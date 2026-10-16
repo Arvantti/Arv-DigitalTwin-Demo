@@ -125,9 +125,9 @@ params:
     affects: [geometry]
 
 ports:
-  - { id: product_in, kind: material, direction: in, unit: kg/h }
+  - { id: product_in, kind: material, direction: in, unit: kg/h, link: { available: product_available, temp_c: product_temp_c, demand_kg_h: product_demand_kg_h } }
   - { id: film_in, kind: material, direction: in, medium: laminado PET/PE }
-  - { id: sachets_out, kind: item, direction: out, unit: u/min }
+  - { id: sachets_out, kind: item, direction: out, unit: u/min, link: { units: units_good, weight_mean_g: fill_weight_avg_g, weight_sd_g: fill_weight_sd_g, temp_c: product_temp_c, ready: downstream_free } }
   - { id: air, kind: utility, direction: in, medium: aire comprimido }
   - { id: power, kind: utility, direction: in, medium: energía eléctrica }
 
@@ -163,6 +163,7 @@ variables:
   - { id: giveaway_g_per_unit, unit: g, kind: calculated, description: Producto regalado promedio por sachet sobre el nominal }
   - { id: film_remaining_pct, unit: "%", kind: calculated, range: [0, 100], description: Laminado restante en el rollo }
   - { id: product_used_kg, unit: kg, kind: counter, description: Producto envasado acumulado }
+  - { id: product_demand_kg_h, unit: kg/h, kind: calculated, description: Producto que pide a la tolva (consumo nominal mientras produce) }
   - { id: unit_ml, unit: mL, kind: setpoint, description: Formato actual }
 
 events:

@@ -83,8 +83,8 @@ params:
 
 ports:
   - { id: charge_in, kind: material, direction: in, description: Ingredientes por boca de carga o tubería }
-  - { id: product_out, kind: material, direction: out, unit: kg/h }
-  - { id: steam_in, kind: utility, direction: in, medium: vapor saturado, unit: kg/h }
+  - { id: product_out, kind: material, direction: out, unit: kg/h, link: { flow_kg_h: discharge_kg_h, temp_c: temperature_c, ready: downstream_free } }
+  - { id: steam_in, kind: utility, direction: in, medium: vapor saturado, unit: kg/h, link: { pressure_bar: steam_supply_bar, demand_kg_h: steam_flow_kg_h } }
   - { id: condensate_out, kind: utility, direction: out, medium: condensado }
   - { id: cooling_water, kind: utility, direction: inout, medium: agua de enfriamiento }
   - { id: cip_in, kind: utility, direction: in, medium: solución CIP }
@@ -127,6 +127,7 @@ variables:
   - { id: batch_count, unit: batches, kind: counter, description: Batches descargados }
   - { id: steam_total_kg, unit: kg, kind: counter, description: Vapor consumido acumulado }
   - { id: discharged_kg, unit: kg, kind: counter, description: Producto descargado acumulado }
+  - { id: discharge_kg_h, unit: kg/h, kind: calculated, description: Caudal de descarga en este momento }
 
 events:
   - { id: phase_started, description: Inicio de fase, payload: [phase, batch_id] }

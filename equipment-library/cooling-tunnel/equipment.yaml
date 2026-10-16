@@ -27,8 +27,8 @@ params:
   item_color:         { type: string, default: "#c62828", description: Color de las unidades (hex), affects: [geometry] }
 
 ports:
-  - { id: items_in, kind: item, direction: in, unit: u/min }
-  - { id: items_out, kind: item, direction: out, unit: u/min }
+  - { id: items_in, kind: item, direction: in, unit: u/min, link: { units: inflow_upm, temp_c: inlet_temp_c, ready: accepting } }
+  - { id: items_out, kind: item, direction: out, unit: u/min, link: { units: units_out, temp_c: product_outlet_c, ready: downstream_free } }
   - { id: chilled_water, kind: utility, direction: inout, medium: agua fría }
 
 states:
@@ -46,6 +46,7 @@ variables:
   - { id: heat_load_kw, unit: kW, kind: calculated, description: Calor retirado del producto }
   - { id: belt_speed_m_min, unit: m/min, kind: calculated, description: Velocidad de la banda }
   - { id: hot_outlets, unit: u, kind: counter, description: Unidades que salieron por encima de la temperatura máxima }
+  - { id: accepting, unit: "", kind: status, description: "1 si la banda avanza y recibe unidades; 0 si está detenida" }
 
 events:
   - { id: quality_alarm, description: Temperatura de salida fuera de límite, payload: [variable, value, limit] }

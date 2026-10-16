@@ -57,6 +57,15 @@ class VffsSachetFiller(EquipmentBehavior):
         return self.p["unit_ml"] * self.p["density_kg_l"]
 
     @property
+    def product_demand_kg_h(self) -> float:
+        """Producto que pide a la tolva: el consumo nominal mientras produce."""
+        if self.state.current != "running":
+            return 0.0
+        p = self.p
+        unit_kg = self.nominal_g * (1 + p["overfill_target_pct"] / 100.0) / 1000.0
+        return unit_kg * p["lanes"] * p["cycles_min"] * 60.0
+
+    @property
     def product_temp(self) -> float:
         t = self.inputs.get("product_temp_c")
         if t is None:
@@ -236,6 +245,7 @@ class VffsSachetFiller(EquipmentBehavior):
             "giveaway_g_per_unit": self.giveaway_sum / self.weight_count if self.weight_count else None,
             "film_remaining_pct": 100.0 * max(0, self.roll_left) / self.p["roll_units"],
             "product_used_kg": self.product_kg,
+            "product_demand_kg_h": self.product_demand_kg_h,
             "unit_ml": self.p["unit_ml"],
         }
 

@@ -3,6 +3,9 @@
     twin-lib list                         tipos disponibles
     twin-lib validate [tipo ...]          valida contratos, presets, comportamiento y escenarios
     twin-lib run <tipo> [--scenario id]   ejecuta un escenario y muestra la evolución
+    twin-lib plant list                   plantas con simulation.yaml
+    twin-lib plant validate [planta ...]  valida enlaces contra la librería y el plano, y corre sus escenarios
+    twin-lib plant run <planta> [--scenario id]   simula la planta conectada
 """
 
 from __future__ import annotations
@@ -12,6 +15,7 @@ import json
 import sys
 
 from .library import Library, check_behavior_contract
+from .plant import SIM_FILE, PlantModel, check_plant_expectations, find_models_root, run_plant_scenario
 from .sim import check_expectations, run_scenario
 
 
@@ -75,6 +79,67 @@ def cmd_run(lib: Library, args: argparse.Namespace) -> int:
     return 0
 
 
+def _plants(lib: Library, names: list[str] | None = None) -> list[PlantModel]:
+    root = find_models_root(lib.root)
+    folders = [root / n for n in names] if names else sorted(p.parent for p in root.glob(f"*/{SIM_FILE}"))
+    return [PlantModel(f, lib) for f in folders]
+
+
+def cmd_plant(lib: Library, args: argparse.Namespace) -> int:
+    if args.action == "list":
+        for m in _plants(lib):
+            print(f"{m.id:<28} {len(m.equipment)} equipos, {len(m.links)} enlaces  escenarios: {', '.join(m.scenarios) or '-'}")
+        return 0
+    if args.action == "validate":
+        failed = 0
+        root = find_models_root(lib.root)
+        names = args.names or sorted(p.parent.name for p in root.glob(f"*/{SIM_FILE}"))
+        for name in names:
+            try:
+                model = PlantModel(root / name, lib)
+                errors = []
+                for sc in model.scenarios.values():
+                    plant, _ = run_plant_scenario(model, sc)
+                    errors += [f"escenario {sc.id}: {m}" for m in check_plant_expectations(plant.snapshot(), sc.expect, plant.events)]
+            except Exception as exc:  # noqa: BLE001 - se informa cualquier error de carga
+                errors = [f"{type(exc).__name__}: {exc}"]
+            print(f"[{'OK ' if not errors else 'ERR'}] {name}")
+            for e in errors:
+                print(f"       {e}")
+            failed += bool(errors)
+        return 1 if failed else 0
+    # run
+    if not args.names:
+        print("indique la planta: twin-lib plant run <planta>", file=sys.stderr)
+        return 2
+    model = _plants(lib, args.names[:1])[0]
+    if not model.scenarios:
+        print(f"{model.id} no tiene escenarios", file=sys.stderr)
+        return 1
+    sc = model.scenarios[args.scenario] if args.scenario else next(iter(model.scenarios.values()))
+    plant, samples = run_plant_scenario(model, sc, sample_every_s=args.every)
+    if args.json:
+        json.dump({"samples": [s for _, s in samples], "events": [e.to_dict() for e in plant.events]}, sys.stdout)
+        return 0
+    ids = list(model.equipment)
+    print(f"{model.id} · escenario {sc.id}: {sc.description}")
+    print(f"{'t (min)':>8}  " + " ".join(f"{eid[:13]:<13}" for eid in ids))
+    for t, snap in samples:
+        print(f"{t / 60:>8.0f}  " + " ".join(f"{snap['equipment'][eid]['state']:<13}" for eid in ids))
+    for line_id, kpi in plant.line_kpis().items():
+        print(f"\nLínea {line_id} ({kpi['name']}): {kpi['output_units']:.0f} unidades, {_fmt(kpi['output_per_h'])} por hora")
+        print("  en marcha:", {eid: f"{v:.0%}" for eid, v in kpi["running_pct"].items()})
+    counts: dict[str, int] = {}
+    for e in plant.events:
+        if e.type != "state_changed":
+            key = f"{e.equipment_id}.{e.type}"
+            counts[key] = counts.get(key, 0) + 1
+    print("Eventos:", counts)
+    failures = check_plant_expectations(plant.snapshot(), sc.expect, plant.events)
+    print("Expectativas:", "todas se cumplen" if not failures else "\n  " + "\n  ".join(failures))
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="twin-lib", description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -87,9 +152,15 @@ def main(argv: list[str] | None = None) -> int:
     r.add_argument("--every", type=float, default=60.0, help="segundos virtuales entre muestras")
     r.add_argument("--vars", help="variables a mostrar, separadas por coma")
     r.add_argument("--json", action="store_true")
+    pl = sub.add_parser("plant", help="motor de planta")
+    pl.add_argument("action", choices=["list", "validate", "run"])
+    pl.add_argument("names", nargs="*", help="carpetas de industrial-models/")
+    pl.add_argument("--scenario")
+    pl.add_argument("--every", type=float, default=600.0, help="segundos virtuales entre muestras")
+    pl.add_argument("--json", action="store_true")
     args = ap.parse_args(argv)
     lib = Library()
-    return {"list": cmd_list, "validate": cmd_validate, "run": cmd_run}[args.cmd](lib, args)
+    return {"list": cmd_list, "validate": cmd_validate, "run": cmd_run, "plant": cmd_plant}[args.cmd](lib, args)
 
 
 if __name__ == "__main__":

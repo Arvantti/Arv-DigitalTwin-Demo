@@ -1,0 +1,109 @@
+# Simulación de la planta de salsas con el motor de planta (docs/plant-engine.md).
+# Primera línea conectada: salsa de tomate caliente en sachet de 1.000 ml, desde la marmita hasta la caja,
+# con el vapor de la caldera. Los equipos del plant.yaml que aún no tienen tipo en la librería
+# (bombas, tubo de retención, estación reductora) se atraviesan con `via`.
+
+schema_version: 0.1.0
+description: Línea caliente de 1.000 ml (marmitas → pasteurizador → pulmón → sachetadora → túnel → control de peso → encajadora) con la caldera
+dt: 1.0
+
+x-tomato-batch: &tomato_batch
+  # rcp-tomato-sauce del plant.yaml, en fases de la marmita (igual al escenario de jacketed-kettle).
+  # Descarga a 56 kg/min = 3.000 L/h × 1,12 kg/L, el caudal del pasteurizador.
+  - { kind: agitate, rpm: 40 }
+  - { kind: charge, material: agua, kg: 860, rate_kg_min: 107.5 }
+  - { kind: charge, material: pasta_tomate_30brix, kg: 700, rate_kg_min: 46.7 }
+  - { kind: agitate, rpm: 60 }
+  - { kind: charge, material: azucar, kg: 300, rate_kg_min: 30 }
+  - { kind: charge, material: sal, kg: 36, rate_kg_min: 30 }
+  - { kind: charge, material: almidon_modificado, kg: 20, rate_kg_min: 10 }
+  - { kind: charge, material: especias, kg: 2, rate_kg_min: 2 }
+  - { kind: charge, material: conservante, kg: 2, rate_kg_min: 2 }
+  - { kind: charge, material: vinagre, kg: 80, rate_kg_min: 40 }
+  - { kind: heat, target_c: 85 }
+  - { kind: hold, target_c: 85, minutes: 10 }
+  - { kind: sample, minutes: 10, spec: { brix: [24, 28], ph_max: 3.9, bostwick_cm_30s: [4, 7] } }
+  - { kind: discharge, rate_kg_min: 56 }
+
+equipment:
+  boiler-01:         { type: steam-boiler,        preset: 60bhp-8bar }
+  kettle-01:         { type: jacketed-kettle,     preset: 2500l-sauce }
+  kettle-02:         { type: jacketed-kettle,     preset: 2500l-sauce }
+  pasteurizer-01:    { type: tubular-pasteurizer, preset: 3000lh-sauce }
+  buffer-hot-01:     { type: vessel,              preset: hot-buffer-3000l, params: { initial_level_pct: 0 } }
+  filler-pouch-01:   { type: vffs-sachet-filler,  preset: 1000ml-1-lane-hot }
+  cooling-tunnel-01: { type: cooling-tunnel,      preset: sachet-6m }
+  checkweigher-01:   { type: checkweigher,        preset: 1000ml-tomato }
+  case-pack-02:      { type: case-packer,         preset: 1000ml-12 }
+
+links:
+  # Vapor: la estación reductora steam-station-01 baja de 8 a 3 bar (outlet_bar del plant.yaml).
+  - { from: boiler-01.steam_out, to: kettle-01.steam_in,      via: [steam-station-01], max: { pressure_bar: 3 } }
+  - { from: boiler-01.steam_out, to: kettle-02.steam_in,      via: [steam-station-01], max: { pressure_bar: 3 } }
+  - { from: boiler-01.steam_out, to: pasteurizer-01.steam_in, via: [steam-station-01], max: { pressure_bar: 3 } }
+  # Producto
+  - { from: kettle-01.product_out,      to: pasteurizer-01.product_in,  via: [pump-hot-01] }
+  - { from: kettle-02.product_out,      to: pasteurizer-01.product_in,  via: [pump-hot-01] }
+  - { from: pasteurizer-01.product_out, to: buffer-hot-01.inlet,        via: [holding-tube-01] }
+  - { from: buffer-hot-01.outlet,       to: filler-pouch-01.product_in }
+  # Sachets
+  - { from: filler-pouch-01.sachets_out,  to: cooling-tunnel-01.items_in }
+  - { from: cooling-tunnel-01.items_out,  to: checkweigher-01.items_in }
+  - { from: checkweigher-01.items_out,    to: case-pack-02.items_in }
+
+startup:
+  - { equipment: pasteurizer-01,  command: start }
+  - { equipment: filler-pouch-01, command: start }
+  # La prueba del detector de metales se hace al inicio de cada hora (metal_test_interval_min).
+  - { equipment: checkweigher-01, command: metal_test, every_s: 3600 }
+
+lines:
+  - id: hot-1000
+    name: Salsa de tomate en sachet de 1.000 ml
+    output: case-pack-02.cases_out
+    equipment: [kettle-01, kettle-02, pasteurizer-01, buffer-hot-01, filler-pouch-01, cooling-tunnel-01, checkweigher-01, case-pack-02]
+
+scenarios:
+  - id: nominal
+    description: "Turno de 8 h: dos marmitas alternadas cada 2 h alimentan la línea hasta la caja"
+    duration_s: 28800
+    timeline:
+      - { at_s: 0,    equipment: kettle-01, command: run_phases, args: { phases: *tomato_batch }, every_s: 7200 }
+      - { at_s: 3600, equipment: kettle-02, command: run_phases, args: { phases: *tomato_batch }, every_s: 7200 }
+    expect:
+      - { path: events.kettle-01.batch_completed, equals: 4, description: "(batch ≈ 118 min: carga 40 + calentamiento ≈ 23 + 10 + 10 + descarga 36; empieza a 0, 120, 240 y 360 min)" }
+      - { path: events.kettle-02.batch_completed, equals: 3, description: "(empieza a 60, 180, 300 y 420 min; el último termina después del turno)" }
+      - { path: lines.hot-1000.output_units, min: 720, max: 900, description: "(7 batches × 1.995 kg, menos lo que queda en el pulmón, ÷ 1,131 kg por sachet, menos ≈ 370 en el túnel y la encajadora, × 93,7 % aceptados ÷ 12; tope: 30 u/min desde el min 85)" }
+      - { path: equipment.checkweigher-01.kpis.reject_rate, min: 0.04, max: 0.09, description: "(media 1.131 g, desv. 16,8 g, límite inferior 1.105 g: z = −1,56 → 5,9 % + 0,4 % sobre 1.176 g)" }
+      - { path: equipment.filler-pouch-01.state_share.starved, min: 0.17, description: "(sin producto hasta la primera descarga, ≈ 85 min de 480)" }
+      - { path: equipment.filler-pouch-01.variables.rejects_temperature, equals: 0, description: "(el pulmón mantiene 88 °C, sobre los 85 °C del llenado en caliente)" }
+      - { path: equipment.cooling-tunnel-01.variables.hot_outlets, equals: 0 }
+      - { path: equipment.pasteurizer-01.kpis.under_target_l, equals: 0.0 }
+
+  - id: boiler-trip
+    description: "Falla de llama de la caldera durante 1 h: la marmita 1 calienta y gasta el vapor que queda, la presión cae y el pasteurizador desvía la descarga de la marmita 2"
+    duration_s: 18000
+    timeline:
+      - { at_s: 0,    equipment: kettle-01, command: run_phases, args: { phases: *tomato_batch }, every_s: 7200 }
+      # La marmita 2 va 75 min detrás, así su descarga coincide con el calentamiento de la marmita 1.
+      - { at_s: 4500, equipment: kettle-02, command: run_phases, args: { phases: *tomato_batch }, every_s: 7200 }
+      - { at_s: 9000, equipment: boiler-01, command: inject_fault, args: { fault: flame_failure, duration_s: 3600 } }
+    expect:
+      - { path: events.boiler-01.low_pressure, min: 1, description: "(7,6 bar al min 160, cuando la marmita 1 empieza a calentar con ≈ 750 kg/h: 25 kg/bar × 2,8 bar se gastan en ≈ 6 min)" }
+      - { path: events.pasteurizer-01.divert_started, min: 2, description: "(el arranque, y la caída bajo ≈ 0,6 bar: necesita ≈ 0,5 bar, 110 °C, para llegar a 95 °C)" }
+      - { path: equipment.pasteurizer-01.variables.diverted_l, min: 500, description: "(0,6 bar hacia el min 174: (7,6 − 0,6) × 25 kg ÷ 756 kg/h = 14 min; desvía a 50 L/min hasta que la marmita 2 termina de descargar en el min 193, ≈ 17 min ≈ 850 L)" }
+      - { path: equipment.pasteurizer-01.kpis.under_target_l, equals: 0.0, description: "(el desvío impide que salga producto sin pasteurizar)" }
+      - { path: equipment.kettle-01.kpis.avg_batch_min, min: 120, description: "(118 min normales; el segundo batch se queda sin vapor desde ≈ 0,6 bar hasta que la caldera vuelve en el min 210 con 1 min de prebarrido)" }
+
+  - id: tunnel-stop
+    description: "La banda del túnel se detiene 80 min: la sachetadora se bloquea, el pulmón se llena y el pasteurizador y la marmita esperan"
+    duration_s: 14400
+    timeline:
+      - { at_s: 0,    equipment: kettle-01, command: run_phases, args: { phases: *tomato_batch }, every_s: 7200 }
+      - { at_s: 3600, equipment: kettle-02, command: run_phases, args: { phases: *tomato_batch }, every_s: 7200 }
+      - { at_s: 5400, equipment: cooling-tunnel-01, command: inject_fault, args: { fault: belt_drive_trip, duration_s: 4800 } }
+    expect:
+      - { path: equipment.filler-pouch-01.state_share.blocked, min: 0.3, description: "(80 de 240 min con el túnel detenido)" }
+      - { path: events.buffer-hot-01.high_level, min: 1, description: "(10 % + 1.576 kg de la marmita 1 + la marmita 2 desde el min 145: 90 % hacia el min 165)" }
+      - { path: equipment.kettle-02.state_share.blocked, min: 0.04, description: "(espera desde ≈ 165 min hasta que el pulmón baja 10 puntos, ≈ 10 min después de que vuelve el túnel)" }
+      - { path: equipment.cooling-tunnel-01.variables.hot_outlets, equals: 0 }

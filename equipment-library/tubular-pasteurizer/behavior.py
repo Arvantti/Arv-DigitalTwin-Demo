@@ -152,7 +152,16 @@ class TubularPasteurizer(EquipmentBehavior):
             "p_value_min": self.p_now,
             "fouling_pct": 100.0 * self.fouling,
             "lot_hold": 1 if self.lot_hold else 0,
+            "accepting": 1 if self.accepting else 0,
+            "forward_kg_h": self.p["flow_l_h"] * self.p["density_kg_l"] if self.flowing and not self.diverting else 0.0,
         }
+
+    @property
+    def accepting(self) -> bool:
+        """Recibe producto si está en marcha, sin falla ni CIP y con salida (adelante o al desvío)."""
+        if not self.running_cmd or self.state.current in ("fault", "cleaning"):
+            return False
+        return bool(self.inputs.get("downstream_free", True)) or self.diverting
 
     def kpis(self) -> dict[str, Any]:
         tons = self.pasteurized * self.p["density_kg_l"] / 1000.0

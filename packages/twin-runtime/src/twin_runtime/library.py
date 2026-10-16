@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any
 
 from .behavior import EquipmentBehavior
+from .links import check_port_links
 from .spec import EquipmentSpec, SpecError, load_spec, load_yaml
 
 LIBRARY_DIR_NAME = "equipment-library"
@@ -185,4 +186,5 @@ def check_behavior_contract(eq: EquipmentType) -> list[str]:
         errors.append(f"animation() no produce canales declarados: {sorted(missing)}")
     if extra := anim - channels:
         errors.append(f"animation() produce canales no declarados: {sorted(extra)}")
+    errors += check_port_links(eq.spec, eq.behavior_cls)
     return errors

@@ -97,6 +97,7 @@ class JacketedKettle(EquipmentBehavior):
         self.batch_durations: list[float] = []
         self.steam_total = 0.0
         self.discharged = 0.0
+        self.discharge_kg_h = 0.0
         self.samples = 0
         self.samples_ok = 0
         self.deviation_flag = False
@@ -188,6 +189,7 @@ class JacketedKettle(EquipmentBehavior):
     def update(self, ctx: StepContext) -> None:
         dt = ctx.dt
         s = self.state.current
+        self.discharge_kg_h = 0.0
         if self.failures.is_active("temperature_probe_drift"):
             self.probe_offset += 3.0 * dt / 3600.0
 
@@ -329,6 +331,7 @@ class JacketedKettle(EquipmentBehavior):
                 self.components = {k: v * scale for k, v in self.components.items()}
                 self.discharged += out
                 self.phase_progress_kg += out
+                self.discharge_kg_h = out * 3600.0 / dt
             if self.mass <= self.p["heel_kg"] + 1e-6:
                 self._complete_batch()
                 self._finish_phase()
@@ -460,6 +463,7 @@ class JacketedKettle(EquipmentBehavior):
             "batch_count": self.batch_count,
             "steam_total_kg": self.steam_total,
             "discharged_kg": self.discharged,
+            "discharge_kg_h": self.discharge_kg_h,
         }
 
     def kpis(self) -> dict[str, Any]:

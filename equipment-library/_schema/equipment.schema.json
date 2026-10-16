@@ -179,7 +179,24 @@
         "direction": { "enum": ["in", "out", "inout"] },
         "medium": { "type": "string" },
         "unit": { "type": "string" },
-        "description": { "type": "string" }
+        "description": { "type": "string" },
+        "link": {
+          "description": "Magnitudes que viajan por el puerto cuando el motor de planta lo conecta: magnitud → variable que el equipo publica o entrada que recibe (docs/plant-engine.md)",
+          "type": "object",
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "units": { "$ref": "#/$defs/ident" },
+            "flow_kg_h": { "$ref": "#/$defs/ident" },
+            "available": { "$ref": "#/$defs/ident" },
+            "temp_c": { "$ref": "#/$defs/ident" },
+            "pressure_bar": { "$ref": "#/$defs/ident" },
+            "weight_mean_g": { "$ref": "#/$defs/ident" },
+            "weight_sd_g": { "$ref": "#/$defs/ident" },
+            "ready": { "$ref": "#/$defs/ident" },
+            "demand_kg_h": { "$ref": "#/$defs/ident" }
+          }
+        }
       }
     },
     "state": {

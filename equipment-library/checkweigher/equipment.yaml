@@ -24,8 +24,8 @@ params:
   item_color:           { type: string, default: "#c62828", description: Color de las unidades (hex), affects: [geometry] }
 
 ports:
-  - { id: items_in, kind: item, direction: in, unit: u/min }
-  - { id: items_out, kind: item, direction: out, unit: u/min }
+  - { id: items_in, kind: item, direction: in, unit: u/min, link: { units: inflow_upm, weight_mean_g: upstream_mean_g, weight_sd_g: upstream_sd_g, ready: accepting } }
+  - { id: items_out, kind: item, direction: out, unit: u/min, link: { units: units_accepted, ready: downstream_free } }
   - { id: rejects_out, kind: item, direction: out, medium: rechazos }
 
 states:
@@ -47,6 +47,7 @@ variables:
   - { id: metal_escapes, unit: u, kind: counter, description: Unidades con metal no detectadas }
   - { id: minutes_since_metal_test, unit: min, kind: calculated, description: Minutos desde la última prueba del detector }
   - { id: lot_on_hold, unit: "", kind: status, description: "1 si el lote queda retenido por prueba de detector vencida" }
+  - { id: accepting, unit: "", kind: status, description: "1 si recibe unidades; 0 detenido por falla o con la salida llena" }
 
 events:
   - { id: unit_rejected, description: Unidad rechazada, payload: [reason, weight_g] }

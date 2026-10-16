@@ -127,8 +127,8 @@ params:
     affects: [geometry]
 
 ports:
-  - { id: inlet, kind: material, direction: in, unit: kg/h }
-  - { id: outlet, kind: material, direction: out, unit: kg/h }
+  - { id: inlet, kind: material, direction: in, unit: kg/h, link: { flow_kg_h: supply_kg_h, temp_c: inflow_temp_c, ready: accepting } }
+  - { id: outlet, kind: material, direction: out, unit: kg/h, link: { flow_kg_h: outflow_kg_h, available: available, temp_c: temperature_c, demand_kg_h: demand_kg_h } }
   - { id: heating_medium, kind: utility, direction: in, medium: vapor o agua caliente }
 
 states:
@@ -151,6 +151,8 @@ variables:
   - { id: heating_pct, unit: "%", kind: calculated, range: [0, 100], description: Apertura de la válvula de calentamiento de la chaqueta }
   - { id: total_in_kg, unit: kg, kind: counter, description: Masa recibida acumulada }
   - { id: total_out_kg, unit: kg, kind: counter, description: Masa entregada acumulada }
+  - { id: accepting, unit: "", kind: status, description: "1 si recibe producto; deja de recibir en el nivel alto y vuelve 10 puntos abajo" }
+  - { id: available, unit: "", kind: status, description: "1 si puede entregar; deja de entregar vacío y vuelve al superar el nivel bajo" }
 
 events:
   - { id: low_level, description: Nivel por debajo de la alarma baja }
