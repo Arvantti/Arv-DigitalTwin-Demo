@@ -1,0 +1,41 @@
+scenarios:
+  - id: steady
+    description: Sachets de 250 ml a 100 u/min durante 10 minutos
+    preset: sachet-250
+    duration_s: 600
+    expect:
+      - { path: variables.delivered, min: 975, max: 980, description: "(100 u/min × (600 − 13,3 s de tránsito) ≈ 978)" }
+      - { path: state, equals: running }
+
+  - id: blocked-accumulation
+    description: El control de peso deja de recibir; la banda acumula hasta llenarse y bloquea a la sachetadora
+    preset: sachet-250
+    duration_s: 120
+    timeline:
+      - { at_s: 30, inputs: { downstream_free: false } }
+    expect:
+      - { path: variables.items_on_belt, equals: 27, description: "(4 m / 0,15 m + 1)" }
+      - { path: variables.accepting, equals: 0 }
+      - { path: events.full, equals: 1 }
+      - { path: state, equals: blocked }
+
+  - id: unblock
+    description: Se libera la salida y la banda drena la cola
+    preset: sachet-250
+    duration_s: 300
+    timeline:
+      - { at_s: 30, inputs: { downstream_free: false } }
+      - { at_s: 120, inputs: { downstream_free: true } }
+    expect:
+      - { path: events.accepting_again, equals: 1 }
+      - { path: variables.accepting, equals: 1 }
+
+  - id: motor-trip
+    description: Disparo del motor durante 10 minutos
+    preset: sachet-1000
+    duration_s: 1800
+    timeline:
+      - { at_s: 300, command: inject_fault, args: { fault: motor_trip, duration_s: 600 } }
+    expect:
+      - { path: events.fault_cleared, equals: 1 }
+      - { path: kpis.throughput_upm, min: 15, max: 25, description: "(30 u/min, sin entregas ≈ 10 de 30 min)" }

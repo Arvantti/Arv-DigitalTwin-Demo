@@ -1,0 +1,4 @@
+preset: 250ml-1-lane
+description: Sachet de 250 ml en 1 pista para mostaza, máquina dedicada por alérgeno (60 u/min)
+params: { unit_ml: 250, lanes: 1, cycles_min: 60, density_kg_l: 1.05, product: mostaza, hot_fill: false, roll_units: 6000, film_color: "#e0a800" }
+provenance: { unit_ml: user, cycles_min: assumed, density_kg_l: assumed }

@@ -1,0 +1,75 @@
+schema_version: 0.1.0
+type: case-packer
+version: 0.1.0
+name: Encajadora de sachets
+manufacturing: packaging
+category: packaging.case
+description: >
+  Encajadora semiautomática que arma la caja de corrugado, la carga con un número fijo de
+  unidades, la cierra con cinta y la entrega al paletizado. Acumula unidades en un pulmón,
+  bloquea a la línea cuando se llena y se detiene si faltan cajas o cinta.
+aliases: [encajadora, empacadora de cajas, case packer, armadora de cajas]
+fidelity: { visual: V2, behavior: B2 }
+
+params:
+  units_per_case:     { type: integer, min: 1, max: 500, default: 24, description: Unidades por caja, affects: [behavior, geometry] }
+  cycle_s:            { type: number, unit: s, min: 3, max: 120, default: 10, description: "Tiempo de armado, carga y cierre de una caja", affects: [behavior] }
+  buffer_cases:       { type: integer, min: 1, max: 10, default: 2, description: Capacidad del pulmón de entrada en cajas, affects: [behavior] }
+  nominal_inflow_upm: { type: number, unit: u/min, min: 0, max: 1000, default: 80, description: Llegada nominal si el entorno no la fija, affects: [behavior] }
+  case_size_m:        { type: number, unit: m, min: 0.15, max: 0.8, default: 0.4, description: Lado mayor de la caja, affects: [geometry] }
+  item_color:         { type: string, default: "#c62828", description: Color de las unidades (hex), affects: [geometry] }
+
+ports:
+  - { id: items_in, kind: item, direction: in, unit: u/min }
+  - { id: cases_out, kind: item, direction: out, unit: cajas/min }
+  - { id: boxes_in, kind: material, direction: in, medium: cajas de corrugado plegadas }
+  - { id: air, kind: utility, direction: in, medium: aire comprimido }
+
+states:
+  - { id: idle, description: Sin unidades }
+  - { id: running, description: Encajando }
+  - { id: starved, description: Faltan cajas plegadas }
+  - { id: blocked, description: El paletizado no recibe }
+  - { id: fault, description: Detenida por falla }
+
+phases:
+  - { id: erect, description: Armado de la caja }
+  - { id: load, description: Carga de unidades }
+  - { id: close, description: Cierre de solapas y encintado }
+
+variables:
+  - { id: buffer_units, unit: u, kind: calculated, description: Unidades en el pulmón de entrada }
+  - { id: cases_count, unit: cajas, kind: counter, description: Cajas terminadas }
+  - { id: units_packed, unit: u, kind: counter, description: Unidades encajadas }
+  - { id: cases_per_min, unit: cajas/min, kind: calculated, description: Cajas por minuto (promedio) }
+  - { id: accepting, unit: "", kind: status, description: "1 si acepta unidades, 0 si el pulmón está lleno" }
+
+events:
+  - { id: case_completed, description: Caja terminada, payload: [case] }
+  - { id: buffer_full, description: El pulmón se llenó y bloquea a la línea }
+
+faults:
+  - { id: box_jam, description: Atasco de caja en el armado, mtbf_h: 200, mttr_min: 5, severity: low, effect: Parada corta }
+  - { id: tape_out, description: Rollo de cinta agotado, mtbf_h: 100, mttr_min: 4, severity: low, effect: Parada para cambiar la cinta }
+
+commands:
+  - { id: inject_fault, description: Inyecta una falla declarada, args: { fault: string, duration_s: number } }
+  - { id: clear_fault, description: Repara una falla activa, args: { fault: string } }
+  - { id: set_param, description: Cambia un parámetro en caliente, args: { name: string, value: any } }
+
+kpis:
+  - { id: utilization, unit: "", description: Fracción del tiempo encajando }
+  - { id: starved_pct, unit: "", description: Fracción del tiempo sin cajas }
+
+animation_channels:
+  - { id: case_progress, range: [0, 1], description: Avance del ciclo de la caja actual }
+  - { id: flaps, range: [0, 1], description: "Solapas: 0 abiertas, 1 cerradas" }
+  - { id: buffer_fill, range: [0, 1], description: Llenado del pulmón }
+  - { id: stack_light, range: [0, 3], description: "Baliza: 0 apagada, 1 verde, 2 amarilla, 3 roja" }
+
+geometry:
+  parts: [frame, guards, box_magazine, case, flaps, tape_head, infeed, outfeed, stack_light]
+
+assumptions:
+  - "Ciclo dividido en armado 30 %, carga 40 % y cierre 30 %."
+  - La caja terminada sale de inmediato si el paletizado recibe; si no, la máquina espera con la caja cerrada.

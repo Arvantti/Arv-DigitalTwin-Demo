@@ -1,0 +1,40 @@
+scenarios:
+  - id: steady-500
+    description: Demanda estable de 500 kg/h durante una hora
+    preset: 60bhp-8bar
+    duration_s: 3600
+    expect:
+      - { path: variables.pressure_bar, min: 7.6, max: 8.4 }
+      - { path: variables.gas_m3_h, min: 37, max: 43, description: "(500 kg/h × 0,70 kWh/kg / (0,85 × 10,3) ≈ 40 m³/h)" }
+      - { path: variables.burner_starts, equals: 0 }
+
+  - id: overload
+    description: Demanda de 1.200 kg/h, por encima de la capacidad de 940 kg/h
+    preset: 60bhp-8bar
+    duration_s: 1800
+    timeline:
+      - { at_s: 0, command: set_demand, args: { kg_h: 1200 } }
+    expect:
+      - { path: variables.pressure_bar, min: 2.0, max: 3.8, description: "(déficit 260 kg/h ÷ 25 kg/bar ≈ 0,0029 bar/s → −5,2 bar en 30 min)" }
+      - { path: variables.firing_rate_pct, min: 99 }
+
+  - id: low-load-cycling
+    description: Demanda de 150 kg/h, menor que el fuego mínimo (235 kg/h); el quemador cicla
+    preset: 60bhp-8bar
+    duration_s: 3600
+    timeline:
+      - { at_s: 0, command: set_demand, args: { kg_h: 150 } }
+    expect:
+      - { path: variables.burner_starts, min: 3 }
+      - { path: variables.pressure_bar, min: 7.2, max: 8.8 }
+
+  - id: flame-failure
+    description: Falla de llama de 30 minutos con 500 kg/h de demanda; la presión se agota y luego se recupera
+    preset: 60bhp-8bar
+    duration_s: 6000
+    timeline:
+      - { at_s: 600, command: inject_fault, args: { fault: flame_failure, duration_s: 1800 } }
+    expect:
+      - { path: events.low_pressure, equals: 1 }
+      - { path: events.fault_cleared, equals: 1 }
+      - { path: variables.pressure_bar, min: 7.4, max: 8.6, description: "(recupera 8 bar a (940 − 500) kg/h en ≈ 27 min)" }

@@ -1,0 +1,75 @@
+schema_version: 0.1.0
+type: belt-conveyor
+version: 0.1.0
+name: Banda transportadora
+manufacturing: logistics
+category: transport.conveyor
+description: >
+  Transportador de banda plana, malla, tablillas o rodillos que mueve unidades discretas
+  (sachets, piezas, cajas) entre equipos. Acumula unidades cuando la salida se bloquea y deja
+  de aceptar cuando se llena, propagando el bloqueo hacia la máquina anterior.
+aliases: [banda, transportador, conveyor, banda de salida, transportador de rodillos]
+fidelity: { visual: V2, behavior: B2 }
+
+params:
+  length_m:      { type: number, unit: m, min: 0.5, max: 200, default: 6, description: Largo útil, affects: [geometry, behavior] }
+  width_m:       { type: number, unit: m, min: 0.1, max: 2, default: 0.4, description: Ancho de la banda, affects: [geometry] }
+  speed_m_s:     { type: number, unit: m/s, min: 0.01, max: 3, default: 0.3, description: Velocidad de la banda, affects: [behavior] }
+  pitch_m:       { type: number, unit: m, min: 0.02, max: 3, default: 0.25, description: Separación mínima entre unidades acumuladas, affects: [behavior, geometry] }
+  height_m:      { type: number, unit: m, min: 0.2, max: 6, default: 0.85, description: Altura de la superficie de transporte, affects: [geometry] }
+  kind:          { type: enum, values: [flat, mesh, slat, roller], default: flat, description: Tipo de transportador, affects: [geometry] }
+  item:          { type: enum, values: [sachet, part, box], default: sachet, description: Unidad que transporta (para el dibujo), affects: [geometry] }
+  item_size_m:   { type: number, unit: m, min: 0.02, max: 1.5, default: 0.18, description: Tamaño de la unidad (para el dibujo), affects: [geometry] }
+  item_color:    { type: string, default: "#c62828", description: Color de la unidad (hex), affects: [geometry] }
+  nominal_inflow_upm: { type: number, unit: u/min, min: 0, max: 2000, default: 60, description: Llegada nominal de unidades si el entorno no la fija, affects: [behavior] }
+  motor_kw:      { type: number, unit: kW, min: 0.1, max: 30, default: 0.75, description: Potencia del motorreductor, affects: [geometry, behavior] }
+
+ports:
+  - { id: items_in, kind: item, direction: in, unit: u/min }
+  - { id: items_out, kind: item, direction: out, unit: u/min }
+  - { id: power, kind: utility, direction: in, medium: energía eléctrica }
+
+states:
+  - { id: idle, description: Vacía y sin llegadas }
+  - { id: running, description: Transportando }
+  - { id: blocked, description: Unidades detenidas en la descarga porque la salida no recibe }
+  - { id: fault, description: Detenida por falla }
+
+variables:
+  - { id: items_on_belt, unit: u, kind: calculated, description: Unidades sobre la banda }
+  - { id: accumulated, unit: u, kind: calculated, description: Unidades detenidas en cola contra la descarga }
+  - { id: delivered, unit: u, kind: counter, description: Unidades entregadas a la siguiente máquina }
+  - { id: occupancy_pct, unit: "%", kind: calculated, range: [0, 100], description: Ocupación respecto de la capacidad de acumulación }
+  - { id: accepting, unit: "", kind: status, description: "1 si acepta unidades, 0 si está llena (bloquea a la máquina anterior)" }
+  - { id: speed_actual_m_s, unit: m/s, kind: measured, range: [0, 3], noise_sd: 0.002, resolution: 0.001, description: Velocidad real }
+  - { id: motor_current_a, unit: A, kind: measured, range: [0, 100], noise_sd: 0.03, resolution: 0.01, description: Corriente del motor }
+
+events:
+  - { id: full, description: La banda se llenó y dejó de aceptar unidades }
+  - { id: accepting_again, description: La banda vuelve a aceptar unidades }
+
+faults:
+  - { id: motor_trip, description: Disparo térmico del motor, mtbf_h: 8000, mttr_min: 30, severity: medium, effect: La banda se detiene }
+  - { id: belt_misalignment, description: Banda desalineada, mtbf_h: 2000, mttr_min: 20, severity: low, stops_equipment: false, effect: "Se reduce la velocidad al 70 % hasta el ajuste" }
+
+commands:
+  - { id: set_speed, description: Cambia la velocidad, args: { m_s: number } }
+  - { id: inject_fault, description: Inyecta una falla declarada, args: { fault: string, duration_s: number } }
+  - { id: clear_fault, description: Repara una falla activa, args: { fault: string } }
+  - { id: set_param, description: Cambia un parámetro en caliente, args: { name: string, value: any } }
+
+kpis:
+  - { id: throughput_upm, unit: u/min, description: Unidades entregadas por minuto (promedio) }
+  - { id: blocked_pct, unit: "", description: Fracción del tiempo bloqueada }
+
+animation_channels:
+  - { id: belt_travel, unit: m, range: [0, 10], description: Recorrido acumulado de la banda (módulo 10 m) }
+  - { id: items_count, range: [0, 2000], description: Unidades sobre la banda }
+  - { id: accumulated, range: [0, 2000], description: Unidades detenidas contra la descarga }
+
+geometry:
+  parts: [frame, belt, rollers, side_guides, legs, drive_motor, items]
+
+assumptions:
+  - Las unidades entran por el inicio y avanzan a la velocidad de la banda; contra la descarga se acumulan a la separación mínima.
+  - La corriente del motor crece con la carga transportada.

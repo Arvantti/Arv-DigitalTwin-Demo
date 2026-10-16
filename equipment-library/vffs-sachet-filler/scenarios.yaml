@@ -1,0 +1,65 @@
+scenarios:
+  - id: steady-250
+    description: Una hora de sachets de 250 ml de mayonesa sin fallas
+    preset: 250ml-2-lanes
+    duration_s: 3590
+    timeline:
+      - { at_s: 0, command: start }
+    expect:
+      - { path: variables.units_good, min: 5940, max: 5984, description: "(3590 s × 100 u/min ≈ 5983 sachets; ~0,25 % de rechazos)" }
+      - { path: kpis.giveaway_pct, min: 0.85, max: 1.15, description: "(sobrellenado objetivo 1 %)" }
+      - { path: variables.nominal_weight_g, min: 232.4, max: 232.6, description: "(250 ml × 0,93 kg/L)" }
+      - { path: state, equals: running }
+
+  - id: roll-change
+    description: Se acaba el rollo a la hora y se cambia en 8 minutos
+    preset: 250ml-2-lanes
+    duration_s: 7200
+    timeline:
+      - { at_s: 0, command: start }
+    expect:
+      - { path: events.roll_changed, equals: 1, description: "(6.000 sachets por rollo = 3.600 s)" }
+      - { path: kpis.availability, min: 0.93, max: 0.94, description: "(6.720 s produciendo de 7.200 s)" }
+
+  - id: hot-fill-cold-product
+    description: El tanque pulmón entrega salsa a 80 °C durante 5 minutos; esos sachets se rechazan
+    preset: 1000ml-1-lane-hot
+    duration_s: 1800
+    timeline:
+      - { at_s: 0, command: start }
+      - { at_s: 600, inputs: { product_temp_c: 80 } }
+      - { at_s: 900, inputs: { product_temp_c: 88 } }
+    expect:
+      - { path: variables.rejects_temperature, min: 148, max: 152, description: "(30 u/min × 5 min)" }
+      - { path: events.quality_alarm, min: 1 }
+
+  - id: jaw-heater-failure
+    description: Falla una resistencia de las mordazas durante 30 minutos; aumentan los sellos débiles
+    preset: 500ml-1-lane
+    duration_s: 3600
+    timeline:
+      - { at_s: 0, command: start }
+      - { at_s: 300, command: inject_fault, args: { fault: jaw_heater_failure, duration_s: 1800 } }
+    expect:
+      - { path: variables.rejects_seal, min: 330, max: 470, description: "(≈ 29 min fuera de ventana × 45 u/min × 30 %)" }
+      - { path: events.fault_cleared, equals: 1 }
+
+  - id: format-change
+    description: Cambio de 1.000 ml a 500 ml de mayonesa a la media hora
+    preset: 1000ml-1-lane
+    duration_s: 5400
+    timeline:
+      - { at_s: 0, command: start }
+      - { at_s: 1800, command: change_format, args: { unit_ml: 500 } }
+    expect:
+      - { path: events.format_changed, equals: 1 }
+      - { path: variables.unit_ml, equals: 500 }
+      - { path: variables.nominal_weight_g, min: 464.9, max: 465.1, description: "(500 ml × 0,93 kg/L)" }
+
+  - id: demo
+    description: Turno de 8 horas de sachets de 250 ml de tomate en caliente, con fallas aleatorias
+    preset: 250ml-2-lanes-hot
+    duration_s: 28800
+    random_faults: true
+    timeline:
+      - { at_s: 0, command: start }

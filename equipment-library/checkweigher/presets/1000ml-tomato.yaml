@@ -1,0 +1,4 @@
+preset: 1000ml-tomato
+description: Sachet de 1.000 ml de salsa de tomate (1.120 g)
+params: { nominal_g: 1120, tolerance_minus_g: 15, tolerance_plus_g: 56, nominal_inflow_upm: 30, belt_width_m: 0.45 }
+provenance: { nominal_g: user, tolerance_minus_g: assumed }

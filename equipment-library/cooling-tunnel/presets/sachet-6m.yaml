@@ -1,0 +1,4 @@
+preset: sachet-6m
+description: Túnel de 6 m para sachets de 500 y 1.000 ml llenados en caliente (12 min de permanencia)
+params: { length_m: 6, width_m: 1.5, dwell_min: 12, unit_ml: 1000, density_kg_l: 1.12, inlet_c: 85, outlet_max_c: 40, water_setpoint_c: 4, water_flow_m3_h: 12, nominal_inflow_upm: 30 }
+provenance: { length_m: user, dwell_min: user, water_setpoint_c: user, water_flow_m3_h: user, outlet_max_c: assumed }

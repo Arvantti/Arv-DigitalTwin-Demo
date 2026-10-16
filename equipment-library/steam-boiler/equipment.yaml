@@ -1,0 +1,88 @@
+schema_version: 0.1.0
+type: steam-boiler
+version: 0.1.0
+name: Caldera pirotubular de vapor
+manufacturing: utility
+category: utility.steam
+description: >
+  Caldera pirotubular a gas con quemador modulante que genera vapor saturado para marmitas,
+  pasteurizadores y otros consumidores. La presión responde al balance entre generación y
+  demanda; con poca carga el quemador cicla (con prebarrido en cada encendido) y con
+  sobrecarga la presión cae y todos los consumidores lo sienten.
+aliases: [caldera, generador de vapor, boiler, caldera pirotubular]
+fidelity: { visual: V2, behavior: B3 }
+
+params:
+  rating_kg_h:         { type: number, unit: kg/h, min: 50, max: 30000, default: 940, description: Capacidad nominal de vapor, affects: [behavior, geometry] }
+  rating_bhp:          { type: number, unit: BHP, min: 5, max: 2000, default: 60, description: Potencia en caballos caldera (para la placa y el tamaño), affects: [geometry] }
+  design_bar:          { type: number, unit: bar(g), min: 2, max: 25, default: 10, description: Presión de diseño, affects: [behavior] }
+  setpoint_bar:        { type: number, unit: bar(g), min: 1, max: 20, default: 8, description: Consigna de presión, affects: [behavior] }
+  band_bar:            { type: number, unit: bar, min: 0.1, max: 2, default: 0.4, description: Banda de encendido y apagado del quemador, affects: [behavior] }
+  min_fire_pct:        { type: number, unit: "%", min: 10, max: 60, default: 25, description: Fuego mínimo del quemador (relación de modulación), affects: [behavior] }
+  efficiency:          { type: number, min: 0.5, max: 0.98, default: 0.85, description: Eficiencia térmica, affects: [behavior] }
+  gas_kwh_m3:          { type: number, unit: kWh/m3, min: 5, max: 15, default: 10.3, description: Poder calorífico inferior del gas, affects: [behavior] }
+  feedwater_c:         { type: number, unit: degC, min: 10, max: 120, default: 60, description: Temperatura del agua de alimentación, affects: [behavior] }
+  storage_kg_per_bar:  { type: number, unit: kg/bar, min: 1, max: 1000, default: 25, description: Vapor que la caldera entrega o almacena por cada bar de presión (inercia), affects: [behavior] }
+  purge_s:             { type: number, unit: s, min: 0, max: 300, default: 60, description: Prebarrido antes de cada encendido, affects: [behavior] }
+  nominal_demand_kg_h: { type: number, unit: kg/h, min: 0, max: 30000, default: 500, description: Demanda si el entorno no la fija, affects: [behavior] }
+
+ports:
+  - { id: steam_out, kind: utility, direction: out, medium: vapor saturado, unit: kg/h }
+  - { id: gas_in, kind: utility, direction: in, medium: gas natural, unit: m3/h }
+  - { id: feedwater_in, kind: utility, direction: in, medium: agua tratada }
+  - { id: power, kind: utility, direction: in, medium: energía eléctrica }
+
+states:
+  - { id: "off", description: Apagada }
+  - { id: starting, description: Prebarrido y encendido del quemador }
+  - { id: running, description: En servicio (con el quemador encendido o en reposo dentro de la banda) }
+  - { id: fault, description: Disparo por seguridad }
+
+variables:
+  - { id: pressure_bar, unit: bar(g), kind: measured, range: [0, 25], noise_sd: 0.02, resolution: 0.01, description: Presión de vapor }
+  - { id: setpoint_bar, unit: bar(g), kind: setpoint, description: Consigna de presión }
+  - { id: firing_rate_pct, unit: "%", kind: calculated, range: [0, 100], description: Fuego del quemador }
+  - { id: steam_out_kg_h, unit: kg/h, kind: calculated, description: Vapor entregado }
+  - { id: demand_kg_h, unit: kg/h, kind: calculated, description: Vapor demandado por los consumidores }
+  - { id: gas_m3_h, unit: m3/h, kind: measured, range: [0, 5000], noise_sd: 0.2, resolution: 0.1, description: Consumo de gas }
+  - { id: gas_total_m3, unit: m3, kind: counter, description: Gas acumulado }
+  - { id: water_level_pct, unit: "%", kind: measured, range: [0, 100], noise_sd: 0.5, resolution: 0.1, description: Nivel de agua en la mirilla }
+  - { id: stack_temp_c, unit: degC, kind: measured, range: [0, 400], noise_sd: 1, resolution: 1, description: Temperatura de gases en la chimenea }
+  - { id: burner_on, unit: "", kind: status, description: "1 si el quemador está encendido" }
+  - { id: burner_starts, unit: encendidos, kind: counter, description: Encendidos del quemador }
+
+events:
+  - { id: burner_started, description: Encendido del quemador }
+  - { id: burner_stopped, description: Apagado del quemador por presión alta }
+  - { id: low_pressure, description: Presión bajo el 60 % de la consigna, payload: [pressure_bar] }
+
+faults:
+  - { id: flame_failure, description: Falla de llama, mtbf_h: 2000, mttr_min: 30, severity: high, effect: Disparo; la presión cae con la demanda }
+  - { id: low_water, description: Bajo nivel de agua, mtbf_h: 5000, mttr_min: 45, severity: critical, effect: Disparo por seguridad }
+
+commands:
+  - { id: start, description: Arranca la caldera }
+  - { id: stop, description: Apaga la caldera }
+  - { id: set_demand, description: Fija la demanda de vapor (si no la entrega el entorno), args: { kg_h: number } }
+  - { id: inject_fault, description: Inyecta una falla declarada, args: { fault: string, duration_s: number } }
+  - { id: clear_fault, description: Repara una falla activa, args: { fault: string } }
+  - { id: set_param, description: Cambia un parámetro en caliente, args: { name: string, value: any } }
+
+kpis:
+  - { id: avg_load_pct, unit: "", description: Carga media respecto de la capacidad }
+  - { id: gas_m3_per_t, unit: m3/t, description: Gas por tonelada de vapor }
+  - { id: burner_cycles_per_h, unit: 1/h, description: Encendidos por hora (muchos = sobredimensionada para la carga) }
+
+animation_channels:
+  - { id: flame, range: [0, 1], description: Intensidad de la llama }
+  - { id: pressure_norm, range: [0, 1], description: Presión / presión de diseño (aguja del manómetro) }
+  - { id: stack, range: [0, 1], description: Gases calientes en la chimenea }
+  - { id: alarm_light, range: [0, 3], description: "Baliza: 0 apagada, 1 verde, 2 amarilla, 3 roja" }
+
+geometry:
+  parts: [shell, front_door, burner, blower, stack, water_column, gauges, feed_pump, safety_valves, main_valve, control_panel, base]
+
+assumptions:
+  - "Gas por kg de vapor = (2.770 − 4,18·T_agua) kJ/kg / (eficiencia × PCI)."
+  - "Presión: dP/dt = (generación − demanda) / inercia (kg/bar)."
+  - Con la presión en cero, los consumidores solo reciben lo que genera el quemador.

@@ -25,11 +25,12 @@ plant:
       - "emulsiones en frío: mayonesa (natural, chipotle, jalapeño), salsa rosada, mayonesa-mostaza"
       - "salsas en caliente: salsa de tomate (reconstituida desde pasta), salsa BBQ"
       - mostaza
-    packaging: [sachet 8-10 g, doypack 200 g, doypack 500 g, botella 400-1000 g, galón 3-4 kg]
+    packaging: [sachet 250 ml, sachet 500 ml, sachet 1000 ml]
     assumptions:
       - Área construida ≈ 5.200 m² incluyendo bodegas.
       - Agua de proceso a 1.500 m s. n. m.: ebullición ≈ 95 °C, por eso la cocción abierta se limita a 85-90 °C.
       - La salsa de tomate se pasteuriza en continuo durante la transferencia y se llena en caliente (≥ 85 °C).
+      - Todo el producto se envasa en sachet (laminado PET/PE apto para llenado en caliente); no hay botellas.
 
 layout_concept: >
   Flujo unidireccional oeste → este con zonificación higiénica creciente:
@@ -96,8 +97,8 @@ equipment:
   - { id: rack-dry-01,      type: pallet_rack, zone: bodega-seca,      position: [18, 49, 0], footprint: [14, 1.5, 6], params: { content: azúcar y sal } }
   - { id: rack-dry-02,      type: pallet_rack, zone: bodega-seca,      position: [18, 56, 0], footprint: [14, 1.5, 6], params: { content: "almidones, estabilizantes y conservantes" } }
   - { id: rack-dry-03,      type: pallet_rack, zone: bodega-seca,      position: [18, 63, 0], footprint: [14, 1.5, 6], params: { content: "especias, chipotle, jalapeño, colorantes" } }
-  - { id: rack-pack-01,     type: pallet_rack, zone: bodega-empaque,   position: [68, 16, 0], footprint: [14, 1.5, 6], params: { content: rollos de laminado para sachet y doypack } }
-  - { id: rack-pack-02,     type: pallet_rack, zone: bodega-empaque,   position: [68, 22, 0], footprint: [14, 1.5, 6], params: { content: "botellas, tapas, galones y cajas" } }
+  - { id: rack-pack-01,     type: pallet_rack, zone: bodega-empaque,   position: [68, 16, 0], footprint: [14, 1.5, 6], params: { content: rollos de laminado impreso para sachet } }
+  - { id: rack-pack-02,     type: pallet_rack, zone: bodega-empaque,   position: [68, 22, 0], footprint: [14, 1.5, 6], params: { content: "cajas de corrugado, displays y cinta de codificación" } }
 
   # --- Preparación de pasta y pesaje ---
   - { id: drum-tipper-01, type: drum_tipper,  zone: preparacion-pasta, position: [30, 18, 0], footprint: [2, 2, 3],   params: { bag_kg: 220 } }
@@ -146,20 +147,21 @@ equipment:
 
   # --- Llenado (alto cuidado) ---
   - { id: handwash-02,      type: handwash_station, zone: esclusa-llenado, position: [68, 28, 0], footprint: [2, 1, 1.2], params: { boot_wash: true } }
-  - { id: filler-sachet-01, type: vffs_sachet,     zone: llenado, position: [62.5, 56, 0], footprint: [1.6, 1.6, 3], params: { lanes: 8, cycles_min: 40, units_min: 320, unit_g: 8 }, tags: [speed, units_count, reject_count, seal_temperature] }
-  - { id: filler-sachet-02, type: vffs_sachet,     zone: llenado, position: [65.5, 56, 0], footprint: [1.6, 1.6, 3], params: { lanes: 8, cycles_min: 40, units_min: 320, unit_g: 10 }, tags: [speed, units_count, reject_count, seal_temperature] }
-  - { id: filler-sachet-03, type: vffs_sachet,     zone: llenado, position: [68.5, 56, 0], footprint: [1.6, 1.6, 3], params: { lanes: 6, cycles_min: 40, units_min: 240, unit_g: 10, note: dedicada a mostaza }, tags: [speed, units_count, reject_count, seal_temperature] }
-  - { id: filler-doypack-01, type: premade_pouch_filler, zone: llenado, position: [73, 56, 0], footprint: [3, 3, 2.5], params: { units_min: 40, unit_g: [200, 500] }, tags: [speed, units_count, reject_count] }
-  - { id: filler-gallon-01, type: piston_filler,   zone: llenado, position: [63, 48, 0],   footprint: [2, 2, 2.2], params: { units_min: 8, unit_kg: [3, 4] }, tags: [speed, units_count] }
-  - { id: checkweigher-01,  type: checkweigher,    zone: llenado, position: [68, 48, 0],   footprint: [1.5, 0.8, 1.2], params: { tolerance_g: 2 }, tags: [weight, reject_count] }
-  - { id: filler-bottle-01, type: rotary_filler,   zone: llenado, position: [63, 40, 0],   footprint: [3, 2, 2.2], params: { heads: 12, units_min: 60, unit_g: [400, 1000], hot_fill_min_c: 85 }, tags: [speed, units_count, product_temperature] }
-  - { id: capper-01,        type: capper,          zone: llenado, position: [66.5, 40, 0], footprint: [1.5, 1.5, 2], params: { units_min: 60 }, tags: [speed, torque_rejects] }
-  - { id: cooling-tunnel-01, type: cooling_tunnel, zone: llenado, position: [71.5, 40, 0], footprint: [6, 1.5, 2], params: { inlet_c: 85, outlet_c: 40, dwell_min: 15 }, tags: [water_temperature, product_outlet_temperature] }
-  - { id: labeler-01,       type: labeler,         zone: llenado, position: [71.5, 35, 0], footprint: [2, 1.5, 1.8], params: { units_min: 60 }, tags: [speed, units_count] }
+  # Sachets de 250 ml (2 pistas), 500 ml y 1.000 ml (1 pista). Tomate y BBQ se llenan en caliente (≥ 85 °C).
+  # Las máquinas de 1 pista cambian entre 500 y 1.000 ml cambiando el tubo formador (≈ 30 min).
+  - { id: filler-sachet-01, type: vffs_sachet, zone: llenado, position: [62.5, 56, 0], footprint: [1.6, 1.6, 3],   params: { format: 250 ml, unit_ml: 250, lanes: 2, units_min: 100, product: mayonesa y salsa rosada }, tags: [speed, units_count, reject_count, seal_temperature] }
+  - { id: filler-sachet-02, type: vffs_sachet, zone: llenado, position: [65.5, 56, 0], footprint: [1.6, 1.6, 3],   params: { format: 250 ml, unit_ml: 250, lanes: 2, units_min: 80, product: salsa de tomate y BBQ, hot_fill_min_c: 85 }, tags: [speed, units_count, reject_count, seal_temperature, product_temperature] }
+  - { id: filler-sachet-03, type: vffs_sachet, zone: llenado, position: [68.5, 56, 0], footprint: [1.6, 1.6, 3],   params: { format: 250 ml, unit_ml: 250, lanes: 1, units_min: 60, product: mostaza, note: dedicada por alérgeno }, tags: [speed, units_count, reject_count, seal_temperature] }
+  - { id: filler-pouch-01,  type: vffs_sachet, zone: llenado, position: [72.5, 56, 0], footprint: [1.8, 1.6, 3.2], params: { format: 1000 ml, unit_ml: 1000, formats_ml: [500, 1000], lanes: 1, units_min: 30, product: salsa de tomate y BBQ, hot_fill_min_c: 85 }, tags: [speed, units_count, reject_count, seal_temperature, product_temperature] }
+  - { id: filler-pouch-02,  type: vffs_sachet, zone: llenado, position: [63, 48, 0],   footprint: [1.8, 1.6, 3.2], params: { format: 1000 ml, unit_ml: 1000, formats_ml: [500, 1000], lanes: 1, units_min: 30, product: mayonesa y salsa rosada }, tags: [speed, units_count, reject_count, seal_temperature] }
+  - { id: filler-pouch-03,  type: vffs_sachet, zone: llenado, position: [63, 40, 0],   footprint: [1.8, 1.6, 3.2], params: { format: 500 ml, unit_ml: 500, formats_ml: [500, 1000], lanes: 1, units_min: 45, product: mayonesa y salsa rosada }, tags: [speed, units_count, reject_count, seal_temperature] }
+  - { id: checkweigher-01,  type: checkweigher, zone: llenado, position: [68, 48, 0],   footprint: [1.5, 0.8, 1.2], params: { line: 500 y 1000 ml, tolerance_g: { "500": 6, "1000": 10 }, metal_detector: true }, tags: [weight, reject_count, metal_rejects] }
+  - { id: checkweigher-02,  type: checkweigher, zone: llenado, position: [71.5, 35, 0], footprint: [1.5, 0.8, 1.2], params: { line: 250 ml, tolerance_g: 4, metal_detector: true }, tags: [weight, reject_count, metal_rejects] }
+  - { id: cooling-tunnel-01, type: cooling_tunnel, zone: llenado, position: [71.5, 40, 0], footprint: [6, 1.5, 2], params: { product: sachets llenados en caliente (250 y 1000 ml), inlet_c: 85, outlet_c: 35, dwell_min: 12 }, tags: [water_temperature, product_outlet_temperature] }
 
   # --- Encajado y paletizado ---
-  - { id: case-pack-01, type: case_packer,     zone: encajado, position: [81, 52, 0], footprint: [3, 2, 2],   params: { cases_min: 6, source: sachets y doypack } }
-  - { id: case-pack-02, type: case_packer,     zone: encajado, position: [81, 40, 0], footprint: [3, 2, 2],   params: { cases_min: 5, source: botellas y galones } }
+  - { id: case-pack-01, type: case_packer,     zone: encajado, position: [81, 52, 0], footprint: [3, 2, 2],   params: { cases_min: 6, source: sachets de 250 ml (cajas de 24) } }
+  - { id: case-pack-02, type: case_packer,     zone: encajado, position: [81, 40, 0], footprint: [3, 2, 2],   params: { cases_min: 5, source: sachets de 500 ml (cajas de 20) y 1000 ml (cajas de 12) } }
   - { id: wrapper-01,   type: stretch_wrapper, zone: encajado, position: [81, 20, 0], footprint: [3, 3, 2.5], params: { pallets_h: 20 } }
 
   # --- Bodega de producto terminado y despacho ---
@@ -191,9 +193,9 @@ lines:
   - { id: line-past,     name: Pasteurización,       mode: continuous, equipment: [pump-hot-01, pasteurizer-01, holding-tube-01, buffer-hot-01, buffer-hot-02] }
   - { id: line-emulsion, name: Emulsiones en frío,   mode: batch,      equipment: [tank-aqueous-01, oil-dosing-01, emulsifier-01, colloid-mill-01, buffer-cold-01, buffer-cold-02] }
   - { id: line-mustard,  name: Mostaza,              mode: batch,      equipment: [tank-mustard-01, mustard-mill-01, buffer-mustard-01] }
-  - { id: line-bottle,   name: Envasado en botella,  mode: discrete,   equipment: [filler-bottle-01, capper-01, cooling-tunnel-01, labeler-01, case-pack-02] }
-  - { id: line-sachet,   name: Envasado en sachet y doypack, mode: discrete, equipment: [filler-sachet-01, filler-sachet-02, filler-sachet-03, filler-doypack-01, case-pack-01] }
-  - { id: line-gallon,   name: Envasado en galón,    mode: discrete,   equipment: [filler-gallon-01, checkweigher-01, case-pack-02] }
+  - { id: line-250,  name: Envasado en sachet de 250 ml,   mode: discrete, equipment: [filler-sachet-01, filler-sachet-02, filler-sachet-03, checkweigher-02, case-pack-01] }
+  - { id: line-500-1000, name: Envasado en sachet de 500 y 1.000 ml, mode: discrete, equipment: [filler-pouch-01, filler-pouch-02, filler-pouch-03, checkweigher-01, case-pack-02] }
+  - { id: line-cooling, name: Enfriamiento de sachets llenados en caliente, mode: continuous, equipment: [cooling-tunnel-01] }
 
 recipes:
   - id: rcp-mayo-natural
@@ -270,16 +272,23 @@ flows:
   - { from: tank-mustard-01,  to: mustard-mill-01,   medium: mostaza,           rate: 1000,  unit: kg/h, piped: true }
   - { from: mustard-mill-01,  to: buffer-mustard-01, medium: mostaza,           rate: 1000,  unit: kg/h, piped: true, show: true }
   # Llenado
-  - { from: buffer-hot-01,    to: filler-bottle-01,  medium: salsa caliente,    rate: 2160,  unit: kg/h, piped: true, show: true }
-  - { from: buffer-cold-01,   to: filler-sachet-01,  medium: mayonesa,          rate: 154,   unit: kg/h, piped: true, show: true }
-  - { from: buffer-cold-02,   to: filler-doypack-01, medium: mayonesa,          rate: 480,   unit: kg/h, piped: true }
-  - { from: buffer-mustard-01, to: filler-sachet-03, medium: mostaza,           rate: 144,   unit: kg/h, piped: true }
-  - { from: buffer-cold-02,   to: filler-gallon-01,  medium: mayonesa,          rate: 1680,  unit: kg/h, piped: true }
-  - { from: filler-bottle-01, to: capper-01,         medium: botellas,          rate: 60,    unit: u/min }
-  - { from: capper-01,        to: cooling-tunnel-01, medium: botellas,          rate: 60,    unit: u/min }
-  - { from: cooling-tunnel-01, to: labeler-01,       medium: botellas,          rate: 60,    unit: u/min }
-  - { from: labeler-01,       to: case-pack-02,      medium: botellas,          rate: 60,    unit: u/min, show: true }
-  - { from: filler-sachet-01, to: case-pack-01,      medium: sachets,           rate: 320,   unit: u/min, show: true }
+  # Caliente: 30 × 1,12 kg + 80 × 0,28 kg = 56 kg/min ≈ 3.000 L/h, igual a la capacidad del pasteurizador.
+  - { from: buffer-hot-01,    to: filler-pouch-01,   medium: salsa caliente,    rate: 2016,  unit: kg/h, piped: true, show: true }
+  - { from: buffer-hot-02,    to: filler-sachet-02,  medium: salsa caliente,    rate: 1344,  unit: kg/h, piped: true }
+  - { from: buffer-cold-01,   to: filler-sachet-01,  medium: mayonesa,          rate: 1395,  unit: kg/h, piped: true, show: true }
+  - { from: buffer-cold-02,   to: filler-pouch-02,   medium: mayonesa,          rate: 1674,  unit: kg/h, piped: true }
+  - { from: buffer-mustard-01, to: filler-sachet-03, medium: mostaza,           rate: 945,   unit: kg/h, piped: true }
+  - { from: filler-pouch-01,  to: cooling-tunnel-01, medium: sachets calientes, rate: 30,    unit: u/min, show: true }
+  - { from: filler-sachet-02, to: cooling-tunnel-01, medium: sachets calientes, rate: 80,    unit: u/min }
+  - { from: cooling-tunnel-01, to: checkweigher-01,  medium: sachets 1000 ml,   rate: 30,    unit: u/min }
+  - { from: cooling-tunnel-01, to: checkweigher-02,  medium: sachets 250 ml,    rate: 80,    unit: u/min }
+  - { from: filler-pouch-02,  to: checkweigher-01,   medium: sachets 1000 ml,   rate: 30,    unit: u/min }
+  - { from: filler-sachet-01, to: checkweigher-02,   medium: sachets 250 ml,    rate: 100,   unit: u/min }
+  - { from: buffer-cold-01,   to: filler-pouch-03,   medium: mayonesa,          rate: 1256,  unit: kg/h, piped: true }
+  - { from: filler-pouch-03,  to: checkweigher-01,   medium: sachets 500 ml,    rate: 45,    unit: u/min }
+  - { from: filler-sachet-03, to: checkweigher-02,   medium: sachets 250 ml,    rate: 60,    unit: u/min }
+  - { from: checkweigher-01,  to: case-pack-02,      medium: sachets 500 y 1000 ml, rate: 105, unit: u/min, show: true }
+  - { from: checkweigher-02,  to: case-pack-01,      medium: sachets 250 ml,    rate: 240,   unit: u/min, show: true }
   - { from: rack-pack-01,     to: filler-sachet-01,  medium: laminado,          rate: 2,     unit: rollos/turno, show: true }
   # Despacho
   - { from: case-pack-01,     to: wrapper-01,        medium: cajas,             rate: 6,     unit: cajas/min }
@@ -290,7 +299,7 @@ flows:
   - { from: steam-station-01, to: kettle-01,         medium: vapor,             rate: 450,   unit: kg/h, piped: true }
   - { from: steam-station-01, to: pasteurizer-01,    medium: vapor,             rate: 300,   unit: kg/h, piped: true }
   - { from: cip-skid-01,      to: kettle-01,         medium: CIP,               rate: 15000, unit: L/h, piped: true }
-  - { from: cip-skid-01,      to: filler-bottle-01,  medium: CIP,               rate: 10000, unit: L/h, piped: true }
+  - { from: cip-skid-01,      to: filler-pouch-01,   medium: CIP,               rate: 10000, unit: L/h, piped: true }
   - { from: ice-bank-01,      to: emulsifier-01,     medium: agua helada,       rate: 8,     unit: m3/h, piped: true }
   - { from: chiller-01,       to: cooling-tunnel-01, medium: agua fría,         rate: 12,    unit: m3/h, piped: true }
   - { from: ro-01,            to: tank-water-01,     medium: agua tratada,      rate: 3,     unit: m3/h, piped: true }

@@ -1,0 +1,83 @@
+schema_version: 0.1.0
+type: checkweigher
+version: 0.1.0
+name: Control de peso con detector de metales
+manufacturing: packaging
+category: quality.inspection
+description: >
+  Báscula dinámica en línea con detector de metales que pesa cada unidad, rechaza las que
+  quedan fuera de tolerancia o contienen metal y lleva estadística de peso. Modela la deriva
+  de la celda de carga (rechazos falsos y aceptaciones falsas) y la prueba periódica del
+  detector, que retiene el lote si se vence.
+aliases: [checkweigher, control de peso, báscula dinámica, detector de metales]
+fidelity: { visual: V2, behavior: B2 }
+
+params:
+  nominal_g:            { type: number, unit: g, min: 1, max: 50000, default: 280, description: Peso nominal declarado, affects: [behavior] }
+  tolerance_minus_g:    { type: number, unit: g, min: 0.1, max: 1000, default: 9, description: Límite inferior bajo el nominal (error negativo tolerable), affects: [behavior] }
+  tolerance_plus_g:     { type: number, unit: g, min: 0.1, max: 2000, default: 14, description: Límite superior sobre el nominal, affects: [behavior] }
+  metal_detector:       { type: boolean, default: true, description: Tiene detector de metales, affects: [geometry, behavior] }
+  metal_test_interval_min: { type: number, unit: min, min: 15, max: 480, default: 120, description: Intervalo máximo entre pruebas del detector con patrón, affects: [behavior] }
+  metal_rate:           { type: number, min: 0, max: 0.01, default: 0.00002, description: Probabilidad de una unidad con metal (para simular), affects: [behavior] }
+  nominal_inflow_upm:   { type: number, unit: u/min, min: 0, max: 600, default: 80, description: Llegada nominal si el entorno no la fija, affects: [behavior] }
+  belt_width_m:         { type: number, unit: m, min: 0.1, max: 1, default: 0.3, description: Ancho de banda, affects: [geometry] }
+  item_color:           { type: string, default: "#c62828", description: Color de las unidades (hex), affects: [geometry] }
+
+ports:
+  - { id: items_in, kind: item, direction: in, unit: u/min }
+  - { id: items_out, kind: item, direction: out, unit: u/min }
+  - { id: rejects_out, kind: item, direction: out, medium: rechazos }
+
+states:
+  - { id: idle, description: Sin unidades }
+  - { id: running, description: Inspeccionando }
+  - { id: blocked, description: La salida no recibe }
+  - { id: fault, description: Detenido por falla }
+
+variables:
+  - { id: last_weight_g, unit: g, kind: calculated, description: Peso medido de la última unidad }
+  - { id: mean_g, unit: g, kind: calculated, description: Peso medio de las últimas 100 unidades }
+  - { id: sd_g, unit: g, kind: calculated, description: Desviación típica de las últimas 100 unidades }
+  - { id: units_in, unit: u, kind: counter, description: Unidades pesadas }
+  - { id: units_accepted, unit: u, kind: counter, description: Unidades aceptadas }
+  - { id: rejects_weight, unit: u, kind: counter, description: Rechazos por peso }
+  - { id: rejects_metal, unit: u, kind: counter, description: Rechazos por metal }
+  - { id: false_rejects, unit: u, kind: counter, description: Unidades buenas rechazadas por error de medición }
+  - { id: false_accepts, unit: u, kind: counter, description: Unidades fuera de tolerancia aceptadas por error de medición }
+  - { id: metal_escapes, unit: u, kind: counter, description: Unidades con metal no detectadas }
+  - { id: minutes_since_metal_test, unit: min, kind: calculated, description: Minutos desde la última prueba del detector }
+  - { id: lot_on_hold, unit: "", kind: status, description: "1 si el lote queda retenido por prueba de detector vencida" }
+
+events:
+  - { id: unit_rejected, description: Unidad rechazada, payload: [reason, weight_g] }
+  - { id: metal_test_done, description: Prueba del detector con patrón realizada }
+  - { id: quality_alarm, description: Condición de calidad, payload: [variable, value, limit] }
+
+faults:
+  - { id: load_cell_drift, description: Deriva de la celda de carga (+5 g), mtbf_h: 3000, mttr_min: 30, severity: medium, stops_equipment: false, effect: Rechaza producto bueno y deja pasar producto liviano }
+  - { id: reject_pusher_fault, description: Falla del empujador de rechazo, mtbf_h: 5000, mttr_min: 20, severity: high, effect: Parada (no puede rechazar) }
+
+commands:
+  - { id: metal_test, description: Prueba del detector con patrón (reinicia el intervalo) }
+  - { id: inject_fault, description: Inyecta una falla declarada, args: { fault: string, duration_s: number } }
+  - { id: clear_fault, description: Repara una falla activa, args: { fault: string } }
+  - { id: set_param, description: Cambia un parámetro en caliente, args: { name: string, value: any } }
+
+kpis:
+  - { id: reject_rate, unit: "", description: Rechazos / unidades }
+  - { id: false_reject_rate, unit: "", description: Rechazos falsos / unidades }
+  - { id: giveaway_pct, unit: "%", description: Sobrepeso medio de lo aceptado sobre el nominal }
+
+animation_channels:
+  - { id: belt_travel, unit: m, range: [0, 10], description: Recorrido de las bandas (módulo 10 m) }
+  - { id: pusher, range: [0, 1], description: Golpe del empujador de rechazo }
+  - { id: stack_light, range: [0, 3], description: "Baliza: 0 apagada, 1 verde, 2 amarilla, 3 roja" }
+
+geometry:
+  parts: [infeed, weigh_belt, outfeed, metal_detector, display_tower, pusher, reject_bin, legs]
+
+assumptions:
+  - "Peso de llegada con media de nominal + 1 % y desviación del 1,5 % si el entorno no lo entrega."
+  - Error de la báscula con desviación de 0,3 g más la deriva por falla.
+  - El detector encuentra el 99,5 % de las unidades con metal.
+  - "Límites: error negativo tolerable de metrología legal abajo (≈ 9 g en 250 ml, 15 g en 500 y 1.000 ml) y +5 % arriba."

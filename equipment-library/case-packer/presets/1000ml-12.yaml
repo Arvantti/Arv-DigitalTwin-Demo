@@ -1,0 +1,4 @@
+preset: 1000ml-12
+description: Cajas de 12 sachets de 1.000 ml
+params: { units_per_case: 12, cycle_s: 12, nominal_inflow_upm: 30, case_size_m: 0.5 }
+provenance: { units_per_case: assumed, cycle_s: assumed }

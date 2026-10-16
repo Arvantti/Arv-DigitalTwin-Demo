@@ -1,0 +1,4 @@
+preset: 500ml-1-lane
+description: Sachet de 500 ml en 1 pista para mayonesa y salsa rosada (45 u/min)
+params: { unit_ml: 500, lanes: 1, cycles_min: 45, density_kg_l: 0.93, product: mayonesa, hot_fill: false, roll_units: 4000, film_color: "#f4c430" }
+provenance: { unit_ml: user, cycles_min: assumed, density_kg_l: assumed }

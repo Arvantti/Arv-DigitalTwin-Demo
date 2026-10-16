@@ -1,0 +1,50 @@
+scenarios:
+  - id: steady
+    description: Una hora de salsa a 3.000 L/h entrando a 85 °C
+    preset: 3000lh-sauce
+    duration_s: 3600
+    timeline:
+      - { at_s: 0, command: start }
+    expect:
+      - { path: variables.product_out_c, min: 94.5, max: 95.5 }
+      - { path: variables.pasteurized_l, min: 2850, max: 3000, description: "(3.000 L menos el desvío del arranque)" }
+      - { path: variables.steam_flow_kg_h, min: 50, max: 65, description: "(0,933 kg/s × 3,6 kJ/kgK × 10 K ≈ 33,6 kW ≈ 56 kg/h)" }
+      - { path: events.divert_started, equals: 1, description: "(solo el desvío del arranque, hasta calentar)" }
+      - { path: kpis.under_target_l, equals: 0 }
+
+  - id: fouling-without-cip
+    description: "Diez horas con vapor a 1 bar y sin CIP: el ensuciamiento termina forzando el desvío"
+    preset: 3000lh-sauce
+    duration_s: 36000
+    dt: 1.0
+    inputs: { steam_supply_bar: 1.0 }
+    timeline:
+      - { at_s: 0, command: start }
+    expect:
+      - { path: events.divert_started, min: 2, description: "(arranque + desvío al pasar ≈ 9 h: con vapor a 113 °C hace falta UA ≥ 0,94 kW/K)" }
+      - { path: variables.diverted_l, min: 1000 }
+
+  - id: cip-restores
+    description: Mismo caso con CIP a las 6 horas; no vuelve a desviar
+    preset: 3000lh-sauce
+    duration_s: 36000
+    dt: 1.0
+    inputs: { steam_supply_bar: 1.0 }
+    timeline:
+      - { at_s: 0, command: start }
+      - { at_s: 21600, command: cip, args: { duration_min: 40 } }
+    expect:
+      - { path: events.cip_completed, equals: 1 }
+      - { path: events.divert_started, equals: 2, description: "(arranque + recalentamiento después del CIP)" }
+      - { path: variables.fouling_pct, max: 21 }
+
+  - id: divert-valve-stuck
+    description: Falla la válvula de desvío; parada y lote retenido
+    preset: 3000lh-sauce
+    duration_s: 3600
+    timeline:
+      - { at_s: 0, command: start }
+      - { at_s: 1200, command: inject_fault, args: { fault: divert_valve_stuck, duration_s: 1200 } }
+    expect:
+      - { path: variables.lot_hold, equals: 1 }
+      - { path: events.quality_alarm, min: 1 }

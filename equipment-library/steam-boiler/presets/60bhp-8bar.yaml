@@ -1,0 +1,4 @@
+preset: 60bhp-8bar
+description: Caldera pirotubular de 60 BHP (940 kg/h), 8 bar, gas natural
+params: { rating_kg_h: 940, rating_bhp: 60, design_bar: 10, setpoint_bar: 8, efficiency: 0.85, nominal_demand_kg_h: 500 }
+provenance: { rating_kg_h: user, rating_bhp: user, setpoint_bar: user, efficiency: assumed, storage_kg_per_bar: assumed }

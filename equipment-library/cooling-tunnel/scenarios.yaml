@@ -1,0 +1,29 @@
+scenarios:
+  - id: steady-1000
+    description: Sachets de 1.000 ml a 30 u/min y 85 °C durante una hora
+    preset: sachet-6m
+    duration_s: 3600
+    expect:
+      - { path: variables.units_out, min: 1435, max: 1445, description: "(30 u/min × (3600 − 720 s))" }
+      - { path: variables.product_outlet_c, min: 33, max: 37, description: "(agua media ≈ 7,6 °C: 7,6 + 77,4·e^(−720/685) ≈ 34,7 °C)" }
+      - { path: variables.water_return_c, min: 10.5, max: 12, description: "(≈ 101 kW / 13,9 kW/K + 4 °C)" }
+      - { path: variables.hot_outlets, equals: 0 }
+
+  - id: spray-pump-failure
+    description: Falla la bomba de aspersión durante una hora; los sachets salen calientes
+    preset: sachet-6m
+    duration_s: 7200
+    timeline:
+      - { at_s: 1800, command: inject_fault, args: { fault: spray_pump_failure, duration_s: 3600 } }
+    expect:
+      - { path: events.quality_alarm, min: 1 }
+      - { path: variables.hot_outlets, min: 1000, description: "(≈ 1 hora de producción sale sobre 40 °C)" }
+
+  - id: blocked
+    description: El control de peso se detiene; la banda del túnel se detiene con él
+    preset: sachet-250
+    duration_s: 1500
+    timeline:
+      - { at_s: 1200, inputs: { downstream_free: false } }
+    expect:
+      - { path: state, equals: blocked }

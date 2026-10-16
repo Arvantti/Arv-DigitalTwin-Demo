@@ -1,0 +1,4 @@
+preset: 250ml-2-lanes
+description: Sachet de 250 ml en 2 pistas para mayonesa y salsa rosada (100 u/min)
+params: { unit_ml: 250, lanes: 2, cycles_min: 50, density_kg_l: 0.93, product: mayonesa, hot_fill: false, roll_units: 6000, film_color: "#f4c430" }
+provenance: { unit_ml: user, lanes: assumed, cycles_min: assumed, density_kg_l: assumed }

@@ -1,0 +1,235 @@
+schema_version: 0.1.0
+type: vffs-sachet-filler
+version: 0.1.0
+name: Sachetadora vertical (formadora, llenadora y selladora)
+manufacturing: packaging
+category: packaging.vffs
+description: >
+  Máquina vertical que forma sachets desde un rollo de laminado impreso, los llena con un
+  dosificador de pistón, los sella con mordazas calientes, codifica lote y vencimiento y los
+  corta. Trabaja en una o varias pistas y admite llenado en caliente. Modela el peso de cada
+  sachet, el sobrellenado, los rechazos por sello, código y temperatura, el consumo de
+  laminado y los cambios de rollo y de formato.
+aliases: [sachetadora, envasadora vertical, VFFS, empacadora de sachet, llenadora de bolsas]
+fidelity: { visual: V2, behavior: B3 }
+
+params:
+  unit_ml:
+    type: number
+    unit: mL
+    min: 5
+    max: 5000
+    default: 250
+    description: Volumen nominal del sachet
+    affects: [geometry, behavior]
+  lanes:
+    type: integer
+    min: 1
+    max: 8
+    default: 2
+    description: Pistas (sachets por ciclo)
+    affects: [geometry, behavior]
+  cycles_min:
+    type: number
+    unit: ciclos/min
+    min: 5
+    max: 120
+    default: 50
+    description: Ciclos por minuto (unidades por minuto = pistas × ciclos)
+    affects: [behavior]
+  density_kg_l:
+    type: number
+    unit: kg/L
+    min: 0.5
+    max: 2
+    default: 1.12
+    description: Densidad del producto
+    affects: [behavior]
+  product:
+    type: string
+    default: salsa de tomate
+    description: Producto que se envasa
+    affects: [display, geometry]
+  hot_fill:
+    type: boolean
+    default: false
+    description: Llenado en caliente (el producto debe llegar sobre la temperatura mínima)
+    affects: [behavior]
+  hot_fill_min_c:
+    type: number
+    unit: degC
+    min: 60
+    max: 100
+    default: 85
+    description: Temperatura mínima del producto en llenado en caliente
+    affects: [behavior]
+  seal_setpoint_c:
+    type: number
+    unit: degC
+    min: 100
+    max: 220
+    default: 150
+    description: Consigna de temperatura de las mordazas
+    affects: [behavior]
+  seal_window_c:
+    type: number
+    unit: degC
+    min: 2
+    max: 30
+    default: 10
+    description: Ventana de temperatura de sellado aceptable (±)
+    affects: [behavior]
+  overfill_target_pct:
+    type: number
+    unit: "%"
+    min: 0
+    max: 5
+    default: 1.0
+    description: Sobrellenado objetivo sobre el nominal para no quedar por debajo
+    affects: [behavior]
+  fill_sd_pct:
+    type: number
+    unit: "%"
+    min: 0.1
+    max: 10
+    default: 1.5
+    description: Desviación típica del dosificador como porcentaje del peso nominal
+    affects: [behavior]
+  roll_units:
+    type: integer
+    min: 100
+    max: 100000
+    default: 6000
+    description: Sachets por rollo de laminado
+    affects: [behavior]
+  roll_change_min:
+    type: number
+    unit: min
+    min: 1
+    max: 60
+    default: 8
+    description: Duración del cambio de rollo
+    affects: [behavior]
+  format_change_min:
+    type: number
+    unit: min
+    min: 5
+    max: 240
+    default: 30
+    description: Duración del cambio de formato (tubo formador y pistón)
+    affects: [behavior]
+  film_color:
+    type: string
+    default: "#c62828"
+    description: Color dominante del laminado impreso (hex)
+    affects: [geometry]
+
+ports:
+  - { id: product_in, kind: material, direction: in, unit: kg/h }
+  - { id: film_in, kind: material, direction: in, medium: laminado PET/PE }
+  - { id: sachets_out, kind: item, direction: out, unit: u/min }
+  - { id: air, kind: utility, direction: in, medium: aire comprimido }
+  - { id: power, kind: utility, direction: in, medium: energía eléctrica }
+
+states:
+  - { id: idle, description: Detenida }
+  - { id: running, description: Produciendo }
+  - { id: blocked, description: La banda de salida está llena }
+  - { id: starved, description: "Sin producto, sin aire o sin presión de aire suficiente" }
+  - { id: setup, description: Cambio de rollo o de formato }
+  - { id: cleaning, description: Limpieza CIP del dosificador }
+  - { id: fault, description: Detenida por falla }
+
+phases:
+  - { id: pull_film, description: Arrastre de película y formado del tubo }
+  - { id: dose, description: Dosificación del producto }
+  - { id: seal_cut, description: Sellado horizontal y corte }
+  - { id: roll_change, description: Cambio de rollo de laminado }
+  - { id: format_change, description: Cambio de tubo formador y pistón }
+
+variables:
+  - { id: speed_upm, unit: u/min, kind: calculated, description: Unidades por minuto (último minuto) }
+  - { id: units_good, unit: u, kind: counter, description: Sachets buenos producidos }
+  - { id: units_rejected, unit: u, kind: counter, description: Sachets rechazados por la máquina }
+  - { id: rejects_seal, unit: u, kind: counter, description: Rechazos por sello débil o fuga }
+  - { id: rejects_code, unit: u, kind: counter, description: Rechazos por código ilegible }
+  - { id: rejects_temperature, unit: u, kind: counter, description: Rechazos por producto bajo la temperatura de llenado en caliente }
+  - { id: jaw_temp_c, unit: degC, kind: measured, range: [0, 250], noise_sd: 0.4, resolution: 0.1, description: Temperatura de las mordazas }
+  - { id: product_temp_c, unit: degC, kind: measured, range: [0, 110], noise_sd: 0.2, resolution: 0.1, description: Temperatura del producto en la tolva }
+  - { id: fill_weight_avg_g, unit: g, kind: calculated, description: Peso medio de los últimos 50 sachets }
+  - { id: fill_weight_sd_g, unit: g, kind: calculated, description: Desviación típica de los últimos 50 sachets }
+  - { id: last_weight_g, unit: g, kind: calculated, description: Peso del último sachet }
+  - { id: nominal_weight_g, unit: g, kind: setpoint, description: Peso nominal (volumen × densidad) }
+  - { id: giveaway_g_per_unit, unit: g, kind: calculated, description: Producto regalado promedio por sachet sobre el nominal }
+  - { id: film_remaining_pct, unit: "%", kind: calculated, range: [0, 100], description: Laminado restante en el rollo }
+  - { id: product_used_kg, unit: kg, kind: counter, description: Producto envasado acumulado }
+  - { id: unit_ml, unit: mL, kind: setpoint, description: Formato actual }
+
+events:
+  - { id: unit_rejected, description: Sachet rechazado, payload: [reason, count] }
+  - { id: roll_changed, description: Cambio de rollo terminado, payload: [rolls] }
+  - { id: format_changed, description: Cambio de formato terminado, payload: [unit_ml] }
+  - { id: quality_alarm, description: Condición de proceso fuera de ventana, payload: [variable, value, limit] }
+
+faults:
+  - id: film_jam
+    description: Atasco o rotura de la película
+    mtbf_h: 200
+    mttr_min: 6
+    severity: medium
+    effect: Parada hasta reenhebrar la película
+  - id: jaw_heater_failure
+    description: Falla de una resistencia de las mordazas
+    mtbf_h: 600
+    mttr_min: 15
+    severity: medium
+    stops_equipment: false
+    effect: Baja la temperatura de sellado; aumentan los sellos débiles
+  - id: coder_ribbon_out
+    description: Cinta de la codificadora agotada
+    mtbf_h: 150
+    mttr_min: 3
+    severity: low
+    effect: Parada para cambiar la cinta
+  - id: dosing_drip
+    description: Goteo del dosificador
+    mtbf_h: 900
+    mttr_min: 20
+    severity: low
+    stops_equipment: false
+    effect: Sobrellenado y sellos contaminados
+
+commands:
+  - { id: start, description: Inicia la producción }
+  - { id: stop, description: Detiene al terminar el ciclo }
+  - { id: change_format, description: Cambio de formato a otro volumen, args: { unit_ml: number } }
+  - { id: change_roll, description: Cambio de rollo anticipado }
+  - { id: cip, description: Limpieza CIP del dosificador, args: { duration_min: number } }
+  - { id: inject_fault, description: Inyecta una falla declarada, args: { fault: string, duration_s: number } }
+  - { id: clear_fault, description: Repara una falla activa, args: { fault: string } }
+  - { id: set_param, description: Cambia un parámetro en caliente, args: { name: string, value: any } }
+
+kpis:
+  - { id: oee, unit: "", description: Disponibilidad × rendimiento × calidad }
+  - { id: availability, unit: "", description: Tiempo produciendo / tiempo planificado }
+  - { id: reject_rate, unit: "", description: Rechazos / sachets totales }
+  - { id: giveaway_pct, unit: "%", description: Producto regalado sobre el nominal }
+  - { id: units_per_hour, unit: u/h, description: Ritmo de producción del tiempo transcurrido }
+
+animation_channels:
+  - { id: film_feed, range: [0, 1], description: Avance de la película dentro del ciclo }
+  - { id: jaws, range: [0, 1], description: "Mordazas: 0 abiertas, 1 cerradas" }
+  - { id: dosing, range: [0, 1], description: Carrera del pistón dosificador }
+  - { id: roll_remaining, range: [0, 1], description: Fracción de laminado restante (diámetro del rollo) }
+  - { id: unit_drop, range: [0, 1], description: Caída del sachet recién cortado }
+  - { id: stack_light, range: [0, 3], description: "Baliza: 0 apagada, 1 verde, 2 amarilla, 3 roja" }
+
+geometry:
+  parts: [frame, doors, film_roll, dancer, forming_collar, forming_tube, hopper, dosing_piston, jaws, coder, discharge_chute, control_cabinet, hmi_panel, stack_light, sachet]
+  notes: Ancho según pistas (0,9 m + 0,35 m por pista); altura según el volumen del sachet.
+
+assumptions:
+  - Peso de cada sachet con distribución normal alrededor del nominal más el sobrellenado objetivo.
+  - "Probabilidad base de sello débil 0,2 %; sube al 30 % fuera de la ventana de temperatura."
+  - En llenado en caliente se rechaza cualquier sachet con producto bajo la temperatura mínima.
+  - El rechazo por peso lo hace el control de peso aguas abajo; la sachetadora solo reporta el peso.

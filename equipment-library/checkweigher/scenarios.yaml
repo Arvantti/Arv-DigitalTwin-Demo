@@ -1,0 +1,32 @@
+scenarios:
+  - id: steady
+    description: Una hora de sachets de 250 ml de tomate con el peso típico de la sachetadora
+    preset: 250ml-tomato
+    duration_s: 3600
+    timeline:
+      - { at_s: 0, command: metal_test }
+      - { at_s: 1800, command: metal_test }
+    expect:
+      - { path: variables.units_in, min: 4799, max: 4800, description: "(80 u/min × 60 min)" }
+      - { path: kpis.reject_rate, min: 0.002, max: 0.012, description: "(media 282,8 g, desv. 4,2 g: ≈ 0,25 % bajo 271 g + 0,4 % sobre 294 g)" }
+      - { path: variables.lot_on_hold, equals: 0 }
+
+  - id: load-cell-drift
+    description: La celda de carga deriva +5 g; deja pasar sachets livianos
+    preset: 250ml-tomato
+    duration_s: 3600
+    timeline:
+      - { at_s: 0, command: inject_fault, args: { fault: load_cell_drift, duration_s: 3600 } }
+      - { at_s: 0, command: metal_test }
+      - { at_s: 1800, command: metal_test }
+    expect:
+      - { path: variables.false_accepts, min: 5, description: "(los de 266 a 271 g se miden como 271 a 276 g y pasan)" }
+      - { path: variables.false_rejects, min: 100, description: "(los de 289 a 294 g se miden sobre 294 g)" }
+
+  - id: metal-test-overdue
+    description: Nadie hace la prueba del detector en 3 horas; el lote queda retenido
+    preset: 1000ml-tomato
+    duration_s: 10800
+    expect:
+      - { path: variables.lot_on_hold, equals: 1 }
+      - { path: events.quality_alarm, equals: 1 }

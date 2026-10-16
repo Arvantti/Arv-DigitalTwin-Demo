@@ -1,0 +1,4 @@
+preset: 1000ml-1-lane-hot
+description: Sachet de 1.000 ml en 1 pista para salsa de tomate y BBQ en caliente (30 u/min)
+params: { unit_ml: 1000, lanes: 1, cycles_min: 30, density_kg_l: 1.12, product: salsa de tomate, hot_fill: true, hot_fill_min_c: 85, roll_units: 3000, film_color: "#c62828" }
+provenance: { unit_ml: user, hot_fill_min_c: user, cycles_min: assumed, density_kg_l: assumed }

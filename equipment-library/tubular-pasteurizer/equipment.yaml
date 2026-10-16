@@ -1,0 +1,100 @@
+schema_version: 0.1.0
+type: tubular-pasteurizer
+version: 0.1.0
+name: Pasteurizador tubular con tubo de retención
+manufacturing: process
+category: thermal.continuous
+description: >
+  Intercambiador tubular calentado con vapor que lleva el producto a la temperatura de
+  pasteurización, tubo de retención que lo mantiene el tiempo requerido y válvula de desvío
+  que devuelve el producto si la retención no alcanza la temperatura mínima. Calcula la
+  letalidad (valor P) de cada momento, el consumo de vapor y el ensuciamiento progresivo
+  del intercambiador, que obliga a hacer CIP.
+aliases: [pasteurizador, HTST, intercambiador tubular, tubo de retención]
+fidelity: { visual: V2, behavior: B3 }
+
+params:
+  flow_l_h:           { type: number, unit: L/h, min: 100, max: 50000, default: 3000, description: Caudal de producto, affects: [behavior, geometry] }
+  outlet_setpoint_c:  { type: number, unit: degC, min: 60, max: 140, default: 95, description: Consigna de temperatura de salida, affects: [behavior] }
+  hold_min_c:         { type: number, unit: degC, min: 60, max: 140, default: 92, description: Temperatura mínima en el tubo de retención, affects: [behavior] }
+  hold_s:             { type: number, unit: s, min: 2, max: 600, default: 30, description: Tiempo de retención, affects: [behavior, geometry] }
+  ua_clean_kw_k:      { type: number, unit: kW/K, min: 0.1, max: 100, default: 1.71, description: Coeficiente global por área del intercambiador limpio, affects: [behavior] }
+  steam_bar_max:      { type: number, unit: bar(g), min: 0.2, max: 10, default: 3, description: Presión de vapor de diseño, affects: [behavior] }
+  fouling_pct_per_h:  { type: number, unit: "%/h", min: 0, max: 50, default: 5, description: Pérdida de coeficiente por ensuciamiento por hora de operación, affects: [behavior] }
+  p_ref_c:            { type: number, unit: degC, min: 60, max: 130, default: 93.3, description: Temperatura de referencia del valor P, affects: [behavior] }
+  z_c:                { type: number, unit: degC, min: 1, max: 30, default: 8.3, description: Valor z del microorganismo de referencia, affects: [behavior] }
+  p_target_min:       { type: number, unit: min, min: 0, max: 30, default: 0.3, description: Letalidad mínima requerida, affects: [behavior] }
+  density_kg_l:       { type: number, unit: kg/L, min: 0.5, max: 2, default: 1.12, description: Densidad del producto, affects: [behavior] }
+  product_cp:         { type: number, unit: kJ/kgK, min: 1, max: 4.2, default: 3.6, description: Calor específico del producto, affects: [behavior] }
+  tube_passes:        { type: integer, min: 2, max: 20, default: 6, description: Pasos de tubo del intercambiador, affects: [geometry] }
+
+ports:
+  - { id: product_in, kind: material, direction: in, unit: L/h }
+  - { id: product_out, kind: material, direction: out, unit: L/h }
+  - { id: divert_out, kind: material, direction: out, medium: producto desviado a la marmita }
+  - { id: steam_in, kind: utility, direction: in, medium: vapor, unit: kg/h }
+  - { id: cip_in, kind: utility, direction: in, medium: solución CIP }
+
+states:
+  - { id: idle, description: Detenido }
+  - { id: running, description: Pasteurizando }
+  - { id: starved, description: Sin producto en la entrada }
+  - { id: blocked, description: El tanque pulmón no recibe }
+  - { id: cleaning, description: Limpieza CIP }
+  - { id: fault, description: Detenido por falla }
+
+variables:
+  - { id: product_in_c, unit: degC, kind: measured, range: [0, 150], noise_sd: 0.1, resolution: 0.1, description: Temperatura de entrada }
+  - { id: product_out_c, unit: degC, kind: measured, range: [0, 150], noise_sd: 0.1, resolution: 0.1, description: Temperatura de salida del intercambiador }
+  - { id: hold_temp_c, unit: degC, kind: measured, range: [0, 150], noise_sd: 0.1, resolution: 0.1, description: Temperatura al final del tubo de retención }
+  - { id: flow_l_h, unit: L/h, kind: measured, range: [0, 50000], noise_sd: 8, resolution: 1, description: Caudal de producto }
+  - { id: steam_valve_pct, unit: "%", kind: calculated, range: [0, 100], description: Apertura de la válvula de vapor }
+  - { id: steam_flow_kg_h, unit: kg/h, kind: calculated, description: Consumo de vapor }
+  - { id: divert, unit: "", kind: status, description: "1 si la válvula está en desvío" }
+  - { id: pasteurized_l, unit: L, kind: counter, description: Producto pasteurizado entregado }
+  - { id: diverted_l, unit: L, kind: counter, description: Producto desviado }
+  - { id: p_value_min, unit: min, kind: calculated, description: Letalidad del producto que sale en este momento }
+  - { id: fouling_pct, unit: "%", kind: calculated, range: [0, 100], description: Pérdida de coeficiente por ensuciamiento }
+  - { id: lot_hold, unit: "", kind: status, description: "1 si el lote queda retenido por una falla de la válvula de desvío" }
+
+events:
+  - { id: divert_started, description: La retención bajó del mínimo; producto en desvío, payload: [hold_temp_c] }
+  - { id: divert_ended, description: Vuelve el flujo hacia adelante }
+  - { id: quality_alarm, description: Condición de seguridad alimentaria, payload: [variable, value, limit] }
+  - { id: cip_started, description: Inicio de CIP, payload: [duration_min] }
+  - { id: cip_completed, description: Fin de CIP; ensuciamiento eliminado }
+
+faults:
+  - { id: divert_valve_stuck, description: La válvula de desvío no responde, mtbf_h: 20000, mttr_min: 60, severity: critical, effect: Parada y retención del lote }
+  - { id: product_pump_failure, description: Falla de la bomba de producto, mtbf_h: 6000, mttr_min: 45, severity: high, effect: Parada sin flujo }
+  - { id: hold_probe_drift, description: La sonda de retención lee 3 °C más que la temperatura real, mtbf_h: null, mttr_min: 30, severity: high, stops_equipment: false, effect: El producto puede salir bajo la letalidad requerida sin desviarse }
+
+commands:
+  - { id: start, description: Inicia el flujo }
+  - { id: stop, description: Detiene el flujo }
+  - { id: cip, description: Limpieza CIP del intercambiador, args: { duration_min: number } }
+  - { id: inject_fault, description: Inyecta una falla declarada, args: { fault: string, duration_s: number } }
+  - { id: clear_fault, description: Repara una falla activa, args: { fault: string } }
+  - { id: set_param, description: Cambia un parámetro en caliente, args: { name: string, value: any } }
+
+kpis:
+  - { id: divert_time_pct, unit: "", description: Fracción del tiempo de operación en desvío }
+  - { id: steam_kg_per_t, unit: kg/t, description: Vapor por tonelada pasteurizada }
+  - { id: min_p_value_min, unit: min, description: Letalidad mínima del producto entregado }
+  - { id: under_target_l, unit: L, description: Producto entregado con letalidad bajo la requerida }
+
+animation_channels:
+  - { id: flow, range: [0, 1], description: Flujo de producto }
+  - { id: heat, range: [0, 1], description: Temperatura de salida normalizada 20-100 °C }
+  - { id: divert, range: [0, 1], description: Válvula de desvío (1 = desvío) }
+  - { id: steam, range: [0, 1], description: Apertura de vapor }
+  - { id: alarm_light, range: [0, 3], description: "Baliza: 0 apagada, 1 verde, 2 amarilla, 3 roja" }
+
+geometry:
+  parts: [skid, tube_bundle, steam_jacket, holding_tube, divert_valve, product_pump, steam_valve, probes, control_panel]
+
+assumptions:
+  - "Salida del intercambiador por efectividad: T_sal = T_ent + (T_vapor − T_ent)·(1 − e^(−UA/ṁc))."
+  - "UA limpio calibrado para llegar a 95 °C con vapor a ≈ 110 °C (≈ 0,5 bar)."
+  - "Valor P = tiempo de retención × 10^((T_retención − 93,3)/8,3), en minutos."
+  - El desvío se decide con la sonda (puede tener deriva); la letalidad se calcula con la temperatura real.

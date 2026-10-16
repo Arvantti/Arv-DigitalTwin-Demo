@@ -1,0 +1,4 @@
+preset: 250ml-mayo
+description: Sachet de 250 ml de mayonesa (232,5 g)
+params: { nominal_g: 232.5, tolerance_minus_g: 9, tolerance_plus_g: 12, nominal_inflow_upm: 100, item_color: "#f4c430" }
+provenance: { nominal_g: user, tolerance_minus_g: assumed }
