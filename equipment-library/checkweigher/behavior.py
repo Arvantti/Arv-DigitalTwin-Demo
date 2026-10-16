@@ -77,7 +77,9 @@ class Checkweigher(EquipmentBehavior):
         true_w = self.rng.gauss(mean, sd)
         offset = DRIFT_G if self.failures.is_active("load_cell_drift") else 0.0
         measured = true_w + offset + self.rng.gauss(0, SCALE_SD_G)
-        lo, hi = nominal - p["tolerance_minus_g"], nominal + p["tolerance_plus_g"]
+        # la tolerancia es un porcentaje del nominal de cada paquete: 1.000 ml se mide contra su propio peso, no en gramos fijos
+        lo = nominal * (1 - p["tolerance_minus_pct"] / 100.0)
+        hi = nominal * (1 + p["tolerance_plus_pct"] / 100.0)
         truly_ok = lo <= true_w <= hi
         measured_ok = lo <= measured <= hi
         self.counts["in"] += 1
