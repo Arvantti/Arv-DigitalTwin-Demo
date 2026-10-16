@@ -1,0 +1,4 @@
+preset: 250ml-2-lanes-hot
+description: Sachet de 250 ml en 2 pistas para salsa de tomate y BBQ en caliente (80 u/min)
+params: { unit_ml: 250, lanes: 2, cycles_min: 40, density_kg_l: 1.12, product: salsa de tomate, hot_fill: true, hot_fill_min_c: 85, roll_units: 6000, film_color: "#c62828" }
+provenance: { unit_ml: user, hot_fill_min_c: user, cycles_min: assumed, density_kg_l: assumed }
