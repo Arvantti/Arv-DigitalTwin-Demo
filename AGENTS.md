@@ -29,3 +29,6 @@ uv run ruff check .
 pnpm -r typecheck && pnpm -r test   # tipos y prueba genérica de geometrías
 pnpm gallery                      # galería en http://localhost:5173 (con la API: uv run uvicorn twin_api.main:app --port 8000)
 ```
+
+## Registro del proyecto (obligatorio)
+`docs/registro/` es una bóveda de Obsidian con el plan, la bitácora, las decisiones y el histórico de conversaciones con la IA, que respaldan el registro de software en Colombia. **Todo PR actualiza la bitácora y el histórico** siguiendo `docs/registro/como-actualizar.md`. Nunca incluyas credenciales ni tokens en esas notas.
