@@ -1,0 +1,389 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1460" height="950" viewBox="0 0 1460 950" font-family="Inter, Helvetica, Arial, sans-serif">
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#d4a017" stroke-width="1.2" stroke-opacity="0.45"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#c2410c"/></marker></defs>
+<rect width="100%" height="100%" fill="#ffffff"/>
+<text x="30" y="48" font-size="20" font-weight="700" fill="#1f2937">Planta de inyección de plásticos (referencia)</text>
+<text x="30" y="68" font-size="12" fill="#4b5563">plastic-injection-plant-v1 · manufactura discreta · predio 200 × 110 m · datos de referencia, no de una planta real</text>
+<rect x="30.0" y="80.0" width="1400.0" height="770.0" fill="#fbfbf8" stroke="#9ca3af" stroke-dasharray="6 4"/>
+<rect x="44.0" y="290.0" width="84.0" height="280.0" fill="#f4f4ef" stroke="#6b7280" stroke-width="1"/>
+<text x="48.0" y="301.7" font-size="8.735632183908047" font-weight="600" fill="#374151">Silos de resina</text>
+<rect x="30.0" y="150.0" width="98.0" height="126.0" fill="#f4f4ef" stroke="#6b7280" stroke-width="1"/>
+<text x="34.0" y="160.0" font-size="7.0" font-weight="600" fill="#374151">Recepción de materia …</text>
+<rect x="128.0" y="185.0" width="140.0" height="315.0" fill="#e9dcc3" stroke="#6b7280" stroke-width="1"/>
+<text x="132.0" y="197.9" font-size="9.89505247376312" font-weight="600" fill="#374151">Bodega de materia prima</text>
+<rect x="128.0" y="500.0" width="140.0" height="175.0" fill="#cfe3f2" stroke="#6b7280" stroke-width="1"/>
+<text x="132.0" y="513.8" font-size="10.83743842364532" font-weight="600" fill="#374151">Central de materiales</text>
+<rect x="128.0" y="675.0" width="210.0" height="140.0" fill="#cfe3f2" stroke="#6b7280" stroke-width="1"/>
+<text x="132.0" y="689.0" font-size="11.0" font-weight="600" fill="#374151">Reciclaje y peletizado</text>
+<rect x="338.0" y="675.0" width="210.0" height="140.0" fill="#e3e3e3" stroke="#6b7280" stroke-width="1"/>
+<text x="342.0" y="689.0" font-size="11.0" font-weight="600" fill="#374151">Taller de moldes</text>
+<rect x="548.0" y="675.0" width="140.0" height="140.0" fill="#e9dcc3" stroke="#6b7280" stroke-width="1"/>
+<text x="552.0" y="689.0" font-size="11.0" font-weight="600" fill="#374151">Almacén de moldes</text>
+<rect x="688.0" y="675.0" width="105.0" height="140.0" fill="#e3e3e3" stroke="#6b7280" stroke-width="1"/>
+<text x="692.0" y="685.6" font-size="7.601880877742947" font-weight="600" fill="#374151">Laboratorio de calidad</text>
+<rect x="793.0" y="675.0" width="105.0" height="140.0" fill="#e3e3e3" stroke="#6b7280" stroke-width="1"/>
+<text x="797.0" y="686.0" font-size="7.963875205254515" font-weight="600" fill="#374151">Mantenimiento general</text>
+<rect x="898.0" y="675.0" width="308.0" height="140.0" fill="#efe7f5" stroke="#6b7280" stroke-width="1"/>
+<text x="902.0" y="689.0" font-size="11.0" font-weight="600" fill="#374151">Oficinas, vestieres y cafetería</text>
+<rect x="268.0" y="185.0" width="630.0" height="490.0" fill="#cfe3f2" stroke="#6b7280" stroke-width="1"/>
+<text x="272.0" y="199.0" font-size="11.0" font-weight="600" fill="#374151">Nave de inyección</text>
+<rect x="898.0" y="465.0" width="140.0" height="210.0" fill="#cfe3f2" stroke="#6b7280" stroke-width="1"/>
+<text x="902.0" y="479.0" font-size="11.0" font-weight="600" fill="#374151">Empaque y paletizado</text>
+<rect x="898.0" y="185.0" width="140.0" height="280.0" fill="#cfe3f2" stroke="#6b7280" stroke-width="1"/>
+<text x="902.0" y="197.9" font-size="9.89505247376312" font-weight="600" fill="#374151">Operaciones secundarias</text>
+<rect x="1038.0" y="185.0" width="168.0" height="490.0" fill="#e9dcc3" stroke="#6b7280" stroke-width="1"/>
+<text x="1042.0" y="197.9" font-size="9.852216748768473" font-weight="600" fill="#374151">Bodega de producto terminado</text>
+<rect x="1206.0" y="185.0" width="210.0" height="490.0" fill="#f4f4ef" stroke="#6b7280" stroke-width="1"/>
+<text x="1210.0" y="199.0" font-size="11.0" font-weight="600" fill="#374151">Patio y muelles de despacho</text>
+<rect x="268.0" y="101.0" width="105.0" height="84.0" fill="#e3e3e3" stroke="#6b7280" stroke-width="1"/>
+<text x="272.0" y="112.0" font-size="7.963875205254515" font-weight="600" fill="#374151">Subestación eléctrica</text>
+<rect x="373.0" y="101.0" width="105.0" height="84.0" fill="#e3e3e3" stroke="#6b7280" stroke-width="1"/>
+<text x="377.0" y="112.0" font-size="7.963875205254515" font-weight="600" fill="#374151">Cuarto de compresores</text>
+<rect x="478.0" y="101.0" width="140.0" height="84.0" fill="#e3e3e3" stroke="#6b7280" stroke-width="1"/>
+<text x="482.0" y="113.1" font-size="9.10344827586207" font-weight="600" fill="#374151">Chillers y bombeo de agua</text>
+<rect x="618.0" y="101.0" width="70.0" height="84.0" fill="#f4f4ef" stroke="#6b7280" stroke-width="1"/>
+<text x="622.0" y="111.0" font-size="7.0" font-weight="600" fill="#374151">Torre de enfri…</text>
+<rect x="1206.0" y="696.0" width="224.0" height="154.0" fill="#f4f4ef" stroke="#6b7280" stroke-width="1"/>
+<text x="1210.0" y="710.0" font-size="11.0" font-weight="600" fill="#374151">Portería y parqueadero</text>
+<rect x="268.0" y="647.0" width="630.0" height="28.0" fill="url(#hatch)" stroke="none"/>
+<rect x="569.0" y="185.0" width="28.0" height="490.0" fill="url(#hatch)" stroke="none"/>
+<rect x="268.0" y="493.0" width="630.0" height="28.0" fill="url(#hatch)" stroke="none"/>
+<rect x="268.0" y="325.0" width="630.0" height="28.0" fill="url(#hatch)" stroke="none"/>
+<circle cx="65.0" cy="542.0" r="12.2" fill="#64748b" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>silo-01 · silo</title>
+<text x="65.0" y="527.8" font-size="7.0" text-anchor="middle" fill="#111827">silo-01</text>
+<circle cx="103.5" cy="542.0" r="12.2" fill="#64748b" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>silo-02 · silo</title>
+<text x="103.5" y="527.8" font-size="7.0" text-anchor="middle" fill="#111827">silo-02</text>
+<circle cx="65.0" cy="500.0" r="12.2" fill="#64748b" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>silo-03 · silo</title>
+<text x="65.0" y="485.8" font-size="7.0" text-anchor="middle" fill="#111827">silo-03</text>
+<circle cx="103.5" cy="500.0" r="12.2" fill="#64748b" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>silo-04 · silo</title>
+<text x="103.5" y="485.8" font-size="7.0" text-anchor="middle" fill="#111827">silo-04</text>
+<circle cx="65.0" cy="458.0" r="12.2" fill="#64748b" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>silo-05 · silo</title>
+<text x="65.0" y="443.8" font-size="7.0" text-anchor="middle" fill="#111827">silo-05</text>
+<circle cx="103.5" cy="458.0" r="12.2" fill="#64748b" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>silo-06 · silo</title>
+<text x="103.5" y="443.8" font-size="7.0" text-anchor="middle" fill="#111827">silo-06</text>
+<circle cx="65.0" cy="416.0" r="12.2" fill="#64748b" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>silo-07 · silo</title>
+<text x="65.0" y="401.8" font-size="7.0" text-anchor="middle" fill="#111827">silo-07</text>
+<circle cx="103.5" cy="416.0" r="12.2" fill="#64748b" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>silo-08 · silo</title>
+<text x="103.5" y="401.8" font-size="7.0" text-anchor="middle" fill="#111827">silo-08</text>
+<rect x="65.0" y="202.5" width="28.0" height="21.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>dock-mp-01 · dock_leveler</title>
+<text x="79.0" y="200.5" font-size="7.0" text-anchor="middle" fill="#111827">dock-mp-01</text>
+<rect x="142.0" y="421.2" width="112.0" height="17.5" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>rack-mp-01 · pallet_rack</title>
+<text x="198.0" y="432.5" font-size="7.5" text-anchor="middle" fill="#ffffff">rack-mp-01</text>
+<rect x="142.0" y="351.2" width="112.0" height="17.5" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>rack-mp-02 · pallet_rack</title>
+<text x="198.0" y="362.5" font-size="7.5" text-anchor="middle" fill="#ffffff">rack-mp-02</text>
+<rect x="142.0" y="281.2" width="112.0" height="17.5" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>rack-mp-03 · pallet_rack</title>
+<text x="198.0" y="292.5" font-size="7.5" text-anchor="middle" fill="#ffffff">rack-mp-03</text>
+<rect x="142.0" y="213.0" width="112.0" height="14.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>rack-mb-01 · pallet_rack</title>
+<text x="198.0" y="222.5" font-size="7.5" text-anchor="middle" fill="#ffffff">rack-mb-01</text>
+<rect x="142.0" y="529.8" width="14.0" height="10.5" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>dryer-01 · desiccant_dryer</title>
+<text x="149.0" y="527.8" font-size="7.0" text-anchor="middle" fill="#111827">dryer-01</text>
+<rect x="170.0" y="529.8" width="14.0" height="10.5" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>dryer-02 · desiccant_dryer</title>
+<text x="177.0" y="527.8" font-size="7.0" text-anchor="middle" fill="#111827">dryer-02</text>
+<rect x="198.0" y="529.8" width="14.0" height="10.5" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>dryer-03 · desiccant_dryer</title>
+<text x="205.0" y="527.8" font-size="7.0" text-anchor="middle" fill="#111827">dryer-03</text>
+<rect x="226.0" y="529.8" width="14.0" height="10.5" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>dryer-04 · desiccant_dryer</title>
+<text x="233.0" y="527.8" font-size="7.0" text-anchor="middle" fill="#111827">dryer-04</text>
+<rect x="144.8" y="572.8" width="8.4" height="8.4" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>blender-01 · gravimetric_blender</title>
+<text x="149.0" y="570.8" font-size="7.0" text-anchor="middle" fill="#111827">blender-01</text>
+<rect x="172.8" y="572.8" width="8.4" height="8.4" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>blender-02 · gravimetric_blender</title>
+<text x="177.0" y="570.8" font-size="7.0" text-anchor="middle" fill="#111827">blender-02</text>
+<rect x="200.8" y="572.8" width="8.4" height="8.4" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>blender-03 · gravimetric_blender</title>
+<text x="205.0" y="570.8" font-size="7.0" text-anchor="middle" fill="#111827">blender-03</text>
+<rect x="228.8" y="572.8" width="8.4" height="8.4" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>blender-04 · gravimetric_blender</title>
+<text x="233.0" y="570.8" font-size="7.0" text-anchor="middle" fill="#111827">blender-04</text>
+<rect x="156.0" y="633.0" width="28.0" height="14.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>vacuum-central-01 · vacuum_conveying_station</title>
+<text x="170.0" y="631.0" font-size="7.0" text-anchor="middle" fill="#111827">vacuum-central-01</text>
+<rect x="205.0" y="636.5" width="42.0" height="7.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>manifold-01 · material_selection_station</title>
+<text x="226.0" y="634.5" font-size="7.0" text-anchor="middle" fill="#111827">manifold-01</text>
+<rect x="289.0" y="696.0" width="28.0" height="14.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>sort-01 · sorting_table</title>
+<text x="303.0" y="694.0" font-size="7.0" text-anchor="middle" fill="#111827">sort-01</text>
+<rect x="142.0" y="694.2" width="84.0" height="17.5" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>wash-line-01 · washing_line</title>
+<text x="184.0" y="705.5" font-size="7.5" text-anchor="middle" fill="#ffffff">wash-line-01</text>
+<rect x="257.5" y="694.2" width="21.0" height="17.5" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>grinder-rec-01 · granulator</title>
+<text x="268.0" y="692.2" font-size="7.0" text-anchor="middle" fill="#111827">grinder-rec-01</text>
+<rect x="156.0" y="759.0" width="98.0" height="14.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>extruder-pel-01 · pelletizing_line</title>
+<text x="205.0" y="768.5" font-size="7.5" text-anchor="middle" fill="#ffffff">extruder-pel-01</text>
+<rect x="289.0" y="759.0" width="14.0" height="14.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>bagger-01 · bigbag_station</title>
+<text x="296.0" y="757.0" font-size="7.0" text-anchor="middle" fill="#111827">bagger-01</text>
+<rect x="359.0" y="699.5" width="28.0" height="21.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>cnc-01 · cnc_mill</title>
+<text x="373.0" y="697.5" font-size="7.0" text-anchor="middle" fill="#111827">cnc-01</text>
+<rect x="397.5" y="699.5" width="28.0" height="21.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>cnc-02 · cnc_mill</title>
+<text x="411.5" y="697.5" font-size="7.0" text-anchor="middle" fill="#111827">cnc-02</text>
+<rect x="439.5" y="701.2" width="21.0" height="17.5" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>edm-01 · edm</title>
+<text x="450.0" y="699.2" font-size="7.0" text-anchor="middle" fill="#111827">edm-01</text>
+<rect x="474.5" y="703.0" width="21.0" height="14.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>surface-grinder-01 · surface_grinder</title>
+<text x="485.0" y="701.0" font-size="7.0" text-anchor="middle" fill="#111827">surface-grinder-01</text>
+<rect x="366.0" y="774.8" width="28.0" height="10.5" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>polish-bench-01 · workbench</title>
+<text x="380.0" y="772.8" font-size="7.0" text-anchor="middle" fill="#111827">polish-bench-01</text>
+<rect x="429.0" y="773.0" width="42.0" height="14.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>mold-bench-01 · workbench</title>
+<text x="450.0" y="771.0" font-size="7.0" text-anchor="middle" fill="#111827">mold-bench-01</text>
+<rect x="555.0" y="780.0" width="126.0" height="14.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>mold-rack-01 · mold_rack</title>
+<text x="618.0" y="789.5" font-size="7.5" text-anchor="middle" fill="#ffffff">mold-rack-01</text>
+<rect x="555.0" y="738.0" width="126.0" height="14.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>mold-rack-02 · mold_rack</title>
+<text x="618.0" y="747.5" font-size="7.5" text-anchor="middle" fill="#ffffff">mold-rack-02</text>
+<rect x="555.0" y="696.0" width="126.0" height="14.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>mold-rack-03 · mold_rack</title>
+<text x="618.0" y="705.5" font-size="7.5" text-anchor="middle" fill="#ffffff">mold-rack-03</text>
+<rect x="709.0" y="703.0" width="14.0" height="14.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>cmm-01 · cmm</title>
+<text x="716.0" y="701.0" font-size="7.0" text-anchor="middle" fill="#111827">cmm-01</text>
+<rect x="709.0" y="776.5" width="56.0" height="7.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>lab-bench-01 · lab_bench</title>
+<text x="737.0" y="774.5" font-size="7.0" text-anchor="middle" fill="#111827">lab-bench-01</text>
+<rect x="751.0" y="703.0" width="14.0" height="14.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>drop-test-01 · test_rig</title>
+<text x="758.0" y="701.0" font-size="7.0" text-anchor="middle" fill="#111827">drop-test-01</text>
+<rect x="821.0" y="774.8" width="42.0" height="10.5" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>workbench-mnt-01 · workbench</title>
+<text x="842.0" y="772.8" font-size="7.0" text-anchor="middle" fill="#111827">workbench-mnt-01</text>
+<rect x="807.0" y="704.8" width="70.0" height="10.5" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>parts-rack-01 · shelving</title>
+<text x="842.0" y="712.5" font-size="7.5" text-anchor="middle" fill="#ffffff">parts-rack-01</text>
+<rect x="275.0" y="185.0" width="616.0" height="140.0" fill="none" stroke="#7c3aed" stroke-width="1.2" stroke-dasharray="8 4"/>
+<text x="887.0" y="321.0" font-size="9" text-anchor="end" fill="#7c3aed">crane-01 (elevado)</text>
+<rect x="275.0" y="612.0" width="616.0" height="7.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>conveyor-main-01 · belt_conveyor</title>
+<text x="583.0" y="610.0" font-size="7.0" text-anchor="middle" fill="#111827">conveyor-main-01</text>
+<rect x="520.0" y="244.5" width="28.0" height="21.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>mold-cart-01 · mold_staging</title>
+<text x="534.0" y="242.5" font-size="7.0" text-anchor="middle" fill="#111827">mold-cart-01</text>
+<rect x="282.0" y="550.4" width="35.0" height="11.2" rx="1.5" fill="#1d4ed8" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>imm-01 · injection_molding_machine</title>
+<text x="299.5" y="558.5" font-size="7.5" text-anchor="middle" fill="#ffffff">imm-01</text>
+<rect x="331.0" y="550.4" width="35.0" height="11.2" rx="1.5" fill="#1d4ed8" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>imm-02 · injection_molding_machine</title>
+<text x="348.5" y="558.5" font-size="7.5" text-anchor="middle" fill="#ffffff">imm-02</text>
+<rect x="380.0" y="550.4" width="35.0" height="11.2" rx="1.5" fill="#1d4ed8" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>imm-03 · injection_molding_machine</title>
+<text x="397.5" y="558.5" font-size="7.5" text-anchor="middle" fill="#ffffff">imm-03</text>
+<rect x="429.0" y="550.4" width="35.0" height="11.2" rx="1.5" fill="#1d4ed8" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>imm-04 · injection_molding_machine</title>
+<text x="446.5" y="558.5" font-size="7.5" text-anchor="middle" fill="#ffffff">imm-04</text>
+<rect x="478.0" y="550.4" width="35.0" height="11.2" rx="1.5" fill="#1d4ed8" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>imm-05 · injection_molding_machine</title>
+<text x="495.5" y="558.5" font-size="7.5" text-anchor="middle" fill="#ffffff">imm-05</text>
+<rect x="611.0" y="550.4" width="35.0" height="11.2" rx="1.5" fill="#1d4ed8" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>imm-06 · injection_molding_machine</title>
+<text x="628.5" y="558.5" font-size="7.5" text-anchor="middle" fill="#ffffff">imm-06</text>
+<rect x="660.0" y="550.4" width="35.0" height="11.2" rx="1.5" fill="#1d4ed8" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>imm-07 · injection_molding_machine</title>
+<text x="677.5" y="558.5" font-size="7.5" text-anchor="middle" fill="#ffffff">imm-07</text>
+<rect x="709.0" y="550.4" width="35.0" height="11.2" rx="1.5" fill="#1d4ed8" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>imm-08 · injection_molding_machine</title>
+<text x="726.5" y="558.5" font-size="7.5" text-anchor="middle" fill="#ffffff">imm-08</text>
+<rect x="758.0" y="550.4" width="35.0" height="11.2" rx="1.5" fill="#1d4ed8" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>imm-09 · injection_molding_machine</title>
+<text x="775.5" y="558.5" font-size="7.5" text-anchor="middle" fill="#ffffff">imm-09</text>
+<rect x="807.0" y="550.4" width="35.0" height="11.2" rx="1.5" fill="#1d4ed8" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>imm-10 · injection_molding_machine</title>
+<text x="824.5" y="558.5" font-size="7.5" text-anchor="middle" fill="#ffffff">imm-10</text>
+<rect x="282.0" y="437.0" width="49.0" height="14.0" rx="1.5" fill="#1d4ed8" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>imm-11 · injection_molding_machine</title>
+<text x="306.5" y="446.5" font-size="7.5" text-anchor="middle" fill="#ffffff">imm-11</text>
+<rect x="352.0" y="437.0" width="49.0" height="14.0" rx="1.5" fill="#1d4ed8" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>imm-12 · injection_molding_machine</title>
+<text x="376.5" y="446.5" font-size="7.5" text-anchor="middle" fill="#ffffff">imm-12</text>
+<rect x="422.0" y="437.0" width="49.0" height="14.0" rx="1.5" fill="#1d4ed8" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>imm-13 · injection_molding_machine</title>
+<text x="446.5" y="446.5" font-size="7.5" text-anchor="middle" fill="#ffffff">imm-13</text>
+<rect x="492.0" y="437.0" width="49.0" height="14.0" rx="1.5" fill="#1d4ed8" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>imm-14 · injection_molding_machine</title>
+<text x="516.5" y="446.5" font-size="7.5" text-anchor="middle" fill="#ffffff">imm-14</text>
+<rect x="611.0" y="437.0" width="49.0" height="14.0" rx="1.5" fill="#1d4ed8" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>imm-15 · injection_molding_machine</title>
+<text x="635.5" y="446.5" font-size="7.5" text-anchor="middle" fill="#ffffff">imm-15</text>
+<rect x="681.0" y="437.0" width="49.0" height="14.0" rx="1.5" fill="#1d4ed8" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>imm-16 · injection_molding_machine</title>
+<text x="705.5" y="446.5" font-size="7.5" text-anchor="middle" fill="#ffffff">imm-16</text>
+<rect x="751.0" y="437.0" width="49.0" height="14.0" rx="1.5" fill="#1d4ed8" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>imm-17 · injection_molding_machine</title>
+<text x="775.5" y="446.5" font-size="7.5" text-anchor="middle" fill="#ffffff">imm-17</text>
+<rect x="779.0" y="381.0" width="49.0" height="14.0" rx="1.5" fill="#1d4ed8" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>imm-18 · injection_molding_machine</title>
+<text x="803.5" y="390.5" font-size="7.5" text-anchor="middle" fill="#ffffff">imm-18</text>
+<rect x="842.0" y="381.0" width="49.0" height="14.0" rx="1.5" fill="#1d4ed8" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>imm-19 · injection_molding_machine</title>
+<text x="866.5" y="390.5" font-size="7.5" text-anchor="middle" fill="#ffffff">imm-19</text>
+<rect x="282.0" y="379.6" width="63.0" height="16.8" rx="1.5" fill="#1d4ed8" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>imm-20 · injection_molding_machine</title>
+<text x="313.5" y="390.5" font-size="7.5" text-anchor="middle" fill="#ffffff">imm-20</text>
+<rect x="366.0" y="379.6" width="63.0" height="16.8" rx="1.5" fill="#1d4ed8" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>imm-21 · injection_molding_machine</title>
+<text x="397.5" y="390.5" font-size="7.5" text-anchor="middle" fill="#ffffff">imm-21</text>
+<rect x="450.0" y="379.6" width="63.0" height="16.8" rx="1.5" fill="#1d4ed8" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>imm-22 · injection_molding_machine</title>
+<text x="481.5" y="390.5" font-size="7.5" text-anchor="middle" fill="#ffffff">imm-22</text>
+<rect x="611.0" y="379.6" width="63.0" height="16.8" rx="1.5" fill="#1d4ed8" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>imm-23 · injection_molding_machine</title>
+<text x="642.5" y="390.5" font-size="7.5" text-anchor="middle" fill="#ffffff">imm-23</text>
+<rect x="695.0" y="379.6" width="63.0" height="16.8" rx="1.5" fill="#1d4ed8" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>imm-24 · injection_molding_machine</title>
+<text x="726.5" y="390.5" font-size="7.5" text-anchor="middle" fill="#ffffff">imm-24</text>
+<rect x="611.0" y="244.5" width="80.5" height="21.0" rx="1.5" fill="#1d4ed8" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>imm-25 · injection_molding_machine</title>
+<text x="651.2" y="257.5" font-size="7.5" text-anchor="middle" fill="#ffffff">imm-25</text>
+<rect x="709.0" y="244.5" width="80.5" height="21.0" rx="1.5" fill="#1d4ed8" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>imm-26 · injection_molding_machine</title>
+<text x="749.2" y="257.5" font-size="7.5" text-anchor="middle" fill="#ffffff">imm-26</text>
+<rect x="807.0" y="244.5" width="80.5" height="21.0" rx="1.5" fill="#1d4ed8" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>imm-27 · injection_molding_machine</title>
+<text x="847.2" y="257.5" font-size="7.5" text-anchor="middle" fill="#ffffff">imm-27</text>
+<rect x="282.0" y="242.8" width="98.0" height="24.5" rx="1.5" fill="#1d4ed8" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>imm-28 · injection_molding_machine</title>
+<text x="331.0" y="257.5" font-size="7.5" text-anchor="middle" fill="#ffffff">imm-28</text>
+<rect x="401.0" y="242.8" width="98.0" height="24.5" rx="1.5" fill="#1d4ed8" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>imm-29 · injection_molding_machine</title>
+<text x="450.0" y="257.5" font-size="7.5" text-anchor="middle" fill="#ffffff">imm-29</text>
+<rect x="919.0" y="626.0" width="21.0" height="14.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>pack-station-01 · packing_station</title>
+<text x="929.5" y="624.0" font-size="7.0" text-anchor="middle" fill="#111827">pack-station-01</text>
+<rect x="919.0" y="577.0" width="21.0" height="14.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>pack-station-02 · packing_station</title>
+<text x="929.5" y="575.0" font-size="7.0" text-anchor="middle" fill="#111827">pack-station-02</text>
+<rect x="989.0" y="626.0" width="21.0" height="14.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>pack-station-03 · packing_station</title>
+<text x="999.5" y="624.0" font-size="7.0" text-anchor="middle" fill="#111827">pack-station-03</text>
+<rect x="989.0" y="577.0" width="21.0" height="14.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>pack-station-04 · packing_station</title>
+<text x="999.5" y="575.0" font-size="7.0" text-anchor="middle" fill="#111827">pack-station-04</text>
+<rect x="954.0" y="503.5" width="21.0" height="21.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>wrapper-01 · stretch_wrapper</title>
+<text x="964.5" y="501.5" font-size="7.0" text-anchor="middle" fill="#111827">wrapper-01</text>
+<rect x="912.0" y="405.5" width="42.0" height="21.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>assembly-01 · assembly_cell</title>
+<text x="933.0" y="403.5" font-size="7.0" text-anchor="middle" fill="#111827">assembly-01</text>
+<rect x="982.0" y="405.5" width="42.0" height="21.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>assembly-02 · assembly_cell</title>
+<text x="1003.0" y="403.5" font-size="7.0" text-anchor="middle" fill="#111827">assembly-02</text>
+<rect x="922.5" y="339.0" width="21.0" height="14.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>pad-print-01 · pad_printer</title>
+<text x="933.0" y="337.0" font-size="7.0" text-anchor="middle" fill="#111827">pad-print-01</text>
+<rect x="992.5" y="339.0" width="21.0" height="14.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>labeler-01 · labeler</title>
+<text x="1003.0" y="337.0" font-size="7.0" text-anchor="middle" fill="#111827">labeler-01</text>
+<rect x="940.0" y="241.0" width="56.0" height="28.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>foam-01 · pu_foaming_station</title>
+<text x="968.0" y="257.5" font-size="7.5" text-anchor="middle" fill="#ffffff">foam-01</text>
+<rect x="1053.8" y="206.0" width="17.5" height="420.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>rack-pt-01 · pallet_rack</title>
+<text x="1062.5" y="418.5" font-size="7.5" text-anchor="middle" fill="#ffffff" transform="rotate(-90 1062.5 416.0)">rack-pt-01</text>
+<rect x="1102.8" y="206.0" width="17.5" height="420.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>rack-pt-02 · pallet_rack</title>
+<text x="1111.5" y="418.5" font-size="7.5" text-anchor="middle" fill="#ffffff" transform="rotate(-90 1111.5 416.0)">rack-pt-02</text>
+<rect x="1151.8" y="206.0" width="17.5" height="420.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>rack-pt-03 · pallet_rack</title>
+<text x="1160.5" y="418.5" font-size="7.5" text-anchor="middle" fill="#ffffff" transform="rotate(-90 1160.5 416.0)">rack-pt-03</text>
+<rect x="1186.8" y="206.0" width="17.5" height="420.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>rack-pt-04 · pallet_rack</title>
+<text x="1195.5" y="418.5" font-size="7.5" text-anchor="middle" fill="#ffffff" transform="rotate(-90 1195.5 416.0)">rack-pt-04</text>
+<rect x="1209.5" y="591.0" width="21.0" height="28.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>dock-01 · dock_leveler</title>
+<text x="1220.0" y="589.0" font-size="7.0" text-anchor="middle" fill="#111827">dock-01</text>
+<rect x="1209.5" y="521.0" width="21.0" height="28.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>dock-02 · dock_leveler</title>
+<text x="1220.0" y="519.0" font-size="7.0" text-anchor="middle" fill="#111827">dock-02</text>
+<rect x="1209.5" y="451.0" width="21.0" height="28.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>dock-03 · dock_leveler</title>
+<text x="1220.0" y="449.0" font-size="7.0" text-anchor="middle" fill="#111827">dock-03</text>
+<rect x="1209.5" y="381.0" width="21.0" height="28.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>dock-04 · dock_leveler</title>
+<text x="1220.0" y="379.0" font-size="7.0" text-anchor="middle" fill="#111827">dock-04</text>
+<rect x="306.5" y="132.5" width="28.0" height="21.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>transformer-01 · transformer</title>
+<text x="320.5" y="130.5" font-size="7.0" text-anchor="middle" fill="#111827">transformer-01</text>
+<rect x="392.2" y="136.7" width="17.5" height="12.6" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>compressor-01 · air_compressor</title>
+<text x="401.0" y="134.7" font-size="7.0" text-anchor="middle" fill="#111827">compressor-01</text>
+<rect x="420.2" y="136.7" width="17.5" height="12.6" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>compressor-02 · air_compressor</title>
+<text x="429.0" y="134.7" font-size="7.0" text-anchor="middle" fill="#111827">compressor-02</text>
+<rect x="451.8" y="137.8" width="10.5" height="10.5" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>air-dryer-01 · air_dryer</title>
+<text x="457.0" y="135.8" font-size="7.0" text-anchor="middle" fill="#111827">air-dryer-01</text>
+<rect x="492.0" y="134.2" width="42.0" height="17.5" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>chiller-01 · chiller</title>
+<text x="513.0" y="132.2" font-size="7.0" text-anchor="middle" fill="#111827">chiller-01</text>
+<rect x="555.0" y="134.2" width="42.0" height="17.5" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>chiller-02 · chiller</title>
+<text x="576.0" y="132.2" font-size="7.0" text-anchor="middle" fill="#111827">chiller-02</text>
+<circle cx="653.0" cy="143.0" r="14.0" fill="#64748b" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>cooling-tower-01 · cooling_tower</title>
+<text x="653.0" y="127.0" font-size="7.0" text-anchor="middle" fill="#111827">cooling-tower-01</text>
+<line x1="78.6" y1="223.0" x2="65.4" y2="532.0" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>resina: 25 t/d</title></line>
+<line x1="83.8" y1="221.8" x2="193.2" y2="421.2" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>resina en sacos: 8 t/d</title></line>
+<line x1="73.5" y1="547.2" x2="217.5" y2="634.8" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>resina: 600 kg/h</title></line>
+<line x1="229.8" y1="630.7" x2="302.7" y2="453.3" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>resina: 2300 kg/h</title></line>
+<line x1="593.0" y1="616.0" x2="919.5" y2="632.5" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>piezas: 6000 u/h</title></line>
+<line x1="875.7" y1="391.9" x2="923.8" y2="412.1" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>piezas: 103 u/h</title></line>
+<line x1="857.2" y1="255.0" x2="958.0" y2="255.0" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>piezas: 65 u/h</title></line>
+<line x1="971.6" y1="506.9" x2="1055.4" y2="423.1" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>estibas: 40 pallets/d</title></line>
+<line x1="1118.2" y1="423.4" x2="1213.3" y2="527.6" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>estibas: 40 pallets/d</title></line>
+<line x1="476.6" y1="396.7" x2="307.9" y2="694.3" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>scrap y barreduras: 0.8 t/d</title></line>
+<line x1="290.0" y1="758.0" x2="71.0" y2="466.0" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>pellet reciclado: 8 t/d</title></line>
+<line x1="616.2" y1="693.2" x2="535.8" y2="264.8" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>molde: 2 cambios/d</title></line>
+<rect x="30" y="872.0" width="14" height="14" fill="#f4f4ef" stroke="#6b7280"/>
+<text x="49" y="883.0" font-size="11" fill="#374151">Exterior</text>
+<rect x="112.0" y="872.0" width="14" height="14" fill="#e9dcc3" stroke="#6b7280"/>
+<text x="131.0" y="883.0" font-size="11" fill="#374151">Almacenamiento</text>
+<rect x="233.0" y="872.0" width="14" height="14" fill="#cfe3f2" stroke="#6b7280"/>
+<text x="252.0" y="883.0" font-size="11" fill="#374151">Producción</text>
+<rect x="328.0" y="872.0" width="14" height="14" fill="#e3e3e3" stroke="#6b7280"/>
+<text x="347.0" y="883.0" font-size="11" fill="#374151">Servicios</text>
+<rect x="416.5" y="872.0" width="14" height="14" fill="#efe7f5" stroke="#6b7280"/>
+<text x="435.5" y="883.0" font-size="11" fill="#374151">Administración</text>
+<rect x="537.5" y="872.0" width="14" height="14" fill="#e3e3e3" stroke="#6b7280"/>
+<text x="556.5" y="883.0" font-size="11" fill="#374151">Servicios industriales</text>
+<rect x="30" y="898.0" width="14" height="10" fill="#1d4ed8"/>
+<text x="51" y="907.0" font-size="11" fill="#374151">Inyectora</text>
+<rect x="122.5" y="898.0" width="14" height="10" fill="#475569"/>
+<text x="143.5" y="907.0" font-size="11" fill="#374151">Equipo</text>
+<circle cx="202.5" cy="903.0" r="6" fill="#64748b"/>
+<text x="216.5" y="907.0" font-size="11" fill="#374151">Tanque / silo</text>
+<rect x="314.0" y="898.0" width="14" height="10" fill="url(#hatch)" stroke="#d4a017"/>
+<text x="335.0" y="907.0" font-size="11" fill="#374151">Pasillo montacargas</text>
+<rect x="471.5" y="898.0" width="14" height="10" fill="none" stroke="#7c3aed" stroke-dasharray="4 2"/>
+<text x="492.5" y="907.0" font-size="11" fill="#374151">Puente grúa</text>
+<line x1="577.0" y1="903.0" x2="593.0" y2="903.0" stroke="#c2410c" stroke-width="1.6" marker-end="url(#arrow)"/>
+<text x="598.0" y="907.0" font-size="11" fill="#374151">Flujo principal</text>
+<rect x="1290.0" y="878.0" width="70.0" height="6" fill="#111827"/>
+<rect x="1360.0" y="878.0" width="70.0" height="6" fill="#ffffff" stroke="#111827"/>
+<text x="1290.0" y="898.0" font-size="10" fill="#374151">0</text>
+<text x="1430.0" y="898.0" font-size="10" text-anchor="end" fill="#374151">20 m</text>
+<path d="M1418.0,32 L1425.0,52 L1418.0,47 L1411.0,52 z" fill="#111827"/>
+<text x="1418.0" y="66" font-size="11" font-weight="700" text-anchor="middle" fill="#111827">N</text>
+</svg>
