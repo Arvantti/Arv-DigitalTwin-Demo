@@ -210,7 +210,7 @@ def render_svg(plant: dict) -> str:
         '<path d="M0,0 L10,5 L0,10 z" fill="#c2410c"/></marker>'
         "</defs>"
     )
-    a(f'<rect width="100%" height="100%" fill="#ffffff"/>')
+    a('<rect width="100%" height="100%" fill="#ffffff"/>')
     a(
         f'<text x="{pad}" y="{pad + 18}" font-size="20" font-weight="700" fill="#1f2937">{html.escape(meta["name"])}</text>'
     )
@@ -352,7 +352,8 @@ def render_svg(plant: dict) -> str:
         items.append(('<rect x="{x}" y="{y}" width="14" height="10" fill="url(#hatch)" stroke="#d4a017"/>', "Pasillo montacargas"))
     if any(e.get("overhead") for e in plant["equipment"]):
         items.append(('<rect x="{x}" y="{y}" width="14" height="10" fill="none" stroke="#7c3aed" stroke-dasharray="4 2"/>', "Puente grúa"))
-    items.append(('<line x1="{x}" y1="{cy}" x2="{x2}" y2="{cy}" stroke="#c2410c" stroke-width="1.6" marker-end="url(#arrow)"/>', "Flujo principal"))
+    arrow = '<line x1="{x}" y1="{cy}" x2="{x2}" y2="{cy}" stroke="#c2410c" stroke-width="1.6" marker-end="url(#arrow)"/>'
+    items.append((arrow, "Flujo principal"))
     for tpl, text in items:
         a(tpl.format(x=lx, y=ly2 + 2, cx=lx + 7, cy=ly2 + 7, x2=lx + 16))
         a(f'<text x="{lx + 21}" y="{ly2 + 11}" font-size="11" fill="#374151">{text}</text>')
