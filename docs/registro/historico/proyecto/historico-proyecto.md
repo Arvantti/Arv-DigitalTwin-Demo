@@ -14,4 +14,5 @@ Conversaciones del 2026-10-16 (UTC) entre el autor y Claude dentro del proyecto 
 3. [[hilo-motor-de-planta]] (PR #5 y #6)
 4. [[hilo-plan-y-bitacora]] (este registro)
 5. [[hilo-escena-de-planta]] (PR #8, fase 5)
+6. [[hilo-caudal-de-enlaces]] (PR #10, caudal real en las tuberías)
 5. Rutinas: «Revisión semanal de PRs» (lunes 13:52 UTC) y «Galería de equipos semanal» (viernes 13:52 UTC), creadas 15:00 UTC; sin mensajes adicionales.

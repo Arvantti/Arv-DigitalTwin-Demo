@@ -32,6 +32,14 @@ MODELS_DIR_NAME = "industrial-models"
 SIM_FILE = "simulation.yaml"
 # Una salida que entrega unidades o caudal no se puede repartir sin una regla de reparto.
 SPLIT_QUANTITIES = ("units", "flow_kg_h")
+# Un enlace "circula" sobre este caudal (kg/h o u/min); un servicio sin presión útil no entrega.
+FLOW_EPS = 1e-6
+MIN_SERVICE_BAR = 0.05
+
+
+def link_id(lk: Link) -> str:
+    """Id estable de un enlace en el snapshot; usa ':' para que las rutas de expectativa ('links.<id>.flow_kg_h') no se corten."""
+    return f"{lk.src.equipment}:{lk.src.port}>{lk.dst.equipment}:{lk.dst.port}"
 
 
 def find_models_root(library_root: Path | None = None) -> Path:
@@ -155,6 +163,14 @@ class PlantModel:
             every_s=float(raw["every_s"]) if raw.get("every_s") else None,
         )
 
+    def links_for_flow(self, src: str, dst: str) -> list[str]:
+        """Ids de los enlaces cuyo recorrido (origen, `via`…, destino) pasa por el tramo src → dst del plano."""
+        return [
+            link_id(lk)
+            for lk in self.links
+            if (src, dst) in zip([lk.src.equipment, *lk.via], [*lk.via, lk.dst.equipment], strict=True)
+        ]
+
     # ------------------------------------------------------------------ validación
     def validate(self) -> list[str]:
         errors: list[str] = []
@@ -267,6 +283,7 @@ class PlantSimulation:
         self.equipment = self.sim.equipment
         self._links = {eid: port_links(e.spec) for eid, e in self.equipment.items()}
         self._last_count: dict[PortRef, float] = {}
+        self.link_state: dict[str, dict[str, Any]] = {}
         values = self._values()
         for lk in model.links:
             name = self._links[lk.src.equipment][lk.src.port]["link"].get("units")
@@ -318,25 +335,37 @@ class PlantSimulation:
         values = self._values()
         dt = self.sim.dt
         received: dict[tuple[str, str], list[tuple[str, Any, PortRef]]] = defaultdict(list)
+        link_state: dict[str, dict[str, Any]] = {}
         for lk in self.model.links:
             src_link = self._links[lk.src.equipment][lk.src.port]["link"]
             dst_link = self._links[lk.dst.equipment][lk.dst.port]["link"]
+            # Lo que sale por el enlace; el contador de unidades se convierte en u/min una sola vez por paso.
+            sent: dict[str, Any] = {}
+            for q in FORWARD:
+                if q not in src_link and q not in dst_link:
+                    continue
+                if q == "units":
+                    if "units" not in src_link:
+                        continue
+                    count = float(values[lk.src.equipment].get(src_link["units"]) or 0.0)
+                    value: Any = (count - self._last_count[lk.src]) / dt * 60.0
+                    self._last_count[lk.src] = count
+                else:
+                    value = self._forward(values, lk.src, q)
+                    if value is not None and q in lk.max:
+                        value = min(float(value), lk.max[q])
+                if value is not None:
+                    sent[q] = value
             for q, name in dst_link.items():
-                if q in FORWARD:
-                    if q == "units":
-                        if "units" not in src_link:
-                            continue
-                        count = float(values[lk.src.equipment].get(src_link["units"]) or 0.0)
-                        value: Any = (count - self._last_count[lk.src]) / dt * 60.0
-                        self._last_count[lk.src] = count
-                    else:
-                        value = self._forward(values, lk.src, q)
-                        if value is not None and q in lk.max:
-                            value = min(float(value), lk.max[q])
-                    received[(lk.dst.equipment, name)].append((q, value, lk.src))
+                if q in FORWARD and q in sent:
+                    received[(lk.dst.equipment, name)].append((q, sent[q], lk.src))
+            back: dict[str, Any] = {}
             for q, name in src_link.items():
                 if q in BACKWARD and q in dst_link:
-                    received[(lk.src.equipment, name)].append((q, values[lk.dst.equipment].get(dst_link[q]), lk.dst))
+                    back[q] = values[lk.dst.equipment].get(dst_link[q])
+                    received[(lk.src.equipment, name)].append((q, back[q], lk.dst))
+            link_state[link_id(lk)] = self._link_record(lk, sent, back)
+        self.link_state = link_state
 
         for (eid, name), items in received.items():
             q = items[0][0]
@@ -355,6 +384,21 @@ class PlantSimulation:
                 pool = active or [float(v) for v in vals]
                 value = sum(pool) / len(pool)
             self.sim.inputs[eid][name] = value
+
+    def _link_record(self, lk: Link, sent: dict[str, Any], back: dict[str, Any]) -> dict[str, Any]:
+        """Estado de un enlace en este paso: lo que entrega la salida (con `max` aplicado) y lo que pide el destino."""
+        rec: dict[str, Any] = {"from": str(lk.src), "to": str(lk.dst), "via": list(lk.via)}
+        for q, v in sent.items():
+            rec["units_per_min" if q == "units" else q] = v
+        for q, v in back.items():
+            if v is not None:
+                rec[q] = v
+        if "flow_kg_h" not in rec and "demand_kg_h" in rec and self._links[lk.src.equipment][lk.src.port]["kind"] == "utility":
+            # Un servicio (vapor) se entrega a pedido: circula lo que pide el destino mientras haya presión.
+            pressure = rec.get("pressure_bar")
+            rec["flow_kg_h"] = float(rec["demand_kg_h"]) if pressure is None or pressure > MIN_SERVICE_BAR else 0.0
+        rec["flowing"] = rec.get("flow_kg_h", 0.0) > FLOW_EPS or rec.get("units_per_min", 0.0) > FLOW_EPS
+        return rec
 
     def _delivering(self, values: dict[str, dict[str, Any]], ref: PortRef) -> bool:
         flow = self._forward(values, ref, "available")
@@ -403,7 +447,7 @@ class PlantSimulation:
             snap = e.snapshot()
             snap["state_share"] = self._state_shares(eid)
             equipment[eid] = snap
-        return {"t": self.t, "plant": self.model.id, "equipment": equipment, "lines": self.line_kpis()}
+        return {"t": self.t, "plant": self.model.id, "equipment": equipment, "lines": self.line_kpis(), "links": self.link_state}
 
 
 def run_plant_scenario(

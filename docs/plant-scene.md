@@ -25,7 +25,7 @@ Parámetros de URL, pensados para capturas automáticas:
 - **Equipos simulados** con la geometría de su tipo de librería y los parámetros ya resueltos por la API (`sim.type`, `sim.params`). Se animan con los canales que publica el comportamiento; el modelo no calcula nada.
 - **Equipos sin tipo en la librería** como volúmenes de su huella (`footprint`). Los marcados `overhead: true` (puente grúa de la planta de inyección) se dibujan como vías y viga puente a su altura.
 - **Pasarelas** (`walkways` del `plant.yaml`): piso de rejilla a su elevación, barandas a ambos lados, columnas y escalera en los puntos de acceso.
-- **Tuberías** de los flujos `piped: true`: suben a un nivel de rack, cruzan en ortogonal y bajan al equipo de destino; el color sale del medio (vapor, aceite, agua, producto). Cuando llevan producto circulan esferas luminosas. Es un indicio por estado, no un caudal medido: la tubería circula si el origen simulado está en servicio (y, si tiene fases, descargando), o, si el origen no se simula, si lo está el destino. El trazado es de recorrido, no de ingeniería de detalle.
+- **Tuberías** de los flujos `piped: true`: suben a un nivel de rack, cruzan en ortogonal y bajan al equipo de destino; el color sale del medio (vapor, aceite, agua, producto). Cuando llevan producto circulan esferas luminosas. La animación sale del caudal que publica el motor (`snapshot.links`, ver `docs/plant-engine.md`): la tubería suma el `flow_kg_h` de los enlaces que cruzan su tramo (las dos marmitas comparten la bomba) y lo divide por un caudal de referencia, el `rate` del plano si viene en kg/h o L/h, o el máximo visto. Con más carga las esferas son más numerosas y avanzan más rápido; sin caudal desaparecen. Los tramos que el motor no simula (CIP, agua helada, el desvío del pasteurizador) conservan el indicio por estado: circulan si el origen simulado está en servicio (y, con fases, descargando), o, si el origen no se simula, si lo está el destino. El trazado es de recorrido, no de ingeniería de detalle.
 - **Selección de activos:** clic en un equipo para ver su estado, fase, fallas, variables y los comandos y fallas que se pueden inyectar. Un clic en el piso deselecciona.
 - **Cámaras:** vista general y una por zona de producción o servicios grande. **Recorrido** (`tour=1` o el botón): la cámara visita la vista general y esas zonas de oeste a este, el sentido del flujo; cualquier clic o la rueda del ratón lo interrumpe.
 - **HUD de planta:** reloj de simulación, selector de escenario, velocidad, pausa, KPIs de cada línea y eventos de toda la planta.
@@ -35,8 +35,8 @@ Parámetros de URL, pensados para capturas automáticas:
 | Endpoint | Qué entrega |
 |---|---|
 | `GET /api/plants` | Plantas con plano y si tienen simulación conectada |
-| `GET /api/plants/{id}` | Zonas, equipos (con `sim` si el motor los simula), pasarelas, tuberías (flujos `piped`), líneas y escenarios |
-| `WS /api/plants/{id}/simulate?scenario=&speed=` | Cada 100 ms: `{t, speed, paused, snapshot: {equipment, lines}, events}`. Cliente → servidor: `{equipment, command, args}`, `{speed}`, `{pause}` |
+| `GET /api/plants/{id}` | Zonas, equipos (con `sim` si el motor los simula), pasarelas, tuberías (flujos `piped`, con `rate`, `unit` y `links`: los enlaces del motor que las cruzan), líneas y escenarios |
+| `WS /api/plants/{id}/simulate?scenario=&speed=` | Cada 100 ms: `{t, speed, paused, snapshot: {equipment, lines, links}, events}`. Cliente → servidor: `{equipment, command, args}`, `{speed}`, `{pause}` |
 
 ## Pasarelas en el `plant.yaml`
 
@@ -56,6 +56,6 @@ El validador exige: eje de 2 o más puntos, ancho y elevación positivos, todos 
 ## Pendiente de la fase 5
 
 - Los equipos que faltan en la librería siguen siendo volúmenes (fase 3).
-- Caudal real en las tuberías: hoy se anima por estado; falta publicar el caudal de cada enlace del motor.
+- Las tuberías de tramos sin simular siguen animándose por estado; el desvío del pasteurizador a la marmita aún no tiene enlace.
 - Selección desde la lista de activos y recorridos definidos por la planta (hoy se derivan de las zonas).
 - Muros con aberturas, escaleras de acceso con geometría de escalón y pasarelas de la planta de inyección.

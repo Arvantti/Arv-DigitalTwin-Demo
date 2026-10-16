@@ -50,6 +50,15 @@ interface Pipe {
   from: string;
   to: string;
   medium: string;
+  rate?: number;
+  unit?: string;
+  /** Ids de los enlaces del motor que pasan por este tramo; vacío si el tramo no se simula. */
+  links: string[];
+}
+interface LinkState {
+  flow_kg_h?: number;
+  units_per_min?: number;
+  flowing: boolean;
 }
 interface PlantDoc {
   plant: { id: string; name: string; site?: { width_x: number; length_y: number } };
@@ -249,8 +258,15 @@ interface PipeRun {
   points: THREE.Vector3[];
   cumulative: number[];
   beads: THREE.Mesh[];
+  links: string[];
+  /** Caudal de referencia en kg/h: el del plano si viene en kg/h o L/h; si no, el máximo visto en la simulación. */
+  reference: number | null;
+  peak: number;
+  phase: number;
 }
 const pipeRuns: PipeRun[] = [];
+let latestLinks: Record<string, LinkState> = {};
+let lastPipeTime = 0;
 const MEDIUM_COLORS: [RegExp, string][] = [
   [/vapor/, "#e8ecef"],
   [/aceite/, "#d9a521"],
@@ -295,7 +311,8 @@ function buildPipes(): void {
       stage.content.add(bead);
       return bead;
     });
-    pipeRuns.push({ from: pipe.from, to: pipe.to, points, cumulative, beads });
+    const reference = pipe.rate && (pipe.unit === "kg/h" || pipe.unit === "L/h") ? pipe.rate : null;
+    pipeRuns.push({ from: pipe.from, to: pipe.to, points, cumulative, beads, links: pipe.links ?? [], reference, peak: 0, phase: 0 });
   }
 }
 
@@ -307,23 +324,37 @@ function pointAt(run: PipeRun, distance: number): THREE.Vector3 {
 }
 
 /**
- * Una tubería lleva producto si su origen simulado está en servicio (y, si tiene fases, descargando);
- * si el origen no se simula, si lo está el destino. Es un indicio por estado, no un caudal medido.
+ * Carga de una tubería: caudal medido ÷ caudal de referencia (1 = el del plano), con los enlaces del motor
+ * que pasan por el tramo sumados (las dos marmitas comparten la bomba). Si el tramo no se simula, indicio por
+ * estado: lleva producto si su origen simulado está en servicio (y, con fases, descargando), o, si el origen
+ * no se simula, si lo está el destino (carga 1 o 0, no es un caudal medido).
  */
-function pipeFlowing(run: PipeRun): boolean {
+function pipeLoad(run: PipeRun): number {
+  const states = run.links.map((id) => latestLinks[id]).filter((l): l is LinkState => !!l);
+  if (states.length) {
+    const flow = states.reduce((sum, l) => sum + (l.flow_kg_h ?? 0), 0);
+    run.peak = Math.max(run.peak, flow);
+    const reference = run.reference ?? run.peak;
+    return reference > 0 ? flow / reference : 0;
+  }
   const src = latest[run.from];
-  if (src) return FLOWING.has(src.state) && (!src.phase || src.phase === "discharge");
+  if (src) return FLOWING.has(src.state) && (!src.phase || src.phase === "discharge") ? 1 : 0;
   const dst = latest[run.to];
-  return !!dst && FLOWING.has(dst.state);
+  return dst && FLOWING.has(dst.state) ? 1 : 0;
 }
 
+/** Las esferas avanzan más rápido y son más numerosas cuanto mayor es la carga; sin caudal desaparecen. */
 function animatePipes(time: number): void {
+  const dt = Math.min(0.25, Math.max(0, time - lastPipeTime));
+  lastPipeTime = time;
   for (const run of pipeRuns) {
     const total = run.cumulative[run.cumulative.length - 1];
-    const on = pipeFlowing(run);
+    const load = pipeLoad(run);
+    run.phase += dt * 2.5 * Math.min(2, Math.max(0.15, load));
+    const shown = load > 0.005 ? Math.max(1, Math.ceil(run.beads.length * Math.min(1, load))) : 0;
     run.beads.forEach((bead, i) => {
-      bead.visible = on;
-      if (on) bead.position.copy(pointAt(run, ((time * 2.5 + (i * total) / run.beads.length) % total + total) % total));
+      bead.visible = i < shown;
+      if (i < shown) bead.position.copy(pointAt(run, ((run.phase + (i * total) / run.beads.length) % total + total) % total));
     });
   }
 }
@@ -481,6 +512,7 @@ function connect(): void {
     }
     messages++;
     latest = msg.snapshot.equipment;
+    latestLinks = msg.snapshot.links ?? {};
     for (const [id, snap] of Object.entries(latest) as [string, EquipmentSnapshot][]) {
       const asset = assets.get(id);
       if (asset) asset.frame = { channels: snap.animation, state: snap.state, phase: snap.phase, variables: snap.variables, label: id.toUpperCase() };
