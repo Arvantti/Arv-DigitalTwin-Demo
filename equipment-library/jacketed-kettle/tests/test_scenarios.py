@@ -3,7 +3,6 @@
 from pathlib import Path
 
 import pytest
-
 from twin_runtime import Library, check_expectations, run_scenario
 
 TYPE = Path(__file__).resolve().parents[1].name

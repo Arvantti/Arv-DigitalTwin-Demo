@@ -1,0 +1,26 @@
+{
+  "name": "@twin/equipment-library",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Geometr\u00edas param\u00e9tricas de los tipos de equipo (geometry.ts de cada carpeta)",
+  "exports": {
+    "./*": "./*"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@twin/3d": "workspace:*"
+  },
+  "devDependencies": {
+    "three": "0.186.1",
+    "@types/three": "0.186.0",
+    "js-yaml": "4.3.2",
+    "@types/js-yaml": "4.0.9",
+    "typescript": "5.9.3",
+    "vite": "8.3.1",
+    "vitest": "5.0.3"
+  }
+}

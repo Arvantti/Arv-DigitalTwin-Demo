@@ -1,0 +1,4 @@
+preset: standard
+description: Configuración típica de referencia
+params: { cycle_s: 30, length_m: 2.5, width_m: 1.4, height_m: 1.8 }
+provenance: { cycle_s: assumed, length_m: assumed }

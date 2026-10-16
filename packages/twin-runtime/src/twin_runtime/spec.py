@@ -204,7 +204,7 @@ def load_spec(folder: Path, library_root: Path) -> EquipmentSpec:
     spec = EquipmentSpec(type=raw["type"], folder=folder, raw=raw, params=params, presets={})
 
     problems: list[str] = []
-    for name, pdef in params.items():
+    for pdef in params.values():
         if pdef.default is not None:
             msg = pdef.check(pdef.default)
             if msg:

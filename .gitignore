@@ -5,3 +5,6 @@ node_modules/
 dist/
 .env
 .DS_Store
+*.tsbuildinfo
+.pytest_cache/
+.ruff_cache/
