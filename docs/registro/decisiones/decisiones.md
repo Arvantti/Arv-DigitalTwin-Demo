@@ -39,3 +39,6 @@ Tras fusionar el motor (#5) y la tolerancia en % (#6), el autor aprobó arrancar
 
 ## D11 · Pasarelas como datos del plano; tuberías derivadas de los flujos · 2026-10-16 19:25
 El autor aprobó completar los pendientes de la fase 5. Como el plano no describía pasarelas, se definió la sección opcional `walkways` del `plant.yaml` (eje, ancho, elevación y accesos), validada junto con el resto del layout. Las tuberías no se duplican en el plano: se derivan de los flujos `piped: true`, y su animación es un indicio por estado hasta que el motor publique el caudal de cada enlace.
+
+## D12 · Caudal por enlace en el motor; la escena solo lo dibuja · 2026-10-16 21:31
+El autor aprobó que el motor publique el caudal de cada enlace y que las tuberías de la escena se animen con él. El motor deja el estado de cada enlace en `snapshot.links` (ya con `max` aplicado); el vapor, que se entrega a pedido, circula con la demanda del destino mientras haya presión. La API asocia cada tubería del plano con los enlaces que la cruzan y la escena no calcula caudales, solo los muestra. Los tramos que el motor no simula conservan el indicio por estado. Ningún valor de tolerancia interviene (regla D07).

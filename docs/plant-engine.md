@@ -51,6 +51,19 @@ Reglas:
 - **Sin reparto.** Una salida que entrega `units` o `flow_kg_h` va a un solo destino; repartir entre dos (por formato, por ejemplo) necesita una regla que aún no existe. El vapor sí se reparte: la presión llega a todos y las demandas se suman.
 - **Las entradas que calcula un enlace no se fijan en un escenario.** El motor lo rechaza para que la prueba no contradiga la planta.
 
+### Caudal de cada enlace
+
+En cada paso el motor deja en `snapshot["links"]` el estado de cada enlace, con id `<equipo>:<puerto>><equipo>:<puerto>` (usa `:` para que las rutas de expectativa, como `links.kettle-01:product_out>pasteurizer-01:product_in.flow_kg_h`, no se corten en el punto):
+
+| Campo | Qué es |
+|---|---|
+| `from`, `to`, `via` | Extremos del enlace y equipos intermedios sin simular |
+| `flow_kg_h`, `units_per_min`, `temp_c`, `pressure_bar`, `weight_*` | Lo que entrega la salida, ya con `max` aplicado (por eso el vapor llega a 3 bar) |
+| `demand_kg_h`, `ready` | Lo que pide y lo que acepta el destino |
+| `flowing` | `true` si `flow_kg_h` o `units_per_min` son mayores que cero |
+
+Un servicio (el vapor) se entrega a pedido: su `flow_kg_h` es la `demand_kg_h` del destino mientras haya presión útil (> 0,05 bar), y cero si no. Los demás caudales los publica el equipo de origen. Los valores llevan el paso de retraso de la sección siguiente. `PlantModel.links_for_flow(a, b)` dice qué enlaces cruzan un tramo `a → b` del plano; la API lo usa para que la escena anime cada tubería.
+
 ## 3. Lo que ya está conectado
 
 `sauce-plant-v1`: la línea caliente de 1.000 ml, con la receta `rcp-tomato-sauce` en las marmitas.

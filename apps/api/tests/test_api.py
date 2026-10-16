@@ -48,6 +48,10 @@ def test_plant_layout_links_simulated_equipment_to_library_types() -> None:
     pipes = plant["pipes"]
     assert any(p["from"] == "kettle-01" and p["to"] == "pump-hot-01" for p in pipes)
     assert all(p["from"] in ids and p["to"] in ids for p in pipes)
+    by_pipe = {(p["from"], p["to"]): p for p in pipes}
+    assert by_pipe[("kettle-01", "pump-hot-01")]["links"] == ["kettle-01:product_out>pasteurizer-01:product_in"]
+    assert by_pipe[("cip-skid-01", "kettle-01")]["links"] == []  # sin simular: la escena usa el estado
+    assert by_pipe[("pasteurizer-01", "holding-tube-01")]["unit"] == "L/h"
     assert not any(p["from"] == "scale-01" for p in pipes)  # piped: false no se dibuja como tubería
     assert client.get("/api/plants/no-existe").status_code == 404
     layout_only = client.get("/api/plants/plastic-injection-plant-v1").json()

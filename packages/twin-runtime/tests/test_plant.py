@@ -76,6 +76,42 @@ def test_steam_pressure_is_limited_by_the_reducing_station(sauce: PlantModel) ->
     assert sim.sim.inputs["pasteurizer-01"]["steam_supply_bar"] == 3.0
 
 
+def test_snapshot_publishes_the_flow_of_every_link(sauce: PlantModel) -> None:
+    sim = sauce.create()
+    sim.schedule(sauce.scenarios["nominal"].timeline[0], until_s=7200)
+    sim.run(5400)  # la marmita 1 descarga a partir del min 85
+    links = sim.snapshot()["links"]
+    assert len(links) == len(sauce.links)
+    kettle = sim.equipment["kettle-01"].true_values()
+    pour = links["kettle-01:product_out>pasteurizer-01:product_in"]
+    assert pour["flow_kg_h"] == pytest.approx(kettle["discharge_kg_h"]) and pour["flowing"]
+    idle = links["kettle-02:product_out>pasteurizer-01:product_in"]
+    assert idle["flow_kg_h"] == 0 and not idle["flowing"]
+    # El vapor se entrega a pedido y a la presión que deja la estación reductora.
+    steam = links["boiler-01:steam_out>pasteurizer-01:steam_in"]
+    assert steam["pressure_bar"] == 3.0
+    demand = sim.equipment["pasteurizer-01"].true_values()["steam_flow_kg_h"]
+    assert steam["flow_kg_h"] == pytest.approx(demand, rel=0.01)  # un paso de retraso
+    sachets = links["filler-pouch-01:sachets_out>cooling-tunnel-01:items_in"]
+    assert sachets["units_per_min"] > 0 and "flow_kg_h" not in sachets
+
+
+def test_flow_of_a_service_link_is_zero_without_pressure(sauce: PlantModel) -> None:
+    sim = sauce.create()
+    sim.run(5)
+    sim.sim.inputs["pasteurizer-01"]["steam_supply_bar"] = 0.0
+    lk = next(lk for lk in sauce.links if str(lk.dst) == "pasteurizer-01.steam_in")
+    rec = sim._link_record(lk, {"pressure_bar": 0.0}, {"demand_kg_h": 40.0})
+    assert rec["flow_kg_h"] == 0.0 and not rec["flowing"]
+
+
+def test_pipes_map_to_the_links_that_cross_them(sauce: PlantModel) -> None:
+    assert sauce.links_for_flow("kettle-01", "pump-hot-01") == ["kettle-01:product_out>pasteurizer-01:product_in"]
+    assert len(sauce.links_for_flow("pump-hot-01", "pasteurizer-01")) == 2  # las dos marmitas comparten el tramo
+    assert len(sauce.links_for_flow("boiler-01", "steam-station-01")) == 3
+    assert sauce.links_for_flow("cip-skid-01", "kettle-01") == []  # sin simular
+
+
 # ---------------------------------------------------------------- validación
 def _copy_plant(tmp_path: Path, edit) -> Path:
     folder = tmp_path / "sauce-plant-v1"

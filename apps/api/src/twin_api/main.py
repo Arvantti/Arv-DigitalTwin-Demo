@@ -211,7 +211,13 @@ def get_plant(plant_id: str) -> dict[str, Any]:
         "equipment": equipment,
         "walkways": layout.get("walkways", []),
         "pipes": [
-            {k: f[k] for k in ("from", "to", "medium") if k in f} for f in layout.get("flows", []) if f.get("piped")
+            {
+                **{k: f[k] for k in ("from", "to", "medium", "rate", "unit") if k in f},
+                # Enlaces del motor que pasan por este tramo: la escena anima la tubería con su caudal.
+                "links": model.links_for_flow(f["from"], f["to"]) if model else [],
+            }
+            for f in layout.get("flows", [])
+            if f.get("piped")
         ],
         "lines": [{"id": ln.id, "name": ln.name, "equipment": ln.equipment} for ln in model.lines] if model else [],
         "scenarios": (
