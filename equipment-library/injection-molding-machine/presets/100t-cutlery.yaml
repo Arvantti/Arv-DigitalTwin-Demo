@@ -1,0 +1,4 @@
+preset: 100t-cutlery
+description: Inyectora pequeña de 100 t para cubiertos de PS en molde de 16 cavidades
+params: { clamp_t: 100, max_shot_kg: 0.15, product: cubiertos, material: PS, cavities: 16, part_g: 3.5, cycle_s: 9, robot: sprue_picker, barrel_zones: 3, mold_temp_c: 30 }
+provenance: { clamp_t: assumed, cycle_s: assumed, cavities: assumed }

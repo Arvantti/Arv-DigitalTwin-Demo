@@ -1,0 +1,4 @@
+preset: resin-silo-40t
+description: Silo exterior de resina en pellet de 40 t (galvanizado, fondo cónico)
+params: { form: silo, volume_l: 75000, content: resina PP, density_kg_m3: 550, initial_level_pct: 70, finish: galvanized, inlet_max_kg_h: 20000, outlet_max_kg_h: 3000 }
+provenance: { volume_l: assumed, density_kg_m3: assumed }

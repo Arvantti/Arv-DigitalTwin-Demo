@@ -1,0 +1,12 @@
+# Cada escenario con "expect" se vuelve una prueba automática. Calcule los valores esperados
+# a mano (y escriba la cuenta en description) antes de ejecutar: así la prueba valida el modelo.
+scenarios:
+  - id: steady
+    description: Una hora sin fallas
+    preset: standard
+    duration_s: 3600
+    timeline:
+      - { at_s: 0, command: start }
+    expect:
+      - { path: variables.cycle_count, min: 119, max: 120, description: "(3600 s / 30 s = 120 ciclos)" }
+      - { path: state, equals: running }

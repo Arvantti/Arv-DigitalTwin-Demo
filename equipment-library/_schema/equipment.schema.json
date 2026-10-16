@@ -1,0 +1,212 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arvantti.tech/schemas/equipment/0.1.0",
+  "title": "Tipo de equipo de la librería del gemelo digital",
+  "description": "Contrato de un tipo de equipo (equipment.yaml). Define qué parámetros acepta, qué estados, variables, eventos y fallas expone su comportamiento, y qué canales de animación lee su geometría.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "type", "version", "name", "manufacturing", "category", "description", "fidelity", "params", "states", "variables", "animation_channels"],
+  "properties": {
+    "schema_version": { "const": "0.1.0" },
+    "type": {
+      "description": "Identificador del tipo; debe coincidir con el nombre de la carpeta.",
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]*(-[a-z0-9]+)*$"
+    },
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+    "name": { "type": "string", "minLength": 3 },
+    "manufacturing": { "enum": ["discrete", "process", "packaging", "logistics", "utility", "support"] },
+    "category": { "type": "string", "description": "Familia funcional, p. ej. forming.injection, thermal.batch, storage.bulk" },
+    "description": { "type": "string", "minLength": 20 },
+    "aliases": { "type": "array", "items": { "type": "string" }, "description": "Otros nombres con los que un usuario puede referirse al equipo." },
+    "fidelity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["visual", "behavior"],
+      "properties": {
+        "visual": { "enum": ["V1", "V2", "V3"] },
+        "behavior": { "enum": ["B1", "B2", "B3"] }
+      }
+    },
+    "params": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": { "pattern": "^[a-z][a-z0-9_]*$" },
+      "additionalProperties": { "$ref": "#/$defs/param" }
+    },
+    "ports": { "type": "array", "items": { "$ref": "#/$defs/port" } },
+    "states": {
+      "type": "array",
+      "minItems": 2,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/state" }
+    },
+    "phases": {
+      "type": "array",
+      "description": "Fases internas del ciclo o del batch, para trazabilidad y animación.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "description"],
+        "properties": { "id": { "$ref": "#/$defs/ident" }, "description": { "type": "string" } }
+      }
+    },
+    "variables": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/variable" }
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "description"],
+        "properties": {
+          "id": { "$ref": "#/$defs/ident" },
+          "description": { "type": "string" },
+          "payload": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "faults": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "description", "mtbf_h", "mttr_min"],
+        "properties": {
+          "id": { "$ref": "#/$defs/ident" },
+          "description": { "type": "string" },
+          "mtbf_h": { "type": ["number", "null"], "exclusiveMinimum": 0, "description": "Tiempo medio entre fallas en horas de operación; null = solo por inyección manual." },
+          "mttr_min": { "type": "number", "exclusiveMinimum": 0 },
+          "severity": { "enum": ["low", "medium", "high", "critical"] },
+          "stops_equipment": { "type": "boolean", "default": true },
+          "effect": { "type": "string" }
+        }
+      }
+    },
+    "commands": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "description"],
+        "properties": {
+          "id": { "$ref": "#/$defs/ident" },
+          "description": { "type": "string" },
+          "args": { "type": "object", "additionalProperties": { "type": "string" } }
+        }
+      }
+    },
+    "kpis": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "unit", "description"],
+        "properties": {
+          "id": { "$ref": "#/$defs/ident" },
+          "unit": { "type": "string" },
+          "description": { "type": "string" }
+        }
+      }
+    },
+    "animation_channels": {
+      "type": "array",
+      "description": "Valores que el comportamiento publica y la geometría lee para animarse. El renderer nunca es fuente de verdad.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "description"],
+        "properties": {
+          "id": { "$ref": "#/$defs/ident" },
+          "description": { "type": "string" },
+          "range": { "$ref": "#/$defs/range" },
+          "unit": { "type": "string" }
+        }
+      }
+    },
+    "geometry": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "parts": { "type": "array", "items": { "type": "string" }, "description": "Nombres de las piezas del modelo 3D (nodos animables o seleccionables)." },
+        "notes": { "type": "string" }
+      }
+    },
+    "assumptions": { "type": "array", "items": { "type": "string" } },
+    "references": { "type": "array", "items": { "type": "string" } }
+  },
+  "$defs": {
+    "ident": { "type": "string", "pattern": "^[a-z][a-z0-9_]*$" },
+    "range": {
+      "type": "array",
+      "items": { "type": "number" },
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "param": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "description"],
+      "properties": {
+        "type": { "enum": ["number", "integer", "boolean", "string", "enum"] },
+        "description": { "type": "string" },
+        "unit": { "type": "string" },
+        "default": {},
+        "min": { "type": "number" },
+        "max": { "type": "number" },
+        "values": { "type": "array", "minItems": 1 },
+        "required": { "type": "boolean" },
+        "affects": {
+          "type": "array",
+          "items": { "enum": ["geometry", "behavior", "display"] },
+          "uniqueItems": true
+        }
+      },
+      "allOf": [
+        { "if": { "properties": { "type": { "const": "enum" } } }, "then": { "required": ["values"] } }
+      ]
+    },
+    "port": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "kind", "direction"],
+      "properties": {
+        "id": { "$ref": "#/$defs/ident" },
+        "kind": { "enum": ["material", "item", "utility", "signal"] },
+        "direction": { "enum": ["in", "out", "inout"] },
+        "medium": { "type": "string" },
+        "unit": { "type": "string" },
+        "description": { "type": "string" }
+      }
+    },
+    "state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "description"],
+      "properties": {
+        "id": { "enum": ["off", "idle", "starting", "setup", "running", "blocked", "starved", "fault", "maintenance", "cleaning"] },
+        "description": { "type": "string" }
+      }
+    },
+    "variable": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "unit", "kind", "description"],
+      "properties": {
+        "id": { "$ref": "#/$defs/ident" },
+        "unit": { "type": "string" },
+        "kind": {
+          "enum": ["measured", "calculated", "counter", "setpoint", "status"],
+          "description": "measured = sensor simulado (con ruido); calculated = derivado; counter = acumulado; setpoint = consigna; status = texto o código."
+        },
+        "description": { "type": "string" },
+        "range": { "$ref": "#/$defs/range" },
+        "noise_sd": { "type": "number", "minimum": 0 },
+        "resolution": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    }
+  }
+}

@@ -1,0 +1,5 @@
+preset: 1500t-bin
+description: Inyectora grande de 1.500 t para canecas de 121 L (pieza de 7 kg)
+params: { clamp_t: 1500, max_shot_kg: 7.5, product: caneca 121 L, material: HDPE reciclado, cavities: 1, part_g: 7000, cycle_s: 95, robot: cartesiano, barrel_zones: 6, mold_temp_c: 30 }
+provenance: { clamp_t: catalog, max_shot_kg: catalog, part_g: assumed, cycle_s: assumed }
+sources: [Dato público de piezas de hasta 7 kg en planta de referencia]

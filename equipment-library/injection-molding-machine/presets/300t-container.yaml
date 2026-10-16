@@ -1,0 +1,4 @@
+preset: 300t-container
+description: Inyectora mediana de 300 t para recipientes de PP para alimentos
+params: { clamp_t: 300, max_shot_kg: 0.9, product: recipiente para alimentos 1 L, material: PP, cavities: 2, part_g: 75, cycle_s: 18, robot: cartesiano, barrel_zones: 4, mold_temp_c: 35 }
+provenance: { clamp_t: assumed, cycle_s: assumed, part_g: assumed }

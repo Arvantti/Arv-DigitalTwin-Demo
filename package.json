@@ -1,0 +1,12 @@
+{
+  "name": "industrial-twin",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.28.0",
+  "scripts": {
+    "gallery": "pnpm --filter @twin/gallery dev",
+    "gallery:build": "pnpm --filter @twin/gallery build",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test"
+  }
+}

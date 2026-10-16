@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arvantti.tech/schemas/equipment-preset/0.1.0",
+  "title": "Preset de un tipo de equipo",
+  "description": "Configuración típica de un tipo de equipo (equivalente a una referencia de catálogo). Solo puede fijar parámetros que el tipo declara.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["preset", "description", "params"],
+  "properties": {
+    "preset": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+    "description": { "type": "string" },
+    "params": { "type": "object" },
+    "provenance": {
+      "type": "object",
+      "description": "Origen de cada parámetro: catalog, nameplate, photo, measured, user, assumed.",
+      "additionalProperties": { "enum": ["catalog", "nameplate", "photo", "measured", "user", "assumed"] }
+    },
+    "sources": { "type": "array", "items": { "type": "string" } }
+  }
+}

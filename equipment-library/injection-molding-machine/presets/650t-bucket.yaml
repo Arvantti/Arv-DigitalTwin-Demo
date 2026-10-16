@@ -1,0 +1,4 @@
+preset: 650t-bucket
+description: Inyectora de 650 t para baldes de 20 L en HDPE reciclado
+params: { clamp_t: 650, max_shot_kg: 2.5, product: balde 20 L, material: HDPE reciclado, cavities: 1, part_g: 850, cycle_s: 36, robot: cartesiano, barrel_zones: 5, mold_temp_c: 30 }
+provenance: { clamp_t: assumed, cycle_s: assumed }

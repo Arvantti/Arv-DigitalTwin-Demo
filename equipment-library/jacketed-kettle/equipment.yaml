@@ -1,0 +1,197 @@
+schema_version: 0.1.0
+type: jacketed-kettle
+version: 0.1.0
+name: Marmita de cocción con chaqueta de vapor
+manufacturing: process
+category: thermal.batch
+description: >
+  Marmita o tanque de cocción en acero inoxidable con chaqueta de vapor (y agua de
+  enfriamiento), agitador de ancla con raspadores y tapa con boca de carga. Ejecuta fases
+  de batch al estilo ISA-88 (cargar, calentar, mantener, enfriar, muestrear, descargar) y
+  calcula la composición de la mezcla: Brix, pH y consistencia Bostwick.
+aliases: [marmita, olla de cocción, kettle, tanque de cocción, cooker]
+fidelity: { visual: V2, behavior: B3 }
+
+params:
+  volume_l:
+    type: number
+    unit: L
+    min: 50
+    max: 20000
+    default: 2500
+    description: Volumen total de la marmita
+    affects: [geometry, behavior]
+  jacket_coverage:
+    type: number
+    min: 0.3
+    max: 1.0
+    default: 0.7
+    description: Fracción de la altura cubierta por la chaqueta
+    affects: [geometry, behavior]
+  u_w_m2k:
+    type: number
+    unit: W/m2K
+    min: 100
+    max: 1500
+    default: 600
+    description: Coeficiente global de transferencia (con raspadores ≈ 500-900)
+    affects: [behavior]
+  steam_bar:
+    type: number
+    unit: bar(g)
+    min: 0.5
+    max: 6
+    default: 3
+    description: Presión de diseño del vapor en la chaqueta
+    affects: [behavior]
+  agitator_kw:
+    type: number
+    unit: kW
+    min: 0.25
+    max: 75
+    default: 7.5
+    description: Potencia del motor del agitador
+    affects: [geometry, behavior]
+  agitator_max_rpm:
+    type: number
+    unit: rpm
+    min: 5
+    max: 200
+    default: 60
+    description: Velocidad máxima del agitador
+    affects: [behavior]
+  scrapers:
+    type: boolean
+    default: true
+    description: Agitador de ancla con raspadores de teflón
+    affects: [geometry, behavior]
+  heel_kg:
+    type: number
+    unit: kg
+    min: 0
+    max: 200
+    default: 5
+    description: Producto que queda al descargar (no recuperable)
+    affects: [behavior]
+  legs:
+    type: integer
+    min: 3
+    max: 6
+    default: 4
+    description: Número de patas
+    affects: [geometry]
+
+ports:
+  - { id: charge_in, kind: material, direction: in, description: Ingredientes por boca de carga o tubería }
+  - { id: product_out, kind: material, direction: out, unit: kg/h }
+  - { id: steam_in, kind: utility, direction: in, medium: vapor saturado, unit: kg/h }
+  - { id: condensate_out, kind: utility, direction: out, medium: condensado }
+  - { id: cooling_water, kind: utility, direction: inout, medium: agua de enfriamiento }
+  - { id: cip_in, kind: utility, direction: in, medium: solución CIP }
+
+states:
+  - { id: idle, description: Sin fase activa }
+  - { id: running, description: Ejecutando una fase del batch }
+  - { id: starved, description: La fase de carga espera ingrediente }
+  - { id: blocked, description: La descarga espera que el destino reciba }
+  - { id: cleaning, description: Limpieza CIP }
+  - { id: fault, description: Detenida por falla }
+  - { id: maintenance, description: Mantenimiento }
+
+phases:
+  - { id: charge, description: Cargar un ingrediente a un caudal dado }
+  - { id: heat, description: Calentar con vapor hasta la temperatura objetivo }
+  - { id: hold, description: Mantener temperatura durante un tiempo }
+  - { id: cool, description: Enfriar con agua por la chaqueta }
+  - { id: agitate, description: Fijar velocidad del agitador }
+  - { id: sample, description: Muestrear y esperar el resultado de laboratorio }
+  - { id: discharge, description: Descargar el batch }
+  - { id: wait, description: Esperar un tiempo }
+
+variables:
+  - { id: temperature_c, unit: degC, kind: measured, range: [0, 150], noise_sd: 0.15, resolution: 0.1, description: Temperatura del producto }
+  - { id: temperature_setpoint_c, unit: degC, kind: setpoint, description: Consigna de temperatura de la fase actual }
+  - { id: level_pct, unit: "%", kind: measured, range: [0, 100], noise_sd: 0.2, resolution: 0.1, description: Nivel }
+  - { id: mass_kg, unit: kg, kind: calculated, description: Masa en la marmita }
+  - { id: jacket_pressure_bar, unit: bar(g), kind: measured, range: [-1, 8], noise_sd: 0.02, resolution: 0.01, description: Presión de vapor en la chaqueta }
+  - { id: steam_valve_pct, unit: "%", kind: calculated, range: [0, 100], description: Apertura de la válvula de vapor }
+  - { id: steam_flow_kg_h, unit: kg/h, kind: calculated, description: Consumo de vapor }
+  - { id: heat_duty_kw, unit: kW, kind: calculated, description: Potencia térmica transferida al producto }
+  - { id: agitator_rpm, unit: rpm, kind: measured, range: [0, 200], noise_sd: 0.3, resolution: 0.1, description: Velocidad del agitador }
+  - { id: agitator_power_kw, unit: kW, kind: measured, range: [0, 80], noise_sd: 0.05, resolution: 0.01, description: Potencia del agitador }
+  - { id: brix, unit: °Bx, kind: calculated, description: Sólidos solubles estimados de la mezcla }
+  - { id: ph, unit: pH, kind: calculated, description: pH estimado de la mezcla }
+  - { id: bostwick_cm, unit: cm/30s, kind: calculated, description: Consistencia Bostwick estimada (menor = más espeso) }
+  - { id: batch_id, unit: "", kind: status, description: Identificador del batch en curso }
+  - { id: phase_remaining_min, unit: min, kind: calculated, description: Tiempo restante estimado de la fase }
+  - { id: batch_count, unit: batches, kind: counter, description: Batches descargados }
+  - { id: steam_total_kg, unit: kg, kind: counter, description: Vapor consumido acumulado }
+  - { id: discharged_kg, unit: kg, kind: counter, description: Producto descargado acumulado }
+
+events:
+  - { id: phase_started, description: Inicio de fase, payload: [phase, batch_id] }
+  - { id: phase_completed, description: Fin de fase, payload: [phase, batch_id, duration_s] }
+  - { id: sample_taken, description: Resultado de muestra de laboratorio, payload: [batch_id, brix, ph, bostwick_cm, in_spec] }
+  - { id: batch_started, description: Primera carga de un batch nuevo, payload: [batch_id] }
+  - { id: batch_completed, description: Batch descargado, payload: [batch_id, kg, duration_min, steam_kg] }
+  - { id: temperature_deviation, description: Temperatura fuera de la ventana durante el mantenimiento térmico, payload: [value, setpoint] }
+  - { id: cip_started, description: Inicio de CIP, payload: [duration_min] }
+  - { id: cip_completed, description: Fin de CIP }
+
+faults:
+  - id: agitator_trip
+    description: Disparo del motor del agitador (sobrecarga)
+    mtbf_h: 2500
+    mttr_min: 20
+    severity: high
+    effect: Se detiene el batch hasta rearmar el motor
+  - id: steam_valve_stuck
+    description: La válvula de vapor se queda pegada en su posición
+    mtbf_h: 6000
+    mttr_min: 45
+    severity: medium
+    stops_equipment: false
+    effect: La temperatura deja de controlarse (sobrepaso o falta de calor)
+  - id: temperature_probe_drift
+    description: Deriva de la sonda de temperatura (+3 °C por hora)
+    mtbf_h: null
+    mttr_min: 30
+    severity: low
+    stops_equipment: false
+    effect: La lectura se aleja de la temperatura real
+
+commands:
+  - { id: run_phases, description: Encola fases del batch, args: { phases: list } }
+  - { id: abort, description: Cancela las fases pendientes }
+  - { id: cip, description: Limpieza CIP de la marmita vacía, args: { duration_min: number } }
+  - { id: maintenance, description: Inicia o termina mantenimiento, args: { active: boolean } }
+  - { id: inject_fault, description: Inyecta una falla declarada, args: { fault: string, duration_s: number } }
+  - { id: clear_fault, description: Repara una falla activa, args: { fault: string } }
+  - { id: set_param, description: Cambia un parámetro en caliente, args: { name: string, value: any } }
+
+kpis:
+  - { id: batches, unit: batches, description: Batches completados }
+  - { id: avg_batch_min, unit: min, description: Duración media de batch }
+  - { id: steam_kg_per_t, unit: kg/t, description: Vapor por tonelada de producto }
+  - { id: first_pass_in_spec, unit: "", description: Fracción de muestras dentro de especificación }
+
+animation_channels:
+  - { id: level, range: [0, 1], description: Nivel del producto }
+  - { id: agitator_rpm, unit: rpm, range: [0, 200], description: Giro del agitador }
+  - { id: steam, range: [0, 1], description: Apertura de vapor (vapor visible en venteo y tubería) }
+  - { id: cooling, range: [0, 1], description: Agua de enfriamiento en la chaqueta }
+  - { id: product_heat, range: [0, 1], description: Temperatura del producto normalizada 20-100 °C (color y vapor superficial) }
+  - { id: charging, range: [0, 1], description: Carga en curso (boca abierta y chorro) }
+  - { id: discharging, range: [0, 1], description: Descarga en curso (válvula de fondo) }
+  - { id: alarm_light, range: [0, 3], description: "Baliza: 0 apagada, 1 verde, 2 amarilla, 3 roja" }
+
+geometry:
+  parts: [shell, jacket, bottom_head, lid, manhole, agitator_drive, agitator_shaft, anchor, scrapers, legs, bottom_valve, steam_inlet, condensate_trap, thermowell, platform, control_box, stack_light]
+
+assumptions:
+  - Marmita con relación altura/diámetro 1,2 y fondo toriesférico.
+  - Coeficiente global constante; el área efectiva crece con el nivel hasta cubrir la chaqueta.
+  - "Brix = sólidos solubles / masa total; pH a partir de la acidez titulable con una curva empírica."
+  - Bostwick a partir de un índice de espesantes (sólidos de tomate y almidón); solo orientativo.
+references:
+  - Correlación de temperatura de saturación del vapor y calor latente en twin_runtime.primitives.thermo.

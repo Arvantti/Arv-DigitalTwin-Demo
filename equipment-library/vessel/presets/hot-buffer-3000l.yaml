@@ -1,0 +1,4 @@
+preset: hot-buffer-3000l
+description: Tanque pulmón enchaquetado de 3.000 L para salsa caliente (mantiene 88 °C)
+params: { form: vertical_tank, volume_l: 3000, content: salsa de tomate pasteurizada, density_kg_m3: 1120, initial_level_pct: 20, jacketed: true, hold_temp_c: 88, agitator: true, agitator_rpm: 30, inlet_max_kg_h: 3500, outlet_max_kg_h: 3000 }
+provenance: { volume_l: user, hold_temp_c: assumed }

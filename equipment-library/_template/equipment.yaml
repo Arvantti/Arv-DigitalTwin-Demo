@@ -1,0 +1,72 @@
+# PLANTILLA de tipo de equipo. Copie la carpeta completa a equipment-library/<tipo>/,
+# reemplace "template-machine" por el nombre de la carpeta y ajuste cada sección.
+# Reglas: textos con comas dentro de { ... } van entre comillas; el estado "off" va entre comillas.
+schema_version: 0.1.0
+type: template-machine
+version: 0.1.0
+name: Máquina de ciclo genérica
+manufacturing: discrete
+category: generic.cycle
+description: >
+  Máquina genérica que procesa una unidad por ciclo en tres fases (carga, proceso, descarga).
+  Sirve de punto de partida para equipos discretos nuevos.
+aliases: [máquina, estación]
+fidelity: { visual: V1, behavior: B2 }
+
+params:
+  cycle_s:    { type: number, unit: s, min: 1, max: 3600, default: 30, description: Tiempo de ciclo estándar, affects: [behavior] }
+  scrap_rate: { type: number, min: 0, max: 0.5, default: 0.02, description: Fracción de unidades rechazadas, affects: [behavior] }
+  length_m:   { type: number, unit: m, min: 0.5, max: 30, default: 2.5, description: Largo de la máquina, affects: [geometry] }
+  width_m:    { type: number, unit: m, min: 0.5, max: 10, default: 1.4, description: Ancho de la máquina, affects: [geometry] }
+  height_m:   { type: number, unit: m, min: 0.5, max: 10, default: 1.8, description: Alto de la máquina, affects: [geometry] }
+  body_color: { type: string, default: "#3a6ea5", description: Color de la carcasa (hex), affects: [geometry] }
+
+ports:
+  - { id: input, kind: item, direction: in }
+  - { id: output, kind: item, direction: out }
+  - { id: power, kind: utility, direction: in, medium: energía eléctrica }
+
+states:
+  - { id: idle, description: Detenida }
+  - { id: running, description: Ciclando }
+  - { id: blocked, description: Salida llena }
+  - { id: starved, description: Sin unidades de entrada }
+  - { id: fault, description: Detenida por falla }
+
+phases:
+  - { id: load, description: Carga de la unidad }
+  - { id: process, description: Proceso }
+  - { id: unload, description: Descarga }
+
+variables:
+  - { id: cycle_count, unit: ciclos, kind: counter, description: Ciclos completados }
+  - { id: units_good, unit: u, kind: counter, description: Unidades buenas }
+  - { id: units_rejected, unit: u, kind: counter, description: Unidades rechazadas }
+  - { id: power_kw, unit: kW, kind: measured, range: [0, 1000], noise_sd: 0.1, resolution: 0.1, description: Potencia eléctrica }
+
+events:
+  - { id: cycle_completed, description: Fin de ciclo, payload: [cycle, good] }
+
+faults:
+  - { id: jam, description: Atasco de la unidad, mtbf_h: 200, mttr_min: 5, severity: low }
+
+commands:
+  - { id: start, description: Inicia el ciclo automático }
+  - { id: stop, description: Detiene al terminar el ciclo }
+  - { id: inject_fault, description: Inyecta una falla declarada, args: { fault: string, duration_s: number } }
+  - { id: clear_fault, description: Repara una falla activa, args: { fault: string } }
+  - { id: set_param, description: Cambia un parámetro en caliente, args: { name: string, value: any } }
+
+kpis:
+  - { id: oee, unit: "", description: Efectividad global del equipo }
+  - { id: quality, unit: "", description: Unidades buenas / totales }
+
+animation_channels:
+  - { id: progress, range: [0, 1], description: Avance del ciclo }
+  - { id: stack_light, range: [0, 3], description: "Baliza: 0 apagada, 1 verde, 2 amarilla, 3 roja" }
+
+geometry:
+  parts: [body, control_cabinet, hmi_panel, stack_light]
+
+assumptions:
+  - Una unidad por ciclo; fases de igual duración.
