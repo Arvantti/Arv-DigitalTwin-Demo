@@ -81,3 +81,11 @@ body.shot .glass, body.shot .lil-gui { display: none !important; }
   .hud, .events { width: 260px; }
   .lil-gui.root { display: none; }
 }
+
+/* Escena de planta */
+.asset-name { font: 700 18px Rajdhani, sans-serif; letter-spacing: 0.06em; }
+.lines .line { padding: 6px 0; border-bottom: 1px solid var(--line); font-size: 12px; }
+.lines .line b { display: block; font: 600 12px Rajdhani, sans-serif; letter-spacing: 0.08em; color: var(--cyan); }
+.lines .line span { color: var(--dim); font: 400 11px "JetBrains Mono", monospace; }
+.nav-link { display: block; margin-top: 10px; color: var(--cyan); font: 600 12px Rajdhani, sans-serif; letter-spacing: 0.1em; text-decoration: none; }
+.nav-link:hover { color: var(--accent); }

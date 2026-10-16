@@ -33,3 +33,6 @@ Hilos por defecto en Haiku 5.5 (explicaciones y tareas simples); Sonnet 5.5 para
 
 ## D09 · Registro de software en Colombia · 2026-10-16 17:15
 «Muy importante» dejar en el repo el plan en Markdown, los avances de su ejecución y el histórico de conversaciones con la IA, porque la legislación colombiana lo exige para registrar el software. Todo hilo que haga cambios actualiza la bitácora y el histórico ([[como-actualizar]]). Las notas deben ser compatibles con Obsidian (17:16).
+
+## D10 · Fase 5 en un PR pequeño: lo que ya existe en datos · 2026-10-16 18:32
+Tras fusionar el motor (#5) y la tolerancia en % (#6), el autor aprobó arrancar la fase 5. La primera entrega dibuja lo que `plant.yaml` y `simulation.yaml` ya describen: zonas, equipos (simulados con su geometría, el resto como volúmenes) y el puente grúa. Pasarelas y tuberías animadas quedan para PR siguientes porque el plano aún no los describe. El PR se apila sobre #7 para actualizar la bitácora sin conflictos.
