@@ -18,7 +18,7 @@ packages/twin-3d/         piezas 3D, materiales PBR y escenario (three.js)
 apps/api/                 API FastAPI con simulación en vivo por WebSocket
 apps/gallery/             galería web de la librería
 industrial-models/        layouts de planta (plant.yaml + plano 2D)
-docs/                     guías (crear equipos: docs/equipment-authoring.md)
+docs/                     guías (crear equipos: docs/equipment-authoring.md; plan: docs/roadmap.md)
 tools/                    validación de layouts y capturas de vista previa
 ```
 
