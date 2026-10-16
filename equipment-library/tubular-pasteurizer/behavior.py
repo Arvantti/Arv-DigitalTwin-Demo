@@ -153,6 +153,7 @@ class TubularPasteurizer(EquipmentBehavior):
             "fouling_pct": 100.0 * self.fouling,
             "lot_hold": 1 if self.lot_hold else 0,
             "accepting": 1 if self.accepting else 0,
+            "divert_kg_h": self.p["flow_l_h"] * self.p["density_kg_l"] if self.flowing and self.diverting else 0.0,
             "forward_kg_h": self.p["flow_l_h"] * self.p["density_kg_l"] if self.flowing and not self.diverting else 0.0,
         }
 

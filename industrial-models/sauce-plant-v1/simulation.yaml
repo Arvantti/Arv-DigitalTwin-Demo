@@ -45,6 +45,10 @@ links:
   - { from: kettle-01.product_out,      to: pasteurizer-01.product_in,  via: [pump-hot-01] }
   - { from: kettle-02.product_out,      to: pasteurizer-01.product_in,  via: [pump-hot-01] }
   - { from: pasteurizer-01.product_out, to: buffer-hot-01.inlet,        via: [holding-tube-01] }
+  # Desvío: lo que no alcanza la temperatura de retención regresa a la marmita que descarga (reparto en proporción
+  # a su caudal de descarga, ver `when` en docs/plant-engine.md); mientras desvía, nada sigue hacia el pulmón.
+  - { from: pasteurizer-01.divert_out,  to: kettle-01.return_in,        via: [holding-tube-01], when: kettle-01.discharge_kg_h }
+  - { from: pasteurizer-01.divert_out,  to: kettle-02.return_in,        via: [holding-tube-01], when: kettle-02.discharge_kg_h }
   - { from: buffer-hot-01.outlet,       to: filler-pouch-01.product_in }
   # Sachets
   - { from: filler-pouch-01.sachets_out,  to: cooling-tunnel-01.items_in }
@@ -94,6 +98,8 @@ scenarios:
       - { path: equipment.pasteurizer-01.variables.diverted_l, min: 500, description: "(0,6 bar hacia el min 174: (7,6 − 0,6) × 25 kg ÷ 756 kg/h = 14 min; desvía a 50 L/min hasta que la marmita 2 termina de descargar en el min 193, ≈ 17 min ≈ 850 L)" }
       - { path: equipment.pasteurizer-01.kpis.under_target_l, equals: 0.0, description: "(el desvío impide que salga producto sin pasteurizar)" }
       - { path: equipment.kettle-01.kpis.avg_batch_min, min: 120, description: "(118 min normales; el segundo batch se queda sin vapor desde ≈ 0,6 bar hasta que la caldera vuelve en el min 210 con 1 min de prebarrido)" }
+      - { path: equipment.kettle-02.variables.returned_kg, min: 1000, description: "(el desvío regresa a la marmita 2, que es la que descarga: ≥ 20 min × 56 kg/min; antes ese producto salía del modelo)" }
+      - { path: equipment.kettle-02.kpis.avg_batch_min, min: 135, description: "(118 min normales + el producto recirculado, que se vuelve a descargar a 56 kg/min: ≥ 17 min más)" }
 
   - id: tunnel-stop
     description: "La banda del túnel se detiene 80 min: la sachetadora se bloquea, el pulmón se llena y el pasteurizador y la marmita esperan"

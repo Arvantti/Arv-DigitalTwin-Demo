@@ -53,12 +53,44 @@ def test_units_are_conserved_along_the_sachet_line(sauce: PlantModel) -> None:
     assert abs(cw["units_accepted"] - (packer["units_packed"] + packer["buffer_units"])) <= 1
 
 
-def test_material_reaches_the_buffer_except_what_is_diverted(sauce: PlantModel) -> None:
+def test_diverted_product_returns_to_the_kettles_and_the_rest_reaches_the_buffer(sauce: PlantModel) -> None:
     sim, _ = run_plant_scenario(sauce, sauce.scenarios["boiler-trip"])
     v = {eid: e.true_values() for eid, e in sim.equipment.items()}
     discharged = v["kettle-01"]["discharged_kg"] + v["kettle-02"]["discharged_kg"]
+    returned = v["kettle-01"]["returned_kg"] + v["kettle-02"]["returned_kg"]
     diverted = v["pasteurizer-01"]["diverted_l"] * 1.12
-    assert v["buffer-hot-01"]["total_in_kg"] == pytest.approx(discharged - diverted, rel=0.01)
+    # Lo que el pasteurizador desvía regresa completo a las marmitas (un paso de retraso) y el resto llega al pulmón.
+    assert returned == pytest.approx(diverted, rel=0.01)
+    assert v["buffer-hot-01"]["total_in_kg"] == pytest.approx(discharged - returned, rel=0.01)
+
+
+def test_divert_goes_only_to_the_kettle_that_is_discharging(sauce: PlantModel) -> None:
+    sim = sauce.create()
+    sim.step()
+    gated = [lk for lk in sauce.links if lk.when is not None]
+    assert {str(lk.dst) for lk in gated} == {"kettle-01.return_in", "kettle-02.return_in"}
+
+    def shares(discharge_1: float, discharge_2: float) -> dict[str, float]:
+        values = {eid: e.true_values() for eid, e in sim.equipment.items()}
+        values["kettle-01"]["discharge_kg_h"], values["kettle-02"]["discharge_kg_h"] = discharge_1, discharge_2
+        by_link = sim._gate_shares(values)
+        return {str(lk.dst): by_link[id(lk)] for lk in gated}
+
+    assert shares(0.0, 3000.0) == {"kettle-01.return_in": 0.0, "kettle-02.return_in": 1.0}
+    assert shares(1000.0, 3000.0) == {"kettle-01.return_in": 0.25, "kettle-02.return_in": 0.75}  # descargan las dos: en proporción
+    assert shares(0.0, 0.0) == {"kettle-01.return_in": 0.0, "kettle-02.return_in": 0.0}
+
+
+def test_kettles_share_the_pump_so_only_one_discharges_at_a_time(sauce: PlantModel) -> None:
+    sc = sauce.scenarios["boiler-trip"]
+    sim = sauce.create()
+    for st in sc.timeline:
+        sim.schedule(st, until_s=sc.duration_s)
+    overlap = 0
+    while sim.t < sc.duration_s:
+        sim.step()
+        overlap += all(sim.equipment[k].true_values()["discharge_kg_h"] > 0 for k in ("kettle-01", "kettle-02"))
+    assert overlap <= 1  # solo el paso en que las dos arrancan a la vez, antes de que una tome el turno
 
 
 def test_weight_travels_through_the_tunnel_to_the_checkweigher(sauce: PlantModel) -> None:
@@ -109,6 +141,7 @@ def test_pipes_map_to_the_links_that_cross_them(sauce: PlantModel) -> None:
     assert sauce.links_for_flow("kettle-01", "pump-hot-01") == ["kettle-01:product_out>pasteurizer-01:product_in"]
     assert len(sauce.links_for_flow("pump-hot-01", "pasteurizer-01")) == 2  # las dos marmitas comparten el tramo
     assert len(sauce.links_for_flow("boiler-01", "steam-station-01")) == 3
+    assert sauce.links_for_flow("holding-tube-01", "kettle-02") == ["pasteurizer-01:divert_out>kettle-02:return_in"]  # el desvío
     assert sauce.links_for_flow("cip-skid-01", "kettle-01") == []  # sin simular
 
 
@@ -150,6 +183,13 @@ def test_units_cannot_fan_out_without_a_split_rule(lib: Library, tmp_path: Path)
         raw["links"].append({"from": "cooling-tunnel-01.items_out", "to": "checkweigher-02.items_in"})
 
     assert "entrega unidades o caudal a 2 destinos" in _errors(lib, _copy_plant(tmp_path, edit))
+
+
+def test_gate_must_name_a_contract_variable(lib: Library, tmp_path: Path) -> None:
+    def edit(raw):
+        next(lk for lk in raw["links"] if lk.get("when"))["when"] = "kettle-01.nada"
+
+    assert "no es una variable del contrato" in _errors(lib, _copy_plant(tmp_path, edit))
 
 
 def test_scenario_cannot_override_a_linked_input(lib: Library, tmp_path: Path) -> None:
