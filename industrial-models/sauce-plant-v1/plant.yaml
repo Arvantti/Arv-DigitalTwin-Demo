@@ -266,6 +266,7 @@ flows:
   - { from: pasteurizer-01,   to: holding-tube-01,   medium: salsa,             rate: 3000,  unit: L/h, piped: true }
   - { from: holding-tube-01,  to: buffer-hot-01,     medium: salsa pasteurizada, rate: 3000, unit: L/h, piped: true, show: true }
   - { from: holding-tube-01,  to: kettle-01,         medium: desvío por baja temperatura, rate: 3000, unit: L/h, piped: true, note: solo en desvío }
+  - { from: holding-tube-01,  to: kettle-02,         medium: desvío por baja temperatura, rate: 3000, unit: L/h, piped: true, note: solo en desvío }
   # Proceso en frío
   - { from: scale-01,         to: tank-aqueous-01,   medium: fase acuosa,       rate: 300,   unit: kg/batch, piped: false, show: true }
   - { from: tank-oil-01,      to: oil-dosing-01,     medium: aceite,            rate: 4700,  unit: kg/h, piped: true, show: true }

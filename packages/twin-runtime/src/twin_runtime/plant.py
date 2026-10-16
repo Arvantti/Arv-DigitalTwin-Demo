@@ -73,6 +73,8 @@ class Link:
     via: list[str] = field(default_factory=list)
     max: dict[str, float] = field(default_factory=dict)
     note: str = ""
+    # `<equipo>.<variable>`: el enlace solo lleva caudal mientras esa variable sea > 0 (por ejemplo, la marmita que descarga).
+    when: PortRef | None = None
 
 
 @dataclass
@@ -128,6 +130,7 @@ class PlantModel:
                 via=list(lk.get("via", [])),
                 max={k: float(v) for k, v in (lk.get("max") or {}).items()},
                 note=lk.get("note", ""),
+                when=PortRef.parse(lk["when"]) if lk.get("when") else None,
             )
             for lk in raw.get("links") or []
         ]
@@ -197,6 +200,7 @@ class PlantModel:
             ports[eid] = {p["id"]: p for p in eq_type.spec.raw.get("ports", [])}
 
         fan_out: dict[PortRef, int] = defaultdict(int)
+        gated: set[PortRef] = set()
         linked_inputs: dict[str, set[str]] = defaultdict(set)
         for lk in self.links:
             label = f"enlace {lk.src} → {lk.dst}"
@@ -222,7 +226,20 @@ class PlantModel:
             for q in shared & set(BACKWARD):
                 linked_inputs[lk.src.equipment].add(src["link"][q])
             if any(q in shared for q in SPLIT_QUANTITIES):
-                fan_out[lk.src] += 1
+                # Los enlaces con `when` se reparten entre los que están abiertos: cuentan como un solo destino.
+                if lk.when is None:
+                    fan_out[lk.src] += 1
+                elif lk.src not in gated:
+                    gated.add(lk.src)
+                    fan_out[lk.src] += 1
+            if lk.when is not None:
+                gate = self.library.get(self.equipment[lk.when.equipment]["type"]) if lk.when.equipment in self.equipment else None
+                if gate is None:
+                    errors.append(f"{label}: when {lk.when.equipment} no se simula")
+                elif lk.when.port not in {v["id"] for v in gate.spec.variables}:
+                    errors.append(f"{label}: when {lk.when}: no es una variable del contrato")
+                if not any(q in shared for q in SPLIT_QUANTITIES):
+                    errors.append(f"{label}: when solo aplica a enlaces que reparten caudal o unidades")
             for q in lk.max:
                 if q not in FORWARD:
                     errors.append(f"{label}: max.{q} no es una magnitud que viaje hacia adelante")
@@ -336,6 +353,8 @@ class PlantSimulation:
         dt = self.sim.dt
         received: dict[tuple[str, str], list[tuple[str, Any, PortRef]]] = defaultdict(list)
         link_state: dict[str, dict[str, Any]] = {}
+        shares = self._gate_shares(values)
+        waiting = self._waiting_sources()
         for lk in self.model.links:
             src_link = self._links[lk.src.equipment][lk.src.port]["link"]
             dst_link = self._links[lk.dst.equipment][lk.dst.port]["link"]
@@ -356,6 +375,13 @@ class PlantSimulation:
                         value = min(float(value), lk.max[q])
                 if value is not None:
                     sent[q] = value
+            if lk.when is not None:
+                # Enlace con compuerta: lleva su parte del caudal (proporcional a la variable de cada compuerta abierta).
+                share = shares.get(id(lk), 0.0)
+                if share <= 0.0:
+                    sent = {q: 0.0 for q in sent if q == "flow_kg_h"}
+                elif "flow_kg_h" in sent:
+                    sent["flow_kg_h"] *= share
             for q, name in dst_link.items():
                 if q in FORWARD and q in sent:
                     received[(lk.dst.equipment, name)].append((q, sent[q], lk.src))
@@ -363,6 +389,8 @@ class PlantSimulation:
             for q, name in src_link.items():
                 if q in BACKWARD and q in dst_link:
                     back[q] = values[lk.dst.equipment].get(dst_link[q])
+                    if q == "ready" and id(lk) in waiting:
+                        back[q] = False
                     received[(lk.src.equipment, name)].append((q, back[q], lk.dst))
             link_state[link_id(lk)] = self._link_record(lk, sent, back)
         self.link_state = link_state
@@ -384,6 +412,38 @@ class PlantSimulation:
                 pool = active or [float(v) for v in vals]
                 value = sum(pool) / len(pool)
             self.sim.inputs[eid][name] = value
+
+    def _waiting_sources(self) -> set[int]:
+        """Enlaces que esperan: varias salidas con caudal comparten una entrada (la bomba de las marmitas) y solo una descarga a
+        la vez. Conserva el turno quien ya circulaba en el paso anterior (el primero declarado si hay varios); si nadie
+        circula, todos están listos y el primero que empiece se queda con el turno."""
+        by_dst: dict[PortRef, list[Link]] = defaultdict(list)
+        for lk in self.model.links:
+            src_link = self._links[lk.src.equipment][lk.src.port]["link"]
+            dst_link = self._links[lk.dst.equipment][lk.dst.port]["link"]
+            if lk.when is None and "flow_kg_h" in src_link and "ready" in src_link and "ready" in dst_link:
+                by_dst[lk.dst].append(lk)
+        waiting: set[int] = set()
+        for links in by_dst.values():
+            if len(links) < 2:
+                continue
+            holder = next((lk for lk in links if self.link_state.get(link_id(lk), {}).get("flow_kg_h", 0.0) > FLOW_EPS), None)
+            if holder is not None:
+                waiting |= {id(lk) for lk in links if lk is not holder}
+        return waiting
+
+    def _gate_shares(self, values: dict[str, dict[str, Any]]) -> dict[int, float]:
+        """Parte de la salida que lleva cada enlace con `when`: la variable de la compuerta ÷ la suma de las compuertas de su origen."""
+        gates: dict[int, float] = {}
+        totals: dict[PortRef, float] = defaultdict(float)
+        for lk in self.model.links:
+            if lk.when is not None:
+                g = max(0.0, float(values[lk.when.equipment].get(lk.when.port) or 0.0))
+                gates[id(lk)] = g
+                totals[lk.src] += g
+        return {
+            id(lk): gates[id(lk)] / totals[lk.src] if totals[lk.src] > FLOW_EPS else 0.0 for lk in self.model.links if lk.when is not None
+        }
 
     def _link_record(self, lk: Link, sent: dict[str, Any], back: dict[str, Any]) -> dict[str, Any]:
         """Estado de un enlace en este paso: lo que entrega la salida (con `max` aplicado) y lo que pide el destino."""

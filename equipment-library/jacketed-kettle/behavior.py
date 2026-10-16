@@ -59,6 +59,8 @@ class JacketedKettle(EquipmentBehavior):
         "material_available": True,
         "downstream_free": True,
         "ingredient_temp_c": 20.0,
+        "return_kg_h": 0.0,  # producto que regresa del desvío del pasteurizador
+        "return_c": 20.0,
     }
 
     def setup(self) -> None:
@@ -98,6 +100,7 @@ class JacketedKettle(EquipmentBehavior):
         self.steam_total = 0.0
         self.discharged = 0.0
         self.discharge_kg_h = 0.0
+        self.returned = 0.0
         self.samples = 0
         self.samples_ok = 0
         self.deviation_flag = False
@@ -190,6 +193,7 @@ class JacketedKettle(EquipmentBehavior):
         dt = ctx.dt
         s = self.state.current
         self.discharge_kg_h = 0.0
+        self._receive_return(dt)
         if self.failures.is_active("temperature_probe_drift"):
             self.probe_offset += 3.0 * dt / 3600.0
 
@@ -234,6 +238,16 @@ class JacketedKettle(EquipmentBehavior):
 
         self._thermal(dt)
         self._check_deviation()
+
+    def _receive_return(self, dt: float) -> None:
+        """Producto desviado que regresa a la marmita: conserva la receta del batch y se mezcla a su temperatura de retorno."""
+        add = min(float(self.inputs["return_kg_h"]) * dt / 3600.0, self.capacity_kg - self.mass)
+        if add <= 0 or self.mass <= 1e-9:
+            return
+        self.temp = (self.temp * self.mass + float(self.inputs["return_c"]) * add) / (self.mass + add)
+        scale = (self.mass + add) / self.mass
+        self.components = {k: v * scale for k, v in self.components.items()}
+        self.returned += add
 
     def _start_phase(self, ph: dict[str, Any]) -> None:
         self.current = ph
@@ -464,10 +478,11 @@ class JacketedKettle(EquipmentBehavior):
             "steam_total_kg": self.steam_total,
             "discharged_kg": self.discharged,
             "discharge_kg_h": self.discharge_kg_h,
+            "returned_kg": self.returned,
         }
 
     def kpis(self) -> dict[str, Any]:
-        t_product = self.discharged / 1000.0
+        t_product = (self.discharged - self.returned) / 1000.0
         return {
             "batches": self.batch_count,
             "avg_batch_min": sum(self.batch_durations) / len(self.batch_durations) if self.batch_durations else None,

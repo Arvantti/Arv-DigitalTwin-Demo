@@ -16,7 +16,7 @@ Vive junto al layout, en `industrial-models/<planta>/simulation.yaml`:
 | Sección | Qué contiene |
 |---|---|
 | `equipment` | Los equipos del `plant.yaml` que se simulan: id del plano → tipo de librería, preset y parámetros |
-| `links` | Conexiones `equipo.puerto → equipo.puerto`. Cada una debe existir en los `flows` del plano, directa o pasando por equipos que no se simulan (`via`). `max` limita una magnitud, por ejemplo la presión después de una estación reductora |
+| `links` | Conexiones `equipo.puerto → equipo.puerto`. Cada una debe existir en los `flows` del plano, directa o pasando por equipos que no se simulan (`via`). `max` limita una magnitud, por ejemplo la presión después de una estación reductora; `when: <equipo>.<variable>` abre el enlace solo mientras esa variable sea > 0 (el desvío regresa a la marmita que descarga) |
 | `startup` | Comandos que se aplican al inicio de todos los escenarios (`every_s` los repite) |
 | `lines` | Líneas con su puerto de salida, para los KPIs de planta |
 | `scenarios` | Línea de tiempo y expectativas, igual que en un equipo |
@@ -48,7 +48,8 @@ El nombre a la derecha es una **variable** del contrato si el equipo la publica 
 Reglas:
 
 - **Un paso de retraso.** En cada paso el motor lee los valores de todos los equipos y calcula las entradas del siguiente. El orden de simulación no cambia el resultado. Por eso, cuando un equipo deja de recibir, alcanza a llegarle lo de un paso: las máquinas de unidades guardan esas pocas unidades en la entrada en vez de perderlas.
-- **Sin reparto.** Una salida que entrega `units` o `flow_kg_h` va a un solo destino; repartir entre dos (por formato, por ejemplo) necesita una regla que aún no existe. El vapor sí se reparte: la presión llega a todos y las demandas se suman.
+- **Sin reparto.** Una salida que entrega `units` o `flow_kg_h` va a un solo destino; repartir entre dos (por formato, por ejemplo) necesita una regla que aún no existe. El vapor sí se reparte: la presión llega a todos y las demandas se suman. La excepción son los enlaces con `when` (compuerta): varios enlaces de una misma salida cuentan como un destino y el caudal se reparte entre los que están abiertos, en proporción al valor de su variable. Así el desvío del pasteurizador regresa a la marmita que está descargando, y si descargan las dos, a cada una según su caudal; el producto no se crea ni se pierde.
+- **Una entrada compartida atiende a una sola fuente.** Cuando varias salidas con caudal alimentan la misma entrada (las dos marmitas y la bomba del pasteurizador), solo una descarga a la vez: la que ya circulaba conserva el turno (la primera declarada si hay varias) y las demás reciben `ready = 0` y esperan en estado `blocked`. Si nadie circula, todas están listas y la primera que empiece toma el turno.
 - **Las entradas que calcula un enlace no se fijan en un escenario.** El motor lo rechaza para que la prueba no contradiga la planta.
 
 ### Caudal de cada enlace
@@ -72,17 +73,19 @@ Un servicio (el vapor) se entrega a pedido: su `flow_kg_h` es la `demand_kg_h` d
 caldera ─vapor 3 bar (steam-station-01)─▶ marmita 1, marmita 2, pasteurizador
 marmita 1 ┐
 marmita 2 ┴─(pump-hot-01)─▶ pasteurizador ─(holding-tube-01)─▶ pulmón ─▶ sachetadora ─▶ túnel ─▶ control de peso ─▶ encajadora
+               │
+               └─ desvío (holding-tube-01) ─▶ la marmita que descarga
 ```
 
 | Escenario | Qué muestra |
 |---|---|
 | `nominal` | Turno de 8 h con dos marmitas alternadas. La línea queda limitada por la cocción: dos batches de 2.000 kg cada 2 h dan ≈ 2.000 kg/h y la sachetadora pide 2.036 kg/h |
-| `boiler-trip` | Falla de llama de 1 h. La marmita que calienta gasta el vapor almacenado; bajo ≈ 0,6 bar el pasteurizador ya no llega a 92 °C en la retención y desvía. El producto desviado no sale como pasteurizado |
+| `boiler-trip` | Falla de llama de 1 h. La marmita que calienta gasta el vapor almacenado; bajo ≈ 0,6 bar el pasteurizador ya no llega a 92 °C en la retención y desvía. El producto desviado regresa a la marmita que descarga, así que esa descarga se alarga lo que dura el desvío y la otra marmita espera su turno en la bomba |
 | `tunnel-stop` | El túnel se detiene 80 min. La sachetadora se bloquea, el pulmón llega al 90 % y la marmita 2 espera para descargar |
 
 ## 4. Limitaciones actuales
 
-- El producto desviado sale del modelo (en la planta vuelve a la marmita).
+- El producto desviado regresa a la marmita con su receta y se mezcla a la temperatura de salida del pasteurizador (`return_in`, `returned_kg`); no hay tubería de retorno con volumen ni retardo, solo el paso de retraso del motor.
 - Las recetas se escriben como fases de la marmita en `simulation.yaml`; todavía no se traducen solas desde `recipes` del plano.
 - Falta conectar la planta de inyección: sus secadores, chillers y molinos aún no tienen tipo en la librería.
 - La planta conectada se ve en 3D y en vivo en la escena de planta (`docs/plant-scene.md`); la API la expone en `/api/plants`.

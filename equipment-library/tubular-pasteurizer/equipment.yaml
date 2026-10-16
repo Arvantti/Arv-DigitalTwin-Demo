@@ -31,7 +31,7 @@ params:
 ports:
   - { id: product_in, kind: material, direction: in, unit: L/h, link: { available: product_available, temp_c: product_in_c, ready: accepting } }
   - { id: product_out, kind: material, direction: out, unit: L/h, link: { flow_kg_h: forward_kg_h, temp_c: product_out_c, ready: downstream_free } }
-  - { id: divert_out, kind: material, direction: out, medium: producto desviado a la marmita }
+  - { id: divert_out, kind: material, direction: out, medium: producto desviado a la marmita, unit: kg/h, link: { flow_kg_h: divert_kg_h, temp_c: product_out_c } }
   - { id: steam_in, kind: utility, direction: in, medium: vapor, unit: kg/h, link: { pressure_bar: steam_supply_bar, demand_kg_h: steam_flow_kg_h } }
   - { id: cip_in, kind: utility, direction: in, medium: solución CIP }
 
@@ -57,6 +57,7 @@ variables:
   - { id: fouling_pct, unit: "%", kind: calculated, range: [0, 100], description: Pérdida de coeficiente por ensuciamiento }
   - { id: lot_hold, unit: "", kind: status, description: "1 si el lote queda retenido por una falla de la válvula de desvío" }
   - { id: accepting, unit: "", kind: status, description: "1 si recibe producto (en marcha, sin falla ni CIP y con salida libre o desviando)" }
+  - { id: divert_kg_h, unit: kg/h, kind: calculated, description: Producto que sale por el desvío hacia la marmita (0 mientras pasteuriza) }
   - { id: forward_kg_h, unit: kg/h, kind: calculated, description: Producto pasteurizado que sale hacia adelante (0 mientras desvía) }
 
 events:

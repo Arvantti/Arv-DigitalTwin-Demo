@@ -42,3 +42,6 @@ El autor aprobó completar los pendientes de la fase 5. Como el plano no describ
 
 ## D12 · Caudal por enlace en el motor; la escena solo lo dibuja · 2026-10-16 21:31
 El autor aprobó que el motor publique el caudal de cada enlace y que las tuberías de la escena se animen con él. El motor deja el estado de cada enlace en `snapshot.links` (ya con `max` aplicado); el vapor, que se entrega a pedido, circula con la demanda del destino mientras haya presión. La API asocia cada tubería del plano con los enlaces que la cruzan y la escena no calcula caudales, solo los muestra. Los tramos que el motor no simula conservan el indicio por estado. Ningún valor de tolerancia interviene (regla D07).
+
+## D13 · El desvío regresa a la marmita; una bomba compartida atiende a una marmita a la vez · 2026-10-16 22:08
+El autor aprobó enlazar el desvío del pasteurizador en el motor y en la escena. Se modeló lo que ocurre en la planta: el producto que no alcanza la temperatura de retención vuelve a la marmita que está descargando (y, si descargan las dos, a cada una en proporción a su caudal), no sale del modelo. Para que eso no cree masa, las dos marmitas comparten la bomba y solo una descarga a la vez; la otra espera. Ningún valor de tolerancia interviene (regla D07). La planta de inyección se hace en un PR aparte.
