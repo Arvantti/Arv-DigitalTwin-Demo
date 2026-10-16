@@ -72,4 +72,4 @@ marmita 2 ┴─(pump-hot-01)─▶ pasteurizador ─(holding-tube-01)─▶ pul
 - El producto desviado sale del modelo (en la planta vuelve a la marmita).
 - Las recetas se escriben como fases de la marmita en `simulation.yaml`; todavía no se traducen solas desde `recipes` del plano.
 - Falta conectar la planta de inyección: sus secadores, chillers y molinos aún no tienen tipo en la librería.
-- La API y la galería todavía muestran un equipo a la vez; la escena de planta es la fase 5.
+- La planta conectada se ve en 3D y en vivo en la escena de planta (`docs/plant-scene.md`); la API la expone en `/api/plants`.

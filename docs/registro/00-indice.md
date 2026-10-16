@@ -19,6 +19,7 @@ Está escrito como una **bóveda de Obsidian**: abre la carpeta `docs/registro/`
 | Decisiones y reglas del autor | [[decisiones]] |
 | Histórico de conversaciones con la IA: sesión de código | [[historico-sesion-codigo]] |
 | Histórico de conversaciones con la IA: chat del proyecto | [[historico-proyecto]] |
+| Capturas de verificación (carpeta `evidencia/`) | ![[fase5-escena-vista-general.png]] |
 | Cómo mantener este registro | [[como-actualizar]] |
 | Plantilla de entrada de bitácora | [[plantilla-entrada]] |
 
