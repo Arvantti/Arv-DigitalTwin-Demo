@@ -1,0 +1,4 @@
+preset: sachet-250
+description: Banda de salida de sachets de 250 ml hacia el túnel o el control de peso
+params: { length_m: 4, width_m: 0.35, speed_m_s: 0.3, pitch_m: 0.15, height_m: 0.8, kind: flat, item: sachet, item_size_m: 0.13, nominal_inflow_upm: 100 }
+provenance: { length_m: assumed, speed_m_s: assumed }

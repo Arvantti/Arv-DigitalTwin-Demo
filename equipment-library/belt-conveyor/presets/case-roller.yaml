@@ -1,0 +1,4 @@
+preset: case-roller
+description: Transportador de rodillos de cajas hacia el paletizado
+params: { length_m: 5, width_m: 0.6, speed_m_s: 0.25, pitch_m: 0.5, height_m: 0.75, kind: roller, item: box, item_size_m: 0.4, item_color: "#b08a5a", nominal_inflow_upm: 6, motor_kw: 0.55 }
+provenance: { length_m: assumed }

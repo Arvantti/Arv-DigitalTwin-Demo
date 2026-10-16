@@ -1,0 +1,4 @@
+preset: 250ml-24
+description: Cajas de 24 sachets de 250 ml
+params: { units_per_case: 24, cycle_s: 10, nominal_inflow_upm: 80, case_size_m: 0.4 }
+provenance: { units_per_case: assumed, cycle_s: assumed }

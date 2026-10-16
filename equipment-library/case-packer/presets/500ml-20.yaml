@@ -1,0 +1,4 @@
+preset: 500ml-20
+description: Cajas de 20 sachets de 500 ml
+params: { units_per_case: 20, cycle_s: 11, nominal_inflow_upm: 45, case_size_m: 0.45, item_color: "#f4c430" }
+provenance: { units_per_case: assumed, cycle_s: assumed }

@@ -1,0 +1,78 @@
+schema_version: 0.1.0
+type: cooling-tunnel
+version: 0.1.0
+name: Túnel de enfriamiento por aspersión
+manufacturing: packaging
+category: thermal.continuous
+description: >
+  Túnel con banda de malla y aspersión de agua fría que enfría envases llenados en caliente
+  (sachets, bolsas) antes del control de peso y el encajado. Modela el tiempo de permanencia,
+  la curva de enfriamiento de cada unidad según su tamaño, la temperatura del agua según la
+  carga térmica y el bloqueo de la banda.
+aliases: [túnel de enfriamiento, enfriador de sachets, cooling tunnel, túnel de aspersión]
+fidelity: { visual: V2, behavior: B3 }
+
+params:
+  length_m:           { type: number, unit: m, min: 1, max: 40, default: 6, description: Largo del túnel, affects: [geometry, behavior] }
+  width_m:            { type: number, unit: m, min: 0.3, max: 3, default: 1.5, description: Ancho exterior, affects: [geometry] }
+  dwell_min:          { type: number, unit: min, min: 1, max: 60, default: 12, description: Tiempo de permanencia (fija la velocidad de la banda), affects: [behavior] }
+  unit_ml:            { type: number, unit: mL, min: 5, max: 5000, default: 1000, description: Volumen de la unidad (define su constante de enfriamiento), affects: [behavior, geometry] }
+  density_kg_l:       { type: number, unit: kg/L, min: 0.5, max: 2, default: 1.12, description: Densidad del producto, affects: [behavior] }
+  product_cp:         { type: number, unit: kJ/kgK, min: 1, max: 4.2, default: 3.6, description: Calor específico del producto, affects: [behavior] }
+  inlet_c:            { type: number, unit: degC, min: 20, max: 100, default: 85, description: Temperatura de entrada si el entorno no la fija, affects: [behavior] }
+  outlet_max_c:       { type: number, unit: degC, min: 15, max: 60, default: 40, description: Temperatura máxima de salida aceptable, affects: [behavior] }
+  water_setpoint_c:   { type: number, unit: degC, min: 1, max: 30, default: 4, description: Temperatura de suministro del agua fría, affects: [behavior] }
+  water_flow_m3_h:    { type: number, unit: m3/h, min: 1, max: 100, default: 12, description: Caudal de agua de aspersión, affects: [behavior] }
+  nominal_inflow_upm: { type: number, unit: u/min, min: 0, max: 500, default: 30, description: Llegada nominal si el entorno no la fija, affects: [behavior] }
+  item_color:         { type: string, default: "#c62828", description: Color de las unidades (hex), affects: [geometry] }
+
+ports:
+  - { id: items_in, kind: item, direction: in, unit: u/min }
+  - { id: items_out, kind: item, direction: out, unit: u/min }
+  - { id: chilled_water, kind: utility, direction: inout, medium: agua fría }
+
+states:
+  - { id: idle, description: Sin unidades }
+  - { id: running, description: Enfriando }
+  - { id: blocked, description: La salida no recibe; la banda se detiene }
+  - { id: fault, description: Detenido por falla }
+
+variables:
+  - { id: units_inside, unit: u, kind: calculated, description: Unidades dentro del túnel }
+  - { id: units_out, unit: u, kind: counter, description: Unidades entregadas }
+  - { id: product_outlet_c, unit: degC, kind: measured, range: [0, 100], noise_sd: 0.2, resolution: 0.1, description: Temperatura de la última unidad que salió }
+  - { id: water_supply_c, unit: degC, kind: measured, range: [0, 40], noise_sd: 0.1, resolution: 0.1, description: Temperatura del agua de suministro }
+  - { id: water_return_c, unit: degC, kind: measured, range: [0, 60], noise_sd: 0.1, resolution: 0.1, description: Temperatura del agua de retorno }
+  - { id: heat_load_kw, unit: kW, kind: calculated, description: Calor retirado del producto }
+  - { id: belt_speed_m_min, unit: m/min, kind: calculated, description: Velocidad de la banda }
+  - { id: hot_outlets, unit: u, kind: counter, description: Unidades que salieron por encima de la temperatura máxima }
+
+events:
+  - { id: quality_alarm, description: Temperatura de salida fuera de límite, payload: [variable, value, limit] }
+
+faults:
+  - { id: spray_pump_failure, description: Falla de la bomba de aspersión, mtbf_h: 4000, mttr_min: 60, severity: high, stops_equipment: false, effect: "Sin aspersión: enfriamiento por aire, 5 veces más lento" }
+  - { id: belt_drive_trip, description: Disparo del motor de la banda, mtbf_h: 8000, mttr_min: 30, severity: medium, effect: La banda se detiene }
+
+commands:
+  - { id: inject_fault, description: Inyecta una falla declarada, args: { fault: string, duration_s: number } }
+  - { id: clear_fault, description: Repara una falla activa, args: { fault: string } }
+  - { id: set_param, description: Cambia un parámetro en caliente, args: { name: string, value: any } }
+
+kpis:
+  - { id: hot_outlet_rate, unit: "", description: Fracción de unidades que salieron calientes }
+  - { id: avg_heat_load_kw, unit: kW, description: Carga térmica media }
+
+animation_channels:
+  - { id: belt_travel, unit: m, range: [0, 10], description: Recorrido de la banda (módulo 10 m) }
+  - { id: spray, range: [0, 1], description: Aspersión activa }
+  - { id: units_count, range: [0, 5000], description: Unidades dentro }
+  - { id: inlet_heat, range: [0, 1], description: Calor del producto que entra (vapor a la entrada) }
+
+geometry:
+  parts: [enclosure, windows, mesh_belt, spray_headers, pump, piping, legs, items]
+
+assumptions:
+  - "Enfriamiento de primer orden de cada unidad: constante de 343 s para 250 ml, escalada con la raíz del volumen (≈ 685 s para 1.000 ml)."
+  - El agua que ve el producto es el promedio entre suministro y retorno; el retorno sube con la carga térmica.
+  - Sin aspersión, el enfriamiento es por aire a 25 °C con una constante 5 veces mayor.

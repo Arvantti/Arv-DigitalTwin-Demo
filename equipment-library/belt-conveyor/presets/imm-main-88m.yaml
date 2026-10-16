@@ -1,0 +1,4 @@
+preset: imm-main-88m
+description: Banda principal de la nave de inyección (88 m, cruce elevado sobre el pasillo)
+params: { length_m: 88, width_m: 0.6, speed_m_s: 0.3, pitch_m: 0.4, height_m: 0.9, kind: flat, item: part, item_size_m: 0.3, item_color: "#1e6fd9", nominal_inflow_upm: 100, motor_kw: 4 }
+provenance: { length_m: user, speed_m_s: user }

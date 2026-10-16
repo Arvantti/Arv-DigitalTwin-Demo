@@ -1,0 +1,30 @@
+scenarios:
+  - id: steady
+    description: Una hora encajando sachets de 250 ml que llegan a 80 u/min
+    preset: 250ml-24
+    duration_s: 3600
+    expect:
+      - { path: variables.cases_count, min: 198, max: 200, description: "(80 × 60 / 24 = 200 cajas; la última puede quedar en curso)" }
+      - { path: kpis.utilization, min: 0.53, max: 0.57, description: "(200 cajas × 10 s / 3600 s ≈ 0,56)" }
+
+  - id: no-boxes
+    description: Se acaban las cajas plegadas durante 5 minutos; el pulmón se llena y bloquea a la línea
+    preset: 250ml-24
+    duration_s: 1200
+    timeline:
+      - { at_s: 300, inputs: { boxes_available: false } }
+      - { at_s: 600, inputs: { boxes_available: true } }
+    expect:
+      - { path: events.buffer_full, min: 1 }
+      - { path: kpis.starved_pct, min: 0.2, max: 0.26, description: "(≈ 5 min de 20 sin cajas)" }
+
+  - id: tape-out
+    description: Se acaba la cinta y se cambia en 4 minutos
+    preset: 1000ml-12
+    duration_s: 1800
+    timeline:
+      - { at_s: 600, command: inject_fault, args: { fault: tape_out, duration_s: 240 } }
+    expect:
+      - { path: events.fault_cleared, equals: 1 }
+      - { path: variables.cases_count, min: 65, max: 67, description: "(75 cajas posibles − 8 perdidas: en 4 min llegan 120 sachets y el pulmón guarda solo 24, el resto bloquea la línea)" }
+      - { path: events.buffer_full, min: 1 }

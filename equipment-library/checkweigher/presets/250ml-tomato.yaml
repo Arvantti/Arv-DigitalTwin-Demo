@@ -1,0 +1,4 @@
+preset: 250ml-tomato
+description: Sachet de 250 ml de salsa de tomate (280 g)
+params: { nominal_g: 280, tolerance_minus_g: 9, tolerance_plus_g: 14, nominal_inflow_upm: 80 }
+provenance: { nominal_g: user, tolerance_minus_g: assumed, tolerance_plus_g: assumed }
