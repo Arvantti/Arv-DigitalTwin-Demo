@@ -8,39 +8,36 @@
 
 | # | Tipo | Familia | Planta | Fidelidad | Protagonista 3D |
 |---|---|---|---|---|---|
-| 1 | `rotary-filler` | Envasado | Salsas | V2 / B3 | Sí |
-| 2 | `capper` | Envasado | Salsas | V2 / B2 | |
-| 3 | `cooling-tunnel` | Envasado | Salsas | V2 / B3 | |
-| 4 | `labeler` | Envasado | Salsas | V2 / B2 | |
-| 5 | `pouch-filler` | Envasado | Salsas | V2 / B3 | Sí |
-| 6 | `checkweigher` | Envasado | Salsas | V2 / B2 | |
-| 7 | `case-packer` | Envasado | Salsas | V2 / B2 | |
-| 8 | `belt-conveyor` | Transporte | Ambas | V2 / B2 | |
-| 9 | `forklift` | Transporte | Ambas | V2 / B2 | |
-| 10 | `stretch-wrapper` | Transporte | Ambas | V2 / B2 | |
-| 11 | `static-asset` | Transporte e infraestructura | Ambas | V2 / B1 | |
-| 12 | `tubular-pasteurizer` | Térmico | Salsas | V2 / B3 | Sí |
-| 13 | `vacuum-emulsifier` | Mezcla | Salsas | V2 / B3 | Sí |
-| 14 | `inline-mill` | Mezcla | Salsas | V2 / B3 | |
-| 15 | `desiccant-dryer` | Materiales plásticos | Inyección | V2 / B3 | |
-| 16 | `gravimetric-blender` | Materiales plásticos | Inyección | V2 / B2 | |
-| 17 | `vacuum-conveying-station` | Materiales plásticos | Inyección | V2 / B2 | |
-| 18 | `granulator` | Materiales plásticos | Inyección | V2 / B2 | |
-| 19 | `pelletizing-line` | Materiales plásticos | Inyección | V2 / B3 | |
-| 20 | `steam-boiler` | Servicios | Salsas | V2 / B3 | |
-| 21 | `chiller` | Servicios | Ambas | V2 / B3 | |
-| 22 | `air-compressor` | Servicios | Ambas | V2 / B2 | |
-| 23 | `cooling-tower` | Servicios | Inyección | V2 / B3 | |
-| 24 | `cip-skid` | Servicios | Salsas | V2 / B3 | |
-| 25 | `overhead-crane` | Inyección: moldes | Inyección | V2 / B2 | |
-| 26 | `workstation` | Inyección: secundarias | Inyección | V2 / B2 | |
-| 27 | `operator` | Personas | Ambas | V2 / B2 | Sí |
+| 1 | `vffs-sachet-filler` | Envasado | Salsas | V2 / B3 | Sí |
+| 2 | `cooling-tunnel` | Envasado | Salsas | V2 / B3 | |
+| 3 | `checkweigher` | Envasado | Salsas | V2 / B2 | |
+| 4 | `case-packer` | Envasado | Salsas | V2 / B2 | |
+| 5 | `belt-conveyor` | Transporte | Ambas | V2 / B2 | |
+| 6 | `forklift` | Transporte | Ambas | V2 / B2 | |
+| 7 | `stretch-wrapper` | Transporte | Ambas | V2 / B2 | |
+| 8 | `static-asset` | Transporte e infraestructura | Ambas | V2 / B1 | |
+| 9 | `tubular-pasteurizer` | Térmico | Salsas | V2 / B3 | Sí |
+| 10 | `vacuum-emulsifier` | Mezcla | Salsas | V2 / B3 | Sí |
+| 11 | `inline-mill` | Mezcla | Salsas | V2 / B3 | |
+| 12 | `desiccant-dryer` | Materiales plásticos | Inyección | V2 / B3 | |
+| 13 | `gravimetric-blender` | Materiales plásticos | Inyección | V2 / B2 | |
+| 14 | `vacuum-conveying-station` | Materiales plásticos | Inyección | V2 / B2 | |
+| 15 | `granulator` | Materiales plásticos | Inyección | V2 / B2 | |
+| 16 | `pelletizing-line` | Materiales plásticos | Inyección | V2 / B3 | |
+| 17 | `steam-boiler` | Servicios | Salsas | V2 / B3 | |
+| 18 | `chiller` | Servicios | Ambas | V2 / B3 | |
+| 19 | `air-compressor` | Servicios | Ambas | V2 / B2 | |
+| 20 | `cooling-tower` | Servicios | Inyección | V2 / B3 | |
+| 21 | `cip-skid` | Servicios | Salsas | V2 / B3 | |
+| 22 | `overhead-crane` | Inyección: moldes | Inyección | V2 / B2 | |
+| 23 | `workstation` | Inyección: secundarias | Inyección | V2 / B2 | |
+| 24 | `operator` | Personas | Ambas | V2 / B2 | Sí |
 
 Además se agregan **presets** a tipos existentes: `vessel` (tanque de fase acuosa 800 L, tanque de mostaza 1.200 L, tanque de vinagre 10 m³, tanque de agua tratada 10 m³ y silos de reciclado de 30 t).
 
 ### Decisiones de diseño a confirmar
 1. **Tipos combinados para no multiplicar la librería:**
-   - `pouch-filler` cubre sachet (VFFS) y doypack.
+   - `vffs-sachet-filler` cubre los dos tamaños de sachet (250 ml y 1.000 ml) con presets.
    - `inline-mill` cubre el molino coloidal y el de piedra.
    - `static-asset` cubre lo que no se simula: racks, bancos, muelles, transformador, mesas de laboratorio, CNC, EDM y PTAR.
    - `workstation` cubre las estaciones manuales y semiautomáticas: ensamble, tampografía, espumado y empaque.
@@ -49,117 +46,97 @@ Además se agregan **presets** a tipos existentes: `vessel` (tanque de fase acuo
    - El chiller entrega el agua de los moldes: si falla, aumentan los rechupes y se alarga el ciclo.
    - La caldera entrega la presión de vapor a las marmitas y al pasteurizador: si cae, el batch se alarga y el pasteurizador desvía.
    - El compresor alimenta las sachetadoras: si la presión baja, se detienen.
+   - La temperatura del tanque pulmón caliente llega a las sachetadoras de tomate: si el producto llega por debajo de 85 °C, se rechaza.
 3. **Fases de batch reutilizables.** El ejecutor de fases de la marmita pasa a ser una primitiva del runtime (`BatchPhaseRunner`), para que el emulsificador y el CIP lo reutilicen.
 4. **Operarios** a escala real (1,70 m), con EPP según la planta: casco y overol en inyección; cofia, tapabocas y bata blanca en salsas. Representan turnos y tareas, no personas reales.
 
 ---
 
-## Familia 1: Envasado (planta de salsas)
+## Familia 1: Envasado en sachet (planta de salsas)
 
-### 1. `rotary-filler`: llenadora rotativa
-- **Función:** llena botellas y galones con salsa caliente (tomate, BBQ) o fría (mayonesa), y alimenta la tapadora.
-- **Referencias:** `filler-bottle-01` y `filler-gallon-01` del layout.
+> **Todo el producto se envasa en sachet.** No hay botellas, tapas ni etiquetas: el laminado viene impreso y la máquina solo codifica lote y vencimiento. El layout se actualizó en consecuencia.
+
+### 1. `vffs-sachet-filler`: llenadora vertical de sachets (formadora, llenadora y selladora)
+- **Función:** forma el sachet desde un rollo de laminado, lo llena con un dosificador de pistón, lo sella y lo corta. Cubre los dos tamaños de la planta: **250 ml y 1.000 ml**.
+- **Referencias:** `filler-sachet-01..03` y `filler-pouch-01..03` del layout.
 
 | Dato | Valor | Origen |
 |---|---|---|
-| Preset `bottle-12h` | Carrusel de 12 cabezales, 60 u/min, botellas de 400 a 1.000 g, huella 3,0 × 2,0 × 2,2 m | layout |
-| Preset `piston-gallon` | 2 cabezales de pistón, 8 u/min, 3 a 4 kg, huella 2,0 × 2,0 × 2,2 m | layout |
-| Llenado en caliente | Producto ≥ 85 °C; por debajo, el envase se rechaza (riesgo de inocuidad) | layout |
-| Exactitud de llenado | Desviación típica de 1,5 g en botella y 8 g en galón; crece con la viscosidad y si gotea una boquilla | assumed |
-| Tolerancia | Peso nominal −0 / +2 %; por fuera, rechazo | assumed |
+| Tamaños | 250 ml y 1.000 ml | user |
+| Preset `250ml-2-lanes` | 2 pistas, 80 a 100 u/min, huella 1,6 × 1,6 × 3,0 m (mayonesa, rosada, tomate, BBQ) | assumed |
+| Preset `250ml-1-lane` | 1 pista, 60 u/min (mostaza, máquina dedicada por alérgeno) | assumed |
+| Preset `1000ml-1-lane` | 1 pista, 30 u/min, huella 1,8 × 1,6 × 3,2 m | assumed |
+| Peso por sachet | Volumen × densidad: tomate 1,12 kg/L (280 g y 1.120 g), mayonesa 0,93 kg/L (233 g y 930 g), mostaza 1,05 kg/L | derived |
+| Capacidad en caliente | 30 × 1.000 ml + 80 × 250 ml de tomate = 56 kg/min ≈ 3.000 L/h, igual a la capacidad del pasteurizador | derived |
+| Máquinas en planta | 3 de 250 ml (mayonesa, tomate, mostaza) y 2 de 1.000 ml (tomate, mayonesa) | assumed |
+| Llenado en caliente | Tomate y BBQ a ≥ 85 °C; por debajo, rechazo por riesgo de inocuidad. Mayonesa y mostaza en frío | layout |
+| Laminado | PET/PE impreso apto para 85 °C; rollo de unos 6.000 sachets de 250 ml o 3.000 de 1.000 ml; cambio de 8 min | assumed |
+| Sellado | Mordazas a 150 °C ± 10; fuera de ventana, sello débil y rechazo (fuga). En caliente se necesita más tiempo de mordaza | assumed |
+| Exactitud de dosificación | Desviación típica del 1,5 % del peso nominal; crece con la viscosidad y con burbujas de aire en el producto | assumed |
+| Codificación | Impresora térmica de lote y vencimiento; si falla, rechazo por código ilegible | assumed |
+| Aire comprimido | ≥ 6 bar; por debajo, se detiene | layout, assumed |
 
-- **Estados:** idle, running, blocked (salida llena), starved (sin producto o sin envases), cleaning (CIP), fault.
-- **Variables:** velocidad (u/min), unidades llenadas, rechazos, temperatura del producto, peso medio y desviación, nivel del tanque superior.
+- **Estados:** idle, running, blocked (salida llena), starved (sin producto o sin laminado), cleaning (CIP del dosificador), fault.
+- **Variables:** velocidad, unidades, rechazos por causa (sello, peso, código, temperatura), temperatura de mordazas, temperatura del producto, peso medio y desviación, metros de laminado restantes.
 - **Fallas:**
-  - Atasco de botella: MTBF 150 h, MTTR 5 min.
-  - Boquilla goteando: MTBF 800 h, MTTR 20 min. Degradación: sobrellenado.
-  - Sensor de nivel del tanque superior: MTBF 5.000 h, MTTR 30 min.
-- **KPIs:** OEE, sobrellenado (g de producto regalado por unidad), rechazos por temperatura.
-- **Animación:** giro del carrusel, botellas entrando y saliendo por las estrellas, boquillas bajando, nivel del tanque superior.
-- **Visual:** carrusel inoxidable bajo guardas de policarbonato, tanque superior con mirilla, estrellas de entrada y salida, tablero con HMI.
+  - Atasco o rotura de película: MTBF 200 h, MTTR 6 min.
+  - Resistencia de la mordaza: MTBF 600 h, MTTR 15 min. Degradación: sellos débiles.
+  - Cinta de la codificadora agotada: MTBF 150 h, MTTR 3 min.
+  - Goteo del dosificador: MTBF 900 h, MTTR 20 min. Degradación: sobrellenado y sellos contaminados.
+- **KPIs:** OEE, sobrellenado (g regalados por unidad), rechazos por causa, laminado desperdiciado.
+- **Animación:** rollo de laminado girando (se achica con el consumo), película bajando por el tubo formador, mordazas cerrando, sachets cayendo a la banda; en 2 pistas, el par de sachets cortándose.
+- **Visual:** gabinete inoxidable con puertas de policarbonato, portabobinas atrás, tolva de producto arriba, HMI, baliza.
 
-### 2. `capper`: tapadora rotativa
-| Dato | Valor | Origen |
-|---|---|---|
-| Velocidad | 60 u/min | layout |
-| Huella | 1,5 × 1,5 × 2,0 m | layout |
-| Tapas | Tolva con orientador de 2.000 tapas; alimentación de tapas como entrada | assumed |
-| Torque | 2,5 N·m ± 0,2; tapa cruzada en el 0,3 % de las unidades, que se rechazan | assumed |
-
-- **Fallas:** atasco de tapas, con MTBF 300 h y MTTR 5 min. La falta de tapas deja la máquina en starved.
-- **Animación:** giro de la torreta, cabezales roscando, nivel de la tolva de tapas.
-
-### 3. `cooling-tunnel`: túnel de enfriamiento por aspersión
+### 2. `cooling-tunnel`: túnel de enfriamiento de sachets llenados en caliente
 | Dato | Valor | Origen |
 |---|---|---|
 | Huella | 6,0 × 1,5 × 2,0 m | layout |
-| Temperaturas | Entrada 85 °C, salida 40 °C, permanencia 15 min | layout |
+| Temperaturas | Entrada 85 °C, salida 35 °C, permanencia 12 min (la necesita el de 1.000 ml; el de 250 ml enfría en unos 6 min) | layout, derived |
 | Agua | De chiller a 4 °C, 12 m³/h | layout |
-| Modelo térmico | Enfriamiento de primer orden de la botella; constante según la masa de la botella y el caudal de agua | derived |
+| Modelo térmico | Enfriamiento de primer orden del sachet; constante según el espesor (1.000 ml más grueso, enfría más lento) y el caudal de agua | derived |
 
+- **Por qué hace falta:** si el sachet caliente se encaja sin enfriar, el producto sigue cocinándose (pierde color y consistencia) y los sachets se deforman en la caja.
 - **Variables:** temperatura del agua, temperatura de salida del producto, velocidad de la banda, unidades dentro.
-- **Fallas:** bomba de aspersión, con MTBF 4.000 h y MTTR 60 min. Sin aspersión, el producto sale caliente y la etiqueta no adhiere.
-- **Animación:** banda con botellas, cortinas de aspersión y vapor a la entrada.
+- **Fallas:** bomba de aspersión, con MTBF 4.000 h y MTTR 60 min. El producto sale caliente.
+- **Animación:** banda de malla con sachets, cortinas de aspersión y vapor a la entrada.
 
-### 4. `labeler`: etiquetadora autoadhesiva
-| Dato | Valor | Origen |
-|---|---|---|
-| Velocidad | 60 u/min | layout |
-| Huella | 2,0 × 1,5 × 1,8 m | layout |
-| Rollo | 3.000 etiquetas; cambio planificado de 3 min | assumed |
-| Calidad | Etiqueta torcida en el 0,5 %; sube si la botella llega a más de 45 °C | assumed |
-
-- **Fallas:** atasco, con MTBF 250 h y MTTR 5 min.
-- **Animación:** rollo que se desenrolla, botella girando en el aplicador.
-
-### 5. `pouch-filler`: llenadora de sachets y doypacks
-| Dato | Valor | Origen |
-|---|---|---|
-| Modo `vffs_sachet` | VFFS de 8 pistas × 40 ciclos/min = 320 u/min, sachets de 8 a 10 g, huella 1,6 × 1,6 × 3,0 m | layout |
-| Modo `premade_pouch` | Doypack prefabricado, 40 u/min, 200 o 500 g, huella 3,0 × 3,0 × 2,5 m | layout |
-| Sellado | Mordaza a 150 °C ± 10; fuera de ventana, el sello falla y la unidad se rechaza | assumed |
-| Laminado | Rollo de unos 25.000 sachets; cambio de 8 min | assumed |
-| Aire comprimido | 1,5 m³/min a ≥ 6 bar; por debajo, la máquina se detiene | layout, assumed |
-
+### 3. `checkweigher`: control de peso con detector de metales
+- **Datos:** 1,5 × 0,8 × 1,2 m (layout) · uno por tamaño: tolerancia de ±4 g en 250 ml y ±10 g en 1.000 ml (assumed) · detector de metales en línea (layout) · rechazo por empujador.
+- **Variables:** peso medido, media y desviación móviles, rechazos por peso, rechazos por metal.
 - **Fallas:**
-  - Atasco de película: MTBF 200 h, MTTR 6 min.
-  - Resistencia de la mordaza: MTBF 600 h, MTTR 15 min. Degradación: sellos débiles.
-- **Animación:** película bajando por el formador, mordazas cerrando, sachets cayendo; en doypack, carrusel de bolsas.
+  - Deriva de la celda de carga (MTBF 3.000 h): rechaza producto bueno o deja pasar producto malo.
+  - Prueba de detector de metales vencida: cada 2 h se exige una prueba con patrón; si no se hace, el lote queda retenido.
 
-### 6. `checkweigher`: control de peso
-- **Datos:** 1,5 × 0,8 × 1,2 m (layout) · tolerancia ±2 g (layout) · rechazo por soplador.
-- **Variables:** peso medido, media y desviación móviles, rechazos.
-- **Fallas:** deriva de la celda de carga (MTBF 3.000 h): rechaza producto bueno o deja pasar producto malo.
-
-### 7. `case-packer`: encajadora
-- **Datos:** 5 a 6 cajas/min, huella 3,0 × 2,0 × 2,0 m (layout) · 12 a 24 unidades por caja según presentación (assumed).
+### 4. `case-packer`: encajado de sachets
+- **Datos:** 5 a 6 cajas/min, huella 3,0 × 2,0 × 2,0 m (layout).
+- **Formatos:** 250 ml en cajas de 24 u y 1.000 ml en cajas de 12 u (assumed).
 - **Fallas:** atasco de caja, con MTBF 200 h y MTTR 5 min. La falta de cajas deja la máquina en starved.
 
 ---
 
 ## Familia 2: Transporte y logística (ambas plantas)
 
-### 8. `belt-conveyor`: banda transportadora
+### 5. `belt-conveyor`: banda transportadora
 | Dato | Valor | Origen |
 |---|---|---|
 | Parámetros | Largo, ancho, velocidad, capacidad de acumulación y tipo (banda plana, tablillas o rodillos) | assumed |
 | Inyección | Banda principal de 88 m a 0,3 m/s (cruce elevado sobre el pasillo) | layout |
-| Salsas | Transportadores de tablillas entre llenadora, tapadora, túnel, etiquetadora y encajadora, a 0,2 m/s | assumed |
+| Salsas | Bandas de salida de las sachetadoras hacia el túnel, el control de peso y el encajado, a 0,3 m/s | assumed |
 
 - **Comportamiento:** acumula unidades. Si se llena, bloquea la máquina anterior; si se vacía, deja en starved a la siguiente.
 - **Fallas:** motor (MTBF 8.000 h) y banda desalineada (MTBF 2.000 h).
-- **Animación:** unidades (piezas o botellas) moviéndose sobre la banda.
+- **Animación:** unidades (piezas o sachets) moviéndose sobre la banda.
 
-### 9. `forklift`: montacargas
+### 6. `forklift`: montacargas
 - **Datos:** eléctrico, 2,5 t, 2,4 × 1,2 × 2,2 m, 8 km/h cargado (assumed).
 - **Comportamiento:** recibe órdenes de transporte (de una estación a otra), se mueve por los pasillos y lleva una estiba. Tiene batería con nivel de carga.
 - **Animación:** desplazamiento, horquillas subiendo y bajando, baliza azul.
 
-### 10. `stretch-wrapper`: envolvedora de estibas
+### 7. `stretch-wrapper`: envolvedora de estibas
 - **Datos:** 20 a 30 estibas/h (layout), ciclo de 100 s, 3 × 3 × 2,5 m.
 - **Fallas:** rotura de film, con MTBF 100 h y MTTR 3 min.
 
-### 11. `static-asset`: infraestructura sin simulación
+### 8. `static-asset`: infraestructura sin simulación
 - **Variantes:** rack de estibas, estantería, banco de trabajo, mesa de laboratorio, muelle, transformador, rack de moldes, CNC, EDM, rectificadora, PTAR, ablandador y ósmosis.
 - **Comportamiento (B1):** solo estado y, en racks, ocupación (estibas usadas / capacidad).
 - **Visual:** detallado porque llena la escena: estibas con cajas en los racks, moldes en sus racks, máquinas CNC con cerramiento.
@@ -168,7 +145,7 @@ Además se agregan **presets** a tipos existentes: `vessel` (tanque de fase acuo
 
 ## Familia 3: Térmico (planta de salsas)
 
-### 12. `tubular-pasteurizer`: pasteurizador tubular con tubo de retención
+### 9. `tubular-pasteurizer`: pasteurizador tubular con tubo de retención
 | Dato | Valor | Origen |
 |---|---|---|
 | Caudal | 3.000 L/h | layout |
@@ -190,7 +167,7 @@ Además se agregan **presets** a tipos existentes: `vessel` (tanque de fase acuo
 
 ## Familia 4: Mezcla y molienda (planta de salsas)
 
-### 13. `vacuum-emulsifier`: emulsificador al vacío
+### 10. `vacuum-emulsifier`: emulsificador al vacío
 | Dato | Valor | Origen |
 |---|---|---|
 | Volumen y batch | 2.000 L; batch de 1.500 kg | layout |
@@ -203,7 +180,7 @@ Además se agregan **presets** a tipos existentes: `vessel` (tanque de fase acuo
 - **Fallas:** sello mecánico del rotor (MTBF 3.000 h, MTTR 90 min) y fuga de vacío (MTBF 1.500 h, MTTR 20 min).
 - **Animación:** nivel, giro del rotor, vacuómetro, aceite entrando por la tubería.
 
-### 14. `inline-mill`: molino en línea
+### 11. `inline-mill`: molino en línea
 | Dato | Valor | Origen |
 |---|---|---|
 | Modo `colloid` | Molino coloidal de 4.500 kg/h, gap de 0,3 mm, 15 kW | layout |
@@ -216,7 +193,7 @@ Además se agregan **presets** a tipos existentes: `vessel` (tanque de fase acuo
 
 ## Familia 5: Materiales plásticos (planta de inyección)
 
-### 15. `desiccant-dryer`: secador desecante
+### 12. `desiccant-dryer`: secador desecante
 | Dato | Valor | Origen |
 |---|---|---|
 | Capacidad | De 150 a 400 kg/h según el preset; 80 °C; punto de rocío −40 °C | layout |
@@ -225,19 +202,19 @@ Además se agregan **presets** a tipos existentes: `vessel` (tanque de fase acuo
 - **Fallas:** falla de regeneración del desecante (MTBF 2.500 h, MTTR 60 min): el punto de rocío sube a −10 °C, la humedad sube y la inyectora de ABS empieza a rechazar por rayas plateadas.
 - **Animación:** tolva de secado, indicador de punto de rocío.
 
-### 16. `gravimetric-blender`: mezclador gravimétrico
+### 13. `gravimetric-blender`: mezclador gravimétrico
 - **Datos:** 4 componentes, 600 kg/h (layout); receta de virgen, reciclado y masterbatch, típicamente 40/58/2 % (assumed, coherente con el 60 % de reciclado).
 - **Fallas:** deriva de la celda de carga (MTBF 3.000 h): error de dosificación de masterbatch, que produce variación de color.
 
-### 17. `vacuum-conveying-station`: transporte neumático central
+### 14. `vacuum-conveying-station`: transporte neumático central
 - **Datos:** 3 bombas de 7,5 kW y 29 líneas (layout); capacidad de unos 2.300 kg/h (layout).
 - **Fallas:** filtro tapado (MTBF 500 h, MTTR 10 min): baja la capacidad y algunas inyectoras quedan sin material.
 
-### 18. `granulator`: molino de plástico
+### 15. `granulator`: molino de plástico
 - **Datos:** de 300 a 500 kg/h, criba de 10 mm (layout). Molino al pie de máquina, con preset pequeño de 40 kg/h (assumed).
 - **Fallas:** cuchillas sin filo (degradación: más finos y polvo) y atasco (MTBF 300 h, MTTR 10 min).
 
-### 19. `pelletizing-line`: lavado y peletizado de reciclado
+### 16. `pelletizing-line`: lavado y peletizado de reciclado
 | Dato | Valor | Origen |
 |---|---|---|
 | Capacidad | 300 a 350 kg/h | layout |
@@ -250,13 +227,13 @@ Además se agregan **presets** a tipos existentes: `vessel` (tanque de fase acuo
 
 ## Familia 6: Servicios (ambas plantas)
 
-### 20. `steam-boiler`: caldera pirotubular
+### 17. `steam-boiler`: caldera pirotubular
 - **Datos:** 60 BHP, 940 kg/h, 8 bar, gas natural (layout); quemador modulante (assumed).
 - **Modelo:** la presión del vapor responde al balance entre generación y demanda (marmitas y pasteurizador). Si la demanda supera la capacidad, la presión cae y todos los consumidores lo sienten.
 - **Fallas:** apagado de llama (MTBF 2.000 h, MTTR 30 min) y bajo nivel de agua (MTBF 5.000 h, MTTR 45 min).
 - **KPIs:** consumo de gas (m³/h) y eficiencia.
 
-### 21. `chiller`: enfriador de agua
+### 18. `chiller`: enfriador de agua
 - **Presets:**
   - `600kw-mold-water`: inyección, agua a 12 °C (layout).
   - `150kw-process`: salsas, agua a 4 °C (layout).
@@ -264,16 +241,16 @@ Además se agregan **presets** a tipos existentes: `vessel` (tanque de fase acuo
 - **Modelo:** la temperatura de suministro sube si la carga supera la capacidad. Compresores por etapas, con su consumo eléctrico.
 - **Fallas:** disparo por alta presión (MTBF 3.000 h, MTTR 45 min): el agua de los moldes se calienta.
 
-### 22. `air-compressor`: compresor de tornillo
+### 19. `air-compressor`: compresor de tornillo
 - **Datos:** 22 kW en salsas y 75 kW en inyección (layout); banda de carga y descarga de 6,5 a 7,5 bar (assumed).
 - **Fallas:** sobretemperatura (MTBF 4.000 h) y fugas (degradación: más tiempo en carga).
 
-### 23. `cooling-tower`: torre de enfriamiento
+### 20. `cooling-tower`: torre de enfriamiento
 - **Datos:** 1.200 kW, agua a 28 °C (layout). Temperatura de bulbo húmedo en Medellín ≈ 19 °C (assumed).
 - **Modelo:** aproximación al bulbo húmedo según la carga y el ventilador.
 - **Fallas:** ventilador (MTBF 6.000 h): sube la temperatura del aceite de las inyectoras grandes.
 
-### 24. `cip-skid`: limpieza en sitio
+### 21. `cip-skid`: limpieza en sitio
 | Dato | Valor | Origen |
 |---|---|---|
 | Configuración | 4 circuitos; tanques de soda 1,5 %, ácido 1 %, agua recuperada y agua final; 80 °C | layout |
@@ -287,12 +264,12 @@ Además se agregan **presets** a tipos existentes: `vessel` (tanque de fase acuo
 
 ## Familia 7: Inyección, moldes y secundarias
 
-### 25. `overhead-crane`: puente grúa
+### 22. `overhead-crane`: puente grúa
 - **Datos:** 15 t, luz de 20 m, recorrido de 88 m (layout); velocidades de traslación de 0,5 m/s y de izaje de 0,1 m/s (assumed).
 - **Comportamiento:** ejecuta el traslado del molde en los cambios (SMED), con trayectoria entre el rack de moldes y la inyectora.
 - **Animación:** puente, carro, gancho y molde colgando.
 
-### 26. `workstation`: estación de trabajo
+### 23. `workstation`: estación de trabajo
 - **Variantes:**
   - Ensamble de pedal y palanca de papelera: ciclo de 35 s, 1 operario.
   - Ensamble de bisagras y tapas: 20 s.
@@ -308,7 +285,7 @@ Además se agregan **presets** a tipos existentes: `vessel` (tanque de fase acuo
 
 ## Familia 8: Personas
 
-### 27. `operator`: operario
+### 24. `operator`: operario
 | Dato | Valor | Origen |
 |---|---|---|
 | Escala | 1,70 m; cabeza, torso, brazos y piernas distinguibles | assumed |
@@ -321,6 +298,6 @@ Además se agregan **presets** a tipos existentes: `vessel` (tanque de fase acuo
 ---
 
 ## Orden de construcción propuesto
-1. **Línea de botellas de salsas:** `belt-conveyor`, `rotary-filler`, `capper`, `cooling-tunnel`, `labeler` y `case-packer`. Más `tubular-pasteurizer` y `steam-boiler`, que ya existen aguas arriba con la marmita y el tanque pulmón: es la primera línea completa.
+1. **Línea de sachets de salsas (250 y 1.000 ml):** `vffs-sachet-filler`, `belt-conveyor`, `cooling-tunnel`, `checkweigher` y `case-packer`. Más `tubular-pasteurizer` y `steam-boiler`, que ya existen aguas arriba con la marmita y el tanque pulmón: es la primera línea completa, de la pasta de tomate a la caja.
 2. **Cascada de inyección:** `desiccant-dryer`, `chiller`, `granulator` y `operator`.
 3. El resto de las familias, en el orden del resumen.
