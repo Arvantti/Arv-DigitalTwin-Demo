@@ -44,7 +44,8 @@ class Checkweigher(EquipmentBehavior):
         p = self.p
         self.pusher = max(0.0, self.pusher - dt * 4.0)
         if self.lot_on_hold and not self.hold_alarm:
-            self.emit("quality_alarm", variable="minutes_since_metal_test", value=round((self.t - self.last_test_t) / 60, 1), limit=p["metal_test_interval_min"])
+            minutes = round((self.t - self.last_test_t) / 60, 1)
+            self.emit("quality_alarm", variable="minutes_since_metal_test", value=minutes, limit=p["metal_test_interval_min"])
         self.hold_alarm = self.lot_on_hold
         if self.failures.stopping is not None:
             return

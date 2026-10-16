@@ -1,0 +1,4 @@
+preset: 3000lh-sauce
+description: Pasteurizador de 3.000 L/h para salsa de tomate y BBQ (95 °C, retención de 30 s a ≥ 92 °C)
+params: { flow_l_h: 3000, outlet_setpoint_c: 95, hold_min_c: 92, hold_s: 30, steam_bar_max: 3, density_kg_l: 1.12, tube_passes: 6 }
+provenance: { flow_l_h: user, outlet_setpoint_c: user, hold_min_c: user, hold_s: user, ua_clean_kw_k: assumed, fouling_pct_per_h: assumed }
