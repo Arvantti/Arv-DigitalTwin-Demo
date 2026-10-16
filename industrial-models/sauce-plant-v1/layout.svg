@@ -216,6 +216,9 @@
 <rect x="806.2" y="370.0" width="22.5" height="20.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
 <title>filler-pouch-02 · vffs_sachet</title>
 <text x="817.5" y="368.0" font-size="7.0" text-anchor="middle" fill="#111827">filler-pouch-02</text>
+<rect x="806.2" y="470.0" width="22.5" height="20.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>filler-pouch-03 · vffs_sachet</title>
+<text x="817.5" y="468.0" font-size="7.0" text-anchor="middle" fill="#111827">filler-pouch-03</text>
 <rect x="870.6" y="375.0" width="18.8" height="10.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
 <title>checkweigher-01 · checkweigher</title>
 <text x="880.0" y="373.0" font-size="7.0" text-anchor="middle" fill="#111827">checkweigher-01</text>
@@ -303,7 +306,7 @@
 <line x1="735.2" y1="609.0" x2="931.0" y2="288.5" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>salsa caliente: 2016 kg/h</title></line>
 <line x1="733.8" y1="470.7" x2="807.5" y2="289.3" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>mayonesa: 1395 kg/h</title></line>
 <line x1="935.6" y1="290.0" x2="924.4" y2="470.0" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>sachets calientes: 30 u/min</title></line>
-<line x1="888.5" y1="385.2" x2="1034.0" y2="474.8" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>sachets 1000 ml: 60 u/min</title></line>
+<line x1="888.5" y1="385.2" x2="1034.0" y2="474.8" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>sachets 500 y 1000 ml: 105 u/min</title></line>
 <line x1="928.6" y1="533.8" x2="1037.6" y2="338.7" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>sachets 250 ml: 240 u/min</title></line>
 <line x1="878.6" y1="770.1" x2="812.6" y2="289.9" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>laminado: 2 rollos/turno</title></line>
 <line x1="1047.5" y1="721.3" x2="1187.5" y2="476.2" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>estibas: 35 pallets/d</title></line>

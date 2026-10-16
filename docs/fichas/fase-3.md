@@ -37,7 +37,7 @@ Además se agregan **presets** a tipos existentes: `vessel` (tanque de fase acuo
 
 ### Decisiones de diseño a confirmar
 1. **Tipos combinados para no multiplicar la librería:**
-   - `vffs-sachet-filler` cubre los dos tamaños de sachet (250 ml y 1.000 ml) con presets.
+   - `vffs-sachet-filler` cubre los tres tamaños de sachet (250, 500 y 1.000 ml) con presets y cambio de formato.
    - `inline-mill` cubre el molino coloidal y el de piedra.
    - `static-asset` cubre lo que no se simula: racks, bancos, muelles, transformador, mesas de laboratorio, CNC, EDM y PTAR.
    - `workstation` cubre las estaciones manuales y semiautomáticas: ensamble, tampografía, espumado y empaque.
@@ -57,26 +57,28 @@ Además se agregan **presets** a tipos existentes: `vessel` (tanque de fase acuo
 > **Todo el producto se envasa en sachet.** No hay botellas, tapas ni etiquetas: el laminado viene impreso y la máquina solo codifica lote y vencimiento. El layout se actualizó en consecuencia.
 
 ### 1. `vffs-sachet-filler`: llenadora vertical de sachets (formadora, llenadora y selladora)
-- **Función:** forma el sachet desde un rollo de laminado, lo llena con un dosificador de pistón, lo sella y lo corta. Cubre los dos tamaños de la planta: **250 ml y 1.000 ml**.
+- **Función:** forma el sachet desde un rollo de laminado, lo llena con un dosificador de pistón, lo sella y lo corta. Cubre los tres tamaños de la planta: **250 ml, 500 ml y 1.000 ml**.
 - **Referencias:** `filler-sachet-01..03` y `filler-pouch-01..03` del layout.
 
 | Dato | Valor | Origen |
 |---|---|---|
-| Tamaños | 250 ml y 1.000 ml | user |
+| Tamaños | 250 ml, 500 ml y 1.000 ml | user |
 | Preset `250ml-2-lanes` | 2 pistas, 80 a 100 u/min, huella 1,6 × 1,6 × 3,0 m (mayonesa, rosada, tomate, BBQ) | assumed |
 | Preset `250ml-1-lane` | 1 pista, 60 u/min (mostaza, máquina dedicada por alérgeno) | assumed |
+| Preset `500ml-1-lane` | 1 pista, 45 u/min, huella 1,8 × 1,6 × 3,2 m | assumed |
 | Preset `1000ml-1-lane` | 1 pista, 30 u/min, huella 1,8 × 1,6 × 3,2 m | assumed |
-| Peso por sachet | Volumen × densidad: tomate 1,12 kg/L (280 g y 1.120 g), mayonesa 0,93 kg/L (233 g y 930 g), mostaza 1,05 kg/L | derived |
-| Capacidad en caliente | 30 × 1.000 ml + 80 × 250 ml de tomate = 56 kg/min ≈ 3.000 L/h, igual a la capacidad del pasteurizador | derived |
-| Máquinas en planta | 3 de 250 ml (mayonesa, tomate, mostaza) y 2 de 1.000 ml (tomate, mayonesa) | assumed |
+| Cambio de formato | Las máquinas de 1 pista cambian entre 500 y 1.000 ml cambiando el tubo formador y el pistón, en ≈ 30 min (estado `setup`) | assumed |
+| Peso por sachet | Volumen × densidad: tomate 1,12 kg/L (280, 560 y 1.120 g), mayonesa 0,93 kg/L (233, 465 y 930 g), mostaza 1,05 kg/L | derived |
+| Capacidad en caliente | 30 × 1.000 ml + 80 × 250 ml de tomate = 56 kg/min ≈ 3.000 L/h, igual a la capacidad del pasteurizador. El tomate en 500 ml sale de la máquina de 1.000 ml con cambio de formato, sin exceder esa capacidad | derived |
+| Máquinas en planta | 3 de 250 ml (mayonesa, tomate, mostaza), 1 de 500 ml (mayonesa y rosada) y 2 de 1.000 ml (tomate, mayonesa); las de 1 pista pueden pasar a 500 o 1.000 ml | assumed |
 | Llenado en caliente | Tomate y BBQ a ≥ 85 °C; por debajo, rechazo por riesgo de inocuidad. Mayonesa y mostaza en frío | layout |
-| Laminado | PET/PE impreso apto para 85 °C; rollo de unos 6.000 sachets de 250 ml o 3.000 de 1.000 ml; cambio de 8 min | assumed |
+| Laminado | PET/PE impreso apto para 85 °C; rollo de unos 6.000 sachets de 250 ml, 4.000 de 500 ml o 3.000 de 1.000 ml; cambio de 8 min | assumed |
 | Sellado | Mordazas a 150 °C ± 10; fuera de ventana, sello débil y rechazo (fuga). En caliente se necesita más tiempo de mordaza | assumed |
 | Exactitud de dosificación | Desviación típica del 1,5 % del peso nominal; crece con la viscosidad y con burbujas de aire en el producto | assumed |
 | Codificación | Impresora térmica de lote y vencimiento; si falla, rechazo por código ilegible | assumed |
 | Aire comprimido | ≥ 6 bar; por debajo, se detiene | layout, assumed |
 
-- **Estados:** idle, running, blocked (salida llena), starved (sin producto o sin laminado), cleaning (CIP del dosificador), fault.
+- **Estados:** idle, running, blocked (salida llena), starved (sin producto o sin laminado), setup (cambio de formato), cleaning (CIP del dosificador), fault.
 - **Variables:** velocidad, unidades, rechazos por causa (sello, peso, código, temperatura), temperatura de mordazas, temperatura del producto, peso medio y desviación, metros de laminado restantes.
 - **Fallas:**
   - Atasco o rotura de película: MTBF 200 h, MTTR 6 min.
@@ -91,7 +93,7 @@ Además se agregan **presets** a tipos existentes: `vessel` (tanque de fase acuo
 | Dato | Valor | Origen |
 |---|---|---|
 | Huella | 6,0 × 1,5 × 2,0 m | layout |
-| Temperaturas | Entrada 85 °C, salida 35 °C, permanencia 12 min (la necesita el de 1.000 ml; el de 250 ml enfría en unos 6 min) | layout, derived |
+| Temperaturas | Entrada 85 °C, salida 35 °C, permanencia 12 min (la necesita el de 1.000 ml; el de 500 ml enfría en unos 9 min y el de 250 ml en unos 6) | layout, derived |
 | Agua | De chiller a 4 °C, 12 m³/h | layout |
 | Modelo térmico | Enfriamiento de primer orden del sachet; constante según el espesor (1.000 ml más grueso, enfría más lento) y el caudal de agua | derived |
 
@@ -101,7 +103,7 @@ Además se agregan **presets** a tipos existentes: `vessel` (tanque de fase acuo
 - **Animación:** banda de malla con sachets, cortinas de aspersión y vapor a la entrada.
 
 ### 3. `checkweigher`: control de peso con detector de metales
-- **Datos:** 1,5 × 0,8 × 1,2 m (layout) · uno por tamaño: tolerancia de ±4 g en 250 ml y ±10 g en 1.000 ml (assumed) · detector de metales en línea (layout) · rechazo por empujador.
+- **Datos:** 1,5 × 0,8 × 1,2 m (layout) · uno para 250 ml y otro compartido para 500 y 1.000 ml · tolerancia de ±4 g en 250 ml, ±6 g en 500 ml y ±10 g en 1.000 ml (assumed) · detector de metales en línea (layout) · rechazo por empujador.
 - **Variables:** peso medido, media y desviación móviles, rechazos por peso, rechazos por metal.
 - **Fallas:**
   - Deriva de la celda de carga (MTBF 3.000 h): rechaza producto bueno o deja pasar producto malo.
@@ -109,7 +111,7 @@ Además se agregan **presets** a tipos existentes: `vessel` (tanque de fase acuo
 
 ### 4. `case-packer`: encajado de sachets
 - **Datos:** 5 a 6 cajas/min, huella 3,0 × 2,0 × 2,0 m (layout).
-- **Formatos:** 250 ml en cajas de 24 u y 1.000 ml en cajas de 12 u (assumed).
+- **Formatos:** 250 ml en cajas de 24 u, 500 ml en cajas de 20 u y 1.000 ml en cajas de 12 u (assumed).
 - **Fallas:** atasco de caja, con MTBF 200 h y MTTR 5 min. La falta de cajas deja la máquina en starved.
 
 ---
@@ -298,6 +300,6 @@ Además se agregan **presets** a tipos existentes: `vessel` (tanque de fase acuo
 ---
 
 ## Orden de construcción propuesto
-1. **Línea de sachets de salsas (250 y 1.000 ml):** `vffs-sachet-filler`, `belt-conveyor`, `cooling-tunnel`, `checkweigher` y `case-packer`. Más `tubular-pasteurizer` y `steam-boiler`, que ya existen aguas arriba con la marmita y el tanque pulmón: es la primera línea completa, de la pasta de tomate a la caja.
+1. **Línea de sachets de salsas (250, 500 y 1.000 ml):** `vffs-sachet-filler`, `belt-conveyor`, `cooling-tunnel`, `checkweigher` y `case-packer`. Más `tubular-pasteurizer` y `steam-boiler`, que ya existen aguas arriba con la marmita y el tanque pulmón: es la primera línea completa, de la pasta de tomate a la caja.
 2. **Cascada de inyección:** `desiccant-dryer`, `chiller`, `granulator` y `operator`.
 3. El resto de las familias, en el orden del resumen.
