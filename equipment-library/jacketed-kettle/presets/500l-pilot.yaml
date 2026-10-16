@@ -1,0 +1,4 @@
+preset: 500l-pilot
+description: Marmita piloto de 500 L para desarrollo de productos
+params: { volume_l: 500, jacket_coverage: 0.6, u_w_m2k: 500, steam_bar: 2, agitator_kw: 1.5, agitator_max_rpm: 80, scrapers: true, legs: 3 }
+provenance: { volume_l: assumed }

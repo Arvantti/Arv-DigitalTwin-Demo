@@ -1,0 +1,60 @@
+scenarios:
+  - id: fill-and-draw
+    description: Tanque pulmón frío que recibe un batch y alimenta la llenadora hasta vaciarse
+    preset: cold-buffer-3000l
+    duration_s: 9000
+    timeline:
+      - { at_s: 0, command: set_inflow, args: { kg_h: 4500 } }
+      - { at_s: 0, command: set_outflow, args: { kg_h: 1500 } }
+      - { at_s: 2100, command: set_inflow, args: { kg_h: 0 } }
+    expect:
+      - { path: events.high_level, equals: 1, description: "(837 kg + 1750 kg netos = 93 %)" }
+      - { path: events.empty, equals: 1 }
+      - { path: state, equals: starved }
+      - { path: variables.total_out_kg, min: 3440, max: 3480, description: "(837 kg iniciales + 2625 kg recibidos)" }
+
+  - id: hot-hold
+    description: Tanque pulmón caliente recibe salsa a 92 °C y la mantiene a 88 °C
+    preset: hot-buffer-3000l
+    duration_s: 3600
+    inputs: { inflow_temp_c: 92 }
+    timeline:
+      - { at_s: 0, command: set_inflow, args: { kg_h: 3000 } }
+      - { at_s: 1800, command: set_inflow, args: { kg_h: 0 } }
+    expect:
+      - { path: variables.temperature_c, min: 86, max: 90 }
+      - { path: variables.level_pct, min: 60, max: 70 }
+
+  - id: silo-drawdown
+    description: Silo de resina alimenta inyectoras; llega un camión de 20 t
+    preset: resin-silo-40t
+    duration_s: 28800
+    timeline:
+      - { at_s: 0, command: set_outflow, args: { kg_h: 2300 } }
+      - { at_s: 14400, command: set_inflow, args: { kg_h: 20000 } }
+      - { at_s: 18000, command: set_inflow, args: { kg_h: 0 } }
+    expect:
+      - { path: variables.total_in_kg, min: 19990, max: 20010 }
+      - { path: variables.total_out_kg, min: 18390, max: 18410 }
+      - { path: variables.level_pct, min: 72.5, max: 75.5, description: "(28.875 − 18.400 + 20.000 kg = 73,9 %)" }
+
+  - id: silo-overfill
+    description: El camión trae más resina de la que cabe; el silo se llena y bloquea la descarga del camión
+    preset: resin-silo-40t
+    duration_s: 7200
+    timeline:
+      - { at_s: 0, command: set_inflow, args: { kg_h: 20000 } }
+    expect:
+      - { path: events.full, equals: 1 }
+      - { path: state, equals: blocked }
+      - { path: variables.mass_kg, min: 41249, max: 41250 }
+
+  - id: stuck-transmitter
+    description: El transmisor de nivel se congela mientras el tanque se vacía
+    preset: cold-buffer-3000l
+    duration_s: 1800
+    timeline:
+      - { at_s: 0, command: set_outflow, args: { kg_h: 1500 } }
+      - { at_s: 300, command: inject_fault, args: { fault: level_transmitter_stuck, duration_s: 3600 } }
+    expect:
+      - { path: variables.level_pct, min: 25, max: 27, description: la lectura queda congelada cerca del valor de los 300 s }

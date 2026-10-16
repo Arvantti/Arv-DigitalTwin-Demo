@@ -1,0 +1,83 @@
+# La receta de salsa de tomate es la del plant.yaml de sauce-plant-v1 (batch de 2.000 kg).
+x-tomato-phases: &tomato_phases
+  - { kind: agitate, rpm: 40 }
+  - { kind: charge, material: agua, kg: 860, rate_kg_min: 107.5 }
+  - { kind: charge, material: pasta_tomate_30brix, kg: 700, rate_kg_min: 46.7 }
+  - { kind: agitate, rpm: 60 }
+  - { kind: charge, material: azucar, kg: 300, rate_kg_min: 30 }
+  - { kind: charge, material: sal, kg: 36, rate_kg_min: 30 }
+  - { kind: charge, material: almidon_modificado, kg: 20, rate_kg_min: 10 }
+  - { kind: charge, material: especias, kg: 2, rate_kg_min: 2 }
+  - { kind: charge, material: conservante, kg: 2, rate_kg_min: 2 }
+  - { kind: charge, material: vinagre, kg: 80, rate_kg_min: 40 }
+  - { kind: heat, target_c: 85 }
+  - { kind: hold, target_c: 85, minutes: 10 }
+  - { kind: sample, minutes: 10, spec: { brix: [24, 28], ph_max: 3.9, bostwick_cm_30s: [4, 7] } }
+  - { kind: discharge, rate_kg_min: 50 }
+
+scenarios:
+  - id: tomato-sauce-batch
+    description: Batch completo de salsa de tomate de 2.000 kg (cargar, calentar a 85 °C, mantener, muestrear, descargar)
+    preset: 2500l-sauce
+    duration_s: 10800
+    timeline:
+      - { at_s: 0, command: run_phases, args: { phases: *tomato_phases } }
+    expect:
+      - { path: events.batch_completed, equals: 1 }
+      - { path: kpis.first_pass_in_spec, equals: 1.0, description: "la receta del plant.yaml cumple Brix, pH y Bostwick" }
+      - { path: kpis.avg_batch_min, min: 100, max: 140 }
+      - { path: kpis.steam_kg_per_t, min: 90, max: 140, description: "(≈ 3,4 kJ/kg·K × 60 K / 2.150 kJ/kg + pérdidas)" }
+      - { path: variables.discharged_kg, min: 1980, max: 1995 }
+      - { path: state, equals: idle }
+
+  - id: weak-steam
+    description: La caldera entrega solo 1 bar; el calentamiento se alarga
+    preset: 2500l-sauce
+    duration_s: 14400
+    inputs: { steam_supply_bar: 1.0 }
+    timeline:
+      - { at_s: 0, command: run_phases, args: { phases: *tomato_phases } }
+    expect:
+      - { path: events.batch_completed, equals: 1 }
+      - { path: kpis.avg_batch_min, min: 125 }
+
+  - id: under-acidified
+    description: Se olvida el vinagre; el pH sale fuera de especificación
+    preset: 2500l-sauce
+    duration_s: 10800
+    timeline:
+      - at_s: 0
+        command: run_phases
+        args:
+          phases:
+            - { kind: agitate, rpm: 60 }
+            - { kind: charge, material: agua, kg: 940, rate_kg_min: 107.5 }
+            - { kind: charge, material: pasta_tomate_30brix, kg: 700, rate_kg_min: 46.7 }
+            - { kind: charge, material: azucar, kg: 300, rate_kg_min: 30 }
+            - { kind: charge, material: sal, kg: 36, rate_kg_min: 30 }
+            - { kind: charge, material: almidon_modificado, kg: 20, rate_kg_min: 10 }
+            - { kind: heat, target_c: 85 }
+            - { kind: sample, minutes: 10, spec: { brix: [24, 28], ph_max: 3.9 } }
+    expect:
+      - { path: kpis.first_pass_in_spec, equals: 0.0 }
+      - { path: variables.ph, min: 3.95 }
+
+  - id: valve-stuck-overshoot
+    description: La válvula de vapor se pega abierta durante el calentamiento y el producto se sobrecalienta
+    preset: 2500l-sauce
+    duration_s: 7200
+    timeline:
+      - { at_s: 0, command: run_phases, args: { phases: [ { kind: agitate, rpm: 50 }, { kind: charge, material: agua, kg: 1800, rate_kg_min: 120 }, { kind: heat, target_c: 85 }, { kind: hold, target_c: 85, minutes: 60 } ] } }
+      - { at_s: 2200, command: inject_fault, args: { fault: steam_valve_stuck, duration_s: 1800 } }
+    expect:
+      - { path: events.temperature_deviation, min: 1 }
+      - { path: events.fault_cleared, equals: 1 }
+
+  - id: demo
+    description: Batches consecutivos de salsa de tomate con CIP (para la galería)
+    preset: 2500l-sauce
+    duration_s: 21600
+    random_faults: true
+    timeline:
+      - { at_s: 0, command: run_phases, args: { phases: *tomato_phases } }
+      - { at_s: 9000, command: run_phases, args: { phases: *tomato_phases } }

@@ -1,0 +1,4 @@
+preset: cold-buffer-3000l
+description: Tanque pulmón de 3.000 L para mayonesa
+params: { form: vertical_tank, volume_l: 3000, content: mayonesa, density_kg_m3: 930, initial_level_pct: 30, inlet_max_kg_h: 4500, outlet_max_kg_h: 2500 }
+provenance: { volume_l: user }

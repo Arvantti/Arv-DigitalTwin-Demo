@@ -1,0 +1,27 @@
+[project]
+name = "industrial-twin"
+version = "0.1.0"
+description = "Gemelo digital industrial: librería de equipos, runtime de simulación y API"
+requires-python = ">=3.11"
+dependencies = ["twin-runtime"]
+
+[tool.uv.workspace]
+members = ["packages/twin-runtime", "apps/api"]
+
+[tool.uv.sources]
+twin-runtime = { workspace = true }
+
+[dependency-groups]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[tool.pytest.ini_options]
+testpaths = ["packages/twin-runtime/tests", "equipment-library", "apps/api/tests"]
+python_files = ["test_*.py"]
+addopts = "--import-mode=importlib"
+
+[tool.ruff]
+line-length = 110
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]

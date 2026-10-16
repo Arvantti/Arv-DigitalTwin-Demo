@@ -1,0 +1,4 @@
+preset: oil-tank-30m3
+description: Tanque exterior de aceite vegetal de 30 m³
+params: { form: vertical_tank, volume_l: 30000, diameter_m: 3.0, content: aceite de soya, density_kg_m3: 920, initial_level_pct: 60, finish: stainless, inlet_max_kg_h: 18000, outlet_max_kg_h: 6000 }
+provenance: { volume_l: user, diameter_m: user }

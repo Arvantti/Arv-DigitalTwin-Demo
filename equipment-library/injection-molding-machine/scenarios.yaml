@@ -1,0 +1,81 @@
+# Escenarios de referencia. Sirven para la galería, para las pruebas automáticas y
+# para que una IA compruebe que un equipo nuevo se comporta con sentido.
+scenarios:
+  - id: steady-production
+    description: Una hora de producción estable de recipientes, sin fallas
+    preset: 300t-container
+    duration_s: 3600
+    timeline:
+      - { at_s: 0, command: start }
+    expect:
+      - { path: variables.cycle_count, min: 190, max: 202, description: "(3600 s / 18 s ≈ 200 ciclos)" }
+      - { path: kpis.quality, min: 0.97 }
+      - { path: kpis.oee, min: 0.9 }
+      - { path: state, equals: running }
+
+  - id: cold-start
+    description: Arranque en frío; calienta el cilindro y luego produce
+    preset: 300t-container
+    params: { start_hot: false }
+    duration_s: 5400
+    timeline:
+      - { at_s: 0, command: start }
+    expect:
+      - { path: events.heat_up_completed, equals: 1 }
+      - { path: variables.cycle_count, min: 20 }
+      - { path: kpis.availability, max: 0.95, description: el calentamiento cuenta como tiempo no productivo }
+
+  - id: wet-resin-abs
+    description: Resina ABS sin secar; aparecen rayas plateadas (splay) y sube el scrap
+    params: { material: ABS, cycle_s: 25, cavities: 2, part_g: 120 }
+    inputs: { resin_moisture_pct: 0.30 }
+    duration_s: 1800
+    timeline:
+      - { at_s: 0, command: start }
+    expect:
+      - { path: kpis.scrap_rate, min: 0.15 }
+      - { path: variables.last_defect, equals: splay }
+
+  - id: heater-failure
+    description: Falla una resistencia del cilindro; baja la temperatura y aumentan las inyecciones incompletas
+    preset: 650t-bucket
+    duration_s: 3600
+    timeline:
+      - { at_s: 0, command: start }
+      - { at_s: 600, command: inject_fault, args: { fault: heater_band_failure, duration_s: 2400 } }
+    expect:
+      - { path: events.quality_alarm, min: 1 }
+      - { path: events.fault_cleared, equals: 1 }
+      - { path: kpis.scrap_rate, min: 0.05 }
+
+  - id: blocked-downstream
+    description: La banda de salida se llena durante 10 minutos
+    preset: 100t-cutlery
+    duration_s: 1800
+    timeline:
+      - { at_s: 0, command: start }
+      - { at_s: 300, inputs: { downstream_free: false } }
+      - { at_s: 900, inputs: { downstream_free: true } }
+    expect:
+      - { path: kpis.availability, min: 0.6, max: 0.7, description: "(≈ 600 s bloqueada de 1800 s)" }
+      - { path: state, equals: running }
+
+  - id: mold-change
+    description: Cambio de molde de 45 minutos y retorno a producción
+    preset: 1500t-bin
+    duration_s: 7200
+    timeline:
+      - { at_s: 0, command: start }
+      - { at_s: 1800, command: mold_change, args: { duration_min: 45 } }
+      - { at_s: 4600, command: start }
+    expect:
+      - { path: events.mold_change_completed, equals: 1 }
+      - { path: variables.cycle_count, min: 45, max: 50 }
+
+  - id: demo
+    description: Escenario de demostración con fallas aleatorias (para la galería)
+    preset: 300t-container
+    duration_s: 28800
+    random_faults: true
+    timeline:
+      - { at_s: 0, command: start }

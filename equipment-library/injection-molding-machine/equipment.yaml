@@ -1,0 +1,132 @@
+schema_version: 0.1.0
+type: injection-molding-machine
+version: 0.1.0
+name: Inyectora horizontal de termoplásticos
+manufacturing: discrete
+category: forming.injection
+description: >
+  Máquina de moldeo por inyección horizontal (hidráulica o híbrida) con unidad de cierre,
+  unidad de inyección de tornillo reciprocante, molde con termorregulador y robot de
+  extracción opcional. Produce piezas por ciclo (cavidades) y modela la calidad en función
+  de las condiciones del proceso.
+aliases: [inyectora, máquina de inyección, IMM, injection molding machine]
+fidelity: { visual: V2, behavior: B3 }
+
+params:
+  clamp_t:       { type: number, unit: t, min: 20, max: 4000, default: 300, description: Fuerza de cierre, affects: [geometry, behavior] }
+  max_shot_kg:   { type: number, unit: kg, min: 0.005, max: 60, default: 0.9, description: Capacidad máxima de inyección (PS equivalente), affects: [geometry, behavior] }
+  product:       { type: string, default: pieza, description: Producto que se moldea, affects: [display] }
+  material:      { type: enum, values: [PP, HDPE, PS, ABS, PP reciclado, HDPE reciclado, PS reciclado], default: PP, description: Resina principal, affects: [behavior] }
+  cavities:      { type: integer, min: 1, max: 128, default: 1, description: Número de cavidades del molde, affects: [behavior] }
+  part_g:        { type: number, unit: g, min: 0.1, max: 60000, default: 100, description: Peso de una pieza, affects: [behavior] }
+  cycle_s:       { type: number, unit: s, min: 3, max: 600, default: 25, description: Tiempo de ciclo estándar (ideal), affects: [behavior] }
+  robot:         { type: enum, values: [none, sprue_picker, cartesiano], default: cartesiano, description: Tipo de robot de extracción, affects: [geometry, behavior] }
+  barrel_zones:  { type: integer, min: 3, max: 8, default: 5, description: Zonas de calentamiento del cilindro, affects: [geometry, behavior] }
+  mold_temp_c:   { type: number, unit: degC, min: 10, max: 120, default: 40, description: Consigna del termorregulador de molde, affects: [behavior] }
+  scrap_base:    { type: number, min: 0, max: 0.3, default: 0.01, description: Fracción de rechazo en condiciones nominales, affects: [behavior] }
+  start_hot:     { type: boolean, default: true, description: Si el cilindro arranca ya a temperatura (sin calentamiento inicial), affects: [behavior] }
+  body_color:    { type: string, default: "#2f5d8a", description: Color de la carcasa (hex), affects: [geometry] }
+  brand_plate:   { type: string, default: "", description: Texto genérico de placa (no usar marcas reales), affects: [geometry] }
+
+ports:
+  - { id: resin_in,      kind: material, direction: in,  medium: resina en pellet, unit: kg/h }
+  - { id: parts_out,     kind: item,     direction: out, medium: piezas, unit: u/h }
+  - { id: scrap_out,     kind: material, direction: out, medium: scrap, unit: kg/h }
+  - { id: cooling_water, kind: utility,  direction: in,  medium: agua de enfriamiento }
+  - { id: power,         kind: utility,  direction: in,  medium: energía eléctrica, unit: kW }
+
+states:
+  - { id: "off",         description: Apagada }
+  - { id: idle,        description: "Encendida y a temperatura, sin ciclar" }
+  - { id: starting,    description: Calentando el cilindro hasta la temperatura de proceso }
+  - { id: setup,       description: Cambio de molde o ajuste }
+  - { id: running,     description: Ciclando en automático }
+  - { id: blocked,     description: Ciclo detenido porque la salida está llena }
+  - { id: starved,     description: Sin material en la tolva }
+  - { id: fault,       description: Detenida por falla }
+  - { id: maintenance, description: Mantenimiento planificado }
+
+phases:
+  - { id: mold_close,  description: Cierre y bloqueo del molde }
+  - { id: injection,   description: Llenado de la cavidad }
+  - { id: holding,     description: Presión de sostenimiento }
+  - { id: cooling,     description: Enfriamiento y dosificación del tornillo }
+  - { id: mold_open,   description: Apertura del molde }
+  - { id: ejection,    description: Expulsión y extracción por robot }
+
+variables:
+  - { id: barrel_temp_avg,      unit: degC, kind: measured,   range: [20, 320], noise_sd: 0.6, resolution: 0.1, description: Temperatura media de las zonas del cilindro }
+  - { id: barrel_temp_setpoint, unit: degC, kind: setpoint,   range: [150, 300], description: Consigna de temperatura del cilindro según material }
+  - { id: melt_temp,            unit: degC, kind: measured,   range: [20, 330], noise_sd: 1.2, resolution: 0.1, description: Temperatura de masa fundida en boquilla }
+  - { id: mold_temp,            unit: degC, kind: measured,   range: [10, 120], noise_sd: 0.4, resolution: 0.1, description: Temperatura del molde (retorno del termorregulador) }
+  - { id: injection_pressure,   unit: bar,  kind: measured,   range: [0, 2200], noise_sd: 8, resolution: 1, description: Presión hidráulica de inyección instantánea }
+  - { id: peak_pressure,        unit: bar,  kind: measured,   range: [0, 2200], noise_sd: 4, resolution: 1, description: Presión pico del último ciclo }
+  - { id: cushion_mm,           unit: mm,   kind: measured,   range: [0, 30], noise_sd: 0.08, resolution: 0.01, description: Colchón al final del sostenimiento (último ciclo) }
+  - { id: hydraulic_oil_temp,   unit: degC, kind: measured,   range: [20, 70], noise_sd: 0.3, resolution: 0.1, description: Temperatura del aceite hidráulico }
+  - { id: power_kw,             unit: kW,   kind: measured,   range: [0, 1000], noise_sd: 0.5, resolution: 0.1, description: Potencia eléctrica instantánea }
+  - { id: energy_kwh,           unit: kWh,  kind: counter,    description: Energía acumulada }
+  - { id: last_cycle_s,         unit: s,    kind: calculated, description: Duración real del último ciclo }
+  - { id: cycle_count,          unit: ciclos, kind: counter,  description: Ciclos completados }
+  - { id: parts_good,           unit: u,    kind: counter,    description: Piezas buenas }
+  - { id: parts_rejected,       unit: u,    kind: counter,    description: Piezas rechazadas }
+  - { id: scrap_kg,             unit: kg,   kind: counter,    description: Material rechazado acumulado }
+  - { id: resin_consumed_kg,    unit: kg,   kind: counter,    description: Resina consumida }
+  - { id: screw_wear_pct,       unit: "%",  kind: calculated, range: [0, 100], description: Desgaste estimado del tornillo y válvula antirretorno }
+  - { id: last_defect,          unit: "",   kind: status,     description: "Último defecto detectado (short_shot, flash, sink_marks, splay, warp)" }
+
+events:
+  - { id: cycle_completed, description: Fin de ciclo, payload: [cycle, duration_s, good, rejected, peak_pressure, cushion_mm] }
+  - { id: part_rejected,   description: Piezas rechazadas en el ciclo, payload: [count, defect] }
+  - { id: heat_up_completed, description: El cilindro alcanzó la temperatura de proceso }
+  - { id: mold_change_started,  description: Inicio de cambio de molde, payload: [duration_min] }
+  - { id: mold_change_completed, description: Fin de cambio de molde }
+  - { id: quality_alarm, description: Variable de proceso fuera de ventana, payload: [variable, value, limit] }
+
+faults:
+  - { id: heater_band_failure, description: Falla una resistencia del cilindro, mtbf_h: 3000, mttr_min: 40, severity: medium, stops_equipment: false, effect: Baja la temperatura media del cilindro; aumentan inyecciones incompletas }
+  - { id: hydraulic_overtemp,  description: Sobretemperatura del aceite hidráulico, mtbf_h: 2500, mttr_min: 25, severity: high, effect: Parada hasta enfriar el aceite }
+  - { id: part_stuck,          description: Pieza pegada en el molde, mtbf_h: 400, mttr_min: 4, severity: low, effect: Parada corta para retirar la pieza }
+  - { id: robot_fault,         description: Falla del robot de extracción, mtbf_h: 900, mttr_min: 12, severity: medium, effect: Parada hasta rearmar el robot }
+  - { id: thermolator_fault,   description: Falla del termorregulador de molde, mtbf_h: 2000, mttr_min: 30, severity: medium, stops_equipment: false, effect: Sube la temperatura del molde; rechupes y deformación }
+  - { id: check_ring_wear,     description: Desgaste acelerado de la válvula antirretorno, mtbf_h: null, mttr_min: 240, severity: low, stops_equipment: false, effect: Colchón inestable y menor; inyecciones incompletas }
+
+commands:
+  - { id: power_on,     description: Enciende la máquina (calienta si el cilindro está frío) }
+  - { id: power_off,    description: Apaga la máquina }
+  - { id: start,        description: Inicia el ciclo automático }
+  - { id: stop,         description: Detiene al final del ciclo en curso }
+  - { id: mold_change,  description: Cambio de molde, args: { duration_min: number } }
+  - { id: maintenance,  description: Inicia o termina mantenimiento, args: { active: boolean } }
+  - { id: inject_fault, description: Inyecta una falla declarada, args: { fault: string, duration_s: number } }
+  - { id: clear_fault,  description: Repara una falla activa, args: { fault: string } }
+  - { id: set_param,    description: Cambia un parámetro en caliente, args: { name: string, value: any } }
+
+kpis:
+  - { id: oee,          unit: "", description: Efectividad global del equipo (disponibilidad × rendimiento × calidad) }
+  - { id: availability, unit: "", description: Tiempo en marcha / tiempo planificado }
+  - { id: performance,  unit: "", description: Producción real / producción ideal en el tiempo en marcha }
+  - { id: quality,      unit: "", description: Piezas buenas / piezas totales }
+  - { id: scrap_rate,   unit: "", description: Rechazos / piezas totales }
+  - { id: kwh_per_kg,   unit: kWh/kg, description: Consumo específico de energía }
+  - { id: parts_per_hour, unit: u/h, description: Ritmo de producción del tiempo transcurrido }
+
+animation_channels:
+  - { id: mold_open,       range: [0, 1], description: "Apertura de la platina móvil (0 = cerrado, 1 = abierto)" }
+  - { id: ejector,         range: [0, 1], description: Avance de los expulsores }
+  - { id: screw_position,  range: [0, 1], description: "Posición axial del tornillo (1 = atrás con dosis, 0 = adelante)" }
+  - { id: screw_rpm,       unit: rpm, range: [0, 300], description: Giro del tornillo durante la dosificación }
+  - { id: robot_progress,  range: [0, 1], description: "Recorrido del robot (0 = reposo arriba, 0,5 = dentro del molde, 1 = depositando)" }
+  - { id: part_in_mold,    range: [0, 1], description: Hay pieza visible en el molde }
+  - { id: stack_light,     range: [0, 3], description: "Baliza: 0 apagada, 1 verde, 2 amarilla, 3 roja" }
+  - { id: heat_glow,       range: [0, 1], description: Intensidad visual de calor del cilindro }
+
+geometry:
+  parts: [base_frame, clamp_unit, fixed_platen, moving_platen, tie_bars, mold_half_fixed, mold_half_moving, injection_unit, barrel, heater_bands, hopper, screw_drive, control_cabinet, hmi_panel, safety_guards, robot_beam, robot_arm, robot_gripper, stack_light, part]
+  notes: Dimensiones derivadas de clamp_t con relaciones típicas de catálogo (largo ≈ 2,6·t^0,33 m).
+
+assumptions:
+  - Distribución de fases del ciclo fija (cierre 10 %, inyección 8 %, sostenimiento 12 %, enfriamiento 50 %, apertura 10 %, expulsión 10 %).
+  - Potencia instalada aproximada en función del tonelaje (motor ≈ 0,12·t + 10 kW, resistencias ≈ 0,05·t + 5 kW).
+  - La probabilidad de defecto crece con las desviaciones de temperatura, colchón y humedad de la resina.
+references:
+  - Rangos de temperatura por resina de fichas técnicas genéricas de PP, HDPE, PS y ABS.

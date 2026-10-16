@@ -1,0 +1,214 @@
+schema_version: 0.1.0
+type: vessel
+version: 0.1.0
+name: Recipiente de almacenamiento (silo o tanque)
+manufacturing: process
+category: storage.bulk
+description: >
+  Familia paramétrica de recipientes: silos de sólidos a granel con fondo cónico, tanques
+  verticales de almacenamiento, tanques pulmón con chaqueta para mantener temperatura y
+  tanques de mezcla con agitador. Modela balance de masa, nivel, temperatura y alarmas
+  de nivel.
+aliases: [silo, tanque, tanque pulmón, buffer, tanque de almacenamiento, tolva, depósito]
+fidelity: { visual: V2, behavior: B3 }
+
+params:
+  form:
+    type: enum
+    values: [silo, vertical_tank]
+    default: vertical_tank
+    description: Silo (sólidos, fondo cónico, estructura) o tanque vertical (líquidos)
+    affects: [geometry, behavior]
+  volume_l:
+    type: number
+    unit: L
+    min: 50
+    max: 500000
+    default: 3000
+    description: Volumen útil
+    affects: [geometry, behavior]
+  diameter_m:
+    type: number
+    unit: m
+    min: 0
+    max: 12
+    default: 0
+    description: Diámetro; 0 = calcular con relación altura/diámetro típica
+    affects: [geometry, behavior]
+  content:
+    type: string
+    default: producto
+    description: Material almacenado
+    affects: [display]
+  density_kg_m3:
+    type: number
+    unit: kg/m3
+    min: 100
+    max: 2500
+    default: 1000
+    description: Densidad del contenido (aparente si es sólido a granel)
+    affects: [behavior]
+  initial_level_pct:
+    type: number
+    unit: "%"
+    min: 0
+    max: 100
+    default: 50
+    description: Nivel inicial
+    affects: [behavior]
+  jacketed:
+    type: boolean
+    default: false
+    description: Tiene chaqueta para mantener temperatura
+    affects: [geometry, behavior]
+  hold_temp_c:
+    type: number
+    unit: degC
+    min: -10
+    max: 150
+    default: 85
+    description: Temperatura de mantenimiento si tiene chaqueta
+    affects: [behavior]
+  agitator:
+    type: boolean
+    default: false
+    description: Tiene agitador
+    affects: [geometry, behavior]
+  agitator_rpm:
+    type: number
+    unit: rpm
+    min: 0
+    max: 3000
+    default: 60
+    description: Velocidad nominal del agitador
+    affects: [behavior]
+  inlet_max_kg_h:
+    type: number
+    unit: kg/h
+    min: 0
+    max: 500000
+    default: 5000
+    description: Caudal máximo de llenado
+    affects: [behavior]
+  outlet_max_kg_h:
+    type: number
+    unit: kg/h
+    min: 0
+    max: 500000
+    default: 5000
+    description: Caudal máximo de descarga
+    affects: [behavior]
+  low_level_pct:
+    type: number
+    unit: "%"
+    min: 0
+    max: 50
+    default: 10
+    description: Alarma de nivel bajo
+    affects: [behavior]
+  high_level_pct:
+    type: number
+    unit: "%"
+    min: 50
+    max: 100
+    default: 90
+    description: Alarma de nivel alto
+    affects: [behavior]
+  finish:
+    type: enum
+    values: [stainless, painted, galvanized]
+    default: stainless
+    description: Acabado exterior
+    affects: [geometry]
+  color:
+    type: string
+    default: "#d9dde1"
+    description: Color si el acabado es pintado (hex)
+    affects: [geometry]
+
+ports:
+  - { id: inlet, kind: material, direction: in, unit: kg/h }
+  - { id: outlet, kind: material, direction: out, unit: kg/h }
+  - { id: heating_medium, kind: utility, direction: in, medium: vapor o agua caliente }
+
+states:
+  - { id: idle, description: Sin flujos }
+  - { id: running, description: Llenando o descargando }
+  - { id: starved, description: Se pide descarga pero está vacío }
+  - { id: blocked, description: Se pide llenado pero está lleno }
+  - { id: cleaning, description: Limpieza CIP en curso }
+  - { id: fault, description: Detenido por falla }
+  - { id: maintenance, description: Mantenimiento }
+
+variables:
+  - { id: level_pct, unit: "%", kind: measured, range: [0, 100], noise_sd: 0.15, resolution: 0.1, description: Nivel medido }
+  - { id: mass_kg, unit: kg, kind: calculated, description: Masa contenida }
+  - { id: volume_l, unit: L, kind: calculated, description: Volumen ocupado }
+  - { id: temperature_c, unit: degC, kind: measured, range: [-20, 160], noise_sd: 0.15, resolution: 0.1, description: Temperatura del contenido }
+  - { id: inflow_kg_h, unit: kg/h, kind: measured, range: [0, 500000], noise_sd: 2, resolution: 1, description: Caudal de entrada }
+  - { id: outflow_kg_h, unit: kg/h, kind: measured, range: [0, 500000], noise_sd: 2, resolution: 1, description: Caudal de salida }
+  - { id: agitator_rpm, unit: rpm, kind: measured, range: [0, 3000], noise_sd: 0.5, resolution: 1, description: Velocidad del agitador }
+  - { id: heating_pct, unit: "%", kind: calculated, range: [0, 100], description: Apertura de la válvula de calentamiento de la chaqueta }
+  - { id: total_in_kg, unit: kg, kind: counter, description: Masa recibida acumulada }
+  - { id: total_out_kg, unit: kg, kind: counter, description: Masa entregada acumulada }
+
+events:
+  - { id: low_level, description: Nivel por debajo de la alarma baja }
+  - { id: high_level, description: Nivel por encima de la alarma alta }
+  - { id: empty, description: Recipiente vacío con descarga solicitada }
+  - { id: full, description: Recipiente lleno con llenado solicitado }
+  - { id: cip_started, description: Inicio de limpieza CIP, payload: [duration_min] }
+  - { id: cip_completed, description: Fin de limpieza CIP }
+
+faults:
+  - id: level_transmitter_stuck
+    description: El transmisor de nivel se congela en su última lectura
+    mtbf_h: 8000
+    mttr_min: 60
+    severity: medium
+    stops_equipment: false
+    effect: El nivel reportado deja de cambiar aunque la masa sí cambie
+  - id: outlet_valve_fault
+    description: La válvula de descarga no abre
+    mtbf_h: 5000
+    mttr_min: 30
+    severity: high
+    effect: No hay descarga hasta reparar
+  - id: agitator_trip
+    description: Disparo térmico del motor del agitador
+    mtbf_h: 3000
+    mttr_min: 20
+    severity: medium
+    stops_equipment: false
+    effect: El agitador se detiene
+
+commands:
+  - { id: set_inflow, description: Fija el caudal de llenado, args: { kg_h: number } }
+  - { id: set_outflow, description: Fija el caudal de descarga, args: { kg_h: number } }
+  - { id: set_agitator, description: Fija la velocidad del agitador, args: { rpm: number } }
+  - { id: fill, description: Carga instantánea de masa (preparar un escenario), args: { kg: number } }
+  - { id: cip, description: Limpieza CIP (vacía el recipiente), args: { duration_min: number } }
+  - { id: maintenance, description: Inicia o termina mantenimiento, args: { active: boolean } }
+  - { id: inject_fault, description: Inyecta una falla declarada, args: { fault: string, duration_s: number } }
+  - { id: clear_fault, description: Repara una falla activa, args: { fault: string } }
+  - { id: set_param, description: Cambia un parámetro en caliente, args: { name: string, value: any } }
+
+kpis:
+  - { id: residence_time_h, unit: h, description: Masa contenida / caudal de salida promedio }
+  - { id: time_below_low_pct, unit: "", description: Fracción del tiempo con nivel bajo }
+
+animation_channels:
+  - { id: level, range: [0, 1], description: Nivel real (para el corte visual o la mirilla) }
+  - { id: agitator_rpm, unit: rpm, range: [0, 3000], description: Giro del agitador }
+  - { id: inflow_active, range: [0, 1], description: Flujo de entrada normalizado }
+  - { id: outflow_active, range: [0, 1], description: Flujo de salida normalizado }
+  - { id: heating, range: [0, 1], description: Calentamiento de la chaqueta }
+  - { id: alarm_light, range: [0, 3], description: "Baliza: 0 apagada, 1 verde, 2 amarilla, 3 roja" }
+
+geometry:
+  parts: [shell, top_head, bottom_head, cone, legs, skirt, support_structure, jacket, insulation, agitator_motor, agitator_shaft, ladder, manhole, nozzles, level_gauge]
+  notes: Relación altura/diámetro 1,5 para tanques y 2,5 para silos si no se fija el diámetro.
+
+assumptions:
+  - Contenido perfectamente mezclado (una sola temperatura).
+  - Pérdidas térmicas con coeficiente global de 8 W/m²K sobre el área exterior.
