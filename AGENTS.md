@@ -7,7 +7,7 @@ Este repositorio construye una plataforma de gemelos digitales industriales. Las
 - `packages/twin-runtime/`: runtime de Python. Clase base `EquipmentBehavior`, primitivas (PID, retardos, sensores, fallas, OEE, vapor), simulador y CLI `twin-lib`.
 - `packages/twin-3d/`: piezas 3D, materiales PBR y escenario de render (three.js).
 - `apps/api/`: FastAPI con la simulación en vivo por WebSocket.
-- `apps/gallery/`: galería web para ver, parametrizar y simular cada equipo.
+- `apps/gallery/`: galería web para ver, parametrizar y simular cada equipo, y escena de planta en 3D (`plant.html`, `docs/plant-scene.md`).
 - `industrial-models/<planta>/plant.yaml`: layouts de planta. `tools/layout/render_layout.py` los valida y dibuja.
 - `industrial-models/<planta>/simulation.yaml`: qué equipos del layout se simulan y cómo se conectan por puertos (motor de planta, `docs/plant-engine.md`).
 
@@ -28,4 +28,8 @@ uv run pytest                     # pruebas de Python
 uv run ruff check .
 pnpm -r typecheck && pnpm -r test   # tipos y prueba genérica de geometrías
 pnpm gallery                      # galería en http://localhost:5173 (con la API: uv run uvicorn twin_api.main:app --port 8000)
+                                  # escena de planta: http://localhost:5173/plant.html (docs/plant-scene.md)
 ```
+
+## Registro del proyecto (obligatorio)
+`docs/registro/` es una bóveda de Obsidian con el plan, la bitácora, las decisiones y el histórico de conversaciones con la IA, que respaldan el registro de software en Colombia. **Todo PR actualiza la bitácora y el histórico** siguiendo `docs/registro/como-actualizar.md`. Nunca incluyas credenciales ni tokens en esas notas.

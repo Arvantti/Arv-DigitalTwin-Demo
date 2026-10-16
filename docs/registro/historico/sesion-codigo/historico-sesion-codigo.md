@@ -1,0 +1,15 @@
+---
+tipo: historico-ia
+fuente: sesión de Claude Code `session_018z1NSkoJusykZX6JF7go3n`
+tags: [registro, historico-ia]
+---
+# Histórico: sesión de código con la IA
+
+Índice: [[00-indice]] · Bitácora: [[bitacora]].
+
+Conversación entre Carlos Andrés Quiceño (autor) y Claude (modelo Opus 5.5, Claude Code) del **2026-10-15 23:17 UTC al 2026-10-16 13:54 UTC**, en la que se construyó el repositorio hasta el PR #4. Exportada de la transcripción de la sesión.
+
+- [[sesion-codigo-parte-01]]: 2026-10-15 23:17 → 2026-10-16 04:18 (repositorio vacío, plan, layouts de plantas, librería de equipos).
+- [[sesion-codigo-parte-02]]: 2026-10-16 04:18 → 13:54 (geometría, galería, MCP, entrevista, PR #1–#4, sachets).
+
+Criterios de la exportación: se incluyen todos los mensajes del autor y todo el texto escrito por la IA; las llamadas a herramientas se resumen en una línea; no se incluyen resultados de herramientas ni razonamiento interno. Imágenes adjuntas se mencionan pero no se reproducen. Tokens y credenciales se reemplazaron por `[REDACTADO]`. En esta conversación el autor nombra a las dos empresas de Medellín que inspiran las plantas; el código del repositorio no usa esos nombres.
