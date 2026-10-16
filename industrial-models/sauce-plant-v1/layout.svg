@@ -1,0 +1,342 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1460" height="1080" viewBox="0 0 1460 1080" font-family="Inter, Helvetica, Arial, sans-serif">
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#d4a017" stroke-width="1.2" stroke-opacity="0.45"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#c2410c"/></marker></defs>
+<rect width="100%" height="100%" fill="#ffffff"/>
+<text x="30" y="48" font-size="20" font-weight="700" fill="#1f2937">Planta de salsas y aderezos (referencia)</text>
+<text x="30" y="68" font-size="12" fill="#4b5563">sauce-plant-v1 · manufactura por procesos · predio 112 × 72 m · datos de referencia, no de una planta real</text>
+<rect x="30.0" y="80.0" width="1400.0" height="900.0" fill="#fbfbf8" stroke="#9ca3af" stroke-dasharray="6 4"/>
+<rect x="30.0" y="530.0" width="125.0" height="275.0" fill="#f4f4ef" stroke="#6b7280" stroke-width="1"/>
+<text x="34.0" y="544.0" font-size="11.0" font-weight="600" fill="#374151">Patio de recepción</text>
+<rect x="30.0" y="205.0" width="125.0" height="275.0" fill="#f4f4ef" stroke="#6b7280" stroke-width="1"/>
+<text x="34.0" y="215.5" font-size="7.471264367816093" font-weight="600" fill="#374151">Tanques de aceite y vinag…</text>
+<rect x="405.0" y="855.0" width="125.0" height="125.0" fill="#e3e3e3" stroke="#6b7280" stroke-width="1"/>
+<text x="409.0" y="869.0" font-size="11.0" font-weight="600" fill="#374151">Cuarto de caldera</text>
+<rect x="530.0" y="855.0" width="75.0" height="125.0" fill="#e3e3e3" stroke="#6b7280" stroke-width="1"/>
+<text x="534.0" y="868.5" font-size="10.501567398119123" font-weight="600" fill="#374151">Compresores</text>
+<rect x="605.0" y="855.0" width="100.0" height="125.0" fill="#e3e3e3" stroke="#6b7280" stroke-width="1"/>
+<text x="609.0" y="866.3" font-size="8.348457350272232" font-weight="600" fill="#374151">Tratamiento de agua</text>
+<rect x="705.0" y="855.0" width="100.0" height="125.0" fill="#e3e3e3" stroke="#6b7280" stroke-width="1"/>
+<text x="709.0" y="865.0" font-size="7.0" font-weight="600" fill="#374151">Chiller y banco de hi…</text>
+<rect x="805.0" y="855.0" width="75.0" height="125.0" fill="#e3e3e3" stroke="#6b7280" stroke-width="1"/>
+<text x="809.0" y="865.0" font-size="7.0" font-weight="600" fill="#374151">Subestación elé…</text>
+<rect x="1105.0" y="855.0" width="175.0" height="125.0" fill="#e3e3e3" stroke="#6b7280" stroke-width="1"/>
+<text x="1109.0" y="867.3" font-size="9.2880978865406" font-weight="600" fill="#374151">Tratamiento de aguas residuales</text>
+<rect x="1280.0" y="255.0" width="150.0" height="450.0" fill="#f4f4ef" stroke="#6b7280" stroke-width="1"/>
+<text x="1284.0" y="267.1" font-size="9.067688378033207" font-weight="600" fill="#374151">Patio y muelles de despacho</text>
+<rect x="155.0" y="555.0" width="200.0" height="275.0" fill="#e9dcc3" stroke="#6b7280" stroke-width="1"/>
+<text x="159.0" y="569.0" font-size="11.0" font-weight="600" fill="#374151">Bodega de pasta de tomate</text>
+<text x="159.0" y="582.0" font-size="10.0" fill="#6b7280">25 °C</text>
+<rect x="155.0" y="430.0" width="100.0" height="125.0" fill="#e9dcc3" stroke="#6b7280" stroke-width="1"/>
+<text x="159.0" y="440.0" font-size="7.0" font-weight="600" fill="#374151">Cuarto frío (huevo lí…</text>
+<text x="159.0" y="449.0" font-size="6.0" fill="#6b7280">2 °C</text>
+<rect x="255.0" y="430.0" width="100.0" height="125.0" fill="#e9dcc3" stroke="#6b7280" stroke-width="1"/>
+<text x="259.0" y="441.3" font-size="8.348457350272232" font-weight="600" fill="#374151">Bodega de alérgenos</text>
+<text x="259.0" y="451.7" font-size="7.348457350272232" fill="#6b7280">25 °C</text>
+<rect x="155.0" y="105.0" width="200.0" height="325.0" fill="#e9dcc3" stroke="#6b7280" stroke-width="1"/>
+<text x="159.0" y="119.0" font-size="11.0" font-weight="600" fill="#374151">Bodega de ingredientes secos</text>
+<text x="159.0" y="132.0" font-size="10.0" fill="#6b7280">25 °C</text>
+<rect x="780.0" y="655.0" width="200.0" height="175.0" fill="#e9dcc3" stroke="#6b7280" stroke-width="1"/>
+<text x="784.0" y="669.0" font-size="11.0" font-weight="600" fill="#374151">Bodega de material de empaque</text>
+<text x="784.0" y="682.0" font-size="10.0" fill="#6b7280">25 °C</text>
+<rect x="355.0" y="555.0" width="100.0" height="275.0" fill="#cfe3f2" stroke="#6b7280" stroke-width="1"/>
+<text x="359.0" y="565.0" font-size="7.0" font-weight="600" fill="#374151">Preparación de pasta …</text>
+<text x="359.0" y="574.0" font-size="6.0" fill="#6b7280">25 °C</text>
+<rect x="355.0" y="380.0" width="100.0" height="175.0" fill="#cfe3f2" stroke="#6b7280" stroke-width="1"/>
+<text x="359.0" y="394.0" font-size="11.0" font-weight="600" fill="#374151">Sala de pesaje</text>
+<text x="359.0" y="407.0" font-size="10.0" fill="#6b7280">20 °C</text>
+<rect x="355.0" y="305.0" width="100.0" height="75.0" fill="#d9ecd4" stroke="#6b7280" stroke-width="1"/>
+<text x="359.0" y="315.0" font-size="7.0" font-weight="600" fill="#374151">Esclusa sanitaria de …</text>
+<text x="359.0" y="324.0" font-size="6.0" fill="#6b7280">20 °C</text>
+<rect x="455.0" y="505.0" width="225.0" height="325.0" fill="#cfe3f2" stroke="#6b7280" stroke-width="1"/>
+<text x="459.0" y="519.0" font-size="11.0" font-weight="600" fill="#374151">Proceso en caliente</text>
+<text x="459.0" y="532.0" font-size="10.0" fill="#6b7280">28 °C</text>
+<rect x="455.0" y="230.0" width="225.0" height="275.0" fill="#cfe3f2" stroke="#6b7280" stroke-width="1"/>
+<text x="459.0" y="244.0" font-size="11.0" font-weight="600" fill="#374151">Proceso de emulsiones en frío</text>
+<text x="459.0" y="257.0" font-size="10.0" fill="#6b7280">18 °C</text>
+<rect x="680.0" y="655.0" width="100.0" height="175.0" fill="#cfe3f2" stroke="#6b7280" stroke-width="1"/>
+<text x="684.0" y="669.0" font-size="11.0" font-weight="600" fill="#374151">Central CIP</text>
+<text x="684.0" y="682.0" font-size="10.0" fill="#6b7280">25 °C</text>
+<rect x="680.0" y="230.0" width="100.0" height="425.0" fill="#cfe3f2" stroke="#6b7280" stroke-width="1"/>
+<text x="684.0" y="240.0" font-size="7.0" font-weight="600" fill="#374151">Tanques pulmón de pro…</text>
+<text x="684.0" y="249.0" font-size="6.0" fill="#6b7280">20 °C</text>
+<rect x="980.0" y="230.0" width="125.0" height="600.0" fill="#cfe3f2" stroke="#6b7280" stroke-width="1"/>
+<text x="984.0" y="242.6" font-size="9.605911330049262" font-weight="600" fill="#374151">Encajado y paletizado</text>
+<text x="984.0" y="254.2" font-size="8.605911330049262" fill="#6b7280">25 °C</text>
+<rect x="780.0" y="605.0" width="200.0" height="50.0" fill="#d9ecd4" stroke="#6b7280" stroke-width="1"/>
+<text x="784.0" y="619.0" font-size="11.0" font-weight="600" fill="#374151">Esclusa de llenado</text>
+<text x="784.0" y="632.0" font-size="10.0" fill="#6b7280">18 °C</text>
+<rect x="780.0" y="230.0" width="200.0" height="375.0" fill="#b9d7b1" stroke="#6b7280" stroke-width="1"/>
+<text x="784.0" y="244.0" font-size="11.0" font-weight="600" fill="#374151">Sala de llenado</text>
+<text x="784.0" y="257.0" font-size="10.0" fill="#6b7280">18 °C</text>
+<rect x="1105.0" y="105.0" width="175.0" height="725.0" fill="#e9dcc3" stroke="#6b7280" stroke-width="1"/>
+<text x="1109.0" y="118.3" font-size="10.283251231527094" font-weight="600" fill="#374151">Bodega de producto terminado</text>
+<text x="1109.0" y="130.6" font-size="9.283251231527094" fill="#6b7280">25 °C</text>
+<rect x="355.0" y="105.0" width="100.0" height="200.0" fill="#efe7f5" stroke="#6b7280" stroke-width="1"/>
+<text x="359.0" y="119.0" font-size="11.0" font-weight="600" fill="#374151">Vestieres</text>
+<rect x="455.0" y="105.0" width="150.0" height="125.0" fill="#efe7f5" stroke="#6b7280" stroke-width="1"/>
+<text x="459.0" y="119.0" font-size="11.0" font-weight="600" fill="#374151">Laboratorio de calidad</text>
+<text x="459.0" y="132.0" font-size="10.0" fill="#6b7280">22 °C</text>
+<rect x="605.0" y="105.0" width="225.0" height="125.0" fill="#efe7f5" stroke="#6b7280" stroke-width="1"/>
+<text x="609.0" y="119.0" font-size="11.0" font-weight="600" fill="#374151">Oficinas</text>
+<rect x="830.0" y="105.0" width="150.0" height="125.0" fill="#efe7f5" stroke="#6b7280" stroke-width="1"/>
+<text x="834.0" y="119.0" font-size="11.0" font-weight="600" fill="#374151">Cafetería</text>
+<rect x="980.0" y="105.0" width="125.0" height="125.0" fill="#e3e3e3" stroke="#6b7280" stroke-width="1"/>
+<text x="984.0" y="119.0" font-size="11.0" font-weight="600" fill="#374151">Mantenimiento</text>
+<circle cx="92.5" cy="423.8" r="18.8" fill="#64748b" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>tank-oil-01 · storage_tank</title>
+<text x="92.5" y="403.0" font-size="7.0" text-anchor="middle" fill="#111827">tank-oil-01</text>
+<circle cx="92.5" cy="361.2" r="18.8" fill="#64748b" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>tank-oil-02 · storage_tank</title>
+<text x="92.5" y="340.5" font-size="7.0" text-anchor="middle" fill="#111827">tank-oil-02</text>
+<circle cx="92.5" cy="292.5" r="13.8" fill="#64748b" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>tank-vinegar-01 · storage_tank</title>
+<text x="92.5" y="276.8" font-size="7.0" text-anchor="middle" fill="#111827">tank-vinegar-01</text>
+<rect x="86.2" y="230.0" width="12.5" height="12.5" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>pump-unload-01 · pump</title>
+<text x="92.5" y="228.0" font-size="7.0" text-anchor="middle" fill="#111827">pump-unload-01</text>
+<rect x="167.5" y="770.6" width="175.0" height="18.8" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>rack-paste-01 · pallet_rack</title>
+<text x="255.0" y="782.5" font-size="7.5" text-anchor="middle" fill="#ffffff">rack-paste-01</text>
+<rect x="167.5" y="670.6" width="175.0" height="18.8" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>rack-paste-02 · pallet_rack</title>
+<text x="255.0" y="682.5" font-size="7.5" text-anchor="middle" fill="#ffffff">rack-paste-02</text>
+<rect x="167.5" y="510.0" width="75.0" height="15.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>rack-egg-01 · shelving</title>
+<text x="205.0" y="520.0" font-size="7.5" text-anchor="middle" fill="#ffffff">rack-egg-01</text>
+<rect x="167.5" y="460.0" width="75.0" height="15.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>rack-egg-02 · shelving</title>
+<text x="205.0" y="470.0" font-size="7.5" text-anchor="middle" fill="#ffffff">rack-egg-02</text>
+<rect x="267.5" y="510.0" width="75.0" height="15.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>rack-allergen-01 · shelving</title>
+<text x="305.0" y="520.0" font-size="7.5" text-anchor="middle" fill="#ffffff">rack-allergen-01</text>
+<rect x="167.5" y="358.1" width="175.0" height="18.8" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>rack-dry-01 · pallet_rack</title>
+<text x="255.0" y="370.0" font-size="7.5" text-anchor="middle" fill="#ffffff">rack-dry-01</text>
+<rect x="167.5" y="270.6" width="175.0" height="18.8" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>rack-dry-02 · pallet_rack</title>
+<text x="255.0" y="282.5" font-size="7.5" text-anchor="middle" fill="#ffffff">rack-dry-02</text>
+<rect x="167.5" y="183.1" width="175.0" height="18.8" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>rack-dry-03 · pallet_rack</title>
+<text x="255.0" y="195.0" font-size="7.5" text-anchor="middle" fill="#ffffff">rack-dry-03</text>
+<rect x="792.5" y="770.6" width="175.0" height="18.8" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>rack-pack-01 · pallet_rack</title>
+<text x="880.0" y="782.5" font-size="7.5" text-anchor="middle" fill="#ffffff">rack-pack-01</text>
+<rect x="792.5" y="695.6" width="175.0" height="18.8" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>rack-pack-02 · pallet_rack</title>
+<text x="880.0" y="707.5" font-size="7.5" text-anchor="middle" fill="#ffffff">rack-pack-02</text>
+<rect x="392.5" y="742.5" width="25.0" height="25.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>drum-tipper-01 · drum_tipper</title>
+<text x="405.0" y="740.5" font-size="7.0" text-anchor="middle" fill="#111827">drum-tipper-01</text>
+<rect x="395.6" y="661.2" width="18.8" height="12.5" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>pump-paste-01 · lobe_pump</title>
+<text x="405.0" y="659.2" font-size="7.0" text-anchor="middle" fill="#111827">pump-paste-01</text>
+<rect x="376.9" y="508.1" width="18.8" height="18.8" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>scale-01 · floor_scale</title>
+<text x="386.2" y="506.1" font-size="7.0" text-anchor="middle" fill="#111827">scale-01</text>
+<rect x="414.4" y="508.1" width="18.8" height="18.8" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>scale-02 · bench_scale</title>
+<text x="423.8" y="506.1" font-size="7.0" text-anchor="middle" fill="#111827">scale-02</text>
+<rect x="395.6" y="420.6" width="18.8" height="18.8" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>scale-allergen-01 · bench_scale</title>
+<text x="405.0" y="418.6" font-size="7.0" text-anchor="middle" fill="#111827">scale-allergen-01</text>
+<rect x="392.5" y="336.2" width="25.0" height="12.5" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>handwash-01 · handwash_station</title>
+<text x="405.0" y="334.2" font-size="7.0" text-anchor="middle" fill="#111827">handwash-01</text>
+<circle cx="505.0" cy="580.0" r="13.8" fill="#64748b" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>kettle-01 · jacketed_kettle</title>
+<text x="505.0" y="564.2" font-size="7.0" text-anchor="middle" fill="#111827">kettle-01</text>
+<circle cx="580.0" cy="580.0" r="13.8" fill="#64748b" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>kettle-02 · jacketed_kettle</title>
+<text x="580.0" y="564.2" font-size="7.0" text-anchor="middle" fill="#111827">kettle-02</text>
+<rect x="636.2" y="575.0" width="12.5" height="10.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>pump-hot-01 · lobe_pump</title>
+<text x="642.5" y="573.0" font-size="7.0" text-anchor="middle" fill="#111827">pump-hot-01</text>
+<rect x="523.8" y="693.7" width="62.5" height="22.5" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>pasteurizer-01 · tubular_heat_exchanger</title>
+<text x="555.0" y="691.7" font-size="7.0" text-anchor="middle" fill="#111827">pasteurizer-01</text>
+<rect x="530.0" y="745.0" width="50.0" height="7.5" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>holding-tube-01 · holding_tube</title>
+<text x="555.0" y="743.0" font-size="7.0" text-anchor="middle" fill="#111827">holding-tube-01</text>
+<rect x="617.5" y="773.8" width="25.0" height="12.5" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>steam-station-01 · steam_pressure_station</title>
+<text x="630.0" y="771.8" font-size="7.0" text-anchor="middle" fill="#111827">steam-station-01</text>
+<circle cx="498.8" cy="292.5" r="11.2" fill="#64748b" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>tank-aqueous-01 · mixing_tank</title>
+<text x="498.8" y="279.2" font-size="7.0" text-anchor="middle" fill="#111827">tank-aqueous-01</text>
+<circle cx="567.5" cy="292.5" r="15.6" fill="#64748b" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>emulsifier-01 · vacuum_emulsifier</title>
+<text x="567.5" y="274.9" font-size="7.0" text-anchor="middle" fill="#111827">emulsifier-01</text>
+<rect x="620.6" y="286.2" width="18.8" height="12.5" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>colloid-mill-01 · colloid_mill</title>
+<text x="630.0" y="284.2" font-size="7.0" text-anchor="middle" fill="#111827">colloid-mill-01</text>
+<circle cx="498.8" cy="430.0" r="10.0" fill="#64748b" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>tank-mustard-01 · mixing_tank</title>
+<text x="498.8" y="418.0" font-size="7.0" text-anchor="middle" fill="#111827">tank-mustard-01</text>
+<rect x="558.1" y="422.5" width="18.8" height="15.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>mustard-mill-01 · stone_mill</title>
+<text x="567.5" y="420.5" font-size="7.0" text-anchor="middle" fill="#111827">mustard-mill-01</text>
+<rect x="620.6" y="423.8" width="18.8" height="12.5" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>oil-dosing-01 · dosing_skid</title>
+<text x="630.0" y="421.8" font-size="7.0" text-anchor="middle" fill="#111827">oil-dosing-01</text>
+<rect x="692.5" y="723.8" width="75.0" height="37.5" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>cip-skid-01 · cip_skid</title>
+<text x="730.0" y="745.0" font-size="7.5" text-anchor="middle" fill="#ffffff">cip-skid-01</text>
+<circle cx="730.0" cy="617.5" r="13.8" fill="#64748b" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>buffer-hot-01 · jacketed_tank</title>
+<text x="730.0" y="601.8" font-size="7.0" text-anchor="middle" fill="#111827">buffer-hot-01</text>
+<circle cx="730.0" cy="561.2" r="13.8" fill="#64748b" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>buffer-hot-02 · jacketed_tank</title>
+<text x="730.0" y="545.5" font-size="7.0" text-anchor="middle" fill="#111827">buffer-hot-02</text>
+<circle cx="730.0" cy="480.0" r="13.8" fill="#64748b" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>buffer-cold-01 · storage_tank</title>
+<text x="730.0" y="464.2" font-size="7.0" text-anchor="middle" fill="#111827">buffer-cold-01</text>
+<circle cx="730.0" cy="423.8" r="13.8" fill="#64748b" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>buffer-cold-02 · storage_tank</title>
+<text x="730.0" y="408.0" font-size="7.0" text-anchor="middle" fill="#111827">buffer-cold-02</text>
+<circle cx="730.0" cy="342.5" r="12.5" fill="#64748b" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>buffer-mustard-01 · storage_tank</title>
+<text x="730.0" y="328.0" font-size="7.0" text-anchor="middle" fill="#111827">buffer-mustard-01</text>
+<rect x="723.8" y="261.2" width="12.5" height="12.5" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>pump-transfer-01 · lobe_pump</title>
+<text x="730.0" y="259.2" font-size="7.0" text-anchor="middle" fill="#111827">pump-transfer-01</text>
+<rect x="867.5" y="623.8" width="25.0" height="12.5" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>handwash-02 · handwash_station</title>
+<text x="880.0" y="621.8" font-size="7.0" text-anchor="middle" fill="#111827">handwash-02</text>
+<rect x="801.2" y="270.0" width="20.0" height="20.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>filler-sachet-01 · vffs_sachet</title>
+<text x="811.2" y="268.0" font-size="7.0" text-anchor="middle" fill="#111827">filler-sachet-01</text>
+<rect x="838.8" y="270.0" width="20.0" height="20.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>filler-sachet-02 · vffs_sachet</title>
+<text x="848.8" y="268.0" font-size="7.0" text-anchor="middle" fill="#111827">filler-sachet-02</text>
+<rect x="876.2" y="270.0" width="20.0" height="20.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>filler-sachet-03 · vffs_sachet</title>
+<text x="886.2" y="268.0" font-size="7.0" text-anchor="middle" fill="#111827">filler-sachet-03</text>
+<rect x="923.8" y="261.2" width="37.5" height="37.5" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>filler-doypack-01 · premade_pouch_filler</title>
+<text x="942.5" y="259.2" font-size="7.0" text-anchor="middle" fill="#111827">filler-doypack-01</text>
+<rect x="805.0" y="367.5" width="25.0" height="25.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>filler-gallon-01 · piston_filler</title>
+<text x="817.5" y="365.5" font-size="7.0" text-anchor="middle" fill="#111827">filler-gallon-01</text>
+<rect x="870.6" y="375.0" width="18.8" height="10.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>checkweigher-01 · checkweigher</title>
+<text x="880.0" y="373.0" font-size="7.0" text-anchor="middle" fill="#111827">checkweigher-01</text>
+<rect x="798.8" y="467.5" width="37.5" height="25.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>filler-bottle-01 · rotary_filler</title>
+<text x="817.5" y="465.5" font-size="7.0" text-anchor="middle" fill="#111827">filler-bottle-01</text>
+<rect x="851.9" y="470.6" width="18.8" height="18.8" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>capper-01 · capper</title>
+<text x="861.2" y="468.6" font-size="7.0" text-anchor="middle" fill="#111827">capper-01</text>
+<rect x="886.2" y="470.6" width="75.0" height="18.8" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>cooling-tunnel-01 · cooling_tunnel</title>
+<text x="923.8" y="468.6" font-size="7.0" text-anchor="middle" fill="#111827">cooling-tunnel-01</text>
+<rect x="911.2" y="533.1" width="25.0" height="18.8" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>labeler-01 · labeler</title>
+<text x="923.8" y="531.1" font-size="7.0" text-anchor="middle" fill="#111827">labeler-01</text>
+<rect x="1023.8" y="317.5" width="37.5" height="25.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>case-pack-01 · case_packer</title>
+<text x="1042.5" y="315.5" font-size="7.0" text-anchor="middle" fill="#111827">case-pack-01</text>
+<rect x="1023.8" y="467.5" width="37.5" height="25.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>case-pack-02 · case_packer</title>
+<text x="1042.5" y="465.5" font-size="7.0" text-anchor="middle" fill="#111827">case-pack-02</text>
+<rect x="1023.8" y="711.2" width="37.5" height="37.5" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>wrapper-01 · stretch_wrapper</title>
+<text x="1042.5" y="709.2" font-size="7.0" text-anchor="middle" fill="#111827">wrapper-01</text>
+<rect x="1120.6" y="155.0" width="18.8" height="625.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>rack-pt-01 · pallet_rack</title>
+<text x="1130.0" y="470.0" font-size="7.5" text-anchor="middle" fill="#ffffff" transform="rotate(-90 1130.0 467.5)">rack-pt-01</text>
+<rect x="1176.9" y="155.0" width="31.2" height="625.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>rack-pt-02 · pallet_rack</title>
+<text x="1192.5" y="470.0" font-size="7.5" text-anchor="middle" fill="#ffffff" transform="rotate(-90 1192.5 467.5)">rack-pt-02</text>
+<rect x="1251.9" y="155.0" width="18.8" height="625.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>rack-pt-03 · pallet_rack</title>
+<text x="1261.2" y="470.0" font-size="7.5" text-anchor="middle" fill="#ffffff" transform="rotate(-90 1261.2 467.5)">rack-pt-03</text>
+<rect x="1286.2" y="605.0" width="37.5" height="50.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>dock-01 · dock_leveler</title>
+<text x="1305.0" y="632.5" font-size="7.5" text-anchor="middle" fill="#ffffff">dock-01</text>
+<rect x="1286.2" y="480.0" width="37.5" height="50.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>dock-02 · dock_leveler</title>
+<text x="1305.0" y="507.5" font-size="7.5" text-anchor="middle" fill="#ffffff">dock-02</text>
+<rect x="1286.2" y="355.0" width="37.5" height="50.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>dock-03 · dock_leveler</title>
+<text x="1305.0" y="382.5" font-size="7.5" text-anchor="middle" fill="#ffffff">dock-03</text>
+<rect x="480.0" y="186.2" width="100.0" height="12.5" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>lab-bench-01 · lab_bench</title>
+<text x="530.0" y="195.0" font-size="7.5" text-anchor="middle" fill="#ffffff">lab-bench-01</text>
+<rect x="1005.0" y="158.1" width="75.0" height="18.8" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>workbench-mnt-01 · workbench</title>
+<text x="1042.5" y="170.0" font-size="7.5" text-anchor="middle" fill="#ffffff">workbench-mnt-01</text>
+<rect x="436.2" y="903.8" width="62.5" height="27.5" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>boiler-01 · fire_tube_boiler</title>
+<text x="467.5" y="920.0" font-size="7.5" text-anchor="middle" fill="#ffffff">boiler-01</text>
+<rect x="558.1" y="935.0" width="18.8" height="15.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>compressor-01 · air_compressor</title>
+<text x="567.5" y="933.0" font-size="7.0" text-anchor="middle" fill="#111827">compressor-01</text>
+<rect x="558.1" y="885.0" width="18.8" height="15.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>compressor-02 · air_compressor</title>
+<text x="567.5" y="883.0" font-size="7.0" text-anchor="middle" fill="#111827">compressor-02</text>
+<rect x="642.5" y="936.2" width="25.0" height="12.5" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>softener-01 · water_softener</title>
+<text x="655.0" y="934.2" font-size="7.0" text-anchor="middle" fill="#111827">softener-01</text>
+<rect x="636.2" y="898.8" width="37.5" height="12.5" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>ro-01 · reverse_osmosis</title>
+<text x="655.0" y="907.5" font-size="7.5" text-anchor="middle" fill="#ffffff">ro-01</text>
+<circle cx="686.2" cy="948.8" r="13.8" fill="#64748b" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>tank-water-01 · storage_tank</title>
+<text x="686.2" y="933.0" font-size="7.0" text-anchor="middle" fill="#111827">tank-water-01</text>
+<rect x="730.0" y="930.0" width="50.0" height="25.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>chiller-01 · chiller</title>
+<text x="755.0" y="945.0" font-size="7.5" text-anchor="middle" fill="#ffffff">chiller-01</text>
+<rect x="730.0" y="880.0" width="50.0" height="25.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>ice-bank-01 · ice_bank</title>
+<text x="755.0" y="895.0" font-size="7.5" text-anchor="middle" fill="#ffffff">ice-bank-01</text>
+<rect x="823.8" y="901.9" width="37.5" height="31.2" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>transformer-01 · transformer</title>
+<text x="842.5" y="899.9" font-size="7.0" text-anchor="middle" fill="#111827">transformer-01</text>
+<rect x="1130.0" y="886.2" width="125.0" height="62.5" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>wwtp-01 · wastewater_plant</title>
+<text x="1192.5" y="920.0" font-size="7.5" text-anchor="middle" fill="#ffffff">wwtp-01</text>
+<line x1="264.9" y1="778.4" x2="395.1" y2="756.6" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>pasta de tomate: 4 bolsas/batch</title></line>
+<line x1="215.0" y1="517.5" x2="376.2" y2="517.5" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>huevo líquido: 120 kg/batch</title></line>
+<line x1="261.6" y1="375.0" x2="379.7" y2="510.0" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>ingredientes secos: 350 kg/batch</title></line>
+<line x1="412.5" y1="660.9" x2="497.5" y2="586.6" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>pasta de tomate: 3000 kg/h</title></line>
+<line x1="395.1" y1="522.2" x2="496.2" y2="575.3" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>ingredientes pesados: 340 kg/batch</title></line>
+<line x1="636.8" y1="588.2" x2="560.7" y2="696.8" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>salsa cocida: 3000 L/h</title></line>
+<line x1="563.0" y1="742.8" x2="722.0" y2="623.5" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>salsa pasteurizada: 3000 L/h</title></line>
+<line x1="390.7" y1="508.6" x2="494.3" y2="301.4" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>fase acuosa: 300 kg/batch</title></line>
+<line x1="102.5" y1="423.9" x2="620.0" y2="429.9" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>aceite: 4700 kg/h</title></line>
+<line x1="634.7" y1="301.3" x2="725.3" y2="471.2" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>mayonesa: 4500 kg/h</title></line>
+<line x1="415.0" y1="430.0" x2="488.8" y2="430.0" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>harina de mostaza: 120 kg/batch</title></line>
+<line x1="576.3" y1="425.3" x2="721.2" y2="347.2" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>mostaza: 1000 kg/h</title></line>
+<line x1="735.4" y1="609.1" x2="812.1" y2="488.4" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>salsa caliente: 2160 kg/h</title></line>
+<line x1="733.8" y1="470.7" x2="807.5" y2="289.3" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>mayonesa: 154 kg/h</title></line>
+<line x1="932.6" y1="537.8" x2="1033.7" y2="484.7" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>botellas: 60 u/min</title></line>
+<line x1="821.0" y1="282.1" x2="1032.7" y2="327.9" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>sachets: 320 u/min</title></line>
+<line x1="878.6" y1="770.1" x2="812.6" y2="289.9" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>laminado: 2 rollos/turno</title></line>
+<line x1="1047.5" y1="721.3" x2="1187.5" y2="476.2" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>estibas: 35 pallets/d</title></line>
+<line x1="1202.0" y1="470.7" x2="1295.5" y2="501.8" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>estibas: 35 pallets/d</title></line>
+<rect x="30" y="1002.0" width="14" height="14" fill="#f4f4ef" stroke="#6b7280"/>
+<text x="49" y="1013.0" font-size="11" fill="#374151">Exterior</text>
+<rect x="112.0" y="1002.0" width="14" height="14" fill="#e3e3e3" stroke="#6b7280"/>
+<text x="131.0" y="1013.0" font-size="11" fill="#374151">Servicios</text>
+<rect x="200.5" y="1002.0" width="14" height="14" fill="#e9dcc3" stroke="#6b7280"/>
+<text x="219.5" y="1013.0" font-size="11" fill="#374151">Zona sucia</text>
+<rect x="295.5" y="1002.0" width="14" height="14" fill="#cfe3f2" stroke="#6b7280"/>
+<text x="314.5" y="1013.0" font-size="11" fill="#374151">Zona limpia</text>
+<rect x="397.0" y="1002.0" width="14" height="14" fill="#d9ecd4" stroke="#6b7280"/>
+<text x="416.0" y="1013.0" font-size="11" fill="#374151">Esclusa</text>
+<rect x="472.5" y="1002.0" width="14" height="14" fill="#b9d7b1" stroke="#6b7280"/>
+<text x="491.5" y="1013.0" font-size="11" fill="#374151">Alto cuidado</text>
+<rect x="580.5" y="1002.0" width="14" height="14" fill="#efe7f5" stroke="#6b7280"/>
+<text x="599.5" y="1013.0" font-size="11" fill="#374151">Administración</text>
+<rect x="30" y="1028.0" width="14" height="10" fill="#475569"/>
+<text x="51" y="1037.0" font-size="11" fill="#374151">Equipo</text>
+<circle cx="110.0" cy="1033.0" r="6" fill="#64748b"/>
+<text x="124.0" y="1037.0" font-size="11" fill="#374151">Tanque / silo</text>
+<line x1="221.5" y1="1033.0" x2="237.5" y2="1033.0" stroke="#c2410c" stroke-width="1.6" marker-end="url(#arrow)"/>
+<text x="242.5" y="1037.0" font-size="11" fill="#374151">Flujo principal</text>
+<rect x="1305.0" y="1008.0" width="62.5" height="6" fill="#111827"/>
+<rect x="1367.5" y="1008.0" width="62.5" height="6" fill="#ffffff" stroke="#111827"/>
+<text x="1305.0" y="1028.0" font-size="10" fill="#374151">0</text>
+<text x="1430.0" y="1028.0" font-size="10" text-anchor="end" fill="#374151">10 m</text>
+<path d="M1418.0,32 L1425.0,52 L1418.0,47 L1411.0,52 z" fill="#111827"/>
+<text x="1418.0" y="66" font-size="11" font-weight="700" text-anchor="middle" fill="#111827">N</text>
+</svg>
