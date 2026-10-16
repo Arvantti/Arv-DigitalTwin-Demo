@@ -15,6 +15,7 @@ Parámetros de URL, pensados para capturas automáticas:
 | `camera=general` o `camera=<id de zona>` | Cámara inicial |
 | `select=<id de equipo>` | Equipo seleccionado |
 | `autosim=1&scenario=boiler-trip&speed=900` | Conecta la simulación al cargar |
+| `tour=1` | Inicia el recorrido de cámara |
 | `lighting=day\|night\|golden`, `quality=high` | Iluminación y calidad |
 | `shot=1` (`ui=1` conserva la interfaz) | Modo captura: `window.__ready` se marca al terminar; con `autosim`, tras recibir datos (`messages=N`) |
 
@@ -23,8 +24,10 @@ Parámetros de URL, pensados para capturas automáticas:
 - **Zonas** como pisos de color por clase higiénica (sucia, limpia, alto cuidado, servicios, administrativa, exterior), con su volumen en líneas y su nombre.
 - **Equipos simulados** con la geometría de su tipo de librería y los parámetros ya resueltos por la API (`sim.type`, `sim.params`). Se animan con los canales que publica el comportamiento; el modelo no calcula nada.
 - **Equipos sin tipo en la librería** como volúmenes de su huella (`footprint`). Los marcados `overhead: true` (puente grúa de la planta de inyección) se dibujan como vías y viga puente a su altura.
+- **Pasarelas** (`walkways` del `plant.yaml`): piso de rejilla a su elevación, barandas a ambos lados, columnas y escalera en los puntos de acceso.
+- **Tuberías** de los flujos `piped: true`: suben a un nivel de rack, cruzan en ortogonal y bajan al equipo de destino; el color sale del medio (vapor, aceite, agua, producto). Cuando llevan producto circulan esferas luminosas. Es un indicio por estado, no un caudal medido: la tubería circula si el origen simulado está en servicio (y, si tiene fases, descargando), o, si el origen no se simula, si lo está el destino. El trazado es de recorrido, no de ingeniería de detalle.
 - **Selección de activos:** clic en un equipo para ver su estado, fase, fallas, variables y los comandos y fallas que se pueden inyectar. Un clic en el piso deselecciona.
-- **Cámaras:** vista general y una por zona de producción o servicios grande.
+- **Cámaras:** vista general y una por zona de producción o servicios grande. **Recorrido** (`tour=1` o el botón): la cámara visita la vista general y esas zonas de oeste a este, el sentido del flujo; cualquier clic o la rueda del ratón lo interrumpe.
 - **HUD de planta:** reloj de simulación, selector de escenario, velocidad, pausa, KPIs de cada línea y eventos de toda la planta.
 
 ## API
@@ -32,12 +35,27 @@ Parámetros de URL, pensados para capturas automáticas:
 | Endpoint | Qué entrega |
 |---|---|
 | `GET /api/plants` | Plantas con plano y si tienen simulación conectada |
-| `GET /api/plants/{id}` | Zonas, equipos (con `sim` si el motor los simula), líneas y escenarios |
+| `GET /api/plants/{id}` | Zonas, equipos (con `sim` si el motor los simula), pasarelas, tuberías (flujos `piped`), líneas y escenarios |
 | `WS /api/plants/{id}/simulate?scenario=&speed=` | Cada 100 ms: `{t, speed, paused, snapshot: {equipment, lines}, events}`. Cliente → servidor: `{equipment, command, args}`, `{speed}`, `{pause}` |
+
+## Pasarelas en el `plant.yaml`
+
+Sección opcional `walkways`, validada por `tools/layout/render_layout.py` y dibujada en el plano 2D:
+
+```yaml
+walkways:
+  - { id: walk-marmitas, name: Pasarela de marmitas, zone: proceso-caliente,
+      path: [[35.5, 35.2], [47, 35.2]],   # eje, puntos [x, y] en metros
+      width: 1.0,                          # ancho libre
+      elevation: 3.0,                      # altura del piso de la pasarela
+      access: [[35.5, 35.2]] }             # escaleras: puntos [x, y] que bajan al piso
+```
+
+El validador exige: eje de 2 o más puntos, ancho y elevación positivos, todos los puntos dentro de su zona, elevación por debajo de la cubierta de la zona, y avisa si cruza un equipo más alto que la pasarela. El formato se definió en esta fase porque el plano no describía pasarelas.
 
 ## Pendiente de la fase 5
 
-- Pasarelas, escaleras y muros con aberturas: el `plant.yaml` aún no los describe (`aisles: []`).
-- Tuberías y flujos animados sobre los `flows` del plano.
 - Los equipos que faltan en la librería siguen siendo volúmenes (fase 3).
-- Cámara de recorrido y selección desde la lista de activos.
+- Caudal real en las tuberías: hoy se anima por estado; falta publicar el caudal de cada enlace del motor.
+- Selección desde la lista de activos y recorridos definidos por la planta (hoy se derivan de las zonas).
+- Muros con aberturas, escaleras de acceso con geometría de escalón y pasarelas de la planta de inyección.

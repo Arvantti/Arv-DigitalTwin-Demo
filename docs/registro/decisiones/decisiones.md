@@ -36,3 +36,6 @@ Hilos por defecto en Haiku 5.5 (explicaciones y tareas simples); Sonnet 5.5 para
 
 ## D10 · Fase 5 en un PR pequeño: lo que ya existe en datos · 2026-10-16 18:32
 Tras fusionar el motor (#5) y la tolerancia en % (#6), el autor aprobó arrancar la fase 5. La primera entrega dibuja lo que `plant.yaml` y `simulation.yaml` ya describen: zonas, equipos (simulados con su geometría, el resto como volúmenes) y el puente grúa. Pasarelas y tuberías animadas quedan para PR siguientes porque el plano aún no los describe. El PR se apila sobre #7 para actualizar la bitácora sin conflictos.
+
+## D11 · Pasarelas como datos del plano; tuberías derivadas de los flujos · 2026-10-16 19:25
+El autor aprobó completar los pendientes de la fase 5. Como el plano no describía pasarelas, se definió la sección opcional `walkways` del `plant.yaml` (eje, ancho, elevación y accesos), validada junto con el resto del layout. Las tuberías no se duplican en el plano: se derivan de los flujos `piped: true`, y su animación es un indicio por estado hasta que el motor publique el caudal de cada enlace.

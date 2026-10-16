@@ -89,3 +89,4 @@ body.shot .glass, body.shot .lil-gui { display: none !important; }
 .lines .line span { color: var(--dim); font: 400 11px "JetBrains Mono", monospace; }
 .nav-link { display: block; margin-top: 10px; color: var(--cyan); font: 600 12px Rajdhani, sans-serif; letter-spacing: 0.1em; text-decoration: none; }
 .nav-link:hover { color: var(--accent); }
+.tour-stop { margin-top: 6px; font: 11px "JetBrains Mono", monospace; min-height: 14px; }

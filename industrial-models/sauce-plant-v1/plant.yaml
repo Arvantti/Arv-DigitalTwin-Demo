@@ -81,6 +81,12 @@ zones:
 
 aisles: []
 
+# Pasarelas elevadas (plataformas de operación). path: puntos [x, y] del eje; width: ancho libre (m);
+# elevation: altura del piso de la pasarela (m); access: puntos [x, y] de escalera de acceso hasta el piso.
+walkways:
+  - { id: walk-marmitas,  name: Pasarela de marmitas,       zone: proceso-caliente, path: [[35.5, 35.2], [47, 35.2]],     width: 1.0, elevation: 3.0, access: [[35.5, 35.2]] }
+  - { id: walk-emulsion,  name: Pasarela de emulsificación, zone: proceso-frio,     path: [[36, 58.2], [50, 58.2]],       width: 1.0, elevation: 3.2, access: [[50, 58.2]] }
+
 equipment:
   # --- Tanques a granel (exterior) ---
   - { id: tank-oil-01,     type: storage_tank, zone: tanques-granel, position: [5, 44.5, 0], footprint: [3, 3, 6],   params: { volume_l: 30000, content: aceite de soya refinado }, tags: [level, temperature] }

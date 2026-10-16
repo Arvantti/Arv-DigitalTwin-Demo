@@ -209,6 +209,10 @@ def get_plant(plant_id: str) -> dict[str, Any]:
         "plant": layout["plant"],
         "zones": layout.get("zones", []),
         "equipment": equipment,
+        "walkways": layout.get("walkways", []),
+        "pipes": [
+            {k: f[k] for k in ("from", "to", "medium") if k in f} for f in layout.get("flows", []) if f.get("piped")
+        ],
         "lines": [{"id": ln.id, "name": ln.name, "equipment": ln.equipment} for ln in model.lines] if model else [],
         "scenarios": (
             {sid: {"description": s.description, "duration_s": s.duration_s} for sid, s in model.scenarios.items()} if model else {}

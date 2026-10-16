@@ -28,7 +28,7 @@ Las plantas son inspiradas en empresas de Medellín, pero **sin usar nombres ni 
 | 2. Librería de equipos | Contrato, runtime, 3 tipos de referencia, geometría paramétrica, galería, API de simulación, guía y skill de autoría | **Hecha** | PR #2 |
 | 3. Equipos de las plantas | Resto de tipos con la guía de autoría | **En curso**: línea de sachets hecha (sachetadora, banda, túnel, control de peso, encajonadora, pasteurizador, caldera). Faltan emulsificador, molino coloidal, secadores, chillers, robots y otros | PR #3, #4 |
 | 4. Motor de planta | Instanciar `plant.yaml`, conectar equipos por puertos, recetas, líneas y KPIs | **En curso**: motor, enlaces por puerto y línea caliente de 1.000 ml | PR #5, #6 |
-| 5. Escena de planta | Planta completa en 3D, HUD, selección de activos, cámaras | **En curso**: escena de la planta de salsas con equipos simulados en vivo, selección, cámaras y HUD. Faltan pasarelas, tuberías animadas y equipos de la librería | PR #8, `docs/plant-scene.md` |
+| 5. Escena de planta | Planta completa en 3D, HUD, selección de activos, cámaras | **En curso**: escena de la planta de salsas con equipos simulados en vivo, selección, cámaras con recorrido, HUD, pasarelas y tuberías animadas. Faltan el caudal real en las tuberías y equipos de la librería | PR #8, PR #9, `docs/plant-scene.md` |
 | 6. Persistencia y datos | PostgreSQL, MQTT opcional, calidad y frescura de datos | Pendiente | — |
 | 7. Conector MCP | El usuario crea equipos y plantas conversando con Claude (entrevista, ficha confirmada, borradores, validación, publicación con aprobación humana) | Pendiente; diseñada desde ahora | `docs/roadmap.md` |
 | 8. Instalación en ARVANTTI Harness | Manifiesto, permisos, Podman, actualización | Pendiente | — |
@@ -42,7 +42,7 @@ Las plantas son inspiradas en empresas de Medellín, pero **sin usar nombres ni 
 - Cada cambio visual se verifica con captura de la galería y la API de simulación antes del PR; ramas y PRs pequeños; CI en verde (pruebas Python, pruebas de geometría, lint).
 
 ## 5. Próximos pasos propuestos (pendientes de decisión del autor)
-1. **Fase 5:** completar la escena (pasarelas, tuberías animadas, recorrido de cámara). La primera versión está en el PR #8.
+1. **Fase 5:** publicar el caudal de cada enlace del motor para animar las tuberías con datos reales, y cubrir la planta de inyección. Escena base: PR #8; pasarelas, tuberías y recorrido: PR #9.
 2. Resto de la planta de salsas en el motor: líneas de 250 ml y 500 ml, línea fría de mayonesa (requiere emulsificador, molino coloidal, chiller).
 3. Planta de inyección: secadores, chillers, molinos, robots y su conexión al motor.
 4. Mejoras del motor: retorno del producto desviado a la marmita; recetas leídas del `plant.yaml`.

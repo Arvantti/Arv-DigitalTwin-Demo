@@ -10,11 +10,12 @@
  *   &camera=general|<id de zona>   cámara inicial
  *   &select=<id de equipo>         equipo seleccionado
  *   &autosim=1&scenario=boiler-trip&speed=120   conecta la simulación al cargar
+ *   &tour=1                        inicia el recorrido de cámara al cargar
  *   &shot=1                        oculta la interfaz y marca window.__ready (con autosim, tras recibir datos)
  */
 import yaml from "js-yaml";
 import * as THREE from "three";
-import { type AnimationFrame, type EquipmentModel, type LightingPreset, Stage, textures } from "@twin/3d";
+import { type AnimationFrame, type EquipmentModel, type LightingPreset, Stage, parts, textures } from "@twin/3d";
 import { geometryBuilders, rawSpecs } from "@twin/equipment-library/registry.ts";
 import "./styles.css";
 
@@ -36,10 +37,26 @@ interface PlantEquipment {
   overhead?: boolean;
   sim?: { type: string; preset: string | null; params: Record<string, unknown> };
 }
+interface Walkway {
+  id: string;
+  name: string;
+  zone: string;
+  path: [number, number][];
+  width: number;
+  elevation: number;
+  access?: [number, number][];
+}
+interface Pipe {
+  from: string;
+  to: string;
+  medium: string;
+}
 interface PlantDoc {
   plant: { id: string; name: string; site?: { width_x: number; length_y: number } };
   zones: Zone[];
   equipment: PlantEquipment[];
+  walkways: Walkway[];
+  pipes: Pipe[];
   lines: { id: string; name: string; equipment: string[] }[];
   scenarios: Record<string, { description: string; duration_s: number }>;
 }
@@ -180,6 +197,137 @@ function buildEquipment(): void {
   }
 }
 
+/** Pasarelas elevadas: piso de rejilla, barandas a ambos lados, columnas y escalera en los puntos de acceso. */
+function buildWalkways(): void {
+  const deck = new THREE.MeshStandardMaterial({ color: "#6e7781", roughness: 0.7, metalness: 0.5 });
+  const steel = new THREE.MeshStandardMaterial({ color: "#59626c", roughness: 0.6, metalness: 0.6 });
+  for (const w of doc.walkways ?? []) {
+    const group = new THREE.Group();
+    group.name = `walkway-${w.id}`;
+    for (let i = 0; i < w.path.length - 1; i++) {
+      const a = toScene(w.path[i][0], w.path[i][1]);
+      const b = toScene(w.path[i + 1][0], w.path[i + 1][1]);
+      const len = a.distanceTo(b);
+      const dir = b.clone().sub(a).normalize();
+      const normal = new THREE.Vector3(-dir.z, 0, dir.x).multiplyScalar(w.width / 2);
+      const slab = new THREE.Mesh(new THREE.BoxGeometry(len, 0.08, w.width), deck);
+      slab.position.copy(a.clone().add(b).multiplyScalar(0.5)).setY(w.elevation);
+      slab.rotation.y = Math.atan2(-dir.z, dir.x);
+      slab.castShadow = slab.receiveShadow = true;
+      group.add(slab);
+      for (const side of [-1, 1]) {
+        const rail = parts.handrail(
+          [a.clone().addScaledVector(normal, side), b.clone().addScaledVector(normal, side)].map((p) => new THREE.Vector2(p.x, p.z)),
+          1.1,
+        );
+        rail.position.y = w.elevation + 0.04;
+        group.add(rail);
+      }
+      const columns = Math.max(2, Math.ceil(len / 4) + 1);
+      for (let k = 0; k < columns; k++) {
+        const p = a.clone().lerp(b, k / (columns - 1));
+        const column = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, w.elevation, 12), steel);
+        column.position.set(p.x, w.elevation / 2, p.z);
+        column.castShadow = true;
+        group.add(column);
+      }
+    }
+    for (const [ax, ay] of w.access ?? []) {
+      const ladder = parts.ladder(w.elevation + 1.0, 0.5, false);
+      const p = toScene(ax, ay);
+      ladder.position.set(p.x, 0, p.z + w.width / 2 + 0.25);
+      group.add(ladder);
+    }
+    stage.content.add(group);
+  }
+}
+
+// ------------------------------------------------------------------ tuberías
+interface PipeRun {
+  from: string;
+  to: string;
+  points: THREE.Vector3[];
+  cumulative: number[];
+  beads: THREE.Mesh[];
+}
+const pipeRuns: PipeRun[] = [];
+const MEDIUM_COLORS: [RegExp, string][] = [
+  [/vapor/, "#e8ecef"],
+  [/aceite/, "#d9a521"],
+  [/agua/, "#3b82c4"],
+  [/vinagre|mayonesa|mostaza|salsa|pasta|emulsi|fase/, "#b6bec7"],
+];
+const FLOWING = new Set(["running"]);
+
+function assetTop(id: string): THREE.Vector3 | null {
+  const a = assets.get(id);
+  if (!a) return null;
+  const height = a.model?.size.height ?? a.eq.footprint[2];
+  return toScene(a.eq.position[0], a.eq.position[1], a.eq.position[2] + height);
+}
+
+/** Tuberías de los flujos `piped: true` del plano: suben a un nivel de rack, cruzan en ortogonal y bajan. Los puntos son de recorrido, no de ingeniería de detalle. */
+function buildPipes(): void {
+  const lanes = new Map<string, number>();
+  for (const [i, pipe] of (doc.pipes ?? []).entries()) {
+    const a = assetTop(pipe.from);
+    const b = assetTop(pipe.to);
+    if (!a || !b || a.distanceTo(b) < 0.5) continue;
+    const key = `${Math.round(a.x)},${Math.round(a.z)}`;
+    const lane = lanes.get(key) ?? 0;
+    lanes.set(key, lane + 1);
+    const level = 4.4 + 0.35 * ((i + lane) % 5);
+    const raw = [a, new THREE.Vector3(a.x, level, a.z), new THREE.Vector3(b.x, level, a.z), new THREE.Vector3(b.x, level, b.z), b];
+    const points = raw.filter((p, k) => k === 0 || p.distanceTo(raw[k - 1]) > 1e-3);
+    const color = MEDIUM_COLORS.find(([re]) => re.test(pipe.medium.toLowerCase()))?.[1] ?? "#aab3bd";
+    const material = new THREE.MeshStandardMaterial({ color, roughness: 0.35, metalness: 0.7 });
+    const radius = /vapor/.test(pipe.medium.toLowerCase()) ? 0.09 : 0.06;
+    const mesh = parts.pipe(points, radius, material, 0.4);
+    mesh.name = `pipe-${pipe.from}-${pipe.to}`;
+    stage.content.add(mesh);
+    const cumulative = [0];
+    for (let k = 1; k < points.length; k++) cumulative.push(cumulative[k - 1] + points[k].distanceTo(points[k - 1]));
+    const beadMat = new THREE.MeshStandardMaterial({ color: "#000000", emissive: "#4de0ff", emissiveIntensity: 2.5 });
+    const count = Math.max(2, Math.round(cumulative[cumulative.length - 1] / 4));
+    const beads = Array.from({ length: count }, () => {
+      const bead = new THREE.Mesh(new THREE.SphereGeometry(radius * 1.35, 10, 8), beadMat);
+      bead.visible = false;
+      stage.content.add(bead);
+      return bead;
+    });
+    pipeRuns.push({ from: pipe.from, to: pipe.to, points, cumulative, beads });
+  }
+}
+
+function pointAt(run: PipeRun, distance: number): THREE.Vector3 {
+  let k = 1;
+  while (k < run.cumulative.length - 1 && run.cumulative[k] < distance) k++;
+  const span = run.cumulative[k] - run.cumulative[k - 1] || 1;
+  return run.points[k - 1].clone().lerp(run.points[k], Math.min(1, Math.max(0, (distance - run.cumulative[k - 1]) / span)));
+}
+
+/**
+ * Una tubería lleva producto si su origen simulado está en servicio (y, si tiene fases, descargando);
+ * si el origen no se simula, si lo está el destino. Es un indicio por estado, no un caudal medido.
+ */
+function pipeFlowing(run: PipeRun): boolean {
+  const src = latest[run.from];
+  if (src) return FLOWING.has(src.state) && (!src.phase || src.phase === "discharge");
+  const dst = latest[run.to];
+  return !!dst && FLOWING.has(dst.state);
+}
+
+function animatePipes(time: number): void {
+  for (const run of pipeRuns) {
+    const total = run.cumulative[run.cumulative.length - 1];
+    const on = pipeFlowing(run);
+    run.beads.forEach((bead, i) => {
+      bead.visible = on;
+      if (on) bead.position.copy(pointAt(run, ((time * 2.5 + (i * total) / run.beads.length) % total + total) % total));
+    });
+  }
+}
+
 // ------------------------------------------------------------------ selección
 function select(id: string | null): void {
   selectedId = id;
@@ -237,6 +385,69 @@ function buildCameras(): void {
   const initial = url.get("camera") ?? "general";
   (entries.find((e) => e[1] === initial) ?? entries[0])[2]();
 }
+
+// ------------------------------------------------------------------ recorrido
+interface Pose {
+  position: THREE.Vector3;
+  target: THREE.Vector3;
+  label: string;
+}
+const TRAVEL_S = 4;
+const HOLD_S = 3;
+let tourPoses: Pose[] = [];
+let tour: { stop: number; startedAt: number } | null = null;
+
+function poseOf(label: string): Pose {
+  return { position: stage.camera.position.clone(), target: stage.controls.target.clone(), label };
+}
+
+/** Paradas: vista general y luego las zonas de producción y servicios grandes, de oeste a este (el sentido del flujo). */
+function computeTourPoses(): void {
+  const keep = poseOf("");
+  const zones = doc.zones.filter((z) => ["production", "utility"].includes(z.kind) && z.rect[2] * z.rect[3] >= 80).sort((a, b) => a.rect[0] - b.rect[0]);
+  tourPoses = [];
+  focusRect([0, 0, doc.plant.site?.width_x ?? 112, doc.plant.site?.length_y ?? 72], 6, 0.62);
+  tourPoses.push(poseOf("VISTA GENERAL"));
+  for (const z of zones) {
+    focusRect(z.rect, Math.max(3, z.height));
+    tourPoses.push(poseOf(z.name.toUpperCase()));
+  }
+  stage.camera.position.copy(keep.position);
+  stage.controls.target.copy(keep.target);
+  stage.controls.update();
+}
+
+function startTour(): void {
+  if (tour) return stopTour();
+  if (!tourPoses.length) computeTourPoses();
+  tour = { stop: 0, startedAt: stage.time };
+  stage.controls.autoRotate = false;
+  $("btn-tour").textContent = "■ DETENER RECORRIDO";
+}
+
+function stopTour(): void {
+  tour = null;
+  $("btn-tour").textContent = "▶ RECORRIDO";
+  $("tour-stop").textContent = "";
+}
+
+function updateTour(): void {
+  if (!tour) return;
+  const elapsed = stage.time - tour.startedAt;
+  const next = (tour.stop + 1) % tourPoses.length;
+  const from = tourPoses[tour.stop];
+  const to = tourPoses[next];
+  const u = Math.min(1, elapsed / TRAVEL_S);
+  const e = u * u * (3 - 2 * u);
+  stage.camera.position.lerpVectors(from.position, to.position, e);
+  stage.controls.target.lerpVectors(from.target, to.target, e);
+  stage.controls.update();
+  $("tour-stop").textContent = `${tour.stop + 1}/${tourPoses.length} → ${to.label}`;
+  if (elapsed >= TRAVEL_S + HOLD_S) tour = { stop: next, startedAt: stage.time };
+}
+
+stage.renderer.domElement.addEventListener("pointerdown", () => tour && stopTour());
+stage.renderer.domElement.addEventListener("wheel", () => tour && stopTour(), { passive: true });
 
 // ------------------------------------------------------------------ simulación
 function speedFromSlider(): number {
@@ -381,9 +592,11 @@ async function start(): Promise<void> {
   doc = await res.json();
   $("plant-name").textContent = doc.plant.name.toUpperCase();
   const simulated = doc.equipment.filter((e) => e.sim).length;
-  $("plant-meta").textContent = `${doc.equipment.length} activos · ${simulated} simulados · ${doc.zones.length} zonas`;
   buildZones();
   buildEquipment();
+  buildWalkways();
+  buildPipes();
+  $("plant-meta").textContent = `${doc.equipment.length} activos · ${simulated} simulados · ${doc.zones.length} zonas · ${pipeRuns.length} tuberías · ${doc.walkways.length} pasarelas`;
   buildLighting();
   buildCameras();
 
@@ -397,6 +610,7 @@ async function start(): Promise<void> {
     sel.appendChild(o);
   }
   $("btn-connect").onclick = connect;
+  $("btn-tour").onclick = startTour;
   $("btn-pause").onclick = () => {
     paused = !paused;
     send({ pause: paused });
@@ -408,6 +622,7 @@ async function start(): Promise<void> {
   };
   if (!simulated) $("btn-connect").setAttribute("disabled", "");
   if (url.get("select")) select(url.get("select"));
+  if (url.get("tour") === "1") startTour();
   if (url.get("autosim") === "1" && simulated) {
     if (url.get("scenario")) sel.value = url.get("scenario")!;
     if (url.get("speed")) {
@@ -424,6 +639,8 @@ let frames = 0;
 function loop(): void {
   const dt = stage.render();
   for (const a of assets.values()) a.model?.update(a.frame, dt);
+  animatePipes(stage.time);
+  updateTour();
   frames++;
   const wantsData = url.get("autosim") === "1";
   if (shotMode && frames >= 40 && (!wantsData || messages >= Number(url.get("messages") ?? 3))) (window as unknown as { __ready: boolean }).__ready = true;

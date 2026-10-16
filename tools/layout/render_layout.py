@@ -6,6 +6,7 @@ Uso:
 Comprobaciones:
     - Zonas dentro del predio y sin solaparse entre sí.
     - Cada equipo dentro de su zona y sin solaparse con otro (salvo overhead: true).
+    - Pasarelas (walkways) dentro de su zona y bajo su cubierta.
     - Flujos, líneas y recetas solo referencian ids existentes.
 Termina con código 1 si hay errores.
 """
@@ -148,6 +149,36 @@ def validate(plant: dict) -> tuple[list[str], list[str]]:
             if eq_rects[e["id"]].overlaps(ar):
                 warnings.append(f"{e['id']} invade el pasillo {aisle['id']}")
 
+    zone_heights = {z["id"]: z.get("height") for z in plant["zones"]}
+    walkway_ids: set[str] = set()
+    for w in plant.get("walkways") or []:
+        wid = w["id"]
+        if wid in walkway_ids:
+            errors.append(f"id de pasarela duplicado: {wid}")
+        walkway_ids.add(wid)
+        zr = zones.get(w["zone"])
+        if zr is None:
+            errors.append(f"pasarela {wid}: zona inexistente {w['zone']}")
+        if len(w["path"]) < 2:
+            errors.append(f"pasarela {wid}: el eje necesita al menos 2 puntos")
+        if w["width"] <= 0 or w["elevation"] <= 0:
+            errors.append(f"pasarela {wid}: ancho y elevación deben ser positivos")
+        for px, py in [*w["path"], *(w.get("access") or [])]:
+            if zr is not None and not (zr.x <= px <= zr.x2 and zr.y <= py <= zr.y2):
+                errors.append(f"pasarela {wid}: el punto [{px}, {py}] sale de su zona {w['zone']}")
+        roof = zone_heights.get(w["zone"]) or 0
+        if roof and w["elevation"] >= roof:
+            errors.append(f"pasarela {wid}: la elevación {w['elevation']} no cabe bajo la cubierta de {w['zone']}")
+        for e in ground:
+            clearance = e["footprint"][2] if len(e.get("footprint", [])) > 2 else 0
+            if clearance < w["elevation"]:
+                continue
+            for (ax, ay), (bx, by) in zip(w["path"], w["path"][1:], strict=False):
+                half = w["width"] / 2
+                seg = Rect(min(ax, bx) - half, min(ay, by) - half, abs(bx - ax) + w["width"], abs(by - ay) + w["width"])
+                if eq_rects[e["id"]].overlaps(seg):
+                    warnings.append(f"pasarela {wid} cruza {e['id']}, que es más alto que la pasarela")
+
     ids = set(eq_rects) | set(zones)
     for f in plant.get("flows") or []:
         for end in ("from", "to"):
@@ -260,6 +291,17 @@ def render_svg(plant: dict) -> str:
             f'fill="url(#hatch)" stroke="none"/>'
         )
 
+    # pasarelas elevadas
+    for wk in plant.get("walkways") or []:
+        pts = " ".join(f"{sx(px):.1f},{sy(py):.1f}" for px, py in wk["path"])
+        a(
+            f'<polyline points="{pts}" fill="none" stroke="#d4a017" stroke-width="{wk["width"] * scale:.1f}" '
+            f'stroke-opacity="0.55" stroke-linejoin="round"><title>{html.escape(wk["name"])} · +{wk["elevation"]} m</title></polyline>'
+        )
+        for px, py in wk.get("access") or []:
+            r_acc = max(3.0, 0.5 * scale)
+            a(f'<circle cx="{sx(px):.1f}" cy="{sy(py):.1f}" r="{r_acc:.1f}" fill="#92400e"><title>Escalera de acceso</title></circle>')
+
     # equipos
     for eq in plant["equipment"]:
         r = equipment_rect(eq)
@@ -350,6 +392,8 @@ def render_svg(plant: dict) -> str:
         items.insert(0, ('<rect x="{x}" y="{y}" width="14" height="10" fill="#1d4ed8"/>', "Inyectora"))
     if plant.get("aisles"):
         items.append(('<rect x="{x}" y="{y}" width="14" height="10" fill="url(#hatch)" stroke="#d4a017"/>', "Pasillo montacargas"))
+    if plant.get("walkways"):
+        items.append(('<rect x="{x}" y="{y}" width="14" height="10" fill="#d4a017" fill-opacity="0.55"/>', "Pasarela elevada"))
     if any(e.get("overhead") for e in plant["equipment"]):
         items.append(('<rect x="{x}" y="{y}" width="14" height="10" fill="none" stroke="#7c3aed" stroke-dasharray="4 2"/>', "Puente grúa"))
     arrow = '<line x1="{x}" y1="{cy}" x2="{x2}" y2="{cy}" stroke="#c2410c" stroke-width="1.6" marker-end="url(#arrow)"/>'
