@@ -20,18 +20,65 @@ Revise los tipos existentes (`uv run twin-lib list`). Muchas veces basta con un 
 
 ---
 
-## 1. Reunir y normalizar la información
+## 1. Entrevista y ficha del equipo
 
-Extraiga de lo que entregó el usuario:
+**No se escribe código hasta que el usuario confirme la ficha.** Quien pide el equipo conoce su máquina, pero no tiene por qué saber qué es un contrato o un preset. La entrevista traduce lo que sabe a los datos que el equipo necesita.
 
-1. **Identidad:** qué equipo es, para qué sirve y en qué proceso está.
-2. **Dimensiones:** largo, ancho, alto, diámetros. En fotos, estime con referencias de escala (una persona ≈ 1,75 m, una puerta ≈ 2,1 m, una estiba ≈ 1,2 × 1,0 m).
-3. **Capacidades y velocidades:** volumen, caudal, unidades por minuto, tiempo de ciclo, potencia, temperaturas y presiones.
-4. **Partes visibles:** motor, tolva, guardas, tablero, tuberías, plataforma, colores.
-5. **Qué se mueve:** la base de los canales de animación.
-6. **Cómo falla y qué se mide:** sensores típicos y fallas frecuentes del tipo de máquina.
+### 1.1 Leer primero lo entregado
 
-Registre el **origen de cada dato** como `provenance` en el preset: `catalog`, `nameplate`, `photo`, `measured`, `user` o `assumed`. Si un dato no está, use un valor típico de la industria y márquelo como `assumed`. **No invente marcas ni modelos comerciales.**
+Antes de preguntar, extraiga lo que ya venga en las fotos, el catálogo, la placa de datos o la descripción:
+- **Identidad:** qué es, para qué sirve, en qué paso del proceso está.
+- **Dimensiones:** largo, ancho, alto, diámetros. En fotos, estime la escala con referencias conocidas: una persona ≈ 1,75 m, una puerta ≈ 2,1 m, una estiba ≈ 1,2 × 1,0 m.
+- **Capacidades:** volumen, caudal, unidades por minuto, ciclo, potencia, temperaturas, presiones.
+- **Partes visibles y qué se mueve.**
+
+No pregunte lo que ya está respondido.
+
+### 1.2 Preguntar por bloques
+
+- Como máximo **5 preguntas por mensaje**, en lenguaje cotidiano. Explique con un ejemplo cualquier término técnico.
+- Adapte el siguiente bloque a las respuestas y profundice solo en lo relevante para ese equipo.
+- Acepte "no sé" o "no lo medimos": registre el hueco y propóngale un valor típico marcado como supuesto. **No invente datos como si fueran del usuario.**
+- No pida contraseñas, claves ni datos personales.
+
+| Bloque | Qué averiguar | Preguntas de ejemplo |
+|---|---|---|
+| **A. Identidad** (siempre) | Función, ubicación en el proceso, referencias, tamaño, producción | ¿Qué hace la máquina y qué paso del proceso cumple? ¿Tienes fotos, catálogo o placa de datos? ¿Qué tamaño tiene, aproximadamente? ¿Qué produce y a qué ritmo? ¿Qué la alimenta y adónde entrega? |
+| **B. Operación** | Ciclo o fases, cambios de producto, servicios que consume | ¿Cómo es un ciclo o un batch, paso a paso? ¿Hay cambios de formato o de producto, y cuánto tardan? ¿Usa vapor, aire, agua fría o algún otro servicio? |
+| **C. Fallas y calidad** | Paradas frecuentes, qué es un rechazo y por qué ocurre | ¿Qué paradas o fallas son frecuentes, y cada cuánto pasan? ¿Cuánto tarda arreglarlas? ¿Qué cuenta como producto malo y qué lo causa? |
+| **D. Medición** | Variables que mira el operario, alarmas, KPIs | ¿Qué valores muestra su pantalla? ¿Qué alarmas tiene? ¿Con qué indicador evalúan la máquina? |
+| **E. Apariencia** (si no hay fotos) | Colores, guardas, plataformas, accesorios | ¿De qué color es? ¿Tiene guardas, escaleras o plataforma? ¿Dónde se para el operario? |
+
+Si el usuario pide solo otro tamaño o configuración de un tipo existente (sección 0), basta con el bloque A.
+
+### 1.3 Ficha para confirmar
+
+Con las respuestas, presente la ficha y pida confirmarla o corregirla **una sola vez** antes de construir. Guárdela como `FICHA.md` en la carpeta del equipo: queda como registro de lo que se pidió y de lo que se supuso.
+
+```markdown
+# Ficha: <nombre del equipo>
+- Tipo: <tipo nuevo | preset de <tipo existente>>
+- Función y lugar en el proceso: …
+- Referencias recibidas: fotos (3), catálogo (pág. 12), placa de datos
+
+| Dato | Valor | Origen |
+|---|---|---|
+| Velocidad | 60 u/min | user |
+| Cabezales | 12 | photo |
+| Huella | 3,0 × 2,0 × 2,2 m | photo (estimado) |
+| MTBF del atasco | 300 h | **assumed** |
+
+- Fases o ciclo: …
+- Fallas: …
+- Variables y alarmas: …
+- KPIs: …
+- Qué se anima: …
+- Pendiente o desconocido: …
+```
+
+El origen de cada dato usa los mismos valores que el `provenance` de los presets: `catalog`, `nameplate`, `photo`, `measured`, `user` o `assumed`. **No invente marcas ni modelos comerciales.**
+
+Después de la confirmación, avance con los pasos siguientes sin pedir aprobación para cada detalle. Si al construir aparece algo que contradice la ficha, avise al usuario en lugar de resolverlo en silencio.
 
 ---
 
@@ -149,6 +196,7 @@ Abra la captura junto a las fotos del usuario y compare: proporciones, colores, 
 
 ## 8. Checklist de entrega
 
+- [ ] `FICHA.md` confirmada por el usuario y coherente con lo construido
 - [ ] `twin-lib validate` en OK y pruebas en verde
 - [ ] Al menos un escenario por comportamiento clave, con la cuenta esperada documentada
 - [ ] Presets con `provenance`; nada de marcas reales

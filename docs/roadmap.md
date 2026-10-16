@@ -18,7 +18,7 @@ La demo de las dos plantas de referencia se construye al mismo tiempo que la pla
 
 ## Fase 7: conector MCP para crear equipos y plantas
 
-El usuario final no edita el repositorio. Le habla a Claude, le entrega fotos, catálogos o placas de datos, y Claude usa las herramientas del servidor MCP de la plataforma para crear el equipo, validarlo, mostrarle una vista previa y publicarlo. El procedimiento es el mismo de `docs/equipment-authoring.md`; el MCP solo cambia el canal.
+El usuario final no edita el repositorio. Le habla a Claude, le entrega fotos, catálogos o placas de datos, responde una entrevista corta y confirma una ficha del equipo. Con esa ficha, Claude usa las herramientas del servidor MCP de la plataforma para crear el equipo, validarlo, mostrarle una vista previa y publicarlo. El procedimiento es el mismo de `docs/equipment-authoring.md`; el MCP solo cambia el canal.
 
 ### Herramientas previstas
 
@@ -27,7 +27,8 @@ El usuario final no edita el repositorio. Le habla a Claude, le entrega fotos, c
 | `list_equipment_types` | Tipos y presets disponibles | `twin-lib list`, `GET /api/equipment` |
 | `get_equipment_type` | Contrato, presets y escenarios de un tipo | `GET /api/equipment/{type}` |
 | `get_authoring_guide` | Guía, esquema y plantilla | `docs/`, `_schema/`, `_template/` |
-| `create_equipment_draft` | Crea o actualiza un borrador de tipo o de preset | — |
+| `get_interview_guide` | Bloques de preguntas y formato de la ficha para entrevistar al usuario | sección 1 de `docs/equipment-authoring.md` |
+| `create_equipment_draft` | Crea o actualiza un borrador de tipo o de preset a partir de la ficha confirmada | — |
 | `validate_equipment` | Contrato, comportamiento, escenarios y geometría | `twin-lib validate`, pruebas de geometría |
 | `run_scenario` | Simula y devuelve KPIs, eventos y series | `twin-lib run`, WebSocket |
 | `render_preview` | Devuelve la imagen del modelo para compararla con las fotos | `tools/preview/shot.sh` |
