@@ -11,6 +11,8 @@ from twin_runtime import EquipmentBehavior, StepContext
 SCALE_SD_G = 0.3
 DRIFT_G = 5.0
 DETECTION_P = 0.995
+IDLE_AFTER_S = 10.0  # sin unidades durante este tiempo, la báscula pasa a idle
+INFEED_WAIT_UNITS = 3.0  # unidades que alcanzan a quedar en la entrada mientras está detenida o bloqueada
 
 
 class Checkweigher(EquipmentBehavior):
@@ -27,6 +29,7 @@ class Checkweigher(EquipmentBehavior):
         self.pusher = 0.0
         self.travel = 0.0
         self.hold_alarm = False
+        self.last_unit_t = -1e9
 
     def on_command(self, name: str, args: dict[str, Any]) -> bool:
         if name == "metal_test":
@@ -47,19 +50,22 @@ class Checkweigher(EquipmentBehavior):
             minutes = round((self.t - self.last_test_t) / 60, 1)
             self.emit("quality_alarm", variable="minutes_since_metal_test", value=minutes, limit=p["metal_test_interval_min"])
         self.hold_alarm = self.lot_on_hold
-        if self.failures.stopping is not None:
-            return
-        if not self.inputs["downstream_free"]:
-            self.state.set("blocked")
-            return
         inflow = self.inputs["inflow_upm"]
         inflow = p["nominal_inflow_upm"] if inflow is None else float(inflow)
-        self.state.set("running" if inflow > 0 else "idle")
-        self.travel = (self.travel + 0.6 * dt) % 10.0
         self.arrivals += inflow / 60.0 * dt
+        if self.failures.stopping is not None or not self.inputs["downstream_free"]:
+            # las que alcanzan a llegar esperan en la entrada; la máquina anterior ya ve accepting = 0
+            self.arrivals = min(self.arrivals, INFEED_WAIT_UNITS)
+            if self.failures.stopping is None:
+                self.state.set("blocked")
+            return
+        self.travel = (self.travel + 0.6 * dt) % 10.0
         while self.arrivals >= 1.0:
             self.arrivals -= 1.0
+            self.last_unit_t = self.t
             self._inspect()
+        # las unidades llegan sueltas: sigue en marcha mientras pasen con menos de IDLE_AFTER_S entre una y otra
+        self.state.set("running" if inflow > 0 or self.t - self.last_unit_t < IDLE_AFTER_S else "idle")
 
     def _inspect(self) -> None:
         p = self.p
@@ -111,6 +117,7 @@ class Checkweigher(EquipmentBehavior):
             "metal_escapes": c["escapes"],
             "minutes_since_metal_test": (self.t - self.last_test_t) / 60.0,
             "lot_on_hold": 1 if self.lot_on_hold else 0,
+            "accepting": 1 if self.failures.stopping is None and self.inputs.get("downstream_free", True) else 0,
         }
 
     def kpis(self) -> dict[str, Any]:

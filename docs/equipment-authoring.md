@@ -111,6 +111,7 @@ Valídelo contra `equipment-library/_schema/equipment.schema.json`. Puntos clave
 - **`states`:** use los estados estándar (`off`, `idle`, `starting`, `setup`, `running`, `blocked`, `starved`, `fault`, `maintenance`, `cleaning`) que apliquen. `off` va entre comillas: `id: "off"`.
 - **`variables`:** lo que un sistema SCADA leería. Marque `kind: measured` para sensores y dé un `noise_sd` y una `resolution` realistas.
 - **`faults`:** de 2 a 5 fallas típicas con `mtbf_h` y `mttr_min` plausibles. Use `stops_equipment: false` para degradaciones.
+- **`ports`:** cada entrada y salida física. Para que el motor de planta pueda conectar el equipo, declare en el puerto `link: { magnitud: nombre }` con las magnitudes que viajan por él (unidades, caudal, temperatura, presión, `ready`, `demand_kg_h`…). Vea `docs/plant-engine.md`; `twin-lib validate` comprueba que cada nombre sea una variable o una entrada del comportamiento.
 - **`animation_channels`:** valores normalizados (0..1) o físicos (rpm) que la geometría necesita para moverse.
 - **YAML:** dentro de `{ ... }`, un texto con coma debe ir entre comillas. El cargador detecta este error y lo explica.
 
@@ -202,4 +203,5 @@ Abra la captura junto a las fotos del usuario y compare: proporciones, colores, 
 - [ ] Presets con `provenance`; nada de marcas reales
 - [ ] Captura revisada frente a las referencias del usuario
 - [ ] README con qué simula, entradas, presets y limitaciones
+- [ ] Puertos con `link` si el equipo va a conectarse en una planta (`docs/plant-engine.md`)
 - [ ] `fidelity` honesto (V1/V2/V3 y B1/B2/B3)

@@ -9,6 +9,7 @@ Este repositorio construye una plataforma de gemelos digitales industriales. Las
 - `apps/api/`: FastAPI con la simulación en vivo por WebSocket.
 - `apps/gallery/`: galería web para ver, parametrizar y simular cada equipo.
 - `industrial-models/<planta>/plant.yaml`: layouts de planta. `tools/layout/render_layout.py` los valida y dibuja.
+- `industrial-models/<planta>/simulation.yaml`: qué equipos del layout se simulan y cómo se conectan por puertos (motor de planta, `docs/plant-engine.md`).
 
 ## Crear o modificar equipos
 Siga **`docs/equipment-authoring.md`** paso a paso. Reglas no negociables:
@@ -21,6 +22,8 @@ Siga **`docs/equipment-authoring.md`** paso a paso. Reglas no negociables:
 ```bash
 uv sync && pnpm install
 uv run twin-lib validate          # librería completa
+uv run twin-lib plant validate    # plantas conectadas: enlaces y escenarios
+uv run twin-lib plant run sauce-plant-v1 --scenario boiler-trip
 uv run pytest                     # pruebas de Python
 uv run ruff check .
 pnpm -r typecheck && pnpm -r test   # tipos y prueba genérica de geometrías

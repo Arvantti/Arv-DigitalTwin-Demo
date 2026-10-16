@@ -297,6 +297,7 @@ flows:
   # Servicios
   - { from: boiler-01,        to: steam-station-01,  medium: vapor,             rate: 900,   unit: kg/h, piped: true }
   - { from: steam-station-01, to: kettle-01,         medium: vapor,             rate: 450,   unit: kg/h, piped: true }
+  - { from: steam-station-01, to: kettle-02,         medium: vapor,             rate: 450,   unit: kg/h, piped: true }
   - { from: steam-station-01, to: pasteurizer-01,    medium: vapor,             rate: 300,   unit: kg/h, piped: true }
   - { from: cip-skid-01,      to: kettle-01,         medium: CIP,               rate: 15000, unit: L/h, piped: true }
   - { from: cip-skid-01,      to: filler-pouch-01,   medium: CIP,               rate: 10000, unit: L/h, piped: true }

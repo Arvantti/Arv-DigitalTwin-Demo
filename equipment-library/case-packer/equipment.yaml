@@ -20,8 +20,8 @@ params:
   item_color:         { type: string, default: "#c62828", description: Color de las unidades (hex), affects: [geometry] }
 
 ports:
-  - { id: items_in, kind: item, direction: in, unit: u/min }
-  - { id: cases_out, kind: item, direction: out, unit: cajas/min }
+  - { id: items_in, kind: item, direction: in, unit: u/min, link: { units: inflow_upm, ready: accepting } }
+  - { id: cases_out, kind: item, direction: out, unit: cajas/min, link: { units: cases_count, ready: downstream_free } }
   - { id: boxes_in, kind: material, direction: in, medium: cajas de corrugado plegadas }
   - { id: air, kind: utility, direction: in, medium: aire comprimido }
 

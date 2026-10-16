@@ -25,7 +25,8 @@ def vessel_dimensions(volume_l: float, form: str, diameter_m: float = 0.0) -> tu
 
 class Vessel(EquipmentBehavior):
     type = "vessel"
-    DEFAULT_INPUTS = {"inflow_temp_c": 20.0, "heating_available": True}
+    # supply_kg_h / demand_kg_h: caudales que impone el motor de planta (None = las consignas de los comandos)
+    DEFAULT_INPUTS = {"inflow_temp_c": 20.0, "heating_available": True, "supply_kg_h": None, "demand_kg_h": None}
 
     def setup(self) -> None:
         p = self.p
@@ -48,6 +49,8 @@ class Vessel(EquipmentBehavior):
         self.cip_remaining = 0.0
         self.low_s = 0.0
         self.flags: set[str] = set()
+        self.accepting = True
+        self.available = self.mass > 0.0
 
     # ------------------------------------------------------------------ comandos
     def on_command(self, name: str, args: dict[str, Any]) -> bool:
@@ -100,8 +103,10 @@ class Vessel(EquipmentBehavior):
             return
         active = s not in ("maintenance", "fault")
 
-        inflow = min(self.inflow_sp, p["inlet_max_kg_h"]) if active else 0.0
-        outflow = min(self.outflow_sp, p["outlet_max_kg_h"]) if active else 0.0
+        inflow_sp = self.inflow_sp if self.inputs["supply_kg_h"] is None else float(self.inputs["supply_kg_h"])
+        outflow_sp = self.outflow_sp if self.inputs["demand_kg_h"] is None else float(self.inputs["demand_kg_h"])
+        inflow = min(inflow_sp, p["inlet_max_kg_h"]) if active else 0.0
+        outflow = min(outflow_sp, p["outlet_max_kg_h"]) if active else 0.0
         if self.failures.is_active("outlet_valve_fault"):
             outflow = 0.0
         room = self.capacity_kg - self.mass
@@ -118,8 +123,8 @@ class Vessel(EquipmentBehavior):
         self.total_out += out_kg
 
         if active:
-            starved = self.outflow_sp > 0 and self.mass <= 1e-6 and self.inflow < self.outflow_sp
-            full = self.inflow_sp > 0 and self.mass >= self.capacity_kg - 1e-6 and self.outflow < self.inflow_sp
+            starved = outflow_sp > 0 and self.mass <= 1e-6 and self.inflow < outflow_sp
+            full = inflow_sp > 0 and self.mass >= self.capacity_kg - 1e-6 and self.outflow < inflow_sp
             moving = self.inflow > 1e-6 or self.outflow > 1e-6
             new_state = "starved" if starved else "blocked" if full else "running" if moving else "idle"
             self.state.set(new_state)
@@ -127,6 +132,16 @@ class Vessel(EquipmentBehavior):
             self._edge("full", full)
 
         lvl = self.level_pct
+        # Señales hacia los vecinos con histéresis, para no arrancar y parar en cada paso:
+        # deja de recibir en el nivel alto y vuelve 10 puntos abajo; deja de entregar vacío y vuelve sobre el nivel bajo.
+        if lvl >= p["high_level_pct"]:
+            self.accepting = False
+        elif lvl <= p["high_level_pct"] - 10.0:
+            self.accepting = True
+        if self.mass <= 1e-6 or not active:
+            self.available = False
+        elif lvl >= p["low_level_pct"]:
+            self.available = True
         self._edge("low_level", lvl < p["low_level_pct"])
         self._edge("high_level", lvl > p["high_level_pct"])
         if lvl < p["low_level_pct"]:
@@ -172,6 +187,8 @@ class Vessel(EquipmentBehavior):
             "heating_pct": 100.0 * self.heating,
             "total_in_kg": self.total_in,
             "total_out_kg": self.total_out,
+            "accepting": 1 if self.accepting else 0,
+            "available": 1 if self.available else 0,
         }
 
     def kpis(self) -> dict[str, Any]:

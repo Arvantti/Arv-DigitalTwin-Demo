@@ -7,6 +7,7 @@ Familia paramétrica de recipientes: silos de sólidos, tanques de almacenamient
 - **Estados**: `starved` (se pide descarga y está vacío), `blocked` (se pide llenado y está lleno), `cleaning` (CIP).
 - **Temperatura** de mezcla perfecta, con chaqueta controlada por PID (`jacketed`) y pérdidas al ambiente.
 - **Alarmas** de nivel bajo y alto por flanco.
+- **En una planta**: el motor fija los caudales con `supply_kg_h` y `demand_kg_h` (sin ellos mandan `set_inflow` y `set_outflow`). Deja de recibir en el nivel alto y vuelve 10 puntos abajo; deja de entregar vacío y vuelve al superar el nivel bajo (`accepting`, `available`).
 - **Fallas**: transmisor de nivel congelado (la lectura deja de cambiar, la masa real sí), válvula de descarga, disparo del agitador.
 
 ## Presets

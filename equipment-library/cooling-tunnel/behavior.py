@@ -10,6 +10,7 @@ from twin_runtime import EquipmentBehavior, StepContext
 
 AIR_C = 25.0
 WATER_KJ_M3K = 4180.0  # kJ/(m³·K)
+INFEED_WAIT_UNITS = 3.0  # unidades que alcanzan a quedar en la entrada mientras la banda está detenida
 
 
 @dataclass
@@ -32,6 +33,7 @@ class CoolingTunnel(EquipmentBehavior):
         self.heat_kw = 0.0
         self.heat_sum = 0.0
         self.travel = 0.0
+        self.moving = True
         self.alarm = False
 
     @property
@@ -55,6 +57,7 @@ class CoolingTunnel(EquipmentBehavior):
         at_exit = bool(self.units) and self.units[0].pos >= p["length_m"]
         moving = not stopped and not (at_exit and not downstream)
         v = speed if moving else 0.0
+        self.moving = moving
         self.travel = (self.travel + v * dt) % 10.0
 
         removed_kj = 0.0
@@ -80,11 +83,14 @@ class CoolingTunnel(EquipmentBehavior):
         inflow = p["nominal_inflow_upm"] if inflow is None else float(inflow)
         inlet = self.inputs["inlet_temp_c"]
         inlet = p["inlet_c"] if inlet is None else float(inlet)
+        self.arrivals += inflow / 60.0 * dt
         if moving:
-            self.arrivals += inflow / 60.0 * dt
             while self.arrivals >= 1.0:
                 self.units.append(Unit(pos=0.0, temp=inlet))
                 self.arrivals -= 1.0
+        else:
+            # detenida: las que alcanzan a llegar esperan en la entrada; la máquina anterior ya ve accepting = 0
+            self.arrivals = min(self.arrivals, INFEED_WAIT_UNITS)
 
         hot_now = self.last_outlet is not None and self.last_outlet > p["outlet_max_c"]
         if hot_now and not self.alarm:
@@ -111,6 +117,7 @@ class CoolingTunnel(EquipmentBehavior):
             "heat_load_kw": self.heat_kw,
             "belt_speed_m_min": speed if self.state.current == "running" else 0.0,
             "hot_outlets": self.hot,
+            "accepting": 1 if self.moving else 0,
         }
 
     def kpis(self) -> dict[str, Any]:
