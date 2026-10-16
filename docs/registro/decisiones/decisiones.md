@@ -45,3 +45,6 @@ El autor aprobó que el motor publique el caudal de cada enlace y que las tuber�
 
 ## D13 · El desvío regresa a la marmita; una bomba compartida atiende a una marmita a la vez · 2026-10-16 22:08
 El autor aprobó enlazar el desvío del pasteurizador en el motor y en la escena. Se modeló lo que ocurre en la planta: el producto que no alcanza la temperatura de retención vuelve a la marmita que está descargando (y, si descargan las dos, a cada una en proporción a su caudal), no sale del modelo. Para que eso no cree masa, las dos marmitas comparten la bomba y solo una descarga a la vez; la otra espera. Ningún valor de tolerancia interviene (regla D07). La planta de inyección se hace en un PR aparte.
+
+## D14 · Planta de inyección: simular las 29 inyectoras y la banda; lo demás, cuando tenga tipo · 2026-10-16 22:31
+Al ser la planta de inyección el segundo punto de lo aprobado a las 22:08, se eligió el alcance por defecto: simular todas las inyectoras del plano y la banda principal, que son los equipos que ya existen en la librería, y dejar el empaque, secadores, chillers y molinos como volúmenes hasta que se creen sus tipos. Las inyectoras se parametrizan desde el `plant.yaml` para que el plano siga siendo la fuente de verdad. La zona de entrada de la banda (8 piezas) es un supuesto. Ningún valor de tolerancia interviene (regla D07).

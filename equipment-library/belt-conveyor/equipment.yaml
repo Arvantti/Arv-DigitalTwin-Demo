@@ -22,6 +22,7 @@ params:
   item_size_m:   { type: number, unit: m, min: 0.02, max: 1.5, default: 0.18, description: Tamaño de la unidad (para el dibujo), affects: [geometry] }
   item_color:    { type: string, default: "#c62828", description: Color de la unidad (hex), affects: [geometry] }
   nominal_inflow_upm: { type: number, unit: u/min, min: 0, max: 2000, default: 60, description: Llegada nominal de unidades si el entorno no la fija, affects: [behavior] }
+  entry_buffer_units: { type: integer, min: 1, max: 64, default: 1, description: Unidades que caben en la zona de entrada esperando su turno (1 = llegadas una a una; más para máquinas que sueltan varias piezas por ciclo), affects: [behavior] }
   motor_kw:      { type: number, unit: kW, min: 0.1, max: 30, default: 0.75, description: Potencia del motorreductor, affects: [geometry, behavior] }
 
 ports:

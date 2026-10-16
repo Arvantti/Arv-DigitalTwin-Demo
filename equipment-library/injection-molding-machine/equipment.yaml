@@ -30,7 +30,7 @@ params:
 
 ports:
   - { id: resin_in,      kind: material, direction: in,  medium: resina en pellet, unit: kg/h }
-  - { id: parts_out,     kind: item,     direction: out, medium: piezas, unit: u/h }
+  - { id: parts_out,     kind: item,     direction: out, medium: piezas, unit: u/h, link: { units: parts_good, ready: downstream_free } }
   - { id: scrap_out,     kind: material, direction: out, medium: scrap, unit: kg/h }
   - { id: cooling_water, kind: utility,  direction: in,  medium: agua de enfriamiento }
   - { id: power,         kind: utility,  direction: in,  medium: energía eléctrica, unit: kW }

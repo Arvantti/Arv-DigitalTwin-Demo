@@ -53,16 +53,17 @@ class BeltConveyor(EquipmentBehavior):
         # llegadas
         inflow = self.inputs["inflow_upm"]
         inflow = p["nominal_inflow_upm"] if inflow is None else float(inflow)
-        self.arrivals = min(self.arrivals + inflow / 60.0 * dt, 1.0 + inflow / 60.0 * dt)
+        buffer = float(p["entry_buffer_units"])
+        self.arrivals = min(self.arrivals + inflow / 60.0 * dt, buffer + inflow / 60.0 * dt)
         while self.arrivals >= 1.0 and (not self.items or self.items[-1] >= pitch - 1e-9):
             self.items.append(0.0)
             self.arrivals -= 1.0
-        accepting = self.arrivals < 1.0
+        accepting = self.arrivals < buffer
         if accepting != self.accepting:
             self.emit("accepting_again" if accepting else "full")
             self.accepting = accepting
         if not accepting:
-            self.arrivals = 1.0  # la máquina anterior queda esperando
+            self.arrivals = buffer  # la máquina anterior queda esperando
 
         if stopped:
             return
