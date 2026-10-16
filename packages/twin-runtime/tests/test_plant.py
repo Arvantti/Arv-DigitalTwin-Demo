@@ -90,7 +90,8 @@ def test_snapshot_publishes_the_flow_of_every_link(sauce: PlantModel) -> None:
     # El vapor se entrega a pedido y a la presión que deja la estación reductora.
     steam = links["boiler-01:steam_out>pasteurizer-01:steam_in"]
     assert steam["pressure_bar"] == 3.0
-    assert steam["flow_kg_h"] == pytest.approx(sim.equipment["pasteurizer-01"].true_values()["steam_flow_kg_h"], rel=0.01)  # un paso de retraso
+    demand = sim.equipment["pasteurizer-01"].true_values()["steam_flow_kg_h"]
+    assert steam["flow_kg_h"] == pytest.approx(demand, rel=0.01)  # un paso de retraso
     sachets = links["filler-pouch-01:sachets_out>cooling-tunnel-01:items_in"]
     assert sachets["units_per_min"] > 0 and "flow_kg_h" not in sachets
 
