@@ -20,6 +20,7 @@ FORWARD: dict[str, str] = {
     "available": "1 si hay producto para entregar (si falta, se deduce de flow_kg_h > 0)",
     "temp_c": "temperatura del producto o de las unidades",
     "pressure_bar": "presión del servicio (vapor, aire)",
+    "moisture_pct": "humedad de la resina que se entrega, en % (promedio de las fuentes)",
     "weight_mean_g": "peso medio de las unidades",
     "weight_sd_g": "desviación típica del peso de las unidades",
 }
