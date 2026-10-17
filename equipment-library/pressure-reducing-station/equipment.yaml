@@ -1,0 +1,101 @@
+schema_version: 0.1.0
+type: pressure-reducing-station
+version: 0.1.0
+name: Estación reguladora de presión
+manufacturing: utility
+category: utilities.water.pressure_control
+description: >
+  Estación reguladora de presión de una red de agua: la línea de entrada se bifurca en dos ramas con
+  válvulas de corte manuales; la rama A tiene una válvula reductora (PRV) automática cuya consigna de
+  salida la ajusta un PID para sostener la presión medida en el punto más crítico de la red; la rama B
+  tiene una PRV de piloto con salida fija ajustada a mano. Las ramas se unen y siguen hacia la red. El
+  cambio de rama abre primero la que entra y después cierra la que sale, para no cortar el suministro.
+aliases: [estación reguladora, PRV, válvula reductora de presión, VRP, estación de control de presión, by-pass de PRV]
+fidelity: { visual: V2, behavior: B2 }
+
+params:
+  diameter_in:          { type: number, unit: in, min: 1, max: 24, default: 4, description: Diámetro de la línea y de las ramas, affects: [geometry] }
+  prv_kv_m3h:           { type: number, unit: m3/h, min: 1, max: 5000, default: 60, description: Kv de cada PRV abierta del todo, affects: [behavior] }
+  isolation_kv_m3h:     { type: number, unit: m3/h, min: 1, max: 20000, default: 400, description: Kv de cada válvula de corte abierta, affects: [behavior] }
+  branch:               { type: enum, values: [auto, manual], default: auto, description: "Rama en servicio al arrancar (A automática o B manual)", affects: [behavior] }
+  critical_setpoint_mca: { type: number, unit: mca, min: 5, max: 100, default: 20, description: Consigna de presión en el punto crítico de la red (rama automática), affects: [behavior] }
+  manual_setting_mca:   { type: number, unit: mca, min: 5, max: 150, default: 26.66, description: Salida fija de la PRV de piloto (rama manual), affects: [behavior] }
+  auto_min_outlet_mca:  { type: number, unit: mca, min: 0, max: 150, default: 15, description: Límite inferior de la consigna de salida de la PRV automática, affects: [behavior] }
+  auto_max_outlet_mca:  { type: number, unit: mca, min: 0, max: 200, default: 40, description: Límite superior de la consigna de salida de la PRV automática, affects: [behavior] }
+  pid_kp:               { type: number, min: 0, max: 10, default: 0.3, description: "Ganancia proporcional (mca de salida por mca de error)", affects: [behavior] }
+  pid_ki:               { type: number, min: 0, max: 10, default: 0.05, description: "Ganancia integral (mca de salida por mca·s de error)", affects: [behavior] }
+  switch_time_s:        { type: number, unit: s, min: 1, max: 600, default: 20, description: Tiempo de cada maniobra de las válvulas de corte al cambiar de rama, affects: [behavior] }
+  bench_inlet_mca:      { type: number, unit: mca, min: 0, max: 300, default: 79, description: "Banco de prueba: presión de llegada a la estación", affects: [behavior] }
+  bench_network_kv_m3h: { type: number, unit: m3/h, min: 0.1, max: 5000, default: 16.09, description: "Banco de prueba: Kv equivalente de la red entre la estación y el punto crítico", affects: [behavior] }
+  bench_load_kv_m3h:    { type: number, unit: m3/h, min: 0.01, max: 5000, default: 9.283, description: "Banco de prueba: Kv equivalente de lo que se consume en el punto crítico (descarga a la atmósfera)", affects: [behavior] }
+
+ports:
+  - { id: inlet, kind: material, direction: in, medium: agua, unit: m3/h }
+  - { id: outlet, kind: material, direction: out, medium: agua, unit: m3/h }
+  - { id: critical_pressure, kind: signal, direction: in, medium: "presión del punto crítico (telemetría)", unit: mca }
+  - { id: power, kind: utility, direction: in, medium: "energía eléctrica (controlador y telemetría)" }
+
+states:
+  - { id: idle, description: Sin caudal }
+  - { id: running, description: Regulando }
+  - { id: fault, description: Detenida por falla }
+
+variables:
+  - { id: inlet_pressure_mca, unit: mca, kind: measured, range: [0, 300], noise_sd: 0.05, resolution: 0.01, description: Presión de llegada }
+  - { id: outlet_pressure_mca, unit: mca, kind: measured, range: [0, 300], noise_sd: 0.03, resolution: 0.01, description: Presión de salida (después de la unión) }
+  - { id: critical_pressure_mca, unit: mca, kind: measured, range: [0, 300], noise_sd: 0.03, resolution: 0.01, description: Presión en el punto crítico de la red (telemetría) }
+  - { id: flow_m3h, unit: m3/h, kind: measured, range: [0, 5000], noise_sd: 0.02, resolution: 0.01, description: Caudal total }
+  - { id: flow_auto_m3h, unit: m3/h, kind: measured, range: [0, 5000], noise_sd: 0.02, resolution: 0.01, description: Caudal por la rama A (automática) }
+  - { id: flow_manual_m3h, unit: m3/h, kind: measured, range: [0, 5000], noise_sd: 0.02, resolution: 0.01, description: Caudal por la rama B (manual) }
+  - { id: auto_outlet_setpoint_mca, unit: mca, kind: setpoint, description: Consigna de salida que el PID le da a la PRV automática }
+  - { id: critical_setpoint_mca, unit: mca, kind: setpoint, description: Consigna en el punto crítico }
+  - { id: manual_setting_mca, unit: mca, kind: setpoint, description: Salida fija de la PRV manual }
+  - { id: branch_auto, unit: "", kind: status, description: "1 si la rama automática está en servicio, 0 si es la manual" }
+  - { id: dissipated_power_kw, unit: kW, kind: calculated, description: Potencia hidráulica que disipan las PRV }
+  - { id: dissipated_energy_kwh, unit: kWh, kind: counter, description: Energía disipada acumulada }
+  - { id: volume_m3, unit: m3, kind: counter, description: Volumen entregado }
+
+events:
+  - { id: branch_changed, description: Terminó el cambio de rama, payload: [branch] }
+  - { id: critical_low, description: "Presión crítica más de 10 % bajo la consigna durante 30 s", payload: [mca] }
+  - { id: critical_high, description: "Presión crítica más de 15 % sobre la consigna durante 30 s", payload: [mca] }
+  - { id: critical_normal, description: La presión crítica volvió a ± 5 % de la consigna }
+  - { id: telemetry_lost, description: Se perdió la señal del punto crítico; la PRV automática queda en su última consigna }
+
+faults:
+  - { id: telemetry_loss, description: Se pierde la telemetría del punto crítico, mtbf_h: 3000, mttr_min: 45, severity: medium, stops_equipment: false, effect: "El PID se congela y la PRV automática se queda con su última consigna de salida" }
+  - { id: pilot_drift, description: Resorte del piloto de la PRV manual desajustado, mtbf_h: 6000, mttr_min: 60, severity: low, stops_equipment: false, effect: "La salida de la PRV manual sube 15 %" }
+  - { id: diaphragm_failure, description: Diafragma roto en la PRV automática, mtbf_h: 15000, mttr_min: 180, severity: high, stops_equipment: false, effect: "La PRV automática queda abierta del todo y deja pasar la presión de llegada" }
+
+commands:
+  - { id: select_branch, description: "Cambia la rama en servicio (abre la que entra y luego cierra la que sale)", args: { branch: string } }
+  - { id: set_critical_setpoint, description: Cambia la consigna del punto crítico, args: { mca: number } }
+  - { id: set_manual_setting, description: Ajusta la salida fija de la PRV manual, args: { mca: number } }
+  - { id: inject_fault, description: Inyecta una falla declarada, args: { fault: string, duration_s: number } }
+  - { id: clear_fault, description: Repara una falla activa, args: { fault: string } }
+  - { id: set_param, description: Cambia un parámetro en caliente, args: { name: string, value: any } }
+
+kpis:
+  - { id: avg_critical_mca, unit: mca, description: Presión crítica media }
+  - { id: time_in_band_pct, unit: "%", description: "Tiempo con la presión crítica a ± 5 % de la consigna" }
+  - { id: avg_dissipated_kw, unit: kW, description: Potencia disipada media }
+
+animation_channels:
+  - { id: valve_a_open, range: [0, 1], description: Apertura de la válvula de corte de la rama A }
+  - { id: valve_b_open, range: [0, 1], description: Apertura de la válvula de corte de la rama B }
+  - { id: flow_a_norm, range: [0, 2], description: "Caudal por la rama A ÷ Kv de la PRV" }
+  - { id: flow_b_norm, range: [0, 2], description: "Caudal por la rama B ÷ Kv de la PRV" }
+  - { id: inlet_pressure_mca, unit: mca, range: [0, 300], description: Manómetro de entrada }
+  - { id: outlet_pressure_mca, unit: mca, range: [0, 300], description: Manómetro de salida }
+  - { id: critical_pressure_mca, unit: mca, range: [0, 300], description: Presión crítica en la pantalla del controlador }
+  - { id: auto_setpoint_mca, unit: mca, range: [0, 300], description: Consigna de salida de la PRV automática }
+  - { id: stack_light, range: [0, 3], description: "Baliza: 0 apagada, 1 verde, 2 ámbar (alarma de presión crítica), 3 roja (falla)" }
+
+geometry:
+  parts: [inlet_line, tees, isolation_valves, prv_auto_with_actuator, prv_manual_with_pilot, gauges, controller_panel, union, supports]
+
+assumptions:
+  - "Cada PRV sigue los estados de EPANET: activa (fija su salida), abierta (no le alcanza la entrada) o cerrada (aguas abajo hay más que su consigna)."
+  - "PID de la rama automática sobre la presión crítica del paso anterior, con salida limitada a [auto_min_outlet_mca, auto_max_outlet_mca] y sin windup."
+  - "Fuera de una planta, la red aguas abajo es un Kv equivalente hasta el punto crítico (bench_network_kv_m3h) y un consumo como descarga a la atmósfera (bench_load_kv_m3h); la entrada load_factor escala ese consumo."
+  - "La presión crítica la mide la propia red del banco; en la planta llega por la entrada critical_pressure_mca."

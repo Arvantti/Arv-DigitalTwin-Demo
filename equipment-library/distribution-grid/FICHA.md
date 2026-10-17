@@ -1,0 +1,24 @@
+# Ficha: rejilla de distribución de un nivel (distribution-grid)
+
+- Tipo: nuevo
+- Función y lugar en el proceso: cada uno de los cuatro niveles de la red (una comuna); las válvulas de consumo son las casas y las de fuga representan pérdidas y fraudes. El agua cae a canaletas que la llevan a los tanques de recirculación.
+- Referencias recibidas: descripción del autor del 2026-10-17 y diseño [docs/water-network-plant.md](../../docs/water-network-plant.md).
+- Confirmada por: Carlos Andres Quiceno · 2026-10-17 (al fusionar el diseño, PR #13, con los supuestos S1–S7)
+
+| Dato | Valor | Origen |
+|---|---|---|
+| Forma | rejilla rectangular, distribución libre | user |
+| Distribución | cabezal + 4 ramales de 4 válvulas, 2,0 × 2,0 m, nodos cada 0,5 m | assumed (S1) |
+| Válvulas de fuga | 2 por nivel, en otro color (rojo), misma función | user (color y función), assumed (número y lugar) |
+| Tubería | 2" | user |
+| Separación entre niveles | 1,20 m | user |
+| Medición | caudal y presión en cada válvula | user |
+| Kv de consumo y de fuga | 0,12 m³/h al 100 % | assumed (S3) |
+| Válvula de cada ramal | bola de 2", Kv 20 m³/h | assumed |
+| Presión mínima de servicio | 15 mca | assumed |
+
+- Fallas: fuga que revienta (MTBF 2.000 h, MTTR 120 min), ramal obstruido (5.000 h, 90 min).
+- Qué es un rechazo y qué lo causa: no aplica; la alarma es una casa bajo la presión mínima de servicio.
+- Variables, alarmas y KPIs: caudal y presión de cada una de las 18 válvulas, totales del nivel, % de fugas, presión mínima y su válvula; consumo, fugas, agua no contabilizada y presión mínima registrada.
+- Qué se anima: manija de cada válvula con su apertura, chorro proporcional al caudal hacia la canaleta y manómetro de entrada.
+- Pendiente o desconocido: Kv y tipo reales de las válvulas del modelo físico.

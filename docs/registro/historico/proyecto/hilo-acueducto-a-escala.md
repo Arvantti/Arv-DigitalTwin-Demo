@@ -95,3 +95,12 @@ Solo 2 pero ok de 1a6
 ### 🤖 Claude (hilo) · 05:26–05:45 UTC
 
 El PR #22 ya estaba fusionado, así que reinició la rama desde `main` y abrió el PR #23. Cambió el preset principal a `multistage-2x8m3h-80m` (2 bombas de trabajo, sin reserva), rehízo el escenario de disparo de bomba (sin reserva la otra sola entrega 11,3 m³/h a 60,4 mca y salta la alarma de baja presión) y agregó `pump-trip-recovery`. Actualizó el diseño (S4), la ficha, la decisión D24, la bitácora y las capturas.
+
+### 🤖 Claude (hilo) · 05:45–06:15 UTC
+
+Trabajo del hilo, resumido:
+- Creó los tipos `pressure-reducing-station` y `distribution-grid` (contrato, comportamiento sobre la red hidráulica, presets, escenarios calculados a mano, geometría, README y ficha).
+- La primera versión de la estación no convergía en el solucionador (60 iteraciones por paso): la rama cerrada tenía tramos de unión con Kv muy alto y caudal casi nulo. Se quitaron esos tramos y la estación converge en 4 iteraciones; no se cambió el solucionador.
+- Agregó una válvula de bola a la entrada de cada ramal de la rejilla, porque la falla de ramal obstruido apenas se notaba en los tubos de 2".
+- Revisó las capturas de la galería: aclaró la tubería de PVC que brillaba de más y engrosó los chorros. Probó ambos tipos simulando por la API.
+- Esperó la fusión del PR #23 para abrir el PR #24 sobre `main`, y actualizó la bitácora, la decisión D25, el plan, el roadmap, el diseño y este histórico.

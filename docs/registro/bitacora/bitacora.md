@@ -10,6 +10,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
+| 2026-10-17 | #24 | Acueducto: estación reguladora de presión (`pressure-reducing-station`) y rejilla de un nivel (`distribution-grid`) en la librería, con capturas; termina la entrega 3 | acueducto |
 | 2026-10-17 | #23 | Acueducto: el bombeo principal queda con 2 bombas de trabajo (sin reserva), como pidió el autor; escenario de disparo de bomba rehecho | acueducto |
 | 2026-10-17 | #22 | Acueducto: grupo de bombeo en paralelo (`booster-pump-set`), válvula entre niveles (`regulating-valve`) y tanque de agua de 1.000 L (preset de `vessel`) en la librería, con capturas | acueducto |
 | 2026-10-17 | #21 | Fase 5: rutas de montacargas y de operarios de la nave de inyección (datos, validador, plano 2D y escena con montacargas y operarios que las recorren) y 4 estanterías de semielaborado | 5 |
@@ -35,6 +36,16 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 | 2026-10-16 | #1 | Layouts de las plantas | 1 |
 
 ## Entradas
+
+### 2026-10-17 05:30–06:15 · PR #24 · Acueducto: estación reguladora y rejilla de un nivel
+- **Fecha/hora (UTC):** 2026-10-17 05:30 a 06:15.
+- **Fase del plan:** [[plan-del-proyecto]], acueducto a escala, entrega 3 de 5 (segunda y última parte).
+- **Solicitado por:** Carlos Andrés Quiceño, «Si» (04:57) a seguir con los equipos del acueducto; el hilo anunció dos PR y este es el segundo.
+- **Qué se hizo:** dos tipos nuevos. `pressure-reducing-station`: dos ramas (corte, PRV, corte) sobre la red hidráulica; la PRV automática recibe su consigna de un PID sobre la presión del punto crítico y la manual tiene salida fija; cambio de rama sin cortar el suministro, alarmas de presión crítica, potencia disipada y fallas de telemetría, piloto y diafragma; presets `station-4in-auto` y `station-4in-manual`. `distribution-grid`: cabezal y 4 ramales de 2" con válvula de bola, 16 válvulas de consumo y 2 de fuga que publican cada una su caudal y su presión, totales del nivel, alarma de presión mínima, agua no contabilizada y fallas de fuga que revienta y ramal obstruido; presets `level-1` y `level-4-critical`. Cada tipo trae su función `add_*` para el motor de planta.
+- **Commits:** ver el PR #24.
+- **Verificación:** escenarios con valores calculados a mano (estación: 20 mca en el punto crítico con 13 m³/h y 26,66 mca de salida; de noche 3,90 m³/h con la automática y 25,9 mca en el punto crítico con la manual. Rejilla: 3,15 m³/h de consumo y 0,39 de fugas a 27,4 mca, con el reparto independiente de `tools/hydraulics/predimensionamiento.py`), `uv run twin-lib validate`, `uv run pytest`, `uv run ruff check .`, `pnpm -r typecheck` y `pnpm -r test`. Capturas: [[acueducto-estacion-reguladora.jpg]], [[acueducto-rejilla-nivel-4.jpg]]; simulando por la API: [[acueducto-estacion-reguladora-simulando.jpg]] y [[acueducto-rejilla-simulando.jpg]].
+- **Decisiones:** [[decisiones]] D25.
+- **Conversación:** [[hilo-acueducto-a-escala]].
 
 ### 2026-10-17 05:26–05:45 · PR #23 · Acueducto: bombeo principal con 2 bombas
 - **Fecha/hora (UTC):** 2026-10-17 05:26 a 05:45.

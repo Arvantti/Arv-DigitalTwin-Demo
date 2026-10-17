@@ -1,0 +1,90 @@
+# Cuentas a mano con el reparto de tools/hydraulics/predimensionamiento.py (función grid_level, independiente del
+# solucionador del runtime): cabezal y ramales de 2", válvulas de Kv 0,12 que descargan a la atmósfera,
+# Q[m³/h] = Kv·apertura·√(p/10,197). Las pérdidas en 2" son pequeñas: la presión casi no cambia dentro del nivel.
+scenarios:
+  - id: steady
+    description: "Día en el nivel 1: entra a 27,4 mca y reparte 3,15 m³/h a las casas y 0,39 m³/h a las fugas"
+    preset: level-1
+    duration_s: 600
+    expect:
+      - { path: variables.consumption_m3h, min: 3.08, max: 3.21, description: "(grid_level(27,4) = 3,146 m³/h ± 2 %)" }
+      - { path: variables.leakage_m3h, min: 0.385, max: 0.401, description: "(0,393 m³/h ± 2 %)" }
+      - { path: variables.leakage_pct, min: 10.89, max: 11.33, description: "(0,393 ÷ 3,540 = 11,1 % ± 2 %)" }
+      - { path: variables.min_pressure_mca, min: 26.84, max: 27.94, description: "(27,39 mca ± 2 %)" }
+      - { path: variables.min_pressure_valve, equals: c44, description: "(la última del último ramal es la más lejana)" }
+      - { path: variables.q_c44, min: 3.21, max: 3.35, description: "(0,12 · √(27,39/10,197) = 0,1967 m³/h = 3,28 L/min ± 2 %)" }
+      - { path: events.low_pressure, equals: 0 }
+
+  - id: night
+    description: "Noche en el nivel 1: las casas abren al 30 %, las fugas siguen igual y pesan casi un tercio"
+    preset: level-1
+    duration_s: 600
+    inputs: { demand_factor: 0.3 }
+    expect:
+      - { path: variables.consumption_m3h, min: 0.925, max: 0.963, description: "(grid_level con Kv 0,036: 0,944 m³/h ± 2 %)" }
+      - { path: variables.leakage_m3h, min: 0.385, max: 0.401 }
+      - { path: variables.leakage_pct, min: 28.8, max: 30.0, description: "(0,393 ÷ 1,337 = 29,4 % ± 2 %)" }
+
+  - id: level-4-critical
+    description: "Nivel 4 con la válvula más crítica: entra a 20,0 mca y la c44 queda en 20 mca"
+    preset: level-4-critical
+    duration_s: 600
+    expect:
+      - { path: variables.min_pressure_mca, min: 19.6, max: 20.4, description: "(20,0 mca ± 2 %, sección 4 del diseño)" }
+      - { path: variables.consumption_m3h, min: 2.63, max: 2.75, description: "(grid_level(20,01) = 2,689 m³/h ± 2 %)" }
+      - { path: variables.leakage_m3h, min: 0.329, max: 0.343, description: "(0,336 m³/h ± 2 %)" }
+
+  - id: leak-burst
+    description: "Revienta la fuga l1 (fraude o rotura) a los 5 min: su Kv se multiplica por 5 y el agua no contabilizada sube"
+    preset: level-1
+    duration_s: 900
+    timeline:
+      - { at_s: 300, command: inject_fault, args: { fault: leak_burst, duration_s: 3600 } }
+    expect:
+      - { path: variables.q_l1, min: 16.05, max: 16.71, description: "(0,6 · √(27,39/10,197) = 0,983 m³/h = 16,38 L/min ± 2 %)" }
+      - { path: variables.leakage_m3h, min: 1.156, max: 1.204, description: "(0,983 + 0,197 = 1,180 m³/h ± 2 %)" }
+      - { path: variables.leakage_pct, min: 26.7, max: 27.8, description: "(1,180 ÷ (1,180 + 3,146) = 27,3 % ± 2 %)" }
+
+  - id: branch-blockage
+    description: "Se obstruye la válvula del ramal 4 (Kv de 20 a 1 m³/h): las cuatro casas de ese ramal pierden presión"
+    preset: level-1
+    duration_s: 600
+    timeline:
+      - { at_s: 120, command: inject_fault, args: { fault: branch_blockage, duration_s: 3600 } }
+    expect:
+      - { path: variables.min_pressure_mca, min: 21.8, max: 22.7, description: "(ramal 4: Q = 0,48·√(p/10,197) y p = 27,39 − 10,197·Q² → Q = 0,709 m³/h, p = 22,26 mca ± 2 %)" }
+      - { path: variables.min_pressure_valve, equals: c44 }
+      - { path: variables.p_c14, min: 26.84, max: 27.94, description: "(los otros ramales siguen en 27,39 mca)" }
+      - { path: events.low_pressure, equals: 0, description: "(22 mca sigue sobre el mínimo de servicio de 15)" }
+
+  - id: low-supply
+    description: "La entrada cae a 12 mca a los 2 min durante 5 min: salta la alarma de presión mínima y se normaliza al volver"
+    preset: level-1
+    duration_s: 900
+    timeline:
+      - { at_s: 120, inputs: { inlet_pressure_mca: 12 } }
+      - { at_s: 420, inputs: { inlet_pressure_mca: 27.4 } }
+    expect:
+      - { path: events.low_pressure, equals: 1 }
+      - { path: events.pressure_normal, equals: 1 }
+      - { path: kpis.min_pressure_mca, min: 11.76, max: 12.24, description: "(12 mca ± 2 %)" }
+
+  - id: close-houses
+    description: "Se cierran la casa c44 y todas las fugas: la c44 deja de consumir y la rejilla queda sin fugas"
+    preset: level-1
+    duration_s: 600
+    timeline:
+      - { at_s: 60, command: set_opening, args: { valve: c44, pct: 0 } }
+      - { at_s: 60, command: set_opening, args: { valve: leaks, pct: 0 } }
+    expect:
+      - { path: variables.q_c44, max: 0.001 }
+      - { path: variables.leakage_m3h, max: 0.001 }
+      - { path: variables.consumption_m3h, min: 2.91, max: 3.03, description: "(15 casas × 0,1967 m³/h = 2,95 m³/h ± 2 %)" }
+      - { path: variables.consumer_opening_pct, min: 93.7, max: 93.8, description: "(15 × 100 ÷ 16 = 93,75 %)" }
+      - { path: events.opening_changed, equals: 2 }
+
+  - id: demo
+    description: Turno con fallas aleatorias para la galería
+    preset: level-1
+    duration_s: 28800
+    random_faults: true
