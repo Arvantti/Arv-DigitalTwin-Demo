@@ -34,8 +34,10 @@ params:
   bench_inlet_mca:     { type: number, unit: mca, min: 0, max: 300, default: 27.4, description: "Banco de prueba: presión a la entrada de la rejilla", affects: [behavior] }
 
 ports:
-  - { id: inlet, kind: material, direction: in, medium: agua, unit: m3/h }
-  - { id: drain, kind: material, direction: out, medium: "agua a la canaleta (consumo y fugas)", unit: m3/h }
+  - { id: inlet, kind: material, direction: in, medium: agua, unit: m3/h, hydraulic: inlet }
+  - { id: riser_out, kind: material, direction: out, medium: agua, unit: m3/h, hydraulic: inlet, description: Sigue la columna desde la entrada hacia el nivel de arriba }
+  - { id: drain, kind: material, direction: out, medium: "agua a la canaleta (consumo y fugas)", unit: kg/h, link: { flow_kg_h: drain_kg_h } }
+  - { id: telemetry, kind: signal, direction: out, medium: presión de la casa más crítica del nivel, unit: mca, link: { pressure_mca: min_pressure_mca } }
 
 states:
   - { id: idle, description: Todas las válvulas cerradas }
@@ -52,6 +54,7 @@ variables:
   - { id: min_pressure_valve, unit: "", kind: status, description: Válvula de consumo con la presión más baja }
   - { id: consumer_opening_pct, unit: "%", kind: setpoint, description: Apertura media de las válvulas de consumo }
   - { id: volume_m3, unit: m3, kind: counter, description: Volumen que entró a la rejilla }
+  - { id: drain_kg_h, unit: kg/h, kind: calculated, description: Agua que cae a la canaleta (consumo y fugas) }
   - { id: q_c11, unit: L/min, kind: measured, range: [0, 100], noise_sd: 0.02, resolution: 0.01, description: "Caudal de la válvula de consumo c11 (ramal 1, posición 1)" }
   - { id: p_c11, unit: mca, kind: measured, range: [0, 300], noise_sd: 0.02, resolution: 0.01, description: "Presión aguas arriba de la válvula c11" }
   - { id: q_c12, unit: L/min, kind: measured, range: [0, 100], noise_sd: 0.02, resolution: 0.01, description: "Caudal de la válvula de consumo c12 (ramal 1, posición 2)" }

@@ -78,6 +78,13 @@ class PressureReducingStation(EquipmentBehavior):
         self.in_band_s = 0.0
         self.power_integral = 0.0
 
+    def hydraulic_build(self, net: HydraulicNetwork, prefix: str, elevation_m: float) -> None:
+        """En la planta: las dos ramas entre los nodos de llegada y salida, a la cota del equipo. La presión crítica
+        llega por la telemetría (puerto critical_pressure)."""
+        net.add_node(prefix + "inlet", elevation_m)
+        net.add_node(prefix + "outlet", elevation_m)
+        add_pressure_reducing_station(net, prefix, prefix + "inlet", prefix + "outlet", self.p)
+
     # ---- comandos y fallas ----
     def on_command(self, name: str, args: dict[str, Any]) -> bool:
         if name == "select_branch":

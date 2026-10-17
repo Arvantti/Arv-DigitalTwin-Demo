@@ -118,6 +118,18 @@ class EquipmentBehavior:
     def on_fault_cleared(self, fault_id: str) -> None:
         """Gancho al repararse una falla."""
 
+    # ------------------------------------------------------------------ dominio hidráulico (opcional)
+    def hydraulic_build(self, net: Any, prefix: str, elevation_m: float) -> None:
+        """Agrega los elementos del equipo a la red de la planta, con sus nodos y enlaces con el prefijo dado.
+
+        Lo usan los tipos con puertos `hydraulic` (docs/plant-engine.md). Después el motor reemplaza `self.net`
+        por una vista de la red de la planta con el mismo prefijo, así el comportamiento sigue usando los
+        nombres de su banco."""
+        raise NotImplementedError(f"{self.type}: no aporta elementos a una red hidráulica")
+
+    def hydraulic_sync(self) -> None:
+        """Antes de cada solución de la red de la planta: ajustar lo que depende del estado (nivel de un tanque)."""
+
     # ------------------------------------------------------------------ eventos
     def emit(self, event_type: str, **payload: Any) -> None:
         if event_type not in COMMON_EVENTS and event_type not in self.spec.event_ids:

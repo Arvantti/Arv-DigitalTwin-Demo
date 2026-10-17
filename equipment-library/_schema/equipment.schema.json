@@ -191,12 +191,18 @@
             "available": { "$ref": "#/$defs/ident" },
             "temp_c": { "$ref": "#/$defs/ident" },
             "pressure_bar": { "$ref": "#/$defs/ident" },
+            "pressure_mca": { "$ref": "#/$defs/ident" },
+            "level_pct": { "$ref": "#/$defs/ident" },
             "moisture_pct": { "$ref": "#/$defs/ident" },
             "weight_mean_g": { "$ref": "#/$defs/ident" },
             "weight_sd_g": { "$ref": "#/$defs/ident" },
             "ready": { "$ref": "#/$defs/ident" },
             "demand_kg_h": { "$ref": "#/$defs/ident" }
           }
+        },
+        "hydraulic": {
+          "description": "Nodo del banco hidráulico del equipo que este puerto expone a la red de la planta (dominio hidráulico del motor, docs/plant-engine.md)",
+          "$ref": "#/$defs/ident"
         }
       }
     },

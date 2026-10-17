@@ -25,6 +25,7 @@ from typing import Any
 from .behavior import EquipmentBehavior, Event
 from .library import Expectation, Library, find_library_root
 from .links import BACKWARD, FORWARD, ITEM_ATTRIBUTES, port_links
+from .plant_hydraulics import HydraulicDomain
 from .sim import Simulator, resolve_path
 from .spec import SpecError, load_yaml
 
@@ -152,6 +153,8 @@ class PlantModel:
                 expect=[Expectation(**e) for e in sc.get("expect") or []],
             )
         errors = self.validate()
+        self.hydraulic_links = [lk for lk in self.links if self.is_hydraulic(lk)]
+        self.flow_links = [lk for lk in self.links if not self.is_hydraulic(lk)]
         if errors:
             raise SpecError("\n".join(f"{self.sim_path}: {e}" for e in errors))
 
@@ -166,6 +169,21 @@ class PlantModel:
             every_s=float(raw["every_s"]) if raw.get("every_s") else None,
         )
 
+    def _port(self, ref: PortRef) -> dict[str, Any] | None:
+        cfg = self.equipment.get(ref.equipment)
+        if cfg is None:
+            return None
+        try:
+            spec = self.library.get(cfg["type"]).spec
+        except KeyError:
+            return None
+        return next((p for p in spec.raw.get("ports", []) if p["id"] == ref.port), None)
+
+    def is_hydraulic(self, lk: Link) -> bool:
+        """Un enlace entre dos puertos `hydraulic` es un tubo de la red de la planta, no un paso de magnitudes."""
+        src, dst = self._port(lk.src), self._port(lk.dst)
+        return bool(src and dst and src.get("hydraulic") and dst.get("hydraulic"))
+
     def links_for_flow(self, src: str, dst: str) -> list[str]:
         """Ids de los enlaces cuyo recorrido (origen, `via`…, destino) pasa por el tramo src → dst del plano."""
         return [
@@ -179,6 +197,7 @@ class PlantModel:
         errors: list[str] = []
         layout_ids = {e["id"] for e in self.layout.get("equipment", [])}
         edges = {(f["from"], f["to"]) for f in self.layout.get("flows") or []}
+        flows = {(f["from"], f["to"]): f for f in self.layout.get("flows") or []}
         ports: dict[str, dict[str, dict[str, Any]]] = {}
 
         for eid, cfg in self.equipment.items():
@@ -217,6 +236,15 @@ class PlantModel:
                 errors.append(f"{label}: se espera un puerto de salida hacia uno de entrada")
             if src["kind"] != dst["kind"]:
                 errors.append(f"{label}: puertos de distinto tipo ({src['kind']} → {dst['kind']})")
+            if src.get("hydraulic") and dst.get("hydraulic"):
+                # Tubo de la red de agua: no pasa magnitudes; a un tanque le fija lo que entra o sale por ese puerto.
+                errors += self._check_hydraulic(lk, label, flows)
+                for port, eid, q in ((src, lk.src.equipment, "demand_kg_h"), (dst, lk.dst.equipment, "flow_kg_h")):
+                    if q in port.get("link", {}):
+                        linked_inputs[eid].add(port["link"][q])
+                if (lk.src.equipment, lk.dst.equipment) not in edges:
+                    errors.append(f"{label}: plant.yaml no tiene el flujo {lk.src.equipment} → {lk.dst.equipment}")
+                continue
             shared = set(src.get("link", {})) & set(dst.get("link", {}))
             if not shared:
                 errors.append(f"{label}: los puertos no comparten ninguna magnitud de link")
@@ -280,6 +308,18 @@ class PlantModel:
                     errors.append(f"línea {ln.id}: {eid} no se simula")
         return errors
 
+    @staticmethod
+    def _check_hydraulic(lk: Link, label: str, flows: dict) -> list[str]:
+        errors: list[str] = []
+        if lk.via or lk.max or lk.when:
+            errors.append(f"{label}: un enlace hidráulico no admite via, max ni when (es un tubo)")
+        flow = flows.get((lk.src.equipment, lk.dst.equipment))
+        if flow is not None and not flow.get("piped"):
+            errors.append(f"{label}: el flujo del plano debe ser piped: true (da el diámetro y la ruta del tubo)")
+        elif flow is not None and not (flow.get("diameter_in") or flow.get("inner_diameter_mm")):
+            errors.append(f"{label}: el flujo del plano necesita diameter_in o inner_diameter_mm")
+        return errors
+
     def create(self, seed: int = 1, random_faults: bool = False, horizon_s: float = 86400.0) -> PlantSimulation:
         """Instancia la planta. Los comandos de arranque que se repiten se programan hasta horizon_s."""
         instances: list[EquipmentBehavior] = []
@@ -301,8 +341,9 @@ class PlantSimulation:
         self._links = {eid: port_links(e.spec) for eid, e in self.equipment.items()}
         self._last_count: dict[PortRef, float] = {}
         self.link_state: dict[str, dict[str, Any]] = {}
+        self.hydraulics = HydraulicDomain(model, self.equipment, model.hydraulic_links) if model.hydraulic_links else None
         values = self._values()
-        for lk in model.links:
+        for lk in model.flow_links:
             name = self._links[lk.src.equipment][lk.src.port]["link"].get("units")
             if name is not None:
                 self._last_count[lk.src] = float(values[lk.src.equipment].get(name) or 0.0)
@@ -341,7 +382,7 @@ class PlantSimulation:
             flow = values[ref.equipment].get(link["flow_kg_h"])
             return None if flow is None else flow > 1e-9
         if q in ITEM_ATTRIBUTES and ref not in seen:
-            for lk in self.model.links:
+            for lk in self.model.flow_links:
                 if lk.dst.equipment == ref.equipment and self._links[lk.dst.equipment][lk.dst.port]["kind"] == "item":
                     v = self._forward(values, lk.src, q, seen | {ref})
                     if v is not None:
@@ -355,7 +396,7 @@ class PlantSimulation:
         link_state: dict[str, dict[str, Any]] = {}
         shares = self._gate_shares(values)
         waiting = self._waiting_sources()
-        for lk in self.model.links:
+        for lk in self.model.flow_links:
             src_link = self._links[lk.src.equipment][lk.src.port]["link"]
             dst_link = self._links[lk.dst.equipment][lk.dst.port]["link"]
             # Lo que sale por el enlace; el contador de unidades se convierte en u/min una sola vez por paso.
@@ -406,6 +447,8 @@ class PlantSimulation:
                 value = all(bool(v) for v in vals)
             elif q == "available":
                 value = any(bool(v) for v in vals)
+            elif q == "pressure_mca":
+                value = min(float(v) for v in vals)  # telemetría: el punto más crítico
             else:
                 # temperatura, presión o peso de varias fuentes: solo cuentan las que entregan
                 active = [float(v) for _, v, src in items if v is not None and self._delivering(values, src)]
@@ -418,7 +461,7 @@ class PlantSimulation:
         la vez. Conserva el turno quien ya circulaba en el paso anterior (el primero declarado si hay varios); si nadie
         circula, todos están listos y el primero que empiece se queda con el turno."""
         by_dst: dict[PortRef, list[Link]] = defaultdict(list)
-        for lk in self.model.links:
+        for lk in self.model.flow_links:
             src_link = self._links[lk.src.equipment][lk.src.port]["link"]
             dst_link = self._links[lk.dst.equipment][lk.dst.port]["link"]
             if lk.when is None and "flow_kg_h" in src_link and "ready" in src_link and "ready" in dst_link:
@@ -436,13 +479,15 @@ class PlantSimulation:
         """Parte de la salida que lleva cada enlace con `when`: la variable de la compuerta ÷ la suma de las compuertas de su origen."""
         gates: dict[int, float] = {}
         totals: dict[PortRef, float] = defaultdict(float)
-        for lk in self.model.links:
+        for lk in self.model.flow_links:
             if lk.when is not None:
                 g = max(0.0, float(values[lk.when.equipment].get(lk.when.port) or 0.0))
                 gates[id(lk)] = g
                 totals[lk.src] += g
         return {
-            id(lk): gates[id(lk)] / totals[lk.src] if totals[lk.src] > FLOW_EPS else 0.0 for lk in self.model.links if lk.when is not None
+            id(lk): gates[id(lk)] / totals[lk.src] if totals[lk.src] > FLOW_EPS else 0.0
+            for lk in self.model.flow_links
+            if lk.when is not None
         }
 
     def _link_record(self, lk: Link, sent: dict[str, Any], back: dict[str, Any]) -> dict[str, Any]:
@@ -467,6 +512,9 @@ class PlantSimulation:
     # ------------------------------------------------------------------ ciclo
     def step(self) -> list[Event]:
         self._exchange()
+        if self.hydraulics is not None:
+            # Red de agua del paso: con las aperturas, velocidades y consignas que dejaron los equipos en el paso anterior.
+            self.link_state.update(self.hydraulics.solve(self.sim.inputs))
         return self.sim.step()
 
     def run(self, duration_s: float, sample_every_s: float | None = None, on_sample: Any = None) -> None:
@@ -507,7 +555,10 @@ class PlantSimulation:
             snap = e.snapshot()
             snap["state_share"] = self._state_shares(eid)
             equipment[eid] = snap
-        return {"t": self.t, "plant": self.model.id, "equipment": equipment, "lines": self.line_kpis(), "links": self.link_state}
+        snap = {"t": self.t, "plant": self.model.id, "equipment": equipment, "lines": self.line_kpis(), "links": self.link_state}
+        if self.hydraulics is not None:
+            snap["hydraulics"] = self.hydraulics.summary()
+        return snap
 
 
 def run_plant_scenario(

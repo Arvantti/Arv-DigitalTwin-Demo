@@ -26,8 +26,8 @@ params:
   bench_load_kv_m3h: { type: number, unit: m3/h, min: 0.01, max: 5000, default: 6.667, description: "Banco de prueba: Kv equivalente de lo que consume aguas abajo (descarga a la atmósfera)", affects: [behavior] }
 
 ports:
-  - { id: inlet, kind: material, direction: in, medium: agua, unit: m3/h }
-  - { id: outlet, kind: material, direction: out, medium: agua, unit: m3/h }
+  - { id: inlet, kind: material, direction: in, medium: agua, unit: m3/h, hydraulic: inlet }
+  - { id: outlet, kind: material, direction: out, medium: agua, unit: m3/h, hydraulic: outlet }
   - { id: power, kind: utility, direction: in, medium: "energía eléctrica (solo con actuador)" }
 
 states:

@@ -96,6 +96,26 @@ def equipment_rect(eq: dict) -> Rect:
     return Rect(x - dx / 2, y - dy / 2, dx, dy)
 
 
+def zone_span(zone: dict) -> tuple[float, float]:
+    """Cotas de una zona: desde `elevation` (piso del edificio, 0 por defecto) hasta su cubierta."""
+    z0 = float(zone.get("elevation", 0) or 0)
+    return z0, z0 + float(zone.get("height") or 0)
+
+
+def equipment_span(eq: dict) -> tuple[float, float]:
+    """Cotas de un equipo: desde position[2] hasta la altura de su huella."""
+    z0 = float(eq["position"][2]) if len(eq["position"]) > 2 else 0.0
+    h = float(eq["footprint"][2]) if len(eq.get("footprint", [])) > 2 else 0.0
+    return z0, z0 + h
+
+
+def spans_overlap(a: tuple[float, float], b: tuple[float, float]) -> bool:
+    """Dos intervalos de altura se cruzan; uno sin altura (zona exterior, huella plana) cuenta como todo el alto."""
+    if a[1] <= a[0] or b[1] <= b[0]:
+        return True
+    return a[0] < b[1] - EPS and b[0] < a[1] - EPS
+
+
 def _split_by_comma(node: object, path: str, errors: list[str]) -> None:
     """Detecta claves creadas por una coma sin comillas dentro de un mapa { ... } de YAML."""
     if isinstance(node, dict):
@@ -118,11 +138,12 @@ def validate(plant: dict) -> tuple[list[str], list[str]]:
     if len(zones) != len(plant["zones"]):
         errors.append("ids de zona duplicados")
     zone_items = list(zones.items())
+    zone_z = {z["id"]: zone_span(z) for z in plant["zones"]}
     for i, (zid, zr) in enumerate(zone_items):
         if not site.contains(zr):
             errors.append(f"zona {zid} sale del predio")
         for oid, orr in zone_items[i + 1 :]:
-            if zr.overlaps(orr):
+            if zr.overlaps(orr) and spans_overlap(zone_z[zid], zone_z[oid]):
                 errors.append(f"zonas solapadas: {zid} / {oid}")
 
     eq_rects: dict[str, Rect] = {}
@@ -137,11 +158,16 @@ def validate(plant: dict) -> tuple[list[str], list[str]]:
             errors.append(f"{eid}: zona inexistente {eq['zone']}")
         elif not zr.contains(r):
             errors.append(f"{eid}: sale de su zona {eq['zone']}")
+        else:
+            z0, z1 = zone_z[eq["zone"]]
+            z = equipment_span(eq)[0]
+            if z < z0 - EPS or (z1 > z0 and z >= z1 - EPS):
+                errors.append(f"{eid}: su cota {z} m queda fuera de su zona {eq['zone']} ({z0} a {z1} m)")
 
     ground = [e for e in plant["equipment"] if not e.get("overhead")]
     for i, a in enumerate(ground):
         for b in ground[i + 1 :]:
-            if eq_rects[a["id"]].overlaps(eq_rects[b["id"]]):
+            if eq_rects[a["id"]].overlaps(eq_rects[b["id"]]) and spans_overlap(equipment_span(a), equipment_span(b)):
                 errors.append(f"equipos solapados: {a['id']} / {b['id']}")
 
     for aisle in plant.get("aisles") or []:

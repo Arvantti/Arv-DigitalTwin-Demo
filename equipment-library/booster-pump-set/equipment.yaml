@@ -26,6 +26,7 @@ params:
   setpoint_mca:      { type: number, unit: mca, min: 1, max: 250, default: 80, description: Consigna de presión de descarga (modo presión), affects: [behavior] }
   min_speed_pct:     { type: number, unit: "%", min: 10, max: 90, default: 30, description: Velocidad mínima del variador, affects: [behavior] }
   stage_up_speed_pct: { type: number, unit: "%", min: 80, max: 100, default: 98, description: "Arranca otra bomba si la velocidad pasa este valor 15 s (el variador se queda sin margen)", affects: [behavior] }
+  min_running:       { type: integer, min: 1, max: 6, default: 1, description: "Modo presión: bombas que trabajan siempre (2 = las dos de trabajo, sin reserva); no se paran por baja demanda", affects: [behavior] }
   stage_down_flow_pct: { type: number, unit: "%", min: 30, max: 95, default: 70, description: "Para una bomba si el caudal cabe en las restantes por debajo de este % de su caudal de diseño, 30 s", affects: [behavior] }
   start_level_pct:   { type: number, unit: "%", min: 5, max: 100, default: 60, description: "Modo nivel: arranca con el tanque de origen sobre este nivel", affects: [behavior] }
   stop_level_pct:    { type: number, unit: "%", min: 0, max: 95, default: 20, description: "Modo nivel: para con el tanque de origen bajo este nivel", affects: [behavior] }
@@ -37,8 +38,10 @@ params:
   start_on:          { type: boolean, default: true, description: Arranca en automático, affects: [behavior] }
 
 ports:
-  - { id: suction, kind: material, direction: in, medium: agua, unit: m3/h, description: Colector de succión desde los tanques }
-  - { id: discharge, kind: material, direction: out, medium: agua a presión, unit: m3/h, description: Colector de descarga hacia la red }
+  - { id: suction, kind: material, direction: in, medium: agua, unit: m3/h, hydraulic: suction, description: Colector de succión desde los tanques }
+  - { id: discharge, kind: material, direction: out, medium: agua a presión, unit: m3/h, hydraulic: discharge, description: Colector de descarga hacia la red }
+  - { id: source_level, kind: signal, direction: in, medium: nivel del tanque de origen, unit: "%", link: { level_pct: source_level_pct }, description: "Modo nivel: nivel de los tanques de donde toma el agua" }
+  - { id: target_level, kind: signal, direction: in, medium: nivel del tanque de destino, unit: "%", link: { level_pct: target_level_pct }, description: "Modo nivel: nivel del tanque que llena" }
   - { id: power, kind: utility, direction: in, medium: energía eléctrica }
 
 states:

@@ -1,0 +1,95 @@
+# Acueducto a escala: banco de pruebas en un edificio que reproduce el acueducto de una ciudad.
+# Diseño en docs/water-network-plant.md. Valores del autor (D26 a D29 del registro) y supuestos marcados.
+#
+# Convenciones: iguales a sauce-plant-v1/plant.yaml, más pisos:
+#   - Metros, origen suroeste, x = este, y = norte, z = arriba.
+#   - zones[].rect = [x_min, y_min, ancho_x, largo_y]; zones[].elevation = cota del piso de la zona.
+#   - equipment[].position = centro de la huella [x, y, z]; z es la cota donde se apoya el equipo.
+#   - Pisos cada 2,5 m (supuesto S2). Niveles de la rejilla cada 1,20 m desde el piso 1 (confirmado, D28).
+#   - flows con piped: true y diameter_in son tubos de la red de agua: su `route` (puntos [x, y, z]) da la longitud
+#     y el trazado que dibuja la escena.
+
+schema_version: 0.1.0
+
+plant:
+  id: water-network-scale-v1
+  name: Acueducto a escala (banco de pruebas)
+  kind: process
+  units: { length: m, angle: deg, mass: kg, time: s, temperature: degC }
+  frame: { origin: esquina suroeste, x: este, y: norte, z: arriba }
+  site: { width_x: 14, length_y: 10 }
+  context:
+    location: Banco de pruebas en un edificio (laboratorio)
+    purpose: "Gestión de presión de un acueducto: bombear a ≥ 70 mca y que la estación reguladora deje la casa más crítica en 15,45 mca"
+    assumptions:
+      - Pisos cada 2,5 m; el nivel 1 de la rejilla está a ras del piso 1 y los demás cada 1,20 m (confirmado por el autor).
+      - Tubería PVC; 4" hasta el nivel 1 y 2" en la columna de la rejilla (pedido del autor).
+      - "Bombas multietapa genéricas (el autor las describe como Grundfos; regla del repositorio: sin marcas)."
+
+layout_concept: >
+  Edificio de tres pisos. En el piso 0 están los tanques y las bombas de recirculación, debajo de la columna de la
+  rejilla para recibir las bajantes de las canaletas. En el piso 1 está el tanque de bombeo, el grupo de bombas
+  principales, la subida de 1 m, la estación reguladora elevada y la bajada al nivel 1 de la rejilla, a ras de piso.
+  La rejilla sube por una columna que atraviesa los pisos 1 y 2 con un nivel cada 1,20 m y una válvula entre niveles.
+
+zones:
+  - { id: piso-0,  name: "Piso 0 · recirculación",                 kind: utility,    hygiene_class: service, temperature_c: null, rect: [1, 1, 12, 8], elevation: 0,   height: 2.5 }
+  - { id: piso-1,  name: "Piso 1 · bombeo y estación reguladora",  kind: utility,    hygiene_class: service, temperature_c: null, rect: [1, 1, 8, 8],  elevation: 2.5, height: 2.5 }
+  - { id: columna, name: "Columna de la rejilla (niveles 1 a 4)",  kind: production, hygiene_class: clean,   temperature_c: null, rect: [9, 1, 4, 8],  elevation: 2.5, height: 5.0 }
+  - { id: piso-2,  name: "Piso 2",                                 kind: utility,    hygiene_class: service, temperature_c: null, rect: [1, 1, 8, 8],  elevation: 5.0, height: 2.5 }
+
+aisles: []
+
+equipment:
+  # --- Piso 0: recirculación (debajo de la columna) ---
+  - { id: tank-recirc-01,    type: water_tank,   zone: piso-0, position: [10.0, 2.6, 0],   footprint: [1.3, 1.3, 1.7], params: { volume_l: 2256, diameter_m: 1.3, content: agua de retorno } }
+  - { id: tank-recirc-02,    type: water_tank,   zone: piso-0, position: [11.8, 2.6, 0],   footprint: [1.3, 1.3, 1.7], params: { volume_l: 2256, diameter_m: 1.3, content: agua de retorno } }
+  - { id: pumpset-recirc-01, type: pump_set,     zone: piso-0, position: [10.9, 6.6, 0],   footprint: [1.6, 1.2, 1.0], params: { pumps: 2, duty: "1 + 1", flow_m3h: 15, head_m: 10 } }
+
+  # --- Piso 1: bombeo y estación reguladora ---
+  - { id: tank-supply-01,    type: water_tank,   zone: piso-1, position: [2.6, 3.0, 2.5],  footprint: [1.5, 1.5, 2.2], params: { volume_l: 3888, diameter_m: 1.5, content: agua } }
+  - { id: pumpset-main-01,   type: pump_set,     zone: piso-1, position: [2.6, 6.4, 2.5],  footprint: [1.8, 1.4, 1.6], params: { pumps: 2, duty: "2 de trabajo", flow_m3h: 13, head_m: 80 } }
+  - { id: prs-01,            type: pressure_reducing_station, zone: piso-1, position: [6.2, 4.6, 3.5], footprint: [3.0, 1.4, 1.2], params: { diameter_in: 4, branches: "A automática, B manual" }, tags: [elevated] }
+
+  # --- Columna de la rejilla: un nivel cada 1,20 m desde el piso 1 ---
+  - { id: grid-01,           type: distribution_grid, zone: columna, position: [11.0, 5.0, 2.5], footprint: [2.2, 2.7, 1.1], params: { level: 1, valves: 18 } }
+  - { id: grid-02,           type: distribution_grid, zone: columna, position: [11.0, 5.0, 3.7], footprint: [2.2, 2.7, 1.1], params: { level: 2, valves: 18 } }
+  - { id: grid-03,           type: distribution_grid, zone: columna, position: [11.0, 5.0, 4.9], footprint: [2.2, 2.7, 1.1], params: { level: 3, valves: 18 } }
+  - { id: grid-04,           type: distribution_grid, zone: columna, position: [11.0, 5.0, 6.1], footprint: [2.2, 2.7, 1.1], params: { level: 4, valves: 18, critical: true } }
+  - { id: valve-between-12,  type: regulating_valve,  zone: columna, position: [9.45, 3.4, 3.1], footprint: [0.3, 0.3, 0.4], params: { diameter_in: 2, control: apertura fija manual } }
+  - { id: valve-between-23,  type: regulating_valve,  zone: columna, position: [9.45, 3.4, 4.3], footprint: [0.3, 0.3, 0.4], params: { diameter_in: 2, control: apertura fija manual } }
+  - { id: valve-between-34,  type: regulating_valve,  zone: columna, position: [9.45, 3.4, 5.5], footprint: [0.3, 0.3, 0.4], params: { diameter_in: 2, control: apertura fija manual } }
+
+lines: []
+
+flows:
+  # Red a presión (dominio hidráulico del motor). Rutas: del equipo de origen al de destino, con la subida y bajada de 1 m.
+  - { from: tank-supply-01,    to: pumpset-main-01,  medium: agua, rate: 13, unit: m3/h, piped: true, diameter_in: 4, minor_k: 1.0,
+      route: [[2.6, 3.75, 2.7], [2.6, 5.7, 2.7]], show: true }
+  - { from: pumpset-main-01,   to: prs-01,           medium: agua a presión, rate: 13, unit: m3/h, piped: true, diameter_in: 4, minor_k: 0.3,
+      route: [[3.5, 6.4, 2.9], [4.4, 6.4, 2.9], [4.4, 6.4, 3.9], [4.4, 4.6, 3.9], [4.7, 4.6, 3.9]], show: true, note: sube 1 m hasta la estación }
+  - { from: prs-01,            to: grid-01,          medium: agua regulada, rate: 13, unit: m3/h, piped: true, diameter_in: 4, minor_k: 0.5,
+      route: [[7.7, 4.6, 3.9], [8.6, 4.6, 3.9], [8.6, 4.6, 2.9], [9.45, 4.6, 2.9], [9.45, 3.4, 2.9], [9.9, 3.4, 2.9]], show: true, note: baja 1 m hasta el nivel 1 }
+  - { from: grid-01,           to: valve-between-12, medium: agua, rate: 9.6, unit: m3/h, piped: true, diameter_in: 2, minor_k: 0.5, route: [[9.45, 3.4, 2.9], [9.45, 3.4, 3.1]] }
+  - { from: valve-between-12,  to: grid-02,          medium: agua, rate: 9.6, unit: m3/h, piped: true, diameter_in: 2, minor_k: 0.5, route: [[9.45, 3.4, 3.5], [9.45, 3.4, 4.1], [9.9, 3.4, 4.1]] }
+  - { from: grid-02,           to: valve-between-23, medium: agua, rate: 6.4, unit: m3/h, piped: true, diameter_in: 2, minor_k: 0.5, route: [[9.45, 3.4, 4.1], [9.45, 3.4, 4.3]] }
+  - { from: valve-between-23,  to: grid-03,          medium: agua, rate: 6.4, unit: m3/h, piped: true, diameter_in: 2, minor_k: 0.5, route: [[9.45, 3.4, 4.7], [9.45, 3.4, 5.3], [9.9, 3.4, 5.3]] }
+  - { from: grid-03,           to: valve-between-34, medium: agua, rate: 3.2, unit: m3/h, piped: true, diameter_in: 2, minor_k: 0.5, route: [[9.45, 3.4, 5.3], [9.45, 3.4, 5.5]] }
+  - { from: valve-between-34,  to: grid-04,          medium: agua, rate: 3.2, unit: m3/h, piped: true, diameter_in: 2, minor_k: 0.5, route: [[9.45, 3.4, 5.9], [9.45, 3.4, 6.5], [9.9, 3.4, 6.5]] }
+  # Recirculación: las bajantes de las canaletas caen por gravedad a los tanques del piso 0 (no es red a presión).
+  - { from: grid-01, to: tank-recirc-01, medium: agua de retorno (bajante), rate: 3.3, unit: m3/h, piped: true }
+  - { from: grid-02, to: tank-recirc-01, medium: agua de retorno (bajante), rate: 3.2, unit: m3/h, piped: true }
+  - { from: grid-03, to: tank-recirc-02, medium: agua de retorno (bajante), rate: 3.2, unit: m3/h, piped: true }
+  - { from: grid-04, to: tank-recirc-02, medium: agua de retorno (bajante), rate: 3.2, unit: m3/h, piped: true }
+  - { from: tank-recirc-01,    to: pumpset-recirc-01, medium: agua de retorno, rate: 15, unit: m3/h, piped: true, diameter_in: 3, minor_k: 1.0,
+      route: [[10.0, 3.25, 0.2], [10.0, 5.9, 0.2]] }
+  - { from: tank-recirc-02,    to: pumpset-recirc-01, medium: agua de retorno, rate: 15, unit: m3/h, piped: true, diameter_in: 3, minor_k: 1.0,
+      route: [[11.8, 3.25, 0.2], [11.8, 5.9, 0.2]] }
+  - { from: pumpset-recirc-01, to: tank-supply-01,   medium: agua de retorno, rate: 15, unit: m3/h, piped: true, diameter_in: 3, minor_k: 2.0,
+      route: [[10.0, 7.2, 0.5], [8.6, 7.2, 0.5], [8.6, 7.2, 4.9], [2.6, 7.2, 4.9], [2.6, 3.0, 4.9], [2.6, 3.0, 4.7]], show: true, note: sube al tanque de bombeo }
+  # Señales: telemetría de la casa más crítica de cada nivel hacia la estación y niveles de los tanques hacia la recirculación.
+  - { from: grid-01, to: prs-01, medium: telemetría de presión, piped: false }
+  - { from: grid-02, to: prs-01, medium: telemetría de presión, piped: false }
+  - { from: grid-03, to: prs-01, medium: telemetría de presión, piped: false }
+  - { from: grid-04, to: prs-01, medium: telemetría de presión, piped: false }
+  - { from: tank-supply-01, to: pumpset-recirc-01, medium: señal de nivel, piped: false }

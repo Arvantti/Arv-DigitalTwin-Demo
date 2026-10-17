@@ -127,8 +127,9 @@ params:
     affects: [geometry]
 
 ports:
-  - { id: inlet, kind: material, direction: in, unit: kg/h, link: { flow_kg_h: supply_kg_h, temp_c: inflow_temp_c, ready: accepting } }
-  - { id: outlet, kind: material, direction: out, unit: kg/h, link: { flow_kg_h: outflow_kg_h, available: available, temp_c: temperature_c, demand_kg_h: demand_kg_h } }
+  - { id: inlet, kind: material, direction: in, unit: kg/h, hydraulic: inlet, link: { flow_kg_h: supply_kg_h, temp_c: inflow_temp_c, ready: accepting }, description: "En una red de agua, llegada libre por arriba del tanque" }
+  - { id: outlet, kind: material, direction: out, unit: kg/h, hydraulic: outlet, link: { flow_kg_h: outflow_kg_h, available: available, temp_c: temperature_c, demand_kg_h: demand_kg_h }, description: "En una red de agua, salida por el fondo con la cabeza del nivel" }
+  - { id: level, kind: signal, direction: out, medium: nivel, unit: "%", link: { level_pct: level_pct } }
   - { id: heating_medium, kind: utility, direction: in, medium: vapor o agua caliente }
 
 states:
