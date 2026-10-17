@@ -20,6 +20,6 @@
 - Fallas: fuga que revienta (MTBF 2.000 h, MTTR 120 min), ramal obstruido (5.000 h, 90 min).
 - Qué es un rechazo y qué lo causa: no aplica; la alarma es una casa bajo la presión mínima de servicio.
 - Variables, alarmas y KPIs: caudal y presión de cada una de las 18 válvulas, totales del nivel, % de fugas, presión mínima y su válvula; consumo, fugas, agua no contabilizada y presión mínima registrada.
-- Apariencia: cada válvula lleva una placa con su número (C11 a C44 por ramal y posición, L1 y L2 las de fuga, los mismos ids del comando set_opening); las canaletas van 5 cm bajo la salida de las válvulas para que el agua no salpique (pedido del autor, 2026-10-17).
+- Apariencia: cada válvula lleva una placa con su número (C11 a C44 por ramal y posición, L1 y L2 las de fuga, los mismos ids del comando set_opening); las canaletas van 5 cm bajo la salida de las válvulas para que el agua no salpique (pedido del autor, 2026-10-17). Todas las válvulas de bola (las 18 de descarga y las 4 de entrada a los ramales) son de PVC de unión doble: colas, tuercas de unión, cuerpo abombado y manija plana que gira 90° con la apertura (11:42).
 - Qué se anima: manija de cada válvula con su apertura, chorro proporcional al caudal hacia la canaleta y manómetro de entrada.
 - Pendiente o desconocido: Kv y tipo reales de las válvulas del modelo físico.

@@ -28,7 +28,7 @@ const v3 = (x: number, y: number, z: number) => new THREE.Vector3(x, y, z);
 
 interface ValveHandle {
   id: string;
-  lever: THREE.Mesh;
+  lever: THREE.Object3D;
   jet: THREE.Mesh;
   jetLen: number;
 }
@@ -104,9 +104,52 @@ export default function build(params: Params): EquipmentModel {
   const leakMat = M.paint(red, 0.4);
   const water = M.emissive("#4aa8ff", 1.6);
   // canaletas casi a ras de la salida de las válvulas para que el agua no salpique: 5 cm bajo la boquilla
-  const spoutBottom = gy - 0.2 - r * 0.6;
+  const spoutBottom = gy - 0.21 - r * 0.6;
   const gutterTop = spoutBottom - 0.05;
   const jetBottom = gutterTop - 0.05;
+
+  /**
+   * Válvula de bola de PVC de unión doble, a lo largo de Y y centrada en el origen: colas a cada lado, tuercas de
+   * unión facetadas, cuerpo abombado con el vástago hacia +Z y la manija plana. La manija va en `lever`, que gira
+   * sobre Z: 0 = abierta (paralela al tubo), π/2 = cerrada.
+   */
+  const ballValve = (a: number, len: number, bodyMat: THREE.Material, handleMat: THREE.Material) => {
+    const g = P.group("ball-valve");
+    for (const sy of [-1, 1]) {
+      const tail = P.cylinder(a * 1.22, a * 1.22, len * 0.16, bodyMat, 20);
+      tail.position.y = sy * len * 0.42 - len * 0.08;
+      g.add(tail);
+      const nut = P.cylinder(a * 1.8, a * 1.8, len * 0.17, bodyMat, 10); // tuerca de unión: caras de agarre
+      nut.position.y = sy * len * 0.27 - len * 0.085;
+      g.add(nut);
+    }
+    const prof: THREE.Vector2[] = [];
+    for (let k = 0; k <= 12; k++) {
+      const t = k / 12;
+      const y = (t - 0.5) * len * 0.38;
+      prof.push(new THREE.Vector2(a * (1.45 + 0.22 * Math.sin(Math.PI * t)), y));
+    }
+    const body = new THREE.Mesh(new THREE.LatheGeometry(prof, 28), bodyMat);
+    body.castShadow = true;
+    g.add(body);
+    const boss = P.cylinderZ(a * 0.55, a * 1.0, bodyMat, 16);
+    boss.position.z = a * 1.6;
+    g.add(boss);
+    const lever = P.group("lever");
+    lever.position.z = a * 2.15;
+    const hub = P.cylinderZ(a * 0.62, a * 0.35, handleMat, 16);
+    lever.add(hub);
+    const armLen = len * 0.75;
+    const arm = P.box(a * 1.0, armLen, a * 0.3, handleMat, a * 0.1);
+    arm.position.y = armLen / 2;
+    lever.add(arm);
+    const grip = P.box(a * 1.05, armLen * 0.35, a * 0.4, handleMat, a * 0.15);
+    grip.position.y = armLen * 0.82;
+    lever.add(grip);
+    g.add(lever);
+    return { group: g, lever };
+  };
+  const valveBody = M.paint("#596067", 0.5); // PVC gris oscuro de válvula
 
   /** Placa de 13 × 6,5 cm con el número de la válvula en letra grande. */
   const numberPlate = (text: string, bg: string) => {
@@ -121,24 +164,24 @@ export default function build(params: Params): EquipmentModel {
   const dropValve = (id: string, x: number, z: number, mat: THREE.Material, plateBg: string) => {
     const g = P.group(id);
     g.position.set(x, gy, z);
-    const nipple = P.cylinder(r * 0.35, r * 0.35, 0.09, pvc, 12);
-    nipple.position.y = -0.09 - r * 0.6;
+    const o = r * 0.6;
+    const a = r * 0.42; // tubo de ¾" que baja del ramal
+    const vTop = -0.06 - o;
+    const vLen = 0.12;
+    const nipple = P.cylinder(a, a, -r - vTop, pvc, 12);
+    nipple.position.y = vTop;
     g.add(nipple);
-    const body = new THREE.Mesh(new THREE.SphereGeometry(Math.max(r * 0.75, 0.034), 18, 12), mat);
-    body.position.y = -0.11 - r * 0.6;
-    body.castShadow = true;
-    g.add(body);
-    const spout = P.cylinder(r * 0.28, r * 0.22, 0.06, M.chrome(), 12);
-    spout.position.y = -0.17 - r * 0.6;
+    const valve = ballValve(a, vLen, valveBody, mat);
+    valve.group.position.y = vTop - vLen / 2;
+    g.add(valve.group);
+    const lever = valve.lever;
+    const spout = P.cylinder(a * 0.85, a * 0.7, 0.03, M.chrome(), 12); // boquilla de salida
+    spout.position.y = vTop - vLen - 0.03;
     g.add(spout);
-    const lever = P.box(0.12, 0.016, 0.024, mat, 0.005);
-    lever.geometry.translate(0.045, 0, 0);
-    lever.position.set(0, -0.11 - r * 0.6 + r * 0.75, 0);
-    g.add(lever);
-    const jetTop = gy - 0.17 - r * 0.6;
+    const jetTop = gy + vTop - vLen - 0.03;
     const jetLen = Math.max(0.05, jetTop - jetBottom);
     const jet = P.cylinder(0.012, 0.016, jetLen, water, 10);
-    jet.position.y = -0.17 - r * 0.6 - jetLen;
+    jet.position.y = jetTop - gy - jetLen;
     g.add(jet);
     // placa con el número de la válvula sobre el tubo, inclinada hacia quien mira desde el frente
     const post = P.cylinder(0.004, 0.004, 0.05, galv, 6);
@@ -159,12 +202,10 @@ export default function build(params: Params): EquipmentModel {
     const tee = new THREE.Mesh(new THREE.SphereGeometry(r * 1.2, 16, 10), pvc);
     tee.position.set(x, gy, zHead);
     root.add(tee);
-    const bv = P.cylinderZ(r * 1.3, r * 2.2, M.paint("#3a3d42", 0.45), 20);
-    bv.position.set(x, gy, zHead - s * 0.22);
-    root.add(bv);
-    const bvLever = P.box(0.012, 0.012, 0.1, M.paint("#c62828", 0.45), 0.003);
-    bvLever.position.set(x, gy + r * 1.4, zHead - s * 0.22);
-    root.add(bvLever);
+    const bv = ballValve(r, r * 6.5, valveBody, M.paint("#c62828", 0.45));
+    bv.group.rotation.x = -Math.PI / 2; // a lo largo del ramal, manija arriba
+    bv.group.position.set(x, gy, zHead - s * 0.22);
+    root.add(bv.group);
     const branch = P.cylinderZ(r, zHead - zNode(4), pvc, 20);
     branch.position.set(x, gy, (zHead + zNode(4)) / 2);
     root.add(branch);
@@ -246,7 +287,7 @@ export default function build(params: Params): EquipmentModel {
   function update(frame: AnimationFrame): void {
     for (const v of valves) {
       const open = clamp(ch(frame, `open_${v.id}`), 0, 1);
-      v.lever.rotation.y = -(1 - open) * (Math.PI / 2);
+      v.lever.rotation.z = (1 - open) * (Math.PI / 2);
       const q = Math.max(0, ch(frame, `q_${v.id}`)); // L/min
       const radius = clamp(Math.sqrt(q / 3.3), 0, 3); // ≈ 1 a caudal de diseño de una casa
       v.jet.visible = q > 0.05;

@@ -1,6 +1,6 @@
 # distribution-grid
 
-Un nivel de la red del acueducto a escala (una comuna): cabezal de 2" con cuatro ramales, cada uno con su válvula de bola y cuatro válvulas de consumo (las casas), y dos válvulas de fuga (rojas) en el cabezal. Cada válvula lleva una placa con su número (C11…C44, L1, L2) y descarga a una canaleta que pasa 5 cm bajo su salida, para que no salpique; las canaletas bajan por una bajante. Visual V2 · comportamiento B2. Ver `FICHA.md` y el diseño en [docs/water-network-plant.md](../../docs/water-network-plant.md).
+Un nivel de la red del acueducto a escala (una comuna): cabezal de 2" con cuatro ramales, cada uno con su válvula de bola y cuatro válvulas de consumo (las casas), y dos válvulas de fuga (rojas) en el cabezal. Las válvulas son de bola de PVC de unión doble, con manija que gira con la apertura. Cada válvula lleva una placa con su número (C11…C44, L1, L2) y descarga a una canaleta que pasa 5 cm bajo su salida, para que no salpique; las canaletas bajan por una bajante. Visual V2 · comportamiento B2. Ver `FICHA.md` y el diseño en [docs/water-network-plant.md](../../docs/water-network-plant.md).
 
 ## Qué simula
 - **Reparto:** tubos (Darcy-Weisbach) y descargas a la atmósfera resueltos con `HydraulicNetwork`; la presión de cada casa depende de lo que consumen las demás.

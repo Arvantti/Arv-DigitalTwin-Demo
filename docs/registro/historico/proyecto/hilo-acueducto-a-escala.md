@@ -128,3 +128,11 @@ Trabajo del hilo, resumido:
 - Al dispararse una bomba la otra sostiene 80 mca; queda un bache de ≈ 1 s mientras acelera, sin alarma.
 - Subió las canaletas de la rejilla a 5 cm bajo la salida de las válvulas, con colgadores del bastidor, y puso una placa numerada en cada válvula. Revisó las capturas de cerca.
 - Abrió el PR #25 y actualizó la bitácora, la decisión D26, el diseño y este histórico.
+
+### 👤 Carlos Andrés Quiceño · 11:42 UTC
+
+Las válvulas de bola de la red no parecen válvulas reales
+
+### 🤖 Claude (hilo) · 11:43–12:00 UTC
+
+Rehízo las válvulas de bola de la rejilla como válvulas de PVC de unión doble (colas, tuercas de unión, cuerpo abombado y manija plana que gira 90° con la apertura), en las 18 de descarga y en las 4 de entrada a los ramales; revisó capturas de cerca con válvulas abiertas, a medio abrir y cerradas, y lo subió al mismo PR #25.
