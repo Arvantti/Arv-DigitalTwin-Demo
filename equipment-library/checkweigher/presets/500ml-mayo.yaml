@@ -1,4 +1,4 @@
 preset: 500ml-mayo
 description: Sachet de 500 ml de mayonesa (465 g)
-params: { nominal_g: 465, tolerance_minus_pct: 3.23, tolerance_plus_pct: 4.95, nominal_inflow_upm: 45, belt_width_m: 0.4, item_color: "#f4c430" }
+params: { nominal_g: 465, tolerance_minus_pct: 4.0, tolerance_plus_pct: 4.0, nominal_inflow_upm: 45, belt_width_m: 0.4, item_color: "#f4c430" }
 provenance: { nominal_g: user, tolerance_minus_pct: assumed }

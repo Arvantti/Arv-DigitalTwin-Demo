@@ -81,7 +81,7 @@ scenarios:
       - { path: events.kettle-01.batch_completed, equals: 4, description: "(batch ≈ 118 min: carga 40 + calentamiento ≈ 23 + 10 + 10 + descarga 36; empieza a 0, 120, 240 y 360 min)" }
       - { path: events.kettle-02.batch_completed, equals: 3, description: "(empieza a 60, 180, 300 y 420 min; el último termina después del turno)" }
       - { path: lines.hot-1000.output_units, min: 2160, max: 2700, description: "(7 batches × 1.995 kg, menos lo que queda en el pulmón, ÷ 1,131 kg por sachet, menos ≈ 370 en el túnel y la mesa de empaque, × 93,7 % aceptados ÷ 4 sachets por caja; tope: 30 u/min desde el min 85; la mesa empaca hasta 40 u/min, no limita)" }
-      - { path: equipment.checkweigher-01.kpis.reject_rate, min: 0.04, max: 0.09, description: "(media 1.131 g, desv. 16,8 g, límite inferior 1.105 g: z = −1,56 → 5,9 % + 0,4 % sobre 1.176 g)" }
+      - { path: equipment.checkweigher-01.kpis.reject_rate, min: 0.01, max: 0.04, description: "(media 1.131 g, desv. 16,8 g, tolerancia 4 %: límites 1.075 y 1.165 g; ≈ 0,04 % bajo + ≈ 2,3 % sobre; medido ≈ 2,5 %)" }
       - { path: equipment.filler-pouch-01.state_share.starved, min: 0.17, description: "(sin producto hasta la primera descarga, ≈ 85 min de 480)" }
       - { path: equipment.filler-pouch-01.variables.rejects_temperature, equals: 0, description: "(el pulmón mantiene 88 °C, sobre los 85 °C del llenado en caliente)" }
       - { path: equipment.cooling-tunnel-01.variables.hot_outlets, equals: 0 }

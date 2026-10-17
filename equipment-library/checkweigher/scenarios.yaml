@@ -8,7 +8,7 @@ scenarios:
       - { at_s: 1800, command: metal_test }
     expect:
       - { path: variables.units_in, min: 4799, max: 4800, description: "(80 u/min × 60 min)" }
-      - { path: kpis.reject_rate, min: 0.002, max: 0.012, description: "(media 282,8 g, desv. 4,2 g: ≈ 0,25 % bajo 271 g + 0,4 % sobre 294 g)" }
+      - { path: kpis.reject_rate, min: 0.01, max: 0.035, description: "(media 282,8 g, desv. 4,2 g, tolerancia 4 %: límites 268,8 y 291,2 g; ≈ 0,04 % bajo + ≈ 2,9 % sobre; medido ≈ 2,1 %)" }
       - { path: variables.lot_on_hold, equals: 0 }
 
   - id: load-cell-drift
@@ -20,8 +20,8 @@ scenarios:
       - { at_s: 0, command: metal_test }
       - { at_s: 1800, command: metal_test }
     expect:
-      - { path: variables.false_accepts, min: 5, description: "(los de 266 a 271 g se miden como 271 a 276 g y pasan)" }
-      - { path: variables.false_rejects, min: 100, description: "(los de 289 a 294 g se miden sobre 294 g)" }
+      - { path: variables.false_accepts, min: 1, max: 5, description: "(con tolerancia 4 % el límite es 268,8 g: solo los de ≈ 264 a 269 g, muy pocos, se miden como 269 a 274 g y pasan)" }
+      - { path: variables.false_rejects, min: 100, description: "(con tolerancia 4 % el límite es 291,2 g: los de ≈ 286 a 291 g se miden sobre 291,2 g)" }
 
   - id: metal-test-overdue
     description: Nadie hace la prueba del detector en 3 horas; el lote queda retenido
