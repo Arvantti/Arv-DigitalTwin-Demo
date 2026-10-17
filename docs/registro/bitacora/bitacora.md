@@ -10,6 +10,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
+| 2026-10-17 | #32 | Acueducto: panel de gráficos del PLC en la galería (`acueducto.html`): curva del día en 24 ciclos, bombas Grundfos, sensores en tiempo real y gemelo; datos de `tools/hydraulics/dia_acueducto.py` | acueducto |
 | 2026-10-17 | #29 | Control de peso: tolerancia de 4 % en todos los formatos (decisión del autor); dosificador en 1,5 %; rechazo de la presentación de 1.000 ml ≈ 2,5 % | 4 |
 | 2026-10-17 | #27 | Acueducto: semáforo de la casa crítica (20, 18 y 15 mca) y búsqueda de la consigna mínima de la estación; criterio en D28 | acueducto |
 | 2026-10-17 | #27 | Acueducto: primer banco de la planta completa (bombas, estación, cuatro rejillas por las columnas) en `industrial-models/water-network-scale-v1`; resuelve con 13,5 m³/h y c44 a 23,0 mca, a revisar contra 20 mca | acueducto |
@@ -42,6 +43,15 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 ## Entradas
 
+### 2026-10-17 15:28–18:55 · PR #32 · Acueducto: panel de gráficos del PLC en la galería
+- **Fecha/hora (UTC):** 2026-10-17 15:28 a 18:55.
+- **Fase del plan:** [[plan-del-proyecto]] acueducto (monitoreo).
+- **Solicitado por:** Carlos Andrés Quiceño, «la curva día a día del panel… de hora a hora» (15:28) y «no solamente que quede aquí en artefacto en Claude, sino en el sistema» (18:02).
+- **Qué se hizo:** página `apps/gallery/acueducto.html` con `src/acueducto-panel.ts` (cuatro pantallas: curva del día, bombas Grundfos, sensores en tiempo real y gemelo) y script `tools/hydraulics/dia_acueducto.py`, que corre el banco hora a hora (consigna fija de 18,09 mca frente a la consigna mínima del gemelo para 15,45 mca, bombas al piso de 70 mca) y escribe `public/data/acueducto-dia.json`. Resultado: consumo 112,1 m³/día, fugas 30,0 m³/día (−18 % frente a la consigna anterior de 26,66 mca); el ajuste hora a hora casi no suma porque la fricción del banco es mínima. La lista de válvulas se agrupa por nivel y ramal (pedido del autor, 17:53).
+- **Commits:** `40aa331`.
+- **Verificación:** `pnpm -r typecheck`, `uv run ruff check .`, capturas de la galería local en claro y oscuro: ![[acueducto-panel-plc-curva-del-dia.png]] ![[acueducto-panel-plc-gemelo.png]] ![[acueducto-panel-plc-sensores.png]]
+- **Decisiones:** [[decisiones]] (D30).
+- **Conversación:** [[hilo-panel-plc-acueducto]].
 ### 2026-10-17 15:38–16:10 · PR #29 · Control de peso: tolerancia de 4 %
 - **Fecha/hora (UTC):** 2026-10-17 15:38 a 16:10.
 - **Fase del plan:** [[plan-del-proyecto]] fase 4 (motor de planta), ajuste de presets.
