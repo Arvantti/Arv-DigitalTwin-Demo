@@ -1,0 +1,73 @@
+schema_version: 0.1.0
+type: operator
+version: 0.1.0
+name: Operario
+manufacturing: logistics
+category: people.operator
+plant_role: utility
+description: >
+  Persona de planta (operario, técnico de mantenimiento, inspector, montacarguista o
+  supervisor) con el equipo de protección de cada planta. Representa un rol y un turno, no una
+  persona real. Camina por los pasillos hasta un equipo, trabaja allí y vuelve a su base; el
+  motor de planta lo usa para que una reparación empiece cuando el técnico llega.
+aliases: [operario, técnico, mantenimiento, inspector, supervisor, persona]
+fidelity: { visual: V2, behavior: B2 }
+
+params:
+  role:     { type: enum, values: [operator, technician, inspector, forklift_driver, supervisor], default: technician, description: Rol, affects: [geometry, behavior] }
+  ppe:      { type: enum, values: [injection, food], default: injection, description: "Equipo de protección: inyección (casco, gafas, overol) o alimentos (cofia, tapabocas, bata blanca, botas blancas)", affects: [geometry] }
+  speed_m_s: { type: number, unit: m/s, min: 0.3, max: 2.0, default: 1.0, description: Velocidad al caminar por la planta (con herramientas), affects: [behavior] }
+  height_m: { type: number, unit: m, min: 1.5, max: 1.95, default: 1.70, description: Estatura, affects: [geometry] }
+  home_x:   { type: number, unit: m, min: -1000, max: 1000, default: 0, description: Base en el plano (x), affects: [behavior] }
+  home_y:   { type: number, unit: m, min: -1000, max: 1000, default: 0, description: Base en el plano (y), affects: [behavior] }
+
+states:
+  - { id: idle, description: En su base }
+  - { id: running, description: Caminando o trabajando en un equipo }
+
+phases:
+  - { id: walking, description: Camina hacia una tarea }
+  - { id: working, description: Trabaja en el equipo }
+  - { id: returning, description: Vuelve a su base }
+
+variables:
+  - { id: x_m, unit: m, kind: calculated, description: Posición en el plano (x) }
+  - { id: y_m, unit: m, kind: calculated, description: Posición en el plano (y) }
+  - { id: heading_deg, unit: deg, kind: calculated, description: "Rumbo en el plano (0 = +x, 90 = +y)" }
+  - { id: task, unit: "", kind: status, description: Tarea actual }
+  - { id: busy, unit: "", kind: status, description: Ocupado (1/0) }
+  - { id: distance_m, unit: m, kind: counter, description: Distancia caminada }
+  - { id: tasks_done, unit: "", kind: counter, description: Tareas terminadas }
+  - { id: work_time_s, unit: s, kind: counter, description: Tiempo trabajando en equipos }
+  - { id: walk_time_s, unit: s, kind: counter, description: Tiempo caminando }
+
+events:
+  - { id: arrived, description: Llegó al lugar de la tarea, payload: [task] }
+  - { id: task_done, description: Terminó la tarea, payload: [task] }
+  - { id: returned_home, description: Volvió a su base }
+
+commands:
+  - { id: go_to, description: "Camina a (x, y) en el plano; con work_min trabaja ese tiempo y vuelve solo", args: { x: number, y: number, task: string, work_min: number } }
+  - { id: go_home, description: Termina la tarea en curso y vuelve a la base }
+  - { id: set_home, description: Cambia la base, args: { x: number, y: number } }
+  - { id: set_param, description: Cambia un parámetro en caliente, args: { name: string, value: any } }
+
+kpis:
+  - { id: utilization, unit: "", description: Tiempo caminando o trabajando / tiempo total }
+  - { id: distance_km, unit: km, description: Distancia caminada }
+  - { id: walk_share, unit: "", description: Fracción del tiempo ocupado que se va en caminar }
+
+animation_channels:
+  - { id: walk_cycle, range: [0, 1], description: Fase de la zancada }
+  - { id: pose, range: [0, 2], description: "0 = de pie, 1 = caminando, 2 = trabajando" }
+  - { id: heading, unit: rad, range: [-3.1416, 3.1416], description: Rumbo de la figura }
+
+geometry:
+  parts: [legs, boots, torso, arms, hands, head, helmet_or_cap, glasses_or_mask, vest, toolbox]
+  notes: Figura de 1,70 m con proporciones de 7,5 cabezas; el EPP cambia con ppe y el color del casco con el rol.
+
+assumptions:
+  - "Ruta por pasillos: primero a lo largo de x y luego de y (distancia Manhattan)."
+  - La velocidad incluye el andar con herramientas y los cruces de pasillo.
+references:
+  - Proporciones antropométricas promedio de un adulto de 1,70 m.

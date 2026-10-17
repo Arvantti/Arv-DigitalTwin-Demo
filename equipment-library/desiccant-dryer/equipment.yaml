@@ -1,0 +1,98 @@
+schema_version: 0.1.0
+type: desiccant-dryer
+version: 0.1.0
+name: Secador desecante de resina con tolva
+manufacturing: discrete
+category: materials.drying
+plant_role: station
+description: >
+  Secador de aire seco con dos torres de desecante que alternan (una seca el aire de proceso
+  mientras la otra se regenera) y tolva aislada. El pellet entra por un cargador al vacío, baja
+  por la tolva y sale seco hacia la inyectora. La humedad de salida depende del tiempo de
+  residencia, de la temperatura del aire y del punto de rocío.
+aliases: [secador, secador desecante, deshumidificador de resina, dryer]
+fidelity: { visual: V2, behavior: B3 }
+
+params:
+  throughput_kg_h:    { type: number, unit: kg/h, min: 10, max: 3000, default: 150, description: Capacidad nominal de secado, affects: [geometry, behavior] }
+  residence_h:        { type: number, unit: h, min: 0.5, max: 8, default: 3, description: Tiempo de residencia a capacidad nominal (define el tamaño de la tolva), affects: [geometry, behavior] }
+  dry_temp_c:         { type: number, unit: degC, min: 50, max: 180, default: 80, description: Consigna del aire de proceso, affects: [behavior] }
+  dew_point_c:        { type: number, unit: degC, min: -60, max: -20, default: -40, description: Punto de rocío que entrega el desecante sano, affects: [behavior] }
+  ambient_dew_c:      { type: number, unit: degC, min: -10, max: 25, default: 12, description: Punto de rocío del aire de la planta (al que tiende el desecante saturado), affects: [behavior] }
+  material:           { type: enum, values: [ABS, PS, PP, HDPE, PC], default: ABS, description: Resina que se seca, affects: [display] }
+  inlet_moisture_pct: { type: number, unit: "%", min: 0, max: 2, default: 0.30, description: Humedad del pellet que entra, affects: [behavior] }
+  drying_tau_h:       { type: number, unit: h, min: 0.05, max: 6, default: 0.8, description: Constante de secado a la consigna y con rocío de diseño, affects: [behavior] }
+  moisture_limit_pct: { type: number, unit: "%", min: 0.005, max: 1, default: 0.10, description: Humedad máxima que admite la inyectora (alarma), affects: [behavior] }
+  loader_kg_h:        { type: number, unit: kg/h, min: 10, max: 6000, default: 300, description: Capacidad del cargador al vacío que llena la tolva, affects: [behavior] }
+  tower_cycle_h:      { type: number, unit: h, min: 0.5, max: 12, default: 4, description: Tiempo entre cambios de torre de desecante, affects: [behavior] }
+  heater_kw:          { type: number, unit: kW, min: 1, max: 300, default: 12, description: Potencia del calentador de aire de proceso, affects: [geometry, behavior] }
+  bulk_density_kg_l:  { type: number, unit: kg/L, min: 0.3, max: 0.9, default: 0.6, description: Densidad aparente del pellet, affects: [geometry, behavior] }
+  body_color:         { type: string, default: "#2f5d8a", description: Color del gabinete del secador (hex), affects: [geometry] }
+
+ports:
+  - { id: resin_in,  kind: material, direction: in,  medium: pellet húmedo (cargador al vacío), unit: kg/h, bind: { ready_input: resin_available } }
+  - { id: resin_out, kind: material, direction: out, medium: pellet seco, unit: kg/h, bind: { counter: resin_out_kg, counter_unit: kg, rate_input: outflow_kg_h, ready: "hopper_kg > 1", properties: { moisture_pct: outlet_moisture_pct } } }
+  - { id: power,     kind: utility,  direction: in,  medium: energía eléctrica, unit: kW }
+
+states:
+  - { id: idle, description: Secando sin salida de material }
+  - { id: running, description: Secando y entregando pellet }
+  - { id: starved, description: Tolva vacía; la inyectora no recibe material }
+  - { id: fault, description: Detenido por falla }
+  - { id: maintenance, description: Mantenimiento }
+
+variables:
+  - { id: hopper_kg,           unit: kg,   kind: measured,   range: [0, 20000], noise_sd: 2, resolution: 1, description: Masa en la tolva (celdas de carga o sensor de nivel) }
+  - { id: hopper_level_pct,    unit: "%",  kind: calculated, range: [0, 100], description: Nivel de la tolva }
+  - { id: outlet_moisture_pct, unit: "%",  kind: calculated, range: [0, 2], description: Humedad del pellet que sale (modelo; en planta se mide por muestreo) }
+  - { id: inlet_moisture_pct,  unit: "%",  kind: setpoint,   description: Humedad del pellet que entra }
+  - { id: dew_point_c,         unit: degC, kind: measured,   range: [-70, 30], noise_sd: 0.5, resolution: 0.1, description: Punto de rocío del aire de proceso }
+  - { id: process_air_c,       unit: degC, kind: measured,   range: [0, 200], noise_sd: 0.3, resolution: 0.1, description: Temperatura del aire de proceso a la entrada de la tolva }
+  - { id: throughput_kg_h,     unit: kg/h, kind: calculated, description: Caudal de salida promedio del último cuarto de hora }
+  - { id: residence_h,         unit: h,    kind: calculated, description: Tiempo de residencia actual (masa en tolva / caudal) }
+  - { id: resin_out_kg,        unit: kg,   kind: counter,    description: Pellet seco entregado }
+  - { id: power_kw,            unit: kW,   kind: measured,   range: [0, 500], noise_sd: 0.1, resolution: 0.1, description: Potencia eléctrica }
+  - { id: energy_kwh,          unit: kWh,  kind: counter,    description: Energía acumulada }
+  - { id: active_tower,        unit: "",   kind: status,     description: Torre de desecante en proceso (1 o 2) }
+  - { id: loader_on,           unit: "",   kind: status,     description: Cargador llenando la tolva (1/0) }
+
+events:
+  - { id: tower_switched, description: Cambio de torre de desecante, payload: [tower] }
+  - { id: hopper_low, description: Tolva por debajo del 10 % }
+  - { id: quality_alarm, description: Variable fuera de ventana, payload: [variable, value, limit] }
+
+faults:
+  - { id: regeneration_failure, description: Falla la regeneración del desecante, mtbf_h: 2500, mttr_min: 60, severity: high, stops_equipment: false, effect: "El punto de rocío sube hacia el del ambiente; el pellet sale húmedo y aparecen rayas plateadas" }
+  - { id: process_heater_failure, description: Falla el calentador de aire de proceso, mtbf_h: 4000, mttr_min: 45, severity: high, stops_equipment: false, effect: El aire se enfría y el secado se vuelve muy lento }
+  - { id: loader_failure, description: Falla el cargador al vacío, mtbf_h: 1500, mttr_min: 15, severity: medium, stops_equipment: false, effect: La tolva no se llena y se vacía a la velocidad de consumo }
+
+commands:
+  - { id: refill, description: Carga instantánea de pellet (preparar un escenario), args: { kg: number } }
+  - { id: maintenance, description: Inicia o termina mantenimiento, args: { active: boolean } }
+  - { id: inject_fault, description: Inyecta una falla declarada, args: { fault: string, duration_s: number } }
+  - { id: clear_fault, description: Repara una falla activa, args: { fault: string } }
+  - { id: set_param, description: Cambia un parámetro en caliente, args: { name: string, value: any } }
+
+kpis:
+  - { id: kwh_per_kg, unit: kWh/kg, description: Energía por kilo seco entregado }
+  - { id: over_limit_pct, unit: "", description: Fracción del pellet entregado por encima del límite de humedad }
+  - { id: max_outlet_moisture_pct, unit: "%", description: Humedad máxima entregada }
+
+animation_channels:
+  - { id: level, range: [0, 1], description: Nivel de la tolva (mirilla) }
+  - { id: loader, range: [0, 1], description: Cargador aspirando }
+  - { id: heater_glow, range: [0, 1], description: Calentador encendido }
+  - { id: dew_indicator, range: [0, 1], description: "Indicador de punto de rocío: 0 = −60 °C (verde), 1 = +20 °C (rojo)" }
+  - { id: tower, range: [0, 1], description: "Torre activa: 0 = torre 1, 1 = torre 2" }
+  - { id: alarm_light, range: [0, 3], description: "Baliza: 0 apagada, 1 verde, 2 amarilla, 3 roja" }
+
+geometry:
+  parts: [frame, hopper, cone, loader, sight_glass, dryer_cabinet, towers, blower, air_hoses, hmi, stack_light]
+  notes: "Tolva de throughput × residencia / densidad aparente, cilindro de altura 1,3 × diámetro con cono de 60°."
+
+assumptions:
+  - "La humedad de cada porción de pellet tiende al equilibrio (0,01 %) con constante τ = drying_tau_h × 2^((consigna − T aire)/12) × (1 + (rocío + 40)/10 si el rocío supera −40 °C)."
+  - La tolva es FIFO por porciones; el cargador llena del 85 al 98 % de nivel.
+  - Potencia = calentador × (0,35 + 0,65 × carga) + regeneración (40 % del calentador la mitad del ciclo de torre).
+references:
+  - Tiempos y temperaturas de secado típicos de fichas técnicas genéricas de ABS, PS y PC.

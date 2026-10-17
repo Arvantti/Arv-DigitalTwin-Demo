@@ -1,0 +1,58 @@
+# Valores esperados calculados a mano. Inercia del lazo: C = loop_m3 × 4.186 kJ/K
+# (600 kW: 15 m³ ⇒ 62.790 kJ/K). COP = cop_at_7c × (1 + 0,03 × (T − 7)).
+scenarios:
+  - id: steady
+    description: Chiller de moldes con 390 kW de carga durante 4 h; alterna entre 2 y 3 compresores
+    preset: 600kw-mold-water
+    duration_s: 14400
+    inputs: { load_kw: 390 }
+    expect:
+      - { path: variables.supply_temp_c, min: 10.5, max: 13.5, description: "(consigna 12 ± 1 K de banda)" }
+      - { path: kpis.max_supply_c, max: 13.6 }
+      - { path: kpis.avg_cop, min: 3.55, max: 3.80, description: "(3,2 × (1 + 0,03 × 5) = 3,68)" }
+      - { path: variables.energy_kwh, min: 470, max: 520, description: "(390 kW × 4 h / 3,68 + bomba 18 kW × 4 h ≈ 496 kWh)" }
+      - { path: kpis.starts_per_h, min: 0.5, max: 1.5, description: "(3 etapas bajan 2 K en ≈ 2.090 s; 2 etapas lo suben en ≈ 1.395 s: un arranque por hora)" }
+
+  - id: high-pressure-trip
+    description: Disparo por alta presión de 45 min con 390 kW de carga; el agua de moldes se calienta
+    preset: 600kw-mold-water
+    duration_s: 14400
+    inputs: { load_kw: 390 }
+    timeline:
+      - { at_s: 3600, command: inject_fault, args: { fault: high_pressure_trip, duration_s: 2700 } }
+    expect:
+      - { path: kpis.max_supply_c, min: 27, max: 31, description: "(390 / 62.790 = 0,0062 K/s × 2.700 s ≈ 16,8 K sobre ≈ 12)" }
+      - { path: events.quality_alarm, min: 1 }
+      - { path: variables.supply_temp_c, max: 13.5, description: "(con 4 etapas sobran 210 kW: 17 K en ≈ 5.100 s, de vuelta a las ≈ 11.900 s)" }
+      - { path: kpis.over_temp_pct, min: 0.40, max: 0.56, description: "(sobre 15 °C de ≈ 4.080 a ≈ 11.000 s)" }
+
+  - id: refrigerant-leak
+    description: Fuga de refrigerante de 3 h; con 360 kW no alcanza para 390 kW y el agua sube despacio
+    preset: 600kw-mold-water
+    duration_s: 14400
+    inputs: { load_kw: 390 }
+    timeline:
+      - { at_s: 1800, command: inject_fault, args: { fault: refrigerant_leak, duration_s: 10800 } }
+    expect:
+      - { path: kpis.max_supply_c, min: 16.5, max: 19.5, description: "(déficit 30 kW ⇒ 1,7 K/h × 3 h sobre ≈ 13 °C ≈ 18 °C)" }
+      - { path: variables.stages_on, equals: 4 }
+
+  - id: ice-bank-depletion
+    description: Banco de hielo con 250 kW de carga y 100 kW de compresores; el hielo dura 4 h
+    preset: ice-bank
+    duration_s: 18000
+    inputs: { load_kw: 250 }
+    expect:
+      - { path: events.ice_depleted, equals: 1, description: "(600 kWh / 150 kW de déficit = 4 h)" }
+      - { path: variables.supply_temp_c, min: 20, max: 25, description: "(después: 150 kW / 25.116 kJ/K = 0,006 K/s × 3.600 s ≈ 21,5 K sobre 2 °C)" }
+      - { path: kpis.over_temp_pct, min: 0.15, max: 0.19, description: "(sobre 5 °C desde ≈ 14.900 s)" }
+
+  - id: demo
+    description: Chiller de moldes con carga variable y fallas aleatorias (para la galería)
+    preset: 600kw-mold-water
+    duration_s: 28800
+    random_faults: true
+    timeline:
+      - { at_s: 0, inputs: { load_kw: 300 } }
+      - { at_s: 7200, inputs: { load_kw: 480 } }
+      - { at_s: 14400, inputs: { load_kw: 390 } }

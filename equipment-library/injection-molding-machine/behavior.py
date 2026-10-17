@@ -14,12 +14,13 @@ from twin_runtime import EquipmentBehavior, StepContext
 from twin_runtime.primitives import FirstOrderLag, OEEAccumulator, PhaseSequencer
 
 # Propiedades por resina: consigna del cilindro (°C), presión pico base (bar),
-# sensibilidad a la humedad (0..1), humedad máxima admisible (%).
+# sensibilidad a la humedad (0..1), humedad máxima admisible (%), calor específico (kJ/kg·K)
+# y calor de cristalización (kJ/kg; 0 en amorfos) para la carga térmica del molde.
 MATERIALS: dict[str, dict[str, float]] = {
-    "PP": {"barrel_c": 220, "peak_bar": 900, "moisture_sens": 0.05, "moisture_max": 0.20},
-    "HDPE": {"barrel_c": 230, "peak_bar": 1000, "moisture_sens": 0.05, "moisture_max": 0.20},
-    "PS": {"barrel_c": 210, "peak_bar": 950, "moisture_sens": 0.40, "moisture_max": 0.10},
-    "ABS": {"barrel_c": 235, "peak_bar": 1200, "moisture_sens": 1.00, "moisture_max": 0.10},
+    "PP": {"barrel_c": 220, "peak_bar": 900, "moisture_sens": 0.05, "moisture_max": 0.20, "cp": 2.0, "latent": 100},
+    "HDPE": {"barrel_c": 230, "peak_bar": 1000, "moisture_sens": 0.05, "moisture_max": 0.20, "cp": 2.3, "latent": 180},
+    "PS": {"barrel_c": 210, "peak_bar": 950, "moisture_sens": 0.40, "moisture_max": 0.10, "cp": 1.8, "latent": 0},
+    "ABS": {"barrel_c": 235, "peak_bar": 1200, "moisture_sens": 1.00, "moisture_max": 0.10, "cp": 1.9, "latent": 0},
 }
 
 PHASE_FRACTIONS: list[tuple[str, float]] = [
@@ -43,6 +44,9 @@ PHASE_MOTOR_LOAD = {
 
 DOSING_FRACTION_OF_COOLING = 0.7
 AMBIENT_C = 25.0
+# El termorregulador sostiene la consigna del molde si el agua llega al menos 8 °C más fría;
+# por encima, el molde sube grado a grado con el agua.
+MOLD_WATER_APPROACH_C = 8.0
 
 
 class InjectionMoldingMachine(EquipmentBehavior):
@@ -51,6 +55,7 @@ class InjectionMoldingMachine(EquipmentBehavior):
         "material_available": True,
         "downstream_free": True,
         "cooling_water_ok": True,
+        "cooling_water_c": None,  # temperatura del agua de moldes; None = agua de diseño, sin efecto
         "resin_moisture_pct": 0.02,
     }
 
@@ -74,6 +79,7 @@ class InjectionMoldingMachine(EquipmentBehavior):
         self.barrel = FirstOrderLag(tau_s=600.0 + 0.5 * clamp, initial=sp if start_hot else AMBIENT_C)
         self.mold = FirstOrderLag(tau_s=300.0, initial=p["mold_temp_c"] if start_hot else AMBIENT_C)
         self.oil = FirstOrderLag(tau_s=1200.0, initial=42.0 if start_hot else AMBIENT_C)
+        self.cooling_load = FirstOrderLag(tau_s=120.0, initial=self._nominal_cooling_kw() if start_hot else 0.0)
 
         self.seq: PhaseSequencer | None = None
         self.cycle_started_at = 0.0
@@ -98,6 +104,11 @@ class InjectionMoldingMachine(EquipmentBehavior):
 
         if not start_hot:
             self.state.set("off")
+
+    def _nominal_cooling_kw(self) -> float:
+        """Calor que el agua retira del molde a ritmo nominal: masa por hora × (cp·ΔT + cristalización)."""
+        q_kj_kg = self.mat["cp"] * (self.barrel_setpoint + 6.0 - self.p["mold_temp_c"]) + self.mat["latent"]
+        return self.shot_kg * q_kj_kg / self.p["cycle_s"]
 
     @property
     def barrel_setpoint(self) -> float:
@@ -178,7 +189,15 @@ class InjectionMoldingMachine(EquipmentBehavior):
         mold_target = self.p["mold_temp_c"] if heaters_on else AMBIENT_C
         if heaters_on and not cooling_ok:
             mold_target += 25.0 if s == "running" else 10.0
+        water = self.inputs.get("cooling_water_c")
+        if heaters_on and cooling_ok and water is not None:
+            excess = max(0.0, float(water) - (self.p["mold_temp_c"] - MOLD_WATER_APPROACH_C))
+            mold_target += excess if s == "running" else 0.5 * excess
         self.mold.step(mold_target, dt)
+        cycling = s == "running" and self.seq is not None and self.seq.running
+        # ciclo más largo ⇒ el mismo calor por inyección repartido en más tiempo
+        slowdown = self.p["cycle_s"] / max(self.p["cycle_s"], self.last_cycle_s or 0.0)
+        self.cooling_load.step(self._nominal_cooling_kw() * slowdown if cycling else 0.0, dt)
 
         oil_target = AMBIENT_C if s == "off" else (45.0 if s == "running" else 38.0)
         if self.failures.is_active("hydraulic_overtemp"):
@@ -386,6 +405,7 @@ class InjectionMoldingMachine(EquipmentBehavior):
             "scrap_kg": self.scrap_kg,
             "resin_consumed_kg": self.resin_kg,
             "screw_wear_pct": self.screw_wear,
+            "cooling_load_kw": self.cooling_load.value,
             "last_defect": self.last_defect,
         }
 

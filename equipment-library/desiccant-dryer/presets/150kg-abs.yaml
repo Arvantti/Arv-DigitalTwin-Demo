@@ -1,0 +1,4 @@
+preset: 150kg-abs
+description: Secador de 150 kg/h para ABS a 80 °C y rocío de −40 °C (3 h de residencia)
+params: { throughput_kg_h: 150, residence_h: 3, dry_temp_c: 80, dew_point_c: -40, material: ABS, inlet_moisture_pct: 0.30, drying_tau_h: 0.8, moisture_limit_pct: 0.10, loader_kg_h: 300, heater_kw: 12 }
+provenance: { throughput_kg_h: user, dry_temp_c: user, dew_point_c: user, material: user, residence_h: assumed, inlet_moisture_pct: assumed, drying_tau_h: assumed, heater_kw: assumed }

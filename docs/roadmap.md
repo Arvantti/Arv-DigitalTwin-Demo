@@ -6,8 +6,8 @@ La demo de las dos plantas de referencia se construye al mismo tiempo que la pla
 |---|---|---|
 | 1. Layouts | `plant.yaml` de la planta de inyección y de la planta de salsas, validador y plano 2D | Hecho (PR #1) |
 | 2. Librería de equipos | Contrato, runtime, 3 tipos de referencia, geometría paramétrica, galería, API de simulación, guía y skill de autoría | Hecho (PR #2) |
-| 3. Equipos de las plantas | Resto de tipos con la guía de autoría: llenadoras, bandas, pasteurizador, emulsificador, molino coloidal, secadores, chillers, caldera, robots, etc. | Parte 1 hecha (línea de sachets, PR #4); falta la cascada de inyección y el resto de las fichas |
-| 4. Motor de planta | Instanciar `plant.yaml` con la librería; conectar equipos por puertos (material, piezas, servicios); recetas y líneas; KPIs de planta | Primer alcance: línea caliente de tomate de 1.000 ml (`docs/plant-engine.md`) |
+| 3. Equipos de las plantas | Resto de tipos con la guía de autoría: llenadoras, bandas, pasteurizador, emulsificador, molino coloidal, secadores, chillers, caldera, robots, etc. | Partes 1 y 2 hechas: línea de sachets y cascada de inyección (secador, chiller, molino, operario); falta el resto de las fichas |
+| 4. Motor de planta | Instanciar `plant.yaml` con la librería; conectar equipos por puertos (material, piezas, servicios); recetas y líneas; KPIs de planta | Línea caliente de tomate de 1.000 ml y cascada de inyección con técnico de mantenimiento (`docs/plant-engine.md`) |
 | 5. Escena de planta | Planta completa en 3D: celdas, pasillos, pasarelas, puente grúa, HUD de planta, selección de activos, cámaras | |
 | 6. Persistencia y datos | PostgreSQL (activos, configuración, eventos, históricos), MQTT opcional, calidad y frescura de datos | |
 | 7. Conector MCP | La herramienta como servidor MCP: el usuario crea equipos y plantas conversando con Claude (ver abajo) | |

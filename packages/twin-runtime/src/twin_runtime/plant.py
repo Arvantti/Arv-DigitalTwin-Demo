@@ -51,6 +51,7 @@ class TwinEquipment:
     virtual: bool = False
     represents: list[str] = field(default_factory=list)
     description: str = ""
+    position: list[float] | None = None  # [x, y] en el plano; por defecto la del layout
 
 
 @dataclass
@@ -91,8 +92,10 @@ class Link:
 
 @dataclass
 class Controller:
-    kind: str  # batch_loop
-    equipment: str
+    kind: str  # batch_loop | maintenance_crew
+    equipment: str = ""
+    technicians: list[str] = field(default_factory=list)  # maintenance_crew
+    covers: list[str] | None = None  # maintenance_crew: equipos atendidos (None = todos)
     phases: list[dict[str, Any]] = field(default_factory=list)
     start_at_s: float = 0.0
     cip_every: int = 0
@@ -132,6 +135,7 @@ class Twin:
     kpis: list[PlantKpi]
     layout: Path | None
     raw: dict[str, Any]
+    positions: dict[str, tuple[float, float]] = field(default_factory=dict)
 
 
 @dataclass
@@ -174,9 +178,13 @@ def load_twin(path: Path, library: Library) -> Twin:
 
     layout_path = (path.parent / doc["layout"]).resolve() if doc.get("layout") else None
     layout_ids: set[str] = set()
+    positions: dict[str, tuple[float, float]] = {}
     if layout_path:
         layout = load_yaml(layout_path)
         layout_ids = {e["id"] for e in layout.get("equipment", [])}
+        for e in layout.get("equipment", []):
+            if "position" in e:
+                positions[e["id"]] = (float(e["position"][0]), float(e["position"][1]))
 
     equipment: dict[str, TwinEquipment] = {}
     for raw in doc["equipment"]:
@@ -184,6 +192,8 @@ def load_twin(path: Path, library: Library) -> Twin:
         if te.id in equipment:
             errors.append(f"equipo duplicado: {te.id}")
         equipment[te.id] = te
+        if te.position is not None:
+            positions[te.id] = (float(te.position[0]), float(te.position[1]))
         try:
             eq_type = library.get(te.type)
             eq_type.spec.resolve_params(te.preset, te.params)
@@ -265,10 +275,26 @@ def load_twin(path: Path, library: Library) -> Twin:
     controllers: list[Controller] = []
     for raw in doc.get("controllers", []):
         c = Controller(**raw)
-        if c.equipment not in equipment:
-            errors.append(f"controlador {c.kind}: equipo desconocido {c.equipment}")
-        if c.kind != "batch_loop":
-            errors.append(f"controlador desconocido {c.kind!r} (disponible: batch_loop)")
+        if c.kind == "batch_loop":
+            if c.equipment not in equipment:
+                errors.append(f"controlador batch_loop: equipo desconocido {c.equipment!r}")
+        elif c.kind == "maintenance_crew":
+            if not c.technicians:
+                errors.append("controlador maintenance_crew: falta technicians")
+            for tid in c.technicians:
+                if tid not in equipment:
+                    errors.append(f"maintenance_crew: técnico desconocido {tid}")
+                elif equipment[tid].type != "operator":
+                    errors.append(f"maintenance_crew: {tid} no es de tipo operator")
+            for eid in [*c.technicians, *(c.covers or [])]:
+                if eid in equipment and eid not in positions:
+                    errors.append(f"maintenance_crew: {eid} no tiene posición (layout o position: [x, y])")
+            if c.covers is None:
+                missing = [eid for eid in equipment if eid not in positions and eid not in c.technicians]
+                if missing:
+                    errors.append(f"maintenance_crew: equipos sin posición {missing}; use covers o position")
+        else:
+            errors.append(f"controlador desconocido {c.kind!r} (disponibles: batch_loop, maintenance_crew)")
         controllers.append(c)
 
     timeline = _timeline(doc.get("timeline", []))
@@ -302,6 +328,7 @@ def load_twin(path: Path, library: Library) -> Twin:
         kpis=kpis,
         layout=layout_path,
         raw=doc,
+        positions=positions,
     )
 
 
@@ -397,7 +424,11 @@ class PlantSimulator:
             self.static_inputs[eid] = {**te.inputs, **(inputs or {}).get(eid, {})}
         self.forced: dict[str, dict[str, Any]] = defaultdict(dict)
         self.links = [lk for lk in twin.links if lk.src.split(".")[0] in self.equipment and lk.dst.split(".")[0] in self.equipment]
-        self.controllers = [c for c in twin.controllers if c.equipment in self.equipment]
+        self.controllers = [c for c in twin.controllers if c.kind != "batch_loop" or c.equipment in self.equipment]
+        self._crews = [c for c in self.controllers if c.kind == "maintenance_crew"]
+        self._pending: list[tuple[str, str, float]] = []  # (equipo, falla, t de la falla) esperando técnico
+        self._jobs: dict[str, tuple[str, str, float]] = {}  # técnico → (equipo, falla, t de la falla)
+        self.repairs: list[dict[str, Any]] = []
         self._batches: dict[str, int] = defaultdict(int)
         self._queue: list[tuple[float, int, TimelineStep]] = []
         self._seq = 0
@@ -408,10 +439,12 @@ class PlantSimulator:
         self._build_ports(library)
         self._prev_counter: dict[str, float] = {}
         self._cum: dict[str, float] = defaultdict(float)  # acumulado por puerto en u o kg desde t=0
+        self._offset_cum: dict[str, float] = defaultdict(float)  # entregado a consumidores no modelados
         self.rates: dict[str, float] = defaultdict(float)  # caudal por puerto: u/min o kg/h
         self.link_rates: dict[str, float] = {}
         self._selected: dict[str, str | None] = {}
         self._last_temp: dict[str, float] = {}
+        self._last_prop: dict[tuple[str, str], Any] = {}
         self._state_time: dict[str, dict[str, float]] = {eid: defaultdict(float) for eid in self.equipment}
         self.inputs: dict[str, dict[str, Any]] = {eid: dict(v) for eid, v in self.static_inputs.items()}
 
@@ -453,7 +486,11 @@ class PlantSimulator:
                 self.equipment[step.equipment].command(step.command, step.args)
 
     def _run_controllers(self) -> None:
+        for crew in self._crews:
+            self._dispatch(crew)
         for c in self.controllers:
+            if c.kind != "batch_loop":
+                continue
             eq = self.equipment[c.equipment]
             if self.t + 1e-9 < c.start_at_s or eq.state.current != "idle" or eq.phase is not None:
                 continue
@@ -465,6 +502,60 @@ class PlantSimulator:
                 eq.command("cip", {"duration_min": c.cip_min})
                 continue
             eq.command("run_phases", {"phases": c.phases})
+
+    # ------------------------------------------------------------------ mantenimiento
+    def _crew_for(self, eid: str) -> Controller | None:
+        for crew in self._crews:
+            if eid in crew.technicians:
+                return None
+            if crew.covers is None or eid in crew.covers:
+                return crew
+        return None
+
+    def _on_crew_event(self, ev: Event) -> None:
+        if ev.type == "fault_raised" and self._crew_for(ev.equipment_id):
+            self.equipment[ev.equipment_id].failures.hold(ev.payload["fault"], True)
+            self._pending.append((ev.equipment_id, ev.payload["fault"], ev.t))
+        elif ev.type == "fault_cleared":
+            key = (ev.equipment_id, ev.payload["fault"])
+            self._pending = [p for p in self._pending if (p[0], p[1]) != key]
+            for tech, job in list(self._jobs.items()):
+                if (job[0], job[1]) == key:
+                    self.repairs[self._repair_index(tech, job)]["cleared_t"] = ev.t
+                    del self._jobs[tech]
+                    self.equipment[tech].command("go_home", {})
+        elif ev.type == "arrived" and ev.equipment_id in self._jobs:
+            eid, fid, _ = self._jobs[ev.equipment_id]
+            self.equipment[eid].failures.hold(fid, False)
+            self.repairs[self._repair_index(ev.equipment_id, self._jobs[ev.equipment_id])]["arrived_t"] = ev.t
+
+    def _repair_index(self, tech: str, job: tuple[str, str, float]) -> int:
+        for i in range(len(self.repairs) - 1, -1, -1):
+            r = self.repairs[i]
+            if r["technician"] == tech and r["equipment"] == job[0] and r["fault"] == job[1] and r["fault_t"] == job[2]:
+                return i
+        raise KeyError(job)  # pragma: no cover
+
+    def _dispatch(self, crew: Controller) -> None:
+        for tech in crew.technicians:
+            if not self._pending or tech not in self.equipment or tech in self._jobs:
+                continue
+            eid, fid, t0 = self._pending.pop(0)
+            x, y = self.twin.positions[eid]
+            self._jobs[tech] = (eid, fid, t0)
+            self.repairs.append({"technician": tech, "equipment": eid, "fault": fid, "fault_t": t0, "dispatched_t": self.t})
+            self.equipment[tech].command("go_to", {"x": x, "y": y, "task": f"reparar {eid}: {fid}"})
+
+    def maintenance_summary(self) -> dict[str, Any]:
+        done = [r for r in self.repairs if "arrived_t" in r]
+        response = [(r["arrived_t"] - r["fault_t"]) / 60.0 for r in done]
+        return {
+            "pending": [f"{e}:{f}" for e, f, _ in self._pending],
+            "jobs": {t: f"{e}:{f}" for t, (e, f, _) in self._jobs.items()},
+            "repairs": len(done),
+            "avg_response_min": sum(response) / len(response) if response else None,
+            "max_response_min": max(response) if response else None,
+        }
 
     # ------------------------------------------------------------------ acople
     def _to_rate(self, ref: str, amount: float) -> float:
@@ -543,10 +634,21 @@ class PlantSimulator:
                         self._last_temp[dst] = float(temp)
                 if dst in self._last_temp:
                     new[deq][b["temperature_input"]] = self._last_temp[dst]
+            for prop, name in (b.get("property_inputs") or {}).items():
+                sources = [lk for lk in on if prop in (self._ports[lk.src].bind.get("properties") or {})]
+                if sources:
+                    src = max(sources, key=lambda lk: self.rates.get(lk.src, 0.0))
+                    sfp = self._ports[src.src]
+                    value = values[sfp.eq].get(sfp.bind["properties"][prop])
+                    if value is not None:
+                        self._last_prop[(dst, prop)] = value
+                if (dst, prop) in self._last_prop:
+                    new[deq][name] = self._last_prop[(dst, prop)]
             for lk in lks:
                 if lk.mode == "push":
                     self.link_rates[f"{lk.src}>{lk.dst}"] = self.rates[lk.src] if active[(lk.src, dst)] else 0.0
 
+        handled: set[tuple[str, str]] = set()  # offsets ya aplicados por un enlace pull
         for src, lks in by_src.items():
             sfp = self._ports[src]
             seq = sfp.eq
@@ -561,8 +663,13 @@ class PlantSimulator:
                     self.link_rates[f"{lk.src}>{lk.dst}"] = r
                     total += r
                 if "counter" in b:  # el origen entrega lo pendiente: lo consumido menos lo ya entregado
-                    pending = sum(self._cum[lk.dst] for lk in pulls) - self._cum[src]
-                    total = self._to_rate(src, max(0.0, pending))
+                    # input_offsets sobre esta entrada = consumidores no modelados: se entregan aparte y
+                    # se descuentan del contador del origen para que el balance de los modelados cuadre
+                    off = float(self.twin.equipment[seq].input_offsets.get(b["rate_input"], 0.0))
+                    self._offset_cum[src] += off * self.dt / 3600.0
+                    handled.add((seq, b["rate_input"]))
+                    pending = sum(self._cum[lk.dst] for lk in pulls) - (self._cum[src] - self._offset_cum[src])
+                    total = self._to_rate(src, max(0.0, pending)) + off
                 new[seq][b["rate_input"]] = total
             for lk in lks:
                 if lk.mode == "fixed":
@@ -599,6 +706,8 @@ class PlantSimulator:
         for eid in self.equipment:
             offsets = self.twin.equipment[eid].input_offsets
             for name, off in offsets.items():
+                if (eid, name) in handled:
+                    continue
                 base = new[eid].get(name)
                 new[eid][name] = (float(base) if base is not None else 0.0) + off
             new[eid].update(self.forced.get(eid, {}))
@@ -619,6 +728,9 @@ class PlantSimulator:
                 if ev.type == "batch_completed":
                     self._batches[eid] += 1
                 new_events.append(ev)
+        if self._crews:
+            for ev in new_events:
+                self._on_crew_event(ev)
         self.events.extend(new_events)
         return new_events
 
@@ -693,6 +805,7 @@ class PlantSimulator:
                 "kpis": self.plant_kpis(),
                 "bottleneck": self.bottleneck(),
                 "active": {k: round(v, 4) for k, v in self.active_fractions().items()},
+                **({"maintenance": self.maintenance_summary()} if self._crews else {}),
             },
             "links": dict(self.link_rates),
             "equipment": equipment,

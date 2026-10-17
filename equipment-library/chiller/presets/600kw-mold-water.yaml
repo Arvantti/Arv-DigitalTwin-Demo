@@ -1,0 +1,4 @@
+preset: 600kw-mold-water
+description: Chiller de 600 kW para agua de moldes a 12 °C (4 compresores, enfriado por aire)
+params: { capacity_kw: 600, stages: 4, supply_setpoint_c: 12, band_c: 1.0, min_stage_s: 180, flow_m3_h: 180, loop_m3: 15, cop_at_7c: 3.2, storage_kwh: 0, nominal_load_kw: 390 }
+provenance: { capacity_kw: user, supply_setpoint_c: user, flow_m3_h: user, stages: assumed, loop_m3: assumed, cop_at_7c: assumed, nominal_load_kw: assumed }

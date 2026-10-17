@@ -1,0 +1,4 @@
+preset: 500kg-central
+description: Molino central de reciclaje, 500 kg/h, criba de 10 mm
+params: { kind: central, capacity_kg_h: 500, screen_mm: 10, rotor_kw: 45, throat_kg: 40, bin_kg: 800, knife_life_t: 120, nominal_feed_kg_h: 300, body_color: "#3a6ea5" }
+provenance: { capacity_kg_h: user, screen_mm: user, rotor_kw: assumed, throat_kg: assumed, knife_life_t: assumed }

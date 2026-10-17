@@ -62,6 +62,7 @@ El contrato de cada tipo dice, en sus puertos, qué variables y qué entradas us
 | `temperature` / `temperature_input` | Temperatura del producto que sale / que llega | `temperature_c` → `product_in_c` |
 | `supply` / `supply_input` | Servicio ofrecido / recibido | `pressure_bar` → `steam_supply_bar` |
 | `demand` / `demand_input` | Consumo del equipo / suma de consumos que recibe el proveedor | `steam_flow_kg_h` → `steam_demand_kg_h` |
+| `properties` / `property_inputs` | Propiedades del material que viajan con el flujo: nombre → variable en la salida, nombre → entrada en la llegada | `moisture_pct: outlet_moisture_pct` → `moisture_pct: resin_moisture_pct` |
 
 `twin-lib validate` comprueba que cada nombre exista en el contrato o en `DEFAULT_INPUTS`. Las condiciones se evalúan con un subconjunto de Python sin llamadas ni atributos, así que un texto escrito por un usuario no ejecuta código.
 
@@ -77,6 +78,8 @@ El modo de un enlace de flujo sale de los `bind`:
 
 Si los dos extremos llevan contador, el motor pide **lo pendiente** (lo enviado menos lo recibido) en lugar del caudal del último paso. Así la masa cuadra aunque un paso llegue más de lo que la entrada admite (la sachetadora toma 1,13 kg de golpe en cada ciclo y la salida del tanque está limitada a 3.000 kg/h).
 
+Con `input_offsets` sobre la `rate_input` de un origen en modo pull se representan consumidores que no están en el gemelo (p. ej. otras inyectoras que toma el mismo secador): el motor se los entrega aparte y los descuenta del contador del origen para que el balance de los equipos modelados siga cuadrando.
+
 Enlaces de **servicio** (`kind: utility`, deducido de los puertos): el destino recibe lo ofrecido con `scale`, `offset`, `min` y `max`; el proveedor recibe la suma de los consumos más su `input_offsets`. Enlaces de **señal** (`kind: signal`): una variable pasa a una entrada con la misma transformación.
 
 Todo acople usa los valores al final del paso anterior: un paso de retardo, y el resultado no depende del orden de los equipos.
@@ -84,6 +87,7 @@ Todo acople usa los valores al final del paso anterior: un paso de retardo, y el
 ## 4. Controladores y línea de tiempo
 
 - `batch_loop`: cuando la marmita queda en `idle` sin fase, le envía `run_phases` con la receta. Opciones: `start_at_s`, `cip_every` (batches entre CIP), `cip_min`, `max_batches`.
+- `maintenance_crew`: `technicians` (equipos de tipo `operator`) y `covers` (equipos atendidos; por defecto todos). Cuando un equipo atendido levanta una falla, su reloj de reparación se detiene; el primer técnico libre camina por pasillos desde donde esté hasta la posición del equipo (la del layout o `position: [x, y]`) y la reparación corre desde que llega. Al repararse vuelve a su base o va a la siguiente falla en cola. El snapshot de planta trae `maintenance` con la cola, los trabajos en curso y el tiempo de respuesta promedio y máximo.
 - `timeline`: comandos a una hora dada (`command`, `args`). `inputs` impone entradas por encima de los enlaces (para simular, por ejemplo, una salida cerrada a mano) hasta que `release` las devuelve a los enlaces.
 
 ## 5. KPIs de planta y cuello de botella
@@ -133,7 +137,16 @@ Resultados del turno de 8 h (escenario `turno-8h`): 7 batches, ≈ 11.300 sachet
 - **Ensuciamiento del pasteurizador.** En 24 h de marcha continua la salida baja de 95 a ≈ 86 °C y empieza a desviar; hace falta un CIP por turno.
 - **Falla de llama.** La reserva de la caldera (25 kg/bar) dura pocos minutos cuando una marmita calienta; la descarga en curso se desvía casi completa.
 
-## 9. Limitaciones conocidas
+## 9. Segundo alcance: cascada de inyección
+
+`industrial-models/plastic-injection-plant-v1/twin.yaml`: secador de PS (dryer-03) → dos inyectoras de cubiertos; chiller de moldes (chiller-01) → tres inyectoras; inyectora de tapas (imm-03) → molino al pie de máquina; un técnico de mantenimiento.
+
+- **Secador → inyectora:** la humedad sale del secador como propiedad del flujo y entra a la inyectora. Una falla de regeneración de 4 h sube la humedad a ≈ 0,15 % y las inyectoras de PS rechazan ≈ 3 % por rayas plateadas mientras dura (escenario `falla-secador`).
+- **Chiller → molde:** el disparo del chiller calienta el lazo ≈ 0,4 K/min; el molde de cubiertos (30 °C) se calienta cuando el agua pasa de 22 °C, el de tapas (40 °C) aguanta hasta 32 °C (escenario `disparo-chiller`).
+- **Técnico:** con dos fallas a la vez la segunda espera ≈ 14 min: 12 mientras el técnico atiende la primera y 1,5 caminando hasta ella (escenario `dos-fallas`).
+- El secador de 250 kg/h solo con las dos inyectoras de cubiertos (49 kg/h) tendría 7 h de residencia y ninguna falla del secador se notaría en un turno; en el gemelo toma además 150 kg/h de otras inyectoras de PS no modeladas.
+
+## 10. Limitaciones conocidas
 
 - El producto desviado no vuelve a la marmita: se cuenta en `diverted_l`.
 - Una salida que empuja con contador no puede repartir a varios destinos todavía (hace falta un desviador); `load_twin` lo rechaza. Un tanque sí puede alimentar a varias llenadoras (modo pull).

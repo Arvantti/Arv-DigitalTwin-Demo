@@ -1,0 +1,67 @@
+# Gemelo de la cascada de inyección (primer alcance): secador de PS, chiller de agua de moldes,
+# dos inyectoras de cubiertos de PS, una inyectora de tapas de PP con molino al pie de máquina y
+# un técnico de mantenimiento. Ids del layout (plant.yaml); docs/plant-engine.md.
+twin: injection-cascade
+name: Cascada de inyección (secador, chiller, molino y técnico)
+layout: plant.yaml
+dt: 0.5
+
+equipment:
+  - id: dryer-03
+    type: desiccant-dryer
+    preset: 250kg-ps
+    # PS reciclado lavado: entra más húmedo que el virgen.
+    params: { inlet_moisture_pct: 0.30 }
+    # Otras inyectoras de PS que este secador alimenta y que no están en el gemelo (≈ 150 kg/h).
+    input_offsets: { outflow_kg_h: 150 }
+  - id: chiller-01
+    type: chiller
+    preset: 600kw-mold-water
+    # Las otras 26 inyectoras y los canales calientes cargan ≈ 380 kW al agua de moldes.
+    input_offsets: { load_kw: 380 }
+  - { id: imm-01, type: injection-molding-machine, preset: 100t-cutlery }
+  - { id: imm-02, type: injection-molding-machine, preset: 100t-cutlery }
+  - id: imm-03
+    type: injection-molding-machine
+    params: { clamp_t: 120, max_shot_kg: 0.2, product: "tapa recipiente 0,5 L", material: PP, cavities: 4, part_g: 12, cycle_s: 12, robot: cartesiano }
+  - id: gran-03
+    type: granulator
+    preset: 40kg-beside-press
+    virtual: true
+    position: [52.5, 44.5]
+    description: Molino de colada al pie de imm-03 (grinder true en el layout)
+  - id: tech-01
+    type: operator
+    preset: technician-injection
+    virtual: true
+    position: [116, 12]
+    params: { home_x: 116, home_y: 12 }
+    description: Técnico de mantenimiento del turno; su base es el taller de mantenimiento
+
+links:
+  - { from: dryer-03.resin_out, to: imm-01.resin_in }
+  - { from: dryer-03.resin_out, to: imm-02.resin_in }
+  - { from: chiller-01.chilled_water, to: imm-01.cooling_water }
+  - { from: chiller-01.chilled_water, to: imm-02.cooling_water }
+  - { from: chiller-01.chilled_water, to: imm-03.cooling_water }
+  - { from: imm-03.scrap_out, to: gran-03.scrap_in }
+
+controllers:
+  - kind: maintenance_crew
+    technicians: [tech-01]
+    covers: [dryer-03, chiller-01, imm-01, imm-02, imm-03, gran-03]
+
+timeline:
+  - { at_s: 0, equipment: imm-01, command: start }
+  - { at_s: 0, equipment: imm-02, command: start }
+  - { at_s: 0, equipment: imm-03, command: start }
+
+kpis:
+  - { id: cutlery_good, refs: [imm-01.parts_good, imm-02.parts_good], unit: u, description: Cubiertos buenos }
+  - { id: cutlery_rejected, refs: [imm-01.parts_rejected, imm-02.parts_rejected], unit: u }
+  - { id: lids_good, ref: imm-03.parts_good, unit: u, description: Tapas buenas }
+  - { id: regrind_kg, ref: gran-03.regrind_kg, unit: kg, description: Colada y rechazos molidos al pie de imm-03 }
+  - { id: resin_dried_kg, ref: dryer-03.resin_out_kg, unit: kg, description: Pellet seco entregado (incluye los consumidores no modelados) }
+  - { id: max_resin_moisture_pct, ref: dryer-03.kpis.max_outlet_moisture_pct, unit: "%" }
+  - { id: max_mold_water_c, ref: chiller-01.kpis.max_supply_c, unit: degC }
+  - { id: chiller_kwh, ref: chiller-01.energy_kwh, unit: kWh }

@@ -1,0 +1,4 @@
+preset: technician-injection
+description: Técnico de mantenimiento de la planta de inyección (casco azul, overol, caja de herramientas)
+params: { role: technician, ppe: injection, speed_m_s: 1.0 }
+provenance: { role: user, ppe: user, speed_m_s: assumed }

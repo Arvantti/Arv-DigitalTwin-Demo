@@ -1,0 +1,4 @@
+preset: ice-bank
+description: Banco de hielo de 600 kWh con compresores de 100 kW para agua helada a 2 °C
+params: { capacity_kw: 100, stages: 2, supply_setpoint_c: 2, band_c: 0.5, min_stage_s: 180, flow_m3_h: 30, loop_m3: 6, cop_at_7c: 2.6, storage_kwh: 600, nominal_load_kw: 80 }
+provenance: { storage_kwh: user, capacity_kw: assumed, supply_setpoint_c: assumed, loop_m3: assumed, cop_at_7c: assumed, nominal_load_kw: assumed }

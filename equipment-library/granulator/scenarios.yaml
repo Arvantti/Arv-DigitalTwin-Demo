@@ -1,0 +1,42 @@
+# Valores esperados calculados a mano. Finos = (1 + 6 × desgaste) % × √(8 / criba).
+scenarios:
+  - id: steady
+    description: Molino al pie de una inyectora de tapas con 12 kg/h de colada y rechazos durante 8 h
+    preset: 40kg-beside-press
+    duration_s: 28800
+    inputs: { feed_kg_h: 12 }
+    expect:
+      - { path: variables.regrind_kg, min: 94.8, max: 95.2, description: "(12 × 8 = 96 kg; desgaste 96/30.000 ≈ 0 ⇒ finos 1 % ⇒ 95,0 kg)" }
+      - { path: variables.overflow_kg, equals: 0.0 }
+      - { path: kpis.kwh_per_kg, min: 0.21, max: 0.23, description: "(carga 12/40 = 0,3 ⇒ 5,5 × (0,25 + 0,75 × 0,3) = 2,61 kW / 12 kg/h = 0,218 kWh/kg)" }
+
+  - id: jam
+    description: Atasco de 10 min en el molino central con 300 kg/h de alimentación; la tolva rebosa
+    preset: 500kg-central
+    duration_s: 7200
+    inputs: { feed_kg_h: 300 }
+    timeline:
+      - { at_s: 1800, command: inject_fault, args: { fault: jam, duration_s: 600 } }
+    expect:
+      - { path: variables.overflow_kg, min: 9, max: 11, description: "(300 × 600/3.600 = 50 kg en 10 min; caben 40 ⇒ 10 kg al piso)" }
+      - { path: events.overflow, equals: 1 }
+      - { path: variables.regrind_kg, min: 583, max: 586, description: "(600 − 10 = 590 kg molidos; finos 1 % × √0,8 = 0,89 % ⇒ 584,7 kg)" }
+
+  - id: dull-knives
+    description: Cuchillas sin filo en el molino central con 450 kg/h; la capacidad baja a 340 kg/h
+    preset: 500kg-central
+    duration_s: 7200
+    inputs: { feed_kg_h: 450 }
+    timeline:
+      - { at_s: 0, command: inject_fault, args: { fault: knives_dull, duration_s: 9000 } }
+    expect:
+      - { path: variables.fines_pct, min: 5.0, max: 5.4, description: "((1 + 6 × 0,8) × 0,894 = 5,19 %)" }
+      - { path: variables.overflow_kg, min: 175, max: 185, description: "(capacidad 500 × 0,68 = 340 ⇒ sobran 110 kg/h × 2 h − 40 kg de tolva = 180 kg)" }
+      - { path: events.overflow, equals: 1 }
+
+  - id: demo
+    description: Molino al pie de máquina con fallas aleatorias (para la galería)
+    preset: 40kg-beside-press
+    duration_s: 28800
+    random_faults: true
+    inputs: { feed_kg_h: 12 }

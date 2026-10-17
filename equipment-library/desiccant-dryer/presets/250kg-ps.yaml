@@ -1,0 +1,4 @@
+preset: 250kg-ps
+description: Secador de 250 kg/h para PS a 70 °C (1,5 h de residencia)
+params: { throughput_kg_h: 250, residence_h: 1.5, dry_temp_c: 70, dew_point_c: -40, material: PS, inlet_moisture_pct: 0.15, drying_tau_h: 0.4, moisture_limit_pct: 0.10, loader_kg_h: 500, heater_kw: 18 }
+provenance: { throughput_kg_h: user, dry_temp_c: user, material: user, residence_h: assumed, inlet_moisture_pct: assumed, drying_tau_h: assumed, heater_kw: assumed }

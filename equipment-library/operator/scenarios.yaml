@@ -1,0 +1,37 @@
+# Valores esperados calculados a mano: distancia por pasillos = |Δx| + |Δy|.
+scenarios:
+  - id: repair-trip
+    description: El técnico camina 60 m + 40 m hasta un equipo, repara 30 min y vuelve
+    preset: technician-injection
+    duration_s: 3600
+    timeline:
+      - { at_s: 0, command: go_to, args: { x: 60, y: 40, task: reparar inyectora, work_min: 30 } }
+    expect:
+      - { path: events.arrived, equals: 1, description: "(100 m a 1,0 m/s: llega a los 100 s)" }
+      - { path: variables.distance_m, min: 199.9, max: 200.1, description: "(ida y vuelta)" }
+      - { path: variables.tasks_done, equals: 1 }
+      - { path: kpis.utilization, min: 0.55, max: 0.56, description: "(100 + 1.800 + 100 = 2.000 s de 3.600)" }
+      - { path: kpis.walk_share, min: 0.099, max: 0.101, description: "(200 / 2.000)" }
+      - { path: state, equals: idle }
+      - { path: variables.x_m, equals: 0.0 }
+
+  - id: called-back
+    description: El operario va a una inspección sin duración fija y lo llaman de vuelta a los 15 min
+    preset: operator-injection
+    duration_s: 1800
+    timeline:
+      - { at_s: 0, command: go_to, args: { x: -30, y: 12, task: inspección } }
+      - { at_s: 900, command: go_home }
+    expect:
+      - { path: variables.distance_m, min: 83.9, max: 84.1, description: "(42 m de ida y 42 de vuelta)" }
+      - { path: events.task_done, equals: 1 }
+      - { path: events.returned_home, equals: 1, description: "(sale a los 900 s y llega a los 935 s)" }
+
+  - id: demo
+    description: Técnico que hace rondas (para la galería)
+    preset: technician-injection
+    duration_s: 7200
+    timeline:
+      - { at_s: 0, command: go_to, args: { x: 20, y: 10, task: ronda, work_min: 10 } }
+      - { at_s: 1800, command: go_to, args: { x: -15, y: 25, task: ronda, work_min: 10 } }
+      - { at_s: 3600, command: go_to, args: { x: 30, y: -10, task: ronda, work_min: 10 } }
