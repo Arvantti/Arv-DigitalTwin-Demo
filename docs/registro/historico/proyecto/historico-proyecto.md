@@ -16,7 +16,7 @@ Conversaciones del 2026-10-16 (UTC) entre el autor y Claude dentro del proyecto 
 5. [[hilo-escena-de-planta]] (PR #8, fase 5)
 6. [[hilo-caudal-de-enlaces]] (PR #10, caudal real en las tuberías)
 7. [[hilo-desvio-pasteurizador]] (PR #11, desvío del pasteurizador)
-8. [[hilo-acueducto-a-escala]] (PR #13, PR #14, PR #22 y PR #23, diseño, solucionador hidráulico y primeros equipos de la tercera planta, 2026-10-17)
+8. [[hilo-acueducto-a-escala]] (PR #13, PR #14, PR #22, PR #23 y PR #24, diseño, solucionador hidráulico y primeros equipos de la tercera planta, 2026-10-17)
 9. [[hilo-equipos-de-inyeccion]] (PR #15, geometría del empaque, secadores, chillers y molino, 2026-10-17)
 10. [[hilo-cascada-de-inyeccion]] (PR #16, cascada de la planta de inyección, y PR #17, lazo de reciclaje, 2026-10-17)
 11. [[hilo-celda-de-ensamble]] (PR #20, celda de ensamble manual con operario, y PR #21, rutas de montacargas y operarios, 2026-10-17)

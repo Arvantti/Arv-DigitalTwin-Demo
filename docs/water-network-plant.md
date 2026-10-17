@@ -1,6 +1,6 @@
 # Acueducto a escala (tercera planta de demostración) · diseño
 
-Estado: diseño fusionado (PR #13, supuestos S1–S7 aceptados por defecto al fusionarlo), **solucionador hidráulico hecho** (PR #14, sección 5.1) y primeros equipos en la librería (PR #22 y #23: grupo de bombeo, válvula entre niveles y tanque de agua). Faltan la estación reguladora, la rejilla, la planta y la escena (sección 9). Navier-Stokes queda para una fase posterior, pero el modelo se prepara desde ahora para recibirlo (sección 8).
+Estado: diseño fusionado (PR #13, supuestos S1–S7 aceptados por defecto al fusionarlo), **solucionador hidráulico hecho** (PR #14, sección 5.1) y los 4 tipos de equipo en la librería (PR #22 a #24). Faltan la planta con el motor y la escena (sección 9). Navier-Stokes queda para una fase posterior, pero el modelo se prepara desde ahora para recibirlo (sección 8).
 
 Pedido original: Carlos Andrés Quiceño, 2026-10-17 00:20 UTC (hilo «Acueducto a escala», ver `docs/registro/historico/proyecto/hilo-acueducto-a-escala.md`).
 
@@ -197,7 +197,7 @@ La fase 1 es un modelo 1D (red). Para acoplar después CFD (Navier-Stokes) sin r
 
 1. **Este diseño** y el script de predimensionamiento (sin código de producción). Hecho: PR #13.
 2. **Solucionador hidráulico** en `twin-runtime`, con pruebas contra casos calculados a mano (tubo simple, dos ramas en paralelo, bomba contra curva del sistema, PRV). Hecho: PR #14.
-3. **Tipos de equipo** `booster-pump-set`, `pressure-reducing-station`, `regulating-valve` y `distribution-grid` (contrato, comportamiento, geometría, presets, escenarios) y el preset `water-1000l` de `vessel`. Captura de la galería de cada uno. Primera parte hecha (PR #22): `booster-pump-set`, `regulating-valve` y `water-1000l`; faltan `pressure-reducing-station` y `distribution-grid`.
+3. **Tipos de equipo** `booster-pump-set`, `pressure-reducing-station`, `regulating-valve` y `distribution-grid` (contrato, comportamiento, geometría, presets, escenarios) y el preset `water-1000l` de `vessel`. Captura de la galería de cada uno. Hecho: PR #22 y #23 (`booster-pump-set`, `regulating-valve`, `water-1000l`) y PR #24 (`pressure-reducing-station`, `distribution-grid`).
 4. **Planta** `industrial-models/water-network-scale-v1/` (`plant.yaml` con pisos y rutas, `simulation.yaml`) y dominio hidráulico del motor, con los escenarios de la sección 6.
 5. **Escena 3D** del edificio, con captura y API de simulación.
 

@@ -1,0 +1,96 @@
+# Cuentas a mano con el banco: llegada a 79 mca, red hasta el punto crítico como Kv 16,09 y consumo en el punto
+# crítico como Kv 9,283 a la atmósfera (Δp[mca] = 10,197·(Q/Kv)²). Con 20 mca en el punto crítico de día:
+# Q = 9,283·√(20/10,197) = 13,00 m³/h y salida = 20 + 10,197·(13/16,09)² = 26,66 mca (docs/water-network-plant.md, sección 4).
+scenarios:
+  - id: steady
+    description: "Día, rama automática: 20 mca en el punto crítico con 13 m³/h"
+    preset: station-4in-auto
+    duration_s: 1800
+    expect:
+      - { path: variables.critical_pressure_mca, min: 19.0, max: 21.0, description: "(consigna 20 mca ± 5 %)" }
+      - { path: variables.outlet_pressure_mca, min: 26.13, max: 27.19, description: "(26,66 mca ± 2 %)" }
+      - { path: variables.flow_m3h, min: 12.74, max: 13.26, description: "(13,00 m³/h ± 2 %)" }
+      - { path: variables.flow_manual_m3h, max: 0.01, description: "(la rama manual está cerrada)" }
+      - { path: variables.dissipated_power_kw, min: 1.81, max: 1.89, description: "(9.790 N/m³ × 13/3.600 m³/s × (79 − 26,66) m = 1,85 kW ± 2 %)" }
+      - { path: kpis.time_in_band_pct, min: 95 }
+
+  - id: night-auto
+    description: "Noche (consumo al 30 %), rama automática: la PRV baja su salida y sostiene 20 mca en el punto crítico"
+    preset: station-4in-auto
+    duration_s: 1800
+    inputs: { load_factor: 0.3 }
+    expect:
+      - { path: variables.critical_pressure_mca, min: 19.0, max: 21.0 }
+      - { path: variables.flow_m3h, min: 3.82, max: 3.98, description: "(0,3 × 9,283 × √(20/10,197) = 3,90 m³/h ± 2 %)" }
+      - { path: variables.auto_outlet_setpoint_mca, min: 20.19, max: 21.01, description: "(20 + 10,197·(3,90/16,09)² = 20,60 mca ± 2 %)" }
+      - { path: events.critical_high, equals: 0 }
+
+  - id: night-manual
+    description: "Noche con la rama manual fija en la salida del día: la presión crítica sube y salta la alarma"
+    preset: station-4in-manual
+    duration_s: 1800
+    inputs: { load_factor: 0.3 }
+    expect:
+      - { path: variables.outlet_pressure_mca, min: 26.13, max: 27.19, description: "(la PRV de piloto sostiene 26,66 mca)" }
+      - { path: variables.flow_m3h, min: 4.35, max: 4.53, description: "(26,66 = 10,197·Q²·(1/16,09² + 1/2,785²) → Q = 4,44 m³/h ± 2 %)" }
+      - { path: variables.critical_pressure_mca, min: 25.36, max: 26.40, description: "(10,197·(4,44/2,785)² = 25,88 mca ± 2 %)" }
+      - { path: variables.flow_auto_m3h, max: 0.01 }
+      - { path: events.critical_high, equals: 1, description: "(25,88 > 20 × 1,15 durante 30 s)" }
+
+  - id: branch-switch
+    description: "De noche el operador pasa a la rama manual a los 10 min y vuelve a la automática a los 20 min"
+    preset: station-4in-auto
+    duration_s: 1800
+    inputs: { load_factor: 0.3 }
+    timeline:
+      - { at_s: 600, command: select_branch, args: { branch: manual } }
+      - { at_s: 1200, command: select_branch, args: { branch: auto } }
+    expect:
+      - { path: events.branch_changed, equals: 2 }
+      - { path: events.critical_high, equals: 1, description: "(en la rama manual el punto crítico queda en 25,88 mca)" }
+      - { path: events.critical_normal, equals: 1, description: "(al volver a la automática regresa a 20 mca)" }
+      - { path: variables.branch_auto, equals: 1 }
+      - { path: variables.critical_pressure_mca, min: 19.0, max: 21.0 }
+      - { path: variables.flow_manual_m3h, max: 0.01 }
+
+  - id: telemetry-loss
+    description: "Se pierde la telemetría a los 10 min y a los 15 min baja el consumo: la PRV automática no se entera y el punto crítico sube"
+    preset: station-4in-auto
+    duration_s: 1800
+    timeline:
+      - { at_s: 600, command: inject_fault, args: { fault: telemetry_loss, duration_s: 3000 } }
+      - { at_s: 900, inputs: { load_factor: 0.3 } }
+    expect:
+      - { path: events.telemetry_lost, equals: 1 }
+      - { path: variables.auto_outlet_setpoint_mca, min: 26.13, max: 27.19, description: "(la consigna se queda en la del día, 26,66 mca)" }
+      - { path: variables.critical_pressure_mca, min: 25.36, max: 26.40, description: "(igual que la rama manual de noche: 25,88 mca ± 2 %)" }
+      - { path: events.critical_high, equals: 1 }
+
+  - id: diaphragm-failure
+    description: "Se rompe el diafragma de la PRV automática: queda abierta y la red recibe casi toda la presión de llegada"
+    preset: station-4in-auto
+    duration_s: 1200
+    timeline:
+      - { at_s: 600, command: inject_fault, args: { fault: diaphragm_failure, duration_s: 3000 } }
+    expect:
+      - { path: variables.flow_m3h, min: 21.73, max: 22.61, description: "(79 = 10,197·Q²·(1/60² + 2/400² + 1/16,09² + 1/9,283²) → Q = 22,17 m³/h ± 2 %)" }
+      - { path: variables.critical_pressure_mca, min: 57.0, max: 59.3, description: "(10,197·(22,17/9,283)² = 58,2 mca ± 2 %)" }
+      - { path: events.critical_high, equals: 1 }
+      - { path: animation.stack_light, equals: 3 }
+
+  - id: pilot-drift
+    description: "El piloto de la PRV manual se desajusta: su salida sube 15 % y el punto crítico queda alto"
+    preset: station-4in-manual
+    duration_s: 1200
+    timeline:
+      - { at_s: 300, command: inject_fault, args: { fault: pilot_drift, duration_s: 3000 } }
+    expect:
+      - { path: variables.outlet_pressure_mca, min: 30.05, max: 31.27, description: "(26,66 × 1,15 = 30,66 mca ± 2 %)" }
+      - { path: variables.flow_m3h, min: 13.66, max: 14.22, description: "(30,66 = 10,197·Q²·(1/16,09² + 1/9,283²) → Q = 13,94 m³/h ± 2 %)" }
+      - { path: variables.critical_pressure_mca, min: 22.54, max: 23.46, description: "(10,197·(13,94/9,283)² = 23,0 mca ± 2 %)" }
+
+  - id: demo
+    description: Turno con fallas aleatorias para la galería
+    preset: station-4in-auto
+    duration_s: 28800
+    random_faults: true
