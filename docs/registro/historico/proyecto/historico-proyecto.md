@@ -16,5 +16,5 @@ Conversaciones del 2026-10-16 (UTC) entre el autor y Claude dentro del proyecto 
 5. [[hilo-escena-de-planta]] (PR #8, fase 5)
 6. [[hilo-caudal-de-enlaces]] (PR #10, caudal real en las tuberías)
 7. [[hilo-desvio-pasteurizador]] (PR #11, desvío del pasteurizador)
-8. [[hilo-acueducto-a-escala]] (PR #13, diseño de la tercera planta, 2026-10-17)
+8. [[hilo-acueducto-a-escala]] (PR #13 y PR #14, diseño y solucionador hidráulico de la tercera planta, 2026-10-17)
 9. Rutinas: «Revisión semanal de PRs» (lunes 13:52 UTC) y «Galería de equipos semanal» (viernes 13:52 UTC), creadas 15:00 UTC; sin mensajes adicionales.

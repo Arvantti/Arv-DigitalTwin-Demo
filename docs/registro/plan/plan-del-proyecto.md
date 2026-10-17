@@ -35,7 +35,7 @@ Las plantas son inspiradas en empresas de Medellín, pero **sin usar nombres ni 
 | 8. Instalación en ARVANTTI Harness | Manifiesto, permisos, Podman, actualización | Pendiente | — |
 | 9. Conectividad industrial | OPC UA y PLC en solo lectura | Pendiente | — |
 
-| Acueducto a escala | Tercera planta: diseño, solucionador hidráulico, 4 tipos de equipo, planta y motor, escena 3D | **En curso**: diseño para revisión del autor | PR #13, `docs/water-network-plant.md` |
+| Acueducto a escala | Tercera planta: diseño, solucionador hidráulico, 4 tipos de equipo, planta y motor, escena 3D | **En curso**: diseño y solucionador hidráulico hechos; faltan los 4 tipos de equipo, la planta con el motor y la escena | PR #13, PR #14, `docs/water-network-plant.md` |
 
 ## 4. Reglas de calidad (no negociables)
 - El modelo 3D nunca es fuente de verdad: solo refleja los canales que publica el comportamiento.
@@ -49,7 +49,7 @@ Las plantas son inspiradas en empresas de Medellín, pero **sin usar nombres ni 
 2. Resto de la planta de salsas en el motor: líneas de 250 ml y 500 ml, línea fría de mayonesa (requiere emulsificador, molino coloidal, chiller).
 3. Planta de inyección: empaque, secadores, chillers, molinos y central de materiales, y su conexión al motor (resina y agua de enfriamiento).
 4. Mejoras del motor: recetas leídas del `plant.yaml`. (El retorno del producto desviado a la marmita ya está: PR #11.)
-5. Acueducto a escala: revisar el diseño y los supuestos S1–S7; después, solucionador hidráulico (PR siguiente).
+5. Acueducto a escala: siguiente entrega, los tipos de equipo (grupo de bombas, estación reguladora, válvula entre niveles, rejilla) con sus capturas de galería.
 6. Dato pendiente del autor: precisión real del dosificador de 1.000 ml y tolerancias reales por formato.
 
 ## 6. Metodología de trabajo con IA

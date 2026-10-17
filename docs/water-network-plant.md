@@ -1,6 +1,6 @@
 # Acueducto a escala (tercera planta de demostración) · diseño
 
-Estado: **diseño para revisión del autor** (fase 1 del acueducto: modelo digital). Ningún equipo, plano ni simulación de esta planta existe todavía en el repositorio; este documento fija qué se va a construir y con qué supuestos. Navier-Stokes queda para una fase posterior, pero el modelo se prepara desde ahora para recibirlo (sección 8).
+Estado: diseño fusionado (PR #13, supuestos S1–S7 aceptados por defecto al fusionarlo) y **solucionador hidráulico hecho** (PR #14, sección 5.1). Faltan los tipos de equipo, la planta y la escena (sección 9). Navier-Stokes queda para una fase posterior, pero el modelo se prepara desde ahora para recibirlo (sección 8).
 
 Pedido original: Carlos Andrés Quiceño, 2026-10-17 00:20 UTC (hilo «Acueducto a escala», ver `docs/registro/historico/proyecto/hilo-acueducto-a-escala.md`).
 
@@ -119,12 +119,34 @@ El motor de planta actual (`docs/plant-engine.md`) pasa magnitudes de una salida
 
 **Propuesta:** un dominio hidráulico en el motor de planta.
 
-1. **Primitiva nueva** `twin_runtime/primitives/hydraulics.py`: solucionador de redes a presión por el método del gradiente global (Todini-Pilati, el mismo de EPANET), en Python puro. Elementos: tubo (Darcy-Weisbach), válvula con Kv y característica de apertura, bomba con curva H-Q y velocidad, antirretorno, PRV (consigna de presión aguas abajo), descarga a la atmósfera con exponente (consumo y fugas) y nivel fijo (tanque). Resuelve el estado cuasiestacionario en cada paso.
+1. **Primitiva** `twin_runtime/primitives/hydraulics.py` (hecha, ver 5.1): solucionador de redes a presión por el método del gradiente global (Todini-Pilati, el mismo de EPANET), en Python puro. Elementos: tubo (Darcy-Weisbach), válvula con Kv y característica de apertura, bomba con curva H-Q y velocidad, antirretorno, PRV (consigna de presión aguas abajo), descarga a la atmósfera con exponente (consumo y fugas) y nivel fijo (tanque). Resuelve el estado cuasiestacionario en cada paso.
 2. **Puertos hidráulicos** en los contratos: `kind: hydraulic` con `link: { network: water }`. Cada tipo de equipo declara los elementos que aporta (la rejilla aporta sus tramos y sus 18 válvulas; la estación sus dos ramas). Los `flows` del plano con `piped: true` aportan los tubos, con `diameter_in`, `length_m` y una ruta con elevación (campo nuevo `route`, puntos `[x, y, z]`), que también usa la escena para dibujar la subida y la bajada de 1 m.
 3. **Paso del motor:** antes de avanzar los equipos, el motor junta todos los elementos de la red `water`, la resuelve y entrega a cada equipo su presión y caudal (`pressure_mca`, `flow_m3_h`). Los equipos con dinámica propia (nivel de tanques, variador de las bombas, PID de la PRV automática) avanzan con esos valores y su nuevo estado entra en la solución del paso siguiente. Se conserva la regla del paso de retraso entre el control y la red.
 4. **Enlaces de servicio que no son de presión** (recirculación por gravedad desde las canaletas) siguen siendo enlaces normales del motor con `flow_kg_h`, con un retardo de bajada.
 
 Alternativa descartada: una sola «planta-equipo» que resuelva todo por dentro. Es más rápida de escribir, pero no deja seleccionar ni ajustar cada equipo en la escena ni reutilizar los tipos en otra red.
+
+### 5.1 Solucionador hidráulico (hecho)
+
+```python
+from twin_runtime.primitives import HydraulicNetwork
+
+net = HydraulicNetwork()
+net.add_fixed_head("supply", 80.0)                       # tanque o descarga de bombas: cabeza fija (m)
+net.add_node("a", elevation_m=0.0)
+net.add_node("b", elevation_m=0.0)
+net.add_pipe("main", "supply", "a", length_m=10, diameter_m=0.1022, minor_k=3.0)
+net.add_prv("prv", "a", "b", setting_mca=20.0, kv_m3h=60)
+net.add_emitter("house", "b", kv_m3h=0.12, opening=1.0)  # descarga a la atmósfera
+res = net.solve()          # res.flows_m3h, res.pressures_mca, res.heads_m, res.status, res.velocity_m_s
+net.set("house", opening=0.3); net.set("prv", setting_mca=22.0); net.set_head("supply", 78.0)
+```
+
+- **Elementos:** `add_pipe`, `add_valve` (lineal o de igual porcentaje), `add_check_valve`, `add_pump` (curva por H a caudal cero y punto de diseño; `speed` relativa, H ∝ s²), `add_emitter` (exponente β), `add_prv`, `add_fixed_head`, `add_node` (con `demand_m3h`).
+- **Estados** como EPANET: bombas, antirretornos y descargas no dejan pasar caudal al revés; la PRV queda `active` (fija su presión de salida), `open` (no le alcanza la presión de entrada) o `closed` (aguas abajo hay más que su consigna).
+- **Arranque en caliente:** cada `solve()` parte de la solución anterior. La red de diseño (163 nodos, 162 elementos) converge en 6 iteraciones en frío y en 3 a 5 tras un cambio, en milisegundos, así que se puede resolver en cada paso de 1 s.
+- **Pruebas** (`packages/twin-runtime/tests/test_hydraulics.py`): casos calculados a mano (descarga por Kv, válvulas en serie y en paralelo, bomba contra la curva del sistema, bombas en paralelo, velocidad, PRV activa, abierta y cerrada, antirretorno, Hagen-Poiseuille, Darcy-Weisbach) y la red de diseño completa, que reproduce la sección 4 dentro del 2 %: 13,0 m³/h y 20,0 mca en la válvula crítica de día, 23,4 mca de noche con la PRV fija. Las tolerancias de las pruebas son relativas.
+- **Pendiente para la entrega 4:** el motor de planta todavía no arma la red desde los contratos; se usa directamente desde Python.
 
 ### Control
 
@@ -173,8 +195,8 @@ La fase 1 es un modelo 1D (red). Para acoplar después CFD (Navier-Stokes) sin r
 
 ## 9. Entregas (PRs pequeños)
 
-1. **Este diseño** y el script de predimensionamiento (sin código de producción).
-2. **Solucionador hidráulico** en `twin-runtime`, con pruebas contra casos calculados a mano (tubo simple, dos ramas en paralelo, bomba contra curva del sistema, PRV).
+1. **Este diseño** y el script de predimensionamiento (sin código de producción). Hecho: PR #13.
+2. **Solucionador hidráulico** en `twin-runtime`, con pruebas contra casos calculados a mano (tubo simple, dos ramas en paralelo, bomba contra curva del sistema, PRV). Hecho: PR #14.
 3. **Tipos de equipo** `booster-pump-set`, `pressure-reducing-station`, `regulating-valve` y `distribution-grid` (contrato, comportamiento, geometría, presets, escenarios) y el preset `water-1000l` de `vessel`. Captura de la galería de cada uno.
 4. **Planta** `industrial-models/water-network-scale-v1/` (`plant.yaml` con pisos y rutas, `simulation.yaml`) y dominio hidráulico del motor, con los escenarios de la sección 6.
 5. **Escena 3D** del edificio, con captura y API de simulación.
