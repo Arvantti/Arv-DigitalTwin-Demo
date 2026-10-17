@@ -90,3 +90,36 @@ def solve_day() -> dict[str, Any]:
     return {"converged": res.converged, "iterations": res.iterations, "grid_flows": grid_flows,
             "pump_flow": sum(res.flows_m3h.get(f"bombas_pump{i}", 0.0) for i in (1, 2)),
             "p_station_out": res.pressures_mca["salida_est"], "p_c44_nivel4": res.pressures_mca[info["grids"]["nivel4"]["c44"]["node"]]}
+
+
+# Semáforo de la casa más crítica (criterio de la norma: 15 mca mínimo; alertas en 20 y 18), decisión del autor.
+HOUSE_STATES = ((20.0, "verde"), (18.0, "amarillo"), (15.0, "naranja"))
+
+
+def house_state(p_mca: float) -> str:
+    for umbral, estado in HOUSE_STATES:
+        if p_mca >= umbral:
+            return estado
+    return "rojo"
+
+
+def worst_house(setting_mca: float | None = None, pump_speed: float = 1.0) -> tuple[str, float]:
+    """Casa con menor presión (manométrica) y su presión, con la consigna de la estación dada."""
+    net, info = build(station_setting_mca=setting_mca, pump_speed=pump_speed)
+    res = net.solve()
+    casas = {f"{g}:{k}": res.pressures_mca[v["node"]] for g, mp in info["grids"].items()
+             for k, v in mp.items() if k.startswith("c")}
+    peor = min(casas, key=casas.get)
+    return peor, casas[peor]
+
+
+def setting_for(target_mca: float = 15.0, pump_speed: float = 1.0) -> float:
+    """Consigna mínima de la estación para que la casa más crítica quede en target_mca (búsqueda por bisección)."""
+    lo, hi = 0.0, 60.0
+    for _ in range(40):
+        mid = (lo + hi) / 2
+        if worst_house(mid, pump_speed)[1] >= target_mca:
+            hi = mid
+        else:
+            lo = mid
+    return round(hi, 2)
