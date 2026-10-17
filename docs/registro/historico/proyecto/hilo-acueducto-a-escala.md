@@ -184,3 +184,12 @@ Sí
 ### 🤖 Claude (hilo) · 12:58–13:20 UTC
 
 Armó la red completa de la planta en un archivo del proyecto, con las funciones de la librería. Resolvió el banco en estado estacionario: la red converge, las bombas dan 13,5 m³/h y la estación da 26,65 mca. El nivel 4 crítico queda en 23,0 mca y el diseño pide 20; con 23,66 mca de consigna da 20,0. Se dejó la decisión abierta, sin cambiar el preset.
+
+### 👤 Carlos Andrés Quiceño · 15:34 UTC
+
+Sí, ese documento hay que actualizarlo.
+
+### 🤖 Claude (hilo) · 15:34–15:40 UTC
+
+Actualizó `docs/water-network-plant.md` con los pisos, los tanques de 3,9 m³ y 4,5 m³, la presión mínima de 70 mca en bombeo, la consigna de 18,09 mca y la válvula crítica en 15,45 mca. Las tablas de predimensionamiento quedaron como referencia original, con una nota que indica la versión vigente.
+
