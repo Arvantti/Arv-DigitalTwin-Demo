@@ -9,12 +9,14 @@
  *   ?plant=sauce-plant-v1&lighting=day
  *   &camera=general|<id de zona>   cámara inicial
  *   &select=<id de equipo>         equipo seleccionado
+ *   &focus=<id de equipo>          acerca la cámara a ese equipo
  *   &autosim=1&scenario=boiler-trip&speed=120   conecta la simulación al cargar
  *   &tour=1                        inicia el recorrido de cámara al cargar
  *   &shot=1                        oculta la interfaz y marca window.__ready (con autosim, tras recibir datos)
  */
 import yaml from "js-yaml";
 import * as THREE from "three";
+import { buildRoutes, type Aisle, type Route } from "./routes.ts";
 import { type AnimationFrame, type EquipmentModel, type LightingPreset, Stage, parts, textures } from "@twin/3d";
 import { geometryBuilders, rawSpecs } from "@twin/equipment-library/registry.ts";
 import { type ControlPiece, type PanelConfig, controlPanel, operatorDesk, plcCabinet } from "./control-room.ts";
@@ -67,6 +69,8 @@ interface PlantDoc {
   zones: Zone[];
   equipment: PlantEquipment[];
   walkways: Walkway[];
+  aisles?: Aisle[];
+  routes?: Route[];
   pipes: Pipe[];
   lines: { id: string; name: string; equipment: string[] }[];
   scenarios: Record<string, { description: string; duration_s: number }>;
@@ -643,6 +647,7 @@ async function start(): Promise<void> {
   buildZones();
   buildEquipment();
   buildWalkways();
+  if (url.get("routes") !== "0") updateRoutes = buildRoutes(doc.aisles ?? [], doc.routes ?? [], stage.content, toScene);
   buildPipes();
   $("plant-meta").textContent = `${doc.equipment.length} activos · ${simulated} simulados · ${doc.zones.length} zonas · ${pipeRuns.length} tuberías · ${doc.walkways.length} pasarelas`;
   buildLighting();
@@ -670,6 +675,8 @@ async function start(): Promise<void> {
   };
   if (!simulated) $("btn-connect").setAttribute("disabled", "");
   if (url.get("select")) select(url.get("select"));
+  const focusAsset = url.get("focus") ? assets.get(url.get("focus")!) : undefined;
+  if (focusAsset) stage.frame(focusAsset.root, 1.1);
   if (url.get("tour") === "1") startTour();
   if (url.get("autosim") === "1" && simulated) {
     if (url.get("scenario")) sel.value = url.get("scenario")!;
@@ -684,8 +691,10 @@ async function start(): Promise<void> {
 }
 
 let frames = 0;
+let updateRoutes: ((time: number, dt: number) => void) | null = null;
 function loop(): void {
   const dt = stage.render();
+  updateRoutes?.(stage.time, dt);
   for (const a of assets.values()) a.model?.update(a.frame, dt);
   animatePipes(stage.time);
   for (const piece of controlPieces) piece.redraw?.();

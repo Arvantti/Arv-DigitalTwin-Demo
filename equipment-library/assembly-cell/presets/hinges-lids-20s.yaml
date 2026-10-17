@@ -1,0 +1,4 @@
+preset: hinges-lids-20s
+description: Ensamble de bisagras y tapas (2 bisagras por tapa), un operario, 20 s por unidad (celda assembly-02 de la nave de inyección)
+params: { operation: ensamble bisagras y tapas, part_a_name: bisagra, part_b_name: tapa, cycle_s: 20, operators: 1, parts_a_per_unit: 2, parts_b_per_unit: 1, bin_capacity_units: 120, nominal_inflow_a_upm: 8, nominal_inflow_b_upm: 4, color_a: "#c9ccd1", color_b: "#d9531e" }
+provenance: { cycle_s: user, operators: user, operation: user, part_a_name: user, part_b_name: assumed, parts_a_per_unit: assumed, parts_b_per_unit: assumed, bin_capacity_units: assumed, nominal_inflow_a_upm: assumed, nominal_inflow_b_upm: assumed }

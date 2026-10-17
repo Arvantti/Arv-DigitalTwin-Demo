@@ -10,6 +10,8 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
+| 2026-10-17 | #21 | Fase 5: rutas de montacargas y de operarios de la nave de inyección (datos, validador, plano 2D y escena con montacargas y operarios que las recorren) y 4 estanterías de semielaborado | 5 |
+| 2026-10-17 | #20 | Fase 3 y 5: celda de ensamble manual con operario (tipo `assembly-cell`) en la planta de inyección; `assembly-01` y `assembly-02` simuladas y escenario `body-stop` | 3 y 5 |
 | 2026-10-17 | #19 | Planta de salsas: área de empaque manual (cajas de 4, 8 y 16 sachets) con estiba en tarimas, en librería, motor y escena | 3 y 5 |
 | 2026-10-17 | #18 | Fase 5: sala de control del PLC en la planta de salsas, con gabinete, puesto del operador y panel de gráficos configurable | 5 |
 | 2026-10-17 | #17 | Fase 3 y 5: línea de peletizado (tipo `pelletizing-line`) y silo 5 de reciclado enlazados al molino; escenario `pelletizer-jam` | 3 y 5 |
@@ -30,6 +32,26 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 | 2026-10-16 | #1 | Layouts de las plantas | 1 |
 
 ## Entradas
+
+### 2026-10-17 03:54–04:50 · PR #21 (fusionado en el #20) · Rutas de montacargas y de operarios de la nave de inyección
+- **Fecha/hora (UTC):** 2026-10-17 03:54 a 04:50.
+- **Fase del plan:** [[plan-del-proyecto]] fase 5.
+- **Solicitado por:** Carlos Andrés Quiceño, «hay que definir como las rutas por donde caminan los operarios y las rutas por donde caminan los montacargas que llevan la materia prima semielaborada a estanterías […], y luego […] hacia las celdas de ensamblaje, y después de las celdas de ensamblaje, producto terminado» (03:54).
+- **Qué se hizo:** `plant.yaml` gana 4 estanterías de semielaborado (`rack-sf-01` a `04`, frente al pasillo sur), 7 pasillos nuevos hacia las celdas de ensamble y la bodega de producto terminado y una sección `routes` con 8 rutas de montacargas (recolección de las inyectoras a las estanterías, estanterías a las celdas, celdas a la bodega) y 5 de operarios (3 rondas de inyección, vestier a las celdas, celda 1 a empaque 3). `tools/layout/render_layout.py` valida las rutas (pasillos de montacargas, sin cruzar equipos, extremos junto a sus equipos) y las dibuja en `layout.svg`. La API entrega `aisles` y `routes`; la escena dibuja franjas y cintas y hace circular montacargas (pieza nueva `parts.forklift()`) y operarios que caminan. Documentado en `docs/plant-scene.md`. Es un PR apilado sobre el #20.
+- **Commits:** ver el PR #21; entró a `main` con el #20.
+- **Verificación:** `uv run python tools/layout/render_layout.py` (sin errores; el validador rechaza rutas movidas a mano a un equipo o fuera de un pasillo), `uv run twin-lib plant validate`, `uv run pytest`, `uv run ruff check .`, `pnpm -r typecheck` y `pnpm -r test`. Capturas: [[fase7-rutas-plano.png]] y [[fase7-rutas-escena.png]].
+- **Decisiones:** [[decisiones]] D22.
+- **Conversación:** [[hilo-celda-de-ensamble]].
+
+### 2026-10-17 03:54–04:30 · PR #20 · Celda de ensamble manual con operario
+- **Fecha/hora (UTC):** 2026-10-17 03:54 a 04:30.
+- **Fase del plan:** [[plan-del-proyecto]] fases 3 y 5.
+- **Solicitado por:** Carlos Andrés Quiceño, «Si con el operario» (03:54), a la pregunta de si las celdas de ensamble eran robotizadas o manuales (03:13). Pidió además las rutas de operarios y montacargas de la nave: van en un PR aparte. El empaque de salsas y la sala del PLC los toman otros hilos (PR #18 y #19).
+- **Qué se hizo:** tipo nuevo `assembly-cell` en `equipment-library/` (contrato, comportamiento, 2 presets, 7 escenarios con expectativas calculadas a mano, geometría 3D, `FICHA.md`, `README.md`): cubetas de componentes A y B, ciclo fijo del operario (35 s pedal/palanca y 20 s bisagras y tapas, de la ficha 23), bandeja de salida, estados `running`/`starved`/`blocked`/`idle`/`fault`. Pieza nueva `parts.operator()` (operario de pie con chaleco y casco) en `@twin/3d`. `assembly-01` (imm-06 y imm-19 → celda → empaque 3) y `assembly-02` (imm-08 y imm-14, flujos supuestos) simuladas en la planta; `nominal` suma 5 expectativas y hay un escenario nuevo `body-stop`. Parámetro de URL `focus=` en la escena para acercar la cámara.
+- **Commits:** ver el PR #20.
+- **Verificación:** `uv run twin-lib validate`, `uv run twin-lib plant validate`, `uv run pytest` (137), `uv run ruff check .`, `pnpm -r typecheck` y `pnpm -r test` (64). Expectativas calculadas a mano (35 s por unidad: (3.600 − 30) ÷ 35 = 102 u/h; la imm-19 entrega un cuerpo cada 35 s y limita la celda 1 a ≈ 100 u/h; la imm-06 trabaja 103 ÷ 288 = 36 % del tiempo). Capturas: [[fase7-celda-ensamble-galeria.png]] y [[fase7-celda-ensamble-escena.png]].
+- **Decisiones:** [[decisiones]] D21.
+- **Conversación:** [[hilo-celda-de-ensamble]].
 
 ### 2026-10-17 03:54–04:20 · PR #19 · Empaque manual y estibado de la planta de salsas
 - **Fecha/hora (UTC):** 2026-10-17 03:54 a 04:20.

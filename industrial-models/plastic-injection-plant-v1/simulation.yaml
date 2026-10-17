@@ -65,6 +65,8 @@ equipment:
   chiller-02: { type: chiller, preset: 600kw-standby, params: {"capacity_kw": 600, "supply_c": 12} }
   grinder-rec-01: { type: granulator, preset: 500kg-recycling, params: {"throughput_kg_h": 500, "screen_mm": 10} }
   extruder-pel-01: { type: pelletizing-line, preset: 350kg-recycling, params: {"throughput_kg_h": 350} }
+  assembly-01: { type: assembly-cell, preset: pedal-lever-35s }
+  assembly-02: { type: assembly-cell, preset: hinges-lids-20s }
   silo-05: { type: vessel, preset: resin-silo-40t, params: {"volume_l": 54545, "content": "pellet de PP reciclado", "initial_level_pct": 20} }
 
 links:
@@ -77,6 +79,14 @@ links:
   - { from: dryer-04.resin_out, to: imm-28.resin_in }
   - { from: grinder-rec-01.granulate_out, to: extruder-pel-01.granulate_in }
   - { from: extruder-pel-01.pellet_out, to: silo-05.inlet, via: [bagger-01] }
+
+  # Celdas de ensamble con operario: pedal/palanca (imm-06) y cuerpo de papelera (imm-19) → assembly-01 → empaque 3;
+  # bisagras (imm-08) y tapas (imm-14) → assembly-02 (sin salida simulada: las unidades terminadas las lleva un montacargas).
+  - { from: imm-06.parts_out, to: assembly-01.parts_a_in }
+  - { from: imm-19.parts_out, to: assembly-01.parts_b_in }
+  - { from: assembly-01.units_out, to: pack-station-03.items_in }
+  - { from: imm-08.parts_out, to: assembly-02.parts_a_in }
+  - { from: imm-14.parts_out, to: assembly-02.parts_b_in }
   - { from: chiller-01.water_out, to: imm-01.cooling_water }
   - { from: chiller-01.water_out, to: imm-02.cooling_water }
   - { from: chiller-01.water_out, to: imm-03.cooling_water }
@@ -187,6 +197,11 @@ scenarios:
       - { path: equipment.dryer-01.variables.processed_kg, min: 149, max: 151, description: "(sin enlace entrega su caudal nominal: 150 kg/h × 1 h)" }
       - { path: equipment.dryer-04.variables.processed_kg, min: 268, max: 276, description: "(ahora entrega lo que pide la imm-28, no su caudal nominal: 7 kg × 1,03 = 7,21 kg por ciclo de 95 s = 273 kg/h × 1 h)" }
       - { path: equipment.dryer-03.variables.processed_kg, min: 23.5, max: 25.5, description: "(lo que pide la imm-01: 16 cavidades × 3,5 g × 1,10 de colada = 61,6 g cada 9 s = 24,6 kg/h × 1 h)" }
+      - { path: equipment.assembly-01.variables.units_assembled, min: 97, max: 102, description: "(la imm-19 entrega un cuerpo de papelera cada 35 s, igual que el ciclo del operario: 3.600 ÷ 35 = 102,9 ciclos, menos 1 % de rechazo y el arranque: ≈ 100 u/h, como dice la ficha 23)" }
+      - { path: equipment.assembly-01.state_share.starved, max: 0.05, description: "(el cuerpo llega justo al ritmo del operario; solo espera al inicio)" }
+      - { path: equipment.pack-station-03.variables.units_packed, min: 96, max: 102, description: "(todo lo que arma la celda 1 llega a la mesa de empaque 3)" }
+      - { path: equipment.imm-06.state_share.blocked, min: 0.3, max: 0.4, description: "(el pedal y la palanca salen a 2 piezas por 25 s = 288 u/h y la celda solo usa 103 u/h: la inyectora trabaja 103 ÷ 288 = 36 % del tiempo y espera 64 %; hasta llenar la cubeta de 60 trabaja sin parar: ≈ 36 % bloqueada en la hora)" }
+      - { path: equipment.assembly-02.variables.units_assembled, min: 176, max: 180, description: "(cada unidad toma 20 s: 3.600 ÷ 20 = 180 menos los ≈ 15 s de espera inicial por 2 bisagras y 1 tapa; supuesto de la ficha)" }
       - { path: equipment.extruder-pel-01.variables.processed_kg, min: 94, max: 102, description: "(todo el molido que entrega el molino llega a la línea de peletizado, que procesa 350 kg/h: ≈ 99 kg de los 100,6 kg/h que trituró, menos lo que el paso de retraso del motor aún no pasó)" }
       - { path: equipment.silo-05.variables.total_in_kg, min: 94, max: 102, description: "(el pellet que sale de la línea llega al silo 5)" }
       - { path: equipment.silo-05.variables.mass_kg, min: 6090, max: 6110, description: "(30 t × 20 % = 6.000 kg de inicio + ≈ 99 kg recibidos)" }
@@ -221,6 +236,17 @@ scenarios:
       - { path: equipment.imm-28.state_share.starved, min: 0.40, max: 0.52, description: "(espera desde ≈ 1.900 s hasta el final: ≈ 1.700 s de 3.600 s = 0,47)" }
       - { path: equipment.imm-01.variables.cycle_count, min: 395, description: "(la imm-01 tiene su propio secador y sigue ciclando: 3.600 s ÷ 9 s = 400)" }
       - { path: equipment.dryer-03.variables.resin_dry, equals: 1 }
+
+  - id: body-stop
+    description: "La imm-19 (cuerpo de papelera) se apaga a los 30 min: la celda de ensamble 1 consume lo que tenía y se queda sin cuerpos; la celda 2 no se entera"
+    duration_s: 3600
+    timeline:
+      - { at_s: 1800, equipment: imm-19, command: stop }
+    expect:
+      - { path: equipment.assembly-01.variables.units_assembled, min: 47, max: 52, description: "(la imm-19 entrega un cuerpo cada 35 s hasta los 1.800 s: 1.800 ÷ 35 = 51 cuerpos; el operario arma los que llegan y pierde el último ciclo por estar a medias)" }
+      - { path: equipment.assembly-01.state, equals: starved }
+      - { path: equipment.assembly-01.state_share.starved, min: 0.47, max: 0.52, description: "(sin cuerpos desde ≈ 1.800 s hasta el final: 1.800 ÷ 3.600 = 0,5)" }
+      - { path: equipment.assembly-02.variables.units_assembled, min: 176, max: 180, description: "(la celda 2 tiene sus propias máquinas y sigue a 180 u/h)" }
 
   - id: chiller-trip
     description: "El chiller 1 se dispara por alta presión a los 30 min durante 45 min: el agua de moldes sube, los moldes se calientan y el rechazo y el scrap aumentan"

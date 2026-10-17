@@ -14,6 +14,8 @@ Parámetros de URL, pensados para capturas automáticas:
 | `plant=<id>` | Planta (por defecto `sauce-plant-v1`; también `plastic-injection-plant-v1`, con sus 29 inyectoras, la banda, el empaque, los secadores, los chillers y el molino animados; escenarios `nominal`, `conveyor-trip`, `dryer-stop`, `chiller-trip` y `pelletizer-jam`) |
 | `camera=general` o `camera=<id de zona>` | Cámara inicial |
 | `select=<id de equipo>` | Equipo seleccionado |
+| `focus=<id de equipo>` | Acerca la cámara a ese equipo |
+| `routes=0` | Oculta los pasillos, las rutas y los montacargas y operarios que las recorren |
 | `autosim=1&scenario=boiler-trip&speed=900` | Conecta la simulación al cargar |
 | `tour=1` | Inicia el recorrido de cámara |
 | `lighting=day\|night\|golden`, `quality=high` | Iluminación y calidad |
@@ -68,6 +70,26 @@ walkways:
 ```
 
 El validador exige: eje de 2 o más puntos, ancho y elevación positivos, todos los puntos dentro de su zona, elevación por debajo de la cubierta de la zona, y avisa si cruza un equipo más alto que la pasarela. El formato se definió en esta fase porque el plano no describía pasarelas.
+
+## Pasillos y rutas en el `plant.yaml`
+
+Secciones opcionales `aisles` (pasillos) y `routes` (rutas de montacargas y de operarios). El validador las comprueba y el plano 2D las dibuja (naranja continua los montacargas, verde punteada los operarios). La escena pinta los pasillos de montacargas como franjas amarillas tenues en el piso y cada ruta como una cinta; sobre cada una circula un montacargas (de ida cargado con una estiba, de vuelta vacío) o un operario que camina (`routes=0` en la URL las oculta). Es un recorrido ilustrativo: el motor de planta no simula todavía el transporte.
+
+```yaml
+aisles:
+  - { id: aisle-sur, kind: forklift, rect: [34, 25, 90, 4] }
+routes:
+  - { id: fk-sf-ensamble-1, name: "Semielaborado a la celda de ensamble 1", kind: forklift,
+      from: rack-sf-03, to: assembly-01,           # equipo (extremo a ≤ 3,5 m de su huella) o zona (extremo dentro)
+      load: "pedal, palanca y cuerpos de papelera", width: 1.5, trips_per_h: 3,
+      passes_under: [conveyor-main-01],            # equipos de piso que la ruta puede cruzar (banda elevada)
+      path: [[98, 27.2], [79, 27.2], [79, 74.25], [134, 74.25], [134, 66.5], [129, 66.5]] }
+  - { id: pe-ensamble-empaque, name: "Operario lleva unidades armadas a empaque 3", kind: pedestrian,
+      from: assembly-01, to: pack-station-03, width: 1.0, walkers: 1,
+      path: [[131, 59], [131, 53], [136, 53], [136, 33]] }
+```
+
+El validador exige: `kind` `forklift` o `pedestrian`, 2 o más puntos dentro del predio, ancho positivo, `from` y `to` existentes con el extremo junto al equipo o dentro de la zona, que ninguna ruta cruce un equipo de piso (salvo los de `passes_under`) y que las de montacargas vayan siempre dentro de un pasillo de `aisles` con `kind: forklift`. `trips_per_h` y `walkers` son supuestos.
 
 ## Pendiente de la fase 5
 

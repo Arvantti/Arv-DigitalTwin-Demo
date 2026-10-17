@@ -210,6 +210,8 @@ def get_plant(plant_id: str) -> dict[str, Any]:
         "zones": layout.get("zones", []),
         "equipment": equipment,
         "walkways": layout.get("walkways", []),
+        "aisles": layout.get("aisles", []),
+        "routes": layout.get("routes", []),
         "pipes": [
             {
                 **{k: f[k] for k in ("from", "to", "medium", "rate", "unit") if k in f},
