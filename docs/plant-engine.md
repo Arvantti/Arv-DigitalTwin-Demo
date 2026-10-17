@@ -41,6 +41,7 @@ El nombre a la derecha es una **variable** del contrato si el equipo la publica 
 | `flow_kg_h` | adelante | Caudal de material | Se suman |
 | `available` | adelante | 1 si hay producto. Si la salida no la declara, se deduce de `flow_kg_h > 0` | Basta una |
 | `temp_c`, `pressure_bar` | adelante | Temperatura del producto, presión del servicio | Promedio de las fuentes que están entregando |
+| `moisture_pct` | adelante | Humedad de la resina que entrega un secador, en % | Promedio de las fuentes que están entregando |
 | `weight_mean_g`, `weight_sd_g` | adelante | Peso de las unidades. Atraviesa los equipos que no lo publican (el túnel no cambia el peso) | Promedio |
 | `ready` | atrás | 1 si el equipo de abajo recibe; llega como `downstream_free` | Todas deben estar listas |
 | `demand_kg_h` | atrás | Lo que pide el equipo de abajo (vapor, producto) | Se suman |
@@ -83,17 +84,27 @@ marmita 2 ┴─(pump-hot-01)─▶ pasteurizador ─(holding-tube-01)─▶ pul
 | `boiler-trip` | Falla de llama de 1 h. La marmita que calienta gasta el vapor almacenado; bajo ≈ 0,6 bar el pasteurizador ya no llega a 92 °C en la retención y desvía. El producto desviado regresa a la marmita que descarga, así que esa descarga se alarga lo que dura el desvío y la otra marmita espera su turno en la bomba |
 | `tunnel-stop` | El túnel se detiene 80 min. La sachetadora se bloquea, el pulmón llega al 90 % y la marmita 2 espera para descargar |
 
-`plastic-injection-plant-v1`: la nave de inyección. Las 29 inyectoras se simulan con los parámetros del `plant.yaml` (tonelaje, cavidades, peso de pieza, ciclo, robot) sobre el preset de su tonelaje, y la banda principal de 88 m recibe las piezas de la inyectora 3 (`imm-03.parts_out → conveyor-main-01.items_in`) y las entrega a la estación de empaque 1 (`conveyor-main-01.items_out → pack-station-01.items_in`). Las demás inyectoras trabajan solas. También se simulan, sin enlace con las inyectoras, los 4 secadores de resina (`desiccant-dryer`), los 2 chillers (`chiller`, el segundo de respaldo y apagado), el molino de reciclaje (`granulator`) y las otras 3 estaciones de empaque (`packing-station`, sin banda: no tienen llegadas).
+`plastic-injection-plant-v1`: la nave de inyección. Las 29 inyectoras se simulan con los parámetros del `plant.yaml` (tonelaje, cavidades, peso de pieza, ciclo, robot) sobre el preset de su tonelaje, y la banda principal de 88 m recibe las piezas de la inyectora 3 (`imm-03.parts_out → conveyor-main-01.items_in`) y las entrega a la estación de empaque 1 (`conveyor-main-01.items_out → pack-station-01.items_in`). Las demás inyectoras trabajan solas. También se simulan los 4 secadores de resina (`desiccant-dryer`), los 2 chillers (`chiller`, el segundo de respaldo y apagado), el molino de reciclaje (`granulator`) y las otras 3 estaciones de empaque (`packing-station`, sin banda: no tienen llegadas). Desde la cascada de materiales y servicios, las inyectoras reciben su resina seca, su agua de moldes y entregan su scrap al molino:
 
 ```
 imm-03 ─ piezas (4 por ciclo) ─▶ conveyor-main-01 (88 m) ─▶ pack-station-01 (cajas de 250 y tarima de 40)
-imm-01 … imm-29 (las otras 28): ciclan en paralelo, sin enlace
-dryer-01 … 04, chiller-01 y 02, grinder-rec-01, pack-station-02 … 04: trabajan solos
+imm-01 … imm-29 (las otras 28): ciclan en paralelo, sin enlace de piezas
+
+dryer-03 ─ resina seca + humedad ─▶ imm-01          dryer-04 ─ resina seca + humedad ─▶ imm-28
+chiller-01 ─ agua de moldes (temperatura y disponibilidad) ─▶ imm-01 … imm-29
+imm-01 … imm-29 ─ scrap (rechazos y coladas) ─(sort-01, wash-line-01 sin simular)─▶ grinder-rec-01
+dryer-01, dryer-02 (ABS, ninguna inyectora lo moldea), chiller-02 (respaldo) y pack-station-02 … 04: trabajan solos
 ```
+
+- **Resina seca.** La inyectora publica la resina que pide (`resin_demand_kg_h`, el disparo por ciclo repartido en el ciclo; 0 si está parada o bloqueada) y el secador entrega exactamente eso, hasta su caudal máximo y lo que tenga en la tolva, con la humedad que tiene en ese momento (`resin_moisture_pct`). Si el secador no entrega (apagado, tolva vacía), la inyectora gasta los 10 s de reserva de su tolva y pasa a `starved`. Una humedad por encima del límite de la resina produce rechazos por vetas (`splay`). Cada salida de resina va a una sola inyectora (sin reparto), por eso solo dos de las 29 tienen secador enlazado: la imm-28 (HDPE reciclado) con el secador 4 y la imm-01 (PS) con el secador 3; la imm-02 (también PS) conserva la humedad por defecto.
+- **Agua de moldes.** El chiller 1 publica la temperatura de suministro y `water_ok` (la alarma `supply_temp_high` no está activa: ≤ consigna + 3 °C). Si no hay agua, el molde se calienta 25 °C sobre la consigna, el ciclo se alarga y aparecen rechupes y deformación. La carga del chiller sigue siendo la nominal: las inyectoras todavía no le piden calor.
+- **Scrap.** Cada inyectora publica el scrap del último ciclo por hora de ciclo (`scrap_flow_kg_h`: rechazos más colada) y el molino suma las 29 entregas (≈ 100 kg/h en la hora nominal). El molino todavía no entrega a la extrusora de pellet reciclado, que no existe en la librería, así que el lazo molido → pellet → secador no está cerrado.
 
 | Escenario | Qué muestra |
 |---|---|
-| `nominal` | Una hora estable. La inyectora 3 da 300 ciclos × 4 piezas; ≈ 1.090 llegan al final de la banda (293 s de recorrido) y la estación 1 las cuenta (4 cajas de 250). Los secadores entregan 150, 250 y 400 kg/h con la resina seca, el chiller de 600 kW mantiene 12 °C con 360 kW de carga y el molino tritura los 300 kg/h que le llegan |
+| `nominal` | Una hora estable. La inyectora 3 da 300 ciclos × 4 piezas; ≈ 1.090 llegan al final de la banda (293 s de recorrido) y la estación 1 las cuenta (4 cajas de 250). Los secadores de ABS entregan 150 kg/h, el 3 y el 4 lo que piden la imm-01 (24,6 kg/h) y la imm-28 (273 kg/h), el chiller de 600 kW mantiene 12 °C con 360 kW de carga y el molino tritura los ≈ 100 kg/h de scrap de las 29 inyectoras |
+| `dryer-stop` | El secador 4 se apaga a los 30 min: la imm-28 espera sin resina (`starved` ≈ 47 % de la hora) y las otras 28 no se enteran |
+| `chiller-trip` | El chiller 1 se dispara 45 min a los 30 min: el agua del circuito sube 0,0043 K/s, pasa de 15 °C a los ≈ 2.500 s, los moldes se calientan a ≈ 55 °C y los rechazos de la imm-01 pasan de ≈ 65 a ≈ 300 en la hora; el scrap que llega al molino sube ≈ 60 % (de ≈ 100 a ≈ 160 kg) |
 | `conveyor-trip` | El motor de la banda se dispara 20 min: la zona de entrada (8 piezas, `entry_buffer_units`) se llena, la banda deja de aceptar y la inyectora 3 se bloquea; las otras 28 no se enteran. La estación de empaque solo cuenta lo que entregó la banda |
 
 Una máquina que suelta varias piezas por ciclo entrega ráfagas, no un flujo continuo: la banda las recibe en una zona de entrada con `entry_buffer_units` plazas (por defecto 1, llegadas una a una como en la línea de sachets). Sin ella, la banda descartaba lo que no cabía entre dos piezas y se perdía la mitad de la producción.
@@ -102,5 +113,5 @@ Una máquina que suelta varias piezas por ciclo entrega ráfagas, no un flujo co
 
 - El producto desviado regresa a la marmita con su receta y se mezcla a la temperatura de salida del pasteurizador (`return_in`, `returned_kg`); no hay tubería de retorno con volumen ni retardo, solo el paso de retraso del motor.
 - Las recetas se escriben como fases de la marmita en `simulation.yaml`; todavía no se traducen solas desde `recipes` del plano.
-- La planta de inyección conecta la inyectora 3 con la banda y el empaque 1. Secadores, chillers y molino se simulan pero sin enlaces: las inyectoras no consumen su resina seca ni su agua de enfriamiento (usan los valores por defecto), el chiller trabaja con una carga nominal y el molino con una alimentación nominal. Esa cascada (humedad de la resina, temperatura del agua de moldes, scrap hacia el molino) y la central de materiales quedan para otra entrega.
+- La planta de inyección conecta la inyectora 3 con la banda y el empaque 1, y enlaza resina seca (2 secadores con 2 inyectoras), agua de moldes (chiller 1 con las 29) y scrap (las 29 con el molino). Quedan fuera: el reparto de resina de un secador entre varias inyectoras (hoy una salida atiende un solo destino), la carga térmica real del chiller (las inyectoras no le piden calor), el efecto de la temperatura del agua sobre el molde (solo cuenta si hay o no agua), la humedad de la resina como causa de un escenario completo (el secador cambia de humedad en horas, no en minutos) y la central de materiales y la extrusora de pellet reciclado, que cerrarían el lazo del reciclaje.
 - La planta conectada se ve en 3D y en vivo en la escena de planta (`docs/plant-scene.md`); la API la expone en `/api/plants`.

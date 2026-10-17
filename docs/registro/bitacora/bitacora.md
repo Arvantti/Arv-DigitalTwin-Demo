@@ -10,6 +10,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
+| 2026-10-17 | #16 | Fase 3 y 5: cascada de la planta de inyección (resina seca y humedad desde los secadores, agua de moldes desde el chiller, scrap hacia el molino) y escenarios `dryer-stop` y `chiller-trip` | 3 y 5 |
 | 2026-10-17 | #15 | Fase 3 y 5: geometría y comportamiento de empaque, secadores, chillers y molino de la planta de inyección, simulados en la escena | 3 y 5 |
 | 2026-10-17 | #13 | Diseño de la tercera planta: acueducto a escala (documento y predimensionamiento, sin código de producción) | acueducto |
 | 2026-10-16 | #12 | Fase 5: la planta de inyección se simula y se ve en la escena (29 inyectoras y banda principal) | 5 |
@@ -26,6 +27,16 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 | 2026-10-16 | #1 | Layouts de las plantas | 1 |
 
 ## Entradas
+
+### 2026-10-17 01:31–01:52 · PR #16 · Cascada de la planta de inyección
+- **Fecha/hora (UTC):** 2026-10-17 01:31 a 01:52.
+- **Fase del plan:** [[plan-del-proyecto]] fases 3 y 5.
+- **Solicitado por:** Carlos Andrés Quiceño, «los equipos todavía se ven como bloques simples […] hay que darle su geometría de verdad […] y después también entonces arrancamos con los equipos de inyección» (01:31). La geometría de empaque, secadores, chillers y molino ya estaba hecha en el PR #15; la de la inyectora ya era detallada (V2, 463 líneas), así que este PR hace la segunda parte: incorporarlos a las inyectoras.
+- **Qué se hizo:** el motor de planta gana la magnitud `moisture_pct` (humedad de la resina; esquema, `links.py` y `docs/plant-engine.md`). Contratos: la inyectora publica la resina que pide (`resin_demand_kg_h`) y su scrap (`scrap_flow_kg_h`), recibe caudal y humedad por `resin_in` y la disponibilidad del agua por `cooling_water` (puerto ahora de tipo `material`, como la salida del chiller); sin caudal de resina más de 10 s pasa a `starved`. El secador entrega lo que pide la inyectora y su humedad; el chiller publica `water_ok`. `simulation.yaml` enlaza secador 3 → imm-01, secador 4 → imm-28 (un secador por inyectora: el motor no reparte caudal), chiller 1 → las 29 inyectoras y las 29 → molino (por `sort-01` y `wash-line-01`, sin simular); `plant.yaml` gana los flujos correspondientes sin `piped`. Escenarios nuevos `dryer-stop` y `chiller-trip`; `nominal` recalculado (secador 4: 273 kg/h, no 400; molino: ≈ 100 kg/h, no 300). Dos pruebas nuevas de la inyectora.
+- **Commits:** ver el PR #16.
+- **Verificación:** `uv run twin-lib validate`, `uv run twin-lib plant validate`, `uv run pytest` (119 pruebas), `uv run ruff check .`, `pnpm -r typecheck` y `pnpm -r test` (57). Expectativas calculadas a mano (consumo de resina 7 × 1,03 ÷ 95 s = 273 kg/h; coladas de las 29 = 79 kg/h y rechazos base = 21,6 kg/h; circuito del chiller sin compresores 360 kW ÷ (4.186 kJ/m³K × 20 m³) = 0,0043 K/s). Capturas de la escena con la API en vivo, escenarios `chiller-trip` y `dryer-stop` a ≈ 1 h 10 min simulados: [[fase6-chiller-trip-moldes.png]] (molde de la imm-01 a 54,8 °C) y [[fase6-secador-4-detenido.png]] (imm-28 en `starved`). La geometría no cambió.
+- **Decisiones:** [[decisiones]] D17.
+- **Conversación:** [[hilo-cascada-de-inyeccion]].
 
 ### 2026-10-17 00:54–01:30 · PR #15 · Equipos de la planta de inyección con geometría propia
 - **Fecha/hora (UTC):** 2026-10-17 00:54 a 01:30.

@@ -42,6 +42,7 @@ PHASE_MOTOR_LOAD = {
 }
 
 DOSING_FRACTION_OF_COOLING = 0.7
+RESIN_HOPPER_S = 10.0  # la tolva de la máquina aguanta este tiempo sin que llegue resina
 AMBIENT_C = 25.0
 
 
@@ -52,6 +53,7 @@ class InjectionMoldingMachine(EquipmentBehavior):
         "downstream_free": True,
         "cooling_water_ok": True,
         "resin_moisture_pct": 0.02,
+        "resin_flow_kg_h": None,
     }
 
     # ------------------------------------------------------------------ inicialización
@@ -85,6 +87,8 @@ class InjectionMoldingMachine(EquipmentBehavior):
         self.parts_rejected = 0
         self.scrap_kg = 0.0
         self.resin_kg = 0.0
+        self.scrap_flow = 0.0
+        self.no_resin_s = 0.0
         self.energy_kwh = 0.0
         self.power_kw = 0.0
         self.pressure_bar = 0.0
@@ -211,6 +215,11 @@ class InjectionMoldingMachine(EquipmentBehavior):
         if s == "running":
             self.screw_wear = min(100.0, self.screw_wear + 100.0 * dt / (3600.0 * 20000.0))
 
+        # Sin resina del secador (caudal enlazado en cero) el ciclo espera: la tolva guarda unos segundos.
+        supplied = self.inputs["resin_flow_kg_h"]
+        wants_resin = s in ("running", "starved") and supplied is not None
+        self.no_resin_s = self.no_resin_s + dt if wants_resin and float(supplied) <= 1e-9 else 0.0
+
         self._check_alarms()
         self.oee.tick(self.state.current, dt)
 
@@ -258,7 +267,7 @@ class InjectionMoldingMachine(EquipmentBehavior):
             self.stop_requested = False
             self.state.set("idle")
             return False
-        if not self.inputs["material_available"]:
+        if not self.inputs["material_available"] or self.no_resin_s >= RESIN_HOPPER_S:
             self.state.set("starved")
             return False
         if not self.inputs["downstream_free"]:
@@ -333,6 +342,7 @@ class InjectionMoldingMachine(EquipmentBehavior):
         part_kg = self.p["part_g"] / 1000.0
         runner_kg = self.shot_kg - cavities * part_kg
         self.scrap_kg += rejected * part_kg + runner_kg
+        self.scrap_flow = (rejected * part_kg + runner_kg) * 3600.0 / duration if duration > 0 else 0.0
         self.resin_kg += self.shot_kg
         self.oee.count(good, rejected)
         if rejected:
@@ -384,6 +394,8 @@ class InjectionMoldingMachine(EquipmentBehavior):
             "parts_good": self.parts_good,
             "parts_rejected": self.parts_rejected,
             "scrap_kg": self.scrap_kg,
+            "resin_demand_kg_h": self.shot_kg * 3600.0 / self.p["cycle_s"] if self.state.current in ("running", "starved") else 0.0,
+            "scrap_flow_kg_h": self.scrap_flow if self.state.current == "running" else 0.0,
             "resin_consumed_kg": self.resin_kg,
             "screw_wear_pct": self.screw_wear,
             "last_defect": self.last_defect,

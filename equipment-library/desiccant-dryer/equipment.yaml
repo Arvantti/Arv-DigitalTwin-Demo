@@ -24,7 +24,7 @@ params:
 
 ports:
   - { id: resin_in, kind: material, direction: in, medium: resina higroscópica, unit: kg/h }
-  - { id: resin_out, kind: material, direction: out, medium: resina seca, unit: kg/h, link: { flow_kg_h: flow_kg_h, available: resin_dry } }
+  - { id: resin_out, kind: material, direction: out, medium: resina seca, unit: kg/h, link: { flow_kg_h: flow_kg_h, available: resin_dry, moisture_pct: resin_moisture_pct, demand_kg_h: demand_kg_h } }
   - { id: power, kind: utility, direction: in, medium: energía eléctrica }
 
 states:

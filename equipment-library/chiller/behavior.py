@@ -114,6 +114,7 @@ class Chiller(EquipmentBehavior):
             "return_temp_c": return_c,
             "load_kw": self.load,
             "cooling_kw": self.cooling,
+            "water_ok": 0 if self.alarm else 1,
             "stages_on": self.stages_on,
             "power_kw": self.power_kw,
             "cop_actual": self.cop_actual,

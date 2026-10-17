@@ -210,6 +210,8 @@ flows:
   - { from: silo-01,          to: manifold-01,      medium: resina,           rate: 600,  unit: kg/h, show: true }
   - { from: rack-mp-02,       to: dryer-01,         medium: resina,           rate: 150,  unit: kg/h }
   - { from: rack-mb-01,       to: blender-01,       medium: masterbatch,      rate: 20,   unit: kg/h }
+  - { from: dryer-03,         to: imm-01,           medium: resina seca,      rate: 22,   unit: kg/h }
+  - { from: dryer-04,         to: imm-28,           medium: resina seca,      rate: 265,  unit: kg/h }
   - { from: manifold-01,      to: imm-11,           medium: resina,           rate: 2300, unit: kg/h, piped: true, show: true, note: transporte neumático a las 29 inyectoras }
   - { from: imm-03,           to: conveyor-main-01, medium: piezas,           rate: 1200, unit: u/h }
   - { from: conveyor-main-01, to: pack-station-01,  medium: piezas,           rate: 6000, unit: u/h,  show: true }
@@ -223,6 +225,34 @@ flows:
   - { from: rack-pt-02,       to: dock-02,          medium: estibas,          rate: 40,   unit: pallets/d, show: true }
   # Scrap y reciclaje
   - { from: imm-22,           to: sort-01,          medium: scrap y barreduras, rate: 0.8, unit: t/d, show: true }
+  - { from: imm-01, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
+  - { from: imm-02, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
+  - { from: imm-03, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
+  - { from: imm-04, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
+  - { from: imm-05, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
+  - { from: imm-06, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
+  - { from: imm-07, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
+  - { from: imm-08, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
+  - { from: imm-09, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
+  - { from: imm-10, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
+  - { from: imm-11, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
+  - { from: imm-12, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
+  - { from: imm-13, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
+  - { from: imm-14, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
+  - { from: imm-15, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
+  - { from: imm-16, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
+  - { from: imm-17, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
+  - { from: imm-18, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
+  - { from: imm-19, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
+  - { from: imm-20, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
+  - { from: imm-21, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
+  - { from: imm-23, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
+  - { from: imm-24, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
+  - { from: imm-25, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
+  - { from: imm-26, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
+  - { from: imm-27, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
+  - { from: imm-28, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
+  - { from: imm-29, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
   - { from: sort-01,          to: wash-line-01,     medium: scrap,            rate: 300,  unit: kg/h }
   - { from: wash-line-01,     to: grinder-rec-01,   medium: scrap lavado,     rate: 300,  unit: kg/h }
   - { from: grinder-rec-01,   to: extruder-pel-01,  medium: molido,           rate: 350,  unit: kg/h }
@@ -233,6 +263,34 @@ flows:
   - { from: mold-rack-01,     to: cnc-01,           medium: molde,            rate: 1,    unit: mantenimientos/d }
   # Servicios
   - { from: chiller-01,       to: imm-11,           medium: agua de enfriamiento de moldes, rate: 180, unit: m3/h, piped: true }
+  - { from: chiller-01,       to: imm-01, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
+  - { from: chiller-01,       to: imm-02, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
+  - { from: chiller-01,       to: imm-03, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
+  - { from: chiller-01,       to: imm-04, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
+  - { from: chiller-01,       to: imm-05, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
+  - { from: chiller-01,       to: imm-06, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
+  - { from: chiller-01,       to: imm-07, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
+  - { from: chiller-01,       to: imm-08, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
+  - { from: chiller-01,       to: imm-09, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
+  - { from: chiller-01,       to: imm-10, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
+  - { from: chiller-01,       to: imm-12, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
+  - { from: chiller-01,       to: imm-13, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
+  - { from: chiller-01,       to: imm-14, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
+  - { from: chiller-01,       to: imm-15, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
+  - { from: chiller-01,       to: imm-16, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
+  - { from: chiller-01,       to: imm-17, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
+  - { from: chiller-01,       to: imm-18, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
+  - { from: chiller-01,       to: imm-19, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
+  - { from: chiller-01,       to: imm-20, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
+  - { from: chiller-01,       to: imm-21, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
+  - { from: chiller-01,       to: imm-22, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
+  - { from: chiller-01,       to: imm-23, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
+  - { from: chiller-01,       to: imm-24, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
+  - { from: chiller-01,       to: imm-25, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
+  - { from: chiller-01,       to: imm-26, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
+  - { from: chiller-01,       to: imm-27, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
+  - { from: chiller-01,       to: imm-28, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
+  - { from: chiller-01,       to: imm-29, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
   - { from: cooling-tower-01, to: imm-25,           medium: agua de torre (aceite hidráulico), rate: 250, unit: m3/h, piped: true }
   - { from: compressor-01,    to: vacuum-central-01, medium: aire comprimido, rate: 12,   unit: m3/min, piped: true }
   - { from: transformer-01,   to: imm-28,           medium: energía eléctrica, rate: 2100, unit: kW }

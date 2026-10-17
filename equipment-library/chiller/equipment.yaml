@@ -23,7 +23,7 @@ params:
   start_on:        { type: boolean, default: true, description: "Arranca encendido (false = en espera, apagado)", affects: [behavior] }
 
 ports:
-  - { id: water_out, kind: material, direction: out, medium: agua enfriada, unit: m3/h, link: { temp_c: supply_temp_c } }
+  - { id: water_out, kind: material, direction: out, medium: agua enfriada, unit: m3/h, link: { temp_c: supply_temp_c, available: water_ok } }
   - { id: water_in, kind: material, direction: in, medium: agua de retorno, unit: m3/h }
   - { id: power, kind: utility, direction: in, medium: energía eléctrica }
 
@@ -37,6 +37,7 @@ variables:
   - { id: return_temp_c, unit: °C, kind: measured, range: [0, 60], noise_sd: 0.05, resolution: 0.01, description: Temperatura del agua de retorno }
   - { id: load_kw, unit: kW, kind: calculated, description: Carga térmica que pide el circuito }
   - { id: cooling_kw, unit: kW, kind: calculated, description: Capacidad frigorífica que entregan las etapas encendidas }
+  - { id: water_ok, unit: "", kind: status, description: "1 mientras el agua de suministro no supere la consigna en más de 3 °C (es la alarma supply_temp_high); es la señal que usa el motor de planta para decir si los moldes tienen agua" }
   - { id: stages_on, unit: "", kind: calculated, description: Etapas encendidas }
   - { id: power_kw, unit: kW, kind: calculated, description: "Potencia eléctrica (compresores y ventiladores)" }
   - { id: cop_actual, unit: "", kind: calculated, description: COP con la temperatura ambiente actual }
