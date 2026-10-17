@@ -22,5 +22,6 @@ Conversaciones del 2026-10-16 (UTC) entre el autor y Claude dentro del proyecto 
 11. [[hilo-celda-de-ensamble]] (PR #20, celda de ensamble manual con operario, y PR #21, rutas de montacargas y operarios, 2026-10-17)
 12. [[hilo-sala-de-control-plc]] (PR #18, sala de control del PLC y panel de gráficos, 2026-10-17)
 13. [[hilo-empaque-de-salsas]] (PR #19, empaque manual y estibado de la planta de salsas, 2026-10-17)
-14. Rutinas: «Revisión semanal de PRs» (lunes 13:52 UTC) y «Galería de equipos semanal» (viernes 13:52 UTC), creadas 15:00 UTC; sin mensajes adicionales.
-15. [[hilo-motor-de-planta]] (continuación, 2026-10-17 15:28–15:38 UTC): el autor pidió 1 % de tolerancia y dosificador de 1,5 % (15:33), y eligió la opción de 4 % en la tarjeta de decisión (15:38). Implementado en el PR #29.
+14. [[hilo-bodega-de-producto-terminado]] (PR #28, bodega contigua a empaque y despacho a camiones, 2026-10-17)
+15. Rutinas: «Revisión semanal de PRs» (lunes 13:52 UTC) y «Galería de equipos semanal» (viernes 13:52 UTC), creadas 15:00 UTC; sin mensajes adicionales.
+16. [[hilo-motor-de-planta]] (continuación, 2026-10-17 15:28–15:38 UTC): el autor pidió 1 % de tolerancia y dosificador de 1,5 % (15:33), y eligió la opción de 4 % en la tarjeta de decisión (15:38). Implementado en el PR #29.
