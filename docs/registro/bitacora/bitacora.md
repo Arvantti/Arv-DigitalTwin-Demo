@@ -10,6 +10,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
+| 2026-10-17 | #21 | Fase 5: rutas de montacargas y de operarios de la nave de inyección (datos, validador, plano 2D y escena con montacargas y operarios que las recorren) y 4 estanterías de semielaborado | 5 |
 | 2026-10-17 | #20 | Fase 3 y 5: celda de ensamble manual con operario (tipo `assembly-cell`) en la planta de inyección; `assembly-01` y `assembly-02` simuladas y escenario `body-stop` | 3 y 5 |
 | 2026-10-17 | #17 | Fase 3 y 5: línea de peletizado (tipo `pelletizing-line`) y silo 5 de reciclado enlazados al molino; escenario `pelletizer-jam` | 3 y 5 |
 | 2026-10-17 | #16 | Fase 3 y 5: cascada de la planta de inyección (resina seca y humedad desde los secadores, agua de moldes desde el chiller, scrap hacia el molino) y escenarios `dryer-stop` y `chiller-trip` | 3 y 5 |
@@ -29,6 +30,16 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 | 2026-10-16 | #1 | Layouts de las plantas | 1 |
 
 ## Entradas
+
+### 2026-10-17 03:54–04:50 · PR #21 · Rutas de montacargas y de operarios de la nave de inyección
+- **Fecha/hora (UTC):** 2026-10-17 03:54 a 04:50.
+- **Fase del plan:** [[plan-del-proyecto]] fase 5.
+- **Solicitado por:** Carlos Andrés Quiceño, «hay que definir como las rutas por donde caminan los operarios y las rutas por donde caminan los montacargas que llevan la materia prima semielaborada a estanterías […], y luego […] hacia las celdas de ensamblaje, y después de las celdas de ensamblaje, producto terminado» (03:54).
+- **Qué se hizo:** `plant.yaml` gana 4 estanterías de semielaborado (`rack-sf-01` a `04`, frente al pasillo sur), 7 pasillos nuevos hacia las celdas de ensamble y la bodega de producto terminado y una sección `routes` con 8 rutas de montacargas (recolección de las inyectoras a las estanterías, estanterías a las celdas, celdas a la bodega) y 5 de operarios (3 rondas de inyección, vestier a las celdas, celda 1 a empaque 3). `tools/layout/render_layout.py` valida las rutas (pasillos de montacargas, sin cruzar equipos, extremos junto a sus equipos) y las dibuja en `layout.svg`. La API entrega `aisles` y `routes`; la escena dibuja franjas y cintas y hace circular montacargas (pieza nueva `parts.forklift()`) y operarios que caminan. Documentado en `docs/plant-scene.md`. Es un PR apilado sobre el #20.
+- **Commits:** ver el PR #21.
+- **Verificación:** `uv run python tools/layout/render_layout.py` (sin errores; el validador rechaza rutas movidas a mano a un equipo o fuera de un pasillo), `uv run twin-lib plant validate`, `uv run pytest`, `uv run ruff check .`, `pnpm -r typecheck` y `pnpm -r test`. Capturas: [[fase7-rutas-plano.png]] y [[fase7-rutas-escena.png]].
+- **Decisiones:** [[decisiones]] D21.
+- **Conversación:** [[hilo-celda-de-ensamble]].
 
 ### 2026-10-17 03:54–04:30 · PR #20 · Celda de ensamble manual con operario
 - **Fecha/hora (UTC):** 2026-10-17 03:54 a 04:30.

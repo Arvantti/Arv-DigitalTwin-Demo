@@ -212,6 +212,8 @@ export interface OperatorHandle {
   object: THREE.Group;
   /** 0 de pie, 1 inclinado sobre el trabajo con los brazos adelante (animación de trabajo). */
   setPose(work: number): void;
+  /** Paso de caminata: fase en radianes (un paso completo = 2π); piernas y brazos se balancean. */
+  setWalk(phase: number): void;
 }
 
 /**
@@ -226,13 +228,18 @@ export function operator(vest = "#f26b1d", shirt = "#2f5f8f"): OperatorHandle {
   const vestMat = M.paint(vest, 0.7);
   const shirtMat = M.paint(shirt, 0.8);
   const helmet = M.paint("#f2f2f2", 0.4);
+  const legs: THREE.Group[] = [];
   for (const sx of [-1, 1]) {
+    const leg = group("leg");
+    leg.position.set(sx * 0.1, 0.9, 0);
+    const thigh = cylinder(0.065, 0.055, 0.8, pants, 14);
+    thigh.position.y = -0.8;
+    leg.add(thigh);
     const boot = box(0.11, 0.1, 0.27, boots, 0.03);
-    boot.position.set(sx * 0.1, 0.05, 0.04);
-    g.add(boot);
-    const leg = cylinder(0.065, 0.055, 0.8, pants, 14);
-    leg.position.set(sx * 0.1, 0.1, 0);
+    boot.position.set(0, -0.85, 0.04);
+    leg.add(boot);
     g.add(leg);
+    legs.push(leg);
   }
   const hips = box(0.34, 0.16, 0.2, pants, 0.05);
   hips.position.y = 0.95;
@@ -289,8 +296,83 @@ export function operator(vest = "#f26b1d", shirt = "#2f5f8f"): OperatorHandle {
       (arm.userData.fore as THREE.Group).rotation.x = -(0.9 + 0.12 * Math.sin(i * 2)) * w;
     }
   }
+  function setWalk(phase: number): void {
+    const swing = Math.sin(phase) * 0.5;
+    legs[0].rotation.x = swing;
+    legs[1].rotation.x = -swing;
+    arms[0].rotation.x = -swing * 0.8 - 0.05;
+    arms[1].rotation.x = swing * 0.8 - 0.05;
+    torso.rotation.x = 0;
+    g.position.y = Math.abs(Math.cos(phase)) * 0.02;
+  }
   setPose(0);
-  return { object: g, setPose };
+  return { object: g, setPose, setWalk };
+}
+
+export interface ForkliftHandle {
+  object: THREE.Group;
+  /** Muestra u oculta la estiba con carga sobre las horquillas. */
+  setLoaded(loaded: boolean): void;
+}
+
+/**
+ * Montacargas de contrapeso eléctrico (≈ 2,3 × 1,1 × 2,1 m) con mástil, horquillas, techo de protección y baliza.
+ * Origen en el suelo, centrado; avanza hacia +Z (las horquillas apuntan a +Z).
+ */
+export function forklift(body = "#f2b705"): ForkliftHandle {
+  const g = group("forklift");
+  const paint = M.paint(body, 0.45);
+  const dark = M.paint("#2b2f35", 0.6);
+  const tyre = M.rubber();
+  const chassis = box(1.05, 0.7, 1.7, paint, 0.06);
+  chassis.position.set(0, 0.55, -0.1);
+  g.add(chassis);
+  const counter = box(1.05, 0.55, 0.5, paint, 0.1);
+  counter.position.set(0, 0.8, -0.85);
+  g.add(counter);
+  const seat = box(0.5, 0.12, 0.5, dark, 0.04);
+  seat.position.set(0, 1.0, -0.2);
+  g.add(seat);
+  const back = box(0.5, 0.45, 0.08, dark, 0.03);
+  back.position.set(0, 1.2, -0.45);
+  g.add(back);
+  for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]] as [number, number][]) {
+    const post = box(0.06, 1.0, 0.06, dark, 0.01);
+    post.position.set(sx * 0.46, 1.5, sz * 0.4 - 0.15);
+    g.add(post);
+  }
+  const roof = box(1.0, 0.05, 0.95, dark, 0.01);
+  roof.position.set(0, 2.02, -0.15);
+  g.add(roof);
+  for (const sx of [-1, 1]) {
+    const wf = cylinderX(0.3, 0.22, tyre, 20);
+    wf.position.set(sx * 0.5, 0.3, 0.45);
+    g.add(wf);
+    const wb = cylinderX(0.25, 0.2, tyre, 20);
+    wb.position.set(sx * 0.46, 0.25, -0.7);
+    g.add(wb);
+    const rail = box(0.07, 1.9, 0.08, M.paint("#3a4047", 0.5), 0.01);
+    rail.position.set(sx * 0.3, 0.95, 0.9);
+    g.add(rail);
+    const fork = box(0.1, 0.05, 1.1, M.darkSteel(), 0.01);
+    fork.position.set(sx * 0.3, 0.07, 1.45);
+    g.add(fork);
+  }
+  const carriage = box(0.8, 0.5, 0.06, M.paint("#3a4047", 0.5), 0.01);
+  carriage.position.set(0, 0.35, 0.95);
+  g.add(carriage);
+  const beacon = mesh(new THREE.SphereGeometry(0.07, 12, 8), M.emissive("#ff8a00", 1.5));
+  beacon.position.set(0.4, 2.12, -0.5);
+  g.add(beacon);
+  const load = group("load");
+  load.add(box(1.0, 0.12, 1.1, M.paint("#8a6a43", 0.9), 0.01));
+  const boxes = box(0.95, 0.7, 1.0, M.paint("#b08a5a", 0.9), 0.02);
+  boxes.position.y = 0.45;
+  load.add(boxes);
+  load.position.set(0, 0.14, 1.55);
+  g.add(load);
+  load.visible = false;
+  return { object: g, setLoaded: (v) => (load.visible = v) };
 }
 
 /** Placa de datos (texto). Plano orientado a +Z. */

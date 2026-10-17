@@ -7,6 +7,7 @@ Comprobaciones:
     - Zonas dentro del predio y sin solaparse entre sí.
     - Cada equipo dentro de su zona y sin solaparse con otro (salvo overhead: true).
     - Pasarelas (walkways) dentro de su zona y bajo su cubierta.
+    - Rutas (routes) de montacargas y de operarios: sin cruzar equipos de piso y, las de montacargas, por sus pasillos.
     - Flujos, líneas y recetas solo referencian ids existentes.
 Termina con código 1 si hay errores.
 """
@@ -179,6 +180,8 @@ def validate(plant: dict) -> tuple[list[str], list[str]]:
                 if eq_rects[e["id"]].overlaps(seg):
                     warnings.append(f"pasarela {wid} cruza {e['id']}, que es más alto que la pasarela")
 
+    errors.extend(check_routes(plant, site, zones, eq_rects, ground))
+
     ids = set(eq_rects) | set(zones)
     for f in plant.get("flows") or []:
         for end in ("from", "to"):
@@ -196,6 +199,76 @@ def validate(plant: dict) -> tuple[list[str], list[str]]:
             if ph["equipment"] not in eq_rects:
                 errors.append(f"receta {rcp['id']}: equipo inexistente {ph['equipment']}")
     return errors, warnings
+
+
+ROUTE_KINDS = ("forklift", "pedestrian")
+ROUTE_END_REACH_M = 3.5
+ROUTE_STEP_M = 0.25
+
+
+def _dist_to_rect(px: float, py: float, r: Rect) -> float:
+    return math.hypot(max(r.x - px, 0.0, px - r.x2), max(r.y - py, 0.0, py - r.y2))
+
+
+def _inside(r: Rect, px: float, py: float) -> bool:
+    return r.x - EPS <= px <= r.x2 + EPS and r.y - EPS <= py <= r.y2 + EPS
+
+
+def check_routes(plant: dict, site: Rect, zones: dict[str, Rect], eq_rects: dict[str, Rect], ground: list[dict]) -> list[str]:
+    errors: list[str] = []
+    aisles = [Rect(*a["rect"]) for a in plant.get("aisles") or [] if a.get("kind") == "forklift"]
+    seen: set[str] = set()
+    for rt in plant.get("routes") or []:
+        rid = rt["id"]
+        if rid in seen:
+            errors.append(f"id de ruta duplicado: {rid}")
+        seen.add(rid)
+        if rt["kind"] not in ROUTE_KINDS:
+            errors.append(f"ruta {rid}: kind debe ser uno de {ROUTE_KINDS}")
+            continue
+        path = rt["path"]
+        if len(path) < 2:
+            errors.append(f"ruta {rid}: necesita al menos 2 puntos")
+            continue
+        if rt["width"] <= 0:
+            errors.append(f"ruta {rid}: el ancho debe ser positivo")
+        for px, py in path:
+            if not _inside(site, px, py):
+                errors.append(f"ruta {rid}: el punto [{px}, {py}] sale del predio")
+        for end, point in (("from", path[0]), ("to", path[-1])):
+            ref = rt[end]
+            if ref in eq_rects:
+                d = _dist_to_rect(point[0], point[1], eq_rects[ref])
+                if d > ROUTE_END_REACH_M:
+                    errors.append(f"ruta {rid}: el extremo {end} está a {d:.1f} m de {ref} (máximo {ROUTE_END_REACH_M} m)")
+            elif ref in zones:
+                if not _inside(zones[ref], point[0], point[1]):
+                    errors.append(f"ruta {rid}: el extremo {end} está fuera de la zona {ref}")
+            else:
+                errors.append(f"ruta {rid}: id inexistente {ref}")
+        under = set(rt.get("passes_under") or [])
+        for u in under:
+            if u not in eq_rects:
+                errors.append(f"ruta {rid}: passes_under con id inexistente {u}")
+        half = rt["width"] / 2
+        for (ax, ay), (bx, by) in zip(path, path[1:], strict=False):
+            length = math.hypot(bx - ax, by - ay)
+            if length < EPS:
+                errors.append(f"ruta {rid}: dos puntos seguidos iguales en [{ax}, {ay}]")
+                continue
+            if rt["kind"] == "forklift":
+                steps = max(1, int(length / ROUTE_STEP_M))
+                for i in range(steps + 1):
+                    t = i / steps
+                    qx, qy = ax + (bx - ax) * t, ay + (by - ay) * t
+                    if not any(_inside(a, qx, qy) for a in aisles):
+                        errors.append(f"ruta {rid}: el punto [{qx:.1f}, {qy:.1f}] no está en un pasillo de montacargas")
+                        break
+            seg = Rect(min(ax, bx) - half, min(ay, by) - half, abs(bx - ax) + rt["width"], abs(by - ay) + rt["width"])
+            for e in ground:
+                if e["id"] not in under and eq_rects[e["id"]].overlaps(seg):
+                    errors.append(f"ruta {rid}: cruza el equipo {e['id']}")
+    return errors
 
 
 def summary(plant: dict) -> list[str]:
@@ -239,6 +312,10 @@ def render_svg(plant: dict) -> str:
         '<line x1="0" y1="0" x2="0" y2="6" stroke="#d4a017" stroke-width="1.2" stroke-opacity="0.45"/></pattern>'
         '<marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">'
         '<path d="M0,0 L10,5 L0,10 z" fill="#c2410c"/></marker>'
+        '<marker id="arrow-forklift" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="4" markerHeight="4" orient="auto">'
+        '<path d="M0,0 L10,5 L0,10 z" fill="#ea580c"/></marker>'
+        '<marker id="arrow-pedestrian" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="4" markerHeight="4" orient="auto">'
+        '<path d="M0,0 L10,5 L0,10 z" fill="#15803d"/></marker>'
         "</defs>"
     )
     a('<rect width="100%" height="100%" fill="#ffffff"/>')
@@ -350,6 +427,17 @@ def render_svg(plant: dict) -> str:
                 f'fill="#111827">{html.escape(label)}</text>'
             )
 
+    # rutas de montacargas (naranja continua) y de operarios (verde punteada), con flecha al final
+    for rt in plant.get("routes") or []:
+        color = "#ea580c" if rt["kind"] == "forklift" else "#15803d"
+        dash = "" if rt["kind"] == "forklift" else ' stroke-dasharray="3 3"'
+        pts = " ".join(f"{sx(px):.1f},{sy(py):.1f}" for px, py in rt["path"])
+        a(
+            f'<polyline points="{pts}" fill="none" stroke="{color}" stroke-width="{max(1.6, rt["width"] * scale * 0.35):.1f}" '
+            f'stroke-opacity="0.85" stroke-linejoin="round"{dash} marker-end="url(#arrow-{rt["kind"]})">'
+            f'<title>{html.escape(rt["name"])}</title></polyline>'
+        )
+
     # flujos principales
     rects = {e["id"]: equipment_rect(e) for e in plant["equipment"]}
     rects.update({z["id"]: Rect(*z["rect"]) for z in plant["zones"]})
@@ -394,6 +482,11 @@ def render_svg(plant: dict) -> str:
         items.append(('<rect x="{x}" y="{y}" width="14" height="10" fill="url(#hatch)" stroke="#d4a017"/>', "Pasillo montacargas"))
     if plant.get("walkways"):
         items.append(('<rect x="{x}" y="{y}" width="14" height="10" fill="#d4a017" fill-opacity="0.55"/>', "Pasarela elevada"))
+    if any(r["kind"] == "forklift" for r in plant.get("routes") or []):
+        items.append(('<line x1="{x}" y1="{cy}" x2="{x2}" y2="{cy}" stroke="#ea580c" stroke-width="3"/>', "Ruta de montacargas"))
+    if any(r["kind"] == "pedestrian" for r in plant.get("routes") or []):
+        walk = '<line x1="{x}" y1="{cy}" x2="{x2}" y2="{cy}" stroke="#15803d" stroke-width="3" stroke-dasharray="3 3"/>'
+        items.append((walk, "Ruta de operarios"))
     if any(e.get("overhead") for e in plant["equipment"]):
         items.append(('<rect x="{x}" y="{y}" width="14" height="10" fill="none" stroke="#7c3aed" stroke-dasharray="4 2"/>', "Puente grúa"))
     arrow = '<line x1="{x}" y1="{cy}" x2="{x2}" y2="{cy}" stroke="#c2410c" stroke-width="1.6" marker-end="url(#arrow)"/>'
