@@ -10,7 +10,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
-| 2026-10-17 | #14 | Fase 3 y 5: geometría y comportamiento de empaque, secadores, chillers y molino de la planta de inyección, simulados en la escena | 3 y 5 |
+| 2026-10-17 | #15 | Fase 3 y 5: geometría y comportamiento de empaque, secadores, chillers y molino de la planta de inyección, simulados en la escena | 3 y 5 |
 | 2026-10-17 | #13 | Diseño de la tercera planta: acueducto a escala (documento y predimensionamiento, sin código de producción) | acueducto |
 | 2026-10-16 | #12 | Fase 5: la planta de inyección se simula y se ve en la escena (29 inyectoras y banda principal) | 5 |
 | 2026-10-16 | #11 | Fase 5: el desvío del pasteurizador regresa a la marmita que descarga (motor, contratos, escena) | 5 |
@@ -27,12 +27,12 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 ## Entradas
 
-### 2026-10-17 00:54–01:30 · PR #14 · Equipos de la planta de inyección con geometría propia
+### 2026-10-17 00:54–01:30 · PR #15 · Equipos de la planta de inyección con geometría propia
 - **Fecha/hora (UTC):** 2026-10-17 00:54 a 01:30.
 - **Fase del plan:** [[plan-del-proyecto]] fases 3 y 5.
 - **Solicitado por:** Carlos Andrés Quiceño, «si asigna un hijlo para ello» (00:54), a la propuesta del coordinador de modelar con geometría propia el empaque, los secadores, los chillers y los molinos de la planta de inyección, que seguían como bloques simples en la escena. Las pasarelas de la nave quedaron fuera de este hilo.
 - **Qué se hizo:** cuatro tipos nuevos en `equipment-library/`, cada uno con contrato, comportamiento, geometría 3D, presets, escenarios con expectativas calculadas a mano, `FICHA.md` y `README.md`: `desiccant-dryer` (aire de proceso, residencia y humedad de la resina; falla de regeneración del desecante), `chiller` (etapas por banda muerta, inercia del circuito, derrateo por ambiente, disparo por alta presión), `granulator` (capacidad, desgaste de cuchillas, finos, corriente) y `packing-station` (mesa de espera, ritmo del operario, cambio de caja, tarima). `simulation.yaml` de la planta de inyección los simula (4 secadores, 2 chillers con el segundo de respaldo apagado, el molino de reciclaje y las 4 estaciones de empaque) y enlaza `conveyor-main-01 → pack-station-01`: la banda de 88 m ya entrega al empaque. Documentado en `docs/plant-engine.md` y `docs/plant-scene.md`.
-- **Commits:** ver el PR #14.
+- **Commits:** ver el PR #15.
 - **Verificación:** `uv run twin-lib validate` (14 tipos), `uv run twin-lib plant validate`, `uv run pytest` (115 pruebas), `uv run ruff check .`, `pnpm -r typecheck` y `pnpm -r test` (57 pruebas de geometría). Expectativas calculadas a mano (por ejemplo, humedad del ABS a 4 h de residencia: 0,0035 + 0,1965·e^(−4/1,2) = 0,0105 %; chiller con 360 kW de carga: ≈ 85,4 kW eléctricos; molino de 500 kg/h con 300 kg/h de alimentación: 43,96 A). Dos expectativas se corrigieron al revisar mi propia cuenta (no la simulación): el tiempo hasta que la resina deja de estar seca ignoraba el retardo del punto de rocío, y el calor neto del chiller sobrecargado ignoraba el arranque escalonado de las etapas. Capturas con Chromium y la API local (01:19, escenario `nominal`): [[fase5f-secadores-en-la-escena.jpg]], [[fase5f-chillers-en-la-escena.jpg]], [[fase5f-empaque-en-la-escena.jpg]], [[fase5f-molino-en-la-escena.jpg]].
 - **Decisiones:** [[decisiones]] D16.
 - **Conversación:** [[hilo-equipos-de-inyeccion]].

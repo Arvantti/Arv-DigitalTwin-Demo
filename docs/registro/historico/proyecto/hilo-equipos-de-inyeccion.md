@@ -5,7 +5,7 @@ desde: 2026-10-17 00:53
 hasta: 2026-10-17 01:30
 tags: [registro, historico-ia, inyeccion]
 ---
-# Hilo: equipos de la planta de inyección con geometría propia (PR #14)
+# Hilo: equipos de la planta de inyección con geometría propia (PR #15)
 
 Parte de [[historico-proyecto]] · Índice: [[00-indice]] · Bitácora: [[bitacora]] · Decisión: [[decisiones]] D16. Autor humano: Carlos Andrés Quiceño. Hora en UTC. Credenciales: ninguna.
 
@@ -34,4 +34,4 @@ Trabajo del hilo, resumido (las actualizaciones de estado no se reproducen):
 - Creó los tipos `desiccant-dryer`, `chiller`, `granulator` y `packing-station` con contrato, comportamiento, presets, escenarios con expectativas calculadas a mano, geometría 3D, `FICHA.md` y `README.md`. Corrigió dos expectativas tras revisar su propia cuenta (retardo del punto de rocío del secador; arranque escalonado de las etapas del chiller).
 - Los simuló en `plastic-injection-plant-v1` y enlazó la banda principal con la estación de empaque 1; amplió los escenarios `nominal` y `conveyor-trip`; ajustó una prueba de la API.
 - Verificó con `twin-lib validate`, `twin-lib plant validate`, `pytest`, `ruff`, `pnpm -r typecheck` y `pnpm -r test`, y con capturas de la galería y de la escena con la API en vivo.
-- Actualizó `docs/plant-engine.md`, `docs/plant-scene.md`, el plan, el roadmap, la bitácora, las decisiones y este histórico, y abrió el PR #14.
+- Actualizó `docs/plant-engine.md`, `docs/plant-scene.md`, el plan, el roadmap, la bitácora, las decisiones y este histórico, y abrió el PR #15.
