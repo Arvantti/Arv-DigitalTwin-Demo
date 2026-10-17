@@ -1,7 +1,7 @@
 ---
 tipo: decisiones
 tags: [registro, decision]
-actualizado: 2026-10-16
+actualizado: 2026-10-17
 ---
 # Decisiones y reglas del autor
 
@@ -48,3 +48,6 @@ El autor aprobó enlazar el desvío del pasteurizador en el motor y en la escena
 
 ## D14 · Planta de inyección: simular las 29 inyectoras y la banda; lo demás, cuando tenga tipo · 2026-10-16 22:31
 Al ser la planta de inyección el segundo punto de lo aprobado a las 22:08, se eligió el alcance por defecto: simular todas las inyectoras del plano y la banda principal, que son los equipos que ya existen en la librería, y dejar el empaque, secadores, chillers y molinos como volúmenes hasta que se creen sus tipos. Las inyectoras se parametrizan desde el `plant.yaml` para que el plano siga siendo la fuente de verdad. La zona de entrada de la banda (8 piezas) es un supuesto. Ningún valor de tolerancia interviene (regla D07).
+
+## D15 · Acueducto a escala: diseño primero y solucionador hidráulico en el motor · 2026-10-17 00:21
+El autor pidió una tercera planta: un acueducto a escala. Se entrega primero el diseño para su revisión (`docs/water-network-plant.md`), con supuestos marcados (S1–S7): rejillas de 4 × 4 válvulas de consumo y 2 de fuga por nivel, 4" hasta la estación reguladora y 2" en la red, 80 mca en bombas y 20 mca en la válvula más crítica. Como el caudal de cada válvula depende de la presión de toda la red, el motor de planta gana un dominio hidráulico (método del gradiente global) en vez de pasar magnitudes enlace por enlace; se descartó modelar la red como un solo equipo porque impediría seleccionar y reutilizar cada equipo. Las bombas son genéricas (multietapa vertical) por la regla de no usar marcas reales. Tolerancias de control en % de la consigna (D07).

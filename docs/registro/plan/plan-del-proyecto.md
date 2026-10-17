@@ -1,7 +1,7 @@
 ---
 tipo: plan
 tags: [registro, plan]
-actualizado: 2026-10-16
+actualizado: 2026-10-17
 ---
 # Plan del proyecto
 
@@ -11,6 +11,7 @@ actualizado: 2026-10-16
 Construir una **plataforma de gemelos digitales industriales** y demostrarla con dos plantas de referencia que cubren los dos tipos de manufactura:
 - **Manufactura discreta:** planta de inyección de plástico.
 - **Manufactura de procesos:** planta de procesamiento de salsas (tomate, mayonesa) con envasado en sachet.
+- **Servicios públicos (agregada el 2026-10-17):** acueducto a escala de una ciudad: bombeo, estación reguladora de presión, red de cuatro niveles con consumos y fugas, y recirculación. Diseño en `docs/water-network-plant.md`; Navier-Stokes en una fase posterior.
 
 Las plantas son inspiradas en empresas de Medellín, pero **sin usar nombres ni marcas reales** (decisión del autor, ver [[decisiones]]). Cada equipo es una pieza estandarizada y reutilizable de una **librería de equipos** (contrato, comportamiento simulado, geometría 3D, presets, escenarios y pruebas). Las plantas se arman instanciando esa librería. La herramienta se instalará en ARVANTTI Harness.
 
@@ -34,6 +35,8 @@ Las plantas son inspiradas en empresas de Medellín, pero **sin usar nombres ni 
 | 8. Instalación en ARVANTTI Harness | Manifiesto, permisos, Podman, actualización | Pendiente | — |
 | 9. Conectividad industrial | OPC UA y PLC en solo lectura | Pendiente | — |
 
+| Acueducto a escala | Tercera planta: diseño, solucionador hidráulico, 4 tipos de equipo, planta y motor, escena 3D | **En curso**: diseño para revisión del autor | PR #13, `docs/water-network-plant.md` |
+
 ## 4. Reglas de calidad (no negociables)
 - El modelo 3D nunca es fuente de verdad: solo refleja los canales que publica el comportamiento.
 - Cada escenario con `expect` es una prueba con valores calculados a mano.
@@ -46,7 +49,8 @@ Las plantas son inspiradas en empresas de Medellín, pero **sin usar nombres ni 
 2. Resto de la planta de salsas en el motor: líneas de 250 ml y 500 ml, línea fría de mayonesa (requiere emulsificador, molino coloidal, chiller).
 3. Planta de inyección: empaque, secadores, chillers, molinos y central de materiales, y su conexión al motor (resina y agua de enfriamiento).
 4. Mejoras del motor: recetas leídas del `plant.yaml`. (El retorno del producto desviado a la marmita ya está: PR #11.)
-5. Dato pendiente del autor: precisión real del dosificador de 1.000 ml y tolerancias reales por formato.
+5. Acueducto a escala: revisar el diseño y los supuestos S1–S7; después, solucionador hidráulico (PR siguiente).
+6. Dato pendiente del autor: precisión real del dosificador de 1.000 ml y tolerancias reales por formato.
 
 ## 6. Metodología de trabajo con IA
 El autor define objetivos y decisiones; la IA (Claude) propone, implementa, prueba y abre PRs; el autor revisa y aprueba cada PR antes del merge. Todo queda en [[historico-sesion-codigo]] y [[historico-proyecto]].
