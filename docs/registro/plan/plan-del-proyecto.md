@@ -35,7 +35,7 @@ Las plantas son inspiradas en empresas de Medellín, pero **sin usar nombres ni 
 | 8. Instalación en ARVANTTI Harness | Manifiesto, permisos, Podman, actualización | Pendiente | — |
 | 9. Conectividad industrial | OPC UA y PLC en solo lectura | Pendiente | — |
 
-| Acueducto a escala | Tercera planta: diseño, solucionador hidráulico, 4 tipos de equipo, planta y motor, escena 3D | **Hecho**: diseño, solucionador hidráulico, los 4 tipos de equipo, la planta en el motor (dominio hidráulico) y la escena del edificio | PR #13, PR #14, PR #22 a #25, PR #31, PR #32, `docs/water-network-plant.md` |
+| Acueducto a escala | Tercera planta: diseño, solucionador hidráulico, 4 tipos de equipo, planta y motor, escena 3D | **Hecho**: diseño, solucionador hidráulico, los 4 tipos de equipo, la planta en el motor (dominio hidráulico) y la escena del edificio | PR #13, PR #14, PR #22 a #25, PR #31, PR #33, `docs/water-network-plant.md` |
 
 ## 4. Reglas de calidad (no negociables)
 - El modelo 3D nunca es fuente de verdad: solo refleja los canales que publica el comportamiento.
@@ -49,7 +49,7 @@ Las plantas son inspiradas en empresas de Medellín, pero **sin usar nombres ni 
 2. Resto de la planta de salsas en el motor: líneas de 250 ml y 500 ml, línea fría de mayonesa (requiere emulsificador, molino coloidal, chiller).
 3. Planta de inyección: central de materiales (silo 5 → manifold → inyectoras con pellet reciclado) y reparto de resina de un secador entre varias inyectoras. Empaque, secadores, chillers y molino tienen tipo y se simulan (PR #15) y la cascada de resina seca, agua de moldes y scrap ya está enlazada (PR #16).
 4. Mejoras del motor: recetas leídas del `plant.yaml`. (El retorno del producto desviado a la marmita ya está: PR #11.)
-5. Acueducto a escala: la planta `water-network-scale-v1` corre en el motor con el dominio hidráulico (entrega 4, PR #31) y se ve en la escena 3D del edificio con sus pisos y el caudal real en los tubos (entrega 5, PR #32). Siguen los escenarios que cree el usuario por MCP y el panel de monitoreo.
+5. Acueducto a escala: la planta `water-network-scale-v1` corre en el motor con el dominio hidráulico (entrega 4, PR #31) y se ve en la escena 3D del edificio con sus pisos y el caudal real en los tubos (entrega 5, PR #33). Siguen los escenarios que cree el usuario por MCP y el panel de monitoreo.
 6. Dato pendiente del autor: precisión real del dosificador de 1.000 ml y tolerancias reales por formato.
 
 ## 6. Metodología de trabajo con IA

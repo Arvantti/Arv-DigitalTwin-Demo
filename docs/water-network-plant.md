@@ -217,7 +217,7 @@ La fase 1 es un modelo 1D (red). Para acoplar después CFD (Navier-Stokes) sin r
 2. **Solucionador hidráulico** en `twin-runtime`, con pruebas contra casos calculados a mano (tubo simple, dos ramas en paralelo, bomba contra curva del sistema, PRV). Hecho: PR #14.
 3. **Tipos de equipo** `booster-pump-set`, `pressure-reducing-station`, `regulating-valve` y `distribution-grid` (contrato, comportamiento, geometría, presets, escenarios) y el preset `water-1000l` de `vessel`. Captura de la galería de cada uno. Hecho: PR #22 y #23 (`booster-pump-set`, `regulating-valve`, `water-1000l`) y PR #24 (`pressure-reducing-station`, `distribution-grid`); PR #25 agranda las bombas principales a 13 m³/h para que una sola sostenga la presión y numera las válvulas de la rejilla.
 4. **Planta** `industrial-models/water-network-scale-v1/` (`plant.yaml` con pisos y rutas, `simulation.yaml`) y dominio hidráulico del motor, con los escenarios de la sección 6. Hecho (sección 5.2); `night-pressure` usa un cambio de apertura al 30 % en vez de la curva de 24 h, que se deja para los escenarios que cree el usuario.
-5. **Escena 3D** del edificio, con captura y API de simulación. Hecho: PR #32 (pisos a su cota, tubos con su trazado y diámetro, caudal y velocidad reales, soportes y cámaras por piso y por nivel; ver `docs/plant-scene.md`).
+5. **Escena 3D** del edificio, con captura y API de simulación. Hecho: PR #33 (pisos a su cota, tubos con su trazado y diámetro, caudal y velocidad reales, soportes y cámaras por piso y por nivel; ver `docs/plant-scene.md`).
 
 ## 10. Supuestos para confirmar
 

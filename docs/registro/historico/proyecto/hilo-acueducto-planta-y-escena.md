@@ -62,5 +62,5 @@ El hilo se pausó por el límite de uso. El PR #31 se fusionó a main a las 19:5
 
 ### 🤖 Claude (hilo) · 20:53–21:10 UTC
 
-Trabajo del hilo, resumido: reinició la rama desde main y armó la entrega 5 (escena 3D del edificio por pisos, tubos con trazado y diámetro, caudal y velocidad reales, soportes y cámaras por piso y por nivel), con prueba de la API y capturas de la galería. PR #32.
+Trabajo del hilo, resumido: reinició la rama desde main y armó la entrega 5 (escena 3D del edificio por pisos, tubos con trazado y diámetro, caudal y velocidad reales, soportes y cámaras por piso y por nivel), con prueba de la API y capturas de la galería. PR #33.
 
