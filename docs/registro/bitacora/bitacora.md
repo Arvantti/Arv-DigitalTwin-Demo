@@ -41,7 +41,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 ## Entradas
 
-### 2026-10-17 12:58–15:40 · PR #27 (borrador) · Acueducto: banco hidráulico de la planta (entrega 4, primer paso)
+### 2026-10-17 12:58–15:40 · PR #27 (fusionado) · Acueducto: banco hidráulico de la planta (entrega 4, primer paso)
 - **Solicitado por:** el autor (12:55 y 12:55:22 UTC): «Qué falta» y luego «Sí», para arrancar la planta.
 - **Qué se hizo:** `industrial-models/water-network-scale-v1/network.py` arma en una sola red el tanque, el grupo de bombas, el colector de 4", la estación reguladora, las cuatro columnas de 2" y las cuatro rejillas, con las funciones de `equipment-library` (sin copiar la lógica). Corre en estado estacionario con consumo de día.
 - **Resultado (consumo de día, consigna de la estación 26,66 mca):** converge en 6 iteraciones; bombas 13,47 m³/h; consumos 11,97 m³/h y fugas ≈ 1,50 m³/h (el balance cierra); salida de la estación 26,65 mca; c44 del nivel 4 en 22,99 mca.
