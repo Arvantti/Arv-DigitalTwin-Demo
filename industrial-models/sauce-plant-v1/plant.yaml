@@ -78,6 +78,8 @@ zones:
   - { id: oficinas,          name: Oficinas,                      kind: admin,    hygiene_class: admin,       temperature_c: null, rect: [46, 60, 18, 10], height: 3 }
   - { id: cafeteria,         name: Cafetería,                     kind: admin,    hygiene_class: admin,       temperature_c: null, rect: [64, 60, 12, 10], height: 3 }
   - { id: mantenimiento,     name: Mantenimiento,                 kind: service,  hygiene_class: service,     temperature_c: null, rect: [76, 60, 10, 10], height: 5 }
+  # Sala de control: junto a la subestación (tableros y acometida cercanos). Sin vista directa al proceso: se opera por el panel.
+  - { id: sala-control,      name: Sala de control del PLC,       kind: admin,    hygiene_class: admin,       temperature_c: 22,   rect: [68, 0, 14, 10],  height: 3.5 }
 
 aisles: []
 
@@ -193,6 +195,30 @@ equipment:
   - { id: ice-bank-01,    type: ice_bank,         zone: frio,             position: [58, 7, 0],   footprint: [4, 2, 2],     params: { storage_kwh: 600 }, tags: [ice_thickness] }
   - { id: transformer-01, type: transformer,      zone: subestacion,      position: [65, 5, 0],   footprint: [3, 2.5, 2.5], params: { rating_kva: 630 } }
   - { id: wwtp-01,        type: wastewater_plant, zone: ptar,             position: [93, 5, 0],   footprint: [10, 5, 3],    params: { flow_m3_d: 60, process: DAF + biológico } }
+
+  # --- Sala de control del PLC ---
+  # Puestos de la sala. Solo dibujan lo que publica la simulación: el PLC y el panel no calculan nada.
+  # panel.slots: cada espacio del panel de gráficos lee una variable de un equipo simulado (equipment + variable);
+  # con equipment: null queda libre, listo para asignarlo. Los gráficos definitivos se eligen después.
+  - { id: plc-01,         type: plc_cabinet,   zone: sala-control, position: [70.5, 1.2, 0], footprint: [2.4, 0.7, 2.1], rotation_deg: 180, params: { rack: "CPU + 4 módulos de E/S + fuente", network: "Ethernet industrial hacia las celdas" } }
+  - { id: operator-desk-01, type: operator_desk, zone: sala-control, position: [75, 5.5, 0], footprint: [3.2, 1.2, 1.1], params: { monitors: 2 } }
+  - id: scada-wall-01
+    type: control_panel
+    zone: sala-control
+    position: [75, 9.6, 0]
+    footprint: [8, 0.3, 2.6]
+    params: {}
+    panel:
+      title: Panel de planta
+      slots:
+        - { title: Presión de vapor,       equipment: boiler-01,        variable: pressure_bar,  unit: bar }
+        - { title: Temperatura marmita 1,  equipment: kettle-01,        variable: temperature_c, unit: "°C" }
+        - { title: Salida pasteurizador,   equipment: pasteurizer-01,   variable: product_out_c, unit: "°C" }
+        - { title: Nivel pulmón caliente,  equipment: buffer-hot-01,    variable: level_pct,     unit: "%" }
+        - { title: Velocidad sachetadora,  equipment: filler-pouch-01,  variable: speed_upm,     unit: "u/min" }
+        - { title: "Peso medio, 1.000 ml", equipment: checkweigher-01,  variable: mean_g,        unit: g }
+        - { title: Libre 1,                equipment: null,             variable: null }
+        - { title: Libre 2,                equipment: null,             variable: null }
 
 lines:
   - { id: line-hot,      name: Salsas en caliente,   mode: batch,      equipment: [pump-paste-01, kettle-01, kettle-02] }

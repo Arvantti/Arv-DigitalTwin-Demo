@@ -10,6 +10,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
+| 2026-10-17 | #18 | Fase 5: sala de control del PLC en la planta de salsas, con gabinete, puesto del operador y panel de gráficos configurable | 5 |
 | 2026-10-17 | #17 | Fase 3 y 5: línea de peletizado (tipo `pelletizing-line`) y silo 5 de reciclado enlazados al molino; escenario `pelletizer-jam` | 3 y 5 |
 | 2026-10-17 | #16 | Fase 3 y 5: cascada de la planta de inyección (resina seca y humedad desde los secadores, agua de moldes desde el chiller, scrap hacia el molino) y escenarios `dryer-stop` y `chiller-trip` | 3 y 5 |
 | 2026-10-17 | #15 | Fase 3 y 5: geometría y comportamiento de empaque, secadores, chillers y molino de la planta de inyección, simulados en la escena | 3 y 5 |
@@ -28,6 +29,16 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 | 2026-10-16 | #1 | Layouts de las plantas | 1 |
 
 ## Entradas
+
+### 2026-10-17 03:55–04:25 · PR #18 · Sala de control del PLC y panel de gráficos
+- **Fecha/hora (UTC):** 2026-10-17 03:55 a 04:25.
+- **Fase del plan:** [[plan-del-proyecto]] fase 5.
+- **Solicitado por:** Carlos Andrés Quiceño, «nos falta una parte que es la sala de control del PLC, y en el PLC tener como un panel de gráficos que ya después definiremos» (03:54). La parte de empaque de salsas y las rutas de operarios y montacargas del mismo mensaje van en otros hilos.
+- **Qué se hizo:** zona `sala-control` (14 × 10 m, junto a la subestación) y tres equipos en `plant.yaml`: `plc-01` (gabinete), `operator-desk-01` y `scada-wall-01` (panel). Pieza de escena nueva `apps/gallery/src/control-room.ts`: gabinete con luces de estado, puesto con dos monitores y panel de 8 gráficos de tendencia dibujados en un canvas con las variables de la simulación (6 asignadas, 2 libres). La API entrega la clave `panel` del equipo; la escena gana la cámara «Sala de control del PLC»; `layout.svg` regenerado; `docs/plant-scene.md` documenta el panel.
+- **Commits:** ver el PR #18.
+- **Verificación:** `uv run twin-lib plant validate`, `uv run pytest`, `uv run ruff check .`, `pnpm -r typecheck` y `pnpm -r test`. Capturas con la API en vivo: [[fase7-sala-de-control.png]] (panel con los gráficos recibiendo datos de la simulación) y [[fase7-sala-de-control-plc.png]] (gabinete del PLC).
+- **Decisiones:** [[decisiones]] D19.
+- **Conversación:** [[hilo-sala-de-control-plc]].
 
 ### 2026-10-17 02:19–02:50 · PR #17 · Línea de peletizado y lazo de reciclaje
 - **Fecha/hora (UTC):** 2026-10-17 02:19 a 02:50.
