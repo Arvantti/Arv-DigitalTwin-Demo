@@ -16,6 +16,8 @@ from twin_runtime.primitives import HydraulicNetwork
 
 LIB = Path(__file__).resolve().parents[2] / "equipment-library"
 LEVEL_RISE_M = 1.2  # cada nivel 1,20 m más arriba (docs/water-network-plant.md, sección 2)
+STATION_SETTING_MCA = 18.09  # consigna de la reguladora para 15,45 mca en la casa crítica (D29)
+PUMP_FLOOR_MCA = 70.0  # descarga mínima de las bombas a la entrada de la reguladora (D29)
 STATION_ELEV_M = 1.0  # piso 1: la reguladora queda 1 m arriba de las bombas y el nivel 1 de la rejilla, 1 m abajo
 RISER_LEN_M = 3.0  # tramo horizontal de la columna hasta la rejilla
 RISER_D_M = 0.0525  # 2"
@@ -42,10 +44,14 @@ def build(
     pump_preset: str = "multistage-2x13m3h-80m",
     station_preset: str = "station-4in-manual",
     grid_presets: tuple[str, str, str, str] = ("level-1", "level-2", "level-3", "level-4-critical"),
-    station_setting_mca: float | None = None,
-    pump_speed: float = 1.0,
+    station_setting_mca: float | None = STATION_SETTING_MCA,
+    pump_speed: float | None = None,
 ) -> tuple[HydraulicNetwork, dict[str, Any]]:
-    """Arma la red. Devuelve la red y los mapas de nodos y de válvulas de cada rejilla."""
+    """Arma la red. Devuelve la red y los mapas de nodos y de válvulas de cada rejilla.
+
+    Sin velocidad de bomba fija, las bombas van a la mínima que mantiene PUMP_FLOOR_MCA en su sensor de descarga."""
+    if pump_speed is None:
+        pump_speed = speed_for_floor(station_setting_mca)
     pump_mod = _load("booster-pump-set")
     station_mod = _load("pressure-reducing-station")
     grid_mod = _load("distribution-grid")
@@ -104,7 +110,20 @@ def house_state(p_mca: float) -> str:
     return "rojo"
 
 
-def worst_house(setting_mca: float | None = None, pump_speed: float = 1.0) -> tuple[str, float]:
+def speed_for_floor(setting_mca: float | None = STATION_SETTING_MCA) -> float:
+    """Velocidad mínima de las bombas que mantiene PUMP_FLOOR_MCA en el sensor de descarga (bisección)."""
+    lo, hi = 0.3, 1.0
+    for _ in range(30):
+        mid = (lo + hi) / 2
+        net, info = build(station_setting_mca=setting_mca, pump_speed=mid)
+        if net.solve().pressures_mca["entrada_est"] >= PUMP_FLOOR_MCA:
+            hi = mid
+        else:
+            lo = mid
+    return round(hi, 4)
+
+
+def worst_house(setting_mca: float | None = STATION_SETTING_MCA, pump_speed: float | None = None) -> tuple[str, float]:
     """Casa con menor presión (manométrica) y su presión, con la consigna de la estación dada."""
     net, info = build(station_setting_mca=setting_mca, pump_speed=pump_speed)
     res = net.solve()
@@ -114,7 +133,7 @@ def worst_house(setting_mca: float | None = None, pump_speed: float = 1.0) -> tu
     return peor, casas[peor]
 
 
-def setting_for(target_mca: float = 15.0, pump_speed: float = 1.0) -> float:
+def setting_for(target_mca: float = 15.0, pump_speed: float | None = None) -> float:
     """Consigna mínima de la estación para que la casa más crítica quede en target_mca (búsqueda por bisección)."""
     lo, hi = 0.0, 60.0
     for _ in range(40):
