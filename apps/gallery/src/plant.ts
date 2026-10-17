@@ -19,6 +19,7 @@ import * as THREE from "three";
 import { buildRoutes, type Aisle, type Route } from "./routes.ts";
 import { type AnimationFrame, type EquipmentModel, type LightingPreset, Stage, parts, textures } from "@twin/3d";
 import { geometryBuilders, rawSpecs } from "@twin/equipment-library/registry.ts";
+import { dockLeveler, deliveryTruck, palletRack, passThroughDoor } from "./warehouse.ts";
 import { type ControlPiece, type PanelConfig, controlPanel, operatorDesk, plcCabinet } from "./control-room.ts";
 import "./styles.css";
 
@@ -39,6 +40,7 @@ interface PlantEquipment {
   rotation_deg?: number;
   overhead?: boolean;
   panel?: PanelConfig;
+  params?: Record<string, unknown>;
   sim?: { type: string; preset: string | null; params: Record<string, unknown> };
 }
 interface Walkway {
@@ -203,16 +205,27 @@ const controlBuilders: Record<string, (eq: PlantEquipment) => ControlPiece> = {
 };
 const controlPieces: ControlPiece[] = [];
 
+/** Bodega de producto terminado y despacho (estanterías, paso directo, muelle y camión): piezas de la escena, sin comportamiento. */
+const warehouseBuilders: Record<string, (eq: PlantEquipment) => THREE.Object3D> = {
+  pallet_rack: (eq) => palletRack(eq.footprint),
+  pass_through_door: (eq) => passThroughDoor(eq.footprint),
+  dock_leveler: (eq) => dockLeveler(eq.footprint),
+  delivery_truck: (eq) => deliveryTruck(eq.footprint, eq.params?.state as string | undefined),
+};
+
 function buildEquipment(): void {
   for (const eq of doc.equipment) {
     let root: THREE.Object3D;
     let model: EquipmentModel | null = null;
     const builder = eq.sim ? geometryBuilders[eq.sim.type] : undefined;
     const control = controlBuilders[eq.type];
+    const warehouse = warehouseBuilders[eq.type];
     if (control) {
       const piece = control(eq);
       controlPieces.push(piece);
       root = piece.root;
+    } else if (warehouse) {
+      root = warehouse(eq);
     } else if (builder && eq.sim) {
       model = builder(eq.sim.params);
       root = model.root;
@@ -425,6 +438,16 @@ function buildCameras(): void {
   const entries: [string, string, () => void][] = [["VISTA GENERAL", "general", () => focusRect([0, 0, doc.plant.site?.width_x ?? 112, doc.plant.site?.length_y ?? 72], 6, 0.62)]];
   const featured = doc.zones.filter((z) => (["production", "utility"].includes(z.kind) && z.rect[2] * z.rect[3] >= 80) || z.id.startsWith("sala-control"));
   for (const z of featured) entries.push([z.name.toUpperCase(), z.id, () => focusRect(z.rect, Math.max(3, z.height))]);
+  // bodega de producto terminado junto con el patio de despacho (la planta de salsas): una sola vista
+  const bodega = doc.zones.find((z) => z.id === "bodega-pt");
+  const patio = doc.zones.find((z) => z.id === "patio-despacho");
+  if (bodega && patio) {
+    const x0 = Math.min(bodega.rect[0], patio.rect[0]);
+    const y0 = Math.min(bodega.rect[1], patio.rect[1]);
+    const x1 = Math.max(bodega.rect[0] + bodega.rect[2], patio.rect[0] + patio.rect[2]);
+    const y1 = Math.max(bodega.rect[1] + bodega.rect[3], patio.rect[1] + patio.rect[3]);
+    entries.push(["BODEGA Y DESPACHO", bodega.id, () => focusRect([x0, y0, x1 - x0, y1 - y0], bodega.height)]);
+  }
   for (const [label, key, go] of entries) {
     const b = document.createElement("button");
     b.textContent = label;
