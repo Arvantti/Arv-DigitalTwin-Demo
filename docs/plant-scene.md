@@ -14,6 +14,7 @@ Parámetros de URL, pensados para capturas automáticas:
 | `plant=<id>` | Planta (por defecto `sauce-plant-v1`; también `plastic-injection-plant-v1`, con sus 29 inyectoras, la banda, el empaque, los secadores, los chillers y el molino animados; escenarios `nominal`, `conveyor-trip`, `dryer-stop`, `chiller-trip` y `pelletizer-jam`) |
 | `camera=general` o `camera=<id de zona>` | Cámara inicial |
 | `select=<id de equipo>` | Equipo seleccionado |
+| `focus=<id de equipo>` | Acerca la cámara a ese equipo |
 | `autosim=1&scenario=boiler-trip&speed=900` | Conecta la simulación al cargar |
 | `tour=1` | Inicia el recorrido de cámara |
 | `lighting=day\|night\|golden`, `quality=high` | Iluminación y calidad |

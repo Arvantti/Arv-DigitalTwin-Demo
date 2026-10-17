@@ -1,0 +1,83 @@
+schema_version: 0.1.0
+type: assembly-cell
+version: 0.1.0
+name: Celda de ensamble manual con operario
+manufacturing: discrete
+category: assembly.manual
+description: >
+  Celda de ensamble manual: uno o más operarios de pie ante una mesa de trabajo arman un producto con dos
+  componentes que llegan de dos máquinas (cada uno en su cubeta de la mesa). Cada unidad toma un ciclo fijo
+  del operario; sin componentes, sin operario, con la salida ocupada o con una falla la celda se detiene.
+  No es una celda robotizada: el ritmo lo fija la persona.
+aliases: [celda de ensamble, ensamble manual, celda de ensamblaje, puesto de ensamble, assembly cell, manual assembly]
+fidelity: { visual: V2, behavior: B2 }
+
+params:
+  operation:            { type: string, default: ensamble manual, description: Nombre de la operación (se muestra en el panel), affects: [geometry] }
+  part_a_name:          { type: string, default: componente A, description: Nombre del componente de la cubeta A, affects: [geometry] }
+  part_b_name:          { type: string, default: componente B, description: Nombre del componente de la cubeta B, affects: [geometry] }
+  cycle_s:              { type: number, unit: s, min: 5, max: 600, default: 35, description: Tiempo de un operario por unidad armada, affects: [behavior] }
+  operators:            { type: integer, min: 1, max: 4, default: 1, description: "Operarios en la celda (el ritmo crece en proporción)", affects: [behavior, geometry] }
+  parts_a_per_unit:     { type: integer, min: 1, max: 20, default: 1, description: Componentes A que lleva cada unidad, affects: [behavior] }
+  parts_b_per_unit:     { type: integer, min: 1, max: 20, default: 1, description: Componentes B que lleva cada unidad, affects: [behavior] }
+  bin_capacity_units:   { type: integer, min: 1, max: 2000, default: 60, description: Componentes que caben en cada cubeta, affects: [behavior, geometry] }
+  nominal_inflow_a_upm: { type: number, unit: u/min, min: 0, max: 2000, default: 3, description: Llegada del componente A si el entorno no la fija, affects: [behavior] }
+  nominal_inflow_b_upm: { type: number, unit: u/min, min: 0, max: 2000, default: 3, description: Llegada del componente B si el entorno no la fija, affects: [behavior] }
+  color_a:              { type: string, default: "#1e6fd9", description: Color del componente A (hex), affects: [geometry] }
+  color_b:              { type: string, default: "#d9531e", description: Color del componente B (hex), affects: [geometry] }
+
+ports:
+  - { id: parts_a_in, kind: item, direction: in, medium: componente A, unit: u/min, link: { units: inflow_a_upm, ready: accepting_a } }
+  - { id: parts_b_in, kind: item, direction: in, medium: componente B, unit: u/min, link: { units: inflow_b_upm, ready: accepting_b } }
+  - { id: units_out, kind: item, direction: out, medium: unidades armadas, unit: u/min, link: { units: units_assembled, ready: downstream_free } }
+
+states:
+  - { id: idle, description: "Sin operario en el puesto o sin trabajo en curso" }
+  - { id: running, description: El operario arma una unidad }
+  - { id: starved, description: Faltan componentes en alguna cubeta }
+  - { id: blocked, description: La unidad terminada no tiene salida libre }
+  - { id: fault, description: Detenida por falla }
+
+variables:
+  - { id: bin_a_units, unit: u, kind: calculated, description: Componentes A en la cubeta }
+  - { id: bin_b_units, unit: u, kind: calculated, description: Componentes B en la cubeta }
+  - { id: units_assembled, unit: u, kind: counter, description: Unidades armadas y entregadas }
+  - { id: cycle_pct, unit: "%", kind: calculated, range: [0, 100], description: Avance de la unidad en curso }
+  - { id: accepting_a, unit: "", kind: status, description: "1 si la cubeta A recibe, 0 si está llena (bloquea la máquina que la surte)" }
+  - { id: accepting_b, unit: "", kind: status, description: "1 si la cubeta B recibe, 0 si está llena" }
+
+events:
+  - { id: unit_completed, description: Unidad armada y entregada }
+  - { id: bin_a_full, description: La cubeta A se llenó y bloquea a su máquina }
+  - { id: bin_b_full, description: La cubeta B se llenó y bloquea a su máquina }
+  - { id: starved, description: La celda se quedó sin componentes }
+
+faults:
+  - { id: fixture_jam, description: Atasco del dispositivo de sujeción, mtbf_h: 250, mttr_min: 5, severity: low, effect: Parada corta para destrabar el dispositivo }
+  - { id: missing_fasteners, description: Se acaban los tornillos o clips del puesto, mtbf_h: 120, mttr_min: 10, severity: low, effect: Parada hasta reponer la tornillería }
+
+commands:
+  - { id: inject_fault, description: Inyecta una falla declarada, args: { fault: string, duration_s: number } }
+  - { id: clear_fault, description: Repara una falla activa, args: { fault: string } }
+  - { id: set_param, description: Cambia un parámetro en caliente, args: { name: string, value: any } }
+
+kpis:
+  - { id: utilization, unit: "", description: Fracción del tiempo armando }
+  - { id: units_per_h, unit: u/h, description: Unidades armadas por hora }
+  - { id: starved_pct, unit: "", description: Fracción del tiempo sin componentes }
+
+animation_channels:
+  - { id: bin_a_fill, range: [0, 1], description: Llenado de la cubeta A }
+  - { id: bin_b_fill, range: [0, 1], description: Llenado de la cubeta B }
+  - { id: cycle, range: [0, 1], description: Avance de la unidad en curso }
+  - { id: working, range: [0, 1], description: "1 mientras el operario arma" }
+  - { id: output_fill, range: [0, 1], description: Unidades terminadas esperando en la bandeja de salida }
+  - { id: stack_light, range: [0, 3], description: "Baliza: 0 apagada, 1 verde, 2 amarilla, 3 roja" }
+
+geometry:
+  parts: [table, bin_a, bin_b, fixture, unit_in_progress, output_tray, operator, floor_marking, hmi, stack_light]
+
+assumptions:
+  - "Cada operario arma una unidad en cycle_s; con n operarios el ritmo es n veces mayor (sin esperas entre ellos)."
+  - "La unidad consume sus componentes al empezar el ciclo y se entrega al terminarlo; si la salida no está libre, queda en la bandeja y la celda se bloquea."
+  - "Las llegadas se acumulan en cubetas; cuando una se llena deja de aceptar y bloquea a la máquina que la surte."

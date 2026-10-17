@@ -1,0 +1,4 @@
+preset: pedal-lever-35s
+description: Ensamble de pedal/palanca y cuerpo de papelera de 20 L, un operario, 35 s por unidad (celda assembly-01 de la nave de inyección)
+params: { operation: ensamble pedal/palanca en papelera, part_a_name: pedal y palanca, part_b_name: cuerpo de papelera, cycle_s: 35, operators: 1, parts_a_per_unit: 1, parts_b_per_unit: 1, bin_capacity_units: 60, nominal_inflow_a_upm: 3, nominal_inflow_b_upm: 3, color_a: "#1e6fd9", color_b: "#8a8f96" }
+provenance: { cycle_s: user, operators: user, operation: user, part_a_name: user, part_b_name: user, parts_a_per_unit: assumed, parts_b_per_unit: assumed, bin_capacity_units: assumed, nominal_inflow_a_upm: assumed, nominal_inflow_b_upm: assumed }

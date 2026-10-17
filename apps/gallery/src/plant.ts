@@ -9,6 +9,7 @@
  *   ?plant=sauce-plant-v1&lighting=day
  *   &camera=general|<id de zona>   cámara inicial
  *   &select=<id de equipo>         equipo seleccionado
+ *   &focus=<id de equipo>          acerca la cámara a ese equipo
  *   &autosim=1&scenario=boiler-trip&speed=120   conecta la simulación al cargar
  *   &tour=1                        inicia el recorrido de cámara al cargar
  *   &shot=1                        oculta la interfaz y marca window.__ready (con autosim, tras recibir datos)
@@ -654,6 +655,8 @@ async function start(): Promise<void> {
   };
   if (!simulated) $("btn-connect").setAttribute("disabled", "");
   if (url.get("select")) select(url.get("select"));
+  const focusAsset = url.get("focus") ? assets.get(url.get("focus")!) : undefined;
+  if (focusAsset) stage.frame(focusAsset.root, 1.1);
   if (url.get("tour") === "1") startTour();
   if (url.get("autosim") === "1" && simulated) {
     if (url.get("scenario")) sel.value = url.get("scenario")!;

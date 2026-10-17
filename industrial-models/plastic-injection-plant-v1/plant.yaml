@@ -220,6 +220,8 @@ flows:
   - { from: imm-19,           to: assembly-01,      medium: piezas,           rate: 103,  unit: u/h,  show: true }
   - { from: imm-27,           to: foam-01,          medium: piezas,           rate: 65,   unit: u/h,  show: true }
   - { from: assembly-01,      to: pack-station-03,  medium: piezas,           rate: 100,  unit: u/h }
+  - { from: imm-08,           to: assembly-02,      medium: bisagras,         rate: 360,  unit: u/h,  note: supuesto (2 bisagras por tapa a 20 s por unidad) }
+  - { from: imm-14,           to: assembly-02,      medium: tapas,            rate: 180,  unit: u/h,  note: supuesto (una tapa por unidad a 20 s) }
   - { from: pack-station-01,  to: wrapper-01,       medium: cajas,            rate: 40,   unit: pallets/d }
   - { from: wrapper-01,       to: rack-pt-01,       medium: estibas,          rate: 40,   unit: pallets/d, show: true }
   - { from: rack-pt-02,       to: dock-02,          medium: estibas,          rate: 40,   unit: pallets/d, show: true }

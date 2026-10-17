@@ -208,6 +208,91 @@ export function cabinet(w: number, h: number, d: number, color = "#cfd3d6"): THR
   return g;
 }
 
+export interface OperatorHandle {
+  object: THREE.Group;
+  /** 0 de pie, 1 inclinado sobre el trabajo con los brazos adelante (animación de trabajo). */
+  setPose(work: number): void;
+}
+
+/**
+ * Operario de pie (≈ 1,75 m): botas, pantalón, chaleco reflectivo, casco y brazos articulados al hombro.
+ * Origen en el suelo entre los pies; mira a +Z.
+ */
+export function operator(vest = "#f26b1d", shirt = "#2f5f8f"): OperatorHandle {
+  const g = group("operator");
+  const skin = M.paint("#c99a76", 0.7);
+  const pants = M.paint("#2b3442", 0.8);
+  const boots = M.paint("#1a1a1a", 0.7);
+  const vestMat = M.paint(vest, 0.7);
+  const shirtMat = M.paint(shirt, 0.8);
+  const helmet = M.paint("#f2f2f2", 0.4);
+  for (const sx of [-1, 1]) {
+    const boot = box(0.11, 0.1, 0.27, boots, 0.03);
+    boot.position.set(sx * 0.1, 0.05, 0.04);
+    g.add(boot);
+    const leg = cylinder(0.065, 0.055, 0.8, pants, 14);
+    leg.position.set(sx * 0.1, 0.1, 0);
+    g.add(leg);
+  }
+  const hips = box(0.34, 0.16, 0.2, pants, 0.05);
+  hips.position.y = 0.95;
+  g.add(hips);
+  const torso = group("torso");
+  torso.position.y = 1.03;
+  const chest = box(0.38, 0.5, 0.22, shirtMat, 0.07);
+  chest.position.y = 0.25;
+  torso.add(chest);
+  const vestBody = box(0.4, 0.4, 0.235, vestMat, 0.06);
+  vestBody.position.y = 0.27;
+  torso.add(vestBody);
+  for (const y of [0.2, 0.34]) {
+    const band = box(0.405, 0.035, 0.24, M.paint("#d8dde0", 0.3), 0.01);
+    band.position.y = y;
+    torso.add(band);
+  }
+  const head = group("head");
+  head.position.y = 0.62;
+  head.add(mesh(new THREE.SphereGeometry(0.095, 20, 14), skin));
+  const hat = mesh(new THREE.SphereGeometry(0.105, 20, 10, 0, Math.PI * 2, 0, Math.PI / 2), helmet);
+  hat.position.y = 0.02;
+  head.add(hat);
+  const brim = box(0.22, 0.015, 0.06, helmet, 0.005);
+  brim.position.set(0, 0.025, 0.1);
+  head.add(brim);
+  torso.add(head);
+  const arms: THREE.Group[] = [];
+  for (const sx of [-1, 1]) {
+    const arm = group("arm");
+    arm.position.set(sx * 0.24, 0.47, 0);
+    const upper = cylinder(0.04, 0.035, 0.3, shirtMat, 12);
+    upper.position.y = -0.3;
+    arm.add(upper);
+    const fore = group("forearm");
+    fore.position.y = -0.3;
+    const lower = cylinder(0.035, 0.03, 0.27, shirtMat, 12);
+    lower.position.y = -0.27;
+    fore.add(lower);
+    const hand = mesh(new THREE.SphereGeometry(0.04, 12, 10), M.paint("#e8c34a", 0.8));
+    hand.position.y = -0.29;
+    fore.add(hand);
+    arm.add(fore);
+    arm.userData.fore = fore;
+    torso.add(arm);
+    arms.push(arm);
+  }
+  g.add(torso);
+  function setPose(work: number): void {
+    const w = Math.max(0, Math.min(1, work));
+    torso.rotation.x = 0.35 * w;
+    for (const [i, arm] of arms.entries()) {
+      arm.rotation.x = -0.5 * w - 0.05;
+      (arm.userData.fore as THREE.Group).rotation.x = -(0.9 + 0.12 * Math.sin(i * 2)) * w;
+    }
+  }
+  setPose(0);
+  return { object: g, setPose };
+}
+
 /** Placa de datos (texto). Plano orientado a +Z. */
 export function nameplate(lines: string[], w = 0.25, h = 0.1, bg = "#d9dde1", fg = "#1b1e22"): THREE.Mesh {
   const tex = textTexture(lines, { width: 512, height: Math.round((512 * h) / w), bg, fg, font: "700 44px Inter, Arial, sans-serif" });

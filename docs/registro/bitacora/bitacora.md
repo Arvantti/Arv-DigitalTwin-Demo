@@ -10,6 +10,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
+| 2026-10-17 | #20 | Fase 3 y 5: celda de ensamble manual con operario (tipo `assembly-cell`) en la planta de inyección; `assembly-01` y `assembly-02` simuladas y escenario `body-stop` | 3 y 5 |
 | 2026-10-17 | #17 | Fase 3 y 5: línea de peletizado (tipo `pelletizing-line`) y silo 5 de reciclado enlazados al molino; escenario `pelletizer-jam` | 3 y 5 |
 | 2026-10-17 | #16 | Fase 3 y 5: cascada de la planta de inyección (resina seca y humedad desde los secadores, agua de moldes desde el chiller, scrap hacia el molino) y escenarios `dryer-stop` y `chiller-trip` | 3 y 5 |
 | 2026-10-17 | #15 | Fase 3 y 5: geometría y comportamiento de empaque, secadores, chillers y molino de la planta de inyección, simulados en la escena | 3 y 5 |
@@ -28,6 +29,16 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 | 2026-10-16 | #1 | Layouts de las plantas | 1 |
 
 ## Entradas
+
+### 2026-10-17 03:54–04:30 · PR #20 · Celda de ensamble manual con operario
+- **Fecha/hora (UTC):** 2026-10-17 03:54 a 04:30.
+- **Fase del plan:** [[plan-del-proyecto]] fases 3 y 5.
+- **Solicitado por:** Carlos Andrés Quiceño, «Si con el operario» (03:54), a la pregunta de si las celdas de ensamble eran robotizadas o manuales (03:13). Pidió además las rutas de operarios y montacargas de la nave: van en un PR aparte. El empaque de salsas y la sala del PLC los toman otros hilos (PR #18 y #19).
+- **Qué se hizo:** tipo nuevo `assembly-cell` en `equipment-library/` (contrato, comportamiento, 2 presets, 7 escenarios con expectativas calculadas a mano, geometría 3D, `FICHA.md`, `README.md`): cubetas de componentes A y B, ciclo fijo del operario (35 s pedal/palanca y 20 s bisagras y tapas, de la ficha 23), bandeja de salida, estados `running`/`starved`/`blocked`/`idle`/`fault`. Pieza nueva `parts.operator()` (operario de pie con chaleco y casco) en `@twin/3d`. `assembly-01` (imm-06 y imm-19 → celda → empaque 3) y `assembly-02` (imm-08 y imm-14, flujos supuestos) simuladas en la planta; `nominal` suma 5 expectativas y hay un escenario nuevo `body-stop`. Parámetro de URL `focus=` en la escena para acercar la cámara.
+- **Commits:** ver el PR #20.
+- **Verificación:** `uv run twin-lib validate`, `uv run twin-lib plant validate`, `uv run pytest` (137), `uv run ruff check .`, `pnpm -r typecheck` y `pnpm -r test` (64). Expectativas calculadas a mano (35 s por unidad: (3.600 − 30) ÷ 35 = 102 u/h; la imm-19 entrega un cuerpo cada 35 s y limita la celda 1 a ≈ 100 u/h; la imm-06 trabaja 103 ÷ 288 = 36 % del tiempo). Capturas: [[fase7-celda-ensamble-galeria.png]] y [[fase7-celda-ensamble-escena.png]].
+- **Decisiones:** [[decisiones]] D20.
+- **Conversación:** [[hilo-celda-de-ensamble]].
 
 ### 2026-10-17 02:19–02:50 · PR #17 · Línea de peletizado y lazo de reciclaje
 - **Fecha/hora (UTC):** 2026-10-17 02:19 a 02:50.
