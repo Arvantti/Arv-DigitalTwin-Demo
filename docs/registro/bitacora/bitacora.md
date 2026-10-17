@@ -56,7 +56,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 - **Qué se hizo:** las fugas l1 y l2 pasaron del cabezal a los ramales 2 y 4, con la misma válvula de bola de descarga y la misma canaleta que las casas. Cada ramal tiene 5 posiciones; la fuga va en la posición que indica `leak_slot_branch2`/`leak_slot_branch4` (1, 3 o 5). Se agregaron caminos entre ramales vecinos en el extremo (posición 5) y en la tercera de los ramales 1–2 y 3–4, formando una rejilla cerrada. Escenario `branch-blockage` recalculado: con los caminos la red rodea la válvula obstruida y la caída es de 0,03 mca.
 - **Commits:** ver el PR #26.
 - **Verificación:** `uv run pytest equipment-library/distribution-grid` (7 pasan), `twin-lib validate`, `ruff`, `pnpm -r typecheck`.
-- **Pendiente:** la posición de la fuga se elige con un parámetro por preset, no con un sorteo en la simulación (la 3D tiene que mostrar la misma posición). Se confirma con el autor si quiere sorteo por semilla.
+- **Resuelto (2026-10-17, 15:23 UTC):** la posición de la fuga es fija por nivel, cada nivel en su preset (ver D27); el autor descartó el sorteo por semilla.
 - **Conversación:** [[hilo-acueducto-a-escala]].
 
 ### 2026-10-17 11:00–12:00 · PR #25 · Acueducto: una bomba sola sostiene la presión; rejilla numerada
