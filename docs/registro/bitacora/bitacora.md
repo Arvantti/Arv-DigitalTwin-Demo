@@ -63,6 +63,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 - **Verificación:** `uv run twin-lib validate` (OK), `uv run pytest` (183 pasan), `uv run ruff check .` (OK).
 - **Decisiones:** [[decisiones]] (D08).
 - **Conversación:** [[hilo-motor-de-planta]].
+
 ### 2026-10-17 12:58–15:40 · PR #27 (borrador) · Acueducto: banco hidráulico de la planta (entrega 4, primer paso)
 - **Solicitado por:** el autor (12:55 y 12:55:22 UTC): «Qué falta» y luego «Sí», para arrancar la planta.
 - **Qué se hizo:** `industrial-models/water-network-scale-v1/network.py` arma en una sola red el tanque, el grupo de bombas, el colector de 4", la estación reguladora, las cuatro columnas de 2" y las cuatro rejillas, con las funciones de `equipment-library` (sin copiar la lógica). Corre en estado estacionario con consumo de día.
