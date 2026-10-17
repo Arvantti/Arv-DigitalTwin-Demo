@@ -21,3 +21,6 @@ Conversaciones del 2026-10-16 (UTC) entre el autor y Claude dentro del proyecto 
 10. [[hilo-cascada-de-inyeccion]] (PR #16, cascada de la planta de inyección, y PR #17, lazo de reciclaje, 2026-10-17)
 11. [[hilo-celda-de-ensamble]] (PR #20, celda de ensamble manual con operario, y PR #21, rutas de montacargas y operarios, 2026-10-17)
 12. Rutinas: «Revisión semanal de PRs» (lunes 13:52 UTC) y «Galería de equipos semanal» (viernes 13:52 UTC), creadas 15:00 UTC; sin mensajes adicionales.
+13. [[hilo-sala-de-control-plc]] (PR #18, sala de control del PLC y panel de gráficos, 2026-10-17)
+14. [[hilo-empaque-de-salsas]] (PR #19, empaque manual y estibado de la planta de salsas, 2026-10-17)
+15. Rutinas: «Revisión semanal de PRs» (lunes 13:52 UTC) y «Galería de equipos semanal» (viernes 13:52 UTC), creadas 15:00 UTC; sin mensajes adicionales.

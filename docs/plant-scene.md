@@ -40,6 +40,22 @@ Parámetros de URL, pensados para capturas automáticas:
 | `GET /api/plants/{id}` | Zonas, equipos (con `sim` si el motor los simula), pasarelas, tuberías (flujos `piped`, con `rate`, `unit` y `links`: los enlaces del motor que las cruzan), líneas y escenarios |
 | `WS /api/plants/{id}/simulate?scenario=&speed=` | Cada 100 ms: `{t, speed, paused, snapshot: {equipment, lines, links}, events}`. Cliente → servidor: `{equipment, command, args}`, `{speed}`, `{pause}` |
 
+## Sala de control del PLC (planta de salsas)
+
+La zona `sala-control` (14 × 10 m, junto a la subestación) tiene tres piezas de escena que no son equipos de la librería y no calculan nada: `plc_cabinet` (gabinete del PLC con luces de estado), `operator_desk` (puesto con dos monitores) y `control_panel` (panel de pared con un mosaico de gráficos de tendencia). Cámara «SALA DE CONTROL DEL PLC» o `camera=sala-control`.
+
+El panel se configura en el `plant.yaml`, en la clave `panel` del equipo; la API la entrega tal cual en `GET /api/plants/{id}`:
+
+```yaml
+panel:
+  title: Panel de planta
+  slots:                      # 8 espacios, 4 columnas × 2 filas
+    - { title: Presión de vapor, equipment: boiler-01, variable: pressure_bar, unit: bar }
+    - { title: Libre 1, equipment: null, variable: null }   # sin asignar: se muestra «SIN ASIGNAR»
+```
+
+Cada espacio guarda las últimas 160 muestras de `snapshot.equipment[equipment].variables[variable]` (una por mensaje del WebSocket) y dibuja el valor actual y la tendencia. Para cambiar un gráfico basta cambiar `equipment` y `variable` por cualquier variable que publique un equipo simulado; los gráficos definitivos se definen después.
+
 ## Pasarelas en el `plant.yaml`
 
 Sección opcional `walkways`, validada por `tools/layout/render_layout.py` y dibujada en el plano 2D:

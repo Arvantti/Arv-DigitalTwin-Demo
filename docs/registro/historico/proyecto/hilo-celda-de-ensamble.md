@@ -7,7 +7,7 @@ tags: [registro, historico-ia, inyeccion, ensamble]
 ---
 # Hilo: celda de ensamble manual con operario (PR #20) y rutas de la nave (PR #21)
 
-Parte de [[historico-proyecto]] · Índice: [[00-indice]] · Bitácora: [[bitacora]] · Decisiones: [[decisiones]] D20 y D21. Autor humano: Carlos Andrés Quiceño. Hora en UTC. Credenciales: ninguna.
+Parte de [[historico-proyecto]] · Índice: [[00-indice]] · Bitácora: [[bitacora]] · Decisiones: [[decisiones]] D21 y D22. Autor humano: Carlos Andrés Quiceño. Hora en UTC. Credenciales: ninguna.
 
 ---
 

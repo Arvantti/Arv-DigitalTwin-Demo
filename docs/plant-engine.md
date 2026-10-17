@@ -73,7 +73,7 @@ Un servicio (el vapor) se entrega a pedido: su `flow_kg_h` es la `demand_kg_h` d
 ```
 caldera ─vapor 3 bar (steam-station-01)─▶ marmita 1, marmita 2, pasteurizador
 marmita 1 ┐
-marmita 2 ┴─(pump-hot-01)─▶ pasteurizador ─(holding-tube-01)─▶ pulmón ─▶ sachetadora ─▶ túnel ─▶ control de peso ─▶ encajadora
+marmita 2 ┴─(pump-hot-01)─▶ pasteurizador ─(holding-tube-01)─▶ pulmón ─▶ sachetadora ─▶ túnel ─▶ control de peso ─▶ empaque manual (cajas de 4)
                │
                └─ desvío (holding-tube-01) ─▶ la marmita que descarga
 ```

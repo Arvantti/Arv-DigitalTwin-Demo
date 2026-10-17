@@ -107,7 +107,7 @@ def test_plant_websocket_streams_connected_plant_and_accepts_commands() -> None:
             msg = ws.receive_json()
         snap = msg["snapshot"]
         assert msg["t"] > 0
-        assert {"boiler-01", "kettle-01", "filler-pouch-01", "case-pack-02"} <= set(snap["equipment"])
+        assert {"boiler-01", "kettle-01", "filler-pouch-01", "pack-sauce-1000"} <= set(snap["equipment"])
         assert "animation" in snap["equipment"]["kettle-01"]
         assert "hot-1000" in snap["lines"]
         ws.send_json({"equipment": "boiler-01", "command": "inject_fault", "args": {"fault": "flame_failure"}})

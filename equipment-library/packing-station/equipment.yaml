@@ -21,6 +21,7 @@ params:
   nominal_inflow_upm:   { type: number, unit: u/min, min: 0, max: 2000, default: 20, description: Llegada nominal si el entorno no la fija, affects: [behavior] }
   box_size_m:           { type: number, unit: m, min: 0.2, max: 1.0, default: 0.5, description: Lado mayor de la caja, affects: [geometry] }
   item_color:           { type: string, default: "#1e6fd9", description: Color de las piezas (hex), affects: [geometry] }
+  item_kind:            { type: enum, values: [piece, sachet], default: piece, description: "Forma de la unidad en el dibujo: pieza rígida o sachet (bolsa plana)", affects: [geometry] }
 
 ports:
   - { id: items_in, kind: item, direction: in, unit: u/min, link: { units: inflow_upm, ready: accepting } }
