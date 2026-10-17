@@ -1,0 +1,88 @@
+# Gemelo de la línea caliente de salsa de tomate en sachet de 1.000 ml (primer alcance del motor
+# de planta). Cada equipo es un tipo de la librería con su preset; los ids son los del layout
+# (plant.yaml). Los enlaces usan los `bind` de los puertos de cada contrato: docs/plant-engine.md.
+twin: sauce-hot-line-1000
+name: Línea caliente de salsa de tomate, sachet de 1.000 ml
+layout: plant.yaml
+dt: 1.0
+
+# Receta de salsa de tomate del plant.yaml (batch de 2.000 kg). La descarga va a 56 kg/min, el
+# caudal del pasteurizador: 3.000 L/h × 1,12 kg/L / 60.
+x-tomato-phases: &tomato_phases
+  - { kind: agitate, rpm: 40 }
+  - { kind: charge, material: agua, kg: 860, rate_kg_min: 107.5 }
+  - { kind: charge, material: pasta_tomate_30brix, kg: 700, rate_kg_min: 46.7 }
+  - { kind: agitate, rpm: 60 }
+  - { kind: charge, material: azucar, kg: 300, rate_kg_min: 30 }
+  - { kind: charge, material: sal, kg: 36, rate_kg_min: 30 }
+  - { kind: charge, material: almidon_modificado, kg: 20, rate_kg_min: 10 }
+  - { kind: charge, material: especias, kg: 2, rate_kg_min: 2 }
+  - { kind: charge, material: conservante, kg: 2, rate_kg_min: 2 }
+  - { kind: charge, material: vinagre, kg: 80, rate_kg_min: 40 }
+  - { kind: heat, target_c: 85 }
+  - { kind: hold, target_c: 85, minutes: 10 }
+  - { kind: sample, minutes: 10, spec: { brix: [24, 28], ph_max: 3.9, bostwick_cm_30s: [4, 7] } }
+  - { kind: discharge, rate_kg_min: 56 }
+
+equipment:
+  - id: boiler-01
+    type: steam-boiler
+    preset: 60bhp-8bar
+    represents: [steam-station-01]
+    # El resto de la planta (tanques enchaquetados, CIP, emulsiones) consume ≈ 150 kg/h de vapor.
+    input_offsets: { steam_demand_kg_h: 150 }
+  - { id: kettle-01, type: jacketed-kettle, preset: 2500l-sauce }
+  - { id: kettle-02, type: jacketed-kettle, preset: 2500l-sauce }
+  - id: pasteurizer-01
+    type: tubular-pasteurizer
+    preset: 3000lh-sauce
+    represents: [holding-tube-01, pump-hot-01]
+  - { id: buffer-hot-01, type: vessel, preset: hot-buffer-3000l }
+  - { id: filler-pouch-01, type: vffs-sachet-filler, preset: 1000ml-1-lane-hot }
+  - id: conveyor-pouch-01
+    type: belt-conveyor
+    preset: sachet-1000
+    virtual: true
+    description: Banda de la sachetadora al túnel (no está dibujada en el layout)
+  - { id: cooling-tunnel-01, type: cooling-tunnel, preset: sachet-6m }
+  - { id: checkweigher-01, type: checkweigher, preset: 1000ml-tomato }
+  - { id: case-pack-02, type: case-packer, preset: 1000ml-12 }
+
+links:
+  # producto
+  - { from: kettle-01.product_out, to: pasteurizer-01.product_in }
+  - { from: kettle-02.product_out, to: pasteurizer-01.product_in }
+  - { from: pasteurizer-01.product_out, to: buffer-hot-01.inlet }
+  - { from: buffer-hot-01.outlet, to: filler-pouch-01.product_in }
+  - { from: filler-pouch-01.sachets_out, to: conveyor-pouch-01.items_in }
+  - { from: conveyor-pouch-01.items_out, to: cooling-tunnel-01.items_in }
+  - { from: cooling-tunnel-01.items_out, to: checkweigher-01.items_in }
+  - { from: checkweigher-01.items_out, to: case-pack-02.items_in }
+  # vapor: la estación reductora baja de 8 a 3 bar
+  - { from: boiler-01.steam_out, to: kettle-01.steam_in, max: 3 }
+  - { from: boiler-01.steam_out, to: kettle-02.steam_in, max: 3 }
+  - { from: boiler-01.steam_out, to: pasteurizer-01.steam_in, max: 3 }
+  # señales que viajan con el producto
+  - { kind: signal, from: filler-pouch-01.product_temp_c, to: cooling-tunnel-01.inlet_temp_c }
+  - { kind: signal, from: filler-pouch-01.fill_weight_avg_g, to: checkweigher-01.upstream_mean_g }
+  - { kind: signal, from: filler-pouch-01.fill_weight_sd_g, to: checkweigher-01.upstream_sd_g }
+
+controllers:
+  # Las marmitas repiten la receta; la segunda arranca una hora después para alternar descargas.
+  - { kind: batch_loop, equipment: kettle-01, phases: *tomato_phases, start_at_s: 0 }
+  - { kind: batch_loop, equipment: kettle-02, phases: *tomato_phases, start_at_s: 3600 }
+
+timeline:
+  - { at_s: 0, equipment: pasteurizer-01, command: start }
+  - { at_s: 0, equipment: filler-pouch-01, command: start }
+
+kpis:
+  - { id: sachets_ok, ref: checkweigher-01.units_accepted, unit: u, description: Sachets aceptados por el control de peso }
+  - { id: sachets_per_h, ref: checkweigher-01.units_accepted, per_hour: true, unit: u/h }
+  - { id: cases, ref: case-pack-02.cases_count, unit: cajas, description: Cajas de 12 sachets }
+  - { id: product_filled_kg, ref: filler-pouch-01.product_used_kg, unit: kg }
+  - { id: sauce_cooked_kg, refs: [kettle-01.discharged_kg, kettle-02.discharged_kg], unit: kg }
+  - { id: batches, refs: [kettle-01.batch_count, kettle-02.batch_count], unit: batches }
+  - { id: pasteurized_l, ref: pasteurizer-01.pasteurized_l, unit: L }
+  - { id: diverted_l, ref: pasteurizer-01.diverted_l, unit: L }
+  - { id: gas_m3, ref: boiler-01.gas_total_m3, unit: m³ }

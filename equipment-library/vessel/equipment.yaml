@@ -4,6 +4,7 @@ version: 0.1.0
 name: Recipiente de almacenamiento (silo o tanque)
 manufacturing: process
 category: storage.bulk
+plant_role: storage
 description: >
   Familia paramétrica de recipientes: silos de sólidos a granel con fondo cónico, tanques
   verticales de almacenamiento, tanques pulmón con chaqueta para mantener temperatura y
@@ -127,8 +128,8 @@ params:
     affects: [geometry]
 
 ports:
-  - { id: inlet, kind: material, direction: in, unit: kg/h }
-  - { id: outlet, kind: material, direction: out, unit: kg/h }
+  - { id: inlet, kind: material, direction: in, unit: kg/h, bind: { counter: total_in_kg, counter_unit: kg, rate_input: inflow_kg_h, ready: "level_pct < 98", temperature_input: inflow_temp_c } }
+  - { id: outlet, kind: material, direction: out, unit: kg/h, bind: { counter: total_out_kg, counter_unit: kg, rate_input: outflow_kg_h, ready: "level_pct > 1", temperature: temperature_c } }
   - { id: heating_medium, kind: utility, direction: in, medium: vapor o agua caliente }
 
 states:

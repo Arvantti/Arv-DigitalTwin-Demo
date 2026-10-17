@@ -112,6 +112,8 @@ Valídelo contra `equipment-library/_schema/equipment.schema.json`. Puntos clave
 - **`variables`:** lo que un sistema SCADA leería. Marque `kind: measured` para sensores y dé un `noise_sd` y una `resolution` realistas.
 - **`faults`:** de 2 a 5 fallas típicas con `mtbf_h` y `mttr_min` plausibles. Use `stops_equipment: false` para degradaciones.
 - **`animation_channels`:** valores normalizados (0..1) o físicos (rpm) que la geometría necesita para moverse.
+- **`ports` con `bind`:** para que el motor de planta pueda conectar el equipo, cada puerto dice qué variable cuenta lo que pasa (`counter`, con `counter_unit` u, kg o L), qué entrada recibe el caudal (`rate_input`), cuándo el puerto puede transferir (`ready`, una condición como `"level_pct > 1"` o `"state in ['running', 'idle']"`), qué entrada recibe si el otro lado está listo (`ready_input`), la temperatura del producto (`temperature` / `temperature_input`) y, en servicios, lo ofrecido y lo consumido (`supply` / `supply_input`, `demand` / `demand_input`). Ejemplos en `belt-conveyor`, `vessel` y `jacketed-kettle`; detalle en `docs/plant-engine.md`.
+- **`plant_role`:** `station` (procesa; puede ser cuello de botella, es el valor por defecto), `transport` (mueve o acondiciona en tránsito: bandas, túneles), `storage` (pulmones) o `utility` (caldera, chiller, compresor).
 - **YAML:** dentro de `{ ... }`, un texto con coma debe ir entre comillas. El cargador detecta este error y lo explica.
 
 ---
@@ -137,7 +139,7 @@ Reglas de realismo:
 2. **Límites físicos:** nada rebosa, nada queda negativo, nada supera la ebullición en un recipiente abierto, etc.
 3. **Ritmo:** el tiempo de ciclo y la capacidad nominal reproducen el preset.
 4. **Calidad causal:** los rechazos dependen de las condiciones del proceso, no de un número fijo.
-5. **Entradas del entorno** en `DEFAULT_INPUTS`: material disponible, salida libre, servicios (vapor, aire, agua).
+5. **Entradas del entorno** en `DEFAULT_INPUTS`: material disponible, salida libre, servicios (vapor, aire, agua). Los caudales que impone el motor de planta llegan como entradas con valor `None` por defecto (p. ej. `inflow_upm`, `inflow_kg_h`): con `None` el equipo usa su valor nominal o sus comandos, y así sigue funcionando solo.
 6. `true_values()` devuelve **exactamente** las variables del contrato y `animation()` **exactamente** los canales. `twin-lib validate` lo verifica.
 
 ---

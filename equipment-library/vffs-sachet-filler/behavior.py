@@ -8,11 +8,10 @@ mordazas, de la codificadora y, en llenado en caliente, de la temperatura del pr
 from __future__ import annotations
 
 from collections import deque
-from statistics import fmean, pstdev
 from typing import Any
 
 from twin_runtime import EquipmentBehavior, StepContext
-from twin_runtime.primitives import FirstOrderLag, OEEAccumulator, PhaseSequencer
+from twin_runtime.primitives import FirstOrderLag, OEEAccumulator, PhaseSequencer, mean_sd
 
 CYCLE_SPLIT = [("pull_film", 0.35), ("dose", 0.35), ("seal_cut", 0.30)]
 BASE_SEAL_FAIL = 0.002
@@ -219,7 +218,7 @@ class VffsSachetFiller(EquipmentBehavior):
 
     # ------------------------------------------------------------------ lectura
     def true_values(self) -> dict[str, Any]:
-        w = list(self.weights)
+        mean, sd = mean_sd(list(self.weights))
         return {
             "speed_upm": sum(n for _, n in self.recent) * 60.0 / min(60.0, max(self.t, 1.0)),
             "units_good": self.units_good,
@@ -229,8 +228,8 @@ class VffsSachetFiller(EquipmentBehavior):
             "rejects_temperature": self.rejects["temperature"],
             "jaw_temp_c": self.jaw.value,
             "product_temp_c": self.product_temp,
-            "fill_weight_avg_g": fmean(w) if w else None,
-            "fill_weight_sd_g": pstdev(w) if len(w) > 1 else None,
+            "fill_weight_avg_g": mean,
+            "fill_weight_sd_g": sd,
             "last_weight_g": self.last_weight or None,
             "nominal_weight_g": self.nominal_g,
             "giveaway_g_per_unit": self.giveaway_sum / self.weight_count if self.weight_count else None,

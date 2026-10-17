@@ -27,3 +27,28 @@ def test_simulation_websocket_runs_and_accepts_commands() -> None:
 def test_simulation_rejects_bad_params() -> None:
     with client.websocket_connect('/api/equipment/vessel/simulate?params={"volume_l":-5}') as ws:
         assert "error" in ws.receive_json()
+
+
+def test_plants_list_and_detail() -> None:
+    plants = {p["plant"]: p for p in client.get("/api/plants").json()}
+    assert plants["sauce-plant-v1"]["equipment"] >= 10
+    detail = client.get("/api/plants/sauce-plant-v1").json()
+    assert {lk["mode"] for lk in detail["links"] if lk["kind"] == "flow"} == {"push", "pull", "fixed"}
+    assert "turno-8h" in detail["scenarios"]
+    assert client.get("/api/plants/no-existe").status_code == 404
+
+
+def test_plant_websocket_runs_and_accepts_commands() -> None:
+    with client.websocket_connect("/api/plants/sauce-plant-v1/simulate?scenario=turno-8h&speed=2000") as ws:
+        ws.send_json({"equipment": "case-pack-02", "command": "inject_fault", "args": {"fault": "box_jam", "duration_s": 60}})
+        events = []
+        for _ in range(5):
+            msg = ws.receive_json()
+            events += msg["events"]
+        snap = msg["snapshot"]
+        assert msg["t"] > 0
+        assert snap["equipment"]["kettle-01"]["state"] == "running"
+        assert "bottleneck" in snap["plant"] and "sachets_ok" in snap["plant"]["kpis"]
+        assert any(e["type"] == "fault_raised" and e["equipment_id"] == "case-pack-02" for e in events)
+        ws.send_json({"equipment": "no-existe", "command": "start"})
+        assert any("error" in ws.receive_json() for _ in range(3))

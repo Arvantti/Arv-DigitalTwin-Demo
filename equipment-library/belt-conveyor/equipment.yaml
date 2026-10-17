@@ -4,6 +4,7 @@ version: 0.1.0
 name: Banda transportadora
 manufacturing: logistics
 category: transport.conveyor
+plant_role: transport
 description: >
   Transportador de banda plana, malla, tablillas o rodillos que mueve unidades discretas
   (sachets, piezas, cajas) entre equipos. Acumula unidades cuando la salida se bloquea y deja
@@ -25,8 +26,8 @@ params:
   motor_kw:      { type: number, unit: kW, min: 0.1, max: 30, default: 0.75, description: Potencia del motorreductor, affects: [geometry, behavior] }
 
 ports:
-  - { id: items_in, kind: item, direction: in, unit: u/min }
-  - { id: items_out, kind: item, direction: out, unit: u/min }
+  - { id: items_in, kind: item, direction: in, unit: u/min, bind: { rate_input: inflow_upm, ready: "accepting == 1" } }
+  - { id: items_out, kind: item, direction: out, unit: u/min, bind: { counter: delivered, counter_unit: u, ready_input: downstream_free } }
   - { id: power, kind: utility, direction: in, medium: energía eléctrica }
 
 states:

@@ -1,4 +1,4 @@
 preset: 1000ml-1-lane
 description: Sachet de 1.000 ml en 1 pista para mayonesa (30 u/min)
-params: { unit_ml: 1000, lanes: 1, cycles_min: 30, density_kg_l: 0.93, product: mayonesa, hot_fill: false, roll_units: 3000, film_color: "#f4c430" }
-provenance: { unit_ml: user, cycles_min: assumed, density_kg_l: assumed }
+params: { unit_ml: 1000, lanes: 1, cycles_min: 30, density_kg_l: 0.93, product: mayonesa, hot_fill: false, roll_units: 3000, fill_sd_pct: 0.8, film_color: "#f4c430" }
+provenance: { unit_ml: user, fill_sd_pct: assumed, cycles_min: assumed, density_kg_l: assumed }

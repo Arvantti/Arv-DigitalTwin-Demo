@@ -185,4 +185,38 @@ def check_behavior_contract(eq: EquipmentType) -> list[str]:
         errors.append(f"animation() no produce canales declarados: {sorted(missing)}")
     if extra := anim - channels:
         errors.append(f"animation() produce canales no declarados: {sorted(extra)}")
+    errors += check_port_binds(eq)
+    return errors
+
+
+BIND_VARIABLES = ("counter", "temperature", "supply", "demand")
+BIND_INPUTS = ("rate_input", "ready_input", "temperature_input", "supply_input", "demand_input")
+
+
+def check_port_binds(eq: EquipmentType) -> list[str]:
+    """Los `bind` de los puertos deben nombrar variables del contrato y entradas del comportamiento."""
+    from .expr import Condition, ExprError
+
+    errors: list[str] = []
+    variables = {v["id"] for v in eq.spec.variables}
+    inputs = set(eq.behavior_cls.DEFAULT_INPUTS)
+    for port in eq.spec.raw.get("ports", []):
+        bind = port.get("bind") or {}
+        where = f"puerto {port['id']}"
+        for key in BIND_VARIABLES:
+            if key in bind and bind[key] not in variables:
+                errors.append(f"{where}: bind.{key}={bind[key]!r} no es una variable del contrato")
+        for key in BIND_INPUTS:
+            if key in bind and bind[key] not in inputs:
+                errors.append(f"{where}: bind.{key}={bind[key]!r} no está en DEFAULT_INPUTS del comportamiento")
+        if "ready" in bind:
+            try:
+                unknown = Condition(bind["ready"]).names - variables - {"state", "phase"}
+            except ExprError as exc:
+                errors.append(f"{where}: {exc}")
+            else:
+                if unknown:
+                    errors.append(f"{where}: bind.ready usa nombres desconocidos {sorted(unknown)}")
+        if "counter_unit" in bind and "counter" not in bind:
+            errors.append(f"{where}: counter_unit sin counter")
     return errors

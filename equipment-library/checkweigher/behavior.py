@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 from collections import deque
-from statistics import fmean, pstdev
 from typing import Any
 
 from twin_runtime import EquipmentBehavior, StepContext
+from twin_runtime.primitives import mean_sd
 
 SCALE_SD_G = 0.3
 DRIFT_G = 5.0
@@ -96,12 +96,12 @@ class Checkweigher(EquipmentBehavior):
         self.accepted_g += true_w
 
     def true_values(self) -> dict[str, Any]:
-        w = list(self.weights)
+        mean, sd = mean_sd(list(self.weights))
         c = self.counts
         return {
             "last_weight_g": self.last,
-            "mean_g": fmean(w) if w else None,
-            "sd_g": pstdev(w) if len(w) > 1 else None,
+            "mean_g": mean,
+            "sd_g": sd,
             "units_in": c["in"],
             "units_accepted": c["ok"],
             "rejects_weight": c["weight"],

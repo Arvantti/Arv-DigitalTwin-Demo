@@ -4,6 +4,7 @@ version: 0.1.0
 name: Túnel de enfriamiento por aspersión
 manufacturing: packaging
 category: thermal.continuous
+plant_role: transport
 description: >
   Túnel con banda de malla y aspersión de agua fría que enfría envases llenados en caliente
   (sachets, bolsas) antes del control de peso y el encajado. Modela el tiempo de permanencia,
@@ -27,8 +28,8 @@ params:
   item_color:         { type: string, default: "#c62828", description: Color de las unidades (hex), affects: [geometry] }
 
 ports:
-  - { id: items_in, kind: item, direction: in, unit: u/min }
-  - { id: items_out, kind: item, direction: out, unit: u/min }
+  - { id: items_in, kind: item, direction: in, unit: u/min, bind: { rate_input: inflow_upm, ready: "state in ['running', 'idle']", temperature_input: inlet_temp_c } }
+  - { id: items_out, kind: item, direction: out, unit: u/min, bind: { counter: units_out, counter_unit: u, ready_input: downstream_free, temperature: product_outlet_c } }
   - { id: chilled_water, kind: utility, direction: inout, medium: agua fría }
 
 states:

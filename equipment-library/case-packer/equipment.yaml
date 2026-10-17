@@ -20,9 +20,9 @@ params:
   item_color:         { type: string, default: "#c62828", description: Color de las unidades (hex), affects: [geometry] }
 
 ports:
-  - { id: items_in, kind: item, direction: in, unit: u/min }
-  - { id: cases_out, kind: item, direction: out, unit: cajas/min }
-  - { id: boxes_in, kind: material, direction: in, medium: cajas de corrugado plegadas }
+  - { id: items_in, kind: item, direction: in, unit: u/min, bind: { rate_input: inflow_upm, ready: "accepting == 1" } }
+  - { id: cases_out, kind: item, direction: out, unit: cajas/min, bind: { counter: cases_count, counter_unit: u, ready_input: downstream_free } }
+  - { id: boxes_in, kind: material, direction: in, medium: cajas de corrugado plegadas, bind: { ready_input: boxes_available } }
   - { id: air, kind: utility, direction: in, medium: aire comprimido }
 
 states:

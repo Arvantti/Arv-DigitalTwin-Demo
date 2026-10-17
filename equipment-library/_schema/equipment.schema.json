@@ -17,6 +17,10 @@
     "name": { "type": "string", "minLength": 3 },
     "manufacturing": { "enum": ["discrete", "process", "packaging", "logistics", "utility", "support"] },
     "category": { "type": "string", "description": "Familia funcional, p. ej. forming.injection, thermal.batch, storage.bulk" },
+    "plant_role": {
+      "enum": ["station", "transport", "storage", "utility"],
+      "description": "Papel en una planta (motor de planta). station: transforma o procesa y puede ser cuello de botella; transport: mueve o acondiciona en tránsito (su estado running indica producto adentro); storage: pulmón; utility: servicio. Por defecto station."
+    },
     "description": { "type": "string", "minLength": 20 },
     "aliases": { "type": "array", "items": { "type": "string" }, "description": "Otros nombres con los que un usuario puede referirse al equipo." },
     "fidelity": {
@@ -179,7 +183,26 @@
         "direction": { "enum": ["in", "out", "inout"] },
         "medium": { "type": "string" },
         "unit": { "type": "string" },
-        "description": { "type": "string" }
+        "description": { "type": "string" },
+        "bind": { "$ref": "#/$defs/port_bind" }
+      }
+    },
+    "port_bind": {
+      "description": "Cómo se acopla el puerto en una planta (docs/plant-engine.md). Nombra variables del contrato y entradas (DEFAULT_INPUTS) del comportamiento.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "counter": { "$ref": "#/$defs/ident", "description": "Variable acumulada de lo que pasa por el puerto" },
+        "counter_unit": { "enum": ["u", "kg", "L"], "description": "Unidad del contador; L se pasa a kg con density_kg_l" },
+        "rate_input": { "$ref": "#/$defs/ident", "description": "Entrada que recibe el caudal (u/min en item, kg/h en material)" },
+        "ready": { "type": "string", "description": "Condición sobre variables, state y phase: el puerto puede transferir ahora" },
+        "ready_input": { "$ref": "#/$defs/ident", "description": "Entrada que recibe si el otro lado puede transferir" },
+        "temperature": { "$ref": "#/$defs/ident", "description": "Variable con la temperatura del producto que sale" },
+        "temperature_input": { "$ref": "#/$defs/ident", "description": "Entrada que recibe la temperatura del producto que llega" },
+        "supply": { "$ref": "#/$defs/ident", "description": "Servicio: variable que se ofrece (presión de vapor…)" },
+        "supply_input": { "$ref": "#/$defs/ident", "description": "Servicio: entrada que recibe lo ofrecido" },
+        "demand": { "$ref": "#/$defs/ident", "description": "Servicio: variable con el consumo del equipo" },
+        "demand_input": { "$ref": "#/$defs/ident", "description": "Servicio: entrada que recibe la suma de consumos" }
       }
     },
     "state": {
