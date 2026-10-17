@@ -11,7 +11,7 @@ Parámetros de URL, pensados para capturas automáticas:
 
 | Parámetro | Efecto |
 |---|---|
-| `plant=<id>` | Planta (por defecto `sauce-plant-v1`; también `plastic-injection-plant-v1`, con sus 29 inyectoras y la banda animadas; escenarios `nominal` y `conveyor-trip`) |
+| `plant=<id>` | Planta (por defecto `sauce-plant-v1`; también `plastic-injection-plant-v1`, con sus 29 inyectoras, la banda, el empaque, los secadores, los chillers y el molino animados; escenarios `nominal` y `conveyor-trip`) |
 | `camera=general` o `camera=<id de zona>` | Cámara inicial |
 | `select=<id de equipo>` | Equipo seleccionado |
 | `autosim=1&scenario=boiler-trip&speed=900` | Conecta la simulación al cargar |
@@ -55,8 +55,8 @@ El validador exige: eje de 2 o más puntos, ancho y elevación positivos, todos 
 
 ## Pendiente de la fase 5
 
-- Los equipos que faltan en la librería siguen siendo volúmenes (fase 3).
+- Los equipos de la librería que aún no tienen tipo siguen siendo volúmenes (fase 3).
 - Las tuberías de tramos sin simular siguen animándose por estado (CIP, agua helada).
 - Selección desde la lista de activos y recorridos definidos por la planta (hoy se derivan de las zonas).
 - Muros con aberturas, escaleras de acceso con geometría de escalón y pasarelas de la planta de inyección (el plano no las describe).
-- De la planta de inyección faltan por tipo en la librería el empaque, los secadores, los chillers y los molinos: siguen como volúmenes.
+- De la planta de inyección siguen como volúmenes los equipos sin tipo en la librería (silos, mezcladores, estaciones de ensamble, compresores, torre de enfriamiento y otros); el empaque, los secadores, los chillers y el molino de reciclaje ya tienen geometría propia.

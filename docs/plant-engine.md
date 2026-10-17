@@ -83,17 +83,18 @@ marmita 2 ┴─(pump-hot-01)─▶ pasteurizador ─(holding-tube-01)─▶ pul
 | `boiler-trip` | Falla de llama de 1 h. La marmita que calienta gasta el vapor almacenado; bajo ≈ 0,6 bar el pasteurizador ya no llega a 92 °C en la retención y desvía. El producto desviado regresa a la marmita que descarga, así que esa descarga se alarga lo que dura el desvío y la otra marmita espera su turno en la bomba |
 | `tunnel-stop` | El túnel se detiene 80 min. La sachetadora se bloquea, el pulmón llega al 90 % y la marmita 2 espera para descargar |
 
-`plastic-injection-plant-v1`: la nave de inyección. Las 29 inyectoras se simulan con los parámetros del `plant.yaml` (tonelaje, cavidades, peso de pieza, ciclo, robot) sobre el preset de su tonelaje, y la banda principal de 88 m recibe las piezas de la inyectora 3 (`imm-03.parts_out → conveyor-main-01.items_in`). Las demás inyectoras trabajan solas.
+`plastic-injection-plant-v1`: la nave de inyección. Las 29 inyectoras se simulan con los parámetros del `plant.yaml` (tonelaje, cavidades, peso de pieza, ciclo, robot) sobre el preset de su tonelaje, y la banda principal de 88 m recibe las piezas de la inyectora 3 (`imm-03.parts_out → conveyor-main-01.items_in`) y las entrega a la estación de empaque 1 (`conveyor-main-01.items_out → pack-station-01.items_in`). Las demás inyectoras trabajan solas. También se simulan, sin enlace con las inyectoras, los 4 secadores de resina (`desiccant-dryer`), los 2 chillers (`chiller`, el segundo de respaldo y apagado), el molino de reciclaje (`granulator`) y las otras 3 estaciones de empaque (`packing-station`, sin banda: no tienen llegadas).
 
 ```
-imm-03 ─ piezas (4 por ciclo) ─▶ conveyor-main-01 (88 m) ─▶ empaque (sin simular)
+imm-03 ─ piezas (4 por ciclo) ─▶ conveyor-main-01 (88 m) ─▶ pack-station-01 (cajas de 250 y tarima de 40)
 imm-01 … imm-29 (las otras 28): ciclan en paralelo, sin enlace
+dryer-01 … 04, chiller-01 y 02, grinder-rec-01, pack-station-02 … 04: trabajan solos
 ```
 
 | Escenario | Qué muestra |
 |---|---|
-| `nominal` | Una hora estable. La inyectora 3 da 300 ciclos × 4 piezas; ≈ 1.090 llegan al final de la banda (293 s de recorrido) |
-| `conveyor-trip` | El motor de la banda se dispara 20 min: la zona de entrada (8 piezas, `entry_buffer_units`) se llena, la banda deja de aceptar y la inyectora 3 se bloquea; las otras 28 no se enteran |
+| `nominal` | Una hora estable. La inyectora 3 da 300 ciclos × 4 piezas; ≈ 1.090 llegan al final de la banda (293 s de recorrido) y la estación 1 las cuenta (4 cajas de 250). Los secadores entregan 150, 250 y 400 kg/h con la resina seca, el chiller de 600 kW mantiene 12 °C con 360 kW de carga y el molino tritura los 300 kg/h que le llegan |
+| `conveyor-trip` | El motor de la banda se dispara 20 min: la zona de entrada (8 piezas, `entry_buffer_units`) se llena, la banda deja de aceptar y la inyectora 3 se bloquea; las otras 28 no se enteran. La estación de empaque solo cuenta lo que entregó la banda |
 
 Una máquina que suelta varias piezas por ciclo entrega ráfagas, no un flujo continuo: la banda las recibe en una zona de entrada con `entry_buffer_units` plazas (por defecto 1, llegadas una a una como en la línea de sachets). Sin ella, la banda descartaba lo que no cabía entre dos piezas y se perdía la mitad de la producción.
 
@@ -101,5 +102,5 @@ Una máquina que suelta varias piezas por ciclo entrega ráfagas, no un flujo co
 
 - El producto desviado regresa a la marmita con su receta y se mezcla a la temperatura de salida del pasteurizador (`return_in`, `returned_kg`); no hay tubería de retorno con volumen ni retardo, solo el paso de retraso del motor.
 - Las recetas se escriben como fases de la marmita en `simulation.yaml`; todavía no se traducen solas desde `recipes` del plano.
-- La planta de inyección conecta solo la inyectora 3 con la banda: el empaque, los secadores, chillers, molinos y la central de materiales aún no tienen tipo en la librería, así que las inyectoras no consumen resina ni agua de enfriamiento del motor (usan los valores por defecto).
+- La planta de inyección conecta la inyectora 3 con la banda y el empaque 1. Secadores, chillers y molino se simulan pero sin enlaces: las inyectoras no consumen su resina seca ni su agua de enfriamiento (usan los valores por defecto), el chiller trabaja con una carga nominal y el molino con una alimentación nominal. Esa cascada (humedad de la resina, temperatura del agua de moldes, scrap hacia el molino) y la central de materiales quedan para otra entrega.
 - La planta conectada se ve en 3D y en vivo en la escena de planta (`docs/plant-scene.md`); la API la expone en `/api/plants`.

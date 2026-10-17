@@ -1,0 +1,56 @@
+scenarios:
+  - id: steady
+    description: Secador de ABS de 150 kg/h en régimen durante 8 h, arrancado en caliente con la tolva llena
+    preset: abs-150
+    duration_s: 28800
+    expect:
+      - { path: variables.processed_kg, min: 1199, max: 1201, description: "(150 kg/h × 8 h = 1.200 kg)" }
+      - { path: variables.resin_moisture_pct, min: 0.010, max: 0.014, description: "(tolva de 600 kg: con 4 h de residencia 0,0035 + 0,1965·e^(−4/1,2) = 0,0105 %; el cargador repone al 90 %, o sea 3,6 h → 0,0133 %; ambos bajo el límite de 0,02 %)" }
+      - { path: variables.resin_dry, equals: 1 }
+      - { path: variables.power_kw, min: 5.0, max: 5.2, description: "((0,3 × 0,08 + 0,01) kW por kg/h × 150 kg/h = 5,1 kW)" }
+      - { path: kpis.specific_energy_kwh_t, min: 33.5, max: 34.5, description: "(5,1 kW ÷ 0,15 t/h = 34 kWh/t)" }
+      - { path: state, equals: running }
+
+  - id: cold-start
+    description: Secador apagado que se enciende; el aire llega a 80 °C pero la resina aún no está seca después de 1 h
+    preset: abs-150
+    params: { start_hot: false }
+    duration_s: 3600
+    timeline:
+      - { at_s: 0, command: start }
+    expect:
+      - { path: state, equals: running }
+      - { path: variables.air_temp_c, min: 78.2, max: 79.8, description: "(80 − 55 · e^(−3.600/900) = 79,0 °C; τ = 15 min)" }
+      - { path: variables.resin_dry, equals: 0, description: "(la tolva tarda horas en secar la resina de 0,2 % a menos de 0,02 %)" }
+
+  - id: regeneration-failure
+    description: Falla la regeneración del desecante 8 h; el rocío sube hacia −10 °C y la resina de ABS deja de estar seca
+    preset: abs-150
+    duration_s: 36000
+    timeline:
+      - { at_s: 3600, command: inject_fault, args: { fault: regeneration_failure, duration_s: 28800 } }
+    expect:
+      - { path: events.moisture_alarm, equals: 1 }
+      - { path: variables.resin_dry, equals: 0, description: "(con rocío de −10 °C la humedad objetivo es 0,041 %; tras reparar, la tolva tarda ≈ 4 h más en volver a 0,02 %)" }
+      - { path: kpis.dry_share, min: 0.29, max: 0.33, description: "(seca 1 h antes de la falla y ≈ 2,1 h después: el rocío sube con τ = 30 min y la humedad objetivo cruza 0,02 % tarde; ≈ 3,1 h de 10)" }
+
+  - id: no-resin
+    description: Se acaba la resina a las 1 h; la tolva se vacía en unas horas y el secador queda sin material
+    preset: abs-150
+    duration_s: 21600
+    timeline:
+      - { at_s: 3600, inputs: { resin_available: false } }
+    expect:
+      - { path: events.empty, equals: 1, description: "(la tolva de 600 kg, entre 540 y 600 kg al cortar, se vacía a 150 kg/h entre 3,6 y 4 h después)" }
+      - { path: state, equals: starved }
+      - { path: variables.hopper_level_pct, max: 0.05, description: "(se declara vacía bajo 0,05 %)" }
+
+  - id: blower-trip
+    description: Disparo del soplador 30 min; la resina no se entrega y el aire se enfría
+    preset: abs-150
+    duration_s: 7200
+    timeline:
+      - { at_s: 1800, command: inject_fault, args: { fault: blower_trip, duration_s: 1800 } }
+    expect:
+      - { path: events.fault_cleared, equals: 1 }
+      - { path: variables.processed_kg, min: 224, max: 226, description: "(150 kg/h × (7.200 − 1.800) s = 225 kg: sin soplador no entrega)" }

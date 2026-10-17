@@ -1,0 +1,4 @@
+preset: buckets-20
+description: Empaque de baldes y piezas grandes, 20 por caja, tarima de 24 cajas
+params: { parts_per_box: 20, pack_rate_upm: 12, box_change_s: 40, table_capacity_units: 20, boxes_per_pallet: 24, nominal_inflow_upm: 4, box_size_m: 0.8, item_color: "#d97b1e" }
+provenance: { parts_per_box: assumed, pack_rate_upm: assumed, box_change_s: assumed, table_capacity_units: assumed, boxes_per_pallet: assumed, nominal_inflow_upm: assumed }

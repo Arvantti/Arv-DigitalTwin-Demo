@@ -2,7 +2,7 @@
 tipo: indice
 titulo: Registro del proyecto para el registro de software en Colombia
 tags: [registro, indice]
-actualizado: 2026-10-16
+actualizado: 2026-10-17
 ---
 # Registro del proyecto · Índice
 

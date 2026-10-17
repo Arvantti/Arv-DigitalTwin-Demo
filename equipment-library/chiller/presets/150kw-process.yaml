@@ -1,0 +1,4 @@
+preset: 150kw-process
+description: Enfriador de 150 kW de proceso para el túnel de enfriamiento de la planta de salsas, a 4 °C
+params: { capacity_kw: 150, stages: 2, supply_c: 4, flow_m3_h: 12, loop_volume_m3: 4, nominal_load_kw: 90, cop: 3.6 }
+provenance: { capacity_kw: user, supply_c: user, flow_m3_h: user, stages: assumed, loop_volume_m3: assumed, nominal_load_kw: assumed, cop: assumed }

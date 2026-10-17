@@ -1,0 +1,4 @@
+preset: 600kw-standby
+description: Enfriador de 600 kW de respaldo, apagado y sin carga hasta que se le ordene arrancar
+params: { capacity_kw: 600, stages: 3, supply_c: 12, flow_m3_h: 180, loop_volume_m3: 20, nominal_load_kw: 0, cop: 4.5, start_on: false }
+provenance: { capacity_kw: user, supply_c: user, stages: assumed, loop_volume_m3: assumed, cop: assumed }

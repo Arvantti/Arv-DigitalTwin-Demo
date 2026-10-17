@@ -1,0 +1,4 @@
+preset: recycled-ps-250
+description: Secador de PS reciclado de 250 kg/h a 70 °C
+params: { material: PS reciclado, throughput_kg_h: 250, residence_h: 3, temp_c: 70, dew_point_c: -30, inlet_moisture_pct: 0.1, moisture_limit_pct: 0.05 }
+provenance: { throughput_kg_h: user, temp_c: user, residence_h: assumed, dew_point_c: assumed, inlet_moisture_pct: assumed, moisture_limit_pct: assumed }
