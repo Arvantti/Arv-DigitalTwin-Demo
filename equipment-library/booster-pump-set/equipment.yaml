@@ -14,7 +14,7 @@ aliases: [grupo de presión, booster, bombas en paralelo, estación de bombeo, b
 fidelity: { visual: V2, behavior: B2 }
 
 params:
-  pumps:             { type: integer, min: 1, max: 6, default: 3, description: Bombas instaladas, affects: [geometry, behavior] }
+  pumps:             { type: integer, min: 1, max: 6, default: 2, description: Bombas instaladas, affects: [geometry, behavior] }
   duty_max:          { type: integer, min: 1, max: 6, default: 2, description: Bombas que pueden trabajar a la vez (las demás son reserva), affects: [behavior] }
   pump_style:        { type: enum, values: [vertical_multistage, end_suction], default: vertical_multistage, description: "Multietapa vertical (alta presión) o de succión axial horizontal", affects: [geometry] }
   design_flow_m3h:   { type: number, unit: m3/h, min: 0.5, max: 500, default: 8, description: Caudal de diseño de cada bomba, affects: [geometry, behavior] }

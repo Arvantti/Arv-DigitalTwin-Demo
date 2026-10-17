@@ -10,6 +10,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
+| 2026-10-17 | #23 | Acueducto: el bombeo principal queda con 2 bombas de trabajo (sin reserva), como pidió el autor; escenario de disparo de bomba rehecho | acueducto |
 | 2026-10-17 | #22 | Acueducto: grupo de bombeo en paralelo (`booster-pump-set`), válvula entre niveles (`regulating-valve`) y tanque de agua de 1.000 L (preset de `vessel`) en la librería, con capturas | acueducto |
 | 2026-10-17 | #21 | Fase 5: rutas de montacargas y de operarios de la nave de inyección (datos, validador, plano 2D y escena con montacargas y operarios que las recorren) y 4 estanterías de semielaborado | 5 |
 | 2026-10-17 | #20 | Fase 3 y 5: celda de ensamble manual con operario (tipo `assembly-cell`) en la planta de inyección; `assembly-01` y `assembly-02` simuladas y escenario `body-stop` | 3 y 5 |
@@ -35,11 +36,21 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 ## Entradas
 
+### 2026-10-17 05:26–05:45 · PR #23 · Acueducto: bombeo principal con 2 bombas
+- **Fecha/hora (UTC):** 2026-10-17 05:26 a 05:45.
+- **Fase del plan:** [[plan-del-proyecto]], acueducto a escala, entrega 3 de 5 (ajuste de la primera parte).
+- **Solicitado por:** Carlos Andrés Quiceño, «Por qué 3 bombas?» y «Solo 2 pero ok de 1a6» (05:25–05:26). El PR #22 ya se había fusionado con 3 bombas, así que el cambio va en un PR nuevo.
+- **Qué se hizo:** el preset `multistage-3x8m3h-80m` pasa a `multistage-2x8m3h-80m` (2 bombas de trabajo, sin reserva; el parámetro sigue de 1 a 6). El escenario `pump-trip` ahora muestra que, sin reserva, la bomba que queda entrega 11,3 m³/h a 60,4 mca y salta la alarma de baja presión; se agrega `pump-trip-recovery`. Diseño (supuesto S4, sección 6), ficha, README y capturas actualizados.
+- **Commits:** ver el PR #23.
+- **Verificación:** valores de la falla calculados a mano antes de correr, `uv run pytest equipment-library/booster-pump-set` (7 escenarios), `uv run twin-lib validate`, `uv run ruff check .`, `pnpm -r test`; captura [[acueducto-grupo-de-bombeo.jpg]] y simulación por la API [[acueducto-grupo-de-bombeo-simulando.jpg]].
+- **Decisiones:** [[decisiones]] D24, punto 6.
+- **Conversación:** [[hilo-acueducto-a-escala]].
+
 ### 2026-10-17 04:57–05:25 · PR #22 · Acueducto: grupo de bombeo y válvula entre niveles
 - **Fecha/hora (UTC):** 2026-10-17 04:57 a 05:25.
 - **Fase del plan:** [[plan-del-proyecto]], acueducto a escala, entrega 3 de 5 (primera parte).
 - **Solicitado por:** Carlos Andrés Quiceño respondió «Si» (04:57) a la propuesta de seguir con los equipos de la librería del acueducto (bombas, estación reguladora y rejillas).
-- **Qué se hizo:** dos tipos nuevos en la librería. `booster-pump-set`: bombas iguales en paralelo con antirretorno sobre la red hidráulica del PR #14, variador con PID de presión, entrada y salida de bombas por velocidad y caudal, alternancia de la líder, reserva que entra en el mismo paso si se dispara una bomba, modo por nivel para la recirculación, energía específica; presets `multistage-3x8m3h-80m` (2 + 1 a 80 mca) y `recirculation-2x15m3h` (1 + 1 por nivel). `regulating-valve`: Kv con característica lineal o de igual porcentaje, volante o actuador con tiempo de recorrido, PID opcional de presión aguas abajo, actuador trabado y fuga por el asiento; presets `between-levels-2in` y `actuated-2in-pressure`. Preset `water-1000l` de `vessel` (S7). Cada tipo trae una función `add_*` para que el motor de planta lo agregue a la red del edificio en la entrega 4. La estación reguladora y la rejilla van en el siguiente PR.
+- **Qué se hizo:** dos tipos nuevos en la librería. `booster-pump-set`: bombas iguales en paralelo con antirretorno sobre la red hidráulica del PR #14, variador con PID de presión, entrada y salida de bombas por velocidad y caudal, alternancia de la líder, reserva que entra en el mismo paso si se dispara una bomba, modo por nivel para la recirculación, energía específica; presets `multistage-3x8m3h-80m` (2 + 1 a 80 mca; el PR #23 lo cambió a 2 bombas) y `recirculation-2x15m3h` (1 + 1 por nivel). `regulating-valve`: Kv con característica lineal o de igual porcentaje, volante o actuador con tiempo de recorrido, PID opcional de presión aguas abajo, actuador trabado y fuga por el asiento; presets `between-levels-2in` y `actuated-2in-pressure`. Preset `water-1000l` de `vessel` (S7). Cada tipo trae una función `add_*` para que el motor de planta lo agregue a la red del edificio en la entrega 4. La estación reguladora y la rejilla van en el siguiente PR.
 - **Commits:** ver el PR #22.
 - **Verificación:** escenarios con valores calculados a mano (por ejemplo, 13 m³/h a 80 mca con 2 bombas al 96,2 %, 4,52 kW; 21 mca aguas abajo con apertura 50,9 %), `uv run twin-lib validate`, `uv run pytest` (168 pruebas), `uv run ruff check .`, `pnpm -r typecheck` y `pnpm -r test`. Capturas de la galería: [[acueducto-grupo-de-bombeo.jpg]], [[acueducto-bombas-de-recirculacion.jpg]], [[acueducto-valvula-entre-niveles.jpg]], [[acueducto-tanque-1000l.jpg]]; simulando por la API: [[acueducto-grupo-de-bombeo-simulando.jpg]] y [[acueducto-valvula-actuada-simulando.jpg]].
 - **Decisiones:** [[decisiones]] D24.

@@ -71,3 +71,27 @@ Trabajo del hilo, resumido:
 - Un escenario de la válvula falló porque el valor esperado de la apertura estaba mal calculado a mano; se corrigió la cuenta (49,9–51,9 %), no el modelo.
 - Revisó las capturas de la galería; corrigió los soportes de la válvula, que quedaban medio enterrados, y el actuador, que se veía hundido en el bonete. Probó ambos tipos simulando por la API.
 - Actualizó la bitácora, la decisión D24, el plan, el roadmap, el diseño y este histórico, y abrió el PR #22.
+
+### 👤 Carlos Andrés Quiceño · 05:25 UTC (comentario en el PR #22)
+
+El tanque pulmón de las bombas Grundfos está bien, pero no se si deberías incluir el tanque de almacenamiento en este mismo sistema o lo vas a poner aparte ?
+
+### 🤖 Claude (hilo) · 05:25 UTC (respuesta en el PR #22 y aviso en el hilo)
+
+Lo pone aparte: el tanque de almacenamiento es su propio equipo (preset `water-1000l` de `vessel`), para seleccionarlo y ver su nivel por separado y reutilizarlo en los pisos 2 y 3; en la planta el motor lo conectará con la succión de las bombas y con el arranque por nivel de la recirculación. El tanque azul del grupo es el hidroacumulador de la descarga, solo dibujado. Ofreció cambiarlo si el autor lo prefiere dentro del grupo.
+
+### 👤 Carlos Andrés Quiceño · 05:25:47 UTC
+
+Por qué 3 bombas?
+
+### 🤖 Claude (hilo) · 05:26 UTC
+
+Explicó el supuesto S4: 2 bombas de trabajo porque una de 8 m³/h solo da ≈ 8,2 m³/h a 80 mca y el día pide 13 m³/h, y 1 de reserva para que un disparo no tumbe la presión y para alternar el desgaste; el número es un parámetro de 1 a 6.
+
+### 👤 Carlos Andrés Quiceño · 05:26:20 UTC
+
+Solo 2 pero ok de 1a6
+
+### 🤖 Claude (hilo) · 05:26–05:45 UTC
+
+El PR #22 ya estaba fusionado, así que reinició la rama desde `main` y abrió el PR #23. Cambió el preset principal a `multistage-2x8m3h-80m` (2 bombas de trabajo, sin reserva), rehízo el escenario de disparo de bomba (sin reserva la otra sola entrega 11,3 m³/h a 60,4 mca y salta la alarma de baja presión) y agregó `pump-trip-recovery`. Actualizó el diseño (S4), la ficha, la decisión D24, la bitácora y las capturas.
