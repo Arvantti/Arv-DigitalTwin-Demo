@@ -14,8 +14,8 @@ fidelity: { visual: V2, behavior: B2 }
 
 params:
   nominal_g:            { type: number, unit: g, min: 1, max: 50000, default: 280, description: Peso nominal declarado, affects: [behavior] }
-  tolerance_minus_pct:  { type: number, unit: "%", min: 0.1, max: 50, default: 3.2, description: "Error negativo tolerable como porcentaje del peso nominal del paquete (límite inferior = nominal − %)", affects: [behavior] }
-  tolerance_plus_pct:   { type: number, unit: "%", min: 0.1, max: 100, default: 5.0, description: "Límite superior como porcentaje del peso nominal del paquete (límite superior = nominal + %)", affects: [behavior] }
+  tolerance_minus_pct:  { type: number, unit: "%", min: 0.1, max: 50, default: 4.0, description: "Error negativo tolerable como porcentaje del peso nominal del paquete (límite inferior = nominal − %)", affects: [behavior] }
+  tolerance_plus_pct:   { type: number, unit: "%", min: 0.1, max: 100, default: 4.0, description: "Límite superior como porcentaje del peso nominal del paquete (límite superior = nominal + %)", affects: [behavior] }
   metal_detector:       { type: boolean, default: true, description: Tiene detector de metales, affects: [geometry, behavior] }
   metal_test_interval_min: { type: number, unit: min, min: 15, max: 480, default: 120, description: Intervalo máximo entre pruebas del detector con patrón, affects: [behavior] }
   metal_rate:           { type: number, min: 0, max: 0.01, default: 0.00002, description: Probabilidad de una unidad con metal (para simular), affects: [behavior] }
