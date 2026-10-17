@@ -19,6 +19,7 @@ import * as THREE from "three";
 import { buildRoutes, type Aisle, type Route } from "./routes.ts";
 import { type AnimationFrame, type EquipmentModel, type LightingPreset, Stage, parts, textures } from "@twin/3d";
 import { geometryBuilders, rawSpecs } from "@twin/equipment-library/registry.ts";
+import { dockLeveler, deliveryTruck, palletRack, passThroughDoor } from "./warehouse.ts";
 import { type ControlPiece, type PanelConfig, controlPanel, operatorDesk, plcCabinet } from "./control-room.ts";
 import "./styles.css";
 
@@ -29,6 +30,8 @@ interface Zone {
   hygiene_class: string;
   rect: [number, number, number, number];
   height: number;
+  /** Cota del piso de la zona (edificios por pisos); 0 si no viene. */
+  elevation?: number;
 }
 interface PlantEquipment {
   id: string;
@@ -39,6 +42,7 @@ interface PlantEquipment {
   rotation_deg?: number;
   overhead?: boolean;
   panel?: PanelConfig;
+  params?: Record<string, unknown>;
   sim?: { type: string; preset: string | null; params: Record<string, unknown> };
 }
 interface Walkway {
@@ -56,12 +60,18 @@ interface Pipe {
   medium: string;
   rate?: number;
   unit?: string;
+  /** Trazado del tubo en el plano ([x, y, z]); si no viene, la escena lo traza sola. */
+  route?: [number, number, number][];
+  /** Diámetro nominal del tubo (red de agua): da el grosor en la escena. */
+  diameter_in?: number;
   /** Ids de los enlaces del motor que pasan por este tramo; vacío si el tramo no se simula. */
   links: string[];
 }
 interface LinkState {
   flow_kg_h?: number;
   units_per_min?: number;
+  /** Tubos de la red de agua (dominio hidráulico): velocidad real del agua. */
+  velocity_m_s?: number;
   flowing: boolean;
 }
 interface PlantDoc {
@@ -137,12 +147,30 @@ function buildZones(): void {
     const [x0, y0, w, l] = z.rect;
     const color = HYGIENE_COLORS[z.hygiene_class] ?? "#555";
     const center = toScene(x0 + w / 2, y0 + l / 2);
+    const base = z.elevation ?? 0;
+    if (base > 0) {
+      // Piso elevado: losa delgada y translúcida para ver lo que hay debajo.
+      const slab = new THREE.Mesh(
+        new THREE.BoxGeometry(w, SLAB_M, l),
+        new THREE.MeshStandardMaterial({ color: "#9aa3ad", roughness: 0.8, transparent: true, opacity: 0.22, depthWrite: false }),
+      );
+      slab.position.copy(center).setY(base - SLAB_M / 2);
+      slab.name = `zone-slab-${z.id}`;
+      stage.content.add(slab);
+    }
     const floor = new THREE.Mesh(
       new THREE.PlaneGeometry(w - 0.2, l - 0.2),
-      new THREE.MeshStandardMaterial({ color, roughness: 0.7, metalness: 0.05, transparent: true, opacity: z.kind === "exterior" ? 0.55 : 0.9 }),
+      new THREE.MeshStandardMaterial({
+        color,
+        roughness: 0.7,
+        metalness: 0.05,
+        transparent: true,
+        opacity: base > 0 ? 0.3 : z.kind === "exterior" ? 0.55 : 0.9,
+        depthWrite: base <= 0,
+      }),
     );
     floor.rotation.x = -Math.PI / 2;
-    floor.position.copy(center).setY(0.02);
+    floor.position.copy(center).setY(base + 0.02);
     floor.receiveShadow = true;
     floor.name = `zone-floor-${z.id}`;
     stage.content.add(floor);
@@ -151,7 +179,7 @@ function buildZones(): void {
         new THREE.EdgesGeometry(new THREE.BoxGeometry(w, z.height, l)),
         new THREE.LineBasicMaterial({ color: "#9fd4f5", transparent: true, opacity: 0.45 }),
       );
-      edges.position.copy(center).setY(z.height / 2);
+      edges.position.copy(center).setY(base + z.height / 2);
       edges.name = `zone-frame-${z.id}`;
       stage.content.add(edges);
     }
@@ -160,14 +188,17 @@ function buildZones(): void {
       const lw = Math.min(w - 0.6, 11);
       const label = new THREE.Mesh(new THREE.PlaneGeometry(lw, lw * (96 / 1024)), new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, opacity: 0.85 }));
       label.rotation.x = -Math.PI / 2;
-      label.position.copy(toScene(x0 + 0.3 + lw / 2, y0 + l - 0.6)).setY(0.03);
+      label.position.copy(toScene(x0 + 0.3 + lw / 2, y0 + l - 0.6)).setY(base + 0.03);
       stage.content.add(label);
     }
   }
 }
 
+const SLAB_M = 0.12;
+
 const PLACEHOLDER = new THREE.MeshStandardMaterial({ color: "#7f8b97", roughness: 0.65, metalness: 0.25 });
 const RAIL = new THREE.MeshStandardMaterial({ color: "#e0a82e", roughness: 0.5, metalness: 0.4 });
+const SUPPORT = new THREE.MeshStandardMaterial({ color: "#59626c", roughness: 0.6, metalness: 0.6 });
 
 /** Volumen de la huella para un equipo que aún no tiene tipo en la librería (en el plano: x = dx, y = dy, altura = dz). */
 function placeholder(eq: PlantEquipment): THREE.Object3D {
@@ -203,16 +234,27 @@ const controlBuilders: Record<string, (eq: PlantEquipment) => ControlPiece> = {
 };
 const controlPieces: ControlPiece[] = [];
 
+/** Bodega de producto terminado y despacho (estanterías, paso directo, muelle y camión): piezas de la escena, sin comportamiento. */
+const warehouseBuilders: Record<string, (eq: PlantEquipment) => THREE.Object3D> = {
+  pallet_rack: (eq) => palletRack(eq.footprint),
+  pass_through_door: (eq) => passThroughDoor(eq.footprint),
+  dock_leveler: (eq) => dockLeveler(eq.footprint),
+  delivery_truck: (eq) => deliveryTruck(eq.footprint, eq.params?.state as string | undefined),
+};
+
 function buildEquipment(): void {
   for (const eq of doc.equipment) {
     let root: THREE.Object3D;
     let model: EquipmentModel | null = null;
     const builder = eq.sim ? geometryBuilders[eq.sim.type] : undefined;
     const control = controlBuilders[eq.type];
+    const warehouse = warehouseBuilders[eq.type];
     if (control) {
       const piece = control(eq);
       controlPieces.push(piece);
       root = piece.root;
+    } else if (warehouse) {
+      root = warehouse(eq);
     } else if (builder && eq.sim) {
       model = builder(eq.sim.params);
       root = model.root;
@@ -221,8 +263,43 @@ function buildEquipment(): void {
     root.rotation.y = THREE.MathUtils.degToRad(eq.rotation_deg ?? 0);
     root.userData.assetId = eq.id;
     stage.content.add(root);
+    const support = supportFor(eq);
+    if (support) stage.content.add(support);
     assets.set(eq.id, { eq, root, model, frame: { channels: {}, state: "idle", label: eq.id.toUpperCase() } });
   }
+}
+
+/**
+ * Soporte de un equipo que va por encima del piso de su zona (la estación reguladora elevada, los niveles de la
+ * rejilla): cuatro patas en las esquinas de la huella y un marco bajo el equipo. Los equipos chicos (una válvula
+ * entre niveles) cuelgan de su tubería y no llevan soporte.
+ */
+function supportFor(eq: PlantEquipment): THREE.Object3D | null {
+  const zone = doc.zones.find((z) => z.id === eq.zone);
+  const floor = zone?.elevation ?? 0;
+  const gap = eq.position[2] - floor;
+  const [dx, dy] = eq.footprint;
+  if (eq.overhead || gap < 0.15 || dx * dy < 0.5) return null;
+  const group = new THREE.Group();
+  group.name = `support-${eq.id}`;
+  for (const sx of [-1, 1])
+    for (const sy of [-1, 1]) {
+      const leg = new THREE.Mesh(new THREE.BoxGeometry(0.06, gap, 0.06), SUPPORT);
+      leg.position.copy(toScene(eq.position[0] + sx * (dx / 2 - 0.05), eq.position[1] + sy * (dy / 2 - 0.05), floor + gap / 2));
+      leg.castShadow = true;
+      group.add(leg);
+    }
+  for (const sy of [-1, 1]) {
+    const beam = new THREE.Mesh(new THREE.BoxGeometry(dx, 0.06, 0.06), SUPPORT);
+    beam.position.copy(toScene(eq.position[0], eq.position[1] + sy * (dy / 2 - 0.05), eq.position[2] - 0.03));
+    group.add(beam);
+  }
+  for (const sx of [-1, 1]) {
+    const beam = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.06, dy), SUPPORT);
+    beam.position.copy(toScene(eq.position[0] + sx * (dx / 2 - 0.05), eq.position[1], eq.position[2] - 0.03));
+    group.add(beam);
+  }
+  return group;
 }
 
 /** Pasarelas elevadas: piso de rejilla, barandas a ambos lados, columnas y escalera en los puntos de acceso. */
@@ -282,6 +359,8 @@ interface PipeRun {
   reference: number | null;
   peak: number;
   phase: number;
+  /** Velocidad real del agua en m/s (tubos de la red de agua); null si el tramo no la publica. */
+  velocity: number | null;
 }
 const pipeRuns: PipeRun[] = [];
 let latestLinks: Record<string, LinkState> = {};
@@ -301,37 +380,77 @@ function assetTop(id: string): THREE.Vector3 | null {
   return toScene(a.eq.position[0], a.eq.position[1], a.eq.position[2] + height);
 }
 
-/** Tuberías de los flujos `piped: true` del plano: suben a un nivel de rack, cruzan en ortogonal y bajan. Los puntos son de recorrido, no de ingeniería de detalle. */
+/**
+ * Bajante por gravedad: sale del costado del equipo de arriba, baja hasta poco más arriba del de abajo, cruza y
+ * entra por su tapa. Varias bajantes del mismo equipo de destino se separan para no dibujarse encima.
+ */
+function dropPoints(from: string, to: string, lane: number): THREE.Vector3[] | null {
+  const a = assets.get(from);
+  const top = assetTop(to);
+  if (!a || !top) return null;
+  const [x, y, z] = a.eq.position;
+  const start = toScene(x - a.eq.footprint[0] / 2 + 0.15 + 0.2 * lane, y - a.eq.footprint[1] / 2 - 0.08, z + 0.1);
+  const level = top.y + 0.3 + 0.12 * lane;
+  const over = new THREE.Vector3(top.x - 0.25 + 0.2 * lane, level, top.z);
+  return [start, new THREE.Vector3(start.x, level, start.z), new THREE.Vector3(over.x, level, start.z), over, new THREE.Vector3(over.x, top.y, over.z)];
+}
+
+/**
+ * Tuberías de los flujos `piped: true` del plano. Con `route` (red de agua) siguen el trazado del plano con el grosor
+ * de su diámetro. Sin ruta: una bajante si el origen está por encima de la tapa del destino; si no, suben a un nivel
+ * de rack, cruzan en ortogonal y bajan. Los puntos son de recorrido, no de ingeniería de detalle.
+ */
 function buildPipes(): void {
   const lanes = new Map<string, number>();
+  const drops = new Map<string, number>();
+  const site = doc.plant.site?.width_x ?? 112;
+  const spacing = Math.min(4, Math.max(0.6, site / 30));
   for (const [i, pipe] of (doc.pipes ?? []).entries()) {
     const a = assetTop(pipe.from);
     const b = assetTop(pipe.to);
     if (!a || !b || a.distanceTo(b) < 0.5) continue;
-    const key = `${Math.round(a.x)},${Math.round(a.z)}`;
-    const lane = lanes.get(key) ?? 0;
-    lanes.set(key, lane + 1);
-    const level = 4.4 + 0.35 * ((i + lane) % 5);
-    const raw = [a, new THREE.Vector3(a.x, level, a.z), new THREE.Vector3(b.x, level, a.z), new THREE.Vector3(b.x, level, b.z), b];
+    const src = assets.get(pipe.from)!.eq.position[2];
+    let raw: THREE.Vector3[] | null;
+    if (pipe.route?.length) raw = pipe.route.map(([x, y, z]) => toScene(x, y, z));
+    else if (src > b.y + 0.3) {
+      const lane = drops.get(pipe.to) ?? 0;
+      drops.set(pipe.to, lane + 1);
+      raw = dropPoints(pipe.from, pipe.to, lane);
+    } else {
+      const key = `${Math.round(a.x)},${Math.round(a.z)}`;
+      const lane = lanes.get(key) ?? 0;
+      lanes.set(key, lane + 1);
+      const level = 4.4 + 0.35 * ((i + lane) % 5);
+      raw = [a, new THREE.Vector3(a.x, level, a.z), new THREE.Vector3(b.x, level, a.z), new THREE.Vector3(b.x, level, b.z), b];
+    }
+    if (!raw || raw.length < 2) continue;
     const points = raw.filter((p, k) => k === 0 || p.distanceTo(raw[k - 1]) > 1e-3);
     const color = MEDIUM_COLORS.find(([re]) => re.test(pipe.medium.toLowerCase()))?.[1] ?? "#aab3bd";
     const material = new THREE.MeshStandardMaterial({ color, roughness: 0.35, metalness: 0.7 });
-    const radius = /vapor/.test(pipe.medium.toLowerCase()) ? 0.09 : 0.06;
-    const mesh = parts.pipe(points, radius, material, 0.4);
+    // Con diámetro: el radio exterior real (PVC, ≈ 1,15 × el nominal), con un mínimo para que se vea.
+    const radius = pipe.diameter_in
+      ? Math.max(0.025, (pipe.diameter_in * 0.0254 * 1.15) / 2)
+      : pipe.route || src > b.y + 0.3
+        ? 0.035
+        : /vapor/.test(pipe.medium.toLowerCase())
+          ? 0.09
+          : 0.06;
+    const mesh = parts.pipe(points, radius, material, Math.min(0.4, radius * 3));
     mesh.name = `pipe-${pipe.from}-${pipe.to}`;
     stage.content.add(mesh);
     const cumulative = [0];
     for (let k = 1; k < points.length; k++) cumulative.push(cumulative[k - 1] + points[k].distanceTo(points[k - 1]));
     const beadMat = new THREE.MeshStandardMaterial({ color: "#000000", emissive: "#4de0ff", emissiveIntensity: 2.5 });
-    const count = Math.max(2, Math.round(cumulative[cumulative.length - 1] / 4));
+    const count = Math.max(2, Math.round(cumulative[cumulative.length - 1] / spacing));
     const beads = Array.from({ length: count }, () => {
       const bead = new THREE.Mesh(new THREE.SphereGeometry(radius * 1.35, 10, 8), beadMat);
       bead.visible = false;
       stage.content.add(bead);
       return bead;
     });
-    const reference = pipe.rate && (pipe.unit === "kg/h" || pipe.unit === "L/h") ? pipe.rate : null;
-    pipeRuns.push({ from: pipe.from, to: pipe.to, points, cumulative, beads, links: pipe.links ?? [], reference, peak: 0, phase: 0 });
+    const perUnit: Record<string, number> = { "kg/h": 1, "L/h": 1, "m3/h": 1000 };
+    const reference = pipe.rate && pipe.unit && perUnit[pipe.unit] ? pipe.rate * perUnit[pipe.unit] : null;
+    pipeRuns.push({ from: pipe.from, to: pipe.to, points, cumulative, beads, links: pipe.links ?? [], reference, peak: 0, phase: 0, velocity: null });
   }
 }
 
@@ -350,6 +469,8 @@ function pointAt(run: PipeRun, distance: number): THREE.Vector3 {
  */
 function pipeLoad(run: PipeRun): number {
   const states = run.links.map((id) => latestLinks[id]).filter((l): l is LinkState => !!l);
+  const velocities = states.map((l) => l.velocity_m_s).filter((v): v is number => v !== undefined);
+  run.velocity = velocities.length ? Math.max(...velocities) : null;
   if (states.length) {
     const flow = states.reduce((sum, l) => sum + (l.flow_kg_h ?? 0), 0);
     run.peak = Math.max(run.peak, flow);
@@ -362,14 +483,17 @@ function pipeLoad(run: PipeRun): number {
   return dst && FLOWING.has(dst.state) ? 1 : 0;
 }
 
-/** Las esferas avanzan más rápido y son más numerosas cuanto mayor es la carga; sin caudal desaparecen. */
+/**
+ * Las esferas avanzan más rápido y son más numerosas cuanto mayor es la carga; sin caudal desaparecen. En los tubos
+ * de la red de agua avanzan a la velocidad real del agua (m/s del motor).
+ */
 function animatePipes(time: number): void {
   const dt = Math.min(0.25, Math.max(0, time - lastPipeTime));
   lastPipeTime = time;
   for (const run of pipeRuns) {
     const total = run.cumulative[run.cumulative.length - 1];
     const load = pipeLoad(run);
-    run.phase += dt * 2.5 * Math.min(2, Math.max(0.15, load));
+    run.phase += dt * (run.velocity !== null ? Math.max(0.05, run.velocity) : 2.5 * Math.min(2, Math.max(0.15, load)));
     const shown = load > 0.005 ? Math.max(1, Math.ceil(run.beads.length * Math.min(1, load))) : 0;
     run.beads.forEach((bead, i) => {
       bead.visible = i < shown;
@@ -412,19 +536,41 @@ stage.renderer.domElement.addEventListener("pointerup", (e) => {
 });
 
 // ------------------------------------------------------------------ cámaras
-function focusRect(rect: [number, number, number, number], height = 4, distanceFactor = 0.85): void {
+function focusRect(rect: [number, number, number, number], height = 4, distanceFactor = 0.85, base = 0): void {
   const [x0, y0, w, l] = rect;
   const probe = new THREE.Mesh(new THREE.BoxGeometry(w, height, l));
-  probe.position.copy(toScene(x0 + w / 2, y0 + l / 2)).setY(height / 2);
+  probe.position.copy(toScene(x0 + w / 2, y0 + l / 2)).setY(base + height / 2);
   probe.updateMatrixWorld(true);
   stage.frame(probe, distanceFactor);
 }
 
 function buildCameras(): void {
   const box = $("cameras");
-  const entries: [string, string, () => void][] = [["VISTA GENERAL", "general", () => focusRect([0, 0, doc.plant.site?.width_x ?? 112, doc.plant.site?.length_y ?? 72], 6, 0.62)]];
-  const featured = doc.zones.filter((z) => (["production", "utility"].includes(z.kind) && z.rect[2] * z.rect[3] >= 80) || z.id.startsWith("sala-control"));
-  for (const z of featured) entries.push([z.name.toUpperCase(), z.id, () => focusRect(z.rect, Math.max(3, z.height))]);
+  const building = doc.zones.some((z) => (z.elevation ?? 0) > 0);
+  const top = Math.max(6, ...doc.zones.map((z) => (z.elevation ?? 0) + z.height));
+  const entries: [string, string, () => void][] = [
+    ["VISTA GENERAL", "general", () => focusRect([0, 0, doc.plant.site?.width_x ?? 112, doc.plant.site?.length_y ?? 72], top, building ? 0.9 : 0.62)],
+  ];
+  // Edificio por pisos: una cámara por zona (cada piso) y una por nivel de los equipos que lo declaran (la rejilla).
+  const featured = building
+    ? doc.zones
+    : doc.zones.filter((z) => (["production", "utility"].includes(z.kind) && z.rect[2] * z.rect[3] >= 80) || z.id.startsWith("sala-control"));
+  for (const z of featured) entries.push([z.name.toUpperCase(), z.id, () => focusRect(z.rect, Math.max(3, z.height), 0.85, z.elevation ?? 0)]);
+  if (building)
+    for (const a of assets.values()) {
+      const level = a.eq.params?.level;
+      if (typeof level === "number") entries.push([`NIVEL ${level}`, `nivel-${level}`, () => stage.frame(a.root, 1.4)]);
+    }
+  // bodega de producto terminado junto con el patio de despacho (la planta de salsas): una sola vista
+  const bodega = doc.zones.find((z) => z.id === "bodega-pt");
+  const patio = doc.zones.find((z) => z.id === "patio-despacho");
+  if (bodega && patio) {
+    const x0 = Math.min(bodega.rect[0], patio.rect[0]);
+    const y0 = Math.min(bodega.rect[1], patio.rect[1]);
+    const x1 = Math.max(bodega.rect[0] + bodega.rect[2], patio.rect[0] + patio.rect[2]);
+    const y1 = Math.max(bodega.rect[1] + bodega.rect[3], patio.rect[1] + patio.rect[3]);
+    entries.push(["BODEGA Y DESPACHO", bodega.id, () => focusRect([x0, y0, x1 - x0, y1 - y0], bodega.height)]);
+  }
   for (const [label, key, go] of entries) {
     const b = document.createElement("button");
     b.textContent = label;

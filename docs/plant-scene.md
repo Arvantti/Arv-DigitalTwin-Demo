@@ -12,7 +12,7 @@ Parámetros de URL, pensados para capturas automáticas:
 | Parámetro | Efecto |
 |---|---|
 | `plant=<id>` | Planta (por defecto `sauce-plant-v1`; también `plastic-injection-plant-v1`, con sus 29 inyectoras, la banda, el empaque, los secadores, los chillers y el molino animados; escenarios `nominal`, `conveyor-trip`, `dryer-stop`, `chiller-trip` y `pelletizer-jam`) |
-| `camera=general` o `camera=<id de zona>` | Cámara inicial |
+| `camera=general`, `camera=<id de zona>` o `camera=nivel-<n>` | Cámara inicial (`nivel-<n>`: el equipo con `params.level: n`, en un edificio por pisos) |
 | `select=<id de equipo>` | Equipo seleccionado |
 | `focus=<id de equipo>` | Acerca la cámara a ese equipo |
 | `routes=0` | Oculta los pasillos, las rutas y los montacargas y operarios que las recorren |
@@ -37,8 +37,20 @@ Parámetros de URL, pensados para capturas automáticas:
 | Endpoint | Qué entrega |
 |---|---|
 | `GET /api/plants` | Plantas con plano y si tienen simulación conectada |
-| `GET /api/plants/{id}` | Zonas, equipos (con `sim` si el motor los simula), pasarelas, tuberías (flujos `piped`, con `rate`, `unit` y `links`: los enlaces del motor que las cruzan), líneas y escenarios |
+| `GET /api/plants/{id}` | Zonas (con `elevation` si la traen), equipos (con `sim` si el motor los simula), pasarelas, tuberías (flujos `piped`, con `rate`, `unit`, `route`, `diameter_in` y `links`: los enlaces del motor que las cruzan), líneas y escenarios |
 | `WS /api/plants/{id}/simulate?scenario=&speed=` | Cada 100 ms: `{t, speed, paused, snapshot: {equipment, lines, links}, events}`. Cliente → servidor: `{equipment, command, args}`, `{speed}`, `{pause}` |
+
+## Edificio por pisos y red de agua (acueducto a escala)
+
+`plant=water-network-scale-v1` dibuja el banco de pruebas del acueducto (`docs/water-network-plant.md`) como un edificio de tres pisos:
+
+- **Pisos:** cada zona con `elevation` se dibuja a su cota. Los pisos elevados llevan una losa delgada translúcida, para ver lo que hay debajo, y su volumen arranca en esa cota.
+- **Tubos de la red de agua:** los flujos con `route` siguen el trazado del plano (puntos `[x, y, z]`). Su grosor sale de `diameter_in` (4" hasta el nivel 1, 2" en la columna, 3" en la recirculación). Las esferas avanzan a la velocidad real del agua (`velocity_m_s` del dominio hidráulico) y su número sigue el caudal frente al `rate` del plano (en m³/h se compara en kg/h).
+- **Bajantes:** un flujo sin ruta cuyo origen está por encima de la tapa del destino baja vertical desde el costado del equipo de arriba y entra por la tapa del de abajo. Varias bajantes al mismo tanque se separan.
+- **Soportes:** un equipo apoyado por encima del piso de su zona (la estación reguladora, 1 m sobre el piso 1; los niveles 2 a 4 de la rejilla) lleva cuatro patas y un marco. Los equipos chicos, como las válvulas entre niveles, cuelgan de su tubería.
+- **Cámaras:** vista general del edificio, una por piso (zona) y una por nivel de la rejilla (`NIVEL 1` a `NIVEL 4`).
+
+La API entrega en cada tubería, además, `route`, `diameter_in` e `inner_diameter_mm` cuando el plano los trae.
 
 ## Sala de control del PLC (planta de salsas)
 
@@ -55,6 +67,21 @@ panel:
 ```
 
 Cada espacio guarda las últimas 160 muestras de `snapshot.equipment[equipment].variables[variable]` (una por mensaje del WebSocket) y dibuja el valor actual y la tendencia. Para cambiar un gráfico basta cambiar `equipment` y `variable` por cualquier variable que publique un equipo simulado; los gráficos definitivos se definen después.
+
+## Bodega de producto terminado y despacho (planta de salsas)
+
+La bodega `bodega-pt` (14 × 58 m) es contigua a la zona de empaque (`encajado`): la tarima sale de la envolvedora `wrapper-01`, pasa directo por la puerta `door-pt-01` de la pared (sin esclusa), se estiba en las estanterías y, para despachar, sale por el carril de alistamiento a los muelles del patio, donde se carga el camión. El flujo del plano es `wrapper-01 → rack-pt-02 → dock-02 → truck-01`. El plano no traía medidas de esta parte; la distribución es un supuesto (ver D30 en el registro).
+
+Son piezas de la escena (`apps/gallery/src/warehouse.ts`), no equipos de la librería: no calculan nada. Se dimensionan con la `footprint` del `plant.yaml`:
+
+| Tipo en `plant.yaml` | Pieza |
+|---|---|
+| `pallet_rack` | Estantería de 4 niveles con tarimas (85 % ocupadas); de doble fondo si el ancho es ≥ 2,2 m. Sirve también a la planta de inyección (el largo es el lado mayor) |
+| `pass_through_door` | Marco del paso directo empaque → bodega |
+| `dock_leveler` | Andén con nivelador, topes y semáforo de muelle |
+| `delivery_truck` | Camión sencillo de caja seca de 8,4 m; `params.state: loading` abre las puertas y muestra tarimas cargadas, `waiting` lo deja cerrado |
+
+Dos pasillos de recibo y uno de alistamiento (`aisles`) y dos rutas de montacargas (`routes`): `fk-empaque-bodega` y `fk-bodega-despacho`. Cámara «BODEGA Y DESPACHO» o `camera=bodega-pt`. La API entrega ahora la clave `params` de cada equipo.
 
 ## Pasarelas en el `plant.yaml`
 

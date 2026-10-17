@@ -20,6 +20,8 @@ FORWARD: dict[str, str] = {
     "available": "1 si hay producto para entregar (si falta, se deduce de flow_kg_h > 0)",
     "temp_c": "temperatura del producto o de las unidades",
     "pressure_bar": "presión del servicio (vapor, aire)",
+    "pressure_mca": "telemetría de presión de agua en mca (si llegan varias, la menor: el punto más crítico)",
+    "level_pct": "nivel de un tanque en % (si llegan varios, el promedio)",
     "moisture_pct": "humedad de la resina que se entrega, en % (promedio de las fuentes)",
     "weight_mean_g": "peso medio de las unidades",
     "weight_sd_g": "desviación típica del peso de las unidades",
@@ -39,6 +41,11 @@ ITEM_ATTRIBUTES = frozenset({"weight_mean_g", "weight_sd_g"})
 def publishes(direction: str, quantity: str) -> bool:
     """True si el equipo publica la magnitud por un puerto con esa dirección (variable)."""
     return (quantity in FORWARD and direction == "out") or (quantity in BACKWARD and direction == "in")
+
+
+def hydraulic_ports(spec: EquipmentSpec) -> dict[str, str]:
+    """Puertos que exponen un nodo del banco hidráulico del equipo: id del puerto → nodo (ver docs/plant-engine.md)."""
+    return {p["id"]: p["hydraulic"] for p in spec.raw.get("ports", []) if p.get("hydraulic")}
 
 
 def port_links(spec: EquipmentSpec) -> dict[str, dict[str, Any]]:
@@ -65,4 +72,8 @@ def check_port_links(spec: EquipmentSpec, behavior_cls: type[EquipmentBehavior])
                     errors.append(f"puerto {pid}: link.{q} = {name!r} no es una variable del contrato")
             elif name not in inputs:
                 errors.append(f"puerto {pid}: link.{q} = {name!r} no es una entrada (DEFAULT_INPUTS) del comportamiento")
+    from .behavior import EquipmentBehavior
+
+    if hydraulic_ports(spec) and behavior_cls.hydraulic_build is EquipmentBehavior.hydraulic_build:
+        errors.append("declara puertos hidráulicos pero el comportamiento no implementa hydraulic_build()")
     return errors

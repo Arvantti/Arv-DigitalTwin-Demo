@@ -77,6 +77,12 @@ class BoosterPumpSet(EquipmentBehavior):
         if p["start_on"]:
             self.state.set("idle")
 
+    def hydraulic_build(self, net: HydraulicNetwork, prefix: str, elevation_m: float) -> None:
+        """En la planta: las bombas entre los nodos de succión y descarga (los de los puertos), a la cota del equipo."""
+        net.add_node(prefix + "suction", elevation_m)
+        net.add_node(prefix + "discharge", elevation_m)
+        add_pump_set(net, prefix, prefix + "suction", prefix + "discharge", self.p)
+
     # ---- comandos y fallas ----
     def on_command(self, name: str, args: dict[str, Any]) -> bool:
         if name == "start":
@@ -102,6 +108,8 @@ class BoosterPumpSet(EquipmentBehavior):
             self.emit("pump_tripped", pump=victim + 1)
             if self.state.current == "running" and len(self.running) < self.p["duty_max"]:
                 self._start_next()  # la reserva entra de inmediato
+            if self.running and self.p["control"] == "pressure":
+                self._feed_forward()
         elif fault_id == "vfd_fault":
             self._stop_all("vfd_fault")
         elif fault_id == "worn_impeller":
@@ -112,6 +120,19 @@ class BoosterPumpSet(EquipmentBehavior):
             self.tripped = [False] * self.p["pumps"]
         elif fault_id == "worn_impeller":
             self._set_curve(1.0)
+
+    def _feed_forward(self) -> None:
+        """Al perder una bomba, las que siguen saltan (con la rampa del variador) a la velocidad que da la misma
+        altura con todo el caudal, sin esperar a que el PID vea caer la presión: s² = (H + r·q²) / H0 por bomba.
+        Es un supuesto del control (el PLC de las bombas reales es cerrado, D29)."""
+        p = self.p
+        head = max(self.pump_heads) if any(self.pump_heads) else p["design_head_m"]
+        q = self.flow / len(self.running)
+        shutoff = p["shutoff_head_m"] * (WORN_FACTOR if self.failures.is_active("worn_impeller") else 1.0)
+        r = (p["shutoff_head_m"] - p["design_head_m"]) / p["design_flow_m3h"] ** 2
+        s = min(1.0, max(p["min_speed_pct"] / 100, ((head + r * q * q) / shutoff) ** 0.5))
+        if s > self.pid.output:
+            self.pid.integral = self.pid.output = s
 
     def _set_curve(self, factor: float) -> None:
         for pid in self.pump_ids:
@@ -180,6 +201,8 @@ class BoosterPumpSet(EquipmentBehavior):
         if not self.running:
             self._start_next()
             return
+        if len(self.running) < min(p["min_running"], p["duty_max"]) and self._start_next():
+            return  # las bombas que trabajan siempre arrancan de una vez
         # entra otra bomba si el variador queda sin margen, aunque la presión todavía se sostenga
         if len(self.running) < p["duty_max"] and self._available() and self.speed * 100 >= p["stage_up_speed_pct"]:
             self.up_s += dt
@@ -190,7 +213,7 @@ class BoosterPumpSet(EquipmentBehavior):
             self.up_s = 0.0
         n = len(self.running)
         limit = (n - 1) * p["design_flow_m3h"] * p["stage_down_flow_pct"] / 100
-        self.down_s = self.down_s + dt if n > 1 and self.flow < limit else 0.0
+        self.down_s = self.down_s + dt if n > max(1, p["min_running"]) and self.flow < limit else 0.0
         if self.since_change >= MIN_CHANGE_S and self.down_s >= STAGE_DOWN_S:
             self._stop_last("low_demand")
             self.down_s = 0.0

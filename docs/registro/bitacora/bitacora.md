@@ -10,7 +10,10 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
-| 2026-10-17 | #32 | Acueducto: panel de gráficos del PLC en la galería (`acueducto.html`): curva del día en 24 ciclos, bombas Grundfos, sensores en tiempo real y gemelo; datos de `tools/hydraulics/dia_acueducto.py` | acueducto |
+| 2026-10-17 | #32 | Acueducto: panel de gráficos del PLC en la galería (`acueducto.html`): curva del día en 24 ciclos, bombas Grundfos, sensores en tiempo real y gemelo (−5 % de fugas con la consigna hora a hora); datos de `tools/hydraulics/dia_acueducto.py` | acueducto |
+| 2026-10-17 | #33 | Acueducto: escena 3D del edificio por pisos, tubos con su trazado y diámetro del plano, caudal y velocidad reales del agua, soportes y cámaras por piso y por nivel | acueducto |
+| 2026-10-17 | #31 | Acueducto: la planta corre en el motor con una sola red de agua (dominio hidráulico); edificio por pisos, 13 equipos, 6 escenarios; con la columna en serie la estación queda en 20,94 mca | acueducto |
+| 2026-10-17 | #28 | Fase 5: bodega de producto terminado contigua a empaque con paso directo, estanterías, rutas de montacargas, muelles y camiones en la planta de salsas (pedido del autor) | 5 |
 | 2026-10-17 | #29 | Control de peso: tolerancia de 4 % en todos los formatos (decisión del autor); dosificador en 1,5 %; rechazo de la presentación de 1.000 ml ≈ 2,5 % | 4 |
 | 2026-10-17 | #27 | Acueducto: semáforo de la casa crítica (20, 18 y 15 mca) y búsqueda de la consigna mínima de la estación; criterio en D28 | acueducto |
 | 2026-10-17 | #27 | Acueducto: primer banco de la planta completa (bombas, estación, cuatro rejillas por las columnas) en `industrial-models/water-network-scale-v1`; resuelve con 13,5 m³/h y c44 a 23,0 mca, a revisar contra 20 mca | acueducto |
@@ -43,15 +46,48 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 ## Entradas
 
-### 2026-10-17 15:28–18:55 · PR #32 · Acueducto: panel de gráficos del PLC en la galería
-- **Fecha/hora (UTC):** 2026-10-17 15:28 a 18:55.
+### 2026-10-17 15:28–22:55 · PR #32 · Acueducto: panel de gráficos del PLC en la galería
+- **Fecha/hora (UTC):** 2026-10-17 15:28 a 18:55; conflictos con `main` resueltos a las 22:55 (pedido del autor en el PR, 22:39).
 - **Fase del plan:** [[plan-del-proyecto]] acueducto (monitoreo).
 - **Solicitado por:** Carlos Andrés Quiceño, «la curva día a día del panel… de hora a hora» (15:28) y «no solamente que quede aquí en artefacto en Claude, sino en el sistema» (18:02).
-- **Qué se hizo:** página `apps/gallery/acueducto.html` con `src/acueducto-panel.ts` (cuatro pantallas: curva del día, bombas Grundfos, sensores en tiempo real y gemelo) y script `tools/hydraulics/dia_acueducto.py`, que corre el banco hora a hora (consigna fija de 18,09 mca frente a la consigna mínima del gemelo para 15,45 mca, bombas al piso de 70 mca) y escribe `public/data/acueducto-dia.json`. Resultado: consumo 112,1 m³/día, fugas 30,0 m³/día (−18 % frente a la consigna anterior de 26,66 mca); el ajuste hora a hora casi no suma porque la fricción del banco es mínima. La lista de válvulas se agrupa por nivel y ramal (pedido del autor, 17:53).
-- **Commits:** `40aa331`.
+- **Qué se hizo:** página `apps/gallery/acueducto.html` con `src/acueducto-panel.ts` (cuatro pantallas: curva del día, bombas Grundfos, sensores en tiempo real y gemelo) y script `tools/hydraulics/dia_acueducto.py`, que corre hora a hora la red del motor (PR #31: columna en serie) con la rama manual fija en 20,94 mca frente a la consigna mínima del gemelo para 15,45 mca, bombas a 72,1 mca en la descarga, y escribe `public/data/acueducto-dia.json`. Resultado: consumo 118,4 m³/día; la casa crítica va de 18,2 mca de madrugada a 16,0 mca en el pico con la consigna fija; el gemelo baja la consigna a 18,15–20,29 mca y evita 1,6 m³/día de fugas (−5,0 %; −7,0 % de madrugada). La lista de válvulas se agrupa por nivel y ramal (pedido del autor, 17:53).
+- **Commits:** ver el PR #32.
 - **Verificación:** `pnpm -r typecheck`, `uv run ruff check .`, capturas de la galería local en claro y oscuro: ![[acueducto-panel-plc-curva-del-dia.png]] ![[acueducto-panel-plc-gemelo.png]] ![[acueducto-panel-plc-sensores.png]]
-- **Decisiones:** [[decisiones]] (D30).
+- **Decisiones:** [[decisiones]] (D32).
 - **Conversación:** [[hilo-panel-plc-acueducto]].
+
+### 2026-10-17 20:53–21:10 · PR #33 · Acueducto: escena 3D del edificio (entrega 5)
+- **Fecha/hora (UTC):** 2026-10-17 20:53 a 21:10 (el hilo se pausó de 18:57 a 20:53 por el límite de uso).
+- **Fase del plan:** [[plan-del-proyecto]], acueducto a escala, entrega 5.
+- **Solicitado por:** Carlos Andrés Quiceño, «Sí, para eso tenemos que abrir otro hilo entonces» (18:03), para seguir con la planta y la escena.
+- **Qué se hizo:** la escena (`apps/gallery/src/plant.ts`) dibuja cada zona a su cota con losas translúcidas, los tubos con la `route` y el `diameter_in` del plano, las bajantes verticales a los tanques del piso 0, soportes para la estación elevada y los niveles 2 a 4 de la rejilla, y cámaras por piso y por nivel; las esferas de los tubos avanzan a la velocidad real del agua. La API entrega `route`, `diameter_in` e `inner_diameter_mm` en cada tubería.
+- **Commits:** ver el PR #33.
+- **Verificación:** prueba nueva de la API (`test_water_plant_pipes_carry_route_diameter_and_hydraulic_link`), `pytest`, `ruff`, `pnpm -r typecheck`; capturas con Chromium y la simulación en vivo en `docs/registro/evidencia/`: [[acueducto-escena-general.jpg]], [[acueducto-escena-piso0.jpg]], [[acueducto-escena-piso1.jpg]], [[acueducto-escena-nivel4.jpg]].
+- **Decisiones:** ninguna nueva; la rama manual quedó en 20,94 mca al fusionarse el PR #31 (la tarjeta de D31 no tuvo respuesta).
+- **Conversación:** [[hilo-acueducto-planta-y-escena]].
+
+### 2026-10-17 18:03–18:50 · PR #31 · Acueducto: la planta en el motor (entrega 4)
+- **Fecha/hora (UTC):** 2026-10-17 18:03 a 18:50.
+- **Fase del plan:** [[plan-del-proyecto]], acueducto a escala, entrega 4.
+- **Solicitado por:** Carlos Andrés Quiceño, «Sí, para eso tenemos que abrir otro hilo entonces» (18:03), para seguir con la planta y la escena.
+- **Qué se hizo:** dominio hidráulico del motor (puertos `hydraulic`, tubos del plano, una sola red resuelta en cada paso y otra vez si un equipo cambia algo); `plant.yaml` del edificio por pisos y `simulation.yaml` con 13 equipos y 6 escenarios (`nominal`, `night-pressure`, `manual-branch`, `pump-trip`, `leak-burst`, `between-valve`); `network.py` lee los mismos tubos y sigue la columna en serie; grupo de bombeo con `min_running` y anticipación de velocidad al disparo; validador del plano con zonas por piso.
+- **Resultados:** de día estación 20,94 mca, casa crítica c44 en 15,45 mca, bombas 11,53 m³/h a 72,1 mca; de noche la rama automática ahorra 6,4 % de fugas frente a la manual; disparo de bomba: 68,9 mca un segundo.
+- **Commits:** ver el PR #31.
+- **Verificación:** `twin-lib validate`, `twin-lib plant validate` (las 3 plantas), `pytest` (194 pasan), `ruff check`, API en vivo (WebSocket con disparo de bomba y cierre de c44: la casa crítica pasa a c24).
+- **Decisiones:** [[decisiones]] (D31). Pendiente del autor: salida fija de la rama manual (20,94 recomendada, o 18,09).
+- **Conversación:** [[hilo-acueducto-planta-y-escena]].
+
+### 2026-10-17 15:25–16:00 · PR #28 · Bodega de producto terminado y despacho a camiones
+- **Fecha/hora (UTC):** 2026-10-17 15:25 a 16:00.
+- **Fase del plan:** [[plan-del-proyecto]] fase 5 (pendiente «pasarelas de la nave»).
+- **Solicitado por:** Carlos Andrés Quiceño, «Las pasarelas de la nave es como una bodega contigua a la zona donde se empaca… de empaque pasa directo a esa zona y después de ahí sale hacia los camiones» (15:25).
+- **Qué se hizo:** `plant.yaml` de la planta de salsas gana el paso directo `door-pt-01`, la estantería `rack-pt-03` acortada para dejar un carril de alistamiento frente a los muelles, los camiones `truck-01` y `truck-02`, tres pasillos de montacargas, dos rutas (`fk-empaque-bodega`, `fk-bodega-despacho`) y el flujo `dock-02 → truck-01`. Nuevo `apps/gallery/src/warehouse.ts` con la estantería con tarimas, el paso directo, el andén con nivelador y el camión (puertas abiertas y tarimas si carga); la estantería también se ve en la planta de inyección. Cámara «Bodega y despacho». La API entrega `params`. Documentado en `docs/plant-scene.md`. Distribución supuesta, ver D30.
+- **Commits:** ver el PR #28.
+- **Verificación:** `twin-lib validate`, `twin-lib plant validate`, `render_layout.py` (sin errores; un aviso esperado: la puerta está dentro del pasillo de recibo), `twin-lib plant run sauce-plant-v1 --scenario nominal`, `pytest`, `ruff`, `pnpm -r typecheck` y `pnpm -r test`. Capturas con la API y la simulación en vivo: [[fase8-bodega-y-despacho.png]] y [[fase8-camiones-en-muelle.png]].
+- **Decisiones:** [[decisiones]] D30.
+- **Pendiente:** el panel de gráficos del PLC se mostrará en un artefacto de monitoreo, fuera de la escena (curvas por definir con el autor). El transporte sigue sin simularse en el motor.
+- **Conversación:** [[hilo-bodega-de-producto-terminado]].
+
 ### 2026-10-17 15:38–16:10 · PR #29 · Control de peso: tolerancia de 4 %
 - **Fecha/hora (UTC):** 2026-10-17 15:38 a 16:10.
 - **Fase del plan:** [[plan-del-proyecto]] fase 4 (motor de planta), ajuste de presets.
@@ -61,6 +97,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 - **Verificación:** `uv run twin-lib validate` (OK), `uv run pytest` (183 pasan), `uv run ruff check .` (OK).
 - **Decisiones:** [[decisiones]] (D08).
 - **Conversación:** [[hilo-motor-de-planta]].
+
 ### 2026-10-17 12:58–15:40 · PR #27 (borrador) · Acueducto: banco hidráulico de la planta (entrega 4, primer paso)
 - **Solicitado por:** el autor (12:55 y 12:55:22 UTC): «Qué falta» y luego «Sí», para arrancar la planta.
 - **Qué se hizo:** `industrial-models/water-network-scale-v1/network.py` arma en una sola red el tanque, el grupo de bombas, el colector de 4", la estación reguladora, las cuatro columnas de 2" y las cuatro rejillas, con las funciones de `equipment-library` (sin copiar la lógica). Corre en estado estacionario con consumo de día.

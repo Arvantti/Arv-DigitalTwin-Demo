@@ -31,9 +31,8 @@ interface Scenario {
 interface DayData {
   target: number;
   manual: number;
-  pump_floor: number;
-  legacy_setting: number;
-  legacy_leak: number;
+  /** Consigna del sensor de descarga de las bombas (mca). */
+  pump_setpoint: number;
   valves: string[];
   actual: Scenario;
   opt: Scenario;
@@ -355,8 +354,8 @@ function start(D: DayData): void {
   /* ---------- 2. bombas ---------- */
   const spA = A.speed.map((x) => x * 100);
   kpis("k-bom", [
-    ["Entrada de la reguladora", `${fmt(Math.min(...A.p_station_in), 1)} a ${fmt(Math.max(...A.p_station_in), 1)}`, "mca", `sensor PT-201, piso de ${fmt(D.pump_floor, 0)} mca`],
-    ["Velocidad de las bombas", `${fmt(Math.min(...spA), 0)} a ${fmt(Math.max(...spA), 0)}`, "%", `mínima que sostiene ${fmt(D.pump_floor, 0)} mca`],
+    ["Descarga de las bombas", `${fmt(Math.min(...A.p_discharge), 1)} a ${fmt(Math.max(...A.p_discharge), 1)}`, "mca", `sensor PT-101, consigna ${fmt(D.pump_setpoint, 1)} mca`],
+    ["Velocidad de las bombas", `${fmt(Math.min(...spA), 0)} a ${fmt(Math.max(...spA), 0)}`, "%", `la que sostiene ${fmt(D.pump_setpoint, 1)} mca`],
     ["Caudal pico por bomba", fmt(Math.max(...A.pump_q[0]), 2), "m³/h", "diseño 13 m³/h cada una"],
     ["Cabeza de cada bomba", `${fmt(Math.min(...A.pump_head[0]), 1)} a ${fmt(Math.max(...A.pump_head[0]), 1)}`, "mca", "succión a descarga"],
   ]);
@@ -366,7 +365,7 @@ function start(D: DayData): void {
     const hint = $("b-hint");
     if (y === "h") {
       hint.textContent =
-        "Presión a la entrada de la reguladora (sensor que controla el PLC de Grundfos) y cabeza de cada bomba, en metros de columna de agua. Las dos bombas son iguales y sus curvas se superponen.";
+        "Presión en el sensor de descarga (el que controla el PLC de Grundfos), a la entrada de la reguladora y cabeza de cada bomba, en metros de columna de agua. Las dos bombas son iguales y sus curvas se superponen.";
       chart(el, {
         unit: "mca",
         yMin: 60,
@@ -375,12 +374,14 @@ function start(D: DayData): void {
         label: "Presión de las bombas",
         refs: [
           { y: 80, label: "80 pico máx.", c: "var(--warn)" },
+          { y: D.pump_setpoint, label: `${fmt(D.pump_setpoint, 1)} consigna`, c: "var(--ink3)" },
           { y: 70, label: "70 mínimo", c: "var(--crit)" },
           { y: 65, label: "65 por 5 s", c: "var(--serious)" },
         ],
         series: [
           { name: "Cabeza bomba 1", c: "var(--s1)", w: 3, values: A.pump_head[0] },
           { name: "Cabeza bomba 2", c: "var(--s2)", dash: true, values: A.pump_head[1] },
+          { name: "Descarga PT-101", c: "var(--s4)", values: A.p_discharge },
           { name: "Entrada reguladora PT-201", c: "var(--s3)", values: A.p_station_in },
         ],
       });
@@ -397,7 +398,7 @@ function start(D: DayData): void {
         ],
       });
     } else {
-      hint.textContent = `Velocidad de las dos bombas en % de la nominal, la mínima que sostiene ${fmt(D.pump_floor, 0)} mca a la entrada de la reguladora.`;
+      hint.textContent = `Velocidad de las dos bombas en % de la nominal, la que sostiene ${fmt(D.pump_setpoint, 1)} mca en el sensor de descarga.`;
       chart(el, { unit: "%", yMin: 50, yMax: 100, dec: 1, label: "Velocidad de las bombas", series: [{ name: "Bombas 1 y 2", c: "var(--s1)", values: spA }] });
     }
   };
@@ -406,9 +407,11 @@ function start(D: DayData): void {
   /* ---------- 4. gemelo ---------- */
   const lA = sum(A.leak_m3h);
   const lO = sum(O.leak_m3h);
+  const night = [0, 1, 2, 3, 4, 5];
+  const nightCut = 1 - sum(night.map((h) => O.leak_m3h[h])) / sum(night.map((h) => A.leak_m3h[h]));
   kpis("k-gem", [
-    [`Fugas frente a ${fmt(D.legacy_setting, 2)} mca`, fmt(D.legacy_leak - lA, 1), "m³/día evitados", `−${fmt((100 * (D.legacy_leak - lA)) / D.legacy_leak, 1)} % con la consigna de ${fmt(D.manual, 2)} mca`],
-    ["Ajuste hora a hora", fmt(lA - lO, 2), "m³/día más", `−${fmt((100 * (lA - lO)) / lA, 1)} % de fugas sobre la consigna fija`],
+    ["Fugas evitadas por el gemelo", fmt(lA - lO, 2), "m³/día", `−${fmt((100 * (lA - lO)) / lA, 1)} % frente a la consigna fija`],
+    ["Fugas de madrugada", `−${fmt(100 * nightCut, 1)}`, "%", "00:00 a 05:59, cuando más sobra presión"],
     ["Consigna recomendada", `${fmt(Math.min(...O.setting), 2)} a ${fmt(Math.max(...O.setting), 2)}`, "mca", `hoy fija en ${fmt(D.manual, 2)} mca`],
     ["Casa crítica con el gemelo", fmt(Math.min(...O.worst_p), 2), "mca", `norma 15 mca + 3 % = ${fmt(D.target, 2)}`],
   ]);
@@ -488,10 +491,10 @@ function start(D: DayData): void {
   const noise = (k: number, amp: number) => 1 + amp * (Math.sin(k * 12.9898 + performance.now() / 700) * 0.6 + Math.sin(k * 3.7 + performance.now() / 290) * 0.4);
   const valveSeries = (S: Scenario, i: number) => HOURS.map((h) => S.vp[h][i]);
   const SENS: { tg: string; nm: string; u: string; d?: number; sem?: boolean; f: (S: Scenario) => number }[] = [
-    { tg: "PT-101", nm: "Descarga bombas", u: "mca", f: (S) => lerp(S.p_discharge, t) },
+    { tg: "PT-101", nm: `Descarga bombas (consigna ${fmt(D.pump_setpoint, 1)})`, u: "mca", f: (S) => lerp(S.p_discharge, t) },
     { tg: "SC-101", nm: "Velocidad bombas", u: "%", f: (S) => 100 * lerp(S.speed, t) },
     { tg: "FT-101", nm: "Caudal bombeado", u: "m³/h", d: 2, f: (S) => lerp(S.pump_m3h, t) },
-    { tg: "PT-201", nm: `Entrada reguladora (piso ${fmt(D.pump_floor, 0)})`, u: "mca", f: (S) => lerp(S.p_station_in, t) },
+    { tg: "PT-201", nm: "Entrada reguladora", u: "mca", f: (S) => lerp(S.p_station_in, t) },
     { tg: "PT-202", nm: "Salida reguladora", u: "mca", f: (S) => lerp(S.p_station_out, t) },
     { tg: "ZT-201", nm: "Apertura PRV", u: "%", f: (S) => lerp(S.prv_opening_pct, t) },
     ...[1, 2, 3, 4].map((l) => ({

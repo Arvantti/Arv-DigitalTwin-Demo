@@ -1,14 +1,15 @@
 """Un día de operación del acueducto a escala en 24 ciclos de una hora, para el panel de gráficos del PLC.
 
-Corre el banco hidráulico (industrial-models/water-network-scale-v1/network.py) hora a hora con dos escenarios:
-- actual: la reguladora fija en STATION_SETTING_MCA y las bombas a la velocidad mínima que sostiene PUMP_FLOOR_MCA
-  a la entrada de la reguladora;
-- opt: la consigna mínima de la reguladora que deja la casa más desfavorable en TARGET_MCA (gemelo), con las bombas
-  al mismo piso de presión.
+Corre el banco hidráulico (industrial-models/water-network-scale-v1/network.py, la misma red del motor) hora a hora
+con dos escenarios:
+- actual: la rama manual de la reguladora, fija en la salida de diseño de día (la que deja la casa crítica en
+  CRITICAL_TARGET_MCA con todas las casas abiertas, 20,94 mca en D31);
+- opt: la consigna mínima de cada hora que deja la casa más desfavorable en CRITICAL_TARGET_MCA (gemelo, lo que hace
+  la rama automática).
+En los dos, las bombas van a la velocidad que sostiene PUMP_SETPOINT_MCA en su sensor de descarga.
 
 La apertura de cada casa es perfil diario × factor fijo de la casa (0,70–1,00) × variación horaria (±15 %), con
-semilla fija; las fugas quedan abiertas como en su preset. Además corre la consigna anterior de 26,66 mca para
-comparar el volumen de fugas.
+semilla fija; las fugas quedan abiertas como en su preset.
 
 Uso: uv run python tools/hydraulics/dia_acueducto.py [salida.json]
 (por defecto apps/gallery/public/data/acueducto-dia.json; tarda unos minutos, usa todos los núcleos)."""
@@ -27,13 +28,13 @@ import network as n  # noqa: E402
 
 PROFILE = [0.15, 0.12, 0.10, 0.10, 0.15, 0.35, 0.70, 1.00, 0.85, 0.65, 0.55, 0.60,
            0.75, 0.70, 0.55, 0.50, 0.55, 0.70, 0.90, 0.95, 0.80, 0.60, 0.40, 0.25]
-TARGET_MCA = 15.45  # 15 mca de norma + 3 % (D29)
-LEGACY_SETTING_MCA = 26.66  # consigna manual anterior a D29, solo para comparar fugas
+TARGET_MCA = n.CRITICAL_TARGET_MCA  # 15 mca de norma + 3 % (D29)
+MANUAL_SETTING_MCA = n.setting_for(TARGET_MCA)  # rama manual: salida de diseño de día
 SEED = 17
 RETRY_TOLERANCE = 5e-3
 
 _rng = random.Random(SEED)
-_net0, _info0 = n.build(pump_speed=1.0)
+_net0, _info0 = n.build(station_setting_mca=MANUAL_SETTING_MCA, pump_speed=1.0)
 CONSUMERS = [(g, v) for g, mp in _info0["grids"].items() for v in mp if v.startswith("c")]
 MULT = {cv: _rng.uniform(0.7, 1.0) for cv in CONSUMERS}
 JIT = {(h, cv): _rng.uniform(0.85, 1.15) for h in range(24) for cv in CONSUMERS}
@@ -62,11 +63,11 @@ def worst(res, info) -> tuple[str, float]:
 
 
 def speed_floor(h: int, setting: float) -> float:
-    """Velocidad mínima de las bombas que deja PUMP_FLOOR_MCA a la entrada de la reguladora."""
+    """Velocidad de las bombas que deja PUMP_SETPOINT_MCA en su sensor de descarga."""
     lo, hi = 0.3, 1.0
     for _ in range(14):
         mid = (lo + hi) / 2
-        if run(h, setting, mid)[2].pressures_mca["entrada_est"] >= n.PUMP_FLOOR_MCA:
+        if run(h, setting, mid)[2].pressures_mca["descarga"] >= n.PUMP_SETPOINT_MCA:
             hi = mid
         else:
             lo = mid
@@ -100,7 +101,7 @@ def summarize(net, info, r, setting: float, speed: float) -> dict:
 
 
 def hour(h: int) -> dict:
-    fixed = n.STATION_SETTING_MCA
+    fixed = MANUAL_SETTING_MCA
     sp = speed_floor(h, fixed)
     actual = summarize(*run(h, fixed, sp), fixed, sp)
     lo, hi = 10.0, 30.0
@@ -113,17 +114,15 @@ def hour(h: int) -> dict:
             lo = mid
     sp2 = speed_floor(h, hi)
     opt = summarize(*run(h, hi, sp2), hi, sp2)
-    legacy_leak = summarize(*run(h, LEGACY_SETTING_MCA), LEGACY_SETTING_MCA, 1.0)["leak_m3h"]
     print(f"hora {h:02d}: casa crítica {actual['worst_p']} mca, consigna gemelo {opt['setting']} mca", file=sys.stderr)
-    return {"actual": actual, "opt": opt, "legacy_leak": legacy_leak}
+    return {"actual": actual, "opt": opt}
 
 
 def compact(hours: list[dict]) -> dict:
     """Arreglos por variable (24 valores), como los lee el panel."""
     keys = list(hours[0]["actual"]["valves"])
-    out = {"target": TARGET_MCA, "manual": n.STATION_SETTING_MCA, "pump_floor": n.PUMP_FLOOR_MCA,
-           "legacy_setting": LEGACY_SETTING_MCA, "demand": PROFILE, "seed": SEED,
-           "legacy_leak": round(sum(h["legacy_leak"] for h in hours), 3), "valves": keys}
+    out = {"target": TARGET_MCA, "manual": MANUAL_SETTING_MCA, "pump_setpoint": n.PUMP_SETPOINT_MCA,
+           "demand": PROFILE, "seed": SEED, "valves": keys}
     for sc in ("actual", "opt"):
         s: dict = {f: [h[sc][f] for h in hours] for f in ("setting", "speed", "p_discharge", "p_station_in",
                    "p_station_out", "prv_opening_pct", "worst", "worst_p", "cons_m3h", "leak_m3h", "pump_m3h")}

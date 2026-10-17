@@ -2,7 +2,7 @@
 tipo: historico-ia
 fuente: hilo «Panel de gráficos del PLC del acueducto» (Claude Projects)
 desde: 2026-10-17 15:28
-hasta: 2026-10-17 18:55
+hasta: 2026-10-17 22:55
 tags: [registro, historico-ia, acueducto, panel-plc]
 ---
 # Hilo: panel de gráficos del PLC del acueducto (PR #32)
@@ -137,3 +137,9 @@ Bueno, entonces este artefacto hay que llevar el código para que el sistema des
 Sí, el panel debe vivir en el frontend del sistema. Reviso cómo está armado el frontend del repo para integrarlo ahí.
 
 *(Herramientas: script `tools/hydraulics/dia_acueducto.py`, página `apps/gallery/acueducto.html` con `src/acueducto-panel.ts`, captura de la galería local y PR #32. 18:47 UTC: el coordinador avisó que el PR #31 cambia el banco y agrega la API en vivo; queda como paso siguiente.)*
+
+### 👤 Carlos Andrés Quiceño · 22:39:35 UTC (comentario en el PR #32)
+
+Resolver conflictos
+
+*(Herramientas: merge de `main` (PR #28, #31 y #33) en la rama; la decisión del panel pasa a D32; el script se ajusta a la red del motor (rama manual de 20,94 mca, bombas a 72,1 mca en la descarga) y se regeneran los datos y las capturas.)*

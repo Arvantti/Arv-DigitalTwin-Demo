@@ -1,6 +1,6 @@
 # Acueducto a escala (tercera planta de demostración) · diseño
 
-Estado: diseño fusionado (PR #13, supuestos S1–S7 aceptados por defecto al fusionarlo), **solucionador hidráulico hecho** (PR #14, sección 5.1) y los 4 tipos de equipo en la librería (PR #22 a #24). Faltan la planta con el motor y la escena (sección 9). Navier-Stokes queda para una fase posterior, pero el modelo se prepara desde ahora para recibirlo (sección 8).
+Estado: diseño fusionado (PR #13, supuestos S1–S7 aceptados por defecto al fusionarlo), **solucionador hidráulico hecho** (PR #14, sección 5.1), los 4 tipos de equipo en la librería (PR #22 a #24) y **la planta en el motor de planta** (`industrial-models/water-network-scale-v1/`, sección 5.2, entrega 4). Falta la escena 3D del edificio (sección 9). Navier-Stokes queda para una fase posterior, pero el modelo se prepara desde ahora para recibirlo (sección 8).
 
 Pedido original: Carlos Andrés Quiceño, 2026-10-17 00:20 UTC (hilo «Acueducto a escala», ver `docs/registro/historico/proyecto/hilo-acueducto-a-escala.md`).
 
@@ -153,7 +153,18 @@ net.set("house", opening=0.3); net.set("prv", setting_mca=22.0); net.set_head("s
 - **Estados** como EPANET: bombas, antirretornos y descargas no dejan pasar caudal al revés; la PRV queda `active` (fija su presión de salida), `open` (no le alcanza la presión de entrada) o `closed` (aguas abajo hay más que su consigna).
 - **Arranque en caliente:** cada `solve()` parte de la solución anterior. La red de diseño (163 nodos, 162 elementos) converge en 6 iteraciones en frío y en 3 a 5 tras un cambio, en milisegundos, así que se puede resolver en cada paso de 1 s.
 - **Pruebas** (`packages/twin-runtime/tests/test_hydraulics.py`): casos calculados a mano (descarga por Kv, válvulas en serie y en paralelo, bomba contra la curva del sistema, bombas en paralelo, velocidad, PRV activa, abierta y cerrada, antirretorno, Hagen-Poiseuille, Darcy-Weisbach) y la red de diseño completa, que reproduce la sección 4 dentro del 2 %: 13,0 m³/h y 20,0 mca en la válvula crítica de día, 23,4 mca de noche con la PRV fija. Las tolerancias de las pruebas son relativas.
-- **Pendiente para la entrega 4:** el motor de planta todavía no arma la red desde los contratos; se usa directamente desde Python.
+- **Entrega 4:** el motor de planta ya arma la red desde los contratos (sección 5.2).
+
+### 5.2 La planta en el motor (entrega 4, hecha)
+
+`industrial-models/water-network-scale-v1/plant.yaml` (edificio, pisos, rutas de los tubos) y `simulation.yaml` (equipos, enlaces y escenarios de prueba). El dominio hidráulico del motor se describe en `docs/plant-engine.md` (sección 2b): una sola red con los elementos de los 13 equipos y los tubos del plano, resuelta en cada paso.
+
+- **Pisos (supuesto S2):** cada 2,5 m. Piso 0: tanques de retorno (Ø 1,3 × 1,7 m) y bombas de recirculación, debajo de la columna. Piso 1 (cota 2,5): tanque de bombeo (Ø 1,5 × 2,2 m), las dos bombas multietapa, la subida de 1 m, la estación a 3,5 m y la bajada al nivel 1 de la rejilla a ras del piso. Columna: niveles a 2,5, 3,7, 4,9 y 6,1 m.
+- **Columna en serie** como la describió el autor: nivel 1 → válvula entre niveles → nivel 2 → … → nivel 4. El banco anterior de `network.py` tenía una columna directa a cada nivel; ahora `network.py` arma la misma red que el motor, con los tubos del plano, y es el cálculo de referencia de los escenarios.
+- **Consignas:** bombas a 72,1 mca en su sensor de descarga (70 + 3 %, supuesto: PLC cerrado), las dos de trabajo siempre (`min_running: 2`); estación en la rama automática con la casa crítica en 15,45 mca. Con la serie, de día la estación queda en **20,94 mca** (no 18,09: esa cifra era de la columna directa) y la rama manual se deja en esa salida (decisión en curso con el autor). De noche (casas al 30 %) baja a 18,46 mca.
+- **Resultados (banco y motor coinciden en ± 0,5 %):** de día 11,53 m³/h, 71,1 mca a la entrada de la reguladora y fugas 1,28 m³/h; la casa crítica es c44 del nivel 4. De noche, la rama automática ahorra 6,4 % de fugas frente a la manual con la salida del día (1,253 contra 1,338 m³/h).
+- **Disparo de una bomba:** la otra salta con la rampa del variador a la velocidad que sostiene la misma altura (anticipación, supuesto del control); la presión baja a 68,9 mca un segundo, dentro de la regla de D29 (piso de 65 mca, hasta 5 s).
+- **Recirculación:** las bajantes de los niveles 1 y 2 van al tanque de retorno 1 y las de 3 y 4 al 2; las bombas de recirculación arrancan con los tanques de retorno al 60 % y paran con el de bombeo al 90 % (≈ 20 min por ciclo). El agua se conserva (prueba `test_water_is_conserved_through_the_recirculation`).
 
 ### Control
 
@@ -205,8 +216,8 @@ La fase 1 es un modelo 1D (red). Para acoplar después CFD (Navier-Stokes) sin r
 1. **Este diseño** y el script de predimensionamiento (sin código de producción). Hecho: PR #13.
 2. **Solucionador hidráulico** en `twin-runtime`, con pruebas contra casos calculados a mano (tubo simple, dos ramas en paralelo, bomba contra curva del sistema, PRV). Hecho: PR #14.
 3. **Tipos de equipo** `booster-pump-set`, `pressure-reducing-station`, `regulating-valve` y `distribution-grid` (contrato, comportamiento, geometría, presets, escenarios) y el preset `water-1000l` de `vessel`. Captura de la galería de cada uno. Hecho: PR #22 y #23 (`booster-pump-set`, `regulating-valve`, `water-1000l`) y PR #24 (`pressure-reducing-station`, `distribution-grid`); PR #25 agranda las bombas principales a 13 m³/h para que una sola sostenga la presión y numera las válvulas de la rejilla.
-4. **Planta** `industrial-models/water-network-scale-v1/` (`plant.yaml` con pisos y rutas, `simulation.yaml`) y dominio hidráulico del motor, con los escenarios de la sección 6. En curso: el banco en régimen permanente (`network.py`) ya arma la red completa; falta el motor y el paso en el tiempo.
-5. **Escena 3D** del edificio, con captura y API de simulación.
+4. **Planta** `industrial-models/water-network-scale-v1/` (`plant.yaml` con pisos y rutas, `simulation.yaml`) y dominio hidráulico del motor, con los escenarios de la sección 6. Hecho (sección 5.2); `night-pressure` usa un cambio de apertura al 30 % en vez de la curva de 24 h, que se deja para los escenarios que cree el usuario.
+5. **Escena 3D** del edificio, con captura y API de simulación. Hecho: PR #33 (pisos a su cota, tubos con su trazado y diámetro, caudal y velocidad reales, soportes y cámaras por piso y por nivel; ver `docs/plant-scene.md`).
 
 ## 10. Supuestos para confirmar
 

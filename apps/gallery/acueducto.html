@@ -46,7 +46,7 @@
       </div>
       <div class="chart" id="c-pres"></div>
     </div>
-    <p class="note">Con la reguladora fija en 18,09 mca la presión casi no cambia en el día: en el banco las pérdidas por fricción en tubería de 2" son pequeñas frente a la consigna, así que la estación reguladora es la que fija la presión de cada piso. El nivel 4 queda 3,6 m más alto que el nivel 1 y por eso tiene la casa más desfavorable.</p>
+    <p class="note">La estación reguladora fija la presión de entrada a la rejilla; la presión de cada casa es esa salida menos la altura y la fricción. Con la columna en serie, la fricción cambia con el consumo: de madrugada sobra presión en la casa crítica y en el pico de la mañana queda cerca de 15,45 mca. El nivel 4 es el más alto y el último de la columna, por eso tiene la casa más desfavorable.</p>
   </section>
 
   <!-- 2. BOMBAS -->
@@ -59,7 +59,7 @@
       </div>
       <div class="chart" id="c-bom"></div>
     </div>
-    <p class="note">Las dos bombas trabajan a la vez con su PLC propio de Grundfos, a la velocidad mínima que sostiene 70 mca en el sensor de la entrada de la reguladora. Los picos hasta 80 mca y los bajones hasta 65 mca por 5 s son transitorios que este día, calculado en estado estacionario hora a hora, no tiene. Los parámetros de rampa del PLC de Grundfos son cerrados; el banco los toma como supuestos.</p>
+    <p class="note">Las dos bombas trabajan a la vez con su PLC propio de Grundfos, a la velocidad que sostiene la consigna de 72,1 mca en el sensor de descarga (70 mca + 3 %). Los picos hasta 80 mca y los bajones hasta 65 mca por 5 s son transitorios que este día, calculado en estado estacionario hora a hora, no tiene. Los parámetros de rampa del PLC de Grundfos son cerrados; el banco los toma como supuestos.</p>
   </section>
 
   <!-- 3. SENSORES -->
@@ -94,14 +94,14 @@
       <div class="card"><div class="chead"><div><h2>Casa más desfavorable</h2><p class="hint">Presión mínima de la red cada hora, operación actual frente a la consigna del gemelo.</p></div></div><div class="chart" id="c-crit"></div></div>
       <div class="card"><div class="chead"><div><h2>Consigna de la reguladora</h2><p class="hint">Presión de salida de la estación y apertura de la PRV.</p></div><div class="controls"><div class="seg" id="g-prv"><button aria-pressed="true" data-y="s">Salida mca</button><button aria-pressed="false" data-y="a">Apertura %</button></div></div></div><div class="chart" id="c-set"></div></div>
       <div class="card"><div class="chead"><div><h2>Fugas por hora</h2><p class="hint">Caudal de las válvulas de fuga L1 y L2 de los cuatro niveles.</p></div></div><div class="chart" id="c-leak"></div></div>
-      <div class="card"><div class="chead"><div><h2>Velocidad de las bombas</h2><p class="hint">Velocidad de las bombas con cada escenario; las dos sostienen 70 mca a la entrada de la reguladora.</p></div></div><div class="chart" id="c-gpump"></div></div>
+      <div class="card"><div class="chead"><div><h2>Velocidad de las bombas</h2><p class="hint">Velocidad de las bombas con cada escenario; en los dos sostienen 72,1 mca en el sensor de descarga.</p></div></div><div class="chart" id="c-gpump"></div></div>
     </div>
     <div class="card">
       <h2>Cómo calcula el gemelo</h2>
       <div class="method" style="margin-top:10px">
         <div><h3>Modelo hidráulico</h3><p>Red de tuberías en una dimensión: Darcy-Weisbach con factor de fricción de Swamee-Jain (Hagen-Poiseuille en laminar) y pérdidas por accesorios K·v²/2g. Es la forma integrada de Navier-Stokes para flujo en tubería, no una simulación CFD en 3D.</p></div>
-        <div><h3>Optimización</h3><p>Para cada hora busca por bisección la consigna mínima de la PRV que deja la casa más desfavorable en 15,45 mca (15 de norma más 3 %). La casa crítica se recalcula en cada corrida. Después ajusta la velocidad de las bombas a la mínima que sostiene 70 mca a la entrada de la reguladora.</p></div>
-        <div><h3>Qué falta</h3><p>El consumo del banco depende de la presión (válvulas de apertura fija), así que bajar la presión también baja lo que recibe cada casa. Con demanda por volumen la parte de fugas sobre el total bajaría; hoy queda en el mismo porcentaje.</p></div>
+        <div><h3>Optimización</h3><p>Para cada hora busca por bisección la consigna mínima de la PRV que deja la casa más desfavorable en 15,45 mca (15 de norma más 3 %), lo que haría la rama automática. La operación actual es la rama manual fija en la salida de diseño de día. La casa crítica se recalcula en cada corrida.</p></div>
+        <div><h3>Qué falta</h3><p>El consumo del banco depende de la presión (válvulas de apertura fija), así que bajar la presión también baja un poco lo que recibe cada casa. La pantalla de sensores reproduce el día calculado; el paso siguiente es leer la red en vivo de la API del motor.</p></div>
       </div>
     </div>
   </section>

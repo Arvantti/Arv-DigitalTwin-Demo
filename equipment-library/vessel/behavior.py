@@ -12,6 +12,7 @@ AMBIENT_C = 22.0
 LOSS_W_M2K = 8.0
 CP_KJ_KGK = 3.8
 HEATING_KW_PER_M3 = 6.0  # potencia de chaqueta típica por m³ de volumen
+OUTLET_KV_M3H = 400.0  # válvula de fondo abierta (4"): casi sin pérdida
 
 
 def vessel_dimensions(volume_l: float, form: str, diameter_m: float = 0.0) -> tuple[float, float]:
@@ -51,6 +52,26 @@ class Vessel(EquipmentBehavior):
         self.flags: set[str] = set()
         self.accepting = True
         self.available = self.mass > 0.0
+
+    # ------------------------------------------------------------------ red de agua (motor de planta)
+    def hydraulic_build(self, net: Any, prefix: str, elevation_m: float) -> None:
+        """En una red de agua el tanque es una cabeza fija: el fondo a la cota del equipo más la altura del agua.
+        La salida es una válvula de fondo hacia el puerto outlet; la entrada (inlet) descarga libre por arriba."""
+        self.base_m = elevation_m
+        net.add_fixed_head(prefix + "water", elevation_m + self._water_height(), elevation_m=elevation_m)
+        net.add_node(prefix + "outlet", elevation_m)
+        net.add_valve(prefix + "outlet_valve", prefix + "water", prefix + "outlet", kv_m3h=OUTLET_KV_M3H)
+        top = elevation_m + self.height
+        net.add_fixed_head(prefix + "inlet", top, elevation_m=top)
+
+    def hydraulic_sync(self) -> None:
+        """Antes de cada solución: la cabeza sigue al nivel y la válvula de fondo cierra si el tanque está vacío."""
+        self.net.set_head("water", self.base_m + self._water_height())
+        dry = self.mass <= 1e-6 or self.failures.is_active("outlet_valve_fault")
+        self.net.set("outlet_valve", opening=0.0 if dry else 1.0)
+
+    def _water_height(self) -> float:
+        return self.height * self.level_pct / 100.0
 
     # ------------------------------------------------------------------ comandos
     def on_command(self, name: str, args: dict[str, Any]) -> bool:

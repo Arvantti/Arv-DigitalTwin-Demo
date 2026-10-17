@@ -69,6 +69,18 @@ def test_plant_layout_links_simulated_equipment_to_library_types() -> None:
     assert client.get("/api/plants/no-existe").status_code == 404
 
 
+def test_water_plant_pipes_carry_route_diameter_and_hydraulic_link() -> None:
+    plant = client.get("/api/plants/water-network-scale-v1").json()
+    assert {z["id"]: z["elevation"] for z in plant["zones"]}["piso-1"] == 2.5
+    by_pipe = {(p["from"], p["to"]): p for p in plant["pipes"]}
+    riser = by_pipe[("prs-01", "grid-01")]
+    assert riser["diameter_in"] == 4
+    assert riser["route"][0] == [7.7, 4.6, 3.9]
+    assert riser["links"] == ["prs-01:outlet>grid-01:inlet"]
+    drop = by_pipe[("grid-03", "tank-recirc-02")]  # bajante: sin ruta ni diámetro, la escena la dibuja vertical
+    assert "route" not in drop and drop["links"]
+
+
 def test_injection_plant_exposes_its_simulated_machines_and_conveyor() -> None:
     plant = client.get("/api/plants/plastic-injection-plant-v1").json()
     by_id = {e["id"]: e for e in plant["equipment"]}
@@ -92,7 +104,10 @@ def test_injection_plant_exposes_aisles_and_routes() -> None:
     assert routes["fk-ensamble-pt-1"]["from"] == "assembly-01"
     assert all(len(r["path"]) >= 2 for r in routes.values())
     assert {a["id"] for a in plant["aisles"]} >= {"aisle-sur", "aisle-pt-1"}
-    assert client.get("/api/plants/sauce-plant-v1").json()["routes"] == []
+    sauce = client.get("/api/plants/sauce-plant-v1").json()
+    assert {r["id"] for r in sauce["routes"]} == {"fk-empaque-bodega", "fk-bodega-despacho"}
+    trucks = {e["id"]: e["params"]["state"] for e in sauce["equipment"] if e["type"] == "delivery_truck"}
+    assert trucks == {"truck-01": "loading", "truck-02": "waiting"}
 
 
 def test_layout_only_plant_has_no_lines(tmp_path, monkeypatch) -> None:

@@ -30,9 +30,9 @@ params:
   bench_load_kv_m3h:    { type: number, unit: m3/h, min: 0.01, max: 5000, default: 9.283, description: "Banco de prueba: Kv equivalente de lo que se consume en el punto crítico (descarga a la atmósfera)", affects: [behavior] }
 
 ports:
-  - { id: inlet, kind: material, direction: in, medium: agua, unit: m3/h }
-  - { id: outlet, kind: material, direction: out, medium: agua, unit: m3/h }
-  - { id: critical_pressure, kind: signal, direction: in, medium: "presión del punto crítico (telemetría)", unit: mca }
+  - { id: inlet, kind: material, direction: in, medium: agua, unit: m3/h, hydraulic: inlet }
+  - { id: outlet, kind: material, direction: out, medium: agua, unit: m3/h, hydraulic: outlet }
+  - { id: critical_pressure, kind: signal, direction: in, medium: "presión del punto crítico (telemetría)", unit: mca, link: { pressure_mca: critical_pressure_mca } }
   - { id: power, kind: utility, direction: in, medium: "energía eléctrica (controlador y telemetría)" }
 
 states:

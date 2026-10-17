@@ -81,7 +81,20 @@ zones:
   # Sala de control: junto a la subestación (tableros y acometida cercanos). Sin vista directa al proceso: se opera por el panel.
   - { id: sala-control,      name: Sala de control del PLC,       kind: admin,    hygiene_class: admin,       temperature_c: 22,   rect: [68, 0, 14, 10],  height: 3.5 }
 
-aisles: []
+# Pasillos de montacargas de la bodega de producto terminado (supuestos: el plano no los trae).
+aisles:
+  - { id: aisle-pt-salida-empaque, kind: forklift, rect: [83, 12, 3, 10] }       # junto a la envolvedora hasta el paso directo
+  - { id: aisle-pt-recibo,         kind: forklift, rect: [83, 12, 17, 4] }       # recibo: norte de las estanterías
+  - { id: aisle-pt-alistamiento,   kind: forklift, rect: [94.25, 12, 5.75, 40] } # carril este frente a los muelles
+
+routes:
+  - { id: fk-empaque-bodega, name: "Tarimas de la envolvedora a la bodega de producto terminado", kind: forklift,
+      from: wrapper-01, to: rack-pt-02, load: "tarima de cajas de salsa", width: 1.5, trips_per_h: 20,
+      passes_under: [door-pt-01],
+      path: [[84, 20], [84, 14], [92.5, 14]] }
+  - { id: fk-bodega-despacho, name: "Tarimas de la bodega al muelle 2 y al camión", kind: forklift,
+      from: rack-pt-02, to: dock-02, load: "tarima de cajas de salsa", width: 1.5, trips_per_h: 12,
+      path: [[95.5, 16], [95.5, 38], [99.5, 38]] }
 
 # Pasarelas elevadas (plataformas de operación). path: puntos [x, y] del eje; width: ancho libre (m);
 # elevation: altura del piso de la pasarela (m); access: puntos [x, y] de escalera de acceso hasta el piso.
@@ -176,12 +189,19 @@ equipment:
   - { id: wrapper-01,   type: stretch_wrapper, zone: encajado, position: [81, 20, 0], footprint: [3, 3, 2.5], params: { pallets_h: 20 } }
 
   # --- Bodega de producto terminado y despacho ---
+  # Contigua a la zona de empaque (supuesto: no hay medidas del plano). La tarima sale de la envolvedora, cruza el paso directo
+  # de la pared (puerta de 4 m) por el pasillo de recibo al norte y se estiba en las estanterías; para despachar, el montacargas
+  # la lleva por el carril este (alistamiento) al andén y de ahí al camión.
+  - { id: door-pt-01, type: pass_through_door, zone: bodega-pt, position: [86.4, 14, 0], footprint: [0.8, 3.8, 4.5], params: { note: "paso directo empaque → bodega, sin esclusa (supuesto)" } }
   - { id: rack-pt-01, type: pallet_rack, zone: bodega-pt, position: [88, 41, 0],   footprint: [1.5, 50, 7], params: { positions: 150, note: rack sencillo } }
   - { id: rack-pt-02, type: pallet_rack, zone: bodega-pt, position: [93, 41, 0],   footprint: [2.5, 50, 7], params: { positions: 300 } }
-  - { id: rack-pt-03, type: pallet_rack, zone: bodega-pt, position: [98.5, 41, 0], footprint: [1.5, 50, 7], params: { positions: 150, note: rack sencillo } }
+  - { id: rack-pt-03, type: pallet_rack, zone: bodega-pt, position: [98.5, 59, 0], footprint: [1.5, 14, 7], params: { positions: 42, note: "rack sencillo corto: deja libre el carril de alistamiento frente a los muelles" } }
   - { id: dock-01, type: dock_leveler, zone: patio-despacho, position: [102, 28, 0], footprint: [3, 4, 1.2], params: {} }
   - { id: dock-02, type: dock_leveler, zone: patio-despacho, position: [102, 38, 0], footprint: [3, 4, 1.2], params: {} }
   - { id: dock-03, type: dock_leveler, zone: patio-despacho, position: [102, 48, 0], footprint: [3, 4, 1.2], params: {} }
+  # Camiones sencillos de ≈ 8,4 m (caja seca de 6,5 m): caben en el patio de 12 m. El del muelle 2 se está cargando; el del 3 espera.
+  - { id: truck-01, type: delivery_truck, zone: patio-despacho, position: [107.75, 38, 0], footprint: [8.4, 2.6, 3.4], params: { state: loading, cargo: estibas de salsa en sachet } }
+  - { id: truck-02, type: delivery_truck, zone: patio-despacho, position: [107.75, 48, 0], footprint: [8.4, 2.6, 3.4], params: { state: waiting } }
 
   # --- Laboratorio y mantenimiento ---
   - { id: lab-bench-01,     type: lab_bench, zone: laboratorio,   position: [40, 63, 0], footprint: [8, 1, 1],   params: { tests: [Brix, pH, acidez, consistómetro Bostwick, viscosidad, estabilidad de emulsión, microbiología] } }
@@ -333,6 +353,7 @@ flows:
   - { from: pack-sauce-1000,  to: wrapper-01,        medium: cajas de 4,        rate: 7.5,   unit: cajas/min }
   - { from: wrapper-01,       to: rack-pt-02,        medium: estibas,           rate: 35,    unit: pallets/d, show: true }
   - { from: rack-pt-02,       to: dock-02,           medium: estibas,           rate: 35,    unit: pallets/d, show: true }
+  - { from: dock-02,          to: truck-01,          medium: estibas,           rate: 35,    unit: pallets/d, show: true }
   # Servicios
   - { from: boiler-01,        to: steam-station-01,  medium: vapor,             rate: 900,   unit: kg/h, piped: true }
   - { from: steam-station-01, to: kettle-01,         medium: vapor,             rate: 450,   unit: kg/h, piped: true }
