@@ -1,6 +1,6 @@
 # Acueducto a escala (tercera planta de demostración) · diseño
 
-Estado: diseño fusionado (PR #13, supuestos S1–S7 aceptados por defecto al fusionarlo), **solucionador hidráulico hecho** (PR #14, sección 5.1) y primeros equipos en la librería (PR #22: grupo de bombeo, válvula entre niveles y tanque de agua). Faltan la estación reguladora, la rejilla, la planta y la escena (sección 9). Navier-Stokes queda para una fase posterior, pero el modelo se prepara desde ahora para recibirlo (sección 8).
+Estado: diseño fusionado (PR #13, supuestos S1–S7 aceptados por defecto al fusionarlo), **solucionador hidráulico hecho** (PR #14, sección 5.1) y primeros equipos en la librería (PR #22 y #23: grupo de bombeo, válvula entre niveles y tanque de agua). Faltan la estación reguladora, la rejilla, la planta y la escena (sección 9). Navier-Stokes queda para una fase posterior, pero el modelo se prepara desde ahora para recibirlo (sección 8).
 
 Pedido original: Carlos Andrés Quiceño, 2026-10-17 00:20 UTC (hilo «Acueducto a escala», ver `docs/registro/historico/proyecto/hilo-acueducto-a-escala.md`).
 

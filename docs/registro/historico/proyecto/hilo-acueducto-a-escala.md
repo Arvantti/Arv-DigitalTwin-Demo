@@ -92,6 +92,6 @@ Explicó el supuesto S4: 2 bombas de trabajo porque una de 8 m³/h solo da ≈ 8
 
 Solo 2 pero ok de 1a6
 
-### 🤖 Claude (hilo) · 05:26–05:40 UTC
+### 🤖 Claude (hilo) · 05:26–05:45 UTC
 
-Cambió el preset principal a `multistage-2x8m3h-80m` (2 bombas de trabajo, sin reserva), rehízo el escenario de disparo de bomba (sin reserva la otra sola entrega 11,3 m³/h a 60,4 mca y salta la alarma de baja presión) y agregó `pump-trip-recovery`. Actualizó el diseño (S4), la ficha, la decisión D24, la bitácora y las capturas.
+El PR #22 ya estaba fusionado, así que reinició la rama desde `main` y abrió el PR #23. Cambió el preset principal a `multistage-2x8m3h-80m` (2 bombas de trabajo, sin reserva), rehízo el escenario de disparo de bomba (sin reserva la otra sola entrega 11,3 m³/h a 60,4 mca y salta la alarma de baja presión) y agregó `pump-trip-recovery`. Actualizó el diseño (S4), la ficha, la decisión D24, la bitácora y las capturas.
