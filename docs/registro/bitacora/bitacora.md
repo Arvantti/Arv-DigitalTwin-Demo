@@ -1,7 +1,7 @@
 ---
 tipo: bitacora
 tags: [registro, bitacora]
-actualizado: 2026-10-16
+actualizado: 2026-10-17
 ---
 # Bitácora de avances
 
@@ -10,6 +10,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
+| 2026-10-17 | #13 | Diseño de la tercera planta: acueducto a escala (documento y predimensionamiento, sin código de producción) | acueducto |
 | 2026-10-16 | #12 | Fase 5: la planta de inyección se simula y se ve en la escena (29 inyectoras y banda principal) | 5 |
 | 2026-10-16 | #11 | Fase 5: el desvío del pasteurizador regresa a la marmita que descarga (motor, contratos, escena) | 5 |
 | 2026-10-16 | #10 | Fase 5: el motor publica el caudal de cada enlace y las tuberías se animan con él | 5 |
@@ -24,6 +25,15 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 | 2026-10-16 | #1 | Layouts de las plantas | 1 |
 
 ## Entradas
+
+### 2026-10-17 00:21–00:45 · PR #13 · Diseño del acueducto a escala (tercera planta)
+- **Fecha/hora (UTC):** 2026-10-17 00:21 a 00:45.
+- **Fase del plan:** [[plan-del-proyecto]], nueva planta de demostración (acueducto), entrega 1 de 5.
+- **Solicitado por:** Carlos Andrés Quiceño (00:20): «quiero añadir una nueva planta […] va a representar el sistema de acueducto de una ciudad», con bombeo en paralelo a 80 mca, estación reguladora con rama automática y manual, rejilla de cuatro niveles con válvulas de consumo y de fuga, recirculación, y 20 mca en la válvula más crítica; «por ahora la primera fase es crear el modelo digital» y después Navier-Stokes.
+- **Qué se hizo:** documento de diseño `docs/water-network-plant.md` (distribución por pisos, equipos y tipos de librería, predimensionamiento, modelo de simulación con un solucionador hidráulico en el motor, control, KPIs, escenarios, escena 3D, preparación para Navier-Stokes, entregas y supuestos S1–S7) y script `tools/hydraulics/predimensionamiento.py` que reproduce las cifras. `docs/roadmap.md` agrega la planta.
+- **Verificación:** el script corre (día: 13,0 m³/h, salida PRV 26,7 mca, 20,0 mca en la válvula crítica; noche al 30 %: PRV automática 20,0 mca y 1,42 m³/h de fugas contra 23,4 mca y 1,50 m³/h con la manual) y pasa `ruff`. Sin cambios visuales, por eso no hay captura.
+- **Decisiones:** [[decisiones]] D15.
+- **Conversación:** [[hilo-acueducto-a-escala]].
 
 ### 2026-10-16 22:31–22:45 · PR #12 · Planta de inyección en la escena (fase 5)
 - **Fecha/hora (UTC):** 2026-10-16 22:31 a 22:45.

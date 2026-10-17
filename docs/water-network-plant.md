@@ -1,0 +1,192 @@
+# Acueducto a escala (tercera planta de demostración) · diseño
+
+Estado: **diseño para revisión del autor** (fase 1 del acueducto: modelo digital). Ningún equipo, plano ni simulación de esta planta existe todavía en el repositorio; este documento fija qué se va a construir y con qué supuestos. Navier-Stokes queda para una fase posterior, pero el modelo se prepara desde ahora para recibirlo (sección 8).
+
+Pedido original: Carlos Andrés Quiceño, 2026-10-17 00:20 UTC (hilo «Acueducto a escala», ver `docs/registro/historico/proyecto/hilo-acueducto-a-escala.md`).
+
+## 1. Qué representa
+
+Un banco de pruebas a escala, montado en un edificio, que reproduce el acueducto de una ciudad:
+
+- **Bombeo** desde tanques con bombas multietapa en paralelo que entregan **80 mca**.
+- **Estación reguladora de presión** con dos ramas a elegir a mano: una válvula reductora con control automático y otra con control manual.
+- **Red de distribución** de cuatro niveles. Cada nivel es una **rejilla** rectangular de válvulas que representan las casas de una comuna o barrio, más unas válvulas de **fuga** (pérdidas técnicas, fraudes, conexiones ilegales) pintadas de otro color.
+- **Recirculación**: lo que sale por las válvulas cae a canaletas, baja a los tanques de recirculación y vuelve a subir a los tanques de bombeo.
+
+El objetivo de control es el de una empresa de acueducto real: **bombear a 80 mca y que la estación reguladora baje la presión hasta dejar 20 mca en la válvula más crítica de la red**, no solo a su propia salida. Con eso la demo muestra la gestión de presión: menos presión de sobra, menos fugas.
+
+## 2. Distribución en el edificio
+
+Supuesto: pisos de 3,0 m entre losas; la rejilla atraviesa la losa del piso 4 por un vacío.
+
+| Piso | Qué hay |
+|---|---|
+| 2 | Tanques de recirculación (llegan las bajantes de las canaletas) y bombas de recirculación (centrífugas normales) |
+| 3 | Tanques de bombeo, grupo de bombas multietapa en paralelo con antirretorno, tramo que sube 1 m, estación reguladora elevada, bajada de 1 m y **nivel 1** de la rejilla con su canaleta. Niveles 2 y 3 encima, cada uno 1,20 m más arriba |
+| 4 | **Nivel 4** de la rejilla (3,60 m sobre el nivel 1) y su canaleta |
+
+```mermaid
+flowchart LR
+  TR[Tanques de recirculación<br/>piso 2] --> BR[Bombas de recirculación<br/>piso 2]
+  BR --> TB[Tanques de bombeo<br/>piso 3]
+  TB --> BP[Grupo de bombas en paralelo<br/>+ antirretorno, 80 mca]
+  BP -->|4&quot;, sube 1 m| BIF{Bifurcación manual}
+  BIF -->|rama A| PRVA[PRV automática<br/>control por punto crítico]
+  BIF -->|rama B| PRVM[PRV manual<br/>salida fija]
+  PRVA --> UNI((Unión))
+  PRVM --> UNI
+  UNI -->|baja 1 m| N1[Rejilla nivel 1]
+  N1 -->|2&quot; + válvula entre niveles| N2[Rejilla nivel 2]
+  N2 -->|2&quot; + válvula| N3[Rejilla nivel 3]
+  N3 -->|2&quot; + válvula| N4[Rejilla nivel 4<br/>válvula más crítica]
+  N1 & N2 & N3 & N4 -.->|canaletas y bajantes| TR
+```
+
+## 3. Equipos
+
+| Id en el plano | Qué es | Tipo de librería (nuevo salvo indicación) | Cantidad |
+|---|---|---|---|
+| `tank-recirc-01..02` | Tanques de recirculación, 1.000 L c/u | `vessel` (existe; preset nuevo `water-1000l`) | 2 |
+| `pumpset-recirc-01` | 2 bombas centrífugas normales (1 trabaja, 1 reserva), 15 m³/h a 10 mca c/u, arranque por nivel | `booster-pump-set` (preset `recirculation-2x15m3h`) | 1 |
+| `tank-supply-01..02` | Tanques de bombeo, 1.000 L c/u, comunicados | `vessel` (preset `water-1000l`) | 2 |
+| `pumpset-main-01` | 3 bombas multietapa verticales en paralelo (2 trabajan, 1 reserva), 8 m³/h a 80 m c/u, variador, antirretorno por bomba, colector de 4" | `booster-pump-set` (preset `multistage-3x8m3h-80m`) | 1 |
+| `prs-01` | Estación reguladora: bifurcación con válvulas de corte manuales, rama A con PRV automática, rama B con PRV manual de piloto, unión | `pressure-reducing-station` | 1 |
+| `grid-01..04` | Rejilla de un nivel: cabezal y ramales de 2", 16 válvulas de consumo (4 × 4), 2 válvulas de fuga (rojas), canaleta | `distribution-grid` | 4 |
+| `valve-between-12/23/34` | Válvula de regulación entre niveles, apertura fija manual (automatizable después) | `regulating-valve` | 3 |
+
+Equipos de 5 tipos: `vessel` ya existe y se reutiliza; los otros cuatro se crean con `docs/equipment-authoring.md`. Las tuberías no son equipos: son los `flows` del plano con diámetro y longitud (sección 5).
+
+Nombres de marca: el autor describió las bombas como Grundfos. La regla del repositorio es no usar marcas ni nombres de empresas reales (`AGENTS.md`), así que el tipo es una **bomba centrífuga multietapa vertical** genérica con curva de ese estilo. Si el autor quiere el nombre comercial, es una decisión aparte.
+
+### Rejilla de un nivel (`distribution-grid`)
+
+Supuesto de distribución (el autor dejó libre la forma): rectángulo de 2,0 × 2,0 m. Un cabezal de 2" a lo largo del frente con 4 nodos cada 0,5 m; de cada nodo sale un ramal de 2" hacia el fondo con 4 válvulas de consumo cada 0,5 m. Las dos válvulas de fuga cuelgan del cabezal, en los nodos 2 y 4. La válvula más crítica es la última del último ramal (la más lejana de la entrada) del nivel 4.
+
+```
+entrada (montante 2")
+   │
+   ●──────●──────●──────●   cabezal 2"   (F = válvula de fuga, en rojo)
+   │      │F     │      │F
+   ○      ○      ○      ○   ← válvulas de consumo (casas)
+   ○      ○      ○      ○
+   ○      ○      ○      ○
+   ○      ○      ○      ◎   ← ◎ válvula más crítica (en el nivel 4)
+ ─────────────── canaleta ───────────────
+```
+
+Cada válvula, de consumo o de fuga, publica **apertura (%)**, **caudal (L/min)** y **presión aguas arriba (mca)**, y acepta el comando `set_opening` (0–100 %, por válvula o por grupo). La rejilla publica además los totales del nivel: consumo, fugas, presión mínima y cuál válvula la tiene.
+
+## 4. Predimensionamiento
+
+Calculado con `tools/hydraulics/predimensionamiento.py` (Darcy-Weisbach, PVC; reproducible con `python tools/hydraulics/predimensionamiento.py`). Supuestos de las válvulas, todos `assumed`:
+
+| Elemento | Valor de diseño |
+|---|---|
+| Válvula de consumo (aguja de ½") | Kv 0,12 m³/h al 100 % (≈ 2,9 L/min a 20 mca) |
+| Válvula de fuga (orificio) | Kv 0,12 m³/h, exponente de presión 0,5 |
+| Válvula entre niveles (bola de 2", apertura fija) | Kv 20 m³/h |
+| Tubería hasta la estación y hasta el nivel 1 | 4" (DI 102 mm) |
+| Red (montantes, cabezales, ramales) | 2" (DI 52,5 mm) |
+
+Resultado con todas las válvulas de consumo abiertas (día) y la PRV automática:
+
+| Punto | Presión | Caudal |
+|---|---|---|
+| Salida del grupo de bombas | 80 mca (consigna) | 13,0 m³/h (3,6 L/s) |
+| Llegada a la estación reguladora (1 m más arriba) | 79,0 mca | velocidad en 4": 0,44 m/s |
+| Salida de la PRV | 26,7 mca (disipa 52 mca) | |
+| Entrada nivel 1 | 27,4 mca | 3,5 m³/h (consumo 3,15, fugas 0,39); velocidad en el montante de 2": 1,67 m/s |
+| Entrada nivel 2 | 23,7 mca | 3,3 m³/h |
+| Entrada nivel 3 | 21,5 mca | 3,1 m³/h |
+| Entrada nivel 4 / válvula más crítica | 20,0 / **20,0 mca** | 3,0 m³/h |
+
+De noche (válvulas de consumo al 30 %):
+
+| Control | Salida PRV | Válvula más crítica | Fugas totales |
+|---|---|---|---|
+| PRV automática (punto crítico) | 23,2 mca | 20,0 mca | 1,42 m³/h |
+| PRV manual (queda con la salida del día) | 26,7 mca | 23,4 mca | 1,50 m³/h |
+
+Con fugas tipo orificio (exponente 0,5) la PRV automática ahorra ≈ 5 % de fugas de noche; con un exponente de 1,15, típico de redes de PVC con fisuras, el ahorro sube a ≈ 15 %. El exponente queda como parámetro de las válvulas de fuga para mostrar ese efecto.
+
+Bombas: dos multietapa de 8 m³/h a 80 m cubren el día (13 m³/h) con una tercera de reserva. Recirculación: la elevación desde los tanques del piso 2 a los del piso 3 es ≈ 4,5 m; 10 mca con pérdidas, 15 m³/h para reponer más rápido de lo que se consume. Volumen: 2 m³ en tanques de bombeo dan ≈ 9 min de autonomía a caudal de día.
+
+## 5. Modelo de simulación
+
+### Por qué hace falta un solucionador hidráulico
+
+El motor de planta actual (`docs/plant-engine.md`) pasa magnitudes de una salida a una entrada con un paso de retraso y sin reparto. Una red de agua no funciona así: el caudal de cada una de las 72 válvulas depende de la presión en su nodo, y esa presión depende de lo que consumen todas las demás. Hay que resolver la red completa en cada paso.
+
+**Propuesta:** un dominio hidráulico en el motor de planta.
+
+1. **Primitiva nueva** `twin_runtime/primitives/hydraulics.py`: solucionador de redes a presión por el método del gradiente global (Todini-Pilati, el mismo de EPANET), en Python puro. Elementos: tubo (Darcy-Weisbach), válvula con Kv y característica de apertura, bomba con curva H-Q y velocidad, antirretorno, PRV (consigna de presión aguas abajo), descarga a la atmósfera con exponente (consumo y fugas) y nivel fijo (tanque). Resuelve el estado cuasiestacionario en cada paso.
+2. **Puertos hidráulicos** en los contratos: `kind: hydraulic` con `link: { network: water }`. Cada tipo de equipo declara los elementos que aporta (la rejilla aporta sus tramos y sus 18 válvulas; la estación sus dos ramas). Los `flows` del plano con `piped: true` aportan los tubos, con `diameter_in`, `length_m` y una ruta con elevación (campo nuevo `route`, puntos `[x, y, z]`), que también usa la escena para dibujar la subida y la bajada de 1 m.
+3. **Paso del motor:** antes de avanzar los equipos, el motor junta todos los elementos de la red `water`, la resuelve y entrega a cada equipo su presión y caudal (`pressure_mca`, `flow_m3_h`). Los equipos con dinámica propia (nivel de tanques, variador de las bombas, PID de la PRV automática) avanzan con esos valores y su nuevo estado entra en la solución del paso siguiente. Se conserva la regla del paso de retraso entre el control y la red.
+4. **Enlaces de servicio que no son de presión** (recirculación por gravedad desde las canaletas) siguen siendo enlaces normales del motor con `flow_kg_h`, con un retardo de bajada.
+
+Alternativa descartada: una sola «planta-equipo» que resuelva todo por dentro. Es más rápida de escribir, pero no deja seleccionar ni ajustar cada equipo en la escena ni reutilizar los tipos en otra red.
+
+### Control
+
+| Lazo | Medición | Actúa sobre | Consigna y tolerancia |
+|---|---|---|---|
+| Presión de bombeo | Presión en el colector de descarga | Velocidad de las bombas; entra la 2.ª bomba si la 1.ª pasa del 95 % de velocidad 10 s, sale si bajan del 60 % | 80 mca ± 3 % |
+| PRV automática (rama A) | Presión en la válvula más crítica (telemetría del nivel 4) | Consigna de salida de la PRV, PID con límites | 20 mca ± 5 % |
+| PRV manual (rama B) | Su propia salida (piloto de resorte) | — | Salida fija ajustable, por defecto 26,7 mca |
+| Bifurcación | — | Válvulas de corte manuales: comando `select_branch` (`auto`, `manual`), con cierre y apertura escalonados para no cortar el suministro | — |
+| Recirculación | Nivel de tanques de recirculación y de bombeo | Arranque y paro de la bomba de recirculación | Arranca al 60 %, para al 20 % del tanque de recirculación; no arranca si el de bombeo pasa del 90 % |
+
+Las tolerancias van en **porcentaje de la consigna** (regla D07 del registro), no en mca fijos.
+
+### KPIs de la planta
+
+- Agua no contabilizada (%) = fugas ÷ volumen bombeado.
+- Presión en la válvula más crítica y en la salida de la PRV.
+- Potencia disipada en la PRV (kW) y energía de bombeo (kWh/m³).
+- Consumo y fugas por nivel (comuna).
+
+## 6. Escenarios previstos
+
+Las expectativas se calculan a mano con la sección 4 antes de escribir el escenario.
+
+| Escenario | Qué muestra |
+|---|---|
+| `nominal` | Día: todas las casas abiertas, rama automática. 80 mca en bombas, 20 mca en la válvula crítica, 13 m³/h |
+| `night-pressure` | Demanda de 24 h (curva diaria); la rama automática baja la salida de la PRV de noche y las fugas bajan |
+| `manual-branch` | El operador pasa a la rama manual: la presión crítica sube de noche y las fugas aumentan; comparación de KPIs |
+| `pump-trip` | Falla de una bomba principal: entra la de reserva; el antirretorno evita el retroceso |
+| `leak-burst` | Una válvula de fuga del nivel 2 se abre del todo (fraude o rotura): sube el agua no contabilizada, baja la presión del nivel y la PRV automática compensa |
+| `between-valve` | Se cierra a la mitad la válvula entre niveles 2 y 3: los niveles de arriba pierden presión aunque la estación esté bien |
+
+## 7. Escena 3D
+
+Reutiliza la escena de planta (`docs/plant-scene.md`): un edificio de 4 pisos con losas transparentes, cada equipo con su geometría y las tuberías con su ruta en 3D (la subida y bajada de 1 m se ven). Colores: válvulas de consumo en azul, de fuga en rojo, tubería de 4" y de 2" diferenciadas por grosor. Cada válvula muestra su caudal (chorro proporcional a su caudal hacia la canaleta) y un indicador de presión; al seleccionarla se ven apertura, caudal y presión y se puede cambiar su apertura. Cámaras: general, cuarto de bombas, estación reguladora y una por nivel de la rejilla. Captura de verificación en cada PR con cambio visual.
+
+## 8. Preparado para Navier-Stokes
+
+La fase 1 es un modelo 1D (red). Para acoplar después CFD (Navier-Stokes) sin rehacerlo:
+
+- **Geometría exportable:** cada tubo guarda su ruta 3D, diámetro interior, rugosidad y accesorios; cada equipo hidráulico declara sus bocas (posición, diámetro, sentido). Un exportador generará la geometría (eje y superficies) para mallar.
+- **Condiciones de borde por componente:** el solucionador 1D publica, por cada boca, caudal, presión y velocidad media en cada paso. Son las condiciones de entrada y salida de una simulación CFD de un componente (la estación reguladora, una tee del cabezal, la válvula crítica).
+- **Acoplamiento por etapas:** primero CFD fuera de línea de un componente con las condiciones del 1D (acople en un sentido); después reemplazar el coeficiente de pérdida de ese componente en la red por el que da la CFD (en dos sentidos). Para transitorios (golpe de ariete al disparar una bomba o cerrar el antirretorno) una etapa intermedia con el método de las características sobre la misma red.
+- **Propiedades del fluido** como parámetros de la red (densidad, viscosidad, temperatura), no constantes en el código.
+
+## 9. Entregas (PRs pequeños)
+
+1. **Este diseño** y el script de predimensionamiento (sin código de producción).
+2. **Solucionador hidráulico** en `twin-runtime`, con pruebas contra casos calculados a mano (tubo simple, dos ramas en paralelo, bomba contra curva del sistema, PRV).
+3. **Tipos de equipo** `booster-pump-set`, `pressure-reducing-station`, `regulating-valve` y `distribution-grid` (contrato, comportamiento, geometría, presets, escenarios) y el preset `water-1000l` de `vessel`. Captura de la galería de cada uno.
+4. **Planta** `industrial-models/water-network-scale-v1/` (`plant.yaml` con pisos y rutas, `simulation.yaml`) y dominio hidráulico del motor, con los escenarios de la sección 6.
+5. **Escena 3D** del edificio, con captura y API de simulación.
+
+## 10. Supuestos para confirmar
+
+| # | Supuesto | Por qué importa |
+|---|---|---|
+| S1 | Rejilla de 4 × 4 válvulas de consumo y 2 de fuga por nivel, 2,0 × 2,0 m | Número de casas por comuna y tamaño de la escena |
+| S2 | Pisos de 3,0 m; nivel 1 de la rejilla a la altura de la descarga de las bombas | Presiones estáticas de cada nivel |
+| S3 | Kv de las válvulas (sección 4) | Caudal total y tamaño de las bombas |
+| S4 | 3 bombas principales (2 + 1 reserva) y 2 de recirculación (1 + 1) | Lógica de alternancia y escenario de falla |
+| S5 | La PRV automática mide la presión en la válvula crítica por telemetría | Es lo que permite el objetivo de 20 mca en el punto crítico |
+| S6 | Bombas genéricas, sin marca | Regla del repositorio |
+| S7 | Tanques de 1.000 L | Autonomía y dinámica de niveles |
