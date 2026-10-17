@@ -1,0 +1,103 @@
+scenarios:
+  - id: steady
+    description: Línea de 350 kg/h con una alimentación de 300 kg/h durante 1 h
+    preset: 350kg-recycling
+    duration_s: 3600
+    timeline:
+      - { at_s: 0, inputs: { feed_kg_h: 300 } }
+    expect:
+      - { path: variables.processed_kg, min: 299, max: 301, description: "(300 kg/h × 1 h; el extrusor procesa lo que llega porque su capacidad es mayor)" }
+      - { path: state, equals: running }
+      - { path: variables.filter_pressure_bar, min: 58.6, max: 62.6, description: "(300 kg de 60 t ensucian 0,5 % la malla: 60 + 120 × 0,005 = 60,6 bar; el sensor tiene ruido de ±0,5 bar)" }
+      - { path: variables.power_kw, min: 92, max: 94, description: "(carga 300 ÷ 350 = 0,857: 110 × (0,25 + 0,6 × 0,857) = 84,1 kW + resistencias 0,2 × 110 × 0,4 = 8,8 kW = 92,9 kW)" }
+      - { path: kpis.specific_energy_kwh_t, min: 300, max: 320, description: "(92,9 kW ÷ 0,3 t/h = 310 kWh/t)" }
+
+  - id: overfeed
+    description: Llegan 500 kg/h a una línea de 350 kg/h; la tolva se llena y deja de recibir
+    preset: 350kg-recycling
+    duration_s: 5400
+    timeline:
+      - { at_s: 0, inputs: { feed_kg_h: 500 } }
+    expect:
+      - { path: variables.processed_kg, min: 521, max: 526, description: "(350 kg/h × 1,5 h = 525 kg, menos 0,3 % por la malla que se ensucia)" }
+      - { path: variables.accepting, equals: 0, description: "(la tolva de 200 kg gana 150 kg/h y se llena a los 80 min)" }
+      - { path: events.hopper_full, equals: 1 }
+
+  - id: dirty-screen
+    description: Malla al 70 % de suciedad; el aviso salta al empezar y se cambia a la media hora, con 300 kg/h de entrada
+    preset: 350kg-dirty-screen
+    duration_s: 3600
+    timeline:
+      - { at_s: 0, inputs: { feed_kg_h: 300 } }
+      - { at_s: 1800, command: change_screen }
+    expect:
+      - { path: events.screen_change_needed, equals: 1, description: "(60 + 120 × 0,7 = 144 bar, sobre el aviso de 140 bar)" }
+      - { path: events.screen_changed, equals: 1 }
+      - { path: variables.processed_kg, min: 274, max: 279, description: "(1.ª media hora: 350 × (1 − 0,6 × 0,7) = 203 kg/h → 101,5 kg; 2.ª: caben 175 kg porque la tolva guardó 48,5 kg; total 276,5 kg)" }
+      - { path: variables.filter_pressure_bar, min: 58.4, max: 62.4, description: "(malla nueva a media hora: 175 kg → 60 + 120 × 0,0029 = 60,35 bar; el sensor tiene ruido de ±0,5 bar; con la malla vieja serían 144 bar)" }
+
+  - id: cutter-jam
+    description: Atasco de la cortadora 10 min con alimentación de 250 kg/h; la tolva guarda lo que llega y la línea lo recupera
+    preset: 350kg-recycling
+    duration_s: 3600
+    timeline:
+      - { at_s: 600, command: inject_fault, args: { fault: cutter_jam, duration_s: 600 } }
+    expect:
+      - { path: events.fault_cleared, equals: 1 }
+      - { path: variables.processed_kg, min: 248, max: 251, description: "(en 10 min llegan 41,7 kg, caben en la tolva; después la línea drena 100 kg/h de ventaja en 25 min)" }
+      - { path: variables.hopper_level_pct, max: 0.1 }
+
+  - id: heater-fault
+    description: Falla una zona de calefacción a los 10 min durante 1 h; el fundido baja y la capacidad cae
+    preset: 350kg-recycling
+    duration_s: 3600
+    timeline:
+      - { at_s: 600, command: inject_fault, args: { fault: heater_fault, duration_s: 3600 } }
+    expect:
+      - { path: variables.melt_temp_c, min: 194, max: 196.5, description: "(tiende a 230 − 35 = 195 °C con constante de 600 s: 195 + 35 × e^(−3.000/600) = 195,2 °C)" }
+      - { path: variables.flow_kg_h, min: 138, max: 144, description: "(déficit 34,8 °C − 5 = 29,8: 350 × (1 − 0,02 × 29,8) = 141 kg/h, menor que los 250 kg/h que llegan)" }
+
+  - id: cold-start
+    description: Línea fría que se enciende al inicio con 250 kg/h de alimentación; la tolva recibe el molido mientras se calienta
+    preset: 350kg-cold-start
+    duration_s: 3600
+    timeline:
+      - { at_s: 0, command: start }
+    expect:
+      - { path: state, equals: running }
+      - { path: variables.processed_kg, min: 101, max: 106, description: "(tarda 600 × ln(205 ÷ 3) = 2.534 s en llegar a 3 °C de la consigna y la tolva guarda 250 kg/h × 2.534 s = 176 kg; después recibe 74 kg más y procesa a su capacidad: 350 kg/h × 1.066 s = 103,6 kg)" }
+
+  - id: starved
+    description: Sin alimentación el husillo gira en vacío
+    preset: 350kg-recycling
+    duration_s: 600
+    timeline:
+      - { at_s: 0, inputs: { feed_kg_h: 0 } }
+    expect:
+      - { path: state, equals: starved }
+      - { path: variables.power_kw, min: 36, max: 36.6, description: "(110 × 0,25 = 27,5 kW + resistencias 8,8 kW = 36,3 kW)" }
+
+  - id: blocked-output
+    description: La descarga deja de recibir el pellet a la media hora, con 300 kg/h de entrada
+    preset: 350kg-recycling
+    duration_s: 3600
+    timeline:
+      - { at_s: 0, inputs: { feed_kg_h: 300 } }
+      - { at_s: 1800, inputs: { downstream_free: false } }
+    expect:
+      - { path: state, equals: blocked }
+      - { path: variables.processed_kg, min: 149, max: 151, description: "(300 kg/h × 0,5 h)" }
+      - { path: variables.hopper_level_pct, min: 74, max: 76, description: "(150 kg de 200 kg quedan en la tolva)" }
+
+  - id: stopped
+    description: Línea apagada a la media hora; deja de aceptar molido y avisa a quien la alimenta
+    preset: 350kg-recycling
+    duration_s: 3600
+    timeline:
+      - { at_s: 0, inputs: { feed_kg_h: 200 } }
+      - { at_s: 1800, command: stop }
+    expect:
+      - { path: state, equals: "off" }
+      - { path: variables.accepting, equals: 0 }
+      - { path: variables.processed_kg, min: 99, max: 101, description: "(200 kg/h × 0,5 h)" }
+      - { path: variables.hopper_level_pct, max: 0.1, description: "(apagada no recibe molido: la tolva queda vacía)" }

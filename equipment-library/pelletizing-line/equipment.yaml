@@ -1,0 +1,87 @@
+schema_version: 0.1.0
+type: pelletizing-line
+version: 0.1.0
+name: Línea de peletizado de reciclaje
+manufacturing: process
+category: plastics.recycling
+description: >
+  Línea de extrusión y peletizado de hebras para reciclar el molido de plástico: tolva de alimentación,
+  extrusor de husillo con zonas de calefacción, cambiador de malla (filtro de fundido), cabezal de hebras,
+  baño de agua, cortadora y descarga de pellet a un big-bag. La malla se ensucia con el material procesado:
+  sube la presión del filtro y baja la capacidad hasta cambiarla. Una temperatura de fundido baja también
+  limita la capacidad.
+aliases: [peletizadora, extrusora de reciclaje, línea de peletizado, extrusor, pelletizing line]
+fidelity: { visual: V2, behavior: B2 }
+
+params:
+  throughput_kg_h:      { type: number, unit: kg/h, min: 20, max: 2000, default: 350, description: Capacidad nominal con la malla limpia, affects: [geometry, behavior] }
+  motor_kw:             { type: number, unit: kW, min: 5, max: 600, default: 110, description: Potencia del motor del husillo, affects: [geometry, behavior] }
+  melt_temp_c:          { type: number, unit: degC, min: 150, max: 300, default: 230, description: Consigna de temperatura de fundido, affects: [behavior] }
+  hopper_kg:            { type: number, unit: kg, min: 20, max: 3000, default: 200, description: Molido que cabe en la tolva de alimentación, affects: [geometry, behavior] }
+  nominal_feed_kg_h:    { type: number, unit: kg/h, min: 0, max: 2000, default: 250, description: Alimentación si el entorno no la fija, affects: [behavior] }
+  screen_life_t:        { type: number, unit: t, min: 2, max: 500, default: 60, description: Material que procesa la malla desde limpia hasta quedar tapada, affects: [behavior] }
+  start_clog_pct:       { type: number, unit: "%", min: 0, max: 100, default: 0, description: Suciedad de la malla al empezar, affects: [behavior] }
+  start_on:             { type: boolean, default: true, description: Arranca encendida y a temperatura, affects: [behavior] }
+
+ports:
+  - { id: granulate_in, kind: material, direction: in, medium: molido de plástico, unit: kg/h, link: { flow_kg_h: feed_kg_h, ready: accepting } }
+  - { id: pellet_out, kind: material, direction: out, medium: pellet reciclado, unit: kg/h, link: { flow_kg_h: flow_kg_h, ready: downstream_free } }
+  - { id: power, kind: utility, direction: in, medium: energía eléctrica }
+
+states:
+  - { id: "off", description: Apagada }
+  - { id: starting, description: Calentando el cilindro hasta la temperatura de fundido }
+  - { id: running, description: Extruyendo y cortando }
+  - { id: starved, description: Husillo girando sin molido en la tolva }
+  - { id: blocked, description: La descarga no recibe el pellet }
+  - { id: fault, description: Detenida por falla }
+
+variables:
+  - { id: hopper_level_pct, unit: "%", kind: calculated, range: [0, 100], description: Nivel de la tolva de alimentación }
+  - { id: flow_kg_h, unit: kg/h, kind: calculated, description: Caudal de pellet que entrega }
+  - { id: processed_kg, unit: kg, kind: counter, description: Material peletizado acumulado }
+  - { id: accepting, unit: "", kind: status, description: "1 si acepta más molido, 0 si la tolva está llena" }
+  - { id: melt_temp_c, unit: degC, kind: measured, range: [0, 320], noise_sd: 0.8, resolution: 0.1, description: Temperatura del fundido }
+  - { id: filter_pressure_bar, unit: bar, kind: measured, range: [0, 300], noise_sd: 0.5, resolution: 0.1, description: Presión antes del cambiador de malla }
+  - { id: screen_clog_pct, unit: "%", kind: calculated, range: [0, 100], description: Suciedad acumulada de la malla }
+  - { id: power_kw, unit: kW, kind: calculated, description: "Potencia eléctrica (motor y resistencias)" }
+
+events:
+  - { id: screen_change_needed, description: La presión del filtro superó 140 bar y conviene cambiar la malla }
+  - { id: screen_changed, description: Se cambió la malla }
+  - { id: hopper_full, description: La tolva se llenó y deja de recibir }
+
+faults:
+  - { id: cutter_jam, description: Atasco de la cortadora por una hebra rota, mtbf_h: 400, mttr_min: 15, severity: medium, effect: La línea se detiene hasta destrabar la cortadora }
+  - { id: screen_blocked, description: Malla tapada por contaminación del molido, mtbf_h: 1000, mttr_min: 25, severity: low, stops_equipment: false, effect: "Sube la presión del filtro y baja la capacidad hasta cambiar la malla" }
+  - { id: heater_fault, description: Falla de una zona de calefacción, mtbf_h: 3000, mttr_min: 40, severity: medium, stops_equipment: false, effect: "El fundido baja unos 35 °C y la capacidad cae por la viscosidad" }
+
+commands:
+  - { id: start, description: Enciende la línea (calienta si está fría) }
+  - { id: stop, description: Apaga la línea }
+  - { id: change_screen, description: Cambia la malla y devuelve la suciedad a 0 % }
+  - { id: inject_fault, description: Inyecta una falla declarada, args: { fault: string, duration_s: number } }
+  - { id: clear_fault, description: Repara una falla activa, args: { fault: string } }
+  - { id: set_param, description: Cambia un parámetro en caliente, args: { name: string, value: any } }
+
+kpis:
+  - { id: specific_energy_kwh_t, unit: kWh/t, description: Energía por tonelada peletizada }
+  - { id: utilization, unit: "", description: Fracción del tiempo extruyendo }
+
+animation_channels:
+  - { id: screw_speed, range: [0, 1], description: "Giro del husillo (0 parado, 1 a velocidad nominal)" }
+  - { id: heater_glow, range: [0, 1], description: Intensidad de las resistencias del cilindro }
+  - { id: strand_flow, range: [0, 1], description: Caudal de hebras respecto de la capacidad nominal }
+  - { id: hopper_fill, range: [0, 1], description: Nivel de la tolva }
+  - { id: motor_load, range: [0, 1.2], description: Carga del motor como fracción de la nominal }
+  - { id: stack_light, range: [0, 3], description: "Baliza: 0 apagada, 1 verde, 2 amarilla, 3 roja" }
+
+geometry:
+  parts: [frame, hopper, loader, barrel, heater_bands, gearbox, motor, screen_changer, die_head, strands, water_bath, pelletizer, cutter, chute, bigbag, cabinet, hmi, stack_light]
+
+assumptions:
+  - "Capacidad efectiva = nominal × (1 − 0,6 × suciedad de la malla) × (1 − 0,02 × déficit de temperatura sobre 5 °C, mínimo 0,2)."
+  - "La suciedad de la malla crece con el material procesado: de 0 a 100 % en screen_life_t toneladas; screen_blocked suma 50 %."
+  - "Presión del filtro = 60 bar + 120 bar × suciedad; el aviso de cambio de malla es a 140 bar."
+  - "Potencia = motor × (0,25 + 0,6 × carga) + 0,2 × motor × ciclo de las resistencias (0,4 a régimen); ≈ 0,3 kWh/kg a 86 % de carga."
+  - "El fundido tiende a la consigna con constante de 600 s; sale de «starting» a menos de 3 °C de la consigna."

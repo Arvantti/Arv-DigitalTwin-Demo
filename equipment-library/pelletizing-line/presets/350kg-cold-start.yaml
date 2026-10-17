@@ -1,0 +1,4 @@
+preset: 350kg-cold-start
+description: La misma línea de 350 kg/h apagada y fría
+params: { throughput_kg_h: 350, motor_kw: 110, melt_temp_c: 230, hopper_kg: 200, nominal_feed_kg_h: 250, screen_life_t: 60, start_on: false }
+provenance: { throughput_kg_h: user, motor_kw: assumed, melt_temp_c: assumed, hopper_kg: assumed, nominal_feed_kg_h: assumed, screen_life_t: assumed, start_on: assumed }

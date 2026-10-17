@@ -45,9 +45,9 @@ Las plantas son inspiradas en empresas de Medellín, pero **sin usar nombres ni 
 - Cada cambio visual se verifica con captura de la galería y la API de simulación antes del PR; ramas y PRs pequeños; CI en verde (pruebas Python, pruebas de geometría, lint).
 
 ## 5. Próximos pasos propuestos (pendientes de decisión del autor)
-1. **Fase 5:** quedan los equipos de la librería que aún son volúmenes en las dos plantas. Hecho: escena base (PR #8), pasarelas, tuberías y recorrido (PR #9), caudal real por enlace (PR #10), desvío del pasteurizador (PR #11), inyectoras y banda de la nave de inyección (PR #12), empaque, secadores, chillers y molino de reciclaje con geometría propia (PR #15) y su cascada con las inyectoras (PR #16).
+1. **Fase 5:** quedan los equipos de la librería que aún son volúmenes en las dos plantas. Hecho: escena base (PR #8), pasarelas, tuberías y recorrido (PR #9), caudal real por enlace (PR #10), desvío del pasteurizador (PR #11), inyectoras y banda de la nave de inyección (PR #12), empaque, secadores, chillers y molino de reciclaje con geometría propia (PR #15) su cascada con las inyectoras (PR #16) y la línea de peletizado con el silo de reciclado (PR #17).
 2. Resto de la planta de salsas en el motor: líneas de 250 ml y 500 ml, línea fría de mayonesa (requiere emulsificador, molino coloidal, chiller).
-3. Planta de inyección: central de materiales, reparto de resina de un secador entre varias inyectoras y extrusora de pellet reciclado. Empaque, secadores, chillers y molino tienen tipo y se simulan (PR #15) y la cascada de resina seca, agua de moldes y scrap ya está enlazada (PR #16).
+3. Planta de inyección: central de materiales (silo 5 → manifold → inyectoras con pellet reciclado) y reparto de resina de un secador entre varias inyectoras. Empaque, secadores, chillers y molino tienen tipo y se simulan (PR #15) y la cascada de resina seca, agua de moldes y scrap ya está enlazada (PR #16).
 4. Mejoras del motor: recetas leídas del `plant.yaml`. (El retorno del producto desviado a la marmita ya está: PR #11.)
 5. Acueducto a escala: revisar el diseño y los supuestos S1–S7; después, solucionador hidráulico (PR siguiente).
 6. Dato pendiente del autor: precisión real del dosificador de 1.000 ml y tolerancias reales por formato.

@@ -10,6 +10,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
+| 2026-10-17 | #17 | Fase 3 y 5: línea de peletizado (tipo `pelletizing-line`) y silo 5 de reciclado enlazados al molino; escenario `pelletizer-jam` | 3 y 5 |
 | 2026-10-17 | #16 | Fase 3 y 5: cascada de la planta de inyección (resina seca y humedad desde los secadores, agua de moldes desde el chiller, scrap hacia el molino) y escenarios `dryer-stop` y `chiller-trip` | 3 y 5 |
 | 2026-10-17 | #15 | Fase 3 y 5: geometría y comportamiento de empaque, secadores, chillers y molino de la planta de inyección, simulados en la escena | 3 y 5 |
 | 2026-10-17 | #13 | Diseño de la tercera planta: acueducto a escala (documento y predimensionamiento, sin código de producción) | acueducto |
@@ -27,6 +28,16 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 | 2026-10-16 | #1 | Layouts de las plantas | 1 |
 
 ## Entradas
+
+### 2026-10-17 02:19–02:50 · PR #17 · Línea de peletizado y lazo de reciclaje
+- **Fecha/hora (UTC):** 2026-10-17 02:19 a 02:50.
+- **Fase del plan:** [[plan-del-proyecto]] fases 3 y 5.
+- **Solicitado por:** Carlos Andrés Quiceño, «No entiendo cómo es que las inyectoras le entregan al molino, no es al revés» (02:19) y, a la propuesta de cerrar el lazo de reciclaje con la extrusora de pellet, «Sí, por favor» (02:19). También preguntó adónde van las piezas después de la inyección; se le respondió con los flujos del plano (sin cambios de código).
+- **Qué se hizo:** tipo nuevo `pelletizing-line` en `equipment-library/` con contrato, comportamiento (tolva, capacidad que baja con la suciedad de la malla, temperatura de fundido, potencia), 3 presets, 9 escenarios con expectativas calculadas a mano, geometría 3D (tolva con cargador, extrusor con resistencias, cambiador de malla, baño de agua con hebras, cortadora, big-bag), `FICHA.md` y `README.md`. `simulation.yaml` simula `extruder-pel-01` y `silo-05` (un `vessel` con la forma `silo`) y enlaza molino → peletizado → silo 5 (por la estación de big-bag, sin simular). Escenario nuevo `pelletizer-jam`; `nominal` suma tres expectativas. PR apilado sobre el #16.
+- **Commits:** ver el PR #17.
+- **Verificación:** `uv run twin-lib validate`, `uv run twin-lib plant validate`, `uv run pytest`, `uv run ruff check .`, `pnpm -r typecheck` y `pnpm -r test`. Expectativas calculadas a mano (arranque en frío: 600 × ln(205 ÷ 3) = 2.534 s; potencia a 86 % de carga: 110 × (0,25 + 0,6 × 0,857) + 8,8 = 92,9 kW; tolva tras el atasco: ≈ 54 kg de 200 kg). Capturas: [[fase6-peletizadora.png]] (galería) y [[fase6-reciclaje-en-la-escena.png]] (escena con la API en vivo, escenario `pelletizer-jam`: tolva al 26,5 %, 46,7 kg entregados al silo 5).
+- **Decisiones:** [[decisiones]] D18.
+- **Conversación:** [[hilo-cascada-de-inyeccion]].
 
 ### 2026-10-17 01:31–01:52 · PR #16 · Cascada de la planta de inyección
 - **Fecha/hora (UTC):** 2026-10-17 01:31 a 01:52.
