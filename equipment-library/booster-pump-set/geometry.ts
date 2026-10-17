@@ -81,9 +81,9 @@ function inlineValve(pipeR: number, color: string, handle: boolean): THREE.Group
 export default function build(params: Params): EquipmentModel {
   const n = Math.round(clamp(num(params, "pumps", 3), 1, 6));
   const style = str(params, "pump_style", "vertical_multistage");
-  const q = num(params, "design_flow_m3h", 8);
+  const q = num(params, "design_flow_m3h", 13);
   const head = num(params, "design_head_m", 80);
-  const kw = num(params, "motor_kw", 4);
+  const kw = num(params, "motor_kw", 5.5);
   const setpoint = num(params, "setpoint_mca", 80);
   const dn = num(params, "header_diameter_in", 4);
   const headerR = (dn * 0.0254) / 2 + 0.006;

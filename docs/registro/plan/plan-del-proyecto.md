@@ -35,7 +35,7 @@ Las plantas son inspiradas en empresas de Medellín, pero **sin usar nombres ni 
 | 8. Instalación en ARVANTTI Harness | Manifiesto, permisos, Podman, actualización | Pendiente | — |
 | 9. Conectividad industrial | OPC UA y PLC en solo lectura | Pendiente | — |
 
-| Acueducto a escala | Tercera planta: diseño, solucionador hidráulico, 4 tipos de equipo, planta y motor, escena 3D | **En curso**: diseño, solucionador hidráulico y los 4 tipos de equipo hechos; faltan la planta con el motor y la escena | PR #13, PR #14, PR #22, PR #23, PR #24, `docs/water-network-plant.md` |
+| Acueducto a escala | Tercera planta: diseño, solucionador hidráulico, 4 tipos de equipo, planta y motor, escena 3D | **En curso**: diseño, solucionador hidráulico y los 4 tipos de equipo hechos; faltan la planta con el motor y la escena | PR #13, PR #14, PR #22, PR #23, PR #24, PR #25, `docs/water-network-plant.md` |
 
 ## 4. Reglas de calidad (no negociables)
 - El modelo 3D nunca es fuente de verdad: solo refleja los canales que publica el comportamiento.

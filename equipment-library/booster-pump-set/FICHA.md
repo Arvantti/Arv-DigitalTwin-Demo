@@ -9,9 +9,9 @@
 |---|---|---|
 | Bombas principales | 2 multietapa verticales en paralelo, las dos de trabajo, sin reserva | user (paralelo y número, 2026-10-17 05:26) |
 | Presión de entrega | 80 mca en la descarga | user |
-| Caudal de diseño | 8 m³/h por bomba a 80 m; 13 m³/h de demanda de día | assumed (sección 4 del diseño) |
+| Caudal de diseño | 13 m³/h por bomba a 80 m: una sola sostiene la demanda de día (13 m³/h) sobre 75 mca | user (2026-10-17, una bomba sola debe dar 75 mca) |
 | Altura a caudal cero | 100 m | assumed |
-| Eficiencia y motor | 62 %, 4 kW por bomba | assumed |
+| Eficiencia y motor | 62 %, 5,5 kW por bomba (una bomba sola consume ≈ 4,5 kW) | assumed |
 | Colector | 4" hasta la estación reguladora | user |
 | Antirretorno | uno por bomba en la descarga, Kv = 5 × caudal de diseño | user (antirretornos), assumed (Kv) |
 | Bombas de recirculación | 2 centrífugas horizontales, 1 + 1, 15 m³/h a 10 m, por nivel | user (bombas normales), assumed (datos) |

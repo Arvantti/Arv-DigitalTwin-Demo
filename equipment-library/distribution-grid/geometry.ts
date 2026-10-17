@@ -20,6 +20,7 @@ import {
   num,
   str,
   parts as P,
+  textures,
 } from "@twin/3d";
 
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
@@ -102,11 +103,22 @@ export default function build(params: Params): EquipmentModel {
   const consumerMat = M.paint(blue, 0.4);
   const leakMat = M.paint(red, 0.4);
   const water = M.emissive("#4aa8ff", 1.6);
-  const gutterTop = 0.32;
-  const jetBottom = gutterTop - 0.03;
+  // canaletas casi a ras de la salida de las válvulas para que el agua no salpique: 5 cm bajo la boquilla
+  const spoutBottom = gy - 0.2 - r * 0.6;
+  const gutterTop = spoutBottom - 0.05;
+  const jetBottom = gutterTop - 0.05;
 
-  /** Válvula de descarga hacia abajo bajo un nodo; la manija gira con la apertura. */
-  const dropValve = (id: string, x: number, z: number, mat: THREE.Material) => {
+  /** Placa de 13 × 6,5 cm con el número de la válvula en letra grande. */
+  const numberPlate = (text: string, bg: string) => {
+    const tex = textures.textTexture([text], { width: 256, height: 128, bg, fg: "#ffffff", font: "800 96px Inter, Arial, sans-serif" });
+    const mat = new THREE.MeshStandardMaterial({ color: tex ? "#ffffff" : bg, map: tex ?? undefined, roughness: 0.4, metalness: 0.1 });
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(0.13, 0.065), mat);
+    m.name = "valve-number";
+    return m;
+  };
+
+  /** Válvula de descarga hacia abajo bajo un nodo, con su placa de número; la manija gira con la apertura. */
+  const dropValve = (id: string, x: number, z: number, mat: THREE.Material, plateBg: string) => {
     const g = P.group(id);
     g.position.set(x, gy, z);
     const nipple = P.cylinder(r * 0.35, r * 0.35, 0.09, pvc, 12);
@@ -128,6 +140,14 @@ export default function build(params: Params): EquipmentModel {
     const jet = P.cylinder(0.012, 0.016, jetLen, water, 10);
     jet.position.y = -0.17 - r * 0.6 - jetLen;
     g.add(jet);
+    // placa con el número de la válvula sobre el tubo, inclinada hacia quien mira desde el frente
+    const post = P.cylinder(0.004, 0.004, 0.05, galv, 6);
+    post.position.y = r + 0.025;
+    g.add(post);
+    const plate = numberPlate(id.toUpperCase(), plateBg);
+    plate.position.set(0, r + 0.05 + 0.03, 0.01);
+    plate.rotation.x = -0.55;
+    g.add(plate);
     root.add(g);
     valves.push({ id, lever, jet, jetLen });
     return g;
@@ -156,7 +176,7 @@ export default function build(params: Params): EquipmentModel {
       const fit = new THREE.Mesh(new THREE.SphereGeometry(r * 1.12, 14, 10), pvc);
       fit.position.set(x, gy, z);
       root.add(fit);
-      dropValve(`c${j}${i}`, x, z, consumerMat);
+      dropValve(`c${j}${i}`, x, z, consumerMat, blue);
     }
     // canaleta bajo el ramal: fondo y dos paredes, con pendiente hacia el colector del frente
     const len = zHead - zNode(4) + s * 0.4;
@@ -169,11 +189,19 @@ export default function build(params: Params): EquipmentModel {
       ch_.add(wall);
     }
     ch_.position.set(x, gutterTop - 0.06, (zNode(4) - s * 0.2 + zHead - s * 0.2) / 2 - s * 0.05);
-    ch_.rotation.x = -0.03;
+    ch_.rotation.x = -0.015;
     root.add(ch_);
+    // colgadores de la canaleta desde los travesaños del bastidor
+    for (const zc of [zNode(1) - s / 2, zNode(3) - s / 2]) {
+      for (const sx of [-1, 1]) {
+        const hanger = P.box(0.012, beamY - gutterTop, 0.025, galv, 0.002);
+        hanger.position.set(x + sx * 0.08, (beamY + gutterTop) / 2, zc);
+        root.add(hanger);
+      }
+    }
   }
   for (const [id, j] of [["l1", 2], ["l2", 4]] as const) {
-    const g = dropValve(id, xNode(j) + s * 0.25, zHead, leakMat);
+    const g = dropValve(id, xNode(j) + s * 0.25, zHead, leakMat, red);
     const stub = P.cylinderX(r * 0.45, s * 0.25, pvc, 12);
     stub.position.set(-s * 0.125, 0, 0);
     g.add(stub);
@@ -191,6 +219,11 @@ export default function build(params: Params): EquipmentModel {
   }
   collector.position.set((x0 + x1) / 2, gutterTop - 0.12, zHead + s * 0.05);
   root.add(collector);
+  for (const x of [x0 + 0.05, x1 - 0.05]) {
+    const hanger = P.box(0.012, beamY - (gutterTop - 0.04), 0.025, galv, 0.002);
+    hanger.position.set(x, (beamY + gutterTop - 0.04) / 2, zHead + s * 0.05 + 0.1);
+    root.add(hanger);
+  }
   const downpipe = P.pipe([v3(x1 - 0.06, gutterTop - 0.12, zHead + s * 0.05), v3(x1 - 0.06, 0.0, zHead + s * 0.05)], 0.035, M.plastic("#8c939a", 0.5));
   root.add(downpipe);
 

@@ -180,8 +180,8 @@ class BoosterPumpSet(EquipmentBehavior):
         if not self.running:
             self._start_next()
             return
-        if len(self.running) < p["duty_max"] and self._available() and self.speed * 100 >= p["stage_up_speed_pct"] \
-                and self.discharge < self.setpoint * (1 - NORMAL_FRACTION):
+        # entra otra bomba si el variador queda sin margen, aunque la presión todavía se sostenga
+        if len(self.running) < p["duty_max"] and self._available() and self.speed * 100 >= p["stage_up_speed_pct"]:
             self.up_s += dt
         else:
             self.up_s = 0.0

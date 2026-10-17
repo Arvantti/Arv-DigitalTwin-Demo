@@ -104,3 +104,27 @@ Trabajo del hilo, resumido:
 - Agregó una válvula de bola a la entrada de cada ramal de la rejilla, porque la falla de ramal obstruido apenas se notaba en los tubos de 2".
 - Revisó las capturas de la galería: aclaró la tubería de PVC que brillaba de más y engrosó los chorros. Probó ambos tipos simulando por la API.
 - Esperó la fusión del PR #23 para abrir el PR #24 sobre `main`, y actualizó la bitácora, la decisión D25, el plan, el roadmap, el diseño y este histórico.
+
+### 👤 Carlos Andrés Quiceño · 05:32 UTC (comentario en el PR #23)
+
+Para que no caiga la presión el sistema debe preveer y llenar el tanque de alimentación de las bombas así aunque solo una de ellas trabaje puede entregar 75 mca
+
+### 🤖 Claude (hilo) · 06:00 UTC (respuesta en el PR #23 y pregunta en el hilo)
+
+Explicó que el nivel del tanque de alimentación solo suma ≈ 1 mca y que el control por nivel de la recirculación ya lo mantiene lleno; para que una bomba sola dé 75 mca hay que usar bombas de 13 m³/h a 80 m (con las de 8 m³/h una sola da ≈ 60 mca). Preguntó si agrandaba las bombas, recomendando hacerlo.
+
+### 👤 Carlos Andrés Quiceño · 11:00 UTC
+
+Eligió «Bombas de 13 m³/h».
+
+### 👤 Carlos Andrés Quiceño · 11:03 UTC
+
+Y un detalle más, las canaletas quedan casi a la misma altura de la salida de las válvulas  para que el agua no salpique y cada válvula debe ir numerada
+
+### 🤖 Claude (hilo) · 11:00–11:30 UTC
+
+Trabajo del hilo, resumido:
+- Cambió el bombeo principal a 2 bombas de 13 m³/h a 80 m y rehízo los escenarios a mano. Con la regla anterior una sola bomba al 99,7 % sostenía la presión y la segunda nunca entraba; ahora entra cuando el variador pasa el 98 %, así trabajan las dos de día.
+- Al dispararse una bomba la otra sostiene 80 mca; queda un bache de ≈ 1 s mientras acelera, sin alarma.
+- Subió las canaletas de la rejilla a 5 cm bajo la salida de las válvulas, con colgadores del bastidor, y puso una placa numerada en cada válvula. Revisó las capturas de cerca.
+- Abrió el PR #25 y actualizó la bitácora, la decisión D26, el diseño y este histórico.

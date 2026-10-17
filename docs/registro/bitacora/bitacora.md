@@ -10,6 +10,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
+| 2026-10-17 | #25 | Acueducto: bombas principales de 13 m³/h para que una sola sostenga la presión (pedido del autor); rejilla con válvulas numeradas y canaletas a ras de la salida | acueducto |
 | 2026-10-17 | #24 | Acueducto: estación reguladora de presión (`pressure-reducing-station`) y rejilla de un nivel (`distribution-grid`) en la librería, con capturas; termina la entrega 3 | acueducto |
 | 2026-10-17 | #23 | Acueducto: el bombeo principal queda con 2 bombas de trabajo (sin reserva), como pidió el autor; escenario de disparo de bomba rehecho | acueducto |
 | 2026-10-17 | #22 | Acueducto: grupo de bombeo en paralelo (`booster-pump-set`), válvula entre niveles (`regulating-valve`) y tanque de agua de 1.000 L (preset de `vessel`) en la librería, con capturas | acueducto |
@@ -36,6 +37,16 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 | 2026-10-16 | #1 | Layouts de las plantas | 1 |
 
 ## Entradas
+
+### 2026-10-17 11:00–11:30 · PR #25 · Acueducto: una bomba sola sostiene la presión; rejilla numerada
+- **Fecha/hora (UTC):** 2026-10-17 11:00 a 11:30.
+- **Fase del plan:** [[plan-del-proyecto]], acueducto a escala, ajustes a la entrega 3.
+- **Solicitado por:** Carlos Andrés Quiceño: comentario en el PR #23 (05:32) «aunque solo una de ellas trabaje puede entregar 75 mca», la opción «Bombas de 13 m³/h» (11:00) y «las canaletas quedan casi a la misma altura de la salida de las válvulas para que el agua no salpique y cada válvula debe ir numerada» (11:03).
+- **Qué se hizo:** preset principal `multistage-2x13m3h-80m` (2 bombas de 13 m³/h a 80 m, motor de 5,5 kW). El grupo arranca la segunda bomba cuando el variador pasa el 98 % aunque la presión todavía se sostenga, para que las dos trabajen de día con margen. Escenarios rehechos: de día 2 bombas al 91,7 %; si una se dispara, la otra sube al 99,7 % y sostiene 13 m³/h a 80 mca sin alarma. Rejilla: cada válvula lleva una placa con su número (C11…C44, L1, L2) y las canaletas pasan 5 cm bajo la salida de las válvulas, colgadas del bastidor.
+- **Commits:** ver el PR #25.
+- **Verificación:** escenarios calculados a mano con la curva H = 100·s² − 0,11834·Q², `uv run twin-lib validate`, `uv run pytest`, `uv run ruff check .`, `pnpm -r typecheck` y `pnpm -r test`. Capturas: [[acueducto-grupo-de-bombeo.jpg]], [[acueducto-rejilla-numerada.jpg]] y [[acueducto-rejilla-canaletas.jpg]].
+- **Decisiones:** [[decisiones]] D26.
+- **Conversación:** [[hilo-acueducto-a-escala]].
 
 ### 2026-10-17 05:30–06:15 · PR #24 · Acueducto: estación reguladora y rejilla de un nivel
 - **Fecha/hora (UTC):** 2026-10-17 05:30 a 06:15.

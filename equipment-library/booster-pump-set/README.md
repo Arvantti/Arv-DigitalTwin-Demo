@@ -16,7 +16,7 @@ Grupo de bombeo en paralelo sobre un bastidor: 1 a 6 bombas iguales (multietapa 
 `add_pump_set(net, prefix, suction, discharge, p)` agrega las bombas y antirretornos a una red ya armada; la planta del acueducto la usará en vez del banco.
 
 ## Presets
-`multistage-2x8m3h-80m` (bombeo principal, 2 bombas de trabajo a 80 mca, sin reserva), `recirculation-2x15m3h` (recirculación por nivel, 1 + 1).
+`multistage-2x13m3h-80m` (bombeo principal, 2 bombas de 13 m³/h a 80 mca, sin reserva; una sola sostiene la demanda de día), `recirculation-2x15m3h` (recirculación por nivel, 1 + 1).
 
 ## Fallas
 `pump_trip` (se dispara la líder, entra la reserva), `vfd_fault` (paran todas), `worn_impeller` (la curva baja 10 %).
