@@ -17,6 +17,7 @@ import yaml from "js-yaml";
 import * as THREE from "three";
 import { type AnimationFrame, type EquipmentModel, type LightingPreset, Stage, parts, textures } from "@twin/3d";
 import { geometryBuilders, rawSpecs } from "@twin/equipment-library/registry.ts";
+import { type ControlPiece, type PanelConfig, controlPanel, operatorDesk, plcCabinet } from "./control-room.ts";
 import "./styles.css";
 
 interface Zone {
@@ -35,6 +36,7 @@ interface PlantEquipment {
   footprint: [number, number, number];
   rotation_deg?: number;
   overhead?: boolean;
+  panel?: PanelConfig;
   sim?: { type: string; preset: string | null; params: Record<string, unknown> };
 }
 interface Walkway {
@@ -189,12 +191,25 @@ function placeholder(eq: PlantEquipment): THREE.Object3D {
   return g;
 }
 
+/** Piezas de la sala de control (PLC, puesto del operador, panel de gráficos): son de la escena, no de la librería. */
+const controlBuilders: Record<string, (eq: PlantEquipment) => ControlPiece> = {
+  plc_cabinet: (eq) => plcCabinet(eq.footprint),
+  operator_desk: (eq) => operatorDesk(eq.footprint),
+  control_panel: (eq) => controlPanel(eq.footprint, eq.panel ?? { slots: [] }),
+};
+const controlPieces: ControlPiece[] = [];
+
 function buildEquipment(): void {
   for (const eq of doc.equipment) {
     let root: THREE.Object3D;
     let model: EquipmentModel | null = null;
     const builder = eq.sim ? geometryBuilders[eq.sim.type] : undefined;
-    if (builder && eq.sim) {
+    const control = controlBuilders[eq.type];
+    if (control) {
+      const piece = control(eq);
+      controlPieces.push(piece);
+      root = piece.root;
+    } else if (builder && eq.sim) {
       model = builder(eq.sim.params);
       root = model.root;
     } else root = placeholder(eq);
@@ -404,7 +419,7 @@ function focusRect(rect: [number, number, number, number], height = 4, distanceF
 function buildCameras(): void {
   const box = $("cameras");
   const entries: [string, string, () => void][] = [["VISTA GENERAL", "general", () => focusRect([0, 0, doc.plant.site?.width_x ?? 112, doc.plant.site?.length_y ?? 72], 6, 0.62)]];
-  const featured = doc.zones.filter((z) => ["production", "utility"].includes(z.kind) && z.rect[2] * z.rect[3] >= 80);
+  const featured = doc.zones.filter((z) => (["production", "utility"].includes(z.kind) && z.rect[2] * z.rect[3] >= 80) || z.id.startsWith("sala-control"));
   for (const z of featured) entries.push([z.name.toUpperCase(), z.id, () => focusRect(z.rect, Math.max(3, z.height))]);
   for (const [label, key, go] of entries) {
     const b = document.createElement("button");
@@ -517,6 +532,7 @@ function connect(): void {
       const asset = assets.get(id);
       if (asset) asset.frame = { channels: snap.animation, state: snap.state, phase: snap.phase, variables: snap.variables, label: id.toUpperCase() };
     }
+    for (const piece of controlPieces) piece.feed?.(latest, msg.t as number);
     renderAsset();
     renderLines(msg.snapshot.lines);
     appendEvents(msg.events);
@@ -672,6 +688,7 @@ function loop(): void {
   const dt = stage.render();
   for (const a of assets.values()) a.model?.update(a.frame, dt);
   animatePipes(stage.time);
+  for (const piece of controlPieces) piece.redraw?.();
   updateTour();
   frames++;
   const wantsData = url.get("autosim") === "1";
