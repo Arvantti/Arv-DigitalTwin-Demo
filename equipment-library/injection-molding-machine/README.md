@@ -12,7 +12,7 @@ Inyectora horizontal de termoplásticos (manufactura discreta). Visual V2 · com
 - **KPIs**: OEE (disponibilidad × rendimiento × calidad), scrap, kWh/kg, piezas por hora.
 
 ## Entradas del entorno
-`material_available`, `downstream_free`, `cooling_water_ok`, `resin_moisture_pct` (la entrega el secador).
+`material_available`, `downstream_free`, `cooling_water_ok`, `resin_moisture_pct` (la entrega el secador) y `cooling_water_c` (la entrega el chiller; None = agua de diseño). El termorregulador sostiene el molde si el agua llega al menos 8 °C más fría que la consigna; por encima, el molde sube con el agua: más enfriamiento, rechupes y deformación. La variable `cooling_load_kw` es el calor que la inyectora le entrega al chiller.
 
 ## Presets
 `100t-cutlery`, `300t-container`, `650t-bucket`, `1500t-bin`.

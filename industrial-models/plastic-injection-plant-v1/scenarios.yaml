@@ -1,0 +1,70 @@
+# Escenarios de la cascada de inyección (twin.yaml). Valores esperados calculados a mano.
+#
+# Base:
+#   Cubiertos (imm-01, imm-02): 16 × 3,5 g × 1,10 de colada = 61,6 g cada 9 s = 24,6 kg/h.
+#   Tapas (imm-03): 4 × 12 g × 1,10 = 52,8 g cada 12 s; colada 4,8 g por ciclo.
+#   Secador: 150 kg/h de consumidores no modelados + 49,3 kg/h ⇒ ≈ 199 kg/h; tolva ≈ 343 kg
+#            ⇒ residencia ≈ 1,72 h. Normal: 0,01 + 0,29 × e^(−1,72/0,4) ≈ 0,014 %.
+#   Chiller: 380 + 2,3 + 2,3 + 2,1 ≈ 387 kW; lazo de 15 m³ ⇒ 62.790 kJ/K.
+#   Técnico: base (116, 12), 1,0 m/s por pasillos. A dryer-03 (25, 45): 124 m. A chiller-01
+#            (69, 101): 136 m. A imm-01 (38,5; 42): 107,5 m. De chiller-01 a imm-01: 89,5 m.
+twin: twin.yaml
+
+scenarios:
+  - id: turno-8h
+    description: Turno de 8 h sin fallas
+    duration_s: 28800
+    expect:
+      - { path: plant.kpis.cutlery_good, min: 100500, max: 102300, description: "(2 × 3.200 ciclos × 16 × 0,99 = 101.376)" }
+      - { path: plant.kpis.lids_good, min: 9350, max: 9650, description: "(2.400 ciclos × 4 × 0,99 = 9.504)" }
+      - { path: plant.kpis.regrind_kg, min: 12.2, max: 12.9, description: "((2.400 × 4,8 g + 96 × 12 g) × 0,99 ≈ 12,5 kg)" }
+      - { path: plant.kpis.resin_dried_kg, min: 1590, max: 1598, description: "(150 × 8 + 2 × 24,64 × 8 = 1.594 kg)" }
+      - { path: plant.kpis.max_resin_moisture_pct, max: 0.021 }
+      - { path: plant.kpis.max_mold_water_c, max: 13.6, description: "(consigna 12 ± 1 K)" }
+      - { path: plant.kpis.chiller_kwh, min: 950, max: 1020, description: "(387 × 8 / 3,68 + bomba 18 × 8 ≈ 985 kWh)" }
+
+  - id: falla-secador
+    description: Falla la regeneración del secador durante 4 h (repuesto no disponible); la resina sale húmeda y las inyectoras de PS rechazan por rayas plateadas
+    duration_s: 28800
+    timeline:
+      - { at_s: 3600, equipment: dryer-03, command: inject_fault, args: { fault: regeneration_failure, duration_s: 14400 } }
+    expect:
+      # Con el rocío en +12 °C, τ = 0,4 × (1 + 52/10) = 2,48 h ⇒ 0,01 + 0,29 × e^(−1,72/2,48) ≈ 0,155 %.
+      - { path: plant.kpis.max_resin_moisture_pct, min: 0.14, max: 0.17 }
+      - { path: events.dryer-03.quality_alarm, min: 1 }
+      # Rayas: 0,15 × 0,4 × (0,155/0,10 − 1) ≈ 3,3 % durante ≈ 200 min sobre el límite
+      # (21.300 cubiertos por máquina) ≈ 700 rechazos extra sobre los ≈ 512 normales.
+      - { path: equipment.imm-01.variables.parts_rejected, min: 900, max: 1300 }
+      - { path: events.tech-01.arrived, equals: 1, description: "(124 m a 1 m/s)" }
+      - { path: plant.maintenance.avg_response_min, min: 2.0, max: 2.2, description: "(124 s)" }
+
+  - id: disparo-chiller
+    description: El chiller se dispara por alta presión; el técnico tarda 136 s en llegar y repara en 45 min. Se observa justo antes del rearme
+    duration_s: 6430
+    timeline:
+      - { at_s: 3600, equipment: chiller-01, command: inject_fault, args: { fault: high_pressure_trip, duration_s: 2700 } }
+    expect:
+      # Sin compresores el lazo sube 387 / 62.790 = 0,0062 K/s durante 136 + 2.694 s ≈ +17,4 K.
+      - { path: equipment.chiller-01.variables.supply_temp_c, min: 28.5, max: 30.5 }
+      # Molde de cubiertos (consigna 30 °C): sube con el agua sobre 30 − 8 = 22 °C, con 300 s de retardo:
+      # 30 + (29,3 − 22) − 0,0062 × 300 ≈ 35,5 °C.
+      - { path: equipment.imm-01.variables.mold_temp, min: 34.5, max: 36.5 }
+      # Molde de tapas (consigna 40 °C): el agua no pasa de 40 − 8 = 32 °C, no se calienta.
+      - { path: equipment.imm-03.variables.mold_temp, min: 39.0, max: 41.0 }
+      - { path: equipment.tech-01.phase, equals: working }
+      - { path: events.chiller-01.quality_alarm, min: 1 }
+
+  - id: dos-fallas
+    description: Fallan a la vez el chiller y el robot de imm-01 (10 min de reparación cada uno); un solo técnico los atiende en orden
+    duration_s: 3600
+    timeline:
+      - { at_s: 600, equipment: imm-01, command: inject_fault, args: { fault: robot_fault, duration_s: 600 } }
+      - { at_s: 600, equipment: chiller-01, command: inject_fault, args: { fault: high_pressure_trip, duration_s: 600 } }
+    expect:
+      # Se atiende primero el chiller (orden del gemelo): llega a los 736 s, termina a los 1.336 s,
+      # camina 89,5 m hasta imm-01 (llega a los ≈ 1.426 s) y termina a los ≈ 2.026 s.
+      - { path: plant.maintenance.repairs, equals: 2 }
+      - { path: plant.maintenance.avg_response_min, min: 7.8, max: 8.3, description: "((136 + 826) / 2 s ≈ 8,0 min)" }
+      - { path: plant.maintenance.max_response_min, min: 13.6, max: 14.0, description: "(826 s esperando el técnico)" }
+      - { path: equipment.imm-01.states.fault, min: 0.39, max: 0.40, description: "((2.026 − 600) / 3.600)" }
+      - { path: equipment.tech-01.state, equals: idle, description: "(vuelve a la base a los ≈ 2.134 s)" }

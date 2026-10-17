@@ -1,0 +1,91 @@
+schema_version: 0.1.0
+type: granulator
+version: 0.1.0
+name: Molino granulador de plástico
+manufacturing: discrete
+category: materials.size_reduction
+plant_role: station
+description: >
+  Molino de cuchillas para colada, piezas rechazadas y scrap. Al pie de la inyectora recibe la
+  colada y los rechazos y devuelve molido al proceso; en la central de reciclaje muele scrap
+  lavado. Rotor de cuchillas contra cuchillas fijas y criba que define el tamaño del molido.
+  Las cuchillas se desafilan con el uso: baja la capacidad y aumentan los finos.
+aliases: [molino, granulador, molino de colada, triturador]
+fidelity: { visual: V2, behavior: B2 }
+
+params:
+  kind:          { type: enum, values: [beside_press, central], default: beside_press, description: Molino al pie de máquina o central, affects: [geometry] }
+  capacity_kg_h: { type: number, unit: kg/h, min: 5, max: 3000, default: 40, description: Capacidad con cuchillas afiladas, affects: [geometry, behavior] }
+  screen_mm:     { type: number, unit: mm, min: 3, max: 20, default: 8, description: Diámetro de los agujeros de la criba, affects: [behavior] }
+  rotor_kw:      { type: number, unit: kW, min: 1, max: 160, default: 5.5, description: Potencia del motor del rotor, affects: [geometry, behavior] }
+  throat_kg:     { type: number, unit: kg, min: 1, max: 500, default: 8, description: Material que cabe en la tolva y la garganta antes de rebosar, affects: [behavior] }
+  bin_kg:        { type: number, unit: kg, min: 5, max: 3000, default: 60, description: Capacidad del recipiente de molido (si no hay transporte), affects: [behavior] }
+  knife_life_t:  { type: number, unit: t, min: 1, max: 1000, default: 30, description: Toneladas molidas hasta que las cuchillas quedan sin filo, affects: [behavior] }
+  nominal_feed_kg_h: { type: number, unit: kg/h, min: 0, max: 3000, default: 12, description: Alimentación si el entorno no la fija, affects: [behavior] }
+  body_color:    { type: string, default: "#2f5d8a", description: Color de la carcasa (hex), affects: [geometry] }
+
+ports:
+  - { id: scrap_in,    kind: material, direction: in,  medium: "colada, rechazos o scrap", unit: kg/h, bind: { rate_input: feed_kg_h, ready: "throat_kg < throat_capacity_kg" } }
+  - { id: regrind_out, kind: material, direction: out, medium: molido, unit: kg/h, bind: { counter: regrind_kg, counter_unit: kg, ready_input: downstream_free } }
+  - { id: power,       kind: utility,  direction: in,  medium: energía eléctrica, unit: kW }
+
+states:
+  - { id: idle, description: Rotor girando en vacío }
+  - { id: running, description: Moliendo }
+  - { id: blocked, description: Recipiente de molido lleno }
+  - { id: fault, description: Detenido por falla (atasco) }
+  - { id: maintenance, description: Cambio de cuchillas o limpieza }
+
+variables:
+  - { id: throat_kg,          unit: kg,   kind: calculated, description: Material esperando en la tolva y la garganta }
+  - { id: throat_capacity_kg, unit: kg,   kind: setpoint,   description: Capacidad de la tolva y la garganta }
+  - { id: rate_kg_h,          unit: kg/h, kind: calculated, description: Caudal molido }
+  - { id: regrind_kg,         unit: kg,   kind: counter,    description: Molido entregado }
+  - { id: fines_kg,           unit: kg,   kind: counter,    description: Finos y polvo al colector }
+  - { id: fines_pct,          unit: "%",  kind: calculated, description: Finos en el molido actual }
+  - { id: overflow_kg,        unit: kg,   kind: counter,    description: Material que rebosó la tolva (al piso) }
+  - { id: bin_kg,             unit: kg,   kind: calculated, description: Molido en el recipiente }
+  - { id: knife_wear_pct,     unit: "%",  kind: calculated, range: [0, 100], description: Desgaste de las cuchillas }
+  - { id: motor_current_a,    unit: A,    kind: measured,   range: [0, 400], noise_sd: 0.3, resolution: 0.1, description: Corriente del motor del rotor }
+  - { id: power_kw,           unit: kW,   kind: calculated, description: Potencia eléctrica }
+  - { id: energy_kwh,         unit: kWh,  kind: counter,    description: Energía acumulada }
+
+events:
+  - { id: overflow, description: La tolva rebosa (el molino no da abasto o está detenido) }
+  - { id: bin_full, description: El recipiente de molido se llenó }
+  - { id: knives_changed, description: Se cambiaron las cuchillas }
+
+faults:
+  - { id: jam, description: Atasco del rotor por una pieza grande, mtbf_h: 300, mttr_min: 10, severity: low, effect: El rotor se detiene; la tolva se llena y rebosa }
+  - { id: knives_dull, description: Cuchillas sin filo, mtbf_h: 2000, mttr_min: 60, severity: medium, stops_equipment: false, effect: "Capacidad −32 %, finos ×5 y más consumo; se repara cambiando las cuchillas" }
+
+commands:
+  - { id: change_knives, description: Cambia las cuchillas (desgaste a cero) }
+  - { id: empty_bin, description: Vacía el recipiente de molido }
+  - { id: maintenance, description: Inicia o termina mantenimiento, args: { active: boolean } }
+  - { id: inject_fault, description: Inyecta una falla declarada, args: { fault: string, duration_s: number } }
+  - { id: clear_fault, description: Repara una falla activa, args: { fault: string } }
+  - { id: set_param, description: Cambia un parámetro en caliente, args: { name: string, value: any } }
+
+kpis:
+  - { id: avg_fines_pct, unit: "%", description: Finos sobre lo molido }
+  - { id: kwh_per_kg, unit: kWh/kg, description: Energía por kilo molido }
+  - { id: overflow_pct, unit: "", description: Fracción de lo alimentado que rebosó }
+
+animation_channels:
+  - { id: rotor, range: [0, 1], description: Giro del rotor (1 = velocidad nominal) }
+  - { id: feed, range: [0, 1], description: Material cayendo a la tolva }
+  - { id: throat_fill, range: [0, 1], description: Llenado de la tolva }
+  - { id: bin_level, range: [0, 1], description: Nivel del recipiente de molido }
+  - { id: alarm_light, range: [0, 3], description: "Baliza: 0 apagada, 1 verde, 2 amarilla, 3 roja" }
+
+geometry:
+  parts: [base, cutting_chamber, hopper, sound_box, motor, belt_guard, flywheel, screen_drawer, bin, blower, cyclone, stack_light]
+  notes: "Escala s = (capacidad/40)^0,33. Al pie de máquina: bajo, sobre ruedas, con cajón de molido. Central: tolva grande, volante, soplador y ciclón."
+
+assumptions:
+  - Desgaste = toneladas molidas / knife_life_t. Capacidad = nominal × (1 − 0,4 × desgaste).
+  - "Finos = (1 + 6 × desgaste) % × √(8 / criba en mm)."
+  - Potencia = rotor × (0,25 + 0,75 × carga) × (1 + 0,5 × desgaste).
+references:
+  - Rangos típicos de molinos de colada y centrales de fichas genéricas.

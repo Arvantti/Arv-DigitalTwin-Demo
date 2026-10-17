@@ -1,0 +1,4 @@
+preset: operator-food
+description: Operario de la planta de salsas (cofia, tapabocas, bata y botas blancas)
+params: { role: operator, ppe: food, speed_m_s: 1.2 }
+provenance: { role: user, ppe: user, speed_m_s: assumed }

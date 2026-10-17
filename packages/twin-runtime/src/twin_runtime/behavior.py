@@ -210,6 +210,7 @@ class EquipmentBehavior:
             "state": self.state.current,
             "phase": self.phase,
             "active_faults": sorted(self.failures.active),
+            "waiting_repair": sorted(f.id for f in self.failures.active.values() if f.waiting),
             "stopping_fault": stopping.id if stopping else None,
             "variables": self.variables(),
             "animation": self.animation(),

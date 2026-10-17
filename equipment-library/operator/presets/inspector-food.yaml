@@ -1,0 +1,4 @@
+preset: inspector-food
+description: Inspector de calidad de la planta de salsas
+params: { role: inspector, ppe: food, speed_m_s: 1.2 }
+provenance: { role: user, ppe: user, speed_m_s: assumed }

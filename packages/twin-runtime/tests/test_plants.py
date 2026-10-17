@@ -195,3 +195,59 @@ def test_plant_scenario(plant: str, scenario_id: str) -> None:
     sim, _ = run_plant_scenario(twin, LIB, scenario)
     failures = check_plant_expectations(sim, scenario.expect)
     assert not failures, "\n".join(failures)
+
+
+# ---------------------------------------------------------------------------- cascada de inyección
+INJECTION = PLANTS["plastic-injection-plant-v1"]
+
+
+def test_repair_clock_waits_for_the_technician() -> None:
+    import random
+
+    from twin_runtime.primitives import FailureModel
+
+    fm = FailureModel([{"id": "jam", "mtbf_h": None, "mttr_min": 10}], random.Random(1))
+    fm.trigger("jam", duration_s=60)
+    fm.hold("jam", True)
+    for _ in range(100):
+        fm.step(1.0, operating=True)
+    assert fm.is_active("jam")  # 100 s esperando: el reloj no corrió
+    fm.hold("jam", False)
+    cleared = [fid for _ in range(60) for fid in fm.step(1.0, operating=True)[1]]
+    assert cleared == ["jam"]
+
+
+def test_resin_moisture_travels_from_dryer_to_press() -> None:
+    twin = load_twin(INJECTION, LIB)
+    sim = PlantSimulator(twin, LIB)
+    sim.run(600)
+    dryer = sim.equipment["dryer-03"].true_values()["outlet_moisture_pct"]
+    assert sim.inputs["imm-01"]["resin_moisture_pct"] == pytest.approx(dryer, rel=0.05)
+    assert sim.inputs["imm-01"]["cooling_water_c"] == pytest.approx(sim.equipment["chiller-01"].true_values()["supply_temp_c"], abs=0.05)
+
+
+def test_pull_offset_keeps_mass_balance() -> None:
+    """Lo que entrega el secador = consumidores no modelados (150 kg/h) + lo que consumen las inyectoras."""
+    twin = load_twin(INJECTION, LIB)
+    sim = PlantSimulator(twin, LIB)
+    sim.run(2 * 3600)
+    out = sim.equipment["dryer-03"].true_values()["resin_out_kg"]
+    consumed = sum(sim.equipment[e].true_values()["resin_consumed_kg"] for e in ("imm-01", "imm-02"))
+    assert out == pytest.approx(150.0 * 2 + consumed, abs=0.2)  # ≤ una inyección en curso
+
+
+def test_maintenance_crew_requires_positions(tmp_path: Path) -> None:
+    path = _write(
+        tmp_path,
+        """
+twin: t
+name: prueba
+equipment:
+  - { id: a, type: belt-conveyor }
+  - { id: tech, type: operator, position: [0, 0] }
+controllers:
+  - { kind: maintenance_crew, technicians: [tech], covers: [a] }
+""",
+    )
+    with pytest.raises(SpecError, match="a no tiene posición"):
+        load_twin(path, LIB)

@@ -1,0 +1,96 @@
+schema_version: 0.1.0
+type: chiller
+version: 0.1.0
+name: Enfriador de agua (chiller) con banco de hielo opcional
+manufacturing: utility
+category: utility.chilled_water
+plant_role: utility
+description: >
+  Enfriador de agua por compresión con compresores por etapas, condensador por aire y lazo de
+  agua fría con tanque. La temperatura de suministro responde al balance entre la carga de los
+  consumidores (moldes, tanques enchaquetados) y la capacidad de las etapas encendidas. Con banco
+  de hielo, el hielo cubre el déficit mientras dure y se recarga con la capacidad sobrante.
+aliases: [chiller, enfriador, unidad de agua helada, banco de hielo]
+fidelity: { visual: V2, behavior: B3 }
+
+params:
+  capacity_kw:       { type: number, unit: kW, min: 10, max: 5000, default: 600, description: Capacidad frigorífica nominal de todos los compresores, affects: [geometry, behavior] }
+  stages:            { type: integer, min: 1, max: 8, default: 4, description: Etapas de compresor (iguales), affects: [geometry, behavior] }
+  supply_setpoint_c: { type: number, unit: degC, min: -5, max: 25, default: 12, description: Consigna del agua de suministro, affects: [behavior] }
+  band_c:            { type: number, unit: K, min: 0.3, max: 4, default: 1.0, description: Banda muerta de la etapa (± alrededor de la consigna), affects: [behavior] }
+  min_stage_s:       { type: number, unit: s, min: 30, max: 1800, default: 180, description: Tiempo mínimo entre cambios de etapa (protección antiarranque), affects: [behavior] }
+  flow_m3_h:         { type: number, unit: m3/h, min: 1, max: 2000, default: 180, description: Caudal del lazo de agua, affects: [behavior] }
+  loop_m3:           { type: number, unit: m3, min: 0.5, max: 500, default: 15, description: Agua en el lazo y el tanque (inercia térmica), affects: [geometry, behavior] }
+  cop_at_7c:         { type: number, min: 1.5, max: 8, default: 3.2, description: Coeficiente de desempeño con suministro a 7 °C (+3 % por K más caliente), affects: [behavior] }
+  storage_kwh:       { type: number, unit: kWh, min: 0, max: 20000, default: 0, description: Capacidad del banco de hielo (0 = sin banco), affects: [geometry, behavior] }
+  nominal_load_kw:   { type: number, unit: kW, min: 0, max: 5000, default: 390, description: Carga si el entorno no la fija, affects: [behavior] }
+  body_color:        { type: string, default: "#d7dadd", description: Color de la carcasa (hex), affects: [geometry] }
+
+ports:
+  - { id: chilled_water, kind: utility, direction: out, medium: agua fría, unit: kW, bind: { supply: supply_temp_c, demand_input: load_kw } }
+  - { id: power, kind: utility, direction: in, medium: energía eléctrica, unit: kW, bind: { supply_input: power_available } }
+
+states:
+  - { id: "off", description: Apagado }
+  - { id: idle, description: Encendido sin carga; compresores detenidos }
+  - { id: running, description: Enfriando }
+  - { id: fault, description: Disparado por falla; el agua se calienta con la carga }
+  - { id: maintenance, description: Mantenimiento }
+
+variables:
+  - { id: supply_temp_c,  unit: degC, kind: measured,   range: [-10, 60], noise_sd: 0.1, resolution: 0.1, description: Temperatura del agua de suministro }
+  - { id: return_temp_c,  unit: degC, kind: measured,   range: [-10, 70], noise_sd: 0.1, resolution: 0.1, description: Temperatura del agua de retorno }
+  - { id: setpoint_c,     unit: degC, kind: setpoint,   description: Consigna de suministro }
+  - { id: load_kw,        unit: kW,   kind: calculated, description: Calor que entregan los consumidores }
+  - { id: cooling_kw,     unit: kW,   kind: calculated, description: Frío que producen los compresores }
+  - { id: stages_on,      unit: "",   kind: status,     description: Etapas de compresor encendidas }
+  - { id: capacity_pct,   unit: "%",  kind: calculated, description: Capacidad en uso }
+  - { id: cop,            unit: "",   kind: calculated, description: Coeficiente de desempeño actual }
+  - { id: power_kw,       unit: kW,   kind: measured,   range: [0, 3000], noise_sd: 0.5, resolution: 0.1, description: Potencia eléctrica (compresores y bomba) }
+  - { id: energy_kwh,     unit: kWh,  kind: counter,    description: Energía acumulada }
+  - { id: ice_kwh,        unit: kWh,  kind: calculated, description: Frío almacenado en el banco de hielo }
+  - { id: ice_pct,        unit: "%",  kind: calculated, description: Carga del banco de hielo }
+  - { id: compressor_starts, unit: "", kind: counter,   description: Arranques de compresor }
+
+events:
+  - { id: quality_alarm, description: Agua de suministro fuera de ventana, payload: [variable, value, limit] }
+  - { id: ice_depleted, description: Se agotó el banco de hielo }
+
+faults:
+  - { id: high_pressure_trip, description: Disparo por alta presión de condensación, mtbf_h: 3000, mttr_min: 45, severity: high, effect: Todos los compresores se detienen; el agua de los moldes se calienta }
+  - { id: refrigerant_leak, description: Fuga de refrigerante, mtbf_h: 8000, mttr_min: 120, severity: medium, stops_equipment: false, effect: La capacidad baja al 60 % }
+
+commands:
+  - { id: start, description: Enciende el chiller }
+  - { id: stop, description: Apaga el chiller }
+  - { id: set_setpoint, description: Cambia la consigna de suministro, args: { c: number } }
+  - { id: maintenance, description: Inicia o termina mantenimiento, args: { active: boolean } }
+  - { id: inject_fault, description: Inyecta una falla declarada, args: { fault: string, duration_s: number } }
+  - { id: clear_fault, description: Repara una falla activa, args: { fault: string } }
+  - { id: set_param, description: Cambia un parámetro en caliente, args: { name: string, value: any } }
+
+kpis:
+  - { id: avg_cop, unit: "", description: Frío producido / energía de los compresores }
+  - { id: max_supply_c, unit: degC, description: Temperatura máxima de suministro }
+  - { id: over_temp_pct, unit: "", description: Fracción del tiempo con suministro sobre consigna + 3 K }
+  - { id: starts_per_h, unit: 1/h, description: Arranques de compresor por hora }
+
+animation_channels:
+  - { id: fans, range: [0, 1], description: Giro de los ventiladores del condensador }
+  - { id: compressors, range: [0, 1], description: Fracción de etapas encendidas }
+  - { id: pump, range: [0, 1], description: Bomba del lazo en marcha }
+  - { id: supply_heat, range: [0, 1], description: "Temperatura de suministro normalizada (0 = consigna, 1 = consigna + 20 K)" }
+  - { id: ice, range: [0, 1], description: Carga del banco de hielo }
+  - { id: alarm_light, range: [0, 3], description: "Baliza: 0 apagada, 1 verde, 2 amarilla, 3 roja" }
+
+geometry:
+  parts: [skid, casing, condenser_coils, fans, compressors, evaporator, pump, tank, ice_bank, panel, stack_light]
+  notes: "Largo ≈ 1,6 + capacidad/150 m (ventiladores en fila sobre el condensador en V); tanque de lazo al lado."
+
+assumptions:
+  - Lazo de agua perfectamente mezclado con la masa de loop_m3.
+  - Capacidad por etapa constante (no se corrige por la temperatura exterior).
+  - El banco de hielo descarga como máximo la mitad de su capacidad por hora.
+  - "COP = cop_at_7c × (1 + 0,03 × (T suministro − 7)); bomba = 0,1 kW por m³/h."
+references:
+  - Rangos típicos de COP de chillers enfriados por aire y de bancos de hielo de fichas genéricas.

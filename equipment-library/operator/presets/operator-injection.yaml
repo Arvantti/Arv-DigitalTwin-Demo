@@ -1,0 +1,4 @@
+preset: operator-injection
+description: Operario de inyectoras (casco amarillo, gafas, overol azul)
+params: { role: operator, ppe: injection, speed_m_s: 1.2 }
+provenance: { role: user, ppe: user, speed_m_s: assumed }

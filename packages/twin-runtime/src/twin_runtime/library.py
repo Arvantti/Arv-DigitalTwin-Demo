@@ -209,6 +209,12 @@ def check_port_binds(eq: EquipmentType) -> list[str]:
         for key in BIND_INPUTS:
             if key in bind and bind[key] not in inputs:
                 errors.append(f"{where}: bind.{key}={bind[key]!r} no está en DEFAULT_INPUTS del comportamiento")
+        for prop, var in (bind.get("properties") or {}).items():
+            if var not in variables:
+                errors.append(f"{where}: bind.properties.{prop}={var!r} no es una variable del contrato")
+        for prop, name in (bind.get("property_inputs") or {}).items():
+            if name not in inputs:
+                errors.append(f"{where}: bind.property_inputs.{prop}={name!r} no está en DEFAULT_INPUTS del comportamiento")
         if "ready" in bind:
             try:
                 unknown = Condition(bind["ready"]).names - variables - {"state", "phase"}

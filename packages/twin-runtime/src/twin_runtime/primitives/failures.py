@@ -13,6 +13,7 @@ class ActiveFault:
     stops_equipment: bool
     remaining_s: float
     severity: str
+    waiting: bool = False  # esperando al técnico: el reloj de reparación no corre
 
 
 class FailureModel:
@@ -49,6 +50,8 @@ class FailureModel:
         new: list[str] = []
         cleared: list[str] = []
         for fid, fault in list(self.active.items()):
+            if fault.waiting:
+                continue
             fault.remaining_s -= dt
             if fault.remaining_s <= 0:
                 del self.active[fid]
@@ -66,6 +69,11 @@ class FailureModel:
     def clear(self, fault_id: str | None = None) -> list[str]:
         ids = [fault_id] if fault_id else list(self.active)
         return [fid for fid in ids if self.active.pop(fid, None) is not None]
+
+    def hold(self, fault_id: str, waiting: bool) -> None:
+        """Detiene (o reanuda) el reloj de reparación de una falla activa."""
+        if fault_id in self.active:
+            self.active[fault_id].waiting = waiting
 
     def is_active(self, fault_id: str) -> bool:
         return fault_id in self.active

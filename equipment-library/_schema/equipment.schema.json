@@ -199,6 +199,16 @@
         "ready_input": { "$ref": "#/$defs/ident", "description": "Entrada que recibe si el otro lado puede transferir" },
         "temperature": { "$ref": "#/$defs/ident", "description": "Variable con la temperatura del producto que sale" },
         "temperature_input": { "$ref": "#/$defs/ident", "description": "Entrada que recibe la temperatura del producto que llega" },
+        "properties": {
+          "type": "object",
+          "description": "Propiedades del material que salen con el flujo: nombre → variable (p. ej. moisture_pct: outlet_moisture_pct)",
+          "additionalProperties": { "$ref": "#/$defs/ident" }
+        },
+        "property_inputs": {
+          "type": "object",
+          "description": "Propiedades del material que llegan: nombre → entrada (p. ej. moisture_pct: resin_moisture_pct)",
+          "additionalProperties": { "$ref": "#/$defs/ident" }
+        },
         "supply": { "$ref": "#/$defs/ident", "description": "Servicio: variable que se ofrece (presión de vapor…)" },
         "supply_input": { "$ref": "#/$defs/ident", "description": "Servicio: entrada que recibe lo ofrecido" },
         "demand": { "$ref": "#/$defs/ident", "description": "Servicio: variable con el consumo del equipo" },
