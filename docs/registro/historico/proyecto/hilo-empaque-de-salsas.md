@@ -7,7 +7,7 @@ tags: [registro, historico-ia, empaque, salsas]
 ---
 # Hilo: empaque manual y estibado de la planta de salsas (PR #19)
 
-Parte de [[historico-proyecto]] · Índice: [[00-indice]] · Bitácora: [[bitacora]] · Decisión: [[decisiones]] D19. Autor humano: Carlos Andrés Quiceño. Hora en UTC. Credenciales: ninguna.
+Parte de [[historico-proyecto]] · Índice: [[00-indice]] · Bitácora: [[bitacora]] · Decisión: [[decisiones]] D20. Autor humano: Carlos Andrés Quiceño. Hora en UTC. Credenciales: ninguna.
 
 El mensaje del autor venía de otro hilo (operarios, montacargas, empaque y sala de control del PLC); este hilo atiende solo la parte del empaque de la planta de salsas.
 
