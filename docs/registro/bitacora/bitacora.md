@@ -11,6 +11,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
 | 2026-10-17 | #28 | Fase 5: bodega de producto terminado contigua a empaque con paso directo, estanterías, rutas de montacargas, muelles y camiones en la planta de salsas (pedido del autor) | 5 |
+| 2026-10-17 | #29 | Control de peso: tolerancia de 4 % en todos los formatos (decisión del autor); dosificador en 1,5 %; rechazo de la presentación de 1.000 ml ≈ 2,5 % | 4 |
 | 2026-10-17 | #27 | Acueducto: semáforo de la casa crítica (20, 18 y 15 mca) y búsqueda de la consigna mínima de la estación; criterio en D28 | acueducto |
 | 2026-10-17 | #27 | Acueducto: primer banco de la planta completa (bombas, estación, cuatro rejillas por las columnas) en `industrial-models/water-network-scale-v1`; resuelve con 13,5 m³/h y c44 a 23,0 mca, a revisar contra 20 mca | acueducto |
 | 2026-10-17 | #26 | Acueducto: fugas de la rejilla en los ramales 2 y 4 con la misma descarga que las casas, en la posición 1, 3 o 5; red cerrada con caminos entre ramales (pedido del autor) | acueducto |
@@ -53,6 +54,15 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 - **Pendiente:** el panel de gráficos del PLC se mostrará en un artefacto de monitoreo, fuera de la escena (curvas por definir con el autor). El transporte sigue sin simularse en el motor.
 - **Conversación:** [[hilo-bodega-de-producto-terminado]].
 
+### 2026-10-17 15:38–16:10 · PR #29 · Control de peso: tolerancia de 4 %
+- **Fecha/hora (UTC):** 2026-10-17 15:38 a 16:10.
+- **Fase del plan:** [[plan-del-proyecto]] fase 4 (motor de planta), ajuste de presets.
+- **Solicitado por:** Carlos Andrés Quiceño, «Los porcentajes de tolerancia están muy altos… le pondría yo 1 % de tolerancia a todos» (15:33). Después eligió «4 % y dosificador 1,5 %» en la tarjeta de decisión (15:38).
+- **Qué se hizo:** la tolerancia de `checkweigher` pasa a 4 % a ambos lados en el valor por defecto y en los cuatro presets. Con 1 % y dosificación de 1,5 % el rechazo de 1.000 ml era ≈ 59 %; con 4 % es ≈ 2,5 %. Se recalculan las expectativas de `steady`, `load-cell-drift` y de la planta `sauce-plant-v1`.
+- **Commits:** `617c6d5`.
+- **Verificación:** `uv run twin-lib validate` (OK), `uv run pytest` (183 pasan), `uv run ruff check .` (OK).
+- **Decisiones:** [[decisiones]] (D08).
+- **Conversación:** [[hilo-motor-de-planta]].
 ### 2026-10-17 12:58–15:40 · PR #27 (borrador) · Acueducto: banco hidráulico de la planta (entrega 4, primer paso)
 - **Solicitado por:** el autor (12:55 y 12:55:22 UTC): «Qué falta» y luego «Sí», para arrancar la planta.
 - **Qué se hizo:** `industrial-models/water-network-scale-v1/network.py` arma en una sola red el tanque, el grupo de bombas, el colector de 4", la estación reguladora, las cuatro columnas de 2" y las cuatro rejillas, con las funciones de `equipment-library` (sin copiar la lógica). Corre en estado estacionario con consumo de día.
