@@ -49,7 +49,7 @@ flowchart LR
 | `tank-recirc-01..02` | Tanques de recirculación, 1.000 L c/u | `vessel` (existe; preset nuevo `water-1000l`) | 2 |
 | `pumpset-recirc-01` | 2 bombas centrífugas normales (1 trabaja, 1 reserva), 15 m³/h a 10 mca c/u, arranque por nivel | `booster-pump-set` (preset `recirculation-2x15m3h`) | 1 |
 | `tank-supply-01..02` | Tanques de bombeo, 1.000 L c/u, comunicados | `vessel` (preset `water-1000l`) | 2 |
-| `pumpset-main-01` | 3 bombas multietapa verticales en paralelo (2 trabajan, 1 reserva), 8 m³/h a 80 m c/u, variador, antirretorno por bomba, colector de 4" | `booster-pump-set` (preset `multistage-3x8m3h-80m`) | 1 |
+| `pumpset-main-01` | 2 bombas multietapa verticales en paralelo (las dos trabajan, sin reserva), 8 m³/h a 80 m c/u, variador, antirretorno por bomba, colector de 4" | `booster-pump-set` (preset `multistage-2x8m3h-80m`) | 1 |
 | `prs-01` | Estación reguladora: bifurcación con válvulas de corte manuales, rama A con PRV automática, rama B con PRV manual de piloto, unión | `pressure-reducing-station` | 1 |
 | `grid-01..04` | Rejilla de un nivel: cabezal y ramales de 2", 16 válvulas de consumo (4 × 4), 2 válvulas de fuga (rojas), canaleta | `distribution-grid` | 4 |
 | `valve-between-12/23/34` | Válvula de regulación entre niveles, apertura fija manual (automatizable después) | `regulating-valve` | 3 |
@@ -109,7 +109,7 @@ De noche (válvulas de consumo al 30 %):
 
 Con fugas tipo orificio (exponente 0,5) la PRV automática ahorra ≈ 5 % de fugas de noche; con un exponente de 1,15, típico de redes de PVC con fisuras, el ahorro sube a ≈ 15 %. El exponente queda como parámetro de las válvulas de fuga para mostrar ese efecto.
 
-Bombas: dos multietapa de 8 m³/h a 80 m cubren el día (13 m³/h) con una tercera de reserva. Recirculación: la elevación desde los tanques del piso 2 a los del piso 3 es ≈ 4,5 m; 10 mca con pérdidas, 15 m³/h para reponer más rápido de lo que se consume. Volumen: 2 m³ en tanques de bombeo dan ≈ 9 min de autonomía a caudal de día.
+Bombas: dos multietapa de 8 m³/h a 80 m cubren el día (13 m³/h), sin reserva (el autor fijó 2 bombas). Recirculación: la elevación desde los tanques del piso 2 a los del piso 3 es ≈ 4,5 m; 10 mca con pérdidas, 15 m³/h para reponer más rápido de lo que se consume. Volumen: 2 m³ en tanques de bombeo dan ≈ 9 min de autonomía a caudal de día.
 
 ## 5. Modelo de simulación
 
@@ -176,7 +176,7 @@ Las expectativas se calculan a mano con la sección 4 antes de escribir el escen
 | `nominal` | Día: todas las casas abiertas, rama automática. 80 mca en bombas, 20 mca en la válvula crítica, 13 m³/h |
 | `night-pressure` | Demanda de 24 h (curva diaria); la rama automática baja la salida de la PRV de noche y las fugas bajan |
 | `manual-branch` | El operador pasa a la rama manual: la presión crítica sube de noche y las fugas aumentan; comparación de KPIs |
-| `pump-trip` | Falla de una bomba principal: entra la de reserva; el antirretorno evita el retroceso |
+| `pump-trip` | Falla de una bomba principal: sin reserva, la otra sola entrega ≈ 11,3 m³/h a ≈ 60 mca, salta la alarma de baja presión y el antirretorno evita el retroceso por la bomba parada |
 | `leak-burst` | Una válvula de fuga del nivel 2 se abre del todo (fraude o rotura): sube el agua no contabilizada, baja la presión del nivel y la PRV automática compensa |
 | `between-valve` | Se cierra a la mitad la válvula entre niveles 2 y 3: los niveles de arriba pierden presión aunque la estación esté bien |
 
@@ -208,7 +208,7 @@ La fase 1 es un modelo 1D (red). Para acoplar después CFD (Navier-Stokes) sin r
 | S1 | Rejilla de 4 × 4 válvulas de consumo y 2 de fuga por nivel, 2,0 × 2,0 m | Número de casas por comuna y tamaño de la escena |
 | S2 | Pisos de 3,0 m; nivel 1 de la rejilla a la altura de la descarga de las bombas | Presiones estáticas de cada nivel |
 | S3 | Kv de las válvulas (sección 4) | Caudal total y tamaño de las bombas |
-| S4 | 3 bombas principales (2 + 1 reserva) y 2 de recirculación (1 + 1) | Lógica de alternancia y escenario de falla |
+| S4 | 2 bombas principales, las dos de trabajo (el autor corrigió el supuesto de 2 + 1 el 2026-10-17) y 2 de recirculación (1 + 1) | Lógica de alternancia y escenario de falla |
 | S5 | La PRV automática mide la presión en la válvula crítica por telemetría | Es lo que permite el objetivo de 20 mca en el punto crítico |
 | S6 | Bombas genéricas, sin marca | Regla del repositorio |
 | S7 | Tanques de 1.000 L | Autonomía y dinámica de niveles |

@@ -3,7 +3,7 @@
 scenarios:
   - id: steady
     description: "Día: la red pide 13 m³/h a 80 mca; trabajan 2 bombas al 96 % de velocidad"
-    preset: multistage-3x8m3h-80m
+    preset: multistage-2x8m3h-80m
     duration_s: 3600
     expect:
       - { path: variables.discharge_pressure_mca, min: 77.6, max: 82.4, description: "(consigna 80 mca ± 3 %)" }
@@ -16,7 +16,7 @@ scenarios:
 
   - id: night-demand
     description: "Noche: la red pide 5 m³/h; basta una bomba al 93 %"
-    preset: multistage-3x8m3h-80m
+    preset: multistage-2x8m3h-80m
     duration_s: 1800
     inputs: { system_kv_m3h: 1.78 }
     expect:
@@ -26,7 +26,7 @@ scenarios:
 
   - id: day-to-night
     description: "La demanda baja de 13 a 5 m³/h a los 30 min; el caudal cabe en una bomba y la otra para"
-    preset: multistage-3x8m3h-80m
+    preset: multistage-2x8m3h-80m
     duration_s: 3600
     timeline:
       - { at_s: 1800, inputs: { system_kv_m3h: 1.78 } }
@@ -36,22 +36,36 @@ scenarios:
       - { path: variables.discharge_pressure_mca, min: 77.6, max: 82.4 }
 
   - id: pump-trip
-    description: "Se dispara la bomba líder a los 15 min durante 30 min; entra la de reserva y la presión se sostiene"
-    preset: multistage-3x8m3h-80m
+    description: "Se dispara la bomba líder a los 15 min; sin reserva, la otra sola no alcanza y la presión cae"
+    preset: multistage-2x8m3h-80m
+    duration_s: 1800
+    timeline:
+      - { at_s: 900, command: inject_fault, args: { fault: pump_trip, duration_s: 1800 } }
+    expect:
+      - { path: events.pump_tripped, equals: 1 }
+      - { path: events.low_pressure, equals: 1, description: "(la descarga queda más de 10 % bajo la consigna durante 10 s)" }
+      - { path: variables.pumps_running, equals: 1 }
+      - { path: variables.speed_pct, min: 99.9, max: 100.1, description: "(el variador se satura al 100 %)" }
+      - { path: variables.flow_m3h, min: 11.06, max: 11.52, description: "(1 bomba a plena velocidad: 1 + 100 − 0,3125·Q² − 10,197·(Q/40)² = 10,197·(Q/4,64)² → Q = 11,29 m³/h ± 2 %)" }
+      - { path: variables.discharge_pressure_mca, min: 59.2, max: 61.6, description: "(10,197·(11,29/4,64)² = 60,4 mca ± 2 %)" }
+
+  - id: pump-trip-recovery
+    description: "La misma falla dura 30 min; al repararse la bomba vuelve a entrar y la presión se recupera"
+    preset: multistage-2x8m3h-80m
     duration_s: 3600
     timeline:
       - { at_s: 900, command: inject_fault, args: { fault: pump_trip, duration_s: 1800 } }
     expect:
       - { path: events.pump_tripped, equals: 1 }
-      - { path: kpis.pump_starts, equals: 3, description: "(bombas 1 y 2 al arrancar; la 3 reemplaza a la 1)" }
+      - { path: events.pressure_normal, equals: 1 }
+      - { path: kpis.pump_starts, equals: 3, description: "(bombas 1 y 2 al arrancar; la 1 vuelve tras la reparación)" }
       - { path: variables.pumps_running, equals: 2 }
-      - { path: variables.pumps_available, equals: 3, description: "(la bomba 1 se reparó a los 45 min y queda de reserva)" }
-      - { path: events.low_pressure, equals: 0, description: "(la reserva arranca en el mismo paso: la descarga no cae 10 %)" }
+      - { path: variables.pumps_available, equals: 2 }
       - { path: variables.discharge_pressure_mca, min: 77.6, max: 82.4 }
 
   - id: vfd-fault
     description: "Falla del variador a los 10 min durante 10 min: paran todas las bombas y al rearmar arranca la siguiente como líder"
-    preset: multistage-3x8m3h-80m
+    preset: multistage-2x8m3h-80m
     duration_s: 2400
     timeline:
       - { at_s: 600, command: inject_fault, args: { fault: vfd_fault, duration_s: 600 } }
@@ -78,6 +92,6 @@ scenarios:
 
   - id: demo
     description: Turno con fallas aleatorias para la galería
-    preset: multistage-3x8m3h-80m
+    preset: multistage-2x8m3h-80m
     duration_s: 28800
     random_faults: true

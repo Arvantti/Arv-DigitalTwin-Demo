@@ -7,7 +7,7 @@
 
 | Dato | Valor | Origen |
 |---|---|---|
-| Bombas principales | 3 multietapa verticales en paralelo, 2 trabajan y 1 de reserva | user (paralelo), assumed (número, S4) |
+| Bombas principales | 2 multietapa verticales en paralelo, las dos de trabajo, sin reserva | user (paralelo y número, 2026-10-17 05:26) |
 | Presión de entrega | 80 mca en la descarga | user |
 | Caudal de diseño | 8 m³/h por bomba a 80 m; 13 m³/h de demanda de día | assumed (sección 4 del diseño) |
 | Altura a caudal cero | 100 m | assumed |
