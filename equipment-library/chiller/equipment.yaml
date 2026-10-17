@@ -1,0 +1,81 @@
+schema_version: 0.1.0
+type: chiller
+version: 0.1.0
+name: Enfriador de agua (chiller)
+manufacturing: utility
+category: utilities.chiller
+description: >
+  Enfriador de agua enfriado por aire con compresores de tornillo por etapas. Mantiene la
+  temperatura de suministro del circuito (por ejemplo el agua de los moldes) arrancando y
+  parando etapas con una banda muerta y un tiempo mínimo entre cambios. Si la carga supera su
+  capacidad, o un disparo por alta presión detiene los compresores, el agua del circuito se calienta.
+aliases: [chiller, enfriador, enfriador de agua, agua de moldes, agua helada]
+fidelity: { visual: V2, behavior: B2 }
+
+params:
+  capacity_kw:     { type: number, unit: kW, min: 20, max: 3000, default: 600, description: Capacidad frigorífica nominal con todas las etapas, affects: [geometry, behavior] }
+  stages:          { type: integer, min: 1, max: 8, default: 3, description: Compresores o etapas de capacidad, affects: [geometry, behavior] }
+  supply_c:        { type: number, unit: °C, min: 2, max: 25, default: 12, description: Consigna de temperatura de suministro, affects: [behavior] }
+  flow_m3_h:       { type: number, unit: m3/h, min: 5, max: 1000, default: 180, description: Caudal de agua del circuito, affects: [behavior] }
+  loop_volume_m3:  { type: number, unit: m3, min: 0.5, max: 200, default: 20, description: Volumen de agua del circuito (inercia térmica), affects: [behavior] }
+  nominal_load_kw: { type: number, unit: kW, min: 0, max: 3000, default: 360, description: Carga térmica del circuito si el entorno no la fija, affects: [behavior] }
+  cop:             { type: number, min: 2, max: 7, default: 4.5, description: COP nominal a 30 °C de ambiente, affects: [behavior] }
+  start_on:        { type: boolean, default: true, description: "Arranca encendido (false = en espera, apagado)", affects: [behavior] }
+
+ports:
+  - { id: water_out, kind: material, direction: out, medium: agua enfriada, unit: m3/h, link: { temp_c: supply_temp_c } }
+  - { id: water_in, kind: material, direction: in, medium: agua de retorno, unit: m3/h }
+  - { id: power, kind: utility, direction: in, medium: energía eléctrica }
+
+states:
+  - { id: "off", description: Apagado o en espera }
+  - { id: running, description: Enfriando el circuito }
+  - { id: fault, description: Compresores detenidos por falla }
+
+variables:
+  - { id: supply_temp_c, unit: °C, kind: measured, range: [0, 50], noise_sd: 0.05, resolution: 0.01, description: Temperatura del agua de suministro }
+  - { id: return_temp_c, unit: °C, kind: measured, range: [0, 60], noise_sd: 0.05, resolution: 0.01, description: Temperatura del agua de retorno }
+  - { id: load_kw, unit: kW, kind: calculated, description: Carga térmica que pide el circuito }
+  - { id: cooling_kw, unit: kW, kind: calculated, description: Capacidad frigorífica que entregan las etapas encendidas }
+  - { id: stages_on, unit: "", kind: calculated, description: Etapas encendidas }
+  - { id: power_kw, unit: kW, kind: calculated, description: "Potencia eléctrica (compresores y ventiladores)" }
+  - { id: cop_actual, unit: "", kind: calculated, description: COP con la temperatura ambiente actual }
+  - { id: energy_kwh, unit: kWh, kind: counter, description: Energía eléctrica consumida }
+
+events:
+  - { id: stage_changed, description: Se encendió o se apagó una etapa, payload: [stages] }
+  - { id: supply_temp_high, description: "El agua de suministro superó la consigna en más de 3 °C" }
+  - { id: supply_temp_normal, description: El agua de suministro volvió a menos de 1 °C sobre la consigna }
+
+faults:
+  - { id: high_pressure_trip, description: Disparo por alta presión de descarga, mtbf_h: 3000, mttr_min: 45, severity: high, effect: "Los compresores se detienen y el agua del circuito se calienta" }
+  - { id: fouled_condenser, description: Condensador sucio, mtbf_h: 1500, mttr_min: 90, severity: low, stops_equipment: false, effect: "Pierde 15 % de capacidad y sube el consumo" }
+
+commands:
+  - { id: start, description: Enciende el enfriador }
+  - { id: stop, description: Lo apaga o lo deja en espera }
+  - { id: inject_fault, description: Inyecta una falla declarada, args: { fault: string, duration_s: number } }
+  - { id: clear_fault, description: Repara una falla activa, args: { fault: string } }
+  - { id: set_param, description: Cambia un parámetro en caliente, args: { name: string, value: any } }
+
+kpis:
+  - { id: avg_power_kw, unit: kW, description: Potencia eléctrica media }
+  - { id: max_supply_c, unit: °C, description: Temperatura de suministro máxima alcanzada }
+  - { id: time_above_limit_pct, unit: "", description: Fracción del tiempo con el suministro más de 3 °C sobre la consigna }
+
+animation_channels:
+  - { id: fan_speed, range: [0, 1], description: Velocidad de los ventiladores del condensador }
+  - { id: stages_on, range: [0, 8], description: Etapas encendidas }
+  - { id: supply_temp_c, unit: °C, range: [0, 40], description: Temperatura de suministro }
+  - { id: return_temp_c, unit: °C, range: [0, 40], description: Temperatura de retorno }
+  - { id: load_pct, range: [0, 1.5], description: Carga como fracción de la capacidad }
+  - { id: stack_light, range: [0, 3], description: "Baliza: 0 apagada, 1 verde, 2 amarilla, 3 roja" }
+
+geometry:
+  parts: [skid, evaporator, compressors, condenser_coils, fans, water_headers, panel, hmi, stack_light]
+
+assumptions:
+  - "La temperatura del circuito es única (bien mezclada): C·dT/dt = carga − frío, con C = 4,186 MJ/K por m3 de agua."
+  - "Las etapas arrancan con el suministro 0,5 °C sobre la consigna y paran 0,5 °C bajo ella, con 180 s mínimo entre cambios."
+  - "Capacidad: −1 % por cada °C de ambiente sobre 35 °C. COP: −1,5 % por cada °C sobre 30 °C. Ventiladores: 1,5 % de la capacidad nominal a plena carga."
+  - "El retorno es el suministro más carga ÷ (1,163 kW por m3/h·K × caudal)."

@@ -1,0 +1,52 @@
+scenarios:
+  - id: steady
+    description: Enfriador de 600 kW con el 60 % de carga durante 1 h
+    preset: 600kw-mold-water
+    duration_s: 3600
+    expect:
+      - { path: variables.supply_temp_c, min: 11.2, max: 12.8, description: "(las etapas oscilan en la banda de ±0,5 °C alrededor de 12 °C)" }
+      - { path: variables.return_temp_c, min: 13.0, max: 14.8, description: "(12 + 360 kW ÷ (1,163 × 180 m3/h) = 13,7 °C)" }
+      - { path: kpis.avg_power_kw, min: 83, max: 88, description: "(frío medio = carga = 360 kW; 360 ÷ 4,5 = 80 kW de compresores + 1,5 % × 600 kW × 0,6 = 5,4 kW de ventiladores ≈ 85,4 kW)" }
+      - { path: kpis.time_above_limit_pct, equals: 0.0 }
+
+  - id: high-pressure-trip
+    description: Disparo por alta presión durante 30 min; el agua se calienta con la carga y se recupera al rearmar
+    preset: 600kw-mold-water
+    duration_s: 9000
+    timeline:
+      - { at_s: 1200, command: inject_fault, args: { fault: high_pressure_trip, duration_s: 1800 } }
+    expect:
+      - { path: kpis.max_supply_c, min: 19.0, max: 21.5, description: "(≈ 12 + 360 kW × (1.800 + 180 s de espera al rearmar) ÷ 83.720 kJ/K ≈ 20,5 °C)" }
+      - { path: events.supply_temp_high, equals: 1 }
+      - { path: events.supply_temp_normal, equals: 1 }
+      - { path: variables.supply_temp_c, min: 10.8, max: 13.2, description: "(vuelve a la consigna antes de las 2,5 h)" }
+
+  - id: overload
+    description: La carga pide 700 kW a un enfriador de 600 kW durante 2 h; no alcanza y el agua sube
+    preset: 600kw-mold-water
+    duration_s: 7200
+    timeline:
+      - { at_s: 0, inputs: { load_kw: 700 } }
+    expect:
+      - { path: variables.stages_on, equals: 3 }
+      - { path: variables.supply_temp_c, min: 21.5, max: 23.2, description: "(calor neto: 700 kW × 60 s sin etapas + 500 × 180 + 300 × 180 con 1 y 2 etapas + 100 × 6.780 s con las 3 = 864.000 kJ ÷ 83.720 kJ/K = 10,3 °C sobre los 12 °C)" }
+      - { path: events.supply_temp_high, equals: 1 }
+
+  - id: hot-day
+    description: Día de 40 °C de ambiente; el COP baja y el consumo sube con la misma carga
+    preset: 600kw-mold-water
+    duration_s: 3600
+    timeline:
+      - { at_s: 0, inputs: { ambient_c: 40 } }
+    expect:
+      - { path: variables.cop_actual, min: 3.80, max: 3.85, description: "(4,5 × (1 − 0,015 × 10 °C sobre 30) = 3,825)" }
+      - { path: kpis.avg_power_kw, min: 96, max: 103, description: "(360 ÷ 3,825 = 94,1 kW + ventiladores ≈ 5,4 kW ≈ 99,5 kW)" }
+
+  - id: standby
+    description: Enfriador de respaldo apagado sin carga
+    preset: 600kw-standby
+    duration_s: 3600
+    expect:
+      - { path: state, equals: "off" }
+      - { path: variables.power_kw, equals: 0 }
+      - { path: variables.supply_temp_c, min: 11.7, max: 12.3 }

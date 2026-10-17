@@ -76,7 +76,10 @@ def test_injection_plant_exposes_its_simulated_machines_and_conveyor() -> None:
     assert all(by_id[f"imm-{i:02d}"]["sim"]["type"] == "injection-molding-machine" for i in range(1, 30))
     assert by_id["imm-03"]["sim"]["params"]["cavities"] == 4
     assert by_id["conveyor-main-01"]["sim"]["params"]["length_m"] == 88
-    assert "sim" not in by_id["pack-station-01"]  # empaque aún sin tipo en la librería
+    assert by_id["pack-station-01"]["sim"]["type"] == "packing-station"
+    assert by_id["dryer-01"]["sim"]["type"] == "desiccant-dryer"
+    assert by_id["chiller-02"]["sim"]["params"]["start_on"] is False
+    assert by_id["grinder-rec-01"]["sim"]["type"] == "granulator"
     assert {"nominal", "conveyor-trip"} <= set(plant["scenarios"])
     assert plant["lines"][0]["id"] == "lids-05l"
 

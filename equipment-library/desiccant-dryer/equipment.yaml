@@ -1,0 +1,86 @@
+schema_version: 0.1.0
+type: desiccant-dryer
+version: 0.1.0
+name: Secador desecante de tolva
+manufacturing: process
+category: plastics.dryer
+description: >
+  Secador de resina con tolva aislada, aire de proceso deshumidificado por tamices moleculares
+  (torres de desecante con regeneración), calentador y soplador. La humedad con que sale la
+  resina depende del tiempo de residencia en la tolva, de la temperatura del aire y de su punto
+  de rocío; si falla la regeneración del desecante, el punto de rocío sube y la resina sale húmeda.
+aliases: [secador, secador de resina, tolva de secado, desecante, dryer]
+fidelity: { visual: V2, behavior: B2 }
+
+params:
+  material:           { type: string, default: ABS, description: Resina que seca (para la placa y la ficha), affects: [geometry] }
+  throughput_kg_h:    { type: number, unit: kg/h, min: 20, max: 1000, default: 150, description: Capacidad nominal de entrega de resina seca, affects: [geometry, behavior] }
+  residence_h:        { type: number, unit: h, min: 1, max: 8, default: 4, description: Tiempo de residencia de la tolva a capacidad nominal (define su volumen), affects: [geometry, behavior] }
+  temp_c:             { type: number, unit: °C, min: 40, max: 140, default: 80, description: Temperatura del aire de secado, affects: [behavior] }
+  dew_point_c:        { type: number, unit: °C, min: -60, max: -10, default: -40, description: Punto de rocío del aire de proceso con el desecante en buen estado, affects: [behavior] }
+  inlet_moisture_pct: { type: number, unit: "%", min: 0.01, max: 1, default: 0.2, description: Humedad de la resina que entra, affects: [behavior] }
+  moisture_limit_pct: { type: number, unit: "%", min: 0.005, max: 0.5, default: 0.02, description: Humedad máxima admisible para inyectar, affects: [behavior] }
+  start_hot:          { type: boolean, default: true, description: "Arranca ya caliente, con la tolva llena y la resina seca", affects: [behavior] }
+
+ports:
+  - { id: resin_in, kind: material, direction: in, medium: resina higroscópica, unit: kg/h }
+  - { id: resin_out, kind: material, direction: out, medium: resina seca, unit: kg/h, link: { flow_kg_h: flow_kg_h, available: resin_dry } }
+  - { id: power, kind: utility, direction: in, medium: energía eléctrica }
+
+states:
+  - { id: "off", description: Apagado }
+  - { id: starting, description: Calentando el aire de proceso }
+  - { id: running, description: Secando y entregando resina }
+  - { id: starved, description: Tolva vacía y sin resina para cargar }
+  - { id: fault, description: Detenido por falla }
+
+variables:
+  - { id: hopper_level_pct, unit: "%", kind: calculated, range: [0, 100], description: Nivel de resina en la tolva }
+  - { id: air_temp_c, unit: °C, kind: measured, range: [0, 150], noise_sd: 0.2, resolution: 0.1, description: Temperatura del aire de proceso a la entrada de la tolva }
+  - { id: dew_point_actual_c, unit: °C, kind: measured, range: [-70, 20], noise_sd: 0.5, resolution: 0.1, description: Punto de rocío del aire de proceso }
+  - { id: resin_moisture_pct, unit: "%", kind: calculated, description: Humedad de la resina que sale de la tolva }
+  - { id: resin_dry, unit: "", kind: status, description: "1 si la humedad está por debajo del límite admisible" }
+  - { id: flow_kg_h, unit: kg/h, kind: calculated, description: Caudal de resina que entrega }
+  - { id: processed_kg, unit: kg, kind: counter, description: Resina entregada acumulada }
+  - { id: heater_duty, unit: "", kind: calculated, range: [0, 1], description: Fracción de potencia del calentador }
+  - { id: power_kw, unit: kW, kind: calculated, description: "Potencia eléctrica (calentador, soplador y regeneración)" }
+
+events:
+  - { id: empty, description: La tolva se vació y no hay resina para cargarla }
+  - { id: moisture_alarm, description: La humedad de la resina superó el límite }
+  - { id: moisture_ok, description: La humedad volvió por debajo del límite }
+
+faults:
+  - { id: regeneration_failure, description: Falla de regeneración del desecante, mtbf_h: 2500, mttr_min: 60, severity: medium, stops_equipment: false, effect: "El punto de rocío sube hacia −10 °C y la resina sale húmeda" }
+  - { id: blower_trip, description: Disparo del soplador, mtbf_h: 6000, mttr_min: 30, severity: medium, effect: "Sin aire de proceso, el secador se detiene" }
+  - { id: heater_fault, description: Falla de resistencia del calentador, mtbf_h: 4000, mttr_min: 45, severity: medium, stops_equipment: false, effect: El aire no calienta y la resina se seca más lento }
+
+commands:
+  - { id: start, description: Enciende el soplador y el calentador }
+  - { id: stop, description: Apaga el secador }
+  - { id: inject_fault, description: Inyecta una falla declarada, args: { fault: string, duration_s: number } }
+  - { id: clear_fault, description: Repara una falla activa, args: { fault: string } }
+  - { id: set_param, description: Cambia un parámetro en caliente, args: { name: string, value: any } }
+
+kpis:
+  - { id: dry_share, unit: "", description: Fracción del tiempo con la resina por debajo del límite de humedad }
+  - { id: specific_energy_kwh_t, unit: kWh/t, description: Energía por tonelada de resina entregada }
+
+animation_channels:
+  - { id: hopper_level, range: [0, 1], description: Nivel de la tolva }
+  - { id: air_temp_c, unit: °C, range: [0, 150], description: Temperatura del aire de proceso }
+  - { id: dew_point_c, unit: °C, range: [-70, 20], description: Punto de rocío }
+  - { id: dry_ok, range: [0, 1], description: "1 si la resina está seca" }
+  - { id: heater_duty, range: [0, 1], description: Potencia del calentador }
+  - { id: loading, range: [0, 1], description: "1 mientras el cargador de vacío llena la tolva" }
+  - { id: stack_light, range: [0, 3], description: "Baliza: 0 apagada, 1 verde, 2 amarilla, 3 roja" }
+
+geometry:
+  parts: [skid, hopper, insulation, sight_glass, loader, hose, desiccant_towers, process_unit, hmi, stack_light]
+
+assumptions:
+  - "Tolva con el volumen de throughput × residence_h a 550 kg/m³ de densidad aparente."
+  - "Humedad de salida: m_eq + (m_in − m_eq)·exp(−t_res/τ_sec), con τ_sec = 1,2 h a 80 °C que se duplica cada 15 °C menos; m_eq = 0,0035 % a −40 °C de rocío y ×10 cada +30 °C."
+  - "La humedad de salida sigue ese valor con retardo de primer orden igual al tiempo de residencia."
+  - "El calentador mantiene 30 % de su potencia en régimen; potencia nominal 0,08 kW por kg/h; soplador 0,01 kW por kg/h."
+  - "El cargador de vacío repone la tolva cuando baja de 90 % y carga a 4 veces la capacidad nominal."

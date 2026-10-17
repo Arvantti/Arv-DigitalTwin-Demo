@@ -2,8 +2,10 @@
 # Las 29 inyectoras de la nave se simulan con los parámetros del plant.yaml (tonelaje, cavidades, peso de la pieza,
 # ciclo y robot); el preset solo aporta lo que el plano no dice (zonas del cilindro, temperatura del molde),
 # elegido por el tonelaje. La banda principal (88 m) recibe las piezas de la inyectora 3 y las lleva a la
-# estación de empaque 1, que aún no tiene tipo en la librería. Las demás inyectoras trabajan solas: sus piezas
-# se retiran a mano o con montacargas (flujos del plano sin enlace de banda).
+# estación de empaque 1. Las demás inyectoras trabajan solas: sus piezas se retiran a mano o con montacargas
+# (flujos del plano sin enlace de banda). También se simulan, sin enlace con las inyectoras, los 4 secadores de
+# resina, los 2 chillers (el segundo de respaldo, apagado), el molino de reciclaje y las otras 3 estaciones de
+# empaque (sin banda: se alimentan a mano, sin llegadas).
 
 schema_version: 0.1.0
 description: Nave de inyección (29 inyectoras) y la banda principal hacia empaque
@@ -40,10 +42,22 @@ equipment:
   imm-28: { type: injection-molding-machine, preset: 1500t-bin, params: {"clamp_t": 1500, "max_shot_kg": 7.5, "product": "caneca 121 L", "material": "HDPE reciclado", "cavities": 1, "part_g": 7000, "cycle_s": 95, "robot": "cartesiano"} }
   imm-29: { type: injection-molding-machine, preset: 1500t-bin, params: {"clamp_t": 1500, "max_shot_kg": 7.5, "product": "tapa caneca 121 L y estiba liviana", "material": "HDPE reciclado", "cavities": 1, "part_g": 3200, "cycle_s": 70, "robot": "cartesiano"} }
   conveyor-main-01: { type: belt-conveyor, preset: imm-main-88m }
+  pack-station-01: { type: packing-station, preset: lids-250 }
+  pack-station-02: { type: packing-station, preset: buckets-20, params: {"nominal_inflow_upm": 0} }
+  pack-station-03: { type: packing-station, preset: lids-250, params: {"nominal_inflow_upm": 0} }
+  pack-station-04: { type: packing-station, preset: cutlery-1000, params: {"nominal_inflow_upm": 0} }
+  dryer-01: { type: desiccant-dryer, preset: abs-150, params: {"material": "ABS", "throughput_kg_h": 150, "dew_point_c": -40, "temp_c": 80} }
+  dryer-02: { type: desiccant-dryer, preset: abs-150, params: {"material": "ABS", "throughput_kg_h": 150, "dew_point_c": -40, "temp_c": 80} }
+  dryer-03: { type: desiccant-dryer, preset: recycled-ps-250, params: {"material": "PS reciclado", "throughput_kg_h": 250, "temp_c": 70} }
+  dryer-04: { type: desiccant-dryer, preset: recycled-pp-400, params: {"material": "PP/HDPE reciclado", "throughput_kg_h": 400, "temp_c": 80} }
+  chiller-01: { type: chiller, preset: 600kw-mold-water, params: {"capacity_kw": 600, "supply_c": 12} }
+  chiller-02: { type: chiller, preset: 600kw-standby, params: {"capacity_kw": 600, "supply_c": 12} }
+  grinder-rec-01: { type: granulator, preset: 500kg-recycling, params: {"throughput_kg_h": 500, "screen_mm": 10} }
 
 links:
-  # imm-03 → conveyor-main-01 → pack-station-01 (plant.yaml); empaque no se simula.
+  # imm-03 → conveyor-main-01 → pack-station-01 (plant.yaml).
   - { from: imm-03.parts_out, to: conveyor-main-01.items_in }
+  - { from: conveyor-main-01.items_out, to: pack-station-01.items_in }
 
 startup:
   - { equipment: imm-01, command: start }
@@ -80,7 +94,7 @@ lines:
   - id: lids-05l
     name: Tapas de recipiente 0,5 L hacia empaque
     output: conveyor-main-01.items_out
-    equipment: [imm-03, conveyor-main-01]
+    equipment: [imm-03, conveyor-main-01, pack-station-01]
 
 scenarios:
   - id: nominal
@@ -90,6 +104,14 @@ scenarios:
       - { path: equipment.imm-03.variables.cycle_count, min: 295, max: 301, description: "(3.600 s ÷ 12 s = 300 ciclos)" }
       - { path: lines.lids-05l.output_units, min: 1040, max: 1130, description: "(299 ciclos × 4 cavidades = 1.196 piezas, menos ≈ 0,6 % de rechazo, menos ≈ 98 que siguen en la banda: 88 m ÷ 0,3 m/s = 293 s ≈ 24 ciclos × 4)" }
       - { path: equipment.imm-03.state_share.blocked, equals: 0.0, description: "(la banda recibe 4 piezas cada 12 s, bastante menos que lo que admite: 1 pieza cada 1,33 s)" }
+      - { path: equipment.pack-station-01.variables.units_packed, min: 1040, max: 1130, description: "(todo lo que entrega la banda llega a la mesa de empaque y se cuenta; el operario cuenta a 120 u/min, muy por encima de las ≈ 18 u/min que llegan)" }
+      - { path: equipment.pack-station-01.variables.boxes_count, equals: 4, description: "(≈ 1.092 piezas ÷ 250 por caja = 4,4 cajas)" }
+      - { path: equipment.dryer-01.variables.resin_dry, equals: 1, description: "(secadores y chillers trabajan sin enlace con las inyectoras: solo se vigilan sus propias variables)" }
+      - { path: equipment.dryer-01.variables.processed_kg, min: 149, max: 151, description: "(150 kg/h × 1 h)" }
+      - { path: equipment.dryer-04.variables.processed_kg, min: 399, max: 401, description: "(400 kg/h × 1 h)" }
+      - { path: equipment.chiller-01.variables.supply_temp_c, min: 11.2, max: 12.8, description: "(el chiller de 600 kW con 360 kW de carga mantiene 12 °C ± 0,5 °C por etapas)" }
+      - { path: equipment.chiller-02.state, equals: "off", description: "(el chiller de respaldo está apagado)" }
+      - { path: equipment.grinder-rec-01.variables.processed_kg, min: 299, max: 301, description: "(300 kg/h de scrap lavado × 1 h; el molino de 500 kg/h tritura todo lo que llega)" }
       - { path: equipment.imm-28.variables.cycle_count, min: 36, max: 38, description: "(la inyectora más grande: 3.600 s ÷ 95 s ≈ 38 ciclos; el primero termina al cerrar el ciclo)" }
 
   - id: conveyor-trip
@@ -101,4 +123,6 @@ scenarios:
       - { path: equipment.imm-03.state_share.blocked, min: 0.3, description: "(la zona de entrada guarda 8 piezas = 2 ciclos; después la inyectora espera ≈ 1.200 − 60 s de 3.600)" }
       - { path: events.conveyor-main-01.full, min: 1 }
       - { path: lines.lids-05l.output_units, min: 650, max: 760, description: "(≈ 596 piezas que entraron antes del paro llegan al final; después del paro entran ≈ 100 más en los 300 s que quedan, más las 8 de la entrada)" }
+      - { path: equipment.pack-station-01.variables.units_packed, min: 650, max: 760, description: "(la estación solo cuenta lo que entrega la banda, igual que el KPI de la línea)" }
+      - { path: equipment.pack-station-01.variables.boxes_count, min: 2, max: 3, description: "(≈ 700 piezas ÷ 250 por caja)" }
       - { path: equipment.imm-01.variables.cycle_count, min: 395, description: "(las demás inyectoras no se enteran: 3.600 s ÷ 9 s = 400 ciclos)" }

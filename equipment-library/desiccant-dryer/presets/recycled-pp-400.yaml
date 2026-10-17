@@ -1,0 +1,4 @@
+preset: recycled-pp-400
+description: Secador de PP/HDPE reciclado de 400 kg/h a 80 °C
+params: { material: PP/HDPE reciclado, throughput_kg_h: 400, residence_h: 2, temp_c: 80, dew_point_c: -30, inlet_moisture_pct: 0.08, moisture_limit_pct: 0.05 }
+provenance: { throughput_kg_h: user, temp_c: user, residence_h: assumed, dew_point_c: assumed, inlet_moisture_pct: assumed, moisture_limit_pct: assumed }
