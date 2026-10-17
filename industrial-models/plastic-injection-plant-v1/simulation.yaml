@@ -1,0 +1,104 @@
+# Simulación de la planta de inyección con el motor de planta (docs/plant-engine.md).
+# Las 29 inyectoras de la nave se simulan con los parámetros del plant.yaml (tonelaje, cavidades, peso de la pieza,
+# ciclo y robot); el preset solo aporta lo que el plano no dice (zonas del cilindro, temperatura del molde),
+# elegido por el tonelaje. La banda principal (88 m) recibe las piezas de la inyectora 3 y las lleva a la
+# estación de empaque 1, que aún no tiene tipo en la librería. Las demás inyectoras trabajan solas: sus piezas
+# se retiran a mano o con montacargas (flujos del plano sin enlace de banda).
+
+schema_version: 0.1.0
+description: Nave de inyección (29 inyectoras) y la banda principal hacia empaque
+dt: 1.0
+
+equipment:
+  imm-01: { type: injection-molding-machine, preset: 100t-cutlery, params: {"clamp_t": 100, "max_shot_kg": 0.15, "product": "cubiertos", "material": "PS", "cavities": 16, "part_g": 3.5, "cycle_s": 9, "robot": "sprue_picker"} }
+  imm-02: { type: injection-molding-machine, preset: 100t-cutlery, params: {"clamp_t": 100, "max_shot_kg": 0.15, "product": "cubiertos", "material": "PS", "cavities": 16, "part_g": 3.5, "cycle_s": 9, "robot": "sprue_picker"} }
+  imm-03: { type: injection-molding-machine, preset: 300t-container, params: {"clamp_t": 120, "max_shot_kg": 0.2, "product": "tapa recipiente 0,5 L", "material": "PP", "cavities": 4, "part_g": 12, "cycle_s": 12, "robot": "cartesiano"} }
+  imm-04: { type: injection-molding-machine, preset: 300t-container, params: {"clamp_t": 120, "max_shot_kg": 0.2, "product": "tapa recipiente 1 L", "material": "PP", "cavities": 4, "part_g": 18, "cycle_s": 13, "robot": "cartesiano"} }
+  imm-05: { type: injection-molding-machine, preset: 300t-container, params: {"clamp_t": 150, "max_shot_kg": 0.25, "product": "vajilla infantil (plato)", "material": "PP", "cavities": 2, "part_g": 45, "cycle_s": 18, "robot": "cartesiano"} }
+  imm-06: { type: injection-molding-machine, preset: 300t-container, params: {"clamp_t": 150, "max_shot_kg": 0.25, "product": "pedal y palanca de papelera", "material": "PP reciclado", "cavities": 2, "part_g": 60, "cycle_s": 25, "robot": "sprue_picker"} }
+  imm-07: { type: injection-molding-machine, preset: 300t-container, params: {"clamp_t": 150, "max_shot_kg": 0.25, "product": "vaso", "material": "PP", "cavities": 4, "part_g": 22, "cycle_s": 11, "robot": "cartesiano"} }
+  imm-08: { type: injection-molding-machine, preset: 100t-cutlery, params: {"clamp_t": 80, "max_shot_kg": 0.12, "product": "bisagras y piezas pequeñas", "material": "PP", "cavities": 8, "part_g": 1.75, "cycle_s": 14, "robot": "sprue_picker"} }
+  imm-09: { type: injection-molding-machine, preset: 300t-container, params: {"clamp_t": 150, "max_shot_kg": 0.25, "product": "tapa de termo", "material": "PP", "cavities": 4, "part_g": 28, "cycle_s": 16, "robot": "cartesiano"} }
+  imm-10: { type: injection-molding-machine, preset: 300t-container, params: {"clamp_t": 150, "max_shot_kg": 0.25, "product": "cucharón", "material": "PP", "cavities": 4, "part_g": 30, "cycle_s": 15, "robot": "sprue_picker"} }
+  imm-11: { type: injection-molding-machine, preset: 300t-container, params: {"clamp_t": 300, "max_shot_kg": 0.9, "product": "recipiente para alimentos 1 L", "material": "PP", "cavities": 2, "part_g": 75, "cycle_s": 18, "robot": "cartesiano"} }
+  imm-12: { type: injection-molding-machine, preset: 300t-container, params: {"clamp_t": 300, "max_shot_kg": 0.9, "product": "recipiente para alimentos 3 L", "material": "PP", "cavities": 1, "part_g": 160, "cycle_s": 22, "robot": "cartesiano"} }
+  imm-13: { type: injection-molding-machine, preset: 300t-container, params: {"clamp_t": 300, "max_shot_kg": 0.9, "product": "caja organizadora 6 L", "material": "PP", "cavities": 1, "part_g": 280, "cycle_s": 24, "robot": "cartesiano"} }
+  imm-14: { type: injection-molding-machine, preset: 300t-container, params: {"clamp_t": 300, "max_shot_kg": 0.9, "product": "tapa caja organizadora", "material": "PP", "cavities": 2, "part_g": 110, "cycle_s": 20, "robot": "cartesiano"} }
+  imm-15: { type: injection-molding-machine, preset: 300t-container, params: {"clamp_t": 300, "max_shot_kg": 0.9, "product": "balde 4 L", "material": "HDPE", "cavities": 1, "part_g": 230, "cycle_s": 26, "robot": "cartesiano"} }
+  imm-16: { type: injection-molding-machine, preset: 300t-container, params: {"clamp_t": 300, "max_shot_kg": 0.9, "product": "bandeja", "material": "PP", "cavities": 1, "part_g": 320, "cycle_s": 25, "robot": "cartesiano"} }
+  imm-17: { type: injection-molding-machine, preset: 300t-container, params: {"clamp_t": 300, "max_shot_kg": 0.9, "product": "cuerpo de termo", "material": "PP", "cavities": 2, "part_g": 140, "cycle_s": 28, "robot": "cartesiano"} }
+  imm-18: { type: injection-molding-machine, preset: 650t-bucket, params: {"clamp_t": 350, "max_shot_kg": 1.2, "product": "señal de prevención plegable", "material": "PP", "cavities": 1, "part_g": 650, "cycle_s": 40, "robot": "cartesiano"} }
+  imm-19: { type: injection-molding-machine, preset: 650t-bucket, params: {"clamp_t": 350, "max_shot_kg": 1.2, "product": "cuerpo papelera 20 L", "material": "PP reciclado", "cavities": 1, "part_g": 700, "cycle_s": 35, "robot": "cartesiano"} }
+  imm-20: { type: injection-molding-machine, preset: 650t-bucket, params: {"clamp_t": 650, "max_shot_kg": 2.5, "product": "caja organizadora 40 L", "material": "PP", "cavities": 1, "part_g": 1100, "cycle_s": 38, "robot": "cartesiano"} }
+  imm-21: { type: injection-molding-machine, preset: 650t-bucket, params: {"clamp_t": 650, "max_shot_kg": 2.5, "product": "balde 12 L", "material": "HDPE", "cavities": 1, "part_g": 520, "cycle_s": 30, "robot": "cartesiano"} }
+  imm-22: { type: injection-molding-machine, preset: 650t-bucket, params: {"clamp_t": 650, "max_shot_kg": 2.5, "product": "balde 20 L", "material": "HDPE reciclado", "cavities": 1, "part_g": 850, "cycle_s": 36, "robot": "cartesiano"} }
+  imm-23: { type: injection-molding-machine, preset: 650t-bucket, params: {"clamp_t": 650, "max_shot_kg": 2.5, "product": "tapa de nevera", "material": "PP", "cavities": 1, "part_g": 600, "cycle_s": 34, "robot": "cartesiano"} }
+  imm-24: { type: injection-molding-machine, preset: 650t-bucket, params: {"clamp_t": 650, "max_shot_kg": 2.5, "product": "bandeja industrial", "material": "HDPE", "cavities": 1, "part_g": 1300, "cycle_s": 42, "robot": "cartesiano"} }
+  imm-25: { type: injection-molding-machine, preset: 1500t-bin, params: {"clamp_t": 1100, "max_shot_kg": 4.5, "product": "canasta industrial apilable", "material": "HDPE", "cavities": 1, "part_g": 2000, "cycle_s": 50, "robot": "cartesiano"} }
+  imm-26: { type: injection-molding-machine, preset: 1500t-bin, params: {"clamp_t": 1100, "max_shot_kg": 4.5, "product": "caneca 50 L", "material": "HDPE reciclado", "cavities": 1, "part_g": 2600, "cycle_s": 60, "robot": "cartesiano"} }
+  imm-27: { type: injection-molding-machine, preset: 1500t-bin, params: {"clamp_t": 1100, "max_shot_kg": 4.5, "product": "cuerpo de nevera portátil", "material": "PP", "cavities": 1, "part_g": 1800, "cycle_s": 55, "robot": "cartesiano"} }
+  imm-28: { type: injection-molding-machine, preset: 1500t-bin, params: {"clamp_t": 1500, "max_shot_kg": 7.5, "product": "caneca 121 L", "material": "HDPE reciclado", "cavities": 1, "part_g": 7000, "cycle_s": 95, "robot": "cartesiano"} }
+  imm-29: { type: injection-molding-machine, preset: 1500t-bin, params: {"clamp_t": 1500, "max_shot_kg": 7.5, "product": "tapa caneca 121 L y estiba liviana", "material": "HDPE reciclado", "cavities": 1, "part_g": 3200, "cycle_s": 70, "robot": "cartesiano"} }
+  conveyor-main-01: { type: belt-conveyor, preset: imm-main-88m }
+
+links:
+  # imm-03 → conveyor-main-01 → pack-station-01 (plant.yaml); empaque no se simula.
+  - { from: imm-03.parts_out, to: conveyor-main-01.items_in }
+
+startup:
+  - { equipment: imm-01, command: start }
+  - { equipment: imm-02, command: start }
+  - { equipment: imm-03, command: start }
+  - { equipment: imm-04, command: start }
+  - { equipment: imm-05, command: start }
+  - { equipment: imm-06, command: start }
+  - { equipment: imm-07, command: start }
+  - { equipment: imm-08, command: start }
+  - { equipment: imm-09, command: start }
+  - { equipment: imm-10, command: start }
+  - { equipment: imm-11, command: start }
+  - { equipment: imm-12, command: start }
+  - { equipment: imm-13, command: start }
+  - { equipment: imm-14, command: start }
+  - { equipment: imm-15, command: start }
+  - { equipment: imm-16, command: start }
+  - { equipment: imm-17, command: start }
+  - { equipment: imm-18, command: start }
+  - { equipment: imm-19, command: start }
+  - { equipment: imm-20, command: start }
+  - { equipment: imm-21, command: start }
+  - { equipment: imm-22, command: start }
+  - { equipment: imm-23, command: start }
+  - { equipment: imm-24, command: start }
+  - { equipment: imm-25, command: start }
+  - { equipment: imm-26, command: start }
+  - { equipment: imm-27, command: start }
+  - { equipment: imm-28, command: start }
+  - { equipment: imm-29, command: start }
+
+lines:
+  - id: lids-05l
+    name: Tapas de recipiente 0,5 L hacia empaque
+    output: conveyor-main-01.items_out
+    equipment: [imm-03, conveyor-main-01]
+
+scenarios:
+  - id: nominal
+    description: "Una hora de producción estable de las 29 inyectoras; las piezas de la imm-03 viajan por la banda de 88 m"
+    duration_s: 3600
+    expect:
+      - { path: equipment.imm-03.variables.cycle_count, min: 295, max: 301, description: "(3.600 s ÷ 12 s = 300 ciclos)" }
+      - { path: lines.lids-05l.output_units, min: 1040, max: 1130, description: "(299 ciclos × 4 cavidades = 1.196 piezas, menos ≈ 0,6 % de rechazo, menos ≈ 98 que siguen en la banda: 88 m ÷ 0,3 m/s = 293 s ≈ 24 ciclos × 4)" }
+      - { path: equipment.imm-03.state_share.blocked, equals: 0.0, description: "(la banda recibe 4 piezas cada 12 s, bastante menos que lo que admite: 1 pieza cada 1,33 s)" }
+      - { path: equipment.imm-28.variables.cycle_count, min: 36, max: 38, description: "(la inyectora más grande: 3.600 s ÷ 95 s ≈ 38 ciclos; el primero termina al cerrar el ciclo)" }
+
+  - id: conveyor-trip
+    description: "El motor de la banda principal se dispara 20 min: las piezas se acumulan en la entrada y la inyectora 3 se bloquea"
+    duration_s: 3600
+    timeline:
+      - { at_s: 1800, equipment: conveyor-main-01, command: inject_fault, args: { fault: motor_trip, duration_s: 1200 } }
+    expect:
+      - { path: equipment.imm-03.state_share.blocked, min: 0.3, description: "(la zona de entrada guarda 8 piezas = 2 ciclos; después la inyectora espera ≈ 1.200 − 60 s de 3.600)" }
+      - { path: events.conveyor-main-01.full, min: 1 }
+      - { path: lines.lids-05l.output_units, min: 650, max: 760, description: "(≈ 596 piezas que entraron antes del paro llegan al final; después del paro entran ≈ 100 más en los 300 s que quedan, más las 8 de la entrada)" }
+      - { path: equipment.imm-01.variables.cycle_count, min: 395, description: "(las demás inyectoras no se enteran: 3.600 s ÷ 9 s = 400 ciclos)" }

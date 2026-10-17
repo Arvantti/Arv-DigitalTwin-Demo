@@ -93,6 +93,16 @@ def test_kettles_share_the_pump_so_only_one_discharges_at_a_time(sauce: PlantMod
     assert overlap <= 1  # solo el paso en que las dos arrancan a la vez, antes de que una tome el turno
 
 
+def test_parts_of_the_injection_machine_reach_the_conveyor_without_loss(lib: Library) -> None:
+    model = PlantModel(MODELS / "plastic-injection-plant-v1", lib)
+    sim, _ = run_plant_scenario(model, model.scenarios["nominal"])
+    imm, belt = sim.equipment["imm-03"].true_values(), sim.equipment["conveyor-main-01"].true_values()
+    # Cada pieza buena está en la banda, entregada o esperando en la zona de entrada (8 como máximo).
+    pending = imm["parts_good"] - belt["delivered"] - belt["items_on_belt"]
+    assert 0 <= pending <= 8
+    assert belt["delivered"] > 0 and belt["accepting"] == 1
+
+
 def test_weight_travels_through_the_tunnel_to_the_checkweigher(sauce: PlantModel) -> None:
     sim = sauce.create()
     sim.schedule(sauce.scenarios["nominal"].timeline[0], until_s=7200)

@@ -2,10 +2,10 @@
 tipo: historico-ia
 fuente: hilo «Desvío del pasteurizador y planta de inyección»
 desde: 2026-10-16 22:05
-hasta: 2026-10-16 22:30
+hasta: 2026-10-16 22:45
 tags: [registro, historico-ia]
 ---
-# Hilo: desvío del pasteurizador (PR #11)
+# Hilo: desvío del pasteurizador y planta de inyección (PR #11 y PR #12)
 
 Parte de [[historico-proyecto]] · Índice: [[00-indice]]. Autor humano: Carlos Andrés Quiceño. Hora en UTC.
 
@@ -33,3 +33,21 @@ Trabajo del hilo, resumido (las actualizaciones de estado no se reproducen):
 - Al probar, una prueba de balance de masa falló: al alargarse la descarga de la marmita 2, las dos marmitas descargaban a la vez por la misma bomba y se perdían ≈ 408 kg. Lo resolvió con la regla de entrada compartida en vez de ajustar la prueba.
 - Ejecutó `uv run pytest`, `ruff`, validaciones de la librería y de la planta, `pnpm -r typecheck` y capturó la escena con Chromium contra la API local.
 - Documentó el cambio y actualizó este registro.
+
+
+### 🤖 Claude (hilo) · 22:25 UTC
+
+Abrió el PR #11 y propuso, para el segundo PR (planta de inyección), conectar las inyectoras y el transportador principal a la simulación y mostrarlos animados en la escena, más las pasarelas de la nave; pidió fusionar #11 primero para no pisar la bitácora y confirmar el alcance.
+
+### ⚙️ Sistema · 22:29 UTC
+
+El PR #11 fue fusionado en `main` (aviso automático de GitHub). El autor no escribió ningún mensaje adicional en el hilo.
+
+### 🤖 Claude (hilo) · 22:31–22:45 UTC
+
+Con el PR #11 fusionado y lo aprobado a las 22:08 («Si» a las dos entregas), siguió con el alcance propuesto, sin las pasarelas de la nave porque el `plant.yaml` de inyección no las describe (anotado en los pendientes):
+- Leyó los contratos de la inyectora y la banda y generó el `simulation.yaml` de la nave con las 29 inyectoras.
+- Al correr el escenario, la banda entregaba la mitad de lo esperado: descartaba las ráfagas de 4 piezas por ciclo. Agregó `entry_buffer_units` a la banda en vez de ajustar el escenario.
+- Ejecutó pruebas, `ruff`, validaciones y `pnpm -r typecheck`, y capturó la escena con Chromium contra la API local.
+- Actualizó la documentación y este registro.
+

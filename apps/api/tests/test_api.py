@@ -1,5 +1,8 @@
+import shutil
+
 from fastapi.testclient import TestClient
 from twin_api.main import app
+from twin_runtime.plant import SIM_FILE, find_models_root
 
 client = TestClient(app)
 
@@ -29,10 +32,20 @@ def test_simulation_rejects_bad_params() -> None:
         assert "error" in ws.receive_json()
 
 
-def test_plants_listed_with_and_without_simulation() -> None:
+def _layout_only_models(tmp_path, monkeypatch) -> None:
+    """Una planta sin simulation.yaml: solo su plano."""
+    folder = tmp_path / "plastic-injection-plant-v1"
+    shutil.copytree(find_models_root() / "plastic-injection-plant-v1", folder)
+    (folder / SIM_FILE).unlink()
+    monkeypatch.setenv("TWIN_MODELS", str(tmp_path))
+
+
+def test_plants_listed_with_and_without_simulation(tmp_path, monkeypatch) -> None:
     plants = {p["id"]: p for p in client.get("/api/plants").json()}
     assert plants["sauce-plant-v1"]["simulated"] is True
-    assert plants["plastic-injection-plant-v1"]["simulated"] is False
+    assert plants["plastic-injection-plant-v1"]["simulated"] is True
+    _layout_only_models(tmp_path, monkeypatch)
+    assert {p["id"]: p["simulated"] for p in client.get("/api/plants").json()} == {"plastic-injection-plant-v1": False}
 
 
 def test_plant_layout_links_simulated_equipment_to_library_types() -> None:
@@ -54,6 +67,22 @@ def test_plant_layout_links_simulated_equipment_to_library_types() -> None:
     assert by_pipe[("pasteurizer-01", "holding-tube-01")]["unit"] == "L/h"
     assert not any(p["from"] == "scale-01" for p in pipes)  # piped: false no se dibuja como tubería
     assert client.get("/api/plants/no-existe").status_code == 404
+
+
+def test_injection_plant_exposes_its_simulated_machines_and_conveyor() -> None:
+    plant = client.get("/api/plants/plastic-injection-plant-v1").json()
+    by_id = {e["id"]: e for e in plant["equipment"]}
+    assert sum(1 for e in plant["equipment"] if e["type"] == "injection_molding_machine") == 29
+    assert all(by_id[f"imm-{i:02d}"]["sim"]["type"] == "injection-molding-machine" for i in range(1, 30))
+    assert by_id["imm-03"]["sim"]["params"]["cavities"] == 4
+    assert by_id["conveyor-main-01"]["sim"]["params"]["length_m"] == 88
+    assert "sim" not in by_id["pack-station-01"]  # empaque aún sin tipo en la librería
+    assert {"nominal", "conveyor-trip"} <= set(plant["scenarios"])
+    assert plant["lines"][0]["id"] == "lids-05l"
+
+
+def test_layout_only_plant_has_no_lines(tmp_path, monkeypatch) -> None:
+    _layout_only_models(tmp_path, monkeypatch)
     layout_only = client.get("/api/plants/plastic-injection-plant-v1").json()
     assert layout_only["equipment"] and not layout_only["lines"]
 
@@ -74,7 +103,7 @@ def test_plant_websocket_streams_connected_plant_and_accepts_commands() -> None:
 
 
 def test_plant_websocket_rejects_unknown_plant_and_scenario() -> None:
-    with client.websocket_connect("/api/plants/plastic-injection-plant-v1/simulate") as ws:
+    with client.websocket_connect("/api/plants/no-existe/simulate") as ws:
         assert "error" in ws.receive_json()
     with client.websocket_connect("/api/plants/sauce-plant-v1/simulate?scenario=nope") as ws:
         assert "error" in ws.receive_json()
