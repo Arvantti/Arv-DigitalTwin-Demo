@@ -10,6 +10,13 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
+| 2026-10-17 | #21 | Fase 5: rutas de montacargas y de operarios de la nave de inyección (datos, validador, plano 2D y escena con montacargas y operarios que las recorren) y 4 estanterías de semielaborado | 5 |
+| 2026-10-17 | #20 | Fase 3 y 5: celda de ensamble manual con operario (tipo `assembly-cell`) en la planta de inyección; `assembly-01` y `assembly-02` simuladas y escenario `body-stop` | 3 y 5 |
+| 2026-10-17 | #19 | Planta de salsas: área de empaque manual (cajas de 4, 8 y 16 sachets) con estiba en tarimas, en librería, motor y escena | 3 y 5 |
+| 2026-10-17 | #18 | Fase 5: sala de control del PLC en la planta de salsas, con gabinete, puesto del operador y panel de gráficos configurable | 5 |
+| 2026-10-17 | #17 | Fase 3 y 5: línea de peletizado (tipo `pelletizing-line`) y silo 5 de reciclado enlazados al molino; escenario `pelletizer-jam` | 3 y 5 |
+| 2026-10-17 | #16 | Fase 3 y 5: cascada de la planta de inyección (resina seca y humedad desde los secadores, agua de moldes desde el chiller, scrap hacia el molino) y escenarios `dryer-stop` y `chiller-trip` | 3 y 5 |
+| 2026-10-17 | #15 | Fase 3 y 5: geometría y comportamiento de empaque, secadores, chillers y molino de la planta de inyección, simulados en la escena | 3 y 5 |
 | 2026-10-17 | #14 | Acueducto: solucionador hidráulico de redes a presión en el runtime (gradiente global) con pruebas | acueducto |
 | 2026-10-17 | #13 | Diseño de la tercera planta: acueducto a escala (documento y predimensionamiento, sin código de producción) | acueducto |
 | 2026-10-16 | #12 | Fase 5: la planta de inyección se simula y se ve en la escena (29 inyectoras y banda principal) | 5 |
@@ -27,13 +34,83 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 ## Entradas
 
+### 2026-10-17 03:54–04:50 · PR #21 (fusionado en el #20) · Rutas de montacargas y de operarios de la nave de inyección
+- **Fecha/hora (UTC):** 2026-10-17 03:54 a 04:50.
+- **Fase del plan:** [[plan-del-proyecto]] fase 5.
+- **Solicitado por:** Carlos Andrés Quiceño, «hay que definir como las rutas por donde caminan los operarios y las rutas por donde caminan los montacargas que llevan la materia prima semielaborada a estanterías […], y luego […] hacia las celdas de ensamblaje, y después de las celdas de ensamblaje, producto terminado» (03:54).
+- **Qué se hizo:** `plant.yaml` gana 4 estanterías de semielaborado (`rack-sf-01` a `04`, frente al pasillo sur), 7 pasillos nuevos hacia las celdas de ensamble y la bodega de producto terminado y una sección `routes` con 8 rutas de montacargas (recolección de las inyectoras a las estanterías, estanterías a las celdas, celdas a la bodega) y 5 de operarios (3 rondas de inyección, vestier a las celdas, celda 1 a empaque 3). `tools/layout/render_layout.py` valida las rutas (pasillos de montacargas, sin cruzar equipos, extremos junto a sus equipos) y las dibuja en `layout.svg`. La API entrega `aisles` y `routes`; la escena dibuja franjas y cintas y hace circular montacargas (pieza nueva `parts.forklift()`) y operarios que caminan. Documentado en `docs/plant-scene.md`. Es un PR apilado sobre el #20.
+- **Commits:** ver el PR #21; entró a `main` con el #20.
+- **Verificación:** `uv run python tools/layout/render_layout.py` (sin errores; el validador rechaza rutas movidas a mano a un equipo o fuera de un pasillo), `uv run twin-lib plant validate`, `uv run pytest`, `uv run ruff check .`, `pnpm -r typecheck` y `pnpm -r test`. Capturas: [[fase7-rutas-plano.png]] y [[fase7-rutas-escena.png]].
+- **Decisiones:** [[decisiones]] D22.
+- **Conversación:** [[hilo-celda-de-ensamble]].
+
+### 2026-10-17 03:54–04:30 · PR #20 · Celda de ensamble manual con operario
+- **Fecha/hora (UTC):** 2026-10-17 03:54 a 04:30.
+- **Fase del plan:** [[plan-del-proyecto]] fases 3 y 5.
+- **Solicitado por:** Carlos Andrés Quiceño, «Si con el operario» (03:54), a la pregunta de si las celdas de ensamble eran robotizadas o manuales (03:13). Pidió además las rutas de operarios y montacargas de la nave: van en un PR aparte. El empaque de salsas y la sala del PLC los toman otros hilos (PR #18 y #19).
+- **Qué se hizo:** tipo nuevo `assembly-cell` en `equipment-library/` (contrato, comportamiento, 2 presets, 7 escenarios con expectativas calculadas a mano, geometría 3D, `FICHA.md`, `README.md`): cubetas de componentes A y B, ciclo fijo del operario (35 s pedal/palanca y 20 s bisagras y tapas, de la ficha 23), bandeja de salida, estados `running`/`starved`/`blocked`/`idle`/`fault`. Pieza nueva `parts.operator()` (operario de pie con chaleco y casco) en `@twin/3d`. `assembly-01` (imm-06 y imm-19 → celda → empaque 3) y `assembly-02` (imm-08 y imm-14, flujos supuestos) simuladas en la planta; `nominal` suma 5 expectativas y hay un escenario nuevo `body-stop`. Parámetro de URL `focus=` en la escena para acercar la cámara.
+- **Commits:** ver el PR #20.
+- **Verificación:** `uv run twin-lib validate`, `uv run twin-lib plant validate`, `uv run pytest` (137), `uv run ruff check .`, `pnpm -r typecheck` y `pnpm -r test` (64). Expectativas calculadas a mano (35 s por unidad: (3.600 − 30) ÷ 35 = 102 u/h; la imm-19 entrega un cuerpo cada 35 s y limita la celda 1 a ≈ 100 u/h; la imm-06 trabaja 103 ÷ 288 = 36 % del tiempo). Capturas: [[fase7-celda-ensamble-galeria.png]] y [[fase7-celda-ensamble-escena.png]].
+- **Decisiones:** [[decisiones]] D21.
+- **Conversación:** [[hilo-celda-de-ensamble]].
+
+### 2026-10-17 03:54–04:20 · PR #19 · Empaque manual y estibado de la planta de salsas
+- **Fecha/hora (UTC):** 2026-10-17 03:54 a 04:20.
+- **Fase del plan:** [[plan-del-proyecto]] fases 3 y 5.
+- **Solicitado por:** Carlos Andrés Quiceño: «nos falta la parte de empaque [...] arman paquetes con esos sachets [...] las de litro vienen 4 por caja, las de 500 gramos 8 por caja y las de 250 gramos 16 unidades por caja [...] es una línea manual donde se empacan, y luego esas cajas van para apilarse en estibas para almacenarse como producto terminado disponible para entrega» (03:54).
+- **Qué se hizo:** el tipo `packing-station` gana el parámetro `item_kind` (`sachet` dibuja bolsas planas en la mesa y en la caja) y tres presets: `sachet-1000ml-4`, `sachet-500ml-8` y `sachet-250ml-16`, más tres escenarios con expectativas calculadas a mano. En `sauce-plant-v1` las encajadoras automáticas `case-pack-01` y `case-pack-02` se reemplazan por tres mesas manuales (`pack-sauce-250`, `pack-sauce-500` y `pack-sauce-1000`) en la zona de encajado, enlazadas a la envolvedora. En `simulation.yaml` la línea caliente de 1.000 ml termina ahora en `pack-sauce-1000` (control de peso → mesa → tarimas); las mesas de 500 y 250 ml se simulan sin llegadas hasta conectar sus líneas. Se ajustaron `nominal` y las pruebas que usaban `case-pack-02`.
+- **Commits:** ver el PR #19.
+- **Verificación:** `uv run twin-lib validate`, `uv run twin-lib plant validate`, `uv run pytest` (132 pruebas), `uv run ruff check .`, `pnpm -r typecheck` y `pnpm -r test`. Expectativas calculadas a mano (1.000 ml: 30 u/min × 60 min = 1.800 sachets ÷ 4 = 450 cajas ÷ 48 por tarima = 9 tarimas; `nominal`: 7 batches ≈ 9.000–10.800 sachets ÷ 4 = 2.160–2.700 cajas; resultado de la corrida: 2.472 cajas, 51 tarimas recogidas, mesa ocupada 27 % del tiempo). Capturas: [[fase7-empaque-sachets-galeria.png]] (galería, preset `sachet-1000ml-4`) y [[fase7-empaque-sachets-escena.png]] (escena con la API en vivo, escenario `nominal`).
+- **Decisiones:** [[decisiones]] D20.
+- **Conversación:** [[hilo-empaque-de-salsas]].
+
+### 2026-10-17 03:55–04:25 · PR #18 · Sala de control del PLC y panel de gráficos
+- **Fecha/hora (UTC):** 2026-10-17 03:55 a 04:25.
+- **Fase del plan:** [[plan-del-proyecto]] fase 5.
+- **Solicitado por:** Carlos Andrés Quiceño, «nos falta una parte que es la sala de control del PLC, y en el PLC tener como un panel de gráficos que ya después definiremos» (03:54). La parte de empaque de salsas y las rutas de operarios y montacargas del mismo mensaje van en otros hilos.
+- **Qué se hizo:** zona `sala-control` (14 × 10 m, junto a la subestación) y tres equipos en `plant.yaml`: `plc-01` (gabinete), `operator-desk-01` y `scada-wall-01` (panel). Pieza de escena nueva `apps/gallery/src/control-room.ts`: gabinete con luces de estado, puesto con dos monitores y panel de 8 gráficos de tendencia dibujados en un canvas con las variables de la simulación (6 asignadas, 2 libres). La API entrega la clave `panel` del equipo; la escena gana la cámara «Sala de control del PLC»; `layout.svg` regenerado; `docs/plant-scene.md` documenta el panel.
+- **Commits:** ver el PR #18.
+- **Verificación:** `uv run twin-lib plant validate`, `uv run pytest`, `uv run ruff check .`, `pnpm -r typecheck` y `pnpm -r test`. Capturas con la API en vivo: [[fase7-sala-de-control.png]] (panel con los gráficos recibiendo datos de la simulación) y [[fase7-sala-de-control-plc.png]] (gabinete del PLC).
+- **Decisiones:** [[decisiones]] D19.
+- **Conversación:** [[hilo-sala-de-control-plc]].
+
+### 2026-10-17 02:19–02:50 · PR #17 · Línea de peletizado y lazo de reciclaje
+- **Fecha/hora (UTC):** 2026-10-17 02:19 a 02:50.
+- **Fase del plan:** [[plan-del-proyecto]] fases 3 y 5.
+- **Solicitado por:** Carlos Andrés Quiceño, «No entiendo cómo es que las inyectoras le entregan al molino, no es al revés» (02:19) y, a la propuesta de cerrar el lazo de reciclaje con la extrusora de pellet, «Sí, por favor» (02:19). También preguntó adónde van las piezas después de la inyección; se le respondió con los flujos del plano (sin cambios de código).
+- **Qué se hizo:** tipo nuevo `pelletizing-line` en `equipment-library/` con contrato, comportamiento (tolva, capacidad que baja con la suciedad de la malla, temperatura de fundido, potencia), 3 presets, 9 escenarios con expectativas calculadas a mano, geometría 3D (tolva con cargador, extrusor con resistencias, cambiador de malla, baño de agua con hebras, cortadora, big-bag), `FICHA.md` y `README.md`. `simulation.yaml` simula `extruder-pel-01` y `silo-05` (un `vessel` con la forma `silo`) y enlaza molino → peletizado → silo 5 (por la estación de big-bag, sin simular). Escenario nuevo `pelletizer-jam`; `nominal` suma tres expectativas. PR apilado sobre el #16.
+- **Commits:** ver el PR #17.
+- **Verificación:** `uv run twin-lib validate`, `uv run twin-lib plant validate`, `uv run pytest`, `uv run ruff check .`, `pnpm -r typecheck` y `pnpm -r test`. Expectativas calculadas a mano (arranque en frío: 600 × ln(205 ÷ 3) = 2.534 s; potencia a 86 % de carga: 110 × (0,25 + 0,6 × 0,857) + 8,8 = 92,9 kW; tolva tras el atasco: ≈ 54 kg de 200 kg). Capturas: [[fase6-peletizadora.png]] (galería) y [[fase6-reciclaje-en-la-escena.png]] (escena con la API en vivo, escenario `pelletizer-jam`: tolva al 26,5 %, 46,7 kg entregados al silo 5).
+- **Decisiones:** [[decisiones]] D18.
+- **Conversación:** [[hilo-cascada-de-inyeccion]].
+
+### 2026-10-17 01:31–01:52 · PR #16 · Cascada de la planta de inyección
+- **Fecha/hora (UTC):** 2026-10-17 01:31 a 01:52.
+- **Fase del plan:** [[plan-del-proyecto]] fases 3 y 5.
+- **Solicitado por:** Carlos Andrés Quiceño, «los equipos todavía se ven como bloques simples […] hay que darle su geometría de verdad […] y después también entonces arrancamos con los equipos de inyección» (01:31). La geometría de empaque, secadores, chillers y molino ya estaba hecha en el PR #15; la de la inyectora ya era detallada (V2, 463 líneas), así que este PR hace la segunda parte: incorporarlos a las inyectoras.
+- **Qué se hizo:** el motor de planta gana la magnitud `moisture_pct` (humedad de la resina; esquema, `links.py` y `docs/plant-engine.md`). Contratos: la inyectora publica la resina que pide (`resin_demand_kg_h`) y su scrap (`scrap_flow_kg_h`), recibe caudal y humedad por `resin_in` y la disponibilidad del agua por `cooling_water` (puerto ahora de tipo `material`, como la salida del chiller); sin caudal de resina más de 10 s pasa a `starved`. El secador entrega lo que pide la inyectora y su humedad; el chiller publica `water_ok`. `simulation.yaml` enlaza secador 3 → imm-01, secador 4 → imm-28 (un secador por inyectora: el motor no reparte caudal), chiller 1 → las 29 inyectoras y las 29 → molino (por `sort-01` y `wash-line-01`, sin simular); `plant.yaml` gana los flujos correspondientes sin `piped`. Escenarios nuevos `dryer-stop` y `chiller-trip`; `nominal` recalculado (secador 4: 273 kg/h, no 400; molino: ≈ 100 kg/h, no 300). Dos pruebas nuevas de la inyectora.
+- **Commits:** ver el PR #16.
+- **Verificación:** `uv run twin-lib validate`, `uv run twin-lib plant validate`, `uv run pytest` (119 pruebas), `uv run ruff check .`, `pnpm -r typecheck` y `pnpm -r test` (57). Expectativas calculadas a mano (consumo de resina 7 × 1,03 ÷ 95 s = 273 kg/h; coladas de las 29 = 79 kg/h y rechazos base = 21,6 kg/h; circuito del chiller sin compresores 360 kW ÷ (4.186 kJ/m³K × 20 m³) = 0,0043 K/s). Capturas de la escena con la API en vivo, escenarios `chiller-trip` y `dryer-stop` a ≈ 1 h 10 min simulados: [[fase6-chiller-trip-moldes.png]] (molde de la imm-01 a 54,8 °C) y [[fase6-secador-4-detenido.png]] (imm-28 en `starved`). La geometría no cambió.
+- **Decisiones:** [[decisiones]] D17.
+- **Conversación:** [[hilo-cascada-de-inyeccion]].
+
+### 2026-10-17 00:54–01:30 · PR #15 · Equipos de la planta de inyección con geometría propia
+- **Fecha/hora (UTC):** 2026-10-17 00:54 a 01:30.
+- **Fase del plan:** [[plan-del-proyecto]] fases 3 y 5.
+- **Solicitado por:** Carlos Andrés Quiceño, «si asigna un hijlo para ello» (00:54), a la propuesta del coordinador de modelar con geometría propia el empaque, los secadores, los chillers y los molinos de la planta de inyección, que seguían como bloques simples en la escena. Las pasarelas de la nave quedaron fuera de este hilo.
+- **Qué se hizo:** cuatro tipos nuevos en `equipment-library/`, cada uno con contrato, comportamiento, geometría 3D, presets, escenarios con expectativas calculadas a mano, `FICHA.md` y `README.md`: `desiccant-dryer` (aire de proceso, residencia y humedad de la resina; falla de regeneración del desecante), `chiller` (etapas por banda muerta, inercia del circuito, derrateo por ambiente, disparo por alta presión), `granulator` (capacidad, desgaste de cuchillas, finos, corriente) y `packing-station` (mesa de espera, ritmo del operario, cambio de caja, tarima). `simulation.yaml` de la planta de inyección los simula (4 secadores, 2 chillers con el segundo de respaldo apagado, el molino de reciclaje y las 4 estaciones de empaque) y enlaza `conveyor-main-01 → pack-station-01`: la banda de 88 m ya entrega al empaque. Documentado en `docs/plant-engine.md` y `docs/plant-scene.md`.
+- **Commits:** ver el PR #15.
+- **Verificación:** `uv run twin-lib validate` (14 tipos), `uv run twin-lib plant validate`, `uv run pytest` (115 pruebas), `uv run ruff check .`, `pnpm -r typecheck` y `pnpm -r test` (57 pruebas de geometría). Expectativas calculadas a mano (por ejemplo, humedad del ABS a 4 h de residencia: 0,0035 + 0,1965·e^(−4/1,2) = 0,0105 %; chiller con 360 kW de carga: ≈ 85,4 kW eléctricos; molino de 500 kg/h con 300 kg/h de alimentación: 43,96 A). Dos expectativas se corrigieron al revisar mi propia cuenta (no la simulación): el tiempo hasta que la resina deja de estar seca ignoraba el retardo del punto de rocío, y el calor neto del chiller sobrecargado ignoraba el arranque escalonado de las etapas. Capturas con Chromium y la API local (01:19, escenario `nominal`): [[fase5f-secadores-en-la-escena.jpg]], [[fase5f-chillers-en-la-escena.jpg]], [[fase5f-empaque-en-la-escena.jpg]], [[fase5f-molino-en-la-escena.jpg]].
+- **Decisiones:** [[decisiones]] D16.
+- **Conversación:** [[hilo-equipos-de-inyeccion]].
+
 ### 2026-10-17 00:53–01:15 · PR #14 · Solucionador hidráulico del acueducto
 - **Fecha/hora (UTC):** 2026-10-17 00:53 a 01:15.
 - **Fase del plan:** [[plan-del-proyecto]], acueducto a escala, entrega 2 de 5.
 - **Solicitado por:** Carlos Andrés Quiceño: pedido del acueducto (00:20) y fusión del PR #13 (00:52) sin correcciones a los supuestos, con lo que el hilo siguió con lo anunciado («si no me corriges nada, lo construyo con estos supuestos apenas fusiones el #13»).
 - **Qué se hizo:** primitiva `twin_runtime/primitives/hydraulics.py`, `HydraulicNetwork`: método del gradiente global (Todini-Pilati, el de EPANET) en Python puro con eliminación dispersa de grado mínimo; tubos (Darcy-Weisbach, Swamee-Jain y Hagen-Poiseuille), válvulas por Kv (lineales o de igual porcentaje), antirretornos, bombas con curva y velocidad, descargas con exponente (consumos y fugas) y PRV con los estados de EPANET; arranque en caliente. Documentado en `docs/water-network-plant.md` (sección 5.1).
 - **Verificación:** 16 pruebas nuevas en `packages/twin-runtime/tests/test_hydraulics.py` con valores calculados a mano en cada prueba y la red de diseño completa (lo que entra sale; 13,0 m³/h y 20,0 mca en la válvula crítica dentro del 2 %; noche con PRV fija 23,4 mca); `uv run pytest`, `ruff`. Sin cambios visuales, sin captura.
-- **Decisiones:** [[decisiones]] D16.
+- **Decisiones:** [[decisiones]] D23.
 - **Conversación:** [[hilo-acueducto-a-escala]].
 
 ### 2026-10-17 00:21–00:45 · PR #13 · Diseño del acueducto a escala (tercera planta)

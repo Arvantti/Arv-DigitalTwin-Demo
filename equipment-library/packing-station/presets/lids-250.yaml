@@ -1,0 +1,4 @@
+preset: lids-250
+description: Empaque de tapas de recipiente en cajas de 250 piezas, tarima de 40 cajas (estación de la banda principal)
+params: { parts_per_box: 250, pack_rate_upm: 120, box_change_s: 20, table_capacity_units: 200, boxes_per_pallet: 40, nominal_inflow_upm: 20, box_size_m: 0.5, item_color: "#1e6fd9" }
+provenance: { parts_per_box: assumed, pack_rate_upm: assumed, box_change_s: assumed, table_capacity_units: assumed, boxes_per_pallet: assumed, nominal_inflow_upm: user }

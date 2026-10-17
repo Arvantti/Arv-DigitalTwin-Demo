@@ -1,0 +1,4 @@
+preset: abs-150
+description: Secador de ABS de 150 kg/h, 80 °C y rocío de −40 °C (planta de inyección)
+params: { material: ABS, throughput_kg_h: 150, residence_h: 4, temp_c: 80, dew_point_c: -40, inlet_moisture_pct: 0.2, moisture_limit_pct: 0.02 }
+provenance: { throughput_kg_h: user, temp_c: user, dew_point_c: user, residence_h: assumed, inlet_moisture_pct: assumed, moisture_limit_pct: assumed }

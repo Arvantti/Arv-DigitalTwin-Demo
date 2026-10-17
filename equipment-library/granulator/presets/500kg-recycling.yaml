@@ -1,0 +1,4 @@
+preset: 500kg-recycling
+description: Molino de reciclaje de 500 kg/h con criba de 10 mm, para el scrap lavado de la nave de inyección
+params: { throughput_kg_h: 500, screen_mm: 10, motor_kw: 37, hopper_kg: 150, nominal_feed_kg_h: 300, knife_life_t: 150 }
+provenance: { throughput_kg_h: user, screen_mm: user, motor_kw: assumed, hopper_kg: assumed, nominal_feed_kg_h: user, knife_life_t: assumed }

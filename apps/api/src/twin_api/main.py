@@ -195,7 +195,7 @@ def get_plant(plant_id: str) -> dict[str, Any]:
     model = _plant_model(plant_id) if (folders[plant_id] / SIM_FILE).exists() else None
     equipment = []
     for eq in layout.get("equipment", []):
-        item = {k: eq[k] for k in ("id", "type", "zone", "position", "footprint", "rotation_deg", "overhead") if k in eq}
+        item = {k: eq[k] for k in ("id", "type", "zone", "position", "footprint", "rotation_deg", "overhead", "panel") if k in eq}
         cfg = model.equipment.get(eq["id"]) if model else None
         if cfg:
             spec = library.get(cfg["type"]).spec
@@ -210,6 +210,8 @@ def get_plant(plant_id: str) -> dict[str, Any]:
         "zones": layout.get("zones", []),
         "equipment": equipment,
         "walkways": layout.get("walkways", []),
+        "aisles": layout.get("aisles", []),
+        "routes": layout.get("routes", []),
         "pipes": [
             {
                 **{k: f[k] for k in ("from", "to", "medium", "rate", "unit") if k in f},

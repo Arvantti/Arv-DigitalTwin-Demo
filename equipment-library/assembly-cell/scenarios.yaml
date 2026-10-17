@@ -1,0 +1,80 @@
+scenarios:
+  - id: steady
+    description: Celda de pedal/palanca (35 s por unidad, un operario) con 2 u/min de cada componente durante 1 h
+    preset: pedal-lever-35s
+    duration_s: 3600
+    timeline:
+      - { at_s: 0, inputs: { inflow_a_upm: 2, inflow_b_upm: 2 } }
+    expect:
+      - { path: variables.units_assembled, min: 101, max: 103, description: "(el 1.er componente completo llega a los 30 s; cada unidad toma 35 s: (3.600 − 30) ÷ 35 = 102 unidades)" }
+      - { path: state, equals: running }
+      - { path: variables.bin_a_units, min: 16, max: 20, description: "(llegan 2 × 60 = 120 componentes y se consumen 102: quedan ≈ 18 en la cubeta)" }
+      - { path: kpis.units_per_h, min: 101, max: 103 }
+
+  - id: starved-b
+    description: No llegan cuerpos de papelera en media hora; la celda espera y la cubeta de pedales se llena
+    preset: pedal-lever-35s
+    duration_s: 1800
+    timeline:
+      - { at_s: 0, inputs: { inflow_a_upm: 3, inflow_b_upm: 0 } }
+    expect:
+      - { path: variables.units_assembled, equals: 0 }
+      - { path: state, equals: starved }
+      - { path: variables.bin_a_units, equals: 60, description: "(3 u/min llenan la cubeta de 60 en 20 min)" }
+      - { path: variables.accepting_a, equals: 0, description: "(la cubeta llena bloquea a la máquina que surte los pedales)" }
+      - { path: events.bin_a_full, equals: 1 }
+      - { path: kpis.starved_pct, min: 0.98, description: "(nunca tuvo los dos componentes)" }
+
+  - id: no-operator
+    description: El operario se retira del minuto 10 al 30 con componentes de sobra; la unidad en curso queda a medias y se retoma
+    preset: pedal-lever-35s
+    duration_s: 3600
+    timeline:
+      - { at_s: 0, inputs: { inflow_a_upm: 3, inflow_b_upm: 3 } }
+      - { at_s: 600, inputs: { operator_present: false } }
+      - { at_s: 1800, inputs: { operator_present: true } }
+    expect:
+      - { path: variables.units_assembled, min: 67, max: 69, description: "(16 unidades antes del minuto 10; la 17.ª queda con 15 s por hacer y termina a los 1.815 s; después caben (3.600 − 1.815) ÷ 35 = 51 más: 68)" }
+      - { path: state, equals: running }
+
+  - id: blocked-output
+    description: La salida se ocupa a la media hora; la celda deja la unidad terminada en la bandeja y se bloquea
+    preset: pedal-lever-35s
+    duration_s: 3600
+    timeline:
+      - { at_s: 0, inputs: { inflow_a_upm: 3, inflow_b_upm: 3 } }
+      - { at_s: 1800, inputs: { downstream_free: false } }
+    expect:
+      - { path: variables.units_assembled, equals: 50, description: "(a los 1.800 s van (1.800 − 20) ÷ 35 = 50 unidades entregadas; la 51.ª queda en la bandeja)" }
+      - { path: state, equals: blocked }
+
+  - id: fixture-jam
+    description: Atasco del dispositivo de sujeción de 5 min al minuto 10; el ciclo en curso se retoma al repararlo
+    preset: pedal-lever-35s
+    duration_s: 3600
+    timeline:
+      - { at_s: 0, inputs: { inflow_a_upm: 3, inflow_b_upm: 3 } }
+      - { at_s: 600, command: inject_fault, args: { fault: fixture_jam, duration_s: 300 } }
+    expect:
+      - { path: variables.units_assembled, min: 92, max: 94, description: "(se pierden 300 s ÷ 35 = 8,6 unidades de las 102 de la hora: ≈ 93)" }
+      - { path: events.fault_cleared, equals: 1 }
+
+  - id: hinges-lids
+    description: Celda de bisagras y tapas (20 s, 2 bisagras por tapa) con 8 bisagras/min y 4 tapas/min durante 1 h
+    preset: hinges-lids-20s
+    duration_s: 3600
+    timeline:
+      - { at_s: 0, inputs: { inflow_a_upm: 8, inflow_b_upm: 4 } }
+    expect:
+      - { path: variables.units_assembled, min: 178, max: 180, description: "(cuando llegan 2 bisagras y 1 tapa, a los 15 s, arranca; cada unidad toma 20 s: (3.600 − 15) ÷ 20 = 179)" }
+      - { path: variables.bin_a_units, min: 118, max: 120, description: "(cubeta de 120: llegan 480 bisagras y se consumen 358; la cubeta se llena y bloquea a su máquina)" }
+
+  - id: two-operators
+    description: Dos operarios en la celda de pedal/palanca con 4 u/min de cada componente; el ritmo se duplica
+    preset: pedal-lever-35s
+    duration_s: 3600
+    timeline:
+      - { at_s: 0, inputs: { inflow_a_upm: 4, inflow_b_upm: 4 } }
+      - { at_s: 0, command: set_param, args: { name: operators, value: 2 } }
+    expect:
+      - { path: variables.units_assembled, min: 197, max: 206, description: "(35 s ÷ 2 = 17,5 s por unidad en teoría: 3.600 ÷ 17,5 = 205; el paso de 1 s la redondea a 18 s: 199)" }

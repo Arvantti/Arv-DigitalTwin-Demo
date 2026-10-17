@@ -191,6 +191,7 @@
             "available": { "$ref": "#/$defs/ident" },
             "temp_c": { "$ref": "#/$defs/ident" },
             "pressure_bar": { "$ref": "#/$defs/ident" },
+            "moisture_pct": { "$ref": "#/$defs/ident" },
             "weight_mean_g": { "$ref": "#/$defs/ident" },
             "weight_sd_g": { "$ref": "#/$defs/ident" },
             "ready": { "$ref": "#/$defs/ident" },

@@ -1,0 +1,81 @@
+schema_version: 0.1.0
+type: packing-station
+version: 0.1.0
+name: Estación de empaque manual
+manufacturing: packaging
+category: packaging.manual
+description: >
+  Mesa de empaque donde un operario recibe las piezas que llegan por banda, las cuenta dentro
+  de cajas de cartón y las cierra, rotula y estiba en la tarima. Acumula piezas en la mesa
+  mientras se cambia la caja y bloquea la banda cuando la mesa se llena; sin operario, sin
+  cajas o con la tarima llena y sin recoger, la estación se detiene.
+aliases: [empaque, mesa de empaque, estación de empaque, packing station, packing table]
+fidelity: { visual: V2, behavior: B2 }
+
+params:
+  parts_per_box:        { type: integer, min: 1, max: 5000, default: 250, description: Piezas por caja, affects: [behavior, geometry] }
+  pack_rate_upm:        { type: number, unit: u/min, min: 5, max: 600, default: 120, description: Ritmo máximo del operario al contar y colocar, affects: [behavior] }
+  box_change_s:         { type: number, unit: s, min: 2, max: 300, default: 20, description: "Tiempo de cerrar, rotular y estibar una caja y tomar otra", affects: [behavior] }
+  table_capacity_units: { type: integer, min: 1, max: 5000, default: 200, description: Piezas que caben sobre la mesa esperando su turno, affects: [behavior, geometry] }
+  boxes_per_pallet:     { type: integer, min: 1, max: 200, default: 40, description: Cajas por tarima, affects: [behavior, geometry] }
+  nominal_inflow_upm:   { type: number, unit: u/min, min: 0, max: 2000, default: 20, description: Llegada nominal si el entorno no la fija, affects: [behavior] }
+  box_size_m:           { type: number, unit: m, min: 0.2, max: 1.0, default: 0.5, description: Lado mayor de la caja, affects: [geometry] }
+  item_color:           { type: string, default: "#1e6fd9", description: Color de las piezas (hex), affects: [geometry] }
+  item_kind:            { type: enum, values: [piece, sachet], default: piece, description: "Forma de la unidad en el dibujo: pieza rígida o sachet (bolsa plana)", affects: [geometry] }
+
+ports:
+  - { id: items_in, kind: item, direction: in, unit: u/min, link: { units: inflow_upm, ready: accepting } }
+  - { id: boxes_out, kind: item, direction: out, unit: cajas/min, link: { units: boxes_count, ready: downstream_free } }
+  - { id: boxes_in, kind: material, direction: in, medium: cajas de cartón armadas }
+
+states:
+  - { id: idle, description: "Sin piezas o sin operario en la estación" }
+  - { id: running, description: Contando y colocando piezas en la caja }
+  - { id: setup, description: "Cerrando, rotulando y estibando la caja" }
+  - { id: starved, description: Faltan cajas de cartón }
+  - { id: blocked, description: La tarima está llena y nadie la recoge }
+  - { id: fault, description: Detenida por falla }
+
+variables:
+  - { id: table_units, unit: u, kind: calculated, description: Piezas sobre la mesa esperando }
+  - { id: box_fill_pct, unit: "%", kind: calculated, range: [0, 100], description: Llenado de la caja en curso }
+  - { id: units_packed, unit: u, kind: counter, description: Piezas empacadas }
+  - { id: boxes_count, unit: cajas, kind: counter, description: Cajas terminadas }
+  - { id: pallet_boxes, unit: cajas, kind: calculated, description: Cajas en la tarima en curso }
+  - { id: pallets_count, unit: tarimas, kind: counter, description: Tarimas completas recogidas }
+  - { id: accepting, unit: "", kind: status, description: "1 si la mesa recibe piezas, 0 si está llena (bloquea la banda)" }
+
+events:
+  - { id: box_completed, description: Caja terminada, payload: [box] }
+  - { id: pallet_ready, description: La tarima se llenó y espera recogida }
+  - { id: pallet_picked_up, description: Se recogió la tarima llena }
+  - { id: buffer_full, description: La mesa se llenó y bloquea la banda }
+
+faults:
+  - { id: label_printer_jam, description: Atasco de la impresora de etiquetas, mtbf_h: 150, mttr_min: 6, severity: low, effect: Parada corta para cambiar el rollo }
+  - { id: sealer_jam, description: Atasco del sellador de cajas, mtbf_h: 300, mttr_min: 8, severity: low, effect: Parada para destrabar el sellador }
+
+commands:
+  - { id: inject_fault, description: Inyecta una falla declarada, args: { fault: string, duration_s: number } }
+  - { id: clear_fault, description: Repara una falla activa, args: { fault: string } }
+  - { id: set_param, description: Cambia un parámetro en caliente, args: { name: string, value: any } }
+
+kpis:
+  - { id: utilization, unit: "", description: Fracción del tiempo contando piezas }
+  - { id: boxes_per_h, unit: cajas/h, description: Cajas terminadas por hora }
+  - { id: blocked_pct, unit: "", description: Fracción del tiempo con la tarima llena sin recoger }
+
+animation_channels:
+  - { id: box_fill, range: [0, 1], description: Llenado de la caja en curso }
+  - { id: table_fill, range: [0, 1], description: Piezas sobre la mesa respecto de su capacidad }
+  - { id: pallet_fill, range: [0, 1], description: Cajas en la tarima respecto de las que caben }
+  - { id: packing, range: [0, 1], description: "1 mientras el operario cuenta y coloca piezas" }
+  - { id: stack_light, range: [0, 3], description: "Baliza: 0 apagada, 1 verde, 2 amarilla, 3 roja" }
+
+geometry:
+  parts: [table, infeed_end, carton, parts, sealer, label_printer, carton_magazine, pallet, floor_marking, hmi, stack_light]
+
+assumptions:
+  - "El operario cuenta a pack_rate_upm solo si hay piezas en la mesa; cambiar de caja toma box_change_s y las piezas esperan en la mesa."
+  - "La tarima llena se recoge solo si la salida (montacargas, envolvedora) está libre; si no, la estación se bloquea."
+  - "No se simula la envolvedora: el flujo de cajas a tarima solo cuenta cajas terminadas."

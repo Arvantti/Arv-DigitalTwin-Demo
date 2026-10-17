@@ -1,0 +1,4 @@
+preset: 600kw-mold-water
+description: Enfriador de 600 kW para el agua de los moldes de la nave de inyección, a 12 °C
+params: { capacity_kw: 600, stages: 3, supply_c: 12, flow_m3_h: 180, loop_volume_m3: 20, nominal_load_kw: 360, cop: 4.5 }
+provenance: { capacity_kw: user, supply_c: user, flow_m3_h: user, stages: assumed, loop_volume_m3: assumed, nominal_load_kw: assumed, cop: assumed }

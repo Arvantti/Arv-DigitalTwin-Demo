@@ -41,5 +41,13 @@ Trabajo del hilo, resumido:
 - Reinició la rama desde `main` y escribió `twin_runtime/primitives/hydraulics.py` (gradiente global, estados de PRV, bombas, antirretornos y descargas).
 - Escribió 16 pruebas con valores calculados a mano; una falló porque una válvula cerrada reportaba un caudal residual de 0,0004 m³/h y otra porque la PRV no cerraba contra un tanque; se corrigió el solucionador, no las pruebas.
 - Comprobó que la red de diseño completa reproduce el predimensionamiento del PR #13 dentro del 2 %.
-- Actualizó el diseño, el roadmap, el plan, la bitácora, la decisión D16 y este histórico, y abrió el PR #14.
+- Actualizó el diseño, el roadmap, el plan, la bitácora, la decisión D23 y este histórico, y abrió el PR #14.
 
+
+### 👤 Carlos Andrés Quiceño · 04:45:13 UTC (comentario en el PR #14)
+
+por favor resolver los conflictos ya que ha habido otros pr despues de este
+
+### 🤖 Claude (hilo) · 04:45–05:00 UTC
+
+Fusionó `main` en la rama del PR #14 (merge commit, sin reescribir historia). Los conflictos estaban solo en el registro: la bitácora, las decisiones y el índice del histórico. Conservó las entradas de los PR #15 a #21 y agregó las del #14. La decisión del solucionador pasó de D16 a D23, porque D16 ya la usaba el PR #15. Volvió a correr las pruebas y `ruff`.

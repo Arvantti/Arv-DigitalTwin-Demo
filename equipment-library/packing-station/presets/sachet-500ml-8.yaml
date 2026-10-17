@@ -1,0 +1,4 @@
+preset: sachet-500ml-8
+description: Empaque manual de sachets de 500 ml en cajas de 8, tarima de 60 cajas
+params: { parts_per_box: 8, pack_rate_upm: 120, box_change_s: 5, table_capacity_units: 80, boxes_per_pallet: 60, nominal_inflow_upm: 45, box_size_m: 0.4, item_color: "#e5a823", item_kind: sachet }
+provenance: { parts_per_box: user, pack_rate_upm: assumed, box_change_s: assumed, table_capacity_units: assumed, boxes_per_pallet: assumed, nominal_inflow_upm: assumed }

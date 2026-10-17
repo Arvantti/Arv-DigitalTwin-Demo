@@ -27,7 +27,7 @@ Las plantas son inspiradas en empresas de Medellín, pero **sin usar nombres ni 
 |---|---|---|---|
 | 1. Layouts | `plant.yaml` de ambas plantas, validador y plano 2D | **Hecha** | [[bitacora]] PR #1 |
 | 2. Librería de equipos | Contrato, runtime, 3 tipos de referencia, geometría paramétrica, galería, API de simulación, guía y skill de autoría | **Hecha** | PR #2 |
-| 3. Equipos de las plantas | Resto de tipos con la guía de autoría | **En curso**: línea de sachets hecha (sachetadora, banda, túnel, control de peso, encajonadora, pasteurizador, caldera). Faltan emulsificador, molino coloidal, secadores, chillers, robots y otros | PR #3, #4 |
+| 3. Equipos de las plantas | Resto de tipos con la guía de autoría | **En curso**: línea de sachets hecha (sachetadora, banda, túnel, control de peso, encajonadora, pasteurizador, caldera). Faltan emulsificador, molino coloidal, robots y otros. Planta de inyección: empaque, secadores, chillers y molino de reciclaje hechos | PR #3, #4, #15 |
 | 4. Motor de planta | Instanciar `plant.yaml`, conectar equipos por puertos, recetas, líneas y KPIs | **En curso**: motor, enlaces por puerto y línea caliente de 1.000 ml | PR #5, #6 |
 | 5. Escena de planta | Planta completa en 3D, HUD, selección de activos, cámaras | **En curso**: escena de la planta de salsas con equipos simulados en vivo, selección, cámaras con recorrido, HUD, pasarelas y tuberías animadas. Las tuberías se animan con el caudal real de cada enlace del motor, incluido el desvío del pasteurizador a la marmita; la planta de inyección se simula y se ve con sus 29 inyectoras y la banda principal. Faltan equipos de la librería | PR #8, PR #9, PR #10, PR #11, PR #12, `docs/plant-scene.md` |
 | 6. Persistencia y datos | PostgreSQL, MQTT opcional, calidad y frescura de datos | Pendiente | — |
@@ -45,9 +45,9 @@ Las plantas son inspiradas en empresas de Medellín, pero **sin usar nombres ni 
 - Cada cambio visual se verifica con captura de la galería y la API de simulación antes del PR; ramas y PRs pequeños; CI en verde (pruebas Python, pruebas de geometría, lint).
 
 ## 5. Próximos pasos propuestos (pendientes de decisión del autor)
-1. **Fase 5:** quedan los equipos de la librería que aún son volúmenes en las dos plantas. Hecho: escena base (PR #8), pasarelas, tuberías y recorrido (PR #9), caudal real por enlace (PR #10), desvío del pasteurizador (PR #11), inyectoras y banda de la nave de inyección (PR #12).
+1. **Fase 5:** quedan los equipos de la librería que aún son volúmenes en las dos plantas. Hecho: escena base (PR #8), pasarelas, tuberías y recorrido (PR #9), caudal real por enlace (PR #10), desvío del pasteurizador (PR #11), inyectoras y banda de la nave de inyección (PR #12), empaque, secadores, chillers y molino de reciclaje con geometría propia (PR #15) su cascada con las inyectoras (PR #16) la línea de peletizado con el silo de reciclado (PR #17) y la sala de control del PLC con su panel de gráficos en la planta de salsas (PR #18; los gráficos definitivos están por definir).
 2. Resto de la planta de salsas en el motor: líneas de 250 ml y 500 ml, línea fría de mayonesa (requiere emulsificador, molino coloidal, chiller).
-3. Planta de inyección: empaque, secadores, chillers, molinos y central de materiales, y su conexión al motor (resina y agua de enfriamiento).
+3. Planta de inyección: central de materiales (silo 5 → manifold → inyectoras con pellet reciclado) y reparto de resina de un secador entre varias inyectoras. Empaque, secadores, chillers y molino tienen tipo y se simulan (PR #15) y la cascada de resina seca, agua de moldes y scrap ya está enlazada (PR #16).
 4. Mejoras del motor: recetas leídas del `plant.yaml`. (El retorno del producto desviado a la marmita ya está: PR #11.)
 5. Acueducto a escala: siguiente entrega, los tipos de equipo (grupo de bombas, estación reguladora, válvula entre niveles, rejilla) con sus capturas de galería.
 6. Dato pendiente del autor: precisión real del dosificador de 1.000 ml y tolerancias reales por formato.

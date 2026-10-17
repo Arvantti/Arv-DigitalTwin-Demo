@@ -56,3 +56,27 @@ def test_animation_channels_in_range() -> None:
         for ch in EQ.spec.raw["animation_channels"]:
             lo, hi = ch["range"]
             assert lo <= m.animation()[ch["id"]] <= hi, ch["id"]
+
+
+def test_waits_without_dryer_resin_after_hopper_reserve() -> None:
+    m, sim = _run("300t-container", 120)
+    assert m.state.current == "running"
+    sim.inputs[m.id]["resin_flow_kg_h"] = 0.0
+    sim.run(60)
+    assert m.state.current == "starved"
+    cycles = m.cycle_count
+    sim.run(120)
+    assert m.cycle_count == cycles
+    sim.inputs[m.id]["resin_flow_kg_h"] = 100.0
+    sim.run(60)
+    assert m.state.current == "running"
+    assert m.cycle_count > cycles
+
+
+def test_published_resin_demand_and_scrap_flow_match_the_cycle() -> None:
+    m, _ = _run("650t-bucket", 900, part_g=850, cycle_s=36, cavities=1, max_shot_kg=2.5)
+    values = m.true_values()
+    # disparo = 0,85 kg × 1,03 de colada = 0,8755 kg cada 36 s
+    assert abs(values["resin_demand_kg_h"] - 0.8755 * 3600 / 36) < 1e-6
+    # la colada sola da (0,8755 − 0,85) kg × 100 ciclos/h = 2,55 kg/h; la duración real varía ±1,5 % por ciclo
+    assert values["scrap_flow_kg_h"] >= 0.95 * (0.8755 - 0.85) * 3600 / 36

@@ -70,6 +70,39 @@ aisles:
   - { id: aisle-cruce,   kind: forklift, rect: [77, 25, 4, 70] }
   - { id: aisle-centro,  kind: forklift, rect: [34, 47, 90, 4] }
   - { id: aisle-norte,   kind: forklift, rect: [34, 71, 90, 4] }
+  # Pasillos del este (supuestos): del extremo oriente de la nave a las celdas de ensamble y a la bodega de producto terminado
+  - { id: aisle-sec-norte,  kind: forklift, rect: [124, 73.5, 20, 4] }
+  - { id: aisle-sec-medio,  kind: forklift, rect: [124, 64.5, 20, 4] }
+  - { id: aisle-sec-v,      kind: forklift, rect: [132.5, 52.5, 3, 25] }
+  - { id: aisle-pt-enlace,  kind: forklift, rect: [132.5, 52.5, 13.5, 3.5] }
+  - { id: aisle-pt-oeste,   kind: forklift, rect: [144, 28, 2.25, 28] }
+  - { id: aisle-pt-sur,     kind: forklift, rect: [144, 26, 24, 4] }
+  - { id: aisle-pt-1,       kind: forklift, rect: [148.75, 26, 4.5, 36] }
+
+# Rutas de montacargas y de operarios (supuestos de recorrido, no de ingeniería de detalle). Cada ruta es una polilínea en metros:
+#   - kind forklift: va por los pasillos de `aisles` (kind forklift) y no cruza equipos de piso, salvo los de `passes_under`
+#     (la banda principal se asume elevada en el cruce del pasillo central);
+#   - kind pedestrian: camina por donde no hay equipos de piso (rondas del operador y trayectos a las celdas de ensamble);
+#   - from / to: un equipo (la ruta termina a ≤ 3,5 m de su huella) o una zona (la ruta empieza o termina dentro de ella);
+#   - trips_per_h: viajes por hora de un vehículo (supuesto); walkers: operarios que la recorren (supuesto).
+routes:
+  # --- Montacargas: piezas semielaboradas de las inyectoras a las estanterías de semielaborado ---
+  - { id: fk-recolecta-oeste-norte, name: "Recolección de semielaborado, pasillo norte oeste", kind: forklift, from: nave-inyeccion, to: rack-sf-01, load: piezas inyectadas en cajas y estibas, width: 1.5, trips_per_h: 4, passes_under: [conveyor-main-01], path: [[36, 74.25], [79, 74.25], [79, 27.2], [50, 27.2]] }
+  - { id: fk-recolecta-oeste-centro, name: "Recolección de semielaborado, pasillo centro oeste", kind: forklift, from: nave-inyeccion, to: rack-sf-02, load: piezas inyectadas en cajas y estibas, width: 1.5, trips_per_h: 4, passes_under: [conveyor-main-01], path: [[36, 49], [79, 49], [79, 27.2], [68, 27.2]] }
+  - { id: fk-recolecta-este-centro, name: "Recolección de semielaborado, pasillo centro este", kind: forklift, from: nave-inyeccion, to: rack-sf-03, load: piezas inyectadas en cajas y estibas, width: 1.5, trips_per_h: 4, passes_under: [conveyor-main-01], path: [[122, 49], [79, 49], [79, 27.2], [98, 27.2]] }
+  - { id: fk-recolecta-este-norte, name: "Recolección de semielaborado, pasillo norte este", kind: forklift, from: nave-inyeccion, to: rack-sf-04, load: piezas inyectadas en cajas y estibas, width: 1.5, trips_per_h: 4, passes_under: [conveyor-main-01], path: [[122, 74.25], [79, 74.25], [79, 27.2], [116, 27.2]] }
+  # --- Montacargas: de las estanterías de semielaborado a las celdas de ensamble ---
+  - { id: fk-sf-ensamble-1, name: "Semielaborado a la celda de ensamble 1 (pedal/palanca y cuerpo)", kind: forklift, from: rack-sf-03, to: assembly-01, load: "pedal, palanca y cuerpos de papelera", width: 1.5, trips_per_h: 3, passes_under: [conveyor-main-01], path: [[98, 27.2], [79, 27.2], [79, 74.25], [134, 74.25], [134, 66.5], [129, 66.5]] }
+  - { id: fk-sf-ensamble-2, name: "Semielaborado a la celda de ensamble 2 (bisagras y tapas)", kind: forklift, from: rack-sf-04, to: assembly-02, load: bisagras y tapas, width: 1.5, trips_per_h: 3, passes_under: [conveyor-main-01], path: [[116, 27.2], [79, 27.2], [79, 74.25], [134, 74.25], [134, 66.5], [139, 66.5]] }
+  # --- Montacargas: de las celdas de ensamble a la bodega de producto terminado ---
+  - { id: fk-ensamble-pt-1, name: "Producto terminado de la celda 1 a la bodega", kind: forklift, from: assembly-01, to: rack-pt-01, load: papeleras armadas en estibas, width: 1.5, trips_per_h: 2, path: [[129, 66.5], [134, 66.5], [134, 54.25], [145.1, 54.25], [145.1, 28], [151, 28], [151, 58]] }
+  - { id: fk-ensamble-pt-2, name: "Producto terminado de la celda 2 a la bodega", kind: forklift, from: assembly-02, to: rack-pt-02, load: tapas con bisagras en estibas, width: 1.5, trips_per_h: 2, path: [[139, 66.5], [134, 66.5], [134, 54.25], [145.1, 54.25], [145.1, 28], [151, 28], [151, 58]] }
+  # --- Operarios a pie ---
+  - { id: pe-ronda-pequenas, name: "Ronda del operador de inyección, hilera de las inyectoras pequeñas", kind: pedestrian, from: imm-01, to: imm-10, width: 1.0, walkers: 1, path: [[36, 45], [114, 45]] }
+  - { id: pe-ronda-medianas, name: "Ronda del operador de inyección, hileras de las medianas", kind: pedestrian, from: imm-11, to: imm-19, width: 1.0, walkers: 1, path: [[38, 62], [121, 62]] }
+  - { id: pe-ronda-grandes, name: "Ronda del operador de inyección, inyectoras grandes", kind: pedestrian, from: imm-28, to: imm-27, width: 1.0, walkers: 1, path: [[44, 80.5], [116, 80.5]] }
+  - { id: pe-vestier-ensamble, name: "Del vestier a las celdas de ensamble", kind: pedestrian, from: admin, to: assembly-01, width: 1.0, walkers: 1, path: [[143, 24.5], [143, 58], [127, 58]] }
+  - { id: pe-ensamble-empaque, name: "Operario lleva unidades armadas de la celda 1 al empaque 3", kind: pedestrian, from: assembly-01, to: pack-station-03, width: 1.0, walkers: 1, path: [[131, 59], [131, 53], [136, 53], [136, 33]] }
 
 equipment:
   # --- Silos (Ø3,5 m, 14 m de alto) ---
@@ -175,6 +208,12 @@ equipment:
   - { id: pack-station-04, type: packing_station, zone: empaque, position: [138.5, 38, 0], footprint: [3, 2, 1], params: {} }
   - { id: wrapper-01,      type: stretch_wrapper, zone: empaque, position: [133.5, 48, 0], footprint: [3, 3, 2.5], params: { pallets_h: 30 } }
 
+  # --- Estanterías de material semielaborado (piezas inyectadas por consumir en ensamble o empaque), frente al pasillo sur (supuesto) ---
+  - { id: rack-sf-01, type: pallet_rack, zone: nave-inyeccion, position: [50, 30.5, 0],  footprint: [16, 2.5, 6], params: { content: piezas inyectadas semielaboradas (inyectoras del oeste), positions: 48 } }
+  - { id: rack-sf-02, type: pallet_rack, zone: nave-inyeccion, position: [68, 30.5, 0],  footprint: [16, 2.5, 6], params: { content: piezas inyectadas semielaboradas (inyectoras del oeste), positions: 48 } }
+  - { id: rack-sf-03, type: pallet_rack, zone: nave-inyeccion, position: [98, 30.5, 0],  footprint: [16, 2.5, 6], params: { content: piezas inyectadas semielaboradas (inyectoras del este; papelera), positions: 48 } }
+  - { id: rack-sf-04, type: pallet_rack, zone: nave-inyeccion, position: [116, 30.5, 0], footprint: [16, 2.5, 6], params: { content: piezas inyectadas semielaboradas (inyectoras del este; bisagras y tapas), positions: 48 } }
+
   # --- Operaciones secundarias ---
   - { id: assembly-01,   type: assembly_cell,   zone: secundarias, position: [129, 62, 0], footprint: [6, 3, 1.5], params: { operation: ensamble pedal/palanca en papelera } }
   - { id: assembly-02,   type: assembly_cell,   zone: secundarias, position: [139, 62, 0], footprint: [6, 3, 1.5], params: { operation: ensamble bisagras y tapas } }
@@ -210,6 +249,8 @@ flows:
   - { from: silo-01,          to: manifold-01,      medium: resina,           rate: 600,  unit: kg/h, show: true }
   - { from: rack-mp-02,       to: dryer-01,         medium: resina,           rate: 150,  unit: kg/h }
   - { from: rack-mb-01,       to: blender-01,       medium: masterbatch,      rate: 20,   unit: kg/h }
+  - { from: dryer-03,         to: imm-01,           medium: resina seca,      rate: 22,   unit: kg/h }
+  - { from: dryer-04,         to: imm-28,           medium: resina seca,      rate: 265,  unit: kg/h }
   - { from: manifold-01,      to: imm-11,           medium: resina,           rate: 2300, unit: kg/h, piped: true, show: true, note: transporte neumático a las 29 inyectoras }
   - { from: imm-03,           to: conveyor-main-01, medium: piezas,           rate: 1200, unit: u/h }
   - { from: conveyor-main-01, to: pack-station-01,  medium: piezas,           rate: 6000, unit: u/h,  show: true }
@@ -218,11 +259,41 @@ flows:
   - { from: imm-19,           to: assembly-01,      medium: piezas,           rate: 103,  unit: u/h,  show: true }
   - { from: imm-27,           to: foam-01,          medium: piezas,           rate: 65,   unit: u/h,  show: true }
   - { from: assembly-01,      to: pack-station-03,  medium: piezas,           rate: 100,  unit: u/h }
+  - { from: imm-08,           to: assembly-02,      medium: bisagras,         rate: 360,  unit: u/h,  note: supuesto (2 bisagras por tapa a 20 s por unidad) }
+  - { from: imm-14,           to: assembly-02,      medium: tapas,            rate: 180,  unit: u/h,  note: supuesto (una tapa por unidad a 20 s) }
   - { from: pack-station-01,  to: wrapper-01,       medium: cajas,            rate: 40,   unit: pallets/d }
   - { from: wrapper-01,       to: rack-pt-01,       medium: estibas,          rate: 40,   unit: pallets/d, show: true }
   - { from: rack-pt-02,       to: dock-02,          medium: estibas,          rate: 40,   unit: pallets/d, show: true }
   # Scrap y reciclaje
   - { from: imm-22,           to: sort-01,          medium: scrap y barreduras, rate: 0.8, unit: t/d, show: true }
+  - { from: imm-01, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
+  - { from: imm-02, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
+  - { from: imm-03, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
+  - { from: imm-04, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
+  - { from: imm-05, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
+  - { from: imm-06, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
+  - { from: imm-07, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
+  - { from: imm-08, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
+  - { from: imm-09, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
+  - { from: imm-10, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
+  - { from: imm-11, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
+  - { from: imm-12, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
+  - { from: imm-13, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
+  - { from: imm-14, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
+  - { from: imm-15, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
+  - { from: imm-16, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
+  - { from: imm-17, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
+  - { from: imm-18, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
+  - { from: imm-19, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
+  - { from: imm-20, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
+  - { from: imm-21, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
+  - { from: imm-23, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
+  - { from: imm-24, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
+  - { from: imm-25, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
+  - { from: imm-26, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
+  - { from: imm-27, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
+  - { from: imm-28, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
+  - { from: imm-29, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
   - { from: sort-01,          to: wash-line-01,     medium: scrap,            rate: 300,  unit: kg/h }
   - { from: wash-line-01,     to: grinder-rec-01,   medium: scrap lavado,     rate: 300,  unit: kg/h }
   - { from: grinder-rec-01,   to: extruder-pel-01,  medium: molido,           rate: 350,  unit: kg/h }
@@ -233,6 +304,34 @@ flows:
   - { from: mold-rack-01,     to: cnc-01,           medium: molde,            rate: 1,    unit: mantenimientos/d }
   # Servicios
   - { from: chiller-01,       to: imm-11,           medium: agua de enfriamiento de moldes, rate: 180, unit: m3/h, piped: true }
+  - { from: chiller-01,       to: imm-01, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
+  - { from: chiller-01,       to: imm-02, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
+  - { from: chiller-01,       to: imm-03, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
+  - { from: chiller-01,       to: imm-04, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
+  - { from: chiller-01,       to: imm-05, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
+  - { from: chiller-01,       to: imm-06, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
+  - { from: chiller-01,       to: imm-07, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
+  - { from: chiller-01,       to: imm-08, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
+  - { from: chiller-01,       to: imm-09, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
+  - { from: chiller-01,       to: imm-10, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
+  - { from: chiller-01,       to: imm-12, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
+  - { from: chiller-01,       to: imm-13, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
+  - { from: chiller-01,       to: imm-14, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
+  - { from: chiller-01,       to: imm-15, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
+  - { from: chiller-01,       to: imm-16, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
+  - { from: chiller-01,       to: imm-17, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
+  - { from: chiller-01,       to: imm-18, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
+  - { from: chiller-01,       to: imm-19, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
+  - { from: chiller-01,       to: imm-20, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
+  - { from: chiller-01,       to: imm-21, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
+  - { from: chiller-01,       to: imm-22, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
+  - { from: chiller-01,       to: imm-23, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
+  - { from: chiller-01,       to: imm-24, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
+  - { from: chiller-01,       to: imm-25, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
+  - { from: chiller-01,       to: imm-26, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
+  - { from: chiller-01,       to: imm-27, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
+  - { from: chiller-01,       to: imm-28, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
+  - { from: chiller-01,       to: imm-29, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
   - { from: cooling-tower-01, to: imm-25,           medium: agua de torre (aceite hidráulico), rate: 250, unit: m3/h, piped: true }
   - { from: compressor-01,    to: vacuum-central-01, medium: aire comprimido, rate: 12,   unit: m3/min, piped: true }
   - { from: transformer-01,   to: imm-28,           medium: energía eléctrica, rate: 2100, unit: kW }

@@ -76,9 +76,23 @@ def test_injection_plant_exposes_its_simulated_machines_and_conveyor() -> None:
     assert all(by_id[f"imm-{i:02d}"]["sim"]["type"] == "injection-molding-machine" for i in range(1, 30))
     assert by_id["imm-03"]["sim"]["params"]["cavities"] == 4
     assert by_id["conveyor-main-01"]["sim"]["params"]["length_m"] == 88
-    assert "sim" not in by_id["pack-station-01"]  # empaque aún sin tipo en la librería
+    assert by_id["pack-station-01"]["sim"]["type"] == "packing-station"
+    assert by_id["dryer-01"]["sim"]["type"] == "desiccant-dryer"
+    assert by_id["chiller-02"]["sim"]["params"]["start_on"] is False
+    assert by_id["grinder-rec-01"]["sim"]["type"] == "granulator"
     assert {"nominal", "conveyor-trip"} <= set(plant["scenarios"])
     assert plant["lines"][0]["id"] == "lids-05l"
+
+
+def test_injection_plant_exposes_aisles_and_routes() -> None:
+    plant = client.get("/api/plants/plastic-injection-plant-v1").json()
+    routes = {r["id"]: r for r in plant["routes"]}
+    assert {r["kind"] for r in routes.values()} == {"forklift", "pedestrian"}
+    assert routes["fk-sf-ensamble-1"]["to"] == "assembly-01"
+    assert routes["fk-ensamble-pt-1"]["from"] == "assembly-01"
+    assert all(len(r["path"]) >= 2 for r in routes.values())
+    assert {a["id"] for a in plant["aisles"]} >= {"aisle-sur", "aisle-pt-1"}
+    assert client.get("/api/plants/sauce-plant-v1").json()["routes"] == []
 
 
 def test_layout_only_plant_has_no_lines(tmp_path, monkeypatch) -> None:
@@ -93,7 +107,7 @@ def test_plant_websocket_streams_connected_plant_and_accepts_commands() -> None:
             msg = ws.receive_json()
         snap = msg["snapshot"]
         assert msg["t"] > 0
-        assert {"boiler-01", "kettle-01", "filler-pouch-01", "case-pack-02"} <= set(snap["equipment"])
+        assert {"boiler-01", "kettle-01", "filler-pouch-01", "pack-sauce-1000"} <= set(snap["equipment"])
         assert "animation" in snap["equipment"]["kettle-01"]
         assert "hot-1000" in snap["lines"]
         ws.send_json({"equipment": "boiler-01", "command": "inject_fault", "args": {"fault": "flame_failure"}})

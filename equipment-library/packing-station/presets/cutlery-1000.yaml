@@ -1,0 +1,4 @@
+preset: cutlery-1000
+description: Empaque de piezas pequeñas (cubiertos, bisagras) en cajas de 1.000 unidades, a 300 u/min
+params: { parts_per_box: 1000, pack_rate_upm: 300, box_change_s: 25, table_capacity_units: 1000, boxes_per_pallet: 30, nominal_inflow_upm: 200, box_size_m: 0.4, item_color: "#f2f2f2" }
+provenance: { parts_per_box: assumed, pack_rate_upm: assumed, box_change_s: assumed, table_capacity_units: assumed, boxes_per_pallet: assumed, nominal_inflow_upm: assumed }

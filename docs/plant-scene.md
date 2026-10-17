@@ -11,9 +11,11 @@ Parámetros de URL, pensados para capturas automáticas:
 
 | Parámetro | Efecto |
 |---|---|
-| `plant=<id>` | Planta (por defecto `sauce-plant-v1`; también `plastic-injection-plant-v1`, con sus 29 inyectoras y la banda animadas; escenarios `nominal` y `conveyor-trip`) |
+| `plant=<id>` | Planta (por defecto `sauce-plant-v1`; también `plastic-injection-plant-v1`, con sus 29 inyectoras, la banda, el empaque, los secadores, los chillers y el molino animados; escenarios `nominal`, `conveyor-trip`, `dryer-stop`, `chiller-trip` y `pelletizer-jam`) |
 | `camera=general` o `camera=<id de zona>` | Cámara inicial |
 | `select=<id de equipo>` | Equipo seleccionado |
+| `focus=<id de equipo>` | Acerca la cámara a ese equipo |
+| `routes=0` | Oculta los pasillos, las rutas y los montacargas y operarios que las recorren |
 | `autosim=1&scenario=boiler-trip&speed=900` | Conecta la simulación al cargar |
 | `tour=1` | Inicia el recorrido de cámara |
 | `lighting=day\|night\|golden`, `quality=high` | Iluminación y calidad |
@@ -38,6 +40,22 @@ Parámetros de URL, pensados para capturas automáticas:
 | `GET /api/plants/{id}` | Zonas, equipos (con `sim` si el motor los simula), pasarelas, tuberías (flujos `piped`, con `rate`, `unit` y `links`: los enlaces del motor que las cruzan), líneas y escenarios |
 | `WS /api/plants/{id}/simulate?scenario=&speed=` | Cada 100 ms: `{t, speed, paused, snapshot: {equipment, lines, links}, events}`. Cliente → servidor: `{equipment, command, args}`, `{speed}`, `{pause}` |
 
+## Sala de control del PLC (planta de salsas)
+
+La zona `sala-control` (14 × 10 m, junto a la subestación) tiene tres piezas de escena que no son equipos de la librería y no calculan nada: `plc_cabinet` (gabinete del PLC con luces de estado), `operator_desk` (puesto con dos monitores) y `control_panel` (panel de pared con un mosaico de gráficos de tendencia). Cámara «SALA DE CONTROL DEL PLC» o `camera=sala-control`.
+
+El panel se configura en el `plant.yaml`, en la clave `panel` del equipo; la API la entrega tal cual en `GET /api/plants/{id}`:
+
+```yaml
+panel:
+  title: Panel de planta
+  slots:                      # 8 espacios, 4 columnas × 2 filas
+    - { title: Presión de vapor, equipment: boiler-01, variable: pressure_bar, unit: bar }
+    - { title: Libre 1, equipment: null, variable: null }   # sin asignar: se muestra «SIN ASIGNAR»
+```
+
+Cada espacio guarda las últimas 160 muestras de `snapshot.equipment[equipment].variables[variable]` (una por mensaje del WebSocket) y dibuja el valor actual y la tendencia. Para cambiar un gráfico basta cambiar `equipment` y `variable` por cualquier variable que publique un equipo simulado; los gráficos definitivos se definen después.
+
 ## Pasarelas en el `plant.yaml`
 
 Sección opcional `walkways`, validada por `tools/layout/render_layout.py` y dibujada en el plano 2D:
@@ -53,10 +71,30 @@ walkways:
 
 El validador exige: eje de 2 o más puntos, ancho y elevación positivos, todos los puntos dentro de su zona, elevación por debajo de la cubierta de la zona, y avisa si cruza un equipo más alto que la pasarela. El formato se definió en esta fase porque el plano no describía pasarelas.
 
+## Pasillos y rutas en el `plant.yaml`
+
+Secciones opcionales `aisles` (pasillos) y `routes` (rutas de montacargas y de operarios). El validador las comprueba y el plano 2D las dibuja (naranja continua los montacargas, verde punteada los operarios). La escena pinta los pasillos de montacargas como franjas amarillas tenues en el piso y cada ruta como una cinta; sobre cada una circula un montacargas (de ida cargado con una estiba, de vuelta vacío) o un operario que camina (`routes=0` en la URL las oculta). Es un recorrido ilustrativo: el motor de planta no simula todavía el transporte.
+
+```yaml
+aisles:
+  - { id: aisle-sur, kind: forklift, rect: [34, 25, 90, 4] }
+routes:
+  - { id: fk-sf-ensamble-1, name: "Semielaborado a la celda de ensamble 1", kind: forklift,
+      from: rack-sf-03, to: assembly-01,           # equipo (extremo a ≤ 3,5 m de su huella) o zona (extremo dentro)
+      load: "pedal, palanca y cuerpos de papelera", width: 1.5, trips_per_h: 3,
+      passes_under: [conveyor-main-01],            # equipos de piso que la ruta puede cruzar (banda elevada)
+      path: [[98, 27.2], [79, 27.2], [79, 74.25], [134, 74.25], [134, 66.5], [129, 66.5]] }
+  - { id: pe-ensamble-empaque, name: "Operario lleva unidades armadas a empaque 3", kind: pedestrian,
+      from: assembly-01, to: pack-station-03, width: 1.0, walkers: 1,
+      path: [[131, 59], [131, 53], [136, 53], [136, 33]] }
+```
+
+El validador exige: `kind` `forklift` o `pedestrian`, 2 o más puntos dentro del predio, ancho positivo, `from` y `to` existentes con el extremo junto al equipo o dentro de la zona, que ninguna ruta cruce un equipo de piso (salvo los de `passes_under`) y que las de montacargas vayan siempre dentro de un pasillo de `aisles` con `kind: forklift`. `trips_per_h` y `walkers` son supuestos.
+
 ## Pendiente de la fase 5
 
-- Los equipos que faltan en la librería siguen siendo volúmenes (fase 3).
+- Los equipos de la librería que aún no tienen tipo siguen siendo volúmenes (fase 3).
 - Las tuberías de tramos sin simular siguen animándose por estado (CIP, agua helada).
 - Selección desde la lista de activos y recorridos definidos por la planta (hoy se derivan de las zonas).
 - Muros con aberturas, escaleras de acceso con geometría de escalón y pasarelas de la planta de inyección (el plano no las describe).
-- De la planta de inyección faltan por tipo en la librería el empaque, los secadores, los chillers y los molinos: siguen como volúmenes.
+- De la planta de inyección siguen como volúmenes los equipos sin tipo en la librería (silos, mezcladores, estaciones de ensamble, compresores, torre de enfriamiento y otros); el empaque, los secadores, los chillers y el molino de reciclaje ya tienen geometría propia.

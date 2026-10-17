@@ -1,0 +1,66 @@
+scenarios:
+  - id: steady
+    description: Molino de 500 kg/h con una alimentación de 300 kg/h durante 1 h
+    preset: 500kg-recycling
+    duration_s: 3600
+    expect:
+      - { path: variables.processed_kg, min: 299, max: 301, description: "(300 kg/h × 1 h; el rotor tritura lo que llega porque la capacidad es mayor)" }
+      - { path: state, equals: running }
+      - { path: variables.motor_current_a, min: 43, max: 45, description: "(37 kW × 1,8 A/kW = 66,6 A nominales × (0,3 + 0,6 × 300/500) = 43,96 A)" }
+      - { path: kpis.specific_energy_kwh_t, min: 80.5, max: 82.5, description: "(37 kW × 0,66 = 24,4 kW ÷ 0,3 t/h = 81,4 kWh/t)" }
+      - { path: variables.fines_pct, min: 3.0, max: 3.1, description: "(cuchillas casi nuevas: 300 kg de 150 t gastan 0,2 % del filo)" }
+
+  - id: overfeed
+    description: Llegan 800 kg/h a un molino de 500 kg/h; la tolva se llena y deja de recibir
+    preset: 500kg-recycling
+    duration_s: 3600
+    timeline:
+      - { at_s: 0, inputs: { feed_kg_h: 800 } }
+    expect:
+      - { path: variables.processed_kg, min: 499, max: 501, description: "(el molino da su capacidad: 500 kg/h × 1 h)" }
+      - { path: variables.accepting, equals: 0 }
+      - { path: events.hopper_full, equals: 1 }
+
+  - id: worn-knives
+    description: Cuchillas con 30 % de filo que se afilan a la media hora
+    preset: 500kg-worn
+    duration_s: 3600
+    timeline:
+      - { at_s: 1800, command: sharpen }
+    expect:
+      - { path: events.sharpen_needed, equals: 1, description: "(arranca con 30 % de filo, bajo el 40 % de alerta)" }
+      - { path: events.knives_sharpened, equals: 1 }
+      - { path: variables.processed_kg, min: 429, max: 431, description: "(1.ª media hora: 500 × (0,6 + 0,4 × 0,3) = 360 kg/h → 180 kg; 2.ª: 500 kg/h → 250 kg; total 430 kg)" }
+      - { path: variables.fines_pct, min: 3.0, max: 3.1, description: "(afilado: 3 % de finos)" }
+
+  - id: jam
+    description: Atasco del rotor 10 min con alimentación de 300 kg/h; la tolva guarda lo que llega y el molino lo recupera
+    preset: 500kg-recycling
+    duration_s: 3600
+    timeline:
+      - { at_s: 600, command: inject_fault, args: { fault: jam, duration_s: 600 } }
+    expect:
+      - { path: events.fault_cleared, equals: 1 }
+      - { path: variables.processed_kg, min: 299, max: 301, description: "(en 10 min llegan 50 kg, caben en la tolva de 150 kg; después el molino drena 200 kg/h de ventaja en 15 min)" }
+      - { path: variables.hopper_level_pct, max: 0.1 }
+
+  - id: starved
+    description: Sin alimentación el rotor gira en vacío
+    preset: 500kg-recycling
+    duration_s: 600
+    timeline:
+      - { at_s: 0, inputs: { feed_kg_h: 0 } }
+    expect:
+      - { path: state, equals: starved }
+      - { path: variables.motor_current_a, min: 19.5, max: 20.5, description: "(66,6 A × 0,3 = 20 A en vacío)" }
+
+  - id: blocked-output
+    description: La salida deja de recibir el granulado a la media hora
+    preset: 500kg-recycling
+    duration_s: 3600
+    timeline:
+      - { at_s: 1800, inputs: { downstream_free: false } }
+    expect:
+      - { path: state, equals: blocked }
+      - { path: variables.processed_kg, min: 149, max: 151, description: "(300 kg/h × 0,5 h)" }
+      - { path: variables.accepting, equals: 0 }

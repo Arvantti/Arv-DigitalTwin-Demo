@@ -29,10 +29,10 @@ params:
   brand_plate:   { type: string, default: "", description: Texto genérico de placa (no usar marcas reales), affects: [geometry] }
 
 ports:
-  - { id: resin_in,      kind: material, direction: in,  medium: resina en pellet, unit: kg/h }
+  - { id: resin_in,      kind: material, direction: in,  medium: resina en pellet, unit: kg/h, link: { flow_kg_h: resin_flow_kg_h, moisture_pct: resin_moisture_pct, demand_kg_h: resin_demand_kg_h } }
   - { id: parts_out,     kind: item,     direction: out, medium: piezas, unit: u/h, link: { units: parts_good, ready: downstream_free } }
-  - { id: scrap_out,     kind: material, direction: out, medium: scrap, unit: kg/h }
-  - { id: cooling_water, kind: utility,  direction: in,  medium: agua de enfriamiento }
+  - { id: scrap_out,     kind: material, direction: out, medium: scrap, unit: kg/h, link: { flow_kg_h: scrap_flow_kg_h } }
+  - { id: cooling_water, kind: material, direction: in,  medium: agua de enfriamiento, link: { available: cooling_water_ok } }
   - { id: power,         kind: utility,  direction: in,  medium: energía eléctrica, unit: kW }
 
 states:
@@ -70,6 +70,8 @@ variables:
   - { id: parts_good,           unit: u,    kind: counter,    description: Piezas buenas }
   - { id: parts_rejected,       unit: u,    kind: counter,    description: Piezas rechazadas }
   - { id: scrap_kg,             unit: kg,   kind: counter,    description: Material rechazado acumulado }
+  - { id: resin_demand_kg_h,    unit: kg/h, kind: calculated, description: "Resina que pide a su secador (consumo nominal mientras cicla; 0 si está parada o bloqueada)" }
+  - { id: scrap_flow_kg_h,      unit: kg/h, kind: calculated, description: Scrap (rechazos y coladas) del último ciclo por hora de ciclo }
   - { id: resin_consumed_kg,    unit: kg,   kind: counter,    description: Resina consumida }
   - { id: screw_wear_pct,       unit: "%",  kind: calculated, range: [0, 100], description: Desgaste estimado del tornillo y válvula antirretorno }
   - { id: last_defect,          unit: "",   kind: status,     description: "Último defecto detectado (short_shot, flash, sink_marks, splay, warp)" }

@@ -1,0 +1,108 @@
+scenarios:
+  - id: steady
+    description: Tapas que llegan a 100 u/min a una estación de 120 u/min con cajas de 500 durante 1 h
+    preset: lids-250
+    params: { parts_per_box: 500 }
+    duration_s: 3600
+    timeline:
+      - { at_s: 0, inputs: { inflow_upm: 100 } }
+    expect:
+      - { path: variables.units_packed, min: 5950, max: 6000, description: "(100 u/min × 60 min = 6.000; quedan en la mesa las del cambio de caja en curso)" }
+      - { path: variables.boxes_count, min: 11, max: 12, description: "(6.000 ÷ 500 = 12 cajas; la última puede cerrar justo después de la hora)" }
+      - { path: kpis.utilization, min: 0.81, max: 0.85, description: "(6.000 u ÷ 120 u/min = 50 min contando de 60)" }
+      - { path: variables.accepting, equals: 1 }
+
+  - id: no-operator
+    description: El operario se ausenta 10 min; la mesa se llena en 2 min y bloquea la banda
+    preset: lids-250
+    params: { parts_per_box: 500 }
+    duration_s: 1800
+    timeline:
+      - { at_s: 0, inputs: { inflow_upm: 100 } }
+      - { at_s: 600, inputs: { operator_present: false } }
+      - { at_s: 1200, inputs: { operator_present: true } }
+    expect:
+      - { path: events.buffer_full, equals: 1, description: "(la mesa de 200 piezas se llena en 2 min a 100 u/min)" }
+      - { path: variables.boxes_count, equals: 4, description: "(unas 1.000 piezas antes de la ausencia + 200 de la mesa + 1.000 de los últimos 10 min, menos las que quedan esperando: 2.100-2.200 piezas = 4 cajas)" }
+
+  - id: no-boxes
+    description: No hay cajas de cartón; la estación no empaca y la mesa se llena
+    preset: lids-250
+    duration_s: 600
+    timeline:
+      - { at_s: 0, inputs: { inflow_upm: 100, boxes_available: false } }
+    expect:
+      - { path: state, equals: starved }
+      - { path: variables.units_packed, equals: 0 }
+      - { path: events.buffer_full, equals: 1 }
+
+  - id: pallet-waiting
+    description: Tarima de 4 cajas de 100 piezas que se llena y nadie recoge
+    preset: lids-250
+    params: { parts_per_box: 100, boxes_per_pallet: 4 }
+    duration_s: 800
+    timeline:
+      - { at_s: 0, inputs: { inflow_upm: 100, downstream_free: false } }
+    expect:
+      - { path: state, equals: blocked }
+      - { path: variables.pallet_boxes, equals: 4 }
+      - { path: variables.pallets_count, equals: 0 }
+      - { path: events.pallet_ready, equals: 1, description: "(4 cajas de 100 piezas a 100 u/min: ≈ 4 min y 3 cambios de 20 s)" }
+
+  - id: pallet-picked-up
+    description: La misma tarima se recoge a los 15 min y se empieza otra con la mesa llena
+    preset: lids-250
+    params: { parts_per_box: 100, boxes_per_pallet: 4 }
+    duration_s: 1100
+    timeline:
+      - { at_s: 0, inputs: { inflow_upm: 100, downstream_free: false } }
+      - { at_s: 900, inputs: { downstream_free: true } }
+    expect:
+      - { path: variables.pallets_count, equals: 1 }
+      - { path: events.pallet_picked_up, equals: 1 }
+      - { path: variables.pallet_boxes, equals: 3, description: "(cada caja toma 100 u ÷ 120 u/min = 50 s más 20 s de cambio = 70 s; la mesa llena (200 piezas) alimenta el ritmo máximo: cajas a los 950, 1.020 y 1.090 s)" }
+
+  - id: label-printer-jam
+    description: Atasco de la impresora de etiquetas 6 min con llegadas de 100 u/min
+    preset: lids-250
+    duration_s: 1800
+    timeline:
+      - { at_s: 0, inputs: { inflow_upm: 100 } }
+      - { at_s: 300, command: inject_fault, args: { fault: label_printer_jam, duration_s: 360 } }
+    expect:
+      - { path: events.fault_cleared, equals: 1 }
+      - { path: events.buffer_full, equals: 1, description: "(en 6 min llegan 600 piezas y la mesa guarda 200)" }
+
+  - id: sachets-1000ml-box-of-4
+    description: Línea caliente de sachets de 1.000 ml a 30 u/min en cajas de 4 durante 1 h
+    preset: sachet-1000ml-4
+    duration_s: 3600
+    timeline:
+      - { at_s: 0, inputs: { inflow_upm: 30 } }
+    expect:
+      - { path: variables.units_packed, min: 1790, max: 1800, description: "(30 u/min × 60 min = 1.800; quedan en la mesa las del cambio de caja en curso)" }
+      - { path: variables.boxes_count, min: 448, max: 450, description: "(1.800 ÷ 4 = 450 cajas; cada caja toma 4 ÷ 120 u/min = 2 s + 4 s de cambio = 6 s, capacidad 10 cajas/min sobre las 7,5 que llegan)" }
+      - { path: variables.pallets_count, equals: 9, description: "(450 cajas ÷ 48 por tarima = 9,4: 9 tarimas completas recogidas)" }
+      - { path: variables.accepting, equals: 1, description: "(el ritmo del operario, 40 u/min, supera la llegada)" }
+
+  - id: sachets-250ml-box-of-16
+    description: Sachets de 250 ml a 60 u/min en cajas de 16 durante 30 min
+    preset: sachet-250ml-16
+    duration_s: 1800
+    timeline:
+      - { at_s: 0, inputs: { inflow_upm: 60 } }
+    expect:
+      - { path: variables.boxes_count, min: 110, max: 112, description: "(60 u/min × 30 min = 1.800 ÷ 16 = 112,5; cada caja toma 16 ÷ 150 u/min = 6,4 s + 6 s de cambio ≈ 12,4 s, capacidad ≈ 4,8 cajas/min sobre las 3,75 que llegan)" }
+      - { path: variables.pallets_count, equals: 1, description: "(112 cajas ÷ 64 por tarima = 1 tarima completa recogida)" }
+
+  - id: pallet-not-picked-up-500ml
+    description: Sachets de 500 ml en cajas de 8; con la tarima de 60 cajas llena y sin recoger, la estación se bloquea
+    preset: sachet-500ml-8
+    params: { boxes_per_pallet: 6 }
+    duration_s: 900
+    timeline:
+      - { at_s: 0, inputs: { inflow_upm: 45, downstream_free: false } }
+    expect:
+      - { path: state, equals: blocked }
+      - { path: variables.pallet_boxes, equals: 6 }
+      - { path: events.pallet_ready, equals: 1, description: "(6 cajas × 8 sachets = 48 sachets: ≈ 64 s llegando a 45 u/min)" }

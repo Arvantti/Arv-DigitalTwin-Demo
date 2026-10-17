@@ -1,0 +1,4 @@
+preset: 40kg-beside-press
+description: Molino pequeño al pie de la inyectora para mazarotas, de 40 kg/h
+params: { throughput_kg_h: 40, screen_mm: 8, motor_kw: 4, hopper_kg: 20, nominal_feed_kg_h: 15, knife_life_t: 40 }
+provenance: { throughput_kg_h: assumed, screen_mm: assumed, motor_kw: assumed, hopper_kg: assumed, nominal_feed_kg_h: assumed, knife_life_t: assumed }
