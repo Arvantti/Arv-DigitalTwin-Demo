@@ -10,8 +10,8 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
-| 2026-10-17 | pendiente | Acueducto: semáforo de la casa crítica (20, 18 y 15 mca) y búsqueda de la consigna mínima de la estación; criterio en D28 | acueducto |
-| 2026-10-17 | pendiente | Acueducto: primer banco de la planta completa (bombas, estación, cuatro rejillas por las columnas) en `industrial-models/water-network-scale-v1`; resuelve con 13,5 m³/h y c44 a 23,0 mca, a revisar contra 20 mca | acueducto |
+| 2026-10-17 | #27 | Acueducto: semáforo de la casa crítica (20, 18 y 15 mca) y búsqueda de la consigna mínima de la estación; criterio en D28 | acueducto |
+| 2026-10-17 | #27 | Acueducto: primer banco de la planta completa (bombas, estación, cuatro rejillas por las columnas) en `industrial-models/water-network-scale-v1`; resuelve con 13,5 m³/h y c44 a 23,0 mca, a revisar contra 20 mca | acueducto |
 | 2026-10-17 | #26 | Acueducto: fugas de la rejilla en los ramales 2 y 4 con la misma descarga que las casas, en la posición 1, 3 o 5; red cerrada con caminos entre ramales (pedido del autor) | acueducto |
 | 2026-10-17 | #25 | Acueducto: bombas principales de 13 m³/h para que una sola sostenga la presión (pedido del autor); rejilla con válvulas de bola de unión doble numeradas y canaletas a ras de la salida | acueducto |
 | 2026-10-17 | #24 | Acueducto: estación reguladora de presión (`pressure-reducing-station`) y rejilla de un nivel (`distribution-grid`) en la librería, con capturas; termina la entrega 3 | acueducto |
@@ -41,7 +41,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 ## Entradas
 
-### 2026-10-17 12:58–13:20 · PR pendiente · Acueducto: banco hidráulico de la planta (entrega 4, primer paso)
+### 2026-10-17 12:58–15:40 · PR #27 (borrador) · Acueducto: banco hidráulico de la planta (entrega 4, primer paso)
 - **Solicitado por:** el autor (12:55 y 12:55:22 UTC): «Qué falta» y luego «Sí», para arrancar la planta.
 - **Qué se hizo:** `industrial-models/water-network-scale-v1/network.py` arma en una sola red el tanque, el grupo de bombas, el colector de 4", la estación reguladora, las cuatro columnas de 2" y las cuatro rejillas, con las funciones de `equipment-library` (sin copiar la lógica). Corre en estado estacionario con consumo de día.
 - **Resultado (consumo de día, consigna de la estación 26,66 mca):** converge en 6 iteraciones; bombas 13,47 m³/h; consumos 11,97 m³/h y fugas ≈ 1,50 m³/h (el balance cierra); salida de la estación 26,65 mca; c44 del nivel 4 en 22,99 mca.
