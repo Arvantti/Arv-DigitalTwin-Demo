@@ -8,6 +8,7 @@ Este repositorio construye una plataforma de gemelos digitales industriales. Las
 - `packages/twin-3d/`: piezas 3D, materiales PBR y escenario de render (three.js).
 - `apps/api/`: FastAPI con la simulación en vivo por WebSocket.
 - `apps/gallery/`: galería web para ver, parametrizar y simular cada equipo, y escena de planta en 3D (`plant.html`, `docs/plant-scene.md`).
+- `apps/gallery/acueducto.html`: panel de gráficos del PLC del acueducto a escala (fuera de la escena 3D). Lee `public/data/acueducto-dia.json`, que genera `tools/hydraulics/dia_acueducto.py` con el banco hidráulico.
 - `industrial-models/<planta>/plant.yaml`: layouts de planta. `tools/layout/render_layout.py` los valida y dibuja.
 - `industrial-models/<planta>/simulation.yaml`: qué equipos del layout se simulan y cómo se conectan por puertos (motor de planta, `docs/plant-engine.md`).
 

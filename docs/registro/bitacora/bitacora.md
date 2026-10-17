@@ -10,6 +10,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
+| 2026-10-17 | #32 | Acueducto: panel de gráficos del PLC en la galería (`acueducto.html`): curva del día en 24 ciclos, bombas Grundfos, sensores en tiempo real y gemelo (−5 % de fugas con la consigna hora a hora); datos de `tools/hydraulics/dia_acueducto.py` | acueducto |
 | 2026-10-17 | #33 | Acueducto: escena 3D del edificio por pisos, tubos con su trazado y diámetro del plano, caudal y velocidad reales del agua, soportes y cámaras por piso y por nivel | acueducto |
 | 2026-10-17 | #31 | Acueducto: la planta corre en el motor con una sola red de agua (dominio hidráulico); edificio por pisos, 13 equipos, 6 escenarios; con la columna en serie la estación queda en 20,94 mca | acueducto |
 | 2026-10-17 | #28 | Fase 5: bodega de producto terminado contigua a empaque con paso directo, estanterías, rutas de montacargas, muelles y camiones en la planta de salsas (pedido del autor) | 5 |
@@ -44,6 +45,16 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 | 2026-10-16 | #1 | Layouts de las plantas | 1 |
 
 ## Entradas
+
+### 2026-10-17 15:28–22:55 · PR #32 · Acueducto: panel de gráficos del PLC en la galería
+- **Fecha/hora (UTC):** 2026-10-17 15:28 a 18:55; conflictos con `main` resueltos a las 22:55 (pedido del autor en el PR, 22:39).
+- **Fase del plan:** [[plan-del-proyecto]] acueducto (monitoreo).
+- **Solicitado por:** Carlos Andrés Quiceño, «la curva día a día del panel… de hora a hora» (15:28) y «no solamente que quede aquí en artefacto en Claude, sino en el sistema» (18:02).
+- **Qué se hizo:** página `apps/gallery/acueducto.html` con `src/acueducto-panel.ts` (cuatro pantallas: curva del día, bombas Grundfos, sensores en tiempo real y gemelo) y script `tools/hydraulics/dia_acueducto.py`, que corre hora a hora la red del motor (PR #31: columna en serie) con la rama manual fija en 20,94 mca frente a la consigna mínima del gemelo para 15,45 mca, bombas a 72,1 mca en la descarga, y escribe `public/data/acueducto-dia.json`. Resultado: consumo 118,4 m³/día; la casa crítica va de 18,2 mca de madrugada a 16,0 mca en el pico con la consigna fija; el gemelo baja la consigna a 18,15–20,29 mca y evita 1,6 m³/día de fugas (−5,0 %; −7,0 % de madrugada). La lista de válvulas se agrupa por nivel y ramal (pedido del autor, 17:53).
+- **Commits:** ver el PR #32.
+- **Verificación:** `pnpm -r typecheck`, `uv run ruff check .`, capturas de la galería local en claro y oscuro: ![[acueducto-panel-plc-curva-del-dia.png]] ![[acueducto-panel-plc-gemelo.png]] ![[acueducto-panel-plc-sensores.png]]
+- **Decisiones:** [[decisiones]] (D32).
+- **Conversación:** [[hilo-panel-plc-acueducto]].
 
 ### 2026-10-17 20:53–21:10 · PR #33 · Acueducto: escena 3D del edificio (entrega 5)
 - **Fecha/hora (UTC):** 2026-10-17 20:53 a 21:10 (el hilo se pausó de 18:57 a 20:53 por el límite de uso).
