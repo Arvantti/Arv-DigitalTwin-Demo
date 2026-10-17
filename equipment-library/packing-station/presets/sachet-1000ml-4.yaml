@@ -1,0 +1,4 @@
+preset: sachet-1000ml-4
+description: Empaque manual de sachets de 1.000 ml en cajas de 4, tarima de 48 cajas (línea caliente de la planta de salsas)
+params: { parts_per_box: 4, pack_rate_upm: 120, box_change_s: 4, table_capacity_units: 60, boxes_per_pallet: 48, nominal_inflow_upm: 30, box_size_m: 0.4, item_color: "#c0392b", item_kind: sachet }
+provenance: { parts_per_box: user, pack_rate_upm: assumed, box_change_s: assumed, table_capacity_units: assumed, boxes_per_pallet: assumed, nominal_inflow_upm: assumed }

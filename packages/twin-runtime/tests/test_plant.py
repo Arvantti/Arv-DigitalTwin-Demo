@@ -46,11 +46,11 @@ def test_plant_scenarios_meet_expectations(lib: Library, plant: str, scenario: s
 def test_units_are_conserved_along_the_sachet_line(sauce: PlantModel) -> None:
     sim, _ = run_plant_scenario(sauce, sauce.scenarios["tunnel-stop"])
     v = {eid: e.true_values() for eid, e in sim.equipment.items()}
-    filler, tunnel, cw, packer = v["filler-pouch-01"], v["cooling-tunnel-01"], v["checkweigher-01"], v["case-pack-02"]
+    filler, tunnel, cw, packer = v["filler-pouch-01"], v["cooling-tunnel-01"], v["checkweigher-01"], v["pack-sauce-1000"]
     # Un paso de retraso puede dejar a lo sumo una unidad en tránsito por enlace.
     assert abs(filler["units_good"] - (tunnel["units_inside"] + tunnel["units_out"])) <= 1
     assert abs(tunnel["units_out"] - cw["units_in"]) <= 1
-    assert abs(cw["units_accepted"] - (packer["units_packed"] + packer["buffer_units"])) <= 1
+    assert abs(cw["units_accepted"] - (packer["units_packed"] + packer["table_units"])) <= 1
 
 
 def test_diverted_product_returns_to_the_kettles_and_the_rest_reaches_the_buffer(sauce: PlantModel) -> None:

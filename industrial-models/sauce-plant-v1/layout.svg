@@ -233,11 +233,14 @@
 <title>cooling-tunnel-01 · cooling_tunnel</title>
 <text x="923.8" y="468.6" font-size="7.0" text-anchor="middle" fill="#111827">cooling-tunnel-01</text>
 <rect x="1023.8" y="317.5" width="37.5" height="25.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
-<title>case-pack-01 · case_packer</title>
-<text x="1042.5" y="315.5" font-size="7.0" text-anchor="middle" fill="#111827">case-pack-01</text>
-<rect x="1023.8" y="467.5" width="37.5" height="25.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
-<title>case-pack-02 · case_packer</title>
-<text x="1042.5" y="465.5" font-size="7.0" text-anchor="middle" fill="#111827">case-pack-02</text>
+<title>pack-sauce-250 · packing_station</title>
+<text x="1042.5" y="315.5" font-size="7.0" text-anchor="middle" fill="#111827">pack-sauce-250</text>
+<rect x="1023.8" y="417.5" width="37.5" height="25.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>pack-sauce-500 · packing_station</title>
+<text x="1042.5" y="415.5" font-size="7.0" text-anchor="middle" fill="#111827">pack-sauce-500</text>
+<rect x="1023.8" y="517.5" width="37.5" height="25.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>pack-sauce-1000 · packing_station</title>
+<text x="1042.5" y="515.5" font-size="7.0" text-anchor="middle" fill="#111827">pack-sauce-1000</text>
 <rect x="1023.8" y="711.2" width="37.5" height="37.5" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
 <title>wrapper-01 · stretch_wrapper</title>
 <text x="1042.5" y="709.2" font-size="7.0" text-anchor="middle" fill="#111827">wrapper-01</text>
@@ -310,7 +313,8 @@
 <line x1="735.2" y1="609.0" x2="931.0" y2="288.5" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>salsa caliente: 2016 kg/h</title></line>
 <line x1="733.8" y1="470.7" x2="807.5" y2="289.3" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>mayonesa: 1395 kg/h</title></line>
 <line x1="935.6" y1="290.0" x2="924.4" y2="470.0" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>sachets calientes: 30 u/min</title></line>
-<line x1="888.5" y1="385.2" x2="1034.0" y2="474.8" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>sachets 500 y 1000 ml: 105 u/min</title></line>
+<line x1="887.3" y1="386.8" x2="1035.2" y2="523.2" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>sachets 1000 ml: 30 u/min</title></line>
+<line x1="889.6" y1="382.9" x2="1032.9" y2="427.1" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>sachets 500 ml: 45 u/min</title></line>
 <line x1="928.6" y1="533.8" x2="1037.6" y2="338.7" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>sachets 250 ml: 240 u/min</title></line>
 <line x1="878.6" y1="770.1" x2="812.6" y2="289.9" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>laminado: 2 rollos/turno</title></line>
 <line x1="1047.5" y1="721.3" x2="1187.5" y2="476.2" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>estibas: 35 pallets/d</title></line>
