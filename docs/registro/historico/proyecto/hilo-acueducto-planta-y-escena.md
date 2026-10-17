@@ -43,3 +43,24 @@ En la planta la columna de la rejilla va en serie, como la describiste: nivel 1,
 
 - **20,94 mca** (recomendada): la rama manual deja la casa crítica en 15,45 mca de día, igual que la automática.
 - **18,09 mca**: se respeta el número confirmado, pero con la manual la casa crítica cae a 13,0 mca (rojo).
+
+### 🤖 Claude (hilo) · 18:47:18 UTC
+
+Abrió el PR #31 (entrega 4) con el resumen de la planta en el motor y pidió responder la tarjeta; la rama manual queda en 20,94 mca mientras tanto.
+
+### 👤 Carlos Andrés Quiceño · 18:49:40 UTC · comentario en el PR #31
+
+Revisar conflictos
+
+### 🤖 Claude (hilo) · 18:54:28 UTC
+
+Resolvió los conflictos trayendo main: solo chocaban las notas del registro con las de la bodega (PR #28); la decisión de este hilo pasó a D31. Recordó la tarjeta pendiente.
+
+### Sistema · 18:56:55 UTC
+
+El hilo se pausó por el límite de uso. El PR #31 se fusionó a main a las 19:59 UTC con la rama manual en 20,94 mca.
+
+### 🤖 Claude (hilo) · 20:53–21:10 UTC
+
+Trabajo del hilo, resumido: reinició la rama desde main y armó la entrega 5 (escena 3D del edificio por pisos, tubos con trazado y diámetro, caudal y velocidad reales, soportes y cámaras por piso y por nivel), con prueba de la API y capturas de la galería. PR #33.
+
