@@ -10,6 +10,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
+| 2026-10-17 | #26 | Acueducto: fugas de la rejilla al final de los ramales 2 y 4, con la misma descarga que las casas (pedido del autor); próximo paso: fuga al azar por ramal y caminos entre ramales | acueducto |
 | 2026-10-17 | #25 | Acueducto: bombas principales de 13 m³/h para que una sola sostenga la presión (pedido del autor); rejilla con válvulas de bola de unión doble numeradas y canaletas a ras de la salida | acueducto |
 | 2026-10-17 | #24 | Acueducto: estación reguladora de presión (`pressure-reducing-station`) y rejilla de un nivel (`distribution-grid`) en la librería, con capturas; termina la entrega 3 | acueducto |
 | 2026-10-17 | #23 | Acueducto: el bombeo principal queda con 2 bombas de trabajo (sin reserva), como pidió el autor; escenario de disparo de bomba rehecho | acueducto |
@@ -37,6 +38,16 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 | 2026-10-16 | #1 | Layouts de las plantas | 1 |
 
 ## Entradas
+
+### 2026-10-17 12:00–12:20 · PR #26 · Acueducto: fugas al final de los ramales
+- **Fecha/hora (UTC):** 2026-10-17 12:00 a 12:20.
+- **Fase del plan:** [[plan-del-proyecto]], acueducto a escala, ajustes a la entrega 3.
+- **Solicitado por:** Carlos Andrés Quiceño, «explicame como es la ubicacion de las valvulas de perdidas?» (11:57) y «No, eso está mal… tienen que ir igual que van las otras válvulas» (11:58).
+- **Qué se hizo:** las fugas l1 y l2 pasaron del cabezal al final de los ramales 2 y 4 (después de la cuarta casa), con la misma válvula de bola de descarga y la misma canaleta que las casas. La rejilla se alarga 0,5 m en esos ramales y el bastidor se ajusta. Escenario `branch-blockage` recalculado: la fuga l2 cruza la válvula obstruida del ramal 4 (mínimo 20,14 mca).
+- **Commits:** ver el PR #26.
+- **Verificación:** `uv run pytest equipment-library/distribution-grid` (7 pasan), `twin-lib validate`, `ruff`, `pnpm -r typecheck`.
+- **Pendiente:** el autor pidió que la fuga caiga al azar en 1ª, 3ª o 5ª posición en cada ramal, y que los ramales vecinos se unan con caminos (rejilla cerrada). Decisión abierta en el hilo.
+- **Conversación:** [[hilo-acueducto-a-escala]].
 
 ### 2026-10-17 11:00–12:00 · PR #25 · Acueducto: una bomba sola sostiene la presión; rejilla numerada
 - **Fecha/hora (UTC):** 2026-10-17 11:00 a 12:00.

@@ -60,17 +60,18 @@ Nombres de marca: el autor describió las bombas como Grundfos. La regla del rep
 
 ### Rejilla de un nivel (`distribution-grid`)
 
-Supuesto de distribución (el autor dejó libre la forma): rectángulo de 2,0 × 2,0 m. Un cabezal de 2" a lo largo del frente con 4 nodos cada 0,5 m; de cada nodo sale un ramal de 2" hacia el fondo con 4 válvulas de consumo cada 0,5 m. Las dos válvulas de fuga cuelgan del cabezal, en los nodos 2 y 4. La válvula más crítica es la última del último ramal (la más lejana de la entrada) del nivel 4.
+Supuesto de distribución (el autor dejó libre la forma): rectángulo de 2,0 × 2,0 m. Un cabezal de 2" a lo largo del frente con 4 nodos cada 0,5 m; de cada nodo sale un ramal de 2" hacia el fondo con 4 válvulas de consumo cada 0,5 m. Las dos válvulas de fuga cuelgan al final de los ramales 2 y 4, después de la cuarta casa, y descargan a la canaleta igual que las casas (corregido 2026-10-17, pedido del autor). La válvula más crítica es la última del último ramal (la más lejana de la entrada) del nivel 4.
 
 ```
 entrada (montante 2")
    │
-   ●──────●──────●──────●   cabezal 2"   (F = válvula de fuga, en rojo)
-   │      │F     │      │F
-   ○      ○      ○      ○   ← válvulas de consumo (casas)
+   ●──────●──────●──────●   cabezal 2"
+   │      │      │      │
+   ○      ○      ○      ○   ← válvulas de consumo (casas), ramal 1 a 4
    ○      ○      ○      ○
    ○      ○      ○      ○
-   ○      ○      ○      ◎   ← ◎ válvula más crítica (en el nivel 4)
+   ○      ○      ○      ◎   ← ◎ válvula más crítica (c44, en el nivel 4)
+   ·      F      ·      F   ← fugas (rojas) al final de los ramales 2 y 4
  ─────────────── canaleta ───────────────
 ```
 

@@ -1,6 +1,6 @@
 """Rejilla de distribución de un nivel (B2): cabezal y ramales de 2" (cada ramal con su válvula de bola) sobre
-la red hidráulica, 16 válvulas de consumo y 2 de fuga que descargan a la canaleta, cada una con su caudal y su
-presión; alarma de presión mínima de servicio, fuga que revienta y ramal obstruido."""
+la red hidráulica, 16 válvulas de consumo y 2 de fuga que descargan a la canaleta igual que las casas, cada una con
+su caudal y su presión; alarma de presión mínima de servicio, fuga que revienta y ramal obstruido."""
 
 from __future__ import annotations
 
@@ -13,7 +13,8 @@ MCA_PER_BAR = 10.197
 BRANCHES = 4
 PER_BRANCH = 4
 CONSUMERS = [f"c{j}{i}" for j in range(1, BRANCHES + 1) for i in range(1, PER_BRANCH + 1)]
-LEAKS = {"l1": 2, "l2": 4}  # válvula de fuga → nodo del cabezal
+LEAKS = {"l1": 2, "l2": 4}  # válvula de fuga → ramal donde cuelga, al final del ramal (después de la casa 4)
+LEAK_NODE = PER_BRANCH + 1  # índice del nodo de la fuga en su ramal
 VALVES = CONSUMERS + list(LEAKS)
 HEADER_K = 0.3
 BRANCH_K = 0.5
@@ -45,11 +46,15 @@ def add_distribution_grid(net: HydraulicNetwork, prefix: str, inlet: str, p: dic
             net.add_pipe(f"{prefix}bp{j}{i}", root if i == 1 else f"{prefix}n{j}{i - 1}", node, s, d, minor_k=BRANCH_K)
             net.add_emitter(f"{prefix}{v}", node, kv_m3h=p["consumer_kv_m3h"], opening=p["consumer_opening_pct"] / 100)
             out[v] = {"link": f"{prefix}{v}", "node": node}
-    for v, j in LEAKS.items():
-        node = f"{prefix}h{j}"
-        net.add_emitter(f"{prefix}{v}", node, kv_m3h=p["leak_kv_m3h"], opening=p["leak_opening_pct"] / 100,
-                        exponent=p["leak_exponent"])
-        out[v] = {"link": f"{prefix}{v}", "node": node}
+        for v, lj in LEAKS.items():
+            if lj != j:
+                continue
+            node = f"{prefix}n{j}{LEAK_NODE}"
+            net.add_node(node, z)
+            net.add_pipe(f"{prefix}bp{j}{LEAK_NODE}", f"{prefix}n{j}{PER_BRANCH}", node, s, d, minor_k=BRANCH_K)
+            net.add_emitter(f"{prefix}{v}", node, kv_m3h=p["leak_kv_m3h"], opening=p["leak_opening_pct"] / 100,
+                            exponent=p["leak_exponent"])
+            out[v] = {"link": f"{prefix}{v}", "node": node}
     return out
 
 

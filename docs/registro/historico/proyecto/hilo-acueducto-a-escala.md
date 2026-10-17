@@ -136,3 +136,27 @@ Las válvulas de bola de la red no parecen válvulas reales
 ### 🤖 Claude (hilo) · 11:43–12:00 UTC
 
 Rehízo las válvulas de bola de la rejilla como válvulas de PVC de unión doble (colas, tuercas de unión, cuerpo abombado y manija plana que gira 90° con la apertura), en las 18 de descarga y en las 4 de entrada a los ramales; revisó capturas de cerca con válvulas abiertas, a medio abrir y cerradas, y lo subió al mismo PR #25.
+
+### 👤 Carlos Andrés Quiceño · 11:57 UTC
+
+explicame como es la ubicacion de las valvulas de perdidas?
+
+### 🤖 Claude (hilo) · 11:58 UTC
+
+Explicó que las fugas cuelgan del cabezal, en los nodos 2 y 4, descargando a la colectora del frente.
+
+### 👤 Carlos Andrés Quiceño · 11:58 UTC
+
+No, eso está mal. Las válvulas de pérdidas tienen que ir igual que van las otras válvulas que descargan al sistema de recirculación. Esas válvulas así puestas antes del sistema, antes de las válvulas de usuario, no es correcto. Eso hay que corregirlo.
+
+### 🤖 Claude (hilo) · 12:00–12:20 UTC
+
+Pasó las fugas al final de los ramales 2 y 4, con la misma descarga y canaleta que las casas. Recalculó el escenario de obstrucción del ramal 4 y lo registró en la bitácora (PR #26).
+
+### 👤 Carlos Andrés Quiceño · 12:00 UTC
+
+Y la ubicación de las válvulas de pérdida es aleatorio en cada ramal… Puede ser primera, luego la tercera, luego la quinta. Y los ramales deben conectarse entre sí: una rejilla completa, con caminos que conectan internamente a las ramas, como una red de barrio alrededor de una cuadra.
+
+### 🤖 Claude (hilo) · 12:00–12:20 UTC
+
+Respondió con el plan y abrió la decisión sobre cómo conectar los ramales (caminos en cada casa o solo en los extremos). Mientras tanto avanza con la recomendada.

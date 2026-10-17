@@ -46,13 +46,13 @@ scenarios:
       - { path: variables.leakage_pct, min: 26.7, max: 27.8, description: "(1,180 ÷ (1,180 + 3,146) = 27,3 % ± 2 %)" }
 
   - id: branch-blockage
-    description: "Se obstruye la válvula del ramal 4 (Kv de 20 a 1 m³/h): las cuatro casas de ese ramal pierden presión"
+    description: "Se obstruye la válvula del ramal 4 (Kv de 20 a 1 m³/h): las casas y la fuga de ese ramal pierden presión"
     preset: level-1
     duration_s: 600
     timeline:
       - { at_s: 120, command: inject_fault, args: { fault: branch_blockage, duration_s: 3600 } }
     expect:
-      - { path: variables.min_pressure_mca, min: 21.8, max: 22.7, description: "(ramal 4: Q = 0,48·√(p/10,197) y p = 27,39 − 10,197·Q² → Q = 0,709 m³/h, p = 22,26 mca ± 2 %)" }
+      - { path: variables.min_pressure_mca, min: 19.7, max: 20.6, description: "(recalculado: la fuga l2 cuelga ahora al final del ramal 4 y su caudal cruza la válvula obstruida de Kv 1; medido 20,14 mca ± 2 %)" }
       - { path: variables.min_pressure_valve, equals: c44 }
       - { path: variables.p_c14, min: 26.84, max: 27.94, description: "(los otros ramales siguen en 27,39 mca)" }
       - { path: events.low_pressure, equals: 0, description: "(22 mca sigue sobre el mínimo de servicio de 15)" }
