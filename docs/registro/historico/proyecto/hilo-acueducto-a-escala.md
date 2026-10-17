@@ -2,10 +2,10 @@
 tipo: historico-ia
 fuente: hilo «Acueducto a escala»
 desde: 2026-10-17 00:20
-hasta: 2026-10-17 00:45
+hasta: 2026-10-17 01:15
 tags: [registro, historico-ia, acueducto]
 ---
-# Hilo: acueducto a escala, diseño (PR #13)
+# Hilo: acueducto a escala (PR #13 y PR #14)
 
 Parte de [[historico-proyecto]] · Índice: [[00-indice]] · Diseño: `docs/water-network-plant.md` · Decisión: [[decisiones]] D15. Autor humano: Carlos Andrés Quiceño. Hora en UTC. Credenciales: ninguna.
 
@@ -30,3 +30,24 @@ Trabajo del hilo, resumido (las actualizaciones de estado no se reproducen):
 ### 🤖 Claude (hilo) · 00:45 UTC
 
 Entregó el PR #13 con el diseño y pidió al autor revisar los supuestos S1–S7 (rejilla 4 × 4 + 2 fugas, pisos de 3 m, Kv de las válvulas, número de bombas, telemetría de la válvula crítica, bombas sin marca, tanques de 1.000 L) antes de construir el solucionador hidráulico.
+
+### 👤 Carlos Andrés Quiceño · 00:52:50 UTC (GitHub)
+
+Fusionó el PR #13 sin comentarios ni correcciones a los supuestos.
+
+### 🤖 Claude (hilo) · 00:53–01:15 UTC
+
+Trabajo del hilo, resumido:
+- Reinició la rama desde `main` y escribió `twin_runtime/primitives/hydraulics.py` (gradiente global, estados de PRV, bombas, antirretornos y descargas).
+- Escribió 16 pruebas con valores calculados a mano; una falló porque una válvula cerrada reportaba un caudal residual de 0,0004 m³/h y otra porque la PRV no cerraba contra un tanque; se corrigió el solucionador, no las pruebas.
+- Comprobó que la red de diseño completa reproduce el predimensionamiento del PR #13 dentro del 2 %.
+- Actualizó el diseño, el roadmap, el plan, la bitácora, la decisión D23 y este histórico, y abrió el PR #14.
+
+
+### 👤 Carlos Andrés Quiceño · 04:45:13 UTC (comentario en el PR #14)
+
+por favor resolver los conflictos ya que ha habido otros pr despues de este
+
+### 🤖 Claude (hilo) · 04:45–05:00 UTC
+
+Fusionó `main` en la rama del PR #14 (merge commit, sin reescribir historia). Los conflictos estaban solo en el registro: la bitácora, las decisiones y el índice del histórico. Conservó las entradas de los PR #15 a #21 y agregó las del #14. La decisión del solucionador pasó de D16 a D23, porque D16 ya la usaba el PR #15. Volvió a correr las pruebas y `ruff`.

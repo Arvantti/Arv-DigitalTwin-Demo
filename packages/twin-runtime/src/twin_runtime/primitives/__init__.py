@@ -2,6 +2,7 @@
 
 from .control import PID, FirstOrderLag, RateLimiter
 from .failures import FailureModel
+from .hydraulics import HydraulicNetwork, HydraulicResult
 from .oee import OEEAccumulator
 from .sensor import Sensor
 from .sequencer import PhaseSequencer
@@ -12,6 +13,8 @@ __all__ = [
     "PID",
     "FailureModel",
     "FirstOrderLag",
+    "HydraulicNetwork",
+    "HydraulicResult",
     "OEEAccumulator",
     "PhaseSequencer",
     "RateLimiter",

@@ -17,6 +17,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 | 2026-10-17 | #17 | Fase 3 y 5: línea de peletizado (tipo `pelletizing-line`) y silo 5 de reciclado enlazados al molino; escenario `pelletizer-jam` | 3 y 5 |
 | 2026-10-17 | #16 | Fase 3 y 5: cascada de la planta de inyección (resina seca y humedad desde los secadores, agua de moldes desde el chiller, scrap hacia el molino) y escenarios `dryer-stop` y `chiller-trip` | 3 y 5 |
 | 2026-10-17 | #15 | Fase 3 y 5: geometría y comportamiento de empaque, secadores, chillers y molino de la planta de inyección, simulados en la escena | 3 y 5 |
+| 2026-10-17 | #14 | Acueducto: solucionador hidráulico de redes a presión en el runtime (gradiente global) con pruebas | acueducto |
 | 2026-10-17 | #13 | Diseño de la tercera planta: acueducto a escala (documento y predimensionamiento, sin código de producción) | acueducto |
 | 2026-10-16 | #12 | Fase 5: la planta de inyección se simula y se ve en la escena (29 inyectoras y banda principal) | 5 |
 | 2026-10-16 | #11 | Fase 5: el desvío del pasteurizador regresa a la marmita que descarga (motor, contratos, escena) | 5 |
@@ -102,6 +103,15 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 - **Verificación:** `uv run twin-lib validate` (14 tipos), `uv run twin-lib plant validate`, `uv run pytest` (115 pruebas), `uv run ruff check .`, `pnpm -r typecheck` y `pnpm -r test` (57 pruebas de geometría). Expectativas calculadas a mano (por ejemplo, humedad del ABS a 4 h de residencia: 0,0035 + 0,1965·e^(−4/1,2) = 0,0105 %; chiller con 360 kW de carga: ≈ 85,4 kW eléctricos; molino de 500 kg/h con 300 kg/h de alimentación: 43,96 A). Dos expectativas se corrigieron al revisar mi propia cuenta (no la simulación): el tiempo hasta que la resina deja de estar seca ignoraba el retardo del punto de rocío, y el calor neto del chiller sobrecargado ignoraba el arranque escalonado de las etapas. Capturas con Chromium y la API local (01:19, escenario `nominal`): [[fase5f-secadores-en-la-escena.jpg]], [[fase5f-chillers-en-la-escena.jpg]], [[fase5f-empaque-en-la-escena.jpg]], [[fase5f-molino-en-la-escena.jpg]].
 - **Decisiones:** [[decisiones]] D16.
 - **Conversación:** [[hilo-equipos-de-inyeccion]].
+
+### 2026-10-17 00:53–01:15 · PR #14 · Solucionador hidráulico del acueducto
+- **Fecha/hora (UTC):** 2026-10-17 00:53 a 01:15.
+- **Fase del plan:** [[plan-del-proyecto]], acueducto a escala, entrega 2 de 5.
+- **Solicitado por:** Carlos Andrés Quiceño: pedido del acueducto (00:20) y fusión del PR #13 (00:52) sin correcciones a los supuestos, con lo que el hilo siguió con lo anunciado («si no me corriges nada, lo construyo con estos supuestos apenas fusiones el #13»).
+- **Qué se hizo:** primitiva `twin_runtime/primitives/hydraulics.py`, `HydraulicNetwork`: método del gradiente global (Todini-Pilati, el de EPANET) en Python puro con eliminación dispersa de grado mínimo; tubos (Darcy-Weisbach, Swamee-Jain y Hagen-Poiseuille), válvulas por Kv (lineales o de igual porcentaje), antirretornos, bombas con curva y velocidad, descargas con exponente (consumos y fugas) y PRV con los estados de EPANET; arranque en caliente. Documentado en `docs/water-network-plant.md` (sección 5.1).
+- **Verificación:** 16 pruebas nuevas en `packages/twin-runtime/tests/test_hydraulics.py` con valores calculados a mano en cada prueba y la red de diseño completa (lo que entra sale; 13,0 m³/h y 20,0 mca en la válvula crítica dentro del 2 %; noche con PRV fija 23,4 mca); `uv run pytest`, `ruff`. Sin cambios visuales, sin captura.
+- **Decisiones:** [[decisiones]] D23.
+- **Conversación:** [[hilo-acueducto-a-escala]].
 
 ### 2026-10-17 00:21–00:45 · PR #13 · Diseño del acueducto a escala (tercera planta)
 - **Fecha/hora (UTC):** 2026-10-17 00:21 a 00:45.
