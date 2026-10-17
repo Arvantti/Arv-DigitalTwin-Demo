@@ -47,6 +47,12 @@ class RegulatingValve(EquipmentBehavior):
         self.dp_integral = 0.0
         self._update_state()
 
+    def hydraulic_build(self, net: HydraulicNetwork, prefix: str, elevation_m: float) -> None:
+        """En la planta: la válvula entre los nodos de entrada y salida, a la cota del equipo."""
+        net.add_node(prefix + "inlet", elevation_m)
+        net.add_node(prefix + "outlet", elevation_m)
+        add_regulating_valve(net, prefix + "valve", prefix + "inlet", prefix + "outlet", self.p)
+
     def on_command(self, name: str, args: dict[str, Any]) -> bool:
         if name == "set_opening":
             self.target = min(100.0, max(0.0, float(args["pct"])))

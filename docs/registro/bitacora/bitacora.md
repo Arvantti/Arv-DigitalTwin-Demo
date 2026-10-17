@@ -10,6 +10,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
+| 2026-10-17 | #31 | Acueducto: la planta corre en el motor con una sola red de agua (dominio hidráulico); edificio por pisos, 13 equipos, 6 escenarios; con la columna en serie la estación queda en 20,94 mca | acueducto |
 | 2026-10-17 | #28 | Fase 5: bodega de producto terminado contigua a empaque con paso directo, estanterías, rutas de montacargas, muelles y camiones en la planta de salsas (pedido del autor) | 5 |
 | 2026-10-17 | #29 | Control de peso: tolerancia de 4 % en todos los formatos (decisión del autor); dosificador en 1,5 %; rechazo de la presentación de 1.000 ml ≈ 2,5 % | 4 |
 | 2026-10-17 | #27 | Acueducto: semáforo de la casa crítica (20, 18 y 15 mca) y búsqueda de la consigna mínima de la estación; criterio en D28 | acueducto |
@@ -42,6 +43,17 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 | 2026-10-16 | #1 | Layouts de las plantas | 1 |
 
 ## Entradas
+
+### 2026-10-17 18:03–18:50 · PR #31 · Acueducto: la planta en el motor (entrega 4)
+- **Fecha/hora (UTC):** 2026-10-17 18:03 a 18:50.
+- **Fase del plan:** [[plan-del-proyecto]], acueducto a escala, entrega 4.
+- **Solicitado por:** Carlos Andrés Quiceño, «Sí, para eso tenemos que abrir otro hilo entonces» (18:03), para seguir con la planta y la escena.
+- **Qué se hizo:** dominio hidráulico del motor (puertos `hydraulic`, tubos del plano, una sola red resuelta en cada paso y otra vez si un equipo cambia algo); `plant.yaml` del edificio por pisos y `simulation.yaml` con 13 equipos y 6 escenarios (`nominal`, `night-pressure`, `manual-branch`, `pump-trip`, `leak-burst`, `between-valve`); `network.py` lee los mismos tubos y sigue la columna en serie; grupo de bombeo con `min_running` y anticipación de velocidad al disparo; validador del plano con zonas por piso.
+- **Resultados:** de día estación 20,94 mca, casa crítica c44 en 15,45 mca, bombas 11,53 m³/h a 72,1 mca; de noche la rama automática ahorra 6,4 % de fugas frente a la manual; disparo de bomba: 68,9 mca un segundo.
+- **Commits:** ver el PR #31.
+- **Verificación:** `twin-lib validate`, `twin-lib plant validate` (las 3 plantas), `pytest` (194 pasan), `ruff check`, API en vivo (WebSocket con disparo de bomba y cierre de c44: la casa crítica pasa a c24).
+- **Decisiones:** [[decisiones]] (D31). Pendiente del autor: salida fija de la rama manual (20,94 recomendada, o 18,09).
+- **Conversación:** [[hilo-acueducto-planta-y-escena]].
 
 ### 2026-10-17 15:25–16:00 · PR #28 · Bodega de producto terminado y despacho a camiones
 - **Fecha/hora (UTC):** 2026-10-17 15:25 a 16:00.

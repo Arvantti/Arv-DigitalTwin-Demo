@@ -1,0 +1,147 @@
+# Simulación del acueducto a escala con el motor de planta (docs/plant-engine.md, dominio hidráulico).
+# Los enlaces entre puertos hidráulicos son tubos de una sola red de agua que se resuelve en cada paso; las bajantes
+# de las canaletas y las señales (telemetría y niveles) son enlaces normales del motor.
+#
+# Los escenarios de este archivo son pruebas de la planta. Los escenarios de operación los crea el usuario
+# conversando con Claude conectado al simulador (MCP / OPC UA), no se fijan aquí.
+
+schema_version: 0.1.0
+description: "Acueducto a escala: recirculación, bombeo a ≥ 70 mca, estación reguladora por punto crítico y rejilla de 4 niveles"
+dt: 1.0
+
+equipment:
+  tank-recirc-01:    { type: vessel, preset: water-1000l, params: { volume_l: 2256, diameter_m: 1.3, initial_level_pct: 40, inlet_max_kg_h: 40000, outlet_max_kg_h: 40000, high_level_pct: 95 } }
+  tank-recirc-02:    { type: vessel, preset: water-1000l, params: { volume_l: 2256, diameter_m: 1.3, initial_level_pct: 40, inlet_max_kg_h: 40000, outlet_max_kg_h: 40000, high_level_pct: 95 } }
+  pumpset-recirc-01: { type: booster-pump-set, preset: recirculation-2x15m3h }
+  tank-supply-01:    { type: vessel, preset: water-1000l, params: { volume_l: 3888, diameter_m: 1.5, initial_level_pct: 70, inlet_max_kg_h: 40000, outlet_max_kg_h: 40000, high_level_pct: 95 } }
+  # Las dos bombas trabajan siempre (D26, sin reserva). Consigna 72,1 mca en el sensor de descarga = 70 mca + 3 %
+  # (supuesto: el PLC de las bombas es cerrado, D29).
+  pumpset-main-01:   { type: booster-pump-set, preset: multistage-2x13m3h-80m, params: { setpoint_mca: 72.1, min_running: 2 } }
+  # Rama automática por punto crítico: casa más crítica en 15,45 mca (15 mca + 3 %, D29). La rama manual queda en la
+  # salida que da lo mismo de día con la columna en serie (20,94 mca, banco network.py).
+  prs-01:            { type: pressure-reducing-station, preset: station-4in-auto, params: { critical_setpoint_mca: 15.45, manual_setting_mca: 20.94 } }
+  grid-01:           { type: distribution-grid, preset: level-1 }
+  grid-02:           { type: distribution-grid, preset: level-2 }
+  grid-03:           { type: distribution-grid, preset: level-3 }
+  grid-04:           { type: distribution-grid, preset: level-4-critical }
+  valve-between-12:  { type: regulating-valve, preset: between-levels-2in }
+  valve-between-23:  { type: regulating-valve, preset: between-levels-2in }
+  valve-between-34:  { type: regulating-valve, preset: between-levels-2in }
+
+links:
+  # Red de agua a presión (tubos del plano)
+  - { from: tank-supply-01.outlet,      to: pumpset-main-01.suction }
+  - { from: pumpset-main-01.discharge,  to: prs-01.inlet }
+  - { from: prs-01.outlet,              to: grid-01.inlet }
+  - { from: grid-01.riser_out,          to: valve-between-12.inlet }
+  - { from: valve-between-12.outlet,    to: grid-02.inlet }
+  - { from: grid-02.riser_out,          to: valve-between-23.inlet }
+  - { from: valve-between-23.outlet,    to: grid-03.inlet }
+  - { from: grid-03.riser_out,          to: valve-between-34.inlet }
+  - { from: valve-between-34.outlet,    to: grid-04.inlet }
+  - { from: tank-recirc-01.outlet,      to: pumpset-recirc-01.suction }
+  - { from: tank-recirc-02.outlet,      to: pumpset-recirc-01.suction }
+  - { from: pumpset-recirc-01.discharge, to: tank-supply-01.inlet }
+  # Bajantes de las canaletas (por gravedad)
+  - { from: grid-01.drain, to: tank-recirc-01.inlet }
+  - { from: grid-02.drain, to: tank-recirc-01.inlet }
+  - { from: grid-03.drain, to: tank-recirc-02.inlet }
+  - { from: grid-04.drain, to: tank-recirc-02.inlet }
+  # Telemetría: la estación recibe la presión más baja de las casas de los 4 niveles (la casa crítica no es fija).
+  - { from: grid-01.telemetry, to: prs-01.critical_pressure }
+  - { from: grid-02.telemetry, to: prs-01.critical_pressure }
+  - { from: grid-03.telemetry, to: prs-01.critical_pressure }
+  - { from: grid-04.telemetry, to: prs-01.critical_pressure }
+  # Niveles para la recirculación: arranca con los tanques de retorno llenos y para si el de bombeo se llena.
+  - { from: tank-recirc-01.level, to: pumpset-recirc-01.source_level }
+  - { from: tank-recirc-02.level, to: pumpset-recirc-01.source_level }
+  - { from: tank-supply-01.level, to: pumpset-recirc-01.target_level }
+
+startup:
+  - { equipment: pumpset-main-01,   command: start }
+  - { equipment: pumpset-recirc-01, command: start }
+
+# Valores esperados: banco en régimen permanente (network.py, misma red y mismos tubos del plano), con tolerancias en
+# % del valor (regla D07). Día: estación 20,94 mca, casa crítica c44 del nivel 4 en 15,45 mca, bombas 11,53 m³/h.
+x-night: &night
+  - { at_s: 300, equipment: grid-01, command: set_opening, args: { valve: consumers, pct: 30 } }
+  - { at_s: 300, equipment: grid-02, command: set_opening, args: { valve: consumers, pct: 30 } }
+  - { at_s: 300, equipment: grid-03, command: set_opening, args: { valve: consumers, pct: 30 } }
+  - { at_s: 300, equipment: grid-04, command: set_opening, args: { valve: consumers, pct: 30 } }
+
+scenarios:
+  - id: nominal
+    description: "Día: todas las casas abiertas, rama automática; la recirculación mantiene los tanques"
+    duration_s: 1800
+    expect:
+      - { path: equipment.prs-01.variables.outlet_pressure_mca, min: 20.73, max: 21.15, description: "(banco: 20,94 mca ± 1 %)" }
+      - { path: equipment.prs-01.variables.critical_pressure_mca, min: 15.30, max: 15.60, description: "(15,45 mca ± 1 %)" }
+      - { path: equipment.grid-04.variables.min_pressure_valve, equals: c44, description: "(la casa más crítica es la última del último ramal del nivel 4)" }
+      - { path: equipment.pumpset-main-01.variables.flow_m3h, min: 11.30, max: 11.77, description: "(banco: 11,53 m³/h ± 2 %)" }
+      - { path: equipment.pumpset-main-01.variables.pumps_running, equals: 2, description: "(las dos de trabajo, D26)" }
+      - { path: equipment.pumpset-main-01.kpis.min_discharge_mca, min: 70.0, description: "(nunca bajo 70 mca después del arranque, D29)" }
+      - { path: equipment.prs-01.variables.inlet_pressure_mca, min: 70.0, description: "(banco: 71,1 mca a la entrada de la reguladora: 72,1 − 1 m de subida y pérdidas)" }
+      - { path: events.pumpset-recirc-01.pump_started, min: 2, description: "(arranca al 60 % de los tanques de retorno y para con el de bombeo al 90 %: ≈ 20 min por ciclo)" }
+      - { path: events.tank-supply-01.empty, equals: 0 }
+      - { path: events.grid-04.low_pressure, equals: 0 }
+      - { path: hydraulics.converged, equals: true }
+
+  - id: night-pressure
+    description: "De noche las casas abren al 30 %: la rama automática baja la salida de la estación y las fugas bajan"
+    duration_s: 1500
+    timeline: *night
+    expect:
+      - { path: equipment.prs-01.variables.auto_outlet_setpoint_mca, min: 18.18, max: 18.74, description: "(banco de noche: 18,46 mca ± 1,5 %; de día 20,94)" }
+      - { path: equipment.prs-01.variables.critical_pressure_mca, min: 15.30, max: 15.60, description: "(15,45 mca ± 1 %)" }
+      - { path: equipment.pumpset-main-01.variables.flow_m3h, min: 4.17, max: 4.34, description: "(banco: 4,26 m³/h ± 2 %)" }
+      - { path: equipment.grid-01.variables.leakage_m3h, min: 0.325, max: 0.338, description: "(banco: 0,3315 m³/h ± 2 %; de día 0,3517: menos presión en el nivel 1)" }
+
+  - id: manual-branch
+    description: "De noche el operador pasa a la rama manual (salida fija del día): la casa crítica sube y las fugas aumentan"
+    duration_s: 1500
+    timeline:
+      - { at_s: 300, equipment: grid-01, command: set_opening, args: { valve: consumers, pct: 30 } }
+      - { at_s: 300, equipment: grid-02, command: set_opening, args: { valve: consumers, pct: 30 } }
+      - { at_s: 300, equipment: grid-03, command: set_opening, args: { valve: consumers, pct: 30 } }
+      - { at_s: 300, equipment: grid-04, command: set_opening, args: { valve: consumers, pct: 30 } }
+      - { at_s: 600, equipment: prs-01, command: select_branch, args: { branch: manual } }
+    expect:
+      - { path: events.prs-01.branch_changed, equals: 1 }
+      - { path: equipment.prs-01.variables.critical_pressure_mca, min: 17.60, max: 18.14, description: "(banco con 20,94 mca fijos de noche: 17,87 mca ± 1,5 %, 2,4 mca de sobra)" }
+      - { path: equipment.grid-01.variables.leakage_m3h, min: 0.345, max: 0.359, description: "(banco: 0,352 m³/h ± 2 %; con la rama automática 0,3315: las fugas de la red suben 6,4 %, de 1,253 a 1,338 m³/h)" }
+      - { path: equipment.pumpset-main-01.variables.flow_m3h, min: 4.46, max: 4.64, description: "(banco: 4,55 m³/h ± 2 %)" }
+
+  - id: pump-trip
+    description: "Se dispara una bomba principal: sin reserva, la otra acelera y sola sostiene la presión"
+    duration_s: 1200
+    timeline:
+      - { at_s: 600, equipment: pumpset-main-01, command: inject_fault, args: { fault: pump_trip, duration_s: 3600 } }
+    expect:
+      - { path: events.pumpset-main-01.pump_tripped, equals: 1 }
+      - { path: equipment.pumpset-main-01.variables.pumps_running, equals: 1 }
+      - { path: equipment.pumpset-main-01.variables.flow_m3h, min: 11.30, max: 11.77, description: "(la misma demanda: 11,53 m³/h ± 2 %; una bomba da 13 m³/h a 80 mca)" }
+      - { path: equipment.pumpset-main-01.variables.discharge_pressure_mca, min: 71.38, max: 72.82, description: "(vuelve a 72,1 mca ± 1 %)" }
+      - { path: equipment.pumpset-main-01.kpis.min_discharge_mca, min: 65.0, description: "(el bache del disparo no baja de 65 mca, D29)" }
+      - { path: events.pumpset-main-01.low_pressure, equals: 0, description: "(sin alarma: 10 s bajo 64,9 mca)" }
+      - { path: equipment.prs-01.variables.critical_pressure_mca, min: 15.30, max: 15.60 }
+
+  - id: leak-burst
+    description: "Revienta la fuga l1 del nivel 2 (fraude o rotura): sube el agua no contabilizada y la estación compensa"
+    duration_s: 1200
+    timeline:
+      - { at_s: 300, equipment: grid-02, command: inject_fault, args: { fault: leak_burst, duration_s: 3600 } }
+    expect:
+      - { path: equipment.grid-02.variables.leakage_m3h, min: 0.959, max: 0.998, description: "(banco con la fuga a 5 veces su Kv: 0,978 m³/h ± 2 %; antes 0,326)" }
+      - { path: equipment.prs-01.variables.outlet_pressure_mca, min: 21.04, max: 21.46, description: "(banco: 21,25 mca ± 1 %; sube 0,3 mca para sostener la casa crítica)" }
+      - { path: equipment.prs-01.variables.critical_pressure_mca, min: 15.30, max: 15.60 }
+      - { path: equipment.pumpset-main-01.variables.flow_m3h, min: 11.96, max: 12.45, description: "(banco: 12,21 m³/h ± 2 %)" }
+
+  - id: between-valve
+    description: "Se cierra a la mitad la válvula entre los niveles 2 y 3: los niveles de arriba pierden presión y la estación la repone"
+    duration_s: 1200
+    timeline:
+      - { at_s: 300, equipment: valve-between-23, command: set_opening, args: { pct: 50 } }
+    expect:
+      - { path: equipment.prs-01.variables.outlet_pressure_mca, min: 23.05, max: 23.51, description: "(banco: 23,28 mca ± 1 %, 2,3 mca más que con la válvula abierta)" }
+      - { path: equipment.prs-01.variables.critical_pressure_mca, min: 15.30, max: 15.60 }
+      - { path: equipment.valve-between-23.variables.dp_mca, min: 1.5, description: "(Kv 20 al 50 % = 10 m³/h con ≈ 5,4 m³/h: ≈ 2,9 mca de caída)" }

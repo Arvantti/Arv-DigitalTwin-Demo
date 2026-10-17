@@ -66,6 +66,19 @@ En cada paso el motor deja en `snapshot["links"]` el estado de cada enlace, con 
 
 Un servicio (el vapor) se entrega a pedido: su `flow_kg_h` es la `demand_kg_h` del destino mientras haya presión útil (> 0,05 bar), y cero si no. Los demás caudales los publica el equipo de origen. Los valores llevan el paso de retraso de la sección siguiente. `PlantModel.links_for_flow(a, b)` dice qué enlaces cruzan un tramo `a → b` del plano; la API lo usa para que la escena anime cada tubería.
 
+## 2b. Dominio hidráulico (redes de agua a presión)
+
+Una red de agua no se puede pasar de equipo en equipo con un paso de retraso: el caudal de cada válvula depende de la presión en su nodo, y esa presión de lo que consumen todas las demás. Por eso el motor tiene un dominio hidráulico (`twin_runtime/plant_hydraulics.py`) sobre el solucionador de `primitives/hydraulics.py`:
+
+- **Puertos hidráulicos.** Un puerto declara `hydraulic: <nodo>`, el nodo de su banco de prueba que expone a la red (por ejemplo `discharge` en el grupo de bombas, `inlet` en la rejilla). El comportamiento implementa `hydraulic_build(net, prefijo, cota)`, que agrega sus elementos a la red de la planta con las mismas funciones de su banco (`add_pump_set`, `add_distribution_grid`…).
+- **Enlace hidráulico = tubo.** Un enlace entre dos puertos `hydraulic` no pasa magnitudes: es un tubo de la red. Sale del flujo del plano, que debe ser `piped: true` con `diameter_in` (PVC a presión: 2" = 52,5 mm, 3" = 77,9 mm, 4" = 102,2 mm) o `inner_diameter_mm`; la longitud es la de su `route` (puntos `[x, y, z]`), o `length_m`, o la distancia entre equipos; `minor_k` suma los accesorios (0,5 por defecto). No admite `via`, `max` ni `when`.
+- **Cotas.** Cada nodo queda a la cota del equipo (`position[2]` del plano): la presión en mca es la de ese punto.
+- **Tanques.** Un `vessel` es cabeza fija: el fondo a su cota más la altura del agua, con una válvula de fondo hacia `outlet` que cierra si se vacía; `inlet` descarga libre por arriba. El motor le fija `demand_kg_h` y `supply_kg_h` con el agua que mueve la red (más lo que llega por enlaces normales, como las bajantes). Si dos tanques comparten una succión y se pasan agua, eso entra al que recibe: el agua se conserva.
+- **El equipo no cambia.** Después de armar la red, el motor reemplaza `equipo.net` (su banco) por una vista con su prefijo: `set`, `set_head` y `solve` usan los nombres del banco; lo que solo existe en el banco (la carga, la cabeza de prueba) se ignora.
+- **Paso.** Al empezar el paso el motor actualiza los tanques (`hydraulic_sync`) y resuelve la red. Si un equipo cambia algo de la red durante su `update` (velocidad, apertura, consigna), su `solve()` la vuelve a resolver con arranque en caliente: la red responde al instante, como en el banco de cada equipo. Con el paso de retraso, el lazo de presión de las bombas oscilaba de 60 a 81 mca al dispararse una bomba. El resultado depende del orden de `equipment` en `simulation.yaml`, que es fijo. Unas 3 soluciones por paso, ≈ 20 ms para el acueducto a escala.
+- **Señales.** `pressure_mca` (telemetría de presión; si llegan varias, la menor: el punto más crítico) y `level_pct` (nivel de un tanque; si llegan varios, el promedio) son magnitudes normales del motor.
+- **Snapshot.** Cada tubo aparece en `links` con `hydraulic: true`, `flow_m3h` (con signo), `flow_kg_h`, `velocity_m_s`, `from_pressure_mca`, `to_pressure_mca` y `flowing`; `snapshot["hydraulics"]` dice si la red convergió y en cuántas iteraciones.
+
 ## 3. Lo que ya está conectado
 
 `sauce-plant-v1`: la línea caliente de 1.000 ml, con la receta `rcp-tomato-sauce` en las marmitas.
@@ -113,9 +126,31 @@ dryer-01, dryer-02 (ABS, ninguna inyectora lo moldea), chiller-02 (respaldo) y p
 
 Una máquina que suelta varias piezas por ciclo entrega ráfagas, no un flujo continuo: la banda las recibe en una zona de entrada con `entry_buffer_units` plazas (por defecto 1, llegadas una a una como en la línea de sachets). Sin ella, la banda descartaba lo que no cabía entre dos piezas y se perdía la mitad de la producción.
 
+`water-network-scale-v1`: el acueducto a escala (diseño en `docs/water-network-plant.md`), con el dominio hidráulico.
+
+```
+tanques de retorno (piso 0) ─▶ bombas de recirculación (por nivel) ─▶ tanque de bombeo (piso 1)
+tanque de bombeo ─▶ 2 bombas multietapa (las dos de trabajo, 72,1 mca) ─4", sube 1 m─▶ estación reguladora ─4", baja 1 m─▶ nivel 1
+nivel 1 ─2"─▶ válvula 1-2 ─▶ nivel 2 ─▶ válvula 2-3 ─▶ nivel 3 ─▶ válvula 3-4 ─▶ nivel 4
+niveles 1 y 2 ─bajantes─▶ tanque de retorno 1      niveles 3 y 4 ─bajantes─▶ tanque de retorno 2
+telemetría: la casa más baja de los 4 niveles ─▶ estación (rama automática)
+```
+
+| Escenario | Qué muestra |
+|---|---|
+| `nominal` | Día: estación en 20,94 mca y casa crítica (c44 del nivel 4) en 15,45 mca; bombas 11,53 m³/h a 72,1 mca, 71,1 mca a la entrada de la reguladora; la recirculación arranca y para por nivel cada ≈ 20 min |
+| `night-pressure` | Las casas al 30 %: la rama automática baja la salida a 18,46 mca y la casa crítica sigue en 15,45 |
+| `manual-branch` | De noche, rama manual con la salida del día: la casa crítica sube a 17,87 mca y las fugas de la red suben 6,4 % (de 1,253 a 1,338 m³/h) |
+| `pump-trip` | Se dispara una bomba: la otra salta a ≈ 93 % y la presión baja a 68,9 mca un segundo (regla D29: piso 65 mca) |
+| `leak-burst` | La fuga l1 del nivel 2 se abre a 5 veces su Kv (0,98 m³/h); la estación sube a 21,25 mca |
+| `between-valve` | La válvula entre los niveles 2 y 3 al 50 %: la estación sube a 23,28 mca para sostener la casa crítica |
+
+Los valores esperados salen del banco en régimen permanente `industrial-models/water-network-scale-v1/network.py`, que arma la misma red con los mismos tubos del plano; `test_plant_hydraulics.py` compara el motor con él (± 0,5 %). Los escenarios del archivo son pruebas: los de operación los crea el usuario conversando con Claude conectado al simulador.
+
 ## 4. Limitaciones actuales
 
 - El producto desviado regresa a la marmita con su receta y se mezcla a la temperatura de salida del pasteurizador (`return_in`, `returned_kg`); no hay tubería de retorno con volumen ni retardo, solo el paso de retraso del motor.
 - Las recetas se escriben como fases de la marmita en `simulation.yaml`; todavía no se traducen solas desde `recipes` del plano.
 - La planta de inyección conecta la inyectora 3 con la banda y el empaque 1, y enlaza resina seca (2 secadores con 2 inyectoras), agua de moldes (chiller 1 con las 29) y scrap (las 29 con el molino), y de ahí molino → peletizado → silo 5. Quedan fuera: el reparto de resina de un secador entre varias inyectoras (hoy una salida atiende un solo destino), la carga térmica real del chiller (las inyectoras no le piden calor), el efecto de la temperatura del agua sobre el molde (solo cuenta si hay o no agua), la humedad de la resina como causa de un escenario completo (el secador cambia de humedad en horas, no en minutos) y la central de materiales: el silo 5 → manifold → inyectoras con pellet reciclado, que cerraría el lazo del reciclaje.
+- Acueducto: las bajantes llegan a los tanques de retorno en el paso siguiente (≈ 3 kg en tránsito), sin el tiempo real de caída por la canaleta; no hay golpe de ariete (régimen cuasiestacionario) ni agua guardada en los tubos.
 - La planta conectada se ve en 3D y en vivo en la escena de planta (`docs/plant-scene.md`); la API la expone en `/api/plants`.

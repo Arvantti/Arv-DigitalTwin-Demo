@@ -10,6 +10,7 @@ from twin_runtime import EquipmentBehavior, StepContext
 from twin_runtime.primitives import HydraulicNetwork
 
 MCA_PER_BAR = 10.197
+WATER_KG_M3 = 998.0
 BRANCHES = 4
 PER_BRANCH = 4
 NODES_PER_BRANCH = 5  # cuatro casas y una posición más para la fuga o el empalme
@@ -114,6 +115,12 @@ class DistributionGrid(EquipmentBehavior):
         # caudal de diseño del nivel: todas las válvulas abiertas a 20 mca
         self.design_m3h = (len(CONSUMERS) * p["consumer_kv_m3h"] + len(LEAKS) * p["leak_kv_m3h"]) * (20 / MCA_PER_BAR) ** 0.5
 
+    def hydraulic_build(self, net: HydraulicNetwork, prefix: str, elevation_m: float) -> None:
+        """En la planta: la rejilla colgada de su nodo de entrada, a la cota del equipo (la columna sigue desde ese
+        mismo nodo hacia el nivel de arriba, puerto riser_out)."""
+        net.add_node(prefix + "inlet", elevation_m)
+        add_distribution_grid(net, prefix, prefix + "inlet", self.p)
+
     # ---- comandos y fallas ----
     def on_command(self, name: str, args: dict[str, Any]) -> bool:
         if name != "set_opening":
@@ -192,6 +199,7 @@ class DistributionGrid(EquipmentBehavior):
             "min_pressure_valve": self.min_valve,
             "consumer_opening_pct": sum(self.opening[v] for v in CONSUMERS) / len(CONSUMERS),
             "volume_m3": self.volume_m3,
+            "drain_kg_h": self.flow_in * WATER_KG_M3,
         }
         for v in VALVES:
             out[f"q_{v}"] = self.flow_lpm[v]
