@@ -16,6 +16,7 @@ from twin_runtime.primitives import HydraulicNetwork
 
 LIB = Path(__file__).resolve().parents[2] / "equipment-library"
 LEVEL_RISE_M = 1.2  # cada nivel 1,20 m más arriba (docs/water-network-plant.md, sección 2)
+STATION_ELEV_M = 1.0  # piso 1: la reguladora queda 1 m arriba de las bombas y el nivel 1 de la rejilla, 1 m abajo
 RISER_LEN_M = 3.0  # tramo horizontal de la columna hasta la rejilla
 RISER_D_M = 0.0525  # 2"
 HEADER_D_M = 0.1022  # 4"
@@ -64,9 +65,9 @@ def build(
     st_p = resolved("pressure-reducing-station", station_preset)
     if station_setting_mca is not None:
         st_p["manual_setting_mca"] = station_setting_mca
-    net.add_node("entrada_est", 0.0)
+    net.add_node("entrada_est", STATION_ELEV_M)
     net.add_pipe("colector", "descarga", "entrada_est", 5.0, HEADER_D_M, minor_k=0.3)
-    net.add_node("salida_est", 0.0)
+    net.add_node("salida_est", STATION_ELEV_M)
     station_mod.add_pressure_reducing_station(net, "est_", "entrada_est", "salida_est", st_p)
 
     grids: dict[str, Any] = {}
@@ -75,7 +76,7 @@ def build(
         gp = resolved("distribution-grid", preset)
         inlet = f"nivel{k}_in"
         net.add_node(inlet, z)
-        net.add_pipe(f"columna{k}", "salida_est", inlet, RISER_LEN_M + z, RISER_D_M, minor_k=0.5)
+        net.add_pipe(f"columna{k}", "salida_est", inlet, RISER_LEN_M + abs(STATION_ELEV_M - z), RISER_D_M, minor_k=0.5)
         grids[f"nivel{k}"] = grid_mod.add_distribution_grid(net, f"n{k}_", inlet, gp)
     return net, {"grids": grids, "pumps": pumps_p}
 
