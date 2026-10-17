@@ -1,71 +1,72 @@
-# Cuentas a mano con la curva H = s²·100 − 0,3125·Q² (bomba de 8 m³/h a 80 m, H0 = 100 m), antirretorno de
-# Kv 40 (Δh = 10,197·(Q/40)²), succión a 1 m y la red servida como un Kv a la atmósfera: Q = Kv·√(p/10,197).
+# Cuentas a mano con la curva H = s²·100 − 0,11834·Q² (bomba de 13 m³/h a 80 m, H0 = 100 m), antirretorno de
+# Kv 65 (Δh = 10,197·(Q/65)²), succión a 1 m y la red servida como un Kv a la atmósfera: Q = Kv·√(p/10,197).
+# Cada bomba sola sostiene la demanda de día a 80 mca (pedido del autor: aunque solo una trabaje, ≥ 75 mca).
 scenarios:
   - id: steady
-    description: "Día: la red pide 13 m³/h a 80 mca; trabajan 2 bombas al 96 % de velocidad"
-    preset: multistage-2x8m3h-80m
+    description: "Día: la red pide 13 m³/h a 80 mca; trabajan 2 bombas al 92 % de velocidad"
+    preset: multistage-2x13m3h-80m
     duration_s: 3600
     expect:
       - { path: variables.discharge_pressure_mca, min: 77.6, max: 82.4, description: "(consigna 80 mca ± 3 %)" }
       - { path: variables.flow_m3h, min: 12.74, max: 13.26, description: "(Kv 4,64 · √(80/10,197) = 13,00 m³/h ± 2 %)" }
-      - { path: variables.pumps_running, equals: 2, description: "(una sola bomba a plena velocidad da 8,2 m³/h a 80 mca: no alcanza)" }
-      - { path: variables.speed_pct, min: 95.2, max: 97.2, description: "(cada bomba: 6,5 m³/h; altura = 80 + 0,27 del antirretorno − 1 de succión = 79,27 m = 100·s² − 0,3125·6,5² → s = 96,2 %)" }
-      - { path: variables.power_kw, min: 4.43, max: 4.61, description: "(9.790 N/m³ × 13/3.600 m³/s × 79,27 m ÷ 0,62 = 4,52 kW ± 2 %)" }
+      - { path: variables.pumps_running, equals: 2, description: "(una sola bomba necesita el 99,7 % de velocidad, sobre el 98 % de arranque: entra la segunda; 13 m³/h > 1 × 13 × 70 % = 9,1, no para)" }
+      - { path: variables.speed_pct, min: 90.7, max: 92.7, description: "(cada bomba: 6,5 m³/h; altura = 80 + 0,10 del antirretorno − 1 de succión = 79,10 m = 100·s² − 0,11834·6,5² → s = 91,7 %)" }
+      - { path: variables.power_kw, min: 4.42, max: 4.60, description: "(9.790 N/m³ × 13/3.600 m³/s × 79,10 m ÷ 0,62 = 4,51 kW ± 2 %)" }
       - { path: kpis.pump_starts, equals: 2 }
       - { path: events.low_pressure, equals: 0, description: "(la alarma solo cuenta después del primer minuto de arranque)" }
 
   - id: night-demand
-    description: "Noche: la red pide 5 m³/h; basta una bomba al 93 %"
-    preset: multistage-2x8m3h-80m
+    description: "Noche: la red pide 5 m³/h; basta una bomba al 91 %"
+    preset: multistage-2x13m3h-80m
     duration_s: 1800
     inputs: { system_kv_m3h: 1.78 }
     expect:
       - { path: variables.flow_m3h, min: 4.89, max: 5.09, description: "(1,78 · √(80/10,197) = 4,99 m³/h ± 2 %)" }
       - { path: variables.pumps_running, equals: 1 }
-      - { path: variables.speed_pct, min: 92.3, max: 94.3, description: "(altura 80 + 0,16 − 1 = 79,16 m = 100·s² − 0,3125·4,99² → s = 93,2 %)" }
+      - { path: variables.speed_pct, min: 89.6, max: 91.6, description: "(altura 80 + 0,06 − 1 = 79,06 m = 100·s² − 0,11834·4,99² → s = 90,6 %)" }
 
   - id: day-to-night
     description: "La demanda baja de 13 a 5 m³/h a los 30 min; el caudal cabe en una bomba y la otra para"
-    preset: multistage-2x8m3h-80m
+    preset: multistage-2x13m3h-80m
     duration_s: 3600
     timeline:
       - { at_s: 1800, inputs: { system_kv_m3h: 1.78 } }
     expect:
-      - { path: variables.pumps_running, equals: 1, description: "(5,0 m³/h < 1 × 8 × 70 % = 5,6 m³/h durante 30 s)" }
+      - { path: variables.pumps_running, equals: 1, description: "(5,0 m³/h < 1 × 13 × 70 % = 9,1 m³/h durante 30 s)" }
       - { path: events.pump_stopped, equals: 1 }
       - { path: variables.discharge_pressure_mca, min: 77.6, max: 82.4 }
 
   - id: pump-trip
-    description: "Se dispara la bomba líder a los 15 min; sin reserva, la otra sola no alcanza y la presión cae"
-    preset: multistage-2x8m3h-80m
+    description: "Se dispara la bomba líder a los 15 min; sin reserva, la otra sola sostiene los 13 m³/h a 80 mca"
+    preset: multistage-2x13m3h-80m
     duration_s: 1800
     timeline:
       - { at_s: 900, command: inject_fault, args: { fault: pump_trip, duration_s: 1800 } }
     expect:
       - { path: events.pump_tripped, equals: 1 }
-      - { path: events.low_pressure, equals: 1, description: "(la descarga queda más de 10 % bajo la consigna durante 10 s)" }
+      - { path: events.low_pressure, equals: 0, description: "(la presión no baja de 75 mca: la bomba que queda acelera)" }
       - { path: variables.pumps_running, equals: 1 }
-      - { path: variables.speed_pct, min: 99.9, max: 100.1, description: "(el variador se satura al 100 %)" }
-      - { path: variables.flow_m3h, min: 11.06, max: 11.52, description: "(1 bomba a plena velocidad: 1 + 100 − 0,3125·Q² − 10,197·(Q/40)² = 10,197·(Q/4,64)² → Q = 11,29 m³/h ± 2 %)" }
-      - { path: variables.discharge_pressure_mca, min: 59.2, max: 61.6, description: "(10,197·(11,29/4,64)² = 60,4 mca ± 2 %)" }
+      - { path: variables.speed_pct, min: 98.7, max: 100.1, description: "(altura 80 + 0,41 − 1 = 79,41 m = 100·s² − 0,11834·13² → s = 99,7 %)" }
+      - { path: variables.flow_m3h, min: 12.74, max: 13.26, description: "(13,00 m³/h ± 2 %)" }
+      - { path: variables.discharge_pressure_mca, min: 77.6, max: 82.4, description: "(consigna 80 mca ± 3 %; a plena velocidad daría 80,5)" }
 
   - id: pump-trip-recovery
-    description: "La misma falla dura 30 min; al repararse la bomba vuelve a entrar y la presión se recupera"
-    preset: multistage-2x8m3h-80m
+    description: "La misma falla dura 30 min; al repararse la bomba vuelve a entrar y el variador baja al 92 %"
+    preset: multistage-2x13m3h-80m
     duration_s: 3600
     timeline:
       - { at_s: 900, command: inject_fault, args: { fault: pump_trip, duration_s: 1800 } }
     expect:
       - { path: events.pump_tripped, equals: 1 }
-      - { path: events.pressure_normal, equals: 1 }
-      - { path: kpis.pump_starts, equals: 3, description: "(bombas 1 y 2 al arrancar; la 1 vuelve tras la reparación)" }
+      - { path: events.low_pressure, equals: 0 }
+      - { path: kpis.pump_starts, equals: 3, description: "(bombas 1 y 2 al arrancar; la 1 vuelve tras la reparación porque la otra va sobre el 98 %)" }
       - { path: variables.pumps_running, equals: 2 }
       - { path: variables.pumps_available, equals: 2 }
       - { path: variables.discharge_pressure_mca, min: 77.6, max: 82.4 }
 
   - id: vfd-fault
     description: "Falla del variador a los 10 min durante 10 min: paran todas las bombas y al rearmar arranca la siguiente como líder"
-    preset: multistage-2x8m3h-80m
+    preset: multistage-2x13m3h-80m
     duration_s: 2400
     timeline:
       - { at_s: 600, command: inject_fault, args: { fault: vfd_fault, duration_s: 600 } }
@@ -92,6 +93,6 @@ scenarios:
 
   - id: demo
     description: Turno con fallas aleatorias para la galería
-    preset: multistage-2x8m3h-80m
+    preset: multistage-2x13m3h-80m
     duration_s: 28800
     random_faults: true

@@ -49,9 +49,9 @@ flowchart LR
 | `tank-recirc-01..02` | Tanques de recirculación, 1.000 L c/u | `vessel` (existe; preset nuevo `water-1000l`) | 2 |
 | `pumpset-recirc-01` | 2 bombas centrífugas normales (1 trabaja, 1 reserva), 15 m³/h a 10 mca c/u, arranque por nivel | `booster-pump-set` (preset `recirculation-2x15m3h`) | 1 |
 | `tank-supply-01..02` | Tanques de bombeo, 1.000 L c/u, comunicados | `vessel` (preset `water-1000l`) | 2 |
-| `pumpset-main-01` | 2 bombas multietapa verticales en paralelo (las dos trabajan, sin reserva), 8 m³/h a 80 m c/u, variador, antirretorno por bomba, colector de 4" | `booster-pump-set` (preset `multistage-2x8m3h-80m`) | 1 |
+| `pumpset-main-01` | 2 bombas multietapa verticales en paralelo (las dos trabajan, sin reserva), 13 m³/h a 80 m c/u: una sola sostiene la demanda de día, variador, antirretorno por bomba, colector de 4" | `booster-pump-set` (preset `multistage-2x13m3h-80m`) | 1 |
 | `prs-01` | Estación reguladora: bifurcación con válvulas de corte manuales, rama A con PRV automática, rama B con PRV manual de piloto, unión | `pressure-reducing-station` | 1 |
-| `grid-01..04` | Rejilla de un nivel: cabezal y ramales de 2", 16 válvulas de consumo (4 × 4), 2 válvulas de fuga (rojas), canaleta | `distribution-grid` | 4 |
+| `grid-01..04` | Rejilla de un nivel: cabezal y ramales de 2", 16 válvulas de consumo (4 × 4), 2 válvulas de fuga (rojas), cada válvula numerada, canaletas casi a ras de la salida de las válvulas | `distribution-grid` | 4 |
 | `valve-between-12/23/34` | Válvula de regulación entre niveles, apertura fija manual (automatizable después) | `regulating-valve` | 3 |
 
 Equipos de 5 tipos: `vessel` ya existe y se reutiliza; los otros cuatro se crean con `docs/equipment-authoring.md`. Las tuberías no son equipos: son los `flows` del plano con diámetro y longitud (sección 5).
@@ -109,7 +109,7 @@ De noche (válvulas de consumo al 30 %):
 
 Con fugas tipo orificio (exponente 0,5) la PRV automática ahorra ≈ 5 % de fugas de noche; con un exponente de 1,15, típico de redes de PVC con fisuras, el ahorro sube a ≈ 15 %. El exponente queda como parámetro de las válvulas de fuga para mostrar ese efecto.
 
-Bombas: dos multietapa de 8 m³/h a 80 m cubren el día (13 m³/h), sin reserva (el autor fijó 2 bombas). Recirculación: la elevación desde los tanques del piso 2 a los del piso 3 es ≈ 4,5 m; 10 mca con pérdidas, 15 m³/h para reponer más rápido de lo que se consume. Volumen: 2 m³ en tanques de bombeo dan ≈ 9 min de autonomía a caudal de día.
+Bombas: dos multietapa de 13 m³/h a 80 m, sin reserva (el autor fijó 2 bombas). Cada una sola cubre el día (13 m³/h a 80 mca, con el variador al 99,7 %), para que la presión no caiga bajo 75 mca si una falla (pedido del autor, 2026-10-17); con las dos, el variador baja al 92 %. Recirculación: la elevación desde los tanques del piso 2 a los del piso 3 es ≈ 4,5 m; 10 mca con pérdidas, 15 m³/h para reponer más rápido de lo que se consume. Volumen: 2 m³ en tanques de bombeo dan ≈ 9 min de autonomía a caudal de día.
 
 ## 5. Modelo de simulación
 
@@ -176,7 +176,7 @@ Las expectativas se calculan a mano con la sección 4 antes de escribir el escen
 | `nominal` | Día: todas las casas abiertas, rama automática. 80 mca en bombas, 20 mca en la válvula crítica, 13 m³/h |
 | `night-pressure` | Demanda de 24 h (curva diaria); la rama automática baja la salida de la PRV de noche y las fugas bajan |
 | `manual-branch` | El operador pasa a la rama manual: la presión crítica sube de noche y las fugas aumentan; comparación de KPIs |
-| `pump-trip` | Falla de una bomba principal: sin reserva, la otra sola entrega ≈ 11,3 m³/h a ≈ 60 mca, salta la alarma de baja presión y el antirretorno evita el retroceso por la bomba parada |
+| `pump-trip` | Falla de una bomba principal: sin reserva, la otra acelera y sola sostiene 13 m³/h a 80 mca (un bache de ≈ 1 s mientras acelera, sin alarma de baja presión) y el antirretorno evita el retroceso por la bomba parada |
 | `leak-burst` | Una válvula de fuga del nivel 2 se abre del todo (fraude o rotura): sube el agua no contabilizada, baja la presión del nivel y la PRV automática compensa |
 | `between-valve` | Se cierra a la mitad la válvula entre niveles 2 y 3: los niveles de arriba pierden presión aunque la estación esté bien |
 
@@ -197,7 +197,7 @@ La fase 1 es un modelo 1D (red). Para acoplar después CFD (Navier-Stokes) sin r
 
 1. **Este diseño** y el script de predimensionamiento (sin código de producción). Hecho: PR #13.
 2. **Solucionador hidráulico** en `twin-runtime`, con pruebas contra casos calculados a mano (tubo simple, dos ramas en paralelo, bomba contra curva del sistema, PRV). Hecho: PR #14.
-3. **Tipos de equipo** `booster-pump-set`, `pressure-reducing-station`, `regulating-valve` y `distribution-grid` (contrato, comportamiento, geometría, presets, escenarios) y el preset `water-1000l` de `vessel`. Captura de la galería de cada uno. Hecho: PR #22 y #23 (`booster-pump-set`, `regulating-valve`, `water-1000l`) y PR #24 (`pressure-reducing-station`, `distribution-grid`).
+3. **Tipos de equipo** `booster-pump-set`, `pressure-reducing-station`, `regulating-valve` y `distribution-grid` (contrato, comportamiento, geometría, presets, escenarios) y el preset `water-1000l` de `vessel`. Captura de la galería de cada uno. Hecho: PR #22 y #23 (`booster-pump-set`, `regulating-valve`, `water-1000l`) y PR #24 (`pressure-reducing-station`, `distribution-grid`); PR #25 agranda las bombas principales a 13 m³/h para que una sola sostenga la presión y numera las válvulas de la rejilla.
 4. **Planta** `industrial-models/water-network-scale-v1/` (`plant.yaml` con pisos y rutas, `simulation.yaml`) y dominio hidráulico del motor, con los escenarios de la sección 6.
 5. **Escena 3D** del edificio, con captura y API de simulación.
 

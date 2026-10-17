@@ -1,0 +1,4 @@
+preset: multistage-2x13m3h-80m
+description: Dos bombas multietapa verticales de 13 m³/h a 80 m, las dos de trabajo (sin reserva) y cada una capaz de sostener sola la demanda de día, con variador a 80 mca, bombeo principal del acueducto a escala
+params: { pumps: 2, duty_max: 2, pump_style: vertical_multistage, design_flow_m3h: 13, design_head_m: 80, shutoff_head_m: 100, efficiency: 0.62, motor_kw: 5.5, control: pressure, setpoint_mca: 80, header_diameter_in: 4, suction_head_m: 1.0, bench_static_head_m: 0, bench_system_kv_m3h: 4.64 }
+provenance: { pumps: user, duty_max: assumed, design_flow_m3h: user, design_head_m: user, setpoint_mca: user, header_diameter_in: user, shutoff_head_m: assumed, efficiency: assumed, motor_kw: assumed, suction_head_m: assumed, bench_system_kv_m3h: assumed }
