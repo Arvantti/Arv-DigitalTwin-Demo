@@ -1,0 +1,81 @@
+schema_version: 0.1.0
+type: regulating-valve
+version: 0.1.0
+name: Válvula de regulación en línea
+manufacturing: utility
+category: utilities.water.valve
+description: >
+  Válvula de regulación en una tubería de agua (bola o globo) con volante manual o actuador eléctrico.
+  Con apertura fija estrangula el paso entre dos tramos de la red (por ejemplo entre dos niveles del
+  acueducto a escala); con actuador puede ir a una apertura ordenada o regular la presión aguas abajo
+  con un PID. El caudal sale de Kv, apertura y diferencia de presión en la red hidráulica.
+aliases: [válvula de regulación, válvula entre niveles, válvula de estrangulamiento, válvula de control, válvula de bola, válvula de globo]
+fidelity: { visual: V2, behavior: B2 }
+
+params:
+  diameter_in:     { type: number, unit: in, min: 0.5, max: 24, default: 2, description: Diámetro nominal, affects: [geometry] }
+  kv_m3h:          { type: number, unit: m3/h, min: 0.1, max: 5000, default: 20, description: Kv a apertura total, affects: [behavior] }
+  characteristic:  { type: enum, values: [linear, equal_percentage], default: linear, description: Característica de apertura, affects: [behavior] }
+  opening_pct:     { type: number, unit: "%", min: 0, max: 100, default: 100, description: Apertura fija inicial, affects: [behavior] }
+  actuated:        { type: boolean, default: false, description: "Tiene actuador eléctrico (si no, volante manual)", affects: [geometry, behavior] }
+  stroke_s:        { type: number, unit: s, min: 1, max: 600, default: 30, description: Tiempo del actuador de cerrada a abierta, affects: [behavior] }
+  control:         { type: enum, values: [manual, downstream_pressure], default: manual, description: "manual: apertura fija u ordenada; downstream_pressure: PID sobre la presión de salida (requiere actuador)", affects: [behavior] }
+  setpoint_mca:    { type: number, unit: mca, min: 0, max: 250, default: 20, description: Consigna de presión aguas abajo, affects: [behavior] }
+  body_color:      { type: string, default: "#2f5f93", description: Color del cuerpo (hex), affects: [geometry] }
+  bench_inlet_mca: { type: number, unit: mca, min: 0, max: 300, default: 25, description: "Banco de prueba: presión de entrada si el entorno no la fija", affects: [behavior] }
+  bench_load_kv_m3h: { type: number, unit: m3/h, min: 0.01, max: 5000, default: 6.667, description: "Banco de prueba: Kv equivalente de lo que consume aguas abajo (descarga a la atmósfera)", affects: [behavior] }
+
+ports:
+  - { id: inlet, kind: material, direction: in, medium: agua, unit: m3/h }
+  - { id: outlet, kind: material, direction: out, medium: agua, unit: m3/h }
+  - { id: power, kind: utility, direction: in, medium: "energía eléctrica (solo con actuador)" }
+
+states:
+  - { id: idle, description: Cerrada }
+  - { id: running, description: Abierta y en servicio }
+  - { id: fault, description: Detenida por falla }
+
+variables:
+  - { id: opening_pct, unit: "%", kind: measured, range: [0, 100], noise_sd: 0.1, resolution: 0.1, description: Apertura (indicador de posición) }
+  - { id: opening_target_pct, unit: "%", kind: setpoint, description: Apertura ordenada }
+  - { id: flow_m3h, unit: m3/h, kind: measured, range: [0, 5000], noise_sd: 0.01, resolution: 0.01, description: Caudal }
+  - { id: inlet_pressure_mca, unit: mca, kind: measured, range: [0, 300], noise_sd: 0.02, resolution: 0.01, description: Presión aguas arriba }
+  - { id: outlet_pressure_mca, unit: mca, kind: measured, range: [0, 300], noise_sd: 0.02, resolution: 0.01, description: Presión aguas abajo }
+  - { id: dp_mca, unit: mca, kind: calculated, description: Caída de presión en la válvula }
+  - { id: setpoint_mca, unit: mca, kind: setpoint, description: Consigna de presión aguas abajo (modo presión) }
+  - { id: kv_effective_m3h, unit: m3/h, kind: calculated, description: Kv a la apertura actual }
+  - { id: volume_m3, unit: m3, kind: counter, description: Volumen que pasó }
+
+events:
+  - { id: opening_changed, description: Se ordenó una apertura nueva, payload: [pct] }
+  - { id: valve_stuck, description: El actuador no responde, payload: [pct] }
+
+faults:
+  - { id: actuator_stuck, description: Actuador o vástago trabado, mtbf_h: 8000, mttr_min: 60, severity: medium, stops_equipment: false, effect: "La apertura queda fija donde estaba" }
+  - { id: seat_leak, description: Asiento desgastado, mtbf_h: 20000, mttr_min: 120, severity: low, stops_equipment: false, effect: "Cerrada deja pasar 2 % del Kv" }
+
+commands:
+  - { id: set_opening, description: "Ordena una apertura (el volante es inmediato; el actuador recorre a su velocidad)", args: { pct: number } }
+  - { id: set_setpoint, description: Cambia la consigna de presión aguas abajo, args: { mca: number } }
+  - { id: inject_fault, description: Inyecta una falla declarada, args: { fault: string, duration_s: number } }
+  - { id: clear_fault, description: Repara una falla activa, args: { fault: string } }
+  - { id: set_param, description: Cambia un parámetro en caliente, args: { name: string, value: any } }
+
+kpis:
+  - { id: avg_flow_m3h, unit: m3/h, description: Caudal medio }
+  - { id: avg_dp_mca, unit: mca, description: Caída de presión media }
+
+animation_channels:
+  - { id: opening, range: [0, 1], description: Apertura (gira el volante o el indicador del actuador) }
+  - { id: flow_norm, range: [0, 2], description: "Caudal ÷ Kv (m³/h por cada 1 bar)" }
+  - { id: inlet_pressure_mca, unit: mca, range: [0, 300], description: Manómetro de entrada }
+  - { id: outlet_pressure_mca, unit: mca, range: [0, 300], description: Manómetro de salida }
+
+geometry:
+  parts: [spool, flanges, valve_body, handwheel_or_actuator, position_indicator, gauges, supports]
+
+assumptions:
+  - "Q[m³/h] = Kv · c(apertura) · √(Δp[bar]); c lineal o de igual porcentaje con rangeabilidad 50."
+  - "El volante cambia la apertura de inmediato; el actuador recorre 100 % en stroke_s."
+  - "Modo presión: PID sobre la presión de salida del paso anterior, kp 0,5 %/mca, ki 0,5 %/(mca·s)."
+  - "Fuera de una planta, la entrada es una presión fija (bench_inlet_mca) a la misma elevación y la salida descarga a la atmósfera por un Kv equivalente (bench_load_kv_m3h)."

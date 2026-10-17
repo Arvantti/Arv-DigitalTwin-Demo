@@ -1,0 +1,4 @@
+preset: water-1000l
+description: Tanque vertical de agua de 1.000 L, pintado, para los tanques de bombeo y de recirculación del acueducto a escala
+params: { form: vertical_tank, volume_l: 1000, content: agua, density_kg_m3: 998, initial_level_pct: 70, jacketed: false, agitator: false, inlet_max_kg_h: 20000, outlet_max_kg_h: 20000, low_level_pct: 15, high_level_pct: 90, finish: painted, color: "#3d6fa8" }
+provenance: { volume_l: assumed, content: user, initial_level_pct: assumed, inlet_max_kg_h: assumed, outlet_max_kg_h: assumed, finish: assumed }

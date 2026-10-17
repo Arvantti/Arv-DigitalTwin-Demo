@@ -1,0 +1,4 @@
+preset: actuated-2in-pressure
+description: La misma válvula de 2" con actuador eléctrico regulando 21 mca aguas abajo (la versión automatizada que pidió el autor para después)
+params: { diameter_in: 2, kv_m3h: 20, characteristic: linear, opening_pct: 100, actuated: true, stroke_s: 30, control: downstream_pressure, setpoint_mca: 21, body_color: "#2f5f93", bench_inlet_mca: 25, bench_load_kv_m3h: 6.667 }
+provenance: { diameter_in: user, actuated: user, kv_m3h: assumed, stroke_s: assumed, setpoint_mca: assumed, bench_inlet_mca: assumed, bench_load_kv_m3h: assumed }

@@ -1,0 +1,4 @@
+preset: recirculation-2x15m3h
+description: Dos bombas centrífugas horizontales de 15 m³/h a 10 m (1 trabaja, 1 de reserva) que suben el agua de los tanques de recirculación a los de bombeo según nivel
+params: { pumps: 2, duty_max: 1, pump_style: end_suction, design_flow_m3h: 15, design_head_m: 10, shutoff_head_m: 14, efficiency: 0.55, motor_kw: 1.1, control: level, setpoint_mca: 10, header_diameter_in: 3, suction_head_m: 0.5, bench_static_head_m: 4.5, bench_system_kv_m3h: 20.4 }
+provenance: { pumps: assumed, duty_max: assumed, pump_style: user, design_flow_m3h: assumed, design_head_m: assumed, shutoff_head_m: assumed, efficiency: assumed, motor_kw: assumed, bench_static_head_m: assumed, bench_system_kv_m3h: assumed }
