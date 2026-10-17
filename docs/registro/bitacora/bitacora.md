@@ -10,6 +10,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
+| 2026-10-17 | #19 | Planta de salsas: área de empaque manual (cajas de 4, 8 y 16 sachets) con estiba en tarimas, en librería, motor y escena | 3 y 5 |
 | 2026-10-17 | #17 | Fase 3 y 5: línea de peletizado (tipo `pelletizing-line`) y silo 5 de reciclado enlazados al molino; escenario `pelletizer-jam` | 3 y 5 |
 | 2026-10-17 | #16 | Fase 3 y 5: cascada de la planta de inyección (resina seca y humedad desde los secadores, agua de moldes desde el chiller, scrap hacia el molino) y escenarios `dryer-stop` y `chiller-trip` | 3 y 5 |
 | 2026-10-17 | #15 | Fase 3 y 5: geometría y comportamiento de empaque, secadores, chillers y molino de la planta de inyección, simulados en la escena | 3 y 5 |
@@ -28,6 +29,16 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 | 2026-10-16 | #1 | Layouts de las plantas | 1 |
 
 ## Entradas
+
+### 2026-10-17 03:54–04:20 · PR #19 · Empaque manual y estibado de la planta de salsas
+- **Fecha/hora (UTC):** 2026-10-17 03:54 a 04:20.
+- **Fase del plan:** [[plan-del-proyecto]] fases 3 y 5.
+- **Solicitado por:** Carlos Andrés Quiceño: «nos falta la parte de empaque [...] arman paquetes con esos sachets [...] las de litro vienen 4 por caja, las de 500 gramos 8 por caja y las de 250 gramos 16 unidades por caja [...] es una línea manual donde se empacan, y luego esas cajas van para apilarse en estibas para almacenarse como producto terminado disponible para entrega» (03:54).
+- **Qué se hizo:** el tipo `packing-station` gana el parámetro `item_kind` (`sachet` dibuja bolsas planas en la mesa y en la caja) y tres presets: `sachet-1000ml-4`, `sachet-500ml-8` y `sachet-250ml-16`, más tres escenarios con expectativas calculadas a mano. En `sauce-plant-v1` las encajadoras automáticas `case-pack-01` y `case-pack-02` se reemplazan por tres mesas manuales (`pack-sauce-250`, `pack-sauce-500` y `pack-sauce-1000`) en la zona de encajado, enlazadas a la envolvedora. En `simulation.yaml` la línea caliente de 1.000 ml termina ahora en `pack-sauce-1000` (control de peso → mesa → tarimas); las mesas de 500 y 250 ml se simulan sin llegadas hasta conectar sus líneas. Se ajustaron `nominal` y las pruebas que usaban `case-pack-02`.
+- **Commits:** ver el PR #19.
+- **Verificación:** `uv run twin-lib validate`, `uv run twin-lib plant validate`, `uv run pytest` (132 pruebas), `uv run ruff check .`, `pnpm -r typecheck` y `pnpm -r test`. Expectativas calculadas a mano (1.000 ml: 30 u/min × 60 min = 1.800 sachets ÷ 4 = 450 cajas ÷ 48 por tarima = 9 tarimas; `nominal`: 7 batches ≈ 9.000–10.800 sachets ÷ 4 = 2.160–2.700 cajas; resultado de la corrida: 2.472 cajas, 51 tarimas recogidas, mesa ocupada 27 % del tiempo). Capturas: [[fase7-empaque-sachets-galeria.png]] (galería, preset `sachet-1000ml-4`) y [[fase7-empaque-sachets-escena.png]] (escena con la API en vivo, escenario `nominal`).
+- **Decisiones:** [[decisiones]] D20.
+- **Conversación:** [[hilo-empaque-de-salsas]].
 
 ### 2026-10-17 02:19–02:50 · PR #17 · Línea de peletizado y lazo de reciclaje
 - **Fecha/hora (UTC):** 2026-10-17 02:19 a 02:50.

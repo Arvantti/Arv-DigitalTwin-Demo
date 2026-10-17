@@ -25,6 +25,8 @@ const MAX_PALLET_BOXES = 16;
 export default function build(params: Params): EquipmentModel {
   const cs = num(params, "box_size_m", 0.5);
   const color = str(params, "item_color", "#1e6fd9");
+  const sachet = str(params, "item_kind", "piece") === "sachet";
+  const perBox = Math.max(1, Math.round(num(params, "parts_per_box", 250)));
   const L = 3.0;
   const W = 2.0;
   const yTop = 0.85;
@@ -70,7 +72,10 @@ export default function build(params: Params): EquipmentModel {
   root.add(belt);
 
   // piezas esperando en la mesa (se muestran según el llenado)
-  const partsTable = new THREE.InstancedMesh(new THREE.BoxGeometry(0.1, 0.03, 0.08), itemMat, MAX_PARTS_TABLE);
+  // el sachet es una bolsa plana tipo almohada; la pieza rígida, un bloque
+  const tableGeo = sachet ? new THREE.SphereGeometry(0.5, 10, 6).scale(0.16, 0.05, 0.11) : new THREE.BoxGeometry(0.1, 0.03, 0.08);
+  const boxGeo = sachet ? new THREE.SphereGeometry(0.5, 10, 6).scale(0.15, 0.05, 0.1) : new THREE.BoxGeometry(0.08, 0.03, 0.06);
+  const partsTable = new THREE.InstancedMesh(tableGeo, itemMat, MAX_PARTS_TABLE);
   const m = new THREE.Matrix4();
   const q = new THREE.Quaternion();
   for (let i = 0; i < MAX_PARTS_TABLE; i++) {
@@ -104,7 +109,8 @@ export default function build(params: Params): EquipmentModel {
     flap.rotation.x = sz * -0.5;
     box.add(flap);
   }
-  const inside = new THREE.InstancedMesh(new THREE.BoxGeometry(0.08, 0.03, 0.06), itemMat, MAX_PARTS_BOX);
+  const insideMax = Math.min(MAX_PARTS_BOX, perBox);
+  const inside = new THREE.InstancedMesh(boxGeo, itemMat, MAX_PARTS_BOX);
   const cols = 6;
   for (let i = 0; i < MAX_PARTS_BOX; i++) {
     const c = i % cols;
@@ -209,7 +215,7 @@ export default function build(params: Params): EquipmentModel {
     const table = Math.max(0, Math.min(1, ch(frame, "table_fill")));
     partsTable.count = Math.round(MAX_PARTS_TABLE * table);
     const fill = Math.max(0, Math.min(1, ch(frame, "box_fill")));
-    inside.count = Math.round(MAX_PARTS_BOX * fill);
+    inside.count = Math.round(insideMax * fill);
     const changing = frame.state === "setup";
     closed.visible = changing;
     box.visible = !changing;

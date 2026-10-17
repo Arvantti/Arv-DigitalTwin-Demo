@@ -1,0 +1,4 @@
+preset: sachet-250ml-16
+description: Empaque manual de sachets de 250 ml en cajas de 16, tarima de 64 cajas
+params: { parts_per_box: 16, pack_rate_upm: 150, box_change_s: 6, table_capacity_units: 120, boxes_per_pallet: 64, nominal_inflow_upm: 60, box_size_m: 0.4, item_color: "#2e8b57", item_kind: sachet }
+provenance: { parts_per_box: user, pack_rate_upm: assumed, box_change_s: assumed, table_capacity_units: assumed, boxes_per_pallet: assumed, nominal_inflow_upm: assumed }
