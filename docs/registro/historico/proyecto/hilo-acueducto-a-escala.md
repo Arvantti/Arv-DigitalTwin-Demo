@@ -136,3 +136,35 @@ Las válvulas de bola de la red no parecen válvulas reales
 ### 🤖 Claude (hilo) · 11:43–12:00 UTC
 
 Rehízo las válvulas de bola de la rejilla como válvulas de PVC de unión doble (colas, tuercas de unión, cuerpo abombado y manija plana que gira 90° con la apertura), en las 18 de descarga y en las 4 de entrada a los ramales; revisó capturas de cerca con válvulas abiertas, a medio abrir y cerradas, y lo subió al mismo PR #25.
+
+### 👤 Carlos Andrés Quiceño · 11:57 UTC
+
+explicame como es la ubicacion de las valvulas de perdidas?
+
+### 🤖 Claude (hilo) · 11:58 UTC
+
+Explicó que las fugas cuelgan del cabezal, en los nodos 2 y 4, descargando a la colectora del frente.
+
+### 👤 Carlos Andrés Quiceño · 11:58 UTC
+
+No, eso está mal. Las válvulas de pérdidas tienen que ir igual que van las otras válvulas que descargan al sistema de recirculación. Esas válvulas así puestas antes del sistema, antes de las válvulas de usuario, no es correcto. Eso hay que corregirlo.
+
+### 🤖 Claude (hilo) · 12:00–12:20 UTC
+
+Pasó las fugas al final de los ramales 2 y 4, con la misma descarga y canaleta que las casas. Recalculó el escenario de obstrucción del ramal 4 y lo registró en la bitácora (PR #26).
+
+### 👤 Carlos Andrés Quiceño · 12:00 UTC
+
+Y la ubicación de las válvulas de pérdida es aleatorio en cada ramal… Puede ser primera, luego la tercera, luego la quinta. Y los ramales deben conectarse entre sí: una rejilla completa, con caminos que conectan internamente a las ramas, como una red de barrio alrededor de una cuadra.
+
+### 🤖 Claude (hilo) · 12:00–12:20 UTC
+
+Respondió con el plan y abrió la decisión sobre cómo conectar los ramales (caminos en cada casa o solo en los extremos). Mientras tanto avanza con la recomendada.
+
+### 👤 Carlos Andrés Quiceño · 12:16 UTC
+
+caminos en los extremos y algunos caminos intemedios
+
+### 🤖 Claude (hilo) · 12:16–13:00 UTC
+
+Cerró la decisión con la opción de caminos en los extremos, más caminos intermedios en la tercera posición de los ramales 1–2 y 3–4. Implementó la posición de la fuga por parámetro (1, 3 o 5 por ramal) y la red cerrada; la simulación comprobó que las tres posiciones dan el mismo reparto (la pérdida en 2" es de milímetros) y que el bloqueo del ramal 4 apenas se nota porque la red lo rodea.
