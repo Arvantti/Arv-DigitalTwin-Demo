@@ -2,10 +2,10 @@
 tipo: historico-ia
 fuente: hilo «Equipos de inyección: geometría y cascada» (Claude Projects)
 desde: 2026-10-17 01:31
-hasta: 2026-10-17 02:00
+hasta: 2026-10-17 02:50
 tags: [registro, historico-ia, inyeccion]
 ---
-# Hilo: cascada de la planta de inyección (PR #16)
+# Hilo: cascada de la planta de inyección (PR #16) y lazo de reciclaje (PR #17)
 
 Parte de [[historico-proyecto]] · Índice: [[00-indice]] · Bitácora: [[bitacora]] · Decisión: [[decisiones]] D17. Autor humano: Carlos Andrés Quiceño. Hora en UTC. Credenciales: ninguna.
 
@@ -27,3 +27,38 @@ Trabajo del hilo, resumido (las actualizaciones de estado no se reproducen):
 - Añadió los escenarios `dryer-stop` y `chiller-trip` con expectativas calculadas a mano, recalculó `nominal` y agregó dos pruebas de la inyectora. Descartó un escenario de resina húmeda porque la humedad del secador cambia en decenas de horas.
 - Verificó con `twin-lib validate`, `twin-lib plant validate`, `pytest`, `ruff`, `pnpm -r typecheck` y `pnpm -r test`, y con capturas de la escena con la API en vivo.
 - Actualizó `docs/plant-engine.md`, `docs/plant-scene.md`, el plan, el roadmap, la bitácora, las decisiones y este histórico, y abrió el PR #16.
+
+### 👤 Carlos Andrés Quiceño · 02:19:15 UTC
+
+No entiendo cómo es que las inyectoras le entregan al molino, no es al revés.
+
+### 🤖 Claude (hilo) · 02:19 UTC
+
+Tienes razón en que falta una mitad: lo que enlacé es solo la ida. Las inyectoras le entregan al molino su **scrap** (piezas rechazadas y coladas), porque eso es lo que sobra de cada ciclo y hay que triturarlo. El molino ya no devuelve nada a las inyectoras: su molido se entrega a la extrusora de pellet reciclado, luego al silo, de ahí al secador y por último a la inyectora (así lo dibuja el plano).
+
+Ese retorno todavía no está simulado porque la extrusora de pellet no existe en la librería, así que el lazo no está cerrado. Lo dejé anotado en `docs/plant-engine.md` y en el PR #16. Si prefieres, cierro el lazo en un PR aparte, con la extrusora de pellet y el silo.
+
+### 👤 Carlos Andrés Quiceño · 02:19:56 UTC
+
+Sí, por favor. Y después de la inyección, entonces, ¿hacia dónde pasan?
+
+### 🤖 Claude (hilo) · 02:20 UTC
+
+Entendido: reviso el plano para decirte adónde van las piezas y empiezo a cerrar el lazo de reciclaje.
+
+Según el plano, después de la inyección las piezas siguen según la máquina:
+- **imm-03** (tapas): banda principal de 88 m, mesa de empaque 1, envolvedora de estibas, bodega de producto terminado y muelle 2. Esta es la única ruta que ya se simula entera hasta el empaque.
+- **imm-06 e imm-19** (papelera): celda de ensamble 1, luego empaque 3.
+- **imm-27** (nevera portátil): estación de espumado de poliuretano.
+- **imm-28**: empaque 3 por montacargas.
+- **Las demás inyectoras:** el plano no les define destino; sus piezas se retiran a mano o con montacargas.
+
+Sobre el reciclaje, la ruta es molino, extrusora de pellet, big-bag y silo 5. Voy a hacer el lazo en un PR aparte, apilado sobre el #16, con la extrusora de pellet como tipo nuevo de la librería. Te aviso cuando esté listo.
+
+### 🤖 Claude (hilo) · 02:21–02:50 UTC
+
+Trabajo del hilo, resumido (las actualizaciones de estado no se reproducen):
+- Creó el tipo `pelletizing-line` (contrato, comportamiento, presets, 9 escenarios con expectativas calculadas a mano, geometría, `FICHA.md` y `README.md`), con la guía `docs/equipment-authoring.md`.
+- Enlazó molino → extrusora → silo 5 (un `vessel`) en `simulation.yaml`, agregó el escenario `pelletizer-jam` y amplió `nominal`.
+- Verificó con `twin-lib validate`, `twin-lib plant validate`, `pytest`, `ruff`, `pnpm -r typecheck` y `pnpm -r test`, y con capturas de la galería y de la escena con la API en vivo.
+- Actualizó `docs/plant-engine.md`, `docs/plant-scene.md`, el plan, el roadmap, la bitácora, las decisiones y este histórico, y abrió el PR #17.

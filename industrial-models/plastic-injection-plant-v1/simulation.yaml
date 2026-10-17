@@ -13,7 +13,10 @@
 #    inyectora del plano moldea ABS, y la imm-02 (también PS) queda con la resina por defecto;
 #  - agua de moldes: el chiller 1 alimenta a las 29 inyectoras; el chiller 2 es de respaldo y no está enlazado;
 #  - scrap: las 29 inyectoras entregan rechazos y coladas al molino de reciclaje (pasando por la clasificación y el
-#    lavado, que no se simulan). El molino aún no entrega a la extrusora de pellet reciclado (no está en la librería).
+#    lavado, que no se simulan);
+#  - reciclaje: el molino entrega el molido a la línea de peletizado (extruder-pel-01) y esta el pellet al silo 5 de
+#    reciclado (por la estación de big-bag, que no se simula). Del silo 5 al manifold y a las inyectoras (la mezcla
+#    de pellet reciclado en la resina) aún no hay enlace: el silo solo acumula.
 
 schema_version: 0.1.0
 description: Nave de inyección (29 inyectoras) y la banda principal hacia empaque
@@ -61,6 +64,8 @@ equipment:
   chiller-01: { type: chiller, preset: 600kw-mold-water, params: {"capacity_kw": 600, "supply_c": 12} }
   chiller-02: { type: chiller, preset: 600kw-standby, params: {"capacity_kw": 600, "supply_c": 12} }
   grinder-rec-01: { type: granulator, preset: 500kg-recycling, params: {"throughput_kg_h": 500, "screen_mm": 10} }
+  extruder-pel-01: { type: pelletizing-line, preset: 350kg-recycling, params: {"throughput_kg_h": 350} }
+  silo-05: { type: vessel, preset: resin-silo-40t, params: {"volume_l": 54545, "content": "pellet de PP reciclado", "initial_level_pct": 20} }
 
 links:
   # imm-03 → conveyor-main-01 → pack-station-01 (plant.yaml).
@@ -70,6 +75,8 @@ links:
   # Cascada de materiales y servicios (docs/plant-engine.md): resina seca → inyectora, agua de moldes y scrap → molino.
   - { from: dryer-03.resin_out, to: imm-01.resin_in }
   - { from: dryer-04.resin_out, to: imm-28.resin_in }
+  - { from: grinder-rec-01.granulate_out, to: extruder-pel-01.granulate_in }
+  - { from: extruder-pel-01.pellet_out, to: silo-05.inlet, via: [bagger-01] }
   - { from: chiller-01.water_out, to: imm-01.cooling_water }
   - { from: chiller-01.water_out, to: imm-02.cooling_water }
   - { from: chiller-01.water_out, to: imm-03.cooling_water }
@@ -180,6 +187,9 @@ scenarios:
       - { path: equipment.dryer-01.variables.processed_kg, min: 149, max: 151, description: "(sin enlace entrega su caudal nominal: 150 kg/h × 1 h)" }
       - { path: equipment.dryer-04.variables.processed_kg, min: 268, max: 276, description: "(ahora entrega lo que pide la imm-28, no su caudal nominal: 7 kg × 1,03 = 7,21 kg por ciclo de 95 s = 273 kg/h × 1 h)" }
       - { path: equipment.dryer-03.variables.processed_kg, min: 23.5, max: 25.5, description: "(lo que pide la imm-01: 16 cavidades × 3,5 g × 1,10 de colada = 61,6 g cada 9 s = 24,6 kg/h × 1 h)" }
+      - { path: equipment.extruder-pel-01.variables.processed_kg, min: 94, max: 102, description: "(todo el molido que entrega el molino llega a la línea de peletizado, que procesa 350 kg/h: ≈ 99 kg de los 100,6 kg/h que trituró, menos lo que el paso de retraso del motor aún no pasó)" }
+      - { path: equipment.silo-05.variables.total_in_kg, min: 94, max: 102, description: "(el pellet que sale de la línea llega al silo 5)" }
+      - { path: equipment.silo-05.variables.mass_kg, min: 6090, max: 6110, description: "(30 t × 20 % = 6.000 kg de inicio + ≈ 99 kg recibidos)" }
       - { path: equipment.imm-28.state_share.starved, equals: 0.0, description: "(el secador 4 entrega todo lo que pide la imm-28)" }
       - { path: equipment.chiller-01.variables.water_ok, equals: 1, description: "(el agua de moldes se mantiene dentro de la banda de 3 °C)" }
       - { path: equipment.chiller-01.variables.supply_temp_c, min: 11.2, max: 12.8, description: "(el chiller de 600 kW con 360 kW de carga mantiene 12 °C ± 0,5 °C por etapas)" }
@@ -224,3 +234,14 @@ scenarios:
       - { path: equipment.imm-01.variables.parts_rejected, min: 200, description: "(≈ 1.100 s con el molde caliente: ≈ 120 ciclos × 16 cavidades × ≈ 10 a 20 % de rechazo por rechupes y deformación; con agua son ≈ 65 en toda la hora)" }
       - { path: equipment.grinder-rec-01.variables.processed_kg, min: 140, description: "(el rechazo extra llega al molino: ≈ 100 kg en la hora nominal)" }
       - { path: equipment.dryer-04.variables.resin_dry, equals: 1, description: "(los secadores no dependen del chiller)" }
+
+  - id: pelletizer-jam
+    description: "La cortadora de la línea de peletizado se atasca a los 10 min durante 45 min: el pellet deja de llegar al silo 5 y el molido se acumula en la tolva de la extrusora; el molino y las inyectoras no se enteran"
+    duration_s: 3600
+    timeline:
+      - { at_s: 600, equipment: extruder-pel-01, command: inject_fault, args: { fault: cutter_jam, duration_s: 2700 } }
+    expect:
+      - { path: equipment.extruder-pel-01.variables.hopper_level_pct, min: 25, max: 29.5, description: "(durante el atasco llegan ≈ 100,6 kg/h × 0,75 h = 75 kg; al arreglarlo, en los 300 s que quedan entran 8,4 kg y salen 350 kg/h × 300 s = 29,2 kg: ≈ 54 kg de 200 kg = 27 %)" }
+      - { path: equipment.silo-05.variables.total_in_kg, min: 42, max: 49, description: "(≈ 99 kg que trituró el molino − 54 kg que siguen en la tolva = ≈ 45 kg)" }
+      - { path: equipment.grinder-rec-01.variables.processed_kg, min: 95, max: 104, description: "(el molino sigue triturando todo lo que llega: la tolva de la extrusora no se llena)" }
+      - { path: equipment.imm-01.variables.cycle_count, min: 395, description: "(las inyectoras no se enteran)" }
