@@ -6,8 +6,8 @@ La demo de las dos plantas de referencia se construye al mismo tiempo que la pla
 |---|---|---|
 | 1. Layouts | `plant.yaml` de la planta de inyección y de la planta de salsas, validador y plano 2D | Hecho (PR #1) |
 | 2. Librería de equipos | Contrato, runtime, 3 tipos de referencia, geometría paramétrica, galería, API de simulación, guía y skill de autoría | Hecho (PR #2) |
-| 3. Equipos de las plantas | Resto de tipos con la guía de autoría: llenadoras, bandas, pasteurizador, emulsificador, molino coloidal, secadores, chillers, caldera, robots, etc. | Siguiente |
-| 4. Motor de planta | Instanciar `plant.yaml` con la librería; conectar equipos por puertos (material, piezas, servicios); recetas y líneas; KPIs de planta | |
+| 3. Equipos de las plantas | Resto de tipos con la guía de autoría: llenadoras, bandas, pasteurizador, emulsificador, molino coloidal, secadores, chillers, caldera, robots, etc. | Parte 1 hecha (línea de sachets, PR #4); falta la cascada de inyección y el resto de las fichas |
+| 4. Motor de planta | Instanciar `plant.yaml` con la librería; conectar equipos por puertos (material, piezas, servicios); recetas y líneas; KPIs de planta | Primer alcance: línea caliente de tomate de 1.000 ml (`docs/plant-engine.md`) |
 | 5. Escena de planta | Planta completa en 3D: celdas, pasillos, pasarelas, puente grúa, HUD de planta, selección de activos, cámaras | |
 | 6. Persistencia y datos | PostgreSQL (activos, configuración, eventos, históricos), MQTT opcional, calidad y frescura de datos | |
 | 7. Conector MCP | La herramienta como servidor MCP: el usuario crea equipos y plantas conversando con Claude (ver abajo) | |
@@ -34,6 +34,7 @@ El usuario final no edita el repositorio. Le habla a Claude, le entrega fotos, c
 | `render_preview` | Devuelve la imagen del modelo para compararla con las fotos | `tools/preview/shot.sh` |
 | `publish_equipment` | Pasa el borrador a la librería, con aprobación humana | — |
 | `add_equipment_to_plant` / `edit_plant` | Ubica equipos en un `plant.yaml` y lo valida | `render_layout.py` |
+| `connect_equipment` / `run_plant_scenario` | Conecta equipos en `twin.yaml` por sus puertos y simula la planta | `load_twin`, `twin-lib plant run`, `WS /api/plants/{plant}/simulate` |
 | `get_asset_state` / `query_telemetry` / `run_simulation` | Consulta del gemelo en operación (sección 13.2 de la arquitectura) | API de simulación |
 
 ### Decisiones que se toman desde ahora para que el MCP sea una capa delgada

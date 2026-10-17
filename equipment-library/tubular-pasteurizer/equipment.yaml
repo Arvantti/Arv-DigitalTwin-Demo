@@ -29,10 +29,10 @@ params:
   tube_passes:        { type: integer, min: 2, max: 20, default: 6, description: Pasos de tubo del intercambiador, affects: [geometry] }
 
 ports:
-  - { id: product_in, kind: material, direction: in, unit: L/h }
-  - { id: product_out, kind: material, direction: out, unit: L/h }
+  - { id: product_in, kind: material, direction: in, unit: L/h, bind: { ready: "state in ['running', 'starved']", ready_input: product_available, temperature_input: product_in_c } }
+  - { id: product_out, kind: material, direction: out, unit: L/h, bind: { counter: pasteurized_l, counter_unit: L, ready: "state == 'running' and divert == 0", ready_input: downstream_free, temperature: product_out_c } }
   - { id: divert_out, kind: material, direction: out, medium: producto desviado a la marmita }
-  - { id: steam_in, kind: utility, direction: in, medium: vapor, unit: kg/h }
+  - { id: steam_in, kind: utility, direction: in, medium: vapor, unit: kg/h, bind: { supply_input: steam_supply_bar, demand: steam_flow_kg_h } }
   - { id: cip_in, kind: utility, direction: in, medium: solución CIP }
 
 states:

@@ -125,10 +125,10 @@ params:
     affects: [geometry]
 
 ports:
-  - { id: product_in, kind: material, direction: in, unit: kg/h }
+  - { id: product_in, kind: material, direction: in, unit: kg/h, bind: { counter: product_used_kg, counter_unit: kg, ready_input: product_available, temperature_input: product_temp_c } }
   - { id: film_in, kind: material, direction: in, medium: laminado PET/PE }
-  - { id: sachets_out, kind: item, direction: out, unit: u/min }
-  - { id: air, kind: utility, direction: in, medium: aire comprimido }
+  - { id: sachets_out, kind: item, direction: out, unit: u/min, bind: { counter: units_good, counter_unit: u, ready_input: downstream_free, temperature: product_temp_c } }
+  - { id: air, kind: utility, direction: in, medium: aire comprimido, bind: { supply_input: air_pressure_bar } }
   - { id: power, kind: utility, direction: in, medium: energía eléctrica }
 
 states:

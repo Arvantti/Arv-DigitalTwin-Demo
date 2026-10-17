@@ -25,7 +25,9 @@ def vessel_dimensions(volume_l: float, form: str, diameter_m: float = 0.0) -> tu
 
 class Vessel(EquipmentBehavior):
     type = "vessel"
-    DEFAULT_INPUTS = {"inflow_temp_c": 20.0, "heating_available": True}
+    # inflow_kg_h / outflow_kg_h: caudales impuestos por el motor de planta; None = usar las consignas
+    # de los comandos set_inflow / set_outflow.
+    DEFAULT_INPUTS = {"inflow_temp_c": 20.0, "heating_available": True, "inflow_kg_h": None, "outflow_kg_h": None}
 
     def setup(self) -> None:
         p = self.p
@@ -99,9 +101,11 @@ class Vessel(EquipmentBehavior):
             self._thermal(dt, active=False)
             return
         active = s not in ("maintenance", "fault")
+        in_sp = self.inflow_sp if self.inputs["inflow_kg_h"] is None else max(0.0, float(self.inputs["inflow_kg_h"]))
+        out_sp = self.outflow_sp if self.inputs["outflow_kg_h"] is None else max(0.0, float(self.inputs["outflow_kg_h"]))
 
-        inflow = min(self.inflow_sp, p["inlet_max_kg_h"]) if active else 0.0
-        outflow = min(self.outflow_sp, p["outlet_max_kg_h"]) if active else 0.0
+        inflow = min(in_sp, p["inlet_max_kg_h"]) if active else 0.0
+        outflow = min(out_sp, p["outlet_max_kg_h"]) if active else 0.0
         if self.failures.is_active("outlet_valve_fault"):
             outflow = 0.0
         room = self.capacity_kg - self.mass
@@ -118,8 +122,8 @@ class Vessel(EquipmentBehavior):
         self.total_out += out_kg
 
         if active:
-            starved = self.outflow_sp > 0 and self.mass <= 1e-6 and self.inflow < self.outflow_sp
-            full = self.inflow_sp > 0 and self.mass >= self.capacity_kg - 1e-6 and self.outflow < self.inflow_sp
+            starved = out_sp > 0 and self.mass <= 1e-6 and self.inflow < out_sp
+            full = in_sp > 0 and self.mass >= self.capacity_kg - 1e-6 and self.outflow < in_sp
             moving = self.inflow > 1e-6 or self.outflow > 1e-6
             new_state = "starved" if starved else "blocked" if full else "running" if moving else "idle"
             self.state.set(new_state)

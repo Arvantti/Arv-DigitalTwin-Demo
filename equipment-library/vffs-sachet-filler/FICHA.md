@@ -15,7 +15,7 @@
 | Llenado en caliente | Tomate y BBQ ≥ 85 °C; por debajo, rechazo | user |
 | Densidades | Tomate 1,12 · mayonesa 0,93 · mostaza 1,05 kg/L | assumed |
 | Sellado | 150 °C ± 10 | assumed |
-| Dosificación | Desviación típica 1,5 %; sobrellenado objetivo 1 % | assumed |
+| Dosificación | Desviación típica 1,5 % (0,8 % en 1.000 ml); sobrellenado objetivo 1 % | assumed |
 | Rollo | 6.000 (250 ml), 4.000 (500 ml), 3.000 (1.000 ml) sachets; cambio de 8 min | assumed |
 | Aire comprimido | ≥ 6 bar | layout, assumed |
 
@@ -23,4 +23,5 @@
 - Qué es un rechazo y qué lo causa: sello débil (mordazas fuera de ventana, goteo), código ilegible, producto frío en llenado en caliente. El rechazo por peso lo hace el control de peso.
 - Variables, alarmas y KPIs: velocidad, rechazos por causa, temperatura de mordazas y de producto, peso medio y desviación, sobrellenado, laminado restante; OEE.
 - Qué se anima: avance de película, mordazas, pistón, diámetro del rollo, caída del sachet, baliza.
+- **Ajuste al acoplar la planta (fase 4):** con 1,5 % en 1.000 ml (±16,8 g) el control de peso rechazaba ≈ 6 %, porque el error negativo tolerable legal para 1.000 g es 15 g. La dosificación volumétrica es relativamente más precisa en dosis grandes; los presets de 1.000 ml usan 0,8 % (≈ 9 g), con lo que el rechazo esperado es ≈ 0,2 %.
 - Pendiente o desconocido: velocidades reales de las máquinas de la planta.

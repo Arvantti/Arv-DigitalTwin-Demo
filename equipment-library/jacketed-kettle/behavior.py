@@ -7,6 +7,7 @@ chaqueta, enfriamiento con agua, pérdidas y evaporación) y la composición de 
 from __future__ import annotations
 
 import math
+from functools import lru_cache
 from typing import Any
 
 from twin_runtime import EquipmentBehavior, StepContext
@@ -31,6 +32,7 @@ INGREDIENTS: dict[str, dict[str, float]] = {
 }
 
 
+@lru_cache(maxsize=256)
 def ingredient_props(name: str) -> dict[str, float]:
     """Propiedades de un ingrediente. 'pasta_tomate_28brix' toma 28 °Bx; desconocidos = agua."""
     base = name.split("_")[0] if name not in INGREDIENTS else name

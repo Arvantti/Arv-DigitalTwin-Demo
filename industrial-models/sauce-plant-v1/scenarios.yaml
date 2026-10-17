@@ -1,0 +1,71 @@
+# Escenarios de planta del gemelo twin.yaml. Son las pruebas del motor de planta: los valores
+# esperados salen de cálculos a mano (en la descripción de cada expectativa) y no se ajustan
+# para que pasen.
+#
+# Cálculo base (receta de tomate, marmita de 2.500 L a 3 bar):
+#   carga 40,2 min + calentamiento ≈ 22 min + mantener 10 + muestra 10 + descarga 2.000/56 = 35,7
+#   ⇒ batch ≈ 118 min; la primera descarga empieza a los ≈ 82 min.
+#   Sachetadora: 30 u/min × 1,12 kg × 1,01 = 33,9 kg/min (2.036 kg/h); rollo cada 100 min (5 % en cambio).
+#   Pulmón al arranque: 20 % de 3.360 kg = 672 kg ⇒ ≈ 20 min de llenado y luego espera hasta la
+#   primera descarga.
+twin: twin.yaml
+
+scenarios:
+  - id: turno-8h
+    description: Turno de 8 h con las dos marmitas alternando descargas
+    duration_s: 28800
+    expect:
+      - { path: plant.kpis.batches, equals: 7, description: "(marmita 1: 118, 236, 354, 472 min; marmita 2 arranca a 60: 178, 296, 414)" }
+      - path: plant.kpis.sachets_ok
+        min: 10300
+        max: 11800
+        description: "(30 u/min × 480 min × 0,95 de disponibilidad − ≈ 62 min sin producto al arranque ≈ 11.500, menos ≈ 400 en tránsito por la banda y el túnel)"
+      - { path: plant.kpis.cases, min: 860, max: 985, description: "(sachets / 12)" }
+      - { path: equipment.filler-pouch-01.states.starved, min: 0.08, max: 0.20, description: "(≈ 62 min de 480 sin producto al arranque)" }
+      - { path: equipment.checkweigher-01.kpis.reject_rate, max: 0.01, description: "(desv. 9 g frente a −15 g de tolerancia: ≈ 0,2 %)" }
+      - { path: plant.bottleneck, equals: [kettle-01], description: "(la marmita 1 nunca espera; la 2 arranca una hora después)" }
+      - { path: equipment.boiler-01.state, equals: running }
+
+  - id: una-marmita
+    description: La marmita 2 está en mantenimiento; la sachetadora queda esperando producto
+    duration_s: 28800
+    disable: [kettle-02]
+    expect:
+      - { path: plant.kpis.batches, equals: 4 }
+      - { path: equipment.filler-pouch-01.states.starved, min: 0.40, description: "(1.017 kg/h de oferta frente a 2.036 kg/h de demanda ⇒ ≈ 47 % del tiempo sin producto)" }
+      - path: plant.kpis.sachets_ok
+        min: 5900
+        max: 7000
+        description: "(la 4.ª descarga termina a los ≈ 472 min y deja ≈ 1.000 kg en el pulmón: (672 + 4 × 1.990 − 1.000) / 1,131 ≈ 6.740 sachets, menos ≈ 370 en el túnel y la banda)"
+      - { path: plant.bottleneck, equals: [kettle-01] }
+
+  - id: falla-de-llama
+    description: La caldera se dispara por falla de llama durante 1 h; cuando la marmita 1 pide vapor la presión cae y el pasteurizador desvía
+    duration_s: 28800
+    timeline:
+      - { at_s: 7200, equipment: boiler-01, command: inject_fault, args: { fault: flame_failure, duration_s: 3600 } }
+    expect:
+      # A los 7.200 s la marmita 2 ya terminó de calentar: la demanda es ≈ 150-200 kg/h y la caldera
+      # pierde ≈ 1,8 bar en 40 min. A los ≈ 9.500 s la marmita 1 empieza a calentar (≈ 870 kg/h):
+      # los 25 kg/bar × 3,3 bar que quedan sobre 3 bar duran ≈ 6 min y la presión llega a 0.
+      - { path: events.boiler-01.low_pressure, min: 1 }
+      - { path: events.pasteurizer-01.divert_started, min: 1 }
+      - path: plant.kpis.diverted_l
+        min: 500
+        max: 1100
+        description: "(desvío desde ≈ 9.800 s hasta el fin de la descarga de la marmita 2, ≈ 10.750 s: ≈ 950 s × 3.000 L/h ≈ 790 L)"
+      - { path: plant.kpis.sachets_ok, max: 10500, description: "(se pierde casi un batch frente al turno normal)" }
+
+  - id: encajadora-detenida
+    description: Atasco de caja de 20 min en la encajadora; el bloqueo se propaga hasta la sachetadora
+    duration_s: 28800
+    timeline:
+      - { at_s: 14400, equipment: case-pack-02, command: inject_fault, args: { fault: box_jam, duration_s: 1200 } }
+    expect:
+      - path: equipment.filler-pouch-01.states.blocked
+        min: 0.033
+        max: 0.042
+        description: "(1.200 s − ≈ 48 s hasta llenar el pulmón de 24 sachets − ≈ 22 s hasta llenar la banda ≈ 1.130 s de 28.800)"
+      - { path: equipment.checkweigher-01.states.blocked, min: 0.035, max: 0.042 }
+      - { path: events.conveyor-pouch-01.full, min: 1 }
+      - { path: events.case-pack-02.buffer_full, min: 1 }

@@ -82,9 +82,9 @@ params:
     affects: [geometry]
 
 ports:
-  - { id: charge_in, kind: material, direction: in, description: Ingredientes por boca de carga o tubería }
-  - { id: product_out, kind: material, direction: out, unit: kg/h }
-  - { id: steam_in, kind: utility, direction: in, medium: vapor saturado, unit: kg/h }
+  - { id: charge_in, kind: material, direction: in, description: Ingredientes por boca de carga o tubería, bind: { ready_input: material_available } }
+  - { id: product_out, kind: material, direction: out, unit: kg/h, bind: { counter: discharged_kg, counter_unit: kg, ready: "phase == 'discharge' and state != 'fault'", ready_input: downstream_free, temperature: temperature_c } }
+  - { id: steam_in, kind: utility, direction: in, medium: vapor saturado, unit: kg/h, bind: { supply_input: steam_supply_bar, demand: steam_flow_kg_h } }
   - { id: condensate_out, kind: utility, direction: out, medium: condensado }
   - { id: cooling_water, kind: utility, direction: inout, medium: agua de enfriamiento }
   - { id: cip_in, kind: utility, direction: in, medium: solución CIP }

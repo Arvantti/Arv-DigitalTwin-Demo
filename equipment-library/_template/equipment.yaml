@@ -7,6 +7,7 @@ version: 0.1.0
 name: Máquina de ciclo genérica
 manufacturing: discrete
 category: generic.cycle
+plant_role: station
 description: >
   Máquina genérica que procesa una unidad por ciclo en tres fases (carga, proceso, descarga).
   Sirve de punto de partida para equipos discretos nuevos.
@@ -21,9 +22,11 @@ params:
   height_m:   { type: number, unit: m, min: 0.5, max: 10, default: 1.8, description: Alto de la máquina, affects: [geometry] }
   body_color: { type: string, default: "#3a6ea5", description: Color de la carcasa (hex), affects: [geometry] }
 
+# bind: cómo se conecta cada puerto en una planta (docs/plant-engine.md). Nombra variables del
+# contrato y entradas de DEFAULT_INPUTS; twin-lib validate lo comprueba.
 ports:
-  - { id: input, kind: item, direction: in }
-  - { id: output, kind: item, direction: out }
+  - { id: input, kind: item, direction: in, bind: { ready_input: material_available } }
+  - { id: output, kind: item, direction: out, bind: { counter: units_good, counter_unit: u, ready_input: downstream_free } }
   - { id: power, kind: utility, direction: in, medium: energía eléctrica }
 
 states:

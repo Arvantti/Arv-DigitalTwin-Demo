@@ -24,8 +24,8 @@ params:
   item_color:           { type: string, default: "#c62828", description: Color de las unidades (hex), affects: [geometry] }
 
 ports:
-  - { id: items_in, kind: item, direction: in, unit: u/min }
-  - { id: items_out, kind: item, direction: out, unit: u/min }
+  - { id: items_in, kind: item, direction: in, unit: u/min, bind: { rate_input: inflow_upm, ready: "state in ['running', 'idle']" } }
+  - { id: items_out, kind: item, direction: out, unit: u/min, bind: { counter: units_accepted, counter_unit: u, ready_input: downstream_free } }
   - { id: rejects_out, kind: item, direction: out, medium: rechazos }
 
 states:
