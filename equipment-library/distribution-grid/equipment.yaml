@@ -7,7 +7,9 @@ category: utilities.water.distribution
 description: >
   Un nivel de la red del acueducto a escala, que representa una comuna: un cabezal de 2" con cuatro
   ramales, cada ramal con cuatro válvulas de consumo (las casas) y dos válvulas de fuga (fraudes y
-  pérdidas, en rojo) al final de los ramales 2 y 4, igual que las casas. Cada válvula descarga a una canaleta y mide su caudal y la presión
+  pérdidas, en rojo) en los ramales 2 y 4, en la posición que indique el parámetro, igual que las casas. Los
+  extremos de los ramales y la tercera posición están unidos por caminos entre ramales vecinos: es una rejilla
+  cerrada. Cada válvula descarga a una canaleta y mide su caudal y la presión
   aguas arriba. El reparto sale de la red hidráulica (twin_runtime.primitives.hydraulics): la presión de
   cada casa depende de lo que consumen todas las demás.
 aliases: [rejilla, comuna, barrio, red de distribución, sector hidráulico, nivel de la red]
@@ -16,6 +18,8 @@ fidelity: { visual: V2, behavior: B2 }
 params:
   level:               { type: integer, min: 1, max: 4, default: 1, description: Nivel de la rejilla en el edificio (1 abajo), affects: [geometry, display] }
   elevation_m:         { type: number, unit: m, min: 0, max: 50, default: 0, description: Elevación de la rejilla sobre el nivel 1, affects: [behavior] }
+  leak_slot_branch2:  { type: integer, min: 1, max: 5, default: 5, description: "Posición de la fuga l1 en el ramal 2 (1 = primera casa desde el cabezal, 5 = el extremo)", affects: [geometry, behavior] }
+  leak_slot_branch4:  { type: integer, min: 1, max: 5, default: 5, description: "Posición de la fuga l2 en el ramal 4 (1 = primera casa desde el cabezal, 5 = el extremo)", affects: [geometry, behavior] }
   spacing_m:           { type: number, unit: m, min: 0.2, max: 2, default: 0.5, description: Separación entre nodos del cabezal y entre válvulas de un ramal, affects: [geometry, behavior] }
   pipe_id_mm:          { type: number, unit: mm, min: 10, max: 300, default: 52.5, description: "Diámetro interior de cabezal y ramales (2\" SCH 40)", affects: [geometry, behavior] }
   consumer_kv_m3h:     { type: number, unit: m3/h, min: 0.001, max: 10, default: 0.12, description: Kv de cada válvula de consumo abierta del todo, affects: [behavior] }
@@ -151,7 +155,7 @@ geometry:
   parts: [frame, header, branch_valves, branches, consumer_valves, leak_valves, gutter, inlet_riser, gauge, level_sign]
 
 assumptions:
-  - "Cabezal de 4 tramos y 4 ramales de 4 válvulas, todos de 2\" y separados spacing_m; las fugas cuelgan al final de los ramales 2 y 4, después de la cuarta casa, y descargan a la canaleta como las casas (docs/water-network-plant.md, supuesto S1)."
+  - "Cabezal de 4 tramos y 4 ramales de 5 posiciones separadas spacing_m, todos de 2\"; cuatro casas por ramal y la fuga en la posición leak_slot_branch2/4 de los ramales 2 y 4; caminos entre ramales vecinos en la posición 5 y en la 3 de los ramales 1–2 y 3–4 (pedido del autor, 2026-10-17)."
   - "Cada ramal empieza con una válvula de bola de 2\" (Kv 20 m³/h) que casi no pierde presión mientras está limpia."
   - "Tubos con Darcy-Weisbach (PVC) y pérdidas menores K = 0,3 por tramo de cabezal y 0,5 por tramo de ramal, como el predimensionamiento."
   - "Cada válvula descarga a la atmósfera: Q = Kv·apertura·(p/10,197)^β, con β 0,5 en consumos y leak_exponent en fugas."

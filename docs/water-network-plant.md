@@ -60,20 +60,24 @@ Nombres de marca: el autor describió las bombas como Grundfos. La regla del rep
 
 ### Rejilla de un nivel (`distribution-grid`)
 
-Supuesto de distribución (el autor dejó libre la forma): rectángulo de 2,0 × 2,0 m. Un cabezal de 2" a lo largo del frente con 4 nodos cada 0,5 m; de cada nodo sale un ramal de 2" hacia el fondo con 4 válvulas de consumo cada 0,5 m. Las dos válvulas de fuga cuelgan al final de los ramales 2 y 4, después de la cuarta casa, y descargan a la canaleta igual que las casas (corregido 2026-10-17, pedido del autor). La válvula más crítica es la última del último ramal (la más lejana de la entrada) del nivel 4.
+Supuesto de distribución (el autor dejó libre la forma): rectángulo de 2,0 × 2,0 m. Un cabezal de 2" a lo largo del frente con 4 nodos cada 0,5 m; de cada nodo sale un ramal de 2" hacia el fondo con 5 posiciones cada 0,5 m, donde van las 4 válvulas de consumo y, en los ramales 2 y 4, la fuga (corregido 2026-10-17). Las dos válvulas de fuga cuelgan de los ramales 2 y 4, en la posición que indique el parámetro (1, 3 o 5), y descargan a la canaleta igual que las casas. La red se cierra con caminos entre ramales vecinos en los extremos y en la tercera posición (corregido 2026-10-17, pedido del autor). La válvula más crítica es la última del último ramal (la más lejana de la entrada) del nivel 4.
 
 ```
 entrada (montante 2")
    │
    ●──────●──────●──────●   cabezal 2"
    │      │      │      │
-   ○      ○      ○      ○   ← válvulas de consumo (casas), ramal 1 a 4
-   ○      ○      ○      ○
-   ○      ○      ○      ○
-   ○      ○      ○      ◎   ← ◎ válvula más crítica (c44, en el nivel 4)
-   ·      F      ·      F   ← fugas (rojas) al final de los ramales 2 y 4
+   ○      ○      ○      ○   ← posición 1 (casa, o fuga F en los ramales 2 y 4)
+   ○      ○      ○      ○   ← posición 2
+   ○ ─────○      ○ ─────○   ← posición 3 (caminos entre ramales 1–2 y 3–4)
+   ○      ○      ○      ◎   ← posición 4 (◎ = válvula más crítica, c44)
+   ○ ─────○ ─────○ ─────○   ← posición 5 (caminos en los extremos)
  ─────────────── canaleta ───────────────
 ```
+
+Las fugas (F, rojas) van en los ramales 2 y 4 en la posición 1, 3 o 5, según el parámetro; el diagrama dibuja la posición 1 por claridad.
+
+Las fugas (F, rojas) van en los ramales 2 y 4, en la posición 1, 3 o 5 según el parámetro: el diagrama muestra las de la posición 5 de la configuración por defecto.
 
 Cada válvula, de consumo o de fuga, publica **apertura (%)**, **caudal (L/min)** y **presión aguas arriba (mca)**, y acepta el comando `set_opening` (0–100 %, por válvula o por grupo). La rejilla publica además los totales del nivel: consumo, fugas, presión mínima y cuál válvula la tiene.
 

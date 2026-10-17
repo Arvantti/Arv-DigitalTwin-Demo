@@ -160,3 +160,11 @@ Y la ubicación de las válvulas de pérdida es aleatorio en cada ramal… Puede
 ### 🤖 Claude (hilo) · 12:00–12:20 UTC
 
 Respondió con el plan y abrió la decisión sobre cómo conectar los ramales (caminos en cada casa o solo en los extremos). Mientras tanto avanza con la recomendada.
+
+### 👤 Carlos Andrés Quiceño · 12:16 UTC
+
+caminos en los extremos y algunos caminos intemedios
+
+### 🤖 Claude (hilo) · 12:16–13:00 UTC
+
+Cerró la decisión con la opción de caminos en los extremos, más caminos intermedios en la tercera posición de los ramales 1–2 y 3–4. Implementó la posición de la fuga por parámetro (1, 3 o 5 por ramal) y la red cerrada; la simulación comprobó que las tres posiciones dan el mismo reparto (la pérdida en 2" es de milímetros) y que el bloqueo del ramal 4 apenas se nota porque la red lo rodea.

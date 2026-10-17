@@ -46,8 +46,18 @@ export default function build(params: Params): EquipmentModel {
   const zHead = 2 * s;
   const xNode = (j: number) => -2 * s + j * s; // j = 1..4
   const zNode = (i: number) => zHead - i * s; // i = 1..5; el 5 es la fuga al final de un ramal
-  const leakBranch = (j: number) => j === 2 || j === 4; // ramales con fuga al final
-  const zEnd = (j: number) => (leakBranch(j) ? zNode(5) : zNode(4));
+  // posiciones con descarga: las casas ocupan las que no tienen fuga; los ramales 1 y 3 no tienen fuga y su
+  // quinta posición es solo un empalme con los caminos entre ramales (igual que behavior.drop_slots)
+  const leakSlot: Record<number, number> = {
+    2: Math.round(num(params, "leak_slot_branch2", 5)),
+    4: Math.round(num(params, "leak_slot_branch4", 5)),
+  };
+  const dropSlots = (j: number): number[] => {
+    const lk = leakSlot[j];
+    const slots = [1, 2, 3, 4, 5].filter((k) => k !== lk);
+    return lk === undefined ? slots.filter((k) => k !== 5) : slots;
+  };
+  const houseSlot = (j: number, i: number) => dropSlots(j)[i - 1];
   const pvc = M.paint("#8f989f", 0.6); // PVC gris
   const galv = M.galvanized();
   const root = P.group("distribution-grid");
@@ -209,23 +219,25 @@ export default function build(params: Params): EquipmentModel {
     bv.group.rotation.x = -Math.PI / 2; // a lo largo del ramal, manija arriba
     bv.group.position.set(x, gy, zHead - s * 0.22);
     root.add(bv.group);
-    const branch = P.cylinderZ(r, zHead - zEnd(j), pvc, 20);
-    branch.position.set(x, gy, (zHead + zEnd(j)) / 2);
+    const branch = P.cylinderZ(r, zHead - zNode(5), pvc, 20);
+    branch.position.set(x, gy, (zHead + zNode(5)) / 2);
     root.add(branch);
-    if (!leakBranch(j)) {
-      const cap = P.cylinderZ(r * 1.15, r * 0.6, pvc, 20);
-      cap.position.set(x, gy, zNode(4) - r * 0.3);
-      root.add(cap);
-    }
-    for (let i = 1; i <= 4; i++) {
-      const z = zNode(i);
+    for (let k = 1; k <= 5; k++) {
+      const z = zNode(k);
       const fit = new THREE.Mesh(new THREE.SphereGeometry(r * 1.12, 14, 10), pvc);
       fit.position.set(x, gy, z);
       root.add(fit);
-      dropValve(`c${j}${i}`, x, z, consumerMat, blue);
+    }
+    for (let i = 1; i <= 4; i++) {
+      dropValve(`c${j}${i}`, x, zNode(houseSlot(j, i)), consumerMat, blue);
+    }
+    const lk = leakSlot[j];
+    if (lk !== undefined) {
+      const id = j === 2 ? "l1" : "l2";
+      dropValve(id, x, zNode(lk), leakMat, red);
     }
     // canaleta bajo el ramal: fondo y dos paredes, con pendiente hacia el colector del frente
-    const len = zHead - zEnd(j) + s * 0.4;
+    const len = zHead - zNode(5) + s * 0.4;
     const ch_ = P.group(`gutter-${j}`);
     const floor = P.box(0.16, 0.012, len, galv, 0.003);
     ch_.add(floor);
@@ -234,7 +246,7 @@ export default function build(params: Params): EquipmentModel {
       wall.position.set(sx * 0.08, 0.03, 0);
       ch_.add(wall);
     }
-    ch_.position.set(x, gutterTop - 0.06, (zEnd(j) - s * 0.2 + zHead - s * 0.2) / 2 - s * 0.05);
+    ch_.position.set(x, gutterTop - 0.06, (zNode(5) - s * 0.2 + zHead - s * 0.2) / 2 - s * 0.05);
     ch_.rotation.x = -0.015;
     root.add(ch_);
     // colgadores de la canaleta desde los travesaños del bastidor
@@ -246,12 +258,14 @@ export default function build(params: Params): EquipmentModel {
       }
     }
   }
-  for (const [id, j] of [["l1", 2], ["l2", 4]] as const) {
-    const fit = new THREE.Mesh(new THREE.SphereGeometry(r * 1.12, 14, 10), pvc);
-    fit.position.set(xNode(j), gy, zNode(5));
-    root.add(fit);
-    dropValve(id, xNode(j), zNode(5), leakMat, red);
-  }
+  // caminos entre ramales vecinos: en el extremo (posición 5) y en la tercera posición de los ramales 1–2 y 3–4
+  const link = (a: number, b: number, z: number) => {
+    const t = P.cylinderX(r, s, pvc, 16);
+    t.position.set((xNode(a) + xNode(b)) / 2, gy, z);
+    root.add(t);
+  };
+  for (let a = 1; a < 4; a++) link(a, a + 1, zNode(5));
+  for (const a of [1, 3]) link(a, a + 1, zNode(3));
 
   // colector al frente y bajante
   const colLen = x1 - x0;
@@ -277,10 +291,11 @@ export default function build(params: Params): EquipmentModel {
   if (critical) {
     const ring = new THREE.Mesh(new THREE.TorusGeometry(0.09, 0.012, 8, 28), M.emissive(M.SAFETY_YELLOW, 2.5));
     ring.rotation.x = Math.PI / 2;
-    ring.position.set(xNode(4), gy - 0.11 - r * 0.6, zNode(4));
+    const cSlot = zNode(houseSlot(4, 4));
+    ring.position.set(xNode(4), gy - 0.11 - r * 0.6, cSlot);
     root.add(ring);
     const tag = P.nameplate(["VÁLVULA MÁS CRÍTICA"], 0.44, 0.09, M.SAFETY_YELLOW);
-    tag.position.set(xNode(4) + s * 0.35, gy + 0.12, zNode(4));
+    tag.position.set(xNode(4) + s * 0.35, gy + 0.12, cSlot);
     tag.rotation.y = Math.PI / 2;
     root.add(tag);
   }

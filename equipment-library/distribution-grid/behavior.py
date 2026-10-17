@@ -12,9 +12,9 @@ from twin_runtime.primitives import HydraulicNetwork
 MCA_PER_BAR = 10.197
 BRANCHES = 4
 PER_BRANCH = 4
+NODES_PER_BRANCH = 5  # cuatro casas y una posición más para la fuga o el empalme
 CONSUMERS = [f"c{j}{i}" for j in range(1, BRANCHES + 1) for i in range(1, PER_BRANCH + 1)]
-LEAKS = {"l1": 2, "l2": 4}  # válvula de fuga → ramal donde cuelga, al final del ramal (después de la casa 4)
-LEAK_NODE = PER_BRANCH + 1  # índice del nodo de la fuga en su ramal
+LEAKS = {"l1": 2, "l2": 4}  # válvula de fuga → ramal donde cuelga
 VALVES = CONSUMERS + list(LEAKS)
 HEADER_K = 0.3
 BRANCH_K = 0.5
@@ -24,10 +24,30 @@ BLOCKED_KV = 1.0  # válvula del ramal 4 obstruida por sedimento
 LOW_S = 30.0
 
 
+def leak_slot(j: int, p: dict[str, Any]) -> int | None:
+    """Posición (1 a 5, contando desde el cabezal) de la fuga del ramal j, o None si el ramal no tiene fuga."""
+    if j in LEAKS.values():
+        return int(p[f"leak_slot_branch{j}"])
+    return None
+
+
+def drop_slots(j: int, p: dict[str, Any]) -> list[int]:
+    """Posiciones con descarga del ramal j, en orden: las casas ocupan las que no tienen fuga. Los ramales 1 y 3 no
+    tienen fuga, así que su quinta posición es solo un empalme con la red de caminos."""
+    lk = leak_slot(j, p)
+    slots = [k for k in range(1, NODES_PER_BRANCH + 1) if k != lk]
+    if lk is None:
+        slots = [k for k in slots if k != NODES_PER_BRANCH]
+    return slots
+
+
 def add_distribution_grid(net: HydraulicNetwork, prefix: str, inlet: str, p: dict[str, Any]) -> dict[str, dict[str, str]]:
     """Agrega una rejilla colgada del nodo de entrada. Devuelve, por válvula, el id de su descarga y de su nodo.
 
-    El motor de planta usará esta misma función para armar las cuatro rejillas dentro de la red completa."""
+    Cada ramal tiene cinco posiciones desde el cabezal. Las casas ocupan las posiciones con descarga y la fuga de los
+    ramales 2 y 4 ocupa la posición que indica el parámetro leak_slot_branch2 o leak_slot_branch4 (1, 3 o 5). Los
+    extremos de los ramales (posición 5) se unen con caminos entre ramales vecinos, y la posición 3 de los ramales 1–2
+    y 3–4 también: es una rejilla cerrada, no un peine. El motor de planta usará esta misma función."""
     z = net.nodes[inlet].elevation_m
     d = p["pipe_id_mm"] / 1000
     s = p["spacing_m"]
@@ -39,22 +59,29 @@ def add_distribution_grid(net: HydraulicNetwork, prefix: str, inlet: str, p: dic
         root = f"{prefix}r{j}"
         net.add_node(root, z)
         net.add_valve(f"{prefix}bv{j}", h, root, kv_m3h=BRANCH_VALVE_KV)
-        for i in range(1, PER_BRANCH + 1):
-            v = f"c{j}{i}"
-            node = f"{prefix}n{j}{i}"
+        prev = root
+        for k in range(1, NODES_PER_BRANCH + 1):
+            node = f"{prefix}n{j}{k}"
             net.add_node(node, z)
-            net.add_pipe(f"{prefix}bp{j}{i}", root if i == 1 else f"{prefix}n{j}{i - 1}", node, s, d, minor_k=BRANCH_K)
+            net.add_pipe(f"{prefix}bp{j}{k}", prev, node, s, d, minor_k=BRANCH_K)
+            prev = node
+        for i, k in enumerate(drop_slots(j, p), start=1):
+            v = f"c{j}{i}"
+            node = f"{prefix}n{j}{k}"
             net.add_emitter(f"{prefix}{v}", node, kv_m3h=p["consumer_kv_m3h"], opening=p["consumer_opening_pct"] / 100)
             out[v] = {"link": f"{prefix}{v}", "node": node}
+        lk = leak_slot(j, p)
         for v, lj in LEAKS.items():
-            if lj != j:
-                continue
-            node = f"{prefix}n{j}{LEAK_NODE}"
-            net.add_node(node, z)
-            net.add_pipe(f"{prefix}bp{j}{LEAK_NODE}", f"{prefix}n{j}{PER_BRANCH}", node, s, d, minor_k=BRANCH_K)
-            net.add_emitter(f"{prefix}{v}", node, kv_m3h=p["leak_kv_m3h"], opening=p["leak_opening_pct"] / 100,
-                            exponent=p["leak_exponent"])
-            out[v] = {"link": f"{prefix}{v}", "node": node}
+            if lj == j:
+                node = f"{prefix}n{j}{lk}"
+                net.add_emitter(f"{prefix}{v}", node, kv_m3h=p["leak_kv_m3h"], opening=p["leak_opening_pct"] / 100,
+                                exponent=p["leak_exponent"])
+                out[v] = {"link": f"{prefix}{v}", "node": node}
+    for a in range(1, BRANCHES):  # caminos entre ramales vecinos, en el extremo
+        net.add_pipe(f"{prefix}xe{a}", f"{prefix}n{a}{NODES_PER_BRANCH}", f"{prefix}n{a + 1}{NODES_PER_BRANCH}", s, d,
+                     minor_k=BRANCH_K)
+    for a in (1, 3):  # caminos intermedios, en la tercera posición
+        net.add_pipe(f"{prefix}xm{a}", f"{prefix}n{a}3", f"{prefix}n{a + 1}3", s, d, minor_k=BRANCH_K)
     return out
 
 
