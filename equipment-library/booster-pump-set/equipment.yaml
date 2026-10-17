@@ -1,0 +1,112 @@
+schema_version: 0.1.0
+type: booster-pump-set
+version: 0.1.0
+name: Grupo de bombeo en paralelo
+manufacturing: utility
+category: utilities.water.pumping
+description: >
+  Grupo de bombas centrífugas en paralelo sobre un mismo bastidor, cada una con su antirretorno y
+  su válvula de corte, con colectores de succión y de descarga comunes. En modo presión, un variador
+  mantiene la presión de descarga (velocidad común con PID) y arranca o para bombas según la demanda;
+  en modo nivel, las bombas trabajan a velocidad fija mientras el tanque de origen tenga agua y el de
+  destino espacio. El caudal y la presión salen de la red hidráulica (twin_runtime.primitives.hydraulics).
+aliases: [grupo de presión, booster, bombas en paralelo, estación de bombeo, bombas multietapa, bombas de recirculación]
+fidelity: { visual: V2, behavior: B2 }
+
+params:
+  pumps:             { type: integer, min: 1, max: 6, default: 3, description: Bombas instaladas, affects: [geometry, behavior] }
+  duty_max:          { type: integer, min: 1, max: 6, default: 2, description: Bombas que pueden trabajar a la vez (las demás son reserva), affects: [behavior] }
+  pump_style:        { type: enum, values: [vertical_multistage, end_suction], default: vertical_multistage, description: "Multietapa vertical (alta presión) o de succión axial horizontal", affects: [geometry] }
+  design_flow_m3h:   { type: number, unit: m3/h, min: 0.5, max: 500, default: 8, description: Caudal de diseño de cada bomba, affects: [geometry, behavior] }
+  design_head_m:     { type: number, unit: m, min: 2, max: 250, default: 80, description: Altura de diseño de cada bomba a velocidad nominal, affects: [behavior] }
+  shutoff_head_m:    { type: number, unit: m, min: 3, max: 300, default: 100, description: Altura a caudal cero a velocidad nominal, affects: [behavior] }
+  efficiency:        { type: number, min: 0.2, max: 0.9, default: 0.62, description: Eficiencia bomba-motor-variador, affects: [behavior] }
+  motor_kw:          { type: number, unit: kW, min: 0.25, max: 200, default: 4, description: Potencia nominal del motor de cada bomba, affects: [geometry, behavior] }
+  control:           { type: enum, values: [pressure, level], default: pressure, description: "pressure: variador a presión constante; level: velocidad fija según niveles de los tanques", affects: [behavior] }
+  setpoint_mca:      { type: number, unit: mca, min: 1, max: 250, default: 80, description: Consigna de presión de descarga (modo presión), affects: [behavior] }
+  min_speed_pct:     { type: number, unit: "%", min: 10, max: 90, default: 30, description: Velocidad mínima del variador, affects: [behavior] }
+  stage_up_speed_pct: { type: number, unit: "%", min: 80, max: 100, default: 98, description: "Arranca otra bomba si la velocidad pasa este valor 15 s (no alcanza la presión)", affects: [behavior] }
+  stage_down_flow_pct: { type: number, unit: "%", min: 30, max: 95, default: 70, description: "Para una bomba si el caudal cabe en las restantes por debajo de este % de su caudal de diseño, 30 s", affects: [behavior] }
+  start_level_pct:   { type: number, unit: "%", min: 5, max: 100, default: 60, description: "Modo nivel: arranca con el tanque de origen sobre este nivel", affects: [behavior] }
+  stop_level_pct:    { type: number, unit: "%", min: 0, max: 95, default: 20, description: "Modo nivel: para con el tanque de origen bajo este nivel", affects: [behavior] }
+  target_full_pct:   { type: number, unit: "%", min: 50, max: 100, default: 90, description: "Modo nivel: no arranca (y para) si el tanque de destino pasa este nivel", affects: [behavior] }
+  header_diameter_in: { type: number, unit: in, min: 1, max: 24, default: 4, description: Diámetro nominal de los colectores, affects: [geometry] }
+  suction_head_m:    { type: number, unit: m, min: -5, max: 50, default: 1.0, description: "Banco de prueba: cabeza en la succión (nivel del tanque sobre las bombas) si el entorno no la fija", affects: [behavior] }
+  bench_static_head_m: { type: number, unit: m, min: 0, max: 200, default: 0, description: "Banco de prueba: cabeza fija a la salida del sistema (elevación del destino)", affects: [behavior] }
+  bench_system_kv_m3h: { type: number, unit: m3/h, min: 0.01, max: 2000, default: 4.64, description: "Banco de prueba: Kv equivalente de la red servida si el entorno no lo fija", affects: [behavior] }
+  start_on:          { type: boolean, default: true, description: Arranca en automático, affects: [behavior] }
+
+ports:
+  - { id: suction, kind: material, direction: in, medium: agua, unit: m3/h, description: Colector de succión desde los tanques }
+  - { id: discharge, kind: material, direction: out, medium: agua a presión, unit: m3/h, description: Colector de descarga hacia la red }
+  - { id: power, kind: utility, direction: in, medium: energía eléctrica }
+
+states:
+  - { id: "off", description: Apagado }
+  - { id: idle, description: "En automático sin bombas trabajando (modo nivel: sin agua en el origen o destino lleno)" }
+  - { id: running, description: Bombeando }
+  - { id: fault, description: Variador o tablero en falla; todas las bombas detenidas }
+
+variables:
+  - { id: discharge_pressure_mca, unit: mca, kind: measured, range: [0, 300], noise_sd: 0.05, resolution: 0.01, description: Presión en el colector de descarga }
+  - { id: suction_pressure_mca, unit: mca, kind: measured, range: [-10, 60], noise_sd: 0.02, resolution: 0.01, description: Presión en el colector de succión }
+  - { id: flow_m3h, unit: m3/h, kind: measured, range: [0, 3000], noise_sd: 0.02, resolution: 0.01, description: Caudal total entregado }
+  - { id: setpoint_mca, unit: mca, kind: setpoint, description: Consigna de presión de descarga }
+  - { id: speed_pct, unit: "%", kind: calculated, range: [0, 100], description: Velocidad del variador (común a las bombas que trabajan) }
+  - { id: pumps_running, unit: "", kind: calculated, description: Bombas trabajando }
+  - { id: pumps_available, unit: "", kind: calculated, description: Bombas disponibles (sin falla) }
+  - { id: lead_pump, unit: "", kind: status, description: "Número de la bomba líder (1 a N; 0 si ninguna)" }
+  - { id: pump_head_m, unit: m, kind: calculated, description: Altura que entregan las bombas (descarga − succión) }
+  - { id: power_kw, unit: kW, kind: calculated, description: Potencia eléctrica total }
+  - { id: energy_kwh, unit: kWh, kind: counter, description: Energía consumida }
+  - { id: volume_m3, unit: m3, kind: counter, description: Volumen bombeado }
+  - { id: specific_energy_kwh_m3, unit: kWh/m3, kind: calculated, description: Energía por metro cúbico bombeado }
+
+events:
+  - { id: pump_started, description: Arrancó una bomba, payload: [pump, running] }
+  - { id: pump_stopped, description: Se detuvo una bomba, payload: [pump, running, reason] }
+  - { id: pump_tripped, description: Una bomba se disparó y queda fuera hasta repararla, payload: [pump] }
+  - { id: low_pressure, description: "La descarga cayó más de 10 % bajo la consigna por más de 10 s" }
+  - { id: pressure_normal, description: La descarga volvió a menos de 3 % de la consigna }
+
+faults:
+  - { id: pump_trip, description: Disparo térmico de la bomba líder, mtbf_h: 4000, mttr_min: 60, severity: medium, stops_equipment: false, effect: "La bomba líder queda fuera; entra la de reserva si hay" }
+  - { id: vfd_fault, description: Falla del variador o del tablero, mtbf_h: 8000, mttr_min: 90, severity: high, effect: "Se detienen todas las bombas" }
+  - { id: worn_impeller, description: Impulsores desgastados, mtbf_h: 6000, mttr_min: 240, severity: low, stops_equipment: false, effect: "La altura a caudal cero baja 10 %; el variador sube la velocidad" }
+
+commands:
+  - { id: start, description: Pasa a automático }
+  - { id: stop, description: Detiene todas las bombas }
+  - { id: set_setpoint, description: Cambia la consigna de presión, args: { mca: number } }
+  - { id: inject_fault, description: Inyecta una falla declarada, args: { fault: string, duration_s: number } }
+  - { id: clear_fault, description: Repara una falla activa, args: { fault: string } }
+  - { id: set_param, description: Cambia un parámetro en caliente, args: { name: string, value: any } }
+
+kpis:
+  - { id: avg_power_kw, unit: kW, description: Potencia eléctrica media }
+  - { id: specific_energy_kwh_m3, unit: kWh/m3, description: Energía por metro cúbico en todo el periodo }
+  - { id: min_discharge_mca, unit: mca, description: "Presión de descarga mínima después del primer minuto (en modo presión)" }
+  - { id: pump_starts, unit: "", description: Arranques de bombas }
+
+animation_channels:
+  - { id: pump_1, range: [-1, 1], description: "Velocidad relativa de la bomba 1; −1 si está disparada" }
+  - { id: pump_2, range: [-1, 1], description: Igual para la bomba 2 }
+  - { id: pump_3, range: [-1, 1], description: Igual para la bomba 3 }
+  - { id: pump_4, range: [-1, 1], description: Igual para la bomba 4 }
+  - { id: pump_5, range: [-1, 1], description: Igual para la bomba 5 }
+  - { id: pump_6, range: [-1, 1], description: Igual para la bomba 6 }
+  - { id: flow_norm, range: [0, 2], description: "Caudal ÷ (bombas de trabajo × caudal de diseño)" }
+  - { id: discharge_pressure_mca, unit: mca, range: [0, 300], description: Presión de descarga (manómetro) }
+  - { id: stack_light, range: [0, 3], description: "Baliza: 0 apagada, 1 verde, 2 amarilla, 3 roja" }
+
+geometry:
+  parts: [skid, pumps, motors, suction_header, discharge_header, check_valves, isolation_valves, gauges, control_panel, hmi, stack_light]
+
+assumptions:
+  - "Curva de cada bomba H = s²·H0 − r·Q² (s = velocidad relativa), que pasa por el punto de diseño; leyes de afinidad para la velocidad."
+  - "Las bombas que trabajan giran a la misma velocidad (un variador por bomba con consigna común). PID kp 0,02 /mca, ki 0,01 /(mca·s)."
+  - "Arranca otra bomba si la velocidad pasa stage_up_speed_pct 15 s; para una si el caudal cabe en las restantes bajo stage_down_flow_pct de su diseño, 30 s. 60 s mínimo entre cambios."
+  - "La bomba líder rota en cada arranque desde cero y al dispararse; una bomba disparada no vuelve hasta que se repara la falla."
+  - "Antirretorno por bomba con Kv = 5 × caudal de diseño; una bomba detenida no deja regresar agua."
+  - "Potencia eléctrica = ρ·g·Q·H ÷ eficiencia, con H la altura de cada bomba en su punto de operación."
+  - "Fuera de una planta, la red servida es un Kv equivalente a la atmósfera (bench_system_kv_m3h) sobre una cabeza fija (bench_static_head_m)."

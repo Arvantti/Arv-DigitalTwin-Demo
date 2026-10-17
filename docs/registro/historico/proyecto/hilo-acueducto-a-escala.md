@@ -51,3 +51,23 @@ por favor resolver los conflictos ya que ha habido otros pr despues de este
 ### 🤖 Claude (hilo) · 04:45–05:00 UTC
 
 Fusionó `main` en la rama del PR #14 (merge commit, sin reescribir historia). Los conflictos estaban solo en el registro: la bitácora, las decisiones y el índice del histórico. Conservó las entradas de los PR #15 a #21 y agregó las del #14. La decisión del solucionador pasó de D16 a D23, porque D16 ya la usaba el PR #15. Volvió a correr las pruebas y `ruff`.
+
+### 🤖 Coordinador del proyecto · 04:56 UTC (chat del proyecto)
+
+Preguntó al autor si arrancaba el siguiente paso del acueducto: los equipos de la librería (bombas, estación reguladora y rejillas).
+
+### 👤 Carlos Andrés Quiceño · 04:57:02 UTC (chat del proyecto)
+
+Si
+
+### 🤖 Claude (hilo) · 04:58 UTC
+
+Respondió que el trabajo iría en dos PR, cada uno con su captura de la galería: primero el grupo de bombas y la válvula entre niveles, y después la estación reguladora y la rejilla.
+
+### 🤖 Claude (hilo) · 04:58–05:25 UTC
+
+Trabajo del hilo, resumido:
+- Reinició la rama desde `main` y creó los tipos `booster-pump-set` y `regulating-valve` (contrato, comportamiento sobre la red hidráulica, presets, escenarios calculados a mano, geometría, README y ficha) y el preset `water-1000l` de `vessel`.
+- Un escenario de la válvula falló porque el valor esperado de la apertura estaba mal calculado a mano; se corrigió la cuenta (49,9–51,9 %), no el modelo.
+- Revisó las capturas de la galería; corrigió los soportes de la válvula, que quedaban medio enterrados, y el actuador, que se veía hundido en el bonete. Probó ambos tipos simulando por la API.
+- Actualizó la bitácora, la decisión D24, el plan, el roadmap, el diseño y este histórico, y abrió el PR #22.

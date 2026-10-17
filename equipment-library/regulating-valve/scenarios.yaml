@@ -1,0 +1,62 @@
+# Cuentas a mano: entrada fija de 25 mca, válvula de Kv 20 en serie con una descarga de Kv 6,667 a la atmósfera.
+# En serie: 25/10,197 = Q²·(1/Kv_válvula² + 1/6,667²) y p_salida = 10,197·(Q/6,667)².
+scenarios:
+  - id: steady
+    description: "Abierta del todo: 9,90 m³/h y 22,5 mca a la salida"
+    preset: between-levels-2in
+    duration_s: 600
+    expect:
+      - { path: variables.flow_m3h, min: 9.70, max: 10.10, description: "(Q² = 2,4517 ÷ (1/400 + 1/44,449) = 98,08 → 9,90 m³/h ± 2 %)" }
+      - { path: variables.outlet_pressure_mca, min: 22.05, max: 22.95, description: "(10,197·(9,90/6,667)² = 22,50 mca ± 2 %)" }
+      - { path: variables.dp_mca, min: 2.4, max: 2.6, description: "(25 − 22,5)" }
+      - { path: state, equals: running }
+
+  - id: half-open
+    description: "El operario deja el volante al 50 % a los 5 min: Kv 10"
+    preset: between-levels-2in
+    duration_s: 1200
+    timeline:
+      - { at_s: 300, command: set_opening, args: { pct: 50 } }
+    expect:
+      - { path: variables.flow_m3h, min: 8.51, max: 8.86, description: "(Q² = 2,4517 ÷ (1/100 + 1/44,449) = 75,44 → 8,69 m³/h ± 2 %)" }
+      - { path: variables.outlet_pressure_mca, min: 16.96, max: 17.66, description: "(10,197·(8,69/6,667)² = 17,31 mca ± 2 %)" }
+      - { path: events.opening_changed, equals: 1 }
+
+  - id: closed-with-seat-leak
+    description: "Cerrada: no pasa nada; con el asiento gastado pasa el 2 % del Kv"
+    preset: between-levels-2in
+    duration_s: 1800
+    timeline:
+      - { at_s: 300, command: set_opening, args: { pct: 0 } }
+      - { at_s: 600, command: inject_fault, args: { fault: seat_leak, duration_s: 7200 } }
+    expect:
+      - { path: variables.flow_m3h, min: 0.61, max: 0.64, description: "(Kv 0,4: Q² = 2,4517 ÷ (1/0,16 + 1/44,449) = 0,3909 → 0,625 m³/h ± 2 %)" }
+      - { path: state, equals: idle }
+
+  - id: pressure-control
+    description: "Con actuador, regula 21 mca a la salida; la entrada sube a 30 mca a los 15 min y la válvula cierra para mantenerlos"
+    preset: actuated-2in-pressure
+    duration_s: 1800
+    timeline:
+      - { at_s: 900, inputs: { inlet_pressure_mca: 30 } }
+    expect:
+      - { path: variables.outlet_pressure_mca, min: 20.37, max: 21.63, description: "(consigna 21 mca ± 3 %)" }
+      - { path: variables.opening_pct, min: 49.9, max: 51.9, description: "(p_salida 21 → Q = 6,667·√(21/10,197) = 9,568 m³/h; con 30 de entrada Δp = 9 mca → Kv = 9,568 ÷ √(9/10,197) = 10,18 → 50,9 % ± 1)" }
+
+  - id: actuator-stuck
+    description: "El actuador se traba a los 10 min; la entrada sube a 30 mca y la salida ya no se corrige"
+    preset: actuated-2in-pressure
+    duration_s: 1800
+    timeline:
+      - { at_s: 600, command: inject_fault, args: { fault: actuator_stuck, duration_s: 3600 } }
+      - { at_s: 900, inputs: { inlet_pressure_mca: 30 } }
+    expect:
+      - { path: events.valve_stuck, equals: 1 }
+      - { path: variables.opening_pct, min: 75.6, max: 77.2, description: "(queda donde regulaba 21 mca con 25 de entrada: Kv = 9,568 ÷ √(4/10,197) = 15,28 → 76,4 %)" }
+      - { path: variables.outlet_pressure_mca, min: 24.70, max: 25.70, description: "(Q² = (30/10,197) ÷ (1/15,28² + 1/44,449) = 109,9 → 10,48 m³/h; 10,197·(10,48/6,667)² = 25,2 mca ± 2 %)" }
+
+  - id: demo
+    description: Turno con fallas aleatorias para la galería
+    preset: actuated-2in-pressure
+    duration_s: 28800
+    random_faults: true
