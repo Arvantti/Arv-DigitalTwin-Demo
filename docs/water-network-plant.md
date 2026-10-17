@@ -8,28 +8,28 @@ Pedido original: Carlos Andrés Quiceño, 2026-10-17 00:20 UTC (hilo «Acueducto
 
 Un banco de pruebas a escala, montado en un edificio, que reproduce el acueducto de una ciudad:
 
-- **Bombeo** desde tanques con bombas multietapa en paralelo que entregan **80 mca**.
+- **Bombeo** desde un tanque con dos bombas multietapa en paralelo, con la presión de descarga en **al menos 70 mca** (picos hasta 80).
 - **Estación reguladora de presión** con dos ramas a elegir a mano: una válvula reductora con control automático y otra con control manual.
 - **Red de distribución** de cuatro niveles. Cada nivel es una **rejilla** rectangular de válvulas que representan las casas de una comuna o barrio, más unas válvulas de **fuga** (pérdidas técnicas, fraudes, conexiones ilegales) pintadas de otro color.
 - **Recirculación**: lo que sale por las válvulas cae a canaletas, baja a los tanques de recirculación y vuelve a subir a los tanques de bombeo.
 
-El objetivo de control es el de una empresa de acueducto real: **bombear a 80 mca y que la estación reguladora baje la presión hasta dejar 20 mca en la válvula más crítica de la red**, no solo a su propia salida. Con eso la demo muestra la gestión de presión: menos presión de sobra, menos fugas.
+El objetivo de control es el de una empresa de acueducto real: **bombear al menos 70 mca y que la estación reguladora baje la presión hasta dejar la válvula más crítica de la red en 15 mca con 3 % de margen (15,45 mca)**, no solo a su propia salida. La consigna de la estación resulta de eso (18,09 mca, D29). Alertas en la casa crítica: 20, 18 y 15 mca. Con eso la demo muestra la gestión de presión: menos presión de sobra, menos fugas.
 
 ## 2. Distribución en el edificio
 
-Supuesto: pisos de 3,0 m entre losas; la rejilla atraviesa la losa del piso 4 por un vacío.
+Pisos confirmados por el autor (2026-10-17): piso cero con la recirculación; piso 1 con las bombas Grundfos, la reguladora y el nivel 1 de la rejilla a ras de piso; de piso 1 a piso 2 hay unos 2,5 m. Los niveles de la rejilla van cada 1,20 m por la columna: nivel 2 a 1,20 m, nivel 3 a 2,40 m y nivel 4 a 3,60 m del nivel 1.
 
 | Piso | Qué hay |
 |---|---|
-| 2 | Tanques de recirculación (llegan las bajantes de las canaletas) y bombas de recirculación (centrífugas normales) |
-| 3 | Tanques de bombeo, grupo de bombas multietapa en paralelo con antirretorno, tramo que sube 1 m, estación reguladora elevada, bajada de 1 m y **nivel 1** de la rejilla con su canaleta. Niveles 2 y 3 encima, cada uno 1,20 m más arriba |
-| 4 | **Nivel 4** de la rejilla (3,60 m sobre el nivel 1) y su canaleta |
+| 0 | Tanques de recirculación (llegan las bajantes de las canaletas) y bombas de recirculación (centrífugas normales), que llevan el agua al tanque de bombeo |
+| 1 | Tanque de bombeo, grupo de bombas multietapa en paralelo con antirretorno, tramo que sube 1 m, estación reguladora elevada, bajada de 1 m y **nivel 1** de la rejilla a ras de piso con su canaleta |
+| 2 y más | Niveles 2, 3 y 4 de la rejilla en la columna, cada uno 1,20 m más arriba que el anterior (**nivel 4** a 3,60 m sobre el nivel 1) |
 
 ```mermaid
 flowchart LR
-  TR[Tanques de recirculación<br/>piso 2] --> BR[Bombas de recirculación<br/>piso 2]
-  BR --> TB[Tanques de bombeo<br/>piso 3]
-  TB --> BP[Grupo de bombas en paralelo<br/>+ antirretorno, 80 mca]
+  TR[Tanques de recirculación<br/>piso 0] --> BR[Bombas de recirculación<br/>piso 0]
+  BR --> TB[Tanque de bombeo<br/>piso 1]
+  TB --> BP[Grupo de bombas en paralelo<br/>+ antirretorno, mínimo 70 mca]
   BP -->|4&quot;, sube 1 m| BIF{Bifurcación manual}
   BIF -->|rama A| PRVA[PRV automática<br/>control por punto crítico]
   BIF -->|rama B| PRVM[PRV manual<br/>salida fija]
@@ -46,10 +46,10 @@ flowchart LR
 
 | Id en el plano | Qué es | Tipo de librería (nuevo salvo indicación) | Cantidad |
 |---|---|---|---|
-| `tank-recirc-01..02` | Tanques de recirculación, 1.000 L c/u | `vessel` (existe; preset nuevo `water-1000l`) | 2 |
-| `pumpset-recirc-01` | 2 bombas centrífugas normales (1 trabaja, 1 reserva), 15 m³/h a 10 mca c/u, arranque por nivel | `booster-pump-set` (preset `recirculation-2x15m3h`) | 1 |
-| `tank-supply-01..02` | Tanques de bombeo, 1.000 L c/u, comunicados | `vessel` (preset `water-1000l`) | 2 |
-| `pumpset-main-01` | 2 bombas multietapa verticales en paralelo (las dos trabajan, sin reserva), 13 m³/h a 80 m c/u: una sola sostiene la demanda de día, variador, antirretorno por bomba, colector de 4" | `booster-pump-set` (preset `multistage-2x13m3h-80m`) | 1 |
+| `tank-recirc-01..02` | Tanques de recirculación, cilindros de 1,30 m de diámetro × 1,70 m (≈ 2,26 m³ c/u, ≈ 4,5 m³ en total), piso 0 | `vessel` (preset `water-1000l`, a ajustar al volumen) | 2 |
+| `pumpset-recirc-01` | 2 bombas centrífugas normales (1 trabaja, 1 reserva), 15 m³/h a 10 mca c/u, arranque por nivel, piso 0 | `booster-pump-set` (preset `recirculation-2x15m3h`) | 1 |
+| `tank-supply-01` | Tanque de bombeo de las bombas Grundfos, 1,50 m × 2,20 m (≈ 3,9 m³), piso 1, alimentado por recirculación | `vessel` (preset a ajustar al volumen) | 1 |
+| `pumpset-main-01` | 2 bombas multietapa verticales en paralelo (las dos trabajan, sin reserva), 13 m³/h a 80 m c/u, descarga mínima de 70 mca a la entrada de la reguladora; variador, antirretorno por bomba, colector de 4", piso 1 | `booster-pump-set` (preset `multistage-2x13m3h-80m`) | 1 |
 | `prs-01` | Estación reguladora: bifurcación con válvulas de corte manuales, rama A con PRV automática, rama B con PRV manual de piloto, unión | `pressure-reducing-station` | 1 |
 | `grid-01..04` | Rejilla de un nivel: cabezal y ramales de 2", 16 válvulas de consumo (4 × 4), 2 válvulas de fuga (rojas), cada válvula numerada, canaletas casi a ras de la salida de las válvulas | `distribution-grid` | 4 |
 | `valve-between-12/23/34` | Válvula de regulación entre niveles, apertura fija manual (automatizable después) | `regulating-valve` | 3 |
@@ -114,7 +114,9 @@ De noche (válvulas de consumo al 30 %):
 
 Con fugas tipo orificio (exponente 0,5) la PRV automática ahorra ≈ 5 % de fugas de noche; con un exponente de 1,15, típico de redes de PVC con fisuras, el ahorro sube a ≈ 15 %. El exponente queda como parámetro de las válvulas de fuga para mostrar ese efecto.
 
-Bombas: dos multietapa de 13 m³/h a 80 m, sin reserva (el autor fijó 2 bombas). Cada una sola cubre el día (13 m³/h a 80 mca, con el variador al 99,7 %), para que la presión no caiga bajo 75 mca si una falla (pedido del autor, 2026-10-17); con las dos, el variador baja al 92 %. Recirculación: la elevación desde los tanques del piso 2 a los del piso 3 es ≈ 4,5 m; 10 mca con pérdidas, 15 m³/h para reponer más rápido de lo que se consume. Volumen: 2 m³ en tanques de bombeo dan ≈ 9 min de autonomía a caudal de día.
+**Actualización 2026-10-17 (confirmada por el autor):** las presiones de esta sección son el predimensionamiento original, con 80 mca de bombeo y 20 mca en la válvula crítica. La versión vigente es: bombas con mínimo 70 mca, consigna de la estación de 18,09 mca y válvula crítica en 15,45 mca (D29). Los valores del banco están en la sección 5.1 y en `industrial-models/water-network-scale-v1/network.py`.
+
+Bombas: dos multietapa de 13 m³/h a 80 m, sin reserva (el autor fijó 2 bombas). Cada una sola cubre el día (13 m³/h a 80 mca, con el variador al 99,7 %), para que la presión no caiga bajo 75 mca si una falla (pedido del autor, 2026-10-17); con las dos, el variador baja al 92 %. Recirculación: la elevación desde los tanques del piso 2 a los del piso 3 es ≈ 4,5 m; 10 mca con pérdidas, 15 m³/h para reponer más rápido de lo que se consume. Volumen: el tanque de bombeo de ≈ 3,9 m³ da ≈ 17 min de autonomía a 13,5 m³/h, sin reposición.
 
 ## 5. Modelo de simulación
 
@@ -157,8 +159,8 @@ net.set("house", opening=0.3); net.set("prv", setting_mca=22.0); net.set_head("s
 
 | Lazo | Medición | Actúa sobre | Consigna y tolerancia |
 |---|---|---|---|
-| Presión de bombeo | Presión en el colector de descarga | Velocidad de las bombas; entra la 2.ª bomba si la 1.ª pasa del 95 % de velocidad 10 s, sale si bajan del 60 % | 80 mca ± 3 % |
-| PRV automática (rama A) | Presión en la válvula más crítica (telemetría del nivel 4) | Consigna de salida de la PRV, PID con límites | 20 mca ± 5 % |
+| Presión de bombeo | Presión en el sensor de descarga de Grundfos, antes de la reguladora | Velocidad de las bombas; entra la 2.ª bomba si la 1.ª pasa del 95 % de velocidad 10 s, sale si bajan del 60 % | Mínimo 70 mca, picos hasta 80 mca; bajón de hasta 5 s con piso de 65 mca (D29). El PLC de Grundfos es cerrado: sus parámetros son supuestos |
+| PRV automática (rama A) | Presión en la válvula más crítica (telemetría del nivel 4) | Consigna de salida de la PRV, PID con límites | 18,09 mca de consigna de la estación; casa crítica en 15,45 mca (3 % sobre 15 mca, D29) |
 | PRV manual (rama B) | Su propia salida (piloto de resorte) | — | Salida fija ajustable, por defecto 26,7 mca |
 | Bifurcación | — | Válvulas de corte manuales: comando `select_branch` (`auto`, `manual`), con cierre y apertura escalonados para no cortar el suministro | — |
 | Recirculación | Nivel de tanques de recirculación y de bombeo | Arranque y paro de la bomba de recirculación | Arranca al 60 %, para al 20 % del tanque de recirculación; no arranca si el de bombeo pasa del 90 % |
@@ -178,7 +180,7 @@ Las expectativas se calculan a mano con la sección 4 antes de escribir el escen
 
 | Escenario | Qué muestra |
 |---|---|
-| `nominal` | Día: todas las casas abiertas, rama automática. 80 mca en bombas, 20 mca en la válvula crítica, 13 m³/h |
+| `nominal` | Día: todas las casas abiertas, rama automática. Al menos 70 mca en bombas, 15,45 mca en la válvula crítica, 13 m³/h |
 | `night-pressure` | Demanda de 24 h (curva diaria); la rama automática baja la salida de la PRV de noche y las fugas bajan |
 | `manual-branch` | El operador pasa a la rama manual: la presión crítica sube de noche y las fugas aumentan; comparación de KPIs |
 | `pump-trip` | Falla de una bomba principal: sin reserva, la otra acelera y sola sostiene 13 m³/h a 80 mca (un bache de ≈ 1 s mientras acelera, sin alarma de baja presión) y el antirretorno evita el retroceso por la bomba parada |
@@ -203,7 +205,7 @@ La fase 1 es un modelo 1D (red). Para acoplar después CFD (Navier-Stokes) sin r
 1. **Este diseño** y el script de predimensionamiento (sin código de producción). Hecho: PR #13.
 2. **Solucionador hidráulico** en `twin-runtime`, con pruebas contra casos calculados a mano (tubo simple, dos ramas en paralelo, bomba contra curva del sistema, PRV). Hecho: PR #14.
 3. **Tipos de equipo** `booster-pump-set`, `pressure-reducing-station`, `regulating-valve` y `distribution-grid` (contrato, comportamiento, geometría, presets, escenarios) y el preset `water-1000l` de `vessel`. Captura de la galería de cada uno. Hecho: PR #22 y #23 (`booster-pump-set`, `regulating-valve`, `water-1000l`) y PR #24 (`pressure-reducing-station`, `distribution-grid`); PR #25 agranda las bombas principales a 13 m³/h para que una sola sostenga la presión y numera las válvulas de la rejilla.
-4. **Planta** `industrial-models/water-network-scale-v1/` (`plant.yaml` con pisos y rutas, `simulation.yaml`) y dominio hidráulico del motor, con los escenarios de la sección 6.
+4. **Planta** `industrial-models/water-network-scale-v1/` (`plant.yaml` con pisos y rutas, `simulation.yaml`) y dominio hidráulico del motor, con los escenarios de la sección 6. En curso: el banco en régimen permanente (`network.py`) ya arma la red completa; falta el motor y el paso en el tiempo.
 5. **Escena 3D** del edificio, con captura y API de simulación.
 
 ## 10. Supuestos para confirmar
@@ -211,9 +213,9 @@ La fase 1 es un modelo 1D (red). Para acoplar después CFD (Navier-Stokes) sin r
 | # | Supuesto | Por qué importa |
 |---|---|---|
 | S1 | Rejilla de 4 × 4 válvulas de consumo y 2 de fuga por nivel, 2,0 × 2,0 m | Número de casas por comuna y tamaño de la escena |
-| S2 | Pisos de 3,0 m; nivel 1 de la rejilla a la altura de la descarga de las bombas | Presiones estáticas de cada nivel |
+| S2 | Piso 1 a piso 2 de unos 2,5 m; niveles de la rejilla cada 1,20 m; nivel 1 a ras de piso (confirmado) | Presiones estáticas de cada nivel |
 | S3 | Kv de las válvulas (sección 4) | Caudal total y tamaño de las bombas |
 | S4 | 2 bombas principales, las dos de trabajo (el autor corrigió el supuesto de 2 + 1 el 2026-10-17) y 2 de recirculación (1 + 1) | Lógica de alternancia y escenario de falla |
 | S5 | La PRV automática mide la presión en la válvula crítica por telemetría | Es lo que permite el objetivo de 20 mca en el punto crítico |
 | S6 | Bombas genéricas, sin marca | Regla del repositorio |
-| S7 | Tanques de 1.000 L | Autonomía y dinámica de niveles |
+| S7 | Tanque de bombeo de ≈ 3,9 m³ y dos tanques de recirculación de ≈ 4,5 m³ en total (confirmado) | Autonomía y dinámica de niveles |

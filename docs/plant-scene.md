@@ -58,7 +58,7 @@ Cada espacio guarda las últimas 160 muestras de `snapshot.equipment[equipment].
 
 ## Bodega de producto terminado y despacho (planta de salsas)
 
-La bodega `bodega-pt` (14 × 58 m) es contigua a la zona de empaque (`encajado`): la tarima sale de la envolvedora `wrapper-01`, pasa directo por la puerta `door-pt-01` de la pared (sin esclusa), se estiba en las estanterías y, para despachar, sale por el carril de alistamiento a los muelles del patio, donde se carga el camión. El flujo del plano es `wrapper-01 → rack-pt-02 → dock-02 → truck-01`. El plano no traía medidas de esta parte; la distribución es un supuesto (ver D28 en el registro).
+La bodega `bodega-pt` (14 × 58 m) es contigua a la zona de empaque (`encajado`): la tarima sale de la envolvedora `wrapper-01`, pasa directo por la puerta `door-pt-01` de la pared (sin esclusa), se estiba en las estanterías y, para despachar, sale por el carril de alistamiento a los muelles del patio, donde se carga el camión. El flujo del plano es `wrapper-01 → rack-pt-02 → dock-02 → truck-01`. El plano no traía medidas de esta parte; la distribución es un supuesto (ver D30 en el registro).
 
 Son piezas de la escena (`apps/gallery/src/warehouse.ts`), no equipos de la librería: no calculan nada. Se dimensionan con la `footprint` del `plant.yaml`:
 

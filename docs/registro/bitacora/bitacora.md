@@ -11,6 +11,8 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
 | 2026-10-17 | #28 | Fase 5: bodega de producto terminado contigua a empaque con paso directo, estanterías, rutas de montacargas, muelles y camiones en la planta de salsas (pedido del autor) | 5 |
+| 2026-10-17 | #27 | Acueducto: semáforo de la casa crítica (20, 18 y 15 mca) y búsqueda de la consigna mínima de la estación; criterio en D28 | acueducto |
+| 2026-10-17 | #27 | Acueducto: primer banco de la planta completa (bombas, estación, cuatro rejillas por las columnas) en `industrial-models/water-network-scale-v1`; resuelve con 13,5 m³/h y c44 a 23,0 mca, a revisar contra 20 mca | acueducto |
 | 2026-10-17 | #26 | Acueducto: fugas de la rejilla en los ramales 2 y 4 con la misma descarga que las casas, en la posición 1, 3 o 5; red cerrada con caminos entre ramales (pedido del autor) | acueducto |
 | 2026-10-17 | #25 | Acueducto: bombas principales de 13 m³/h para que una sola sostenga la presión (pedido del autor); rejilla con válvulas de bola de unión doble numeradas y canaletas a ras de la salida | acueducto |
 | 2026-10-17 | #24 | Acueducto: estación reguladora de presión (`pressure-reducing-station`) y rejilla de un nivel (`distribution-grid`) en la librería, con capturas; termina la entrega 3 | acueducto |
@@ -44,12 +46,19 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 - **Fecha/hora (UTC):** 2026-10-17 15:25 a 16:00.
 - **Fase del plan:** [[plan-del-proyecto]] fase 5 (pendiente «pasarelas de la nave»).
 - **Solicitado por:** Carlos Andrés Quiceño, «Las pasarelas de la nave es como una bodega contigua a la zona donde se empaca… de empaque pasa directo a esa zona y después de ahí sale hacia los camiones» (15:25).
-- **Qué se hizo:** `plant.yaml` de la planta de salsas gana el paso directo `door-pt-01`, la estantería `rack-pt-03` acortada para dejar un carril de alistamiento frente a los muelles, los camiones `truck-01` y `truck-02`, tres pasillos de montacargas, dos rutas (`fk-empaque-bodega`, `fk-bodega-despacho`) y el flujo `dock-02 → truck-01`. Nuevo `apps/gallery/src/warehouse.ts` con la estantería con tarimas, el paso directo, el andén con nivelador y el camión (puertas abiertas y tarimas si carga); la estantería también se ve en la planta de inyección. Cámara «Bodega y despacho». La API entrega `params`. Documentado en `docs/plant-scene.md`. Distribución supuesta, ver D28.
+- **Qué se hizo:** `plant.yaml` de la planta de salsas gana el paso directo `door-pt-01`, la estantería `rack-pt-03` acortada para dejar un carril de alistamiento frente a los muelles, los camiones `truck-01` y `truck-02`, tres pasillos de montacargas, dos rutas (`fk-empaque-bodega`, `fk-bodega-despacho`) y el flujo `dock-02 → truck-01`. Nuevo `apps/gallery/src/warehouse.ts` con la estantería con tarimas, el paso directo, el andén con nivelador y el camión (puertas abiertas y tarimas si carga); la estantería también se ve en la planta de inyección. Cámara «Bodega y despacho». La API entrega `params`. Documentado en `docs/plant-scene.md`. Distribución supuesta, ver D30.
 - **Commits:** ver el PR #28.
 - **Verificación:** `twin-lib validate`, `twin-lib plant validate`, `render_layout.py` (sin errores; un aviso esperado: la puerta está dentro del pasillo de recibo), `twin-lib plant run sauce-plant-v1 --scenario nominal`, `pytest`, `ruff`, `pnpm -r typecheck` y `pnpm -r test`. Capturas con la API y la simulación en vivo: [[fase8-bodega-y-despacho.png]] y [[fase8-camiones-en-muelle.png]].
-- **Decisiones:** [[decisiones]] D28.
+- **Decisiones:** [[decisiones]] D30.
 - **Pendiente:** el panel de gráficos del PLC se mostrará en un artefacto de monitoreo, fuera de la escena (curvas por definir con el autor). El transporte sigue sin simularse en el motor.
 - **Conversación:** [[hilo-bodega-de-producto-terminado]].
+### 2026-10-17 12:58–15:40 · PR #27 (borrador) · Acueducto: banco hidráulico de la planta (entrega 4, primer paso)
+- **Solicitado por:** el autor (12:55 y 12:55:22 UTC): «Qué falta» y luego «Sí», para arrancar la planta.
+- **Qué se hizo:** `industrial-models/water-network-scale-v1/network.py` arma en una sola red el tanque, el grupo de bombas, el colector de 4", la estación reguladora, las cuatro columnas de 2" y las cuatro rejillas, con las funciones de `equipment-library` (sin copiar la lógica). Corre en estado estacionario con consumo de día.
+- **Resultado (consumo de día, consigna de la estación 26,66 mca):** converge en 6 iteraciones; bombas 13,47 m³/h; consumos 11,97 m³/h y fugas ≈ 1,50 m³/h (el balance cierra); salida de la estación 26,65 mca; c44 del nivel 4 en 22,99 mca.
+- **Punto abierto:** c44 debería quedar cerca de 20 mca. Con 23,66 mca de consigna da 20,0 mca (bombas 12,63 m³/h). La consigna de 26,66 mca viene del preset de la estación y quedó con supuesto; la decisión es del autor, no se cambió el preset.
+- **Tolerancia:** el solucionador no llega a 1e-6 por un ciclo límite de ≈ 1e-5 m³/h en ramales casi sin caudal del nivel 4; la red usa 5e-4 relativa (ver comentario en `network.py`).
+- **Conversación:** [[hilo-acueducto-a-escala]].
 
 ### 2026-10-17 12:00–12:20 · PR #26 · Acueducto: fugas al final de los ramales
 - **Fecha/hora (UTC):** 2026-10-17 12:00 a 12:20.

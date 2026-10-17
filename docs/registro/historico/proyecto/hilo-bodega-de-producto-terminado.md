@@ -7,7 +7,7 @@ tags: [registro, historico-ia, bodega, despacho]
 ---
 # Hilo: bodega de producto terminado y despacho (PR #28)
 
-Parte de [[historico-proyecto]] · Índice: [[00-indice]] · Bitácora: [[bitacora]] · Decisión: [[decisiones]] D28. Autor humano: Carlos Andrés Quiceño. Hora en UTC. Credenciales: ninguna.
+Parte de [[historico-proyecto]] · Índice: [[00-indice]] · Bitácora: [[bitacora]] · Decisión: [[decisiones]] D30. Autor humano: Carlos Andrés Quiceño. Hora en UTC. Credenciales: ninguna.
 
 ---
 
@@ -29,7 +29,7 @@ Instrucciones al hilo: agregar la bodega de producto terminado, contigua a la zo
 
 Trabajo del hilo, resumido (las actualizaciones de estado no se reproducen):
 - Leyó `AGENTS.md`, `docs/plant-scene.md` y el `plant.yaml`: la zona `bodega-pt` ya existía pegada a `encajado` con tres estanterías y tres muelles, pero todo se dibujaba como volúmenes grises y no había camiones, pasillos ni rutas.
-- Rediseñó la distribución con supuestos (D28): paso directo de 4 m, tercera estantería acortada para dejar un carril de alistamiento, camiones de 8,4 m, dos rutas de montacargas y el flujo `dock-02 → truck-01`.
+- Rediseñó la distribución con supuestos (D30): paso directo de 4 m, tercera estantería acortada para dejar un carril de alistamiento, camiones de 8,4 m, dos rutas de montacargas y el flujo `dock-02 → truck-01`.
 - Creó `apps/gallery/src/warehouse.ts` (estantería con tarimas, paso directo, andén con nivelador, camión), la cámara «Bodega y despacho» y la clave `params` en la API.
 - Verificó con validadores, pruebas, lint, tipos y capturas con la API y la simulación en vivo ([[fase8-bodega-y-despacho.png]], [[fase8-camiones-en-muelle.png]]).
 - Actualizó `docs/plant-scene.md`, el plan, la bitácora, las decisiones y este histórico, y abrió el PR #28.
