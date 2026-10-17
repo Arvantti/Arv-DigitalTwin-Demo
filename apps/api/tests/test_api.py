@@ -84,6 +84,17 @@ def test_injection_plant_exposes_its_simulated_machines_and_conveyor() -> None:
     assert plant["lines"][0]["id"] == "lids-05l"
 
 
+def test_injection_plant_exposes_aisles_and_routes() -> None:
+    plant = client.get("/api/plants/plastic-injection-plant-v1").json()
+    routes = {r["id"]: r for r in plant["routes"]}
+    assert {r["kind"] for r in routes.values()} == {"forklift", "pedestrian"}
+    assert routes["fk-sf-ensamble-1"]["to"] == "assembly-01"
+    assert routes["fk-ensamble-pt-1"]["from"] == "assembly-01"
+    assert all(len(r["path"]) >= 2 for r in routes.values())
+    assert {a["id"] for a in plant["aisles"]} >= {"aisle-sur", "aisle-pt-1"}
+    assert client.get("/api/plants/sauce-plant-v1").json()["routes"] == []
+
+
 def test_layout_only_plant_has_no_lines(tmp_path, monkeypatch) -> None:
     _layout_only_models(tmp_path, monkeypatch)
     layout_only = client.get("/api/plants/plastic-injection-plant-v1").json()

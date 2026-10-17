@@ -2,12 +2,12 @@
 tipo: historico-ia
 fuente: hilo «Celda de ensamble con operario» (Claude Projects)
 desde: 2026-10-17 03:13
-hasta: 2026-10-17 04:30
+hasta: 2026-10-17 04:50
 tags: [registro, historico-ia, inyeccion, ensamble]
 ---
-# Hilo: celda de ensamble manual con operario (PR #20)
+# Hilo: celda de ensamble manual con operario (PR #20) y rutas de la nave (PR #21)
 
-Parte de [[historico-proyecto]] · Índice: [[00-indice]] · Bitácora: [[bitacora]] · Decisión: [[decisiones]] D20. Autor humano: Carlos Andrés Quiceño. Hora en UTC. Credenciales: ninguna.
+Parte de [[historico-proyecto]] · Índice: [[00-indice]] · Bitácora: [[bitacora]] · Decisiones: [[decisiones]] D20 y D21. Autor humano: Carlos Andrés Quiceño. Hora en UTC. Credenciales: ninguna.
 
 ---
 
@@ -34,3 +34,9 @@ Trabajo del hilo, resumido (las actualizaciones de estado no se reproducen):
 - Enlazó `assembly-01` y `assembly-02` en `simulation.yaml` (con flujos supuestos para la 2 en `plant.yaml`), recalculó `nominal` y agregó el escenario `body-stop`. Agregó `focus=` a la escena para acercar la cámara.
 - Verificó con `twin-lib validate`, `twin-lib plant validate`, `pytest`, `ruff`, `pnpm -r typecheck` y `pnpm -r test`, y con capturas de la galería y de la escena con la API en vivo.
 - Actualizó `docs/plant-engine.md`, `docs/plant-scene.md`, la bitácora, las decisiones y este histórico, y abrió el PR #20.
+
+### 🤖 Claude (hilo) · 04:30–04:50 UTC
+
+- Pasó a las rutas de la nave de inyección, en un PR aparte (#21) apilado sobre el #20. Definió en el `plant.yaml` cuatro estanterías de semielaborado, siete pasillos hacia el este y la sección `routes` (8 rutas de montacargas y 5 de operarios).
+- Extendió el validador del plano (`render_layout.py`) y el plano 2D, la API y la escena (franjas, cintas, montacargas y operarios que recorren las rutas). Verificó con las pruebas del repositorio y con capturas.
+

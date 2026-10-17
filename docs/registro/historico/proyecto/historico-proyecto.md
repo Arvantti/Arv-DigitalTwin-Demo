@@ -19,5 +19,5 @@ Conversaciones del 2026-10-16 (UTC) entre el autor y Claude dentro del proyecto 
 8. [[hilo-acueducto-a-escala]] (PR #13, diseño de la tercera planta, 2026-10-17)
 9. [[hilo-equipos-de-inyeccion]] (PR #15, geometría del empaque, secadores, chillers y molino, 2026-10-17)
 10. [[hilo-cascada-de-inyeccion]] (PR #16, cascada de la planta de inyección, y PR #17, lazo de reciclaje, 2026-10-17)
-11. [[hilo-celda-de-ensamble]] (PR #20, celda de ensamble manual con operario, 2026-10-17)
+11. [[hilo-celda-de-ensamble]] (PR #20, celda de ensamble manual con operario, y PR #21, rutas de montacargas y operarios, 2026-10-17)
 12. Rutinas: «Revisión semanal de PRs» (lunes 13:52 UTC) y «Galería de equipos semanal» (viernes 13:52 UTC), creadas 15:00 UTC; sin mensajes adicionales.
