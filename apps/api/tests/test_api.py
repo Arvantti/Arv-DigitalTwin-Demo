@@ -92,7 +92,10 @@ def test_injection_plant_exposes_aisles_and_routes() -> None:
     assert routes["fk-ensamble-pt-1"]["from"] == "assembly-01"
     assert all(len(r["path"]) >= 2 for r in routes.values())
     assert {a["id"] for a in plant["aisles"]} >= {"aisle-sur", "aisle-pt-1"}
-    assert client.get("/api/plants/sauce-plant-v1").json()["routes"] == []
+    sauce = client.get("/api/plants/sauce-plant-v1").json()
+    assert {r["id"] for r in sauce["routes"]} == {"fk-empaque-bodega", "fk-bodega-despacho"}
+    trucks = {e["id"]: e["params"]["state"] for e in sauce["equipment"] if e["type"] == "delivery_truck"}
+    assert trucks == {"truck-01": "loading", "truck-02": "waiting"}
 
 
 def test_layout_only_plant_has_no_lines(tmp_path, monkeypatch) -> None:

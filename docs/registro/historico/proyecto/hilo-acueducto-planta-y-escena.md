@@ -7,7 +7,7 @@ tags: [registro, historico-ia, acueducto]
 ---
 # Hilo: acueducto, planta en el motor y escena 3D (entregas 4 y 5)
 
-Parte de [[historico-proyecto]] · Índice: [[00-indice]] · Hilo anterior: [[hilo-acueducto-a-escala]] · Diseño: `docs/water-network-plant.md` · Decisión: [[decisiones]] D30. Autor humano: Carlos Andrés Quiceño. Hora en UTC. Credenciales: ninguna.
+Parte de [[historico-proyecto]] · Índice: [[00-indice]] · Hilo anterior: [[hilo-acueducto-a-escala]] · Diseño: `docs/water-network-plant.md` · Decisión: [[decisiones]] D31. Autor humano: Carlos Andrés Quiceño. Hora en UTC. Credenciales: ninguna.
 
 ---
 

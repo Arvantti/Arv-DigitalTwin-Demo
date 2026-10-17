@@ -56,6 +56,21 @@ panel:
 
 Cada espacio guarda las últimas 160 muestras de `snapshot.equipment[equipment].variables[variable]` (una por mensaje del WebSocket) y dibuja el valor actual y la tendencia. Para cambiar un gráfico basta cambiar `equipment` y `variable` por cualquier variable que publique un equipo simulado; los gráficos definitivos se definen después.
 
+## Bodega de producto terminado y despacho (planta de salsas)
+
+La bodega `bodega-pt` (14 × 58 m) es contigua a la zona de empaque (`encajado`): la tarima sale de la envolvedora `wrapper-01`, pasa directo por la puerta `door-pt-01` de la pared (sin esclusa), se estiba en las estanterías y, para despachar, sale por el carril de alistamiento a los muelles del patio, donde se carga el camión. El flujo del plano es `wrapper-01 → rack-pt-02 → dock-02 → truck-01`. El plano no traía medidas de esta parte; la distribución es un supuesto (ver D30 en el registro).
+
+Son piezas de la escena (`apps/gallery/src/warehouse.ts`), no equipos de la librería: no calculan nada. Se dimensionan con la `footprint` del `plant.yaml`:
+
+| Tipo en `plant.yaml` | Pieza |
+|---|---|
+| `pallet_rack` | Estantería de 4 niveles con tarimas (85 % ocupadas); de doble fondo si el ancho es ≥ 2,2 m. Sirve también a la planta de inyección (el largo es el lado mayor) |
+| `pass_through_door` | Marco del paso directo empaque → bodega |
+| `dock_leveler` | Andén con nivelador, topes y semáforo de muelle |
+| `delivery_truck` | Camión sencillo de caja seca de 8,4 m; `params.state: loading` abre las puertas y muestra tarimas cargadas, `waiting` lo deja cerrado |
+
+Dos pasillos de recibo y uno de alistamiento (`aisles`) y dos rutas de montacargas (`routes`): `fk-empaque-bodega` y `fk-bodega-despacho`. Cámara «BODEGA Y DESPACHO» o `camera=bodega-pt`. La API entrega ahora la clave `params` de cada equipo.
+
 ## Pasarelas en el `plant.yaml`
 
 Sección opcional `walkways`, validada por `tools/layout/render_layout.py` y dibujada en el plano 2D:
