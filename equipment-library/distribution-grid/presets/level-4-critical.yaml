@@ -1,4 +1,4 @@
 preset: level-4-critical
 description: Nivel 4 (el más alto, 3,6 m sobre el nivel 1) con la válvula más crítica de la red marcada; entra con 20,0 mca de diseño
-params: { level: 4, elevation_m: 3.6, spacing_m: 0.5, pipe_id_mm: 52.5, consumer_kv_m3h: 0.12, leak_kv_m3h: 0.12, leak_exponent: 0.5, consumer_opening_pct: 100, leak_opening_pct: 100, min_service_mca: 15, critical_marker: true, bench_inlet_mca: 20.01 }
-provenance: { level: user, elevation_m: user, spacing_m: assumed, pipe_id_mm: user, consumer_kv_m3h: assumed, leak_kv_m3h: assumed, leak_exponent: assumed, min_service_mca: assumed, bench_inlet_mca: assumed }
+params: { level: 4, elevation_m: 3.6, spacing_m: 0.5, pipe_id_mm: 52.5, consumer_kv_m3h: 0.12, leak_kv_m3h: 0.12, leak_exponent: 0.5, consumer_opening_pct: 100, leak_opening_pct: 100, min_service_mca: 15, critical_marker: true, bench_inlet_mca: 20.01, leak_slot_branch2: 1, leak_slot_branch4: 3 }
+provenance: { level: user, leak_slot_branch2: user, leak_slot_branch4: user, elevation_m: user, spacing_m: assumed, pipe_id_mm: user, consumer_kv_m3h: assumed, leak_kv_m3h: assumed, leak_exponent: assumed, min_service_mca: assumed, bench_inlet_mca: assumed }

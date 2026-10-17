@@ -41,7 +41,7 @@ def resolved(tipo: str, preset: str, **overrides: Any) -> dict[str, Any]:
 def build(
     pump_preset: str = "multistage-2x13m3h-80m",
     station_preset: str = "station-4in-manual",
-    grid_presets: tuple[str, str, str, str] = ("level-1", "level-1", "level-1", "level-4-critical"),
+    grid_presets: tuple[str, str, str, str] = ("level-1", "level-2", "level-3", "level-4-critical"),
     station_setting_mca: float | None = None,
     pump_speed: float = 1.0,
 ) -> tuple[HydraulicNetwork, dict[str, Any]]:
