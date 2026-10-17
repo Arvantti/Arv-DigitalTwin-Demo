@@ -5,7 +5,7 @@ desde: 2026-10-17 15:24
 hasta: 2026-10-17 16:00
 tags: [registro, historico-ia, bodega, despacho]
 ---
-# Hilo: bodega de producto terminado y despacho (PR #27)
+# Hilo: bodega de producto terminado y despacho (PR #28)
 
 Parte de [[historico-proyecto]] · Índice: [[00-indice]] · Bitácora: [[bitacora]] · Decisión: [[decisiones]] D28. Autor humano: Carlos Andrés Quiceño. Hora en UTC. Credenciales: ninguna.
 
@@ -32,5 +32,5 @@ Trabajo del hilo, resumido (las actualizaciones de estado no se reproducen):
 - Rediseñó la distribución con supuestos (D28): paso directo de 4 m, tercera estantería acortada para dejar un carril de alistamiento, camiones de 8,4 m, dos rutas de montacargas y el flujo `dock-02 → truck-01`.
 - Creó `apps/gallery/src/warehouse.ts` (estantería con tarimas, paso directo, andén con nivelador, camión), la cámara «Bodega y despacho» y la clave `params` en la API.
 - Verificó con validadores, pruebas, lint, tipos y capturas con la API y la simulación en vivo ([[fase8-bodega-y-despacho.png]], [[fase8-camiones-en-muelle.png]]).
-- Actualizó `docs/plant-scene.md`, el plan, la bitácora, las decisiones y este histórico, y abrió el PR #27.
+- Actualizó `docs/plant-scene.md`, el plan, la bitácora, las decisiones y este histórico, y abrió el PR #28.
 - Anotó que el panel de gráficos del PLC se presentará en un artefacto o HTML de monitoreo, fuera de la escena, con curvas por definir.
