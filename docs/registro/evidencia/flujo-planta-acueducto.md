@@ -36,6 +36,7 @@ Fuente: `industrial-models/water-network-scale-v1/plant.yaml` (flujos y rutas), 
 - **Válvulas entre niveles:** los tubos pasaban por el medio del cuerpo y las bridas de los lados quedaban abiertas. Ahora la columna entra por la brida oeste de cada válvula y sale por la brida este hacia la toma del nivel siguiente.
 - **Estación reguladora:** el tubo de llegada y el de salida estaban 0,15 m más bajos y ~0,2 m separados de sus bridas, y por eso el extremo con manómetro quedaba abierto. Las rutas ahora empiezan y terminan en las bridas reales.
 - **Tanques de recirculación y de bombeo:** el codo blanco de la tapa (boquilla de entrada) y la salida inferior quedaban al aire. Las bajantes y el retorno llegan ahora a la boquilla de entrada; la succión sale de la boquilla inferior hasta el colector de las bombas.
+- **Costados de la rejilla (2.ª captura):** las patas de soporte de los niveles 2 a 4 bajaban por la huella nominal, que no coincidía con el bastidor real (quedaban vigas al aire en el borde este y sur). Ahora bajan por las esquinas del propio bastidor, una sobre otra, hasta el piso; las bajantes arrancan en la boquilla real de cada canaleta (12,09; 3,975).
 - **Bombas:** los colectores de succión y descarga terminaban abiertos al este; ahora reciben el tubo.
 
 ## Qué NO está conectado o es solo ilustrativo

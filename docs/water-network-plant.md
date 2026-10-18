@@ -242,7 +242,7 @@ Revisión del 2026-10-18 (captura del autor con piezas sueltas). Cada ruta de `p
 | Extremo este del colector de descarga (Grundfos) | 4,44; 6,8; 3,176 | ídem |
 | Brida de entrada / salida de la estación reguladora | 4,9135 y 7,4865; 4,6; 4,05 | `pressure-reducing-station`: L/2 − 0,02 m, eje a 0,55 m del apoyo |
 | Montante de entrada de cada nivel | 10,0; 4,0; piso del nivel | `distribution-grid`: sube hasta 0,9 m; la toma se hace a 0,15 m del piso |
-| Bajante de cada canaleta | 11,59; 4,025; piso del nivel | `distribution-grid`: baja a su piso |
+| Bajante de cada canaleta | 12,09; 3,975; piso del nivel | `distribution-grid`: baja a su piso |
 | Bridas de la válvula entre niveles | 9,22 y 9,92; 3,7; eje a 0,35 m del apoyo | `regulating-valve`: carrete de 0,70 m hacia +X |
 | Boquilla de entrada de cada tanque de recirculación | 8,95 y 10,75; 2,6; 3,245 | `vessel`: tapa, a −(radio + 0,4) m en X |
 | Boquilla de salida de los tanques de recirculación | 10,95 y 12,75; 2,6; 0,25 | `vessel` |

@@ -304,6 +304,19 @@ function supportFor(eq: PlantEquipment): THREE.Object3D | null {
   if (eq.overhead || gap < 0.15 || dx * dy < 0.5) return null;
   const group = new THREE.Group();
   group.name = `support-${eq.id}`;
+  if (eq.type === "distribution_grid") {
+    // el bastidor de la rejilla ya trae sus vigas: las patas bajan por las esquinas reales de ese bastidor (no por la
+    // huella nominal, que no coincide), una sobre otra, como una sola columna hasta el piso
+    const s = Number(eq.params?.spacing_m ?? 0.5);
+    for (const lx of [-2.3 * s, 2.3 * s])
+      for (const lz of [-3.3 * s, 2.3 * s]) {
+        const leg = new THREE.Mesh(new THREE.BoxGeometry(0.05, gap, 0.05), SUPPORT);
+        leg.position.copy(toScene(eq.position[0] + lx, eq.position[1] - lz, floor + gap / 2));
+        leg.castShadow = true;
+        group.add(leg);
+      }
+    return group;
+  }
   for (const sx of [-1, 1])
     for (const sy of [-1, 1]) {
       const leg = new THREE.Mesh(new THREE.BoxGeometry(0.06, gap, 0.06), SUPPORT);
