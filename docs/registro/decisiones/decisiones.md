@@ -126,3 +126,6 @@ El autor (12:00): Orbitron cansa la lectura, se usa solo en títulos. Decisiones
 
 ## D38 · Tuberías ancladas a la superficie real del equipo · 2026-10-18 13:50
 Tras la inspección visual, el autor señala líneas desconectadas (13:15) y pide arreglarlas (13:48). Decisión: sin esperar puertos de conexión por tipo de equipo, las tuberías sin `route` se anclan a la geometría real (rayo vertical) y llevan brida en cada extremo; las que traen `route` no cambian. Es un arreglo de recorrido, no de ingeniería de detalle; los puertos reales por tipo de equipo quedan como mejora posterior.
+
+## D39 · Pantalla de carga con etapas reales · 2026-10-18 14:09
+El autor (14:09) pide una barra de carga con varias etapas porque la entrada a cada planta tarda unos 5 s y parece un error. Decisión: las etapas son las del arranque real de `plant.ts` (no un temporizador falso): el porcentaje sube cuando empieza cada etapa y llega a 100 % tras los primeros cuadros renderizados; la barra no avanza por su cuenta durante el trabajo síncrono, solo entre etapas. Aplica a las tres plantas porque comparten `plant.html`.

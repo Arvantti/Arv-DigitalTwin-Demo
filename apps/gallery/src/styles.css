@@ -137,3 +137,17 @@ body.portal { overflow: auto; background: var(--bg); }
   .portal-wrap { padding: 28px 14px 40px; }
   .portal-head h1 { font-size: 26px; }
 }
+
+/* pantalla de carga de la escena de planta */
+.boot { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; background: var(--bg); transition: opacity 0.5s ease; }
+.boot.done { opacity: 0; pointer-events: none; }
+.boot-card { width: min(420px, calc(100vw - 32px)); }
+.boot-brand { font: 700 13px Orbitron, sans-serif; letter-spacing: 0.2em; margin-bottom: 18px; }
+.boot-title { font: 600 20px Orbitron, sans-serif; margin: 0 0 18px; }
+.boot-track { height: 6px; background: rgba(255, 255, 255, 0.12); border: 1px solid var(--line); border-radius: 0; overflow: hidden; }
+.boot-fill { height: 100%; width: 0; background: var(--accent); box-shadow: 0 0 10px rgba(45, 127, 249, 0.6); transition: width 0.45s ease; }
+.boot-row { display: flex; justify-content: space-between; gap: 12px; margin-top: 10px; font: 500 12px Inter, sans-serif; letter-spacing: 0.04em; }
+.boot-pct { font-family: "IBM Plex Mono", monospace; color: var(--accent); }
+.boot.error .boot-fill { background: #ff6b6b; box-shadow: none; }
+.boot.error .boot-stage { color: #ff9b9b; }
+body.shot .boot { display: none; }

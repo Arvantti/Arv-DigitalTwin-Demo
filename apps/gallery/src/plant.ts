@@ -23,6 +23,7 @@ import { geometryBuilders, rawSpecs } from "@twin/equipment-library/registry.ts"
 import { buildProcessPiece } from "./process-pieces.ts";
 import { dockLeveler, deliveryTruck, palletRack, passThroughDoor } from "./warehouse.ts";
 import { type ControlPiece, type PanelConfig, controlPanel, operatorDesk, plcCabinet } from "./control-room.ts";
+import { bootDone, bootError, bootStage } from "./boot.ts";
 import "./styles.css";
 
 interface Zone {
@@ -846,21 +847,30 @@ function buildLighting(): void {
 // ------------------------------------------------------------------ arranque
 async function start(): Promise<void> {
   const plantId = url.get("plant") ?? "sauce-plant-v1";
+  await bootStage(6, "Conectando con el gemelo digital…");
   const res = await fetch(`/api/plants/${plantId}`);
   if (!res.ok) {
-    $("plant-name").textContent = `No se pudo cargar ${plantId} (${res.status}). ¿Está corriendo la API?`;
+    const message = `No se pudo cargar ${plantId} (${res.status}). ¿Está corriendo la API?`;
+    $("plant-name").textContent = message;
+    bootError(message);
     return;
   }
+  await bootStage(22, "Descargando el plano de la planta…");
   doc = await res.json();
   $<HTMLAnchorElement>("link-equipos").href = `/equipos.html?plant=${plantId}`;
   $("plant-name").textContent = doc.plant.name.toUpperCase();
   const simulated = doc.equipment.filter((e) => e.sim).length;
+  await bootStage(34, "Construyendo zonas y pisos…");
   buildZones();
+  await bootStage(48, `Montando ${doc.equipment.length} equipos…`);
   buildEquipment();
+  await bootStage(66, "Tendiendo pasarelas y rutas…");
   buildWalkways();
   if (url.get("routes") !== "0") updateRoutes = buildRoutes(doc.aisles ?? [], doc.routes ?? [], stage.content, toScene);
+  await bootStage(78, "Procesando conexiones y tuberías…");
   buildPipes();
   $("plant-meta").textContent = `${doc.equipment.length} activos · ${simulated} simulados · ${doc.zones.length} zonas · ${pipeRuns.length} tuberías · ${doc.walkways.length} pasarelas`;
+  await bootStage(88, "Configurando iluminación y cámaras…");
   buildLighting();
   buildCameras();
 
@@ -898,6 +908,7 @@ async function start(): Promise<void> {
     connect();
   }
   renderAsset();
+  await bootStage(94, "Renderizando la escena 3D…");
   loop();
 }
 
@@ -940,6 +951,7 @@ function loop(): void {
   for (const piece of controlPieces) piece.redraw?.();
   updateTour();
   frames++;
+  if (frames === 12) bootDone();
   const wantsData = url.get("autosim") === "1";
   if (shotMode && frames >= 40 && (!wantsData || messages >= Number(url.get("messages") ?? 3))) (window as unknown as { __ready: boolean }).__ready = true;
   requestAnimationFrame(loop);

@@ -10,6 +10,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
+| 2026-10-18 | Pantalla de carga | La escena de planta (las tres plantas) muestra una barra de carga con etapas reales (conexión, plano, zonas, equipos, pasarelas, tuberías, luces, render) para que la espera inicial no parezca un error. D39 | 5 |
 | 2026-10-18 | Tuberías ancladas | Las tuberías sin ruta terminaban en el aire sobre el centro de la huella del equipo; ahora se anclan a su superficie real (rayo vertical contra la geometría) y llevan brida en cada extremo. Inspección visual de las tres plantas en `/mnt/project-files/inspeccion/`. D38 | 5 |
 | 2026-10-18 | Vista móvil | Orbitron solo en títulos (Inter en el resto) y en pantallas de hasta 700 px los paneles de la escena se ven de a uno desde una barra inferior (Menú, Activo, Eventos); el panel del acueducto también usa Inter en cifras y pestañas. D37 | 4 |
 | 2026-10-18 | Salsas sin cubos | 29 tipos de equipo de proceso, empaque y servicios de la planta de salsas con forma propia (tanques, bombas, molinos, emulsificador al vacío, CIP, caldera, enfriador…); las llenadoras y la pesadora sin simular usan su forma de la librería | 5 |
@@ -53,6 +54,14 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 | 2026-10-16 | #1 | Layouts de las plantas | 1 |
 
 ## Entradas
+
+### 2026-10-18 14:09 · Pantalla de carga con etapas
+- **Fecha/hora (UTC):** 2026-10-18 14:09–14:40
+- **Solicitado por:** Carlos Andrés Quiceño (14:09): al entrar a cada planta hay una espera de unos 5 segundos y parece un error; pidió una barra de carga que se llene y muestre varias etapas («cargando el modelo digital, procesando conexiones, renderizando»), en los tres modelos.
+- **Qué se hizo:** `apps/gallery/src/boot.ts` y una capa `#boot` en `plant.html` con barra y texto de etapa (6 % conexión, 22 % plano, 34 % zonas, 48 % equipos, 66 % pasarelas y rutas, 78 % conexiones y tuberías, 88 % luces y cámaras, 94 % render; 100 % tras 12 cuadros). Cada etapa cede el hilo para pintarse antes del trabajo síncrono. Si falla la API, el mensaje de error se muestra en la barra en rojo. Se oculta en modo captura (`shot=1`).
+- **Verificación:** `pnpm -r typecheck`; capturas con la API retrasada 2,5 s de las tres plantas en escritorio y de salsas a 390×844 (`/mnt/project-files/inspeccion/carga/`); la capa se retira sola al terminar.
+- **Decisiones:** [[decisiones]] D39.
+- **Conversación:** [[hilo-inspeccion-visual]].
 
 ### 2026-10-18 13:14 · Inspección visual y tuberías desconectadas
 - **Fecha/hora (UTC):** 2026-10-18 13:14–14:10
