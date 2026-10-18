@@ -39,3 +39,34 @@ scenarios:
     expect:
       - { path: events.fault_cleared, equals: 1 }
       - { path: kpis.throughput_upm, min: 15, max: 25, description: "(30 u/min, sin entregas ≈ 10 de 30 min)" }
+
+  - id: bridge-steady
+    description: Banda de maletas que sube a un puente de 4 m y baja (20 m en planta), 5 maletas por minuto durante 10 minutos
+    preset: bhs-bridge-20m
+    duration_s: 600
+    expect:
+      - { path: variables.max_slope_deg, min: 19.5, max: 20.3, description: "(las rampas de 16° no caben en 18 m: se empinan a 3,25 m en 9 m, atan 0,361 = 19,9°)" }
+      - { path: variables.path_length_m, min: 21.0, max: 21.3, description: "(2 × √(9² + 3,25²) + 2 m a nivel = 21,14 m)" }
+      - { path: variables.delivered, min: 45, max: 49, description: "(5 por min × (600 − 35 s de recorrido a 0,6 m/s) ≈ 47)" }
+      - { path: variables.slipping, equals: 0, description: "(19,9° < atan 0,45 = 24,2°: las maletas suben con la banda)" }
+
+  - id: steep-ramp-slip
+    description: La misma banda con rampas de 35°, más empinadas que el ángulo de fricción de las maletas
+    preset: bhs-bridge-20m
+    params: { ramp_deg: 35 }
+    duration_s: 300
+    expect:
+      - { path: events.slip, min: 1, description: "(tan 35° = 0,70 > 0,45: la primera maleta resbala al pie de la subida)" }
+      - { path: variables.delivered, equals: 0 }
+      - { path: variables.slipping, equals: 1 }
+      - { path: variables.accepting, equals: 0, description: "(la maleta detenida tapa la entrada; las 4 plazas de espera se llenan)" }
+
+  - id: queue-collisions
+    description: La salida de una banda corta de maletas se bloquea al minuto; las que llegan chocan contra la cola
+    preset: bhs-transfer-9m
+    duration_s: 300
+    timeline:
+      - { at_s: 60, inputs: { downstream_free: false } }
+    expect:
+      - { path: variables.items_on_belt, equals: 8, description: "(9 m / 1,2 m + 1)" }
+      - { path: variables.collisions, equals: 7, description: "(la primera se detiene en la descarga; cada una de las otras 7 llega a 0,6 m/s contra la cola)" }

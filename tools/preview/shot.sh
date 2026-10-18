@@ -22,7 +22,7 @@ Q="type=$(enc "$TYPE")&shot=1&lighting=$LIGHTING"
 [ -n "$PARAMS" ] && Q="$Q&params=$(enc "$PARAMS")"
 "$CHROME" --headless --no-sandbox --use-angle=swiftshader --enable-unsafe-swiftshader --ignore-gpu-blocklist \
   --hide-scrollbars --window-size=1600,987 --virtual-time-budget=15000 \
-  --screenshot="$OUT" "$URL_BASE/?$Q" 2>/dev/null
+  --screenshot="$OUT" "$URL_BASE/equipos.html?$Q" 2>/dev/null
 # el viewport de Chromium sin interfaz es más bajo que la ventana: recorta la franja vacía
 if command -v convert >/dev/null; then convert "$OUT" -crop 1600x900+0+0 +repage "$OUT"; fi
 echo "$OUT"

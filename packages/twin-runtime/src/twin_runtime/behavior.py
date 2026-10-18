@@ -101,6 +101,10 @@ class EquipmentBehavior:
     def animation(self) -> dict[str, float]:
         return {}
 
+    def tracked_items(self) -> list[float] | None:
+        """Posición de cada unidad que el equipo sigue una por una (p. ej. maletas en una banda), o None."""
+        return None
+
     def kpis(self) -> dict[str, Any]:
         return {}
 
@@ -227,4 +231,5 @@ class EquipmentBehavior:
             "animation": self.animation(),
             "kpis": self.kpis(),
             "quality": "simulated",
+            **({"items": items} if (items := self.tracked_items()) is not None else {}),
         }

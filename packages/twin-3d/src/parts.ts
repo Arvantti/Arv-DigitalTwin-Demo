@@ -226,6 +226,8 @@ export interface OperatorLook {
   hair?: string;
   pants?: string;
   helmet?: string;
+  /** Persona sin dotación (pasajero, agente de mostrador): sin casco, chaleco ni gafas. */
+  civilian?: boolean;
 }
 
 function capsule(r: number, length: number, material: THREE.Material, sx = 1, sz = 1): THREE.Mesh {
@@ -285,13 +287,15 @@ export function operator(vest = "#f26b1d", shirt = "#2f5f8f", look: OperatorLook
   chest.position.y = 0.26;
   torso.add(chest);
   // chaleco reflectivo con franjas
-  const vestBody = box(0.385, 0.42, 0.215, vestMat, 0.07);
-  vestBody.position.y = 0.23;
-  torso.add(vestBody);
-  for (const y of [0.1, 0.27]) {
-    const band = box(0.392, 0.035, 0.222, reflect, 0.012);
-    band.position.y = y;
-    torso.add(band);
+  if (!look.civilian) {
+    const vestBody = box(0.385, 0.42, 0.215, vestMat, 0.07);
+    vestBody.position.y = 0.23;
+    torso.add(vestBody);
+    for (const y of [0.1, 0.27]) {
+      const band = box(0.392, 0.035, 0.222, reflect, 0.012);
+      band.position.y = y;
+      torso.add(band);
+    }
   }
   const neck = cylinder(0.045, 0.05, 0.1, skin, 14);
   neck.position.y = 0.52;
@@ -320,13 +324,17 @@ export function operator(vest = "#f26b1d", shirt = "#2f5f8f", look: OperatorLook
     const eye = mesh(new THREE.SphereGeometry(0.01, 8, 6), M.paint("#15110f", 0.3));
     eye.position.set(sx * 0.034, 0.014, 0.093);
     head.add(eye);
-    const lens = box(0.058, 0.032, 0.006, M.glass("#bfe3ff", 0.35), 0.003);
-    lens.position.set(sx * 0.034, 0.014, 0.1);
-    head.add(lens);
+    if (!look.civilian) {
+      const lens = box(0.058, 0.032, 0.006, M.glass("#bfe3ff", 0.35), 0.003);
+      lens.position.set(sx * 0.034, 0.014, 0.1);
+      head.add(lens);
+    }
   }
-  const bridge = box(0.02, 0.006, 0.006, M.paint("#222a30", 0.5), 0.002);
-  bridge.position.set(0, 0.018, 0.101);
-  head.add(bridge);
+  if (!look.civilian) {
+    const bridge = box(0.02, 0.006, 0.006, M.paint("#222a30", 0.5), 0.002);
+    bridge.position.set(0, 0.018, 0.101);
+    head.add(bridge);
+  }
   const nose = mesh(new THREE.ConeGeometry(0.014, 0.034, 8), skin);
   nose.rotation.x = Math.PI / 2;
   nose.position.set(0, -0.012, 0.108);
@@ -334,16 +342,18 @@ export function operator(vest = "#f26b1d", shirt = "#2f5f8f", look: OperatorLook
   const mouth = box(0.04, 0.006, 0.006, M.paint("#8a4b4b", 0.6), 0.002);
   mouth.position.set(0, -0.052, 0.092);
   head.add(mouth);
-  const hat = mesh(new THREE.SphereGeometry(0.112, 22, 12, 0, Math.PI * 2, 0, Math.PI * 0.46), helmet);
-  hat.scale.set(0.96, 1.05, 1.08);
-  hat.position.set(0, 0.03, -0.004);
-  head.add(hat);
-  const ridge = box(0.03, 0.012, 0.2, helmet, 0.005);
-  ridge.position.set(0, 0.135, -0.004);
-  head.add(ridge);
-  const brim = box(0.2, 0.012, 0.07, helmet, 0.005);
-  brim.position.set(0, 0.052, 0.1);
-  head.add(brim);
+  if (!look.civilian) {
+    const hat = mesh(new THREE.SphereGeometry(0.112, 22, 12, 0, Math.PI * 2, 0, Math.PI * 0.46), helmet);
+    hat.scale.set(0.96, 1.05, 1.08);
+    hat.position.set(0, 0.03, -0.004);
+    head.add(hat);
+    const ridge = box(0.03, 0.012, 0.2, helmet, 0.005);
+    ridge.position.set(0, 0.135, -0.004);
+    head.add(ridge);
+    const brim = box(0.2, 0.012, 0.07, helmet, 0.005);
+    brim.position.set(0, 0.052, 0.1);
+    head.add(brim);
+  }
   torso.add(head);
 
   // brazos: hombro → codo → antebrazo → guante
@@ -805,4 +815,58 @@ export function butterflyValve(pipeR: number, material: THREE.Material = M.stain
   handle.rotation.y = Math.PI / 2;
   g.add(handle);
   return g;
+}
+
+// ------------------------------------------------------------------ equipaje (aeropuerto)
+
+/** Colores de maletas: oscuros y sobrios, con algunos vivos, como en una banda real. */
+export const BAG_COLORS = ["#1f2a44", "#7a1f2b", "#2f4f3a", "#3a3a3a", "#5a3d8a", "#b5651d", "#264d73", "#8c8c8c", "#c9a227", "#111418"];
+
+/**
+ * Maletas instanciadas, acostadas (como viajan en las bandas): largo `size` sobre X, alto 0,35 × size,
+ * ancho 0,65 × size. Cada instancia tiene su color. El origen de cada maleta está en el centro de su base.
+ */
+export function bagInstances(maxCount: number, size = 0.7, name = "bags"): THREE.InstancedMesh {
+  const h = size * 0.35;
+  const geo = new RoundedBoxGeometry(size, h, size * 0.65, 2, Math.min(0.04, h / 3));
+  geo.translate(0, h / 2, 0);
+  const mat = new THREE.MeshStandardMaterial({ color: "#ffffff", roughness: 0.55, metalness: 0.05 });
+  const bags = new THREE.InstancedMesh(geo, mat, Math.max(1, maxCount));
+  const c = new THREE.Color();
+  const m = new THREE.Matrix4();
+  for (let i = 0; i < bags.count; i++) {
+    bags.setColorAt(i, c.set(BAG_COLORS[(i * 7 + 3) % BAG_COLORS.length]));
+    bags.setMatrixAt(i, m.makeTranslation(0, 0, 0));
+  }
+  bags.castShadow = true;
+  bags.name = name;
+  bags.count = 0;
+  return bags;
+}
+
+/**
+ * Punto de un óvalo (dos rectas de largo `straight` y dos semicírculos de radio `r`) a la distancia `s` de su
+ * inicio. El recorrido empieza en el extremo -X de la recta +Z y avanza hacia +X (sentido horario visto desde arriba
+ * con +Z hacia el observador). Devuelve x, z y el ángulo de avance (rotación en Y).
+ */
+export function ovalPoint(s: number, straight: number, r: number): { x: number; z: number; yaw: number } {
+  const L = 2 * straight + 2 * Math.PI * r;
+  let d = ((s % L) + L) % L;
+  const h = straight / 2;
+  if (d < straight) return { x: -h + d, z: r, yaw: 0 };
+  d -= straight;
+  if (d < Math.PI * r) {
+    const a = d / r; // de +Z a -Z por el extremo +X
+    return { x: h + r * Math.sin(a), z: r * Math.cos(a), yaw: a };
+  }
+  d -= Math.PI * r;
+  if (d < straight) return { x: h - d, z: -r, yaw: Math.PI };
+  d -= straight;
+  const a = d / r;
+  return { x: -h - r * Math.sin(a), z: -r * Math.cos(a), yaw: Math.PI + a };
+}
+
+/** Largo del óvalo de `ovalPoint`. */
+export function ovalLength(straight: number, r: number): number {
+  return 2 * straight + 2 * Math.PI * r;
 }

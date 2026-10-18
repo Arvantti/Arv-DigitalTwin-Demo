@@ -10,7 +10,11 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
-| 2026-10-18 | Estiba por producto | Planta de plásticos: la estiba es estándar y las piezas por estiba se calculan por producto (de 30 canecas de 121 L a 72.000 bisagras); la flota recibe las piezas por ruta y la ruta 5 usa estibas armadas. D49 | plásticos |
+| 2026-10-18 | Estiba por producto | Planta de plásticos: la estiba es estándar y las piezas por estiba se calculan por producto (de 30 canecas de 121 L a 72.000 bisagras); la flota recibe las piezas por ruta y la ruta 5 usa estibas armadas. D51 | plásticos |
+| 2026-10-18 | Subidas desde el cabezal | Las subidas entre niveles del acueducto salen del tubo principal de cada nivel, después del último ramal, por fuera del bastidor (pedido de Andy). D50 | acueducto |
+| 2026-10-18 | Línea caliente de salsas | Motor: segunda línea caliente de 250 ml (marmita 3, pasteurizador 2, pulmón 2, sachetadora, túnel 2, control de peso y mesa de empaque) junto a la de 1.000 ml; dos mesas de 250 ml; escenario `tunnel-250-stop`; dimensionado a 22 t/día con 40 % en caliente. D49 | 5 |
+| 2026-10-18 | Tuberías sin cruces | Planta de salsas: los tubos a nivel de rack buscan un nivel y un recorrido que no atraviesen equipos ni cajas de estantería ni se crucen entre sí (suben por encima, o se desplazan); documento del flujo de salsas conectado vs faltante. D41 | 5 |
+| 2026-10-18 | Equipaje de aeropuerto | Gemelo nuevo `airport-baggage-v1`: check-in, colectoras, inspección CT con nivel 3, clasificador de bandejas basculantes, 4 carruseles de armado, codificación manual y 2 carruseles de reclamo, conectados en el motor con 5 escenarios; 5 tipos nuevos en la librería y escena 3D con aviones y carros. Rutas con subidas y bajadas: clasificador elevado, colectoras, bandas de alarma y de llegadas con puentes; cada maleta con fricción y choques. D47 | logística |
 | 2026-10-18 | Subidas directas del acueducto | Se elimina la columna lateral con lazos: cada nivel sube recto al siguiente con su válvula vertical, en puntos distintos de la cuadrícula; reductor de 4 a 2 pulgadas antes del nivel 1; el travesaño del cabezal ya no cruza el montante de entrada. D46 | acueducto |
 | 2026-10-18 | Acueducto sin pisos | Las zonas elevadas del acueducto ya no dibujan losa ni suelo de color; se ven las estructuras y los tubos de todos los pisos (pedido del autor). D45 | acueducto |
 | 2026-10-18 | #46 | Cuarto gemelo: fábrica de cajas de cartón corrugado centrada en el transporte de pilas (corrugadora, rodillos, mesas giratorias, carro de transferencia, pulmón, 3 líneas de conversión con tamaños de caja distintos, un paletizador propio y uno compartido, bodega); plano validado y forma 3D propia para sus 20 tipos de equipo, sin simulación todavía. D44 | gemelos |
@@ -69,8 +73,27 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 - **Qué se hizo:** tabla `pallet-sizing.yaml` (volumen por pieza, supuesto) y `tools/logistics/pallet_sizing.py` que calcula las piezas por estiba de los 28 productos y las escribe en `plant.yaml` y `simulation.yaml`; la flota acepta `route_N_pallet_pieces` (0 = el general, -1 = estibas armadas) y las estanterías usan la estiba de su producto; escenarios `nominal`, `fleet-short` y `pallet-chain` recalculados a mano; dos escenarios nuevos de la flota; prueba de consistencia.
 - **Verificación:** `twin-lib validate forklift-fleet` y `twin-lib plant validate` en OK, `pytest`, `ruff` y `pnpm -r typecheck`.
 - **Pendiente:** reemplazar los volúmenes supuestos por los de los moldes reales; con estibas de decenas de miles de piezas (cubiertos, bisagras) la primera tarda horas en llenarse.
-- **Decisiones:** [[decisiones]] D49.
+- **Decisiones:** [[decisiones]] D51.
 - **Conversación:** [[hilo-inspeccion-visual]].
+
+### 2026-10-18 22:10 · Subidas entre niveles desde el tubo principal
+- **Fecha/hora (UTC):** 2026-10-18 20:13–22:15
+- **Fase del plan:** [[plan-del-proyecto]] acueducto
+- **Solicitado por:** Andy: las conexiones 1-2, 2-3 y 3-4 deben salir del tubo principal de cada nivel, al final después del último ramal (con captura marcada).
+- **Qué se hizo:** `distribution-grid` prolonga el cabezal 0,25 m después del último ramal y lo lleva por fuera del costado este hasta el punto de subida (`riser_in_lz`, `riser_out_lz`); las rutas de `plant.yaml` suben en x = 12,25 con y = 4,4 / 5,25 / 6,2; válvulas verticales a 180°.
+- **Verificación:** `twin-lib validate`, `twin-lib plant validate`, `pytest apps/api`, `ruff check`, `pnpm typecheck`, captura `evidencia/acueducto-subidas-desde-cabezal.png`.
+- **Decisiones:** [[decisiones]] D50
+- **Conversación:** [[hilo-secuencia-acueducto]]
+### 2026-10-18 15:04 · Sistema de equipaje de aeropuerto (gemelo nuevo)
+- **Fecha/hora (UTC):** 2026-10-18 15:04–17:40
+- **Fase del plan:** [[plan-del-proyecto]] gemelos nuevos (logística)
+- **Solicitado por:** Carlos Andrés Quiceño: «quiero que con otro hilo construyas un sistema de bandas transportadoras de maletas de aeropuerto, ese sería otro digital twin».
+- **Qué se hizo:** ficha de diseño en la carpeta del proyecto (`aeropuerto/ficha-diseno-bhs.md`); 5 tipos nuevos en la librería con contrato, comportamiento, geometría, presets, escenarios, README y FICHA: `checkin-island`, `baggage-screening` (CT con nivel 2 en pantalla y salida a nivel 3), `baggage-sorter` (bandejas basculantes, 4 rampas de vuelo y rampa manual), `baggage-carousel` (armado o reclamo) y `bag-handling-station` (nivel 3 o codificación); `belt-conveyor` acepta maletas (`item: bag`) y tiene 3 presets de equipaje. Planta `industrial-models/airport-baggage-v1` (plano de 170 × 112 m con 32 equipos, `simulation.yaml` con 22 equipos enlazados y 5 escenarios: `nominal`, `screening-fault`, `makeup-short-staff`, `sorter-trip`, `arrivals-wave`). Escena: piezas `aircraft` y `baggage_cart_train`, tarjeta «Equipaje de aeropuerto» en el portal. Documentación en `docs/plant-engine.md` y `docs/plant-scene.md`.
+- **Verificación:** escenarios de cada equipo y de la planta con valores calculados a mano (todos pasan); `twin-lib validate`, `twin-lib plant validate`, `pytest`, `ruff`, `pnpm -r typecheck`; capturas de la galería y de la escena con simulación (`evidencia/aeropuerto-*.jpg`).
+- **Ampliación (17:55):** a pedido del autor, las rutas de las maletas suben y bajan: perfil de altura en `belt-conveyor` (preset nuevo `bhs-bridge-20m`), clasificador a 3,5 m con rampas que bajan a los carruseles, colectoras con puente a 4,2 m, bandas de alarma a 2,4 m y de llegadas a 3,6 m.
+- **Física (22:46):** a pedido del autor, cada maleta se sigue en la simulación con separación mínima, choques y fricción (resbala en subidas de más de ≈ 24°); la escena dibuja la posición real de cada una; escenarios nuevos de banda (`bridge-steady`, `steep-ramp-slip`, `queue-collisions`) y de planta (`slippery-collector`).
+- **Decisiones:** [[decisiones]] D47
+- **Conversación:** [[hilo-equipaje-aeropuerto]]
 
 ### 2026-10-18 17:50 · Subidas directas entre niveles del acueducto
 - **Fecha/hora (UTC):** 2026-10-18 17:21–18:10
@@ -115,6 +138,13 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 - **Verificación:** `twin-lib validate` y `twin-lib plant validate` (6 escenarios del acueducto dentro de tolerancia), `pytest` 84 pruebas en verde más una prueba nueva de continuidad de la secuencia, capturas de la galería (`evidencia/acueducto-columna-conectada.png`, `acueducto-secuencia-y-lineas.png`, `acueducto-rejilla-costado-este.png`, `acueducto-tapas-tanques-recirculacion.png`); segunda captura del autor (15:10): patas de la rejilla alineadas con su bastidor y bajantes desde la canaleta real.
 - **Decisiones:** [[decisiones]] D42
 - **Conversación:** [[hilo-secuencia-acueducto]]
+
+### 2026-10-18 17:10–17:40 · Línea caliente de salsas conectada (22 t/día)
+- **Solicitado por:** el autor («si», 17:10) a la propuesta del hilo de tuberías; reparto 40/45/15 aprobado a las 17:11.
+- **Qué se hizo:** `plant.yaml` y `simulation.yaml` de `sauce-plant-v1`: `kettle-03`, `pump-hot-02`, `pasteurizer-02`, `holding-tube-02`, `buffer-hot-02`, `filler-sachet-02` (250 ml, 2 pistas, caliente), `cooling-tunnel-02`, `checkweigher-02` y `pack-sauce-250-b`, con la línea `hot-250`; vapor, chiller y flujos del plano actualizados; el túnel 1 queda solo con el sachet de 1.000 ml. Escenario `nominal` con marmita 3 y expectativas de la línea de 250 ml; escenario nuevo `tunnel-250-stop`. Decisión [[decisiones]] D51.
+- **Verificación:** `twin-lib plant validate` y `uv run pytest packages/twin-runtime/tests/test_plant.py` (16 pasan, ≈ 6 min), plano 2D regenerado, capturas de la galería local con la simulación corriendo: [[salsas-caliente-marmita-3.png]] y [[salsas-tunel-2-sachet-250.png]].
+- **Conversación:** [[hilo-linea-caliente-de-salsas]].
+
 ### 2026-10-18 14:36 · Tuberías de salsas sin cruces y flujo del proceso
 - **Fecha/hora (UTC):** 2026-10-18 14:36–15:10
 - **Fase del plan:** [[plan-del-proyecto]] fase 5

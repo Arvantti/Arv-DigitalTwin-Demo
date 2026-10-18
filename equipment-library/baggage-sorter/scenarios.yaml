@@ -1,0 +1,52 @@
+scenarios:
+  - id: steady
+    description: "300 maletas en 30 min, 97 % leídas, reparto 30/25/25/20 entre los 4 vuelos"
+    preset: tilt-tray-4
+    duration_s: 1800
+    expect:
+      - { path: variables.inducted, min: 298, max: 300, description: "(10 por min × 30)" }
+      - { path: variables.no_reads, min: 8, max: 9, description: "(3 % de 300)" }
+      - { path: variables.delivered_1, min: 85, max: 88, description: "(30 % de las ≈ 291 leídas = 87; la rampa 1 está a 3,5 m, menos de 2 s)" }
+      - { path: variables.delivered_4, min: 56, max: 59, description: "(20 % de 291 = 58)" }
+      - { path: variables.delivered_manual, min: 7, max: 9, description: "(las sin lectura, 29,5 m hasta la rampa de manual)" }
+      - { path: variables.recirculated, equals: 0 }
+
+  - id: chute-1-blocked
+    description: "El carrusel 1 no recibe en toda la media hora: las maletas del vuelo 1 dan 2 vueltas más y salen a manual"
+    preset: tilt-tray-4
+    duration_s: 1800
+    timeline:
+      - { at_s: 0, inputs: { downstream_free_1: false } }
+    expect:
+      - { path: variables.delivered_1, equals: 0 }
+      - { path: events.chute_full, equals: 1, description: "(las primeras 4 maletas llenan la rampa)" }
+      - { path: variables.dumped, min: 75, max: 80, description: "(≈ 87 del vuelo 1 − 4 en la rampa − ≈ 4,5 que siguen dando vueltas: 3 por min × 91 s)" }
+      - { path: variables.recirculated, min: 228, max: 246, description: "(3 pasadas por la rampa llena por cada maleta descartada)" }
+      - { path: variables.delivered_manual, min: 82, max: 89, description: "(≈ 78 descartadas + 9 sin lectura)" }
+
+  - id: drive-trip
+    description: "Disparo de los motores 10 min: las inducciones se llenan; al volver el lazo recupera a 40 por min"
+    preset: tilt-tray-4
+    duration_s: 1800
+    timeline:
+      - { at_s: 600, command: inject_fault, args: { fault: drive_trip, duration_s: 600 } }
+    expect:
+      - { path: events.full, equals: 1 }
+      - { path: events.accepting_again, equals: 1, description: "(100 maletas acumuladas a 40 − 10 = 30 por min: ≈ 3,3 min)" }
+      - { path: events.fault_cleared, equals: 1 }
+      - { path: variables.inducted, min: 296, max: 300 }
+
+  - id: atr-fault
+    description: "Lector de etiquetas desalineado los primeros 10 min: solo lee el 60 %"
+    preset: tilt-tray-4
+    duration_s: 1800
+    timeline:
+      - { at_s: 0, command: inject_fault, args: { fault: atr_fault, duration_s: 600 } }
+    expect:
+      - { path: variables.no_reads, min: 44, max: 47, description: "(40 % de 100 + 3 % de 200 = 46)" }
+
+  - id: demo
+    description: Escenario de demostración con fallas aleatorias (para la galería)
+    preset: tilt-tray-4
+    duration_s: 28800
+    random_faults: true

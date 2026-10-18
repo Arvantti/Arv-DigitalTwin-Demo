@@ -48,3 +48,11 @@ Las conexiones entre los pisos están muy rebuscadas. Entre niveles de la rejill
 ### 🤖 Claude · 18:10 UTC
 
 Quité la columna lateral con lazos. Cada nivel sube recto al siguiente con su válvula, en puntos distintos de la cuadrícula, y la estación entrega al nivel 1 con un reductor de 4 a 2 pulgadas. El motor sigue dentro de tolerancia.
+
+### 👤 Andy · 20:13:29 UTC
+
+aunque ha mejorado la conexión entre niveles, esta conexión debería ocurrir en la parte donde están los tubos principales de cada nivel, que es de donde salen los ramales; pensaría yo que al final, después del último ramal, para las conexiones de los niveles 1-2, 2-3 y 3-4.
+
+### 🤖 Claude · 22:10 UTC
+
+Prolongué el cabezal de cada nivel después del último ramal, por fuera del costado este del bastidor, y las subidas con su válvula salen de ahí, cada una en un punto distinto.

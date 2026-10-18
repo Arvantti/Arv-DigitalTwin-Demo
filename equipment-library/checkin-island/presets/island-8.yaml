@@ -1,0 +1,4 @@
+preset: island-8
+description: Isla de 8 mostradores de una terminal regional (hora pico de 300 pasajeros)
+params: { counters: 8, open_counters: 8, pax_per_h: 300, process_s: 90, bags_per_pax: 1.1, bag_mean_kg: 17, bag_sd_kg: 5, excess_kg: 23, max_kg: 32, release_gap_s: 2.5, counter_pitch_m: 3.5 }
+provenance: { counters: assumed, process_s: assumed, bags_per_pax: assumed, bag_mean_kg: assumed, bag_sd_kg: assumed, excess_kg: assumed, max_kg: assumed }

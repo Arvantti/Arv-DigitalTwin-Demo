@@ -29,6 +29,8 @@ params:
   leak_opening_pct:    { type: number, unit: "%", min: 0, max: 100, default: 100, description: Apertura inicial de las válvulas de fuga, affects: [behavior] }
   min_service_mca:     { type: number, unit: mca, min: 0, max: 100, default: 15, description: Presión mínima de servicio (alarma si alguna válvula queda por debajo), affects: [behavior] }
   inlet_riser:         { type: boolean, default: true, description: "Dibuja el montante de entrada desde el piso; en falso el nivel recibe el agua por un tubo que sube del nivel de abajo", affects: [geometry] }
+  riser_in_lz:         { type: number, unit: m, min: -2, max: 9, default: 9, description: "Punto (z local, m) donde llega el tubo de subida desde el nivel de abajo, en la prolongación del cabezal después del último ramal; 9 = sin tubo", affects: [geometry] }
+  riser_out_lz:        { type: number, unit: m, min: -2, max: 9, default: 9, description: "Punto (z local, m) donde sale el tubo de subida hacia el nivel de arriba, en la prolongación del cabezal; 9 = sin tubo", affects: [geometry] }
   critical_marker:     { type: boolean, default: false, description: "Marca la válvula c44 como la más crítica de la red", affects: [geometry] }
   consumer_color:      { type: string, default: "#2f6fb3", description: Color de las válvulas de consumo (hex), affects: [geometry] }
   leak_color:          { type: string, default: "#c62828", description: Color de las válvulas de fuga (hex), affects: [geometry] }

@@ -1,0 +1,4 @@
+preset: encoding-1op
+description: Puesto de codificación manual con un operario (20 s por etiqueta)
+params: { role: encoding, operators: 1, handle_s: 20, reject_pct: 0, queue_capacity: 8, release_gap_s: 3, nominal_inflow_upm: 0.5 }
+provenance: { operators: assumed, handle_s: assumed }

@@ -1,0 +1,4 @@
+preset: bhs-collector-46m
+description: Banda colectora de una isla de check-in hacia la inspección (46 m, maletas)
+params: { length_m: 46, width_m: 1.0, speed_m_s: 0.6, pitch_m: 1.2, height_m: 0.75, kind: flat, item: bag, item_size_m: 0.75, nominal_inflow_upm: 5, entry_buffer_units: 4, motor_kw: 3 }
+provenance: { length_m: assumed, speed_m_s: assumed, pitch_m: assumed }

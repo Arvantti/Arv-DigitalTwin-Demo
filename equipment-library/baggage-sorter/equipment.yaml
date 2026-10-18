@@ -1,0 +1,108 @@
+schema_version: 0.1.0
+type: baggage-sorter
+version: 0.1.0
+name: Clasificador de equipaje de bandejas basculantes
+manufacturing: logistics
+category: transport.sorter
+description: >
+  Clasificador en lazo cerrado de bandejas basculantes (tilt-tray). Cada maleta entra por una banda
+  de inducción a una bandeja libre, un lector automático lee su etiqueta y la bandeja se inclina en la
+  rampa del vuelo que le corresponde. Si la rampa está llena la maleta da otra vuelta; después de
+  max_recirc vueltas, o si la etiqueta no se leyó, sale por la rampa de codificación manual.
+aliases: [sorter, clasificador, tilt-tray, bandejas basculantes, clasificador de maletas]
+fidelity: { visual: V2, behavior: B2 }
+
+params:
+  straight_m:         { type: number, unit: m, min: 5, max: 200, default: 28, description: Largo de cada tramo recto del lazo, affects: [geometry, behavior] }
+  loop_width_m:       { type: number, unit: m, min: 4, max: 30, default: 10.5, description: Distancia entre los ejes de los dos tramos rectos (diámetro de las curvas), affects: [geometry, behavior] }
+  speed_m_s:          { type: number, unit: m/s, min: 0.5, max: 3, default: 2.0, description: Velocidad del lazo, affects: [behavior] }
+  tray_pitch_m:       { type: number, unit: m, min: 0.8, max: 2.5, default: 1.4, description: Separación entre bandejas, affects: [geometry, behavior] }
+  destinations:       { type: integer, min: 1, max: 4, default: 4, description: Rampas de vuelo en uso (en el tramo recto de descarga), affects: [geometry, behavior] }
+  split_1_pct:        { type: number, unit: "%", min: 0, max: 100, default: 30, description: Maletas del vuelo de la rampa 1, affects: [behavior] }
+  split_2_pct:        { type: number, unit: "%", min: 0, max: 100, default: 25, description: Maletas del vuelo de la rampa 2, affects: [behavior] }
+  split_3_pct:        { type: number, unit: "%", min: 0, max: 100, default: 25, description: Maletas del vuelo de la rampa 3, affects: [behavior] }
+  split_4_pct:        { type: number, unit: "%", min: 0, max: 100, default: 20, description: Maletas del vuelo de la rampa 4, affects: [behavior] }
+  read_rate_pct:      { type: number, unit: "%", min: 0, max: 100, default: 97, description: Etiquetas que lee el lector automático, affects: [behavior] }
+  max_recirc:         { type: integer, min: 0, max: 10, default: 2, description: Vueltas extra antes de mandar la maleta a codificación manual, affects: [behavior] }
+  induct_max_upm:     { type: number, unit: maletas/min, min: 1, max: 120, default: 40, description: Capacidad de las inducciones juntas, affects: [behavior] }
+  chute_capacity:     { type: integer, min: 1, max: 20, default: 4, description: Maletas que caben en cada rampa, affects: [behavior, geometry] }
+  chute_length_m:     { type: number, unit: m, min: 1, max: 8, default: 4, description: Largo de las rampas, affects: [geometry] }
+  release_gap_s:      { type: number, unit: s, min: 0.5, max: 30, default: 2.5, description: Separación mínima entre maletas que salen de cada rampa, affects: [behavior] }
+  entry_buffer_units: { type: integer, min: 1, max: 32, default: 6, description: Maletas que caben esperando en las inducciones, affects: [behavior] }
+  nominal_inflow_upm: { type: number, unit: maletas/min, min: 0, max: 120, default: 10, description: Llegada de maletas si el entorno no la fija, affects: [behavior] }
+  height_m:           { type: number, unit: m, min: 0.6, max: 6, default: 1.1, description: "Altura de las bandejas (con el lazo elevado las rampas bajan hasta ≈ 1 m del piso)", affects: [geometry] }
+  motor_kw:           { type: number, unit: kW, min: 1, max: 100, default: 15, description: Potencia de los motores lineales sumados, affects: [behavior, geometry] }
+
+ports:
+  - { id: bags_in, kind: item, direction: in, unit: maletas/min, link: { units: inflow_upm, ready: accepting } }
+  - { id: out_1, kind: item, direction: out, unit: maletas/min, link: { units: delivered_1, ready: downstream_free_1 } }
+  - { id: out_2, kind: item, direction: out, unit: maletas/min, link: { units: delivered_2, ready: downstream_free_2 } }
+  - { id: out_3, kind: item, direction: out, unit: maletas/min, link: { units: delivered_3, ready: downstream_free_3 } }
+  - { id: out_4, kind: item, direction: out, unit: maletas/min, link: { units: delivered_4, ready: downstream_free_4 } }
+  - { id: manual_out, kind: item, direction: out, unit: maletas/min, link: { units: delivered_manual, ready: manual_free } }
+  - { id: power, kind: utility, direction: in, medium: energía eléctrica }
+
+states:
+  - { id: idle, description: Lazo girando sin maletas }
+  - { id: running, description: Clasificando }
+  - { id: blocked, description: "Lazo lleno: no hay bandejas libres para inducir" }
+  - { id: fault, description: Detenido por falla }
+
+variables:
+  - { id: inducted, unit: maletas, kind: counter, description: Maletas puestas en una bandeja }
+  - { id: no_reads, unit: maletas, kind: counter, description: Etiquetas que el lector no leyó }
+  - { id: recirculated, unit: vueltas, kind: counter, description: Vueltas extra por rampa llena }
+  - { id: dumped, unit: maletas, kind: counter, description: Maletas mandadas a manual tras agotar las vueltas }
+  - { id: on_loop, unit: maletas, kind: calculated, description: Maletas sobre el lazo }
+  - { id: occupancy_pct, unit: "%", kind: calculated, range: [0, 100], description: Bandejas ocupadas }
+  - { id: delivered_1, unit: maletas, kind: counter, description: Maletas entregadas por la rampa 1 }
+  - { id: delivered_2, unit: maletas, kind: counter, description: Maletas entregadas por la rampa 2 }
+  - { id: delivered_3, unit: maletas, kind: counter, description: Maletas entregadas por la rampa 3 }
+  - { id: delivered_4, unit: maletas, kind: counter, description: Maletas entregadas por la rampa 4 }
+  - { id: delivered_manual, unit: maletas, kind: counter, description: Maletas entregadas a codificación manual }
+  - { id: chute_bags, unit: maletas, kind: calculated, description: Maletas en las rampas }
+  - { id: accepting, unit: "", kind: status, description: "1 si recibe maletas, 0 si las inducciones están llenas" }
+  - { id: speed_actual_m_s, unit: m/s, kind: measured, range: [0, 3], noise_sd: 0.005, resolution: 0.01, description: Velocidad del lazo }
+  - { id: motor_current_a, unit: A, kind: measured, range: [0, 400], noise_sd: 0.2, resolution: 0.1, description: Corriente de los motores }
+
+events:
+  - { id: full, description: Las inducciones se llenaron y el clasificador dejó de recibir }
+  - { id: accepting_again, description: El clasificador vuelve a recibir }
+  - { id: chute_full, description: Una rampa se llenó }
+  - { id: bag_dumped, description: Una maleta agotó sus vueltas y va a codificación manual }
+
+faults:
+  - { id: drive_trip, description: Disparo de los motores del lazo, mtbf_h: 4000, mttr_min: 20, severity: high, effect: El lazo se detiene }
+  - { id: tray_jam, description: Bandeja trabada en una rampa, mtbf_h: 800, mttr_min: 8, severity: medium, effect: El lazo se detiene }
+  - { id: atr_fault, description: Lector de etiquetas sucio o desalineado, mtbf_h: 1500, mttr_min: 30, severity: low, stops_equipment: false, effect: "Solo lee el 60 % de las etiquetas" }
+
+commands:
+  - { id: set_speed, description: Cambia la velocidad del lazo, args: { m_s: number } }
+  - { id: set_split, description: Cambia el reparto por vuelo de una rampa, args: { chute: integer, pct: number } }
+  - { id: inject_fault, description: Inyecta una falla declarada, args: { fault: string, duration_s: number } }
+  - { id: clear_fault, description: Repara una falla activa, args: { fault: string } }
+  - { id: set_param, description: Cambia un parámetro en caliente, args: { name: string, value: any } }
+
+kpis:
+  - { id: bags_per_h, unit: maletas/h, description: Maletas inducidas por hora }
+  - { id: read_rate, unit: "", description: Fracción de etiquetas leídas }
+  - { id: recirc_per_bag, unit: vueltas, description: Vueltas extra por maleta inducida }
+  - { id: manual_rate, unit: "", description: Fracción enviada a codificación manual }
+
+animation_channels:
+  - { id: loop_travel, unit: m, range: [0, 600], description: Recorrido del lazo (módulo su largo) }
+  - { id: on_loop, range: [0, 500], description: Maletas sobre el lazo }
+  - { id: chute_1, range: [0, 20], description: Maletas en la rampa 1 }
+  - { id: chute_2, range: [0, 20], description: Maletas en la rampa 2 }
+  - { id: chute_3, range: [0, 20], description: Maletas en la rampa 3 }
+  - { id: chute_4, range: [0, 20], description: Maletas en la rampa 4 }
+  - { id: chute_manual, range: [0, 20], description: Maletas en la rampa de manual }
+  - { id: stack_light, range: [0, 3], description: "0 apagado, 1 verde, 2 ámbar (lleno), 3 rojo (falla)" }
+
+geometry:
+  parts: [track, trays, linear_motors, inductions, chutes, manual_chute, tag_reader, guard_rails, supports]
+
+assumptions:
+  - El lazo recorre el tramo recto de descarga de oeste a este; las inducciones están al inicio de ese tramo y las rampas reparten el tramo en partes iguales.
+  - Las etiquetas sin lectura se reparten de forma uniforme (una de cada 1 ÷ (1 − lectura)); el destino sigue el reparto por vuelo con el método del mayor déficit.
+  - La rampa de codificación manual está 1,5 m después del final del tramo de descarga, al entrar a la curva.

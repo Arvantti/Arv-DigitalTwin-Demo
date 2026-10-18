@@ -1,0 +1,53 @@
+scenarios:
+  - id: steady
+    description: "Armado: llegan 3 maletas por min y 2 operarios cargan hasta 8 por min"
+    preset: makeup-40
+    duration_s: 3600
+    expect:
+      - { path: variables.received, min: 179, max: 180, description: "(3 por min × 60)" }
+      - { path: variables.removed, min: 177, max: 180, description: "(los operarios retiran más rápido de lo que llega)" }
+      - { path: kpis.max_occupancy_pct, max: 5 }
+
+  - id: handlers-short
+    description: "Los operarios se van 20 min a los 10 min: el carrusel se llena y deja de recibir"
+    preset: makeup-40
+    duration_s: 2400
+    timeline:
+      - { at_s: 600, command: set_handlers, args: { n: 0 } }
+      - { at_s: 1800, command: set_handlers, args: { n: 2 } }
+    expect:
+      - { path: events.full, equals: 1, description: "(36 plazas útiles a 3 por min: lleno a los ≈ 22 min y la entrada de 4 se llena 1,3 min después)" }
+      - { path: events.accepting_again, equals: 1 }
+      - { path: variables.removed, min: 105, max: 112, description: "(≈ 30 antes de que se vayan + 8 por min × 10 min al volver)" }
+
+  - id: reclaim-flight
+    description: "Llegada de un vuelo: 180 maletas a 20 por min; los pasajeros recogen 25 por min desde los 2 min"
+    preset: reclaim-60
+    duration_s: 900
+    timeline:
+      - { at_s: 0, inputs: { inflow_upm: 20 } }
+      - { at_s: 540, inputs: { inflow_upm: 0 } }
+    expect:
+      - { path: variables.removed, equals: 180 }
+      - { path: events.full, equals: 0, description: "(a los 2 min hay 40 maletas de 54 plazas útiles; después bajan 5 por min)" }
+      - { path: events.first_bag, equals: 1 }
+      - { path: events.last_bag, equals: 1 }
+      - { path: kpis.wave_min, min: 9, max: 9.6, description: "(la última maleta entra a los 9 min y sale en segundos)" }
+
+  - id: reclaim-late-passengers
+    description: "Los pasajeros llegan a los 5 min: el carrusel se llena y frena la descarga"
+    preset: reclaim-60
+    duration_s: 1200
+    timeline:
+      - { at_s: 0, inputs: { inflow_upm: 20 } }
+      - { at_s: 0, command: set_param, args: { name: pick_delay_s, value: 300 } }
+      - { at_s: 540, inputs: { inflow_upm: 0 } }
+    expect:
+      - { path: events.full, equals: 1, description: "(54 plazas útiles a 20 por min: lleno a los ≈ 2,7 min)" }
+      - { path: variables.removed, equals: 180, description: "(desde los 5 min se recogen 25 por min: ≈ 12,2 min para las 180)" }
+
+  - id: demo
+    description: Escenario de demostración con fallas aleatorias (para la galería)
+    preset: makeup-40
+    duration_s: 28800
+    random_faults: true

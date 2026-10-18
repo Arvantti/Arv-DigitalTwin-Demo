@@ -1,0 +1,4 @@
+preset: bhs-transfer-9m
+description: Banda corta de maletas (inducción al clasificador o banda de alarma a nivel 3)
+params: { length_m: 9, width_m: 1.0, speed_m_s: 0.6, pitch_m: 1.2, height_m: 0.9, kind: flat, item: bag, item_size_m: 0.75, nominal_inflow_upm: 4, entry_buffer_units: 4, motor_kw: 1.5 }
+provenance: { length_m: assumed, speed_m_s: assumed }

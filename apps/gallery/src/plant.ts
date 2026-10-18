@@ -96,6 +96,7 @@ interface EquipmentSnapshot {
   state: string;
   phase: string | null;
   animation: Record<string, number>;
+  items?: number[];
   variables: Record<string, number | string | null>;
   active_faults: string[];
 }
@@ -816,7 +817,14 @@ function buildCameras(): void {
   // Edificio por pisos: una cámara por zona (cada piso) y una por nivel de los equipos que lo declaran (la rejilla).
   const featured = building
     ? doc.zones
-    : doc.zones.filter((z) => (["production", "utility"].includes(z.kind) && z.rect[2] * z.rect[3] >= 80) || z.id.startsWith("sala-control") || z.id === "almacen-semielaborado");
+    : doc.zones.filter(
+        (z) =>
+          (["production", "utility"].includes(z.kind) && z.rect[2] * z.rect[3] >= 80) ||
+          z.id.startsWith("sala-control") ||
+          z.id === "almacen-semielaborado" ||
+          // halls de pasajeros (aeropuerto): zonas administrativas con equipos simulados
+          (z.kind === "admin" && doc.equipment.some((e) => e.zone === z.id && e.sim)),
+      );
   for (const z of featured) entries.push([z.name.toUpperCase(), z.id, () => focusRect(z.rect, Math.max(3, z.height), 0.85, z.elevation ?? 0)]);
   if (building)
     for (const a of assets.values()) {
@@ -961,7 +969,7 @@ function connect(): void {
     latestLinks = msg.snapshot.links ?? {};
     for (const [id, snap] of Object.entries(latest) as [string, EquipmentSnapshot][]) {
       const asset = assets.get(id);
-      if (asset) asset.frame = { channels: snap.animation, state: snap.state, phase: snap.phase, variables: snap.variables, label: id.toUpperCase() };
+      if (asset) asset.frame = { channels: snap.animation, state: snap.state, phase: snap.phase, variables: snap.variables, items: snap.items, label: id.toUpperCase() };
     }
     for (const piece of controlPieces) piece.feed?.(latest, msg.t as number);
     renderAsset();
