@@ -10,6 +10,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
+| 2026-10-18 | Vista móvil | Orbitron solo en títulos (Inter en el resto) y en pantallas de hasta 700 px los paneles de la escena se ven de a uno desde una barra inferior (Menú, Activo, Eventos); el panel del acueducto también usa Inter en cifras y pestañas. D37 | 4 |
 | 2026-10-18 | Salsas sin cubos | 29 tipos de equipo de proceso, empaque y servicios de la planta de salsas con forma propia (tanques, bombas, molinos, emulsificador al vacío, CIP, caldera, enfriador…); las llenadoras y la pesadora sin simular usan su forma de la librería | 5 |
 | 2026-10-18 | Planta de plásticos | Molde que abre y cierra con ciclo ilustrativo sin API, canastilla con piezas junto a cada inyectora, carros de canastillas (ruta `cart`), montacargas con estibas de cajas y operarios más realistas; acciones de GitHub a Node 24 | 5 |
 | 2026-10-18 | Portal de plantas | Al entrar se elige la planta (manufactura discreta, procesos, gemelo de operación); cada una abre solo sus equipos y su escena; acento azul provisional (sin dorado), iluminación suavizada, columna derecha sin superposición | despliegue |
@@ -51,6 +52,14 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 | 2026-10-16 | #1 | Layouts de las plantas | 1 |
 
 ## Entradas
+
+### 2026-10-18 12:00 · Tipografía solo en títulos y vista móvil
+- **Fecha/hora (UTC):** 2026-10-18 12:00–12:40
+- **Solicitado por:** Carlos Andrés Quiceño (12:00): «Orbitron solo para títulos ya que se vuelve pesado de leer, Y en Mobile como resolvemos eso?», con captura del celular donde el menú, el HUD y los eventos se superponían.
+- **Qué se hizo:** Orbitron queda en marca, título de planta, nombre del activo y titulares; todo lo demás en Inter. Nuevo `mobile-dock.ts`: en pantallas angostas una barra inferior abre un panel a la vez y la ficha del activo se abre sola al elegir un equipo. Barra superior compacta y botones de 40 px.
+- **Verificación:** `pnpm -r typecheck`, `pnpm gallery:build`, capturas con Playwright a 390×844 de la escena de salsas (con la barra y con Eventos abierto) y del panel del acueducto.
+- **Decisiones:** [[decisiones]] D37.
+- **Conversación:** [[hilo-despliegue-cloudflare]].
 
 ### 2026-10-18 04:23 · Planta de salsas: de cubos a equipos
 - **Solicitado por:** el autor (04:23): en la planta de salsas muchos equipos son cubos 3D; y (04:26) «puedes buscar en internet y ser libre de los detalles».

@@ -114,3 +114,11 @@ Puedes buscar en internet y ser libre de los detalles.
 ### 🤖 Claude · 2026-10-18 04:4x UTC
 
 Las 47 piezas que eran cubos en la planta de salsas pasan a tener forma propia (D36).
+
+### 👤 Carlos Andrés Quiceño · 2026-10-18 12:00:44 UTC
+
+Orbitron solo para títulos ya que se vuelve pesado de leer, Y en Mobile como resolvemos eso ? (captura del celular con paneles superpuestos)
+
+### 🤖 Claude · 2026-10-18 12:3x UTC
+
+Orbitron solo en títulos y el resto en Inter; en móvil los paneles se ven de a uno desde una barra inferior (D37).

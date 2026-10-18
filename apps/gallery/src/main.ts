@@ -12,6 +12,7 @@
  *   &autosim=1&scenario=demo&speed=60   conecta la simulación al cargar (requiere la API)
  *   &ui=1                  con shot=1, conserva la interfaz en la captura
  */
+import "./mobile-dock.ts";
 import GUI from "lil-gui";
 import yaml from "js-yaml";
 import * as THREE from "three";

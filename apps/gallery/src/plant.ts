@@ -14,6 +14,7 @@
  *   &tour=1                        inicia el recorrido de cámara al cargar
  *   &shot=1                        oculta la interfaz y marca window.__ready (con autosim, tras recibir datos)
  */
+import "./mobile-dock.ts";
 import yaml from "js-yaml";
 import * as THREE from "three";
 import { buildRoutes, type Aisle, type Route } from "./routes.ts";
