@@ -1,0 +1,4 @@
+preset: vinegar-10m3
+description: Tanque de vinagre al 5 % de 10 m³
+params: { form: vertical_tank, volume_l: 10000, diameter_m: 2.2, content: vinagre 5 %, density_kg_m3: 1010, initial_level_pct: 60, inlet_max_kg_h: 10000, outlet_max_kg_h: 3000 }
+provenance: { volume_l: user, diameter_m: user, density_kg_m3: assumed }

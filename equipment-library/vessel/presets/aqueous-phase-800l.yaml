@@ -1,0 +1,4 @@
+preset: aqueous-phase-800l
+description: Tanque de fase acuosa de 800 L para mayonesa (agua, huevo, sal, azúcar, estabilizante), agitado a 300 rpm y frío
+params: { form: vertical_tank, volume_l: 800, diameter_m: 1.0, content: fase acuosa de mayonesa, density_kg_m3: 1050, initial_level_pct: 0, jacketed: true, hold_temp_c: 12, agitator: true, agitator_rpm: 300, inlet_max_kg_h: 3000, outlet_max_kg_h: 3000 }
+provenance: { volume_l: user, agitator_rpm: user, hold_temp_c: user, density_kg_m3: assumed }

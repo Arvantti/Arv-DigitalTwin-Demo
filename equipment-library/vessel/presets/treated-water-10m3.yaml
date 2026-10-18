@@ -1,0 +1,4 @@
+preset: treated-water-10m3
+description: Tanque de agua tratada (ósmosis) de 10 m³
+params: { form: vertical_tank, volume_l: 10000, diameter_m: 2.2, content: agua tratada, density_kg_m3: 1000, initial_level_pct: 70, inlet_max_kg_h: 3000, outlet_max_kg_h: 15000 }
+provenance: { volume_l: user, diameter_m: user, inlet_max_kg_h: user }

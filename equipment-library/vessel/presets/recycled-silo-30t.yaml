@@ -1,0 +1,4 @@
+preset: recycled-silo-30t
+description: Silo exterior de pellet reciclado de 30 t (Ø 3,5 m, galvanizado, fondo cónico)
+params: { form: silo, volume_l: 60000, diameter_m: 3.5, content: pellet reciclado, density_kg_m3: 500, initial_level_pct: 60, finish: galvanized, inlet_max_kg_h: 5000, outlet_max_kg_h: 3000 }
+provenance: { volume_l: assumed, diameter_m: user, density_kg_m3: assumed }
