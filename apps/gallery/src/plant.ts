@@ -10,6 +10,7 @@
  *   &camera=general|<id de zona>   cámara inicial
  *   &select=<id de equipo>         equipo seleccionado
  *   &focus=<id de equipo>          acerca la cámara a ese equipo
+ *   &look=x,y,z,tx,ty,tz           cámara en el punto (x, y, z) del plano mirando a (tx, ty, tz), en metros
  *   &autosim=1&scenario=boiler-trip&speed=120   conecta la simulación al cargar
  *   &tour=1                        inicia el recorrido de cámara al cargar
  *   &shot=1                        oculta la interfaz y marca window.__ready (con autosim, tras recibir datos)
@@ -304,6 +305,19 @@ function supportFor(eq: PlantEquipment): THREE.Object3D | null {
   if (eq.overhead || gap < 0.15 || dx * dy < 0.5) return null;
   const group = new THREE.Group();
   group.name = `support-${eq.id}`;
+  if (eq.type === "distribution_grid") {
+    // el bastidor de la rejilla ya trae sus vigas: las patas bajan por las esquinas reales de ese bastidor (no por la
+    // huella nominal, que no coincide), una sobre otra, como una sola columna hasta el piso
+    const s = Number(eq.params?.spacing_m ?? 0.5);
+    for (const lx of [-2.3 * s, 2.3 * s])
+      for (const lz of [-3.3 * s, 2.3 * s]) {
+        const leg = new THREE.Mesh(new THREE.BoxGeometry(0.05, gap, 0.05), SUPPORT);
+        leg.position.copy(toScene(eq.position[0] + lx, eq.position[1] - lz, floor + gap / 2));
+        leg.castShadow = true;
+        group.add(leg);
+      }
+    return group;
+  }
   for (const sx of [-1, 1])
     for (const sy of [-1, 1]) {
       const leg = new THREE.Mesh(new THREE.BoxGeometry(0.06, gap, 0.06), SUPPORT);
@@ -448,49 +462,219 @@ function dropPoints(from: string, top: THREE.Vector3, lane: number): THREE.Vecto
   return [start, new THREE.Vector3(start.x, level, start.z), new THREE.Vector3(over.x, level, start.z), over, new THREE.Vector3(over.x, top.y, over.z)];
 }
 
+/** Distancia mínima entre dos segmentos 3D (Ericson, «Real-Time Collision Detection», 5.1.9). */
+function segmentDistance(p1: THREE.Vector3, q1: THREE.Vector3, p2: THREE.Vector3, q2: THREE.Vector3): number {
+  const d1 = q1.clone().sub(p1);
+  const d2 = q2.clone().sub(p2);
+  const r = p1.clone().sub(p2);
+  const a = d1.dot(d1);
+  const e = d2.dot(d2);
+  const f = d2.dot(r);
+  const clamp = (v: number) => Math.min(1, Math.max(0, v));
+  let s: number;
+  let t: number;
+  if (a < 1e-9 && e < 1e-9) return r.length();
+  if (a < 1e-9) {
+    s = 0;
+    t = clamp(f / e);
+  } else {
+    const c = d1.dot(r);
+    if (e < 1e-9) {
+      t = 0;
+      s = clamp(-c / a);
+    } else {
+      const b = d1.dot(d2);
+      const denom = a * e - b * b;
+      s = denom > 1e-9 ? clamp((b * f - c * e) / denom) : 0;
+      t = (b * s + f) / e;
+      if (t < 0) {
+        t = 0;
+        s = clamp(-c / a);
+      } else if (t > 1) {
+        t = 1;
+        s = clamp((b - c) / a);
+      }
+    }
+  }
+  return p1.clone().addScaledVector(d1, s).distanceTo(p2.clone().addScaledVector(d2, t));
+}
+
+/** ¿El segmento p→q atraviesa la caja (método de las losas)? */
+function segmentHitsBox(p: THREE.Vector3, q: THREE.Vector3, box: THREE.Box3): boolean {
+  let t0 = 0;
+  let t1 = 1;
+  for (const axis of ["x", "y", "z"] as const) {
+    const d = q[axis] - p[axis];
+    if (Math.abs(d) < 1e-9) {
+      if (p[axis] < box.min[axis] || p[axis] > box.max[axis]) return false;
+      continue;
+    }
+    let near = (box.min[axis] - p[axis]) / d;
+    let far = (box.max[axis] - p[axis]) / d;
+    if (near > far) [near, far] = [far, near];
+    t0 = Math.max(t0, near);
+    t1 = Math.min(t1, far);
+    if (t0 > t1) return false;
+  }
+  return true;
+}
+
+const DEBUG_PIPES = false;
+
+/** Tuberías ya colocadas, para que las siguientes no las crucen ni se les monten encima. */
+interface PlacedPipe {
+  from: string;
+  to: string;
+  points: THREE.Vector3[];
+  radius: number;
+}
+
+/**
+ * Un trazado es válido si no atraviesa ningún equipo ajeno (cajas de estantería, tanques, máquinas) y no toca otra
+ * tubería ya colocada. Las dos tuberías que comparten un equipo convergen en sus tramos de conexión: esos no cuentan.
+ */
+function pathIsClear(points: THREE.Vector3[], radius: number, ends: [string, string], placed: PlacedPipe[], obstacles: Map<string, THREE.Box3>, pipesToo = true): boolean {
+  const last = points.length - 2;
+  for (let i = 0; i <= last; i++) {
+    for (const [id, box] of obstacles) {
+      if (id === ends[0] || id === ends[1]) continue;
+      if (segmentHitsBox(points[i], points[i + 1], box.clone().expandByScalar(radius + 0.08))) {
+        if (DEBUG_PIPES) console.warn(`  ${ends[0]}→${ends[1]} choca con ${id}`);
+        return false;
+      }
+    }
+    for (const other of pipesToo ? placed : []) {
+      const shares = other.from === ends[0] || other.from === ends[1] || other.to === ends[0] || other.to === ends[1];
+      const otherLast = other.points.length - 2;
+      for (let k = 0; k <= otherLast; k++) {
+        if (shares && (i === 0 || i === last || k === 0 || k === otherLast)) continue;
+        if (segmentDistance(points[i], points[i + 1], other.points[k], other.points[k + 1]) < radius + other.radius + 0.12) {
+          if (DEBUG_PIPES) console.warn(`  ${ends[0]}→${ends[1]} choca con tubo ${other.from}→${other.to} (tramo ${i}/${k})`);
+          return false;
+        }
+      }
+    }
+  }
+  return true;
+}
+
 /**
  * Tuberías de los flujos `piped: true` del plano. Con `route` (red de agua) siguen el trazado del plano con el grosor
  * de su diámetro. Sin ruta: una bajante si el origen está por encima de la tapa del destino; si no, suben a un nivel
- * de rack, cruzan en ortogonal y bajan. Los puntos son de recorrido, no de ingeniería de detalle.
+ * de rack, cruzan en ortogonal y bajan. El nivel (y el orden de los tramos) se elige tubería por tubería para que
+ * no atraviese equipos ni cajas de estantería ni se cruce con otro tubo: se sube hasta encontrar un nivel libre.
+ * Los puntos son de recorrido, no de ingeniería de detalle.
  */
 function buildPipes(): void {
   const lanes = new Map<string, number>();
   const drops = new Map<string, number>();
   const site = doc.plant.site?.width_x ?? 112;
   const spacing = Math.min(4, Math.max(0.6, site / 30));
-  for (const [i, pipe] of (doc.pipes ?? []).entries()) {
+  const placed: PlacedPipe[] = [];
+  const obstacles = new Map<string, THREE.Box3>();
+  for (const [id, a] of assets) {
+    a.root.updateMatrixWorld(true);
+    obstacles.set(id, new THREE.Box3().setFromObject(a.root));
+  }
+  const radiusOf = (pipe: Pipe, src: number, bY: number): number =>
+    pipe.diameter_in
+      ? Math.max(0.025, (pipe.diameter_in * 0.0254 * 1.15) / 2)
+      : pipe.route || src > bY + 0.3
+        ? 0.035
+        : /vapor/.test(pipe.medium.toLowerCase())
+          ? 0.09
+          : 0.06;
+  // primero los trazados fijos (con ruta y bajantes); los de nivel de rack buscan sitio después
+  const entries = (doc.pipes ?? []).flatMap((pipe, i) => {
     const nominalA = assetTop(pipe.from);
     const nominalB = assetTop(pipe.to);
-    if (!nominalA || !nominalB || nominalA.distanceTo(nominalB) < 0.5) continue;
+    if (!nominalA || !nominalB || nominalA.distanceTo(nominalB) < 0.5) return [];
     // con `route` el plano ya trae los extremos; sin ella el tubo se ancla a la superficie real de cada equipo
     const a = pipe.route?.length ? nominalA : (attachPoint(pipe.from, nominalB) ?? nominalA);
     const b = pipe.route?.length ? nominalB : (attachPoint(pipe.to, nominalA) ?? nominalB);
     const src = assets.get(pipe.from)!.eq.position[2];
-    let raw: THREE.Vector3[] | null;
+    let raw: THREE.Vector3[] | null = null;
     if (pipe.route?.length) raw = pipe.route.map(([x, y, z]) => toScene(x, y, z));
     else if (src > b.y + 0.3) {
       const lane = drops.get(pipe.to) ?? 0;
       drops.set(pipe.to, lane + 1);
       raw = dropPoints(pipe.from, b, lane);
-    } else {
-      const key = `${Math.round(a.x)},${Math.round(a.z)}`;
-      const lane = lanes.get(key) ?? 0;
-      lanes.set(key, lane + 1);
-      const level = 4.4 + 0.35 * ((i + lane) % 5);
-      raw = [a, new THREE.Vector3(a.x, level, a.z), new THREE.Vector3(b.x, level, a.z), new THREE.Vector3(b.x, level, b.z), b];
     }
+    return [{ pipe, i, a, b, raw, radius: radiusOf(pipe, src, b.y) }];
+  });
+  for (const e of entries) {
+    if (e.raw && e.raw.length > 1) placed.push({ from: e.pipe.from, to: e.pipe.to, points: e.raw, radius: e.radius });
+  }
+  const fixed = [...placed];
+  const free = entries.filter((e) => !e.raw);
+  const laneOf = new Map(free.map((e) => {
+    const key = `${Math.round(e.a.x)},${Math.round(e.a.z)}`;
+    const lane = lanes.get(key) ?? 0;
+    lanes.set(key, lane + 1);
+    return [e, lane];
+  }));
+  /** Coloca los tubos de nivel de rack en el orden dado; devuelve los que no hallaron un trazado libre. */
+  const placeAll = (order: typeof free): typeof free => {
+    placed.length = 0;
+    placed.push(...fixed);
+    const blocked: typeof free = [];
+    for (const e of order) {
+      const { pipe, i, a, b, radius } = e;
+      const lane = laneOf.get(e) ?? 0;
+      // niveles candidatos: primero los de siempre (4,4 m y arriba), luego los de abajo hasta justo por encima de las tapas
+      const floor = Math.max(a.y, b.y) + 0.45;
+      const levels = Array.from({ length: 5 }, (_, n) => 4.4 + 0.35 * ((i + lane + n) % 5));
+      for (let l = 4.4 - 0.35; l >= floor; l -= 0.35) levels.push(l);
+      for (let l = 4.4 + 0.35 * 5; l < 14; l += 0.35) levels.push(l);
+      const variants = (level: number): THREE.Vector3[][] => {
+        const out = [
+          [a, new THREE.Vector3(a.x, level, a.z), new THREE.Vector3(b.x, level, a.z), new THREE.Vector3(b.x, level, b.z), b],
+          [a, new THREE.Vector3(a.x, level, a.z), new THREE.Vector3(a.x, level, b.z), new THREE.Vector3(b.x, level, b.z), b],
+        ];
+        // si la columna de subida cae justo bajo otro tubo, se corre en horizontal poco más arriba de la tapa
+        for (const [dx, dz] of [[1.5, 0], [-1.5, 0], [0, 1.5], [0, -1.5], [3, 0], [-3, 0], [0, 3], [0, -3]]) {
+          const lift = new THREE.Vector3(a.x, floor, a.z);
+          const jog = new THREE.Vector3(a.x + dx, floor, a.z + dz);
+          const up = new THREE.Vector3(a.x + dx, level, a.z + dz);
+          out.push([a, lift, jog, up, new THREE.Vector3(b.x, level, up.z), new THREE.Vector3(b.x, level, b.z), b]);
+          out.push([a, lift, jog, up, new THREE.Vector3(up.x, level, b.z), new THREE.Vector3(b.x, level, b.z), b]);
+        }
+        return out;
+      };
+      const find = (pipesToo: boolean) => {
+        for (const level of levels) {
+          const v = variants(level).find((c) => pathIsClear(c, radius, [pipe.from, pipe.to], placed, obstacles, pipesToo));
+          if (v) return v;
+        }
+        return null;
+      };
+      let chosen = find(true);
+      // sin un trazado del todo libre, el que al menos no atraviesa equipos (se cruza con un tubo, pasando uno por encima)
+      if (!chosen) {
+        blocked.push(e);
+        chosen = find(false);
+      }
+      e.raw = chosen ?? variants(levels[0])[0];
+      placed.push({ from: pipe.from, to: pipe.to, points: e.raw, radius });
+    }
+    return blocked;
+  };
+  // los que quedan bloqueados pasan al frente de la cola y los demás se acomodan a ellos
+  let order = free;
+  let blocked = placeAll(order);
+  let best = { order, blocked };
+  for (let pass = 0; pass < 12 && blocked.length; pass++) {
+    order = [...blocked, ...order.filter((e) => !blocked.includes(e))];
+    blocked = placeAll(order);
+    if (blocked.length < best.blocked.length) best = { order, blocked };
+  }
+  if (best.order !== order) blocked = placeAll(best.order);
+  for (const e of blocked) console.warn(`tubería ${e.pipe.from} → ${e.pipe.to}: sin trazado libre`);
+  for (const { pipe, raw, radius } of entries) {
     if (!raw || raw.length < 2) continue;
     const points = raw.filter((p, k) => k === 0 || p.distanceTo(raw[k - 1]) > 1e-3);
     const color = MEDIUM_COLORS.find(([re]) => re.test(pipe.medium.toLowerCase()))?.[1] ?? "#aab3bd";
     const material = new THREE.MeshStandardMaterial({ color, roughness: 0.35, metalness: 0.7 });
-    // Con diámetro: el radio exterior real (PVC, ≈ 1,15 × el nominal), con un mínimo para que se vea.
-    const radius = pipe.diameter_in
-      ? Math.max(0.025, (pipe.diameter_in * 0.0254 * 1.15) / 2)
-      : pipe.route || src > b.y + 0.3
-        ? 0.035
-        : /vapor/.test(pipe.medium.toLowerCase())
-          ? 0.09
-          : 0.06;
     const mesh = parts.pipe(points, radius, material, Math.min(0.4, radius * 3));
     mesh.name = `pipe-${pipe.from}-${pipe.to}`;
     stage.content.add(mesh);
@@ -831,9 +1015,9 @@ function commandButton(label: string, title: string, command: string, args: Reco
   return b;
 }
 
-function renderLines(lines: Record<string, { name: string; output_units: number; output_per_h: number | null }>): void {
+function renderLines(lines: Record<string, { name: string; unit?: string; output_units: number; output_per_h: number | null }>): void {
   $("lines").innerHTML = Object.entries(lines)
-    .map(([id, ln]) => `<div class="line" data-line="${id}"><b>${ln.name}</b><span>${fmt(ln.output_units)} u · ${ln.output_per_h === null ? "—" : fmt(ln.output_per_h)} u/h</span></div>`)
+    .map(([id, ln]) => `<div class="line" data-line="${id}"><b>${ln.name}</b><span>${fmt(ln.output_units)} ${ln.unit ?? "u"} · ${ln.output_per_h === null ? "—" : fmt(ln.output_per_h)} ${ln.unit ?? "u"}/h</span></div>`)
     .join("");
 }
 
@@ -926,6 +1110,12 @@ async function start(): Promise<void> {
   if (url.get("select")) select(url.get("select"));
   const focusAsset = url.get("focus") ? assets.get(url.get("focus")!) : undefined;
   if (focusAsset) stage.frame(focusAsset.root, 1.1);
+  const look = url.get("look")?.split(",").map(Number);
+  if (look?.length === 6 && look.every(Number.isFinite)) {
+    stage.camera.position.copy(toScene(look[0], look[1], look[2]));
+    stage.controls.target.copy(toScene(look[3], look[4], look[5]));
+    stage.controls.update();
+  }
   if (url.get("tour") === "1") startTour();
   if (url.get("autosim") === "1" && simulated) {
     if (url.get("scenario")) sel.value = url.get("scenario")!;
