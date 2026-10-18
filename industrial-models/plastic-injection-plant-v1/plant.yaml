@@ -89,13 +89,15 @@ aisles:
 #   - trips_per_h: viajes por hora de un vehículo (supuesto); walkers: operarios que la recorren (supuesto).
 routes:
   # --- Montacargas: piezas semielaboradas de las inyectoras a las estanterías de semielaborado ---
-  - { id: fk-recolecta-oeste-norte, name: "Recolección de semielaborado, pasillo norte oeste", kind: forklift, from: nave-inyeccion, to: rack-sf-01, load: piezas inyectadas en cajas y estibas, width: 1.5, trips_per_h: 4, path: [[36, 74.25], [79, 74.25], [79, 89.1], [50, 89.1]] }
-  - { id: fk-recolecta-oeste-centro, name: "Recolección de semielaborado, pasillo centro oeste", kind: forklift, from: nave-inyeccion, to: rack-sf-02, load: piezas inyectadas en cajas y estibas, width: 1.5, trips_per_h: 4, path: [[36, 49], [79, 49], [79, 89.1], [68, 89.1]] }
-  - { id: fk-recolecta-este-centro, name: "Recolección de semielaborado, pasillo centro este", kind: forklift, from: nave-inyeccion, to: rack-sf-03, load: piezas inyectadas en cajas y estibas, width: 1.5, trips_per_h: 4, path: [[122, 49], [79, 49], [79, 89.1], [98, 89.1]] }
-  - { id: fk-recolecta-este-norte, name: "Recolección de semielaborado, pasillo norte este", kind: forklift, from: nave-inyeccion, to: rack-sf-04, load: piezas inyectadas en cajas y estibas, width: 1.5, trips_per_h: 4, path: [[122, 74.25], [79, 74.25], [79, 89.1], [116, 89.1]] }
+  - { id: fk-recolecta-oeste-norte, name: "Recolección de semielaborado, pasillo norte oeste", kind: forklift, from: nave-inyeccion, to: rack-sf-01, load: piezas inyectadas en cajas y estibas, width: 1.5, trips_per_h: 4, fleet: fleet-01, fleet_route: 1, path: [[36, 74.25], [79, 74.25], [79, 89.1], [50, 89.1]] }
+  - { id: fk-recolecta-oeste-centro, name: "Recolección de semielaborado, pasillo centro oeste", kind: forklift, from: nave-inyeccion, to: rack-sf-02, load: piezas inyectadas en cajas y estibas, width: 1.5, trips_per_h: 4, fleet: fleet-01, fleet_route: 2, path: [[36, 49], [79, 49], [79, 89.1], [68, 89.1]] }
+  - { id: fk-recolecta-este-centro, name: "Recolección de semielaborado, pasillo centro este", kind: forklift, from: nave-inyeccion, to: rack-sf-03, load: piezas inyectadas en cajas y estibas, width: 1.5, trips_per_h: 4, fleet: fleet-01, fleet_route: 3, path: [[122, 49], [79, 49], [79, 89.1], [98, 89.1]] }
+  - { id: fk-recolecta-este-norte, name: "Recolección de semielaborado, pasillo norte este", kind: forklift, from: nave-inyeccion, to: rack-sf-04, load: piezas inyectadas en cajas y estibas, width: 1.5, trips_per_h: 4, fleet: fleet-01, fleet_route: [4, 5], path: [[122, 74.25], [79, 74.25], [79, 89.1], [116, 89.1]] }
   # --- Montacargas: de las estanterías de semielaborado a las celdas de ensamble ---
-  - { id: fk-sf-ensamble-1, name: "Semielaborado a la celda de ensamble 1 (pedal/palanca y cuerpo)", kind: forklift, from: rack-sf-03, to: assembly-01, load: "pedal, palanca y cuerpos de papelera", width: 1.5, trips_per_h: 3, path: [[98, 89.1], [79, 89.1], [79, 74.25], [134, 74.25], [134, 66.5], [129, 66.5]] }
-  - { id: fk-sf-ensamble-2, name: "Semielaborado a la celda de ensamble 2 (bisagras y tapas)", kind: forklift, from: rack-sf-04, to: assembly-02, load: bisagras y tapas, width: 1.5, trips_per_h: 3, path: [[116, 89.1], [79, 89.1], [79, 74.25], [134, 74.25], [134, 66.5], [139, 66.5]] }
+  - { id: fk-sf-a1, name: "Estantería 1 (pedal y palanca) a la celda de ensamble 1", kind: forklift, from: rack-sf-01, to: assembly-01, load: estibas de pedal y palanca, width: 1.5, trips_per_h: 3, fleet: fleet-01, fleet_route: 6, path: [[50, 89.1], [79, 89.1], [79, 74.25], [134, 74.25], [134, 66.5], [129, 66.5]] }
+  - { id: fk-sf-b1, name: "Estantería 2 (cuerpos de papelera) a la celda de ensamble 1", kind: forklift, from: rack-sf-02, to: assembly-01, load: estibas de cuerpos de papelera, width: 1.5, trips_per_h: 3, fleet: fleet-01, fleet_route: 7, path: [[68, 89.1], [79, 89.1], [79, 74.25], [134, 74.25], [134, 66.5], [129, 66.5]] }
+  - { id: fk-sf-a2, name: "Estantería 3 (bisagras) a la celda de ensamble 2", kind: forklift, from: rack-sf-03, to: assembly-02, load: estibas de bisagras, width: 1.5, trips_per_h: 3, fleet: fleet-01, fleet_route: 8, path: [[98, 89.1], [79, 89.1], [79, 74.25], [134, 74.25], [134, 66.5], [139, 66.5]] }
+  - { id: fk-sf-b2, name: "Estantería 4 (tapas) a la celda de ensamble 2", kind: forklift, from: rack-sf-04, to: assembly-02, load: estibas de tapas, width: 1.5, trips_per_h: 3, fleet: fleet-01, fleet_route: 9, path: [[116, 89.1], [79, 89.1], [79, 74.25], [134, 74.25], [134, 66.5], [139, 66.5]] }
   # --- Montacargas: de las celdas de ensamble a la bodega de producto terminado ---
   - { id: fk-ensamble-pt-1, name: "Producto terminado de la celda 1 a la bodega", kind: forklift, from: assembly-01, to: rack-pt-01, load: papeleras armadas en estibas, width: 1.5, trips_per_h: 2, path: [[129, 66.5], [134, 66.5], [134, 54.25], [145.1, 54.25], [145.1, 28], [151, 28], [151, 58]] }
   - { id: fk-ensamble-pt-2, name: "Producto terminado de la celda 2 a la bodega", kind: forklift, from: assembly-02, to: rack-pt-02, load: tapas con bisagras en estibas, width: 1.5, trips_per_h: 2, path: [[139, 66.5], [134, 66.5], [134, 54.25], [145.1, 54.25], [145.1, 28], [151, 28], [151, 58]] }
@@ -207,6 +209,35 @@ equipment:
   - { id: imm-27, type: injection_molding_machine, zone: nave-inyeccion, position: [116.75, 85, 0], footprint: [11.5, 3, 3.2], params: { clamp_t: 1100, max_shot_kg: 4.5, product: cuerpo de nevera portátil, material: PP, cavities: 1, part_g: 1800, cycle_s: 55, robot: cartesiano, grinder: false } }
   - { id: imm-28, type: injection_molding_machine, zone: nave-inyeccion, position: [43, 85, 0],     footprint: [14, 3.5, 3.5], params: { clamp_t: 1500, max_shot_kg: 7.5, product: caneca 121 L, material: HDPE reciclado, cavities: 1, part_g: 7000, cycle_s: 95, robot: cartesiano, grinder: false } }
   - { id: imm-29, type: injection_molding_machine, zone: nave-inyeccion, position: [60, 85, 0],     footprint: [14, 3.5, 3.5], params: { clamp_t: 1500, max_shot_kg: 7.5, product: tapa caneca 121 L y estiba liviana, material: HDPE reciclado, cavities: 1, part_g: 3200, cycle_s: 70, robot: cartesiano, grinder: false } }
+  # Buffers de máquina: una estiba junto a cada inyectora (menos la 3, que entrega a la banda principal)
+  - { id: buf-01, type: pallet_buffer, zone: nave-inyeccion, position: [38.5, 43.7, 0], footprint: [3.4, 1, 1.4], params: { product: "cubiertos", pallet_pieces: 1000 } }
+  - { id: buf-02, type: pallet_buffer, zone: nave-inyeccion, position: [45.5, 43.7, 0], footprint: [3.4, 1, 1.4], params: { product: "cubiertos", pallet_pieces: 1000 } }
+  - { id: buf-04, type: pallet_buffer, zone: nave-inyeccion, position: [59.5, 43.7, 0], footprint: [3.4, 1, 1.4], params: { product: "tapa recipiente 1 L", pallet_pieces: 1000 } }
+  - { id: buf-05, type: pallet_buffer, zone: nave-inyeccion, position: [66.5, 43.7, 0], footprint: [3.4, 1, 1.4], params: { product: "vajilla infantil (plato)", pallet_pieces: 1000 } }
+  - { id: buf-06, type: pallet_buffer, zone: nave-inyeccion, position: [85.5, 43.7, 0], footprint: [3.4, 1, 1.4], params: { product: "pedal y palanca de papelera", pallet_pieces: 1000 } }
+  - { id: buf-07, type: pallet_buffer, zone: nave-inyeccion, position: [92.5, 43.7, 0], footprint: [3.4, 1, 1.4], params: { product: "vaso", pallet_pieces: 1000 } }
+  - { id: buf-08, type: pallet_buffer, zone: nave-inyeccion, position: [99.5, 43.7, 0], footprint: [3.4, 1, 1.4], params: { product: "bisagras y piezas pequeñas", pallet_pieces: 1000 } }
+  - { id: buf-09, type: pallet_buffer, zone: nave-inyeccion, position: [106.5, 43.7, 0], footprint: [3.4, 1, 1.4], params: { product: "tapa de termo", pallet_pieces: 1000 } }
+  - { id: buf-10, type: pallet_buffer, zone: nave-inyeccion, position: [113.5, 43.7, 0], footprint: [3.4, 1, 1.4], params: { product: "cucharón", pallet_pieces: 1000 } }
+  - { id: buf-11, type: pallet_buffer, zone: nave-inyeccion, position: [39.5, 60.9, 0], footprint: [3.4, 1, 1.4], params: { product: "recipiente para alimentos 1 L", pallet_pieces: 1000 } }
+  - { id: buf-12, type: pallet_buffer, zone: nave-inyeccion, position: [49.5, 60.9, 0], footprint: [3.4, 1, 1.4], params: { product: "recipiente para alimentos 3 L", pallet_pieces: 1000 } }
+  - { id: buf-13, type: pallet_buffer, zone: nave-inyeccion, position: [59.5, 60.9, 0], footprint: [3.4, 1, 1.4], params: { product: "caja organizadora 6 L", pallet_pieces: 1000 } }
+  - { id: buf-14, type: pallet_buffer, zone: nave-inyeccion, position: [69.5, 60.9, 0], footprint: [3.4, 1, 1.4], params: { product: "tapa caja organizadora", pallet_pieces: 1000 } }
+  - { id: buf-15, type: pallet_buffer, zone: nave-inyeccion, position: [86.5, 60.9, 0], footprint: [3.4, 1, 1.4], params: { product: "balde 4 L", pallet_pieces: 1000 } }
+  - { id: buf-16, type: pallet_buffer, zone: nave-inyeccion, position: [96.5, 60.9, 0], footprint: [3.4, 1, 1.4], params: { product: "bandeja", pallet_pieces: 1000 } }
+  - { id: buf-17, type: pallet_buffer, zone: nave-inyeccion, position: [106.5, 60.9, 0], footprint: [3.4, 1, 1.4], params: { product: "cuerpo de termo", pallet_pieces: 1000 } }
+  - { id: buf-18, type: pallet_buffer, zone: nave-inyeccion, position: [110.5, 69.4, 0], footprint: [3.4, 1, 1.4], params: { product: "señal de prevención plegable", pallet_pieces: 1000 } }
+  - { id: buf-19, type: pallet_buffer, zone: nave-inyeccion, position: [119.5, 69.4, 0], footprint: [3.4, 1, 1.4], params: { product: "cuerpo papelera 20 L", pallet_pieces: 1000 } }
+  - { id: buf-20, type: pallet_buffer, zone: nave-inyeccion, position: [40.5, 69.4, 0], footprint: [3.4, 1, 1.4], params: { product: "caja organizadora 40 L", pallet_pieces: 1000 } }
+  - { id: buf-21, type: pallet_buffer, zone: nave-inyeccion, position: [52.5, 69.4, 0], footprint: [3.4, 1, 1.4], params: { product: "balde 12 L", pallet_pieces: 1000 } }
+  - { id: buf-22, type: pallet_buffer, zone: nave-inyeccion, position: [64.5, 69.4, 0], footprint: [3.4, 1, 1.4], params: { product: "balde 20 L", pallet_pieces: 1000 } }
+  - { id: buf-23, type: pallet_buffer, zone: nave-inyeccion, position: [87.5, 69.4, 0], footprint: [3.4, 1, 1.4], params: { product: "tapa de nevera", pallet_pieces: 1000 } }
+  - { id: buf-24, type: pallet_buffer, zone: nave-inyeccion, position: [99.5, 69.4, 0], footprint: [3.4, 1, 1.4], params: { product: "bandeja industrial", pallet_pieces: 1000 } }
+  - { id: buf-25, type: pallet_buffer, zone: nave-inyeccion, position: [88.75, 82.3, 0], footprint: [3.4, 1, 1.4], params: { product: "canasta industrial apilable", pallet_pieces: 1000 } }
+  - { id: buf-26, type: pallet_buffer, zone: nave-inyeccion, position: [102.75, 82.3, 0], footprint: [3.4, 1, 1.4], params: { product: "caneca 50 L", pallet_pieces: 1000 } }
+  - { id: buf-27, type: pallet_buffer, zone: nave-inyeccion, position: [116.75, 82.3, 0], footprint: [3.4, 1, 1.4], params: { product: "cuerpo de nevera portátil", pallet_pieces: 1000 } }
+  - { id: buf-28, type: pallet_buffer, zone: nave-inyeccion, position: [43, 82.3, 0], footprint: [3.4, 1, 1.4], params: { product: "caneca 121 L", pallet_pieces: 1000 } }
+  - { id: buf-29, type: pallet_buffer, zone: nave-inyeccion, position: [60, 82.3, 0], footprint: [3.4, 1, 1.4], params: { product: "tapa caneca 121 L y estiba liviana", pallet_pieces: 1000 } }
 
   # --- Empaque ---
   - { id: pack-station-01, type: packing_station, zone: empaque, position: [128.5, 31, 0], footprint: [3, 2, 1], params: {} }
@@ -216,10 +247,12 @@ equipment:
   - { id: wrapper-01,      type: stretch_wrapper, zone: empaque, position: [133.5, 48, 0], footprint: [3, 3, 2.5], params: { pallets_h: 30 } }
 
   # --- Estanterías de material semielaborado (piezas inyectadas por consumir en ensamble o empaque), frente al pasillo sur (supuesto) ---
-  - { id: rack-sf-01, type: pallet_rack, zone: almacen-semielaborado, position: [50, 92.5, 0],  footprint: [16, 2.5, 6], params: { stage: semielaborado, content: piezas inyectadas semielaboradas (inyectoras del oeste), positions: 48 } }
-  - { id: rack-sf-02, type: pallet_rack, zone: almacen-semielaborado, position: [68, 92.5, 0],  footprint: [16, 2.5, 6], params: { stage: semielaborado, content: piezas inyectadas semielaboradas (inyectoras del oeste), positions: 48 } }
-  - { id: rack-sf-03, type: pallet_rack, zone: almacen-semielaborado, position: [98, 92.5, 0],  footprint: [16, 2.5, 6], params: { stage: semielaborado, content: piezas inyectadas semielaboradas (inyectoras del este; papelera), positions: 48 } }
-  - { id: rack-sf-04, type: pallet_rack, zone: almacen-semielaborado, position: [116, 92.5, 0], footprint: [16, 2.5, 6], params: { stage: semielaborado, content: piezas inyectadas semielaboradas (inyectoras del este; bisagras y tapas), positions: 48 } }
+  - { id: rack-sf-01, type: pallet_rack, zone: almacen-semielaborado, position: [50, 92.5, 0],  footprint: [16, 2.5, 6], params: { stage: semielaborado, content: pedal y palanca de papelera (imm-06), positions: 48 } }
+  - { id: rack-sf-02, type: pallet_rack, zone: almacen-semielaborado, position: [68, 92.5, 0],  footprint: [16, 2.5, 6], params: { stage: semielaborado, content: cuerpos de papelera (imm-19), positions: 48 } }
+  - { id: rack-sf-03, type: pallet_rack, zone: almacen-semielaborado, position: [98, 92.5, 0],  footprint: [16, 2.5, 6], params: { stage: semielaborado, content: bisagras (imm-08), positions: 48 } }
+  - { id: rack-sf-04, type: pallet_rack, zone: almacen-semielaborado, position: [116, 92.5, 0], footprint: [16, 2.5, 6], params: { stage: semielaborado, content: tapas de caja organizadora (imm-14), positions: 48 } }
+  # Flota de montacargas (estacionamiento)
+  - { id: fleet-01, type: forklift_fleet, zone: almacen-semielaborado, position: [85, 92.5, 0], footprint: [8, 3, 2], params: { vehicles: 6, role: flota de montacargas de la planta (recolección de la nave y abastecimiento de las celdas de ensamble) } }
 
   # --- Operaciones secundarias ---
   - { id: assembly-01,   type: assembly_cell,   zone: secundarias, position: [129, 62, 0], footprint: [6, 3, 1.5], params: { operation: ensamble pedal/palanca en papelera } }
@@ -262,15 +295,80 @@ flows:
   - { from: imm-03,           to: conveyor-main-01, medium: piezas,           rate: 1200, unit: u/h }
   - { from: conveyor-main-01, to: pack-station-01,  medium: piezas,           rate: 6000, unit: u/h,  show: true }
   - { from: imm-28,           to: pack-station-03,  medium: piezas,           rate: 38,   unit: u/h,  note: montacargas por pasillo norte }
-  - { from: imm-06,           to: assembly-01,      medium: piezas,           rate: 288,  unit: u/h }
-  - { from: imm-19,           to: assembly-01,      medium: piezas,           rate: 103,  unit: u/h,  show: true }
   - { from: imm-27,           to: foam-01,          medium: piezas,           rate: 65,   unit: u/h,  show: true }
   - { from: assembly-01,      to: pack-station-03,  medium: piezas,           rate: 100,  unit: u/h }
-  - { from: imm-08,           to: assembly-02,      medium: bisagras,         rate: 360,  unit: u/h,  note: supuesto (2 bisagras por tapa a 20 s por unidad) }
-  - { from: imm-14,           to: assembly-02,      medium: tapas,            rate: 180,  unit: u/h,  note: supuesto (una tapa por unidad a 20 s) }
   - { from: pack-station-01,  to: wrapper-01,       medium: cajas,            rate: 40,   unit: pallets/d }
   - { from: wrapper-01,       to: rack-pt-01,       medium: estibas,          rate: 40,   unit: pallets/d, show: true }
   - { from: rack-pt-02,       to: dock-02,          medium: estibas,          rate: 40,   unit: pallets/d, show: true }
+  # Proceso conectado: inyectora → buffer → montacargas → estantería de semielaborado → montacargas → celda de ensamble
+  - { from: imm-01, to: buf-01, medium: piezas, rate: 6400, unit: u/h }
+  - { from: imm-02, to: buf-02, medium: piezas, rate: 6400, unit: u/h }
+  - { from: imm-04, to: buf-04, medium: piezas, rate: 1108, unit: u/h }
+  - { from: imm-05, to: buf-05, medium: piezas, rate: 400, unit: u/h }
+  - { from: imm-06, to: buf-06, medium: piezas, rate: 288, unit: u/h }
+  - { from: imm-07, to: buf-07, medium: piezas, rate: 1309, unit: u/h }
+  - { from: imm-08, to: buf-08, medium: piezas, rate: 2057, unit: u/h }
+  - { from: imm-09, to: buf-09, medium: piezas, rate: 900, unit: u/h }
+  - { from: imm-10, to: buf-10, medium: piezas, rate: 960, unit: u/h }
+  - { from: imm-11, to: buf-11, medium: piezas, rate: 400, unit: u/h }
+  - { from: imm-12, to: buf-12, medium: piezas, rate: 164, unit: u/h }
+  - { from: imm-13, to: buf-13, medium: piezas, rate: 150, unit: u/h }
+  - { from: imm-14, to: buf-14, medium: piezas, rate: 360, unit: u/h }
+  - { from: imm-15, to: buf-15, medium: piezas, rate: 138, unit: u/h }
+  - { from: imm-16, to: buf-16, medium: piezas, rate: 144, unit: u/h }
+  - { from: imm-17, to: buf-17, medium: piezas, rate: 257, unit: u/h }
+  - { from: imm-18, to: buf-18, medium: piezas, rate: 90, unit: u/h }
+  - { from: imm-19, to: buf-19, medium: piezas, rate: 103, unit: u/h }
+  - { from: imm-20, to: buf-20, medium: piezas, rate: 95, unit: u/h }
+  - { from: imm-21, to: buf-21, medium: piezas, rate: 120, unit: u/h }
+  - { from: imm-22, to: buf-22, medium: piezas, rate: 100, unit: u/h }
+  - { from: imm-23, to: buf-23, medium: piezas, rate: 106, unit: u/h }
+  - { from: imm-24, to: buf-24, medium: piezas, rate: 86, unit: u/h }
+  - { from: imm-25, to: buf-25, medium: piezas, rate: 72, unit: u/h }
+  - { from: imm-26, to: buf-26, medium: piezas, rate: 60, unit: u/h }
+  - { from: imm-27, to: buf-27, medium: piezas, rate: 65, unit: u/h }
+  - { from: imm-28, to: buf-28, medium: piezas, rate: 38, unit: u/h }
+  - { from: imm-29, to: buf-29, medium: piezas, rate: 51, unit: u/h }
+  - { from: buf-01, to: fleet-01, medium: estibas de cubiertos, rate: 6400, unit: u/h }
+  - { from: buf-02, to: fleet-01, medium: estibas de cubiertos, rate: 6400, unit: u/h }
+  - { from: buf-04, to: fleet-01, medium: estibas de tapa recipiente 1 L, rate: 1108, unit: u/h }
+  - { from: buf-05, to: fleet-01, medium: estibas de vajilla infantil (plato), rate: 400, unit: u/h }
+  - { from: buf-06, to: fleet-01, medium: estibas de pedal y palanca de papelera, rate: 288, unit: u/h }
+  - { from: buf-07, to: fleet-01, medium: estibas de vaso, rate: 1309, unit: u/h }
+  - { from: buf-08, to: fleet-01, medium: estibas de bisagras y piezas pequeñas, rate: 2057, unit: u/h }
+  - { from: buf-09, to: fleet-01, medium: estibas de tapa de termo, rate: 900, unit: u/h }
+  - { from: buf-10, to: fleet-01, medium: estibas de cucharón, rate: 960, unit: u/h }
+  - { from: buf-11, to: fleet-01, medium: estibas de recipiente para alimentos 1 L, rate: 400, unit: u/h }
+  - { from: buf-12, to: fleet-01, medium: estibas de recipiente para alimentos 3 L, rate: 164, unit: u/h }
+  - { from: buf-13, to: fleet-01, medium: estibas de caja organizadora 6 L, rate: 150, unit: u/h }
+  - { from: buf-14, to: fleet-01, medium: estibas de tapa caja organizadora, rate: 360, unit: u/h }
+  - { from: buf-15, to: fleet-01, medium: estibas de balde 4 L, rate: 138, unit: u/h }
+  - { from: buf-16, to: fleet-01, medium: estibas de bandeja, rate: 144, unit: u/h }
+  - { from: buf-17, to: fleet-01, medium: estibas de cuerpo de termo, rate: 257, unit: u/h }
+  - { from: buf-18, to: fleet-01, medium: estibas de señal de prevención plegable, rate: 90, unit: u/h }
+  - { from: buf-19, to: fleet-01, medium: estibas de cuerpo papelera 20 L, rate: 103, unit: u/h }
+  - { from: buf-20, to: fleet-01, medium: estibas de caja organizadora 40 L, rate: 95, unit: u/h }
+  - { from: buf-21, to: fleet-01, medium: estibas de balde 12 L, rate: 120, unit: u/h }
+  - { from: buf-22, to: fleet-01, medium: estibas de balde 20 L, rate: 100, unit: u/h }
+  - { from: buf-23, to: fleet-01, medium: estibas de tapa de nevera, rate: 106, unit: u/h }
+  - { from: buf-24, to: fleet-01, medium: estibas de bandeja industrial, rate: 86, unit: u/h }
+  - { from: buf-25, to: fleet-01, medium: estibas de canasta industrial apilable, rate: 72, unit: u/h }
+  - { from: buf-26, to: fleet-01, medium: estibas de caneca 50 L, rate: 60, unit: u/h }
+  - { from: buf-27, to: fleet-01, medium: estibas de cuerpo de nevera portátil, rate: 65, unit: u/h }
+  - { from: buf-28, to: fleet-01, medium: estibas de caneca 121 L, rate: 38, unit: u/h }
+  - { from: buf-29, to: fleet-01, medium: estibas de tapa caneca 121 L y estiba liviana, rate: 51, unit: u/h }
+  - { from: fleet-01, to: rack-sf-01, medium: estibas de semielaborado, rate: 288, unit: u/h }
+  - { from: fleet-01, to: rack-sf-02, medium: estibas de semielaborado, rate: 103, unit: u/h }
+  - { from: fleet-01, to: rack-sf-03, medium: estibas de semielaborado, rate: 2057, unit: u/h }
+  - { from: fleet-01, to: rack-sf-04, medium: estibas de semielaborado, rate: 360, unit: u/h }
+  - { from: rack-sf-01, to: fleet-01, medium: estibas de semielaborado, rate: 103, unit: u/h }
+  - { from: fleet-01, to: assembly-01, medium: pedal y palanca, rate: 103, unit: u/h }
+  - { from: rack-sf-02, to: fleet-01, medium: estibas de semielaborado, rate: 103, unit: u/h }
+  - { from: fleet-01, to: assembly-01, medium: cuerpos de papelera, rate: 103, unit: u/h }
+  - { from: rack-sf-03, to: fleet-01, medium: estibas de semielaborado, rate: 360, unit: u/h }
+  - { from: fleet-01, to: assembly-02, medium: bisagras, rate: 360, unit: u/h }
+  - { from: rack-sf-04, to: fleet-01, medium: estibas de semielaborado, rate: 180, unit: u/h }
+  - { from: fleet-01, to: assembly-02, medium: tapas, rate: 180, unit: u/h }
   # Scrap y reciclaje
   - { from: imm-22,           to: sort-01,          medium: scrap y barreduras, rate: 0.8, unit: t/d, show: true }
   - { from: imm-01, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }

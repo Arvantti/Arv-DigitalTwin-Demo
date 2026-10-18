@@ -121,7 +121,12 @@ def test_injection_plant_exposes_aisles_and_routes() -> None:
     plant = client.get("/api/plants/plastic-injection-plant-v1").json()
     routes = {r["id"]: r for r in plant["routes"]}
     assert {r["kind"] for r in routes.values()} == {"forklift", "pedestrian", "cart"}
-    assert routes["fk-sf-ensamble-1"]["to"] == "assembly-01"
+    assert routes["fk-sf-a1"]["to"] == "assembly-01"
+    assert routes["fk-sf-a1"]["fleet"] == "fleet-01"
+    equipment = {e["id"]: e for e in plant["equipment"]}
+    assert equipment["rack-sf-01"]["sim"]["type"] == "pallet-store"
+    assert equipment["fleet-01"]["sim"]["params"]["vehicles"] == 6
+    assert sum(1 for e in plant["equipment"] if e.get("sim", {}).get("type") == "pallet-buffer") == 28
     assert routes["fk-ensamble-pt-1"]["from"] == "assembly-01"
     assert all(len(r["path"]) >= 2 for r in routes.values())
     assert {a["id"] for a in plant["aisles"]} >= {"aisle-semielaborado", "aisle-pt-1"}
