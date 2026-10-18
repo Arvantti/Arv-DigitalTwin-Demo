@@ -10,6 +10,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
+| 2026-10-18 | Acueducto sin pisos | Las zonas elevadas del acueducto ya no dibujan losa ni suelo de color; se ven las estructuras y los tubos de todos los pisos (pedido del autor). D43 | acueducto |
 | 2026-10-18 | Secuencia del acueducto | Acueducto: cada tubo empieza y termina en la boquilla o brida real (tanques, bombas, estación, válvulas entre niveles, rejilla, bajantes); panel LÍNEAS con dos líneas en m³; parámetro de cámara `look`. D42 | acueducto |
 | 2026-10-18 | Tuberías sin cruces | Planta de salsas: los tubos a nivel de rack buscan un nivel y un recorrido que no atraviesen equipos ni cajas de estantería ni se crucen entre sí (suben por encima, o se desplazan); documento del flujo de salsas conectado vs faltante. D41 | 5 |
 | 2026-10-18 | Flujo de montacargas y ensamble | Planta de plásticos: almacén de semielaborado separado del de terminado (al norte de la nave, cajas azules), montacargas sin cruzar la banda y con carriles de ida y regreso, línea de ensamble visible (cámara propia) y piezas nuevas en secundarias. D40 | 5 |
@@ -57,6 +58,15 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 | 2026-10-16 | #1 | Layouts de las plantas | 1 |
 
 ## Entradas
+
+### 2026-10-18 17:15 · Acueducto sin losas en los pisos elevados
+- **Fecha/hora (UTC):** 2026-10-18 17:12–17:30
+- **Fase del plan:** [[plan-del-proyecto]] acueducto
+- **Solicitado por:** Carlos Andrés Quiceño: «prefiero que quitemos los pisos y mantengamos la estructuras».
+- **Qué se hizo:** `buildZones` de `plant.ts` no dibuja losa ni suelo de color en zonas con `elevation`; se conservan contorno, rótulo y estructuras.
+- **Verificación:** `pnpm -r typecheck`, captura de la galería (`evidencia/acueducto-sin-pisos.png`).
+- **Decisiones:** [[decisiones]] D43
+- **Conversación:** [[hilo-secuencia-acueducto]]
 
 ### 2026-10-18 14:40 · Secuencia hidráulica continua del acueducto
 - **Fecha/hora (UTC):** 2026-10-18 14:40–15:50

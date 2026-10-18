@@ -45,7 +45,7 @@ Parámetros de URL, pensados para capturas automáticas:
 
 `plant=water-network-scale-v1` dibuja el banco de pruebas del acueducto (`docs/water-network-plant.md`) como un edificio de tres pisos:
 
-- **Pisos:** cada zona con `elevation` se dibuja a su cota. Los pisos elevados llevan una losa delgada translúcida, para ver lo que hay debajo, y su volumen arranca en esa cota.
+- **Pisos:** cada zona con `elevation` se dibuja a su cota solo con su contorno y su rótulo: sin losa ni suelo de color (pedido del autor, 2026-10-18), para ver las estructuras y los tubos de todos los pisos. El piso 0 (cota 0) conserva su suelo.
 - **Tubos de la red de agua:** los flujos con `route` siguen el trazado del plano (puntos `[x, y, z]`). Su grosor sale de `diameter_in` (4" hasta el nivel 1, 2" en la columna, 3" en la recirculación). Las esferas avanzan a la velocidad real del agua (`velocity_m_s` del dominio hidráulico) y su número sigue el caudal frente al `rate` del plano (en m³/h se compara en kg/h).
 - **Bajantes:** las cuatro bajantes del acueducto traen su `route` en el plano: salen de la canaleta de cada nivel, se juntan en un tronco a la cota de la boquilla de entrada del tanque de recirculación y llegan a ella. Un flujo sin ruta cuyo origen está por encima de la tapa del destino sigue dibujándose vertical desde el costado del equipo de arriba (salsas, inyección).
 - **Conexiones:** cada ruta empieza y termina en la boquilla o brida real del modelo (tanque, colectores de las bombas, bridas de la estación y de las válvulas entre niveles, montante de cada rejilla); las coordenadas están en `docs/water-network-plant.md`, sección 11.

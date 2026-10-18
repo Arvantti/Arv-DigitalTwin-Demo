@@ -24,3 +24,11 @@ Recibí el pedido del coordinador: dejar continua la secuencia tanques de recirc
 ### 🤖 Claude · 15:50 UTC
 
 Dejé las rutas ancladas a las conexiones reales, el panel LÍNEAS con dos líneas y el informe `flujo-planta-acueducto` (en `docs/registro/evidencia/`). Verificado con el motor, 84 pruebas y capturas. Pendiente: la bajante del nivel 1 llega a una boquilla más alta (tanques de 2,9 m).
+
+### 👤 Carlos Andrés Quiceño · 17:12:50 UTC
+
+prefiero que quitemos los pisos y mantengamos la estructuras
+
+### 🤖 Claude · 17:15 UTC
+
+Quito la losa y el suelo de color de los pisos elevados y dejo las estructuras, el contorno y el rótulo de cada zona.

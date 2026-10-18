@@ -152,32 +152,25 @@ function buildZones(): void {
     const color = HYGIENE_COLORS[z.hygiene_class] ?? "#555";
     const center = toScene(x0 + w / 2, y0 + l / 2);
     const base = z.elevation ?? 0;
-    if (base > 0) {
-      // Piso elevado: losa delgada y translúcida para ver lo que hay debajo.
-      const slab = new THREE.Mesh(
-        new THREE.BoxGeometry(w, SLAB_M, l),
-        new THREE.MeshStandardMaterial({ color: "#9aa3ad", roughness: 0.8, transparent: true, opacity: 0.22, depthWrite: false }),
+    // Los pisos elevados no llevan losa ni suelo de color (pedido del autor): solo el contorno de la zona, su rótulo
+    // y las estructuras de cada equipo, para ver la instalación completa.
+    if (base <= 0) {
+      const floor = new THREE.Mesh(
+        new THREE.PlaneGeometry(w - 0.2, l - 0.2),
+        new THREE.MeshStandardMaterial({
+          color,
+          roughness: 0.7,
+          metalness: 0.05,
+          transparent: true,
+          opacity: z.kind === "exterior" ? 0.55 : 0.9,
+        }),
       );
-      slab.position.copy(center).setY(base - SLAB_M / 2);
-      slab.name = `zone-slab-${z.id}`;
-      stage.content.add(slab);
+      floor.rotation.x = -Math.PI / 2;
+      floor.position.copy(center).setY(base + 0.02);
+      floor.receiveShadow = true;
+      floor.name = `zone-floor-${z.id}`;
+      stage.content.add(floor);
     }
-    const floor = new THREE.Mesh(
-      new THREE.PlaneGeometry(w - 0.2, l - 0.2),
-      new THREE.MeshStandardMaterial({
-        color,
-        roughness: 0.7,
-        metalness: 0.05,
-        transparent: true,
-        opacity: base > 0 ? 0.3 : z.kind === "exterior" ? 0.55 : 0.9,
-        depthWrite: base <= 0,
-      }),
-    );
-    floor.rotation.x = -Math.PI / 2;
-    floor.position.copy(center).setY(base + 0.02);
-    floor.receiveShadow = true;
-    floor.name = `zone-floor-${z.id}`;
-    stage.content.add(floor);
     if (z.height > 0) {
       const edges = new THREE.LineSegments(
         new THREE.EdgesGeometry(new THREE.BoxGeometry(w, z.height, l)),
@@ -197,8 +190,6 @@ function buildZones(): void {
     }
   }
 }
-
-const SLAB_M = 0.12;
 
 const PLACEHOLDER = new THREE.MeshStandardMaterial({ color: "#7f8b97", roughness: 0.65, metalness: 0.25 });
 const RAIL = new THREE.MeshStandardMaterial({ color: "#e0a82e", roughness: 0.5, metalness: 0.4 });
