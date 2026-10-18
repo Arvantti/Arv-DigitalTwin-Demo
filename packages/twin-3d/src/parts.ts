@@ -217,70 +217,151 @@ export interface OperatorHandle {
 }
 
 /**
- * Operario de pie (≈ 1,75 m): botas, pantalón, chaleco reflectivo, casco y brazos articulados al hombro.
- * Origen en el suelo entre los pies; mira a +Z.
+ * Operario de pie (≈ 1,75 m) con proporciones humanas: cuello, cabello, orejas, nariz, gafas de seguridad, casco, camiseta con
+ * chaleco reflectivo, guantes, pantalón con rodillas articuladas y botas de seguridad con suela.
+ * Origen en el suelo entre los pies; mira a +Z. `look` varía tono de piel y cabello entre personas.
  */
-export function operator(vest = "#f26b1d", shirt = "#2f5f8f"): OperatorHandle {
+export interface OperatorLook {
+  skin?: string;
+  hair?: string;
+  pants?: string;
+  helmet?: string;
+}
+
+function capsule(r: number, length: number, material: THREE.Material, sx = 1, sz = 1): THREE.Mesh {
+  const m = mesh(new THREE.CapsuleGeometry(r, Math.max(0.001, length), 6, 14), material);
+  m.scale.set(sx, 1, sz);
+  return m;
+}
+
+export function operator(vest = "#f26b1d", shirt = "#2f5f8f", look: OperatorLook = {}): OperatorHandle {
   const g = group("operator");
-  const skin = M.paint("#c99a76", 0.7);
-  const pants = M.paint("#2b3442", 0.8);
-  const boots = M.paint("#1a1a1a", 0.7);
+  const skin = M.paint(look.skin ?? "#c99a76", 0.62);
+  const hairMat = M.paint(look.hair ?? "#2a1d16", 0.85);
+  const pants = M.paint(look.pants ?? "#2b3442", 0.85);
+  const boots = M.paint("#2a211b", 0.6);
+  const sole = M.paint("#111111", 0.9);
   const vestMat = M.paint(vest, 0.7);
-  const shirtMat = M.paint(shirt, 0.8);
-  const helmet = M.paint("#f2f2f2", 0.4);
-  const legs: THREE.Group[] = [];
+  const shirtMat = M.paint(shirt, 0.85);
+  const helmet = M.paint(look.helmet ?? "#f4f4f2", 0.35);
+  const glove = M.paint("#d9d2c3", 0.8);
+  const reflect = M.paint("#e3e7ea", 0.25);
+
+  // piernas: cadera → muslo → rodilla → pantorrilla → bota
+  const legs: { hip: THREE.Group; knee: THREE.Group }[] = [];
   for (const sx of [-1, 1]) {
-    const leg = group("leg");
-    leg.position.set(sx * 0.1, 0.9, 0);
-    const thigh = cylinder(0.065, 0.055, 0.8, pants, 14);
-    thigh.position.y = -0.8;
-    leg.add(thigh);
-    const boot = box(0.11, 0.1, 0.27, boots, 0.03);
-    boot.position.set(0, -0.85, 0.04);
-    leg.add(boot);
-    g.add(leg);
-    legs.push(leg);
+    const hip = group("leg");
+    hip.position.set(sx * 0.095, 0.93, 0);
+    const thigh = capsule(0.077, 0.28, pants, 1, 1.05);
+    thigh.position.y = -0.22;
+    hip.add(thigh);
+    const knee = group("knee");
+    knee.position.y = -0.44;
+    const shin = capsule(0.058, 0.27, pants);
+    shin.position.y = -0.2;
+    knee.add(shin);
+    const kneeCap = mesh(new THREE.SphereGeometry(0.066, 12, 10), pants);
+    knee.add(kneeCap);
+    const boot = box(0.105, 0.09, 0.27, boots, 0.035);
+    boot.position.set(0, -0.435, 0.05);
+    knee.add(boot);
+    const bootSole = box(0.11, 0.025, 0.285, sole, 0.01);
+    bootSole.position.set(0, -0.485, 0.05);
+    knee.add(bootSole);
+    const shaft = capsule(0.062, 0.05, boots);
+    shaft.position.y = -0.4;
+    knee.add(shaft);
+    hip.add(knee);
+    g.add(hip);
+    legs.push({ hip, knee });
   }
-  const hips = box(0.34, 0.16, 0.2, pants, 0.05);
-  hips.position.y = 0.95;
-  g.add(hips);
+  const pelvis = box(0.34, 0.2, 0.2, pants, 0.08);
+  pelvis.position.y = 0.97;
+  g.add(pelvis);
+
   const torso = group("torso");
-  torso.position.y = 1.03;
-  const chest = box(0.38, 0.5, 0.22, shirtMat, 0.07);
-  chest.position.y = 0.25;
+  torso.position.y = 1.0;
+  const chest = box(0.37, 0.5, 0.2, shirtMat, 0.08);
+  chest.position.y = 0.26;
   torso.add(chest);
-  const vestBody = box(0.4, 0.4, 0.235, vestMat, 0.06);
-  vestBody.position.y = 0.27;
+  // chaleco reflectivo con franjas
+  const vestBody = box(0.385, 0.42, 0.215, vestMat, 0.07);
+  vestBody.position.y = 0.23;
   torso.add(vestBody);
-  for (const y of [0.2, 0.34]) {
-    const band = box(0.405, 0.035, 0.24, M.paint("#d8dde0", 0.3), 0.01);
+  for (const y of [0.1, 0.27]) {
+    const band = box(0.392, 0.035, 0.222, reflect, 0.012);
     band.position.y = y;
     torso.add(band);
   }
+  const neck = cylinder(0.045, 0.05, 0.1, skin, 14);
+  neck.position.y = 0.52;
+  torso.add(neck);
+  for (const sx of [-1, 1]) {
+    const shoulder = mesh(new THREE.SphereGeometry(0.06, 14, 10), shirtMat);
+    shoulder.position.set(sx * 0.205, 0.45, 0);
+    torso.add(shoulder);
+  }
+
+  // cabeza: cráneo ovalado, cabello, orejas, nariz, ojos, gafas y casco
   const head = group("head");
-  head.position.y = 0.62;
-  head.add(mesh(new THREE.SphereGeometry(0.095, 20, 14), skin));
-  const hat = mesh(new THREE.SphereGeometry(0.105, 20, 10, 0, Math.PI * 2, 0, Math.PI / 2), helmet);
-  hat.position.y = 0.02;
+  head.position.y = 0.67;
+  const skull = mesh(new THREE.SphereGeometry(0.1, 24, 18), skin);
+  skull.scale.set(0.9, 1.12, 1);
+  head.add(skull);
+  const hair = mesh(new THREE.SphereGeometry(0.104, 20, 14, 0, Math.PI * 2, 0, Math.PI * 0.62), hairMat);
+  hair.scale.set(0.92, 1.12, 1.02);
+  hair.position.set(0, 0.004, -0.008);
+  head.add(hair);
+  for (const sx of [-1, 1]) {
+    const ear = mesh(new THREE.SphereGeometry(0.022, 10, 8), skin);
+    ear.scale.set(0.5, 1, 0.8);
+    ear.position.set(sx * 0.091, -0.005, 0);
+    head.add(ear);
+    const eye = mesh(new THREE.SphereGeometry(0.01, 8, 6), M.paint("#15110f", 0.3));
+    eye.position.set(sx * 0.034, 0.014, 0.093);
+    head.add(eye);
+    const lens = box(0.058, 0.032, 0.006, M.glass("#bfe3ff", 0.35), 0.003);
+    lens.position.set(sx * 0.034, 0.014, 0.1);
+    head.add(lens);
+  }
+  const bridge = box(0.02, 0.006, 0.006, M.paint("#222a30", 0.5), 0.002);
+  bridge.position.set(0, 0.018, 0.101);
+  head.add(bridge);
+  const nose = mesh(new THREE.ConeGeometry(0.014, 0.034, 8), skin);
+  nose.rotation.x = Math.PI / 2;
+  nose.position.set(0, -0.012, 0.108);
+  head.add(nose);
+  const mouth = box(0.04, 0.006, 0.006, M.paint("#8a4b4b", 0.6), 0.002);
+  mouth.position.set(0, -0.052, 0.092);
+  head.add(mouth);
+  const hat = mesh(new THREE.SphereGeometry(0.112, 22, 12, 0, Math.PI * 2, 0, Math.PI * 0.46), helmet);
+  hat.scale.set(0.96, 1.05, 1.08);
+  hat.position.set(0, 0.03, -0.004);
   head.add(hat);
-  const brim = box(0.22, 0.015, 0.06, helmet, 0.005);
-  brim.position.set(0, 0.025, 0.1);
+  const ridge = box(0.03, 0.012, 0.2, helmet, 0.005);
+  ridge.position.set(0, 0.135, -0.004);
+  head.add(ridge);
+  const brim = box(0.2, 0.012, 0.07, helmet, 0.005);
+  brim.position.set(0, 0.052, 0.1);
   head.add(brim);
   torso.add(head);
+
+  // brazos: hombro → codo → antebrazo → guante
   const arms: THREE.Group[] = [];
   for (const sx of [-1, 1]) {
     const arm = group("arm");
-    arm.position.set(sx * 0.24, 0.47, 0);
-    const upper = cylinder(0.04, 0.035, 0.3, shirtMat, 12);
-    upper.position.y = -0.3;
+    arm.position.set(sx * 0.215, 0.45, 0);
+    const upper = capsule(0.04, 0.17, shirtMat);
+    upper.position.y = -0.14;
     arm.add(upper);
     const fore = group("forearm");
     fore.position.y = -0.3;
-    const lower = cylinder(0.035, 0.03, 0.27, shirtMat, 12);
-    lower.position.y = -0.27;
+    const lower = capsule(0.034, 0.16, shirtMat);
+    lower.position.y = -0.13;
     fore.add(lower);
-    const hand = mesh(new THREE.SphereGeometry(0.04, 12, 10), M.paint("#e8c34a", 0.8));
-    hand.position.y = -0.29;
+    const hand = mesh(new THREE.SphereGeometry(0.04, 12, 10), glove);
+    hand.scale.set(0.9, 1.15, 0.7);
+    hand.position.y = -0.285;
     fore.add(hand);
     arm.add(fore);
     arm.userData.fore = fore;
@@ -290,23 +371,166 @@ export function operator(vest = "#f26b1d", shirt = "#2f5f8f"): OperatorHandle {
   g.add(torso);
   function setPose(work: number): void {
     const w = Math.max(0, Math.min(1, work));
-    torso.rotation.x = 0.35 * w;
+    torso.rotation.x = 0.3 * w;
     for (const [i, arm] of arms.entries()) {
       arm.rotation.x = -0.5 * w - 0.05;
-      (arm.userData.fore as THREE.Group).rotation.x = -(0.9 + 0.12 * Math.sin(i * 2)) * w;
+      arm.rotation.z = (i ? -1 : 1) * 0.04;
+      (arm.userData.fore as THREE.Group).rotation.x = -(0.2 + 0.7 * w + 0.12 * Math.sin(i * 2) * w);
+    }
+    for (const l of legs) {
+      l.hip.rotation.x = 0;
+      l.knee.rotation.x = 0;
     }
   }
   function setWalk(phase: number): void {
     const swing = Math.sin(phase) * 0.5;
-    legs[0].rotation.x = swing;
-    legs[1].rotation.x = -swing;
+    legs[0].hip.rotation.x = swing;
+    legs[1].hip.rotation.x = -swing;
+    // la rodilla se flexiona mientras la pierna avanza
+    legs[0].knee.rotation.x = Math.max(0, -Math.cos(phase)) * 0.7;
+    legs[1].knee.rotation.x = Math.max(0, Math.cos(phase)) * 0.7;
     arms[0].rotation.x = -swing * 0.8 - 0.05;
     arms[1].rotation.x = swing * 0.8 - 0.05;
-    torso.rotation.x = 0;
+    (arms[0].userData.fore as THREE.Group).rotation.x = -0.25 - Math.max(0, swing) * 0.4;
+    (arms[1].userData.fore as THREE.Group).rotation.x = -0.25 - Math.max(0, -swing) * 0.4;
+    torso.rotation.x = 0.03;
+    torso.rotation.y = swing * 0.12;
     g.position.y = Math.abs(Math.cos(phase)) * 0.02;
   }
   setPose(0);
   return { object: g, setPose, setWalk };
+}
+
+/**
+ * Canastilla plástica (≈ 0,6 × 0,4 × 0,3 m) con asas y ranuras de ventilación. Origen en el centro de la base.
+ * Con `fill` > 0 lleva piezas moldeadas apiladas (0..1).
+ */
+export function basket(color = "#2f6fb0", w = 0.6, d = 0.4, h = 0.3): THREE.Group {
+  const g = group("basket");
+  const mat = M.plastic(color, 0.5);
+  const floor = box(w, 0.03, d, mat, 0.01);
+  floor.position.y = 0.015;
+  g.add(floor);
+  for (const sz of [-1, 1]) {
+    const wall = box(w, h, 0.025, mat, 0.008);
+    wall.position.set(0, h / 2, sz * (d / 2 - 0.0125));
+    g.add(wall);
+    for (let i = 0; i < 5; i++) {
+      const slot = box(w * 0.1, h * 0.28, 0.03, M.darkSteel(), 0.004);
+      slot.position.set(-w * 0.4 + i * w * 0.2, h * 0.55, sz * (d / 2 - 0.0125));
+      g.add(slot);
+    }
+  }
+  for (const sx of [-1, 1]) {
+    const end = box(0.025, h, d, mat, 0.008);
+    end.position.set(sx * (w / 2 - 0.0125), h / 2, 0);
+    g.add(end);
+    const handle = box(0.03, 0.04, d * 0.35, M.darkSteel(), 0.01);
+    handle.position.set(sx * (w / 2 + 0.005), h * 0.8, 0);
+    g.add(handle);
+  }
+  return g;
+}
+
+export interface CartHandle {
+  object: THREE.Group;
+  /** Muestra las canastillas llenas (0 = vacío, 1 = tres canastillas con piezas). */
+  setLoaded(loaded: boolean): void;
+}
+
+/**
+ * Carro de transporte interno (≈ 1,3 × 0,75 × 1,1 m): plataforma baja con cuatro ruedas, manubrio y tres canastillas
+ * con piezas. Origen en el suelo, centrado; avanza hacia +Z (el manubrio queda atrás).
+ */
+export function cart(color = "#2f6fb0"): CartHandle {
+  const g = group("cart");
+  const steel = M.paint("#59616a", 0.5);
+  const bed = box(0.7, 0.05, 1.25, steel, 0.015);
+  bed.position.y = 0.2;
+  g.add(bed);
+  for (const sx of [-1, 1]) {
+    for (const sz of [-1, 1]) {
+      const wheel = cylinderX(0.07, 0.04, M.rubber(), 16);
+      wheel.position.set(sx * 0.3, 0.07, sz * 0.5);
+      g.add(wheel);
+      const fork = box(0.02, 0.1, 0.06, M.darkSteel(), 0.004);
+      fork.position.set(sx * 0.3, 0.14, sz * 0.5);
+      g.add(fork);
+    }
+  }
+  for (const sx of [-1, 1]) {
+    const post = cylinder(0.014, 0.014, 0.9, steel, 10);
+    post.position.set(sx * 0.3, 0.65, -0.58);
+    g.add(post);
+  }
+  const grip = cylinderX(0.016, 0.62, M.paint("#1d2228", 0.7), 12);
+  grip.position.set(0, 1.1, -0.58);
+  g.add(grip);
+  const load = group("load");
+  const partMat = M.plastic("#e8e4da", 0.3);
+  for (let i = 0; i < 3; i++) {
+    const b = basket(color);
+    b.position.set(0, 0.225, -0.4 + i * 0.4);
+    load.add(b);
+    for (let k = 0; k < 8; k++) {
+      const p = box(0.09, 0.05, 0.09, partMat, 0.015);
+      p.position.set(-0.15 + (k % 2) * 0.3, 0.27 + Math.floor(k / 4) * 0.05, -0.4 + i * 0.4 - 0.08 + ((k >> 1) % 2) * 0.16);
+      p.rotation.y = k * 0.7;
+      load.add(p);
+    }
+  }
+  g.add(load);
+  load.visible = false;
+  return { object: g, setLoaded: (v) => (load.visible = v) };
+}
+
+/** Estiba europea (1,2 × 0,8 m) con cajas de cartón apiladas en traslape, esquineros y fleje; origen en la base. */
+export function palletLoad(layers = 3, boxColor = "#b08a5a"): THREE.Group {
+  const g = group("pallet-load");
+  const wood = M.paint("#a07a4a", 0.9);
+  for (const sx of [-1, 0, 1]) {
+    const runner = box(0.1, 0.09, 0.8, wood, 0.004);
+    runner.position.set(sx * 0.5, 0.075, 0);
+    g.add(runner);
+  }
+  for (let i = 0; i < 7; i++) {
+    const slat = box(1.2, 0.022, 0.1, wood, 0.003);
+    slat.position.set(0, 0.14, -0.35 + i * 0.1167);
+    g.add(slat);
+  }
+  const carton = M.paint(boxColor, 0.85);
+  const tape = M.paint("#d8c9a4", 0.6);
+  const label = M.paint("#f4f4f2", 0.6);
+  for (let l = 0; l < layers; l++) {
+    const y = 0.15 + l * 0.27 + 0.135;
+    for (let ix = 0; ix < 2; ix++) {
+      for (let iz = 0; iz < 2; iz++) {
+        const swap = l % 2 === 1;
+        const cx = swap ? (iz - 0.5) * 0.6 : (ix - 0.5) * 0.6;
+        const cz = swap ? (ix - 0.5) * 0.4 : (iz - 0.5) * 0.4;
+        const b = box(swap ? 0.4 : 0.6, 0.265, swap ? 0.6 : 0.4, carton, 0.006);
+        b.position.set(cx, y, cz);
+        g.add(b);
+        const seam = box(swap ? 0.4 : 0.05, 0.268, swap ? 0.05 : 0.4, tape, 0.002);
+        seam.position.set(cx, y, cz);
+        g.add(seam);
+        const lab = box(0.001 + 0.0, 0.1, 0.14, label, 0);
+        lab.position.set(swap ? cx : cx + 0.3 * Math.sign(cx || 1), y, swap ? cz + 0.3 * Math.sign(cz || 1) : cz);
+        if (swap) lab.rotation.y = Math.PI / 2;
+        g.add(lab);
+      }
+    }
+  }
+  const top = 0.15 + layers * 0.27;
+  for (const sy of [0.3, 0.7]) {
+    const strap = mesh(new THREE.BoxGeometry(1.22, 0.012, 0.012), M.paint("#1d2228", 0.6));
+    strap.position.set(0, top * sy, 0.402);
+    g.add(strap);
+    const strap2 = strap.clone();
+    strap2.position.z = -0.402;
+    g.add(strap2);
+  }
+  return g;
 }
 
 export interface ForkliftHandle {
@@ -365,11 +589,10 @@ export function forklift(body = "#f2b705"): ForkliftHandle {
   beacon.position.set(0.4, 2.12, -0.5);
   g.add(beacon);
   const load = group("load");
-  load.add(box(1.0, 0.12, 1.1, M.paint("#8a6a43", 0.9), 0.01));
-  const boxes = box(0.95, 0.7, 1.0, M.paint("#b08a5a", 0.9), 0.02);
-  boxes.position.y = 0.45;
-  load.add(boxes);
-  load.position.set(0, 0.14, 1.55);
+  const pallet = palletLoad(3);
+  pallet.rotation.y = Math.PI / 2;
+  load.add(pallet);
+  load.position.set(0, 0.06, 1.55);
   g.add(load);
   load.visible = false;
   return { object: g, setLoaded: (v) => (load.visible = v) };

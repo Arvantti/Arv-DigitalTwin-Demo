@@ -1,6 +1,6 @@
 /**
  * Pasillos y rutas de la planta (secciones `aisles` y `routes` del plant.yaml): franjas en el piso y, sobre cada ruta,
- * un montacargas o un operario que la recorre de ida y vuelta (el montacargas va cargado de ida y vacío de vuelta).
+ * un montacargas, un carro de canastillas o un operario que la recorre de ida y vuelta (montacargas y carro van cargados de ida y vacíos de vuelta).
  * Es un recorrido ilustrativo: el motor de planta no simula todavía el transporte.
  */
 import * as THREE from "three";
@@ -14,7 +14,7 @@ export interface Aisle {
 export interface Route {
   id: string;
   name: string;
-  kind: "forklift" | "pedestrian";
+  kind: "forklift" | "pedestrian" | "cart";
   from: string;
   to: string;
   path: [number, number][];
@@ -27,6 +27,7 @@ type ToScene = (x: number, y: number, z?: number) => THREE.Vector3;
 
 const FORKLIFT_SPEED = 2.0; // m/s
 const WALK_SPEED = 1.2; // m/s
+const CART_SPEED = 1.0; // m/s
 const PAUSE_S = 3;
 
 interface Agent {
@@ -79,13 +80,14 @@ export function buildRoutes(aisles: Aisle[], routes: Route[], parent: THREE.Obje
   const lineMats = {
     forklift: new THREE.MeshBasicMaterial({ color: "#ff7a1a", transparent: true, opacity: 0.55, depthWrite: false }),
     pedestrian: new THREE.MeshBasicMaterial({ color: "#2ecc71", transparent: true, opacity: 0.6, depthWrite: false }),
+    cart: new THREE.MeshBasicMaterial({ color: "#3fa7ff", transparent: true, opacity: 0.5, depthWrite: false }),
   };
   const agents: Agent[] = [];
   routes.forEach((r, idx) => {
     const points = r.path.map(([x, y]) => toScene(x, y));
     const cumulative = [0];
     for (let i = 1; i < points.length; i++) cumulative.push(cumulative[i - 1] + points[i].distanceTo(points[i - 1]));
-    const width = r.kind === "forklift" ? 0.35 : 0.22;
+    const width = r.kind === "forklift" ? 0.35 : r.kind === "cart" ? 0.28 : 0.22;
     for (let i = 1; i < points.length; i++) group.add(strip(points[i - 1], points[i], width, lineMats[r.kind], 0.03));
 
     const length = cumulative[cumulative.length - 1];
@@ -96,8 +98,20 @@ export function buildRoutes(aisles: Aisle[], routes: Route[], parent: THREE.Obje
         points, cumulative, length, speed: FORKLIFT_SPEED, offset: idx * 11, object: fk.object, heading: 0,
         step: (forward) => fk.setLoaded(forward),
       };
+    } else if (r.kind === "cart") {
+      const ct = parts.cart(idx % 2 ? "#2f6fb0" : "#3b8f6a");
+      agent = {
+        points, cumulative, length, speed: CART_SPEED, offset: idx * 7, object: ct.object, heading: 0,
+        step: (forward) => ct.setLoaded(forward),
+      };
     } else {
-      const op = parts.operator(idx % 2 ? "#f2b705" : "#f26b1d", idx % 2 ? "#4a6b3a" : "#2f5f8f");
+      const looks: parts.OperatorLook[] = [
+        { skin: "#c99a76", hair: "#2a1d16" },
+        { skin: "#8d5a3b", hair: "#15100d" },
+        { skin: "#e3b896", hair: "#6b4a2b" },
+        { skin: "#a8745a", hair: "#1c1410" },
+      ];
+      const op = parts.operator(idx % 2 ? "#f2b705" : "#f26b1d", idx % 2 ? "#4a6b3a" : "#2f5f8f", looks[idx % looks.length]);
       let phase = 0;
       agent = {
         points, cumulative, length, speed: WALK_SPEED, offset: idx * 13, object: op.object, heading: 0,

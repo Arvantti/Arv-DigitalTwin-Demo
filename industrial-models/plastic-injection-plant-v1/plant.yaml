@@ -97,6 +97,11 @@ routes:
   # --- Montacargas: de las celdas de ensamble a la bodega de producto terminado ---
   - { id: fk-ensamble-pt-1, name: "Producto terminado de la celda 1 a la bodega", kind: forklift, from: assembly-01, to: rack-pt-01, load: papeleras armadas en estibas, width: 1.5, trips_per_h: 2, path: [[129, 66.5], [134, 66.5], [134, 54.25], [145.1, 54.25], [145.1, 28], [151, 28], [151, 58]] }
   - { id: fk-ensamble-pt-2, name: "Producto terminado de la celda 2 a la bodega", kind: forklift, from: assembly-02, to: rack-pt-02, load: tapas con bisagras en estibas, width: 1.5, trips_per_h: 2, path: [[139, 66.5], [134, 66.5], [134, 54.25], [145.1, 54.25], [145.1, 28], [151, 28], [151, 58]] }
+  # --- Carros de canastillas: de las inyectoras al pasillo de los montacargas (recorrido ilustrativo) ---
+  - { id: ca-pequenas-oeste, name: "Carro de canastillas, hilera de inyectoras pequeñas (oeste)", kind: cart, from: nave-inyeccion, to: nave-inyeccion, load: piezas inyectadas en canastillas, width: 0.8, path: [[38, 46.6], [77, 46.6]] }
+  - { id: ca-pequenas-este, name: "Carro de canastillas, hilera de inyectoras pequeñas (este)", kind: cart, from: nave-inyeccion, to: nave-inyeccion, load: piezas inyectadas en canastillas, width: 0.8, path: [[114, 46.6], [81, 46.6]] }
+  - { id: ca-medianas-oeste, name: "Carro de canastillas, hilera de inyectoras medianas (oeste)", kind: cart, from: nave-inyeccion, to: nave-inyeccion, load: piezas inyectadas en canastillas, width: 0.8, path: [[40, 63.4], [77, 63.4]] }
+  - { id: ca-medianas-este, name: "Carro de canastillas, hilera de inyectoras medianas (este)", kind: cart, from: nave-inyeccion, to: nave-inyeccion, load: piezas inyectadas en canastillas, width: 0.8, path: [[121, 63.4], [81, 63.4]] }
   # --- Operarios a pie ---
   - { id: pe-ronda-pequenas, name: "Ronda del operador de inyección, hilera de las inyectoras pequeñas", kind: pedestrian, from: imm-01, to: imm-10, width: 1.0, walkers: 1, path: [[36, 45], [114, 45]] }
   - { id: pe-ronda-medianas, name: "Ronda del operador de inyección, hileras de las medianas", kind: pedestrian, from: imm-11, to: imm-19, width: 1.0, walkers: 1, path: [[38, 62], [121, 62]] }

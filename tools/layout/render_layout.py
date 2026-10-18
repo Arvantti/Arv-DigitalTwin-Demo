@@ -227,7 +227,7 @@ def validate(plant: dict) -> tuple[list[str], list[str]]:
     return errors, warnings
 
 
-ROUTE_KINDS = ("forklift", "pedestrian")
+ROUTE_KINDS = ("forklift", "pedestrian", "cart")
 ROUTE_END_REACH_M = 3.5
 ROUTE_STEP_M = 0.25
 
@@ -342,6 +342,8 @@ def render_svg(plant: dict) -> str:
         '<path d="M0,0 L10,5 L0,10 z" fill="#ea580c"/></marker>'
         '<marker id="arrow-pedestrian" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="4" markerHeight="4" orient="auto">'
         '<path d="M0,0 L10,5 L0,10 z" fill="#15803d"/></marker>'
+        '<marker id="arrow-cart" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="4" markerHeight="4" orient="auto">'
+        '<path d="M0,0 L10,5 L0,10 z" fill="#0284c7"/></marker>'
         "</defs>"
     )
     a('<rect width="100%" height="100%" fill="#ffffff"/>')
@@ -455,7 +457,7 @@ def render_svg(plant: dict) -> str:
 
     # rutas de montacargas (naranja continua) y de operarios (verde punteada), con flecha al final
     for rt in plant.get("routes") or []:
-        color = "#ea580c" if rt["kind"] == "forklift" else "#15803d"
+        color = {"forklift": "#ea580c", "cart": "#0284c7"}.get(rt["kind"], "#15803d")
         dash = "" if rt["kind"] == "forklift" else ' stroke-dasharray="3 3"'
         pts = " ".join(f"{sx(px):.1f},{sy(py):.1f}" for px, py in rt["path"])
         a(
@@ -513,6 +515,9 @@ def render_svg(plant: dict) -> str:
     if any(r["kind"] == "pedestrian" for r in plant.get("routes") or []):
         walk = '<line x1="{x}" y1="{cy}" x2="{x2}" y2="{cy}" stroke="#15803d" stroke-width="3" stroke-dasharray="3 3"/>'
         items.append((walk, "Ruta de operarios"))
+    if any(r["kind"] == "cart" for r in plant.get("routes") or []):
+        cart = '<line x1="{x}" y1="{cy}" x2="{x2}" y2="{cy}" stroke="#0284c7" stroke-width="3" stroke-dasharray="3 3"/>'
+        items.append((cart, "Ruta de carros de canastillas"))
     if any(e.get("overhead") for e in plant["equipment"]):
         items.append(('<rect x="{x}" y="{y}" width="14" height="10" fill="none" stroke="#7c3aed" stroke-dasharray="4 2"/>', "Puente grúa"))
     arrow = '<line x1="{x}" y1="{cy}" x2="{x2}" y2="{cy}" stroke="#c2410c" stroke-width="1.6" marker-end="url(#arrow)"/>'

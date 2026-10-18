@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1460" height="950" viewBox="0 0 1460 950" font-family="Inter, Helvetica, Arial, sans-serif">
-<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#d4a017" stroke-width="1.2" stroke-opacity="0.45"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#c2410c"/></marker><marker id="arrow-forklift" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#ea580c"/></marker><marker id="arrow-pedestrian" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#15803d"/></marker></defs>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#d4a017" stroke-width="1.2" stroke-opacity="0.45"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#c2410c"/></marker><marker id="arrow-forklift" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#ea580c"/></marker><marker id="arrow-pedestrian" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#15803d"/></marker><marker id="arrow-cart" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#0284c7"/></marker></defs>
 <rect width="100%" height="100%" fill="#ffffff"/>
 <text x="30" y="48" font-size="20" font-weight="700" fill="#1f2937">Planta de inyección de plásticos (referencia)</text>
 <text x="30" y="68" font-size="12" fill="#4b5563">plastic-injection-plant-v1 · manufactura discreta · predio 200 × 110 m · datos de referencia, no de una planta real</text>
@@ -371,6 +371,10 @@
 <polyline points="842.0,659.6 583.0,659.6 583.0,330.2 968.0,330.2 968.0,384.5 1003.0,384.5" fill="none" stroke="#ea580c" stroke-width="3.7" stroke-opacity="0.85" stroke-linejoin="round" marker-end="url(#arrow-forklift)"><title>Semielaborado a la celda de ensamble 2 (bisagras y tapas)</title></polyline>
 <polyline points="933.0,384.5 968.0,384.5 968.0,470.2 1045.7,470.2 1045.7,654.0 1087.0,654.0 1087.0,444.0" fill="none" stroke="#ea580c" stroke-width="3.7" stroke-opacity="0.85" stroke-linejoin="round" marker-end="url(#arrow-forklift)"><title>Producto terminado de la celda 1 a la bodega</title></polyline>
 <polyline points="1003.0,384.5 968.0,384.5 968.0,470.2 1045.7,470.2 1045.7,654.0 1087.0,654.0 1087.0,444.0" fill="none" stroke="#ea580c" stroke-width="3.7" stroke-opacity="0.85" stroke-linejoin="round" marker-end="url(#arrow-forklift)"><title>Producto terminado de la celda 2 a la bodega</title></polyline>
+<polyline points="296.0,523.8 569.0,523.8" fill="none" stroke="#0284c7" stroke-width="2.0" stroke-opacity="0.85" stroke-linejoin="round" stroke-dasharray="3 3" marker-end="url(#arrow-cart)"><title>Carro de canastillas, hilera de inyectoras pequeñas (oeste)</title></polyline>
+<polyline points="828.0,523.8 597.0,523.8" fill="none" stroke="#0284c7" stroke-width="2.0" stroke-opacity="0.85" stroke-linejoin="round" stroke-dasharray="3 3" marker-end="url(#arrow-cart)"><title>Carro de canastillas, hilera de inyectoras pequeñas (este)</title></polyline>
+<polyline points="310.0,406.2 569.0,406.2" fill="none" stroke="#0284c7" stroke-width="2.0" stroke-opacity="0.85" stroke-linejoin="round" stroke-dasharray="3 3" marker-end="url(#arrow-cart)"><title>Carro de canastillas, hilera de inyectoras medianas (oeste)</title></polyline>
+<polyline points="877.0,406.2 597.0,406.2" fill="none" stroke="#0284c7" stroke-width="2.0" stroke-opacity="0.85" stroke-linejoin="round" stroke-dasharray="3 3" marker-end="url(#arrow-cart)"><title>Carro de canastillas, hilera de inyectoras medianas (este)</title></polyline>
 <polyline points="282.0,535.0 828.0,535.0" fill="none" stroke="#15803d" stroke-width="2.4" stroke-opacity="0.85" stroke-linejoin="round" stroke-dasharray="3 3" marker-end="url(#arrow-pedestrian)"><title>Ronda del operador de inyección, hilera de las inyectoras pequeñas</title></polyline>
 <polyline points="296.0,416.0 877.0,416.0" fill="none" stroke="#15803d" stroke-width="2.4" stroke-opacity="0.85" stroke-linejoin="round" stroke-dasharray="3 3" marker-end="url(#arrow-pedestrian)"><title>Ronda del operador de inyección, hileras de las medianas</title></polyline>
 <polyline points="338.0,286.5 842.0,286.5" fill="none" stroke="#15803d" stroke-width="2.4" stroke-opacity="0.85" stroke-linejoin="round" stroke-dasharray="3 3" marker-end="url(#arrow-pedestrian)"><title>Ronda del operador de inyección, inyectoras grandes</title></polyline>
@@ -412,10 +416,12 @@
 <text x="492.5" y="907.0" font-size="11" fill="#374151">Ruta de montacargas</text>
 <line x1="629.0" y1="903.0" x2="645.0" y2="903.0" stroke="#15803d" stroke-width="3" stroke-dasharray="3 3"/>
 <text x="650.0" y="907.0" font-size="11" fill="#374151">Ruta de operarios</text>
-<rect x="773.5" y="898.0" width="14" height="10" fill="none" stroke="#7c3aed" stroke-dasharray="4 2"/>
-<text x="794.5" y="907.0" font-size="11" fill="#374151">Puente grúa</text>
-<line x1="879.0" y1="903.0" x2="895.0" y2="903.0" stroke="#c2410c" stroke-width="1.6" marker-end="url(#arrow)"/>
-<text x="900.0" y="907.0" font-size="11" fill="#374151">Flujo principal</text>
+<line x1="773.5" y1="903.0" x2="789.5" y2="903.0" stroke="#0284c7" stroke-width="3" stroke-dasharray="3 3"/>
+<text x="794.5" y="907.0" font-size="11" fill="#374151">Ruta de carros de canastillas</text>
+<rect x="996.0" y="898.0" width="14" height="10" fill="none" stroke="#7c3aed" stroke-dasharray="4 2"/>
+<text x="1017.0" y="907.0" font-size="11" fill="#374151">Puente grúa</text>
+<line x1="1101.5" y1="903.0" x2="1117.5" y2="903.0" stroke="#c2410c" stroke-width="1.6" marker-end="url(#arrow)"/>
+<text x="1122.5" y="907.0" font-size="11" fill="#374151">Flujo principal</text>
 <rect x="1290.0" y="878.0" width="70.0" height="6" fill="#111827"/>
 <rect x="1360.0" y="878.0" width="70.0" height="6" fill="#ffffff" stroke="#111827"/>
 <text x="1290.0" y="898.0" font-size="10" fill="#374151">0</text>

@@ -837,12 +837,41 @@ async function start(): Promise<void> {
   loop();
 }
 
+/**
+ * Ciclo ilustrativo de una inyectora cuando no hay simulación conectada (p. ej. en la versión publicada sin la API):
+ * cierra el molde, inyecta, enfría, abre, expulsa y el robot lleva la pieza a la canastilla. Mismas fases y canales que el simulador.
+ */
+function ambientInjectionFrame(id: string, params: Record<string, unknown>, time: number): AnimationFrame {
+  const cycle = Math.max(8, Number(params.cycle_s ?? 14));
+  let h = 0;
+  for (const c of id) h = (h * 31 + c.charCodeAt(0)) % 997;
+  const x = ((time + (h % 17)) % cycle) / cycle;
+  const seg = (a: number, b: number) => Math.min(1, Math.max(0, (x - a) / (b - a)));
+  let moldOpen = 1, ejector = 0, screw = 1, rpm = 0, robot = 0, part = 0;
+  let phase = "mold_close";
+  if (x < 0.12) { const p = seg(0, 0.12); moldOpen = 1 - p; robot = 1 - p; phase = "mold_close"; }
+  else if (x < 0.22) { const p = seg(0.12, 0.22); moldOpen = 0; screw = 1 - 0.92 * p; part = p; phase = "injection"; }
+  else if (x < 0.3) { moldOpen = 0; screw = 0.08; part = 1; phase = "holding"; }
+  else if (x < 0.65) { const p = seg(0.3, 0.65); moldOpen = 0; part = 1; screw = 0.08 + 0.92 * Math.min(1, p / 0.6); rpm = p < 0.6 ? 140 : 0; phase = "cooling"; }
+  else if (x < 0.75) { const p = seg(0.65, 0.75); moldOpen = p; part = 1; robot = 0.45 * p; phase = "mold_open"; }
+  else { const p = seg(0.75, 1); ejector = Math.sin(p * Math.PI); robot = 0.45 + 0.55 * p; part = p < 0.4 ? 1 : 0; phase = "ejection"; }
+  return {
+    channels: { mold_open: moldOpen, ejector, screw_position: screw, screw_rpm: rpm, robot_progress: robot, part_in_mold: part, heat_glow: 0.7, stack_light: 1 },
+    state: "running",
+    phase,
+    label: id.toUpperCase(),
+  };
+}
+
 let frames = 0;
 let updateRoutes: ((time: number, dt: number) => void) | null = null;
 function loop(): void {
   const dt = stage.render();
   updateRoutes?.(stage.time, dt);
-  for (const a of assets.values()) a.model?.update(a.frame, dt);
+  for (const a of assets.values()) {
+    if (a.model && messages === 0 && a.eq.sim?.type === "injection-molding-machine") a.frame = ambientInjectionFrame(a.eq.id, a.eq.sim.params, stage.time);
+    a.model?.update(a.frame, dt);
+  }
   animatePipes(stage.time);
   for (const piece of controlPieces) piece.redraw?.();
   updateTour();
