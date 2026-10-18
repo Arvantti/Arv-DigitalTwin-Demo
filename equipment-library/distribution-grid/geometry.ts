@@ -84,8 +84,10 @@ export default function build(params: Params): EquipmentModel {
     root.add(beam);
   }
   for (const zc of [zHead, zNode(1) - s / 2, zNode(3) - s / 2]) {
-    const cross = P.box(x1 - x0, 0.04, 0.04, galv, 0.005);
-    cross.position.set((x0 + x1) / 2, beamY, zc);
+    // el travesaño del cabezal arranca después del montante de entrada, que sube por ese mismo eje
+    const xa = zc === zHead ? xIn + r + 0.06 : x0;
+    const cross = P.box(x1 - xa, 0.04, 0.04, galv, 0.005);
+    cross.position.set((xa + x1) / 2, beamY, zc);
     root.add(cross);
   }
 
