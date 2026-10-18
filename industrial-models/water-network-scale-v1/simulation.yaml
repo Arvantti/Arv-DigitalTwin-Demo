@@ -57,6 +57,19 @@ links:
   - { from: tank-recirc-02.level, to: pumpset-recirc-01.source_level }
   - { from: tank-supply-01.level, to: pumpset-recirc-01.target_level }
 
+# Líneas del panel: el agua entregada a la red es el volumen que bombean las bombas principales (contador del grupo).
+lines:
+  - id: red-distribucion
+    name: Red de distribución (agua entregada)
+    unit: m³
+    output: pumpset-main-01.discharge
+    equipment: [tank-supply-01, pumpset-main-01, prs-01, grid-01, valve-between-12, grid-02, valve-between-23, grid-03, valve-between-34, grid-04]
+  - id: recirculacion
+    name: Recirculación (agua devuelta al tanque de bombeo)
+    unit: m³
+    output: pumpset-recirc-01.discharge
+    equipment: [tank-recirc-01, tank-recirc-02, pumpset-recirc-01]
+
 startup:
   - { equipment: pumpset-main-01,   command: start }
   - { equipment: pumpset-recirc-01, command: start }

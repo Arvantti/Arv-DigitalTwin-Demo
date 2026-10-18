@@ -106,6 +106,7 @@ class LineDef:
     name: str
     output: PortRef
     equipment: list[str]
+    unit: str = "u"
 
 
 class PlantModel:
@@ -137,7 +138,7 @@ class PlantModel:
         ]
         self.startup = [self._step(s) for s in raw.get("startup") or []]
         self.lines = [
-            LineDef(ln["id"], ln.get("name", ln["id"]), PortRef.parse(ln["output"]), list(ln.get("equipment", [])))
+            LineDef(ln["id"], ln.get("name", ln["id"]), PortRef.parse(ln["output"]), list(ln.get("equipment", [])), ln.get("unit", "u"))
             for ln in raw.get("lines") or []
         ]
         self.scenarios: dict[str, PlantScenario] = {}
@@ -537,6 +538,7 @@ class PlantSimulation:
             shares = {eid: self._state_shares(eid) for eid in ln.equipment}
             out[ln.id] = {
                 "name": ln.name,
+                "unit": ln.unit,
                 "output_units": units,
                 "output_per_h": units / hours if hours > 0 else None,
                 "running_pct": {eid: s.get("running", 0.0) for eid, s in shares.items()},
