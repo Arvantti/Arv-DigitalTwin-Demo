@@ -1,0 +1,76 @@
+scenarios:
+  - id: on-demand
+    description: Tres estibas al empezar; el siguiente tramo las pide desde el minuto 10 (una cada 30 s como mínimo)
+    preset: semielaborado-48
+    params: { initial_pallets: 3 }
+    duration_s: 650
+    timeline:
+      - { at_s: 0, inputs: { downstream_free: false } }
+      - { at_s: 600, inputs: { downstream_free: true } }
+    expect:
+      - { path: variables.pallets_delivered, equals: 2, description: "(salen a los 600 y 630 s; la tercera sale a los 660 s, después de los 650 s)" }
+      - { path: variables.stock_pieces, equals: 1000 }
+      - { path: variables.units_delivered, equals: 2000 }
+      - { path: state, equals: running }
+
+  - id: depleted
+    description: Dos estibas al empezar y el siguiente tramo las pide de inmediato; sale una cada 30 s y la estantería se queda sin estiba completa
+    preset: semielaborado-48
+    params: { initial_pallets: 2 }
+    duration_s: 600
+    expect:
+      - { path: variables.pallets_delivered, equals: 2 }
+      - { path: variables.stock_pieces, equals: 0 }
+      - { path: state, equals: starved }
+      - { path: events.store_empty, equals: 1 }
+
+  - id: receiving
+    description: Llegan 100 piezas/min durante 1 h y nadie pide estibas; se guardan 6 estibas de 48 posiciones
+    preset: semielaborado-48
+    duration_s: 3600
+    timeline:
+      - { at_s: 0, inputs: { inflow_upm: 100, downstream_free: false } }
+    expect:
+      - { path: variables.units_received, min: 5998, max: 6000, description: "(100 × 60 = 6.000 piezas)" }
+      - { path: variables.stored_pallets, equals: 6 }
+      - { path: variables.occupancy_pct, min: 12.4, max: 12.6, description: "(6 ÷ 48 = 12,5 %)" }
+      - { path: variables.accepting, equals: 1 }
+
+  - id: full
+    description: Estantería de 12 posiciones con 600 piezas/min y sin pedidos; se llena a los ≈ 1.100 s y deja de recibir
+    preset: semielaborado-small-12
+    duration_s: 1800
+    timeline:
+      - { at_s: 0, inputs: { inflow_upm: 600, downstream_free: false } }
+    expect:
+      - { path: variables.stored_pallets, equals: 12 }
+      - { path: variables.stock_pieces, min: 11000, max: 11012, description: "(la posición 12 se ocupa al pasar de 11.000 piezas: 11.000 ÷ 10 por s = 1.100 s)" }
+      - { path: variables.accepting, equals: 0 }
+      - { path: state, equals: blocked }
+      - { path: events.store_full, equals: 1 }
+
+  - id: aisle-obstructed
+    description: Pasillo obstruido de 100 a 400 s con 2 estibas y pedidos desde los 200 s; vista a los 350 s, sin entregas
+    preset: semielaborado-48
+    params: { initial_pallets: 2 }
+    duration_s: 350
+    timeline:
+      - { at_s: 0, inputs: { downstream_free: false } }
+      - { at_s: 100, command: inject_fault, args: { fault: aisle_obstructed, duration_s: 300 } }
+      - { at_s: 200, inputs: { downstream_free: true } }
+    expect:
+      - { path: variables.pallets_delivered, equals: 0 }
+      - { path: state, equals: fault }
+
+  - id: aisle-cleared
+    description: "La misma falla, vista a los 450 s: al despejar (400 s) salen las dos estibas con 30 s de separación"
+    preset: semielaborado-48
+    params: { initial_pallets: 2 }
+    duration_s: 450
+    timeline:
+      - { at_s: 0, inputs: { downstream_free: false } }
+      - { at_s: 100, command: inject_fault, args: { fault: aisle_obstructed, duration_s: 300 } }
+      - { at_s: 200, inputs: { downstream_free: true } }
+    expect:
+      - { path: variables.pallets_delivered, equals: 2 }
+      - { path: state, equals: starved }

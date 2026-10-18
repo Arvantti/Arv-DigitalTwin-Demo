@@ -278,6 +278,90 @@
 <rect x="401.0" y="242.8" width="98.0" height="24.5" rx="1.5" fill="#1d4ed8" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
 <title>imm-29 · injection_molding_machine</title>
 <text x="450.0" y="257.5" font-size="7.5" text-anchor="middle" fill="#ffffff">imm-29</text>
+<rect x="287.6" y="540.6" width="23.8" height="7.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>buf-01 · pallet_buffer</title>
+<text x="299.5" y="538.6" font-size="7.0" text-anchor="middle" fill="#111827">buf-01</text>
+<rect x="336.6" y="540.6" width="23.8" height="7.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>buf-02 · pallet_buffer</title>
+<text x="348.5" y="538.6" font-size="7.0" text-anchor="middle" fill="#111827">buf-02</text>
+<rect x="434.6" y="540.6" width="23.8" height="7.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>buf-04 · pallet_buffer</title>
+<text x="446.5" y="538.6" font-size="7.0" text-anchor="middle" fill="#111827">buf-04</text>
+<rect x="483.6" y="540.6" width="23.8" height="7.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>buf-05 · pallet_buffer</title>
+<text x="495.5" y="538.6" font-size="7.0" text-anchor="middle" fill="#111827">buf-05</text>
+<rect x="616.6" y="540.6" width="23.8" height="7.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>buf-06 · pallet_buffer</title>
+<text x="628.5" y="538.6" font-size="7.0" text-anchor="middle" fill="#111827">buf-06</text>
+<rect x="665.6" y="540.6" width="23.8" height="7.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>buf-07 · pallet_buffer</title>
+<text x="677.5" y="538.6" font-size="7.0" text-anchor="middle" fill="#111827">buf-07</text>
+<rect x="714.6" y="540.6" width="23.8" height="7.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>buf-08 · pallet_buffer</title>
+<text x="726.5" y="538.6" font-size="7.0" text-anchor="middle" fill="#111827">buf-08</text>
+<rect x="763.6" y="540.6" width="23.8" height="7.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>buf-09 · pallet_buffer</title>
+<text x="775.5" y="538.6" font-size="7.0" text-anchor="middle" fill="#111827">buf-09</text>
+<rect x="812.6" y="540.6" width="23.8" height="7.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>buf-10 · pallet_buffer</title>
+<text x="824.5" y="538.6" font-size="7.0" text-anchor="middle" fill="#111827">buf-10</text>
+<rect x="294.6" y="420.2" width="23.8" height="7.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>buf-11 · pallet_buffer</title>
+<text x="306.5" y="418.2" font-size="7.0" text-anchor="middle" fill="#111827">buf-11</text>
+<rect x="364.6" y="420.2" width="23.8" height="7.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>buf-12 · pallet_buffer</title>
+<text x="376.5" y="418.2" font-size="7.0" text-anchor="middle" fill="#111827">buf-12</text>
+<rect x="434.6" y="420.2" width="23.8" height="7.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>buf-13 · pallet_buffer</title>
+<text x="446.5" y="418.2" font-size="7.0" text-anchor="middle" fill="#111827">buf-13</text>
+<rect x="504.6" y="420.2" width="23.8" height="7.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>buf-14 · pallet_buffer</title>
+<text x="516.5" y="418.2" font-size="7.0" text-anchor="middle" fill="#111827">buf-14</text>
+<rect x="623.6" y="420.2" width="23.8" height="7.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>buf-15 · pallet_buffer</title>
+<text x="635.5" y="418.2" font-size="7.0" text-anchor="middle" fill="#111827">buf-15</text>
+<rect x="693.6" y="420.2" width="23.8" height="7.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>buf-16 · pallet_buffer</title>
+<text x="705.5" y="418.2" font-size="7.0" text-anchor="middle" fill="#111827">buf-16</text>
+<rect x="763.6" y="420.2" width="23.8" height="7.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>buf-17 · pallet_buffer</title>
+<text x="775.5" y="418.2" font-size="7.0" text-anchor="middle" fill="#111827">buf-17</text>
+<rect x="791.6" y="360.7" width="23.8" height="7.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>buf-18 · pallet_buffer</title>
+<text x="803.5" y="358.7" font-size="7.0" text-anchor="middle" fill="#111827">buf-18</text>
+<rect x="854.6" y="360.7" width="23.8" height="7.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>buf-19 · pallet_buffer</title>
+<text x="866.5" y="358.7" font-size="7.0" text-anchor="middle" fill="#111827">buf-19</text>
+<rect x="301.6" y="360.7" width="23.8" height="7.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>buf-20 · pallet_buffer</title>
+<text x="313.5" y="358.7" font-size="7.0" text-anchor="middle" fill="#111827">buf-20</text>
+<rect x="385.6" y="360.7" width="23.8" height="7.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>buf-21 · pallet_buffer</title>
+<text x="397.5" y="358.7" font-size="7.0" text-anchor="middle" fill="#111827">buf-21</text>
+<rect x="469.6" y="360.7" width="23.8" height="7.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>buf-22 · pallet_buffer</title>
+<text x="481.5" y="358.7" font-size="7.0" text-anchor="middle" fill="#111827">buf-22</text>
+<rect x="630.6" y="360.7" width="23.8" height="7.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>buf-23 · pallet_buffer</title>
+<text x="642.5" y="358.7" font-size="7.0" text-anchor="middle" fill="#111827">buf-23</text>
+<rect x="714.6" y="360.7" width="23.8" height="7.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>buf-24 · pallet_buffer</title>
+<text x="726.5" y="358.7" font-size="7.0" text-anchor="middle" fill="#111827">buf-24</text>
+<rect x="639.4" y="270.4" width="23.8" height="7.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>buf-25 · pallet_buffer</title>
+<text x="651.2" y="268.4" font-size="7.0" text-anchor="middle" fill="#111827">buf-25</text>
+<rect x="737.4" y="270.4" width="23.8" height="7.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>buf-26 · pallet_buffer</title>
+<text x="749.2" y="268.4" font-size="7.0" text-anchor="middle" fill="#111827">buf-26</text>
+<rect x="835.4" y="270.4" width="23.8" height="7.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>buf-27 · pallet_buffer</title>
+<text x="847.2" y="268.4" font-size="7.0" text-anchor="middle" fill="#111827">buf-27</text>
+<rect x="319.1" y="270.4" width="23.8" height="7.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>buf-28 · pallet_buffer</title>
+<text x="331.0" y="268.4" font-size="7.0" text-anchor="middle" fill="#111827">buf-28</text>
+<rect x="438.1" y="270.4" width="23.8" height="7.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>buf-29 · pallet_buffer</title>
+<text x="450.0" y="268.4" font-size="7.0" text-anchor="middle" fill="#111827">buf-29</text>
 <rect x="919.0" y="626.0" width="21.0" height="14.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
 <title>pack-station-01 · packing_station</title>
 <text x="929.5" y="624.0" font-size="7.0" text-anchor="middle" fill="#111827">pack-station-01</text>
@@ -305,6 +389,9 @@
 <rect x="786.0" y="193.8" width="112.0" height="17.5" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
 <title>rack-sf-04 · pallet_rack</title>
 <text x="842.0" y="205.0" font-size="7.5" text-anchor="middle" fill="#ffffff">rack-sf-04</text>
+<rect x="597.0" y="192.0" width="56.0" height="21.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>fleet-01 · forklift_fleet</title>
+<text x="625.0" y="205.0" font-size="7.5" text-anchor="middle" fill="#ffffff">fleet-01</text>
 <rect x="912.0" y="405.5" width="42.0" height="21.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
 <title>assembly-01 · assembly_cell</title>
 <text x="933.0" y="403.5" font-size="7.0" text-anchor="middle" fill="#111827">assembly-01</text>
@@ -369,8 +456,10 @@
 <polyline points="282.0,507.0 583.0,507.0 583.0,226.3 506.0,226.3" fill="none" stroke="#ea580c" stroke-width="3.7" stroke-opacity="0.85" stroke-linejoin="round" marker-end="url(#arrow-forklift)"><title>Recolección de semielaborado, pasillo centro oeste</title></polyline>
 <polyline points="884.0,507.0 583.0,507.0 583.0,226.3 716.0,226.3" fill="none" stroke="#ea580c" stroke-width="3.7" stroke-opacity="0.85" stroke-linejoin="round" marker-end="url(#arrow-forklift)"><title>Recolección de semielaborado, pasillo centro este</title></polyline>
 <polyline points="884.0,330.2 583.0,330.2 583.0,226.3 842.0,226.3" fill="none" stroke="#ea580c" stroke-width="3.7" stroke-opacity="0.85" stroke-linejoin="round" marker-end="url(#arrow-forklift)"><title>Recolección de semielaborado, pasillo norte este</title></polyline>
-<polyline points="716.0,226.3 583.0,226.3 583.0,330.2 968.0,330.2 968.0,384.5 933.0,384.5" fill="none" stroke="#ea580c" stroke-width="3.7" stroke-opacity="0.85" stroke-linejoin="round" marker-end="url(#arrow-forklift)"><title>Semielaborado a la celda de ensamble 1 (pedal/palanca y cuerpo)</title></polyline>
-<polyline points="842.0,226.3 583.0,226.3 583.0,330.2 968.0,330.2 968.0,384.5 1003.0,384.5" fill="none" stroke="#ea580c" stroke-width="3.7" stroke-opacity="0.85" stroke-linejoin="round" marker-end="url(#arrow-forklift)"><title>Semielaborado a la celda de ensamble 2 (bisagras y tapas)</title></polyline>
+<polyline points="380.0,226.3 583.0,226.3 583.0,330.2 968.0,330.2 968.0,384.5 933.0,384.5" fill="none" stroke="#ea580c" stroke-width="3.7" stroke-opacity="0.85" stroke-linejoin="round" marker-end="url(#arrow-forklift)"><title>Estantería 1 (pedal y palanca) a la celda de ensamble 1</title></polyline>
+<polyline points="506.0,226.3 583.0,226.3 583.0,330.2 968.0,330.2 968.0,384.5 933.0,384.5" fill="none" stroke="#ea580c" stroke-width="3.7" stroke-opacity="0.85" stroke-linejoin="round" marker-end="url(#arrow-forklift)"><title>Estantería 2 (cuerpos de papelera) a la celda de ensamble 1</title></polyline>
+<polyline points="716.0,226.3 583.0,226.3 583.0,330.2 968.0,330.2 968.0,384.5 1003.0,384.5" fill="none" stroke="#ea580c" stroke-width="3.7" stroke-opacity="0.85" stroke-linejoin="round" marker-end="url(#arrow-forklift)"><title>Estantería 3 (bisagras) a la celda de ensamble 2</title></polyline>
+<polyline points="842.0,226.3 583.0,226.3 583.0,330.2 968.0,330.2 968.0,384.5 1003.0,384.5" fill="none" stroke="#ea580c" stroke-width="3.7" stroke-opacity="0.85" stroke-linejoin="round" marker-end="url(#arrow-forklift)"><title>Estantería 4 (tapas) a la celda de ensamble 2</title></polyline>
 <polyline points="933.0,384.5 968.0,384.5 968.0,470.2 1045.7,470.2 1045.7,654.0 1087.0,654.0 1087.0,444.0" fill="none" stroke="#ea580c" stroke-width="3.7" stroke-opacity="0.85" stroke-linejoin="round" marker-end="url(#arrow-forklift)"><title>Producto terminado de la celda 1 a la bodega</title></polyline>
 <polyline points="1003.0,384.5 968.0,384.5 968.0,470.2 1045.7,470.2 1045.7,654.0 1087.0,654.0 1087.0,444.0" fill="none" stroke="#ea580c" stroke-width="3.7" stroke-opacity="0.85" stroke-linejoin="round" marker-end="url(#arrow-forklift)"><title>Producto terminado de la celda 2 a la bodega</title></polyline>
 <polyline points="296.0,523.8 569.0,523.8" fill="none" stroke="#0284c7" stroke-width="2.0" stroke-opacity="0.85" stroke-linejoin="round" stroke-dasharray="3 3" marker-end="url(#arrow-cart)"><title>Carro de canastillas, hilera de inyectoras pequeñas (oeste)</title></polyline>
@@ -387,7 +476,6 @@
 <line x1="73.5" y1="547.2" x2="217.5" y2="634.8" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>resina: 600 kg/h</title></line>
 <line x1="229.8" y1="630.7" x2="302.7" y2="453.3" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>resina: 2300 kg/h</title></line>
 <line x1="593.0" y1="616.0" x2="919.5" y2="632.5" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>piezas: 6000 u/h</title></line>
-<line x1="875.7" y1="391.9" x2="923.8" y2="412.1" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>piezas: 103 u/h</title></line>
 <line x1="857.2" y1="255.0" x2="958.0" y2="255.0" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>piezas: 65 u/h</title></line>
 <line x1="971.6" y1="506.9" x2="1055.4" y2="423.1" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>estibas: 40 pallets/d</title></line>
 <line x1="1118.2" y1="423.4" x2="1213.3" y2="527.6" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>estibas: 40 pallets/d</title></line>

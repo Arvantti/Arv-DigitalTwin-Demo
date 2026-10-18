@@ -1,0 +1,63 @@
+scenarios:
+  - id: steady
+    description: Llegan 60 piezas/min durante 1 h con el montacargas siempre disponible (estiba de 1.000 piezas)
+    preset: pallet-1000
+    duration_s: 3600
+    timeline:
+      - { at_s: 0, inputs: { inflow_upm: 60 } }
+    expect:
+      - { path: variables.pallets_delivered, equals: 3, description: "(la estiba se llena a los 1.000, 2.000 y 3.000 s y sale 120 s después: a los 3.600 s van 3 entregadas)" }
+      - { path: variables.units_delivered, equals: 3000 }
+      - { path: variables.loose_pieces, min: 598, max: 602, description: "(llegan 3.600 piezas y 3.000 pasaron a estibas)" }
+      - { path: state, equals: running }
+
+  - id: no-forklift
+    description: Ningún montacargas recibe estibas en 1 h; el buffer se llena con 2 estibas y bloquea a la máquina
+    preset: pallet-1000
+    duration_s: 3600
+    timeline:
+      - { at_s: 0, inputs: { inflow_upm: 60, downstream_free: false } }
+    expect:
+      - { path: variables.pallets_delivered, equals: 0 }
+      - { path: variables.pallets_waiting, equals: 2, description: "(se llenan las 2 estibas permitidas a los 1.000 y 2.000 s)" }
+      - { path: variables.loose_pieces, min: 999, max: 1001, description: "(la 3.ª estiba se arma hasta 1.000 a los 3.000 s y ya no cabe otra)" }
+      - { path: variables.accepting, equals: 0 }
+      - { path: state, equals: blocked }
+      - { path: events.buffer_blocked, equals: 1 }
+      - { path: kpis.blocked_pct, min: 0.15, max: 0.18, description: "(bloqueado de 3.000 a 3.600 s: 600 ÷ 3.600 = 0,167)" }
+
+  - id: late-pickup
+    description: El montacargas llega a los 25 min; la estiba que esperaba desde los 1.000 s sale de inmediato
+    preset: pallet-1000
+    duration_s: 1800
+    timeline:
+      - { at_s: 0, inputs: { inflow_upm: 60, downstream_free: false } }
+      - { at_s: 1500, inputs: { downstream_free: true } }
+    expect:
+      - { path: variables.pallets_delivered, equals: 1 }
+      - { path: variables.units_delivered, equals: 1000 }
+      - { path: variables.loose_pieces, min: 798, max: 802, description: "(1.800 piezas llegadas menos una estiba)" }
+      - { path: state, equals: running }
+
+  - id: misbuilt-pallet
+    description: "La estiba que se llena a los 1.000 s se arma mal (falla de 5 min): sale a los 1.300 s en vez de a los 1.120 s"
+    preset: pallet-1000
+    duration_s: 1250
+    timeline:
+      - { at_s: 0, inputs: { inflow_upm: 60 } }
+      - { at_s: 1000, command: inject_fault, args: { fault: pallet_misbuilt, duration_s: 300 } }
+    expect:
+      - { path: variables.pallets_delivered, equals: 0, description: "(a los 1.250 s la falla sigue activa hasta los 1.300 s)" }
+      - { path: variables.pallets_waiting, equals: 1 }
+      - { path: state, equals: fault }
+
+  - id: misbuilt-pallet-cleared
+    description: "La misma falla, vista a los 1.400 s, ya reparada: la estiba salió a los 1.300 s"
+    preset: pallet-1000
+    duration_s: 1400
+    timeline:
+      - { at_s: 0, inputs: { inflow_upm: 60 } }
+      - { at_s: 1000, command: inject_fault, args: { fault: pallet_misbuilt, duration_s: 300 } }
+    expect:
+      - { path: variables.pallets_delivered, equals: 1 }
+      - { path: state, equals: running }

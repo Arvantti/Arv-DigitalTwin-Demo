@@ -7,7 +7,7 @@ tags: [registro, historico-ia, salsas, capacidad]
 ---
 # Hilo: línea caliente completa de la planta de salsas
 
-Parte de [[historico-proyecto]] · Índice: [[00-indice]] · Bitácora: [[bitacora]] · Decisión: [[decisiones]] D47. Autor humano: Carlos Andrés Quiceño. Hora en UTC. Credenciales: ninguna.
+Parte de [[historico-proyecto]] · Índice: [[00-indice]] · Bitácora: [[bitacora]] · Decisión: [[decisiones]] D49. Autor humano: Carlos Andrés Quiceño. Hora en UTC. Credenciales: ninguna.
 
 ---
 

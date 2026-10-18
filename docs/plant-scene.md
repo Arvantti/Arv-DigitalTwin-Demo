@@ -102,7 +102,7 @@ El validador exige: eje de 2 o más puntos, ancho y elevación positivos, todos 
 
 ## Pasillos y rutas en el `plant.yaml`
 
-Secciones opcionales `aisles` (pasillos) y `routes` (rutas de montacargas y de operarios). El validador las comprueba y el plano 2D las dibuja (naranja continua los montacargas, verde punteada los operarios). La escena pinta los pasillos de montacargas como franjas amarillas tenues en el piso y cada ruta como una cinta; sobre cada una circula un montacargas (de ida cargado con una estiba de cajas, de vuelta vacío), un carro de canastillas (`kind: cart`, azul punteada en el plano 2D) o un operario que camina (`routes=0` en la URL las oculta). Es un recorrido ilustrativo: el motor de planta no simula todavía el transporte.
+Secciones opcionales `aisles` (pasillos) y `routes` (rutas de montacargas y de operarios). El validador las comprueba y el plano 2D las dibuja (naranja continua los montacargas, verde punteada los operarios). La escena pinta los pasillos de montacargas como franjas amarillas tenues en el piso y cada ruta como una cinta; sobre cada una circula un montacargas (de ida cargado con una estiba de cajas, de vuelta vacío), un carro de canastillas (`kind: cart`, azul punteada en el plano 2D) o un operario que camina (`routes=0` en la URL las oculta). Los montacargas de las rutas con `fleet` y `fleet_route` (planta de plásticos) no son ilustrativos: los mueve el motor (equipo `forklift-fleet`, canales `v*_route`, `v*_pos`, `v*_loaded`, `v*_wait`); en reposo están en el estacionamiento de la flota. Los demás (carros, operarios y los dos montacargas de producto terminado) siguen un recorrido ilustrativo, y los montacargas ilustrativos ceden el paso si un vehículo de la flota está a menos de 7 m.
 
 ```yaml
 aisles:
@@ -121,7 +121,7 @@ El validador exige: `kind` `forklift` o `pedestrian`, 2 o más puntos dentro del
 
 **Carriles.** En la escena, montacargas y carros circulan por la derecha: la ida (cargada) y el regreso (vacío) van por carriles distintos a 0,8 m (montacargas) y 0,5 m (carros) del eje de la ruta, y ambos se dibujan en el piso. Los operarios caminan por el eje.
 
-**Almacenes.** `almacen-semielaborado` (al norte de la nave, estanterías con cajas plásticas azules, `params.stage: semielaborado`) guarda las piezas inyectadas que llevan los montacargas desde los buffers de las inyectoras y alimenta las celdas de ensamble; la bodega de producto terminado (`params.stage: terminado`, cajas de cartón) recibe lo armado y empacado. Hoy ninguno de los dos se simula (sin inventario), ver `docs/registro` D40.
+**Almacenes.** `almacen-semielaborado` (al norte de la nave, estanterías con cajas plásticas azules, `params.stage: semielaborado`) guarda las piezas inyectadas que llevan los montacargas desde los buffers de las inyectoras y alimenta las celdas de ensamble; la bodega de producto terminado (`params.stage: terminado`, cajas de cartón) recibe lo armado y empacado. Las cuatro estanterías de semielaborado se simulan (`pallet-store`: muestran sus estibas almacenadas; cada inyectora tiene un buffer `pallet-buffer` con su estiba y las estibas llenas en espera) y la bodega de terminado no (sin inventario), ver `docs/registro` D40 y D48.
 
 ## Pendiente de la fase 5
 

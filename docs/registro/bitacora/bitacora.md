@@ -10,11 +10,12 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
-| 2026-10-18 | Línea caliente de salsas | Motor: segunda línea caliente de 250 ml (marmita 3, pasteurizador 2, pulmón 2, sachetadora, túnel 2, control de peso y mesa de empaque) junto a la de 1.000 ml; dos mesas de 250 ml; escenario `tunnel-250-stop`; dimensionado a 22 t/día con 40 % en caliente. D45 | 5 |
+| 2026-10-18 | Línea caliente de salsas | Motor: segunda línea caliente de 250 ml (marmita 3, pasteurizador 2, pulmón 2, sachetadora, túnel 2, control de peso y mesa de empaque) junto a la de 1.000 ml; dos mesas de 250 ml; escenario `tunnel-250-stop`; dimensionado a 22 t/día con 40 % en caliente. D49 | 5 |
 | 2026-10-18 | Tuberías sin cruces | Planta de salsas: los tubos a nivel de rack buscan un nivel y un recorrido que no atraviesen equipos ni cajas de estantería ni se crucen entre sí (suben por encima, o se desplazan); documento del flujo de salsas conectado vs faltante. D41 | 5 |
 | 2026-10-18 | Subidas directas del acueducto | Se elimina la columna lateral con lazos: cada nivel sube recto al siguiente con su válvula vertical, en puntos distintos de la cuadrícula; reductor de 4 a 2 pulgadas antes del nivel 1; el travesaño del cabezal ya no cruza el montante de entrada. D46 | acueducto |
 | 2026-10-18 | Acueducto sin pisos | Las zonas elevadas del acueducto ya no dibujan losa ni suelo de color; se ven las estructuras y los tubos de todos los pisos (pedido del autor). D45 | acueducto |
 | 2026-10-18 | #46 | Cuarto gemelo: fábrica de cajas de cartón corrugado centrada en el transporte de pilas (corrugadora, rodillos, mesas giratorias, carro de transferencia, pulmón, 3 líneas de conversión con tamaños de caja distintos, un paletizador propio y uno compartido, bodega); plano validado y forma 3D propia para sus 20 tipos de equipo, sin simulación todavía. D44 | gemelos |
+| 2026-10-18 | Proceso conectado de plásticos | Planta de plásticos: cada inyectora entrega a su buffer de estiba (X = 1.000), una flota de 6 montacargas lleva las estibas a las estanterías de semielaborado y de ahí a las celdas de ensamble, todo simulado en el motor y sin cruces entre montacargas | 4 |
 | 2026-10-18 | Secuencia del acueducto | Acueducto: cada tubo empieza y termina en la boquilla o brida real (tanques, bombas, estación, válvulas entre niveles, rejilla, bajantes); panel LÍNEAS con dos líneas en m³; parámetro de cámara `look`. D42 | acueducto |
 | 2026-10-18 | Tuberías sin cruces | Planta de salsas: los tubos a nivel de rack buscan un nivel y un recorrido que no atraviesen equipos ni cajas de estantería ni se crucen entre sí (suben por encima, o se desplazan); documento del flujo de salsas conectado vs faltante; revisión de capacidad contra 22 t/día (despacho de 35 a 90 tarimas/día). D41, D43 | 5 |
 | 2026-10-18 | Flujo de montacargas y ensamble | Planta de plásticos: almacén de semielaborado separado del de terminado (al norte de la nave, cajas azules), montacargas sin cruzar la banda y con carriles de ida y regreso, línea de ensamble visible (cámara propia) y piezas nuevas en secundarias. D40 | 5 |
@@ -89,6 +90,15 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 - **Decisiones:** [[decisiones]] D44.
 - **Conversación:** [[hilo-fabrica-de-cajas]].
 
+### 2026-10-18 15:06 · Proceso conectado de la planta de plásticos
+- **Fecha/hora (UTC):** 2026-10-18 14:19–17:30
+- **Solicitado por:** Carlos Andrés Quiceño (14:19–14:30): cada máquina con un buffer que se llena con X piezas y sale en estiba al almacén de semielaborado y de ahí a la línea de ensamble; «es muy importante que los procesos estén conectados entre sí»; primero conectar el proceso y después los datos reales. X = 1.000 (tarjeta, 14:26). Ficha confirmada (15:06) con un añadido: «los montacargas no deben ser infinitos, crea una flota según lo que necesitemos para cada área y evita choques y traspasos».
+- **Qué se hizo:** tres tipos nuevos de la librería (`pallet-buffer`, `pallet-store`, `forklift-fleet`) con contrato, comportamiento, geometría, presets, escenarios calculados a mano y ficha; 28 buffers, 4 estanterías de semielaborado simuladas y una flota de 6 montacargas cableados en `simulation.yaml` y `plant.yaml` (inyectora → buffer → flota → estantería → flota → celda de ensamble, cada paso con `ready` hacia atrás); las rutas de abastecimiento de las celdas pasan a cuatro (una por estantería); los montacargas de la escena los mueven los canales del motor y se estacionan en la flota; los dos de producto terminado ceden el paso. Escenarios recalculados (`nominal`, `body-stop`) y nuevos (`fleet-short`, `pallet-chain`).
+- **Verificación:** `twin-lib validate` de los 3 tipos y `twin-lib plant validate` en OK, `pytest` (219) y `pnpm -r test`/`typecheck` en verde, `render_layout.py` sin errores; capturas `plasticos-buffer-de-maquina.png` y `plasticos-flota-de-montacargas.png` en `docs/registro/evidencia/`.
+- **Pendiente:** el almacén de terminado y los dos montacargas de producto terminado fuera del motor; con X = 1.000 las piezas grandes dan estibas de toneladas (decidir X por producto en la etapa de datos reales); baterías y turnos de los montacargas.
+- **Decisiones:** [[decisiones]] D48.
+- **Conversación:** [[hilo-inspeccion-visual]].
+
 ### 2026-10-18 14:40 · Secuencia hidráulica continua del acueducto
 - **Fecha/hora (UTC):** 2026-10-18 14:40–15:50
 - **Fase del plan:** [[plan-del-proyecto]] acueducto
@@ -100,7 +110,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 ### 2026-10-18 17:10–17:40 · Línea caliente de salsas conectada (22 t/día)
 - **Solicitado por:** el autor («si», 17:10) a la propuesta del hilo de tuberías; reparto 40/45/15 aprobado a las 17:11.
-- **Qué se hizo:** `plant.yaml` y `simulation.yaml` de `sauce-plant-v1`: `kettle-03`, `pump-hot-02`, `pasteurizer-02`, `holding-tube-02`, `buffer-hot-02`, `filler-sachet-02` (250 ml, 2 pistas, caliente), `cooling-tunnel-02`, `checkweigher-02` y `pack-sauce-250-b`, con la línea `hot-250`; vapor, chiller y flujos del plano actualizados; el túnel 1 queda solo con el sachet de 1.000 ml. Escenario `nominal` con marmita 3 y expectativas de la línea de 250 ml; escenario nuevo `tunnel-250-stop`. Decisión [[decisiones]] D47.
+- **Qué se hizo:** `plant.yaml` y `simulation.yaml` de `sauce-plant-v1`: `kettle-03`, `pump-hot-02`, `pasteurizer-02`, `holding-tube-02`, `buffer-hot-02`, `filler-sachet-02` (250 ml, 2 pistas, caliente), `cooling-tunnel-02`, `checkweigher-02` y `pack-sauce-250-b`, con la línea `hot-250`; vapor, chiller y flujos del plano actualizados; el túnel 1 queda solo con el sachet de 1.000 ml. Escenario `nominal` con marmita 3 y expectativas de la línea de 250 ml; escenario nuevo `tunnel-250-stop`. Decisión [[decisiones]] D49.
 - **Verificación:** `twin-lib plant validate` y `uv run pytest packages/twin-runtime/tests/test_plant.py` (16 pasan, ≈ 6 min), plano 2D regenerado, capturas de la galería local con la simulación corriendo: [[salsas-caliente-marmita-3.png]] y [[salsas-tunel-2-sachet-250.png]].
 - **Conversación:** [[hilo-linea-caliente-de-salsas]].
 

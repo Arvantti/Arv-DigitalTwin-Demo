@@ -1,0 +1,146 @@
+scenarios:
+  - id: single-trip
+    description: "Una estiba en la ruta 1 (87 m): carga 45 s, ida 43,5 s, descarga 45 s; llega a los ≈ 134 s y el montacargas regresa a los ≈ 177 s"
+    preset: plant-6
+    duration_s: 140
+    timeline:
+      - { at_s: 0, inputs: { inflow_1_upm: 60000 } }
+      - { at_s: 1, inputs: { inflow_1_upm: 0 } }
+    expect:
+      - { path: variables.trips_completed, equals: 1 }
+      - { path: variables.units_out_1, equals: 1000 }
+      - { path: variables.vehicles_busy, equals: 1, description: "(a los 140 s el montacargas va de regreso)" }
+      - { path: variables.pieces_pending, equals: 0 }
+
+  - id: vehicle-returns
+    description: La misma estiba, vista a los 200 s; el montacargas ya regresó y la flota queda libre
+    preset: plant-6
+    duration_s: 200
+    timeline:
+      - { at_s: 0, inputs: { inflow_1_upm: 60000 } }
+      - { at_s: 1, inputs: { inflow_1_upm: 0 } }
+    expect:
+      - { path: variables.vehicles_busy, equals: 0 }
+      - { path: variables.vehicles_available, equals: 6 }
+      - { path: state, equals: idle }
+      - { path: events.trip_completed, equals: 1 }
+
+  - id: headway-wait
+    description: "Dos estibas piden montacargas a la vez en las rutas 1 y 2: ambos cargan hasta los 45 s, el primero sale a los 45 s y el segundo espera hasta los 75 s (30 s de separación); a los 150 s solo llegó la ruta 1"
+    preset: plant-6
+    duration_s: 150
+    timeline:
+      - { at_s: 0, inputs: { inflow_1_upm: 60000, inflow_2_upm: 60000 } }
+      - { at_s: 1, inputs: { inflow_1_upm: 0, inflow_2_upm: 0 } }
+    expect:
+      - { path: variables.trips_completed, equals: 1, description: "(ruta 1 llega a los 45 + 43,5 + 45 = 133,5 s; ruta 2 saldría a los 45 s sin separación y llegaría a los 137 s, pero sale a los 75 s)" }
+      - { path: variables.units_out_1, equals: 1000 }
+      - { path: variables.units_out_2, equals: 0 }
+      - { path: variables.pallets_in_transit, equals: 1 }
+      - { path: events.vehicle_waiting, equals: 1 }
+
+  - id: headway-clear
+    description: Las mismas dos estibas a los 175 s; la ruta 2 llegó a los 75 + 47 + 45 = 167 s
+    preset: plant-6
+    duration_s: 175
+    timeline:
+      - { at_s: 0, inputs: { inflow_1_upm: 60000, inflow_2_upm: 60000 } }
+      - { at_s: 1, inputs: { inflow_1_upm: 0, inflow_2_upm: 0 } }
+    expect:
+      - { path: variables.trips_completed, equals: 2 }
+      - { path: variables.units_out_2, equals: 1000 }
+
+  - id: one-vehicle
+    description: Un solo montacargas y 3 estibas en la ruta 1; sirve una por vez (ciclo de 177 s). A los 300 s llegó la primera, la segunda va en camino y la tercera espera
+    preset: plant-6
+    params: { vehicles: 1 }
+    duration_s: 300
+    timeline:
+      - { at_s: 0, inputs: { inflow_1_upm: 180000 } }
+      - { at_s: 1, inputs: { inflow_1_upm: 0 } }
+    expect:
+      - { path: variables.trips_completed, equals: 1, description: "(1.ª llega a los 133,5 s; la 2.ª sale a los 177 s y llega a los 310,5 s)" }
+      - { path: variables.pallets_queued, equals: 1 }
+      - { path: variables.vehicles_busy, equals: 1 }
+      - { path: variables.accepting_1, equals: 0, description: "(2 en cola o carga + 1 en viaje: la ruta no acepta más)" }
+      - { path: events.fleet_saturated, equals: 1 }
+
+  - id: one-vehicle-done
+    description: El mismo caso a los 500 s; las tres estibas llegaron (a los 133,5, 310,5 y 487,5 s)
+    preset: plant-6
+    params: { vehicles: 1 }
+    duration_s: 500
+    timeline:
+      - { at_s: 0, inputs: { inflow_1_upm: 180000 } }
+      - { at_s: 1, inputs: { inflow_1_upm: 0 } }
+    expect:
+      - { path: variables.trips_completed, equals: 3 }
+      - { path: variables.units_out_1, equals: 3000 }
+      - { path: variables.accepting_1, equals: 1 }
+
+  - id: breakdown
+    description: Dos montacargas y una falla desde los 10 s (uno menos); 2 estibas piden a los 20 s y se sirven una tras otra. A los 300 s llegó solo la primera (153,5 s); con la flota completa habrían llegado las dos a los 183,5 s
+    preset: plant-6
+    params: { vehicles: 2 }
+    duration_s: 300
+    timeline:
+      - { at_s: 10, command: inject_fault, args: { fault: vehicle_breakdown, duration_s: 1800 } }
+      - { at_s: 20, inputs: { inflow_1_upm: 120000 } }
+      - { at_s: 21, inputs: { inflow_1_upm: 0 } }
+    expect:
+      - { path: variables.trips_completed, equals: 1 }
+      - { path: variables.vehicles_available, equals: 0, description: "(uno fuera de servicio y el otro llevando la segunda estiba)" }
+
+  - id: destination-full
+    description: El destino no recibe las piezas; la estiba llega a los 134 s y queda pendiente, la flota se bloquea y no entrega nada
+    preset: plant-6
+    duration_s: 200
+    timeline:
+      - { at_s: 0, inputs: { inflow_1_upm: 60000, downstream_free_1: false } }
+      - { at_s: 1, inputs: { inflow_1_upm: 0 } }
+    expect:
+      - { path: variables.trips_completed, equals: 1 }
+      - { path: variables.pieces_pending, equals: 1000 }
+      - { path: variables.units_out_1, equals: 0 }
+      - { path: state, equals: blocked }
+
+  - id: destination-frees
+    description: El destino vuelve a recibir a los 200 s; las 1.000 piezas pendientes salen enseguida
+    preset: plant-6
+    duration_s: 210
+    timeline:
+      - { at_s: 0, inputs: { inflow_1_upm: 60000, downstream_free_1: false } }
+      - { at_s: 1, inputs: { inflow_1_upm: 0 } }
+      - { at_s: 200, inputs: { downstream_free_1: true } }
+    expect:
+      - { path: variables.units_out_1, equals: 1000 }
+      - { path: variables.pieces_pending, equals: 0 }
+
+  - id: line-feed
+    description: "Ruta 6 (estantería 1 a la celda 1, 111,6 m): la estiba llega a la línea a los 45 + 55,8 + 45 = 145,8 s y las piezas salen a 12 u/min (0,2 por s); a los 206 s salieron ≈ 12"
+    preset: plant-6
+    duration_s: 206
+    timeline:
+      - { at_s: 0, inputs: { inflow_6_upm: 60000 } }
+      - { at_s: 1, inputs: { inflow_6_upm: 0 } }
+    expect:
+      - { path: variables.units_out_6, min: 11, max: 13 }
+      - { path: variables.pieces_pending, min: 987, max: 989, description: "(1.000 menos las ≈ 12 que ya salieron)" }
+
+  - id: oldest-first
+    description: "Un solo montacargas y tres estibas que piden en orden: la de la ruta 3 a los 0 s, la de la ruta 1 a los 10 s y la de la ruta 2 a los 20 s; las sirve en el orden en que pidieron (3, 1, 2), no por número de ruta. A los 300 s solo llegó la de la ruta 3 (45 + 51 + 45 = 141 s); la ruta 1 sale a los 177 s y llega a los 310,5 s"
+    preset: plant-6
+    params: { vehicles: 1 }
+    duration_s: 300
+    timeline:
+      - { at_s: 0, inputs: { inflow_3_upm: 60000 } }
+      - { at_s: 1, inputs: { inflow_3_upm: 0 } }
+      - { at_s: 10, inputs: { inflow_1_upm: 60000 } }
+      - { at_s: 11, inputs: { inflow_1_upm: 0 } }
+      - { at_s: 20, inputs: { inflow_2_upm: 60000 } }
+      - { at_s: 21, inputs: { inflow_2_upm: 0 } }
+    expect:
+      - { path: variables.units_out_3, equals: 1000 }
+      - { path: variables.units_out_1, equals: 0 }
+      - { path: variables.units_out_2, equals: 0 }
+      - { path: variables.pallets_queued, equals: 1, description: "(la ruta 1 está cargando desde los 177 s y la ruta 2 espera)" }
