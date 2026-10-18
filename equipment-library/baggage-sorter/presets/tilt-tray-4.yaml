@@ -1,0 +1,4 @@
+preset: tilt-tray-4
+description: Lazo de bandejas basculantes de una terminal regional (≈ 89 m, 4 rampas de vuelo y una de manual)
+params: { straight_m: 28, loop_width_m: 10.5, speed_m_s: 2.0, tray_pitch_m: 1.4, destinations: 4, split_1_pct: 30, split_2_pct: 25, split_3_pct: 25, split_4_pct: 20, read_rate_pct: 97, max_recirc: 2, induct_max_upm: 40, chute_capacity: 4, chute_length_m: 4, nominal_inflow_upm: 10, motor_kw: 15 }
+provenance: { straight_m: assumed, speed_m_s: assumed, tray_pitch_m: assumed, read_rate_pct: assumed, max_recirc: assumed, induct_max_upm: assumed }

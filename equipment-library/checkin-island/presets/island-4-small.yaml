@@ -1,0 +1,4 @@
+preset: island-4-small
+description: Isla pequeña de 4 mostradores (aeropuerto pequeño o aerolínea de bajo costo)
+params: { counters: 4, open_counters: 4, pax_per_h: 120, process_s: 75, bags_per_pax: 0.9, bag_mean_kg: 15, bag_sd_kg: 5, excess_kg: 23, max_kg: 32, release_gap_s: 3, counter_pitch_m: 3.2, desk_color: "#7a2f5f" }
+provenance: { counters: assumed, process_s: assumed, bags_per_pax: assumed }

@@ -128,15 +128,25 @@ export default function build(params: Params): EquipmentModel {
     itemGeo = new THREE.BoxGeometry(size, size * 0.5, size * 0.8);
     itemMat = M.plastic(color, 0.3);
     itemH = size * 0.5;
+  } else if (item === "bag") {
+    itemGeo = new THREE.BoxGeometry(0.01, 0.01, 0.01); // no se usa: las maletas tienen su propia pieza
+    itemMat = M.rubber();
+    itemH = 0;
   } else {
     itemGeo = new THREE.BoxGeometry(size * 1.5, 0.03, size);
     itemMat = new THREE.MeshPhysicalMaterial({ color, roughness: 0.25, clearcoat: 0.8 });
     itemH = 0.03;
   }
-  const items = new THREE.InstancedMesh(itemGeo, itemMat, MAX_ITEMS);
-  items.name = "items";
-  items.castShadow = true;
-  items.count = 0;
+  let items: THREE.InstancedMesh;
+  if (item === "bag") {
+    // maleta acostada con su color (origen en la base)
+    items = P.bagInstances(MAX_ITEMS, size);
+  } else {
+    items = new THREE.InstancedMesh(itemGeo, itemMat, MAX_ITEMS);
+    items.name = "items";
+    items.castShadow = true;
+    items.count = 0;
+  }
   root.add(items);
   const m = new THREE.Matrix4();
   const yItem = surfaceY + itemH / 2 + 0.002;

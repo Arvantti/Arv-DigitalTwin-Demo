@@ -6,7 +6,7 @@ manufacturing: logistics
 category: transport.conveyor
 description: >
   Transportador de banda plana, malla, tablillas o rodillos que mueve unidades discretas
-  (sachets, piezas, cajas) entre equipos. Acumula unidades cuando la salida se bloquea y deja
+  (sachets, piezas, cajas, maletas) entre equipos. Acumula unidades cuando la salida se bloquea y deja
   de aceptar cuando se llena, propagando el bloqueo hacia la máquina anterior.
 aliases: [banda, transportador, conveyor, banda de salida, transportador de rodillos]
 fidelity: { visual: V2, behavior: B2 }
@@ -18,7 +18,7 @@ params:
   pitch_m:       { type: number, unit: m, min: 0.02, max: 3, default: 0.25, description: Separación mínima entre unidades acumuladas, affects: [behavior, geometry] }
   height_m:      { type: number, unit: m, min: 0.2, max: 6, default: 0.85, description: Altura de la superficie de transporte, affects: [geometry] }
   kind:          { type: enum, values: [flat, mesh, slat, roller], default: flat, description: Tipo de transportador, affects: [geometry] }
-  item:          { type: enum, values: [sachet, part, box], default: sachet, description: Unidad que transporta (para el dibujo), affects: [geometry] }
+  item:          { type: enum, values: [sachet, part, box, bag], default: sachet, description: Unidad que transporta (para el dibujo), affects: [geometry] }
   item_size_m:   { type: number, unit: m, min: 0.02, max: 1.5, default: 0.18, description: Tamaño de la unidad (para el dibujo), affects: [geometry] }
   item_color:    { type: string, default: "#c62828", description: Color de la unidad (hex), affects: [geometry] }
   nominal_inflow_upm: { type: number, unit: u/min, min: 0, max: 2000, default: 60, description: Llegada nominal de unidades si el entorno no la fija, affects: [behavior] }

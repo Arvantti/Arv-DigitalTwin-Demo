@@ -1,0 +1,94 @@
+schema_version: 0.1.0
+type: baggage-screening
+version: 0.1.0
+name: Inspección de equipaje en bodega (CT por niveles)
+manufacturing: logistics
+category: inspection.baggage
+description: >
+  Máquina de tomografía (CT) en línea que inspecciona las maletas documentadas. Nivel 1: la máquina
+  decide sola y despeja la mayoría. Nivel 2: las maletas con alarma siguen por la banda mientras un
+  operador revisa su imagen en un puesto remoto; si la despeja a tiempo continúan al clasificador.
+  Lo que no se despeja (o no alcanza a revisarse antes del punto de decisión) sale por la banda de
+  alarma a nivel 3, la revisión manual con el pasajero.
+aliases: [CT, EDS, HBS, rayos X de equipaje, inspección de bodega, screening]
+fidelity: { visual: V2, behavior: B2 }
+
+params:
+  max_bph:            { type: number, unit: maletas/h, min: 100, max: 2000, default: 600, description: Capacidad de la máquina, affects: [behavior] }
+  scan_s:             { type: number, unit: s, min: 2, max: 60, default: 12, description: Tránsito de la maleta por el túnel hasta la decisión de nivel 1, affects: [behavior] }
+  l1_alarm_pct:       { type: number, unit: "%", min: 0, max: 100, default: 25, description: Maletas que el nivel 1 no despeja, affects: [behavior] }
+  l2_operators:       { type: integer, min: 0, max: 10, default: 2, description: Operadores de revisión de imagen (nivel 2), affects: [behavior] }
+  l2_review_s:        { type: number, unit: s, min: 5, max: 300, default: 30, description: Tiempo de revisión de una imagen, affects: [behavior] }
+  l2_clear_pct:       { type: number, unit: "%", min: 0, max: 100, default: 80, description: Imágenes con alarma que el operador despeja, affects: [behavior] }
+  l2_timeout_s:       { type: number, unit: s, min: 10, max: 600, default: 120, description: "Tiempo hasta el punto de decisión; si la imagen no se revisó, la maleta va a nivel 3", affects: [behavior] }
+  entry_buffer_units: { type: integer, min: 1, max: 32, default: 4, description: Maletas que caben esperando en la banda de entrada, affects: [behavior] }
+  exit_buffer_units:  { type: integer, min: 1, max: 32, default: 6, description: Maletas despejadas que caben en la salida antes de detener la máquina, affects: [behavior] }
+  nominal_inflow_upm: { type: number, unit: maletas/min, min: 0, max: 60, default: 5, description: Llegada de maletas si el entorno no la fija, affects: [behavior] }
+  release_gap_s:      { type: number, unit: s, min: 0.5, max: 30, default: 2.5, description: Separación mínima entre maletas que salen por cada banda, affects: [behavior] }
+  tunnel_length_m:    { type: number, unit: m, min: 2, max: 12, default: 5, description: Largo del cuerpo de la máquina, affects: [geometry] }
+  belt_width_m:       { type: number, unit: m, min: 0.6, max: 1.4, default: 1.0, description: Ancho de la banda, affects: [geometry] }
+  body_color:         { type: string, default: "#d9dde2", description: Color de la carcasa (hex), affects: [geometry] }
+  alarm_side:         { type: enum, values: [left, right], default: left, description: "Lado de la salida a nivel 3, mirando en el sentido del flujo", affects: [geometry] }
+
+ports:
+  - { id: bags_in, kind: item, direction: in, unit: maletas/min, link: { units: inflow_upm, ready: accepting } }
+  - { id: cleared_out, kind: item, direction: out, unit: maletas/min, link: { units: cleared_out, ready: downstream_free } }
+  - { id: alarm_out, kind: item, direction: out, unit: maletas/min, link: { units: to_l3, ready: l3_free } }
+  - { id: power, kind: utility, direction: in, medium: energía eléctrica }
+
+states:
+  - { id: idle, description: Sin maletas }
+  - { id: running, description: Inspeccionando }
+  - { id: blocked, description: "La salida de despejadas está llena: la máquina no admite más maletas" }
+  - { id: fault, description: Detenida por falla }
+
+variables:
+  - { id: bags_scanned, unit: maletas, kind: counter, description: Maletas inspeccionadas en nivel 1 }
+  - { id: l1_alarms, unit: maletas, kind: counter, description: Maletas con alarma de nivel 1 }
+  - { id: l2_cleared, unit: maletas, kind: counter, description: Alarmas despejadas por el operador de nivel 2 }
+  - { id: l2_timeouts, unit: maletas, kind: counter, description: Alarmas que llegaron al punto de decisión sin revisar }
+  - { id: cleared_out, unit: maletas, kind: counter, description: Maletas despejadas entregadas hacia el clasificador }
+  - { id: to_l3, unit: maletas, kind: counter, description: Maletas entregadas a la banda de nivel 3 }
+  - { id: entry_queue, unit: maletas, kind: calculated, description: Maletas esperando en la entrada }
+  - { id: in_tunnel, unit: maletas, kind: calculated, description: Maletas dentro de la máquina }
+  - { id: l2_queue, unit: maletas, kind: calculated, description: Imágenes esperando revisión }
+  - { id: exit_queue, unit: maletas, kind: calculated, description: Maletas despejadas esperando salir }
+  - { id: accepting, unit: "", kind: status, description: "1 si recibe maletas, 0 si la entrada está llena (vuelve a recibir con una plaza libre)" }
+  - { id: xray_kv, unit: kV, kind: measured, range: [0, 200], noise_sd: 0.3, resolution: 0.1, description: Tensión del tubo de rayos X }
+
+events:
+  - { id: full, description: La entrada se llenó y la máquina dejó de recibir }
+  - { id: accepting_again, description: La máquina vuelve a recibir }
+  - { id: bag_to_l3, description: Una maleta salió hacia nivel 3 }
+
+faults:
+  - { id: xray_fault, description: Falla del generador de rayos X, mtbf_h: 1500, mttr_min: 45, severity: high, effect: La máquina se detiene }
+  - { id: belt_jam, description: Atasco de una maleta en el túnel, mtbf_h: 300, mttr_min: 5, severity: medium, effect: La máquina se detiene }
+  - { id: image_link_down, description: Caída del enlace de imágenes al puesto de nivel 2, mtbf_h: 2000, mttr_min: 30, severity: medium, stops_equipment: false, effect: "Toda alarma de nivel 1 va directo a nivel 3" }
+
+commands:
+  - { id: set_operators, description: Cambia los operadores de nivel 2, args: { n: integer } }
+  - { id: inject_fault, description: Inyecta una falla declarada, args: { fault: string, duration_s: number } }
+  - { id: clear_fault, description: Repara una falla activa, args: { fault: string } }
+  - { id: set_param, description: Cambia un parámetro en caliente, args: { name: string, value: any } }
+
+kpis:
+  - { id: bags_per_h, unit: maletas/h, description: Maletas inspeccionadas por hora }
+  - { id: l1_alarm_rate, unit: "", description: Fracción con alarma de nivel 1 }
+  - { id: l3_rate, unit: "", description: Fracción enviada a nivel 3 }
+  - { id: blocked_pct, unit: "", description: Fracción del tiempo bloqueada por la salida }
+
+animation_channels:
+  - { id: belt_travel, unit: m, range: [0, 10], description: Recorrido de la banda (módulo 10 m) }
+  - { id: in_tunnel, range: [0, 20], description: Maletas dentro de la máquina }
+  - { id: entry_queue, range: [0, 32], description: Maletas en la entrada }
+  - { id: xray_on, range: [0, 1], description: 1 con el generador emitiendo }
+  - { id: stack_light, range: [0, 3], description: "0 apagado, 1 verde, 2 ámbar (bloqueo), 3 rojo (falla)" }
+
+geometry:
+  parts: [infeed_belt, gantry, tunnel_curtains, outfeed_belt, operator_console, warning_light, radiation_signs]
+
+assumptions:
+  - Las alarmas de nivel 1 se reparten de forma uniforme (una de cada 1 ÷ l1_alarm_pct), igual que las que despeja el nivel 2; así los valores esperados se pueden calcular a mano.
+  - La máquina admite una maleta cada 3.600 ÷ max_bph s.
+  - Las maletas con alarma esperan en la banda de seguimiento hasta el punto de decisión (l2_timeout_s) sin ocupar la salida de despejadas.

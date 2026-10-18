@@ -1,0 +1,4 @@
+preset: ct-600
+description: CT en línea de 600 maletas por hora, con 2 operadores de nivel 2
+params: { max_bph: 600, scan_s: 12, l1_alarm_pct: 25, l2_operators: 2, l2_review_s: 30, l2_clear_pct: 80, l2_timeout_s: 120, tunnel_length_m: 5, belt_width_m: 1.0, nominal_inflow_upm: 5 }
+provenance: { max_bph: assumed, l1_alarm_pct: assumed, l2_review_s: assumed, l2_clear_pct: assumed, l2_timeout_s: assumed }

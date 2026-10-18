@@ -1,0 +1,48 @@
+scenarios:
+  - id: steady
+    description: "Hora pico: 300 pasajeros por hora en 8 mostradores de 90 s (capacidad 320 por hora)"
+    preset: island-8
+    duration_s: 3600
+    expect:
+      - { path: variables.pax_served, min: 290, max: 300, description: "(300 llegadas, menos los ≤ 8 que están en el mostrador al final)" }
+      - { path: variables.bags_out, min: 312, max: 332, description: "(≈ 296 × 1,1 = 326 maletas, menos ≈ 0,13 % sobre 32 kg)" }
+      - { path: kpis.avg_wait_min, max: 1.0, description: "(llega uno cada 12 s y se libera un mostrador cada 11,25 s: casi no hay fila)" }
+      - { path: state, equals: running }
+
+  - id: overload
+    description: "400 pasajeros por hora durante 1,5 h con capacidad para 320: la fila crece"
+    preset: island-8
+    duration_s: 5400
+    timeline:
+      - { at_s: 0, command: set_arrivals, args: { pax_per_h: 400 } }
+    expect:
+      - { path: variables.pax_queue, min: 110, max: 130, description: "(600 llegadas − 8 mostradores × 60 atenciones = 120)" }
+      - { path: variables.wait_min, min: 20, max: 25, description: "(120 × 90 s ÷ 8 ÷ 60 = 22,5 min)" }
+      - { path: events.long_queue, equals: 1 }
+
+  - id: collector-blocked
+    description: La colectora deja de recibir a los 10 min; las maletas se quedan en las básculas y los agentes paran
+    preset: island-8
+    duration_s: 1200
+    timeline:
+      - { at_s: 600, inputs: { downstream_free: false } }
+    expect:
+      - { path: state, equals: blocked }
+      - { path: variables.counters_busy, equals: 0, description: "(cada mostrador termina su pasajero y espera con sus maletas en la báscula)" }
+      - { path: variables.bags_waiting, min: 8, max: 16, description: "(8 mostradores con 1 o 2 maletas)" }
+
+  - id: dcs-outage
+    description: Caída del sistema de control de salidas durante 20 min
+    preset: island-8
+    duration_s: 2400
+    timeline:
+      - { at_s: 600, command: inject_fault, args: { fault: dcs_outage, duration_s: 1200 } }
+    expect:
+      - { path: events.fault_cleared, equals: 1 }
+      - { path: variables.pax_queue, min: 85, max: 100, description: "(20 min × 5 pax/min = 100 en fila; en los 10 min siguientes se recuperan ≈ 3, el margen es de 20 pax/h)" }
+
+  - id: demo
+    description: Escenario de demostración con fallas aleatorias (para la galería)
+    preset: island-8
+    duration_s: 28800
+    random_faults: true

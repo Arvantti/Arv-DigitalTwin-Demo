@@ -1,0 +1,4 @@
+preset: ct-1200-hub
+description: CT de alta velocidad de 1.200 maletas por hora para un aeropuerto grande
+params: { max_bph: 1200, scan_s: 10, l1_alarm_pct: 20, l2_operators: 4, l2_review_s: 30, l2_clear_pct: 85, l2_timeout_s: 150, tunnel_length_m: 6, belt_width_m: 1.0, nominal_inflow_upm: 12, body_color: "#cfd8e3" }
+provenance: { max_bph: assumed, l1_alarm_pct: assumed, l2_review_s: assumed }
