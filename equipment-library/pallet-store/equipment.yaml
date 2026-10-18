@@ -1,0 +1,71 @@
+schema_version: 0.1.0
+type: pallet-store
+version: 0.1.0
+name: Almacén de estibas (estantería de semielaborado)
+manufacturing: discrete
+category: logistics.storage
+description: >
+  Estantería de estibas que recibe las estibas llenas que traen los montacargas, las guarda como inventario y entrega
+  una estiba a la vez al siguiente tramo (el montacargas hacia la línea de ensamble) cuando este la pide. Con todas las
+  posiciones ocupadas deja de recibir; sin inventario de una estiba completa, queda a la espera.
+aliases: [almacén de estibas, estantería de semielaborado, rack de estibas, pallet store, pallet rack store, almacén de semielaborado]
+fidelity: { visual: V2, behavior: B2 }
+
+params:
+  positions:       { type: integer, min: 1, max: 500, default: 48, description: Posiciones de estiba de la estantería, affects: [behavior, geometry] }
+  pallet_pieces:   { type: integer, min: 1, max: 5000, default: 1000, description: Piezas que forman una estiba (el X de los buffers), affects: [behavior] }
+  initial_pallets: { type: integer, min: 0, max: 500, default: 0, description: Estibas que ya hay en la estantería al empezar, affects: [behavior, geometry] }
+  release_gap_s:   { type: number, unit: s, min: 0, max: 600, default: 30, description: Tiempo mínimo entre una entrega y la siguiente (el montacarguista saca y asegura la estiba), affects: [behavior] }
+  levels:          { type: integer, min: 1, max: 6, default: 4, description: Niveles de la estantería, affects: [geometry] }
+  rack_length_m:   { type: number, unit: m, min: 3, max: 60, default: 16, description: Largo de la estantería, affects: [geometry] }
+  rack_height_m:   { type: number, unit: m, min: 2, max: 12, default: 6, description: Alto de la estantería, affects: [geometry] }
+  content:         { type: string, default: semielaborado, description: Lo que se guarda (se muestra en el panel), affects: [geometry] }
+  color:           { type: string, default: "#2f6fb0", description: Color de las cajas de las estibas (hex), affects: [geometry] }
+
+ports:
+  - { id: pallets_in, kind: item, direction: in, medium: estibas, unit: u/min, link: { units: inflow_upm, ready: accepting } }
+  - { id: pallets_out, kind: item, direction: out, medium: estibas, unit: u/min, link: { units: units_delivered, ready: downstream_free } }
+
+states:
+  - { id: running, description: Recibe y entrega estibas }
+  - { id: starved, description: Sin una estiba completa para entregar }
+  - { id: blocked, description: Todas las posiciones ocupadas; deja de recibir }
+  - { id: fault, description: Detenida por una falla }
+
+variables:
+  - { id: stock_pieces, unit: u, kind: calculated, description: Piezas en inventario }
+  - { id: stored_pallets, unit: u, kind: calculated, description: Estibas almacenadas }
+  - { id: occupancy_pct, unit: "%", kind: calculated, range: [0, 100], description: Posiciones ocupadas }
+  - { id: pallets_delivered, unit: u, kind: counter, description: Estibas entregadas al siguiente tramo }
+  - { id: units_delivered, unit: u, kind: counter, description: Piezas entregadas en estibas }
+  - { id: units_received, unit: u, kind: counter, description: Piezas recibidas en estibas }
+  - { id: accepting, unit: "", kind: status, description: "1 si recibe estibas, 0 si está llena" }
+
+events:
+  - { id: pallet_released, description: Una estiba salió hacia el siguiente tramo }
+  - { id: store_full, description: La estantería se llenó y deja de recibir }
+  - { id: store_empty, description: La estantería se quedó sin una estiba completa }
+
+faults:
+  - { id: aisle_obstructed, description: Pasillo de la estantería obstruido, mtbf_h: 800, mttr_min: 15, severity: low, effect: No entra ni sale ninguna estiba hasta despejar }
+
+commands:
+  - { id: inject_fault, description: Inyecta una falla declarada, args: { fault: string, duration_s: number } }
+  - { id: clear_fault, description: Repara una falla activa, args: { fault: string } }
+  - { id: set_param, description: Cambia un parámetro en caliente, args: { name: string, value: any } }
+
+kpis:
+  - { id: pallets_per_h, unit: pallets/h, description: Estibas entregadas por hora }
+  - { id: starved_pct, unit: "", description: Fracción del tiempo sin estiba completa }
+
+animation_channels:
+  - { id: fill, range: [0, 1], description: Posiciones ocupadas }
+  - { id: releasing, range: [0, 1], description: "1 durante la entrega de una estiba" }
+
+geometry:
+  parts: [uprights, beams, pallets, boxes]
+
+assumptions:
+  - "Una estantería guarda estibas completas de pallet_pieces; las piezas recibidas se acumulan hasta formar estibas."
+  - "Entrega una estiba por pedido, con al menos release_gap_s entre una y otra; la estiba que se entrega es siempre una completa."
+  - "Todas las piezas de la estantería son intercambiables (un solo producto por estantería)."

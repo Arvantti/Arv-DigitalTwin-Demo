@@ -1,0 +1,4 @@
+preset: pallet-200
+description: Estiba de 200 piezas para piezas grandes o pesadas (cuerpos, baldes), hasta 2 estibas esperando
+params: { pallet_pieces: 200, max_waiting_pallets: 2, pickup_wait_s: 120, nominal_inflow_upm: 0, product: piezas grandes, color: "#d9531e" }
+provenance: { pallet_pieces: assumed, max_waiting_pallets: assumed, pickup_wait_s: assumed, nominal_inflow_upm: assumed, product: assumed, color: assumed }

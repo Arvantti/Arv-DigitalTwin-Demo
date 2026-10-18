@@ -103,3 +103,21 @@ Pasé la hoja de ruta al coordinador como contexto, sin ejecutarla, y seguí con
 
 *(Herramientas: edición de `plant.yaml`, `routes.ts`, `warehouse.ts`, `process-pieces.ts`, `plant.ts`, `plant-scene.md`; `render_layout.py`, `twin-lib plant validate`, `pytest apps/api`, `pnpm -r typecheck` y `pnpm -r test`; capturas con la API.)*
 
+### 👤 Carlos Andrés Quiceño · 15:06:15 UTC
+
+(Comentario sobre la ficha, línea de la flota) Los montacargas no deben ser infinitos: crea una flota según lo que necesitemos para cada área, haz la propuesta y evita choques y traspasos entre montacargas.
+
+### 🤖 Claude · 15:06 UTC
+
+Propuse la flota en la ficha: 7 montacargas con el uso de cada ruta, tramos reservados, 3 m de separación y sin adelantamientos.
+
+### 👤 Carlos Andrés Quiceño · 15:06:33 UTC
+
+De resto está bien el plan. (Tarjeta de decisión: «Confirmar» la ficha del buffer y del almacén.)
+
+### 🤖 Claude · 15:07 UTC
+
+Confirmado. Construí los tipos y cableé la planta; al construir dejé una sola flota de 6 montacargas (un corredor, una reserva) en lugar de dos por área, para que no se crucen.
+
+*(Herramientas: tres tipos de librería con 22 pruebas, edición de `plant.yaml`, `simulation.yaml`, `routes.ts`, `plant.ts`; `twin-lib plant validate`, `pytest`, `pnpm -r test`; capturas con Playwright.)*
+

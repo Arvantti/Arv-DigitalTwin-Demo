@@ -1,0 +1,66 @@
+schema_version: 0.1.0
+type: pallet-buffer
+version: 0.1.0
+name: Buffer de máquina con estiba
+manufacturing: discrete
+category: logistics.buffer
+description: >
+  Estiba junto a una máquina que recibe las piezas que esta produce. Al juntar una estiba completa (X piezas) la deja
+  lista para recogida y arma la siguiente; cuando hay demasiadas estibas llenas esperando, deja de aceptar piezas y
+  bloquea la máquina que la surte. Entrega las estibas al montacargas (flota de montacargas) cuando este las recibe.
+aliases: [buffer de máquina, estiba de máquina, pallet buffer, buffer de estiba, estiba de salida]
+fidelity: { visual: V2, behavior: B2 }
+
+params:
+  pallet_pieces:       { type: integer, min: 1, max: 5000, default: 1000, description: Piezas que forman una estiba (el X del buffer), affects: [behavior, geometry] }
+  max_waiting_pallets: { type: integer, min: 1, max: 6, default: 2, description: Estibas llenas que pueden esperar recogida antes de bloquear la máquina, affects: [behavior, geometry] }
+  pickup_wait_s:       { type: number, unit: s, min: 0, max: 1800, default: 120, description: Tiempo desde que la estiba se llena (cierre y etiquetado) hasta que queda lista para recogida, affects: [behavior] }
+  nominal_inflow_upm:  { type: number, unit: u/min, min: 0, max: 5000, default: 0, description: Llegada de piezas si el entorno no la fija, affects: [behavior] }
+  product:             { type: string, default: piezas inyectadas, description: Producto que se estiba (se muestra en el panel), affects: [geometry] }
+  color:               { type: string, default: "#1e6fd9", description: Color de las cajas de la estiba (hex), affects: [geometry] }
+
+ports:
+  - { id: pieces_in, kind: item, direction: in, medium: piezas, unit: u/min, link: { units: inflow_upm, ready: accepting } }
+  - { id: pallets_out, kind: item, direction: out, medium: estibas llenas, unit: u/min, link: { units: units_delivered, ready: downstream_free } }
+
+states:
+  - { id: running, description: Recibe piezas y arma la estiba }
+  - { id: blocked, description: Sin espacio para otra estiba llena; la máquina que la surte espera }
+  - { id: fault, description: Manejo de estibas detenido por una falla }
+
+variables:
+  - { id: loose_pieces, unit: u, kind: calculated, description: Piezas de la estiba en armado }
+  - { id: pallets_waiting, unit: u, kind: calculated, description: Estibas llenas esperando recogida }
+  - { id: pallets_delivered, unit: u, kind: counter, description: Estibas entregadas al montacargas }
+  - { id: units_delivered, unit: u, kind: counter, description: Piezas entregadas en estibas }
+  - { id: accepting, unit: "", kind: status, description: "1 si recibe piezas, 0 si bloquea a la máquina" }
+
+events:
+  - { id: pallet_full, description: Se llenó una estiba }
+  - { id: pallet_released, description: Una estiba pasó al montacargas }
+  - { id: buffer_blocked, description: El buffer se llenó y bloquea a la máquina }
+
+faults:
+  - { id: pallet_misbuilt, description: Estiba mal armada (cajas caídas o mal apiladas), mtbf_h: 400, mttr_min: 5, severity: low, effect: No se entrega ninguna estiba hasta rearmarla }
+
+commands:
+  - { id: inject_fault, description: Inyecta una falla declarada, args: { fault: string, duration_s: number } }
+  - { id: clear_fault, description: Repara una falla activa, args: { fault: string } }
+  - { id: set_param, description: Cambia un parámetro en caliente, args: { name: string, value: any } }
+
+kpis:
+  - { id: pallets_per_h, unit: pallets/h, description: Estibas entregadas por hora }
+  - { id: blocked_pct, unit: "", description: Fracción del tiempo bloqueando a la máquina }
+
+animation_channels:
+  - { id: fill, range: [0, 1], description: Llenado de la estiba en armado }
+  - { id: waiting, range: [0, 6], description: Estibas llenas esperando recogida }
+  - { id: blocked, range: [0, 1], description: "1 si bloquea a la máquina" }
+
+geometry:
+  parts: [pallet, boxes, waiting_pallets, floor_marking]
+
+assumptions:
+  - "La estiba se cierra y etiqueta durante pickup_wait_s; después queda lista para el montacargas."
+  - "Una estiba llena que no encuentra montacargas libre sigue esperando; con max_waiting_pallets estibas esperando el buffer deja de aceptar piezas."
+  - "Lo que llega estando bloqueado se descarta, igual que en las cubetas de assembly-cell (una ráfaga de la máquina puede perder una pieza)."

@@ -1,0 +1,4 @@
+preset: semielaborado-small-12
+description: Estantería pequeña de 12 posiciones (2 niveles, 8 m) para componentes de bajo volumen
+params: { positions: 12, pallet_pieces: 1000, initial_pallets: 0, release_gap_s: 30, levels: 2, rack_length_m: 8, rack_height_m: 3.5, content: semielaborado, color: "#2f6fb0" }
+provenance: { positions: assumed, pallet_pieces: user, initial_pallets: assumed, release_gap_s: assumed, levels: assumed, rack_length_m: assumed, rack_height_m: assumed, content: assumed, color: assumed }
