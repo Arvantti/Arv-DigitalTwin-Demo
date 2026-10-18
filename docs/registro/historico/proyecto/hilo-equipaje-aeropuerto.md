@@ -2,7 +2,7 @@
 tipo: historico-ia
 fuente: hilo «Gemelo de equipaje de aeropuerto» (Claude Projects)
 desde: 2026-10-18 15:04
-hasta: 2026-10-18 17:45
+hasta: 2026-10-18 22:10
 tags: [registro, historico-ia, aeropuerto, equipaje, logistica]
 ---
 # Hilo: gemelo del sistema de equipaje de aeropuerto
@@ -32,3 +32,15 @@ Dejé la ficha de diseño del gemelo de equipaje en `aeropuerto/ficha-diseno-bhs
 ### 🤖 Claude · 17:45 UTC
 
 (Resumen) Gemelo `airport-baggage-v1` listo en un PR: 5 tipos nuevos en la librería, plano con 32 equipos, motor con 22 equipos enlazados y 5 escenarios calculados a mano (todos pasan), escena 3D con aviones, carros y maletas en movimiento. Capturas en `docs/registro/evidencia/aeropuerto-*.jpg`.
+
+### 👤 Carlos Andrés Quiceño · 17:55:37 UTC
+
+me gustaria que fuera un poco mas entramado las rutas de las maletas con subidas y descensos
+
+### 🤖 Claude · 17:56 UTC
+
+Entendido: bandas con subidas, tramos elevados y bajadas entre equipos. Reviso primero qué permite hoy la banda en altura.
+
+### 🤖 Claude · 22:10 UTC
+
+(Resumen) La banda ahora tiene perfil de altura (subida, tramo elevado y bajada); el clasificador va a 3,5 m con rampas que bajan a los carruseles y las colectoras, las bandas de alarma y las de llegadas cruzan por puentes. Actualizado en el mismo PR #51 con capturas nuevas.

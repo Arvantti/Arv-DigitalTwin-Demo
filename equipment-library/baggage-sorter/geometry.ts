@@ -4,6 +4,7 @@
  * La recta de descarga es la del lado +Z y se recorre hacia +X; las inducciones entran al inicio de las dos rectas
  * por el extremo -X y las rampas de vuelo salen hacia +Z, repartidas en partes iguales en la recta de descarga.
  * La rampa de codificación manual sale 1,5 m después del final de esa recta, ya en la curva.
+ * Si el lazo va elevado (height_m alto), las rampas bajan hasta ≈ 1 m del piso para entregar a los carruseles.
  *
  * Huella: largo = recta + ancho + 1,5 m (bandejas de 1,5 m); fondo = ancho + 1,5 m + chute_length_m (las rampas).
  */
@@ -125,18 +126,21 @@ export default function build(params: Params): EquipmentModel {
 
   // rampas de vuelo hacia +Z
   const chuteZ0 = zc + r + TRAY_W / 2;
-  const slope = Math.atan2(0.45, cl);
+  // con el lazo a altura de mesa la rampa baja 0,45 m; con el lazo elevado baja hasta ≈ 1 m del piso
+  const drop = Math.max(0.45, H - 1.0);
+  const slope = Math.atan2(drop, cl);
+  const chuteLen = Math.hypot(drop, cl);
   const chuteX: number[] = [];
   for (let k = 0; k < n; k++) {
     const x = -S / 2 + (S * (k + 0.5)) / n;
     chuteX.push(x);
     const c = P.group("chutes");
-    const bed = P.box(1.3, 0.04, cl, M.stainless(), 0.005);
-    bed.position.set(0, 0, cl / 2);
+    const bed = P.box(1.3, 0.04, chuteLen, M.stainless(), 0.005);
+    bed.position.set(0, 0, chuteLen / 2);
     c.add(bed);
     for (const side of [-1, 1]) {
-      const wall = P.box(0.03, 0.35, cl, M.stainless(), 0.004);
-      wall.position.set(side * 0.66, 0.17, cl / 2);
+      const wall = P.box(0.03, 0.35, chuteLen, M.stainless(), 0.004);
+      wall.position.set(side * 0.66, 0.17, chuteLen / 2);
       c.add(wall);
     }
     const label = P.nameplate([`${k + 1}`], 0.35, 0.25, "#1d2a3a", "#ffffff");
@@ -145,15 +149,16 @@ export default function build(params: Params): EquipmentModel {
     c.rotation.x = slope;
     c.position.set(x, H - 0.1, chuteZ0);
     root.add(c);
-    const leg = P.box(0.08, H - 0.55, 0.08, steel, 0.005);
-    leg.position.set(x, (H - 0.55) / 2, chuteZ0 + cl - 0.2);
+    const endY = H - 0.1 - drop;
+    const leg = P.box(0.08, endY, 0.08, steel, 0.005);
+    leg.position.set(x, endY / 2, chuteZ0 + cl - 0.2);
     root.add(leg);
   }
   // rampa de manual (radial, al entrar a la curva)
   const pm = at(S + MANUAL_AFTER_M);
   const manual = P.group("manual_chute");
-  const mbed = P.box(1.3, 0.04, cl, M.paint("#c0392b", 0.5), 0.005);
-  mbed.position.set(0, 0, cl / 2);
+  const mbed = P.box(1.3, 0.04, chuteLen, M.paint("#c0392b", 0.5), 0.005);
+  mbed.position.set(0, 0, chuteLen / 2);
   manual.add(mbed);
   manual.rotation.order = "YXZ";
   manual.rotation.y = pm.yaw;
@@ -161,6 +166,10 @@ export default function build(params: Params): EquipmentModel {
   const radial = new THREE.Vector3(Math.sin(pm.yaw), 0, Math.cos(pm.yaw));
   manual.position.set(pm.x + radial.x * TRAY_W * 0.5, H - 0.1, pm.z + radial.z * TRAY_W * 0.5);
   root.add(manual);
+  const mEndY = H - 0.1 - drop;
+  const mleg = P.box(0.08, mEndY, 0.08, steel, 0.005);
+  mleg.position.set(manual.position.x + radial.x * (cl - 0.2), mEndY / 2, manual.position.z + radial.z * (cl - 0.2));
+  root.add(mleg);
 
   const light = P.stackLight(0.4);
   light.object.position.set(-S / 2 + 1.0, H + 1.25, zc + r);
@@ -188,16 +197,16 @@ export default function build(params: Params): EquipmentModel {
     for (let c = 0; c < n; c++) {
       const count = Math.min(6, Math.round(ch(frame, `chute_${c + 1}`)));
       for (let i = 0; i < count && k < MAX_BAGS; i++) {
-        const d = cl - 0.45 - i * 0.8;
+        const d = chuteLen - 0.45 - i * 0.8;
         if (d < 0.2) break;
         bags.setMatrixAt(k++, m.makeTranslation(chuteX[c], H - 0.1 - Math.sin(slope) * d + 0.03, chuteZ0 + Math.cos(slope) * d));
       }
     }
     const mc = Math.min(4, Math.round(ch(frame, "chute_manual")));
     for (let i = 0; i < mc && k < MAX_BAGS; i++) {
-      const d = cl - 0.45 - i * 0.8;
+      const d = chuteLen - 0.45 - i * 0.8;
       const base = manual.position;
-      bags.setMatrixAt(k++, m.makeTranslation(base.x + radial.x * d, H - 0.1 - Math.sin(slope) * d + 0.03, base.z + radial.z * d));
+      bags.setMatrixAt(k++, m.makeTranslation(base.x + radial.x * Math.cos(slope) * d, H - 0.1 - Math.sin(slope) * d + 0.03, base.z + radial.z * Math.cos(slope) * d));
     }
     bags.count = k;
     bags.instanceMatrix.needsUpdate = true;

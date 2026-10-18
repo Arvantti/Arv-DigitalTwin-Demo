@@ -94,6 +94,8 @@ Dos pasillos de recibo y uno de alistamiento (`aisles`) y dos rutas de montacarg
 | `aircraft` | Avión de pasillo único (fuselaje, alas, motores, cola), dimensionado por la `footprint` (largo × envergadura × altura) |
 | `baggage_cart_train` | Tractor con tres carros de equipaje cargados |
 
+Las rutas de las maletas suben y bajan: las colectoras salen del check-in a 0,75 m, suben a un puente de 4,2 m sobre el pasillo y bajan a la CT; las inducciones suben al clasificador, que va elevado a 3,5 m, y sus rampas bajan a ≈ 1 m sobre los carruseles de armado; las bandas de alarma pasan a 2,4 m hacia nivel 3 y las de llegadas cruzan la vía de servicio a 3,6 m. Es el perfil de altura de `belt-conveyor` (`rise_m`, `crest_height_m`, `ramp_deg`).
+
 Cámaras por zona: `camera=hall-checkin`, `camera=sala-bhs`, `camera=plataforma`, `camera=hall-llegadas`. La escena por software (sin GPU) tarda unos 2 minutos en estar lista para una captura con datos.
 
 ## Pasarelas en el `plant.yaml`

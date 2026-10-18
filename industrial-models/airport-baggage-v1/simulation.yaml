@@ -13,24 +13,24 @@ dt: 1.0
 equipment:
   checkin-a:     { type: checkin-island,       preset: island-8 }
   checkin-b:     { type: checkin-island,       preset: island-8, params: { desk_color: "#7a2f5f" } }
-  collector-a:   { type: belt-conveyor,        preset: bhs-collector-46m }
-  collector-b:   { type: belt-conveyor,        preset: bhs-collector-46m }
+  collector-a:   { type: belt-conveyor,        preset: bhs-collector-46m, params: { crest_height_m: 4.2, ramp_deg: 16 } }
+  collector-b:   { type: belt-conveyor,        preset: bhs-collector-46m, params: { crest_height_m: 4.2, ramp_deg: 16 } }
   screening-01:  { type: baggage-screening,    preset: ct-600, params: { alarm_side: left } }
   screening-02:  { type: baggage-screening,    preset: ct-600, params: { alarm_side: right } }
-  induct-01:     { type: belt-conveyor,        preset: bhs-transfer-9m }
-  induct-02:     { type: belt-conveyor,        preset: bhs-transfer-9m }
-  alarm-belt-01: { type: belt-conveyor,        preset: bhs-transfer-9m, params: { length_m: 7.7 } }
-  alarm-belt-02: { type: belt-conveyor,        preset: bhs-transfer-9m, params: { length_m: 7.7 } }
+  induct-01:     { type: belt-conveyor,        preset: bhs-transfer-9m, params: { height_m: 0.75, rise_m: 2.75 } }
+  induct-02:     { type: belt-conveyor,        preset: bhs-transfer-9m, params: { height_m: 0.75, rise_m: 2.75 } }
+  alarm-belt-01: { type: belt-conveyor,        preset: bhs-transfer-9m, params: { length_m: 7.7, height_m: 0.75, crest_height_m: 2.4, ramp_deg: 22 } }
+  alarm-belt-02: { type: belt-conveyor,        preset: bhs-transfer-9m, params: { length_m: 7.7, height_m: 0.75, crest_height_m: 2.4, ramp_deg: 22 } }
   l3-01:         { type: bag-handling-station, preset: level3-3ops }
   l3-02:         { type: bag-handling-station, preset: level3-3ops }
-  sorter-01:     { type: baggage-sorter,       preset: tilt-tray-4 }
+  sorter-01:     { type: baggage-sorter,       preset: tilt-tray-4, params: { height_m: 3.5 } }
   encoding-01:   { type: bag-handling-station, preset: encoding-1op }
   makeup-01:     { type: baggage-carousel,     preset: makeup-40 }
   makeup-02:     { type: baggage-carousel,     preset: makeup-40 }
   makeup-03:     { type: baggage-carousel,     preset: makeup-40 }
   makeup-04:     { type: baggage-carousel,     preset: makeup-40 }
-  inbound-01:    { type: belt-conveyor,        preset: bhs-inbound-18m }
-  inbound-02:    { type: belt-conveyor,        preset: bhs-inbound-18m }
+  inbound-01:    { type: belt-conveyor,        preset: bhs-inbound-18m, params: { crest_height_m: 3.6, ramp_deg: 20 } }
+  inbound-02:    { type: belt-conveyor,        preset: bhs-inbound-18m, params: { crest_height_m: 3.6, ramp_deg: 20 } }
   reclaim-01:    { type: baggage-carousel,     preset: reclaim-60 }
   reclaim-02:    { type: baggage-carousel,     preset: reclaim-60 }
 

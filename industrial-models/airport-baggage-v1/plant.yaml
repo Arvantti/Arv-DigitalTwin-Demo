@@ -49,21 +49,21 @@ equipment:
   # --- Check-in (salidas) ---
   - { id: checkin-a,    type: checkin_island, zone: hall-checkin, position: [24.5, 97.3, 0],  footprint: [29, 11, 2.6], params: { counters: 8 } }
   - { id: checkin-b,    type: checkin_island, zone: hall-checkin, position: [24.5, 74.7, 0],  footprint: [29, 11, 2.6], rotation_deg: 180, params: { counters: 8 } }
-  - { id: collector-a,  type: belt_conveyor,  zone: hall-checkin, position: [33, 91, 0],      footprint: [46, 1.6, 0.95], params: { length_m: 46 } }
-  - { id: collector-b,  type: belt_conveyor,  zone: hall-checkin, position: [33, 81, 0],      footprint: [46, 1.6, 0.95], params: { length_m: 46 } }
+  - { id: collector-a,  type: belt_conveyor,  zone: hall-checkin, position: [33, 91, 0],      footprint: [46, 1.6, 4.6], params: { length_m: 46 } }
+  - { id: collector-b,  type: belt_conveyor,  zone: hall-checkin, position: [33, 81, 0],      footprint: [46, 1.6, 4.6], params: { length_m: 46 } }
 
   # --- Inspección de bodega y nivel 3 ---
   - { id: screening-01, type: baggage_screening, zone: hbs, position: [60, 91, 0],    footprint: [8, 2.6, 2.1], params: { max_bph: 600, alarm_side: left } }
   - { id: screening-02, type: baggage_screening, zone: hbs, position: [60, 81, 0],    footprint: [8, 2.6, 2.1], params: { max_bph: 600, alarm_side: right } }
-  - { id: induct-01,    type: belt_conveyor,     zone: hbs, position: [68.5, 91, 0],  footprint: [9, 1.6, 1.1], params: { length_m: 9 } }
-  - { id: induct-02,    type: belt_conveyor,     zone: hbs, position: [68.5, 81, 0],  footprint: [9, 1.6, 1.1], params: { length_m: 9 } }
-  - { id: alarm-belt-01, type: belt_conveyor,    zone: hbs, position: [63.25, 96.15, 0], footprint: [7.7, 1.6, 1.1], rotation_deg: 90,  params: { length_m: 7.7 } }
-  - { id: alarm-belt-02, type: belt_conveyor,    zone: hbs, position: [63.25, 75.85, 0], footprint: [7.7, 1.6, 1.1], rotation_deg: 270, params: { length_m: 7.7 } }
+  - { id: induct-01,    type: belt_conveyor,     zone: hbs, position: [68.5, 91, 0],  footprint: [9, 1.6, 3.9], params: { length_m: 9 } }
+  - { id: induct-02,    type: belt_conveyor,     zone: hbs, position: [68.5, 81, 0],  footprint: [9, 1.6, 3.9], params: { length_m: 9 } }
+  - { id: alarm-belt-01, type: belt_conveyor,    zone: hbs, position: [63.25, 96.15, 0], footprint: [7.7, 1.6, 2.8], rotation_deg: 90,  params: { length_m: 7.7 } }
+  - { id: alarm-belt-02, type: belt_conveyor,    zone: hbs, position: [63.25, 75.85, 0], footprint: [7.7, 1.6, 2.8], rotation_deg: 270, params: { length_m: 7.7 } }
   - { id: l3-01,        type: bag_handling_station, zone: nivel3-norte, position: [66.85, 104, 0], footprint: [9.2, 5, 2.4], params: { role: l3, operators: 3 } }
   - { id: l3-02,        type: bag_handling_station, zone: nivel3-sur,   position: [66.85, 67, 0],  footprint: [9.2, 5, 2.4], params: { role: l3, operators: 3 } }
 
   # --- Clasificación y armado ---
-  - { id: sorter-01,    type: baggage_sorter,    zone: sala-bhs, position: [93, 84, 0],     footprint: [40, 16, 2.7], params: { destinations: 4, flights: [V101, V205, V317, V422] } }
+  - { id: sorter-01,    type: baggage_sorter,    zone: sala-bhs, position: [93, 84, 0],     footprint: [40, 16, 5.1], params: { destinations: 4, flights: [V101, V205, V317, V422] } }
   - { id: encoding-01,  type: bag_handling_station, zone: sala-bhs, position: [110.5, 73.5, 0], footprint: [4.4, 3, 2.4], params: { role: encoding, operators: 1 } }
   - { id: makeup-01,    type: baggage_carousel,  zone: sala-bhs, position: [83.3, 66.4, 0],  footprint: [19.1, 6.6, 1.9], rotation_deg: 90, params: { flight: V101 } }
   - { id: makeup-02,    type: baggage_carousel,  zone: sala-bhs, position: [90.3, 66.4, 0],  footprint: [19.1, 6.6, 1.9], rotation_deg: 90, params: { flight: V205 } }
@@ -102,8 +102,8 @@ equipment:
   - { id: carts-arr-01, type: baggage_cart_train, zone: plataforma, position: [114, 20, 0], footprint: [12, 2.2, 1.9], rotation_deg: 90 }
 
   # --- Llegadas ---
-  - { id: inbound-01,   type: belt_conveyor,    zone: inyeccion-llegadas, position: [130.2, 49, 0], footprint: [18, 1.6, 1.0], rotation_deg: 90, params: { length_m: 18 } }
-  - { id: inbound-02,   type: belt_conveyor,    zone: inyeccion-llegadas, position: [152.2, 49, 0], footprint: [18, 1.6, 1.0], rotation_deg: 90, params: { length_m: 18 } }
+  - { id: inbound-01,   type: belt_conveyor,    zone: inyeccion-llegadas, position: [130.2, 49, 0], footprint: [18, 1.6, 4.0], rotation_deg: 90, params: { length_m: 18 } }
+  - { id: inbound-02,   type: belt_conveyor,    zone: inyeccion-llegadas, position: [152.2, 49, 0], footprint: [18, 1.6, 4.0], rotation_deg: 90, params: { length_m: 18 } }
   - { id: reclaim-01,   type: baggage_carousel, zone: hall-llegadas, position: [131, 72, 0],  footprint: [27.9, 8.6, 2.0], rotation_deg: 90, params: { mode: reclaim } }
   - { id: reclaim-02,   type: baggage_carousel, zone: hall-llegadas, position: [153, 72, 0],  footprint: [27.9, 8.6, 2.0], rotation_deg: 90, params: { mode: reclaim } }
 
