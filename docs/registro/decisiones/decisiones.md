@@ -1,7 +1,7 @@
 ---
 tipo: decisiones
 tags: [registro, decision]
-actualizado: 2026-10-17
+actualizado: 2026-10-18
 ---
 # Decisiones y reglas del autor
 
@@ -140,3 +140,6 @@ El autor envió capturas de tuberías que atraviesan las cajas de la estantería
 
 ## D43 · Capacidad de la planta de salsas contra 22 t/día · 2026-10-18 15:23
 El autor (15:23) aprueba el plan de conexión de la planta de salsas y añade: revisar y ajustar los equipos que no darían abasto en litros por día. Decisión: base de 16 h/día y 85 % de disponibilidad (supuestos); el despacho pasa de 35 a 90 tarimas/día; túnel de enfriamiento, marmitas, pasteurizador y mesa de 250 ml se ajustan al conectar cada etapa, no antes.
+
+## D44 · Fábrica de cajas: cuarto gemelo, primero plano y escena · 2026-10-18 15:04
+El autor (15:04) pide un gemelo aparte del sistema de transporte de una fábrica de cajas, inspirado en un fabricante de transportadores, y (15:07) que esa empresa no se mencione nunca. Decisiones: (1) la inspiración no se nombra en el código, los documentos, el registro, los commits ni los PR; en el histórico su mención se reemplaza por «[referencia omitida a pedido del autor]», igual que D01 con las empresas de Medellín. (2) Planta `corrugated-box-plant-v1` con la corrugadora al norte y el transporte de pilas al este (rodillos, mesas giratorias, carro de transferencia, carriles de alimentación y pulmón) que alimenta las líneas de conversión hacia el oeste; valores supuestos (`docs/box-plant.md`). (4) El autor (17:14): todo es imaginario y se hace lo que consuma menos; varios tamaños de caja, una línea con paletizador propio y dos con uno compartido. Quedan tres líneas, una por tamaño (grande, mediana, pequeña troquelada), y se retira la cuarta (troqueladora plana y pegadora). (3) Se entrega en PR pequeños: primero plano y escena 3D con piezas de escena; después los tipos de librería y la simulación conectada en el motor, tras confirmar la ficha de diseño con el autor (D03).
