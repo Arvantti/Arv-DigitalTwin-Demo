@@ -42,3 +42,19 @@ Este sería el primer ensayo para hacer CICD automático. Y después, cuando ya 
 ### 🤖 Claude · 2026-10-18 02:05 UTC
 
 Renombra el proyecto de Pages a `digitaltwin-arvantti` para que coincida con el dominio `digitaltwin.arvantti.online`. También resume las respuestas de la sesión: token de Pages con permiso de edición y caducidad de 90 días, secretos de organización compartidos solo con los repos que desplieguen, nombre de proyecto único por repo, y Wrangler a mano en otras ramas sin choque con el CI/CD (que solo corre en `main`).
+
+### 👤 Carlos Andrés Quiceño · 2026-10-18 03:08:14 UTC
+
+(Captura de GitHub Actions: Deploy #1 en rojo tras fusionar el PR #35.)
+
+### 🤖 Claude · 2026-10-18 03:15 UTC
+
+Revisa el registro: el build funcionó, pero la acción de wrangler falló al instalar wrangler con pnpm en la raíz del workspace. Se corrige ejecutando wrangler con `pnpm dlx`.
+
+### 👤 Carlos Andrés Quiceño · 2026-10-18 03:09:25 UTC
+
+Pero no me gusta npm, siempre uso pnpm.
+
+### 🤖 Claude · 2026-10-18 03:12 UTC
+
+Cambia el PR #36: en vez de `packageManager: npm`, el workflow ejecuta `pnpm dlx wrangler@4`, con los secretos como variables de entorno.
