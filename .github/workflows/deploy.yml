@@ -44,6 +44,15 @@ jobs:
           cache: pnpm
       - if: steps.secrets.outputs.ready == 'true'
         run: pnpm install --frozen-lockfile
+      - uses: astral-sh/setup-uv@v6
+        if: steps.secrets.outputs.ready == 'true'
+        with:
+          python-version: "3.12"
+      - name: Exportar el plano de las plantas (la escena 3D lo pide a /api/plants)
+        if: steps.secrets.outputs.ready == 'true'
+        run: |
+          uv sync
+          uv run python tools/deploy/export_static_plants.py
       - if: steps.secrets.outputs.ready == 'true'
         run: pnpm gallery:build
       - name: Desplegar en Cloudflare Pages

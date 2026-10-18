@@ -8,3 +8,4 @@ dist/
 *.tsbuildinfo
 .pytest_cache/
 .ruff_cache/
+apps/gallery/public/api/
