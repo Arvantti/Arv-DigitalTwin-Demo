@@ -165,6 +165,9 @@ banda de llegadas 1 ─▶ carrusel de reclamo 1        banda de llegadas 2 ─�
 | `makeup-short-staff` | Los operarios del carrusel 1 se van 20 min: el carrusel se llena, su rampa también y el clasificador recircula y manda a codificación manual 10–35 maletas |
 | `sorter-trip` | Disparo del clasificador 10 min: las inducciones y la salida de las CT se llenan en ≈ 3 min y las dos CT quedan bloqueadas ≥ 15 % de la media hora |
 | `arrivals-wave` | Dos vuelos llegan a la vez, 180 maletas por banda a 20 por min; cada oleada dura ≈ 10 min de la primera maleta a la última recogida |
+| `slippery-collector` | La colectora A pierde agarre 15 min (fricción 0,25 < tan 16°): las maletas resbalan al pie de la subida, las que llegan chocan contra ellas (≈ 27 choques), la colectora se tapa y la isla A queda bloqueada ≈ 35 % del tiempo con 65 pasajeros en fila |
+
+Cada maleta se sigue una por una sobre el recorrido real de su banda, con sus subidas y bajadas: respeta la separación mínima, cuenta un choque cuando alcanza a la de adelante con velocidad relativa y, si la pendiente supera su ángulo de fricción (tan θ > `friction_coef`, 0,45 por defecto, ≈ 24°), resbala y se detiene al pie de la subida. La API publica la posición de cada una (`items` en el snapshot) y la escena las dibuja donde están.
 
 Un equipo con varias salidas (clasificador, CT) usa un puerto por destino (`out_1` … `out_4`, `manual_out`, `cleared_out`, `alarm_out`), porque un enlace no reparte. Las islas, las colectoras, la CT, el clasificador y los carruseles dejan de recibir cuando se llenan y vuelven a recibir con una plaza libre (histéresis), así un bloqueo se propaga aguas arriba hasta la fila de pasajeros.
 

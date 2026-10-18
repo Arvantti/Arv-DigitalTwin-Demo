@@ -19,8 +19,8 @@ equipment:
   screening-02:  { type: baggage-screening,    preset: ct-600, params: { alarm_side: right } }
   induct-01:     { type: belt-conveyor,        preset: bhs-transfer-9m, params: { height_m: 0.75, rise_m: 2.75 } }
   induct-02:     { type: belt-conveyor,        preset: bhs-transfer-9m, params: { height_m: 0.75, rise_m: 2.75 } }
-  alarm-belt-01: { type: belt-conveyor,        preset: bhs-transfer-9m, params: { length_m: 7.7, height_m: 0.75, crest_height_m: 2.4, ramp_deg: 22 } }
-  alarm-belt-02: { type: belt-conveyor,        preset: bhs-transfer-9m, params: { length_m: 7.7, height_m: 0.75, crest_height_m: 2.4, ramp_deg: 22 } }
+  alarm-belt-01: { type: belt-conveyor,        preset: bhs-transfer-9m, params: { length_m: 7.7, height_m: 0.75, crest_height_m: 2.0, ramp_deg: 22 } }
+  alarm-belt-02: { type: belt-conveyor,        preset: bhs-transfer-9m, params: { length_m: 7.7, height_m: 0.75, crest_height_m: 2.0, ramp_deg: 22 } }
   l3-01:         { type: bag-handling-station, preset: level3-3ops }
   l3-02:         { type: bag-handling-station, preset: level3-3ops }
   sorter-01:     { type: baggage-sorter,       preset: tilt-tray-4, params: { height_m: 3.5 } }
@@ -136,3 +136,17 @@ scenarios:
       - { path: lines.reclaim-1.output_units, equals: 180 }
       - { path: lines.reclaim-2.output_units, equals: 180 }
       - { path: equipment.reclaim-01.kpis.wave_min, min: 9, max: 11, description: "(9 min de descarga + 36 s de banda; los pasajeros recogen más rápido de lo que llega)" }
+
+  - id: slippery-collector
+    description: "La colectora A pierde agarre 15 min a los 10 min (cubierta lisa o maletas con funda plástica): las maletas resbalan al pie de la subida de 16°, la colectora se tapa y la isla A se bloquea"
+    duration_s: 2400
+    timeline:
+      - { at_s: 600,  equipment: collector-a, command: set_param, args: { name: friction_coef, value: 0.25 } }
+      - { at_s: 1500, equipment: collector-a, command: set_param, args: { name: friction_coef, value: 0.45 } }
+    expect:
+      - { path: events.collector-a.slip, min: 1, description: "(tan 16° = 0,287 > 0,25: no sube)" }
+      - { path: equipment.checkin-a.state_share.blocked, min: 0.05, description: "(con la colectora tapada la isla A deja de despachar)" }
+      - { path: equipment.collector-a.variables.collisions, min: 10, description: "(las maletas que siguen llegando chocan contra las detenidas al pie de la rampa)" }
+      - { path: equipment.checkin-b.state_share.blocked, equals: 0.0 }
+      - { path: equipment.collector-b.variables.slipping, equals: 0 }
+

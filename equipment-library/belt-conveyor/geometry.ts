@@ -67,6 +67,18 @@ export default function build(params: Params): EquipmentModel {
     return 0;
   };
   const top = Math.max(...prof.map((q) => q[1]));
+  // largo acumulado sobre el recorrido en cada punto del perfil (la simulación mide ahí la posición de cada unidad)
+  const cum = [0];
+  for (let i = 1; i < prof.length; i++) cum.push(cum[i - 1] + Math.hypot(prof[i][0] - prof[i - 1][0], prof[i][1] - prof[i - 1][1]));
+  const xAtPath = (sPath: number): number => {
+    for (let i = 1; i < prof.length; i++) {
+      if (sPath <= cum[i] || i === prof.length - 1) {
+        const f = cum[i] > cum[i - 1] ? Math.min(1, Math.max(0, (sPath - cum[i - 1]) / (cum[i] - cum[i - 1]))) : 1;
+        return prof[i - 1][0] + f * (prof[i][0] - prof[i - 1][0]);
+      }
+    }
+    return L / 2;
+  };
   /** Agrega una pieza recta que sigue el perfil: largo en planta, centrada en z, a dy de la superficie. */
   const alongProfile = (make: (len: number) => THREE.Object3D, dy: number, z: number): void => {
     for (let i = 1; i < prof.length; i++) {
@@ -213,6 +225,14 @@ export default function build(params: Params): EquipmentModel {
   };
 
   function update(frame: AnimationFrame): void {
+    if (frame.items) {
+      // la simulación sigue cada unidad: se dibuja donde está (con su separación, sus choques y sus resbalones)
+      const n = Math.min(MAX_ITEMS, frame.items.length);
+      for (let i = 0; i < n; i++) place(i, Math.min(L / 2 - size * 0.5, xAtPath(frame.items[i])));
+      items.count = n;
+      items.instanceMatrix.needsUpdate = true;
+      return;
+    }
     const capacity = Math.floor(L / pitch) + 1; // lo que cabe físicamente sobre la banda
     const total = Math.min(MAX_ITEMS, capacity, Math.round(ch(frame, "items_count")));
     const acc = Math.min(total, Math.round(ch(frame, "accumulated")));

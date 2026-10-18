@@ -2,7 +2,7 @@
 tipo: historico-ia
 fuente: hilo «Gemelo de equipaje de aeropuerto» (Claude Projects)
 desde: 2026-10-18 15:04
-hasta: 2026-10-18 22:10
+hasta: 2026-10-18 23:30
 tags: [registro, historico-ia, aeropuerto, equipaje, logistica]
 ---
 # Hilo: gemelo del sistema de equipaje de aeropuerto
@@ -44,3 +44,19 @@ Entendido: bandas con subidas, tramos elevados y bajadas entre equipos. Reviso p
 ### 🤖 Claude · 22:10 UTC
 
 (Resumen) La banda ahora tiene perfil de altura (subida, tramo elevado y bajada); el clasificador va a 3,5 m con rampas que bajan a los carruseles y las colectoras, las bandas de alarma y las de llegadas cruzan por puentes. Actualizado en el mismo PR #51 con capturas nuevas.
+
+### 👤 Andy (Carlos Andrés Quiceño) · 22:45:42 UTC
+
+la animacion con las maletas tiene reglas de fisica como friccion y colisiones?
+
+### 🤖 Claude · 22:46 UTC
+
+No: no hay motor de física. Lo que sí hay viene de la simulación: separación mínima entre maletas, bloqueo hacia atrás y capacidades; la escena reparte las maletas a lo largo del recorrido. Propuse dos caminos: (1) seguir cada maleta en la simulación con espacio libre y límite de pendiente (recomendado) o (2) un motor de física solo visual. ¿Avanzo con el 1?
+
+### 👤 Andy (Carlos Andrés Quiceño) · 22:46:53 UTC
+
+si
+
+### 🤖 Claude · 23:30 UTC
+
+(Resumen) Cada maleta se sigue sobre el recorrido real de su banda: separación mínima, choques contados y fricción (resbala en subidas de más de ≈ 24°). La escena dibuja la posición real de cada maleta. Escenario nuevo de planta `slippery-collector`: la colectora A pierde agarre, las maletas resbalan, chocan contra la cola y la isla A se bloquea.

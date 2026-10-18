@@ -15,6 +15,8 @@ export interface AnimationFrame {
   variables?: Record<string, number | string | null>;
   /** Identificador visible del equipo (p. ej. IMM-03). */
   label?: string;
+  /** Posición de cada unidad que el equipo sigue una por una (m sobre su recorrido), si la publica. */
+  items?: number[];
 }
 
 /**
