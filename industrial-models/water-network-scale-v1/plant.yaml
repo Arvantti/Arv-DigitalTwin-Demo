@@ -56,37 +56,55 @@ equipment:
   - { id: grid-02,           type: distribution_grid, zone: columna, position: [11.0, 5.0, 3.7], footprint: [2.2, 2.7, 1.1], params: { level: 2, valves: 18 } }
   - { id: grid-03,           type: distribution_grid, zone: columna, position: [11.0, 5.0, 4.9], footprint: [2.2, 2.7, 1.1], params: { level: 3, valves: 18 } }
   - { id: grid-04,           type: distribution_grid, zone: columna, position: [11.0, 5.0, 6.1], footprint: [2.2, 2.7, 1.1], params: { level: 4, valves: 18, critical: true } }
-  - { id: valve-between-12,  type: regulating_valve,  zone: columna, position: [9.45, 3.4, 3.1], footprint: [0.3, 0.3, 0.4], params: { diameter_in: 2, control: apertura fija manual } }
-  - { id: valve-between-23,  type: regulating_valve,  zone: columna, position: [9.45, 3.4, 4.3], footprint: [0.3, 0.3, 0.4], params: { diameter_in: 2, control: apertura fija manual } }
-  - { id: valve-between-34,  type: regulating_valve,  zone: columna, position: [9.45, 3.4, 5.5], footprint: [0.3, 0.3, 0.4], params: { diameter_in: 2, control: apertura fija manual } }
+  - { id: valve-between-12,  type: regulating_valve,  zone: columna, position: [9.57, 3.7, 2.9], footprint: [0.3, 0.3, 0.4], params: { diameter_in: 2, control: apertura fija manual } }
+  - { id: valve-between-23,  type: regulating_valve,  zone: columna, position: [9.57, 3.7, 4.1], footprint: [0.3, 0.3, 0.4], params: { diameter_in: 2, control: apertura fija manual } }
+  - { id: valve-between-34,  type: regulating_valve,  zone: columna, position: [9.57, 3.7, 5.3], footprint: [0.3, 0.3, 0.4], params: { diameter_in: 2, control: apertura fija manual } }
 
 lines: []
 
 flows:
-  # Red a presión (dominio hidráulico del motor). Rutas: del equipo de origen al de destino, con la subida y bajada de 1 m.
+  # Red a presión (dominio hidráulico del motor). Cada ruta empieza y termina en la boquilla o brida real del equipo
+  # (cotas del modelo 3D, ver docs/water-network-plant.md sección 11), para que la secuencia quede continua:
+  #   tanques de recirculación -> bombas de recirculación -> tanque de bombeo -> bombas principales -> estación
+  #   reguladora -> nivel 1 -> válvula entre niveles -> nivel 2 -> ... -> nivel 4.
   - { from: tank-supply-01,    to: pumpset-main-01,  medium: agua, rate: 13, unit: m3/h, piped: true, diameter_in: 4, minor_k: 1.0,
-      route: [[2.6, 3.75, 2.7], [2.6, 5.7, 2.7]], show: true }
+      route: [[3.65, 3.0, 2.82], [4.62, 3.0, 2.82], [4.62, 5.98, 2.82], [4.44, 5.98, 2.82]], show: true, note: de la salida del tanque al colector de succión }
   - { from: pumpset-main-01,   to: prs-01,           medium: agua a presión, rate: 13, unit: m3/h, piped: true, diameter_in: 4, minor_k: 0.3,
-      route: [[3.5, 6.4, 2.9], [4.4, 6.4, 2.9], [4.4, 6.4, 3.9], [4.4, 4.6, 3.9], [4.7, 4.6, 3.9]], show: true, note: sube 1 m hasta la estación }
+      route: [[4.44, 6.8, 3.176], [4.55, 6.8, 3.176], [4.55, 6.8, 4.05], [4.55, 4.6, 4.05], [4.9135, 4.6, 4.05]], show: true, note: sube 1 m hasta la estación }
   - { from: prs-01,            to: grid-01,          medium: agua regulada, rate: 13, unit: m3/h, piped: true, diameter_in: 4, minor_k: 0.5,
-      route: [[7.7, 4.6, 3.9], [8.6, 4.6, 3.9], [8.6, 4.6, 2.9], [9.45, 4.6, 2.9], [9.45, 3.4, 2.9], [9.9, 3.4, 2.9]], show: true, note: baja 1 m hasta el nivel 1 }
-  - { from: grid-01,           to: valve-between-12, medium: agua, rate: 9.6, unit: m3/h, piped: true, diameter_in: 2, minor_k: 0.5, route: [[9.45, 3.4, 2.9], [9.45, 3.4, 3.1]] }
-  - { from: valve-between-12,  to: grid-02,          medium: agua, rate: 9.6, unit: m3/h, piped: true, diameter_in: 2, minor_k: 0.5, route: [[9.45, 3.4, 3.5], [9.45, 3.4, 4.1], [9.9, 3.4, 4.1]] }
-  - { from: grid-02,           to: valve-between-23, medium: agua, rate: 6.4, unit: m3/h, piped: true, diameter_in: 2, minor_k: 0.5, route: [[9.45, 3.4, 4.1], [9.45, 3.4, 4.3]] }
-  - { from: valve-between-23,  to: grid-03,          medium: agua, rate: 6.4, unit: m3/h, piped: true, diameter_in: 2, minor_k: 0.5, route: [[9.45, 3.4, 4.7], [9.45, 3.4, 5.3], [9.9, 3.4, 5.3]] }
-  - { from: grid-03,           to: valve-between-34, medium: agua, rate: 3.2, unit: m3/h, piped: true, diameter_in: 2, minor_k: 0.5, route: [[9.45, 3.4, 5.3], [9.45, 3.4, 5.5]] }
-  - { from: valve-between-34,  to: grid-04,          medium: agua, rate: 3.2, unit: m3/h, piped: true, diameter_in: 2, minor_k: 0.5, route: [[9.45, 3.4, 5.9], [9.45, 3.4, 6.5], [9.9, 3.4, 6.5]] }
-  # Recirculación: las bajantes de las canaletas caen por gravedad a los tanques del piso 0 (no es red a presión).
-  - { from: grid-01, to: tank-recirc-01, medium: agua de retorno (bajante), rate: 3.3, unit: m3/h, piped: true }
-  - { from: grid-02, to: tank-recirc-01, medium: agua de retorno (bajante), rate: 3.2, unit: m3/h, piped: true }
-  - { from: grid-03, to: tank-recirc-02, medium: agua de retorno (bajante), rate: 3.2, unit: m3/h, piped: true }
-  - { from: grid-04, to: tank-recirc-02, medium: agua de retorno (bajante), rate: 3.2, unit: m3/h, piped: true }
+      route: [[7.4865, 4.6, 4.05], [8.6, 4.6, 4.05], [8.6, 4.6, 2.65], [8.6, 3.5, 2.65], [10.0, 3.5, 2.65], [10.0, 4.0, 2.65]], show: true, note: baja 1 m hasta el nivel 1 y entra por el montante de la rejilla }
+  # Columna: de la toma de cada nivel (derivación a 0,15 m del piso del nivel) a la brida de entrada de la válvula entre niveles
+  # (por el costado oeste), y de la brida de salida a la toma del nivel siguiente.
+  - { from: grid-01,           to: valve-between-12, medium: agua, rate: 9.6, unit: m3/h, piped: true, diameter_in: 2, minor_k: 0.5,
+      route: [[10.0, 3.7, 2.65], [9.1, 3.7, 2.65], [9.1, 3.7, 3.25], [9.22, 3.7, 3.25]] }
+  - { from: valve-between-12,  to: grid-02,          medium: agua, rate: 9.6, unit: m3/h, piped: true, diameter_in: 2, minor_k: 0.5,
+      route: [[9.92, 3.7, 3.25], [10.0, 3.7, 3.25], [10.0, 3.7, 3.85], [10.0, 4.0, 3.85]] }
+  - { from: grid-02,           to: valve-between-23, medium: agua, rate: 6.4, unit: m3/h, piped: true, diameter_in: 2, minor_k: 0.5,
+      route: [[10.0, 3.7, 3.85], [9.1, 3.7, 3.85], [9.1, 3.7, 4.45], [9.22, 3.7, 4.45]] }
+  - { from: valve-between-23,  to: grid-03,          medium: agua, rate: 6.4, unit: m3/h, piped: true, diameter_in: 2, minor_k: 0.5,
+      route: [[9.92, 3.7, 4.45], [10.0, 3.7, 4.45], [10.0, 3.7, 5.05], [10.0, 4.0, 5.05]] }
+  - { from: grid-03,           to: valve-between-34, medium: agua, rate: 3.2, unit: m3/h, piped: true, diameter_in: 2, minor_k: 0.5,
+      route: [[10.0, 3.7, 5.05], [9.1, 3.7, 5.05], [9.1, 3.7, 5.65], [9.22, 3.7, 5.65]] }
+  - { from: valve-between-34,  to: grid-04,          medium: agua, rate: 3.2, unit: m3/h, piped: true, diameter_in: 2, minor_k: 0.5,
+      route: [[9.92, 3.7, 5.65], [10.0, 3.7, 5.65], [10.0, 3.7, 6.25], [10.0, 4.0, 6.25]] }
+  # Recirculación: la bajante de cada nivel sale de su canaleta (12,09; 3,975), se junta en un tronco a la cota de la
+  # boquilla de entrada de cada tanque (3,245 m) y llega a ella. Por gravedad, no es red a presión. El nivel 1 desagua
+  # 0,7 m más abajo que esa boquilla: es una simplificación ilustrativa (ver la sección 11 del documento de diseño).
+  - { from: grid-01, to: tank-recirc-01, medium: agua de retorno (bajante), rate: 3.3, unit: m3/h, piped: true,
+      route: [[12.09, 3.975, 2.52], [12.35, 3.975, 2.52], [12.35, 3.975, 3.245], [12.35, 3.55, 3.245], [8.95, 3.55, 3.245], [8.95, 2.6, 3.245]] }
+  - { from: grid-02, to: tank-recirc-01, medium: agua de retorno (bajante), rate: 3.2, unit: m3/h, piped: true,
+      route: [[12.09, 3.975, 3.72], [12.35, 3.975, 3.72], [12.35, 3.975, 3.245], [12.35, 3.55, 3.245], [8.95, 3.55, 3.245], [8.95, 2.6, 3.245]] }
+  - { from: grid-03, to: tank-recirc-02, medium: agua de retorno (bajante), rate: 3.2, unit: m3/h, piped: true,
+      route: [[12.09, 3.975, 4.92], [12.65, 3.975, 4.92], [12.65, 3.975, 3.245], [12.65, 3.4, 3.245], [10.75, 3.4, 3.245], [10.75, 2.6, 3.245]] }
+  - { from: grid-04, to: tank-recirc-02, medium: agua de retorno (bajante), rate: 3.2, unit: m3/h, piped: true,
+      route: [[12.09, 3.975, 6.12], [12.65, 3.975, 6.12], [12.65, 3.975, 3.245], [12.65, 3.4, 3.245], [10.75, 3.4, 3.245], [10.75, 2.6, 3.245]] }
+  # Succión de las bombas de recirculación (colector de 3", brida este) y retorno al tanque de bombeo (boquilla de entrada, cota 6,375 m).
   - { from: tank-recirc-01,    to: pumpset-recirc-01, medium: agua de retorno, rate: 15, unit: m3/h, piped: true, diameter_in: 3, minor_k: 1.0,
-      route: [[10.0, 3.25, 0.2], [10.0, 5.9, 0.2]] }
+      route: [[10.95, 2.6, 0.32], [10.95, 3.6, 0.32], [12.95, 3.6, 0.32]] }
   - { from: tank-recirc-02,    to: pumpset-recirc-01, medium: agua de retorno, rate: 15, unit: m3/h, piped: true, diameter_in: 3, minor_k: 1.0,
-      route: [[11.8, 3.25, 0.2], [11.8, 5.9, 0.2]] }
+      route: [[12.75, 2.6, 0.32], [12.95, 2.6, 0.32], [12.95, 6.03, 0.32], [12.665, 6.03, 0.32]] }
   - { from: pumpset-recirc-01, to: tank-supply-01,   medium: agua de retorno, rate: 15, unit: m3/h, piped: true, diameter_in: 3, minor_k: 2.0,
-      route: [[10.0, 7.2, 0.5], [8.6, 7.2, 0.5], [8.6, 7.2, 4.9], [2.6, 7.2, 4.9], [2.6, 3.0, 4.9], [2.6, 3.0, 4.7]], show: true, note: sube al tanque de bombeo }
+      route: [[12.665, 7.15, 0.897], [12.95, 7.15, 0.897], [12.95, 7.15, 6.375], [1.45, 7.15, 6.375], [1.45, 3.0, 6.375]], show: true, note: sube al tanque de bombeo }
   # Señales: telemetría de la casa más crítica de cada nivel hacia la estación y niveles de los tanques hacia la recirculación.
   - { from: grid-01, to: prs-01, medium: telemetría de presión, piped: false }
   - { from: grid-02, to: prs-01, medium: telemetría de presión, piped: false }

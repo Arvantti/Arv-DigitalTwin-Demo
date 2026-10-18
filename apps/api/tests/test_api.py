@@ -75,10 +75,25 @@ def test_water_plant_pipes_carry_route_diameter_and_hydraulic_link() -> None:
     by_pipe = {(p["from"], p["to"]): p for p in plant["pipes"]}
     riser = by_pipe[("prs-01", "grid-01")]
     assert riser["diameter_in"] == 4
-    assert riser["route"][0] == [7.7, 4.6, 3.9]
+    assert riser["route"][0] == [7.4865, 4.6, 4.05]  # brida de salida de la estación reguladora
     assert riser["links"] == ["prs-01:outlet>grid-01:inlet"]
-    drop = by_pipe[("grid-03", "tank-recirc-02")]  # bajante: sin ruta ni diámetro, la escena la dibuja vertical
-    assert "route" not in drop and drop["links"]
+    drop = by_pipe[("grid-03", "tank-recirc-02")]  # bajante por gravedad: con ruta pero sin diámetro (no es red a presión)
+    assert drop["route"][-1] == [10.75, 2.6, 3.245] and "diameter_in" not in drop and drop["links"]
+
+
+def test_water_plant_sequence_is_continuous_and_lines_are_published() -> None:
+    """Cada tubo de la secuencia termina donde empieza el siguiente: sin extremos al aire entre niveles."""
+    plant = client.get("/api/plants/water-network-scale-v1").json()
+    by_pipe = {(p["from"], p["to"]): p["route"] for p in plant["pipes"] if p.get("route")}
+    # la derivación de cada nivel (toma del montante) es el punto de partida del tubo hacia la válvula siguiente
+    for level, valve in ((1, "valve-between-12"), (2, "valve-between-23"), (3, "valve-between-34")):
+        into_valve = by_pipe[(f"grid-0{level}", valve)]
+        out_of_valve = by_pipe[(valve, f"grid-0{level + 1}")]
+        assert into_valve[-1][2] == out_of_valve[0][2]  # entra y sale por el eje de la válvula
+        assert abs(out_of_valve[-2][2] - (into_valve[0][2] + 1.2)) < 1e-9  # la toma del nivel siguiente está 1,20 m más arriba
+    assert by_pipe[("prs-01", "grid-01")][-2][2] == by_pipe[("grid-01", "valve-between-12")][0][2]
+    lines = {ln["id"]: ln for ln in plant["lines"]}
+    assert set(lines) == {"red-distribucion", "recirculacion"}
 
 
 def test_injection_plant_exposes_its_simulated_machines_and_conveyor() -> None:
