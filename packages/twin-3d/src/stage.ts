@@ -212,7 +212,7 @@ export class Stage {
    * Demarcación de celda en el piso: líneas luminosas, esquineros, franja de seguridad y rótulo,
    * como en un tablero de control de planta.
    */
-  addCellMarker(w: number, d: number, label: string, sublabel = "", color = "#3fd0ff"): THREE.Group {
+  addCellMarker(w: number, d: number, label: string, sublabel = "", color = "#4EA7FF"): THREE.Group {
     const g = group(`cell-${label}`);
     const glow = new THREE.MeshStandardMaterial({ color: "#000000", emissive: color, emissiveIntensity: 2.2 });
     this.pulseMats.push(glow);

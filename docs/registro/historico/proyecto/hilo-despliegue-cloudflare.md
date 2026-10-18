@@ -82,3 +82,11 @@ Quisiera que al ingresar uno pudiera seleccionar qué planta quiere ver: manufac
 ### 🤖 Claude · 2026-10-18 04:2x UTC
 
 Portal de selección de planta con librería filtrada por planta (D34).
+
+### 👤 Carlos Andrés Quiceño · 2026-10-18 04:10:26 UTC
+
+(Adjunta el manual de marca `Design_ArvanttiLabs.md`.) Los nombres serían esos. Manufactura discreta, planta de plásticos. Manufactura de procesos, planta de salsas. Operaciones, y en operaciones planta de acueducto.
+
+### 🤖 Claude · 2026-10-18 04:2x UTC
+
+Renombro las tarjetas y aplico el manual de marca (D34, ampliación).

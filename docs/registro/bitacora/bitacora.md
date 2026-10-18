@@ -53,7 +53,8 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 ### 2026-10-18 04:00 · Portal de selección de planta
 - **Solicitado por:** el autor (03:5x–04:00): ver al ingresar qué planta quiere (manufactura discreta, procesos o gemelo digital de operación) y que cada una muestre solo lo suyo; menús superpuestos; iluminación muy fuerte; el dorado no es la identidad de Arvantti; «recuerda lo de los acentos y los colores».
 - **Cambios:** `index.html` es el portal; la librería pasó a `equipos.html?plant=ID` y filtra los tipos por los equipos de esa planta; HUD y panel de parámetros apilados en una columna derecha con desplazamiento; luces atenuadas en `stage.ts`; acento `#3fd0ff` provisional.
-- **Pendiente:** paleta oficial de arvantti.tech (códigos hex o captura) y ancho de pantalla donde se superponían los menús.
+- **04:10:** el autor envía el manual de marca y los nombres de las tarjetas (plásticos, salsas, acueducto); se aplican paleta, tipografías, esquinas rectas y fondo `#040421` (ver D34).
+- **Pendiente:** confirmar la tipografía (Orbit u Orbitron) y el ancho de pantalla donde se superponían los menús.
 
 ### 2026-10-18 03:42–03:55 · Las tres plantas en la galería publicada
 - **Fecha/hora (UTC):** 2026-10-18 03:42 a 03:55.

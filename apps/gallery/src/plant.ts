@@ -514,7 +514,7 @@ function select(id: string | null): void {
   if (asset) {
     const box = new THREE.Box3().setFromObject(asset.root);
     const size = box.getSize(new THREE.Vector3());
-    selection = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(size.x + 0.3, size.y + 0.3, size.z + 0.3)), new THREE.LineBasicMaterial({ color: "#3fd0ff" }));
+    selection = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(size.x + 0.3, size.y + 0.3, size.z + 0.3)), new THREE.LineBasicMaterial({ color: "#4EA7FF" }));
     selection.position.copy(box.getCenter(new THREE.Vector3()));
     stage.scene.add(selection);
   }
