@@ -1,0 +1,83 @@
+schema_version: 0.1.0
+type: transfer-car
+version: 0.1.0
+name: Carro de transferencia de pilas
+manufacturing: logistics
+category: transport.transfer_car
+description: >
+  Carro con rodillos motorizados que corre sobre un riel: recibe una pila en su posición de carga,
+  la lleva al carril de destino, la descarga y regresa. Reparte las pilas entre hasta cuatro carriles
+  según un peso por carril, saltando los que están llenos; si ninguno recibe, espera cargado en la posición de carga.
+aliases: [carro de transferencia, transfer car, shuttle, lanzadera]
+fidelity: { visual: V1, behavior: B2 }
+
+params:
+  speed_m_s:      { type: number, unit: m/s, min: 0.2, max: 4, default: 2.0, description: Velocidad de traslación, affects: [behavior] }
+  load_s:         { type: number, unit: s, min: 1, max: 120, default: 10, description: Tiempo de recibir la pila, affects: [behavior] }
+  unload_s:       { type: number, unit: s, min: 1, max: 120, default: 10, description: Tiempo de entregar la pila, affects: [behavior] }
+  dist_1_m:       { type: number, unit: m, min: 0, max: 200, default: 15, description: "Distancia de la posición de carga al carril 1 (0 = sin carril)", affects: [behavior] }
+  dist_2_m:       { type: number, unit: m, min: 0, max: 200, default: 10, description: "Distancia al carril 2 (0 = sin carril)", affects: [behavior] }
+  dist_3_m:       { type: number, unit: m, min: 0, max: 200, default: 5, description: "Distancia al carril 3 (0 = sin carril)", affects: [behavior] }
+  dist_4_m:       { type: number, unit: m, min: 0, max: 200, default: 0, description: "Distancia al carril 4 (0 = sin carril)", affects: [behavior] }
+  weight_1:       { type: number, min: 0.1, max: 100, default: 1, description: "Peso del carril 1 en el reparto (pilas por hora del plan, por ejemplo)", affects: [behavior] }
+  weight_2:       { type: number, min: 0.1, max: 100, default: 1, description: Peso del carril 2 en el reparto, affects: [behavior] }
+  weight_3:       { type: number, min: 0.1, max: 100, default: 1, description: Peso del carril 3 en el reparto, affects: [behavior] }
+  weight_4:       { type: number, min: 0.1, max: 100, default: 1, description: Peso del carril 4 en el reparto, affects: [behavior] }
+  nominal_inflow_upm: { type: number, unit: u/min, min: 0, max: 10, default: 0.7, description: Llegada nominal de pilas si el entorno no la fija, affects: [behavior] }
+  home_offset_m:  { type: number, unit: m, min: 1.5, max: 100, default: 1.5, description: Distancia del extremo del riel a la posición de carga, affects: [geometry] }
+  rail_length_m:  { type: number, unit: m, min: 3, max: 200, default: 20, description: Largo del riel, affects: [geometry] }
+  width_m:        { type: number, unit: m, min: 1, max: 5, default: 3, description: Ancho del carro, affects: [geometry] }
+
+ports:
+  - { id: stacks_in, kind: item, direction: in, unit: pilas/min, link: { units: inflow_upm, ready: accepting } }
+  - { id: out_1, kind: item, direction: out, unit: pilas/min, link: { units: delivered_1, ready: free_1 } }
+  - { id: out_2, kind: item, direction: out, unit: pilas/min, link: { units: delivered_2, ready: free_2 } }
+  - { id: out_3, kind: item, direction: out, unit: pilas/min, link: { units: delivered_3, ready: free_3 } }
+  - { id: out_4, kind: item, direction: out, unit: pilas/min, link: { units: delivered_4, ready: free_4 } }
+  - { id: power, kind: utility, direction: in, medium: energía eléctrica (barra colectora) }
+
+states:
+  - { id: idle, description: Vacío en la posición de carga }
+  - { id: running, description: "Cargando, viajando o descargando" }
+  - { id: blocked, description: Cargado y sin carril que reciba }
+  - { id: fault, description: Detenido por falla }
+
+variables:
+  - { id: position_m, unit: m, kind: measured, range: [0, 200], noise_sd: 0.01, resolution: 0.01, description: Posición del carro desde la posición de carga }
+  - { id: loaded, unit: "", kind: status, description: "1 si lleva una pila" }
+  - { id: target, unit: "", kind: status, description: "Carril de destino (0 si no tiene)" }
+  - { id: accepting, unit: "", kind: status, description: "1 si está vacío en la posición de carga y recibe una pila" }
+  - { id: trips, unit: viajes, kind: counter, description: Pilas entregadas en total }
+  - { id: delivered_1, unit: pilas, kind: counter, description: Pilas entregadas al carril 1 }
+  - { id: delivered_2, unit: pilas, kind: counter, description: Pilas entregadas al carril 2 }
+  - { id: delivered_3, unit: pilas, kind: counter, description: Pilas entregadas al carril 3 }
+  - { id: delivered_4, unit: pilas, kind: counter, description: Pilas entregadas al carril 4 }
+
+events:
+  - { id: stack_delivered, description: Pila entregada a un carril, payload: [lane] }
+  - { id: no_free_lane, description: Cargado y ningún carril recibe }
+
+faults:
+  - { id: drive_fault, description: Falla del variador de traslación, mtbf_h: 2000, mttr_min: 30, severity: medium, effect: El carro se detiene donde esté }
+  - { id: position_sensor, description: Falla del sensor de posición, mtbf_h: 3000, mttr_min: 20, severity: low, effect: El carro se detiene hasta recalibrar }
+
+commands:
+  - { id: inject_fault, description: Inyecta una falla declarada, args: { fault: string, duration_s: number } }
+  - { id: clear_fault, description: Repara una falla activa, args: { fault: string } }
+  - { id: set_param, description: Cambia un parámetro en caliente, args: { name: string, value: any } }
+
+kpis:
+  - { id: trips_per_h, unit: viajes/h, description: Pilas entregadas por hora }
+  - { id: busy_pct, unit: "", description: "Fracción del tiempo cargando, viajando o descargando" }
+  - { id: blocked_pct, unit: "", description: Fracción del tiempo cargado sin carril libre }
+
+animation_channels:
+  - { id: car_pos_m, unit: m, range: [0, 200], description: Distancia del carro a la posición de carga }
+  - { id: loaded, range: [0, 1], description: "1 si lleva una pila" }
+
+geometry:
+  parts: [rail, car, rollers, stack]
+
+assumptions:
+  - "Lleva cada pila al carril que recibe con menos pilas entregadas respecto de su peso; un carril lleno se salta."
+  - "Viaja a velocidad constante, sin rampas de aceleración; una pila por viaje."

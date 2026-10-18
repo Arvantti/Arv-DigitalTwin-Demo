@@ -1,0 +1,90 @@
+schema_version: 0.1.0
+type: box-converter
+version: 0.1.0
+name: Convertidora de cajas (impresora-plegadora-pegadora o troqueladora)
+manufacturing: packaging
+category: converting.box
+description: >
+  Máquina de conversión que recibe pilas de láminas de cartón en su alimentador, imprime, ranura o troquela,
+  pliega y pega, y entrega las cajas planas en fajos contados. Se queda sin láminas si no llegan pilas,
+  se bloquea si los fajos no salen y para en cada cambio de pedido (clisés o troquel).
+aliases: [impresora-plegadora-pegadora, flexo folder gluer, troqueladora rotativa, convertidora, casemaker]
+fidelity: { visual: V1, behavior: B2 }
+
+params:
+  speed_sheets_min:  { type: number, unit: u/min, min: 10, max: 600, default: 150, description: Velocidad en láminas por minuto, affects: [behavior] }
+  sheets_per_stack:  { type: integer, min: 50, max: 3000, default: 600, description: Láminas por pila que recibe, affects: [behavior] }
+  boxes_per_sheet:   { type: integer, min: 1, max: 8, default: 1, description: Cajas que salen de cada lámina, affects: [behavior] }
+  boxes_per_bundle:  { type: integer, min: 5, max: 200, default: 25, description: Cajas por fajo, affects: [behavior] }
+  infeed_stacks:     { type: integer, min: 1, max: 4, default: 2, description: Pilas que caben en el alimentador (la que alimenta y la siguiente), affects: [behavior] }
+  delivery_bundles:  { type: integer, min: 1, max: 20, default: 3, description: Fajos que esperan en la salida antes de bloquear, affects: [behavior] }
+  order_change_s:    { type: number, unit: s, min: 0, max: 7200, default: 900, description: Cambio de pedido (clisés o troquel), affects: [behavior] }
+  nominal_inflow_upm: { type: number, unit: pilas/min, min: 0, max: 5, default: 0.3, description: Llegada nominal de pilas si el entorno no la fija, affects: [behavior] }
+  kind:              { type: enum, values: [flexo_folder_gluer, rotary_die_cutter], default: flexo_folder_gluer, description: Tipo de máquina (para el dibujo), affects: [geometry] }
+  length_m:          { type: number, unit: m, min: 4, max: 40, default: 20, description: Largo de la máquina, affects: [geometry] }
+  width_m:           { type: number, unit: m, min: 2, max: 8, default: 4.5, description: Ancho de la máquina, affects: [geometry] }
+  colors:            { type: integer, min: 0, max: 6, default: 4, description: Unidades de impresión, affects: [geometry] }
+
+ports:
+  - { id: stacks_in, kind: item, direction: in, unit: pilas/min, link: { units: inflow_upm, ready: accepting } }
+  - { id: bundles_out, kind: item, direction: out, unit: fajos/min, link: { units: bundles_count, ready: downstream_free } }
+  - { id: trim_out, kind: material, direction: out, medium: recorte de cartón }
+  - { id: power, kind: utility, direction: in, medium: energía eléctrica }
+
+states:
+  - { id: idle, description: Detenida }
+  - { id: running, description: Convirtiendo láminas en cajas }
+  - { id: setup, description: Cambio de pedido }
+  - { id: starved, description: Sin láminas en el alimentador }
+  - { id: blocked, description: La salida de fajos está llena }
+  - { id: fault, description: Detenida por falla }
+
+variables:
+  - { id: speed_actual, unit: u/min, kind: measured, range: [0, 600], noise_sd: 0.5, resolution: 1, description: Velocidad real en láminas por minuto }
+  - { id: sheets_fed, unit: u, kind: counter, description: Láminas alimentadas }
+  - { id: boxes_count, unit: u, kind: counter, description: Cajas producidas }
+  - { id: bundles_count, unit: fajos, kind: counter, description: Fajos entregados }
+  - { id: infeed_sheets, unit: u, kind: calculated, description: Láminas en el alimentador }
+  - { id: infeed_stacks, unit: pilas, kind: calculated, description: Pilas en el alimentador (la que alimenta cuenta como una) }
+  - { id: bundle_fill_pct, unit: "%", kind: calculated, range: [0, 100], description: Llenado del fajo en curso }
+  - { id: delivery_bundles, unit: fajos, kind: calculated, description: Fajos esperando en la salida }
+  - { id: accepting, unit: "", kind: status, description: "1 si el alimentador recibe otra pila" }
+
+events:
+  - { id: bundle_completed, description: Fajo completo, payload: [bundle] }
+  - { id: infeed_empty, description: El alimentador se quedó sin láminas }
+  - { id: order_change_started, description: Empieza un cambio de pedido }
+  - { id: order_change_done, description: Termina el cambio de pedido }
+
+faults:
+  - { id: feed_jam, description: Atasco en el alimentador, mtbf_h: 25, mttr_min: 6, severity: low, effect: Parada para retirar láminas }
+  - { id: folder_jam, description: Atasco en la plegadora o el contador, mtbf_h: 40, mttr_min: 8, severity: low, effect: Parada para retirar cajas }
+  - { id: worn_die, description: Troquel o cuchillas gastadas, mtbf_h: 300, mttr_min: 60, severity: low, stops_equipment: false, effect: "Baja la velocidad al 85 % hasta el cambio" }
+
+commands:
+  - { id: start, description: Arranca la máquina }
+  - { id: stop, description: Detiene la máquina }
+  - { id: order_change, description: "Cambio de pedido: para order_change_s y puede cambiar cajas por lámina y por fajo", args: { boxes_per_sheet: integer, boxes_per_bundle: integer } }
+  - { id: set_speed, description: Cambia la velocidad, args: { sheets_min: number } }
+  - { id: inject_fault, description: Inyecta una falla declarada, args: { fault: string, duration_s: number } }
+  - { id: clear_fault, description: Repara una falla activa, args: { fault: string } }
+  - { id: set_param, description: Cambia un parámetro en caliente, args: { name: string, value: any } }
+
+kpis:
+  - { id: boxes_per_h, unit: u/h, description: Cajas por hora }
+  - { id: running_pct, unit: "", description: Fracción del tiempo convirtiendo }
+  - { id: starved_pct, unit: "", description: Fracción del tiempo sin láminas }
+  - { id: blocked_pct, unit: "", description: Fracción del tiempo con la salida llena }
+
+animation_channels:
+  - { id: running, range: [0, 1], description: "1 mientras convierte" }
+  - { id: infeed_fill, range: [0, 1], description: Láminas en el alimentador respecto de su capacidad }
+  - { id: stack_light, range: [0, 3], description: "Baliza: 0 apagada, 1 verde, 2 amarilla, 3 roja" }
+
+geometry:
+  parts: [feeder, stack, print_units, die_or_slotter, folder, counter_ejector, hmi, stack_light]
+
+assumptions:
+  - "Velocidad constante en láminas por minuto; sin rechazos ni recorte en el conteo de cajas."
+  - "El amarre del fajo está incluido: cada boxes_per_bundle cajas sale un fajo."
+  - "Una pila entra al alimentador cuando cabe completa."

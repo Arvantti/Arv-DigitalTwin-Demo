@@ -10,6 +10,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
+| 2026-10-18 | Simulación de la fábrica de cajas | La fábrica de cajas simula su transporte: corrugadora, transportadores de pilas, carro de transferencia que reparte entre tres carriles, tres convertidoras, bandas de fajos y paletizador propio y compartido; escenarios nominal, rotura de papel y paro del paletizador compartido | 4 |
 | 2026-10-18 | #46 | Cuarto gemelo: fábrica de cajas de cartón corrugado centrada en el transporte de pilas (corrugadora, rodillos, mesas giratorias, carro de transferencia, pulmón, 3 líneas de conversión con tamaños de caja distintos, un paletizador propio y uno compartido, bodega); plano validado y forma 3D propia para sus 20 tipos de equipo, sin simulación todavía. D44 | gemelos |
 | 2026-10-18 | Secuencia del acueducto | Acueducto: cada tubo empieza y termina en la boquilla o brida real (tanques, bombas, estación, válvulas entre niveles, rejilla, bajantes); panel LÍNEAS con dos líneas en m³; parámetro de cámara `look`. D42 | acueducto |
 | 2026-10-18 | Tuberías sin cruces | Planta de salsas: los tubos a nivel de rack buscan un nivel y un recorrido que no atraviesen equipos ni cajas de estantería ni se crucen entre sí (suben por encima, o se desplazan); documento del flujo de salsas conectado vs faltante; revisión de capacidad contra 22 t/día (despacho de 35 a 90 tarimas/día). D41, D43 | 5 |
@@ -58,6 +59,14 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 | 2026-10-16 | #1 | Layouts de las plantas | 1 |
 
 ## Entradas
+
+### 2026-10-18 22:00 · Fábrica de cajas: simulación del transporte
+- **Fecha/hora (UTC):** 2026-10-18 17:53–22:30
+- **Solicitado por:** continuación de D44 (PR #46 fusionado a las 17:53), con la decisión del autor de las 17:14: «todo es imaginario no nos pongamos trabajo de más… lo que nos consuma menos».
+- **Qué se hizo:** tipos `corrugator`, `transfer-car`, `box-converter` y `palletizer` en `equipment-library/` (contrato, comportamiento, geometría, presets, escenarios, ficha); `industrial-models/corrugated-box-plant-v1/simulation.yaml` con 18 equipos simulados y escenarios `nominal`, `paper-break` y `shared-palletizer-stop`; ritmos y orientaciones del `plant.yaml` ajustados a la simulación; botón de librería en el portal; `docs/box-plant.md`, `docs/plant-engine.md` y `docs/plant-scene.md`.
+- **Verificación:** `twin-lib validate` de los cuatro tipos, `pytest` de sus 19 escenarios, `twin-lib plant run` de los tres escenarios de la planta con todas sus expectativas cumplidas, `render_layout.py` sin errores; capturas de la escena en vivo: ![[cajas-sim-transporte-pilas.jpg]] ![[cajas-sim-paletizado.jpg]] ![[cajas-sim-apilador.jpg]]
+- **Decisiones:** [[decisiones]] D45.
+- **Conversación:** [[hilo-fabrica-de-cajas]].
 
 ### 2026-10-18 15:04 · Fábrica de cajas: plano y escena 3D
 - **Fecha/hora (UTC):** 2026-10-18 15:04–17:30

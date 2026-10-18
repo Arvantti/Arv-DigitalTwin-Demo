@@ -1,0 +1,53 @@
+scenarios:
+  - id: steady
+    description: Paletizador compartido con 15,6 fajos/min durante 1 h (6 de cajas medianas y 9,6 de pequeñas)
+    preset: shared-40
+    duration_s: 3600
+    timeline:
+      - { at_s: 0, inputs: { inflow_upm: 15.6 } }
+    expect:
+      - { path: variables.bundles_placed, min: 925, max: 936, description: "(15,6 × 60 = 936 llegan; capacidad 40 ÷ 22 = 109 s + 30 s de cambio = 139 s por estiba ≈ 17,3 fajos/min)" }
+      - { path: variables.pallets_count, equals: 23, description: "(936 ÷ 40 = 23,4)" }
+      - { path: kpis.utilization, min: 0.70, max: 0.75, description: "(936 ÷ 22 = 42,5 min de 60; con pasos de 1 s cada fajo ocupa entre 2 y 3 s: ≈ 44 min)" }
+      - { path: events.infeed_full, equals: 0 }
+
+  - id: overload
+    description: Llegan 20 fajos/min, más de lo que el paletizador compartido alcanza
+    preset: shared-40
+    duration_s: 3600
+    timeline:
+      - { at_s: 0, inputs: { inflow_upm: 20 } }
+    expect:
+      - { path: events.infeed_full, min: 1 }
+      - { path: variables.pallets_count, min: 25, max: 26, description: "(una estiba cada ≈ 139 s: 3.600 ÷ 139 = 25,9)" }
+
+  - id: outfeed-blocked
+    description: La envolvedora no recibe; una estiba espera y la siguiente bloquea
+    preset: single-24
+    duration_s: 1800
+    timeline:
+      - { at_s: 0, inputs: { inflow_upm: 4, downstream_free: false } }
+    expect:
+      - { path: state, equals: blocked }
+      - { path: variables.outfeed_pallets, equals: 1 }
+      - { path: variables.pallets_count, equals: 0 }
+      - { path: variables.pallet_bundles, equals: 24 }
+
+  - id: no-pallets
+    description: No hay estibas vacías
+    preset: single-24
+    duration_s: 600
+    timeline:
+      - { at_s: 0, inputs: { inflow_upm: 4, pallets_available: false } }
+    expect:
+      - { path: state, equals: starved }
+      - { path: variables.bundles_placed, equals: 0 }
+      - { path: events.infeed_full, equals: 1, description: "(la mesa de 8 fajos se llena en 2 min a 4 fajos/min)" }
+
+  - id: demo
+    description: Turno con fallas aleatorias para la galería
+    preset: shared-40
+    duration_s: 28800
+    random_faults: true
+    timeline:
+      - { at_s: 0, inputs: { inflow_upm: 15.6 } }

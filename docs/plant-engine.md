@@ -147,6 +147,8 @@ telemetría: la casa más baja de los 4 niveles ─▶ estación (rama automáti
 
 Los valores esperados salen del banco en régimen permanente `industrial-models/water-network-scale-v1/network.py`, que arma la misma red con los mismos tubos del plano; `test_plant_hydraulics.py` compara el motor con él (± 0,5 %). Los escenarios del archivo son pruebas: los de operación los crea el usuario conversando con Claude conectado al simulador.
 
+`corrugated-box-plant-v1`: la fábrica de cajas (`docs/box-plant.md`). La corrugadora (`corrugator`) entrega pilas a cuatro transportadores de rodillos (`belt-conveyor`); el carro de transferencia (`transfer-car`) tiene un puerto de salida por carril y reparte él mismo las pilas, así el motor sigue sin repartir una salida entre varios destinos. Tres convertidoras (`box-converter`) entregan fajos a sus bandas; la línea 1 termina en su paletizador y las líneas 2 y 3 se juntan en una banda de unión (dos enlaces a la misma entrada: las unidades se suman) antes del paletizador compartido (`palletizer`). Escenarios `nominal`, `paper-break` y `shared-palletizer-stop`.
+
 ## 4. Limitaciones actuales
 
 - El producto desviado regresa a la marmita con su receta y se mezcla a la temperatura de salida del pasteurizador (`return_in`, `returned_kg`); no hay tubería de retorno con volumen ni retardo, solo el paso de retraso del motor.

@@ -36,7 +36,6 @@ const plants: PlantCard[] = [
     family: "MANEJO DE MATERIALES",
     title: "Fábrica de cajas",
     text: "Corrugadora, transporte de pilas con carro de transferencia y pulmón, conversión, paletizado y bodega de cartón corrugado.",
-    noLibrary: true,
   },
 ];
 

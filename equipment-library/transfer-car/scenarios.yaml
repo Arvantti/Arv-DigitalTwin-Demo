@@ -1,0 +1,59 @@
+scenarios:
+  - id: steady
+    description: Una pila por minuto durante 1 h repartida por igual entre tres carriles a 15, 10 y 5 m
+    duration_s: 3600
+    timeline:
+      - { at_s: 0, inputs: { inflow_upm: 1 } }
+    expect:
+      - { path: variables.trips, min: 58, max: 60, description: "(60 pilas llegan; cada viaje toma 10 + 10 s más ida y vuelta a 2 m/s: 35, 30 y 25 s, todos menores que el minuto entre pilas)" }
+      - { path: variables.delivered_1, min: 19, max: 20, description: "(pesos iguales: un tercio cada uno)" }
+      - { path: variables.delivered_3, min: 19, max: 20 }
+      - { path: kpis.busy_pct, min: 0.48, max: 0.51, description: "(60 viajes × 30 s promedio = 30 min de 60)" }
+
+  - id: lane-full
+    description: El carril 1 está lleno; el carro alterna entre el 2 y el 3
+    duration_s: 3600
+    timeline:
+      - { at_s: 0, inputs: { inflow_upm: 1, free_1: false } }
+    expect:
+      - { path: variables.delivered_1, equals: 0 }
+      - { path: variables.delivered_2, min: 29, max: 30 }
+      - { path: variables.delivered_3, min: 29, max: 30 }
+
+  - id: no-free-lane
+    description: Ningún carril recibe; el carro carga una pila y espera
+    duration_s: 600
+    timeline:
+      - { at_s: 0, inputs: { inflow_upm: 1, free_1: false, free_2: false, free_3: false } }
+    expect:
+      - { path: state, equals: blocked }
+      - { path: variables.loaded, equals: 1 }
+      - { path: variables.accepting, equals: 0 }
+      - { path: variables.trips, equals: 0 }
+      - { path: events.no_free_lane, equals: 1 }
+
+  - id: box-plant
+    description: Las 41,4 pilas por hora de la corrugadora repartidas entre los tres carriles de la fábrica de cajas
+    preset: stack-3-lanes
+    duration_s: 3600
+    expect:
+      - { path: variables.trips, min: 40, max: 42, description: "(0,69 pilas/min × 60 = 41,4)" }
+      - { path: kpis.busy_pct, min: 0.58, max: 0.63, description: "(viajes de 65, 53 y 41 s, promedio 53 s × 41,4 ≈ 36,6 min de 60)" }
+      - { path: kpis.blocked_pct, equals: 0.0 }
+      - { path: variables.delivered_2, min: 16, max: 17, description: "(pesos 10, 15 y 12: 41 × 15 ÷ 37 = 16,6)" }
+
+  - id: drive-fault
+    description: El variador falla 10 min a los 20 min
+    duration_s: 3600
+    timeline:
+      - { at_s: 0, inputs: { inflow_upm: 1 } }
+      - { at_s: 1200, command: inject_fault, args: { fault: drive_fault, duration_s: 600 } }
+    expect:
+      - { path: events.fault_cleared, equals: 1 }
+      - { path: variables.trips, min: 49, max: 52, description: "(en los 10 min de falla llegan 10 pilas que esperan en el transportador; el carro vuelve con 2 en cola y recupera ≈ 1)" }
+
+  - id: demo
+    description: Una hora con fallas aleatorias para la galería
+    preset: stack-3-lanes
+    duration_s: 3600
+    random_faults: true
