@@ -28,6 +28,7 @@ Sin base de datos por ahora.
 Mientras los secretos no existan, el workflow termina en verde con un aviso y no despliega.
 
 ## Seguridad
+- **Rotación cada 30 días** (práctica del autor): crea un token nuevo con los mismos permisos, reemplaza el secreto `CLOUDFLARE_API_TOKEN` (en la organización, si es compartido) y borra el anterior en *Mi perfil → Tokens de API*. Usa caducidad de 30 días al crearlo para que no se te olvide.
 - El token solo puede editar Pages de esa cuenta. Si se filtra, se revoca en *Mi perfil → Tokens de API*.
 - Nunca pegues el token en el chat, en el código ni en `docs/registro/`.
 
