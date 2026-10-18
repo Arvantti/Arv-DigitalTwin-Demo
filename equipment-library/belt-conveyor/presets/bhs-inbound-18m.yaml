@@ -1,0 +1,4 @@
+preset: bhs-inbound-18m
+description: Banda de llegadas desde la plataforma hasta el carrusel de reclamo (18 m)
+params: { length_m: 18, width_m: 1.0, speed_m_s: 0.5, pitch_m: 1.0, height_m: 0.8, kind: flat, item: bag, item_size_m: 0.75, nominal_inflow_upm: 0, entry_buffer_units: 4, motor_kw: 2.2 }
+provenance: { length_m: assumed, speed_m_s: assumed }

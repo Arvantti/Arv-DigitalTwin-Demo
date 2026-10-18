@@ -1,0 +1,145 @@
+# Sistema de manejo de equipaje (BHS) de una terminal regional de referencia.
+# Terminal ficticia (logística), sin aerolíneas ni marcas reales. Los valores son supuestos típicos
+# (ficha de diseño del 2026-10-18); los de cada equipo están en su FICHA.md.
+#
+# Convenciones:
+#   - Coordenadas en metros. Origen en la esquina suroeste del predio.
+#   - x = este, y = norte, z = arriba.
+#   - zones[].rect = [x_min, y_min, ancho_x, largo_y]
+#   - equipment[].position = centro de la huella [x, y, z_base]
+#   - equipment[].footprint = [dx, dy, dz] antes de rotar (rotation_deg 90 = el eje del equipo apunta al norte)
+
+schema_version: 0.1.0
+
+plant:
+  id: airport-baggage-v1
+  name: Sistema de equipaje de aeropuerto (referencia)
+  kind: discrete
+  units: { length: m, angle: deg, mass: kg, time: s }
+  frame: { origin: esquina suroeste, x: este, y: norte, z: arriba }
+  site: { width_x: 170, length_y: 112 }
+  context:
+    location: Terminal regional de referencia (~4 millones de pasajeros al año)
+    peak_departing_pax_h: 600
+    bags_per_pax: 1.1
+    flights_in_makeup: 4
+    assumptions:
+      - Dos islas de 8 mostradores, dos máquinas CT en paralelo, un clasificador de bandejas y 4 carruseles de armado (un vuelo cada uno).
+      - Llegadas con dos bandas desde la plataforma y dos carruseles de reclamo.
+      - Las maletas fuera de norma, el almacén de maletas tempranas y las conexiones no se modelan todavía.
+
+layout_concept: >
+  Flujo de salidas de oeste a este: hall de check-in al oeste (lado tierra), inspección de bodega (CT) y
+  salas de nivel 3, clasificador al centro de la sala de equipaje y carruseles de armado al sur del
+  clasificador, sobre el patio de carros que da a la plataforma. Llegadas al este: bandas desde la
+  plataforma suben al hall de llegadas y descargan en los carruseles de reclamo. Las bandas no se cruzan.
+
+zones:
+  - { id: plataforma,         name: Plataforma de aviones,             kind: exterior,   rect: [0, 0, 170, 40],   height: 0 }
+  - { id: hall-checkin,       name: Hall de check-in,                  kind: admin,      rect: [0, 64, 56, 46],   height: 12 }
+  - { id: hbs,                name: Inspección de equipaje (CT),       kind: production, rect: [56, 72, 17, 28],  height: 8 }
+  - { id: nivel3-norte,       name: Nivel 3 norte (revisión manual),   kind: service,    rect: [56, 100, 30, 10], height: 4 }
+  - { id: nivel3-sur,         name: Nivel 3 sur (revisión manual),     kind: service,    rect: [56, 58, 17, 14],  height: 4 }
+  - { id: sala-control,       name: Sala de control del BHS,           kind: service,    rect: [56, 40, 17, 18],  height: 4 }
+  - { id: sala-bhs,           name: Clasificación y armado de vuelos,  kind: production, rect: [73, 40, 47, 60],  height: 8 }
+  - { id: inyeccion-llegadas, name: Inyección de llegadas,             kind: production, rect: [120, 40, 50, 18], height: 6 }
+  - { id: hall-llegadas,      name: Hall de llegadas (reclamo),        kind: admin,      rect: [120, 58, 50, 52], height: 10 }
+
+equipment:
+  # --- Check-in (salidas) ---
+  - { id: checkin-a,    type: checkin_island, zone: hall-checkin, position: [24.5, 97.3, 0],  footprint: [29, 11, 2.6], params: { counters: 8 } }
+  - { id: checkin-b,    type: checkin_island, zone: hall-checkin, position: [24.5, 74.7, 0],  footprint: [29, 11, 2.6], rotation_deg: 180, params: { counters: 8 } }
+  - { id: collector-a,  type: belt_conveyor,  zone: hall-checkin, position: [33, 91, 0],      footprint: [46, 1.6, 4.6], params: { length_m: 46 } }
+  - { id: collector-b,  type: belt_conveyor,  zone: hall-checkin, position: [33, 81, 0],      footprint: [46, 1.6, 4.6], params: { length_m: 46 } }
+
+  # --- Inspección de bodega y nivel 3 ---
+  - { id: screening-01, type: baggage_screening, zone: hbs, position: [60, 91, 0],    footprint: [8, 2.6, 2.1], params: { max_bph: 600, alarm_side: left } }
+  - { id: screening-02, type: baggage_screening, zone: hbs, position: [60, 81, 0],    footprint: [8, 2.6, 2.1], params: { max_bph: 600, alarm_side: right } }
+  - { id: induct-01,    type: belt_conveyor,     zone: hbs, position: [68.5, 91, 0],  footprint: [9, 1.6, 3.9], params: { length_m: 9 } }
+  - { id: induct-02,    type: belt_conveyor,     zone: hbs, position: [68.5, 81, 0],  footprint: [9, 1.6, 3.9], params: { length_m: 9 } }
+  - { id: alarm-belt-01, type: belt_conveyor,    zone: hbs, position: [63.25, 96.15, 0], footprint: [7.7, 1.6, 2.8], rotation_deg: 90,  params: { length_m: 7.7 } }
+  - { id: alarm-belt-02, type: belt_conveyor,    zone: hbs, position: [63.25, 75.85, 0], footprint: [7.7, 1.6, 2.8], rotation_deg: 270, params: { length_m: 7.7 } }
+  - { id: l3-01,        type: bag_handling_station, zone: nivel3-norte, position: [66.85, 104, 0], footprint: [9.2, 5, 2.4], params: { role: l3, operators: 3 } }
+  - { id: l3-02,        type: bag_handling_station, zone: nivel3-sur,   position: [66.85, 67, 0],  footprint: [9.2, 5, 2.4], params: { role: l3, operators: 3 } }
+
+  # --- Clasificación y armado ---
+  - { id: sorter-01,    type: baggage_sorter,    zone: sala-bhs, position: [93, 84, 0],     footprint: [40, 16, 5.1], params: { destinations: 4, flights: [V101, V205, V317, V422] } }
+  - { id: encoding-01,  type: bag_handling_station, zone: sala-bhs, position: [110.5, 73.5, 0], footprint: [4.4, 3, 2.4], params: { role: encoding, operators: 1 } }
+  - { id: makeup-01,    type: baggage_carousel,  zone: sala-bhs, position: [83.3, 66.4, 0],  footprint: [19.1, 6.6, 1.9], rotation_deg: 90, params: { flight: V101 } }
+  - { id: makeup-02,    type: baggage_carousel,  zone: sala-bhs, position: [90.3, 66.4, 0],  footprint: [19.1, 6.6, 1.9], rotation_deg: 90, params: { flight: V205 } }
+  - { id: makeup-03,    type: baggage_carousel,  zone: sala-bhs, position: [97.3, 66.4, 0],  footprint: [19.1, 6.6, 1.9], rotation_deg: 90, params: { flight: V317 } }
+  - { id: makeup-04,    type: baggage_carousel,  zone: sala-bhs, position: [104.3, 66.4, 0], footprint: [19.1, 6.6, 1.9], rotation_deg: 90, params: { flight: V422 } }
+  - { id: carts-01,     type: baggage_cart_train, zone: sala-bhs, position: [82.5, 48, 0],  footprint: [12, 2.2, 1.9], rotation_deg: 270 }
+  - { id: carts-02,     type: baggage_cart_train, zone: sala-bhs, position: [89.5, 48, 0],  footprint: [12, 2.2, 1.9], rotation_deg: 270 }
+  - { id: carts-03,     type: baggage_cart_train, zone: sala-bhs, position: [96.5, 48, 0],  footprint: [12, 2.2, 1.9], rotation_deg: 270 }
+  - { id: carts-04,     type: baggage_cart_train, zone: sala-bhs, position: [103.5, 48, 0], footprint: [12, 2.2, 1.9], rotation_deg: 270 }
+
+  # --- Sala de control del BHS ---
+  - { id: plc-bhs-01,      type: plc_cabinet,   zone: sala-control, position: [60, 42.5, 0], footprint: [2.4, 0.7, 2.1], params: { rack: "CPU + E/S remotas por zona", network: "Ethernet industrial hacia las bandas, la CT y el clasificador" } }
+  - { id: operator-desk-bhs, type: operator_desk, zone: sala-control, position: [64.5, 49, 0], footprint: [3.2, 1.2, 1.1], params: { monitors: 2 } }
+  - id: bhs-wall-01
+    type: control_panel
+    zone: sala-control
+    position: [64.5, 56, 0]
+    footprint: [8, 0.3, 2.6]
+    rotation_deg: 180
+    params: {}
+    panel:
+      title: Panel del BHS
+      slots:
+        - { title: Fila check-in A,        equipment: checkin-a,    variable: pax_queue,    unit: pax }
+        - { title: Fila check-in B,        equipment: checkin-b,    variable: pax_queue,    unit: pax }
+        - { title: Cola nivel 2 CT 1,      equipment: screening-01, variable: l2_queue,     unit: maletas }
+        - { title: Cola nivel 2 CT 2,      equipment: screening-02, variable: l2_queue,     unit: maletas }
+        - { title: Ocupación clasificador, equipment: sorter-01,    variable: occupancy_pct, unit: "%" }
+        - { title: Carrusel V101,        equipment: makeup-01,    variable: occupancy_pct, unit: "%" }
+        - { title: Mesa nivel 3 norte,     equipment: l3-01,        variable: queue,        unit: maletas }
+        - { title: Reclamo 1,              equipment: reclaim-01,   variable: bags_on,      unit: maletas }
+
+  # --- Plataforma ---
+  - { id: aircraft-01,  type: aircraft,           zone: plataforma, position: [85, 18, 0],  footprint: [38, 36, 12], params: { flight: V101 } }
+  - { id: aircraft-02,  type: aircraft,           zone: plataforma, position: [145, 18, 0], footprint: [38, 36, 12], params: { flight: "Vuelo 880 (llegada)" } }
+  - { id: carts-arr-01, type: baggage_cart_train, zone: plataforma, position: [114, 20, 0], footprint: [12, 2.2, 1.9], rotation_deg: 90 }
+
+  # --- Llegadas ---
+  - { id: inbound-01,   type: belt_conveyor,    zone: inyeccion-llegadas, position: [130.2, 49, 0], footprint: [18, 1.6, 4.0], rotation_deg: 90, params: { length_m: 18 } }
+  - { id: inbound-02,   type: belt_conveyor,    zone: inyeccion-llegadas, position: [152.2, 49, 0], footprint: [18, 1.6, 4.0], rotation_deg: 90, params: { length_m: 18 } }
+  - { id: reclaim-01,   type: baggage_carousel, zone: hall-llegadas, position: [131, 72, 0],  footprint: [27.9, 8.6, 2.0], rotation_deg: 90, params: { mode: reclaim } }
+  - { id: reclaim-02,   type: baggage_carousel, zone: hall-llegadas, position: [153, 72, 0],  footprint: [27.9, 8.6, 2.0], rotation_deg: 90, params: { mode: reclaim } }
+
+flows:
+  # Salidas
+  - { from: checkin-a,    to: collector-a,  medium: maletas, rate: 330, unit: u/h, show: true }
+  - { from: checkin-b,    to: collector-b,  medium: maletas, rate: 330, unit: u/h, show: true }
+  - { from: collector-a,  to: screening-01, medium: maletas, rate: 330, unit: u/h }
+  - { from: collector-b,  to: screening-02, medium: maletas, rate: 330, unit: u/h }
+  - { from: screening-01, to: induct-01,    medium: maletas despejadas, rate: 315, unit: u/h }
+  - { from: screening-02, to: induct-02,    medium: maletas despejadas, rate: 315, unit: u/h }
+  - { from: induct-01,    to: sorter-01,    medium: maletas, rate: 315, unit: u/h, show: true }
+  - { from: induct-02,    to: sorter-01,    medium: maletas, rate: 315, unit: u/h, show: true }
+  - { from: screening-01, to: alarm-belt-01, medium: maletas con alarma, rate: 16, unit: u/h }
+  - { from: screening-02, to: alarm-belt-02, medium: maletas con alarma, rate: 16, unit: u/h }
+  - { from: alarm-belt-01, to: l3-01,       medium: maletas con alarma, rate: 16, unit: u/h, show: true }
+  - { from: alarm-belt-02, to: l3-02,       medium: maletas con alarma, rate: 16, unit: u/h, show: true }
+  - { from: l3-01,        to: sorter-01,    medium: maletas despejadas, rate: 16, unit: u/h, note: banda de reingreso }
+  - { from: l3-02,        to: sorter-01,    medium: maletas despejadas, rate: 16, unit: u/h, note: banda de reingreso }
+  - { from: sorter-01,    to: makeup-01,    medium: maletas V101, rate: 190, unit: u/h, show: true }
+  - { from: sorter-01,    to: makeup-02,    medium: maletas V205, rate: 158, unit: u/h, show: true }
+  - { from: sorter-01,    to: makeup-03,    medium: maletas V317, rate: 158, unit: u/h, show: true }
+  - { from: sorter-01,    to: makeup-04,    medium: maletas V422, rate: 127, unit: u/h, show: true }
+  - { from: sorter-01,    to: encoding-01,  medium: maletas sin lectura, rate: 20, unit: u/h }
+  - { from: encoding-01,  to: sorter-01,    medium: maletas codificadas, rate: 20, unit: u/h, note: banda de reingreso }
+  - { from: makeup-01,    to: carts-01,     medium: maletas, rate: 190, unit: u/h }
+  - { from: makeup-02,    to: carts-02,     medium: maletas, rate: 158, unit: u/h }
+  - { from: makeup-03,    to: carts-03,     medium: maletas, rate: 158, unit: u/h }
+  - { from: makeup-04,    to: carts-04,     medium: maletas, rate: 127, unit: u/h }
+  - { from: carts-01,     to: aircraft-01,  medium: carros de equipaje, rate: 6, unit: carros/h, show: true }
+  # Llegadas
+  - { from: aircraft-02,  to: carts-arr-01, medium: maletas, rate: 180, unit: u/vuelo }
+  - { from: carts-arr-01, to: inbound-01,   medium: maletas, rate: 180, unit: u/vuelo, show: true }
+  - { from: inbound-01,   to: reclaim-01,   medium: maletas, rate: 1200, unit: u/h, show: true }
+  - { from: inbound-02,   to: reclaim-02,   medium: maletas, rate: 1200, unit: u/h, show: true }
+
+lines:
+  - { id: line-departures, name: Salidas,  mode: discrete, equipment: [checkin-a, checkin-b, collector-a, collector-b, screening-01, screening-02, sorter-01, makeup-01, makeup-02, makeup-03, makeup-04] }
+  - { id: line-arrivals,   name: Llegadas, mode: discrete, equipment: [inbound-01, inbound-02, reclaim-01, reclaim-02] }

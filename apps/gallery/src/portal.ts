@@ -32,6 +32,12 @@ const plants: PlantCard[] = [
     extra: { href: "/acueducto.html", label: "PANEL DEL PLC" },
   },
   {
+    id: "airport-baggage-v1",
+    family: "LOGÍSTICA",
+    title: "Equipaje de aeropuerto",
+    text: "Check-in, inspección CT por niveles, clasificador de bandejas y carruseles de armado y de reclamo: cada maleta seguida hasta el avión.",
+  },
+  {
     id: "corrugated-box-plant-v1",
     family: "MANEJO DE MATERIALES",
     title: "Fábrica de cajas",

@@ -1,0 +1,51 @@
+scenarios:
+  - id: steady
+    description: "300 maletas en 1 h: 25 % con alarma, 2 operadores de nivel 2 despejan el 80 %"
+    preset: ct-600
+    duration_s: 3600
+    expect:
+      - { path: variables.bags_scanned, min: 297, max: 300, description: "(5 por min × 60; la última puede seguir en el túnel)" }
+      - { path: variables.l1_alarms, min: 73, max: 75, description: "(25 % de ≈ 299)" }
+      - { path: variables.l2_timeouts, equals: 0, description: "(una alarma cada 48 s y 2 operadores de 30 s: nunca esperan 120 s)" }
+      - { path: variables.to_l3, min: 13, max: 16, description: "(20 % de ≈ 74)" }
+      - { path: variables.cleared_out, min: 280, max: 287, description: "(≈ 224 sin alarma + ≈ 59 despejadas en nivel 2)" }
+
+  - id: no-operators
+    description: "Sin operadores de nivel 2: cada alarma espera 120 s y sale a nivel 3"
+    preset: ct-600
+    duration_s: 3600
+    timeline:
+      - { at_s: 0, command: set_operators, args: { n: 0 } }
+    expect:
+      - { path: variables.l2_cleared, equals: 0 }
+      - { path: variables.l2_timeouts, min: 71, max: 74, description: "(las ≈ 74 alarmas, menos las ≈ 2,5 de los últimos 120 s)" }
+      - { path: variables.to_l3, min: 71, max: 74 }
+
+  - id: xray-fault
+    description: "Falla de rayos X 15 min: la entrada se llena, después la máquina recupera a 10 por min"
+    preset: ct-600
+    duration_s: 2400
+    timeline:
+      - { at_s: 600, command: inject_fault, args: { fault: xray_fault, duration_s: 900 } }
+    expect:
+      - { path: events.full, equals: 1 }
+      - { path: events.accepting_again, equals: 1, description: "(75 maletas acumuladas se recuperan a 10 − 5 = 5 por min en ≈ 15 min)" }
+      - { path: events.fault_cleared, equals: 1 }
+      - { path: variables.bags_scanned, min: 185, max: 200, description: "(2.400 s × 5 por min = 200, menos lo que queda por recuperar)" }
+
+  - id: exit-blocked
+    description: "El clasificador deja de recibir: se llena la salida y la máquina deja de admitir"
+    preset: ct-600
+    duration_s: 900
+    timeline:
+      - { at_s: 300, inputs: { downstream_free: false } }
+    expect:
+      - { path: state, equals: blocked }
+      - { path: variables.exit_queue, min: 4, max: 6, description: "(la máquina deja de admitir cuando la salida, el túnel y las alarmas en revisión suman 6; las que van a nivel 3 no ocupan la salida)" }
+      - { path: variables.accepting, equals: 0 }
+
+  - id: demo
+    description: Escenario de demostración con fallas aleatorias (para la galería)
+    preset: ct-600
+    duration_s: 28800
+    random_faults: true

@@ -1,0 +1,4 @@
+preset: makeup-40
+description: Carrusel de armado de 40 m para un vuelo de pasillo único, con 2 operarios
+params: { mode: makeup, length_m: 40, width_m: 5, pitch_m: 1.0, speed_m_s: 0.45, fill_limit_pct: 90, handlers: 2, handler_upm: 4, entry_buffer_units: 4, nominal_inflow_upm: 3, plate_color: "#3b4148" }
+provenance: { length_m: assumed, handlers: assumed, handler_upm: assumed, fill_limit_pct: assumed }

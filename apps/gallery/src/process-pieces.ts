@@ -9,6 +9,7 @@
  */
 import * as THREE from "three";
 import { materials as M, parts as P } from "@twin/3d";
+import { aircraft, baggageCartTrain } from "./airport-pieces.ts";
 import { boxPlantBuilders } from "./box-plant-pieces.ts";
 
 type Footprint = [number, number, number];
@@ -606,6 +607,8 @@ const foamingStation: PieceBuilder = ([dx, dy, h]) => {
 };
 
 export const processBuilders: Record<string, PieceBuilder> = {
+  aircraft,
+  baggage_cart_train: baggageCartTrain,
   storage_tank: storageTank,
   mixing_tank: mixingTank,
   jacketed_tank: jacketedTank,
