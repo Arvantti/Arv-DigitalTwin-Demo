@@ -1,7 +1,7 @@
 ---
 tipo: decisiones
 tags: [registro, decision]
-actualizado: 2026-10-17
+actualizado: 2026-10-18
 ---
 # Decisiones y reglas del autor
 
@@ -138,5 +138,11 @@ El autor (14:39) señala piezas sueltas en el acueducto. Decisión: cada ruta de
 ## D41 · Tuberías que esquivan equipos y otros tubos · 2026-10-18 14:36
 El autor envió capturas de tuberías que atraviesan las cajas de la estantería y de dos tubos que se cruzan, y pidió corregirlo en un hilo aparte junto con el flujo conectado de la planta de salsas. Decisión: el trazado a nivel de rack se elige por tubo con una comprobación geométrica (no atraviesa la caja de ningún equipo ajeno ni se acerca a otro tubo); es un arreglo de recorrido, no ingeniería de detalle. Los tubos con `route` (acueducto) no cambian. Lo que quede sin trazado libre se avisa en la consola del navegador.
 
-## D43 · Proceso conectado con una sola flota de montacargas · 2026-10-18 15:06
+## D43 · Capacidad de la planta de salsas contra 22 t/día · 2026-10-18 15:23
+El autor (15:23) aprueba el plan de conexión de la planta de salsas y añade: revisar y ajustar los equipos que no darían abasto en litros por día. Decisión: base de 16 h/día y 85 % de disponibilidad (supuestos); el despacho pasa de 35 a 90 tarimas/día; túnel de enfriamiento, marmitas, pasteurizador y mesa de 250 ml se ajustan al conectar cada etapa, no antes.
+
+## D44 · Fábrica de cajas: cuarto gemelo, primero plano y escena · 2026-10-18 15:04
+El autor (15:04) pide un gemelo aparte del sistema de transporte de una fábrica de cajas, inspirado en un fabricante de transportadores, y (15:07) que esa empresa no se mencione nunca. Decisiones: (1) la inspiración no se nombra en el código, los documentos, el registro, los commits ni los PR; en el histórico su mención se reemplaza por «[referencia omitida a pedido del autor]», igual que D01 con las empresas de Medellín. (2) Planta `corrugated-box-plant-v1` con la corrugadora al norte y el transporte de pilas al este (rodillos, mesas giratorias, carro de transferencia, carriles de alimentación y pulmón) que alimenta las líneas de conversión hacia el oeste; valores supuestos (`docs/box-plant.md`). (4) El autor (17:14): todo es imaginario y se hace lo que consuma menos; varios tamaños de caja, una línea con paletizador propio y dos con uno compartido. Quedan tres líneas, una por tamaño (grande, mediana, pequeña troquelada), y se retira la cuarta (troqueladora plana y pegadora). (3) Se entrega en PR pequeños: primero plano y escena 3D con piezas de escena; después los tipos de librería y la simulación conectada en el motor, tras confirmar la ficha de diseño con el autor (D03).
+
+## D45 · Proceso conectado con una sola flota de montacargas · 2026-10-18 15:06
 Carlos pidió conectar el proceso de plásticos (buffer por máquina, estiba, almacén de semielaborado, línea de ensamble) y, al confirmar la ficha (15:06), que los montacargas no fueran infinitos y no se cruzaran. Decisiones: (1) tres tipos de librería nuevos: `pallet-buffer` (estiba de X = 1.000 piezas del usuario; 2 estibas llenas esperando y 120 s de cierre, supuestos), `pallet-store` (48 posiciones del plano, 6 estibas de inventario inicial, supuesto) y `forklift-fleet`; (2) **una sola flota de 6 montacargas** y no una por área: un solo corredor con 30 s entre salidas evita que dos grupos independientes se crucen por el mismo carril (el corredor x = 79 m y el pasillo de semielaborado lo usan la recolección y el abastecimiento); atiende primero la estiba más antigua; (3) 28 buffers: la inyectora 3 sigue por la banda; (4) las estibas de las 24 inyectoras sin consumidor usan una ruta cuyo destino no se simula, para ocupar montacargas sin inventar una estantería general; (5) las estanterías simuladas usan la geometría de la librería (precedencia sobre la pieza de escena); (6) los dos montacargas de producto terminado siguen ilustrativos y ceden el paso a menos de 7 m. Consecuencia que se deja al autor: con X = 1.000 una estiba de piezas grandes pesa toneladas y una inyectora lenta tarda horas en llenarla; por eso `body-stop` ya no deja sin cuerpos a la celda 1 en una hora. Ver [[bitacora]] y `equipment-library/forklift-fleet/FICHA.md`.

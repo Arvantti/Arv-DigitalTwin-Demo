@@ -11,7 +11,7 @@ Parámetros de URL, pensados para capturas automáticas:
 
 | Parámetro | Efecto |
 |---|---|
-| `plant=<id>` | Planta (por defecto `sauce-plant-v1`; también `plastic-injection-plant-v1`, con sus 29 inyectoras, la banda, el empaque, los secadores, los chillers y el molino animados; escenarios `nominal`, `conveyor-trip`, `dryer-stop`, `chiller-trip` y `pelletizer-jam`) |
+| `plant=<id>` | Planta (por defecto `sauce-plant-v1`; también `plastic-injection-plant-v1`, con sus 29 inyectoras, la banda, el empaque, los secadores, los chillers y el molino animados; escenarios `nominal`, `conveyor-trip`, `dryer-stop`, `chiller-trip` y `pelletizer-jam`); `corrugated-box-plant-v1`: fábrica de cajas, aún sin simulación, ver `docs/box-plant.md`) |
 | `camera=general`, `camera=<id de zona>` o `camera=nivel-<n>` | Cámara inicial (`nivel-<n>`: el equipo con `params.level: n`, en un edificio por pisos) |
 | `look=x,y,z,tx,ty,tz` | Cámara en el punto (x, y, z) del plano mirando a (tx, ty, tz), en metros; sirve para capturar un detalle exacto |
 | `select=<id de equipo>` | Equipo seleccionado |
@@ -121,7 +121,7 @@ El validador exige: `kind` `forklift` o `pedestrian`, 2 o más puntos dentro del
 
 **Carriles.** En la escena, montacargas y carros circulan por la derecha: la ida (cargada) y el regreso (vacío) van por carriles distintos a 0,8 m (montacargas) y 0,5 m (carros) del eje de la ruta, y ambos se dibujan en el piso. Los operarios caminan por el eje.
 
-**Almacenes.** `almacen-semielaborado` (al norte de la nave, estanterías con cajas plásticas azules, `params.stage: semielaborado`) guarda las piezas inyectadas que llevan los montacargas desde los buffers de las inyectoras y alimenta las celdas de ensamble; la bodega de producto terminado (`params.stage: terminado`, cajas de cartón) recibe lo armado y empacado. Las cuatro estanterías de semielaborado se simulan (`pallet-store`: muestran sus estibas almacenadas; cada inyectora tiene un buffer `pallet-buffer` con su estiba y las estibas llenas en espera) y la bodega de terminado no (sin inventario), ver `docs/registro` D40 y D43.
+**Almacenes.** `almacen-semielaborado` (al norte de la nave, estanterías con cajas plásticas azules, `params.stage: semielaborado`) guarda las piezas inyectadas que llevan los montacargas desde los buffers de las inyectoras y alimenta las celdas de ensamble; la bodega de producto terminado (`params.stage: terminado`, cajas de cartón) recibe lo armado y empacado. Las cuatro estanterías de semielaborado se simulan (`pallet-store`: muestran sus estibas almacenadas; cada inyectora tiene un buffer `pallet-buffer` con su estiba y las estibas llenas en espera) y la bodega de terminado no (sin inventario), ver `docs/registro` D40 y D45.
 
 ## Pendiente de la fase 5
 
