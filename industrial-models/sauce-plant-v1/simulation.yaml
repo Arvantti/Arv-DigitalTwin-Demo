@@ -1,10 +1,10 @@
 # Simulación de la planta de salsas con el motor de planta (docs/plant-engine.md).
-# Primera línea conectada: salsa de tomate caliente en sachet de 1.000 ml, desde la marmita hasta la caja de 4 sachets,
-# con el vapor de la caldera. Los equipos del plant.yaml que aún no tienen tipo en la librería
+# Línea caliente completa: salsa de tomate/BBQ en sachet de 1.000 ml (marmitas 1 y 2 → pasteurizador 1) y de 250 ml
+# (marmita 3 → pasteurizador 2, supuesto), cada una hasta su caja, con el vapor de la caldera. Los equipos del plant.yaml que aún no tienen tipo en la librería
 # (bombas, tubo de retención, estación reductora) se atraviesan con `via`.
 
 schema_version: 0.1.0
-description: Línea caliente de 1.000 ml (marmitas → pasteurizador → pulmón → sachetadora → túnel → control de peso → empaque manual en cajas de 4) con la caldera
+description: Línea caliente de 1.000 ml (marmitas 1 y 2 → pasteurizador → pulmón → sachetadora → túnel → control de peso → empaque en cajas de 4) y de 250 ml (marmita 3 → pasteurizador 2 → pulmón 2 → sachetadora → túnel 2 → control de peso → dos mesas de cajas de 16), con la caldera
 dt: 1.0
 
 x-tomato-batch: &tomato_batch
@@ -29,21 +29,32 @@ equipment:
   boiler-01:         { type: steam-boiler,        preset: 60bhp-8bar }
   kettle-01:         { type: jacketed-kettle,     preset: 2500l-sauce }
   kettle-02:         { type: jacketed-kettle,     preset: 2500l-sauce }
+  kettle-03:         { type: jacketed-kettle,     preset: 2500l-sauce }
   pasteurizer-01:    { type: tubular-pasteurizer, preset: 3000lh-sauce }
+  pasteurizer-02:    { type: tubular-pasteurizer, preset: 3000lh-sauce }
   buffer-hot-01:     { type: vessel,              preset: hot-buffer-3000l, params: { initial_level_pct: 0 } }
+  buffer-hot-02:     { type: vessel,              preset: hot-buffer-3000l, params: { initial_level_pct: 0 } }
   filler-pouch-01:   { type: vffs-sachet-filler,  preset: 1000ml-1-lane-hot }
+  filler-sachet-02:  { type: vffs-sachet-filler,  preset: 250ml-2-lanes-hot }
   cooling-tunnel-01: { type: cooling-tunnel,      preset: sachet-6m }
+  cooling-tunnel-02: { type: cooling-tunnel,      preset: sachet-250 }
   checkweigher-01:   { type: checkweigher,        preset: 1000ml-tomato }
+  checkweigher-02:   { type: checkweigher,        preset: 250ml-tomato }
   pack-sauce-1000:   { type: packing-station,     preset: sachet-1000ml-4 }
-  # Las mesas de 500 y 250 ml no tienen aún su línea de llenado conectada: se simulan sin llegadas.
+  # La mesa de 500 ml no tiene aún su línea de llenado conectada (mayonesa): se simula sin llegadas.
   pack-sauce-500:    { type: packing-station,     preset: sachet-500ml-8,  params: { nominal_inflow_upm: 0 } }
-  pack-sauce-250:    { type: packing-station,     preset: sachet-250ml-16, params: { nominal_inflow_upm: 0 } }
+  # Dos mesas de 250 ml (150 u/min cada una). Hoy solo llega el sachet caliente de 80 u/min a la mesa 1; la mesa 2 espera
+  # a las llenadoras frías (240 u/min en total), porque una salida entrega a un solo destino (sin reparto).
+  pack-sauce-250:    { type: packing-station,     preset: sachet-250ml-16 }
+  pack-sauce-250-b:  { type: packing-station,     preset: sachet-250ml-16, params: { nominal_inflow_upm: 0 } }
 
 links:
   # Vapor: la estación reductora steam-station-01 baja de 8 a 3 bar (outlet_bar del plant.yaml).
   - { from: boiler-01.steam_out, to: kettle-01.steam_in,      via: [steam-station-01], max: { pressure_bar: 3 } }
   - { from: boiler-01.steam_out, to: kettle-02.steam_in,      via: [steam-station-01], max: { pressure_bar: 3 } }
+  - { from: boiler-01.steam_out, to: kettle-03.steam_in,      via: [steam-station-01], max: { pressure_bar: 3 } }
   - { from: boiler-01.steam_out, to: pasteurizer-01.steam_in, via: [steam-station-01], max: { pressure_bar: 3 } }
+  - { from: boiler-01.steam_out, to: pasteurizer-02.steam_in, via: [steam-station-01], max: { pressure_bar: 3 } }
   # Producto
   - { from: kettle-01.product_out,      to: pasteurizer-01.product_in,  via: [pump-hot-01] }
   - { from: kettle-02.product_out,      to: pasteurizer-01.product_in,  via: [pump-hot-01] }
@@ -53,22 +64,37 @@ links:
   - { from: pasteurizer-01.divert_out,  to: kettle-01.return_in,        via: [holding-tube-01], when: kettle-01.discharge_kg_h }
   - { from: pasteurizer-01.divert_out,  to: kettle-02.return_in,        via: [holding-tube-01], when: kettle-02.discharge_kg_h }
   - { from: buffer-hot-01.outlet,       to: filler-pouch-01.product_in }
+  # Segunda línea caliente (250 ml)
+  - { from: kettle-03.product_out,      to: pasteurizer-02.product_in,  via: [pump-hot-02] }
+  - { from: pasteurizer-02.product_out, to: buffer-hot-02.inlet,        via: [holding-tube-02] }
+  - { from: pasteurizer-02.divert_out,  to: kettle-03.return_in,        via: [holding-tube-02], when: kettle-03.discharge_kg_h }
+  - { from: buffer-hot-02.outlet,       to: filler-sachet-02.product_in }
   # Sachets
   - { from: filler-pouch-01.sachets_out,  to: cooling-tunnel-01.items_in }
   - { from: cooling-tunnel-01.items_out,  to: checkweigher-01.items_in }
   - { from: checkweigher-01.items_out,    to: pack-sauce-1000.items_in }
+  - { from: filler-sachet-02.sachets_out, to: cooling-tunnel-02.items_in }
+  - { from: cooling-tunnel-02.items_out,  to: checkweigher-02.items_in }
+  - { from: checkweigher-02.items_out,    to: pack-sauce-250.items_in }
 
 startup:
   - { equipment: pasteurizer-01,  command: start }
+  - { equipment: pasteurizer-02,  command: start }
   - { equipment: filler-pouch-01, command: start }
+  - { equipment: filler-sachet-02, command: start }
   # La prueba del detector de metales se hace al inicio de cada hora (metal_test_interval_min).
   - { equipment: checkweigher-01, command: metal_test, every_s: 3600 }
+  - { equipment: checkweigher-02, command: metal_test, every_s: 3600 }
 
 lines:
   - id: hot-1000
     name: Salsa de tomate en sachet de 1.000 ml
     output: pack-sauce-1000.boxes_out
     equipment: [kettle-01, kettle-02, pasteurizer-01, buffer-hot-01, filler-pouch-01, cooling-tunnel-01, checkweigher-01, pack-sauce-1000]
+  - id: hot-250
+    name: Salsa de tomate/BBQ en sachet de 250 ml
+    output: pack-sauce-250.boxes_out
+    equipment: [kettle-03, pasteurizer-02, buffer-hot-02, filler-sachet-02, cooling-tunnel-02, checkweigher-02, pack-sauce-250]
 
 scenarios:
   - id: nominal
@@ -77,6 +103,7 @@ scenarios:
     timeline:
       - { at_s: 0,    equipment: kettle-01, command: run_phases, args: { phases: *tomato_batch }, every_s: 7200 }
       - { at_s: 3600, equipment: kettle-02, command: run_phases, args: { phases: *tomato_batch }, every_s: 7200 }
+      - { at_s: 1800, equipment: kettle-03, command: run_phases, args: { phases: *tomato_batch }, every_s: 7200 }
     expect:
       - { path: events.kettle-01.batch_completed, equals: 4, description: "(batch ≈ 118 min: carga 40 + calentamiento ≈ 23 + 10 + 10 + descarga 36; empieza a 0, 120, 240 y 360 min)" }
       - { path: events.kettle-02.batch_completed, equals: 3, description: "(empieza a 60, 180, 300 y 420 min; el último termina después del turno)" }
@@ -86,6 +113,12 @@ scenarios:
       - { path: equipment.filler-pouch-01.variables.rejects_temperature, equals: 0, description: "(el pulmón mantiene 88 °C, sobre los 85 °C del llenado en caliente)" }
       - { path: equipment.cooling-tunnel-01.variables.hot_outlets, equals: 0 }
       - { path: equipment.pasteurizer-01.kpis.under_target_l, equals: 0.0 }
+      - { path: events.kettle-03.batch_completed, equals: 3, description: "(empieza a 30, 150 y 270 min y termina a ≈ 148, 268 y 388 min; el cuarto empieza a 390 y no termina en el turno)" }
+      - { path: lines.hot-250.output_units, min: 1200, max: 1330, description: "(3 batches × 1.995 kg ÷ ≈ 0,283 kg por sachet de 250 ml ≈ 21.100 sachets, × 97,6 % aceptados ÷ 16 por caja ≈ 1.290 cajas; el pulmón 2 queda casi vacío y la sachetadora corre a 80 u/min solo ≈ 55 % del turno, el resto espera la marmita 3)" }
+      - { path: equipment.filler-sachet-02.state_share.starved, min: 0.3, description: "(sin producto hasta la primera descarga, ≈ 115 min de 480, y entre batches: una marmita da ≈ 1.015 kg/h contra 1.344 kg/h que pide la sachetadora)" }
+      - { path: equipment.cooling-tunnel-02.variables.hot_outlets, equals: 0 }
+      - { path: equipment.pasteurizer-02.kpis.under_target_l, equals: 0.0 }
+      - { path: equipment.pack-sauce-250.kpis.blocked_pct, equals: 0.0, description: "(llegan 80 u/min a una mesa que empaca 150: no limita)" }
 
   - id: boiler-trip
     description: "Falla de llama de la caldera durante 1 h: la marmita 1 calienta y gasta el vapor que queda, la presión cae y el pasteurizador desvía la descarga de la marmita 2"
@@ -115,4 +148,18 @@ scenarios:
       - { path: equipment.filler-pouch-01.state_share.blocked, min: 0.3, description: "(80 de 240 min con el túnel detenido)" }
       - { path: events.buffer-hot-01.high_level, min: 1, description: "(10 % + 1.576 kg de la marmita 1 + la marmita 2 desde el min 145: 90 % hacia el min 165)" }
       - { path: equipment.kettle-02.state_share.blocked, min: 0.04, description: "(espera desde ≈ 165 min hasta que el pulmón baja 10 puntos, ≈ 10 min después de que vuelve el túnel)" }
+      - { path: equipment.cooling-tunnel-01.variables.hot_outlets, equals: 0 }
+
+  - id: tunnel-250-stop
+    description: "La banda del túnel 2 se detiene 80 min: la sachetadora de 250 ml se bloquea; la línea de 1.000 ml, con su propio túnel, ni se entera"
+    duration_s: 14400
+    timeline:
+      - { at_s: 0,    equipment: kettle-01, command: run_phases, args: { phases: *tomato_batch }, every_s: 7200 }
+      - { at_s: 3600, equipment: kettle-02, command: run_phases, args: { phases: *tomato_batch }, every_s: 7200 }
+      - { at_s: 0,    equipment: kettle-03, command: run_phases, args: { phases: *tomato_batch }, every_s: 7200 }
+      - { at_s: 5400, equipment: cooling-tunnel-02, command: inject_fault, args: { fault: belt_drive_trip, duration_s: 4800 } }
+    expect:
+      - { path: equipment.filler-sachet-02.state_share.blocked, min: 0.25, description: "(la sachetadora recibe producto desde ≈ 85 min y la banda para en el min 90 durante 80 min: ≈ 75 de 240 min bloqueada)" }
+      - { path: equipment.cooling-tunnel-02.variables.hot_outlets, equals: 0 }
+      - { path: equipment.filler-pouch-01.state_share.blocked, equals: 0.0, description: "(el túnel 1 sigue andando: el bloqueo no cruza de una línea a la otra)" }
       - { path: equipment.cooling-tunnel-01.variables.hot_outlets, equals: 0 }

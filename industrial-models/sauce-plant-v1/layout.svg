@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1460" height="1080" viewBox="0 0 1460 1080" font-family="Inter, Helvetica, Arial, sans-serif">
-<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#d4a017" stroke-width="1.2" stroke-opacity="0.45"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#c2410c"/></marker><marker id="arrow-forklift" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#ea580c"/></marker><marker id="arrow-pedestrian" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#15803d"/></marker></defs>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#d4a017" stroke-width="1.2" stroke-opacity="0.45"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#c2410c"/></marker><marker id="arrow-forklift" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#ea580c"/></marker><marker id="arrow-pedestrian" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#15803d"/></marker><marker id="arrow-cart" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#0284c7"/></marker></defs>
 <rect width="100%" height="100%" fill="#ffffff"/>
 <text x="30" y="48" font-size="20" font-weight="700" fill="#1f2937">Planta de salsas y aderezos (referencia)</text>
 <text x="30" y="68" font-size="12" fill="#4b5563">sauce-plant-v1 · manufactura por procesos · predio 112 × 72 m · datos de referencia, no de una planta real</text>
@@ -157,6 +157,9 @@
 <circle cx="580.0" cy="580.0" r="13.8" fill="#64748b" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
 <title>kettle-02 · jacketed_kettle</title>
 <text x="580.0" y="564.2" font-size="7.0" text-anchor="middle" fill="#111827">kettle-02</text>
+<circle cx="655.0" cy="642.5" r="13.8" fill="#64748b" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>kettle-03 · jacketed_kettle</title>
+<text x="655.0" y="626.8" font-size="7.0" text-anchor="middle" fill="#111827">kettle-03</text>
 <rect x="636.2" y="575.0" width="12.5" height="10.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
 <title>pump-hot-01 · lobe_pump</title>
 <text x="642.5" y="573.0" font-size="7.0" text-anchor="middle" fill="#111827">pump-hot-01</text>
@@ -166,6 +169,15 @@
 <rect x="530.0" y="745.0" width="50.0" height="7.5" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
 <title>holding-tube-01 · holding_tube</title>
 <text x="555.0" y="743.0" font-size="7.0" text-anchor="middle" fill="#111827">holding-tube-01</text>
+<rect x="605.0" y="637.5" width="12.5" height="10.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>pump-hot-02 · lobe_pump</title>
+<text x="611.2" y="635.5" font-size="7.0" text-anchor="middle" fill="#111827">pump-hot-02</text>
+<rect x="611.2" y="693.7" width="62.5" height="22.5" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>pasteurizer-02 · tubular_heat_exchanger</title>
+<text x="642.5" y="691.7" font-size="7.0" text-anchor="middle" fill="#111827">pasteurizer-02</text>
+<rect x="617.5" y="745.0" width="50.0" height="7.5" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>holding-tube-02 · holding_tube</title>
+<text x="642.5" y="743.0" font-size="7.0" text-anchor="middle" fill="#111827">holding-tube-02</text>
 <rect x="617.5" y="773.8" width="25.0" height="12.5" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
 <title>steam-station-01 · steam_pressure_station</title>
 <text x="630.0" y="771.8" font-size="7.0" text-anchor="middle" fill="#111827">steam-station-01</text>
@@ -238,9 +250,15 @@
 <rect x="886.2" y="470.6" width="75.0" height="18.8" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
 <title>cooling-tunnel-01 · cooling_tunnel</title>
 <text x="923.8" y="468.6" font-size="7.0" text-anchor="middle" fill="#111827">cooling-tunnel-01</text>
+<rect x="886.2" y="414.4" width="75.0" height="18.8" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>cooling-tunnel-02 · cooling_tunnel</title>
+<text x="923.8" y="412.4" font-size="7.0" text-anchor="middle" fill="#111827">cooling-tunnel-02</text>
 <rect x="1023.8" y="317.5" width="37.5" height="25.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
 <title>pack-sauce-250 · packing_station</title>
 <text x="1042.5" y="315.5" font-size="7.0" text-anchor="middle" fill="#111827">pack-sauce-250</text>
+<rect x="1023.8" y="267.5" width="37.5" height="25.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>pack-sauce-250-b · packing_station</title>
+<text x="1042.5" y="265.5" font-size="7.0" text-anchor="middle" fill="#111827">pack-sauce-250-b</text>
 <rect x="1023.8" y="417.5" width="37.5" height="25.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
 <title>pack-sauce-500 · packing_station</title>
 <text x="1042.5" y="415.5" font-size="7.0" text-anchor="middle" fill="#111827">pack-sauce-500</text>
@@ -331,6 +349,8 @@
 <line x1="395.1" y1="522.2" x2="496.2" y2="575.3" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>ingredientes pesados: 340 kg/batch</title></line>
 <line x1="636.8" y1="588.2" x2="560.7" y2="696.8" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>salsa cocida: 3000 L/h</title></line>
 <line x1="563.0" y1="742.8" x2="722.0" y2="623.5" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>salsa pasteurizada: 3000 L/h</title></line>
+<line x1="615.7" y1="651.4" x2="638.0" y2="696.1" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>salsa cocida: 3000 L/h</title></line>
+<line x1="646.7" y1="739.7" x2="725.8" y2="570.3" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>salsa pasteurizada: 3000 L/h</title></line>
 <line x1="390.7" y1="508.6" x2="494.3" y2="301.4" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>fase acuosa: 300 kg/batch</title></line>
 <line x1="102.5" y1="423.9" x2="620.0" y2="429.9" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>aceite: 4700 kg/h</title></line>
 <line x1="634.7" y1="301.3" x2="725.3" y2="471.2" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>mayonesa: 4500 kg/h</title></line>
@@ -341,7 +361,8 @@
 <line x1="935.6" y1="290.0" x2="924.4" y2="470.0" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>sachets calientes: 30 u/min</title></line>
 <line x1="887.3" y1="386.8" x2="1035.2" y2="523.2" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>sachets 1000 ml: 30 u/min</title></line>
 <line x1="889.6" y1="382.9" x2="1032.9" y2="427.1" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>sachets 500 ml: 45 u/min</title></line>
-<line x1="928.6" y1="533.8" x2="1037.6" y2="338.7" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>sachets 250 ml: 240 u/min</title></line>
+<line x1="928.6" y1="533.8" x2="1037.6" y2="338.7" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>sachets 250 ml: 120 u/min</title></line>
+<line x1="927.9" y1="533.4" x2="1038.4" y2="289.1" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>sachets 250 ml: 120 u/min</title></line>
 <line x1="878.6" y1="770.1" x2="812.6" y2="289.9" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>laminado: 2 rollos/turno</title></line>
 <line x1="1047.5" y1="721.3" x2="1187.5" y2="476.2" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>estibas: 35 pallets/d</title></line>
 <line x1="1202.0" y1="470.7" x2="1295.5" y2="501.8" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>estibas: 35 pallets/d</title></line>

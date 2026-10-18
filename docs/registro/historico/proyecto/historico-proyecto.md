@@ -30,3 +30,4 @@ Conversaciones del 2026-10-16 (UTC) entre el autor y Claude dentro del proyecto 
 19. [[hilo-despliegue-cloudflare]] (CI/CD de la galería en Cloudflare Pages, 2026-10-17 22:54 a 2026-10-18 01:50 UTC)
 20. [[hilo-inspeccion-visual]] (inspección visual de los modelos y arreglo de tuberías desconectadas, 2026-10-18 13:14 UTC)
 21. [[hilo-tuberias-sin-cruces]] (tuberías de salsas que cruzan cajas y flujo del proceso de salsas, 2026-10-18 14:36 UTC)
+22. [[hilo-linea-caliente-de-salsas]] (línea caliente completa de salsas y capacidad a 22 t/día, 2026-10-18 17:10 UTC)

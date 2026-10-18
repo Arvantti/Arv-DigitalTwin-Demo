@@ -81,7 +81,7 @@ Una red de agua no se puede pasar de equipo en equipo con un paso de retraso: el
 
 ## 3. Lo que ya está conectado
 
-`sauce-plant-v1`: la línea caliente de 1.000 ml, con la receta `rcp-tomato-sauce` en las marmitas.
+`sauce-plant-v1`: dos líneas calientes con la receta `rcp-tomato-sauce`: la de 1.000 ml (marmitas 1 y 2) y la de 250 ml (marmita 3 con su propio pasteurizador, pulmón, túnel y control de peso; supuesto D45). Una salida no se reparte entre dos destinos, por eso no comparten pasteurizador. La mesa 2 de 250 ml espera la línea fría.
 
 ```
 caldera ─vapor 3 bar (steam-station-01)─▶ marmita 1, marmita 2, pasteurizador
