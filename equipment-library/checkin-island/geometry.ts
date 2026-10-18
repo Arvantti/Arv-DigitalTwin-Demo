@@ -41,11 +41,11 @@ export default function build(params: Params): EquipmentModel {
   const steel = M.stainless();
 
   // panel de fondo elevado (las bandas pasan por debajo) con postes
-  const wall = P.box(DX, 1.4, 0.12, M.paint("#f2f3f4", 0.5), 0.02, "signage");
-  wall.position.set(0, 1.85, zWall);
+  const wall = P.box(DX, 0.7, 0.1, M.paint("#56606b", 0.6), 0.02, "signage");
+  wall.position.set(0, 2.05, zWall);
   root.add(wall);
   const band = P.box(DX, 0.28, 0.13, deskFront, 0.01);
-  band.position.set(0, 2.42, zWall);
+  band.position.set(0, 2.5, zWall);
   root.add(band);
   for (let i = 0; i <= n; i++) {
     const post = P.box(0.12, 1.15, 0.12, steel, 0.01);

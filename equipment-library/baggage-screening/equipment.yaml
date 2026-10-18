@@ -27,7 +27,7 @@ params:
   release_gap_s:      { type: number, unit: s, min: 0.5, max: 30, default: 2.5, description: Separación mínima entre maletas que salen por cada banda, affects: [behavior] }
   tunnel_length_m:    { type: number, unit: m, min: 2, max: 12, default: 5, description: Largo del cuerpo de la máquina, affects: [geometry] }
   belt_width_m:       { type: number, unit: m, min: 0.6, max: 1.4, default: 1.0, description: Ancho de la banda, affects: [geometry] }
-  body_color:         { type: string, default: "#d9dde2", description: Color de la carcasa (hex), affects: [geometry] }
+  body_color:         { type: string, default: "#aeb6bf", description: Color de la carcasa (hex), affects: [geometry] }
   alarm_side:         { type: enum, values: [left, right], default: left, description: "Lado de la salida a nivel 3, mirando en el sentido del flujo", affects: [geometry] }
 
 ports:

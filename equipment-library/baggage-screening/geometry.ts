@@ -25,7 +25,7 @@ const FEED_L = 1.5;
 export default function build(params: Params): EquipmentModel {
   const L = num(params, "tunnel_length_m", 5);
   const W = num(params, "belt_width_m", 1.0);
-  const color = str(params, "body_color", "#d9dde2");
+  const color = str(params, "body_color", "#aeb6bf");
   const side = str(params, "alarm_side", "left") === "right" ? 1 : -1; // izquierda del flujo +X = -Z
   const DX = L + 2 * FEED_L;
   const BW = W + 1.0;

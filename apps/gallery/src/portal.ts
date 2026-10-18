@@ -29,6 +29,12 @@ const plants: PlantCard[] = [
     text: "Bombeo, estación reguladora y rejilla de distribución por pisos, con la presión de cada casa y el panel del PLC.",
     extra: { href: "/acueducto.html", label: "PANEL DEL PLC" },
   },
+  {
+    id: "airport-baggage-v1",
+    family: "LOGÍSTICA",
+    title: "Equipaje de aeropuerto",
+    text: "Check-in, inspección CT por niveles, clasificador de bandejas y carruseles de armado y de reclamo: cada maleta seguida hasta el avión.",
+  },
 ];
 
 const root = document.getElementById("cards") as HTMLElement;

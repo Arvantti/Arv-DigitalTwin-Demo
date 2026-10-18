@@ -147,10 +147,32 @@ telemetría: la casa más baja de los 4 niveles ─▶ estación (rama automáti
 
 Los valores esperados salen del banco en régimen permanente `industrial-models/water-network-scale-v1/network.py`, que arma la misma red con los mismos tubos del plano; `test_plant_hydraulics.py` compara el motor con él (± 0,5 %). Los escenarios del archivo son pruebas: los de operación los crea el usuario conversando con Claude conectado al simulador.
 
+`airport-baggage-v1`: el sistema de equipaje de un aeropuerto (ficha de diseño en la carpeta compartida del proyecto, `aeropuerto/ficha-diseno-bhs.md`). Dos islas de check-in de 8 mostradores entregan a dos colectoras de 46 m, cada una con su máquina de inspección por tomografía (CT). Lo que la CT y el operador despejan va por una banda de inducción al clasificador de bandejas basculantes; lo que no se despeja va a nivel 3 (revisión manual) y de ahí también al clasificador. El clasificador reparte por vuelo a 4 carruseles de armado (30/25/25/20 %); las etiquetas sin lectura y las maletas que agotan sus vueltas van a codificación manual y regresan. En llegadas, dos bandas desde la plataforma llenan dos carruseles de reclamo.
+
+```
+check-in A ─▶ colectora A (46 m) ─▶ CT 1 ─despejadas─▶ inducción 1 ─┐
+check-in B ─▶ colectora B (46 m) ─▶ CT 2 ─despejadas─▶ inducción 2 ─┤
+CT 1 ─alarma─▶ banda ─▶ nivel 3 norte ─────────────────────────────┤
+CT 2 ─alarma─▶ banda ─▶ nivel 3 sur ───────────────────────────────┼─▶ clasificador ─rampas 1…4─▶ carruseles de armado 1…4 (vuelos V101, V205, V317, V422)
+codificación manual ◀─rampa manual (sin lectura o sin vueltas)─────┘                └─▶ carros hacia el avión
+banda de llegadas 1 ─▶ carrusel de reclamo 1        banda de llegadas 2 ─▶ carrusel de reclamo 2
+```
+
+| Escenario | Qué muestra |
+|---|---|
+| `nominal` | Hora pico: 300 pasajeros por isla (1,1 maletas cada uno). Casi no hay fila (capacidad 320 por hora). La CT 1 inspecciona ≈ 312 maletas y manda ≈ 16 a nivel 3; el clasificador induce ≈ 637 y el vuelo V101 recibe ≈ 184 (30 %). A los 20 min llega un vuelo de 180 maletas al reclamo 1 |
+| `screening-fault` | Falla de rayos X de la CT 1 durante 15 min: la colectora A se llena en ≈ 8 min, la isla A se bloquea y la fila crece a 20–45 pasajeros; la isla B no se entera |
+| `makeup-short-staff` | Los operarios del carrusel 1 se van 20 min: el carrusel se llena, su rampa también y el clasificador recircula y manda a codificación manual 10–35 maletas |
+| `sorter-trip` | Disparo del clasificador 10 min: las inducciones y la salida de las CT se llenan en ≈ 3 min y las dos CT quedan bloqueadas ≥ 15 % de la media hora |
+| `arrivals-wave` | Dos vuelos llegan a la vez, 180 maletas por banda a 20 por min; cada oleada dura ≈ 10 min de la primera maleta a la última recogida |
+
+Un equipo con varias salidas (clasificador, CT) usa un puerto por destino (`out_1` … `out_4`, `manual_out`, `cleared_out`, `alarm_out`), porque un enlace no reparte. Las islas, las colectoras, la CT, el clasificador y los carruseles dejan de recibir cuando se llenan y vuelven a recibir con una plaza libre (histéresis), así un bloqueo se propaga aguas arriba hasta la fila de pasajeros.
+
 ## 4. Limitaciones actuales
 
 - El producto desviado regresa a la marmita con su receta y se mezcla a la temperatura de salida del pasteurizador (`return_in`, `returned_kg`); no hay tubería de retorno con volumen ni retardo, solo el paso de retraso del motor.
 - Las recetas se escriben como fases de la marmita en `simulation.yaml`; todavía no se traducen solas desde `recipes` del plano.
 - La planta de inyección conecta la inyectora 3 con la banda y el empaque 1, y enlaza resina seca (2 secadores con 2 inyectoras), agua de moldes (chiller 1 con las 29) y scrap (las 29 con el molino), y de ahí molino → peletizado → silo 5. Quedan fuera: el reparto de resina de un secador entre varias inyectoras (hoy una salida atiende un solo destino), la carga térmica real del chiller (las inyectoras no le piden calor), el efecto de la temperatura del agua sobre el molde (solo cuenta si hay o no agua), la humedad de la resina como causa de un escenario completo (el secador cambia de humedad en horas, no en minutos) y la central de materiales: el silo 5 → manifold → inyectoras con pellet reciclado, que cerraría el lazo del reciclaje.
 - Acueducto: las bajantes llegan a los tanques de retorno en el paso siguiente (≈ 3 kg en tránsito), sin el tiempo real de caída por la canaleta; no hay golpe de ariete (régimen cuasiestacionario) ni agua guardada en los tubos.
+- Aeropuerto: el reparto por vuelo es fijo por porcentaje (no hay horarios de vuelo ni cierre de vuelo), los carros hacia el avión no se simulan (el carrusel de armado entrega siempre que haya operario) y las bandas de llegadas reciben un caudal fijo, sin la descarga real del avión.
 - La planta conectada se ve en 3D y en vivo en la escena de planta (`docs/plant-scene.md`); la API la expone en `/api/plants`.

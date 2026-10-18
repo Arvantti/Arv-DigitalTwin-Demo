@@ -1,0 +1,138 @@
+# Simulación del sistema de equipaje con el motor de planta (docs/plant-engine.md).
+# Salidas: cada isla de check-in entrega a su colectora, la colectora a su máquina CT; la CT despeja hacia la
+# inducción del clasificador y manda las alarmas por su banda a la sala de nivel 3, que devuelve al clasificador
+# las que despeja. El clasificador reparte por vuelo entre los 4 carruseles de armado y manda las etiquetas sin
+# lectura (y las maletas que agotan sus vueltas) a codificación manual, que también las devuelve al clasificador.
+# Llegadas: dos bandas desde la plataforma descargan en los dos carruseles de reclamo; la llegada de un vuelo es un
+# cambio de nominal_inflow_upm en la banda (los carros no se simulan).
+
+schema_version: 0.1.0
+description: Salidas (check-in → CT → clasificador → carruseles de armado) y llegadas (bandas → carruseles de reclamo)
+dt: 1.0
+
+equipment:
+  checkin-a:     { type: checkin-island,       preset: island-8 }
+  checkin-b:     { type: checkin-island,       preset: island-8, params: { desk_color: "#7a2f5f" } }
+  collector-a:   { type: belt-conveyor,        preset: bhs-collector-46m }
+  collector-b:   { type: belt-conveyor,        preset: bhs-collector-46m }
+  screening-01:  { type: baggage-screening,    preset: ct-600, params: { alarm_side: left } }
+  screening-02:  { type: baggage-screening,    preset: ct-600, params: { alarm_side: right } }
+  induct-01:     { type: belt-conveyor,        preset: bhs-transfer-9m }
+  induct-02:     { type: belt-conveyor,        preset: bhs-transfer-9m }
+  alarm-belt-01: { type: belt-conveyor,        preset: bhs-transfer-9m, params: { length_m: 7.7 } }
+  alarm-belt-02: { type: belt-conveyor,        preset: bhs-transfer-9m, params: { length_m: 7.7 } }
+  l3-01:         { type: bag-handling-station, preset: level3-3ops }
+  l3-02:         { type: bag-handling-station, preset: level3-3ops }
+  sorter-01:     { type: baggage-sorter,       preset: tilt-tray-4 }
+  encoding-01:   { type: bag-handling-station, preset: encoding-1op }
+  makeup-01:     { type: baggage-carousel,     preset: makeup-40 }
+  makeup-02:     { type: baggage-carousel,     preset: makeup-40 }
+  makeup-03:     { type: baggage-carousel,     preset: makeup-40 }
+  makeup-04:     { type: baggage-carousel,     preset: makeup-40 }
+  inbound-01:    { type: belt-conveyor,        preset: bhs-inbound-18m }
+  inbound-02:    { type: belt-conveyor,        preset: bhs-inbound-18m }
+  reclaim-01:    { type: baggage-carousel,     preset: reclaim-60 }
+  reclaim-02:    { type: baggage-carousel,     preset: reclaim-60 }
+
+links:
+  # salidas: check-in → colectoras → CT
+  - { from: checkin-a.bags_out,      to: collector-a.items_in }
+  - { from: checkin-b.bags_out,      to: collector-b.items_in }
+  - { from: collector-a.items_out,   to: screening-01.bags_in }
+  - { from: collector-b.items_out,   to: screening-02.bags_in }
+  # CT → inducción → clasificador
+  - { from: screening-01.cleared_out, to: induct-01.items_in }
+  - { from: screening-02.cleared_out, to: induct-02.items_in }
+  - { from: induct-01.items_out,     to: sorter-01.bags_in }
+  - { from: induct-02.items_out,     to: sorter-01.bags_in }
+  # CT con alarma → nivel 3 → reingreso al clasificador
+  - { from: screening-01.alarm_out,  to: alarm-belt-01.items_in }
+  - { from: screening-02.alarm_out,  to: alarm-belt-02.items_in }
+  - { from: alarm-belt-01.items_out, to: l3-01.bags_in }
+  - { from: alarm-belt-02.items_out, to: l3-02.bags_in }
+  - { from: l3-01.bags_out,          to: sorter-01.bags_in }
+  - { from: l3-02.bags_out,          to: sorter-01.bags_in }
+  # clasificador → carruseles de armado y codificación manual
+  - { from: sorter-01.out_1,         to: makeup-01.bags_in }
+  - { from: sorter-01.out_2,         to: makeup-02.bags_in }
+  - { from: sorter-01.out_3,         to: makeup-03.bags_in }
+  - { from: sorter-01.out_4,         to: makeup-04.bags_in }
+  - { from: sorter-01.manual_out,    to: encoding-01.bags_in }
+  - { from: encoding-01.bags_out,    to: sorter-01.bags_in }
+  # llegadas
+  - { from: inbound-01.items_out,    to: reclaim-01.bags_in }
+  - { from: inbound-02.items_out,    to: reclaim-02.bags_in }
+
+lines:
+  - { id: flight-101, name: Vuelo 101 (carrusel 1), output: makeup-01.bags_out, equipment: [checkin-a, checkin-b, screening-01, screening-02, sorter-01, makeup-01] }
+  - { id: flight-205, name: Vuelo 205 (carrusel 2), output: makeup-02.bags_out, equipment: [sorter-01, makeup-02] }
+  - { id: flight-317, name: Vuelo 317 (carrusel 3), output: makeup-03.bags_out, equipment: [sorter-01, makeup-03] }
+  - { id: flight-422, name: Vuelo 422 (carrusel 4), output: makeup-04.bags_out, equipment: [sorter-01, makeup-04] }
+  - { id: reclaim-1,  name: Reclamo 1,              output: reclaim-01.bags_out, equipment: [inbound-01, reclaim-01] }
+  - { id: reclaim-2,  name: Reclamo 2,              output: reclaim-02.bags_out, equipment: [inbound-02, reclaim-02] }
+
+scenarios:
+  - id: nominal
+    description: "Hora pico de salidas (300 pasajeros por isla) y un vuelo de llegada de 180 maletas a los 20 min"
+    duration_s: 3600
+    timeline:
+      - { at_s: 1200, equipment: inbound-01, command: set_param, args: { name: nominal_inflow_upm, value: 20 } }
+      - { at_s: 1740, equipment: inbound-01, command: set_param, args: { name: nominal_inflow_upm, value: 0 } }
+    expect:
+      - { path: equipment.checkin-a.kpis.avg_wait_min, max: 1.0, description: "(capacidad 320 pasajeros por hora y llegan 300: casi no hay fila)" }
+      - { path: equipment.screening-01.variables.bags_scanned, min: 305, max: 320, description: "(≈ 321 maletas de la isla A menos ≈ 7 que van en los 77 s de la colectora)" }
+      - { path: equipment.screening-01.variables.to_l3, min: 12, max: 18, description: "(25 % con alarma × 20 % no despejadas ≈ 5 % de 313)" }
+      - { path: equipment.l3-01.variables.released, min: 9, max: 17, description: "(4 min por maleta; las últimas siguen en la mesa)" }
+      - { path: equipment.sorter-01.variables.inducted, min: 600, max: 660, description: "(≈ 2 × 296 despejadas + ≈ 26 de nivel 3 + ≈ 19 codificadas)" }
+      - { path: lines.flight-101.output_units, min: 170, max: 192, description: "(30 % de ≈ 611 leídas = 183)" }
+      - { path: lines.flight-422.output_units, min: 112, max: 128, description: "(20 % de ≈ 611 = 122)" }
+      - { path: equipment.sorter-01.variables.dumped, equals: 0, description: "(los carruseles nunca se llenan: reciben ≤ 3,2 por min y sacan 8)" }
+      - { path: lines.reclaim-1.output_units, equals: 180 }
+      - { path: events.reclaim-01.full, equals: 0 }
+
+  - id: screening-fault
+    description: "Falla de rayos X de la CT 1 durante 15 min a los 10 min: la colectora A se llena, la isla A se bloquea y la fila crece; la isla B no se entera"
+    duration_s: 2400
+    timeline:
+      - { at_s: 600, equipment: screening-01, command: inject_fault, args: { fault: xray_fault, duration_s: 900 } }
+    expect:
+      - { path: events.collector-a.full, min: 1, description: "(39 plazas de la colectora + 4 de la entrada de la CT a 5,35 maletas por min: ≈ 8 min)" }
+      - { path: equipment.checkin-a.state_share.blocked, min: 0.12, description: "(bloqueada desde ≈ 1.080 s hasta que la CT vuelve en 1.500 s: ≥ 7 de 40 min)" }
+      - { path: equipment.checkin-a.variables.pax_queue, min: 20, max: 45, description: "(≈ 7 min sin atender × 5 pax por min, y el margen de la isla es de solo 20 pax por hora)" }
+      - { path: equipment.checkin-b.state_share.blocked, equals: 0.0 }
+      - { path: equipment.screening-02.variables.bags_scanned, min: 200, description: "(≈ 214 en 40 min, como siempre)" }
+
+  - id: makeup-short-staff
+    description: "Los operarios del carrusel 1 se van 20 min a los 10 min: se llena, el clasificador recircula y descarta a codificación manual"
+    duration_s: 2400
+    timeline:
+      - { at_s: 600,  equipment: makeup-01, command: set_handlers, args: { n: 0 } }
+      - { at_s: 1800, equipment: makeup-01, command: set_handlers, args: { n: 2 } }
+    expect:
+      - { path: events.makeup-01.full, min: 1, description: "(36 plazas útiles a ≈ 3,2 maletas por min: lleno a los ≈ 21 min)" }
+      - { path: events.sorter-01.chute_full, min: 1 }
+      - { path: equipment.sorter-01.variables.dumped, min: 10, max: 35, description: "(≈ 3,2 por min del vuelo 101 durante los ≈ 8 min con el carrusel lleno, menos las que siguen dando vueltas)" }
+      - { path: events.makeup-02.full, equals: 0 }
+
+  - id: sorter-trip
+    description: "Disparo de los motores del clasificador 10 min a los 10 min: se llenan las inducciones y las CT se bloquean"
+    duration_s: 1800
+    timeline:
+      - { at_s: 600, equipment: sorter-01, command: inject_fault, args: { fault: drive_trip, duration_s: 600 } }
+    expect:
+      - { path: events.sorter-01.fault_cleared, equals: 1 }
+      - { path: equipment.screening-01.state_share.blocked, min: 0.15, description: "(la inducción de 9 m (8 + 4 maletas) y la salida de la CT (6) se llenan en ≈ 3 min; bloqueada ≈ 7 de 30 min)" }
+      - { path: equipment.screening-02.state_share.blocked, min: 0.15 }
+
+  - id: arrivals-wave
+    description: "Dos vuelos llegan a la vez: 180 maletas por banda a 20 por min"
+    duration_s: 1200
+    timeline:
+      - { at_s: 0,   equipment: inbound-01, command: set_param, args: { name: nominal_inflow_upm, value: 20 } }
+      - { at_s: 0,   equipment: inbound-02, command: set_param, args: { name: nominal_inflow_upm, value: 20 } }
+      - { at_s: 540, equipment: inbound-01, command: set_param, args: { name: nominal_inflow_upm, value: 0 } }
+      - { at_s: 540, equipment: inbound-02, command: set_param, args: { name: nominal_inflow_upm, value: 0 } }
+    expect:
+      - { path: lines.reclaim-1.output_units, equals: 180 }
+      - { path: lines.reclaim-2.output_units, equals: 180 }
+      - { path: equipment.reclaim-01.kpis.wave_min, min: 9, max: 11, description: "(9 min de descarga + 36 s de banda; los pasajeros recogen más rápido de lo que llega)" }

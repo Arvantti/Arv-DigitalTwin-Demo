@@ -99,11 +99,11 @@ export default function build(params: Params): EquipmentModel {
     etd.position.set(DX / 2 - 0.5, 0.88, zWork);
     etd.name = "trace_detector";
     root.add(etd);
-    const glass = P.box(DX - 0.2, 1.4, 0.03, M.glass("#cfe6f5", 0.22), 0.01, "partition");
-    glass.position.set(0, 1.6, DZ / 2 - 0.1);
+    const glass = P.box(DX - 0.2, 0.6, 0.02, M.glass("#cfe6f5", 0.12), 0.01, "partition");
+    glass.position.set(0, 1.0, DZ / 2 - 0.1);
     root.add(glass);
-    const sill = P.box(DX - 0.2, 0.9, 0.08, M.paint("#2c3e50", 0.5), 0.01);
-    sill.position.set(0, 0.45, DZ / 2 - 0.1);
+    const sill = P.box(DX - 0.2, 0.7, 0.08, M.paint("#2c3e50", 0.5), 0.01);
+    sill.position.set(0, 0.35, DZ / 2 - 0.1);
     root.add(sill);
   }
   const term = P.box(0.5, 0.34, 0.04, M.darkSteel(), 0.01, "terminal");

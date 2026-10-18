@@ -1,11 +1,12 @@
 # Gemelo digital industrial (demo + plataforma)
 
-Plataforma para construir gemelos digitales de plantas industriales a partir de una **librería de equipos estandarizados**. Cada equipo es una pieza de código configurable: un modelo 3D paramétrico más un comportamiento simulado. La demo arma dos plantas de referencia ficticias:
+Plataforma para construir gemelos digitales de plantas industriales a partir de una **librería de equipos estandarizados**. Cada equipo es una pieza de código configurable: un modelo 3D paramétrico más un comportamiento simulado. La demo arma plantas de referencia ficticias:
 
 | Planta | Tipo de manufactura | Layout |
 |---|---|---|
 | Inyección de artículos plásticos | Discreta | `industrial-models/plastic-injection-plant-v1/` |
 | Salsas y aderezos | Por procesos (batch + continuo) | `industrial-models/sauce-plant-v1/` |
+| Equipaje de aeropuerto | Logística (manejo de materiales) | `industrial-models/airport-baggage-v1/` |
 
 Los datos de las plantas son estimaciones plausibles, no de una instalación real.
 
