@@ -30,9 +30,17 @@ const WALK_SPEED = 1.2; // m/s
 const CART_SPEED = 1.0; // m/s
 const PAUSE_S = 3;
 
-interface Agent {
+/** Un carril: polilínea con su longitud acumulada. */
+interface Lane {
   points: THREE.Vector3[];
   cumulative: number[];
+  length: number;
+}
+
+interface Agent {
+  /** Carril de ida (cargado) y de regreso: montacargas y carros circulan por la derecha, cada sentido por su carril. */
+  out: Lane;
+  back: Lane;
   length: number;
   speed: number;
   offset: number;
@@ -51,12 +59,43 @@ function strip(a: THREE.Vector3, b: THREE.Vector3, width: number, mat: THREE.Mat
   return m;
 }
 
-function locate(agent: Agent, s: number): { pos: THREE.Vector3; dir: THREE.Vector3 } {
-  const c = agent.cumulative;
+/** Distancia de cada carril al eje de la ruta (m); a la derecha del sentido de marcha. */
+const LANE_OFFSET = { forklift: 0.8, cart: 0.5 } as const;
+
+function makeLane(points: THREE.Vector3[]): Lane {
+  const cumulative = [0];
+  for (let i = 1; i < points.length; i++) cumulative.push(cumulative[i - 1] + points[i].distanceTo(points[i - 1]));
+  return { points, cumulative, length: cumulative[cumulative.length - 1] };
+}
+
+/**
+ * Desplaza una polilínea `d` metros a la derecha de su sentido (visto desde arriba, x este y z sur), con esquinas en inglete.
+ * Para el carril de regreso se desplaza la polilínea invertida y se vuelve a invertir, así queda del lado opuesto del eje.
+ */
+function offsetPath(points: THREE.Vector3[], d: number): THREE.Vector3[] {
+  const normals: THREE.Vector3[] = [];
+  for (let i = 1; i < points.length; i++) {
+    const dir = new THREE.Vector3().subVectors(points[i], points[i - 1]).setY(0).normalize();
+    normals.push(new THREE.Vector3(-dir.z, 0, dir.x));
+  }
+  return points.map((p, i) => {
+    const before = normals[Math.max(0, i - 1)];
+    const after = normals[Math.min(normals.length - 1, i)];
+    const miter = before.clone().add(after);
+    const len2 = miter.lengthSq();
+    // inglete: el desplazamiento crece en la esquina para mantener `d` entre tramos (acotado en curvas cerradas)
+    const k = len2 < 1e-6 ? 0 : Math.min(2, (2 * d) / len2);
+    return p.clone().addScaledVector(miter, k);
+  });
+}
+
+function locate(lane: Lane, fraction: number): { pos: THREE.Vector3; dir: THREE.Vector3 } {
+  const c = lane.cumulative;
+  const s = Math.min(1, Math.max(0, fraction)) * lane.length;
   let i = 1;
   while (i < c.length - 1 && c[i] < s) i++;
-  const a = agent.points[i - 1];
-  const b = agent.points[i];
+  const a = lane.points[i - 1];
+  const b = lane.points[i];
   const t = (s - c[i - 1]) / Math.max(1e-6, c[i] - c[i - 1]);
   return { pos: new THREE.Vector3().lerpVectors(a, b, Math.min(1, Math.max(0, t))), dir: new THREE.Vector3().subVectors(b, a).normalize() };
 }
@@ -85,23 +124,26 @@ export function buildRoutes(aisles: Aisle[], routes: Route[], parent: THREE.Obje
   const agents: Agent[] = [];
   routes.forEach((r, idx) => {
     const points = r.path.map(([x, y]) => toScene(x, y));
-    const cumulative = [0];
-    for (let i = 1; i < points.length; i++) cumulative.push(cumulative[i - 1] + points[i].distanceTo(points[i - 1]));
     const width = r.kind === "forklift" ? 0.35 : r.kind === "cart" ? 0.28 : 0.22;
-    for (let i = 1; i < points.length; i++) group.add(strip(points[i - 1], points[i], width, lineMats[r.kind], 0.03));
-
-    const length = cumulative[cumulative.length - 1];
+    // montacargas y carros: dos carriles (ida y regreso); los operarios caminan por el eje
+    const laneOffset = r.kind === "pedestrian" ? 0 : LANE_OFFSET[r.kind];
+    const out = makeLane(laneOffset ? offsetPath(points, laneOffset) : points);
+    const back = makeLane(laneOffset ? offsetPath([...points].reverse(), laneOffset).reverse() : points);
+    for (const lane of laneOffset ? [out, back] : [out]) {
+      for (let i = 1; i < lane.points.length; i++) group.add(strip(lane.points[i - 1], lane.points[i], width, lineMats[r.kind], 0.03));
+    }
+    const length = makeLane(points).length;
     let agent: Agent;
     if (r.kind === "forklift") {
       const fk = parts.forklift(idx % 2 ? "#f2b705" : "#e8731a");
       agent = {
-        points, cumulative, length, speed: FORKLIFT_SPEED, offset: idx * 11, object: fk.object, heading: 0,
+        out, back, length, speed: FORKLIFT_SPEED, offset: idx * 11, object: fk.object, heading: 0,
         step: (forward) => fk.setLoaded(forward),
       };
     } else if (r.kind === "cart") {
       const ct = parts.cart(idx % 2 ? "#2f6fb0" : "#3b8f6a");
       agent = {
-        points, cumulative, length, speed: CART_SPEED, offset: idx * 7, object: ct.object, heading: 0,
+        out, back, length, speed: CART_SPEED, offset: idx * 7, object: ct.object, heading: 0,
         step: (forward) => ct.setLoaded(forward),
       };
     } else {
@@ -114,7 +156,7 @@ export function buildRoutes(aisles: Aisle[], routes: Route[], parent: THREE.Obje
       const op = parts.operator(idx % 2 ? "#f2b705" : "#f26b1d", idx % 2 ? "#4a6b3a" : "#2f5f8f", looks[idx % looks.length]);
       let phase = 0;
       agent = {
-        points, cumulative, length, speed: WALK_SPEED, offset: idx * 13, object: op.object, heading: 0,
+        out, back, length, speed: WALK_SPEED, offset: idx * 13, object: op.object, heading: 0,
         step: (_f, moving, dt) => {
           if (moving) {
             phase += dt * WALK_SPEED * 5;
@@ -151,7 +193,7 @@ export function buildRoutes(aisles: Aisle[], routes: Route[], parent: THREE.Obje
         forward = false;
         moving = false;
       }
-      const { pos, dir } = locate(a, s);
+      const { pos, dir } = locate(forward ? a.out : a.back, s / a.length);
       if (!forward) dir.negate();
       a.object.position.copy(pos);
       const target = Math.atan2(dir.x, dir.z);

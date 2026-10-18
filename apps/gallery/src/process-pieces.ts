@@ -562,6 +562,48 @@ const wastewaterPlant: PieceBuilder = ([dx, dy, h]) => {
   return g;
 };
 
+// ------------------------------------------------------------------ operaciones secundarias (plástico)
+
+/** Tampografía: bastidor con cabezal de tampón, mesa de pieza y gabinete de tintas. */
+const padPrinter: PieceBuilder = ([dx, dy, h]) => {
+  const g = P.group("pad_printer");
+  g.add(at(P.box(dx * 0.8, h * 0.5, dy * 0.8, M.paint("#2f5d8a", 0.4), 0.03), 0, h * 0.25, 0));
+  g.add(at(P.box(dx * 0.5, 0.05, dy * 0.6, steel(), 0.01), 0, h * 0.52, 0));
+  g.add(at(P.box(0.12, h * 0.4, 0.12, frame(), 0.01), -dx * 0.3, h * 0.72, 0));
+  g.add(at(P.box(dx * 0.55, 0.1, 0.12, frame(), 0.01), -dx * 0.05, h * 0.92, 0));
+  g.add(at(P.cylinder(0.09, 0.09, 0.14, M.paint("#e9ecef", 0.6), 16), dx * 0.2, h * 0.84, 0));
+  g.add(at(P.box(0.3, 0.2, 0.02, M.emissive("#3fd0ff", 0.5), 0.003), dx * 0.2, h * 0.38, dy * 0.4 + 0.01));
+  return g;
+};
+
+/** Etiquetadora: banda corta con cabezal dispensador y rollo de etiquetas. */
+const labelerPiece: PieceBuilder = ([dx, dy, h]) => {
+  const g = P.group("labeler");
+  g.add(at(P.box(dx, 0.1, dy * 0.5, dark(), 0.01), 0, 0.8, 0));
+  for (const sx of [-1, 1]) for (const sz of [-1, 1]) g.add(at(P.box(0.06, 0.78, 0.06, frame(), 0.005), sx * (dx / 2 - 0.1), 0.39, sz * dy * 0.18));
+  g.add(at(P.box(0.5, h * 0.55, 0.5, M.paint("#e9ecef", 0.4), 0.03), dx * 0.1, 0.85 + h * 0.275, -dy * 0.3));
+  g.add(at(P.cylinder(0.2, 0.2, 0.06, M.paint("#f2b705", 0.5), 24), dx * 0.1, 0.85 + h * 0.4, -dy * 0.3 - 0.3));
+  for (let i = 0; i < 4; i++) g.add(at(P.box(0.25, 0.14, 0.18, M.plastic("#e8e4da", 0.4), 0.02), -dx * 0.35 + i * 0.3, 0.93, 0));
+  return g;
+};
+
+/** Estación de espumado de poliuretano: carrusel con moldes (fixtures), cabezal mezclador y tanques de poliol e isocianato. */
+const foamingStation: PieceBuilder = ([dx, dy, h]) => {
+  const g = P.group("pu_foaming_station");
+  const r = Math.min(dx, dy) * 0.4;
+  g.add(at(P.cylinder(r, r, 0.12, dark(), 36), -dx * 0.12, 0.3, 0));
+  g.add(at(P.cylinder(0.12, 0.12, 0.6, frame(), 16), -dx * 0.12, 0.3, 0));
+  for (let i = 0; i < 4; i++) {
+    const a = (i * Math.PI) / 2;
+    const fx = -dx * 0.12 + Math.cos(a) * r * 0.62;
+    const fz = Math.sin(a) * r * 0.62;
+    g.add(at(P.box(r * 0.55, h * 0.4, r * 0.55, M.paint("#cfd3d6", 0.5), 0.02), fx, 0.36 + h * 0.2, fz));
+  }
+  g.add(at(P.box(0.3, 0.3, 0.3, yellow(), 0.02), -dx * 0.12, h * 0.85, 0));
+  for (const sz of [-1, 1]) g.add(at(P.cylinder(0.3, 0.3, h * 0.6, M.paint(sz > 0 ? "#2f5d8a" : "#c0392b", 0.4), 24), dx * 0.38, h * 0.3, sz * dy * 0.25));
+  return g;
+};
+
 export const processBuilders: Record<string, PieceBuilder> = {
   storage_tank: storageTank,
   mixing_tank: mixingTank,
@@ -592,6 +634,9 @@ export const processBuilders: Record<string, PieceBuilder> = {
   transformer,
   fire_tube_boiler: boiler,
   wastewater_plant: wastewaterPlant,
+  pad_printer: padPrinter,
+  labeler: labelerPiece,
+  pu_foaming_station: foamingStation,
 };
 
 /** Construye la pieza de un tipo del plano; `null` si ese tipo aún no tiene forma propia. */

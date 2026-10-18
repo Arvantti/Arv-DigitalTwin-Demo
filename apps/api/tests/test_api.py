@@ -103,7 +103,7 @@ def test_injection_plant_exposes_aisles_and_routes() -> None:
     assert routes["fk-sf-ensamble-1"]["to"] == "assembly-01"
     assert routes["fk-ensamble-pt-1"]["from"] == "assembly-01"
     assert all(len(r["path"]) >= 2 for r in routes.values())
-    assert {a["id"] for a in plant["aisles"]} >= {"aisle-sur", "aisle-pt-1"}
+    assert {a["id"] for a in plant["aisles"]} >= {"aisle-semielaborado", "aisle-pt-1"}
     sauce = client.get("/api/plants/sauce-plant-v1").json()
     assert {r["id"] for r in sauce["routes"]} == {"fk-empaque-bodega", "fk-bodega-despacho"}
     trucks = {e["id"]: e["params"]["state"] for e in sauce["equipment"] if e["type"] == "delivery_truck"}

@@ -10,6 +10,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
+| 2026-10-18 | Flujo de montacargas y ensamble | Planta de plásticos: almacén de semielaborado separado del de terminado (al norte de la nave, cajas azules), montacargas sin cruzar la banda y con carriles de ida y regreso, línea de ensamble visible (cámara propia) y piezas nuevas en secundarias. D40 | 5 |
 | 2026-10-18 | Pantalla de carga | La escena de planta (las tres plantas) muestra una barra de carga con etapas reales (conexión, plano, zonas, equipos, pasarelas, tuberías, luces, render) para que la espera inicial no parezca un error. D39 | 5 |
 | 2026-10-18 | Tuberías ancladas | Las tuberías sin ruta terminaban en el aire sobre el centro de la huella del equipo; ahora se anclan a su superficie real (rayo vertical contra la geometría) y llevan brida en cada extremo. Inspección visual de las tres plantas en `/mnt/project-files/inspeccion/`. D38 | 5 |
 | 2026-10-18 | Vista móvil | Orbitron solo en títulos (Inter en el resto) y en pantallas de hasta 700 px los paneles de la escena se ven de a uno desde una barra inferior (Menú, Activo, Eventos); el panel del acueducto también usa Inter en cifras y pestañas. D37 | 4 |
@@ -54,6 +55,15 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 | 2026-10-16 | #1 | Layouts de las plantas | 1 |
 
 ## Entradas
+
+### 2026-10-18 14:17 · Montacargas con carriles, almacenes separados y línea de ensamble visible
+- **Fecha/hora (UTC):** 2026-10-18 14:17–14:50
+- **Solicitado por:** Carlos Andrés Quiceño (14:17): los montacargas se traspasan entre sí, deben tener carriles de ida y regreso distintos y no cruzar la banda transportadora; la línea de ensamble no se ve y no se muestran sus operarios. (14:19): cada máquina con un buffer que se llena con X productos, estiba al almacén de semielaborados, de ahí al ensamble; diferenciar semielaborados de terminado. (14:24): los procesos deben estar conectados entre sí.
+- **Qué se hizo:** zona `almacen-semielaborado` al norte de la nave con las 4 estanterías (cajas plásticas azules, `stage: semielaborado`; la bodega de terminado usa cartón, `stage: terminado`); rutas de montacargas rehechas por el norte (ya no cruzan la banda, se quita `passes_under`); `routes.ts` dibuja y usa dos carriles por ruta (0,8 m del eje para montacargas, 0,5 m para carros); cámara «LÍNEA DE ENSAMBLE» desde el oeste; formas propias para tampografía, etiquetadora y estación de espumado (eran cubos grises); la grúa puente se acorta para caber en la nave. Descripción del flujo y de lo que falta conectar en el motor: `/mnt/project-files/inspeccion/flujo-planta-plasticos.md`.
+- **Verificación:** `render_layout.py` sin errores, `twin-lib plant validate` en OK, `pytest apps/api` (11), `pnpm -r typecheck` y `pnpm -r test` (82); capturas de la vista general, del almacén y de la línea de ensamble.
+- **Pendiente (siguiente PR):** conectar el proceso en el motor: buffer por máquina (X = 1.000 piezas, supuesto), almacén con inventario y viaje del montacargas.
+- **Decisiones:** [[decisiones]] D40.
+- **Conversación:** [[hilo-inspeccion-visual]].
 
 ### 2026-10-18 14:09 · Pantalla de carga con etapas
 - **Fecha/hora (UTC):** 2026-10-18 14:09–14:40

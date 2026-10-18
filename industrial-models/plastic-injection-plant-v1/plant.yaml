@@ -54,7 +54,8 @@ zones:
   - { id: laboratorio-qc,      name: Laboratorio de calidad,          kind: service,    rect: [94, 5, 15, 20],   height: 4 }
   - { id: mantenimiento,       name: Mantenimiento general,           kind: service,    rect: [109, 5, 15, 20],  height: 6 }
   - { id: admin,               name: "Oficinas, vestieres y cafetería", kind: admin,      rect: [124, 5, 44, 20],  height: 7 }
-  - { id: nave-inyeccion,      name: Nave de inyección,               kind: production, rect: [34, 25, 90, 70],  height: 14 }
+  - { id: nave-inyeccion,      name: Nave de inyección,               kind: production, rect: [34, 25, 90, 63],  height: 14 }
+  - { id: almacen-semielaborado, name: Almacén de semielaborado,    kind: storage,    rect: [34, 88, 90, 7],   height: 9 }
   - { id: empaque,             name: Empaque y paletizado,            kind: production, rect: [124, 25, 20, 30], height: 9 }
   - { id: secundarias,         name: Operaciones secundarias,         kind: production, rect: [124, 55, 20, 40], height: 9 }
   - { id: bodega-pt,           name: Bodega de producto terminado,    kind: storage,    rect: [144, 25, 24, 70], height: 12 }
@@ -66,10 +67,10 @@ zones:
   - { id: parqueadero,         name: Portería y parqueadero,          kind: exterior,   rect: [168, 0, 32, 22],  height: 0 }
 
 aisles:
-  - { id: aisle-sur,     kind: forklift, rect: [34, 25, 90, 4] }
-  - { id: aisle-cruce,   kind: forklift, rect: [77, 25, 4, 70] }
+  - { id: aisle-cruce,   kind: forklift, rect: [77, 47, 4, 48] }
   - { id: aisle-centro,  kind: forklift, rect: [34, 47, 90, 4] }
   - { id: aisle-norte,   kind: forklift, rect: [34, 71, 90, 4] }
+  - { id: aisle-semielaborado, kind: forklift, rect: [34, 87.2, 90, 3.8] }
   # Pasillos del este (supuestos): del extremo oriente de la nave a las celdas de ensamble y a la bodega de producto terminado
   - { id: aisle-sec-norte,  kind: forklift, rect: [124, 73.5, 20, 4] }
   - { id: aisle-sec-medio,  kind: forklift, rect: [124, 64.5, 20, 4] }
@@ -80,20 +81,21 @@ aisles:
   - { id: aisle-pt-1,       kind: forklift, rect: [148.75, 26, 4.5, 36] }
 
 # Rutas de montacargas y de operarios (supuestos de recorrido, no de ingeniería de detalle). Cada ruta es una polilínea en metros:
-#   - kind forklift: va por los pasillos de `aisles` (kind forklift) y no cruza equipos de piso, salvo los de `passes_under`
-#     (la banda principal se asume elevada en el cruce del pasillo central);
+#   - kind forklift: va por los pasillos de `aisles` (kind forklift) y no cruza equipos de piso, ni la banda principal (el semielaborado
+#     se almacena al norte de la nave, del lado de las inyectoras, para que ningún montacargas pase bajo la banda). Ida y regreso van por
+#     carriles distintos (mano derecha) en la escena;
 #   - kind pedestrian: camina por donde no hay equipos de piso (rondas del operador y trayectos a las celdas de ensamble);
 #   - from / to: un equipo (la ruta termina a ≤ 3,5 m de su huella) o una zona (la ruta empieza o termina dentro de ella);
 #   - trips_per_h: viajes por hora de un vehículo (supuesto); walkers: operarios que la recorren (supuesto).
 routes:
   # --- Montacargas: piezas semielaboradas de las inyectoras a las estanterías de semielaborado ---
-  - { id: fk-recolecta-oeste-norte, name: "Recolección de semielaborado, pasillo norte oeste", kind: forklift, from: nave-inyeccion, to: rack-sf-01, load: piezas inyectadas en cajas y estibas, width: 1.5, trips_per_h: 4, passes_under: [conveyor-main-01], path: [[36, 74.25], [79, 74.25], [79, 27.2], [50, 27.2]] }
-  - { id: fk-recolecta-oeste-centro, name: "Recolección de semielaborado, pasillo centro oeste", kind: forklift, from: nave-inyeccion, to: rack-sf-02, load: piezas inyectadas en cajas y estibas, width: 1.5, trips_per_h: 4, passes_under: [conveyor-main-01], path: [[36, 49], [79, 49], [79, 27.2], [68, 27.2]] }
-  - { id: fk-recolecta-este-centro, name: "Recolección de semielaborado, pasillo centro este", kind: forklift, from: nave-inyeccion, to: rack-sf-03, load: piezas inyectadas en cajas y estibas, width: 1.5, trips_per_h: 4, passes_under: [conveyor-main-01], path: [[122, 49], [79, 49], [79, 27.2], [98, 27.2]] }
-  - { id: fk-recolecta-este-norte, name: "Recolección de semielaborado, pasillo norte este", kind: forklift, from: nave-inyeccion, to: rack-sf-04, load: piezas inyectadas en cajas y estibas, width: 1.5, trips_per_h: 4, passes_under: [conveyor-main-01], path: [[122, 74.25], [79, 74.25], [79, 27.2], [116, 27.2]] }
+  - { id: fk-recolecta-oeste-norte, name: "Recolección de semielaborado, pasillo norte oeste", kind: forklift, from: nave-inyeccion, to: rack-sf-01, load: piezas inyectadas en cajas y estibas, width: 1.5, trips_per_h: 4, path: [[36, 74.25], [79, 74.25], [79, 89.1], [50, 89.1]] }
+  - { id: fk-recolecta-oeste-centro, name: "Recolección de semielaborado, pasillo centro oeste", kind: forklift, from: nave-inyeccion, to: rack-sf-02, load: piezas inyectadas en cajas y estibas, width: 1.5, trips_per_h: 4, path: [[36, 49], [79, 49], [79, 89.1], [68, 89.1]] }
+  - { id: fk-recolecta-este-centro, name: "Recolección de semielaborado, pasillo centro este", kind: forklift, from: nave-inyeccion, to: rack-sf-03, load: piezas inyectadas en cajas y estibas, width: 1.5, trips_per_h: 4, path: [[122, 49], [79, 49], [79, 89.1], [98, 89.1]] }
+  - { id: fk-recolecta-este-norte, name: "Recolección de semielaborado, pasillo norte este", kind: forklift, from: nave-inyeccion, to: rack-sf-04, load: piezas inyectadas en cajas y estibas, width: 1.5, trips_per_h: 4, path: [[122, 74.25], [79, 74.25], [79, 89.1], [116, 89.1]] }
   # --- Montacargas: de las estanterías de semielaborado a las celdas de ensamble ---
-  - { id: fk-sf-ensamble-1, name: "Semielaborado a la celda de ensamble 1 (pedal/palanca y cuerpo)", kind: forklift, from: rack-sf-03, to: assembly-01, load: "pedal, palanca y cuerpos de papelera", width: 1.5, trips_per_h: 3, passes_under: [conveyor-main-01], path: [[98, 27.2], [79, 27.2], [79, 74.25], [134, 74.25], [134, 66.5], [129, 66.5]] }
-  - { id: fk-sf-ensamble-2, name: "Semielaborado a la celda de ensamble 2 (bisagras y tapas)", kind: forklift, from: rack-sf-04, to: assembly-02, load: bisagras y tapas, width: 1.5, trips_per_h: 3, passes_under: [conveyor-main-01], path: [[116, 27.2], [79, 27.2], [79, 74.25], [134, 74.25], [134, 66.5], [139, 66.5]] }
+  - { id: fk-sf-ensamble-1, name: "Semielaborado a la celda de ensamble 1 (pedal/palanca y cuerpo)", kind: forklift, from: rack-sf-03, to: assembly-01, load: "pedal, palanca y cuerpos de papelera", width: 1.5, trips_per_h: 3, path: [[98, 89.1], [79, 89.1], [79, 74.25], [134, 74.25], [134, 66.5], [129, 66.5]] }
+  - { id: fk-sf-ensamble-2, name: "Semielaborado a la celda de ensamble 2 (bisagras y tapas)", kind: forklift, from: rack-sf-04, to: assembly-02, load: bisagras y tapas, width: 1.5, trips_per_h: 3, path: [[116, 89.1], [79, 89.1], [79, 74.25], [134, 74.25], [134, 66.5], [139, 66.5]] }
   # --- Montacargas: de las celdas de ensamble a la bodega de producto terminado ---
   - { id: fk-ensamble-pt-1, name: "Producto terminado de la celda 1 a la bodega", kind: forklift, from: assembly-01, to: rack-pt-01, load: papeleras armadas en estibas, width: 1.5, trips_per_h: 2, path: [[129, 66.5], [134, 66.5], [134, 54.25], [145.1, 54.25], [145.1, 28], [151, 28], [151, 58]] }
   - { id: fk-ensamble-pt-2, name: "Producto terminado de la celda 2 a la bodega", kind: forklift, from: assembly-02, to: rack-pt-02, load: tapas con bisagras en estibas, width: 1.5, trips_per_h: 2, path: [[139, 66.5], [134, 66.5], [134, 54.25], [145.1, 54.25], [145.1, 28], [151, 28], [151, 58]] }
@@ -165,7 +167,7 @@ equipment:
   - { id: parts-rack-01, type: shelving,      zone: mantenimiento,  position: [116, 20, 0], footprint: [10, 1.5, 3], params: { content: repuestos } }
 
   # --- Nave de inyección ---
-  - { id: crane-01, type: overhead_crane, zone: nave-inyeccion, position: [79, 85, 9], footprint: [88, 20, 1], overhead: true, params: { capacity_t: 15, span_m: 20, runway_m: 88 } }
+  - { id: crane-01, type: overhead_crane, zone: nave-inyeccion, position: [79, 81.5, 9], footprint: [88, 13, 1], overhead: true, params: { capacity_t: 15, span_m: 13, runway_m: 88 } }
   - { id: conveyor-main-01, type: belt_conveyor, zone: nave-inyeccion, position: [79, 33.5, 0], footprint: [88, 1, 1], params: { speed_m_s: 0.3, to: empaque, note: "cruza el pasillo central elevado a 2,5 m" } }
   - { id: mold-cart-01, type: mold_staging, zone: nave-inyeccion, position: [72, 85, 0], footprint: [4, 3, 1], params: { use: preparación de cambio de molde (SMED) } }
 
@@ -214,10 +216,10 @@ equipment:
   - { id: wrapper-01,      type: stretch_wrapper, zone: empaque, position: [133.5, 48, 0], footprint: [3, 3, 2.5], params: { pallets_h: 30 } }
 
   # --- Estanterías de material semielaborado (piezas inyectadas por consumir en ensamble o empaque), frente al pasillo sur (supuesto) ---
-  - { id: rack-sf-01, type: pallet_rack, zone: nave-inyeccion, position: [50, 30.5, 0],  footprint: [16, 2.5, 6], params: { content: piezas inyectadas semielaboradas (inyectoras del oeste), positions: 48 } }
-  - { id: rack-sf-02, type: pallet_rack, zone: nave-inyeccion, position: [68, 30.5, 0],  footprint: [16, 2.5, 6], params: { content: piezas inyectadas semielaboradas (inyectoras del oeste), positions: 48 } }
-  - { id: rack-sf-03, type: pallet_rack, zone: nave-inyeccion, position: [98, 30.5, 0],  footprint: [16, 2.5, 6], params: { content: piezas inyectadas semielaboradas (inyectoras del este; papelera), positions: 48 } }
-  - { id: rack-sf-04, type: pallet_rack, zone: nave-inyeccion, position: [116, 30.5, 0], footprint: [16, 2.5, 6], params: { content: piezas inyectadas semielaboradas (inyectoras del este; bisagras y tapas), positions: 48 } }
+  - { id: rack-sf-01, type: pallet_rack, zone: almacen-semielaborado, position: [50, 92.5, 0],  footprint: [16, 2.5, 6], params: { stage: semielaborado, content: piezas inyectadas semielaboradas (inyectoras del oeste), positions: 48 } }
+  - { id: rack-sf-02, type: pallet_rack, zone: almacen-semielaborado, position: [68, 92.5, 0],  footprint: [16, 2.5, 6], params: { stage: semielaborado, content: piezas inyectadas semielaboradas (inyectoras del oeste), positions: 48 } }
+  - { id: rack-sf-03, type: pallet_rack, zone: almacen-semielaborado, position: [98, 92.5, 0],  footprint: [16, 2.5, 6], params: { stage: semielaborado, content: piezas inyectadas semielaboradas (inyectoras del este; papelera), positions: 48 } }
+  - { id: rack-sf-04, type: pallet_rack, zone: almacen-semielaborado, position: [116, 92.5, 0], footprint: [16, 2.5, 6], params: { stage: semielaborado, content: piezas inyectadas semielaboradas (inyectoras del este; bisagras y tapas), positions: 48 } }
 
   # --- Operaciones secundarias ---
   - { id: assembly-01,   type: assembly_cell,   zone: secundarias, position: [129, 62, 0], footprint: [6, 3, 1.5], params: { operation: ensamble pedal/palanca en papelera } }
@@ -227,10 +229,10 @@ equipment:
   - { id: foam-01,       type: pu_foaming_station, zone: secundarias, position: [134, 85, 0], footprint: [8, 4, 3], params: { product: aislamiento de neveras, fixtures: 4 } }
 
   # --- Bodega de producto terminado (racks dobles 2,5 m, pasillos 4–4,5 m) ---
-  - { id: rack-pt-01, type: pallet_rack, zone: bodega-pt, position: [147.5, 62, 0], footprint: [2.5, 60, 9], params: { positions: 240 } }
-  - { id: rack-pt-02, type: pallet_rack, zone: bodega-pt, position: [154.5, 62, 0], footprint: [2.5, 60, 9], params: { positions: 240 } }
-  - { id: rack-pt-03, type: pallet_rack, zone: bodega-pt, position: [161.5, 62, 0], footprint: [2.5, 60, 9], params: { positions: 240 } }
-  - { id: rack-pt-04, type: pallet_rack, zone: bodega-pt, position: [166.5, 62, 0], footprint: [2.5, 60, 9], params: { positions: 120, note: rack sencillo contra muro } }
+  - { id: rack-pt-01, type: pallet_rack, zone: bodega-pt, position: [147.5, 62, 0], footprint: [2.5, 60, 9], params: { stage: terminado, positions: 240 } }
+  - { id: rack-pt-02, type: pallet_rack, zone: bodega-pt, position: [154.5, 62, 0], footprint: [2.5, 60, 9], params: { stage: terminado, positions: 240 } }
+  - { id: rack-pt-03, type: pallet_rack, zone: bodega-pt, position: [161.5, 62, 0], footprint: [2.5, 60, 9], params: { stage: terminado, positions: 240 } }
+  - { id: rack-pt-04, type: pallet_rack, zone: bodega-pt, position: [166.5, 62, 0], footprint: [2.5, 60, 9], params: { stage: terminado, positions: 120, note: rack sencillo contra muro } }
 
   # --- Muelles de despacho ---
   - { id: dock-01, type: dock_leveler, zone: patio-despacho, position: [170, 35, 0], footprint: [3, 4, 1.2], params: {} }
