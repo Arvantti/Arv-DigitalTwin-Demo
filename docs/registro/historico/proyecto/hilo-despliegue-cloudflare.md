@@ -29,4 +29,8 @@ Propone no depender de ninguna máquina: GitHub Actions despliega la galería en
 
 ### 👤 Carlos Andrés Quiceño · 2026-10-18 01:22:42 UTC
 
-Bueno, yo llamaría más bien esto digitaltwin.arvanti.online.
+Bueno, yo llamaría más bien esto digitaltwin.arvantti.online.
+
+### 👤 Carlos Andrés Quiceño · 2026-10-18 01:23:06 UTC
+
+Es con doble T. (Respuesta a la duda sobre si el dominio es `arvanti.online` o `arvantti.online`.)

@@ -23,7 +23,7 @@ Sin base de datos por ahora.
    - `CLOUDFLARE_API_TOKEN` = el token del paso 2.
    - `CLOUDFLARE_ACCOUNT_ID` = el ID del paso 1.
 4. **Primer despliegue.** *Actions → Deploy → Run workflow* (rama `main`). El workflow crea el proyecto de Pages `gemelos-arvantti` y publica. La dirección provisional queda en `https://gemelos-arvantti.pages.dev`.
-5. **Subdominio.** En Cloudflare: *Workers & Pages → gemelos-arvantti → Custom domains → Set up a custom domain* → escribe `digitaltwin.arvanti.online`. Si el dominio `arvanti.online` está en la misma cuenta, Cloudflare crea el CNAME solo y emite el certificado; tarda unos minutos.
+5. **Subdominio.** En Cloudflare: *Workers & Pages → gemelos-arvantti → Custom domains → Set up a custom domain* → escribe `digitaltwin.arvantti.online`. Si el dominio `arvantti.online` está en la misma cuenta, Cloudflare crea el CNAME solo y emite el certificado; tarda unos minutos.
 
 Mientras los secretos no existan, el workflow termina en verde con un aviso y no despliega.
 
