@@ -22,8 +22,8 @@ class ForkliftFleet(EquipmentBehavior):
 
     def setup(self) -> None:
         self.rx = [0.0] * ROUTES  # piezas recibidas que aún no completan una estiba
-        # instante en que cada estiba pidió montacargas; la primera es la más antigua
-        self.queue: list[list[float]] = [[] for _ in range(ROUTES)]
+        # (instante, piezas) con que cada estiba pidió montacargas; la primera es la más antigua
+        self.queue: list[list[tuple[float, float]]] = [[] for _ in range(ROUTES)]
         self.pending = [0.0] * ROUTES  # piezas descargadas que el destino aún no recibe
         self.out = [0.0] * ROUTES  # piezas entregadas (contador)
         self.accepting = [True] * ROUTES
@@ -37,13 +37,19 @@ class ForkliftFleet(EquipmentBehavior):
 
     @staticmethod
     def _new_vehicle() -> dict[str, Any]:
-        return {"phase": "idle", "route": -1, "t": 0.0, "dur": 0.0}
+        return {"phase": "idle", "route": -1, "t": 0.0, "dur": 0.0, "pieces": 0.0}
 
     def on_fault(self, fault_id: str) -> None:
         self.down += 1
 
     def on_fault_cleared(self, fault_id: str) -> None:
         self.down = max(0, self.down - 1)
+
+    def _pieces(self, route: int) -> int:
+        # piezas por estiba de la ruta: la estiba es estándar pero cada producto llena una cantidad distinta;
+        # 0 usa pallet_pieces y -1 (estibas armadas) deja que cada entrega completa del origen sea una estiba
+        x = self.p[f"route_{route + 1}_pallet_pieces"]
+        return x if x > 0 else self.p["pallet_pieces"]
 
     def _travel_s(self, route: int) -> float:
         return self.p[f"route_{route + 1}_m"] / self.p["speed_m_s"]
@@ -70,7 +76,7 @@ class ForkliftFleet(EquipmentBehavior):
             elif v["phase"] == "out":
                 self._set_phase(v, "unloading", self.p["unload_s"])
             elif v["phase"] == "unloading":
-                self.pending[r] += self.p["pallet_pieces"]
+                self.pending[r] += v["pieces"]
                 self.trips += 1
                 self.emit("trip_completed", route=r + 1, trips=self.trips)
                 self._set_phase(v, "back", self._travel_s(r))
@@ -81,7 +87,6 @@ class ForkliftFleet(EquipmentBehavior):
 
     def update(self, ctx: StepContext) -> None:
         dt, now, p = ctx.dt, ctx.t, self.p
-        x = p["pallet_pieces"]
         while len(self.vehicles) < p["vehicles"]:
             self.vehicles.append(self._new_vehicle())
         while len(self.vehicles) > p["vehicles"] and self.vehicles[-1]["phase"] == "idle":
@@ -91,9 +96,17 @@ class ForkliftFleet(EquipmentBehavior):
             inflow = self.inputs[f"inflow_{r + 1}_upm"]
             if inflow:
                 self.rx[r] += max(0.0, float(inflow)) / 60.0 * dt
+            if self.p[f"route_{r + 1}_pallet_pieces"] < 0:
+                # estibas armadas de tamaños distintos (varios productos en la misma ruta): cada entrega es una estiba
+                # (una entrega puede durar varios pasos: se cierra cuando el origen deja de entregar)
+                if not inflow and self.rx[r] >= 1.0 - EPS:
+                    self.queue[r].append((now, self.rx[r]))
+                    self.rx[r] = 0.0
+                continue
+            x = self._pieces(r)
             while self.rx[r] >= x - EPS:
                 self.rx[r] -= x
-                self.queue[r].append(now)
+                self.queue[r].append((now, x))
 
         for v in self.vehicles:
             self._advance(v, dt, now)
@@ -103,8 +116,8 @@ class ForkliftFleet(EquipmentBehavior):
         for v in self.vehicles:
             if v["phase"] != "idle" or busy >= capacity or not any(self.queue):
                 continue
-            r = min((i for i in range(ROUTES) if self.queue[i]), key=lambda i: (self.queue[i][0], i))
-            self.queue[r].pop(0)
+            r = min((i for i in range(ROUTES) if self.queue[i]), key=lambda i: (self.queue[i][0][0], i))
+            v["pieces"] = self.queue[r].pop(0)[1]
             v["route"] = r
             self._set_phase(v, "loading", p["load_s"])
             busy += 1
@@ -135,7 +148,7 @@ class ForkliftFleet(EquipmentBehavior):
 
         for r in range(ROUTES):
             in_system = len(self.queue[r]) + sum(1 for v in self.vehicles if v["route"] == r and v["phase"] in LOADED_PHASES + ("loading",))
-            in_system += -int(-self.pending[r] // x) if self.pending[r] > EPS else 0
+            in_system += -int(-self.pending[r] // self._pieces(r)) if self.pending[r] > EPS else 0
             self.accepting[r] = in_system < p["max_pallets_per_route"]
 
         if blocked:

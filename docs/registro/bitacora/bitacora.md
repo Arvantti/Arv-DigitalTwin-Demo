@@ -11,6 +11,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
 | 2026-10-18 | Simulación de la fábrica de cajas | La fábrica de cajas simula su transporte: corrugadora, transportadores de pilas, carro de transferencia que reparte entre tres carriles, tres convertidoras, bandas de fajos y paletizador propio y compartido; escenarios nominal, rotura de papel y paro del paletizador compartido | 4 |
+| 2026-10-18 | Estiba por producto | Planta de plásticos: la estiba es estándar y las piezas por estiba se calculan por producto (de 30 canecas de 121 L a 72.000 bisagras); la flota recibe las piezas por ruta y la ruta 5 usa estibas armadas. D51 | plásticos |
 | 2026-10-18 | Subidas desde el cabezal | Las subidas entre niveles del acueducto salen del tubo principal de cada nivel, después del último ramal, por fuera del bastidor (pedido de Andy). D50 | acueducto |
 | 2026-10-18 | Línea caliente de salsas | Motor: segunda línea caliente de 250 ml (marmita 3, pasteurizador 2, pulmón 2, sachetadora, túnel 2, control de peso y mesa de empaque) junto a la de 1.000 ml; dos mesas de 250 ml; escenario `tunnel-250-stop`; dimensionado a 22 t/día con 40 % en caliente. D49 | 5 |
 | 2026-10-18 | Tuberías sin cruces | Planta de salsas: los tubos a nivel de rack buscan un nivel y un recorrido que no atraviesen equipos ni cajas de estantería ni se crucen entre sí (suben por encima, o se desplazan); documento del flujo de salsas conectado vs faltante. D41 | 5 |
@@ -72,8 +73,17 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 - **Solicitado por:** continuación de D44 (PR #46 fusionado a las 17:53), con la decisión del autor de las 17:14: «todo es imaginario no nos pongamos trabajo de más… lo que nos consuma menos».
 - **Qué se hizo:** tipos `corrugator`, `transfer-car`, `box-converter` y `palletizer` en `equipment-library/` (contrato, comportamiento, geometría, presets, escenarios, ficha); `industrial-models/corrugated-box-plant-v1/simulation.yaml` con 18 equipos simulados y escenarios `nominal`, `paper-break` y `shared-palletizer-stop`; ritmos y orientaciones del `plant.yaml` ajustados a la simulación; botón de librería en el portal; `docs/box-plant.md`, `docs/plant-engine.md` y `docs/plant-scene.md`.
 - **Verificación:** `twin-lib validate` de los cuatro tipos, `pytest` de sus 19 escenarios, `twin-lib plant run` de los tres escenarios de la planta con todas sus expectativas cumplidas, `render_layout.py` sin errores; capturas de la escena en vivo: ![[cajas-sim-transporte-pilas.jpg]] ![[cajas-sim-paletizado.jpg]] ![[cajas-sim-apilador.jpg]]
-- **Decisiones:** [[decisiones]] D51 (renumerada al traer main: D45 a D50 ya estaban tomadas por otros hilos).
+- **Decisiones:** [[decisiones]] D52 (renumerada al traer main: D45 a D51 ya estaban tomadas por otros hilos).
 - **Conversación:** [[hilo-fabrica-de-cajas]].
+### 2026-10-18 22:44 · Estiba estándar con piezas por producto
+- **Fecha/hora (UTC):** 2026-10-18 22:44–23:30
+- **Solicitado por:** Carlos Andrés Quiceño (22:44): «el tamaño de la estiba es estándar, tú debes asignar un tamaño a cada producto y calcular».
+- **Qué se hizo:** tabla `pallet-sizing.yaml` (volumen por pieza, supuesto) y `tools/logistics/pallet_sizing.py` que calcula las piezas por estiba de los 28 productos y las escribe en `plant.yaml` y `simulation.yaml`; la flota acepta `route_N_pallet_pieces` (0 = el general, -1 = estibas armadas) y las estanterías usan la estiba de su producto; escenarios `nominal`, `fleet-short` y `pallet-chain` recalculados a mano; dos escenarios nuevos de la flota; prueba de consistencia.
+- **Verificación:** `twin-lib validate forklift-fleet` y `twin-lib plant validate` en OK, `pytest`, `ruff` y `pnpm -r typecheck`.
+- **Pendiente:** reemplazar los volúmenes supuestos por los de los moldes reales; con estibas de decenas de miles de piezas (cubiertos, bisagras) la primera tarda horas en llenarse.
+- **Decisiones:** [[decisiones]] D51.
+- **Conversación:** [[hilo-inspeccion-visual]].
+
 ### 2026-10-18 22:10 · Subidas entre niveles desde el tubo principal
 - **Fecha/hora (UTC):** 2026-10-18 20:13–22:15
 - **Fase del plan:** [[plan-del-proyecto]] acueducto
@@ -139,7 +149,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 ### 2026-10-18 17:10–17:40 · Línea caliente de salsas conectada (22 t/día)
 - **Solicitado por:** el autor («si», 17:10) a la propuesta del hilo de tuberías; reparto 40/45/15 aprobado a las 17:11.
-- **Qué se hizo:** `plant.yaml` y `simulation.yaml` de `sauce-plant-v1`: `kettle-03`, `pump-hot-02`, `pasteurizer-02`, `holding-tube-02`, `buffer-hot-02`, `filler-sachet-02` (250 ml, 2 pistas, caliente), `cooling-tunnel-02`, `checkweigher-02` y `pack-sauce-250-b`, con la línea `hot-250`; vapor, chiller y flujos del plano actualizados; el túnel 1 queda solo con el sachet de 1.000 ml. Escenario `nominal` con marmita 3 y expectativas de la línea de 250 ml; escenario nuevo `tunnel-250-stop`. Decisión [[decisiones]] D49.
+- **Qué se hizo:** `plant.yaml` y `simulation.yaml` de `sauce-plant-v1`: `kettle-03`, `pump-hot-02`, `pasteurizer-02`, `holding-tube-02`, `buffer-hot-02`, `filler-sachet-02` (250 ml, 2 pistas, caliente), `cooling-tunnel-02`, `checkweigher-02` y `pack-sauce-250-b`, con la línea `hot-250`; vapor, chiller y flujos del plano actualizados; el túnel 1 queda solo con el sachet de 1.000 ml. Escenario `nominal` con marmita 3 y expectativas de la línea de 250 ml; escenario nuevo `tunnel-250-stop`. Decisión [[decisiones]] D51.
 - **Verificación:** `twin-lib plant validate` y `uv run pytest packages/twin-runtime/tests/test_plant.py` (16 pasan, ≈ 6 min), plano 2D regenerado, capturas de la galería local con la simulación corriendo: [[salsas-caliente-marmita-3.png]] y [[salsas-tunel-2-sachet-250.png]].
 - **Conversación:** [[hilo-linea-caliente-de-salsas]].
 
