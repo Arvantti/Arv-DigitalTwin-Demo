@@ -94,7 +94,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 - **Qué se hizo:** tres tipos nuevos de la librería (`pallet-buffer`, `pallet-store`, `forklift-fleet`) con contrato, comportamiento, geometría, presets, escenarios calculados a mano y ficha; 28 buffers, 4 estanterías de semielaborado simuladas y una flota de 6 montacargas cableados en `simulation.yaml` y `plant.yaml` (inyectora → buffer → flota → estantería → flota → celda de ensamble, cada paso con `ready` hacia atrás); las rutas de abastecimiento de las celdas pasan a cuatro (una por estantería); los montacargas de la escena los mueven los canales del motor y se estacionan en la flota; los dos de producto terminado ceden el paso. Escenarios recalculados (`nominal`, `body-stop`) y nuevos (`fleet-short`, `pallet-chain`).
 - **Verificación:** `twin-lib validate` de los 3 tipos y `twin-lib plant validate` en OK, `pytest` (219) y `pnpm -r test`/`typecheck` en verde, `render_layout.py` sin errores; capturas `plasticos-buffer-de-maquina.png` y `plasticos-flota-de-montacargas.png` en `docs/registro/evidencia/`.
 - **Pendiente:** el almacén de terminado y los dos montacargas de producto terminado fuera del motor; con X = 1.000 las piezas grandes dan estibas de toneladas (decidir X por producto en la etapa de datos reales); baterías y turnos de los montacargas.
-- **Decisiones:** [[decisiones]] D47.
+- **Decisiones:** [[decisiones]] D48.
 - **Conversación:** [[hilo-inspeccion-visual]].
 
 ### 2026-10-18 14:40 · Secuencia hidráulica continua del acueducto
