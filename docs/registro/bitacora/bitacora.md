@@ -10,6 +10,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
+| 2026-10-18 | Plantas en Cloudflare | Deploy a Pages funciona (run #2 en verde); las tres plantas se publican sin la API: el plano de cada planta se exporta a archivo estático al desplegar y la galería enlaza a las tres escenas | despliegue |
 | 2026-10-18 | Corrección del despliegue | Primer despliegue falló: `wrangler-action` intentó instalar wrangler con pnpm en la raíz del workspace; se despliega con `pnpm dlx wrangler@4` (sin la acción de wrangler) | despliegue |
 | 2026-10-18 | CI/CD Cloudflare | Despliegue continuo de la galería (equipos, escena de planta, panel del acueducto) en Cloudflare Pages con GitHub Actions; guía de token, secretos y subdominio `digitaltwin.arvantti.online`; la API queda fuera | despliegue |
 | 2026-10-17 | #32 | Acueducto: panel de gráficos del PLC en la galería (`acueducto.html`): curva del día en 24 ciclos, bombas Grundfos, sensores en tiempo real y gemelo (−5 % de fugas con la consigna hora a hora); datos de `tools/hydraulics/dia_acueducto.py` | acueducto |
@@ -47,6 +48,13 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 | 2026-10-16 | #1 | Layouts de las plantas | 1 |
 
 ## Entradas
+
+### 2026-10-18 03:42–03:55 · Las tres plantas en la galería publicada
+- **Fecha/hora (UTC):** 2026-10-18 03:42 a 03:55.
+- **Solicitado por:** Carlos Andrés Quiceño, «solo veo la galería de equipos pero no veo las 3 plantas» (03:42).
+- **Qué se hizo:** la escena de planta pide `/api/plants/{id}`, que en Pages no existe. `tools/deploy/export_static_plants.py` guarda esa misma respuesta en `apps/gallery/public/api/plants/{id}` durante el despliegue (`deploy.yml` instala uv y lo corre antes del build); la carpeta está en `.gitignore`. La barra lateral de la galería enlaza a las tres plantas. La simulación en vivo (WebSocket) sigue necesitando la API.
+- **Verificación:** build local; captura de `plant.html?plant=sauce-plant-v1` servida solo con archivos estáticos (sin API) carga el plano completo; `ruff` en verde.
+- **Conversación:** [[hilo-despliegue-cloudflare]].
 
 ### 2026-10-18 03:08–03:20 · Corrección del despliegue en Cloudflare Pages
 - **Fecha/hora (UTC):** 2026-10-18 03:08 a 03:20.

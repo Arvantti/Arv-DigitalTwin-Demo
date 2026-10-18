@@ -58,3 +58,11 @@ Pero no me gusta npm, siempre uso pnpm.
 ### 🤖 Claude · 2026-10-18 03:12 UTC
 
 Cambia el PR #36: en vez de `packageManager: npm`, el workflow ejecuta `pnpm dlx wrangler@4`, con los secretos como variables de entorno.
+
+### 👤 Carlos Andrés Quiceño · 2026-10-18 03:42:29 UTC
+
+Solo veo la galería de equipos pero no veo las 3 plantas.
+
+### 🤖 Claude · 2026-10-18 03:55 UTC
+
+La escena de planta necesita la API, que no está publicada. Se exporta el plano de cada planta como archivo estático al desplegar y se agregan enlaces a las tres plantas en la galería. La simulación en vivo sigue pendiente de la API.
