@@ -10,6 +10,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
+| 2026-10-18 | CI/CD Cloudflare | Despliegue continuo de la galería (equipos, escena de planta, panel del acueducto) en Cloudflare Pages con GitHub Actions; guía de token, secretos y subdominio `digitaltwin.arvantti.online`; la API queda fuera | despliegue |
 | 2026-10-17 | #32 | Acueducto: panel de gráficos del PLC en la galería (`acueducto.html`): curva del día en 24 ciclos, bombas Grundfos, sensores en tiempo real y gemelo (−5 % de fugas con la consigna hora a hora); datos de `tools/hydraulics/dia_acueducto.py` | acueducto |
 | 2026-10-17 | #33 | Acueducto: escena 3D del edificio por pisos, tubos con su trazado y diámetro del plano, caudal y velocidad reales del agua, soportes y cámaras por piso y por nivel | acueducto |
 | 2026-10-17 | #31 | Acueducto: la planta corre en el motor con una sola red de agua (dominio hidráulico); edificio por pisos, 13 equipos, 6 escenarios; con la columna en serie la estación queda en 20,94 mca | acueducto |
@@ -45,6 +46,16 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 | 2026-10-16 | #1 | Layouts de las plantas | 1 |
 
 ## Entradas
+
+### 2026-10-18 01:21–01:50 · PR CI/CD Cloudflare · Despliegue de la galería en Cloudflare Pages
+- **Fecha/hora (UTC):** 2026-10-18 01:21 a 01:50.
+- **Fase del plan:** [[plan-del-proyecto]] despliegue.
+- **Solicitado por:** Carlos Andrés Quiceño, publicar las plantas y el panel en la cuenta Arvantti de Cloudflare con un CI/CD completo (22:54 y 23:15 del 2026-10-17); no puede desplegar desde su máquina virtual hasta el 31 de octubre (01:21).
+- **Qué se hizo:** workflow `.github/workflows/deploy.yml` (build de la galería y `wrangler pages deploy` en cada push a `main`, o a mano; no falla si faltan los secretos) y guía `docs/despliegue-cloudflare.md` con el Account ID, el token de permisos mínimos (Cloudflare Pages: Editar), los secretos del repositorio y el subdominio. La API de simulación (FastAPI con WebSocket) queda fuera.
+- **Commits:** ver el PR.
+- **Verificación:** `pnpm install --frozen-lockfile` y `pnpm gallery:build` generan `apps/gallery/dist`. El despliegue real queda pendiente de los secretos.
+- **Decisiones:** [[decisiones]] (D33).
+- **Conversación:** [[hilo-despliegue-cloudflare]].
 
 ### 2026-10-17 15:28–22:55 · PR #32 · Acueducto: panel de gráficos del PLC en la galería
 - **Fecha/hora (UTC):** 2026-10-17 15:28 a 18:55; conflictos con `main` resueltos a las 22:55 (pedido del autor en el PR, 22:39).
