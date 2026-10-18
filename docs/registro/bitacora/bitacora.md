@@ -10,6 +10,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
+| 2026-10-18 | Corrección del despliegue | Primer despliegue falló: `wrangler-action` intentó instalar wrangler con pnpm en la raíz del workspace; se fija `packageManager: npm` | despliegue |
 | 2026-10-18 | CI/CD Cloudflare | Despliegue continuo de la galería (equipos, escena de planta, panel del acueducto) en Cloudflare Pages con GitHub Actions; guía de token, secretos y subdominio `digitaltwin.arvantti.online`; la API queda fuera | despliegue |
 | 2026-10-17 | #32 | Acueducto: panel de gráficos del PLC en la galería (`acueducto.html`): curva del día en 24 ciclos, bombas Grundfos, sensores en tiempo real y gemelo (−5 % de fugas con la consigna hora a hora); datos de `tools/hydraulics/dia_acueducto.py` | acueducto |
 | 2026-10-17 | #33 | Acueducto: escena 3D del edificio por pisos, tubos con su trazado y diámetro del plano, caudal y velocidad reales del agua, soportes y cámaras por piso y por nivel | acueducto |
@@ -46,6 +47,13 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 | 2026-10-16 | #1 | Layouts de las plantas | 1 |
 
 ## Entradas
+
+### 2026-10-18 03:08–03:20 · Corrección del despliegue en Cloudflare Pages
+- **Fecha/hora (UTC):** 2026-10-18 03:08 a 03:20.
+- **Solicitado por:** Carlos Andrés Quiceño, captura del primer despliegue fallido (03:08).
+- **Qué se hizo:** el job `pages` de Deploy #1 compiló bien pero falló al instalar wrangler (`ERR_PNPM_ADDING_TO_ROOT`). Se fija `packageManager: npm` y `wranglerVersion: "4"` en `deploy.yml`.
+- **Verificación:** registros del job fallido; el despliegue real se confirma al correr de nuevo.
+- **Conversación:** [[hilo-despliegue-cloudflare]].
 
 ### 2026-10-18 01:21–01:50 · PR CI/CD Cloudflare · Despliegue de la galería en Cloudflare Pages
 - **Fecha/hora (UTC):** 2026-10-18 01:21 a 01:50.
