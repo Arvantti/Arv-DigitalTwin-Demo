@@ -10,6 +10,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
+| 2026-10-18 | Secuencia del acueducto | Acueducto: cada tubo empieza y termina en la boquilla o brida real (tanques, bombas, estación, válvulas entre niveles, rejilla, bajantes); panel LÍNEAS con dos líneas en m³; parámetro de cámara `look`. D41 | acueducto |
 | 2026-10-18 | Flujo de montacargas y ensamble | Planta de plásticos: almacén de semielaborado separado del de terminado (al norte de la nave, cajas azules), montacargas sin cruzar la banda y con carriles de ida y regreso, línea de ensamble visible (cámara propia) y piezas nuevas en secundarias. D40 | 5 |
 | 2026-10-18 | Pantalla de carga | La escena de planta (las tres plantas) muestra una barra de carga con etapas reales (conexión, plano, zonas, equipos, pasarelas, tuberías, luces, render) para que la espera inicial no parezca un error. D39 | 5 |
 | 2026-10-18 | Tuberías ancladas | Las tuberías sin ruta terminaban en el aire sobre el centro de la huella del equipo; ahora se anclan a su superficie real (rayo vertical contra la geometría) y llevan brida en cada extremo. Inspección visual de las tres plantas en `/mnt/project-files/inspeccion/`. D38 | 5 |
@@ -55,6 +56,15 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 | 2026-10-16 | #1 | Layouts de las plantas | 1 |
 
 ## Entradas
+
+### 2026-10-18 14:40 · Secuencia hidráulica continua del acueducto
+- **Fecha/hora (UTC):** 2026-10-18 14:40–15:50
+- **Fase del plan:** [[plan-del-proyecto]] acueducto
+- **Solicitado por:** Carlos Andrés Quiceño: «lanza otro hilo para seguir la secuencia de la planta de acueducto, mira que hay cosas sueltas» (con captura de válvulas entre niveles, extremo de la estación reguladora y tubos sobre los tanques).
+- **Qué se hizo:** rutas de `water-network-scale-v1/plant.yaml` reescritas con las conexiones reales de cada modelo 3D (tabla en `docs/water-network-plant.md` sección 11); válvulas entre niveles en desvío de la columna (entran por la brida oeste y salen por la este) y 0,2 m más bajas; bajantes con ruta propia hasta la boquilla de cada tanque; recirculación hasta la boquilla del tanque de bombeo; panel LÍNEAS con «Red de distribución» y «Recirculación» (contador `volume_m3` por el puerto de descarga de `booster-pump-set`, `unit` opcional en las líneas); parámetro de URL `look` para capturas. Informe de qué está conectado y qué es ilustrativo: [[flujo-planta-acueducto]].
+- **Verificación:** `twin-lib validate` y `twin-lib plant validate` (6 escenarios del acueducto dentro de tolerancia), `pytest` 84 pruebas en verde más una prueba nueva de continuidad de la secuencia, capturas de la galería (`evidencia/acueducto-columna-conectada.png`, `evidencia/acueducto-secuencia-y-lineas.png`).
+- **Decisiones:** [[decisiones]] D41
+- **Conversación:** [[hilo-secuencia-acueducto]]
 
 ### 2026-10-18 14:17 · Montacargas con carriles, almacenes separados y línea de ensamble visible
 - **Fecha/hora (UTC):** 2026-10-18 14:17–14:50

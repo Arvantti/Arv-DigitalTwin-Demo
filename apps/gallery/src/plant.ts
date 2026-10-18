@@ -10,6 +10,7 @@
  *   &camera=general|<id de zona>   cámara inicial
  *   &select=<id de equipo>         equipo seleccionado
  *   &focus=<id de equipo>          acerca la cámara a ese equipo
+ *   &look=x,y,z,tx,ty,tz           cámara en el punto (x, y, z) del plano mirando a (tx, ty, tz), en metros
  *   &autosim=1&scenario=boiler-trip&speed=120   conecta la simulación al cargar
  *   &tour=1                        inicia el recorrido de cámara al cargar
  *   &shot=1                        oculta la interfaz y marca window.__ready (con autosim, tras recibir datos)
@@ -830,9 +831,9 @@ function commandButton(label: string, title: string, command: string, args: Reco
   return b;
 }
 
-function renderLines(lines: Record<string, { name: string; output_units: number; output_per_h: number | null }>): void {
+function renderLines(lines: Record<string, { name: string; unit?: string; output_units: number; output_per_h: number | null }>): void {
   $("lines").innerHTML = Object.entries(lines)
-    .map(([id, ln]) => `<div class="line" data-line="${id}"><b>${ln.name}</b><span>${fmt(ln.output_units)} u · ${ln.output_per_h === null ? "—" : fmt(ln.output_per_h)} u/h</span></div>`)
+    .map(([id, ln]) => `<div class="line" data-line="${id}"><b>${ln.name}</b><span>${fmt(ln.output_units)} ${ln.unit ?? "u"} · ${ln.output_per_h === null ? "—" : fmt(ln.output_per_h)} ${ln.unit ?? "u"}/h</span></div>`)
     .join("");
 }
 
@@ -917,6 +918,12 @@ async function start(): Promise<void> {
   if (url.get("select")) select(url.get("select"));
   const focusAsset = url.get("focus") ? assets.get(url.get("focus")!) : undefined;
   if (focusAsset) stage.frame(focusAsset.root, 1.1);
+  const look = url.get("look")?.split(",").map(Number);
+  if (look?.length === 6 && look.every(Number.isFinite)) {
+    stage.camera.position.copy(toScene(look[0], look[1], look[2]));
+    stage.controls.target.copy(toScene(look[3], look[4], look[5]));
+    stage.controls.update();
+  }
   if (url.get("tour") === "1") startTour();
   if (url.get("autosim") === "1" && simulated) {
     if (url.get("scenario")) sel.value = url.get("scenario")!;
