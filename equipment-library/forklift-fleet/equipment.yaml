@@ -1,0 +1,178 @@
+schema_version: 0.1.0
+type: forklift-fleet
+version: 0.1.0
+name: Flota de montacargas por área
+manufacturing: discrete
+category: logistics.transport
+description: >
+  Flota finita de montacargas que lleva estibas entre un origen y un destino por rutas fijas (hasta 10 rutas). Cada
+  estiba espera su turno en la cola de su ruta, un montacargas libre la carga, la lleva a velocidad constante, la
+  descarga y regresa por el carril contrario. Los montacargas comparten el corredor: no salen a la vez (separación mínima
+  entre salidas) y adelante no hay adelantamientos, así no se cruzan ni se traspasan. Si todos están ocupados o no hay
+  espacio en el destino, las estibas esperan en el origen.
+aliases: [flota de montacargas, montacargas, forklift fleet, forklift, transporte de estibas, carretillas elevadoras]
+fidelity: { visual: V2, behavior: B2 }
+
+params:
+  vehicles:       { type: integer, min: 1, max: 12, default: 4, description: Montacargas de la flota, affects: [behavior, geometry] }
+  speed_m_s:      { type: number, unit: m/s, min: 0.5, max: 4, default: 2, description: Velocidad de marcha (carga y vacío), affects: [behavior] }
+  load_s:         { type: number, unit: s, min: 0, max: 300, default: 45, description: Tiempo de recoger la estiba en el origen, affects: [behavior] }
+  unload_s:       { type: number, unit: s, min: 0, max: 300, default: 45, description: Tiempo de dejar la estiba en el destino, affects: [behavior] }
+  headway_s:      { type: number, unit: s, min: 0, max: 300, default: 30, description: "Separación mínima entre salidas por el corredor compartido (nadie adelanta ni sale encima de otro)", affects: [behavior] }
+  pallet_pieces:  { type: integer, min: 1, max: 5000, default: 1000, description: Piezas por estiba, affects: [behavior] }
+  max_pallets_per_route: { type: integer, min: 1, max: 8, default: 2, description: "Estibas por ruta entre cola, viaje y entrega pendiente antes de dejar de aceptar más", affects: [behavior] }
+  parking_pose:   { type: string, default: bay, description: Cómo se muestran los montacargas en reposo (bay), affects: [geometry] }
+  route_1_m:       { type: number, unit: m, min: 5, max: 1000, default: 100, description: Largo de la ruta 1 (origen a destino), affects: [behavior] }
+  route_1_feed_upm: { type: number, unit: u/min, min: 0.1, max: 1000000, default: 1000000, description: "Ritmo máximo al que entrega en el destino las piezas de la estiba de la ruta 1 (en una línea de ensamble, lo que se saca de la estiba)", affects: [behavior] }
+  route_2_m:       { type: number, unit: m, min: 5, max: 1000, default: 100, description: Largo de la ruta 2 (origen a destino), affects: [behavior] }
+  route_2_feed_upm: { type: number, unit: u/min, min: 0.1, max: 1000000, default: 1000000, description: "Ritmo máximo al que entrega en el destino las piezas de la estiba de la ruta 2 (en una línea de ensamble, lo que se saca de la estiba)", affects: [behavior] }
+  route_3_m:       { type: number, unit: m, min: 5, max: 1000, default: 100, description: Largo de la ruta 3 (origen a destino), affects: [behavior] }
+  route_3_feed_upm: { type: number, unit: u/min, min: 0.1, max: 1000000, default: 1000000, description: "Ritmo máximo al que entrega en el destino las piezas de la estiba de la ruta 3 (en una línea de ensamble, lo que se saca de la estiba)", affects: [behavior] }
+  route_4_m:       { type: number, unit: m, min: 5, max: 1000, default: 100, description: Largo de la ruta 4 (origen a destino), affects: [behavior] }
+  route_4_feed_upm: { type: number, unit: u/min, min: 0.1, max: 1000000, default: 1000000, description: "Ritmo máximo al que entrega en el destino las piezas de la estiba de la ruta 4 (en una línea de ensamble, lo que se saca de la estiba)", affects: [behavior] }
+  route_5_m:       { type: number, unit: m, min: 5, max: 1000, default: 100, description: Largo de la ruta 5 (origen a destino), affects: [behavior] }
+  route_5_feed_upm: { type: number, unit: u/min, min: 0.1, max: 1000000, default: 1000000, description: "Ritmo máximo al que entrega en el destino las piezas de la estiba de la ruta 5 (en una línea de ensamble, lo que se saca de la estiba)", affects: [behavior] }
+  route_6_m:       { type: number, unit: m, min: 5, max: 1000, default: 100, description: Largo de la ruta 6 (origen a destino), affects: [behavior] }
+  route_6_feed_upm: { type: number, unit: u/min, min: 0.1, max: 1000000, default: 1000000, description: "Ritmo máximo al que entrega en el destino las piezas de la estiba de la ruta 6 (en una línea de ensamble, lo que se saca de la estiba)", affects: [behavior] }
+  route_7_m:       { type: number, unit: m, min: 5, max: 1000, default: 100, description: Largo de la ruta 7 (origen a destino), affects: [behavior] }
+  route_7_feed_upm: { type: number, unit: u/min, min: 0.1, max: 1000000, default: 1000000, description: "Ritmo máximo al que entrega en el destino las piezas de la estiba de la ruta 7 (en una línea de ensamble, lo que se saca de la estiba)", affects: [behavior] }
+  route_8_m:       { type: number, unit: m, min: 5, max: 1000, default: 100, description: Largo de la ruta 8 (origen a destino), affects: [behavior] }
+  route_8_feed_upm: { type: number, unit: u/min, min: 0.1, max: 1000000, default: 1000000, description: "Ritmo máximo al que entrega en el destino las piezas de la estiba de la ruta 8 (en una línea de ensamble, lo que se saca de la estiba)", affects: [behavior] }
+  route_9_m:       { type: number, unit: m, min: 5, max: 1000, default: 100, description: Largo de la ruta 9 (origen a destino), affects: [behavior] }
+  route_9_feed_upm: { type: number, unit: u/min, min: 0.1, max: 1000000, default: 1000000, description: "Ritmo máximo al que entrega en el destino las piezas de la estiba de la ruta 9 (en una línea de ensamble, lo que se saca de la estiba)", affects: [behavior] }
+  route_10_m:       { type: number, unit: m, min: 5, max: 1000, default: 100, description: Largo de la ruta 10 (origen a destino), affects: [behavior] }
+  route_10_feed_upm: { type: number, unit: u/min, min: 0.1, max: 1000000, default: 1000000, description: "Ritmo máximo al que entrega en el destino las piezas de la estiba de la ruta 10 (en una línea de ensamble, lo que se saca de la estiba)", affects: [behavior] }
+
+ports:
+  - { id: pallets_in_1, kind: item, direction: in, medium: estibas, unit: u/min, link: { units: inflow_1_upm, ready: accepting_1 } }
+  - { id: pallets_in_2, kind: item, direction: in, medium: estibas, unit: u/min, link: { units: inflow_2_upm, ready: accepting_2 } }
+  - { id: pallets_in_3, kind: item, direction: in, medium: estibas, unit: u/min, link: { units: inflow_3_upm, ready: accepting_3 } }
+  - { id: pallets_in_4, kind: item, direction: in, medium: estibas, unit: u/min, link: { units: inflow_4_upm, ready: accepting_4 } }
+  - { id: pallets_in_5, kind: item, direction: in, medium: estibas, unit: u/min, link: { units: inflow_5_upm, ready: accepting_5 } }
+  - { id: pallets_in_6, kind: item, direction: in, medium: estibas, unit: u/min, link: { units: inflow_6_upm, ready: accepting_6 } }
+  - { id: pallets_in_7, kind: item, direction: in, medium: estibas, unit: u/min, link: { units: inflow_7_upm, ready: accepting_7 } }
+  - { id: pallets_in_8, kind: item, direction: in, medium: estibas, unit: u/min, link: { units: inflow_8_upm, ready: accepting_8 } }
+  - { id: pallets_in_9, kind: item, direction: in, medium: estibas, unit: u/min, link: { units: inflow_9_upm, ready: accepting_9 } }
+  - { id: pallets_in_10, kind: item, direction: in, medium: estibas, unit: u/min, link: { units: inflow_10_upm, ready: accepting_10 } }
+  - { id: pieces_out_1, kind: item, direction: out, medium: estibas, unit: u/min, link: { units: units_out_1, ready: downstream_free_1 } }
+  - { id: pieces_out_2, kind: item, direction: out, medium: estibas, unit: u/min, link: { units: units_out_2, ready: downstream_free_2 } }
+  - { id: pieces_out_3, kind: item, direction: out, medium: estibas, unit: u/min, link: { units: units_out_3, ready: downstream_free_3 } }
+  - { id: pieces_out_4, kind: item, direction: out, medium: estibas, unit: u/min, link: { units: units_out_4, ready: downstream_free_4 } }
+  - { id: pieces_out_5, kind: item, direction: out, medium: estibas, unit: u/min, link: { units: units_out_5, ready: downstream_free_5 } }
+  - { id: pieces_out_6, kind: item, direction: out, medium: estibas, unit: u/min, link: { units: units_out_6, ready: downstream_free_6 } }
+  - { id: pieces_out_7, kind: item, direction: out, medium: estibas, unit: u/min, link: { units: units_out_7, ready: downstream_free_7 } }
+  - { id: pieces_out_8, kind: item, direction: out, medium: estibas, unit: u/min, link: { units: units_out_8, ready: downstream_free_8 } }
+  - { id: pieces_out_9, kind: item, direction: out, medium: estibas, unit: u/min, link: { units: units_out_9, ready: downstream_free_9 } }
+  - { id: pieces_out_10, kind: item, direction: out, medium: estibas, unit: u/min, link: { units: units_out_10, ready: downstream_free_10 } }
+
+states:
+  - { id: idle, description: Sin estibas que mover }
+  - { id: running, description: Al menos un montacargas trabaja }
+  - { id: blocked, description: Hay estibas descargadas que el destino no recibe }
+
+variables:
+  - { id: vehicles_busy, unit: u, kind: calculated, description: "Montacargas en trabajo (carga, viaje, descarga o regreso)" }
+  - { id: vehicles_available, unit: u, kind: calculated, description: Montacargas libres }
+  - { id: pallets_queued, unit: u, kind: calculated, description: Estibas esperando montacargas en todas las rutas }
+  - { id: pallets_in_transit, unit: u, kind: calculated, description: Estibas cargadas en camino }
+  - { id: pieces_pending, unit: u, kind: calculated, description: Piezas descargadas que el destino aún no recibe }
+  - { id: trips_completed, unit: u, kind: counter, description: Viajes completados (estibas entregadas) }
+  - { id: utilization_pct, unit: "%", kind: calculated, range: [0, 100], description: Fracción de la flota en trabajo }
+  - { id: units_out_1, unit: u, kind: counter, description: Piezas entregadas por la ruta 1 }
+  - { id: units_out_2, unit: u, kind: counter, description: Piezas entregadas por la ruta 2 }
+  - { id: units_out_3, unit: u, kind: counter, description: Piezas entregadas por la ruta 3 }
+  - { id: units_out_4, unit: u, kind: counter, description: Piezas entregadas por la ruta 4 }
+  - { id: units_out_5, unit: u, kind: counter, description: Piezas entregadas por la ruta 5 }
+  - { id: units_out_6, unit: u, kind: counter, description: Piezas entregadas por la ruta 6 }
+  - { id: units_out_7, unit: u, kind: counter, description: Piezas entregadas por la ruta 7 }
+  - { id: units_out_8, unit: u, kind: counter, description: Piezas entregadas por la ruta 8 }
+  - { id: units_out_9, unit: u, kind: counter, description: Piezas entregadas por la ruta 9 }
+  - { id: units_out_10, unit: u, kind: counter, description: Piezas entregadas por la ruta 10 }
+  - { id: accepting_1, unit: "", kind: status, description: "1 si la ruta 1 recibe otra estiba" }
+  - { id: accepting_2, unit: "", kind: status, description: "1 si la ruta 2 recibe otra estiba" }
+  - { id: accepting_3, unit: "", kind: status, description: "1 si la ruta 3 recibe otra estiba" }
+  - { id: accepting_4, unit: "", kind: status, description: "1 si la ruta 4 recibe otra estiba" }
+  - { id: accepting_5, unit: "", kind: status, description: "1 si la ruta 5 recibe otra estiba" }
+  - { id: accepting_6, unit: "", kind: status, description: "1 si la ruta 6 recibe otra estiba" }
+  - { id: accepting_7, unit: "", kind: status, description: "1 si la ruta 7 recibe otra estiba" }
+  - { id: accepting_8, unit: "", kind: status, description: "1 si la ruta 8 recibe otra estiba" }
+  - { id: accepting_9, unit: "", kind: status, description: "1 si la ruta 9 recibe otra estiba" }
+  - { id: accepting_10, unit: "", kind: status, description: "1 si la ruta 10 recibe otra estiba" }
+
+events:
+  - { id: trip_completed, description: Una estiba llegó a su destino }
+  - { id: vehicle_waiting, description: Un montacargas espera en la línea de parada porque otro salió hace poco }
+  - { id: fleet_saturated, description: Todos los montacargas están ocupados y hay estibas en cola }
+
+faults:
+  - { id: vehicle_breakdown, description: Un montacargas queda fuera de servicio (batería o falla mecánica), mtbf_h: 300, mttr_min: 30, severity: medium, stops_equipment: false, effect: La flota trabaja con un montacargas menos hasta repararlo }
+
+commands:
+  - { id: inject_fault, description: Inyecta una falla declarada, args: { fault: string, duration_s: number } }
+  - { id: clear_fault, description: Repara una falla activa, args: { fault: string } }
+  - { id: set_param, description: Cambia un parámetro en caliente, args: { name: string, value: any } }
+
+kpis:
+  - { id: trips_per_h, unit: trips/h, description: Viajes completados por hora }
+  - { id: utilization, unit: "", description: Fracción del tiempo-vehículo en trabajo }
+  - { id: max_queue, unit: u, description: Mayor número de estibas esperando a la vez }
+
+animation_channels:
+  - { id: v1_route, range: [0, 6], description: "Ruta del montacargas 1 (0 = libre en reposo)" }
+  - { id: v1_pos, range: [0, 1], description: "Avance del montacargas 1 en su viaje redondo (0 = origen, 0.5 = destino)" }
+  - { id: v1_loaded, range: [0, 1], description: "1 si lleva estiba" }
+  - { id: v1_wait, range: [0, 1], description: "1 si espera en la línea de parada" }
+  - { id: v2_route, range: [0, 6], description: "Ruta del montacargas 2 (0 = libre en reposo)" }
+  - { id: v2_pos, range: [0, 1], description: "Avance del montacargas 2 en su viaje redondo (0 = origen, 0.5 = destino)" }
+  - { id: v2_loaded, range: [0, 1], description: "1 si lleva estiba" }
+  - { id: v2_wait, range: [0, 1], description: "1 si espera en la línea de parada" }
+  - { id: v3_route, range: [0, 6], description: "Ruta del montacargas 3 (0 = libre en reposo)" }
+  - { id: v3_pos, range: [0, 1], description: "Avance del montacargas 3 en su viaje redondo (0 = origen, 0.5 = destino)" }
+  - { id: v3_loaded, range: [0, 1], description: "1 si lleva estiba" }
+  - { id: v3_wait, range: [0, 1], description: "1 si espera en la línea de parada" }
+  - { id: v4_route, range: [0, 6], description: "Ruta del montacargas 4 (0 = libre en reposo)" }
+  - { id: v4_pos, range: [0, 1], description: "Avance del montacargas 4 en su viaje redondo (0 = origen, 0.5 = destino)" }
+  - { id: v4_loaded, range: [0, 1], description: "1 si lleva estiba" }
+  - { id: v4_wait, range: [0, 1], description: "1 si espera en la línea de parada" }
+  - { id: v5_route, range: [0, 6], description: "Ruta del montacargas 5 (0 = libre en reposo)" }
+  - { id: v5_pos, range: [0, 1], description: "Avance del montacargas 5 en su viaje redondo (0 = origen, 0.5 = destino)" }
+  - { id: v5_loaded, range: [0, 1], description: "1 si lleva estiba" }
+  - { id: v5_wait, range: [0, 1], description: "1 si espera en la línea de parada" }
+  - { id: v6_route, range: [0, 6], description: "Ruta del montacargas 6 (0 = libre en reposo)" }
+  - { id: v6_pos, range: [0, 1], description: "Avance del montacargas 6 en su viaje redondo (0 = origen, 0.5 = destino)" }
+  - { id: v6_loaded, range: [0, 1], description: "1 si lleva estiba" }
+  - { id: v6_wait, range: [0, 1], description: "1 si espera en la línea de parada" }
+  - { id: v7_route, range: [0, 6], description: "Ruta del montacargas 7 (0 = libre en reposo)" }
+  - { id: v7_pos, range: [0, 1], description: "Avance del montacargas 7 en su viaje redondo (0 = origen, 0.5 = destino)" }
+  - { id: v7_loaded, range: [0, 1], description: "1 si lleva estiba" }
+  - { id: v7_wait, range: [0, 1], description: "1 si espera en la línea de parada" }
+  - { id: v8_route, range: [0, 6], description: "Ruta del montacargas 8 (0 = libre en reposo)" }
+  - { id: v8_pos, range: [0, 1], description: "Avance del montacargas 8 en su viaje redondo (0 = origen, 0.5 = destino)" }
+  - { id: v8_loaded, range: [0, 1], description: "1 si lleva estiba" }
+  - { id: v8_wait, range: [0, 1], description: "1 si espera en la línea de parada" }
+  - { id: v9_route, range: [0, 6], description: "Ruta del montacargas 9 (0 = libre en reposo)" }
+  - { id: v9_pos, range: [0, 1], description: "Avance del montacargas 9 en su viaje redondo (0 = origen, 0.5 = destino)" }
+  - { id: v9_loaded, range: [0, 1], description: "1 si lleva estiba" }
+  - { id: v9_wait, range: [0, 1], description: "1 si espera en la línea de parada" }
+  - { id: v10_route, range: [0, 6], description: "Ruta del montacargas 10 (0 = libre en reposo)" }
+  - { id: v10_pos, range: [0, 1], description: "Avance del montacargas 10 en su viaje redondo (0 = origen, 0.5 = destino)" }
+  - { id: v10_loaded, range: [0, 1], description: "1 si lleva estiba" }
+  - { id: v10_wait, range: [0, 1], description: "1 si espera en la línea de parada" }
+  - { id: v11_route, range: [0, 6], description: "Ruta del montacargas 11 (0 = libre en reposo)" }
+  - { id: v11_pos, range: [0, 1], description: "Avance del montacargas 11 en su viaje redondo (0 = origen, 0.5 = destino)" }
+  - { id: v11_loaded, range: [0, 1], description: "1 si lleva estiba" }
+  - { id: v11_wait, range: [0, 1], description: "1 si espera en la línea de parada" }
+  - { id: v12_route, range: [0, 6], description: "Ruta del montacargas 12 (0 = libre en reposo)" }
+  - { id: v12_pos, range: [0, 1], description: "Avance del montacargas 12 en su viaje redondo (0 = origen, 0.5 = destino)" }
+  - { id: v12_loaded, range: [0, 1], description: "1 si lleva estiba" }
+  - { id: v12_wait, range: [0, 1], description: "1 si espera en la línea de parada" }
+
+geometry:
+  parts: [bay, floor_marking, forklift, charger, signs]
+
+assumptions:
+  - "Cada ruta tiene su largo (route_N_m); el viaje de ida y el de regreso toman cada uno largo ÷ speed_m_s."
+  - "Un montacargas atiende cualquier ruta de su flota; toma primero la estiba que lleva más tiempo esperando (FIFO entre rutas; la de menor número si empatan)."
+  - "El corredor es compartido: se exige headway_s entre salidas de cualquier ruta. Con carriles separados de ida y regreso, el regreso no choca con las salidas."
+  - "Las piezas de la estiba llegan al destino al terminar la descarga y salen hacia el siguiente equipo al ritmo feed_upm."
+  - "Una falla deja un montacargas menos disponible para nuevos viajes; el viaje en curso termina."

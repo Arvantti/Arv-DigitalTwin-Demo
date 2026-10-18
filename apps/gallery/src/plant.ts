@@ -259,7 +259,8 @@ function buildEquipment(): void {
     let model: EquipmentModel | null = null;
     const builder = eq.sim ? geometryBuilders[eq.sim.type] : undefined;
     const control = controlBuilders[eq.type];
-    const warehouse = warehouseBuilders[eq.type];
+    // un rack simulado (almacén de estibas) usa la geometría de la librería, que muestra su inventario
+    const warehouse = eq.sim ? undefined : warehouseBuilders[eq.type];
     if (control) {
       const piece = control(eq);
       controlPieces.push(piece);
@@ -885,7 +886,15 @@ async function start(): Promise<void> {
   buildEquipment();
   await bootStage(66, "Tendiendo pasarelas y rutas…");
   buildWalkways();
-  if (url.get("routes") !== "0") updateRoutes = buildRoutes(doc.aisles ?? [], doc.routes ?? [], stage.content, toScene);
+  if (url.get("routes") !== "0") updateRoutes = buildRoutes(doc.aisles ?? [], doc.routes ?? [], stage.content, toScene, {
+      channels: (id) => assets.get(id)?.frame.channels,
+      bay: (id) => {
+        const a = assets.get(id);
+        if (!a || a.eq.sim?.type !== "forklift-fleet") return undefined;
+        const n = Number(a.eq.sim.params.vehicles ?? a.eq.params?.vehicles ?? 0);
+        return n > 0 ? { center: a.root.position.clone(), vehicles: Math.min(12, n) } : undefined;
+      },
+    });
   await bootStage(78, "Procesando conexiones y tuberías…");
   buildPipes();
   $("plant-meta").textContent = `${doc.equipment.length} activos · ${simulated} simulados · ${doc.zones.length} zonas · ${pipeRuns.length} tuberías · ${doc.walkways.length} pasarelas`;

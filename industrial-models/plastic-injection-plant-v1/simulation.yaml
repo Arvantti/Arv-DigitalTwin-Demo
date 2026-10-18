@@ -67,6 +67,39 @@ equipment:
   extruder-pel-01: { type: pelletizing-line, preset: 350kg-recycling, params: {"throughput_kg_h": 350} }
   assembly-01: { type: assembly-cell, preset: pedal-lever-35s }
   assembly-02: { type: assembly-cell, preset: hinges-lids-20s }
+  buf-01: { type: pallet-buffer, preset: pallet-1000, params: {"product": "cubiertos"} }
+  buf-02: { type: pallet-buffer, preset: pallet-1000, params: {"product": "cubiertos"} }
+  buf-04: { type: pallet-buffer, preset: pallet-1000, params: {"product": "tapa recipiente 1 L"} }
+  buf-05: { type: pallet-buffer, preset: pallet-1000, params: {"product": "vajilla infantil (plato)"} }
+  buf-06: { type: pallet-buffer, preset: pallet-1000, params: {"product": "pedal y palanca de papelera"} }
+  buf-07: { type: pallet-buffer, preset: pallet-1000, params: {"product": "vaso"} }
+  buf-08: { type: pallet-buffer, preset: pallet-1000, params: {"product": "bisagras y piezas pequeñas"} }
+  buf-09: { type: pallet-buffer, preset: pallet-1000, params: {"product": "tapa de termo"} }
+  buf-10: { type: pallet-buffer, preset: pallet-1000, params: {"product": "cucharón"} }
+  buf-11: { type: pallet-buffer, preset: pallet-1000, params: {"product": "recipiente para alimentos 1 L"} }
+  buf-12: { type: pallet-buffer, preset: pallet-1000, params: {"product": "recipiente para alimentos 3 L"} }
+  buf-13: { type: pallet-buffer, preset: pallet-1000, params: {"product": "caja organizadora 6 L"} }
+  buf-14: { type: pallet-buffer, preset: pallet-1000, params: {"product": "tapa caja organizadora"} }
+  buf-15: { type: pallet-buffer, preset: pallet-1000, params: {"product": "balde 4 L"} }
+  buf-16: { type: pallet-buffer, preset: pallet-1000, params: {"product": "bandeja"} }
+  buf-17: { type: pallet-buffer, preset: pallet-1000, params: {"product": "cuerpo de termo"} }
+  buf-18: { type: pallet-buffer, preset: pallet-1000, params: {"product": "señal de prevención plegable"} }
+  buf-19: { type: pallet-buffer, preset: pallet-1000, params: {"product": "cuerpo papelera 20 L"} }
+  buf-20: { type: pallet-buffer, preset: pallet-1000, params: {"product": "caja organizadora 40 L"} }
+  buf-21: { type: pallet-buffer, preset: pallet-1000, params: {"product": "balde 12 L"} }
+  buf-22: { type: pallet-buffer, preset: pallet-1000, params: {"product": "balde 20 L"} }
+  buf-23: { type: pallet-buffer, preset: pallet-1000, params: {"product": "tapa de nevera"} }
+  buf-24: { type: pallet-buffer, preset: pallet-1000, params: {"product": "bandeja industrial"} }
+  buf-25: { type: pallet-buffer, preset: pallet-1000, params: {"product": "canasta industrial apilable"} }
+  buf-26: { type: pallet-buffer, preset: pallet-1000, params: {"product": "caneca 50 L"} }
+  buf-27: { type: pallet-buffer, preset: pallet-1000, params: {"product": "cuerpo de nevera portátil"} }
+  buf-28: { type: pallet-buffer, preset: pallet-1000, params: {"product": "caneca 121 L"} }
+  buf-29: { type: pallet-buffer, preset: pallet-1000, params: {"product": "tapa caneca 121 L y estiba liviana"} }
+  rack-sf-01: { type: pallet-store, preset: semielaborado-48, params: {"initial_pallets": 6, "content": "pedal y palanca de papelera"} }
+  rack-sf-02: { type: pallet-store, preset: semielaborado-48, params: {"initial_pallets": 6, "content": "cuerpos de papelera"} }
+  rack-sf-03: { type: pallet-store, preset: semielaborado-48, params: {"initial_pallets": 6, "content": "bisagras"} }
+  rack-sf-04: { type: pallet-store, preset: semielaborado-48, params: {"initial_pallets": 6, "content": "tapas de caja organizadora"} }
+  fleet-01: { type: forklift-fleet, preset: plant-6 }
   silo-05: { type: vessel, preset: resin-silo-40t, params: {"volume_l": 54545, "content": "pellet de PP reciclado", "initial_level_pct": 20} }
 
 links:
@@ -82,11 +115,76 @@ links:
 
   # Celdas de ensamble con operario: pedal/palanca (imm-06) y cuerpo de papelera (imm-19) → assembly-01 → empaque 3;
   # bisagras (imm-08) y tapas (imm-14) → assembly-02 (sin salida simulada: las unidades terminadas las lleva un montacargas).
-  - { from: imm-06.parts_out, to: assembly-01.parts_a_in }
-  - { from: imm-19.parts_out, to: assembly-01.parts_b_in }
   - { from: assembly-01.units_out, to: pack-station-03.items_in }
-  - { from: imm-08.parts_out, to: assembly-02.parts_a_in }
-  - { from: imm-14.parts_out, to: assembly-02.parts_b_in }
+  # Proceso conectado (docs/plant-engine.md): inyectora → buffer → montacargas → estantería de semielaborado → montacargas → celda
+  - { from: imm-01.parts_out, to: buf-01.pieces_in }
+  - { from: imm-02.parts_out, to: buf-02.pieces_in }
+  - { from: imm-04.parts_out, to: buf-04.pieces_in }
+  - { from: imm-05.parts_out, to: buf-05.pieces_in }
+  - { from: imm-06.parts_out, to: buf-06.pieces_in }
+  - { from: imm-07.parts_out, to: buf-07.pieces_in }
+  - { from: imm-08.parts_out, to: buf-08.pieces_in }
+  - { from: imm-09.parts_out, to: buf-09.pieces_in }
+  - { from: imm-10.parts_out, to: buf-10.pieces_in }
+  - { from: imm-11.parts_out, to: buf-11.pieces_in }
+  - { from: imm-12.parts_out, to: buf-12.pieces_in }
+  - { from: imm-13.parts_out, to: buf-13.pieces_in }
+  - { from: imm-14.parts_out, to: buf-14.pieces_in }
+  - { from: imm-15.parts_out, to: buf-15.pieces_in }
+  - { from: imm-16.parts_out, to: buf-16.pieces_in }
+  - { from: imm-17.parts_out, to: buf-17.pieces_in }
+  - { from: imm-18.parts_out, to: buf-18.pieces_in }
+  - { from: imm-19.parts_out, to: buf-19.pieces_in }
+  - { from: imm-20.parts_out, to: buf-20.pieces_in }
+  - { from: imm-21.parts_out, to: buf-21.pieces_in }
+  - { from: imm-22.parts_out, to: buf-22.pieces_in }
+  - { from: imm-23.parts_out, to: buf-23.pieces_in }
+  - { from: imm-24.parts_out, to: buf-24.pieces_in }
+  - { from: imm-25.parts_out, to: buf-25.pieces_in }
+  - { from: imm-26.parts_out, to: buf-26.pieces_in }
+  - { from: imm-27.parts_out, to: buf-27.pieces_in }
+  - { from: imm-28.parts_out, to: buf-28.pieces_in }
+  - { from: imm-29.parts_out, to: buf-29.pieces_in }
+  - { from: buf-01.pallets_out, to: fleet-01.pallets_in_5 }
+  - { from: buf-02.pallets_out, to: fleet-01.pallets_in_5 }
+  - { from: buf-04.pallets_out, to: fleet-01.pallets_in_5 }
+  - { from: buf-05.pallets_out, to: fleet-01.pallets_in_5 }
+  - { from: buf-06.pallets_out, to: fleet-01.pallets_in_1 }
+  - { from: buf-07.pallets_out, to: fleet-01.pallets_in_5 }
+  - { from: buf-08.pallets_out, to: fleet-01.pallets_in_3 }
+  - { from: buf-09.pallets_out, to: fleet-01.pallets_in_5 }
+  - { from: buf-10.pallets_out, to: fleet-01.pallets_in_5 }
+  - { from: buf-11.pallets_out, to: fleet-01.pallets_in_5 }
+  - { from: buf-12.pallets_out, to: fleet-01.pallets_in_5 }
+  - { from: buf-13.pallets_out, to: fleet-01.pallets_in_5 }
+  - { from: buf-14.pallets_out, to: fleet-01.pallets_in_4 }
+  - { from: buf-15.pallets_out, to: fleet-01.pallets_in_5 }
+  - { from: buf-16.pallets_out, to: fleet-01.pallets_in_5 }
+  - { from: buf-17.pallets_out, to: fleet-01.pallets_in_5 }
+  - { from: buf-18.pallets_out, to: fleet-01.pallets_in_5 }
+  - { from: buf-19.pallets_out, to: fleet-01.pallets_in_2 }
+  - { from: buf-20.pallets_out, to: fleet-01.pallets_in_5 }
+  - { from: buf-21.pallets_out, to: fleet-01.pallets_in_5 }
+  - { from: buf-22.pallets_out, to: fleet-01.pallets_in_5 }
+  - { from: buf-23.pallets_out, to: fleet-01.pallets_in_5 }
+  - { from: buf-24.pallets_out, to: fleet-01.pallets_in_5 }
+  - { from: buf-25.pallets_out, to: fleet-01.pallets_in_5 }
+  - { from: buf-26.pallets_out, to: fleet-01.pallets_in_5 }
+  - { from: buf-27.pallets_out, to: fleet-01.pallets_in_5 }
+  - { from: buf-28.pallets_out, to: fleet-01.pallets_in_5 }
+  - { from: buf-29.pallets_out, to: fleet-01.pallets_in_5 }
+  - { from: fleet-01.pieces_out_1, to: rack-sf-01.pallets_in }
+  - { from: rack-sf-01.pallets_out, to: fleet-01.pallets_in_6 }
+  - { from: fleet-01.pieces_out_2, to: rack-sf-02.pallets_in }
+  - { from: rack-sf-02.pallets_out, to: fleet-01.pallets_in_7 }
+  - { from: fleet-01.pieces_out_3, to: rack-sf-03.pallets_in }
+  - { from: rack-sf-03.pallets_out, to: fleet-01.pallets_in_8 }
+  - { from: fleet-01.pieces_out_4, to: rack-sf-04.pallets_in }
+  - { from: rack-sf-04.pallets_out, to: fleet-01.pallets_in_9 }
+  - { from: fleet-01.pieces_out_6, to: assembly-01.parts_a_in }
+  - { from: fleet-01.pieces_out_7, to: assembly-01.parts_b_in }
+  - { from: fleet-01.pieces_out_8, to: assembly-02.parts_a_in }
+  - { from: fleet-01.pieces_out_9, to: assembly-02.parts_b_in }
   - { from: chiller-01.water_out, to: imm-01.cooling_water }
   - { from: chiller-01.water_out, to: imm-02.cooling_water }
   - { from: chiller-01.water_out, to: imm-03.cooling_water }
@@ -197,11 +295,15 @@ scenarios:
       - { path: equipment.dryer-01.variables.processed_kg, min: 149, max: 151, description: "(sin enlace entrega su caudal nominal: 150 kg/h × 1 h)" }
       - { path: equipment.dryer-04.variables.processed_kg, min: 268, max: 276, description: "(ahora entrega lo que pide la imm-28, no su caudal nominal: 7 kg × 1,03 = 7,21 kg por ciclo de 95 s = 273 kg/h × 1 h)" }
       - { path: equipment.dryer-03.variables.processed_kg, min: 23.5, max: 25.5, description: "(lo que pide la imm-01: 16 cavidades × 3,5 g × 1,10 de colada = 61,6 g cada 9 s = 24,6 kg/h × 1 h)" }
-      - { path: equipment.assembly-01.variables.units_assembled, min: 97, max: 102, description: "(la imm-19 entrega un cuerpo de papelera cada 35 s, igual que el ciclo del operario: 3.600 ÷ 35 = 102,9 ciclos, menos 1 % de rechazo y el arranque: ≈ 100 u/h, como dice la ficha 23)" }
-      - { path: equipment.assembly-01.state_share.starved, max: 0.05, description: "(el cuerpo llega justo al ritmo del operario; solo espera al inicio)" }
-      - { path: equipment.pack-station-03.variables.units_packed, min: 96, max: 102, description: "(todo lo que arma la celda 1 llega a la mesa de empaque 3)" }
-      - { path: equipment.imm-06.state_share.blocked, min: 0.3, max: 0.4, description: "(el pedal y la palanca salen a 2 piezas por 25 s = 288 u/h y la celda solo usa 103 u/h: la inyectora trabaja 103 ÷ 288 = 36 % del tiempo y espera 64 %; hasta llenar la cubeta de 60 trabaja sin parar: ≈ 36 % bloqueada en la hora)" }
-      - { path: equipment.assembly-02.variables.units_assembled, min: 176, max: 180, description: "(cada unidad toma 20 s: 3.600 ÷ 20 = 180 menos los ≈ 15 s de espera inicial por 2 bisagras y 1 tapa; supuesto de la ficha)" }
+      - { path: equipment.assembly-01.variables.units_assembled, min: 96, max: 98, description: "(las estibas de pedal/palanca y de cuerpos salen de las estanterías en t = 1 s, las carga el montacargas (45 s), salen por el corredor con 30 s de separación y llegan a los 148 y 169 s; con 5 s más para la primera pieza el operario arranca a los ≈ 174 s: (3.600 − 174) ÷ 35 = 97,9, o sea 97 unidades; la 98.ª terminaría a los 3.604 s)" }
+      - { path: equipment.assembly-01.state_share.starved, min: 0.04, max: 0.06, description: "(espera la primera pieza de cada cubeta ≈ 174 s de 3.600 s = 0,048)" }
+      - { path: equipment.pack-station-03.variables.units_packed, min: 95, max: 97, description: "(todo lo que arma la celda 1 llega a la mesa de empaque 3, con un paso de retraso)" }
+      - { path: equipment.imm-06.state_share.blocked, equals: 0.0, description: "(el buffer de 1.000 piezas absorbe las 288 u/h de la imm-06: ya no se bloquea porque la celda use solo 103 u/h)" }
+      - { path: equipment.buf-06.variables.loose_pieces, min: 276, max: 288, description: "(144 ciclos × 2 piezas = 288, menos ≈ 1 % de rechazo; todavía no completa la estiba de 1.000)" }
+      - { path: equipment.buf-01.variables.pallets_delivered, equals: 6, description: "(la imm-01 saca 16 cavidades ÷ 9 s = 6.400 u/h, ≈ 6.300 buenas: 6 estibas de 1.000; la 6.ª sale a los ≈ 3.500 s, con 120 s de cierre)" }
+      - { path: equipment.fleet-01.variables.trips_completed, min: 19, max: 23, description: "(8 viajes de las estanterías a las celdas y 15 estibas que salen de los buffers: 6 + 6 de las imm-01 e imm-02, 1 de la imm-07, 1 de la imm-04, 1 de la imm-08; las que van en camino a los 3.600 s no cuentan)" }
+      - { path: equipment.fleet-01.variables.vehicles_busy, max: 6 }
+      - { path: equipment.assembly-02.variables.units_assembled, min: 166, max: 168, description: "(las estibas de bisagras y tapas salen en t = 1 s y despachan a los 107 y 137 s por la separación de 30 s; llegan a los 203 y 242 s, la primera tapa 5 s después: (3.600 − 247) ÷ 20 = 167,7, o sea 167 unidades)" }
       - { path: equipment.extruder-pel-01.variables.processed_kg, min: 94, max: 102, description: "(todo el molido que entrega el molino llega a la línea de peletizado, que procesa 350 kg/h: ≈ 99 kg de los 100,6 kg/h que trituró, menos lo que el paso de retraso del motor aún no pasó)" }
       - { path: equipment.silo-05.variables.total_in_kg, min: 94, max: 102, description: "(el pellet que sale de la línea llega al silo 5)" }
       - { path: equipment.silo-05.variables.mass_kg, min: 6090, max: 6110, description: "(30 t × 20 % = 6.000 kg de inicio + ≈ 99 kg recibidos)" }
@@ -238,15 +340,37 @@ scenarios:
       - { path: equipment.dryer-03.variables.resin_dry, equals: 1 }
 
   - id: body-stop
-    description: "La imm-19 (cuerpo de papelera) se apaga a los 30 min: la celda de ensamble 1 consume lo que tenía y se queda sin cuerpos; la celda 2 no se entera"
+    description: "La imm-19 (cuerpo de papelera) se apaga a los 30 min: su buffer deja de llenarse, pero la celda de ensamble 1 sigue con el inventario de la estantería y de la estiba en la línea (6 estibas de 1.000 cuerpos, 9,7 h de producción)"
     duration_s: 3600
     timeline:
       - { at_s: 1800, equipment: imm-19, command: stop }
     expect:
-      - { path: equipment.assembly-01.variables.units_assembled, min: 47, max: 52, description: "(la imm-19 entrega un cuerpo cada 35 s hasta los 1.800 s: 1.800 ÷ 35 = 51 cuerpos; el operario arma los que llegan y pierde el último ciclo por estar a medias)" }
-      - { path: equipment.assembly-01.state, equals: starved }
-      - { path: equipment.assembly-01.state_share.starved, min: 0.47, max: 0.52, description: "(sin cuerpos desde ≈ 1.800 s hasta el final: 1.800 ÷ 3.600 = 0,5)" }
-      - { path: equipment.assembly-02.variables.units_assembled, min: 176, max: 180, description: "(la celda 2 tiene sus propias máquinas y sigue a 180 u/h)" }
+      - { path: equipment.imm-19.state, equals: idle }
+      - { path: equipment.buf-19.variables.loose_pieces, min: 50, max: 52, description: "(la imm-19 entrega 1 cuerpo cada 35 s hasta los 1.800 s: 1.800 ÷ 35 = 51 cuerpos, menos un posible rechazo)" }
+      - { path: equipment.assembly-01.variables.units_assembled, min: 96, max: 98, description: "(el inventario de cuerpos cubre la hora: igual que en nominal)" }
+      - { path: equipment.assembly-01.state, equals: running }
+      - { path: equipment.assembly-01.state_share.starved, max: 0.06 }
+      - { path: equipment.assembly-02.variables.units_assembled, min: 166, max: 168, description: "(la celda 2 no se entera)" }
+
+  - id: fleet-short
+    description: "La flota se reduce a 1 montacargas desde el inicio: sirve las estibas de las celdas y las de los buffers una por vez (ciclo de ≈ 177 s, ≤ 20 viajes por hora), las estibas esperan en cola y las celdas arrancan tarde"
+    duration_s: 3600
+    timeline:
+      - { at_s: 0, equipment: fleet-01, command: set_param, args: { name: vehicles, value: 1 } }
+    expect:
+      - { path: equipment.fleet-01.variables.trips_completed, min: 14, max: 20, description: "(un montacargas hace como máximo 3.600 ÷ 177 = 20 viajes; con la carga y el regreso más largos de las rutas 8 y 9 hace ≈ 17)" }
+      - { path: equipment.fleet-01.variables.pallets_queued, min: 1, description: "(los buffers pidieron más viajes de los que el montacargas alcanza a hacer)" }
+      - { path: events.fleet-01.fleet_saturated, min: 1 }
+      - { path: equipment.assembly-02.variables.units_assembled, min: 130, max: 150, description: "(sirve primero lo que pidió primero: cuerpos, pedal, bisagras y tapas; la tapa llega a los ≈ 730 s y arranca: (3.600 − 735) ÷ 20 = 143)" }
+
+  - id: pallet-chain
+    description: "Cuatro horas: la imm-06 junta 1.000 piezas de pedal/palanca a las ≈ 3,5 h, el buffer cierra la estiba (120 s), un montacargas la lleva a la estantería 1 y esta recibe sus 1.000 piezas"
+    duration_s: 14400
+    expect:
+      - { path: equipment.buf-06.variables.pallets_delivered, equals: 1, description: "(288 u/h × 0,99 de rechazo ≈ 285 u/h: 1.000 piezas a las ≈ 3,5 h = 12.600 s; sale a los ≈ 12.720 s)" }
+      - { path: equipment.rack-sf-01.variables.units_received, equals: 1000, description: "(la estiba llega a los ≈ 12.720 + 45 + 43,5 + 45 = 12.855 s)" }
+      - { path: equipment.rack-sf-01.variables.stored_pallets, equals: 5, description: "(6 de inventario inicial, 2 pasaron a las celdas, +1 recibida)" }
+      - { path: equipment.imm-06.state_share.blocked, equals: 0.0 }
 
   - id: chiller-trip
     description: "El chiller 1 se dispara por alta presión a los 30 min durante 45 min: el agua de moldes sube, los moldes se calientan y el rechazo y el scrap aumentan"

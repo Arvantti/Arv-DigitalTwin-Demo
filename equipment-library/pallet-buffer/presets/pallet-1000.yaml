@@ -1,0 +1,4 @@
+preset: pallet-1000
+description: Estiba europea de 1.000 piezas junto a una inyectora (X elegido por el usuario), hasta 2 estibas llenas esperando recogida
+params: { pallet_pieces: 1000, max_waiting_pallets: 2, pickup_wait_s: 120, nominal_inflow_upm: 0, product: piezas inyectadas, color: "#1e6fd9" }
+provenance: { pallet_pieces: user, max_waiting_pallets: assumed, pickup_wait_s: assumed, nominal_inflow_upm: assumed, product: assumed, color: assumed }
