@@ -32,3 +32,19 @@ prefiero que quitemos los pisos y mantengamos la estructuras
 ### 🤖 Claude · 17:15 UTC
 
 Quito la losa y el suelo de color de los pisos elevados y dejo las estructuras, el contorno y el rótulo de cada zona.
+
+### 👤 Carlos Andrés Quiceño · 17:21:24 UTC
+
+la tubería se cruza con la estructura
+
+### 🤖 Claude · 17:28 UTC
+
+El travesaño del cabezal de cada nivel atravesaba el montante de entrada (junto a la casa C13 del nivel 4). Acorté ese travesaño para que arranque después del montante.
+
+### 👤 Carlos Andrés Quiceño · 17:28:38 UTC
+
+Las conexiones entre los pisos están muy rebuscadas. Entre niveles de la rejilla debe ser directa: tubería con su válvula del nivel 1 al 2, del 2 al 3 y del 3 al 4, en puntos distintos de la cuadrícula (no todos en el mismo punto en vista de planta). De la estación reguladora sale la tubería, se reduce en un reductor y llega a la rejilla del nivel 1.
+
+### 🤖 Claude · 18:10 UTC
+
+Quité la columna lateral con lazos. Cada nivel sube recto al siguiente con su válvula, en puntos distintos de la cuadrícula, y la estación entrega al nivel 1 con un reductor de 4 a 2 pulgadas. El motor sigue dentro de tolerancia.

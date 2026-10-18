@@ -138,5 +138,11 @@ El autor (14:39) señala piezas sueltas en el acueducto. Decisión: cada ruta de
 ## D41 · Tuberías que esquivan equipos y otros tubos · 2026-10-18 14:36
 El autor envió capturas de tuberías que atraviesan las cajas de la estantería y de dos tubos que se cruzan, y pidió corregirlo en un hilo aparte junto con el flujo conectado de la planta de salsas. Decisión: el trazado a nivel de rack se elige por tubo con una comprobación geométrica (no atraviesa la caja de ningún equipo ajeno ni se acerca a otro tubo); es un arreglo de recorrido, no ingeniería de detalle. Los tubos con `route` (acueducto) no cambian. Lo que quede sin trazado libre se avisa en la consola del navegador.
 
-## D43 · Pisos elevados sin losa, con sus estructuras · 2026-10-18 17:12
+## D43 · Capacidad de la planta de salsas contra 22 t/día · 2026-10-18 15:23
+El autor (15:23) aprueba el plan de conexión de la planta de salsas y añade: revisar y ajustar los equipos que no darían abasto en litros por día. Decisión: base de 16 h/día y 85 % de disponibilidad (supuestos); el despacho pasa de 35 a 90 tarimas/día; túnel de enfriamiento, marmitas, pasteurizador y mesa de 250 ml se ajustan al conectar cada etapa, no antes.
+
+## D44 · Pisos elevados sin losa, con sus estructuras · 2026-10-18 17:12
 El autor (17:12) pide quitar los pisos y mantener las estructuras. Decisión: las zonas con `elevation` ya no dibujan losa translúcida ni suelo de color; quedan su contorno, su rótulo y las estructuras de cada equipo (bastidores, patas, soportes). El piso 0 conserva su suelo.
+
+## D45 · Subidas directas entre niveles, sin columna lateral · 2026-10-18 17:28
+El autor (17:28) pide que la conexión entre niveles de la rejilla sea directa: tubo con válvula del nivel 1 al 2, del 2 al 3 y del 3 al 4, cada uno en un punto distinto de la cuadrícula en vista de planta, y la estación reguladora con un reductor antes del nivel 1. Decisión: se elimina la columna externa con lazos; cada subida es un tubo recto de 2" que se une a un camino entre ramales de cada nivel; los niveles 2 a 4 no dibujan montante propio; la válvula entre niveles tiene variante vertical (`vertical: true`); el flujo de la estación trae `reduce_at` y `reduce_to_in` para dibujar el reductor (solo escena).
