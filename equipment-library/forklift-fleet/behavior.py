@@ -22,7 +22,8 @@ class ForkliftFleet(EquipmentBehavior):
 
     def setup(self) -> None:
         self.rx = [0.0] * ROUTES  # piezas recibidas que aún no completan una estiba
-        self.queue: list[list[float]] = [[] for _ in range(ROUTES)]  # instante en que cada estiba pidió montacargas, la primera es la más antigua
+        # instante en que cada estiba pidió montacargas; la primera es la más antigua
+        self.queue: list[list[float]] = [[] for _ in range(ROUTES)]
         self.pending = [0.0] * ROUTES  # piezas descargadas que el destino aún no recibe
         self.out = [0.0] * ROUTES  # piezas entregadas (contador)
         self.accepting = [True] * ROUTES
