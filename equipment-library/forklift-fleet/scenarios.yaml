@@ -144,3 +144,30 @@ scenarios:
       - { path: variables.units_out_1, equals: 0 }
       - { path: variables.units_out_2, equals: 0 }
       - { path: variables.pallets_queued, equals: 1, description: "(la ruta 1 está cargando desde los 177 s y la ruta 2 espera)" }
+
+  - id: pallet-by-product
+    description: "La ruta 2 lleva estibas de 240 piezas (route_2_pallet_pieces): llegan 240 piezas, una sola estiba, y a los ≈ 137 s se descargan 240 piezas, no las 1.000 de la estiba por defecto"
+    preset: plant-6
+    params: { route_2_pallet_pieces: 240 }
+    duration_s: 140
+    timeline:
+      - { at_s: 0, inputs: { inflow_2_upm: 14400 } }
+      - { at_s: 1, inputs: { inflow_2_upm: 0 } }
+    expect:
+      - { path: variables.trips_completed, equals: 1, description: "(240 piezas completan una estiba de la ruta 2; carga 45 s + ida 94 m ÷ 2 m/s = 47 s + descarga 45 s = 137 s)" }
+      - { path: variables.units_out_2, equals: 240 }
+      - { path: variables.pieces_pending, equals: 0 }
+
+  - id: assembled-pallets
+    description: "Ruta con estibas armadas (route_5_pallet_pieces = -1): dos buffers entregan estibas de 40 y 30 piezas con 10 s de diferencia; cada entrega es una estiba y se descarga completa; la segunda sale 30 s después de la primera"
+    preset: plant-6
+    params: { route_5_pallet_pieces: -1 }
+    duration_s: 180
+    timeline:
+      - { at_s: 0, inputs: { inflow_5_upm: 2400 } }
+      - { at_s: 1, inputs: { inflow_5_upm: 0 } }
+      - { at_s: 10, inputs: { inflow_5_upm: 1800 } }
+      - { at_s: 11, inputs: { inflow_5_upm: 0 } }
+    expect:
+      - { path: variables.trips_completed, equals: 2, description: "(la 1.ª sale a los 45 s y llega a los 45 + 47,5 + 45 = 137,5 s; la 2.ª termina de cargar a los 55 s pero sale a los 75 s por la separación de 30 s y llega a los 167,5 s)" }
+      - { path: variables.units_out_5, equals: 70, description: "(40 + 30 piezas: cada estiba lleva las piezas con que se armó)" }

@@ -1,0 +1,41 @@
+# Tamaño de la estiba por producto (planta de plásticos).
+# La estiba es estándar (1,2 x 1,0 m, 1,6 m de altura de apilado); las piezas que caben dependen del producto.
+# Procedimiento y reglas en docs/plant-engine.md; calculado con tools/logistics/pallet_sizing.py.
+pallet:
+  length_m: 1.2          # estiba estándar (supuesto)
+  width_m: 1.0
+  stack_height_m: 1.6
+  packing_efficiency: 0.75   # fracción del volumen útil ocupada por las piezas (cajas y espacios), supuesto
+  max_load_kg: 800            # carga máxima por estiba, supuesto
+  round_down_to: 10           # el conteo se redondea hacia abajo a múltiplos de 10 (conteo de operario)
+# Volumen que ocupa una pieza en la estiba (litros), ya considerando apilado o encaje. Todos son supuestos
+# hasta tener los moldes reales (primer paso de la hoja de ruta: librería de moldes por producto).
+bulk_l:
+  imm-01: 0.03    # cubiertos
+  imm-02: 0.03
+  imm-04: 0.08    # tapa recipiente 1 L
+  imm-05: 0.25    # plato infantil
+  imm-06: 0.2     # pedal y palanca de papelera
+  imm-07: 0.1     # vaso
+  imm-08: 0.02    # bisagras y piezas pequeñas
+  imm-09: 0.15    # tapa de termo
+  imm-10: 0.35    # cucharón
+  imm-11: 0.45    # recipiente 1 L
+  imm-12: 1.1     # recipiente 3 L
+  imm-13: 2.0     # caja organizadora 6 L
+  imm-14: 0.7     # tapa caja organizadora
+  imm-15: 1.0     # balde 4 L
+  imm-16: 0.9     # bandeja
+  imm-17: 1.5     # cuerpo de termo
+  imm-18: 1.5     # señal plegable
+  imm-19: 6.0     # cuerpo papelera 20 L
+  imm-20: 14.0    # caja organizadora 40 L
+  imm-21: 3.5     # balde 12 L
+  imm-22: 5.5     # balde 20 L
+  imm-23: 4.0     # tapa de nevera
+  imm-24: 5.0     # bandeja industrial
+  imm-25: 9.0     # canasta industrial apilable
+  imm-26: 14.0    # caneca 50 L
+  imm-27: 30.0    # cuerpo de nevera portátil
+  imm-28: 40.0    # caneca 121 L
+  imm-29: 25.0    # tapa caneca 121 L y estiba liviana

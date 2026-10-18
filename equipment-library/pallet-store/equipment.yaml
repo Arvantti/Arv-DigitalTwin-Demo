@@ -13,7 +13,7 @@ fidelity: { visual: V2, behavior: B2 }
 
 params:
   positions:       { type: integer, min: 1, max: 500, default: 48, description: Posiciones de estiba de la estantería, affects: [behavior, geometry] }
-  pallet_pieces:   { type: integer, min: 1, max: 5000, default: 1000, description: Piezas que forman una estiba (el X de los buffers), affects: [behavior] }
+  pallet_pieces:   { type: integer, min: 1, max: 100000, default: 1000, description: Piezas que forman una estiba (el X de los buffers), affects: [behavior] }
   initial_pallets: { type: integer, min: 0, max: 500, default: 0, description: Estibas que ya hay en la estantería al empezar, affects: [behavior, geometry] }
   release_gap_s:   { type: number, unit: s, min: 0, max: 600, default: 30, description: Tiempo mínimo entre una entrega y la siguiente (el montacarguista saca y asegura la estiba), affects: [behavior] }
   levels:          { type: integer, min: 1, max: 6, default: 4, description: Niveles de la estantería, affects: [geometry] }
