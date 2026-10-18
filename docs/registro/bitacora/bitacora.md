@@ -10,6 +10,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
+| 2026-10-18 | Estiba por producto | Planta de plásticos: la estiba es estándar y las piezas por estiba se calculan por producto (de 30 canecas de 121 L a 72.000 bisagras); la flota recibe las piezas por ruta y la ruta 5 usa estibas armadas. D49 | plásticos |
 | 2026-10-18 | Subidas directas del acueducto | Se elimina la columna lateral con lazos: cada nivel sube recto al siguiente con su válvula vertical, en puntos distintos de la cuadrícula; reductor de 4 a 2 pulgadas antes del nivel 1; el travesaño del cabezal ya no cruza el montante de entrada. D46 | acueducto |
 | 2026-10-18 | Acueducto sin pisos | Las zonas elevadas del acueducto ya no dibujan losa ni suelo de color; se ven las estructuras y los tubos de todos los pisos (pedido del autor). D45 | acueducto |
 | 2026-10-18 | #46 | Cuarto gemelo: fábrica de cajas de cartón corrugado centrada en el transporte de pilas (corrugadora, rodillos, mesas giratorias, carro de transferencia, pulmón, 3 líneas de conversión con tamaños de caja distintos, un paletizador propio y uno compartido, bodega); plano validado y forma 3D propia para sus 20 tipos de equipo, sin simulación todavía. D44 | gemelos |
@@ -61,6 +62,15 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 | 2026-10-16 | #1 | Layouts de las plantas | 1 |
 
 ## Entradas
+
+### 2026-10-18 22:44 · Estiba estándar con piezas por producto
+- **Fecha/hora (UTC):** 2026-10-18 22:44–23:30
+- **Solicitado por:** Carlos Andrés Quiceño (22:44): «el tamaño de la estiba es estándar, tú debes asignar un tamaño a cada producto y calcular».
+- **Qué se hizo:** tabla `pallet-sizing.yaml` (volumen por pieza, supuesto) y `tools/logistics/pallet_sizing.py` que calcula las piezas por estiba de los 28 productos y las escribe en `plant.yaml` y `simulation.yaml`; la flota acepta `route_N_pallet_pieces` (0 = el general, -1 = estibas armadas) y las estanterías usan la estiba de su producto; escenarios `nominal`, `fleet-short` y `pallet-chain` recalculados a mano; dos escenarios nuevos de la flota; prueba de consistencia.
+- **Verificación:** `twin-lib validate forklift-fleet` y `twin-lib plant validate` en OK, `pytest`, `ruff` y `pnpm -r typecheck`.
+- **Pendiente:** reemplazar los volúmenes supuestos por los de los moldes reales; con estibas de decenas de miles de piezas (cubiertos, bisagras) la primera tarda horas en llenarse.
+- **Decisiones:** [[decisiones]] D49.
+- **Conversación:** [[hilo-inspeccion-visual]].
 
 ### 2026-10-18 17:50 · Subidas directas entre niveles del acueducto
 - **Fecha/hora (UTC):** 2026-10-18 17:21–18:10

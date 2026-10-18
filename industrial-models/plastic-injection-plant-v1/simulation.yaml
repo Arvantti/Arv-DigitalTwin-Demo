@@ -67,39 +67,39 @@ equipment:
   extruder-pel-01: { type: pelletizing-line, preset: 350kg-recycling, params: {"throughput_kg_h": 350} }
   assembly-01: { type: assembly-cell, preset: pedal-lever-35s }
   assembly-02: { type: assembly-cell, preset: hinges-lids-20s }
-  buf-01: { type: pallet-buffer, preset: pallet-1000, params: {"product": "cubiertos"} }
-  buf-02: { type: pallet-buffer, preset: pallet-1000, params: {"product": "cubiertos"} }
-  buf-04: { type: pallet-buffer, preset: pallet-1000, params: {"product": "tapa recipiente 1 L"} }
-  buf-05: { type: pallet-buffer, preset: pallet-1000, params: {"product": "vajilla infantil (plato)"} }
-  buf-06: { type: pallet-buffer, preset: pallet-1000, params: {"product": "pedal y palanca de papelera"} }
-  buf-07: { type: pallet-buffer, preset: pallet-1000, params: {"product": "vaso"} }
-  buf-08: { type: pallet-buffer, preset: pallet-1000, params: {"product": "bisagras y piezas pequeñas"} }
-  buf-09: { type: pallet-buffer, preset: pallet-1000, params: {"product": "tapa de termo"} }
-  buf-10: { type: pallet-buffer, preset: pallet-1000, params: {"product": "cucharón"} }
-  buf-11: { type: pallet-buffer, preset: pallet-1000, params: {"product": "recipiente para alimentos 1 L"} }
-  buf-12: { type: pallet-buffer, preset: pallet-1000, params: {"product": "recipiente para alimentos 3 L"} }
-  buf-13: { type: pallet-buffer, preset: pallet-1000, params: {"product": "caja organizadora 6 L"} }
-  buf-14: { type: pallet-buffer, preset: pallet-1000, params: {"product": "tapa caja organizadora"} }
-  buf-15: { type: pallet-buffer, preset: pallet-1000, params: {"product": "balde 4 L"} }
-  buf-16: { type: pallet-buffer, preset: pallet-1000, params: {"product": "bandeja"} }
-  buf-17: { type: pallet-buffer, preset: pallet-1000, params: {"product": "cuerpo de termo"} }
-  buf-18: { type: pallet-buffer, preset: pallet-1000, params: {"product": "señal de prevención plegable"} }
-  buf-19: { type: pallet-buffer, preset: pallet-1000, params: {"product": "cuerpo papelera 20 L"} }
-  buf-20: { type: pallet-buffer, preset: pallet-1000, params: {"product": "caja organizadora 40 L"} }
-  buf-21: { type: pallet-buffer, preset: pallet-1000, params: {"product": "balde 12 L"} }
-  buf-22: { type: pallet-buffer, preset: pallet-1000, params: {"product": "balde 20 L"} }
-  buf-23: { type: pallet-buffer, preset: pallet-1000, params: {"product": "tapa de nevera"} }
-  buf-24: { type: pallet-buffer, preset: pallet-1000, params: {"product": "bandeja industrial"} }
-  buf-25: { type: pallet-buffer, preset: pallet-1000, params: {"product": "canasta industrial apilable"} }
-  buf-26: { type: pallet-buffer, preset: pallet-1000, params: {"product": "caneca 50 L"} }
-  buf-27: { type: pallet-buffer, preset: pallet-1000, params: {"product": "cuerpo de nevera portátil"} }
-  buf-28: { type: pallet-buffer, preset: pallet-1000, params: {"product": "caneca 121 L"} }
-  buf-29: { type: pallet-buffer, preset: pallet-1000, params: {"product": "tapa caneca 121 L y estiba liviana"} }
-  rack-sf-01: { type: pallet-store, preset: semielaborado-48, params: {"initial_pallets": 6, "content": "pedal y palanca de papelera"} }
-  rack-sf-02: { type: pallet-store, preset: semielaborado-48, params: {"initial_pallets": 6, "content": "cuerpos de papelera"} }
-  rack-sf-03: { type: pallet-store, preset: semielaborado-48, params: {"initial_pallets": 6, "content": "bisagras"} }
-  rack-sf-04: { type: pallet-store, preset: semielaborado-48, params: {"initial_pallets": 6, "content": "tapas de caja organizadora"} }
-  fleet-01: { type: forklift-fleet, preset: plant-6 }
+  buf-01: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 48000, "product": "cubiertos"} }
+  buf-02: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 48000, "product": "cubiertos"} }
+  buf-04: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 18000, "product": "tapa recipiente 1 L"} }
+  buf-05: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 5760, "product": "vajilla infantil (plato)"} }
+  buf-06: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 7200, "product": "pedal y palanca de papelera"} }
+  buf-07: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 14400, "product": "vaso"} }
+  buf-08: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 72000, "product": "bisagras y piezas pequeñas"} }
+  buf-09: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 9600, "product": "tapa de termo"} }
+  buf-10: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 4110, "product": "cucharón"} }
+  buf-11: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 3200, "product": "recipiente para alimentos 1 L"} }
+  buf-12: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 1300, "product": "recipiente para alimentos 3 L"} }
+  buf-13: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 720, "product": "caja organizadora 6 L"} }
+  buf-14: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 2050, "product": "tapa caja organizadora"} }
+  buf-15: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 1440, "product": "balde 4 L"} }
+  buf-16: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 1600, "product": "bandeja"} }
+  buf-17: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 960, "product": "cuerpo de termo"} }
+  buf-18: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 960, "product": "señal de prevención plegable"} }
+  buf-19: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 240, "product": "cuerpo papelera 20 L"} }
+  buf-20: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 100, "product": "caja organizadora 40 L"} }
+  buf-21: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 410, "product": "balde 12 L"} }
+  buf-22: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 260, "product": "balde 20 L"} }
+  buf-23: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 360, "product": "tapa de nevera"} }
+  buf-24: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 280, "product": "bandeja industrial"} }
+  buf-25: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 160, "product": "canasta industrial apilable"} }
+  buf-26: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 100, "product": "caneca 50 L"} }
+  buf-27: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 40, "product": "cuerpo de nevera portátil"} }
+  buf-28: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 30, "product": "caneca 121 L"} }
+  buf-29: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 50, "product": "tapa caneca 121 L y estiba liviana"} }
+  rack-sf-01: { type: pallet-store, preset: semielaborado-48, params: {"pallet_pieces": 7200, "initial_pallets": 6, "content": "pedal y palanca de papelera"} }
+  rack-sf-02: { type: pallet-store, preset: semielaborado-48, params: {"pallet_pieces": 240, "initial_pallets": 6, "content": "cuerpos de papelera"} }
+  rack-sf-03: { type: pallet-store, preset: semielaborado-48, params: {"pallet_pieces": 72000, "initial_pallets": 6, "content": "bisagras"} }
+  rack-sf-04: { type: pallet-store, preset: semielaborado-48, params: {"pallet_pieces": 2050, "initial_pallets": 6, "content": "tapas de caja organizadora"} }
+  fleet-01: { type: forklift-fleet, preset: plant-6, params: {"route_1_pallet_pieces": 7200, "route_5_pallet_pieces": -1, "route_2_pallet_pieces": 240, "route_3_pallet_pieces": 72000, "route_4_pallet_pieces": 2050, "route_6_pallet_pieces": 7200, "route_7_pallet_pieces": 240, "route_8_pallet_pieces": 72000, "route_9_pallet_pieces": 2050} }
   silo-05: { type: vessel, preset: resin-silo-40t, params: {"volume_l": 54545, "content": "pellet de PP reciclado", "initial_level_pct": 20} }
 
 links:
@@ -298,10 +298,12 @@ scenarios:
       - { path: equipment.assembly-01.variables.units_assembled, min: 96, max: 98, description: "(las estibas de pedal/palanca y de cuerpos salen de las estanterías en t = 1 s, las carga el montacargas (45 s), salen por el corredor con 30 s de separación y llegan a los 148 y 169 s; con 5 s más para la primera pieza el operario arranca a los ≈ 174 s: (3.600 − 174) ÷ 35 = 97,9, o sea 97 unidades; la 98.ª terminaría a los 3.604 s)" }
       - { path: equipment.assembly-01.state_share.starved, min: 0.04, max: 0.06, description: "(espera la primera pieza de cada cubeta ≈ 174 s de 3.600 s = 0,048)" }
       - { path: equipment.pack-station-03.variables.units_packed, min: 95, max: 97, description: "(todo lo que arma la celda 1 llega a la mesa de empaque 3, con un paso de retraso)" }
-      - { path: equipment.imm-06.state_share.blocked, equals: 0.0, description: "(el buffer de 1.000 piezas absorbe las 288 u/h de la imm-06: ya no se bloquea porque la celda use solo 103 u/h)" }
-      - { path: equipment.buf-06.variables.loose_pieces, min: 276, max: 288, description: "(144 ciclos × 2 piezas = 288, menos ≈ 1 % de rechazo; todavía no completa la estiba de 1.000)" }
-      - { path: equipment.buf-01.variables.pallets_delivered, equals: 6, description: "(la imm-01 saca 16 cavidades ÷ 9 s = 6.400 u/h, ≈ 6.300 buenas: 6 estibas de 1.000; la 6.ª sale a los ≈ 3.500 s, con 120 s de cierre)" }
-      - { path: equipment.fleet-01.variables.trips_completed, min: 19, max: 23, description: "(8 viajes de las estanterías a las celdas y 15 estibas que salen de los buffers: 6 + 6 de las imm-01 e imm-02, 1 de la imm-07, 1 de la imm-04, 1 de la imm-08; las que van en camino a los 3.600 s no cuentan)" }
+      - { path: equipment.imm-06.state_share.blocked, equals: 0.0, description: "(el buffer de 7.200 piezas absorbe las 288 u/h de la imm-06: ya no se bloquea porque la celda use solo 103 u/h)" }
+      - { path: equipment.buf-06.variables.loose_pieces, min: 276, max: 288, description: "(144 ciclos × 2 piezas = 288, menos ≈ 1 % de rechazo; todavía no completa la estiba de 7.200)" }
+      - { path: equipment.buf-27.variables.pallets_delivered, equals: 1, description: "(la estiba de cuerpos de nevera portátil es de 40 piezas de 1,8 kg: 40 ciclos de 55 s = 2.200 s, con 120 s de cierre sale a los ≈ 2.320 s)" }
+      - { path: equipment.buf-28.variables.pallets_delivered, equals: 1, description: "(la estiba de caneca de 121 L es de 30 piezas de 7 kg: 31 ciclos de 95 s con el rechazo ≈ 2.950 s, con 120 s de cierre sale a los ≈ 3.070 s)" }
+      - { path: equipment.buf-01.variables.pallets_delivered, equals: 0, description: "(la estiba de cubiertos es de 48.000 piezas: la imm-01 junta ≈ 6.300 por hora, la primera estiba tarda ≈ 7,6 h)" }
+      - { path: equipment.fleet-01.variables.trips_completed, min: 10, max: 10, description: "(8 viajes de las estanterías a las celdas, 2 por ruta, y las 2 estibas de buffer de las imm-27 e imm-28, que ya descargaron a los ≈ 2.450 y ≈ 3.210 s)" }
       - { path: equipment.fleet-01.variables.vehicles_busy, max: 6 }
       - { path: equipment.assembly-02.variables.units_assembled, min: 166, max: 168, description: "(las estibas de bisagras y tapas salen en t = 1 s y despachan a los 107 y 137 s por la separación de 30 s; llegan a los 203 y 242 s, la primera tapa 5 s después: (3.600 − 247) ÷ 20 = 167,7, o sea 167 unidades)" }
       - { path: equipment.extruder-pel-01.variables.processed_kg, min: 94, max: 102, description: "(todo el molido que entrega el molino llega a la línea de peletizado, que procesa 350 kg/h: ≈ 99 kg de los 100,6 kg/h que trituró, menos lo que el paso de retraso del motor aún no pasó)" }
@@ -340,7 +342,7 @@ scenarios:
       - { path: equipment.dryer-03.variables.resin_dry, equals: 1 }
 
   - id: body-stop
-    description: "La imm-19 (cuerpo de papelera) se apaga a los 30 min: su buffer deja de llenarse, pero la celda de ensamble 1 sigue con el inventario de la estantería y de la estiba en la línea (6 estibas de 1.000 cuerpos, 9,7 h de producción)"
+    description: "La imm-19 (cuerpo de papelera) se apaga a los 30 min: su buffer deja de llenarse, pero la celda de ensamble 1 sigue con el inventario de la estantería y de la estiba en la línea (6 estibas de 240 cuerpos, ≈ 15 h de la celda 1)"
     duration_s: 3600
     timeline:
       - { at_s: 1800, equipment: imm-19, command: stop }
@@ -353,23 +355,24 @@ scenarios:
       - { path: equipment.assembly-02.variables.units_assembled, min: 166, max: 168, description: "(la celda 2 no se entera)" }
 
   - id: fleet-short
-    description: "La flota se reduce a 1 montacargas desde el inicio: sirve las estibas de las celdas y las de los buffers una por vez (ciclo de ≈ 177 s, ≤ 20 viajes por hora), las estibas esperan en cola y las celdas arrancan tarde"
+    description: "La flota se reduce a 1 montacargas desde el inicio: las 8 estibas con que arrancan las celdas se sirven una por vez (ciclo de ≈ 177 s), esperan en cola y las celdas arrancan tarde"
     duration_s: 3600
     timeline:
       - { at_s: 0, equipment: fleet-01, command: set_param, args: { name: vehicles, value: 1 } }
     expect:
-      - { path: equipment.fleet-01.variables.trips_completed, min: 14, max: 20, description: "(un montacargas hace como máximo 3.600 ÷ 177 = 20 viajes; con la carga y el regreso más largos de las rutas 8 y 9 hace ≈ 17)" }
-      - { path: equipment.fleet-01.variables.pallets_queued, min: 1, description: "(los buffers pidieron más viajes de los que el montacargas alcanza a hacer)" }
+      - { path: equipment.fleet-01.variables.trips_completed, min: 10, max: 10, description: "(un montacargas hace los 8 viajes de las celdas en ≈ 1.520 s y las 2 estibas de buffer, de las imm-27 e imm-28, a los ≈ 2.450 y ≈ 3.210 s)" }
+      - { path: equipment.fleet-01.variables.pallets_queued, equals: 0, description: "(a la hora ya no queda nadie en cola: con estibas por producto el pedido de viajes es bajo y un montacargas alcanza)" }
       - { path: events.fleet-01.fleet_saturated, min: 1 }
       - { path: equipment.assembly-02.variables.units_assembled, min: 130, max: 150, description: "(sirve primero lo que pidió primero: cuerpos, pedal, bisagras y tapas; la tapa llega a los ≈ 730 s y arranca: (3.600 − 735) ÷ 20 = 143)" }
 
   - id: pallet-chain
-    description: "Cuatro horas: la imm-06 junta 1.000 piezas de pedal/palanca a las ≈ 3,5 h, el buffer cierra la estiba (120 s), un montacargas la lleva a la estantería 1 y esta recibe sus 1.000 piezas"
+    description: "Cuatro horas: la imm-19 junta 240 cuerpos de papelera (la estiba de ese producto), el buffer cierra la estiba (120 s), un montacargas la lleva a la estantería 2 y esta recibe sus 240 piezas"
     duration_s: 14400
     expect:
-      - { path: equipment.buf-06.variables.pallets_delivered, equals: 1, description: "(288 u/h × 0,99 de rechazo ≈ 285 u/h: 1.000 piezas a las ≈ 3,5 h = 12.600 s; sale a los ≈ 12.720 s)" }
-      - { path: equipment.rack-sf-01.variables.units_received, equals: 1000, description: "(la estiba llega a los ≈ 12.720 + 45 + 43,5 + 45 = 12.855 s)" }
-      - { path: equipment.rack-sf-01.variables.stored_pallets, equals: 5, description: "(6 de inventario inicial, 2 pasaron a las celdas, +1 recibida)" }
+      - { path: equipment.buf-19.variables.pallets_delivered, equals: 1, description: "(1 cuerpo cada 35 s × 0,99 de rechazo: 240 piezas a los ≈ 8.470 s; sale a los ≈ 8.590 s)" }
+      - { path: equipment.buf-06.variables.pallets_delivered, equals: 0, description: "(la estiba de pedal y palanca es de 7.200 piezas: a 285 u/h tardaría ≈ 25 h)" }
+      - { path: equipment.rack-sf-02.variables.units_received, equals: 240, description: "(la estiba llega a los ≈ 8.590 + 45 + 47 + 45 = 8.727 s)" }
+      - { path: equipment.rack-sf-02.variables.stored_pallets, equals: 4, description: "(6 de inventario inicial, 3 pasaron a la celda: 2 al arrancar y una a los ≈ 6.440 s cuando se gastaron, +1 recibida)" }
       - { path: equipment.imm-06.state_share.blocked, equals: 0.0 }
 
   - id: chiller-trip

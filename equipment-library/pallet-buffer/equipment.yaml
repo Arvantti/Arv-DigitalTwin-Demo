@@ -12,7 +12,7 @@ aliases: [buffer de máquina, estiba de máquina, pallet buffer, buffer de estib
 fidelity: { visual: V2, behavior: B2 }
 
 params:
-  pallet_pieces:       { type: integer, min: 1, max: 5000, default: 1000, description: Piezas que forman una estiba (el X del buffer), affects: [behavior, geometry] }
+  pallet_pieces:       { type: integer, min: 1, max: 100000, default: 1000, description: Piezas que forman una estiba (el X del buffer), affects: [behavior, geometry] }
   max_waiting_pallets: { type: integer, min: 1, max: 6, default: 2, description: Estibas llenas que pueden esperar recogida antes de bloquear la máquina, affects: [behavior, geometry] }
   pickup_wait_s:       { type: number, unit: s, min: 0, max: 1800, default: 120, description: Tiempo desde que la estiba se llena (cierre y etiquetado) hasta que queda lista para recogida, affects: [behavior] }
   nominal_inflow_upm:  { type: number, unit: u/min, min: 0, max: 5000, default: 0, description: Llegada de piezas si el entorno no la fija, affects: [behavior] }
