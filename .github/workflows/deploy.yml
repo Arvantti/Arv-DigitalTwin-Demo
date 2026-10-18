@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  PAGES_PROJECT: gemelos-arvantti
+  PAGES_PROJECT: digitaltwin-arvantti
 
 jobs:
   pages:

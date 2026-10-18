@@ -34,3 +34,11 @@ Bueno, yo llamaría más bien esto digitaltwin.arvantti.online.
 ### 👤 Carlos Andrés Quiceño · 2026-10-18 01:23:06 UTC
 
 Es con doble T. (Respuesta a la duda sobre si el dominio es `arvanti.online` o `arvantti.online`.)
+
+### 👤 Carlos Andrés Quiceño · 2026-10-18 02:04:04 UTC
+
+Este sería el primer ensayo para hacer CICD automático. Y después, cuando ya aprenda bien a hacerlo acá, lo hacemos con otros proyectos. Pero en este, concentrémonos en este proyecto de gemelos digitales, de Digital Twin. Su dominio es Digital Twin, no, no gemelos.
+
+### 🤖 Claude · 2026-10-18 02:05 UTC
+
+Renombra el proyecto de Pages a `digitaltwin-arvantti` para que coincida con el dominio `digitaltwin.arvantti.online`. También resume las respuestas de la sesión: token de Pages con permiso de edición y caducidad de 90 días, secretos de organización compartidos solo con los repos que desplieguen, nombre de proyecto único por repo, y Wrangler a mano en otras ramas sin choque con el CI/CD (que solo corre en `main`).
