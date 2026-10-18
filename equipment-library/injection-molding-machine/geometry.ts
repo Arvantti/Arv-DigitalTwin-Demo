@@ -385,6 +385,42 @@ export default function build(params: Params): EquipmentModel {
     robotTop = beamY + armLen * 0.95 + 0.2 * scale;
   }
 
+  // canastilla al lado de la inyectora, donde el robot deposita las piezas (se llena y se vacía cuando pasa el carro)
+  const basketZ = -(robotType === "none" ? W * 0.85 : W * 0.85);
+  const basketX = xFixed - pt - moldD / 2 - stroke / 2;
+  const basketGroup = P.group("part_basket");
+  const stand = P.group("basket_stand");
+  const standH = 0.55;
+  for (const sx of [-1, 1]) {
+    for (const sz of [-1, 1]) {
+      const leg = P.box(0.04, standH, 0.04, M.paint("#59616a", 0.5), 0.005);
+      leg.position.set(sx * 0.27, standH / 2, sz * 0.17);
+      stand.add(leg);
+    }
+  }
+  const shelf = P.box(0.62, 0.03, 0.42, M.paint("#59616a", 0.5), 0.005);
+  shelf.position.y = standH;
+  stand.add(shelf);
+  basketGroup.add(stand);
+  const bk = P.basket("#2f6fb0");
+  bk.position.y = standH + 0.015;
+  basketGroup.add(bk);
+  const basketParts: THREE.Mesh[] = [];
+  const pieceMat = M.plastic(hashColor(product), 0.3);
+  const pieceW = 0.11;
+  for (let i = 0; i < 12; i++) {
+    const piece = P.box(pieceW, 0.04, pieceW * 0.9, pieceMat, 0.012);
+    piece.position.set(-0.17 + (i % 3) * 0.17, standH + 0.06 + Math.floor(i / 6) * 0.045, -0.07 + ((i >> 1) % 2) * 0.14);
+    piece.rotation.y = i * 0.9;
+    piece.visible = false;
+    basketGroup.add(piece);
+    basketParts.push(piece);
+  }
+  basketGroup.position.set(basketX, 0, basketZ);
+  root.add(basketGroup);
+  let deposited = 0;
+  let prevRp = 0;
+
   // ------------------------------------------------------------------ animación
   let screwAngle = 0;
   let hmiTimer = 0;
@@ -414,6 +450,12 @@ export default function build(params: Params): EquipmentModel {
       robot.arm.position.y = robot.up * (1 - drop);
       robot.carriage.position.z = z;
     }
+    // cada vez que el robot termina de depositar, la canastilla suma una pieza; llena, se vacía (la recoge el carro)
+    if (rp >= 0.98 && prevRp < 0.98 && prevRp > 0) {
+      deposited = (deposited + 1) % (basketParts.length + 1);
+      basketParts.forEach((m, i) => (m.visible = i < deposited));
+    }
+    prevRp = rp;
     // pieza: en el molde mientras inMold; en la pinza durante la extracción
     if (inMold > 0.5 && open > 0.05 && rp < 0.5) {
       part.visible = true;

@@ -10,6 +10,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
+| 2026-10-18 | Planta de plásticos | Molde que abre y cierra con ciclo ilustrativo sin API, canastilla con piezas junto a cada inyectora, carros de canastillas (ruta `cart`), montacargas con estibas de cajas y operarios más realistas; acciones de GitHub a Node 24 | 5 |
 | 2026-10-18 | Portal de plantas | Al entrar se elige la planta (manufactura discreta, procesos, gemelo de operación); cada una abre solo sus equipos y su escena; acento azul provisional (sin dorado), iluminación suavizada, columna derecha sin superposición | despliegue |
 | 2026-10-18 | Plantas en Cloudflare | Deploy a Pages funciona (run #2 en verde); las tres plantas se publican sin la API: el plano de cada planta se exporta a archivo estático al desplegar y la galería enlaza a las tres escenas | despliegue |
 | 2026-10-18 | Corrección del despliegue | Primer despliegue falló: `wrangler-action` intentó instalar wrangler con pnpm en la raíz del workspace; se despliega con `pnpm dlx wrangler@4` (sin la acción de wrangler) | despliegue |
@@ -49,6 +50,11 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 | 2026-10-16 | #1 | Layouts de las plantas | 1 |
 
 ## Entradas
+
+### 2026-10-18 04:11 · Planta de plásticos: molde, canastillas, carros, estibas y operarios
+- **Solicitado por:** el autor (04:11): las inyectoras deben abrir y cerrar el molde y sacar la pieza hacia una canastilla al lado; faltan carritos que la lleven; los montacargas deben mover estibas reales con producto; los humanos «están muy feos».
+- **Cambios:** ciclo ilustrativo de la inyectora cuando no hay simulación (`plant.ts`); canastilla con piezas en la geometría; ruta `cart` con carros de tres canastillas (validador y plano 2D); estiba europea con cajas, cinta y fleje; operario nuevo con rostro, casco, gafas, rodillas y variedad de tonos; `actions/checkout` y `actions/setup-node` v5 (aviso de Node 20, 04:21).
+- **Pendiente:** el aviso de Node 20 de `pnpm/action-setup@v4` queda hasta que haya una versión con Node 24.
 
 ### 2026-10-18 04:00 · Portal de selección de planta
 - **Solicitado por:** el autor (03:5x–04:00): ver al ingresar qué planta quiere (manufactura discreta, procesos o gemelo digital de operación) y que cada una muestre solo lo suyo; menús superpuestos; iluminación muy fuerte; el dorado no es la identidad de Arvantti; «recuerda lo de los acentos y los colores».

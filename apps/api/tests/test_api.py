@@ -99,7 +99,7 @@ def test_injection_plant_exposes_its_simulated_machines_and_conveyor() -> None:
 def test_injection_plant_exposes_aisles_and_routes() -> None:
     plant = client.get("/api/plants/plastic-injection-plant-v1").json()
     routes = {r["id"]: r for r in plant["routes"]}
-    assert {r["kind"] for r in routes.values()} == {"forklift", "pedestrian"}
+    assert {r["kind"] for r in routes.values()} == {"forklift", "pedestrian", "cart"}
     assert routes["fk-sf-ensamble-1"]["to"] == "assembly-01"
     assert routes["fk-ensamble-pt-1"]["from"] == "assembly-01"
     assert all(len(r["path"]) >= 2 for r in routes.values())

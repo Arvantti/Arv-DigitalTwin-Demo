@@ -100,7 +100,7 @@ El validador exige: eje de 2 o más puntos, ancho y elevación positivos, todos 
 
 ## Pasillos y rutas en el `plant.yaml`
 
-Secciones opcionales `aisles` (pasillos) y `routes` (rutas de montacargas y de operarios). El validador las comprueba y el plano 2D las dibuja (naranja continua los montacargas, verde punteada los operarios). La escena pinta los pasillos de montacargas como franjas amarillas tenues en el piso y cada ruta como una cinta; sobre cada una circula un montacargas (de ida cargado con una estiba, de vuelta vacío) o un operario que camina (`routes=0` en la URL las oculta). Es un recorrido ilustrativo: el motor de planta no simula todavía el transporte.
+Secciones opcionales `aisles` (pasillos) y `routes` (rutas de montacargas y de operarios). El validador las comprueba y el plano 2D las dibuja (naranja continua los montacargas, verde punteada los operarios). La escena pinta los pasillos de montacargas como franjas amarillas tenues en el piso y cada ruta como una cinta; sobre cada una circula un montacargas (de ida cargado con una estiba de cajas, de vuelta vacío), un carro de canastillas (`kind: cart`, azul punteada en el plano 2D) o un operario que camina (`routes=0` en la URL las oculta). Es un recorrido ilustrativo: el motor de planta no simula todavía el transporte.
 
 ```yaml
 aisles:
@@ -125,3 +125,5 @@ El validador exige: `kind` `forklift` o `pedestrian`, 2 o más puntos dentro del
 - Selección desde la lista de activos y recorridos definidos por la planta (hoy se derivan de las zonas).
 - Muros con aberturas, escaleras de acceso con geometría de escalón y pasarelas de la planta de inyección (el plano no las describe).
 - De la planta de inyección siguen como volúmenes los equipos sin tipo en la librería (silos, mezcladores, estaciones de ensamble, compresores, torre de enfriamiento y otros); el empaque, los secadores, los chillers y el molino de reciclaje ya tienen geometría propia.
+
+**Ciclo ilustrativo de las inyectoras.** Sin simulación conectada (p. ej. la versión publicada sin la API) cada inyectora repite sus fases (cierre, inyección, enfriamiento, apertura, expulsión) y el robot deposita la pieza en la canastilla de su costado; con la API conectada manda el simulador.

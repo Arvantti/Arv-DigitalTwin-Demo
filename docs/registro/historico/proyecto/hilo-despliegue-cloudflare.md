@@ -90,3 +90,23 @@ Portal de selección de planta con librería filtrada por planta (D34).
 ### 🤖 Claude · 2026-10-18 04:2x UTC
 
 Renombro las tarjetas y aplico el manual de marca (D34, ampliación).
+
+### 👤 Carlos Andrés Quiceño · 2026-10-18 04:11:57 UTC
+
+Las inyectoras deberían tener el movimiento de apertura y cierre del molde, que salga la pieza y se ponga en una estantería o canastilla al lado de la inyectora. Hacen falta carritos que lleven eso hacia cierto lugar, inventémonos algo. Las montacargas mueven cajas o estibas reales con producto. Los humanos están muy feos; hay que ponerlos más realistas.
+
+### 👤 Carlos Andrés Quiceño · 2026-10-18 04:21:17 UTC
+
+(Pega el aviso de GitHub: Node.js 20 está obsoleto en actions/checkout@v4, actions/setup-node@v4 y pnpm/action-setup@v4.)
+
+### 👤 Carlos Andrés Quiceño · 2026-10-18 04:23:20 UTC
+
+En la planta de salsas hay muchos equipos que son cubos 3D, ¿qué necesitamos para refinar su detalle?
+
+### 🤖 Claude · 2026-10-18 04:2x UTC
+
+47 de 77 equipos de la planta de salsas son cubos; propongo estándar de catálogo por lotes, empezando por proceso y empaque.
+
+### 👤 Carlos Andrés Quiceño · 2026-10-18 04:26:56 UTC
+
+Puedes buscar en internet y ser libre de los detalles.
