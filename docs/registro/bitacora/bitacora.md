@@ -10,7 +10,8 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
-| 2026-10-18 | Secuencia del acueducto | Acueducto: cada tubo empieza y termina en la boquilla o brida real (tanques, bombas, estación, válvulas entre niveles, rejilla, bajantes); panel LÍNEAS con dos líneas en m³; parámetro de cámara `look`. D41 | acueducto |
+| 2026-10-18 | Secuencia del acueducto | Acueducto: cada tubo empieza y termina en la boquilla o brida real (tanques, bombas, estación, válvulas entre niveles, rejilla, bajantes); panel LÍNEAS con dos líneas en m³; parámetro de cámara `look`. D42 | acueducto |
+| 2026-10-18 | Tuberías sin cruces | Planta de salsas: los tubos a nivel de rack buscan un nivel y un recorrido que no atraviesen equipos ni cajas de estantería ni se crucen entre sí (suben por encima, o se desplazan); documento del flujo de salsas conectado vs faltante. D41 | 5 |
 | 2026-10-18 | Flujo de montacargas y ensamble | Planta de plásticos: almacén de semielaborado separado del de terminado (al norte de la nave, cajas azules), montacargas sin cruzar la banda y con carriles de ida y regreso, línea de ensamble visible (cámara propia) y piezas nuevas en secundarias. D40 | 5 |
 | 2026-10-18 | Pantalla de carga | La escena de planta (las tres plantas) muestra una barra de carga con etapas reales (conexión, plano, zonas, equipos, pasarelas, tuberías, luces, render) para que la espera inicial no parezca un error. D39 | 5 |
 | 2026-10-18 | Tuberías ancladas | Las tuberías sin ruta terminaban en el aire sobre el centro de la huella del equipo; ahora se anclan a su superficie real (rayo vertical contra la geometría) y llevan brida en cada extremo. Inspección visual de las tres plantas en `/mnt/project-files/inspeccion/`. D38 | 5 |
@@ -63,8 +64,17 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 - **Solicitado por:** Carlos Andrés Quiceño: «lanza otro hilo para seguir la secuencia de la planta de acueducto, mira que hay cosas sueltas» (con captura de válvulas entre niveles, extremo de la estación reguladora y tubos sobre los tanques).
 - **Qué se hizo:** rutas de `water-network-scale-v1/plant.yaml` reescritas con las conexiones reales de cada modelo 3D (tabla en `docs/water-network-plant.md` sección 11); válvulas entre niveles en desvío de la columna (entran por la brida oeste y salen por la este) y 0,2 m más bajas; bajantes con ruta propia hasta la boquilla de cada tanque; recirculación hasta la boquilla del tanque de bombeo; panel LÍNEAS con «Red de distribución» y «Recirculación» (contador `volume_m3` por el puerto de descarga de `booster-pump-set`, `unit` opcional en las líneas); parámetro de URL `look` para capturas. Informe de qué está conectado y qué es ilustrativo: [[flujo-planta-acueducto]].
 - **Verificación:** `twin-lib validate` y `twin-lib plant validate` (6 escenarios del acueducto dentro de tolerancia), `pytest` 84 pruebas en verde más una prueba nueva de continuidad de la secuencia, capturas de la galería (`evidencia/acueducto-columna-conectada.png`, `acueducto-secuencia-y-lineas.png`, `acueducto-rejilla-costado-este.png`, `acueducto-tapas-tanques-recirculacion.png`); segunda captura del autor (15:10): patas de la rejilla alineadas con su bastidor y bajantes desde la canaleta real.
-- **Decisiones:** [[decisiones]] D41
+- **Decisiones:** [[decisiones]] D42
 - **Conversación:** [[hilo-secuencia-acueducto]]
+### 2026-10-18 14:36 · Tuberías de salsas sin cruces y flujo del proceso
+- **Fecha/hora (UTC):** 2026-10-18 14:36–15:10
+- **Fase del plan:** [[plan-del-proyecto]] fase 5
+- **Solicitado por:** Carlos Andrés Quiceño: «corregir estos detalles en la planta de salsas, tuberías que se cruzan con las cajas, y en ese hilo dime el proceso que está conectado y qué falta, como con la planta de plásticos».
+- **Qué se hizo:** en `apps/gallery/src/plant.ts` los tubos sin `route` ya no usan un nivel fijo por turno: para cada uno se prueban niveles (los de siempre, luego más bajos, luego más altos) y dos órdenes de tramos, y se descarta todo trazado que atraviese la caja de otro equipo (incluidas las estanterías con sus cajas) o quede a menos de un diámetro más 12 cm de otro tubo; si la columna de subida cae bajo otro tubo, se desplaza en horizontal. Los que no encuentran sitio pasan al frente de la cola y los demás se acomodan. Se documentó el flujo en `/mnt/project-files/inspeccion/flujo-planta-salsas.md`.
+- **Verificación:** capturas de la galería local (vista general y de cerca de la bodega de empaque, CIP y marmita); la consola no reporta tuberías sin trazado libre en las tres plantas de prueba de salsas; `pnpm -r typecheck`.
+- **Decisiones:** [[decisiones]] D42
+- **Evidencia:** `docs/registro/evidencia/salsas-tuberias-sobre-estanteria.png`, `salsas-tuberias-sin-cruces-general.png`
+- **Conversación:** [[hilo-tuberias-sin-cruces]]
 
 ### 2026-10-18 14:17 · Montacargas con carriles, almacenes separados y línea de ensamble visible
 - **Fecha/hora (UTC):** 2026-10-18 14:17–14:50
