@@ -10,6 +10,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
+| 2026-10-18 | Tuberías ancladas | Las tuberías sin ruta terminaban en el aire sobre el centro de la huella del equipo; ahora se anclan a su superficie real (rayo vertical contra la geometría) y llevan brida en cada extremo. Inspección visual de las tres plantas en `/mnt/project-files/inspeccion/`. D38 | 5 |
 | 2026-10-18 | Vista móvil | Orbitron solo en títulos (Inter en el resto) y en pantallas de hasta 700 px los paneles de la escena se ven de a uno desde una barra inferior (Menú, Activo, Eventos); el panel del acueducto también usa Inter en cifras y pestañas. D37 | 4 |
 | 2026-10-18 | Salsas sin cubos | 29 tipos de equipo de proceso, empaque y servicios de la planta de salsas con forma propia (tanques, bombas, molinos, emulsificador al vacío, CIP, caldera, enfriador…); las llenadoras y la pesadora sin simular usan su forma de la librería | 5 |
 | 2026-10-18 | Planta de plásticos | Molde que abre y cierra con ciclo ilustrativo sin API, canastilla con piezas junto a cada inyectora, carros de canastillas (ruta `cart`), montacargas con estibas de cajas y operarios más realistas; acciones de GitHub a Node 24 | 5 |
@@ -52,6 +53,15 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 | 2026-10-16 | #1 | Layouts de las plantas | 1 |
 
 ## Entradas
+
+### 2026-10-18 13:14 · Inspección visual y tuberías desconectadas
+- **Fecha/hora (UTC):** 2026-10-18 13:14–14:10
+- **Solicitado por:** Carlos Andrés Quiceño (13:13): «¿quieres hacer una inspección visual en cada uno de los modelos?»; (13:15) «veo líneas desconectadas»; (13:48) «si arregla también voy a tomar unas capturas».
+- **Qué se hizo:** 32 capturas (escritorio 1440×900 y móvil 390×844) de las tres plantas, el panel PLC, el portal y la librería; informe de hallazgos. Causa de las líneas sueltas: `plant.ts` llevaba los tubos sin `route` al centro de la tapa nominal de cada equipo. Ahora `attachPoint` lanza un rayo vertical contra la geometría real (centro y puntos desplazados hacia el otro extremo), la bajante nace en la pared lateral del equipo de arriba y cada extremo lleva una brida.
+- **Verificación:** `pnpm -r typecheck`; capturas antes y después de llenado, caldera y proceso en caliente de salsas, inyección general y piso 1 del acueducto.
+- **Pendiente (no incluido):** panel «LÍNEAS» vacío en el acueducto, pestañas cortadas del panel PLC en móvil, y puertos de conexión por tipo de equipo (arreglo de fondo).
+- **Decisiones:** [[decisiones]] D38.
+- **Conversación:** [[hilo-inspeccion-visual]].
 
 ### 2026-10-18 12:00 · Tipografía solo en títulos y vista móvil
 - **Fecha/hora (UTC):** 2026-10-18 12:00–12:40

@@ -400,16 +400,47 @@ function assetTop(id: string): THREE.Vector3 | null {
   return toScene(a.eq.position[0], a.eq.position[1], a.eq.position[2] + height);
 }
 
+const downRay = new THREE.Raycaster();
+/**
+ * Punto de conexión de una tubería sin ruta: un rayo vertical contra la geometría real del equipo, probando el centro
+ * y puntos de su caja desplazados hacia el otro extremo (para que el tubo llegue por el lado de donde viene). Así el
+ * tubo toca el equipo en vez de terminar en el aire sobre el centro de su huella. Sin impacto, cae en la tapa nominal.
+ */
+function attachPoint(id: string, toward: THREE.Vector3): THREE.Vector3 | null {
+  const a = assets.get(id);
+  const nominal = assetTop(id);
+  if (!a || !nominal) return nominal;
+  a.root.updateMatrixWorld(true);
+  const box = new THREE.Box3().setFromObject(a.root);
+  const c = box.getCenter(new THREE.Vector3());
+  const half = box.getSize(new THREE.Vector3()).multiplyScalar(0.5);
+  const dir = new THREE.Vector3(toward.x - c.x, 0, toward.z - c.z);
+  if (dir.lengthSq() > 1e-6) dir.normalize();
+  const meshes: THREE.Object3D[] = [];
+  a.root.traverse((o) => {
+    if ((o as THREE.Mesh).isMesh) meshes.push(o);
+  });
+  for (const k of [0, 0.45, 0.25, -0.25, 0.7]) {
+    const x = c.x + dir.x * half.x * k;
+    const z = c.z + dir.z * half.z * k;
+    downRay.set(new THREE.Vector3(x, box.max.y + 1, z), new THREE.Vector3(0, -1, 0));
+    const hit = downRay.intersectObjects(meshes, false)[0];
+    if (hit) return new THREE.Vector3(x, hit.point.y, z);
+  }
+  return nominal;
+}
+
 /**
  * Bajante por gravedad: sale del costado del equipo de arriba, baja hasta poco más arriba del de abajo, cruza y
  * entra por su tapa. Varias bajantes del mismo equipo de destino se separan para no dibujarse encima.
  */
-function dropPoints(from: string, to: string, lane: number): THREE.Vector3[] | null {
+function dropPoints(from: string, top: THREE.Vector3, lane: number): THREE.Vector3[] | null {
   const a = assets.get(from);
-  const top = assetTop(to);
-  if (!a || !top) return null;
-  const [x, y, z] = a.eq.position;
-  const start = toScene(x - a.eq.footprint[0] / 2 + 0.15 + 0.2 * lane, y - a.eq.footprint[1] / 2 - 0.08, z + 0.1);
+  if (!a) return null;
+  // sale de la pared lateral (oeste) del equipo de arriba, a un tercio de su altura, para que nazca pegada al casco
+  a.root.updateMatrixWorld(true);
+  const box = new THREE.Box3().setFromObject(a.root);
+  const start = new THREE.Vector3(box.min.x - 0.02 - 0.2 * lane, box.min.y + (box.max.y - box.min.y) / 3, (box.min.z + box.max.z) / 2);
   const level = top.y + 0.3 + 0.12 * lane;
   const over = new THREE.Vector3(top.x - 0.25 + 0.2 * lane, level, top.z);
   return [start, new THREE.Vector3(start.x, level, start.z), new THREE.Vector3(over.x, level, start.z), over, new THREE.Vector3(over.x, top.y, over.z)];
@@ -426,16 +457,19 @@ function buildPipes(): void {
   const site = doc.plant.site?.width_x ?? 112;
   const spacing = Math.min(4, Math.max(0.6, site / 30));
   for (const [i, pipe] of (doc.pipes ?? []).entries()) {
-    const a = assetTop(pipe.from);
-    const b = assetTop(pipe.to);
-    if (!a || !b || a.distanceTo(b) < 0.5) continue;
+    const nominalA = assetTop(pipe.from);
+    const nominalB = assetTop(pipe.to);
+    if (!nominalA || !nominalB || nominalA.distanceTo(nominalB) < 0.5) continue;
+    // con `route` el plano ya trae los extremos; sin ella el tubo se ancla a la superficie real de cada equipo
+    const a = pipe.route?.length ? nominalA : (attachPoint(pipe.from, nominalB) ?? nominalA);
+    const b = pipe.route?.length ? nominalB : (attachPoint(pipe.to, nominalA) ?? nominalB);
     const src = assets.get(pipe.from)!.eq.position[2];
     let raw: THREE.Vector3[] | null;
     if (pipe.route?.length) raw = pipe.route.map(([x, y, z]) => toScene(x, y, z));
     else if (src > b.y + 0.3) {
       const lane = drops.get(pipe.to) ?? 0;
       drops.set(pipe.to, lane + 1);
-      raw = dropPoints(pipe.from, pipe.to, lane);
+      raw = dropPoints(pipe.from, b, lane);
     } else {
       const key = `${Math.round(a.x)},${Math.round(a.z)}`;
       const lane = lanes.get(key) ?? 0;
@@ -458,6 +492,16 @@ function buildPipes(): void {
     const mesh = parts.pipe(points, radius, material, Math.min(0.4, radius * 3));
     mesh.name = `pipe-${pipe.from}-${pipe.to}`;
     stage.content.add(mesh);
+    if (!pipe.route?.length) {
+      // brida en cada extremo: se lee como una conexión al equipo y no como un tubo cortado
+      for (const [end, next] of [[points[0], points[1]], [points[points.length - 1], points[points.length - 2]]] as const) {
+        const flange = new THREE.Mesh(new THREE.CylinderGeometry(radius * 1.7, radius * 1.7, radius * 1.1, 16), material);
+        flange.position.copy(end);
+        flange.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), next.clone().sub(end).normalize());
+        flange.castShadow = true;
+        stage.content.add(flange);
+      }
+    }
     const cumulative = [0];
     for (let k = 1; k < points.length; k++) cumulative.push(cumulative[k - 1] + points[k].distanceTo(points[k - 1]));
     const beadMat = new THREE.MeshStandardMaterial({ color: "#000000", emissive: "#4de0ff", emissiveIntensity: 2.5 });
