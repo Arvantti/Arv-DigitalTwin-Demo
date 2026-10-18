@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Equipos · Gemelo digital</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&family=Orbitron:wght@500;600;700&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <canvas id="scene"></canvas>
+    <header class="topbar glass">
+      <div class="brand"><span class="logo">◆</span> TWIN<span class="dim">/</span>LIBRARY</div>
+      <div class="title"><span id="eq-name">—</span><span class="dim" id="eq-meta"></span></div>
+      <div class="lighting" id="lighting"></div>
+      <div class="clock" id="clock">SIM · DESCONECTADA</div>
+    </header>
+    <aside class="sidebar glass" id="sidebar">
+      <a class="nav-link" href="/">◀ INICIO</a>
+      <a class="nav-link" id="link-plant" href="/plant.html" hidden>▦ VER LA PLANTA EN 3D</a>
+      <h3 id="lib-title">LIBRERÍA</h3>
+      <ul id="types"></ul>
+      <h3>ESCENARIO</h3>
+      <select id="scenario"></select>
+      <div class="sim-controls">
+        <button id="btn-connect" class="primary">▶ SIMULAR</button>
+        <button id="btn-pause">❚❚</button>
+      </div>
+      <label class="speed">Velocidad <span id="speed-val">×1</span>
+        <input id="speed" type="range" min="0" max="4" step="0.01" value="0" />
+      </label>
+      <h3>COMANDOS</h3>
+      <div id="commands" class="commands"></div>
+    </aside>
+    <div class="right-col" id="right-col">
+    <section class="hud glass" id="hud">
+      <div class="hud-head">
+        <div><div class="label">ESTADO</div><div id="state" class="state">—</div></div>
+        <div><div class="label">FASE</div><div id="phase" class="phase">—</div></div>
+      </div>
+      <div id="faults" class="faults"></div>
+      <div class="label">KPIs</div>
+      <div id="kpis" class="kpis"></div>
+      <div class="label">VARIABLES <span class="dim">· simulado</span></div>
+      <div id="vars" class="vars"></div>
+    </section>
+    <div id="gui-host"></div>
+    </div>
+    <section class="events glass" id="events-panel">
+      <div class="label">EVENTOS</div>
+      <ol id="events"></ol>
+    </section>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

@@ -66,3 +66,27 @@ Solo veo la galería de equipos pero no veo las 3 plantas.
 ### 🤖 Claude · 2026-10-18 03:55 UTC
 
 La escena de planta necesita la API, que no está publicada. Se exporta el plano de cada planta como archivo estático al desplegar y se agregan enlaces a las tres plantas en la galería. La simulación en vivo sigue pendiente de la API.
+
+### 👤 Carlos Andrés Quiceño · 2026-10-18 03:5x UTC
+
+Se superponen los menús, quisiera no usar tan fuerte la iluminación y los colores dorados no son de la identidad de Arvantti; revisa arvantti.tech y verás los colores.
+
+### 🤖 Claude · 2026-10-18 04:0x UTC
+
+La web no es accesible desde mi entorno; pido los códigos hex o una captura. Mientras, acento azul provisional.
+
+### 👤 Carlos Andrés Quiceño · 2026-10-18 04:00:32 UTC
+
+Quisiera que al ingresar uno pudiera seleccionar qué planta quiere ver: manufactura discreta, planta de procesos o gemelo digital de operación, y que según cada planta le muestre solamente lo de esa planta, porque hoy muestra toda la librería. Eso hay que separarlo. Y recuerda lo de los acentos y los colores.
+
+### 🤖 Claude · 2026-10-18 04:2x UTC
+
+Portal de selección de planta con librería filtrada por planta (D34).
+
+### 👤 Carlos Andrés Quiceño · 2026-10-18 04:10:26 UTC
+
+(Adjunta el manual de marca `Design_ArvanttiLabs.md`.) Los nombres serían esos. Manufactura discreta, planta de plásticos. Manufactura de procesos, planta de salsas. Operaciones, y en operaciones planta de acueducto.
+
+### 🤖 Claude · 2026-10-18 04:2x UTC
+
+Renombro las tarjetas y aplico el manual de marca (D34, ampliación).

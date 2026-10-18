@@ -10,6 +10,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
+| 2026-10-18 | Portal de plantas | Al entrar se elige la planta (manufactura discreta, procesos, gemelo de operación); cada una abre solo sus equipos y su escena; acento azul provisional (sin dorado), iluminación suavizada, columna derecha sin superposición | despliegue |
 | 2026-10-18 | Plantas en Cloudflare | Deploy a Pages funciona (run #2 en verde); las tres plantas se publican sin la API: el plano de cada planta se exporta a archivo estático al desplegar y la galería enlaza a las tres escenas | despliegue |
 | 2026-10-18 | Corrección del despliegue | Primer despliegue falló: `wrangler-action` intentó instalar wrangler con pnpm en la raíz del workspace; se despliega con `pnpm dlx wrangler@4` (sin la acción de wrangler) | despliegue |
 | 2026-10-18 | CI/CD Cloudflare | Despliegue continuo de la galería (equipos, escena de planta, panel del acueducto) en Cloudflare Pages con GitHub Actions; guía de token, secretos y subdominio `digitaltwin.arvantti.online`; la API queda fuera | despliegue |
@@ -48,6 +49,12 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 | 2026-10-16 | #1 | Layouts de las plantas | 1 |
 
 ## Entradas
+
+### 2026-10-18 04:00 · Portal de selección de planta
+- **Solicitado por:** el autor (03:5x–04:00): ver al ingresar qué planta quiere (manufactura discreta, procesos o gemelo digital de operación) y que cada una muestre solo lo suyo; menús superpuestos; iluminación muy fuerte; el dorado no es la identidad de Arvantti; «recuerda lo de los acentos y los colores».
+- **Cambios:** `index.html` es el portal; la librería pasó a `equipos.html?plant=ID` y filtra los tipos por los equipos de esa planta; HUD y panel de parámetros apilados en una columna derecha con desplazamiento; luces atenuadas en `stage.ts`; acento `#3fd0ff` provisional.
+- **04:10:** el autor envía el manual de marca y los nombres de las tarjetas (plásticos, salsas, acueducto); se aplican paleta, tipografías, esquinas rectas y fondo `#040421` (ver D34).
+- **Pendiente:** confirmar la tipografía (Orbit u Orbitron) y el ancho de pantalla donde se superponían los menús.
 
 ### 2026-10-18 03:42–03:55 · Las tres plantas en la galería publicada
 - **Fecha/hora (UTC):** 2026-10-18 03:42 a 03:55.

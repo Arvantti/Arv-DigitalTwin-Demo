@@ -10,6 +10,6 @@ export default defineConfig({
   preview: { port: 4173, proxy: { "/api": { target: "http://localhost:8000", ws: true } } },
   build: {
     chunkSizeWarningLimit: 2000,
-    rollupOptions: { input: { main: "index.html", plant: "plant.html", acueducto: "acueducto.html" } },
+    rollupOptions: { input: { index: "index.html", equipos: "equipos.html", plant: "plant.html", acueducto: "acueducto.html" } },
   },
 });

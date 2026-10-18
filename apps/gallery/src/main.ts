@@ -123,10 +123,11 @@ function selectType(type: string, preset: string | null = null, overrides: Recor
 }
 
 // ------------------------------------------------------------------ interfaz
-function buildTypeList(): void {
+function buildTypeList(allowed: Set<string> | null = null): void {
   const ul = $("types");
   ul.innerHTML = "";
   for (const type of Object.keys(geometryBuilders).sort()) {
+    if (allowed && !allowed.has(type)) continue;
     const spec = specs[type];
     const li = document.createElement("li");
     li.dataset.type = type;
@@ -153,7 +154,7 @@ function buildLighting(): void {
 
 function buildGui(): void {
   gui?.destroy();
-  gui = new GUI({ title: "Parámetros" });
+  gui = new GUI({ title: "Parámetros", container: $("gui-host") });
   const spec = specs[currentType];
   const presetIds = Object.keys(presets[currentType] ?? {});
   if (presetIds.length) {
@@ -324,7 +325,25 @@ function appendEvents(events: { t: number; type: string; [k: string]: unknown }[
 }
 
 // ------------------------------------------------------------------ arranque
-buildTypeList();
+/** Con `?plant=<id>` la librería muestra solo los equipos que usa esa planta (el plano trae el tipo de librería de cada activo). */
+async function plantTypes(plantId: string): Promise<Set<string> | null> {
+  try {
+    const res = await fetch(`/api/plants/${plantId}`);
+    if (!res.ok) return null;
+    const doc = (await res.json()) as { plant: { name: string }; equipment: { sim?: { type: string } }[] };
+    $("lib-title").textContent = `LIBRERÍA · ${doc.plant.name.toUpperCase()}`;
+    const link = $<HTMLAnchorElement>("link-plant");
+    link.href = `/plant.html?plant=${plantId}`;
+    link.hidden = false;
+    const types = new Set(doc.equipment.flatMap((e) => (e.sim ? [e.sim.type] : [])));
+    return types.size ? types : null;
+  } catch {
+    return null;
+  }
+}
+const plantFilter = url.get("plant") ? await plantTypes(url.get("plant")!) : null;
+if (plantFilter && !url.get("type") && !plantFilter.has(currentType)) currentType = [...plantFilter].sort()[0];
+buildTypeList(plantFilter);
 buildLighting();
 $("btn-connect").onclick = connect;
 $("btn-pause").onclick = () => {
