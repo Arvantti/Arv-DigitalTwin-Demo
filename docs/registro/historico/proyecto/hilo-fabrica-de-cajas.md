@@ -51,7 +51,7 @@ Resolvió dos conflictos del PR #46 con main (el número de la decisión, ahora 
 
 ### 🤖 Claude · 22:30 UTC
 
-Siguiente paso de D44 sin nueva pregunta, según la decisión del autor de las 17:14: cuatro tipos de librería sencillos (corrugadora, carro de transferencia, convertidora de cajas, paletizador) y la simulación del transporte conectada en el motor, con tres escenarios (turno nominal, rotura de papel y paro del paletizador compartido). Ver D49.
+Siguiente paso de D44 sin nueva pregunta, según la decisión del autor de las 17:14: cuatro tipos de librería sencillos (corrugadora, carro de transferencia, convertidora de cajas, paletizador) y la simulación del transporte conectada en el motor, con tres escenarios (turno nominal, rotura de papel y paro del paletizador compartido). Ver D50.
 
 *(Herramientas: lectura del motor de planta y de tipos existentes; creación y prueba de los tipos; corridas de la planta; capturas con Playwright.)*
 
