@@ -10,6 +10,8 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
+| 2026-10-18 | Línea caliente de salsas | Motor: segunda línea caliente de 250 ml (marmita 3, pasteurizador 2, pulmón 2, sachetadora, túnel 2, control de peso y mesa de empaque) junto a la de 1.000 ml; dos mesas de 250 ml; escenario `tunnel-250-stop`; dimensionado a 22 t/día con 40 % en caliente. D49 | 5 |
+| 2026-10-18 | Tuberías sin cruces | Planta de salsas: los tubos a nivel de rack buscan un nivel y un recorrido que no atraviesen equipos ni cajas de estantería ni se crucen entre sí (suben por encima, o se desplazan); documento del flujo de salsas conectado vs faltante. D41 | 5 |
 | 2026-10-18 | Equipaje de aeropuerto | Gemelo nuevo `airport-baggage-v1`: check-in, colectoras, inspección CT con nivel 3, clasificador de bandejas basculantes, 4 carruseles de armado, codificación manual y 2 carruseles de reclamo, conectados en el motor con 5 escenarios; 5 tipos nuevos en la librería y escena 3D con aviones y carros. Rutas con subidas y bajadas: clasificador elevado, colectoras, bandas de alarma y de llegadas con puentes; cada maleta con fricción y choques. D47 | logística |
 | 2026-10-18 | Subidas directas del acueducto | Se elimina la columna lateral con lazos: cada nivel sube recto al siguiente con su válvula vertical, en puntos distintos de la cuadrícula; reductor de 4 a 2 pulgadas antes del nivel 1; el travesaño del cabezal ya no cruza el montante de entrada. D46 | acueducto |
 | 2026-10-18 | Acueducto sin pisos | Las zonas elevadas del acueducto ya no dibujan losa ni suelo de color; se ven las estructuras y los tubos de todos los pisos (pedido del autor). D45 | acueducto |
@@ -117,6 +119,13 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 - **Verificación:** `twin-lib validate` y `twin-lib plant validate` (6 escenarios del acueducto dentro de tolerancia), `pytest` 84 pruebas en verde más una prueba nueva de continuidad de la secuencia, capturas de la galería (`evidencia/acueducto-columna-conectada.png`, `acueducto-secuencia-y-lineas.png`, `acueducto-rejilla-costado-este.png`, `acueducto-tapas-tanques-recirculacion.png`); segunda captura del autor (15:10): patas de la rejilla alineadas con su bastidor y bajantes desde la canaleta real.
 - **Decisiones:** [[decisiones]] D42
 - **Conversación:** [[hilo-secuencia-acueducto]]
+
+### 2026-10-18 17:10–17:40 · Línea caliente de salsas conectada (22 t/día)
+- **Solicitado por:** el autor («si», 17:10) a la propuesta del hilo de tuberías; reparto 40/45/15 aprobado a las 17:11.
+- **Qué se hizo:** `plant.yaml` y `simulation.yaml` de `sauce-plant-v1`: `kettle-03`, `pump-hot-02`, `pasteurizer-02`, `holding-tube-02`, `buffer-hot-02`, `filler-sachet-02` (250 ml, 2 pistas, caliente), `cooling-tunnel-02`, `checkweigher-02` y `pack-sauce-250-b`, con la línea `hot-250`; vapor, chiller y flujos del plano actualizados; el túnel 1 queda solo con el sachet de 1.000 ml. Escenario `nominal` con marmita 3 y expectativas de la línea de 250 ml; escenario nuevo `tunnel-250-stop`. Decisión [[decisiones]] D49.
+- **Verificación:** `twin-lib plant validate` y `uv run pytest packages/twin-runtime/tests/test_plant.py` (16 pasan, ≈ 6 min), plano 2D regenerado, capturas de la galería local con la simulación corriendo: [[salsas-caliente-marmita-3.png]] y [[salsas-tunel-2-sachet-250.png]].
+- **Conversación:** [[hilo-linea-caliente-de-salsas]].
+
 ### 2026-10-18 14:36 · Tuberías de salsas sin cruces y flujo del proceso
 - **Fecha/hora (UTC):** 2026-10-18 14:36–15:10
 - **Fase del plan:** [[plan-del-proyecto]] fase 5
