@@ -11,7 +11,7 @@ Parámetros de URL, pensados para capturas automáticas:
 
 | Parámetro | Efecto |
 |---|---|
-| `plant=<id>` | Planta (por defecto `sauce-plant-v1`; también `plastic-injection-plant-v1`, con sus 29 inyectoras, la banda, el empaque, los secadores, los chillers y el molino animados; escenarios `nominal`, `conveyor-trip`, `dryer-stop`, `chiller-trip` y `pelletizer-jam`); `corrugated-box-plant-v1`: fábrica de cajas, aún sin simulación, ver `docs/box-plant.md`) |
+| `plant=<id>` | Planta (por defecto `sauce-plant-v1`; también `plastic-injection-plant-v1`, con sus 29 inyectoras, la banda, el empaque, los secadores, los chillers y el molino animados; escenarios `nominal`, `conveyor-trip`, `dryer-stop`, `chiller-trip` y `pelletizer-jam`); `corrugated-box-plant-v1`: fábrica de cajas, aún sin simulación, ver `docs/box-plant.md`; y `airport-baggage-v1`, el sistema de equipaje de aeropuerto con escenarios `nominal`, `screening-fault`, `makeup-short-staff`, `sorter-trip` y `arrivals-wave`) |
 | `camera=general`, `camera=<id de zona>` o `camera=nivel-<n>` | Cámara inicial (`nivel-<n>`: el equipo con `params.level: n`, en un edificio por pisos) |
 | `look=x,y,z,tx,ty,tz` | Cámara en el punto (x, y, z) del plano mirando a (tx, ty, tz), en metros; sirve para capturar un detalle exacto |
 | `select=<id de equipo>` | Equipo seleccionado |
@@ -84,6 +84,19 @@ Son piezas de la escena (`apps/gallery/src/warehouse.ts`), no equipos de la libr
 | `delivery_truck` | Camión sencillo de caja seca de 8,4 m; `params.state: loading` abre las puertas y muestra tarimas cargadas, `waiting` lo deja cerrado |
 
 Dos pasillos de recibo y uno de alistamiento (`aisles`) y dos rutas de montacargas (`routes`): `fk-empaque-bodega` y `fk-bodega-despacho`. Cámara «BODEGA Y DESPACHO» o `camera=bodega-pt`. La API entrega ahora la clave `params` de cada equipo.
+
+## Plataforma del aeropuerto (equipaje)
+
+`plant=airport-baggage-v1` muestra el hall de check-in, la inspección, la sala del clasificador, los carruseles de armado, la plataforma con dos aviones y el hall de llegadas. Los equipos del sistema de equipaje son de la librería (`checkin-island`, `belt-conveyor` con maletas, `baggage-screening`, `bag-handling-station`, `baggage-sorter`, `baggage-carousel`). En la plataforma hay dos piezas de escena (`apps/gallery/src/airport-pieces.ts`), sin cálculo:
+
+| Tipo en `plant.yaml` | Pieza |
+|---|---|
+| `aircraft` | Avión de pasillo único (fuselaje, alas, motores, cola), dimensionado por la `footprint` (largo × envergadura × altura) |
+| `baggage_cart_train` | Tractor con tres carros de equipaje cargados |
+
+Las rutas de las maletas suben y bajan: las colectoras salen del check-in a 0,75 m, suben a un puente de 4,2 m sobre el pasillo y bajan a la CT; las inducciones suben al clasificador, que va elevado a 3,5 m, y sus rampas bajan a ≈ 1 m sobre los carruseles de armado; las bandas de alarma pasan a 2,4 m hacia nivel 3 y las de llegadas cruzan la vía de servicio a 3,6 m. Es el perfil de altura de `belt-conveyor` (`rise_m`, `crest_height_m`, `ramp_deg`).
+
+Cámaras por zona: `camera=hall-checkin`, `camera=sala-bhs`, `camera=plataforma`, `camera=hall-llegadas`. La escena por software (sin GPU) tarda unos 2 minutos en estar lista para una captura con datos.
 
 ## Pasarelas en el `plant.yaml`
 

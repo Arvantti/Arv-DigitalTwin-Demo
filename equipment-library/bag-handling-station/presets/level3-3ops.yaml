@@ -1,0 +1,4 @@
+preset: level3-3ops
+description: Sala de nivel 3 con 3 operarios (revisión con el pasajero, 4 min por maleta)
+params: { role: l3, operators: 3, handle_s: 240, reject_pct: 1, queue_capacity: 10, release_gap_s: 3, nominal_inflow_upm: 0.5 }
+provenance: { operators: assumed, handle_s: assumed, reject_pct: assumed }
