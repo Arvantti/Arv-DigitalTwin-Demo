@@ -27,3 +27,4 @@ Conversaciones del 2026-10-16 (UTC) entre el autor y Claude dentro del proyecto 
 16. [[hilo-motor-de-planta]] (continuación, 2026-10-17 15:28–15:38 UTC): el autor pidió 1 % de tolerancia y dosificador de 1,5 % (15:33), y eligió la opción de 4 % en la tarjeta de decisión (15:38). Implementado en el PR #29.
 17. [[hilo-acueducto-planta-y-escena]] (planta del acueducto en el motor con el dominio hidráulico y escena del edificio, 2026-10-17)
 18. [[hilo-panel-plc-acueducto]] (PR #32, panel de gráficos del PLC del acueducto en la galería, 2026-10-17 15:28–18:55 UTC)
+19. [[hilo-despliegue-cloudflare]] (CI/CD de la galería en Cloudflare Pages, 2026-10-17 22:54 a 2026-10-18 01:50 UTC)
