@@ -1,0 +1,4 @@
+preset: compact-2
+description: Clasificador compacto de 2 rampas (aeropuerto pequeño)
+params: { straight_m: 12, loop_width_m: 6, speed_m_s: 1.5, tray_pitch_m: 1.3, destinations: 2, split_1_pct: 60, split_2_pct: 40, split_3_pct: 0, split_4_pct: 0, read_rate_pct: 95, max_recirc: 2, induct_max_upm: 20, chute_capacity: 3, chute_length_m: 3, nominal_inflow_upm: 5, motor_kw: 6 }
+provenance: { straight_m: assumed, speed_m_s: assumed, read_rate_pct: assumed }

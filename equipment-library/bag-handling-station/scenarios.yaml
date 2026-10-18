@@ -1,0 +1,46 @@
+scenarios:
+  - id: steady
+    description: "Nivel 3: 30 maletas en 1 h, 3 operarios de 4 min (capacidad 45 por hora)"
+    preset: level3-3ops
+    duration_s: 3600
+    expect:
+      - { path: variables.handled, min: 28, max: 30, description: "(una cada 2 min; las del final siguen en la mesa)" }
+      - { path: variables.rejected, equals: 0, description: "(1 % de 30 = 0,3)" }
+      - { path: kpis.utilization, min: 0.6, max: 0.7, description: "(30 × 4 min ÷ (3 × 60 min) = 0,67)" }
+      - { path: kpis.avg_wait_min, max: 0.1 }
+
+  - id: overload
+    description: "Nivel 3 con 1 por min durante 1 h: llegan 60 y caben 45 por hora; la mesa se llena"
+    preset: level3-3ops
+    duration_s: 3600
+    timeline:
+      - { at_s: 0, inputs: { inflow_upm: 1.0 } }
+    expect:
+      - { path: events.full, equals: 1, description: "(la mesa crece 0,25 por min: 10 maletas hacia el min 40)" }
+      - { path: variables.handled, min: 42, max: 44, description: "(3 operarios × 15 por hora, menos el arranque: la primera maleta de cada operario llega a los 1, 2 y 3 min, así cada uno termina 14)" }
+
+  - id: encoding
+    description: "Codificación manual: 12 etiquetas en 30 min, 20 s cada una"
+    preset: encoding-1op
+    duration_s: 1800
+    timeline:
+      - { at_s: 0, inputs: { inflow_upm: 0.4 } }
+    expect:
+      - { path: variables.released, min: 11, max: 12, description: "(0,4 por min × 30)" }
+      - { path: variables.rejected, equals: 0 }
+
+  - id: no-reingress
+    description: "La banda de reingreso no recibe: las maletas atendidas se quedan en la estación"
+    preset: encoding-1op
+    duration_s: 1800
+    timeline:
+      - { at_s: 0, inputs: { inflow_upm: 0.4, downstream_free: false } }
+    expect:
+      - { path: variables.released, equals: 0 }
+      - { path: state, equals: blocked }
+
+  - id: demo
+    description: Escenario de demostración con fallas aleatorias (para la galería)
+    preset: level3-3ops
+    duration_s: 28800
+    random_faults: true

@@ -1,0 +1,4 @@
+preset: bhs-bridge-20m
+description: Banda de maletas que sube, cruza un pasillo a 4 m y baja (20 m en planta)
+params: { length_m: 20, width_m: 1.0, speed_m_s: 0.6, pitch_m: 1.2, height_m: 0.75, crest_height_m: 4.0, ramp_deg: 16, kind: flat, item: bag, item_size_m: 0.75, nominal_inflow_upm: 5, entry_buffer_units: 4, motor_kw: 3 }
+provenance: { length_m: assumed, crest_height_m: assumed, ramp_deg: assumed }

@@ -6,7 +6,7 @@ manufacturing: logistics
 category: transport.conveyor
 description: >
   Transportador de banda plana, malla, tablillas o rodillos que mueve unidades discretas
-  (sachets, piezas, cajas) entre equipos. Acumula unidades cuando la salida se bloquea y deja
+  (sachets, piezas, cajas, maletas) entre equipos. Acumula unidades cuando la salida se bloquea y deja
   de aceptar cuando se llena, propagando el bloqueo hacia la máquina anterior.
 aliases: [banda, transportador, conveyor, banda de salida, transportador de rodillos]
 fidelity: { visual: V2, behavior: B2 }
@@ -18,11 +18,15 @@ params:
   pitch_m:       { type: number, unit: m, min: 0.02, max: 3, default: 0.25, description: Separación mínima entre unidades acumuladas, affects: [behavior, geometry] }
   height_m:      { type: number, unit: m, min: 0.2, max: 6, default: 0.85, description: Altura de la superficie de transporte, affects: [geometry] }
   kind:          { type: enum, values: [flat, mesh, slat, roller], default: flat, description: Tipo de transportador, affects: [geometry] }
-  item:          { type: enum, values: [sachet, part, box], default: sachet, description: Unidad que transporta (para el dibujo), affects: [geometry] }
+  item:          { type: enum, values: [sachet, part, box, bag], default: sachet, description: Unidad que transporta (para el dibujo), affects: [geometry] }
   item_size_m:   { type: number, unit: m, min: 0.02, max: 1.5, default: 0.18, description: Tamaño de la unidad (para el dibujo), affects: [geometry] }
   item_color:    { type: string, default: "#c62828", description: Color de la unidad (hex), affects: [geometry] }
   nominal_inflow_upm: { type: number, unit: u/min, min: 0, max: 2000, default: 60, description: Llegada nominal de unidades si el entorno no la fija, affects: [behavior] }
   entry_buffer_units: { type: integer, min: 1, max: 64, default: 1, description: Unidades que caben en la zona de entrada esperando su turno (1 = llegadas una a una; más para máquinas que sueltan varias piezas por ciclo), affects: [behavior] }
+  rise_m:        { type: number, unit: m, min: -6, max: 6, default: 0, description: "Diferencia de altura de la descarga respecto de la entrada (positiva sube, negativa baja)", affects: [geometry, behavior] }
+  crest_height_m: { type: number, unit: m, min: 0, max: 8, default: 0, description: "Altura del tramo elevado intermedio (0 = sin tramo elevado): sube desde la entrada, sigue a nivel y baja a la descarga", affects: [geometry, behavior] }
+  ramp_deg:      { type: number, unit: "°", min: 5, max: 35, default: 15, description: "Pendiente de las subidas y bajadas (se empina sola si el largo no alcanza)", affects: [geometry, behavior] }
+  friction_coef: { type: number, min: 0.1, max: 1.0, default: 0.45, description: "Coeficiente de fricción entre la banda y la unidad: sube o baja con la banda mientras tan(pendiente) no lo supere", affects: [behavior] }
   motor_kw:      { type: number, unit: kW, min: 0.1, max: 30, default: 0.75, description: Potencia del motorreductor, affects: [geometry, behavior] }
 
 ports:
@@ -42,12 +46,17 @@ variables:
   - { id: delivered, unit: u, kind: counter, description: Unidades entregadas a la siguiente máquina }
   - { id: occupancy_pct, unit: "%", kind: calculated, range: [0, 100], description: Ocupación respecto de la capacidad de acumulación }
   - { id: accepting, unit: "", kind: status, description: "1 si acepta unidades, 0 si está llena (bloquea a la máquina anterior)" }
+  - { id: collisions, unit: choques, kind: counter, description: "Unidades que alcanzaron a la de adelante con velocidad relativa (más de 0,05 m/s)" }
+  - { id: slipping, unit: u, kind: calculated, description: Unidades detenidas al pie de una subida más empinada que su ángulo de fricción }
+  - { id: path_length_m, unit: m, kind: calculated, description: Largo real del recorrido con subidas y bajadas }
+  - { id: max_slope_deg, unit: "°", kind: calculated, description: Pendiente máxima del recorrido }
   - { id: speed_actual_m_s, unit: m/s, kind: measured, range: [0, 3], noise_sd: 0.002, resolution: 0.001, description: Velocidad real }
   - { id: motor_current_a, unit: A, kind: measured, range: [0, 100], noise_sd: 0.03, resolution: 0.01, description: Corriente del motor }
 
 events:
   - { id: full, description: La banda se llenó y dejó de aceptar unidades }
   - { id: accepting_again, description: La banda vuelve a aceptar unidades }
+  - { id: slip, description: Una unidad resbaló en una subida más empinada que su ángulo de fricción }
 
 faults:
   - { id: motor_trip, description: Disparo térmico del motor, mtbf_h: 8000, mttr_min: 30, severity: medium, effect: La banda se detiene }
@@ -62,6 +71,7 @@ commands:
 kpis:
   - { id: throughput_upm, unit: u/min, description: Unidades entregadas por minuto (promedio) }
   - { id: blocked_pct, unit: "", description: Fracción del tiempo bloqueada }
+  - { id: collisions_per_h, unit: choques/h, description: Choques entre unidades por hora }
 
 animation_channels:
   - { id: belt_travel, unit: m, range: [0, 10], description: Recorrido acumulado de la banda (módulo 10 m) }
@@ -74,3 +84,6 @@ geometry:
 assumptions:
   - Las unidades entran por el inicio y avanzan a la velocidad de la banda; contra la descarga se acumulan a la separación mínima.
   - La corriente del motor crece con la carga transportada.
+  - length_m es el largo en planta; cada unidad se sigue sobre el recorrido real (path_length_m), algo mayor con subidas y bajadas (≈ 3,5 % en una rampa de 15°).
+  - Fricción, supuesto. con tan θ ≤ friction_coef la unidad va con la banda; en una subida más empinada resbala y se detiene al pie (bloquea a las de atrás); en una bajada más empinada se desliza a v × (1 + 4 × (tan θ − μ)), hasta el doble de la banda.
+  - Choque = una unidad que alcanza la separación mínima con la de adelante con más de 0,05 m/s de diferencia; desde ahí avanza pegada a ella.

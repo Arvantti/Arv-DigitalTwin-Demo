@@ -1,0 +1,4 @@
+preset: reclaim-60
+description: Carrusel de reclamo plano de 60 m en el hall de llegadas
+params: { mode: reclaim, length_m: 60, width_m: 7, pitch_m: 1.0, speed_m_s: 0.45, fill_limit_pct: 90, handlers: 0, pick_upm: 25, pick_delay_s: 120, entry_buffer_units: 4, nominal_inflow_upm: 0, plate_color: "#9aa3ab", motor_kw: 3 }
+provenance: { length_m: assumed, pick_upm: assumed, pick_delay_s: assumed }
