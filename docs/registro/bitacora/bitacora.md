@@ -10,7 +10,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
-| 2026-10-18 | Tuberías sin cruces | Planta de salsas: los tubos a nivel de rack buscan un nivel y un recorrido que no atraviesen equipos ni cajas de estantería ni se crucen entre sí (suben por encima, o se desplazan); documento del flujo de salsas conectado vs faltante. D41 | 5 |
+| 2026-10-18 | Tuberías sin cruces | Planta de salsas: los tubos a nivel de rack buscan un nivel y un recorrido que no atraviesen equipos ni cajas de estantería ni se crucen entre sí (suben por encima, o se desplazan); documento del flujo de salsas conectado vs faltante; revisión de capacidad contra 22 t/día (despacho de 35 a 90 tarimas/día). D41, D42 | 5 |
 | 2026-10-18 | Flujo de montacargas y ensamble | Planta de plásticos: almacén de semielaborado separado del de terminado (al norte de la nave, cajas azules), montacargas sin cruzar la banda y con carriles de ida y regreso, línea de ensamble visible (cámara propia) y piezas nuevas en secundarias. D40 | 5 |
 | 2026-10-18 | Pantalla de carga | La escena de planta (las tres plantas) muestra una barra de carga con etapas reales (conexión, plano, zonas, equipos, pasarelas, tuberías, luces, render) para que la espera inicial no parezca un error. D39 | 5 |
 | 2026-10-18 | Tuberías ancladas | Las tuberías sin ruta terminaban en el aire sobre el centro de la huella del equipo; ahora se anclan a su superficie real (rayo vertical contra la geometría) y llevan brida en cada extremo. Inspección visual de las tres plantas en `/mnt/project-files/inspeccion/`. D38 | 5 |
@@ -62,6 +62,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 - **Fase del plan:** [[plan-del-proyecto]] fase 5
 - **Solicitado por:** Carlos Andrés Quiceño: «corregir estos detalles en la planta de salsas, tuberías que se cruzan con las cajas, y en ese hilo dime el proceso que está conectado y qué falta, como con la planta de plásticos».
 - **Qué se hizo:** en `apps/gallery/src/plant.ts` los tubos sin `route` ya no usan un nivel fijo por turno: para cada uno se prueban niveles (los de siempre, luego más bajos, luego más altos) y dos órdenes de tramos, y se descarta todo trazado que atraviese la caja de otro equipo (incluidas las estanterías con sus cajas) o quede a menos de un diámetro más 12 cm de otro tubo; si la columna de subida cae bajo otro tubo, se desplaza en horizontal. Los que no encuentran sitio pasan al frente de la cola y los demás se acomodan. Se documentó el flujo en `/mnt/project-files/inspeccion/flujo-planta-salsas.md`.
+- **Capacidad (pedido de las 15:23):** el autor pidió revisar qué equipos no darían abasto en litros por día; revisión en `flujo-planta-salsas.md`: el despacho de 35 tarimas/día solo movía ≈ 8 t/día y se ajustó a 90; quedan señalados túnel, marmitas, pasteurizador y mesa de 250 ml para ajustar al conectar.
 - **Verificación:** capturas de la galería local (vista general y de cerca de la bodega de empaque, CIP y marmita); la consola no reporta tuberías sin trazado libre en las tres plantas de prueba de salsas; `pnpm -r typecheck`.
 - **Decisiones:** [[decisiones]] D41
 - **Evidencia:** `docs/registro/evidencia/salsas-tuberias-sobre-estanteria.png`, `salsas-tuberias-sin-cruces-general.png`

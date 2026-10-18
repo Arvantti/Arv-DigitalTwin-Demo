@@ -22,3 +22,11 @@ Recibí las capturas: en una, dos tubos se cruzan a la misma altura; en la otra,
 ### 🤖 Claude · 15:10 UTC
 
 (Resumen) Los tubos ahora eligen nivel y recorrido con una comprobación geométrica; pasan por encima de las estanterías y no se cruzan entre sí (capturas de la galería local). El flujo conectado y el faltante de la planta de salsas está en `inspeccion/flujo-planta-salsas.md`: solo la línea caliente de 1.000 ml corre en el motor; línea fría, mostaza, otras llenadoras, despacho y servicios (salvo el vapor) son plano y escena.
+
+### 👤 Carlos Andrés Quiceño · 15:23:49 UTC
+
+deacuerdo con el plan solamente añadiria algo y es que revises que creo que hay unos equipos que no darian a basto para la capacidad de la planta en litros / dia, revisa eso al hacer las conexiones y ajusta
+
+### 🤖 Claude · 15:40 UTC
+
+(Resumen) Revisé la capacidad contra 22 t/día (16 h, 85 %): el despacho del plano (35 tarimas/día) solo movía ≈ 8 t y pasó a 90; el túnel de enfriamiento, las marmitas, el pasteurizador (sin margen) y la mesa de 250 ml quedan señalados para ajustar al conectar. Tabla en `flujo-planta-salsas.md`.

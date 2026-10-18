@@ -135,3 +135,6 @@ El autor (14:17–14:30): los montacargas se cruzan entre sí y con la banda; ha
 
 ## D41 · Tuberías que esquivan equipos y otros tubos · 2026-10-18 14:36
 El autor envió capturas de tuberías que atraviesan las cajas de la estantería y de dos tubos que se cruzan, y pidió corregirlo en un hilo aparte junto con el flujo conectado de la planta de salsas. Decisión: el trazado a nivel de rack se elige por tubo con una comprobación geométrica (no atraviesa la caja de ningún equipo ajeno ni se acerca a otro tubo); es un arreglo de recorrido, no ingeniería de detalle. Los tubos con `route` (acueducto) no cambian. Lo que quede sin trazado libre se avisa en la consola del navegador.
+
+## D42 · Capacidad de la planta de salsas contra 22 t/día · 2026-10-18 15:23
+El autor (15:23) aprueba el plan de conexión de la planta de salsas y añade: revisar y ajustar los equipos que no darían abasto en litros por día. Decisión: base de 16 h/día y 85 % de disponibilidad (supuestos); el despacho pasa de 35 a 90 tarimas/día; túnel de enfriamiento, marmitas, pasteurizador y mesa de 250 ml se ajustan al conectar cada etapa, no antes.

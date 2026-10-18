@@ -347,13 +347,13 @@ flows:
   - { from: checkweigher-01,  to: pack-sauce-500,    medium: sachets 500 ml,     rate: 45,    unit: u/min, show: true }
   - { from: checkweigher-02,  to: pack-sauce-250,    medium: sachets 250 ml,     rate: 240,   unit: u/min, show: true }
   - { from: rack-pack-01,     to: filler-sachet-01,  medium: laminado,          rate: 2,     unit: rollos/turno, show: true }
-  # Despacho
+  # Despacho: 22 t/d ÷ 4,5 kg por caja ≈ 4.900 cajas/d ÷ ≈ 55 cajas por tarima ≈ 90 tarimas/d (antes 35, que solo movía ≈ 8 t/d)
   - { from: pack-sauce-250,   to: wrapper-01,        medium: cajas de 16,       rate: 15,    unit: cajas/min }
   - { from: pack-sauce-500,   to: wrapper-01,        medium: cajas de 8,        rate: 5.6,   unit: cajas/min }
   - { from: pack-sauce-1000,  to: wrapper-01,        medium: cajas de 4,        rate: 7.5,   unit: cajas/min }
-  - { from: wrapper-01,       to: rack-pt-02,        medium: estibas,           rate: 35,    unit: pallets/d, show: true }
-  - { from: rack-pt-02,       to: dock-02,           medium: estibas,           rate: 35,    unit: pallets/d, show: true }
-  - { from: dock-02,          to: truck-01,          medium: estibas,           rate: 35,    unit: pallets/d, show: true }
+  - { from: wrapper-01,       to: rack-pt-02,        medium: estibas,           rate: 90,    unit: pallets/d, show: true }
+  - { from: rack-pt-02,       to: dock-02,           medium: estibas,           rate: 90,    unit: pallets/d, show: true }
+  - { from: dock-02,          to: truck-01,          medium: estibas,           rate: 90,    unit: pallets/d, show: true }
   # Servicios
   - { from: boiler-01,        to: steam-station-01,  medium: vapor,             rate: 900,   unit: kg/h, piped: true }
   - { from: steam-station-01, to: kettle-01,         medium: vapor,             rate: 450,   unit: kg/h, piped: true }
