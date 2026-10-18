@@ -10,6 +10,8 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
+| 2026-10-18 | Subidas directas del acueducto | Se elimina la columna lateral con lazos: cada nivel sube recto al siguiente con su válvula vertical, en puntos distintos de la cuadrícula; reductor de 4 a 2 pulgadas antes del nivel 1; el travesaño del cabezal ya no cruza el montante de entrada. D46 | acueducto |
+| 2026-10-18 | Acueducto sin pisos | Las zonas elevadas del acueducto ya no dibujan losa ni suelo de color; se ven las estructuras y los tubos de todos los pisos (pedido del autor). D45 | acueducto |
 | 2026-10-18 | #46 | Cuarto gemelo: fábrica de cajas de cartón corrugado centrada en el transporte de pilas (corrugadora, rodillos, mesas giratorias, carro de transferencia, pulmón, 3 líneas de conversión con tamaños de caja distintos, un paletizador propio y uno compartido, bodega); plano validado y forma 3D propia para sus 20 tipos de equipo, sin simulación todavía. D44 | gemelos |
 | 2026-10-18 | Proceso conectado de plásticos | Planta de plásticos: cada inyectora entrega a su buffer de estiba (X = 1.000), una flota de 6 montacargas lleva las estibas a las estanterías de semielaborado y de ahí a las celdas de ensamble, todo simulado en el motor y sin cruces entre montacargas | 4 |
 | 2026-10-18 | Secuencia del acueducto | Acueducto: cada tubo empieza y termina en la boquilla o brida real (tanques, bombas, estación, válvulas entre niveles, rejilla, bajantes); panel LÍNEAS con dos líneas en m³; parámetro de cámara `look`. D42 | acueducto |
@@ -60,6 +62,23 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 ## Entradas
 
+### 2026-10-18 17:50 · Subidas directas entre niveles del acueducto
+- **Fecha/hora (UTC):** 2026-10-18 17:21–18:10
+- **Fase del plan:** [[plan-del-proyecto]] acueducto
+- **Solicitado por:** Carlos Andrés Quiceño: «la tubería se cruza con la estructura» y, después, que la conexión entre niveles sea directa, con válvula, en puntos distintos de la cuadrícula y con un reductor tras la estación.
+- **Qué se hizo:** el travesaño del cabezal de la rejilla arranca después del montante (no lo atraviesa); se quitó la columna lateral; subidas rectas de 2" nivel 1→2→3→4 con válvula vertical (`regulating-valve` con `vertical: true`) entre caminos de ramales del nivel de abajo y de arriba; los niveles 2 a 4 sin montante propio (`inlet_riser: false`); reductor dibujado en el tubo de la estación (`reduce_at`, `reduce_to_in`).
+- **Verificación:** `twin-lib validate`, `twin-lib plant validate` (escenarios en tolerancia), `pytest apps/api`, `ruff check`, `pnpm typecheck`, captura `evidencia/acueducto-subidas-directas.png`.
+- **Decisiones:** [[decisiones]] D46
+- **Conversación:** [[hilo-secuencia-acueducto]]
+
+### 2026-10-18 17:15 · Acueducto sin losas en los pisos elevados
+- **Fecha/hora (UTC):** 2026-10-18 17:12–17:30
+- **Fase del plan:** [[plan-del-proyecto]] acueducto
+- **Solicitado por:** Carlos Andrés Quiceño: «prefiero que quitemos los pisos y mantengamos la estructuras».
+- **Qué se hizo:** `buildZones` de `plant.ts` no dibuja losa ni suelo de color en zonas con `elevation`; se conservan contorno, rótulo y estructuras.
+- **Verificación:** `pnpm -r typecheck`, captura de la galería (`evidencia/acueducto-sin-pisos.png`).
+- **Decisiones:** [[decisiones]] D45
+- **Conversación:** [[hilo-secuencia-acueducto]]
 ### 2026-10-18 15:04 · Fábrica de cajas: plano y escena 3D
 - **Fecha/hora (UTC):** 2026-10-18 15:04–17:30
 - **Solicitado por:** Carlos Andrés Quiceño (15:04): construir en otro hilo «un sistema de transporte de una fábrica de cajas», como gemelo digital aparte, tomando como inspiración el sitio web de un fabricante de transportadores; (15:07): no mencionar nunca esa empresa. (17:14): «todo es imaginario no nos pongamos trabajo de más», varios tamaños de caja, lo que consuma menos, y una línea con paletizador y otras dos con uno compartido.
@@ -75,7 +94,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 - **Qué se hizo:** tres tipos nuevos de la librería (`pallet-buffer`, `pallet-store`, `forklift-fleet`) con contrato, comportamiento, geometría, presets, escenarios calculados a mano y ficha; 28 buffers, 4 estanterías de semielaborado simuladas y una flota de 6 montacargas cableados en `simulation.yaml` y `plant.yaml` (inyectora → buffer → flota → estantería → flota → celda de ensamble, cada paso con `ready` hacia atrás); las rutas de abastecimiento de las celdas pasan a cuatro (una por estantería); los montacargas de la escena los mueven los canales del motor y se estacionan en la flota; los dos de producto terminado ceden el paso. Escenarios recalculados (`nominal`, `body-stop`) y nuevos (`fleet-short`, `pallet-chain`).
 - **Verificación:** `twin-lib validate` de los 3 tipos y `twin-lib plant validate` en OK, `pytest` (219) y `pnpm -r test`/`typecheck` en verde, `render_layout.py` sin errores; capturas `plasticos-buffer-de-maquina.png` y `plasticos-flota-de-montacargas.png` en `docs/registro/evidencia/`.
 - **Pendiente:** el almacén de terminado y los dos montacargas de producto terminado fuera del motor; con X = 1.000 las piezas grandes dan estibas de toneladas (decidir X por producto en la etapa de datos reales); baterías y turnos de los montacargas.
-- **Decisiones:** [[decisiones]] D45.
+- **Decisiones:** [[decisiones]] D47.
 - **Conversación:** [[hilo-inspeccion-visual]].
 
 ### 2026-10-18 14:40 · Secuencia hidráulica continua del acueducto

@@ -21,6 +21,7 @@ params:
   stroke_s:        { type: number, unit: s, min: 1, max: 600, default: 30, description: Tiempo del actuador de cerrada a abierta, affects: [behavior] }
   control:         { type: enum, values: [manual, downstream_pressure], default: manual, description: "manual: apertura fija u ordenada; downstream_pressure: PID sobre la presión de salida (requiere actuador)", affects: [behavior] }
   setpoint_mca:    { type: number, unit: mca, min: 0, max: 250, default: 20, description: Consigna de presión aguas abajo, affects: [behavior] }
+  vertical:        { type: boolean, default: false, description: "En tubería vertical: el eje sube por +Y y el volante queda de costado (sin soportes ni manómetros)", affects: [geometry] }
   body_color:      { type: string, default: "#2f5f93", description: Color del cuerpo (hex), affects: [geometry] }
   bench_inlet_mca: { type: number, unit: mca, min: 0, max: 300, default: 25, description: "Banco de prueba: presión de entrada si el entorno no la fija", affects: [behavior] }
   bench_load_kv_m3h: { type: number, unit: m3/h, min: 0.01, max: 5000, default: 6.667, description: "Banco de prueba: Kv equivalente de lo que consume aguas abajo (descarga a la atmósfera)", affects: [behavior] }
