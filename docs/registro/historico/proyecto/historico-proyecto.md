@@ -31,3 +31,4 @@ Conversaciones del 2026-10-16 (UTC) entre el autor y Claude dentro del proyecto 
 20. [[hilo-inspeccion-visual]] (inspección visual de los modelos y arreglo de tuberías desconectadas, 2026-10-18 13:14 UTC)
 22. [[hilo-secuencia-acueducto]] (secuencia hidráulica continua del acueducto y panel LÍNEAS, 2026-10-18 14:40 UTC)
 21. [[hilo-tuberias-sin-cruces]] (tuberías de salsas que cruzan cajas y flujo del proceso de salsas, 2026-10-18 14:36 UTC)
+23. [[hilo-equipaje-aeropuerto]] (gemelo nuevo del sistema de equipaje de aeropuerto, 2026-10-18 15:04 UTC)

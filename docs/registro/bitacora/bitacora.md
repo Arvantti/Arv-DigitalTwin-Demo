@@ -10,6 +10,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
+| 2026-10-18 | Equipaje de aeropuerto | Gemelo nuevo `airport-baggage-v1`: check-in, colectoras, inspección CT con nivel 3, clasificador de bandejas basculantes, 4 carruseles de armado, codificación manual y 2 carruseles de reclamo, conectados en el motor con 5 escenarios; 5 tipos nuevos en la librería y escena 3D con aviones y carros. D43 | logística |
 | 2026-10-18 | Secuencia del acueducto | Acueducto: cada tubo empieza y termina en la boquilla o brida real (tanques, bombas, estación, válvulas entre niveles, rejilla, bajantes); panel LÍNEAS con dos líneas en m³; parámetro de cámara `look`. D42 | acueducto |
 | 2026-10-18 | Tuberías sin cruces | Planta de salsas: los tubos a nivel de rack buscan un nivel y un recorrido que no atraviesen equipos ni cajas de estantería ni se crucen entre sí (suben por encima, o se desplazan); documento del flujo de salsas conectado vs faltante. D41 | 5 |
 | 2026-10-18 | Flujo de montacargas y ensamble | Planta de plásticos: almacén de semielaborado separado del de terminado (al norte de la nave, cajas azules), montacargas sin cruzar la banda y con carriles de ida y regreso, línea de ensamble visible (cámara propia) y piezas nuevas en secundarias. D40 | 5 |
@@ -58,6 +59,14 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 ## Entradas
 
+### 2026-10-18 15:04 · Sistema de equipaje de aeropuerto (gemelo nuevo)
+- **Fecha/hora (UTC):** 2026-10-18 15:04–17:40
+- **Fase del plan:** [[plan-del-proyecto]] gemelos nuevos (logística)
+- **Solicitado por:** Carlos Andrés Quiceño: «quiero que con otro hilo construyas un sistema de bandas transportadoras de maletas de aeropuerto, ese sería otro digital twin».
+- **Qué se hizo:** ficha de diseño en la carpeta del proyecto (`aeropuerto/ficha-diseno-bhs.md`); 5 tipos nuevos en la librería con contrato, comportamiento, geometría, presets, escenarios, README y FICHA: `checkin-island`, `baggage-screening` (CT con nivel 2 en pantalla y salida a nivel 3), `baggage-sorter` (bandejas basculantes, 4 rampas de vuelo y rampa manual), `baggage-carousel` (armado o reclamo) y `bag-handling-station` (nivel 3 o codificación); `belt-conveyor` acepta maletas (`item: bag`) y tiene 3 presets de equipaje. Planta `industrial-models/airport-baggage-v1` (plano de 170 × 112 m con 32 equipos, `simulation.yaml` con 22 equipos enlazados y 5 escenarios: `nominal`, `screening-fault`, `makeup-short-staff`, `sorter-trip`, `arrivals-wave`). Escena: piezas `aircraft` y `baggage_cart_train`, tarjeta «Equipaje de aeropuerto» en el portal. Documentación en `docs/plant-engine.md` y `docs/plant-scene.md`.
+- **Verificación:** escenarios de cada equipo y de la planta con valores calculados a mano (todos pasan); `twin-lib validate`, `twin-lib plant validate`, `pytest`, `ruff`, `pnpm -r typecheck`; capturas de la galería y de la escena con simulación (`evidencia/aeropuerto-*.png`).
+- **Decisiones:** [[decisiones]] D43
+- **Conversación:** [[hilo-equipaje-aeropuerto]]
 ### 2026-10-18 14:40 · Secuencia hidráulica continua del acueducto
 - **Fecha/hora (UTC):** 2026-10-18 14:40–15:50
 - **Fase del plan:** [[plan-del-proyecto]] acueducto

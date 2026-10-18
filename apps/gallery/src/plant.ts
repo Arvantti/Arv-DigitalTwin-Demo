@@ -803,7 +803,14 @@ function buildCameras(): void {
   // Edificio por pisos: una cámara por zona (cada piso) y una por nivel de los equipos que lo declaran (la rejilla).
   const featured = building
     ? doc.zones
-    : doc.zones.filter((z) => (["production", "utility"].includes(z.kind) && z.rect[2] * z.rect[3] >= 80) || z.id.startsWith("sala-control") || z.id === "almacen-semielaborado");
+    : doc.zones.filter(
+        (z) =>
+          (["production", "utility"].includes(z.kind) && z.rect[2] * z.rect[3] >= 80) ||
+          z.id.startsWith("sala-control") ||
+          z.id === "almacen-semielaborado" ||
+          // halls de pasajeros (aeropuerto): zonas administrativas con equipos simulados
+          (z.kind === "admin" && doc.equipment.some((e) => e.zone === z.id && e.sim)),
+      );
   for (const z of featured) entries.push([z.name.toUpperCase(), z.id, () => focusRect(z.rect, Math.max(3, z.height), 0.85, z.elevation ?? 0)]);
   if (building)
     for (const a of assets.values()) {
