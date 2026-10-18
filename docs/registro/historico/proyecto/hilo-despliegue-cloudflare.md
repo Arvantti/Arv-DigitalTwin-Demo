@@ -49,4 +49,12 @@ Renombra el proyecto de Pages a `digitaltwin-arvantti` para que coincida con el 
 
 ### 🤖 Claude · 2026-10-18 03:15 UTC
 
-Revisa el registro: el build funcionó, pero la acción de wrangler falló al instalar wrangler con pnpm en la raíz del workspace. Corrige con `packageManager: npm`.
+Revisa el registro: el build funcionó, pero la acción de wrangler falló al instalar wrangler con pnpm en la raíz del workspace. Se corrige ejecutando wrangler con `pnpm dlx`.
+
+### 👤 Carlos Andrés Quiceño · 2026-10-18 03:09:25 UTC
+
+Pero no me gusta npm, siempre uso pnpm.
+
+### 🤖 Claude · 2026-10-18 03:12 UTC
+
+Cambia el PR #36: en vez de `packageManager: npm`, el workflow ejecuta `pnpm dlx wrangler@4`, con los secretos como variables de entorno.
