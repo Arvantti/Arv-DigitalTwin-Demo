@@ -21,12 +21,12 @@ equipment:
   # salida que da lo mismo de día con la columna en serie (20,94 mca, banco network.py).
   prs-01:            { type: pressure-reducing-station, preset: station-4in-auto, params: { critical_setpoint_mca: 15.45, manual_setting_mca: 20.94 } }
   grid-01:           { type: distribution-grid, preset: level-1 }
-  grid-02:           { type: distribution-grid, preset: level-2 }
-  grid-03:           { type: distribution-grid, preset: level-3 }
-  grid-04:           { type: distribution-grid, preset: level-4-critical }
-  valve-between-12:  { type: regulating-valve, preset: between-levels-2in }
-  valve-between-23:  { type: regulating-valve, preset: between-levels-2in }
-  valve-between-34:  { type: regulating-valve, preset: between-levels-2in }
+  grid-02:           { type: distribution-grid, preset: level-2, params: { inlet_riser: false } }
+  grid-03:           { type: distribution-grid, preset: level-3, params: { inlet_riser: false } }
+  grid-04:           { type: distribution-grid, preset: level-4-critical, params: { inlet_riser: false } }
+  valve-between-12:  { type: regulating-valve, preset: between-levels-2in, params: { vertical: true } }
+  valve-between-23:  { type: regulating-valve, preset: between-levels-2in, params: { vertical: true } }
+  valve-between-34:  { type: regulating-valve, preset: between-levels-2in, params: { vertical: true } }
 
 links:
   # Red de agua a presión (tubos del plano)

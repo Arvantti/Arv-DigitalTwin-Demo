@@ -7,7 +7,7 @@ tags: [registro, historico-ia, aeropuerto, equipaje, logistica]
 ---
 # Hilo: gemelo del sistema de equipaje de aeropuerto
 
-Parte de [[historico-proyecto]] · Índice: [[00-indice]] · Bitácora: [[bitacora]] · Decisión: [[decisiones]] D43. Autor humano: Carlos Andrés Quiceño. Hora en UTC. Las listas de progreso no se reproducen. Credenciales: ninguna.
+Parte de [[historico-proyecto]] · Índice: [[00-indice]] · Bitácora: [[bitacora]] · Decisión: [[decisiones]] D47. Autor humano: Carlos Andrés Quiceño. Hora en UTC. Las listas de progreso no se reproducen. Credenciales: ninguna.
 
 ---
 

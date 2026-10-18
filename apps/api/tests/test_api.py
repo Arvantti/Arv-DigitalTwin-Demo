@@ -85,13 +85,19 @@ def test_water_plant_sequence_is_continuous_and_lines_are_published() -> None:
     """Cada tubo de la secuencia termina donde empieza el siguiente: sin extremos al aire entre niveles."""
     plant = client.get("/api/plants/water-network-scale-v1").json()
     by_pipe = {(p["from"], p["to"]): p["route"] for p in plant["pipes"] if p.get("route")}
-    # la derivación de cada nivel (toma del montante) es el punto de partida del tubo hacia la válvula siguiente
+    # cada subida entre niveles es un tubo recto y vertical con su válvula, en un punto distinto de la cuadrícula
+    points = []
     for level, valve in ((1, "valve-between-12"), (2, "valve-between-23"), (3, "valve-between-34")):
         into_valve = by_pipe[(f"grid-0{level}", valve)]
         out_of_valve = by_pipe[(valve, f"grid-0{level + 1}")]
-        assert into_valve[-1][2] == out_of_valve[0][2]  # entra y sale por el eje de la válvula
-        assert abs(out_of_valve[-2][2] - (into_valve[0][2] + 1.2)) < 1e-9  # la toma del nivel siguiente está 1,20 m más arriba
-    assert by_pipe[("prs-01", "grid-01")][-2][2] == by_pipe[("grid-01", "valve-between-12")][0][2]
+        xy = into_valve[0][:2]
+        assert all(p[:2] == xy for p in into_valve + out_of_valve)  # vertical, sin lazos laterales
+        assert into_valve[0][2] < into_valve[-1][2] < out_of_valve[0][2] < out_of_valve[-1][2]  # sube y atraviesa la válvula
+        assert abs(out_of_valve[-1][2] - (into_valve[0][2] + 1.2)) < 1e-9  # de un camino del nivel al del siguiente
+        points.append(tuple(xy))
+    assert len(set(points)) == 3  # en vista de planta no coinciden
+    prs = {(p["from"], p["to"]): p for p in plant["pipes"]}[("prs-01", "grid-01")]
+    assert prs["reduce_to_in"] == 2 and 0 < prs["reduce_at"] < len(prs["route"]) - 1  # reductor antes de la rejilla
     lines = {ln["id"]: ln for ln in plant["lines"]}
     assert set(lines) == {"red-distribucion", "recirculacion"}
 

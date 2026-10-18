@@ -47,31 +47,39 @@ function gauge(r: number): { object: THREE.Group; set(f: number): void } {
 
 export default function build(params: Params): EquipmentModel {
   const dn = num(params, "diameter_in", 2);
+  const vertical = bool(params, "vertical", false);
   const actuated = bool(params, "actuated", false);
   const color = str(params, "body_color", "#2f5f93");
   const setpoint = num(params, "setpoint_mca", 20);
 
   const r = Math.max(0.012, (dn * 0.0254) / 2 + 0.004); // radio exterior del tubo
   const axisY = Math.max(0.35, r * 6);
-  const L = Math.max(0.6, r * 24);
+  const L = vertical ? Math.max(0.4, r * 9) : Math.max(0.6, r * 24);
   const bodyMat = M.paint(color, 0.45);
   const steel = M.galvanized();
   const root = P.group("regulating-valve");
+  // en vertical el eje del tubo pasa por el origen y sube por +Y: el cuerpo se acuesta y el volante queda de costado
+  const body = vertical ? P.group("body") : root;
+  if (vertical) {
+    body.rotation.z = Math.PI / 2;
+    body.position.x = axisY;
+    root.add(body);
+  }
 
   // carrete con bridas en los extremos y junto al cuerpo
   const spool = P.cylinderX(r, L, steel, 28, "spool");
   spool.position.y = axisY;
-  root.add(spool);
+  body.add(spool);
   const flangeR = r * 2.1;
   const bodyHalf = r * 1.9;
   for (const x of [-L / 2 + 0.01, L / 2 - 0.01, -bodyHalf, bodyHalf]) {
     const fl = P.cylinderX(flangeR, r * 0.35, x === -bodyHalf || x === bodyHalf ? bodyMat : steel, 28);
     fl.position.set(x, axisY, 0);
-    root.add(fl);
+    body.add(fl);
     const bolts = P.boltCircle(flangeR * 0.8, 4, r * 0.12, r * 0.5);
     bolts.rotation.z = Math.PI / 2;
     bolts.position.set(x + r * 0.25, axisY, 0);
-    root.add(bolts);
+    body.add(bolts);
   }
 
   // cuerpo de globo y bonete
@@ -79,26 +87,26 @@ export default function build(params: Params): EquipmentModel {
   globe.scale.set(1.1, 1, 0.95);
   globe.position.y = axisY;
   globe.castShadow = true;
-  root.add(globe);
+  body.add(globe);
   const neck = P.cylinderX(r * 1.15, bodyHalf * 2, bodyMat, 24);
   neck.position.y = axisY;
-  root.add(neck);
+  body.add(neck);
   const bonnetFl = P.cylinder(r * 1.45, r * 1.45, r * 0.3, bodyMat, 24);
   bonnetFl.position.y = axisY + r * 1.45;
-  root.add(bonnetFl);
+  body.add(bonnetFl);
   const bonnet = P.cylinder(r * 0.9, r * 1.2, r * 1.6, bodyMat, 24);
   bonnet.position.y = axisY + r * 1.75;
-  root.add(bonnet);
+  body.add(bonnet);
   const topY = axisY + r * 3.35;
 
   // flecha de sentido de flujo fundida en el cuerpo (+X)
   const arrow = P.box(r * 1.4, r * 0.18, r * 0.05, M.paint("#f4f4f0", 0.5), 0);
   arrow.position.set(0, axisY, r * 1.68);
-  root.add(arrow);
+  body.add(arrow);
   const tip = new THREE.Mesh(new THREE.ConeGeometry(r * 0.25, r * 0.4, 3), M.paint("#f4f4f0", 0.5));
   tip.rotation.z = -Math.PI / 2;
   tip.position.set(r * 0.85, axisY, r * 1.68);
-  root.add(tip);
+  body.add(tip);
 
   // volante o actuador
   let wheel: THREE.Group | null = null;
@@ -112,14 +120,14 @@ export default function build(params: Params): EquipmentModel {
     for (const s of [-1, 1]) {
       const col = P.cylinder(r * 0.16, r * 0.16, yokeH, M.darkSteel(), 10);
       col.position.set(s * r * 0.75, topY, 0);
-      root.add(col);
+      body.add(col);
     }
     const yokeTop = P.box(r * 1.9, r * 0.3, r * 0.6, M.darkSteel(), r * 0.05);
     yokeTop.position.set(0, topY + yokeH, 0);
-    root.add(yokeTop);
+    body.add(yokeTop);
     stem = P.cylinder(r * 0.12, r * 0.12, yokeH + r * 1.2, stemMat, 12);
     stem.position.y = topY;
-    root.add(stem);
+    body.add(stem);
     wheel = P.group("handwheel");
     const rimR = r * 2.1;
     const red = M.paint("#c62828", 0.45);
@@ -136,33 +144,33 @@ export default function build(params: Params): EquipmentModel {
     hub.position.y = -r * 0.2;
     wheel.add(hub);
     wheel.position.y = topY + yokeH + r * 0.5;
-    root.add(wheel);
+    body.add(wheel);
   } else {
     // acople, actuador eléctrico con tapa e indicador, y prensaestopa del cable
     const coupling = P.cylinder(r * 0.55, r * 0.55, r * 1.0, M.darkSteel(), 16);
     coupling.position.y = topY;
-    root.add(coupling);
+    body.add(coupling);
     const actW = r * 3.6;
     const actH = r * 3.0;
     const act = P.slab(actW, actH, r * 2.8, M.paint("#8a949c", 0.45), r * 0.25, "actuator");
     act.position.y = topY + r * 1.0;
-    root.add(act);
+    body.add(act);
     const cover = P.cylinder(r * 1.2, r * 1.2, r * 0.6, M.paint("#8a949c", 0.45), 24);
     cover.position.y = topY + r * 1.0 + actH;
-    root.add(cover);
+    body.add(cover);
     const dome = new THREE.Mesh(new THREE.SphereGeometry(r * 0.9, 20, 10, 0, Math.PI * 2, 0, Math.PI / 2), M.glass("#e8f1f5", 0.35));
     dome.position.y = topY + r * 1.6 + actH;
-    root.add(dome);
+    body.add(dome);
     actNeedle = P.box(r * 1.5, r * 0.1, r * 0.25, M.paint(M.SAFETY_YELLOW, 0.45), 0);
     actNeedle.position.y = topY + r * 1.65 + actH;
-    root.add(actNeedle);
+    body.add(actNeedle);
     ledMat = M.emissive("#22e06b", 3);
     const led = P.box(r * 0.4, r * 0.25, r * 0.06, ledMat, 0);
     led.position.set(-actW * 0.25, topY + r * 1.0 + actH * 0.75, r * 1.42);
-    root.add(led);
+    body.add(led);
     const gland = P.cylinderX(r * 0.25, r * 0.6, M.darkSteel(), 12);
     gland.position.set(actW / 2 + r * 0.3, topY + r * 1.0 + actH * 0.3, 0);
-    root.add(gland);
+    body.add(gland);
     const cable = P.pipe(
       [
         new THREE.Vector3(actW / 2 + r * 0.6, topY + r * 1.0 + actH * 0.3, 0),
@@ -172,40 +180,40 @@ export default function build(params: Params): EquipmentModel {
       r * 0.12,
       M.rubber(),
     );
-    root.add(cable);
+    body.add(cable);
   }
 
   // manómetros antes y después, con su toma en la parte de arriba del tubo
   const gR = Math.max(0.04, r * 1.3);
-  const gauges = [-1, 1].map((s) => {
+  const gauges = (vertical ? [] : [-1, 1]).map((s) => {
     const x = s * (bodyHalf + r * 3.5);
     const tap = P.cylinder(r * 0.18, r * 0.18, gR * 1.6, M.chrome(), 10);
     tap.position.set(x, axisY + r * 0.9, 0);
-    root.add(tap);
+    body.add(tap);
     const g = gauge(gR);
     g.object.position.set(x, axisY + r * 0.9 + gR * 1.6 + gR, 0);
-    root.add(g.object);
+    body.add(g.object);
     return g;
   });
 
   // soportes al piso cerca de los extremos
-  for (const s of [-1, 1]) {
+  for (const s of vertical ? [] : [-1, 1]) {
     const x = s * (L / 2 - r * 3);
     const post = P.slab(r * 0.9, axisY - r * 1.1, r * 0.9, steel, r * 0.05);
     post.position.set(x, 0, 0);
-    root.add(post);
+    body.add(post);
     const base = P.slab(r * 3, r * 0.25, r * 3, steel, r * 0.05);
     base.position.set(x, 0, 0);
-    root.add(base);
+    body.add(base);
     const cradle = new THREE.Mesh(new THREE.TorusGeometry(r * 1.02, r * 0.12, 6, 20, Math.PI), steel);
     cradle.rotation.set(0, Math.PI / 2, Math.PI);
     cradle.position.set(x, axisY, 0);
-    root.add(cradle);
+    body.add(cradle);
   }
 
   const plate = P.nameplate([`VÁLVULA ${dn}"`, actuated ? "ACTUADA" : "MANUAL"], Math.max(0.12, r * 3.4), Math.max(0.045, r * 1.3));
   plate.position.set(0, axisY - r * 2.4, r * 1.2);
-  root.add(plate);
+  body.add(plate);
 
   const fullScale = Math.max(10, Math.ceil((Math.max(setpoint, num(params, "bench_inlet_mca", 25)) * 1.6) / 10) * 10);
   function update(frame: AnimationFrame): void {
@@ -221,8 +229,8 @@ export default function build(params: Params): EquipmentModel {
       const fault = frame.state === "fault";
       ledMat.emissive.set(fault ? "#ff2a2a" : open > 0 ? "#22e06b" : "#ffb300");
     }
-    gauges[0].set(ch(frame, "inlet_pressure_mca") / fullScale);
-    gauges[1].set(ch(frame, "outlet_pressure_mca") / fullScale);
+    gauges[0]?.set(ch(frame, "inlet_pressure_mca") / fullScale);
+    gauges[1]?.set(ch(frame, "outlet_pressure_mca") / fullScale);
   }
   update({ channels: { opening: num(params, "opening_pct", 100) / 100, inlet_pressure_mca: 25, outlet_pressure_mca: 22.5, flow_norm: 0.5 }, state: "running" });
 

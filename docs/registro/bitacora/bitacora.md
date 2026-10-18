@@ -1,7 +1,7 @@
 ---
 tipo: bitacora
 tags: [registro, bitacora]
-actualizado: 2026-10-17
+actualizado: 2026-10-18
 ---
 # Bitácora de avances
 
@@ -10,9 +10,12 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
-| 2026-10-18 | Equipaje de aeropuerto | Gemelo nuevo `airport-baggage-v1`: check-in, colectoras, inspección CT con nivel 3, clasificador de bandejas basculantes, 4 carruseles de armado, codificación manual y 2 carruseles de reclamo, conectados en el motor con 5 escenarios; 5 tipos nuevos en la librería y escena 3D con aviones y carros. D43 | logística |
+| 2026-10-18 | Equipaje de aeropuerto | Gemelo nuevo `airport-baggage-v1`: check-in, colectoras, inspección CT con nivel 3, clasificador de bandejas basculantes, 4 carruseles de armado, codificación manual y 2 carruseles de reclamo, conectados en el motor con 5 escenarios; 5 tipos nuevos en la librería y escena 3D con aviones y carros. D47 | logística |
+| 2026-10-18 | Subidas directas del acueducto | Se elimina la columna lateral con lazos: cada nivel sube recto al siguiente con su válvula vertical, en puntos distintos de la cuadrícula; reductor de 4 a 2 pulgadas antes del nivel 1; el travesaño del cabezal ya no cruza el montante de entrada. D46 | acueducto |
+| 2026-10-18 | Acueducto sin pisos | Las zonas elevadas del acueducto ya no dibujan losa ni suelo de color; se ven las estructuras y los tubos de todos los pisos (pedido del autor). D45 | acueducto |
+| 2026-10-18 | #46 | Cuarto gemelo: fábrica de cajas de cartón corrugado centrada en el transporte de pilas (corrugadora, rodillos, mesas giratorias, carro de transferencia, pulmón, 3 líneas de conversión con tamaños de caja distintos, un paletizador propio y uno compartido, bodega); plano validado y forma 3D propia para sus 20 tipos de equipo, sin simulación todavía. D44 | gemelos |
 | 2026-10-18 | Secuencia del acueducto | Acueducto: cada tubo empieza y termina en la boquilla o brida real (tanques, bombas, estación, válvulas entre niveles, rejilla, bajantes); panel LÍNEAS con dos líneas en m³; parámetro de cámara `look`. D42 | acueducto |
-| 2026-10-18 | Tuberías sin cruces | Planta de salsas: los tubos a nivel de rack buscan un nivel y un recorrido que no atraviesen equipos ni cajas de estantería ni se crucen entre sí (suben por encima, o se desplazan); documento del flujo de salsas conectado vs faltante. D41 | 5 |
+| 2026-10-18 | Tuberías sin cruces | Planta de salsas: los tubos a nivel de rack buscan un nivel y un recorrido que no atraviesen equipos ni cajas de estantería ni se crucen entre sí (suben por encima, o se desplazan); documento del flujo de salsas conectado vs faltante; revisión de capacidad contra 22 t/día (despacho de 35 a 90 tarimas/día). D41, D43 | 5 |
 | 2026-10-18 | Flujo de montacargas y ensamble | Planta de plásticos: almacén de semielaborado separado del de terminado (al norte de la nave, cajas azules), montacargas sin cruzar la banda y con carriles de ida y regreso, línea de ensamble visible (cámara propia) y piezas nuevas en secundarias. D40 | 5 |
 | 2026-10-18 | Pantalla de carga | La escena de planta (las tres plantas) muestra una barra de carga con etapas reales (conexión, plano, zonas, equipos, pasarelas, tuberías, luces, render) para que la espera inicial no parezca un error. D39 | 5 |
 | 2026-10-18 | Tuberías ancladas | Las tuberías sin ruta terminaban en el aire sobre el centro de la huella del equipo; ahora se anclan a su superficie real (rayo vertical contra la geometría) y llevan brida en cada extremo. Inspección visual de las tres plantas en `/mnt/project-files/inspeccion/`. D38 | 5 |
@@ -65,8 +68,35 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 - **Solicitado por:** Carlos Andrés Quiceño: «quiero que con otro hilo construyas un sistema de bandas transportadoras de maletas de aeropuerto, ese sería otro digital twin».
 - **Qué se hizo:** ficha de diseño en la carpeta del proyecto (`aeropuerto/ficha-diseno-bhs.md`); 5 tipos nuevos en la librería con contrato, comportamiento, geometría, presets, escenarios, README y FICHA: `checkin-island`, `baggage-screening` (CT con nivel 2 en pantalla y salida a nivel 3), `baggage-sorter` (bandejas basculantes, 4 rampas de vuelo y rampa manual), `baggage-carousel` (armado o reclamo) y `bag-handling-station` (nivel 3 o codificación); `belt-conveyor` acepta maletas (`item: bag`) y tiene 3 presets de equipaje. Planta `industrial-models/airport-baggage-v1` (plano de 170 × 112 m con 32 equipos, `simulation.yaml` con 22 equipos enlazados y 5 escenarios: `nominal`, `screening-fault`, `makeup-short-staff`, `sorter-trip`, `arrivals-wave`). Escena: piezas `aircraft` y `baggage_cart_train`, tarjeta «Equipaje de aeropuerto» en el portal. Documentación en `docs/plant-engine.md` y `docs/plant-scene.md`.
 - **Verificación:** escenarios de cada equipo y de la planta con valores calculados a mano (todos pasan); `twin-lib validate`, `twin-lib plant validate`, `pytest`, `ruff`, `pnpm -r typecheck`; capturas de la galería y de la escena con simulación (`evidencia/aeropuerto-*.jpg`).
-- **Decisiones:** [[decisiones]] D43
+- **Decisiones:** [[decisiones]] D47
 - **Conversación:** [[hilo-equipaje-aeropuerto]]
+
+### 2026-10-18 17:50 · Subidas directas entre niveles del acueducto
+- **Fecha/hora (UTC):** 2026-10-18 17:21–18:10
+- **Fase del plan:** [[plan-del-proyecto]] acueducto
+- **Solicitado por:** Carlos Andrés Quiceño: «la tubería se cruza con la estructura» y, después, que la conexión entre niveles sea directa, con válvula, en puntos distintos de la cuadrícula y con un reductor tras la estación.
+- **Qué se hizo:** el travesaño del cabezal de la rejilla arranca después del montante (no lo atraviesa); se quitó la columna lateral; subidas rectas de 2" nivel 1→2→3→4 con válvula vertical (`regulating-valve` con `vertical: true`) entre caminos de ramales del nivel de abajo y de arriba; los niveles 2 a 4 sin montante propio (`inlet_riser: false`); reductor dibujado en el tubo de la estación (`reduce_at`, `reduce_to_in`).
+- **Verificación:** `twin-lib validate`, `twin-lib plant validate` (escenarios en tolerancia), `pytest apps/api`, `ruff check`, `pnpm typecheck`, captura `evidencia/acueducto-subidas-directas.png`.
+- **Decisiones:** [[decisiones]] D46
+- **Conversación:** [[hilo-secuencia-acueducto]]
+
+### 2026-10-18 17:15 · Acueducto sin losas en los pisos elevados
+- **Fecha/hora (UTC):** 2026-10-18 17:12–17:30
+- **Fase del plan:** [[plan-del-proyecto]] acueducto
+- **Solicitado por:** Carlos Andrés Quiceño: «prefiero que quitemos los pisos y mantengamos la estructuras».
+- **Qué se hizo:** `buildZones` de `plant.ts` no dibuja losa ni suelo de color en zonas con `elevation`; se conservan contorno, rótulo y estructuras.
+- **Verificación:** `pnpm -r typecheck`, captura de la galería (`evidencia/acueducto-sin-pisos.png`).
+- **Decisiones:** [[decisiones]] D45
+- **Conversación:** [[hilo-secuencia-acueducto]]
+### 2026-10-18 15:04 · Fábrica de cajas: plano y escena 3D
+- **Fecha/hora (UTC):** 2026-10-18 15:04–17:30
+- **Solicitado por:** Carlos Andrés Quiceño (15:04): construir en otro hilo «un sistema de transporte de una fábrica de cajas», como gemelo digital aparte, tomando como inspiración el sitio web de un fabricante de transportadores; (15:07): no mencionar nunca esa empresa. (17:14): «todo es imaginario no nos pongamos trabajo de más», varios tamaños de caja, lo que consuma menos, y una línea con paletizador y otras dos con uno compartido.
+- **Qué se hizo:** planta `industrial-models/corrugated-box-plant-v1` (230 × 135 m, 17 zonas, 69 equipos, tres líneas de conversión por tamaño de caja, paletizador 1 para la línea 1 y paletizador 2 compartido por las líneas 2 y 3 con una banda de unión, flujos, pasillos y rutas de montacargas; `layout.svg`); 20 piezas de escena en `apps/gallery/src/box-plant-pieces.ts` (bobinas, portabobinas, single facer, puente, engomadora, doble mesa, cortadoras, apilador, transportadores de pilas, mesas giratorias, carro de transferencia, impresoras-plegadoras-pegadoras, troqueladora rotativa, amarradora, banda de fajos, paletizador, cocina de almidón, ciclón, compactadora); tarjeta en el portal; ficha en `docs/box-plant.md` y ficha de diseño en `/mnt/project-files/fabrica-cajas/ficha-diseno.md`.
+- **Verificación:** `render_layout.py` sin errores ni avisos, `pnpm -r typecheck` y `pnpm -r test`, `pytest apps/api`; capturas de la escena: ![[cajas-general.jpg]] ![[cajas-pilas.jpg]] ![[cajas-corrugadora.jpg]] ![[cajas-paletizado-compartido.jpg]]
+- **Pendiente (siguiente PR):** tipos de librería y `simulation.yaml` para conectar el transporte en el motor (corrugadora → transportadores → carro → carriles → máquinas → paletizado), con la regla de reparto del carro entre carriles.
+- **Decisiones:** [[decisiones]] D44.
+- **Conversación:** [[hilo-fabrica-de-cajas]].
+
 ### 2026-10-18 14:40 · Secuencia hidráulica continua del acueducto
 - **Fecha/hora (UTC):** 2026-10-18 14:40–15:50
 - **Fase del plan:** [[plan-del-proyecto]] acueducto
@@ -80,8 +110,9 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 - **Fase del plan:** [[plan-del-proyecto]] fase 5
 - **Solicitado por:** Carlos Andrés Quiceño: «corregir estos detalles en la planta de salsas, tuberías que se cruzan con las cajas, y en ese hilo dime el proceso que está conectado y qué falta, como con la planta de plásticos».
 - **Qué se hizo:** en `apps/gallery/src/plant.ts` los tubos sin `route` ya no usan un nivel fijo por turno: para cada uno se prueban niveles (los de siempre, luego más bajos, luego más altos) y dos órdenes de tramos, y se descarta todo trazado que atraviese la caja de otro equipo (incluidas las estanterías con sus cajas) o quede a menos de un diámetro más 12 cm de otro tubo; si la columna de subida cae bajo otro tubo, se desplaza en horizontal. Los que no encuentran sitio pasan al frente de la cola y los demás se acomodan. Se documentó el flujo en `/mnt/project-files/inspeccion/flujo-planta-salsas.md`.
+- **Capacidad (pedido de las 15:23):** el autor pidió revisar qué equipos no darían abasto en litros por día; revisión en `flujo-planta-salsas.md`: el despacho de 35 tarimas/día solo movía ≈ 8 t/día y se ajustó a 90; quedan señalados túnel, marmitas, pasteurizador y mesa de 250 ml para ajustar al conectar.
 - **Verificación:** capturas de la galería local (vista general y de cerca de la bodega de empaque, CIP y marmita); la consola no reporta tuberías sin trazado libre en las tres plantas de prueba de salsas; `pnpm -r typecheck`.
-- **Decisiones:** [[decisiones]] D42
+- **Decisiones:** [[decisiones]] D41 y D43
 - **Evidencia:** `docs/registro/evidencia/salsas-tuberias-sobre-estanteria.png`, `salsas-tuberias-sin-cruces-general.png`
 - **Conversación:** [[hilo-tuberias-sin-cruces]]
 

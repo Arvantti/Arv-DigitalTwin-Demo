@@ -1,7 +1,7 @@
 ---
 tipo: decisiones
 tags: [registro, decision]
-actualizado: 2026-10-17
+actualizado: 2026-10-18
 ---
 # Decisiones y reglas del autor
 
@@ -138,6 +138,18 @@ El autor (14:39) señala piezas sueltas en el acueducto. Decisión: cada ruta de
 ## D41 · Tuberías que esquivan equipos y otros tubos · 2026-10-18 14:36
 El autor envió capturas de tuberías que atraviesan las cajas de la estantería y de dos tubos que se cruzan, y pidió corregirlo en un hilo aparte junto con el flujo conectado de la planta de salsas. Decisión: el trazado a nivel de rack se elige por tubo con una comprobación geométrica (no atraviesa la caja de ningún equipo ajeno ni se acerca a otro tubo); es un arreglo de recorrido, no ingeniería de detalle. Los tubos con `route` (acueducto) no cambian. Lo que quede sin trazado libre se avisa en la consola del navegador.
 
-## D43 · Sistema de equipaje de aeropuerto · 2026-10-18 15:04
+## D43 · Capacidad de la planta de salsas contra 22 t/día · 2026-10-18 15:23
+El autor (15:23) aprueba el plan de conexión de la planta de salsas y añade: revisar y ajustar los equipos que no darían abasto en litros por día. Decisión: base de 16 h/día y 85 % de disponibilidad (supuestos); el despacho pasa de 35 a 90 tarimas/día; túnel de enfriamiento, marmitas, pasteurizador y mesa de 250 ml se ajustan al conectar cada etapa, no antes.
+
+## D44 · Fábrica de cajas: cuarto gemelo, primero plano y escena · 2026-10-18 15:04
+El autor (15:04) pide un gemelo aparte del sistema de transporte de una fábrica de cajas, inspirado en un fabricante de transportadores, y (15:07) que esa empresa no se mencione nunca. Decisiones: (1) la inspiración no se nombra en el código, los documentos, el registro, los commits ni los PR; en el histórico su mención se reemplaza por «[referencia omitida a pedido del autor]», igual que D01 con las empresas de Medellín. (2) Planta `corrugated-box-plant-v1` con la corrugadora al norte y el transporte de pilas al este (rodillos, mesas giratorias, carro de transferencia, carriles de alimentación y pulmón) que alimenta las líneas de conversión hacia el oeste; valores supuestos (`docs/box-plant.md`). (4) El autor (17:14): todo es imaginario y se hace lo que consuma menos; varios tamaños de caja, una línea con paletizador propio y dos con uno compartido. Quedan tres líneas, una por tamaño (grande, mediana, pequeña troquelada), y se retira la cuarta (troqueladora plana y pegadora). (3) Se entrega en PR pequeños: primero plano y escena 3D con piezas de escena; después los tipos de librería y la simulación conectada en el motor, tras confirmar la ficha de diseño con el autor (D03).
+
+## D45 · Pisos elevados sin losa, con sus estructuras · 2026-10-18 17:12
+El autor (17:12) pide quitar los pisos y mantener las estructuras. Decisión: las zonas con `elevation` ya no dibujan losa translúcida ni suelo de color; quedan su contorno, su rótulo y las estructuras de cada equipo (bastidores, patas, soportes). El piso 0 conserva su suelo.
+
+## D46 · Subidas directas entre niveles, sin columna lateral · 2026-10-18 17:28
+El autor (17:28) pide que la conexión entre niveles de la rejilla sea directa: tubo con válvula del nivel 1 al 2, del 2 al 3 y del 3 al 4, cada uno en un punto distinto de la cuadrícula en vista de planta, y la estación reguladora con un reductor antes del nivel 1. Decisión: se elimina la columna externa con lazos; cada subida es un tubo recto de 2" que se une a un camino entre ramales de cada nivel; los niveles 2 a 4 no dibujan montante propio; la válvula entre niveles tiene variante vertical (`vertical: true`); el flujo de la estación trae `reduce_at` y `reduce_to_in` para dibujar el reductor (solo escena).
+
+## D47 · Sistema de equipaje de aeropuerto · 2026-10-18 15:04
 Pedido del autor (15:04): un gemelo nuevo de bandas transportadoras de maletas de aeropuerto, en su propio hilo. El autor no dio datos; todo valor es típico de la industria y queda «por confirmar» en cada FICHA. Decisiones: (1) flujo de salidas check-in → colectora → inspección CT → clasificador → carruseles de armado, con nivel 3 para lo que la CT y el operador no despejan y codificación manual para etiquetas sin lectura; llegadas con dos bandas desde la plataforma a dos carruseles de reclamo. Ninguna banda se cruza con otra. (2) Un equipo con varias salidas usa un puerto por destino (`out_1` … `out_4`, `manual_out`, `cleared_out`, `alarm_out`), porque el motor no reparte un enlace. (3) Reparto por vuelo fijo por porcentaje (30/25/25/20) con el método del mayor déficit, lectura del 97 % y 2 vueltas extra antes de mandar a manual; no hay horarios de vuelo todavía. (4) Todos los equipos dejan de recibir al llenarse y vuelven con una plaza libre (histéresis), para que un bloqueo llegue hasta la fila de pasajeros sin parpadeo. (5) Sin marcas ni códigos reales de aerolínea: vuelos V101, V205, V317 y V422.
 
