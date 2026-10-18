@@ -1,0 +1,4 @@
+preset: single-wall-1800
+description: Corrugadora de 1,8 m a 150 m/min con lámina de pared sencilla de 1,0 m, 2 a lo ancho, pilas de 1.000
+params: { speed_m_min: 150, sheet_length_m: 1.0, outs: 2, sheets_per_stack: 1000, outfeed_stacks: 2, order_change_s: 240, width_m: 3.0 }
+provenance: { speed_m_min: assumed, sheet_length_m: assumed, outs: assumed, sheets_per_stack: assumed, outfeed_stacks: assumed, order_change_s: assumed }

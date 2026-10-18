@@ -1,0 +1,85 @@
+schema_version: 0.1.0
+type: corrugator
+version: 0.1.0
+name: Corrugadora (extremo seco y apilador)
+manufacturing: packaging
+category: converting.corrugator
+description: >
+  Línea corrugadora vista desde el transporte: produce lámina de cartón a una velocidad de línea,
+  la corta en láminas de un largo dado (varias a lo ancho) y el apilador arma pilas que entrega a un
+  transportador de rodillos. Si el transportador no recibe, las pilas esperan en la salida del apilador
+  y, con la salida llena, la línea se detiene. El cambio de pedido y la rotura de papel la paran.
+aliases: [corrugadora, apilador, stacker, extremo seco, dry end]
+fidelity: { visual: V1, behavior: B1 }
+
+params:
+  speed_m_min:       { type: number, unit: m/min, min: 50, max: 400, default: 200, description: Velocidad de la línea, affects: [behavior] }
+  sheet_length_m:    { type: number, unit: m, min: 0.3, max: 6, default: 1.45, description: Largo de la lámina que corta la cuchilla, affects: [behavior] }
+  outs:              { type: integer, min: 1, max: 8, default: 3, description: Láminas a lo ancho del cartón, affects: [behavior] }
+  sheets_per_stack:  { type: integer, min: 50, max: 3000, default: 600, description: Láminas por pila, affects: [behavior] }
+  outfeed_stacks:    { type: integer, min: 1, max: 6, default: 2, description: Pilas que esperan en la salida del apilador, affects: [behavior, geometry] }
+  order_change_s:    { type: number, unit: s, min: 0, max: 3600, default: 180, description: Parada por cambio de pedido, affects: [behavior] }
+  length_m:          { type: number, unit: m, min: 4, max: 30, default: 12, description: Largo del apilador, affects: [geometry] }
+  width_m:           { type: number, unit: m, min: 1.5, max: 5, default: 3.6, description: Ancho del apilador, affects: [geometry] }
+  stack_height_m:    { type: number, unit: m, min: 0.5, max: 2.2, default: 1.4, description: Altura de la pila completa, affects: [geometry] }
+
+ports:
+  - { id: stacks_out, kind: item, direction: out, unit: pilas/min, link: { units: stacks_delivered, ready: downstream_free } }
+  - { id: paper_in, kind: material, direction: in, medium: bobinas de papel }
+  - { id: steam_in, kind: utility, direction: in, medium: vapor }
+  - { id: power, kind: utility, direction: in, medium: energía eléctrica }
+
+states:
+  - { id: idle, description: Detenida }
+  - { id: running, description: Produciendo lámina }
+  - { id: setup, description: Cambio de pedido }
+  - { id: blocked, description: La salida del apilador está llena }
+  - { id: fault, description: Detenida por falla }
+
+variables:
+  - { id: speed_m_min, unit: m/min, kind: measured, range: [0, 400], noise_sd: 0.5, resolution: 1, description: Velocidad de la línea }
+  - { id: sheets_per_min, unit: u/min, kind: calculated, description: Láminas que corta por minuto a la velocidad actual }
+  - { id: sheets_count, unit: u, kind: counter, description: Láminas cortadas }
+  - { id: stacks_count, unit: pilas, kind: counter, description: Pilas terminadas }
+  - { id: stacks_delivered, unit: pilas, kind: counter, description: Pilas entregadas al transportador }
+  - { id: stack_fill_pct, unit: "%", kind: calculated, range: [0, 100], description: Llenado de la pila en curso }
+  - { id: outfeed_count, unit: pilas, kind: calculated, description: Pilas esperando en la salida del apilador }
+
+events:
+  - { id: stack_completed, description: Pila terminada, payload: [stack] }
+  - { id: outfeed_full, description: La salida del apilador se llenó y la línea se detiene }
+  - { id: order_change_started, description: Empieza un cambio de pedido }
+  - { id: order_change_done, description: Termina el cambio de pedido }
+
+faults:
+  - { id: paper_break, description: Rotura del papel en un single facer, mtbf_h: 60, mttr_min: 15, severity: medium, effect: La línea se detiene hasta empalmar }
+  - { id: splice_failure, description: Falla del empalmador automático, mtbf_h: 120, mttr_min: 8, severity: low, effect: Parada corta para empalmar a mano }
+  - { id: warp, description: Lámina alabeada, mtbf_h: 200, mttr_min: 20, severity: low, stops_equipment: false, effect: "Baja la velocidad al 70 % hasta corregir la goma" }
+
+commands:
+  - { id: start, description: Arranca la línea }
+  - { id: stop, description: Detiene la línea }
+  - { id: order_change, description: "Cambio de pedido: para order_change_s y aplica el nuevo largo y láminas a lo ancho", args: { sheet_length_m: number, outs: integer } }
+  - { id: set_speed, description: Cambia la velocidad de la línea, args: { m_min: number } }
+  - { id: inject_fault, description: Inyecta una falla declarada, args: { fault: string, duration_s: number } }
+  - { id: clear_fault, description: Repara una falla activa, args: { fault: string } }
+  - { id: set_param, description: Cambia un parámetro en caliente, args: { name: string, value: any } }
+
+kpis:
+  - { id: stacks_per_h, unit: pilas/h, description: Pilas entregadas por hora }
+  - { id: running_pct, unit: "", description: Fracción del tiempo produciendo }
+  - { id: blocked_pct, unit: "", description: Fracción del tiempo con la salida llena }
+
+animation_channels:
+  - { id: stack_fill, range: [0, 1], description: Llenado de la pila en curso }
+  - { id: outfeed_count, range: [0, 6], description: Pilas esperando en la salida }
+  - { id: line_speed, unit: m/min, range: [0, 400], description: Velocidad de la línea }
+  - { id: stack_light, range: [0, 3], description: "Baliza: 0 apagada, 1 verde, 2 amarilla, 3 roja" }
+
+geometry:
+  parts: [frame, infeed_belt, stack, outfeed_rollers, cabinet, hmi, stack_light]
+
+assumptions:
+  - "El ritmo de láminas es velocidad ÷ largo de lámina × láminas a lo ancho; no se modelan el papel, el vapor ni la goma."
+  - "Con la salida llena la línea se detiene; una corrugadora real baja la velocidad antes de parar."
+  - "Las pilas salen de una en una cuando el transportador recibe."

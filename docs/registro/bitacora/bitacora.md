@@ -10,6 +10,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
+| 2026-10-18 | Simulación de la fábrica de cajas | La fábrica de cajas simula su transporte: corrugadora, transportadores de pilas, carro de transferencia que reparte entre tres carriles, tres convertidoras, bandas de fajos y paletizador propio y compartido; escenarios nominal, rotura de papel y paro del paletizador compartido | 4 |
 | 2026-10-18 | Estiba por producto | Planta de plásticos: la estiba es estándar y las piezas por estiba se calculan por producto (de 30 canecas de 121 L a 72.000 bisagras); la flota recibe las piezas por ruta y la ruta 5 usa estibas armadas. D51 | plásticos |
 | 2026-10-18 | Subidas desde el cabezal | Las subidas entre niveles del acueducto salen del tubo principal de cada nivel, después del último ramal, por fuera del bastidor (pedido de Andy). D50 | acueducto |
 | 2026-10-18 | Línea caliente de salsas | Motor: segunda línea caliente de 250 ml (marmita 3, pasteurizador 2, pulmón 2, sachetadora, túnel 2, control de peso y mesa de empaque) junto a la de 1.000 ml; dos mesas de 250 ml; escenario `tunnel-250-stop`; dimensionado a 22 t/día con 40 % en caliente. D49 | 5 |
@@ -67,6 +68,13 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 ## Entradas
 
+### 2026-10-18 22:00 · Fábrica de cajas: simulación del transporte
+- **Fecha/hora (UTC):** 2026-10-18 17:53–22:30
+- **Solicitado por:** continuación de D44 (PR #46 fusionado a las 17:53), con la decisión del autor de las 17:14: «todo es imaginario no nos pongamos trabajo de más… lo que nos consuma menos».
+- **Qué se hizo:** tipos `corrugator`, `transfer-car`, `box-converter` y `palletizer` en `equipment-library/` (contrato, comportamiento, geometría, presets, escenarios, ficha); `industrial-models/corrugated-box-plant-v1/simulation.yaml` con 18 equipos simulados y escenarios `nominal`, `paper-break` y `shared-palletizer-stop`; ritmos y orientaciones del `plant.yaml` ajustados a la simulación; botón de librería en el portal; `docs/box-plant.md`, `docs/plant-engine.md` y `docs/plant-scene.md`.
+- **Verificación:** `twin-lib validate` de los cuatro tipos, `pytest` de sus 19 escenarios, `twin-lib plant run` de los tres escenarios de la planta con todas sus expectativas cumplidas, `render_layout.py` sin errores; capturas de la escena en vivo: ![[cajas-sim-transporte-pilas.jpg]] ![[cajas-sim-paletizado.jpg]] ![[cajas-sim-apilador.jpg]]
+- **Decisiones:** [[decisiones]] D52 (renumerada al traer main: D45 a D51 ya estaban tomadas por otros hilos).
+- **Conversación:** [[hilo-fabrica-de-cajas]].
 ### 2026-10-18 22:44 · Estiba estándar con piezas por producto
 - **Fecha/hora (UTC):** 2026-10-18 22:44–23:30
 - **Solicitado por:** Carlos Andrés Quiceño (22:44): «el tamaño de la estiba es estándar, tú debes asignar un tamaño a cada producto y calcular».

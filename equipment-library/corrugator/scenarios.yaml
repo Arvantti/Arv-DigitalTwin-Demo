@@ -1,0 +1,48 @@
+scenarios:
+  - id: steady
+    description: Una hora a 200 m/min con lámina de 1,45 m, 3 a lo ancho y pilas de 600
+    preset: bc-2500
+    duration_s: 3600
+    expect:
+      - { path: variables.sheets_count, min: 24800, max: 24840, description: "(200 ÷ 1,45 × 3 = 413,8 láminas/min × 60 = 24.828)" }
+      - { path: variables.stacks_delivered, equals: 41, description: "(24.828 ÷ 600 = 41,4: una pila cada 87 s)" }
+      - { path: kpis.running_pct, min: 0.99 }
+
+  - id: outfeed-full
+    description: El transportador no recibe; dos pilas esperan en la salida y la línea se detiene
+    preset: bc-2500
+    duration_s: 600
+    timeline:
+      - { at_s: 0, inputs: { downstream_free: false } }
+    expect:
+      - { path: state, equals: blocked }
+      - { path: variables.outfeed_count, equals: 2 }
+      - { path: events.outfeed_full, equals: 1, description: "(dos pilas de 87 s: se llena a los ≈ 174 s)" }
+      - { path: variables.stacks_delivered, equals: 0 }
+
+  - id: order-change
+    description: Cambio de pedido a los 10 min a una lámina de 0,9 m, 4 a lo ancho
+    preset: bc-2500
+    duration_s: 3600
+    timeline:
+      - { at_s: 600, command: order_change, args: { sheet_length_m: 0.9, outs: 4 } }
+    expect:
+      - { path: events.order_change_done, equals: 1 }
+      - { path: variables.sheets_per_min, min: 888, max: 890, description: "(200 ÷ 0,9 × 4 = 888,9 láminas/min)" }
+      - { path: variables.stacks_delivered, min: 76, max: 77, description: "(10 min a 413,8 = 4.138 láminas + 47 min a 888,9 = 41.778; 45.916 ÷ 600 = 76,5; el cambio de 3 min no produce)" }
+
+  - id: paper-break
+    description: Rotura de papel de 15 min a los 20 min
+    preset: bc-2500
+    duration_s: 3600
+    timeline:
+      - { at_s: 1200, command: inject_fault, args: { fault: paper_break, duration_s: 900 } }
+    expect:
+      - { path: events.fault_cleared, equals: 1 }
+      - { path: variables.stacks_delivered, min: 30, max: 31, description: "(45 min × 413,8 = 18.621 láminas ÷ 600 = 31,0)" }
+
+  - id: demo
+    description: Turno con fallas aleatorias para la galería
+    preset: bc-2500
+    duration_s: 28800
+    random_faults: true

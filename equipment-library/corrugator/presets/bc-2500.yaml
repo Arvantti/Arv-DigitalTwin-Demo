@@ -1,0 +1,4 @@
+preset: bc-2500
+description: Corrugadora de 2,5 m a 200 m/min con lámina de doble pared BC de 1,45 m, 3 a lo ancho, pilas de 600
+params: { speed_m_min: 200, sheet_length_m: 1.45, outs: 3, sheets_per_stack: 600, outfeed_stacks: 2, order_change_s: 180 }
+provenance: { speed_m_min: assumed, sheet_length_m: assumed, outs: assumed, sheets_per_stack: assumed, outfeed_stacks: assumed, order_change_s: assumed }

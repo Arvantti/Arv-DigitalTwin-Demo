@@ -1,0 +1,4 @@
+preset: single-24
+description: Paletizador de una línea de cajas grandes, 12 fajos/min, estibas de 24 fajos
+params: { rate_bundles_min: 12, bundles_per_pallet: 24, pallet_change_s: 30, infeed_capacity: 8, nominal_inflow_upm: 4 }
+provenance: { rate_bundles_min: assumed, bundles_per_pallet: assumed, pallet_change_s: assumed, infeed_capacity: assumed }

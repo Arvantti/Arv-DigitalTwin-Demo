@@ -1,0 +1,4 @@
+preset: shared-40
+description: Paletizador compartido de cajas medianas y pequeñas, 22 fajos/min, estibas de 40 fajos
+params: { rate_bundles_min: 22, bundles_per_pallet: 40, pallet_change_s: 30, infeed_capacity: 12, nominal_inflow_upm: 15.6 }
+provenance: { rate_bundles_min: assumed, bundles_per_pallet: assumed, pallet_change_s: assumed, infeed_capacity: assumed }

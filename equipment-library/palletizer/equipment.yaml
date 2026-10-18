@@ -1,0 +1,74 @@
+schema_version: 0.1.0
+type: palletizer
+version: 0.1.0
+name: Paletizador de fajos
+manufacturing: logistics
+category: logistics.palletizer
+description: >
+  Paletizador automático que recibe fajos por banda, los acomoda por capas sobre una estiba vacía y,
+  al completarla, la saca hacia la envolvedora y toma otra. Acumula fajos en la entrada y bloquea la
+  banda cuando se llena; sin estibas vacías o con la salida ocupada se detiene.
+aliases: [paletizador, palletizer, robot paletizador, estibador]
+fidelity: { visual: V1, behavior: B2 }
+
+params:
+  rate_bundles_min:   { type: number, unit: fajos/min, min: 1, max: 60, default: 20, description: Ritmo máximo de colocación, affects: [behavior] }
+  bundles_per_pallet: { type: integer, min: 1, max: 200, default: 40, description: Fajos por estiba, affects: [behavior, geometry] }
+  pallet_change_s:    { type: number, unit: s, min: 0, max: 600, default: 30, description: "Tiempo de sacar la estiba llena y poner una vacía", affects: [behavior] }
+  infeed_capacity:    { type: integer, min: 1, max: 100, default: 12, description: Fajos que caben en la mesa de entrada, affects: [behavior] }
+  nominal_inflow_upm: { type: number, unit: fajos/min, min: 0, max: 60, default: 10, description: Llegada nominal si el entorno no la fija, affects: [behavior] }
+  length_m:           { type: number, unit: m, min: 3, max: 15, default: 8, description: Largo del paletizador, affects: [geometry] }
+  width_m:            { type: number, unit: m, min: 2, max: 8, default: 4, description: Ancho del paletizador, affects: [geometry] }
+
+ports:
+  - { id: bundles_in, kind: item, direction: in, unit: fajos/min, link: { units: inflow_upm, ready: accepting } }
+  - { id: pallets_out, kind: item, direction: out, unit: estibas/min, link: { units: pallets_count, ready: downstream_free } }
+  - { id: empty_pallets_in, kind: material, direction: in, medium: estibas vacías }
+  - { id: power, kind: utility, direction: in, medium: energía eléctrica }
+
+states:
+  - { id: idle, description: Sin fajos }
+  - { id: running, description: Colocando fajos }
+  - { id: setup, description: Cambiando de estiba }
+  - { id: starved, description: Sin estibas vacías }
+  - { id: blocked, description: La estiba llena no puede salir }
+  - { id: fault, description: Detenido por falla }
+
+variables:
+  - { id: infeed_bundles, unit: fajos, kind: calculated, description: Fajos en la mesa de entrada }
+  - { id: pallet_bundles, unit: fajos, kind: calculated, description: Fajos en la estiba en curso }
+  - { id: bundles_placed, unit: fajos, kind: counter, description: Fajos colocados }
+  - { id: pallets_count, unit: estibas, kind: counter, description: Estibas entregadas a la salida }
+  - { id: outfeed_pallets, unit: estibas, kind: calculated, description: Estibas llenas esperando salir }
+  - { id: accepting, unit: "", kind: status, description: "1 si la mesa de entrada recibe fajos" }
+
+events:
+  - { id: pallet_completed, description: Estiba completa, payload: [pallet] }
+  - { id: infeed_full, description: La mesa de entrada se llenó y bloquea la banda }
+
+faults:
+  - { id: gripper_fault, description: Falla de la pinza o del cabezal, mtbf_h: 150, mttr_min: 10, severity: medium, effect: El paletizador se detiene }
+  - { id: pallet_dispenser_jam, description: Atasco del dispensador de estibas, mtbf_h: 200, mttr_min: 6, severity: low, effect: Parada corta }
+
+commands:
+  - { id: inject_fault, description: Inyecta una falla declarada, args: { fault: string, duration_s: number } }
+  - { id: clear_fault, description: Repara una falla activa, args: { fault: string } }
+  - { id: set_param, description: Cambia un parámetro en caliente, args: { name: string, value: any } }
+
+kpis:
+  - { id: pallets_per_h, unit: estibas/h, description: Estibas por hora }
+  - { id: utilization, unit: "", description: Fracción del tiempo colocando fajos }
+  - { id: blocked_pct, unit: "", description: Fracción del tiempo con la salida ocupada }
+
+animation_channels:
+  - { id: pallet_fill, range: [0, 1], description: Fajos en la estiba respecto de los que caben }
+  - { id: infeed_fill, range: [0, 1], description: Fajos en la mesa de entrada respecto de su capacidad }
+  - { id: working, range: [0, 1], description: "1 mientras coloca fajos" }
+  - { id: stack_light, range: [0, 3], description: "Baliza: 0 apagada, 1 verde, 2 amarilla, 3 roja" }
+
+geometry:
+  parts: [infeed_table, gantry, head, pallet, load, fence, stack_light]
+
+assumptions:
+  - "Coloca a ritmo constante mientras hay fajos; no distingue productos: una estiba compartida mezcla lo que llega."
+  - "La salida guarda una estiba llena; si no sale, la siguiente bloquea el paletizador."

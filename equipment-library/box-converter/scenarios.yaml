@@ -1,0 +1,75 @@
+scenarios:
+  - id: steady
+    description: Cajas medianas a 150 láminas/min con pilas de 600 que llegan cada 2 min durante 1 h
+    preset: ffg-medium
+    duration_s: 3600
+    timeline:
+      - { at_s: 0, inputs: { inflow_upm: 0.5 } }
+    expect:
+      - { path: variables.sheets_fed, min: 8695, max: 8700, description: "(la primera pila llega a los 2 min; 58 min × 150 = 8.700 láminas; las pilas llegan más rápido de lo que se gastan, 4 min cada una)" }
+      - { path: variables.bundles_count, min: 347, max: 348, description: "(8.700 cajas ÷ 25 = 348 fajos)" }
+      - { path: variables.accepting, equals: 0, description: "(el alimentador queda lleno: la pila que alimenta y la siguiente)" }
+      - { path: kpis.running_pct, min: 0.96, max: 0.97, description: "(58 de 60 min)" }
+
+  - id: starved
+    description: No llegan pilas
+    preset: ffg-medium
+    duration_s: 600
+    timeline:
+      - { at_s: 0, inputs: { inflow_upm: 0 } }
+    expect:
+      - { path: state, equals: starved }
+      - { path: variables.sheets_fed, equals: 0 }
+      - { path: variables.accepting, equals: 1 }
+
+  - id: outfeed-blocked
+    description: La banda de fajos no recibe; tres fajos esperan y la máquina se bloquea
+    preset: ffg-medium
+    duration_s: 600
+    timeline:
+      - { at_s: 0, inputs: { inflow_upm: 0.5, downstream_free: false } }
+    expect:
+      - { path: state, equals: blocked }
+      - { path: variables.delivery_bundles, equals: 3 }
+      - { path: variables.bundles_count, equals: 0 }
+      - { path: variables.sheets_fed, min: 75, max: 76, description: "(3 fajos × 25 cajas = 75 láminas, 30 s a 150 láminas/min)" }
+
+  - id: order-change
+    description: Cambio de clisés de 15 min a los 10 min en la máquina de cajas grandes
+    preset: ffg-large
+    duration_s: 3600
+    timeline:
+      - { at_s: 0, inputs: { inflow_upm: 0.5 } }
+      - { at_s: 600, command: order_change, args: {} }
+    expect:
+      - { path: events.order_change_done, equals: 1 }
+      - { path: variables.bundles_count, min: 171, max: 172, description: "(produce de los 2 a los 10 min y de los 25 a los 60: 43 min × 100 = 4.300 cajas ÷ 25 = 172 fajos)" }
+
+  - id: feed-jam
+    description: Atasco de 6 min en el alimentador a los 20 min
+    preset: ffg-large
+    duration_s: 3600
+    timeline:
+      - { at_s: 0, inputs: { inflow_upm: 0.5 } }
+      - { at_s: 1200, command: inject_fault, args: { fault: feed_jam, duration_s: 360 } }
+    expect:
+      - { path: events.fault_cleared, equals: 1 }
+      - { path: variables.bundles_count, min: 207, max: 208, description: "(52 min × 100 = 5.200 cajas ÷ 25 = 208 fajos)" }
+
+  - id: die-cutter-two-up
+    description: Troqueladora rotativa de cajas pequeñas, 2 cajas por lámina, con una pila cada 4 min durante 1 h
+    preset: rdc-small
+    duration_s: 3600
+    timeline:
+      - { at_s: 0, inputs: { inflow_upm: 0.25 } }
+    expect:
+      - { path: variables.boxes_count, min: 13430, max: 13440, description: "(primera pila a los 4 min; 56 min × 120 láminas × 2 cajas = 13.440)" }
+      - { path: variables.bundles_count, min: 537, max: 538, description: "(13.440 ÷ 25 = 537,6)" }
+
+  - id: demo
+    description: Turno con fallas aleatorias para la galería
+    preset: ffg-medium
+    duration_s: 28800
+    random_faults: true
+    timeline:
+      - { at_s: 0, inputs: { inflow_upm: 0.5 } }
