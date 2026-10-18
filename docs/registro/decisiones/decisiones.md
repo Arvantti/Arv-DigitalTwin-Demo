@@ -123,3 +123,6 @@ El autor autoriza buscar referencias en internet y decidir los detalles (04:26).
 
 ## D37 · Orbitron solo en títulos y paneles de a uno en móvil · 2026-10-18 12:00
 El autor (12:00): Orbitron cansa la lectura, se usa solo en títulos. Decisiones: (1) Orbitron en la marca, el título de la planta, el nombre del activo, los titulares del portal y los h1/h2 del panel del acueducto; Inter en etiquetas, botones, pestañas, cifras y subtítulos. (2) En pantallas de hasta 700 px los paneles flotantes de la escena (menú, activo, eventos) no caben juntos: se muestran de a uno desde una barra inferior, sin cambiar nada en escritorio.
+
+## D38 · Tuberías ancladas a la superficie real del equipo · 2026-10-18 13:50
+Tras la inspección visual, el autor señala líneas desconectadas (13:15) y pide arreglarlas (13:48). Decisión: sin esperar puertos de conexión por tipo de equipo, las tuberías sin `route` se anclan a la geometría real (rayo vertical) y llevan brida en cada extremo; las que traen `route` no cambian. Es un arreglo de recorrido, no de ingeniería de detalle; los puertos reales por tipo de equipo quedan como mejora posterior.
