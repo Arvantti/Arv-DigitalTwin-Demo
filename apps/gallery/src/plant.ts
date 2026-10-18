@@ -239,7 +239,7 @@ const controlPieces: ControlPiece[] = [];
 
 /** Bodega de producto terminado y despacho (estanterías, paso directo, muelle y camión): piezas de la escena, sin comportamiento. */
 const warehouseBuilders: Record<string, (eq: PlantEquipment) => THREE.Object3D> = {
-  pallet_rack: (eq) => palletRack(eq.footprint),
+  pallet_rack: (eq) => palletRack(eq.footprint, eq.params?.stage as string | undefined),
   pass_through_door: (eq) => passThroughDoor(eq.footprint),
   dock_leveler: (eq) => dockLeveler(eq.footprint),
   delivery_truck: (eq) => deliveryTruck(eq.footprint, eq.params?.state as string | undefined),
@@ -619,7 +619,7 @@ function buildCameras(): void {
   // Edificio por pisos: una cámara por zona (cada piso) y una por nivel de los equipos que lo declaran (la rejilla).
   const featured = building
     ? doc.zones
-    : doc.zones.filter((z) => (["production", "utility"].includes(z.kind) && z.rect[2] * z.rect[3] >= 80) || z.id.startsWith("sala-control"));
+    : doc.zones.filter((z) => (["production", "utility"].includes(z.kind) && z.rect[2] * z.rect[3] >= 80) || z.id.startsWith("sala-control") || z.id === "almacen-semielaborado");
   for (const z of featured) entries.push([z.name.toUpperCase(), z.id, () => focusRect(z.rect, Math.max(3, z.height), 0.85, z.elevation ?? 0)]);
   if (building)
     for (const a of assets.values()) {
@@ -635,6 +635,25 @@ function buildCameras(): void {
     const x1 = Math.max(bodega.rect[0] + bodega.rect[2], patio.rect[0] + patio.rect[2]);
     const y1 = Math.max(bodega.rect[1] + bodega.rect[3], patio.rect[1] + patio.rect[3]);
     entries.push(["BODEGA Y DESPACHO", bodega.id, () => focusRect([x0, y0, x1 - x0, y1 - y0], bodega.height)]);
+  }
+  // línea de ensamble: las celdas de ensamble con su operario, en primer plano
+  const cells = [...assets.values()].filter((a) => a.eq.type === "assembly_cell");
+  if (cells.length) {
+    const xs = cells.map((a) => a.eq.position[0]);
+    const ys = cells.map((a) => a.eq.position[1]);
+    const rect: [number, number, number, number] = [Math.min(...xs) - 6, Math.min(...ys) - 4, Math.max(...xs) - Math.min(...xs) + 12, Math.max(...ys) - Math.min(...ys) + 8];
+    entries.push([
+      "LÍNEA DE ENSAMBLE",
+      "ensamble",
+      () => {
+        focusRect(rect, 3, 0.8);
+        // las estanterías de producto terminado quedan al este: se mira desde el oeste para que no tapen la línea
+        const target = stage.controls.target;
+        const offset = stage.camera.position.clone().sub(target);
+        stage.camera.position.set(target.x - Math.abs(offset.x) * 0.7, target.y + offset.y * 0.9, target.z + Math.abs(offset.z));
+        stage.controls.update();
+      },
+    ]);
   }
   for (const [label, key, go] of entries) {
     const b = document.createElement("button");

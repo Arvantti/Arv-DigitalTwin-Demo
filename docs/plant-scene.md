@@ -104,19 +104,22 @@ Secciones opcionales `aisles` (pasillos) y `routes` (rutas de montacargas y de o
 
 ```yaml
 aisles:
-  - { id: aisle-sur, kind: forklift, rect: [34, 25, 90, 4] }
+  - { id: aisle-semielaborado, kind: forklift, rect: [34, 87.2, 90, 3.8] }
 routes:
   - { id: fk-sf-ensamble-1, name: "Semielaborado a la celda de ensamble 1", kind: forklift,
       from: rack-sf-03, to: assembly-01,           # equipo (extremo a ≤ 3,5 m de su huella) o zona (extremo dentro)
       load: "pedal, palanca y cuerpos de papelera", width: 1.5, trips_per_h: 3,
-      passes_under: [conveyor-main-01],            # equipos de piso que la ruta puede cruzar (banda elevada)
-      path: [[98, 27.2], [79, 27.2], [79, 74.25], [134, 74.25], [134, 66.5], [129, 66.5]] }
+      path: [[98, 89.1], [79, 89.1], [79, 74.25], [134, 74.25], [134, 66.5], [129, 66.5]] }
   - { id: pe-ensamble-empaque, name: "Operario lleva unidades armadas a empaque 3", kind: pedestrian,
       from: assembly-01, to: pack-station-03, width: 1.0, walkers: 1,
       path: [[131, 59], [131, 53], [136, 53], [136, 33]] }
 ```
 
-El validador exige: `kind` `forklift` o `pedestrian`, 2 o más puntos dentro del predio, ancho positivo, `from` y `to` existentes con el extremo junto al equipo o dentro de la zona, que ninguna ruta cruce un equipo de piso (salvo los de `passes_under`) y que las de montacargas vayan siempre dentro de un pasillo de `aisles` con `kind: forklift`. `trips_per_h` y `walkers` son supuestos.
+El validador exige: `kind` `forklift` o `pedestrian`, 2 o más puntos dentro del predio, ancho positivo, `from` y `to` existentes con el extremo junto al equipo o dentro de la zona, que ninguna ruta cruce un equipo de piso (`passes_under` permite cruzar uno elevado a propósito, pero la planta de plásticos ya no lo usa: la banda no se cruza) y que las de montacargas vayan siempre dentro de un pasillo de `aisles` con `kind: forklift`. `trips_per_h` y `walkers` son supuestos.
+
+**Carriles.** En la escena, montacargas y carros circulan por la derecha: la ida (cargada) y el regreso (vacío) van por carriles distintos a 0,8 m (montacargas) y 0,5 m (carros) del eje de la ruta, y ambos se dibujan en el piso. Los operarios caminan por el eje.
+
+**Almacenes.** `almacen-semielaborado` (al norte de la nave, estanterías con cajas plásticas azules, `params.stage: semielaborado`) guarda las piezas inyectadas que llevan los montacargas desde los buffers de las inyectoras y alimenta las celdas de ensamble; la bodega de producto terminado (`params.stage: terminado`, cajas de cartón) recibe lo armado y empacado. Hoy ninguno de los dos se simula (sin inventario), ver `docs/registro` D40.
 
 ## Pendiente de la fase 5
 

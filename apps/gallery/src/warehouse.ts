@@ -26,12 +26,14 @@ const BAY_M = 2.7;
 const LEVELS = 4;
 const FILL = 0.85;
 const CARTONS = ["#b08a5a", "#a67c4e", "#bf9965", "#9c7447"];
+/** Semielaborado: piezas inyectadas en cajas plásticas azules (el producto terminado va en cajas de cartón). */
+const BINS = ["#2f6fb0", "#3a7bbf", "#285f99", "#3f86c9"];
 
 /**
  * Estantería de estibas: marcos y largueros (azul y naranja), 4 niveles, 2 tarimas por vano y por fila de fondo.
  * Con ancho ≥ 2,2 m es de doble fondo; el largo es el lado mayor de la huella. Las tarimas son instancias: el 85 % de las posiciones está ocupado.
  */
-export function palletRack(footprint: [number, number, number]): THREE.Object3D {
+export function palletRack(footprint: [number, number, number], stage?: string): THREE.Object3D {
   const [fx, fy, dz] = footprint;
   // el largo es el lado mayor de la huella; si va a lo largo de x se gira el conjunto
   const alongX = fx > fy;
@@ -87,7 +89,8 @@ export function palletRack(footprint: [number, number, number]): THREE.Object3D 
     const h = 0.85 + hash(s.seed + 0.5) * 0.15;
     m.makeScale(1, h, 1).setPosition(s.x, s.y + 0.14 + (1.25 * h) / 2, s.z);
     load.setMatrixAt(i, m);
-    load.setColorAt(i, c.set(CARTONS[Math.floor(hash(s.seed + 0.9) * CARTONS.length)]));
+    const palette = stage === "semielaborado" ? BINS : CARTONS;
+    load.setColorAt(i, c.set(palette[Math.floor(hash(s.seed + 0.9) * palette.length)]));
   });
   for (const im of [base, load]) {
     im.castShadow = im.receiveShadow = true;
