@@ -7,6 +7,8 @@ interface PlantCard {
   title: string;
   text: string;
   extra?: { href: string; label: string };
+  /** Sin tipos de librería simulados todavía: no se ofrece la librería filtrada. */
+  noLibrary?: boolean;
 }
 
 const plants: PlantCard[] = [
@@ -29,6 +31,13 @@ const plants: PlantCard[] = [
     text: "Bombeo, estación reguladora y rejilla de distribución por pisos, con la presión de cada casa y el panel del PLC.",
     extra: { href: "/acueducto.html", label: "PANEL DEL PLC" },
   },
+  {
+    id: "corrugated-box-plant-v1",
+    family: "MANEJO DE MATERIALES",
+    title: "Fábrica de cajas",
+    text: "Corrugadora, transporte de pilas con carro de transferencia y pulmón, conversión, paletizado y bodega de cartón corrugado.",
+    noLibrary: true,
+  },
 ];
 
 const root = document.getElementById("cards") as HTMLElement;
@@ -41,7 +50,7 @@ for (const p of plants) {
     <p>${p.text}</p>
     <div class="portal-actions">
       <a class="btn primary" href="/plant.html?plant=${p.id}">VER LA PLANTA EN 3D</a>
-      <a class="btn" href="/equipos.html?plant=${p.id}">EQUIPOS</a>
+      ${p.noLibrary ? "" : `<a class="btn" href="/equipos.html?plant=${p.id}">EQUIPOS</a>`}
       ${p.extra ? `<a class="btn" href="${p.extra.href}">${p.extra.label}</a>` : ""}
     </div>`;
   root.appendChild(card);

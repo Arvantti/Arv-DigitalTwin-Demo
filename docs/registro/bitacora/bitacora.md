@@ -1,7 +1,7 @@
 ---
 tipo: bitacora
 tags: [registro, bitacora]
-actualizado: 2026-10-17
+actualizado: 2026-10-18
 ---
 # Bitácora de avances
 
@@ -10,6 +10,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
+| 2026-10-18 | Fábrica de cajas: plano y escena | Cuarto gemelo: fábrica de cajas de cartón corrugado centrada en el transporte de pilas (corrugadora, rodillos, mesas giratorias, carro de transferencia, pulmón, 4 líneas de conversión, paletizado, bodega); plano validado y forma 3D propia para sus 22 tipos de equipo, sin simulación todavía. D42 | gemelos |
 | 2026-10-18 | Flujo de montacargas y ensamble | Planta de plásticos: almacén de semielaborado separado del de terminado (al norte de la nave, cajas azules), montacargas sin cruzar la banda y con carriles de ida y regreso, línea de ensamble visible (cámara propia) y piezas nuevas en secundarias. D40 | 5 |
 | 2026-10-18 | Pantalla de carga | La escena de planta (las tres plantas) muestra una barra de carga con etapas reales (conexión, plano, zonas, equipos, pasarelas, tuberías, luces, render) para que la espera inicial no parezca un error. D39 | 5 |
 | 2026-10-18 | Tuberías ancladas | Las tuberías sin ruta terminaban en el aire sobre el centro de la huella del equipo; ahora se anclan a su superficie real (rayo vertical contra la geometría) y llevan brida en cada extremo. Inspección visual de las tres plantas en `/mnt/project-files/inspeccion/`. D38 | 5 |
@@ -55,6 +56,15 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 | 2026-10-16 | #1 | Layouts de las plantas | 1 |
 
 ## Entradas
+
+### 2026-10-18 15:04 · Fábrica de cajas: plano y escena 3D
+- **Fecha/hora (UTC):** 2026-10-18 15:04–15:40
+- **Solicitado por:** Carlos Andrés Quiceño (15:04): construir en otro hilo «un sistema de transporte de una fábrica de cajas», como gemelo digital aparte, tomando como inspiración el sitio web de un fabricante de transportadores; (15:07): no mencionar nunca esa empresa.
+- **Qué se hizo:** planta `industrial-models/corrugated-box-plant-v1` (230 × 135 m, 17 zonas, 78 equipos, flujos, pasillos y rutas de montacargas; `layout.svg`); 22 piezas de escena en `apps/gallery/src/box-plant-pieces.ts` (bobinas, portabobinas, single facer, puente, engomadora, doble mesa, cortadoras, apilador, transportadores de pilas, mesas giratorias, carro de transferencia, impresoras-plegadoras-pegadoras, troqueladoras, pegadora, amarradora, banda de fajos, paletizador, cocina de almidón, ciclón, compactadora); tarjeta en el portal; ficha en `docs/box-plant.md` y ficha de diseño en `/mnt/project-files/fabrica-cajas/ficha-diseno.md`.
+- **Verificación:** `render_layout.py` sin errores ni avisos, `pnpm -r typecheck` y `pnpm -r test`, `pytest apps/api`; capturas de la escena: ![[cajas-general.jpg]] ![[cajas-pilas.jpg]] ![[cajas-corrugadora.jpg]]
+- **Pendiente (siguiente PR):** tipos de librería y `simulation.yaml` para conectar el transporte en el motor (corrugadora → transportadores → carro → carriles → máquinas → paletizado), con la regla de reparto del carro entre carriles.
+- **Decisiones:** [[decisiones]] D42.
+- **Conversación:** [[hilo-fabrica-de-cajas]].
 
 ### 2026-10-18 14:17 · Montacargas con carriles, almacenes separados y línea de ensamble visible
 - **Fecha/hora (UTC):** 2026-10-18 14:17–14:50

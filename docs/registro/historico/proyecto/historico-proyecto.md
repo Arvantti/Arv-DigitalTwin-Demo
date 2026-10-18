@@ -29,3 +29,4 @@ Conversaciones del 2026-10-16 (UTC) entre el autor y Claude dentro del proyecto 
 18. [[hilo-panel-plc-acueducto]] (PR #32, panel de gráficos del PLC del acueducto en la galería, 2026-10-17 15:28–18:55 UTC)
 19. [[hilo-despliegue-cloudflare]] (CI/CD de la galería en Cloudflare Pages, 2026-10-17 22:54 a 2026-10-18 01:50 UTC)
 20. [[hilo-inspeccion-visual]] (inspección visual de los modelos y arreglo de tuberías desconectadas, 2026-10-18 13:14 UTC)
+21. [[hilo-fabrica-de-cajas]] (fábrica de cajas de cartón corrugado: plano y escena 3D, 2026-10-18)

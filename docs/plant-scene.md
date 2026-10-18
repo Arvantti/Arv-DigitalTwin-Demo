@@ -11,7 +11,7 @@ Parámetros de URL, pensados para capturas automáticas:
 
 | Parámetro | Efecto |
 |---|---|
-| `plant=<id>` | Planta (por defecto `sauce-plant-v1`; también `plastic-injection-plant-v1`, con sus 29 inyectoras, la banda, el empaque, los secadores, los chillers y el molino animados; escenarios `nominal`, `conveyor-trip`, `dryer-stop`, `chiller-trip` y `pelletizer-jam`) |
+| `plant=<id>` | Planta (por defecto `sauce-plant-v1`; también `plastic-injection-plant-v1`, con sus 29 inyectoras, la banda, el empaque, los secadores, los chillers y el molino animados; escenarios `nominal`, `conveyor-trip`, `dryer-stop`, `chiller-trip` y `pelletizer-jam`); `corrugated-box-plant-v1`: fábrica de cajas, aún sin simulación, ver `docs/box-plant.md`) |
 | `camera=general`, `camera=<id de zona>` o `camera=nivel-<n>` | Cámara inicial (`nivel-<n>`: el equipo con `params.level: n`, en un edificio por pisos) |
 | `select=<id de equipo>` | Equipo seleccionado |
 | `focus=<id de equipo>` | Acerca la cámara a ese equipo |

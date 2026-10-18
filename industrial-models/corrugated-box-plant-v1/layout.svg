@@ -1,0 +1,326 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1460" height="1002" viewBox="0 0 1460 1002" font-family="Inter, Helvetica, Arial, sans-serif">
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#d4a017" stroke-width="1.2" stroke-opacity="0.45"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#c2410c"/></marker><marker id="arrow-forklift" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#ea580c"/></marker><marker id="arrow-pedestrian" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#15803d"/></marker><marker id="arrow-cart" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#0284c7"/></marker></defs>
+<rect width="100%" height="100%" fill="#ffffff"/>
+<text x="30" y="48" font-size="20" font-weight="700" fill="#1f2937">Fábrica de cajas de cartón corrugado (referencia)</text>
+<text x="30" y="68" font-size="12" fill="#4b5563">corrugated-box-plant-v1 · manufactura discreta · predio 230 × 135 m · datos de referencia, no de una planta real</text>
+<rect x="30.0" y="80.0" width="1400.0" height="821.7391304347826" fill="#fbfbf8" stroke="#9ca3af" stroke-dasharray="6 4"/>
+<rect x="30.0" y="80.0" width="85.2" height="261.7" fill="#f4f4ef" stroke="#6b7280" stroke-width="1"/>
+<text x="34.0" y="90.4" font-size="7.396301849075463" font-weight="600" fill="#374151">Recepción de papel</text>
+<rect x="115.2" y="80.0" width="170.4" height="286.1" fill="#e9dcc3" stroke="#6b7280" stroke-width="1"/>
+<text x="119.2" y="94.0" font-size="11.0" font-weight="600" fill="#374151">Bodega de bobinas</text>
+<rect x="285.7" y="232.2" width="779.1" height="133.9" fill="#cfe3f2" stroke="#6b7280" stroke-width="1"/>
+<text x="289.7" y="246.2" font-size="11.0" font-weight="600" fill="#374151">Corrugadora</text>
+<rect x="285.7" y="147.0" width="97.4" height="85.2" fill="#e3e3e3" stroke="#6b7280" stroke-width="1"/>
+<text x="289.7" y="159.0" font-size="9.066055207690274" font-weight="600" fill="#374151">Cocina de almidón</text>
+<rect x="383.0" y="147.0" width="97.4" height="85.2" fill="#e3e3e3" stroke="#6b7280" stroke-width="1"/>
+<text x="387.0" y="161.0" font-size="11.0" font-weight="600" fill="#374151">Caldera</text>
+<rect x="480.4" y="147.0" width="85.2" height="85.2" fill="#e3e3e3" stroke="#6b7280" stroke-width="1"/>
+<text x="484.4" y="161.0" font-size="11.0" font-weight="600" fill="#374151">Compresores</text>
+<rect x="565.7" y="147.0" width="85.2" height="85.2" fill="#e3e3e3" stroke="#6b7280" stroke-width="1"/>
+<text x="569.7" y="157.0" font-size="7.0" font-weight="600" fill="#374151">Subestación eléctr…</text>
+<rect x="650.9" y="147.0" width="182.6" height="85.2" fill="#e3e3e3" stroke="#6b7280" stroke-width="1"/>
+<text x="654.9" y="161.0" font-size="11.0" font-weight="600" fill="#374151">Recorte y compactación</text>
+<rect x="833.5" y="147.0" width="231.3" height="85.2" fill="#e9dcc3" stroke="#6b7280" stroke-width="1"/>
+<text x="837.5" y="161.0" font-size="11.0" font-weight="600" fill="#374151">Almacén de troqueles y clisés</text>
+<rect x="943.0" y="366.1" width="243.5" height="389.6" fill="#cfe3f2" stroke="#6b7280" stroke-width="1"/>
+<text x="947.0" y="380.1" font-size="11.0" font-weight="600" fill="#374151">Transporte y pulmón de pilas</text>
+<rect x="407.4" y="366.1" width="535.7" height="389.6" fill="#cfe3f2" stroke="#6b7280" stroke-width="1"/>
+<text x="411.4" y="380.1" font-size="11.0" font-weight="600" fill="#374151">Conversión</text>
+<rect x="285.7" y="366.1" width="121.7" height="389.6" fill="#cfe3f2" stroke="#6b7280" stroke-width="1"/>
+<text x="289.7" y="380.1" font-size="11.0" font-weight="600" fill="#374151">Paletizado</text>
+<rect x="30.0" y="366.1" width="255.7" height="389.6" fill="#e9dcc3" stroke="#6b7280" stroke-width="1"/>
+<text x="34.0" y="380.1" font-size="11.0" font-weight="600" fill="#374151">Bodega de producto terminado</text>
+<rect x="30.0" y="755.7" width="365.2" height="146.1" fill="#f4f4ef" stroke="#6b7280" stroke-width="1"/>
+<text x="34.0" y="769.7" font-size="11.0" font-weight="600" fill="#374151">Patio y muelles de despacho</text>
+<rect x="395.2" y="780.0" width="426.1" height="121.7" fill="#efe7f5" stroke="#6b7280" stroke-width="1"/>
+<text x="399.2" y="794.0" font-size="11.0" font-weight="600" fill="#374151">Oficinas, vestieres y cafetería</text>
+<rect x="821.3" y="780.0" width="608.7" height="121.7" fill="#f4f4ef" stroke="#6b7280" stroke-width="1"/>
+<text x="825.3" y="794.0" font-size="11.0" font-weight="600" fill="#374151">Portería y parqueadero</text>
+<rect x="1186.5" y="573.0" width="152.2" height="182.6" fill="#e3e3e3" stroke="#6b7280" stroke-width="1"/>
+<text x="1190.5" y="587.0" font-size="11.0" font-weight="600" fill="#374151">Mantenimiento</text>
+<rect x="115.2" y="256.5" width="547.8" height="24.3" fill="url(#hatch)" stroke="none"/>
+<rect x="285.7" y="372.2" width="21.3" height="377.4" fill="url(#hatch)" stroke="none"/>
+<rect x="33.0" y="722.2" width="273.9" height="27.4" fill="url(#hatch)" stroke="none"/>
+<rect x="55.9" y="387.4" width="36.5" height="334.8" fill="url(#hatch)" stroke="none"/>
+<rect x="107.6" y="387.4" width="36.5" height="334.8" fill="url(#hatch)" stroke="none"/>
+<rect x="159.3" y="387.4" width="36.5" height="334.8" fill="url(#hatch)" stroke="none"/>
+<rect x="211.1" y="387.4" width="36.5" height="334.8" fill="url(#hatch)" stroke="none"/>
+<rect x="262.8" y="387.4" width="22.8" height="334.8" fill="url(#hatch)" stroke="none"/>
+<rect x="97.0" y="256.5" width="18.3" height="24.3" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>dock-mp-01 · dock_leveler</title>
+<text x="106.1" y="254.5" font-size="7.0" text-anchor="middle" fill="#111827">dock-mp-01</text>
+<rect x="45.8" y="260.8" width="51.1" height="15.8" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>truck-mp-01 · delivery_truck</title>
+<text x="71.4" y="271.2" font-size="7.5" text-anchor="middle" fill="#ffffff">truck-mp-01</text>
+<rect x="121.3" y="287.0" width="73.0" height="73.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>rolls-01 · paper_roll_stack</title>
+<text x="157.8" y="326.0" font-size="7.5" text-anchor="middle" fill="#ffffff">rolls-01</text>
+<rect x="206.5" y="287.0" width="73.0" height="73.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>rolls-02 · paper_roll_stack</title>
+<text x="243.0" y="326.0" font-size="7.5" text-anchor="middle" fill="#ffffff">rolls-02</text>
+<rect x="121.3" y="86.1" width="73.0" height="164.3" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>rolls-03 · paper_roll_stack</title>
+<text x="157.8" y="170.8" font-size="7.5" text-anchor="middle" fill="#ffffff">rolls-03</text>
+<rect x="206.5" y="86.1" width="73.0" height="164.3" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>rolls-04 · paper_roll_stack</title>
+<text x="243.0" y="170.8" font-size="7.5" text-anchor="middle" fill="#ffffff">rolls-04</text>
+<rect x="300.9" y="288.5" width="18.3" height="21.3" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>rs-01 · mill_roll_stand</title>
+<text x="310.0" y="286.5" font-size="7.0" text-anchor="middle" fill="#111827">rs-01</text>
+<rect x="328.3" y="288.5" width="18.3" height="21.3" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>rs-02 · mill_roll_stand</title>
+<text x="337.4" y="286.5" font-size="7.0" text-anchor="middle" fill="#111827">rs-02</text>
+<rect x="355.7" y="288.5" width="30.4" height="21.3" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>sf-01 · single_facer</title>
+<text x="370.9" y="301.6" font-size="7.5" text-anchor="middle" fill="#ffffff">sf-01</text>
+<rect x="398.3" y="288.5" width="18.3" height="21.3" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>rs-03 · mill_roll_stand</title>
+<text x="407.4" y="286.5" font-size="7.0" text-anchor="middle" fill="#111827">rs-03</text>
+<rect x="425.7" y="288.5" width="18.3" height="21.3" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>rs-04 · mill_roll_stand</title>
+<text x="434.8" y="286.5" font-size="7.0" text-anchor="middle" fill="#111827">rs-04</text>
+<rect x="453.0" y="288.5" width="30.4" height="21.3" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>sf-02 · single_facer</title>
+<text x="468.3" y="301.6" font-size="7.5" text-anchor="middle" fill="#ffffff">sf-02</text>
+<rect x="486.5" y="290.0" width="146.1" height="18.3" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>bridge-01 · corrugator_bridge</title>
+<text x="559.6" y="301.6" font-size="7.5" text-anchor="middle" fill="#ffffff">bridge-01</text>
+<rect x="638.7" y="288.5" width="18.3" height="21.3" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>rs-05 · mill_roll_stand</title>
+<text x="647.8" y="286.5" font-size="7.0" text-anchor="middle" fill="#111827">rs-05</text>
+<rect x="663.0" y="288.5" width="30.4" height="21.3" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>glue-01 · glue_machine</title>
+<text x="678.3" y="286.5" font-size="7.0" text-anchor="middle" fill="#111827">glue-01</text>
+<rect x="696.5" y="289.4" width="152.2" height="19.5" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>df-01 · double_facer</title>
+<text x="772.6" y="301.6" font-size="7.5" text-anchor="middle" fill="#ffffff">df-01</text>
+<rect x="854.8" y="288.8" width="18.3" height="20.7" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>ss-01 · slitter_scorer</title>
+<text x="863.9" y="286.8" font-size="7.0" text-anchor="middle" fill="#111827">ss-01</text>
+<rect x="879.1" y="288.8" width="18.3" height="20.7" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>ck-01 · cutoff_knife</title>
+<text x="888.3" y="286.8" font-size="7.0" text-anchor="middle" fill="#111827">ck-01</text>
+<rect x="906.5" y="288.2" width="73.0" height="21.9" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>stacker-01 · sheet_stacker</title>
+<text x="943.0" y="301.6" font-size="7.5" text-anchor="middle" fill="#ffffff">stacker-01</text>
+<rect x="985.7" y="291.2" width="36.5" height="15.8" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>cv-st-01 · stack_roller_conveyor</title>
+<text x="1003.9" y="289.2" font-size="7.0" text-anchor="middle" fill="#111827">cv-st-01</text>
+<rect x="1025.2" y="290.0" width="18.3" height="18.3" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>tt-01 · stack_turntable</title>
+<text x="1034.3" y="288.0" font-size="7.0" text-anchor="middle" fill="#111827">tt-01</text>
+<rect x="1026.4" y="308.3" width="15.8" height="51.7" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>cv-st-02 · stack_roller_conveyor</title>
+<text x="1034.3" y="336.6" font-size="7.5" text-anchor="middle" fill="#ffffff" transform="rotate(-90 1034.3 334.1)">cv-st-02</text>
+<rect x="1026.4" y="366.1" width="15.8" height="30.4" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>cv-st-03 · stack_roller_conveyor</title>
+<text x="1034.3" y="364.1" font-size="7.0" text-anchor="middle" fill="#111827">cv-st-03</text>
+<rect x="1025.2" y="399.6" width="18.3" height="18.3" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>tt-02 · stack_turntable</title>
+<text x="1034.3" y="397.6" font-size="7.0" text-anchor="middle" fill="#111827">tt-02</text>
+<rect x="1045.0" y="400.8" width="42.6" height="15.8" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>cv-st-04 · stack_roller_conveyor</title>
+<text x="1066.3" y="411.2" font-size="7.5" text-anchor="middle" fill="#ffffff">cv-st-04</text>
+<rect x="1092.2" y="384.3" width="18.3" height="353.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>tc-01 · transfer_car</title>
+<text x="1101.3" y="563.4" font-size="7.5" text-anchor="middle" fill="#ffffff" transform="rotate(-90 1101.3 560.9)">tc-01</text>
+<rect x="949.1" y="674.7" width="140.0" height="15.8" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>lane-01 · stack_roller_conveyor</title>
+<text x="1019.1" y="685.1" font-size="7.5" text-anchor="middle" fill="#ffffff">lane-01</text>
+<rect x="949.1" y="601.7" width="140.0" height="15.8" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>lane-02 · stack_roller_conveyor</title>
+<text x="1019.1" y="612.1" font-size="7.5" text-anchor="middle" fill="#ffffff">lane-02</text>
+<rect x="949.1" y="528.6" width="140.0" height="15.8" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>lane-03 · stack_roller_conveyor</title>
+<text x="1019.1" y="539.0" font-size="7.5" text-anchor="middle" fill="#ffffff">lane-03</text>
+<rect x="949.1" y="455.6" width="140.0" height="15.8" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>lane-04 · stack_roller_conveyor</title>
+<text x="1019.1" y="466.0" font-size="7.5" text-anchor="middle" fill="#ffffff">lane-04</text>
+<rect x="1113.5" y="650.3" width="67.0" height="15.8" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>buffer-01 · stack_roller_conveyor</title>
+<text x="1147.0" y="660.8" font-size="7.5" text-anchor="middle" fill="#ffffff">buffer-01</text>
+<rect x="1113.5" y="589.5" width="67.0" height="15.8" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>buffer-02 · stack_roller_conveyor</title>
+<text x="1147.0" y="599.9" font-size="7.5" text-anchor="middle" fill="#ffffff">buffer-02</text>
+<rect x="1113.5" y="528.6" width="67.0" height="15.8" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>buffer-03 · stack_roller_conveyor</title>
+<text x="1147.0" y="539.0" font-size="7.5" text-anchor="middle" fill="#ffffff">buffer-03</text>
+<rect x="1113.5" y="467.7" width="67.0" height="15.8" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>buffer-04 · stack_roller_conveyor</title>
+<text x="1147.0" y="478.2" font-size="7.5" text-anchor="middle" fill="#ffffff">buffer-04</text>
+<rect x="787.8" y="667.4" width="152.2" height="30.4" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>ffg-01 · flexo_folder_gluer</title>
+<text x="863.9" y="685.1" font-size="7.5" text-anchor="middle" fill="#ffffff">ffg-01</text>
+<rect x="748.3" y="673.5" width="24.3" height="18.3" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>strap-01 · bundle_strapper</title>
+<text x="760.4" y="671.5" font-size="7.0" text-anchor="middle" fill="#111827">strap-01</text>
+<rect x="413.5" y="678.3" width="328.7" height="8.5" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>bc-01 · bundle_conveyor</title>
+<text x="577.8" y="685.1" font-size="7.5" text-anchor="middle" fill="#ffffff">bc-01</text>
+<rect x="787.8" y="594.3" width="152.2" height="30.4" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>ffg-02 · flexo_folder_gluer</title>
+<text x="863.9" y="612.1" font-size="7.5" text-anchor="middle" fill="#ffffff">ffg-02</text>
+<rect x="748.3" y="600.4" width="24.3" height="18.3" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>strap-02 · bundle_strapper</title>
+<text x="760.4" y="598.4" font-size="7.0" text-anchor="middle" fill="#111827">strap-02</text>
+<rect x="413.5" y="605.3" width="328.7" height="8.5" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>bc-02 · bundle_conveyor</title>
+<text x="577.8" y="612.1" font-size="7.5" text-anchor="middle" fill="#ffffff">bc-02</text>
+<rect x="836.5" y="521.3" width="103.5" height="30.4" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>rdc-01 · rotary_die_cutter</title>
+<text x="888.3" y="539.0" font-size="7.5" text-anchor="middle" fill="#ffffff">rdc-01</text>
+<rect x="797.0" y="527.4" width="24.3" height="18.3" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>strap-03 · bundle_strapper</title>
+<text x="809.1" y="525.4" font-size="7.0" text-anchor="middle" fill="#111827">strap-03</text>
+<rect x="413.5" y="532.3" width="380.4" height="8.5" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>bc-03 · bundle_conveyor</title>
+<text x="603.7" y="539.0" font-size="7.5" text-anchor="middle" fill="#ffffff">bc-03</text>
+<rect x="860.9" y="448.3" width="79.1" height="30.4" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>fdc-01 · flatbed_die_cutter</title>
+<text x="900.4" y="466.0" font-size="7.5" text-anchor="middle" fill="#ffffff">fdc-01</text>
+<rect x="839.6" y="455.6" width="18.3" height="15.8" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>cv-fg-01 · stack_roller_conveyor</title>
+<text x="848.7" y="453.6" font-size="7.0" text-anchor="middle" fill="#111827">cv-fg-01</text>
+<rect x="696.5" y="454.3" width="140.0" height="18.3" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>fg-01 · folder_gluer</title>
+<text x="766.5" y="466.0" font-size="7.5" text-anchor="middle" fill="#ffffff">fg-01</text>
+<rect x="657.0" y="454.3" width="24.3" height="18.3" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>strap-04 · bundle_strapper</title>
+<text x="669.1" y="452.3" font-size="7.0" text-anchor="middle" fill="#111827">strap-04</text>
+<rect x="413.5" y="459.2" width="240.4" height="8.5" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>bc-04 · bundle_conveyor</title>
+<text x="533.7" y="466.0" font-size="7.5" text-anchor="middle" fill="#ffffff">bc-04</text>
+<rect x="346.5" y="670.4" width="48.7" height="24.3" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>pal-01 · palletizer</title>
+<text x="370.9" y="685.1" font-size="7.5" text-anchor="middle" fill="#ffffff">pal-01</text>
+<rect x="308.5" y="672.0" width="21.3" height="21.3" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>wrap-01 · stretch_wrapper</title>
+<text x="319.1" y="670.0" font-size="7.0" text-anchor="middle" fill="#111827">wrap-01</text>
+<rect x="346.5" y="597.4" width="48.7" height="24.3" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>pal-02 · palletizer</title>
+<text x="370.9" y="612.1" font-size="7.5" text-anchor="middle" fill="#ffffff">pal-02</text>
+<rect x="308.5" y="598.9" width="21.3" height="21.3" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>wrap-02 · stretch_wrapper</title>
+<text x="319.1" y="596.9" font-size="7.0" text-anchor="middle" fill="#111827">wrap-02</text>
+<rect x="346.5" y="524.3" width="48.7" height="24.3" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>pal-03 · palletizer</title>
+<text x="370.9" y="539.0" font-size="7.5" text-anchor="middle" fill="#ffffff">pal-03</text>
+<rect x="308.5" y="525.9" width="21.3" height="21.3" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>wrap-03 · stretch_wrapper</title>
+<text x="319.1" y="523.9" font-size="7.0" text-anchor="middle" fill="#111827">wrap-03</text>
+<rect x="346.5" y="451.3" width="48.7" height="24.3" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>pal-04 · palletizer</title>
+<text x="370.9" y="466.0" font-size="7.5" text-anchor="middle" fill="#ffffff">pal-04</text>
+<rect x="308.5" y="452.8" width="21.3" height="21.3" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>wrap-04 · stretch_wrapper</title>
+<text x="319.1" y="450.8" font-size="7.0" text-anchor="middle" fill="#111827">wrap-04</text>
+<rect x="40.7" y="390.4" width="15.2" height="328.7" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>rack-pt-01 · pallet_rack</title>
+<text x="48.3" y="557.3" font-size="7.5" text-anchor="middle" fill="#ffffff" transform="rotate(-90 48.3 554.8)">rack-pt-01</text>
+<rect x="92.4" y="390.4" width="15.2" height="328.7" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>rack-pt-02 · pallet_rack</title>
+<text x="100.0" y="557.3" font-size="7.5" text-anchor="middle" fill="#ffffff" transform="rotate(-90 100.0 554.8)">rack-pt-02</text>
+<rect x="144.1" y="390.4" width="15.2" height="328.7" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>rack-pt-03 · pallet_rack</title>
+<text x="151.7" y="557.3" font-size="7.5" text-anchor="middle" fill="#ffffff" transform="rotate(-90 151.7 554.8)">rack-pt-03</text>
+<rect x="195.9" y="390.4" width="15.2" height="328.7" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>rack-pt-04 · pallet_rack</title>
+<text x="203.5" y="557.3" font-size="7.5" text-anchor="middle" fill="#ffffff" transform="rotate(-90 203.5 554.8)">rack-pt-04</text>
+<rect x="247.6" y="390.4" width="15.2" height="328.7" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>rack-pt-05 · pallet_rack</title>
+<text x="255.2" y="557.3" font-size="7.5" text-anchor="middle" fill="#ffffff" transform="rotate(-90 255.2 554.8)">rack-pt-05</text>
+<rect x="66.5" y="755.7" width="24.3" height="18.3" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>dock-01 · dock_leveler</title>
+<text x="78.7" y="753.7" font-size="7.0" text-anchor="middle" fill="#111827">dock-01</text>
+<rect x="127.4" y="755.7" width="24.3" height="18.3" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>dock-02 · dock_leveler</title>
+<text x="139.6" y="753.7" font-size="7.0" text-anchor="middle" fill="#111827">dock-02</text>
+<rect x="188.3" y="755.7" width="24.3" height="18.3" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>dock-03 · dock_leveler</title>
+<text x="200.4" y="753.7" font-size="7.0" text-anchor="middle" fill="#111827">dock-03</text>
+<rect x="249.1" y="755.7" width="24.3" height="18.3" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>dock-04 · dock_leveler</title>
+<text x="261.3" y="753.7" font-size="7.0" text-anchor="middle" fill="#111827">dock-04</text>
+<rect x="70.8" y="775.1" width="15.8" height="51.1" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>truck-01 · delivery_truck</title>
+<text x="78.7" y="803.2" font-size="7.5" text-anchor="middle" fill="#ffffff" transform="rotate(-90 78.7 800.7)">truck-01</text>
+<rect x="192.5" y="775.1" width="15.8" height="51.1" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>truck-02 · delivery_truck</title>
+<text x="200.4" y="803.2" font-size="7.5" text-anchor="middle" fill="#ffffff" transform="rotate(-90 200.4 800.7)">truck-02</text>
+<rect x="303.9" y="168.3" width="60.9" height="42.6" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>starch-01 · starch_kitchen</title>
+<text x="334.3" y="192.1" font-size="7.5" text-anchor="middle" fill="#ffffff">starch-01</text>
+<rect x="404.3" y="178.9" width="54.8" height="21.3" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>boiler-01 · fire_tube_boiler</title>
+<text x="431.7" y="192.1" font-size="7.5" text-anchor="middle" fill="#ffffff">boiler-01</text>
+<rect x="497.2" y="184.1" width="15.2" height="11.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>compressor-01 · air_compressor</title>
+<text x="504.8" y="182.1" font-size="7.0" text-anchor="middle" fill="#111827">compressor-01</text>
+<rect x="530.7" y="184.1" width="15.2" height="11.0" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>compressor-02 · air_compressor</title>
+<text x="538.3" y="182.1" font-size="7.0" text-anchor="middle" fill="#111827">compressor-02</text>
+<rect x="596.1" y="180.4" width="24.3" height="18.3" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>transformer-01 · transformer</title>
+<text x="608.3" y="178.4" font-size="7.0" text-anchor="middle" fill="#111827">transformer-01</text>
+<rect x="672.2" y="174.3" width="30.4" height="30.4" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>cyclone-01 · trim_cyclone</title>
+<text x="687.4" y="172.3" font-size="7.0" text-anchor="middle" fill="#111827">cyclone-01</text>
+<rect x="730.0" y="183.5" width="73.0" height="24.3" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>baler-01 · trim_baler</title>
+<text x="766.5" y="198.2" font-size="7.5" text-anchor="middle" fill="#ffffff">baler-01</text>
+<rect x="845.7" y="209.3" width="207.0" height="9.1" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>dies-01 · shelving</title>
+<text x="949.1" y="216.4" font-size="7.5" text-anchor="middle" fill="#ffffff">dies-01</text>
+<rect x="845.7" y="163.7" width="207.0" height="9.1" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>dies-02 · shelving</title>
+<text x="949.1" y="170.8" font-size="7.5" text-anchor="middle" fill="#ffffff">dies-02</text>
+<rect x="1226.1" y="715.5" width="18.3" height="7.3" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>bench-01 · workbench</title>
+<text x="1235.2" y="713.5" font-size="7.0" text-anchor="middle" fill="#111827">bench-01</text>
+<rect x="1268.7" y="715.5" width="18.3" height="7.3" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>bench-02 · workbench</title>
+<text x="1277.8" y="713.5" font-size="7.0" text-anchor="middle" fill="#111827">bench-02</text>
+<polyline points="121.3,268.7 182.2,268.7" fill="none" stroke="#ea580c" stroke-width="3.2" stroke-opacity="0.85" stroke-linejoin="round" marker-end="url(#arrow-forklift)"><title>Recibo de bobinas del camión a la bodega</title></polyline>
+<polyline points="243.0,268.7 407.4,268.7" fill="none" stroke="#ea580c" stroke-width="3.2" stroke-opacity="0.85" stroke-linejoin="round" marker-end="url(#arrow-forklift)"><title>Bobinas a los portabobinas de los single facers</title></polyline>
+<polyline points="255.2,268.7 647.8,268.7" fill="none" stroke="#ea580c" stroke-width="3.2" stroke-opacity="0.85" stroke-linejoin="round" marker-end="url(#arrow-forklift)"><title>Bobinas al portabobinas de la doble mesa</title></polyline>
+<polyline points="296.3,682.6 296.3,737.4 177.6,737.4 177.6,597.4" fill="none" stroke="#ea580c" stroke-width="3.2" stroke-opacity="0.85" stroke-linejoin="round" marker-end="url(#arrow-forklift)"><title>Estibas de la línea 1 a la bodega</title></polyline>
+<polyline points="296.3,463.5 296.3,737.4 229.3,737.4 229.3,536.5" fill="none" stroke="#ea580c" stroke-width="3.2" stroke-opacity="0.85" stroke-linejoin="round" marker-end="url(#arrow-forklift)"><title>Estibas de la línea 4 a la bodega</title></polyline>
+<polyline points="74.1,597.4 74.1,737.4" fill="none" stroke="#ea580c" stroke-width="3.2" stroke-opacity="0.85" stroke-linejoin="round" marker-end="url(#arrow-forklift)"><title>Alistamiento: de la bodega al muelle 1</title></polyline>
+<line x1="953.0" y1="299.1" x2="993.9" y2="299.1" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>pilas de láminas: 41 pilas/h</title></line>
+<line x1="1009.1" y1="682.6" x2="873.9" y2="682.6" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>pilas de láminas: 10 pilas/h</title></line>
+<line x1="1009.1" y1="609.6" x2="873.9" y2="609.6" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>pilas de láminas: 10 pilas/h</title></line>
+<line x1="1009.1" y1="536.5" x2="898.3" y2="536.5" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>pilas de láminas: 10 pilas/h</title></line>
+<line x1="1009.1" y1="463.5" x2="910.4" y2="463.5" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>pilas de láminas: 10 pilas/h</title></line>
+<line x1="567.8" y1="682.6" x2="380.9" y2="682.6" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>fajos de 25 cajas: 10 u/min</title></line>
+<line x1="567.8" y1="609.6" x2="380.9" y2="609.6" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>fajos de 25 cajas: 10 u/min</title></line>
+<line x1="593.7" y1="536.5" x2="380.9" y2="536.5" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>fajos de 25 cajas: 8 u/min</title></line>
+<line x1="523.7" y1="463.5" x2="380.9" y2="463.5" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>fajos de 25 cajas: 8 u/min</title></line>
+<rect x="30" y="923.7391304347826" width="14" height="14" fill="#f4f4ef" stroke="#6b7280"/>
+<text x="49" y="934.7391304347826" font-size="11" fill="#374151">Exterior</text>
+<rect x="112.0" y="923.7391304347826" width="14" height="14" fill="#e9dcc3" stroke="#6b7280"/>
+<text x="131.0" y="934.7391304347826" font-size="11" fill="#374151">Almacenamiento</text>
+<rect x="233.0" y="923.7391304347826" width="14" height="14" fill="#cfe3f2" stroke="#6b7280"/>
+<text x="252.0" y="934.7391304347826" font-size="11" fill="#374151">Producción</text>
+<rect x="328.0" y="923.7391304347826" width="14" height="14" fill="#e3e3e3" stroke="#6b7280"/>
+<text x="347.0" y="934.7391304347826" font-size="11" fill="#374151">Servicios industriales</text>
+<rect x="501.0" y="923.7391304347826" width="14" height="14" fill="#e3e3e3" stroke="#6b7280"/>
+<text x="520.0" y="934.7391304347826" font-size="11" fill="#374151">Servicios</text>
+<rect x="589.5" y="923.7391304347826" width="14" height="14" fill="#efe7f5" stroke="#6b7280"/>
+<text x="608.5" y="934.7391304347826" font-size="11" fill="#374151">Administración</text>
+<rect x="30" y="949.7391304347826" width="14" height="10" fill="#475569"/>
+<text x="51" y="958.7391304347826" font-size="11" fill="#374151">Equipo</text>
+<circle cx="110.0" cy="954.7391304347826" r="6" fill="#64748b"/>
+<text x="124.0" y="958.7391304347826" font-size="11" fill="#374151">Tanque / silo</text>
+<rect x="221.5" y="949.7391304347826" width="14" height="10" fill="url(#hatch)" stroke="#d4a017"/>
+<text x="242.5" y="958.7391304347826" font-size="11" fill="#374151">Pasillo montacargas</text>
+<line x1="379.0" y1="954.7391304347826" x2="395.0" y2="954.7391304347826" stroke="#ea580c" stroke-width="3"/>
+<text x="400.0" y="958.7391304347826" font-size="11" fill="#374151">Ruta de montacargas</text>
+<line x1="536.5" y1="954.7391304347826" x2="552.5" y2="954.7391304347826" stroke="#c2410c" stroke-width="1.6" marker-end="url(#arrow)"/>
+<text x="557.5" y="958.7391304347826" font-size="11" fill="#374151">Flujo principal</text>
+<rect x="1308.3" y="929.7391304347826" width="60.9" height="6" fill="#111827"/>
+<rect x="1369.1" y="929.7391304347826" width="60.9" height="6" fill="#ffffff" stroke="#111827"/>
+<text x="1308.3" y="949.7391304347826" font-size="10" fill="#374151">0</text>
+<text x="1430.0" y="949.7391304347826" font-size="10" text-anchor="end" fill="#374151">20 m</text>
+<path d="M1418.0,32 L1425.0,52 L1418.0,47 L1411.0,52 z" fill="#111827"/>
+<text x="1418.0" y="66" font-size="11" font-weight="700" text-anchor="middle" fill="#111827">N</text>
+</svg>

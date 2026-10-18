@@ -1,7 +1,7 @@
 ---
 tipo: decisiones
 tags: [registro, decision]
-actualizado: 2026-10-17
+actualizado: 2026-10-18
 ---
 # Decisiones y reglas del autor
 
@@ -132,3 +132,6 @@ El autor (14:09) pide una barra de carga con varias etapas porque la entrada a c
 
 ## D40 · Semielaborado al norte, carriles y procesos conectados · 2026-10-18 14:30
 El autor (14:17–14:30): los montacargas se cruzan entre sí y con la banda; hay que distinguir el almacén de semielaborado del de terminado; cada máquina tiene un buffer que se llena con X piezas y sale en estiba; y «es muy importante que los procesos estén conectados entre sí, no solo procesos sueltos». Decisiones: (1) el semielaborado se almacena al norte de la nave (zona `almacen-semielaborado`), del mismo lado que las inyectoras, así ningún montacargas cruza la banda (que corre al sur de las inyectoras). (2) Ida y regreso por carriles distintos, a la derecha. (3) X = 1.000 piezas por estiba, supuesto elegido por el autor en la tarjeta de decisión (14:26), editable por máquina. (4) Orden de trabajo del autor: primero conectar el proceso en el motor (buffer, almacén con inventario, viaje); después alimentar el gemelo con datos reales (productos, ciclos, moldes, tres tamaños de inyectora, ruta por producto, pedidos y el backend Fractal). Lo segundo queda como hoja de ruta para el coordinador, no se ejecuta ahora.
+
+## D42 · Fábrica de cajas: cuarto gemelo, primero plano y escena · 2026-10-18 15:04
+El autor (15:04) pide un gemelo aparte del sistema de transporte de una fábrica de cajas, inspirado en un fabricante de transportadores, y (15:07) que esa empresa no se mencione nunca. Decisiones: (1) la inspiración no se nombra en el código, los documentos, el registro, los commits ni los PR; en el histórico su mención se reemplaza por «[referencia omitida a pedido del autor]», igual que D01 con las empresas de Medellín. (2) Planta `corrugated-box-plant-v1` con la corrugadora al norte y el transporte de pilas al este (rodillos, mesas giratorias, carro de transferencia, carriles de alimentación y pulmón) que alimenta cuatro líneas de conversión hacia el oeste; valores supuestos (`docs/box-plant.md`). (3) Se entrega en PR pequeños: primero plano y escena 3D con piezas de escena; después los tipos de librería y la simulación conectada en el motor, tras confirmar la ficha de diseño con el autor (D03).
