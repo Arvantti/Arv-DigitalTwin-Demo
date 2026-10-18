@@ -1,7 +1,7 @@
 ---
 tipo: bitacora
 tags: [registro, bitacora]
-actualizado: 2026-10-17
+actualizado: 2026-10-18
 ---
 # Bitácora de avances
 
@@ -10,8 +10,9 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
-| 2026-10-18 | Subidas directas del acueducto | Se elimina la columna lateral con lazos: cada nivel sube recto al siguiente con su válvula vertical, en puntos distintos de la cuadrícula; reductor de 4 a 2 pulgadas antes del nivel 1; el travesaño del cabezal ya no cruza el montante de entrada. D45 | acueducto |
-| 2026-10-18 | Acueducto sin pisos | Las zonas elevadas del acueducto ya no dibujan losa ni suelo de color; se ven las estructuras y los tubos de todos los pisos (pedido del autor). D44 | acueducto |
+| 2026-10-18 | Subidas directas del acueducto | Se elimina la columna lateral con lazos: cada nivel sube recto al siguiente con su válvula vertical, en puntos distintos de la cuadrícula; reductor de 4 a 2 pulgadas antes del nivel 1; el travesaño del cabezal ya no cruza el montante de entrada. D46 | acueducto |
+| 2026-10-18 | Acueducto sin pisos | Las zonas elevadas del acueducto ya no dibujan losa ni suelo de color; se ven las estructuras y los tubos de todos los pisos (pedido del autor). D45 | acueducto |
+| 2026-10-18 | #46 | Cuarto gemelo: fábrica de cajas de cartón corrugado centrada en el transporte de pilas (corrugadora, rodillos, mesas giratorias, carro de transferencia, pulmón, 3 líneas de conversión con tamaños de caja distintos, un paletizador propio y uno compartido, bodega); plano validado y forma 3D propia para sus 20 tipos de equipo, sin simulación todavía. D44 | gemelos |
 | 2026-10-18 | Secuencia del acueducto | Acueducto: cada tubo empieza y termina en la boquilla o brida real (tanques, bombas, estación, válvulas entre niveles, rejilla, bajantes); panel LÍNEAS con dos líneas en m³; parámetro de cámara `look`. D42 | acueducto |
 | 2026-10-18 | Tuberías sin cruces | Planta de salsas: los tubos a nivel de rack buscan un nivel y un recorrido que no atraviesen equipos ni cajas de estantería ni se crucen entre sí (suben por encima, o se desplazan); documento del flujo de salsas conectado vs faltante; revisión de capacidad contra 22 t/día (despacho de 35 a 90 tarimas/día). D41, D43 | 5 |
 | 2026-10-18 | Flujo de montacargas y ensamble | Planta de plásticos: almacén de semielaborado separado del de terminado (al norte de la nave, cajas azules), montacargas sin cruzar la banda y con carriles de ida y regreso, línea de ensamble visible (cámara propia) y piezas nuevas en secundarias. D40 | 5 |
@@ -66,7 +67,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 - **Solicitado por:** Carlos Andrés Quiceño: «la tubería se cruza con la estructura» y, después, que la conexión entre niveles sea directa, con válvula, en puntos distintos de la cuadrícula y con un reductor tras la estación.
 - **Qué se hizo:** el travesaño del cabezal de la rejilla arranca después del montante (no lo atraviesa); se quitó la columna lateral; subidas rectas de 2" nivel 1→2→3→4 con válvula vertical (`regulating-valve` con `vertical: true`) entre caminos de ramales del nivel de abajo y de arriba; los niveles 2 a 4 sin montante propio (`inlet_riser: false`); reductor dibujado en el tubo de la estación (`reduce_at`, `reduce_to_in`).
 - **Verificación:** `twin-lib validate`, `twin-lib plant validate` (escenarios en tolerancia), `pytest apps/api`, `ruff check`, `pnpm typecheck`, captura `evidencia/acueducto-subidas-directas.png`.
-- **Decisiones:** [[decisiones]] D45
+- **Decisiones:** [[decisiones]] D46
 - **Conversación:** [[hilo-secuencia-acueducto]]
 
 ### 2026-10-18 17:15 · Acueducto sin losas en los pisos elevados
@@ -75,8 +76,16 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 - **Solicitado por:** Carlos Andrés Quiceño: «prefiero que quitemos los pisos y mantengamos la estructuras».
 - **Qué se hizo:** `buildZones` de `plant.ts` no dibuja losa ni suelo de color en zonas con `elevation`; se conservan contorno, rótulo y estructuras.
 - **Verificación:** `pnpm -r typecheck`, captura de la galería (`evidencia/acueducto-sin-pisos.png`).
-- **Decisiones:** [[decisiones]] D44
+- **Decisiones:** [[decisiones]] D45
 - **Conversación:** [[hilo-secuencia-acueducto]]
+### 2026-10-18 15:04 · Fábrica de cajas: plano y escena 3D
+- **Fecha/hora (UTC):** 2026-10-18 15:04–17:30
+- **Solicitado por:** Carlos Andrés Quiceño (15:04): construir en otro hilo «un sistema de transporte de una fábrica de cajas», como gemelo digital aparte, tomando como inspiración el sitio web de un fabricante de transportadores; (15:07): no mencionar nunca esa empresa. (17:14): «todo es imaginario no nos pongamos trabajo de más», varios tamaños de caja, lo que consuma menos, y una línea con paletizador y otras dos con uno compartido.
+- **Qué se hizo:** planta `industrial-models/corrugated-box-plant-v1` (230 × 135 m, 17 zonas, 69 equipos, tres líneas de conversión por tamaño de caja, paletizador 1 para la línea 1 y paletizador 2 compartido por las líneas 2 y 3 con una banda de unión, flujos, pasillos y rutas de montacargas; `layout.svg`); 20 piezas de escena en `apps/gallery/src/box-plant-pieces.ts` (bobinas, portabobinas, single facer, puente, engomadora, doble mesa, cortadoras, apilador, transportadores de pilas, mesas giratorias, carro de transferencia, impresoras-plegadoras-pegadoras, troqueladora rotativa, amarradora, banda de fajos, paletizador, cocina de almidón, ciclón, compactadora); tarjeta en el portal; ficha en `docs/box-plant.md` y ficha de diseño en `/mnt/project-files/fabrica-cajas/ficha-diseno.md`.
+- **Verificación:** `render_layout.py` sin errores ni avisos, `pnpm -r typecheck` y `pnpm -r test`, `pytest apps/api`; capturas de la escena: ![[cajas-general.jpg]] ![[cajas-pilas.jpg]] ![[cajas-corrugadora.jpg]] ![[cajas-paletizado-compartido.jpg]]
+- **Pendiente (siguiente PR):** tipos de librería y `simulation.yaml` para conectar el transporte en el motor (corrugadora → transportadores → carro → carriles → máquinas → paletizado), con la regla de reparto del carro entre carriles.
+- **Decisiones:** [[decisiones]] D44.
+- **Conversación:** [[hilo-fabrica-de-cajas]].
 
 ### 2026-10-18 14:40 · Secuencia hidráulica continua del acueducto
 - **Fecha/hora (UTC):** 2026-10-18 14:40–15:50
