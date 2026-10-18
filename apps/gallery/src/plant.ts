@@ -10,6 +10,7 @@
  *   &camera=general|<id de zona>   cámara inicial
  *   &select=<id de equipo>         equipo seleccionado
  *   &focus=<id de equipo>          acerca la cámara a ese equipo
+ *   &look=x,y,z,tx,ty,tz           cámara en el punto (x, y, z) del plano mirando a (tx, ty, tz), en metros
  *   &autosim=1&scenario=boiler-trip&speed=120   conecta la simulación al cargar
  *   &tour=1                        inicia el recorrido de cámara al cargar
  *   &shot=1                        oculta la interfaz y marca window.__ready (con autosim, tras recibir datos)
@@ -67,6 +68,9 @@ interface Pipe {
   route?: [number, number, number][];
   /** Diámetro nominal del tubo (red de agua): da el grosor en la escena. */
   diameter_in?: number;
+  /** Reductor: en el punto `reduce_at` de la ruta el tubo pasa a `reduce_to_in` pulgadas (cono de 0,2 m). */
+  reduce_at?: number;
+  reduce_to_in?: number;
   /** Ids de los enlaces del motor que pasan por este tramo; vacío si el tramo no se simula. */
   links: string[];
 }
@@ -151,32 +155,25 @@ function buildZones(): void {
     const color = HYGIENE_COLORS[z.hygiene_class] ?? "#555";
     const center = toScene(x0 + w / 2, y0 + l / 2);
     const base = z.elevation ?? 0;
-    if (base > 0) {
-      // Piso elevado: losa delgada y translúcida para ver lo que hay debajo.
-      const slab = new THREE.Mesh(
-        new THREE.BoxGeometry(w, SLAB_M, l),
-        new THREE.MeshStandardMaterial({ color: "#9aa3ad", roughness: 0.8, transparent: true, opacity: 0.22, depthWrite: false }),
+    // Los pisos elevados no llevan losa ni suelo de color (pedido del autor): solo el contorno de la zona, su rótulo
+    // y las estructuras de cada equipo, para ver la instalación completa.
+    if (base <= 0) {
+      const floor = new THREE.Mesh(
+        new THREE.PlaneGeometry(w - 0.2, l - 0.2),
+        new THREE.MeshStandardMaterial({
+          color,
+          roughness: 0.7,
+          metalness: 0.05,
+          transparent: true,
+          opacity: z.kind === "exterior" ? 0.55 : 0.9,
+        }),
       );
-      slab.position.copy(center).setY(base - SLAB_M / 2);
-      slab.name = `zone-slab-${z.id}`;
-      stage.content.add(slab);
+      floor.rotation.x = -Math.PI / 2;
+      floor.position.copy(center).setY(base + 0.02);
+      floor.receiveShadow = true;
+      floor.name = `zone-floor-${z.id}`;
+      stage.content.add(floor);
     }
-    const floor = new THREE.Mesh(
-      new THREE.PlaneGeometry(w - 0.2, l - 0.2),
-      new THREE.MeshStandardMaterial({
-        color,
-        roughness: 0.7,
-        metalness: 0.05,
-        transparent: true,
-        opacity: base > 0 ? 0.3 : z.kind === "exterior" ? 0.55 : 0.9,
-        depthWrite: base <= 0,
-      }),
-    );
-    floor.rotation.x = -Math.PI / 2;
-    floor.position.copy(center).setY(base + 0.02);
-    floor.receiveShadow = true;
-    floor.name = `zone-floor-${z.id}`;
-    stage.content.add(floor);
     if (z.height > 0) {
       const edges = new THREE.LineSegments(
         new THREE.EdgesGeometry(new THREE.BoxGeometry(w, z.height, l)),
@@ -196,8 +193,6 @@ function buildZones(): void {
     }
   }
 }
-
-const SLAB_M = 0.12;
 
 const PLACEHOLDER = new THREE.MeshStandardMaterial({ color: "#7f8b97", roughness: 0.65, metalness: 0.25 });
 const RAIL = new THREE.MeshStandardMaterial({ color: "#e0a82e", roughness: 0.5, metalness: 0.4 });
@@ -303,6 +298,19 @@ function supportFor(eq: PlantEquipment): THREE.Object3D | null {
   if (eq.overhead || gap < 0.15 || dx * dy < 0.5) return null;
   const group = new THREE.Group();
   group.name = `support-${eq.id}`;
+  if (eq.type === "distribution_grid") {
+    // el bastidor de la rejilla ya trae sus vigas: las patas bajan por las esquinas reales de ese bastidor (no por la
+    // huella nominal, que no coincide), una sobre otra, como una sola columna hasta el piso
+    const s = Number(eq.params?.spacing_m ?? 0.5);
+    for (const lx of [-2.3 * s, 2.3 * s])
+      for (const lz of [-3.3 * s, 2.3 * s]) {
+        const leg = new THREE.Mesh(new THREE.BoxGeometry(0.05, gap, 0.05), SUPPORT);
+        leg.position.copy(toScene(eq.position[0] + lx, eq.position[1] - lz, floor + gap / 2));
+        leg.castShadow = true;
+        group.add(leg);
+      }
+    return group;
+  }
   for (const sx of [-1, 1])
     for (const sy of [-1, 1]) {
       const leg = new THREE.Mesh(new THREE.BoxGeometry(0.06, gap, 0.06), SUPPORT);
@@ -660,9 +668,27 @@ function buildPipes(): void {
     const points = raw.filter((p, k) => k === 0 || p.distanceTo(raw[k - 1]) > 1e-3);
     const color = MEDIUM_COLORS.find(([re]) => re.test(pipe.medium.toLowerCase()))?.[1] ?? "#aab3bd";
     const material = new THREE.MeshStandardMaterial({ color, roughness: 0.35, metalness: 0.7 });
-    const mesh = parts.pipe(points, radius, material, Math.min(0.4, radius * 3));
-    mesh.name = `pipe-${pipe.from}-${pipe.to}`;
-    stage.content.add(mesh);
+    const at = pipe.reduce_at;
+    if (pipe.reduce_to_in && at !== undefined && at > 0 && at < points.length - 1) {
+      // reductor: tramo grueso hasta el punto, cono de 0,2 m y tramo delgado hasta el final
+      const small = Math.max(0.025, (pipe.reduce_to_in * 0.0254 * 1.15) / 2);
+      const p0 = points[at];
+      const dir = points[at + 1].clone().sub(p0);
+      const cone = Math.min(0.2, dir.length() / 2);
+      const q = p0.clone().addScaledVector(dir.normalize(), cone);
+      const big = parts.pipe(points.slice(0, at + 1), radius, material, Math.min(0.4, radius * 3));
+      big.name = `pipe-${pipe.from}-${pipe.to}`;
+      const thin = parts.pipe([q, ...points.slice(at + 1)], small, material, Math.min(0.4, small * 3));
+      const taper = new THREE.Mesh(new THREE.CylinderGeometry(small, radius, cone, 20), material);
+      taper.position.copy(p0).addScaledVector(dir, cone / 2);
+      taper.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir);
+      taper.castShadow = true;
+      stage.content.add(big, thin, taper);
+    } else {
+      const mesh = parts.pipe(points, radius, material, Math.min(0.4, radius * 3));
+      mesh.name = `pipe-${pipe.from}-${pipe.to}`;
+      stage.content.add(mesh);
+    }
     if (!pipe.route?.length) {
       // brida en cada extremo: se lee como una conexión al equipo y no como un tubo cortado
       for (const [end, next] of [[points[0], points[1]], [points[points.length - 1], points[points.length - 2]]] as const) {
@@ -1000,9 +1026,9 @@ function commandButton(label: string, title: string, command: string, args: Reco
   return b;
 }
 
-function renderLines(lines: Record<string, { name: string; output_units: number; output_per_h: number | null }>): void {
+function renderLines(lines: Record<string, { name: string; unit?: string; output_units: number; output_per_h: number | null }>): void {
   $("lines").innerHTML = Object.entries(lines)
-    .map(([id, ln]) => `<div class="line" data-line="${id}"><b>${ln.name}</b><span>${fmt(ln.output_units)} u · ${ln.output_per_h === null ? "—" : fmt(ln.output_per_h)} u/h</span></div>`)
+    .map(([id, ln]) => `<div class="line" data-line="${id}"><b>${ln.name}</b><span>${fmt(ln.output_units)} ${ln.unit ?? "u"} · ${ln.output_per_h === null ? "—" : fmt(ln.output_per_h)} ${ln.unit ?? "u"}/h</span></div>`)
     .join("");
 }
 
@@ -1087,6 +1113,12 @@ async function start(): Promise<void> {
   if (url.get("select")) select(url.get("select"));
   const focusAsset = url.get("focus") ? assets.get(url.get("focus")!) : undefined;
   if (focusAsset) stage.frame(focusAsset.root, 1.1);
+  const look = url.get("look")?.split(",").map(Number);
+  if (look?.length === 6 && look.every(Number.isFinite)) {
+    stage.camera.position.copy(toScene(look[0], look[1], look[2]));
+    stage.controls.target.copy(toScene(look[3], look[4], look[5]));
+    stage.controls.update();
+  }
   if (url.get("tour") === "1") startTour();
   if (url.get("autosim") === "1" && simulated) {
     if (url.get("scenario")) sel.value = url.get("scenario")!;

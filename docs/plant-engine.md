@@ -18,7 +18,7 @@ Vive junto al layout, en `industrial-models/<planta>/simulation.yaml`:
 | `equipment` | Los equipos del `plant.yaml` que se simulan: id del plano → tipo de librería, preset y parámetros |
 | `links` | Conexiones `equipo.puerto → equipo.puerto`. Cada una debe existir en los `flows` del plano, directa o pasando por equipos que no se simulan (`via`). `max` limita una magnitud, por ejemplo la presión después de una estación reductora; `when: <equipo>.<variable>` abre el enlace solo mientras esa variable sea > 0 (el desvío regresa a la marmita que descarga) |
 | `startup` | Comandos que se aplican al inicio de todos los escenarios (`every_s` los repite) |
-| `lines` | Líneas con su puerto de salida, para los KPIs de planta |
+| `lines` | Líneas con su puerto de salida, para los KPIs de planta; `unit` opcional (por defecto `u`; el acueducto usa `m³` con el contador `volume_m3` de las bombas) |
 | `scenarios` | Línea de tiempo y expectativas, igual que en un equipo |
 
 Un equipo del plano sin tipo en la librería no se simula. Si está en medio de un flujo (una bomba, un tubo de retención), se nombra en `via` y el enlace lo atraviesa sin cambios.

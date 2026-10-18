@@ -38,6 +38,8 @@ app = FastAPI(title="Industrial Twin API", version="0.1.0")
 library = Library()
 _plant_models: dict[str, PlantModel] = {}
 
+_PIPE_KEYS = ("from", "to", "medium", "rate", "unit", "route", "diameter_in", "inner_diameter_mm", "reduce_at", "reduce_to_in")
+
 
 def _clean(value: Any) -> Any:
     """JSON estricto: NaN/inf a null."""
@@ -214,7 +216,7 @@ def get_plant(plant_id: str) -> dict[str, Any]:
         "routes": layout.get("routes", []),
         "pipes": [
             {
-                **{k: f[k] for k in ("from", "to", "medium", "rate", "unit", "route", "diameter_in", "inner_diameter_mm") if k in f},
+                **{k: f[k] for k in _PIPE_KEYS if k in f},
                 # Enlaces del motor que pasan por este tramo: la escena anima la tubería con su caudal.
                 "links": model.links_for_flow(f["from"], f["to"]) if model else [],
             }

@@ -21,12 +21,12 @@ equipment:
   # salida que da lo mismo de día con la columna en serie (20,94 mca, banco network.py).
   prs-01:            { type: pressure-reducing-station, preset: station-4in-auto, params: { critical_setpoint_mca: 15.45, manual_setting_mca: 20.94 } }
   grid-01:           { type: distribution-grid, preset: level-1 }
-  grid-02:           { type: distribution-grid, preset: level-2 }
-  grid-03:           { type: distribution-grid, preset: level-3 }
-  grid-04:           { type: distribution-grid, preset: level-4-critical }
-  valve-between-12:  { type: regulating-valve, preset: between-levels-2in }
-  valve-between-23:  { type: regulating-valve, preset: between-levels-2in }
-  valve-between-34:  { type: regulating-valve, preset: between-levels-2in }
+  grid-02:           { type: distribution-grid, preset: level-2, params: { inlet_riser: false } }
+  grid-03:           { type: distribution-grid, preset: level-3, params: { inlet_riser: false } }
+  grid-04:           { type: distribution-grid, preset: level-4-critical, params: { inlet_riser: false } }
+  valve-between-12:  { type: regulating-valve, preset: between-levels-2in, params: { vertical: true } }
+  valve-between-23:  { type: regulating-valve, preset: between-levels-2in, params: { vertical: true } }
+  valve-between-34:  { type: regulating-valve, preset: between-levels-2in, params: { vertical: true } }
 
 links:
   # Red de agua a presión (tubos del plano)
@@ -56,6 +56,19 @@ links:
   - { from: tank-recirc-01.level, to: pumpset-recirc-01.source_level }
   - { from: tank-recirc-02.level, to: pumpset-recirc-01.source_level }
   - { from: tank-supply-01.level, to: pumpset-recirc-01.target_level }
+
+# Líneas del panel: el agua entregada a la red es el volumen que bombean las bombas principales (contador del grupo).
+lines:
+  - id: red-distribucion
+    name: Red de distribución (agua entregada)
+    unit: m³
+    output: pumpset-main-01.discharge
+    equipment: [tank-supply-01, pumpset-main-01, prs-01, grid-01, valve-between-12, grid-02, valve-between-23, grid-03, valve-between-34, grid-04]
+  - id: recirculacion
+    name: Recirculación (agua devuelta al tanque de bombeo)
+    unit: m³
+    output: pumpset-recirc-01.discharge
+    equipment: [tank-recirc-01, tank-recirc-02, pumpset-recirc-01]
 
 startup:
   - { equipment: pumpset-main-01,   command: start }

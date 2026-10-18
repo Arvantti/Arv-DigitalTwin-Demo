@@ -39,7 +39,7 @@ params:
 
 ports:
   - { id: suction, kind: material, direction: in, medium: agua, unit: m3/h, hydraulic: suction, description: Colector de succión desde los tanques }
-  - { id: discharge, kind: material, direction: out, medium: agua a presión, unit: m3/h, hydraulic: discharge, description: Colector de descarga hacia la red }
+  - { id: discharge, kind: material, direction: out, medium: agua a presión, unit: m3/h, hydraulic: discharge, link: { units: volume_m3 }, description: Colector de descarga hacia la red (publica el volumen bombeado acumulado) }
   - { id: source_level, kind: signal, direction: in, medium: nivel del tanque de origen, unit: "%", link: { level_pct: source_level_pct }, description: "Modo nivel: nivel de los tanques de donde toma el agua" }
   - { id: target_level, kind: signal, direction: in, medium: nivel del tanque de destino, unit: "%", link: { level_pct: target_level_pct }, description: "Modo nivel: nivel del tanque que llena" }
   - { id: power, kind: utility, direction: in, medium: energía eléctrica }
