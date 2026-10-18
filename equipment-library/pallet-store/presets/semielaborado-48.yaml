@@ -1,0 +1,4 @@
+preset: semielaborado-48
+description: Estantería de semielaborado de 48 posiciones de estiba (4 niveles, 16 m), estibas de 1.000 piezas en cajas azules
+params: { positions: 48, pallet_pieces: 1000, initial_pallets: 0, release_gap_s: 30, levels: 4, rack_length_m: 16, rack_height_m: 6, content: semielaborado, color: "#2f6fb0" }
+provenance: { positions: user, pallet_pieces: user, initial_pallets: assumed, release_gap_s: assumed, levels: assumed, rack_length_m: user, rack_height_m: user, content: assumed, color: assumed }
