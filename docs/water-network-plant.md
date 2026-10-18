@@ -230,3 +230,25 @@ La fase 1 es un modelo 1D (red). Para acoplar después CFD (Navier-Stokes) sin r
 | S5 | La PRV automática mide la presión en la válvula crítica por telemetría | Es lo que permite el objetivo de 20 mca en el punto crítico |
 | S6 | Bombas genéricas, sin marca | Regla del repositorio |
 | S7 | Tanque de bombeo de ≈ 3,9 m³ y dos tanques de recirculación de ≈ 4,5 m³ en total (confirmado) | Autonomía y dinámica de niveles |
+
+## 11. Conexiones de la escena: dónde empieza y termina cada tubo
+
+Revisión del 2026-10-18 (captura del autor con piezas sueltas). Cada ruta de `plant.yaml` empieza y termina en la conexión real del modelo 3D, con las cotas del plano (metros; z = arriba). Si cambia la geometría de un equipo, estas coordenadas se recalculan a mano (todavía no hay puertos de conexión por tipo).
+
+| Conexión | Punto (x, y, z) | De dónde sale |
+|---|---|---|
+| Boquilla de salida del tanque de bombeo | 3,65; 3,0; 2,82 | `vessel`: salida inferior hacia +X (radio + 0,3 m) |
+| Extremo este del colector de succión (bombas Grundfos) | 4,44; 5,98; 2,82 | `booster-pump-set`: colector hasta xb + 0,35 m |
+| Extremo este del colector de descarga (Grundfos) | 4,44; 6,8; 3,176 | ídem |
+| Brida de entrada / salida de la estación reguladora | 4,9135 y 7,4865; 4,6; 4,05 | `pressure-reducing-station`: L/2 − 0,02 m, eje a 0,55 m del apoyo |
+| Montante de entrada de cada nivel | 10,0; 4,0; piso del nivel | `distribution-grid`: sube hasta 0,9 m; la toma se hace a 0,15 m del piso |
+| Bajante de cada canaleta | 12,09; 3,975; piso del nivel | `distribution-grid`: baja a su piso |
+| Bridas de la válvula entre niveles | 9,22 y 9,92; 3,7; eje a 0,35 m del apoyo | `regulating-valve`: carrete de 0,70 m hacia +X |
+| Boquilla de entrada de cada tanque de recirculación | 8,95 y 10,75; 2,6; 3,245 | `vessel`: tapa, a −(radio + 0,4) m en X |
+| Boquilla de salida de los tanques de recirculación | 10,95 y 12,75; 2,6; 0,25 | `vessel` |
+| Colectores de las bombas de recirculación | 12,665; 6,03 (succión) y 7,15 (descarga) | `booster-pump-set` estilo `end_suction` de 3" |
+| Boquilla de entrada del tanque de bombeo | 1,45; 3,0; 6,375 | `vessel` |
+
+Cambios de esta revisión: la válvula entre niveles queda en un desvío de la columna (entra por la brida oeste y sale por la este) en vez de atravesar su cuerpo; la columna está en y = 3,7 m, entre los tanques (borde en 3,25) y el bastidor de la rejilla (3,85). Las válvulas bajan 0,2 m (2,9; 4,1; 5,3). Los tubos de la red de agua cambian de largo, y con ellos las pérdidas por fricción que calcula el motor; las expectativas de los escenarios siguen dentro de su tolerancia (ver el resultado en la bitácora).
+
+Simplificación conocida: el nivel 1 desagua a 2,5 m y la boquilla de entrada del tanque de recirculación está a 3,25 m, porque el tanque de 1,70 m con patas y fondos mide 2,9 m y sobresale del piso 1. En la escena se dibuja continuo; para que fuera por gravedad habría que bajar el tanque o usar una bomba de sumidero.

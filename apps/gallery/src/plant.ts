@@ -10,6 +10,7 @@
  *   &camera=general|<id de zona>   cámara inicial
  *   &select=<id de equipo>         equipo seleccionado
  *   &focus=<id de equipo>          acerca la cámara a ese equipo
+ *   &look=x,y,z,tx,ty,tz           cámara en el punto (x, y, z) del plano mirando a (tx, ty, tz), en metros
  *   &autosim=1&scenario=boiler-trip&speed=120   conecta la simulación al cargar
  *   &tour=1                        inicia el recorrido de cámara al cargar
  *   &shot=1                        oculta la interfaz y marca window.__ready (con autosim, tras recibir datos)
@@ -303,6 +304,19 @@ function supportFor(eq: PlantEquipment): THREE.Object3D | null {
   if (eq.overhead || gap < 0.15 || dx * dy < 0.5) return null;
   const group = new THREE.Group();
   group.name = `support-${eq.id}`;
+  if (eq.type === "distribution_grid") {
+    // el bastidor de la rejilla ya trae sus vigas: las patas bajan por las esquinas reales de ese bastidor (no por la
+    // huella nominal, que no coincide), una sobre otra, como una sola columna hasta el piso
+    const s = Number(eq.params?.spacing_m ?? 0.5);
+    for (const lx of [-2.3 * s, 2.3 * s])
+      for (const lz of [-3.3 * s, 2.3 * s]) {
+        const leg = new THREE.Mesh(new THREE.BoxGeometry(0.05, gap, 0.05), SUPPORT);
+        leg.position.copy(toScene(eq.position[0] + lx, eq.position[1] - lz, floor + gap / 2));
+        leg.castShadow = true;
+        group.add(leg);
+      }
+    return group;
+  }
   for (const sx of [-1, 1])
     for (const sy of [-1, 1]) {
       const leg = new THREE.Mesh(new THREE.BoxGeometry(0.06, gap, 0.06), SUPPORT);
@@ -1000,9 +1014,9 @@ function commandButton(label: string, title: string, command: string, args: Reco
   return b;
 }
 
-function renderLines(lines: Record<string, { name: string; output_units: number; output_per_h: number | null }>): void {
+function renderLines(lines: Record<string, { name: string; unit?: string; output_units: number; output_per_h: number | null }>): void {
   $("lines").innerHTML = Object.entries(lines)
-    .map(([id, ln]) => `<div class="line" data-line="${id}"><b>${ln.name}</b><span>${fmt(ln.output_units)} u · ${ln.output_per_h === null ? "—" : fmt(ln.output_per_h)} u/h</span></div>`)
+    .map(([id, ln]) => `<div class="line" data-line="${id}"><b>${ln.name}</b><span>${fmt(ln.output_units)} ${ln.unit ?? "u"} · ${ln.output_per_h === null ? "—" : fmt(ln.output_per_h)} ${ln.unit ?? "u"}/h</span></div>`)
     .join("");
 }
 
@@ -1087,6 +1101,12 @@ async function start(): Promise<void> {
   if (url.get("select")) select(url.get("select"));
   const focusAsset = url.get("focus") ? assets.get(url.get("focus")!) : undefined;
   if (focusAsset) stage.frame(focusAsset.root, 1.1);
+  const look = url.get("look")?.split(",").map(Number);
+  if (look?.length === 6 && look.every(Number.isFinite)) {
+    stage.camera.position.copy(toScene(look[0], look[1], look[2]));
+    stage.controls.target.copy(toScene(look[3], look[4], look[5]));
+    stage.controls.update();
+  }
   if (url.get("tour") === "1") startTour();
   if (url.get("autosim") === "1" && simulated) {
     if (url.get("scenario")) sel.value = url.get("scenario")!;
