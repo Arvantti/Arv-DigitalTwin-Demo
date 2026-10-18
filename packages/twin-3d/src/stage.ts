@@ -73,6 +73,9 @@ const PRESETS: Record<LightingPreset, {
   },
 };
 
+/** Atenuación común de los tres modos: la escena se veía demasiado brillante (pedido del autor, 2026-10-18). */
+const SOFTEN = { key: 0.8, fill: 0.7, exposure: 0.9, bloom: 0.5 };
+
 export class Stage {
   readonly renderer: THREE.WebGLRenderer;
   readonly scene = new THREE.Scene();
@@ -192,15 +195,15 @@ export class Stage {
     this.rig.hemi.groundColor.set(p.hemi[1]);
     this.rig.hemi.intensity = p.hemi[2];
     this.rig.key.color.set(p.key[0]);
-    this.rig.key.intensity = p.key[1];
+    this.rig.key.intensity = p.key[1] * SOFTEN.key;
     this.rig.key.position.set(...p.key[2]);
     this.rig.fills.forEach((f) => {
       f.color.set(p.fill[0]);
-      f.intensity = p.fill[1];
+      f.intensity = p.fill[1] * SOFTEN.fill;
     });
     this.scene.environmentIntensity = p.env;
-    this.renderer.toneMappingExposure = p.exposure;
-    this.bloom.strength = p.bloom[0];
+    this.renderer.toneMappingExposure = p.exposure * SOFTEN.exposure;
+    this.bloom.strength = p.bloom[0] * SOFTEN.bloom;
     this.bloom.radius = p.bloom[1];
     this.bloom.threshold = p.bloom[2];
   }
@@ -209,7 +212,7 @@ export class Stage {
    * Demarcación de celda en el piso: líneas luminosas, esquineros, franja de seguridad y rótulo,
    * como en un tablero de control de planta.
    */
-  addCellMarker(w: number, d: number, label: string, sublabel = "", color = "#ffb21e"): THREE.Group {
+  addCellMarker(w: number, d: number, label: string, sublabel = "", color = "#3fd0ff"): THREE.Group {
     const g = group(`cell-${label}`);
     const glow = new THREE.MeshStandardMaterial({ color: "#000000", emissive: color, emissiveIntensity: 2.2 });
     this.pulseMats.push(glow);

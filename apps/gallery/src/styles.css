@@ -4,7 +4,7 @@
   --line: rgba(120, 180, 230, 0.16);
   --text: #dbe7f2;
   --dim: #7d93a8;
-  --accent: #ffb21e;
+  --accent: #3fd0ff;
   --cyan: #3fd0ff;
   --ok: #22e06b;
   --warn: #ffb000;
@@ -28,7 +28,7 @@ html, body { margin: 0; height: 100%; background: var(--bg); overflow: hidden; }
 h3 { font: 700 12px Rajdhani, sans-serif; letter-spacing: 0.18em; color: var(--accent); margin: 16px 0 8px; }
 .topbar { top: 12px; left: 12px; right: 12px; height: 52px; display: flex; align-items: center; gap: 22px; padding: 0 16px; }
 .brand { font: 700 18px Rajdhani, sans-serif; letter-spacing: 0.12em; }
-.logo { color: var(--accent); text-shadow: 0 0 12px var(--accent); }
+.logo { color: var(--accent); text-shadow: 0 0 8px rgba(63, 208, 255, 0.4); }
 .title { flex: 1; font: 600 16px Rajdhani, sans-serif; letter-spacing: 0.06em; display: flex; gap: 12px; align-items: baseline; }
 .lighting button { margin-left: 4px; }
 .clock { font: 600 13px "JetBrains Mono", monospace; color: var(--cyan); min-width: 210px; text-align: right; }
@@ -37,13 +37,13 @@ button, select {
   border-radius: 6px; padding: 6px 10px; font: 600 12px Rajdhani, sans-serif; letter-spacing: 0.08em; cursor: pointer;
 }
 button:hover { border-color: var(--accent); }
-button.active { background: rgba(255, 178, 30, 0.18); border-color: var(--accent); color: #fff; }
-button.primary { background: rgba(255, 178, 30, 0.22); border-color: var(--accent); }
+button.active { background: rgba(63, 208, 255, 0.18); border-color: var(--accent); color: #fff; }
+button.primary { background: rgba(63, 208, 255, 0.22); border-color: var(--accent); }
 .sidebar { top: 76px; left: 12px; width: 250px; bottom: 12px; padding: 4px 14px 14px; overflow-y: auto; }
 .sidebar ul { list-style: none; margin: 0; padding: 0; }
 .sidebar li { padding: 8px 10px; border-radius: 6px; cursor: pointer; border: 1px solid transparent; margin-bottom: 4px; }
 .sidebar li:hover { border-color: var(--line); }
-.sidebar li.active { border-color: var(--accent); background: rgba(255, 178, 30, 0.1); }
+.sidebar li.active { border-color: var(--accent); background: rgba(63, 208, 255, 0.1); }
 .sidebar li small { display: block; color: var(--dim); font-size: 11px; }
 .sidebar select { width: 100%; }
 .sim-controls { display: flex; gap: 6px; margin-top: 8px; }
@@ -75,11 +75,15 @@ button.primary { background: rgba(255, 178, 30, 0.22); border-color: var(--accen
 .events li.fault_raised b { color: var(--bad); }
 .events li.fault_cleared b, .events li.batch_completed b { color: var(--ok); }
 body.shot .glass, body.shot .lil-gui { display: none !important; }
-.lil-gui.root { top: 76px !important; right: 344px !important; --background-color: rgba(10, 16, 24, 0.75); --title-background-color: rgba(30, 44, 60, 0.9); --widget-color: rgba(40, 56, 74, 0.9); --focus-color: #3a5068; --number-color: #3fd0ff; --font-family: Inter, sans-serif; }
+.lil-gui.root { --background-color: rgba(10, 16, 24, 0.75); --title-background-color: rgba(30, 44, 60, 0.9); --widget-color: rgba(40, 56, 74, 0.9); --focus-color: #3a5068; --number-color: #3fd0ff; --font-family: Inter, sans-serif; width: 100%; }
+.right-col { position: fixed; top: 76px; right: 12px; width: 320px; bottom: 204px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+.right-col .glass { position: static; width: auto; max-height: none; flex: none; }
+#gui-host { flex: none; }
+.sidebar [hidden], .nav-link[hidden] { display: none; }
 @media (max-width: 900px) {
   .sidebar { width: 200px; }
-  .hud, .events { width: 260px; }
-  .lil-gui.root { display: none; }
+  .hud, .events, .right-col { width: 260px; }
+  #gui-host { display: none; }
 }
 
 /* Escena de planta */
@@ -90,3 +94,16 @@ body.shot .glass, body.shot .lil-gui { display: none !important; }
 .nav-link { display: block; margin-top: 10px; color: var(--cyan); font: 600 12px Rajdhani, sans-serif; letter-spacing: 0.1em; text-decoration: none; }
 .nav-link:hover { color: var(--accent); }
 .tour-stop { margin-top: 6px; font: 11px "JetBrains Mono", monospace; min-height: 14px; }
+
+/* Portada */
+body.portal { overflow: auto; background: var(--bg); }
+.portal-wrap { max-width: 1080px; margin: 0 auto; padding: 48px 20px 64px; }
+.portal-head h1 { font: 700 34px Rajdhani, sans-serif; letter-spacing: 0.04em; margin: 18px 0 4px; }
+.portal-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 16px; margin-top: 28px; }
+.portal-card { position: static; padding: 20px 22px; display: flex; flex-direction: column; gap: 6px; }
+.portal-card h2 { font: 700 22px Rajdhani, sans-serif; letter-spacing: 0.04em; margin: 0; }
+.portal-card p { color: var(--dim); margin: 4px 0 14px; flex: 1; line-height: 1.5; }
+.portal-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.btn { display: inline-block; background: rgba(30, 44, 60, 0.7); color: var(--text); border: 1px solid var(--line); border-radius: 6px; padding: 8px 12px; font: 600 12px Rajdhani, sans-serif; letter-spacing: 0.08em; text-decoration: none; }
+.btn:hover { border-color: var(--accent); }
+.btn.primary { background: rgba(63, 208, 255, 0.18); border-color: var(--accent); }
