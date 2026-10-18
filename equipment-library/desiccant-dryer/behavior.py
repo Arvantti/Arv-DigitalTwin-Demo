@@ -42,7 +42,7 @@ class DesiccantDryer(EquipmentBehavior):
         self.capacity_kg = p["throughput_kg_h"] * p["residence_h"]
         self.parcel_kg = self.capacity_kg / PARCELS
         self.air = FirstOrderLag(tau_s=600.0, initial=p["dry_temp_c"])
-        self.dew = FirstOrderLag(tau_s=1800.0, initial=p["dew_point_c"])
+        self.dew = FirstOrderLag(tau_s=3600.0, initial=p["dew_point_c"])
         # Arranca en régimen: 90 % de nivel, cada porción con la humedad que tendría tras su edad
         # a caudal nominal (la del fondo es la más antigua).
         self.hopper: deque[Parcel] = deque()

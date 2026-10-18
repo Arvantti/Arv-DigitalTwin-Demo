@@ -10,7 +10,7 @@ scenarios:
       - { path: variables.resin_out_kg, min: 399, max: 401, description: "(50 kg/h × 8 h)" }
       - { path: variables.outlet_moisture_pct, max: 0.016, description: "(residencia ≈ 343 kg / 50 kg/h = 6,9 h ≫ τ = 0,4 h ⇒ ≈ 0,01 %)" }
       - { path: kpis.over_limit_pct, equals: 0.0 }
-      - { path: kpis.kwh_per_kg, min: 0.22, max: 0.32, description: "(18 × (0,35 + 0,65 × 0,2) + 7,2 × 0,5 + 1,5 ≈ 13,7 kW / 50 kg/h: secador sobredimensionado)" }
+      - { path: kpis.kwh_per_kg, min: 0.16, max: 0.20, description: "(11 × (0,35 + 0,65 × 0,2) + 4,4 × 0,5 + 1,5 ≈ 9 kW / 50 kg/h = 0,18: a un 20 % de carga el secador gasta el triple que a plena carga, ≈ 0,06 kWh/kg)" }
       - { path: events.tower_switched, equals: 2, description: "(cada 4 h)" }
 
   - id: regeneration-failure
@@ -21,11 +21,11 @@ scenarios:
     timeline:
       - { at_s: 3600, command: inject_fault, args: { fault: regeneration_failure, duration_s: 18000 } }
     expect:
-      # El rocío sube de −40 a +12 °C con τ = 30 min; una hora después vale ≈ +5 °C y τ de secado
-      # ≈ 0,8 × (1 + 45/10) ≈ 4,4 h. La porción que sale a las 6 h entró a las ≈ 3,3 h (residencia
-      # ≈ 412 / 150 = 2,74 h) y se secó con τ ≈ 4,9 h: 0,01 + 0,29 × e^(−2,74/4,9) ≈ 0,18 %.
+      # El rocío sube de −40 a +12 °C con τ = 1 h. La porción que sale a las 6 h entró a las ≈ 3,3 h
+      # (residencia ≈ 412 / 150 = 2,74 h), con el rocío entre +6,5 y +11,7 °C: τ de secado
+      # ≈ 0,8 × (1 + 50/10) ≈ 4,8 h ⇒ 0,01 + 0,29 × e^(−2,74/4,8) ≈ 0,17 %.
       - { path: variables.outlet_moisture_pct, min: 0.15, max: 0.20 }
-      - { path: variables.dew_point_c, min: 10, description: "(≈ 12 − 52 × e^(−5) ≈ 11,7 °C)" }
+      - { path: variables.dew_point_c, min: 10, description: "(5 h de falla: 12 − 52 × e^(−5) ≈ 11,7 °C)" }
       - { path: events.quality_alarm, min: 1 }
 
   - id: heater-failure

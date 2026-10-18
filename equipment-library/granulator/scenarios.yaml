@@ -6,9 +6,9 @@ scenarios:
     duration_s: 28800
     inputs: { feed_kg_h: 12 }
     expect:
-      - { path: variables.regrind_kg, min: 94.8, max: 95.2, description: "(12 × 8 = 96 kg; desgaste 96/30.000 ≈ 0 ⇒ finos 1 % ⇒ 95,0 kg)" }
+      - { path: variables.regrind_kg, min: 94.8, max: 95.2, description: "(12 × 8 = 96 kg; desgaste 96/150.000 ≈ 0 ⇒ finos 1 % ⇒ 95,0 kg)" }
       - { path: variables.overflow_kg, equals: 0.0 }
-      - { path: kpis.kwh_per_kg, min: 0.21, max: 0.23, description: "(carga 12/40 = 0,3 ⇒ 5,5 × (0,25 + 0,75 × 0,3) = 2,61 kW / 12 kg/h = 0,218 kWh/kg)" }
+      - { path: kpis.kwh_per_kg, min: 0.11, max: 0.13, description: "(carga 12/40 = 0,3 ⇒ 3,0 × (0,25 + 0,75 × 0,3) = 1,43 kW / 12 kg/h = 0,119 kWh/kg)" }
 
   - id: jam
     description: Atasco de 10 min en el molino central con 300 kg/h de alimentación; la tolva rebosa

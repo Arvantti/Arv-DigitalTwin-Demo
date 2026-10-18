@@ -1,4 +1,4 @@
 preset: 40kg-beside-press
 description: Molino de colada al pie de la inyectora, 40 kg/h, criba de 8 mm
-params: { kind: beside_press, capacity_kg_h: 40, screen_mm: 8, rotor_kw: 5.5, throat_kg: 8, bin_kg: 60, knife_life_t: 30, nominal_feed_kg_h: 12 }
+params: { kind: beside_press, capacity_kg_h: 40, screen_mm: 8, rotor_kw: 3.0, throat_kg: 8, bin_kg: 60, knife_life_t: 150, nominal_feed_kg_h: 12 }
 provenance: { capacity_kg_h: user, screen_mm: assumed, rotor_kw: assumed, throat_kg: assumed, knife_life_t: assumed }
