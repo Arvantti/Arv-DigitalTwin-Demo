@@ -7,7 +7,7 @@ tags: [registro, historico-ia, fabrica-cajas, transporte]
 ---
 # Hilo: gemelo de la fábrica de cajas
 
-Parte de [[historico-proyecto]] · Índice: [[00-indice]] · Bitácora: [[bitacora]]. Autor humano: Carlos Andrés Quiceño. Hora en UTC. Las listas de progreso no se reproducen. Credenciales: ninguna. Por pedido del autor, el nombre de la empresa que sirvió de inspiración se reemplaza por «[referencia omitida a pedido del autor]» (D42).
+Parte de [[historico-proyecto]] · Índice: [[00-indice]] · Bitácora: [[bitacora]]. Autor humano: Carlos Andrés Quiceño. Hora en UTC. Las listas de progreso no se reproducen. Credenciales: ninguna. Por pedido del autor, el nombre de la empresa que sirvió de inspiración se reemplaza por «[referencia omitida a pedido del autor]» (D43).
 
 ---
 

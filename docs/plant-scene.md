@@ -13,6 +13,7 @@ Parámetros de URL, pensados para capturas automáticas:
 |---|---|
 | `plant=<id>` | Planta (por defecto `sauce-plant-v1`; también `plastic-injection-plant-v1`, con sus 29 inyectoras, la banda, el empaque, los secadores, los chillers y el molino animados; escenarios `nominal`, `conveyor-trip`, `dryer-stop`, `chiller-trip` y `pelletizer-jam`); `corrugated-box-plant-v1`: fábrica de cajas, aún sin simulación, ver `docs/box-plant.md`) |
 | `camera=general`, `camera=<id de zona>` o `camera=nivel-<n>` | Cámara inicial (`nivel-<n>`: el equipo con `params.level: n`, en un edificio por pisos) |
+| `look=x,y,z,tx,ty,tz` | Cámara en el punto (x, y, z) del plano mirando a (tx, ty, tz), en metros; sirve para capturar un detalle exacto |
 | `select=<id de equipo>` | Equipo seleccionado |
 | `focus=<id de equipo>` | Acerca la cámara a ese equipo |
 | `routes=0` | Oculta los pasillos, las rutas y los montacargas y operarios que las recorren |
@@ -46,7 +47,8 @@ Parámetros de URL, pensados para capturas automáticas:
 
 - **Pisos:** cada zona con `elevation` se dibuja a su cota. Los pisos elevados llevan una losa delgada translúcida, para ver lo que hay debajo, y su volumen arranca en esa cota.
 - **Tubos de la red de agua:** los flujos con `route` siguen el trazado del plano (puntos `[x, y, z]`). Su grosor sale de `diameter_in` (4" hasta el nivel 1, 2" en la columna, 3" en la recirculación). Las esferas avanzan a la velocidad real del agua (`velocity_m_s` del dominio hidráulico) y su número sigue el caudal frente al `rate` del plano (en m³/h se compara en kg/h).
-- **Bajantes:** un flujo sin ruta cuyo origen está por encima de la tapa del destino baja vertical desde el costado del equipo de arriba y entra por la tapa del de abajo. Varias bajantes al mismo tanque se separan.
+- **Bajantes:** las cuatro bajantes del acueducto traen su `route` en el plano: salen de la canaleta de cada nivel, se juntan en un tronco a la cota de la boquilla de entrada del tanque de recirculación y llegan a ella. Un flujo sin ruta cuyo origen está por encima de la tapa del destino sigue dibujándose vertical desde el costado del equipo de arriba (salsas, inyección).
+- **Conexiones:** cada ruta empieza y termina en la boquilla o brida real del modelo (tanque, colectores de las bombas, bridas de la estación y de las válvulas entre niveles, montante de cada rejilla); las coordenadas están en `docs/water-network-plant.md`, sección 11.
 - **Soportes:** un equipo apoyado por encima del piso de su zona (la estación reguladora, 1 m sobre el piso 1; los niveles 2 a 4 de la rejilla) lleva cuatro patas y un marco. Los equipos chicos, como las válvulas entre niveles, cuelgan de su tubería.
 - **Cámaras:** vista general del edificio, una por piso (zona) y una por nivel de la rejilla (`NIVEL 1` a `NIVEL 4`).
 
