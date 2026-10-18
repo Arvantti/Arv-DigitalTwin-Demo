@@ -1,0 +1,75 @@
+schema_version: 0.1.0
+type: bag-handling-station
+version: 0.1.0
+name: Estación manual de equipaje
+manufacturing: logistics
+category: inspection.manual
+description: >
+  Puesto donde operarios atienden a mano las maletas que el sistema automático no resolvió. Como
+  nivel 3 de seguridad, abren y revisan la maleta (con el pasajero o con detector de trazas) y la
+  despejan o la retienen. Como codificación manual, leen la etiqueta que el lector no pudo leer y le
+  asignan el vuelo. Las maletas despejadas regresan al clasificador por la banda de reingreso.
+aliases: [nivel 3, revisión manual, codificación manual, manual encoding, estación manual]
+fidelity: { visual: V2, behavior: B2 }
+
+params:
+  role:               { type: enum, values: [l3, encoding], default: l3, description: "Revisión de nivel 3 o codificación de etiquetas", affects: [geometry] }
+  operators:          { type: integer, min: 0, max: 10, default: 3, description: Operarios en el puesto, affects: [behavior, geometry] }
+  handle_s:           { type: number, unit: s, min: 5, max: 1800, default: 240, description: Tiempo de atención de una maleta, affects: [behavior] }
+  reject_pct:         { type: number, unit: "%", min: 0, max: 100, default: 1, description: Maletas retenidas (no regresan al sistema), affects: [behavior] }
+  queue_capacity:     { type: integer, min: 1, max: 60, default: 10, description: Maletas que caben esperando en la mesa de llegada, affects: [behavior, geometry] }
+  release_gap_s:      { type: number, unit: s, min: 0.5, max: 60, default: 3, description: Separación mínima entre maletas que salen a la banda de reingreso, affects: [behavior] }
+  nominal_inflow_upm: { type: number, unit: maletas/min, min: 0, max: 30, default: 0.5, description: Llegada de maletas si el entorno no la fija, affects: [behavior] }
+
+ports:
+  - { id: bags_in, kind: item, direction: in, unit: maletas/min, link: { units: inflow_upm, ready: accepting } }
+  - { id: bags_out, kind: item, direction: out, unit: maletas/min, link: { units: released, ready: downstream_free } }
+
+states:
+  - { id: idle, description: Sin maletas }
+  - { id: running, description: Atendiendo maletas }
+  - { id: blocked, description: Maletas atendidas esperando la banda de reingreso }
+  - { id: fault, description: Detenida por falla }
+
+variables:
+  - { id: queue, unit: maletas, kind: calculated, description: Maletas esperando atención }
+  - { id: in_process, unit: maletas, kind: calculated, description: Maletas que se están atendiendo }
+  - { id: handled, unit: maletas, kind: counter, description: Maletas atendidas }
+  - { id: rejected, unit: maletas, kind: counter, description: Maletas retenidas }
+  - { id: released, unit: maletas, kind: counter, description: Maletas devueltas al sistema }
+  - { id: accepting, unit: "", kind: status, description: "1 si recibe maletas, 0 si la mesa de llegada está llena" }
+  - { id: oldest_wait_min, unit: min, kind: calculated, description: Espera de la maleta más antigua en la mesa }
+
+events:
+  - { id: full, description: La mesa de llegada se llenó }
+  - { id: accepting_again, description: La mesa vuelve a recibir }
+  - { id: bag_rejected, description: Una maleta quedó retenida }
+
+faults:
+  - { id: trace_detector_fault, description: Detector de trazas o lector de mano fuera de servicio, mtbf_h: 1000, mttr_min: 30, severity: low, stops_equipment: false, effect: "La atención tarda 50 % más" }
+  - { id: area_evacuation, description: Evacuación del área por un objeto sospechoso, mtbf_h: 20000, mttr_min: 45, severity: high, effect: Se detiene toda la atención }
+
+commands:
+  - { id: set_operators, description: Cambia los operarios del puesto, args: { n: integer } }
+  - { id: inject_fault, description: Inyecta una falla declarada, args: { fault: string, duration_s: number } }
+  - { id: clear_fault, description: Repara una falla activa, args: { fault: string } }
+  - { id: set_param, description: Cambia un parámetro en caliente, args: { name: string, value: any } }
+
+kpis:
+  - { id: bags_per_h, unit: maletas/h, description: Maletas atendidas por hora }
+  - { id: utilization, unit: "", description: Fracción del tiempo de los operarios ocupada }
+  - { id: reject_rate, unit: "", description: Fracción retenida }
+  - { id: avg_wait_min, unit: min, description: Espera promedio en la mesa antes de ser atendida }
+
+animation_channels:
+  - { id: queue, range: [0, 60], description: Maletas en la mesa de llegada }
+  - { id: in_process, range: [0, 10], description: Maletas abiertas en las mesas }
+  - { id: belt_travel, unit: m, range: [0, 10], description: Recorrido de la banda de reingreso (módulo 10 m) }
+  - { id: stack_light, range: [0, 3], description: "0 apagado, 1 verde, 2 ámbar (mesa llena), 3 rojo (falla)" }
+
+geometry:
+  parts: [inspection_tables, arrival_table, return_belt, operators, trace_detector, terminal, partition]
+
+assumptions:
+  - Las retenciones se reparten de forma uniforme (una de cada 1 ÷ reject_pct) para poder calcular a mano.
+  - Cada operario atiende una maleta a la vez; la siguiente de la mesa pasa en orden de llegada.

@@ -67,8 +67,9 @@ def test_diverted_product_returns_to_the_kettles_and_the_rest_reaches_the_buffer
 def test_divert_goes_only_to_the_kettle_that_is_discharging(sauce: PlantModel) -> None:
     sim = sauce.create()
     sim.step()
-    gated = [lk for lk in sauce.links if lk.when is not None]
-    assert {str(lk.dst) for lk in gated} == {"kettle-01.return_in", "kettle-02.return_in"}
+    all_gated = [lk for lk in sauce.links if lk.when is not None]
+    assert {str(lk.dst) for lk in all_gated} == {"kettle-01.return_in", "kettle-02.return_in", "kettle-03.return_in"}
+    gated = [lk for lk in all_gated if lk.src.equipment == "pasteurizer-01"]  # la marmita 3 tiene su propio pasteurizador
 
     def shares(discharge_1: float, discharge_2: float) -> dict[str, float]:
         values = {eid: e.true_values() for eid, e in sim.equipment.items()}
@@ -150,7 +151,7 @@ def test_flow_of_a_service_link_is_zero_without_pressure(sauce: PlantModel) -> N
 def test_pipes_map_to_the_links_that_cross_them(sauce: PlantModel) -> None:
     assert sauce.links_for_flow("kettle-01", "pump-hot-01") == ["kettle-01:product_out>pasteurizer-01:product_in"]
     assert len(sauce.links_for_flow("pump-hot-01", "pasteurizer-01")) == 2  # las dos marmitas comparten el tramo
-    assert len(sauce.links_for_flow("boiler-01", "steam-station-01")) == 3
+    assert len(sauce.links_for_flow("boiler-01", "steam-station-01")) == 5  # tres marmitas y dos pasteurizadores
     assert sauce.links_for_flow("holding-tube-01", "kettle-02") == ["pasteurizer-01:divert_out>kettle-02:return_in"]  # el desvío
     assert sauce.links_for_flow("cip-skid-01", "kettle-01") == []  # sin simular
 
@@ -173,7 +174,8 @@ def _errors(lib: Library, folder: Path) -> str:
 
 def test_link_must_follow_a_flow_of_the_layout(lib: Library, tmp_path: Path) -> None:
     def edit(raw):
-        raw["links"][3]["via"] = []  # kettle-01 → pasteurizer-01 pasa por pump-hot-01
+        link = next(lk for lk in raw["links"] if lk["from"] == "kettle-01.product_out")
+        link["via"] = []  # kettle-01 → pasteurizer-01 pasa por pump-hot-01
 
     assert "no tiene el flujo kettle-01 → pasteurizer-01" in _errors(lib, _copy_plant(tmp_path, edit))
 

@@ -32,3 +32,5 @@ Conversaciones del 2026-10-16 (UTC) entre el autor y Claude dentro del proyecto 
 22. [[hilo-secuencia-acueducto]] (secuencia hidráulica continua del acueducto y panel LÍNEAS, 2026-10-18 14:40 UTC)
 21. [[hilo-tuberias-sin-cruces]] (tuberías de salsas que cruzan cajas y flujo del proceso de salsas, 2026-10-18 14:36 UTC)
 23. [[hilo-fabrica-de-cajas]] (fábrica de cajas de cartón corrugado: plano y escena 3D, 2026-10-18)
+24. [[hilo-equipaje-aeropuerto]] (gemelo nuevo del sistema de equipaje de aeropuerto, 2026-10-18 15:04 UTC)
+25. [[hilo-linea-caliente-de-salsas]] (línea caliente completa de salsas y capacidad a 22 t/día, 2026-10-18 17:10 UTC)

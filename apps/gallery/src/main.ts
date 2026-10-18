@@ -258,7 +258,7 @@ function connect(): void {
       return;
     }
     const snap = msg.snapshot;
-    frame = { channels: snap.animation, state: snap.state, phase: snap.phase, variables: snap.variables, label: "CELL-01" };
+    frame = { channels: snap.animation, state: snap.state, phase: snap.phase, variables: snap.variables, items: snap.items, label: "CELL-01" };
     renderHud(snap);
     appendEvents(msg.events);
     const t = msg.t as number;

@@ -136,11 +136,21 @@ equipment:
   - { id: kettle-02, type: jacketed_kettle, zone: proceso-caliente, position: [44, 32, 0], footprint: [2.2, 2.2, 3.2],
       params: { volume_l: 2500, batch_kg: 2000, jacket: vapor, steam_bar: 3, agitator: ancla con raspadores, agitator_kw: 7.5 },
       tags: [temperature, level, agitator_speed, steam_pressure, steam_valve] }
+  - { id: kettle-03, type: jacketed_kettle, zone: proceso-caliente, position: [50, 27, 0], footprint: [2.2, 2.2, 3.2],
+      params: { volume_l: 2500, batch_kg: 2000, jacket: vapor, steam_bar: 3, agitator: ancla con raspadores, agitator_kw: 7.5, line: sachet 250 ml caliente },
+      tags: [temperature, level, agitator_speed, steam_pressure, steam_valve] }
   - { id: pump-hot-01,     type: lobe_pump,         zone: proceso-caliente, position: [49, 32, 0],   footprint: [1, 0.8, 1], params: { flow_l_h: 3000 }, tags: [speed, flow] }
   - { id: pasteurizer-01,  type: tubular_heat_exchanger, zone: proceso-caliente, position: [42, 22, 0], footprint: [5, 1.8, 2],
       params: { flow_l_h: 3000, heating: agua caliente/vapor, product_out_c: 95, regeneration: false },
       tags: [product_in_temperature, product_out_temperature, heating_medium_temperature, flow] }
   - { id: holding-tube-01, type: holding_tube,      zone: proceso-caliente, position: [42, 18.5, 0], footprint: [4, 0.6, 1.5],
+      params: { hold_s: 30, min_temp_c: 92, divert_valve: true },
+      tags: [hold_temperature, divert_valve_position] }
+  - { id: pump-hot-02,     type: lobe_pump,         zone: proceso-caliente, position: [46.5, 27, 0], footprint: [1, 0.8, 1], params: { flow_l_h: 3000 }, tags: [speed, flow] }
+  - { id: pasteurizer-02,  type: tubular_heat_exchanger, zone: proceso-caliente, position: [49, 22, 0], footprint: [5, 1.8, 2],
+      params: { flow_l_h: 3000, heating: agua caliente/vapor, product_out_c: 95, regeneration: false, note: "segundo pasteurizador (supuesto): línea de 250 ml y respaldo del primero" },
+      tags: [product_in_temperature, product_out_temperature, heating_medium_temperature, flow] }
+  - { id: holding-tube-02, type: holding_tube,      zone: proceso-caliente, position: [49, 18.5, 0], footprint: [4, 0.6, 1.5],
       params: { hold_s: 30, min_temp_c: 92, divert_valve: true },
       tags: [hold_temperature, divert_valve_position] }
   - { id: steam-station-01, type: steam_pressure_station, zone: proceso-caliente, position: [48, 16, 0], footprint: [2, 1, 1.5], params: { inlet_bar: 8, outlet_bar: 3 }, tags: [steam_pressure] }
@@ -178,12 +188,14 @@ equipment:
   - { id: filler-pouch-03,  type: vffs_sachet, zone: llenado, position: [63, 40, 0],   footprint: [1.8, 1.6, 3.2], params: { format: 500 ml, unit_ml: 500, formats_ml: [500, 1000], lanes: 1, units_min: 45, product: mayonesa y salsa rosada }, tags: [speed, units_count, reject_count, seal_temperature] }
   - { id: checkweigher-01,  type: checkweigher, zone: llenado, position: [68, 48, 0],   footprint: [1.5, 0.8, 1.2], params: { line: 500 y 1000 ml, tolerance_g: { "500": 6, "1000": 10 }, metal_detector: true }, tags: [weight, reject_count, metal_rejects] }
   - { id: checkweigher-02,  type: checkweigher, zone: llenado, position: [71.5, 35, 0], footprint: [1.5, 0.8, 1.2], params: { line: 250 ml, tolerance_g: 4, metal_detector: true }, tags: [weight, reject_count, metal_rejects] }
-  - { id: cooling-tunnel-01, type: cooling_tunnel, zone: llenado, position: [71.5, 40, 0], footprint: [6, 1.5, 2], params: { product: sachets llenados en caliente (250 y 1000 ml), inlet_c: 85, outlet_c: 35, dwell_min: 12 }, tags: [water_temperature, product_outlet_temperature] }
+  - { id: cooling-tunnel-01, type: cooling_tunnel, zone: llenado, position: [71.5, 40, 0], footprint: [6, 1.5, 2], params: { product: sachets de 1000 ml llenados en caliente, inlet_c: 85, outlet_c: 35, dwell_min: 12 }, tags: [water_temperature, product_outlet_temperature] }
+  - { id: cooling-tunnel-02, type: cooling_tunnel, zone: llenado, position: [71.5, 44.5, 0], footprint: [6, 1.5, 2], params: { product: sachets de 250 ml llenados en caliente, inlet_c: 85, outlet_c: 35, dwell_min: 12, note: segundo túnel (supuesto) }, tags: [water_temperature, product_outlet_temperature] }
 
   # --- Encajado y paletizado ---
   # Empaque manual: un operario por mesa mete los sachets en cajas (1.000 ml: 4 por caja, 500 ml: 8, 250 ml: 16) y estiba las cajas
   # en tarimas que la envolvedora recoge y llevan a la bodega de producto terminado.
-  - { id: pack-sauce-250,  type: packing_station, zone: encajado, position: [81, 52, 0], footprint: [3, 2, 1], params: { box_units: 16, source: sachets de 250 ml, note: "una mesa de referencia; los 240 u/min de la línea requieren varias mesas iguales" } }
+  - { id: pack-sauce-250,  type: packing_station, zone: encajado, position: [81, 52, 0], footprint: [3, 2, 1], params: { box_units: 16, source: sachets de 250 ml, note: "mesa 1 de 2: los 240 u/min de la línea de 250 ml requieren dos mesas iguales" } }
+  - { id: pack-sauce-250-b, type: packing_station, zone: encajado, position: [81, 56, 0], footprint: [3, 2, 1], params: { box_units: 16, source: sachets de 250 ml, note: segunda mesa de 250 ml (150 u/min por mesa; la línea de 250 ml pide 240) } }
   - { id: pack-sauce-500,  type: packing_station, zone: encajado, position: [81, 44, 0], footprint: [3, 2, 1], params: { box_units: 8, source: sachets de 500 ml } }
   - { id: pack-sauce-1000, type: packing_station, zone: encajado, position: [81, 36, 0], footprint: [3, 2, 1], params: { box_units: 4, source: sachets de 1.000 ml } }
   - { id: wrapper-01,   type: stretch_wrapper, zone: encajado, position: [81, 20, 0], footprint: [3, 3, 2.5], params: { pallets_h: 20 } }
@@ -244,13 +256,13 @@ equipment:
         - { title: Libre 2,                equipment: null,             variable: null }
 
 lines:
-  - { id: line-hot,      name: Salsas en caliente,   mode: batch,      equipment: [pump-paste-01, kettle-01, kettle-02] }
-  - { id: line-past,     name: Pasteurización,       mode: continuous, equipment: [pump-hot-01, pasteurizer-01, holding-tube-01, buffer-hot-01, buffer-hot-02] }
+  - { id: line-hot,      name: Salsas en caliente,   mode: batch,      equipment: [pump-paste-01, kettle-01, kettle-02, kettle-03] }
+  - { id: line-past,     name: Pasteurización,       mode: continuous, equipment: [pump-hot-01, pasteurizer-01, holding-tube-01, buffer-hot-01, pump-hot-02, pasteurizer-02, holding-tube-02, buffer-hot-02] }
   - { id: line-emulsion, name: Emulsiones en frío,   mode: batch,      equipment: [tank-aqueous-01, oil-dosing-01, emulsifier-01, colloid-mill-01, buffer-cold-01, buffer-cold-02] }
   - { id: line-mustard,  name: Mostaza,              mode: batch,      equipment: [tank-mustard-01, mustard-mill-01, buffer-mustard-01] }
-  - { id: line-250,  name: Envasado en sachet de 250 ml,   mode: discrete, equipment: [filler-sachet-01, filler-sachet-02, filler-sachet-03, checkweigher-02, pack-sauce-250] }
+  - { id: line-250,  name: Envasado en sachet de 250 ml,   mode: discrete, equipment: [filler-sachet-01, filler-sachet-02, filler-sachet-03, checkweigher-02, pack-sauce-250, pack-sauce-250-b] }
   - { id: line-500-1000, name: Envasado en sachet de 500 y 1.000 ml, mode: discrete, equipment: [filler-pouch-01, filler-pouch-02, filler-pouch-03, checkweigher-01, pack-sauce-500, pack-sauce-1000] }
-  - { id: line-cooling, name: Enfriamiento de sachets llenados en caliente, mode: continuous, equipment: [cooling-tunnel-01] }
+  - { id: line-cooling, name: Enfriamiento de sachets llenados en caliente, mode: continuous, equipment: [cooling-tunnel-01, cooling-tunnel-02] }
 
 recipes:
   - id: rcp-mayo-natural
@@ -309,6 +321,8 @@ flows:
   - { from: drum-tipper-01,   to: pump-paste-01,     medium: pasta de tomate,   rate: 3000,  unit: kg/h, piped: true }
   - { from: pump-paste-01,    to: kettle-01,         medium: pasta de tomate,   rate: 3000,  unit: kg/h, piped: true, show: true }
   - { from: scale-01,         to: kettle-01,         medium: ingredientes pesados, rate: 340, unit: kg/batch, piped: false, show: true }
+  - { from: pump-paste-01,    to: kettle-03,         medium: pasta de tomate,   rate: 3000,  unit: kg/h, piped: true }
+  - { from: scale-01,         to: kettle-03,         medium: ingredientes pesados, rate: 340, unit: kg/batch, piped: false }
   - { from: kettle-01,        to: pump-hot-01,       medium: salsa cocida,      rate: 3000,  unit: L/h, piped: true }
   - { from: kettle-02,        to: pump-hot-01,       medium: salsa cocida,      rate: 3000,  unit: L/h, piped: true }
   - { from: pump-hot-01,      to: pasteurizer-01,    medium: salsa cocida,      rate: 3000,  unit: L/h, piped: true, show: true }
@@ -316,6 +330,12 @@ flows:
   - { from: holding-tube-01,  to: buffer-hot-01,     medium: salsa pasteurizada, rate: 3000, unit: L/h, piped: true, show: true }
   - { from: holding-tube-01,  to: kettle-01,         medium: desvío por baja temperatura, rate: 3000, unit: L/h, piped: true, note: solo en desvío }
   - { from: holding-tube-01,  to: kettle-02,         medium: desvío por baja temperatura, rate: 3000, unit: L/h, piped: true, note: solo en desvío }
+  # Segunda línea caliente (supuesto): la marmita 3 y el pasteurizador 2 alimentan el pulmón caliente 2 y la sachetadora de 250 ml
+  - { from: kettle-03,        to: pump-hot-02,       medium: salsa cocida,      rate: 3000,  unit: L/h, piped: true }
+  - { from: pump-hot-02,      to: pasteurizer-02,    medium: salsa cocida,      rate: 3000,  unit: L/h, piped: true, show: true }
+  - { from: pasteurizer-02,   to: holding-tube-02,   medium: salsa,             rate: 3000,  unit: L/h, piped: true }
+  - { from: holding-tube-02,  to: buffer-hot-02,     medium: salsa pasteurizada, rate: 3000, unit: L/h, piped: true, show: true }
+  - { from: holding-tube-02,  to: kettle-03,         medium: desvío por baja temperatura, rate: 3000, unit: L/h, piped: true, note: solo en desvío }
   # Proceso en frío
   - { from: scale-01,         to: tank-aqueous-01,   medium: fase acuosa,       rate: 300,   unit: kg/batch, piped: false, show: true }
   - { from: tank-oil-01,      to: oil-dosing-01,     medium: aceite,            rate: 4700,  unit: kg/h, piped: true, show: true }
@@ -335,9 +355,9 @@ flows:
   - { from: buffer-cold-02,   to: filler-pouch-02,   medium: mayonesa,          rate: 1674,  unit: kg/h, piped: true }
   - { from: buffer-mustard-01, to: filler-sachet-03, medium: mostaza,           rate: 945,   unit: kg/h, piped: true }
   - { from: filler-pouch-01,  to: cooling-tunnel-01, medium: sachets calientes, rate: 30,    unit: u/min, show: true }
-  - { from: filler-sachet-02, to: cooling-tunnel-01, medium: sachets calientes, rate: 80,    unit: u/min }
+  - { from: filler-sachet-02, to: cooling-tunnel-02, medium: sachets calientes, rate: 80,    unit: u/min }
   - { from: cooling-tunnel-01, to: checkweigher-01,  medium: sachets 1000 ml,   rate: 30,    unit: u/min }
-  - { from: cooling-tunnel-01, to: checkweigher-02,  medium: sachets 250 ml,    rate: 80,    unit: u/min }
+  - { from: cooling-tunnel-02, to: checkweigher-02,  medium: sachets 250 ml,    rate: 80,    unit: u/min }
   - { from: filler-pouch-02,  to: checkweigher-01,   medium: sachets 1000 ml,   rate: 30,    unit: u/min }
   - { from: filler-sachet-01, to: checkweigher-02,   medium: sachets 250 ml,    rate: 100,   unit: u/min }
   - { from: buffer-cold-01,   to: filler-pouch-03,   medium: mayonesa,          rate: 1256,  unit: kg/h, piped: true }
@@ -345,10 +365,12 @@ flows:
   - { from: filler-sachet-03, to: checkweigher-02,   medium: sachets 250 ml,    rate: 60,    unit: u/min }
   - { from: checkweigher-01,  to: pack-sauce-1000,   medium: sachets 1000 ml,   rate: 30,    unit: u/min, show: true }
   - { from: checkweigher-01,  to: pack-sauce-500,    medium: sachets 500 ml,     rate: 45,    unit: u/min, show: true }
-  - { from: checkweigher-02,  to: pack-sauce-250,    medium: sachets 250 ml,     rate: 240,   unit: u/min, show: true }
+  - { from: checkweigher-02,  to: pack-sauce-250,    medium: sachets 250 ml,     rate: 120,   unit: u/min, show: true }
+  - { from: checkweigher-02,  to: pack-sauce-250-b,  medium: sachets 250 ml,     rate: 120,   unit: u/min, show: true }
   - { from: rack-pack-01,     to: filler-sachet-01,  medium: laminado,          rate: 2,     unit: rollos/turno, show: true }
   # Despacho: 22 t/d ÷ 4,5 kg por caja ≈ 4.900 cajas/d ÷ ≈ 55 cajas por tarima ≈ 90 tarimas/d (antes 35, que solo movía ≈ 8 t/d)
-  - { from: pack-sauce-250,   to: wrapper-01,        medium: cajas de 16,       rate: 15,    unit: cajas/min }
+  - { from: pack-sauce-250,   to: wrapper-01,        medium: cajas de 16,       rate: 7.5,   unit: cajas/min }
+  - { from: pack-sauce-250-b, to: wrapper-01,        medium: cajas de 16,       rate: 7.5,   unit: cajas/min }
   - { from: pack-sauce-500,   to: wrapper-01,        medium: cajas de 8,        rate: 5.6,   unit: cajas/min }
   - { from: pack-sauce-1000,  to: wrapper-01,        medium: cajas de 4,        rate: 7.5,   unit: cajas/min }
   - { from: wrapper-01,       to: rack-pt-02,        medium: estibas,           rate: 90,    unit: pallets/d, show: true }
@@ -359,10 +381,13 @@ flows:
   - { from: steam-station-01, to: kettle-01,         medium: vapor,             rate: 450,   unit: kg/h, piped: true }
   - { from: steam-station-01, to: kettle-02,         medium: vapor,             rate: 450,   unit: kg/h, piped: true }
   - { from: steam-station-01, to: pasteurizer-01,    medium: vapor,             rate: 300,   unit: kg/h, piped: true }
+  - { from: steam-station-01, to: kettle-03,         medium: vapor,             rate: 450,   unit: kg/h, piped: true }
+  - { from: steam-station-01, to: pasteurizer-02,    medium: vapor,             rate: 300,   unit: kg/h, piped: true }
   - { from: cip-skid-01,      to: kettle-01,         medium: CIP,               rate: 15000, unit: L/h, piped: true }
   - { from: cip-skid-01,      to: filler-pouch-01,   medium: CIP,               rate: 10000, unit: L/h, piped: true }
   - { from: ice-bank-01,      to: emulsifier-01,     medium: agua helada,       rate: 8,     unit: m3/h, piped: true }
   - { from: chiller-01,       to: cooling-tunnel-01, medium: agua fría,         rate: 12,    unit: m3/h, piped: true }
+  - { from: chiller-01,       to: cooling-tunnel-02, medium: agua fría,         rate: 12,    unit: m3/h, piped: true }
   - { from: ro-01,            to: tank-water-01,     medium: agua tratada,      rate: 3,     unit: m3/h, piped: true }
   - { from: compressor-01,    to: filler-sachet-01,  medium: aire comprimido,   rate: 1.5,   unit: m3/min, piped: true }
   - { from: kettle-01,        to: wwtp-01,           medium: efluente CIP,      rate: 40,    unit: m3/d, piped: true }

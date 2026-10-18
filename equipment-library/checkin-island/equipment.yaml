@@ -1,0 +1,91 @@
+schema_version: 0.1.0
+type: checkin-island
+version: 0.1.0
+name: Isla de check-in de equipaje
+manufacturing: logistics
+category: transport.baggage
+description: >
+  Isla de mostradores de facturación de un aeropuerto. Los pasajeros llegan a una fila única, un
+  agente los atiende en cada mostrador abierto, pesa y etiqueta sus maletas y las envía por la banda
+  de inyección del mostrador a la banda colectora. Las maletas sobre el peso máximo se desvían a
+  fuera de norma; si la colectora no recibe, las maletas esperan en la báscula y el agente no puede
+  atender al siguiente pasajero.
+aliases: [check-in, mostradores de facturación, isla de facturación, counters, bag drop]
+fidelity: { visual: V2, behavior: B2 }
+
+params:
+  counters:           { type: integer, min: 1, max: 24, default: 8, description: Mostradores de la isla (para el dibujo y el máximo abierto), affects: [geometry, behavior] }
+  open_counters:      { type: integer, min: 0, max: 24, default: 8, description: Mostradores abiertos, affects: [behavior] }
+  pax_per_h:          { type: number, unit: pax/h, min: 0, max: 3000, default: 300, description: Pasajeros con maleta que llegan a la fila, affects: [behavior] }
+  process_s:          { type: number, unit: s, min: 20, max: 600, default: 90, description: Tiempo de atención por pasajero, affects: [behavior] }
+  bags_per_pax:       { type: number, min: 0.1, max: 4, default: 1.1, description: Maletas documentadas por pasajero (promedio), affects: [behavior] }
+  bag_mean_kg:        { type: number, unit: kg, min: 3, max: 40, default: 17, description: Peso medio de la maleta, affects: [behavior] }
+  bag_sd_kg:          { type: number, unit: kg, min: 0, max: 15, default: 5, description: Desviación del peso de la maleta, affects: [behavior] }
+  excess_kg:          { type: number, unit: kg, min: 5, max: 50, default: 23, description: Peso desde el que se cobra exceso, affects: [behavior] }
+  max_kg:             { type: number, unit: kg, min: 10, max: 60, default: 32, description: Peso máximo para la banda (más pesado va a fuera de norma), affects: [behavior] }
+  release_gap_s:      { type: number, unit: s, min: 0.5, max: 30, default: 2.5, description: Separación mínima entre maletas que entran a la colectora (la isla entera), affects: [behavior] }
+  counter_pitch_m:    { type: number, unit: m, min: 2, max: 6, default: 3.5, description: Ancho de cada mostrador, affects: [geometry] }
+  queue_depth_m:      { type: number, unit: m, min: 2, max: 20, default: 8, description: Fondo del área de fila (para el dibujo), affects: [geometry] }
+  desk_color:         { type: string, default: "#2f5f8f", description: Color del frente de los mostradores (hex), affects: [geometry] }
+
+ports:
+  - { id: bags_out, kind: item, direction: out, unit: maletas/min, link: { units: bags_out, ready: downstream_free } }
+  - { id: oog_out, kind: item, direction: out, unit: maletas/min, description: Maletas fuera de norma (pesadas o voluminosas) que se llevan a mano }
+  - { id: power, kind: utility, direction: in, medium: energía eléctrica }
+
+states:
+  - { id: idle, description: Sin pasajeros ni maletas }
+  - { id: running, description: Atendiendo pasajeros }
+  - { id: blocked, description: Maletas detenidas en las básculas porque la colectora no recibe }
+  - { id: fault, description: "Detenida: sin sistema de control de salidas (no se pueden emitir etiquetas)" }
+
+variables:
+  - { id: pax_queue, unit: pax, kind: calculated, description: Pasajeros en la fila }
+  - { id: pax_served, unit: pax, kind: counter, description: Pasajeros atendidos }
+  - { id: bags_checked, unit: maletas, kind: counter, description: Maletas pesadas y etiquetadas para la banda }
+  - { id: bags_out, unit: maletas, kind: counter, description: Maletas entregadas a la colectora }
+  - { id: bags_waiting, unit: maletas, kind: calculated, description: Maletas en las básculas esperando entrar a la colectora }
+  - { id: oog_bags, unit: maletas, kind: counter, description: "Maletas fuera de norma (más del peso máximo)" }
+  - { id: excess_bags, unit: maletas, kind: counter, description: Maletas con cobro por exceso de peso }
+  - { id: last_weight_kg, unit: kg, kind: measured, range: [0, 80], noise_sd: 0.05, resolution: 0.1, description: Peso de la última maleta en báscula }
+  - { id: counters_busy, unit: "", kind: calculated, description: Mostradores atendiendo a un pasajero }
+  - { id: wait_min, unit: min, kind: calculated, description: Espera estimada de un pasajero que llega ahora }
+
+events:
+  - { id: long_queue, description: La espera estimada pasó de 20 minutos }
+  - { id: queue_normal, description: La espera estimada volvió a menos de 10 minutos }
+  - { id: oog_bag, description: Una maleta superó el peso máximo y se desvió a fuera de norma }
+
+faults:
+  - { id: dcs_outage, description: Caída del sistema de control de salidas (no se emiten pases ni etiquetas), mtbf_h: 4000, mttr_min: 20, severity: high, effect: Se detienen todos los mostradores }
+  - { id: label_printer_jam, description: Atasco de una impresora de etiquetas, mtbf_h: 150, mttr_min: 10, severity: low, stops_equipment: false, effect: "Un mostrador menos mientras dura" }
+  - { id: scale_fault, description: Báscula descalibrada en un mostrador, mtbf_h: 2000, mttr_min: 30, severity: low, stops_equipment: false, effect: "La atención tarda 30 s más por pasajero en ese mostrador (pesaje manual)" }
+
+commands:
+  - { id: set_arrivals, description: Cambia la llegada de pasajeros, args: { pax_per_h: number } }
+  - { id: open_counters, description: Cambia cuántos mostradores están abiertos, args: { n: integer } }
+  - { id: inject_fault, description: Inyecta una falla declarada, args: { fault: string, duration_s: number } }
+  - { id: clear_fault, description: Repara una falla activa, args: { fault: string } }
+  - { id: set_param, description: Cambia un parámetro en caliente, args: { name: string, value: any } }
+
+kpis:
+  - { id: avg_wait_min, unit: min, description: Espera promedio en la fila de los pasajeros atendidos }
+  - { id: max_queue, unit: pax, description: Fila máxima }
+  - { id: bags_per_h, unit: maletas/h, description: Maletas entregadas a la colectora por hora }
+  - { id: blocked_pct, unit: "", description: Fracción del tiempo con maletas detenidas en las básculas }
+
+animation_channels:
+  - { id: counters_busy, range: [0, 24], description: Mostradores atendiendo }
+  - { id: queue_len, range: [0, 400], description: Pasajeros en la fila }
+  - { id: bags_waiting, range: [0, 48], description: Maletas en las básculas }
+  - { id: belt_travel, unit: m, range: [0, 10], description: Recorrido de las bandas de inyección (módulo 10 m) }
+  - { id: stack_light, range: [0, 3], description: "0 apagado, 1 verde, 2 ámbar (bloqueo o fila larga), 3 rojo (falla)" }
+
+geometry:
+  parts: [counters, agents, monitors, weigh_belts, injection_belts, queue_stanchions, passengers, signage]
+
+assumptions:
+  - Fila única para toda la isla (cada mostrador libre toma al siguiente pasajero).
+  - Llegadas uniformes con el ritmo de pax_per_h (sin oleadas dentro de la hora); las oleadas se hacen con set_arrivals.
+  - Cada mostrador sostiene en su báscula las maletas de un pasajero; mientras no salen, el agente no atiende al siguiente.
+  - El peso de la maleta sigue una normal con media y desviación del parámetro (mínimo 3 kg).
