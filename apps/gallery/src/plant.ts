@@ -19,6 +19,7 @@ import * as THREE from "three";
 import { buildRoutes, type Aisle, type Route } from "./routes.ts";
 import { type AnimationFrame, type EquipmentModel, type LightingPreset, Stage, parts, textures } from "@twin/3d";
 import { geometryBuilders, rawSpecs } from "@twin/equipment-library/registry.ts";
+import { buildProcessPiece } from "./process-pieces.ts";
 import { dockLeveler, deliveryTruck, palletRack, passThroughDoor } from "./warehouse.ts";
 import { type ControlPiece, type PanelConfig, controlPanel, operatorDesk, plcCabinet } from "./control-room.ts";
 import "./styles.css";
@@ -242,6 +243,14 @@ const warehouseBuilders: Record<string, (eq: PlantEquipment) => THREE.Object3D> 
   delivery_truck: (eq) => deliveryTruck(eq.footprint, eq.params?.state as string | undefined),
 };
 
+/** Tipos del plano sin simulación que sí tienen forma en la librería. */
+const LIBRARY_FALLBACK: Record<string, string> = {
+  vffs_sachet: "vffs-sachet-filler",
+  checkweigher: "checkweigher",
+  cooling_tunnel: "cooling-tunnel",
+  jacketed_kettle: "jacketed-kettle",
+};
+
 function buildEquipment(): void {
   for (const eq of doc.equipment) {
     let root: THREE.Object3D;
@@ -258,7 +267,17 @@ function buildEquipment(): void {
     } else if (builder && eq.sim) {
       model = builder(eq.sim.params);
       root = model.root;
-    } else root = placeholder(eq);
+    } else {
+      // equipo sin simular: forma de la librería con parámetros por defecto, o pieza de escena; el cubo es el último recurso
+      const fallbackType = LIBRARY_FALLBACK[eq.type];
+      const fallback = fallbackType ? geometryBuilders[fallbackType] : undefined;
+      const lanes = Number(eq.params?.lanes);
+      const piece = fallback ? null : buildProcessPiece(eq.type, eq.footprint, eq.params ?? {});
+      if (fallback) {
+        model = fallback(lanes > 0 ? { lanes } : {});
+        root = model.root;
+      } else root = piece ?? placeholder(eq);
+    }
     root.position.copy(toScene(eq.position[0], eq.position[1], eq.position[2]));
     root.rotation.y = THREE.MathUtils.degToRad(eq.rotation_deg ?? 0);
     root.userData.assetId = eq.id;
