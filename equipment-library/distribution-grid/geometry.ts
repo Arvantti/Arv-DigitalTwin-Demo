@@ -38,6 +38,8 @@ export default function build(params: Params): EquipmentModel {
   const s = num(params, "spacing_m", 0.5);
   const level = num(params, "level", 1);
   const critical = bool(params, "critical_marker", false);
+  // sin montante propio: el nivel recibe el agua por un tubo que sube desde el nivel de abajo y se une a un camino entre ramales
+  const inletRiser = bool(params, "inlet_riser", true);
   const blue = str(params, "consumer_color", "#2f6fb3");
   const red = str(params, "leak_color", "#c62828");
   const r = Math.max(0.012, (num(params, "pipe_id_mm", 52.5) / 1000) / 2 + 0.004);
@@ -84,17 +86,29 @@ export default function build(params: Params): EquipmentModel {
     root.add(beam);
   }
   for (const zc of [zHead, zNode(1) - s / 2, zNode(3) - s / 2]) {
-    const cross = P.box(x1 - x0, 0.04, 0.04, galv, 0.005);
-    cross.position.set((x0 + x1) / 2, beamY, zc);
+    // el travesaño del cabezal arranca después del montante de entrada, que sube por ese mismo eje
+    const xa = zc === zHead && inletRiser ? xIn + r + 0.06 : x0;
+    const cross = P.box(x1 - xa, 0.04, 0.04, galv, 0.005);
+    cross.position.set((xa + x1) / 2, beamY, zc);
     root.add(cross);
   }
 
   // montante de entrada, cabezal y ramales
-  const riser = P.pipe([v3(xIn, 0, zHead), v3(xIn, gy, zHead), v3(xNode(4), gy, zHead)], r, pvc, r * 2.5);
+  const riser = P.pipe(
+    inletRiser ? [v3(xIn, 0, zHead), v3(xIn, gy, zHead), v3(xNode(4), gy, zHead)] : [v3(xIn, gy, zHead), v3(xNode(4), gy, zHead)],
+    r,
+    pvc,
+    r * 2.5,
+  );
   root.add(riser);
   const capEnd = P.cylinderX(r * 1.15, r * 0.6, pvc, 24);
   capEnd.position.set(xNode(4) + r * 0.3, gy, zHead);
   root.add(capEnd);
+  if (!inletRiser) {
+    const capIn = P.cylinderX(r * 1.15, r * 0.6, pvc, 24);
+    capIn.position.set(xIn - r * 0.3, gy, zHead);
+    root.add(capIn);
+  }
   const inGauge = P.group("inlet-gauge");
   const gR = 0.05;
   inGauge.add(P.cylinder(r * 0.2, r * 0.2, 0.12, M.chrome(), 10));
