@@ -10,6 +10,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
+| 2026-10-18 | Plan de datos reales | Plan para alimentar los cinco gemelos con datos reales: catálogo común (productos, rutas, moldes o recetas, materia prima, tamaños de equipo), interfaz con ruta en 3D, pedidos y secuenciación en Fractal; aeropuerto con entrada y destino, acueducto con optimización (`docs/datos-reales.md`). D53 | plan |
 | 2026-10-18 | Simulación de la fábrica de cajas | La fábrica de cajas simula su transporte: corrugadora, transportadores de pilas, carro de transferencia que reparte entre tres carriles, tres convertidoras, bandas de fajos y paletizador propio y compartido; escenarios nominal, rotura de papel y paro del paletizador compartido | 4 |
 | 2026-10-18 | Estiba por producto | Planta de plásticos: la estiba es estándar y las piezas por estiba se calculan por producto (de 30 canecas de 121 L a 72.000 bisagras); la flota recibe las piezas por ruta y la ruta 5 usa estibas armadas. D51 | plásticos |
 | 2026-10-18 | Subidas desde el cabezal | Las subidas entre niveles del acueducto salen del tubo principal de cada nivel, después del último ramal, por fuera del bastidor (pedido de Andy). D50 | acueducto |
@@ -67,6 +68,15 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 | 2026-10-16 | #1 | Layouts de las plantas | 1 |
 
 ## Entradas
+
+### 2026-10-18 23:53 · Plan de datos reales para todos los gemelos
+- **Fecha/hora (UTC):** 2026-10-18 23:53–00:10
+- **Fase del plan:** [[plan-del-proyecto]] «Datos reales y pedidos» (nueva)
+- **Solicitado por:** Carlos Andrés Quiceño: «lo que hablamos de plásticos de hoja de ruta también aplica para todos los gemelos digitales (el único que tal vez queda diferente es el de aeropuerto donde únicamente es entrada y destino y el de acueducto que se trata de condiciones de optimización de caudales, presiones y ahorros)».
+- **Qué se hizo:** plan en `docs/datos-reales.md`: modelo de datos común (materiales, productos con ruta, herramental, tamaños de equipo, pedidos, secuenciación), tabla de qué aplica a cada gemelo, arquitectura del paso a Fractal, orden de fases A a G y primer PR propuesto (esquema común y catálogo piloto de plásticos). Fila nueva en `docs/roadmap.md` y en el plan. Sin código.
+- **Verificación:** revisión de los `plant.yaml`, `simulation.yaml`, presets de inyectora y `pallet-sizing.yaml` actuales para anclar el plan.
+- **Decisiones:** [[decisiones#D53]]
+- **Conversación:** [[hilo-datos-reales]]
 
 ### 2026-10-18 22:00 · Fábrica de cajas: simulación del transporte
 - **Fecha/hora (UTC):** 2026-10-18 17:53–22:30
