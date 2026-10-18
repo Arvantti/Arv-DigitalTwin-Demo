@@ -29,7 +29,7 @@ Mientras los secretos no existan, el workflow termina en verde con un aviso y no
 
 ## Seguridad
 - **Rotación cada 90 días** (caducidad del token): crea un token nuevo con los mismos permisos, reemplaza el secreto `CLOUDFLARE_API_TOKEN` (en la organización, si es compartido) y borra el anterior en *Mi perfil → Tokens de API*. Anótalo en el calendario unos días antes de que caduque.
-- El token solo puede editar Pages de esa cuenta. Si se filtra, se revoca en *Mi perfil → Tokens de API*.
+- El token solo actúa sobre la cuenta Arvantti y con los permisos listados. Si se filtra, se revoca en *Mi perfil → Tokens de API*.
 - Nunca pegues el token en el chat, en el código ni en `docs/registro/`.
 
 ## Cómo comprobar
