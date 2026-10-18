@@ -31,4 +31,4 @@ Dejé la ficha de diseño del gemelo de equipaje en `aeropuerto/ficha-diseno-bhs
 
 ### 🤖 Claude · 17:45 UTC
 
-(Resumen) Gemelo `airport-baggage-v1` listo en un PR: 5 tipos nuevos en la librería, plano con 32 equipos, motor con 22 equipos enlazados y 5 escenarios calculados a mano (todos pasan), escena 3D con aviones, carros y maletas en movimiento. Capturas en `docs/registro/evidencia/aeropuerto-*.png`.
+(Resumen) Gemelo `airport-baggage-v1` listo en un PR: 5 tipos nuevos en la librería, plano con 32 equipos, motor con 22 equipos enlazados y 5 escenarios calculados a mano (todos pasan), escena 3D con aviones, carros y maletas en movimiento. Capturas en `docs/registro/evidencia/aeropuerto-*.jpg`.
