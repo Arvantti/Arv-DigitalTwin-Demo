@@ -93,17 +93,34 @@ export default function build(params: Params): EquipmentModel {
     root.add(cross);
   }
 
-  // montante de entrada, cabezal y ramales
+  // Tubos de subida entre niveles: el cabezal sigue después del último ramal, sale por el costado este del bastidor y
+  // corre hacia el fondo hasta el punto donde sube (riser_out_lz) o baja (riser_in_lz) el tubo hacia el nivel vecino
+  const tapLz = [num(params, "riser_in_lz", 9), num(params, "riser_out_lz", 9)].filter((v) => v < 2);
+  const xe = xNode(4) + 0.25;
+  const zDeep = Math.min(...tapLz);
+  const headPath = [v3(xNode(4), gy, zHead)];
+  if (tapLz.length) headPath.push(v3(xe, gy, zHead), v3(xe, gy, zDeep));
   const riser = P.pipe(
-    inletRiser ? [v3(xIn, 0, zHead), v3(xIn, gy, zHead), v3(xNode(4), gy, zHead)] : [v3(xIn, gy, zHead), v3(xNode(4), gy, zHead)],
+    [...(inletRiser ? [v3(xIn, 0, zHead), v3(xIn, gy, zHead)] : [v3(xIn, gy, zHead)]), ...headPath],
     r,
     pvc,
     r * 2.5,
   );
   root.add(riser);
-  const capEnd = P.cylinderX(r * 1.15, r * 0.6, pvc, 24);
-  capEnd.position.set(xNode(4) + r * 0.3, gy, zHead);
-  root.add(capEnd);
+  if (tapLz.length) {
+    const capDeep = P.cylinderZ(r * 1.15, r * 0.6, pvc, 24);
+    capDeep.position.set(xe, gy, zDeep - r * 0.3);
+    root.add(capDeep);
+    for (const z of tapLz) {
+      const tee = new THREE.Mesh(new THREE.SphereGeometry(r * 1.12, 14, 10), pvc);
+      tee.position.set(xe, gy, z);
+      root.add(tee);
+    }
+  } else {
+    const capEnd = P.cylinderX(r * 1.15, r * 0.6, pvc, 24);
+    capEnd.position.set(xNode(4) + r * 0.3, gy, zHead);
+    root.add(capEnd);
+  }
   if (!inletRiser) {
     const capIn = P.cylinderX(r * 1.15, r * 0.6, pvc, 24);
     capIn.position.set(xIn - r * 0.3, gy, zHead);

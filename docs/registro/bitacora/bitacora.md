@@ -10,6 +10,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
+| 2026-10-18 | Subidas desde el cabezal | Las subidas entre niveles del acueducto salen del tubo principal de cada nivel, después del último ramal, por fuera del bastidor (pedido de Andy). D50 | acueducto |
 | 2026-10-18 | Línea caliente de salsas | Motor: segunda línea caliente de 250 ml (marmita 3, pasteurizador 2, pulmón 2, sachetadora, túnel 2, control de peso y mesa de empaque) junto a la de 1.000 ml; dos mesas de 250 ml; escenario `tunnel-250-stop`; dimensionado a 22 t/día con 40 % en caliente. D49 | 5 |
 | 2026-10-18 | Tuberías sin cruces | Planta de salsas: los tubos a nivel de rack buscan un nivel y un recorrido que no atraviesen equipos ni cajas de estantería ni se crucen entre sí (suben por encima, o se desplazan); documento del flujo de salsas conectado vs faltante. D41 | 5 |
 | 2026-10-18 | Equipaje de aeropuerto | Gemelo nuevo `airport-baggage-v1`: check-in, colectoras, inspección CT con nivel 3, clasificador de bandejas basculantes, 4 carruseles de armado, codificación manual y 2 carruseles de reclamo, conectados en el motor con 5 escenarios; 5 tipos nuevos en la librería y escena 3D con aviones y carros. Rutas con subidas y bajadas: clasificador elevado, colectoras, bandas de alarma y de llegadas con puentes; cada maleta con fricción y choques. D47 | logística |
@@ -65,6 +66,14 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 ## Entradas
 
+### 2026-10-18 22:10 · Subidas entre niveles desde el tubo principal
+- **Fecha/hora (UTC):** 2026-10-18 20:13–22:15
+- **Fase del plan:** [[plan-del-proyecto]] acueducto
+- **Solicitado por:** Andy: las conexiones 1-2, 2-3 y 3-4 deben salir del tubo principal de cada nivel, al final después del último ramal (con captura marcada).
+- **Qué se hizo:** `distribution-grid` prolonga el cabezal 0,25 m después del último ramal y lo lleva por fuera del costado este hasta el punto de subida (`riser_in_lz`, `riser_out_lz`); las rutas de `plant.yaml` suben en x = 12,25 con y = 4,4 / 5,25 / 6,2; válvulas verticales a 180°.
+- **Verificación:** `twin-lib validate`, `twin-lib plant validate`, `pytest apps/api`, `ruff check`, `pnpm typecheck`, captura `evidencia/acueducto-subidas-desde-cabezal.png`.
+- **Decisiones:** [[decisiones]] D50
+- **Conversación:** [[hilo-secuencia-acueducto]]
 ### 2026-10-18 15:04 · Sistema de equipaje de aeropuerto (gemelo nuevo)
 - **Fecha/hora (UTC):** 2026-10-18 15:04–17:40
 - **Fase del plan:** [[plan-del-proyecto]] gemelos nuevos (logística)
