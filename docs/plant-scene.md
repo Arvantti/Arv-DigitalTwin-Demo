@@ -127,3 +127,5 @@ El validador exige: `kind` `forklift` o `pedestrian`, 2 o más puntos dentro del
 - De la planta de inyección siguen como volúmenes los equipos sin tipo en la librería (silos, mezcladores, estaciones de ensamble, compresores, torre de enfriamiento y otros); el empaque, los secadores, los chillers y el molino de reciclaje ya tienen geometría propia.
 
 **Ciclo ilustrativo de las inyectoras.** Sin simulación conectada (p. ej. la versión publicada sin la API) cada inyectora repite sus fases (cierre, inyección, enfriamiento, apertura, expulsión) y el robot deposita la pieza en la canastilla de su costado; con la API conectada manda el simulador.
+
+**Equipos de proceso sin tipo de librería.** Los tipos del plano que no se simulan (tanques, bombas, molinos, emulsificador, CIP, servicios, mesas y estantes) se dibujan con las piezas de `apps/gallery/src/process-pieces.ts`, dimensionadas con la huella; los que sí están en la librería pero sin simular (selladoras, pesadora, túnel de enfriamiento, cocedores) usan su forma con parámetros por defecto. Un tipo sin pieza sigue viéndose como un cubo.

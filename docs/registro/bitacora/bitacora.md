@@ -10,6 +10,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
+| 2026-10-18 | Salsas sin cubos | 29 tipos de equipo de proceso, empaque y servicios de la planta de salsas con forma propia (tanques, bombas, molinos, emulsificador al vacío, CIP, caldera, enfriador…); las llenadoras y la pesadora sin simular usan su forma de la librería | 5 |
 | 2026-10-18 | Planta de plásticos | Molde que abre y cierra con ciclo ilustrativo sin API, canastilla con piezas junto a cada inyectora, carros de canastillas (ruta `cart`), montacargas con estibas de cajas y operarios más realistas; acciones de GitHub a Node 24 | 5 |
 | 2026-10-18 | Portal de plantas | Al entrar se elige la planta (manufactura discreta, procesos, gemelo de operación); cada una abre solo sus equipos y su escena; acento azul provisional (sin dorado), iluminación suavizada, columna derecha sin superposición | despliegue |
 | 2026-10-18 | Plantas en Cloudflare | Deploy a Pages funciona (run #2 en verde); las tres plantas se publican sin la API: el plano de cada planta se exporta a archivo estático al desplegar y la galería enlaza a las tres escenas | despliegue |
@@ -50,6 +51,11 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 | 2026-10-16 | #1 | Layouts de las plantas | 1 |
 
 ## Entradas
+
+### 2026-10-18 04:23 · Planta de salsas: de cubos a equipos
+- **Solicitado por:** el autor (04:23): en la planta de salsas muchos equipos son cubos 3D; y (04:26) «puedes buscar en internet y ser libre de los detalles».
+- **Cambios:** `apps/gallery/src/process-pieces.ts` con 29 piezas de escena dimensionadas con la huella del plano; los tipos sin simular que ya existen en la librería (selladoras, pesadora, túnel, cocedores) usan esa forma con parámetros por defecto. Referencias consultadas: fichas de fabricantes de emulsificadores al vacío (tapa elevable con pistón, homogeneizador y agitador raspador) y de molinos coloidales (tolva cónica, motor de 3–7 HP, rotor y estator).
+- **Verificación:** captura de cada pieza y de la planta completa: no queda ningún cubo.
 
 ### 2026-10-18 04:11 · Planta de plásticos: molde, canastillas, carros, estibas y operarios
 - **Solicitado por:** el autor (04:11): las inyectoras deben abrir y cerrar el molde y sacar la pieza hacia una canastilla al lado; faltan carritos que la lleven; los montacargas deben mover estibas reales con producto; los humanos «están muy feos».
