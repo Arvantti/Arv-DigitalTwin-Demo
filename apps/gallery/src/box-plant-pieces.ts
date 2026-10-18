@@ -9,7 +9,7 @@
  * Formas tomadas de equipos típicos de una planta de cartón corrugado: portabobinas de brazos, single facer con
  * rodillos corrugadores, puente con festones de cartón, doble mesa de planchas calientes, cortadoras, apilador,
  * transportadores de rodillos motorizados por zonas, mesas giratorias, carro de transferencia sobre riel, impresoras-
- * troqueladoras-plegadoras-pegadoras, troqueladoras rotativa y plana, pegadora, amarradora, paletizador, bobinas,
+ * troqueladoras-plegadoras-pegadoras, troqueladora rotativa, amarradora, paletizador, bobinas,
  * cocina de almidón, ciclón y compactadora de recorte.
  */
 import * as THREE from "three";
@@ -422,42 +422,6 @@ const rotaryDieCutter: PieceBuilder = ([dx, dy, h], params) => {
   return g;
 };
 
-const flatbedDieCutter: PieceBuilder = ([dx, dy, h]) => {
-  const g = P.group("flatbed_die_cutter");
-  const feedLen = dx * 0.22;
-  g.add(feeder(dx / 2 - feedLen / 2, dy, h, feedLen));
-  // cuerpo de la platina con mesa de alimentación cubierta, troquel, desbarbado y separación de poses
-  const bodyLen = dx * 0.5;
-  const bx = dx / 2 - feedLen - bodyLen / 2;
-  g.add(at(P.box(bodyLen, h, dy - 0.6, machineLight(), 0.06), bx, h / 2, 0));
-  g.add(at(P.box(bodyLen * 0.98, h * 0.18, dy - 0.55, machine(), 0.04), bx, h * 0.55, 0));
-  for (let i = 0; i < 3; i++) g.add(at(P.box(bodyLen * 0.28, h * 0.4, 0.02, M.glass("#cfe6f5", 0.35), 0.005), bx - bodyLen * 0.33 + i * bodyLen * 0.33, h * 0.75, dy / 2 - 0.29));
-  // entrega de poses en pila sobre estiba
-  const outLen = dx - feedLen - bodyLen;
-  const ox = -dx / 2 + outLen / 2;
-  g.add(at(P.box(outLen, 0.15, dy * 0.6, frame(), 0.01), ox, 0.075, 0));
-  g.add(at(sheetStack(1.3, 1.6, 1.25), ox, 0.15, 0));
-  for (const s of [-1, 1]) g.add(at(P.box(0.15, h * 0.8, 0.15, machine(), 0.01), ox - outLen / 2 + 0.2, (h * 0.8) / 2, s * (dy / 2 - 0.5)));
-  g.add(at(P.hmiPanel(0.7).object, dx * 0.15, 1.0, dy / 2 + 0.1));
-  g.add(at(P.stackLight(0.3).object, bx, h, dy / 2 - 0.4));
-  return g;
-};
-
-const folderGluer: PieceBuilder = ([dx, dy, h]) => {
-  const g = P.group("folder_gluer");
-  const top = Math.min(1.05, h - 0.3);
-  // alimentador, prerrompedor, encolador, plegado, cuenta y prensa de salida (de este a oeste)
-  g.add(at(P.box(dx * 0.12, h, dy, machine(), 0.04), dx / 2 - dx * 0.06, h / 2, 0));
-  g.add(at(sheetStack(1.0, 1.4, 0.6), dx / 2 - dx * 0.06, h, 0));
-  g.add(at(P.box(dx * 0.68, top - 0.2, dy * 0.75, machine(), 0.03), dx * 0.0, 0.2 + (top - 0.2) / 2, 0));
-  for (const s of [-1, 1]) g.add(at(P.box(dx * 0.68, 0.08, 0.2, dark(), 0.01), 0, top + 0.05, s * dy * 0.25));
-  g.add(at(P.box(dx * 0.6, 0.03, dy * 0.4, kraft(1), 0.003), 0, top + 0.03, 0));
-  for (let i = 0; i < 6; i++) g.add(at(P.box(0.08, 0.3, dy * 0.7, machineLight(), 0.01), -dx * 0.3 + i * dx * 0.11, top + 0.2, 0));
-  g.add(at(P.box(dx * 0.18, h * 0.85, dy, machineLight(), 0.04), -dx / 2 + dx * 0.09, (h * 0.85) / 2, 0)); // prensa
-  g.add(at(P.hmiPanel(0.6).object, dx * 0.2, 0.9, dy / 2 + 0.1));
-  return g;
-};
-
 const bundleStrapper: PieceBuilder = ([dx, dy, h]) => {
   const g = P.group("bundle_strapper");
   g.add(at(rollerBed(dx, Math.min(1.4, dy - 0.4), 0.75), 0, 0, 0));
@@ -571,8 +535,6 @@ export const boxPlantBuilders: Record<string, PieceBuilder> = {
   transfer_car: transferCar,
   flexo_folder_gluer: flexoFolderGluer,
   rotary_die_cutter: rotaryDieCutter,
-  flatbed_die_cutter: flatbedDieCutter,
-  folder_gluer: folderGluer,
   bundle_strapper: bundleStrapper,
   bundle_conveyor: bundleConveyor,
   palletizer,

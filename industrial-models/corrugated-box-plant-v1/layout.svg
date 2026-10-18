@@ -133,9 +133,6 @@
 <rect x="949.1" y="528.6" width="140.0" height="15.8" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
 <title>lane-03 · stack_roller_conveyor</title>
 <text x="1019.1" y="539.0" font-size="7.5" text-anchor="middle" fill="#ffffff">lane-03</text>
-<rect x="949.1" y="455.6" width="140.0" height="15.8" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
-<title>lane-04 · stack_roller_conveyor</title>
-<text x="1019.1" y="466.0" font-size="7.5" text-anchor="middle" fill="#ffffff">lane-04</text>
 <rect x="1113.5" y="650.3" width="67.0" height="15.8" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
 <title>buffer-01 · stack_roller_conveyor</title>
 <text x="1147.0" y="660.8" font-size="7.5" text-anchor="middle" fill="#ffffff">buffer-01</text>
@@ -175,45 +172,21 @@
 <rect x="413.5" y="532.3" width="380.4" height="8.5" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
 <title>bc-03 · bundle_conveyor</title>
 <text x="603.7" y="539.0" font-size="7.5" text-anchor="middle" fill="#ffffff">bc-03</text>
-<rect x="860.9" y="448.3" width="79.1" height="30.4" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
-<title>fdc-01 · flatbed_die_cutter</title>
-<text x="900.4" y="466.0" font-size="7.5" text-anchor="middle" fill="#ffffff">fdc-01</text>
-<rect x="839.6" y="455.6" width="18.3" height="15.8" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
-<title>cv-fg-01 · stack_roller_conveyor</title>
-<text x="848.7" y="453.6" font-size="7.0" text-anchor="middle" fill="#111827">cv-fg-01</text>
-<rect x="696.5" y="454.3" width="140.0" height="18.3" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
-<title>fg-01 · folder_gluer</title>
-<text x="766.5" y="466.0" font-size="7.5" text-anchor="middle" fill="#ffffff">fg-01</text>
-<rect x="657.0" y="454.3" width="24.3" height="18.3" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
-<title>strap-04 · bundle_strapper</title>
-<text x="669.1" y="452.3" font-size="7.0" text-anchor="middle" fill="#111827">strap-04</text>
-<rect x="413.5" y="459.2" width="240.4" height="8.5" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
-<title>bc-04 · bundle_conveyor</title>
-<text x="533.7" y="466.0" font-size="7.5" text-anchor="middle" fill="#ffffff">bc-04</text>
 <rect x="346.5" y="670.4" width="48.7" height="24.3" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
 <title>pal-01 · palletizer</title>
 <text x="370.9" y="685.1" font-size="7.5" text-anchor="middle" fill="#ffffff">pal-01</text>
 <rect x="308.5" y="672.0" width="21.3" height="21.3" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
 <title>wrap-01 · stretch_wrapper</title>
 <text x="319.1" y="670.0" font-size="7.0" text-anchor="middle" fill="#111827">wrap-01</text>
-<rect x="346.5" y="597.4" width="48.7" height="24.3" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<rect x="397.0" y="532.3" width="8.5" height="81.6" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>bc-merge-01 · bundle_conveyor</title>
+<text x="401.3" y="575.5" font-size="7.5" text-anchor="middle" fill="#ffffff" transform="rotate(-90 401.3 573.0)">bc-merge-01</text>
+<rect x="346.5" y="560.9" width="48.7" height="24.3" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
 <title>pal-02 · palletizer</title>
-<text x="370.9" y="612.1" font-size="7.5" text-anchor="middle" fill="#ffffff">pal-02</text>
-<rect x="308.5" y="598.9" width="21.3" height="21.3" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<text x="370.9" y="575.5" font-size="7.5" text-anchor="middle" fill="#ffffff">pal-02</text>
+<rect x="308.5" y="562.4" width="21.3" height="21.3" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
 <title>wrap-02 · stretch_wrapper</title>
-<text x="319.1" y="596.9" font-size="7.0" text-anchor="middle" fill="#111827">wrap-02</text>
-<rect x="346.5" y="524.3" width="48.7" height="24.3" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
-<title>pal-03 · palletizer</title>
-<text x="370.9" y="539.0" font-size="7.5" text-anchor="middle" fill="#ffffff">pal-03</text>
-<rect x="308.5" y="525.9" width="21.3" height="21.3" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
-<title>wrap-03 · stretch_wrapper</title>
-<text x="319.1" y="523.9" font-size="7.0" text-anchor="middle" fill="#111827">wrap-03</text>
-<rect x="346.5" y="451.3" width="48.7" height="24.3" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
-<title>pal-04 · palletizer</title>
-<text x="370.9" y="466.0" font-size="7.5" text-anchor="middle" fill="#ffffff">pal-04</text>
-<rect x="308.5" y="452.8" width="21.3" height="21.3" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
-<title>wrap-04 · stretch_wrapper</title>
-<text x="319.1" y="450.8" font-size="7.0" text-anchor="middle" fill="#111827">wrap-04</text>
+<text x="319.1" y="560.4" font-size="7.0" text-anchor="middle" fill="#111827">wrap-02</text>
 <rect x="40.7" y="390.4" width="15.2" height="328.7" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
 <title>rack-pt-01 · pallet_rack</title>
 <text x="48.3" y="557.3" font-size="7.5" text-anchor="middle" fill="#ffffff" transform="rotate(-90 48.3 554.8)">rack-pt-01</text>
@@ -283,18 +256,16 @@
 <polyline points="121.3,268.7 182.2,268.7" fill="none" stroke="#ea580c" stroke-width="3.2" stroke-opacity="0.85" stroke-linejoin="round" marker-end="url(#arrow-forklift)"><title>Recibo de bobinas del camión a la bodega</title></polyline>
 <polyline points="243.0,268.7 407.4,268.7" fill="none" stroke="#ea580c" stroke-width="3.2" stroke-opacity="0.85" stroke-linejoin="round" marker-end="url(#arrow-forklift)"><title>Bobinas a los portabobinas de los single facers</title></polyline>
 <polyline points="255.2,268.7 647.8,268.7" fill="none" stroke="#ea580c" stroke-width="3.2" stroke-opacity="0.85" stroke-linejoin="round" marker-end="url(#arrow-forklift)"><title>Bobinas al portabobinas de la doble mesa</title></polyline>
-<polyline points="296.3,682.6 296.3,737.4 177.6,737.4 177.6,597.4" fill="none" stroke="#ea580c" stroke-width="3.2" stroke-opacity="0.85" stroke-linejoin="round" marker-end="url(#arrow-forklift)"><title>Estibas de la línea 1 a la bodega</title></polyline>
-<polyline points="296.3,463.5 296.3,737.4 229.3,737.4 229.3,536.5" fill="none" stroke="#ea580c" stroke-width="3.2" stroke-opacity="0.85" stroke-linejoin="round" marker-end="url(#arrow-forklift)"><title>Estibas de la línea 4 a la bodega</title></polyline>
+<polyline points="296.3,682.6 296.3,737.4 177.6,737.4 177.6,597.4" fill="none" stroke="#ea580c" stroke-width="3.2" stroke-opacity="0.85" stroke-linejoin="round" marker-end="url(#arrow-forklift)"><title>Estibas de cajas grandes (línea 1) a la bodega</title></polyline>
+<polyline points="296.3,573.0 296.3,737.4 229.3,737.4 229.3,536.5" fill="none" stroke="#ea580c" stroke-width="3.2" stroke-opacity="0.85" stroke-linejoin="round" marker-end="url(#arrow-forklift)"><title>Estibas de cajas medianas y pequeñas (paletizador compartido) a la bodega</title></polyline>
 <polyline points="74.1,597.4 74.1,737.4" fill="none" stroke="#ea580c" stroke-width="3.2" stroke-opacity="0.85" stroke-linejoin="round" marker-end="url(#arrow-forklift)"><title>Alistamiento: de la bodega al muelle 1</title></polyline>
 <line x1="953.0" y1="299.1" x2="993.9" y2="299.1" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>pilas de láminas: 41 pilas/h</title></line>
 <line x1="1009.1" y1="682.6" x2="873.9" y2="682.6" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>pilas de láminas: 10 pilas/h</title></line>
 <line x1="1009.1" y1="609.6" x2="873.9" y2="609.6" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>pilas de láminas: 10 pilas/h</title></line>
 <line x1="1009.1" y1="536.5" x2="898.3" y2="536.5" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>pilas de láminas: 10 pilas/h</title></line>
-<line x1="1009.1" y1="463.5" x2="910.4" y2="463.5" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>pilas de láminas: 10 pilas/h</title></line>
-<line x1="567.8" y1="682.6" x2="380.9" y2="682.6" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>fajos de 25 cajas: 10 u/min</title></line>
-<line x1="567.8" y1="609.6" x2="380.9" y2="609.6" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>fajos de 25 cajas: 10 u/min</title></line>
-<line x1="593.7" y1="536.5" x2="380.9" y2="536.5" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>fajos de 25 cajas: 8 u/min</title></line>
-<line x1="523.7" y1="463.5" x2="380.9" y2="463.5" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>fajos de 25 cajas: 8 u/min</title></line>
+<line x1="567.8" y1="682.6" x2="380.9" y2="682.6" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>fajos de cajas grandes: 7.2 u/min</title></line>
+<line x1="568.0" y1="607.5" x2="411.1" y2="575.1" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>fajos de cajas medianas: 10 u/min</title></line>
+<line x1="593.9" y1="538.3" x2="411.1" y2="571.3" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>fajos de cajas pequeñas: 8 u/min</title></line>
 <rect x="30" y="923.7391304347826" width="14" height="14" fill="#f4f4ef" stroke="#6b7280"/>
 <text x="49" y="934.7391304347826" font-size="11" fill="#374151">Exterior</text>
 <rect x="112.0" y="923.7391304347826" width="14" height="14" fill="#e9dcc3" stroke="#6b7280"/>

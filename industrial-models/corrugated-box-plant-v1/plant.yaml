@@ -23,22 +23,24 @@ plant:
     shifts: 3 turnos, 24/6
     daily_output_t: 120
     corrugator: { width_m: 2.5, speed_m_min: 200, flutes: [B, C, BC] }
-    converting_lines: 4
+    converting_lines: 3
+    box_sizes: ["grande 600 × 400 × 400 mm (línea 1)", "mediana 400 × 300 × 300 mm (línea 2)", "pequeña troquelada 250 × 200 × 150 mm (línea 3)"]
     assumptions:
-      - "Lámina de ejemplo: caja regular 400 × 300 × 300 mm en doble pared BC, 1,45 × 0,62 m, 3 láminas por ancho: ≈ 414 láminas/min."
+      - "Tres tamaños de caja imaginarios, uno por línea. Lámina de referencia (caja mediana 400 × 300 × 300 mm): 1,45 × 0,62 m, 3 por ancho: ≈ 414 láminas/min."
       - "Pila de 1,4 m ≈ 200 capas × 3 = 600 láminas; sale una pila cada ≈ 1,45 min (≈ 41 pilas/h)."
       - "Transportadores de pilas de rodillos motorizados por zonas de 2,4 m a 0,3 m/s; carro de transferencia a 1 m/s."
-      - "Fajos de 25 cajas y estibas de 40 fajos."
+      - "Fajos de 25 cajas; la línea 1 tiene paletizador propio y las líneas 2 y 3 comparten uno."
 
 layout_concept: >
   La corrugadora cruza la franja norte de oeste a este: portabobinas y single
   facers junto a la bodega de bobinas, puente, engomadora, doble mesa,
   cortadoras y apilador. Las pilas de láminas salen por rodillos y dos mesas
   giratorias al carro de transferencia, que corre de norte a sur por el lado
-  este y reparte entre los carriles de alimentación de las cuatro máquinas de
-  conversión (al oeste del riel) y el pulmón de pilas (al este del riel). Las
-  máquinas de conversión trabajan de este a oeste; los fajos viajan por banda
-  hasta los paletizadores, y las estibas envueltas pasan en montacargas a la
+  este y reparte entre los carriles de alimentación de las tres máquinas de
+  conversión (una por tamaño de caja, al oeste del riel) y el pulmón de pilas
+  (al este del riel). Las máquinas trabajan de este a oeste; los fajos viajan
+  por banda hasta los paletizadores (uno para la línea 1, uno compartido por
+  las líneas 2 y 3), y las estibas envueltas pasan en montacargas a la
   bodega de producto terminado del oeste, que despacha por los muelles del sur.
   Servicios (almidón, caldera, aire, subestación), recorte y almacén de
   troqueles quedan al norte de la corrugadora.
@@ -78,8 +80,8 @@ routes:
   - { id: fk-bobinas-sf, name: "Bobinas a los portabobinas de los single facers", kind: forklift, from: rolls-02, to: rs-03, load: bobinas de liner y medium, width: 1.5, trips_per_h: 8, path: [[35, 104], [62, 104]] }
   - { id: fk-bobinas-df, name: "Bobinas al portabobinas de la doble mesa", kind: forklift, from: rolls-02, to: rs-05, load: bobinas de liner exterior, width: 1.5, trips_per_h: 4, path: [[37, 104], [101.5, 104]] }
   # --- Montacargas: estibas envueltas a la bodega y de la bodega al muelle ---
-  - { id: fk-envuelta-pt-1, name: "Estibas de la línea 1 a la bodega", kind: forklift, from: wrap-01, to: rack-pt-03, load: estibas de cajas, width: 1.5, trips_per_h: 15, path: [[43.75, 36], [43.75, 27], [24.25, 27], [24.25, 50]] }
-  - { id: fk-envuelta-pt-4, name: "Estibas de la línea 4 a la bodega", kind: forklift, from: wrap-04, to: rack-pt-05, load: estibas de cajas, width: 1.5, trips_per_h: 7, path: [[43.75, 72], [43.75, 27], [32.75, 27], [32.75, 60]] }
+  - { id: fk-envuelta-pt-1, name: "Estibas de cajas grandes (línea 1) a la bodega", kind: forklift, from: wrap-01, to: rack-pt-03, load: estibas de cajas, width: 1.5, trips_per_h: 15, path: [[43.75, 36], [43.75, 27], [24.25, 27], [24.25, 50]] }
+  - { id: fk-envuelta-pt-2, name: "Estibas de cajas medianas y pequeñas (paletizador compartido) a la bodega", kind: forklift, from: wrap-02, to: rack-pt-04, load: estibas de cajas, width: 1.5, trips_per_h: 27, path: [[43.75, 54], [43.75, 27], [32.75, 27], [32.75, 60]] }
   - { id: fk-pt-despacho, name: "Alistamiento: de la bodega al muelle 1", kind: forklift, from: rack-pt-01, to: dock-01, load: estibas de cajas, width: 1.5, trips_per_h: 12, path: [[7.25, 50], [7.25, 27]] }
 
 equipment:
@@ -117,37 +119,28 @@ equipment:
   - { id: lane-01, type: stack_roller_conveyor, zone: transporte-pilas, position: [162.5, 36, 0], footprint: [23, 2.6, 0.6], params: { speed_m_s: 0.3, zones: 9, feeds: ffg-01 } }
   - { id: lane-02, type: stack_roller_conveyor, zone: transporte-pilas, position: [162.5, 48, 0], footprint: [23, 2.6, 0.6], params: { speed_m_s: 0.3, zones: 9, feeds: ffg-02 } }
   - { id: lane-03, type: stack_roller_conveyor, zone: transporte-pilas, position: [162.5, 60, 0], footprint: [23, 2.6, 0.6], params: { speed_m_s: 0.3, zones: 9, feeds: rdc-01 } }
-  - { id: lane-04, type: stack_roller_conveyor, zone: transporte-pilas, position: [162.5, 72, 0], footprint: [23, 2.6, 0.6], params: { speed_m_s: 0.3, zones: 9, feeds: fdc-01 } }
   - { id: buffer-01, type: stack_roller_conveyor, zone: transporte-pilas, position: [183.5, 40, 0], footprint: [11, 2.6, 0.6], params: { speed_m_s: 0.3, zones: 4, role: pulmón } }
   - { id: buffer-02, type: stack_roller_conveyor, zone: transporte-pilas, position: [183.5, 50, 0], footprint: [11, 2.6, 0.6], params: { speed_m_s: 0.3, zones: 4, role: pulmón } }
   - { id: buffer-03, type: stack_roller_conveyor, zone: transporte-pilas, position: [183.5, 60, 0], footprint: [11, 2.6, 0.6], params: { speed_m_s: 0.3, zones: 4, role: pulmón } }
   - { id: buffer-04, type: stack_roller_conveyor, zone: transporte-pilas, position: [183.5, 70, 0], footprint: [11, 2.6, 0.6], params: { speed_m_s: 0.3, zones: 4, role: pulmón } }
 
-  # --- Conversión: línea 1 y 2 (impresora-troqueladora-plegadora-pegadora), 3 (troqueladora rotativa), 4 (troqueladora plana y pegadora) ---
-  - { id: ffg-01, type: flexo_folder_gluer, zone: conversion, position: [137, 36, 0], footprint: [25, 5, 3], params: { colors: 4, sheets_min: 250 } }
+  # --- Conversión: tres tamaños de caja. Línea 1 (cajas grandes) y 2 (medianas): impresora-troqueladora-plegadora-pegadora; 3 (pequeñas): troqueladora rotativa ---
+  - { id: ffg-01, type: flexo_folder_gluer, zone: conversion, position: [137, 36, 0], footprint: [25, 5, 3], params: { colors: 4, sheets_min: 180, box: "grande 600 × 400 × 400 mm" } }
   - { id: strap-01, type: bundle_strapper, zone: conversion, position: [120, 36, 0], footprint: [4, 3, 2.6], params: { bundle: 25 } }
   - { id: bc-01, type: bundle_conveyor, zone: conversion, position: [90, 36, 0], footprint: [54, 1.4, 0.8], params: { speed_m_s: 0.5 } }
-  - { id: ffg-02, type: flexo_folder_gluer, zone: conversion, position: [137, 48, 0], footprint: [25, 5, 3], params: { colors: 4, sheets_min: 250 } }
+  - { id: ffg-02, type: flexo_folder_gluer, zone: conversion, position: [137, 48, 0], footprint: [25, 5, 3], params: { colors: 4, sheets_min: 250, box: "mediana 400 × 300 × 300 mm" } }
   - { id: strap-02, type: bundle_strapper, zone: conversion, position: [120, 48, 0], footprint: [4, 3, 2.6], params: { bundle: 25 } }
   - { id: bc-02, type: bundle_conveyor, zone: conversion, position: [90, 48, 0], footprint: [54, 1.4, 0.8], params: { speed_m_s: 0.5 } }
-  - { id: rdc-01, type: rotary_die_cutter, zone: conversion, position: [141, 60, 0], footprint: [17, 5, 3], params: { colors: 2, sheets_min: 200 } }
+  - { id: rdc-01, type: rotary_die_cutter, zone: conversion, position: [141, 60, 0], footprint: [17, 5, 3], params: { colors: 2, sheets_min: 200, box: "pequeña troquelada 250 × 200 × 150 mm" } }
   - { id: strap-03, type: bundle_strapper, zone: conversion, position: [128, 60, 0], footprint: [4, 3, 2.6], params: { bundle: 25 } }
   - { id: bc-03, type: bundle_conveyor, zone: conversion, position: [94.25, 60, 0], footprint: [62.5, 1.4, 0.8], params: { speed_m_s: 0.5 } }
-  - { id: fdc-01, type: flatbed_die_cutter, zone: conversion, position: [143, 72, 0], footprint: [13, 5, 3.2], params: { sheets_min: 115 } }
-  - { id: cv-fg-01, type: stack_roller_conveyor, zone: conversion, position: [134.5, 72, 0], footprint: [3, 2.6, 0.6], params: { speed_m_s: 0.3, zones: 1 } }
-  - { id: fg-01, type: folder_gluer, zone: conversion, position: [121, 72, 0], footprint: [23, 3, 1.8], params: { boxes_min: 250 } }
-  - { id: strap-04, type: bundle_strapper, zone: conversion, position: [105, 72, 0], footprint: [4, 3, 2.6], params: { bundle: 25 } }
-  - { id: bc-04, type: bundle_conveyor, zone: conversion, position: [82.75, 72, 0], footprint: [39.5, 1.4, 0.8], params: { speed_m_s: 0.5 } }
 
-  # --- Paletizado y envoltura ---
-  - { id: pal-01, type: palletizer, zone: paletizado, position: [56, 36, 0], footprint: [8, 4, 3.5], params: { bundles_per_pallet: 40 } }
+  # --- Paletizado y envoltura: la línea 1 tiene su paletizador; las líneas 2 y 3 se unen en una banda y comparten el paletizador 2 ---
+  - { id: pal-01, type: palletizer, zone: paletizado, position: [56, 36, 0], footprint: [8, 4, 3.5], params: { bundles_per_pallet: 24, serves: línea 1 } }
   - { id: wrap-01, type: stretch_wrapper, zone: paletizado, position: [47.5, 36, 0], footprint: [3.5, 3.5, 3], params: {} }
-  - { id: pal-02, type: palletizer, zone: paletizado, position: [56, 48, 0], footprint: [8, 4, 3.5], params: { bundles_per_pallet: 40 } }
-  - { id: wrap-02, type: stretch_wrapper, zone: paletizado, position: [47.5, 48, 0], footprint: [3.5, 3.5, 3], params: {} }
-  - { id: pal-03, type: palletizer, zone: paletizado, position: [56, 60, 0], footprint: [8, 4, 3.5], params: { bundles_per_pallet: 40 } }
-  - { id: wrap-03, type: stretch_wrapper, zone: paletizado, position: [47.5, 60, 0], footprint: [3.5, 3.5, 3], params: {} }
-  - { id: pal-04, type: palletizer, zone: paletizado, position: [56, 72, 0], footprint: [8, 4, 3.5], params: { bundles_per_pallet: 40 } }
-  - { id: wrap-04, type: stretch_wrapper, zone: paletizado, position: [47.5, 72, 0], footprint: [3.5, 3.5, 3], params: {} }
+  - { id: bc-merge-01, type: bundle_conveyor, zone: paletizado, position: [61, 54, 0], footprint: [1.4, 13.4, 0.8], params: { speed_m_s: 0.5, note: une los fajos de las líneas 2 y 3 } }
+  - { id: pal-02, type: palletizer, zone: paletizado, position: [56, 54, 0], footprint: [8, 4, 3.5], params: { bundles_per_pallet: 40, serves: líneas 2 y 3 (compartido) } }
+  - { id: wrap-02, type: stretch_wrapper, zone: paletizado, position: [47.5, 54, 0], footprint: [3.5, 3.5, 3], params: {} }
 
   # --- Bodega de producto terminado y despacho ---
   - { id: rack-pt-01, type: pallet_rack, zone: bodega-pt, position: [3, 57, 0], footprint: [2.5, 54, 9], params: { stage: terminado, positions: 216 } }
@@ -210,8 +203,6 @@ flows:
   - { from: lane-02, to: ffg-02, medium: pilas de láminas, rate: 10, unit: pilas/h, show: true }
   - { from: tc-01, to: lane-03, medium: pilas de láminas, rate: 10, unit: pilas/h }
   - { from: lane-03, to: rdc-01, medium: pilas de láminas, rate: 10, unit: pilas/h, show: true }
-  - { from: tc-01, to: lane-04, medium: pilas de láminas, rate: 10, unit: pilas/h }
-  - { from: lane-04, to: fdc-01, medium: pilas de láminas, rate: 10, unit: pilas/h, show: true }
   - { from: tc-01, to: buffer-01, medium: pilas de láminas (pulmón), rate: 4, unit: pilas/h }
   - { from: buffer-01, to: tc-01, medium: pilas de láminas (pulmón), rate: 4, unit: pilas/h }
   - { from: tc-01, to: buffer-02, medium: pilas de láminas (pulmón), rate: 4, unit: pilas/h }
@@ -221,28 +212,20 @@ flows:
   - { from: tc-01, to: buffer-04, medium: pilas de láminas (pulmón), rate: 4, unit: pilas/h }
   - { from: buffer-04, to: tc-01, medium: pilas de láminas (pulmón), rate: 4, unit: pilas/h }
   # Conversión, paletizado y bodega
-  - { from: ffg-01, to: strap-01, medium: cajas plegadas, rate: 250, unit: u/min }
-  - { from: strap-01, to: bc-01, medium: fajos de 25 cajas, rate: 10, unit: u/min }
-  - { from: bc-01, to: pal-01, medium: fajos de 25 cajas, rate: 10, unit: u/min, show: true }
-  - { from: pal-01, to: wrap-01, medium: estibas, rate: 15, unit: pallets/h }
-  - { from: wrap-01, to: rack-pt-02, medium: estibas, rate: 15, unit: pallets/h }
+  - { from: ffg-01, to: strap-01, medium: cajas plegadas, rate: 180, unit: u/min }
+  - { from: strap-01, to: bc-01, medium: fajos de 25 cajas, rate: 7.2, unit: u/min }
   - { from: ffg-02, to: strap-02, medium: cajas plegadas, rate: 250, unit: u/min }
   - { from: strap-02, to: bc-02, medium: fajos de 25 cajas, rate: 10, unit: u/min }
-  - { from: bc-02, to: pal-02, medium: fajos de 25 cajas, rate: 10, unit: u/min, show: true }
-  - { from: pal-02, to: wrap-02, medium: estibas, rate: 15, unit: pallets/h }
-  - { from: wrap-02, to: rack-pt-03, medium: estibas, rate: 15, unit: pallets/h }
   - { from: rdc-01, to: strap-03, medium: cajas plegadas, rate: 200, unit: u/min }
   - { from: strap-03, to: bc-03, medium: fajos de 25 cajas, rate: 8, unit: u/min }
-  - { from: bc-03, to: pal-03, medium: fajos de 25 cajas, rate: 8, unit: u/min, show: true }
-  - { from: pal-03, to: wrap-03, medium: estibas, rate: 15, unit: pallets/h }
-  - { from: wrap-03, to: rack-pt-04, medium: estibas, rate: 15, unit: pallets/h }
-  - { from: fdc-01, to: cv-fg-01, medium: láminas troqueladas, rate: 115, unit: u/min }
-  - { from: cv-fg-01, to: fg-01, medium: láminas troqueladas, rate: 115, unit: u/min }
-  - { from: fg-01, to: strap-04, medium: cajas plegadas, rate: 115, unit: u/min }
-  - { from: strap-04, to: bc-04, medium: fajos de 25 cajas, rate: 8, unit: u/min }
-  - { from: bc-04, to: pal-04, medium: fajos de 25 cajas, rate: 8, unit: u/min, show: true }
-  - { from: pal-04, to: wrap-04, medium: estibas, rate: 15, unit: pallets/h }
-  - { from: wrap-04, to: rack-pt-05, medium: estibas, rate: 15, unit: pallets/h }
+  - { from: bc-01, to: pal-01, medium: fajos de cajas grandes, rate: 7.2, unit: u/min, show: true }
+  - { from: bc-02, to: bc-merge-01, medium: fajos de cajas medianas, rate: 10, unit: u/min, show: true }
+  - { from: bc-03, to: bc-merge-01, medium: fajos de cajas pequeñas, rate: 8, unit: u/min, show: true }
+  - { from: bc-merge-01, to: pal-02, medium: fajos de cajas medianas y pequeñas, rate: 18, unit: u/min }
+  - { from: pal-01, to: wrap-01, medium: estibas, rate: 18, unit: pallets/h }
+  - { from: wrap-01, to: rack-pt-03, medium: estibas, rate: 18, unit: pallets/h }
+  - { from: pal-02, to: wrap-02, medium: estibas, rate: 27, unit: pallets/h }
+  - { from: wrap-02, to: rack-pt-04, medium: estibas, rate: 27, unit: pallets/h }
   - { from: rack-pt-01, to: dock-01, medium: estibas, rate: 300, unit: pallets/d }
   - { from: dock-01, to: truck-01, medium: estibas, rate: 300, unit: pallets/d }
   # Recorte (ductos neumáticos)
@@ -250,7 +233,6 @@ flows:
   - { from: ffg-01, to: cyclone-01, medium: recorte de cartón, rate: 120, unit: kg/h }
   - { from: ffg-02, to: cyclone-01, medium: recorte de cartón, rate: 120, unit: kg/h }
   - { from: rdc-01, to: cyclone-01, medium: recorte de cartón, rate: 120, unit: kg/h }
-  - { from: fdc-01, to: cyclone-01, medium: recorte de cartón, rate: 120, unit: kg/h }
   - { from: cyclone-01, to: baler-01, medium: recorte de cartón, rate: 780, unit: kg/h }
   # Servicios
   - { from: boiler-01, to: sf-01, medium: vapor, rate: 900, unit: kg/h, piped: true }
@@ -264,8 +246,7 @@ flows:
 
 lines:
   - { id: line-corrugator, name: Corrugadora,                      mode: continuous, equipment: [rs-01, rs-02, sf-01, rs-03, rs-04, sf-02, bridge-01, rs-05, glue-01, df-01, ss-01, ck-01, stacker-01] }
-  - { id: line-stacks,     name: Transporte de pilas,              mode: discrete,   equipment: [cv-st-01, tt-01, cv-st-02, cv-st-03, tt-02, cv-st-04, tc-01, lane-01, lane-02, lane-03, lane-04, buffer-01, buffer-02, buffer-03, buffer-04] }
-  - { id: line-ffg-1,      name: Línea 1 · impresora-plegadora-pegadora, mode: discrete, equipment: [ffg-01, strap-01, bc-01, pal-01, wrap-01] }
-  - { id: line-ffg-2,      name: Línea 2 · impresora-plegadora-pegadora, mode: discrete, equipment: [ffg-02, strap-02, bc-02, pal-02, wrap-02] }
-  - { id: line-rdc,        name: Línea 3 · troqueladora rotativa,  mode: discrete,   equipment: [rdc-01, strap-03, bc-03, pal-03, wrap-03] }
-  - { id: line-fdc,        name: Línea 4 · troqueladora plana y pegadora, mode: discrete, equipment: [fdc-01, cv-fg-01, fg-01, strap-04, bc-04, pal-04, wrap-04] }
+  - { id: line-stacks,     name: Transporte de pilas,              mode: discrete,   equipment: [cv-st-01, tt-01, cv-st-02, cv-st-03, tt-02, cv-st-04, tc-01, lane-01, lane-02, lane-03, buffer-01, buffer-02, buffer-03, buffer-04] }
+  - { id: line-large,      name: Línea 1 · cajas grandes (paletizador propio), mode: discrete, equipment: [ffg-01, strap-01, bc-01, pal-01, wrap-01] }
+  - { id: line-medium,     name: Línea 2 · cajas medianas (paletizador compartido), mode: discrete, equipment: [ffg-02, strap-02, bc-02, bc-merge-01, pal-02, wrap-02] }
+  - { id: line-small,      name: Línea 3 · cajas pequeñas troqueladas (paletizador compartido), mode: discrete, equipment: [rdc-01, strap-03, bc-03, bc-merge-01, pal-02, wrap-02] }
