@@ -15,9 +15,9 @@ Sin base de datos por ahora.
 ## Pasos de una sola vez (en dash.cloudflare.com, cuenta Arvantti)
 1. **Account ID.** Entra a la cuenta Arvantti, abre *Workers & Pages* y copia el **Account ID** del panel derecho (o de la URL: `dash.cloudflare.com/<ACCOUNT_ID>/...`).
 2. **Token de API con permisos mínimos.** *Mi perfil → Tokens de API → Crear token → Crear token personalizado*:
-   - Permiso: **Cuenta → Cloudflare Pages → Editar**. Nada más.
+   - Permiso mínimo: **Cuenta → Cloudflare Pages → Editar**. Si ya vas a desplegar el backend, agrega también Workers Scripts, D1, R2, KV y Tunnel (cada uno con Edit) y, sobre el dominio, DNS y Workers Routes.
    - Recursos de la cuenta: *Incluir → Arvantti* (solo esa cuenta).
-   - Opcional: caducidad (por ejemplo 1 año) y filtro de IP vacío.
+   - Caducidad de 90 días y filtro de IP vacío.
    - Crear y **copiar el token ahora**: no se vuelve a mostrar.
 3. **Secretos en GitHub.** En el repo: *Settings → Secrets and variables → Actions → New repository secret*. Crea dos:
    - `CLOUDFLARE_API_TOKEN` = el token del paso 2.
@@ -28,7 +28,7 @@ Sin base de datos por ahora.
 Mientras los secretos no existan, el workflow termina en verde con un aviso y no despliega.
 
 ## Seguridad
-- **Rotación cada 30 días** (práctica del autor): crea un token nuevo con los mismos permisos, reemplaza el secreto `CLOUDFLARE_API_TOKEN` (en la organización, si es compartido) y borra el anterior en *Mi perfil → Tokens de API*. Usa caducidad de 30 días al crearlo para que no se te olvide.
+- **Rotación cada 90 días** (caducidad del token): crea un token nuevo con los mismos permisos, reemplaza el secreto `CLOUDFLARE_API_TOKEN` (en la organización, si es compartido) y borra el anterior en *Mi perfil → Tokens de API*. Anótalo en el calendario unos días antes de que caduque.
 - El token solo puede editar Pages de esa cuenta. Si se filtra, se revoca en *Mi perfil → Tokens de API*.
 - Nunca pegues el token en el chat, en el código ni en `docs/registro/`.
 
