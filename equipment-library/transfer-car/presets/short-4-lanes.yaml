@@ -1,0 +1,4 @@
+preset: short-4-lanes
+description: Carro corto con cuatro carriles a 5, 10, 15 y 20 m
+params: { speed_m_s: 1.5, load_s: 8, unload_s: 8, dist_1_m: 5, dist_2_m: 10, dist_3_m: 15, dist_4_m: 20, rail_length_m: 24 }
+provenance: { speed_m_s: assumed, load_s: assumed, unload_s: assumed }

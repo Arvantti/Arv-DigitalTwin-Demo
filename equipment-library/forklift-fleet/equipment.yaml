@@ -19,7 +19,7 @@ params:
   load_s:         { type: number, unit: s, min: 0, max: 300, default: 45, description: Tiempo de recoger la estiba en el origen, affects: [behavior] }
   unload_s:       { type: number, unit: s, min: 0, max: 300, default: 45, description: Tiempo de dejar la estiba en el destino, affects: [behavior] }
   headway_s:      { type: number, unit: s, min: 0, max: 300, default: 30, description: "Separación mínima entre salidas por el corredor compartido (nadie adelanta ni sale encima de otro)", affects: [behavior] }
-  pallet_pieces:  { type: integer, min: 1, max: 5000, default: 1000, description: Piezas por estiba, affects: [behavior] }
+  pallet_pieces:  { type: integer, min: 1, max: 100000, default: 1000, description: Piezas por estiba (la de las rutas que no declaran la suya), affects: [behavior] }
   max_pallets_per_route: { type: integer, min: 1, max: 8, default: 2, description: "Estibas por ruta entre cola, viaje y entrega pendiente antes de dejar de aceptar más", affects: [behavior] }
   parking_pose:   { type: string, default: bay, description: Cómo se muestran los montacargas en reposo (bay), affects: [geometry] }
   route_1_m:       { type: number, unit: m, min: 5, max: 1000, default: 100, description: Largo de la ruta 1 (origen a destino), affects: [behavior] }
@@ -42,6 +42,16 @@ params:
   route_9_feed_upm: { type: number, unit: u/min, min: 0.1, max: 1000000, default: 1000000, description: "Ritmo máximo al que entrega en el destino las piezas de la estiba de la ruta 9 (en una línea de ensamble, lo que se saca de la estiba)", affects: [behavior] }
   route_10_m:       { type: number, unit: m, min: 5, max: 1000, default: 100, description: Largo de la ruta 10 (origen a destino), affects: [behavior] }
   route_10_feed_upm: { type: number, unit: u/min, min: 0.1, max: 1000000, default: 1000000, description: "Ritmo máximo al que entrega en el destino las piezas de la estiba de la ruta 10 (en una línea de ensamble, lo que se saca de la estiba)", affects: [behavior] }
+  route_1_pallet_pieces: { type: integer, min: -1, max: 100000, default: 0, description: "Piezas por estiba de la ruta 1 (0 = usa pallet_pieces) o -1 = estibas armadas; la estiba es estándar y las piezas que caben dependen del producto", affects: [behavior] }
+  route_2_pallet_pieces: { type: integer, min: -1, max: 100000, default: 0, description: "Piezas por estiba de la ruta 2 (0 = usa pallet_pieces) o -1 = estibas armadas; la estiba es estándar y las piezas que caben dependen del producto", affects: [behavior] }
+  route_3_pallet_pieces: { type: integer, min: -1, max: 100000, default: 0, description: "Piezas por estiba de la ruta 3 (0 = usa pallet_pieces) o -1 = estibas armadas; la estiba es estándar y las piezas que caben dependen del producto", affects: [behavior] }
+  route_4_pallet_pieces: { type: integer, min: -1, max: 100000, default: 0, description: "Piezas por estiba de la ruta 4 (0 = usa pallet_pieces) o -1 = estibas armadas; la estiba es estándar y las piezas que caben dependen del producto", affects: [behavior] }
+  route_5_pallet_pieces: { type: integer, min: -1, max: 100000, default: 0, description: "Piezas por estiba de la ruta 5 (0 = usa pallet_pieces) o -1 = estibas armadas; la estiba es estándar y las piezas que caben dependen del producto", affects: [behavior] }
+  route_6_pallet_pieces: { type: integer, min: -1, max: 100000, default: 0, description: "Piezas por estiba de la ruta 6 (0 = usa pallet_pieces) o -1 = estibas armadas; la estiba es estándar y las piezas que caben dependen del producto", affects: [behavior] }
+  route_7_pallet_pieces: { type: integer, min: -1, max: 100000, default: 0, description: "Piezas por estiba de la ruta 7 (0 = usa pallet_pieces) o -1 = estibas armadas; la estiba es estándar y las piezas que caben dependen del producto", affects: [behavior] }
+  route_8_pallet_pieces: { type: integer, min: -1, max: 100000, default: 0, description: "Piezas por estiba de la ruta 8 (0 = usa pallet_pieces) o -1 = estibas armadas; la estiba es estándar y las piezas que caben dependen del producto", affects: [behavior] }
+  route_9_pallet_pieces: { type: integer, min: -1, max: 100000, default: 0, description: "Piezas por estiba de la ruta 9 (0 = usa pallet_pieces) o -1 = estibas armadas; la estiba es estándar y las piezas que caben dependen del producto", affects: [behavior] }
+  route_10_pallet_pieces: { type: integer, min: -1, max: 100000, default: 0, description: "Piezas por estiba de la ruta 10 (0 = usa pallet_pieces) o -1 = estibas armadas; la estiba es estándar y las piezas que caben dependen del producto", affects: [behavior] }
 
 ports:
   - { id: pallets_in_1, kind: item, direction: in, medium: estibas, unit: u/min, link: { units: inflow_1_upm, ready: accepting_1 } }

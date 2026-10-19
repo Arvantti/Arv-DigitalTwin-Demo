@@ -1,0 +1,4 @@
+preset: stack-3-lanes
+description: Carro de pilas de la fábrica de cajas, riel de 58 m, carriles a 45, 33 y 21 m repartidos 10, 15 y 12 pilas/h
+params: { speed_m_s: 2.0, load_s: 10, unload_s: 10, dist_1_m: 45, dist_2_m: 33, dist_3_m: 21, dist_4_m: 0, weight_1: 10, weight_2: 15, weight_3: 12, nominal_inflow_upm: 0.69, rail_length_m: 58, home_offset_m: 4, width_m: 3 }
+provenance: { speed_m_s: assumed, load_s: assumed, unload_s: assumed, dist_1_m: assumed, dist_2_m: assumed, dist_3_m: assumed, weight_1: assumed, weight_2: assumed, weight_3: assumed, nominal_inflow_upm: assumed }

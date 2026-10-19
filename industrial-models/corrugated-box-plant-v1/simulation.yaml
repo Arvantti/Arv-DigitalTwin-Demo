@@ -1,0 +1,119 @@
+# Simulación de la fábrica de cajas con el motor de planta (docs/plant-engine.md, docs/box-plant.md).
+# El transporte conectado: corrugadora → transportadores de pilas → carro de transferencia → tres carriles →
+# tres convertidoras (una por tamaño de caja) → bandas de fajos → paletizador propio (línea 1) y compartido (líneas 2 y 3).
+# Todo valor es imaginario (decisión del autor del 2026-10-18). Las mesas giratorias, las amarradoras y las
+# envolvedoras no se simulan: se atraviesan con `via`. Los carriles de pulmón todavía no se usan.
+
+schema_version: 0.1.0
+description: Transporte de pilas y fajos de la fábrica de cajas, de la corrugadora a los paletizadores
+dt: 1.0
+
+x-stack-conveyor: &stack_conveyor { kind: roller, item: box, item_size_m: 1.4, item_color: "#b8895a", width_m: 2.0, height_m: 0.6, pitch_m: 2.4, speed_m_s: 0.3, nominal_inflow_upm: 0, motor_kw: 2.2 }
+x-bundle-conveyor: &bundle_conveyor { kind: flat, item: box, item_size_m: 0.8, item_color: "#b8895a", width_m: 1.2, height_m: 0.8, pitch_m: 1.2, speed_m_s: 0.5, nominal_inflow_upm: 0, motor_kw: 1.5 }
+
+equipment:
+  # El apilador del extremo seco representa a toda la corrugadora (los demás equipos de la línea no se simulan).
+  stacker-01:  { type: corrugator, preset: bc-2500 }
+  cv-st-01:    { type: belt-conveyor, params: { <<: *stack_conveyor, length_m: 6 } }
+  cv-st-02:    { type: belt-conveyor, params: { <<: *stack_conveyor, length_m: 8.5 } }
+  cv-st-03:    { type: belt-conveyor, params: { <<: *stack_conveyor, length_m: 5 } }
+  cv-st-04:    { type: belt-conveyor, params: { <<: *stack_conveyor, length_m: 7 } }
+  tc-01:       { type: transfer-car, preset: stack-3-lanes }
+  lane-01:     { type: belt-conveyor, params: { <<: *stack_conveyor, length_m: 23 } }
+  lane-02:     { type: belt-conveyor, params: { <<: *stack_conveyor, length_m: 23 } }
+  lane-03:     { type: belt-conveyor, params: { <<: *stack_conveyor, length_m: 23 } }
+  ffg-01:      { type: box-converter, preset: ffg-large }
+  ffg-02:      { type: box-converter, preset: ffg-medium }
+  rdc-01:      { type: box-converter, preset: rdc-small }
+  bc-01:       { type: belt-conveyor, params: { <<: *bundle_conveyor, length_m: 54 } }
+  bc-02:       { type: belt-conveyor, params: { <<: *bundle_conveyor, length_m: 54 } }
+  bc-03:       { type: belt-conveyor, params: { <<: *bundle_conveyor, length_m: 62.5 } }
+  # La banda de unión recibe de dos bandas: dos plazas en la entrada para que los fajos que llegan juntos no la frenen.
+  bc-merge-01: { type: belt-conveyor, params: { <<: *bundle_conveyor, length_m: 13.4, entry_buffer_units: 2 } }
+  pal-01:      { type: palletizer, preset: single-24 }
+  pal-02:      { type: palletizer, preset: shared-40 }
+
+links:
+  # Pilas
+  - { from: stacker-01.stacks_out, to: cv-st-01.items_in }
+  - { from: cv-st-01.items_out,    to: cv-st-02.items_in, via: [tt-01] }
+  - { from: cv-st-02.items_out,    to: cv-st-03.items_in }
+  - { from: cv-st-03.items_out,    to: cv-st-04.items_in, via: [tt-02] }
+  - { from: cv-st-04.items_out,    to: tc-01.stacks_in }
+  - { from: tc-01.out_1,           to: lane-01.items_in }
+  - { from: tc-01.out_2,           to: lane-02.items_in }
+  - { from: tc-01.out_3,           to: lane-03.items_in }
+  - { from: lane-01.items_out,     to: ffg-01.stacks_in }
+  - { from: lane-02.items_out,     to: ffg-02.stacks_in }
+  - { from: lane-03.items_out,     to: rdc-01.stacks_in }
+  # Fajos
+  - { from: ffg-01.bundles_out,    to: bc-01.items_in, via: [strap-01] }
+  - { from: ffg-02.bundles_out,    to: bc-02.items_in, via: [strap-02] }
+  - { from: rdc-01.bundles_out,    to: bc-03.items_in, via: [strap-03] }
+  - { from: bc-01.items_out,       to: pal-01.bundles_in }
+  - { from: bc-02.items_out,       to: bc-merge-01.items_in }
+  - { from: bc-03.items_out,       to: bc-merge-01.items_in }
+  - { from: bc-merge-01.items_out, to: pal-02.bundles_in }
+
+lines:
+  - id: line-large
+    name: Cajas grandes (línea 1, paletizador propio)
+    output: pal-01.pallets_out
+    unit: estibas
+    equipment: [ffg-01, bc-01, pal-01]
+  - id: line-medium
+    name: Cajas medianas (línea 2)
+    output: ffg-02.bundles_out
+    unit: fajos
+    equipment: [ffg-02, bc-02]
+  - id: line-small
+    name: Cajas pequeñas (línea 3)
+    output: rdc-01.bundles_out
+    unit: fajos
+    equipment: [rdc-01, bc-03]
+  - id: shared-pallets
+    name: Paletizador compartido (líneas 2 y 3)
+    output: pal-02.pallets_out
+    unit: estibas
+    equipment: [bc-merge-01, pal-02]
+
+scenarios:
+  - id: nominal
+    description: "Cuatro horas: la corrugadora entrega 41,4 pilas/h y las tres máquinas gastan 37 (10 + 15 + 12)"
+    duration_s: 14400
+    expect:
+      - { path: equipment.stacker-01.variables.stacks_delivered, min: 164, max: 166, description: "(200 m/min ÷ 1,45 m × 3 = 413,8 láminas/min ÷ 600 = 41,4 pilas/h × 4 h = 165,5)" }
+      - { path: equipment.stacker-01.state_share.blocked, equals: 0.0, description: "(la conversión gasta 37 de las 41,4 pilas/h; el excedente, ≈ 18 pilas en 4 h, cabe en los carriles de 10 pilas)" }
+      - { path: equipment.tc-01.variables.delivered_1, min: 43, max: 45, description: "(≈ 163 viajes repartidos 10 : 15 : 12 = 44, 66 y 53)" }
+      - { path: equipment.tc-01.variables.delivered_2, min: 64, max: 67 }
+      - { path: equipment.tc-01.variables.delivered_3, min: 52, max: 54 }
+      - { path: equipment.ffg-01.variables.bundles_count, min: 925, max: 940, description: "(≈ 6 min hasta la primera pila: 234 min × 100 cajas ÷ 25 = 936 fajos)" }
+      - { path: equipment.ffg-02.state_share.starved, max: 0.04, description: "(solo la espera de la primera pila, ≈ 6 min de 240)" }
+      - { path: lines.line-large.output_units, min: 37, max: 39, description: "(934 fajos ÷ 24 = 38,9 estibas, menos los fajos en la banda de 54 m)" }
+      - { path: lines.shared-pallets.output_units, min: 88, max: 90, description: "((1.401 + 2.229) fajos ÷ 40 = 90,8 estibas, menos los fajos en las bandas)" }
+      - { path: equipment.pal-02.kpis.utilization, min: 0.67, max: 0.74, description: "(15,6 fajos/min de 22 posibles: ≈ 71 %; el compartido trabaja el doble que el paletizador 1, ≈ 32 %)" }
+
+  - id: paper-break
+    description: "Rotura de papel de 45 min a las 2 h: los carriles y los alimentadores sostienen la conversión mientras la corrugadora para"
+    duration_s: 14400
+    timeline:
+      - { at_s: 7200, equipment: stacker-01, command: inject_fault, args: { fault: paper_break, duration_s: 2700 } }
+    expect:
+      - { path: equipment.stacker-01.variables.stacks_delivered, min: 133, max: 135, description: "(165,5 − 45 min × 0,69 pilas/min = 134)" }
+      - { path: equipment.ffg-01.state_share.starved, min: 0.11, max: 0.19, description: "(faltan 31 pilas; cada carril guarda pocas porque el excedente es solo 4,4 pilas/h: cada máquina para ≈ 30 min de 240)" }
+      - { path: equipment.ffg-02.state_share.starved, min: 0.11, max: 0.19 }
+      - { path: equipment.rdc-01.state_share.starved, min: 0.11, max: 0.19 }
+      - { path: lines.line-large.output_units, min: 32, max: 34, description: "(≈ 5 estibas menos que en el turno nominal)" }
+
+  - id: shared-palletizer-stop
+    description: "El paletizador compartido para 30 min a la 1 h: se llenan las bandas de las líneas 2 y 3, esas máquinas se bloquean y la línea 1 no se entera"
+    duration_s: 10800
+    timeline:
+      - { at_s: 3600, equipment: pal-02, command: inject_fault, args: { fault: gripper_fault, duration_s: 1800 } }
+    expect:
+      - { path: events.pal-02.fault_raised, equals: 1 }
+      - { path: equipment.ffg-02.state_share.blocked, min: 0.09, max: 0.16, description: "(la mesa del paletizador y la banda de unión, 24 fajos, y la banda de 54 m, 46 fajos, se llenan en ≈ 7 min a 6 fajos/min: ≈ 23 de 180 min bloqueada)" }
+      - { path: equipment.rdc-01.state_share.blocked, min: 0.10, max: 0.17, description: "(su banda de 62,5 m guarda 53 fajos y recibe 9,6 por minuto: se bloquea antes, ≈ 25 min)" }
+      - { path: equipment.ffg-01.state_share.blocked, equals: 0.0, description: "(la línea 1 tiene su propio paletizador)" }
+      - { path: lines.line-large.output_units, min: 27, max: 29, description: "(sigue a ≈ 9,4 estibas/h)" }
+      - { path: equipment.stacker-01.state_share.blocked, equals: 0.0, description: "(las máquinas 2 y 3 dejan de gastar pilas, pero sus carriles de 10 plazas alcanzan a recibirlas en 30 min)" }

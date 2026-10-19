@@ -1,0 +1,4 @@
+preset: rdc-small
+description: Troqueladora rotativa para cajas pequeñas troqueladas (250 × 200 × 150 mm), 120 láminas/min, 2 cajas por lámina, fajos de 25
+params: { speed_sheets_min: 120, sheets_per_stack: 600, boxes_per_sheet: 2, boxes_per_bundle: 25, order_change_s: 1200, kind: rotary_die_cutter, length_m: 17, width_m: 5, colors: 2 }
+provenance: { speed_sheets_min: assumed, sheets_per_stack: assumed, boxes_per_sheet: assumed, boxes_per_bundle: assumed, order_change_s: assumed }

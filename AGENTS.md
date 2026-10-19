@@ -9,7 +9,7 @@ Este repositorio construye una plataforma de gemelos digitales industriales. Las
 - `apps/api/`: FastAPI con la simulación en vivo por WebSocket.
 - `apps/gallery/`: galería web para ver, parametrizar y simular cada equipo, y escena de planta en 3D (`plant.html`, `docs/plant-scene.md`).
 - `apps/gallery/acueducto.html`: panel de gráficos del PLC del acueducto a escala (fuera de la escena 3D). Lee `public/data/acueducto-dia.json`, que genera `tools/hydraulics/dia_acueducto.py` con el banco hidráulico.
-- `industrial-models/corrugated-box-plant-v1/`: fábrica de cajas de cartón corrugado centrada en el transporte de pilas (`docs/box-plant.md`); sus piezas de escena están en `apps/gallery/src/box-plant-pieces.ts`.
+- `industrial-models/corrugated-box-plant-v1/`: fábrica de cajas de cartón corrugado centrada en el transporte de pilas (`docs/box-plant.md`), simulada con los tipos `corrugator`, `transfer-car`, `box-converter`, `palletizer` y `belt-conveyor`; las piezas de escena de los equipos no simulados están en `apps/gallery/src/box-plant-pieces.ts`.
 - `industrial-models/<planta>/plant.yaml`: layouts de planta. `tools/layout/render_layout.py` los valida y dibuja.
 - `industrial-models/<planta>/simulation.yaml`: qué equipos del layout se simulan y cómo se conectan por puertos (motor de planta, `docs/plant-engine.md`).
 
