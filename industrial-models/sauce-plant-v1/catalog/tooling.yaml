@@ -1,0 +1,38 @@
+# Herramental de la planta de salsas: recetas (lo que se monta en una marmita, emulsificador o tanque) y formatos de
+# sachet (lo que se monta en una llenadora). Las recetas repiten lote y fórmula de recipes del plant.yaml (el validador
+# exige que coincidan) y el lote de cada escenario debe cargar batch_kg. El formato da unit_ml a la llenadora.
+tooling:
+  - id: rcp-tomato-sauce
+    kind: recipe
+    name: Salsa de tomate
+    product: salsa-tomate
+    layout_types: [jacketed_kettle]
+    batch_kg: 2000
+    formula_pct: { pasta-tomate-30brix: 35.0, agua: 43.0, azucar: 15.0, vinagre: 4.0, sal: 1.8, almidon-modificado: 1.0, especias: 0.1, conservante: 0.1 }
+    yield_pct: 98.0
+    change_min: 45
+    assumed: true
+  - id: rcp-mayo-natural
+    kind: recipe
+    name: Mayonesa natural
+    product: mayonesa
+    layout_types: [vacuum_emulsifier]
+    batch_kg: 1500
+    formula_pct: { aceite: 78.0, huevo-liquido: 8.0, agua: 7.0, vinagre: 4.0, azucar: 1.5, sal: 0.8, mostaza: 0.5, estabilizantes-conservantes: 0.2 }
+    yield_pct: 98.5
+    change_min: 60
+    assumed: true
+  - id: rcp-mustard
+    kind: recipe
+    name: Mostaza
+    product: mostaza-granel
+    layout_types: [mixing_tank]
+    batch_kg: 1000
+    formula_pct: { agua: 71.0, harina-mostaza: 12.0, vinagre: 12.0, sal: 2.5, azucar: 2.0, curcuma: 0.3, especias: 0.2 }
+    yield_pct: 98.5
+    change_min: 60
+    assumed: true
+  # Formatos de sachet: sirven a varios productos (la ruta de cada uno dice en qué llenadoras).
+  - { id: fmt-sachet-250, kind: format, name: Sachet de 250 ml, size: 250 ml, layout_types: [vffs_sachet], params: { unit_ml: 250 }, change_min: 30, assumed: true }
+  - { id: fmt-sachet-500, kind: format, name: Sachet de 500 ml, size: 500 ml, layout_types: [vffs_sachet], params: { unit_ml: 500 }, change_min: 30, assumed: true }
+  - { id: fmt-sachet-1000, kind: format, name: Sachet de 1.000 ml, size: 1.000 ml, layout_types: [vffs_sachet], params: { unit_ml: 1000 }, change_min: 30, assumed: true }

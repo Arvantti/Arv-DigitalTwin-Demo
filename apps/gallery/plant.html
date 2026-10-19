@@ -26,6 +26,13 @@
     <aside class="sidebar glass" id="sidebar">
       <a class="nav-link" href="/">◀ INICIO</a>
       <a class="nav-link" id="link-equipos" href="/equipos.html">▤ EQUIPOS DE ESTA PLANTA</a>
+      <div id="products-section" hidden>
+        <h3>PRODUCTOS</h3>
+        <ul id="products"></ul>
+        <div class="sim-controls"><button id="btn-new-product" title="Crear un producto y su hoja de ruta en el editor">＋ NUEVO</button><button id="btn-load-product" title="YAML o JSON con el formato de catalog/products.yaml">⤒ CARGAR</button></div>
+        <input id="product-file" type="file" accept=".yaml,.yml,.json" hidden />
+        <div id="product-detail" class="product-detail"></div>
+      </div>
       <h3>CÁMARAS</h3>
       <div id="cameras" class="commands"></div>
       <div class="sim-controls"><button id="btn-tour">▶ RECORRIDO</button></div>
@@ -39,9 +46,11 @@
       <label class="speed">Velocidad <span id="speed-val">×60</span>
         <input id="speed" type="range" min="0" max="4" step="0.01" value="1.78" />
       </label>
+      <div class="sim-controls hidden" id="plc-toggle-wrap"><button id="btn-plc">⚙ PLC DE BANDAS</button></div>
       <h3>LÍNEAS</h3>
       <div id="lines" class="lines"></div>
     </aside>
+    <section class="plc glass hidden" id="belt-plc" aria-label="Tablero del PLC de las bandas"></section>
     <section class="hud glass" id="hud">
       <div class="label">ACTIVO SELECCIONADO</div>
       <div id="asset-name" class="asset-name">Haz clic en un equipo</div>
@@ -55,6 +64,7 @@
       <div class="label">VARIABLES <span class="dim">· simulado</span></div>
       <div id="vars" class="vars"></div>
     </section>
+    <section class="route-panel glass" id="route-panel" hidden></section>
     <section class="events glass" id="events-panel">
       <div class="label">EVENTOS DE PLANTA</div>
       <ol id="events"></ol>

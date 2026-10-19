@@ -1,0 +1,164 @@
+# Productos de la fábrica de cajas (docs/datos-reales.md): una caja por línea. Todas salen de lámina de doble pared BC
+# (preset bc-2500 de la corrugadora), así que comparten la ruta de la corrugadora al carro de transferencia; desde el
+# carril, cada una sigue su línea. Lista de materiales por caja: 3 capas de liner y 2 de medium (×1,4 por la onda) sobre
+# el área de lámina, almidón, tinta y 1/25 de fleje (fajos de 25). Valores imaginarios.
+# Tiempos (catálogo): corte = 60 ÷ (200 m/min ÷ 1,45 m × 3 a lo ancho × cajas por lámina), del preset bc-2500;
+# lotes: pila de 600 láminas, fajo de 25 cajas y estiba del paletizador (24 o 40 fajos de 25).
+products:
+- id: caja-grande
+  name: Caja grande
+  family: regular ranurada
+  kind: finished
+  unit: u
+  size: 600 × 400 × 400 mm
+  color: '#b8895a'
+  bom:
+  - item: liner-kraft
+    qty: 5.55
+  - item: medium-onda
+    qty: 5.18
+  - item: almidon
+    qty: 0.0222
+  - item: tinta-flexo
+    qty: 0.002
+  - item: fleje
+    qty: 0.04
+  routing:
+  - stage: onduladoras
+    equipment: &id001 [sf-01, sf-02]
+  - stage: doble mesa
+    equipment: &id002 [df-01]
+  - stage: corte
+    equipment: &id003 [ss-01, ck-01]
+    cycle_s: 0.145
+  - stage: apilado
+    equipment: &id004 [stacker-01]
+    batch_qty: 600
+  - stage: transporte de pilas
+    equipment: &id005 [cv-st-01, tt-01, cv-st-02, cv-st-03, tt-02, cv-st-04]
+  - stage: carro de transferencia
+    equipment: &id006 [tc-01]
+  - stage: carril
+    equipment: [lane-01]
+  - stage: conversión
+    equipment: [ffg-01]
+    tooling: fmt-caja-grande
+  - stage: amarre
+    equipment: [strap-01]
+    batch_qty: 25
+  - stage: banda de fajos
+    equipment: [bc-01]
+  - stage: paletizado
+    equipment: [pal-01]
+    batch_qty: 600
+  - stage: envoltura
+    equipment: [wrap-01]
+  - stage: bodega
+    equipment: [rack-pt-03]
+  assumed: true
+- id: caja-mediana
+  name: Caja mediana
+  family: regular ranurada
+  kind: finished
+  unit: u
+  size: 400 × 300 × 300 mm
+  color: '#b8895a'
+  bom:
+  - item: liner-kraft
+    qty: 2.85
+  - item: medium-onda
+    qty: 2.66
+  - item: almidon
+    qty: 0.0114
+  - item: tinta-flexo
+    qty: 0.002
+  - item: fleje
+    qty: 0.04
+  routing:
+  - stage: onduladoras
+    equipment: *id001
+  - stage: doble mesa
+    equipment: *id002
+  - stage: corte
+    equipment: *id003
+    cycle_s: 0.145
+  - stage: apilado
+    equipment: *id004
+    batch_qty: 600
+  - stage: transporte de pilas
+    equipment: *id005
+  - stage: carro de transferencia
+    equipment: *id006
+  - stage: carril
+    equipment: [lane-02]
+  - stage: conversión
+    equipment: [ffg-02]
+    tooling: fmt-caja-mediana
+  - stage: amarre
+    equipment: [strap-02]
+    batch_qty: 25
+  - stage: banda de fajos
+    equipment: [bc-02]
+  - stage: unión de bandas
+    equipment: [bc-merge-01]
+  - stage: paletizado
+    equipment: [pal-02]
+    batch_qty: 1000
+  - stage: envoltura
+    equipment: [wrap-02]
+  - stage: bodega
+    equipment: [rack-pt-04]
+  assumed: true
+- id: caja-pequena
+  name: Caja pequeña troquelada
+  family: troquelada
+  kind: finished
+  unit: u
+  size: 250 × 200 × 150 mm
+  color: '#b8895a'
+  bom:
+  - item: liner-kraft
+    qty: 1.08
+  - item: medium-onda
+    qty: 1.008
+  - item: almidon
+    qty: 0.0043
+  - item: tinta-flexo
+    qty: 0.002
+  - item: fleje
+    qty: 0.04
+  routing:
+  - stage: onduladoras
+    equipment: *id001
+  - stage: doble mesa
+    equipment: *id002
+  - stage: corte
+    equipment: *id003
+    cycle_s: 0.072
+  - stage: apilado
+    equipment: *id004
+    batch_qty: 1200
+  - stage: transporte de pilas
+    equipment: *id005
+  - stage: carro de transferencia
+    equipment: *id006
+  - stage: carril
+    equipment: [lane-03]
+  - stage: conversión
+    equipment: [rdc-01]
+    tooling: die-caja-pequena
+  - stage: amarre
+    equipment: [strap-03]
+    batch_qty: 25
+  - stage: banda de fajos
+    equipment: [bc-03]
+  - stage: unión de bandas
+    equipment: [bc-merge-01]
+  - stage: paletizado
+    equipment: [pal-02]
+    batch_qty: 1000
+  - stage: envoltura
+    equipment: [wrap-02]
+  - stage: bodega
+    equipment: [rack-pt-04]
+  assumed: true

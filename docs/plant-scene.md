@@ -13,6 +13,7 @@ Parámetros de URL, pensados para capturas automáticas:
 |---|---|
 | `plant=<id>` | Planta (por defecto `sauce-plant-v1`; también `plastic-injection-plant-v1`, con sus 29 inyectoras, la banda, el empaque, los secadores, los chillers y el molino animados; escenarios `nominal`, `conveyor-trip`, `dryer-stop`, `chiller-trip` y `pelletizer-jam`); `corrugated-box-plant-v1`: fábrica de cajas, con la corrugadora, el carro de transferencia, las convertidoras, las bandas y los paletizadores animados; escenarios `nominal`, `paper-break` y `shared-palletizer-stop`, ver `docs/box-plant.md`; y `airport-baggage-v1`, el sistema de equipaje de aeropuerto con escenarios `nominal`, `screening-fault`, `makeup-short-staff`, `sorter-trip` y `arrivals-wave`) |
 | `camera=general`, `camera=<id de zona>` o `camera=nivel-<n>` | Cámara inicial (`nivel-<n>`: el equipo con `params.level: n`, en un edificio por pisos) |
+| `plc=1` | Abre el tablero «⚙ PLC DE BANDAS» (plantas con bandas de maletas) |
 | `look=x,y,z,tx,ty,tz` | Cámara en el punto (x, y, z) del plano mirando a (tx, ty, tz), en metros; sirve para capturar un detalle exacto |
 | `select=<id de equipo>` | Equipo seleccionado |
 | `focus=<id de equipo>` | Acerca la cámara a ese equipo |
@@ -33,12 +34,34 @@ Parámetros de URL, pensados para capturas automáticas:
 - **Cámaras:** vista general y una por zona de producción o servicios grande. **Recorrido** (`tour=1` o el botón): la cámara visita la vista general y esas zonas de oeste a este, el sentido del flujo; cualquier clic o la rueda del ratón lo interrumpe.
 - **HUD de planta:** reloj de simulación, selector de escenario, velocidad, pausa, KPIs de cada línea y eventos de toda la planta.
 
+## Productos y su ruta (catálogo)
+
+Si la planta tiene catálogo (`docs/datos-reales.md`), el panel PRODUCTOS lista sus productos. Al elegir uno se resaltan los equipos de cada etapa (activos en ámbar con su número de etapa, alternativas en gris) y un recorrido animado entre etapas; `&product=<id>` lo abre al cargar. CARGAR PRODUCTO valida un YAML con `POST /api/plants/{id}/products/check` y lo agrega a la sesión.
+
+### Hoja de ruta y editor de rutas
+
+Al elegir un producto se abre abajo el panel HOJA DE RUTA: una fila por etapa con sus equipos (y alternativas), el **tiempo unitario** (segundos por unidad del producto) y el **lote mínimo** con su duración, más el tiempo hasta la etapa siguiente. En el 3D, junto al número de cada etapa, va una etiqueta con esos mismos tiempos. Si la etapa no trabaja por lotes, solo aparece el tiempo unitario. Al pasar el cursor sobre un tiempo se ve de dónde sale:
+
+- **catálogo**: `cycle_s`, `batch_qty` y `batch_min` de la etapa en `catalog/products.yaml`;
+- **molde**: ciclo ÷ cavidades;
+- **receta**: suma de las fases de `recipes` del plano y su lote en kg;
+- **plano**: `units_min`, `flow_kg_h`, `flow_l_h` o `sheets_min` × cajas por lámina del primer equipo activo; la estiba de un buffer (`pallet_pieces`) o la caja de una mesa (`box_units`) son lotes que duran su cantidad por el último tiempo unitario de la ruta.
+
+Botones del panel:
+
+- **✎ EDITAR** convierte la tabla en editor. Se pueden cambiar el id, el nombre, el tipo y la unidad. Por etapa se edita el nombre, el herramental y los tiempos (vacío = calculado), se suben o bajan etapas, se quitan o se agregan (＋ ETAPA). Con ＋ equipo y un clic sobre el equipo en el 3D se agrega; otro clic sobre un equipo ya agregado lo quita. Las etapas de los componentes se editan en su propio producto.
+- Cada cambio se redibuja y se valida en vivo con `POST /products/check`, que devuelve los errores en palabras del editor (por ejemplo, «etapa 4: falta al menos un equipo»).
+- **✓ GUARDAR EN LA SESIÓN** queda en el navegador hasta que exista el almacenamiento (fase F). **⤓ YAML** descarga el producto con el formato de `catalog/products.yaml` para agregarlo al repositorio.
+- **⧉ DUPLICAR** y **＋ NUEVO** (en la barra lateral) abren el editor con una copia o con un producto vacío.
+- Parámetros de URL: `&product=<id>&edit=1` abre el editor directamente.
+
 ## API
 
 | Endpoint | Qué entrega |
 |---|---|
 | `GET /api/plants` | Plantas con plano y si tienen simulación conectada |
-| `GET /api/plants/{id}` | Zonas (con `elevation` si la traen), equipos (con `sim` si el motor los simula), pasarelas, tuberías (flujos `piped`, con `rate`, `unit`, `route`, `diameter_in` y `links`: los enlaces del motor que las cruzan), líneas y escenarios |
+| `GET /api/plants/{id}` | Zonas (con `elevation` si la traen), equipos (con `sim` si el motor los simula), pasarelas, tuberías (flujos `piped`, con `rate`, `unit`, `route`, `diameter_in` y `links`: los enlaces del motor que las cruzan), líneas, escenarios y `catalog` (productos con su ruta y tamaño de cada equipo, o null) |
+| `POST /api/plants/{id}/products/check` | Valida un producto nuevo o editado contra el catálogo y el plano; devuelve `{ok, errors, product}` con su ruta y los tiempos de cada etapa. No guarda nada |
 | `WS /api/plants/{id}/simulate?scenario=&speed=` | Cada 100 ms: `{t, speed, paused, snapshot: {equipment, lines, links}, events}`. Cliente → servidor: `{equipment, command, args}`, `{speed}`, `{pause}` |
 
 ## Edificio por pisos y red de agua (acueducto a escala)
@@ -94,7 +117,9 @@ Dos pasillos de recibo y uno de alistamiento (`aisles`) y dos rutas de montacarg
 | `aircraft` | Avión de pasillo único (fuselaje, alas, motores, cola), dimensionado por la `footprint` (largo × envergadura × altura) |
 | `baggage_cart_train` | Tractor con tres carros de equipaje cargados |
 
-Las rutas de las maletas suben y bajan: las colectoras salen del check-in a 0,75 m, suben a un puente de 4,2 m sobre el pasillo y bajan a la CT; las inducciones suben al clasificador, que va elevado a 3,5 m, y sus rampas bajan a ≈ 1 m sobre los carruseles de armado; las bandas de alarma pasan a 2,0 m hacia nivel 3 y las de llegadas cruzan la vía de servicio a 3,6 m. Es el perfil de altura de `belt-conveyor` (`rise_m`, `crest_height_m`, `ramp_deg`). Cada traspaso entre bandas tiene su equipo: la salida de la CT 1 gira 90° con una curva motorizada (pieza `belt_curve`) y la banda norte entra de costado a la línea sur por una abertura de la guía (`merge_at_m`); la inducción sube a 3,5 m, gira 30° con otra curva y su banda en ángulo entrega en el borde de las bandejas, a favor del flujo, al inicio de la recta de las rampas (antes del lector). Cada extremo de banda lleva su tambor, también en las curvas y en la inducción del clasificador, así que en cada traspaso se ve el rodillo que entrega. Las bandas de maletas tienen control por zonas (`zone_control`): una fotocelda en la descarga (emisor amarillo, reflector y haz) que se pone roja mientras detiene la zona de cabeza porque la siguiente banda no recibe. Las salas de nivel 3 devuelven por su banda de regreso (curvas motorizadas y bandas que entran de costado a la línea de inducción, `merge2_at_m` para la segunda abertura) y codificación manual sube por el costado este hasta la reinducción que el clasificador dibuja con `reinduct: true`. El lazo mide 31,1 m de recta por 7,4 m de ancho; los carruseles de armado están alineados con las rampas.
+Las rutas de las maletas suben y bajan: las colectoras salen del check-in a 0,75 m, suben a un puente de 4,2 m sobre el pasillo y bajan a la CT; las inducciones suben al clasificador, que va elevado a 3,5 m, y sus rampas bajan a ≈ 1 m sobre los carruseles de armado; las bandas de alarma pasan a 2,0 m hacia nivel 3 y las de llegadas cruzan la vía de servicio a 3,6 m. Es el perfil de altura de `belt-conveyor` (`rise_m`, `crest_height_m`, `ramp_deg`). Cada traspaso entre bandas tiene su equipo: la salida de la CT 1 gira 90° con una curva motorizada (pieza `belt_curve`) y la banda norte entra de costado a la línea sur por una abertura de la guía (`merge_at_m`); la inducción sube a 3,5 m, gira 45° con otra curva y su banda en ángulo entra en la parte recta del lazo, a favor del flujo, a 1 m del inicio de la recta (antes del lector), con la punta cortada a inglete sobre el borde de las bandejas (sin hueco) y rodillo de nariz; las rampas empiezan 4 m después (`chute_lead_m`). Cada extremo de banda lleva su tambor, también en las curvas y en la inducción del clasificador, así que en cada traspaso se ve el rodillo que entrega. Las bandas de maletas tienen control por zonas (`zone_control`): una fotocelda en la descarga (emisor amarillo, reflector y haz) que se pone roja mientras detiene la zona de cabeza porque la siguiente banda no recibe. Las salas de nivel 3 devuelven por su banda de regreso (curvas motorizadas y bandas que entran de costado a la línea de inducción, `merge2_at_m` para la segunda abertura) y codificación manual sube por el costado este hasta la reinducción que el clasificador dibuja con `reinduct: true`. El lazo mide 31,1 m de recta por 7,4 m de ancho; los carruseles de armado están alineados con las rampas.
+
+Tablero del PLC de bandas (`apps/gallery/src/belt-plc.ts`, botón «⚙ PLC DE BANDAS» o `&plc=1`): una fila por banda de maletas con sus luces (marcha al motor, habilitada por el operador, fotoceldas de entrada y de descarga, zona retenida, falla), START y STOP, consigna de velocidad de 0,1 a 2,0 m/s y lectura de velocidad real, corriente y maletas; START TODAS y STOP TODAS. Los mandos van por el WebSocket (`start`, `stop`, `set_speed`) y necesitan la simulación en vivo con la API; con la grabación del sitio publicado el tablero solo muestra las señales.
 
 Cámaras por zona: `camera=hall-checkin`, `camera=sala-bhs`, `camera=plataforma`, `camera=hall-llegadas`. La escena por software (sin GPU) tarda unos 2 minutos en estar lista para una captura con datos.
 

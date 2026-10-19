@@ -9,12 +9,14 @@
  *   ?plant=sauce-plant-v1&lighting=day
  *   &camera=general|<id de zona>   cámara inicial
  *   &select=<id de equipo>         equipo seleccionado
+ *   &product=<id de producto>      muestra la ruta de ese producto del catálogo (docs/datos-reales.md)
  *   &focus=<id de equipo>          acerca la cámara a ese equipo
  *   &look=x,y,z,tx,ty,tz           cámara en el punto (x, y, z) del plano mirando a (tx, ty, tz), en metros
  *   &autosim=1&scenario=boiler-trip&speed=120   conecta la simulación al cargar
  *   &tour=1                        inicia el recorrido de cámara al cargar
  *   &shot=1                        oculta la interfaz y marca window.__ready (con autosim, tras recibir datos)
  */
+import { createBeltPlc } from "./belt-plc.ts";
 import "./mobile-dock.ts";
 import yaml from "js-yaml";
 import * as THREE from "three";
@@ -25,6 +27,7 @@ import { buildProcessPiece } from "./process-pieces.ts";
 import { dockLeveler, deliveryTruck, palletRack, passThroughDoor } from "./warehouse.ts";
 import { type ControlPiece, type PanelConfig, controlPanel, operatorDesk, plcCabinet } from "./control-room.ts";
 import { bootDone, bootError, bootStage } from "./boot.ts";
+import { type CatalogDoc, type ProductsApi, buildProducts } from "./products.ts";
 import "./styles.css";
 
 interface Zone {
@@ -91,6 +94,8 @@ interface PlantDoc {
   pipes: Pipe[];
   lines: { id: string; name: string; equipment: string[] }[];
   scenarios: Record<string, { description: string; duration_s: number }>;
+  /** Catálogo de datos de la planta (productos con su ruta y tamaño de cada equipo); null si no tiene. */
+  catalog?: CatalogDoc | null;
 }
 interface EquipmentSnapshot {
   state: string;
@@ -795,6 +800,8 @@ stage.renderer.domElement.addEventListener("pointerup", (e) => {
   const hit = raycaster.intersectObjects(roots, true)[0];
   let o: THREE.Object3D | null = hit?.object ?? null;
   while (o && !o.userData.assetId) o = o.parent;
+  // El editor de rutas toma el clic cuando está agregando equipos a una etapa.
+  if (o && productsApi?.pick(o.userData.assetId as string)) return;
   select(o ? (o.userData.assetId as string) : null);
 });
 
@@ -968,6 +975,7 @@ function applyMessage(msg: SimMessage, label: string): void {
     if (asset) asset.frame = { channels: snap.animation, state: snap.state, phase: snap.phase, variables: snap.variables, items: snap.items, label: id.toUpperCase() };
   }
   for (const piece of controlPieces) piece.feed?.(latest, msg.t);
+  beltPlc?.update(latest);
   renderAsset();
   renderLines(msg.snapshot.lines);
   appendEvents(msg.events);
@@ -1078,7 +1086,7 @@ function renderAsset(): void {
   const spec = asset?.eq.sim ? specs[asset.eq.sim.type] : undefined;
   $("asset-name").textContent = asset ? asset.eq.id.toUpperCase() : "Haz clic en un equipo";
   $("asset-meta").textContent = asset
-    ? `${spec?.name ?? asset.eq.type} · ${asset.eq.zone}${asset.eq.sim ? "" : " · no simulado"}`
+    ? `${spec?.name ?? asset.eq.type}${doc.catalog?.sizes[asset.eq.id] ? ` ${doc.catalog.sizes[asset.eq.id].toLowerCase()}` : ""} · ${asset.eq.zone}${asset.eq.sim ? "" : " · no simulado"}`
     : "";
   const st = $("state");
   st.textContent = (snap?.state ?? "—").toUpperCase();
@@ -1097,6 +1105,26 @@ function renderAsset(): void {
       for (const f of spec.faults ?? []) cmds.appendChild(commandButton(`⚠ ${f.id.replace(/_/g, " ")}`, f.description, "inject_fault", { fault: f.id }));
     }
   }
+}
+
+// ------------------------------------------------------------------ PLC de bandas
+let beltPlc: ReturnType<typeof createBeltPlc> | null = null;
+function buildBeltPlc(): void {
+  const belts = doc.equipment
+    .filter((e) => e.sim?.type === "belt-conveyor" && e.sim.params.item === "bag")
+    .map((e) => ({ id: e.id, zone: e.zone, speed: Number(e.sim!.params.speed_m_s ?? 0.5) }));
+  if (!belts.length) return;
+  $("plc-toggle-wrap").classList.remove("hidden");
+  beltPlc = createBeltPlc($("belt-plc"), belts, {
+    send: (equipment, command, args) => {
+      if (replay || socket?.readyState !== WebSocket.OPEN) return false;
+      send({ equipment, command, args });
+      return true;
+    },
+    select: (id) => select(id),
+  });
+  $("btn-plc").onclick = () => beltPlc?.toggle();
+  if (url.get("plc") === "1") beltPlc.show();
 }
 
 function commandButton(label: string, title: string, command: string, args: Record<string, unknown>): HTMLButtonElement {
@@ -1202,6 +1230,11 @@ async function start(): Promise<void> {
     send({ speed: speedFromSlider() });
   };
   if (!simulated) $("btn-connect").setAttribute("disabled", "");
+  buildBeltPlc();
+  if (doc.catalog?.products.length) {
+    productsApi = buildProducts({ plantId, catalog: doc.catalog, stage, rootOf: (id) => assets.get(id)?.root, select });
+    updateProducts = productsApi.update;
+  }
   if (url.get("select")) select(url.get("select"));
   const focusAsset = url.get("focus") ? assets.get(url.get("focus")!) : undefined;
   if (focusAsset) stage.frame(focusAsset.root, 1.1);
@@ -1253,6 +1286,8 @@ function ambientInjectionFrame(id: string, params: Record<string, unknown>, time
 
 let frames = 0;
 let updateRoutes: ((time: number, dt: number) => void) | null = null;
+let updateProducts: ((time: number) => void) | null = null;
+let productsApi: ProductsApi | null = null;
 function loop(): void {
   const dt = stage.render();
   updateRoutes?.(stage.time, dt);
@@ -1261,6 +1296,7 @@ function loop(): void {
     a.model?.update(a.frame, dt);
   }
   animatePipes(stage.time);
+  updateProducts?.(stage.time);
   for (const piece of controlPieces) piece.redraw?.();
   updateTour();
   frames++;

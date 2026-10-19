@@ -1,0 +1,9 @@
+# Tamaños de equipo de la planta de salsas: las llenadoras por el formato que tienen hoy (unit_ml del plano).
+equipment_sizes:
+  - type: vffs-sachet-filler
+    layout_type: vffs_sachet
+    by: unit_ml
+    sizes:
+      - { id: s250, name: 250 ml, range: [250, 250], presets: [250ml-1-lane, 250ml-2-lanes, 250ml-2-lanes-hot] }
+      - { id: s500, name: 500 ml, range: [500, 500], presets: [500ml-1-lane] }
+      - { id: s1000, name: 1.000 ml, range: [1000, 1000], presets: [1000ml-1-lane, 1000ml-1-lane-hot] }
