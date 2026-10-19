@@ -38,3 +38,4 @@ Conversaciones del 2026-10-16 (UTC) entre el autor y Claude dentro del proyecto 
 26. [[hilo-linea-fria-y-mostaza-de-salsas]] (línea fría y mostaza de la planta de salsas en el motor, 2026-10-18 23:53 UTC)
 27. [[hilo-datos-reales]] (plan de datos reales, pedidos y Fractal para todos los gemelos, 2026-10-18 23:53 UTC)
 28. [[hilo-imagenes-portal]] (imágenes de cada planta en las tarjetas del portal, 2026-10-19 16:12 UTC)
+29. [[hilo-gemelo-de-ciudad]] (gemelo nuevo de ciudad: plan, escenario hipotético, monitoreo y red de la zona B con 35 cruces, 2026-10-19 12:05 UTC)

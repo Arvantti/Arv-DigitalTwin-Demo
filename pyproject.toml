@@ -16,7 +16,7 @@ twin-api = { workspace = true }
 dev = ["pytest>=8", "ruff>=0.6", "httpx>=0.27"]
 
 [tool.pytest.ini_options]
-testpaths = ["packages/twin-runtime/tests", "equipment-library", "apps/api/tests"]
+testpaths = ["packages/twin-runtime/tests", "equipment-library", "apps/api/tests", "tools/city/tests"]
 python_files = ["test_*.py"]
 addopts = "--import-mode=importlib"
 
