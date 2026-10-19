@@ -175,7 +175,8 @@ def test_plant_catalog_gives_products_routes_and_sizes() -> None:
     assert papelera["stages"][0]["active"] == ["imm-19"]
     assert products["balde-12l"]["colors"][0] == {"id": "mb-azul", "name": "Masterbatch azul", "hex": "#1e6fd9"}
     assert catalog["sizes"]["imm-28"] == "Grande"
-    assert client.get("/api/plants/sauce-plant-v1").json()["catalog"] is None
+    assert client.get("/api/plants/sauce-plant-v1").json()["catalog"]["sizes"]["filler-pouch-03"] == "500 ml"
+    assert client.get("/api/plants/airport-baggage-v1").json()["catalog"] is None
 
 
 def test_new_product_is_checked_against_the_plant() -> None:
