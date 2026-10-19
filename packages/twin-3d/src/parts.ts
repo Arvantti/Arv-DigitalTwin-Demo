@@ -6,6 +6,7 @@ import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
 import * as M from "./materials.ts";
 import { hmiScreen, textTexture } from "./textures.ts";
+import { attachHuman, pickHuman, type HumanState } from "./humans.ts";
 
 // ------------------------------------------------------------------ utilidades básicas
 
@@ -298,8 +299,35 @@ function hand(material: THREE.Material, side: number): THREE.Group {
   return h;
 }
 
+/**
+ * Persona de la escena. Se ve como un modelo 3D real (ver humans.ts) con dotación o, si `look.civilian`, con ropa común;
+ * mientras ese modelo carga, o sin navegador, se ve la figura orgánica `operatorFigure`. Misma interfaz para las dos.
+ */
 export function operator(vest = "#f26b1d", shirt = "#2f5f8f", look: OperatorLook = {}): OperatorHandle {
   const g = group("operator");
+  const fig = operatorFigure(vest, shirt, look);
+  g.add(fig.object);
+  const state: HumanState = { work: 0, walk: null };
+  const { kind, seed } = pickHuman(!!look.civilian);
+  attachHuman(g, fig.object, kind, state, seed);
+  return {
+    object: g,
+    setPose(work: number): void {
+      state.work = work;
+      state.walk = null;
+      fig.setPose(work);
+    },
+    setWalk(phase: number): void {
+      state.walk = phase === 0 ? null : phase;
+      if (phase === 0) state.work = 0;
+      fig.setWalk(phase);
+    },
+  };
+}
+
+/** Figura simple de formas orgánicas (sin descargas): respaldo de `operator` y referencia de tamaño. */
+export function operatorFigure(vest = "#f26b1d", shirt = "#2f5f8f", look: OperatorLook = {}): OperatorHandle {
+  const g = group("operator-figure");
   const skin = M.paint(look.skin ?? "#c99a76", 0.62);
   const hairMat = M.paint(look.hair ?? "#2a1d16", 0.85);
   const pants = M.paint(look.pants ?? "#2b3442", 0.85);

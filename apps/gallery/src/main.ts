@@ -16,7 +16,7 @@ import "./mobile-dock.ts";
 import GUI from "lil-gui";
 import yaml from "js-yaml";
 import * as THREE from "three";
-import { type AnimationFrame, type EquipmentModel, type LightingPreset, Stage } from "@twin/3d";
+import { type AnimationFrame, type EquipmentModel, type LightingPreset, Stage, humansPending } from "@twin/3d";
 import { geometryBuilders, rawPresets, rawScenarios, rawSpecs } from "@twin/equipment-library/registry.ts";
 import "./styles.css";
 
@@ -371,7 +371,7 @@ function loop(): void {
   const dt = stage.render();
   model?.update(frame, dt);
   frames++;
-  if (shotMode && frames === 40) (window as unknown as { __ready: boolean }).__ready = true;
+  if (shotMode && frames >= 40 && humansPending() === 0 && !(window as unknown as { __ready?: boolean }).__ready) (window as unknown as { __ready: boolean }).__ready = true;
   if (shotMode && gui && url.get("ui") === "1" && frames === 1) gui.close();
   requestAnimationFrame(loop);
 }
