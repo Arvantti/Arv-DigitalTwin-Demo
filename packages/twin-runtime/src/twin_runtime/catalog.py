@@ -1,9 +1,10 @@
 """Catálogo de datos de una planta: materiales, productos con su ruta, herramental, tamaños de equipo y montaje.
 
 Vive en industrial-models/<planta>/catalog/*.yaml y se valida con industrial-models/_schema/catalog.schema.json
-más las reglas cruzadas de este módulo (referencias, compatibilidad molde–máquina, coherencia con el plano).
-El motor de planta lo lee: una inyectora con molde montado (setup.yaml) toma de él producto, resina, cavidades,
-peso de pieza y ciclo. Plan completo en docs/datos-reales.md.
+más las reglas cruzadas de este módulo (referencias, compatibilidad herramental–equipo, coherencia con el plano).
+El motor de planta lo lee: un equipo con herramental montado (setup.yaml) toma de él sus parámetros. Una inyectora
+con molde recibe producto, resina, cavidades, peso de pieza y ciclo; una llenadora con formato, su unit_ml; una
+troqueladora con troquel, sus cajas por lámina. Plan completo en docs/datos-reales.md.
 """
 
 from __future__ import annotations
@@ -21,6 +22,9 @@ CATALOG_DIR = "catalog"
 SCHEMA_PATH = Path("_schema") / "catalog.schema.json"
 # Parámetros de la inyectora que vienen del molde montado; simulation.yaml no debe repetirlos.
 MOLD_PARAMS = ("product", "material", "cavities", "part_g", "cycle_s")
+# Cómo se nombra cada clase de herramental en los mensajes y en la escena.
+KIND_NAMES = {"mold": "molde", "recipe": "receta", "format": "formato", "die": "troquel"}
+PARAM_NAMES = {"boxes_per_sheet": "cajas por lámina", "unit_ml": "ml"}
 
 
 @dataclass
@@ -67,11 +71,16 @@ class Catalog:
 
     # ------------------------------------------------------------------ consultas
     def machine_params(self, equipment_id: str) -> dict[str, Any]:
-        """Parámetros de inyectora que da el molde montado en ese equipo ({} si no tiene molde en el catálogo)."""
+        """Parámetros que da el herramental montado en ese equipo ({} si no tiene nada montado en el catálogo).
+
+        Un molde da los de la inyectora (MOLD_PARAMS); los demás, su campo params.
+        """
         mounted = self.setup.get(equipment_id)
         if not mounted:
             return {}
         mold = self.tooling[mounted["tooling"]]
+        if mold["kind"] != "mold":
+            return dict(mold.get("params") or {})
         product = self.products[mold["product"]]
         return {
             "product": product.get("display_name", product["name"]),
@@ -83,7 +92,7 @@ class Catalog:
 
     def product_of(self, equipment_id: str) -> dict[str, Any] | None:
         mounted = self.setup.get(equipment_id)
-        return self.products[self.tooling[mounted["tooling"]]["product"]] if mounted else None
+        return self.products.get(self.tooling[mounted["tooling"]].get("product", "")) if mounted else None
 
     def route(self, product_id: str) -> list[dict[str, Any]]:
         """Ruta completa de un producto: primero la de sus componentes (en el orden de la lista de materiales) y luego la suya.
@@ -128,6 +137,9 @@ class Catalog:
         products = []
         for pid, product in self.products.items():
             molds = [self.tooling[st["tooling"]] for st in product["routing"] if st.get("tooling") in self.tooling]
+            colors = [color(c) for c in product.get("colors") or []]
+            if not colors and product.get("color"):
+                colors = [{"id": pid, "name": product["name"], "hex": product["color"]}]
             products.append(
                 {
                     "id": pid,
@@ -135,14 +147,15 @@ class Catalog:
                     "family": product.get("family"),
                     "kind": product["kind"],
                     "unit": product["unit"],
-                    "colors": [color(c) for c in product.get("colors") or []],
+                    "size": product.get("size"),
+                    "colors": colors,
                     "bom": [
                         {**line, "name": self.products.get(line["item"], self.materials.get(line["item"], {})).get("name", line["item"])}
                         for line in product.get("bom") or []
                     ],
                     "tooling": [
-                        {k: m[k] for k in ("id", "name", "cavities", "part_g", "cycle_s", "min_clamp_t", "change_min") if k in m}
-                        | {"material": self.materials.get(m.get("material", ""), {}).get("name")}
+                        {k: m[k] for k in ("id", "kind", "name", "cavities", "part_g", "cycle_s", "min_clamp_t", "change_min") if k in m}
+                        | {"material": self.materials.get(m.get("material", ""), {}).get("name"), "detail": self.tooling_detail(m)}
                         for m in molds
                     ],
                     "assumed": product.get("assumed", False),
@@ -156,6 +169,21 @@ class Catalog:
                 sizes[item["id"]] = names[sid]
         return {"products": products, "sizes": sizes}
 
+    def tooling_detail(self, tool: dict[str, Any]) -> str:
+        """Resumen de una línea del herramental para la escena."""
+        if tool["kind"] == "mold":
+            resin = self.materials.get(tool["material"], {}).get("name", tool["material"])
+            return f"{tool['cavities']} cav · {tool['part_g']:g} g · {tool['cycle_s']:g} s · {resin}"
+        parts = [tool["size"]] if tool.get("size") and tool["size"] not in tool["name"] else []
+        if tool["kind"] == "recipe":
+            parts.append(f"lote {tool['batch_kg']:g} kg")
+            if tool.get("yield_pct"):
+                parts.append(f"rendimiento {tool['yield_pct']:g} %")
+        parts += [f"{v:g} {PARAM_NAMES.get(k, k)}" for k, v in (tool.get("params") or {}).items() if k != "unit_ml" or not tool.get("size")]
+        if tool.get("change_min") is not None:
+            parts.append(f"cambio {tool['change_min']:g} min")
+        return " · ".join(parts)
+
     def with_product(self, product: dict[str, Any], layout: dict[str, Any], library: Any | None = None) -> tuple[Catalog | None, list[str]]:
         """Catálogo con un producto más (o reemplazado), y los errores que ese producto agrega. No escribe nada."""
         data = {**self.data, "products": [p for p in self.data.get("products") or [] if p["id"] != product.get("id")] + [product]}
@@ -167,15 +195,29 @@ class Catalog:
         return cat, [e for e in cat.validate(layout, library) if e not in before]
 
     def size_of(self, layout_item: dict[str, Any]) -> str | None:
-        """Tamaño (id) de un equipo del plano según su fuerza de cierre, o None si no cae en ninguno."""
+        """Tamaño (id) de un equipo del plano, o None si no cae en ninguno.
+
+        El tamaño se decide por la lista explícita de equipos del tamaño o por el rango del parámetro `by` del grupo
+        (por defecto la fuerza de cierre, clamp_t).
+        """
+        group = self._size_group(layout_item)
+        if group is None:
+            return None
+        by = group.get("by", "clamp_t")
+        value = (layout_item.get("params") or {}).get(by)
+        for size in group["sizes"]:
+            if layout_item["id"] in (size.get("equipment") or []):
+                return size["id"]
+            rng = size.get("range") or size.get(by)
+            if rng is not None and isinstance(value, int | float) and rng[0] <= value <= rng[1]:
+                return size["id"]
+        return None
+
+    def _size_group(self, layout_item: dict[str, Any]) -> dict[str, Any] | None:
         for group in self.data.get("equipment_sizes") or []:
-            if group.get("layout_type") != layout_item.get("type"):
-                continue
-            clamp = (layout_item.get("params") or {}).get("clamp_t")
-            for size in group["sizes"]:
-                lo, hi = size.get("clamp_t", [0, float("inf")])
-                if clamp is not None and lo <= clamp <= hi:
-                    return size["id"]
+            types = group.get("layout_type")
+            if layout_item.get("type") in ([types] if isinstance(types, str) else types or []):
+                return group
         return None
 
     # ------------------------------------------------------------------ validación cruzada
@@ -183,18 +225,25 @@ class Catalog:
         errors: list[str] = []
         items = {e["id"]: e for e in layout.get("equipment", [])}
 
-        for mold in self.tooling.values():
-            label = f"herramental {mold['id']}"
-            if mold["product"] not in self.products:
-                errors.append(f"{label}: producto desconocido {mold['product']!r}")
-            if mold["kind"] == "mold":
-                mat = self.materials.get(mold["material"])
+        for tool in self.tooling.values():
+            label = f"herramental {tool['id']}"
+            if tool.get("product") and tool["product"] not in self.products:
+                errors.append(f"{label}: producto desconocido {tool['product']!r}")
+            if tool["kind"] == "mold":
+                mat = self.materials.get(tool["material"])
                 if mat is None:
-                    errors.append(f"{label}: material desconocido {mold['material']!r}")
+                    errors.append(f"{label}: material desconocido {tool['material']!r}")
                 elif not mat.get("resin"):
                     errors.append(f"{label}: el material {mat['id']} no es una resina (falta resin)")
-                if mold["shot_kg"] < mold["cavities"] * mold["part_g"] / 1000.0:
-                    errors.append(f"{label}: shot_kg {mold['shot_kg']} es menor que cavidades × peso de pieza")
+                if tool["shot_kg"] < tool["cavities"] * tool["part_g"] / 1000.0:
+                    errors.append(f"{label}: shot_kg {tool['shot_kg']} es menor que cavidades × peso de pieza")
+            if formula := tool.get("formula_pct"):
+                for mid in formula:
+                    if mid not in self.materials:
+                        errors.append(f"{label}: material desconocido {mid!r} en la fórmula")
+                if abs(sum(formula.values()) - 100.0) > 0.05:
+                    errors.append(f"{label}: la fórmula suma {sum(formula.values()):g} %, no 100 %")
+        errors += self._check_layout_recipes(layout)
 
         for product in self.products.values():
             label = f"producto {product['id']}"
@@ -210,40 +259,43 @@ class Catalog:
                     if eid not in items:
                         errors.append(f"{where}: {eid} no existe en plant.yaml")
                 if tid := st.get("tooling"):
-                    mold = self.tooling.get(tid)
-                    if mold is None:
+                    tool = self.tooling.get(tid)
+                    if tool is None:
                         errors.append(f"{where}: herramental desconocido {tid!r}")
                         continue
-                    if mold["product"] != product["id"]:
-                        errors.append(f"{where}: el molde {tid} es de {mold['product']}, no de {product['id']}")
+                    name = KIND_NAMES[tool["kind"]]
+                    if tool.get("product") and tool["product"] != product["id"]:
+                        errors.append(f"{where}: el {name} {tid} es de {tool['product']}, no de {product['id']}")
                     for eid in st["equipment"]:
-                        if eid in items and (why := self.fits(mold, items[eid])):
-                            errors.append(f"{where}: el molde {tid} no cabe en {eid} ({why})")
+                        if eid in items and (why := self.fits(tool, items[eid])):
+                            errors.append(f"{where}: el {name} {tid} no cabe en {eid} ({why})")
         errors += self._check_cycles()
 
         for eid, mounted in self.setup.items():
             label = f"montaje {eid}"
-            mold = self.tooling.get(mounted["tooling"])
+            tool = self.tooling.get(mounted["tooling"])
             if eid not in items:
                 errors.append(f"{label}: no existe en plant.yaml")
                 continue
-            if mold is None:
+            if tool is None:
                 errors.append(f"{label}: herramental desconocido {mounted['tooling']!r}")
                 continue
+            name = KIND_NAMES[tool["kind"]]
             before = len(errors)
-            if why := self.fits(mold, items[eid]):
-                errors.append(f"{label}: el molde {mold['id']} no cabe ({why})")
-            product = self.products.get(mold["product"], {})
-            if (color := mounted.get("color")) and color not in (product.get("colors") or []):
-                errors.append(f"{label}: color {color!r} no está entre los del producto {mold['product']}")
-            if not any(eid in st["equipment"] for st in product.get("routing", []) if st.get("tooling") == mold["id"]):
-                errors.append(f"{label}: no está entre las inyectoras de la ruta de {mold['product']}")
-            # El plano muestra los mismos datos que el molde (lo leen la escena y pallet_sizing).
-            if len(errors) == before and product and mold.get("material") in self.materials:
+            if why := self.fits(tool, items[eid]):
+                errors.append(f"{label}: el {name} {tool['id']} no cabe ({why})")
+            routed = [p for p in self.products.values() if any(st.get("tooling") == tool["id"] for st in p["routing"])]
+            colors = {c for p in routed for c in p.get("colors") or []}
+            if (color := mounted.get("color")) and color not in colors:
+                errors.append(f"{label}: color {color!r} no está entre los de {', '.join(p['id'] for p in routed) or 'ningún producto'}")
+            if not any(eid in st["equipment"] for p in routed for st in p["routing"] if st.get("tooling") == tool["id"]):
+                errors.append(f"{label}: no está entre los equipos de la ruta de ningún producto con el {name} {tool['id']}")
+            # El plano muestra los mismos datos que el herramental (lo leen la escena y pallet_sizing).
+            if len(errors) == before and (tool["kind"] != "mold" or tool["material"] in self.materials):
                 layout_params = items[eid].get("params") or {}
                 for key, value in self.machine_params(eid).items():
-                    if layout_params.get(key) != value:
-                        errors.append(f"{label}: plant.yaml dice {key}={layout_params.get(key)!r} y el molde {value!r}")
+                    if (tool["kind"] == "mold" or key in layout_params) and layout_params.get(key) != value:
+                        errors.append(f"{label}: plant.yaml dice {key}={layout_params.get(key)!r} y el {name} {value!r}")
 
         for group in self.data.get("equipment_sizes") or []:
             if library is not None:
@@ -256,26 +308,55 @@ class Catalog:
                     for preset in size.get("presets") or []:
                         if presets and preset not in presets:
                             errors.append(f"tamaño {size['id']}: preset desconocido {preset!r}")
+            by = group.get("by", "clamp_t")
+            for size in group["sizes"]:
+                for eid in size.get("equipment") or []:
+                    if eid not in items:
+                        errors.append(f"tamaño {size['id']}: {eid} no existe en plant.yaml")
             for eid, item in items.items():
-                if item.get("type") == group.get("layout_type") and self.size_of(item) is None:
-                    errors.append(f"tamaños: {eid} ({(item.get('params') or {}).get('clamp_t')} t) no cae en ningún tamaño")
+                if self._size_group(item) is group and self.size_of(item) is None:
+                    errors.append(f"tamaños: {eid} ({by}={(item.get('params') or {}).get(by)}) no cae en ningún tamaño")
 
         for order in self.data.get("orders") or []:
             if order["product"] not in self.products:
                 errors.append(f"pedido {order['id']}: producto desconocido {order['product']!r}")
         return errors
 
+    def _check_layout_recipes(self, layout: dict[str, Any]) -> list[str]:
+        """Las recetas que el plano también describe (recipes del plant.yaml) dicen lo mismo: lote y fórmula."""
+        errors: list[str] = []
+        for rec in layout.get("recipes") or []:
+            tool = self.tooling.get(rec["id"].replace("_", "-"))
+            if tool is None or tool["kind"] != "recipe":
+                continue
+            label = f"receta {tool['id']}"
+            if rec.get("batch_kg") != tool["batch_kg"]:
+                errors.append(f"{label}: plant.yaml dice batch_kg={rec.get('batch_kg')!r} y el catálogo {tool['batch_kg']!r}")
+            formula = {k.replace("_", "-"): v for k, v in (rec.get("formula_pct") or {}).items()}
+            if formula != tool["formula_pct"]:
+                errors.append(f"{label}: la fórmula del plant.yaml no coincide con la del catálogo")
+        return errors
+
     @staticmethod
-    def fits(mold: dict[str, Any], item: dict[str, Any]) -> str:
-        """Motivo por el que un molde no cabe en una inyectora del plano ('' si cabe)."""
+    def fits(tool: dict[str, Any], item: dict[str, Any]) -> str:
+        """Motivo por el que un herramental no cabe en un equipo del plano ('' si cabe)."""
         params = item.get("params") or {}
-        clamp, shot = params.get("clamp_t"), params.get("max_shot_kg")
-        if clamp is None or shot is None:
-            return "el equipo no declara clamp_t y max_shot_kg"
-        if clamp < mold["min_clamp_t"]:
-            return f"{clamp} t de cierre, el molde pide {mold['min_clamp_t']} t"
-        if shot < mold["shot_kg"]:
-            return f"{shot} kg de inyección, el molde pide {mold['shot_kg']} kg"
+        if (types := tool.get("layout_types")) and item.get("type") not in types:
+            return f"es {item.get('type')}, el {KIND_NAMES[tool['kind']]} va en {', '.join(types)}"
+        if tool["kind"] == "mold":
+            clamp, shot = params.get("clamp_t"), params.get("max_shot_kg")
+            if clamp is None or shot is None:
+                return "el equipo no declara clamp_t y max_shot_kg"
+            if clamp < tool["min_clamp_t"]:
+                return f"{clamp} t de cierre, el molde pide {tool['min_clamp_t']} t"
+            if shot < tool["shot_kg"]:
+                return f"{shot} kg de inyección, el molde pide {tool['shot_kg']} kg"
+        if tool["kind"] == "recipe" and (cap := params.get("batch_kg")) is not None and cap < tool["batch_kg"]:
+            return f"lote de {cap} kg, la receta pide {tool['batch_kg']} kg"
+        if (ml := (tool.get("params") or {}).get("unit_ml")) is not None:
+            formats = params.get("formats_ml") or ([params["unit_ml"]] if "unit_ml" in params else None)
+            if formats is not None and ml not in formats:
+                return f"llena {', '.join(f'{f} ml' for f in formats)}, el formato es de {ml} ml"
         return ""
 
     def _check_cycles(self) -> list[str]:

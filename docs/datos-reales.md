@@ -1,6 +1,6 @@
 # Hoja de ruta de datos reales para todos los gemelos
 
-Estado (2026-10-19): **fases A, B y D hechas** para plásticos (decisiones D56 y D58); sigue la fase C (salsas y cajas). Plan en la decisión D54 de `docs/registro/decisiones/decisiones.md`.
+Estado (2026-10-19): **fases A, B, C y D hechas**: catálogo de plásticos, salsas y cajas con su panel de productos y ruta en 3D (decisiones D56, D58 y D59); sigue la fase E (pedidos). Plan en la decisión D54 de `docs/registro/decisiones/decisiones.md`.
 
 El autor definió esta hoja de ruta para la planta de plásticos (D48) y el 2026-10-18 la extendió a todos los gemelos. Hoy cada planta tiene sus datos repartidos en `plant.yaml` (parámetros de cada equipo, recetas de salsas) y `simulation.yaml`, todos supuestos. El objetivo es que el gemelo se alimente con un **catálogo** de datos reales y que los **pedidos** los secuencie el backend Fractal.
 
@@ -95,6 +95,14 @@ Orden elegido por el autor (2026-10-19): primero la fase D y luego la C.
 - En la escena (`plant.html`), el panel PRODUCTOS lista los productos. Al elegir uno se resaltan los equipos activos de cada etapa con su número, las alternativas en gris, y un recorrido con piezas que avanzan entre etapas; la cámara encuadra la ruta y el detalle muestra molde, componentes y etapas (cada equipo es un enlace que lo selecciona). Parámetro de URL: `&product=<id>`.
 - CARGAR PRODUCTO acepta un YAML o JSON con el formato de `catalog/products.yaml` (uno o una lista `products:`). `POST /api/plants/{id}/products/check` lo valida contra el catálogo y el plano y devuelve su ruta; el producto queda solo en la sesión del navegador (guardarlo es la fase F). Sin API, el botón explica que la validación la necesita.
 - El HUD muestra el tamaño de la inyectora seleccionada (pequeña, mediana o grande).
+
+## 5c. Fase C (hecha, 2026-10-19): catálogos de salsas y cajas
+
+- El esquema y el validador sirven ahora para cuatro clases de herramental: molde, receta, formato y troquel. Cada uno puede declarar `layout_types` (dónde se monta) y `params` (lo que impone al equipo en la simulación). Compatibilidad: un molde por tonelaje e inyección; una receta por el `batch_kg` del recipiente; un formato de sachet por los `formats_ml` (o `unit_ml`) de la llenadora.
+- Los tamaños de equipo se definen por el rango de cualquier parámetro del plano (`by`, por defecto `clamp_t`) o por una lista de equipos.
+- **Salsas** (`sauce-plant-v1/catalog/`): ingredientes de las fórmulas, laminado y caja; 3 recetas (tomate 2.000 kg, mayonesa 1.500 kg, mostaza 1.000 kg) que deben coincidir con `recipes` del plano; 3 formatos de sachet (250, 500 y 1.000 ml); 3 graneles semielaborados y 6 SKU (tomate 1.000 y 250 ml; mayonesa 1.000, 500 y 250 ml; mostaza 250 ml) con tolerancia de 4 %; montaje de las 5 recetas y 6 llenadoras; tamaños de llenadora por formato. El motor da a cada llenadora su `unit_ml` desde el formato y exige que cada lote de los escenarios cargue lo que dice la receta. Salsa BBQ y salsa rosada esperan su receta.
+- **Cajas** (`corrugated-box-plant-v1/catalog/`): papel liner y medium, almidón, tinta y fleje; caja grande, mediana y pequeña troquelada, con la ruta común de la corrugadora al carro y luego su línea; formatos de las dos impresoras-plegadoras-pegadoras y troquel de la troqueladora (cajas por lámina); convertidoras por tamaño (grande, mediana, pequeña).
+- Los escenarios de salsas y de cajas dan exactamente el mismo resultado que antes. La escena ya muestra los productos de las tres plantas (receta, formato o troquel en la ficha).
 
 ## 6. Primer PR propuesto (histórico)
 

@@ -61,3 +61,11 @@ Empiezo por la fase D (productos y su ruta en el 3D) en plásticos y después si
 
 Fase D lista en un PR nuevo: panel PRODUCTOS en la escena de plásticos; al elegir un producto se resaltan y numeran los equipos de su ruta, con arcos del color del producto entre etapas, y se puede cargar un producto nuevo desde YAML, que la API valida contra el plano. Sigue la fase C.
 
+### 🤖 Claude · 2026-10-19 10:40 UTC (fase C, sin mensaje intermedio)
+
+*(Herramientas: lectura de `recipes`, llenadoras y escenarios de salsas y de la simulación de cajas; esquema y validador generalizados a recetas, formatos y troqueles; catálogos YAML de las dos plantas; 7 pruebas; instantáneas de los escenarios antes y después; capturas con Playwright.)*
+
+### 🤖 Claude · 2026-10-19 11:20 UTC
+
+Fase C lista en el mismo PR: catálogos de salsas (3 recetas, 3 formatos de sachet, 6 SKU y 3 graneles) y de cajas (3 cajas con su formato o troquel); el motor toma de ahí el formato de cada llenadora y las cajas por lámina, y los escenarios dan lo mismo. El panel de productos ya funciona en las tres plantas.
+

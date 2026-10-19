@@ -1,0 +1,21 @@
+# Materia prima e insumos de la planta de salsas (docs/datos-reales.md). Los ids de ingredientes son las claves de
+# formula_pct de las recetas del plant.yaml con guion en vez de guion bajo. Valores supuestos hasta tener datos reales.
+materials:
+  # Ingredientes
+  - { id: pasta-tomate-30brix, name: Pasta de tomate 30 °Brix, kind: ingredient, unit: kg, density_kg_l: 1.13, assumed: true }
+  - { id: agua, name: Agua tratada, kind: ingredient, unit: kg, density_kg_l: 1.0 }
+  - { id: azucar, name: Azúcar, kind: ingredient, unit: kg, assumed: true }
+  - { id: vinagre, name: Vinagre, kind: ingredient, unit: kg, density_kg_l: 1.01, assumed: true }
+  - { id: sal, name: Sal, kind: ingredient, unit: kg, assumed: true }
+  - { id: almidon-modificado, name: Almidón modificado, kind: ingredient, unit: kg, assumed: true }
+  - { id: especias, name: Especias, kind: ingredient, unit: kg, assumed: true }
+  - { id: conservante, name: Conservante, kind: ingredient, unit: kg, assumed: true }
+  - { id: aceite, name: Aceite vegetal, kind: ingredient, unit: kg, density_kg_l: 0.92, assumed: true }
+  - { id: huevo-liquido, name: Huevo líquido pasteurizado, kind: ingredient, unit: kg, assumed: true }
+  - { id: mostaza, name: Mostaza preparada (alérgeno), kind: ingredient, unit: kg, assumed: true }
+  - { id: estabilizantes-conservantes, name: Estabilizantes y conservantes, kind: ingredient, unit: kg, assumed: true }
+  - { id: harina-mostaza, name: Harina de mostaza (alérgeno), kind: ingredient, unit: kg, assumed: true }
+  - { id: curcuma, name: Cúrcuma, kind: ingredient, unit: kg, assumed: true }
+  # Empaque
+  - { id: laminado, name: Laminado para sachet, kind: packaging, unit: m2, assumed: true }
+  - { id: caja-corrugada, name: Caja corrugada de despacho, kind: packaging, unit: u, assumed: true }

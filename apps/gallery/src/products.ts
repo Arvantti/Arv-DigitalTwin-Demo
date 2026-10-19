@@ -26,13 +26,27 @@ export interface CatalogProduct {
   unit: string;
   colors: { id: string; name: string; hex: string | null }[];
   bom: { item: string; qty: number; name: string }[];
-  tooling: { id: string; name: string; cavities?: number; part_g?: number; cycle_s?: number; material?: string | null; change_min?: number }[];
+  size?: string | null;
+  tooling: {
+    id: string;
+    kind?: "mold" | "recipe" | "format" | "die";
+    name: string;
+    /** Resumen de una línea armado por la API (cavidades y ciclo, lote y rendimiento, formato…). */
+    detail?: string;
+    cavities?: number;
+    part_g?: number;
+    cycle_s?: number;
+    material?: string | null;
+    change_min?: number;
+  }[];
   assumed?: boolean;
   stages: RouteStage[];
   edges: [number, number][];
   /** Cargado en esta sesión (no está en el catálogo del repositorio). */
   local?: boolean;
 }
+const TOOLING_LABEL: Record<string, string> = { mold: "Molde", recipe: "Receta", format: "Formato", die: "Troquel" };
+
 export interface CatalogDoc {
   products: CatalogProduct[];
   sizes: Record<string, string>;
@@ -182,7 +196,10 @@ export function buildProducts(opts: Options): (time: number) => void {
       return;
     }
     const molds = p.tooling
-      .map((m) => `<div class="kv"><span>Molde</span><span>${esc(m.name)} · ${m.cavities ?? "?"} cav · ${m.part_g ?? "?"} g · ${m.cycle_s ?? "?"} s · ${esc(m.material ?? "")}</span></div>`)
+      .map((m) => {
+        const detail = m.detail ?? `${m.cavities ?? "?"} cav · ${m.part_g ?? "?"} g · ${m.cycle_s ?? "?"} s · ${m.material ?? ""}`;
+        return `<div class="kv"><span>${TOOLING_LABEL[m.kind ?? "mold"]}</span><span>${esc(m.name)} · ${esc(detail)}</span></div>`;
+      })
       .join("");
     const bom = p.bom.map((b) => `<div class="kv"><span>Lleva</span><span>${b.qty} × ${esc(b.name)}</span></div>`).join("");
     const colors = p.colors.map((c) => `<i class="swatch" style="background:${esc(c.hex ?? "#888")}" title="${esc(c.name)}"></i>`).join("");
@@ -198,7 +215,7 @@ export function buildProducts(opts: Options): (time: number) => void {
     detail.innerHTML = `
       <div class="product-card">
         <div class="product-name">${esc(p.name)} ${colors}</div>
-        <div class="dim">${p.kind === "semi" ? "Semielaborado" : "Producto terminado"}${p.family ? ` · ${esc(p.family)}` : ""}${p.local ? " · cargado en esta sesión" : ""}${p.assumed ? " · datos supuestos" : ""}</div>
+        <div class="dim">${p.kind === "semi" ? "Semielaborado" : "Producto terminado"}${p.size ? ` · ${esc(p.size)}` : ""}${p.family ? ` · ${esc(p.family)}` : ""}${p.local ? " · cargado en esta sesión" : ""}${p.assumed ? " · datos supuestos" : ""}</div>
         ${molds}${bom}
         <div class="label">RUTA</div>
         <ol class="route">${stages}</ol>

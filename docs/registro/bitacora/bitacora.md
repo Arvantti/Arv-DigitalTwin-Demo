@@ -10,6 +10,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
+| 2026-10-19 | Catálogos de salsas y cajas | Datos reales, fase C: el catálogo admite recetas, formatos y troqueles; salsas con 3 recetas, 3 formatos de sachet y 6 SKU (más 3 graneles); cajas con 3 referencias y su formato o troquel; el motor toma de ahí el formato de cada llenadora y las cajas por lámina, y exige que los lotes carguen lo que dice la receta; escenarios iguales. D59 | datos reales |
 | 2026-10-19 | Productos y su ruta en el 3D | Datos reales, fase D: la API entrega el catálogo de cada planta; panel PRODUCTOS en la escena con la ruta resaltada y numerada, arcos con el color del producto, enlace `?product=` y carga de productos nuevos validados contra el plano; tamaño del equipo en el HUD. D58 | datos reales |
 | 2026-10-19 | #56 | Datos reales, fases A y B: esquema común del catálogo y validador (`twin-lib catalog`), catálogo de plásticos con 3 productos (cubiertos, balde 12 L, papelera 20 L con ensamble), 4 moldes, resinas y colores, 3 tamaños de inyectora y montaje actual; el motor toma el molde del catálogo y los 8 escenarios dan lo mismo. D56 | datos reales |
 | 2026-10-19 | Línea fría y mostaza de salsas | Motor: emulsificador → molino coloidal → pulmón frío 1 → llenadoras de 250, 500 y 1.000 ml → pesadoras → mesas, y mostaza con llenadora y pesadora dedicadas; cuatro pesadoras y flujo nuevos en el plano; escenarios `cold-nominal` y `mustard-nominal`. D53 | 5 |
@@ -71,6 +72,15 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 | 2026-10-16 | #1 | Layouts de las plantas | 1 |
 
 ## Entradas
+
+### 2026-10-19 10:40 · Catálogos de salsas y cajas (fase C)
+- **Fecha/hora (UTC):** 2026-10-19 10:40–11:20
+- **Fase del plan:** [[plan-del-proyecto]] «Datos reales y pedidos», fase C
+- **Solicitado por:** Carlos Andrés Quiceño: «d y luego c» (segunda parte).
+- **Qué se hizo:** esquema con `layout_types`, `params`, `formula_pct`, `yield_pct`, `size` en el herramental, `color` en el producto y tamaños por `by`/`range` o lista de equipos; `catalog.py` con compatibilidad por clase de herramental, fórmula contra materiales y contra `recipes` del plano, y ficha de herramental para la escena; `plant.py` aplica los `params` del herramental montado y valida el lote contra la receta; catálogos nuevos `sauce-plant-v1/catalog/` y `corrugated-box-plant-v1/catalog/`; la ficha de la escena nombra receta, formato o troquel. Documentado en `docs/datos-reales.md`, `docs/plant-engine.md`, la hoja de ruta y el plan.
+- **Verificación:** instantáneas finales de todos los escenarios de salsas y de cajas idénticas byte a byte antes y después; 7 pruebas nuevas en `test_catalog.py`; `twin-lib catalog validate` (3 plantas), `twin-lib plant validate`, `ruff check`, `pytest`, `pnpm -r typecheck` y `pnpm -r test`; capturas de la ruta de la mayonesa 1.000 ml [[salsas-ruta-mayonesa-1000.jpg]] y de la caja pequeña [[cajas-ruta-caja-pequena.jpg]].
+- **Decisiones:** [[decisiones#D59]]
+- **Conversación:** [[hilo-datos-reales]]
 
 ### 2026-10-19 09:58 · Productos y su ruta en el 3D (fase D)
 - **Fecha/hora (UTC):** 2026-10-19 09:58–10:30

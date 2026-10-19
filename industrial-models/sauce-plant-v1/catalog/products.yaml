@@ -1,0 +1,229 @@
+# Productos de la planta de salsas (docs/datos-reales.md): SKU = receta × presentación. Tres semielaborados a granel
+# (uno por familia, con su receta) y seis SKU en sachet, los que corren hoy en los escenarios de simulation.yaml.
+# Cada SKU usa su granel en kg por sachet (presentación × densidad de la llenadora), laminado y 1/n de caja.
+# Las llenadoras que admiten otro formato (500 y 1.000 ml) aparecen como alternativas; la activa es la que tiene
+# el formato montado (setup.yaml). Salsa BBQ y salsa rosada quedan para cuando tengan receta. Datos supuestos.
+products:
+- id: salsa-tomate
+  name: Salsa de tomate pasteurizada
+  family: caliente
+  kind: semi
+  unit: kg
+  color: '#c62828'
+  routing:
+  - stage: pesaje
+    equipment: [scale-01]
+  - stage: cocción
+    equipment: [kettle-01, kettle-02, kettle-03]
+    tooling: rcp-tomato-sauce
+  - stage: pasteurización
+    equipment: [pasteurizer-01, pasteurizer-02]
+  - stage: pulmón caliente
+    equipment: [buffer-hot-01, buffer-hot-02]
+  assumed: true
+- id: mayonesa
+  name: Mayonesa a granel
+  family: frío
+  kind: semi
+  unit: kg
+  color: '#f4c430'
+  routing:
+  - stage: fase acuosa
+    equipment: [tank-aqueous-01]
+  - stage: emulsión
+    equipment: [emulsifier-01]
+    tooling: rcp-mayo-natural
+  - stage: molienda
+    equipment: [colloid-mill-01]
+  - stage: pulmón frío
+    equipment: [buffer-cold-01]
+  assumed: true
+- id: mostaza-granel
+  name: Mostaza a granel
+  family: mostaza
+  kind: semi
+  unit: kg
+  color: '#e0a800'
+  routing:
+  - stage: pesaje de alérgenos
+    equipment: [scale-allergen-01]
+  - stage: hidratación
+    equipment: [tank-mustard-01]
+    tooling: rcp-mustard
+  - stage: molienda
+    equipment: [mustard-mill-01]
+  - stage: pulmón
+    equipment: [buffer-mustard-01]
+  assumed: true
+- id: tomate-1000
+  name: Salsa de tomate 1.000 ml
+  family: caliente
+  kind: finished
+  unit: u
+  size: 1.000 ml
+  color: '#c62828'
+  tolerance_pct: 4
+  bom:
+  - item: salsa-tomate
+    qty: 1.12
+  - item: laminado
+    qty: 0.07
+  - item: caja-corrugada
+    qty: 0.25
+  routing:
+  - stage: llenado
+    equipment: [filler-pouch-01]
+    tooling: fmt-sachet-1000
+  - stage: enfriamiento
+    equipment: [cooling-tunnel-01]
+  - stage: control de peso
+    equipment: [checkweigher-01]
+  - stage: empaque
+    equipment: [pack-sauce-1000]
+  - stage: estibado
+    equipment: [wrapper-01]
+  - stage: bodega
+    equipment: [rack-pt-02]
+  assumed: true
+- id: tomate-250
+  name: Salsa de tomate 250 ml
+  family: caliente
+  kind: finished
+  unit: u
+  size: 250 ml
+  color: '#c62828'
+  tolerance_pct: 4
+  bom:
+  - item: salsa-tomate
+    qty: 0.28
+  - item: laminado
+    qty: 0.03
+  - item: caja-corrugada
+    qty: 0.0625
+  routing:
+  - stage: llenado
+    equipment: [filler-sachet-02]
+    tooling: fmt-sachet-250
+  - stage: enfriamiento
+    equipment: [cooling-tunnel-02]
+  - stage: control de peso
+    equipment: [checkweigher-02]
+  - stage: empaque
+    equipment: [pack-sauce-250]
+  - stage: estibado
+    equipment: [wrapper-01]
+  - stage: bodega
+    equipment: [rack-pt-02]
+  assumed: true
+- id: mayonesa-1000
+  name: Mayonesa 1.000 ml
+  family: frío
+  kind: finished
+  unit: u
+  size: 1.000 ml
+  color: '#f4c430'
+  tolerance_pct: 4
+  bom:
+  - item: mayonesa
+    qty: 0.93
+  - item: laminado
+    qty: 0.07
+  - item: caja-corrugada
+    qty: 0.25
+  routing:
+  - stage: llenado
+    equipment: [filler-pouch-02, filler-pouch-03]
+    tooling: fmt-sachet-1000
+  - stage: control de peso
+    equipment: [checkweigher-05]
+  - stage: empaque
+    equipment: [pack-sauce-1000]
+  - stage: estibado
+    equipment: [wrapper-01]
+  - stage: bodega
+    equipment: [rack-pt-02]
+  assumed: true
+- id: mayonesa-500
+  name: Mayonesa 500 ml
+  family: frío
+  kind: finished
+  unit: u
+  size: 500 ml
+  color: '#f4c430'
+  tolerance_pct: 4
+  bom:
+  - item: mayonesa
+    qty: 0.465
+  - item: laminado
+    qty: 0.045
+  - item: caja-corrugada
+    qty: 0.125
+  routing:
+  - stage: llenado
+    equipment: [filler-pouch-03, filler-pouch-02]
+    tooling: fmt-sachet-500
+  - stage: control de peso
+    equipment: [checkweigher-04]
+  - stage: empaque
+    equipment: [pack-sauce-500]
+  - stage: estibado
+    equipment: [wrapper-01]
+  - stage: bodega
+    equipment: [rack-pt-02]
+  assumed: true
+- id: mayonesa-250
+  name: Mayonesa 250 ml
+  family: frío
+  kind: finished
+  unit: u
+  size: 250 ml
+  color: '#f4c430'
+  tolerance_pct: 4
+  bom:
+  - item: mayonesa
+    qty: 0.2325
+  - item: laminado
+    qty: 0.03
+  - item: caja-corrugada
+    qty: 0.0625
+  routing:
+  - stage: llenado
+    equipment: [filler-sachet-01]
+    tooling: fmt-sachet-250
+  - stage: control de peso
+    equipment: [checkweigher-03]
+  - stage: empaque
+    equipment: [pack-sauce-250-b]
+  - stage: estibado
+    equipment: [wrapper-01]
+  - stage: bodega
+    equipment: [rack-pt-02]
+  assumed: true
+- id: mostaza-250
+  name: Mostaza 250 ml
+  family: mostaza
+  kind: finished
+  unit: u
+  size: 250 ml
+  color: '#e0a800'
+  tolerance_pct: 4
+  bom:
+  - item: mostaza-granel
+    qty: 0.2625
+  - item: laminado
+    qty: 0.03
+  - item: caja-corrugada
+    qty: 0.0625
+  routing:
+  - stage: llenado
+    equipment: [filler-sachet-03]
+    tooling: fmt-sachet-250
+  - stage: control de peso
+    equipment: [checkweigher-06]
+  - stage: empaque
+    equipment: [pack-sauce-250]
+  - stage: estibado
+    equipment: [wrapper-01]
+  - stage: bodega
+    equipment: [rack-pt-02]
+  assumed: true
