@@ -1,0 +1,7 @@
+# Materia prima de la fábrica de cajas (docs/datos-reales.md). Valores imaginarios, como toda la planta.
+materials:
+  - { id: liner-kraft, name: Papel kraft liner, kind: paper, unit: m2, color: "#b8895a", assumed: true }
+  - { id: medium-onda, name: Papel medium (onda), kind: paper, unit: m2, assumed: true }
+  - { id: almidon, name: Almidón para el pegante, kind: ingredient, unit: kg, assumed: true }
+  - { id: tinta-flexo, name: Tinta flexográfica, kind: other, unit: kg, assumed: true }
+  - { id: fleje, name: Fleje para amarrar fajos (por fajo), kind: packaging, unit: u, assumed: true }

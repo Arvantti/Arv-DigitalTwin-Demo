@@ -1,0 +1,5 @@
+# Formato o troquel montado hoy en cada convertidora (una por tamaño de caja).
+setup:
+  ffg-01: { tooling: fmt-caja-grande }
+  ffg-02: { tooling: fmt-caja-mediana }
+  rdc-01: { tooling: die-caja-pequena }

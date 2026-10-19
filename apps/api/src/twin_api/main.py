@@ -7,6 +7,7 @@
     GET  /api/plants                         plantas con plano (y si tienen simulación conectada)
     GET  /api/plants/{id}                    plano para la escena 3D: zonas, equipos y su tipo/parámetros de librería
     WS   /api/plants/{id}/simulate           simulación en vivo de la planta conectada (motor de planta)
+    POST /api/plants/{id}/products/check     valida un producto nuevo contra el catálogo y devuelve su ruta (no guarda)
 
 Protocolo del WebSocket de un equipo
     Query: preset, scenario, params (JSON), speed (×tiempo real), seed
@@ -24,10 +25,11 @@ from __future__ import annotations
 import asyncio
 import json
 import math
-from typing import Any
+from typing import Annotated, Any
 
-from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi import Body, FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from twin_runtime import Library, Simulator
+from twin_runtime.catalog import Catalog
 from twin_runtime.plant import SIM_FILE, PlantModel, find_models_root
 from twin_runtime.spec import SpecError, load_yaml
 
@@ -227,7 +229,34 @@ def get_plant(plant_id: str) -> dict[str, Any]:
         "scenarios": (
             {sid: {"description": s.description, "duration_s": s.duration_s} for sid, s in model.scenarios.items()} if model else {}
         ),
+        # Catálogo de datos (docs/datos-reales.md): productos con su ruta por los equipos y tamaño de cada equipo.
+        "catalog": catalog.summary(layout) if (catalog := _catalog(plant_id)) else None,
     }
+
+
+def _catalog(plant_id: str) -> Catalog | None:
+    folder = _plant_folders()[plant_id]
+    return _plant_model(plant_id).catalog if (folder / SIM_FILE).exists() else Catalog.load(folder)
+
+
+@app.post("/api/plants/{plant_id}/products/check")
+def check_product(plant_id: str, product: Annotated[dict[str, Any], Body()]) -> dict[str, Any]:
+    """Valida un producto (mismo formato que catalog/products.yaml) contra el catálogo y el plano, y devuelve su ruta.
+
+    No guarda nada: el producto vive en la sesión del navegador hasta que exista el almacenamiento de la fase F.
+    """
+    folders = _plant_folders()
+    if plant_id not in folders:
+        raise HTTPException(404, f"planta desconocida: {plant_id}")
+    catalog = _catalog(plant_id)
+    if catalog is None:
+        raise HTTPException(404, f"{plant_id} no tiene catálogo")
+    layout = load_yaml(folders[plant_id] / "plant.yaml")
+    extended, errors = catalog.with_product(product, layout, library)
+    if extended is None or errors:
+        return {"ok": False, "errors": errors}
+    summary = extended.summary(layout)
+    return {"ok": True, "errors": [], "product": next(p for p in summary["products"] if p["id"] == product["id"])}
 
 
 @app.websocket("/api/plants/{plant_id}/simulate")

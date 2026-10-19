@@ -33,12 +33,34 @@ Parámetros de URL, pensados para capturas automáticas:
 - **Cámaras:** vista general y una por zona de producción o servicios grande. **Recorrido** (`tour=1` o el botón): la cámara visita la vista general y esas zonas de oeste a este, el sentido del flujo; cualquier clic o la rueda del ratón lo interrumpe.
 - **HUD de planta:** reloj de simulación, selector de escenario, velocidad, pausa, KPIs de cada línea y eventos de toda la planta.
 
+## Productos y su ruta (catálogo)
+
+Si la planta tiene catálogo (`docs/datos-reales.md`), el panel PRODUCTOS lista sus productos. Al elegir uno se resaltan los equipos de cada etapa (activos en ámbar con su número de etapa, alternativas en gris) y un recorrido animado entre etapas; `&product=<id>` lo abre al cargar. CARGAR PRODUCTO valida un YAML con `POST /api/plants/{id}/products/check` y lo agrega a la sesión.
+
+### Hoja de ruta y editor de rutas
+
+Al elegir un producto se abre abajo el panel HOJA DE RUTA: una fila por etapa con sus equipos (y alternativas), el **tiempo unitario** (segundos por unidad del producto) y el **lote mínimo** con su duración, más el tiempo hasta la etapa siguiente. En el 3D, junto al número de cada etapa, va una etiqueta con esos mismos tiempos. Si la etapa no trabaja por lotes, solo aparece el tiempo unitario. Al pasar el cursor sobre un tiempo se ve de dónde sale:
+
+- **catálogo**: `cycle_s`, `batch_qty` y `batch_min` de la etapa en `catalog/products.yaml`;
+- **molde**: ciclo ÷ cavidades;
+- **receta**: suma de las fases de `recipes` del plano y su lote en kg;
+- **plano**: `units_min`, `flow_kg_h`, `flow_l_h` o `sheets_min` × cajas por lámina del primer equipo activo; la estiba de un buffer (`pallet_pieces`) o la caja de una mesa (`box_units`) son lotes que duran su cantidad por el último tiempo unitario de la ruta.
+
+Botones del panel:
+
+- **✎ EDITAR** convierte la tabla en editor. Se pueden cambiar el id, el nombre, el tipo y la unidad. Por etapa se edita el nombre, el herramental y los tiempos (vacío = calculado), se suben o bajan etapas, se quitan o se agregan (＋ ETAPA). Con ＋ equipo y un clic sobre el equipo en el 3D se agrega; otro clic sobre un equipo ya agregado lo quita. Las etapas de los componentes se editan en su propio producto.
+- Cada cambio se redibuja y se valida en vivo con `POST /products/check`, que devuelve los errores en palabras del editor (por ejemplo, «etapa 4: falta al menos un equipo»).
+- **✓ GUARDAR EN LA SESIÓN** queda en el navegador hasta que exista el almacenamiento (fase F). **⤓ YAML** descarga el producto con el formato de `catalog/products.yaml` para agregarlo al repositorio.
+- **⧉ DUPLICAR** y **＋ NUEVO** (en la barra lateral) abren el editor con una copia o con un producto vacío.
+- Parámetros de URL: `&product=<id>&edit=1` abre el editor directamente.
+
 ## API
 
 | Endpoint | Qué entrega |
 |---|---|
 | `GET /api/plants` | Plantas con plano y si tienen simulación conectada |
-| `GET /api/plants/{id}` | Zonas (con `elevation` si la traen), equipos (con `sim` si el motor los simula), pasarelas, tuberías (flujos `piped`, con `rate`, `unit`, `route`, `diameter_in` y `links`: los enlaces del motor que las cruzan), líneas y escenarios |
+| `GET /api/plants/{id}` | Zonas (con `elevation` si la traen), equipos (con `sim` si el motor los simula), pasarelas, tuberías (flujos `piped`, con `rate`, `unit`, `route`, `diameter_in` y `links`: los enlaces del motor que las cruzan), líneas, escenarios y `catalog` (productos con su ruta y tamaño de cada equipo, o null) |
+| `POST /api/plants/{id}/products/check` | Valida un producto nuevo o editado contra el catálogo y el plano; devuelve `{ok, errors, product}` con su ruta y los tiempos de cada etapa. No guarda nada |
 | `WS /api/plants/{id}/simulate?scenario=&speed=` | Cada 100 ms: `{t, speed, paused, snapshot: {equipment, lines, links}, events}`. Cliente → servidor: `{equipment, command, args}`, `{speed}`, `{pause}` |
 
 ## Edificio por pisos y red de agua (acueducto a escala)

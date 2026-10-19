@@ -21,7 +21,7 @@ Vive junto al layout, en `industrial-models/<planta>/simulation.yaml`:
 | `lines` | Líneas con su puerto de salida, para los KPIs de planta; `unit` opcional (por defecto `u`; el acueducto usa `m³` con el contador `volume_m3` de las bombas) |
 | `scenarios` | Línea de tiempo y expectativas, igual que en un equipo |
 
-Si la planta tiene catálogo (`industrial-models/<planta>/catalog/`, ver `docs/datos-reales.md`), el motor lo valida al cargar la planta y cada inyectora con molde montado en `catalog/setup.yaml` toma de él `product`, `material`, `cavities`, `part_g` y `cycle_s`; esos parámetros no se repiten en `simulation.yaml` (si se repiten, la planta no carga).
+Si la planta tiene catálogo (`industrial-models/<planta>/catalog/`, ver `docs/datos-reales.md`), el motor lo valida al cargar la planta y cada inyectora con molde montado en `catalog/setup.yaml` toma de él `product`, `material`, `cavities`, `part_g` y `cycle_s`; una llenadora con formato toma su `unit_ml` y una convertidora con formato o troquel sus `boxes_per_sheet` (campo `params` del herramental). Esos parámetros no se repiten en `simulation.yaml` (si se repiten, la planta no carga). En un equipo con receta montada, cada lote de la línea de tiempo (`run_phases`) debe cargar el `batch_kg` de la receta (±0,5 %).
 
 Un equipo del plano sin tipo en la librería no se simula. Si está en medio de un flujo (una bomba, un tubo de retención), se nombra en `via` y el enlace lo atraviesa sin cambios.
 

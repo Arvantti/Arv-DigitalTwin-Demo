@@ -1,0 +1,7 @@
+# Herramental de conversión: el formato (clisé de impresión y ajuste de plegado) de cada impresora-plegadora-pegadora
+# y el troquel de la troqueladora rotativa. Dan a la convertidora sus cajas por lámina; el cambio de troquel coincide
+# con order_change_s del preset rdc-small (1.200 s).
+tooling:
+  - { id: fmt-caja-grande, kind: format, name: Clisé y formato de caja grande, product: caja-grande, size: 600 × 400 × 400 mm, layout_types: [flexo_folder_gluer], params: { boxes_per_sheet: 1 }, change_min: 25, assumed: true }
+  - { id: fmt-caja-mediana, kind: format, name: Clisé y formato de caja mediana, product: caja-mediana, size: 400 × 300 × 300 mm, layout_types: [flexo_folder_gluer], params: { boxes_per_sheet: 1 }, change_min: 25, assumed: true }
+  - { id: die-caja-pequena, kind: die, name: Troquel de caja pequeña, product: caja-pequena, size: 250 × 200 × 150 mm, layout_types: [rotary_die_cutter], params: { boxes_per_sheet: 2 }, change_min: 20, assumed: true }
