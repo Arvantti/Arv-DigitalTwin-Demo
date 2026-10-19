@@ -167,3 +167,42 @@ body.shot .boot { display: none; }
 .product-errors ul { margin: 6px 0 0; padding-left: 16px; }
 .product-errors li { cursor: default; padding: 2px 0; border: 0; }
 
+
+/* Hoja de ruta: tabla y editor (products.ts) */
+.route-panel { left: 274px; right: 344px; bottom: 12px; max-height: 36vh; overflow: auto; padding: 8px 14px 12px; font-size: 12px; z-index: 3; }
+.route-panel[hidden] { display: none; }
+.route-sticky { position: sticky; top: -8px; z-index: 2; background: rgba(12, 16, 52, 0.96); margin: -8px -14px 0; padding: 8px 14px 4px; }
+.route-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+.route-head .label { margin-top: 4px; }
+.route-title { font: 700 15px Inter, sans-serif; }
+.route-buttons { display: flex; gap: 6px; flex-wrap: wrap; }
+.route-buttons button, .route-foot button { padding: 5px 10px; font-size: 11px; }
+.route-fields { display: flex; gap: 8px; flex-wrap: wrap; }
+.route-fields label { display: flex; flex-direction: column; gap: 2px; color: var(--dim); font-size: 10px; }
+.route-panel input, .route-panel select { background: rgba(4, 4, 33, 0.6); color: var(--text); border: 1px solid var(--line); padding: 3px 5px; font: 12px Inter, sans-serif; min-width: 0; }
+.route-panel input[type="number"] { width: 82px; }
+.route-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+.route-table th { text-align: left; font: 600 10px Inter, sans-serif; letter-spacing: 0.08em; color: var(--dim); text-transform: uppercase; padding: 4px 6px; border-bottom: 1px solid var(--line); }
+.route-table td { padding: 5px 6px; border-bottom: 1px dashed rgba(120, 180, 230, 0.12); vertical-align: top; }
+.route-table td.n span { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: #ffb000; color: #040421; font-weight: 700; font-size: 11px; }
+.route-table tr.readonly td { color: var(--dim); }
+.route-table tr.picking { outline: 1px solid #ffb000; }
+.route-table.edit td input[type="text"] { width: 150px; display: block; margin-bottom: 3px; }
+.route-table.edit td select { width: 150px; }
+.route-table a { color: #8cc4ff; }
+.route-panel .small { font-size: 11px; }
+.route-panel .bad { color: var(--bad); }
+.chip { display: inline-flex; align-items: center; gap: 2px; border: 1px solid #ffb000; padding: 1px 2px 1px 6px; margin: 0 4px 4px 0; font: 11px "IBM Plex Mono", monospace; }
+.chip button { padding: 0 4px; border: 0; background: none; color: var(--dim); }
+button.pick { padding: 2px 8px; font-size: 11px; }
+.row-actions { white-space: nowrap; }
+.row-actions button { padding: 2px 6px; font-size: 11px; }
+.route-foot { display: flex; align-items: center; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
+.validation { margin-top: 8px; padding: 6px 8px; border: 1px solid var(--line); }
+.validation.ok { border-color: var(--ok); color: var(--ok); }
+.validation.warn { border-color: #ffb000; color: #ffd27a; }
+.validation.bad { border-color: var(--bad); background: rgba(255, 59, 59, 0.1); }
+.validation ul { margin: 4px 0 0; padding-left: 16px; }
+.route-hint { margin-top: 6px; }
+@media (max-width: 900px) { .route-panel { left: 224px; right: 284px; } }
+@media (max-width: 700px) { .route-panel { left: 8px; right: 8px; bottom: 64px; max-height: 50vh; } }

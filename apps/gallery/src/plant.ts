@@ -26,7 +26,7 @@ import { buildProcessPiece } from "./process-pieces.ts";
 import { dockLeveler, deliveryTruck, palletRack, passThroughDoor } from "./warehouse.ts";
 import { type ControlPiece, type PanelConfig, controlPanel, operatorDesk, plcCabinet } from "./control-room.ts";
 import { bootDone, bootError, bootStage } from "./boot.ts";
-import { type CatalogDoc, buildProducts } from "./products.ts";
+import { type CatalogDoc, type ProductsApi, buildProducts } from "./products.ts";
 import "./styles.css";
 
 interface Zone {
@@ -799,6 +799,8 @@ stage.renderer.domElement.addEventListener("pointerup", (e) => {
   const hit = raycaster.intersectObjects(roots, true)[0];
   let o: THREE.Object3D | null = hit?.object ?? null;
   while (o && !o.userData.assetId) o = o.parent;
+  // El editor de rutas toma el clic cuando está agregando equipos a una etapa.
+  if (o && productsApi?.pick(o.userData.assetId as string)) return;
   select(o ? (o.userData.assetId as string) : null);
 });
 
@@ -1206,8 +1208,10 @@ async function start(): Promise<void> {
     send({ speed: speedFromSlider() });
   };
   if (!simulated) $("btn-connect").setAttribute("disabled", "");
-  if (doc.catalog?.products.length)
-    updateProducts = buildProducts({ plantId, catalog: doc.catalog, stage, rootOf: (id) => assets.get(id)?.root, select });
+  if (doc.catalog?.products.length) {
+    productsApi = buildProducts({ plantId, catalog: doc.catalog, stage, rootOf: (id) => assets.get(id)?.root, select });
+    updateProducts = productsApi.update;
+  }
   if (url.get("select")) select(url.get("select"));
   const focusAsset = url.get("focus") ? assets.get(url.get("focus")!) : undefined;
   if (focusAsset) stage.frame(focusAsset.root, 1.1);
@@ -1260,6 +1264,7 @@ function ambientInjectionFrame(id: string, params: Record<string, unknown>, time
 let frames = 0;
 let updateRoutes: ((time: number, dt: number) => void) | null = null;
 let updateProducts: ((time: number) => void) | null = null;
+let productsApi: ProductsApi | null = null;
 function loop(): void {
   const dt = stage.render();
   updateRoutes?.(stage.time, dt);

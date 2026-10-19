@@ -81,7 +81,9 @@
         "stage": { "type": "string" },
         "equipment": { "type": "array", "items": { "type": "string" }, "minItems": 1, "description": "Equipos del plant.yaml donde puede hacerse la etapa" },
         "tooling": { "$ref": "#/$defs/id" },
-        "cycle_s": { "type": "number", "exclusiveMinimum": 0 },
+        "cycle_s": { "type": "number", "exclusiveMinimum": 0, "description": "Tiempo unitario: segundos por unidad del producto" },
+        "batch_qty": { "type": "number", "exclusiveMinimum": 0, "description": "Lote mínimo de la etapa, en unidades del producto" },
+        "batch_min": { "type": "number", "exclusiveMinimum": 0, "description": "Duración del lote" },
         "operators": { "type": "integer", "minimum": 0 },
         "transfer_min": { "type": "number", "minimum": 0, "description": "Tiempo hasta la etapa siguiente" }
       }

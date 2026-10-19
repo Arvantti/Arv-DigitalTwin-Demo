@@ -175,3 +175,33 @@ def test_recipe_formula_must_use_catalog_materials(tmp_path, lib):
     errors = Catalog.load(folder).validate(_layout(folder), lib)
     assert "herramental rcp-mustard: material desconocido 'pimienta' en la fórmula" in errors
     assert "herramental rcp-mustard: la fórmula suma 101 %, no 100 %" in errors
+
+
+# ---------------------------------------------------------------- tiempos de la hoja de ruta (editor de rutas)
+
+
+def _times(plant: Path, product: str) -> dict[str, dict]:
+    stages = Catalog.load(plant).route_graph(product, _layout(plant))["stages"]
+    return {f"{s['product']}/{s['stage']}": s["times"] for s in stages}
+
+
+def test_unit_and_batch_times_come_from_mold_recipe_and_layout():
+    plastics = _times(PLANT, "papelera-20l")
+    assert plastics["cuerpo-papelera-20l/inyeccion"]["unit_s"] == 35  # 35 s ÷ 1 cavidad
+    assert plastics["pedal-palanca-papelera/inyeccion"]["unit_s"] == 12.5  # 25 s ÷ 2 cavidades
+    # La estiba del buffer es un lote: 240 cuerpos a 35 s = 140 min.
+    assert plastics["cuerpo-papelera-20l/estiba"].items() >= {"batch_qty": 240, "batch_min": 140.0}.items()
+    assert plastics["papelera-20l/ensamble"]["unit_source"] == "catálogo"
+    sauce = _times(SAUCE, "tomate-1000")
+    # Receta: 2.000 kg en 118 min (fases del plano sin la opcional de ajuste).
+    assert sauce["salsa-tomate/cocción"].items() >= {"batch_qty": 2000, "batch_min": 118, "batch_source": "receta del plano"}.items()
+    assert sauce["tomate-1000/llenado"]["unit_s"] == 2.0  # 30 u/min
+    assert sauce["tomate-1000/empaque"]["batch_qty"] == 4 and sauce["tomate-1000/empaque"]["batch_min"] == 0.1
+    box = _times(BOX, "caja-pequena")
+    assert box["caja-pequena/conversión"]["unit_s"] == 0.25  # 120 láminas/min × 2 cajas
+
+
+def test_new_product_errors_are_readable(lib):
+    catalog = Catalog.load(PLANT)
+    product = {"id": "x", "name": "X", "kind": "finished", "unit": "u", "routing": [{"stage": "a", "equipment": []}]}
+    assert catalog.with_product(product, _layout(), lib) == (None, ["etapa 1: falta al menos un equipo"])

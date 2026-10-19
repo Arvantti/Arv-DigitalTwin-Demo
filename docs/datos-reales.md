@@ -1,6 +1,6 @@
 # Hoja de ruta de datos reales para todos los gemelos
 
-Estado (2026-10-19): **fases A, B, C y D hechas**: catálogo de plásticos, salsas y cajas con su panel de productos y ruta en 3D (decisiones D56, D59 y D60); sigue la fase E (pedidos). Plan en la decisión D54 de `docs/registro/decisiones/decisiones.md`.
+Estado (2026-10-19): **fases A, B, C y D hechas**: catálogo de plásticos, salsas y cajas con su panel de productos y ruta en 3D (decisiones D56, D59 y D60), más el editor de hojas de ruta con tiempos por etapa (D61); sigue la fase E (pedidos). Plan en la decisión D54 de `docs/registro/decisiones/decisiones.md`.
 
 El autor definió esta hoja de ruta para la planta de plásticos (D48) y el 2026-10-18 la extendió a todos los gemelos. Hoy cada planta tiene sus datos repartidos en `plant.yaml` (parámetros de cada equipo, recetas de salsas) y `simulation.yaml`, todos supuestos. El objetivo es que el gemelo se alimente con un **catálogo** de datos reales y que los **pedidos** los secuencie el backend Fractal.
 
@@ -103,6 +103,14 @@ Orden elegido por el autor (2026-10-19): primero la fase D y luego la C.
 - **Salsas** (`sauce-plant-v1/catalog/`): ingredientes de las fórmulas, laminado y caja; 3 recetas (tomate 2.000 kg, mayonesa 1.500 kg, mostaza 1.000 kg) que deben coincidir con `recipes` del plano; 3 formatos de sachet (250, 500 y 1.000 ml); 3 graneles semielaborados y 6 SKU (tomate 1.000 y 250 ml; mayonesa 1.000, 500 y 250 ml; mostaza 250 ml) con tolerancia de 4 %; montaje de las 5 recetas y 6 llenadoras; tamaños de llenadora por formato. El motor da a cada llenadora su `unit_ml` desde el formato y exige que cada lote de los escenarios cargue lo que dice la receta. Salsa BBQ y salsa rosada esperan su receta.
 - **Cajas** (`corrugated-box-plant-v1/catalog/`): papel liner y medium, almidón, tinta y fleje; caja grande, mediana y pequeña troquelada, con la ruta común de la corrugadora al carro y luego su línea; formatos de las dos impresoras-plegadoras-pegadoras y troquel de la troqueladora (cajas por lámina); convertidoras por tamaño (grande, mediana, pequeña).
 - Los escenarios de salsas y de cajas dan exactamente el mismo resultado que antes. La escena ya muestra los productos de las tres plantas (receta, formato o troquel en la ficha).
+
+## 5d. Editor de hojas de ruta (hecho, 2026-10-19)
+
+Pedido del autor antes de la fase E: ver la ruta de un producto en una tabla y en el 3D, con el tiempo unitario y el del lote mínimo en cada paso, y poder editarla. Detalle en `docs/plant-scene.md` («Hoja de ruta y editor de rutas»).
+
+- La API agrega a cada etapa `times`: tiempo unitario, lote, duración del lote, tiempo hasta la siguiente y de dónde sale cada valor (catálogo, molde, receta o plano). El catálogo de cada producto viaja completo (`source`) para poder editarlo.
+- El esquema admite `batch_qty` y `batch_min` en cada etapa. Las cajas declaran el corte de la corrugadora, la pila, el fajo y la estiba.
+- El editor guarda en la sesión o descarga el YAML. Guardar en el servidor llega con la fase F.
 
 ## 6. Primer PR propuesto (histórico)
 

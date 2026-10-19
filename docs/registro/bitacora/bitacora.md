@@ -10,6 +10,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
+| 2026-10-19 | Editor de hojas de ruta | Panel HOJA DE RUTA con la tabla de pasos y, en el 3D, el tiempo unitario y el lote mínimo junto a cada número; editor con clic en el 3D para los equipos, validación en vivo, productos nuevos o duplicados, y descarga en YAML. D61 | datos reales |
 | 2026-10-19 | Catálogos de salsas y cajas | Datos reales, fase C: el catálogo admite recetas, formatos y troqueles; salsas con 3 recetas, 3 formatos de sachet y 6 SKU (más 3 graneles); cajas con 3 referencias y su formato o troquel; el motor toma de ahí el formato de cada llenadora y las cajas por lámina, y exige que los lotes carguen lo que dice la receta; escenarios iguales. D60 | datos reales |
 | 2026-10-19 | Productos y su ruta en el 3D | Datos reales, fase D: la API entrega el catálogo de cada planta; panel PRODUCTOS en la escena con la ruta resaltada y numerada, arcos con el color del producto, enlace `?product=` y carga de productos nuevos validados contra el plano; tamaño del equipo en el HUD. D59 | datos reales |
 | 2026-10-19 | Aeropuerto sin traslapes y con reproducción | Traspasos entre bandas con su equipo: la línea norte gira con una curva motorizada y entra de costado a la línea sur (confluencia); una sola inducción con curva y banda a 30° que entrega a favor del flujo en el borde de las bandejas; lazo de 31,1 × 7,4 m y carruseles realineados con las rampas. Tambores en cada extremo de banda, control por zonas con fotoceldas (acumulan sin choques) y bandas de regreso de nivel 3 y de codificación (esta a una reinducción del lado de retorno). ▶ SIMULAR funciona en el sitio publicado: sin API reproduce una grabación de 15 min de la operación normal (todas las plantas simuladas). D58 (renumerada al traer main: D54 a D57 ya estaban) | logística |
@@ -75,6 +76,15 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 | 2026-10-16 | #1 | Layouts de las plantas | 1 |
 
 ## Entradas
+
+### 2026-10-19 11:41 · Editor de hojas de ruta con tiempos
+- **Fecha/hora (UTC):** 2026-10-19 11:41–15:30 (con una pausa por el límite de uso)
+- **Fase del plan:** [[plan-del-proyecto]] «Datos reales y pedidos», antes de la fase E
+- **Solicitado por:** Carlos Andrés Quiceño: editor de hojas de ruta que muestre los productos, la ruta en tabla y en 3D, y en cada paso el tiempo unitario y el del lote mínimo.
+- **Qué se hizo:** `catalog.py` calcula los tiempos de cada etapa (`stage_times`), entrega el producto completo y la lista de herramentales, y traduce los errores del esquema; `batch_qty` y `batch_min` en el esquema; tiempos de corrugadora, pila, fajo y estiba en el catálogo de cajas; `products.ts` con el panel HOJA DE RUTA, etiquetas de tiempo en el 3D, editor (campos, etapas, equipos por clic en el 3D, validación en vivo, guardar en la sesión, YAML, nuevo y duplicar); `plant.ts` pasa los clics al editor; `plant.html` y estilos. Documentado en `docs/plant-scene.md` y `docs/datos-reales.md`.
+- **Verificación:** 3 pruebas nuevas en `test_catalog.py`; `ruff check`, `pytest`, `pnpm -r typecheck` y `pnpm -r test`; recorrido con Playwright: editar la papelera (cambiar ciclo, agregar etapa vacía → error «etapa 4: falta al menos un equipo», quitarla → válida) y producto nuevo con un clic en la llenadora del 3D → válido; capturas [[salsas-hoja-de-ruta-tomate-1000.jpg]] y [[plasticos-editor-de-ruta-papelera.jpg]].
+- **Decisiones:** [[decisiones#D61]]
+- **Conversación:** [[hilo-datos-reales]]
 
 ### 2026-10-19 10:40 · Catálogos de salsas y cajas (fase C)
 - **Fecha/hora (UTC):** 2026-10-19 10:40–11:20

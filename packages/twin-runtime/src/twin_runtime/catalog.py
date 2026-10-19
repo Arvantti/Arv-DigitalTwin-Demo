@@ -10,6 +10,7 @@ troqueladora con troquel, sus cajas por lámina. Plan completo en docs/datos-rea
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -102,11 +103,12 @@ class Catalog:
         """
         return self.route_graph(product_id)["stages"]
 
-    def route_graph(self, product_id: str) -> dict[str, Any]:
+    def route_graph(self, product_id: str, layout: dict[str, Any] | None = None) -> dict[str, Any]:
         """Ruta como grafo: etapas (las de route()) y enlaces [de, a] entre índices de etapa.
 
         Dentro de un producto, cada etapa va a la siguiente; la última etapa de cada componente va a la primera del
-        producto que lo usa (el cuerpo y el pedal de la papelera llegan al ensamble).
+        producto que lo usa (el cuerpo y el pedal de la papelera llegan al ensamble). Con el plano, cada etapa trae
+        además `times` (tiempo unitario y de lote, ver stage_times).
         """
         stages: list[dict[str, Any]] = []
         edges: list[list[int]] = []
@@ -125,7 +127,64 @@ class Catalog:
             return first, len(stages) - 1
 
         add(product_id)
+        if layout is not None:
+            items = {e["id"]: e for e in layout.get("equipment", [])}
+            recipes = {r["id"].replace("_", "-"): r for r in layout.get("recipes") or []}
+            last: float | None = None
+            for st in stages:
+                st["times"] = self.stage_times(st, items, recipes, last)
+                last = st["times"].get("unit_s", last)
         return {"stages": stages, "edges": edges}
+
+    def stage_times(
+        self, st: dict[str, Any], items: dict[str, Any], recipes: dict[str, Any], last_unit_s: float | None = None
+    ) -> dict[str, Any]:
+        """Tiempo unitario (s por unidad del producto) y lote de una etapa, y de dónde sale cada dato.
+
+        Orden: lo que la etapa declara en el catálogo (cycle_s, batch_qty, batch_min); el herramental (molde: ciclo ÷
+        cavidades; receta: suma de las fases de recipes del plano y su lote en kg); el primer equipo activo del plano
+        (units_min, flow_kg_h, flow_l_h, sheets_min × cajas por lámina). Un lote sin duración propia (estiba de un
+        buffer, caja de una mesa de empaque) dura su cantidad por el último tiempo unitario conocido de la ruta.
+        """
+        unit = self.products.get(st["product"], {}).get("unit", "u")
+        out: dict[str, Any] = {"unit": unit}
+        tool = self.tooling.get(st.get("tooling") or "")
+        params = (items.get(next(iter(st.get("active") or st["equipment"]), ""), {}).get("params") or {})
+        if st.get("cycle_s") is not None:
+            out.update(unit_s=st["cycle_s"], unit_source="catálogo")
+        elif tool and tool["kind"] == "mold":
+            why = f"molde: {tool['cycle_s']:g} s ÷ {tool['cavities']} cav"
+            out.update(unit_s=round(tool["cycle_s"] / tool["cavities"], 3), unit_source=why)
+        elif params.get("units_min"):
+            out.update(unit_s=round(60 / params["units_min"], 3), unit_source=f"plano: {params['units_min']:g} u/min")
+        elif params.get("sheets_min"):
+            per = (tool or {}).get("params", {}).get("boxes_per_sheet") or params.get("boxes_per_sheet") or 1
+            why = f"plano: {params['sheets_min']:g} láminas/min × {per}"
+            out.update(unit_s=round(60 / (params["sheets_min"] * per), 3), unit_source=why)
+        elif params.get("flow_kg_h"):
+            out.update(unit_s=round(3600 / params["flow_kg_h"], 4), unit_source=f"plano: {params['flow_kg_h']:g} kg/h")
+        elif params.get("flow_l_h"):
+            out.update(unit_s=round(3600 / params["flow_l_h"], 4), unit_source=f"plano: {params['flow_l_h']:g} L/h")
+
+        if st.get("batch_qty") is not None or st.get("batch_min") is not None:
+            out.update(batch_qty=st.get("batch_qty"), batch_min=st.get("batch_min"), batch_source="catálogo")
+        elif tool and tool["kind"] == "recipe":
+            rec = recipes.get(tool["id"])
+            minutes = sum(ph.get("duration_min", 0) for ph in (rec or {}).get("phases") or [] if not ph.get("optional"))
+            out.update(batch_qty=tool["batch_kg"], batch_min=minutes or None, batch_source="receta del plano" if minutes else "receta")
+            if minutes and "unit_s" not in out:
+                out.update(unit_s=round(minutes * 60 / tool["batch_kg"], 4), unit_source="receta: duración del lote ÷ kg")
+        elif params.get("pallet_pieces"):
+            out.update(batch_qty=params["pallet_pieces"], batch_source="plano: piezas por estiba")
+        elif params.get("box_units"):
+            out.update(batch_qty=params["box_units"], batch_source="plano: unidades por caja")
+        if out.get("batch_qty") and out.get("batch_min") is None:
+            base = out.get("unit_s") or last_unit_s
+            if base:
+                out["batch_min"] = round(out["batch_qty"] * base / 60, 1)
+        if st.get("transfer_min") is not None:
+            out["transfer_min"] = st["transfer_min"]
+        return out
 
     def summary(self, layout: dict[str, Any]) -> dict[str, Any]:
         """Lo que la escena necesita del catálogo: productos con su ruta y el tamaño de cada equipo."""
@@ -159,7 +218,8 @@ class Catalog:
                         for m in molds
                     ],
                     "assumed": product.get("assumed", False),
-                    **self.route_graph(pid),
+                    "source": product,
+                    **self.route_graph(pid, layout),
                 }
             )
         sizes: dict[str, str] = {}
@@ -167,7 +227,8 @@ class Catalog:
         for item in layout.get("equipment", []):
             if (sid := self.size_of(item)) is not None:
                 sizes[item["id"]] = names[sid]
-        return {"products": products, "sizes": sizes}
+        tooling = [{k: t[k] for k in ("id", "kind", "name", "product", "size") if k in t} for t in self.tooling.values()]
+        return {"products": products, "sizes": sizes, "tooling": tooling}
 
     def tooling_detail(self, tool: dict[str, Any]) -> str:
         """Resumen de una línea del herramental para la escena."""
@@ -190,7 +251,7 @@ class Catalog:
         try:
             cat = Catalog.from_data(self.folder, data)
         except SpecError as exc:
-            return None, [line.split(": ", 1)[-1] for line in str(exc).split("\n")]
+            return None, [_friendly(line.split(": ", 1)[-1]) for line in str(exc).split("\n")]
         before = set(self.validate(layout, library))
         return cat, [e for e in cat.validate(layout, library) if e not in before]
 
@@ -373,3 +434,11 @@ class Catalog:
         for pid in self.products:
             visit(pid, [])
         return errors
+
+
+def _friendly(error: str) -> str:
+    """Error del esquema en palabras del editor: «products/4/routing/3/equipment: [] should be non-empty» → etapa 4."""
+    error = re.sub(r"^products/\d+/", "", error)
+    error = re.sub(r"routing/(\d+)/?", lambda m: f"etapa {int(m.group(1)) + 1}: ", error)
+    error = error.replace(": : ", ": ").replace(": equipment: [] should be non-empty", ": falta al menos un equipo")
+    return error.replace("[] should be non-empty", "no puede quedar vacío")

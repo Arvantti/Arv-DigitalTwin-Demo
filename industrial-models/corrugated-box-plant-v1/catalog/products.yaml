@@ -2,6 +2,8 @@
 # (preset bc-2500 de la corrugadora), así que comparten la ruta de la corrugadora al carro de transferencia; desde el
 # carril, cada una sigue su línea. Lista de materiales por caja: 3 capas de liner y 2 de medium (×1,4 por la onda) sobre
 # el área de lámina, almidón, tinta y 1/25 de fleje (fajos de 25). Valores imaginarios.
+# Tiempos (catálogo): corte = 60 ÷ (200 m/min ÷ 1,45 m × 3 a lo ancho × cajas por lámina), del preset bc-2500;
+# lotes: pila de 600 láminas, fajo de 25 cajas y estiba del paletizador (24 o 40 fajos de 25).
 products:
 - id: caja-grande
   name: Caja grande
@@ -28,8 +30,10 @@ products:
     equipment: &id002 [df-01]
   - stage: corte
     equipment: &id003 [ss-01, ck-01]
+    cycle_s: 0.145
   - stage: apilado
     equipment: &id004 [stacker-01]
+    batch_qty: 600
   - stage: transporte de pilas
     equipment: &id005 [cv-st-01, tt-01, cv-st-02, cv-st-03, tt-02, cv-st-04]
   - stage: carro de transferencia
@@ -41,10 +45,12 @@ products:
     tooling: fmt-caja-grande
   - stage: amarre
     equipment: [strap-01]
+    batch_qty: 25
   - stage: banda de fajos
     equipment: [bc-01]
   - stage: paletizado
     equipment: [pal-01]
+    batch_qty: 600
   - stage: envoltura
     equipment: [wrap-01]
   - stage: bodega
@@ -75,8 +81,10 @@ products:
     equipment: *id002
   - stage: corte
     equipment: *id003
+    cycle_s: 0.145
   - stage: apilado
     equipment: *id004
+    batch_qty: 600
   - stage: transporte de pilas
     equipment: *id005
   - stage: carro de transferencia
@@ -88,12 +96,14 @@ products:
     tooling: fmt-caja-mediana
   - stage: amarre
     equipment: [strap-02]
+    batch_qty: 25
   - stage: banda de fajos
     equipment: [bc-02]
   - stage: unión de bandas
     equipment: [bc-merge-01]
   - stage: paletizado
     equipment: [pal-02]
+    batch_qty: 1000
   - stage: envoltura
     equipment: [wrap-02]
   - stage: bodega
@@ -124,8 +134,10 @@ products:
     equipment: *id002
   - stage: corte
     equipment: *id003
+    cycle_s: 0.072
   - stage: apilado
     equipment: *id004
+    batch_qty: 1200
   - stage: transporte de pilas
     equipment: *id005
   - stage: carro de transferencia
@@ -137,12 +149,14 @@ products:
     tooling: die-caja-pequena
   - stage: amarre
     equipment: [strap-03]
+    batch_qty: 25
   - stage: banda de fajos
     equipment: [bc-03]
   - stage: unión de bandas
     equipment: [bc-merge-01]
   - stage: paletizado
     equipment: [pal-02]
+    batch_qty: 1000
   - stage: envoltura
     equipment: [wrap-02]
   - stage: bodega
