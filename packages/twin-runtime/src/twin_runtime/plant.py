@@ -23,6 +23,7 @@ from pathlib import Path
 from typing import Any
 
 from .behavior import EquipmentBehavior, Event
+from .catalog import MOLD_PARAMS, Catalog
 from .library import Expectation, Library, find_library_root
 from .links import BACKWARD, FORWARD, ITEM_ATTRIBUTES, port_links
 from .plant_hydraulics import HydraulicDomain
@@ -125,6 +126,23 @@ class PlantModel:
         self.description = raw.get("description", "")
         self.dt = float(raw.get("dt", 1.0))
         self.equipment: dict[str, dict[str, Any]] = dict(raw.get("equipment") or {})
+        # Catálogo (docs/datos-reales.md): el molde montado da producto, resina, cavidades, peso y ciclo.
+        self.catalog = Catalog.load(self.folder)
+        self._catalog_errors: list[str] = []
+        if self.catalog is not None:
+            self._catalog_errors = [f"catálogo: {e}" for e in self.catalog.validate(self.layout, self.library)]
+            for eid in self.catalog.setup:
+                cfg = self.equipment.get(eid)
+                if cfg is None:
+                    continue
+                params = dict(cfg.get("params") or {})
+                if repeated := sorted(set(params) & set(MOLD_PARAMS)):
+                    self._catalog_errors.append(
+                        f"equipo {eid}: {repeated} vienen del molde montado (catalog/setup.yaml); quítelos de params"
+                    )
+                    continue
+                if not self._catalog_errors:
+                    self.equipment[eid] = {**cfg, "params": {**params, **self.catalog.machine_params(eid)}}
         self.links = [
             Link(
                 src=PortRef.parse(lk["from"]),
@@ -195,7 +213,7 @@ class PlantModel:
 
     # ------------------------------------------------------------------ validación
     def validate(self) -> list[str]:
-        errors: list[str] = []
+        errors: list[str] = list(self._catalog_errors)
         layout_ids = {e["id"] for e in self.layout.get("equipment", [])}
         edges = {(f["from"], f["to"]) for f in self.layout.get("flows") or []}
         flows = {(f["from"], f["to"]): f for f in self.layout.get("flows") or []}

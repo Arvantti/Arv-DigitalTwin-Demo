@@ -10,7 +10,9 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
+| 2026-10-19 | #56 | Datos reales, fases A y B: esquema común del catálogo y validador (`twin-lib catalog`), catálogo de plásticos con 3 productos (cubiertos, balde 12 L, papelera 20 L con ensamble), 4 moldes, resinas y colores, 3 tamaños de inyectora y montaje actual; el motor toma el molde del catálogo y los 8 escenarios dan lo mismo. D56 | datos reales |
 | 2026-10-19 | Línea fría y mostaza de salsas | Motor: emulsificador → molino coloidal → pulmón frío 1 → llenadoras de 250, 500 y 1.000 ml → pesadoras → mesas, y mostaza con llenadora y pesadora dedicadas; cuatro pesadoras y flujo nuevos en el plano; escenarios `cold-nominal` y `mustard-nominal`. D53 | 5 |
+| 2026-10-18 | Plan de datos reales | Plan para alimentar los cinco gemelos con datos reales: catálogo común (productos, rutas, moldes o recetas, materia prima, tamaños de equipo), interfaz con ruta en 3D, pedidos y secuenciación en Fractal; aeropuerto con entrada y destino, acueducto con optimización (`docs/datos-reales.md`). D54 | plan |
 | 2026-10-18 | Simulación de la fábrica de cajas | La fábrica de cajas simula su transporte: corrugadora, transportadores de pilas, carro de transferencia que reparte entre tres carriles, tres convertidoras, bandas de fajos y paletizador propio y compartido; escenarios nominal, rotura de papel y paro del paletizador compartido | 4 |
 | 2026-10-18 | Estiba por producto | Planta de plásticos: la estiba es estándar y las piezas por estiba se calculan por producto (de 30 canecas de 121 L a 72.000 bisagras); la flota recibe las piezas por ruta y la ruta 5 usa estibas armadas. D51 | plásticos |
 | 2026-10-18 | Subidas desde el cabezal | Las subidas entre niveles del acueducto salen del tubo principal de cada nivel, después del último ramal, por fuera del bastidor (pedido de Andy). D50 | acueducto |
@@ -69,12 +71,30 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 ## Entradas
 
+### 2026-10-19 03:09 · Catálogo de datos de plásticos (fases A y B)
+- **Fecha/hora (UTC):** 2026-10-19 03:09–03:45
+- **Fase del plan:** [[plan-del-proyecto]] «Datos reales y pedidos», fases A y B
+- **Solicitado por:** Andy eligió en la tarjeta de decisión «A+B plásticos» (03:08).
+- **Qué se hizo:** esquema `industrial-models/_schema/catalog.schema.json`; módulo `twin_runtime/catalog.py` con validación cruzada (referencias, molde que cabe por tonelaje y capacidad de inyección, colores, lista de materiales, tamaños, coherencia con el plano) y ruta por producto; comando `twin-lib catalog validate | route`; catálogo `plastic-injection-plant-v1/catalog/` (materiales, moldes, productos con ruta, tamaños, montaje, pedidos vacío); el motor aplica el molde montado y `simulation.yaml` ya no repite esos parámetros; `pallet_sizing.py` toma el volumen por pieza del catálogo; documentación en `docs/datos-reales.md`, `docs/plant-engine.md` y `AGENTS.md`.
+- **Verificación:** instantáneas finales de los 8 escenarios de plásticos idénticas byte a byte antes y después; `twin-lib catalog validate`, `twin-lib plant validate`, `ruff check` y `pytest` (8 pruebas nuevas en `test_catalog.py`) en verde.
+- **Decisiones:** [[decisiones#D56]]
+- **Conversación:** [[hilo-datos-reales]]
+
 ### 2026-10-18 23:53 – 2026-10-19 00:35 · Línea fría y mostaza de salsas conectadas
 - **Solicitado por:** Andy (2026-10-18 23:53, por el hilo de coordinación): abrir los hilos necesarios; la línea fría y la de mostaza siguen a la caliente (D49) con el reparto 40/45/15 de 22 t/día.
 - **Qué se hizo:** `simulation.yaml` y `plant.yaml` de `sauce-plant-v1`: línea fría (`emulsifier-01` → molino coloidal por `via` → `buffer-cold-01` → `filler-sachet-01`, `filler-pouch-02`, `filler-pouch-03` → `checkweigher-03/04/05` → mesas de 250 (la 2), 500 y 1.000 ml) y mostaza (`tank-mustard-01` → molino por `via` → `buffer-mustard-01` → `filler-sachet-03` → `checkweigher-06` → mesa 1 de 250 ml); presets nuevos `2000l-emulsifier`, `1200l-mustard` (marmita sin vapor), `mustard-buffer-2000l`, `1000ml-mayo` y `250ml-mustard`; líneas `cold-250`, `cold-500`, `cold-1000` y `mustard-250`; escenarios `cold-nominal` y `mustard-nominal` con expectativas calculadas a mano. Las mesas dejan de tener `nominal_inflow_upm: 0`. Documentado en `docs/plant-engine.md`.
 - **Verificación:** `twin-lib plant validate sauce-plant-v1` (incluye los escenarios calientes sin cambios), `uv run pytest -k "sauce or plant or checkweigher or kettle or vessel or library or preset"` (252 pasan), `ruff check`, `twin-lib validate`; API en vivo por WebSocket con `mustard-nominal` (3 batches, 2.995 kg descargados, ≈ 10.860 sachets); captura de la escena con la simulación conectada: [[salsas-linea-fria-sala-de-llenado.png]].
 - **Decisiones:** [[decisiones]] D53.
 - **Conversación:** [[hilo-linea-fria-y-mostaza-de-salsas]].
+
+### 2026-10-18 23:53 · Plan de datos reales para todos los gemelos
+- **Fecha/hora (UTC):** 2026-10-18 23:53–00:10
+- **Fase del plan:** [[plan-del-proyecto]] «Datos reales y pedidos» (nueva)
+- **Solicitado por:** Carlos Andrés Quiceño: «lo que hablamos de plásticos de hoja de ruta también aplica para todos los gemelos digitales (el único que tal vez queda diferente es el de aeropuerto donde únicamente es entrada y destino y el de acueducto que se trata de condiciones de optimización de caudales, presiones y ahorros)».
+- **Qué se hizo:** plan en `docs/datos-reales.md`: modelo de datos común (materiales, productos con ruta, herramental, tamaños de equipo, pedidos, secuenciación), tabla de qué aplica a cada gemelo, arquitectura del paso a Fractal, orden de fases A a G y primer PR propuesto (esquema común y catálogo piloto de plásticos). Fila nueva en `docs/roadmap.md` y en el plan. Sin código.
+- **Verificación:** revisión de los `plant.yaml`, `simulation.yaml`, presets de inyectora y `pallet-sizing.yaml` actuales para anclar el plan.
+- **Decisiones:** [[decisiones#D54]] (renumerada al traer main: D53 ya era la línea fría de salsas)
+- **Conversación:** [[hilo-datos-reales]]
 
 ### 2026-10-18 22:00 · Fábrica de cajas: simulación del transporte
 - **Fecha/hora (UTC):** 2026-10-18 17:53–22:30

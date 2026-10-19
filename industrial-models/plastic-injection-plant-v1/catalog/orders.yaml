@@ -1,0 +1,3 @@
+# Pedidos (paso 5 de la hoja de ruta). Vacío hasta la fase E: la ventana de pedidos los escribirá aquí y el
+# secuenciador (local o Fractal) devolverá un schedule con el formato del esquema común.
+orders: []

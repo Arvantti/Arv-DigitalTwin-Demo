@@ -1,0 +1,53 @@
+# Moldes de los productos de ejemplo. Un molde define lo que la inyectora moldea: cavidades, peso de pieza, ciclo
+# y la resina; y lo que exige de la máquina: fuerza de cierre mínima y capacidad de inyección (shot_kg, con colada).
+# El motor copia producto, resina, cavidades, peso y ciclo a la inyectora donde está montado (setup.yaml).
+# Valores iguales a los que ya tenía cada inyectora; todos supuestos hasta tener los moldes reales.
+tooling:
+  - id: mold-cubiertos-16c
+    kind: mold
+    name: Molde de cubiertos, 16 cavidades
+    product: cubiertos
+    material: ps
+    cavities: 16
+    part_g: 3.5
+    cycle_s: 9
+    shot_kg: 0.062        # 16 × 3,5 g + 10 % de colada
+    min_clamp_t: 80
+    change_min: 45
+    assumed: true
+  - id: mold-balde-12l
+    kind: mold
+    name: Molde de balde de 12 L
+    product: balde-12l
+    material: hdpe
+    cavities: 1
+    part_g: 520
+    cycle_s: 30
+    shot_kg: 0.55
+    min_clamp_t: 500
+    change_min: 90
+    assumed: true
+  - id: mold-cuerpo-papelera-20l
+    kind: mold
+    name: Molde del cuerpo de papelera de 20 L
+    product: cuerpo-papelera-20l
+    material: pp-reciclado
+    cavities: 1
+    part_g: 700
+    cycle_s: 35
+    shot_kg: 0.74
+    min_clamp_t: 300
+    change_min: 90
+    assumed: true
+  - id: mold-pedal-palanca-2c
+    kind: mold
+    name: Molde de pedal y palanca de papelera, 2 cavidades
+    product: pedal-palanca-papelera
+    material: pp-reciclado
+    cavities: 2
+    part_g: 60
+    cycle_s: 25
+    shot_kg: 0.13
+    min_clamp_t: 120
+    change_min: 60
+    assumed: true

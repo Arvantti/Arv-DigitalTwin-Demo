@@ -1,0 +1,164 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arvantti.online/schemas/catalog.schema.json",
+  "title": "Catálogo de datos de una planta",
+  "description": "Modelo de datos común de los gemelos (docs/datos-reales.md). Se valida la unión de los archivos de industrial-models/<planta>/catalog/*.yaml.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "materials": { "type": "array", "items": { "$ref": "#/$defs/material" } },
+    "tooling": { "type": "array", "items": { "$ref": "#/$defs/tooling" } },
+    "products": { "type": "array", "items": { "$ref": "#/$defs/product" } },
+    "equipment_sizes": { "type": "array", "items": { "$ref": "#/$defs/equipmentSizes" } },
+    "setup": { "type": "object", "additionalProperties": { "$ref": "#/$defs/mounted" } },
+    "orders": { "type": "array", "items": { "$ref": "#/$defs/order" } },
+    "schedule": { "type": "array", "items": { "$ref": "#/$defs/assignment" } }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+    "range": { "type": "array", "items": { "type": "number", "minimum": 0 }, "minItems": 2, "maxItems": 2 },
+    "material": {
+      "type": "object",
+      "required": ["id", "name", "kind", "unit"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "name": { "type": "string" },
+        "kind": { "enum": ["resin", "masterbatch", "ingredient", "packaging", "paper", "other"] },
+        "resin": { "type": "string", "description": "Valor del parámetro material de la inyectora" },
+        "color": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" },
+        "dosage_pct": { "type": "number", "minimum": 0, "maximum": 100 },
+        "density_kg_l": { "type": "number", "exclusiveMinimum": 0 },
+        "unit": { "enum": ["kg", "l", "u", "m2"] },
+        "cost_per_unit": { "type": "number", "minimum": 0 },
+        "assumed": { "type": "boolean" }
+      }
+    },
+    "tooling": {
+      "type": "object",
+      "required": ["id", "kind", "name", "product"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "kind": { "enum": ["mold", "recipe", "die", "format"] },
+        "name": { "type": "string" },
+        "product": { "$ref": "#/$defs/id" },
+        "material": { "$ref": "#/$defs/id" },
+        "cavities": { "type": "integer", "minimum": 1 },
+        "part_g": { "type": "number", "exclusiveMinimum": 0 },
+        "cycle_s": { "type": "number", "exclusiveMinimum": 0 },
+        "shot_kg": { "type": "number", "exclusiveMinimum": 0 },
+        "min_clamp_t": { "type": "number", "exclusiveMinimum": 0 },
+        "batch_kg": { "type": "number", "exclusiveMinimum": 0 },
+        "change_min": { "type": "number", "minimum": 0, "description": "Tiempo de cambio (montaje, limpieza o CIP)" },
+        "assumed": { "type": "boolean" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "kind": { "const": "mold" } } },
+          "then": { "required": ["material", "cavities", "part_g", "cycle_s", "shot_kg", "min_clamp_t"] }
+        }
+      ]
+    },
+    "stage": {
+      "type": "object",
+      "required": ["stage", "equipment"],
+      "additionalProperties": false,
+      "properties": {
+        "stage": { "type": "string" },
+        "equipment": { "type": "array", "items": { "type": "string" }, "minItems": 1, "description": "Equipos del plant.yaml donde puede hacerse la etapa" },
+        "tooling": { "$ref": "#/$defs/id" },
+        "cycle_s": { "type": "number", "exclusiveMinimum": 0 },
+        "operators": { "type": "integer", "minimum": 0 },
+        "transfer_min": { "type": "number", "minimum": 0, "description": "Tiempo hasta la etapa siguiente" }
+      }
+    },
+    "product": {
+      "type": "object",
+      "required": ["id", "name", "kind", "unit", "routing"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "name": { "type": "string" },
+        "family": { "type": "string" },
+        "kind": { "enum": ["finished", "semi"] },
+        "unit": { "enum": ["u", "kg", "l"] },
+        "size": { "type": "string", "description": "Presentación o tamaño (250 ml, grande…)" },
+        "display_name": { "type": "string", "description": "Texto que muestra el equipo que lo produce" },
+        "colors": { "type": "array", "items": { "$ref": "#/$defs/id" } },
+        "bulk_l": { "type": "number", "exclusiveMinimum": 0, "description": "Volumen por pieza en la estiba" },
+        "tolerance_pct": { "type": "number", "minimum": 0, "description": "Tolerancia relativa al tamaño de la presentación" },
+        "bom": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["item", "qty"],
+            "additionalProperties": false,
+            "properties": { "item": { "$ref": "#/$defs/id" }, "qty": { "type": "number", "exclusiveMinimum": 0 } }
+          }
+        },
+        "routing": { "type": "array", "items": { "$ref": "#/$defs/stage" }, "minItems": 1 },
+        "assumed": { "type": "boolean" }
+      }
+    },
+    "equipmentSizes": {
+      "type": "object",
+      "required": ["type", "sizes"],
+      "additionalProperties": false,
+      "properties": {
+        "type": { "type": "string", "description": "Tipo de la librería" },
+        "layout_type": { "type": "string", "description": "Tipo con que aparece en plant.yaml" },
+        "sizes": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["id", "name"],
+            "additionalProperties": false,
+            "properties": {
+              "id": { "$ref": "#/$defs/id" },
+              "name": { "type": "string" },
+              "clamp_t": { "$ref": "#/$defs/range" },
+              "max_shot_kg": { "$ref": "#/$defs/range" },
+              "presets": { "type": "array", "items": { "type": "string" } }
+            }
+          }
+        }
+      }
+    },
+    "mounted": {
+      "type": "object",
+      "required": ["tooling"],
+      "additionalProperties": false,
+      "properties": { "tooling": { "$ref": "#/$defs/id" }, "color": { "$ref": "#/$defs/id" } }
+    },
+    "order": {
+      "type": "object",
+      "required": ["id", "product", "quantity", "due"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string" },
+        "product": { "$ref": "#/$defs/id" },
+        "quantity": { "type": "number", "exclusiveMinimum": 0 },
+        "due": { "type": "string", "format": "date-time" },
+        "color": { "$ref": "#/$defs/id" },
+        "priority": { "type": "integer", "minimum": 1, "maximum": 5 },
+        "customer": { "type": "string" }
+      }
+    },
+    "assignment": {
+      "type": "object",
+      "required": ["order", "stage", "equipment", "start", "end"],
+      "additionalProperties": false,
+      "properties": {
+        "order": { "type": "string" },
+        "stage": { "type": "string" },
+        "equipment": { "type": "string" },
+        "tooling": { "$ref": "#/$defs/id" },
+        "start": { "type": "string", "format": "date-time" },
+        "end": { "type": "string", "format": "date-time" },
+        "changeover_min": { "type": "number", "minimum": 0 }
+      }
+    }
+  }
+}

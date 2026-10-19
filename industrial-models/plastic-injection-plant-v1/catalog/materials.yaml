@@ -1,0 +1,10 @@
+# Materias primas de la planta de plásticos (catálogo, docs/datos-reales.md).
+# `resin` es el valor que recibe la inyectora (parámetro material de la librería).
+# Todo es supuesto hasta tener los datos reales del autor.
+materials:
+  - { id: ps,           name: Poliestireno de uso general,     kind: resin,       resin: PS,           density_kg_l: 1.05, unit: kg, assumed: true }
+  - { id: hdpe,         name: Polietileno de alta densidad,     kind: resin,       resin: HDPE,         density_kg_l: 0.95, unit: kg, assumed: true }
+  - { id: pp-reciclado, name: Polipropileno reciclado,          kind: resin,       resin: PP reciclado, density_kg_l: 0.91, unit: kg, assumed: true }
+  - { id: mb-blanco,    name: Masterbatch blanco,               kind: masterbatch, color: "#f2f2f0",    dosage_pct: 2.0, unit: kg, assumed: true }
+  - { id: mb-azul,      name: Masterbatch azul,                 kind: masterbatch, color: "#1e6fd9",    dosage_pct: 2.0, unit: kg, assumed: true }
+  - { id: mb-gris,      name: Masterbatch gris,                 kind: masterbatch, color: "#8a8f96",    dosage_pct: 1.5, unit: kg, assumed: true }
