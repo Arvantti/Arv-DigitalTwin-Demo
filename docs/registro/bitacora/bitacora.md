@@ -10,6 +10,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
+| 2026-10-19 | Gemelo de ciudad, fase 1 | Gemelo nuevo de ciudad: plan para debatir (zona, datos públicos, enjambre aparte, Fractal, monitoreo) y fase 1: red aproximada del centro de Medellín con 35 cruces y 20 semáforos con planes por franja, demanda hipotética de 60.000 entradas al día con 7 tipos de vehículo, validador, plano y pruebas (`city-models/centro-medellin-v1/`, `tools/city/`). D65 | ciudad |
 | 2026-10-19 | Operarios más humanos | La figura común de las personas (operarios, pasajeros y agentes de todas las plantas) pasa de cajas y cilindros a formas orgánicas: tronco con pecho y cintura, chaleco que sigue el cuerpo, brazos y piernas que se afinan y se unen sin costura en codo y rodilla, manos con dedos y pulgar, cara con mandíbula, nariz, orejas, cejas y boca, botas con puntera. Misma interfaz, así que aplica en todas las escenas. D64 | 4 |
 | 2026-10-19 | Sensores y atascos en la fábrica de cajas | Cada banda de la fábrica de cajas es una unidad independiente con fotoceldas por zona; tipo nuevo `inline-station` (cola, puesto y salida con tres fotoceldas, atasco con vigilante de tiempo y pulsador de paro) para las mesas giratorias, las amarradoras y una mesa manual por línea que parte la banda larga en dos; escenarios de atascos de la amarradora, pausa de operarios, paro manual y atascos al azar; la banda ya no pierde unidades cuando la siguiente se llena. D63 | 4 |
 | 2026-10-19 | Imágenes en el portal | Cada tarjeta de la página principal lleva una captura de su escena 3D (plásticos, salsas, acueducto, aeropuerto y fábrica de cajas), recortada sin interfaz, en `apps/gallery/public/portal/`. Pedido de Andy | portal |
@@ -80,6 +81,15 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 | 2026-10-16 | #1 | Layouts de las plantas | 1 |
 
 ## Entradas
+
+### 2026-10-19 23:00 · Gemelo de ciudad: plan y red de la zona B
+- **Fecha/hora (UTC):** 2026-10-19 12:05–23:00
+- **Fase del plan:** [[plan-del-proyecto]] gemelo de ciudad, fase 1 (red y datos)
+- **Solicitado por:** Andy (12:05): «Necesito que te inventes un pedazo de ciudad [...] del mapa de Medellín con su semaforización [...] no tiene que ser real»; (16:54) escenario hipotético sin imágenes satelitales; (18:03) monitoreos como los del acueducto; (22:45) «Haz b con la mitad de intersecciónes».
+- **Qué se hizo:** plan para debatir en un documento del proyecto (zona y tamaño, datos públicos y APIs, gemelo separado del enjambre, escenarios con Fractal, aspecto realista, escenario hipotético de un día hábil y 15 indicadores con criterio de éxito). En el repositorio: `city-models/centro-medellin-v1/network.yaml` (7 carreras x 5 calles, sentidos, carriles, límites, separadores, 20 semáforos con planes de dos fases por franja), `demand.yaml` (60.000 entradas al día, perfil de 24 h, 7 franjas con velocidad y afán, mezcla de 7 tipos, pico y placa, atractores), `tools/city/network.py` (valida ciclos, franjas, sumas y que desde cada entrada se llegue a cada salida; resume y dibuja `layout.svg`), pruebas en `tools/city/tests/` y `docs/ciudad.md`.
+- **Verificación:** `uv run python tools/city/network.py city-models/centro-medellin-v1` (35 cruces, 20 semáforos, 18 entradas y 18 salidas, pico 5.100 veh/h a las 7:00); `uv run pytest` y `uv run ruff check .`; plano [[ciudad-plano-red-zona-b.png]].
+- **Decisiones:** [[decisiones]] D65
+- **Conversación:** [[hilo-gemelo-de-ciudad]]
 
 ### 2026-10-19 16:40 · Operarios con figura orgánica en todas las plantas
 - **Fecha/hora (UTC):** 2026-10-19 16:11–16:45

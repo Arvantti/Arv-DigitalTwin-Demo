@@ -1,0 +1,42 @@
+# Demanda hipotética de un día hábil en la zona (D65). TODO es supuesto (assumed): sirve para ver cómo
+# funcionaría el gemelo antes de tener datos reales (SIMM, encuesta origen-destino).
+# Escalada a la mitad del escenario del plan, porque la zona tiene la mitad de intersecciones.
+assumed: true
+daily_entries: 60000            # vehículos que entran a la zona en el día
+capacity_veh_h: 4250            # entradas por hora que la zona aguanta antes de colapsar (supuesto)
+
+# Porcentaje del día que entra en cada hora (0 = de 0:00 a 1:00). Debe sumar 100.
+hourly_pct: [0.6, 0.4, 0.3, 0.3, 0.6, 2.0, 6.0, 8.5, 7.0, 5.2, 5.0, 5.3,
+             6.2, 5.4, 5.1, 5.3, 6.0, 8.2, 8.0, 6.0, 3.6, 2.4, 1.6, 1.0]
+
+# Franjas: velocidad media esperada (para calibrar) y parte de agentes con afán. Las horas cubren 0 a 24 sin huecos.
+franjas:
+  - {id: madrugada, from_h: 0, to_h: 6, speed_kmh: 35, afan_pct: 10}
+  - {id: pico-am, from_h: 6, to_h: 9, speed_kmh: 12, afan_pct: 70}
+  - {id: media-manana, from_h: 9, to_h: 12, speed_kmh: 20, afan_pct: 35}
+  - {id: almuerzo, from_h: 12, to_h: 14, speed_kmh: 17, afan_pct: 40}
+  - {id: tarde, from_h: 14, to_h: 16, speed_kmh: 20, afan_pct: 35}
+  - {id: pico-pm, from_h: 16, to_h: 19, speed_kmh: 10, afan_pct: 75}
+  - {id: noche, from_h: 19, to_h: 24, speed_kmh: 26, afan_pct: 25}
+
+# Mezcla de vehículos (debe sumar 100). Dimensiones aproximadas para la física y el 3D.
+vehicle_mix:
+  - {type: moto, pct: 30, length_m: 2.0, width_m: 0.8, lane_filtering: true}
+  - {type: carro, pct: 28, length_m: 4.4, width_m: 1.8}
+  - {type: taxi, pct: 12, length_m: 4.2, width_m: 1.7, stops_on_street: true}
+  - {type: moto-domicilio, pct: 10, length_m: 2.0, width_m: 0.8, lane_filtering: true}
+  - {type: carga-liviana, pct: 10, length_m: 6.0, width_m: 2.1, stops_on_street: true}
+  - {type: bus, pct: 6, length_m: 12.0, width_m: 2.5}
+  - {type: carga-pesada, pct: 4, length_m: 12.0, width_m: 2.5, banned_franjas: [pico-am, pico-pm]}
+
+# Reglas supuestas
+pico_y_placa: {applies_to: [carro], removed_pct: 20, from_h: 6, to_h: 20}
+
+# Destinos: la parte interna termina en cruces que atraen viajes (comercio, parqueaderos, oficinas);
+# el resto atraviesa la zona y sale por una puerta. Entradas y salidas por puerta, en proporción a sus carriles.
+internal_destination_pct: 30
+attractors:
+  - {node: cra51-cl48, weight: 3, name: comercio}
+  - {node: cra50-cl50, weight: 2, name: oficinas}
+  - {node: cra53-cl46, weight: 2, name: parqueadero}
+  - {node: cra48-cl54, weight: 1, name: hospital}

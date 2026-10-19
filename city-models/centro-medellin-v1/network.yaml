@@ -1,0 +1,86 @@
+# Red vial del gemelo de ciudad: centro de Medellín, zona B reducida (D65).
+# Trazado APROXIMADO e inventado a partir del centro real: 7 carreras x 5 calles = 35 intersecciones.
+# Los nombres son referencias de ubicación; anchos, sentidos, carriles y límites son supuestos (assumed).
+# Ejes: x hacia el oriente, y hacia el norte, en metros. Origen = cruce de la avenida del Ferrocarril con San Juan.
+# Validar y dibujar: uv run python tools/city/network.py city-models/centro-medellin-v1
+id: centro-medellin-v1
+name: Centro de Medellín, zona B
+assumed: true
+gate_length_m: 100        # cada calle se prolonga hasta una puerta de entrada o salida fuera de la zona
+lane_width_m: 3.3
+
+# sentido: both = doble sentido; north, south, east, west = sentido único
+# lanes = carriles por sentido; speed_kmh = límite supuesto
+streets:
+  carreras:   # norte-sur, de occidente a oriente
+    - {id: cra57, name: Avenida del Ferrocarril, x: 0, sentido: both, lanes: 3, speed_kmh: 50, median: true}
+    - {id: cra55, name: Carrera 55, x: 150, sentido: north, lanes: 2, speed_kmh: 30}
+    - {id: cra53, name: Carrera 53, x: 300, sentido: south, lanes: 2, speed_kmh: 30}
+    - {id: cra51, name: Carrera 51 (Bolívar, bajo el viaducto del metro), x: 450, sentido: both, lanes: 2, speed_kmh: 40, median: true}
+    - {id: cra50, name: Carrera 50, x: 600, sentido: north, lanes: 2, speed_kmh: 30}
+    - {id: cra48, name: Carrera 48, x: 750, sentido: south, lanes: 2, speed_kmh: 30}
+    - {id: cra46, name: Avenida Oriental, x: 900, sentido: both, lanes: 3, speed_kmh: 50, median: true}
+  calles:     # oriente-occidente, de sur a norte
+    - {id: cl44, name: San Juan, y: 0, sentido: both, lanes: 3, speed_kmh: 50, median: true}
+    - {id: cl46, name: Calle 46, y: 180, sentido: east, lanes: 2, speed_kmh: 30}
+    - {id: cl48, name: Calle 48 (Pichincha), y: 360, sentido: west, lanes: 2, speed_kmh: 30}
+    - {id: cl50, name: Calle 50 (Colombia), y: 540, sentido: both, lanes: 2, speed_kmh: 40}
+    - {id: cl54, name: Juan del Corral, y: 720, sentido: both, lanes: 2, speed_kmh: 40}
+
+# Tramos adicionales fuera de la cuadrícula (los escenarios de "calle nueva" se agregan aquí). Vacío en la línea base.
+extra_links: []
+
+# Cruces con semáforo (20 de 35); el resto funciona con pare y prioridad de la vía mayor.
+# plan = plantilla de signals.plans; offset_s = desfase dentro del ciclo (ola verde en escenarios).
+signals:
+  - {node: cra57-cl44, plan: arterial-arterial, offset_s: 0}
+  - {node: cra57-cl46, plan: arterial-ns, offset_s: 0}
+  - {node: cra57-cl48, plan: arterial-ns, offset_s: 0}
+  - {node: cra57-cl50, plan: arterial-arterial, offset_s: 0}
+  - {node: cra57-cl54, plan: arterial-arterial, offset_s: 0}
+  - {node: cra46-cl44, plan: arterial-arterial, offset_s: 0}
+  - {node: cra46-cl46, plan: arterial-ns, offset_s: 0}
+  - {node: cra46-cl48, plan: arterial-ns, offset_s: 0}
+  - {node: cra46-cl50, plan: arterial-arterial, offset_s: 0}
+  - {node: cra46-cl54, plan: arterial-arterial, offset_s: 0}
+  - {node: cra55-cl44, plan: arterial-eo, offset_s: 0}
+  - {node: cra53-cl44, plan: arterial-eo, offset_s: 0}
+  - {node: cra51-cl44, plan: arterial-arterial, offset_s: 0}
+  - {node: cra50-cl44, plan: arterial-eo, offset_s: 0}
+  - {node: cra48-cl44, plan: arterial-eo, offset_s: 0}
+  - {node: cra55-cl50, plan: arterial-eo, offset_s: 0}
+  - {node: cra53-cl50, plan: arterial-eo, offset_s: 0}
+  - {node: cra51-cl50, plan: arterial-arterial, offset_s: 0}
+  - {node: cra50-cl50, plan: arterial-eo, offset_s: 0}
+  - {node: cra48-cl50, plan: arterial-eo, offset_s: 0}
+
+# Planes de tiempos por franja (franjas en demand.yaml). Dos fases: ns = carreras en verde, eo = calles en verde.
+# Por fase: verde + amarillo + todo rojo. Debe cumplirse: green_ns + green_eo + 2 * (amber_s + all_red_s) = cycle_s.
+signal_timing:
+  amber_s: 3
+  all_red_s: 2
+plans:
+  arterial-ns:          # avenida norte-sur con calle menor: más verde a la avenida
+    madrugada: {cycle_s: 60, green_ns: 32, green_eo: 18}
+    pico-am: {cycle_s: 120, green_ns: 70, green_eo: 40}
+    media-manana: {cycle_s: 90, green_ns: 50, green_eo: 30}
+    almuerzo: {cycle_s: 90, green_ns: 50, green_eo: 30}
+    tarde: {cycle_s: 90, green_ns: 50, green_eo: 30}
+    pico-pm: {cycle_s: 120, green_ns: 70, green_eo: 40}
+    noche: {cycle_s: 90, green_ns: 50, green_eo: 30}
+  arterial-eo:          # avenida oriente-occidente con carrera menor
+    madrugada: {cycle_s: 60, green_ns: 18, green_eo: 32}
+    pico-am: {cycle_s: 120, green_ns: 40, green_eo: 70}
+    media-manana: {cycle_s: 90, green_ns: 30, green_eo: 50}
+    almuerzo: {cycle_s: 90, green_ns: 30, green_eo: 50}
+    tarde: {cycle_s: 90, green_ns: 30, green_eo: 50}
+    pico-pm: {cycle_s: 120, green_ns: 40, green_eo: 70}
+    noche: {cycle_s: 90, green_ns: 30, green_eo: 50}
+  arterial-arterial:    # cruce de dos avenidas: reparto parejo
+    madrugada: {cycle_s: 60, green_ns: 25, green_eo: 25}
+    pico-am: {cycle_s: 120, green_ns: 55, green_eo: 55}
+    media-manana: {cycle_s: 90, green_ns: 40, green_eo: 40}
+    almuerzo: {cycle_s: 90, green_ns: 40, green_eo: 40}
+    tarde: {cycle_s: 90, green_ns: 40, green_eo: 40}
+    pico-pm: {cycle_s: 120, green_ns: 55, green_eo: 55}
+    noche: {cycle_s: 90, green_ns: 40, green_eo: 40}
