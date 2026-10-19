@@ -7,7 +7,7 @@ tags: [registro, historico-ia, acueducto, tuberias]
 ---
 # Hilo: desagüe por gravedad del nivel 1
 
-Parte de [[historico-proyecto]] · Índice: [[00-indice]] · Bitácora: [[bitacora]] · Decisión: [[decisiones#D53]]. Autor humano: Andy. Hora en UTC. Credenciales: ninguna.
+Parte de [[historico-proyecto]] · Índice: [[00-indice]] · Bitácora: [[bitacora]] · Decisión: [[decisiones#D55]]. Autor humano: Andy. Hora en UTC. Credenciales: ninguna.
 
 ---
 

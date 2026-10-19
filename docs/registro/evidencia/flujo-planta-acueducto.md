@@ -42,7 +42,7 @@ Fuente: `industrial-models/water-network-scale-v1/plant.yaml` (flujos y rutas), 
 ## Qué NO está conectado o es solo ilustrativo
 
 - **Cotas de los tubos:** el motor usa la longitud y el diámetro de cada ruta (y las elevaciones declaradas de cada rejilla: 0; 1,2; 2,4; 3,6 m), no la cota de cada punto del trazado 3D. El trazado dibuja el recorrido físico.
-- **Bajante del nivel 1:** desagua a 2,5 m y la boquilla de entrada del tanque de recirculación queda a 2,245 m tras bajar los tanques 1 m (D53, foso en el piso 0). Cae por gravedad. Los niveles 2 a 4 también.
+- **Bajante del nivel 1:** desagua a 2,5 m y la boquilla de entrada del tanque de recirculación queda a 2,245 m tras bajar los tanques 1 m (D55, foso en el piso 0). Cae por gravedad. Los niveles 2 a 4 también.
 - **Tubería de las bajantes:** el motor no calcula pérdidas en ellas (no son red a presión); la escena las dibuja con el caudal de los enlaces.
 - **Tubos de recirculación:** las rutas son de recorrido (suben a la cota de la boquilla del tanque de bombeo, 6,4 m); no son un diseño de detalle.
 - **Casas y fugas:** cada válvula de consumo y de fuga es del motor (apertura y Kv), pero su descarga a la canaleta es una animación del chorro; el agua no se mide por casa fuera de las rejillas.
@@ -52,6 +52,6 @@ Fuente: `industrial-models/water-network-scale-v1/plant.yaml` (flujos y rutas), 
 
 ## Siguiente paso propuesto
 
-1. ~~Decidir qué hacer con los tanques de recirculación~~ Hecho: los tanques bajan 1 m (D53).
+1. ~~Decidir qué hacer con los tanques de recirculación~~ Hecho: los tanques bajan 1 m (D55).
 2. Agregar puertos de conexión por tipo de equipo (boquillas) para que las rutas se calculen en vez de escribirse a mano (propuesta del informe de inspección).
 3. Conectar los sensores del panel PLC a la API en vivo.

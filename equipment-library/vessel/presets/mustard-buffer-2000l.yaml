@@ -1,0 +1,4 @@
+preset: mustard-buffer-2000l
+description: Tanque pulmón de 2.000 L para mostaza
+params: { form: vertical_tank, volume_l: 2000, content: mostaza, density_kg_m3: 1050, initial_level_pct: 0, inlet_max_kg_h: 1200, outlet_max_kg_h: 1000 }
+provenance: { volume_l: user }
