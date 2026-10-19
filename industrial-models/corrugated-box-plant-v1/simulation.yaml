@@ -1,22 +1,26 @@
 # Simulación de la fábrica de cajas con el motor de planta (docs/plant-engine.md, docs/box-plant.md).
 # El transporte conectado: corrugadora → transportadores de pilas → carro de transferencia → tres carriles →
 # tres convertidoras (una por tamaño de caja) → bandas de fajos → paletizador propio (línea 1) y compartido (líneas 2 y 3).
-# Todo valor es imaginario (decisión del autor del 2026-10-18). Las mesas giratorias, las amarradoras y las
-# envolvedoras no se simulan: se atraviesan con `via`. Los carriles de pulmón todavía no se usan.
+# Todo valor es imaginario (decisión del autor del 2026-10-18). Cada banda es una unidad independiente con control
+# por zonas (una fotocelda por zona); las mesas giratorias, las amarradoras y las mesas manuales son estaciones con
+# fotoceldas de acumulación, posición y salida, atascos y pulsador de paro (inline-station, docs/box-plant.md).
+# Las envolvedoras no se simulan. Los carriles de pulmón todavía no se usan.
 
 schema_version: 0.1.0
 description: Transporte de pilas y fajos de la fábrica de cajas, de la corrugadora a los paletizadores
 dt: 1.0
 
-x-stack-conveyor: &stack_conveyor { kind: roller, item: box, item_size_m: 1.4, item_color: "#b8895a", width_m: 2.0, height_m: 0.6, pitch_m: 2.4, speed_m_s: 0.3, nominal_inflow_upm: 0, motor_kw: 2.2 }
-x-bundle-conveyor: &bundle_conveyor { kind: flat, item: box, item_size_m: 0.8, item_color: "#b8895a", width_m: 1.2, height_m: 0.8, pitch_m: 1.2, speed_m_s: 0.5, nominal_inflow_upm: 0, motor_kw: 1.5 }
+x-stack-conveyor: &stack_conveyor { kind: roller, item: box, item_size_m: 1.4, item_color: "#b8895a", width_m: 2.0, height_m: 0.6, pitch_m: 2.4, speed_m_s: 0.3, nominal_inflow_upm: 0, motor_kw: 2.2, zone_control: true }
+x-bundle-conveyor: &bundle_conveyor { kind: flat, item: box, item_size_m: 0.8, item_color: "#b8895a", width_m: 1.2, height_m: 0.8, pitch_m: 1.2, speed_m_s: 0.5, nominal_inflow_upm: 0, motor_kw: 1.5, zone_control: true }
 
 equipment:
   # El apilador del extremo seco representa a toda la corrugadora (los demás equipos de la línea no se simulan).
   stacker-01:  { type: corrugator, preset: bc-2500 }
   cv-st-01:    { type: belt-conveyor, params: { <<: *stack_conveyor, length_m: 6 } }
+  tt-01:       { type: inline-station, preset: stack-turntable }
   cv-st-02:    { type: belt-conveyor, params: { <<: *stack_conveyor, length_m: 8.5 } }
   cv-st-03:    { type: belt-conveyor, params: { <<: *stack_conveyor, length_m: 5 } }
+  tt-02:       { type: inline-station, preset: stack-turntable }
   cv-st-04:    { type: belt-conveyor, params: { <<: *stack_conveyor, length_m: 7 } }
   tc-01:       { type: transfer-car, preset: stack-3-lanes }
   lane-01:     { type: belt-conveyor, params: { <<: *stack_conveyor, length_m: 23 } }
@@ -25,9 +29,19 @@ equipment:
   ffg-01:      { type: box-converter, preset: ffg-large }
   ffg-02:      { type: box-converter, preset: ffg-medium }
   rdc-01:      { type: box-converter, preset: rdc-small }
-  bc-01:       { type: belt-conveyor, params: { <<: *bundle_conveyor, length_m: 54 } }
-  bc-02:       { type: belt-conveyor, params: { <<: *bundle_conveyor, length_m: 54 } }
-  bc-03:       { type: belt-conveyor, params: { <<: *bundle_conveyor, length_m: 62.5 } }
+  # Cada línea de fajos: amarradora → banda → mesa manual → banda. La mesa manual parte la banda larga en dos unidades.
+  strap-01:    { type: inline-station, preset: bundle-strapper }
+  strap-02:    { type: inline-station, preset: bundle-strapper }
+  strap-03:    { type: inline-station, preset: bundle-strapper }
+  bc-01a:      { type: belt-conveyor, params: { <<: *bundle_conveyor, length_m: 19 } }
+  bc-02a:      { type: belt-conveyor, params: { <<: *bundle_conveyor, length_m: 19 } }
+  bc-03a:      { type: belt-conveyor, params: { <<: *bundle_conveyor, length_m: 27.5 } }
+  man-01:      { type: inline-station, preset: manual-table, params: { operators: 1 } }
+  man-02:      { type: inline-station, preset: manual-table, params: { operators: 2 } }
+  man-03:      { type: inline-station, preset: manual-table, params: { operators: 3, task: "división y conteo" } }
+  bc-01b:      { type: belt-conveyor, params: { <<: *bundle_conveyor, length_m: 31 } }
+  bc-02b:      { type: belt-conveyor, params: { <<: *bundle_conveyor, length_m: 31 } }
+  bc-03b:      { type: belt-conveyor, params: { <<: *bundle_conveyor, length_m: 31 } }
   # La banda de unión recibe de dos bandas: dos plazas en la entrada para que los fajos que llegan juntos no la frenen.
   bc-merge-01: { type: belt-conveyor, params: { <<: *bundle_conveyor, length_m: 13.4, entry_buffer_units: 2 } }
   pal-01:      { type: palletizer, preset: single-24 }
@@ -36,9 +50,11 @@ equipment:
 links:
   # Pilas
   - { from: stacker-01.stacks_out, to: cv-st-01.items_in }
-  - { from: cv-st-01.items_out,    to: cv-st-02.items_in, via: [tt-01] }
+  - { from: cv-st-01.items_out,    to: tt-01.items_in }
+  - { from: tt-01.items_out,       to: cv-st-02.items_in }
   - { from: cv-st-02.items_out,    to: cv-st-03.items_in }
-  - { from: cv-st-03.items_out,    to: cv-st-04.items_in, via: [tt-02] }
+  - { from: cv-st-03.items_out,    to: tt-02.items_in }
+  - { from: tt-02.items_out,       to: cv-st-04.items_in }
   - { from: cv-st-04.items_out,    to: tc-01.stacks_in }
   - { from: tc-01.out_1,           to: lane-01.items_in }
   - { from: tc-01.out_2,           to: lane-02.items_in }
@@ -47,12 +63,21 @@ links:
   - { from: lane-02.items_out,     to: ffg-02.stacks_in }
   - { from: lane-03.items_out,     to: rdc-01.stacks_in }
   # Fajos
-  - { from: ffg-01.bundles_out,    to: bc-01.items_in, via: [strap-01] }
-  - { from: ffg-02.bundles_out,    to: bc-02.items_in, via: [strap-02] }
-  - { from: rdc-01.bundles_out,    to: bc-03.items_in, via: [strap-03] }
-  - { from: bc-01.items_out,       to: pal-01.bundles_in }
-  - { from: bc-02.items_out,       to: bc-merge-01.items_in }
-  - { from: bc-03.items_out,       to: bc-merge-01.items_in }
+  - { from: ffg-01.bundles_out,    to: strap-01.items_in }
+  - { from: ffg-02.bundles_out,    to: strap-02.items_in }
+  - { from: rdc-01.bundles_out,    to: strap-03.items_in }
+  - { from: strap-01.items_out,    to: bc-01a.items_in }
+  - { from: strap-02.items_out,    to: bc-02a.items_in }
+  - { from: strap-03.items_out,    to: bc-03a.items_in }
+  - { from: bc-01a.items_out,      to: man-01.items_in }
+  - { from: bc-02a.items_out,      to: man-02.items_in }
+  - { from: bc-03a.items_out,      to: man-03.items_in }
+  - { from: man-01.items_out,      to: bc-01b.items_in }
+  - { from: man-02.items_out,      to: bc-02b.items_in }
+  - { from: man-03.items_out,      to: bc-03b.items_in }
+  - { from: bc-01b.items_out,      to: pal-01.bundles_in }
+  - { from: bc-02b.items_out,      to: bc-merge-01.items_in }
+  - { from: bc-03b.items_out,      to: bc-merge-01.items_in }
   - { from: bc-merge-01.items_out, to: pal-02.bundles_in }
 
 lines:
@@ -60,17 +85,17 @@ lines:
     name: Cajas grandes (línea 1, paletizador propio)
     output: pal-01.pallets_out
     unit: estibas
-    equipment: [ffg-01, bc-01, pal-01]
+    equipment: [ffg-01, strap-01, bc-01a, man-01, bc-01b, pal-01]
   - id: line-medium
     name: Cajas medianas (línea 2)
     output: ffg-02.bundles_out
     unit: fajos
-    equipment: [ffg-02, bc-02]
+    equipment: [ffg-02, strap-02, bc-02a, man-02, bc-02b]
   - id: line-small
     name: Cajas pequeñas (línea 3)
     output: rdc-01.bundles_out
     unit: fajos
-    equipment: [rdc-01, bc-03]
+    equipment: [rdc-01, strap-03, bc-03a, man-03, bc-03b]
   - id: shared-pallets
     name: Paletizador compartido (líneas 2 y 3)
     output: pal-02.pallets_out
@@ -112,8 +137,72 @@ scenarios:
       - { at_s: 3600, equipment: pal-02, command: inject_fault, args: { fault: gripper_fault, duration_s: 1800 } }
     expect:
       - { path: events.pal-02.fault_raised, equals: 1 }
-      - { path: equipment.ffg-02.state_share.blocked, min: 0.09, max: 0.16, description: "(la mesa del paletizador y la banda de unión, 24 fajos, y la banda de 54 m, 46 fajos, se llenan en ≈ 7 min a 6 fajos/min: ≈ 23 de 180 min bloqueada)" }
-      - { path: equipment.rdc-01.state_share.blocked, min: 0.10, max: 0.17, description: "(su banda de 62,5 m guarda 53 fajos y recibe 9,6 por minuto: se bloquea antes, ≈ 25 min)" }
+      - { path: equipment.ffg-02.state_share.blocked, min: 0.09, max: 0.16, description: "(la mesa del paletizador y la banda de unión guardan 24 fajos entre las dos líneas; la línea 2 guarda ≈ 50 más en sus bandas de 19 y 31 m, la mesa manual y la amarradora: se llenan en ≈ 8 min a 6 fajos/min, ≈ 22 de 180 min bloqueada)" }
+      - { path: equipment.rdc-01.state_share.blocked, min: 0.10, max: 0.17, description: "(sus bandas de 27,5 y 31 m, la mesa y la amarradora guardan algo más pero reciben 9,6 fajos/min: se llenan en ≈ 4 min y la troqueladora se bloquea ≈ 26 min)" }
       - { path: equipment.ffg-01.state_share.blocked, equals: 0.0, description: "(la línea 1 tiene su propio paletizador)" }
       - { path: lines.line-large.output_units, min: 27, max: 29, description: "(sigue a ≈ 9,4 estibas/h)" }
       - { path: equipment.stacker-01.state_share.blocked, equals: 0.0, description: "(las máquinas 2 y 3 dejan de gastar pilas, pero sus carriles de 10 plazas alcanzan a recibirlas en 30 min)" }
+
+  - id: strapper-jams
+    description: "La amarradora de la línea 3 traba uno de cada 50 fajos: cada atasco la para 5 s de vigilante y 2 min de despeje"
+    duration_s: 14400
+    timeline:
+      - { at_s: 0, equipment: strap-03, command: set_param, args: { name: jam_pct, value: 2 } }
+    expect:
+      - { path: events.strap-03.jam_detected, min: 33, max: 34, description: "(uno de cada 50 fajos: 1.697 ÷ 50 ≈ 34)" }
+      - { path: equipment.rdc-01.state_share.blocked, min: 0.20, max: 0.25, description: "(cada atasco para la amarradora 5 + 120 s; su cola de 2 y la mesa de salida de la troqueladora, 3, guardan 5 fajos ≈ 31 s de producción: la troqueladora se bloquea ≈ 94 s por atasco, 34 × 94 ≈ 3.200 s de 14.400 ≈ 22 %)" }
+      - { path: lines.line-small.output_units, min: 1680, max: 1720, description: "(cada 50 fajos tardan 50 × 6,25 + 94 = 406 s: 7,4 fajos/min en vez de 9,6; 234 min × 7,4 ≈ 1.730, con 2.222 en el turno nominal)" }
+      - { path: equipment.ffg-02.state_share.blocked, equals: 0.0, description: "(los atascos de la línea 3 no llegan a la línea 2: el paletizador compartido recibe menos)" }
+      - { path: equipment.man-03.state_share.idle, min: 0.25, description: "(la mesa manual de la línea 3 espera fajos)" }
+
+  - id: operator-break
+    description: "A la 1 h dos de los tres operarios de la mesa de división de la línea 3 salen 30 min"
+    duration_s: 10800
+    timeline:
+      - { at_s: 3600, equipment: man-03, command: set_operators, args: { n: 1 } }
+      - { at_s: 5400, equipment: man-03, command: set_operators, args: { n: 3 } }
+    expect:
+      - { path: equipment.rdc-01.state_share.blocked, min: 0.07, max: 0.09, description: "(con un operario la mesa atiende un fajo cada 2 + 10 + 2 = 14 s: 129 en 30 min; las bandas, la cola y la amarradora guardan ≈ 22 más. La troqueladora hace esos 151 fajos en ≈ 16 min y pasa ≈ 14 bloqueada: 14 ÷ 180 ≈ 0,08)" }
+      - { path: lines.line-small.output_units, min: 1495, max: 1525, description: "(≈ 1.645 en 3 h sin pausa, menos 14 min × 9,6 = 137)" }
+      - { path: events.man-03.full, min: 1 }
+      - { path: equipment.ffg-02.state_share.blocked, equals: 0.0, description: "(la línea 2 no se entera)" }
+
+  - id: manual-stop
+    description: "A la 1 h un operario oprime el pulsador de paro de la mesa manual de la línea 2 y la arranca 10 min después"
+    duration_s: 7200
+    timeline:
+      - { at_s: 3600, equipment: man-02, command: manual_stop, args: { duration_s: 600 } }
+    expect:
+      - { path: events.man-02.manual_stop, equals: 1 }
+      - { path: events.man-02.manual_resume, equals: 1 }
+      - { path: equipment.man-02.state_share.off, min: 0.08, max: 0.09, description: "(600 de 7.200 s)" }
+      - { path: equipment.ffg-02.state_share.blocked, min: 0.05, max: 0.07, description: "(la mesa parada no recibe; la banda de 19 m tiene ≈ 12 plazas libres, la amarradora 4 y la salida de la máquina 3: 19 fajos son ≈ 3 min a 6 fajos/min y la máquina pasa ≈ 7 de los 10 min bloqueada: 7 ÷ 120 ≈ 0,06)" }
+      - { path: lines.line-medium.output_units, min: 625, max: 645, description: "(≈ 678 en 2 h sin paro, menos 7 min × 6 = 42)" }
+      - { path: equipment.rdc-01.state_share.blocked, equals: 0.0, description: "(el paletizador compartido sigue recibiendo de la línea 3)" }
+
+  - id: random-jams
+    description: "Turno de 8 h con atascos al azar en las mesas giratorias (0,5 %), las amarradoras (1 %) y las mesas manuales (0,5 %)"
+    duration_s: 28800
+    seed: 7
+    timeline:
+      - { at_s: 0, equipment: tt-01, command: set_param, args: { name: jam_pct, value: 0.5 } }
+      - { at_s: 0, equipment: tt-01, command: set_param, args: { name: jam_random, value: true } }
+      - { at_s: 0, equipment: tt-02, command: set_param, args: { name: jam_pct, value: 0.5 } }
+      - { at_s: 0, equipment: tt-02, command: set_param, args: { name: jam_random, value: true } }
+      - { at_s: 0, equipment: strap-01, command: set_param, args: { name: jam_pct, value: 1 } }
+      - { at_s: 0, equipment: strap-01, command: set_param, args: { name: jam_random, value: true } }
+      - { at_s: 0, equipment: strap-02, command: set_param, args: { name: jam_pct, value: 1 } }
+      - { at_s: 0, equipment: strap-02, command: set_param, args: { name: jam_random, value: true } }
+      - { at_s: 0, equipment: strap-03, command: set_param, args: { name: jam_pct, value: 1 } }
+      - { at_s: 0, equipment: strap-03, command: set_param, args: { name: jam_random, value: true } }
+      - { at_s: 0, equipment: man-01, command: set_param, args: { name: jam_pct, value: 0.5 } }
+      - { at_s: 0, equipment: man-01, command: set_param, args: { name: jam_random, value: true } }
+      - { at_s: 0, equipment: man-02, command: set_param, args: { name: jam_pct, value: 0.5 } }
+      - { at_s: 0, equipment: man-02, command: set_param, args: { name: jam_random, value: true } }
+      - { at_s: 0, equipment: man-03, command: set_param, args: { name: jam_pct, value: 0.5 } }
+      - { at_s: 0, equipment: man-03, command: set_param, args: { name: jam_random, value: true } }
+    expect:
+      - { path: events.strap-03.jam_detected, min: 25, max: 55, description: "(≈ 1 % de 3.900 fajos = 39)" }
+      - { path: events.man-02.jam_detected, min: 5, max: 25, description: "(≈ 0,5 % de 2.700 = 13)" }
+      - { path: equipment.rdc-01.state_share.blocked, min: 0.05, max: 0.25, description: "(la línea más rápida es la que más siente los atascos de su amarradora)" }
+      - { path: equipment.stacker-01.state_share.blocked, max: 0.01, description: "(un atasco de 5 min en una mesa giratoria lo absorben los transportadores de pilas)" }

@@ -1,0 +1,112 @@
+schema_version: 0.1.0
+type: inline-station
+version: 0.1.0
+name: Estación en línea con fotoceldas
+manufacturing: logistics
+category: transport.station
+description: >
+  Tramo corto de transportador donde cada unidad (pila o fajo) para, espera una operación y sigue:
+  mesa giratoria, amarradora o encintadora (automáticas) o mesa de trabajo con operarios (revisión,
+  etiquetado, división). Tres fotoceldas ordenan el paso: la de acumulación detiene la banda anterior
+  cuando la cola se llena, la de posición detiene la unidad en el puesto de trabajo y la de salida
+  retiene la unidad terminada si la banda siguiente no recibe. Un vigilante de tiempo convierte una
+  unidad que no llega a su fotocelda en una alarma de atasco, que para el puesto hasta que un operario
+  lo despeja y rearma. El pulsador de paro manual detiene toda la estación.
+aliases: [estación, mesa giratoria, amarradora, ensunchadora, encintadora, mesa manual, puesto de revisión, estación de trabajo en línea]
+fidelity: { visual: V1, behavior: B2 }
+
+params:
+  role:               { type: enum, values: [turntable, strapper, taper, manual_table], default: strapper, description: "Qué hace el puesto (para el dibujo): mesa giratoria, amarradora, encintadora o mesa manual", affects: [geometry] }
+  mode:               { type: enum, values: [automatic, manual], default: automatic, description: "Automática (una unidad a la vez, ciclo fijo) o manual (un puesto por operario)", affects: [behavior, geometry] }
+  task:               { type: string, default: "", description: "Nombre de la tarea manual (texto libre, p. ej. revisión y etiquetado)", affects: [] }
+  cycle_s:            { type: number, unit: s, min: 0.5, max: 600, default: 3.5, description: "Duración de la operación automática (girar, amarrar, encintar)", affects: [behavior] }
+  handle_s:           { type: number, unit: s, min: 1, max: 1800, default: 10, description: Tiempo de un operario por unidad en modo manual, affects: [behavior] }
+  operators:          { type: integer, min: 0, max: 6, default: 1, description: "Operarios en modo manual (un puesto cada uno); 0 = puesto sin gente", affects: [behavior, geometry] }
+  index_s:            { type: number, unit: s, min: 0.5, max: 60, default: 1.5, description: "Tiempo de llevar la unidad de la cola a la fotocelda de posición y de ahí a la salida", affects: [behavior] }
+  release_gap_s:      { type: number, unit: s, min: 1, max: 60, default: 2, description: "Separación mínima entre unidades que salen (con 2 s la banda siguiente alcanza a avisar que se llenó)", affects: [behavior] }
+  queue_capacity:     { type: integer, min: 1, max: 20, default: 2, description: "Unidades que caben en la cola de entrada; con la última, la fotocelda de acumulación detiene la banda anterior", affects: [behavior, geometry] }
+  jam_pct:            { type: number, unit: "%", min: 0, max: 50, default: 0, description: "Unidades que se traban antes de llegar a la fotocelda de posición", affects: [behavior] }
+  jam_random:         { type: boolean, default: false, description: "Atascos al azar (con la semilla del escenario) en lugar de uno cada 100 ÷ jam_pct unidades", affects: [behavior] }
+  jam_detect_s:       { type: number, unit: s, min: 1, max: 120, default: 5, description: "Vigilante: si la unidad no llega a la fotocelda de posición en index_s + este tiempo, alarma de atasco", affects: [behavior] }
+  jam_clear_s:        { type: number, unit: s, min: 5, max: 3600, default: 90, description: "Desde la alarma: llegada del operario, despeje y rearme", affects: [behavior] }
+  nominal_inflow_upm: { type: number, unit: u/min, min: 0, max: 60, default: 4, description: Llegada nominal si el entorno no la fija, affects: [behavior] }
+  length_m:           { type: number, unit: m, min: 1, max: 12, default: 4, description: Largo de la estación, affects: [geometry] }
+  width_m:            { type: number, unit: m, min: 1, max: 6, default: 3, description: Ancho de la estación, affects: [geometry] }
+  unit_size_m:        { type: number, unit: m, min: 0.2, max: 2, default: 0.8, description: Tamaño de la unidad (para el dibujo), affects: [geometry] }
+  unit_color:         { type: string, default: "#b8895a", description: Color de la unidad (hex), affects: [geometry] }
+
+ports:
+  - { id: items_in, kind: item, direction: in, unit: u/min, link: { units: inflow_upm, ready: accepting } }
+  - { id: items_out, kind: item, direction: out, unit: u/min, link: { units: released, ready: downstream_free } }
+  - { id: power, kind: utility, direction: in, medium: energía eléctrica }
+
+states:
+  - { id: idle, description: Sin unidades }
+  - { id: running, description: "Recibiendo, operando o despachando unidades" }
+  - { id: blocked, description: Unidad terminada retenida en la fotocelda de salida porque la banda siguiente no recibe }
+  - { id: "off", description: Parada manual con el pulsador (la estación no recibe ni despacha) }
+  - { id: fault, description: "Detenida por falla o por la parada automática de atasco (falla jam): espera al operario" }
+
+variables:
+  - { id: queue, unit: u, kind: calculated, description: Unidades en la cola de entrada }
+  - { id: in_process, unit: u, kind: calculated, description: Unidades en los puestos de trabajo }
+  - { id: arrived, unit: u, kind: counter, description: Unidades recibidas }
+  - { id: processed, unit: u, kind: counter, description: Unidades terminadas }
+  - { id: released, unit: u, kind: counter, description: Unidades entregadas a la banda siguiente }
+  - { id: jams, unit: atascos, kind: counter, description: Alarmas de atasco }
+  - { id: manual_stops, unit: paros, kind: counter, description: Paros con el pulsador }
+  - { id: accepting, unit: "", kind: status, description: "1 si recibe unidades, 0 si la fotocelda de acumulación detiene la banda anterior" }
+  - { id: pe_queue_full, unit: "", kind: status, description: "Fotocelda de acumulación: 1 si la cola está llena" }
+  - { id: pe_position, unit: "", kind: status, description: "Fotocelda de posición: 1 si hay una unidad detenida en el puesto de trabajo" }
+  - { id: pe_exit, unit: "", kind: status, description: "Fotocelda de salida: 1 si una unidad terminada espera salir" }
+  - { id: jam_alarm, unit: "", kind: status, description: "1 mientras la alarma de atasco está activa" }
+  - { id: jam_time_left_s, unit: s, kind: calculated, description: Tiempo que falta para despejar el atasco }
+
+events:
+  - { id: full, description: La cola se llenó y la fotocelda de acumulación detiene la banda anterior }
+  - { id: accepting_again, description: La cola vuelve a recibir }
+  - { id: jam_detected, description: "El vigilante de tiempo detectó un atasco: parada automática del puesto" }
+  - { id: jam_cleared, description: El operario despejó el atasco y rearmó }
+  - { id: manual_stop, description: Un operario oprimió el pulsador de paro }
+  - { id: manual_resume, description: La estación arrancó de nuevo después del paro manual }
+
+faults:
+  - { id: jam, description: "Atasco: una unidad no llegó a la fotocelda de posición y el vigilante paró el puesto", mtbf_h: null, mttr_min: 1.5, severity: medium, effect: "El puesto se detiene jam_clear_s; la cola sigue recibiendo hasta llenarse" }
+  - { id: drive_fault, description: Falla del motor o del mecanismo del puesto, mtbf_h: 2000, mttr_min: 20, severity: medium, effect: La estación se detiene }
+  - { id: photo_eye_fault, description: Fotocelda sucia o desalineada, mtbf_h: 3000, mttr_min: 10, severity: low, effect: "La estación se detiene: sin fotoceldas no puede ordenar el paso" }
+
+commands:
+  - { id: manual_stop, description: "Paro manual con el pulsador; con duration_s arranca solo al cumplirse (el operario rearma)", args: { duration_s: number } }
+  - { id: resume, description: Arranque después de un paro manual, args: {} }
+  - { id: reset, description: "Rearme después de despejar un atasco (antes de jam_clear_s)", args: {} }
+  - { id: set_operators, description: Cambia los operarios de una estación manual, args: { n: integer } }
+  - { id: inject_fault, description: Inyecta una falla declarada, args: { fault: string, duration_s: number } }
+  - { id: clear_fault, description: Repara una falla activa, args: { fault: string } }
+  - { id: set_param, description: Cambia un parámetro en caliente, args: { name: string, value: any } }
+
+kpis:
+  - { id: units_per_h, unit: u/h, description: Unidades terminadas por hora }
+  - { id: utilization, unit: "", description: "Fracción del tiempo de los puestos ocupada (llevar, operar, retener)" }
+  - { id: jams_per_h, unit: atascos/h, description: Alarmas de atasco por hora }
+  - { id: avg_wait_s, unit: s, description: Espera promedio en la cola antes del puesto }
+
+animation_channels:
+  - { id: queue, range: [0, 20], description: Unidades en la cola de entrada }
+  - { id: in_process, range: [0, 6], description: Unidades en los puestos }
+  - { id: progress, range: [0, 1], description: "Avance de la operación del primer puesto (giro de la mesa, amarre)" }
+  - { id: at_exit, range: [0, 1], description: "1 si hay una unidad en la salida" }
+  - { id: eye_queue, range: [0, 1], description: "Haz de la fotocelda de acumulación (1 = rojo, cola llena)" }
+  - { id: eye_position, range: [0, 1], description: "Haz de la fotocelda de posición (1 = unidad en el puesto)" }
+  - { id: eye_exit, range: [0, 1], description: "Haz de la fotocelda de salida (1 = unidad esperando)" }
+  - { id: stack_light, range: [0, 3], description: "0 apagado, 1 verde, 2 ámbar (cola llena o salida retenida), 3 rojo (atasco, paro o falla)" }
+
+geometry:
+  parts: [frame, rollers, work_unit, units, photo_eyes, stop_button, stack_light, operators]
+
+assumptions:
+  - "Una unidad pasa de la cola al puesto en index_s, se opera (cycle_s o handle_s) y vuelve a tardar index_s en salir: el puesto automático atiende una cada 2 × index_s + cycle_s."
+  - Con la salida retenida la unidad terminada se queda en su puesto, así que el puesto no toma la siguiente.
+  - "Entre dos unidades que salen pasan al menos release_gap_s: el motor de planta intercambia señales con un paso de retraso, y con una por segundo la banda siguiente recibiría la segunda antes de avisar que está llena."
+  - "Atasco: la unidad trabada no llega a la fotocelda de posición; el vigilante avisa jam_detect_s después de lo esperado y desde ahí corre jam_clear_s. La cola sigue recibiendo hasta llenarse (zonas independientes)."
+  - "Paro manual o falla: se detienen todos los motores de la estación, así que tampoco recibe; la banda anterior acumula contra su fotocelda de descarga."
+  - Los atascos se reparten de forma uniforme (uno cada 100 ÷ jam_pct unidades) para calcular a mano; con jam_random caen al azar con la semilla del escenario.

@@ -10,6 +10,8 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
+| 2026-10-19 | Operarios más humanos | La figura común de las personas (operarios, pasajeros y agentes de todas las plantas) pasa de cajas y cilindros a formas orgánicas: tronco con pecho y cintura, chaleco que sigue el cuerpo, brazos y piernas que se afinan y se unen sin costura en codo y rodilla, manos con dedos y pulgar, cara con mandíbula, nariz, orejas, cejas y boca, botas con puntera. Misma interfaz, así que aplica en todas las escenas. D64 | 4 |
+| 2026-10-19 | Sensores y atascos en la fábrica de cajas | Cada banda de la fábrica de cajas es una unidad independiente con fotoceldas por zona; tipo nuevo `inline-station` (cola, puesto y salida con tres fotoceldas, atasco con vigilante de tiempo y pulsador de paro) para las mesas giratorias, las amarradoras y una mesa manual por línea que parte la banda larga en dos; escenarios de atascos de la amarradora, pausa de operarios, paro manual y atascos al azar; la banda ya no pierde unidades cuando la siguiente se llena. D63 | 4 |
 | 2026-10-19 | Imágenes en el portal | Cada tarjeta de la página principal lleva una captura de su escena 3D (plásticos, salsas, acueducto, aeropuerto y fábrica de cajas), recortada sin interfaz, en `apps/gallery/public/portal/`. Pedido de Andy | portal |
 | 2026-10-19 | Entrada a 45° y PLC de bandas | La inducción del clasificador entra a 45° en la parte recta del lazo, con la punta cortada a inglete sobre el borde de las bandejas (sin el hueco triangular) y rodillo de nariz; las rampas empiezan 4 m después (`chute_lead_m`) y los carruseles se realinearon. Velocidades ajustadas (inducción 0,75 → línea sur 1,0 m/s para abrir hueco; regresos 0,4–0,5). Cada banda tiene señales start/stop: arranca con su fotocelda de entrada, se duerme sin maletas y el operador la habilita o la para. Tablero «⚙ PLC DE BANDAS» con luces, START/STOP y consigna de velocidad por banda. D62 | logística |
 | 2026-10-19 | Editor de hojas de ruta | Panel HOJA DE RUTA con la tabla de pasos y, en el 3D, el tiempo unitario y el lote mínimo junto a cada número; editor con clic en el 3D para los equipos, validación en vivo, productos nuevos o duplicados, y descarga en YAML. D61 | datos reales |
@@ -79,6 +81,24 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 ## Entradas
 
+### 2026-10-19 16:40 · Operarios con figura orgánica en todas las plantas
+- **Fecha/hora (UTC):** 2026-10-19 16:11–16:45
+- **Fase del plan:** [[plan-del-proyecto]] fase 4 (motor de planta), escenas 3D
+- **Solicitado por:** Andy (16:11, hilo de la fábrica de cajas): «no solamente en este hilo, sino en todos los demás hilos, los humanos deben tener una geometría mucho más cercana a la real, no tan dura».
+- **Qué se hizo:** se rehízo `operator()` en `packages/twin-3d/src/parts.ts`, la figura que usan todas las plantas: extremidades de revolución que se afinan, con extremos redondeados y solapadas en rodilla y codo; tronco y cadera por perfil, aplanados de frente a espalda; chaleco que sigue el tronco con sus franjas; manos con cuatro dedos y pulgar (guante o piel); cabeza con mandíbula, orejas, ojos, cejas, nariz y boca; casco con cresta y ala; botas con caña, empeine y puntera. Postura de reposo con los brazos algo separados y el codo flexionado. Se conserva la interfaz (`setPose`, `setWalk`, `OperatorLook`). Los operarios de la mesa manual ya no van de camisa blanca.
+- **Verificación:** `pnpm -r typecheck`, `pnpm -r test` (133), `ruff check`; captura [[operarios-figura-organica.jpg]] (con dotación, trabajando, caminando y civil).
+- **Decisiones:** [[decisiones]] D64
+- **Conversación:** [[hilo-fabrica-de-cajas]]
+
+### 2026-10-19 15:30 · Fábrica de cajas: sensores, estaciones y atascos
+- **Fecha/hora (UTC):** 2026-10-19 14:52–15:40
+- **Fase del plan:** [[plan-del-proyecto]] fase 4 (motor de planta), gemelo de la fábrica de cajas
+- **Solicitado por:** Andy (11:45, chat del proyecto, enviado al hilo por el coordinador): «cada banda transportadora funciona como una unidad independiente… hay procesos manuales en el intermedio con los paquetes que tienen que parar y esperar… identifique dónde convendría poner esos sensores para paradas automáticas y para paradas manuales, y que se vaya simulando como el flujo real».
+- **Qué se hizo:** tipo `inline-station` (contrato, comportamiento, geometría con fotoceldas que se ponen rojas, pulsador y baliza, presets `stack-turntable`, `bundle-strapper` y `manual-table`, 6 escenarios con expectativas). En `corrugated-box-plant-v1` se simulan `tt-01`, `tt-02` y `strap-01..03`, se agregan las mesas manuales `man-01..03` y las bandas `bc-0Na`/`bc-0Nb` reemplazan a las bandas de 54 y 62,5 m; control por zonas en todas las bandas; plano y `layout.svg` regenerados. Escenarios nuevos `strapper-jams`, `operator-break`, `manual-stop` y `random-jams`. `belt-conveyor`: la unidad que llega con la entrada ocupada espera en vez de perderse. Documentación: sección «Sensores y paradas» de `docs/box-plant.md`, `docs/plant-engine.md`, `docs/plant-scene.md` y `AGENTS.md`.
+- **Verificación:** `twin-lib validate`, `twin-lib plant validate` (las 5 plantas), conservación de unidades en cada enlace de la fábrica de cajas en los 7 escenarios, `pytest` (298), `ruff check`, `pnpm -r typecheck`, `pnpm -r test` (133); capturas `evidencia/cajas-amarradora-fotoceldas.jpg` y `evidencia/cajas-mesa-manual-division.jpg`.
+- **Al traer main (16:50):** la ruta de las tres cajas en `catalog/products.yaml` (fase C, PR #61) pasa por las bandas partidas y la mesa manual de cada línea (`bc-0Na`, `man-0N`, `bc-0Nb`).
+- **Decisiones:** [[decisiones]] D63
+- **Conversación:** [[hilo-fabrica-de-cajas]]
 ### 2026-10-19 16:12 · Imágenes en las tarjetas del portal
 - **Fecha/hora (UTC):** 2026-10-19 16:12–16:45
 - **Fase del plan:** [[plan-del-proyecto]] portal de plantas

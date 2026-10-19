@@ -47,7 +47,11 @@ products:
     equipment: [strap-01]
     batch_qty: 25
   - stage: banda de fajos
-    equipment: [bc-01]
+    equipment: [bc-01a]
+  - stage: mesa manual (revisión y etiquetado)
+    equipment: [man-01]
+  - stage: banda hacia paletizado
+    equipment: [bc-01b]
   - stage: paletizado
     equipment: [pal-01]
     batch_qty: 600
@@ -98,7 +102,11 @@ products:
     equipment: [strap-02]
     batch_qty: 25
   - stage: banda de fajos
-    equipment: [bc-02]
+    equipment: [bc-02a]
+  - stage: mesa manual (revisión y etiquetado)
+    equipment: [man-02]
+  - stage: banda hacia paletizado
+    equipment: [bc-02b]
   - stage: unión de bandas
     equipment: [bc-merge-01]
   - stage: paletizado
@@ -151,7 +159,11 @@ products:
     equipment: [strap-03]
     batch_qty: 25
   - stage: banda de fajos
-    equipment: [bc-03]
+    equipment: [bc-03a]
+  - stage: mesa manual (división y conteo)
+    equipment: [man-03]
+  - stage: banda hacia paletizado
+    equipment: [bc-03b]
   - stage: unión de bandas
     equipment: [bc-merge-01]
   - stage: paletizado

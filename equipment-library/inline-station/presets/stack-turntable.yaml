@@ -1,0 +1,4 @@
+preset: stack-turntable
+description: Mesa giratoria de pilas de 1,4 m, gira 90° en 8 s; una pila a la vez
+params: { role: turntable, mode: automatic, cycle_s: 8, index_s: 5, queue_capacity: 1, jam_detect_s: 10, jam_clear_s: 300, nominal_inflow_upm: 0.69, length_m: 3, width_m: 3, unit_size_m: 1.4 }
+provenance: { cycle_s: assumed, index_s: assumed, jam_detect_s: assumed, jam_clear_s: assumed }

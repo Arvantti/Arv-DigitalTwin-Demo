@@ -151,27 +151,45 @@
 <rect x="748.3" y="673.5" width="24.3" height="18.3" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
 <title>strap-01 · bundle_strapper</title>
 <text x="760.4" y="671.5" font-size="7.0" text-anchor="middle" fill="#111827">strap-01</text>
-<rect x="413.5" y="678.3" width="328.7" height="8.5" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
-<title>bc-01 · bundle_conveyor</title>
-<text x="577.8" y="685.1" font-size="7.5" text-anchor="middle" fill="#ffffff">bc-01</text>
+<rect x="626.5" y="678.3" width="115.7" height="8.5" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>bc-01a · bundle_conveyor</title>
+<text x="684.3" y="685.1" font-size="7.5" text-anchor="middle" fill="#ffffff">bc-01a</text>
+<rect x="602.2" y="673.5" width="24.3" height="18.3" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>man-01 · manual_table</title>
+<text x="614.3" y="671.5" font-size="7.0" text-anchor="middle" fill="#111827">man-01</text>
+<rect x="413.5" y="678.3" width="188.7" height="8.5" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>bc-01b · bundle_conveyor</title>
+<text x="507.8" y="685.1" font-size="7.5" text-anchor="middle" fill="#ffffff">bc-01b</text>
 <rect x="787.8" y="594.3" width="152.2" height="30.4" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
 <title>ffg-02 · flexo_folder_gluer</title>
 <text x="863.9" y="612.1" font-size="7.5" text-anchor="middle" fill="#ffffff">ffg-02</text>
 <rect x="748.3" y="600.4" width="24.3" height="18.3" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
 <title>strap-02 · bundle_strapper</title>
 <text x="760.4" y="598.4" font-size="7.0" text-anchor="middle" fill="#111827">strap-02</text>
-<rect x="413.5" y="605.3" width="328.7" height="8.5" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
-<title>bc-02 · bundle_conveyor</title>
-<text x="577.8" y="612.1" font-size="7.5" text-anchor="middle" fill="#ffffff">bc-02</text>
+<rect x="626.5" y="605.3" width="115.7" height="8.5" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>bc-02a · bundle_conveyor</title>
+<text x="684.3" y="612.1" font-size="7.5" text-anchor="middle" fill="#ffffff">bc-02a</text>
+<rect x="602.2" y="600.4" width="24.3" height="18.3" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>man-02 · manual_table</title>
+<text x="614.3" y="598.4" font-size="7.0" text-anchor="middle" fill="#111827">man-02</text>
+<rect x="413.5" y="605.3" width="188.7" height="8.5" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>bc-02b · bundle_conveyor</title>
+<text x="507.8" y="612.1" font-size="7.5" text-anchor="middle" fill="#ffffff">bc-02b</text>
 <rect x="836.5" y="521.3" width="103.5" height="30.4" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
 <title>rdc-01 · rotary_die_cutter</title>
 <text x="888.3" y="539.0" font-size="7.5" text-anchor="middle" fill="#ffffff">rdc-01</text>
 <rect x="797.0" y="527.4" width="24.3" height="18.3" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
 <title>strap-03 · bundle_strapper</title>
 <text x="809.1" y="525.4" font-size="7.0" text-anchor="middle" fill="#111827">strap-03</text>
-<rect x="413.5" y="532.3" width="380.4" height="8.5" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
-<title>bc-03 · bundle_conveyor</title>
-<text x="603.7" y="539.0" font-size="7.5" text-anchor="middle" fill="#ffffff">bc-03</text>
+<rect x="626.5" y="532.3" width="167.4" height="8.5" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>bc-03a · bundle_conveyor</title>
+<text x="710.2" y="539.0" font-size="7.5" text-anchor="middle" fill="#ffffff">bc-03a</text>
+<rect x="602.2" y="527.4" width="24.3" height="18.3" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>man-03 · manual_table</title>
+<text x="614.3" y="525.4" font-size="7.0" text-anchor="middle" fill="#111827">man-03</text>
+<rect x="413.5" y="532.3" width="188.7" height="8.5" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
+<title>bc-03b · bundle_conveyor</title>
+<text x="507.8" y="539.0" font-size="7.5" text-anchor="middle" fill="#ffffff">bc-03b</text>
 <rect x="346.5" y="670.4" width="48.7" height="24.3" rx="1.5" fill="#475569" fill-opacity="0.85" stroke="#1f2937" stroke-width="0.8"/>
 <title>pal-01 · palletizer</title>
 <text x="370.9" y="685.1" font-size="7.5" text-anchor="middle" fill="#ffffff">pal-01</text>
@@ -263,9 +281,9 @@
 <line x1="1009.1" y1="682.6" x2="873.9" y2="682.6" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>pilas de láminas: 10 pilas/h</title></line>
 <line x1="1009.1" y1="609.6" x2="873.9" y2="609.6" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>pilas de láminas: 15 pilas/h</title></line>
 <line x1="1009.1" y1="536.5" x2="898.3" y2="536.5" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>pilas de láminas: 12 pilas/h</title></line>
-<line x1="567.8" y1="682.6" x2="380.9" y2="682.6" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>fajos de cajas grandes: 4 u/min</title></line>
-<line x1="568.0" y1="607.5" x2="411.1" y2="575.1" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>fajos de cajas medianas: 6 u/min</title></line>
-<line x1="593.9" y1="538.3" x2="411.1" y2="571.3" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>fajos de cajas pequeñas: 9.6 u/min</title></line>
+<line x1="497.8" y1="682.6" x2="380.9" y2="682.6" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>fajos de cajas grandes: 4 u/min</title></line>
+<line x1="498.4" y1="606.3" x2="410.8" y2="576.3" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>fajos de cajas medianas: 6 u/min</title></line>
+<line x1="498.4" y1="539.8" x2="410.8" y2="569.8" stroke="#c2410c" stroke-width="1.6" stroke-opacity="0.8" marker-end="url(#arrow)"><title>fajos de cajas pequeñas: 9.6 u/min</title></line>
 <rect x="30" y="923.7391304347826" width="14" height="14" fill="#f4f4ef" stroke="#6b7280"/>
 <text x="49" y="934.7391304347826" font-size="11" fill="#374151">Exterior</text>
 <rect x="112.0" y="923.7391304347826" width="14" height="14" fill="#e9dcc3" stroke="#6b7280"/>

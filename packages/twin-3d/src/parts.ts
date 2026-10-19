@@ -217,8 +217,9 @@ export interface OperatorHandle {
 }
 
 /**
- * Operario de pie (≈ 1,75 m) con proporciones humanas: cuello, cabello, orejas, nariz, gafas de seguridad, casco, camiseta con
- * chaleco reflectivo, guantes, pantalón con rodillas articuladas y botas de seguridad con suela.
+ * Operario de pie (≈ 1,75 m) con formas orgánicas: tronco de revolución con cintura, pecho y hombros caídos, extremidades
+ * que se afinan con músculo, manos con dedos, mandíbula, cejas, gafas curvas, casco con ala, chaleco reflectivo que sigue
+ * el cuerpo, rodillas articuladas y botas con puntera redondeada.
  * Origen en el suelo entre los pies; mira a +Z. `look` varía tono de piel y cabello entre personas.
  */
 export interface OperatorLook {
@@ -230,10 +231,71 @@ export interface OperatorLook {
   civilian?: boolean;
 }
 
-function capsule(r: number, length: number, material: THREE.Material, sx = 1, sz = 1): THREE.Mesh {
-  const m = mesh(new THREE.CapsuleGeometry(r, Math.max(0.001, length), 6, 14), material);
-  m.scale.set(sx, 1, sz);
+/** Extremidad orgánica: tubo que se afina de rTop a rBottom con extremos redondeados y un abultamiento opcional (músculo). */
+function limb(rTop: number, rBottom: number, length: number, material: THREE.Material, bulge = 0, sz = 1): THREE.Mesh {
+  const pts: THREE.Vector2[] = [];
+  const caps = 6;
+  for (let i = 0; i <= caps; i++) {
+    const a = (i / caps) * (Math.PI / 2);
+    pts.push(new THREE.Vector2(rBottom * Math.sin(a), -length / 2 - rBottom * Math.cos(a)));
+  }
+  const sides = 8;
+  for (let k = 1; k < sides; k++) {
+    const t = k / sides;
+    pts.push(new THREE.Vector2(rBottom + (rTop - rBottom) * t + bulge * Math.sin(Math.PI * t), -length / 2 + length * t));
+  }
+  for (let i = caps; i >= 0; i--) {
+    const a = (i / caps) * (Math.PI / 2);
+    pts.push(new THREE.Vector2(rTop * Math.sin(a), length / 2 + rTop * Math.cos(a)));
+  }
+  const m = mesh(new THREE.LatheGeometry(pts, 20), material);
+  m.scale.z = sz;
   return m;
+}
+
+/** Cuerpo de revolución a partir de un perfil (radio, altura), aplanado de frente a espalda como un tronco humano. */
+function bodyShell(profile: [number, number][], material: THREE.Material, depth = 0.62, open = false): THREE.Mesh {
+  const pts = profile.map(([r, y]) => new THREE.Vector2(r, y));
+  const geo = new THREE.LatheGeometry(pts, 28);
+  const mat = open ? material.clone() : material;
+  if (open) (mat as THREE.MeshStandardMaterial).side = THREE.DoubleSide;
+  const m = mesh(geo, mat);
+  m.scale.z = depth;
+  return m;
+}
+
+/** Radio del tronco (perfil de TORSO) a una altura dada, para ajustar chaleco y franjas. */
+const TORSO: [number, number][] = [
+  [0.0, -0.02], [0.13, 0.0], [0.148, 0.06], [0.142, 0.13], [0.15, 0.22], [0.168, 0.31], [0.182, 0.38],
+  [0.186, 0.43], [0.178, 0.47], [0.15, 0.5], [0.1, 0.53], [0.055, 0.545], [0.0, 0.55],
+];
+function torsoRadius(y: number): number {
+  for (let i = 1; i < TORSO.length; i++) {
+    const [r0, y0] = TORSO[i - 1];
+    const [r1, y1] = TORSO[i];
+    if (y <= y1) return r0 + ((r1 - r0) * (y - y0)) / Math.max(1e-6, y1 - y0);
+  }
+  return 0;
+}
+
+/** Mano con guante o piel: palma, cuatro dedos algo flexionados y pulgar. Origen en la muñeca; cuelga hacia −Y. */
+function hand(material: THREE.Material, side: number): THREE.Group {
+  const h = group("hand");
+  const palm = mesh(new THREE.SphereGeometry(0.042, 14, 10), material);
+  palm.scale.set(0.82, 1.15, 0.5);
+  palm.position.y = -0.045;
+  h.add(palm);
+  for (let f = 0; f < 4; f++) {
+    const finger = limb(0.0105, 0.0085, 0.045 - Math.abs(f - 1.5) * 0.006, material);
+    finger.position.set((f - 1.5) * 0.019, -0.11, 0.006);
+    finger.rotation.x = 0.35;
+    h.add(finger);
+  }
+  const thumb = limb(0.012, 0.0095, 0.035, material);
+  thumb.position.set(-side * 0.036, -0.06, 0.018);
+  thumb.rotation.set(0.5, 0, side * 0.6);
+  h.add(thumb);
+  return h;
 }
 
 export function operator(vest = "#f26b1d", shirt = "#2f5f8f", look: OperatorLook = {}): OperatorHandle {
@@ -246,133 +308,163 @@ export function operator(vest = "#f26b1d", shirt = "#2f5f8f", look: OperatorLook
   const vestMat = M.paint(vest, 0.7);
   const shirtMat = M.paint(shirt, 0.85);
   const helmet = M.paint(look.helmet ?? "#f4f4f2", 0.35);
-  const glove = M.paint("#d9d2c3", 0.8);
+  const glove = look.civilian ? skin : M.paint("#d9d2c3", 0.8);
   const reflect = M.paint("#e3e7ea", 0.25);
 
   // piernas: cadera → muslo → rodilla → pantorrilla → bota
   const legs: { hip: THREE.Group; knee: THREE.Group }[] = [];
   for (const sx of [-1, 1]) {
     const hip = group("leg");
-    hip.position.set(sx * 0.095, 0.93, 0);
-    const thigh = capsule(0.077, 0.28, pants, 1, 1.05);
+    hip.position.set(sx * 0.09, 0.93, 0);
+    // los tramos se solapan en la rodilla y el codo para que no se vea la costura de muñeco
+    const thigh = limb(0.088, 0.06, 0.4, pants, 0.01, 1.05);
     thigh.position.y = -0.22;
     hip.add(thigh);
     const knee = group("knee");
     knee.position.y = -0.44;
-    const shin = capsule(0.058, 0.27, pants);
-    shin.position.y = -0.2;
+    // pantorrilla con el gemelo atrás
+    const shin = limb(0.059, 0.042, 0.34, pants, 0.008);
+    shin.position.y = -0.17;
     knee.add(shin);
-    const kneeCap = mesh(new THREE.SphereGeometry(0.066, 12, 10), pants);
-    knee.add(kneeCap);
-    const boot = box(0.105, 0.09, 0.27, boots, 0.035);
-    boot.position.set(0, -0.435, 0.05);
-    knee.add(boot);
-    const bootSole = box(0.11, 0.025, 0.285, sole, 0.01);
+    const calf = mesh(new THREE.SphereGeometry(0.05, 12, 10), pants);
+    calf.scale.set(0.9, 1.6, 0.8);
+    calf.position.set(0, -0.12, -0.018);
+    knee.add(calf);
+    // bota: caña, empeine y puntera redondeada sobre la suela
+    const shaft = limb(0.055, 0.058, 0.07, boots);
+    shaft.position.y = -0.39;
+    knee.add(shaft);
+    const instep = box(0.1, 0.085, 0.2, boots, 0.04);
+    instep.position.set(0, -0.44, 0.03);
+    knee.add(instep);
+    const toe = mesh(new THREE.SphereGeometry(0.052, 14, 10), boots);
+    toe.scale.set(1, 0.75, 1.15);
+    toe.position.set(0, -0.445, 0.12);
+    knee.add(toe);
+    const bootSole = box(0.108, 0.022, 0.29, sole, 0.01);
     bootSole.position.set(0, -0.485, 0.05);
     knee.add(bootSole);
-    const shaft = capsule(0.062, 0.05, boots);
-    shaft.position.y = -0.4;
-    knee.add(shaft);
     hip.add(knee);
     g.add(hip);
     legs.push({ hip, knee });
   }
-  const pelvis = box(0.34, 0.2, 0.2, pants, 0.08);
-  pelvis.position.y = 0.97;
+  // cadera y glúteos
+  const pelvis = bodyShell([[0.0, 0.0], [0.1, 0.01], [0.155, 0.06], [0.168, 0.12], [0.158, 0.19], [0.0, 0.2]], pants, 0.66);
+  pelvis.position.y = 0.84;
   g.add(pelvis);
+  const belt = bodyShell([[0.152, 0.0], [0.154, 0.035]], M.paint("#1b1b1b", 0.5), 0.66, true);
+  belt.position.y = 1.0;
+  g.add(belt);
 
   const torso = group("torso");
   torso.position.y = 1.0;
-  const chest = box(0.37, 0.5, 0.2, shirtMat, 0.08);
-  chest.position.y = 0.26;
+  const chest = bodyShell(TORSO, shirtMat, 0.6);
   torso.add(chest);
-  // chaleco reflectivo con franjas
+  // chaleco reflectivo con franjas: sigue la forma del tronco
   if (!look.civilian) {
-    const vestBody = box(0.385, 0.42, 0.215, vestMat, 0.07);
-    vestBody.position.y = 0.23;
+    const vestProfile = TORSO.filter(([, y]) => y >= 0.04 && y <= 0.47).map(([r, y]) => [r + 0.012, y] as [number, number]);
+    const vestBody = bodyShell(vestProfile, vestMat, 0.62, true);
     torso.add(vestBody);
-    for (const y of [0.1, 0.27]) {
-      const band = box(0.392, 0.035, 0.222, reflect, 0.012);
-      band.position.y = y;
+    for (const y of [0.12, 0.28]) {
+      const r = torsoRadius(y) + 0.016;
+      const band = bodyShell([[r, y - 0.018], [r, y + 0.018]], reflect, 0.625, true);
       torso.add(band);
     }
   }
-  const neck = cylinder(0.045, 0.05, 0.1, skin, 14);
-  neck.position.y = 0.52;
+  const neck = limb(0.048, 0.055, 0.08, skin);
+  neck.position.y = 0.56;
   torso.add(neck);
   for (const sx of [-1, 1]) {
-    const shoulder = mesh(new THREE.SphereGeometry(0.06, 14, 10), shirtMat);
-    shoulder.position.set(sx * 0.205, 0.45, 0);
+    const shoulder = mesh(new THREE.SphereGeometry(0.06, 16, 12), shirtMat);
+    shoulder.scale.set(0.95, 0.8, 0.9);
+    shoulder.position.set(sx * 0.178, 0.452, 0);
     torso.add(shoulder);
   }
 
-  // cabeza: cráneo ovalado, cabello, orejas, nariz, ojos, gafas y casco
+  // cabeza: cráneo, mandíbula, cabello, orejas, nariz, ojos, cejas, gafas y casco
   const head = group("head");
-  head.position.y = 0.67;
-  const skull = mesh(new THREE.SphereGeometry(0.1, 24, 18), skin);
-  skull.scale.set(0.9, 1.12, 1);
+  head.position.y = 0.69;
+  const skull = mesh(new THREE.SphereGeometry(0.1, 26, 20), skin);
+  skull.scale.set(0.88, 1.08, 1);
   head.add(skull);
-  const hair = mesh(new THREE.SphereGeometry(0.104, 20, 14, 0, Math.PI * 2, 0, Math.PI * 0.62), hairMat);
-  hair.scale.set(0.92, 1.12, 1.02);
-  hair.position.set(0, 0.004, -0.008);
+  const jaw = mesh(new THREE.SphereGeometry(0.075, 20, 14), skin);
+  jaw.scale.set(0.95, 0.8, 1.05);
+  jaw.position.set(0, -0.05, 0.022);
+  head.add(jaw);
+  const hair = mesh(new THREE.SphereGeometry(0.104, 22, 14, 0, Math.PI * 2, 0, Math.PI * 0.6), hairMat);
+  hair.scale.set(0.91, 1.1, 1.03);
+  hair.position.set(0, 0.006, -0.01);
   head.add(hair);
   for (const sx of [-1, 1]) {
     const ear = mesh(new THREE.SphereGeometry(0.022, 10, 8), skin);
-    ear.scale.set(0.5, 1, 0.8);
-    ear.position.set(sx * 0.091, -0.005, 0);
+    ear.scale.set(0.45, 1, 0.75);
+    ear.position.set(sx * 0.089, -0.008, -0.004);
     head.add(ear);
-    const eye = mesh(new THREE.SphereGeometry(0.01, 8, 6), M.paint("#15110f", 0.3));
-    eye.position.set(sx * 0.034, 0.014, 0.093);
+    const eye = mesh(new THREE.SphereGeometry(0.0095, 10, 8), M.paint("#15110f", 0.3));
+    eye.position.set(sx * 0.033, 0.014, 0.088);
     head.add(eye);
+    const brow = limb(0.006, 0.006, 0.03, hairMat);
+    brow.rotation.z = Math.PI / 2 + sx * 0.12;
+    brow.position.set(sx * 0.034, 0.038, 0.09);
+    head.add(brow);
     if (!look.civilian) {
-      const lens = box(0.058, 0.032, 0.006, M.glass("#bfe3ff", 0.35), 0.003);
-      lens.position.set(sx * 0.034, 0.014, 0.1);
+      const lens = mesh(new THREE.SphereGeometry(0.03, 14, 10, 0, Math.PI * 2, 0, Math.PI / 2), M.glass("#bfe3ff", 0.35));
+      lens.rotation.x = Math.PI / 2;
+      lens.scale.set(1, 0.35, 0.7);
+      lens.position.set(sx * 0.034, 0.014, 0.094);
       head.add(lens);
     }
   }
   if (!look.civilian) {
-    const bridge = box(0.02, 0.006, 0.006, M.paint("#222a30", 0.5), 0.002);
-    bridge.position.set(0, 0.018, 0.101);
+    const bridge = limb(0.003, 0.003, 0.016, M.paint("#222a30", 0.5));
+    bridge.rotation.z = Math.PI / 2;
+    bridge.position.set(0, 0.02, 0.103);
     head.add(bridge);
   }
-  const nose = mesh(new THREE.ConeGeometry(0.014, 0.034, 8), skin);
-  nose.rotation.x = Math.PI / 2;
-  nose.position.set(0, -0.012, 0.108);
+  const nose = limb(0.011, 0.016, 0.026, skin);
+  nose.rotation.x = -0.35;
+  nose.position.set(0, -0.006, 0.1);
   head.add(nose);
-  const mouth = box(0.04, 0.006, 0.006, M.paint("#8a4b4b", 0.6), 0.002);
-  mouth.position.set(0, -0.052, 0.092);
+  const mouth = limb(0.005, 0.005, 0.03, M.paint("#8a4b4b", 0.6));
+  mouth.rotation.z = Math.PI / 2;
+  mouth.position.set(0, -0.05, 0.093);
   head.add(mouth);
   if (!look.civilian) {
-    const hat = mesh(new THREE.SphereGeometry(0.112, 22, 12, 0, Math.PI * 2, 0, Math.PI * 0.46), helmet);
-    hat.scale.set(0.96, 1.05, 1.08);
+    const hat = mesh(new THREE.SphereGeometry(0.112, 24, 12, 0, Math.PI * 2, 0, Math.PI * 0.46), helmet);
+    hat.scale.set(0.97, 1.05, 1.1);
     hat.position.set(0, 0.03, -0.004);
     head.add(hat);
-    const ridge = box(0.03, 0.012, 0.2, helmet, 0.005);
-    ridge.position.set(0, 0.135, -0.004);
+    const ridge = limb(0.012, 0.012, 0.17, helmet);
+    ridge.rotation.x = Math.PI / 2;
+    ridge.position.set(0, 0.13, -0.004);
     head.add(ridge);
-    const brim = box(0.2, 0.012, 0.07, helmet, 0.005);
-    brim.position.set(0, 0.052, 0.1);
+    const brim = mesh(new THREE.CylinderGeometry(0.13, 0.13, 0.01, 28, 1, false, -Math.PI / 2.6, (Math.PI * 2) / 2.6), helmet);
+    brim.scale.set(1, 1, 0.9);
+    brim.position.set(0, 0.05, 0.0);
     head.add(brim);
   }
   torso.add(head);
 
-  // brazos: hombro → codo → antebrazo → guante
+  // brazos: hombro → codo → antebrazo → mano
   const arms: THREE.Group[] = [];
   for (const sx of [-1, 1]) {
     const arm = group("arm");
-    arm.position.set(sx * 0.215, 0.45, 0);
-    const upper = capsule(0.04, 0.17, shirtMat);
-    upper.position.y = -0.14;
+    arm.position.set(sx * 0.195, 0.45, 0);
+    const upper = limb(0.048, 0.038, 0.28, shirtMat, 0.006);
+    upper.position.y = -0.16;
     arm.add(upper);
     const fore = group("forearm");
     fore.position.y = -0.3;
-    const lower = capsule(0.034, 0.16, shirtMat);
-    lower.position.y = -0.13;
+    const lower = limb(0.038, 0.027, 0.24, shirtMat, 0.006);
+    lower.position.y = -0.12;
     fore.add(lower);
-    const hand = mesh(new THREE.SphereGeometry(0.04, 12, 10), glove);
-    hand.scale.set(0.9, 1.15, 0.7);
-    hand.position.y = -0.285;
-    fore.add(hand);
+    const cuff = limb(0.03, 0.03, 0.02, glove);
+    cuff.position.y = -0.255;
+    fore.add(cuff);
+    const hd = hand(glove, sx);
+    hd.position.y = -0.255;
+    hd.rotation.y = -sx * 0.5;
+    fore.add(hd);
     arm.add(fore);
     arm.userData.fore = fore;
     torso.add(arm);
@@ -381,31 +473,39 @@ export function operator(vest = "#f26b1d", shirt = "#2f5f8f", look: OperatorLook
   g.add(torso);
   function setPose(work: number): void {
     const w = Math.max(0, Math.min(1, work));
-    torso.rotation.x = 0.3 * w;
+    torso.rotation.x = 0.28 * w;
+    torso.rotation.y = 0;
+    head.rotation.x = 0.15 * w;
+    g.position.y = 0;
     for (const [i, arm] of arms.entries()) {
-      arm.rotation.x = -0.5 * w - 0.05;
-      arm.rotation.z = (i ? -1 : 1) * 0.04;
-      (arm.userData.fore as THREE.Group).rotation.x = -(0.2 + 0.7 * w + 0.12 * Math.sin(i * 2) * w);
+      const s = i ? -1 : 1;
+      arm.rotation.x = -0.55 * w - 0.06;
+      // en reposo los brazos cuelgan algo separados del cuerpo, con el codo un poco doblado
+      arm.rotation.z = s * (0.09 - 0.04 * w);
+      (arm.userData.fore as THREE.Group).rotation.x = -(0.22 + 0.75 * w + 0.12 * Math.sin(i * 2) * w);
     }
     for (const l of legs) {
-      l.hip.rotation.x = 0;
-      l.knee.rotation.x = 0;
+      l.hip.rotation.x = -0.04 * w;
+      l.knee.rotation.x = 0.06 * w;
     }
   }
   function setWalk(phase: number): void {
-    const swing = Math.sin(phase) * 0.5;
+    const swing = Math.sin(phase) * 0.45;
     legs[0].hip.rotation.x = swing;
     legs[1].hip.rotation.x = -swing;
     // la rodilla se flexiona mientras la pierna avanza
-    legs[0].knee.rotation.x = Math.max(0, -Math.cos(phase)) * 0.7;
-    legs[1].knee.rotation.x = Math.max(0, Math.cos(phase)) * 0.7;
-    arms[0].rotation.x = -swing * 0.8 - 0.05;
-    arms[1].rotation.x = swing * 0.8 - 0.05;
-    (arms[0].userData.fore as THREE.Group).rotation.x = -0.25 - Math.max(0, swing) * 0.4;
-    (arms[1].userData.fore as THREE.Group).rotation.x = -0.25 - Math.max(0, -swing) * 0.4;
-    torso.rotation.x = 0.03;
-    torso.rotation.y = swing * 0.12;
-    g.position.y = Math.abs(Math.cos(phase)) * 0.02;
+    legs[0].knee.rotation.x = Math.max(0, -Math.cos(phase)) * 0.65;
+    legs[1].knee.rotation.x = Math.max(0, Math.cos(phase)) * 0.65;
+    arms[0].rotation.x = -swing * 0.7 - 0.06;
+    arms[1].rotation.x = swing * 0.7 - 0.06;
+    arms[0].rotation.z = 0.08;
+    arms[1].rotation.z = -0.08;
+    (arms[0].userData.fore as THREE.Group).rotation.x = -0.3 - Math.max(0, swing) * 0.45;
+    (arms[1].userData.fore as THREE.Group).rotation.x = -0.3 - Math.max(0, -swing) * 0.45;
+    torso.rotation.x = 0.04;
+    torso.rotation.y = swing * 0.1;
+    head.rotation.x = 0;
+    g.position.y = Math.abs(Math.cos(phase)) * 0.018;
   }
   setPose(0);
   return { object: g, setPose, setWalk };

@@ -172,7 +172,7 @@ class BeltConveyor(EquipmentBehavior):
         inflow = self.inputs["inflow_upm"]
         inflow = p["nominal_inflow_upm"] if inflow is None else float(inflow)
         buffer = float(p["entry_buffer_units"])
-        self.arrivals = min(self.arrivals + inflow / 60.0 * dt, buffer + inflow / 60.0 * dt)
+        self.arrivals += inflow / 60.0 * dt
         while self.arrivals >= 1.0 and (not self.items or self.items[-1] >= pitch - 1e-9):
             self.items.append(0.0)
             self.touching.append(False)
@@ -183,7 +183,9 @@ class BeltConveyor(EquipmentBehavior):
             self.emit("accepting_again" if accepting else "full")
             self.accepting = accepting
         if not accepting:
-            self.arrivals = buffer  # la máquina anterior queda esperando
+            # la máquina anterior queda esperando. Las que ya soltó antes de ver el aviso (las señales llegan con un paso
+            # de retraso, y en una banda de unión pueden ser dos máquinas) esperan en la entrada: no se pierden.
+            self.arrivals = min(self.arrivals, buffer + 2.0)
 
         if stopped:
             return
