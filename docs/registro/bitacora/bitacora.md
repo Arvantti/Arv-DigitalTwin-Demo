@@ -10,6 +10,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
+| 2026-10-19 | Productos y su ruta en el 3D | Datos reales, fase D: la API entrega el catálogo de cada planta; panel PRODUCTOS en la escena con la ruta resaltada y numerada, arcos con el color del producto, enlace `?product=` y carga de productos nuevos validados contra el plano; tamaño del equipo en el HUD. D58 | datos reales |
 | 2026-10-19 | #56 | Datos reales, fases A y B: esquema común del catálogo y validador (`twin-lib catalog`), catálogo de plásticos con 3 productos (cubiertos, balde 12 L, papelera 20 L con ensamble), 4 moldes, resinas y colores, 3 tamaños de inyectora y montaje actual; el motor toma el molde del catálogo y los 8 escenarios dan lo mismo. D56 | datos reales |
 | 2026-10-19 | Línea fría y mostaza de salsas | Motor: emulsificador → molino coloidal → pulmón frío 1 → llenadoras de 250, 500 y 1.000 ml → pesadoras → mesas, y mostaza con llenadora y pesadora dedicadas; cuatro pesadoras y flujo nuevos en el plano; escenarios `cold-nominal` y `mustard-nominal`. D53 | 5 |
 | 2026-10-18 | Plan de datos reales | Plan para alimentar los cinco gemelos con datos reales: catálogo común (productos, rutas, moldes o recetas, materia prima, tamaños de equipo), interfaz con ruta en 3D, pedidos y secuenciación en Fractal; aeropuerto con entrada y destino, acueducto con optimización (`docs/datos-reales.md`). D54 | plan |
@@ -70,6 +71,15 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 | 2026-10-16 | #1 | Layouts de las plantas | 1 |
 
 ## Entradas
+
+### 2026-10-19 09:58 · Productos y su ruta en el 3D (fase D)
+- **Fecha/hora (UTC):** 2026-10-19 09:58–10:30
+- **Fase del plan:** [[plan-del-proyecto]] «Datos reales y pedidos», fase D
+- **Solicitado por:** Carlos Andrés Quiceño: «d y luego c».
+- **Qué se hizo:** `twin_runtime/catalog.py` con `route_graph`, `summary` y `with_product`; la API (`apps/api`) agrega `catalog` a `GET /api/plants/{id}` y el endpoint `POST /api/plants/{id}/products/check`; escena de planta (`apps/gallery/src/products.ts`, `plant.html`, `plant.ts`, `styles.css`) con panel PRODUCTOS, ruta resaltada y numerada, alternativas en gris, arcos animados con el color del producto, ficha con moldes, materiales y etapas, enlace `?product=` y botón CARGAR PRODUCTO; tamaño del equipo en el HUD. Documentado en `docs/datos-reales.md`, `docs/plant-scene.md`, `docs/roadmap.md` y el plan.
+- **Verificación:** 2 pruebas nuevas de la API (14 pasan), `ruff check`, `pytest`, `pnpm -r typecheck` y `pnpm -r test`, `twin-lib catalog validate`; capturas con la papelera 20 L (11 etapas numeradas) [[plasticos-ruta-papelera.jpg]] y con un kit cargado desde YAML [[plasticos-producto-cargado.jpg]]; un balde gris con el molde del balde blanco se rechaza con el mensaje esperado.
+- **Decisiones:** [[decisiones#D58]]
+- **Conversación:** [[hilo-datos-reales]]
 
 ### 2026-10-19 03:09 · Catálogo de datos de plásticos (fases A y B)
 - **Fecha/hora (UTC):** 2026-10-19 03:09–03:45

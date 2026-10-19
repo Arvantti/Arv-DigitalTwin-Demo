@@ -47,3 +47,17 @@ Arranco con el esquema común y el catálogo de plásticos en el mismo PR #56. L
 
 Fases A y B listas en el PR #56: esquema común y validador del catálogo, catálogo de plásticos con cubiertos, balde 12 L y papelera 20 L (con sus dos piezas y el ensamble), 4 moldes, resinas y colores, tres tamaños de inyectora y el montaje actual. El motor toma el molde del catálogo y los 8 escenarios dan exactamente lo mismo que antes.
 
+### 👤 Carlos Andrés Quiceño · 2026-10-19 09:58:16 UTC
+
+d y luego c
+
+### 🤖 Claude · 2026-10-19 09:59 UTC
+
+Empiezo por la fase D (productos y su ruta en el 3D) en plásticos y después sigo con los catálogos de salsas y cajas (fase C).
+
+*(Herramientas: lectura de la escena de planta, de la API y del catálogo; métodos `route_graph`, `summary` y `with_product`; resumen del catálogo y validación de productos en la API con 2 pruebas; panel de productos en la escena; capturas con Playwright; ruff, pytest, typecheck y pruebas de la galería.)*
+
+### 🤖 Claude · 2026-10-19 10:30 UTC
+
+Fase D lista en un PR nuevo: panel PRODUCTOS en la escena de plásticos; al elegir un producto se resaltan y numeran los equipos de su ruta, con arcos del color del producto entre etapas, y se puede cargar un producto nuevo desde YAML, que la API valida contra el plano. Sigue la fase C.
+

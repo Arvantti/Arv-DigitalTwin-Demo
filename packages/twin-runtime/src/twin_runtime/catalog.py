@@ -45,7 +45,12 @@ class Catalog:
                 if key in data:
                     raise SpecError(f"{path}: la sección {key!r} ya está definida en otro archivo del catálogo")
                 data[key] = value
-        schema = json.loads((plant_folder.parent / SCHEMA_PATH).read_text(encoding="utf-8"))
+        return cls.from_data(folder, data)
+
+    @classmethod
+    def from_data(cls, folder: Path, data: dict[str, Any]) -> Catalog:
+        """Catálogo a partir de datos ya unidos (folder es <planta>/catalog). Valida el esquema y los ids repetidos."""
+        schema = json.loads((folder.parent.parent / SCHEMA_PATH).read_text(encoding="utf-8"))
         errors = sorted(jsonschema.Draft202012Validator(schema).iter_errors(data), key=lambda e: list(e.path))
         if errors:
             raise SpecError("\n".join(f"{folder}: {'/'.join(map(str, e.path)) or '(raíz)'}: {e.message}" for e in errors))
@@ -86,16 +91,80 @@ class Catalog:
         Cada etapa trae `equipment` (donde puede hacerse) y `active` (donde se hace hoy: en una etapa con molde,
         las inyectoras que lo tienen montado; si ninguna, todas las candidatas). Es lo que la escena 3D resalta.
         """
-        product = self.products[product_id]
+        return self.route_graph(product_id)["stages"]
+
+    def route_graph(self, product_id: str) -> dict[str, Any]:
+        """Ruta como grafo: etapas (las de route()) y enlaces [de, a] entre índices de etapa.
+
+        Dentro de un producto, cada etapa va a la siguiente; la última etapa de cada componente va a la primera del
+        producto que lo usa (el cuerpo y el pedal de la papelera llegan al ensamble).
+        """
         stages: list[dict[str, Any]] = []
-        for line in product.get("bom") or []:
-            stages += self.route(line["item"])
-        for st in product["routing"]:
-            active = list(st["equipment"])
-            if st.get("tooling"):
-                active = [e for e in st["equipment"] if self.setup.get(e, {}).get("tooling") == st["tooling"]] or active
-            stages.append({"product": product_id, **st, "active": active})
-        return stages
+        edges: list[list[int]] = []
+
+        def add(pid: str) -> tuple[int, int]:
+            product = self.products[pid]
+            ends = [add(line["item"])[1] for line in product.get("bom") or [] if line["item"] in self.products]
+            first = len(stages)
+            for st in product["routing"]:
+                active = list(st["equipment"])
+                if st.get("tooling"):
+                    active = [e for e in st["equipment"] if self.setup.get(e, {}).get("tooling") == st["tooling"]] or active
+                stages.append({"product": pid, **st, "active": active})
+            edges.extend([end, first] for end in ends)
+            edges.extend([i, i + 1] for i in range(first, len(stages) - 1))
+            return first, len(stages) - 1
+
+        add(product_id)
+        return {"stages": stages, "edges": edges}
+
+    def summary(self, layout: dict[str, Any]) -> dict[str, Any]:
+        """Lo que la escena necesita del catálogo: productos con su ruta y el tamaño de cada equipo."""
+
+        def color(mid: str) -> dict[str, Any]:
+            mat = self.materials.get(mid, {})
+            return {"id": mid, "name": mat.get("name", mid), "hex": mat.get("color")}
+
+        products = []
+        for pid, product in self.products.items():
+            molds = [self.tooling[st["tooling"]] for st in product["routing"] if st.get("tooling") in self.tooling]
+            products.append(
+                {
+                    "id": pid,
+                    "name": product["name"],
+                    "family": product.get("family"),
+                    "kind": product["kind"],
+                    "unit": product["unit"],
+                    "colors": [color(c) for c in product.get("colors") or []],
+                    "bom": [
+                        {**line, "name": self.products.get(line["item"], self.materials.get(line["item"], {})).get("name", line["item"])}
+                        for line in product.get("bom") or []
+                    ],
+                    "tooling": [
+                        {k: m[k] for k in ("id", "name", "cavities", "part_g", "cycle_s", "min_clamp_t", "change_min") if k in m}
+                        | {"material": self.materials.get(m.get("material", ""), {}).get("name")}
+                        for m in molds
+                    ],
+                    "assumed": product.get("assumed", False),
+                    **self.route_graph(pid),
+                }
+            )
+        sizes: dict[str, str] = {}
+        names = {s["id"]: s["name"] for g in self.data.get("equipment_sizes") or [] for s in g["sizes"]}
+        for item in layout.get("equipment", []):
+            if (sid := self.size_of(item)) is not None:
+                sizes[item["id"]] = names[sid]
+        return {"products": products, "sizes": sizes}
+
+    def with_product(self, product: dict[str, Any], layout: dict[str, Any], library: Any | None = None) -> tuple[Catalog | None, list[str]]:
+        """Catálogo con un producto más (o reemplazado), y los errores que ese producto agrega. No escribe nada."""
+        data = {**self.data, "products": [p for p in self.data.get("products") or [] if p["id"] != product.get("id")] + [product]}
+        try:
+            cat = Catalog.from_data(self.folder, data)
+        except SpecError as exc:
+            return None, [line.split(": ", 1)[-1] for line in str(exc).split("\n")]
+        before = set(self.validate(layout, library))
+        return cat, [e for e in cat.validate(layout, library) if e not in before]
 
     def size_of(self, layout_item: dict[str, Any]) -> str | None:
         """Tamaño (id) de un equipo del plano según su fuerza de cierre, o None si no cae en ninguno."""

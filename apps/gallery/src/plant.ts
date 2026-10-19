@@ -9,6 +9,7 @@
  *   ?plant=sauce-plant-v1&lighting=day
  *   &camera=general|<id de zona>   cámara inicial
  *   &select=<id de equipo>         equipo seleccionado
+ *   &product=<id de producto>      muestra la ruta de ese producto del catálogo (docs/datos-reales.md)
  *   &focus=<id de equipo>          acerca la cámara a ese equipo
  *   &look=x,y,z,tx,ty,tz           cámara en el punto (x, y, z) del plano mirando a (tx, ty, tz), en metros
  *   &autosim=1&scenario=boiler-trip&speed=120   conecta la simulación al cargar
@@ -25,6 +26,7 @@ import { buildProcessPiece } from "./process-pieces.ts";
 import { dockLeveler, deliveryTruck, palletRack, passThroughDoor } from "./warehouse.ts";
 import { type ControlPiece, type PanelConfig, controlPanel, operatorDesk, plcCabinet } from "./control-room.ts";
 import { bootDone, bootError, bootStage } from "./boot.ts";
+import { type CatalogDoc, buildProducts } from "./products.ts";
 import "./styles.css";
 
 interface Zone {
@@ -91,6 +93,8 @@ interface PlantDoc {
   pipes: Pipe[];
   lines: { id: string; name: string; equipment: string[] }[];
   scenarios: Record<string, { description: string; duration_s: number }>;
+  /** Catálogo de datos de la planta (productos con su ruta y tamaño de cada equipo); null si no tiene. */
+  catalog?: CatalogDoc | null;
 }
 interface EquipmentSnapshot {
   state: string;
@@ -1006,7 +1010,7 @@ function renderAsset(): void {
   const spec = asset?.eq.sim ? specs[asset.eq.sim.type] : undefined;
   $("asset-name").textContent = asset ? asset.eq.id.toUpperCase() : "Haz clic en un equipo";
   $("asset-meta").textContent = asset
-    ? `${spec?.name ?? asset.eq.type} · ${asset.eq.zone}${asset.eq.sim ? "" : " · no simulado"}`
+    ? `${spec?.name ?? asset.eq.type}${doc.catalog?.sizes[asset.eq.id] ? ` ${doc.catalog.sizes[asset.eq.id].toLowerCase()}` : ""} · ${asset.eq.zone}${asset.eq.sim ? "" : " · no simulado"}`
     : "";
   const st = $("state");
   st.textContent = (snap?.state ?? "—").toUpperCase();
@@ -1127,6 +1131,8 @@ async function start(): Promise<void> {
     send({ speed: speedFromSlider() });
   };
   if (!simulated) $("btn-connect").setAttribute("disabled", "");
+  if (doc.catalog?.products.length)
+    updateProducts = buildProducts({ plantId, catalog: doc.catalog, stage, rootOf: (id) => assets.get(id)?.root, select });
   if (url.get("select")) select(url.get("select"));
   const focusAsset = url.get("focus") ? assets.get(url.get("focus")!) : undefined;
   if (focusAsset) stage.frame(focusAsset.root, 1.1);
@@ -1178,6 +1184,7 @@ function ambientInjectionFrame(id: string, params: Record<string, unknown>, time
 
 let frames = 0;
 let updateRoutes: ((time: number, dt: number) => void) | null = null;
+let updateProducts: ((time: number) => void) | null = null;
 function loop(): void {
   const dt = stage.render();
   updateRoutes?.(stage.time, dt);
@@ -1186,6 +1193,7 @@ function loop(): void {
     a.model?.update(a.frame, dt);
   }
   animatePipes(stage.time);
+  updateProducts?.(stage.time);
   for (const piece of controlPieces) piece.redraw?.();
   updateTour();
   frames++;

@@ -33,8 +33,9 @@ def test_simulation_rejects_bad_params() -> None:
 
 
 def _layout_only_models(tmp_path, monkeypatch) -> None:
-    """Una planta sin simulation.yaml: solo su plano."""
+    """Una planta sin simulation.yaml: solo su plano (con su catálogo y el esquema común)."""
     folder = tmp_path / "plastic-injection-plant-v1"
+    shutil.copytree(find_models_root() / "_schema", tmp_path / "_schema")
     shutil.copytree(find_models_root() / "plastic-injection-plant-v1", folder)
     (folder / SIM_FILE).unlink()
     monkeypatch.setenv("TWIN_MODELS", str(tmp_path))
@@ -162,3 +163,42 @@ def test_plant_websocket_rejects_unknown_plant_and_scenario() -> None:
         assert "error" in ws.receive_json()
     with client.websocket_connect("/api/plants/sauce-plant-v1/simulate?scenario=nope") as ws:
         assert "error" in ws.receive_json()
+
+
+def test_plant_catalog_gives_products_routes_and_sizes() -> None:
+    catalog = client.get("/api/plants/plastic-injection-plant-v1").json()["catalog"]
+    products = {p["id"]: p for p in catalog["products"]}
+    papelera = products["papelera-20l"]
+    # cuerpo (4 etapas) y pedal (4 etapas) llegan al ensamble (etapa 8), que sigue a empaque y bodega
+    assert [s["stage"] for s in papelera["stages"]][-3:] == ["ensamble", "empaque", "almacen-terminado"]
+    assert [3, 8] in papelera["edges"] and [7, 8] in papelera["edges"]
+    assert papelera["stages"][0]["active"] == ["imm-19"]
+    assert products["balde-12l"]["colors"][0] == {"id": "mb-azul", "name": "Masterbatch azul", "hex": "#1e6fd9"}
+    assert catalog["sizes"]["imm-28"] == "Grande"
+    assert client.get("/api/plants/sauce-plant-v1").json()["catalog"] is None
+
+
+def test_new_product_is_checked_against_the_plant() -> None:
+    url = "/api/plants/plastic-injection-plant-v1/products/check"
+    product = {
+        "id": "balde-12l-gris",
+        "name": "Balde de 12 L gris",
+        "kind": "finished",
+        "unit": "u",
+        "colors": ["mb-gris"],
+        "routing": [
+            {"stage": "inyeccion", "tooling": "mold-balde-12l", "equipment": ["imm-21"]},
+            {"stage": "estiba", "equipment": ["buf-21"]},
+        ],
+    }
+    # el molde del balde es de otro producto: la ruta no puede usarlo
+    bad = client.post(url, json=product).json()
+    assert not bad["ok"] and any("es de balde-12l" in e for e in bad["errors"])
+    product["routing"][0] = {"stage": "inyeccion", "equipment": ["imm-21", "imm-01"], "cycle_s": 30}
+    product["routing"].append({"stage": "transporte", "equipment": ["no-existe"]})
+    bad = client.post(url, json=product).json()
+    assert bad["errors"] == ["producto balde-12l-gris, etapa transporte: no-existe no existe en plant.yaml"]
+    product["routing"].pop()
+    ok = client.post(url, json=product).json()
+    assert ok["ok"] and [s["active"] for s in ok["product"]["stages"]] == [["imm-21", "imm-01"], ["buf-21"]]
+    assert not client.post(url, json={"id": "x"}).json()["ok"]

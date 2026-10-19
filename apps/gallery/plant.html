@@ -26,6 +26,13 @@
     <aside class="sidebar glass" id="sidebar">
       <a class="nav-link" href="/">◀ INICIO</a>
       <a class="nav-link" id="link-equipos" href="/equipos.html">▤ EQUIPOS DE ESTA PLANTA</a>
+      <div id="products-section" hidden>
+        <h3>PRODUCTOS</h3>
+        <ul id="products"></ul>
+        <div class="sim-controls"><button id="btn-load-product" title="YAML o JSON con el formato de catalog/products.yaml">＋ CARGAR PRODUCTO</button></div>
+        <input id="product-file" type="file" accept=".yaml,.yml,.json" hidden />
+        <div id="product-detail" class="product-detail"></div>
+      </div>
       <h3>CÁMARAS</h3>
       <div id="cameras" class="commands"></div>
       <div class="sim-controls"><button id="btn-tour">▶ RECORRIDO</button></div>

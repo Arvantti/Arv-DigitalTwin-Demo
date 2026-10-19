@@ -33,12 +33,17 @@ Parámetros de URL, pensados para capturas automáticas:
 - **Cámaras:** vista general y una por zona de producción o servicios grande. **Recorrido** (`tour=1` o el botón): la cámara visita la vista general y esas zonas de oeste a este, el sentido del flujo; cualquier clic o la rueda del ratón lo interrumpe.
 - **HUD de planta:** reloj de simulación, selector de escenario, velocidad, pausa, KPIs de cada línea y eventos de toda la planta.
 
+## Productos y su ruta (catálogo)
+
+Si la planta tiene catálogo (`docs/datos-reales.md`), el panel PRODUCTOS lista sus productos. Al elegir uno se resaltan los equipos de cada etapa (activos en ámbar con su número de etapa, alternativas en gris) y un recorrido animado entre etapas; `&product=<id>` lo abre al cargar. CARGAR PRODUCTO valida un YAML con `POST /api/plants/{id}/products/check` y lo agrega a la sesión.
+
 ## API
 
 | Endpoint | Qué entrega |
 |---|---|
 | `GET /api/plants` | Plantas con plano y si tienen simulación conectada |
-| `GET /api/plants/{id}` | Zonas (con `elevation` si la traen), equipos (con `sim` si el motor los simula), pasarelas, tuberías (flujos `piped`, con `rate`, `unit`, `route`, `diameter_in` y `links`: los enlaces del motor que las cruzan), líneas y escenarios |
+| `GET /api/plants/{id}` | Zonas (con `elevation` si la traen), equipos (con `sim` si el motor los simula), pasarelas, tuberías (flujos `piped`, con `rate`, `unit`, `route`, `diameter_in` y `links`: los enlaces del motor que las cruzan), líneas, escenarios y `catalog` (productos con su ruta y tamaño de cada equipo, o null) |
+| `POST /api/plants/{id}/products/check` | Valida un producto nuevo contra el catálogo y el plano; devuelve `{ok, errors, product}` con su ruta. No guarda nada |
 | `WS /api/plants/{id}/simulate?scenario=&speed=` | Cada 100 ms: `{t, speed, paused, snapshot: {equipment, lines, links}, events}`. Cliente → servidor: `{equipment, command, args}`, `{speed}`, `{pause}` |
 
 ## Edificio por pisos y red de agua (acueducto a escala)

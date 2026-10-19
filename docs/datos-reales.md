@@ -1,6 +1,6 @@
 # Hoja de ruta de datos reales para todos los gemelos
 
-Estado (2026-10-19): **fases A y B hechas** para plásticos (decisión D56); el resto del plan sigue pendiente. Plan en la decisión D54 de `docs/registro/decisiones/decisiones.md`.
+Estado (2026-10-19): **fases A, B y D hechas** para plásticos (decisiones D56 y D58); sigue la fase C (salsas y cajas). Plan en la decisión D54 de `docs/registro/decisiones/decisiones.md`.
 
 El autor definió esta hoja de ruta para la planta de plásticos (D48) y el 2026-10-18 la extendió a todos los gemelos. Hoy cada planta tiene sus datos repartidos en `plant.yaml` (parámetros de cada equipo, recetas de salsas) y `simulation.yaml`, todos supuestos. El objetivo es que el gemelo se alimente con un **catálogo** de datos reales y que los **pedidos** los secuencie el backend Fractal.
 
@@ -87,7 +87,14 @@ Las fases A a C dan los pasos 1 a 3; D el 4; E el 5; F el 6. G puede ir en paral
 - `tools/logistics/pallet_sizing.py` toma el volumen por pieza de esas cinco inyectoras del producto del catálogo.
 - Ruta de un producto: `uv run twin-lib catalog route plastic-injection-plant-v1 papelera-20l` (la usará la interfaz de la fase D para resaltarla en 3D).
 
-Siguiente: fase C (catálogos de salsas y cajas) o fase D (interfaz de productos), a elección del autor.
+Orden elegido por el autor (2026-10-19): primero la fase D y luego la C.
+
+## 5b. Fase D (hecha, 2026-10-19): productos y su ruta en el 3D
+
+- La API agrega `catalog` a `GET /api/plants/{id}`: cada producto con nombre, colores, moldes, lista de materiales y su ruta como grafo (`stages` con `equipment` y `active`, y `edges` entre etapas; los componentes llegan a la etapa del producto que los usa), más el tamaño de cada equipo. La versión publicada sin API lo recibe igual, porque el export estático guarda esa misma respuesta.
+- En la escena (`plant.html`), el panel PRODUCTOS lista los productos. Al elegir uno se resaltan los equipos activos de cada etapa con su número, las alternativas en gris, y un recorrido con piezas que avanzan entre etapas; la cámara encuadra la ruta y el detalle muestra molde, componentes y etapas (cada equipo es un enlace que lo selecciona). Parámetro de URL: `&product=<id>`.
+- CARGAR PRODUCTO acepta un YAML o JSON con el formato de `catalog/products.yaml` (uno o una lista `products:`). `POST /api/plants/{id}/products/check` lo valida contra el catálogo y el plano y devuelve su ruta; el producto queda solo en la sesión del navegador (guardarlo es la fase F). Sin API, el botón explica que la validación la necesita.
+- El HUD muestra el tamaño de la inyectora seleccionada (pequeña, mediana o grande).
 
 ## 6. Primer PR propuesto (histórico)
 
