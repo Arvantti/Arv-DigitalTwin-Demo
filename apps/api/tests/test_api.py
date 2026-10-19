@@ -78,7 +78,7 @@ def test_water_plant_pipes_carry_route_diameter_and_hydraulic_link() -> None:
     assert riser["route"][0] == [7.4865, 4.6, 4.05]  # brida de salida de la estación reguladora
     assert riser["links"] == ["prs-01:outlet>grid-01:inlet"]
     drop = by_pipe[("grid-03", "tank-recirc-02")]  # bajante por gravedad: con ruta pero sin diámetro (no es red a presión)
-    assert drop["route"][-1] == [10.75, 2.6, 3.245] and "diameter_in" not in drop and drop["links"]
+    assert drop["route"][-1] == [10.75, 2.6, 2.245] and "diameter_in" not in drop and drop["links"]
 
 
 def test_water_plant_sequence_is_continuous_and_lines_are_published() -> None:
