@@ -39,9 +39,11 @@
       <label class="speed">Velocidad <span id="speed-val">×60</span>
         <input id="speed" type="range" min="0" max="4" step="0.01" value="1.78" />
       </label>
+      <div class="sim-controls hidden" id="plc-toggle-wrap"><button id="btn-plc">⚙ PLC DE BANDAS</button></div>
       <h3>LÍNEAS</h3>
       <div id="lines" class="lines"></div>
     </aside>
+    <section class="plc glass hidden" id="belt-plc" aria-label="Tablero del PLC de las bandas"></section>
     <section class="hud glass" id="hud">
       <div class="label">ACTIVO SELECCIONADO</div>
       <div id="asset-name" class="asset-name">Haz clic en un equipo</div>

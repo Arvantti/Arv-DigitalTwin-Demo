@@ -93,3 +93,22 @@ ajusta ademas que el sensor pase este del otro lado  y si te fijaz bien en la tr
 
 (Resumen) Preguntó con una tarjeta cuál sensor pasar al otro lado (brazo amarillo de la CT, lector de etiquetas o baliza). Agregó tambores en cada extremo de banda, control por zonas con fotoceldas en todas las bandas de maletas (acumulan sin choques; haz rojo cuando detienen la zona de cabeza) y las bandas de regreso: nivel 3 norte y sur entran de costado a la línea de inducción y codificación sube por el costado este a una reinducción del clasificador. Decisión D58 (renumerada al traer main). Mismo PR #59.
 
+### 👤 Andy (Carlos Andrés Quiceño) · 2026-10-19 11:41 UTC
+
+Listo, ¿qué más tenemos pendiente aquí?
+
+### 🤖 Claude · 2026-10-19 11:42 UTC
+
+(Resumen) Queda abierta la pregunta de cuál sensor pasar al otro lado (tarjeta) y algunas ideas opcionales.
+
+### 👤 Andy (Carlos Andrés Quiceño) · 2026-10-19 11:43 UTC (con captura)
+
+Acabo de ver ese detalle, esa entrada ahí no debe ser así. Debe ser buscar una parte recta para entrar, no puede ser entrar en curva. Y no debe entrar en diagonal. Bueno, puede entrar en diagonal, pero si el ángulo es mayor a 45 grados. Si no, preferible entrar a 90 grados o... Bueno, no, sí, corrijo, perdón. Entrar a 45 grados sería lo ideal. Pero fíjate que hay una parte donde hay un hueco. Sí, hay un hueco ahí como en forma de triángulo que yo te lo señalo acá en la imagen. Entonces eso no debe pasar. Y tampoco debe pasar que entre en curva. Tiene que entrar en una zona donde no sea curva.
+
+### 👤 Andy (Carlos Andrés Quiceño) · 2026-10-19 11:43:57 UTC
+
+También quiero que ajustes las velocidades de las bandas y que crees como una especie de tablero monitor control a través del cual se puedan controlar las velocidades de las bandas, de cada una de las bandas. Como si fuera un PLC de control de las velocidades de las bandas para uno poderlas modificar. Recuerda que las bandas tienen que tener señales start-stop y eso lo determina son los flujos de los sensores que se ejecutan.
+
+### 🤖 Claude · 2026-10-19 15:20 UTC
+
+(Resumen) La inducción entra a 45° en la recta del lazo con la punta cortada a inglete (sin hueco) y las rampas empiezan 4 m después. Velocidades ajustadas, señales start/stop en cada banda (fotocelda de entrada, sueño sin maletas, selector del operador) y tablero «⚙ PLC DE BANDAS» con START/STOP y consigna por banda. Decisión D61. PR nuevo desde main.

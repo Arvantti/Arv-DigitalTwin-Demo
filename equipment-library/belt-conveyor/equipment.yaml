@@ -33,6 +33,7 @@ params:
   merge_side:    { type: enum, values: [left, right], default: left, description: "Lado de la confluencia mirando en el sentido de avance", affects: [geometry] }
   merge2_at_m:   { type: number, unit: m, min: 0, max: 200, default: 0, description: "Segunda confluencia: a esta distancia de la entrada entra de costado otra banda; 0 = sin segunda confluencia", affects: [geometry] }
   merge2_side:   { type: enum, values: [left, right], default: right, description: "Lado de la segunda confluencia mirando en el sentido de avance", affects: [geometry] }
+  run_on_s:      { type: number, unit: s, min: 0, max: 600, default: 10, description: "Con zone_control, segundos que la banda sigue andando después de quedar vacía antes de apagarse (arranque y parada por fotoceldas)", affects: [behavior] }
   zone_control:  { type: boolean, default: false, description: "Control por zonas con fotoceldas: cada zona (del largo de una unidad) para si la de adelante está ocupada y arranca cuando se libera; las unidades se acumulan sin choques", affects: [geometry, behavior] }
 
 ports:
@@ -56,6 +57,9 @@ variables:
   - { id: slipping, unit: u, kind: calculated, description: Unidades detenidas al pie de una subida más empinada que su ángulo de fricción }
   - { id: photo_eye, unit: "", kind: status, description: "1 si la fotocelda de descarga ve una unidad" }
   - { id: zone_stopped, unit: "", kind: status, description: "1 si la fotocelda de descarga tiene detenida la zona de cabeza porque la salida no recibe" }
+  - { id: entry_eye, unit: "", kind: status, description: "1 si la fotocelda de entrada ve una unidad (llegando o esperando)" }
+  - { id: run_enable, unit: "", kind: status, description: "Selector del operador en el tablero: 1 = habilitada (start), 0 = parada (stop)" }
+  - { id: run_signal, unit: "", kind: status, description: "Salida del PLC al contactor del motor: 1 = en marcha, 0 = parada (por el operador, por falla o, con zone_control, por las fotoceldas)" }
   - { id: path_length_m, unit: m, kind: calculated, description: Largo real del recorrido con subidas y bajadas }
   - { id: max_slope_deg, unit: "°", kind: calculated, description: Pendiente máxima del recorrido }
   - { id: speed_actual_m_s, unit: m/s, kind: measured, range: [0, 3], noise_sd: 0.002, resolution: 0.001, description: Velocidad real }
@@ -65,6 +69,8 @@ events:
   - { id: full, description: La banda se llenó y dejó de aceptar unidades }
   - { id: accepting_again, description: La banda vuelve a aceptar unidades }
   - { id: slip, description: Una unidad resbaló en una subida más empinada que su ángulo de fricción }
+  - { id: operator_start, description: El operador habilitó la banda desde el tablero }
+  - { id: operator_stop, description: El operador paró la banda desde el tablero }
 
 faults:
   - { id: motor_trip, description: Disparo térmico del motor, mtbf_h: 8000, mttr_min: 30, severity: medium, effect: La banda se detiene }
@@ -72,6 +78,8 @@ faults:
 
 commands:
   - { id: set_speed, description: Cambia la velocidad, args: { m_s: number } }
+  - { id: start, description: Habilita la banda (selector del tablero en marcha) }
+  - { id: stop, description: Para la banda desde el tablero; las unidades que llegan esperan y bloquean a la máquina anterior }
   - { id: inject_fault, description: Inyecta una falla declarada, args: { fault: string, duration_s: number } }
   - { id: clear_fault, description: Repara una falla activa, args: { fault: string } }
   - { id: set_param, description: Cambia un parámetro en caliente, args: { name: string, value: any } }
@@ -97,3 +105,4 @@ assumptions:
   - Fricción, supuesto. con tan θ ≤ friction_coef la unidad va con la banda; en una subida más empinada resbala y se detiene al pie (bloquea a las de atrás); en una bajada más empinada se desliza a v × (1 + 4 × (tan θ − μ)), hasta el doble de la banda.
   - Choque = una unidad que alcanza la separación mínima con la de adelante con más de 0,05 m/s de diferencia; desde ahí avanza pegada a ella.
   - Con zone_control la banda va en zonas del largo de una unidad (acumulación sin presión); cada zona para antes de tocar a la de adelante, así que no se cuentan choques; la capacidad de acumulación es la misma.
+  - Señales de marcha; run_signal = selector del operador (start/stop) y sin falla; con zone_control, además, la banda arranca cuando la fotocelda de entrada ve una unidad o lleva unidades, se apaga run_on_s después de quedar vacía y se apaga mientras todas sus unidades están retenidas contra la descarga.

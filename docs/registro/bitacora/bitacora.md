@@ -10,6 +10,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
+| 2026-10-19 | Entrada a 45° y PLC de bandas | La inducción del clasificador entra a 45° en la parte recta del lazo, con la punta cortada a inglete sobre el borde de las bandejas (sin el hueco triangular) y rodillo de nariz; las rampas empiezan 4 m después (`chute_lead_m`) y los carruseles se realinearon. Velocidades ajustadas (inducción 0,75 → línea sur 1,0 m/s para abrir hueco; regresos 0,4–0,5). Cada banda tiene señales start/stop: arranca con su fotocelda de entrada, se duerme sin maletas y el operador la habilita o la para. Tablero «⚙ PLC DE BANDAS» con luces, START/STOP y consigna de velocidad por banda. D61 | logística |
 | 2026-10-19 | Aeropuerto sin traslapes y con reproducción | Traspasos entre bandas con su equipo: la línea norte gira con una curva motorizada y entra de costado a la línea sur (confluencia); una sola inducción con curva y banda a 30° que entrega a favor del flujo en el borde de las bandejas; lazo de 31,1 × 7,4 m y carruseles realineados con las rampas. Tambores en cada extremo de banda, control por zonas con fotoceldas (acumulan sin choques) y bandas de regreso de nivel 3 y de codificación (esta a una reinducción del lado de retorno). ▶ SIMULAR funciona en el sitio publicado: sin API reproduce una grabación de 15 min de la operación normal (todas las plantas simuladas). D58 (renumerada al traer main: D54 a D57 ya estaban) | logística |
 | 2026-10-19 | Desagüe por gravedad del nivel 1 | Los tanques de recirculación del acueducto bajan 1 m, con su bomba (foso en el piso 0); la boquilla de entrada queda a 2,245 m, por debajo de la bajante del nivel 1 (2,5 m), y desagua por gravedad. Pedido de Andy. D55 | acueducto |
 | 2026-10-19 | Molienda de mostaza | El plano anota 60 min de molienda en la receta de mostaza (antes 30), acorde con el molino de 1.000 kg/h y con datos de fabricantes. D57 | 5 |
@@ -73,6 +74,15 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 | 2026-10-16 | #1 | Layouts de las plantas | 1 |
 
 ## Entradas
+
+### 2026-10-19 11:43 · Aeropuerto: entrada a 45° en la recta y tablero PLC de bandas
+- **Fecha/hora (UTC):** 2026-10-19 11:43–15:20
+- **Fase del plan:** [[plan-del-proyecto]] gemelos nuevos (logística)
+- **Solicitado por:** Carlos Andrés Quiceño (11:43, con captura): «Debe ser buscar una parte recta para entrar, no puede ser entrar en curva… Entrar a 45 grados sería lo ideal… hay un hueco… en forma de triángulo… eso no debe pasar»; (11:43:57) «ajustes las velocidades de las bandas y que crees como una especie de tablero monitor control… Como si fuera un PLC… las bandas tienen que tener señales start-stop y eso lo determina son los flujos de los sensores».
+- **Qué se hizo:** `baggage-sorter/geometry.ts`: la banda de inducción gira 45° y su esquina de aguas arriba toca el borde de las bandejas a 1 m del inicio de la recta; la banda se dibuja como polígono con la punta cortada a inglete, paralela al lazo, y rodillo de nariz, así no queda hueco ni entra en la curva. Parámetro nuevo `chute_lead_m` (geometría y comportamiento): las rampas se reparten después de 4 m de recta; carruseles de armado y carros realineados (`plant.yaml`). `belt-conveyor`: selector del operador `run_enable` (comandos `start`/`stop`, eventos `operator_start`/`operator_stop`), salida de marcha `run_signal`, fotocelda de entrada `entry_eye` y parámetro `run_on_s` (10 s sin maletas → la banda se duerme); escenario `operator-stop-and-sleep`. Velocidades en `simulation.yaml`: inducción 0,75 m/s, línea sur 1,0, alarma y regresos de nivel 3 0,4, regreso de codificación 0,5. Escena: tablero «⚙ PLC DE BANDAS» (`apps/gallery/src/belt-plc.ts`, `&plc=1`) con una fila por banda: luces, START/STOP, consigna 0,1–2,0 m/s y lecturas; mandos por WebSocket (necesitan la API; en el sitio publicado solo lectura).
+- **Verificación:** prueba en vivo de los mandos (STOP de la inducción la para y bloquea la CT; START + 0,3 m/s la arranca a 0,3; un regreso sin maletas queda dormido); 6 escenarios del aeropuerto; `twin-lib validate`, `twin-lib plant validate`, `pytest`, `pnpm -r test`, `pnpm -r typecheck`, `ruff check`; capturas `evidencia/aeropuerto-induccion-45.jpg` y `evidencia/aeropuerto-plc-bandas.jpg`.
+- **Decisiones:** [[decisiones]] D61
+- **Conversación:** [[hilo-equipaje-aeropuerto]]
 
 ### 2026-10-19 00:05 · Aeropuerto: inducciones sin traslapes y simulación en el sitio publicado
 - **Fecha/hora (UTC):** 2026-10-19 00:05–00:40

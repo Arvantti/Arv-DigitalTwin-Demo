@@ -26,6 +26,7 @@ params:
   max_recirc:         { type: integer, min: 0, max: 10, default: 2, description: Vueltas extra antes de mandar la maleta a codificación manual, affects: [behavior] }
   induct_max_upm:     { type: number, unit: maletas/min, min: 1, max: 120, default: 40, description: Capacidad de las inducciones juntas, affects: [behavior] }
   chute_capacity:     { type: integer, min: 1, max: 20, default: 4, description: Maletas que caben en cada rampa, affects: [behavior, geometry] }
+  chute_lead_m:       { type: number, unit: m, min: 0, max: 20, default: 0, description: "Tramo al inicio de la recta de descarga reservado a la inducción y al lector; las rampas se reparten en el resto", affects: [geometry, behavior] }
   chute_length_m:     { type: number, unit: m, min: 1, max: 8, default: 4, description: Largo de las rampas, affects: [geometry] }
   release_gap_s:      { type: number, unit: s, min: 0.5, max: 30, default: 2.5, description: Separación mínima entre maletas que salen de cada rampa, affects: [behavior] }
   entry_buffer_units: { type: integer, min: 1, max: 32, default: 6, description: Maletas que caben esperando en las inducciones, affects: [behavior] }
