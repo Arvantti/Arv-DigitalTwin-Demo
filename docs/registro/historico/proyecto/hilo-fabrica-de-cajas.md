@@ -66,3 +66,13 @@ para que le digas al de cajas que hay que establecer una secuencia de sensores e
 Revisó el flujo: las mesas giratorias y las amarradoras se atravesaban sin simular y las bandas de fajos eran tramos de 54 a 62,5 m. Creó la estación en línea con tres fotoceldas, atasco con vigilante y pulsador de paro; simuló las mesas giratorias y las amarradoras, agregó una mesa manual por línea que parte cada banda larga en dos, dejó todas las bandas con control por zonas y armó cuatro escenarios de atascos y paros. Encontró y corrigió una pérdida de fajos en la banda de unión cuando la línea se llenaba. Ver D62 y la sección «Sensores y paradas» de `docs/box-plant.md`.
 
 *(Herramientas: lectura del motor y de la banda; tipo nuevo y sus pruebas; corridas de la planta con conteo de unidades por enlace; plano regenerado.)*
+
+### 👤 Andy · 2026-10-19 16:11 UTC
+
+Recuerda que no solamente en este hilo, sino en todos los demás hilos, los humanos deben tener una geometría mucho más cercana a la real, no tan dura.
+
+### 🤖 Claude · 2026-10-19 16:45 UTC
+
+Rehízo la figura común de las personas, que usan todas las plantas, con formas orgánicas: tronco con pecho y cintura, brazos y piernas que se afinan y se unen sin costura, manos con dedos, cara con rasgos y botas con puntera. Misma interfaz, así que el cambio aparece en todas las escenas. Ver D63 y la captura `evidencia/operarios-figura-organica.jpg`.
+
+*(Herramientas: lectura de la figura común; página de prueba temporal con cuatro personas y capturas con Playwright; typecheck y pruebas.)*

@@ -105,7 +105,7 @@ export default function build(params: Params): EquipmentModel {
   const operators = P.group("operators");
   const figs: ReturnType<typeof P.operator>[] = [];
   for (let i = 0; i < ops; i++) {
-    const fig = P.operator(i % 2 ? "#2f5f8f" : "#f26b1d", "#e9eef2");
+    const fig = P.operator(i % 2 ? "#f2b705" : "#f26b1d", i % 2 ? "#4a6b3a" : "#2f5f8f");
     const side = i % 2 ? 1 : -1;
     const along = (Math.floor(i / 2) - (Math.ceil(ops / 2) - 1) / 2) * 0.9;
     fig.object.position.set(xWork + along, 0, side * (bedW / 2 + 0.95));
