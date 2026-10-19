@@ -33,7 +33,7 @@ layout_concept: >
   La rejilla sube por una columna que atraviesa los pisos 1 y 2 con un nivel cada 1,20 m y una válvula entre niveles.
 
 zones:
-  - { id: piso-0,  name: "Piso 0 · recirculación",                 kind: utility,    hygiene_class: service, temperature_c: null, rect: [1, 1, 12, 8], elevation: 0,   height: 2.5 }
+  - { id: piso-0,  name: "Piso 0 · recirculación",                 kind: utility,    hygiene_class: service, temperature_c: null, rect: [1, 1, 12, 8], elevation: -1.0, height: 3.5 }
   - { id: piso-1,  name: "Piso 1 · bombeo y estación reguladora",  kind: utility,    hygiene_class: service, temperature_c: null, rect: [1, 1, 8, 8],  elevation: 2.5, height: 2.5 }
   - { id: columna, name: "Columna de la rejilla (niveles 1 a 4)",  kind: production, hygiene_class: clean,   temperature_c: null, rect: [9, 1, 4, 8],  elevation: 2.5, height: 5.0 }
   - { id: piso-2,  name: "Piso 2",                                 kind: utility,    hygiene_class: service, temperature_c: null, rect: [1, 1, 8, 8],  elevation: 5.0, height: 2.5 }
