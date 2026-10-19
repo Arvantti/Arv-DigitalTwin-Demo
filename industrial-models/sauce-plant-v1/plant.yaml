@@ -188,6 +188,12 @@ equipment:
   - { id: filler-pouch-03,  type: vffs_sachet, zone: llenado, position: [63, 40, 0],   footprint: [1.8, 1.6, 3.2], params: { format: 500 ml, unit_ml: 500, formats_ml: [500, 1000], lanes: 1, units_min: 45, product: mayonesa y salsa rosada }, tags: [speed, units_count, reject_count, seal_temperature] }
   - { id: checkweigher-01,  type: checkweigher, zone: llenado, position: [68, 48, 0],   footprint: [1.5, 0.8, 1.2], params: { line: 500 y 1000 ml, tolerance_g: { "500": 6, "1000": 10 }, metal_detector: true }, tags: [weight, reject_count, metal_rejects] }
   - { id: checkweigher-02,  type: checkweigher, zone: llenado, position: [71.5, 35, 0], footprint: [1.5, 0.8, 1.2], params: { line: 250 ml, tolerance_g: 4, metal_detector: true }, tags: [weight, reject_count, metal_rejects] }
+  # Pesadoras de las líneas en frío y de mostaza (supuesto): una por formato, porque cada una promedia el peso de lo que recibe y no
+  # sirve mezclar sachets de pesos distintos; la de mostaza es dedicada por alérgeno.
+  - { id: checkweigher-03,  type: checkweigher, zone: llenado, position: [62.5, 52.5, 0], footprint: [1.5, 0.8, 1.2], params: { line: 250 ml mayonesa y salsa rosada, tolerance_pct: 4, metal_detector: true }, tags: [weight, reject_count, metal_rejects] }
+  - { id: checkweigher-04,  type: checkweigher, zone: llenado, position: [66.2, 40, 0],   footprint: [1.5, 0.8, 1.2], params: { line: 500 ml mayonesa y salsa rosada, tolerance_pct: 4, metal_detector: true }, tags: [weight, reject_count, metal_rejects] }
+  - { id: checkweigher-05,  type: checkweigher, zone: llenado, position: [66.2, 48, 0],   footprint: [1.5, 0.8, 1.2], params: { line: 1000 ml mayonesa y salsa rosada, tolerance_pct: 4, metal_detector: true }, tags: [weight, reject_count, metal_rejects] }
+  - { id: checkweigher-06,  type: checkweigher, zone: llenado, position: [68.5, 52.5, 0], footprint: [1.5, 0.8, 1.2], params: { line: 250 ml mostaza, tolerance_pct: 4, metal_detector: true, allergen_dedicated: true }, tags: [weight, reject_count, metal_rejects] }
   - { id: cooling-tunnel-01, type: cooling_tunnel, zone: llenado, position: [71.5, 40, 0], footprint: [6, 1.5, 2], params: { product: sachets de 1000 ml llenados en caliente, inlet_c: 85, outlet_c: 35, dwell_min: 12 }, tags: [water_temperature, product_outlet_temperature] }
   - { id: cooling-tunnel-02, type: cooling_tunnel, zone: llenado, position: [71.5, 44.5, 0], footprint: [6, 1.5, 2], params: { product: sachets de 250 ml llenados en caliente, inlet_c: 85, outlet_c: 35, dwell_min: 12, note: segundo túnel (supuesto) }, tags: [water_temperature, product_outlet_temperature] }
 
@@ -358,15 +364,18 @@ flows:
   - { from: filler-sachet-02, to: cooling-tunnel-02, medium: sachets calientes, rate: 80,    unit: u/min }
   - { from: cooling-tunnel-01, to: checkweigher-01,  medium: sachets 1000 ml,   rate: 30,    unit: u/min }
   - { from: cooling-tunnel-02, to: checkweigher-02,  medium: sachets 250 ml,    rate: 80,    unit: u/min }
-  - { from: filler-pouch-02,  to: checkweigher-01,   medium: sachets 1000 ml,   rate: 30,    unit: u/min }
-  - { from: filler-sachet-01, to: checkweigher-02,   medium: sachets 250 ml,    rate: 100,   unit: u/min }
+  - { from: filler-pouch-02,  to: checkweigher-05,   medium: sachets 1000 ml,   rate: 30,    unit: u/min }
+  - { from: filler-sachet-01, to: checkweigher-03,   medium: sachets 250 ml,    rate: 100,   unit: u/min }
+  - { from: buffer-cold-01,   to: filler-pouch-02,   medium: mayonesa,          rate: 1674,  unit: kg/h, piped: true }  # el motor reparte un solo pulmón frío entre las tres llenadoras; el pulmón frío 2 queda de reserva
   - { from: buffer-cold-01,   to: filler-pouch-03,   medium: mayonesa,          rate: 1256,  unit: kg/h, piped: true }
-  - { from: filler-pouch-03,  to: checkweigher-01,   medium: sachets 500 ml,    rate: 45,    unit: u/min }
-  - { from: filler-sachet-03, to: checkweigher-02,   medium: sachets 250 ml,    rate: 60,    unit: u/min }
+  - { from: filler-pouch-03,  to: checkweigher-04,   medium: sachets 500 ml,    rate: 45,    unit: u/min }
+  - { from: filler-sachet-03, to: checkweigher-06,   medium: sachets 250 ml,    rate: 60,    unit: u/min }
   - { from: checkweigher-01,  to: pack-sauce-1000,   medium: sachets 1000 ml,   rate: 30,    unit: u/min, show: true }
-  - { from: checkweigher-01,  to: pack-sauce-500,    medium: sachets 500 ml,     rate: 45,    unit: u/min, show: true }
+  - { from: checkweigher-04,  to: pack-sauce-500,    medium: sachets 500 ml,     rate: 45,    unit: u/min, show: true }
+  - { from: checkweigher-05,  to: pack-sauce-1000,   medium: sachets 1000 ml,   rate: 30,    unit: u/min, show: true }
+  - { from: checkweigher-06,  to: pack-sauce-250,    medium: sachets 250 ml,     rate: 60,    unit: u/min, show: true }
   - { from: checkweigher-02,  to: pack-sauce-250,    medium: sachets 250 ml,     rate: 120,   unit: u/min, show: true }
-  - { from: checkweigher-02,  to: pack-sauce-250-b,  medium: sachets 250 ml,     rate: 120,   unit: u/min, show: true }
+  - { from: checkweigher-03,  to: pack-sauce-250-b,  medium: sachets 250 ml,     rate: 100,   unit: u/min, show: true }
   - { from: rack-pack-01,     to: filler-sachet-01,  medium: laminado,          rate: 2,     unit: rollos/turno, show: true }
   # Despacho: 22 t/d ÷ 4,5 kg por caja ≈ 4.900 cajas/d ÷ ≈ 55 cajas por tarima ≈ 90 tarimas/d (antes 35, que solo movía ≈ 8 t/d)
   - { from: pack-sauce-250,   to: wrapper-01,        medium: cajas de 16,       rate: 7.5,   unit: cajas/min }

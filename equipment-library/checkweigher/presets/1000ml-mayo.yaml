@@ -1,0 +1,4 @@
+preset: 1000ml-mayo
+description: Sachet de 1.000 ml de mayonesa (930 g)
+params: { nominal_g: 930, tolerance_minus_pct: 4.0, tolerance_plus_pct: 4.0, nominal_inflow_upm: 30, belt_width_m: 0.45, item_color: "#f4c430" }
+provenance: { nominal_g: user, tolerance_minus_pct: assumed }
