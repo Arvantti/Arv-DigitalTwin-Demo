@@ -10,6 +10,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
+| 2026-10-19 | Imágenes en el portal | Cada tarjeta de la página principal lleva una captura de su escena 3D (plásticos, salsas, acueducto, aeropuerto y fábrica de cajas), recortada sin interfaz, en `apps/gallery/public/portal/`. Pedido de Andy | portal |
 | 2026-10-19 | Entrada a 45° y PLC de bandas | La inducción del clasificador entra a 45° en la parte recta del lazo, con la punta cortada a inglete sobre el borde de las bandejas (sin el hueco triangular) y rodillo de nariz; las rampas empiezan 4 m después (`chute_lead_m`) y los carruseles se realinearon. Velocidades ajustadas (inducción 0,75 → línea sur 1,0 m/s para abrir hueco; regresos 0,4–0,5). Cada banda tiene señales start/stop: arranca con su fotocelda de entrada, se duerme sin maletas y el operador la habilita o la para. Tablero «⚙ PLC DE BANDAS» con luces, START/STOP y consigna de velocidad por banda. D62 | logística |
 | 2026-10-19 | Editor de hojas de ruta | Panel HOJA DE RUTA con la tabla de pasos y, en el 3D, el tiempo unitario y el lote mínimo junto a cada número; editor con clic en el 3D para los equipos, validación en vivo, productos nuevos o duplicados, y descarga en YAML. D61 | datos reales |
 | 2026-10-19 | Catálogos de salsas y cajas | Datos reales, fase C: el catálogo admite recetas, formatos y troqueles; salsas con 3 recetas, 3 formatos de sachet y 6 SKU (más 3 graneles); cajas con 3 referencias y su formato o troquel; el motor toma de ahí el formato de cada llenadora y las cajas por lámina, y exige que los lotes carguen lo que dice la receta; escenarios iguales. D60 | datos reales |
@@ -77,6 +78,14 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 | 2026-10-16 | #1 | Layouts de las plantas | 1 |
 
 ## Entradas
+
+### 2026-10-19 16:12 · Imágenes en las tarjetas del portal
+- **Fecha/hora (UTC):** 2026-10-19 16:12–16:45
+- **Fase del plan:** [[plan-del-proyecto]] portal de plantas
+- **Solicitado por:** Andy (16:12): «en la página principal, donde están las tarjetas […] hay que poner una imagen que represente a cada uno para que se vea más animado, más claro».
+- **Qué se hizo:** cada tarjeta de `apps/gallery/src/portal.ts` muestra una captura de la escena 3D de su planta (16:9, con zoom suave al pasar el cursor; la imagen también lleva a la escena). Las capturas se recortaron sin la interfaz y se guardaron en 960 px de ancho en `apps/gallery/public/portal/`.
+- **Verificación:** `pnpm -r typecheck`; captura del portal en [[portal-tarjetas-con-imagen]] (`evidencia/portal-tarjetas-con-imagen.jpg`).
+- **Conversación:** [[hilo-imagenes-portal]]
 
 ### 2026-10-19 11:43 · Aeropuerto: entrada a 45° en la recta y tablero PLC de bandas
 - **Fecha/hora (UTC):** 2026-10-19 11:43–15:20

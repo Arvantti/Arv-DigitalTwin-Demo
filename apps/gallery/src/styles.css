@@ -100,7 +100,10 @@ body.portal { overflow: auto; background: var(--bg); }
 .portal-wrap { max-width: 1080px; margin: 0 auto; padding: 48px 20px 64px; }
 .portal-head h1 { font: 700 34px Orbitron, sans-serif; letter-spacing: 0.04em; margin: 18px 0 4px; }
 .portal-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 16px; margin-top: 28px; }
-.portal-card { position: static; padding: 20px 22px; display: flex; flex-direction: column; gap: 6px; }
+.portal-card { position: static; padding: 0 22px 20px; overflow: hidden; display: flex; flex-direction: column; gap: 6px; }
+.portal-media { display: block; margin: 0 -22px 14px; aspect-ratio: 16 / 9; overflow: hidden; background: #0b1220; }
+.portal-media img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.4s ease; }
+.portal-card:hover .portal-media img { transform: scale(1.04); }
 .portal-card h2 { font: 700 22px Orbitron, sans-serif; letter-spacing: 0.04em; margin: 0; }
 .portal-card p { color: var(--dim); margin: 4px 0 14px; flex: 1; line-height: 1.5; }
 .portal-actions { display: flex; flex-wrap: wrap; gap: 8px; }
