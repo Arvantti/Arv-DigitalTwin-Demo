@@ -1,0 +1,13 @@
+# Qué receta o formato tiene montado hoy cada equipo (lo que corre en los escenarios de simulation.yaml).
+setup:
+  kettle-01: { tooling: rcp-tomato-sauce }
+  kettle-02: { tooling: rcp-tomato-sauce }
+  kettle-03: { tooling: rcp-tomato-sauce }
+  emulsifier-01: { tooling: rcp-mayo-natural }
+  tank-mustard-01: { tooling: rcp-mustard }
+  filler-pouch-01: { tooling: fmt-sachet-1000 }
+  filler-sachet-02: { tooling: fmt-sachet-250 }
+  filler-sachet-01: { tooling: fmt-sachet-250 }
+  filler-pouch-03: { tooling: fmt-sachet-500 }
+  filler-pouch-02: { tooling: fmt-sachet-1000 }
+  filler-sachet-03: { tooling: fmt-sachet-250 }

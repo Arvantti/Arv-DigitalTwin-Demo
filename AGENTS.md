@@ -27,7 +27,7 @@ uv sync && pnpm install
 uv run twin-lib validate          # librería completa
 uv run twin-lib plant validate    # plantas conectadas: enlaces y escenarios
 uv run twin-lib plant run sauce-plant-v1 --scenario boiler-trip
-uv run twin-lib catalog validate    # catálogos de datos (productos, moldes, tamaños, montaje)
+uv run twin-lib catalog validate    # catálogos de datos (productos, moldes o recetas, tamaños, montaje)
 uv run twin-lib catalog route plastic-injection-plant-v1 papelera-20l
 uv run pytest                     # pruebas de Python
 uv run ruff check .

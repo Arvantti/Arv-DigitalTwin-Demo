@@ -10,7 +10,10 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
-| 2026-10-19 | Sensores y atascos en la fábrica de cajas | Cada banda de la fábrica de cajas es una unidad independiente con fotoceldas por zona; tipo nuevo `inline-station` (cola, puesto y salida con tres fotoceldas, atasco con vigilante de tiempo y pulsador de paro) para las mesas giratorias, las amarradoras y una mesa manual por línea que parte la banda larga en dos; escenarios de atascos de la amarradora, pausa de operarios, paro manual y atascos al azar; la banda ya no pierde unidades cuando la siguiente se llena. D59 | 4 |
+| 2026-10-19 | Sensores y atascos en la fábrica de cajas | Cada banda de la fábrica de cajas es una unidad independiente con fotoceldas por zona; tipo nuevo `inline-station` (cola, puesto y salida con tres fotoceldas, atasco con vigilante de tiempo y pulsador de paro) para las mesas giratorias, las amarradoras y una mesa manual por línea que parte la banda larga en dos; escenarios de atascos de la amarradora, pausa de operarios, paro manual y atascos al azar; la banda ya no pierde unidades cuando la siguiente se llena. D62 | 4 |
+| 2026-10-19 | Editor de hojas de ruta | Panel HOJA DE RUTA con la tabla de pasos y, en el 3D, el tiempo unitario y el lote mínimo junto a cada número; editor con clic en el 3D para los equipos, validación en vivo, productos nuevos o duplicados, y descarga en YAML. D61 | datos reales |
+| 2026-10-19 | Catálogos de salsas y cajas | Datos reales, fase C: el catálogo admite recetas, formatos y troqueles; salsas con 3 recetas, 3 formatos de sachet y 6 SKU (más 3 graneles); cajas con 3 referencias y su formato o troquel; el motor toma de ahí el formato de cada llenadora y las cajas por lámina, y exige que los lotes carguen lo que dice la receta; escenarios iguales. D60 | datos reales |
+| 2026-10-19 | Productos y su ruta en el 3D | Datos reales, fase D: la API entrega el catálogo de cada planta; panel PRODUCTOS en la escena con la ruta resaltada y numerada, arcos con el color del producto, enlace `?product=` y carga de productos nuevos validados contra el plano; tamaño del equipo en el HUD. D59 | datos reales |
 | 2026-10-19 | Aeropuerto sin traslapes y con reproducción | Traspasos entre bandas con su equipo: la línea norte gira con una curva motorizada y entra de costado a la línea sur (confluencia); una sola inducción con curva y banda a 30° que entrega a favor del flujo en el borde de las bandejas; lazo de 31,1 × 7,4 m y carruseles realineados con las rampas. Tambores en cada extremo de banda, control por zonas con fotoceldas (acumulan sin choques) y bandas de regreso de nivel 3 y de codificación (esta a una reinducción del lado de retorno). ▶ SIMULAR funciona en el sitio publicado: sin API reproduce una grabación de 15 min de la operación normal (todas las plantas simuladas). D58 (renumerada al traer main: D54 a D57 ya estaban) | logística |
 | 2026-10-19 | Desagüe por gravedad del nivel 1 | Los tanques de recirculación del acueducto bajan 1 m, con su bomba (foso en el piso 0); la boquilla de entrada queda a 2,245 m, por debajo de la bajante del nivel 1 (2,5 m), y desagua por gravedad. Pedido de Andy. D55 | acueducto |
 | 2026-10-19 | Molienda de mostaza | El plano anota 60 min de molienda en la receta de mostaza (antes 30), acorde con el molino de 1.000 kg/h y con datos de fabricantes. D57 | 5 |
@@ -81,9 +84,35 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 - **Solicitado por:** Andy (11:45, chat del proyecto, enviado al hilo por el coordinador): «cada banda transportadora funciona como una unidad independiente… hay procesos manuales en el intermedio con los paquetes que tienen que parar y esperar… identifique dónde convendría poner esos sensores para paradas automáticas y para paradas manuales, y que se vaya simulando como el flujo real».
 - **Qué se hizo:** tipo `inline-station` (contrato, comportamiento, geometría con fotoceldas que se ponen rojas, pulsador y baliza, presets `stack-turntable`, `bundle-strapper` y `manual-table`, 6 escenarios con expectativas). En `corrugated-box-plant-v1` se simulan `tt-01`, `tt-02` y `strap-01..03`, se agregan las mesas manuales `man-01..03` y las bandas `bc-0Na`/`bc-0Nb` reemplazan a las bandas de 54 y 62,5 m; control por zonas en todas las bandas; plano y `layout.svg` regenerados. Escenarios nuevos `strapper-jams`, `operator-break`, `manual-stop` y `random-jams`. `belt-conveyor`: la unidad que llega con la entrada ocupada espera en vez de perderse. Documentación: sección «Sensores y paradas» de `docs/box-plant.md`, `docs/plant-engine.md`, `docs/plant-scene.md` y `AGENTS.md`.
 - **Verificación:** `twin-lib validate`, `twin-lib plant validate` (las 5 plantas), conservación de unidades en cada enlace de la fábrica de cajas en los 7 escenarios, `pytest` (298), `ruff check`, `pnpm -r typecheck`, `pnpm -r test` (133); capturas `evidencia/cajas-amarradora-fotoceldas.jpg` y `evidencia/cajas-mesa-manual-division.jpg`.
-- **Decisiones:** [[decisiones]] D59
+- **Decisiones:** [[decisiones]] D62
 - **Conversación:** [[hilo-fabrica-de-cajas]]
 
+### 2026-10-19 11:41 · Editor de hojas de ruta con tiempos
+- **Fecha/hora (UTC):** 2026-10-19 11:41–15:30 (con una pausa por el límite de uso)
+- **Fase del plan:** [[plan-del-proyecto]] «Datos reales y pedidos», antes de la fase E
+- **Solicitado por:** Carlos Andrés Quiceño: editor de hojas de ruta que muestre los productos, la ruta en tabla y en 3D, y en cada paso el tiempo unitario y el del lote mínimo.
+- **Qué se hizo:** `catalog.py` calcula los tiempos de cada etapa (`stage_times`), entrega el producto completo y la lista de herramentales, y traduce los errores del esquema; `batch_qty` y `batch_min` en el esquema; tiempos de corrugadora, pila, fajo y estiba en el catálogo de cajas; `products.ts` con el panel HOJA DE RUTA, etiquetas de tiempo en el 3D, editor (campos, etapas, equipos por clic en el 3D, validación en vivo, guardar en la sesión, YAML, nuevo y duplicar); `plant.ts` pasa los clics al editor; `plant.html` y estilos. Documentado en `docs/plant-scene.md` y `docs/datos-reales.md`.
+- **Verificación:** 3 pruebas nuevas en `test_catalog.py`; `ruff check`, `pytest`, `pnpm -r typecheck` y `pnpm -r test`; recorrido con Playwright: editar la papelera (cambiar ciclo, agregar etapa vacía → error «etapa 4: falta al menos un equipo», quitarla → válida) y producto nuevo con un clic en la llenadora del 3D → válido; capturas [[salsas-hoja-de-ruta-tomate-1000.jpg]] y [[plasticos-editor-de-ruta-papelera.jpg]].
+- **Decisiones:** [[decisiones#D61]]
+- **Conversación:** [[hilo-datos-reales]]
+
+### 2026-10-19 10:40 · Catálogos de salsas y cajas (fase C)
+- **Fecha/hora (UTC):** 2026-10-19 10:40–11:20
+- **Fase del plan:** [[plan-del-proyecto]] «Datos reales y pedidos», fase C
+- **Solicitado por:** Carlos Andrés Quiceño: «d y luego c» (segunda parte).
+- **Qué se hizo:** esquema con `layout_types`, `params`, `formula_pct`, `yield_pct`, `size` en el herramental, `color` en el producto y tamaños por `by`/`range` o lista de equipos; `catalog.py` con compatibilidad por clase de herramental, fórmula contra materiales y contra `recipes` del plano, y ficha de herramental para la escena; `plant.py` aplica los `params` del herramental montado y valida el lote contra la receta; catálogos nuevos `sauce-plant-v1/catalog/` y `corrugated-box-plant-v1/catalog/`; la ficha de la escena nombra receta, formato o troquel. Documentado en `docs/datos-reales.md`, `docs/plant-engine.md`, la hoja de ruta y el plan.
+- **Verificación:** instantáneas finales de todos los escenarios de salsas y de cajas idénticas byte a byte antes y después; 7 pruebas nuevas en `test_catalog.py`; `twin-lib catalog validate` (3 plantas), `twin-lib plant validate`, `ruff check`, `pytest`, `pnpm -r typecheck` y `pnpm -r test`; capturas de la ruta de la mayonesa 1.000 ml [[salsas-ruta-mayonesa-1000.jpg]] y de la caja pequeña [[cajas-ruta-caja-pequena.jpg]].
+- **Decisiones:** [[decisiones#D60]]
+- **Conversación:** [[hilo-datos-reales]]
+
+### 2026-10-19 09:58 · Productos y su ruta en el 3D (fase D)
+- **Fecha/hora (UTC):** 2026-10-19 09:58–10:30
+- **Fase del plan:** [[plan-del-proyecto]] «Datos reales y pedidos», fase D
+- **Solicitado por:** Carlos Andrés Quiceño: «d y luego c».
+- **Qué se hizo:** `twin_runtime/catalog.py` con `route_graph`, `summary` y `with_product`; la API (`apps/api`) agrega `catalog` a `GET /api/plants/{id}` y el endpoint `POST /api/plants/{id}/products/check`; escena de planta (`apps/gallery/src/products.ts`, `plant.html`, `plant.ts`, `styles.css`) con panel PRODUCTOS, ruta resaltada y numerada, alternativas en gris, arcos animados con el color del producto, ficha con moldes, materiales y etapas, enlace `?product=` y botón CARGAR PRODUCTO; tamaño del equipo en el HUD. Documentado en `docs/datos-reales.md`, `docs/plant-scene.md`, `docs/roadmap.md` y el plan.
+- **Verificación:** 2 pruebas nuevas de la API (14 pasan), `ruff check`, `pytest`, `pnpm -r typecheck` y `pnpm -r test`, `twin-lib catalog validate`; capturas con la papelera 20 L (11 etapas numeradas) [[plasticos-ruta-papelera.jpg]] y con un kit cargado desde YAML [[plasticos-producto-cargado.jpg]]; un balde gris con el molde del balde blanco se rechaza con el mensaje esperado.
+- **Decisiones:** [[decisiones#D59]]
+- **Conversación:** [[hilo-datos-reales]]
 ### 2026-10-19 00:05 · Aeropuerto: inducciones sin traslapes y simulación en el sitio publicado
 - **Fecha/hora (UTC):** 2026-10-19 00:05–00:40
 - **Fase del plan:** [[plan-del-proyecto]] gemelos nuevos (logística) y despliegue

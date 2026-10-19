@@ -63,6 +63,6 @@ para que le digas al de cajas que hay que establecer una secuencia de sensores e
 
 ### 🤖 Claude · 2026-10-19 15:40 UTC
 
-Revisó el flujo: las mesas giratorias y las amarradoras se atravesaban sin simular y las bandas de fajos eran tramos de 54 a 62,5 m. Creó la estación en línea con tres fotoceldas, atasco con vigilante y pulsador de paro; simuló las mesas giratorias y las amarradoras, agregó una mesa manual por línea que parte cada banda larga en dos, dejó todas las bandas con control por zonas y armó cuatro escenarios de atascos y paros. Encontró y corrigió una pérdida de fajos en la banda de unión cuando la línea se llenaba. Ver D59 y la sección «Sensores y paradas» de `docs/box-plant.md`.
+Revisó el flujo: las mesas giratorias y las amarradoras se atravesaban sin simular y las bandas de fajos eran tramos de 54 a 62,5 m. Creó la estación en línea con tres fotoceldas, atasco con vigilante y pulsador de paro; simuló las mesas giratorias y las amarradoras, agregó una mesa manual por línea que parte cada banda larga en dos, dejó todas las bandas con control por zonas y armó cuatro escenarios de atascos y paros. Encontró y corrigió una pérdida de fajos en la banda de unión cuando la línea se llenaba. Ver D62 y la sección «Sensores y paradas» de `docs/box-plant.md`.
 
 *(Herramientas: lectura del motor y de la banda; tipo nuevo y sus pruebas; corridas de la planta con conteo de unidades por enlace; plano regenerado.)*
