@@ -160,6 +160,7 @@ def test_pipes_map_to_the_links_that_cross_them(sauce: PlantModel) -> None:
 def _copy_plant(tmp_path: Path, edit) -> Path:
     folder = tmp_path / "sauce-plant-v1"
     shutil.copytree(SAUCE, folder)
+    shutil.copytree(SAUCE.parent / "_schema", tmp_path / "_schema")  # la planta tiene catálogo
     raw = yaml.safe_load((folder / SIM_FILE).read_text(encoding="utf-8"))
     edit(raw)
     (folder / SIM_FILE).write_text(yaml.safe_dump(raw, allow_unicode=True, sort_keys=False), encoding="utf-8")
