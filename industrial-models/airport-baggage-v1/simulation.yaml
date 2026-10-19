@@ -23,7 +23,7 @@ equipment:
   alarm-belt-02: { type: belt-conveyor,        preset: bhs-transfer-9m, params: { length_m: 7.7, height_m: 0.75, crest_height_m: 2.0, ramp_deg: 22 } }
   l3-01:         { type: bag-handling-station, preset: level3-3ops }
   l3-02:         { type: bag-handling-station, preset: level3-3ops }
-  sorter-01:     { type: baggage-sorter,       preset: tilt-tray-4, params: { height_m: 3.5 } }
+  sorter-01:     { type: baggage-sorter,       preset: tilt-tray-4, params: { height_m: 3.5, straight_m: 31.1, loop_width_m: 7.4, chute_length_m: 5.6 } }
   encoding-01:   { type: bag-handling-station, preset: encoding-1op }
   makeup-01:     { type: baggage-carousel,     preset: makeup-40 }
   makeup-02:     { type: baggage-carousel,     preset: makeup-40 }

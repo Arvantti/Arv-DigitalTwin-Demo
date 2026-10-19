@@ -63,16 +63,16 @@ equipment:
   - { id: l3-02,        type: bag_handling_station, zone: nivel3-sur,   position: [66.85, 67, 0],  footprint: [9.2, 5, 2.4], params: { role: l3, operators: 3 } }
 
   # --- Clasificación y armado ---
-  - { id: sorter-01,    type: baggage_sorter,    zone: sala-bhs, position: [93, 84, 0],     footprint: [40, 16, 5.1], params: { destinations: 4, flights: [V101, V205, V317, V422] } }
-  - { id: encoding-01,  type: bag_handling_station, zone: sala-bhs, position: [110.5, 73.5, 0], footprint: [4.4, 3, 2.4], params: { role: encoding, operators: 1 } }
-  - { id: makeup-01,    type: baggage_carousel,  zone: sala-bhs, position: [83.3, 66.4, 0],  footprint: [19.1, 6.6, 1.9], rotation_deg: 90, params: { flight: V101 } }
-  - { id: makeup-02,    type: baggage_carousel,  zone: sala-bhs, position: [90.3, 66.4, 0],  footprint: [19.1, 6.6, 1.9], rotation_deg: 90, params: { flight: V205 } }
-  - { id: makeup-03,    type: baggage_carousel,  zone: sala-bhs, position: [97.3, 66.4, 0],  footprint: [19.1, 6.6, 1.9], rotation_deg: 90, params: { flight: V317 } }
-  - { id: makeup-04,    type: baggage_carousel,  zone: sala-bhs, position: [104.3, 66.4, 0], footprint: [19.1, 6.6, 1.9], rotation_deg: 90, params: { flight: V422 } }
-  - { id: carts-01,     type: baggage_cart_train, zone: sala-bhs, position: [82.5, 48, 0],  footprint: [12, 2.2, 1.9], rotation_deg: 270 }
-  - { id: carts-02,     type: baggage_cart_train, zone: sala-bhs, position: [89.5, 48, 0],  footprint: [12, 2.2, 1.9], rotation_deg: 270 }
-  - { id: carts-03,     type: baggage_cart_train, zone: sala-bhs, position: [96.5, 48, 0],  footprint: [12, 2.2, 1.9], rotation_deg: 270 }
-  - { id: carts-04,     type: baggage_cart_train, zone: sala-bhs, position: [103.5, 48, 0], footprint: [12, 2.2, 1.9], rotation_deg: 270 }
+  - { id: sorter-01,    type: baggage_sorter,    zone: sala-bhs, position: [93, 83.2, 0],   footprint: [40, 14.5, 5.1], params: { destinations: 4, flights: [V101, V205, V317, V422] } }
+  - { id: encoding-01,  type: bag_handling_station, zone: sala-bhs, position: [111.2, 73.5, 0], footprint: [4.4, 3, 2.4], params: { role: encoding, operators: 1 } }
+  - { id: makeup-01,    type: baggage_carousel,  zone: sala-bhs, position: [82.14, 66.4, 0], footprint: [19.1, 6.6, 1.9], rotation_deg: 90, params: { flight: V101 } }
+  - { id: makeup-02,    type: baggage_carousel,  zone: sala-bhs, position: [89.91, 66.4, 0], footprint: [19.1, 6.6, 1.9], rotation_deg: 90, params: { flight: V205 } }
+  - { id: makeup-03,    type: baggage_carousel,  zone: sala-bhs, position: [97.69, 66.4, 0], footprint: [19.1, 6.6, 1.9], rotation_deg: 90, params: { flight: V317 } }
+  - { id: makeup-04,    type: baggage_carousel,  zone: sala-bhs, position: [105.46, 66.4, 0], footprint: [19.1, 6.6, 1.9], rotation_deg: 90, params: { flight: V422 } }
+  - { id: carts-01,     type: baggage_cart_train, zone: sala-bhs, position: [81.34, 48, 0], footprint: [12, 2.2, 1.9], rotation_deg: 270 }
+  - { id: carts-02,     type: baggage_cart_train, zone: sala-bhs, position: [89.11, 48, 0], footprint: [12, 2.2, 1.9], rotation_deg: 270 }
+  - { id: carts-03,     type: baggage_cart_train, zone: sala-bhs, position: [96.89, 48, 0], footprint: [12, 2.2, 1.9], rotation_deg: 270 }
+  - { id: carts-04,     type: baggage_cart_train, zone: sala-bhs, position: [104.66, 48, 0], footprint: [12, 2.2, 1.9], rotation_deg: 270 }
 
   # --- Sala de control del BHS ---
   - { id: plc-bhs-01,      type: plc_cabinet,   zone: sala-control, position: [60, 42.5, 0], footprint: [2.4, 0.7, 2.1], params: { rack: "CPU + E/S remotas por zona", network: "Ethernet industrial hacia las bandas, la CT y el clasificador" } }

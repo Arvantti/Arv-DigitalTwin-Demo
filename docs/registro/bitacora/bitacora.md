@@ -10,6 +10,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
+| 2026-10-19 | Aeropuerto sin traslapes y con reproducción | Las inducciones del clasificador ya no pisan las bandejas (corren por fuera del lazo y entregan de costado); lazo de 31,1 × 7,4 m y carruseles realineados con las rampas. ▶ SIMULAR funciona en el sitio publicado: sin API reproduce una grabación de 15 min de la operación normal (todas las plantas simuladas). D50 | logística |
 | 2026-10-18 | Línea caliente de salsas | Motor: segunda línea caliente de 250 ml (marmita 3, pasteurizador 2, pulmón 2, sachetadora, túnel 2, control de peso y mesa de empaque) junto a la de 1.000 ml; dos mesas de 250 ml; escenario `tunnel-250-stop`; dimensionado a 22 t/día con 40 % en caliente. D49 | 5 |
 | 2026-10-18 | Tuberías sin cruces | Planta de salsas: los tubos a nivel de rack buscan un nivel y un recorrido que no atraviesen equipos ni cajas de estantería ni se crucen entre sí (suben por encima, o se desplazan); documento del flujo de salsas conectado vs faltante. D41 | 5 |
 | 2026-10-18 | Equipaje de aeropuerto | Gemelo nuevo `airport-baggage-v1`: check-in, colectoras, inspección CT con nivel 3, clasificador de bandejas basculantes, 4 carruseles de armado, codificación manual y 2 carruseles de reclamo, conectados en el motor con 5 escenarios; 5 tipos nuevos en la librería y escena 3D con aviones y carros. Rutas con subidas y bajadas: clasificador elevado, colectoras, bandas de alarma y de llegadas con puentes; cada maleta con fricción y choques. D47 | logística |
@@ -64,6 +65,15 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 | 2026-10-16 | #1 | Layouts de las plantas | 1 |
 
 ## Entradas
+
+### 2026-10-19 00:05 · Aeropuerto: inducciones sin traslapes y simulación en el sitio publicado
+- **Fecha/hora (UTC):** 2026-10-19 00:05–00:40
+- **Fase del plan:** [[plan-del-proyecto]] gemelos nuevos (logística) y despliegue
+- **Solicitado por:** Carlos Andrés Quiceño (con captura): «corregir esos traslapamientos en aeropuerto» y «faltaría dar play a la simulación de las maletas».
+- **Qué se hizo:** las dos bandas de inducción del clasificador corrían sobre las bandejas los últimos ≈ 3 m. Ahora llegan por fuera de cada recta, a 1,3 m del eje de las bandejas, con un empujador que pasa la maleta de costado; el lector de etiquetas se corrió a 2,2 m del inicio de la recta. Para que cada inducción siga en línea con su CT el lazo pasa a 31,1 m de recta por 7,4 m de ancho (85 m de lazo, antes 89 m) y rampas de 5,6 m; los carruseles de armado, los carros y la codificación se realinearon con las rampas. Reproducción sin API: `twin_api.replay.record_plant` graba 15 min de operación normal (tras 15 min de calentamiento), un cuadro por segundo con solo lo que cambió; `tools/deploy/export_static_plants.py` la escribe en `api/replays/{id}.json` al desplegar y la escena la reproduce con ▶ SIMULAR cuando el WebSocket no responde (reloj «GRABACIÓN», velocidad y pausa funcionan).
+- **Verificación:** `twin-lib plant validate` (4 plantas), escenarios del aeropuerto, `pytest` (prueba nueva de la grabación), `ruff`, `pnpm -r typecheck`, `pnpm -r test`; prueba en un servidor estático sin API (como Cloudflare Pages): el WebSocket falla, la escena carga la grabación y el reloj avanza; capturas `evidencia/aeropuerto-inducciones-*.jpg`.
+- **Decisiones:** [[decisiones]] D50
+- **Conversación:** [[hilo-equipaje-aeropuerto]]
 
 ### 2026-10-18 15:04 · Sistema de equipaje de aeropuerto (gemelo nuevo)
 - **Fecha/hora (UTC):** 2026-10-18 15:04–17:40

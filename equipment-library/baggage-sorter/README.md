@@ -2,7 +2,7 @@
 
 Clasificador de equipaje de bandejas basculantes en lazo cerrado. Visual V2 · comportamiento B2. Ver `FICHA.md`.
 
-- Largo del lazo = 2 × `straight_m` + π × `loop_width_m`; bandejas cada `tray_pitch_m`. La inducción pone hasta `induct_max_upm` maletas por minuto en bandejas libres.
+- Largo del lazo = 2 × `straight_m` + π × `loop_width_m`; bandejas cada `tray_pitch_m`. La inducción pone hasta `induct_max_upm` maletas por minuto en bandejas libres. En la escena las dos bandas de inducción corren por fuera de las rectas (a ancho/2 + 1,3 m del eje del óvalo) y entregan de costado con un empujador, sin pisar las bandejas.
 - El lector lee `read_rate_pct` % de las etiquetas; las demás van a la rampa de codificación manual. Las leídas se reparten entre los vuelos según `split_<n>_pct` (método del mayor déficit).
 - Cada rampa guarda `chute_capacity` maletas y entrega al carrusel una cada `release_gap_s` mientras el carrusel recibe. Con la rampa llena la maleta da otra vuelta; tras `max_recirc` vueltas va a manual (`dumped`).
 - Salidas: `out_1` … `out_4` y `manual_out`. Entradas: `inflow_upm`, `downstream_free_1..4`, `manual_free`.

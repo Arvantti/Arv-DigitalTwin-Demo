@@ -60,3 +60,20 @@ si
 ### 🤖 Claude · 23:30 UTC
 
 (Resumen) Cada maleta se sigue sobre el recorrido real de su banda: separación mínima, choques contados y fricción (resbala en subidas de más de ≈ 24°). La escena dibuja la posición real de cada maleta. Escenario nuevo de planta `slippery-collector`: la colectora A pierde agarre, las maletas resbalan, chocan contra la cola y la isla A se bloquea.
+
+### 🤖 Claude · 23:20 UTC
+
+Confirmado: la física por maleta ya está en main. El PR #51 se fusionó con todos sus commits, así que no hace falta un PR nuevo.
+
+### 👤 Andy (Carlos Andrés Quiceño) · 2026-10-19 00:04:37 UTC (chat del proyecto, con captura)
+
+corregir esos traslapamientos en aeropuerto
+
+### 👤 Andy (Carlos Andrés Quiceño) · 2026-10-19 00:04:58 UTC (chat del proyecto)
+
+y faltaria dar play a la simulacion de las maletas
+
+### 🤖 Claude · 2026-10-19 00:40 UTC
+
+(Resumen) Las inducciones ya no pisan las bandejas: corren por fuera del lazo y entregan de costado; el lazo y los carruseles se realinearon. En el sitio publicado ▶ SIMULAR reproduce una grabación de 15 min de la operación normal, porque allí no hay API. PR nuevo desde main.
+

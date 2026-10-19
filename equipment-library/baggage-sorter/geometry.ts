@@ -1,12 +1,14 @@
 /**
  * Geometría paramétrica del clasificador de bandejas basculantes. El lazo es un óvalo: dos rectas de straight_m y
  * dos semicírculos de diámetro loop_width_m (largo = 2 × recta + π × ancho, el mismo que usa behavior.py).
- * La recta de descarga es la del lado +Z y se recorre hacia +X; las inducciones entran al inicio de las dos rectas
- * por el extremo -X y las rampas de vuelo salen hacia +Z, repartidas en partes iguales en la recta de descarga.
+ * La recta de descarga es la del lado +Z y se recorre hacia +X; las inducciones llegan por el extremo -X, corren por
+ * fuera de las dos rectas (a r + 1,3 m del eje del óvalo, sin pisar las bandejas) y entregan de costado con un
+ * empujador. Las rampas de vuelo salen hacia +Z, repartidas en partes iguales en la recta de descarga.
  * La rampa de codificación manual sale 1,5 m después del final de esa recta, ya en la curva.
  * Si el lazo va elevado (height_m alto), las rampas bajan hasta ≈ 1 m del piso para entregar a los carruseles.
  *
- * Huella: largo = recta + ancho + 1,5 m (bandejas de 1,5 m); fondo = ancho + 1,5 m + chute_length_m (las rampas).
+ * Huella: largo = recta + ancho + 1,5 m (bandejas de 1,5 m); fondo = ancho + 1,5 m + chute_length_m (las rampas);
+ * la banda de inducción del lado -Z sobresale ≈ 0,5 m de ese fondo.
  */
 import * as THREE from "three";
 import {
@@ -23,6 +25,10 @@ import {
 const TRAY_W = 1.5;
 const MANUAL_AFTER_M = 1.5;
 const MAX_BAGS = 300;
+const INDUCT_W = 1.0; // ancho de la banda de inducción
+const INDUCT_GAP = 0.05; // luz entre la banda y el borde de las bandejas
+const INDUCT_OVERLAP_M = 1.5; // cuánto entra la inducción a lo largo de la recta
+const READER_AT_M = 2.2; // lector de etiquetas, después del final de la inducción
 
 export default function build(params: Params): EquipmentModel {
   const S = num(params, "straight_m", 28);
@@ -95,16 +101,27 @@ export default function build(params: Params): EquipmentModel {
   const bags = P.bagInstances(MAX_BAGS, 0.7);
   root.add(bags);
 
-  // inducciones: dos bandas desde el borde -X hasta el inicio de cada recta
+  // inducciones: dos bandas que llegan por el extremo -X y corren por fuera de cada recta, sin pisar las bandejas;
+  // al final un empujador pasa la maleta de costado a la bandeja que pasa
+  const inductZ = r + TRAY_W / 2 + INDUCT_GAP + INDUCT_W / 2;
+  const inductEnd = -S / 2 + INDUCT_OVERLAP_M;
   for (const sz of [1, -1]) {
-    const len = DX / 2 - S / 2;
-    const belt = P.box(len, 0.08, 1.0, M.rubber(), 0.01, "inductions");
-    belt.position.set(-S / 2 - len / 2, H - 0.05, zc + sz * r);
+    const len = inductEnd + DX / 2;
+    const cx = -DX / 2 + len / 2;
+    const cz = zc + sz * inductZ;
+    const belt = P.box(len, 0.08, INDUCT_W, M.rubber(), 0.01, "inductions");
+    belt.position.set(cx, H - 0.05, cz);
     root.add(belt);
-    for (const side of [-1, 1]) {
-      const g = P.box(len, 0.18, 0.04, M.stainless(), 0.005);
-      g.position.set(-S / 2 - len / 2, H + 0.03, zc + sz * r + side * 0.52);
-      root.add(g);
+    const g = P.box(len, 0.18, 0.04, M.stainless(), 0.005);
+    g.position.set(cx, H + 0.03, cz + sz * (INDUCT_W / 2 + 0.02)); // baranda solo del lado de afuera
+    root.add(g);
+    const pusher = P.box(0.9, 0.3, 0.12, yellow, 0.01, "induction_pushers");
+    pusher.position.set(inductEnd - 0.55, H + 0.15, cz + sz * (INDUCT_W / 2 - 0.06));
+    root.add(pusher);
+    for (const x of [-DX / 2 + 0.4, inductEnd - 0.3]) {
+      const leg = P.box(0.1, H - 0.1, 0.1, steel, 0.005);
+      leg.position.set(x, (H - 0.1) / 2, cz + sz * (INDUCT_W / 2 - 0.05));
+      root.add(leg);
     }
   }
   // lector de etiquetas: arco sobre la recta de descarga
@@ -121,7 +138,7 @@ export default function build(params: Params): EquipmentModel {
   scan.rotation.x = -Math.PI / 2;
   scan.position.set(0, H + 1.04, 0);
   arch.add(scan);
-  arch.position.set(-S / 2 + 1.0, 0, zc + r);
+  arch.position.set(-S / 2 + READER_AT_M, 0, zc + r);
   root.add(arch);
 
   // rampas de vuelo hacia +Z
@@ -172,7 +189,7 @@ export default function build(params: Params): EquipmentModel {
   root.add(mleg);
 
   const light = P.stackLight(0.4);
-  light.object.position.set(-S / 2 + 1.0, H + 1.25, zc + r);
+  light.object.position.set(-S / 2 + READER_AT_M, H + 1.25, zc + r);
   root.add(light.object);
 
   let time = 0;
