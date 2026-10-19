@@ -23,7 +23,7 @@ from pathlib import Path
 from typing import Any
 
 from .behavior import EquipmentBehavior, Event
-from .catalog import MOLD_PARAMS, Catalog
+from .catalog import KIND_NAMES, MOLD_PARAMS, Catalog
 from .library import Expectation, Library, find_library_root
 from .links import BACKWARD, FORWARD, ITEM_ATTRIBUTES, port_links
 from .plant_hydraulics import HydraulicDomain
@@ -126,7 +126,8 @@ class PlantModel:
         self.description = raw.get("description", "")
         self.dt = float(raw.get("dt", 1.0))
         self.equipment: dict[str, dict[str, Any]] = dict(raw.get("equipment") or {})
-        # Catálogo (docs/datos-reales.md): el molde montado da producto, resina, cavidades, peso y ciclo.
+        # Catálogo (docs/datos-reales.md): el herramental montado da parámetros al equipo (el molde: producto, resina,
+        # cavidades, peso y ciclo; el formato de una llenadora: unit_ml; el troquel: cajas por lámina).
         self.catalog = Catalog.load(self.folder)
         self._catalog_errors: list[str] = []
         if self.catalog is not None:
@@ -136,9 +137,12 @@ class PlantModel:
                 if cfg is None:
                     continue
                 params = dict(cfg.get("params") or {})
-                if repeated := sorted(set(params) & set(MOLD_PARAMS)):
+                tool = self.catalog.tooling.get(self.catalog.setup[eid]["tooling"], {})
+                given = set(MOLD_PARAMS) if tool.get("kind") == "mold" else set(tool.get("params") or {})
+                if repeated := sorted(set(params) & given):
+                    name = KIND_NAMES.get(tool.get("kind", ""), "herramental")
                     self._catalog_errors.append(
-                        f"equipo {eid}: {repeated} vienen del molde montado (catalog/setup.yaml); quítelos de params"
+                        f"equipo {eid}: {repeated} vienen del {name} montado (catalog/setup.yaml); quítelos de params"
                     )
                     continue
                 if not self._catalog_errors:
@@ -176,6 +180,16 @@ class PlantModel:
         self.flow_links = [lk for lk in self.links if not self.is_hydraulic(lk)]
         if errors:
             raise SpecError("\n".join(f"{self.sim_path}: {e}" for e in errors))
+
+    def _check_batch(self, step: PlantStep) -> list[str]:
+        """Un lote (run_phases) en un equipo con receta montada carga lo que dice la receta (±0,5 %)."""
+        tool = self.catalog.tooling.get(self.catalog.setup.get(step.equipment, {}).get("tooling", "")) if self.catalog else None
+        if not tool or tool["kind"] != "recipe" or step.command != "run_phases":
+            return []
+        charged = sum(ph.get("kg", 0) for ph in (step.args or {}).get("phases") or [] if ph.get("kind") == "charge")
+        if abs(charged - tool["batch_kg"]) > 0.005 * tool["batch_kg"]:
+            return [f"línea de tiempo: {step.equipment}: carga {charged:g} kg y la receta {tool['id']} es de {tool['batch_kg']:g} kg"]
+        return []
 
     @staticmethod
     def _step(raw: dict[str, Any]) -> PlantStep:
@@ -317,6 +331,7 @@ class PlantModel:
                 errors.append(f"línea de tiempo: {st.equipment} no tiene el comando {st.command!r}")
             if clash := set(st.inputs) & linked_inputs[st.equipment]:
                 errors.append(f"línea de tiempo: {st.equipment}: las entradas {sorted(clash)} las calcula un enlace")
+            errors += self._check_batch(st)
         for ln in self.lines:
             if ln.output.equipment not in self.equipment:
                 errors.append(f"línea {ln.id}: la salida {ln.output} no se simula")

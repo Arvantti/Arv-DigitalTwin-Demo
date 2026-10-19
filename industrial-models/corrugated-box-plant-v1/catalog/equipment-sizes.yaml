@@ -1,0 +1,9 @@
+# Convertidoras por tamaño de caja (docs/datos-reales.md, paso 2). El plano no tiene un parámetro numérico de tamaño,
+# así que cada tamaño lista sus equipos.
+equipment_sizes:
+  - type: box-converter
+    layout_type: [flexo_folder_gluer, rotary_die_cutter]
+    sizes:
+      - { id: grande, name: Grande, equipment: [ffg-01], presets: [ffg-large] }
+      - { id: mediana, name: Mediana, equipment: [ffg-02], presets: [ffg-medium] }
+      - { id: pequena, name: Pequeña, equipment: [rdc-01], presets: [rdc-small] }

@@ -111,4 +111,4 @@ También quiero que ajustes las velocidades de las bandas y que crees como una e
 
 ### 🤖 Claude · 2026-10-19 15:20 UTC
 
-(Resumen) La inducción entra a 45° en la recta del lazo con la punta cortada a inglete (sin hueco) y las rampas empiezan 4 m después. Velocidades ajustadas, señales start/stop en cada banda (fotocelda de entrada, sueño sin maletas, selector del operador) y tablero «⚙ PLC DE BANDAS» con START/STOP y consigna por banda. Decisión D61. PR nuevo desde main.
+(Resumen) La inducción entra a 45° en la recta del lazo con la punta cortada a inglete (sin hueco) y las rampas empiezan 4 m después. Velocidades ajustadas, señales start/stop en cada banda (fotocelda de entrada, sueño sin maletas, selector del operador) y tablero «⚙ PLC DE BANDAS» con START/STOP y consigna por banda. Decisión D62. PR #63 desde main.
