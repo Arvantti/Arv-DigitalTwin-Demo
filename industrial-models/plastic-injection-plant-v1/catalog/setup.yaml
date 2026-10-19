@@ -1,0 +1,9 @@
+# Montaje actual: qué molde y qué color tiene cada inyectora. El motor toma de aquí el producto, la resina,
+# las cavidades, el peso de la pieza y el ciclo de esas inyectoras (no se repiten en simulation.yaml).
+# Las demás inyectoras siguen con sus parámetros del simulation.yaml hasta que sus productos entren al catálogo.
+setup:
+  imm-01: { tooling: mold-cubiertos-16c,       color: mb-blanco }
+  imm-02: { tooling: mold-cubiertos-16c,       color: mb-blanco }
+  imm-06: { tooling: mold-pedal-palanca-2c,    color: mb-azul }
+  imm-19: { tooling: mold-cuerpo-papelera-20l, color: mb-gris }
+  imm-21: { tooling: mold-balde-12l,           color: mb-azul }

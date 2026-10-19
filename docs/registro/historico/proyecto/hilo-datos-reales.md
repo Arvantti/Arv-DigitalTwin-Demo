@@ -2,7 +2,7 @@
 tipo: historico-ia
 fuente: hilo «Plan de la hoja de ruta de datos reales para todos los gemelos» (Claude Projects)
 desde: 2026-10-18 23:53
-hasta: 2026-10-19 02:58
+hasta: 2026-10-19 03:45
 tags: [registro, historico-ia, datos-reales, pedidos, fractal]
 ---
 # Hilo: hoja de ruta de datos reales para todos los gemelos
@@ -32,3 +32,18 @@ corregir / corregir conflictos
 ### 🤖 Claude · 2026-10-19 02:58 UTC
 
 Fusionó main en la rama del PR y resolvió los conflictos de la bitácora, las decisiones y el histórico conservando las dos entradas; la decisión del plan pasó a D54 porque D53 ya era la línea fría y mostaza de salsas.
+
+### 👤 Carlos Andrés Quiceño · 2026-10-19 03:08:49 UTC (tarjeta de decisión)
+
+Eligió «A+B plásticos» en la pregunta «¿Con qué fase empezamos la hoja de ruta de datos reales?»
+
+### 🤖 Claude · 2026-10-19 03:09 UTC
+
+Arranco con el esquema común y el catálogo de plásticos en el mismo PR #56. Los escenarios actuales deben seguir dando los mismos resultados.
+
+*(Herramientas: lectura del motor, de `simulation.yaml`, de los presets de inyectora y de `pallet_sizing.py`; instantánea de los 8 escenarios antes del cambio; esquema, módulo de catálogo, comando, catálogo YAML y pruebas; comparación de instantáneas, ruff, pytest y validación de plantas.)*
+
+### 🤖 Claude · 2026-10-19 03:45 UTC
+
+Fases A y B listas en el PR #56: esquema común y validador del catálogo, catálogo de plásticos con cubiertos, balde 12 L y papelera 20 L (con sus dos piezas y el ensamble), 4 moldes, resinas y colores, tres tamaños de inyectora y el montaje actual. El motor toma el molde del catálogo y los 8 escenarios dan exactamente lo mismo que antes.
+

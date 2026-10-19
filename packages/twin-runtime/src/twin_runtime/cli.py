@@ -6,6 +6,8 @@
     twin-lib plant list                   plantas con simulation.yaml
     twin-lib plant validate [planta ...]  valida enlaces contra la librería y el plano, y corre sus escenarios
     twin-lib plant run <planta> [--scenario id]   simula la planta conectada
+    twin-lib catalog validate [planta ...]        valida el catálogo de datos (productos, moldes, tamaños, montaje)
+    twin-lib catalog route <planta> <producto>    ruta del producto por los equipos de la planta
 """
 
 from __future__ import annotations
@@ -14,9 +16,11 @@ import argparse
 import json
 import sys
 
+from .catalog import Catalog
 from .library import Library, check_behavior_contract
 from .plant import SIM_FILE, PlantModel, check_plant_expectations, find_models_root, run_plant_scenario
 from .sim import check_expectations, run_scenario
+from .spec import SpecError, load_yaml
 
 
 def _fmt(value: object) -> str:
@@ -140,6 +144,41 @@ def cmd_plant(lib: Library, args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_catalog(lib: Library, args: argparse.Namespace) -> int:
+    root = find_models_root(lib.root)
+    if args.action == "route":
+        if len(args.names) != 2:
+            print("uso: twin-lib catalog route <planta> <producto>", file=sys.stderr)
+            return 2
+        cat = Catalog.load(root / args.names[0])
+        if cat is None or args.names[1] not in cat.products:
+            print(f"{args.names[0]}: sin catálogo o producto desconocido {args.names[1]!r}", file=sys.stderr)
+            return 1
+        for st in cat.route(args.names[1]):
+            extra = f"  molde {st['tooling']}" if st.get("tooling") else ""
+            print(f"{st['product']:<24} {st['stage']:<22} {', '.join(st['active'])}{extra}")
+        return 0
+    failed = 0
+    names = args.names or sorted(p.parent.name for p in root.glob("*/catalog"))
+    for name in names:
+        try:
+            cat = Catalog.load(root / name)
+            if cat is None:
+                errors = ["no tiene catálogo (carpeta catalog/)"]
+            else:
+                errors = cat.validate(load_yaml(root / name / "plant.yaml"), lib)
+        except SpecError as exc:
+            errors = [str(exc)]
+        summary = ""
+        if not errors and cat:
+            summary = f"  {len(cat.products)} productos, {len(cat.tooling)} herramentales, {len(cat.setup)} montados"
+        print(f"[{'OK ' if not errors else 'ERR'}] {name}{summary}")
+        for e in errors:
+            print(f"       {e}")
+        failed += bool(errors)
+    return 1 if failed else 0
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="twin-lib", description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -158,9 +197,12 @@ def main(argv: list[str] | None = None) -> int:
     pl.add_argument("--scenario")
     pl.add_argument("--every", type=float, default=600.0, help="segundos virtuales entre muestras")
     pl.add_argument("--json", action="store_true")
+    ca = sub.add_parser("catalog", help="catálogo de datos de una planta (docs/datos-reales.md)")
+    ca.add_argument("action", choices=["validate", "route"])
+    ca.add_argument("names", nargs="*", help="validate: plantas; route: <planta> <producto>")
     args = ap.parse_args(argv)
     lib = Library()
-    return {"list": cmd_list, "validate": cmd_validate, "run": cmd_run, "plant": cmd_plant}[args.cmd](lib, args)
+    return {"list": cmd_list, "validate": cmd_validate, "run": cmd_run, "plant": cmd_plant, "catalog": cmd_catalog}[args.cmd](lib, args)
 
 
 if __name__ == "__main__":

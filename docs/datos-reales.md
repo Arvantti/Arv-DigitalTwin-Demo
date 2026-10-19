@@ -1,6 +1,6 @@
 # Hoja de ruta de datos reales para todos los gemelos
 
-Estado: **plan, sin implementar** (2026-10-18). Decisión D54 en `docs/registro/decisiones/decisiones.md`.
+Estado (2026-10-19): **fases A y B hechas** para plásticos (decisión D55); el resto del plan sigue pendiente. Plan en la decisión D54 de `docs/registro/decisiones/decisiones.md`.
 
 El autor definió esta hoja de ruta para la planta de plásticos (D48) y el 2026-10-18 la extendió a todos los gemelos. Hoy cada planta tiene sus datos repartidos en `plant.yaml` (parámetros de cada equipo, recetas de salsas) y `simulation.yaml`, todos supuestos. El objetivo es que el gemelo se alimente con un **catálogo** de datos reales y que los **pedidos** los secuencie el backend Fractal.
 
@@ -79,7 +79,17 @@ Galería (Pages)  ──pedido──▶  Worker /api/orders  ──▶  cola  �
 
 Las fases A a C dan los pasos 1 a 3; D el 4; E el 5; F el 6. G puede ir en paralelo desde que exista la fase A.
 
-## 5. Primer PR propuesto
+## 5. Fases A y B (hechas, 2026-10-19)
+
+- Esquema común: `industrial-models/_schema/catalog.schema.json`. Validador: `uv run twin-lib catalog validate` (esquema más reglas cruzadas de `packages/twin-runtime/src/twin_runtime/catalog.py`: referencias, molde que cabe en cada inyectora candidata por tonelaje y capacidad de inyección, color permitido, lista de materiales sin ciclos, cada inyectora del plano en un tamaño, y el plano mostrando los mismos datos del molde montado).
+- Catálogo de plásticos en `industrial-models/plastic-injection-plant-v1/catalog/`: `materials.yaml` (PS, HDPE, PP reciclado y masterbatch blanco, azul y gris), `tooling.yaml` (4 moldes), `products.yaml` (cubiertos, balde 12 L y papelera 20 L con sus dos semielaborados y su ruta), `equipment-sizes.yaml` (pequeña 50–200 t: 10 inyectoras; mediana 250–800 t: 14; grande 1.000–2.000 t: 5), `setup.yaml` (molde y color montados en imm-01, imm-02, imm-06, imm-19 e imm-21) y `orders.yaml` (vacío hasta la fase E).
+- El motor copia producto, resina, cavidades, peso y ciclo del molde montado a la inyectora; `simulation.yaml` ya no los repite (si los repite, es error). Los 8 escenarios de la planta dan exactamente el mismo resultado que antes.
+- `tools/logistics/pallet_sizing.py` toma el volumen por pieza de esas cinco inyectoras del producto del catálogo.
+- Ruta de un producto: `uv run twin-lib catalog route plastic-injection-plant-v1 papelera-20l` (la usará la interfaz de la fase D para resaltarla en 3D).
+
+Siguiente: fase C (catálogos de salsas y cajas) o fase D (interfaz de productos), a elección del autor.
+
+## 6. Primer PR propuesto (histórico)
 
 **Fases A y B juntas para plásticos**, pequeño y verificable:
 

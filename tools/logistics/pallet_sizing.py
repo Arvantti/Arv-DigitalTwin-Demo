@@ -20,6 +20,15 @@ PLANT_DIR = Path(__file__).resolve().parents[2] / "industrial-models" / "plastic
 
 def load() -> tuple[dict, dict, dict]:
     sizing = yaml.safe_load((PLANT_DIR / "pallet-sizing.yaml").read_text(encoding="utf-8"))
+    # Las inyectoras con molde del catálogo toman el volumen por pieza del producto (catalog/products.yaml).
+    catalog = PLANT_DIR / "catalog"
+    products = {p["id"]: p for p in yaml.safe_load((catalog / "products.yaml").read_text(encoding="utf-8"))["products"]}
+    molds = {t["id"]: t for t in yaml.safe_load((catalog / "tooling.yaml").read_text(encoding="utf-8"))["tooling"]}
+    setup = yaml.safe_load((catalog / "setup.yaml").read_text(encoding="utf-8"))["setup"]
+    for imm, mounted in setup.items():
+        if imm in sizing["bulk_l"]:
+            raise SystemExit(f"pallet-sizing.yaml: {imm} tiene molde en el catálogo; su volumen va en catalog/products.yaml")
+        sizing["bulk_l"][imm] = products[molds[mounted["tooling"]]["product"]]["bulk_l"]
     plant = yaml.safe_load((PLANT_DIR / "plant.yaml").read_text(encoding="utf-8"))
     imms = {e["id"]: e["params"] for e in plant["equipment"] if e["type"] == "injection_molding_machine"}
     bufs = {e["id"]: e for e in plant["equipment"] if e["type"] == "pallet_buffer"}

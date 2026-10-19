@@ -1,0 +1,9 @@
+# Tres tamaños de inyectora (paso 2 de la hoja de ruta). Cada inyectora del plant.yaml cae en uno por su fuerza
+# de cierre; los presets son los de la librería que se usan en ese tamaño. Rangos supuestos.
+equipment_sizes:
+  - type: injection-molding-machine
+    layout_type: injection_molding_machine
+    sizes:
+      - { id: pequena, name: Pequeña, clamp_t: [50, 200],    max_shot_kg: [0.1, 0.3], presets: [100t-cutlery, 300t-container] }
+      - { id: mediana, name: Mediana, clamp_t: [250, 800],   max_shot_kg: [0.8, 3.0], presets: [300t-container, 650t-bucket] }
+      - { id: grande,  name: Grande,  clamp_t: [1000, 2000], max_shot_kg: [4.0, 8.0], presets: [1500t-bin] }
