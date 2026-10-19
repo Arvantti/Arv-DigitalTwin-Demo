@@ -1,7 +1,7 @@
 ---
 tipo: bitacora
 tags: [registro, bitacora]
-actualizado: 2026-10-18
+actualizado: 2026-10-19
 ---
 # Bitácora de avances
 
@@ -10,6 +10,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
+| 2026-10-19 | Línea fría y mostaza de salsas | Motor: emulsificador → molino coloidal → pulmón frío 1 → llenadoras de 250, 500 y 1.000 ml → pesadoras → mesas, y mostaza con llenadora y pesadora dedicadas; cuatro pesadoras y flujo nuevos en el plano; escenarios `cold-nominal` y `mustard-nominal`. D53 | 5 |
 | 2026-10-18 | Simulación de la fábrica de cajas | La fábrica de cajas simula su transporte: corrugadora, transportadores de pilas, carro de transferencia que reparte entre tres carriles, tres convertidoras, bandas de fajos y paletizador propio y compartido; escenarios nominal, rotura de papel y paro del paletizador compartido | 4 |
 | 2026-10-18 | Estiba por producto | Planta de plásticos: la estiba es estándar y las piezas por estiba se calculan por producto (de 30 canecas de 121 L a 72.000 bisagras); la flota recibe las piezas por ruta y la ruta 5 usa estibas armadas. D51 | plásticos |
 | 2026-10-18 | Subidas desde el cabezal | Las subidas entre niveles del acueducto salen del tubo principal de cada nivel, después del último ramal, por fuera del bastidor (pedido de Andy). D50 | acueducto |
@@ -67,6 +68,13 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 | 2026-10-16 | #1 | Layouts de las plantas | 1 |
 
 ## Entradas
+
+### 2026-10-18 23:53 – 2026-10-19 00:35 · Línea fría y mostaza de salsas conectadas
+- **Solicitado por:** Andy (2026-10-18 23:53, por el hilo de coordinación): abrir los hilos necesarios; la línea fría y la de mostaza siguen a la caliente (D49) con el reparto 40/45/15 de 22 t/día.
+- **Qué se hizo:** `simulation.yaml` y `plant.yaml` de `sauce-plant-v1`: línea fría (`emulsifier-01` → molino coloidal por `via` → `buffer-cold-01` → `filler-sachet-01`, `filler-pouch-02`, `filler-pouch-03` → `checkweigher-03/04/05` → mesas de 250 (la 2), 500 y 1.000 ml) y mostaza (`tank-mustard-01` → molino por `via` → `buffer-mustard-01` → `filler-sachet-03` → `checkweigher-06` → mesa 1 de 250 ml); presets nuevos `2000l-emulsifier`, `1200l-mustard` (marmita sin vapor), `mustard-buffer-2000l`, `1000ml-mayo` y `250ml-mustard`; líneas `cold-250`, `cold-500`, `cold-1000` y `mustard-250`; escenarios `cold-nominal` y `mustard-nominal` con expectativas calculadas a mano. Las mesas dejan de tener `nominal_inflow_upm: 0`. Documentado en `docs/plant-engine.md`.
+- **Verificación:** `twin-lib plant validate sauce-plant-v1` (incluye los escenarios calientes sin cambios), `uv run pytest -k "sauce or plant or checkweigher or kettle or vessel or library or preset"` (252 pasan), `ruff check`, `twin-lib validate`; API en vivo por WebSocket con `mustard-nominal` (3 batches, 2.995 kg descargados, ≈ 10.860 sachets); captura de la escena con la simulación conectada: [[salsas-linea-fria-sala-de-llenado.png]].
+- **Decisiones:** [[decisiones]] D53.
+- **Conversación:** [[hilo-linea-fria-y-mostaza-de-salsas]].
 
 ### 2026-10-18 22:00 · Fábrica de cajas: simulación del transporte
 - **Fecha/hora (UTC):** 2026-10-18 17:53–22:30

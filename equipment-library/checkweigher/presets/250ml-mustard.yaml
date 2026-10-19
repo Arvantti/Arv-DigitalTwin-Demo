@@ -1,0 +1,4 @@
+preset: 250ml-mustard
+description: Sachet de 250 ml de mostaza (262,5 g), pesadora dedicada por alérgeno
+params: { nominal_g: 262.5, tolerance_minus_pct: 4.0, tolerance_plus_pct: 4.0, nominal_inflow_upm: 60, item_color: "#e0a800" }
+provenance: { nominal_g: user, tolerance_minus_pct: assumed }
