@@ -23,12 +23,12 @@ description: Nave de inyección (29 inyectoras) y la banda principal hacia empaq
 dt: 1.0
 
 equipment:
-  imm-01: { type: injection-molding-machine, preset: 100t-cutlery, params: {"clamp_t": 100, "max_shot_kg": 0.15, "product": "cubiertos", "material": "PS", "cavities": 16, "part_g": 3.5, "cycle_s": 9, "robot": "sprue_picker"} }
-  imm-02: { type: injection-molding-machine, preset: 100t-cutlery, params: {"clamp_t": 100, "max_shot_kg": 0.15, "product": "cubiertos", "material": "PS", "cavities": 16, "part_g": 3.5, "cycle_s": 9, "robot": "sprue_picker"} }
+  imm-01: { type: injection-molding-machine, preset: 100t-cutlery, params: {"clamp_t": 100, "max_shot_kg": 0.15, "robot": "sprue_picker"} }  # molde en catalog/setup.yaml
+  imm-02: { type: injection-molding-machine, preset: 100t-cutlery, params: {"clamp_t": 100, "max_shot_kg": 0.15, "robot": "sprue_picker"} }  # molde en catalog/setup.yaml
   imm-03: { type: injection-molding-machine, preset: 300t-container, params: {"clamp_t": 120, "max_shot_kg": 0.2, "product": "tapa recipiente 0,5 L", "material": "PP", "cavities": 4, "part_g": 12, "cycle_s": 12, "robot": "cartesiano"} }
   imm-04: { type: injection-molding-machine, preset: 300t-container, params: {"clamp_t": 120, "max_shot_kg": 0.2, "product": "tapa recipiente 1 L", "material": "PP", "cavities": 4, "part_g": 18, "cycle_s": 13, "robot": "cartesiano"} }
   imm-05: { type: injection-molding-machine, preset: 300t-container, params: {"clamp_t": 150, "max_shot_kg": 0.25, "product": "vajilla infantil (plato)", "material": "PP", "cavities": 2, "part_g": 45, "cycle_s": 18, "robot": "cartesiano"} }
-  imm-06: { type: injection-molding-machine, preset: 300t-container, params: {"clamp_t": 150, "max_shot_kg": 0.25, "product": "pedal y palanca de papelera", "material": "PP reciclado", "cavities": 2, "part_g": 60, "cycle_s": 25, "robot": "sprue_picker"} }
+  imm-06: { type: injection-molding-machine, preset: 300t-container, params: {"clamp_t": 150, "max_shot_kg": 0.25, "robot": "sprue_picker"} }  # molde en catalog/setup.yaml
   imm-07: { type: injection-molding-machine, preset: 300t-container, params: {"clamp_t": 150, "max_shot_kg": 0.25, "product": "vaso", "material": "PP", "cavities": 4, "part_g": 22, "cycle_s": 11, "robot": "cartesiano"} }
   imm-08: { type: injection-molding-machine, preset: 100t-cutlery, params: {"clamp_t": 80, "max_shot_kg": 0.12, "product": "bisagras y piezas pequeñas", "material": "PP", "cavities": 8, "part_g": 1.75, "cycle_s": 14, "robot": "sprue_picker"} }
   imm-09: { type: injection-molding-machine, preset: 300t-container, params: {"clamp_t": 150, "max_shot_kg": 0.25, "product": "tapa de termo", "material": "PP", "cavities": 4, "part_g": 28, "cycle_s": 16, "robot": "cartesiano"} }
@@ -41,9 +41,9 @@ equipment:
   imm-16: { type: injection-molding-machine, preset: 300t-container, params: {"clamp_t": 300, "max_shot_kg": 0.9, "product": "bandeja", "material": "PP", "cavities": 1, "part_g": 320, "cycle_s": 25, "robot": "cartesiano"} }
   imm-17: { type: injection-molding-machine, preset: 300t-container, params: {"clamp_t": 300, "max_shot_kg": 0.9, "product": "cuerpo de termo", "material": "PP", "cavities": 2, "part_g": 140, "cycle_s": 28, "robot": "cartesiano"} }
   imm-18: { type: injection-molding-machine, preset: 650t-bucket, params: {"clamp_t": 350, "max_shot_kg": 1.2, "product": "señal de prevención plegable", "material": "PP", "cavities": 1, "part_g": 650, "cycle_s": 40, "robot": "cartesiano"} }
-  imm-19: { type: injection-molding-machine, preset: 650t-bucket, params: {"clamp_t": 350, "max_shot_kg": 1.2, "product": "cuerpo papelera 20 L", "material": "PP reciclado", "cavities": 1, "part_g": 700, "cycle_s": 35, "robot": "cartesiano"} }
+  imm-19: { type: injection-molding-machine, preset: 650t-bucket, params: {"clamp_t": 350, "max_shot_kg": 1.2, "robot": "cartesiano"} }  # molde en catalog/setup.yaml
   imm-20: { type: injection-molding-machine, preset: 650t-bucket, params: {"clamp_t": 650, "max_shot_kg": 2.5, "product": "caja organizadora 40 L", "material": "PP", "cavities": 1, "part_g": 1100, "cycle_s": 38, "robot": "cartesiano"} }
-  imm-21: { type: injection-molding-machine, preset: 650t-bucket, params: {"clamp_t": 650, "max_shot_kg": 2.5, "product": "balde 12 L", "material": "HDPE", "cavities": 1, "part_g": 520, "cycle_s": 30, "robot": "cartesiano"} }
+  imm-21: { type: injection-molding-machine, preset: 650t-bucket, params: {"clamp_t": 650, "max_shot_kg": 2.5, "robot": "cartesiano"} }  # molde en catalog/setup.yaml
   imm-22: { type: injection-molding-machine, preset: 650t-bucket, params: {"clamp_t": 650, "max_shot_kg": 2.5, "product": "balde 20 L", "material": "HDPE reciclado", "cavities": 1, "part_g": 850, "cycle_s": 36, "robot": "cartesiano"} }
   imm-23: { type: injection-molding-machine, preset: 650t-bucket, params: {"clamp_t": 650, "max_shot_kg": 2.5, "product": "tapa de nevera", "material": "PP", "cavities": 1, "part_g": 600, "cycle_s": 34, "robot": "cartesiano"} }
   imm-24: { type: injection-molding-machine, preset: 650t-bucket, params: {"clamp_t": 650, "max_shot_kg": 2.5, "product": "bandeja industrial", "material": "HDPE", "cavities": 1, "part_g": 1300, "cycle_s": 42, "robot": "cartesiano"} }

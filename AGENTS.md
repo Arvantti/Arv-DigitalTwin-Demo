@@ -11,6 +11,7 @@ Este repositorio construye una plataforma de gemelos digitales industriales. Las
 - `apps/gallery/acueducto.html`: panel de gráficos del PLC del acueducto a escala (fuera de la escena 3D). Lee `public/data/acueducto-dia.json`, que genera `tools/hydraulics/dia_acueducto.py` con el banco hidráulico.
 - `industrial-models/corrugated-box-plant-v1/`: fábrica de cajas de cartón corrugado centrada en el transporte de pilas (`docs/box-plant.md`), simulada con los tipos `corrugator`, `transfer-car`, `box-converter`, `palletizer` y `belt-conveyor`; las piezas de escena de los equipos no simulados están en `apps/gallery/src/box-plant-pieces.ts`.
 - `industrial-models/<planta>/plant.yaml`: layouts de planta. `tools/layout/render_layout.py` los valida y dibuja.
+- `industrial-models/<planta>/catalog/`: catálogo de datos de la planta (materiales, productos con su ruta, moldes o recetas, tamaños de equipo, montaje y pedidos) con el esquema común `industrial-models/_schema/catalog.schema.json`; el motor lo lee (`docs/datos-reales.md`). Hoy solo plásticos.
 - `industrial-models/<planta>/simulation.yaml`: qué equipos del layout se simulan y cómo se conectan por puertos (motor de planta, `docs/plant-engine.md`).
 
 ## Crear o modificar equipos
@@ -26,6 +27,8 @@ uv sync && pnpm install
 uv run twin-lib validate          # librería completa
 uv run twin-lib plant validate    # plantas conectadas: enlaces y escenarios
 uv run twin-lib plant run sauce-plant-v1 --scenario boiler-trip
+uv run twin-lib catalog validate    # catálogos de datos (productos, moldes, tamaños, montaje)
+uv run twin-lib catalog route plastic-injection-plant-v1 papelera-20l
 uv run pytest                     # pruebas de Python
 uv run ruff check .
 pnpm -r typecheck && pnpm -r test   # tipos y prueba genérica de geometrías
