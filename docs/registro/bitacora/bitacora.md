@@ -10,7 +10,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
-| 2026-10-19 | #56 | Datos reales, fases A y B: esquema común del catálogo y validador (`twin-lib catalog`), catálogo de plásticos con 3 productos (cubiertos, balde 12 L, papelera 20 L con ensamble), 4 moldes, resinas y colores, 3 tamaños de inyectora y montaje actual; el motor toma el molde del catálogo y los 8 escenarios dan lo mismo. D55 | datos reales |
+| 2026-10-19 | #56 | Datos reales, fases A y B: esquema común del catálogo y validador (`twin-lib catalog`), catálogo de plásticos con 3 productos (cubiertos, balde 12 L, papelera 20 L con ensamble), 4 moldes, resinas y colores, 3 tamaños de inyectora y montaje actual; el motor toma el molde del catálogo y los 8 escenarios dan lo mismo. D56 | datos reales |
 | 2026-10-19 | Línea fría y mostaza de salsas | Motor: emulsificador → molino coloidal → pulmón frío 1 → llenadoras de 250, 500 y 1.000 ml → pesadoras → mesas, y mostaza con llenadora y pesadora dedicadas; cuatro pesadoras y flujo nuevos en el plano; escenarios `cold-nominal` y `mustard-nominal`. D53 | 5 |
 | 2026-10-18 | Plan de datos reales | Plan para alimentar los cinco gemelos con datos reales: catálogo común (productos, rutas, moldes o recetas, materia prima, tamaños de equipo), interfaz con ruta en 3D, pedidos y secuenciación en Fractal; aeropuerto con entrada y destino, acueducto con optimización (`docs/datos-reales.md`). D54 | plan |
 | 2026-10-18 | Simulación de la fábrica de cajas | La fábrica de cajas simula su transporte: corrugadora, transportadores de pilas, carro de transferencia que reparte entre tres carriles, tres convertidoras, bandas de fajos y paletizador propio y compartido; escenarios nominal, rotura de papel y paro del paletizador compartido | 4 |
@@ -77,7 +77,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 - **Solicitado por:** Andy eligió en la tarjeta de decisión «A+B plásticos» (03:08).
 - **Qué se hizo:** esquema `industrial-models/_schema/catalog.schema.json`; módulo `twin_runtime/catalog.py` con validación cruzada (referencias, molde que cabe por tonelaje y capacidad de inyección, colores, lista de materiales, tamaños, coherencia con el plano) y ruta por producto; comando `twin-lib catalog validate | route`; catálogo `plastic-injection-plant-v1/catalog/` (materiales, moldes, productos con ruta, tamaños, montaje, pedidos vacío); el motor aplica el molde montado y `simulation.yaml` ya no repite esos parámetros; `pallet_sizing.py` toma el volumen por pieza del catálogo; documentación en `docs/datos-reales.md`, `docs/plant-engine.md` y `AGENTS.md`.
 - **Verificación:** instantáneas finales de los 8 escenarios de plásticos idénticas byte a byte antes y después; `twin-lib catalog validate`, `twin-lib plant validate`, `ruff check` y `pytest` (8 pruebas nuevas en `test_catalog.py`) en verde.
-- **Decisiones:** [[decisiones#D55]]
+- **Decisiones:** [[decisiones#D56]]
 - **Conversación:** [[hilo-datos-reales]]
 
 ### 2026-10-18 23:53 – 2026-10-19 00:35 · Línea fría y mostaza de salsas conectadas
