@@ -164,15 +164,15 @@ Los valores esperados salen del banco en régimen permanente `industrial-models/
 
 `corrugated-box-plant-v1`: la fábrica de cajas (`docs/box-plant.md`). La corrugadora (`corrugator`) entrega pilas a cuatro transportadores de rodillos (`belt-conveyor`); el carro de transferencia (`transfer-car`) tiene un puerto de salida por carril y reparte él mismo las pilas, así el motor sigue sin repartir una salida entre varios destinos. Tres convertidoras (`box-converter`) entregan fajos a sus bandas; la línea 1 termina en su paletizador y las líneas 2 y 3 se juntan en una banda de unión (dos enlaces a la misma entrada: las unidades se suman) antes del paletizador compartido (`palletizer`). Escenarios `nominal`, `paper-break` y `shared-palletizer-stop`.
 
-`airport-baggage-v1`: el sistema de equipaje de un aeropuerto (ficha de diseño en la carpeta compartida del proyecto, `aeropuerto/ficha-diseno-bhs.md`). Dos islas de check-in de 8 mostradores entregan a dos colectoras de 46 m, cada una con su máquina de inspección por tomografía (CT). Lo que la CT y el operador despejan va al clasificador de bandejas basculantes: la línea norte gira con una curva motorizada y entra de costado (confluencia) a la línea sur, que es la única inducción; esta sube, gira 30° con otra curva y entrega a favor del flujo al inicio de la recta de las rampas; lo que no se despeja va a nivel 3 (revisión manual) y de ahí también al clasificador. El clasificador reparte por vuelo a 4 carruseles de armado (30/25/25/20 %); las etiquetas sin lectura y las maletas que agotan sus vueltas van a codificación manual y regresan. En llegadas, dos bandas desde la plataforma llenan dos carruseles de reclamo.
+`airport-baggage-v1`: el sistema de equipaje de un aeropuerto (ficha de diseño en la carpeta compartida del proyecto, `aeropuerto/ficha-diseno-bhs.md`). Dos islas de check-in de 8 mostradores entregan a dos colectoras de 46 m, cada una con su máquina de inspección por tomografía (CT). Lo que la CT y el operador despejan va al clasificador de bandejas basculantes: la línea norte gira con una curva motorizada y entra de costado (confluencia) a la línea sur, que es la única inducción; esta sube, gira 30° con otra curva y entrega a favor del flujo al inicio de la recta de las rampas; lo que no se despeja va a nivel 3 (revisión manual), y cada sala devuelve lo que despeja por su propia banda de regreso, que entra de costado a la línea de inducción (la norte a la banda norte, la sur a la inducción). El clasificador reparte por vuelo a 4 carruseles de armado (30/25/25/20 %); las etiquetas sin lectura y las maletas que agotan sus vueltas van a codificación manual, que las devuelve por una banda que sube por el costado este hasta una reinducción del lado de retorno del lazo. Todas las bandas de maletas tienen control por zonas con fotoceldas (`zone_control`): acumulan sin choques. En llegadas, dos bandas desde la plataforma llenan dos carruseles de reclamo.
 
 ```
 check-in A ─▶ colectora A (46 m) ─▶ CT 1 ─despejadas─▶ curva ─▶ banda norte ─┐ (confluencia)
-check-in B ─▶ colectora B (46 m) ─▶ CT 2 ─despejadas─▶ inducción ◀───────────┘ ─┐
-                                                                                 │
-CT 1 ─alarma─▶ banda ─▶ nivel 3 norte ─────────────────────────────┤
-CT 2 ─alarma─▶ banda ─▶ nivel 3 sur ───────────────────────────────┼─▶ clasificador ─rampas 1…4─▶ carruseles de armado 1…4 (vuelos V101, V205, V317, V422)
-codificación manual ◀─rampa manual (sin lectura o sin vueltas)─────┘                └─▶ carros hacia el avión
+check-in B ─▶ colectora B (46 m) ─▶ CT 2 ─despejadas─▶ inducción ◀───────────┘ ─▶ clasificador
+CT 1 ─alarma─▶ banda ─▶ nivel 3 norte ─regreso─▶ banda norte (de costado)
+CT 2 ─alarma─▶ banda ─▶ nivel 3 sur ───regreso─▶ inducción (de costado)
+clasificador ─rampas 1…4─▶ carruseles de armado 1…4 (vuelos V101, V205, V317, V422) ─▶ carros hacia el avión
+clasificador ─rampa manual (sin lectura o sin vueltas)─▶ codificación manual ─regreso─▶ reinducción del clasificador
 banda de llegadas 1 ─▶ carrusel de reclamo 1        banda de llegadas 2 ─▶ carrusel de reclamo 2
 ```
 

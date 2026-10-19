@@ -203,6 +203,8 @@ export const beltCurve: PieceBuilder = (_fp, params) => {
       const leg = P.box(0.04, h - 0.12, 0.04, steel, 0.004);
       place(leg, phi, R + side * (W / 2 + 0.03), (h - 0.12) / 2);
     }
+  // tambores en los dos extremos: cierran el traspaso con la banda anterior y la siguiente
+  for (const phi of [0, angle]) place(P.cylinderZ(0.04, W + 0.02, M.polishedSteel(), 20), phi, R, h - 0.045);
   const drive = P.motor(0.75);
   place(drive, angle / 2, R + W / 2 + 0.25, h - 0.15);
   return g;

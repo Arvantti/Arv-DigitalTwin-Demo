@@ -5,7 +5,8 @@
  * (a r + 3,0 m del eje del óvalo): tramo recto, curva motorizada y banda a 30° que entrega a favor del flujo al
  * inicio de esa recta, antes del lector y de las rampas. Las rampas de vuelo salen hacia +Z, repartidas en partes
  * iguales en la recta de descarga.
- * La rampa de codificación manual sale 1,5 m después del final de esa recta, ya en la curva.
+ * La rampa de codificación manual sale 1,5 m después del final de esa recta, ya en la curva. Con reinduct = true se
+ * dibuja una segunda inducción igual, girada 180°, que entra por el extremo +X del lado -Z (fuera de la huella).
  * Si el lazo va elevado (height_m alto), las rampas bajan hasta ≈ 1 m del piso para entregar a los carruseles.
  *
  * Huella: largo = recta + ancho + 1,5 m (bandejas de 1,5 m); fondo = ancho + 1,5 m + chute_length_m (las rampas).
@@ -15,6 +16,7 @@ import {
   type AnimationFrame,
   type EquipmentModel,
   type Params,
+  bool,
   ch,
   disposeObject,
   materials as M,
@@ -114,47 +116,73 @@ export default function build(params: Params): EquipmentModel {
   const inductZ = endZ + MERGE_LEN * sinA + CURVE_R * (1 - cosA); // eje de la entrada
   const endX = -S / 2 + MERGE_END_M;
   const curveX = endX - MERGE_LEN * cosA - CURVE_R * sinA; // inicio de la curva
-  const inductPaths = P.group("induction");
-  const inductMat = M.rubber();
-  const guideMat = M.stainless();
-  const beltPiece = (len: number, x: number, z: number, yaw: number) => {
-    const piece = P.group();
-    piece.add(P.box(len, 0.08, INDUCT_W, inductMat, 0.01));
-    for (const side of [-1, 1]) {
-      const gde = P.box(len, 0.18, 0.04, guideMat, 0.005);
-      gde.position.set(0, 0.08, side * (INDUCT_W / 2 + 0.02));
-      piece.add(gde);
+  const buildInduction = (): THREE.Group => {
+    const inductPaths = P.group("induction");
+    const inductMat = M.rubber();
+    const guideMat = M.stainless();
+    const beltPiece = (len: number, x: number, z: number, yaw: number) => {
+      const piece = P.group();
+      piece.add(P.box(len, 0.08, INDUCT_W, inductMat, 0.01));
+      for (const side of [-1, 1]) {
+        const gde = P.box(len, 0.18, 0.04, guideMat, 0.005);
+        gde.position.set(0, 0.08, side * (INDUCT_W / 2 + 0.02));
+        piece.add(gde);
+      }
+      piece.position.set(x, H - 0.05, zc + z);
+      piece.rotation.y = yaw;
+      inductPaths.add(piece);
+    };
+    // tambor en cada extremo de banda: el traspaso entre la recta, la curva y la banda en ángulo
+    const drum = (x: number, z: number, yaw: number) => {
+      const d = P.cylinderZ(0.05, INDUCT_W + 0.02, M.polishedSteel(), 20);
+      d.position.set(x, H - 0.05, zc + z);
+      d.rotation.y = yaw;
+      inductPaths.add(d);
+    };
+    const entryLen = curveX + DX / 2;
+    if (entryLen > 0.05) beltPiece(entryLen, -DX / 2 + entryLen / 2, inductZ, 0);
+    // curva motorizada: gira hacia -Z (hacia el lazo) con radio CURVE_R
+    const nArc = 10;
+    for (let i = 0; i < nArc; i++) {
+      const phi = (ma * (i + 0.5)) / nArc;
+      beltPiece(((ma / nArc) * CURVE_R) * 1.05, curveX + CURVE_R * Math.sin(phi), inductZ - CURVE_R * (1 - Math.cos(phi)), phi);
     }
-    piece.position.set(x, H - 0.05, zc + z);
-    piece.rotation.y = yaw;
-    inductPaths.add(piece);
+    // banda en ángulo hasta el borde de las bandejas
+    const mx0 = curveX + CURVE_R * sinA;
+    const mz0 = inductZ - CURVE_R * (1 - cosA);
+    beltPiece(MERGE_LEN, (mx0 + endX) / 2, (mz0 + endZ) / 2, ma);
+    if (entryLen > 0.05) drum(-DX / 2, inductZ, 0);
+    drum(curveX, inductZ, 0);
+    drum(mx0, mz0, ma);
+    drum(endX - 0.05 * cosA, endZ + 0.05 * sinA, ma);
+    for (const [x, z] of [
+      [-DX / 2 + 0.4, inductZ],
+      [curveX, inductZ],
+      [(mx0 + endX) / 2, (mz0 + endZ) / 2],
+    ]) {
+      const leg = P.box(0.1, H - 0.1, 0.1, steel, 0.005);
+      leg.position.set(x, (H - 0.1) / 2, zc + z);
+      inductPaths.add(leg);
+    }
+    const drive = P.motor(1.1);
+    drive.position.set((mx0 + endX) / 2 + 0.3, H - 0.3, zc + (mz0 + endZ) / 2 + INDUCT_W / 2 + 0.25);
+    inductPaths.add(drive);
+    return inductPaths;
   };
-  const entryLen = curveX + DX / 2;
-  if (entryLen > 0.05) beltPiece(entryLen, -DX / 2 + entryLen / 2, inductZ, 0);
-  // curva motorizada: gira hacia -Z (hacia el lazo) con radio CURVE_R
-  const nArc = 10;
-  for (let i = 0; i < nArc; i++) {
-    const phi = (ma * (i + 0.5)) / nArc;
-    beltPiece(((ma / nArc) * CURVE_R) * 1.05, curveX + CURVE_R * Math.sin(phi), inductZ - CURVE_R * (1 - Math.cos(phi)), phi);
+  const induction = buildInduction();
+  induction.name = "inductions";
+  root.add(induction);
+  // reinducción (reinduct): la misma inducción girada 180° sobre el centro del óvalo; entra por el extremo +X del
+  // lado -Z y entrega a favor del flujo al inicio de la recta de retorno (la usa el regreso de codificación manual)
+  if (bool(params, "reinduct", false)) {
+    const inner = buildInduction();
+    inner.position.z = -zc;
+    const pivot = P.group("reinduction");
+    pivot.add(inner);
+    pivot.position.z = zc;
+    pivot.rotation.y = Math.PI;
+    root.add(pivot);
   }
-  // banda en ángulo hasta el borde de las bandejas
-  const mx0 = curveX + CURVE_R * sinA;
-  const mz0 = inductZ - CURVE_R * (1 - cosA);
-  beltPiece(MERGE_LEN, (mx0 + endX) / 2, (mz0 + endZ) / 2, ma);
-  for (const [x, z] of [
-    [-DX / 2 + 0.4, inductZ],
-    [curveX, inductZ],
-    [(mx0 + endX) / 2, (mz0 + endZ) / 2],
-  ]) {
-    const leg = P.box(0.1, H - 0.1, 0.1, steel, 0.005);
-    leg.position.set(x, (H - 0.1) / 2, zc + z);
-    inductPaths.add(leg);
-  }
-  const drive = P.motor(1.1);
-  drive.position.set((mx0 + endX) / 2 + 0.3, H - 0.3, zc + (mz0 + endZ) / 2 + INDUCT_W / 2 + 0.25);
-  inductPaths.add(drive);
-  inductPaths.name = "inductions";
-  root.add(inductPaths);
   // lector de etiquetas: arco sobre la recta de descarga
   const arch = P.group("tag_reader");
   for (const side of [-1, 1]) {
