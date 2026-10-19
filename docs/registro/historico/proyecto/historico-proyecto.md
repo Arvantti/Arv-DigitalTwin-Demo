@@ -37,3 +37,4 @@ Conversaciones del 2026-10-16 (UTC) entre el autor y Claude dentro del proyecto 
 27. [[hilo-desague-nivel-1]] (bajada de 1 m de los tanques de recirculación para que el nivel 1 desagüe por gravedad, 2026-10-18 23:53 UTC)
 26. [[hilo-linea-fria-y-mostaza-de-salsas]] (línea fría y mostaza de la planta de salsas en el motor, 2026-10-18 23:53 UTC)
 27. [[hilo-datos-reales]] (plan de datos reales, pedidos y Fractal para todos los gemelos, 2026-10-18 23:53 UTC)
+28. [[hilo-imagenes-portal]] (imágenes de cada planta en las tarjetas del portal, 2026-10-19 16:12 UTC)
