@@ -10,6 +10,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
+| 2026-10-19 | Molienda de mostaza | El plano anota 60 min de molienda en la receta de mostaza (antes 30), acorde con el molino de 1.000 kg/h y con datos de fabricantes. D57 | 5 |
 | 2026-10-19 | #56 | Datos reales, fases A y B: esquema común del catálogo y validador (`twin-lib catalog`), catálogo de plásticos con 3 productos (cubiertos, balde 12 L, papelera 20 L con ensamble), 4 moldes, resinas y colores, 3 tamaños de inyectora y montaje actual; el motor toma el molde del catálogo y los 8 escenarios dan lo mismo. D56 | datos reales |
 | 2026-10-19 | Línea fría y mostaza de salsas | Motor: emulsificador → molino coloidal → pulmón frío 1 → llenadoras de 250, 500 y 1.000 ml → pesadoras → mesas, y mostaza con llenadora y pesadora dedicadas; cuatro pesadoras y flujo nuevos en el plano; escenarios `cold-nominal` y `mustard-nominal`. D53 | 5 |
 | 2026-10-18 | Plan de datos reales | Plan para alimentar los cinco gemelos con datos reales: catálogo común (productos, rutas, moldes o recetas, materia prima, tamaños de equipo), interfaz con ruta en 3D, pedidos y secuenciación en Fractal; aeropuerto con entrada y destino, acueducto con optimización (`docs/datos-reales.md`). D54 | plan |
@@ -70,6 +71,13 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 | 2026-10-16 | #1 | Layouts de las plantas | 1 |
 
 ## Entradas
+
+### 2026-10-19 09:57 · Molienda de la mostaza a 60 min
+- **Solicitado por:** Andy (03:10: «son datos inventados por nosotros, busca en internet»; 09:57: «si»).
+- **Qué se hizo:** `plant.yaml`: `moler_y_transferir` de `rcp-mustard` de 30 a 60 min; comentario de `simulation.yaml` actualizado. La simulación no cambia.
+- **Verificación:** `twin-lib plant validate sauce-plant-v1`.
+- **Decisiones:** [[decisiones]] D57.
+- **Conversación:** [[hilo-linea-fria-y-mostaza-de-salsas]].
 
 ### 2026-10-19 03:09 · Catálogo de datos de plásticos (fases A y B)
 - **Fecha/hora (UTC):** 2026-10-19 03:09–03:45
