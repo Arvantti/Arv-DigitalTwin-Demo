@@ -77,3 +77,11 @@ y faltaria dar play a la simulacion de las maletas
 
 (Resumen) Las inducciones ya no pisan las bandejas: corren por fuera del lazo y entregan de costado; el lazo y los carruseles se realinearon. En el sitio publicado ▶ SIMULAR reproduce una grabación de 15 min de la operación normal, porque allí no hay API. PR nuevo desde main.
 
+### 👤 Andy (Carlos Andrés Quiceño) · 2026-10-19 09:55:07 UTC
+
+deberia haber algun sistema que traslade la maleta de una banda a otra  por que ahi se caerian las maletas, revisa ese detalle piensalo bien segun el flujo
+
+### 🤖 Claude · 2026-10-19 10:40 UTC
+
+(Resumen) Revisé cada traspaso del flujo. La inducción ahora entrega en ángulo de 30° a favor del flujo (curva motorizada y banda en ángulo hasta el borde de las bandejas); la línea norte gira con una curva motorizada y entra de costado a la línea sur, que es la única inducción. Quedan sin banda dibujada los regresos de nivel 3 y de codificación al clasificador. Mismo PR #59.
+

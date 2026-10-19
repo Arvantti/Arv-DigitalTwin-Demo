@@ -1,6 +1,7 @@
 # Simulación del sistema de equipaje con el motor de planta (docs/plant-engine.md).
-# Salidas: cada isla de check-in entrega a su colectora, la colectora a su máquina CT; la CT despeja hacia la
-# inducción del clasificador y manda las alarmas por su banda a la sala de nivel 3, que devuelve al clasificador
+# Salidas: cada isla de check-in entrega a su colectora, la colectora a su máquina CT; la CT 1 despeja hacia la
+# banda norte, que entra de costado a la línea sur (confluencia); la CT 2 despeja a esa línea, la única inducción
+# del clasificador y manda las alarmas por su banda a la sala de nivel 3, que devuelve al clasificador
 # las que despeja. El clasificador reparte por vuelo entre los 4 carruseles de armado y manda las etiquetas sin
 # lectura (y las maletas que agotan sus vueltas) a codificación manual, que también las devuelve al clasificador.
 # Llegadas: dos bandas desde la plataforma descargan en los dos carruseles de reclamo; la llegada de un vuelo es un
@@ -17,8 +18,8 @@ equipment:
   collector-b:   { type: belt-conveyor,        preset: bhs-collector-46m, params: { crest_height_m: 4.2, ramp_deg: 16 } }
   screening-01:  { type: baggage-screening,    preset: ct-600, params: { alarm_side: left } }
   screening-02:  { type: baggage-screening,    preset: ct-600, params: { alarm_side: right } }
-  induct-01:     { type: belt-conveyor,        preset: bhs-transfer-9m, params: { height_m: 0.75, rise_m: 2.75 } }
-  induct-02:     { type: belt-conveyor,        preset: bhs-transfer-9m, params: { height_m: 0.75, rise_m: 2.75 } }
+  induct-01:     { type: belt-conveyor,        preset: bhs-transfer-9m, params: { length_m: 8, height_m: 0.75, rise_m: 0.5 } }
+  induct-02:     { type: belt-conveyor,        preset: bhs-transfer-9m, params: { height_m: 0.75, rise_m: 2.75, merge_at_m: 1.5, merge_width_m: 1.2, merge_side: left } }
   alarm-belt-01: { type: belt-conveyor,        preset: bhs-transfer-9m, params: { length_m: 7.7, height_m: 0.75, crest_height_m: 2.0, ramp_deg: 22 } }
   alarm-belt-02: { type: belt-conveyor,        preset: bhs-transfer-9m, params: { length_m: 7.7, height_m: 0.75, crest_height_m: 2.0, ramp_deg: 22 } }
   l3-01:         { type: bag-handling-station, preset: level3-3ops }
@@ -43,7 +44,7 @@ links:
   # CT → inducción → clasificador
   - { from: screening-01.cleared_out, to: induct-01.items_in }
   - { from: screening-02.cleared_out, to: induct-02.items_in }
-  - { from: induct-01.items_out,     to: sorter-01.bags_in }
+  - { from: induct-01.items_out,     to: induct-02.items_in }
   - { from: induct-02.items_out,     to: sorter-01.bags_in }
   # CT con alarma → nivel 3 → reingreso al clasificador
   - { from: screening-01.alarm_out,  to: alarm-belt-01.items_in }

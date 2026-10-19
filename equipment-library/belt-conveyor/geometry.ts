@@ -160,11 +160,31 @@ export default function build(params: Params): EquipmentModel {
   if (item !== "box") {
     // en los tramos inclinados las maletas llevan guías más altas
     const guideH = prof.length > 2 || hOut !== hIn ? 0.12 : 0.03;
+    // confluencia: la guía del lado de la banda que entra de costado se abre (merge_at_m desde la entrada)
+    const mergeAt = num(params, "merge_at_m", 0);
+    const mergeW = num(params, "merge_width_m", 1.2);
+    const mergeZ = str(params, "merge_side", "left") === "right" ? 1 : -1; // izquierda del avance +X = -Z
+    const gap: [number, number] | null = mergeAt > 0 ? [-L / 2 + mergeAt - mergeW / 2, -L / 2 + mergeAt + mergeW / 2] : null;
     for (const sz of [-1, 1]) {
-      alongProfile((len) => P.box(len, guideH, 0.01, M.plastic("#d8dde2", 0.4), 0.003), 0.06, sz * (W / 2 - 0.01));
+      const open = gap && sz === mergeZ ? gap : null;
+      const guide = (len: number) => P.box(len, guideH, 0.01, M.plastic("#d8dde2", 0.4), 0.003);
+      if (!open) alongProfile(guide, 0.06, sz * (W / 2 - 0.01));
+      else
+        for (const [a, b] of [[-L / 2, open[0]], [open[1], L / 2]]) {
+          if (b - a < 0.05) continue;
+          const x = (a + b) / 2;
+          const g = new THREE.Group();
+          const piece = guide((b - a) / Math.cos(slopeAt(x)));
+          piece.position.set(0, 0.06, sz * (W / 2 - 0.01));
+          g.add(piece);
+          g.position.set(x, yAt(x), 0);
+          g.rotation.z = slopeAt(x);
+          root.add(g);
+        }
       const nb = Math.max(2, Math.ceil(L / 1.5));
       for (let i = 0; i < nb; i++) {
         const bx = -L / 2 + 0.2 + ((L - 0.4) * i) / (nb - 1);
+        if (open && bx > open[0] && bx < open[1]) continue;
         const bracket = P.box(0.02, 0.07, 0.02, steel, 0.003);
         bracket.position.set(bx, yAt(bx) + 0.035, sz * (W / 2 + 0.01));
         root.add(bracket);
