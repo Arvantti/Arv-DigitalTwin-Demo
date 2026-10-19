@@ -84,3 +84,22 @@ scenarios:
       - { path: variables.zone_stopped, equals: 1 }
       - { path: variables.photo_eye, equals: 1 }
       - { path: state, equals: blocked }
+
+  - id: operator-stop-and-sleep
+    description: Banda con zonas; el operador la para 2 min desde el tablero y, cuando dejan de llegar maletas, se apaga sola
+    preset: bhs-transfer-9m
+    params: { zone_control: true, run_on_s: 10 }
+    duration_s: 600
+    timeline:
+      - { at_s: 60, command: stop }
+      - { at_s: 180, command: start }
+      - { at_s: 300, command: set_param, args: { name: nominal_inflow_upm, value: 0 } }
+    expect:
+      - { path: events.operator_stop, equals: 1 }
+      - { path: events.operator_start, equals: 1 }
+      - { path: events.full, min: 1, description: "(parada 2 min con 4 maletas por min: se llenan la banda y la entrada)" }
+      - { path: variables.run_enable, equals: 1 }
+      - { path: variables.run_signal, equals: 0, description: "(vacía desde ≈ 330 s: se apaga 10 s después)" }
+      - { path: variables.items_on_belt, equals: 0 }
+      - { path: variables.collisions, equals: 0 }
+

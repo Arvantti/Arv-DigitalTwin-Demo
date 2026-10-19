@@ -10,6 +10,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
+| 2026-10-19 | Entrada a 45° y PLC de bandas | La inducción del clasificador entra a 45° en la parte recta del lazo, con la punta cortada a inglete sobre el borde de las bandejas (sin el hueco triangular) y rodillo de nariz; las rampas empiezan 4 m después (`chute_lead_m`) y los carruseles se realinearon. Velocidades ajustadas (inducción 0,75 → línea sur 1,0 m/s para abrir hueco; regresos 0,4–0,5). Cada banda tiene señales start/stop: arranca con su fotocelda de entrada, se duerme sin maletas y el operador la habilita o la para. Tablero «⚙ PLC DE BANDAS» con luces, START/STOP y consigna de velocidad por banda. D62 | logística |
 | 2026-10-19 | Editor de hojas de ruta | Panel HOJA DE RUTA con la tabla de pasos y, en el 3D, el tiempo unitario y el lote mínimo junto a cada número; editor con clic en el 3D para los equipos, validación en vivo, productos nuevos o duplicados, y descarga en YAML. D61 | datos reales |
 | 2026-10-19 | Catálogos de salsas y cajas | Datos reales, fase C: el catálogo admite recetas, formatos y troqueles; salsas con 3 recetas, 3 formatos de sachet y 6 SKU (más 3 graneles); cajas con 3 referencias y su formato o troquel; el motor toma de ahí el formato de cada llenadora y las cajas por lámina, y exige que los lotes carguen lo que dice la receta; escenarios iguales. D60 | datos reales |
 | 2026-10-19 | Productos y su ruta en el 3D | Datos reales, fase D: la API entrega el catálogo de cada planta; panel PRODUCTOS en la escena con la ruta resaltada y numerada, arcos con el color del producto, enlace `?product=` y carga de productos nuevos validados contra el plano; tamaño del equipo en el HUD. D59 | datos reales |
@@ -76,6 +77,15 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 | 2026-10-16 | #1 | Layouts de las plantas | 1 |
 
 ## Entradas
+
+### 2026-10-19 11:43 · Aeropuerto: entrada a 45° en la recta y tablero PLC de bandas
+- **Fecha/hora (UTC):** 2026-10-19 11:43–15:20
+- **Fase del plan:** [[plan-del-proyecto]] gemelos nuevos (logística)
+- **Solicitado por:** Carlos Andrés Quiceño (11:43, con captura): «Debe ser buscar una parte recta para entrar, no puede ser entrar en curva… Entrar a 45 grados sería lo ideal… hay un hueco… en forma de triángulo… eso no debe pasar»; (11:43:57) «ajustes las velocidades de las bandas y que crees como una especie de tablero monitor control… Como si fuera un PLC… las bandas tienen que tener señales start-stop y eso lo determina son los flujos de los sensores».
+- **Qué se hizo:** `baggage-sorter/geometry.ts`: la banda de inducción gira 45° y su esquina de aguas arriba toca el borde de las bandejas a 1 m del inicio de la recta; la banda se dibuja como polígono con la punta cortada a inglete, paralela al lazo, y rodillo de nariz, así no queda hueco ni entra en la curva. Parámetro nuevo `chute_lead_m` (geometría y comportamiento): las rampas se reparten después de 4 m de recta; carruseles de armado y carros realineados (`plant.yaml`). `belt-conveyor`: selector del operador `run_enable` (comandos `start`/`stop`, eventos `operator_start`/`operator_stop`), salida de marcha `run_signal`, fotocelda de entrada `entry_eye` y parámetro `run_on_s` (10 s sin maletas → la banda se duerme); escenario `operator-stop-and-sleep`. Velocidades en `simulation.yaml`: inducción 0,75 m/s, línea sur 1,0, alarma y regresos de nivel 3 0,4, regreso de codificación 0,5. Escena: tablero «⚙ PLC DE BANDAS» (`apps/gallery/src/belt-plc.ts`, `&plc=1`) con una fila por banda: luces, START/STOP, consigna 0,1–2,0 m/s y lecturas; mandos por WebSocket (necesitan la API; en el sitio publicado solo lectura).
+- **Verificación:** prueba en vivo de los mandos (STOP de la inducción la para y bloquea la CT; START + 0,3 m/s la arranca a 0,3; un regreso sin maletas queda dormido); 6 escenarios del aeropuerto; `twin-lib validate`, `twin-lib plant validate`, `pytest`, `pnpm -r test`, `pnpm -r typecheck`, `ruff check`; capturas `evidencia/aeropuerto-induccion-45.jpg` y `evidencia/aeropuerto-plc-bandas.jpg`.
+- **Decisiones:** [[decisiones]] D62
+- **Conversación:** [[hilo-equipaje-aeropuerto]]
 
 ### 2026-10-19 11:41 · Editor de hojas de ruta con tiempos
 - **Fecha/hora (UTC):** 2026-10-19 11:41–15:30 (con una pausa por el límite de uso)

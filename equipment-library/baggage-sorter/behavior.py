@@ -87,7 +87,9 @@ class BaggageSorter(EquipmentBehavior):
     def _chute_pos(self, k: int) -> float:
         """Distancia desde las inducciones hasta la rampa k (0..destinations-1)."""
         n = int(self.p["destinations"])
-        return self.p["straight_m"] * (k + 0.5) / n
+        s = float(self.p["straight_m"])
+        lead = min(float(self.p.get("chute_lead_m", 0.0)), 0.5 * s)
+        return lead + (s - lead) * (k + 0.5) / n
 
     def _manual_pos(self) -> float:
         """La rampa de manual está 1,5 m después del final del tramo de descarga (al entrar a la curva)."""
