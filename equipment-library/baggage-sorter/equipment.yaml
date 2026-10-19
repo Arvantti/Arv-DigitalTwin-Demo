@@ -31,6 +31,7 @@ params:
   entry_buffer_units: { type: integer, min: 1, max: 32, default: 6, description: Maletas que caben esperando en las inducciones, affects: [behavior] }
   nominal_inflow_upm: { type: number, unit: maletas/min, min: 0, max: 120, default: 10, description: Llegada de maletas si el entorno no la fija, affects: [behavior] }
   height_m:           { type: number, unit: m, min: 0.6, max: 6, default: 1.1, description: "Altura de las bandejas (con el lazo elevado las rampas bajan hasta ≈ 1 m del piso)", affects: [geometry] }
+  reinduct:           { type: boolean, default: false, description: "Dibuja una segunda inducción (reinducción) por el extremo +X del lado de retorno, para el regreso de codificación manual", affects: [geometry] }
   motor_kw:           { type: number, unit: kW, min: 1, max: 100, default: 15, description: Potencia de los motores lineales sumados, affects: [behavior, geometry] }
 
 ports:

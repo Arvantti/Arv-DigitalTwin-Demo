@@ -1,7 +1,8 @@
 /**
  * Geometría paramétrica de la estación manual de equipaje. Mesa de rodillos de llegada en el extremo -X, mesas de
  * atención (una por operario) en el centro con el operario del lado +Z, y banda de reingreso al clasificador a lo
- * largo del borde -Z. En nivel 3 lleva detector de trazas y mampara de vidrio; en codificación, un puesto con terminal.
+ * largo del borde -Z, que entrega en el borde +X de la huella. En nivel 3 lleva detector de trazas y mampara de
+ * vidrio; en codificación, un puesto con terminal.
  *
  * Relaciones: largo = operarios × 2,4 m + 2 m (mínimo 4 m); fondo = 5 m (nivel 3) o 3 m (codificación).
  */
@@ -28,21 +29,27 @@ export default function build(params: Params): EquipmentModel {
   const steel = M.stainless();
   const tableMat = M.paint("#d5d9dd", 0.4);
 
-  // banda de reingreso
+  // banda de reingreso: llega hasta el borde +X de la huella, donde la recibe la banda de regreso al clasificador
   const zBelt = -DZ / 2 + 0.55;
-  const beltL = DX - 0.4;
+  const beltL = DX - 0.2;
+  const beltX = 0.1;
   const belt = P.box(beltL, 0.06, 0.9, M.rubber(), 0.01, "return_belt");
-  belt.position.set(0, 0.72, zBelt);
+  belt.position.set(beltX, 0.72, zBelt);
   root.add(belt);
   for (const side of [-1, 1]) {
     const rail = P.box(beltL, 0.14, 0.04, steel, 0.005);
-    rail.position.set(0, 0.78, zBelt + side * 0.47);
+    rail.position.set(beltX, 0.78, zBelt + side * 0.47);
     root.add(rail);
     for (const lx of [-1, 1]) {
       const leg = P.box(0.05, 0.69, 0.05, steel, 0.005);
-      leg.position.set(lx * (beltL / 2 - 0.2), 0.345, zBelt + side * 0.42);
+      leg.position.set(beltX + lx * (beltL / 2 - 0.2), 0.345, zBelt + side * 0.42);
       root.add(leg);
     }
+  }
+  for (const lx of [-1, 1]) {
+    const drum = P.cylinderZ(0.04, 0.92, M.polishedSteel(), 16);
+    drum.position.set(beltX + lx * (beltL / 2 - 0.04), 0.71, zBelt);
+    root.add(drum);
   }
 
   // mesa de rodillos de llegada
@@ -114,7 +121,7 @@ export default function build(params: Params): EquipmentModel {
   root.add(glow);
 
   const light = P.stackLight(0.4);
-  light.object.position.set(DX / 2 - 0.25, 0.75, zBelt);
+  light.object.position.set(-DX / 2 + 0.2, 0.75, -DZ / 2 + 0.12);
   root.add(light.object);
 
   // maletas: en la mesa de llegada, abiertas en las mesas y en la banda de reingreso
@@ -144,7 +151,7 @@ export default function build(params: Params): EquipmentModel {
     }
     const travel = ch(frame, "belt_travel");
     if (travel > 0) {
-      const x = -beltL / 2 + 0.4 + ((travel / 10) * (beltL - 0.8)) % (beltL - 0.8);
+      const x = beltX - beltL / 2 + 0.4 + ((travel / 10) * (beltL - 0.8)) % (beltL - 0.8);
       bags.setMatrixAt(k++, m.makeTranslation(x, 0.75, zBelt));
     }
     bags.count = k;

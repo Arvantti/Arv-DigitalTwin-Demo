@@ -6,6 +6,10 @@ Cada unidad se sigue una por una sobre el recorrido real de la banda (con sus su
 - fricción: una unidad sube o baja con la banda mientras la pendiente no supere el ángulo de fricción
   (tan θ ≤ friction_coef). En una subida más empinada resbala y se queda detenida al pie de la rampa (`slip`),
   frenando a las de atrás; en una bajada más empinada se desliza más rápido que la banda (hasta el doble).
+- control por zonas con fotoceldas (`zone_control`): la banda va partida en zonas del largo de una unidad, cada una
+  con su fotocelda. Una zona para cuando la de adelante está ocupada y arranca cuando se libera, así las unidades se
+  acumulan sin tocarse (sin choques, ni contra la cola ni contra una maleta resbalada). La fotocelda de descarga
+  para la zona de cabeza mientras la siguiente máquina no recibe.
 """
 
 from __future__ import annotations
@@ -50,6 +54,7 @@ class BeltConveyor(EquipmentBehavior):
         self.speed = self.p["speed_m_s"]
         self.accepting = True
         self.blocked_s = 0.0
+        self.zone_stopped = False
         self._build_path()
 
     def _path_key(self) -> tuple[Any, ...]:
@@ -103,11 +108,14 @@ class BeltConveyor(EquipmentBehavior):
         if self._path_key() != self._key:  # set_param cambió el recorrido
             self._build_path()
         stopped = self.failures.stopping is not None
+        end, pitch = self.path_length, p["pitch_m"]
+        downstream = bool(self.inputs["downstream_free"])
+        zones = bool(p.get("zone_control", False))
+        # fotocelda de descarga: con la cabeza tapada y la salida ocupada, la zona de cabeza queda detenida
+        self.zone_stopped = zones and not downstream and bool(self.items) and self.items[0] >= end - 1e-9
         v = 0.0 if stopped else p["speed_m_s"] * (0.7 if self.failures.is_active("belt_misalignment") else 1.0)
         self.speed = v
         self.travel = (self.travel + v * dt) % 10.0
-        end, pitch = self.path_length, p["pitch_m"]
-        downstream = bool(self.inputs["downstream_free"])
 
         # avance: la primera hasta la descarga; las demás respetan la separación mínima
         moved: list[float] = []
@@ -124,7 +132,8 @@ class BeltConveyor(EquipmentBehavior):
             target = pos + own * dt
             new = min(target, max(pos, limit))
             limited = target > new + 1e-9
-            if limited and not self.touching[i] and i > 0 and own - speeds[-1] > IMPACT_M_S:
+            # con zonas, la fotocelda de la zona de adelante la detiene antes del contacto
+            if limited and not zones and not self.touching[i] and i > 0 and own - speeds[-1] > IMPACT_M_S:
                 self.collisions += 1
             self.touching[i] = limited and i > 0
             moved.append(new)
@@ -189,6 +198,8 @@ class BeltConveyor(EquipmentBehavior):
             "accepting": 1 if self.accepting else 0,
             "collisions": self.collisions,
             "slipping": sum(self.slipping),
+            "photo_eye": 1 if self.items and self.items[0] >= self.path_length - self.p["pitch_m"] / 2 else 0,
+            "zone_stopped": 1 if self.zone_stopped else 0,
             "path_length_m": self.path_length,
             "max_slope_deg": self.max_slope_deg,
             "speed_actual_m_s": self.speed,
@@ -204,7 +215,12 @@ class BeltConveyor(EquipmentBehavior):
         }
 
     def animation(self) -> dict[str, float]:
-        return {"belt_travel": self.travel, "items_count": float(len(self.items)), "accumulated": float(self._accumulated())}
+        return {
+            "belt_travel": self.travel,
+            "items_count": float(len(self.items)),
+            "accumulated": float(self._accumulated()),
+            "eye_blocked": 1.0 if self.zone_stopped else 0.0,
+        }
 
     def tracked_items(self) -> list[float]:
         return [round(pos, 2) for pos in self.items[:400]]  # lo que la escena alcanza a dibujar

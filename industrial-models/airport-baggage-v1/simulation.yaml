@@ -1,6 +1,7 @@
 # Simulación del sistema de equipaje con el motor de planta (docs/plant-engine.md).
-# Salidas: cada isla de check-in entrega a su colectora, la colectora a su máquina CT; la CT despeja hacia la
-# inducción del clasificador y manda las alarmas por su banda a la sala de nivel 3, que devuelve al clasificador
+# Salidas: cada isla de check-in entrega a su colectora, la colectora a su máquina CT; la CT 1 despeja hacia la
+# banda norte, que entra de costado a la línea sur (confluencia); la CT 2 despeja a esa línea, la única inducción
+# del clasificador y manda las alarmas por su banda a la sala de nivel 3, que devuelve al clasificador
 # las que despeja. El clasificador reparte por vuelo entre los 4 carruseles de armado y manda las etiquetas sin
 # lectura (y las maletas que agotan sus vueltas) a codificación manual, que también las devuelve al clasificador.
 # Llegadas: dos bandas desde la plataforma descargan en los dos carruseles de reclamo; la llegada de un vuelo es un
@@ -13,18 +14,24 @@ dt: 1.0
 equipment:
   checkin-a:     { type: checkin-island,       preset: island-8 }
   checkin-b:     { type: checkin-island,       preset: island-8, params: { desk_color: "#7a2f5f" } }
-  collector-a:   { type: belt-conveyor,        preset: bhs-collector-46m, params: { crest_height_m: 4.2, ramp_deg: 16 } }
-  collector-b:   { type: belt-conveyor,        preset: bhs-collector-46m, params: { crest_height_m: 4.2, ramp_deg: 16 } }
+  collector-a:   { type: belt-conveyor,        preset: bhs-collector-46m, params: { crest_height_m: 4.2, ramp_deg: 16, zone_control: true } }
+  collector-b:   { type: belt-conveyor,        preset: bhs-collector-46m, params: { crest_height_m: 4.2, ramp_deg: 16, zone_control: true } }
   screening-01:  { type: baggage-screening,    preset: ct-600, params: { alarm_side: left } }
   screening-02:  { type: baggage-screening,    preset: ct-600, params: { alarm_side: right } }
-  induct-01:     { type: belt-conveyor,        preset: bhs-transfer-9m, params: { height_m: 0.75, rise_m: 2.75 } }
-  induct-02:     { type: belt-conveyor,        preset: bhs-transfer-9m, params: { height_m: 0.75, rise_m: 2.75 } }
-  alarm-belt-01: { type: belt-conveyor,        preset: bhs-transfer-9m, params: { length_m: 7.7, height_m: 0.75, crest_height_m: 2.0, ramp_deg: 22 } }
-  alarm-belt-02: { type: belt-conveyor,        preset: bhs-transfer-9m, params: { length_m: 7.7, height_m: 0.75, crest_height_m: 2.0, ramp_deg: 22 } }
+  induct-01:     { type: belt-conveyor,        preset: bhs-transfer-9m, params: { length_m: 8, height_m: 0.75, rise_m: 0.5, merge_at_m: 2.5, merge_side: left, zone_control: true } }
+  induct-02:     { type: belt-conveyor,        preset: bhs-transfer-9m, params: { height_m: 0.75, rise_m: 2.75, merge_at_m: 1.5, merge_width_m: 1.2, merge_side: left, merge2_at_m: 6.45, merge2_side: right, zone_control: true } }
+  alarm-belt-01: { type: belt-conveyor,        preset: bhs-transfer-9m, params: { length_m: 7.7, height_m: 0.75, crest_height_m: 2.0, ramp_deg: 22, zone_control: true } }
+  alarm-belt-02: { type: belt-conveyor,        preset: bhs-transfer-9m, params: { length_m: 7.7, height_m: 0.75, crest_height_m: 2.0, ramp_deg: 22, zone_control: true } }
   l3-01:         { type: bag-handling-station, preset: level3-3ops }
   l3-02:         { type: bag-handling-station, preset: level3-3ops }
-  sorter-01:     { type: baggage-sorter,       preset: tilt-tray-4, params: { height_m: 3.5 } }
+  l3n-return-1:  { type: belt-conveyor,        preset: bhs-transfer-9m, params: { length_m: 4.95, height_m: 0.75, zone_control: true } }
+  l3n-return-2:  { type: belt-conveyor,        preset: bhs-transfer-9m, params: { length_m: 12, height_m: 0.75, zone_control: true } }
+  l3n-return-3:  { type: belt-conveyor,        preset: bhs-transfer-9m, params: { length_m: 5.45, height_m: 0.75, rise_m: 0.16, zone_control: true } }
+  l3s-return-1:  { type: belt-conveyor,        preset: bhs-transfer-9m, params: { length_m: 2.05, height_m: 0.75, zone_control: true } }
+  l3s-return-2:  { type: belt-conveyor,        preset: bhs-transfer-9m, params: { length_m: 6.5, height_m: 0.75, rise_m: 1.97, zone_control: true } }
+  sorter-01:     { type: baggage-sorter,       preset: tilt-tray-4, params: { height_m: 3.5, straight_m: 31.1, loop_width_m: 7.4, chute_length_m: 5.6, reinduct: true } }
   encoding-01:   { type: bag-handling-station, preset: encoding-1op }
+  enc-return:    { type: belt-conveyor,        preset: bhs-transfer-9m, params: { length_m: 16.25, height_m: 0.75, rise_m: 2.75, zone_control: true } }
   makeup-01:     { type: baggage-carousel,     preset: makeup-40 }
   makeup-02:     { type: baggage-carousel,     preset: makeup-40 }
   makeup-03:     { type: baggage-carousel,     preset: makeup-40 }
@@ -43,22 +50,28 @@ links:
   # CT → inducción → clasificador
   - { from: screening-01.cleared_out, to: induct-01.items_in }
   - { from: screening-02.cleared_out, to: induct-02.items_in }
-  - { from: induct-01.items_out,     to: sorter-01.bags_in }
+  - { from: induct-01.items_out,     to: induct-02.items_in }
   - { from: induct-02.items_out,     to: sorter-01.bags_in }
   # CT con alarma → nivel 3 → reingreso al clasificador
   - { from: screening-01.alarm_out,  to: alarm-belt-01.items_in }
   - { from: screening-02.alarm_out,  to: alarm-belt-02.items_in }
   - { from: alarm-belt-01.items_out, to: l3-01.bags_in }
   - { from: alarm-belt-02.items_out, to: l3-02.bags_in }
-  - { from: l3-01.bags_out,          to: sorter-01.bags_in }
-  - { from: l3-02.bags_out,          to: sorter-01.bags_in }
+  - { from: l3-01.bags_out,          to: l3n-return-1.items_in }
+  - { from: l3n-return-1.items_out,  to: l3n-return-2.items_in }
+  - { from: l3n-return-2.items_out,  to: l3n-return-3.items_in }
+  - { from: l3n-return-3.items_out,  to: induct-01.items_in }
+  - { from: l3-02.bags_out,          to: l3s-return-1.items_in }
+  - { from: l3s-return-1.items_out,  to: l3s-return-2.items_in }
+  - { from: l3s-return-2.items_out,  to: induct-02.items_in }
   # clasificador → carruseles de armado y codificación manual
   - { from: sorter-01.out_1,         to: makeup-01.bags_in }
   - { from: sorter-01.out_2,         to: makeup-02.bags_in }
   - { from: sorter-01.out_3,         to: makeup-03.bags_in }
   - { from: sorter-01.out_4,         to: makeup-04.bags_in }
   - { from: sorter-01.manual_out,    to: encoding-01.bags_in }
-  - { from: encoding-01.bags_out,    to: sorter-01.bags_in }
+  - { from: encoding-01.bags_out,    to: enc-return.items_in }
+  - { from: enc-return.items_out,    to: sorter-01.bags_in }
   # llegadas
   - { from: inbound-01.items_out,    to: reclaim-01.bags_in }
   - { from: inbound-02.items_out,    to: reclaim-02.bags_in }
@@ -146,7 +159,7 @@ scenarios:
     expect:
       - { path: events.collector-a.slip, min: 1, description: "(tan 16° = 0,287 > 0,25: no sube)" }
       - { path: equipment.checkin-a.state_share.blocked, min: 0.05, description: "(con la colectora tapada la isla A deja de despachar)" }
-      - { path: equipment.collector-a.variables.collisions, min: 10, description: "(las maletas que siguen llegando chocan contra las detenidas al pie de la rampa)" }
+      - { path: equipment.collector-a.variables.collisions, equals: 0, description: "(las fotoceldas de zona paran a las que siguen llegando antes de tocar a la maleta detenida al pie de la rampa)" }
       - { path: equipment.checkin-b.state_share.blocked, equals: 0.0 }
       - { path: equipment.collector-b.variables.slipping, equals: 0 }
 

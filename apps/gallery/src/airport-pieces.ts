@@ -161,3 +161,51 @@ export const baggageCartTrain: PieceBuilder = ([dx, dy], params) => {
   g.add(bags);
   return g;
 };
+
+/**
+ * Curva motorizada de banda (transfiere la maleta entre dos bandas que no van en línea). La banda entra por su
+ * extremo con rumbo +X y gira `angle_deg` hacia +Z (`turn: right`, el sur del plano) o hacia -Z (`left`) con radio
+ * `radius_m` en el eje; ancho `width_m` y superficie a `height_m`. Origen en el centro de la huella del arco.
+ */
+export const beltCurve: PieceBuilder = (_fp, params) => {
+  const g = P.group("powered_curve");
+  const angle = THREE.MathUtils.degToRad(Number(params.angle_deg ?? 90));
+  const R = Number(params.radius_m ?? 1.5);
+  const W = Number(params.width_m ?? 1.0);
+  const h = Number(params.height_m ?? 0.75);
+  const sgn = params.turn === "left" ? -1 : 1;
+  const at = (phi: number, rad: number) => ({ x: rad * Math.sin(phi), z: sgn * (R - rad * Math.cos(phi)) });
+  // centra la huella del arco en el origen
+  const pts = [];
+  for (let i = 0; i <= 24; i++) for (const rad of [R - W / 2, R + W / 2]) pts.push(at((angle * i) / 24, rad));
+  const cx = (Math.min(...pts.map((p) => p.x)) + Math.max(...pts.map((p) => p.x))) / 2;
+  const cz = (Math.min(...pts.map((p) => p.z)) + Math.max(...pts.map((p) => p.z))) / 2;
+  const steel = M.stainless();
+  const n = Math.max(6, Math.ceil((angle * R) / 0.12));
+  const place = (obj: THREE.Object3D, phi: number, rad: number, y: number) => {
+    const p = at(phi, rad);
+    obj.position.set(p.x - cx, y, p.z - cz);
+    obj.rotation.y = -sgn * phi;
+    g.add(obj);
+  };
+  for (let i = 0; i < n; i++) {
+    const phi = (angle * (i + 0.5)) / n;
+    const step = (angle / n) * 1.04;
+    place(P.box(step * R, 0.012, W, M.rubber(), 0.002), phi, R, h - 0.006);
+    for (const side of [-1, 1]) {
+      const rad = R + (side * W) / 2;
+      place(P.box(step * rad, 0.12, 0.012, M.plastic("#d8dde2", 0.4), 0.002), phi, rad + side * 0.01, h + 0.06);
+      place(P.box(step * (rad + side * 0.03), 0.12, 0.03, steel, 0.004), phi, rad + side * 0.03, h - 0.06);
+    }
+  }
+  for (const phi of [0.15, angle / 2, angle - 0.15])
+    for (const side of [-1, 1]) {
+      const leg = P.box(0.04, h - 0.12, 0.04, steel, 0.004);
+      place(leg, phi, R + side * (W / 2 + 0.03), (h - 0.12) / 2);
+    }
+  // tambores en los dos extremos: cierran el traspaso con la banda anterior y la siguiente
+  for (const phi of [0, angle]) place(P.cylinderZ(0.04, W + 0.02, M.polishedSteel(), 20), phi, R, h - 0.045);
+  const drive = P.motor(0.75);
+  place(drive, angle / 2, R + W / 2 + 0.25, h - 0.15);
+  return g;
+};

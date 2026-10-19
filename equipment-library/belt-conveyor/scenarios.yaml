@@ -70,3 +70,17 @@ scenarios:
     expect:
       - { path: variables.items_on_belt, equals: 8, description: "(9 m / 1,2 m + 1)" }
       - { path: variables.collisions, equals: 7, description: "(la primera se detiene en la descarga; cada una de las otras 7 llega a 0,6 m/s contra la cola)" }
+
+  - id: queue-zone-control
+    description: La misma banda con control por zonas (fotoceldas); al bloquearse la salida las maletas se acumulan sin chocar
+    preset: bhs-transfer-9m
+    params: { zone_control: true }
+    duration_s: 300
+    timeline:
+      - { at_s: 60, inputs: { downstream_free: false } }
+    expect:
+      - { path: variables.items_on_belt, equals: 8, description: "(la misma capacidad: 9 m / 1,2 m + 1)" }
+      - { path: variables.collisions, equals: 0, description: "(cada zona para antes de tocar a la de adelante)" }
+      - { path: variables.zone_stopped, equals: 1 }
+      - { path: variables.photo_eye, equals: 1 }
+      - { path: state, equals: blocked }

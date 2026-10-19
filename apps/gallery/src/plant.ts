@@ -944,49 +944,121 @@ function send(msg: unknown): void {
 }
 
 function disconnect(): void {
-  socket?.close();
+  const s = socket;
   socket = null;
+  s?.close();
+  stopReplay();
   $("btn-connect").textContent = "▶ SIMULAR";
   $("clock").textContent = "SIM · DESCONECTADA";
 }
 
+type SimMessage = {
+  t: number;
+  speed?: number;
+  snapshot: { equipment: Record<string, EquipmentSnapshot>; lines: Parameters<typeof renderLines>[0]; links?: Record<string, LinkState> };
+  events: Parameters<typeof appendEvents>[0];
+};
+
+function applyMessage(msg: SimMessage, label: string): void {
+  messages++;
+  latest = msg.snapshot.equipment;
+  latestLinks = msg.snapshot.links ?? {};
+  for (const [id, snap] of Object.entries(latest)) {
+    const asset = assets.get(id);
+    if (asset) asset.frame = { channels: snap.animation, state: snap.state, phase: snap.phase, variables: snap.variables, items: snap.items, label: id.toUpperCase() };
+  }
+  for (const piece of controlPieces) piece.feed?.(latest, msg.t);
+  renderAsset();
+  renderLines(msg.snapshot.lines);
+  appendEvents(msg.events);
+  const t = msg.t;
+  const hh = String(Math.floor(t / 3600)).padStart(2, "0");
+  const mm = String(Math.floor((t % 3600) / 60)).padStart(2, "0");
+  const ss = String(Math.floor(t % 60)).padStart(2, "0");
+  $("clock").textContent = `${label} ${hh}:${mm}:${ss} · ×${msg.speed ?? speedFromSlider()}`;
+}
+
 function connect(): void {
-  if (socket) return disconnect();
+  if (socket || replay) return disconnect();
   const q = new URLSearchParams({ speed: String(speedFromSlider()) });
   const scenario = $<HTMLSelectElement>("scenario").value;
   if (scenario) q.set("scenario", scenario);
   const proto = location.protocol === "https:" ? "wss" : "ws";
-  socket = new WebSocket(`${proto}://${location.host}/api/plants/${doc.plant.id}/simulate?${q}`);
+  const ws = new WebSocket(`${proto}://${location.host}/api/plants/${doc.plant.id}/simulate?${q}`);
+  socket = ws;
+  let received = 0;
   $("btn-connect").textContent = "■ DETENER";
-  socket.onmessage = (ev) => {
+  ws.onmessage = (ev) => {
     const msg = JSON.parse(ev.data);
     if (msg.error) {
       $("clock").textContent = `ERROR · ${msg.error}`.slice(0, 60);
       return;
     }
-    messages++;
-    latest = msg.snapshot.equipment;
-    latestLinks = msg.snapshot.links ?? {};
-    for (const [id, snap] of Object.entries(latest) as [string, EquipmentSnapshot][]) {
-      const asset = assets.get(id);
-      if (asset) asset.frame = { channels: snap.animation, state: snap.state, phase: snap.phase, variables: snap.variables, items: snap.items, label: id.toUpperCase() };
+    received++;
+    applyMessage(msg, "SIM");
+  };
+  // sin API (sitio publicado): se reproduce la grabación de la operación normal
+  ws.onclose = () => {
+    if (socket !== ws) return;
+    socket = null;
+    if (received === 0) void startReplay();
+    else disconnect();
+  };
+  ws.onerror = () => {
+    if (received === 0) $("clock").textContent = "SIM · SIN API, CARGANDO GRABACIÓN…";
+  };
+}
+
+// ------------------------------------------------------------------ reproducción grabada (sin API)
+// La genera tools/deploy/export_static_plants.py con twin_api.replay: cada cuadro trae solo lo que cambió.
+type Replay = { interval_s: number; frames: SimMessage[] };
+let replayData: Replay | null = null;
+let replay: { timer: number; t: number; next: number; state: Record<string, EquipmentSnapshot>; links: Record<string, LinkState> } | null = null;
+
+async function startReplay(): Promise<void> {
+  if (!replayData) {
+    const res = await fetch(`/api/replays/${doc.plant.id}.json`).catch(() => null);
+    if (!res?.ok) {
+      $("btn-connect").textContent = "▶ SIMULAR";
+      $("clock").textContent = "SIM · API NO DISPONIBLE (uv run uvicorn …)";
+      return;
     }
-    for (const piece of controlPieces) piece.feed?.(latest, msg.t as number);
-    renderAsset();
-    renderLines(msg.snapshot.lines);
-    appendEvents(msg.events);
-    const t = msg.t as number;
-    const hh = String(Math.floor(t / 3600)).padStart(2, "0");
-    const mm = String(Math.floor((t % 3600) / 60)).padStart(2, "0");
-    const ss = String(Math.floor(t % 60)).padStart(2, "0");
-    $("clock").textContent = `SIM ${hh}:${mm}:${ss} · ×${msg.speed}`;
+    replayData = (await res.json()) as Replay;
+  }
+  if (!replayData.frames.length) return;
+  if ($<HTMLSelectElement>("scenario").value) appendEvents([{ t: replayData.frames[0].t, type: "grabación: solo operación normal (los escenarios necesitan la API)" }]);
+  const TICK_MS = 100;
+  replay = { timer: 0, t: replayData.frames[0].t, next: 0, state: {}, links: {} };
+  $("btn-connect").textContent = "■ DETENER";
+  const tick = () => {
+    if (!replay || !replayData) return;
+    const frames = replayData.frames;
+    if (!paused) replay.t += (speedFromSlider() * TICK_MS) / 1000;
+    if (replay.next >= frames.length) {
+      // vuelve a empezar: el primer cuadro va completo
+      replay.next = 0;
+      replay.state = {};
+      replay.links = {};
+      replay.t = frames[0].t;
+    }
+    const events: SimMessage["events"] = [];
+    let last: SimMessage | null = null;
+    while (replay.next < frames.length && (frames[replay.next].t <= replay.t || last === null && replay.next === 0)) {
+      const f = frames[replay.next++];
+      for (const [id, delta] of Object.entries(f.snapshot.equipment)) replay.state[id] = { ...replay.state[id], ...delta };
+      Object.assign(replay.links, f.snapshot.links ?? {});
+      events.push(...f.events);
+      last = f;
+    }
+    if (last) applyMessage({ t: last.t, snapshot: { equipment: { ...replay.state }, lines: last.snapshot.lines, links: { ...replay.links } }, events }, "GRABACIÓN");
   };
-  socket.onclose = () => {
-    if (socket) disconnect();
-  };
-  socket.onerror = () => {
-    $("clock").textContent = "SIM · API NO DISPONIBLE (uv run uvicorn …)";
-  };
+  tick();
+  replay.timer = window.setInterval(tick, TICK_MS);
+}
+
+function stopReplay(): void {
+  if (replay) window.clearInterval(replay.timer);
+  replay = null;
 }
 
 // ------------------------------------------------------------------ HUD
@@ -1031,7 +1103,10 @@ function commandButton(label: string, title: string, command: string, args: Reco
   const b = document.createElement("button");
   b.textContent = label;
   b.title = title;
-  b.onclick = () => send({ equipment: selectedId, command, args });
+  b.onclick = () =>
+    replay
+      ? appendEvents([{ t: replay.t, type: "grabación: los comandos y fallas necesitan la API" }])
+      : send({ equipment: selectedId, command, args });
   return b;
 }
 

@@ -60,3 +60,36 @@ si
 ### 🤖 Claude · 23:30 UTC
 
 (Resumen) Cada maleta se sigue sobre el recorrido real de su banda: separación mínima, choques contados y fricción (resbala en subidas de más de ≈ 24°). La escena dibuja la posición real de cada maleta. Escenario nuevo de planta `slippery-collector`: la colectora A pierde agarre, las maletas resbalan, chocan contra la cola y la isla A se bloquea.
+
+### 🤖 Claude · 23:20 UTC
+
+Confirmado: la física por maleta ya está en main. El PR #51 se fusionó con todos sus commits, así que no hace falta un PR nuevo.
+
+### 👤 Andy (Carlos Andrés Quiceño) · 2026-10-19 00:04:37 UTC (chat del proyecto, con captura)
+
+corregir esos traslapamientos en aeropuerto
+
+### 👤 Andy (Carlos Andrés Quiceño) · 2026-10-19 00:04:58 UTC (chat del proyecto)
+
+y faltaria dar play a la simulacion de las maletas
+
+### 🤖 Claude · 2026-10-19 00:40 UTC
+
+(Resumen) Las inducciones ya no pisan las bandejas: corren por fuera del lazo y entregan de costado; el lazo y los carruseles se realinearon. En el sitio publicado ▶ SIMULAR reproduce una grabación de 15 min de la operación normal, porque allí no hay API. PR nuevo desde main.
+
+### 👤 Andy (Carlos Andrés Quiceño) · 2026-10-19 09:55:07 UTC
+
+deberia haber algun sistema que traslade la maleta de una banda a otra  por que ahi se caerian las maletas, revisa ese detalle piensalo bien segun el flujo
+
+### 🤖 Claude · 2026-10-19 10:40 UTC
+
+(Resumen) Revisé cada traspaso del flujo. La inducción ahora entrega en ángulo de 30° a favor del flujo (curva motorizada y banda en ángulo hasta el borde de las bandejas); la línea norte gira con una curva motorizada y entra de costado a la línea sur, que es la única inducción. Quedan sin banda dibujada los regresos de nivel 3 y de codificación al clasificador. Mismo PR #59.
+
+### 👤 Andy (Carlos Andrés Quiceño) · 2026-10-19 10:37:06 UTC
+
+ajusta ademas que el sensor pase este del otro lado  y si te fijaz bien en la transicion entr bandas falta un circulo y agrega unos sensores que permitan para o avanzar las bandas para que no hayan choques de maletas y agrega las bandas que devuelven de al clasificador las maletas de nivel 3 y de codificación manual.
+
+### 🤖 Claude · 2026-10-19 11:30 UTC
+
+(Resumen) Preguntó con una tarjeta cuál sensor pasar al otro lado (brazo amarillo de la CT, lector de etiquetas o baliza). Agregó tambores en cada extremo de banda, control por zonas con fotoceldas en todas las bandas de maletas (acumulan sin choques; haz rojo cuando detienen la zona de cabeza) y las bandas de regreso: nivel 3 norte y sur entran de costado a la línea de inducción y codificación sube por el costado este a una reinducción del clasificador. Decisión D58 (renumerada al traer main). Mismo PR #59.
+
