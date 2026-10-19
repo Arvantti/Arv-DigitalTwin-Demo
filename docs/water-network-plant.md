@@ -46,8 +46,8 @@ flowchart LR
 
 | Id en el plano | Qué es | Tipo de librería (nuevo salvo indicación) | Cantidad |
 |---|---|---|---|
-| `tank-recirc-01..02` | Tanques de recirculación, cilindros de 1,30 m de diámetro × 1,70 m (≈ 2,26 m³ c/u, ≈ 4,5 m³ en total), piso 0, con la base 1 m bajo el piso (foso) | `vessel` (preset `water-1000l`, a ajustar al volumen) | 2 |
-| `pumpset-recirc-01` | 2 bombas centrífugas normales (1 trabaja, 1 reserva), 15 m³/h a 10 mca c/u, arranque por nivel, piso 0, base 1 m bajo el piso (en el foso, con la succión inundada) | `booster-pump-set` (preset `recirculation-2x15m3h`) | 1 |
+| `tank-recirc-01..02` | Tanques de recirculación, cilindros de 1,30 m de diámetro × 1,70 m (≈ 2,26 m³ c/u, ≈ 4,5 m³ en total), piso 0, con la base a z = −1.0 m (foso) | `vessel` (preset `water-1000l`, a ajustar al volumen) | 2 |
+| `pumpset-recirc-01` | 2 bombas centrífugas normales (1 trabaja, 1 reserva), 15 m³/h a 10 mca c/u, arranque por nivel, piso 0, base a z = −1.0 m (en el foso, con la succión inundada) | `booster-pump-set` (preset `recirculation-2x15m3h`) | 1 |
 | `tank-supply-01` | Tanque de bombeo de las bombas Grundfos, 1,50 m × 2,20 m (≈ 3,9 m³), piso 1, alimentado por recirculación | `vessel` (preset a ajustar al volumen) | 1 |
 | `pumpset-main-01` | 2 bombas multietapa verticales en paralelo (las dos trabajan, sin reserva), 13 m³/h a 80 m c/u, descarga mínima de 70 mca a la entrada de la reguladora; variador, antirretorno por bomba, colector de 4", piso 1 | `booster-pump-set` (preset `multistage-2x13m3h-80m`) | 1 |
 | `prs-01` | Estación reguladora: bifurcación con válvulas de corte manuales, rama A con PRV automática, rama B con PRV manual de piloto, unión | `pressure-reducing-station` | 1 |
