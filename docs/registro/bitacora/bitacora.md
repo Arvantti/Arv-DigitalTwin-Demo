@@ -10,6 +10,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
+| 2026-10-19 | Desagüe por gravedad del nivel 1 | Los tanques de recirculación del acueducto bajan 1 m, con su bomba (foso en el piso 0); la boquilla de entrada queda a 2,245 m, por debajo de la bajante del nivel 1 (2,5 m), y desagua por gravedad. Pedido de Andy. D53 | acueducto |
 | 2026-10-18 | Simulación de la fábrica de cajas | La fábrica de cajas simula su transporte: corrugadora, transportadores de pilas, carro de transferencia que reparte entre tres carriles, tres convertidoras, bandas de fajos y paletizador propio y compartido; escenarios nominal, rotura de papel y paro del paletizador compartido | 4 |
 | 2026-10-18 | Estiba por producto | Planta de plásticos: la estiba es estándar y las piezas por estiba se calculan por producto (de 30 canecas de 121 L a 72.000 bisagras); la flota recibe las piezas por ruta y la ruta 5 usa estibas armadas. D51 | plásticos |
 | 2026-10-18 | Subidas desde el cabezal | Las subidas entre niveles del acueducto salen del tubo principal de cada nivel, después del último ramal, por fuera del bastidor (pedido de Andy). D50 | acueducto |
@@ -67,6 +68,14 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 | 2026-10-16 | #1 | Layouts de las plantas | 1 |
 
 ## Entradas
+
+### 2026-10-19 01:09 · Desagüe por gravedad del nivel 1
+- **Fecha/hora (UTC):** 2026-10-18 23:53–2026-10-19 01:30
+- **Solicitado por:** Andy (23:53, hilo «Desagüe por gravedad del nivel 1»; 01:09: «bajar los tanques 1 metro»). Antes se le propuso una boquilla lateral a 2,2 m, sin obra civil, como recomendación; él eligió bajar.
+- **Qué se hizo:** `industrial-models/water-network-scale-v1/plant.yaml`: tanques `tank-recirc-01..02` y bomba `pumpset-recirc-01` con la base a −1,0 m; boquillas de entrada en 2,245 m (las cuatro bajantes); salidas en −0,75 m y succiones en −0,68 m; el retorno de la bomba sale en −0,103 m. Comentario de la sección de recirculación actualizado. Documentación: `docs/water-network-plant.md` (tabla de equipos y de boquillas, y la simplificación ya resuelta) y la evidencia del acueducto.
+- **Verificación:** `apps/api` `pytest` 12 de 12 en verde (incluida la prueba de la bajante, que ahora termina en 2,245 m). Pendiente antes del PR: validación del motor de la planta y captura de la escena.
+- **Decisiones:** [[decisiones]] D53.
+- **Conversación:** [[hilo-desague-nivel-1]].
 
 ### 2026-10-18 22:00 · Fábrica de cajas: simulación del transporte
 - **Fecha/hora (UTC):** 2026-10-18 17:53–22:30

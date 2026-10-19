@@ -46,8 +46,8 @@ flowchart LR
 
 | Id en el plano | Qué es | Tipo de librería (nuevo salvo indicación) | Cantidad |
 |---|---|---|---|
-| `tank-recirc-01..02` | Tanques de recirculación, cilindros de 1,30 m de diámetro × 1,70 m (≈ 2,26 m³ c/u, ≈ 4,5 m³ en total), piso 0 | `vessel` (preset `water-1000l`, a ajustar al volumen) | 2 |
-| `pumpset-recirc-01` | 2 bombas centrífugas normales (1 trabaja, 1 reserva), 15 m³/h a 10 mca c/u, arranque por nivel, piso 0 | `booster-pump-set` (preset `recirculation-2x15m3h`) | 1 |
+| `tank-recirc-01..02` | Tanques de recirculación, cilindros de 1,30 m de diámetro × 1,70 m (≈ 2,26 m³ c/u, ≈ 4,5 m³ en total), piso 0, con la base 1 m bajo el piso (foso) | `vessel` (preset `water-1000l`, a ajustar al volumen) | 2 |
+| `pumpset-recirc-01` | 2 bombas centrífugas normales (1 trabaja, 1 reserva), 15 m³/h a 10 mca c/u, arranque por nivel, piso 0, base 1 m bajo el piso (en el foso, con la succión inundada) | `booster-pump-set` (preset `recirculation-2x15m3h`) | 1 |
 | `tank-supply-01` | Tanque de bombeo de las bombas Grundfos, 1,50 m × 2,20 m (≈ 3,9 m³), piso 1, alimentado por recirculación | `vessel` (preset a ajustar al volumen) | 1 |
 | `pumpset-main-01` | 2 bombas multietapa verticales en paralelo (las dos trabajan, sin reserva), 13 m³/h a 80 m c/u, descarga mínima de 70 mca a la entrada de la reguladora; variador, antirretorno por bomba, colector de 4", piso 1 | `booster-pump-set` (preset `multistage-2x13m3h-80m`) | 1 |
 | `prs-01` | Estación reguladora: bifurcación con válvulas de corte manuales, rama A con PRV automática, rama B con PRV manual de piloto, unión | `pressure-reducing-station` | 1 |
@@ -245,14 +245,14 @@ Revisión del 2026-10-18 (captura del autor con piezas sueltas). Cada ruta de `p
 | Prolongación del cabezal (toma de cada subida) | x = 12,25 (costado este, fuera del bastidor); y = 4,4 (1→2), 5,25 (2→3), 6,2 (3→4); a 0,9 m del piso de cada nivel | `distribution-grid`: el cabezal sigue 0,25 m después del último ramal (x = 12,0) y corre hacia el fondo; parámetros `riser_in_lz` y `riser_out_lz` |
 | Bajante de cada canaleta | 12,09; 3,975; piso del nivel | `distribution-grid`: baja a su piso |
 | Brida de la válvula entre niveles (vertical) | 12,25; 4,4 / 5,25 / 6,2; centro a 0,02 m sobre el piso del nivel de arriba, bridas a ±0,19 m | `regulating-valve` con `vertical: true`, girada 180° para que el volante quede hacia afuera |
-| Boquilla de entrada de cada tanque de recirculación | 8,95 y 10,75; 2,6; 3,245 | `vessel`: tapa, a −(radio + 0,4) m en X |
-| Boquilla de salida de los tanques de recirculación | 10,95 y 12,75; 2,6; 0,25 | `vessel` |
+| Boquilla de entrada de cada tanque de recirculación | 8,95 y 10,75; 2,6; 2,245 | `vessel`: tapa, a −(radio + 0,4) m en X |
+| Boquilla de salida de los tanques de recirculación | 10,95 y 12,75; 2,6; −0,75 | `vessel` |
 | Colectores de las bombas de recirculación | 12,665; 6,03 (succión) y 7,15 (descarga) | `booster-pump-set` estilo `end_suction` de 3" |
 | Boquilla de entrada del tanque de bombeo | 1,45; 3,0; 6,375 | `vessel` |
 
 Cambios de esta revisión: la válvula entre niveles queda en un desvío de la columna (entra por la brida oeste y sale por la este) en vez de atravesar su cuerpo; la columna está en y = 3,7 m, entre los tanques (borde en 3,25) y el bastidor de la rejilla (3,85). Las válvulas bajan 0,2 m (2,9; 4,1; 5,3). Los tubos de la red de agua cambian de largo, y con ellos las pérdidas por fricción que calcula el motor; las expectativas de los escenarios siguen dentro de su tolerancia (ver el resultado en la bitácora).
 
-Simplificación conocida: el nivel 1 desagua a 2,5 m y la boquilla de entrada del tanque de recirculación está a 3,25 m, porque el tanque de 1,70 m con patas y fondos mide 2,9 m y sobresale del piso 1. En la escena se dibuja continuo; para que fuera por gravedad habría que bajar el tanque o usar una bomba de sumidero.
+Decisión D53 (2026-10-19, pedido de Andy): los tanques de recirculación y la bomba de recirculación bajan 1 m, con la base a −1,0 m (foso en el piso 0). La boquilla de entrada queda a 2,245 m, por debajo de la bajante del nivel 1 (2,5 m), así que desagua por gravedad. La succión de la bomba queda también en el foso, con el nivel del agua por encima de ella.
 
 Revisión del 2026-10-18 17:28 (columna lateral eliminada): el autor pidió que cada nivel suba directo al siguiente. Ya no hay columna externa con lazos: la estación reguladora sale, un **reductor** (cono de 0,2 m, de 4" a 2") antes de la rejilla, y entra al nivel 1. De un camino entre ramales de cada nivel sube un tubo recto de 2" con su válvula (vertical) al mismo punto del nivel siguiente, y cada subida está en un punto distinto de la cuadrícula en vista de planta. Los tubos entre niveles son cortos (0,13 m + 0,69 m) y el motor ve menos pérdida por fricción; los escenarios siguen dentro de su tolerancia. El reductor solo se dibuja: el motor usa el diámetro de 4" en todo el tramo. La válvula y su volante quedan de costado en el tubo vertical.
 
