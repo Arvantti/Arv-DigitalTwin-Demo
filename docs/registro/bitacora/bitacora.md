@@ -10,6 +10,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
+| 2026-10-19 | Imágenes en el portal | Cada tarjeta de la página principal lleva una captura de su escena 3D (plásticos, salsas, acueducto, aeropuerto y fábrica de cajas), recortada sin interfaz, en `apps/gallery/public/portal/`. Pedido de Andy | portal |
 | 2026-10-19 | Aeropuerto sin traslapes y con reproducción | Traspasos entre bandas con su equipo: la línea norte gira con una curva motorizada y entra de costado a la línea sur (confluencia); una sola inducción con curva y banda a 30° que entrega a favor del flujo en el borde de las bandejas; lazo de 31,1 × 7,4 m y carruseles realineados con las rampas. Tambores en cada extremo de banda, control por zonas con fotoceldas (acumulan sin choques) y bandas de regreso de nivel 3 y de codificación (esta a una reinducción del lado de retorno). ▶ SIMULAR funciona en el sitio publicado: sin API reproduce una grabación de 15 min de la operación normal (todas las plantas simuladas). D58 (renumerada al traer main: D54 a D57 ya estaban) | logística |
 | 2026-10-19 | Desagüe por gravedad del nivel 1 | Los tanques de recirculación del acueducto bajan 1 m, con su bomba (foso en el piso 0); la boquilla de entrada queda a 2,245 m, por debajo de la bajante del nivel 1 (2,5 m), y desagua por gravedad. Pedido de Andy. D55 | acueducto |
 | 2026-10-19 | Molienda de mostaza | El plano anota 60 min de molienda en la receta de mostaza (antes 30), acorde con el molino de 1.000 kg/h y con datos de fabricantes. D57 | 5 |
@@ -73,6 +74,14 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 | 2026-10-16 | #1 | Layouts de las plantas | 1 |
 
 ## Entradas
+
+### 2026-10-19 16:12 · Imágenes en las tarjetas del portal
+- **Fecha/hora (UTC):** 2026-10-19 16:12–16:45
+- **Fase del plan:** [[plan-del-proyecto]] portal de plantas
+- **Solicitado por:** Andy (16:12): «en la página principal, donde están las tarjetas […] hay que poner una imagen que represente a cada uno para que se vea más animado, más claro».
+- **Qué se hizo:** cada tarjeta de `apps/gallery/src/portal.ts` muestra una captura de la escena 3D de su planta (16:9, con zoom suave al pasar el cursor; la imagen también lleva a la escena). Las capturas se recortaron sin la interfaz y se guardaron en 960 px de ancho en `apps/gallery/public/portal/`.
+- **Verificación:** `pnpm -r typecheck`; captura del portal en [[portal-tarjetas-con-imagen]] (`evidencia/portal-tarjetas-con-imagen.jpg`).
+- **Conversación:** [[hilo-imagenes-portal]]
 
 ### 2026-10-19 00:05 · Aeropuerto: inducciones sin traslapes y simulación en el sitio publicado
 - **Fecha/hora (UTC):** 2026-10-19 00:05–00:40
