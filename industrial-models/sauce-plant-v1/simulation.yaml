@@ -42,7 +42,7 @@ x-mayo-batch: &mayo_batch
   - { kind: discharge, rate_kg_min: 75 }
 
 # Mostaza (rcp-mustard): batch de 1.000 kg = líquidos 830 kg (agua y vinagre) + harina, sal, azúcar y especias 170 kg. La hidratación dura 60 min y el
-# molino de piedra entrega 1.000 kg/h (16,7 kg/min): descargar los 1.000 kg toma 60 min (la receta del plano anota 30 min, que no cuadra con ese caudal).
+# molino de piedra entrega 1.000 kg/h (16,7 kg/min): descargar los 1.000 kg toma 60 min (el plano anota 60 min desde D57; antes decía 30 min, que no cuadraba con ese caudal).
 x-mustard-batch: &mustard_batch
   - { kind: agitate, rpm: 60 }
   - { kind: charge, material: agua, kg: 710, rate_kg_min: 88.75, temp_c: 18 }

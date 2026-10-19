@@ -28,6 +28,12 @@ params:
   ramp_deg:      { type: number, unit: "°", min: 5, max: 35, default: 15, description: "Pendiente de las subidas y bajadas (se empina sola si el largo no alcanza)", affects: [geometry, behavior] }
   friction_coef: { type: number, min: 0.1, max: 1.0, default: 0.45, description: "Coeficiente de fricción entre la banda y la unidad: sube o baja con la banda mientras tan(pendiente) no lo supere", affects: [behavior] }
   motor_kw:      { type: number, unit: kW, min: 0.1, max: 30, default: 0.75, description: Potencia del motorreductor, affects: [geometry, behavior] }
+  merge_at_m:    { type: number, unit: m, min: 0, max: 200, default: 0, description: "Punto de confluencia: a esta distancia de la entrada (en planta) entra de costado otra banda; 0 = sin confluencia", affects: [geometry] }
+  merge_width_m: { type: number, unit: m, min: 0.2, max: 3, default: 1.2, description: Largo de la abertura en la guía lateral para la confluencia, affects: [geometry] }
+  merge_side:    { type: enum, values: [left, right], default: left, description: "Lado de la confluencia mirando en el sentido de avance", affects: [geometry] }
+  merge2_at_m:   { type: number, unit: m, min: 0, max: 200, default: 0, description: "Segunda confluencia: a esta distancia de la entrada entra de costado otra banda; 0 = sin segunda confluencia", affects: [geometry] }
+  merge2_side:   { type: enum, values: [left, right], default: right, description: "Lado de la segunda confluencia mirando en el sentido de avance", affects: [geometry] }
+  zone_control:  { type: boolean, default: false, description: "Control por zonas con fotoceldas: cada zona (del largo de una unidad) para si la de adelante está ocupada y arranca cuando se libera; las unidades se acumulan sin choques", affects: [geometry, behavior] }
 
 ports:
   - { id: items_in, kind: item, direction: in, unit: u/min, link: { units: inflow_upm, ready: accepting } }
@@ -48,6 +54,8 @@ variables:
   - { id: accepting, unit: "", kind: status, description: "1 si acepta unidades, 0 si está llena (bloquea a la máquina anterior)" }
   - { id: collisions, unit: choques, kind: counter, description: "Unidades que alcanzaron a la de adelante con velocidad relativa (más de 0,05 m/s)" }
   - { id: slipping, unit: u, kind: calculated, description: Unidades detenidas al pie de una subida más empinada que su ángulo de fricción }
+  - { id: photo_eye, unit: "", kind: status, description: "1 si la fotocelda de descarga ve una unidad" }
+  - { id: zone_stopped, unit: "", kind: status, description: "1 si la fotocelda de descarga tiene detenida la zona de cabeza porque la salida no recibe" }
   - { id: path_length_m, unit: m, kind: calculated, description: Largo real del recorrido con subidas y bajadas }
   - { id: max_slope_deg, unit: "°", kind: calculated, description: Pendiente máxima del recorrido }
   - { id: speed_actual_m_s, unit: m/s, kind: measured, range: [0, 3], noise_sd: 0.002, resolution: 0.001, description: Velocidad real }
@@ -77,9 +85,10 @@ animation_channels:
   - { id: belt_travel, unit: m, range: [0, 10], description: Recorrido acumulado de la banda (módulo 10 m) }
   - { id: items_count, range: [0, 2000], description: Unidades sobre la banda }
   - { id: accumulated, range: [0, 2000], description: Unidades detenidas contra la descarga }
+  - { id: eye_blocked, range: [0, 1], description: "1 si la fotocelda de descarga tiene detenida la zona de cabeza (haz en rojo)" }
 
 geometry:
-  parts: [frame, belt, rollers, side_guides, legs, drive_motor, items]
+  parts: [frame, belt, rollers, side_guides, legs, drive_motor, items, photo_eye]
 
 assumptions:
   - Las unidades entran por el inicio y avanzan a la velocidad de la banda; contra la descarga se acumulan a la separación mínima.
@@ -87,3 +96,4 @@ assumptions:
   - length_m es el largo en planta; cada unidad se sigue sobre el recorrido real (path_length_m), algo mayor con subidas y bajadas (≈ 3,5 % en una rampa de 15°).
   - Fricción, supuesto. con tan θ ≤ friction_coef la unidad va con la banda; en una subida más empinada resbala y se detiene al pie (bloquea a las de atrás); en una bajada más empinada se desliza a v × (1 + 4 × (tan θ − μ)), hasta el doble de la banda.
   - Choque = una unidad que alcanza la separación mínima con la de adelante con más de 0,05 m/s de diferencia; desde ahí avanza pegada a ella.
+  - Con zone_control la banda va en zonas del largo de una unidad (acumulación sin presión); cada zona para antes de tocar a la de adelante, así que no se cuentan choques; la capacidad de acumulación es la misma.

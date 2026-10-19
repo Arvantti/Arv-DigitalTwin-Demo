@@ -12,6 +12,7 @@ import {
   type AnimationFrame,
   type EquipmentModel,
   type Params,
+  bool,
   ch,
   disposeObject,
   materials as M,
@@ -160,11 +161,44 @@ export default function build(params: Params): EquipmentModel {
   if (item !== "box") {
     // en los tramos inclinados las maletas llevan guías más altas
     const guideH = prof.length > 2 || hOut !== hIn ? 0.12 : 0.03;
+    // confluencias: la guía del lado de la banda que entra de costado se abre (merge_at_m desde la entrada); una
+    // segunda confluencia (merge2_at_m) puede llegar por el mismo lado o por el otro
+    const mergeW = num(params, "merge_width_m", 1.2);
+    const gaps: { side: number; a: number; b: number }[] = [];
+    for (const [atKey, sideKey] of [["merge_at_m", "merge_side"], ["merge2_at_m", "merge2_side"]]) {
+      const at = num(params, atKey, 0);
+      if (at <= 0) continue;
+      const side = str(params, sideKey, "left") === "right" ? 1 : -1; // izquierda del avance +X = -Z
+      gaps.push({ side, a: Math.max(-L / 2, -L / 2 + at - mergeW / 2), b: Math.min(L / 2, -L / 2 + at + mergeW / 2) });
+    }
     for (const sz of [-1, 1]) {
-      alongProfile((len) => P.box(len, guideH, 0.01, M.plastic("#d8dde2", 0.4), 0.003), 0.06, sz * (W / 2 - 0.01));
+      const open = gaps.filter((g) => g.side === sz).sort((g1, g2) => g1.a - g2.a);
+      const guide = (len: number) => P.box(len, guideH, 0.01, M.plastic("#d8dde2", 0.4), 0.003);
+      if (!open.length) alongProfile(guide, 0.06, sz * (W / 2 - 0.01));
+      else {
+        const pieces: [number, number][] = [];
+        let from = -L / 2;
+        for (const g of open) {
+          pieces.push([from, g.a]);
+          from = g.b;
+        }
+        pieces.push([from, L / 2]);
+        for (const [a, b] of pieces) {
+          if (b - a < 0.05) continue;
+          const x = (a + b) / 2;
+          const g = new THREE.Group();
+          const piece = guide((b - a) / Math.cos(slopeAt(x)));
+          piece.position.set(0, 0.06, sz * (W / 2 - 0.01));
+          g.add(piece);
+          g.position.set(x, yAt(x), 0);
+          g.rotation.z = slopeAt(x);
+          root.add(g);
+        }
+      }
       const nb = Math.max(2, Math.ceil(L / 1.5));
       for (let i = 0; i < nb; i++) {
         const bx = -L / 2 + 0.2 + ((L - 0.4) * i) / (nb - 1);
+        if (open.some((g) => bx > g.a && bx < g.b)) continue;
         const bracket = P.box(0.02, 0.07, 0.02, steel, 0.003);
         bracket.position.set(bx, yAt(bx) + 0.035, sz * (W / 2 + 0.01));
         root.add(bracket);
@@ -181,6 +215,32 @@ export default function build(params: Params): EquipmentModel {
   drive.add(gb);
   drive.position.set(L / 2 - 0.12, yAt(L / 2 - 0.12) - 0.12, -(W / 2 + 0.25));
   root.add(drive);
+
+  // fotocelda de descarga (zone_control): emisor y reflector a los lados; el haz se pone rojo mientras detiene la zona de cabeza
+  let beam: THREE.MeshStandardMaterial | null = null;
+  if (bool(params, "zone_control", false)) {
+    const eye = P.group("photo_eye");
+    const ex = L / 2 - 0.3;
+    const ey = yAt(ex);
+    for (const sz of [-1, 1]) {
+      const post = P.box(0.04, 0.32, 0.04, M.paint("#2c3e50", 0.4), 0.004);
+      post.position.set(ex, ey + 0.16, sz * (W / 2 + 0.06));
+      eye.add(post);
+      const head = P.box(0.07, 0.07, 0.05, M.paint(sz < 0 ? "#f2b705" : "#1d2a3a", 0.4), 0.006);
+      head.position.set(ex, ey + 0.28, sz * (W / 2 + 0.06));
+      eye.add(head);
+    }
+    beam = M.emissive("#22e06b", 1.2);
+    const ray = new THREE.Mesh(new THREE.BoxGeometry(0.01, 0.01, W + 0.08), beam);
+    ray.position.set(ex, ey + 0.28, 0);
+    eye.add(ray);
+    root.add(eye);
+  }
+  const setEye = (frame: AnimationFrame): void => {
+    if (!beam) return;
+    const red = ch(frame, "eye_blocked") > 0.5;
+    beam.emissive.set(red ? "#ff3030" : "#22e06b");
+  };
 
   // unidades transportadas (instanciadas)
   let itemGeo: THREE.BufferGeometry;
@@ -225,6 +285,7 @@ export default function build(params: Params): EquipmentModel {
   };
 
   function update(frame: AnimationFrame): void {
+    setEye(frame);
     if (frame.items) {
       // la simulación sigue cada unidad: se dibuja donde está (con su separación, sus choques y sus resbalones)
       const n = Math.min(MAX_ITEMS, frame.items.length);

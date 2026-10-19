@@ -1,6 +1,6 @@
 # Hoja de ruta de datos reales para todos los gemelos
 
-Estado (2026-10-19): **fases A, B, C y D hechas**: catálogo de plásticos, salsas y cajas con su panel de productos y ruta en 3D (decisiones D56, D58 y D59); sigue la fase E (pedidos). Plan en la decisión D54 de `docs/registro/decisiones/decisiones.md`.
+Estado (2026-10-19): **fases A, B, C y D hechas**: catálogo de plásticos, salsas y cajas con su panel de productos y ruta en 3D (decisiones D56, D59 y D60); sigue la fase E (pedidos). Plan en la decisión D54 de `docs/registro/decisiones/decisiones.md`.
 
 El autor definió esta hoja de ruta para la planta de plásticos (D48) y el 2026-10-18 la extendió a todos los gemelos. Hoy cada planta tiene sus datos repartidos en `plant.yaml` (parámetros de cada equipo, recetas de salsas) y `simulation.yaml`, todos supuestos. El objetivo es que el gemelo se alimente con un **catálogo** de datos reales y que los **pedidos** los secuencie el backend Fractal.
 

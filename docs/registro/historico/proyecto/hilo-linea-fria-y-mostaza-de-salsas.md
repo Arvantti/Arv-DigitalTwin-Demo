@@ -2,7 +2,7 @@
 tipo: historico-ia
 fuente: hilo «Línea fría y mostaza de salsas» (Claude Projects)
 desde: 2026-10-18 23:53
-hasta: 2026-10-19 00:35
+hasta: 2026-10-19 09:57
 tags: [registro, historico-ia, salsas, capacidad]
 ---
 # Hilo: línea fría y mostaza de la planta de salsas
@@ -22,3 +22,19 @@ Abrió este hilo con el encargo: conectar en el motor la línea de emulsiones en
 ### 🤖 Claude · 23:53 – 00:35 UTC
 
 (Resumen, sin reproducir salidas de herramientas.) Leyó `AGENTS.md`, `flujo-planta-salsas.md`, `plant.yaml` y `simulation.yaml`. Comprobó tres límites del motor: no existe un tipo de librería para el emulsificador al vacío, una salida con caudal va a un solo destino, y el enlace pulmón → llenadora solo transmite demanda y disponibilidad. Decidió modelar el emulsificador y el tanque de mostaza con la marmita sin vapor, un solo pulmón frío para las tres llenadoras, y una pesadora por formato (la de mostaza dedicada por alérgeno). Descubrió que la receta de mostaza del plano (30 min de molienda) no cuadra con el molino de 1.000 kg/h. Escribió los presets, los enlaces, las líneas y dos escenarios con expectativas calculadas a mano, validó con `twin-lib plant validate`, `pytest` y `ruff`, comprobó la API en vivo y capturó la escena. Registró D53.
+
+### 👤 Andy · 03:10:07 UTC
+
+la verdad son datos inventados por nosotros asi que busca en internet
+
+### 🤖 Claude · 03:10 UTC
+
+(Resumen) Buscó datos de molienda de mostaza. Encontró que un molino coloidal industrial se ofrece para 200 a 2.000 kg/h y que una línea de mostaza describe ≈ 1 h de mezcla por el molino; sin datos de molinos de piedra ni de tamaño de batch. Recomendó dejar el molino en 1.000 kg/h y cambiar el plano a 60 min de molienda.
+
+### 👤 Andy · 09:57:13 UTC
+
+si
+
+### 🤖 Claude · 09:57 UTC
+
+Cambió la molienda a 60 min en el plano y registró D57.

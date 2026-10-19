@@ -1,9 +1,12 @@
 /**
  * Geometría paramétrica del clasificador de bandejas basculantes. El lazo es un óvalo: dos rectas de straight_m y
  * dos semicírculos de diámetro loop_width_m (largo = 2 × recta + π × ancho, el mismo que usa behavior.py).
- * La recta de descarga es la del lado +Z y se recorre hacia +X; las inducciones entran al inicio de las dos rectas
- * por el extremo -X y las rampas de vuelo salen hacia +Z, repartidas en partes iguales en la recta de descarga.
- * La rampa de codificación manual sale 1,5 m después del final de esa recta, ya en la curva.
+ * La recta de descarga es la del lado +Z y se recorre hacia +X. La inducción llega por el extremo -X del lado +Z
+ * (a r + 3,0 m del eje del óvalo): tramo recto, curva motorizada y banda a 30° que entrega a favor del flujo al
+ * inicio de esa recta, antes del lector y de las rampas. Las rampas de vuelo salen hacia +Z, repartidas en partes
+ * iguales en la recta de descarga.
+ * La rampa de codificación manual sale 1,5 m después del final de esa recta, ya en la curva. Con reinduct = true se
+ * dibuja una segunda inducción igual, girada 180°, que entra por el extremo +X del lado -Z (fuera de la huella).
  * Si el lazo va elevado (height_m alto), las rampas bajan hasta ≈ 1 m del piso para entregar a los carruseles.
  *
  * Huella: largo = recta + ancho + 1,5 m (bandejas de 1,5 m); fondo = ancho + 1,5 m + chute_length_m (las rampas).
@@ -13,6 +16,7 @@ import {
   type AnimationFrame,
   type EquipmentModel,
   type Params,
+  bool,
   ch,
   disposeObject,
   materials as M,
@@ -23,6 +27,13 @@ import {
 const TRAY_W = 1.5;
 const MANUAL_AFTER_M = 1.5;
 const MAX_BAGS = 300;
+const INDUCT_W = 1.0; // ancho de la banda de inducción
+const INDUCT_GAP = 0.05; // luz entre la banda y el borde de las bandejas
+const MERGE_DEG = 30; // ángulo de la banda de inducción contra el sentido de las bandejas
+const MERGE_LEN = 3.0; // largo de la banda de inducción en ángulo
+const CURVE_R = 2.0; // radio (en el eje) de la curva motorizada antes de la banda en ángulo
+const MERGE_END_M = 0.6; // la banda en ángulo entrega a esta distancia del inicio de la recta de las rampas
+const READER_AT_M = 2.2; // lector de etiquetas, después del final de la inducción
 
 export default function build(params: Params): EquipmentModel {
   const S = num(params, "straight_m", 28);
@@ -95,17 +106,82 @@ export default function build(params: Params): EquipmentModel {
   const bags = P.bagInstances(MAX_BAGS, 0.7);
   root.add(bags);
 
-  // inducciones: dos bandas desde el borde -X hasta el inicio de cada recta
-  for (const sz of [1, -1]) {
-    const len = DX / 2 - S / 2;
-    const belt = P.box(len, 0.08, 1.0, M.rubber(), 0.01, "inductions");
-    belt.position.set(-S / 2 - len / 2, H - 0.05, zc + sz * r);
-    root.add(belt);
-    for (const side of [-1, 1]) {
-      const g = P.box(len, 0.18, 0.04, M.stainless(), 0.005);
-      g.position.set(-S / 2 - len / 2, H + 0.03, zc + sz * r + side * 0.52);
-      root.add(g);
+  // inducción: llega por el extremo -X del lado +Z (el de las rampas, que se recorre hacia +X) y entrega a favor del
+  // flujo: tramo recto, curva motorizada y banda en ángulo de MERGE_DEG° cuyo extremo queda al borde de las bandejas.
+  // La maleta pasa a la bandeja con la componente de avance de la banda, sin caer en un vacío.
+  const ma = THREE.MathUtils.degToRad(MERGE_DEG);
+  const cosA = Math.cos(ma);
+  const sinA = Math.sin(ma);
+  const endZ = r + TRAY_W / 2 + INDUCT_GAP + (INDUCT_W / 2) * cosA; // eje de la banda en su extremo (desde el eje del óvalo)
+  const inductZ = endZ + MERGE_LEN * sinA + CURVE_R * (1 - cosA); // eje de la entrada
+  const endX = -S / 2 + MERGE_END_M;
+  const curveX = endX - MERGE_LEN * cosA - CURVE_R * sinA; // inicio de la curva
+  const buildInduction = (): THREE.Group => {
+    const inductPaths = P.group("induction");
+    const inductMat = M.rubber();
+    const guideMat = M.stainless();
+    const beltPiece = (len: number, x: number, z: number, yaw: number) => {
+      const piece = P.group();
+      piece.add(P.box(len, 0.08, INDUCT_W, inductMat, 0.01));
+      for (const side of [-1, 1]) {
+        const gde = P.box(len, 0.18, 0.04, guideMat, 0.005);
+        gde.position.set(0, 0.08, side * (INDUCT_W / 2 + 0.02));
+        piece.add(gde);
+      }
+      piece.position.set(x, H - 0.05, zc + z);
+      piece.rotation.y = yaw;
+      inductPaths.add(piece);
+    };
+    // tambor en cada extremo de banda: el traspaso entre la recta, la curva y la banda en ángulo
+    const drum = (x: number, z: number, yaw: number) => {
+      const d = P.cylinderZ(0.05, INDUCT_W + 0.02, M.polishedSteel(), 20);
+      d.position.set(x, H - 0.05, zc + z);
+      d.rotation.y = yaw;
+      inductPaths.add(d);
+    };
+    const entryLen = curveX + DX / 2;
+    if (entryLen > 0.05) beltPiece(entryLen, -DX / 2 + entryLen / 2, inductZ, 0);
+    // curva motorizada: gira hacia -Z (hacia el lazo) con radio CURVE_R
+    const nArc = 10;
+    for (let i = 0; i < nArc; i++) {
+      const phi = (ma * (i + 0.5)) / nArc;
+      beltPiece(((ma / nArc) * CURVE_R) * 1.05, curveX + CURVE_R * Math.sin(phi), inductZ - CURVE_R * (1 - Math.cos(phi)), phi);
     }
+    // banda en ángulo hasta el borde de las bandejas
+    const mx0 = curveX + CURVE_R * sinA;
+    const mz0 = inductZ - CURVE_R * (1 - cosA);
+    beltPiece(MERGE_LEN, (mx0 + endX) / 2, (mz0 + endZ) / 2, ma);
+    if (entryLen > 0.05) drum(-DX / 2, inductZ, 0);
+    drum(curveX, inductZ, 0);
+    drum(mx0, mz0, ma);
+    drum(endX - 0.05 * cosA, endZ + 0.05 * sinA, ma);
+    for (const [x, z] of [
+      [-DX / 2 + 0.4, inductZ],
+      [curveX, inductZ],
+      [(mx0 + endX) / 2, (mz0 + endZ) / 2],
+    ]) {
+      const leg = P.box(0.1, H - 0.1, 0.1, steel, 0.005);
+      leg.position.set(x, (H - 0.1) / 2, zc + z);
+      inductPaths.add(leg);
+    }
+    const drive = P.motor(1.1);
+    drive.position.set((mx0 + endX) / 2 + 0.3, H - 0.3, zc + (mz0 + endZ) / 2 + INDUCT_W / 2 + 0.25);
+    inductPaths.add(drive);
+    return inductPaths;
+  };
+  const induction = buildInduction();
+  induction.name = "inductions";
+  root.add(induction);
+  // reinducción (reinduct): la misma inducción girada 180° sobre el centro del óvalo; entra por el extremo +X del
+  // lado -Z y entrega a favor del flujo al inicio de la recta de retorno (la usa el regreso de codificación manual)
+  if (bool(params, "reinduct", false)) {
+    const inner = buildInduction();
+    inner.position.z = -zc;
+    const pivot = P.group("reinduction");
+    pivot.add(inner);
+    pivot.position.z = zc;
+    pivot.rotation.y = Math.PI;
+    root.add(pivot);
   }
   // lector de etiquetas: arco sobre la recta de descarga
   const arch = P.group("tag_reader");
@@ -121,7 +197,7 @@ export default function build(params: Params): EquipmentModel {
   scan.rotation.x = -Math.PI / 2;
   scan.position.set(0, H + 1.04, 0);
   arch.add(scan);
-  arch.position.set(-S / 2 + 1.0, 0, zc + r);
+  arch.position.set(-S / 2 + READER_AT_M, 0, zc + r);
   root.add(arch);
 
   // rampas de vuelo hacia +Z
@@ -172,7 +248,7 @@ export default function build(params: Params): EquipmentModel {
   root.add(mleg);
 
   const light = P.stackLight(0.4);
-  light.object.position.set(-S / 2 + 1.0, H + 1.25, zc + r);
+  light.object.position.set(-S / 2 + READER_AT_M, H + 1.25, zc + r);
   root.add(light.object);
 
   let time = 0;
