@@ -85,3 +85,11 @@ deberia haber algun sistema que traslade la maleta de una banda a otra  por que 
 
 (Resumen) Revisé cada traspaso del flujo. La inducción ahora entrega en ángulo de 30° a favor del flujo (curva motorizada y banda en ángulo hasta el borde de las bandejas); la línea norte gira con una curva motorizada y entra de costado a la línea sur, que es la única inducción. Quedan sin banda dibujada los regresos de nivel 3 y de codificación al clasificador. Mismo PR #59.
 
+### 👤 Andy (Carlos Andrés Quiceño) · 2026-10-19 10:37:06 UTC
+
+ajusta ademas que el sensor pase este del otro lado  y si te fijaz bien en la transicion entr bandas falta un circulo y agrega unos sensores que permitan para o avanzar las bandas para que no hayan choques de maletas y agrega las bandas que devuelven de al clasificador las maletas de nivel 3 y de codificación manual.
+
+### 🤖 Claude · 2026-10-19 11:30 UTC
+
+(Resumen) Preguntó con una tarjeta cuál sensor pasar al otro lado (brazo amarillo de la CT, lector de etiquetas o baliza). Agregó tambores en cada extremo de banda, control por zonas con fotoceldas en todas las bandas de maletas (acumulan sin choques; haz rojo cuando detienen la zona de cabeza) y las bandas de regreso: nivel 3 norte y sur entran de costado a la línea de inducción y codificación sube por el costado este a una reinducción del clasificador. Decisión D58 (renumerada al traer main). Mismo PR #59.
+

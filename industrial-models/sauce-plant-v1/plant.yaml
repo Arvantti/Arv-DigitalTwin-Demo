@@ -312,7 +312,7 @@ recipes:
       - { name: cargar_liquidos, equipment: tank-mustard-01, duration_min: 8, setpoints: {} }
       - { name: dispersar_harina, equipment: tank-mustard-01, duration_min: 15, setpoints: { agitator_rpm: 1500 } }
       - { name: hidratar, equipment: tank-mustard-01, duration_min: 60, setpoints: { agitator_rpm: 100 } }
-      - { name: moler_y_transferir, equipment: mustard-mill-01, duration_min: 30, setpoints: { flow_kg_h: 1000 } }
+      - { name: moler_y_transferir, equipment: mustard-mill-01, duration_min: 60, setpoints: { flow_kg_h: 1000 } }
       - { name: muestrear, equipment: lab-bench-01, duration_min: 10, setpoints: { ph_max: 3.8 } }
     yield_pct: 98.5
 
