@@ -1,0 +1,80 @@
+# Productos de ejemplo de la planta de plásticos con su ruta de proceso (docs/datos-reales.md).
+# Cada etapa nombra los equipos del plant.yaml donde puede hacerse. En una etapa con molde, la lista son las
+# inyectoras donde el molde cabe (el validador lo comprueba con su tonelaje y capacidad de inyección).
+# transfer_min = tiempo hasta la etapa siguiente (transporte o espera). bulk_l = volumen por pieza en la estiba
+# (lo usa tools/logistics/pallet_sizing.py). Todo es supuesto hasta tener los datos reales.
+products:
+  - id: cubiertos
+    name: Cubiertos desechables
+    family: desechables
+    kind: finished
+    unit: u
+    display_name: cubiertos       # texto que muestra la inyectora
+    colors: [mb-blanco]
+    bulk_l: 0.03
+    routing:
+      - { stage: inyeccion, tooling: mold-cubiertos-16c, equipment: [imm-01, imm-02, imm-08], transfer_min: 0 }
+      - { stage: estiba,    equipment: [buf-01, buf-02], transfer_min: 30 }
+      - { stage: transporte, equipment: [fleet-01], transfer_min: 10 }
+      - { stage: almacen-terminado, equipment: [rack-pt-03] }
+    assumed: true
+
+  - id: balde-12l
+    name: Balde de 12 L
+    family: hogar
+    kind: finished
+    unit: u
+    display_name: balde 12 L
+    colors: [mb-azul, mb-blanco]
+    bulk_l: 3.5
+    routing:
+      - { stage: inyeccion, tooling: mold-balde-12l, equipment: [imm-20, imm-21, imm-22, imm-23, imm-24], transfer_min: 0 }
+      - { stage: estiba,    equipment: [buf-21], transfer_min: 30 }
+      - { stage: transporte, equipment: [fleet-01], transfer_min: 10 }
+      - { stage: almacen-terminado, equipment: [rack-pt-03] }
+    assumed: true
+
+  - id: cuerpo-papelera-20l
+    name: Cuerpo de papelera de 20 L
+    family: papelera-20l
+    kind: semi
+    unit: u
+    display_name: cuerpo papelera 20 L
+    colors: [mb-gris]
+    bulk_l: 6.0
+    routing:
+      - { stage: inyeccion, tooling: mold-cuerpo-papelera-20l, equipment: [imm-18, imm-19], transfer_min: 0 }
+      - { stage: estiba,    equipment: [buf-19], transfer_min: 30 }
+      - { stage: transporte, equipment: [fleet-01], transfer_min: 10 }
+      - { stage: almacen-semielaborado, equipment: [rack-sf-02], transfer_min: 60 }
+    assumed: true
+
+  - id: pedal-palanca-papelera
+    name: Pedal y palanca de papelera
+    family: papelera-20l
+    kind: semi
+    unit: u
+    display_name: pedal y palanca de papelera
+    colors: [mb-azul]
+    bulk_l: 0.2
+    routing:
+      - { stage: inyeccion, tooling: mold-pedal-palanca-2c, equipment: [imm-05, imm-06, imm-07, imm-09, imm-10], transfer_min: 0 }
+      - { stage: estiba,    equipment: [buf-06], transfer_min: 30 }
+      - { stage: transporte, equipment: [fleet-01], transfer_min: 10 }
+      - { stage: almacen-semielaborado, equipment: [rack-sf-01], transfer_min: 60 }
+    assumed: true
+
+  - id: papelera-20l
+    name: Papelera de pedal de 20 L
+    family: papelera-20l
+    kind: finished
+    unit: u
+    colors: [mb-gris]
+    bom:
+      - { item: cuerpo-papelera-20l, qty: 1 }
+      - { item: pedal-palanca-papelera, qty: 1 }
+    routing:
+      - { stage: ensamble, equipment: [assembly-01], cycle_s: 35, operators: 1, transfer_min: 5 }
+      - { stage: empaque,  equipment: [pack-station-03], transfer_min: 20 }
+      - { stage: almacen-terminado, equipment: [rack-pt-01] }
+    assumed: true
