@@ -10,6 +10,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
+| 2026-10-19 | Desagüe por gravedad del nivel 1 | Los tanques de recirculación del acueducto bajan 1 m, con su bomba (foso en el piso 0); la boquilla de entrada queda a 2,245 m, por debajo de la bajante del nivel 1 (2,5 m), y desagua por gravedad. Pedido de Andy. D55 | acueducto |
 | 2026-10-19 | Molienda de mostaza | El plano anota 60 min de molienda en la receta de mostaza (antes 30), acorde con el molino de 1.000 kg/h y con datos de fabricantes. D57 | 5 |
 | 2026-10-19 | #56 | Datos reales, fases A y B: esquema común del catálogo y validador (`twin-lib catalog`), catálogo de plásticos con 3 productos (cubiertos, balde 12 L, papelera 20 L con ensamble), 4 moldes, resinas y colores, 3 tamaños de inyectora y montaje actual; el motor toma el molde del catálogo y los 8 escenarios dan lo mismo. D56 | datos reales |
 | 2026-10-19 | Línea fría y mostaza de salsas | Motor: emulsificador → molino coloidal → pulmón frío 1 → llenadoras de 250, 500 y 1.000 ml → pesadoras → mesas, y mostaza con llenadora y pesadora dedicadas; cuatro pesadoras y flujo nuevos en el plano; escenarios `cold-nominal` y `mustard-nominal`. D53 | 5 |
@@ -72,6 +73,13 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 ## Entradas
 
+### 2026-10-19 01:09 · Desagüe por gravedad del nivel 1
+- **Fecha/hora (UTC):** 2026-10-18 23:53–2026-10-19 01:30
+- **Solicitado por:** Andy (23:53, hilo «Desagüe por gravedad del nivel 1»; 01:09: «bajar los tanques 1 metro»). Antes se le propuso una boquilla lateral a 2,2 m, sin obra civil, como recomendación; él eligió bajar.
+- **Qué se hizo:** `industrial-models/water-network-scale-v1/plant.yaml`: tanques `tank-recirc-01..02` y bomba `pumpset-recirc-01` con la base a −1,0 m; boquillas de entrada en 2,245 m (las cuatro bajantes); salidas en −0,75 m y succiones en −0,68 m; el retorno de la bomba sale en −0,103 m. Comentario de la sección de recirculación actualizado. Documentación: `docs/water-network-plant.md` (tabla de equipos y de boquillas, y la simplificación ya resuelta) y la evidencia del acueducto.
+- **Verificación:** `apps/api` `pytest` 12 de 12 en verde (incluida la prueba de la bajante, que ahora termina en 2,245 m). Motor: `twin-lib plant validate water-network-scale-v1` en OK y 72 pruebas de runtime en verde. Capturas de la galería local: `docs/registro/evidencia/acueducto-tanques-bajados-1m.png` (vista general) y `docs/registro/evidencia/acueducto-recirculacion-foso-piso-0.png` (piso 0). Desde la zona corregida (−1,0 m), la losa del piso 0 baja al nivel de la base de los tanques: la captura de piso 0 se rehizo y muestra el foso.
+- **Decisiones:** [[decisiones]] D55.
+- **Conversación:** [[hilo-desague-nivel-1]].
 ### 2026-10-19 09:57 · Molienda de la mostaza a 60 min
 - **Solicitado por:** Andy (03:10: «son datos inventados por nosotros, busca en internet»; 09:57: «si»).
 - **Qué se hizo:** `plant.yaml`: `moler_y_transferir` de `rcp-mustard` de 30 a 60 min; comentario de `simulation.yaml` actualizado. La simulación no cambia.

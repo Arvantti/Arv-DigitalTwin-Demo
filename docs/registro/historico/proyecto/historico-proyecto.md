@@ -34,5 +34,6 @@ Conversaciones del 2026-10-16 (UTC) entre el autor y Claude dentro del proyecto 
 23. [[hilo-fabrica-de-cajas]] (fábrica de cajas de cartón corrugado: plano y escena 3D, 2026-10-18)
 24. [[hilo-equipaje-aeropuerto]] (gemelo nuevo del sistema de equipaje de aeropuerto, 2026-10-18 15:04 UTC)
 25. [[hilo-linea-caliente-de-salsas]] (línea caliente completa de salsas y capacidad a 22 t/día, 2026-10-18 17:10 UTC)
+27. [[hilo-desague-nivel-1]] (bajada de 1 m de los tanques de recirculación para que el nivel 1 desagüe por gravedad, 2026-10-18 23:53 UTC)
 26. [[hilo-linea-fria-y-mostaza-de-salsas]] (línea fría y mostaza de la planta de salsas en el motor, 2026-10-18 23:53 UTC)
 27. [[hilo-datos-reales]] (plan de datos reales, pedidos y Fractal para todos los gemelos, 2026-10-18 23:53 UTC)
