@@ -7,7 +7,7 @@ tags: [registro, historico-ia, datos-reales, pedidos, fractal]
 ---
 # Hilo: hoja de ruta de datos reales para todos los gemelos
 
-Parte de [[historico-proyecto]] · Índice: [[00-indice]] · Bitácora: [[bitacora]] · Decisión: [[decisiones#D53]]. Autor humano: Carlos Andrés Quiceño. Hora en UTC. Las listas de progreso no se reproducen. Credenciales: ninguna.
+Parte de [[historico-proyecto]] · Índice: [[00-indice]] · Bitácora: [[bitacora]] · Decisión: [[decisiones#D54]]. Autor humano: Carlos Andrés Quiceño. Hora en UTC. Las listas de progreso no se reproducen. Credenciales: ninguna.
 
 ---
 

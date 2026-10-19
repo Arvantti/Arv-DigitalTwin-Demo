@@ -1,6 +1,6 @@
 # Hoja de ruta de datos reales para todos los gemelos
 
-Estado: **plan, sin implementar** (2026-10-18). Decisión D53 en `docs/registro/decisiones/decisiones.md`.
+Estado: **plan, sin implementar** (2026-10-18). Decisión D54 en `docs/registro/decisiones/decisiones.md`.
 
 El autor definió esta hoja de ruta para la planta de plásticos (D48) y el 2026-10-18 la extendió a todos los gemelos. Hoy cada planta tiene sus datos repartidos en `plant.yaml` (parámetros de cada equipo, recetas de salsas) y `simulation.yaml`, todos supuestos. El objetivo es que el gemelo se alimente con un **catálogo** de datos reales y que los **pedidos** los secuencie el backend Fractal.
 

@@ -1,10 +1,12 @@
 # Simulación de la planta de salsas con el motor de planta (docs/plant-engine.md).
 # Línea caliente completa: salsa de tomate/BBQ en sachet de 1.000 ml (marmitas 1 y 2 → pasteurizador 1) y de 250 ml
-# (marmita 3 → pasteurizador 2, supuesto), cada una hasta su caja, con el vapor de la caldera. Los equipos del plant.yaml que aún no tienen tipo en la librería
-# (bombas, tubo de retención, estación reductora) se atraviesan con `via`.
+# (marmita 3 → pasteurizador 2, supuesto), cada una hasta su caja, con el vapor de la caldera. Línea fría: emulsificador (marmita sin vapor) →
+# molino coloidal → pulmón frío 1, que alimenta las tres llenadoras de mayonesa y salsa rosada (250, 500 y 1.000 ml). Mostaza: tanque → molino →
+# pulmón → llenadora de 250 ml, con su pesadora dedicada. Los equipos del plant.yaml que aún no tienen tipo en la librería
+# (bombas, molinos, tubo de retención, estación reductora) se atraviesan con `via`.
 
 schema_version: 0.1.0
-description: Línea caliente de 1.000 ml (marmitas 1 y 2 → pasteurizador → pulmón → sachetadora → túnel → control de peso → empaque en cajas de 4) y de 250 ml (marmita 3 → pasteurizador 2 → pulmón 2 → sachetadora → túnel 2 → control de peso → dos mesas de cajas de 16), con la caldera
+description: Línea fría (emulsificador → molino coloidal → pulmón frío → llenadoras de 250, 500 y 1.000 ml → pesadoras → mesas), línea de mostaza (tanque → molino → pulmón → llenadora de 250 ml → pesadora dedicada → mesa) y línea caliente de 1.000 ml (marmitas 1 y 2 → pasteurizador → pulmón → sachetadora → túnel → control de peso → empaque en cajas de 4) y de 250 ml (marmita 3 → pasteurizador 2 → pulmón 2 → sachetadora → túnel 2 → control de peso → dos mesas de cajas de 16), con la caldera
 dt: 1.0
 
 x-tomato-batch: &tomato_batch
@@ -25,6 +27,30 @@ x-tomato-batch: &tomato_batch
   - { kind: sample, minutes: 10, spec: { brix: [24, 28], ph_max: 3.9, bostwick_cm_30s: [4, 7] } }
   - { kind: discharge, rate_kg_min: 56 }
 
+# Emulsión en frío (mayonesa natural, formula_pct de rcp-mayo-natural): batch de 1.500 kg = fase acuosa (huevo, agua, secos) 270 kg +
+# vinagre 60 kg + aceite 1.170 kg. El aceite entra a 4.700 kg/h (78,3 kg/min, dosificador) y la pre-emulsión sale por el molino coloidal a
+# 4.500 kg/h (75 kg/min). El vacío y la homogeneización son esperas: la marmita sin vapor no modela rotor ni vacío. Sin muestra de Brix/pH
+# (esos cálculos son de la salsa de tomate): el laboratorio (viscosidad, pH) se anota como espera de 10 min.
+x-mayo-batch: &mayo_batch
+  - { kind: agitate, rpm: 60 }
+  - { kind: charge, material: fase_acuosa, kg: 270, rate_kg_min: 27, temp_c: 12 }
+  - { kind: charge, material: vinagre, kg: 60, rate_kg_min: 20, temp_c: 15 }
+  - { kind: wait, minutes: 5 }
+  - { kind: charge, material: aceite, kg: 1170, rate_kg_min: 78.3, temp_c: 14 }
+  - { kind: wait, minutes: 5 }
+  - { kind: wait, minutes: 10 }
+  - { kind: discharge, rate_kg_min: 75 }
+
+# Mostaza (rcp-mustard): batch de 1.000 kg = líquidos 830 kg (agua y vinagre) + harina, sal, azúcar y especias 170 kg. La hidratación dura 60 min y el
+# molino de piedra entrega 1.000 kg/h (16,7 kg/min): descargar los 1.000 kg toma 60 min (la receta del plano anota 30 min, que no cuadra con ese caudal).
+x-mustard-batch: &mustard_batch
+  - { kind: agitate, rpm: 60 }
+  - { kind: charge, material: agua, kg: 710, rate_kg_min: 88.75, temp_c: 18 }
+  - { kind: charge, material: vinagre, kg: 120, rate_kg_min: 15, temp_c: 18 }
+  - { kind: charge, material: harina_mostaza, kg: 170, rate_kg_min: 11.3, temp_c: 18 }
+  - { kind: wait, minutes: 60 }
+  - { kind: discharge, rate_kg_min: 16.67 }
+
 equipment:
   boiler-01:         { type: steam-boiler,        preset: 60bhp-8bar }
   kettle-01:         { type: jacketed-kettle,     preset: 2500l-sauce }
@@ -41,12 +67,23 @@ equipment:
   checkweigher-01:   { type: checkweigher,        preset: 1000ml-tomato }
   checkweigher-02:   { type: checkweigher,        preset: 250ml-tomato }
   pack-sauce-1000:   { type: packing-station,     preset: sachet-1000ml-4 }
-  # La mesa de 500 ml no tiene aún su línea de llenado conectada (mayonesa): se simula sin llegadas.
-  pack-sauce-500:    { type: packing-station,     preset: sachet-500ml-8,  params: { nominal_inflow_upm: 0 } }
-  # Dos mesas de 250 ml (150 u/min cada una). Hoy solo llega el sachet caliente de 80 u/min a la mesa 1; la mesa 2 espera
-  # a las llenadoras frías (240 u/min en total), porque una salida entrega a un solo destino (sin reparto).
+  # Línea fría y mostaza
+  emulsifier-01:     { type: jacketed-kettle,     preset: 2000l-emulsifier }
+  buffer-cold-01:    { type: vessel,              preset: cold-buffer-3000l, params: { initial_level_pct: 0, outlet_max_kg_h: 4400 } }
+  filler-sachet-01:  { type: vffs-sachet-filler,  preset: 250ml-2-lanes }
+  filler-pouch-02:   { type: vffs-sachet-filler,  preset: 1000ml-1-lane }
+  filler-pouch-03:   { type: vffs-sachet-filler,  preset: 500ml-1-lane }
+  checkweigher-03:   { type: checkweigher,        preset: 250ml-mayo }
+  checkweigher-04:   { type: checkweigher,        preset: 500ml-mayo }
+  checkweigher-05:   { type: checkweigher,        preset: 1000ml-mayo }
+  tank-mustard-01:   { type: jacketed-kettle,     preset: 1200l-mustard }
+  buffer-mustard-01: { type: vessel,              preset: mustard-buffer-2000l }
+  filler-sachet-03:  { type: vffs-sachet-filler,  preset: 250ml-1-lane }
+  checkweigher-06:   { type: checkweigher,        preset: 250ml-mustard }
+  pack-sauce-500:    { type: packing-station,     preset: sachet-500ml-8 }
+  # Dos mesas de 250 ml (150 u/min cada una): la 1 recibe el sachet caliente (80 u/min) y la mostaza (60 u/min); la 2, la mayonesa fría (100 u/min).
   pack-sauce-250:    { type: packing-station,     preset: sachet-250ml-16 }
-  pack-sauce-250-b:  { type: packing-station,     preset: sachet-250ml-16, params: { nominal_inflow_upm: 0 } }
+  pack-sauce-250-b:  { type: packing-station,     preset: sachet-250ml-16 }
 
 links:
   # Vapor: la estación reductora steam-station-01 baja de 8 a 3 bar (outlet_bar del plant.yaml).
@@ -76,6 +113,23 @@ links:
   - { from: filler-sachet-02.sachets_out, to: cooling-tunnel-02.items_in }
   - { from: cooling-tunnel-02.items_out,  to: checkweigher-02.items_in }
   - { from: checkweigher-02.items_out,    to: pack-sauce-250.items_in }
+  # Emulsiones en frío. El molino coloidal se atraviesa con `via`. Un solo pulmón frío alimenta a las tres llenadoras (el pulmón frío 2
+  # queda de reserva sin simular): el pulmón entrega lo que le piden las tres juntas, por eso su salida máxima sube a 4.400 kg/h.
+  - { from: emulsifier-01.product_out,    to: buffer-cold-01.inlet,       via: [colloid-mill-01] }
+  - { from: buffer-cold-01.outlet,        to: filler-sachet-01.product_in }
+  - { from: buffer-cold-01.outlet,        to: filler-pouch-02.product_in }
+  - { from: buffer-cold-01.outlet,        to: filler-pouch-03.product_in }
+  - { from: filler-sachet-01.sachets_out, to: checkweigher-03.items_in }
+  - { from: checkweigher-03.items_out,    to: pack-sauce-250-b.items_in }
+  - { from: filler-pouch-03.sachets_out,  to: checkweigher-04.items_in }
+  - { from: checkweigher-04.items_out,    to: pack-sauce-500.items_in }
+  - { from: filler-pouch-02.sachets_out,  to: checkweigher-05.items_in }
+  - { from: checkweigher-05.items_out,    to: pack-sauce-1000.items_in }
+  # Mostaza (llenadora y pesadora dedicadas por alérgeno; la mesa 1 de 250 ml recibe también el sachet caliente)
+  - { from: tank-mustard-01.product_out,  to: buffer-mustard-01.inlet,    via: [mustard-mill-01] }
+  - { from: buffer-mustard-01.outlet,     to: filler-sachet-03.product_in }
+  - { from: filler-sachet-03.sachets_out, to: checkweigher-06.items_in }
+  - { from: checkweigher-06.items_out,    to: pack-sauce-250.items_in }
 
 startup:
   - { equipment: pasteurizer-01,  command: start }
@@ -83,8 +137,16 @@ startup:
   - { equipment: filler-pouch-01, command: start }
   - { equipment: filler-sachet-02, command: start }
   # La prueba del detector de metales se hace al inicio de cada hora (metal_test_interval_min).
+  - { equipment: filler-sachet-01, command: start }
+  - { equipment: filler-pouch-02, command: start }
+  - { equipment: filler-pouch-03, command: start }
+  - { equipment: filler-sachet-03, command: start }
   - { equipment: checkweigher-01, command: metal_test, every_s: 3600 }
   - { equipment: checkweigher-02, command: metal_test, every_s: 3600 }
+  - { equipment: checkweigher-03, command: metal_test, every_s: 3600 }
+  - { equipment: checkweigher-04, command: metal_test, every_s: 3600 }
+  - { equipment: checkweigher-05, command: metal_test, every_s: 3600 }
+  - { equipment: checkweigher-06, command: metal_test, every_s: 3600 }
 
 lines:
   - id: hot-1000
@@ -95,6 +157,24 @@ lines:
     name: Salsa de tomate/BBQ en sachet de 250 ml
     output: pack-sauce-250.boxes_out
     equipment: [kettle-03, pasteurizer-02, buffer-hot-02, filler-sachet-02, cooling-tunnel-02, checkweigher-02, pack-sauce-250]
+  - id: cold-250
+    name: Mayonesa y salsa rosada en sachet de 250 ml
+    output: pack-sauce-250-b.boxes_out
+    equipment: [emulsifier-01, buffer-cold-01, filler-sachet-01, checkweigher-03, pack-sauce-250-b]
+  - id: cold-500
+    name: Mayonesa y salsa rosada en sachet de 500 ml
+    output: pack-sauce-500.boxes_out
+    equipment: [emulsifier-01, buffer-cold-01, filler-pouch-03, checkweigher-04, pack-sauce-500]
+  - id: cold-1000
+    name: Mayonesa y salsa rosada en sachet de 1.000 ml (cuenta los sachets buenos de la pesadora; la mesa de 1.000 ml es compartida con la línea caliente)
+    output: checkweigher-05.items_out
+    unit: sachets
+    equipment: [emulsifier-01, buffer-cold-01, filler-pouch-02, checkweigher-05]
+  - id: mustard-250
+    name: Mostaza en sachet de 250 ml (cuenta los sachets buenos de la pesadora; la mesa 1 de 250 ml es compartida con la línea caliente)
+    output: checkweigher-06.items_out
+    unit: sachets
+    equipment: [tank-mustard-01, buffer-mustard-01, filler-sachet-03, checkweigher-06]
 
 scenarios:
   - id: nominal
@@ -163,3 +243,34 @@ scenarios:
       - { path: equipment.cooling-tunnel-02.variables.hot_outlets, equals: 0 }
       - { path: equipment.filler-pouch-01.state_share.blocked, equals: 0.0, description: "(el túnel 1 sigue andando: el bloqueo no cruza de una línea a la otra)" }
       - { path: equipment.cooling-tunnel-01.variables.hot_outlets, equals: 0 }
+
+  - id: cold-nominal
+    description: "Turno de 8 h de la línea fría: el emulsificador hace un batch de mayonesa cada 75 min y el pulmón frío 1 reparte a las llenadoras de 250, 500 y 1.000 ml"
+    duration_s: 28800
+    timeline:
+      - { at_s: 0, equipment: emulsifier-01, command: run_phases, args: { phases: *mayo_batch }, every_s: 4500 }
+    expect:
+      - { path: events.emulsifier-01.batch_completed, equals: 6, description: "(batch ≈ 68 min: acuosa 10 + vinagre 3 + vacío 5 + aceite 1.170 kg ÷ 78,3 kg/min = 15 + homogeneizar 5 + muestra 10 + descarga 1.500 kg ÷ 75 kg/min = 20; empieza a 0, 75, … 450 min; el séptimo termina a los 518 min, después del turno)" }
+      - { path: equipment.emulsifier-01.kpis.avg_batch_min, min: 67, max: 69 }
+      - { path: equipment.emulsifier-01.variables.discharged_kg, min: 8900, max: 9100, description: "(6 batches × 1.500 kg, menos el talón de 5 kg que queda en el tanque)" }
+      - { path: equipment.emulsifier-01.state_share.blocked, equals: 0.0, description: "(el pulmón de 3.000 L siempre alcanza a recibir un batch de 1.500 kg)" }
+      - { path: equipment.filler-sachet-01.state_share.starved, min: 0.6, description: "(las tres llenadoras piden 4.325 kg/h a tope y el emulsificador entrega ≈ 9.000 kg ÷ 8 h = 1.125 kg/h: corren ≈ 26 % del turno)" }
+      - { path: lines.cold-250.output_units, min: 600, max: 780, description: "(reparto del batch en proporción a lo que pide cada llenadora: 250 ml pide 1.395 de 4.325 kg/h = 32 % ≈ 2.900 kg ÷ 0,2325 kg = 12.500 sachets × 97,5 % aceptados ÷ 16 por caja ≈ 760; menos lo que queda en el túnel y la mesa)" }
+      - { path: lines.cold-500.output_units, min: 620, max: 780, description: "(500 ml pide 1.256 kg/h = 29 % ≈ 2.600 kg ÷ 0,465 kg = 5.600 sachets × 97,5 % ÷ 8 por caja ≈ 690)" }
+      - { path: lines.cold-1000.output_units, min: 3300, max: 4000, description: "(1.000 ml pide 1.674 kg/h = 39 % ≈ 3.500 kg ÷ 0,93 kg = 3.750 sachets × 97,5 % aceptados ≈ 3.660)" }
+      - { path: equipment.checkweigher-03.kpis.reject_rate, min: 0.01, max: 0.05, description: "(tolerancia 4 % de 232,5 g: 223,2 a 241,8 g; medido ≈ 2,7 %)" }
+      - { path: equipment.checkweigher-05.variables.mean_g, min: 925, max: 950, description: "(nominal 930 g más ≈ 1 % de regalo)" }
+      - { path: equipment.pack-sauce-250-b.kpis.blocked_pct, equals: 0.0, description: "(llegan ≤ 100 u/min a una mesa que empaca 150)" }
+      - { path: equipment.cooling-tunnel-01.variables.hot_outlets, equals: 0, description: "(la mayonesa no pasa por el túnel de enfriamiento: no se llena en caliente)" }
+
+  - id: mustard-nominal
+    description: "Turno de 8 h de la mostaza: un batch de 1.000 kg cada 150 min (hidratación de 60 min y molino de 1.000 kg/h) hacia la llenadora dedicada de 250 ml"
+    duration_s: 28800
+    timeline:
+      - { at_s: 0, equipment: tank-mustard-01, command: run_phases, args: { phases: *mustard_batch }, every_s: 9000 }
+    expect:
+      - { path: events.tank-mustard-01.batch_completed, equals: 3, description: "(batch ≈ 151 min: líquidos y harina ≈ 11 + hidratación 60 + descarga 1.000 kg ÷ 16,67 kg/min = 60 + espera ≈ 20 del molino; empieza a 0, 150, 300 y 450 min; el cuarto no termina en el turno)" }
+      - { path: equipment.tank-mustard-01.variables.discharged_kg, min: 2950, max: 3000, description: "(3 batches × 1.000 kg, menos el talón de 5 kg)" }
+      - { path: equipment.filler-sachet-03.state_share.starved, min: 0.5, description: "(la llenadora pide 945 kg/h y el molino entrega 3.000 kg ÷ 8 h = 375 kg/h: corre ≈ 40 % del turno)" }
+      - { path: lines.mustard-250.output_units, min: 10300, max: 11500, description: "(3.000 kg ÷ 0,2625 kg = 11.430 sachets × 97,4 % aceptados ≈ 11.130)" }
+      - { path: equipment.checkweigher-06.variables.mean_g, min: 260, max: 270, description: "(nominal 262,5 g más ≈ 1 % de regalo)" }
