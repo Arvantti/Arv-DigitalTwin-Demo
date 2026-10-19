@@ -18,20 +18,20 @@ equipment:
   collector-b:   { type: belt-conveyor,        preset: bhs-collector-46m, params: { crest_height_m: 4.2, ramp_deg: 16, zone_control: true } }
   screening-01:  { type: baggage-screening,    preset: ct-600, params: { alarm_side: left } }
   screening-02:  { type: baggage-screening,    preset: ct-600, params: { alarm_side: right } }
-  induct-01:     { type: belt-conveyor,        preset: bhs-transfer-9m, params: { length_m: 8, height_m: 0.75, rise_m: 0.5, merge_at_m: 2.5, merge_side: left, zone_control: true } }
-  induct-02:     { type: belt-conveyor,        preset: bhs-transfer-9m, params: { height_m: 0.75, rise_m: 2.75, merge_at_m: 1.5, merge_width_m: 1.2, merge_side: left, merge2_at_m: 6.45, merge2_side: right, zone_control: true } }
-  alarm-belt-01: { type: belt-conveyor,        preset: bhs-transfer-9m, params: { length_m: 7.7, height_m: 0.75, crest_height_m: 2.0, ramp_deg: 22, zone_control: true } }
-  alarm-belt-02: { type: belt-conveyor,        preset: bhs-transfer-9m, params: { length_m: 7.7, height_m: 0.75, crest_height_m: 2.0, ramp_deg: 22, zone_control: true } }
+  induct-01:     { type: belt-conveyor,        preset: bhs-transfer-9m, params: { speed_m_s: 0.75, length_m: 8, height_m: 0.75, rise_m: 0.5, merge_at_m: 2.5, merge_side: left, zone_control: true } }
+  induct-02:     { type: belt-conveyor,        preset: bhs-transfer-9m, params: { speed_m_s: 1.0, height_m: 0.75, rise_m: 2.75, merge_at_m: 1.5, merge_width_m: 1.2, merge_side: left, merge2_at_m: 6.45, merge2_side: right, zone_control: true } }
+  alarm-belt-01: { type: belt-conveyor,        preset: bhs-transfer-9m, params: { speed_m_s: 0.4, length_m: 7.7, height_m: 0.75, crest_height_m: 2.0, ramp_deg: 22, zone_control: true } }
+  alarm-belt-02: { type: belt-conveyor,        preset: bhs-transfer-9m, params: { speed_m_s: 0.4, length_m: 7.7, height_m: 0.75, crest_height_m: 2.0, ramp_deg: 22, zone_control: true } }
   l3-01:         { type: bag-handling-station, preset: level3-3ops }
   l3-02:         { type: bag-handling-station, preset: level3-3ops }
-  l3n-return-1:  { type: belt-conveyor,        preset: bhs-transfer-9m, params: { length_m: 4.95, height_m: 0.75, zone_control: true } }
-  l3n-return-2:  { type: belt-conveyor,        preset: bhs-transfer-9m, params: { length_m: 12, height_m: 0.75, zone_control: true } }
-  l3n-return-3:  { type: belt-conveyor,        preset: bhs-transfer-9m, params: { length_m: 5.45, height_m: 0.75, rise_m: 0.16, zone_control: true } }
-  l3s-return-1:  { type: belt-conveyor,        preset: bhs-transfer-9m, params: { length_m: 2.05, height_m: 0.75, zone_control: true } }
-  l3s-return-2:  { type: belt-conveyor,        preset: bhs-transfer-9m, params: { length_m: 6.5, height_m: 0.75, rise_m: 1.97, zone_control: true } }
-  sorter-01:     { type: baggage-sorter,       preset: tilt-tray-4, params: { height_m: 3.5, straight_m: 31.1, loop_width_m: 7.4, chute_length_m: 5.6, reinduct: true } }
+  l3n-return-1:  { type: belt-conveyor,        preset: bhs-transfer-9m, params: { speed_m_s: 0.4, length_m: 4.95, height_m: 0.75, zone_control: true } }
+  l3n-return-2:  { type: belt-conveyor,        preset: bhs-transfer-9m, params: { speed_m_s: 0.4, length_m: 12, height_m: 0.75, zone_control: true } }
+  l3n-return-3:  { type: belt-conveyor,        preset: bhs-transfer-9m, params: { speed_m_s: 0.4, length_m: 5.45, height_m: 0.75, rise_m: 0.16, zone_control: true } }
+  l3s-return-1:  { type: belt-conveyor,        preset: bhs-transfer-9m, params: { speed_m_s: 0.4, length_m: 2.05, height_m: 0.75, zone_control: true } }
+  l3s-return-2:  { type: belt-conveyor,        preset: bhs-transfer-9m, params: { speed_m_s: 0.4, length_m: 6.5, height_m: 0.75, rise_m: 1.97, zone_control: true } }
+  sorter-01:     { type: baggage-sorter,       preset: tilt-tray-4, params: { height_m: 3.5, straight_m: 31.1, loop_width_m: 7.4, chute_length_m: 5.6, chute_lead_m: 4.0, reinduct: true } }
   encoding-01:   { type: bag-handling-station, preset: encoding-1op }
-  enc-return:    { type: belt-conveyor,        preset: bhs-transfer-9m, params: { length_m: 16.25, height_m: 0.75, rise_m: 2.75, zone_control: true } }
+  enc-return:    { type: belt-conveyor,        preset: bhs-transfer-9m, params: { speed_m_s: 0.5, length_m: 16.25, height_m: 0.75, rise_m: 2.75, zone_control: true } }
   makeup-01:     { type: baggage-carousel,     preset: makeup-40 }
   makeup-02:     { type: baggage-carousel,     preset: makeup-40 }
   makeup-03:     { type: baggage-carousel,     preset: makeup-40 }

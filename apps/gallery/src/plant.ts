@@ -16,6 +16,7 @@
  *   &tour=1                        inicia el recorrido de cámara al cargar
  *   &shot=1                        oculta la interfaz y marca window.__ready (con autosim, tras recibir datos)
  */
+import { createBeltPlc } from "./belt-plc.ts";
 import "./mobile-dock.ts";
 import yaml from "js-yaml";
 import * as THREE from "three";
@@ -974,6 +975,7 @@ function applyMessage(msg: SimMessage, label: string): void {
     if (asset) asset.frame = { channels: snap.animation, state: snap.state, phase: snap.phase, variables: snap.variables, items: snap.items, label: id.toUpperCase() };
   }
   for (const piece of controlPieces) piece.feed?.(latest, msg.t);
+  beltPlc?.update(latest);
   renderAsset();
   renderLines(msg.snapshot.lines);
   appendEvents(msg.events);
@@ -1105,6 +1107,26 @@ function renderAsset(): void {
   }
 }
 
+// ------------------------------------------------------------------ PLC de bandas
+let beltPlc: ReturnType<typeof createBeltPlc> | null = null;
+function buildBeltPlc(): void {
+  const belts = doc.equipment
+    .filter((e) => e.sim?.type === "belt-conveyor" && e.sim.params.item === "bag")
+    .map((e) => ({ id: e.id, zone: e.zone, speed: Number(e.sim!.params.speed_m_s ?? 0.5) }));
+  if (!belts.length) return;
+  $("plc-toggle-wrap").classList.remove("hidden");
+  beltPlc = createBeltPlc($("belt-plc"), belts, {
+    send: (equipment, command, args) => {
+      if (replay || socket?.readyState !== WebSocket.OPEN) return false;
+      send({ equipment, command, args });
+      return true;
+    },
+    select: (id) => select(id),
+  });
+  $("btn-plc").onclick = () => beltPlc?.toggle();
+  if (url.get("plc") === "1") beltPlc.show();
+}
+
 function commandButton(label: string, title: string, command: string, args: Record<string, unknown>): HTMLButtonElement {
   const b = document.createElement("button");
   b.textContent = label;
@@ -1208,6 +1230,7 @@ async function start(): Promise<void> {
     send({ speed: speedFromSlider() });
   };
   if (!simulated) $("btn-connect").setAttribute("disabled", "");
+  buildBeltPlc();
   if (doc.catalog?.products.length) {
     productsApi = buildProducts({ plantId, catalog: doc.catalog, stage, rootOf: (id) => assets.get(id)?.root, select });
     updateProducts = productsApi.update;

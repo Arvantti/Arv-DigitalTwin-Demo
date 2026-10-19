@@ -10,6 +10,10 @@ Cada unidad se sigue una por una sobre el recorrido real de la banda (con sus su
   con su fotocelda. Una zona para cuando la de adelante está ocupada y arranca cuando se libera, así las unidades se
   acumulan sin tocarse (sin choques, ni contra la cola ni contra una maleta resbalada). La fotocelda de descarga
   para la zona de cabeza mientras la siguiente máquina no recibe.
+- señales de arranque y parada: el operador habilita o deshabilita la banda (`start`/`stop`, como el selector del
+  tablero del PLC). Con control por zonas la banda además duerme sola: el motor arranca cuando la fotocelda de entrada
+  ve una unidad o hay unidades sobre la banda, y se apaga `run_on_s` segundos después de quedar vacía; también se
+  apaga mientras todas sus unidades están retenidas contra la descarga.
 """
 
 from __future__ import annotations
@@ -55,6 +59,9 @@ class BeltConveyor(EquipmentBehavior):
         self.accepting = True
         self.blocked_s = 0.0
         self.zone_stopped = False
+        self.enabled = True  # selector del operador (start/stop)
+        self.run_signal = True  # salida del PLC al contactor del motor
+        self.idle_s = 0.0
         self._build_path()
 
     def _path_key(self) -> tuple[Any, ...]:
@@ -83,6 +90,10 @@ class BeltConveyor(EquipmentBehavior):
     def on_command(self, name: str, args: dict[str, Any]) -> bool:
         if name == "set_speed":
             self.p["speed_m_s"] = max(0.0, float(args["m_s"]))
+            return True
+        if name in ("start", "stop"):
+            self.enabled = name == "start"
+            self.emit("operator_" + name)
             return True
         return False
 
@@ -113,7 +124,17 @@ class BeltConveyor(EquipmentBehavior):
         zones = bool(p.get("zone_control", False))
         # fotocelda de descarga: con la cabeza tapada y la salida ocupada, la zona de cabeza queda detenida
         self.zone_stopped = zones and not downstream and bool(self.items) and self.items[0] >= end - 1e-9
-        v = 0.0 if stopped else p["speed_m_s"] * (0.7 if self.failures.is_active("belt_misalignment") else 1.0)
+        # señal de marcha: selector del operador y, con zonas, arranque y parada por fotoceldas
+        run = self.enabled and not stopped
+        if run and zones:
+            if self.items or self.arrivals >= 1.0:
+                self.idle_s = 0.0
+            else:
+                self.idle_s += dt
+            held = self.zone_stopped and len(self.items) == self._accumulated() and self.arrivals < 1.0
+            run = self.idle_s <= float(p.get("run_on_s", 10.0)) and not held
+        self.run_signal = run
+        v = 0.0 if not run else p["speed_m_s"] * (0.7 if self.failures.is_active("belt_misalignment") else 1.0)
         self.speed = v
         self.travel = (self.travel + v * dt) % 10.0
 
@@ -139,7 +160,7 @@ class BeltConveyor(EquipmentBehavior):
             moved.append(new)
             speeds.append((new - pos) / dt if dt > 0 else 0.0)
         self.items = moved
-        while self.items and self.items[0] >= end - 1e-9 and downstream and not stopped:
+        while self.items and self.items[0] >= end - 1e-9 and downstream and not stopped and self.enabled:
             self.items.pop(0)
             self.touching.pop(0)
             self.slipping.pop(0)
@@ -169,7 +190,9 @@ class BeltConveyor(EquipmentBehavior):
         if stopped:
             return
         at_head = bool(self.items) and self.items[0] >= end - 1e-9
-        if at_head and not downstream:
+        if not self.enabled:
+            self.state.set("idle")
+        elif at_head and not downstream:
             self.state.set("blocked")
             self.blocked_s += dt
         elif self.items or inflow > 0:
@@ -202,6 +225,9 @@ class BeltConveyor(EquipmentBehavior):
             "slipping": sum(self.slipping),
             "photo_eye": 1 if self.items and self.items[0] >= self.path_length - self.p["pitch_m"] / 2 else 0,
             "zone_stopped": 1 if self.zone_stopped else 0,
+            "entry_eye": 1 if self.arrivals >= 1.0 or (self.items and self.items[-1] < self.p["pitch_m"]) else 0,
+            "run_enable": 1 if self.enabled else 0,
+            "run_signal": 1 if self.run_signal else 0,
             "path_length_m": self.path_length,
             "max_slope_deg": self.max_slope_deg,
             "speed_actual_m_s": self.speed,
