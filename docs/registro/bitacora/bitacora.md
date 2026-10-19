@@ -74,7 +74,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 - **Fecha/hora (UTC):** 2026-10-18 23:53–2026-10-19 01:30
 - **Solicitado por:** Andy (23:53, hilo «Desagüe por gravedad del nivel 1»; 01:09: «bajar los tanques 1 metro»). Antes se le propuso una boquilla lateral a 2,2 m, sin obra civil, como recomendación; él eligió bajar.
 - **Qué se hizo:** `industrial-models/water-network-scale-v1/plant.yaml`: tanques `tank-recirc-01..02` y bomba `pumpset-recirc-01` con la base a −1,0 m; boquillas de entrada en 2,245 m (las cuatro bajantes); salidas en −0,75 m y succiones en −0,68 m; el retorno de la bomba sale en −0,103 m. Comentario de la sección de recirculación actualizado. Documentación: `docs/water-network-plant.md` (tabla de equipos y de boquillas, y la simplificación ya resuelta) y la evidencia del acueducto.
-- **Verificación:** `apps/api` `pytest` 12 de 12 en verde (incluida la prueba de la bajante, que ahora termina en 2,245 m). Pendiente antes del PR: validación del motor de la planta y captura de la escena.
+- **Verificación:** `apps/api` `pytest` 12 de 12 en verde (incluida la prueba de la bajante, que ahora termina en 2,245 m). Motor: `twin-lib plant validate water-network-scale-v1` en OK y 72 pruebas de runtime en verde. Capturas de la galería local: `docs/registro/evidencia/acueducto-tanques-bajados-1m.png` (vista general) y `docs/registro/evidencia/acueducto-recirculacion-foso-piso-0.png` (piso 0). La escena dibuja el piso sin foso: los tanques se ven apoyados en la losa.
 - **Decisiones:** [[decisiones]] D55.
 - **Conversación:** [[hilo-desague-nivel-1]].
 ### 2026-10-18 23:53 – 2026-10-19 00:35 · Línea fría y mostaza de salsas conectadas
