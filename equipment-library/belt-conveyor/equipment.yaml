@@ -96,4 +96,5 @@ assumptions:
   - length_m es el largo en planta; cada unidad se sigue sobre el recorrido real (path_length_m), algo mayor con subidas y bajadas (≈ 3,5 % en una rampa de 15°).
   - Fricción, supuesto. con tan θ ≤ friction_coef la unidad va con la banda; en una subida más empinada resbala y se detiene al pie (bloquea a las de atrás); en una bajada más empinada se desliza a v × (1 + 4 × (tan θ − μ)), hasta el doble de la banda.
   - Choque = una unidad que alcanza la separación mínima con la de adelante con más de 0,05 m/s de diferencia; desde ahí avanza pegada a ella.
+  - "Entrada: una unidad que llega cuando la zona de entrada está ocupada espera ahí (hasta 2 más que entry_buffer_units, las que la máquina anterior soltó antes de ver el aviso de banda llena); no se pierde."
   - Con zone_control la banda va en zonas del largo de una unidad (acumulación sin presión); cada zona para antes de tocar a la de adelante, así que no se cuentan choques; la capacidad de acumulación es la misma.

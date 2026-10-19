@@ -1,0 +1,88 @@
+scenarios:
+  - id: strapper-steady
+    description: Amarradora con 9,6 fajos/min durante 1 h (línea de cajas pequeñas)
+    preset: bundle-strapper
+    duration_s: 3600
+    timeline:
+      - { at_s: 0, inputs: { inflow_upm: 9.6 } }
+    expect:
+      - { path: variables.arrived, equals: 576, description: "(9,6 × 60)" }
+      - { path: variables.processed, min: 574, max: 576 }
+      - { path: kpis.utilization, min: 0.78, max: 0.82, description: "(cada fajo ocupa el puesto 1 + 3 + 1 = 5 s: 576 × 5 ÷ 3.600 = 0,80)" }
+      - { path: variables.jams, equals: 0 }
+
+  - id: strapper-jams
+    description: "Uno de cada 50 fajos se traba antes de la fotocelda de posición: el vigilante para la amarradora y el operario la despeja en 2 min"
+    preset: bundle-strapper
+    duration_s: 3600
+    timeline:
+      - { at_s: 0, inputs: { inflow_upm: 9.6 } }
+      - { at_s: 0, command: set_param, args: { name: jam_pct, value: 2 } }
+    expect:
+      - { path: events.jam_detected, equals: 8, description: "(uno cada 50 fajos; con las pérdidas de abajo entran ≈ 433: 8 atascos)" }
+      - { path: events.jam_cleared, equals: 8 }
+      - { path: kpis.jams_per_h, min: 7.9, max: 8.1 }
+      - { path: variables.arrived, min: 425, max: 440, description: "(en cada atasco el puesto queda quieto 5 + 120 s; llegan 20 fajos, la cola guarda 2 y en el banco el resto se pierde: 576 − 8 × 18 = 432. En la planta esos fajos esperan en la banda anterior)" }
+      - { path: events.full, min: 8 }
+
+  - id: turntable-steady
+    description: Mesa giratoria con las 41,4 pilas/h de la corrugadora
+    preset: stack-turntable
+    duration_s: 3600
+    timeline:
+      - { at_s: 0, inputs: { inflow_upm: 0.69 } }
+    expect:
+      - { path: variables.processed, equals: 41, description: "(0,69 × 60 = 41,4)" }
+      - { path: kpis.utilization, min: 0.19, max: 0.22, description: "(5 + 8 + 5 = 18 s por pila: 41 × 18 ÷ 3.600 = 0,205)" }
+      - { path: events.full, equals: 0, description: "(una pila cada 87 s y la mesa la despacha en 18)" }
+
+  - id: manual-break
+    description: "Mesa manual con 3 operarios y 9,6 fajos/min; a los 10 min dos salen 30 min y la cola se llena"
+    preset: manual-table
+    duration_s: 3600
+    timeline:
+      - { at_s: 0, inputs: { inflow_upm: 9.6 } }
+      - { at_s: 0, command: set_operators, args: { n: 3 } }
+      - { at_s: 600, command: set_operators, args: { n: 1 } }
+      - { at_s: 2400, command: set_operators, args: { n: 3 } }
+    expect:
+      - { path: variables.arrived, min: 425, max: 435, description: "(con 1 operario atiende 60 ÷ 13 = 4,6 fajos/min; en 30 min sobran (9,6 − 4,6) × 30 = 150, la cola guarda 4: 576 − 146 = 430)" }
+      - { path: events.full, min: 1 }
+      - { path: kpis.avg_wait_s, min: 5, description: "(los fajos esperan en la cola mientras falta gente)" }
+
+  - id: manual-stop
+    description: Un operario oprime el pulsador de paro de la amarradora 5 min
+    preset: bundle-strapper
+    duration_s: 1800
+    timeline:
+      - { at_s: 0, inputs: { inflow_upm: 9.6 } }
+      - { at_s: 600, command: manual_stop, args: { duration_s: 300 } }
+    expect:
+      - { path: events.manual_stop, equals: 1 }
+      - { path: events.manual_resume, equals: 1 }
+      - { path: variables.manual_stops, equals: 1 }
+      - { path: variables.arrived, min: 240, max: 244, description: "(288 − 48 que llegan en el paro + 2 que caben en la cola)" }
+
+  - id: outfeed-blocked
+    description: La banda siguiente no recibe; la amarradora retiene un fajo en la salida, otro en el puesto y llena la cola
+    preset: bundle-strapper
+    duration_s: 600
+    timeline:
+      - { at_s: 0, inputs: { inflow_upm: 9.6, downstream_free: false } }
+    expect:
+      - { path: state, equals: blocked }
+      - { path: variables.released, equals: 0 }
+      - { path: variables.pe_exit, equals: 1 }
+      - { path: variables.pe_position, equals: 1, description: "(el segundo fajo amarrado no puede salir del puesto)" }
+      - { path: variables.pe_queue_full, equals: 1 }
+      - { path: variables.accepting, equals: 0 }
+
+  - id: demo
+    description: Turno con atascos al azar y fallas aleatorias para la galería
+    preset: bundle-strapper
+    duration_s: 28800
+    random_faults: true
+    timeline:
+      - { at_s: 0, inputs: { inflow_upm: 9.6 } }
+      - { at_s: 0, command: set_param, args: { name: jam_pct, value: 1 } }
+      - { at_s: 0, command: set_param, args: { name: jam_random, value: true } }

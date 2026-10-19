@@ -2,7 +2,7 @@
 tipo: historico-ia
 fuente: hilo «Gemelo de fábrica de cajas» (Claude Projects)
 desde: 2026-10-18 15:04
-hasta: 2026-10-18 22:30
+hasta: 2026-10-19 15:40
 tags: [registro, historico-ia, fabrica-cajas, transporte]
 ---
 # Hilo: gemelo de la fábrica de cajas
@@ -55,3 +55,14 @@ Siguiente paso de D44 sin nueva pregunta, según la decisión del autor de las 1
 
 *(Herramientas: lectura del motor de planta y de tipos existentes; creación y prueba de los tipos; corridas de la planta; capturas con Playwright.)*
 
+*(El PR #54 se fusionó a las 23:49.)*
+
+### 👤 Andy · 2026-10-19 11:45:05 UTC (chat del proyecto, enviado a este hilo)
+
+para que le digas al de cajas que hay que establecer una secuencia de sensores en las bandas, tal que cada banda transportadora funciona como una unidad independiente, ¿cierto? No es una gran larga banda transportadora porque hay varios procesos en el intermedio. Entonces, por ejemplo, está el proceso de encintado, ensunchado de las cajas. Hay otros procesos que es como la división. Hay unos carritos que, es decir, hay procesos manuales en el intermedio con los paquetes que tienen que parar y esperar a que se haga una operación y luego seguir. Entonces ahí eso se vuelve un simulador de atascos, ¿sí? Entonces quiero que revises el flujo, que la gente revise el hilo, revise el flujo, identifique dónde convendría poner esos sensores para paradas automáticas y para paradas manuales, y que se vaya simulando como el flujo real, ¿cierto?
+
+### 🤖 Claude · 2026-10-19 15:40 UTC
+
+Revisó el flujo: las mesas giratorias y las amarradoras se atravesaban sin simular y las bandas de fajos eran tramos de 54 a 62,5 m. Creó la estación en línea con tres fotoceldas, atasco con vigilante y pulsador de paro; simuló las mesas giratorias y las amarradoras, agregó una mesa manual por línea que parte cada banda larga en dos, dejó todas las bandas con control por zonas y armó cuatro escenarios de atascos y paros. Encontró y corrigió una pérdida de fajos en la banda de unión cuando la línea se llenaba. Ver D59 y la sección «Sensores y paradas» de `docs/box-plant.md`.
+
+*(Herramientas: lectura del motor y de la banda; tipo nuevo y sus pruebas; corridas de la planta con conteo de unidades por enlace; plano regenerado.)*

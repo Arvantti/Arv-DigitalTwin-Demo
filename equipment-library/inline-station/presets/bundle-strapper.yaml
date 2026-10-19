@@ -1,0 +1,4 @@
+preset: bundle-strapper
+description: Amarradora (ensunchadora) de fajos, 3 s por amarre y 1 s para entrar y salir; hasta 12 fajos/min
+params: { role: strapper, mode: automatic, cycle_s: 3, index_s: 1, queue_capacity: 2, jam_detect_s: 5, jam_clear_s: 120, nominal_inflow_upm: 9.6, length_m: 4, width_m: 3, unit_size_m: 0.8 }
+provenance: { cycle_s: assumed, index_s: assumed, jam_detect_s: assumed, jam_clear_s: assumed }

@@ -10,6 +10,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
+| 2026-10-19 | Sensores y atascos en la fábrica de cajas | Cada banda de la fábrica de cajas es una unidad independiente con fotoceldas por zona; tipo nuevo `inline-station` (cola, puesto y salida con tres fotoceldas, atasco con vigilante de tiempo y pulsador de paro) para las mesas giratorias, las amarradoras y una mesa manual por línea que parte la banda larga en dos; escenarios de atascos de la amarradora, pausa de operarios, paro manual y atascos al azar; la banda ya no pierde unidades cuando la siguiente se llena. D59 | 4 |
 | 2026-10-19 | Aeropuerto sin traslapes y con reproducción | Traspasos entre bandas con su equipo: la línea norte gira con una curva motorizada y entra de costado a la línea sur (confluencia); una sola inducción con curva y banda a 30° que entrega a favor del flujo en el borde de las bandejas; lazo de 31,1 × 7,4 m y carruseles realineados con las rampas. Tambores en cada extremo de banda, control por zonas con fotoceldas (acumulan sin choques) y bandas de regreso de nivel 3 y de codificación (esta a una reinducción del lado de retorno). ▶ SIMULAR funciona en el sitio publicado: sin API reproduce una grabación de 15 min de la operación normal (todas las plantas simuladas). D58 (renumerada al traer main: D54 a D57 ya estaban) | logística |
 | 2026-10-19 | Desagüe por gravedad del nivel 1 | Los tanques de recirculación del acueducto bajan 1 m, con su bomba (foso en el piso 0); la boquilla de entrada queda a 2,245 m, por debajo de la bajante del nivel 1 (2,5 m), y desagua por gravedad. Pedido de Andy. D55 | acueducto |
 | 2026-10-19 | Molienda de mostaza | El plano anota 60 min de molienda en la receta de mostaza (antes 30), acorde con el molino de 1.000 kg/h y con datos de fabricantes. D57 | 5 |
@@ -73,6 +74,15 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 | 2026-10-16 | #1 | Layouts de las plantas | 1 |
 
 ## Entradas
+
+### 2026-10-19 15:30 · Fábrica de cajas: sensores, estaciones y atascos
+- **Fecha/hora (UTC):** 2026-10-19 14:52–15:40
+- **Fase del plan:** [[plan-del-proyecto]] fase 4 (motor de planta), gemelo de la fábrica de cajas
+- **Solicitado por:** Andy (11:45, chat del proyecto, enviado al hilo por el coordinador): «cada banda transportadora funciona como una unidad independiente… hay procesos manuales en el intermedio con los paquetes que tienen que parar y esperar… identifique dónde convendría poner esos sensores para paradas automáticas y para paradas manuales, y que se vaya simulando como el flujo real».
+- **Qué se hizo:** tipo `inline-station` (contrato, comportamiento, geometría con fotoceldas que se ponen rojas, pulsador y baliza, presets `stack-turntable`, `bundle-strapper` y `manual-table`, 6 escenarios con expectativas). En `corrugated-box-plant-v1` se simulan `tt-01`, `tt-02` y `strap-01..03`, se agregan las mesas manuales `man-01..03` y las bandas `bc-0Na`/`bc-0Nb` reemplazan a las bandas de 54 y 62,5 m; control por zonas en todas las bandas; plano y `layout.svg` regenerados. Escenarios nuevos `strapper-jams`, `operator-break`, `manual-stop` y `random-jams`. `belt-conveyor`: la unidad que llega con la entrada ocupada espera en vez de perderse. Documentación: sección «Sensores y paradas» de `docs/box-plant.md`, `docs/plant-engine.md`, `docs/plant-scene.md` y `AGENTS.md`.
+- **Verificación:** `twin-lib validate`, `twin-lib plant validate` (las 5 plantas), conservación de unidades en cada enlace de la fábrica de cajas en los 7 escenarios, `pytest`, `ruff check`, `pnpm -r typecheck`, `pnpm -r test`.
+- **Decisiones:** [[decisiones]] D59
+- **Conversación:** [[hilo-fabrica-de-cajas]]
 
 ### 2026-10-19 00:05 · Aeropuerto: inducciones sin traslapes y simulación en el sitio publicado
 - **Fecha/hora (UTC):** 2026-10-19 00:05–00:40

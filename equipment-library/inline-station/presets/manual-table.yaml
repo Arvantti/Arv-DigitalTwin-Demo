@@ -1,0 +1,4 @@
+preset: manual-table
+description: Mesa manual en la banda de fajos; cada operario revisa, cuenta y etiqueta un fajo en 10 s
+params: { role: manual_table, mode: manual, task: "revisión y etiquetado", handle_s: 10, operators: 1, index_s: 1.5, queue_capacity: 4, jam_detect_s: 10, jam_clear_s: 60, nominal_inflow_upm: 4, length_m: 4, width_m: 3, unit_size_m: 0.8 }
+provenance: { handle_s: assumed, index_s: assumed, queue_capacity: assumed }
