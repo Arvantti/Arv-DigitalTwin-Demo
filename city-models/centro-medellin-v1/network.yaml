@@ -16,7 +16,7 @@ streets:
     - {id: cra57, name: Avenida del Ferrocarril, x: 0, sentido: both, lanes: 3, speed_kmh: 50, median: true}
     - {id: cra55, name: Carrera 55, x: 150, sentido: north, lanes: 2, speed_kmh: 30}
     - {id: cra53, name: Carrera 53, x: 300, sentido: south, lanes: 2, speed_kmh: 30}
-    - {id: cra51, name: Carrera 51 (Bolívar, bajo el viaducto del metro), x: 450, sentido: both, lanes: 2, speed_kmh: 40, median: true}
+    - {id: cra51, name: "Carrera 51 (Bolívar, bajo el viaducto del metro)", x: 450, sentido: both, lanes: 2, speed_kmh: 40, median: true}
     - {id: cra50, name: Carrera 50, x: 600, sentido: north, lanes: 2, speed_kmh: 30}
     - {id: cra48, name: Carrera 48, x: 750, sentido: south, lanes: 2, speed_kmh: 30}
     - {id: cra46, name: Avenida Oriental, x: 900, sentido: both, lanes: 3, speed_kmh: 50, median: true}
