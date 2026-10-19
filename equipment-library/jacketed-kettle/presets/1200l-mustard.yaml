@@ -1,0 +1,4 @@
+preset: 1200l-mustard
+description: Tanque de mostaza de 1.200 L con agitador de alta cizalla, en frío (batch de 1.000 kg), modelado con la marmita sin vapor
+params: { volume_l: 1200, jacket_coverage: 0.7, u_w_m2k: 600, steam_bar: 3, agitator_kw: 15, agitator_max_rpm: 60, scrapers: false }
+provenance: { volume_l: user, agitator_kw: assumed, u_w_m2k: assumed }

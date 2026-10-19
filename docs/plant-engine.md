@@ -81,7 +81,7 @@ Una red de agua no se puede pasar de equipo en equipo con un paso de retraso: el
 
 ## 3. Lo que ya está conectado
 
-`sauce-plant-v1`: dos líneas calientes con la receta `rcp-tomato-sauce`: la de 1.000 ml (marmitas 1 y 2) y la de 250 ml (marmita 3 con su propio pasteurizador, pulmón, túnel y control de peso; supuesto D45). Una salida no se reparte entre dos destinos, por eso no comparten pasteurizador. La mesa 2 de 250 ml espera la línea fría.
+`sauce-plant-v1`: las tres familias de producto (D53). Dos líneas calientes con la receta `rcp-tomato-sauce`: la de 1.000 ml (marmitas 1 y 2) y la de 250 ml (marmita 3 con su propio pasteurizador, pulmón, túnel y control de peso; supuesto D45). Una línea fría de emulsiones con la receta `rcp-mayo-natural` y una línea de mostaza con `rcp-mustard`. Una salida no se reparte entre dos destinos cuando lleva caudal, por eso las líneas calientes no comparten pasteurizador; el pulmón frío sí alimenta a tres llenadoras porque su enlace al llenador solo transmite demanda y disponibilidad (el pulmón entrega la suma de lo que piden). Las pesadoras son una por formato (supuesto): cada una promedia el peso de lo que recibe, y la de mostaza es dedicada por alérgeno.
 
 ```
 caldera ─vapor 3 bar (steam-station-01)─▶ marmita 1, marmita 2, pasteurizador
@@ -89,13 +89,22 @@ marmita 1 ┐
 marmita 2 ┴─(pump-hot-01)─▶ pasteurizador ─(holding-tube-01)─▶ pulmón ─▶ sachetadora ─▶ túnel ─▶ control de peso ─▶ empaque manual (cajas de 4)
                │
                └─ desvío (holding-tube-01) ─▶ la marmita que descarga
+
+emulsificador (marmita sin vapor) ─(colloid-mill-01)─▶ pulmón frío 1 ─┬─▶ sachetadora 250 ml ─▶ pesadora 3 ─▶ mesa 2 de 250 ml
+                                                                       ├─▶ pouch 500 ml ─▶ pesadora 4 ─▶ mesa de 500 ml
+                                                                       └─▶ pouch 1.000 ml ─▶ pesadora 5 ─▶ mesa de 1.000 ml (compartida con la línea caliente)
+tanque de mostaza ─(mustard-mill-01)─▶ pulmón de mostaza ─▶ sachetadora 250 ml dedicada ─▶ pesadora 6 ─▶ mesa 1 de 250 ml (compartida con la caliente)
 ```
+
+El emulsificador y el tanque de mostaza se modelan con el tipo `jacketed-kettle` sin vapor (presets `2000l-emulsifier` y `1200l-mustard`): los batches son cargas, esperas y descarga; el rotor de 3.000 rpm y el vacío de -0,8 bar se anotan como esperas, y no hay Brix ni pH (esos cálculos son de la salsa de tomate). Los molinos (coloidal y de piedra) se atraviesan con `via`. El pulmón frío 2 queda de reserva sin simular.
 
 | Escenario | Qué muestra |
 |---|---|
 | `nominal` | Turno de 8 h con dos marmitas alternadas. La línea queda limitada por la cocción: dos batches de 2.000 kg cada 2 h dan ≈ 2.000 kg/h y la sachetadora pide 2.036 kg/h |
 | `boiler-trip` | Falla de llama de 1 h. La marmita que calienta gasta el vapor almacenado; bajo ≈ 0,6 bar el pasteurizador ya no llega a 92 °C en la retención y desvía. El producto desviado regresa a la marmita que descarga, así que esa descarga se alarga lo que dura el desvío y la otra marmita espera su turno en la bomba |
 | `tunnel-stop` | El túnel se detiene 80 min. La sachetadora se bloquea, el pulmón llega al 90 % y la marmita 2 espera para descargar |
+| `cold-nominal` | Turno de 8 h de la línea fría: un batch de 1.500 kg cada 75 min (≈ 68 min de ciclo) y las tres llenadoras corren ≈ 26 % del turno, porque piden 4.325 kg/h a tope y el emulsificador entrega ≈ 1.125 kg/h; da ≈ 9 t por turno contra las 9,9 t/día del reparto del 45 % |
+| `mustard-nominal` | Turno de 8 h de la mostaza: un batch de 1.000 kg cada 150 min; el molino de 1.000 kg/h limita la descarga a 60 min por batch; ≈ 3 t por turno contra las 3,3 t/día del reparto del 15 % |
 
 `plastic-injection-plant-v1`: la nave de inyección. Las 29 inyectoras se simulan con los parámetros del `plant.yaml` (tonelaje, cavidades, peso de pieza, ciclo, robot) sobre el preset de su tonelaje, y la banda principal de 88 m recibe las piezas de la inyectora 3 (`imm-03.parts_out → conveyor-main-01.items_in`) y las entrega a la estación de empaque 1 (`conveyor-main-01.items_out → pack-station-01.items_in`). Las demás inyectoras trabajan solas. También se simulan los 4 secadores de resina (`desiccant-dryer`), los 2 chillers (`chiller`, el segundo de respaldo y apagado), el molino de reciclaje (`granulator`) y las otras 3 estaciones de empaque (`packing-station`, sin banda: no tienen llegadas). Desde la cascada de materiales y servicios, las inyectoras reciben su resina seca, su agua de moldes y entregan su scrap al molino:
 
