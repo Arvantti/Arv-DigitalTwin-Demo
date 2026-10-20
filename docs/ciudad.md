@@ -28,6 +28,7 @@ Decisiones del autor (D65):
 | `tools/city/sumo_city.py` | Convierte red, semáforos y demanda a SUMO, corre el día y calcula los indicadores |
 | `tools/city/tests/test_sumo_city.py` | Pruebas de la conversión y una corrida corta (necesitan `uv sync --group city`) |
 | `city-models/centro-medellin-v1/resultados/linea-base.json` | Indicadores de la línea base (semilla 1); `build/` guarda los archivos de SUMO y no se versiona |
+| `apps/gallery/ciudad.html` | Página del portal (tarjeta «Gemelo de ciudad»): indicadores, plano, corredores, atascos y curva de 24 h. Lee copias del plano y de la línea base en `apps/gallery/public/data/`; si se regeneran, hay que copiarlas otra vez (una prueba lo revisa) |
 
 ```bash
 uv run python tools/city/network.py city-models/centro-medellin-v1   # valida, resume y escribe layout.svg

@@ -1,0 +1,161 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 896" font-family="sans-serif">
+<defs><marker id="a" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="4" markerHeight="4" orient="auto"><path d="M0 0L10 5L0 10z" fill="#fff"/></marker></defs>
+<rect width="1000" height="896" fill="#eef0ea"/>
+<text x="60" y="28" font-size="16" font-weight="600" fill="#222">Centro de Medellín, zona B: 35 cruces, 20 con semáforo (trazado aproximado)</text>
+<rect x="154.0" y="616.0" width="92.0" height="116.0" rx="3" fill="#d9d4c7"/>
+<rect x="154.0" y="472.0" width="92.0" height="116.0" rx="3" fill="#d9d4c7"/>
+<rect x="154.0" y="328.0" width="92.0" height="116.0" rx="3" fill="#d9d4c7"/>
+<rect x="154.0" y="184.0" width="92.0" height="116.0" rx="3" fill="#d9d4c7"/>
+<rect x="274.0" y="616.0" width="92.0" height="116.0" rx="3" fill="#d9d4c7"/>
+<rect x="274.0" y="472.0" width="92.0" height="116.0" rx="3" fill="#d9d4c7"/>
+<rect x="274.0" y="328.0" width="92.0" height="116.0" rx="3" fill="#d9d4c7"/>
+<rect x="274.0" y="184.0" width="92.0" height="116.0" rx="3" fill="#d9d4c7"/>
+<rect x="394.0" y="616.0" width="92.0" height="116.0" rx="3" fill="#d9d4c7"/>
+<rect x="394.0" y="472.0" width="92.0" height="116.0" rx="3" fill="#d9d4c7"/>
+<rect x="394.0" y="328.0" width="92.0" height="116.0" rx="3" fill="#d9d4c7"/>
+<rect x="394.0" y="184.0" width="92.0" height="116.0" rx="3" fill="#d9d4c7"/>
+<rect x="514.0" y="616.0" width="92.0" height="116.0" rx="3" fill="#d9d4c7"/>
+<rect x="514.0" y="472.0" width="92.0" height="116.0" rx="3" fill="#d9d4c7"/>
+<rect x="514.0" y="328.0" width="92.0" height="116.0" rx="3" fill="#d9d4c7"/>
+<rect x="514.0" y="184.0" width="92.0" height="116.0" rx="3" fill="#d9d4c7"/>
+<rect x="634.0" y="616.0" width="92.0" height="116.0" rx="3" fill="#d9d4c7"/>
+<rect x="634.0" y="472.0" width="92.0" height="116.0" rx="3" fill="#d9d4c7"/>
+<rect x="634.0" y="328.0" width="92.0" height="116.0" rx="3" fill="#d9d4c7"/>
+<rect x="634.0" y="184.0" width="92.0" height="116.0" rx="3" fill="#d9d4c7"/>
+<rect x="754.0" y="616.0" width="92.0" height="116.0" rx="3" fill="#d9d4c7"/>
+<rect x="754.0" y="472.0" width="92.0" height="116.0" rx="3" fill="#d9d4c7"/>
+<rect x="754.0" y="328.0" width="92.0" height="116.0" rx="3" fill="#d9d4c7"/>
+<rect x="754.0" y="184.0" width="92.0" height="116.0" rx="3" fill="#d9d4c7"/>
+<line x1="140.0" x2="140.0" y1="90.0" y2="826.0" stroke="#6b6e73" stroke-width="15.8"/>
+<line x1="140.0" x2="140.0" y1="90.0" y2="826.0" stroke="#9bb98a" stroke-width="1.5"/>
+<line x1="260.0" x2="260.0" y1="90.0" y2="826.0" stroke="#6b6e73" stroke-width="5.3"/>
+<line x1="380.0" x2="380.0" y1="90.0" y2="826.0" stroke="#6b6e73" stroke-width="5.3"/>
+<line x1="500.0" x2="500.0" y1="90.0" y2="826.0" stroke="#6b6e73" stroke-width="10.6"/>
+<line x1="500.0" x2="500.0" y1="90.0" y2="826.0" stroke="#9bb98a" stroke-width="1.5"/>
+<line x1="620.0" x2="620.0" y1="90.0" y2="826.0" stroke="#6b6e73" stroke-width="5.3"/>
+<line x1="740.0" x2="740.0" y1="90.0" y2="826.0" stroke="#6b6e73" stroke-width="5.3"/>
+<line x1="860.0" x2="860.0" y1="90.0" y2="826.0" stroke="#6b6e73" stroke-width="15.8"/>
+<line x1="860.0" x2="860.0" y1="90.0" y2="826.0" stroke="#9bb98a" stroke-width="1.5"/>
+<line x1="60.0" x2="940.0" y1="746.0" y2="746.0" stroke="#6b6e73" stroke-width="15.8"/>
+<line x1="60.0" x2="940.0" y1="746.0" y2="746.0" stroke="#9bb98a" stroke-width="1.5"/>
+<line x1="60.0" x2="940.0" y1="602.0" y2="602.0" stroke="#6b6e73" stroke-width="5.3"/>
+<line x1="60.0" x2="940.0" y1="458.0" y2="458.0" stroke="#6b6e73" stroke-width="5.3"/>
+<line x1="60.0" x2="940.0" y1="314.0" y2="314.0" stroke="#6b6e73" stroke-width="10.6"/>
+<line x1="60.0" x2="940.0" y1="170.0" y2="170.0" stroke="#6b6e73" stroke-width="10.6"/>
+<path d="M260.0 792.0 L260.0 780.0" stroke="#fff" stroke-width="1.6" marker-end="url(#a)"/>
+<path d="M260.0 680.0 L260.0 668.0" stroke="#fff" stroke-width="1.6" marker-end="url(#a)"/>
+<path d="M260.0 536.0 L260.0 524.0" stroke="#fff" stroke-width="1.6" marker-end="url(#a)"/>
+<path d="M260.0 392.0 L260.0 380.0" stroke="#fff" stroke-width="1.6" marker-end="url(#a)"/>
+<path d="M260.0 248.0 L260.0 236.0" stroke="#fff" stroke-width="1.6" marker-end="url(#a)"/>
+<path d="M260.0 136.0 L260.0 124.0" stroke="#fff" stroke-width="1.6" marker-end="url(#a)"/>
+<path d="M380.0 780.0 L380.0 792.0" stroke="#fff" stroke-width="1.6" marker-end="url(#a)"/>
+<path d="M380.0 668.0 L380.0 680.0" stroke="#fff" stroke-width="1.6" marker-end="url(#a)"/>
+<path d="M380.0 524.0 L380.0 536.0" stroke="#fff" stroke-width="1.6" marker-end="url(#a)"/>
+<path d="M380.0 380.0 L380.0 392.0" stroke="#fff" stroke-width="1.6" marker-end="url(#a)"/>
+<path d="M380.0 236.0 L380.0 248.0" stroke="#fff" stroke-width="1.6" marker-end="url(#a)"/>
+<path d="M380.0 124.0 L380.0 136.0" stroke="#fff" stroke-width="1.6" marker-end="url(#a)"/>
+<path d="M620.0 792.0 L620.0 780.0" stroke="#fff" stroke-width="1.6" marker-end="url(#a)"/>
+<path d="M620.0 680.0 L620.0 668.0" stroke="#fff" stroke-width="1.6" marker-end="url(#a)"/>
+<path d="M620.0 536.0 L620.0 524.0" stroke="#fff" stroke-width="1.6" marker-end="url(#a)"/>
+<path d="M620.0 392.0 L620.0 380.0" stroke="#fff" stroke-width="1.6" marker-end="url(#a)"/>
+<path d="M620.0 248.0 L620.0 236.0" stroke="#fff" stroke-width="1.6" marker-end="url(#a)"/>
+<path d="M620.0 136.0 L620.0 124.0" stroke="#fff" stroke-width="1.6" marker-end="url(#a)"/>
+<path d="M740.0 780.0 L740.0 792.0" stroke="#fff" stroke-width="1.6" marker-end="url(#a)"/>
+<path d="M740.0 668.0 L740.0 680.0" stroke="#fff" stroke-width="1.6" marker-end="url(#a)"/>
+<path d="M740.0 524.0 L740.0 536.0" stroke="#fff" stroke-width="1.6" marker-end="url(#a)"/>
+<path d="M740.0 380.0 L740.0 392.0" stroke="#fff" stroke-width="1.6" marker-end="url(#a)"/>
+<path d="M740.0 236.0 L740.0 248.0" stroke="#fff" stroke-width="1.6" marker-end="url(#a)"/>
+<path d="M740.0 124.0 L740.0 136.0" stroke="#fff" stroke-width="1.6" marker-end="url(#a)"/>
+<path d="M94.0 602.0 L106.0 602.0" stroke="#fff" stroke-width="1.6" marker-end="url(#a)"/>
+<path d="M194.0 602.0 L206.0 602.0" stroke="#fff" stroke-width="1.6" marker-end="url(#a)"/>
+<path d="M314.0 602.0 L326.0 602.0" stroke="#fff" stroke-width="1.6" marker-end="url(#a)"/>
+<path d="M434.0 602.0 L446.0 602.0" stroke="#fff" stroke-width="1.6" marker-end="url(#a)"/>
+<path d="M554.0 602.0 L566.0 602.0" stroke="#fff" stroke-width="1.6" marker-end="url(#a)"/>
+<path d="M674.0 602.0 L686.0 602.0" stroke="#fff" stroke-width="1.6" marker-end="url(#a)"/>
+<path d="M794.0 602.0 L806.0 602.0" stroke="#fff" stroke-width="1.6" marker-end="url(#a)"/>
+<path d="M894.0 602.0 L906.0 602.0" stroke="#fff" stroke-width="1.6" marker-end="url(#a)"/>
+<path d="M106.0 458.0 L94.0 458.0" stroke="#fff" stroke-width="1.6" marker-end="url(#a)"/>
+<path d="M206.0 458.0 L194.0 458.0" stroke="#fff" stroke-width="1.6" marker-end="url(#a)"/>
+<path d="M326.0 458.0 L314.0 458.0" stroke="#fff" stroke-width="1.6" marker-end="url(#a)"/>
+<path d="M446.0 458.0 L434.0 458.0" stroke="#fff" stroke-width="1.6" marker-end="url(#a)"/>
+<path d="M566.0 458.0 L554.0 458.0" stroke="#fff" stroke-width="1.6" marker-end="url(#a)"/>
+<path d="M686.0 458.0 L674.0 458.0" stroke="#fff" stroke-width="1.6" marker-end="url(#a)"/>
+<path d="M806.0 458.0 L794.0 458.0" stroke="#fff" stroke-width="1.6" marker-end="url(#a)"/>
+<path d="M906.0 458.0 L894.0 458.0" stroke="#fff" stroke-width="1.6" marker-end="url(#a)"/>
+<circle cx="140.0" cy="746.0" r="4.5" fill="#d23c3c" stroke="#333" stroke-width="0.8"/>
+<circle cx="140.0" cy="602.0" r="4.5" fill="#d23c3c" stroke="#333" stroke-width="0.8"/>
+<circle cx="140.0" cy="458.0" r="4.5" fill="#d23c3c" stroke="#333" stroke-width="0.8"/>
+<circle cx="140.0" cy="314.0" r="4.5" fill="#d23c3c" stroke="#333" stroke-width="0.8"/>
+<circle cx="140.0" cy="170.0" r="4.5" fill="#d23c3c" stroke="#333" stroke-width="0.8"/>
+<circle cx="260.0" cy="746.0" r="4.5" fill="#d23c3c" stroke="#333" stroke-width="0.8"/>
+<circle cx="260.0" cy="602.0" r="4.5" fill="#f2f2f2" stroke="#333" stroke-width="0.8"/>
+<circle cx="260.0" cy="458.0" r="4.5" fill="#f2f2f2" stroke="#333" stroke-width="0.8"/>
+<circle cx="260.0" cy="314.0" r="4.5" fill="#d23c3c" stroke="#333" stroke-width="0.8"/>
+<circle cx="260.0" cy="170.0" r="4.5" fill="#f2f2f2" stroke="#333" stroke-width="0.8"/>
+<circle cx="380.0" cy="746.0" r="4.5" fill="#d23c3c" stroke="#333" stroke-width="0.8"/>
+<circle cx="380.0" cy="602.0" r="4.5" fill="#f2f2f2" stroke="#333" stroke-width="0.8"/>
+<circle cx="380.0" cy="458.0" r="4.5" fill="#f2f2f2" stroke="#333" stroke-width="0.8"/>
+<circle cx="380.0" cy="314.0" r="4.5" fill="#d23c3c" stroke="#333" stroke-width="0.8"/>
+<circle cx="380.0" cy="170.0" r="4.5" fill="#f2f2f2" stroke="#333" stroke-width="0.8"/>
+<circle cx="500.0" cy="746.0" r="4.5" fill="#d23c3c" stroke="#333" stroke-width="0.8"/>
+<circle cx="500.0" cy="602.0" r="4.5" fill="#f2f2f2" stroke="#333" stroke-width="0.8"/>
+<circle cx="500.0" cy="458.0" r="4.5" fill="#f2f2f2" stroke="#333" stroke-width="0.8"/>
+<circle cx="500.0" cy="314.0" r="4.5" fill="#d23c3c" stroke="#333" stroke-width="0.8"/>
+<circle cx="500.0" cy="170.0" r="4.5" fill="#f2f2f2" stroke="#333" stroke-width="0.8"/>
+<circle cx="620.0" cy="746.0" r="4.5" fill="#d23c3c" stroke="#333" stroke-width="0.8"/>
+<circle cx="620.0" cy="602.0" r="4.5" fill="#f2f2f2" stroke="#333" stroke-width="0.8"/>
+<circle cx="620.0" cy="458.0" r="4.5" fill="#f2f2f2" stroke="#333" stroke-width="0.8"/>
+<circle cx="620.0" cy="314.0" r="4.5" fill="#d23c3c" stroke="#333" stroke-width="0.8"/>
+<circle cx="620.0" cy="170.0" r="4.5" fill="#f2f2f2" stroke="#333" stroke-width="0.8"/>
+<circle cx="740.0" cy="746.0" r="4.5" fill="#d23c3c" stroke="#333" stroke-width="0.8"/>
+<circle cx="740.0" cy="602.0" r="4.5" fill="#f2f2f2" stroke="#333" stroke-width="0.8"/>
+<circle cx="740.0" cy="458.0" r="4.5" fill="#f2f2f2" stroke="#333" stroke-width="0.8"/>
+<circle cx="740.0" cy="314.0" r="4.5" fill="#d23c3c" stroke="#333" stroke-width="0.8"/>
+<circle cx="740.0" cy="170.0" r="4.5" fill="#f2f2f2" stroke="#333" stroke-width="0.8"/>
+<circle cx="860.0" cy="746.0" r="4.5" fill="#d23c3c" stroke="#333" stroke-width="0.8"/>
+<circle cx="860.0" cy="602.0" r="4.5" fill="#d23c3c" stroke="#333" stroke-width="0.8"/>
+<circle cx="860.0" cy="458.0" r="4.5" fill="#d23c3c" stroke="#333" stroke-width="0.8"/>
+<circle cx="860.0" cy="314.0" r="4.5" fill="#d23c3c" stroke="#333" stroke-width="0.8"/>
+<circle cx="860.0" cy="170.0" r="4.5" fill="#d23c3c" stroke="#333" stroke-width="0.8"/>
+<text x="508.0" y="450.0" font-size="10" fill="#5a3e8c">comercio</text>
+<text x="628.0" y="306.0" font-size="10" fill="#5a3e8c">oficinas</text>
+<text x="388.0" y="594.0" font-size="10" fill="#5a3e8c">parqueadero</text>
+<text x="748.0" y="162.0" font-size="10" fill="#5a3e8c">hospital</text>
+<rect x="931.0" y="739.0" width="18" height="14" rx="3" fill="#1f6fd1"/><text x="940.0" y="749.5" font-size="8" text-anchor="middle" fill="#fff">E/S</text>
+<rect x="51.0" y="739.0" width="18" height="14" rx="3" fill="#1f6fd1"/><text x="60.0" y="749.5" font-size="8" text-anchor="middle" fill="#fff">E/S</text>
+<rect x="931.0" y="595.0" width="18" height="14" rx="3" fill="#7a7a7a"/><text x="940.0" y="605.5" font-size="8" text-anchor="middle" fill="#fff">S</text>
+<rect x="51.0" y="595.0" width="18" height="14" rx="3" fill="#1f6fd1"/><text x="60.0" y="605.5" font-size="8" text-anchor="middle" fill="#fff">E</text>
+<rect x="931.0" y="451.0" width="18" height="14" rx="3" fill="#1f6fd1"/><text x="940.0" y="461.5" font-size="8" text-anchor="middle" fill="#fff">E</text>
+<rect x="51.0" y="451.0" width="18" height="14" rx="3" fill="#7a7a7a"/><text x="60.0" y="461.5" font-size="8" text-anchor="middle" fill="#fff">S</text>
+<rect x="931.0" y="307.0" width="18" height="14" rx="3" fill="#1f6fd1"/><text x="940.0" y="317.5" font-size="8" text-anchor="middle" fill="#fff">E/S</text>
+<rect x="51.0" y="307.0" width="18" height="14" rx="3" fill="#1f6fd1"/><text x="60.0" y="317.5" font-size="8" text-anchor="middle" fill="#fff">E/S</text>
+<rect x="931.0" y="163.0" width="18" height="14" rx="3" fill="#1f6fd1"/><text x="940.0" y="173.5" font-size="8" text-anchor="middle" fill="#fff">E/S</text>
+<rect x="51.0" y="163.0" width="18" height="14" rx="3" fill="#1f6fd1"/><text x="60.0" y="173.5" font-size="8" text-anchor="middle" fill="#fff">E/S</text>
+<rect x="851.0" y="83.0" width="18" height="14" rx="3" fill="#1f6fd1"/><text x="860.0" y="93.5" font-size="8" text-anchor="middle" fill="#fff">E/S</text>
+<rect x="851.0" y="819.0" width="18" height="14" rx="3" fill="#1f6fd1"/><text x="860.0" y="829.5" font-size="8" text-anchor="middle" fill="#fff">E/S</text>
+<rect x="731.0" y="83.0" width="18" height="14" rx="3" fill="#1f6fd1"/><text x="740.0" y="93.5" font-size="8" text-anchor="middle" fill="#fff">E</text>
+<rect x="731.0" y="819.0" width="18" height="14" rx="3" fill="#7a7a7a"/><text x="740.0" y="829.5" font-size="8" text-anchor="middle" fill="#fff">S</text>
+<rect x="611.0" y="83.0" width="18" height="14" rx="3" fill="#7a7a7a"/><text x="620.0" y="93.5" font-size="8" text-anchor="middle" fill="#fff">S</text>
+<rect x="611.0" y="819.0" width="18" height="14" rx="3" fill="#1f6fd1"/><text x="620.0" y="829.5" font-size="8" text-anchor="middle" fill="#fff">E</text>
+<rect x="491.0" y="83.0" width="18" height="14" rx="3" fill="#1f6fd1"/><text x="500.0" y="93.5" font-size="8" text-anchor="middle" fill="#fff">E/S</text>
+<rect x="491.0" y="819.0" width="18" height="14" rx="3" fill="#1f6fd1"/><text x="500.0" y="829.5" font-size="8" text-anchor="middle" fill="#fff">E/S</text>
+<rect x="371.0" y="83.0" width="18" height="14" rx="3" fill="#1f6fd1"/><text x="380.0" y="93.5" font-size="8" text-anchor="middle" fill="#fff">E</text>
+<rect x="371.0" y="819.0" width="18" height="14" rx="3" fill="#7a7a7a"/><text x="380.0" y="829.5" font-size="8" text-anchor="middle" fill="#fff">S</text>
+<rect x="251.0" y="83.0" width="18" height="14" rx="3" fill="#7a7a7a"/><text x="260.0" y="93.5" font-size="8" text-anchor="middle" fill="#fff">S</text>
+<rect x="251.0" y="819.0" width="18" height="14" rx="3" fill="#1f6fd1"/><text x="260.0" y="829.5" font-size="8" text-anchor="middle" fill="#fff">E</text>
+<rect x="131.0" y="83.0" width="18" height="14" rx="3" fill="#1f6fd1"/><text x="140.0" y="93.5" font-size="8" text-anchor="middle" fill="#fff">E/S</text>
+<rect x="131.0" y="819.0" width="18" height="14" rx="3" fill="#1f6fd1"/><text x="140.0" y="829.5" font-size="8" text-anchor="middle" fill="#fff">E/S</text>
+<text x="140.0" y="76.0" font-size="10" text-anchor="middle" fill="#222">Avenida del Ferrocarril</text>
+<text x="260.0" y="76.0" font-size="10" text-anchor="middle" fill="#222">Carrera 55</text>
+<text x="380.0" y="76.0" font-size="10" text-anchor="middle" fill="#222">Carrera 53</text>
+<text x="500.0" y="76.0" font-size="10" text-anchor="middle" fill="#222">Carrera 51</text>
+<text x="620.0" y="76.0" font-size="10" text-anchor="middle" fill="#222">Carrera 50</text>
+<text x="740.0" y="76.0" font-size="10" text-anchor="middle" fill="#222">Carrera 48</text>
+<text x="860.0" y="76.0" font-size="10" text-anchor="middle" fill="#222">Avenida Oriental</text>
+<text x="74.0" y="738.0" font-size="10" fill="#222">San Juan</text>
+<text x="74.0" y="594.0" font-size="10" fill="#222">Calle 46</text>
+<text x="74.0" y="450.0" font-size="10" fill="#222">Calle 48</text>
+<text x="74.0" y="306.0" font-size="10" fill="#222">Calle 50</text>
+<text x="74.0" y="162.0" font-size="10" fill="#222">Juan del Corral</text>
+<text x="60" y="886" font-size="10" fill="#444">Rojo = cruce con semáforo · blanco = pare o prioridad · E entrada, S salida, E/S ambas · flechas = sentido único · línea verde = separador</text>
+</svg>

@@ -12,6 +12,8 @@ interface PlantCard {
   extra?: { href: string; label: string };
   /** Sin tipos de librería simulados todavía: no se ofrece la librería filtrada. */
   noLibrary?: boolean;
+  /** Página propia en lugar de la escena 3D (gemelos sin vista 3D todavía). */
+  main?: { href: string; label: string };
 }
 
 const plants: PlantCard[] = [
@@ -56,19 +58,30 @@ const plants: PlantCard[] = [
     title: "Fábrica de cajas",
     text: "Corrugadora, transporte de pilas con carro de transferencia y pulmón, conversión, paletizado y bodega de cartón corrugado.",
   },
+  {
+    id: "centro-medellin-v1",
+    image: "/portal/ciudad.jpg",
+    alt: "Plano de la red vial del centro de Medellín con carreras, calles y semáforos",
+    family: "MOVILIDAD URBANA",
+    title: "Gemelo de ciudad",
+    text: "Centro de Medellín con 35 cruces y 20 semáforos: un día completo de tráfico en SUMO, con motos entre carriles, afán según la hora y ruta crítica.",
+    main: { href: "/ciudad.html", label: "VER EL PLANO Y LOS INDICADORES" },
+    noLibrary: true,
+  },
 ];
 
 const root = document.getElementById("cards") as HTMLElement;
 for (const p of plants) {
+  const main = p.main ?? { href: `/plant.html?plant=${p.id}`, label: "VER LA PLANTA EN 3D" };
   const card = document.createElement("article");
   card.className = "portal-card glass";
   card.innerHTML = `
-    <a class="portal-media" href="/plant.html?plant=${p.id}" tabindex="-1"><img src="${p.image}" alt="${p.alt}" loading="lazy" width="960" height="540" /></a>
+    <a class="portal-media" href="${main.href}" tabindex="-1"><img src="${p.image}" alt="${p.alt}" loading="lazy" width="960" height="540" /></a>
     <div class="label">${p.family}</div>
     <h2>${p.title}</h2>
     <p>${p.text}</p>
     <div class="portal-actions">
-      <a class="btn primary" href="/plant.html?plant=${p.id}">VER LA PLANTA EN 3D</a>
+      <a class="btn primary" href="${main.href}">${main.label}</a>
       ${p.noLibrary ? "" : `<a class="btn" href="/equipos.html?plant=${p.id}">EQUIPOS</a>`}
       ${p.extra ? `<a class="btn" href="${p.extra.href}">${p.extra.label}</a>` : ""}
     </div>`;

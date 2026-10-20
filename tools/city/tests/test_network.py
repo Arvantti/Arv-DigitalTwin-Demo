@@ -77,3 +77,10 @@ def test_calle_nueva_se_agrega_como_tramo_adicional():
     g = network.build_graph(new)
     lk = next(lk for lk in g.links if lk.street == "diagonal")
     assert round(lk.length_m) == 234  # hipotenusa de 150 m x 180 m
+
+
+def test_copias_de_la_galeria_iguales_al_modelo():
+    # /ciudad.html lee copias del plano y de la línea base: si se regeneran, hay que copiarlas otra vez
+    public = ROOT / "apps" / "gallery" / "public" / "data"
+    assert (public / "ciudad-plano.svg").read_bytes() == (MODEL / "layout.svg").read_bytes()
+    assert (public / "ciudad-linea-base.json").read_bytes() == (MODEL / "resultados" / "linea-base.json").read_bytes()
