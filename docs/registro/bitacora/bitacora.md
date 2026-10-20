@@ -10,6 +10,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
+| 2026-10-20 | Ciudad en la página principal | El gemelo de ciudad entra al portal con su tarjeta (plano de la red) y una página propia `/ciudad.html`: indicadores de la línea base, plano, índice por corredor con semáforo, tramos con más minutos de atasco y curva de 24 h. Pedido de Andy | ciudad |
 | 2026-10-20 | Gemelo de ciudad, fase 2 | El día completo del centro corre en SUMO: red y semáforos por franja convertidos, 7 tipos de vehículo con variante de afán y motos entre carriles, 60.000 viajes con semilla fija, e indicadores (ruta crítica, índice por corredor, atascos, demora, bloqueos). Línea base: 60.000 viajes completados, 27,6 km/h, 63 s de demora media; no colapsa con los supuestos actuales. D66 | ciudad |
 | 2026-10-19 | Personas con modelo 3D real | Las personas de todas las plantas pasan a ser modelos 3D reales (piel, ropa, esqueleto) con animaciones de reposo, caminar y trabajar: operario y operaria con casco y chaleco, y hombre y mujer de ropa común para pasajeros y agentes. Biblioteca con licencia MIT; cada modelo pesa ≈ 1,2 MB, se descarga una vez y lo comparten todas las personas de la escena; la figura orgánica queda de respaldo. D67 | 4 |
 | 2026-10-19 | Gemelo de ciudad, fase 1 | Gemelo nuevo de ciudad: plan para debatir (zona, datos públicos, enjambre aparte, Fractal, monitoreo) y fase 1: red aproximada del centro de Medellín con 35 cruces y 20 semáforos con planes por franja, demanda hipotética de 60.000 entradas al día con 7 tipos de vehículo, validador, plano y pruebas (`city-models/centro-medellin-v1/`, `tools/city/`). D65 | ciudad |
@@ -83,6 +84,15 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 | 2026-10-16 | #1 | Layouts de las plantas | 1 |
 
 ## Entradas
+
+### 2026-10-20 12:10 · Gemelo de ciudad en la página principal
+- **Fecha/hora (UTC):** 2026-10-20 11:45 a 12:10
+- **Fase del plan:** [[plan-del-proyecto]] gemelo de ciudad (portal)
+- **Solicitado por:** Andy (11:45, en el chat del proyecto): «ya agregaste a la home el gemelo de ciudad?».
+- **Qué se hizo:** tarjeta «Gemelo de ciudad» en el portal (`apps/gallery/src/portal.ts`, imagen `public/portal/ciudad.jpg` con el plano) que abre `/ciudad.html`, porque la ciudad aún no tiene escena 3D. La página (`ciudad.html`, `src/ciudad.ts`, `src/ciudad.css`) muestra los indicadores de la línea base, el plano, el índice por corredor con su semáforo, los tramos con más minutos de atasco y la curva de 24 h. Lee copias de `layout.svg` y `resultados/linea-base.json` en `public/data/`; una prueba revisa que sigan iguales al modelo.
+- **Verificación:** `pnpm typecheck` y `pnpm build` de la galería; capturas en escritorio (tema claro) y en 390 px (tema oscuro) sin desborde horizontal; clic en la tarjeta abre la página; `uv run pytest -q tools/city/tests/test_network.py` (9 pruebas); `uv run ruff check tools/city`. Evidencia: `evidencia/ciudad-pagina-linea-base.png`.
+- **Decisiones:** ninguna nueva.
+- **Conversación:** [[hilo-gemelo-de-ciudad]]
 
 ### 2026-10-20 00:30 · Gemelo de ciudad: día completo en SUMO
 - **Fecha/hora (UTC):** 2026-10-19 23:22 a 2026-10-20 00:30

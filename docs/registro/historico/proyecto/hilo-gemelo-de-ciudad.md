@@ -2,7 +2,7 @@
 tipo: historico-ia
 fuente: hilo «Gemelo digital de ciudad» (Claude Projects)
 desde: 2026-10-19 11:59
-hasta: 2026-10-20 00:30
+hasta: 2026-10-20 12:10
 tags: [registro, historico-ia, ciudad]
 ---
 # Hilo: gemelo digital de ciudad
@@ -170,3 +170,39 @@ Eligió «SUMO» en la tarjeta «¿Qué motor de tráfico usamos para la fase 2 
 Listo, vamos con SUMO. Arranco la fase 2: convertir la red y la demanda a SUMO y correr el día completo con los semáforos por franja.
 
 *(Herramientas: instalación de eclipse-sumo como grupo opcional de uv, `tools/city/sumo_city.py` (red, semáforos por franja con WAUT, tipos de vehículo con afán, viajes con semilla, corrida e indicadores), pruebas, CI, `docs/ciudad.md`, este registro y el PR.)*
+
+### 🤖 Claude · 23:48 UTC
+
+El PR de la fase 2 ya está listo para que lo revises: el CI pasó completo, incluidas las pruebas que corren SUMO, y no tiene conflictos con main. [PR #67](https://github.com/Arvantti/Arv-sfot-demo-Fabtimus/pull/67)
+
+Sigue pendiente tu respuesta: ¿el siguiente paso es calibrar la congestión?
+
+### 👤 Andy · 2026-10-20 00:32 UTC
+
+Sí, pero para correr Python necesitamos armar un ambiente UV. Eso. Entonces, y no sé si sea el interés en este momento empezar a hacer ese backend de Python. Los backends los vamos a trabajar después en otros hilos. Entonces se reporta al coordinador cómo hemos estructurado esto para que después él sepa cómo coordinar los hilos de backend.
+
+### 🤖 Claude · 2026-10-20 00:33 UTC
+
+Entendido: dejo la calibración en pausa y le paso al coordinador cómo quedó armado el motor en Python para los hilos de backend.
+
+### 🤖 Claude · 2026-10-20 00:35 UTC
+
+Listo, ya le pasé al coordinador cómo quedó armado esto:
+- **Ambiente:** el ambiente uv ya existe. SUMO se instala con `uv sync --group city` y el CI ya lo usa.
+- **Código y datos:** los datos de la ciudad están en `city-models/` y el código en `tools/city/`.
+- **Qué recibe y qué devuelve:** entra el modelo con un escenario y una semilla, y sale un JSON con los indicadores.
+- **Lo que les toca a los hilos de backend:** convertirlo en un servicio. Iría en el servidor (VPS) de Fractal y no en Cloudflare, porque SUMO es un programa que no corre en Workers.
+
+La calibración queda en pausa hasta que me digas. [Edit: el PR #67 ya está fusionado en main.]
+
+*(Herramientas: mensaje al coordinador con la estructura del motor; memoria del proyecto actualizada. El PR #67 se fusionó a las 00:49 UTC.)*
+
+### 👤 Andy · 2026-10-20 11:45 UTC (chat del proyecto, reenviado por el coordinador)
+
+ya agregaste a la home el gemelo de ciudad?
+
+### 🤖 Claude · 2026-10-20 11:46 UTC
+
+Todavía no estaba en la página principal. Reviso cómo están las tarjetas de las otras plantas y le agrego la suya.
+
+*(Herramientas: tarjeta en `apps/gallery/src/portal.ts`, página `ciudad.html` con `src/ciudad.ts` y `src/ciudad.css`, copias del plano y la línea base en `public/data/`, prueba de copias, capturas, este registro y el PR.)*

@@ -1,0 +1,13 @@
+/* Página del gemelo de ciudad: complementa acueducto-panel.css (mismos tokens y tarjetas). */
+.plano{display:block;width:100%;height:auto}
+.sub2{font:600 15px var(--f-body)!important;margin:18px 0 0!important}
+.bar-row{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) 3.2em;gap:8px;align-items:center;font-size:13px;padding:3px 0}
+.bar-row .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink2)}
+.bar-row .track{display:block;height:8px;background:var(--grid)}
+.bar-row .track span{display:block;height:100%}
+.bar-row b{font-variant-numeric:tabular-nums;text-align:right;font-weight:600}
+.jam{list-style:none;margin:6px 0 0;padding:0;font-size:13px}
+.jam li{display:flex;justify-content:space-between;gap:12px;padding:4px 0;border-bottom:1px solid var(--line)}
+.jam b{font-variant-numeric:tabular-nums;white-space:nowrap}
+.chart .ax{font:11px var(--f-mono);fill:var(--ink3)}
+code{font-family:var(--f-mono);font-size:12px}
