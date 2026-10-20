@@ -2,12 +2,12 @@
 tipo: historico-ia
 fuente: hilo «Gemelo digital de ciudad» (Claude Projects)
 desde: 2026-10-19 11:59
-hasta: 2026-10-19 23:00
+hasta: 2026-10-20 00:30
 tags: [registro, historico-ia, ciudad]
 ---
 # Hilo: gemelo digital de ciudad
 
-Parte de [[historico-proyecto]] · Índice: [[00-indice]] · Bitácora: [[bitacora]] · Decisión: [[decisiones]] D65. Hora en UTC. Credenciales: ninguna.
+Parte de [[historico-proyecto]] · Índice: [[00-indice]] · Bitácora: [[bitacora]] · Decisiones: [[decisiones]] D65 y D66. Hora en UTC. Credenciales: ninguna.
 
 Las listas de progreso del hilo y el aviso automático de límite de uso (18:03:50) no se reproducen.
 
@@ -108,3 +108,65 @@ Haz b con la mitad de intersecciónes
 Entendido: zona B del centro con unas 35 intersecciones. Actualizo el plan y arranco la fase 1, la red de calles.
 
 *(Herramientas: red de 35 cruces y demanda en `city-models/centro-medellin-v1/`, validador y plano en `tools/city/network.py`, pruebas, `docs/ciudad.md`, este registro y el PR.)*
+
+### 🤖 Claude · 22:59 UTC
+
+Abrí el PR en borrador con la fase 1 del gemelo de ciudad. Lo vigilo y te aviso cuando el CI pase.
+
+- **Red:** el centro aproximado e inventado, como dijiste, con 7 carreras por 5 calles: 35 cruces y 20 semáforos (las tres avenidas y Colombia). Cada semáforo tiene su plan de tiempos por franja.
+- **Demanda:** el escenario hipotético escalado a la mitad, con 60.000 entradas al día. La zona queda sobre la capacidad a las 7, 17 y 18 h.
+- **Plano:** generado y validado. El plan del documento ya tiene la decisión.
+
+Para la fase 2, el motor de tráfico, necesito que me digas qué es el motor "JEV" y si prefieres SUMO o un motor propio.
+
+PR #65.
+
+### 🤖 Claude · 23:01 UTC
+
+El PR #65 está listo para que lo revises y lo fusiones: el CI pasó y las 318 pruebas también. ¿Lo revisas?
+
+Para arrancar la fase 2, el motor de tráfico, sigo necesitando que me digas qué es el motor "JEV" y si prefieres SUMO o un motor propio.
+
+*(El autor fusionó el PR #65 a las 23:20 UTC.)*
+
+### 👤 Andy · 23:22:02 UTC
+
+Jev es este 
+Jev es un modelo de inteligencia artificial de TypeSafe AI, lanzado el 15 de septiembre de 2026 por el exinvestigador de OpenAI Diogo Almeida, diseñado específicamente para la toma de decisiones estructuradas en lugar de la generación de texto.  Clasificado como un modelo "System One", Jev opera de forma no autoregresiva, calculando probabilidades de todas las opciones posibles en un solo paso, lo que lo hace hasta 200 veces más rápido (70-500 ms) y 400 veces más económico que los grandes modelos de lenguaje (LLMs) tradicionales. 
+
+El modelo ofrece tres tipos de respuestas precisas: Choice (selección de una opción específica), Score (evaluación en una escala continua) y Noul (probabilidad de veracidad de una afirmación binaria), todas acompañadas de confianza calibrada.  Con un costo de $0.042 por millón de tokens de entrada y salida gratuita, se integra rápidamente en flujos de trabajo de automatización, agentes de IA y sistemas empresariales para tareas como enrutamiento de tickets, validación de datos y trading algorítmico, sin riesgo de alucinaciones.
+
+### 🤖 Claude · 23:22 UTC
+
+Gracias, con eso ya sé dónde va JEV. No lo pude verificar porque salió después de lo que conozco, así que trabajo con tu descripción.
+
+JEV sirve para que cada vehículo **decida**, no para que **maneje** cada medio segundo. Tarda de 70 a 500 ms, y con 2.000 a 3.000 vehículos a la vez no alcanza para la física.
+
+- **Decisiones con JEV:** en cada cruce, qué salida tomar (respuesta tipo selección), cuánto afán tiene según la hora y el retraso (respuesta tipo puntaje), y si cambia de ruta por un atasco.
+- **Conducción sin JEV:** acelerar, frenar, mantener distancia y que las motos filtren entre carriles lo hace un modelo clásico y rápido dentro del motor.
+- **Volumen y costo (mi estimación):** con 60.000 viajes y unas 6 decisiones por viaje salen unas 360.000 consultas por día simulado. A unas 300 palabras por consulta, son alrededor de 4,5 USD por día simulado, con tu precio de 0,042 USD por millón.
+- **Para Fractal:** guardo cada decisión de JEV con su estado. Así un escenario se puede repetir igual y comparar contra la línea base sin volver a pagar.
+
+Lo único que falta es elegir el motor de tráfico; te dejo la pregunta en una tarjeta.
+
+*(Tarjeta de decisión: «¿Qué motor de tráfico usamos para la fase 2 del gemelo de ciudad?», opciones SUMO (recomendada) y Motor propio.)*
+
+### 👤 Andy · 23:23:00 UTC
+
+Sumones opensource ?
+
+### 🤖 Claude · 23:23 UTC
+
+Sí, SUMO es de código abierto y gratuito. Es un proyecto de la Fundación Eclipse que nació en el centro aeroespacial alemán (DLR). Su licencia es la Eclipse Public License 2.0, que permite usarlo en un producto comercial sin pagar; solo exige publicar los cambios que hagas al propio SUMO, no tu código.
+
+Además, se instala con pip y ese paquete sí está accesible desde este entorno, así que no hay bloqueo para usarlo. Si te sirve, toca SUMO en la tarjeta y arranco la fase 2.
+
+### 👤 Andy · 23:23:41 UTC (tarjeta de decisión)
+
+Eligió «SUMO» en la tarjeta «¿Qué motor de tráfico usamos para la fase 2 del gemelo de ciudad?».
+
+### 🤖 Claude · 23:24 UTC
+
+Listo, vamos con SUMO. Arranco la fase 2: convertir la red y la demanda a SUMO y correr el día completo con los semáforos por franja.
+
+*(Herramientas: instalación de eclipse-sumo como grupo opcional de uv, `tools/city/sumo_city.py` (red, semáforos por franja con WAUT, tipos de vehículo con afán, viajes con semilla, corrida e indicadores), pruebas, CI, `docs/ciudad.md`, este registro y el PR.)*
