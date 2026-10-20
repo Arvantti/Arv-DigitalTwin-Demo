@@ -1,0 +1,297 @@
+{
+ "modelo": "centro-medellin-v1",
+ "supuesto": true,
+ "viajes_cargados": 60000,
+ "viajes_completados": 60000,
+ "bloqueos_teletransporte": 3,
+ "velocidad_media_kmh": 27.6,
+ "demora_media_s": 63.0,
+ "horas_vehiculo_demora": 1050.2,
+ "hora_mas_lenta": 7,
+ "espera_media_para_entrar_s": 0.2,
+ "ruta_critica": {
+  "origen": "cra55-s",
+  "destino": "cl50-w",
+  "viajes": 104,
+  "viaje_medio_s": 171.8,
+  "indice": 2.65,
+  "nivel": "amarillo"
+ },
+ "corredores": [
+  {
+   "calle": "cra46",
+   "nombre": "Avenida Oriental",
+   "indice": 1.73,
+   "nivel": "amarillo"
+  },
+  {
+   "calle": "cra57",
+   "nombre": "Avenida del Ferrocarril",
+   "indice": 1.71,
+   "nivel": "amarillo"
+  },
+  {
+   "calle": "cl44",
+   "nombre": "San Juan",
+   "indice": 1.6,
+   "nivel": "amarillo"
+  },
+  {
+   "calle": "cra48",
+   "nombre": "Carrera 48",
+   "indice": 1.37,
+   "nivel": "verde"
+  },
+  {
+   "calle": "cl50",
+   "nombre": "Calle 50 (Colombia)",
+   "indice": 1.35,
+   "nivel": "verde"
+  },
+  {
+   "calle": "cra51",
+   "nombre": "Carrera 51 (Bolívar, bajo el viaducto del metro)",
+   "indice": 1.12,
+   "nivel": "verde"
+  },
+  {
+   "calle": "cra53",
+   "nombre": "Carrera 53",
+   "indice": 1.06,
+   "nivel": "verde"
+  },
+  {
+   "calle": "cl54",
+   "nombre": "Juan del Corral",
+   "indice": 1.05,
+   "nivel": "verde"
+  },
+  {
+   "calle": "cra50",
+   "nombre": "Carrera 50",
+   "indice": 0.95,
+   "nivel": "verde"
+  },
+  {
+   "calle": "cra55",
+   "nombre": "Carrera 55",
+   "indice": 0.94,
+   "nivel": "verde"
+  },
+  {
+   "calle": "cl46",
+   "nombre": "Calle 46",
+   "indice": 0.88,
+   "nivel": "verde"
+  },
+  {
+   "calle": "cl48",
+   "nombre": "Calle 48 (Pichincha)",
+   "indice": 0.86,
+   "nivel": "verde"
+  }
+ ],
+ "tramos_mas_atascados": [
+  {
+   "tramo": "cra55-cl48_cra55-cl50",
+   "minutos": 40
+  },
+  {
+   "tramo": "cra53-cl54_cra53-cl50",
+   "minutos": 20
+  },
+  {
+   "tramo": "cra53-cl50_cra51-cl50",
+   "minutos": 15
+  },
+  {
+   "tramo": "cra51-cl50_cra53-cl50",
+   "minutos": 10
+  },
+  {
+   "tramo": "cra55-cl50_cra57-cl50",
+   "minutos": 10
+  }
+ ],
+ "curva_24h": [
+  {
+   "hora": 0,
+   "entradas": 360,
+   "salidas": 346,
+   "viaje_medio_s": 127.6,
+   "demora_media_s": 46.0
+  },
+  {
+   "hora": 1,
+   "entradas": 240,
+   "salidas": 249,
+   "viaje_medio_s": 123.3,
+   "demora_media_s": 45.1
+  },
+  {
+   "hora": 2,
+   "entradas": 180,
+   "salidas": 178,
+   "viaje_medio_s": 133.3,
+   "demora_media_s": 48.0
+  },
+  {
+   "hora": 3,
+   "entradas": 179,
+   "salidas": 179,
+   "viaje_medio_s": 124.3,
+   "demora_media_s": 44.7
+  },
+  {
+   "hora": 4,
+   "entradas": 361,
+   "salidas": 352,
+   "viaje_medio_s": 126.6,
+   "demora_media_s": 45.4
+  },
+  {
+   "hora": 5,
+   "entradas": 1200,
+   "salidas": 1176,
+   "viaje_medio_s": 129.1,
+   "demora_media_s": 47.5
+  },
+  {
+   "hora": 6,
+   "entradas": 3599,
+   "salidas": 3492,
+   "viaje_medio_s": 139.8,
+   "demora_media_s": 64.6
+  },
+  {
+   "hora": 7,
+   "entradas": 5100,
+   "salidas": 5020,
+   "viaje_medio_s": 146.7,
+   "demora_media_s": 71.1
+  },
+  {
+   "hora": 8,
+   "entradas": 4201,
+   "salidas": 4262,
+   "viaje_medio_s": 141.2,
+   "demora_media_s": 66.4
+  },
+  {
+   "hora": 9,
+   "entradas": 3120,
+   "salidas": 3169,
+   "viaje_medio_s": 139.6,
+   "demora_media_s": 60.4
+  },
+  {
+   "hora": 10,
+   "entradas": 3000,
+   "salidas": 3019,
+   "viaje_medio_s": 137.9,
+   "demora_media_s": 59.3
+  },
+  {
+   "hora": 11,
+   "entradas": 3180,
+   "salidas": 3139,
+   "viaje_medio_s": 140.7,
+   "demora_media_s": 61.2
+  },
+  {
+   "hora": 12,
+   "entradas": 3720,
+   "salidas": 3703,
+   "viaje_medio_s": 141.9,
+   "demora_media_s": 62.7
+  },
+  {
+   "hora": 13,
+   "entradas": 3240,
+   "salidas": 3251,
+   "viaje_medio_s": 140.9,
+   "demora_media_s": 61.2
+  },
+  {
+   "hora": 14,
+   "entradas": 3060,
+   "salidas": 3096,
+   "viaje_medio_s": 139.8,
+   "demora_media_s": 60.4
+  },
+  {
+   "hora": 15,
+   "entradas": 3180,
+   "salidas": 3157,
+   "viaje_medio_s": 139.4,
+   "demora_media_s": 60.5
+  },
+  {
+   "hora": 16,
+   "entradas": 3599,
+   "salidas": 3591,
+   "viaje_medio_s": 137.9,
+   "demora_media_s": 63.5
+  },
+  {
+   "hora": 17,
+   "entradas": 4921,
+   "salidas": 4887,
+   "viaje_medio_s": 143.6,
+   "demora_media_s": 68.9
+  },
+  {
+   "hora": 18,
+   "entradas": 4799,
+   "salidas": 4765,
+   "viaje_medio_s": 144.3,
+   "demora_media_s": 68.9
+  },
+  {
+   "hora": 19,
+   "entradas": 3601,
+   "salidas": 3657,
+   "viaje_medio_s": 142.8,
+   "demora_media_s": 62.3
+  },
+  {
+   "hora": 20,
+   "entradas": 2160,
+   "salidas": 2234,
+   "viaje_medio_s": 139.4,
+   "demora_media_s": 58.8
+  },
+  {
+   "hora": 21,
+   "entradas": 1440,
+   "salidas": 1477,
+   "viaje_medio_s": 137.1,
+   "demora_media_s": 57.0
+  },
+  {
+   "hora": 22,
+   "entradas": 960,
+   "salidas": 957,
+   "viaje_medio_s": 136.5,
+   "demora_media_s": 57.0
+  },
+  {
+   "hora": 23,
+   "entradas": 600,
+   "salidas": 618,
+   "viaje_medio_s": 136.9,
+   "demora_media_s": 55.4
+  },
+  {
+   "hora": 24,
+   "entradas": 0,
+   "salidas": 26,
+   "viaje_medio_s": 0.0,
+   "demora_media_s": 0.0
+  }
+ ],
+ "entradas_registradas": 60000,
+ "semilla": 1,
+ "desde_h": 0,
+ "hasta_h": 24
+}

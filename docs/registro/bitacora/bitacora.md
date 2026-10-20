@@ -1,7 +1,7 @@
 ---
 tipo: bitacora
 tags: [registro, bitacora]
-actualizado: 2026-10-19
+actualizado: 2026-10-20
 ---
 # Bitácora de avances
 
@@ -10,7 +10,8 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
-| 2026-10-19 | Personas con modelo 3D real | Las personas de todas las plantas pasan a ser modelos 3D reales (piel, ropa, esqueleto) con animaciones de reposo, caminar y trabajar: operario y operaria con casco y chaleco, y hombre y mujer de ropa común para pasajeros y agentes. Biblioteca con licencia MIT; cada modelo pesa ≈ 1,2 MB, se descarga una vez y lo comparten todas las personas de la escena; la figura orgánica queda de respaldo. D66 | 4 |
+| 2026-10-20 | Gemelo de ciudad, fase 2 | El día completo del centro corre en SUMO: red y semáforos por franja convertidos, 7 tipos de vehículo con variante de afán y motos entre carriles, 60.000 viajes con semilla fija, e indicadores (ruta crítica, índice por corredor, atascos, demora, bloqueos). Línea base: 60.000 viajes completados, 27,6 km/h, 63 s de demora media; no colapsa con los supuestos actuales. D66 | ciudad |
+| 2026-10-19 | Personas con modelo 3D real | Las personas de todas las plantas pasan a ser modelos 3D reales (piel, ropa, esqueleto) con animaciones de reposo, caminar y trabajar: operario y operaria con casco y chaleco, y hombre y mujer de ropa común para pasajeros y agentes. Biblioteca con licencia MIT; cada modelo pesa ≈ 1,2 MB, se descarga una vez y lo comparten todas las personas de la escena; la figura orgánica queda de respaldo. D67 | 4 |
 | 2026-10-19 | Gemelo de ciudad, fase 1 | Gemelo nuevo de ciudad: plan para debatir (zona, datos públicos, enjambre aparte, Fractal, monitoreo) y fase 1: red aproximada del centro de Medellín con 35 cruces y 20 semáforos con planes por franja, demanda hipotética de 60.000 entradas al día con 7 tipos de vehículo, validador, plano y pruebas (`city-models/centro-medellin-v1/`, `tools/city/`). D65 | ciudad |
 | 2026-10-19 | Operarios más humanos | La figura común de las personas (operarios, pasajeros y agentes de todas las plantas) pasa de cajas y cilindros a formas orgánicas: tronco con pecho y cintura, chaleco que sigue el cuerpo, brazos y piernas que se afinan y se unen sin costura en codo y rodilla, manos con dedos y pulgar, cara con mandíbula, nariz, orejas, cejas y boca, botas con puntera. Misma interfaz, así que aplica en todas las escenas. D64 | 4 |
 | 2026-10-19 | Sensores y atascos en la fábrica de cajas | Cada banda de la fábrica de cajas es una unidad independiente con fotoceldas por zona; tipo nuevo `inline-station` (cola, puesto y salida con tres fotoceldas, atasco con vigilante de tiempo y pulsador de paro) para las mesas giratorias, las amarradoras y una mesa manual por línea que parte la banda larga en dos; escenarios de atascos de la amarradora, pausa de operarios, paro manual y atascos al azar; la banda ya no pierde unidades cuando la siguiente se llena. D63 | 4 |
@@ -83,14 +84,24 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 ## Entradas
 
+### 2026-10-20 00:30 · Gemelo de ciudad: día completo en SUMO
+- **Fecha/hora (UTC):** 2026-10-19 23:22 a 2026-10-20 00:30
+- **Fase del plan:** [[plan-del-proyecto]] gemelo de ciudad, fase 2 (motor de tráfico)
+- **Solicitado por:** Andy (23:22) explica qué es JEV; (23:23) elige SUMO en la tarjeta de decisión.
+- **Qué se hizo:** `tools/city/sumo_city.py` convierte la red y los 20 semáforos (un programa por franja y un WAUT que los cambia), crea 14 tipos de vehículo (7 tipos, tranquilo y con afán; motos con subcarriles), genera los 60.000 viajes del día con semilla, corre SUMO y calcula los indicadores en `city-models/centro-medellin-v1/resultados/linea-base.json`. SUMO entra como grupo opcional de uv (`city`), que el CI instala. Se corrigió el nombre de la carrera 51 en `network.yaml` (la coma partía el texto). `docs/ciudad.md` sección 6.
+- **Verificación:** corrida del día completo (60.000 de 60.000 viajes, 3 bloqueos, unos 4 min); `uv run pytest -q tools/city/tests` (14 pruebas: red de SUMO con 35 cruces y 20 semáforos, ciclos por franja, viajes por hora, mezcla con pico y placa, semilla, corrida de 23 a 24 h sin bloqueos); `uv run ruff check .`.
+- **Decisiones:** [[decisiones]] D66
+- **Conversación:** [[hilo-gemelo-de-ciudad]]
+
 ### 2026-10-19 23:10 · Personas con modelo 3D real en todas las plantas
 - **Fecha/hora (UTC):** 2026-10-19 22:39–23:20
 - **Fase del plan:** [[plan-del-proyecto]] fase 4 (motor de planta), escenas 3D
 - **Solicitado por:** Andy (18:04, hilo de la fábrica de cajas): «Esos muñequitos de personas están muy chistosos. No hay forma de ponerlos más reales». Eligió «Modelo real» en la tarjeta de decisión (22:39).
 - **Qué se hizo:** cuatro personas de la biblioteca Microsoft Rocketbox (licencia MIT): operario con chaleco naranja, operaria con chaleco amarillo, hombre y mujer de ropa común. Convertidas de FBX a glTF con tres animaciones cada una (reposo, caminar sin desplazamiento y trabajo en mesa), texturas reducidas a 1024/512 px, malla simplificada a la mitad y compresión meshopt: ≈ 1,2 MB por modelo (4,7 MB los cuatro) en `apps/gallery/public/humans/`, con la licencia al lado. `packages/twin-3d/src/humans.ts` carga cada modelo una vez, lo clona por persona (solo el esqueleto es propio) y anima solo a quien se está dibujando; `parts.operator()` conserva su interfaz y usa la figura orgánica (`operatorFigure`) como respaldo mientras carga o sin navegador. Las capturas esperan a que lleguen los modelos.
 - **Verificación:** `pnpm -r typecheck`, `pnpm -r test` (133), compilación de la galería con los modelos; capturas [[personas-modelo-real.jpg]] y [[personas-celda-de-ensamble.jpg]].
-- **Decisiones:** [[decisiones]] D66
+- **Decisiones:** [[decisiones]] D67
 - **Conversación:** [[hilo-fabrica-de-cajas]]
+
 
 ### 2026-10-19 23:00 · Gemelo de ciudad: plan y red de la zona B
 - **Fecha/hora (UTC):** 2026-10-19 12:05–23:00

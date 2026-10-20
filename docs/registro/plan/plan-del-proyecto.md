@@ -37,7 +37,7 @@ Las plantas son inspiradas en empresas de Medellín, pero **sin usar nombres ni 
 | 9. Conectividad industrial | OPC UA y PLC en solo lectura | Pendiente | — |
 
 | Acueducto a escala | Tercera planta: diseño, solucionador hidráulico, 4 tipos de equipo, planta y motor, escena 3D | **Hecho**: diseño, solucionador hidráulico, los 4 tipos de equipo, la planta en el motor (dominio hidráulico) y la escena del edificio | PR #13, PR #14, PR #22 a #25, PR #31, PR #33, `docs/water-network-plant.md` |
-| Gemelo de ciudad | Centro de Medellín aproximado: red vial con semáforos, día completo de tráfico con vehículos autónomos (enjambre aparte), escenarios con Fractal y monitoreo | **En curso**: plan para debatir (2026-10-19) y fase 1 hecha: zona B con la mitad de cruces (35, 20 con semáforo), demanda hipotética de 60.000 entradas al día, validador y plano | `docs/ciudad.md`, [[decisiones#D65]] |
+| Gemelo de ciudad | Centro de Medellín aproximado: red vial con semáforos, día completo de tráfico con vehículos autónomos (enjambre aparte), escenarios con Fractal y monitoreo | **En curso**: plan para debatir (2026-10-19); fase 1 hecha: zona B con la mitad de cruces (35, 20 con semáforo), demanda hipotética de 60.000 entradas al día, validador y plano; fase 2 hecha: día completo en SUMO con indicadores. Sigue calibrar la congestión | `docs/ciudad.md`, [[decisiones#D65]], [[decisiones#D66]] |
 
 ## 4. Reglas de calidad (no negociables)
 - El modelo 3D nunca es fuente de verdad: solo refleja los canales que publica el comportamiento.

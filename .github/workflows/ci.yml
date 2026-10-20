@@ -13,7 +13,7 @@ jobs:
       - uses: astral-sh/setup-uv@v6
         with:
           python-version: "3.12"
-      - run: uv sync
+      - run: uv sync --group city
       - run: uv run ruff check .
       - run: uv run twin-lib validate
       - run: uv run pytest -q

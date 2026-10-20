@@ -89,6 +89,6 @@ Propuso cambiar la figura armada por un modelo 3D de persona real con piel, ropa
 
 ### 🤖 Claude · 2026-10-19 23:20 UTC
 
-Cambió las personas de todas las plantas por cuatro modelos reales con licencia MIT (operario, operaria, hombre y mujer de ropa común) con reposo, caminar y trabajo; ≈ 1,2 MB cada uno, compartidos por todas las personas. Ver D66 y las capturas `evidencia/personas-modelo-real.jpg` y `evidencia/personas-celda-de-ensamble.jpg`.
+Cambió las personas de todas las plantas por cuatro modelos reales con licencia MIT (operario, operaria, hombre y mujer de ropa común) con reposo, caminar y trabajo; ≈ 1,2 MB cada uno, compartidos por todas las personas. Ver D67 y las capturas `evidencia/personas-modelo-real.jpg` y `evidencia/personas-celda-de-ensamble.jpg`.
 
 *(Herramientas: descarga de la biblioteca, conversión FBX → glTF en el navegador, optimización con gltf-transform, capturas con Playwright, typecheck y pruebas.)*
