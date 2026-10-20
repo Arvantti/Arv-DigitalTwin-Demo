@@ -21,7 +21,7 @@ import "./mobile-dock.ts";
 import yaml from "js-yaml";
 import * as THREE from "three";
 import { buildRoutes, type Aisle, type Route } from "./routes.ts";
-import { type AnimationFrame, type EquipmentModel, type LightingPreset, Stage, parts, textures } from "@twin/3d";
+import { type AnimationFrame, type EquipmentModel, type LightingPreset, Stage, humansPending, parts, textures } from "@twin/3d";
 import { geometryBuilders, rawSpecs } from "@twin/equipment-library/registry.ts";
 import { buildProcessPiece } from "./process-pieces.ts";
 import { dockLeveler, deliveryTruck, palletRack, passThroughDoor } from "./warehouse.ts";
@@ -1302,7 +1302,7 @@ function loop(): void {
   frames++;
   if (frames === 12) bootDone();
   const wantsData = url.get("autosim") === "1";
-  if (shotMode && frames >= 40 && (!wantsData || messages >= Number(url.get("messages") ?? 3))) (window as unknown as { __ready: boolean }).__ready = true;
+  if (shotMode && frames >= 40 && humansPending() === 0 && (!wantsData || messages >= Number(url.get("messages") ?? 3))) (window as unknown as { __ready: boolean }).__ready = true;
   requestAnimationFrame(loop);
 }
 

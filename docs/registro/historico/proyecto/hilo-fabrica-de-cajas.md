@@ -76,3 +76,19 @@ Recuerda que no solamente en este hilo, sino en todos los demás hilos, los huma
 Rehízo la figura común de las personas, que usan todas las plantas, con formas orgánicas: tronco con pecho y cintura, brazos y piernas que se afinan y se unen sin costura, manos con dedos, cara con rasgos y botas con puntera. Misma interfaz, así que el cambio aparece en todas las escenas. Ver D64 y la captura `evidencia/operarios-figura-organica.jpg`.
 
 *(Herramientas: lectura de la figura común; página de prueba temporal con cuatro personas y capturas con Playwright; typecheck y pruebas.)*
+
+### 👤 Andy · 2026-10-19 18:03 UTC
+
+Esos muñequitos de personas están muy chistosos. No hay forma de ponerlos más reales. O sea, consume mucha memoria. ¿Qué dices?
+
+### 🤖 Claude · 2026-10-19 19:55 UTC
+
+Propuso cambiar la figura armada por un modelo 3D de persona real con piel, ropa y animaciones, que se carga una vez y comparten todas las personas (unos 2 a 4 MB en total), de licencia libre, en un PR aparte. Dejó la decisión en una tarjeta.
+
+*(Andy eligió «Modelo real» a las 22:39.)*
+
+### 🤖 Claude · 2026-10-19 23:20 UTC
+
+Cambió las personas de todas las plantas por cuatro modelos reales con licencia MIT (operario, operaria, hombre y mujer de ropa común) con reposo, caminar y trabajo; ≈ 1,2 MB cada uno, compartidos por todas las personas. Ver D67 y las capturas `evidencia/personas-modelo-real.jpg` y `evidencia/personas-celda-de-ensamble.jpg`.
+
+*(Herramientas: descarga de la biblioteca, conversión FBX → glTF en el navegador, optimización con gltf-transform, capturas con Playwright, typecheck y pruebas.)*

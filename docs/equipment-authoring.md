@@ -150,7 +150,7 @@ Exporte por defecto `build(params) => EquipmentModel`. Convenciones:
 - Metros; +Y arriba; origen en el piso, en el centro de la huella; eje largo sobre +X; lado del operador hacia +Z.
 - Las dimensiones salen de los parámetros con relaciones de catálogo, escritas en el comentario del archivo. Si el comportamiento también usa dimensiones, comparta la misma fórmula (ver `vessel_dimensions` y `vesselDimensions`).
 - Construya con `parts` (cajas biseladas, cilindros, fondos toriesféricos, tuberías con codos, motores, gabinetes, HMI, balizas, escaleras, barandas, guardas, patas, válvulas) y `materials` (pintura industrial, inoxidable cepillado, galvanizado, cromo, vidrio, caucho, emisivos).
-- **Personas** (operarios, pasajeros, agentes): siempre con `P.operator(chaleco, camisa, look)`, la figura orgánica común con `setPose` y `setWalk`; nunca con cajas o cilindros sueltos. Si hace falta mejorarla, se cambia ahí y llega a todas las plantas.
+- **Personas** (operarios, pasajeros, agentes): siempre con `P.operator(chaleco, camisa, look)`, con `setPose` y `setWalk`; nunca con cajas o cilindros sueltos. En el navegador se ve un modelo 3D real con dotación o, con `look.civilian`, con ropa común (`packages/twin-3d/src/humans.ts`, modelos en `apps/gallery/public/humans/`); sin navegador o mientras carga se ve la figura orgánica `P.operatorFigure`. Si hace falta mejorarla, se cambia ahí y llega a todas las plantas.
 - `update(frame, dt)` solo lee `frame.channels`, `frame.state` y `frame.variables`.
 
 Lo que más aporta al realismo:
