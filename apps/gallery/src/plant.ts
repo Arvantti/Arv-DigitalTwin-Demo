@@ -248,6 +248,9 @@ const warehouseBuilders: Record<string, (eq: PlantEquipment) => THREE.Object3D> 
 
 /** Tipos del plano sin simulación que sí tienen forma en la librería. */
 const LIBRARY_FALLBACK: Record<string, string> = {
+  "lockstitch-sewing-machine": "lockstitch-sewing-machine",
+  "overlock-sewing-machine": "overlock-sewing-machine",
+  "coverstitch-sewing-machine": "coverstitch-sewing-machine",
   vffs_sachet: "vffs-sachet-filler",
   checkweigher: "checkweigher",
   cooling_tunnel: "cooling-tunnel",

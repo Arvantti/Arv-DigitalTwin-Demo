@@ -230,6 +230,8 @@ export interface OperatorLook {
   helmet?: string;
   /** Persona sin dotación (pasajero, agente de mostrador): sin casco, chaleco ni gafas. */
   civilian?: boolean;
+  /** Género visual explícito cuando lo requiere el contexto; si se omite, se conserva la alternancia global. */
+  gender?: "female" | "male";
 }
 
 /** Extremidad orgánica: tubo que se afina de rTop a rBottom con extremos redondeados y un abultamiento opcional (músculo). */
@@ -308,7 +310,7 @@ export function operator(vest = "#f26b1d", shirt = "#2f5f8f", look: OperatorLook
   const fig = operatorFigure(vest, shirt, look);
   g.add(fig.object);
   const state: HumanState = { work: 0, walk: null };
-  const { kind, seed } = pickHuman(!!look.civilian);
+  const { kind, seed } = pickHuman(!!look.civilian, look.gender);
   attachHuman(g, fig.object, kind, state, seed);
   return {
     object: g,
