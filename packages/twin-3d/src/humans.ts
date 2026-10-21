@@ -126,8 +126,8 @@ export function attachHuman(host: THREE.Object3D, fallback: THREE.Object3D, kind
 
 /** Elige el modelo: dotación o ropa común, y alterna hombres y mujeres (una de cada tres personas es mujer). */
 let counter = 0;
-export function pickHuman(civilian: boolean): { kind: HumanKind; seed: number } {
+export function pickHuman(civilian: boolean, gender?: "female" | "male"): { kind: HumanKind; seed: number } {
   const n = counter++;
-  const female = n % 3 === 2;
+  const female = gender ? gender === "female" : n % 3 === 2;
   return { kind: civilian ? (female ? "civil_f" : "civil_m") : female ? "worker_f" : "worker_m", seed: n + 1 };
 }

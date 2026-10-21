@@ -351,13 +351,35 @@ const labBench: PieceBuilder = ([dx, dy]) => {
   return g;
 };
 
-const workbench: PieceBuilder = ([dx, dy]) => {
-  const g = P.group("workbench");
-  g.add(at(P.box(dx, 0.06, dy, M.paint("#8a6a43", 0.8), 0.01), 0, 0.9, 0));
+const workbench: PieceBuilder = ([dx, dy], params) => {
+  const machine = String(params.machine ?? "");
+  const g = P.group(machine ? `sewing-${machine}` : "workbench");
+  const tableMat = M.paint(machine ? "#d5d9dc" : "#8a6a43", 0.65);
+  g.add(at(P.box(dx, 0.06, dy, tableMat, 0.01), 0, 0.9, 0));
   for (const sx of [-1, 1]) for (const sz of [-1, 1]) g.add(at(P.box(0.08, 0.88, 0.08, M.paint("#3a4047", 0.5), 0.005), sx * (dx / 2 - 0.1), 0.44, sz * (dy / 2 - 0.1)));
   g.add(at(P.box(dx - 0.2, 0.03, dy - 0.2, M.paint("#3a4047", 0.5), 0.003), 0, 0.3, 0));
-  g.add(at(P.box(0.4, 0.2, 0.3, M.paint("#c0392b", 0.4), 0.02), -dx * 0.3, 1.03, 0));
-  g.add(at(P.box(0.25, 0.15, 0.15, steel(), 0.01), dx * 0.2, 1.0, 0));
+  if (machine) {
+    // Máquina plana industrial: bancada, cabezal, brazo, aguja y volante; conos de hilo en el cabezal.
+    const enamel = M.paint(machine === "recubridora" ? "#3d7181" : machine === "fileteadora" ? "#d7e0e4" : "#4c6680", 0.35);
+    g.add(at(P.box(0.72, 0.3, 0.24, enamel, 0.04), -0.12, 1.08, -0.04));
+    g.add(at(P.box(0.42, 0.12, 0.34, enamel, 0.03), 0.05, 1.24, 0.02));
+    g.add(at(P.box(0.035, 0.24, 0.035, steel(), 0.006), 0.27, 0.98, 0.13));
+    g.add(at(P.box(0.62, 0.025, 0.28, steel(), 0.004), 0.06, 0.94, 0.05));
+    const wheel = P.cylinderX(0.105, 0.035, dark(), 24); wheel.position.set(-0.47, 1.13, -0.03); g.add(wheel);
+    for (let i = 0; i < (machine === "fileteadora" ? 4 : 3); i++) {
+      g.add(at(P.cylinder(0.035, 0.035, 0.14, M.paint(i % 2 ? "#d55c54" : "#e9d7a5", 0.45), 12), -0.25 + i * 0.12, 1.42, -0.04));
+    }
+    // Operaria con dotación industrial y variantes de tono de piel; postura de trabajo hacia la aguja.
+    const operator = P.operator("#e8ad3b", "#375c76", { gender: "female", skin: ["#c99a76", "#8d5a3b", "#e3b896", "#a8745a"][Number(String(params.operator).slice(-2)) % 4], hair: "#30231d" });
+    operator.object.position.set(0.72, 0, 0.5);
+    operator.object.rotation.y = Math.PI;
+    operator.setPose(0.58);
+    operator.object.scale.setScalar(0.78);
+    g.add(operator.object);
+  } else {
+    g.add(at(P.box(0.4, 0.2, 0.3, M.paint("#c0392b", 0.4), 0.02), -dx * 0.3, 1.03, 0));
+    g.add(at(P.box(0.25, 0.15, 0.15, steel(), 0.01), dx * 0.2, 1.0, 0));
+  }
   const vise = P.box(0.18, 0.14, 0.14, M.paint("#2f5d8a", 0.4), 0.01);
   vise.position.set(dx * 0.4, 1.0, dy * 0.35);
   g.add(vise);

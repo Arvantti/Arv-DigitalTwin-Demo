@@ -1,0 +1,4 @@
+preset: standard
+description: Recubridora interlock de tres agujas y cinco hilos, configuración representativa
+params: { machine_style: coverstitch, cycle_s: 45, max_speed_spm: 5500, stitch_length_mm: 3.5, needle_count: 3, thread_count: 5, nominal_inflow_upm: 2, queue_capacity: 8, length_m: 1.2, width_m: 0.65, power_kw: 0.55 }
+provenance: { cycle_s: assumed, max_speed_spm: assumed, stitch_length_mm: catalog, needle_count: assumed, thread_count: assumed, nominal_inflow_upm: assumed, queue_capacity: assumed, length_m: assumed, width_m: assumed, power_kw: assumed }

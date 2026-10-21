@@ -1,0 +1,4 @@
+preset: standard
+description: Fileteadora de cuatro hilos con ciclo estándar de simulación
+params: { machine_style: overlock, cycle_s: 45, max_speed_spm: 5500, stitch_length_mm: 4.0, stitch_width_mm: 4.0, thread_count: 4, nominal_inflow_upm: 2, queue_capacity: 8, length_m: 1.2, width_m: 0.65, power_kw: 0.55 }
+provenance: { cycle_s: assumed, max_speed_spm: catalog, stitch_length_mm: catalog, stitch_width_mm: catalog, thread_count: catalog, nominal_inflow_upm: assumed, queue_capacity: assumed, length_m: assumed, width_m: assumed, power_kw: assumed }

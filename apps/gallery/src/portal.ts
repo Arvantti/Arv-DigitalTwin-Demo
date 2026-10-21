@@ -59,6 +59,15 @@ const plants: PlantCard[] = [
     text: "Corrugadora, transporte de pilas con carro de transferencia y pulmón, conversión, paletizado y bodega de cartón corrugado.",
   },
   {
+    id: "garment-factory-v1",
+    image: "/portal/confecciones.svg",
+    alt: "Vista esquemática del gemelo digital de confecciones",
+    family: "MANUFACTURA DISCRETA",
+    title: "Fábrica de confecciones",
+    text: "Corte y almacén de tela, tres módulos con 15 máquinas de costura, inspección y bodega de producto terminado. SAM de referencia para camisetas Polo y Oversize.",
+    noLibrary: true,
+  },
+  {
     id: "centro-medellin-v1",
     image: "/portal/ciudad.jpg",
     alt: "Plano de la red vial del centro de Medellín con carreras, calles y semáforos",

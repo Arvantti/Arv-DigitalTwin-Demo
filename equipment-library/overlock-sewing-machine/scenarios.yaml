@@ -1,0 +1,12 @@
+scenarios:
+  - id: steady
+    description: "Una hora de costura con ciclo de 45 s y alimentación de 2 piezas/min; la máquina termina alrededor de 79 piezas tras el primer abastecimiento"
+    preset: standard
+    duration_s: 3600
+    timeline:
+      - { at_s: 0, inputs: { inflow_upm: 2 } }
+      - { at_s: 0, command: start }
+    expect:
+      - { path: variables.units_processed, min: 78, max: 80, description: "(3600 / 45 = 80 ciclos teóricos; la alimentación del primer artículo consume hasta 30 s)" }
+      - { path: kpis.units_per_h, min: 78, max: 80 }
+      - { path: state, equals: running }

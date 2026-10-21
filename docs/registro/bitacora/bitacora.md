@@ -1,7 +1,7 @@
 ---
 tipo: bitacora
 tags: [registro, bitacora]
-actualizado: 2026-10-20
+actualizado: 2026-10-21
 ---
 # Bitácora de avances
 
@@ -10,6 +10,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
+| 2026-10-21 | Gemelo de confecciones v1 | Planta con 3 tipos nuevos de máquinas reutilizables (plana, overlock y recubridora), comportamiento discreto, geometría animada y 15 máquinas/operarias en layout; 2 productos, operaciones, SAM y tarjeta del portal. Tests específicos, suite de geometrías, layout, catálogo y build pasan. La simulación conectada de flujo completo aún queda pendiente. [[2026-10-21-gemelo-confecciones]] | gemelos |
 | 2026-10-20 | Ciudad en la página principal | El gemelo de ciudad entra al portal con su tarjeta (plano de la red) y una página propia `/ciudad.html`: indicadores de la línea base, plano, índice por corredor con semáforo, tramos con más minutos de atasco y curva de 24 h. Pedido de Andy | ciudad |
 | 2026-10-20 | Gemelo de ciudad, fase 2 | El día completo del centro corre en SUMO: red y semáforos por franja convertidos, 7 tipos de vehículo con variante de afán y motos entre carriles, 60.000 viajes con semilla fija, e indicadores (ruta crítica, índice por corredor, atascos, demora, bloqueos). Línea base: 60.000 viajes completados, 27,6 km/h, 63 s de demora media; no colapsa con los supuestos actuales. D66 | ciudad |
 | 2026-10-19 | Personas con modelo 3D real | Las personas de todas las plantas pasan a ser modelos 3D reales (piel, ropa, esqueleto) con animaciones de reposo, caminar y trabajar: operario y operaria con casco y chaleco, y hombre y mujer de ropa común para pasajeros y agentes. Biblioteca con licencia MIT; cada modelo pesa ≈ 1,2 MB, se descarga una vez y lo comparten todas las personas de la escena; la figura orgánica queda de respaldo. D67 | 4 |
