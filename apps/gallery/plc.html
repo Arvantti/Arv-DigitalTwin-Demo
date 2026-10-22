@@ -25,6 +25,7 @@
       <section class="content">
         <nav class="tabs" aria-label="Pantallas PLC">
           <button class="active" data-screen="master">MASTER</button>
+          <button data-screen="day">DÍA 24 H</button>
           <button data-screen="pumping">BOMBEO Y TANQUES</button>
           <button data-screen="grid">REJILLA Y CONSUMO</button>
           <button data-screen="trends">TENDENCIAS</button>
@@ -37,12 +38,18 @@
           <div class="kpis" id="kpis"></div>
           <div class="panel recommendation"><p class="eyebrow">FRACTAL DE INGENIERÍA</p><strong>Sin recomendación aplicada</strong><span>Las sugerencias futuras se validarán contra una calculadora hidráulica independiente y requerirán aceptación del operador.</span></div>
         </section>
+        <section id="day" class="screen">
+          <div class="section-head"><div><p class="eyebrow">ESCENARIO HIDRÁULICO ESTACIONARIO</p><h1>Curva del día · 24 horas</h1><p class="muted">Perfil de referencia calculado hora a hora por el emulador hidráulico. Las futuras programaciones sustituirán este perfil estático.</p></div></div>
+          <div class="kpis" id="day-kpis"></div>
+          <div id="day-charts" class="trend-charts"></div>
+        </section>
         <section id="pumping" class="screen">
           <div class="section-head"><div><p class="eyebrow">OPERACIÓN HIDRÁULICA</p><h1>Bombeo, tanques y regulación</h1></div><div id="branch-state" class="mode">RAMA · —</div></div>
           <div class="flow-diagram panel"><span>RETORNO</span><b>→</b><span>RECIRCULACIÓN</span><b>→</b><span>TANQUE DE BOMBEO</span><b>→</b><span>BOMBAS PRINCIPALES</span><b>→</b><span>REGULADORA</span></div>
           <div class="cards" id="tanks"></div>
           <div class="cards" id="pumps"></div>
-          <section class="panel regulation"><div><p class="eyebrow">ESTACIÓN REGULADORA</p><h2>PRS-01</h2><div id="prs-values" class="readings"></div></div><div class="controls"><button data-command="auto">AUTO</button><button data-command="manual">MANUAL</button><label>Consigna crítica <input id="critical-setpoint" type="range" min="15" max="30" step="0.05" value="15.45" /><output id="critical-output">15.45 mca</output></label></div></section>
+          <section class="panel regulation"><div><p class="eyebrow">ESTACIÓN REGULADORA</p><h2>PRS-01</h2><div id="prs-values" class="readings"></div></div><div class="controls"><button data-command="auto">AUTO</button><button data-command="manual">MANUAL</button><label>Consigna crítica <input id="critical-setpoint" type="range" min="15" max="30" step="0.05" value="15.45" /><output id="critical-output">15.45 mca</output></label><label>Salida manual <input id="manual-setpoint" type="range" min="15" max="35" step="0.05" value="20.94" /><output id="manual-output">20.94 mca</output></label></div></section>
+          <section class="panel hydraulic-profile"><div class="section-head"><div><p class="eyebrow">MONITOREO HIDRÁULICO EN VIVO</p><h2>Presión y caudal a lo largo de la red</h2><p class="muted">Cada punto corresponde a un transmisor virtual. La válvula crítica es la vivienda de menor presión calculada en ese instante.</p></div></div><div id="hydraulic-profile" class="hydraulic-profile-chart"></div></section>
         </section>
         <section id="trends" class="screen">
           <div class="section-head"><div><p class="eyebrow">HISTORIADOR DE SESIÓN</p><h1>Tendencias de operación</h1><p class="muted">Muestras del emulador hidráulico durante esta sesión. Un perfil de 24 h se incorporará como escenario programable.</p></div></div>

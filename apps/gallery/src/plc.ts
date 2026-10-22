@@ -6,6 +6,8 @@ type Message = { t: number; speed: number; paused: boolean; snapshot: { equipmen
 type Asset = { id: string; name: string; group: string; level?: number };
 type Schema = { name: string; assets: Asset[]; service_constraint: { critical_pressure_min_mca: number; automatic_target_mca: number } };
 type Sample = { t: number; main: number; recirculation: number; consumption: number; leakage: number; critical: number; supplyLevel: number };
+type DayScenario = { p_discharge: number[]; p_station_in: number[]; p_station_out: number[]; worst_p: number[]; cons_m3h: number[]; leak_m3h: number[]; pump_m3h: number[]; speed: number[] };
+type DayData = { target: number; actual: DayScenario };
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 const plantId = new URLSearchParams(location.search).get("plant") ?? "water-network-scale-v1";
@@ -16,6 +18,7 @@ let latest: Record<string, Snapshot> = {};
 let simTime = 0;
 let randomTimer: number | null = null;
 const history: Sample[] = [];
+let dayData: DayData | null = null;
 
 const n = (value: Value | undefined): number | null => typeof value === "number" && Number.isFinite(value) ? value : null;
 const fmt = (value: Value | undefined, digits = 1) => {
@@ -66,6 +69,12 @@ function renderPumping(): void {
   const prs = eq("prs-01");
   const branch = String(prs?.variables.branch_auto ?? "") === "1" ? "AUTO" : "MANUAL";
   $("branch-state").textContent = `RAMA · ${branch}`;
+  const criticalInput = $<HTMLInputElement>("critical-setpoint");
+  const manualInput = $<HTMLInputElement>("manual-setpoint");
+  if (document.activeElement !== criticalInput) criticalInput.value = String(n(value("prs-01", "critical_setpoint_mca")) ?? schema.service_constraint.automatic_target_mca);
+  if (document.activeElement !== manualInput) manualInput.value = String(n(value("prs-01", "manual_setting_mca")) ?? 20.94);
+  $("critical-output").textContent = `${Number(criticalInput.value).toFixed(2)} mca`;
+  $("manual-output").textContent = `${Number(manualInput.value).toFixed(2)} mca`;
   $("prs-values").innerHTML = [
     ["Entrada", `${fmt(value("prs-01", "inlet_pressure_mca"))} mca`], ["Salida", `${fmt(value("prs-01", "outlet_pressure_mca"))} mca`],
     ["Casa crítica", `${fmt(value("prs-01", "critical_pressure_mca"))} mca`], ["SP crítica", `${fmt(value("prs-01", "critical_setpoint_mca"))} mca`],
@@ -132,6 +141,70 @@ function renderTrends(): void {
   ].join("");
 }
 
+function renderHydraulicProfile(): void {
+  const criticalValve = String(value("grid-04", "min_pressure_valve") ?? "c44");
+  const criticalFlow = value("grid-04", `q_${criticalValve}`);
+  const points = [
+    { label: "Salida bombeo", pressure: value("pumpset-main-01", "discharge_pressure_mca"), flow: value("pumpset-main-01", "flow_m3h") },
+    { label: "Entrada estación", pressure: value("prs-01", "inlet_pressure_mca"), flow: value("prs-01", "flow_m3h") },
+    { label: "Salida estación", pressure: value("prs-01", "outlet_pressure_mca"), flow: value("prs-01", "flow_m3h") },
+    { label: "Entrada rejilla 1", pressure: value("grid-01", "inlet_pressure_mca"), flow: value("grid-01", "flow_in_m3h") },
+    { label: "Salida rejilla 1", pressure: value("valve-between-12", "inlet_pressure_mca"), flow: value("valve-between-12", "flow_m3h") },
+    { label: "Salida rejilla 2", pressure: value("valve-between-23", "inlet_pressure_mca"), flow: value("valve-between-23", "flow_m3h") },
+    { label: "Salida rejilla 3", pressure: value("valve-between-34", "inlet_pressure_mca"), flow: value("valve-between-34", "flow_m3h") },
+    { label: `Válvula crítica ${criticalValve.toUpperCase()}`, pressure: value("grid-04", "min_pressure_mca"), flow: criticalFlow, critical: true, flowUnit: "L/min" },
+  ];
+  const pressureMax = Math.max(1, ...points.map((point) => n(point.pressure) ?? 0));
+  const flowMax = Math.max(1, ...points.map((point) => n(point.flow) ?? 0));
+  const bars = (kind: "pressure" | "flow") => points.map((point) => {
+    const reading = point[kind];
+    const maximum = kind === "pressure" ? pressureMax : flowMax;
+    const unit = kind === "pressure" ? "mca" : point.flowUnit ?? "m³/h";
+    return `<div class="profile-row ${kind === "flow" ? "flow" : ""} ${point.critical ? "critical" : ""}"><span title="${point.label}">${point.label}</span><span class="profile-track"><i style="width:${100 * (n(reading) ?? 0) / maximum}%"></i></span><b>${fmt(reading, kind === "pressure" ? 1 : 2)} ${unit}</b></div>`;
+  }).join("");
+  $("hydraulic-profile").innerHTML = `<article class="profile-bars"><h2>Presión <span>${fmt(pressureMax)} mca máx.</span></h2>${bars("pressure")}</article><article class="profile-bars"><h2>Caudal <span>por punto</span></h2>${bars("flow")}</article>`;
+}
+
+function dayChart(title: string, unit: string, series: { name: string; values: number[]; color: string }[], reference?: number): string {
+  const width = 620, height = 245, left = 44, right = 14, top = 16, bottom = 30;
+  const values = series.flatMap((item) => item.values);
+  if (reference !== undefined) values.push(reference);
+  const low = Math.min(0, ...values);
+  const high = Math.max(1, ...values);
+  const range = Math.max(0.01, high - low);
+  const x = (hour: number) => left + (hour * (width - left - right)) / 23;
+  const y = (reading: number) => top + (height - top - bottom) - ((reading - low) / range) * (height - top - bottom);
+  const axis = [0, .25, .5, .75, 1].map((fraction) => { const reading = low + range * fraction; return `<line x1="${left}" x2="${width - right}" y1="${y(reading)}" y2="${y(reading)}" class="axis" /><text x="${left - 5}" y="${y(reading) + 4}" text-anchor="end">${fmt(reading, 1)}</text>`; }).join("");
+  const hours = [0, 3, 6, 9, 12, 15, 18, 21, 23].map((hour) => `<text x="${x(hour)}" y="${height - 8}" text-anchor="middle">${String(hour).padStart(2, "0")}</text>`).join("");
+  const lines = series.map((item) => `<polyline points="${item.values.map((reading, hour) => `${x(hour)},${y(reading)}`).join(" ")}" fill="none" stroke="${item.color}" stroke-width="2.5" />`).join("");
+  const referenceLine = reference === undefined ? "" : `<line x1="${left}" x2="${width - right}" y1="${y(reference)}" y2="${y(reference)}" class="ref" />`;
+  const legend = series.map((item) => `<span><i style="background:${item.color}"></i>${item.name}</span>`).join("");
+  return `<article class="trend panel"><h2>${title}<span>${unit}</span></h2><svg class="day-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="${title}"><g class="day-axis">${axis}${hours}</g>${referenceLine}${lines}</svg><div class="legend">${legend}</div></article>`;
+}
+
+function renderDay(): void {
+  if (!dayData) return;
+  const current = dayData.actual;
+  const consumptionDay = current.cons_m3h.reduce((total, value) => total + value, 0);
+  const leakDay = current.leak_m3h.reduce((total, value) => total + value, 0);
+  const peak = current.cons_m3h.indexOf(Math.max(...current.cons_m3h));
+  const minimum = Math.min(...current.worst_p);
+  const leakPercent = fmt(100 * leakDay / (leakDay + consumptionDay), 1);
+  const peakLabel = `${String(peak).padStart(2, "0")}:00`;
+  const dayKpis: [string, string, string][] = [
+    ["CONSUMO DEL DÍA", `${fmt(consumptionDay, 1)} m³`, "24 estados estacionarios"],
+    ["FUGAS DEL DÍA", `${fmt(leakDay, 1)} m³`, `${leakPercent} % del caudal total`],
+    ["HORA PICO", peakLabel, `${fmt(current.cons_m3h[peak])} m³/h residencial`],
+    ["PRESIÓN MÍNIMA", `${fmt(minimum, 2)} mca`, `objetivo ${fmt(dayData.target, 2)} mca`],
+  ];
+  $("day-kpis").innerHTML = dayKpis.map(([label, reading, detail]) => `<div class="kpi panel"><small>${label}</small><b>${reading}</b><small>${detail}</small></div>`).join("");
+  $("day-charts").innerHTML = [
+    dayChart("Caudal de consumo y fugas", "m³/h", [{ name: "Consumo residencial", values: current.cons_m3h, color: "#2D7FF9" }, { name: "Fugas", values: current.leak_m3h, color: "#f17474" }, { name: "Bombeo", values: current.pump_m3h, color: "#4EA7FF" }]),
+    dayChart("Presiones principales", "mca", [{ name: "Salida de bombeo", values: current.p_discharge, color: "#4EA7FF" }, { name: "Entrada reguladora", values: current.p_station_in, color: "#2D7FF9" }, { name: "Salida reguladora", values: current.p_station_out, color: "#55d58c" }, { name: "Punto crítico", values: current.worst_p, color: "#f17474" }], 15),
+    dayChart("Velocidad de bombeo", "%", [{ name: "Velocidad VFD", values: current.speed.map((reading) => reading * 100), color: "#4EA7FF" }]),
+  ].join("");
+}
+
 function renderAlarms(): void {
   const active: string[] = [];
   for (const [id, snapshot] of Object.entries(latest)) if (snapshot.state === "fault" || snapshot.active_faults.length) active.push(`${id}: ${snapshot.active_faults.join(", ") || "falla"}`);
@@ -153,7 +226,7 @@ function render(message: Message): void {
   const ss = String(Math.floor(simTime % 60)).padStart(2, "0");
   $("clock").textContent = `SIM · ${hh}:${mm}:${ss} · ×${message.speed}`;
   recordHistory(message);
-  renderMaster(); renderPumping(); renderGrid(); renderTrends(); renderAlarms();
+  renderMaster(); renderPumping(); renderGrid(); renderTrends(); renderHydraulicProfile(); renderAlarms();
 }
 
 function connect(): void {
@@ -178,16 +251,25 @@ async function start(): Promise<void> {
   $("plant-name").textContent = ` · ${schema.name.toUpperCase()}`;
   buildAssets();
   document.querySelectorAll<HTMLButtonElement>(".tabs button").forEach((button) => button.onclick = () => selectScreen(button.dataset.screen!));
+  const initialScreen = new URLSearchParams(location.search).get("screen");
+  if (["master", "day", "pumping", "grid", "trends"].includes(initialScreen ?? "")) selectScreen(initialScreen!);
   $("connect").onclick = connect;
   $("pause").onclick = () => { paused = !paused; socket?.send(JSON.stringify({ pause: paused })); $("pause").textContent = paused ? "▶ REANUDAR" : "❚❚ PAUSA"; };
   document.querySelectorAll<HTMLButtonElement>("[data-command]").forEach((button) => button.onclick = () => send("prs-01", "select_branch", { branch: button.dataset.command }));
   const critical = $<HTMLInputElement>("critical-setpoint");
   critical.oninput = () => $("critical-output").textContent = `${Number(critical.value).toFixed(2)} mca`;
   critical.onchange = () => send("prs-01", "set_critical_setpoint", { mca: Number(critical.value) });
+  const manual = $<HTMLInputElement>("manual-setpoint");
+  manual.oninput = () => $("manual-output").textContent = `${Number(manual.value).toFixed(2)} mca`;
+  manual.onchange = () => send("prs-01", "set_manual_setting", { mca: Number(manual.value) });
   const all = $<HTMLInputElement>("all-consumers");
   all.oninput = () => $("all-consumers-output").textContent = `${all.value} %`;
   all.onchange = () => { for (let level = 1; level <= 4; level++) send(`grid-0${level}`, "set_opening", { valve: "consumers", pct: Number(all.value) }); };
   $("random").onclick = randomize;
+  void fetch("/data/acueducto-dia.json")
+    .then((response) => response.ok ? response.json() as Promise<DayData> : Promise.reject(new Error(`HTTP ${response.status}`)))
+    .then((data) => { dayData = data; renderDay(); })
+    .catch(() => { $("day-charts").innerHTML = `<p class="muted">No se pudo cargar el escenario diario de referencia.</p>`; });
 }
 
 start().catch((error: unknown) => { $("plant-name").textContent = ` · ERROR: ${String(error)}`; });

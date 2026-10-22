@@ -3,112 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Panel PLC · Acueducto a escala</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" />
+    <meta http-equiv="refresh" content="0; url=/plc.html?plant=water-network-scale-v1&screen=day" />
+    <title>PLC Master · Acueducto</title>
   </head>
   <body>
-<div class="wrap">
-  <header class="top">
-    <div>
-      <h1>Panel PLC · Acueducto a escala</h1>
-      <p class="sub">Un día de operación en 24 ciclos de una hora: consumos, presiones de la rejilla, bombas Grundfos, sensores y la optimización del gemelo digital.</p>
-    </div>
-    <div class="controls"><a class="tag" href="/">◀ Inicio</a><span class="tag">Banco hidráulico water-network-scale-v1</span></div>
-  </header>
-
-  <nav class="tabs" role="tablist" aria-label="Pantallas del panel">
-    <button role="tab" id="t-dia" aria-selected="true" data-s="dia">Curva del día</button>
-    <button role="tab" id="t-bom" aria-selected="false" data-s="bom">Bombas Grundfos</button>
-    <button role="tab" id="t-sen" aria-selected="false" data-s="sen">Sensores en tiempo real</button>
-    <button role="tab" id="t-gem" aria-selected="false" data-s="gem">Gemelo digital</button>
-  </nav>
-
-  <!-- 1. CURVA DEL DÍA -->
-  <section class="screen" id="s-dia">
-    <div class="kpis" id="k-dia"></div>
-    <div class="card">
-      <div class="chead">
-        <div><h2>Consumo de agua por hora</h2><p class="hint">Caudal entregado a las casas y perdido en fugas, sumando los cuatro niveles.</p></div>
-        <div class="controls"><div class="seg" id="q-unit"><button aria-pressed="true" data-u="m3h">m³/h</button><button aria-pressed="false" data-u="lpm">L/min</button></div></div>
-      </div>
-      <div class="chart" id="c-cons"></div>
-    </div>
-    <div class="card">
-      <div class="chead">
-        <div><h2>Presión en la rejilla</h2><p class="hint" id="p-hint"></p></div>
-        <div class="controls">
-          <div class="seg" id="p-view"><button aria-pressed="true" data-v="sis">Sistema completo</button><button aria-pressed="false" data-v="piso">Por piso</button><button aria-pressed="false" data-v="val">Por válvula</button></div>
-          <select id="p-lvl" aria-label="Piso" hidden><option value="1">Nivel 1</option><option value="2">Nivel 2</option><option value="3">Nivel 3</option><option value="4">Nivel 4</option></select>
-          <select id="p-val" aria-label="Válvula" hidden></select>
-          <div class="seg" id="p-y"><button aria-pressed="true" data-y="p">mca</button><button aria-pressed="false" data-y="q">Caudal L/h</button></div>
-        </div>
-      </div>
-      <div class="chart" id="c-pres"></div>
-    </div>
-    <p class="note">La estación reguladora fija la presión de entrada a la rejilla; la presión de cada casa es esa salida menos la altura y la fricción. Con la columna en serie, la fricción cambia con el consumo: de madrugada sobra presión en la casa crítica y en el pico de la mañana queda cerca de 15,45 mca. El nivel 4 es el más alto y el último de la columna, por eso tiene la casa más desfavorable.</p>
-  </section>
-
-  <!-- 2. BOMBAS -->
-  <section class="screen" id="s-bom" hidden>
-    <div class="kpis" id="k-bom"></div>
-    <div class="card">
-      <div class="chead">
-        <div><h2>Bombas Grundfos, mismo día</h2><p class="hint" id="b-hint"></p></div>
-        <div class="controls"><div class="seg" id="b-y"><button aria-pressed="true" data-y="h">Presión mca</button><button aria-pressed="false" data-y="q">Caudal m³/h</button><button aria-pressed="false" data-y="v">Velocidad %</button></div></div>
-      </div>
-      <div class="chart" id="c-bom"></div>
-    </div>
-    <p class="note">Las dos bombas trabajan a la vez con su PLC propio de Grundfos, a la velocidad que sostiene la consigna de 72,1 mca en el sensor de descarga (70 mca + 3 %). Los picos hasta 80 mca y los bajones hasta 65 mca por 5 s son transitorios que este día, calculado en estado estacionario hora a hora, no tiene. Los parámetros de rampa del PLC de Grundfos son cerrados; el banco los toma como supuestos.</p>
-  </section>
-
-  <!-- 3. SENSORES -->
-  <section class="screen" id="s-sen" hidden>
-    <div class="card">
-      <div class="live">
-        <div><div class="nm" style="color:var(--ink2);font-size:12px">Hora simulada del día</div><div class="clock" id="clk">00:00:00</div></div>
-        <div class="controls">
-          <button class="pill" id="play" style="cursor:pointer;background:var(--panel);color:var(--ink);font-size:13px;padding:5px 12px">Pausar</button>
-          <div class="seg" id="spd"><button aria-pressed="false" data-x="60">×60</button><button aria-pressed="true" data-x="600">×600</button><button aria-pressed="false" data-x="3600">×3600</button></div>
-          <div class="seg" id="scn"><button aria-pressed="true" data-c="actual">Operación actual</button><button aria-pressed="false" data-c="opt">Consigna del gemelo</button></div>
-          <input type="range" id="scrub" min="0" max="1439" value="0" aria-label="Hora del día" style="width:160px">
-        </div>
-      </div>
-      <p class="hint" style="margin-top:6px">Reproducción del día con lecturas cada segundo de sensor y un ruido de medición simulado de ±0,3 %. Cuando el simulador de tiempo real se conecte, estas tarjetas leen sus tramas.</p>
-    </div>
-    <div class="sensors" id="sens"></div>
-    <div class="card">
-      <div class="chead"><div><h2>Válvulas de la rejilla</h2><p class="hint">Presión de cada válvula en mca y semáforo: verde ≥ 20, amarillo ≥ 18, naranja ≥ 15, rojo bajo 15. Borde punteado = válvula de fuga.</p></div><div id="sem-leg" class="controls"></div></div>
-      <div class="levels" id="lvls"></div>
-    </div>
-    <div class="card">
-      <div class="chead"><div><h2>Últimas tramas recibidas</h2><p class="hint">Lo que envía cada sensor al PLC.</p></div></div>
-      <div class="tablewrap"><table class="frames"><tbody id="frm"></tbody></table></div>
-    </div>
-  </section>
-
-  <!-- 4. GEMELO -->
-  <section class="screen" id="s-gem" hidden>
-    <div class="kpis" id="k-gem"></div>
-    <div class="grid2">
-      <div class="card"><div class="chead"><div><h2>Casa más desfavorable</h2><p class="hint">Presión mínima de la red cada hora, operación actual frente a la consigna del gemelo.</p></div></div><div class="chart" id="c-crit"></div></div>
-      <div class="card"><div class="chead"><div><h2>Consigna de la reguladora</h2><p class="hint">Presión de salida de la estación y apertura de la PRV.</p></div><div class="controls"><div class="seg" id="g-prv"><button aria-pressed="true" data-y="s">Salida mca</button><button aria-pressed="false" data-y="a">Apertura %</button></div></div></div><div class="chart" id="c-set"></div></div>
-      <div class="card"><div class="chead"><div><h2>Fugas por hora</h2><p class="hint">Caudal de las válvulas de fuga L1 y L2 de los cuatro niveles.</p></div></div><div class="chart" id="c-leak"></div></div>
-      <div class="card"><div class="chead"><div><h2>Velocidad de las bombas</h2><p class="hint">Velocidad de las bombas con cada escenario; en los dos sostienen 72,1 mca en el sensor de descarga.</p></div></div><div class="chart" id="c-gpump"></div></div>
-    </div>
-    <div class="card">
-      <h2>Cómo calcula el gemelo</h2>
-      <div class="method" style="margin-top:10px">
-        <div><h3>Modelo hidráulico</h3><p>Red de tuberías en una dimensión: Darcy-Weisbach con factor de fricción de Swamee-Jain (Hagen-Poiseuille en laminar) y pérdidas por accesorios K·v²/2g. Es la forma integrada de Navier-Stokes para flujo en tubería, no una simulación CFD en 3D.</p></div>
-        <div><h3>Optimización</h3><p>Para cada hora busca por bisección la consigna mínima de la PRV que deja la casa más desfavorable en 15,45 mca (15 de norma más 3 %), lo que haría la rama automática. La operación actual es la rama manual fija en la salida de diseño de día. La casa crítica se recalcula en cada corrida.</p></div>
-        <div><h3>Qué falta</h3><p>El consumo del banco depende de la presión (válvulas de apertura fija), así que bajar la presión también baja un poco lo que recibe cada casa. La pantalla de sensores reproduce el día calculado; el paso siguiente es leer la red en vivo de la API del motor.</p></div>
-      </div>
-    </div>
-  </section>
-
-  <footer>Datos: tools/hydraulics/dia_acueducto.py sobre el banco industrial-models/water-network-scale-v1, con perfil de consumo residencial y apertura variable por casa (semilla fija). Archivo: /data/acueducto-dia.json.</footer>
-</div>
-
-    <script type="module" src="/src/acueducto-panel.ts"></script>
+    <p>El panel del acueducto se consolidó en <a href="/plc.html?plant=water-network-scale-v1&screen=day">PLC Master</a>.</p>
+    <script>location.replace("/plc.html?plant=water-network-scale-v1&screen=day");</script>
   </body>
 </html>
