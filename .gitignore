@@ -9,3 +9,4 @@ dist/
 .pytest_cache/
 .ruff_cache/
 apps/gallery/public/api/
+city-models/centro-medellin-v1/osm-build/

@@ -11,6 +11,7 @@ Conversación entre Carlos Andrés Quiceño (autor) y Claude (modelo Opus 5.5, C
 
 - [[sesion-codigo-parte-01]]: 2026-10-15 23:17 → 2026-10-16 04:18 (repositorio vacío, plan, layouts de plantas, librería de equipos).
 - [[sesion-codigo-parte-02]]: 2026-10-16 04:18 → 13:54 (geometría, galería, MCP, entrevista, PR #1–#4, sachets).
+- [[2026-10-22-mapa-ciudad-osm]]: 2026-10-22 (base cartográfica vial del centro de Medellín desde OpenStreetMap; grafo SUMO aún reducido).
 - [[2026-10-21-gemelo-confecciones]]: 2026-10-21 (gemelo de confecciones, layout, catálogo de productos y geometría de costura).
 
 Criterios de la exportación: se incluyen todos los mensajes del autor y todo el texto escrito por la IA; las llamadas a herramientas se resumen en una línea; no se incluyen resultados de herramientas ni razonamiento interno. Imágenes adjuntas se mencionan pero no se reproducen. Tokens y credenciales se reemplazaron por `[REDACTADO]`. En esta conversación el autor nombra a las dos empresas de Medellín que inspiran las plantas; el código del repositorio no usa esos nombres.

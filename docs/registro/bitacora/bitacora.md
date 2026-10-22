@@ -1,7 +1,7 @@
 ---
 tipo: bitacora
 tags: [registro, bitacora]
-actualizado: 2026-10-21
+actualizado: 2026-10-22
 ---
 # Bitácora de avances
 
@@ -10,6 +10,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
+| 2026-10-22 | Gemelo 3D de ciudad desde OSM | Escena Three.js con vías y edificios OSM, semáforos y vehículos siguiendo trayectorias FCD de SUMO; muestra x3 el volumen base con coloración vial por velocidad media y barra de km/h. Escenario y velocidades son supuestos, no aforos medidos; la red analítica previa de 35 cruces permanece separada. Se incluye `docs/arvantti-industrial-digital-twin.md` aportado por el autor. Typecheck y diff-check pasan; pruebas Python para CI. [[2026-10-22-mapa-ciudad-osm]] | ciudad |
 | 2026-10-21 | Gemelo de confecciones v1 | Planta con 3 tipos nuevos de máquinas reutilizables (plana, overlock y recubridora), comportamiento discreto, geometría animada y 15 máquinas/operarias en layout; 2 productos, operaciones, SAM y tarjeta del portal. Tests específicos, suite de geometrías, layout, catálogo y build pasan. La simulación conectada de flujo completo aún queda pendiente. [[2026-10-21-gemelo-confecciones]] | gemelos |
 | 2026-10-20 | Ciudad en la página principal | El gemelo de ciudad entra al portal con su tarjeta (plano de la red) y una página propia `/ciudad.html`: indicadores de la línea base, plano, índice por corredor con semáforo, tramos con más minutos de atasco y curva de 24 h. Pedido de Andy | ciudad |
 | 2026-10-20 | Gemelo de ciudad, fase 2 | El día completo del centro corre en SUMO: red y semáforos por franja convertidos, 7 tipos de vehículo con variante de afán y motos entre carriles, 60.000 viajes con semilla fija, e indicadores (ruta crítica, índice por corredor, atascos, demora, bloqueos). Línea base: 60.000 viajes completados, 27,6 km/h, 63 s de demora media; no colapsa con los supuestos actuales. D66 | ciudad |
@@ -85,6 +86,15 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 | 2026-10-16 | #1 | Layouts de las plantas | 1 |
 
 ## Entradas
+
+### 2026-10-22 · Cartografía vial de OpenStreetMap
+- **Fecha/hora (UTC):** 2026-10-22
+- **Fase del plan:** [[plan-del-proyecto]] gemelo de ciudad, corrección cartográfica.
+- **Solicitado por:** Andy (sesión de código): continuar el trabajo de mapa OSM en rama aparte y usar el extracto que guardó en `city-models/`; pidió que `docs/arvantti-industrial-digital-twin.md`, que él aportó, se incluya en el mismo commit.
+- **Qué se hizo:** `tools/city/osm_map.py` lee `city-models/map.osm` (extracto XML con atribución ODbL), recorta vías reales del corredor Ferrocarril–Oriental / San Juan–Juan del Corral, representa clasificación, geometría y nombres, y marca nodos de semáforo presentes en OSM. `network.py` renderiza esa base en `layout.svg`; se actualizó la copia estática de galería, el rótulo alternativo y la tarjeta del portal. El grafo SUMO reducido de 35 cruces y sus indicadores permanecen hipotéticos; no se afirma que SUMO ya use la topología OSM.
+- **Verificación:** generado `layout.svg` desde el XML local y sincronizado a `apps/gallery/public/data/ciudad-plano.svg`; no se corrieron pruebas Python localmente por instrucción del autor. CI de GitHub queda a cargo de esa validación.
+- **Archivos incluidos en el commit:** extracto OSM aportado por Andy y `docs/arvantti-industrial-digital-twin.md`, sin modificar este último.
+- **Conversación:** [[2026-10-22-mapa-ciudad-osm]]
 
 ### 2026-10-20 12:10 · Gemelo de ciudad en la página principal
 - **Fecha/hora (UTC):** 2026-10-20 11:45 a 12:10

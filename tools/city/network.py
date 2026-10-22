@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import argparse
 import html
+import importlib.util
 import sys
 from collections import deque
 from dataclasses import dataclass, field
@@ -75,6 +76,8 @@ class Graph:
 def load(folder: Path) -> tuple[dict, dict]:
     net = yaml.safe_load((folder / "network.yaml").read_text(encoding="utf-8"))
     demand = yaml.safe_load((folder / "demand.yaml").read_text(encoding="utf-8"))
+    if net.get("map_source", {}).get("file"):
+        net["_osm_source_path"] = (folder / net["map_source"]["file"]).resolve()
     return net, demand
 
 
@@ -235,6 +238,18 @@ def summary(net: dict, demand: dict) -> dict:
 # ---------------------------------------------------------------- plano SVG
 
 def render_svg(net: dict, demand: dict) -> str:
+    map_source = net.get("map_source") or {}
+    source_path = net.get("_osm_source_path")
+    if source_path and Path(source_path).is_file():
+        module = sys.modules.get("city_osm_map")
+        if module is None:
+            spec = importlib.util.spec_from_file_location("city_osm_map", Path(__file__).with_name("osm_map.py"))
+            if spec is None or spec.loader is None:
+                raise RuntimeError("no se puede cargar tools/city/osm_map.py")
+            module = importlib.util.module_from_spec(spec)
+            sys.modules["city_osm_map"] = module
+            spec.loader.exec_module(module)
+        return module.render_svg(Path(source_path), map_source["bbox"], net.get("map_title", net["name"]))
     g = build_graph(net)
     lw = net.get("lane_width_m", 3.3)
     xs = [n.x for n in g.nodes.values()]
@@ -335,7 +350,7 @@ def main(argv: list[str] | None = None) -> int:
             print(f"ERROR {e}")
         return 1
     info = summary(net, demand)
-    print(f"{net['id']}: {info['intersections']} cruces, {info['signals']} con semáforo, "
+    print(f"grafo SUMO reducido {net['id']}: {info['intersections']} cruces, {info['signals']} semáforos supuestos, "
           f"{info['entry_gates']} puertas de entrada, {info['exit_gates']} de salida, {info['lane_km']} km-carril")
     print(f"pico {info['peak_veh_h']} veh/h a las {info['peak_hour']}:00; horas sobre la capacidad: "
           f"{', '.join(f'{h}:00' for h in info['hours_over_capacity']) or 'ninguna'}")

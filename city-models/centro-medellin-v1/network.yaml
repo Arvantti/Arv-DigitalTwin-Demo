@@ -1,11 +1,18 @@
-# Red vial del gemelo de ciudad: centro de Medellín, zona B reducida (D65).
-# Trazado APROXIMADO e inventado a partir del centro real: 7 carreras x 5 calles = 35 intersecciones.
-# Los nombres son referencias de ubicación; anchos, sentidos, carriles y límites son supuestos (assumed).
-# Ejes: x hacia el oriente, y hacia el norte, en metros. Origen = cruce de la avenida del Ferrocarril con San Juan.
+# Base cartográfica real OSM + grafo de tráfico reducido para el gemelo de ciudad (D65).
+# OSM dibuja las vías; el grafo SUMO modela 7 corredores × 5 calles = 35 intersecciones, todavía hipotéticas.
+# Los nombres, geometría de fondo y algunos atributos proceden de OSM; el balance vial y la demanda siguen supuestos.
+# Coordenadas del grafo reducido: x al oriente, y al norte, en m; origen = Ferrocarril con San Juan.
 # Validar y dibujar: uv run python tools/city/network.py city-models/centro-medellin-v1
 id: centro-medellin-v1
 name: Centro de Medellín, zona B
 assumed: true
+# Base cartográfica real descargada de OpenStreetMap para este corredor. El grafo de SUMO abajo
+# sigue siendo una reducción hipotética (35 cruces), no una red OSM calibrada.
+map_title: Centro de Medellín · Ferrocarril–Oriental / San Juan–Juan del Corral
+map_source:
+  file: ../map.osm
+  # [sur, occidente, norte, oriente] en WGS84; bordes siguen los cuatro corredores del área solicitada.
+  bbox: [6.2435, -75.5760, 6.2593, -75.5640]
 gate_length_m: 100        # cada calle se prolonga hasta una puerta de entrada o salida fuera de la zona
 lane_width_m: 3.3
 
