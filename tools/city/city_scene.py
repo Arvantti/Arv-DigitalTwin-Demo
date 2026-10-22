@@ -1,4 +1,5 @@
 """Prepare compact, georeferenced OSM geometry for the interactive 3D city twin."""
+
 from __future__ import annotations
 
 import argparse
@@ -11,21 +12,52 @@ from pathlib import Path
 from typing import Any
 
 MOTOR_ROADS = {
-    "motorway", "motorway_link", "trunk", "trunk_link", "primary", "primary_link",
-    "secondary", "secondary_link", "tertiary", "tertiary_link", "unclassified",
-    "residential", "living_street", "service",
+    "motorway",
+    "motorway_link",
+    "trunk",
+    "trunk_link",
+    "primary",
+    "primary_link",
+    "secondary",
+    "secondary_link",
+    "tertiary",
+    "tertiary_link",
+    "unclassified",
+    "residential",
+    "living_street",
+    "service",
 }
 DEFAULT_LANES = {
-    "motorway": 3, "motorway_link": 1, "trunk": 3, "trunk_link": 1,
-    "primary": 2, "primary_link": 1, "secondary": 2, "secondary_link": 1,
-    "tertiary": 1, "tertiary_link": 1, "unclassified": 1, "residential": 1,
-    "living_street": 1, "service": 1,
+    "motorway": 3,
+    "motorway_link": 1,
+    "trunk": 3,
+    "trunk_link": 1,
+    "primary": 2,
+    "primary_link": 1,
+    "secondary": 2,
+    "secondary_link": 1,
+    "tertiary": 1,
+    "tertiary_link": 1,
+    "unclassified": 1,
+    "residential": 1,
+    "living_street": 1,
+    "service": 1,
 }
 DEFAULT_SPEED = {
-    "motorway": 60, "motorway_link": 40, "trunk": 50, "trunk_link": 35,
-    "primary": 40, "primary_link": 30, "secondary": 35, "secondary_link": 25,
-    "tertiary": 30, "tertiary_link": 25, "unclassified": 25, "residential": 25,
-    "living_street": 15, "service": 15,
+    "motorway": 60,
+    "motorway_link": 40,
+    "trunk": 50,
+    "trunk_link": 35,
+    "primary": 40,
+    "primary_link": 30,
+    "secondary": 35,
+    "secondary_link": 25,
+    "tertiary": 30,
+    "tertiary_link": 25,
+    "unclassified": 25,
+    "residential": 25,
+    "living_street": 15,
+    "service": 15,
 }
 
 
@@ -76,7 +108,7 @@ def _inside(p: tuple[float, float], bbox: tuple[float, float, float, float]) -> 
 def _clipped_paths(refs: list[str], nodes: dict[str, tuple[float, float]], bbox: tuple[float, float, float, float]):
     paths: list[list[tuple[str | None, float, float]]] = []
     current: list[tuple[str | None, float, float]] = []
-    for rid_a, rid_b in zip(refs, refs[1:]):
+    for rid_a, rid_b in zip(refs, refs[1:], strict=False):
         if rid_a not in nodes or rid_b not in nodes:
             if len(current) > 1:
                 paths.append(current)
@@ -155,16 +187,18 @@ def build_scene(osm_path: Path, bbox_values: list[float]) -> dict[str, Any]:
         # Local metric frame: x east, z north. The scene maps north to Three.js -Z.
         return ((lon - center_lon) * 111_320 * cos_lat, (lat - center_lat) * 110_540)
 
-    signal_points = {node_id for node_id, tags in node_tags.items()
-                     if tags.get("highway") == "traffic_signals" and _inside(coords[node_id], bbox)}
+    signal_points = {
+        node_id for node_id, tags in node_tags.items() if tags.get("highway") == "traffic_signals" and _inside(coords[node_id], bbox)
+    }
     junction_ids = {node_id for node_id, members in uses.items() if len(members) > 1}
     key_nodes = junction_ids | signal_points
     road_parts: list[dict[str, Any]] = []
     segments: list[dict[str, Any]] = []
     node_index: dict[str, tuple[float, float]] = {}
 
-    def emit_segment(way_id: str, tags: dict[str, str], refs: list[str], part_index: int,
-                     points: list[tuple[str | None, float, float]]) -> None:
+    def emit_segment(
+        way_id: str, tags: dict[str, str], refs: list[str], part_index: int, points: list[tuple[str | None, float, float]]
+    ) -> None:
         if len(points) < 2:
             return
         xy = [project(lat, lon) for _, lat, lon in points]
@@ -183,25 +217,45 @@ def build_scene(osm_path: Path, bbox_values: list[float]) -> dict[str, Any]:
         speed = speed if speed is not None else DEFAULT_SPEED[highway]
         coords_list = [[round(x, 2), round(z, 2)] for x, z in xy]
         part_id = f"{way_id}:{part_index}"
-        road_parts.append({
-            "id": part_id, "way": way_id, "name": name, "class": highway,
-            "points": coords_list, "width": round(max(3.0, lane_count * 3.15), 2),
-            "lanes": lane_count, "lanesAssumed": assumed_f or assumed_b,
-            "oneway": oneway, "reverse": oneway_tag == "-1",
-        })
+        road_parts.append(
+            {
+                "id": part_id,
+                "way": way_id,
+                "name": name,
+                "class": highway,
+                "points": coords_list,
+                "width": round(max(3.0, lane_count * 3.15), 2),
+                "lanes": lane_count,
+                "lanesAssumed": assumed_f or assumed_b,
+                "oneway": oneway,
+                "reverse": oneway_tag == "-1",
+            }
+        )
         from_id, to_id = points[0][0], points[-1][0]
         if from_id is None or to_id is None:
             return
         for node_id in (from_id, to_id):
             if node_id in coords:
                 node_index[node_id] = project(*coords[node_id])
+
         def add_directed(suffix: str, a: str, b: str, line: list[list[float]], lanes: int, lane_assumed: bool):
-            segments.append({
-                "id": f"{part_id}:{suffix}", "part": part_id, "way": way_id,
-                "from": a, "to": b, "points": line, "class": highway, "name": name,
-                "lanes": lanes, "lanesAssumed": lane_assumed,
-                "speedKmh": round(speed, 1), "speedAssumed": speed_assumed,
-            })
+            segments.append(
+                {
+                    "id": f"{part_id}:{suffix}",
+                    "part": part_id,
+                    "way": way_id,
+                    "from": a,
+                    "to": b,
+                    "points": line,
+                    "class": highway,
+                    "name": name,
+                    "lanes": lanes,
+                    "lanesAssumed": lane_assumed,
+                    "speedKmh": round(speed, 1),
+                    "speedAssumed": speed_assumed,
+                }
+            )
+
         if oneway_tag == "-1":
             add_directed("b", to_id, from_id, list(reversed(coords_list)), width_b, assumed_b)
         else:
@@ -225,11 +279,20 @@ def build_scene(osm_path: Path, bbox_values: list[float]) -> dict[str, Any]:
                 emit_segment(wid, tags, refs, part_index, chunk)
                 part_index += 1
 
-    signals = [{"id": node_id, "x": round(project(*coords[node_id])[0], 2),
-                "z": round(project(*coords[node_id])[1], 2)} for node_id in sorted(signal_points)]
-    junctions = [{"id": node_id, "x": round(project(*coords[node_id])[0], 2),
-                  "z": round(project(*coords[node_id])[1], 2), "signal": node_id in signal_points}
-                 for node_id in sorted(junction_ids) if node_id in coords and _inside(coords[node_id], bbox)]
+    signals = [
+        {"id": node_id, "x": round(project(*coords[node_id])[0], 2), "z": round(project(*coords[node_id])[1], 2)}
+        for node_id in sorted(signal_points)
+    ]
+    junctions = [
+        {
+            "id": node_id,
+            "x": round(project(*coords[node_id])[0], 2),
+            "z": round(project(*coords[node_id])[1], 2),
+            "signal": node_id in signal_points,
+        }
+        for node_id in sorted(junction_ids)
+        if node_id in coords and _inside(coords[node_id], bbox)
+    ]
 
     buildings: list[dict[str, Any]] = []
     for way in root.findall("way"):
@@ -240,8 +303,13 @@ def build_scene(osm_path: Path, bbox_values: list[float]) -> dict[str, Any]:
         if len(refs) < 4 or refs[0] != refs[-1] or any(ref not in coords or not _inside(coords[ref], bbox) for ref in refs):
             continue
         polygon = [project(*coords[ref]) for ref in refs[:-1]]
-        area = abs(sum(polygon[i][0] * polygon[(i + 1) % len(polygon)][1] - polygon[(i + 1) % len(polygon)][0] * polygon[i][1]
-                       for i in range(len(polygon))) / 2)
+        area = abs(
+            sum(
+                polygon[i][0] * polygon[(i + 1) % len(polygon)][1] - polygon[(i + 1) % len(polygon)][0] * polygon[i][1]
+                for i in range(len(polygon))
+            )
+            / 2
+        )
         if area < 12:
             continue
         raw_height = _number(tags.get("height"))
@@ -254,12 +322,16 @@ def build_scene(osm_path: Path, bbox_values: list[float]) -> dict[str, Any]:
             # Visible fallback is explicitly tagged as an estimate, never as measured height.
             height = 7 + (int(way.get("id", "0")) % 7) * 2.2
             height_source = "estimated"
-        buildings.append({
-            "id": way.get("id", ""), "name": tags.get("name", ""),
-            "kind": tags.get("building", "yes"),
-            "points": [[round(x, 2), round(z, 2)] for x, z in polygon],
-            "height": round(height, 1), "heightSource": height_source,
-        })
+        buildings.append(
+            {
+                "id": way.get("id", ""),
+                "name": tags.get("name", ""),
+                "kind": tags.get("building", "yes"),
+                "points": [[round(x, 2), round(z, 2)] for x, z in polygon],
+                "height": round(height, 1),
+                "heightSource": height_source,
+            }
+        )
 
     # OSM footprints occasionally overlap the mapped carriageway; exclude those whole footprints
     # from the visual extrusion rather than drawing traffic through a solid-looking building.
@@ -280,17 +352,23 @@ def build_scene(osm_path: Path, bbox_values: list[float]) -> dict[str, Any]:
         overlaps_road = False
         for road in road_parts:
             rp = road["points"]
-            if max(p[0] for p in rp) < bx[0] or min(p[0] for p in rp) > bx[1] or max(p[1] for p in rp) < bz[0] or min(p[1] for p in rp) > bz[1]:
+            if (
+                max(p[0] for p in rp) < bx[0]
+                or min(p[0] for p in rp) > bx[1]
+                or max(p[1] for p in rp) < bz[0]
+                or min(p[1] for p in rp) > bz[1]
+            ):
                 continue
             if any(inside_polygon(point, polygon) for point in rp):
                 overlaps_road = True
                 break
-            for a, b in zip(rp, rp[1:]):
+            for a, b in zip(rp, rp[1:], strict=False):
                 length = math.dist(a, b)
                 samples = max(1, math.ceil(length / 3.0))
-                if any(inside_polygon([a[0] + (b[0] - a[0]) * i / samples,
-                                       a[1] + (b[1] - a[1]) * i / samples], polygon)
-                       for i in range(1, samples)):
+                if any(
+                    inside_polygon([a[0] + (b[0] - a[0]) * i / samples, a[1] + (b[1] - a[1]) * i / samples], polygon)
+                    for i in range(1, samples)
+                ):
                     overlaps_road = True
                     break
             if overlaps_road:
@@ -304,14 +382,29 @@ def build_scene(osm_path: Path, bbox_values: list[float]) -> dict[str, Any]:
         raise ValueError("El extracto no contiene vías transitables en el bbox configurado")
     xs, zs = [p[0] for p in all_points], [p[1] for p in all_points]
     return {
-        "schema": "city-scene-v1", "source": "OpenStreetMap",
+        "schema": "city-scene-v1",
+        "source": "OpenStreetMap",
         "attribution": "© OpenStreetMap contributors · ODbL 1.0 · openstreetmap.org/copyright",
-        "bounds": {"south": south, "west": west, "north": north, "east": east,
-                   "width": round(max(xs) - min(xs), 1), "height": round(max(zs) - min(zs), 1)},
-        "counts": {"roadParts": len(road_parts), "directedSegments": len(segments),
-                   "buildings": len(buildings), "trafficSignals": len(signals), "junctions": len(junctions)},
-        "roadParts": road_parts, "segments": segments, "buildings": buildings,
-        "signals": signals, "junctions": junctions,
+        "bounds": {
+            "south": south,
+            "west": west,
+            "north": north,
+            "east": east,
+            "width": round(max(xs) - min(xs), 1),
+            "height": round(max(zs) - min(zs), 1),
+        },
+        "counts": {
+            "roadParts": len(road_parts),
+            "directedSegments": len(segments),
+            "buildings": len(buildings),
+            "trafficSignals": len(signals),
+            "junctions": len(junctions),
+        },
+        "roadParts": road_parts,
+        "segments": segments,
+        "buildings": buildings,
+        "signals": signals,
+        "junctions": junctions,
     }
 
 
@@ -368,6 +461,7 @@ def main() -> int:
     parser.add_argument("--tracks", type=Path, default=Path("apps/gallery/public/data/ciudad-trayectorias.json"))
     args = parser.parse_args()
     import yaml
+
     config = yaml.safe_load(args.network.read_text(encoding="utf-8"))
     scene = build_scene(args.osm, config["map_source"]["bbox"])
     removed = filter_buildings_on_trajectories(scene, args.tracks)

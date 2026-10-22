@@ -3,6 +3,7 @@
 This deliberately samples 1,200 trips from the assumed daily profile. It is a visual scenario,
 not a traffic-volume estimate or a calibrated full-day run.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -26,6 +27,7 @@ spec.loader.exec_module(city_scene)
 
 def sumo_home() -> Path:
     import sumo
+
     return Path(sumo.SUMO_HOME)
 
 
@@ -44,8 +46,10 @@ def build_net(model: dict, build: Path) -> Path:
         ET.SubElement(nodes, "node", id=j["id"], x=str(j["x"]), y=str(j["z"]), type=node_type)
     seen = set(junction_ids)
     for seg in model["segments"]:
-        for node_id, x, y in ((seg["from"], seg["points"][0][0], seg["points"][0][1]),
-                              (seg["to"], seg["points"][-1][0], seg["points"][-1][1])):
+        for node_id, x, y in (
+            (seg["from"], seg["points"][0][0], seg["points"][0][1]),
+            (seg["to"], seg["points"][-1][0], seg["points"][-1][1]),
+        ):
             if node_id not in seen:
                 ET.SubElement(nodes, "node", id=node_id, x=str(x), y=str(y), type="priority")
                 seen.add(node_id)
@@ -55,9 +59,14 @@ def build_net(model: dict, build: Path) -> Path:
         if seg["id"] in used or seg["from"] == seg["to"]:
             continue
         used.add(seg["id"])
-        attrs = {"id": seg["id"], "from": seg["from"], "to": seg["to"],
-                 "numLanes": str(max(1, int(seg["lanes"]))), "speed": str(max(4.17, seg["speedKmh"] / 3.6)),
-                 "priority": "3"}
+        attrs = {
+            "id": seg["id"],
+            "from": seg["from"],
+            "to": seg["to"],
+            "numLanes": str(max(1, int(seg["lanes"]))),
+            "speed": str(max(4.17, seg["speedKmh"] / 3.6)),
+            "priority": "3",
+        }
         # Preserve the OSM centerline shape; SUMO models this as a directed edge.
         shape = " ".join(f"{x:.2f},{y:.2f}" for x, y in seg["points"])
         attrs["shape"] = shape
@@ -65,14 +74,34 @@ def build_net(model: dict, build: Path) -> Path:
     write(build / "osm.nod.xml", nodes)
     write(build / "osm.edg.xml", edges)
     net = build / "osm.net.xml"
-    subprocess.run([str(sumo_home() / "bin" / "netconvert"), "--node-files", str(build / "osm.nod.xml"),
-                    "--edge-files", str(build / "osm.edg.xml"), "--output-file", str(net),
-                    "--no-turnarounds", "true", "--tls.default-type", "static", "--junctions.corner-detail", "3", "--no-warnings", "true"],
-                   check=True, capture_output=True, text=True)
+    subprocess.run(
+        [
+            str(sumo_home() / "bin" / "netconvert"),
+            "--node-files",
+            str(build / "osm.nod.xml"),
+            "--edge-files",
+            str(build / "osm.edg.xml"),
+            "--output-file",
+            str(net),
+            "--no-turnarounds",
+            "true",
+            "--tls.default-type",
+            "static",
+            "--junctions.corner-detail",
+            "3",
+            "--no-warnings",
+            "true",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
     return net
 
 
-def make_demand(model: dict, demand: dict, build: Path, count: int, seed: int, from_hour: int, duration_minutes: int) -> tuple[Path, dict[str, int]]:
+def make_demand(
+    model: dict, demand: dict, build: Path, count: int, seed: int, from_hour: int, duration_minutes: int
+) -> tuple[Path, dict[str, int]]:
     rng = random.Random(seed)
     edges = ET.parse(build / "osm.net.xml").getroot().findall("edge")
     candidates = [e for e in edges if not e.get("function") and e.get("from") and e.get("to")]
@@ -84,8 +113,24 @@ def make_demand(model: dict, demand: dict, build: Path, count: int, seed: int, f
     type_counts: Counter[str] = Counter()
     routes = ET.Element("routes")
     for v in types:
-        attrs = dict(id=v["type"], vClass={"moto":"motorcycle", "moto-domicilio":"motorcycle", "carro":"passenger", "taxi":"taxi", "carga-liviana":"delivery", "bus":"bus", "carga-pesada":"truck"}[v["type"]],
-                     length=str(v["length_m"]), width=str(v["width_m"]), accel="2.5", decel="4.5", sigma="0.5", minGap="1.2")
+        attrs = dict(
+            id=v["type"],
+            vClass={
+                "moto": "motorcycle",
+                "moto-domicilio": "motorcycle",
+                "carro": "passenger",
+                "taxi": "taxi",
+                "carga-liviana": "delivery",
+                "bus": "bus",
+                "carga-pesada": "truck",
+            }[v["type"]],
+            length=str(v["length_m"]),
+            width=str(v["width_m"]),
+            accel="2.5",
+            decel="4.5",
+            sigma="0.5",
+            minGap="1.2",
+        )
         if v.get("lane_filtering"):
             attrs.update(latAlignment="arbitrary", minGapLat="0.5", lcSublane="5", maxSpeedLat="1.5")
         ET.SubElement(routes, "vType", attrs)
@@ -108,19 +153,46 @@ def make_demand(model: dict, demand: dict, build: Path, count: int, seed: int, f
             pct = vehicle_type["pct"]
             if franja["id"] in vehicle_type.get("banned_franjas", []):
                 pct = 0
-            if vehicle_type["type"] in pico_placa.get("applies_to", []) and pico_placa.get("from_h", 24) <= hour < pico_placa.get("to_h", 0):
+            if vehicle_type["type"] in pico_placa.get("applies_to", []) and pico_placa.get("from_h", 24) <= hour < pico_placa.get(
+                "to_h", 0
+            ):
                 pct *= 1 - pico_placa.get("removed_pct", 0) / 100
             effective.append(pct)
         typ = rng.choices(types, weights=effective)[0]["type"]
         type_counts[typ] += 1
-        ET.SubElement(routes, "trip", id=f"osm{idx:05d}", type=typ, depart=f"{depart:.1f}",
-                      departLane="best", departSpeed="max", **{"from": origin.get("id", ""), "to": dest.get("id", "")})
+        ET.SubElement(
+            routes,
+            "trip",
+            id=f"osm{idx:05d}",
+            type=typ,
+            depart=f"{depart:.1f}",
+            departLane="best",
+            departSpeed="max",
+            **{"from": origin.get("id", ""), "to": dest.get("id", "")},
+        )
     trip_file = build / "trips.rou.xml"
     write(trip_file, routes)
     routed = build / "routed.rou.xml"
-    subprocess.run([str(sumo_home() / "bin" / "duarouter"), "--net-file", str(build / "osm.net.xml"),
-                    "--route-files", str(trip_file), "--output-file", str(routed), "--ignore-errors", "true",
-                    "--no-warnings", "true", "--seed", str(seed)], check=True, capture_output=True, text=True)
+    subprocess.run(
+        [
+            str(sumo_home() / "bin" / "duarouter"),
+            "--net-file",
+            str(build / "osm.net.xml"),
+            "--route-files",
+            str(trip_file),
+            "--output-file",
+            str(routed),
+            "--ignore-errors",
+            "true",
+            "--no-warnings",
+            "true",
+            "--seed",
+            str(seed),
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
     type_counts = Counter(v.get("type", "carro") for v in ET.parse(routed).getroot().findall("vehicle"))
     return routed, dict(type_counts)
 
@@ -149,8 +221,13 @@ def run(folder: Path, build: Path, out: Path, count: int, seed: int, from_hour: 
     ET.SubElement(out_cfg, "device.fcd.probability", value="1")
     ET.SubElement(out_cfg, "no-step-log", value="true")
     write(build / "city.sumocfg", cfg)
-    subprocess.run([str(sumo_home() / "bin" / "sumo"), "-c", "city.sumocfg", "--seed", str(seed), "--no-warnings", "true"],
-                   cwd=build, check=True, capture_output=True, text=True)
+    subprocess.run(
+        [str(sumo_home() / "bin" / "sumo"), "-c", "city.sumocfg", "--seed", str(seed), "--no-warnings", "true"],
+        cwd=build,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
     net_root = ET.parse(build / "osm.net.xml").getroot()
     net_offset = net_root.find("location").get("netOffset", "0,0").split(",")
     offset_x, offset_y = float(net_offset[0]), float(net_offset[1])
@@ -165,19 +242,33 @@ def run(folder: Path, build: Path, out: Path, count: int, seed: int, from_hour: 
             speed = float(v.get("speed", "0"))
             if edge:
                 speed_by_edge.setdefault(edge, []).append(speed * 3.6)
-            vehicles.append({"id": v.get("id", ""), "type": v.get("type", "carro"),
-                             "x": round(float(v.get("x", "0")) - offset_x, 2), "y": round(float(v.get("y", "0")) - offset_y, 2),
-                             "angle": round(float(v.get("angle", "0")) * 3.141592653589793 / 180, 4),
-                             "speed": round(speed, 2), "edge": edge})
+            vehicles.append(
+                {
+                    "id": v.get("id", ""),
+                    "type": v.get("type", "carro"),
+                    "x": round(float(v.get("x", "0")) - offset_x, 2),
+                    "y": round(float(v.get("y", "0")) - offset_y, 2),
+                    "angle": round(float(v.get("angle", "0")) * 3.141592653589793 / 180, 4),
+                    "speed": round(speed, 2),
+                    "edge": edge,
+                }
+            )
         frames.append({"time": time, "vehicles": vehicles})
-    result = {"schema": "city-trajectory-v1", "duration": frames[-1]["time"] if frames else 0,
-              "interval": FCD_PERIOD_S, "sampledTrips": sum(type_counts.values()), "windowMinutes": duration_minutes,
-              "assumedHourlyDemand": round(sum(type_counts.values()) * 60 / duration_minutes), "assumed": True,
-              "note": "Escenario visual con demanda triplicada respecto al supuesto base; no representa aforos reales.",
-              "types": type_counts,
-              "roadSpeeds": {edge: {"meanKmh": round(sum(values) / len(values), 1), "samples": len(values)}
-                             for edge, values in speed_by_edge.items()},
-              "frames": frames}
+    result = {
+        "schema": "city-trajectory-v1",
+        "duration": frames[-1]["time"] if frames else 0,
+        "interval": FCD_PERIOD_S,
+        "sampledTrips": sum(type_counts.values()),
+        "windowMinutes": duration_minutes,
+        "assumedHourlyDemand": round(sum(type_counts.values()) * 60 / duration_minutes),
+        "assumed": True,
+        "note": "Escenario visual con demanda triplicada respecto al supuesto base; no representa aforos reales.",
+        "types": type_counts,
+        "roadSpeeds": {
+            edge: {"meanKmh": round(sum(values) / len(values), 1), "samples": len(values)} for edge, values in speed_by_edge.items()
+        },
+        "frames": frames,
+    }
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(result, separators=(",", ":")) + "\n", encoding="utf-8")
     print(f"Wrote {len(frames)} frames from {sum(len(f['vehicles']) for f in frames)} vehicle observations to {out}")
@@ -188,7 +279,9 @@ def main() -> int:
     ap.add_argument("folder", type=Path, default=Path("city-models/centro-medellin-v1"), nargs="?")
     ap.add_argument("--build", type=Path, default=Path("city-models/centro-medellin-v1/osm-build"))
     ap.add_argument("--out", type=Path, default=Path("apps/gallery/public/data/ciudad-trayectorias.json"))
-    ap.add_argument("--trips", type=int, default=3825, help="target routed trips for the 15-minute x3 visual sample (assumed, not measured volume)")
+    ap.add_argument(
+        "--trips", type=int, default=3825, help="target routed trips for the 15-minute x3 visual sample (assumed, not measured volume)"
+    )
     ap.add_argument("--seed", type=int, default=1)
     ap.add_argument("--from-hour", type=int, default=7, help="start hour for the visual sample")
     ap.add_argument("--minutes", type=int, default=15, help="duration of departures; trips are spread uniformly over this window")
