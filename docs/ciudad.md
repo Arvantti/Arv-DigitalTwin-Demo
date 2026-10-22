@@ -1,14 +1,12 @@
 # Gemelo de ciudad: centro de Medellín (zona B reducida)
 
-Estado: **fases 1 y 2 hechas**: red vial y demanda hipotética validadas con plano (PR #65) y el día completo corre en SUMO con indicadores (D66). Sin escena 3D ni enjambre todavía.
+Estado: cartografía OSM en 3D interactivo y generador de trayectorias SUMO sobre la red derivada de OSM en desarrollo. La línea base histórica de SUMO aún usa el grafo reducido hipotético de 35 intersecciones; demanda, alturas OSM ausentes y atributos de vía faltantes son supuestos. Sin calibración de aforos ni enjambre.
 Pedido: Andy, 2026-10-19 (hilo «Gemelo digital de ciudad», ver `docs/registro/historico/proyecto/hilo-gemelo-de-ciudad.md`).
 El plan completo para debatir está en el documento «Plan: gemelo digital de ciudad (centro de Medellín)» del proyecto; aquí va el resumen técnico.
 
 ## 1. Qué representa
 
-Un pedazo del centro de Medellín, **aproximado e inventado**, para simular un día completo de tráfico con vehículos autónomos
-(cada vehículo es un agente con origen, destino y prisa) y luego probar escenarios con Fractal: calles nuevas, glorietas,
-otros tiempos de semáforo. Los datos son supuestos (`assumed: true`) hasta tener datos reales del SIMM.
+La escena 3D se construye con vías y huellas de edificios del extracto OSM local, y puede reproducir snapshots FCD de una corrida SUMO sobre los tramos dirigidos derivados del mismo extracto. La demanda de la corrida visual es una muestra escalada, no un aforo. Los edificios sin `height` ni `building:levels` usan alturas estimadas, señaladas como tales en los datos. La demanda, capacidades y varios atributos viales siguen supuestos (`assumed: true`) hasta calibrar con datos del SIMM. La línea base analítica anterior conserva el grafo reducido de 35 cruces; el enjambre queda separado.
 
 Decisiones del autor (D65):
 - Zona B del plan (centro entre la avenida del Ferrocarril, la Oriental, San Juan y Juan del Corral) **con la mitad de intersecciones**: 35 en vez de 60 a 80.
@@ -20,15 +18,20 @@ Decisiones del autor (D65):
 
 | Archivo | Qué tiene |
 |---|---|
-| `city-models/centro-medellin-v1/network.yaml` | 7 carreras x 5 calles con sentido, carriles, límite y separador; 20 cruces con semáforo y sus planes de tiempos por franja; tramos adicionales para escenarios |
+| `city-models/centro-medellin-v1/network.yaml` | Referencia el extracto cartográfico OSM y conserva el grafo reducido de SUMO (7×5 nodos, 20 semáforos supuestos y planes por franja) |
 | `city-models/centro-medellin-v1/demand.yaml` | 60.000 entradas al día, perfil de 24 h, 7 franjas con velocidad esperada y % de agentes con afán, mezcla de 7 tipos de vehículo, pico y placa, atractores |
-| `city-models/centro-medellin-v1/layout.svg` | Plano generado (no se edita a mano) |
-| `tools/city/network.py` | Valida la red y la demanda y dibuja el plano |
+| `city-models/map.osm` | Extracto XML de OpenStreetMap, con atribución y licencia ODbL 1.0 en el encabezado |
+| `city-models/centro-medellin-v1/layout.svg` | Plano vial generado desde geometría OSM (no se edita a mano) |
+| `tools/city/network.py` | Valida la red y la demanda y dibuja el plano 2D de referencia |
+| `tools/city/city_scene.py` | Convierte el extracto OSM en geometría 3D, vías dirigidas y metadatos de edificios/semáforos |
+| `tools/city/osm_simulation.py` | Construye red SUMO desde OSM, simula una muestra de viajes y exporta snapshots FCD para el visor |
+| `apps/gallery/src/city-scene.ts` | Escena Three.js interactiva, controles Orbit, vehículos y reproducción de trayectorias |
+| `apps/gallery/public/data/ciudad-modelo.json` | Geometría OSM preprocesada para la escena 3D |
 | `tools/city/tests/test_network.py` | Pruebas (tamaño, horas sobre capacidad, sentidos, ciclos, conectividad, calle nueva) |
 | `tools/city/sumo_city.py` | Convierte red, semáforos y demanda a SUMO, corre el día y calcula los indicadores |
 | `tools/city/tests/test_sumo_city.py` | Pruebas de la conversión y una corrida corta (necesitan `uv sync --group city`) |
 | `city-models/centro-medellin-v1/resultados/linea-base.json` | Indicadores de la línea base (semilla 1); `build/` guarda los archivos de SUMO y no se versiona |
-| `apps/gallery/ciudad.html` | Página del portal (tarjeta «Gemelo de ciudad»): indicadores, plano, corredores, atascos y curva de 24 h. Lee copias del plano y de la línea base en `apps/gallery/public/data/`; si se regeneran, hay que copiarlas otra vez (una prueba lo revisa) |
+| `apps/gallery/ciudad.html` | Visor 3D interactivo con controles de reproducción; la línea base agregada se conserva en `public/data/ciudad-linea-base.json` |
 
 ```bash
 uv run python tools/city/network.py city-models/centro-medellin-v1   # valida, resume y escribe layout.svg
@@ -37,16 +40,29 @@ uv run python tools/city/sumo_city.py city-models/centro-medellin-v1  # día com
 uv run pytest -q tools/city/tests
 ```
 
-## 3. La red
+## 3. Cartografía 3D OSM y simulación
 
-- Cuadrícula de 900 x 720 m: carreras cada 150 m (Ferrocarril, 55, 53, Bolívar, 50, 48, Oriental) y calles cada 180 m (San Juan, 46, Pichincha, Colombia, Juan del Corral).
+- `city_scene.py` proyecta el extracto WGS84 a coordenadas locales en metros y genera una malla urbana con calzadas, edificios extruidos, clasificación vial, 137 semáforos OSM y nodos de unión. La geometría conserva los ejes y trazados del extracto; la altura de edificios sin dato etiquetado se estima (no es altura catastral medida).
+- `osm_simulation.py` convierte los tramos dirigidos OSM a una red SUMO separada, usa como semáforos los nodos `highway=traffic_signals` y exporta FCD para animar carros, motos, taxis, buses y carga en la misma escena. La muestra visual versionada reproduce 3.745 viajes en 15 min (14.980/h, semilla fija), tres veces el objetivo de entrada del pico base (5.100/h); es una prueba de estrés visual supuesta, no una medición ni un escenario calibrado, y no sustituye la línea base de 60.000 viajes/día. Los colores de calzada muestran la velocidad media por tramo en las observaciones FCD de toda esa ventana (rojo lento → verde fluido, escala 0–50+ km/h). El visor omite huellas de edificio que se solapan con trayectorias observadas para no dibujar vehículos atravesando edificios.
+- Comandos de generación (la corrida SUMO de muestra es un proceso separado):
+
+```bash
+uv run --group city python tools/city/city_scene.py
+uv run --group city python tools/city/osm_simulation.py --trips 3825 --minutes 15  # tráfico x3 supuesto, produce trayectorias y velocidades por tramo
+```
+
+### Grafo SUMO reducido (todavía hipotético)
+
+- Cuadrícula de 900 × 720 m: carreras cada 150 m (Ferrocarril, 55, 53, Bolívar, 50, 48, Oriental) y calles cada 180 m (San Juan, 46, Pichincha, Colombia, Juan del Corral). Sus posiciones, carriles, sentidos, semáforos y ciclos no son datos derivados de OSM.
 - Avenidas de doble sentido con 3 carriles por sentido y separador (Ferrocarril, Oriental, San Juan); Bolívar, Colombia y Juan del Corral con 2 por sentido; el resto de sentido único alterno con 2 carriles.
 - Cada calle sigue 100 m fuera de la zona hasta una **puerta**: 18 de entrada y 18 de salida. Las entradas se reparten por carriles.
 - **20 semáforos**: todos los cruces de las tres avenidas y de Colombia. Los otros 15 cruces van con pare o prioridad.
 - Planes de dos fases (carreras / calles) por franja: 60 s de madrugada, 120 s en los picos y 90 s el resto, con 3 s de amarillo y 2 s de todo rojo por fase. El validador exige que verdes + 10 s cierren el ciclo.
 - Una calle nueva de un escenario se agrega en `extra_links` (desde, hasta, carriles, velocidad); el largo se calcula.
 
-![Plano de la red](../city-models/centro-medellin-v1/layout.svg)
+![Plano vial basado en OpenStreetMap](../city-models/centro-medellin-v1/layout.svg)
+
+Atribución: © OpenStreetMap contributors, ODbL 1.0. La cartografía real no implica que la demanda, el grafo SUMO ni sus indicadores estén calibrados con aforos reales.
 
 ## 4. Demanda hipotética
 
@@ -59,7 +75,7 @@ en cuatro atractores (comercio, oficinas, parqueadero, hospital).
 
 ## 5. Lo que sigue (fases del plan)
 
-1. ~~Red y datos~~ (esta entrega, con red aproximada a mano porque OpenStreetMap no es accesible desde el entorno de trabajo).
+1. ~~Plano base~~ (extracto vial OSM dibujado; falta convertir toda la geometría y topología a la red simulada).
 2. ~~Gemelo base en SUMO~~ (sección 6).
 3. Vista 3D de la ciudad en el visor actual, reproduciendo la corrida, con el panel de curvas de 24 h.
 4. Enjambre: los agentes en un proceso aparte con la interfaz estado → acción y los perfiles de prisa por hora.

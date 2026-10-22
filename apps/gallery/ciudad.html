@@ -3,44 +3,34 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#d3ddd8" />
     <title>Gemelo de ciudad · Centro de Medellín</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" />
+    <link rel="stylesheet" href="/src/city-scene.css" />
   </head>
-  <body>
-<div class="wrap">
-  <header class="top">
-    <div>
-      <h1>Gemelo de ciudad · Centro de Medellín</h1>
-      <p class="sub">Un día completo de tráfico en la zona B (35 cruces, 20 semáforos) corrido en SUMO: 60.000 vehículos con origen, destino y afán según la hora. Datos hipotéticos, todavía sin calibrar.</p>
+  <body class="city-page">
+    <canvas id="city-scene" aria-label="Escena 3D interactiva de Medellín. Arrastre para orbitar y use la rueda para acercar."></canvas>
+    <div id="city-loading" class="city-loading">Cargando ciudad OSM 3D…</div>
+    <header class="city-top glass">
+      <a class="city-home" href="/">← Inicio</a>
+      <div><strong>MEDELLÍN · GEMELO URBANO</strong><small>Centro · extracto OpenStreetMap</small></div>
+      <div class="city-clock" id="sim-clock">00:00:00</div>
+    </header>
+    <aside class="city-info glass">
+      <h1>Centro de Medellín</h1>
+      <p>Geometría vial y huellas de edificios desde OSM. Circulación simulada sobre las vías de este extracto.</p>
+      <div id="map-stats">Leyendo objetos del mapa…</div>
+      <div class="traffic-scale"><div class="traffic-scale-title"><span>Velocidad media de la vía</span><b>km/h</b></div><div class="traffic-gradient" aria-label="Rojo: lento; verde: fluido"></div><div class="traffic-ticks"><span>0 · lenta</span><span>10</span><span>20</span><span>30</span><span>50+ · fluida</span></div><small>Promedio de SUMO en toda la ventana mostrada; vías sin observaciones conservan el color OSM.</small></div>
+      <div class="city-legend"><span><i style="background:#3b83bc"></i>Carros</span><span><i style="background:#ee743b"></i>Motos</span><span><i style="background:#f0cf36"></i>Taxis</span><span><i style="background:#b6564b"></i>Buses</span><span><i style="background:#63a67d"></i>Carga</span></div>
+      <div class="city-note">Las posiciones animadas provienen de SUMO. La demanda y alturas sin dato OSM son supuestos, no mediciones de tráfico ni de catastro.</div>
+    </aside>
+    <div class="city-playback glass">
+      <div class="play-row"><button id="play" type="button">▶ Reproducir</button><button id="sim-home" type="button" title="Volver al inicio">⟲</button><span id="sim-count">0 vehículos</span></div>
+      <input id="sim-time" type="range" min="0" max="86400" value="0" step="1" aria-label="Tiempo de simulación" />
+      <div class="speed-row"><label for="sim-speed">Velocidad</label><input id="sim-speed" type="range" min="1" max="600" value="60" /><b id="sim-speed-label">60×</b><span id="sim-status">Preparando simulación…</span></div>
     </div>
-    <div class="controls"><a class="tag" href="/">◀ Inicio</a><span class="tag" id="tag-model">centro-medellin-v1</span></div>
-  </header>
-
-  <div class="kpis" id="kpis"></div>
-
-  <div class="grid2">
-    <div class="card">
-      <div class="chead"><div><h2>Plano de la red</h2><p class="hint">Sentidos, carriles, semáforos y puertas de entrada y salida (trazado aproximado).</p></div></div>
-      <img class="plano" src="/data/ciudad-plano.svg" alt="Plano de la zona B del centro de Medellín con 7 carreras, 5 calles y 20 semáforos" width="1000" height="896" />
-    </div>
-    <div class="card">
-      <div class="chead"><div><h2>Corredores</h2><p class="hint">Índice de tiempo de viaje: tiempo real entre tiempo a flujo libre. Verde por debajo de 1,5, amarillo hasta 2,5, rojo encima.</p></div></div>
-      <div id="corr"></div>
-      <h2 class="sub2">Tramos con más minutos de atasco</h2>
-      <p class="hint">Minutos del día con velocidad media por debajo de 5 km/h.</p>
-      <div id="jam"></div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="chead"><div><h2>Curva de 24 horas</h2><p class="hint">Vehículos que entran a la zona por hora (barras) y demora media por viaje (línea).</p></div></div>
-    <div class="chart" id="c-dia"></div>
-    <div class="legend"><span><i style="background:var(--s1)"></i>Entradas por hora</span><span><i style="background:var(--s2)"></i>Demora media (s)</span></div>
-  </div>
-
-  <p class="note">Con los supuestos actuales el centro <strong>no colapsa</strong>: aguanta la hora pico a unos 25 km/h. Falta calibrar lo que hace lento el centro real (buses y taxis parando en la vía, carga descargando, peatones, carros estacionados). Siguen la vista 3D, el enjambre de agentes y los escenarios con Fractal. Detalle en <code>docs/ciudad.md</code>.</p>
-</div>
-    <script type="module" src="/src/ciudad.ts"></script>
+    <footer class="city-credit glass" id="osm-credit">© OpenStreetMap contributors · ODbL 1.0</footer>
+    <script type="module" src="/src/city-scene.ts"></script>
   </body>
 </html>
