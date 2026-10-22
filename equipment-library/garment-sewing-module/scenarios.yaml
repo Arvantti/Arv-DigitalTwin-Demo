@@ -1,0 +1,12 @@
+scenarios:
+  - id: five-station-pipeline
+    description: "Una hora con WIP de ambos productos; cada prenda completa plana 1, plana 2, fileteadora 1, fileteadora 2 y recubridora en pipeline. Las estaciones conservan sus SAM agrupados"
+    preset: standard
+    duration_s: 3600
+    timeline:
+      - { at_s: 0, inputs: { polo_inflow_upm: 1, oversize_inflow_upm: 1 } }
+    expect:
+      - { path: variables.station_1_units, min: 30, max: 40 }
+      - { path: variables.station_5_units, min: 25, max: 38 }
+      - { path: variables.units_completed, min: 25, max: 38 }
+      - { path: state, equals: running }

@@ -1,0 +1,11 @@
+scenarios:
+  - id: inventory-receipts
+    description: "Una hora con 1 prenda/min: las 60 unidades inspeccionadas se reflejan en inventario, sin despacho modelado"
+    preset: standard
+    duration_s: 3600
+    timeline:
+      - { at_s: 0, inputs: { polo_inflow_upm: 1 } }
+    expect:
+      - { path: variables.polo_received, min: 59, max: 60 }
+      - { path: variables.polo_stock, min: 59, max: 60 }
+      - { path: variables.units_stored, min: 59, max: 60 }

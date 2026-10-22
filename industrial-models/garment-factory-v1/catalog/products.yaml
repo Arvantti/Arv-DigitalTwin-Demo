@@ -1,4 +1,4 @@
-# Ruta ilustrativa por prenda; ciclo_s = SAM de operación × 60. Valores supuestos.
+# Rutas agregadas a los cinco puestos de cada módulo; los SAM son supuestos de la ruta conceptual.
 products:
   - id: camiseta-polo
     name: Camiseta Polo
@@ -8,19 +8,14 @@ products:
     size: talla adulta (supuesto)
     color: '#285b83'
     routing:
-      - { stage: corte y paquete (prorrateo por unidad no fijado), equipment: [mesa-tendido-01, mesa-corte-01, rack-paquetes], batch_qty: 30 }
-      - { stage: cerrar hombros y estabilizar, equipment: [plana-m1-1, plana-m2-1, plana-m3-1], cycle_s: 33 }
-      - { stage: "preparar, unir y pespuntear pie de cuello", equipment: [plana-m1-2, plana-m2-2, plana-m3-2], cycle_s: 63 }
-      - { stage: cerrar extremos y montar cuello, equipment: [plana-m1-1, plana-m2-1, plana-m3-1], cycle_s: 54 }
-      - { stage: preparar cartera, equipment: [plana-m1-2, plana-m2-2, plana-m3-2], cycle_s: 45 }
-      - { stage: montar cartera al delantero y pespuntear, equipment: [plana-m1-1, plana-m2-1, plana-m3-1], cycle_s: 60 }
-      - { stage: pegar mangas a sisas, equipment: [fileteadora-m1-1, fileteadora-m2-1, fileteadora-m3-1], cycle_s: 72 }
-      - { stage: cerrar costados y bajo mangas, equipment: [fileteadora-m1-2, fileteadora-m2-2, fileteadora-m3-2], cycle_s: 63 }
-      - { stage: recubrir ruedo de mangas, equipment: [recubridora-m1-1, recubridora-m2-1, recubridora-m3-1], cycle_s: 42 }
-      - { stage: recubrir ruedo inferior, equipment: [recubridora-m1-1, recubridora-m2-1, recubridora-m3-1], cycle_s: 51 }
-      - { stage: "presillas, remates y etiquetas", equipment: [plana-m1-2, plana-m2-2, plana-m3-2], cycle_s: 33 }
-      - { stage: inspección y limpieza de hilos, equipment: [mesa-calidad], cycle_s: 33 }
-      - { stage: empaque y almacenamiento por pedido, equipment: [rack-pt-01, rack-pt-02, mesa-despacho], batch_qty: 20 }
+      - { stage: corte por lote, equipment: [corte-tela-01, rack-paquetes], batch_qty: 30 }
+      - { stage: plana 1, equipment: [modulo-01, modulo-02, modulo-03], cycle_s: 147 }
+      - { stage: plana 2, equipment: [modulo-01, modulo-02, modulo-03], cycle_s: 141 }
+      - { stage: fileteadora 1, equipment: [modulo-01, modulo-02, modulo-03], cycle_s: 72 }
+      - { stage: fileteadora 2, equipment: [modulo-01, modulo-02, modulo-03], cycle_s: 63 }
+      - { stage: recubridora, equipment: [modulo-01, modulo-02, modulo-03], cycle_s: 93 }
+      - { stage: inspección y limpieza de hilos, equipment: [inspeccion-final-01], cycle_s: 33 }
+      - { stage: almacenamiento producto terminado, equipment: [almacen-pt-01], batch_qty: 20 }
     assumed: true
   - id: camiseta-oversize
     name: Camiseta Oversize
@@ -30,15 +25,12 @@ products:
     size: talla adulta (supuesto)
     color: '#a25e42'
     routing:
-      - { stage: corte y paquete (prorrateo por unidad no fijado), equipment: [mesa-tendido-01, mesa-corte-01, rack-paquetes], batch_qty: 30 }
-      - { stage: cerrar hombros y estabilizar, equipment: [plana-m1-1, plana-m2-1, plana-m3-1], cycle_s: 33 }
-      - { stage: pegar mangas caídas a sisas, equipment: [fileteadora-m1-1, fileteadora-m2-1, fileteadora-m3-1], cycle_s: 69 }
-      - { stage: cerrar costados y bajo mangas, equipment: [fileteadora-m1-2, fileteadora-m2-2, fileteadora-m3-2], cycle_s: 63 }
-      - { stage: recubrir ruedo de mangas, equipment: [recubridora-m1-1, recubridora-m2-1, recubridora-m3-1], cycle_s: 39 }
-      - { stage: recubrir ruedo inferior, equipment: [recubridora-m1-1, recubridora-m2-1, recubridora-m3-1], cycle_s: 48 }
-      - { stage: preparar y montar cuello rib, equipment: [fileteadora-m1-1, fileteadora-m2-1, fileteadora-m3-1], cycle_s: 63 }
-      - { stage: pespuntear cuello y asegurar costura, equipment: [plana-m1-2, plana-m2-2, plana-m3-2], cycle_s: 33 }
-      - { stage: colocar marquilla y etiqueta talla, equipment: [plana-m1-1, plana-m2-1, plana-m3-1], cycle_s: 27 }
-      - { stage: "remates, revisión y limpieza de hilos", equipment: [mesa-calidad], cycle_s: 33 }
-      - { stage: empaque y almacenamiento por pedido, equipment: [rack-pt-01, rack-pt-02, mesa-despacho], batch_qty: 20 }
+      - { stage: corte por lote, equipment: [corte-tela-01, rack-paquetes], batch_qty: 30 }
+      - { stage: plana 1, equipment: [modulo-01, modulo-02, modulo-03], cycle_s: 60 }
+      - { stage: plana 2, equipment: [modulo-01, modulo-02, modulo-03], cycle_s: 33 }
+      - { stage: fileteadora 1, equipment: [modulo-01, modulo-02, modulo-03], cycle_s: 132 }
+      - { stage: fileteadora 2, equipment: [modulo-01, modulo-02, modulo-03], cycle_s: 63 }
+      - { stage: recubridora, equipment: [modulo-01, modulo-02, modulo-03], cycle_s: 87 }
+      - { stage: revisión final y limpieza de hilos, equipment: [inspeccion-final-01], cycle_s: 33 }
+      - { stage: almacenamiento producto terminado, equipment: [almacen-pt-01], batch_qty: 20 }
     assumed: true

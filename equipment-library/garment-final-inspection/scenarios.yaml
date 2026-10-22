@@ -1,0 +1,10 @@
+scenarios:
+  - id: inspection-nominal
+    description: "Diez minutos a 1 prenda/min: 33 s por inspección, sin rechazos inventados"
+    preset: standard
+    duration_s: 600
+    timeline:
+      - { at_s: 0, inputs: { polo_inflow_upm: 1 } }
+    expect:
+      - { path: variables.polo_good, min: 8, max: 10 }
+      - { path: variables.units_inspected, min: 8, max: 10 }

@@ -1,0 +1,79 @@
+schema_version: 0.1.0
+description: "Flujo de prendas conectado: rollos → corte → tres módulos en fila → inspección → almacén PT"
+dt: 1.0
+
+equipment:
+  almacen-tela-01: { type: garment-fabric-store, preset: standard }
+  corte-tela-01: { type: garment-cutting-line, preset: standard }
+  modulo-01: { type: garment-sewing-module, preset: standard }
+  modulo-02: { type: garment-sewing-module, preset: standard }
+  modulo-03: { type: garment-sewing-module, preset: standard }
+  inspeccion-final-01: { type: garment-final-inspection, preset: standard }
+  almacen-pt-01: { type: garment-finished-goods-store, preset: standard }
+
+links:
+  # Rollos disponibles; la señal ready del corte detiene el despacho al llenarse su cola.
+  - { from: almacen-tela-01.rolls_out, to: corte-tela-01.rolls_in, via: [inspeccion-rollos] }
+  # Seis flujos separados (dos referencias × tres módulos); la fila de paquetes es buffer visual intermedio.
+  - { from: corte-tela-01.module_1_polo, to: modulo-01.polo_in, via: [rack-paquetes] }
+  - { from: corte-tela-01.module_1_oversize, to: modulo-01.oversize_in, via: [rack-paquetes] }
+  - { from: corte-tela-01.module_2_polo, to: modulo-02.polo_in, via: [rack-paquetes] }
+  - { from: corte-tela-01.module_2_oversize, to: modulo-02.oversize_in, via: [rack-paquetes] }
+  - { from: corte-tela-01.module_3_polo, to: modulo-03.polo_in, via: [rack-paquetes] }
+  - { from: corte-tela-01.module_3_oversize, to: modulo-03.oversize_in, via: [rack-paquetes] }
+  # Inspección común, con una cola lógica por producto.
+  - { from: modulo-01.polo_out, to: inspeccion-final-01.polo_in }
+  - { from: modulo-02.polo_out, to: inspeccion-final-01.polo_in }
+  - { from: modulo-03.polo_out, to: inspeccion-final-01.polo_in }
+  - { from: modulo-01.oversize_out, to: inspeccion-final-01.oversize_in }
+  - { from: modulo-02.oversize_out, to: inspeccion-final-01.oversize_in }
+  - { from: modulo-03.oversize_out, to: inspeccion-final-01.oversize_in }
+  - { from: inspeccion-final-01.polo_out, to: almacen-pt-01.polo_in }
+  - { from: inspeccion-final-01.oversize_out, to: almacen-pt-01.oversize_in }
+
+lines:
+  - id: camiseta-polo
+    name: Camiseta Polo — flujo conectado
+    output: almacen-pt-01.polo_out
+    unit: prendas
+    equipment: [almacen-tela-01, corte-tela-01, modulo-01, modulo-02, modulo-03, inspeccion-final-01, almacen-pt-01]
+  - id: camiseta-oversize
+    name: Camiseta Oversize — flujo conectado
+    output: almacen-pt-01.oversize_out
+    unit: prendas
+    equipment: [almacen-tela-01, corte-tela-01, modulo-01, modulo-02, modulo-03, inspeccion-final-01, almacen-pt-01]
+
+scenarios:
+  - id: turno-conectado
+    description: "Ocho horas de alimentación; rollos pasan por corte, los tres módulos balancean Polo/Oversize en pipeline, inspección libera prendas y el almacén PT acumula el producto terminado. Las cifras de stock/yield/SAM son supuestos explícitos"
+    duration_s: 28800
+    expect:
+      - { path: equipment.almacen-tela-01.variables.rolls_issued, min: 8 }
+      - { path: equipment.corte-tela-01.variables.rolls_cut, min: 5 }
+      - { path: equipment.modulo-01.variables.station_5_units, min: 1 }
+      - { path: equipment.modulo-02.variables.station_5_units, min: 1 }
+      - { path: equipment.modulo-03.variables.station_5_units, min: 1 }
+      - { path: equipment.inspeccion-final-01.variables.units_inspected, min: 1 }
+      - { path: equipment.almacen-pt-01.variables.units_stored, min: 1 }
+      - { path: lines.camiseta-polo.output_units, min: 1 }
+      - { path: lines.camiseta-oversize.output_units, min: 1 }
+
+  - id: corte-detencion
+    description: "El cabezal de corte se detiene una hora tras dos horas de producción; rollos y WIP quedan conservados en sus colas"
+    duration_s: 14400
+    timeline:
+      - { at_s: 7200, equipment: corte-tela-01, command: inject_fault, args: { fault: cutter_stop, duration_s: 3600 } }
+    expect:
+      - { path: events.corte-tela-01.fault_raised, equals: 1 }
+      - { path: equipment.corte-tela-01.state_share.fault, min: 0.24 }
+      - { path: equipment.corte-tela-01.variables.rolls_cut, min: 5 }
+
+  - id: inspection-stop
+    description: "La inspección queda fuera de servicio durante dos horas: las salidas de los módulos se bloquean al llenarse su cola"
+    duration_s: 28800
+    timeline:
+      - { at_s: 3600, equipment: inspeccion-final-01, command: inject_fault, args: { fault: inspection_stop, duration_s: 14400 } }
+    expect:
+      - { path: events.inspeccion-final-01.fault_raised, equals: 1 }
+      - { path: equipment.inspeccion-final-01.state_share.fault, min: 0.49 }
+      - { path: equipment.modulo-01.state_share.blocked, min: 0.1 }

@@ -1,0 +1,55 @@
+schema_version: 0.1.0
+type: garment-final-inspection
+version: 0.1.0
+name: Inspección final de camisetas
+manufacturing: discrete
+category: garment.quality
+description: Inspección visual, limpieza de hilos y aceptación final de prendas Polo y Oversize antes de almacén.
+aliases: [mesa de calidad de confecciones, revisión final]
+fidelity: { visual: V2, behavior: B2 }
+params:
+  inspection_s: { type: number, unit: s, min: 1, max: 600, default: 33, description: Tiempo estándar supuesto de inspección y limpieza, affects: [behavior] }
+  queue_capacity: { type: integer, min: 1, max: 1000, default: 120, description: Capacidad de prendas en espera, affects: [behavior, geometry] }
+  length_m: { type: number, unit: m, min: 2, max: 8, default: 5, description: Largo de la mesa de inspección, affects: [geometry] }
+  width_m: { type: number, unit: m, min: 1, max: 4, default: 2, description: Ancho de la mesa de inspección, affects: [geometry] }
+ports:
+  - { id: polo_in, kind: item, direction: in, medium: Camiseta Polo cosida, unit: u/min, link: { units: polo_inflow_upm, ready: polo_accepting } }
+  - { id: oversize_in, kind: item, direction: in, medium: Camiseta Oversize cosida, unit: u/min, link: { units: oversize_inflow_upm, ready: oversize_accepting } }
+  - { id: polo_out, kind: item, direction: out, medium: Polo inspeccionada, unit: u/min, link: { units: polo_good, ready: polo_downstream_free } }
+  - { id: oversize_out, kind: item, direction: out, medium: Oversize inspeccionada, unit: u/min, link: { units: oversize_good, ready: oversize_downstream_free } }
+states:
+  - { id: idle, description: Sin prendas en inspección }
+  - { id: running, description: Operaria inspeccionando una prenda }
+  - { id: starved, description: Sin prendas cosidas por inspeccionar }
+  - { id: blocked, description: Almacén PT no acepta nuevas unidades }
+  - { id: fault, description: Inspección detenida }
+variables:
+  - { id: polo_queue, unit: u, kind: calculated, description: Polo pendiente }
+  - { id: oversize_queue, unit: u, kind: calculated, description: Oversize pendiente }
+  - { id: polo_good, unit: u, kind: counter, description: Polo aceptadas y enviadas a almacén }
+  - { id: oversize_good, unit: u, kind: counter, description: Oversize aceptadas y enviadas a almacén }
+  - { id: units_inspected, unit: u, kind: counter, description: Prendas que completaron inspección }
+  - { id: polo_accepting, unit: "", kind: status, description: 1 si recibe Polo }
+  - { id: oversize_accepting, unit: "", kind: status, description: 1 si recibe Oversize }
+  - { id: polo_downstream_free, unit: "", kind: status, description: 1 si almacén recibe Polo }
+  - { id: oversize_downstream_free, unit: "", kind: status, description: 1 si almacén recibe Oversize }
+  - { id: progress, unit: "%", kind: calculated, range: [0, 1], description: Avance de inspección actual }
+events:
+  - { id: garment_inspected, description: Prenda inspeccionada y liberada, payload: [product, accepted] }
+faults:
+  - { id: inspection_stop, description: Inspección manual detenida, mtbf_h: 300, mttr_min: 10, severity: low, effect: "Se acumula WIP de salida de los módulos" }
+commands:
+  - { id: inject_fault, description: Inyecta falla, args: { fault: string, duration_s: number } }
+  - { id: clear_fault, description: Repara falla, args: { fault: string } }
+kpis:
+  - { id: inspected_per_h, unit: u/h, description: Unidades inspeccionadas por hora }
+  - { id: utilization, unit: "", description: Fracción de tiempo de inspección activa }
+animation_channels:
+  - { id: working, range: [0, 1], description: Operaria de calidad revisando }
+  - { id: progress, range: [0, 1], description: Avance de inspección }
+  - { id: queue, range: [0, 1], description: Ocupación de cola }
+  - { id: stack_light, range: [0, 3], description: Estado de inspección }
+geometry: { parts: [inspection_table, finished_garments, thread_trimming_tools, seated_or_standing_inspector, hmi] }
+assumptions:
+  - "SAM de 33 s por camiseta proviene de la operación manual propuesta y requiere estudio de tiempos."
+  - "Sin tasa de rechazo configurada, el modelo inspecciona y acepta; no inventa defectos ni calidad porcentual."
