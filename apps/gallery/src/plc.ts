@@ -82,26 +82,33 @@ function renderPumping(): void {
 }
 
 function renderGrid(): void {
+  type LowPoint = { grid: string; valve: string; pressure: number };
   const cards: string[] = [];
-  let lowest: { grid: string; valve: string; pressure: number } | null = null;
+  let networkLowest: LowPoint | null = null;
+  const levelLowest = new Map<string, LowPoint>();
   for (let level = 1; level <= 4; level++) {
     const id = `grid-0${level}`;
     for (let branch = 1; branch <= 4; branch++) for (let house = 1; house <= 4; house++) {
       const valve = `c${branch}${house}`;
-      const pressure = n(value(id, `p_${valve}`)) ?? Infinity;
-      if (!lowest || pressure < lowest.pressure) lowest = { grid: id, valve, pressure };
+      const point = { grid: id, valve, pressure: n(value(id, `p_${valve}`)) ?? Infinity };
+      if (!networkLowest || point.pressure < networkLowest.pressure) networkLowest = point;
+      const currentLevelLowest = levelLowest.get(id);
+      if (!currentLevelLowest || point.pressure < currentLevelLowest.pressure) levelLowest.set(id, point);
     }
   }
   for (let level = 1; level <= 4; level++) {
     const id = `grid-0${level}`;
+    const minimum = levelLowest.get(id)!;
     const houses: string[] = [];
     for (let branch = 1; branch <= 4; branch++) for (let house = 1; house <= 4; house++) {
       const valve = `c${branch}${house}`;
       const open = Math.round((eq(id)?.animation[`open_${valve}`] ?? 0) * 100);
-      const critical = lowest?.grid === id && lowest.valve === valve;
-      houses.push(`<article class="house ${critical ? "critical" : ""}"><span class="id">L${level}.${valve.toUpperCase()}</span><span class="values">${fmt(value(id, `p_${valve}`))} mca<br>${fmt(value(id, `q_${valve}`))} L/min</span><input data-grid="${id}" data-valve="${valve}" type="range" min="0" max="100" value="${open}" title="Apertura ${valve}" /><span class="muted">${open} %</span></article>`);
+      const levelCritical = minimum.valve === valve;
+      const networkCritical = networkLowest?.grid === id && networkLowest.valve === valve;
+      const flag = networkCritical ? `<span class="flag global">MÍN. RED</span>` : levelCritical ? `<span class="flag">MÍN. NIVEL</span>` : "";
+      houses.push(`<article class="house ${levelCritical ? "critical" : ""} ${networkCritical ? "global-critical" : ""}"><span class="id">L${level}.${valve.toUpperCase()} ${flag}</span><span class="values">${fmt(value(id, `p_${valve}`))} mca<br>${fmt(value(id, `q_${valve}`))} L/min</span><input data-grid="${id}" data-valve="${valve}" type="range" min="0" max="100" value="${open}" title="Apertura ${valve}" /><span class="muted">${open} %</span></article>`);
     }
-    cards.push(`<section class="level panel"><h2>NIVEL ${level}<span>${fmt(value(id, "consumption_m3h"))} m³/h</span></h2><div class="houses">${houses.join("")}</div></section>`);
+    cards.push(`<section class="level panel"><h2>NIVEL ${level}<span>${fmt(value(id, "consumption_m3h"))} m³/h</span></h2><p class="level-min">Mín. nivel: <b>L${level}.${minimum.valve.toUpperCase()} · ${fmt(minimum.pressure)} mca</b>${networkLowest?.grid === id ? " · MÍNIMO DE RED" : ""}</p><div class="houses">${houses.join("")}</div></section>`);
   }
   $("grid-levels").innerHTML = cards.join("");
   document.querySelectorAll<HTMLInputElement>("[data-grid]").forEach((input) => input.onchange = () => send(input.dataset.grid!, "set_opening", { valve: input.dataset.valve, pct: Number(input.value) }));
