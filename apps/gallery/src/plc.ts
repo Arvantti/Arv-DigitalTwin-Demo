@@ -6,6 +6,7 @@ type Message = { t: number; speed: number; paused: boolean; snapshot: { equipmen
 type Asset = { id: string; name: string; group: string; level?: number };
 type Schema = { name: string; assets: Asset[]; service_constraint: { critical_pressure_min_mca: number; automatic_target_mca: number } };
 type Sample = { t: number; main: number; recirculation: number; consumption: number; leakage: number; critical: number; supplyLevel: number; pumpDischarge: number; stationIn: number; stationOut: number; grid1In: number; grid1Out: number; grid2Out: number; grid3Out: number; criticalFlow: number };
+type SavedRun = { id: string; startedAt: string; durationS: number; samples: Sample[] };
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 const plantId = new URLSearchParams(location.search).get("plant") ?? "water-network-scale-v1";
@@ -15,7 +16,12 @@ let paused = false;
 let latest: Record<string, Snapshot> = {};
 let simTime = 0;
 let randomTimer: number | null = null;
-const history: Sample[] = [];
+const DAY_SECONDS = 24 * 3600;
+const SAMPLE_INTERVAL_S = 60;
+const RUNS_KEY = "arvantti.water-plc.runs.v1";
+let history: Sample[] = [];
+let runStartedAt = "";
+let runSaved = false;
 
 const n = (value: Value | undefined): number | null => typeof value === "number" && Number.isFinite(value) ? value : null;
 const fmt = (value: Value | undefined, digits = 1) => {
@@ -114,9 +120,42 @@ function renderGrid(): void {
   document.querySelectorAll<HTMLInputElement>("[data-grid]").forEach((input) => input.onchange = () => send(input.dataset.grid!, "set_opening", { valve: input.dataset.valve, pct: Number(input.value) }));
 }
 
+function savedRuns(): SavedRun[] {
+  try { return JSON.parse(localStorage.getItem(RUNS_KEY) ?? "[]") as SavedRun[]; } catch { return []; }
+}
+
+function renderSavedRuns(): void {
+  const runs = savedRuns();
+  $("saved-runs").innerHTML = runs.length ? runs.map((run) => {
+    const min = Math.min(...run.samples.map((sample) => sample.critical));
+    const consumption = run.samples.slice(1).reduce((total, sample, index) => total + sample.consumption * (sample.t - run.samples[index].t) / 3600, 0);
+    return `<article class="card panel"><p class="eyebrow">SIMULACIÓN ${new Date(run.startedAt).toLocaleString("es-CO")}</p><h2>${fmt(run.durationS / 3600, 2)} h simuladas</h2><div class="readings"><span>Presión mín. <b>${fmt(min)} mca</b></span><span>Consumo <b>${fmt(consumption, 2)} m³</b></span><span>Muestras <b>${run.samples.length}</b></span></div><div class="controls"><button data-load-run="${run.id}">VER CURVAS</button><button data-delete-run="${run.id}">ELIMINAR</button></div></article>`;
+  }).join("") : `<p class="muted">Aún no hay sesiones guardadas. Al desconectar o completar una simulación, sus señales se archivarán aquí.</p>`;
+  document.querySelectorAll<HTMLButtonElement>("[data-load-run]").forEach((button) => button.onclick = () => {
+    const run = savedRuns().find((item) => item.id === button.dataset.loadRun);
+    if (!run) return;
+    socket?.close(); history = run.samples; renderDay(); selectScreen("day");
+  });
+  document.querySelectorAll<HTMLButtonElement>("[data-delete-run]").forEach((button) => button.onclick = () => {
+    localStorage.setItem(RUNS_KEY, JSON.stringify(savedRuns().filter((item) => item.id !== button.dataset.deleteRun)));
+    renderSavedRuns();
+  });
+}
+
+function saveCurrentRun(): void {
+  if (runSaved || history.length < 2 || !runStartedAt) return;
+  const durationS = history[history.length - 1].t - history[0].t;
+  const run: SavedRun = { id: crypto.randomUUID(), startedAt: runStartedAt, durationS, samples: history };
+  try {
+    localStorage.setItem(RUNS_KEY, JSON.stringify([run, ...savedRuns()].slice(0, 12)));
+    runSaved = true;
+    renderSavedRuns();
+  } catch { /* almacenamiento local no disponible o lleno; la sesión visible no se pierde */ }
+}
+
 function recordHistory(message: Message): void {
   const last = history.at(-1);
-  if (last && message.t - last.t < 15) return;
+  if (last && message.t - last.t < SAMPLE_INTERVAL_S) return;
   const consumption = ["grid-01", "grid-02", "grid-03", "grid-04"].reduce((sum, id) => sum + (n(value(id, "consumption_m3h")) ?? 0), 0);
   const leakage = ["grid-01", "grid-02", "grid-03", "grid-04"].reduce((sum, id) => sum + (n(value(id, "leakage_m3h")) ?? 0), 0);
   const criticalValve = String(value("grid-04", "min_pressure_valve") ?? "c44");
@@ -253,15 +292,22 @@ function render(message: Message): void {
   $("clock").textContent = `SIM · ${hh}:${mm}:${ss} · ×${message.speed}`;
   recordHistory(message);
   renderMaster(); renderDay(); renderPumping(); renderGrid(); renderTrends(); renderHydraulicProfile(); renderAlarms();
+  if (message.t >= DAY_SECONDS) { saveCurrentRun(); socket?.close(); }
 }
 
 function connect(): void {
   if (socket?.readyState === WebSocket.OPEN) { socket.close(); return; }
+  saveCurrentRun();
+  history = [];
+  runStartedAt = new Date().toISOString();
+  runSaved = false;
+  renderDay();
   const protocol = location.protocol === "https:" ? "wss" : "ws";
+  // ×60: un minuto real recorre una hora hidráulica; el día completo tarda 24 min.
   socket = new WebSocket(`${protocol}://${location.host}/api/plants/${plantId}/simulate?speed=60`);
-  socket.onopen = () => { $("connection").textContent = "● SIMULACIÓN CONECTADA"; $("connection").classList.add("on"); $("connect").textContent = "■ DESCONECTAR"; };
+  socket.onopen = () => { $("connection").textContent = "● SIMULACIÓN CONECTADA · 1 h/min"; $("connection").classList.add("on"); $("connect").textContent = "■ DETENER Y GUARDAR"; };
   socket.onmessage = (event) => { const message = JSON.parse(event.data) as Message & { error?: string }; if (!message.error) render(message); };
-  socket.onclose = () => { socket = null; $("connection").textContent = "● DESCONECTADO"; $("connection").classList.remove("on"); $("connect").textContent = "▶ CONECTAR SIMULACIÓN"; };
+  socket.onclose = () => { saveCurrentRun(); socket = null; $("connection").textContent = "● DESCONECTADO"; $("connection").classList.remove("on"); $("connect").textContent = "▶ INICIAR SIMULACIÓN 24 H"; };
 }
 
 function randomize(): void {
@@ -278,7 +324,7 @@ async function start(): Promise<void> {
   buildAssets();
   document.querySelectorAll<HTMLButtonElement>(".tabs button").forEach((button) => button.onclick = () => selectScreen(button.dataset.screen!));
   const initialScreen = new URLSearchParams(location.search).get("screen");
-  if (["master", "day", "pumping", "grid", "trends"].includes(initialScreen ?? "")) selectScreen(initialScreen!);
+  if (["master", "day", "pumping", "grid", "trends", "history"].includes(initialScreen ?? "")) selectScreen(initialScreen!);
   $("connect").onclick = connect;
   $("pause").onclick = () => { paused = !paused; socket?.send(JSON.stringify({ pause: paused })); $("pause").textContent = paused ? "▶ REANUDAR" : "❚❚ PAUSA"; };
   document.querySelectorAll<HTMLButtonElement>("[data-command]").forEach((button) => button.onclick = () => send("prs-01", "select_branch", { branch: button.dataset.command }));
@@ -290,9 +336,22 @@ async function start(): Promise<void> {
   manual.onchange = () => send("prs-01", "set_manual_setting", { mca: Number(manual.value) });
   const all = $<HTMLInputElement>("all-consumers");
   all.oninput = () => $("all-consumers-output").textContent = `${all.value} %`;
-  all.onchange = () => { for (let level = 1; level <= 4; level++) send(`grid-0${level}`, "set_opening", { valve: "consumers", pct: Number(all.value) }); };
+  all.onchange = () => {
+    for (let level = 1; level <= 4; level++) {
+      const input = document.querySelector<HTMLInputElement>(`[data-level-consumers="${level}"]`)!;
+      const output = document.querySelector<HTMLOutputElement>(`[data-level-output="${level}"]`)!;
+      input.value = all.value; output.textContent = `${all.value} %`;
+      send(`grid-0${level}`, "set_opening", { valve: "consumers", pct: Number(all.value) });
+    }
+  };
+  document.querySelectorAll<HTMLInputElement>("[data-level-consumers]").forEach((input) => {
+    const level = input.dataset.levelConsumers!;
+    const output = document.querySelector<HTMLOutputElement>(`[data-level-output="${level}"]`)!;
+    input.oninput = () => output.textContent = `${input.value} %`;
+    input.onchange = () => send(`grid-0${level}`, "set_opening", { valve: "consumers", pct: Number(input.value) });
+  });
   $("random").onclick = randomize;
-  renderDay();
+  renderDay(); renderSavedRuns();
 }
 
 start().catch((error: unknown) => { $("plant-name").textContent = ` · ERROR: ${String(error)}`; });
