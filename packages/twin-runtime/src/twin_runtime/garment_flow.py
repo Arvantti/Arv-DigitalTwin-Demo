@@ -3,6 +3,7 @@
 Los resultados son una simulación de referencia: yields, SAM de las operaciones y capacidades se toman del
 catálogo de confecciones o se identifican como supuestos en el plant model/README.
 """
+
 from __future__ import annotations
 
 from typing import Any
@@ -52,9 +53,12 @@ class CuttingLine(EquipmentBehavior):
     type = "garment-cutting-line"
     DEFAULT_INPUTS = {
         "rolls_inflow_upm": None,
-        "module_1_polo_ready": True, "module_1_oversize_ready": True,
-        "module_2_polo_ready": True, "module_2_oversize_ready": True,
-        "module_3_polo_ready": True, "module_3_oversize_ready": True,
+        "module_1_polo_ready": True,
+        "module_1_oversize_ready": True,
+        "module_2_polo_ready": True,
+        "module_2_oversize_ready": True,
+        "module_3_polo_ready": True,
+        "module_3_oversize_ready": True,
     }
 
     def setup(self) -> None:
@@ -69,15 +73,6 @@ class CuttingLine(EquipmentBehavior):
         self.output = {(m, sku): 0 for m in range(1, 4) for sku in ("polo", "oversize")}
         self.busy_s = 0.0
 
-    def _can_dispatch_roll(self) -> bool:
-        # Reserva capacidad completa para la siguiente tanda en los seis supermercados de módulo.
-        polo_each = int(self.p["polo_per_roll"]) // 3
-        over_each = int(self.p["oversize_per_roll"]) // 3
-        return all(
-            bool(self.inputs[f"module_{m}_{sku}_ready"])
-            for m in range(1, 4) for sku in ("polo", "oversize")
-        ) and self.roll_queue + int(self.in_process) < int(self.p["roll_queue_capacity"])
-
     def update(self, ctx: StepContext) -> None:
         dt = ctx.dt
         rate = 0.0 if self.inputs["rolls_inflow_upm"] is None else max(0.0, float(self.inputs["rolls_inflow_upm"]))
@@ -91,7 +86,9 @@ class CuttingLine(EquipmentBehavior):
         remaining = dt
         while remaining > 1e-9:
             if not self.in_process:
-                if self.roll_queue <= 0 or not all(bool(self.inputs[f"module_{m}_{sku}_ready"]) for m in range(1, 4) for sku in ("polo", "oversize")):
+                if self.roll_queue <= 0 or not all(
+                    bool(self.inputs[f"module_{m}_{sku}_ready"]) for m in range(1, 4) for sku in ("polo", "oversize")
+                ):
                     break
                 self.roll_queue -= 1
                 self.in_process = True
@@ -112,8 +109,10 @@ class CuttingLine(EquipmentBehavior):
                 for module in range(1, 4):
                     part = qty // 3 + int(module <= qty % 3)
                     self.output[(module, sku)] += part
-                if sku == "polo": self.polo_cut += qty
-                else: self.oversize_cut += qty
+                if sku == "polo":
+                    self.polo_cut += qty
+                else:
+                    self.oversize_cut += qty
                 self.emit("roll_cut", roll=self.rolls_cut, product=sku, units=qty)
         self.state.set("running" if self.in_process else "starved" if self.roll_queue == 0 else "blocked")
 
@@ -127,22 +126,36 @@ class CuttingLine(EquipmentBehavior):
             "accepting_rolls": int(self.roll_queue + int(self.in_process) < self.p["roll_queue_capacity"]),
         }
         out.update({f"{sku}_module_{m}_out": self.output[(m, sku)] for m in range(1, 4) for sku in ("polo", "oversize")})
-        out.update({f"module_{m}_{sku}_ready": int(bool(self.inputs[f"module_{m}_{sku}_ready"])) for m in range(1, 4) for sku in ("polo", "oversize")})
+        out.update(
+            {
+                f"module_{m}_{sku}_ready": int(bool(self.inputs[f"module_{m}_{sku}_ready"]))
+                for m in range(1, 4)
+                for sku in ("polo", "oversize")
+            }
+        )
         return out
 
     def kpis(self) -> dict[str, Any]:
         return {"rolls_per_h": self.rolls_cut / (self.t / 3600) if self.t > 0 else 0.0, "garments_cut": self.polo_cut + self.oversize_cut}
 
     def animation(self) -> dict[str, float]:
-        return {"table_fill": min(1.0, self.roll_queue / self.p["roll_queue_capacity"]), "cutting": 1.0 if self.in_process else 0.0, "progress": 1 - self.cut_left / self.p["cut_cycle_s"] if self.in_process else 0.0, "stack_light": 1.0 if self.in_process else 2.0}
+        return {
+            "table_fill": min(1.0, self.roll_queue / self.p["roll_queue_capacity"]),
+            "cutting": 1.0 if self.in_process else 0.0,
+            "progress": 1 - self.cut_left / self.p["cut_cycle_s"] if self.in_process else 0.0,
+            "stack_light": 1.0 if self.in_process else 2.0,
+        }
 
 
 class GarmentSewingModule(EquipmentBehavior):
     """Cinco puestos contiguos en fila: una pieza pasa por una operación agrupada en cada puesto."""
+
     type = "garment-sewing-module"
     DEFAULT_INPUTS = {
-        "polo_inflow_upm": None, "oversize_inflow_upm": None,
-        "polo_downstream_free": True, "oversize_downstream_free": True,
+        "polo_inflow_upm": None,
+        "oversize_inflow_upm": None,
+        "polo_downstream_free": True,
+        "oversize_downstream_free": True,
     }
     STATION_PARAMS = {
         "polo": ["polo_lock_1_s", "polo_lock_2_s", "polo_over_1_s", "polo_over_2_s", "polo_cover_s"],
@@ -223,14 +236,18 @@ class GarmentSewingModule(EquipmentBehavior):
                             break
                     else:
                         self.queues[i + 1][sku] += 1
-        self.state.set("running" if any(self.active) else "blocked" if self.waiting_output or any(sum(q.values()) for q in self.queues) else "starved")
+        self.state.set(
+            "running" if any(self.active) else "blocked" if self.waiting_output or any(sum(q.values()) for q in self.queues) else "starved"
+        )
         if self.state.current == "starved":
             self.starved_s += dt
 
     def true_values(self) -> dict[str, Any]:
         out: dict[str, Any] = {
-            "polo_queue": self.queues[0]["polo"], "oversize_queue": self.queues[0]["oversize"],
-            "polo_units": self.done["polo"], "oversize_units": self.done["oversize"],
+            "polo_queue": self.queues[0]["polo"],
+            "oversize_queue": self.queues[0]["oversize"],
+            "polo_units": self.done["polo"],
+            "oversize_units": self.done["oversize"],
             # Cut sends one full package at once; retain headroom so an accepted batch cannot overflow the finite input supermarket.
             "polo_accepting": int(sum(self.queues[0].values()) + self.credit["polo"] < self.p["queue_capacity"] - 20),
             "oversize_accepting": int(sum(self.queues[0].values()) + self.credit["oversize"] < self.p["queue_capacity"] - 20),
@@ -248,11 +265,19 @@ class GarmentSewingModule(EquipmentBehavior):
     def kpis(self) -> dict[str, Any]:
         hours = self.t / 3600.0
         busy = sum(self.busy_s)
-        return {"utilization": busy / (self.t * 5) if self.t > 0 else 0.0, "units_per_h": sum(self.done.values()) / hours if hours else 0.0, "starved_pct": self.starved_s / self.t if self.t else 0.0}
+        return {
+            "utilization": busy / (self.t * 5) if self.t > 0 else 0.0,
+            "units_per_h": sum(self.done.values()) / hours if hours else 0.0,
+            "starved_pct": self.starved_s / self.t if self.t else 0.0,
+        }
 
     def animation(self) -> dict[str, float]:
         import math
-        out: dict[str, float] = {"line_queue": min(1.0, sum(sum(q.values()) for q in self.queues) / (self.p["queue_capacity"] * 5)), "stack_light": 1.0 if any(self.active) else 2.0}
+
+        out: dict[str, float] = {
+            "line_queue": min(1.0, sum(sum(q.values()) for q in self.queues) / (self.p["queue_capacity"] * 5)),
+            "stack_light": 1.0 if any(self.active) else 2.0,
+        }
         for i in range(5):
             active = self.active[i]
             self.needle_phase[i] = (self.needle_phase[i] + self.t * 0.7) % 1 if active else 0.0
@@ -299,7 +324,8 @@ class FinalInspection(EquipmentBehavior):
         while remaining > 1e-9:
             if self.active is None:
                 ready = [sku for sku in ("polo", "oversize") if self.queues[sku] and self.inputs[f"{sku}_downstream_free"]]
-                if not ready: break
+                if not ready:
+                    break
                 sku = ("polo" if self.last_sku == "oversize" else "oversize") if len(ready) == 2 else ready[0]
                 self.queues[sku] -= 1
                 self.active = sku
@@ -321,16 +347,37 @@ class FinalInspection(EquipmentBehavior):
                     self.waiting = sku
                     self.state.set("blocked")
                     break
-        self.state.set("running" if self.active else "blocked" if self.waiting else "starved" if not sum(self.queues.values()) else "blocked")
+        self.state.set(
+            "running" if self.active else "blocked" if self.waiting else "starved" if not sum(self.queues.values()) else "blocked"
+        )
 
     def true_values(self) -> dict[str, Any]:
-        return {"polo_queue": self.queues["polo"], "oversize_queue": self.queues["oversize"], "polo_good": self.done["polo"], "oversize_good": self.done["oversize"], "units_inspected": self.inspected, "polo_accepting": int(self.queues["polo"] < self.p["queue_capacity"]), "oversize_accepting": int(self.queues["oversize"] < self.p["queue_capacity"]), "polo_downstream_free": int(bool(self.inputs["polo_downstream_free"])), "oversize_downstream_free": int(bool(self.inputs["oversize_downstream_free"])), "progress": 1 - self.busy_left / self.p["inspection_s"] if self.active else 0.0}
+        return {
+            "polo_queue": self.queues["polo"],
+            "oversize_queue": self.queues["oversize"],
+            "polo_good": self.done["polo"],
+            "oversize_good": self.done["oversize"],
+            "units_inspected": self.inspected,
+            "polo_accepting": int(self.queues["polo"] < self.p["queue_capacity"]),
+            "oversize_accepting": int(self.queues["oversize"] < self.p["queue_capacity"]),
+            "polo_downstream_free": int(bool(self.inputs["polo_downstream_free"])),
+            "oversize_downstream_free": int(bool(self.inputs["oversize_downstream_free"])),
+            "progress": 1 - self.busy_left / self.p["inspection_s"] if self.active else 0.0,
+        }
 
     def kpis(self) -> dict[str, Any]:
-        return {"inspected_per_h": self.inspected / (self.t / 3600) if self.t else 0.0, "utilization": self.busy_s / self.t if self.t else 0.0}
+        return {
+            "inspected_per_h": self.inspected / (self.t / 3600) if self.t else 0.0,
+            "utilization": self.busy_s / self.t if self.t else 0.0,
+        }
 
     def animation(self) -> dict[str, float]:
-        return {"working": 1.0 if self.active else 0.0, "progress": 1 - self.busy_left / self.p["inspection_s"] if self.active else 0.0, "queue": min(1.0, sum(self.queues.values()) / self.p["queue_capacity"]), "stack_light": 1.0 if self.active else 2.0}
+        return {
+            "working": 1.0 if self.active else 0.0,
+            "progress": 1 - self.busy_left / self.p["inspection_s"] if self.active else 0.0,
+            "queue": min(1.0, sum(self.queues.values()) / self.p["queue_capacity"]),
+            "stack_light": 1.0 if self.active else 2.0,
+        }
 
 
 class FinishedGoodsStore(EquipmentBehavior):
@@ -360,10 +407,26 @@ class FinishedGoodsStore(EquipmentBehavior):
 
     def true_values(self) -> dict[str, Any]:
         total = sum(self.stock.values())
-        return {"polo_stock": self.stock["polo"], "oversize_stock": self.stock["oversize"], "units_stored": total, "polo_received": self.received["polo"], "oversize_received": self.received["oversize"], "capacity_pct": 100.0 * total / self.p["capacity_units"], "polo_accepting": int(total < self.p["capacity_units"]), "oversize_accepting": int(total < self.p["capacity_units"])}
+        return {
+            "polo_stock": self.stock["polo"],
+            "oversize_stock": self.stock["oversize"],
+            "units_stored": total,
+            "polo_received": self.received["polo"],
+            "oversize_received": self.received["oversize"],
+            "capacity_pct": 100.0 * total / self.p["capacity_units"],
+            "polo_accepting": int(total < self.p["capacity_units"]),
+            "oversize_accepting": int(total < self.p["capacity_units"]),
+        }
 
     def kpis(self) -> dict[str, Any]:
-        return {"units_per_h": sum(self.received.values()) / (self.t / 3600) if self.t else 0.0, "occupancy_pct": 100.0 * sum(self.stock.values()) / self.p["capacity_units"]}
+        return {
+            "units_per_h": sum(self.received.values()) / (self.t / 3600) if self.t else 0.0,
+            "occupancy_pct": 100.0 * sum(self.stock.values()) / self.p["capacity_units"],
+        }
 
     def animation(self) -> dict[str, float]:
-        return {"fill": min(1.0, sum(self.stock.values()) / self.p["capacity_units"]), "polo_fill": min(1.0, self.stock["polo"] / self.p["capacity_units"]), "oversize_fill": min(1.0, self.stock["oversize"] / self.p["capacity_units"])}
+        return {
+            "fill": min(1.0, sum(self.stock.values()) / self.p["capacity_units"]),
+            "polo_fill": min(1.0, self.stock["polo"] / self.p["capacity_units"]),
+            "oversize_fill": min(1.0, self.stock["oversize"] / self.p["capacity_units"]),
+        }
