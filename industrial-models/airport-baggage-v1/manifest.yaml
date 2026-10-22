@@ -1,0 +1,19 @@
+# Paquete portable de modelo industrial. Las dependencias se validan contra simulation.yaml.
+schema_version: 0.1.0
+model:
+  id: airport-baggage-v1
+  name: airport baggage v1
+  version: 0.1.0
+  runtime: ">=0.1,<0.2"
+
+entrypoints:
+  layout: plant.yaml
+  simulation: simulation.yaml
+
+equipment_dependencies:
+  - { type: bag-handling-station, version: ">=0.1,<0.2" }
+  - { type: baggage-carousel, version: ">=0.1,<0.2" }
+  - { type: baggage-screening, version: ">=0.1,<0.2" }
+  - { type: baggage-sorter, version: ">=0.1,<0.2" }
+  - { type: belt-conveyor, version: ">=0.1,<0.2" }
+  - { type: checkin-island, version: ">=0.1,<0.2" }

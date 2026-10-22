@@ -16,7 +16,7 @@ Los datos de las plantas son estimaciones plausibles, no de una instalación rea
 equipment-library/        librería de equipos (un tipo por carpeta) + _schema + _template
 packages/twin-runtime/    runtime de comportamiento en Python + CLI twin-lib
 packages/twin-3d/         piezas 3D, materiales PBR y escenario (three.js)
-apps/api/                 API FastAPI con simulación en vivo por WebSocket
+apps/twin-emulator-api/                 API FastAPI con simulación en vivo por WebSocket
 apps/gallery/             galería web de la librería
 industrial-models/        layouts de planta (plant.yaml + plano 2D)
 docs/                     guías (crear equipos: docs/equipment-authoring.md; plan: docs/roadmap.md)
@@ -29,7 +29,7 @@ tools/                    validación de layouts y capturas de vista previa
 uv sync && pnpm install
 uv run twin-lib list                               # tipos de equipo
 uv run twin-lib run jacketed-kettle --scenario tomato-sauce-batch --every 600
-uv run uvicorn twin_api.main:app --port 8000 &     # API de simulación
+uv run uvicorn twin_emulator_api.main:app --port 8000 &     # API de simulación
 pnpm gallery                                       # http://localhost:5173
 ```
 

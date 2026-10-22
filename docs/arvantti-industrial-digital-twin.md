@@ -323,7 +323,7 @@ arvantti-industrial-twin/
 │   │   └── tests/
 │   │
 │   └── api/
-│       ├── src/twin_api/
+│       ├── src/twin_emulator_api/
 │       │   ├── routes/
 │       │   ├── auth/
 │       │   ├── services/
@@ -540,7 +540,7 @@ La escena se ejecuta en el navegador mediante WebGL. WebGPU puede evaluarse post
 
 ```text
 industrial-twin-web      -> navegador / frontend
-industrial-twin-api      -> FastAPI
+twin-emulator-api        -> FastAPI / host de emuladores
 industrial-twin-sim      -> motor SimPy
 industrial-twin-db       -> PostgreSQL
 industrial-twin-mqtt     -> Mosquitto, opcional

@@ -1,0 +1,99 @@
+# Contrato declarativo del PLC virtual/HMI del acueducto. No representa un PLC físico.
+# Los valores vienen exclusivamente del emulador hidráulico simulado.
+schema_version: 0.1.0
+id: water-network-scale-v1-plc
+name: PLC Master · Acueducto a escala
+quality: simulated
+
+sources:
+  emulator:
+    id: simulated-hydraulics-emulator
+    name: Emulador hidráulico de realidad ficticia
+    role: "Resuelve la red estacionaria y publica las señales que recibiría el PLC virtual. No optimiza."
+  engineering:
+    id: fractal-engineering-model
+    name: Fractal de Ingeniería
+    role: "Calculadora hidráulica independiente que evalúa alternativas y devuelve sugerencias; nunca escribe directamente al PLC."
+
+service_constraint:
+  critical_pressure_min_mca: 15.0
+  automatic_target_mca: 15.45
+  target_margin_pct: 3.0
+  description: "La vivienda con menor presión de toda la red no puede bajar de 15 mca."
+
+historian:
+  horizon_h: 24
+  interpolation: linear
+  samples: [main_flow_m3h, recirculation_flow_m3h, consumption_m3h, leakage_m3h, critical_pressure_mca, tank_levels_pct, pump_speed_pct]
+
+demand_profiles:
+  unit: "%"
+  reference_full_demand_m3h: 6.8
+  interpolation: linear
+  modes:
+    - { id: global, name: Todas las viviendas }
+    - { id: level, name: Variación por nivel }
+    - { id: dwelling, name: Variación por vivienda }
+  progressive_defaults:
+    minimum_pct: 30
+    maximum_pct: 100
+    peak_hour: 12
+
+screens:
+  - { id: master, name: PLC Master, description: "Árbol de activos, estado del emulador, alarmas y eventos." }
+  - { id: pumping, name: "Bombeo, tanques y regulación", description: "Recirculación, bombeo principal, niveles y selección AUTO/MANUAL." }
+  - { id: grid, name: Rejilla y consumo, description: "Consumos por nivel/vivienda, válvulas entre niveles y punto crítico." }
+  - { id: trends, name: Tendencias 24 h, description: "Caudal, consumo, fugas, niveles, presión crítica y velocidad." }
+
+assets:
+  - { id: tank-recirc-01, group: recirculation, faceplate: tank, name: Tanque de retorno 1 }
+  - { id: tank-recirc-02, group: recirculation, faceplate: tank, name: Tanque de retorno 2 }
+  - { id: pumpset-recirc-01, group: recirculation, faceplate: pump_set, name: Grupo de recirculación }
+  - { id: tank-supply-01, group: pumping, faceplate: tank, name: Tanque de bombeo }
+  - { id: pumpset-main-01, group: pumping, faceplate: pump_set, name: Grupo de bombeo principal }
+  - { id: prs-01, group: regulation, faceplate: pressure_reducing_station, name: Estación reguladora de presión }
+  - { id: valve-between-12, group: grid, faceplate: regulating_valve, name: Válvula entre niveles 1 y 2 }
+  - { id: valve-between-23, group: grid, faceplate: regulating_valve, name: Válvula entre niveles 2 y 3 }
+  - { id: valve-between-34, group: grid, faceplate: regulating_valve, name: Válvula entre niveles 3 y 4 }
+  - { id: grid-01, group: grid, faceplate: distribution_grid, name: Rejilla nivel 1, level: 1 }
+  - { id: grid-02, group: grid, faceplate: distribution_grid, name: Rejilla nivel 2, level: 2 }
+  - { id: grid-03, group: grid, faceplate: distribution_grid, name: Rejilla nivel 3, level: 3 }
+  - { id: grid-04, group: grid, faceplate: distribution_grid, name: Rejilla nivel 4, level: 4 }
+
+# Cada escritura se traduce a un comando declarado por el equipo y se valida en el backend.
+# set_param nunca se expone a la HMI.
+write_commands:
+  - { equipment: pumpset-main-01, command: start, label: Arrancar bombeo principal, confirmation: true }
+  - { equipment: pumpset-main-01, command: stop, label: Detener bombeo principal, confirmation: true }
+  - { equipment: pumpset-main-01, command: set_setpoint, args: { mca: { type: number, min: 65, max: 85 } }, label: Consigna de descarga }
+  - { equipment: pumpset-recirc-01, command: start, label: Arrancar recirculación, confirmation: true }
+  - { equipment: pumpset-recirc-01, command: stop, label: Detener recirculación, confirmation: true }
+  - { equipment: prs-01, command: select_branch, args: { branch: { type: enum, values: [auto, manual] } }, label: Selección AUTO/MANUAL, confirmation: true }
+  - { equipment: prs-01, command: set_critical_setpoint, args: { mca: { type: number, min: 15, max: 30 } }, label: Consigna de presión crítica }
+  - { equipment: prs-01, command: set_manual_setting, args: { mca: { type: number, min: 15, max: 35 } }, label: Consigna manual de salida }
+  - { equipment: valve-between-12, command: set_opening, args: { pct: { type: number, min: 0, max: 100 } }, label: Apertura válvula 1–2 }
+  - { equipment: valve-between-23, command: set_opening, args: { pct: { type: number, min: 0, max: 100 } }, label: Apertura válvula 2–3 }
+  - { equipment: valve-between-34, command: set_opening, args: { pct: { type: number, min: 0, max: 100 } }, label: Apertura válvula 3–4 }
+  - { equipment: grid-01, command: set_opening, args: { valve: { type: consumer_target }, pct: { type: number, min: 0, max: 100 } }, label: Consumo nivel 1 }
+  - { equipment: grid-02, command: set_opening, args: { valve: { type: consumer_target }, pct: { type: number, min: 0, max: 100 } }, label: Consumo nivel 2 }
+  - { equipment: grid-03, command: set_opening, args: { valve: { type: consumer_target }, pct: { type: number, min: 0, max: 100 } }, label: Consumo nivel 3 }
+  - { equipment: grid-04, command: set_opening, args: { valve: { type: consumer_target }, pct: { type: number, min: 0, max: 100 } }, label: Consumo nivel 4 }
+
+consumer_targets:
+  global: consumers
+  individual_pattern: "c{branch}{house}"
+  branches: [1, 2, 3, 4]
+  houses_per_branch: 4
+  random:
+    allowed: true
+    affects: consumers
+    excludes: [l1, l2]
+    seedable: true
+
+alarms:
+  - { id: critical-pressure-low, source: prs-01.critical_pressure_mca, condition: "< 15", priority: high, message: "La vivienda crítica está bajo la presión mínima de servicio." }
+  - { id: supply-tank-level-low, source: tank-supply-01.level_pct, condition: "< 20", priority: high, message: "Nivel bajo en tanque de bombeo." }
+  - { id: return-tank-level-high, source: tank-recirc-01.level_pct, condition: "> 95", priority: medium, message: "Nivel alto en tanque de retorno 1." }
+  - { id: return-tank-2-level-high, source: tank-recirc-02.level_pct, condition: "> 95", priority: medium, message: "Nivel alto en tanque de retorno 2." }
+  - { id: main-pump-fault, source: pumpset-main-01.state, condition: "= fault", priority: high, message: "Falla en grupo de bombeo principal." }
+  - { id: recirculation-pump-fault, source: pumpset-recirc-01.state, condition: "= fault", priority: high, message: "Falla en grupo de recirculación." }

@@ -6,6 +6,7 @@
     WS   /api/equipment/{type}/simulate      simulación en vivo de un equipo
     GET  /api/plants                         plantas con plano (y si tienen simulación conectada)
     GET  /api/plants/{id}                    plano para la escena 3D: zonas, equipos y su tipo/parámetros de librería
+    GET  /api/plants/{id}/plc-schema         contrato declarativo del PLC/HMI simulado (si la planta lo configura)
     WS   /api/plants/{id}/simulate           simulación en vivo de la planta conectada (motor de planta)
     POST /api/plants/{id}/products/check     valida un producto nuevo contra el catálogo y devuelve su ruta (no guarda)
 
@@ -41,6 +42,7 @@ library = Library()
 _plant_models: dict[str, PlantModel] = {}
 
 _PIPE_KEYS = ("from", "to", "medium", "rate", "unit", "route", "diameter_in", "inner_diameter_mm", "reduce_at", "reduce_to_in")
+PLC_FILE = "plc.yaml"
 
 
 def _clean(value: Any) -> Any:
@@ -237,6 +239,23 @@ def get_plant(plant_id: str) -> dict[str, Any]:
 def _catalog(plant_id: str) -> Catalog | None:
     folder = _plant_folders()[plant_id]
     return _plant_model(plant_id).catalog if (folder / SIM_FILE).exists() else Catalog.load(folder)
+
+
+@app.get("/api/plants/{plant_id}/plc-schema")
+def get_plant_plc_schema(plant_id: str) -> dict[str, Any]:
+    """Contrato declarativo para una HMI/PLC exclusivamente simulada.
+
+    El archivo vive junto al modelo, en ``industrial-models/<planta>/plc.yaml``. El contrato describe pantallas,
+    activos, mandos permitidos, alarmas y procedencia; no concede escritura hacia infraestructura física.
+    """
+    folders = _plant_folders()
+    if plant_id not in folders:
+        raise HTTPException(404, f"planta desconocida: {plant_id}")
+    path = folders[plant_id] / PLC_FILE
+    if not path.exists():
+        raise HTTPException(404, f"planta sin configuración PLC: {plant_id}")
+    schema = load_yaml(path)
+    return _clean({"plant_id": plant_id, "simulated": True, **schema})
 
 
 @app.post("/api/plants/{plant_id}/products/check")

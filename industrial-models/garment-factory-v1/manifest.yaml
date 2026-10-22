@@ -1,0 +1,18 @@
+# Paquete portable de modelo industrial. Las dependencias se validan contra simulation.yaml.
+schema_version: 0.1.0
+model:
+  id: garment-factory-v1
+  name: garment factory v1
+  version: 0.1.0
+  runtime: ">=0.1,<0.2"
+
+entrypoints:
+  layout: plant.yaml
+  simulation: simulation.yaml
+
+equipment_dependencies:
+  - { type: garment-cutting-line, version: ">=0.1,<0.2" }
+  - { type: garment-fabric-store, version: ">=0.1,<0.2" }
+  - { type: garment-final-inspection, version: ">=0.1,<0.2" }
+  - { type: garment-finished-goods-store, version: ">=0.1,<0.2" }
+  - { type: garment-sewing-module, version: ">=0.1,<0.2" }

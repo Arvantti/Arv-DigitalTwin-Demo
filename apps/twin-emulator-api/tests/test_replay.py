@@ -1,7 +1,7 @@
 """Grabación de la operación normal que la galería reproduce sin la API."""
 
-from twin_api.main import _plant_model
-from twin_api.replay import record_plant
+from twin_emulator_api.main import _plant_model
+from twin_emulator_api.replay import record_plant
 
 
 def test_replay_frames_are_deltas_that_rebuild_the_snapshot():

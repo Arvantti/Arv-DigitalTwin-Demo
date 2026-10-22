@@ -1,0 +1,19 @@
+# Paquete portable de modelo industrial. Las dependencias se validan contra simulation.yaml.
+schema_version: 0.1.0
+model:
+  id: corrugated-box-plant-v1
+  name: corrugated box plant v1
+  version: 0.1.0
+  runtime: ">=0.1,<0.2"
+
+entrypoints:
+  layout: plant.yaml
+  simulation: simulation.yaml
+
+equipment_dependencies:
+  - { type: belt-conveyor, version: ">=0.1,<0.2" }
+  - { type: box-converter, version: ">=0.1,<0.2" }
+  - { type: corrugator, version: ">=0.1,<0.2" }
+  - { type: inline-station, version: ">=0.1,<0.2" }
+  - { type: palletizer, version: ">=0.1,<0.2" }
+  - { type: transfer-car, version: ">=0.1,<0.2" }

@@ -30,6 +30,9 @@ import { bootDone, bootError, bootStage } from "./boot.ts";
 import { type CatalogDoc, type ProductsApi, buildProducts } from "./products.ts";
 import "./styles.css";
 
+// Evita que el HTML sin estilos aparezca mientras Vite descarga el módulo CSS.
+document.body.classList.remove("loading");
+
 interface Zone {
   id: string;
   name: string;
@@ -1021,7 +1024,7 @@ function connect(): void {
 }
 
 // ------------------------------------------------------------------ reproducción grabada (sin API)
-// La genera tools/deploy/export_static_plants.py con twin_api.replay: cada cuadro trae solo lo que cambió.
+// La genera tools/deploy/export_static_plants.py con twin_emulator_api.replay: cada cuadro trae solo lo que cambió.
 type Replay = { interval_s: number; frames: SimMessage[] };
 let replayData: Replay | null = null;
 let replay: { timer: number; t: number; next: number; state: Record<string, EquipmentSnapshot>; links: Record<string, LinkState> } | null = null;
@@ -1188,6 +1191,12 @@ async function start(): Promise<void> {
   await bootStage(22, "Descargando el plano de la planta…");
   doc = await res.json();
   $<HTMLAnchorElement>("link-equipos").href = `/equipos.html?plant=${plantId}`;
+  const plcLink = $<HTMLAnchorElement>("link-plc");
+  const plcSchema = await fetch(`/api/plants/${plantId}/plc-schema`).catch(() => null);
+  if (plcSchema?.ok) {
+    plcLink.href = `/plc.html?plant=${plantId}`;
+    plcLink.hidden = false;
+  }
   $("plant-name").textContent = doc.plant.name.toUpperCase();
   const simulated = doc.equipment.filter((e) => e.sim).length;
   await bootStage(34, "Construyendo zonas y pisos…");

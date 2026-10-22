@@ -1,0 +1,19 @@
+# Paquete portable de modelo industrial. Las dependencias se validan contra simulation.yaml.
+schema_version: 0.1.0
+model:
+  id: water-network-scale-v1
+  name: water network scale v1
+  version: 0.1.0
+  runtime: ">=0.1,<0.2"
+
+entrypoints:
+  layout: plant.yaml
+  simulation: simulation.yaml
+  domain_model: network.py
+
+equipment_dependencies:
+  - { type: booster-pump-set, version: ">=0.1,<0.2" }
+  - { type: distribution-grid, version: ">=0.1,<0.2" }
+  - { type: pressure-reducing-station, version: ">=0.1,<0.2" }
+  - { type: regulating-valve, version: ">=0.1,<0.2" }
+  - { type: vessel, version: ">=0.1,<0.2" }

@@ -1,0 +1,25 @@
+# Paquete portable de modelo industrial. Las dependencias se validan contra simulation.yaml.
+schema_version: 0.1.0
+model:
+  id: plastic-injection-plant-v1
+  name: plastic injection plant v1
+  version: 0.1.0
+  runtime: ">=0.1,<0.2"
+
+entrypoints:
+  layout: plant.yaml
+  simulation: simulation.yaml
+
+equipment_dependencies:
+  - { type: assembly-cell, version: ">=0.1,<0.2" }
+  - { type: belt-conveyor, version: ">=0.1,<0.2" }
+  - { type: chiller, version: ">=0.1,<0.2" }
+  - { type: desiccant-dryer, version: ">=0.1,<0.2" }
+  - { type: forklift-fleet, version: ">=0.1,<0.2" }
+  - { type: granulator, version: ">=0.1,<0.2" }
+  - { type: injection-molding-machine, version: ">=0.1,<0.2" }
+  - { type: packing-station, version: ">=0.1,<0.2" }
+  - { type: pallet-buffer, version: ">=0.1,<0.2" }
+  - { type: pallet-store, version: ">=0.1,<0.2" }
+  - { type: pelletizing-line, version: ">=0.1,<0.2" }
+  - { type: vessel, version: ">=0.1,<0.2" }

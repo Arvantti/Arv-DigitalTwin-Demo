@@ -5,7 +5,7 @@ requires-python = ">=3.11"
 [manifest]
 members = [
     "industrial-twin",
-    "twin-api",
+    "twin-emulator-api",
     "twin-runtime",
 ]
 
@@ -259,7 +259,7 @@ name = "industrial-twin"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
-    { name = "twin-api" },
+    { name = "twin-emulator-api" },
     { name = "twin-runtime" },
 ]
 
@@ -275,7 +275,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "twin-api", editable = "apps/api" },
+    { name = "twin-emulator-api", editable = "apps/twin-emulator-api" },
     { name = "twin-runtime", editable = "packages/twin-runtime" },
 ]
 
@@ -788,9 +788,9 @@ wheels = [
 ]
 
 [[package]]
-name = "twin-api"
+name = "twin-emulator-api"
 version = "0.1.0"
-source = { editable = "apps/api" }
+source = { editable = "apps/twin-emulator-api" }
 dependencies = [
     { name = "fastapi" },
     { name = "twin-runtime" },

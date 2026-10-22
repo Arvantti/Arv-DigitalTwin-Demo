@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PLC Master · Acueducto</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Orbitron:wght@500;600;700&display=swap" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a href="/plant.html?plant=water-network-scale-v1" class="back">← GEMELO 3D</a>
+      <div><strong>PLC MASTER</strong><span id="plant-name"> · CARGANDO…</span></div>
+      <div class="connection" id="connection">● DESCONECTADO</div>
+      <div class="clock" id="clock">SIM · —</div>
+    </header>
+    <div class="warning">SIMULACIÓN · PLC VIRTUAL · SIN CONEXIÓN A INFRAESTRUCTURA FÍSICA</div>
+    <main>
+      <aside class="asset-tree panel">
+        <h2>ÁRBOL DE ACTIVOS</h2>
+        <div id="assets"></div>
+        <h2>ALARMAS ACTIVAS</h2>
+        <div id="alarms" class="alarms"><p class="muted">Esperando señales…</p></div>
+      </aside>
+      <section class="content">
+        <nav class="tabs" aria-label="Pantallas PLC">
+          <button class="active" data-screen="master">MASTER</button>
+          <button data-screen="day">DÍA 24 H</button>
+          <button data-screen="pumping">BOMBEO Y TANQUES</button>
+          <button data-screen="grid">REJILLA Y CONSUMO</button>
+          <button data-screen="trends">TENDENCIAS</button>
+          <button data-screen="history">HISTORIAL</button>
+        </nav>
+        <section id="master" class="screen active">
+          <div class="hero panel">
+            <div><p class="eyebrow">EMULADOR DE REALIDAD FICTICIA</p><h1>Acueducto a escala</h1><p>La calculadora hidráulica estacionaria simula las señales que leería el PLC. Fractal de Ingeniería usa otro modelo independiente y solo recomienda cambios.</p></div>
+            <div class="hero-actions"><button id="connect" class="primary">▶ INICIAR SIMULACIÓN 24 H</button><button id="pause">❚❚ PAUSA</button></div>
+          </div>
+          <div class="kpis" id="kpis"></div>
+          <div class="panel recommendation"><p class="eyebrow">FRACTAL DE INGENIERÍA</p><strong>Sin recomendación aplicada</strong><span>Las sugerencias futuras se validarán contra una calculadora hidráulica independiente y requerirán aceptación del operador.</span></div>
+        </section>
+        <section id="day" class="screen">
+          <div class="section-head"><div><p class="eyebrow">HISTORIADOR DE LA SIMULACIÓN</p><h1>Curva del día · 24 horas</h1><p class="muted">Una hora hidráulica equivale a un minuto real: el ciclo completo dura 24 minutos. Cada punto proviene de las señales del emulador y refleja los mandos aplicados durante la sesión.</p></div></div>
+          <div class="kpis" id="day-kpis"></div>
+          <div id="day-charts" class="trend-charts"></div>
+        </section>
+        <section id="pumping" class="screen">
+          <div class="section-head"><div><p class="eyebrow">OPERACIÓN HIDRÁULICA</p><h1>Bombeo, tanques y regulación</h1></div><div id="branch-state" class="mode">RAMA · —</div></div>
+          <div class="flow-diagram panel"><span>RETORNO</span><b>→</b><span>RECIRCULACIÓN</span><b>→</b><span>TANQUE DE BOMBEO</span><b>→</b><span>BOMBAS PRINCIPALES</span><b>→</b><span>REGULADORA</span></div>
+          <div class="cards" id="tanks"></div>
+          <div class="cards" id="pumps"></div>
+          <section class="panel regulation"><div><p class="eyebrow">ESTACIÓN REGULADORA</p><h2>PRS-01</h2><div id="prs-values" class="readings"></div></div><div class="controls"><button data-command="auto">AUTO</button><button data-command="manual">MANUAL</button><label>Consigna crítica <input id="critical-setpoint" type="range" min="15" max="30" step="0.05" value="15.45" /><output id="critical-output">15.45 mca</output></label><label>Salida manual <input id="manual-setpoint" type="range" min="15" max="35" step="0.05" value="20.94" /><output id="manual-output">20.94 mca</output></label></div></section>
+          <section class="panel hydraulic-profile"><div class="section-head"><div><p class="eyebrow">MONITOREO HIDRÁULICO EN VIVO</p><h2>Presión y caudal a lo largo de la red</h2><p class="muted">Cada punto corresponde a un transmisor virtual. La válvula crítica es la vivienda de menor presión calculada en ese instante.</p></div></div><div id="hydraulic-profile" class="hydraulic-profile-chart"></div></section>
+        </section>
+        <section id="history" class="screen">
+          <div class="section-head"><div><p class="eyebrow">ARCHIVO LOCAL DEL OPERADOR</p><h1>Historial de desempeños</h1><p class="muted">Sesiones finalizadas guardadas en este navegador. Permite recuperar sus curvas para comparación; no se envían a infraestructura física.</p></div></div>
+          <div id="saved-runs" class="cards"></div>
+        </section>
+        <section id="trends" class="screen">
+          <div class="section-head"><div><p class="eyebrow">HISTORIADOR DE SESIÓN</p><h1>Tendencias de operación</h1><p class="muted">Muestras del emulador hidráulico durante esta sesión. Un perfil de 24 h se incorporará como escenario programable.</p></div></div>
+          <div id="trends-charts" class="trend-charts"></div>
+        </section>
+        <section id="grid" class="screen">
+          <div class="section-head"><div><p class="eyebrow">DEMANDA RESIDENCIAL</p><h1>Rejilla y consumo</h1><p class="muted">Cada tarjeta representa una vivienda: apertura, presión y caudal. Se resalta el mínimo de cada nivel; <b>MÍN. RED</b> identifica además la presión más baja de toda la red.</p></div><div class="controls inline"><label>Todas <input id="all-consumers" type="range" min="0" max="100" value="100" /><output id="all-consumers-output">100 %</output></label><label>N1 <input data-level-consumers="1" type="range" min="0" max="100" value="100" /><output data-level-output="1">100 %</output></label><label>N2 <input data-level-consumers="2" type="range" min="0" max="100" value="100" /><output data-level-output="2">100 %</output></label><label>N3 <input data-level-consumers="3" type="range" min="0" max="100" value="100" /><output data-level-output="3">100 %</output></label><label>N4 <input data-level-consumers="4" type="range" min="0" max="100" value="100" /><output data-level-output="4">100 %</output></label><button id="random">⚄ ALEATORIO</button></div></div>
+          <div id="grid-levels" class="grid-levels"></div>
+        </section>
+      </section>
+    </main>
+    <script type="module" src="/src/plc.ts"></script>
+  </body>
+</html>
