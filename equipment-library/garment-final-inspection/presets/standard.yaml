@@ -1,0 +1,4 @@
+preset: standard
+description: Inspección y limpieza de hilos, usando 0,55 min por prenda
+params: { inspection_s: 33, queue_capacity: 120, length_m: 5, width_m: 2 }
+provenance: { inspection_s: assumed, queue_capacity: assumed, length_m: assumed, width_m: assumed }

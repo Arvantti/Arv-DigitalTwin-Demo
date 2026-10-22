@@ -1,0 +1,103 @@
+schema_version: 0.1.0
+type: garment-sewing-module
+version: 0.1.0
+name: Módulo de confección de cinco puestos
+manufacturing: discrete
+category: garment.sewing.line
+description: "Módulo en fila con dos planas, dos fileteadoras y una recubridora, cinco operarias sentadas y contadores de unidades en cada estación."
+aliases: [módulo de confección, línea de camisetas]
+fidelity: { visual: V2, behavior: B2 }
+params:
+  polo_lock_1_s: { type: number, unit: s, min: 1, max: 1800, default: 147, description: "SAM agrupado de plana 1 para Polo", affects: [behavior] }
+  polo_lock_2_s: { type: number, unit: s, min: 1, max: 1800, default: 141, description: "SAM agrupado de plana 2 para Polo", affects: [behavior] }
+  polo_over_1_s: { type: number, unit: s, min: 1, max: 1800, default: 72, description: "SAM agrupado de fileteadora 1 para Polo", affects: [behavior] }
+  polo_over_2_s: { type: number, unit: s, min: 1, max: 1800, default: 63, description: "SAM agrupado de fileteadora 2 para Polo", affects: [behavior] }
+  polo_cover_s: { type: number, unit: s, min: 1, max: 1800, default: 93, description: "SAM agrupado de recubridora para Polo", affects: [behavior] }
+  oversize_lock_1_s: { type: number, unit: s, min: 1, max: 1800, default: 60, description: "SAM agrupado de plana 1 para Oversize", affects: [behavior] }
+  oversize_lock_2_s: { type: number, unit: s, min: 1, max: 1800, default: 33, description: "SAM agrupado de plana 2 para Oversize", affects: [behavior] }
+  oversize_over_1_s: { type: number, unit: s, min: 1, max: 1800, default: 132, description: "SAM agrupado de fileteadora 1 para Oversize", affects: [behavior] }
+  oversize_over_2_s: { type: number, unit: s, min: 1, max: 1800, default: 63, description: "SAM agrupado de fileteadora 2 para Oversize", affects: [behavior] }
+  oversize_cover_s: { type: number, unit: s, min: 1, max: 1800, default: 87, description: "SAM agrupado de recubridora para Oversize", affects: [behavior] }
+  queue_capacity: { type: integer, min: 10, max: 1000, default: 180, description: "Capacidad de WIP en la entrada del módulo", affects: [behavior, geometry] }
+  row_length_m: { type: number, unit: m, min: 7, max: 10, default: 9, description: "Largo aproximado de la fila de cinco puestos", affects: [geometry] }
+  row_width_m: { type: number, unit: m, min: 2, max: 5, default: 3.6, description: "Profundidad de máquinas, operarias y sillas", affects: [geometry] }
+ports:
+  - { id: polo_in, kind: item, direction: in, medium: paquete de piezas Polo, unit: u/min, link: { units: polo_inflow_upm, ready: polo_accepting } }
+  - { id: oversize_in, kind: item, direction: in, medium: paquete de piezas Oversize, unit: u/min, link: { units: oversize_inflow_upm, ready: oversize_accepting } }
+  - { id: polo_out, kind: item, direction: out, medium: Polo confeccionada, unit: u/min, link: { units: polo_units, ready: polo_downstream_free } }
+  - { id: oversize_out, kind: item, direction: out, medium: Oversize confeccionada, unit: u/min, link: { units: oversize_units, ready: oversize_downstream_free } }
+states:
+  - { id: idle, description: Módulo sin WIP }
+  - { id: running, description: Al menos una operaria está cosiendo }
+  - { id: starved, description: Fila de entrada vacía }
+  - { id: blocked, description: WIP bloqueado por cola llena o inspección detenida }
+  - { id: fault, description: Módulo detenido por falla }
+phases:
+  - { id: lockstitch_1, description: Operación agregada de plana 1 }
+  - { id: lockstitch_2, description: Operación agregada de plana 2 }
+  - { id: overlock_1, description: Operación agregada de fileteadora 1 }
+  - { id: overlock_2, description: Operación agregada de fileteadora 2 }
+  - { id: coverstitch, description: Operación agregada de recubridora }
+variables:
+  - { id: polo_queue, unit: u, kind: calculated, description: Polo esperando en el módulo }
+  - { id: oversize_queue, unit: u, kind: calculated, description: Oversize esperando en el módulo }
+  - { id: polo_units, unit: u, kind: counter, description: Polo completadas y entregadas a inspección }
+  - { id: oversize_units, unit: u, kind: counter, description: Oversize completadas y entregadas a inspección }
+  - { id: units_completed, unit: u, kind: counter, description: Producción total del módulo }
+  - { id: polo_accepting, unit: "", kind: status, description: 1 si acepta paquetes Polo }
+  - { id: oversize_accepting, unit: "", kind: status, description: 1 si acepta paquetes Oversize }
+  - { id: polo_downstream_free, unit: "", kind: status, description: 1 si inspección recibe Polo }
+  - { id: oversize_downstream_free, unit: "", kind: status, description: 1 si inspección recibe Oversize }
+  - { id: station_1_units, unit: u, kind: counter, description: Unidades que completaron la plana 1 }
+  - { id: station_2_units, unit: u, kind: counter, description: Unidades que completaron la plana 2 }
+  - { id: station_3_units, unit: u, kind: counter, description: Unidades que completaron la fileteadora 1 }
+  - { id: station_4_units, unit: u, kind: counter, description: Unidades que completaron la fileteadora 2 }
+  - { id: station_5_units, unit: u, kind: counter, description: Unidades que completaron la recubridora }
+  - { id: station_1_queue, unit: u, kind: calculated, description: WIP a la espera de la plana 1 }
+  - { id: station_2_queue, unit: u, kind: calculated, description: WIP a la espera de la plana 2 }
+  - { id: station_3_queue, unit: u, kind: calculated, description: WIP a la espera de la fileteadora 1 }
+  - { id: station_4_queue, unit: u, kind: calculated, description: WIP a la espera de la fileteadora 2 }
+  - { id: station_5_queue, unit: u, kind: calculated, description: WIP a la espera de la recubridora }
+  - { id: station_1_product, unit: "", kind: status, description: "1 Polo, 2 Oversize o 0 sin pieza activa en plana 1" }
+  - { id: station_2_product, unit: "", kind: status, description: "1 Polo, 2 Oversize o 0 sin pieza activa en plana 2" }
+  - { id: station_3_product, unit: "", kind: status, description: "1 Polo, 2 Oversize o 0 sin pieza activa en fileteadora 1" }
+  - { id: station_4_product, unit: "", kind: status, description: "1 Polo, 2 Oversize o 0 sin pieza activa en fileteadora 2" }
+  - { id: station_5_product, unit: "", kind: status, description: "1 Polo, 2 Oversize o 0 sin pieza activa en recubridora" }
+  - { id: cycle_pct, unit: "%", kind: calculated, range: [0, 100], description: Avance de la operación activa del último puesto }
+events:
+  - { id: garment_completed, description: Prenda terminó las cinco estaciones, payload: [product, units] }
+  - { id: station_completed, description: Prenda procesada por una máquina del módulo, payload: [station, product, units] }
+faults:
+  - { id: thread_break, description: Rotura de hilo en el módulo, mtbf_h: 35, mttr_min: 3, severity: low, effect: "Pausa temporal de la línea para enhebrar y revisar la costura" }
+  - { id: needle_break, description: Aguja rota en un puesto, mtbf_h: 120, mttr_min: 5, severity: medium, effect: "Pausa temporal del módulo para cambio de aguja" }
+commands:
+  - { id: inject_fault, description: Inyecta una falla, args: { fault: string, duration_s: number } }
+  - { id: clear_fault, description: Repara una falla activa, args: { fault: string } }
+kpis:
+  - { id: utilization, unit: "", description: Ocupación media de los cinco puestos }
+  - { id: units_per_h, unit: u/h, description: Prendas completadas por hora }
+  - { id: starved_pct, unit: "", description: Fracción del turno sin paquetes en el módulo }
+animation_channels:
+  - { id: station_1_needle, range: [0, 1], description: Movimiento de aguja plana 1 }
+  - { id: station_2_needle, range: [0, 1], description: Movimiento de aguja plana 2 }
+  - { id: station_3_needle, range: [0, 1], description: Movimiento de fileteadora 1 }
+  - { id: station_4_needle, range: [0, 1], description: Movimiento de fileteadora 2 }
+  - { id: station_5_needle, range: [0, 1], description: Movimiento de recubridora }
+  - { id: station_1_working, range: [0, 1], description: Operaria sentada trabajando en plana 1 }
+  - { id: station_2_working, range: [0, 1], description: Operaria sentada trabajando en plana 2 }
+  - { id: station_3_working, range: [0, 1], description: Operaria sentada trabajando en fileteadora 1 }
+  - { id: station_4_working, range: [0, 1], description: Operaria sentada trabajando en fileteadora 2 }
+  - { id: station_5_working, range: [0, 1], description: Operaria sentada trabajando en recubridora }
+  - { id: station_1_progress, range: [0, 1], description: Avance de costura de plana 1 }
+  - { id: station_2_progress, range: [0, 1], description: Avance de costura de plana 2 }
+  - { id: station_3_progress, range: [0, 1], description: Avance de costura de fileteadora 1 }
+  - { id: station_4_progress, range: [0, 1], description: Avance de costura de fileteadora 2 }
+  - { id: station_5_progress, range: [0, 1], description: Avance de costura de recubridora }
+  - { id: line_queue, range: [0, 1], description: Ocupación de la cola total de módulos }
+  - { id: stack_light, range: [0, 3], description: Baliza de módulo }
+geometry:
+  parts: [five_machines_in_row, chairs, seated_operators, five_production_counters, infeed_table, outfeed_table, garments, safety_marking]
+assumptions:
+  - "Una prenda pasa por cinco grupos de operaciones, cada uno representado por una máquina dedicada en la fila; los SAM de varias operaciones de una misma familia se agrupan por puesto."
+  - "Ritmos de estación son los SAM agregados del README; no modelan todos los movimientos elementales ni cambios de talla/material."
+  - "Los cinco puestos operan en paralelo (pipeline), con una cola entre puestos; capacidades de fila y datos de corte son supuestos."

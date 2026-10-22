@@ -1,0 +1,4 @@
+preset: standard
+description: Inventario ilustrativo para una línea de camisetas
+params: { initial_rolls: 12, max_rolls: 120, receipt_upm: 0.33, dispatch_interval_s: 60 }
+provenance: { initial_rolls: assumed, max_rolls: assumed, receipt_upm: assumed, dispatch_interval_s: assumed }

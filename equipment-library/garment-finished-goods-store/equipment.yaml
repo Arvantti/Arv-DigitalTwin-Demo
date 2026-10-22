@@ -1,0 +1,44 @@
+schema_version: 0.1.0
+type: garment-finished-goods-store
+version: 0.1.0
+name: Almacén de camisetas terminadas
+manufacturing: discrete
+category: garment.storage.finished
+description: Inventario de camisetas inspeccionadas por producto, disponible para alistamiento de pedidos y despacho.
+aliases: [almacén de producto terminado, bodega de camisetas]
+fidelity: { visual: V2, behavior: B2 }
+params:
+  capacity_units: { type: integer, min: 100, max: 100000, default: 2400, description: Capacidad en prendas terminadas, affects: [behavior, geometry] }
+  rack_count: { type: integer, min: 1, max: 20, default: 2, description: Estanterías representadas en escena, affects: [geometry] }
+ports:
+  - { id: polo_in, kind: item, direction: in, medium: Camisetas Polo aceptadas, unit: u/min, link: { units: polo_inflow_upm, ready: polo_accepting } }
+  - { id: oversize_in, kind: item, direction: in, medium: Camisetas Oversize aceptadas, unit: u/min, link: { units: oversize_inflow_upm, ready: oversize_accepting } }
+  - { id: finished_goods_out, kind: item, direction: out, medium: Inventario de prendas terminadas, unit: u, link: { units: units_stored } }
+  - { id: polo_out, kind: item, direction: out, medium: Inventario Polo, unit: u, link: { units: polo_received } }
+  - { id: oversize_out, kind: item, direction: out, medium: Inventario Oversize, unit: u, link: { units: oversize_received } }
+states:
+  - { id: idle, description: Sin producto almacenado }
+  - { id: running, description: Recibiendo o manteniendo inventario }
+  - { id: blocked, description: Capacidad del almacén agotada }
+variables:
+  - { id: polo_stock, unit: u, kind: calculated, description: Polo almacenadas }
+  - { id: oversize_stock, unit: u, kind: calculated, description: Oversize almacenadas }
+  - { id: units_stored, unit: u, kind: counter, description: Total acumulado de prendas ingresadas a producto terminado }
+  - { id: polo_received, unit: u, kind: counter, description: Polo recibidas e inventariadas }
+  - { id: oversize_received, unit: u, kind: counter, description: Oversize recibidas e inventariadas }
+  - { id: capacity_pct, unit: "%", kind: calculated, range: [0, 100], description: Ocupación de posiciones }
+  - { id: polo_accepting, unit: "", kind: status, description: 1 si admite camisetas Polo }
+  - { id: oversize_accepting, unit: "", kind: status, description: 1 si admite camisetas Oversize }
+events:
+  - { id: finished_unit_received, description: Camiseta terminada ubicada en inventario, payload: [product] }
+kpis:
+  - { id: units_per_h, unit: u/h, description: Prendas recibidas por hora }
+  - { id: occupancy_pct, unit: "%", description: Porcentaje de capacidad ocupada }
+animation_channels:
+  - { id: fill, range: [0, 1], description: Llenado total de la estantería }
+  - { id: polo_fill, range: [0, 1], description: Inventario relativo de Polo }
+  - { id: oversize_fill, range: [0, 1], description: Inventario relativo de Oversize }
+geometry: { parts: [racks, garment_boxes, size_labels, picking_lane] }
+assumptions:
+  - "Capacidad 2.400 unidades supuesta; no se conoce mezcla real de tallas, empaque ni estiba."
+  - "No se modela despacho porque no se proporcionaron pedidos, cajas por paquete o calendario de vehículos."

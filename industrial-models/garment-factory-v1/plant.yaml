@@ -22,37 +22,32 @@ zones:
   - { id: calidad, name: Inspección y acabado final, kind: production, hygiene_class: clean, rect: [44, 12, 16, 8], height: 5 }
   - { id: almacen-pt, name: Almacén de producto terminado y despacho, kind: storage, hygiene_class: clean, rect: [44, 0, 16, 12], height: 7 }
   - { id: servicios, name: "Vestieres, mantenimiento y servicios", kind: service, hygiene_class: service, rect: [0, 0, 14, 20], height: 5 }
+flows:
+  - { from: almacen-tela-01, to: inspeccion-rollos, medium: rollos liberados, rate: 20, unit: rollos/h }
+  - { from: inspeccion-rollos, to: corte-tela-01, medium: rollos liberados, rate: 20, unit: rollos/h }
+  - { from: corte-tela-01, to: rack-paquetes, medium: paquetes Polo y Oversize, rate: 100, unit: prendas/h }
+  - { from: rack-paquetes, to: modulo-01, medium: paquetes cortados, rate: 100, unit: prendas/h }
+  - { from: rack-paquetes, to: modulo-02, medium: paquetes cortados, rate: 100, unit: prendas/h }
+  - { from: rack-paquetes, to: modulo-03, medium: paquetes cortados, rate: 100, unit: prendas/h }
+  - { from: modulo-01, to: inspeccion-final-01, medium: camisetas cosidas, rate: 40, unit: prendas/h }
+  - { from: modulo-02, to: inspeccion-final-01, medium: camisetas cosidas, rate: 40, unit: prendas/h }
+  - { from: modulo-03, to: inspeccion-final-01, medium: camisetas cosidas, rate: 40, unit: prendas/h }
+  - { from: inspeccion-final-01, to: almacen-pt-01, medium: camisetas inspeccionadas, rate: 100, unit: prendas/h }
 equipment:
-  - { id: rack-tela-01, type: pallet_rack, zone: almacen-tela, position: [4, 29, 0], footprint: [5, 1.2, 4], params: { stage: tela, positions: 24 } }
-  - { id: rack-tela-02, type: pallet_rack, zone: almacen-tela, position: [10, 29, 0], footprint: [5, 1.2, 4], params: { stage: tela, positions: 24 } }
+  - { id: almacen-tela-01, type: garment-fabric-store, zone: almacen-tela, position: [7, 29, 0], footprint: [5.4, 1.9, 3.8] }
   - { id: inspeccion-rollos, type: manual_table, zone: almacen-tela, position: [7, 24, 0], footprint: [4, 2, 1], params: { task: inspección y liberación de rollos } }
-  - { id: mesa-tendido-01, type: manual_table, zone: corte, position: [21, 30, 0], footprint: [14, 2, 1], params: { task: extendido y tendido de tela } }
-  - { id: mesa-corte-01, type: manual_table, zone: corte, position: [34, 30, 0], footprint: [8, 3, 1], params: { task: corte y preparación de paquetes } }
+  - { id: corte-tela-01, type: garment-cutting-line, zone: corte, position: [27, 30, 0], footprint: [14, 3.2, 2.1] }
   - { id: rack-paquetes, type: shelving, zone: corte, position: [35, 24, 0], footprint: [7, 1, 3], params: { content: "paquetes cortados por orden, talla y color" } }
-  - { id: plana-m1-1, type: lockstitch-sewing-machine, zone: modulo-1, position: [16, 16, 0], footprint: [2, 1, 1.4], params: { machine: plana, operator: operaria-01 } }
-  - { id: plana-m1-2, type: lockstitch-sewing-machine, zone: modulo-1, position: [21, 16, 0], footprint: [2, 1, 1.4], params: { machine: plana, operator: operaria-02 } }
-  - { id: fileteadora-m1-1, type: overlock-sewing-machine, zone: modulo-1, position: [16, 9, 0], footprint: [2, 1, 1.4], params: { machine: fileteadora, operator: operaria-03 } }
-  - { id: fileteadora-m1-2, type: overlock-sewing-machine, zone: modulo-1, position: [21, 9, 0], footprint: [2, 1, 1.4], params: { machine: fileteadora, operator: operaria-04 } }
-  - { id: recubridora-m1-1, type: coverstitch-sewing-machine, zone: modulo-1, position: [18.5, 4, 0], footprint: [2, 1, 1.4], params: { machine: recubridora, operator: operaria-05 } }
-  - { id: plana-m2-1, type: lockstitch-sewing-machine, zone: modulo-2, position: [26, 16, 0], footprint: [2, 1, 1.4], params: { machine: plana, operator: operaria-06 } }
-  - { id: plana-m2-2, type: lockstitch-sewing-machine, zone: modulo-2, position: [31, 16, 0], footprint: [2, 1, 1.4], params: { machine: plana, operator: operaria-07 } }
-  - { id: fileteadora-m2-1, type: overlock-sewing-machine, zone: modulo-2, position: [26, 9, 0], footprint: [2, 1, 1.4], params: { machine: fileteadora, operator: operaria-08 } }
-  - { id: fileteadora-m2-2, type: overlock-sewing-machine, zone: modulo-2, position: [31, 9, 0], footprint: [2, 1, 1.4], params: { machine: fileteadora, operator: operaria-09 } }
-  - { id: recubridora-m2-1, type: coverstitch-sewing-machine, zone: modulo-2, position: [28.5, 4, 0], footprint: [2, 1, 1.4], params: { machine: recubridora, operator: operaria-10 } }
-  - { id: plana-m3-1, type: lockstitch-sewing-machine, zone: modulo-3, position: [36, 16, 0], footprint: [2, 1, 1.4], params: { machine: plana, operator: operaria-11 } }
-  - { id: plana-m3-2, type: lockstitch-sewing-machine, zone: modulo-3, position: [41, 16, 0], footprint: [2, 1, 1.4], params: { machine: plana, operator: operaria-12 } }
-  - { id: fileteadora-m3-1, type: overlock-sewing-machine, zone: modulo-3, position: [36, 9, 0], footprint: [2, 1, 1.4], params: { machine: fileteadora, operator: operaria-13 } }
-  - { id: fileteadora-m3-2, type: overlock-sewing-machine, zone: modulo-3, position: [41, 9, 0], footprint: [2, 1, 1.4], params: { machine: fileteadora, operator: operaria-14 } }
-  - { id: recubridora-m3-1, type: coverstitch-sewing-machine, zone: modulo-3, position: [38.5, 4, 0], footprint: [2, 1, 1.4], params: { machine: recubridora, operator: operaria-15 } }
-  - { id: mesa-calidad, type: manual_table, zone: calidad, position: [50, 16, 0], footprint: [5, 2, 1], params: { task: "revisión final, limpieza de hilos y empaque" } }
-  - { id: rack-pt-01, type: pallet_rack, zone: almacen-pt, position: [47, 5, 0], footprint: [1.2, 8, 4], params: { stage: producto terminado, positions: 48 } }
-  - { id: rack-pt-02, type: pallet_rack, zone: almacen-pt, position: [52, 5, 0], footprint: [1.2, 8, 4], params: { stage: producto terminado, positions: 48 } }
-  - { id: mesa-despacho, type: manual_table, zone: almacen-pt, position: [57, 5, 0], footprint: [2, 3, 1], params: { task: consolidación por pedido y despacho } }
+  - { id: modulo-01, type: garment-sewing-module, zone: modulo-1, position: [19, 11, 0], footprint: [9.3, 3.8, 2.1], params: { row_length_m: 9, row_width_m: 3.6 } }
+  - { id: modulo-02, type: garment-sewing-module, zone: modulo-2, position: [29, 11, 0], footprint: [9.3, 3.8, 2.1], params: { row_length_m: 9, row_width_m: 3.6 } }
+  - { id: modulo-03, type: garment-sewing-module, zone: modulo-3, position: [39, 11, 0], footprint: [9.3, 3.8, 2.1], params: { row_length_m: 9, row_width_m: 3.6 } }
+  - { id: inspeccion-final-01, type: garment-final-inspection, zone: calidad, position: [51, 16, 0], footprint: [5.8, 3, 1.8] }
+  - { id: almacen-pt-01, type: garment-finished-goods-store, zone: almacen-pt, position: [52, 5, 0], footprint: [5.5, 2, 3.8] }
   - { id: banco-mantenimiento, type: workbench, zone: servicios, position: [7, 5, 0], footprint: [3, 1, 1], params: { task: mantenimiento de máquinas de costura } }
 lines:
-  - { id: corte, name: Corte y preparación de paquetes, equipment: [inspeccion-rollos, mesa-tendido-01, mesa-corte-01, rack-paquetes] }
-  - { id: modulo-1, name: Módulo de confección 1, equipment: [plana-m1-1, plana-m1-2, fileteadora-m1-1, fileteadora-m1-2, recubridora-m1-1] }
-  - { id: modulo-2, name: Módulo de confección 2, equipment: [plana-m2-1, plana-m2-2, fileteadora-m2-1, fileteadora-m2-2, recubridora-m2-1] }
-  - { id: modulo-3, name: Módulo de confección 3, equipment: [plana-m3-1, plana-m3-2, fileteadora-m3-1, fileteadora-m3-2, recubridora-m3-1] }
-  - { id: terminado, name: "Inspección, empaque y producto terminado", equipment: [mesa-calidad, rack-pt-01, rack-pt-02, mesa-despacho] }
+  - { id: corte, name: Corte y preparación de paquetes, equipment: [inspeccion-rollos, corte-tela-01, rack-paquetes] }
+  - { id: modulo-1, name: Módulo de confección 1, equipment: [modulo-01] }
+  - { id: modulo-2, name: Módulo de confección 2, equipment: [modulo-02] }
+  - { id: modulo-3, name: Módulo de confección 3, equipment: [modulo-03] }
+  - { id: terminado, name: "Inspección final y producto terminado", equipment: [inspeccion-final-01, almacen-pt-01] }
 scenarios: {}

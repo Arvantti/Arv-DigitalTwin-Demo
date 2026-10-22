@@ -1,0 +1,38 @@
+schema_version: 0.1.0
+type: garment-fabric-store
+version: 0.1.0
+name: Almacén de rollos de tela
+manufacturing: discrete
+category: garment.storage.raw
+description: "Inventario FIFO de rollos identificados por lote y liberados a corte cuando la línea acepta material."
+aliases: [almacén de tela, bodega de rollos]
+fidelity: { visual: V2, behavior: B2 }
+params:
+  initial_rolls: { type: integer, min: 0, max: 5000, default: 12, description: "Inventario inicial supuesto en rollos", affects: [behavior, geometry] }
+  max_rolls: { type: integer, min: 1, max: 10000, default: 120, description: "Capacidad del almacén en rollos", affects: [behavior, geometry] }
+  receipt_upm: { type: number, unit: rollos/min, min: 0, max: 10, default: 0.25, description: "Recepción media exógena de rollos para reponer inventario", affects: [behavior] }
+  dispatch_interval_s: { type: number, unit: s, min: 1, max: 3600, default: 60, description: "Tiempo mínimo de despacho de un rollo liberado", affects: [behavior] }
+ports:
+  - { id: rolls_out, kind: item, direction: out, medium: rollos de tela liberados, unit: u/min, link: { units: rolls_issued, ready: downstream_free } }
+states:
+  - { id: idle, description: Almacén sin movimientos }
+  - { id: running, description: Inventario disponible y abastecimiento habilitado }
+  - { id: starved, description: Sin rollos liberados para corte }
+  - { id: blocked, description: El corte no acepta nuevos rollos }
+variables:
+  - { id: rolls_on_hand, unit: rollos, kind: calculated, description: Rollo disponible en el inventario }
+  - { id: rolls_received, unit: rollos, kind: counter, description: Rollos recibidos desde el proveedor simulado }
+  - { id: rolls_issued, unit: rollos, kind: counter, description: Rollos entregados a la línea de corte }
+  - { id: accepting, unit: "", kind: status, description: 1 mientras el almacén puede registrar recibos }
+events:
+  - { id: roll_issued, description: Rollo liberado a corte, payload: [roll] }
+kpis:
+  - { id: rolls_per_h, unit: rollos/h, description: Rollos abastecidos por hora }
+animation_channels:
+  - { id: fill, range: [0, 1], description: Ocupación del almacén }
+  - { id: stack_light, range: [0, 3], description: Estado del abastecimiento }
+geometry: { parts: [racks, fabric_rolls, lot_labels, forklift_aisle] }
+assumptions:
+  - "Inventario inicial, capacidad y reposición media son supuestos para la demostración, no datos de una fábrica medida."
+  - "El modelo cuenta rollos FIFO, pero no asigna proveedor, composición, color ni lote comercial." 
+references: [https://www.openstreetmap.org/copyright]

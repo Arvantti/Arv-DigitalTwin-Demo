@@ -4,12 +4,12 @@ Modelo conceptual y balance inicial para una planta de camisetas. **Todos los ti
 
 ## Distribución y recursos
 
-- Tres módulos de confección idénticos, cada uno con 2 máquinas planas (`lockstitch-sewing-machine`), 2 fileteadoras (`overlock-sewing-machine`) y 1 recubridora (`coverstitch-sewing-machine`): **15 máquinas** en total. Los tres tipos tienen contrato, geometría y comportamiento en `equipment-library/`.
-- Una operaria por máquina durante el ciclo (15 operarias directas), representadas en los puestos. La asignación es por operación y balance; una operación no implica que cada prenda visite todas las máquinas.
+- Tres módulos de confección idénticos en `plant.yaml`; cada módulo se representa como fila de cinco equipos contiguos: 2 planas JUKI DDL-8700, 2 fileteadoras JACK JK-E4S-4-M03/333 y 1 recubridora Siruba F007K/F007KD. La biblioteca conserva los tipos individuales, mientras que `garment-sewing-module` integra el pipeline compuesto del módulo.
+- Una operaria sentada frente a cada máquina (15 en total), con pedal, silla, motor y agujas animadas; una pantalla pequeña junto a cada estación presenta su contador de prendas y cola. Las unidades avanzan por cinco puestos agrupados en el módulo, pero esto no afirma que todo taller textil tenga un orden universal: es una asignación de operaciones para esta simulación.
 - Soporte propuesto por turno: 1 supervisora de producción compartida, 1 inspectora de calidad compartida, 1 auxiliar de abastecimiento/WIP, 1 mecánico de mantenimiento compartido. No están incluidos en SAM directo.
 - Una línea de corte: recepción e inspección de rollos, reposo/acondicionamiento, tendido, extendido, tizado, corte, piquete/perforación si aplica, numerado, paquetes por talla/color y despacho interno a módulos.
 - Almacén de tela separado por lote/color/composición y estado (recibido, inspeccionado, liberado, cuarentena); ubicaciones FIFO y conteo de rollos. Almacén de producto terminado con inspección final, empaque, etiquetado, consolidación por pedido y despacho.
-- Flujo: almacén de tela → corte → supermercado de paquetes → módulos 1–3 → inspección/acabado → almacén PT → despacho. Evitar mezclar lotes y mantener trazabilidad de rollo a paquete y pedido.
+- Flujo simulado en `simulation.yaml`: almacén FIFO de rollos → línea de tendido/corte → seis colas por SKU y módulo → tres módulos en paralelo → inspección final → inventario separado de Polo/Oversize en PT. Las señales `ready` aplican backpressure y conservan WIP en las colas; el almacén PT aún no despacha sin pedidos.
 
 ## Operaciones estándar y SAM inicial
 
@@ -49,4 +49,10 @@ Los tiempos de cada fila son SAM de contenido de trabajo por prenda, no takt ni 
 
 Con 8 horas/turno, 85% de eficiencia planificada (408 min productivos por operaria) y mezcla 50/50: capacidad laboral ideal = 408 / ((9.15 + 6.80)/2) = **51 prendas por operaria-turno equivalentes**, o **765 prendas-turno para 15 operarias**. Es un límite de contenido de trabajo agregado, no una promesa de salida: el cuello de botella por tipo de máquina, balance, cambios, ausentismo, defectos, pausas y abastecimiento lo reducirán. Corte, calidad y logística deben modelarse aparte.
 
-Corte y almacenes requieren datos adicionales para capacidad: ancho/gramaje/composición y consumo por talla, largo de tendido, capas, rendimiento de trazo, tiempos de reposo, volumen de rollos, política de inventario, empaque y perfiles de pedido. No se inventa SAM de corte por prenda sin especificación de marcador y lote.
+Corte y almacenes requieren datos adicionales para capacidad: ancho/gramaje/composición y consumo por talla, largo de tendido, capas, rendimiento de trazo, tiempos de reposo, volumen de rollos, política de inventario, empaque y perfiles de pedido. El corte usa 180 s/rollo, un rendimiento de 48 unidades por rollo Polo o 60 por rollo Oversize y una mezcla de rollos 50/50 como supuestos visuales; cada rollo pertenece a un único SKU. No se inventa SAM de corte por prenda sin especificación de marcador y lote.
+
+## Simulación conectada
+
+La simulación no es una medición de producción: el abastecimiento medio de 0,33 rollos/min, yields por rollo, colas (180 piezas por módulo, 120 en inspección), 33 s de inspección y 2.400 posiciones PT son supuestos editables en contratos/presets. Las operaciones del módulo se agrupan en cinco ciclos derivados del SAM por prenda: Polo [147, 141, 72, 63, 93] s y Oversize [60, 33, 132, 63, 87] s. Cada prenda atraviesa las cinco estaciones; tres módulos corren en paralelo. Se acepta toda prenda inspeccionada mientras no exista una tasa de rechazo confirmada.
+
+Validación del modelo: `uv run twin-lib plant validate garment-factory-v1`; incluye `turno-conectado`, `corte-detencion` e `inspection-stop`. Los `geometry.ts` de los cinco equipos nuevos dibujan almacenes, línea de corte, cinco puestos compactos por módulo, HMI/contadores y producto terminado.
