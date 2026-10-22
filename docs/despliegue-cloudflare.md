@@ -8,7 +8,7 @@ Cada push a `main` publica la galería web en **Cloudflare Pages** con el workfl
 | Galería de equipos en 3D (`index.html`) | Se publica. Ver y parametrizar cada equipo funciona. |
 | Escena de planta (`plant.html`): salsas, inyección, acueducto, aeropuerto, cajas | Se publica. El plano de cada planta va como archivo estático; **▶ SIMULAR** sin API reproduce una grabación de 15 min de la operación normal (`api/replays/{id}.json`, la genera `tools/deploy/export_static_plants.py` al desplegar). Escenarios, comandos y fallas necesitan la API (ver abajo). |
 | Panel del PLC del acueducto (`acueducto.html`) | Se publica completo: lee `data/acueducto-dia.json`, no usa la API. |
-| API de simulación (`apps/api`, FastAPI + WebSocket) | **Fuera de este PR.** Es Python con numpy y WebSocket; no corre en Pages ni en Workers de Python. Opciones futuras: contenedor (Cloudflare Containers) o un VPS detrás de un túnel de Cloudflare. |
+| API de simulación (`apps/twin-emulator-api`, FastAPI + WebSocket) | **Fuera de este PR.** Es Python con numpy y WebSocket; no corre en Pages ni en Workers de Python. Opciones futuras: contenedor (Cloudflare Containers) o un VPS detrás de un túnel de Cloudflare. |
 
 Sin base de datos por ahora.
 

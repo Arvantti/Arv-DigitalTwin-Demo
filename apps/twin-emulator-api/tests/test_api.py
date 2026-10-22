@@ -1,7 +1,7 @@
 import shutil
 
 from fastapi.testclient import TestClient
-from twin_api.main import app
+from twin_emulator_api.main import app
 from twin_runtime.plant import SIM_FILE, find_models_root
 
 client = TestClient(app)

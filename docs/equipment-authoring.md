@@ -192,7 +192,7 @@ pnpm gallery:build && (pnpm --filter @twin/gallery preview &)
 tools/preview/shot.sh <tipo> <preset> /tmp/<tipo>.png '{"canal":0.5}'
 ```
 
-Abra la captura junto a las fotos del usuario y compare: proporciones, colores, piezas que faltan, posición del operador. Itere hasta que se reconozca el equipo. Con la API corriendo (`uv run uvicorn twin_api.main:app --port 8000`), `?type=<tipo>&autosim=1&scenario=demo` muestra el equipo simulado en vivo.
+Abra la captura junto a las fotos del usuario y compare: proporciones, colores, piezas que faltan, posición del operador. Itere hasta que se reconozca el equipo. Con la API corriendo (`uv run uvicorn twin_emulator_api.main:app --port 8000`), `?type=<tipo>&autosim=1&scenario=demo` muestra el equipo simulado en vivo.
 
 ---
 

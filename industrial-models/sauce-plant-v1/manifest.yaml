@@ -1,0 +1,21 @@
+# Paquete portable de modelo industrial. Las dependencias se validan contra simulation.yaml.
+schema_version: 0.1.0
+model:
+  id: sauce-plant-v1
+  name: sauce plant v1
+  version: 0.1.0
+  runtime: ">=0.1,<0.2"
+
+entrypoints:
+  layout: plant.yaml
+  simulation: simulation.yaml
+
+equipment_dependencies:
+  - { type: checkweigher, version: ">=0.1,<0.2" }
+  - { type: cooling-tunnel, version: ">=0.1,<0.2" }
+  - { type: jacketed-kettle, version: ">=0.1,<0.2" }
+  - { type: packing-station, version: ">=0.1,<0.2" }
+  - { type: steam-boiler, version: ">=0.1,<0.2" }
+  - { type: tubular-pasteurizer, version: ">=0.1,<0.2" }
+  - { type: vessel, version: ">=0.1,<0.2" }
+  - { type: vffs-sachet-filler, version: ">=0.1,<0.2" }

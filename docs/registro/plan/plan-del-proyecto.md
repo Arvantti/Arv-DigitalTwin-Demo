@@ -19,7 +19,7 @@ Las plantas son inspiradas en empresas de Medellín, pero **sin usar nombres ni 
 - `equipment-library/`: un tipo de equipo por carpeta (`equipment.yaml`, `behavior.py`, `geometry.ts`, presets, escenarios, pruebas).
 - `packages/twin-runtime/` (Python): clase base, primitivas (PID, retardos, sensores, fallas, OEE, vapor), simulador y CLI `twin-lib`.
 - `packages/twin-3d/` (three.js): piezas 3D, materiales PBR y escenario de render.
-- `apps/api/` (FastAPI): simulación en vivo por WebSocket. `apps/gallery/`: galería web.
+- `apps/twin-emulator-api/` (FastAPI): simulación en vivo por WebSocket. `apps/gallery/`: galería web.
 - `industrial-models/<planta>/plant.yaml` (layouts) y `simulation.yaml` (conexión por puertos).
 
 ## 3. Fases y estado

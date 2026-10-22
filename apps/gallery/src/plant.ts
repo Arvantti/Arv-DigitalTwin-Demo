@@ -1021,7 +1021,7 @@ function connect(): void {
 }
 
 // ------------------------------------------------------------------ reproducción grabada (sin API)
-// La genera tools/deploy/export_static_plants.py con twin_api.replay: cada cuadro trae solo lo que cambió.
+// La genera tools/deploy/export_static_plants.py con twin_emulator_api.replay: cada cuadro trae solo lo que cambió.
 type Replay = { interval_s: number; frames: SimMessage[] };
 let replayData: Replay | null = null;
 let replay: { timer: number; t: number; next: number; state: Record<string, EquipmentSnapshot>; links: Record<string, LinkState> } | null = null;

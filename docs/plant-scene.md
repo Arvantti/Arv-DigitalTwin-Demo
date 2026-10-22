@@ -3,7 +3,7 @@
 La escena de planta dibuja un `plant.yaml` completo en 3D y, cuando la planta tiene `simulation.yaml`, la anima con la simulación del motor de planta (`docs/plant-engine.md`). Vive en la galería: `plant.html`.
 
 ```bash
-uv run uvicorn twin_api.main:app --port 8000   # API (planos y simulación)
+uv run uvicorn twin_emulator_api.main:app --port 8000   # API (planos y simulación)
 pnpm gallery                                    # http://localhost:5173/plant.html
 ```
 
@@ -169,7 +169,7 @@ El validador exige: `kind` `forklift` o `pedestrian`, 2 o más puntos dentro del
 - Muros con aberturas, escaleras de acceso con geometría de escalón y pasarelas de la planta de inyección (el plano no las describe).
 - De la planta de inyección siguen como volúmenes los equipos sin tipo en la librería (silos, mezcladores, estaciones de ensamble, compresores, torre de enfriamiento y otros); el empaque, los secadores, los chillers y el molino de reciclaje ya tienen geometría propia.
 
-**Reproducción sin API.** Si el WebSocket de simulación no responde (el sitio publicado no tiene API), **▶ SIMULAR** carga `api/replays/{id}.json` y reproduce la operación normal: 15 min grabados después de 15 min de calentamiento, un cuadro por segundo de simulación con solo lo que cambió desde el anterior, y vuelve a empezar al final. El reloj dice «GRABACIÓN»; la velocidad y la pausa funcionan, los escenarios, comandos y fallas avisan en EVENTOS que necesitan la API. La grabación la arma `twin_api.replay.record_plant` y la escribe `tools/deploy/export_static_plants.py` al desplegar.
+**Reproducción sin API.** Si el WebSocket de simulación no responde (el sitio publicado no tiene API), **▶ SIMULAR** carga `api/replays/{id}.json` y reproduce la operación normal: 15 min grabados después de 15 min de calentamiento, un cuadro por segundo de simulación con solo lo que cambió desde el anterior, y vuelve a empezar al final. El reloj dice «GRABACIÓN»; la velocidad y la pausa funcionan, los escenarios, comandos y fallas avisan en EVENTOS que necesitan la API. La grabación la arma `twin_emulator_api.replay.record_plant` y la escribe `tools/deploy/export_static_plants.py` al desplegar.
 
 **Ciclo ilustrativo de las inyectoras.** Sin simulación conectada (p. ej. la versión publicada sin la API) cada inyectora repite sus fases (cierre, inyección, enfriamiento, apertura, expulsión) y el robot deposita la pieza en la canastilla de su costado; con la API conectada manda el simulador.
 
