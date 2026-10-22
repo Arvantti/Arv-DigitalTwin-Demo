@@ -60,12 +60,11 @@ const plants: PlantCard[] = [
   },
   {
     id: "garment-factory-v1",
-    image: "/portal/confecciones.svg",
-    alt: "Vista esquemática del gemelo digital de confecciones",
+    image: "/portal/confecciones.jpg",
+    alt: "Captura de la escena 3D de la fábrica de confecciones",
     family: "MANUFACTURA DISCRETA",
     title: "Fábrica de confecciones",
     text: "Corte y almacén de tela, tres módulos con 15 máquinas de costura, inspección y bodega de producto terminado. SAM de referencia para camisetas Polo y Oversize.",
-    noLibrary: true,
   },
   {
     id: "centro-medellin-v1",

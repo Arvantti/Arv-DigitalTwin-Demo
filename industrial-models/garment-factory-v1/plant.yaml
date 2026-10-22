@@ -16,9 +16,9 @@ plant:
 zones:
   - { id: almacen-tela, name: Almacén de tela e inspección, kind: storage, hygiene_class: clean, rect: [0, 22, 14, 14], height: 6 }
   - { id: corte, name: Línea de corte y preparación de paquetes, kind: production, hygiene_class: clean, rect: [14, 22, 26, 14], height: 6 }
-  - { id: modulo-1, name: Módulo de confección 1, kind: production, hygiene_class: clean, rect: [14, 2, 10, 18], height: 6 }
-  - { id: modulo-2, name: Módulo de confección 2, kind: production, hygiene_class: clean, rect: [24, 2, 10, 18], height: 6 }
-  - { id: modulo-3, name: Módulo de confección 3, kind: production, hygiene_class: clean, rect: [34, 2, 10, 18], height: 6 }
+  - { id: modulo-1, name: Módulo de confección 1, kind: production, hygiene_class: clean, rect: [14, 8.5, 10, 5], height: 6 }
+  - { id: modulo-2, name: Módulo de confección 2, kind: production, hygiene_class: clean, rect: [24, 8.5, 10, 5], height: 6 }
+  - { id: modulo-3, name: Módulo de confección 3, kind: production, hygiene_class: clean, rect: [34, 8.5, 10, 5], height: 6 }
   - { id: calidad, name: Inspección y acabado final, kind: production, hygiene_class: clean, rect: [44, 12, 16, 8], height: 5 }
   - { id: almacen-pt, name: Almacén de producto terminado y despacho, kind: storage, hygiene_class: clean, rect: [44, 0, 16, 12], height: 7 }
   - { id: servicios, name: "Vestieres, mantenimiento y servicios", kind: service, hygiene_class: service, rect: [0, 0, 14, 20], height: 5 }
