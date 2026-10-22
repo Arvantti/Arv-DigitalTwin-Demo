@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PLC Master · Acueducto</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Orbitron:wght@500;600;700&display=swap" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a href="/plant.html?plant=water-network-scale-v1" class="back">← GEMELO 3D</a>
+      <div><strong>PLC MASTER</strong><span id="plant-name"> · CARGANDO…</span></div>
+      <div class="connection" id="connection">● DESCONECTADO</div>
+      <div class="clock" id="clock">SIM · —</div>
+    </header>
+    <div class="warning">SIMULACIÓN · PLC VIRTUAL · SIN CONEXIÓN A INFRAESTRUCTURA FÍSICA</div>
+    <main>
+      <aside class="asset-tree panel">
+        <h2>ÁRBOL DE ACTIVOS</h2>
+        <div id="assets"></div>
+        <h2>ALARMAS ACTIVAS</h2>
+        <div id="alarms" class="alarms"><p class="muted">Esperando señales…</p></div>
+      </aside>
+      <section class="content">
+        <nav class="tabs" aria-label="Pantallas PLC">
+          <button class="active" data-screen="master">MASTER</button>
+          <button data-screen="pumping">BOMBEO Y TANQUES</button>
+          <button data-screen="grid">REJILLA Y CONSUMO</button>
+          <button data-screen="trends">TENDENCIAS</button>
+        </nav>
+        <section id="master" class="screen active">
+          <div class="hero panel">
+            <div><p class="eyebrow">EMULADOR DE REALIDAD FICTICIA</p><h1>Acueducto a escala</h1><p>La calculadora hidráulica estacionaria simula las señales que leería el PLC. Fractal de Ingeniería usa otro modelo independiente y solo recomienda cambios.</p></div>
+            <div class="hero-actions"><button id="connect" class="primary">▶ CONECTAR SIMULACIÓN</button><button id="pause">❚❚ PAUSA</button></div>
+          </div>
+          <div class="kpis" id="kpis"></div>
+          <div class="panel recommendation"><p class="eyebrow">FRACTAL DE INGENIERÍA</p><strong>Sin recomendación aplicada</strong><span>Las sugerencias futuras se validarán contra una calculadora hidráulica independiente y requerirán aceptación del operador.</span></div>
+        </section>
+        <section id="pumping" class="screen">
+          <div class="section-head"><div><p class="eyebrow">OPERACIÓN HIDRÁULICA</p><h1>Bombeo, tanques y regulación</h1></div><div id="branch-state" class="mode">RAMA · —</div></div>
+          <div class="flow-diagram panel"><span>RETORNO</span><b>→</b><span>RECIRCULACIÓN</span><b>→</b><span>TANQUE DE BOMBEO</span><b>→</b><span>BOMBAS PRINCIPALES</span><b>→</b><span>REGULADORA</span></div>
+          <div class="cards" id="tanks"></div>
+          <div class="cards" id="pumps"></div>
+          <section class="panel regulation"><div><p class="eyebrow">ESTACIÓN REGULADORA</p><h2>PRS-01</h2><div id="prs-values" class="readings"></div></div><div class="controls"><button data-command="auto">AUTO</button><button data-command="manual">MANUAL</button><label>Consigna crítica <input id="critical-setpoint" type="range" min="15" max="30" step="0.05" value="15.45" /><output id="critical-output">15.45 mca</output></label></div></section>
+        </section>
+        <section id="trends" class="screen">
+          <div class="section-head"><div><p class="eyebrow">HISTORIADOR DE SESIÓN</p><h1>Tendencias de operación</h1><p class="muted">Muestras del emulador hidráulico durante esta sesión. Un perfil de 24 h se incorporará como escenario programable.</p></div></div>
+          <div id="trends-charts" class="trend-charts"></div>
+        </section>
+        <section id="grid" class="screen">
+          <div class="section-head"><div><p class="eyebrow">DEMANDA RESIDENCIAL</p><h1>Rejilla y consumo</h1><p class="muted">Cada tarjeta representa una vivienda: apertura, presión y caudal. El borde rojo indica la presión más baja actual.</p></div><div class="controls inline"><label>Todas las viviendas <input id="all-consumers" type="range" min="0" max="100" value="100" /><output id="all-consumers-output">100 %</output></label><button id="random">⚄ ALEATORIO</button></div></div>
+          <div id="grid-levels" class="grid-levels"></div>
+        </section>
+      </section>
+    </main>
+    <script type="module" src="/src/plc.ts"></script>
+  </body>
+</html>

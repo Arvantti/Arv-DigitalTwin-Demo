@@ -82,6 +82,22 @@ def test_water_plant_pipes_carry_route_diameter_and_hydraulic_link() -> None:
     assert drop["route"][-1] == [10.75, 2.6, 2.245] and "diameter_in" not in drop and drop["links"]
 
 
+def test_water_plc_schema_exposes_simulated_hmi_contract() -> None:
+    plc = client.get("/api/plants/water-network-scale-v1/plc-schema").json()
+    assert plc["simulated"] is True
+    assert plc["sources"]["emulator"]["id"] == "simulated-hydraulics-emulator"
+    assert plc["sources"]["engineering"]["id"] == "fractal-engineering-model"
+    assert plc["service_constraint"]["critical_pressure_min_mca"] == 15.0
+    assert plc["demand_profiles"]["reference_full_demand_m3h"] == 6.8
+    assert {screen["id"] for screen in plc["screens"]} == {"master", "pumping", "grid", "trends"}
+    assert {asset["id"] for asset in plc["assets"]} >= {"pumpset-main-01", "pumpset-recirc-01", "prs-01", "grid-04"}
+    commands = {(item["equipment"], item["command"]) for item in plc["write_commands"]}
+    assert ("prs-01", "select_branch") in commands
+    assert ("grid-01", "set_opening") in commands
+    assert not any(item["command"] == "set_param" for item in plc["write_commands"])
+    assert client.get("/api/plants/sauce-plant-v1/plc-schema").status_code == 404
+
+
 def test_water_plant_sequence_is_continuous_and_lines_are_published() -> None:
     """Cada tubo de la secuencia termina donde empieza el siguiente: sin extremos al aire entre niveles."""
     plant = client.get("/api/plants/water-network-scale-v1").json()
@@ -156,6 +172,19 @@ def test_plant_websocket_streams_connected_plant_and_accepts_commands() -> None:
         for _ in range(3):
             msg = ws.receive_json()
         assert "flame_failure" in msg["snapshot"]["equipment"]["boiler-01"]["active_faults"]
+
+
+def test_water_plant_websocket_applies_hmi_valve_and_regulation_commands() -> None:
+    with client.websocket_connect("/api/plants/water-network-scale-v1/simulate?speed=60") as ws:
+        ws.receive_json()  # estado inicial
+        ws.send_json({"equipment": "grid-01", "command": "set_opening", "args": {"valve": "c11", "pct": 37}})
+        ws.send_json({"equipment": "prs-01", "command": "select_branch", "args": {"branch": "manual"}})
+        for _ in range(3):
+            msg = ws.receive_json()
+        grid = msg["snapshot"]["equipment"]["grid-01"]
+        prs = msg["snapshot"]["equipment"]["prs-01"]
+        assert grid["animation"]["open_c11"] == 0.37
+        assert prs["variables"]["branch_auto"] == 0
 
 
 def test_plant_websocket_rejects_unknown_plant_and_scenario() -> None:

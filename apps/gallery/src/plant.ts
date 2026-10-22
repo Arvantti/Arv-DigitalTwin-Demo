@@ -1188,6 +1188,12 @@ async function start(): Promise<void> {
   await bootStage(22, "Descargando el plano de la planta…");
   doc = await res.json();
   $<HTMLAnchorElement>("link-equipos").href = `/equipos.html?plant=${plantId}`;
+  const plcLink = $<HTMLAnchorElement>("link-plc");
+  const plcSchema = await fetch(`/api/plants/${plantId}/plc-schema`).catch(() => null);
+  if (plcSchema?.ok) {
+    plcLink.href = `/plc.html?plant=${plantId}`;
+    plcLink.hidden = false;
+  }
   $("plant-name").textContent = doc.plant.name.toUpperCase();
   const simulated = doc.equipment.filter((e) => e.sim).length;
   await bootStage(34, "Construyendo zonas y pisos…");
