@@ -9,6 +9,7 @@ actualizado: 2026-10-22
 Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `Arvantti/Arv-sfot-demo-Fabtimus`.
 
 | Fecha | PR | Resumen | Fase |
+| 2026-10-22 | PLC Master y carga visual | Se integra el PLC Master simulado, se evitan destellos de HTML sin CSS al abrir la escena y se exponen mandos de casas/fugas y telemetría completa de la reguladora. [[2026-10-22-arquitectura-modelos-portables]] | acueducto |
 | 2026-10-22 | Arquitectura portable de modelos | `apps/twin-emulator-api` reemplaza el nombre genérico `apps/api`; los seis modelos industriales incluyen manifiesto con dependencias explícitas de equipos, validador y guía de empaquetado futuro. D68. [[2026-10-22-arquitectura-modelos-portables]] | arquitectura |
 |---|---|---|---|
 | 2026-10-22 | Gemelo 3D de ciudad desde OSM | Escena Three.js con vías y edificios OSM, semáforos y vehículos siguiendo trayectorias FCD de SUMO; muestra x3 el volumen base con coloración vial por velocidad media y barra de km/h. Escenario y velocidades son supuestos, no aforos medidos; la red analítica previa de 35 cruces permanece separada. Se incluye `docs/arvantti-industrial-digital-twin.md` aportado por el autor. Typecheck y diff-check pasan; pruebas Python para CI. [[2026-10-22-mapa-ciudad-osm]] | ciudad |
@@ -87,6 +88,15 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 | 2026-10-16 | #1 | Layouts de las plantas | 1 |
 
 ## Entradas
+
+### 2026-10-22 · PLC Master y carga visual de la escena
+- **Fecha/hora (UTC):** 2026-10-22
+- **Fase del plan:** acueducto/HMI.
+- **Solicitado por:** Andy: corregir el HTML sin estilos durante la carga y hacer visibles los mandos de aperturas y la telemetría de la estación reguladora.
+- **Qué se hizo:** se integra el PLC Master en la rama de arquitectura; `plant.html` conserva una pantalla de carga crítica hasta que el CSS del módulo está disponible; la rejilla expone los controles de fugas L1/L2 por nivel además de casas/global/nivel; la reguladora muestra presiones antes/después, caudal total y por rama, y apertura de cada PRV.
+- **Verificación:** `pnpm --filter @twin/gallery typecheck`, `pnpm --filter @twin/gallery build`, `uv run pytest apps/twin-emulator-api/tests` (17 passed) y diff-check.
+- **Decisiones:** ninguna nueva.
+- **Conversación:** [[2026-10-22-arquitectura-modelos-portables]].
 
 ### 2026-10-22 · Arquitectura portable de modelos industriales
 - **Fecha/hora (UTC):** 2026-10-22

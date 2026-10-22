@@ -79,10 +79,13 @@ function renderPumping(): void {
   if (document.activeElement !== manualInput) manualInput.value = String(n(value("prs-01", "manual_setting_mca")) ?? 20.94);
   $("critical-output").textContent = `${Number(criticalInput.value).toFixed(2)} mca`;
   $("manual-output").textContent = `${Number(manualInput.value).toFixed(2)} mca`;
+  const autoOpening = 100 * (prs?.animation.valve_a_open ?? 0);
+  const manualOpening = 100 * (prs?.animation.valve_b_open ?? 0);
   $("prs-values").innerHTML = [
-    ["Entrada", `${fmt(value("prs-01", "inlet_pressure_mca"))} mca`], ["Salida", `${fmt(value("prs-01", "outlet_pressure_mca"))} mca`],
-    ["Casa crítica", `${fmt(value("prs-01", "critical_pressure_mca"))} mca`], ["SP crítica", `${fmt(value("prs-01", "critical_setpoint_mca"))} mca`],
-    ["SP auto", `${fmt(value("prs-01", "auto_outlet_setpoint_mca"))} mca`], ["Manual", `${fmt(value("prs-01", "manual_setting_mca"))} mca`],
+    ["Presión antes (entrada)", `${fmt(value("prs-01", "inlet_pressure_mca"))} mca`], ["Presión después (salida)", `${fmt(value("prs-01", "outlet_pressure_mca"))} mca`],
+    ["Caudal total", `${fmt(value("prs-01", "flow_m3h"))} m³/h`], ["Caudal AUTO", `${fmt(value("prs-01", "flow_auto_m3h"))} m³/h`], ["Caudal MANUAL", `${fmt(value("prs-01", "flow_manual_m3h"))} m³/h`],
+    ["Apertura PRV AUTO", `${fmt(autoOpening)} %`], ["Apertura PRV MANUAL", `${fmt(manualOpening)} %`], ["Casa crítica", `${fmt(value("prs-01", "critical_pressure_mca"))} mca`],
+    ["SP crítica", `${fmt(value("prs-01", "critical_setpoint_mca"))} mca`], ["SP auto", `${fmt(value("prs-01", "auto_outlet_setpoint_mca"))} mca`], ["Ajuste manual", `${fmt(value("prs-01", "manual_setting_mca"))} mca`],
   ].map(([label, reading]) => `<span>${label} <b>${reading}</b></span>`).join("");
   document.querySelectorAll<HTMLButtonElement>("[data-pump-command]").forEach((button) => button.onclick = () => send(button.dataset.pump!, button.dataset.pumpCommand!));
 }
@@ -114,10 +117,17 @@ function renderGrid(): void {
       const flag = networkCritical ? `<span class="flag global">MÍN. RED</span>` : levelCritical ? `<span class="flag">MÍN. NIVEL</span>` : "";
       houses.push(`<article class="house ${levelCritical ? "critical" : ""} ${networkCritical ? "global-critical" : ""}"><span class="id">L${level}.${valve.toUpperCase()} ${flag}</span><span class="values">${fmt(value(id, `p_${valve}`))} mca<br>${fmt(value(id, `q_${valve}`))} L/min</span><input data-grid="${id}" data-valve="${valve}" type="range" min="0" max="100" value="${open}" title="Apertura ${valve}" /><span class="muted">${open} %</span></article>`);
     }
-    cards.push(`<section class="level panel"><h2>NIVEL ${level}<span>${fmt(value(id, "consumption_m3h"))} m³/h</span></h2><p class="level-min">Mín. nivel: <b>L${level}.${minimum.valve.toUpperCase()} · ${fmt(minimum.pressure)} mca</b>${networkLowest?.grid === id ? " · MÍNIMO DE RED" : ""}</p><div class="houses">${houses.join("")}</div></section>`);
+    const leaks = ["l1", "l2"].map((valve) => {
+      const open = Math.round((eq(id)?.animation[`open_${valve}`] ?? 0) * 100);
+      return `<label>FUGA ${valve.toUpperCase()} <input data-grid="${id}" data-valve="${valve}" type="range" min="0" max="100" value="${open}" title="Apertura fuga ${valve}" /><output>${open} %</output></label>`;
+    }).join("");
+    cards.push(`<section class="level panel"><h2>NIVEL ${level}<span>${fmt(value(id, "consumption_m3h"))} m³/h</span></h2><p class="level-min">Mín. nivel: <b>L${level}.${minimum.valve.toUpperCase()} · ${fmt(minimum.pressure)} mca</b>${networkLowest?.grid === id ? " · MÍNIMO DE RED" : ""}</p><div class="leak-controls"><span>VÁLVULAS DE FUGA</span>${leaks}</div><div class="houses">${houses.join("")}</div></section>`);
   }
   $("grid-levels").innerHTML = cards.join("");
-  document.querySelectorAll<HTMLInputElement>("[data-grid]").forEach((input) => input.onchange = () => send(input.dataset.grid!, "set_opening", { valve: input.dataset.valve, pct: Number(input.value) }));
+  document.querySelectorAll<HTMLInputElement>("[data-grid]").forEach((input) => {
+    input.oninput = () => { const output = input.parentElement?.querySelector("output"); if (output) output.textContent = `${input.value} %`; };
+    input.onchange = () => send(input.dataset.grid!, "set_opening", { valve: input.dataset.valve, pct: Number(input.value) });
+  });
 }
 
 function savedRuns(): SavedRun[] {

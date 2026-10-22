@@ -30,6 +30,9 @@ import { bootDone, bootError, bootStage } from "./boot.ts";
 import { type CatalogDoc, type ProductsApi, buildProducts } from "./products.ts";
 import "./styles.css";
 
+// Evita que el HTML sin estilos aparezca mientras Vite descarga el módulo CSS.
+document.body.classList.remove("loading");
+
 interface Zone {
   id: string;
   name: string;
