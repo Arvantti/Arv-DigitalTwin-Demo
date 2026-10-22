@@ -40,7 +40,7 @@ const plants: PlantCard[] = [
     family: "OPERACIONES",
     title: "Planta de acueducto",
     text: "Bombeo, estación reguladora y rejilla de distribución por pisos, con la presión de cada casa y el panel del PLC.",
-    extra: { href: "/acueducto.html", label: "PANEL DEL PLC" },
+    extra: { href: "/plc.html?plant=water-network-scale-v1&screen=day", label: "PLC MASTER" },
   },
   {
     id: "airport-baggage-v1",
