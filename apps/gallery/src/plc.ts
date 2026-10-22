@@ -5,9 +5,7 @@ type Snapshot = { state: string; variables: Record<string, Value>; animation: Re
 type Message = { t: number; speed: number; paused: boolean; snapshot: { equipment: Record<string, Snapshot> }; events: { type: string; equipment_id?: string }[] };
 type Asset = { id: string; name: string; group: string; level?: number };
 type Schema = { name: string; assets: Asset[]; service_constraint: { critical_pressure_min_mca: number; automatic_target_mca: number } };
-type Sample = { t: number; main: number; recirculation: number; consumption: number; leakage: number; critical: number; supplyLevel: number };
-type DayScenario = { p_discharge: number[]; p_station_in: number[]; p_station_out: number[]; worst_p: number[]; cons_m3h: number[]; leak_m3h: number[]; pump_m3h: number[]; speed: number[] };
-type DayData = { target: number; actual: DayScenario };
+type Sample = { t: number; main: number; recirculation: number; consumption: number; leakage: number; critical: number; supplyLevel: number; pumpDischarge: number; stationIn: number; stationOut: number; grid1In: number; grid1Out: number; grid2Out: number; grid3Out: number; criticalFlow: number };
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 const plantId = new URLSearchParams(location.search).get("plant") ?? "water-network-scale-v1";
@@ -18,7 +16,6 @@ let latest: Record<string, Snapshot> = {};
 let simTime = 0;
 let randomTimer: number | null = null;
 const history: Sample[] = [];
-let dayData: DayData | null = null;
 
 const n = (value: Value | undefined): number | null => typeof value === "number" && Number.isFinite(value) ? value : null;
 const fmt = (value: Value | undefined, digits = 1) => {
@@ -32,6 +29,7 @@ const send = (equipment: string, command: string, args: Record<string, unknown> 
 function selectScreen(id: string): void {
   document.querySelectorAll<HTMLElement>(".screen").forEach((node) => node.classList.toggle("active", node.id === id));
   document.querySelectorAll<HTMLButtonElement>(".tabs button").forEach((node) => node.classList.toggle("active", node.dataset.screen === id));
+  document.body.classList.toggle("screen-grid", id === "grid");
 }
 
 function buildAssets(): void {
@@ -114,7 +112,24 @@ function recordHistory(message: Message): void {
   if (last && message.t - last.t < 15) return;
   const consumption = ["grid-01", "grid-02", "grid-03", "grid-04"].reduce((sum, id) => sum + (n(value(id, "consumption_m3h")) ?? 0), 0);
   const leakage = ["grid-01", "grid-02", "grid-03", "grid-04"].reduce((sum, id) => sum + (n(value(id, "leakage_m3h")) ?? 0), 0);
-  history.push({ t: message.t, main: n(value("pumpset-main-01", "flow_m3h")) ?? 0, recirculation: n(value("pumpset-recirc-01", "flow_m3h")) ?? 0, consumption, leakage, critical: n(value("prs-01", "critical_pressure_mca")) ?? 0, supplyLevel: n(value("tank-supply-01", "level_pct")) ?? 0 });
+  const criticalValve = String(value("grid-04", "min_pressure_valve") ?? "c44");
+  history.push({
+    t: message.t,
+    main: n(value("pumpset-main-01", "flow_m3h")) ?? 0,
+    recirculation: n(value("pumpset-recirc-01", "flow_m3h")) ?? 0,
+    consumption,
+    leakage,
+    critical: n(value("prs-01", "critical_pressure_mca")) ?? 0,
+    supplyLevel: n(value("tank-supply-01", "level_pct")) ?? 0,
+    pumpDischarge: n(value("pumpset-main-01", "discharge_pressure_mca")) ?? 0,
+    stationIn: n(value("prs-01", "inlet_pressure_mca")) ?? 0,
+    stationOut: n(value("prs-01", "outlet_pressure_mca")) ?? 0,
+    grid1In: n(value("grid-01", "inlet_pressure_mca")) ?? 0,
+    grid1Out: n(value("valve-between-12", "inlet_pressure_mca")) ?? 0,
+    grid2Out: n(value("valve-between-23", "inlet_pressure_mca")) ?? 0,
+    grid3Out: n(value("valve-between-34", "inlet_pressure_mca")) ?? 0,
+    criticalFlow: n(value("grid-04", `q_${criticalValve}`)) ?? 0,
+  });
   if (history.length > 5760) history.shift();
 }
 
@@ -169,39 +184,43 @@ function dayChart(title: string, unit: string, series: { name: string; values: n
   const width = 620, height = 245, left = 44, right = 14, top = 16, bottom = 30;
   const values = series.flatMap((item) => item.values);
   if (reference !== undefined) values.push(reference);
-  const low = Math.min(0, ...values);
-  const high = Math.max(1, ...values);
-  const range = Math.max(0.01, high - low);
-  const x = (hour: number) => left + (hour * (width - left - right)) / 23;
+  const low = Math.min(0, ...values), high = Math.max(1, ...values), range = Math.max(0.01, high - low);
+  const x = (index: number) => left + (index * (width - left - right)) / Math.max(1, history.length - 1);
   const y = (reading: number) => top + (height - top - bottom) - ((reading - low) / range) * (height - top - bottom);
   const axis = [0, .25, .5, .75, 1].map((fraction) => { const reading = low + range * fraction; return `<line x1="${left}" x2="${width - right}" y1="${y(reading)}" y2="${y(reading)}" class="axis" /><text x="${left - 5}" y="${y(reading) + 4}" text-anchor="end">${fmt(reading, 1)}</text>`; }).join("");
-  const hours = [0, 3, 6, 9, 12, 15, 18, 21, 23].map((hour) => `<text x="${x(hour)}" y="${height - 8}" text-anchor="middle">${String(hour).padStart(2, "0")}</text>`).join("");
-  const lines = series.map((item) => `<polyline points="${item.values.map((reading, hour) => `${x(hour)},${y(reading)}`).join(" ")}" fill="none" stroke="${item.color}" stroke-width="2.5" />`).join("");
+  const timeAxis = [0, .25, .5, .75, 1].map((fraction) => { const sample = history[Math.round((history.length - 1) * fraction)]; const elapsed = Math.floor(sample.t / 60); return `<text x="${left + fraction * (width - left - right)}" y="${height - 8}" text-anchor="middle">${String(Math.floor(elapsed / 60)).padStart(2, "0")}:${String(elapsed % 60).padStart(2, "0")}</text>`; }).join("");
+  const lines = series.map((item) => `<polyline points="${item.values.map((reading, index) => `${x(index)},${y(reading)}`).join(" ")}" fill="none" stroke="${item.color}" stroke-width="2.5" />`).join("");
   const referenceLine = reference === undefined ? "" : `<line x1="${left}" x2="${width - right}" y1="${y(reference)}" y2="${y(reference)}" class="ref" />`;
   const legend = series.map((item) => `<span><i style="background:${item.color}"></i>${item.name}</span>`).join("");
-  return `<article class="trend panel"><h2>${title}<span>${unit}</span></h2><svg class="day-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="${title}"><g class="day-axis">${axis}${hours}</g>${referenceLine}${lines}</svg><div class="legend">${legend}</div></article>`;
+  return `<article class="trend panel"><h2>${title}<span>${unit}</span></h2><svg class="day-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="${title}"><g class="day-axis">${axis}${timeAxis}</g>${referenceLine}${lines}</svg><div class="legend">${legend}</div></article>`;
+}
+
+function integrate(reading: (sample: Sample) => number): number {
+  return history.slice(1).reduce((total, sample, index) => total + reading(sample) * (sample.t - history[index].t) / 3600, 0);
 }
 
 function renderDay(): void {
-  if (!dayData) return;
-  const current = dayData.actual;
-  const consumptionDay = current.cons_m3h.reduce((total, value) => total + value, 0);
-  const leakDay = current.leak_m3h.reduce((total, value) => total + value, 0);
-  const peak = current.cons_m3h.indexOf(Math.max(...current.cons_m3h));
-  const minimum = Math.min(...current.worst_p);
-  const leakPercent = fmt(100 * leakDay / (leakDay + consumptionDay), 1);
-  const peakLabel = `${String(peak).padStart(2, "0")}:00`;
+  if (history.length < 2) {
+    $("day-kpis").innerHTML = "";
+    $("day-charts").innerHTML = `<p class="muted">Conecta la simulación para registrar señales del emulador. Esta pantalla no usa datos precalculados.</p>`;
+    return;
+  }
+  const peak = history.reduce((best, sample) => sample.consumption > best.consumption ? sample : best, history[0]);
+  const minimum = Math.min(...history.map((sample) => sample.critical));
+  const consumption = integrate((sample) => sample.consumption);
+  const leakage = integrate((sample) => sample.leakage);
+  const duration = history[history.length - 1].t - history[0].t;
   const dayKpis: [string, string, string][] = [
-    ["CONSUMO DEL DÍA", `${fmt(consumptionDay, 1)} m³`, "24 estados estacionarios"],
-    ["FUGAS DEL DÍA", `${fmt(leakDay, 1)} m³`, `${leakPercent} % del caudal total`],
-    ["HORA PICO", peakLabel, `${fmt(current.cons_m3h[peak])} m³/h residencial`],
-    ["PRESIÓN MÍNIMA", `${fmt(minimum, 2)} mca`, `objetivo ${fmt(dayData.target, 2)} mca`],
+    ["CONSUMO ACUMULADO", `${fmt(consumption, 2)} m³`, `historial de ${fmt(duration / 3600, 2)} h simuladas`],
+    ["FUGAS ACUMULADAS", `${fmt(leakage, 2)} m³`, `${fmt(100 * leakage / Math.max(0.001, leakage + consumption), 1)} % del caudal registrado`],
+    ["PICO REGISTRADO", `${String(Math.floor(peak.t / 3600)).padStart(2, "0")}:${String(Math.floor(peak.t / 60) % 60).padStart(2, "0")}`, `${fmt(peak.consumption)} m³/h residencial`],
+    ["PRESIÓN MÍNIMA", `${fmt(minimum, 2)} mca`, `límite ${fmt(schema.service_constraint.critical_pressure_min_mca, 0)} mca`],
   ];
   $("day-kpis").innerHTML = dayKpis.map(([label, reading, detail]) => `<div class="kpi panel"><small>${label}</small><b>${reading}</b><small>${detail}</small></div>`).join("");
   $("day-charts").innerHTML = [
-    dayChart("Caudal de consumo y fugas", "m³/h", [{ name: "Consumo residencial", values: current.cons_m3h, color: "#2D7FF9" }, { name: "Fugas", values: current.leak_m3h, color: "#f17474" }, { name: "Bombeo", values: current.pump_m3h, color: "#4EA7FF" }]),
-    dayChart("Presiones principales", "mca", [{ name: "Salida de bombeo", values: current.p_discharge, color: "#4EA7FF" }, { name: "Entrada reguladora", values: current.p_station_in, color: "#2D7FF9" }, { name: "Salida reguladora", values: current.p_station_out, color: "#55d58c" }, { name: "Punto crítico", values: current.worst_p, color: "#f17474" }], 15),
-    dayChart("Velocidad de bombeo", "%", [{ name: "Velocidad VFD", values: current.speed.map((reading) => reading * 100), color: "#4EA7FF" }]),
+    dayChart("Caudales medidos por el emulador", "m³/h", [{ name: "Consumo residencial", values: history.map((sample) => sample.consumption), color: "#2D7FF9" }, { name: "Fugas", values: history.map((sample) => sample.leakage), color: "#f17474" }, { name: "Bombeo", values: history.map((sample) => sample.main), color: "#4EA7FF" }]),
+    dayChart("Presiones medidas", "mca", [{ name: "Salida de bombeo", values: history.map((sample) => sample.pumpDischarge), color: "#4EA7FF" }, { name: "Entrada reguladora", values: history.map((sample) => sample.stationIn), color: "#2D7FF9" }, { name: "Salida reguladora", values: history.map((sample) => sample.stationOut), color: "#55d58c" }, { name: "Punto crítico", values: history.map((sample) => sample.critical), color: "#f17474" }], schema.service_constraint.critical_pressure_min_mca),
+    dayChart("Presión de la red por tramo", "mca", [{ name: "Entrada rejilla 1", values: history.map((sample) => sample.grid1In), color: "#4EA7FF" }, { name: "Salida rejilla 1", values: history.map((sample) => sample.grid1Out), color: "#2D7FF9" }, { name: "Salida rejilla 2", values: history.map((sample) => sample.grid2Out), color: "#55d58c" }, { name: "Salida rejilla 3", values: history.map((sample) => sample.grid3Out), color: "#9869ed" }]),
   ].join("");
 }
 
@@ -226,7 +245,7 @@ function render(message: Message): void {
   const ss = String(Math.floor(simTime % 60)).padStart(2, "0");
   $("clock").textContent = `SIM · ${hh}:${mm}:${ss} · ×${message.speed}`;
   recordHistory(message);
-  renderMaster(); renderPumping(); renderGrid(); renderTrends(); renderHydraulicProfile(); renderAlarms();
+  renderMaster(); renderDay(); renderPumping(); renderGrid(); renderTrends(); renderHydraulicProfile(); renderAlarms();
 }
 
 function connect(): void {
@@ -266,10 +285,7 @@ async function start(): Promise<void> {
   all.oninput = () => $("all-consumers-output").textContent = `${all.value} %`;
   all.onchange = () => { for (let level = 1; level <= 4; level++) send(`grid-0${level}`, "set_opening", { valve: "consumers", pct: Number(all.value) }); };
   $("random").onclick = randomize;
-  void fetch("/data/acueducto-dia.json")
-    .then((response) => response.ok ? response.json() as Promise<DayData> : Promise.reject(new Error(`HTTP ${response.status}`)))
-    .then((data) => { dayData = data; renderDay(); })
-    .catch(() => { $("day-charts").innerHTML = `<p class="muted">No se pudo cargar el escenario diario de referencia.</p>`; });
+  renderDay();
 }
 
 start().catch((error: unknown) => { $("plant-name").textContent = ` · ERROR: ${String(error)}`; });
