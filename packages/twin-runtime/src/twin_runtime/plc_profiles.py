@@ -6,8 +6,8 @@ emulador hidráulico puede recibir. La calculadora de Fractal permanece separada
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Sequence
 
 HOURS_PER_DAY = 24
 

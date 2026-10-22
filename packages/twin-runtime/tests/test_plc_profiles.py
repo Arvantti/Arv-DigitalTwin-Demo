@@ -1,5 +1,4 @@
 import pytest
-
 from twin_runtime.plc_profiles import HourlyProfile, progressive_profile
 
 
