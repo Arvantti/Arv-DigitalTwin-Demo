@@ -161,18 +161,14 @@ def render_svg(path: Path, bbox_values: list[float], title: str = "Centro de Med
             xy = [project(lat, lon) for lat, lon in points]
             d = "M" + " L".join(f"{x:.2f},{y:.2f}" for x, y in xy)
             out.append(
-                (
-                    f'<path d="{d}" fill="none" stroke="#fff" '
-                    f'stroke-width="{width + 2.2:.2f}" stroke-linecap="round" '
-                    'stroke-linejoin="round"/>'
-                )
+                f'<path d="{d}" fill="none" stroke="#fff" '
+                f'stroke-width="{width + 2.2:.2f}" stroke-linecap="round" '
+                'stroke-linejoin="round"/>'
             )
             out.append(
-                (
-                    f'<path d="{d}" fill="none" stroke="{color}" '
-                    f'stroke-width="{width:.2f}" stroke-linecap="round" '
-                    'stroke-linejoin="round"/>'
-                )
+                f'<path d="{d}" fill="none" stroke="{color}" '
+                f'stroke-width="{width:.2f}" stroke-linecap="round" '
+                'stroke-linejoin="round"/>'
             )
             if road["oneway"] and len(xy) > 2:
                 i = len(xy) // 2
@@ -181,11 +177,9 @@ def render_svg(path: Path, bbox_values: list[float], title: str = "Centro de Med
                 if road["reverse"]:
                     ax, ay, bx, by = bx, by, ax, ay
                 out.append(
-                    (
-                        f'<path d="M{ax:.1f},{ay:.1f} L{bx:.1f},{by:.1f}" '
-                        'fill="none" stroke="#665b4a" stroke-width="1.1" '
-                        'marker-end="url(#arrow)"/>'
-                    )
+                    f'<path d="M{ax:.1f},{ay:.1f} L{bx:.1f},{by:.1f}" '
+                    'fill="none" stroke="#665b4a" stroke-width="1.1" '
+                    'marker-end="url(#arrow)"/>'
                 )
             length = sum(math.dist(xy[i], xy[i + 1]) for i in range(len(xy) - 1))
             name = road["name"]
@@ -218,21 +212,17 @@ def render_svg(path: Path, bbox_values: list[float], title: str = "Centro de Med
             continue
         size = 13 if highway in {"motorway", "trunk", "primary"} else 11
         out.append(
-            (
-                f'<text x="{x:.1f}" y="{y - 6:.1f}" font-size="{size}" '
-                'font-weight="600" text-anchor="middle" fill="#4a463d" '
-                f'filter="url(#halo)" transform="rotate({angle:.1f} {x:.1f} {y:.1f})">'
-                f'{html.escape(name)}</text>'
-            )
+            f'<text x="{x:.1f}" y="{y - 6:.1f}" font-size="{size}" '
+            'font-weight="600" text-anchor="middle" fill="#4a463d" '
+            f'filter="url(#halo)" transform="rotate({angle:.1f} {x:.1f} {y:.1f})">'
+            f'{html.escape(name)}</text>'
         )
 
     for lat, lon in signals:
         x, y = project(lat, lon)
         out.append(
-            (
-                f'<circle cx="{x:.1f}" cy="{y:.1f}" r="3.2" fill="#d4433f" '
-                'stroke="#fff" stroke-width="1.2"><title>Semáforo OSM</title></circle>'
-            )
+            f'<circle cx="{x:.1f}" cy="{y:.1f}" r="3.2" fill="#d4433f" '
+            'stroke="#fff" stroke-width="1.2"><title>Semáforo OSM</title></circle>'
         )
 
     # OSM extract bounding box, drawn in a fine blue outline for geographic context.
