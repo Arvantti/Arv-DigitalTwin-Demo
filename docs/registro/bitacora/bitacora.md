@@ -103,7 +103,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 - **Fase del plan:** A–C de sesión compartida.
 - **Solicitado por:** Andy autorizó implementar la sincronización PLC, emulador y 3D.
 - **Qué se hizo:** se añade administrador de sesión con runtime único y difusión de snapshots; API REST/WS con roles; PLC crea e inicia sesión; el 3D recibe `session_id` y se conecta como visor sin control.
-- **Commits:** pendiente de crear en la rama de trabajo.
+- **Commits:** `4db7b19` (implementación); actualización de registro incluida en el commit siguiente.
 - **Verificación:** API `18 passed`, ruff API y typecheck de galería.
 - **Decisiones:** endpoint histórico de simulación se conserva temporalmente para compatibilidad.
 - **Conversación:** [[2026-10-22-perfiles-plc-fractal]].
@@ -113,7 +113,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 - **Fase del plan:** arquitectura PLC, 3D y Fractal.
 - **Solicitado por:** Andy pidió dejar el plan completo en Markdown antes de implementar.
 - **Qué se hizo:** se documentó el roadmap por fases para sesión hidráulica única, roles PLC/visor/Fractal, historian, objetivos configurables, optimización instantánea y futura, recomendaciones aprobadas por operador, Podman y pruebas de aceptación.
-- **Commits:** pendiente de crear en la rama de trabajo.
+- **Commits:** `4db7b19` (implementación); actualización de registro incluida en el commit siguiente.
 - **Verificación:** revisión de coherencia con el contrato de co-simulación existente.
 - **Decisiones:** PLC es propietario de mando; 3D es visor; Fractal es lector de tags y asesor sin escritura automática.
 - **Conversación:** [[2026-10-22-perfiles-plc-fractal]].
@@ -123,7 +123,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 - **Fase del plan:** acueducto/escena 3D desplegada.
 - **Solicitado por:** Andy reportó que la escena 3D no cargaba con los contenedores locales.
 - **Qué se hizo:** se propaga `?api=` a las solicitudes del plano, WebSocket de simulación y enlace a PLC; el frontend estático puede usar un emulador FastAPI separado.
-- **Commits:** pendiente de crear en la rama de trabajo.
+- **Commits:** `4db7b19` (implementación); actualización de registro incluida en el commit siguiente.
 - **Verificación:** typecheck/build de galería, imagen Podman y Playwright: 13 activos cargados y simulación WebSocket en vivo.
 - **Decisiones:** ninguna nueva.
 - **Conversación:** [[2026-10-22-perfiles-plc-fractal]].
