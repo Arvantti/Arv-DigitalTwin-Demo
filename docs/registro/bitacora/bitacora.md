@@ -9,6 +9,8 @@ actualizado: 2026-10-22
 Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `Arvantti/Arv-sfot-demo-Fabtimus`.
 
 | Fecha | PR | Resumen | Fase |
+| 2026-10-22 | Perfiles PLC y acceso al emulador | Perfiles operativos explícitos para demanda/PRS/restricción; HMI con API configurable y validación JSON; FastAPI con CORS configurable por entorno. [[2026-10-22-perfiles-plc-fractal]] | acueducto/PLC |
+| 2026-10-22 | Disponibilidad de emulador PLC | La HMI valida que el backend responda JSON, informa claramente la ausencia del emulador en Pages y permite indicar un host API con `?api=`. [[2026-10-22-perfiles-plc-fractal]] | acueducto/HMI |
 | 2026-10-22 | Cámaras 3D y respuesta PLC | Cámaras por zona/nivel con dirección y zoom propios; botón PLC informa conexión/error, bloquea doble inicio y la HMI solo redibuja su pantalla visible. [[2026-10-22-perfiles-plc-fractal]] | acueducto/3D/HMI |
 | 2026-10-22 | Escena hidráulica y tendencias por equipo | La escena sitúa suelo/cuadrícula en la cota mínima visual sin cambiar hidráulica, reduce indicadores externos, añade dirección dentro de rejillas y abre tendencias modales de cualquier equipo simulado. [[2026-10-22-perfiles-plc-fractal]] | acueducto/3D |
 | 2026-10-22 | Perfiles PLC y frontera Fractal | Perfiles horarios persistentes y ejecutables para el acueducto, tags PLC de solo lectura para OPC UA simulado, documentación de co-simulación y escena con tanques transparentes/flechas de flujo. D69. [[2026-10-22-perfiles-plc-fractal]] | acueducto |
@@ -91,6 +93,26 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 | 2026-10-16 | #1 | Layouts de las plantas | 1 |
 
 ## Entradas
+
+### 2026-10-22 · Perfiles PLC y acceso al emulador
+- **Fecha/hora (UTC):** 2026-10-22.
+- **Fase del plan:** acueducto/PLC y despliegue.
+- **Solicitado por:** Andy autorizó separar perfiles operativos de pruebas de falla y corregir la conexión HMI–emulador.
+- **Qué se hizo:** se versionan PFL-BASE-01, PFL-NOC-01, PFL-NOC-02 y PFL-RES-01; la HMI los agrupa como perfiles PLC; las respuestas no JSON se detectan antes de parsear y el origen del API se puede indicar mediante `?api=`; FastAPI limita CORS a `TWIN_CORS_ORIGINS`.
+- **Commits:** pendiente de crear en la rama de trabajo.
+- **Verificación:** API `17 passed`, typecheck de galería y ruff de API.
+- **Decisiones:** fallas transitorias permanecen como pruebas técnicas del modelo, no perfiles rutinarios.
+- **Conversación:** [[2026-10-22-perfiles-plc-fractal]].
+
+### 2026-10-22 · Disponibilidad de emulador PLC
+- **Fecha/hora (UTC):** 2026-10-22.
+- **Fase del plan:** acueducto/HMI desplegada.
+- **Solicitado por:** Andy reportó el error de sintaxis al abrir la HMI publicada.
+- **Qué se hizo:** se detecta una respuesta HTML/no JSON antes de decodificarla y se informa la falta del emulador; se permite configurar el origen FastAPI mediante `?api=https://host-del-emulador`.
+- **Commits:** pendiente de crear en la rama de trabajo.
+- **Verificación:** `pnpm --filter @twin/gallery typecheck`.
+- **Decisiones:** el despliegue estático no ejecuta FastAPI ni WebSocket; requiere host de emulador separado.
+- **Conversación:** [[2026-10-22-perfiles-plc-fractal]].
 
 ### 2026-10-22 · Cámaras 3D y respuesta PLC
 - **Fecha/hora (UTC):** 2026-10-22.

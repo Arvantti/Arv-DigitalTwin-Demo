@@ -26,9 +26,11 @@ from __future__ import annotations
 import asyncio
 import json
 import math
+import os
 from typing import Annotated, Any
 
 from fastapi import Body, FastAPI, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi.middleware.cors import CORSMiddleware
 from twin_runtime import Library, Simulator
 from twin_runtime.catalog import Catalog
 from twin_runtime.plant import SIM_FILE, PlantModel, find_models_root
@@ -41,6 +43,19 @@ TICK_S = 0.1
 MAX_STEPS_PER_TICK = 4000
 
 app = FastAPI(title="Industrial Twin API", version="0.1.0")
+# Pages sirve solamente la galería; el emulador puede vivir en otro origen HTTPS.
+# En producción defina TWIN_CORS_ORIGINS con los dominios autorizados, separados por coma.
+_cors_origins = [
+    origin.strip()
+    for origin in os.environ.get("TWIN_CORS_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173").split(",")
+    if origin.strip()
+]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=_cors_origins,
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_headers=["content-type"],
+)
 library = Library()
 _plant_models: dict[str, PlantModel] = {}
 

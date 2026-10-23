@@ -202,6 +202,9 @@ def test_operation_profiles_persist_and_drive_the_plc_virtual(tmp_path, monkeypa
     assert any(item["id"] == profile["id"] for item in listed)
     template = next(item for item in listed if item["id"].startswith("builtin-water-network-scale-v1-pdd-rca-01"))
     assert template["hours"]["0"]["global_consumers_pct"] == 30
+    official = next(item for item in listed if item["id"].endswith("pfl-noc-01"))
+    assert official["name"] == "PFL-NOC-01 · Operación nocturna automática · demanda residencial 30 %"
+    assert official["hours"]["0"]["prs"]["branch"] == "auto"
     assert template["hours"]["11"]["global_consumers_pct"] == 100
     assert template["hours"]["23"]["global_consumers_pct"] == 30
     assert client.put(f"{url}/{profile['id']}", json=payload).status_code == 200
