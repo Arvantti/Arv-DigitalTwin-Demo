@@ -50,6 +50,10 @@ tags: [registro, historico-ia, acueducto, plc, fractal]
 
 **IA · 2026-10-22 UTC:** añadió un historial de señales numéricas por equipo, el botón `TENDENCIA DEL EQUIPO` en el HUD de selección y un modal con selector de variable, curva, mínimo, máximo, muestras y cierre explícito.
 
+**Autor · 2026-10-22 UTC:** reportó que las cámaras del gemelo parecían la misma vista y pidió zoom real.
+
+**IA · 2026-10-22 UTC:** cambió el encuadre para aceptar dirección de vista explícita. Cada piso/zona usa una dirección distinta, encuadre más cercano y objetivo en su propia cota; los niveles de la rejilla alternan vista lateral. Los botones de cámara indican cuál está activo.
+
 ## Herramientas
 
 Se inspeccionaron contratos PLC, API FastAPI/WebSocket, HMI TypeScript/CSS, geometrías 3D y pruebas. Se ejecutaron pruebas API, Ruff, TypeScript y pruebas de geometrías; no se usaron credenciales ni infraestructura física.

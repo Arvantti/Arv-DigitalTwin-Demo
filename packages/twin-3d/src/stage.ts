@@ -271,7 +271,7 @@ export class Stage {
   }
 
   /** Encuadra la cámara para ver un objeto completo desde una vista 3/4 elevada. */
-  frame(object: THREE.Object3D, distanceFactor = 1.35): void {
+  frame(object: THREE.Object3D, distanceFactor = 1.35, direction?: THREE.Vector3): void {
     const bbox = new THREE.Box3().setFromObject(object);
     const size = bbox.getSize(new THREE.Vector3());
     const center = bbox.getCenter(new THREE.Vector3());
@@ -280,7 +280,7 @@ export class Stage {
     const vfov = (this.camera.fov * Math.PI) / 180;
     const hfov = 2 * Math.atan(Math.tan(vfov / 2) * this.camera.aspect);
     const dist = (radius / Math.sin(Math.min(vfov, hfov) / 2)) * distanceFactor * 0.78;
-    const dir = new THREE.Vector3(0.95, 0.62, 1.15).normalize();
+    const dir = (direction ?? new THREE.Vector3(0.95, 0.62, 1.15)).normalize();
     this.camera.position.copy(center).addScaledVector(dir, dist);
     this.controls.target.copy(center);
     this.controls.update();
