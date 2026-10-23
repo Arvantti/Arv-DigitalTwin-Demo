@@ -89,12 +89,16 @@ def test_water_plc_schema_exposes_simulated_hmi_contract() -> None:
     assert plc["sources"]["engineering"]["id"] == "fractal-engineering-model"
     assert plc["service_constraint"]["critical_pressure_min_mca"] == 15.0
     assert plc["demand_profiles"]["reference_full_demand_m3h"] == 6.8
-    assert {screen["id"] for screen in plc["screens"]} == {"master", "pumping", "grid", "trends"}
+    assert {screen["id"] for screen in plc["screens"]} == {"master", "pumping", "grid", "profiles", "trends"}
+    assert plc["sources"]["opcua"]["id"] == "simulated-plc-opcua"
     assert {asset["id"] for asset in plc["assets"]} >= {"pumpset-main-01", "pumpset-recirc-01", "prs-01", "grid-04"}
     commands = {(item["equipment"], item["command"]) for item in plc["write_commands"]}
     assert ("prs-01", "select_branch") in commands
     assert ("grid-01", "set_opening") in commands
     assert not any(item["command"] == "set_param" for item in plc["write_commands"])
+    opcua = client.get("/api/plants/water-network-scale-v1/opcua-schema").json()
+    assert opcua["simulated"] is True and opcua["access"] == "read-only"
+    assert {node["id"] for node in opcua["nodes"]} >= {"PLC.PRS.OutletPressureMca", "PLC.Profile.CurrentHour"}
     assert client.get("/api/plants/sauce-plant-v1/plc-schema").status_code == 404
 
 
@@ -172,6 +176,48 @@ def test_plant_websocket_streams_connected_plant_and_accepts_commands() -> None:
         for _ in range(3):
             msg = ws.receive_json()
         assert "flame_failure" in msg["snapshot"]["equipment"]["boiler-01"]["active_faults"]
+
+
+def test_operation_profiles_persist_and_drive_the_plc_virtual(tmp_path, monkeypatch) -> None:
+    monkeypatch.setenv("TWIN_DATA", str(tmp_path))
+    url = "/api/plants/water-network-scale-v1/operation-profiles"
+    payload = {
+        "name": "Mañana de baja demanda",
+        "description": "Perfil de prueba persistente.",
+        "hours": {
+            "0": {
+                "global_consumers_pct": 60,
+                "levels": {"1": 55},
+                "dwellings": {"grid-01": {"c11": 37}},
+                "leaks": {"grid-01": {"l1": 10}},
+                "between_levels": {"12": 82},
+                "prs": {"branch": "manual", "manual_setting_mca": 22},
+            }
+        },
+    }
+    created = client.post(url, json=payload)
+    assert created.status_code == 201
+    profile = created.json()
+    listed = client.get(url).json()
+    assert any(item["id"] == profile["id"] for item in listed)
+    template = next(item for item in listed if item["id"].startswith("builtin-water-network-scale-v1-pdd-rca-01"))
+    assert template["hours"]["0"]["global_consumers_pct"] == 30
+    assert template["hours"]["11"]["global_consumers_pct"] == 100
+    assert template["hours"]["23"]["global_consumers_pct"] == 30
+    assert client.put(f"{url}/{profile['id']}", json=payload).status_code == 200
+    with client.websocket_connect(f"/api/plants/water-network-scale-v1/simulate?speed=60&profile_id={profile['id']}") as ws:
+        message = ws.receive_json()
+    equipment = message["snapshot"]["equipment"]
+    assert message["profile"] == {"id": profile["id"], "hour": 0}
+    assert message["plc_tags"]["PLC.Profile.ActiveId"] == profile["id"]
+    assert message["plc_tags"]["PLC.PRS.OutletPressureMca"] is not None
+    assert equipment["grid-01"]["animation"]["open_c11"] == 0.37  # individual prevalece sobre global/nivel
+    assert equipment["grid-01"]["animation"]["open_l1"] == 0.1
+    assert equipment["valve-between-12"]["variables"]["opening_target_pct"] == 82
+    assert equipment["prs-01"]["variables"]["branch_auto"] == 0
+    assert client.delete(f"{url}/{profile['id']}").status_code == 204
+    assert client.get(f"{url}/{profile['id']}").status_code == 404
+    assert client.post(url, json={"name": "incorrecto", "hours": {"24": {}}}).status_code == 422
 
 
 def test_water_plant_websocket_applies_hmi_valve_and_regulation_commands() -> None:

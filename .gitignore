@@ -8,5 +8,7 @@ dist/
 *.tsbuildinfo
 .pytest_cache/
 .ruff_cache/
+.twin-data/
+.playwright-mcp/
 apps/gallery/public/api/
 city-models/centro-medellin-v1/osm-build/

@@ -28,6 +28,7 @@
           <button data-screen="day">DÍA 24 H</button>
           <button data-screen="pumping">BOMBEO Y TANQUES</button>
           <button data-screen="grid">REJILLA Y CONSUMO</button>
+          <button data-screen="profiles">PERFILES</button>
           <button data-screen="trends">TENDENCIAS</button>
           <button data-screen="history">HISTORIAL</button>
         </nav>
@@ -40,7 +41,7 @@
           <div class="panel recommendation"><p class="eyebrow">FRACTAL DE INGENIERÍA</p><strong>Sin recomendación aplicada</strong><span>Las sugerencias futuras se validarán contra una calculadora hidráulica independiente y requerirán aceptación del operador.</span></div>
         </section>
         <section id="day" class="screen">
-          <div class="section-head"><div><p class="eyebrow">HISTORIADOR DE LA SIMULACIÓN</p><h1>Curva del día · 24 horas</h1><p class="muted">Una hora hidráulica equivale a un minuto real: el ciclo completo dura 24 minutos. Cada punto proviene de las señales del emulador y refleja los mandos aplicados durante la sesión.</p></div></div>
+          <div class="section-head"><div><p class="eyebrow">HISTORIADOR DE LA SIMULACIÓN</p><h1>Curva del día · 24 horas</h1><p class="muted">Una hora hidráulica equivale a 15 segundos reales: el ciclo completo dura 6 minutos. Cada punto proviene de las señales del emulador y refleja los mandos aplicados durante la sesión.</p></div></div>
           <div class="kpis" id="day-kpis"></div>
           <div id="day-charts" class="trend-charts"></div>
         </section>
@@ -50,11 +51,25 @@
           <div class="cards" id="tanks"></div>
           <div class="cards" id="pumps"></div>
           <section class="panel regulation"><div><p class="eyebrow">ESTACIÓN REGULADORA</p><h2>PRS-01</h2><div id="prs-values" class="readings"></div></div><div class="controls"><button data-command="auto">AUTO</button><button data-command="manual">MANUAL</button><label>Consigna crítica <input id="critical-setpoint" type="range" min="15" max="30" step="0.05" value="15.45" /><output id="critical-output">15.45 mca</output></label><label>Salida manual <input id="manual-setpoint" type="range" min="15" max="35" step="0.05" value="20.94" /><output id="manual-output">20.94 mca</output></label></div></section>
-          <section class="panel hydraulic-profile"><div class="section-head"><div><p class="eyebrow">MONITOREO HIDRÁULICO EN VIVO</p><h2>Presión y caudal a lo largo de la red</h2><p class="muted">Cada punto corresponde a un transmisor virtual. La válvula crítica es la vivienda de menor presión calculada en ese instante.</p></div></div><div id="hydraulic-profile" class="hydraulic-profile-chart"></div></section>
+          <section class="panel hydraulic-profile"><div class="section-head"><div><p class="eyebrow">MONITOREO HIDRÁULICO EN VIVO</p><h2>Presión y caudal a lo largo de la red</h2><p class="muted">Cada punto corresponde a un transmisor virtual. La válvula crítica es la vivienda de menor presión calculada en ese instante.</p></div><button class="chart-expand" data-expand-target="hydraulic-profile" aria-label="Ampliar monitoreo hidráulico">⤢ AMPLIAR</button></div><div id="hydraulic-profile" class="hydraulic-profile-chart"></div></section>
         </section>
         <section id="history" class="screen">
           <div class="section-head"><div><p class="eyebrow">ARCHIVO LOCAL DEL OPERADOR</p><h1>Historial de desempeños</h1><p class="muted">Sesiones finalizadas guardadas en este navegador. Permite recuperar sus curvas para comparación; no se envían a infraestructura física.</p></div></div>
           <div id="saved-runs" class="cards"></div>
+        </section>
+        <section id="profiles" class="screen">
+          <div class="section-head"><div><p class="eyebrow">PLC VIRTUAL · ESCENARIOS PROGRAMADOS</p><h1>Perfiles de operación</h1><p class="muted">Cada perfil programa las 24 horas hidráulicas: viviendas, fugas, válvulas entre niveles y PRV. Se guarda en el backend local simulado.</p></div><div class="controls"><button id="profile-new">NUEVO</button><button id="profile-save" class="primary">GUARDAR</button><button id="profile-run">▶ EJECUTAR</button></div></div>
+          <section class="panel profile-editor">
+            <label>Perfil <select id="profile-select"><option value="">Nuevo perfil</option></select></label>
+            <label>Nombre <input id="profile-name" maxlength="80" placeholder="Ej.: demanda diurna" /></label>
+            <label class="profile-description">Descripción <input id="profile-description" maxlength="240" placeholder="Objetivo y condiciones del escenario" /></label>
+            <label>Hora simulada <select id="profile-hour"></select></label>
+            <div class="controls"><button id="profile-clone">CLONAR A HORA SIGUIENTE</button><button id="profile-capture">CAPTURAR MANDOS ACTUALES</button></div>
+          </section>
+          <section class="profile-hour-layout">
+            <article class="panel profile-hour-controls"><p class="eyebrow">HORA <span id="profile-hour-title">01</span> · DEMANDA</p><label>Todas las viviendas <input id="profile-global" type="range" min="0" max="100" value="100" /><output id="profile-global-output">—</output></label><div id="profile-level-controls" class="profile-level-controls"></div><p class="muted">La secuencia es global → nivel → vivienda individual. Las aperturas individuales y fugas se incorporan con <b>CAPTURAR MANDOS ACTUALES</b> desde la pantalla Rejilla.</p></article>
+            <article class="panel profile-hour-controls"><p class="eyebrow">HORA <span class="profile-hour-duplicate">01</span> · RED Y PRV</p><div id="profile-between-controls" class="profile-level-controls"></div><label>Rama PRV <select id="profile-prs-branch"><option value="auto">AUTO</option><option value="manual">MANUAL</option></select></label><label>Consigna crítica <input id="profile-prs-critical" type="range" min="15" max="30" step="0.05" value="15.45" /><output id="profile-prs-critical-output">15.45 mca</output></label><label>Salida manual <input id="profile-prs-manual" type="range" min="15" max="35" step="0.05" value="20.94" /><output id="profile-prs-manual-output">20.94 mca</output></label><p id="profile-capture-summary" class="muted">Sin mandos individuales capturados.</p></article>
+          </section>
         </section>
         <section id="trends" class="screen">
           <div class="section-head"><div><p class="eyebrow">HISTORIADOR DE SESIÓN</p><h1>Tendencias de operación</h1><p class="muted">Muestras del emulador hidráulico durante esta sesión. Un perfil de 24 h se incorporará como escenario programable.</p></div></div>
@@ -66,6 +81,7 @@
         </section>
       </section>
     </main>
+    <dialog id="chart-modal" class="chart-modal"><div class="chart-modal-head"><strong id="chart-modal-title">GRÁFICA AMPLIADA</strong><button id="chart-modal-close">× CERRAR</button></div><div id="chart-modal-content"></div></dialog>
     <script type="module" src="/src/plc.ts"></script>
   </body>
 </html>

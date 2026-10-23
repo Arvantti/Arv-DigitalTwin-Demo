@@ -34,6 +34,9 @@ from twin_runtime.catalog import Catalog
 from twin_runtime.plant import SIM_FILE, PlantModel, find_models_root
 from twin_runtime.spec import SpecError, load_yaml
 
+from .plc_tags import opcua_schema, plc_tags
+from .profiles import ProfileStore, commands_for_hour
+
 TICK_S = 0.1
 MAX_STEPS_PER_TICK = 4000
 
@@ -258,6 +261,58 @@ def get_plant_plc_schema(plant_id: str) -> dict[str, Any]:
     return _clean({"plant_id": plant_id, "simulated": True, **schema})
 
 
+@app.get("/api/plants/{plant_id}/opcua-schema")
+def get_plant_opcua_schema(plant_id: str) -> dict[str, Any]:
+    """Contrato de tags OPC UA simulado de solo lectura para Fractal."""
+    if plant_id not in _plant_folders():
+        raise HTTPException(404, f"planta desconocida: {plant_id}")
+    return {"plant_id": plant_id, **opcua_schema()}
+
+
+@app.get("/api/plants/{plant_id}/operation-profiles")
+def list_operation_profiles(plant_id: str) -> list[dict[str, Any]]:
+    if plant_id not in _plant_folders():
+        raise HTTPException(404, f"planta desconocida: {plant_id}")
+    return ProfileStore(plant_id).list()
+
+
+@app.post("/api/plants/{plant_id}/operation-profiles", status_code=201)
+def create_operation_profile(plant_id: str, profile: Annotated[dict[str, Any], Body()]) -> dict[str, Any]:
+    if plant_id not in _plant_folders():
+        raise HTTPException(404, f"planta desconocida: {plant_id}")
+    try:
+        return ProfileStore(plant_id).create(profile)
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
+
+
+@app.get("/api/plants/{plant_id}/operation-profiles/{profile_id}")
+def get_operation_profile(plant_id: str, profile_id: str) -> dict[str, Any]:
+    profile = ProfileStore(plant_id).get(profile_id)
+    if profile is None:
+        raise HTTPException(404, f"perfil desconocido: {profile_id}")
+    return profile
+
+
+@app.put("/api/plants/{plant_id}/operation-profiles/{profile_id}")
+def update_operation_profile(plant_id: str, profile_id: str, profile: Annotated[dict[str, Any], Body()]) -> dict[str, Any]:
+    if plant_id not in _plant_folders():
+        raise HTTPException(404, f"planta desconocida: {plant_id}")
+    try:
+        updated = ProfileStore(plant_id).update(profile_id, profile)
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
+    if updated is None:
+        raise HTTPException(404, f"perfil desconocido: {profile_id}")
+    return updated
+
+
+@app.delete("/api/plants/{plant_id}/operation-profiles/{profile_id}", status_code=204)
+def delete_operation_profile(plant_id: str, profile_id: str) -> None:
+    if not ProfileStore(plant_id).delete(profile_id):
+        raise HTTPException(404, f"perfil desconocido: {profile_id}")
+
+
 @app.post("/api/plants/{plant_id}/products/check")
 def check_product(plant_id: str, product: Annotated[dict[str, Any], Body()]) -> dict[str, Any]:
     """Valida un producto (mismo formato que catalog/products.yaml) contra el catálogo y el plano, y devuelve su ruta.
@@ -297,6 +352,10 @@ async def simulate_plant(ws: WebSocket, plant_id: str) -> None:
                 plant.sim.inputs[eid].update(values)
             for step in scenario.timeline:
                 plant.schedule(step, until_s=scenario.duration_s)
+        profile_id = q.get("profile_id")
+        profile = ProfileStore(plant_id).get(profile_id) if profile_id else None
+        if profile_id and profile is None:
+            raise KeyError(f"perfil desconocido: {profile_id}")
     except (HTTPException, KeyError, SpecError, ValueError) as exc:
         await ws.send_json({"error": str(getattr(exc, "detail", exc))})
         await ws.close()
@@ -305,6 +364,17 @@ async def simulate_plant(ws: WebSocket, plant_id: str) -> None:
     speed = float(q.get("speed", 60.0))
     paused = False
     budget = 0.0
+    applied_profile_hour: int | None = None
+
+    def apply_profile_hour(hour: int) -> None:
+        nonlocal applied_profile_hour
+        if profile is None or applied_profile_hour == hour:
+            return
+        for item in commands_for_hour(profile, hour):
+            equipment = plant.equipment[item["equipment"]]
+            equipment.command(item["command"], item["args"])
+            plant.events.extend(equipment.drain_events())
+        applied_profile_hour = hour
 
     async def receive() -> None:
         nonlocal speed, paused
@@ -327,6 +397,7 @@ async def simulate_plant(ws: WebSocket, plant_id: str) -> None:
     try:
         while not receiver.done():
             if not paused:
+                apply_profile_hour(int(plant.t // 3600))
                 budget += speed * TICK_S
                 steps = 0
                 while budget >= model.dt and steps < MAX_STEPS_PER_TICK:
@@ -337,8 +408,24 @@ async def simulate_plant(ws: WebSocket, plant_id: str) -> None:
                     budget = 0.0
             new_events = [e.to_dict() for e in plant.events[sent_events:]][-200:]
             sent_events = len(plant.events)
+            snapshot = plant.snapshot()
+            profile_state = {"id": profile_id, "hour": int(plant.t // 3600)} if profile else None
             await ws.send_text(
-                json.dumps(_clean({"t": plant.t, "speed": speed, "paused": paused, "snapshot": plant.snapshot(), "events": new_events}))
+                json.dumps(
+                    _clean(
+                        {
+                            "t": plant.t,
+                            "speed": speed,
+                            "paused": paused,
+                            "profile": profile_state,
+                            "snapshot": snapshot,
+                            "plc_tags": plc_tags(
+                                snapshot, profile_id=profile_id, profile_hour=profile_state["hour"] if profile_state else None
+                            ),
+                            "events": new_events,
+                        }
+                    )
+                )
             )
             await asyncio.sleep(TICK_S)
     except WebSocketDisconnect:

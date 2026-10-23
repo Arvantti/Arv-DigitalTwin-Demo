@@ -288,6 +288,13 @@ class BoosterPumpSet(EquipmentBehavior):
             "energy_kwh": self.energy_kwh,
             "volume_m3": self.volume_m3,
             "specific_energy_kwh_m3": self.power_kw / self.flow if self.flow > 1e-6 else 0.0,
+            "automatic_enabled": 1.0 if self.state.current in ("idle", "running") else 0.0,
+            "level_auto_active": 1.0 if self.level_on else 0.0,
+            "source_level_pct": self.inputs["source_level_pct"],
+            "target_level_pct": self.inputs["target_level_pct"],
+            "start_level_pct": self.p["start_level_pct"],
+            "stop_level_pct": self.p["stop_level_pct"],
+            "target_full_pct": self.p["target_full_pct"],
         }
 
     def kpis(self) -> dict[str, Any]:

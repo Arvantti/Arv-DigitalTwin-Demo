@@ -1,11 +1,15 @@
 ---
 tipo: decisiones
 tags: [registro, decision]
-actualizado: 2026-10-18
+actualizado: 2026-10-22
 ---
 # Decisiones y reglas del autor
 
 Índice: [[00-indice]] · Bitácora: [[bitacora]] · Plan: [[plan-del-proyecto]]. Cada decisión cita al autor (Carlos Andrés Quiceño) y la fecha en UTC.
+
+## D69 · Co-simulación hidráulica: PLC como frontera y Fractal asesor · 2026-10-22
+
+El autor definió que Fractal de Ingeniería no puede consultar directamente el emulador hidráulico ni sus variables internas. Todo estado operativo llega exclusivamente desde tags del PLC Master virtual mediante una interfaz OPC UA simulada de solo lectura. Fractal puede proyectar la operación futura solo si el PLC publica un perfil horario conocido; devuelve proyección base, proyección optimizada y recomendaciones, pero no escribe mandos. El operador es quien acepta o rechaza una recomendación en la HMI; el único camino hacia el emulador es HMI → PLC virtual → emulador. Los perfiles incluyen la opción C confirmada por el autor: viviendas globales/por nivel/individuales, fugas, válvulas entre niveles y PRV.
 
 ## D01 · Dos plantas de referencia: discreta y de procesos · 2026-10-16 01:28
 Primero una planta de inyección de plástico y otra de salsas de tomate «para poder representar manufactura discreta y manufactura de procesos». Inspiradas en dos empresas de Medellín **sin decir el nombre de la empresa** (01:29); el repositorio no usa marcas ni nombres reales.

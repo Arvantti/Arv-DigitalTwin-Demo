@@ -13,7 +13,11 @@ sources:
   engineering:
     id: fractal-engineering-model
     name: Fractal de Ingeniería
-    role: "Calculadora hidráulica independiente que evalúa alternativas y devuelve sugerencias; nunca escribe directamente al PLC."
+    role: "Calculadora hidráulica independiente que lee exclusivamente tags PLC por OPC UA simulado, evalúa alternativas y devuelve sugerencias; nunca escribe directamente al PLC."
+  opcua:
+    id: simulated-plc-opcua
+    name: Interfaz OPC UA simulada del PLC Master
+    role: "Espacio de tags de solo lectura para consumidores de ingeniería; no representa un servidor ni una conexión física."
 
 service_constraint:
   critical_pressure_min_mca: 15.0
@@ -43,6 +47,7 @@ screens:
   - { id: master, name: PLC Master, description: "Árbol de activos, estado del emulador, alarmas y eventos." }
   - { id: pumping, name: "Bombeo, tanques y regulación", description: "Recirculación, bombeo principal, niveles y selección AUTO/MANUAL." }
   - { id: grid, name: Rejilla y consumo, description: "Consumos por nivel/vivienda, válvulas entre niveles y punto crítico." }
+  - { id: profiles, name: Perfiles de operación, description: "Escenarios PLC de 24 horas para viviendas, fugas, válvulas entre niveles y PRV." }
   - { id: trends, name: Tendencias 24 h, description: "Caudal, consumo, fugas, niveles, presión crítica y velocidad." }
 
 assets:
