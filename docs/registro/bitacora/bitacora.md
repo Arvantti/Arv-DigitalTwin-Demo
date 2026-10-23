@@ -97,7 +97,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 - **Fase del plan:** acueducto/escena 3D y HMI.
 - **Solicitado por:** Andy: diferenciar cámaras con zoom real y corregir el inicio de la simulación PLC.
 - **Qué se hizo:** el encuadre 3D recibe direcciones independientes para cada piso/zona y nivel; el PLC informa el handshake, errores y conexión, impide doble clic durante la apertura del WebSocket y redibuja solo la pantalla visible para mantener respuesta fluida.
-- **Commits:** pendiente de crear en la rama de trabajo.
+- **Commits:** `d7bf741` (implementación); actualización de registro incluida en el commit siguiente.
 - **Verificación:** `pnpm --filter @twin/gallery typecheck`; conexión WebSocket PLC comprobada contra el emulador local.
 - **Decisiones:** ninguna nueva.
 - **Conversación:** [[2026-10-22-perfiles-plc-fractal]].
