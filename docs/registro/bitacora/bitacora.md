@@ -96,7 +96,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 - **Fase del plan:** acueducto/escena 3D y observabilidad.
 - **Solicitado por:** Andy: corregir la percepción de equipos enterrados, reducir flechas, mostrar flujo interno de rejillas y abrir una gráfica al seleccionar un equipo.
 - **Qué se hizo:** el suelo y cuadrícula del render siguen la cota más baja del plano sin cambiar cotas hidráulicas; las flechas de tuberías externas son más pequeñas; cada rejilla visualiza flujo de entrada y reparto interno; el HUD registra muestras numéricas y abre una tendencia modal con selector de señal.
-- **Commits:** pendiente de crear en la rama de trabajo.
+- **Commits:** `fffa104` (implementación); actualización de registro incluida en el commit siguiente.
 - **Verificación:** `pnpm --filter @twin/gallery typecheck`, `pnpm --filter @twin/3d typecheck`, `pnpm -r test` (149 pruebas).
 - **Decisiones:** ninguna nueva.
 - **Conversación:** [[2026-10-22-perfiles-plc-fractal]].
