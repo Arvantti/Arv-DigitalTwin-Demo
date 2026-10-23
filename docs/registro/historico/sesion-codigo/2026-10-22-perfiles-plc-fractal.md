@@ -62,6 +62,10 @@ tags: [registro, historico-ia, acueducto, plc, fractal]
 
 **IA · 2026-10-22 UTC:** creó las plantillas PLC PFL-BASE-01, PFL-NOC-01, PFL-NOC-02 y PFL-RES-01; agrupó los perfiles operativos en la HMI; añadió validación de respuestas JSON y origen API configurable; y habilitó CORS restringido por `TWIN_CORS_ORIGINS` en FastAPI. Las fallas permanecen como pruebas técnicas, no como perfiles operativos.
 
+**Autor · 2026-10-22 UTC:** indicó que el frontend debe usar Node 26 y autorizó ajustar frontend y backend.
+
+**IA · 2026-10-22 UTC:** alineó Node 26.12.1 en CI, metadatos y build; añadió `Containerfile` para galería estática y emulador FastAPI, `.dockerignore` y guía de ejecución con Podman rootless. El backend sigue en Python 3.12; se conecta mediante HTTPS/WSS y CORS configurado por entorno. Se construyeron ambas imágenes y se comprobó `GET /api/health` en el contenedor del emulador.
+
 ## Herramientas
 
 Se inspeccionaron contratos PLC, API FastAPI/WebSocket, HMI TypeScript/CSS, geometrías 3D y pruebas. Se ejecutaron pruebas API, Ruff, TypeScript y pruebas de geometrías; no se usaron credenciales ni infraestructura física.

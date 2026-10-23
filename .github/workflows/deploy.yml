@@ -40,7 +40,7 @@ jobs:
       - uses: actions/setup-node@v5
         if: steps.secrets.outputs.ready == 'true'
         with:
-          node-version: 22
+          node-version: 26
           cache: pnpm
       - if: steps.secrets.outputs.ready == 'true'
         run: pnpm install --frozen-lockfile

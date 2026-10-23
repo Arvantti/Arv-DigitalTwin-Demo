@@ -12,6 +12,25 @@ Cada push a `main` publica la galería web en **Cloudflare Pages** con el workfl
 
 Sin base de datos por ahora.
 
+## Contenedores para frontend y emulador
+
+El frontend compila con Node `26.12.1` (declarado también en `.node-version`, `package.json` y los workflows). Los `Containerfile` usan la raíz del repositorio como contexto y se ejecutan sin daemon, en modo rootless con Podman:
+
+```bash
+# Galería estática (Node 26 durante compilación)
+podman build -f apps/gallery/Containerfile -t arvantti/gallery:node26 .
+podman run --rm -p 8080:80 arvantti/gallery:node26
+
+# Emulador FastAPI/WebSocket (Python 3.12)
+podman build -f apps/twin-emulator-api/Containerfile -t arvantti/twin-emulator-api .
+podman run --rm -p 8000:8000 \
+  -e TWIN_CORS_ORIGINS=https://digitaltwin.arvantti.online \
+  -v twin-data:/app/.twin-data:Z \
+  arvantti/twin-emulator-api
+```
+
+La HMI publicada apunta al segundo contenedor con `?api=https://<host-del-emulador>`. El proxy HTTPS delante del API debe conservar la actualización WebSocket (`wss`).
+
 ## Pasos de una sola vez (en dash.cloudflare.com, cuenta Arvantti)
 1. **Account ID.** Entra a la cuenta Arvantti, abre *Workers & Pages* y copia el **Account ID** del panel derecho (o de la URL: `dash.cloudflare.com/<ACCOUNT_ID>/...`).
 2. **Token de API con permisos mínimos.** *Mi perfil → Tokens de API → Crear token → Crear token personalizado*:
