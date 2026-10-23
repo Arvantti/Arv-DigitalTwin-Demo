@@ -156,6 +156,8 @@ let latest: Record<string, EquipmentSnapshot> = {};
 let socket: WebSocket | null = null;
 let paused = false;
 let messages = 0;
+type EquipmentHistorySample = { t: number; values: Record<string, number> };
+const equipmentHistory = new Map<string, EquipmentHistorySample[]>();
 
 // ------------------------------------------------------------------ construcción
 function buildZones(): void {
@@ -726,9 +728,10 @@ function buildPipes(): void {
       return bead;
     });
     // Flechas visibles: se orientan con el signo de la velocidad hidráulica, no con una dirección decorativa fija.
-    const arrowMat = new THREE.MeshStandardMaterial({ color: "#8ff3ff", emissive: "#4de0ff", emissiveIntensity: 2.2 });
-    const arrows = Array.from({ length: Math.max(2, Math.ceil(count / 3)) }, () => {
-      const arrow = new THREE.Mesh(new THREE.ConeGeometry(radius * 3.1, radius * 8, 4), arrowMat);
+    const arrowMat = new THREE.MeshStandardMaterial({ color: "#8ff3ff", emissive: "#4de0ff", emissiveIntensity: 1.2 });
+    const arrows = Array.from({ length: Math.max(1, Math.ceil(count / 5)) }, () => {
+      // Indicador deliberadamente más pequeño que la tubería: informa sentido sin ocultar válvulas ni equipos.
+      const arrow = new THREE.Mesh(new THREE.ConeGeometry(Math.max(0.018, radius * 1.15), Math.max(0.08, radius * 3.2), 4), arrowMat);
       arrow.visible = false;
       stage.content.add(arrow);
       return arrow;
@@ -1011,6 +1014,11 @@ function applyMessage(msg: SimMessage, label: string): void {
   for (const [id, snap] of Object.entries(latest)) {
     const asset = assets.get(id);
     if (asset) asset.frame = { channels: snap.animation, state: snap.state, phase: snap.phase, variables: snap.variables, items: snap.items, label: id.toUpperCase() };
+    const values = Object.fromEntries(Object.entries(snap.variables).filter(([, value]) => typeof value === "number" && Number.isFinite(value))) as Record<string, number>;
+    const samples = equipmentHistory.get(id) ?? [];
+    if (!samples.length || samples.at(-1)!.t !== msg.t) samples.push({ t: msg.t, values });
+    if (samples.length > 720) samples.shift();
+    equipmentHistory.set(id, samples);
   }
   for (const piece of controlPieces) piece.feed?.(latest, msg.t);
   beltPlc?.update(latest);
@@ -1032,6 +1040,7 @@ function connect(): void {
   const proto = location.protocol === "https:" ? "wss" : "ws";
   const ws = new WebSocket(`${proto}://${location.host}/api/plants/${doc.plant.id}/simulate?${q}`);
   socket = ws;
+  equipmentHistory.clear();
   let received = 0;
   $("btn-connect").textContent = "■ DETENER";
   ws.onmessage = (ev) => {
@@ -1118,6 +1127,35 @@ function fmt(v: unknown, unit = ""): string {
   return String(v);
 }
 
+function renderAssetChart(): void {
+  const asset = selectedId ? assets.get(selectedId) : undefined;
+  const spec = asset?.eq.sim ? specs[asset.eq.sim.type] : undefined;
+  const samples = selectedId ? equipmentHistory.get(selectedId) ?? [] : [];
+  const available = (spec?.variables ?? []).filter((variable) => samples.some((sample) => Number.isFinite(sample.values[variable.id])));
+  const select = $<HTMLSelectElement>("asset-chart-variable");
+  const previouslySelected = select.value;
+  select.innerHTML = available.map((variable) => `<option value="${variable.id}">${variable.id} · ${variable.unit || "sin unidad"}</option>`).join("");
+  select.value = previouslySelected;
+  if (!available.length) {
+    $("asset-chart-content").innerHTML = `<p class="dim">Aún no hay muestras numéricas del equipo. Inicie la simulación para registrar su tendencia.</p>`;
+    return;
+  }
+  const variable = available.some((item) => item.id === select.value) ? select.value : available[0].id;
+  select.value = variable;
+  const unit = available.find((item) => item.id === variable)?.unit ?? "";
+  const points = samples.filter((sample) => Number.isFinite(sample.values[variable]));
+  const values = points.map((sample) => sample.values[variable]);
+  const width = 920, height = 400, left = 58, right = 20, top = 18, bottom = 36;
+  const low = Math.min(...values), high = Math.max(...values), range = Math.max(0.01, high - low);
+  const x = (index: number) => left + (index * (width - left - right)) / Math.max(1, points.length - 1);
+  const y = (reading: number) => top + height - top - bottom - ((reading - low) / range) * (height - top - bottom);
+  const grid = [0, .25, .5, .75, 1].map((fraction) => { const reading = low + range * fraction; return `<line class="axis" x1="${left}" x2="${width - right}" y1="${y(reading)}" y2="${y(reading)}"/><text x="${left - 7}" y="${y(reading) + 4}" text-anchor="end">${fmt(reading, unit)}</text>`; }).join("");
+  const times = [0, .25, .5, .75, 1].map((fraction) => { const sample = points[Math.round((points.length - 1) * fraction)]; const seconds = Math.floor(sample.t); return `<text x="${left + fraction * (width - left - right)}" y="${height - 10}" text-anchor="middle">${String(Math.floor(seconds / 3600)).padStart(2, "0")}:${String(Math.floor(seconds / 60) % 60).padStart(2, "0")}</text>`; }).join("");
+  const line = points.map((sample, index) => `${x(index)},${y(sample.values[variable])}`).join(" ");
+  $("asset-chart-title").textContent = `${asset!.eq.id.toUpperCase()} · ${variable.toUpperCase()}`;
+  $("asset-chart-content").innerHTML = `<svg class="asset-chart-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="Tendencia de ${variable}"><g class="day-axis">${grid}${times}</g><polyline points="${line}" fill="none" stroke="#4EA7FF" stroke-width="3"/></svg><p class="asset-chart-legend"><i></i> Señal simulada publicada por el equipo · mín. ${fmt(low, unit)} · máx. ${fmt(high, unit)} · ${points.length} muestras</p>`;
+}
+
 function renderAsset(): void {
   const asset = selectedId ? assets.get(selectedId) : undefined;
   const snap = selectedId ? latest[selectedId] : undefined;
@@ -1134,6 +1172,7 @@ function renderAsset(): void {
   $("vars").innerHTML = (spec?.variables ?? [])
     .map((v) => `<div title="${v.description}"><span>${v.id}</span><span>${fmt(snap?.variables?.[v.id], v.unit)}</span></div>`)
     .join("");
+  $("asset-chart").hidden = !asset?.eq.sim;
   const cmds = $("commands");
   if (cmds.dataset.for !== (selectedId ?? "")) {
     cmds.dataset.for = selectedId ?? "";
@@ -1222,6 +1261,9 @@ async function start(): Promise<void> {
   }
   await bootStage(22, "Descargando el plano de la planta…");
   doc = await res.json();
+  // La cuadrícula de referencia sigue el piso más bajo declarado. Así un sótano/foso del plano no parece equipo enterrado
+  // y se conservan intactas todas las cotas hidráulicas, equipos y rutas.
+  stage.setGroundElevation(Math.min(...doc.zones.map((zone) => zone.elevation ?? 0)));
   $<HTMLAnchorElement>("link-equipos").href = `/equipos.html?plant=${plantId}`;
   const plcLink = $<HTMLAnchorElement>("link-plc");
   const plcSchema = await fetch(`/api/plants/${plantId}/plc-schema`).catch(() => null);
@@ -1297,6 +1339,13 @@ async function start(): Promise<void> {
     }
     connect();
   }
+  $("asset-chart").onclick = () => {
+    if (!selectedId) return;
+    renderAssetChart();
+    $<HTMLDialogElement>("asset-chart-modal").showModal();
+  };
+  $("asset-chart-close").onclick = () => $<HTMLDialogElement>("asset-chart-modal").close();
+  $<HTMLSelectElement>("asset-chart-variable").onchange = renderAssetChart;
   renderAsset();
   await bootStage(94, "Renderizando la escena 3D…");
   loop();

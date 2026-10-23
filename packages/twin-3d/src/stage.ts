@@ -88,6 +88,7 @@ export class Stage {
   private rig: LightRig;
   private cells = new THREE.Group();
   private floor: THREE.Mesh;
+  private grid: THREE.GridHelper;
   private clock = new THREE.Clock();
   private pulseMats: THREE.MeshStandardMaterial[] = [];
   lighting: LightingPreset;
@@ -135,11 +136,11 @@ export class Stage {
     this.floor.name = "floor";
     this.scene.add(this.floor);
 
-    const grid = new THREE.GridHelper(240, 120, "#1f4a63", "#132530");
-    (grid.material as THREE.Material).transparent = true;
-    (grid.material as THREE.Material).opacity = 0.35;
-    grid.position.y = 0.002;
-    this.scene.add(grid);
+    this.grid = new THREE.GridHelper(240, 120, "#1f4a63", "#132530");
+    (this.grid.material as THREE.Material).transparent = true;
+    (this.grid.material as THREE.Material).opacity = 0.35;
+    this.grid.position.y = 0.002;
+    this.scene.add(this.grid);
 
     this.rig = this.buildLights(quality);
     this.scene.add(this.content, this.cells);
@@ -292,6 +293,12 @@ export class Stage {
     key.target.position.copy(center);
     this.scene.add(key.target);
     key.position.copy(center).add(new THREE.Vector3(...PRESETS[this.lighting].key[2]));
+  }
+
+  /** Mueve el suelo visual y su cuadrícula sin alterar la geometría ni las cotas del modelo. */
+  setGroundElevation(elevationM: number): void {
+    this.floor.position.y = elevationM;
+    this.grid.position.y = elevationM + 0.002;
   }
 
   resize(): void {

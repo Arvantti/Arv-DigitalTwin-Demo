@@ -42,6 +42,14 @@ tags: [registro, historico-ia, acueducto, plc, fractal]
 
 **IA · 2026-10-22 UTC:** agregó modo compacto de escritorio para Bombeo y Día 24 H (sin árbol lateral), tres gráficas por fila en Día 24 H y botón `⤢ AMPLIAR` en cada gráfica de Día 24 H, Tendencias y monitoreo hidráulico. El modal incluye `× CERRAR` y también puede cerrarse con Escape.
 
+**Autor · 2026-10-22 UTC:** pidió reducir las flechas externas de flujo, mostrar dirección dentro de las rejillas y mover únicamente el piso visual para que el nivel negativo de recirculación no parezca enterrado.
+
+**IA · 2026-10-22 UTC:** movió el suelo y cuadrícula del render al piso más bajo declarado, sin modificar cotas hidráulicas; redujo y espació las flechas externas; y agregó indicadores de dirección pequeños en cabezal y ramales de cada rejilla, gobernados por `flow_in_norm` publicado por el comportamiento.
+
+**Autor · 2026-10-22 UTC:** pidió que, al seleccionar un equipo en la escena 3D, se pueda abrir un modal con gráficas de sus señales.
+
+**IA · 2026-10-22 UTC:** añadió un historial de señales numéricas por equipo, el botón `TENDENCIA DEL EQUIPO` en el HUD de selección y un modal con selector de variable, curva, mínimo, máximo, muestras y cierre explícito.
+
 ## Herramientas
 
 Se inspeccionaron contratos PLC, API FastAPI/WebSocket, HMI TypeScript/CSS, geometrías 3D y pruebas. Se ejecutaron pruebas API, Ruff, TypeScript y pruebas de geometrías; no se usaron credenciales ni infraestructura física.
