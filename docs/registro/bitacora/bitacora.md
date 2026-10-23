@@ -9,6 +9,7 @@ actualizado: 2026-10-22
 Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `Arvantti/Arv-sfot-demo-Fabtimus`.
 
 | Fecha | PR | Resumen | Fase |
+| 2026-10-22 | Escena hidráulica y tendencias por equipo | La escena sitúa suelo/cuadrícula en la cota mínima visual sin cambiar hidráulica, reduce indicadores externos, añade dirección dentro de rejillas y abre tendencias modales de cualquier equipo simulado. [[2026-10-22-perfiles-plc-fractal]] | acueducto/3D |
 | 2026-10-22 | Perfiles PLC y frontera Fractal | Perfiles horarios persistentes y ejecutables para el acueducto, tags PLC de solo lectura para OPC UA simulado, documentación de co-simulación y escena con tanques transparentes/flechas de flujo. D69. [[2026-10-22-perfiles-plc-fractal]] | acueducto |
 | 2026-10-22 | PLC Master y carga visual | Se integra el PLC Master simulado, se evitan destellos de HTML sin CSS al abrir la escena y se exponen mandos de casas/fugas y telemetría completa de la reguladora. [[2026-10-22-arquitectura-modelos-portables]] | acueducto |
 | 2026-10-22 | Arquitectura portable de modelos | `apps/twin-emulator-api` reemplaza el nombre genérico `apps/api`; los seis modelos industriales incluyen manifiesto con dependencias explícitas de equipos, validador y guía de empaquetado futuro. D68. [[2026-10-22-arquitectura-modelos-portables]] | arquitectura |
@@ -90,11 +91,21 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 ## Entradas
 
+### 2026-10-22 · Escena hidráulica y tendencias por equipo
+- **Fecha/hora (UTC):** 2026-10-22.
+- **Fase del plan:** acueducto/escena 3D y observabilidad.
+- **Solicitado por:** Andy: corregir la percepción de equipos enterrados, reducir flechas, mostrar flujo interno de rejillas y abrir una gráfica al seleccionar un equipo.
+- **Qué se hizo:** el suelo y cuadrícula del render siguen la cota más baja del plano sin cambiar cotas hidráulicas; las flechas de tuberías externas son más pequeñas; cada rejilla visualiza flujo de entrada y reparto interno; el HUD registra muestras numéricas y abre una tendencia modal con selector de señal.
+- **Commits:** `fffa104` (implementación); actualización de registro incluida en el commit siguiente.
+- **Verificación:** `pnpm --filter @twin/gallery typecheck`, `pnpm --filter @twin/3d typecheck`, `pnpm -r test` (149 pruebas).
+- **Decisiones:** ninguna nueva.
+- **Conversación:** [[2026-10-22-perfiles-plc-fractal]].
+
 ### 2026-10-22 · Perfiles PLC y frontera Fractal
 - **Fecha/hora (UTC):** 2026-10-22 23:02.
 - **Fase del plan:** acueducto/HMI, perfiles operativos y preparación de co-simulación.
 - **Solicitado por:** Andy: perfiles de 24 franjas con alcance C, Fractal que lea exclusivamente del PLC por OPC UA simulado, y visualización hidráulica de tanques/niveles/flechas.
-- **Qué se hizo:** se documentó la arquitectura; se agregaron perfiles persistentes SQLite con CRUD, validación, plantilla `PDD-RCA-01` y aplicación por hora simulada (15 s reales/hora, ciclo de 6 min); la HMI crea, carga, guarda, clona la hora siguiente y captura mandos actuales; el WebSocket publica tags planos PLC de solo lectura y el contrato OPC UA simulado; los tanques de agua son translúcidos y su líquido sigue `level`; las tuberías muestran flechas según velocidad y sentido publicados; las gráficas llevan leyendas legibles, tres tarjetas por fila en el día hidráulico y ampliación modal; la recirculación muestra estado AUTO/paro, niveles y umbrales de arranque/parada. Se creó el esqueleto independiente `fractal/hydraulics/models/water-network-scale-v1/`.
+- **Qué se hizo:** se documentó la arquitectura; se agregaron perfiles persistentes SQLite con CRUD, validación, plantilla `PDD-RCA-01` y aplicación por hora simulada (15 s reales/hora, ciclo de 6 min); la HMI crea, carga, guarda, clona la hora siguiente y captura mandos actuales; el WebSocket publica tags planos PLC de solo lectura y el contrato OPC UA simulado; los tanques de agua son translúcidos y su líquido sigue `level`; las tuberías muestran flechas reducidas según velocidad y sentido publicados, y las rejillas muestran dirección interna; el suelo visual sigue el piso más bajo sin cambiar cotas hidráulicas; el HUD 3D abre tendencias por equipo; las gráficas llevan leyendas legibles, tres tarjetas por fila en el día hidráulico y ampliación modal; la recirculación muestra estado AUTO/paro, niveles y umbrales de arranque/parada. Se creó el esqueleto independiente `fractal/hydraulics/models/water-network-scale-v1/`.
 - **Commits:** `30cd6fc` (implementación inicial); actualización de registro incluida en el commit siguiente.
 - **Verificación:** pruebas API (17), Ruff, typecheck de galería y 3D, y pruebas de geometría (149).
 - **Decisiones:** [[decisiones]] D69.
