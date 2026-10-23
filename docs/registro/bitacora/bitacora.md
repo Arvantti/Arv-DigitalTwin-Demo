@@ -95,7 +95,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 - **Fase del plan:** acueducto/HMI, perfiles operativos y preparación de co-simulación.
 - **Solicitado por:** Andy: perfiles de 24 franjas con alcance C, Fractal que lea exclusivamente del PLC por OPC UA simulado, y visualización hidráulica de tanques/niveles/flechas.
 - **Qué se hizo:** se documentó la arquitectura; se agregaron perfiles persistentes SQLite con CRUD, validación, plantilla `PDD-RCA-01` y aplicación por hora simulada (15 s reales/hora, ciclo de 6 min); la HMI crea, carga, guarda, clona la hora siguiente y captura mandos actuales; el WebSocket publica tags planos PLC de solo lectura y el contrato OPC UA simulado; los tanques de agua son translúcidos y su líquido sigue `level`; las tuberías muestran flechas según velocidad y sentido publicados; las gráficas llevan leyendas legibles, tres tarjetas por fila en el día hidráulico y ampliación modal; la recirculación muestra estado AUTO/paro, niveles y umbrales de arranque/parada. Se creó el esqueleto independiente `fractal/hydraulics/models/water-network-scale-v1/`.
-- **Commits:** pendiente de crear en la rama de trabajo.
+- **Commits:** `30cd6fc` (implementación inicial); actualización de registro incluida en el commit siguiente.
 - **Verificación:** pruebas API (17), Ruff, typecheck de galería y 3D, y pruebas de geometría (149).
 - **Decisiones:** [[decisiones]] D69.
 - **Conversación:** [[2026-10-22-perfiles-plc-fractal]].
