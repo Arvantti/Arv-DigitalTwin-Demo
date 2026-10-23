@@ -52,6 +52,7 @@ function selectScreen(id: string): void {
   document.body.classList.toggle("screen-grid", id === "grid");
   document.body.classList.toggle("screen-day", id === "day");
   document.body.classList.toggle("screen-pumping", id === "pumping");
+  if (Object.keys(latest).length) renderVisibleScreen();
 }
 
 function buildAssets(): void {
@@ -334,8 +335,17 @@ function renderAlarms(): void {
   $("alarms").innerHTML = active.length ? active.map((message) => `<div class="alarm">${message}</div>`).join("") : `<p class="muted">Sin alarmas activas.</p>`;
 }
 
-function render(message: Message): void {
-  latest = message.snapshot.equipment;
+function renderVisibleScreen(): void {
+  const active = document.querySelector<HTMLElement>(".screen.active")?.id;
+  if (active === "master") renderMaster();
+  else if (active === "day") renderDay();
+  else if (active === "pumping") { renderPumping(); renderHydraulicProfile(); }
+  else if (active === "grid") renderGrid();
+  else if (active === "trends") renderTrends();
+  else if (active === "history") renderSavedRuns();
+}
+
+function render(message: Message): void {  latest = message.snapshot.equipment;
   simTime = message.t;
   for (const asset of schema.assets) {
     const node = document.querySelector<HTMLElement>(`[data-asset="${asset.id}"]`);
@@ -347,12 +357,15 @@ function render(message: Message): void {
   const ss = String(Math.floor(simTime % 60)).padStart(2, "0");
   $("clock").textContent = `SIM · ${hh}:${mm}:${ss} · ×${message.speed}`;
   recordHistory(message);
-  renderMaster(); renderDay(); renderPumping(); renderGrid(); renderTrends(); renderHydraulicProfile(); renderAlarms();
+  renderVisibleScreen();
+  renderAlarms();
   if (message.t >= DAY_SECONDS) { saveCurrentRun(); socket?.close(); }
 }
 
 function connect(): void {
   if (socket?.readyState === WebSocket.OPEN) { socket.close(); return; }
+  // Evita dobles clics mientras el proxy WebSocket termina el handshake.
+  if (socket?.readyState === WebSocket.CONNECTING) return;
   saveCurrentRun();
   history = [];
   runStartedAt = new Date().toISOString();
@@ -361,9 +374,19 @@ function connect(): void {
   const protocol = location.protocol === "https:" ? "wss" : "ws";
   // ×240: 15 s reales recorren una hora hidráulica; el día completo tarda 6 min.
   const profileQuery = activeProfileId ? `&profile_id=${encodeURIComponent(activeProfileId)}` : "";
+  $("connection").textContent = "● CONECTANDO CON EL EMULADOR…";
+  $("connect").textContent = "… CONECTANDO";
   socket = new WebSocket(`${protocol}://${location.host}/api/plants/${plantId}/simulate?speed=240${profileQuery}`);
   socket.onopen = () => { $("connection").textContent = "● SIMULACIÓN CONECTADA · 15 s/h"; $("connection").classList.add("on"); $("connect").textContent = "■ DETENER Y GUARDAR"; };
-  socket.onmessage = (event) => { const message = JSON.parse(event.data) as Message & { error?: string }; if (!message.error) render(message); };
+  socket.onmessage = (event) => {
+    const message = JSON.parse(event.data) as Message & { error?: string };
+    if (message.error) {
+      $("connection").textContent = `● ERROR · ${message.error}`;
+      return;
+    }
+    render(message);
+  };
+  socket.onerror = () => { $("connection").textContent = "● ERROR DE CONEXIÓN CON EL EMULADOR"; };
   socket.onclose = () => { saveCurrentRun(); socket = null; $("connection").textContent = "● DESCONECTADO"; $("connection").classList.remove("on"); $("connect").textContent = "▶ INICIAR SIMULACIÓN 24 H"; };
 }
 
