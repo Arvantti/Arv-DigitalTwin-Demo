@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Perfil operativo PLC virtual · water-network-scale-v1",
+  "type": "object",
+  "required": ["name", "hours"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "name": { "type": "string", "minLength": 1, "maxLength": 80 },
+    "description": { "type": "string", "maxLength": 240 },
+    "hours": {
+      "type": "object",
+      "propertyNames": { "pattern": "^(?:[0-9]|1[0-9]|2[0-3])$" },
+      "additionalProperties": { "$ref": "#/$defs/hour" }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "pct": { "type": "number", "minimum": 0, "maximum": 100 },
+    "openingMap": { "type": "object", "additionalProperties": { "$ref": "#/$defs/pct" } },
+    "hour": {
+      "type": "object",
+      "properties": {
+        "global_consumers_pct": { "$ref": "#/$defs/pct" },
+        "levels": {
+          "type": "object",
+          "propertyNames": { "enum": ["1", "2", "3", "4"] },
+          "additionalProperties": { "$ref": "#/$defs/pct" }
+        },
+        "dwellings": { "type": "object", "additionalProperties": { "$ref": "#/$defs/openingMap" } },
+        "leaks": { "type": "object", "additionalProperties": { "$ref": "#/$defs/openingMap" } },
+        "between_levels": {
+          "type": "object",
+          "propertyNames": { "enum": ["12", "23", "34"] },
+          "additionalProperties": { "$ref": "#/$defs/pct" }
+        },
+        "prs": {
+          "type": "object",
+          "properties": {
+            "branch": { "enum": ["auto", "manual"] },
+            "critical_setpoint_mca": { "type": "number", "minimum": 15, "maximum": 30 },
+            "manual_setting_mca": { "type": "number", "minimum": 15, "maximum": 35 }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

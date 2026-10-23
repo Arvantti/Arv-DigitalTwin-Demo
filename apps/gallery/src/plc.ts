@@ -23,6 +23,20 @@ let history: Sample[] = [];
 let runStartedAt = "";
 let runSaved = false;
 
+type ProfileHour = {
+  global_consumers_pct?: number;
+  levels?: Record<string, number>;
+  dwellings?: Record<string, Record<string, number>>;
+  leaks?: Record<string, Record<string, number>>;
+  between_levels?: Record<string, number>;
+  prs?: { branch?: "auto" | "manual"; critical_setpoint_mca?: number; manual_setting_mca?: number };
+};
+type OperationProfile = { id?: string; name: string; description: string; hours: Record<string, ProfileHour> };
+let profiles: OperationProfile[] = [];
+let activeProfile: OperationProfile = { name: "", description: "", hours: {} };
+let activeProfileId: string | null = null;
+let profileHour = 0;
+
 const n = (value: Value | undefined): number | null => typeof value === "number" && Number.isFinite(value) ? value : null;
 const fmt = (value: Value | undefined, digits = 1) => {
   const number = n(value);
@@ -36,6 +50,8 @@ function selectScreen(id: string): void {
   document.querySelectorAll<HTMLElement>(".screen").forEach((node) => node.classList.toggle("active", node.id === id));
   document.querySelectorAll<HTMLButtonElement>(".tabs button").forEach((node) => node.classList.toggle("active", node.dataset.screen === id));
   document.body.classList.toggle("screen-grid", id === "grid");
+  document.body.classList.toggle("screen-day", id === "day");
+  document.body.classList.toggle("screen-pumping", id === "pumping");
 }
 
 function buildAssets(): void {
@@ -64,7 +80,17 @@ function tankCard(id: string, label: string): string {
 }
 
 function pumpCard(id: string, label: string): string {
-  return `<article class="card panel"><p class="eyebrow">${label}</p><h2>${eq(id)?.state?.toUpperCase() ?? "—"}</h2><div class="readings"><span>Caudal <b>${fmt(value(id, "flow_m3h"))} m³/h</b></span><span>VFD <b>${fmt(value(id, "speed_pct"))} %</b></span><span>Succión <b>${fmt(value(id, "suction_pressure_mca"))} mca</b></span><span>Descarga <b>${fmt(value(id, "discharge_pressure_mca"))} mca</b></span><span>Potencia <b>${fmt(value(id, "power_kw"))} kW</b></span><span>Bombas <b>${fmt(value(id, "pumps_running"), 0)}/${fmt(value(id, "pumps_available"), 0)}</b></span></div><div class="controls"><button data-pump="${id}" data-pump-command="start">START</button><button data-pump="${id}" data-pump-command="stop">STOP</button></div></article>`;
+  const isLevelControlled = id === "pumpset-recirc-01";
+  const automatic = n(value(id, "automatic_enabled")) === 1;
+  const levelActive = n(value(id, "level_auto_active")) === 1;
+  const state = eq(id)?.state?.toUpperCase() ?? "—";
+  const mode = isLevelControlled
+    ? automatic
+      ? levelActive ? "AUTO · RECIRCULANDO POR NIVEL" : "AUTO · EN ESPERA DE NIVEL"
+      : "PARO MANUAL · AUTO BLOQUEADO"
+    : state;
+  const levelReadings = isLevelControlled ? `<span>Retorno <b>${fmt(value(id, "source_level_pct"))} %</b></span><span>Tanque destino <b>${fmt(value(id, "target_level_pct"))} %</b></span><span>Arranque auto <b>≥ ${fmt(value(id, "start_level_pct"), 0)} %</b></span><span>Paro auto <b>&lt; ${fmt(value(id, "stop_level_pct"), 0)} % / destino ${fmt(value(id, "target_full_pct"), 0)} %</b></span>` : "";
+  return `<article class="card panel pump-card"><p class="eyebrow">${label}</p><h2>${state}</h2><p class="pump-mode ${automatic ? "automatic" : "manual-stop"}">${mode}</p><div class="readings"><span>Caudal <b>${fmt(value(id, "flow_m3h"))} m³/h</b></span><span>VFD <b>${fmt(value(id, "speed_pct"))} %</b></span><span>Succión <b>${fmt(value(id, "suction_pressure_mca"))} mca</b></span><span>Descarga <b>${fmt(value(id, "discharge_pressure_mca"))} mca</b></span><span>Potencia <b>${fmt(value(id, "power_kw"))} kW</b></span><span>Bombas <b>${fmt(value(id, "pumps_running"), 0)}/${fmt(value(id, "pumps_available"), 0)}</b></span>${levelReadings}</div><div class="controls"><button data-pump="${id}" data-pump-command="start">${isLevelControlled ? "REARMAR AUTO" : "START"}</button><button data-pump="${id}" data-pump-command="stop">PARO MANUAL</button></div></article>`;
 }
 
 function renderPumping(): void {
@@ -190,7 +216,9 @@ function recordHistory(message: Message): void {
 }
 
 function trend(title: string, unit: string, samples: number[], color = "", reference?: number): string {
-  if (samples.length < 2) return `<article class="trend panel"><h2>${title}<span>${unit}</span></h2><p class="empty">Acumulando muestras…</p></article>`;
+  const lineColor = color === "warn" ? "#4EA7FF" : color === "bad" ? "#f17474" : "#4EA7FF";
+  const legend = `<div class="legend"><span><i style="background:${lineColor}"></i>Medición PLC · ${title}</span>${reference === undefined ? "" : `<span><i class="reference-key"></i>Límite de servicio</span>`}</div>`;
+  if (samples.length < 2) return `<article class="trend panel"><h2>${title}<span>${unit}</span></h2><button class="chart-expand" data-expand-chart aria-label="Ampliar ${title}">⤢ AMPLIAR</button><p class="empty">Acumulando muestras…</p>${legend}</article>`;
   const width = 560, height = 160, pad = 20;
   const lo = Math.min(...samples, reference ?? Infinity);
   const hi = Math.max(...samples, reference ?? -Infinity);
@@ -198,7 +226,22 @@ function trend(title: string, unit: string, samples: number[], color = "", refer
   const point = (value: number, index: number) => `${pad + (index * (width - 2 * pad)) / (samples.length - 1)},${height - pad - ((value - lo) / range) * (height - 2 * pad)}`;
   const path = samples.map(point).join(" ");
   const refY = reference === undefined ? "" : `<line class="ref" x1="${pad}" x2="${width - pad}" y1="${height - pad - ((reference - lo) / range) * (height - 2 * pad)}" y2="${height - pad - ((reference - lo) / range) * (height - 2 * pad)}" />`;
-  return `<article class="trend panel"><h2>${title}<span>${fmt(samples.at(-1), 2)} ${unit}</span></h2><svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Tendencia de ${title}"><line class="axis" x1="${pad}" x2="${width - pad}" y1="${height - pad}" y2="${height - pad}" />${refY}<polyline class="line ${color}" points="${path}" /></svg><p class="muted">Mín. ${fmt(lo, 2)} · Máx. ${fmt(hi, 2)} · ${history.length} muestras</p></article>`;
+  return `<article class="trend panel"><h2>${title}<span>${fmt(samples.at(-1), 2)} ${unit}</span></h2><button class="chart-expand" data-expand-chart aria-label="Ampliar ${title}">⤢ AMPLIAR</button><svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Tendencia de ${title}"><line class="axis" x1="${pad}" x2="${width - pad}" y1="${height - pad}" y2="${height - pad}" />${refY}<polyline class="line ${color}" points="${path}" /></svg>${legend}<p class="muted">Mín. ${fmt(lo, 2)} · Máx. ${fmt(hi, 2)} · ${history.length} muestras</p></article>`;
+}
+
+function bindChartExpanders(): void {
+  const modal = $<HTMLDialogElement>("chart-modal");
+  const content = $("chart-modal-content");
+  document.querySelectorAll<HTMLButtonElement>("[data-expand-chart], [data-expand-target]").forEach((button) => {
+    button.onclick = () => {
+      const target = button.dataset.expandTarget ? $<HTMLElement>(button.dataset.expandTarget) : button.closest<HTMLElement>(".trend");
+      if (!target) return;
+      const title = target.closest<HTMLElement>(".hydraulic-profile")?.querySelector("h2")?.textContent ?? target.querySelector("h2")?.textContent ?? "GRÁFICA AMPLIADA";
+      $("chart-modal-title").textContent = title;
+      content.innerHTML = target.classList.contains("hydraulic-profile-chart") ? `<div class="hydraulic-profile-chart">${target.innerHTML}</div>` : target.innerHTML;
+      modal.showModal();
+    };
+  });
 }
 
 function renderTrends(): void {
@@ -210,6 +253,7 @@ function renderTrends(): void {
     trend("Nivel tanque de bombeo", "%", history.map((sample) => sample.supplyLevel)),
     trend("Caudal de recirculación", "m³/h", history.map((sample) => sample.recirculation)),
   ].join("");
+  bindChartExpanders();
 }
 
 function renderHydraulicProfile(): void {
@@ -234,6 +278,7 @@ function renderHydraulicProfile(): void {
     return `<div class="profile-row ${kind === "flow" ? "flow" : ""} ${point.critical ? "critical" : ""}"><span title="${point.label}">${point.label}</span><span class="profile-track"><i style="width:${100 * (n(reading) ?? 0) / maximum}%"></i></span><b>${fmt(reading, kind === "pressure" ? 1 : 2)} ${unit}</b></div>`;
   }).join("");
   $("hydraulic-profile").innerHTML = `<article class="profile-bars"><h2>Presión <span>${fmt(pressureMax)} mca máx.</span></h2>${bars("pressure")}</article><article class="profile-bars"><h2>Caudal <span>por punto</span></h2>${bars("flow")}</article>`;
+  bindChartExpanders();
 }
 
 function dayChart(title: string, unit: string, series: { name: string; values: number[]; color: string }[], reference?: number): string {
@@ -248,7 +293,7 @@ function dayChart(title: string, unit: string, series: { name: string; values: n
   const lines = series.map((item) => `<polyline points="${item.values.map((reading, index) => `${x(index)},${y(reading)}`).join(" ")}" fill="none" stroke="${item.color}" stroke-width="2.5" />`).join("");
   const referenceLine = reference === undefined ? "" : `<line x1="${left}" x2="${width - right}" y1="${y(reference)}" y2="${y(reference)}" class="ref" />`;
   const legend = series.map((item) => `<span><i style="background:${item.color}"></i>${item.name}</span>`).join("");
-  return `<article class="trend panel"><h2>${title}<span>${unit}</span></h2><svg class="day-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="${title}"><g class="day-axis">${axis}${timeAxis}</g>${referenceLine}${lines}</svg><div class="legend">${legend}</div></article>`;
+  return `<article class="trend panel"><h2>${title}<span>${unit}</span></h2><button class="chart-expand" data-expand-chart aria-label="Ampliar ${title}">⤢ AMPLIAR</button><svg class="day-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="${title}"><g class="day-axis">${axis}${timeAxis}</g>${referenceLine}${lines}</svg><div class="legend">${legend}</div></article>`;
 }
 
 function integrate(reading: (sample: Sample) => number): number {
@@ -278,6 +323,7 @@ function renderDay(): void {
     dayChart("Presiones medidas", "mca", [{ name: "Salida de bombeo", values: history.map((sample) => sample.pumpDischarge), color: "#4EA7FF" }, { name: "Entrada reguladora", values: history.map((sample) => sample.stationIn), color: "#2D7FF9" }, { name: "Salida reguladora", values: history.map((sample) => sample.stationOut), color: "#55d58c" }, { name: "Punto crítico", values: history.map((sample) => sample.critical), color: "#f17474" }], schema.service_constraint.critical_pressure_min_mca),
     dayChart("Presión de la red por tramo", "mca", [{ name: "Entrada rejilla 1", values: history.map((sample) => sample.grid1In), color: "#4EA7FF" }, { name: "Salida rejilla 1", values: history.map((sample) => sample.grid1Out), color: "#2D7FF9" }, { name: "Salida rejilla 2", values: history.map((sample) => sample.grid2Out), color: "#55d58c" }, { name: "Salida rejilla 3", values: history.map((sample) => sample.grid3Out), color: "#9869ed" }]),
   ].join("");
+  bindChartExpanders();
 }
 
 function renderAlarms(): void {
@@ -313,11 +359,105 @@ function connect(): void {
   runSaved = false;
   renderDay();
   const protocol = location.protocol === "https:" ? "wss" : "ws";
-  // ×60: un minuto real recorre una hora hidráulica; el día completo tarda 24 min.
-  socket = new WebSocket(`${protocol}://${location.host}/api/plants/${plantId}/simulate?speed=60`);
-  socket.onopen = () => { $("connection").textContent = "● SIMULACIÓN CONECTADA · 1 h/min"; $("connection").classList.add("on"); $("connect").textContent = "■ DETENER Y GUARDAR"; };
+  // ×240: 15 s reales recorren una hora hidráulica; el día completo tarda 6 min.
+  const profileQuery = activeProfileId ? `&profile_id=${encodeURIComponent(activeProfileId)}` : "";
+  socket = new WebSocket(`${protocol}://${location.host}/api/plants/${plantId}/simulate?speed=240${profileQuery}`);
+  socket.onopen = () => { $("connection").textContent = "● SIMULACIÓN CONECTADA · 15 s/h"; $("connection").classList.add("on"); $("connect").textContent = "■ DETENER Y GUARDAR"; };
   socket.onmessage = (event) => { const message = JSON.parse(event.data) as Message & { error?: string }; if (!message.error) render(message); };
   socket.onclose = () => { saveCurrentRun(); socket = null; $("connection").textContent = "● DESCONECTADO"; $("connection").classList.remove("on"); $("connect").textContent = "▶ INICIAR SIMULACIÓN 24 H"; };
+}
+
+function currentProfileHour(): ProfileHour {
+  const key = String(profileHour);
+  return activeProfile.hours[key] ?? (activeProfile.hours[key] = {});
+}
+
+function updateProfileHourFromForm(): void {
+  const hour = currentProfileHour();
+  hour.global_consumers_pct = Number($<HTMLInputElement>("profile-global").value);
+  hour.levels = Object.fromEntries([...document.querySelectorAll<HTMLInputElement>("[data-profile-level]")].map((input) => [input.dataset.profileLevel!, Number(input.value)]));
+  hour.between_levels = Object.fromEntries([...document.querySelectorAll<HTMLInputElement>("[data-profile-between]")].map((input) => [input.dataset.profileBetween!, Number(input.value)]));
+  hour.prs = {
+    branch: $<HTMLSelectElement>("profile-prs-branch").value as "auto" | "manual",
+    critical_setpoint_mca: Number($<HTMLInputElement>("profile-prs-critical").value),
+    manual_setting_mca: Number($<HTMLInputElement>("profile-prs-manual").value),
+  };
+}
+
+function renderProfileEditor(): void {
+  const profileSelect = $<HTMLSelectElement>("profile-select");
+  profileSelect.innerHTML = `<option value="">Nuevo perfil</option>${profiles.map((profile) => `<option value="${profile.id}">${profile.name}</option>`).join("")}`;
+  profileSelect.value = activeProfileId ?? "";
+  $<HTMLInputElement>("profile-name").value = activeProfile.name;
+  $<HTMLInputElement>("profile-description").value = activeProfile.description;
+  const hourSelect = $<HTMLSelectElement>("profile-hour");
+  hourSelect.innerHTML = Array.from({ length: 24 }, (_, hour) => `<option value="${hour}">Hora ${String(hour + 1).padStart(2, "0")}</option>`).join("");
+  hourSelect.value = String(profileHour);
+  const hour = currentProfileHour();
+  $("profile-hour-title").textContent = String(profileHour + 1).padStart(2, "0");
+  document.querySelectorAll(".profile-hour-duplicate").forEach((node) => node.textContent = String(profileHour + 1).padStart(2, "0"));
+  const global = $<HTMLInputElement>("profile-global");
+  global.value = String(hour.global_consumers_pct ?? 100);
+  $("profile-global-output").textContent = `${global.value} %`;
+  $("profile-level-controls").innerHTML = [1, 2, 3, 4].map((level) => `<label>Nivel ${level}<input data-profile-level="${level}" type="range" min="0" max="100" value="${hour.levels?.[level] ?? hour.global_consumers_pct ?? 100}" /><output>${hour.levels?.[level] ?? hour.global_consumers_pct ?? 100} %</output></label>`).join("");
+  $("profile-between-controls").innerHTML = [["12", "Nivel 1 → 2"], ["23", "Nivel 2 → 3"], ["34", "Nivel 3 → 4"]].map(([valve, label]) => `<label>${label}<input data-profile-between="${valve}" type="range" min="0" max="100" value="${hour.between_levels?.[valve] ?? 100}" /><output>${hour.between_levels?.[valve] ?? 100} %</output></label>`).join("");
+  $<HTMLSelectElement>("profile-prs-branch").value = hour.prs?.branch ?? "auto";
+  const critical = $<HTMLInputElement>("profile-prs-critical");
+  critical.value = String(hour.prs?.critical_setpoint_mca ?? schema.service_constraint.automatic_target_mca);
+  $("profile-prs-critical-output").textContent = `${Number(critical.value).toFixed(2)} mca`;
+  const manual = $<HTMLInputElement>("profile-prs-manual");
+  manual.value = String(hour.prs?.manual_setting_mca ?? 20.94);
+  $("profile-prs-manual-output").textContent = `${Number(manual.value).toFixed(2)} mca`;
+  const individualCount = Object.values(hour.dwellings ?? {}).reduce((total, valves) => total + Object.keys(valves).length, 0);
+  const leakCount = Object.values(hour.leaks ?? {}).reduce((total, valves) => total + Object.keys(valves).length, 0);
+  $("profile-capture-summary").textContent = individualCount || leakCount ? `${individualCount} viviendas y ${leakCount} válvulas de fuga capturadas para esta hora.` : "Sin mandos individuales capturados.";
+  const ranges = [global, ...document.querySelectorAll<HTMLInputElement>("[data-profile-level], [data-profile-between]"), critical, manual];
+  ranges.forEach((input) => input.oninput = () => {
+    const output = input.parentElement?.querySelector("output");
+    if (output) output.textContent = input === critical || input === manual ? `${Number(input.value).toFixed(2)} mca` : `${input.value} %`;
+    updateProfileHourFromForm();
+  });
+}
+
+async function loadProfiles(): Promise<void> {
+  const response = await fetch(`/api/plants/${plantId}/operation-profiles`);
+  if (!response.ok) throw Error("No se pudieron cargar los perfiles");
+  profiles = await response.json() as OperationProfile[];
+  renderProfileEditor();
+}
+
+async function saveProfile(): Promise<void> {
+  updateProfileHourFromForm();
+  activeProfile.name = $<HTMLInputElement>("profile-name").value.trim();
+  activeProfile.description = $<HTMLInputElement>("profile-description").value.trim();
+  if (!activeProfile.name) { window.alert("Asigne un nombre al perfil antes de guardarlo."); return; }
+  const url = activeProfileId ? `/api/plants/${plantId}/operation-profiles/${activeProfileId}` : `/api/plants/${plantId}/operation-profiles`;
+  const response = await fetch(url, { method: activeProfileId ? "PUT" : "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(activeProfile) });
+  if (!response.ok) { window.alert(`No se pudo guardar el perfil (${response.status}).`); return; }
+  activeProfile = await response.json() as OperationProfile;
+  activeProfileId = activeProfile.id ?? null;
+  await loadProfiles();
+}
+
+function captureCurrentCommands(): void {
+  if (!Object.keys(latest).length) { window.alert("Inicie la simulación y ajuste la Rejilla antes de capturar los mandos actuales."); return; }
+  updateProfileHourFromForm();
+  const hour = currentProfileHour();
+  hour.dwellings = {};
+  hour.leaks = {};
+  for (let level = 1; level <= 4; level++) {
+    const grid = `grid-0${level}`;
+    hour.dwellings[grid] = {};
+    hour.leaks[grid] = {};
+    for (let branch = 1; branch <= 4; branch++) for (let house = 1; house <= 4; house++) {
+      const valve = `c${branch}${house}`;
+      hour.dwellings[grid][valve] = Math.round((eq(grid)?.animation[`open_${valve}`] ?? 0) * 100);
+    }
+    for (const valve of ["l1", "l2"]) hour.leaks[grid][valve] = Math.round((eq(grid)?.animation[`open_${valve}`] ?? 0) * 100);
+  }
+  hour.between_levels = Object.fromEntries([["12", "valve-between-12"], ["23", "valve-between-23"], ["34", "valve-between-34"]].map(([key, id]) => [key, Math.round(n(value(id, "opening_target_pct")) ?? 100)]));
+  hour.prs = { branch: String(value("prs-01", "branch_auto")) === "1" ? "auto" : "manual", critical_setpoint_mca: n(value("prs-01", "critical_setpoint_mca")) ?? schema.service_constraint.automatic_target_mca, manual_setting_mca: n(value("prs-01", "manual_setting_mca")) ?? 20.94 };
+  renderProfileEditor();
 }
 
 function randomize(): void {
@@ -334,7 +474,7 @@ async function start(): Promise<void> {
   buildAssets();
   document.querySelectorAll<HTMLButtonElement>(".tabs button").forEach((button) => button.onclick = () => selectScreen(button.dataset.screen!));
   const initialScreen = new URLSearchParams(location.search).get("screen");
-  if (["master", "day", "pumping", "grid", "trends", "history"].includes(initialScreen ?? "")) selectScreen(initialScreen!);
+  if (["master", "day", "pumping", "grid", "profiles", "trends", "history"].includes(initialScreen ?? "")) selectScreen(initialScreen!);
   $("connect").onclick = connect;
   $("pause").onclick = () => { paused = !paused; socket?.send(JSON.stringify({ pause: paused })); $("pause").textContent = paused ? "▶ REANUDAR" : "❚❚ PAUSA"; };
   document.querySelectorAll<HTMLButtonElement>("[data-command]").forEach((button) => button.onclick = () => send("prs-01", "select_branch", { branch: button.dataset.command }));
@@ -361,7 +501,21 @@ async function start(): Promise<void> {
     input.onchange = () => send(`grid-0${level}`, "set_opening", { valve: "consumers", pct: Number(input.value) });
   });
   $("random").onclick = randomize;
-  renderDay(); renderSavedRuns();
+  $("chart-modal-close").onclick = () => $<HTMLDialogElement>("chart-modal").close();
+  $("profile-new").onclick = () => { activeProfile = { name: "", description: "", hours: {} }; activeProfileId = null; profileHour = 0; renderProfileEditor(); };
+  $<HTMLSelectElement>("profile-select").onchange = (event) => {
+    const id = (event.target as HTMLSelectElement).value;
+    const profile = profiles.find((item) => item.id === id);
+    if (profile) { activeProfile = structuredClone(profile); activeProfileId = profile.id ?? null; profileHour = 0; }
+    else { activeProfile = { name: "", description: "", hours: {} }; activeProfileId = null; }
+    renderProfileEditor();
+  };
+  $<HTMLSelectElement>("profile-hour").onchange = (event) => { updateProfileHourFromForm(); profileHour = Number((event.target as HTMLSelectElement).value); renderProfileEditor(); };
+  $("profile-clone").onclick = () => { updateProfileHourFromForm(); const target = Math.min(23, profileHour + 1); activeProfile.hours[String(target)] = structuredClone(currentProfileHour()); profileHour = target; renderProfileEditor(); };
+  $("profile-capture").onclick = captureCurrentCommands;
+  $("profile-save").onclick = () => { void saveProfile(); };
+  $("profile-run").onclick = () => { if (!activeProfileId) { window.alert("Guarde el perfil antes de ejecutarlo."); return; } connect(); };
+  renderDay(); renderSavedRuns(); await loadProfiles();
 }
 
 start().catch((error: unknown) => { $("plant-name").textContent = ` · ERROR: ${String(error)}`; });

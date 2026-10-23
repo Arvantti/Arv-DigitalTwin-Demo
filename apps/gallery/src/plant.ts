@@ -396,6 +396,7 @@ interface PipeRun {
   points: THREE.Vector3[];
   cumulative: number[];
   beads: THREE.Mesh[];
+  arrows: THREE.Mesh[];
   links: string[];
   /** Caudal de referencia en kg/h: el del plano si viene en kg/h o L/h; si no, el máximo visto en la simulación. */
   reference: number | null;
@@ -403,6 +404,8 @@ interface PipeRun {
   phase: number;
   /** Velocidad real del agua en m/s (tubos de la red de agua); null si el tramo no la publica. */
   velocity: number | null;
+  /** Sentido físico del caudal respecto al trazado from → to. */
+  direction: 1 | -1;
 }
 const pipeRuns: PipeRun[] = [];
 let latestLinks: Record<string, LinkState> = {};
@@ -722,9 +725,17 @@ function buildPipes(): void {
       stage.content.add(bead);
       return bead;
     });
+    // Flechas visibles: se orientan con el signo de la velocidad hidráulica, no con una dirección decorativa fija.
+    const arrowMat = new THREE.MeshStandardMaterial({ color: "#8ff3ff", emissive: "#4de0ff", emissiveIntensity: 2.2 });
+    const arrows = Array.from({ length: Math.max(2, Math.ceil(count / 3)) }, () => {
+      const arrow = new THREE.Mesh(new THREE.ConeGeometry(radius * 3.1, radius * 8, 4), arrowMat);
+      arrow.visible = false;
+      stage.content.add(arrow);
+      return arrow;
+    });
     const perUnit: Record<string, number> = { "kg/h": 1, "L/h": 1, "m3/h": 1000 };
     const reference = pipe.rate && pipe.unit && perUnit[pipe.unit] ? pipe.rate * perUnit[pipe.unit] : null;
-    pipeRuns.push({ from: pipe.from, to: pipe.to, points, cumulative, beads, links: pipe.links ?? [], reference, peak: 0, phase: 0, velocity: null });
+    pipeRuns.push({ from: pipe.from, to: pipe.to, points, cumulative, beads, arrows, links: pipe.links ?? [], reference, peak: 0, phase: 0, velocity: null, direction: 1 });
   }
 }
 
@@ -733,6 +744,12 @@ function pointAt(run: PipeRun, distance: number): THREE.Vector3 {
   while (k < run.cumulative.length - 1 && run.cumulative[k] < distance) k++;
   const span = run.cumulative[k] - run.cumulative[k - 1] || 1;
   return run.points[k - 1].clone().lerp(run.points[k], Math.min(1, Math.max(0, (distance - run.cumulative[k - 1]) / span)));
+}
+
+function tangentAt(run: PipeRun, distance: number): THREE.Vector3 {
+  let k = 1;
+  while (k < run.cumulative.length - 1 && run.cumulative[k] < distance) k++;
+  return run.points[k].clone().sub(run.points[k - 1]).normalize();
 }
 
 /**
@@ -744,7 +761,9 @@ function pointAt(run: PipeRun, distance: number): THREE.Vector3 {
 function pipeLoad(run: PipeRun): number {
   const states = run.links.map((id) => latestLinks[id]).filter((l): l is LinkState => !!l);
   const velocities = states.map((l) => l.velocity_m_s).filter((v): v is number => v !== undefined);
-  run.velocity = velocities.length ? Math.max(...velocities) : null;
+  const signedVelocity = velocities.reduce((sum, velocity) => sum + velocity, 0);
+  run.direction = signedVelocity < 0 ? -1 : 1;
+  run.velocity = velocities.length ? Math.max(...velocities.map((velocity) => Math.abs(velocity))) : null;
   if (states.length) {
     const flow = states.reduce((sum, l) => sum + (l.flow_kg_h ?? 0), 0);
     run.peak = Math.max(run.peak, flow);
@@ -771,7 +790,20 @@ function animatePipes(time: number): void {
     const shown = load > 0.005 ? Math.max(1, Math.ceil(run.beads.length * Math.min(1, load))) : 0;
     run.beads.forEach((bead, i) => {
       bead.visible = i < shown;
-      if (i < shown) bead.position.copy(pointAt(run, ((run.phase + (i * total) / run.beads.length) % total + total) % total));
+      if (i < shown) {
+        const phase = ((run.phase + (i * total) / run.beads.length) % total + total) % total;
+        bead.position.copy(pointAt(run, run.direction > 0 ? phase : total - phase));
+      }
+    });
+    run.arrows.forEach((arrow, i) => {
+      arrow.visible = shown > 0;
+      if (shown > 0) {
+        const phase = ((run.phase + ((i + 0.5) * total) / run.arrows.length) % total + total) % total;
+        const distance = run.direction > 0 ? phase : total - phase;
+        arrow.position.copy(pointAt(run, distance));
+        const tangent = tangentAt(run, distance).multiplyScalar(run.direction);
+        arrow.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), tangent);
+      }
     });
   }
 }

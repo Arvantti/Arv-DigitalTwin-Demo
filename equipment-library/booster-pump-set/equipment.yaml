@@ -64,6 +64,13 @@ variables:
   - { id: energy_kwh, unit: kWh, kind: counter, description: Energía consumida }
   - { id: volume_m3, unit: m3, kind: counter, description: Volumen bombeado }
   - { id: specific_energy_kwh_m3, unit: kWh/m3, kind: calculated, description: Energía por metro cúbico bombeado }
+  - { id: automatic_enabled, unit: "", kind: status, description: "1 si el grupo está habilitado para arranque automático; 0 tras un paro manual" }
+  - { id: level_auto_active, unit: "", kind: status, description: "1 si el control por nivel solicita bombeo" }
+  - { id: source_level_pct, unit: "%", kind: measured, description: Nivel recibido del tanque o grupo de tanques de retorno }
+  - { id: target_level_pct, unit: "%", kind: measured, description: Nivel recibido del tanque de destino }
+  - { id: start_level_pct, unit: "%", kind: setpoint, description: Umbral de arranque automático por nivel de origen }
+  - { id: stop_level_pct, unit: "%", kind: setpoint, description: Umbral de paro automático por nivel de origen }
+  - { id: target_full_pct, unit: "%", kind: setpoint, description: Umbral de paro por tanque de destino lleno }
 
 events:
   - { id: pump_started, description: Arrancó una bomba, payload: [pump, running] }

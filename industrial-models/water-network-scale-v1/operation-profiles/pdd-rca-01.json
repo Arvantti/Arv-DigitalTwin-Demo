@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "id": "pdd-rca-01",
+  "name": "PDD-RCA-01 · Demanda diurna con rampa cosenoidal amortiguada",
+  "description": "Escenario simulado de demanda residencial uniforme. La apertura global inicia en 30 % en la hora 01, aumenta con transición cosenoidal sin escalones hasta 100 % en la hora 12 y desciende suavemente hasta 30 % en la hora 24.",
+  "hours": {
+    "0": { "global_consumers_pct": 30.0 },
+    "1": { "global_consumers_pct": 31.4 },
+    "2": { "global_consumers_pct": 35.6 },
+    "3": { "global_consumers_pct": 42.1 },
+    "4": { "global_consumers_pct": 50.5 },
+    "5": { "global_consumers_pct": 60.0 },
+    "6": { "global_consumers_pct": 70.0 },
+    "7": { "global_consumers_pct": 79.5 },
+    "8": { "global_consumers_pct": 87.9 },
+    "9": { "global_consumers_pct": 94.4 },
+    "10": { "global_consumers_pct": 98.6 },
+    "11": { "global_consumers_pct": 100.0 },
+    "12": { "global_consumers_pct": 98.8 },
+    "13": { "global_consumers_pct": 95.3 },
+    "14": { "global_consumers_pct": 89.7 },
+    "15": { "global_consumers_pct": 82.5 },
+    "16": { "global_consumers_pct": 74.1 },
+    "17": { "global_consumers_pct": 65.0 },
+    "18": { "global_consumers_pct": 55.9 },
+    "19": { "global_consumers_pct": 47.5 },
+    "20": { "global_consumers_pct": 40.3 },
+    "21": { "global_consumers_pct": 34.7 },
+    "22": { "global_consumers_pct": 31.2 },
+    "23": { "global_consumers_pct": 30.0 }
+  }
+}
