@@ -9,6 +9,7 @@ actualizado: 2026-10-22
 Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `Arvantti/Arv-sfot-demo-Fabtimus`.
 
 | Fecha | PR | Resumen | Fase |
+| 2026-10-22 | Cámaras 3D y respuesta PLC | Cámaras por zona/nivel con dirección y zoom propios; botón PLC informa conexión/error, bloquea doble inicio y la HMI solo redibuja su pantalla visible. [[2026-10-22-perfiles-plc-fractal]] | acueducto/3D/HMI |
 | 2026-10-22 | Escena hidráulica y tendencias por equipo | La escena sitúa suelo/cuadrícula en la cota mínima visual sin cambiar hidráulica, reduce indicadores externos, añade dirección dentro de rejillas y abre tendencias modales de cualquier equipo simulado. [[2026-10-22-perfiles-plc-fractal]] | acueducto/3D |
 | 2026-10-22 | Perfiles PLC y frontera Fractal | Perfiles horarios persistentes y ejecutables para el acueducto, tags PLC de solo lectura para OPC UA simulado, documentación de co-simulación y escena con tanques transparentes/flechas de flujo. D69. [[2026-10-22-perfiles-plc-fractal]] | acueducto |
 | 2026-10-22 | PLC Master y carga visual | Se integra el PLC Master simulado, se evitan destellos de HTML sin CSS al abrir la escena y se exponen mandos de casas/fugas y telemetría completa de la reguladora. [[2026-10-22-arquitectura-modelos-portables]] | acueducto |
@@ -91,11 +92,21 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 ## Entradas
 
+### 2026-10-22 · Cámaras 3D y respuesta PLC
+- **Fecha/hora (UTC):** 2026-10-22.
+- **Fase del plan:** acueducto/escena 3D y HMI.
+- **Solicitado por:** Andy: diferenciar cámaras con zoom real y corregir el inicio de la simulación PLC.
+- **Qué se hizo:** el encuadre 3D recibe direcciones independientes para cada piso/zona y nivel; el PLC informa el handshake, errores y conexión, impide doble clic durante la apertura del WebSocket y redibuja solo la pantalla visible para mantener respuesta fluida.
+- **Commits:** pendiente de crear en la rama de trabajo.
+- **Verificación:** `pnpm --filter @twin/gallery typecheck`; conexión WebSocket PLC comprobada contra el emulador local.
+- **Decisiones:** ninguna nueva.
+- **Conversación:** [[2026-10-22-perfiles-plc-fractal]].
+
 ### 2026-10-22 · Escena hidráulica y tendencias por equipo
 - **Fecha/hora (UTC):** 2026-10-22.
 - **Fase del plan:** acueducto/escena 3D y observabilidad.
 - **Solicitado por:** Andy: corregir la percepción de equipos enterrados, reducir flechas, mostrar flujo interno de rejillas y abrir una gráfica al seleccionar un equipo.
-- **Qué se hizo:** el suelo y cuadrícula del render siguen la cota más baja del plano sin cambiar cotas hidráulicas; las flechas de tuberías externas son más pequeñas; cada rejilla visualiza flujo de entrada y reparto interno; el HUD registra muestras numéricas y abre una tendencia modal con selector de señal.
+- **Qué se hizo:** el suelo y cuadrícula del render siguen la cota más baja del plano sin cambiar cotas hidráulicas; las flechas de tuberías externas son más pequeñas; cada rejilla visualiza flujo de entrada y reparto interno; el HUD registra muestras numéricas y abre una tendencia modal con selector de señal; las cámaras usan encuadres, objetivos, cotas y direcciones diferenciados por zona y nivel.
 - **Commits:** `fffa104` (implementación); actualización de registro incluida en el commit siguiente.
 - **Verificación:** `pnpm --filter @twin/gallery typecheck`, `pnpm --filter @twin/3d typecheck`, `pnpm -r test` (149 pruebas).
 - **Decisiones:** ninguna nueva.

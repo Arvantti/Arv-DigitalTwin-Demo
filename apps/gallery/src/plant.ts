@@ -847,12 +847,12 @@ stage.renderer.domElement.addEventListener("pointerup", (e) => {
 });
 
 // ------------------------------------------------------------------ cámaras
-function focusRect(rect: [number, number, number, number], height = 4, distanceFactor = 0.85, base = 0): void {
+function focusRect(rect: [number, number, number, number], height = 4, distanceFactor = 0.85, base = 0, direction?: THREE.Vector3): void {
   const [x0, y0, w, l] = rect;
   const probe = new THREE.Mesh(new THREE.BoxGeometry(w, height, l));
   probe.position.copy(toScene(x0 + w / 2, y0 + l / 2)).setY(base + height / 2);
   probe.updateMatrixWorld(true);
-  stage.frame(probe, distanceFactor);
+  stage.frame(probe, distanceFactor, direction);
 }
 
 function buildCameras(): void {
@@ -860,7 +860,7 @@ function buildCameras(): void {
   const building = doc.zones.some((z) => (z.elevation ?? 0) > 0);
   const top = Math.max(6, ...doc.zones.map((z) => (z.elevation ?? 0) + z.height));
   const entries: [string, string, () => void][] = [
-    ["VISTA GENERAL", "general", () => focusRect([0, 0, doc.plant.site?.width_x ?? 112, doc.plant.site?.length_y ?? 72], top, building ? 0.9 : 0.62)],
+    ["VISTA GENERAL", "general", () => focusRect([0, 0, doc.plant.site?.width_x ?? 112, doc.plant.site?.length_y ?? 72], top, building ? 0.9 : 0.62, 0, new THREE.Vector3(1.2, 0.85, 1.35))],
   ];
   // Edificio por pisos: una cámara por zona (cada piso) y una por nivel de los equipos que lo declaran (la rejilla).
   const featured = building
@@ -873,11 +873,21 @@ function buildCameras(): void {
           // halls de pasajeros (aeropuerto): zonas administrativas con equipos simulados
           (z.kind === "admin" && doc.equipment.some((e) => e.zone === z.id && e.sim)),
       );
-  for (const z of featured) entries.push([z.name.toUpperCase(), z.id, () => focusRect(z.rect, Math.max(3, z.height), 0.85, z.elevation ?? 0)]);
+  const zoneDirections = [
+    new THREE.Vector3(-1.25, 0.5, 1.1),
+    new THREE.Vector3(1.15, 0.65, -1.25),
+    new THREE.Vector3(0.8, 0.38, 1.7),
+    new THREE.Vector3(-1.0, 0.8, -1.35),
+  ];
+  for (const [index, z] of featured.entries())
+    entries.push([z.name.toUpperCase(), z.id, () => focusRect(z.rect, Math.max(3, z.height), 0.78, z.elevation ?? 0, zoneDirections[index % zoneDirections.length])]);
   if (building)
     for (const a of assets.values()) {
       const level = a.eq.params?.level;
-      if (typeof level === "number") entries.push([`NIVEL ${level}`, `nivel-${level}`, () => stage.frame(a.root, 1.4)]);
+      if (typeof level === "number") {
+        const direction = level % 2 ? new THREE.Vector3(1.2, 0.42, -1.4) : new THREE.Vector3(-1.3, 0.48, 1.2);
+        entries.push([`NIVEL ${level}`, `nivel-${level}`, () => stage.frame(a.root, 1.05, direction)]);
+      }
     }
   // bodega de producto terminado junto con el patio de despacho (la planta de salsas): una sola vista
   const bodega = doc.zones.find((z) => z.id === "bodega-pt");
@@ -911,12 +921,17 @@ function buildCameras(): void {
   for (const [label, key, go] of entries) {
     const b = document.createElement("button");
     b.textContent = label;
-    b.onclick = go;
+    b.onclick = () => {
+      go();
+      box.querySelectorAll("button").forEach((item) => item.classList.toggle("active", item === b));
+    };
     b.dataset.camera = key;
     box.appendChild(b);
   }
   const initial = url.get("camera") ?? "general";
-  (entries.find((e) => e[1] === initial) ?? entries[0])[2]();
+  const initialEntry = entries.find((entry) => entry[1] === initial) ?? entries[0];
+  initialEntry[2]();
+  box.querySelector<HTMLButtonElement>(`[data-camera="${initialEntry[1]}"]`)?.classList.add("active");
 }
 
 // ------------------------------------------------------------------ recorrido
