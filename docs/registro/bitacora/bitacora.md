@@ -9,6 +9,9 @@ actualizado: 2026-10-22
 Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `Arvantti/Arv-sfot-demo-Fabtimus`.
 
 | Fecha | PR | Resumen | Fase |
+| 2026-10-22 | Sesión PLC compartida inicial | Runtime compartido, roles WebSocket y clientes PLC/3D enlazados por `session_id`; transición conserva endpoint anterior. [[2026-10-22-perfiles-plc-fractal]] | PLC/3D |
+| 2026-10-22 | Plan de sesión PLC compartida y Fractal | Plan versionado para una sesión única, 3D visor, tags por sesión, objetivos y recomendaciones Fractal instantáneas/futuras. [[2026-10-22-perfiles-plc-fractal]] | arquitectura/PLC |
+| 2026-10-22 | Escena 3D contra emulador externo | `plant.html` consume API/WebSocket configurable con `?api=` y conserva el origen al enlazar al PLC. [[2026-10-22-perfiles-plc-fractal]] | acueducto/3D |
 | 2026-10-22 | Contenedores Node 26 y emulador | Node 26.12.1 alineado en frontend/CI, `Containerfile` Podman para galería y FastAPI, y guía de HTTPS/WSS + CORS. [[2026-10-22-perfiles-plc-fractal]] | despliegue |
 | 2026-10-22 | Perfiles PLC y acceso al emulador | Perfiles operativos explícitos para demanda/PRS/restricción; HMI con API configurable y validación JSON; FastAPI con CORS configurable por entorno. [[2026-10-22-perfiles-plc-fractal]] | acueducto/PLC |
 | 2026-10-22 | Disponibilidad de emulador PLC | La HMI valida que el backend responda JSON, informa claramente la ausencia del emulador en Pages y permite indicar un host API con `?api=`. [[2026-10-22-perfiles-plc-fractal]] | acueducto/HMI |
@@ -94,6 +97,36 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 | 2026-10-16 | #1 | Layouts de las plantas | 1 |
 
 ## Entradas
+
+### 2026-10-22 · Sesión PLC compartida inicial
+- **Fecha/hora (UTC):** 2026-10-22.
+- **Fase del plan:** A–C de sesión compartida.
+- **Solicitado por:** Andy autorizó implementar la sincronización PLC, emulador y 3D.
+- **Qué se hizo:** se añade administrador de sesión con runtime único y difusión de snapshots; API REST/WS con roles; PLC crea e inicia sesión; el 3D recibe `session_id` y se conecta como visor sin control.
+- **Commits:** pendiente de crear en la rama de trabajo.
+- **Verificación:** API `18 passed`, ruff API y typecheck de galería.
+- **Decisiones:** endpoint histórico de simulación se conserva temporalmente para compatibilidad.
+- **Conversación:** [[2026-10-22-perfiles-plc-fractal]].
+
+### 2026-10-22 · Plan de sesión PLC compartida y Fractal
+- **Fecha/hora (UTC):** 2026-10-22.
+- **Fase del plan:** arquitectura PLC, 3D y Fractal.
+- **Solicitado por:** Andy pidió dejar el plan completo en Markdown antes de implementar.
+- **Qué se hizo:** se documentó el roadmap por fases para sesión hidráulica única, roles PLC/visor/Fractal, historian, objetivos configurables, optimización instantánea y futura, recomendaciones aprobadas por operador, Podman y pruebas de aceptación.
+- **Commits:** pendiente de crear en la rama de trabajo.
+- **Verificación:** revisión de coherencia con el contrato de co-simulación existente.
+- **Decisiones:** PLC es propietario de mando; 3D es visor; Fractal es lector de tags y asesor sin escritura automática.
+- **Conversación:** [[2026-10-22-perfiles-plc-fractal]].
+
+### 2026-10-22 · Escena 3D contra emulador externo
+- **Fecha/hora (UTC):** 2026-10-22.
+- **Fase del plan:** acueducto/escena 3D desplegada.
+- **Solicitado por:** Andy reportó que la escena 3D no cargaba con los contenedores locales.
+- **Qué se hizo:** se propaga `?api=` a las solicitudes del plano, WebSocket de simulación y enlace a PLC; el frontend estático puede usar un emulador FastAPI separado.
+- **Commits:** pendiente de crear en la rama de trabajo.
+- **Verificación:** typecheck/build de galería, imagen Podman y Playwright: 13 activos cargados y simulación WebSocket en vivo.
+- **Decisiones:** ninguna nueva.
+- **Conversación:** [[2026-10-22-perfiles-plc-fractal]].
 
 ### 2026-10-22 · Contenedores Node 26 y emulador
 - **Fecha/hora (UTC):** 2026-10-22.

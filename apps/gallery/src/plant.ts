@@ -117,6 +117,11 @@ interface Spec {
 
 const specs: Record<string, Spec> = Object.fromEntries(Object.entries(rawSpecs).map(([k, v]) => [k, yaml.load(v) as Spec]));
 const url = new URLSearchParams(location.search);
+// En una galería estática, el emulador puede vivir en un origen HTTPS/WSS aparte.
+const apiOrigin = (url.get("api") ?? location.origin).replace(/\/$/, "");
+const apiUrl = (path: string) => `${apiOrigin}${path}`;
+const websocketUrl = (path: string) => `${apiOrigin.replace(/^http/, "ws")}${path}`;
+const sessionId = url.get("session");
 const shotMode = url.get("shot") === "1";
 if (shotMode && url.get("ui") !== "1") document.body.classList.add("shot");
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -1048,16 +1053,22 @@ function applyMessage(msg: SimMessage, label: string): void {
 }
 
 function connect(): void {
+  // La escena no crea runtimes propios: el PLC es quien inicia la operación y entrega su session_id.
+  if (!sessionId) {
+    const apiQuery = url.get("api") ? `&api=${encodeURIComponent(apiOrigin)}` : "";
+    location.href = `/plc.html?plant=${doc.plant.id}${apiQuery}`;
+    return;
+  }
   if (socket || replay) return disconnect();
   const q = new URLSearchParams({ speed: String(speedFromSlider()) });
   const scenario = $<HTMLSelectElement>("scenario").value;
   if (scenario) q.set("scenario", scenario);
-  const proto = location.protocol === "https:" ? "wss" : "ws";
-  const ws = new WebSocket(`${proto}://${location.host}/api/plants/${doc.plant.id}/simulate?${q}`);
+  const endpoint = sessionId ? `/api/plants/${doc.plant.id}/sessions/${sessionId}?role=viewer` : `/api/plants/${doc.plant.id}/simulate?${q}`;
+  const ws = new WebSocket(websocketUrl(endpoint));
   socket = ws;
   equipmentHistory.clear();
   let received = 0;
-  $("btn-connect").textContent = "■ DETENER";
+  $("btn-connect").textContent = sessionId ? "● SIGUIENDO OPERACIÓN PLC" : "■ DETENER";
   ws.onmessage = (ev) => {
     const msg = JSON.parse(ev.data);
     if (msg.error) {
@@ -1071,7 +1082,8 @@ function connect(): void {
   ws.onclose = () => {
     if (socket !== ws) return;
     socket = null;
-    if (received === 0) void startReplay();
+    if (sessionId) disconnect();
+    else if (received === 0) void startReplay();
     else disconnect();
   };
   ws.onerror = () => {
@@ -1267,9 +1279,9 @@ function buildLighting(): void {
 async function start(): Promise<void> {
   const plantId = url.get("plant") ?? "sauce-plant-v1";
   await bootStage(6, "Conectando con el gemelo digital…");
-  const res = await fetch(`/api/plants/${plantId}`);
-  if (!res.ok) {
-    const message = `No se pudo cargar ${plantId} (${res.status}). ¿Está corriendo la API?`;
+  const res = await fetch(apiUrl(`/api/plants/${plantId}`)).catch(() => null);
+  if (!res?.ok) {
+    const message = `No se pudo cargar ${plantId}. Configure ?api=https://host-del-emulador.`;
     $("plant-name").textContent = message;
     bootError(message);
     return;
@@ -1281,9 +1293,10 @@ async function start(): Promise<void> {
   stage.setGroundElevation(Math.min(...doc.zones.map((zone) => zone.elevation ?? 0)));
   $<HTMLAnchorElement>("link-equipos").href = `/equipos.html?plant=${plantId}`;
   const plcLink = $<HTMLAnchorElement>("link-plc");
-  const plcSchema = await fetch(`/api/plants/${plantId}/plc-schema`).catch(() => null);
+  const plcSchema = await fetch(apiUrl(`/api/plants/${plantId}/plc-schema`)).catch(() => null);
   if (plcSchema?.ok) {
-    plcLink.href = `/plc.html?plant=${plantId}`;
+    const apiQuery = url.get("api") ? `&api=${encodeURIComponent(apiOrigin)}` : "";
+    plcLink.href = `/plc.html?plant=${plantId}${apiQuery}`;
     plcLink.hidden = false;
   }
   $("plant-name").textContent = doc.plant.name.toUpperCase();
@@ -1361,6 +1374,15 @@ async function start(): Promise<void> {
   };
   $("asset-chart-close").onclick = () => $<HTMLDialogElement>("asset-chart-modal").close();
   $<HTMLSelectElement>("asset-chart-variable").onchange = renderAssetChart;
+  if (sessionId) {
+    $("btn-connect").textContent = "● SIGUIENDO OPERACIÓN PLC";
+    $<HTMLButtonElement>("btn-connect").disabled = true;
+    $<HTMLSelectElement>("scenario").disabled = true;
+    connect();
+  } else {
+    $("btn-connect").textContent = "▣ ABRIR PLC MASTER";
+    $<HTMLSelectElement>("scenario").disabled = true;
+  }
   renderAsset();
   await bootStage(94, "Renderizando la escena 3D…");
   loop();

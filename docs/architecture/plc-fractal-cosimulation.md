@@ -1,6 +1,7 @@
 # PLC Master, perfiles operativos y co-simulación Fractal
 
 > Estado: diseño aprobado para implementación incremental.  
+> Plan ejecutable: [sesión PLC compartida y optimización Fractal](plc-session-fractal-implementation-plan.md).
 > Alcance: `water-network-scale-v1`.  
 > Seguridad: todo componente es **simulado**; no hay conexión ni escritura a PLC, OPC UA, sensores o infraestructura física.
 

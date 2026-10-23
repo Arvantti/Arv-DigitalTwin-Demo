@@ -9,7 +9,7 @@
   </head>
   <body>
     <header class="topbar">
-      <a href="/plant.html?plant=water-network-scale-v1" class="back">← GEMELO 3D</a>
+      <a id="link-plant" href="/plant.html?plant=water-network-scale-v1" class="back">← GEMELO 3D</a>
       <div><strong>PLC MASTER</strong><span id="plant-name"> · CARGANDO…</span></div>
       <div class="connection" id="connection">● DESCONECTADO</div>
       <div class="clock" id="clock">SIM · —</div>
@@ -30,6 +30,7 @@
           <button data-screen="grid">REJILLA Y CONSUMO</button>
           <button data-screen="profiles">PERFILES</button>
           <button data-screen="trends">TENDENCIAS</button>
+          <button data-screen="fractal">FRACTAL</button>
           <button data-screen="history">HISTORIAL</button>
         </nav>
         <section id="master" class="screen active">
@@ -71,6 +72,7 @@
             <article class="panel profile-hour-controls"><p class="eyebrow">HORA <span class="profile-hour-duplicate">01</span> · RED Y PRV</p><div id="profile-between-controls" class="profile-level-controls"></div><label>Rama PRV <select id="profile-prs-branch"><option value="auto">AUTO</option><option value="manual">MANUAL</option></select></label><label>Consigna crítica <input id="profile-prs-critical" type="range" min="15" max="30" step="0.05" value="15.45" /><output id="profile-prs-critical-output">15.45 mca</output></label><label>Salida manual <input id="profile-prs-manual" type="range" min="15" max="35" step="0.05" value="20.94" /><output id="profile-prs-manual-output">20.94 mca</output></label><p id="profile-capture-summary" class="muted">Sin mandos individuales capturados.</p></article>
           </section>
         </section>
+        <section id="fractal" class="screen"><div class="section-head"><div><p class="eyebrow">FRACTAL DE INGENIERÍA · SOLO RECOMENDACIONES</p><h1>Optimización y decisiones</h1><p class="muted">Fractal lee tags PLC de esta sesión. Ninguna propuesta cambia la operación hasta que el operador la acepte.</p></div><div class="controls"><label>Objetivo <select id="fractal-objective"><option value="OBJ-LEAK-01">Minimizar fugas manteniendo servicio</option><option value="OBJ-ENERGY-01">Minimizar energía manteniendo servicio</option><option value="OBJ-MARGIN-01">Maximizar margen de presión crítica</option></select></label><button id="fractal-run" class="primary">▶ OPTIMIZAR AHORA</button><button id="fractal-refresh">↻ ACTUALIZAR</button></div></div><div id="fractal-recommendations" class="cards"><p class="muted">Conecte una sesión PLC para consultar recomendaciones.</p></div></section>
         <section id="trends" class="screen">
           <div class="section-head"><div><p class="eyebrow">HISTORIADOR DE SESIÓN</p><h1>Tendencias de operación</h1><p class="muted">Muestras del emulador hidráulico durante esta sesión. Un perfil de 24 h se incorporará como escenario programable.</p></div></div>
           <div id="trends-charts" class="trend-charts"></div>

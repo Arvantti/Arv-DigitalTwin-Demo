@@ -6,7 +6,7 @@ requires-python = ">=3.11"
 dependencies = ["twin-runtime", "twin-emulator-api"]
 
 [tool.uv.workspace]
-members = ["packages/twin-runtime", "apps/twin-emulator-api"]
+members = ["packages/twin-runtime", "apps/twin-emulator-api", "apps/fractal-engineering-api"]
 
 [tool.uv.sources]
 twin-runtime = { workspace = true }

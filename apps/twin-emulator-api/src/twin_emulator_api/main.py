@@ -36,8 +36,10 @@ from twin_runtime.catalog import Catalog
 from twin_runtime.plant import SIM_FILE, PlantModel, find_models_root
 from twin_runtime.spec import SpecError, load_yaml
 
+from .historian import historian
 from .plc_tags import opcua_schema, plc_tags
 from .profiles import ProfileStore, commands_for_hour
+from .sessions import manager as session_manager
 
 TICK_S = 0.1
 MAX_STEPS_PER_TICK = 4000
@@ -274,6 +276,180 @@ def get_plant_plc_schema(plant_id: str) -> dict[str, Any]:
         raise HTTPException(404, f"planta sin configuración PLC: {plant_id}")
     schema = load_yaml(path)
     return _clean({"plant_id": plant_id, "simulated": True, **schema})
+
+
+@app.post("/api/plants/{plant_id}/sessions", status_code=201)
+def create_plant_session(plant_id: str, payload: Annotated[dict[str, Any] | None, Body()] = None) -> dict[str, Any]:
+    model = _plant_model(plant_id)
+    profile_id = (payload or {}).get("profile_id")
+    profile = ProfileStore(plant_id).get(profile_id) if profile_id else None
+    if profile_id and profile is None:
+        raise HTTPException(404, "perfil desconocido")
+    session = session_manager.create(plant_id, model, profile_id=profile_id, profile=profile)
+    return {"id": session.id, "plant_id": plant_id, "running": session.running, "profile_id": profile_id}
+
+
+@app.get("/api/plants/{plant_id}/sessions/{session_id}")
+def get_plant_session(plant_id: str, session_id: str) -> dict[str, Any]:
+    session = session_manager.get(plant_id, session_id)
+    if session is None:
+        raise HTTPException(404, "sesión desconocida")
+    return {
+        "id": session.id,
+        "plant_id": plant_id,
+        "running": session.running,
+        "paused": session.paused,
+        "t": session.plant.t,
+        "profile_id": session.profile_id,
+    }
+
+
+@app.post("/api/plants/{plant_id}/sessions/{session_id}/start")
+async def start_plant_session(plant_id: str, session_id: str) -> dict[str, Any]:
+    session = session_manager.get(plant_id, session_id)
+    if session is None:
+        raise HTTPException(404, "sesión desconocida")
+    session_manager.start(session)
+    return {"id": session.id, "running": True}
+
+
+@app.get("/api/plants/{plant_id}/sessions/{session_id}/fractal/recommendations")
+def list_fractal_recommendations(plant_id: str, session_id: str) -> list[dict[str, Any]]:
+    session = session_manager.get(plant_id, session_id)
+    if session is None:
+        raise HTTPException(404, "sesión desconocida")
+    return session.recommendations
+
+
+@app.post("/api/plants/{plant_id}/sessions/{session_id}/fractal/recommendations", status_code=201)
+def publish_fractal_recommendation(plant_id: str, session_id: str, payload: Annotated[dict[str, Any], Body()]) -> dict[str, Any]:
+    session = session_manager.get(plant_id, session_id)
+    if session is None:
+        raise HTTPException(404, "sesión desconocida")
+    return session_manager.publish_recommendation(session, payload)
+
+
+@app.post("/api/plants/{plant_id}/sessions/{session_id}/fractal/recommendations/{recommendation_id}/decision")
+def decide_fractal_recommendation(
+    plant_id: str, session_id: str, recommendation_id: str, payload: Annotated[dict[str, Any], Body()]
+) -> dict[str, Any]:
+    session = session_manager.get(plant_id, session_id)
+    if session is None:
+        raise HTTPException(404, "sesión desconocida")
+    try:
+        return session_manager.decide_recommendation(session, recommendation_id, bool(payload.get("accept")))
+    except KeyError as exc:
+        raise HTTPException(404, str(exc)) from exc
+
+
+@app.get("/api/plants/{plant_id}/sessions/{session_id}/historian")
+def get_session_historian(plant_id: str, session_id: str) -> dict[str, Any]:
+    if session_manager.get(plant_id, session_id) is None:
+        raise HTTPException(404, "sesión desconocida")
+    return {"session_id": session_id, **historian.read(session_id)}
+
+
+@app.post("/api/plants/{plant_id}/sessions/{session_id}/stop")
+def stop_plant_session(plant_id: str, session_id: str) -> dict[str, Any]:
+    session = session_manager.get(plant_id, session_id)
+    if session is None:
+        raise HTTPException(404, "sesión desconocida")
+    session_manager.stop(session)
+    return {"id": session.id, "running": False}
+
+
+@app.websocket("/api/plants/{plant_id}/sessions/{session_id}")
+async def subscribe_plant_session(ws: WebSocket, plant_id: str, session_id: str) -> None:
+    await ws.accept()
+    session = session_manager.get(plant_id, session_id)
+    role = ws.query_params.get("role", "viewer")
+    if session is None or role not in {"plc", "viewer", "fractal"}:
+        await ws.send_json({"error": "sesión o rol no válido"})
+        await ws.close()
+        return
+    if role == "plc":
+        session_manager.start(session)
+    queue = session_manager.subscribe(session)
+
+    async def receive() -> None:
+        while True:
+            payload = await ws.receive_json()
+            if role != "plc":
+                await ws.send_json({"error": "rol de solo lectura"})
+                continue
+            try:
+                session_manager.command(session, payload)
+            except (KeyError, ValueError) as exc:
+                await ws.send_json({"error": str(exc)})
+
+    receiver = asyncio.create_task(receive())
+    try:
+        while not receiver.done():
+            await ws.send_json(await queue.get())
+    except WebSocketDisconnect:
+        pass
+    finally:
+        receiver.cancel()
+        session_manager.unsubscribe(session, queue)
+
+
+@app.get("/api/plants/{plant_id}/fractal/objectives")
+def get_fractal_objectives(plant_id: str) -> dict[str, Any]:
+    folder = _plant_folders().get(plant_id)
+    if folder is None:
+        raise HTTPException(404, "planta desconocida")
+    objectives = folder / "fractal" / "optimization-objectives.yaml"
+    constraints = folder / "fractal" / "optimization-constraints.yaml"
+    if not objectives.exists() or not constraints.exists():
+        raise HTTPException(404, "planta sin contrato Fractal")
+    return {
+        "plant_id": plant_id,
+        "simulated": True,
+        "objectives": load_yaml(objectives)["objectives"],
+        "constraints": load_yaml(constraints)["constraints"],
+    }
+
+
+@app.get("/api/plants/{plant_id}/sessions/{session_id}/plc-tags")
+def get_session_plc_tags(plant_id: str, session_id: str) -> dict[str, Any]:
+    session = session_manager.get(plant_id, session_id)
+    if session is None:
+        raise HTTPException(404, "sesión desconocida")
+    snapshot = session.plant.snapshot()
+    hour = int(session.plant.t // 3600)
+    return {
+        "session_id": session_id,
+        "t": session.plant.t,
+        "plc_tags": plc_tags(snapshot, profile_id=session.profile_id, profile_hour=hour),
+    }
+
+
+@app.get("/api/plants/{plant_id}/sessions/{session_id}/opcua-schema")
+def get_session_opcua_schema(plant_id: str, session_id: str) -> dict[str, Any]:
+    session = session_manager.get(plant_id, session_id)
+    if session is None:
+        raise HTTPException(404, "sesión desconocida")
+    return {"plant_id": plant_id, "session_id": session_id, "read_only": True, **opcua_schema()}
+
+
+@app.websocket("/api/plants/{plant_id}/sessions/{session_id}/opcua")
+async def stream_session_opcua(ws: WebSocket, plant_id: str, session_id: str) -> None:
+    """Gateway simulado de tags PLC: Fractal recibe solo tags, nunca el runtime."""
+    await ws.accept()
+    session = session_manager.get(plant_id, session_id)
+    if session is None:
+        await ws.send_json({"error": "sesión desconocida"})
+        await ws.close()
+        return
+    queue = session_manager.subscribe(session)
+    try:
+        while True:
+            message = await queue.get()
+            await ws.send_json({"session_id": session_id, "t": message["t"], "plc_tags": message["plc_tags"]})
+    except WebSocketDisconnect:
+        pass
+    finally:
+        session_manager.unsubscribe(session, queue)
 
 
 @app.get("/api/plants/{plant_id}/opcua-schema")

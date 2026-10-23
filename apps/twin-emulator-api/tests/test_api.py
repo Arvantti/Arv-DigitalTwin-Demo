@@ -223,6 +223,30 @@ def test_operation_profiles_persist_and_drive_the_plc_virtual(tmp_path, monkeypa
     assert client.post(url, json={"name": "incorrecto", "hours": {"24": {}}}).status_code == 422
 
 
+def test_shared_session_can_be_created_and_inspected() -> None:
+    created = client.post("/api/plants/water-network-scale-v1/sessions", json={})
+    assert created.status_code == 201
+    session_id = created.json()["id"]
+    state = client.get(f"/api/plants/water-network-scale-v1/sessions/{session_id}")
+    assert state.status_code == 200
+    assert state.json()["running"] is False
+    historian = client.get(f"/api/plants/water-network-scale-v1/sessions/{session_id}/historian")
+    assert historian.status_code == 200
+    assert historian.json()["commands"] == []
+    tags = client.get(f"/api/plants/water-network-scale-v1/sessions/{session_id}/opcua-schema")
+    assert tags.status_code == 200
+    assert tags.json()["read_only"] is True
+    objectives = client.get("/api/plants/water-network-scale-v1/fractal/objectives")
+    assert objectives.status_code == 200
+    assert objectives.json()["objectives"][0]["id"] == "OBJ-LEAK-01"
+    recommendation_url = f"/api/plants/water-network-scale-v1/sessions/{session_id}/fractal/recommendations"
+    published = client.post(recommendation_url, json={"proposal": []})
+    assert published.status_code == 201
+    assert published.json()["status"] == "pending"
+    decision = client.post(f"{recommendation_url}/{published.json()['id']}/decision", json={"accept": False})
+    assert decision.json()["status"] == "rejected"
+
+
 def test_water_plant_websocket_applies_hmi_valve_and_regulation_commands() -> None:
     with client.websocket_connect("/api/plants/water-network-scale-v1/simulate?speed=60") as ws:
         ws.receive_json()  # estado inicial

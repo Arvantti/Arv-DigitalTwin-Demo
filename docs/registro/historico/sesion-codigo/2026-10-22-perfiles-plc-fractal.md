@@ -66,6 +66,32 @@ tags: [registro, historico-ia, acueducto, plc, fractal]
 
 **IA · 2026-10-22 UTC:** alineó Node 26.12.1 en CI, metadatos y build; añadió `Containerfile` para galería estática y emulador FastAPI, `.dockerignore` y guía de ejecución con Podman rootless. El backend sigue en Python 3.12; se conecta mediante HTTPS/WSS y CORS configurado por entorno. Se construyeron ambas imágenes y se comprobó `GET /api/health` en el contenedor del emulador.
 
+**Autor · 2026-10-22 UTC:** reportó que la escena 3D no cargaba al usar los contenedores locales.
+
+**IA · 2026-10-22 UTC:** hizo que `plant.html` respete el parámetro `?api=` para obtener el plano y abrir su WebSocket contra el emulador externo, y que preserve dicho origen al abrir el PLC. Se verificó la escena 3D, sus activos y una simulación en vivo con Playwright sin errores de consola.
+
+**Autor · 2026-10-22 UTC:** pidió registrar en Markdown el plan completo antes de implementar la unificación de sesión PLC, escena 3D y Fractal.
+
+**IA · 2026-10-22 UTC:** creó `docs/architecture/plc-session-fractal-implementation-plan.md` con fases para runtime de sesión única, roles, PLC propietario, 3D visor, historian, tags por sesión, objetivos Fractal, optimización instantánea/futura, recomendaciones con aceptación humana, Podman y pruebas de aceptación.
+
+**Autor · 2026-10-22 UTC:** autorizó implementar la arquitectura de sesión compartida.
+
+**IA · 2026-10-22 UTC:** inició la implementación: añadió `SessionManager` con una planta compartida y difusión de snapshots, endpoints REST/WebSocket con roles `plc`, `viewer` y `fractal`, PLC que crea/inicia la sesión y transmite su identificador al 3D, y escena 3D que se une como visor. Se mantienen los endpoints antiguos durante la transición.
+
+**IA · 2026-10-22 UTC:** verificó la sesión compartida con Playwright: PLC inició una sesión, se reconectó usando su URL, envió el cierre del consumo del nivel 2 y un cliente viewer recibió `grid-02.open_c11 = 0` dentro de la misma sesión. La escena 3D siguió el reloj de la sesión como visor.
+
+**Autor · 2026-10-22 UTC:** pidió señalar en el plan Markdown el punto de avance actual.
+
+**IA · 2026-10-22 UTC:** marcó estados por fase y agregó el diagrama de secuencia de ejecución; el punto actual es C.1 (prueba visual completa y retiro del flujo legado), seguido por historian compartido.
+
+**IA · 2026-10-22 UTC:** completó el retiro del inicio autónomo desde 3D: sin sesión, la escena abre PLC Master; con sesión, permanece como visor bloqueado. Actualizó el plan: C.1 implementado y G (historian compartido) es el bloque actual.
+
+**IA · 2026-10-22 UTC:** completó la implementación inicial del gateway de tags por sesión: schema OPC UA contextual y WebSocket que entrega únicamente tags PLC de solo lectura a Fractal. Actualizó el plan: F (objetivos y optimización Fractal) es el bloque actual.
+
+**Autor · 2026-10-22 UTC:** pidió actualizar avances y pendientes del plan Markdown antes de continuar.
+
+**IA · 2026-10-22 UTC:** añadió el estado consolidado de fases implementadas y el backlog priorizado; el siguiente punto marcado es activar desde PLC el estudio instantáneo Fractal y presentar caso base frente a caso optimizado.
+
 ## Herramientas
 
 Se inspeccionaron contratos PLC, API FastAPI/WebSocket, HMI TypeScript/CSS, geometrías 3D y pruebas. Se ejecutaron pruebas API, Ruff, TypeScript y pruebas de geometrías; no se usaron credenciales ni infraestructura física.

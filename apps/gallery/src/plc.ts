@@ -16,6 +16,7 @@ const plantId = query.get("plant") ?? "water-network-scale-v1";
 const apiOrigin = (query.get("api") ?? location.origin).replace(/\/$/, "");
 const apiUrl = (path: string) => `${apiOrigin}${path}`;
 const websocketUrl = (path: string) => `${apiOrigin.replace(/^http/, "ws")}${path}`;
+const fractalOrigin = (query.get("fractal") ?? "").replace(/\/$/, "");
 
 async function getJson<T>(path: string): Promise<T> {
   const response = await fetch(apiUrl(path));
@@ -51,6 +52,7 @@ let profiles: OperationProfile[] = [];
 let activeProfile: OperationProfile = { name: "", description: "", hours: {} };
 let activeProfileId: string | null = null;
 let profileHour = 0;
+let sessionId = query.get("session");
 
 const n = (value: Value | undefined): number | null => typeof value === "number" && Number.isFinite(value) ? value : null;
 const fmt = (value: Value | undefined, digits = 1) => {
@@ -350,6 +352,19 @@ function renderAlarms(): void {
   $("alarms").innerHTML = active.length ? active.map((message) => `<div class="alarm">${message}</div>`).join("") : `<p class="muted">Sin alarmas activas.</p>`;
 }
 
+async function renderFractal(): Promise<void> {
+  const box = $("fractal-recommendations");
+  if (!sessionId) { box.innerHTML = `<p class="muted">Inicie una operación PLC para consultar recomendaciones.</p>`; return; }
+  const response = await fetch(apiUrl(`/api/plants/${plantId}/sessions/${sessionId}/fractal/recommendations`));
+  if (!response.ok) { box.innerHTML = `<p class="muted">No se pudo consultar el buzón Fractal.</p>`; return; }
+  const recommendations = await response.json() as { id: string; status: string; reason?: string; proposal?: { equipment: string; command: string; args: Record<string, unknown> }[] }[];
+  box.innerHTML = recommendations.length ? recommendations.map((item) => `<article class="card panel"><b>${item.status.toUpperCase()}</b><p>${item.reason ?? "Sin explicación"}</p><pre>${JSON.stringify(item.proposal ?? [], null, 2)}</pre>${item.status === "pending" ? `<button data-fractal-decision="reject" data-id="${item.id}">RECHAZAR</button> <button class="primary" data-fractal-decision="accept" data-id="${item.id}">ACEPTAR Y APLICAR</button>` : ""}</article>`).join("") : `<p class="muted">No hay recomendaciones pendientes.</p>`;
+  box.querySelectorAll<HTMLButtonElement>("[data-fractal-decision]").forEach((button) => button.onclick = async () => {
+    await fetch(apiUrl(`/api/plants/${plantId}/sessions/${sessionId}/fractal/recommendations/${button.dataset.id}/decision`), { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ accept: button.dataset.fractalDecision === "accept" }) });
+    void renderFractal();
+  });
+}
+
 function renderVisibleScreen(): void {
   const active = document.querySelector<HTMLElement>(".screen.active")?.id;
   if (active === "master") renderMaster();
@@ -357,6 +372,7 @@ function renderVisibleScreen(): void {
   else if (active === "pumping") { renderPumping(); renderHydraulicProfile(); }
   else if (active === "grid") renderGrid();
   else if (active === "trends") renderTrends();
+  else if (active === "fractal") void renderFractal();
   else if (active === "history") renderSavedRuns();
 }
 
@@ -377,8 +393,12 @@ function render(message: Message): void {  latest = message.snapshot.equipment;
   if (message.t >= DAY_SECONDS) { saveCurrentRun(); socket?.close(); }
 }
 
-function connect(): void {
-  if (socket?.readyState === WebSocket.OPEN) { socket.close(); return; }
+async function connect(): Promise<void> {
+  if (socket?.readyState === WebSocket.OPEN) {
+    if (sessionId) await fetch(apiUrl(`/api/plants/${plantId}/sessions/${sessionId}/stop`), { method: "POST" });
+    socket.close();
+    return;
+  }
   // Evita dobles clics mientras el proxy WebSocket termina el handshake.
   if (socket?.readyState === WebSocket.CONNECTING) return;
   saveCurrentRun();
@@ -387,10 +407,25 @@ function connect(): void {
   runSaved = false;
   renderDay();
   // ×240: 15 s reales recorren una hora hidráulica; el día completo tarda 6 min.
-  const profileQuery = activeProfileId ? `&profile_id=${encodeURIComponent(activeProfileId)}` : "";
-  $("connection").textContent = "● CONECTANDO CON EL EMULADOR…";
+  $("connection").textContent = "● CREANDO SESIÓN PLC…";
   $("connect").textContent = "… CONECTANDO";
-  socket = new WebSocket(websocketUrl(`/api/plants/${plantId}/simulate?speed=240${profileQuery}`));
+  try {
+    if (!sessionId) {
+      const created = await fetch(apiUrl(`/api/plants/${plantId}/sessions`), { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ profile_id: activeProfileId }) });
+      if (!created.ok) throw Error("no se pudo crear la sesión");
+      sessionId = (await created.json() as { id: string }).id;
+      query.set("session", sessionId);
+      window.history.replaceState(null, "", `${location.pathname}?${query}`);
+      $<HTMLAnchorElement>("link-plant").href = `/plant.html?plant=${plantId}&session=${encodeURIComponent(sessionId)}${query.get("api") ? `&api=${encodeURIComponent(apiOrigin)}` : ""}`;
+    }
+    const started = await fetch(apiUrl(`/api/plants/${plantId}/sessions/${sessionId}/start`), { method: "POST" });
+    if (!started.ok) throw Error("no se pudo iniciar la sesión");
+  } catch (error) {
+    $("connection").textContent = `● ERROR · ${String(error)}`;
+    $("connect").textContent = "▶ INICIAR OPERACIÓN PLC";
+    return;
+  }
+  socket = new WebSocket(websocketUrl(`/api/plants/${plantId}/sessions/${sessionId}?role=plc`));
   socket.onopen = () => { $("connection").textContent = "● SIMULACIÓN CONECTADA · 15 s/h"; $("connection").classList.add("on"); $("connect").textContent = "■ DETENER Y GUARDAR"; };
   socket.onmessage = (event) => {
     const message = JSON.parse(event.data) as Message & { error?: string };
@@ -508,11 +543,12 @@ function randomize(): void {
 async function start(): Promise<void> {
   schema = await getJson<Schema>(`/api/plants/${plantId}/plc-schema`);
   $("plant-name").textContent = ` · ${schema.name.toUpperCase()}`;
+  $<HTMLAnchorElement>("link-plant").href = `/plant.html?plant=${plantId}${sessionId ? `&session=${encodeURIComponent(sessionId)}` : ""}${query.get("api") ? `&api=${encodeURIComponent(apiOrigin)}` : ""}`;
   buildAssets();
   document.querySelectorAll<HTMLButtonElement>(".tabs button").forEach((button) => button.onclick = () => selectScreen(button.dataset.screen!));
   const initialScreen = new URLSearchParams(location.search).get("screen");
-  if (["master", "day", "pumping", "grid", "profiles", "trends", "history"].includes(initialScreen ?? "")) selectScreen(initialScreen!);
-  $("connect").onclick = connect;
+  if (["master", "day", "pumping", "grid", "profiles", "trends", "fractal", "history"].includes(initialScreen ?? "")) selectScreen(initialScreen!);
+  $("connect").onclick = () => { void connect(); };
   $("pause").onclick = () => { paused = !paused; socket?.send(JSON.stringify({ pause: paused })); $("pause").textContent = paused ? "▶ REANUDAR" : "❚❚ PAUSA"; };
   document.querySelectorAll<HTMLButtonElement>("[data-command]").forEach((button) => button.onclick = () => send("prs-01", "select_branch", { branch: button.dataset.command }));
   const critical = $<HTMLInputElement>("critical-setpoint");
@@ -539,6 +575,19 @@ async function start(): Promise<void> {
   });
   $("random").onclick = randomize;
   $("chart-modal-close").onclick = () => $<HTMLDialogElement>("chart-modal").close();
+  $("fractal-refresh").onclick = () => { void renderFractal(); };
+  $("fractal-run").onclick = async () => {
+    if (!sessionId) { window.alert("Inicie una operación PLC antes de optimizar."); return; }
+    if (!fractalOrigin) { window.alert("Configure el servicio Fractal con ?fractal=https://host-fractal."); return; }
+    const button = $<HTMLButtonElement>("fractal-run");
+    button.disabled = true; button.textContent = "… OPTIMIZANDO";
+    try {
+      const response = await fetch(`${fractalOrigin}/studies/instant/publish`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ emulator_api: apiOrigin, plant_id: plantId, session_id: sessionId, objective_id: $<HTMLSelectElement>("fractal-objective").value }) });
+      if (!response.ok) throw Error("Fractal no pudo completar el estudio");
+      await renderFractal();
+    } catch (error) { window.alert(String(error)); }
+    finally { button.disabled = false; button.textContent = "▶ OPTIMIZAR AHORA"; }
+  };
   $("profile-new").onclick = () => { activeProfile = { name: "", description: "", hours: {} }; activeProfileId = null; profileHour = 0; renderProfileEditor(); };
   $<HTMLSelectElement>("profile-select").onchange = (event) => {
     const id = (event.target as HTMLSelectElement).value;
@@ -551,8 +600,9 @@ async function start(): Promise<void> {
   $("profile-clone").onclick = () => { updateProfileHourFromForm(); const target = Math.min(23, profileHour + 1); activeProfile.hours[String(target)] = structuredClone(currentProfileHour()); profileHour = target; renderProfileEditor(); };
   $("profile-capture").onclick = captureCurrentCommands;
   $("profile-save").onclick = () => { void saveProfile(); };
-  $("profile-run").onclick = () => { if (!activeProfileId) { window.alert("Guarde el perfil antes de ejecutarlo."); return; } connect(); };
+  $("profile-run").onclick = () => { if (!activeProfileId) { window.alert("Guarde el perfil antes de ejecutarlo."); return; } void connect(); };
   renderDay(); renderSavedRuns(); await loadProfiles();
+  if (sessionId) void connect();
 }
 
 start().catch((error: unknown) => { $("plant-name").textContent = ` · ERROR: ${String(error)}`; });
