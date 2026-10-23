@@ -99,7 +99,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 - **Fase del plan:** acueducto/PLC y despliegue.
 - **Solicitado por:** Andy autorizó separar perfiles operativos de pruebas de falla y corregir la conexión HMI–emulador.
 - **Qué se hizo:** se versionan PFL-BASE-01, PFL-NOC-01, PFL-NOC-02 y PFL-RES-01; la HMI los agrupa como perfiles PLC; las respuestas no JSON se detectan antes de parsear y el origen del API se puede indicar mediante `?api=`; FastAPI limita CORS a `TWIN_CORS_ORIGINS`.
-- **Commits:** pendiente de crear en la rama de trabajo.
+- **Commits:** `6baba5e` (implementación); actualización de registro incluida en el commit siguiente.
 - **Verificación:** API `17 passed`, typecheck de galería y ruff de API.
 - **Decisiones:** fallas transitorias permanecen como pruebas técnicas del modelo, no perfiles rutinarios.
 - **Conversación:** [[2026-10-22-perfiles-plc-fractal]].
@@ -109,7 +109,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 - **Fase del plan:** acueducto/HMI desplegada.
 - **Solicitado por:** Andy reportó el error de sintaxis al abrir la HMI publicada.
 - **Qué se hizo:** se detecta una respuesta HTML/no JSON antes de decodificarla y se informa la falta del emulador; se permite configurar el origen FastAPI mediante `?api=https://host-del-emulador`.
-- **Commits:** pendiente de crear en la rama de trabajo.
+- **Commits:** `6baba5e` (implementación); actualización de registro incluida en el commit siguiente.
 - **Verificación:** `pnpm --filter @twin/gallery typecheck`.
 - **Decisiones:** el despliegue estático no ejecuta FastAPI ni WebSocket; requiere host de emulador separado.
 - **Conversación:** [[2026-10-22-perfiles-plc-fractal]].
