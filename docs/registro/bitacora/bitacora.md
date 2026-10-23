@@ -100,7 +100,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 - **Fase del plan:** despliegue de frontend y emulador.
 - **Solicitado por:** Andy definió Node 26 como versión aprobada y pidió ajustar frontend y backend.
 - **Qué se hizo:** se fija Node 26.12.1 para pnpm/CI, se añade el `Containerfile` Podman de build/servicio de galería y el `Containerfile` Python 3.12/FastAPI para el emulador; la guía documenta volumen persistente, CORS y URL WSS.
-- **Commits:** pendiente de crear en la rama de trabajo.
+- **Commits:** `196099d` (implementación); actualización de registro incluida en el commit siguiente.
 - **Verificación:** Node `v26.12.1`; build/typecheck de galería; ambas imágenes Podman construyen y el contenedor API responde `GET /api/health`; API `17 passed`; ruff API.
 - **Decisiones:** Node se aplica únicamente al frontend/CI; el backend conserva Python 3.12.
 - **Conversación:** [[2026-10-22-perfiles-plc-fractal]].
