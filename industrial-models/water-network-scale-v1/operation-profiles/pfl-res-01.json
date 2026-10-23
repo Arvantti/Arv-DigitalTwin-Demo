@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "id": "pfl-res-01",
+  "name": "PFL-RES-01 · Restricción vertical N2→N3 · válvula al 50 %",
+  "description": "Operación de restricción controlada: demanda diurna, PRS automática y válvula vertical entre niveles 2 y 3 limitada al 50 %.",
+  "hours": {
+    "0": { "global_consumers_pct": 100, "between_levels": { "23": 50 }, "prs": { "branch": "auto", "critical_setpoint_mca": 15.45 } }
+  }
+}

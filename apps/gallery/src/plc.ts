@@ -9,7 +9,22 @@ type Sample = { t: number; main: number; recirculation: number; consumption: num
 type SavedRun = { id: string; startedAt: string; durationS: number; samples: Sample[] };
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
-const plantId = new URLSearchParams(location.search).get("plant") ?? "water-network-scale-v1";
+const query = new URLSearchParams(location.search);
+const plantId = query.get("plant") ?? "water-network-scale-v1";
+// En desarrollo usa el proxy local. Una HMI publicada puede apuntar a un host FastAPI explícito:
+// plc.html?plant=water-network-scale-v1&api=https://emulador.ejemplo.com
+const apiOrigin = (query.get("api") ?? location.origin).replace(/\/$/, "");
+const apiUrl = (path: string) => `${apiOrigin}${path}`;
+const websocketUrl = (path: string) => `${apiOrigin.replace(/^http/, "ws")}${path}`;
+
+async function getJson<T>(path: string): Promise<T> {
+  const response = await fetch(apiUrl(path));
+  const contentType = response.headers.get("content-type") ?? "";
+  if (!response.ok || !contentType.includes("application/json")) {
+    throw Error("El emulador API no está disponible en esta dirección. La galería publicada es estática; abra la HMI local con el API o proporcione ?api=https://host-del-emulador.");
+  }
+  return response.json() as Promise<T>;
+}
 let schema: Schema;
 let socket: WebSocket | null = null;
 let paused = false;
@@ -371,12 +386,11 @@ function connect(): void {
   runStartedAt = new Date().toISOString();
   runSaved = false;
   renderDay();
-  const protocol = location.protocol === "https:" ? "wss" : "ws";
   // ×240: 15 s reales recorren una hora hidráulica; el día completo tarda 6 min.
   const profileQuery = activeProfileId ? `&profile_id=${encodeURIComponent(activeProfileId)}` : "";
   $("connection").textContent = "● CONECTANDO CON EL EMULADOR…";
   $("connect").textContent = "… CONECTANDO";
-  socket = new WebSocket(`${protocol}://${location.host}/api/plants/${plantId}/simulate?speed=240${profileQuery}`);
+  socket = new WebSocket(websocketUrl(`/api/plants/${plantId}/simulate?speed=240${profileQuery}`));
   socket.onopen = () => { $("connection").textContent = "● SIMULACIÓN CONECTADA · 15 s/h"; $("connection").classList.add("on"); $("connect").textContent = "■ DETENER Y GUARDAR"; };
   socket.onmessage = (event) => {
     const message = JSON.parse(event.data) as Message & { error?: string };
@@ -409,7 +423,10 @@ function updateProfileHourFromForm(): void {
 
 function renderProfileEditor(): void {
   const profileSelect = $<HTMLSelectElement>("profile-select");
-  profileSelect.innerHTML = `<option value="">Nuevo perfil</option>${profiles.map((profile) => `<option value="${profile.id}">${profile.name}</option>`).join("")}`;
+  const official = profiles.filter((profile) => profile.name.startsWith("PFL-"));
+  const other = profiles.filter((profile) => !profile.name.startsWith("PFL-"));
+  const options = (items: OperationProfile[]) => items.map((profile) => `<option value="${profile.id}">${profile.name}</option>`).join("");
+  profileSelect.innerHTML = `<option value="">Nuevo perfil</option>${official.length ? `<optgroup label="PERFILES OPERATIVOS PLC">${options(official)}</optgroup>` : ""}${other.length ? `<optgroup label="OTRAS PLANTILLAS">${options(other)}</optgroup>` : ""}`;
   profileSelect.value = activeProfileId ?? "";
   $<HTMLInputElement>("profile-name").value = activeProfile.name;
   $<HTMLInputElement>("profile-description").value = activeProfile.description;
@@ -443,9 +460,7 @@ function renderProfileEditor(): void {
 }
 
 async function loadProfiles(): Promise<void> {
-  const response = await fetch(`/api/plants/${plantId}/operation-profiles`);
-  if (!response.ok) throw Error("No se pudieron cargar los perfiles");
-  profiles = await response.json() as OperationProfile[];
+  profiles = await getJson<OperationProfile[]>(`/api/plants/${plantId}/operation-profiles`);
   renderProfileEditor();
 }
 
@@ -455,8 +470,9 @@ async function saveProfile(): Promise<void> {
   activeProfile.description = $<HTMLInputElement>("profile-description").value.trim();
   if (!activeProfile.name) { window.alert("Asigne un nombre al perfil antes de guardarlo."); return; }
   const url = activeProfileId ? `/api/plants/${plantId}/operation-profiles/${activeProfileId}` : `/api/plants/${plantId}/operation-profiles`;
-  const response = await fetch(url, { method: activeProfileId ? "PUT" : "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(activeProfile) });
-  if (!response.ok) { window.alert(`No se pudo guardar el perfil (${response.status}).`); return; }
+  const response = await fetch(apiUrl(url), { method: activeProfileId ? "PUT" : "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(activeProfile) });
+  const contentType = response.headers.get("content-type") ?? "";
+  if (!response.ok || !contentType.includes("application/json")) { window.alert("No se pudo guardar: el emulador API no está disponible."); return; }
   activeProfile = await response.json() as OperationProfile;
   activeProfileId = activeProfile.id ?? null;
   await loadProfiles();
@@ -490,9 +506,7 @@ function randomize(): void {
 }
 
 async function start(): Promise<void> {
-  const response = await fetch(`/api/plants/${plantId}/plc-schema`);
-  if (!response.ok) throw Error(`No se pudo cargar el contrato PLC (${response.status})`);
-  schema = await response.json() as Schema;
+  schema = await getJson<Schema>(`/api/plants/${plantId}/plc-schema`);
   $("plant-name").textContent = ` · ${schema.name.toUpperCase()}`;
   buildAssets();
   document.querySelectorAll<HTMLButtonElement>(".tabs button").forEach((button) => button.onclick = () => selectScreen(button.dataset.screen!));

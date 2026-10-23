@@ -54,6 +54,18 @@ tags: [registro, historico-ia, acueducto, plc, fractal]
 
 **IA · 2026-10-22 UTC:** cambió el encuadre para aceptar dirección de vista explícita. Cada piso/zona usa una dirección distinta, encuadre más cercano y objetivo en su propia cota; los niveles de la rejilla alternan vista lateral. Los botones de cámara indican cuál está activo.
 
+**Autor · 2026-10-22 UTC:** indicó que los eventos predefinidos deben modelarse como perfiles del PLC y reportó que la HMI publicada muestra `SyntaxError: Unexpected token '<'`.
+
+**IA · 2026-10-22 UTC:** verificó que Pages devuelve el HTML estático en lugar de JSON porque el emulador FastAPI/WebSocket no está desplegado allí. La HMI ahora detecta respuestas no JSON, explica que necesita el emulador y admite `?api=https://host-del-emulador`; dejó pendiente acordar la separación entre perfiles operativos y pruebas de falla.
+
+**Autor · 2026-10-22 UTC:** autorizó ejecutar el plan de separación de perfiles, corrección Frontend/Backend y configuración de acceso al emulador.
+
+**IA · 2026-10-22 UTC:** creó las plantillas PLC PFL-BASE-01, PFL-NOC-01, PFL-NOC-02 y PFL-RES-01; agrupó los perfiles operativos en la HMI; añadió validación de respuestas JSON y origen API configurable; y habilitó CORS restringido por `TWIN_CORS_ORIGINS` en FastAPI. Las fallas permanecen como pruebas técnicas, no como perfiles operativos.
+
+**Autor · 2026-10-22 UTC:** indicó que el frontend debe usar Node 26 y autorizó ajustar frontend y backend.
+
+**IA · 2026-10-22 UTC:** alineó Node 26.12.1 en CI, metadatos y build; añadió `Containerfile` para galería estática y emulador FastAPI, `.dockerignore` y guía de ejecución con Podman rootless. El backend sigue en Python 3.12; se conecta mediante HTTPS/WSS y CORS configurado por entorno. Se construyeron ambas imágenes y se comprobó `GET /api/health` en el contenedor del emulador.
+
 ## Herramientas
 
 Se inspeccionaron contratos PLC, API FastAPI/WebSocket, HMI TypeScript/CSS, geometrías 3D y pruebas. Se ejecutaron pruebas API, Ruff, TypeScript y pruebas de geometrías; no se usaron credenciales ni infraestructura física.

@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "id": "pfl-base-01",
+  "name": "PFL-BASE-01 · Operación diurna automática · demanda residencial 100 %",
+  "description": "Operación base de día: todas las viviendas al 100 %, PRS en rama automática y presión crítica objetivo de 15,45 mca.",
+  "hours": {
+    "0": { "global_consumers_pct": 100, "prs": { "branch": "auto", "critical_setpoint_mca": 15.45 } },
+    "1": { "global_consumers_pct": 100, "prs": { "branch": "auto", "critical_setpoint_mca": 15.45 } },
+    "2": { "global_consumers_pct": 100, "prs": { "branch": "auto", "critical_setpoint_mca": 15.45 } },
+    "3": { "global_consumers_pct": 100, "prs": { "branch": "auto", "critical_setpoint_mca": 15.45 } },
+    "4": { "global_consumers_pct": 100, "prs": { "branch": "auto", "critical_setpoint_mca": 15.45 } },
+    "5": { "global_consumers_pct": 100, "prs": { "branch": "auto", "critical_setpoint_mca": 15.45 } },
+    "6": { "global_consumers_pct": 100, "prs": { "branch": "auto", "critical_setpoint_mca": 15.45 } },
+    "7": { "global_consumers_pct": 100, "prs": { "branch": "auto", "critical_setpoint_mca": 15.45 } },
+    "8": { "global_consumers_pct": 100, "prs": { "branch": "auto", "critical_setpoint_mca": 15.45 } },
+    "9": { "global_consumers_pct": 100, "prs": { "branch": "auto", "critical_setpoint_mca": 15.45 } },
+    "10": { "global_consumers_pct": 100, "prs": { "branch": "auto", "critical_setpoint_mca": 15.45 } },
+    "11": { "global_consumers_pct": 100, "prs": { "branch": "auto", "critical_setpoint_mca": 15.45 } },
+    "12": { "global_consumers_pct": 100, "prs": { "branch": "auto", "critical_setpoint_mca": 15.45 } },
+    "13": { "global_consumers_pct": 100, "prs": { "branch": "auto", "critical_setpoint_mca": 15.45 } },
+    "14": { "global_consumers_pct": 100, "prs": { "branch": "auto", "critical_setpoint_mca": 15.45 } },
+    "15": { "global_consumers_pct": 100, "prs": { "branch": "auto", "critical_setpoint_mca": 15.45 } },
+    "16": { "global_consumers_pct": 100, "prs": { "branch": "auto", "critical_setpoint_mca": 15.45 } },
+    "17": { "global_consumers_pct": 100, "prs": { "branch": "auto", "critical_setpoint_mca": 15.45 } },
+    "18": { "global_consumers_pct": 100, "prs": { "branch": "auto", "critical_setpoint_mca": 15.45 } },
+    "19": { "global_consumers_pct": 100, "prs": { "branch": "auto", "critical_setpoint_mca": 15.45 } },
+    "20": { "global_consumers_pct": 100, "prs": { "branch": "auto", "critical_setpoint_mca": 15.45 } },
+    "21": { "global_consumers_pct": 100, "prs": { "branch": "auto", "critical_setpoint_mca": 15.45 } },
+    "22": { "global_consumers_pct": 100, "prs": { "branch": "auto", "critical_setpoint_mca": 15.45 } },
+    "23": { "global_consumers_pct": 100, "prs": { "branch": "auto", "critical_setpoint_mca": 15.45 } }
+  }
+}

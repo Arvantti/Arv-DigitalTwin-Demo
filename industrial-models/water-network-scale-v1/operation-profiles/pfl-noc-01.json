@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "id": "pfl-noc-01",
+  "name": "PFL-NOC-01 · Operación nocturna automática · demanda residencial 30 %",
+  "description": "Operación nocturna: viviendas al 30 %; la PRS conserva automáticamente 15,45 mca en la vivienda crítica.",
+  "hours": {
+    "0": { "global_consumers_pct": 30, "prs": { "branch": "auto", "critical_setpoint_mca": 15.45 } }
+  }
+}

@@ -8,9 +8,28 @@ Cada push a `main` publica la galería web en **Cloudflare Pages** con el workfl
 | Galería de equipos en 3D (`index.html`) | Se publica. Ver y parametrizar cada equipo funciona. |
 | Escena de planta (`plant.html`): salsas, inyección, acueducto, aeropuerto, cajas | Se publica. El plano de cada planta va como archivo estático; **▶ SIMULAR** sin API reproduce una grabación de 15 min de la operación normal (`api/replays/{id}.json`, la genera `tools/deploy/export_static_plants.py` al desplegar). Escenarios, comandos y fallas necesitan la API (ver abajo). |
 | PLC Master del acueducto (`plc.html?plant=water-network-scale-v1`) | Se publica como HMI; las señales, mandos y curvas de sesión requieren el emulador API. |
-| API de simulación (`apps/twin-emulator-api`, FastAPI + WebSocket) | **Fuera de Pages.** Es Python con numpy y WebSocket; no corre en Pages ni en Workers de Python. Opciones futuras: contenedor (Cloudflare Containers) o un VPS detrás de un túnel de Cloudflare. |
+| API de simulación (`apps/twin-emulator-api`, FastAPI + WebSocket) | **Fuera de Pages.** Es Python con numpy y WebSocket; no corre en Pages ni en Workers de Python. Opciones: contenedor (Cloudflare Containers) o un VPS detrás de un túnel de Cloudflare. La HMI publicada se abre con `plc.html?plant=water-network-scale-v1&api=https://<host-del-emulador>`; el host debe exponer HTTPS/WSS y definir `TWIN_CORS_ORIGINS=https://digitaltwin.arvantti.online` (más los dominios autorizados). |
 
 Sin base de datos por ahora.
+
+## Contenedores para frontend y emulador
+
+El frontend compila con Node `26.12.1` (declarado también en `.node-version`, `package.json` y los workflows). Los `Containerfile` usan la raíz del repositorio como contexto y se ejecutan sin daemon, en modo rootless con Podman:
+
+```bash
+# Galería estática (Node 26 durante compilación)
+podman build -f apps/gallery/Containerfile -t arvantti/gallery:node26 .
+podman run --rm -p 8080:80 arvantti/gallery:node26
+
+# Emulador FastAPI/WebSocket (Python 3.12)
+podman build -f apps/twin-emulator-api/Containerfile -t arvantti/twin-emulator-api .
+podman run --rm -p 8000:8000 \
+  -e TWIN_CORS_ORIGINS=https://digitaltwin.arvantti.online \
+  -v twin-data:/app/.twin-data:Z \
+  arvantti/twin-emulator-api
+```
+
+La HMI publicada apunta al segundo contenedor con `?api=https://<host-del-emulador>`. El proxy HTTPS delante del API debe conservar la actualización WebSocket (`wss`).
 
 ## Pasos de una sola vez (en dash.cloudflare.com, cuenta Arvantti)
 1. **Account ID.** Entra a la cuenta Arvantti, abre *Workers & Pages* y copia el **Account ID** del panel derecho (o de la URL: `dash.cloudflare.com/<ACCOUNT_ID>/...`).
