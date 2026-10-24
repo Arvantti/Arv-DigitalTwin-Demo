@@ -18,7 +18,7 @@ assert _spec and _spec.loader
 _spec.loader.exec_module(_supply)
 
 
-def pump_flow(model: dict[str, Any], levels: dict[str, float]) -> tuple[float, float, float]:
+def pump_flow(model: dict[str, Any], levels: dict[str, float], speed: float = 1.0) -> tuple[float, float, float]:
     MCA_PER_BAR, pipe_loss, tank_head = _supply.MCA_PER_BAR, _supply.pipe_loss, _supply.tank_head
     pump = model["equipment_models"]["pumpset-recirc-01"]["params"]
     a, b, dst = "tank-recirc-01", "tank-recirc-02", "tank-supply-01"
@@ -52,7 +52,7 @@ def pump_flow(model: dict[str, Any], levels: dict[str, float]) -> tuple[float, f
     def residual(q: float) -> float:
         suction, _, _ = suction_for(q)
         gain = (
-            float(pump["shutoff_head_m"])
+            speed**2 * float(pump["shutoff_head_m"])
             - (float(pump["shutoff_head_m"]) - float(pump["design_head_m"])) * (q / float(pump["design_flow_m3h"])) ** 2
         )
         check = MCA_PER_BAR * (q / (5 * float(pump["design_flow_m3h"]))) ** 2
@@ -79,6 +79,7 @@ def advance_hour(
     }
     drawn = sum(returned.values())
     on = initially_on
+    speed = 1.0 if initially_on else 0.0
     moved = 0.0
     overflow = False
     elapsed = 0.0
@@ -86,16 +87,22 @@ def advance_hour(
         current = {tank: 100 * max(0.0, volume) / capacities[tank] for tank, volume in volumes.items()}
         source = (current["tank-recirc-01"] + current["tank-recirc-02"]) / 2
         full = current["tank-supply-01"] >= float(pump["target_full_pct"])
+        was_on = on
         if on:
             on = source >= float(pump["stop_level_pct"]) and not full
         else:
             on = source >= float(pump["start_level_pct"]) and not full
-        _flow, qa, qb = pump_flow(model, current) if on else (0.0, 0.0, 0.0)
+        if not on or not was_on:
+            speed = 0.0
+        # El variador operativo sube a 100 % en 20 s tras cada arranque.
+        # Integramos la curva a velocidad media durante pasos cortos de rampa.
+        dt = min(5.0 if on and speed < 1.0 else 60.0, 3600 - elapsed)
+        ramp_speed = min(1.0, speed + 0.025 * dt)
+        _flow, qa, qb = pump_flow(model, current, ramp_speed) if on else (0.0, 0.0, 0.0)
         supply = "tank-supply-01"
         supply_slope = qa + qb - drawn
         source_slope = (returned["tank-recirc-01"] - qa) / capacities["tank-recirc-01"] * 50
         source_slope += (returned["tank-recirc-02"] - qb) / capacities["tank-recirc-02"] * 50
-        dt = min(60.0, 3600 - elapsed)
         if on and supply_slope > 0 and current[supply] < float(pump["target_full_pct"]):
             dt = min(dt, 3600 * (float(pump["target_full_pct"]) - current[supply]) * capacities[supply] / (100 * supply_slope))
         if on and source_slope < 0 and source > float(pump["stop_level_pct"]):
@@ -114,5 +121,6 @@ def advance_hour(
         overflow |= delivered + 1e-9 < drawn * dt / 3600 or any(v > capacities[t] + 1e-9 for t, v in next_volumes.items())
         volumes = {t: min(capacities[t], max(0.0, v)) for t, v in next_volumes.items()}
         moved += qa_m3 + qb_m3
+        speed = min(1.0, speed + 0.05 * dt) if on else 0.0
         elapsed += dt
     return {t: 100 * volumes[t] / capacities[t] for t in levels}, moved, on, overflow

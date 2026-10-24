@@ -275,6 +275,12 @@ def test_plc_to_fractal_to_forecast_frames_without_applying_commands(monkeypatch
     result = response.json()
     assert len(result["hours"]) == 24
     assert result["hours"][0]["profile_commands"]["global_consumers_pct"] == 30
+    # Banco operativo independiente: 3600 pasos desde t=12 s, perfil 30 %, PRS AUTO,
+    # niveles finales ≈70,7 / 39,7 / 39,7 % y recirculación ≈4,295 m³.
+    first = result["hours"][0]
+    for tank, reference in (("tank-supply-01", 70.7), ("tank-recirc-01", 39.7), ("tank-recirc-02", 39.7)):
+        assert abs(first["tank_levels_pct"][tank] - reference) < 1.5, tank
+    assert abs(first["snapshot"]["lines"]["recirculacion"]["output_units"] - 4.295) < 0.06
     assert result["base_time"] == t
     assert result["published"]["study_id"] == result["study_id"]
     assert all(not frame["applied"] and frame["commands"] == {} for frame in result["hours"])
