@@ -109,13 +109,41 @@ def test_return_pump_matches_operational_fixed_head_point_and_balances_tanks() -
     # Red operativa a velocidad de régimen, mismas cabezas (tras la rampa de 20 s): ≈21,30 m³/h.
     assert abs(flow - 21.30) < 0.05
     assert abs(flow - first - second) < 0.001
-    next_levels, recirculated, on, overflow = recirc.advance_hour(model.MODEL, levels, {str(level): 2.88 for level in range(1, 5)}, False)
-    assert on and not overflow and recirculated > 0
-    assert next_levels["tank-supply-01"] > levels["tank-supply-01"]
+    # El retorno ya no arranca a 70 %: solo se solicita si suministro <=30 % o algún retorno >=90 %.
+    levels = {"tank-supply-01": 70, "tank-recirc-01": 40, "tank-recirc-02": 40}
+    next_levels, recirculated, _on, overflow = recirc.advance_hour(
+        model.MODEL, levels, {str(level): 2.88 for level in range(1, 5)}, False
+    )
+    assert not overflow and recirculated > 0
+    assert all(0 <= level <= 100 for level in next_levels.values())
     capacities = {tank: model.MODEL["equipment_models"][tank]["params"]["volume_l"] / 1000 for tank in levels}
     before = sum(capacities[tank] * levels[tank] / 100 for tank in levels)
     after = sum(capacities[tank] * next_levels[tank] / 100 for tank in levels)
     assert abs(after - before) < 1e-5  # circuito cerrado; no crea ni destruye agua
+
+
+def test_recirculation_diagnostic_callback_does_not_change_physics() -> None:
+    levels = {"tank-supply-01": 70, "tank-recirc-01": 40, "tank-recirc-02": 40}
+    demand = {str(level): 1.06 for level in range(1, 5)}
+    events = []
+    traced = recirc.advance_hour(model.MODEL, levels, demand, False, on_transition=events.append)
+    untraced = recirc.advance_hour(model.MODEL, levels, demand, False)
+    assert traced == untraced
+    assert [event["action"] for event in events[:2]] == ["start", "stop"]
+    assert events[0]["t_s"] < events[1]["t_s"]
+    assert events[0]["recirculated_m3"] == 0
+    assert events[1]["recirculated_m3"] > 0
+
+
+def test_fractal_return_switches_on_supply_or_individual_high_return() -> None:
+    no_drain = {str(level): 0 for level in range(1, 5)}
+    for levels, should_move in (
+        ({"tank-supply-01": 70, "tank-recirc-01": 40, "tank-recirc-02": 40}, False),
+        ({"tank-supply-01": 30, "tank-recirc-01": 50, "tank-recirc-02": 50}, True),
+        ({"tank-supply-01": 70, "tank-recirc-01": 90, "tank-recirc-02": 40}, True),
+    ):
+        _end, moved, _on, _overflow = recirc.advance_hour(model.MODEL, levels, no_drain, False)
+        assert (moved > 0) is should_move
 
 
 def test_pump_curve_and_prs_auto_react_to_hydraulic_demand() -> None:

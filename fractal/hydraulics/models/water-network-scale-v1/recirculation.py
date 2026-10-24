@@ -7,6 +7,7 @@ masas por pasos cortos con la misma histéresis de niveles del emulador.
 from __future__ import annotations
 
 import importlib.util
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
@@ -67,7 +68,8 @@ def pump_flow(model: dict[str, Any], levels: dict[str, float], speed: float = 1.
 
 
 def advance_hour(
-    model: dict[str, Any], levels: dict[str, float], distribution_by_level: dict[str, float], initially_on: bool
+    model: dict[str, Any], levels: dict[str, float], distribution_by_level: dict[str, float], initially_on: bool,
+    *, on_transition: Callable[[dict[str, Any]], None] | None = None,
 ) -> tuple[dict[str, float], float, bool, bool]:
     """Integra con eventos de histéresis y limitación de masa de los vasos."""
     pump = model["equipment_models"]["pumpset-recirc-01"]["params"]
@@ -87,11 +89,26 @@ def advance_hour(
         current = {tank: 100 * max(0.0, volume) / capacities[tank] for tank, volume in volumes.items()}
         source = (current["tank-recirc-01"] + current["tank-recirc-02"]) / 2
         full = current["tank-supply-01"] >= float(pump["target_full_pct"])
+        high_return = float(pump["return_high_start_pct"]) < 100 and max(
+            current["tank-recirc-01"], current["tank-recirc-02"]
+        ) + 1e-8 >= float(pump["return_high_start_pct"])
+        needs_supply = float(pump["supply_start_pct"]) > 0 and current["tank-supply-01"] <= float(pump["supply_start_pct"]) + 1e-8
+        source_safe = source >= float(pump["stop_level_pct"])
         was_on = on
         if on:
-            on = source >= float(pump["stop_level_pct"]) and not full
+            on = source_safe and not full
         else:
-            on = source >= float(pump["start_level_pct"]) and not full
+            on = source_safe and not full and (
+                needs_supply or high_return or (float(pump["supply_start_pct"]) == 0 and source >= float(pump["start_level_pct"]))
+            )
+        if on != was_on and on_transition is not None:
+            reason = (
+                "suministro_bajo" if needs_supply else "retorno_alto" if high_return else "origen_alto"
+            ) if on else "suministro_lleno" if full else "retornos_bajos"
+            on_transition({
+                "t_s": elapsed, "action": "start" if on else "stop", "reason": reason,
+                "levels_pct": dict(current), "recirculated_m3": moved,
+            })
         if not on or not was_on:
             speed = 0.0
         # El variador operativo sube a 100 % en 20 s tras cada arranque.
@@ -107,8 +124,16 @@ def advance_hour(
             dt = min(dt, 3600 * (float(pump["target_full_pct"]) - current[supply]) * capacities[supply] / (100 * supply_slope))
         if on and source_slope < 0 and source > float(pump["stop_level_pct"]):
             dt = min(dt, 3600 * (source - float(pump["stop_level_pct"])) / -source_slope)
-        if not on and source_slope > 0 and source < float(pump["start_level_pct"]):
-            dt = min(dt, 3600 * (float(pump["start_level_pct"]) - source) / source_slope)
+        if not on:
+            if float(pump["supply_start_pct"]) > 0 and supply_slope < 0 and current[supply] > float(pump["supply_start_pct"]):
+                dt = min(dt, 3600 * (current[supply] - float(pump["supply_start_pct"])) * capacities[supply] / (100 * -supply_slope))
+            if float(pump["return_high_start_pct"]) < 100:
+                for tank in ("tank-recirc-01", "tank-recirc-02"):
+                    slope = returned[tank] / capacities[tank] * 100
+                    if slope > 0 and current[tank] < float(pump["return_high_start_pct"]):
+                        dt = min(dt, 3600 * (float(pump["return_high_start_pct"]) - current[tank]) / slope)
+            if float(pump["supply_start_pct"]) == 0 and source_slope > 0 and source < float(pump["start_level_pct"]):
+                dt = min(dt, 3600 * (float(pump["start_level_pct"]) - source) / source_slope)
         dt = max(0.01, dt)
         delivered = min(drawn * dt / 3600, volumes[supply] + (qa + qb) * dt / 3600)
         qa_m3 = min(qa * dt / 3600, volumes["tank-recirc-01"] + returned["tank-recirc-01"] * dt / 3600)

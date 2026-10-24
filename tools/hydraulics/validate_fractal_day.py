@@ -47,7 +47,7 @@ def summary(samples: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
-def compare(output: Path) -> dict[str, Any]:
+def compare(output: Path, hours: int = 24) -> dict[str, Any]:
     profile = json.loads(PROFILE.read_text(encoding="utf-8"))
     session = session_manager.create(PLANT, _plant_model(PLANT), profile_id=profile["id"], profile=profile)
     session.apply_profile_hour(0)
@@ -57,12 +57,13 @@ def compare(output: Path) -> dict[str, Any]:
     if base_tags["PLC.Pump.RunningCount"] == 0:
         raise RuntimeError("la bomba no se estabilizó")
     started = monotonic()
-    frames = project_24h(base_tags, profile, "baseline")
-    if len(frames) != 24:
-        raise ValueError("Fractal no devolvió 24 horas")
+    frames = project_24h(base_tags, profile, "baseline", horizon_hours=hours)
+    if len(frames) != hours:
+        raise ValueError(f"Fractal no devolvió {hours} horas")
     report: dict[str, Any] = {
-        "scope": "continuous 24-hour emulator run compared to 24 hourly Fractal forecasts",
+        "scope": f"continuous {hours}-hour emulator run compared to {hours} hourly Fractal forecasts",
         "validation_status": "post_session_snapshot_cache",
+        "recirculation_policy": "supply_start_30_or_either_return_90; supply_stop_90_or_source_mean_below_20",
         "sampling": "one PLC sensor sample per simulated tick",
         "execution_mode": "offline_physics; playback cadence controlled separately",
         "plant_id": PLANT,
@@ -108,7 +109,7 @@ def compare(output: Path) -> dict[str, Any]:
         report["elapsed_real_s"] = round(monotonic() - started, 2)
         output.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         print(
-            f"hora {hour + 1:02}/24 · caudal {metrics['flow_m3h']['error_pct']:.2f} % · "
+            f"hora {hour + 1:02}/{hours:02} · caudal {metrics['flow_m3h']['error_pct']:.2f} % · "
             f"suministro {metrics['supply_level_pct']['absolute_error']:.2f} pp · "
             f"retorno {metrics['recirculated_m3']['absolute_error']:.3f} m³",
             flush=True,
@@ -119,8 +120,9 @@ def compare(output: Path) -> dict[str, Any]:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, required=True, help="Archivo JSON de resultados y checkpoints horarios")
+    parser.add_argument("--hours", type=int, default=24, choices=range(1, 25), metavar="1..24")
     args = parser.parse_args()
-    result = compare(args.output)
+    result = compare(args.output, hours=args.hours)
     print(json.dumps({"summary": result["summary"], "safety_disagreements": result["safety_disagreements"]}, indent=2))
     if result["safety_disagreements"]:
         parser.exit(1, "Fractal y emulador discrepan sobre el umbral de 15 mca\n")
