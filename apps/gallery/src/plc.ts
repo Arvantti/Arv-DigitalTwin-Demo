@@ -569,6 +569,7 @@ function renderProfileEditor(): void {
     const output = input.parentElement?.querySelector("output");
     if (output) output.textContent = input === critical || input === manual ? `${Number(input.value).toFixed(2)} mca` : `${input.value} %`;
     updateProfileHourFromForm();
+    pressureRequest++;
     profilePressure = [];
     profilePressureMessage = "Cambios sin recalcular: guarde el perfil para actualizar la presión.";
     renderProfileChart();
@@ -579,6 +580,7 @@ function renderProfileEditor(): void {
     const destination = valve.startsWith("l") ? (entry.leaks ??= {}) : (entry.dwellings ??= {});
     (destination[grid] ??= {})[valve] = Number(input.value);
     input.parentElement!.querySelector("output")!.textContent = `${input.value}%`;
+    pressureRequest++;
     profilePressure = [];
     profilePressureMessage = "Cambios sin recalcular: guarde el perfil para actualizar la presión.";
     renderProfileChart();
@@ -631,7 +633,8 @@ async function saveProfile(): Promise<void> {
   const url = activeProfileId ? `/api/plants/${plantId}/operation-profiles/${activeProfileId}` : `/api/plants/${plantId}/operation-profiles`;
   const response = await fetch(apiUrl(url), { method: activeProfileId ? "PUT" : "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(activeProfile) });
   const contentType = response.headers.get("content-type") ?? "";
-  if (!response.ok || !contentType.includes("application/json")) { window.alert("No se pudo guardar: el emulador API no está disponible."); return; }
+  if (!response.ok) { const error = await response.json().catch(() => ({})) as { detail?: string }; window.alert(error.detail ?? "No se pudo guardar el escenario."); return; }
+  if (!contentType.includes("application/json")) { window.alert("La respuesta del PLC no es JSON."); return; }
   activeProfile = await response.json() as OperationProfile;
   activeProfileId = activeProfile.id ?? null;
   await loadProfiles();
@@ -655,6 +658,7 @@ function captureCurrentCommands(): void {
   }
   hour.between_levels = Object.fromEntries([["12", "valve-between-12"], ["23", "valve-between-23"], ["34", "valve-between-34"]].map(([key, id]) => [key, Math.round(n(value(id, "opening_target_pct")) ?? 100)]));
   hour.prs = { branch: String(value("prs-01", "branch_auto")) === "1" ? "auto" : "manual", critical_setpoint_mca: n(value("prs-01", "critical_setpoint_mca")) ?? schema.service_constraint.automatic_target_mca, manual_setting_mca: n(value("prs-01", "manual_setting_mca")) ?? 20.94 };
+  pressureRequest++; profilePressure = [];
   renderProfileEditor();
 }
 
@@ -735,7 +739,7 @@ async function start(): Promise<void> {
     activeProfile.description = "Aperturas de viviendas y fugas definidas por el operador.";
     activeProfileId = null;
     profileHour = 0;
-    profilePressure = [];
+    pressureRequest++; profilePressure = [];
     renderProfileEditor();
     $<HTMLInputElement>("profile-name").focus();
   };
@@ -744,11 +748,12 @@ async function start(): Promise<void> {
     const profile = profiles.find((item) => item.id === id);
     if (profile) { activeProfile = structuredClone(profile); activeProfileId = profile.id ?? null; profileHour = 0; }
     else { activeProfile = { name: "", description: "", hours: {} }; activeProfileId = null; }
+    pressureRequest++; profilePressure = [];
     renderProfileEditor();
     void loadProfilePressure();
   };
   $<HTMLSelectElement>("profile-hour").onchange = (event) => { updateProfileHourFromForm(); profileHour = Number((event.target as HTMLSelectElement).value); renderProfileEditor(); };
-  $("profile-clone").onclick = () => { updateProfileHourFromForm(); const target = Math.min(23, profileHour + 1); activeProfile.hours[String(target)] = structuredClone(currentProfileHour()); profileHour = target; renderProfileEditor(); };
+  $("profile-clone").onclick = () => { updateProfileHourFromForm(); const target = Math.min(23, profileHour + 1); activeProfile.hours[String(target)] = structuredClone(currentProfileHour()); profileHour = target; pressureRequest++; profilePressure = []; renderProfileEditor(); };
   $("profile-capture").onclick = captureCurrentCommands;
   $("profile-save").onclick = () => { void saveProfile(); };
   $("profile-delete").onclick = async () => {
