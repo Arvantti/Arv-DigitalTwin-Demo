@@ -1,6 +1,6 @@
 ---
 tipo: historico-ia
-fuente: sesión de código pi en rama feat/fractal-240x-replay
+fuente: sesión de código pi en PR 79, rama feat/fractal-240x-replay
 desde: 2026-10-24
 hasta: 2026-10-24
 tags: [registro, historico-ia, plc, fractal, escenarios, 3d]
