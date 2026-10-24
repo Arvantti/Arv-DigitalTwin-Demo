@@ -1,4 +1,5 @@
 """Sesiones compartidas del emulador: una planta calculada una vez para PLC y visores."""
+
 from __future__ import annotations
 
 import asyncio
@@ -62,7 +63,9 @@ class PlantSession:
                 "running": self.running,
                 "profile": profile_state,
                 "snapshot": snapshot,
-                "plc_tags": plc_tags(snapshot, profile_id=self.profile_id, profile_hour=hour if profile_state else None),
+                "plc_tags": plc_tags(
+                    snapshot, profile_id=self.profile_id, profile_hour=hour if profile_state else None, simulated_time=self.plant.t
+                ),
                 "events": events,
             }
         )
@@ -139,9 +142,21 @@ class SessionManager:
         session.running = False
         session.last_activity = time()
 
+    def schedule_profile(self, session: PlantSession, profile_id: str, profile: dict[str, Any]) -> int:
+        """Programa el perfil para la siguiente hora simulada; no envía mandos al aceptarlo."""
+        current_hour = int(session.plant.t // 3600)
+        session.profile_id = profile_id
+        session.profile = profile
+        session.applied_profile_hour = current_hour
+        session.last_activity = time()
+        return current_hour + 1
+
     def command(self, session: PlantSession, payload: dict[str, Any]) -> None:
         if "speed" in payload:
-            session.speed = max(0.0, min(5000.0, float(payload["speed"])))
+            requested_speed = float(payload["speed"])
+            if requested_speed not in {60.0, 120.0, 240.0, 600.0}:
+                raise ValueError("velocidad permitida: ×60, ×120, ×240 o ×600")
+            session.speed = requested_speed
         if "pause" in payload:
             session.paused = bool(payload["pause"])
         if "command" in payload:

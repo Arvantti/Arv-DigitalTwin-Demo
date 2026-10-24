@@ -3,7 +3,7 @@ name = "fractal-engineering-api"
 version = "0.1.0"
 description = "Asesor Fractal independiente para gemelos simulados"
 requires-python = ">=3.11"
-dependencies = ["fastapi>=0.110", "uvicorn[standard]>=0.29"]
+dependencies = ["fastapi>=0.110", "uvicorn[standard]>=0.29", "scipy>=1.14", "pyyaml>=6"]
 
 [build-system]
 requires = ["hatchling"]

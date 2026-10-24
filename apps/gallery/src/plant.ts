@@ -122,6 +122,7 @@ const apiOrigin = (url.get("api") ?? location.origin).replace(/\/$/, "");
 const apiUrl = (path: string) => `${apiOrigin}${path}`;
 const websocketUrl = (path: string) => `${apiOrigin.replace(/^http/, "ws")}${path}`;
 const sessionId = url.get("session");
+const forecastStudyId = url.get("study");
 const shotMode = url.get("shot") === "1";
 if (shotMode && url.get("ui") !== "1") document.body.classList.add("shot");
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -1199,12 +1200,12 @@ function renderAsset(): void {
   $("vars").innerHTML = (spec?.variables ?? [])
     .map((v) => `<div title="${v.description}"><span>${v.id}</span><span>${fmt(snap?.variables?.[v.id], v.unit)}</span></div>`)
     .join("");
-  $("asset-chart").hidden = !asset?.eq.sim;
+  $("asset-chart").hidden = !asset?.eq.sim || Boolean(forecastStudyId);
   const cmds = $("commands");
   if (cmds.dataset.for !== (selectedId ?? "")) {
     cmds.dataset.for = selectedId ?? "";
     cmds.innerHTML = "";
-    if (spec) {
+    if (spec && !forecastStudyId) {
       for (const c of (spec.commands ?? []).filter((c) => !c.args)) cmds.appendChild(commandButton(c.id.replace(/_/g, " ").toUpperCase(), c.description, c.id, {}));
       for (const f of spec.faults ?? []) cmds.appendChild(commandButton(`⚠ ${f.id.replace(/_/g, " ")}`, f.description, "inject_fault", { fault: f.id }));
     }
@@ -1276,6 +1277,28 @@ function buildLighting(): void {
 }
 
 // ------------------------------------------------------------------ arranque
+async function loadForecast(): Promise<void> {
+  if (!sessionId || !forecastStudyId) return;
+  const response = await fetch(apiUrl(`/api/plants/${doc.plant.id}/sessions/${sessionId}/fractal/studies/${forecastStudyId}/frames`));
+  if (!response.ok) throw new Error("No se pudo cargar el estudio Fractal desde PLC");
+  const data = await response.json() as { base_time: number; frames: { hour: number; supply_level_pct: number; robust: boolean; snapshot: SimMessage["snapshot"]; scenarios: { demand_factor: number; state: Record<string, number>; feasible: boolean }[] }[] };
+  const panel = $("forecast-panel");
+  const selector = $<HTMLSelectElement>("forecast-hour");
+  panel.hidden = false;
+  document.body.classList.add("forecast-mode");
+  $("forecast-study-meta").textContent = `Estudio ${forecastStudyId} · ${data.frames.length} horas · PLC.Actual no se modifica`;
+  selector.innerHTML = data.frames.map((frame) => `<option value="${frame.hour}">Hora ${String(frame.hour + 1).padStart(2, "0")}</option>`).join("");
+  const showHour = () => {
+    const frame = data.frames[Number(selector.value)];
+    const nominal = frame?.scenarios?.[1];
+    if (!frame || !nominal) { $("forecast-values").textContent = "El estudio no contiene métricas para esta hora."; return; }
+    applyMessage({ t: data.base_time + (frame.hour + 1) * 3600, speed: 240, snapshot: frame.snapshot, events: [] }, "FUTURO FRACTAL");
+    $("forecast-values").textContent = `Tanque proyectado ${frame.supply_level_pct.toFixed(1)} % · presión crítica ${Number(nominal.state.critical_pressure_mca).toFixed(2)} mca · fuga ${Number(nominal.state.leakage_m3h).toFixed(3)} m³/h · ${frame.robust ? "FACTIBLE" : "REVISAR RESTRICCIONES"}`;
+  };
+  selector.onchange = showHour;
+  showHour();
+}
+
 async function start(): Promise<void> {
   const plantId = url.get("plant") ?? "sauce-plant-v1";
   await bootStage(6, "Conectando con el gemelo digital…");
@@ -1374,7 +1397,12 @@ async function start(): Promise<void> {
   };
   $("asset-chart-close").onclick = () => $<HTMLDialogElement>("asset-chart-modal").close();
   $<HTMLSelectElement>("asset-chart-variable").onchange = renderAssetChart;
-  if (sessionId) {
+  if (forecastStudyId) {
+    try { await loadForecast(); } catch (error) { bootError(String(error)); }
+    $("btn-connect").textContent = "◆ VISTA DE ESCENARIO FRACTAL";
+    $<HTMLButtonElement>("btn-connect").disabled = true;
+    $<HTMLSelectElement>("scenario").disabled = true;
+  } else if (sessionId) {
     $("btn-connect").textContent = "● SIGUIENDO OPERACIÓN PLC";
     $<HTMLButtonElement>("btn-connect").disabled = true;
     $<HTMLSelectElement>("scenario").disabled = true;

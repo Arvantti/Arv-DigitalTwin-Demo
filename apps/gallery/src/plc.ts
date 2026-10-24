@@ -2,7 +2,7 @@ import "./plc.css";
 
 type Value = number | string | null;
 type Snapshot = { state: string; variables: Record<string, Value>; animation: Record<string, number>; active_faults: string[] };
-type Message = { t: number; speed: number; paused: boolean; snapshot: { equipment: Record<string, Snapshot> }; events: { type: string; equipment_id?: string }[] };
+type Message = { t: number; speed: number; paused: boolean; plc_tags?: Record<string, Value>; snapshot: { equipment: Record<string, Snapshot> }; events: { type: string; equipment_id?: string }[] };
 type Asset = { id: string; name: string; group: string; level?: number };
 type Schema = { name: string; assets: Asset[]; service_constraint: { critical_pressure_min_mca: number; automatic_target_mca: number } };
 type Sample = { t: number; main: number; recirculation: number; consumption: number; leakage: number; critical: number; supplyLevel: number; pumpDischarge: number; stationIn: number; stationOut: number; grid1In: number; grid1Out: number; grid2Out: number; grid3Out: number; criticalFlow: number };
@@ -31,6 +31,7 @@ let socket: WebSocket | null = null;
 let paused = false;
 let latest: Record<string, Snapshot> = {};
 let simTime = 0;
+let latestTags: Record<string, Value> = {};
 let randomTimer: number | null = null;
 const DAY_SECONDS = 24 * 3600;
 const SAMPLE_INTERVAL_S = 60;
@@ -70,6 +71,7 @@ function selectScreen(id: string): void {
   document.body.classList.toggle("screen-day", id === "day");
   document.body.classList.toggle("screen-pumping", id === "pumping");
   if (Object.keys(latest).length) renderVisibleScreen();
+  if (id === "fractal") void renderFractal();
 }
 
 function buildAssets(): void {
@@ -353,16 +355,12 @@ function renderAlarms(): void {
 }
 
 async function renderFractal(): Promise<void> {
-  const box = $("fractal-recommendations");
-  if (!sessionId) { box.innerHTML = `<p class="muted">Inicie una operación PLC para consultar recomendaciones.</p>`; return; }
-  const response = await fetch(apiUrl(`/api/plants/${plantId}/sessions/${sessionId}/fractal/recommendations`));
-  if (!response.ok) { box.innerHTML = `<p class="muted">No se pudo consultar el buzón Fractal.</p>`; return; }
-  const recommendations = await response.json() as { id: string; status: string; reason?: string; proposal?: { equipment: string; command: string; args: Record<string, unknown> }[] }[];
-  box.innerHTML = recommendations.length ? recommendations.map((item) => `<article class="card panel"><b>${item.status.toUpperCase()}</b><p>${item.reason ?? "Sin explicación"}</p><pre>${JSON.stringify(item.proposal ?? [], null, 2)}</pre>${item.status === "pending" ? `<button data-fractal-decision="reject" data-id="${item.id}">RECHAZAR</button> <button class="primary" data-fractal-decision="accept" data-id="${item.id}">ACEPTAR Y APLICAR</button>` : ""}</article>`).join("") : `<p class="muted">No hay recomendaciones pendientes.</p>`;
-  box.querySelectorAll<HTMLButtonElement>("[data-fractal-decision]").forEach((button) => button.onclick = async () => {
-    await fetch(apiUrl(`/api/plants/${plantId}/sessions/${sessionId}/fractal/recommendations/${button.dataset.id}/decision`), { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ accept: button.dataset.fractalDecision === "accept" }) });
-    void renderFractal();
-  });
+  const box = $("fractal-saved");
+  if (!sessionId) { box.innerHTML = `<p class="muted">Inicie una sesión PLC para consultar estudios.</p>`; return; }
+  const response = await fetch(apiUrl(`/api/plants/${plantId}/sessions/${sessionId}/fractal/studies`));
+  if (!response.ok) { box.innerHTML = `<p class="muted">No se pudo consultar estudios de esta sesión.</p>`; return; }
+  const studies = await response.json() as { study_id: string; study_type: string; base_time: number }[];
+  box.innerHTML = studies.length ? `<article class="panel"><p class="eyebrow">ESTUDIOS GUARDADOS EN PLC · FUTURO NO APLICADO</p>${studies.filter((study) => ["baseline", "alternative"].includes(study.study_type)).map((study) => `<p>${study.study_type === "baseline" ? "Proyección base" : "Escenario alternativo"} · ${study.study_id.replace(/[&<>"']/g, "")} · t=${fmt(study.base_time, 0)} s · <a href="/plant.html?plant=${plantId}&session=${encodeURIComponent(sessionId!)}&study=${encodeURIComponent(study.study_id)}${query.get("api") ? `&api=${encodeURIComponent(apiOrigin)}` : ""}">VER FUTURO EN 3D</a></p>`).join("")}</article>` : `<p class="muted">No hay estudios futuros guardados en esta sesión.</p>`;
 }
 
 function renderVisibleScreen(): void {
@@ -372,12 +370,12 @@ function renderVisibleScreen(): void {
   else if (active === "pumping") { renderPumping(); renderHydraulicProfile(); }
   else if (active === "grid") renderGrid();
   else if (active === "trends") renderTrends();
-  else if (active === "fractal") void renderFractal();
   else if (active === "history") renderSavedRuns();
 }
 
 function render(message: Message): void {  latest = message.snapshot.equipment;
   simTime = message.t;
+  latestTags = message.plc_tags ?? latestTags;
   for (const asset of schema.assets) {
     const node = document.querySelector<HTMLElement>(`[data-asset="${asset.id}"]`);
     const state = eq(asset.id)?.state ?? "—";
@@ -387,6 +385,7 @@ function render(message: Message): void {  latest = message.snapshot.equipment;
   const mm = String(Math.floor((simTime % 3600) / 60)).padStart(2, "0");
   const ss = String(Math.floor(simTime % 60)).padStart(2, "0");
   $("clock").textContent = `SIM · ${hh}:${mm}:${ss} · ×${message.speed}`;
+  $<HTMLSelectElement>("session-speed").value = String(message.speed);
   recordHistory(message);
   renderVisibleScreen();
   renderAlarms();
@@ -575,18 +574,33 @@ async function start(): Promise<void> {
   });
   $("random").onclick = randomize;
   $("chart-modal-close").onclick = () => $<HTMLDialogElement>("chart-modal").close();
+  $<HTMLSelectElement>("session-speed").onchange = (event) => {
+    const speed = Number((event.target as HTMLSelectElement).value);
+    if (socket?.readyState === WebSocket.OPEN) socket.send(JSON.stringify({ speed }));
+  };
   $("fractal-refresh").onclick = () => { void renderFractal(); };
-  $("fractal-run").onclick = async () => {
-    if (!sessionId) { window.alert("Inicie una operación PLC antes de optimizar."); return; }
-    if (!fractalOrigin) { window.alert("Configure el servicio Fractal con ?fractal=https://host-fractal."); return; }
-    const button = $<HTMLButtonElement>("fractal-run");
-    button.disabled = true; button.textContent = "… OPTIMIZANDO";
+  $("fractal-horizon").onclick = async () => {
+    if (!sessionId) { window.alert("Inicie una sesión PLC con un perfil guardado antes de proyectar."); return; }
+    if (!fractalOrigin) { window.alert("Configure Fractal con ?fractal=https://host-fractal."); return; }
+    const studyType = $<HTMLSelectElement>("fractal-study-type").value;
+    const valveOpening = Number($<HTMLInputElement>("fractal-valve-opening").value);
+    const overrides = studyType === "alternative" ? {
+      demand_multiplier: Number($<HTMLInputElement>("fractal-demand-multiplier").value),
+      leakage_multiplier: Number($<HTMLInputElement>("fractal-leak-multiplier").value),
+      valve_12_pct: valveOpening, valve_23_pct: valveOpening, valve_34_pct: valveOpening,
+    } : undefined;
+    const button = $<HTMLButtonElement>("fractal-horizon");
+    button.disabled = true; button.textContent = "… LEYENDO PLC Y PROYECTANDO";
+    let study: { study_id: string; study_type: string; base_time: number; hours: { hour: number; supply_level_pct: number; robust: boolean; scenarios: { demand_factor: number; state: Record<string, number>; feasible: boolean }[] }[]; published?: unknown };
     try {
-      const response = await fetch(`${fractalOrigin}/studies/instant/publish`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ emulator_api: apiOrigin, plant_id: plantId, session_id: sessionId, objective_id: $<HTMLSelectElement>("fractal-objective").value }) });
-      if (!response.ok) throw Error("Fractal no pudo completar el estudio");
-      await renderFractal();
-    } catch (error) { window.alert(String(error)); }
-    finally { button.disabled = false; button.textContent = "▶ OPTIMIZAR AHORA"; }
+      const response = await fetch(`${fractalOrigin}/studies/horizon/from-plc`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ session_id: sessionId, plant_id: plantId, emulator_api: apiOrigin, overrides, study_type: studyType }) });
+      if (!response.ok) { const detail = await response.json().catch(() => ({})) as { detail?: string }; throw Error(detail.detail ?? "Fractal no pudo proyectar el perfil PLC"); }
+      study = await response.json();
+    } catch (error) { window.alert(String(error)); return; }
+    finally { button.disabled = false; button.textContent = "◫ PROYECTAR 24 H DESDE PLC"; }
+    if (study.published) $<HTMLAnchorElement>("link-plant").href = `/plant.html?plant=${plantId}&session=${encodeURIComponent(sessionId)}&study=${encodeURIComponent(study.study_id)}${query.get("api") ? `&api=${encodeURIComponent(apiOrigin)}` : ""}`;
+    $("fractal-recommendations").innerHTML = `<article class="panel"><p class="eyebrow">◆ FUTURO SIMULADO · NO APLICADO · ${study.study_type.toUpperCase()}</p><p><b>Estudio ${study.study_id}</b> · origen PLC t=${fmt(study.base_time, 0)} s · ${study.published ? "persistido en PLC" : "resultado Fractal (no persistido en PLC)"}</p>${study.hours.map((item) => `<p>Hora ${String(item.hour + 1).padStart(2, "0")} · tanque ${fmt(item.supply_level_pct)} % · ${item.robust ? "FACTIBLE" : "REVISAR · NO VALIDADO"} · presión nominal ${fmt(item.scenarios[1]?.state.critical_pressure_mca)} mca</p>`).join("")}</article>`;
+    void renderFractal();
   };
   $("profile-new").onclick = () => { activeProfile = { name: "", description: "", hours: {} }; activeProfileId = null; profileHour = 0; renderProfileEditor(); };
   $<HTMLSelectElement>("profile-select").onchange = (event) => {

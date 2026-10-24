@@ -40,6 +40,7 @@ from .historian import historian
 from .plc_tags import opcua_schema, plc_tags
 from .profiles import ProfileStore, commands_for_hour
 from .sessions import manager as session_manager
+from .studies import studies
 
 TICK_S = 0.1
 MAX_STEPS_PER_TICK = 4000
@@ -313,6 +314,112 @@ async def start_plant_session(plant_id: str, session_id: str) -> dict[str, Any]:
     return {"id": session.id, "running": True}
 
 
+@app.get("/api/plants/{plant_id}/sessions/{session_id}/fractal/studies")
+def list_fractal_studies(plant_id: str, session_id: str) -> list[dict[str, Any]]:
+    if session_manager.get(plant_id, session_id) is None:
+        raise HTTPException(404, "sesión desconocida")
+    return studies.list(session_id)
+
+
+@app.post("/api/plants/{plant_id}/sessions/{session_id}/fractal/studies", status_code=201)
+def publish_fractal_study(plant_id: str, session_id: str, payload: Annotated[dict[str, Any], Body()]) -> dict[str, Any]:
+    session = session_manager.get(plant_id, session_id)
+    if session is None:
+        raise HTTPException(404, "sesión desconocida")
+    study_id = payload.get("study_id")
+    if not isinstance(study_id, str) or payload.get("temporal_context") != "forecast" or payload.get("applied") is not False:
+        raise HTTPException(422, "study_id y forecast no aplicado son obligatorios")
+    studies.save(session_id, study_id, session.plant.t, payload)
+    historian.command(session_id, session.plant.t, {"source": "fractal", "study_id": study_id, "event": "study_published"})
+    return payload
+
+
+@app.get("/api/plants/{plant_id}/sessions/{session_id}/fractal/studies/{study_id}/frames")
+def get_fractal_study_frames(plant_id: str, session_id: str, study_id: str, hour: int | None = None) -> dict[str, Any]:
+    if session_manager.get(plant_id, session_id) is None:
+        raise HTTPException(404, "sesión desconocida")
+    study = studies.get(session_id, study_id)
+    if study is None:
+        raise HTTPException(404, "estudio desconocido")
+    frames = study.get("hours", [])
+    if hour is not None:
+        if hour < 0 or hour >= len(frames):
+            raise HTTPException(422, "hora fuera del horizonte")
+        frames = [frames[hour]]
+    return {
+        "study_id": study_id,
+        "temporal_context": "forecast",
+        "applied": False,
+        "base_time": study.get("base_time", 0),
+        "frames": frames,
+    }
+
+
+@app.post("/api/plants/{plant_id}/sessions/{session_id}/fractal/studies/{study_id}/decision")
+def decide_fractal_study(plant_id: str, session_id: str, study_id: str, payload: Annotated[dict[str, Any], Body()]) -> dict[str, Any]:
+    session = session_manager.get(plant_id, session_id)
+    study = studies.get(session_id, study_id)
+    if session is None or study is None:
+        raise HTTPException(404, "sesión o estudio desconocido")
+    if study.get("study_type") != "optimized":
+        raise HTTPException(409, "solo los estudios optimizados requieren decisión del operador")
+    if study.get("decision"):
+        raise HTTPException(409, "el estudio ya tiene una decisión")
+    accept = payload.get("accept")
+    if not isinstance(accept, bool):
+        raise HTTPException(422, "accept debe ser booleano")
+    if accept and any(frame.get("robust") is not True for frame in study.get("hours", [])):
+        raise HTTPException(409, "el estudio no cumple restricciones en todas las horas/escenarios; no puede aprobarse")
+    study["decision"] = "accepted" if accept else "rejected"
+    study["applied"] = False
+    if accept:
+        draft = study.get("draft_profile")
+        if not isinstance(draft, dict):
+            raise HTTPException(422, "el estudio no incluye borrador de perfil")
+        try:
+            profile = ProfileStore(plant_id).create(draft)
+        except ValueError as exc:
+            raise HTTPException(422, str(exc)) from exc
+        study["profile_id"] = profile["id"]
+        study["profile_status"] = "approved_pending_activation"
+    studies.update(session_id, study_id, session.plant.t, study)
+    historian.command(
+        session_id,
+        session.plant.t,
+        {"source": "operator", "study_id": study_id, "decision": study["decision"], "profile_id": study.get("profile_id")},
+    )
+    return study
+
+
+@app.post("/api/plants/{plant_id}/sessions/{session_id}/fractal/studies/{study_id}/activate")
+def activate_fractal_profile(plant_id: str, session_id: str, study_id: str) -> dict[str, Any]:
+    session = session_manager.get(plant_id, session_id)
+    study = studies.get(session_id, study_id)
+    if session is None or study is None:
+        raise HTTPException(404, "sesión o estudio desconocido")
+    if study.get("decision") != "accepted" or not study.get("profile_id"):
+        raise HTTPException(409, "el estudio debe estar aprobado antes de programar el perfil")
+    profile = ProfileStore(plant_id).get(study["profile_id"])
+    if profile is None:
+        raise HTTPException(404, "perfil aprobado desconocido")
+    starts_at_hour = session_manager.schedule_profile(session, profile["id"], profile)
+    study["profile_status"] = "scheduled"
+    study["starts_at_hour"] = starts_at_hour
+    studies.update(session_id, study_id, session.plant.t, study)
+    historian.command(
+        session_id,
+        session.plant.t,
+        {
+            "source": "operator",
+            "study_id": study_id,
+            "event": "profile_scheduled",
+            "profile_id": profile["id"],
+            "starts_at_hour": starts_at_hour,
+        },
+    )
+    return {"study_id": study_id, "profile_id": profile["id"], "status": "scheduled", "starts_at_hour": starts_at_hour, "applied": False}
+
+
 @app.get("/api/plants/{plant_id}/sessions/{session_id}/fractal/recommendations")
 def list_fractal_recommendations(plant_id: str, session_id: str) -> list[dict[str, Any]]:
     session = session_manager.get(plant_id, session_id)
@@ -420,7 +527,7 @@ def get_session_plc_tags(plant_id: str, session_id: str) -> dict[str, Any]:
     return {
         "session_id": session_id,
         "t": session.plant.t,
-        "plc_tags": plc_tags(snapshot, profile_id=session.profile_id, profile_hour=hour),
+        "plc_tags": plc_tags(snapshot, profile_id=session.profile_id, profile_hour=hour, simulated_time=session.plant.t),
     }
 
 
@@ -611,7 +718,10 @@ async def simulate_plant(ws: WebSocket, plant_id: str) -> None:
                             "profile": profile_state,
                             "snapshot": snapshot,
                             "plc_tags": plc_tags(
-                                snapshot, profile_id=profile_id, profile_hour=profile_state["hour"] if profile_state else None
+                                snapshot,
+                                profile_id=profile_id,
+                                profile_hour=profile_state["hour"] if profile_state else None,
+                                simulated_time=plant.t,
                             ),
                             "events": new_events,
                         }

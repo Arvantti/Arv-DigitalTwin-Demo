@@ -1,37 +1,34 @@
-# Plan de implementación · sesión PLC compartida y optimización Fractal
+# Plan de implementación · sesión PLC compartida y estudios Fractal
 
-> Estado: fases A–C implementadas de forma inicial y verificadas; fases D–H pendientes.  
+> Estado: fases A–C verificadas; D, E, F y G tienen implementación inicial funcional; los contenedores de los tres servicios existen. Pendientes: solver hidráulico nodal validado, E2E integral, autorización/retención y proxy HTTPS/WSS.
 > Alcance inicial: `water-network-scale-v1`.  
 > Seguridad: todo componente es simulado. No existe conexión ni escritura a infraestructura física.
 
 ## 1. Estado de avance
 
-### Implementado inicial
+### Implementado inicialmente
 
 ```text
-[A] Runtime único por session_id
-[B] PLC como propietario de mando
-[C] 3D como visor de la sesión PLC
-[C.1] Retiro del inicio autónomo desde 3D
-[D] Perfiles PFL-* agrupados; separación de pruebas pendiente
-[G] Historian SQLite inicial de tags, eventos y mandos
-[E] Tags PLC / OPC UA simulados read-only por sesión
-[F.0] Objetivos y restricciones versionados
-[F.1] Servicio Fractal instantáneo básico y puente tags → buzón
-[F.2a] Buzón backend y aceptación/rechazo por operador
-[F.2b] Pantalla PLC inicial de recomendaciones
-[H] Containerfile Podman para galería y emulador
+[A–C] Runtime compartido por session_id, PLC autoridad y 3D visor
+[C.1] Inicio autónomo del 3D retirado; E2E visual completo pendiente
+[D] Perfiles PLC horarios; separación completa de pruebas pendiente
+[E] Tags PLC read-only por sesión, incluidos caudal/presión/apertura por vivienda y fuga
+[F] Estudios base, alternativo y optimizado; horizonte, tres escenarios, snapshots futuros,
+    persistencia PLC, frames horarios, aprobación y programación separadas
+[G] Historian SQLite, auditoría de mandos/decisiones y persistencia inicial de estudios
+[H] Containerfiles de galería, emulador y Fractal
 ```
 
-### Pendiente priorizado
+### Pendiente priorizado (decisión D71)
 
 ```text
-1. PLC solicita estudio instantáneo Fractal y muestra caso base/optimizado.
-2. Persistencia SQLite de recomendaciones y decisiones.
-3. Modelo hidráulico Fractal independiente completo.
-4. Horizonte de 24 h, recomendaciones por hora y borrador PFL-FRA-*.
-5. Completar separación perfiles/pruebas, robustez de sesiones y pruebas visuales.
-6. Containerfile/servicio Podman Fractal y proxy HTTPS/WSS final.
+1. FUTURO SIMULADO: Fractal lee tags y perfil activo desde PLC (implementado en /studies/horizon/from-plc);
+   validar las 24 horas frente a operación del emulador: demandas por vivienda, fugas, PRS,
+   bomba, recirculación y tanques, incluso límites de hora y transitorios.
+2. E2E PLC → estudio base/alternativo → persistencia PLC → frame 3D futuro NO APLICADO.
+3. Solo después: reconsiderar optimización horaria, objetivos, robustez y aprobación/programación.
+   La HMI no ofrece optimización y las rutas Fractal están deshabilitadas por defecto.
+4. Reconexión/expiración de sesiones, autorización/retención y despliegue de las dos APIs más proxy HTTPS/WSS.
 ```
 
 ## 2. Problema que se corrige
@@ -47,7 +44,7 @@ Operador → PLC virtual → sesión hidráulica compartida
                               └── Fractal (lectura y recomendaciones)
 ```
 
-El PLC es la única autoridad normal de mando. El emulador calcula una vez. El 3D representa el snapshot calculado.
+El PLC es la única autoridad normal de mando. El emulador calcula una vez. El 3D representa el estado publicado por PLC: operación (pasado/presente) o una rama futura Fractal explícitamente marcada. La política completa está en [estudios Fractal y visualización temporal](fractal-studies-and-temporal-views.md).
 
 ## 3. Principios y límites
 
@@ -233,9 +230,9 @@ GET /api/plants/{plant}/sessions/{session}/fractal/recommendations
 WS  /api/plants/{plant}/sessions/{session}/fractal/recommendations
 ```
 
-## 9. Fase F · Objetivos y optimización Fractal
+## 9. Fase F · Estudios Fractal: proyección, escenarios y optimización
 
-**Estado: puente instantáneo inicial implementado.** `apps/fractal-engineering-api` lee tags publicados por sesión, calcula una propuesta conservadora y la deposita en el buzón PLC como pendiente; no conoce ni escribe el runtime. Pendiente: lector WebSocket propio, buzón persistente PLC, modelo hidráulico completo y optimización futura.
+**Estado: implementación funcional inicial.** Fractal procesa proyección base, alternativa y optimización; PLC persiste estudios/frames por hora y el visor 3D puede cargar la rama futura con controles desactivados. El solver Fractal resuelve la red nodal aguas abajo de PRS, incluidos cabezales, ramales, cruces, 64 consumos y ocho fugas; contrasta cuatro puntos estacionarios contra el banco operativo. También calcula bomba principal según curva y altura del tanque, PRS con rama AUTO asentada y disponibilidad de presión; la recirculación usa curva de bomba, cabezas de tanques y eventos de histéresis. Pendientes la validación del horizonte completo contra operación real simulada (PID, rampas y fallas transitorias), prueba browser integral y autenticación/retención.
 
 ### Contrato de objetivos
 
@@ -277,6 +274,8 @@ Válvula N3→N4 · apertura
 
 ### Optimización instantánea
 
+**Método aprobado:** Differential Evolution para búsqueda global, seguido de SLSQP para refinamiento sujeto a restricciones. La selección PRS AUTO/MANUAL se evalúa como alternativas discretas. Especificación en `fractal/hydraulics/models/water-network-scale-v1/optimization.md`.
+
 Entrada:
 
 ```text
@@ -288,12 +287,14 @@ Salida: comparación de caso base y caso optimizado para el instante actual. La 
 Acciones PLC:
 
 ```text
-[ RECHAZAR ] [ ACEPTAR Y APLICAR ]
+[ RECHAZAR ] [ APROBAR BORRADOR ] [ PROGRAMAR DESDE PRÓXIMA HORA ]
 ```
 
-Solo la aceptación genera comandos PLC hacia la sesión hidráulica.
+Aprobar crea un perfil. Programarlo lo vincula a la sesión para la siguiente hora simulada; no manda comandos en el instante de la aprobación.
 
 ### Optimización futura
+
+**Método implementado:** horizonte de 24 horas; cada hora optimiza el caso nominal mediante Differential Evolution→SLSQP y evalúa el mismo mando en −10 %, base y +10 %. El perfil PLC define demanda/aperturas y se propagan tres tanques con balances horarios. Aún no es un MPC acoplado de trayectoria completa; IPOPT queda para cuando crezcan variables/horizonte.
 
 Entrada:
 
@@ -306,9 +307,10 @@ Fractal simula/optimiza cada franja futura y propone un plan horario. No altera 
 Acciones PLC:
 
 ```text
-[ RECHAZAR PLAN ]
+[ RECHAZAR ESTUDIO ]
 [ REVISAR HORA POR HORA ]
-[ COPIAR COMO BORRADOR DE PERFIL PLC ]
+[ APROBAR BORRADOR PFL-FRA ]
+[ PROGRAMAR PARA HORA SIMULADA SIGUIENTE ]
 ```
 
 La última opción crea un perfil, por ejemplo:
@@ -317,11 +319,11 @@ La última opción crea un perfil, por ejemplo:
 PFL-FRA-<id> · Plan optimizado · pendiente de aprobación
 ```
 
-El operador revisa, edita, guarda y activa. Solo el perfil aprobado manda órdenes horarias a la sesión.
+El operador revisa y aprueba el perfil; programarlo establece el próximo límite horario como inicio. PLC envía cada orden al llegar esa hora. Aceptación y programación no aplican mandos inmediatamente.
 
 ## 10. Fase G · Historian compartido
 
-**Estado: implementación inicial hecha.** SQLite guarda muestras de tags/perfil/eventos cada 60 s simulados y comandos por `session_id`; el endpoint de lectura de historian ya existe. Pendiente: conectar las gráficas PLC a esta fuente, registrar decisiones Fractal y política de retención.
+**Estado: implementación inicial hecha.** SQLite guarda muestras de tags/perfil/eventos y comandos por `session_id`; persiste estudios y frames, decisiones del operador y auditoría. Pendiente: integrar todas las gráficas PLC a la fuente, política de retención y robustez ante reinicios/expiración.
 
 Sustituir historial exclusivo de `localStorage` por historian de sesión persistente, inicialmente SQLite:
 
@@ -334,7 +336,7 @@ session_id, tiempo real, tiempo simulado, tags, eventos,
 
 ## 11. Fase H · Despliegue Podman
 
-**Estado: parcialmente implementada.** Los `Containerfile` de galería y emulador funcionan en Podman; falta el contenedor Fractal y el proxy HTTPS/WSS final.
+**Estado: parcialmente implementada.** Existen `Containerfile` para galería, emulador y Fractal. Pendiente: probar el conjunto integrado con Podman y configurar el proxy HTTPS/WSS de producción.
 
 ```text
 arvantti-gallery                 # Nginx; Node 26 solo en build
@@ -380,8 +382,10 @@ FRACTAL_ALLOWED_SESSIONS
     ↓ AHORA
 [F.2b] pantalla PLC y solicitud instantánea · implementación inicial hecha
     ↓ AHORA
-[F.2c] caso base/optimizado, persistencia y horizonte futuro · siguiente bloque prioritario
-[H] Podman de tres servicios            · pendiente
+[F.2c] caso base/optimizado y persistencia · implementación inicial hecha
+    ↓ AHORA
+[F.3] horizonte/escenarios y borrador PFL-FRA-* · implementación inicial; validar física y E2E
+[H] contenedores de tres servicios        · Containerfiles; probar stack y proxy pendientes
 ```
 
 La siguiente entrega debe completar **C.1**: prueba visual automatizada PLC → válvula/rejilla → caudal/presión/animación 3D, reconexión y detención limpia. Luego se implementa **G**, historian compartido, antes de construir Fractal.
