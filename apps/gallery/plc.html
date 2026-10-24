@@ -9,9 +9,10 @@
   </head>
   <body>
     <header class="topbar">
-      <a href="/plant.html?plant=water-network-scale-v1" class="back">← GEMELO 3D</a>
+      <a id="link-plant" href="/plant.html?plant=water-network-scale-v1" class="back">← GEMELO 3D</a>
       <div><strong>PLC MASTER</strong><span id="plant-name"> · CARGANDO…</span></div>
       <div class="connection" id="connection">● DESCONECTADO</div>
+      <label class="clock">VELOCIDAD <select id="session-speed"><option value="60">×60</option><option value="120">×120</option><option value="240" selected>×240 · DEFAULT</option><option value="600">×600</option></select></label>
       <div class="clock" id="clock">SIM · —</div>
     </header>
     <div class="warning">SIMULACIÓN · PLC VIRTUAL · SIN CONEXIÓN A INFRAESTRUCTURA FÍSICA</div>
@@ -30,6 +31,7 @@
           <button data-screen="grid">REJILLA Y CONSUMO</button>
           <button data-screen="profiles">PERFILES</button>
           <button data-screen="trends">TENDENCIAS</button>
+          <button data-screen="fractal">FRACTAL</button>
           <button data-screen="history">HISTORIAL</button>
         </nav>
         <section id="master" class="screen active">
@@ -70,6 +72,14 @@
             <article class="panel profile-hour-controls"><p class="eyebrow">HORA <span id="profile-hour-title">01</span> · DEMANDA</p><label>Todas las viviendas <input id="profile-global" type="range" min="0" max="100" value="100" /><output id="profile-global-output">—</output></label><div id="profile-level-controls" class="profile-level-controls"></div><p class="muted">La secuencia es global → nivel → vivienda individual. Las aperturas individuales y fugas se incorporan con <b>CAPTURAR MANDOS ACTUALES</b> desde la pantalla Rejilla.</p></article>
             <article class="panel profile-hour-controls"><p class="eyebrow">HORA <span class="profile-hour-duplicate">01</span> · RED Y PRV</p><div id="profile-between-controls" class="profile-level-controls"></div><label>Rama PRV <select id="profile-prs-branch"><option value="auto">AUTO</option><option value="manual">MANUAL</option></select></label><label>Consigna crítica <input id="profile-prs-critical" type="range" min="15" max="30" step="0.05" value="15.45" /><output id="profile-prs-critical-output">15.45 mca</output></label><label>Salida manual <input id="profile-prs-manual" type="range" min="15" max="35" step="0.05" value="20.94" /><output id="profile-prs-manual-output">20.94 mca</output></label><p id="profile-capture-summary" class="muted">Sin mandos individuales capturados.</p></article>
           </section>
+        </section>
+        <section id="fractal" class="screen">
+          <div class="section-head">
+            <div><p class="eyebrow">FRACTAL · FUTURO SIMULADO · NO APLICADO</p><h1>Proyección del perfil PLC</h1><p class="muted">Fractal lee el perfil activo guardado y los tags de la misma sesión PLC directamente del gateway. Una proyección base continúa ese perfil; un escenario alternativo cambia solo la hipótesis futura. Ninguno genera órdenes. Primero validamos esta proyección; la optimización se evaluará después.</p></div>
+            <div class="controls"><label>Tipo de estudio <select id="fractal-study-type"><option value="baseline">Proyección base</option><option value="alternative">Escenario alternativo</option></select></label><label>Demanda × (solo alternativa) <input id="fractal-demand-multiplier" type="number" min="0" max="2" step="0.1" value="1.1" /></label><label>Fuga × (solo alternativa) <input id="fractal-leak-multiplier" type="number" min="0" max="5" step="0.1" value="1" /></label><label>Válvulas verticales % (solo alternativa) <input id="fractal-valve-opening" type="number" min="0" max="100" step="1" value="100" /></label><button id="fractal-horizon" class="primary">◫ PROYECTAR 24 H DESDE PLC</button><button id="fractal-refresh">↻ ACTUALIZAR</button></div>
+          </div>
+          <div id="fractal-recommendations" class="cards"><p class="muted">Conecte una sesión PLC con un perfil activo para proyectar su futuro simulado.</p></div>
+          <div id="fractal-saved" class="cards" aria-label="Estudios futuros publicados en PLC"></div>
         </section>
         <section id="trends" class="screen">
           <div class="section-head"><div><p class="eyebrow">HISTORIADOR DE SESIÓN</p><h1>Tendencias de operación</h1><p class="muted">Muestras del emulador hidráulico durante esta sesión. Un perfil de 24 h se incorporará como escenario programable.</p></div></div>

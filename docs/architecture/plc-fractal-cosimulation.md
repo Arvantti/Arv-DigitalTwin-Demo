@@ -1,12 +1,14 @@
 # PLC Master, perfiles operativos y co-simulación Fractal
 
 > Estado: diseño aprobado para implementación incremental.  
+> Plan ejecutable: [sesión PLC compartida y optimización Fractal](plc-session-fractal-implementation-plan.md).
+> Política temporal y tipos de estudio: [estudios Fractal y visualización temporal](fractal-studies-and-temporal-views.md).
 > Alcance: `water-network-scale-v1`.  
 > Seguridad: todo componente es **simulado**; no hay conexión ni escritura a PLC, OPC UA, sensores o infraestructura física.
 
 ## Propósito
 
-El PLC Master es la interfaz operativa del emulador hidráulico. Fractal de Ingeniería es una calculadora independiente de proyección y optimización. Ambos se comunican como lo harían sistemas industriales reales: Fractal únicamente lee información publicada por el PLC virtual mediante una interfaz OPC UA simulada; no lee el emulador ni el modelo hidráulico operativo directamente.
+El PLC Master es la interfaz operativa del emulador hidráulico. Fractal de Ingeniería es un motor independiente de estudios futuros: proyección base, escenario alternativo y, opcionalmente, optimización. Ambos se comunican como lo harían sistemas industriales reales: Fractal únicamente lee información publicada por el PLC virtual mediante una interfaz OPC UA simulada; no lee el emulador ni el modelo hidráulico operativo directamente.
 
 La HMI permite al operador:
 

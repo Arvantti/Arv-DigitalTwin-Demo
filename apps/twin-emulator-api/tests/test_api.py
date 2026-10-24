@@ -98,6 +98,9 @@ def test_water_plc_schema_exposes_simulated_hmi_contract() -> None:
     assert not any(item["command"] == "set_param" for item in plc["write_commands"])
     opcua = client.get("/api/plants/water-network-scale-v1/opcua-schema").json()
     assert opcua["simulated"] is True and opcua["access"] == "read-only"
+    tag_ids = {node["id"] for node in opcua["nodes"]}
+    assert "PLC.Grid.L4.Consumer.C44.FlowLMin" in tag_ids
+    assert "PLC.Grid.L2.Leak.L1.OpeningPct" in tag_ids
     assert {node["id"] for node in opcua["nodes"]} >= {"PLC.PRS.OutletPressureMca", "PLC.Profile.CurrentHour"}
     assert client.get("/api/plants/sauce-plant-v1/plc-schema").status_code == 404
 
@@ -221,6 +224,67 @@ def test_operation_profiles_persist_and_drive_the_plc_virtual(tmp_path, monkeypa
     assert client.delete(f"{url}/{profile['id']}").status_code == 204
     assert client.get(f"{url}/{profile['id']}").status_code == 404
     assert client.post(url, json={"name": "incorrecto", "hours": {"24": {}}}).status_code == 422
+
+
+def test_shared_session_can_be_created_and_inspected() -> None:
+    created = client.post("/api/plants/water-network-scale-v1/sessions", json={})
+    assert created.status_code == 201
+    session_id = created.json()["id"]
+    state = client.get(f"/api/plants/water-network-scale-v1/sessions/{session_id}")
+    assert state.status_code == 200
+    assert state.json()["running"] is False
+    historian = client.get(f"/api/plants/water-network-scale-v1/sessions/{session_id}/historian")
+    assert historian.status_code == 200
+    assert historian.json()["commands"] == []
+    tags = client.get(f"/api/plants/water-network-scale-v1/sessions/{session_id}/opcua-schema")
+    assert tags.status_code == 200
+    assert tags.json()["read_only"] is True
+    objectives = client.get("/api/plants/water-network-scale-v1/fractal/objectives")
+    assert objectives.status_code == 200
+    assert objectives.json()["objectives"][0]["id"] == "OBJ-LEAK-01"
+    recommendation_url = f"/api/plants/water-network-scale-v1/sessions/{session_id}/fractal/recommendations"
+    published = client.post(recommendation_url, json={"proposal": []})
+    assert published.status_code == 201
+    assert published.json()["status"] == "pending"
+    decision = client.post(f"{recommendation_url}/{published.json()['id']}/decision", json={"accept": False})
+    assert decision.json()["status"] == "rejected"
+    study = {
+        "study_id": "EST-TEST-01",
+        "study_type": "baseline",
+        "temporal_context": "forecast",
+        "applied": False,
+        "hours": [{"hour": 0, "temporal_context": "forecast", "applied": False}],
+    }
+    study_url = f"/api/plants/water-network-scale-v1/sessions/{session_id}/fractal/studies"
+    assert client.post(study_url, json=study).status_code == 201
+    assert client.get(study_url).json()[0]["study_id"] == "EST-TEST-01"
+    frames = client.get(f"{study_url}/EST-TEST-01/frames?hour=0")
+    assert frames.status_code == 200
+    assert frames.json()["applied"] is False
+    assert frames.json()["frames"][0]["temporal_context"] == "forecast"
+    assert client.get(f"{study_url}/EST-TEST-01/frames?hour=1").status_code == 422
+    optimized = {
+        "study_id": "EST-TEST-OPT",
+        "study_type": "optimized",
+        "temporal_context": "forecast",
+        "applied": False,
+        "draft_profile": {"name": "PFL-FRA-TEST", "description": "aprobación manual", "hours": {}},
+        "hours": [],
+    }
+    assert client.post(study_url, json=optimized).status_code == 201
+    decision = client.post(f"{study_url}/EST-TEST-OPT/decision", json={"accept": True})
+    assert decision.status_code == 200
+    assert decision.json()["profile_status"] == "approved_pending_activation"
+    assert decision.json()["applied"] is False
+    assert client.post(f"{study_url}/EST-TEST-OPT/decision", json={"accept": True}).status_code == 409
+    activation = client.post(f"{study_url}/EST-TEST-OPT/activate")
+    assert activation.status_code == 200
+    assert activation.json()["starts_at_hour"] == 1
+    assert activation.json()["applied"] is False
+    assert client.get(f"/api/plants/water-network-scale-v1/sessions/{session_id}").json()["profile_id"] == decision.json()["profile_id"]
+    unsafe = optimized | {"study_id": "EST-UNSAFE", "hours": [{"hour": 0, "robust": False}]}
+    assert client.post(study_url, json=unsafe).status_code == 201
+    assert client.post(f"{study_url}/EST-UNSAFE/decision", json={"accept": True}).status_code == 409
 
 
 def test_water_plant_websocket_applies_hmi_valve_and_regulation_commands() -> None:

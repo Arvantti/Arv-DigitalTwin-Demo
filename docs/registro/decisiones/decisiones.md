@@ -1,9 +1,17 @@
 ---
 tipo: decisiones
 tags: [registro, decision]
-actualizado: 2026-10-22
+actualizado: 2026-10-24
 ---
 # Decisiones y reglas del autor
+
+## D71 · Primero futuro simulado PLC, luego optimización · 2026-10-24
+
+Andy distingue la proyección futura del escenario leído desde PLC de la optimización de Fractal. Primero se completa y valida el futuro simulado usando tags de la sesión y el perfil activo guardado en PLC, sin proponer ni aplicar mandos; solo después se reevalúa la optimización hora a hora. La HMI presenta por defecto proyección base y alternativa. El código experimental de optimización queda deshabilitado en la API salvo activación explícita de entorno, y no se anuncia como etapa terminada. El despliegue estático de Gallery no equivale a desplegar los servicios Python.
+
+## D70 · Separación temporal de estudios Fractal · 2026-10-23
+
+Fractal es un motor genérico de estudios futuros, no solo un optimizador: proyección base, escenario alternativo y optimización. El gemelo operativo representa PLC.Actual/histórico; los estudios se presentan como futuro no aplicado con identificación explícita y nunca modifican operación hasta decisión humana y programación PLC. El calculador específico pertenece al dominio; Fractal interpreta contratos declarativos compartidos de equipos/red independientemente del runtime operativo. La velocidad simulada predeterminada es ×240 (15 s reales por hora simulada), configurable desde PLC. Detalle: [[../../architecture/fractal-studies-and-temporal-views]].
 
 Índice: [[00-indice]] · Bitácora: [[bitacora]] · Plan: [[plan-del-proyecto]]. Cada decisión cita al autor (Carlos Andrés Quiceño) y la fecha en UTC.
 

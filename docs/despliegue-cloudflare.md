@@ -10,7 +10,7 @@ Cada push a `main` publica la galería web en **Cloudflare Pages** con el workfl
 | PLC Master del acueducto (`plc.html?plant=water-network-scale-v1`) | Se publica como HMI; las señales, mandos y curvas de sesión requieren el emulador API. |
 | API de simulación (`apps/twin-emulator-api`, FastAPI + WebSocket) | **Fuera de Pages.** Es Python con numpy y WebSocket; no corre en Pages ni en Workers de Python. Opciones: contenedor (Cloudflare Containers) o un VPS detrás de un túnel de Cloudflare. La HMI publicada se abre con `plc.html?plant=water-network-scale-v1&api=https://<host-del-emulador>`; el host debe exponer HTTPS/WSS y definir `TWIN_CORS_ORIGINS=https://digitaltwin.arvantti.online` (más los dominios autorizados). |
 
-Sin base de datos por ahora.
+La sesión, el historiador y los estudios usan SQLite local en el volumen del emulador. Pages solo publica archivos estáticos: para proyectar desde PLC se necesitan **ambas APIs** desplegadas aparte (emulador y Fractal).
 
 ## Contenedores para frontend y emulador
 
@@ -29,7 +29,15 @@ podman run --rm -p 8000:8000 \
   arvantti/twin-emulator-api
 ```
 
-La HMI publicada apunta al segundo contenedor con `?api=https://<host-del-emulador>`. El proxy HTTPS delante del API debe conservar la actualización WebSocket (`wss`).
+```bash
+# Fractal independiente (Python 3.12; lee tags y perfil desde el gateway PLC)
+podman build -f apps/fractal-engineering-api/Containerfile -t arvantti/fractal-engineering-api .
+podman run --rm -p 8100:8100 \
+  -e FRACTAL_PLC_API_URL=http://host.containers.internal:8000 \
+  arvantti/fractal-engineering-api
+```
+
+La HMI publicada apunta a ambos servicios con `?api=https://<host-del-emulador>&fractal=https://<host-fractal>`. Fractal usa `FRACTAL_PLC_API_URL` **interno** para obtener tags y perfil PLC y publicar el estudio; nunca acepta la copia de tags/perfil del navegador en `/studies/horizon/from-plc`. Por defecto la optimización está deshabilitada (`FRACTAL_ENABLE_OPTIMIZATION=0`) hasta validar el horizonte. El proxy HTTPS delante de ambos APIs debe conservar la actualización WebSocket (`wss`). **El workflow Deploy solo publica la galería; no despliega las APIs ni configura un proxy.**
 
 ## Pasos de una sola vez (en dash.cloudflare.com, cuenta Arvantti)
 1. **Account ID.** Entra a la cuenta Arvantti, abre *Workers & Pages* y copia el **Account ID** del panel derecho (o de la URL: `dash.cloudflare.com/<ACCOUNT_ID>/...`).

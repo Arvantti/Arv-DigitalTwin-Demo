@@ -1,0 +1,5 @@
+schema_version: 1
+constraints:
+  critical_pressure_min: { metric: critical_pressure_mca, operator: ">=", value: 15.0, unit: mca }
+  supply_level_range: { metric: supply_level_pct, min: 20, max: 95, unit: "%" }
+  pump_discharge_min: { metric: pump_discharge_pressure_mca, operator: ">=", value: 70.0, unit: mca }

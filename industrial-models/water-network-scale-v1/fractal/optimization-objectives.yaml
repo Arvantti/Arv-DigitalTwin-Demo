@@ -1,0 +1,20 @@
+schema_version: 1
+objectives:
+  - id: OBJ-LEAK-01
+    name: Minimizar fugas manteniendo servicio
+    modes: [instant, horizon]
+    primary: { metric: leakage_m3h, direction: minimize }
+    constraints: [critical_pressure_min, supply_level_range, pump_discharge_min]
+    decisions: [prs-01.manual_setting_mca, valve-between-12.opening_pct, valve-between-23.opening_pct, valve-between-34.opening_pct]
+  - id: OBJ-ENERGY-01
+    name: Minimizar energía manteniendo servicio
+    modes: [instant, horizon]
+    primary: { metric: estimated_energy_kwh, direction: minimize }
+    constraints: [critical_pressure_min, supply_level_range, pump_discharge_min]
+    decisions: [prs-01.manual_setting_mca, valve-between-12.opening_pct, valve-between-23.opening_pct, valve-between-34.opening_pct]
+  - id: OBJ-MARGIN-01
+    name: Maximizar margen de presión crítica
+    modes: [instant, horizon]
+    primary: { metric: critical_pressure_mca, direction: maximize }
+    constraints: [critical_pressure_min, supply_level_range, pump_discharge_min]
+    decisions: [prs-01.manual_setting_mca, valve-between-12.opening_pct, valve-between-23.opening_pct, valve-between-34.opening_pct]

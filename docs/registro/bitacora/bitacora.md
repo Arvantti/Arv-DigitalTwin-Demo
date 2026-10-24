@@ -1,7 +1,7 @@
 ---
 tipo: bitacora
 tags: [registro, bitacora]
-actualizado: 2026-10-22
+actualizado: 2026-10-24
 ---
 # Bitácora de avances
 
@@ -9,6 +9,15 @@ actualizado: 2026-10-22
 Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `Arvantti/Arv-sfot-demo-Fabtimus`.
 
 | Fecha | PR | Resumen | Fase |
+| 2026-10-24 | PR #78 · contraste hora real | Perfil 30 % y PRS AUTO: a t=12 s se proyectó una hora y se corrió 3600 pasos del emulador. Fractal 4,259 m³/h nominal frente a promedio emulador ≈4,263 m³/h. Se añadió rampa de variador independiente en Fractal: recirculación mejoró de 4,217 a 4,260 m³ (emulador 4,295); niveles finales 69,83/40,84/39,62 % vs 70,7/39,7/39,7 %. La diferencia residual de fase de histéresis obliga a mantener el forecast **no validado dinámicamente** y la optimización apagada. [[2026-10-24-prioridad-futuro-plc]] | PLC/Fractal |
+| 2026-10-24 | PR #78 · continuación | E2E de API con sesión PLC estabilizada: lee perfil/tags del gateway, genera y publica 24 frames base + 24 alternativos; comprueba horas, caudales, enlaces, ocho fugas, persistencia y que no se cambien consignas ni tiempo operativo. Bloqueo explícito del arranque frío (bombas paradas) y endpoint offline incapaz de publicar tags falsificados. Smoke real entre dos procesos FastAPI: estudio de 24 h, frame 23 persistido. 39 pruebas específicas, Ruff y typecheck pasan. El contraste transitorio completo de 24 h y la prueba browser de 3D siguen pendientes; no se proclama paridad dinámica. [[2026-10-24-prioridad-futuro-plc]] | PLC/Fractal/3D |
+| 2026-10-24 | PR #78 · 582e7ef | Futuro simulado antes de optimización · Por pedido del autor, prioridad a estudios base/alternativos de 24 horas con estado y perfil activo leídos del gateway PLC por Fractal, nunca de la copia del navegador. La HMI muestra solo esos dos tipos y conserva los frames NO APLICADOS; las rutas de optimización quedan deshabilitadas por defecto. Se distingue despliegue estático de Gallery del despliegue pendiente de las APIs. D71. [[2026-10-24-prioridad-futuro-plc]] | PLC/Fractal/3D |
+| 2026-10-24 | Paridad física Fractal: bombas, PRS y recirculación | Se examinó el montaje del emulador (curvas H=s²H0−rQ², antirretornos, PRS con PID, vasos como cabezas fijas y balance de masa). Fractal calcula por separado equilibrio de bombeo/PRS, presión efectiva condicionada a entrada disponible, rama AUTO asentada, caudales de dos tanques de retorno, bomba 1+1 e integración de nivel con histéresis; publica velocidad, potencia, descarga y tags futuros. Un estudio optimizado convierte su mando de PRS a rama manual, en lugar de dejar AUTO anulando la consigna. Pruebas del punto estacionario de bomba/PRS y recirculación y conservación de agua; 33 pruebas específicas, Ruff, typecheck/build, validador y diff-check pasan; estudio optimizado de 24 h con tags nominales terminó en ≈18 s y las 24 franjas resultaron factibles en ese caso. Se mantienen pendientes validación integral de 24 h y transitorios PID/rampa/fallas. [[2026-10-24-solver-fractal-y-estudios]] | Fractal/PLC |
+| 2026-10-24 | Estudios Fractal y solver hidráulico nodal independiente | Fractal arma y resuelve continuidad/presión de columna, cabezales, ramales y cruces de cuatro niveles, 64 viviendas y ocho fugas con Darcy-Weisbach, Kv y emisores; consume aperturas del PLC y compara día, noche, válvula restringida y fuga ×5 contra el banco operativo (tolerancia 0,04 mca/m³/h). El horizonte aplica perfiles por vivienda/fuga y evalúa un mismo mando nominal con demanda −10 %, prevista y +10 %. PLC persiste frames futuros, separados de la operación, aprobación y programación. Pendientes: curva/control de bombas y PRS AUTO, tanques dinámicos validados y E2E browser integral. Ruff, 31 pruebas específicas, typecheck/build Gallery, validador y diff-check pasan; la suite general excedió el timeout durante pruebas de planta. [[../../architecture/fractal-studies-and-temporal-views]] | Fractal/PLC/3D |
+| 2026-10-23 | Arquitectura temporal Fractal | Se define Fractal como motor de proyección base, escenarios alternativos y optimización; una geometría 3D con líneas temporales separadas de operación PLC y futuro no aplicado, barrera temporal, contratos de forecast publicados por PLC y velocidad por defecto ×240 configurable desde PLC. [[../../architecture/fractal-studies-and-temporal-views]] | arquitectura/Fractal |
+| 2026-10-22 | Sesión PLC compartida inicial | Runtime compartido, roles WebSocket y clientes PLC/3D enlazados por `session_id`; transición conserva endpoint anterior. [[2026-10-22-perfiles-plc-fractal]] | PLC/3D |
+| 2026-10-22 | Plan de sesión PLC compartida y Fractal | Plan versionado para una sesión única, 3D visor, tags por sesión, objetivos y recomendaciones Fractal instantáneas/futuras. [[2026-10-22-perfiles-plc-fractal]] | arquitectura/PLC |
+| 2026-10-22 | Escena 3D contra emulador externo | `plant.html` consume API/WebSocket configurable con `?api=` y conserva el origen al enlazar al PLC. [[2026-10-22-perfiles-plc-fractal]] | acueducto/3D |
 | 2026-10-22 | Contenedores Node 26 y emulador | Node 26.12.1 alineado en frontend/CI, `Containerfile` Podman para galería y FastAPI, y guía de HTTPS/WSS + CORS. [[2026-10-22-perfiles-plc-fractal]] | despliegue |
 | 2026-10-22 | Perfiles PLC y acceso al emulador | Perfiles operativos explícitos para demanda/PRS/restricción; HMI con API configurable y validación JSON; FastAPI con CORS configurable por entorno. [[2026-10-22-perfiles-plc-fractal]] | acueducto/PLC |
 | 2026-10-22 | Disponibilidad de emulador PLC | La HMI valida que el backend responda JSON, informa claramente la ausencia del emulador en Pages y permite indicar un host API con `?api=`. [[2026-10-22-perfiles-plc-fractal]] | acueducto/HMI |
@@ -94,6 +103,36 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 | 2026-10-16 | #1 | Layouts de las plantas | 1 |
 
 ## Entradas
+
+### 2026-10-22 · Sesión PLC compartida inicial
+- **Fecha/hora (UTC):** 2026-10-22.
+- **Fase del plan:** A–C de sesión compartida.
+- **Solicitado por:** Andy autorizó implementar la sincronización PLC, emulador y 3D.
+- **Qué se hizo:** se añade administrador de sesión con runtime único y difusión de snapshots; API REST/WS con roles; PLC crea e inicia sesión; el 3D recibe `session_id` y se conecta como visor sin control.
+- **Commits:** `4db7b19` (implementación); actualización de registro incluida en el commit siguiente.
+- **Verificación:** API `18 passed`, ruff API y typecheck de galería.
+- **Decisiones:** endpoint histórico de simulación se conserva temporalmente para compatibilidad.
+- **Conversación:** [[2026-10-22-perfiles-plc-fractal]].
+
+### 2026-10-22 · Plan de sesión PLC compartida y Fractal
+- **Fecha/hora (UTC):** 2026-10-22.
+- **Fase del plan:** arquitectura PLC, 3D y Fractal.
+- **Solicitado por:** Andy pidió dejar el plan completo en Markdown antes de implementar.
+- **Qué se hizo:** se documentó el roadmap por fases para sesión hidráulica única, roles PLC/visor/Fractal, historian, objetivos configurables, optimización instantánea y futura, recomendaciones aprobadas por operador, Podman y pruebas de aceptación.
+- **Commits:** `4db7b19` (implementación); actualización de registro incluida en el commit siguiente.
+- **Verificación:** revisión de coherencia con el contrato de co-simulación existente.
+- **Decisiones:** PLC es propietario de mando; 3D es visor; Fractal es lector de tags y asesor sin escritura automática.
+- **Conversación:** [[2026-10-22-perfiles-plc-fractal]].
+
+### 2026-10-22 · Escena 3D contra emulador externo
+- **Fecha/hora (UTC):** 2026-10-22.
+- **Fase del plan:** acueducto/escena 3D desplegada.
+- **Solicitado por:** Andy reportó que la escena 3D no cargaba con los contenedores locales.
+- **Qué se hizo:** se propaga `?api=` a las solicitudes del plano, WebSocket de simulación y enlace a PLC; el frontend estático puede usar un emulador FastAPI separado.
+- **Commits:** `4db7b19` (implementación); actualización de registro incluida en el commit siguiente.
+- **Verificación:** typecheck/build de galería, imagen Podman y Playwright: 13 activos cargados y simulación WebSocket en vivo.
+- **Decisiones:** ninguna nueva.
+- **Conversación:** [[2026-10-22-perfiles-plc-fractal]].
 
 ### 2026-10-22 · Contenedores Node 26 y emulador
 - **Fecha/hora (UTC):** 2026-10-22.
