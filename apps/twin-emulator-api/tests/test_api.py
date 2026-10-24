@@ -1,7 +1,7 @@
 import shutil
 
 from fastapi.testclient import TestClient
-from twin_emulator_api.main import app
+from twin_emulator_api.main import app, session_manager
 from twin_runtime.plant import SIM_FILE, find_models_root
 
 client = TestClient(app)
@@ -224,6 +224,25 @@ def test_operation_profiles_persist_and_drive_the_plc_virtual(tmp_path, monkeypa
     assert client.delete(f"{url}/{profile['id']}").status_code == 204
     assert client.get(f"{url}/{profile['id']}").status_code == 404
     assert client.post(url, json={"name": "incorrecto", "hours": {"24": {}}}).status_code == 422
+
+
+def test_plc_and_3d_read_the_same_sensor_sample_at_each_simulated_instant() -> None:
+    plant = "water-network-scale-v1"
+    session_id = client.post(f"/api/plants/{plant}/sessions", json={}).json()["id"]
+    session = session_manager.get(plant, session_id)
+    assert session is not None
+    first = session.snapshot()
+    assert session.snapshot() is first
+    url = f"/api/plants/{plant}/sessions/{session_id}/plc-tags"
+    first_tags = client.get(url).json()["plc_tags"]
+    assert client.get(url).json()["plc_tags"] == first_tags
+    assert session.message()["plc_tags"] == first_tags
+    session.plant.step()
+    next_snapshot = session.snapshot()
+    assert next_snapshot is not first
+    assert client.get(url).json()["t"] == session.plant.t
+    session_manager.command(session, {"equipment": "prs-01", "command": "select_branch", "args": {"branch": "manual"}})
+    assert session.snapshot() is not next_snapshot
 
 
 def test_shared_session_can_be_created_and_inspected() -> None:

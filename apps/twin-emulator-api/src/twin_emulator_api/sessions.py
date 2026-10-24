@@ -47,9 +47,21 @@ class PlantSession:
     sent_events: int = 0
     last_sample_t: float = -60.0
     recommendations: list[dict[str, Any]] = field(default_factory=list)
+    _snapshot_t: float | None = field(default=None, repr=False)
+    _snapshot: dict[str, Any] | None = field(default=None, repr=False)
+
+    def snapshot(self) -> dict[str, Any]:
+        """Una lectura de sensores por instante simulado, compartida por PLC y 3D."""
+        if self._snapshot is None or self._snapshot_t != self.plant.t:
+            self._snapshot = self.plant.snapshot()
+            self._snapshot_t = self.plant.t
+        return self._snapshot
+
+    def invalidate_snapshot(self) -> None:
+        self._snapshot = None
 
     def message(self) -> dict[str, Any]:
-        snapshot = self.plant.snapshot()
+        snapshot = self.snapshot()
         hour = int(self.plant.t // 3600)
         profile_state = {"id": self.profile_id, "hour": hour} if self.profile_id else None
         events = [event.to_dict() for event in self.plant.events[self.sent_events :]][-200:]
@@ -78,6 +90,7 @@ class PlantSession:
             equipment.command(item["command"], item["args"])
             self.plant.events.extend(equipment.drain_events())
         self.applied_profile_hour = hour
+        self.invalidate_snapshot()
 
     def publish(self) -> None:
         message = self.message()
@@ -163,6 +176,7 @@ class SessionManager:
             equipment = session.plant.equipment[payload["equipment"]]
             equipment.command(payload["command"], payload.get("args") or {})
             session.plant.events.extend(equipment.drain_events())
+            session.invalidate_snapshot()
         historian.command(session.id, session.plant.t, payload)
         session.last_activity = time()
 
