@@ -522,12 +522,14 @@ def get_session_plc_tags(plant_id: str, session_id: str) -> dict[str, Any]:
     session = session_manager.get(plant_id, session_id)
     if session is None:
         raise HTTPException(404, "sesión desconocida")
-    snapshot = session.plant.snapshot()
+    snapshot = session.snapshot()
     hour = int(session.plant.t // 3600)
     return {
         "session_id": session_id,
         "t": session.plant.t,
-        "plc_tags": plc_tags(snapshot, profile_id=session.profile_id, profile_hour=hour, simulated_time=session.plant.t),
+        "plc_tags": plc_tags(
+            snapshot, profile_id=session.profile_id, profile_hour=hour if session.profile_id else None, simulated_time=session.plant.t
+        ),
     }
 
 

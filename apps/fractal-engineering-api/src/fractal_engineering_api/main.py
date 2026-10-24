@@ -154,6 +154,7 @@ def _horizon_study(payload: dict[str, Any], *, publish: bool) -> dict[str, Any]:
         "objective_id": objective_id,
         "temporal_context": "forecast",
         "applied": False,
+        "validation_status": "hydraulic_setpoints_only",
         "study_id": payload.get("study_id") or f"EST-{uuid4().hex[:12].upper()}",
         "base_time": tags.get("PLC.Session.SimulatedTime", 0),
         "hours": hours,

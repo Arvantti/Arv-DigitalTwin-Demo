@@ -1,0 +1,263 @@
+{
+  "hours": 4,
+  "open_loop_source_t_s": 30.0,
+  "samples": [
+    {
+      "hour": 0,
+      "emulator_t_s": 3600.0,
+      "actual_return_m3": 4.29487,
+      "actual_recirc_on": false,
+      "open_loop": {
+        "levels": {
+          "supply_level_pct": {
+            "fractal": 69.128,
+            "emulator": 70.9,
+            "absolute_error": 1.772,
+            "error_pct": 2.4993
+          },
+          "recirc01_level_pct": {
+            "fractal": 41.495,
+            "emulator": 39.2,
+            "absolute_error": 2.295,
+            "error_pct": 5.8546
+          },
+          "recirc02_level_pct": {
+            "fractal": 40.229,
+            "emulator": 39.2,
+            "absolute_error": 1.029,
+            "error_pct": 2.625
+          }
+        },
+        "recirculated_m3": {
+          "fractal": 4.25617,
+          "emulator": 4.29487,
+          "absolute_error": 0.0387,
+          "error_pct": 0.901
+        },
+        "pump_auto_active": false
+      },
+      "reanchored": {
+        "levels": {
+          "supply_level_pct": {
+            "fractal": 69.128,
+            "emulator": 70.9,
+            "absolute_error": 1.772,
+            "error_pct": 2.4993
+          },
+          "recirc01_level_pct": {
+            "fractal": 41.495,
+            "emulator": 39.2,
+            "absolute_error": 2.295,
+            "error_pct": 5.8546
+          },
+          "recirc02_level_pct": {
+            "fractal": 40.229,
+            "emulator": 39.2,
+            "absolute_error": 1.029,
+            "error_pct": 2.625
+          }
+        },
+        "recirculated_m3": {
+          "fractal": 4.25617,
+          "emulator": 4.29487,
+          "absolute_error": 0.0387,
+          "error_pct": 0.901
+        },
+        "pump_auto_active": false
+      }
+    },
+    {
+      "hour": 1,
+      "emulator_t_s": 7200.0,
+      "actual_return_m3": 4.32947,
+      "actual_recirc_on": false,
+      "open_loop": {
+        "levels": {
+          "supply_level_pct": {
+            "fractal": 66.401,
+            "emulator": 68.8,
+            "absolute_error": 2.399,
+            "error_pct": 3.4869
+          },
+          "recirc01_level_pct": {
+            "fractal": 43.937,
+            "emulator": 40.6,
+            "absolute_error": 3.337,
+            "error_pct": 8.2192
+          },
+          "recirc02_level_pct": {
+            "fractal": 42.486,
+            "emulator": 40.9,
+            "absolute_error": 1.586,
+            "error_pct": 3.8778
+          }
+        },
+        "recirculated_m3": {
+          "fractal": 4.29445,
+          "emulator": 4.32947,
+          "absolute_error": 0.03502,
+          "error_pct": 0.809
+        },
+        "pump_auto_active": false
+      },
+      "reanchored": {
+        "levels": {
+          "supply_level_pct": {
+            "fractal": 68.58,
+            "emulator": 68.8,
+            "absolute_error": 0.22,
+            "error_pct": 0.3198
+          },
+          "recirc01_level_pct": {
+            "fractal": 41.851,
+            "emulator": 40.6,
+            "absolute_error": 1.251,
+            "error_pct": 3.0813
+          },
+          "recirc02_level_pct": {
+            "fractal": 40.548,
+            "emulator": 40.9,
+            "absolute_error": 0.352,
+            "error_pct": 0.8606
+          }
+        },
+        "recirculated_m3": {
+          "fractal": 4.30989,
+          "emulator": 4.32947,
+          "absolute_error": 0.01958,
+          "error_pct": 0.4524
+        },
+        "pump_auto_active": false
+      }
+    },
+    {
+      "hour": 2,
+      "emulator_t_s": 10800.0,
+      "actual_return_m3": 4.45621,
+      "actual_recirc_on": false,
+      "open_loop": {
+        "levels": {
+          "supply_level_pct": {
+            "fractal": 55.807,
+            "emulator": 59.6,
+            "absolute_error": 3.793,
+            "error_pct": 6.3641
+          },
+          "recirc01_level_pct": {
+            "fractal": 53.431,
+            "emulator": 48.9,
+            "absolute_error": 4.531,
+            "error_pct": 9.2658
+          },
+          "recirc02_level_pct": {
+            "fractal": 51.251,
+            "emulator": 49.2,
+            "absolute_error": 2.051,
+            "error_pct": 4.1687
+          }
+        },
+        "recirculated_m3": {
+          "fractal": 4.41334,
+          "emulator": 4.45621,
+          "absolute_error": 0.04287,
+          "error_pct": 0.962
+        },
+        "pump_auto_active": false
+      },
+      "reanchored": {
+        "levels": {
+          "supply_level_pct": {
+            "fractal": 59.409,
+            "emulator": 59.6,
+            "absolute_error": 0.191,
+            "error_pct": 0.3205
+          },
+          "recirc01_level_pct": {
+            "fractal": 49.806,
+            "emulator": 48.9,
+            "absolute_error": 0.906,
+            "error_pct": 1.8528
+          },
+          "recirc02_level_pct": {
+            "fractal": 47.878,
+            "emulator": 49.2,
+            "absolute_error": 1.322,
+            "error_pct": 2.687
+          }
+        },
+        "recirculated_m3": {
+          "fractal": 4.45988,
+          "emulator": 4.45621,
+          "absolute_error": 0.00367,
+          "error_pct": 0.0824
+        },
+        "pump_auto_active": false
+      }
+    },
+    {
+      "hour": 3,
+      "emulator_t_s": 14400.0,
+      "actual_return_m3": 5.8482,
+      "actual_recirc_on": true,
+      "open_loop": {
+        "levels": {
+          "supply_level_pct": {
+            "fractal": 82.835,
+            "emulator": 68.9,
+            "absolute_error": 13.935,
+            "error_pct": 20.225
+          },
+          "recirc01_level_pct": {
+            "fractal": 28.947,
+            "emulator": 41.1,
+            "absolute_error": 12.153,
+            "error_pct": 29.5693
+          },
+          "recirc02_level_pct": {
+            "fractal": 29.154,
+            "emulator": 40.9,
+            "absolute_error": 11.746,
+            "error_pct": 28.7188
+          }
+        },
+        "recirculated_m3": {
+          "fractal": 6.53607,
+          "emulator": 5.8482,
+          "absolute_error": 0.68787,
+          "error_pct": 11.7621
+        },
+        "pump_auto_active": true
+      },
+      "reanchored": {
+        "levels": {
+          "supply_level_pct": {
+            "fractal": 72.07,
+            "emulator": 68.9,
+            "absolute_error": 3.17,
+            "error_pct": 4.6009
+          },
+          "recirc01_level_pct": {
+            "fractal": 38.277,
+            "emulator": 41.1,
+            "absolute_error": 2.823,
+            "error_pct": 6.8686
+          },
+          "recirc02_level_pct": {
+            "fractal": 38.333,
+            "emulator": 40.9,
+            "absolute_error": 2.567,
+            "error_pct": 6.2763
+          }
+        },
+        "recirculated_m3": {
+          "fractal": 5.96991,
+          "emulator": 5.8482,
+          "absolute_error": 0.12171,
+          "error_pct": 2.0811
+        },
+        "pump_auto_active": true
+      }
+    }
+  ],
+  "elapsed_real_s": 824.45
+}

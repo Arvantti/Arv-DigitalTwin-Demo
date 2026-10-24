@@ -30,6 +30,7 @@ def test_horizon_baseline_is_forecast_without_operator_acceptance() -> None:
     assert response.status_code == 200
     study = response.json()
     assert study["temporal_context"] == "forecast"
+    assert study["validation_status"] == "hydraulic_setpoints_only"
     assert study["applied"] is False
     assert study["requires_operator_acceptance"] is False
     assert len(study["hours"]) == 24

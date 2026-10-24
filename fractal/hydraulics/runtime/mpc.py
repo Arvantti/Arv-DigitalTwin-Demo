@@ -227,9 +227,16 @@ def _snapshot(
 
 
 def project_24h(
-    tags: dict[str, Any], profile: dict[str, Any], study_type: str = "baseline", objective_id: str = "OBJ-LEAK-01"
+    tags: dict[str, Any],
+    profile: dict[str, Any],
+    study_type: str = "baseline",
+    objective_id: str = "OBJ-LEAK-01",
+    *,
+    horizon_hours: int = 24,
 ) -> list[dict[str, Any]]:
     """Genera una rama horaria. Baseline y alternative nunca optimizan ni proponen mandos."""
+    if not 1 <= horizon_hours <= 24:
+        raise ValueError("horizon_hours debe estar entre 1 y 24")
     plan: list[dict[str, Any]] = []
     optimized_cache: dict[tuple[Any, ...], dict[str, Any]] = {}
     tank_levels = {
@@ -244,7 +251,7 @@ def project_24h(
         for n in (12, 23, 34)
     )
     base_hour = int(float(tags.get("PLC.Session.SimulatedTime") or 0) // 3600) % 24
-    for hour in range(24):
+    for hour in range(horizon_hours):
         profile_hour = (base_hour + hour) % 24
         entry = profile.get("hours", {}).get(str(profile_hour), {})
         overrides = profile.get("overrides", {}) if study_type == "alternative" else {}
