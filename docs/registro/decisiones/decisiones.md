@@ -5,6 +5,10 @@ actualizado: 2026-10-24
 ---
 # Decisiones y reglas del autor
 
+## D72 · Diferencia entre modelos no implica fallo · 2026-10-24
+
+El autor aclaró que Fractal **no debe ser exactamente igual al emulador**; una diferencia acotada entre dos modelos independientes puede ser útil para ilustrar incertidumbre. Mencionó como referencia informal desviaciones del orden de 2 % y picos cercanos a 4 % observados en otros gemelos, **no como tolerancia aprobada ni como medición de esta planta**. No se introduce ruido artificial para alcanzar una diferencia. Se contrastan errores por canal y hora, conservación de agua y acuerdo sobre límites de seguridad (presión crítica ≥15 mca); la física dinámica de los tanques requiere validación aparte. Sin mediciones de una instalación real no se afirma exactitud respecto al mundo físico.
+
 ## D71 · Primero futuro simulado PLC, luego optimización · 2026-10-24
 
 Andy distingue la proyección futura del escenario leído desde PLC de la optimización de Fractal. Primero se completa y valida el futuro simulado usando tags de la sesión y el perfil activo guardado en PLC, sin proponer ni aplicar mandos; solo después se reevalúa la optimización hora a hora. La HMI presenta por defecto proyección base y alternativa. El código experimental de optimización queda deshabilitado en la API salvo activación explícita de entorno, y no se anuncia como etapa terminada. El despliegue estático de Gallery no equivale a desplegar los servicios Python.
