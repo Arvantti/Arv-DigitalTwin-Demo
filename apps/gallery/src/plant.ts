@@ -121,8 +121,11 @@ const url = new URLSearchParams(location.search);
 const apiOrigin = (url.get("api") ?? location.origin).replace(/\/$/, "");
 const apiUrl = (path: string) => `${apiOrigin}${path}`;
 const websocketUrl = (path: string) => `${apiOrigin.replace(/^http/, "ws")}${path}`;
-const sessionId = url.get("session");
-const forecastStudyId = url.get("study");
+let sessionId = url.get("session");
+let forecastStudyId = url.get("study");
+let latestLiveMessage: SimMessage | null = null;
+let historicalTime: number | null = null;
+let historyRequest = 0;
 const shotMode = url.get("shot") === "1";
 if (shotMode && url.get("ui") !== "1") document.body.classList.add("shot");
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -1024,6 +1027,7 @@ function disconnect(): void {
 type SimMessage = {
   t: number;
   speed?: number;
+  running?: boolean;
   snapshot: { equipment: Record<string, EquipmentSnapshot>; lines: Parameters<typeof renderLines>[0]; links?: Record<string, LinkState> };
   events: Parameters<typeof appendEvents>[0];
 };
@@ -1056,8 +1060,7 @@ function applyMessage(msg: SimMessage, label: string): void {
 function connect(): void {
   // La escena no crea runtimes propios: el PLC es quien inicia la operación y entrega su session_id.
   if (!sessionId) {
-    const apiQuery = url.get("api") ? `&api=${encodeURIComponent(apiOrigin)}` : "";
-    location.href = `/plc.html?plant=${doc.plant.id}${apiQuery}`;
+    $("view-plc").click(); // El PLC crea la sesión sin sacar al operador del 3D.
     return;
   }
   if (socket || replay) return disconnect();
@@ -1077,7 +1080,10 @@ function connect(): void {
       return;
     }
     received++;
-    applyMessage(msg, "SIM");
+    latestLiveMessage = msg as SimMessage;
+    const slider = $<HTMLInputElement>("history-time");
+    slider.max = String(Math.floor(msg.t / 60) * 60);
+    if (historicalTime === null && !forecastStudyId) applyMessage(msg, msg.running === false ? "PLC.DETENIDO" : "PLC.ACTUAL");
   };
   // sin API (sitio publicado): se reproduce la grabación de la operación normal
   ws.onclose = () => {
@@ -1205,7 +1211,7 @@ function renderAsset(): void {
   if (cmds.dataset.for !== (selectedId ?? "")) {
     cmds.dataset.for = selectedId ?? "";
     cmds.innerHTML = "";
-    if (spec && !forecastStudyId) {
+    if (spec && !forecastStudyId && !sessionId) {
       for (const c of (spec.commands ?? []).filter((c) => !c.args)) cmds.appendChild(commandButton(c.id.replace(/_/g, " ").toUpperCase(), c.description, c.id, {}));
       for (const f of spec.faults ?? []) cmds.appendChild(commandButton(`⚠ ${f.id.replace(/_/g, " ")}`, f.description, "inject_fault", { fault: f.id }));
     }
@@ -1276,9 +1282,56 @@ function buildLighting(): void {
   }
 }
 
+// ------------------------------------------------------------------ un solo escritorio: 3D + HMI y pasado de solo lectura
+function waterView(view: "3d" | "plc" | "history"): void {
+  $("water-plc-panel").hidden = view !== "plc";
+  $("water-history-panel").hidden = view !== "history";
+  for (const key of ["3d", "plc", "history"]) $(`view-${key}`).classList.toggle("active", view === key);
+  if (view === "plc") {
+    const frame = $<HTMLIFrameElement>("water-plc-frame");
+    if (!frame.src) {
+      const params = new URLSearchParams({ plant: doc.plant.id, embedded: "1" });
+      if (sessionId) params.set("session", sessionId);
+      if (url.get("api")) params.set("api", apiOrigin);
+      if (url.get("fractal")) params.set("fractal", url.get("fractal")!);
+      frame.src = `/plc.html?${params}`;
+    }
+  }
+  if (view === "history") {
+    // Pasado y futuro nunca se superponen: el estudio sigue guardado, pero la vista
+    // vuelve a PLC.Actual antes de pintar un fotograma histórico.
+    if (forecastStudyId) {
+      forecastStudyId = null; url.delete("study"); history.replaceState(null, "", `${location.pathname}?${url}`);
+      $("forecast-panel").hidden = true; document.body.classList.remove("forecast-mode");
+    }
+    equipmentHistory.clear();
+    if (sessionId) void showHistory(Number($<HTMLInputElement>("history-time").value));
+    else $("history-caption").textContent = "Inicie una sesión PLC para generar historia.";
+  } else if (historicalTime !== null) {
+    historicalTime = null;
+    equipmentHistory.clear();
+    if (!forecastStudyId && latestLiveMessage) applyMessage(latestLiveMessage, "PLC.ACTUAL");
+  }
+}
+
+async function showHistory(t: number): Promise<void> {
+  if (!sessionId) return;
+  const request = ++historyRequest;
+  try {
+    const response = await fetch(apiUrl(`/api/plants/${doc.plant.id}/sessions/${sessionId}/historian/frame?at_t=${encodeURIComponent(t)}`));
+    if (!response.ok) throw Error(`sin fotograma (${response.status})`);
+    const data = await response.json() as { t: number; snapshot: SimMessage["snapshot"]; temporal_context: string };
+    if (request !== historyRequest || $("water-history-panel").hidden) return;
+    historicalTime = data.t;
+    applyMessage({ t: data.t, snapshot: data.snapshot, events: [] }, "HISTÓRICO · NO OPERATIVO");
+    $("history-caption").textContent = `t=${Math.floor(data.t)} s · PLC sigue en play · vista de solo lectura`;
+  } catch (error) { if (request === historyRequest) $("history-caption").textContent = `No se pudo leer el histórico: ${String(error)}`; }
+}
+
 // ------------------------------------------------------------------ arranque
 async function loadForecast(): Promise<void> {
   if (!sessionId || !forecastStudyId) return;
+  historicalTime = null;
   const response = await fetch(apiUrl(`/api/plants/${doc.plant.id}/sessions/${sessionId}/fractal/studies/${forecastStudyId}/frames`));
   if (!response.ok) throw new Error("No se pudo cargar el estudio Fractal desde PLC");
   const data = await response.json() as { base_time: number; frames: { hour: number; supply_level_pct: number; robust: boolean; snapshot: SimMessage["snapshot"]; scenarios: { demand_factor: number; state: Record<string, number>; feasible: boolean }[] }[] };
@@ -1293,7 +1346,7 @@ async function loadForecast(): Promise<void> {
     const nominal = frame?.scenarios?.[1];
     if (!frame || !nominal) { $("forecast-values").textContent = "El estudio no contiene métricas para esta hora."; return; }
     applyMessage({ t: data.base_time + (frame.hour + 1) * 3600, speed: 240, snapshot: frame.snapshot, events: [] }, "FUTURO FRACTAL");
-    $("forecast-values").textContent = `Tanque proyectado ${frame.supply_level_pct.toFixed(1)} % · presión crítica ${Number(nominal.state.critical_pressure_mca).toFixed(2)} mca · fuga ${Number(nominal.state.leakage_m3h).toFixed(3)} m³/h · ${frame.robust ? "FACTIBLE" : "REVISAR RESTRICCIONES"}`;
+    $("forecast-values").textContent = `Tanque estimado ${frame.supply_level_pct.toFixed(1)} % (nivel sensible a la histéresis de retorno) · presión crítica ${Number(nominal.state.critical_pressure_mca).toFixed(2)} mca · fuga ${Number(nominal.state.leakage_m3h).toFixed(3)} m³/h · ${frame.robust ? "FACTIBLE EN MODELO · NO VALIDADO DINÁMICAMENTE" : "REVISAR RESTRICCIONES"}`;
   };
   selector.onchange = showHour;
   showHour();
@@ -1316,11 +1369,41 @@ async function start(): Promise<void> {
   stage.setGroundElevation(Math.min(...doc.zones.map((zone) => zone.elevation ?? 0)));
   $<HTMLAnchorElement>("link-equipos").href = `/equipos.html?plant=${plantId}`;
   const plcLink = $<HTMLAnchorElement>("link-plc");
+  $("forecast-return").onclick = () => {
+    forecastStudyId = null; url.delete("study"); history.replaceState(null, "", `${location.pathname}?${url}`);
+    $("forecast-panel").hidden = true; document.body.classList.remove("forecast-mode");
+    if (latestLiveMessage) applyMessage(latestLiveMessage, "PLC.ACTUAL");
+    else if (sessionId && !socket) connect();
+  };
   const plcSchema = await fetch(apiUrl(`/api/plants/${plantId}/plc-schema`)).catch(() => null);
   if (plcSchema?.ok) {
-    const apiQuery = url.get("api") ? `&api=${encodeURIComponent(apiOrigin)}` : "";
-    plcLink.href = `/plc.html?plant=${plantId}${apiQuery}`;
+    document.body.classList.add("plc-viewer-mode");
+    plcLink.href = "#plc";
     plcLink.hidden = false;
+    $("water-workspace-nav").hidden = false;
+    plcLink.onclick = (event) => { event.preventDefault(); waterView("plc"); };
+    $("view-3d").onclick = () => waterView("3d");
+    $("view-plc").onclick = () => waterView("plc");
+    $("view-history").onclick = () => waterView("history");
+    $<HTMLInputElement>("history-time").oninput = (event) => { void showHistory(Number((event.target as HTMLInputElement).value)); };
+    $("history-return").onclick = () => { historyRequest++; historicalTime = null; waterView("3d"); if (latestLiveMessage) applyMessage(latestLiveMessage, "PLC.ACTUAL"); };
+    window.addEventListener("message", (event: MessageEvent<{ type?: string; sessionId?: string; studyId?: string; plantId?: string }>) => {
+      const frame = $<HTMLIFrameElement>("water-plc-frame");
+      if (event.origin !== location.origin || event.source !== frame.contentWindow || event.data.plantId !== doc.plant.id) return;
+      if (event.data.type === "plc-session-created" && event.data.sessionId && /^[\w-]+$/.test(event.data.sessionId)) {
+        if (sessionId !== event.data.sessionId) {
+          disconnect(); sessionId = event.data.sessionId; url.set("session", sessionId); history.replaceState(null, "", `${location.pathname}?${url}`);
+          connect();
+        }
+      }
+      if (event.data.type === "plc-show-3d") {
+        waterView("3d");
+        if (event.data.studyId && /^[\w-]+$/.test(event.data.studyId)) {
+          forecastStudyId = event.data.studyId; url.set("study", forecastStudyId); history.replaceState(null, "", `${location.pathname}?${url}`);
+          void loadForecast();
+        }
+      }
+    });
   }
   $("plant-name").textContent = doc.plant.name.toUpperCase();
   const simulated = doc.equipment.filter((e) => e.sim).length;
@@ -1402,6 +1485,7 @@ async function start(): Promise<void> {
     $("btn-connect").textContent = "◆ VISTA DE ESCENARIO FRACTAL";
     $<HTMLButtonElement>("btn-connect").disabled = true;
     $<HTMLSelectElement>("scenario").disabled = true;
+    connect(); // Sigue PLC.Actual en memoria sin sobrescribir el futuro seleccionado.
   } else if (sessionId) {
     $("btn-connect").textContent = "● SIGUIENDO OPERACIÓN PLC";
     $<HTMLButtonElement>("btn-connect").disabled = true;
@@ -1412,6 +1496,7 @@ async function start(): Promise<void> {
     $<HTMLSelectElement>("scenario").disabled = true;
   }
   renderAsset();
+  if (plcSchema?.ok && url.get("workspace") === "plc") waterView("plc");
   await bootStage(94, "Renderizando la escena 3D…");
   loop();
 }

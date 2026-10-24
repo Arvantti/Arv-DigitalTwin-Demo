@@ -21,6 +21,7 @@ class SessionHistorian:
         with self._connect() as conn:
             conn.execute("CREATE TABLE IF NOT EXISTS samples (session_id TEXT, t REAL, payload TEXT, PRIMARY KEY(session_id, t))")
             conn.execute("CREATE TABLE IF NOT EXISTS commands (session_id TEXT, t REAL, payload TEXT)")
+            conn.execute("CREATE TABLE IF NOT EXISTS scene_frames (session_id TEXT, t REAL, snapshot TEXT, PRIMARY KEY(session_id, t))")
             conn.execute(
                 "CREATE TABLE IF NOT EXISTS recommendations ("
                 "session_id TEXT, recommendation_id TEXT, t REAL, payload TEXT, "
@@ -33,6 +34,25 @@ class SessionHistorian:
     def sample(self, session_id: str, t: float, payload: dict[str, Any]) -> None:
         with self._connect() as conn:
             conn.execute("INSERT OR REPLACE INTO samples VALUES (?, ?, ?)", (session_id, t, json.dumps(payload)))
+
+    def frame(self, session_id: str, t: float, snapshot: dict[str, Any]) -> None:
+        """Fotograma operativo cada minuto simulado; nunca sustituye el estado vivo."""
+        with self._connect() as conn:
+            conn.execute("INSERT OR REPLACE INTO scene_frames VALUES (?, ?, ?)", (session_id, t, json.dumps(snapshot)))
+
+    def nearest_frame(self, session_id: str, t: float) -> dict[str, Any] | None:
+        with self._connect() as conn:
+            before = conn.execute(
+                "SELECT t, snapshot FROM scene_frames WHERE session_id = ? AND t <= ? ORDER BY t DESC LIMIT 1", (session_id, t)
+            ).fetchone()
+            after = conn.execute(
+                "SELECT t, snapshot FROM scene_frames WHERE session_id = ? AND t >= ? ORDER BY t LIMIT 1", (session_id, t)
+            ).fetchone()
+        candidates = [row for row in (before, after) if row is not None]
+        if not candidates:
+            return None
+        instant, payload = min(candidates, key=lambda row: abs(row[0] - t))
+        return {"t": instant, "snapshot": json.loads(payload), "temporal_context": "history", "applied": False}
 
     def command(self, session_id: str, t: float, payload: dict[str, Any]) -> None:
         with self._connect() as conn:

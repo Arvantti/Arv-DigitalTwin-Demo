@@ -1,7 +1,7 @@
 import shutil
 
 from fastapi.testclient import TestClient
-from twin_emulator_api.main import app
+from twin_emulator_api.main import app, session_manager
 from twin_runtime.plant import SIM_FILE, find_models_root
 
 client = TestClient(app)
@@ -205,9 +205,15 @@ def test_operation_profiles_persist_and_drive_the_plc_virtual(tmp_path, monkeypa
     assert any(item["id"] == profile["id"] for item in listed)
     template = next(item for item in listed if item["id"].startswith("builtin-water-network-scale-v1-pdd-rca-01"))
     assert template["hours"]["0"]["global_consumers_pct"] == 30
-    official = next(item for item in listed if item["id"].endswith("pfl-noc-01"))
-    assert official["name"] == "PFL-NOC-01 · Operación nocturna automática · demanda residencial 30 %"
-    assert official["hours"]["0"]["prs"]["branch"] == "auto"
+    builtins = [item for item in listed if item["id"].startswith("builtin-")]
+    assert {tuple(item["id"].rsplit("-", 3)[-3:]) for item in builtins} == {
+        ("pdd", "rca", "01"),
+        ("pfl", "base", "01"),
+        ("pfl", "personalizado", "01"),
+    }
+    custom = next(item for item in builtins if item["id"].endswith("pfl-personalizado-01"))
+    assert custom["hours"]["0"]["leaks"]["grid-01"] == {"l1": 0, "l2": 0}
+    assert custom["hours"]["0"]["prs"]["branch"] == "auto"
     assert template["hours"]["11"]["global_consumers_pct"] == 100
     assert template["hours"]["23"]["global_consumers_pct"] == 30
     assert client.put(f"{url}/{profile['id']}", json=payload).status_code == 200
@@ -224,6 +230,25 @@ def test_operation_profiles_persist_and_drive_the_plc_virtual(tmp_path, monkeypa
     assert client.delete(f"{url}/{profile['id']}").status_code == 204
     assert client.get(f"{url}/{profile['id']}").status_code == 404
     assert client.post(url, json={"name": "incorrecto", "hours": {"24": {}}}).status_code == 422
+
+
+def test_plc_and_3d_read_the_same_sensor_sample_at_each_simulated_instant() -> None:
+    plant = "water-network-scale-v1"
+    session_id = client.post(f"/api/plants/{plant}/sessions", json={}).json()["id"]
+    session = session_manager.get(plant, session_id)
+    assert session is not None
+    first = session.snapshot()
+    assert session.snapshot() is first
+    url = f"/api/plants/{plant}/sessions/{session_id}/plc-tags"
+    first_tags = client.get(url).json()["plc_tags"]
+    assert client.get(url).json()["plc_tags"] == first_tags
+    assert session.message()["plc_tags"] == first_tags
+    session.plant.step()
+    next_snapshot = session.snapshot()
+    assert next_snapshot is not first
+    assert client.get(url).json()["t"] == session.plant.t
+    session_manager.command(session, {"equipment": "prs-01", "command": "select_branch", "args": {"branch": "manual"}})
+    assert session.snapshot() is not next_snapshot
 
 
 def test_shared_session_can_be_created_and_inspected() -> None:
@@ -281,7 +306,9 @@ def test_shared_session_can_be_created_and_inspected() -> None:
     assert activation.status_code == 200
     assert activation.json()["starts_at_hour"] == 1
     assert activation.json()["applied"] is False
-    assert client.get(f"/api/plants/water-network-scale-v1/sessions/{session_id}").json()["profile_id"] == decision.json()["profile_id"]
+    session_state = client.get(f"/api/plants/water-network-scale-v1/sessions/{session_id}").json()
+    assert session_state["profile_id"] is None  # aún no se aplicó la siguiente hora
+    assert session_state["pending_profile_id"] == decision.json()["profile_id"]
     unsafe = optimized | {"study_id": "EST-UNSAFE", "hours": [{"hour": 0, "robust": False}]}
     assert client.post(study_url, json=unsafe).status_code == 201
     assert client.post(f"{study_url}/EST-UNSAFE/decision", json={"accept": True}).status_code == 409

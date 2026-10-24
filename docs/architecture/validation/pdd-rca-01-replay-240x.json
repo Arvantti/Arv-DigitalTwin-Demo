@@ -1,0 +1,126 @@
+{
+  "mode": "precomputed-replay",
+  "source": "/tmp/fractal-day-post-cache.json",
+  "ticks": [
+    {
+      "profile_hour": 0,
+      "real_elapsed_s": 15.001,
+      "scheduled_s": 15
+    },
+    {
+      "profile_hour": 1,
+      "real_elapsed_s": 30.003,
+      "scheduled_s": 30
+    },
+    {
+      "profile_hour": 2,
+      "real_elapsed_s": 45.001,
+      "scheduled_s": 45
+    },
+    {
+      "profile_hour": 3,
+      "real_elapsed_s": 60.0,
+      "scheduled_s": 60
+    },
+    {
+      "profile_hour": 4,
+      "real_elapsed_s": 75.0,
+      "scheduled_s": 75
+    },
+    {
+      "profile_hour": 5,
+      "real_elapsed_s": 90.002,
+      "scheduled_s": 90
+    },
+    {
+      "profile_hour": 6,
+      "real_elapsed_s": 105.0,
+      "scheduled_s": 105
+    },
+    {
+      "profile_hour": 7,
+      "real_elapsed_s": 120.0,
+      "scheduled_s": 120
+    },
+    {
+      "profile_hour": 8,
+      "real_elapsed_s": 135.0,
+      "scheduled_s": 135
+    },
+    {
+      "profile_hour": 9,
+      "real_elapsed_s": 150.002,
+      "scheduled_s": 150
+    },
+    {
+      "profile_hour": 10,
+      "real_elapsed_s": 165.0,
+      "scheduled_s": 165
+    },
+    {
+      "profile_hour": 11,
+      "real_elapsed_s": 180.0,
+      "scheduled_s": 180
+    },
+    {
+      "profile_hour": 12,
+      "real_elapsed_s": 195.0,
+      "scheduled_s": 195
+    },
+    {
+      "profile_hour": 13,
+      "real_elapsed_s": 210.007,
+      "scheduled_s": 210
+    },
+    {
+      "profile_hour": 14,
+      "real_elapsed_s": 225.0,
+      "scheduled_s": 225
+    },
+    {
+      "profile_hour": 15,
+      "real_elapsed_s": 240.0,
+      "scheduled_s": 240
+    },
+    {
+      "profile_hour": 16,
+      "real_elapsed_s": 255.0,
+      "scheduled_s": 255
+    },
+    {
+      "profile_hour": 17,
+      "real_elapsed_s": 270.0,
+      "scheduled_s": 270
+    },
+    {
+      "profile_hour": 18,
+      "real_elapsed_s": 285.0,
+      "scheduled_s": 285
+    },
+    {
+      "profile_hour": 19,
+      "real_elapsed_s": 300.001,
+      "scheduled_s": 300
+    },
+    {
+      "profile_hour": 20,
+      "real_elapsed_s": 315.0,
+      "scheduled_s": 315
+    },
+    {
+      "profile_hour": 21,
+      "real_elapsed_s": 330.0,
+      "scheduled_s": 330
+    },
+    {
+      "profile_hour": 22,
+      "real_elapsed_s": 345.001,
+      "scheduled_s": 345
+    },
+    {
+      "profile_hour": 23,
+      "real_elapsed_s": 360.004,
+      "scheduled_s": 360
+    }
+  ]
+}

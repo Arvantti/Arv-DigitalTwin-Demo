@@ -227,9 +227,16 @@ def _snapshot(
 
 
 def project_24h(
-    tags: dict[str, Any], profile: dict[str, Any], study_type: str = "baseline", objective_id: str = "OBJ-LEAK-01"
+    tags: dict[str, Any],
+    profile: dict[str, Any],
+    study_type: str = "baseline",
+    objective_id: str = "OBJ-LEAK-01",
+    *,
+    horizon_hours: int = 24,
 ) -> list[dict[str, Any]]:
     """Genera una rama horaria. Baseline y alternative nunca optimizan ni proponen mandos."""
+    if not 1 <= horizon_hours <= 24:
+        raise ValueError("horizon_hours debe estar entre 1 y 24")
     plan: list[dict[str, Any]] = []
     optimized_cache: dict[tuple[Any, ...], dict[str, Any]] = {}
     tank_levels = {
@@ -244,13 +251,16 @@ def project_24h(
         for n in (12, 23, 34)
     )
     base_hour = int(float(tags.get("PLC.Session.SimulatedTime") or 0) // 3600) % 24
-    for hour in range(24):
+    carried_tags = dict(tags)  # Mandos horarios del PLC persisten cuando una hora no los redefine.
+    prs_branch = "auto" if tags.get("PLC.PRS.BranchAuto") else "manual"
+    critical_setpoint = float(tags.get("PLC.PRS.CriticalSetpointMca") or 15.45)
+    for hour in range(horizon_hours):
         profile_hour = (base_hour + hour) % 24
         entry = profile.get("hours", {}).get(str(profile_hour), {})
         overrides = profile.get("overrides", {}) if study_type == "alternative" else {}
         global_pct = entry.get("global_consumers_pct")
         dwellings_by_grid = entry.get("dwellings", {})
-        scenario_tags = dict(tags)
+        scenario_tags = dict(carried_tags)
         for tank_id, plc_id in (
             ("tank-supply-01", "PLC.Tank.Supply.LevelPct"),
             ("tank-recirc-01", "PLC.Tank.Recirc01.LevelPct"),
@@ -266,7 +276,7 @@ def project_24h(
                 for position in range(1, 5):
                     valve_id = f"c{branch}{position}"
                     tag_key = f"PLC.Grid.L{level}.Consumer.{valve_id.upper()}.OpeningPct"
-                    current_opening = float(tags.get(tag_key) if tags.get(tag_key) is not None else 100.0)
+                    current_opening = float(carried_tags.get(tag_key) if carried_tags.get(tag_key) is not None else 100.0)
                     target_opening = dwelling_overrides.get(valve_id, level_pct if level_pct is not None else current_opening)
                     scenario_tags[tag_key] = float(target_opening)
                     openings_for_level.append(float(target_opening))
@@ -275,12 +285,16 @@ def project_24h(
         demand_multiplier = float(overrides.get("demand_multiplier", 1.0))
         demand = max(0.0, profile_demand * demand_multiplier)
         prs_entry = entry.get("prs", {})
-        prs_setpoint = float(overrides.get("prs_mca", prs_entry.get("manual_setting_mca", current_prs)))
-        prs_auto = prs_entry.get("branch", "auto" if tags.get("PLC.PRS.BranchAuto") else "manual") == "auto" and "prs_mca" not in overrides
-        critical_target = float(prs_entry.get("critical_setpoint_mca", tags.get("PLC.PRS.CriticalSetpointMca") or 15.45))
+        current_prs = float(prs_entry.get("manual_setting_mca", current_prs))
+        prs_branch = prs_entry.get("branch", prs_branch)
+        critical_setpoint = float(prs_entry.get("critical_setpoint_mca", critical_setpoint))
+        prs_setpoint = float(overrides.get("prs_mca", current_prs))
+        prs_auto = prs_branch == "auto" and "prs_mca" not in overrides
+        critical_target = critical_setpoint
         between = entry.get("between_levels", {})
+        openings = tuple(float(between.get(str(n), opening)) for n, opening in zip((12, 23, 34), openings, strict=True))
         scenario_openings = tuple(
-            float(overrides.get(f"valve_{n}_pct", between.get(str(n), opening))) for n, opening in zip((12, 23, 34), openings, strict=True)
+            float(overrides.get(f"valve_{n}_pct", opening)) for n, opening in zip((12, 23, 34), openings, strict=True)
         )
         leak_overrides = entry.get("leaks", {})
         leak_multiplier = float(overrides.get("leakage_multiplier", 1.0)) if study_type == "alternative" else 1.0
@@ -289,6 +303,7 @@ def project_24h(
             for leak_id, opening_pct in valve_map.items():
                 scenario_tags[f"PLC.Grid.L{level}.Leak.{leak_id.upper()}.OpeningPct"] = float(opening_pct)
             scenario_tags[f"PLC.Grid.L{level}.LeakageScale"] = leak_multiplier
+        carried_tags.update({k: v for k, v in scenario_tags.items() if k.startswith("PLC.Grid.") and k.endswith(".OpeningPct")})
         factors = tuple(demand_multiplier * factor for factor in (0.9, 1.0, 1.1))
         scenarios: list[dict[str, Any]] = []
         optimized_controls: dict[str, Any] | None = None

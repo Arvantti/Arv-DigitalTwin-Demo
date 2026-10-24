@@ -77,6 +77,8 @@ def horizon_from_plc(payload: dict[str, Any]) -> dict[str, Any]:
     session = gateway_json(f"{base}/sessions/{session_id}")
     if session.get("id") != session_id or session.get("plant_id") != plant_id or not session.get("profile_id"):
         raise HTTPException(409, "la sesión PLC debe tener un perfil activo guardado")
+    if not session.get("running") or session.get("paused"):
+        raise HTTPException(409, "el PLC debe estar en play para solicitar Fractal")
     profile = gateway_json(f"{base}/operation-profiles/{session['profile_id']}")
     tags = gateway_json(f"{base}/sessions/{session_id}/plc-tags").get("plc_tags")
     if not isinstance(tags, dict) or tags.get("PLC.Profile.ActiveId") != session["profile_id"]:
@@ -99,6 +101,40 @@ def horizon_from_plc(payload: dict[str, Any]) -> dict[str, Any]:
         },
         publish=True,
     )
+
+
+@app.post("/studies/profile-preview/from-plc")
+def profile_preview_from_plc(payload: dict[str, Any]) -> dict[str, Any]:
+    """Vista de presión de un perfil guardado; lectura PLC, sin publicar estudio ni mandar controles."""
+    plant_id, session_id, profile_id = (payload.get(key) for key in ("plant_id", "session_id", "profile_id"))
+    if not all(isinstance(value, str) and value and "/" not in value and ".." not in value for value in (plant_id, session_id, profile_id)):
+        raise HTTPException(422, "planta, sesión y perfil guardado son obligatorios")
+    base = f"{plc_gateway(payload)}/api/plants/{plant_id}"
+    session = gateway_json(f"{base}/sessions/{session_id}")
+    if session.get("id") != session_id or session.get("plant_id") != plant_id or not session.get("running") or session.get("paused"):
+        raise HTTPException(409, "el PLC debe estar en play para proyectar la presión")
+    profile = gateway_json(f"{base}/operation-profiles/{profile_id}")
+    if profile.get("id") != profile_id:
+        raise HTTPException(409, "perfil no corresponde al guardado en PLC")
+    tags = gateway_json(f"{base}/sessions/{session_id}/plc-tags").get("plc_tags")
+    if (
+        not isinstance(tags, dict)
+        or int(tags.get("PLC.Pump.RunningCount") or 0) == 0
+        or float(tags.get("PLC.PRS.OutletPressureMca") or 0) < 5
+    ):
+        raise HTTPException(409, "espere a la presurización del PLC")
+    hours = project_24h(tags, profile, horizon_hours=24)
+    return {
+        "mode": "profile_preview",
+        "source": "plc_session",
+        "temporal_context": "forecast",
+        "applied": False,
+        "profile_id": profile_id,
+        "base_time": tags.get("PLC.Session.SimulatedTime"),
+        "pressure_outlet_mca": [
+            {"profile_hour": hour["profile_hour"], "pressure_mca": hour["plc_tags"]["PLC.PRS.OutletPressureMca"]} for hour in hours
+        ],
+    }
 
 
 @app.post("/studies/horizon")
@@ -154,6 +190,7 @@ def _horizon_study(payload: dict[str, Any], *, publish: bool) -> dict[str, Any]:
         "objective_id": objective_id,
         "temporal_context": "forecast",
         "applied": False,
+        "validation_status": "hydraulic_setpoints_only",
         "study_id": payload.get("study_id") or f"EST-{uuid4().hex[:12].upper()}",
         "base_time": tags.get("PLC.Session.SimulatedTime", 0),
         "hours": hours,

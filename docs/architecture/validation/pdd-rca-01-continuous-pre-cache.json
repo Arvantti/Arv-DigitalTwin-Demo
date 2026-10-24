@@ -1,0 +1,1423 @@
+{
+  "scope": "continuous 24-hour emulator run compared to 24 hourly Fractal forecasts",
+  "plant_id": "water-network-scale-v1",
+  "profile_id": "pdd-rca-01",
+  "start_t_s": 30.0,
+  "alignment_note": "Fractal inicia a t=30 s tras estabilización; el emulador se muestrea a 3600,7200,...,86400 s (desfase ≤30 s).",
+  "samples": [
+    {
+      "profile_hour": 0,
+      "emulator_t_s": 3600.0,
+      "forecast_t_s": 3630.0,
+      "pressure_safety_agreement": true,
+      "fractal_feasible": true,
+      "metrics": {
+        "flow_m3h": {
+          "fractal": 4.25898,
+          "emulator": 4.26,
+          "absolute_error": 0.00102,
+          "error_pct": 0.0239
+        },
+        "critical_pressure_mca": {
+          "fractal": 15.45159,
+          "emulator": 15.43,
+          "absolute_error": 0.02159,
+          "error_pct": 0.1399
+        },
+        "pump_discharge_mca": {
+          "fractal": 72.1,
+          "emulator": 72.04,
+          "absolute_error": 0.06,
+          "error_pct": 0.0833
+        },
+        "prs_outlet_mca": {
+          "fractal": 18.4581,
+          "emulator": 18.48,
+          "absolute_error": 0.0219,
+          "error_pct": 0.1185
+        },
+        "supply_level_pct": {
+          "fractal": 69.128,
+          "emulator": 71.0,
+          "absolute_error": 1.872,
+          "error_pct": 2.6366
+        },
+        "recirc01_level_pct": {
+          "fractal": 41.495,
+          "emulator": 39.1,
+          "absolute_error": 2.395,
+          "error_pct": 6.1253
+        },
+        "recirc02_level_pct": {
+          "fractal": 40.229,
+          "emulator": 39.4,
+          "absolute_error": 0.829,
+          "error_pct": 2.1041
+        },
+        "recirculated_m3": {
+          "fractal": 4.25617,
+          "emulator": 4.29487,
+          "absolute_error": 0.0387,
+          "error_pct": 0.901
+        }
+      }
+    },
+    {
+      "profile_hour": 1,
+      "emulator_t_s": 7200.0,
+      "forecast_t_s": 7230.0,
+      "pressure_safety_agreement": true,
+      "fractal_feasible": true,
+      "metrics": {
+        "flow_m3h": {
+          "fractal": 4.40046,
+          "emulator": 4.4,
+          "absolute_error": 0.00046,
+          "error_pct": 0.0105
+        },
+        "critical_pressure_mca": {
+          "fractal": 15.45178,
+          "emulator": 15.43,
+          "absolute_error": 0.02178,
+          "error_pct": 0.1412
+        },
+        "pump_discharge_mca": {
+          "fractal": 72.1,
+          "emulator": 72.18,
+          "absolute_error": 0.08,
+          "error_pct": 0.1108
+        },
+        "prs_outlet_mca": {
+          "fractal": 18.48552,
+          "emulator": 18.45,
+          "absolute_error": 0.03552,
+          "error_pct": 0.1925
+        },
+        "supply_level_pct": {
+          "fractal": 66.401,
+          "emulator": 69.0,
+          "absolute_error": 2.599,
+          "error_pct": 3.7667
+        },
+        "recirc01_level_pct": {
+          "fractal": 43.937,
+          "emulator": 40.7,
+          "absolute_error": 3.237,
+          "error_pct": 7.9533
+        },
+        "recirc02_level_pct": {
+          "fractal": 42.486,
+          "emulator": 40.8,
+          "absolute_error": 1.686,
+          "error_pct": 4.1324
+        },
+        "recirculated_m3": {
+          "fractal": 4.29445,
+          "emulator": 4.32947,
+          "absolute_error": 0.03502,
+          "error_pct": 0.8089
+        }
+      }
+    },
+    {
+      "profile_hour": 2,
+      "emulator_t_s": 10800.0,
+      "forecast_t_s": 10830.0,
+      "pressure_safety_agreement": true,
+      "fractal_feasible": true,
+      "metrics": {
+        "flow_m3h": {
+          "fractal": 4.82526,
+          "emulator": 4.81,
+          "absolute_error": 0.01526,
+          "error_pct": 0.3173
+        },
+        "critical_pressure_mca": {
+          "fractal": 15.45008,
+          "emulator": 15.52,
+          "absolute_error": 0.06992,
+          "error_pct": 0.4505
+        },
+        "pump_discharge_mca": {
+          "fractal": 72.1,
+          "emulator": 72.06,
+          "absolute_error": 0.04,
+          "error_pct": 0.0555
+        },
+        "prs_outlet_mca": {
+          "fractal": 18.57077,
+          "emulator": 18.57,
+          "absolute_error": 0.00077,
+          "error_pct": 0.0041
+        },
+        "supply_level_pct": {
+          "fractal": 55.807,
+          "emulator": 59.7,
+          "absolute_error": 3.893,
+          "error_pct": 6.5209
+        },
+        "recirc01_level_pct": {
+          "fractal": 53.431,
+          "emulator": 48.9,
+          "absolute_error": 4.531,
+          "error_pct": 9.2658
+        },
+        "recirc02_level_pct": {
+          "fractal": 51.251,
+          "emulator": 49.1,
+          "absolute_error": 2.151,
+          "error_pct": 4.3809
+        },
+        "recirculated_m3": {
+          "fractal": 4.41334,
+          "emulator": 4.45621,
+          "absolute_error": 0.04286,
+          "error_pct": 0.9619
+        }
+      }
+    },
+    {
+      "profile_hour": 3,
+      "emulator_t_s": 14400.0,
+      "forecast_t_s": 14430.0,
+      "pressure_safety_agreement": true,
+      "fractal_feasible": true,
+      "metrics": {
+        "flow_m3h": {
+          "fractal": 5.4852,
+          "emulator": 5.46,
+          "absolute_error": 0.0252,
+          "error_pct": 0.4615
+        },
+        "critical_pressure_mca": {
+          "fractal": 15.45015,
+          "emulator": 15.45,
+          "absolute_error": 0.00015,
+          "error_pct": 0.001
+        },
+        "pump_discharge_mca": {
+          "fractal": 72.1,
+          "emulator": 72.07,
+          "absolute_error": 0.03,
+          "error_pct": 0.0416
+        },
+        "prs_outlet_mca": {
+          "fractal": 18.7213,
+          "emulator": 18.78,
+          "absolute_error": 0.0587,
+          "error_pct": 0.3126
+        },
+        "supply_level_pct": {
+          "fractal": 82.835,
+          "emulator": 68.6,
+          "absolute_error": 14.235,
+          "error_pct": 20.7507
+        },
+        "recirc01_level_pct": {
+          "fractal": 28.947,
+          "emulator": 40.9,
+          "absolute_error": 11.953,
+          "error_pct": 29.2249
+        },
+        "recirc02_level_pct": {
+          "fractal": 29.154,
+          "emulator": 41.3,
+          "absolute_error": 12.146,
+          "error_pct": 29.4092
+        },
+        "recirculated_m3": {
+          "fractal": 6.53607,
+          "emulator": 5.8482,
+          "absolute_error": 0.68787,
+          "error_pct": 11.762
+        }
+      }
+    },
+    {
+      "profile_hour": 4,
+      "emulator_t_s": 18000.0,
+      "forecast_t_s": 18030.0,
+      "pressure_safety_agreement": true,
+      "fractal_feasible": true,
+      "metrics": {
+        "flow_m3h": {
+          "fractal": 6.34253,
+          "emulator": 6.35,
+          "absolute_error": 0.00747,
+          "error_pct": 0.1176
+        },
+        "critical_pressure_mca": {
+          "fractal": 15.4503,
+          "emulator": 15.46,
+          "absolute_error": 0.0097,
+          "error_pct": 0.0627
+        },
+        "pump_discharge_mca": {
+          "fractal": 72.1,
+          "emulator": 72.12,
+          "absolute_error": 0.02,
+          "error_pct": 0.0277
+        },
+        "prs_outlet_mca": {
+          "fractal": 18.94444,
+          "emulator": 18.99,
+          "absolute_error": 0.04556,
+          "error_pct": 0.2399
+        },
+        "supply_level_pct": {
+          "fractal": 55.976,
+          "emulator": 63.6,
+          "absolute_error": 7.624,
+          "error_pct": 11.9874
+        },
+        "recirc01_level_pct": {
+          "fractal": 53.336,
+          "emulator": 45.3,
+          "absolute_error": 8.036,
+          "error_pct": 17.7395
+        },
+        "recirc02_level_pct": {
+          "fractal": 51.054,
+          "emulator": 45.5,
+          "absolute_error": 5.554,
+          "error_pct": 12.2066
+        },
+        "recirculated_m3": {
+          "fractal": 5.29825,
+          "emulator": 6.13874,
+          "absolute_error": 0.84049,
+          "error_pct": 13.6915
+        }
+      }
+    },
+    {
+      "profile_hour": 5,
+      "emulator_t_s": 21600.0,
+      "forecast_t_s": 21630.0,
+      "pressure_safety_agreement": true,
+      "fractal_feasible": true,
+      "metrics": {
+        "flow_m3h": {
+          "fractal": 7.31907,
+          "emulator": 7.3,
+          "absolute_error": 0.01907,
+          "error_pct": 0.2612
+        },
+        "critical_pressure_mca": {
+          "fractal": 15.45058,
+          "emulator": 15.48,
+          "absolute_error": 0.02942,
+          "error_pct": 0.1901
+        },
+        "pump_discharge_mca": {
+          "fractal": 72.1,
+          "emulator": 72.11,
+          "absolute_error": 0.01,
+          "error_pct": 0.0139
+        },
+        "prs_outlet_mca": {
+          "fractal": 19.23603,
+          "emulator": 19.23,
+          "absolute_error": 0.00603,
+          "error_pct": 0.0314
+        },
+        "supply_level_pct": {
+          "fractal": 70.75,
+          "emulator": 80.3,
+          "absolute_error": 9.55,
+          "error_pct": 11.8929
+        },
+        "recirc01_level_pct": {
+          "fractal": 40.141,
+          "emulator": 31.3,
+          "absolute_error": 8.841,
+          "error_pct": 28.246
+        },
+        "recirc02_level_pct": {
+          "fractal": 38.788,
+          "emulator": 31.1,
+          "absolute_error": 7.688,
+          "error_pct": 24.7203
+        },
+        "recirculated_m3": {
+          "fractal": 7.89347,
+          "emulator": 7.96372,
+          "absolute_error": 0.07025,
+          "error_pct": 0.8821
+        }
+      }
+    },
+    {
+      "profile_hour": 6,
+      "emulator_t_s": 25200.0,
+      "forecast_t_s": 25230.0,
+      "pressure_safety_agreement": true,
+      "fractal_feasible": true,
+      "metrics": {
+        "flow_m3h": {
+          "fractal": 8.35605,
+          "emulator": 8.36,
+          "absolute_error": 0.00395,
+          "error_pct": 0.0472
+        },
+        "critical_pressure_mca": {
+          "fractal": 15.45096,
+          "emulator": 15.45,
+          "absolute_error": 0.00096,
+          "error_pct": 0.0062
+        },
+        "pump_discharge_mca": {
+          "fractal": 72.1,
+          "emulator": 72.09,
+          "absolute_error": 0.01,
+          "error_pct": 0.0139
+        },
+        "prs_outlet_mca": {
+          "fractal": 19.58832,
+          "emulator": 19.59,
+          "absolute_error": 0.00168,
+          "error_pct": 0.0086
+        },
+        "supply_level_pct": {
+          "fractal": 76.348,
+          "emulator": 87.6,
+          "absolute_error": 11.252,
+          "error_pct": 12.8447
+        },
+        "recirc01_level_pct": {
+          "fractal": 35.171,
+          "emulator": 24.6,
+          "absolute_error": 10.571,
+          "error_pct": 42.9715
+        },
+        "recirc02_level_pct": {
+          "fractal": 34.11,
+          "emulator": 24.7,
+          "absolute_error": 9.41,
+          "error_pct": 38.0972
+        },
+        "recirculated_m3": {
+          "fractal": 8.57372,
+          "emulator": 8.64947,
+          "absolute_error": 0.07575,
+          "error_pct": 0.8758
+        }
+      }
+    },
+    {
+      "profile_hour": 7,
+      "emulator_t_s": 28800.0,
+      "forecast_t_s": 28830.0,
+      "pressure_safety_agreement": true,
+      "fractal_feasible": true,
+      "metrics": {
+        "flow_m3h": {
+          "fractal": 9.35087,
+          "emulator": 9.36,
+          "absolute_error": 0.00913,
+          "error_pct": 0.0975
+        },
+        "critical_pressure_mca": {
+          "fractal": 15.4513,
+          "emulator": 15.47,
+          "absolute_error": 0.0187,
+          "error_pct": 0.1209
+        },
+        "pump_discharge_mca": {
+          "fractal": 72.1,
+          "emulator": 72.21,
+          "absolute_error": 0.11,
+          "error_pct": 0.1523
+        },
+        "prs_outlet_mca": {
+          "fractal": 19.96643,
+          "emulator": 19.91,
+          "absolute_error": 0.05643,
+          "error_pct": 0.2834
+        },
+        "supply_level_pct": {
+          "fractal": 76.14,
+          "emulator": 89.9,
+          "absolute_error": 13.76,
+          "error_pct": 15.3059
+        },
+        "recirc01_level_pct": {
+          "fractal": 35.387,
+          "emulator": 23.1,
+          "absolute_error": 12.287,
+          "error_pct": 53.1905
+        },
+        "recirc02_level_pct": {
+          "fractal": 34.252,
+          "emulator": 22.9,
+          "absolute_error": 11.352,
+          "error_pct": 49.5721
+        },
+        "recirculated_m3": {
+          "fractal": 9.34279,
+          "emulator": 9.42734,
+          "absolute_error": 0.08455,
+          "error_pct": 0.8969
+        }
+      }
+    },
+    {
+      "profile_hour": 8,
+      "emulator_t_s": 32400.0,
+      "forecast_t_s": 32430.0,
+      "pressure_safety_agreement": true,
+      "fractal_feasible": true,
+      "metrics": {
+        "flow_m3h": {
+          "fractal": 10.23912,
+          "emulator": 10.25,
+          "absolute_error": 0.01088,
+          "error_pct": 0.1061
+        },
+        "critical_pressure_mca": {
+          "fractal": 15.45144,
+          "emulator": 15.41,
+          "absolute_error": 0.04144,
+          "error_pct": 0.2689
+        },
+        "pump_discharge_mca": {
+          "fractal": 72.1,
+          "emulator": 72.13,
+          "absolute_error": 0.03,
+          "error_pct": 0.0416
+        },
+        "prs_outlet_mca": {
+          "fractal": 20.33627,
+          "emulator": 20.32,
+          "absolute_error": 0.01627,
+          "error_pct": 0.0801
+        },
+        "supply_level_pct": {
+          "fractal": 73.922,
+          "emulator": 90.1,
+          "absolute_error": 16.178,
+          "error_pct": 17.9556
+        },
+        "recirc01_level_pct": {
+          "fractal": 37.462,
+          "emulator": 23.0,
+          "absolute_error": 14.462,
+          "error_pct": 62.8783
+        },
+        "recirc02_level_pct": {
+          "fractal": 36.001,
+          "emulator": 22.8,
+          "absolute_error": 13.201,
+          "error_pct": 57.8991
+        },
+        "recirculated_m3": {
+          "fractal": 10.15287,
+          "emulator": 10.24563,
+          "absolute_error": 0.09276,
+          "error_pct": 0.9054
+        }
+      }
+    },
+    {
+      "profile_hour": 9,
+      "emulator_t_s": 36000.0,
+      "forecast_t_s": 36030.0,
+      "pressure_safety_agreement": true,
+      "fractal_feasible": true,
+      "metrics": {
+        "flow_m3h": {
+          "fractal": 10.9324,
+          "emulator": 10.93,
+          "absolute_error": 0.0024,
+          "error_pct": 0.022
+        },
+        "critical_pressure_mca": {
+          "fractal": 15.45129,
+          "emulator": 15.41,
+          "absolute_error": 0.04129,
+          "error_pct": 0.2679
+        },
+        "pump_discharge_mca": {
+          "fractal": 72.1,
+          "emulator": 72.09,
+          "absolute_error": 0.01,
+          "error_pct": 0.0139
+        },
+        "prs_outlet_mca": {
+          "fractal": 20.64538,
+          "emulator": 20.56,
+          "absolute_error": 0.08538,
+          "error_pct": 0.4153
+        },
+        "supply_level_pct": {
+          "fractal": 72.753,
+          "emulator": 89.1,
+          "absolute_error": 16.347,
+          "error_pct": 18.3468
+        },
+        "recirc01_level_pct": {
+          "fractal": 38.574,
+          "emulator": 23.7,
+          "absolute_error": 14.874,
+          "error_pct": 62.7595
+        },
+        "recirc02_level_pct": {
+          "fractal": 36.903,
+          "emulator": 23.5,
+          "absolute_error": 13.403,
+          "error_pct": 57.034
+        },
+        "recirculated_m3": {
+          "fractal": 10.88696,
+          "emulator": 10.8982,
+          "absolute_error": 0.01124,
+          "error_pct": 0.1031
+        }
+      }
+    },
+    {
+      "profile_hour": 10,
+      "emulator_t_s": 39600.0,
+      "forecast_t_s": 39630.0,
+      "pressure_safety_agreement": true,
+      "fractal_feasible": true,
+      "metrics": {
+        "flow_m3h": {
+          "fractal": 11.38327,
+          "emulator": 11.38,
+          "absolute_error": 0.00327,
+          "error_pct": 0.0287
+        },
+        "critical_pressure_mca": {
+          "fractal": 15.45098,
+          "emulator": 15.44,
+          "absolute_error": 0.01098,
+          "error_pct": 0.0711
+        },
+        "pump_discharge_mca": {
+          "fractal": 72.1,
+          "emulator": 72.18,
+          "absolute_error": 0.08,
+          "error_pct": 0.1108
+        },
+        "prs_outlet_mca": {
+          "fractal": 20.85575,
+          "emulator": 20.82,
+          "absolute_error": 0.03575,
+          "error_pct": 0.1717
+        },
+        "supply_level_pct": {
+          "fractal": 73.757,
+          "emulator": 85.9,
+          "absolute_error": 12.143,
+          "error_pct": 14.1362
+        },
+        "recirc01_level_pct": {
+          "fractal": 37.685,
+          "emulator": 26.3,
+          "absolute_error": 11.385,
+          "error_pct": 43.289
+        },
+        "recirc02_level_pct": {
+          "fractal": 36.06,
+          "emulator": 26.1,
+          "absolute_error": 9.96,
+          "error_pct": 38.1609
+        },
+        "recirculated_m3": {
+          "fractal": 11.42232,
+          "emulator": 11.2697,
+          "absolute_error": 0.15262,
+          "error_pct": 1.3543
+        }
+      }
+    },
+    {
+      "profile_hour": 11,
+      "emulator_t_s": 43200.0,
+      "forecast_t_s": 43230.0,
+      "pressure_safety_agreement": true,
+      "fractal_feasible": true,
+      "metrics": {
+        "flow_m3h": {
+          "fractal": 11.53407,
+          "emulator": 11.55,
+          "absolute_error": 0.01593,
+          "error_pct": 0.1379
+        },
+        "critical_pressure_mca": {
+          "fractal": 15.45084,
+          "emulator": 15.43,
+          "absolute_error": 0.02084,
+          "error_pct": 0.1351
+        },
+        "pump_discharge_mca": {
+          "fractal": 72.1,
+          "emulator": 72.07,
+          "absolute_error": 0.03,
+          "error_pct": 0.0416
+        },
+        "prs_outlet_mca": {
+          "fractal": 20.92774,
+          "emulator": 20.91,
+          "absolute_error": 0.01774,
+          "error_pct": 0.0848
+        },
+        "supply_level_pct": {
+          "fractal": 75.794,
+          "emulator": 82.6,
+          "absolute_error": 6.806,
+          "error_pct": 8.2397
+        },
+        "recirc01_level_pct": {
+          "fractal": 35.839,
+          "emulator": 29.4,
+          "absolute_error": 6.439,
+          "error_pct": 21.9014
+        },
+        "recirc02_level_pct": {
+          "fractal": 34.396,
+          "emulator": 29.3,
+          "absolute_error": 5.096,
+          "error_pct": 17.3925
+        },
+        "recirculated_m3": {
+          "fractal": 11.61327,
+          "emulator": 11.39091,
+          "absolute_error": 0.22235,
+          "error_pct": 1.952
+        }
+      }
+    },
+    {
+      "profile_hour": 12,
+      "emulator_t_s": 46800.0,
+      "forecast_t_s": 46830.0,
+      "pressure_safety_agreement": true,
+      "fractal_feasible": true,
+      "metrics": {
+        "flow_m3h": {
+          "fractal": 11.4048,
+          "emulator": 11.42,
+          "absolute_error": 0.0152,
+          "error_pct": 0.1331
+        },
+        "critical_pressure_mca": {
+          "fractal": 15.45097,
+          "emulator": 15.44,
+          "absolute_error": 0.01097,
+          "error_pct": 0.071
+        },
+        "pump_discharge_mca": {
+          "fractal": 72.1,
+          "emulator": 72.02,
+          "absolute_error": 0.08,
+          "error_pct": 0.1111
+        },
+        "prs_outlet_mca": {
+          "fractal": 20.86598,
+          "emulator": 20.83,
+          "absolute_error": 0.03598,
+          "error_pct": 0.1727
+        },
+        "supply_level_pct": {
+          "fractal": 76.935,
+          "emulator": 79.5,
+          "absolute_error": 2.565,
+          "error_pct": 3.2264
+        },
+        "recirc01_level_pct": {
+          "fractal": 34.792,
+          "emulator": 31.9,
+          "absolute_error": 2.892,
+          "error_pct": 9.0658
+        },
+        "recirc02_level_pct": {
+          "fractal": 33.478,
+          "emulator": 31.9,
+          "absolute_error": 1.578,
+          "error_pct": 4.9467
+        },
+        "recirculated_m3": {
+          "fractal": 11.44914,
+          "emulator": 11.2857,
+          "absolute_error": 0.16344,
+          "error_pct": 1.4482
+        }
+      }
+    },
+    {
+      "profile_hour": 13,
+      "emulator_t_s": 50400.0,
+      "forecast_t_s": 50430.0,
+      "pressure_safety_agreement": true,
+      "fractal_feasible": true,
+      "metrics": {
+        "flow_m3h": {
+          "fractal": 11.02882,
+          "emulator": 11.01,
+          "absolute_error": 0.01882,
+          "error_pct": 0.1709
+        },
+        "critical_pressure_mca": {
+          "fractal": 15.45124,
+          "emulator": 15.42,
+          "absolute_error": 0.03124,
+          "error_pct": 0.2026
+        },
+        "pump_discharge_mca": {
+          "fractal": 72.1,
+          "emulator": 72.07,
+          "absolute_error": 0.03,
+          "error_pct": 0.0416
+        },
+        "prs_outlet_mca": {
+          "fractal": 20.68976,
+          "emulator": 20.68,
+          "absolute_error": 0.00976,
+          "error_pct": 0.0472
+        },
+        "supply_level_pct": {
+          "fractal": 76.121,
+          "emulator": 77.9,
+          "absolute_error": 1.779,
+          "error_pct": 2.2837
+        },
+        "recirc01_level_pct": {
+          "fractal": 35.515,
+          "emulator": 33.3,
+          "absolute_error": 2.215,
+          "error_pct": 6.6517
+        },
+        "recirc02_level_pct": {
+          "fractal": 34.157,
+          "emulator": 33.0,
+          "absolute_error": 1.157,
+          "error_pct": 3.5061
+        },
+        "recirculated_m3": {
+          "fractal": 10.99719,
+          "emulator": 10.97246,
+          "absolute_error": 0.02473,
+          "error_pct": 0.2254
+        }
+      }
+    },
+    {
+      "profile_hour": 14,
+      "emulator_t_s": 54000.0,
+      "forecast_t_s": 54030.0,
+      "pressure_safety_agreement": true,
+      "fractal_feasible": true,
+      "metrics": {
+        "flow_m3h": {
+          "fractal": 10.43057,
+          "emulator": 10.4,
+          "absolute_error": 0.03057,
+          "error_pct": 0.2939
+        },
+        "critical_pressure_mca": {
+          "fractal": 15.45143,
+          "emulator": 15.44,
+          "absolute_error": 0.01143,
+          "error_pct": 0.074
+        },
+        "pump_discharge_mca": {
+          "fractal": 72.1,
+          "emulator": 72.15,
+          "absolute_error": 0.05,
+          "error_pct": 0.0693
+        },
+        "prs_outlet_mca": {
+          "fractal": 20.41987,
+          "emulator": 20.43,
+          "absolute_error": 0.01013,
+          "error_pct": 0.0496
+        },
+        "supply_level_pct": {
+          "fractal": 73.932,
+          "emulator": 77.7,
+          "absolute_error": 3.768,
+          "error_pct": 4.8494
+        },
+        "recirc01_level_pct": {
+          "fractal": 37.469,
+          "emulator": 33.5,
+          "absolute_error": 3.969,
+          "error_pct": 11.8478
+        },
+        "recirc02_level_pct": {
+          "fractal": 35.975,
+          "emulator": 33.5,
+          "absolute_error": 2.475,
+          "error_pct": 7.3881
+        },
+        "recirculated_m3": {
+          "fractal": 10.34546,
+          "emulator": 10.42437,
+          "absolute_error": 0.07891,
+          "error_pct": 0.7569
+        }
+      }
+    },
+    {
+      "profile_hour": 15,
+      "emulator_t_s": 57600.0,
+      "forecast_t_s": 57630.0,
+      "pressure_safety_agreement": true,
+      "fractal_feasible": true,
+      "metrics": {
+        "flow_m3h": {
+          "fractal": 9.66713,
+          "emulator": 9.66,
+          "absolute_error": 0.00713,
+          "error_pct": 0.0738
+        },
+        "critical_pressure_mca": {
+          "fractal": 15.45138,
+          "emulator": 15.42,
+          "absolute_error": 0.03138,
+          "error_pct": 0.2035
+        },
+        "pump_discharge_mca": {
+          "fractal": 72.1,
+          "emulator": 72.18,
+          "absolute_error": 0.08,
+          "error_pct": 0.1108
+        },
+        "prs_outlet_mca": {
+          "fractal": 20.09468,
+          "emulator": 20.14,
+          "absolute_error": 0.04532,
+          "error_pct": 0.225
+        },
+        "supply_level_pct": {
+          "fractal": 72.623,
+          "emulator": 77.0,
+          "absolute_error": 4.377,
+          "error_pct": 5.6844
+        },
+        "recirc01_level_pct": {
+          "fractal": 38.592,
+          "emulator": 34.0,
+          "absolute_error": 4.592,
+          "error_pct": 13.5059
+        },
+        "recirc02_level_pct": {
+          "fractal": 37.11,
+          "emulator": 34.0,
+          "absolute_error": 3.11,
+          "error_pct": 9.1471
+        },
+        "recirculated_m3": {
+          "fractal": 9.61621,
+          "emulator": 9.63527,
+          "absolute_error": 0.01906,
+          "error_pct": 0.1978
+        }
+      }
+    },
+    {
+      "profile_hour": 16,
+      "emulator_t_s": 61200.0,
+      "forecast_t_s": 61230.0,
+      "pressure_safety_agreement": true,
+      "fractal_feasible": true,
+      "metrics": {
+        "flow_m3h": {
+          "fractal": 8.78418,
+          "emulator": 8.76,
+          "absolute_error": 0.02418,
+          "error_pct": 0.276
+        },
+        "critical_pressure_mca": {
+          "fractal": 15.45111,
+          "emulator": 15.43,
+          "absolute_error": 0.02111,
+          "error_pct": 0.1368
+        },
+        "pump_discharge_mca": {
+          "fractal": 72.1,
+          "emulator": 72.13,
+          "absolute_error": 0.03,
+          "error_pct": 0.0416
+        },
+        "prs_outlet_mca": {
+          "fractal": 19.74629,
+          "emulator": 19.73,
+          "absolute_error": 0.01629,
+          "error_pct": 0.0826
+        },
+        "supply_level_pct": {
+          "fractal": 75.326,
+          "emulator": 70.4,
+          "absolute_error": 4.926,
+          "error_pct": 6.9972
+        },
+        "recirc01_level_pct": {
+          "fractal": 36.107,
+          "emulator": 39.3,
+          "absolute_error": 3.193,
+          "error_pct": 8.1247
+        },
+        "recirc02_level_pct": {
+          "fractal": 34.936,
+          "emulator": 39.7,
+          "absolute_error": 4.764,
+          "error_pct": 12.0
+        },
+        "recirculated_m3": {
+          "fractal": 8.88928,
+          "emulator": 8.53615,
+          "absolute_error": 0.35312,
+          "error_pct": 4.1368
+        }
+      }
+    },
+    {
+      "profile_hour": 17,
+      "emulator_t_s": 64800.0,
+      "forecast_t_s": 64830.0,
+      "pressure_safety_agreement": true,
+      "fractal_feasible": true,
+      "metrics": {
+        "flow_m3h": {
+          "fractal": 7.83632,
+          "emulator": 7.8,
+          "absolute_error": 0.03632,
+          "error_pct": 0.4656
+        },
+        "critical_pressure_mca": {
+          "fractal": 15.45075,
+          "emulator": 15.47,
+          "absolute_error": 0.01925,
+          "error_pct": 0.1244
+        },
+        "pump_discharge_mca": {
+          "fractal": 72.1,
+          "emulator": 72.05,
+          "absolute_error": 0.05,
+          "error_pct": 0.0694
+        },
+        "prs_outlet_mca": {
+          "fractal": 19.40633,
+          "emulator": 19.38,
+          "absolute_error": 0.02633,
+          "error_pct": 0.1359
+        },
+        "supply_level_pct": {
+          "fractal": 85.168,
+          "emulator": 50.7,
+          "absolute_error": 34.468,
+          "error_pct": 67.9842
+        },
+        "recirc01_level_pct": {
+          "fractal": 27.192,
+          "emulator": 56.2,
+          "absolute_error": 29.008,
+          "error_pct": 51.6157
+        },
+        "recirc02_level_pct": {
+          "fractal": 26.889,
+          "emulator": 56.5,
+          "absolute_error": 29.611,
+          "error_pct": 52.4088
+        },
+        "recirculated_m3": {
+          "fractal": 8.21897,
+          "emulator": 7.08098,
+          "absolute_error": 1.13799,
+          "error_pct": 16.0711
+        }
+      }
+    },
+    {
+      "profile_hour": 18,
+      "emulator_t_s": 68400.0,
+      "forecast_t_s": 68430.0,
+      "pressure_safety_agreement": true,
+      "fractal_feasible": true,
+      "metrics": {
+        "flow_m3h": {
+          "fractal": 6.89664,
+          "emulator": 6.89,
+          "absolute_error": 0.00664,
+          "error_pct": 0.0964
+        },
+        "critical_pressure_mca": {
+          "fractal": 15.45044,
+          "emulator": 15.43,
+          "absolute_error": 0.02044,
+          "error_pct": 0.1325
+        },
+        "pump_discharge_mca": {
+          "fractal": 72.1,
+          "emulator": 72.13,
+          "absolute_error": 0.03,
+          "error_pct": 0.0416
+        },
+        "prs_outlet_mca": {
+          "fractal": 19.10506,
+          "emulator": 19.13,
+          "absolute_error": 0.02494,
+          "error_pct": 0.1304
+        },
+        "supply_level_pct": {
+          "fractal": 61.213,
+          "emulator": 64.4,
+          "absolute_error": 3.187,
+          "error_pct": 4.9488
+        },
+        "recirc01_level_pct": {
+          "fractal": 47.769,
+          "emulator": 44.5,
+          "absolute_error": 3.269,
+          "error_pct": 7.3461
+        },
+        "recirc02_level_pct": {
+          "fractal": 47.597,
+          "emulator": 44.7,
+          "absolute_error": 2.897,
+          "error_pct": 6.481
+        },
+        "recirculated_m3": {
+          "fractal": 5.96527,
+          "emulator": 7.41841,
+          "absolute_error": 1.45313,
+          "error_pct": 19.5882
+        }
+      }
+    },
+    {
+      "profile_hour": 19,
+      "emulator_t_s": 72000.0,
+      "forecast_t_s": 72030.0,
+      "pressure_safety_agreement": true,
+      "fractal_feasible": true,
+      "metrics": {
+        "flow_m3h": {
+          "fractal": 6.03573,
+          "emulator": 6.0,
+          "absolute_error": 0.03573,
+          "error_pct": 0.5955
+        },
+        "critical_pressure_mca": {
+          "fractal": 15.45024,
+          "emulator": 15.39,
+          "absolute_error": 0.06024,
+          "error_pct": 0.3914
+        },
+        "pump_discharge_mca": {
+          "fractal": 72.1,
+          "emulator": 72.03,
+          "absolute_error": 0.07,
+          "error_pct": 0.0972
+        },
+        "prs_outlet_mca": {
+          "fractal": 18.86103,
+          "emulator": 18.87,
+          "absolute_error": 0.00897,
+          "error_pct": 0.0475
+        },
+        "supply_level_pct": {
+          "fractal": 69.826,
+          "emulator": 77.6,
+          "absolute_error": 7.774,
+          "error_pct": 10.018
+        },
+        "recirc01_level_pct": {
+          "fractal": 40.894,
+          "emulator": 33.4,
+          "absolute_error": 7.494,
+          "error_pct": 22.4371
+        },
+        "recirc02_level_pct": {
+          "fractal": 39.628,
+          "emulator": 33.8,
+          "absolute_error": 5.828,
+          "error_pct": 17.2426
+        },
+        "recirculated_m3": {
+          "fractal": 6.3706,
+          "emulator": 6.53818,
+          "absolute_error": 0.16757,
+          "error_pct": 2.563
+        }
+      }
+    },
+    {
+      "profile_hour": 20,
+      "emulator_t_s": 75600.0,
+      "forecast_t_s": 75630.0,
+      "pressure_safety_agreement": true,
+      "fractal_feasible": true,
+      "metrics": {
+        "flow_m3h": {
+          "fractal": 5.30216,
+          "emulator": 5.3,
+          "absolute_error": 0.00216,
+          "error_pct": 0.0408
+        },
+        "critical_pressure_mca": {
+          "fractal": 15.45013,
+          "emulator": 15.48,
+          "absolute_error": 0.02987,
+          "error_pct": 0.193
+        },
+        "pump_discharge_mca": {
+          "fractal": 72.1,
+          "emulator": 72.05,
+          "absolute_error": 0.05,
+          "error_pct": 0.0694
+        },
+        "prs_outlet_mca": {
+          "fractal": 18.67768,
+          "emulator": 18.65,
+          "absolute_error": 0.02768,
+          "error_pct": 0.1484
+        },
+        "supply_level_pct": {
+          "fractal": 50.595,
+          "emulator": 76.5,
+          "absolute_error": 25.905,
+          "error_pct": 33.8627
+        },
+        "recirc01_level_pct": {
+          "fractal": 58.119,
+          "emulator": 34.6,
+          "absolute_error": 23.519,
+          "error_pct": 67.974
+        },
+        "recirc02_level_pct": {
+          "fractal": 55.545,
+          "emulator": 34.4,
+          "absolute_error": 21.145,
+          "error_pct": 61.468
+        },
+        "recirculated_m3": {
+          "fractal": 4.55447,
+          "emulator": 5.26564,
+          "absolute_error": 0.71118,
+          "error_pct": 13.506
+        }
+      }
+    },
+    {
+      "profile_hour": 21,
+      "emulator_t_s": 79200.0,
+      "forecast_t_s": 79230.0,
+      "pressure_safety_agreement": true,
+      "fractal_feasible": true,
+      "metrics": {
+        "flow_m3h": {
+          "fractal": 4.7341,
+          "emulator": 4.72,
+          "absolute_error": 0.0141,
+          "error_pct": 0.2987
+        },
+        "critical_pressure_mca": {
+          "fractal": 15.45007,
+          "emulator": 15.45,
+          "absolute_error": 7e-05,
+          "error_pct": 0.0005
+        },
+        "pump_discharge_mca": {
+          "fractal": 72.1,
+          "emulator": 72.15,
+          "absolute_error": 0.05,
+          "error_pct": 0.0693
+        },
+        "prs_outlet_mca": {
+          "fractal": 18.55145,
+          "emulator": 18.56,
+          "absolute_error": 0.00855,
+          "error_pct": 0.0461
+        },
+        "supply_level_pct": {
+          "fractal": 62.783,
+          "emulator": 68.2,
+          "absolute_error": 5.417,
+          "error_pct": 7.9428
+        },
+        "recirc01_level_pct": {
+          "fractal": 46.452,
+          "emulator": 41.3,
+          "absolute_error": 5.152,
+          "error_pct": 12.4746
+        },
+        "recirc02_level_pct": {
+          "fractal": 46.207,
+          "emulator": 41.2,
+          "absolute_error": 5.007,
+          "error_pct": 12.1529
+        },
+        "recirculated_m3": {
+          "fractal": 5.20798,
+          "emulator": 4.42178,
+          "absolute_error": 0.7862,
+          "error_pct": 17.7801
+        }
+      }
+    },
+    {
+      "profile_hour": 22,
+      "emulator_t_s": 82800.0,
+      "forecast_t_s": 82830.0,
+      "pressure_safety_agreement": true,
+      "fractal_feasible": true,
+      "metrics": {
+        "flow_m3h": {
+          "fractal": 4.38025,
+          "emulator": 4.37,
+          "absolute_error": 0.01025,
+          "error_pct": 0.2346
+        },
+        "critical_pressure_mca": {
+          "fractal": 15.45175,
+          "emulator": 15.41,
+          "absolute_error": 0.04175,
+          "error_pct": 0.2709
+        },
+        "pump_discharge_mca": {
+          "fractal": 72.1,
+          "emulator": 72.12,
+          "absolute_error": 0.02,
+          "error_pct": 0.0277
+        },
+        "prs_outlet_mca": {
+          "fractal": 18.48155,
+          "emulator": 18.52,
+          "absolute_error": 0.03845,
+          "error_pct": 0.2076
+        },
+        "supply_level_pct": {
+          "fractal": 71.595,
+          "emulator": 67.1,
+          "absolute_error": 4.495,
+          "error_pct": 6.699
+        },
+        "recirc01_level_pct": {
+          "fractal": 38.579,
+          "emulator": 42.4,
+          "absolute_error": 3.821,
+          "error_pct": 9.0118
+        },
+        "recirc02_level_pct": {
+          "fractal": 38.894,
+          "emulator": 42.4,
+          "absolute_error": 3.506,
+          "error_pct": 8.2689
+        },
+        "recirculated_m3": {
+          "fractal": 4.72285,
+          "emulator": 4.32937,
+          "absolute_error": 0.39347,
+          "error_pct": 9.0885
+        }
+      }
+    },
+    {
+      "profile_hour": 23,
+      "emulator_t_s": 86400.0,
+      "forecast_t_s": 86430.0,
+      "pressure_safety_agreement": true,
+      "fractal_feasible": true,
+      "metrics": {
+        "flow_m3h": {
+          "fractal": 4.25898,
+          "emulator": 4.25,
+          "absolute_error": 0.00898,
+          "error_pct": 0.2113
+        },
+        "critical_pressure_mca": {
+          "fractal": 15.45159,
+          "emulator": 15.44,
+          "absolute_error": 0.01159,
+          "error_pct": 0.0751
+        },
+        "pump_discharge_mca": {
+          "fractal": 72.1,
+          "emulator": 72.1,
+          "absolute_error": 0.0,
+          "error_pct": 0.0
+        },
+        "prs_outlet_mca": {
+          "fractal": 18.4581,
+          "emulator": 18.48,
+          "absolute_error": 0.0219,
+          "error_pct": 0.1185
+        },
+        "supply_level_pct": {
+          "fractal": 71.865,
+          "emulator": 68.0,
+          "absolute_error": 3.865,
+          "error_pct": 5.6838
+        },
+        "recirc01_level_pct": {
+          "fractal": 38.349,
+          "emulator": 41.8,
+          "absolute_error": 3.451,
+          "error_pct": 8.256
+        },
+        "recirc02_level_pct": {
+          "fractal": 38.658,
+          "emulator": 41.8,
+          "absolute_error": 3.142,
+          "error_pct": 7.5167
+        },
+        "recirculated_m3": {
+          "fractal": 4.26949,
+          "emulator": 4.2949,
+          "absolute_error": 0.02541,
+          "error_pct": 0.5916
+        }
+      }
+    }
+  ],
+  "summary": {
+    "flow_m3h": {
+      "mean_error_pct": 0.1884,
+      "peak_error_pct": 0.5955,
+      "peak_hour": 19
+    },
+    "critical_pressure_mca": {
+      "mean_error_pct": 0.1555,
+      "peak_error_pct": 0.4505,
+      "peak_hour": 2
+    },
+    "pump_discharge_mca": {
+      "mean_error_pct": 0.0607,
+      "peak_error_pct": 0.1523,
+      "peak_hour": 7
+    },
+    "prs_outlet_mca": {
+      "mean_error_pct": 0.1398,
+      "peak_error_pct": 0.4153,
+      "peak_hour": 9
+    },
+    "supply_level_pct": {
+      "mean_error_pct": 12.6902,
+      "peak_error_pct": 67.9842,
+      "peak_hour": 17
+    },
+    "recirc01_level_pct": {
+      "mean_error_pct": 25.5773,
+      "peak_error_pct": 67.974,
+      "peak_hour": 20
+    },
+    "recirc02_level_pct": {
+      "mean_error_pct": 22.4015,
+      "peak_error_pct": 61.468,
+      "peak_hour": 20
+    },
+    "recirculated_m3": {
+      "mean_error_pct": 5.0437,
+      "peak_error_pct": 19.5882,
+      "peak_hour": 18
+    }
+  },
+  "safety_disagreements": [],
+  "elapsed_real_s": 4522.94,
+  "provenance": "diagnostic PRE-PLC-snapshot-cache; not a post-fix acceptance report",
+  "validation_status": "diagnostic_non_accepted"
+}

@@ -30,6 +30,7 @@ def test_horizon_baseline_is_forecast_without_operator_acceptance() -> None:
     assert response.status_code == 200
     study = response.json()
     assert study["temporal_context"] == "forecast"
+    assert study["validation_status"] == "hydraulic_setpoints_only"
     assert study["applied"] is False
     assert study["requires_operator_acceptance"] is False
     assert len(study["hours"]) == 24
@@ -47,6 +48,25 @@ def test_horizon_baseline_is_forecast_without_operator_acceptance() -> None:
         assert grid["animation"]["q_l1"] > 0 and grid["animation"]["q_l2"] > 0
         drain = snapshot["links"][f"grid-0{level}:drain>tank-recirc-0{1 if level <= 2 else 2}:inlet"]
         assert abs(drain["flow_kg_h"] / 1000 - states["level_flows_m3h"][str(level)]) < 0.0001
+
+
+def test_sparse_custom_profile_keeps_hourly_house_and_leak_commands() -> None:
+    tags = {
+        "PLC.Session.SimulatedTime": 30,
+        "PLC.Tank.Supply.LevelPct": 70,
+        "PLC.Tank.Recirc01.LevelPct": 40,
+        "PLC.Tank.Recirc02.LevelPct": 40,
+        "PLC.Pump.FlowM3h": 11,
+        "PLC.PRS.OutletPressureMca": 20.94,
+        "PLC.PRS.BranchAuto": 1,
+        "PLC.Grid.L1.Consumer.C11.OpeningPct": 100,
+        "PLC.Grid.L1.Leak.L1.OpeningPct": 100,
+    }
+    profile = {"hours": {"0": {"global_consumers_pct": 30, "leaks": {"grid-01": {"l1": 0}}}}}
+    frames = mpc.project_24h(tags, profile, horizon_hours=2)
+    for frame in frames:
+        assert frame["plc_tags"]["PLC.Grid.L1.Consumer.C11.OpeningPct"] == 30
+        assert frame["plc_tags"]["PLC.Grid.L1.Leak.L1.OpeningPct"] == 0
 
 
 def test_alternative_applies_demand_leak_and_valve_overrides() -> None:
@@ -135,7 +155,7 @@ def test_forecast_reads_active_profile_and_tags_from_plc_not_browser(monkeypatch
     def gateway(url):
         fetched.append(url)
         if url.endswith("/sessions/s1"):
-            return {"id": "s1", "plant_id": "water-network-scale-v1", "profile_id": "pfl-1"}
+            return {"id": "s1", "plant_id": "water-network-scale-v1", "profile_id": "pfl-1", "running": True}
         if url.endswith("/operation-profiles/pfl-1"):
             return {"id": "pfl-1", "hours": {"0": {"global_consumers_pct": 30}}}
         return {
@@ -167,6 +187,13 @@ def test_forecast_reads_active_profile_and_tags_from_plc_not_browser(monkeypatch
     assert captured[0][0]["profile"]["hours"]["0"]["global_consumers_pct"] == 30
     assert captured[0][0]["emulator_api"] == "http://plc-internal:8000"
     assert client.post("/studies/horizon/from-plc", json={"session_id": "../bad", "plant_id": "water-network-scale-v1"}).status_code == 422
+    monkeypatch.setattr(
+        fractal_api,
+        "gateway_json",
+        lambda _url: {"id": "s1", "plant_id": "water-network-scale-v1", "profile_id": "pfl-1", "running": False},
+    )
+    stopped = client.post("/studies/horizon/from-plc", json={"session_id": "s1", "plant_id": "water-network-scale-v1"})
+    assert stopped.status_code == 409 and "play" in stopped.json()["detail"]
 
 
 def test_forecast_refuses_mismatched_session_profile(monkeypatch) -> None:
@@ -209,7 +236,7 @@ def test_forecast_requires_stabilized_plc_before_solving(monkeypatch) -> None:
         fractal_api,
         "gateway_json",
         lambda url: (
-            {"id": "s1", "plant_id": "water-network-scale-v1", "profile_id": "pfl-1"}
+            {"id": "s1", "plant_id": "water-network-scale-v1", "profile_id": "pfl-1", "running": True}
             if url.endswith("/sessions/s1")
             else {"id": "pfl-1", "hours": {}}
             if "operation-profiles" in url
@@ -240,6 +267,7 @@ def test_plc_to_fractal_to_forecast_frames_without_applying_commands(monkeypatch
     operation = session_manager.get(plant, session_id)
     assert operation is not None
     operation.apply_profile_hour(0)
+    operation.running = True  # Prueba sin tarea de reloj; PLC en play, Fractal no avanza la sesión.
     for _ in range(12):
         operation.plant.step()  # se estabiliza la PRS; el estudio no altera el gemelo operativo
     t = operation.plant.t

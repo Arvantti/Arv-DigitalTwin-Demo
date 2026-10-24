@@ -1,0 +1,752 @@
+{
+  "scope": "24 hourly steady-state setpoints; not a continuous 24-hour tank/transient validation",
+  "plant_id": "water-network-scale-v1",
+  "profile_id": "pdd-rca-01",
+  "window_s": 120,
+  "elapsed_real_s": 97.16,
+  "summary": {
+    "flow_m3h": {
+      "mean_error_pct": 0.2003,
+      "peak_error_pct": 0.6459,
+      "peak_hour": 3
+    },
+    "critical_pressure_mca": {
+      "mean_error_pct": 0.1539,
+      "peak_error_pct": 0.4448,
+      "peak_hour": 6
+    },
+    "pump_discharge_mca": {
+      "mean_error_pct": 0.0647,
+      "peak_error_pct": 0.1523,
+      "peak_hour": 16
+    },
+    "prs_outlet_mca": {
+      "mean_error_pct": 0.1575,
+      "peak_error_pct": 0.4176,
+      "peak_hour": 20
+    }
+  },
+  "safety_disagreements": [],
+  "samples": [
+    {
+      "profile_hour": 0,
+      "metrics": {
+        "flow_m3h": {
+          "fractal": 4.25898,
+          "emulator": 4.27,
+          "absolute_error": 0.01102,
+          "error_pct": 0.2581
+        },
+        "critical_pressure_mca": {
+          "fractal": 15.45159,
+          "emulator": 15.48,
+          "absolute_error": 0.02841,
+          "error_pct": 0.1835
+        },
+        "pump_discharge_mca": {
+          "fractal": 72.1,
+          "emulator": 72.03,
+          "absolute_error": 0.07,
+          "error_pct": 0.0972
+        },
+        "prs_outlet_mca": {
+          "fractal": 18.4581,
+          "emulator": 18.48,
+          "absolute_error": 0.0219,
+          "error_pct": 0.1185
+        }
+      },
+      "fractal_feasible": true
+    },
+    {
+      "profile_hour": 1,
+      "metrics": {
+        "flow_m3h": {
+          "fractal": 4.40046,
+          "emulator": 4.38,
+          "absolute_error": 0.02046,
+          "error_pct": 0.4671
+        },
+        "critical_pressure_mca": {
+          "fractal": 15.45178,
+          "emulator": 15.45,
+          "absolute_error": 0.00178,
+          "error_pct": 0.0115
+        },
+        "pump_discharge_mca": {
+          "fractal": 72.1,
+          "emulator": 72.03,
+          "absolute_error": 0.07,
+          "error_pct": 0.0972
+        },
+        "prs_outlet_mca": {
+          "fractal": 18.48552,
+          "emulator": 18.51,
+          "absolute_error": 0.02448,
+          "error_pct": 0.1323
+        }
+      },
+      "fractal_feasible": true
+    },
+    {
+      "profile_hour": 2,
+      "metrics": {
+        "flow_m3h": {
+          "fractal": 4.82526,
+          "emulator": 4.82,
+          "absolute_error": 0.00526,
+          "error_pct": 0.1091
+        },
+        "critical_pressure_mca": {
+          "fractal": 15.45008,
+          "emulator": 15.43,
+          "absolute_error": 0.02008,
+          "error_pct": 0.1301
+        },
+        "pump_discharge_mca": {
+          "fractal": 72.1,
+          "emulator": 72.04,
+          "absolute_error": 0.06,
+          "error_pct": 0.0833
+        },
+        "prs_outlet_mca": {
+          "fractal": 18.57077,
+          "emulator": 18.6,
+          "absolute_error": 0.02923,
+          "error_pct": 0.1572
+        }
+      },
+      "fractal_feasible": true
+    },
+    {
+      "profile_hour": 3,
+      "metrics": {
+        "flow_m3h": {
+          "fractal": 5.4852,
+          "emulator": 5.45,
+          "absolute_error": 0.0352,
+          "error_pct": 0.6459
+        },
+        "critical_pressure_mca": {
+          "fractal": 15.45015,
+          "emulator": 15.5,
+          "absolute_error": 0.04985,
+          "error_pct": 0.3216
+        },
+        "pump_discharge_mca": {
+          "fractal": 72.1,
+          "emulator": 72.05,
+          "absolute_error": 0.05,
+          "error_pct": 0.0694
+        },
+        "prs_outlet_mca": {
+          "fractal": 18.7213,
+          "emulator": 18.7,
+          "absolute_error": 0.0213,
+          "error_pct": 0.1139
+        }
+      },
+      "fractal_feasible": true
+    },
+    {
+      "profile_hour": 4,
+      "metrics": {
+        "flow_m3h": {
+          "fractal": 6.34253,
+          "emulator": 6.34,
+          "absolute_error": 0.00253,
+          "error_pct": 0.0399
+        },
+        "critical_pressure_mca": {
+          "fractal": 15.4503,
+          "emulator": 15.43,
+          "absolute_error": 0.0203,
+          "error_pct": 0.1316
+        },
+        "pump_discharge_mca": {
+          "fractal": 72.1,
+          "emulator": 72.18,
+          "absolute_error": 0.08,
+          "error_pct": 0.1108
+        },
+        "prs_outlet_mca": {
+          "fractal": 18.94444,
+          "emulator": 18.91,
+          "absolute_error": 0.03444,
+          "error_pct": 0.1821
+        }
+      },
+      "fractal_feasible": true
+    },
+    {
+      "profile_hour": 5,
+      "metrics": {
+        "flow_m3h": {
+          "fractal": 7.31907,
+          "emulator": 7.31,
+          "absolute_error": 0.00907,
+          "error_pct": 0.1241
+        },
+        "critical_pressure_mca": {
+          "fractal": 15.45058,
+          "emulator": 15.5,
+          "absolute_error": 0.04942,
+          "error_pct": 0.3188
+        },
+        "pump_discharge_mca": {
+          "fractal": 72.1,
+          "emulator": 72.04,
+          "absolute_error": 0.06,
+          "error_pct": 0.0833
+        },
+        "prs_outlet_mca": {
+          "fractal": 19.23603,
+          "emulator": 19.18,
+          "absolute_error": 0.05603,
+          "error_pct": 0.2921
+        }
+      },
+      "fractal_feasible": true
+    },
+    {
+      "profile_hour": 6,
+      "metrics": {
+        "flow_m3h": {
+          "fractal": 8.35605,
+          "emulator": 8.34,
+          "absolute_error": 0.01605,
+          "error_pct": 0.1924
+        },
+        "critical_pressure_mca": {
+          "fractal": 15.45096,
+          "emulator": 15.52,
+          "absolute_error": 0.06904,
+          "error_pct": 0.4448
+        },
+        "pump_discharge_mca": {
+          "fractal": 72.1,
+          "emulator": 72.07,
+          "absolute_error": 0.03,
+          "error_pct": 0.0416
+        },
+        "prs_outlet_mca": {
+          "fractal": 19.58832,
+          "emulator": 19.58,
+          "absolute_error": 0.00832,
+          "error_pct": 0.0425
+        }
+      },
+      "fractal_feasible": true
+    },
+    {
+      "profile_hour": 7,
+      "metrics": {
+        "flow_m3h": {
+          "fractal": 9.35087,
+          "emulator": 9.33,
+          "absolute_error": 0.02087,
+          "error_pct": 0.2237
+        },
+        "critical_pressure_mca": {
+          "fractal": 15.4513,
+          "emulator": 15.44,
+          "absolute_error": 0.0113,
+          "error_pct": 0.0732
+        },
+        "pump_discharge_mca": {
+          "fractal": 72.1,
+          "emulator": 72.14,
+          "absolute_error": 0.04,
+          "error_pct": 0.0554
+        },
+        "prs_outlet_mca": {
+          "fractal": 19.96643,
+          "emulator": 19.94,
+          "absolute_error": 0.02643,
+          "error_pct": 0.1325
+        }
+      },
+      "fractal_feasible": true
+    },
+    {
+      "profile_hour": 8,
+      "metrics": {
+        "flow_m3h": {
+          "fractal": 10.23912,
+          "emulator": 10.21,
+          "absolute_error": 0.02912,
+          "error_pct": 0.2852
+        },
+        "critical_pressure_mca": {
+          "fractal": 15.45144,
+          "emulator": 15.45,
+          "absolute_error": 0.00144,
+          "error_pct": 0.0093
+        },
+        "pump_discharge_mca": {
+          "fractal": 72.1,
+          "emulator": 72.06,
+          "absolute_error": 0.04,
+          "error_pct": 0.0555
+        },
+        "prs_outlet_mca": {
+          "fractal": 20.33627,
+          "emulator": 20.39,
+          "absolute_error": 0.05373,
+          "error_pct": 0.2635
+        }
+      },
+      "fractal_feasible": true
+    },
+    {
+      "profile_hour": 9,
+      "metrics": {
+        "flow_m3h": {
+          "fractal": 10.9324,
+          "emulator": 10.96,
+          "absolute_error": 0.0276,
+          "error_pct": 0.2518
+        },
+        "critical_pressure_mca": {
+          "fractal": 15.45129,
+          "emulator": 15.44,
+          "absolute_error": 0.01129,
+          "error_pct": 0.0731
+        },
+        "pump_discharge_mca": {
+          "fractal": 72.1,
+          "emulator": 72.11,
+          "absolute_error": 0.01,
+          "error_pct": 0.0139
+        },
+        "prs_outlet_mca": {
+          "fractal": 20.64538,
+          "emulator": 20.58,
+          "absolute_error": 0.06538,
+          "error_pct": 0.3177
+        }
+      },
+      "fractal_feasible": true
+    },
+    {
+      "profile_hour": 10,
+      "metrics": {
+        "flow_m3h": {
+          "fractal": 11.38327,
+          "emulator": 11.39,
+          "absolute_error": 0.00673,
+          "error_pct": 0.0591
+        },
+        "critical_pressure_mca": {
+          "fractal": 15.45098,
+          "emulator": 15.46,
+          "absolute_error": 0.00902,
+          "error_pct": 0.0583
+        },
+        "pump_discharge_mca": {
+          "fractal": 72.1,
+          "emulator": 72.12,
+          "absolute_error": 0.02,
+          "error_pct": 0.0277
+        },
+        "prs_outlet_mca": {
+          "fractal": 20.85575,
+          "emulator": 20.89,
+          "absolute_error": 0.03425,
+          "error_pct": 0.164
+        }
+      },
+      "fractal_feasible": true
+    },
+    {
+      "profile_hour": 11,
+      "metrics": {
+        "flow_m3h": {
+          "fractal": 11.53407,
+          "emulator": 11.52,
+          "absolute_error": 0.01407,
+          "error_pct": 0.1221
+        },
+        "critical_pressure_mca": {
+          "fractal": 15.45084,
+          "emulator": 15.49,
+          "absolute_error": 0.03916,
+          "error_pct": 0.2528
+        },
+        "pump_discharge_mca": {
+          "fractal": 72.1,
+          "emulator": 72.16,
+          "absolute_error": 0.06,
+          "error_pct": 0.0831
+        },
+        "prs_outlet_mca": {
+          "fractal": 20.92774,
+          "emulator": 20.95,
+          "absolute_error": 0.02226,
+          "error_pct": 0.1063
+        }
+      },
+      "fractal_feasible": true
+    },
+    {
+      "profile_hour": 12,
+      "metrics": {
+        "flow_m3h": {
+          "fractal": 11.4048,
+          "emulator": 11.38,
+          "absolute_error": 0.0248,
+          "error_pct": 0.2179
+        },
+        "critical_pressure_mca": {
+          "fractal": 15.45097,
+          "emulator": 15.48,
+          "absolute_error": 0.02903,
+          "error_pct": 0.1875
+        },
+        "pump_discharge_mca": {
+          "fractal": 72.1,
+          "emulator": 72.11,
+          "absolute_error": 0.01,
+          "error_pct": 0.0139
+        },
+        "prs_outlet_mca": {
+          "fractal": 20.86598,
+          "emulator": 20.85,
+          "absolute_error": 0.01598,
+          "error_pct": 0.0766
+        }
+      },
+      "fractal_feasible": true
+    },
+    {
+      "profile_hour": 13,
+      "metrics": {
+        "flow_m3h": {
+          "fractal": 11.02882,
+          "emulator": 11.02,
+          "absolute_error": 0.00882,
+          "error_pct": 0.08
+        },
+        "critical_pressure_mca": {
+          "fractal": 15.45124,
+          "emulator": 15.44,
+          "absolute_error": 0.01124,
+          "error_pct": 0.0728
+        },
+        "pump_discharge_mca": {
+          "fractal": 72.1,
+          "emulator": 72.12,
+          "absolute_error": 0.02,
+          "error_pct": 0.0277
+        },
+        "prs_outlet_mca": {
+          "fractal": 20.68976,
+          "emulator": 20.63,
+          "absolute_error": 0.05976,
+          "error_pct": 0.2897
+        }
+      },
+      "fractal_feasible": true
+    },
+    {
+      "profile_hour": 14,
+      "metrics": {
+        "flow_m3h": {
+          "fractal": 10.43057,
+          "emulator": 10.44,
+          "absolute_error": 0.00943,
+          "error_pct": 0.0903
+        },
+        "critical_pressure_mca": {
+          "fractal": 15.45143,
+          "emulator": 15.46,
+          "absolute_error": 0.00857,
+          "error_pct": 0.0554
+        },
+        "pump_discharge_mca": {
+          "fractal": 72.1,
+          "emulator": 72.1,
+          "absolute_error": 0.0,
+          "error_pct": 0.0
+        },
+        "prs_outlet_mca": {
+          "fractal": 20.41987,
+          "emulator": 20.42,
+          "absolute_error": 0.00013,
+          "error_pct": 0.0006
+        }
+      },
+      "fractal_feasible": true
+    },
+    {
+      "profile_hour": 15,
+      "metrics": {
+        "flow_m3h": {
+          "fractal": 9.66713,
+          "emulator": 9.64,
+          "absolute_error": 0.02713,
+          "error_pct": 0.2814
+        },
+        "critical_pressure_mca": {
+          "fractal": 15.45138,
+          "emulator": 15.45,
+          "absolute_error": 0.00138,
+          "error_pct": 0.0089
+        },
+        "pump_discharge_mca": {
+          "fractal": 72.1,
+          "emulator": 72.05,
+          "absolute_error": 0.05,
+          "error_pct": 0.0694
+        },
+        "prs_outlet_mca": {
+          "fractal": 20.09468,
+          "emulator": 20.13,
+          "absolute_error": 0.03532,
+          "error_pct": 0.1755
+        }
+      },
+      "fractal_feasible": true
+    },
+    {
+      "profile_hour": 16,
+      "metrics": {
+        "flow_m3h": {
+          "fractal": 8.78418,
+          "emulator": 8.8,
+          "absolute_error": 0.01582,
+          "error_pct": 0.1798
+        },
+        "critical_pressure_mca": {
+          "fractal": 15.45111,
+          "emulator": 15.47,
+          "absolute_error": 0.01889,
+          "error_pct": 0.1221
+        },
+        "pump_discharge_mca": {
+          "fractal": 72.1,
+          "emulator": 72.21,
+          "absolute_error": 0.11,
+          "error_pct": 0.1523
+        },
+        "prs_outlet_mca": {
+          "fractal": 19.74629,
+          "emulator": 19.7,
+          "absolute_error": 0.04629,
+          "error_pct": 0.235
+        }
+      },
+      "fractal_feasible": true
+    },
+    {
+      "profile_hour": 17,
+      "metrics": {
+        "flow_m3h": {
+          "fractal": 7.83632,
+          "emulator": 7.84,
+          "absolute_error": 0.00368,
+          "error_pct": 0.0469
+        },
+        "critical_pressure_mca": {
+          "fractal": 15.45075,
+          "emulator": 15.42,
+          "absolute_error": 0.03075,
+          "error_pct": 0.1994
+        },
+        "pump_discharge_mca": {
+          "fractal": 72.1,
+          "emulator": 72.17,
+          "absolute_error": 0.07,
+          "error_pct": 0.097
+        },
+        "prs_outlet_mca": {
+          "fractal": 19.40633,
+          "emulator": 19.4,
+          "absolute_error": 0.00633,
+          "error_pct": 0.0326
+        }
+      },
+      "fractal_feasible": true
+    },
+    {
+      "profile_hour": 18,
+      "metrics": {
+        "flow_m3h": {
+          "fractal": 6.89664,
+          "emulator": 6.9,
+          "absolute_error": 0.00336,
+          "error_pct": 0.0487
+        },
+        "critical_pressure_mca": {
+          "fractal": 15.45044,
+          "emulator": 15.42,
+          "absolute_error": 0.03044,
+          "error_pct": 0.1974
+        },
+        "pump_discharge_mca": {
+          "fractal": 72.1,
+          "emulator": 72.13,
+          "absolute_error": 0.03,
+          "error_pct": 0.0416
+        },
+        "prs_outlet_mca": {
+          "fractal": 19.10506,
+          "emulator": 19.1,
+          "absolute_error": 0.00506,
+          "error_pct": 0.0265
+        }
+      },
+      "fractal_feasible": true
+    },
+    {
+      "profile_hour": 19,
+      "metrics": {
+        "flow_m3h": {
+          "fractal": 6.03573,
+          "emulator": 6.05,
+          "absolute_error": 0.01427,
+          "error_pct": 0.2359
+        },
+        "critical_pressure_mca": {
+          "fractal": 15.45024,
+          "emulator": 15.48,
+          "absolute_error": 0.02976,
+          "error_pct": 0.1922
+        },
+        "pump_discharge_mca": {
+          "fractal": 72.1,
+          "emulator": 72.16,
+          "absolute_error": 0.06,
+          "error_pct": 0.0831
+        },
+        "prs_outlet_mca": {
+          "fractal": 18.86103,
+          "emulator": 18.91,
+          "absolute_error": 0.04897,
+          "error_pct": 0.259
+        }
+      },
+      "fractal_feasible": true
+    },
+    {
+      "profile_hour": 20,
+      "metrics": {
+        "flow_m3h": {
+          "fractal": 5.30216,
+          "emulator": 5.3,
+          "absolute_error": 0.00216,
+          "error_pct": 0.0408
+        },
+        "critical_pressure_mca": {
+          "fractal": 15.45013,
+          "emulator": 15.41,
+          "absolute_error": 0.04013,
+          "error_pct": 0.2604
+        },
+        "pump_discharge_mca": {
+          "fractal": 72.1,
+          "emulator": 72.09,
+          "absolute_error": 0.01,
+          "error_pct": 0.0139
+        },
+        "prs_outlet_mca": {
+          "fractal": 18.67768,
+          "emulator": 18.6,
+          "absolute_error": 0.07768,
+          "error_pct": 0.4176
+        }
+      },
+      "fractal_feasible": true
+    },
+    {
+      "profile_hour": 21,
+      "metrics": {
+        "flow_m3h": {
+          "fractal": 4.7341,
+          "emulator": 4.76,
+          "absolute_error": 0.0259,
+          "error_pct": 0.5441
+        },
+        "critical_pressure_mca": {
+          "fractal": 15.45007,
+          "emulator": 15.48,
+          "absolute_error": 0.02993,
+          "error_pct": 0.1933
+        },
+        "pump_discharge_mca": {
+          "fractal": 72.1,
+          "emulator": 72.17,
+          "absolute_error": 0.07,
+          "error_pct": 0.097
+        },
+        "prs_outlet_mca": {
+          "fractal": 18.55145,
+          "emulator": 18.54,
+          "absolute_error": 0.01145,
+          "error_pct": 0.0618
+        }
+      },
+      "fractal_feasible": true
+    },
+    {
+      "profile_hour": 22,
+      "metrics": {
+        "flow_m3h": {
+          "fractal": 4.38025,
+          "emulator": 4.38,
+          "absolute_error": 0.00025,
+          "error_pct": 0.0057
+        },
+        "critical_pressure_mca": {
+          "fractal": 15.45175,
+          "emulator": 15.44,
+          "absolute_error": 0.01175,
+          "error_pct": 0.0761
+        },
+        "pump_discharge_mca": {
+          "fractal": 72.1,
+          "emulator": 72.18,
+          "absolute_error": 0.08,
+          "error_pct": 0.1108
+        },
+        "prs_outlet_mca": {
+          "fractal": 18.48155,
+          "emulator": 18.45,
+          "absolute_error": 0.03155,
+          "error_pct": 0.171
+        }
+      },
+      "fractal_feasible": true
+    },
+    {
+      "profile_hour": 23,
+      "metrics": {
+        "flow_m3h": {
+          "fractal": 4.25898,
+          "emulator": 4.27,
+          "absolute_error": 0.01102,
+          "error_pct": 0.2581
+        },
+        "critical_pressure_mca": {
+          "fractal": 15.45159,
+          "emulator": 15.47,
+          "absolute_error": 0.01841,
+          "error_pct": 0.119
+        },
+        "pump_discharge_mca": {
+          "fractal": 72.1,
+          "emulator": 72.12,
+          "absolute_error": 0.02,
+          "error_pct": 0.0277
+        },
+        "prs_outlet_mca": {
+          "fractal": 18.4581,
+          "emulator": 18.46,
+          "absolute_error": 0.0019,
+          "error_pct": 0.0103
+        }
+      },
+      "fractal_feasible": true
+    }
+  ]
+}

@@ -25,18 +25,19 @@
       <div id="forecast-study-meta" style="margin:8px 0"></div>
       <label>Hora futura <select id="forecast-hour"></select></label>
       <div id="forecast-values" style="margin-top:8px"></div>
-      <small>Geometría de referencia; las métricas son proyección Fractal, no estado operativo PLC.</small>
+      <small>Geometría de referencia; las métricas son proyección Fractal, no estado operativo PLC.</small><div><button id="forecast-return">↶ VOLVER AL PLC ACTUAL</button></div>
     </section>
     <header class="topbar glass">
       <div class="brand"><span class="logo">◆</span> TWIN<span class="dim">/</span>PLANT</div>
       <div class="title"><span id="plant-name">—</span><span class="dim" id="plant-meta"></span></div>
       <div class="lighting" id="lighting"></div>
+      <nav id="water-workspace-nav" class="water-workspace-nav" aria-label="Vistas del acueducto" hidden><button id="view-3d" class="active">◆ 3D</button><button id="view-plc">▣ PLC Y ESCENARIOS</button><button id="view-history">◷ HISTÓRICO</button></nav>
       <div class="clock" id="clock">SIM · DESCONECTADA</div>
     </header>
     <aside class="sidebar glass" id="sidebar">
       <a class="nav-link" href="/">◀ INICIO</a>
       <a class="nav-link" id="link-equipos" href="/equipos.html">▤ EQUIPOS DE ESTA PLANTA</a>
-      <a class="nav-link" id="link-plc" href="/plc.html" target="_blank" rel="noopener" hidden>▣ PLC MASTER / HMI</a>
+      <a class="nav-link" id="link-plc" href="#plc" hidden>▣ PLC MASTER / HMI</a>
       <div id="products-section" hidden>
         <h3>PRODUCTOS</h3>
         <ul id="products"></ul>
@@ -61,6 +62,8 @@
       <h3>LÍNEAS</h3>
       <div id="lines" class="lines"></div>
     </aside>
+    <section id="water-plc-panel" class="water-plc-panel" hidden aria-label="PLC sobre la misma escena 3D"><iframe id="water-plc-frame" title="PLC Master y administración de escenarios" loading="lazy"></iframe></section>
+    <section id="water-history-panel" class="water-history-panel glass" hidden aria-label="Histórico del 3D"><h2>◷ HISTÓRICO PLC · SOLO LECTURA</h2><p>La operación continúa en vivo mientras se inspecciona un instante anterior. Esto no rebobina ni modifica el PLC.</p><label>Instante simulado <input id="history-time" type="range" min="0" max="0" value="0" step="60" /></label><strong id="history-caption">Sin grabación aún.</strong><button id="history-return">VOLVER AL PRESENTE</button></section>
     <section class="plc glass hidden" id="belt-plc" aria-label="Tablero del PLC de las bandas"></section>
     <section class="hud glass" id="hud">
       <div class="label">ACTIVO SELECCIONADO</div>
