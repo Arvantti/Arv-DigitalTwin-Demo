@@ -167,7 +167,14 @@ class ProfileStore:
         self._seed_model_profiles()
 
     def _seed_model_profiles(self) -> None:
-        """Instala una vez las plantillas versionadas que acompañan al modelo industrial."""
+        """Instala plantillas versionadas; retira las sustituidas sin borrar perfiles del operador."""
+        if self.plant_id == "water-network-scale-v1":
+            retired = tuple(f"builtin-{self.plant_id}-{name}" for name in ("pfl-noc-01", "pfl-noc-02", "pfl-res-01"))
+            with self._connect() as conn:
+                conn.execute(
+                    "DELETE FROM operation_profiles WHERE plant_id = ? AND id IN (?, ?, ?)",
+                    (self.plant_id, *retired),
+                )
         folder = _models_root() / self.plant_id / "operation-profiles"
         if not folder.exists():
             return

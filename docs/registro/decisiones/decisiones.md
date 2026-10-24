@@ -5,6 +5,14 @@ actualizado: 2026-10-24
 ---
 # Decisiones y reglas del autor
 
+## D74 · Escritorio único de acueducto y escenarios personalizados · 2026-10-24
+
+El autor retiró el perfil nocturno plano y limitó los **tipos de escenario** a dos curvas de referencia (diurna PDD y base fija) y un personalizado configurable **antes** de ejecutar con aperturas por vivienda/fuga y horas. Los personalizados se guardan, nombran, editan y eliminan en la administración de escenarios del PLC. La misma pantalla de escritorio 3D aloja el PLC como pestaña y una vista histórica que no altera la operación en play; móviles después. En cada perfil debe verse apertura y presión de salida de PRS vs tiempo en una gráfica con ejes izquierdo (%) y derecho (mca) autoescalados. Para calcular presión futura se requieren estado PLC presurizado y Fractal disponible **bajo demanda**; el emulador no lo mantiene encendido por obligación. Si no es posible calcularla, se indica pendiente y no se finge que la consigna crítica sea la presión de salida. Fractal solo proyecta desde una sesión en play, nunca cambia mandos; el pasado y futuro se distinguen del presente. [[../../architecture/plc-fractal-desktop-workspace]]
+
+## D73 · Reproducción representativa a ×240 separada del cálculo · 2026-10-24
+
+El autor eligió reproducir la comparación hidráulica **precalculada** a razón de 15 segundos reales por hora simulada (×240). El cálculo fiel de 86.400 pasos de 1 s ocurre antes y fuera de línea; los 24 resultados se muestran durante 360 s y se identifican como reproducción, no como emulación en vivo ni como nuevo control. La velocidad solicitada por la HMI sigue siendo ×240, pero no se debe afirmar que el solver operativo la sostiene en este equipo: en prueba real el avance efectivo fue ≈×21,4. Rechazar un paso numérico grueso que altere la presión crítica; optimizar el runtime por separado si se necesita ×240 efectivo en vivo.
+
 ## D72 · Diferencia entre modelos no implica fallo · 2026-10-24
 
 El autor aclaró que Fractal **no debe ser exactamente igual al emulador**; una diferencia acotada entre dos modelos independientes puede ser útil para ilustrar incertidumbre. Mencionó como referencia informal desviaciones del orden de 2 % y picos cercanos a 4 % observados en otros gemelos, **no como tolerancia aprobada ni como medición de esta planta**. No se introduce ruido artificial para alcanzar una diferencia. Se contrastan errores por canal y hora, conservación de agua y acuerdo sobre límites de seguridad (presión crítica ≥15 mca); la física dinámica de los tanques requiere validación aparte. Sin mediciones de una instalación real no se afirma exactitud respecto al mundo físico.

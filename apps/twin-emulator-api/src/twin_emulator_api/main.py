@@ -302,6 +302,7 @@ def get_plant_session(plant_id: str, session_id: str) -> dict[str, Any]:
         "paused": session.paused,
         "t": session.plant.t,
         "profile_id": session.profile_id,
+        "pending_profile_id": session.pending_profile[1] if session.pending_profile else None,
     }
 
 
@@ -312,6 +313,27 @@ async def start_plant_session(plant_id: str, session_id: str) -> dict[str, Any]:
         raise HTTPException(404, "sesión desconocida")
     session_manager.start(session)
     return {"id": session.id, "running": True}
+
+
+@app.post("/api/plants/{plant_id}/sessions/{session_id}/schedule-profile")
+def schedule_saved_profile(plant_id: str, session_id: str, payload: Annotated[dict[str, Any], Body()]) -> dict[str, Any]:
+    """El operador PLC programa un escenario persistido para la próxima hora, nunca Fractal."""
+    session = session_manager.get(plant_id, session_id)
+    if session is None:
+        raise HTTPException(404, "sesión desconocida")
+    if not session.running:
+        raise HTTPException(409, "el PLC debe estar en play para programar un perfil")
+    profile_id = payload.get("profile_id")
+    profile = ProfileStore(plant_id).get(profile_id) if isinstance(profile_id, str) else None
+    if profile is None:
+        raise HTTPException(404, "escenario guardado desconocido")
+    starts_at_hour = session_manager.schedule_profile(session, profile_id, profile)
+    historian.command(
+        session_id,
+        session.plant.t,
+        {"source": "operator_plc", "event": "profile_scheduled", "profile_id": profile_id, "starts_at_hour": starts_at_hour},
+    )
+    return {"session_id": session_id, "profile_id": profile_id, "starts_at_hour": starts_at_hour, "applied_now": False}
 
 
 @app.get("/api/plants/{plant_id}/sessions/{session_id}/fractal/studies")
@@ -456,6 +478,19 @@ def get_session_historian(plant_id: str, session_id: str) -> dict[str, Any]:
     return {"session_id": session_id, **historian.read(session_id)}
 
 
+@app.get("/api/plants/{plant_id}/sessions/{session_id}/historian/frame")
+def get_historical_scene_frame(plant_id: str, session_id: str, at_t: float) -> dict[str, Any]:
+    session = session_manager.get(plant_id, session_id)
+    if session is None:
+        raise HTTPException(404, "sesión desconocida")
+    if not math.isfinite(at_t) or at_t < 0 or at_t > session.plant.t:
+        raise HTTPException(422, "instante fuera del historial de esta sesión")
+    frame = historian.nearest_frame(session_id, at_t)
+    if frame is None:
+        raise HTTPException(404, "todavía no existen fotogramas históricos")
+    return {"session_id": session_id, **frame}
+
+
 @app.post("/api/plants/{plant_id}/sessions/{session_id}/stop")
 def stop_plant_session(plant_id: str, session_id: str) -> dict[str, Any]:
     session = session_manager.get(plant_id, session_id)
@@ -598,6 +633,10 @@ def get_operation_profile(plant_id: str, profile_id: str) -> dict[str, Any]:
 def update_operation_profile(plant_id: str, profile_id: str, profile: Annotated[dict[str, Any], Body()]) -> dict[str, Any]:
     if plant_id not in _plant_folders():
         raise HTTPException(404, f"planta desconocida: {plant_id}")
+    if profile_id.startswith("builtin-"):
+        raise HTTPException(409, "clone la plantilla y edite la copia personalizada")
+    if any(s.plant_id == plant_id and s.profile_id == profile_id and s.running for s in session_manager.sessions.values()):
+        raise HTTPException(409, "no se puede editar el perfil activo mientras el PLC esté en play")
     try:
         updated = ProfileStore(plant_id).update(profile_id, profile)
     except ValueError as exc:
@@ -609,6 +648,10 @@ def update_operation_profile(plant_id: str, profile_id: str, profile: Annotated[
 
 @app.delete("/api/plants/{plant_id}/operation-profiles/{profile_id}", status_code=204)
 def delete_operation_profile(plant_id: str, profile_id: str) -> None:
+    if profile_id.startswith("builtin-"):
+        raise HTTPException(409, "las plantillas del modelo no se eliminan")
+    if any(s.plant_id == plant_id and s.profile_id == profile_id and s.running for s in session_manager.sessions.values()):
+        raise HTTPException(409, "no se puede eliminar el perfil activo mientras el PLC esté en play")
     if not ProfileStore(plant_id).delete(profile_id):
         raise HTTPException(404, f"perfil desconocido: {profile_id}")
 

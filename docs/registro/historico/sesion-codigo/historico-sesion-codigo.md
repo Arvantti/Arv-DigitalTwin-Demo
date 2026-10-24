@@ -11,6 +11,7 @@ Conversación entre Carlos Andrés Quiceño (autor) y Claude (modelo Opus 5.5, C
 
 - [[sesion-codigo-parte-01]]: 2026-10-15 23:17 → 2026-10-16 04:18 (repositorio vacío, plan, layouts de plantas, librería de equipos).
 - [[sesion-codigo-parte-02]]: 2026-10-16 04:18 → 13:54 (geometría, galería, MCP, entrevista, PR #1–#4, sachets).
+- [[2026-10-24-escenarios-integrados-3d]]: 2026-10-24 (tres familias de escenarios, CRUD personalizado, gráfica dual y PLC/histórico en el escritorio 3D).
 - [[2026-10-24-prioridad-futuro-plc]]: 2026-10-24 (proyección PLC→Fractal antes de optimización; commit, push y despliegue según infraestructura disponible).
 - [[2026-10-24-solver-fractal-y-estudios]]: 2026-10-24 (solver hidráulico Fractal por emisores, perfiles residenciales y verificación de estudios).
 - [[2026-10-22-perfiles-plc-fractal]]: 2026-10-22 (perfiles horarios PLC, contrato OPC UA simulado, Fractal independiente y mejoras de visualización hidráulica).

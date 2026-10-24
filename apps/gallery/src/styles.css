@@ -252,3 +252,16 @@ button.pick { padding: 2px 8px; font-size: 11px; }
 .route-hint { margin-top: 6px; }
 @media (max-width: 900px) { .route-panel { left: 224px; right: 284px; } }
 @media (max-width: 700px) { .route-panel { left: 8px; right: 8px; bottom: 64px; max-height: 50vh; } }
+/* Escritorio: una sola pantalla con escena siempre montada y HMI en panel. */
+.water-workspace-nav { display:flex; gap:5px; margin-left:auto; }
+.water-workspace-nav[hidden], .water-plc-panel[hidden], .water-history-panel[hidden] { display:none; }
+.water-workspace-nav button { white-space:nowrap; padding:7px 9px; border:1px solid #456080; background:#09142b; color:#c8d8ed; font:600 10px Orbitron,Inter,sans-serif; }
+.water-workspace-nav button.active { color:#4ea7ff; border-color:#4ea7ff; }
+.topbar:has(.water-workspace-nav:not([hidden])) .clock { min-width:150px; }
+.water-plc-panel { position:fixed; z-index:36; top:76px; right:12px; width:min(1050px,76vw); height:calc(100vh - 90px); overflow:hidden; background:#040421; border:1px solid #4ea7ff; box-shadow:0 14px 45px #000a; }
+.water-plc-panel iframe { width:100%; height:100%; border:0; background:#040421; }
+.water-history-panel { position:fixed; z-index:37; top:76px; right:12px; width:min(520px,55vw); padding:18px; }
+.water-history-panel label { display:grid; gap:8px; margin:16px 0; }
+.water-history-panel input { width:100%; }
+.water-history-panel strong { display:block; margin:12px 0; color:#4ea7ff; font:12px "IBM Plex Mono",monospace; }
+.plc-viewer-mode #btn-pause,.plc-viewer-mode .speed,.plc-viewer-mode #scenario,.plc-viewer-mode #commands { display:none; }

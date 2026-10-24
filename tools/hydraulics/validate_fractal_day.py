@@ -62,6 +62,9 @@ def compare(output: Path) -> dict[str, Any]:
         raise ValueError("Fractal no devolvió 24 horas")
     report: dict[str, Any] = {
         "scope": "continuous 24-hour emulator run compared to 24 hourly Fractal forecasts",
+        "validation_status": "post_session_snapshot_cache",
+        "sampling": "one PLC sensor sample per simulated tick",
+        "execution_mode": "offline_physics; playback cadence controlled separately",
         "plant_id": PLANT,
         "profile_id": profile["id"],
         "start_t_s": session.plant.t,

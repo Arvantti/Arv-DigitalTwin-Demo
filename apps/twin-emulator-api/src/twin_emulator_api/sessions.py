@@ -43,6 +43,7 @@ class PlantSession:
     subscribers: set[asyncio.Queue[dict[str, Any]]] = field(default_factory=set)
     task: asyncio.Task[None] | None = None
     applied_profile_hour: int | None = None
+    pending_profile: tuple[int, str, dict[str, Any]] | None = None
     budget: float = 0.0
     sent_events: int = 0
     last_sample_t: float = -60.0
@@ -83,6 +84,10 @@ class PlantSession:
         )
 
     def apply_profile_hour(self, hour: int) -> None:
+        if self.pending_profile is not None and hour >= self.pending_profile[0]:
+            _, self.profile_id, self.profile = self.pending_profile
+            self.pending_profile = None
+            self.applied_profile_hour = None
         if self.profile is None or self.applied_profile_hour == hour:
             return
         for item in commands_for_hour(self.profile, hour):
@@ -100,6 +105,7 @@ class PlantSession:
                 message["t"],
                 {"plc_tags": message["plc_tags"], "profile": message["profile"], "events": message["events"]},
             )
+            historian.frame(self.id, message["t"], message["snapshot"])
             self.last_sample_t = message["t"]
         for queue in list(self.subscribers):
             if queue.full():
@@ -158,9 +164,7 @@ class SessionManager:
     def schedule_profile(self, session: PlantSession, profile_id: str, profile: dict[str, Any]) -> int:
         """Programa el perfil para la siguiente hora simulada; no envía mandos al aceptarlo."""
         current_hour = int(session.plant.t // 3600)
-        session.profile_id = profile_id
-        session.profile = profile
-        session.applied_profile_hour = current_hour
+        session.pending_profile = (current_hour + 1, profile_id, profile)
         session.last_activity = time()
         return current_hour + 1
 
