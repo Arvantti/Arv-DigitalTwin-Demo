@@ -331,7 +331,7 @@ def publish_fractal_study(plant_id: str, session_id: str, payload: Annotated[dic
         raise HTTPException(422, "study_id y forecast no aplicado son obligatorios")
     studies.save(session_id, study_id, session.plant.t, payload)
     historian.command(session_id, session.plant.t, {"source": "fractal", "study_id": study_id, "event": "study_published"})
-    return payload
+    return {"study_id": study_id, "temporal_context": "forecast", "applied": False}
 
 
 @app.get("/api/plants/{plant_id}/sessions/{session_id}/fractal/studies/{study_id}/frames")

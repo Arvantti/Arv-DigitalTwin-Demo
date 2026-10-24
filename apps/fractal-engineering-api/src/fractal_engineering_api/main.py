@@ -81,9 +81,13 @@ def horizon_from_plc(payload: dict[str, Any]) -> dict[str, Any]:
     tags = gateway_json(f"{base}/sessions/{session_id}/plc-tags").get("plc_tags")
     if not isinstance(tags, dict) or tags.get("PLC.Profile.ActiveId") != session["profile_id"]:
         raise HTTPException(409, "el perfil y los tags PLC no corresponden a la misma sesión")
+    # La red cuasiestacionaria no representa el arranque: con bomba parada la
+    # PRS no tiene cabeza y resolver 24 horas de esa condición sería engañoso.
+    if int(tags.get("PLC.Pump.RunningCount") or 0) == 0 or float(tags.get("PLC.PRS.OutletPressureMca") or 0) < 5:
+        raise HTTPException(409, "espere a que arranquen las bombas y se presurice la PRS antes de proyectar")
     study_type = payload.get("study_type", "baseline")
     overrides = payload.get("overrides", {}) if study_type == "alternative" else {}
-    return horizon_study(
+    return _horizon_study(
         {
             "session_id": session_id,
             "plant_id": plant_id,
@@ -92,13 +96,19 @@ def horizon_from_plc(payload: dict[str, Any]) -> dict[str, Any]:
             "profile": {**profile, "overrides": overrides},
             "objective_id": payload.get("objective_id", "OBJ-LEAK-01"),
             "study_type": study_type,
-        }
+        },
+        publish=True,
     )
 
 
 @app.post("/studies/horizon")
 def horizon_study(payload: dict[str, Any]) -> dict[str, Any]:
-    """Proyección futura: el perfil es una hipótesis PLC, no un mandato Fractal."""
+    """Estudio offline: acepta hipótesis, pero nunca publica una sesión PLC."""
+    return _horizon_study(payload, publish=False)
+
+
+def _horizon_study(payload: dict[str, Any], *, publish: bool) -> dict[str, Any]:
+    """Proyección futura: solo la ruta from-plc publica en la sesión verificada."""
     session_id, tags, profile, objective_id = (
         payload.get("session_id"),
         payload.get("plc_tags"),
@@ -159,7 +169,7 @@ def horizon_study(payload: dict[str, Any]) -> dict[str, Any]:
         "requires_operator_acceptance": study_type == "optimized",
     }
     plant_id = payload.get("plant_id")
-    if payload.get("emulator_api") and isinstance(plant_id, str):
+    if publish and isinstance(plant_id, str):
         emulator_api = plc_gateway(payload)
         request = Request(
             f"{emulator_api}/api/plants/{plant_id}/sessions/{session_id}/fractal/studies",

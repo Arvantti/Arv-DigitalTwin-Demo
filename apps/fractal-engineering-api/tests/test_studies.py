@@ -1,3 +1,6 @@
+import io
+import json
+
 from fastapi.testclient import TestClient
 from fractal_engineering_api import main as fractal_api
 from fractal_engineering_api.main import app
@@ -35,6 +38,15 @@ def test_horizon_baseline_is_forecast_without_operator_acceptance() -> None:
     assert set(frame["snapshot"]["equipment"]) >= {"tank-supply-01", "pumpset-main-01", "prs-01", "grid-04"}
     assert frame["snapshot"]["equipment"]["tank-supply-01"]["animation"]["level"] >= 0
     assert frame["temporal_context"] == "forecast" and frame["applied"] is False
+    snapshot = frame["snapshot"]
+    states = frame["scenarios"][1]["state"]
+    first_riser = snapshot["links"]["grid-01:riser_out>valve-between-12:inlet"]["flow_kg_h"] / 1000
+    assert abs(first_riser - sum(states["level_flows_m3h"][str(level)] for level in (2, 3, 4))) < 0.0001
+    for level in range(1, 5):
+        grid = snapshot["equipment"][f"grid-0{level}"]
+        assert grid["animation"]["q_l1"] > 0 and grid["animation"]["q_l2"] > 0
+        drain = snapshot["links"][f"grid-0{level}:drain>tank-recirc-0{1 if level <= 2 else 2}:inlet"]
+        assert abs(drain["flow_kg_h"] / 1000 - states["level_flows_m3h"][str(level)]) < 0.0001
 
 
 def test_alternative_applies_demand_leak_and_valve_overrides() -> None:
@@ -126,11 +138,18 @@ def test_forecast_reads_active_profile_and_tags_from_plc_not_browser(monkeypatch
             return {"id": "s1", "plant_id": "water-network-scale-v1", "profile_id": "pfl-1"}
         if url.endswith("/operation-profiles/pfl-1"):
             return {"id": "pfl-1", "hours": {"0": {"global_consumers_pct": 30}}}
-        return {"plc_tags": {"PLC.Profile.ActiveId": "pfl-1", "PLC.Pump.FlowM3h": 11.53}}
+        return {
+            "plc_tags": {
+                "PLC.Profile.ActiveId": "pfl-1",
+                "PLC.Pump.FlowM3h": 11.53,
+                "PLC.Pump.RunningCount": 2,
+                "PLC.PRS.OutletPressureMca": 20.94,
+            }
+        }
 
     monkeypatch.setattr(fractal_api, "gateway_json", gateway)
     captured = []
-    monkeypatch.setattr(fractal_api, "horizon_study", lambda payload: captured.append(payload) or {"source": "plc"})
+    monkeypatch.setattr(fractal_api, "_horizon_study", lambda payload, publish: captured.append((payload, publish)) or {"source": "plc"})
     response = client.post(
         "/studies/horizon/from-plc",
         json={
@@ -143,9 +162,10 @@ def test_forecast_reads_active_profile_and_tags_from_plc_not_browser(monkeypatch
     )
     assert response.status_code == 200 and response.json() == {"source": "plc"}
     assert len(fetched) == 3
-    assert captured[0]["plc_tags"]["PLC.Pump.FlowM3h"] == 11.53
-    assert captured[0]["profile"]["hours"]["0"]["global_consumers_pct"] == 30
-    assert captured[0]["emulator_api"] == "http://plc-internal:8000"
+    assert captured[0][1] is True
+    assert captured[0][0]["plc_tags"]["PLC.Pump.FlowM3h"] == 11.53
+    assert captured[0][0]["profile"]["hours"]["0"]["global_consumers_pct"] == 30
+    assert captured[0][0]["emulator_api"] == "http://plc-internal:8000"
     assert client.post("/studies/horizon/from-plc", json={"session_id": "../bad", "plant_id": "water-network-scale-v1"}).status_code == 422
 
 
@@ -163,6 +183,144 @@ def test_forecast_refuses_mismatched_session_profile(monkeypatch) -> None:
         ),
     )
     assert client.post("/studies/horizon/from-plc", json={"session_id": "s1", "plant_id": "water-network-scale-v1"}).status_code == 409
+
+
+def test_offline_horizon_never_publishes_unverified_browser_tags(monkeypatch) -> None:
+    monkeypatch.setenv("FRACTAL_PLC_API_URL", "http://plc-internal:8000")
+    monkeypatch.setattr(fractal_api, "urlopen", lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("publish forbidden")))
+    response = client.post(
+        "/studies/horizon",
+        json={
+            "session_id": "forged",
+            "plant_id": "water-network-scale-v1",
+            "emulator_api": "http://plc-internal:8000",
+            "plc_tags": {"PLC.Tank.Supply.LevelPct": 70},
+            "profile": {"hours": {}},
+            "study_type": "baseline",
+            "objective_id": "OBJ-LEAK-01",
+        },
+    )
+    assert response.status_code == 200 and "published" not in response.json()
+
+
+def test_forecast_requires_stabilized_plc_before_solving(monkeypatch) -> None:
+    monkeypatch.setenv("FRACTAL_PLC_API_URL", "http://plc-internal:8000")
+    monkeypatch.setattr(
+        fractal_api,
+        "gateway_json",
+        lambda url: (
+            {"id": "s1", "plant_id": "water-network-scale-v1", "profile_id": "pfl-1"}
+            if url.endswith("/sessions/s1")
+            else {"id": "pfl-1", "hours": {}}
+            if "operation-profiles" in url
+            else {"plc_tags": {"PLC.Profile.ActiveId": "pfl-1", "PLC.Pump.RunningCount": 0, "PLC.PRS.OutletPressureMca": 0}}
+        ),
+    )
+    result = client.post("/studies/horizon/from-plc", json={"session_id": "s1", "plant_id": "water-network-scale-v1"})
+    assert result.status_code == 409 and "bombas" in result.json()["detail"]
+
+
+def test_plc_to_fractal_to_forecast_frames_without_applying_commands(monkeypatch, tmp_path) -> None:
+    from twin_emulator_api.main import app as plc_app
+    from twin_emulator_api.main import session_manager
+
+    monkeypatch.setenv("TWIN_DATA", str(tmp_path))
+    monkeypatch.setenv("FRACTAL_PLC_API_URL", "http://plc-internal:8000")
+    plc = TestClient(plc_app)
+    plant = "water-network-scale-v1"
+    saved = plc.post(
+        f"/api/plants/{plant}/operation-profiles",
+        json={
+            "name": "PFL-FORECAST-E2E",
+            "hours": {"0": {"global_consumers_pct": 30, "prs": {"branch": "auto", "critical_setpoint_mca": 15.45}}},
+        },
+    )
+    assert saved.status_code == 201
+    session_id = plc.post(f"/api/plants/{plant}/sessions", json={"profile_id": saved.json()["id"]}).json()["id"]
+    operation = session_manager.get(plant, session_id)
+    assert operation is not None
+    operation.apply_profile_hour(0)
+    for _ in range(12):
+        operation.plant.step()  # se estabiliza la PRS; el estudio no altera el gemelo operativo
+    t = operation.plant.t
+    before = operation.message()["plc_tags"]
+    event_count = len(operation.plant.events)
+
+    def gateway(url):
+        response = plc.get(url.removeprefix("http://plc-internal:8000"))
+        assert response.status_code == 200
+        return response.json()
+
+    def publish(request, timeout):
+        assert timeout == 5
+        response = plc.post(
+            request.full_url.removeprefix("http://plc-internal:8000"), content=request.data, headers={"content-type": "application/json"}
+        )
+        assert response.status_code == 201
+        return io.BytesIO(json.dumps(response.json()).encode())
+
+    monkeypatch.setattr(fractal_api, "gateway_json", gateway)
+    monkeypatch.setattr(fractal_api, "urlopen", publish)
+    response = client.post(
+        "/studies/horizon/from-plc",
+        json={
+            "session_id": session_id,
+            "plant_id": plant,
+            "study_type": "baseline",
+            "plc_tags": {"PLC.Pump.FlowM3h": 999},
+            "profile": {"hours": {"0": {"global_consumers_pct": 100}}},
+        },
+    )
+    assert response.status_code == 200, response.text
+    result = response.json()
+    assert len(result["hours"]) == 24
+    assert result["hours"][0]["profile_commands"]["global_consumers_pct"] == 30
+    assert result["base_time"] == t
+    assert result["published"]["study_id"] == result["study_id"]
+    assert all(not frame["applied"] and frame["commands"] == {} for frame in result["hours"])
+    assert [frame["profile_hour"] for frame in result["hours"]] == list(range(24))
+    for hour, projected in enumerate(result["hours"]):
+        assert projected["plc_tags"]["PLC.Session.SimulatedTime"] == t + (hour + 1) * 3600
+        state = projected["scenarios"][1]["state"]
+        assert abs(state["flow_m3h"] - sum(state["level_flows_m3h"].values())) < 0.0001
+    alternative = client.post(
+        "/studies/horizon/from-plc",
+        json={
+            "session_id": session_id,
+            "plant_id": plant,
+            "study_type": "alternative",
+            "overrides": {"demand_multiplier": 1.1, "leakage_multiplier": 2},
+        },
+    )
+    assert alternative.status_code == 200, alternative.text
+    alt = alternative.json()
+    assert alt["hours"][0]["scenarios"][1]["state"]["flow_m3h"] > result["hours"][0]["scenarios"][1]["state"]["flow_m3h"]
+    assert all(not frame["applied"] and frame["commands"] == {} for frame in alt["hours"])
+    after = operation.message()["plc_tags"]
+    assert operation.plant.t == t and len(operation.plant.events) == event_count
+    for tag in (
+        "PLC.Profile.ActiveId",
+        "PLC.PRS.BranchAuto",
+        "PLC.PRS.CriticalSetpointMca",
+        "PLC.PRS.ManualSettingMca",
+        "PLC.Pump.SetpointMca",
+    ):
+        assert before[tag] == after[tag]
+    for connection in (12, 23, 34):
+        tag = f"PLC.Valve.Vertical{connection}OpeningPct"
+        assert abs(before[tag] - after[tag]) <= 0.2  # lectura nodal reitera el redondeo del sensor
+    frame = plc.get(f"/api/plants/{plant}/sessions/{session_id}/fractal/studies/{result['study_id']}/frames?hour=0")
+    assert frame.status_code == 200 and frame.json()["frames"][0]["temporal_context"] == "forecast"
+    assert frame.json()["frames"][0]["applied"] is False
+    last = plc.get(f"/api/plants/{plant}/sessions/{session_id}/fractal/studies/{alt['study_id']}/frames?hour=23")
+    assert last.status_code == 200 and last.json()["frames"][0]["hour"] == 23
+    assert len(plc.get(f"/api/plants/{plant}/sessions/{session_id}/fractal/studies").json()) == 2
+    assert (
+        plc.post(
+            f"/api/plants/{plant}/sessions/{session_id}/fractal/studies/{result['study_id']}/decision", json={"accept": True}
+        ).status_code
+        == 409
+    )
 
 
 def test_optimization_is_disabled_until_forecast_validation(monkeypatch) -> None:

@@ -143,11 +143,11 @@ El cambio se audita como `PLC.Session.Speed`, usuario y tiempo. El 3D solo infor
 
 ## 7. Estado de implementación y prioridad
 
-**Etapa activa: validar futuro simulado del escenario PLC.** `POST /studies/horizon/from-plc` lee directamente tags y perfil guardado de la misma sesión PLC; no toma la copia de estado enviada por navegador. Proyección base y alternativa nunca optimizan, emiten mandos ni requieren aceptación. Debe comprobarse el horizonte frente a la operación PLC, incluyendo volumen/niveles y hora del perfil, antes de volver a la optimización.
+**Etapa activa: validar futuro simulado del escenario PLC.** `POST /studies/horizon/from-plc` lee directamente tags y perfil guardado de la misma sesión PLC; no toma la copia de estado enviada por navegador. Proyección base y alternativa nunca optimizan, emiten mandos ni requieren aceptación. Un E2E de API cubre sesión estabilizada → 24 frames base + 24 alternativos → persistencia PLC y comprueba hora, balance de caudales por nivel/enlace, ocho fugas y ausencia de mandos. El arranque frío se rechaza (409), no se extrapola como equilibrio. **Todavía falta** contrastar volúmenes/niveles y transitorios del día completo contra una ejecución del emulador, así como el E2E browser de la vista 3D; no equivale a validación dinámica del horizonte.
 
 **Etapa posterior: optimización hora a hora.** El prototipo DE→SLSQP permanece en código pero las rutas Fractal de optimización responden 409 por defecto; solo se habilitan explícitamente con `FRACTAL_ENABLE_OPTIMIZATION=1` para pruebas. No se ofrece en la HMI durante esta etapa.
 
-- `POST /studies/horizon` conserva el contrato experimental con `baseline`, `alternative` y, si se habilita, `optimized`; el flujo normal de la HMI usa únicamente `/studies/horizon/from-plc`.
+- `POST /studies/horizon` conserva un contrato **offline sin publicación PLC** con `baseline`, `alternative` y, si se habilita, `optimized`; solo `/studies/horizon/from-plc` verifica sesión/perfil/tags de gateway y puede persistir frames. El gateway rechaza arranques sin bombas o sin presión PRS para no proyectar una física estacionaria inválida. Los primeros segundos de rampas siguen fuera del alcance del forecast horario.
 - PLC persiste estudios por sesión y ofrece listado y frames bajo `fractal/studies/{study_id}/frames`; los frames se marcan forecast y `applied: false`.
 - PLC HMI permite elegir proyección base o alternativa, overrides alternativos iniciales y velocidad ×60/×120/×240/×600. No muestra optimización mientras se valida la proyección.
 - Frames ahora incluyen snapshot estimado de equipos, enlaces y líneas; el visor puede seleccionar hora y renderiza la rama con marca futura y controles de mando desactivados.

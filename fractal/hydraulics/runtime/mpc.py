@@ -140,11 +140,9 @@ def _snapshot(
             leak_map = entry.get("leaks", {}).get(node, {})
             for leak_id in ("l1", "l2"):
                 leak_opening = float(leak_map.get(leak_id, tags.get(f"PLC.Grid.L{level}.Leak.{leak_id.upper()}.OpeningPct", 100)))
-                animation[f"open_{leak_id}"] = leak_opening / 100 if (level, leak_id) in ((2, "l1"), (4, "l2")) else 0
-                animation[f"q_{leak_id}"] = (
-                    float(state.get("leak_flows_l_min", {}).get(f"L{level}.{leak_id.upper()}", level_leak * 1000 / 60))
-                    if (level, leak_id) in ((2, "l1"), (4, "l2"))
-                    else 0
+                animation[f"open_{leak_id}"] = leak_opening / 100
+                animation[f"q_{leak_id}"] = float(
+                    state.get("leak_flows_l_min", {}).get(f"L{level}.{leak_id.upper()}", level_leak * 1000 / 120)
                 )
                 if f"L{level}.{leak_id.upper()}" in state.get("leak_pressures_mca", {}):
                     animation[f"p_{leak_id}"] = state["leak_pressures_mca"][f"L{level}.{leak_id.upper()}"]
@@ -171,6 +169,7 @@ def _snapshot(
                 "variables": {"opening_pct": opening, "dp_mca": 0},
             }
     links: dict[str, Any] = {}
+    level_flows = state["level_flows_m3h"]
     for link in _MODEL["simulation"].get("links", []):
         source, target = link["from"].split("."), link["to"].split(".")
         link_key = f"{source[0]}:{source[1]}>{target[0]}:{target[1]}"
@@ -190,7 +189,17 @@ def _snapshot(
             and source[1] != "drain"
         )
         is_recirculation = source[0] in {"tank-recirc-01", "tank-recirc-02", "pumpset-recirc-01"}
-        link_flow = flow if is_pressure_network else recirculation if is_recirculation else 0.0
+        if source[0].startswith("grid-") and source[1] == "drain":
+            link_flow = float(level_flows[str(int(source[0][-1]))])
+        elif is_pressure_network and (source[0].startswith("valve-between-") or source[1] == "riser_out"):
+            first_level = int(source[0][-1]) + (1 if source[1] == "riser_out" else 0)
+            link_flow = sum(float(level_flows[str(level)]) for level in range(first_level, 5))
+        elif is_pressure_network:
+            link_flow = flow
+        elif is_recirculation:
+            link_flow = recirculation / 2 if source[0].startswith("tank-recirc-") else recirculation
+        else:
+            link_flow = 0.0
         links[link_key] = {
             "from": link["from"],
             "to": link["to"],
@@ -321,7 +330,7 @@ def project_24h(
             _MODEL, tank_levels, nominal_state["level_flows_m3h"], recirc_on
         )
         supply_level = tank_levels["tank-supply-01"]
-        recirc_end_flow = _recirc.pump_flow(_MODEL, tank_levels)[0] if recirc_on else 0.0
+        recirc_end_flow, recirc_a, recirc_b = _recirc.pump_flow(_MODEL, tank_levels) if recirc_on else (0.0, 0.0, 0.0)
         levels_in_bounds = not overflow and all(0 <= value <= 100 for value in tank_levels.values())
         robust = all(item["feasible"] for item in scenarios) and levels_in_bounds and 20 <= supply_level <= 95
         nominal_state = scenarios[1]["state"]
@@ -337,9 +346,11 @@ def project_24h(
             recirc_snapshot["animation"].update({"pump_1": 1 if recirc_on else 0, "pump_2": 0, "flow_norm": min(1, recirc_end_flow / 15)})
             recirc_snapshot["variables"]["flow_m3h"] = round(recirc_end_flow, 4)
         for link in frame_snapshot["links"].values():
-            if link["from"].split(".", 1)[0] in {"tank-recirc-01", "tank-recirc-02", "pumpset-recirc-01"}:
-                link["flow_kg_h"] = recirc_end_flow * 1000
-                link["flowing"] = recirc_end_flow > 0
+            source = link["from"].split(".", 1)[0]
+            if source in {"tank-recirc-01", "tank-recirc-02", "pumpset-recirc-01"}:
+                branch_flow = recirc_a if source == "tank-recirc-01" else recirc_b if source == "tank-recirc-02" else recirc_end_flow
+                link["flow_kg_h"] = branch_flow * 1000
+                link["flowing"] = branch_flow > 0
         frame_snapshot["lines"]["recirculacion"].update({"output_units": recirc_volume, "output_per_h": recirc_volume})
         forecast_tags = dict(tags)
         forecast_tags.update(
