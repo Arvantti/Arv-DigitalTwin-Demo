@@ -50,6 +50,21 @@ def test_horizon_baseline_is_forecast_without_operator_acceptance() -> None:
         assert abs(drain["flow_kg_h"] / 1000 - states["level_flows_m3h"][str(level)]) < 0.0001
 
 
+def test_horizon_transition_trace_is_observational() -> None:
+    tags = {
+        "PLC.Session.SimulatedTime": 30,
+        "PLC.Tank.Supply.LevelPct": 30,
+        "PLC.Tank.Recirc01.LevelPct": 70,
+        "PLC.Tank.Recirc02.LevelPct": 70,
+        "PLC.Pump.RecirculationAutoActive": False,
+    }
+    events = []
+    plain = mpc.project_24h(tags, {"hours": {}}, horizon_hours=1)
+    traced = mpc.project_24h(tags, {"hours": {}}, horizon_hours=1, on_recirculation_transition=events.append)
+    assert plain == traced
+    assert events and events[0]["action"] == "start" and events[0]["t_s"] >= 30
+
+
 def test_sparse_custom_profile_keeps_hourly_house_and_leak_commands() -> None:
     tags = {
         "PLC.Session.SimulatedTime": 30,
@@ -303,12 +318,18 @@ def test_plc_to_fractal_to_forecast_frames_without_applying_commands(monkeypatch
     result = response.json()
     assert len(result["hours"]) == 24
     assert result["hours"][0]["profile_commands"]["global_consumers_pct"] == 30
-    # Banco operativo independiente: 3600 pasos desde t=12 s, perfil 30 %, PRS AUTO,
-    # niveles finales ≈70,7 / 39,7 / 39,7 % y recirculación ≈4,295 m³.
+    # Circuito cerrado: suma de inventarios al inicio y al fin, no valores del antiguo control de retorno.
     first = result["hours"][0]
-    for tank, reference in (("tank-supply-01", 70.7), ("tank-recirc-01", 39.7), ("tank-recirc-02", 39.7)):
-        assert abs(first["tank_levels_pct"][tank] - reference) < 1.5, tank
-    assert abs(first["snapshot"]["lines"]["recirculacion"]["output_units"] - 4.295) < 0.06
+    capacities = {"tank-supply-01": 3.888, "tank-recirc-01": 2.256, "tank-recirc-02": 2.256}
+    initial = (
+        capacities["tank-supply-01"] * float(before["PLC.Tank.Supply.LevelPct"])
+        + capacities["tank-recirc-01"] * float(before["PLC.Tank.Recirc01.LevelPct"])
+        + capacities["tank-recirc-02"] * float(before["PLC.Tank.Recirc02.LevelPct"])
+    ) / 100
+    final = sum(capacity * first["tank_levels_pct"][tank] / 100 for tank, capacity in capacities.items())
+    assert abs(final - initial) < 0.005
+    assert all(0 <= first["tank_levels_pct"][tank] <= 100 for tank in capacities)
+    assert first["snapshot"]["lines"]["recirculacion"]["output_units"] > 0
     assert result["base_time"] == t
     assert result["published"]["study_id"] == result["study_id"]
     assert all(not frame["applied"] and frame["commands"] == {} for frame in result["hours"])

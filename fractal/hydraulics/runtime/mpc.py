@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import importlib.util
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
@@ -233,6 +234,7 @@ def project_24h(
     objective_id: str = "OBJ-LEAK-01",
     *,
     horizon_hours: int = 24,
+    on_recirculation_transition: Callable[[dict[str, Any]], None] | None = None,
 ) -> list[dict[str, Any]]:
     """Genera una rama horaria. Baseline y alternative nunca optimizan ni proponen mandos."""
     if not 1 <= horizon_hours <= 24:
@@ -341,8 +343,15 @@ def project_24h(
         # Una hora con control por nivel e histéresis; cada minuto usa la curva
         # de recirculación, la cabeza de los tres tanques y el caudal por piso.
         flow_out = float(nominal_state["flow_m3h"])
+        def trace_transition(
+            event: dict[str, Any], hour_offset: float = float(tags.get("PLC.Session.SimulatedTime") or 0) + hour * 3600
+        ) -> None:
+            if on_recirculation_transition is not None:
+                on_recirculation_transition({**event, "t_s": hour_offset + event["t_s"]})
+
         tank_levels, recirc_volume, recirc_on, overflow = _recirc.advance_hour(
-            _MODEL, tank_levels, nominal_state["level_flows_m3h"], recirc_on
+            _MODEL, tank_levels, nominal_state["level_flows_m3h"], recirc_on,
+            on_transition=trace_transition if on_recirculation_transition is not None else None,
         )
         supply_level = tank_levels["tank-supply-01"]
         recirc_end_flow, recirc_a, recirc_b = _recirc.pump_flow(_MODEL, tank_levels) if recirc_on else (0.0, 0.0, 0.0)
