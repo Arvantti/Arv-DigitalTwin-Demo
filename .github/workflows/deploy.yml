@@ -1,12 +1,15 @@
 name: Deploy
 
 # Publica la galería web (equipos, escena de planta y panel del acueducto) en
-# Cloudflare Pages en cada push a main. Guía de configuración: docs/despliegue-cloudflare.md
+# Cloudflare Pages en cada push a main y cada lunes (la programación de producción publicada va de 35 días atrás
+# a 45 adelante; el despliegue semanal la mantiene al día). Guía de configuración: docs/despliegue-cloudflare.md
 
 on:
   push:
     branches: [main]
   workflow_dispatch:
+  schedule:
+    - cron: "0 10 * * 1"  # lunes 05:00 en Colombia
 
 concurrency:
   group: deploy

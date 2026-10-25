@@ -8,6 +8,7 @@
     twin-lib plant run <planta> [--scenario id]   simula la planta conectada
     twin-lib catalog validate [planta ...]        valida el catálogo de datos (productos, moldes, tamaños, montaje)
     twin-lib catalog route <planta> <producto>    ruta del producto por los equipos de la planta
+    twin-lib plan <planta> [--from --to --back]   pedidos inventados y su programación (docs/programacion.md)
 """
 
 from __future__ import annotations
@@ -179,6 +180,32 @@ def cmd_catalog(lib: Library, args: argparse.Namespace) -> int:
     return 1 if failed else 0
 
 
+def cmd_plan(lib: Library, args: argparse.Namespace) -> int:
+    from datetime import date
+
+    from . import planning
+
+    folder = find_models_root(lib.root) / args.plant
+    cat = Catalog.load(folder)
+    if cat is None or not cat.data.get("demand"):
+        print(f"{args.plant}: sin catálogo o sin demanda (catalog/demand.yaml)", file=sys.stderr)
+        return 1
+    layout = load_yaml(folder / "plant.yaml")
+    first, last = planning.default_range(planning.tz_of(cat), args.back)
+    first = date.fromisoformat(args.first) if args.first else first
+    last = date.fromisoformat(args.last) if args.last else last
+    out = planning.to_json(planning.build_plan(args.plant, cat, layout, first, last), layout)
+    if args.json:
+        print(json.dumps(out, ensure_ascii=False, indent=1))
+        return 0
+    late = [o for o in out["orders"] if o["late_h"] > 0]
+    print(f"{args.plant}: {first} a {last}, carga objetivo {out['load_pct']} %")
+    print(f"  {len(out['orders'])} pedidos, {len(late)} tarde, {len(out['schedule'])} asignaciones, {len(out['downtime'])} paradas")
+    for eid, u in sorted(out["equipment"].items()):
+        print(f"  {eid:<18} ocupado {u['busy_pct']:>5.1f} %   paradas {u['down_h']:>5.1f} h")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="twin-lib", description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -200,9 +227,16 @@ def main(argv: list[str] | None = None) -> int:
     ca = sub.add_parser("catalog", help="catálogo de datos de una planta (docs/datos-reales.md)")
     ca.add_argument("action", choices=["validate", "route"])
     ca.add_argument("names", nargs="*", help="validate: plantas; route: <planta> <producto>")
+    pn = sub.add_parser("plan", help="programación de producción de la demo (docs/programacion.md)")
+    pn.add_argument("plant")
+    pn.add_argument("--from", dest="first", help="primer día (ISO); por defecto el 1 del mes en curso")
+    pn.add_argument("--to", dest="last", help="último día (ISO); por defecto hoy + 30 días")
+    pn.add_argument("--back", default="month", help="month o Nd (p. ej. 7d) para el inicio por defecto")
+    pn.add_argument("--json", action="store_true")
     args = ap.parse_args(argv)
     lib = Library()
-    return {"list": cmd_list, "validate": cmd_validate, "run": cmd_run, "plant": cmd_plant, "catalog": cmd_catalog}[args.cmd](lib, args)
+    commands = {"list": cmd_list, "validate": cmd_validate, "run": cmd_run, "plant": cmd_plant, "catalog": cmd_catalog, "plan": cmd_plan}
+    return commands[args.cmd](lib, args)
 
 
 if __name__ == "__main__":

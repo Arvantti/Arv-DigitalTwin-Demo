@@ -1,0 +1,29 @@
+# Demanda de la demo (fase E de docs/datos-reales.md, decisión D68). twin_runtime.planning genera con esto los
+# pedidos de cualquier fecha: la semilla es (planta, fecha de entrega), así que el pedido del 5 de noviembre es el
+# mismo hoy y mañana, y la ventana de hoy a +30 días siempre tiene pedidos sin mantener ningún archivo.
+#
+# Capacidad: 2 turnos de 8 h (57.600 s/día), de lunes a sábado (decisión del autor, 2026-10-20). Cada molde existe
+# una sola vez por inyectora montada en setup.yaml, así que `daily` es la capacidad del recurso más lento:
+#   cubiertos: 2 moldes (imm-01, imm-02) × 57.600 s ÷ 0,5625 s/u = 204.800 u/día
+#   balde 12 L: 1 molde (imm-21) × 57.600 ÷ 30 s = 1.920 u/día
+#   papelera 20 L: cuerpo en imm-19 (35 s) y ensamble (35 s): 57.600 ÷ 35 = 1.645 u/día (el pedal sobra)
+# Los pedidos llenan load_pct de esa capacidad. Las demás inyectoras hacen productos que aún no están en el
+# catálogo y no se programan. Todo es supuesto: clientes ficticios, tamaños de pedido y tiempos de entrega.
+demand:
+  load_pct: 85
+  timezone: "-05:00"            # hora de Colombia
+  workdays: [1, 2, 3, 4, 5, 6]  # ISO: lunes = 1 … sábado = 6
+  shifts:
+    - { name: Turno 1, start: "06:00", end: "14:00" }
+    - { name: Turno 2, start: "14:00", end: "22:00" }
+  lead_days: [5, 18]
+  rush: { share_pct: 15, lead_days: [2, 4] }
+  # Pedidos que salen tarde a propósito (regla del autor): el insumo llega entre 3 h antes y 16 h después de la entrega.
+  late: { share_pct: 8, hold_hours: [-3, 16], materials: [ps, hdpe, pp-reciclado, mb-azul, mb-gris] }
+  downtime: { per_day_pct: 5, hours: [1, 5], reasons: [falla mecánica, cambio de resistencia, mantenimiento correctivo, falta de operario] }
+  color_change_min: 40          # purga de color (de claro a oscuro se prefiere)
+  customers: [Hogar Express, Plásticos del Caribe, Mayorista San Andresito, Cadena Éxito Local, Institucional Andina, Ferretería La 80, Distribuidora Oriente]
+  products:
+    - { product: cubiertos,    daily: 204800, order_qty: [60000, 200000], round: 1000 }
+    - { product: balde-12l,    daily: 1920,   order_qty: [400, 2400],     round: 50 }
+    - { product: papelera-20l, daily: 1645,   order_qty: [300, 1500],     round: 25 }

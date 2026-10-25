@@ -83,6 +83,8 @@ export interface CatalogProduct {
 }
 export interface CatalogDoc {
   products: CatalogProduct[];
+  /** La planta tiene demanda (catalog/demand.yaml) y programación de producción en /api/schedules. */
+  schedule?: boolean;
   sizes: Record<string, string>;
   tooling?: { id: string; kind: string; name: string; product?: string; size?: string }[];
 }
@@ -101,6 +103,8 @@ export interface ProductsApi {
   update: (time: number) => void;
   /** Clic en un equipo del 3D: true si el editor lo tomó (agregar o quitar de una etapa). */
   pick: (id: string) => boolean;
+  /** Resalta la ruta de un producto (la usa la tabla de programación). */
+  show: (id: string) => void;
 }
 
 const STAGE_NAMES: Record<string, string> = {
@@ -112,7 +116,7 @@ const STAGE_NAMES: Record<string, string> = {
   ensamble: "Ensamble",
   empaque: "Empaque",
 };
-const stageName = (s: string) => STAGE_NAMES[s] ?? s.replace(/-/g, " ").replace(/^./, (c) => c.toUpperCase());
+export const stageName = (s: string) => STAGE_NAMES[s] ?? s.replace(/-/g, " ").replace(/^./, (c) => c.toUpperCase());
 const esc = (s: unknown) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
 const ROUTE_COLOR = "#ffb000";
 const nf = (v: number, digits = 2) => v.toLocaleString("es-CO", { maximumFractionDigits: digits });
@@ -729,5 +733,8 @@ export function buildProducts(opts: Options): ProductsApi {
       }
     },
     pick,
+    show: (id: string) => {
+      if (id !== current && products.some((p) => p.id === id)) choose(id);
+    },
   };
 }

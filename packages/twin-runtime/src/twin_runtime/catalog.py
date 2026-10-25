@@ -228,7 +228,7 @@ class Catalog:
             if (sid := self.size_of(item)) is not None:
                 sizes[item["id"]] = names[sid]
         tooling = [{k: t[k] for k in ("id", "kind", "name", "product", "size") if k in t} for t in self.tooling.values()]
-        return {"products": products, "sizes": sizes, "tooling": tooling}
+        return {"products": products, "sizes": sizes, "tooling": tooling, "schedule": bool(self.data.get("demand"))}
 
     def tooling_detail(self, tool: dict[str, Any]) -> str:
         """Resumen de una línea del herramental para la escena."""
@@ -381,6 +381,23 @@ class Catalog:
         for order in self.data.get("orders") or []:
             if order["product"] not in self.products:
                 errors.append(f"pedido {order['id']}: producto desconocido {order['product']!r}")
+        demand = self.data.get("demand")
+        if demand:
+            for line in demand["products"]:
+                product = self.products.get(line["product"])
+                if product is None:
+                    errors.append(f"demanda: producto desconocido {line['product']!r}")
+                elif product["kind"] != "finished":
+                    errors.append(f"demanda: {line['product']} es un semielaborado; solo se piden productos terminados")
+                lo, hi = line["order_qty"]
+                if lo > hi:
+                    errors.append(f"demanda: {line['product']}: order_qty [{lo}, {hi}] al revés")
+            for mid in (demand.get("late") or {}).get("materials") or []:
+                if mid not in self.materials:
+                    errors.append(f"demanda: material desconocido {mid!r} en late.materials")
+            for sh in demand["shifts"]:
+                if sh["start"] >= sh["end"]:
+                    errors.append(f"demanda: turno {sh.get('name', sh['start'])}: termina antes de empezar")
         return errors
 
     def _check_layout_recipes(self, layout: dict[str, Any]) -> list[str]:
