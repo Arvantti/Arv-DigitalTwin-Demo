@@ -40,3 +40,4 @@ Conversaciones del 2026-10-16 (UTC) entre el autor y Claude dentro del proyecto 
 28. [[hilo-imagenes-portal]] (imágenes de cada planta en las tarjetas del portal, 2026-10-19 16:12 UTC)
 29. [[hilo-gemelo-de-ciudad]] (gemelo nuevo de ciudad: plan, escenario hipotético, monitoreo y red de la zona B con 35 cruces, 2026-10-19 12:05 UTC)
 30. [[hilo-programacion-de-produccion]] (programación de producción a 30 días en salsas y plásticos: arquitectura, pedidos, secuenciador, tabla y pedido urgente, 2026-10-20 17:03 UTC)
+31. [[hilo-arquitectura-para-todos-los-gemelos]] (revisión del esquema emulador · PLC · gemelo · Fractal del acueducto y propuesta para los demás gemelos, 2026-10-25 02:52 UTC)

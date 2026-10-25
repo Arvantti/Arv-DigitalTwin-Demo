@@ -10,6 +10,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
+| 2026-10-25 | PR (este) · Esquema del acueducto para los demás gemelos | Propuesta sin código: cómo el acueducto define emulador, PLC virtual, gateway OPC UA simulado, gemelo 3D y Fractal (simulador de escenarios hecho, optimizador pendiente), qué parte del código es genérica y cómo se traduce a plásticos, salsas, cajas, aeropuerto, ciudad y confecciones; piloto sugerido plásticos; decisiones abiertas para Andy. No toca el acueducto. [[../../architecture/esquema-gemelo-todos-los-modelos]] · [[hilo-arquitectura-para-todos-los-gemelos]] | arquitectura/Fractal |
 | 2026-10-25 | #80 · Programación de producción a 30 días | Salsas y plásticos tienen pedidos inventados con ventana móvil (semilla por fecha de entrega, 85 % de la capacidad, algunos tarde al azar), un secuenciador de referencia con turnos, paradas y herramental montado, la sección PROGRAMACIÓN del panel lateral con tabla de órdenes, rango hacia atrás a elección (por defecto el mes en curso) y pedido urgente con escenario que se acepta o descarta. API `/api/schedules`, export estático y despliegue semanal. D75. Pedido de Andy | datos reales |
 | 2026-10-24 | PR #79 · escritorio acueducto desktop | Por instrucción del autor se sustituyeron tres presets auxiliares por dos curvas de referencia y una plantilla personalizada; administración CRUD de escenarios nombrados con 64 viviendas/8 fugas por hora, protección de perfil en uso, gráfica dual apertura/PRS autoescalada con presión Fractal bajo demanda desde PLC en play. `plant.html` conserva el 3D y muestra PLC e histórico en pestañas de la misma pantalla; fotogramas SQLite de solo lectura permiten regresar al pasado sin rebobinar la operación; Fractal queda opcional y la optimización sigue apagada. Ver [[../../architecture/plc-fractal-desktop-workspace]]. Verificación: 41 pruebas API/Fractal, 149 de geometría con un worker, Ruff, typecheck/build y smoke browser de editor, presión, 3D histórico y regreso a actual. Mobile y despliegue API integrados siguen pendientes. [[2026-10-24-escenarios-integrados-3d]] | PLC/Fractal |
 | 2026-10-24 | PR #79 · rama `feat/fractal-240x-replay` | El autor eligió D73: reproducir 24 horas **precalculadas** a 15 s/h sin presentarlas como cálculo en vivo. Corrida continua poscorrección completa: 2596,71 s offline, sin desacuerdos sobre presión ≥15 mca; desfase máximo de suministro **34,268 pp en hora 18**, por tanto niveles aún no validados. Reproducción de 24 muestras en **360,004 s reales** (máx. ≈0,007 s de desfase de reloj); ×240 en vivo no se acredita (se midió ≈×21,4 efectivo), y dt=15 s degrada presión hasta 6,8 mca. Evidencia [[../../architecture/validation/pdd-rca-01-continuous-post-cache.json|día poscorrección]] y [[../../architecture/validation/pdd-rca-01-replay-240x.json|marcas ×240]]. [[2026-10-24-prioridad-futuro-plc]] | PLC/Fractal |
@@ -108,6 +109,15 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 | 2026-10-16 | #1 | Layouts de las plantas | 1 |
 
 ## Entradas
+
+### 2026-10-25 · PR (este) · Esquema del acueducto aplicado a los demás gemelos
+- **Fecha/hora (UTC):** 2026-10-25 02:52–03:30
+- **Fase del plan:** [[plan-del-proyecto]] arquitectura PLC/Fractal y datos reales (fase F)
+- **Solicitado por:** Andy (02:52): «no lo toques pero revisa la manera como estamos definiendo ahí el gemelo digital con fractal y el simulador y el emulador […] y revisa como adaptariamos a los demás como plásticos salsas y otros». Aclaró (02:52) que solo existe el Fractal simulador de escenarios y falta el optimizador.
+- **Qué se hizo:** documento `docs/architecture/esquema-gemelo-todos-los-modelos.md` con: las cinco piezas del acueducto, los tres estudios de Fractal y su estado, qué es genérico en el código (`sessions.py`) y qué es solo del acueducto (`plc_tags.py`, `profiles.py`, `plc.yaml`, Fractal hidráulico), una tabla de traducción por gemelo, el lugar de la programación de producción (secuenciador como planificador del PLC/MES y pedido urgente como estudio alternativo), un contrato común propuesto, un orden de PR y cinco decisiones abiertas.
+- **Verificación:** solo documentación; referencias revisadas contra `main` (8a05343).
+- **Decisiones:** ninguna nueva; las decisiones abiertas quedan en el documento para Andy.
+- **Conversación:** [[hilo-arquitectura-para-todos-los-gemelos]]
 
 ### 2026-10-25 · PR #80 · Programación de producción a 30 días (fase E, paso E1)
 - **Fecha/hora (UTC):** 2026-10-20 17:03 (pedido) a 2026-10-25 00:20 (PR).
