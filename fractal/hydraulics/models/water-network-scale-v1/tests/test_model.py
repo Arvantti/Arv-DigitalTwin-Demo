@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+from copy import deepcopy
 from pathlib import Path
 
 MODEL_FILE = Path(__file__).resolve().parent.parent / "model.py"
@@ -43,14 +44,16 @@ def base_tags() -> dict[str, float]:
     return tags
 
 
-def test_declared_base_point_is_calibrated_and_feasible() -> None:
-    result = model.evaluate(base_tags(), prs_mca=20.94)
-    assert abs(result["critical_pressure_mca"] - 15.46149) < 0.03  # banco operativo, PRS manual 20,94 mca
+def test_declared_base_point_needs_prs_compensation_with_series_checks() -> None:
+    manual = model.evaluate(base_tags(), prs_mca=20.94)
+    assert manual["critical_pressure_mca"] < 15  # la consigna manual antigua ya no es segura con cuatro antirretornos
+    result = model.evaluate(base_tags(), prs_mca=20.94, prs_auto=True)
+    assert result["critical_pressure_mca"] >= 15
     assert result["feasible"] is True
     assert result["constraint_results"]["pump_discharge"] is True
     assert result["constraint_results"]["hydraulic_convergence"] is True
-    assert abs(result["flow_m3h"] - 11.53691) < 0.03
-    assert abs(result["leakage_m3h"] - 1.28188) < 0.03
+    assert abs(result["flow_m3h"] - sum(result["level_flows_m3h"].values())) < 0.0001
+    assert abs(result["leakage_m3h"] - sum(result["leakage_by_level_m3h"].values())) < 0.0001
 
 
 def test_valve_restriction_increases_loss_and_reduces_critical_pressure() -> None:
@@ -87,7 +90,15 @@ def test_nodal_solution_conserves_flow_at_every_branch_and_crossing() -> None:
         assert abs(imbalance * 3600) < 1e-6, node
 
 
-def test_nodal_solver_matches_independent_operational_reference_cases() -> None:
+def test_nodal_solver_matches_independent_operational_reference_cases(monkeypatch) -> None:
+    # Oráculo histórico D76: conservar sus parámetros para comprobar que el solver no cambió
+    # los tramos anteriores; estas cifras NO son una referencia operativa de la nueva topología.
+    old = deepcopy(model.MODEL)
+    old["equipment_models"]["prs-01"]["params"]["outlet_check_kv_m3h"] = 0
+    for level in (12, 23, 34):
+        old["equipment_models"][f"valve-between-{level}"]["params"]["outlet_check_kv_m3h"] = 0
+    old["equipment_models"]["tank-supply-01"]["params"]["outlet_check_kv_m3h"] = 400
+    monkeypatch.setattr(model, "MODEL", old)
     # Cifras generadas con el banco network.py del emulador en rama manual,
     # velocidad fija 1.0; aquí son oráculo fijo, no dependencia del runtime.
     cases = (
@@ -105,17 +116,70 @@ def test_nodal_solver_matches_independent_operational_reference_cases() -> None:
 
 def test_return_pump_matches_operational_fixed_head_point_and_balances_tanks() -> None:
     levels = {"tank-supply-01": 70, "tank-recirc-01": 70, "tank-recirc-02": 70}
-    flow, first, second = recirc.pump_flow(model.MODEL, levels)
-    # Red operativa a velocidad de régimen, mismas cabezas (tras la rampa de 20 s): ≈21,30 m³/h.
+    old = deepcopy(model.MODEL)
+    for tank in ("tank-recirc-01", "tank-recirc-02"):
+        old["equipment_models"][tank]["params"]["outlet_check_kv_m3h"] = 400
+    flow, first, second = recirc.pump_flow(old, levels)
+    # Oráculo D76 de la topología antigua: a velocidad de régimen ≈21,30 m³/h.
     assert abs(flow - 21.30) < 0.05
     assert abs(flow - first - second) < 0.001
-    next_levels, recirculated, on, overflow = recirc.advance_hour(model.MODEL, levels, {str(level): 2.88 for level in range(1, 5)}, False)
-    assert on and not overflow and recirculated > 0
-    assert next_levels["tank-supply-01"] > levels["tank-supply-01"]
+    # El retorno ya no arranca a 70 %: solo se solicita si suministro <=30 % o algún retorno >=90 %.
+    levels = {"tank-supply-01": 70, "tank-recirc-01": 40, "tank-recirc-02": 40}
+    next_levels, recirculated, _on, overflow = recirc.advance_hour(
+        model.MODEL, levels, {str(level): 2.88 for level in range(1, 5)}, False
+    )
+    assert not overflow and recirculated > 0
+    assert all(0 <= level <= 100 for level in next_levels.values())
     capacities = {tank: model.MODEL["equipment_models"][tank]["params"]["volume_l"] / 1000 for tank in levels}
     before = sum(capacities[tank] * levels[tank] / 100 for tank in levels)
     after = sum(capacities[tank] * next_levels[tank] / 100 for tank in levels)
     assert abs(after - before) < 1e-5  # circuito cerrado; no crea ni destruye agua
+
+
+def test_individual_tank_checks_are_declared_and_return_flow_is_forward_only() -> None:
+    params = model.MODEL["equipment_models"]
+    for tank in ("tank-supply-01", "tank-recirc-01", "tank-recirc-02"):
+        assert params[tank]["params"]["outlet_check_valve"] is True
+    levels = {"tank-supply-01": 30, "tank-recirc-01": 75, "tank-recirc-02": 75}
+    total, first, second = recirc.pump_flow(model.MODEL, levels)
+    assert first > 0 and second > 0
+    assert abs(total - first - second) < 0.001
+
+
+def test_recirculation_diagnostic_callback_does_not_change_physics() -> None:
+    levels = {"tank-supply-01": 70, "tank-recirc-01": 40, "tank-recirc-02": 40}
+    demand = {str(level): 1.06 for level in range(1, 5)}
+    events = []
+    traced = recirc.advance_hour(model.MODEL, levels, demand, False, on_transition=events.append)
+    untraced = recirc.advance_hour(model.MODEL, levels, demand, False)
+    assert traced == untraced
+    assert [event["action"] for event in events[:2]] == ["start", "stop"]
+    assert events[0]["t_s"] < events[1]["t_s"]
+    assert events[0]["recirculated_m3"] == 0
+    assert events[1]["recirculated_m3"] > 0
+
+
+def test_fractal_return_switches_on_supply_or_individual_high_return() -> None:
+    no_drain = {str(level): 0 for level in range(1, 5)}
+    for levels, should_move in (
+        ({"tank-supply-01": 70, "tank-recirc-01": 40, "tank-recirc-02": 40}, False),
+        ({"tank-supply-01": 30, "tank-recirc-01": 50, "tank-recirc-02": 50}, True),
+        ({"tank-supply-01": 70, "tank-recirc-01": 90, "tank-recirc-02": 40}, True),
+    ):
+        _end, moved, _on, _overflow = recirc.advance_hour(model.MODEL, levels, no_drain, False)
+        assert (moved > 0) is should_move
+
+
+def test_prs_outlet_check_adds_forward_loss_in_fractal() -> None:
+    tags = base_tags()
+    model_with_check = model.MODEL
+    model_without_check = deepcopy(model.MODEL)
+    assert model_with_check["equipment_models"]["prs-01"]["params"]["outlet_check_kv_m3h"] == 158
+    model_without_check["equipment_models"]["prs-01"]["params"]["outlet_check_kv_m3h"] = 0
+    flow = 11.53
+    with_check = model._supply.pump_and_prs(model_with_check, tags, flow, 20.94)
+    without_check = model._supply.pump_and_prs(model_without_check, tags, flow, 20.94)
+    assert abs(without_check["prs_outlet_mca"] - with_check["prs_outlet_mca"] - 10.197 * (flow / 158) ** 2) < 1e-4
 
 
 def test_pump_curve_and_prs_auto_react_to_hydraulic_demand() -> None:

@@ -148,6 +148,11 @@ export default function build(params: Params): EquipmentModel {
   const outLine = P.cylinderX(r, L / 2 - xTeeOut, steel, 28);
   outLine.position.set((xTeeOut + L / 2) / 2, axisY, 0);
   root.add(outLine);
+  if (num(params, "outlet_check_kv_m3h", 0) > 0) {
+    const check = P.checkValve(r);
+    check.position.set(xTeeOut + r * 2, axisY, 0); // después de la unión A/B, antes del puerto de salida
+    root.add(check);
+  }
   for (const x of [-L / 2 + 0.02, L / 2 - 0.02]) {
     const f = flange(r, steel);
     f.position.set(x, axisY, 0);

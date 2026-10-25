@@ -949,6 +949,30 @@ export function butterflyValve(pipeR: number, material: THREE.Material = M.stain
   return g;
 }
 
+/** Antirretorno de disco entre bridas, flujo permitido a lo largo de +X. Origen en el eje. */
+export function checkValve(pipeR: number): THREE.Group {
+  const g = group("outlet-check-valve");
+  const body = M.paint("#677e86", 0.42);
+  const trim = M.polishedSteel();
+  g.add(cylinderX(pipeR * 1.45, pipeR * 2.2, body, 32, "check-body"));
+  for (const x of [-pipeR * 1.1, pipeR * 1.1]) {
+    const flange = cylinderX(pipeR * 1.7, pipeR * 0.28, trim, 32);
+    flange.position.x = x;
+    g.add(flange);
+  }
+  const hinge = box(pipeR * 1.1, pipeR * 0.35, pipeR * 1.2, body, pipeR * 0.12);
+  hinge.position.set(0, pipeR * 1.46, 0);
+  g.add(hinge);
+  const arrow = box(pipeR * 0.85, pipeR * 0.16, pipeR * 0.08, M.paint("#f6e7a2", 0.42), 0);
+  arrow.position.set(0, 0, pipeR * 1.48);
+  g.add(arrow);
+  const tip = mesh(new THREE.ConeGeometry(pipeR * 0.22, pipeR * 0.37, 3), M.paint("#f6e7a2", 0.42));
+  tip.rotation.z = -Math.PI / 2;
+  tip.position.set(pipeR * 0.55, 0, pipeR * 1.48);
+  g.add(tip);
+  return g;
+}
+
 // ------------------------------------------------------------------ equipaje (aeropuerto)
 
 /** Colores de maletas: oscuros y sobrios, con algunos vivos, como en una banda real. */

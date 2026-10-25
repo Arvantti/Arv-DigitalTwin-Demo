@@ -38,7 +38,10 @@ class BoosterPumpSet(EquipmentBehavior):
     type = "booster-pump-set"
     INITIAL_STATE = "off"
     OPERATING_STATES = frozenset({"running"})
-    DEFAULT_INPUTS = {"suction_head_m": None, "system_kv_m3h": None, "source_level_pct": None, "target_level_pct": None}
+    DEFAULT_INPUTS = {
+        "suction_head_m": None, "system_kv_m3h": None, "source_level_pct": None, "target_level_pct": None,
+        "source_level_1_pct": None, "source_level_2_pct": None,
+    }
 
     def setup(self) -> None:
         p = self.p
@@ -223,11 +226,19 @@ class BoosterPumpSet(EquipmentBehavior):
         src = self.inputs["source_level_pct"]
         dst = self.inputs["target_level_pct"]
         full = dst is not None and dst >= p["target_full_pct"]
+        individual = (self.inputs["source_level_1_pct"], self.inputs["source_level_2_pct"])
+        high_return = p["return_high_start_pct"] < 100 and any(
+            level is not None and level + 1e-8 >= p["return_high_start_pct"] for level in individual
+        )
+        needs_supply = p["supply_start_pct"] > 0 and dst is not None and dst <= p["supply_start_pct"] + 1e-8
+        source_safe = src is None or src >= p["stop_level_pct"]
         if self.level_on:
-            if (src is not None and src < p["stop_level_pct"]) or full:
+            if not source_safe or full:
                 self.level_on = False
-        elif (src is None or src >= p["start_level_pct"]) and not full:
-            self.level_on = True
+        elif source_safe and not full:
+            legacy_start = p["supply_start_pct"] == 0 and (src is None or src >= p["start_level_pct"])
+            if needs_supply or high_return or legacy_start:
+                self.level_on = True
         want = min(p["duty_max"], p["pumps"]) if self.level_on else 0
         while len(self.running) > want:
             self._stop_last("level")

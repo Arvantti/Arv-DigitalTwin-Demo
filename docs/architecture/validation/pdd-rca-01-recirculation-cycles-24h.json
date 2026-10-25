@@ -1,0 +1,4583 @@
+{
+  "scope": "independent Fractal forecast vs PLC emulator; same 30 s PLC snapshot, full physical second per emulator step",
+  "base_t_s": 30.0,
+  "hours": 24,
+  "profile_id": "pdd-rca-01",
+  "note": "Ordinal pairing is diagnostic, not proof of event identity if cycle counts differ. Same-time emulator readings are taken at nearest 1 s; Fractal holds hourly distribution fixed. Fractal recirculation totals are accumulated across hours, no commands applied.",
+  "initial_tags": {
+    "PLC.Tank.Supply.LevelPct": 69.2,
+    "PLC.Tank.Recirc01.LevelPct": 40.800000000000004,
+    "PLC.Tank.Recirc02.LevelPct": 40.800000000000004,
+    "PLC.Pump.RecirculationAutoActive": 0.0
+  },
+  "fractal_events": [
+    {
+      "action": "start",
+      "reason": "suministro_bajo",
+      "t_s": 1318.27691,
+      "levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 75.87024,
+        "tank-recirc-02": 73.28721
+      },
+      "recirculated_m3": 0.0
+    },
+    {
+      "action": "stop",
+      "reason": "suministro_lleno",
+      "t_s": 1839.95235,
+      "levels_pct": {
+        "tank-supply-01": 90.00115,
+        "tank-recirc-01": 22.78562,
+        "tank-recirc-02": 22.96559
+      },
+      "recirculated_m3": 2.950013
+    },
+    {
+      "action": "start",
+      "reason": "suministro_bajo",
+      "t_s": 3805.99613,
+      "levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 76.46665,
+        "tank-recirc-02": 72.69079
+      },
+      "recirculated_m3": 2.950013
+    },
+    {
+      "action": "stop",
+      "reason": "suministro_lleno",
+      "t_s": 4332.1438,
+      "levels_pct": {
+        "tank-supply-01": 90.0,
+        "tank-recirc-01": 22.78841,
+        "tank-recirc-02": 22.96478
+      },
+      "recirculated_m3": 5.925949
+    },
+    {
+      "action": "start",
+      "reason": "suministro_bajo",
+      "t_s": 6240.59883,
+      "levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 76.47899,
+        "tank-recirc-02": 72.67846
+      },
+      "recirculated_m3": 5.925949
+    },
+    {
+      "action": "stop",
+      "reason": "suministro_lleno",
+      "t_s": 6766.7566,
+      "levels_pct": {
+        "tank-supply-01": 90.00114,
+        "tank-recirc-01": 22.78747,
+        "tank-recirc-02": 22.96376
+      },
+      "recirculated_m3": 8.901943
+    },
+    {
+      "action": "start",
+      "reason": "suministro_bajo",
+      "t_s": 8548.01305,
+      "levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 76.50732,
+        "tank-recirc-02": 72.65013
+      },
+      "recirculated_m3": 8.901943
+    },
+    {
+      "action": "stop",
+      "reason": "suministro_lleno",
+      "t_s": 9088.08146,
+      "levels_pct": {
+        "tank-supply-01": 90.00111,
+        "tank-recirc-01": 22.78521,
+        "tank-recirc-02": 22.96607
+      },
+      "recirculated_m3": 11.958667
+    },
+    {
+      "action": "start",
+      "reason": "suministro_bajo",
+      "t_s": 10828.5546,
+      "levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 76.51409,
+        "tank-recirc-02": 72.64336
+      },
+      "recirculated_m3": 11.958667
+    },
+    {
+      "action": "stop",
+      "reason": "suministro_lleno",
+      "t_s": 11374.38489,
+      "levels_pct": {
+        "tank-supply-01": 90.0,
+        "tank-recirc-01": 22.78224,
+        "tank-recirc-02": 22.97095
+      },
+      "recirculated_m3": 15.122865
+    },
+    {
+      "action": "start",
+      "reason": "suministro_bajo",
+      "t_s": 12905.42842,
+      "levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 76.57405,
+        "tank-recirc-02": 72.58339
+      },
+      "recirculated_m3": 15.122865
+    },
+    {
+      "action": "stop",
+      "reason": "suministro_lleno",
+      "t_s": 13468.6013,
+      "levels_pct": {
+        "tank-supply-01": 90.00106,
+        "tank-recirc-01": 22.78373,
+        "tank-recirc-02": 22.96763
+      },
+      "recirculated_m3": 18.313794
+    },
+    {
+      "action": "start",
+      "reason": "suministro_bajo",
+      "t_s": 14922.66849,
+      "levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 76.61143,
+        "tank-recirc-02": 72.54601
+      },
+      "recirculated_m3": 18.313794
+    },
+    {
+      "action": "stop",
+      "reason": "suministro_lleno",
+      "t_s": 15519.08612,
+      "levels_pct": {
+        "tank-supply-01": 90.001,
+        "tank-recirc-01": 22.80458,
+        "tank-recirc-02": 22.94689
+      },
+      "recirculated_m3": 21.69741
+    },
+    {
+      "action": "start",
+      "reason": "suministro_bajo",
+      "t_s": 16843.19814,
+      "levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 76.69119,
+        "tank-recirc-02": 72.46626
+      },
+      "recirculated_m3": 21.69741
+    },
+    {
+      "action": "stop",
+      "reason": "suministro_lleno",
+      "t_s": 17439.60621,
+      "levels_pct": {
+        "tank-supply-01": 90.0,
+        "tank-recirc-01": 22.80543,
+        "tank-recirc-02": 22.94776
+      },
+      "recirculated_m3": 25.08097
+    },
+    {
+      "action": "start",
+      "reason": "suministro_bajo",
+      "t_s": 18665.80341,
+      "levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 76.75838,
+        "tank-recirc-02": 72.39907
+      },
+      "recirculated_m3": 25.08097
+    },
+    {
+      "action": "stop",
+      "reason": "suministro_lleno",
+      "t_s": 19305.1539,
+      "levels_pct": {
+        "tank-supply-01": 90.00093,
+        "tank-recirc-01": 22.82173,
+        "tank-recirc-02": 22.92986
+      },
+      "recirculated_m3": 28.713654
+    },
+    {
+      "action": "start",
+      "reason": "suministro_bajo",
+      "t_s": 20452.5962,
+      "levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 76.82962,
+        "tank-recirc-02": 72.32783
+      },
+      "recirculated_m3": 28.713654
+    },
+    {
+      "action": "stop",
+      "reason": "suministro_lleno",
+      "t_s": 21091.94774,
+      "levels_pct": {
+        "tank-supply-01": 90.00093,
+        "tank-recirc-01": 22.82185,
+        "tank-recirc-02": 22.92974
+      },
+      "recirculated_m3": 32.34634
+    },
+    {
+      "action": "start",
+      "reason": "suministro_bajo",
+      "t_s": 22163.76515,
+      "levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 76.90654,
+        "tank-recirc-02": 72.25091
+      },
+      "recirculated_m3": 32.34634
+    },
+    {
+      "action": "stop",
+      "reason": "suministro_lleno",
+      "t_s": 22856.02234,
+      "levels_pct": {
+        "tank-supply-01": 90.0,
+        "tank-recirc-01": 22.83209,
+        "tank-recirc-02": 22.9211
+      },
+      "recirculated_m3": 36.285955
+    },
+    {
+      "action": "start",
+      "reason": "suministro_bajo",
+      "t_s": 23861.05223,
+      "levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 76.98375,
+        "tank-recirc-02": 72.1737
+      },
+      "recirculated_m3": 36.285955
+    },
+    {
+      "action": "stop",
+      "reason": "suministro_lleno",
+      "t_s": 24553.32103,
+      "levels_pct": {
+        "tank-supply-01": 90.00086,
+        "tank-recirc-01": 22.83125,
+        "tank-recirc-02": 22.92047
+      },
+      "recirculated_m3": 40.225631
+    },
+    {
+      "action": "start",
+      "reason": "suministro_bajo",
+      "t_s": 25523.43118,
+      "levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 77.03358,
+        "tank-recirc-02": 72.12386
+      },
+      "recirculated_m3": 40.225631
+    },
+    {
+      "action": "stop",
+      "reason": "suministro_lleno",
+      "t_s": 26275.4195,
+      "levels_pct": {
+        "tank-supply-01": 90.0,
+        "tank-recirc-01": 22.85409,
+        "tank-recirc-02": 22.8991
+      },
+      "recirculated_m3": 44.511693
+    },
+    {
+      "action": "start",
+      "reason": "suministro_bajo",
+      "t_s": 27173.52631,
+      "levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 77.1585,
+        "tank-recirc-02": 71.99894
+      },
+      "recirculated_m3": 44.511693
+    },
+    {
+      "action": "stop",
+      "reason": "suministro_lleno",
+      "t_s": 27925.51788,
+      "levels_pct": {
+        "tank-supply-01": 90.0,
+        "tank-recirc-01": 22.8542,
+        "tank-recirc-02": 22.899
+      },
+      "recirculated_m3": 48.797764
+    },
+    {
+      "action": "start",
+      "reason": "suministro_bajo",
+      "t_s": 28823.62469,
+      "levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 77.15861,
+        "tank-recirc-02": 71.99884
+      },
+      "recirculated_m3": 48.797764
+    },
+    {
+      "action": "stop",
+      "reason": "suministro_lleno",
+      "t_s": 29622.75282,
+      "levels_pct": {
+        "tank-supply-01": 90.0,
+        "tank-recirc-01": 22.86774,
+        "tank-recirc-02": 22.88545
+      },
+      "recirculated_m3": 53.401872
+    },
+    {
+      "action": "start",
+      "reason": "suministro_bajo",
+      "t_s": 30442.9483,
+      "levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 77.31951,
+        "tank-recirc-02": 71.83794
+      },
+      "recirculated_m3": 53.401872
+    },
+    {
+      "action": "stop",
+      "reason": "suministro_lleno",
+      "t_s": 31257.73892,
+      "levels_pct": {
+        "tank-supply-01": 90.00072,
+        "tank-recirc-01": 22.86747,
+        "tank-recirc-02": 22.88448
+      },
+      "recirculated_m3": 58.052127
+    },
+    {
+      "action": "start",
+      "reason": "suministro_bajo",
+      "t_s": 32077.9443,
+      "levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 77.31989,
+        "tank-recirc-02": 71.83755
+      },
+      "recirculated_m3": 58.052127
+    },
+    {
+      "action": "stop",
+      "reason": "suministro_lleno",
+      "t_s": 32925.78305,
+      "levels_pct": {
+        "tank-supply-01": 90.00067,
+        "tank-recirc-01": 22.88263,
+        "tank-recirc-02": 22.8694
+      },
+      "recirculated_m3": 62.891853
+    },
+    {
+      "action": "start",
+      "reason": "suministro_bajo",
+      "t_s": 33693.97433,
+      "levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 77.45659,
+        "tank-recirc-02": 71.70085
+      },
+      "recirculated_m3": 62.891853
+    },
+    {
+      "action": "stop",
+      "reason": "suministro_lleno",
+      "t_s": 34565.56193,
+      "levels_pct": {
+        "tank-supply-01": 90.00067,
+        "tank-recirc-01": 22.88368,
+        "tank-recirc-02": 22.86835
+      },
+      "recirculated_m3": 67.871497
+    },
+    {
+      "action": "start",
+      "reason": "suministro_bajo",
+      "t_s": 35333.75321,
+      "levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 77.45765,
+        "tank-recirc-02": 71.6998
+      },
+      "recirculated_m3": 67.871497
+    },
+    {
+      "action": "stop",
+      "reason": "suministro_lleno",
+      "t_s": 36214.06327,
+      "levels_pct": {
+        "tank-supply-01": 90.00064,
+        "tank-recirc-01": 22.89538,
+        "tank-recirc-02": 22.85671
+      },
+      "recirculated_m3": 72.900681
+    },
+    {
+      "action": "start",
+      "reason": "suministro_bajo",
+      "t_s": 36951.82753,
+      "levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 77.55139,
+        "tank-recirc-02": 71.60605
+      },
+      "recirculated_m3": 72.900681
+    },
+    {
+      "action": "stop",
+      "reason": "suministro_lleno",
+      "t_s": 37864.79954,
+      "levels_pct": {
+        "tank-supply-01": 90.00064,
+        "tank-recirc-01": 22.89236,
+        "tank-recirc-02": 22.85973
+      },
+      "recirculated_m3": 78.120341
+    },
+    {
+      "action": "start",
+      "reason": "suministro_bajo",
+      "t_s": 38602.56381,
+      "levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 77.54837,
+        "tank-recirc-02": 71.60907
+      },
+      "recirculated_m3": 78.120341
+    },
+    {
+      "action": "stop",
+      "reason": "suministro_lleno",
+      "t_s": 39515.52569,
+      "levels_pct": {
+        "tank-supply-01": 90.0,
+        "tank-recirc-01": 22.89291,
+        "tank-recirc-02": 22.86028
+      },
+      "recirculated_m3": 83.339944
+    },
+    {
+      "action": "start",
+      "reason": "suministro_bajo",
+      "t_s": 40245.13308,
+      "levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 77.57185,
+        "tank-recirc-02": 71.5856
+      },
+      "recirculated_m3": 83.339944
+    },
+    {
+      "action": "stop",
+      "reason": "suministro_lleno",
+      "t_s": 41172.84563,
+      "levels_pct": {
+        "tank-supply-01": 90.00063,
+        "tank-recirc-01": 22.89569,
+        "tank-recirc-02": 22.85641
+      },
+      "recirculated_m3": 88.645075
+    },
+    {
+      "action": "start",
+      "reason": "suministro_bajo",
+      "t_s": 41900.96401,
+      "levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 77.57952,
+        "tank-recirc-02": 71.57793
+      },
+      "recirculated_m3": 88.645075
+    },
+    {
+      "action": "stop",
+      "reason": "suministro_lleno",
+      "t_s": 42828.67688,
+      "levels_pct": {
+        "tank-supply-01": 90.00063,
+        "tank-recirc-01": 22.89569,
+        "tank-recirc-02": 22.85641
+      },
+      "recirculated_m3": 93.950206
+    },
+    {
+      "action": "start",
+      "reason": "suministro_bajo",
+      "t_s": 43560.49938,
+      "levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 77.56878,
+        "tank-recirc-02": 71.58866
+      },
+      "recirculated_m3": 93.950206
+    },
+    {
+      "action": "stop",
+      "reason": "suministro_lleno",
+      "t_s": 44475.53138,
+      "levels_pct": {
+        "tank-supply-01": 90.0,
+        "tank-recirc-01": 22.89332,
+        "tank-recirc-02": 22.85987
+      },
+      "recirculated_m3": 99.181827
+    },
+    {
+      "action": "start",
+      "reason": "suministro_bajo",
+      "t_s": 45211.89501,
+      "levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 77.55266,
+        "tank-recirc-02": 71.60479
+      },
+      "recirculated_m3": 99.181827
+    },
+    {
+      "action": "stop",
+      "reason": "suministro_lleno",
+      "t_s": 46126.92634,
+      "levels_pct": {
+        "tank-supply-01": 90.0,
+        "tank-recirc-01": 22.89333,
+        "tank-recirc-02": 22.85986
+      },
+      "recirculated_m3": 104.413447
+    },
+    {
+      "action": "start",
+      "reason": "suministro_bajo",
+      "t_s": 46864.42485,
+      "levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 77.54956,
+        "tank-recirc-02": 71.60789
+      },
+      "recirculated_m3": 104.413447
+    },
+    {
+      "action": "stop",
+      "reason": "suministro_lleno",
+      "t_s": 47744.55387,
+      "levels_pct": {
+        "tank-supply-01": 90.0,
+        "tank-recirc-01": 22.8861,
+        "tank-recirc-02": 22.86709
+      },
+      "recirculated_m3": 109.442576
+    },
+    {
+      "action": "start",
+      "reason": "suministro_bajo",
+      "t_s": 48506.02065,
+      "levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 77.47682,
+        "tank-recirc-02": 71.68062
+      },
+      "recirculated_m3": 109.442576
+    },
+    {
+      "action": "stop",
+      "reason": "suministro_lleno",
+      "t_s": 49386.14672,
+      "levels_pct": {
+        "tank-supply-01": 90.0,
+        "tank-recirc-01": 22.88609,
+        "tank-recirc-02": 22.86711
+      },
+      "recirculated_m3": 114.471696
+    },
+    {
+      "action": "start",
+      "reason": "suministro_bajo",
+      "t_s": 50147.6135,
+      "levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 77.47681,
+        "tank-recirc-02": 71.68064
+      },
+      "recirculated_m3": 114.471696
+    },
+    {
+      "action": "stop",
+      "reason": "suministro_lleno",
+      "t_s": 50993.02341,
+      "levels_pct": {
+        "tank-supply-01": 90.00071,
+        "tank-recirc-01": 22.87208,
+        "tank-recirc-02": 22.87989
+      },
+      "recirculated_m3": 119.300925
+    },
+    {
+      "action": "start",
+      "reason": "suministro_bajo",
+      "t_s": 51798.17398,
+      "levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 77.35754,
+        "tank-recirc-02": 71.7999
+      },
+      "recirculated_m3": 119.300925
+    },
+    {
+      "action": "stop",
+      "reason": "suministro_lleno",
+      "t_s": 52627.9007,
+      "levels_pct": {
+        "tank-supply-01": 90.0,
+        "tank-recirc-01": 22.87267,
+        "tank-recirc-02": 22.88052
+      },
+      "recirculated_m3": 124.037759
+    },
+    {
+      "action": "start",
+      "reason": "suministro_bajo",
+      "t_s": 53433.04174,
+      "levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 77.35749,
+        "tank-recirc-02": 71.79996
+      },
+      "recirculated_m3": 124.037759
+    },
+    {
+      "action": "stop",
+      "reason": "suministro_lleno",
+      "t_s": 54246.42735,
+      "levels_pct": {
+        "tank-supply-01": 90.0,
+        "tank-recirc-01": 22.85802,
+        "tank-recirc-02": 22.89517
+      },
+      "recirculated_m3": 128.681349
+    },
+    {
+      "action": "start",
+      "reason": "suministro_bajo",
+      "t_s": 55115.15261,
+      "levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 77.21378,
+        "tank-recirc-02": 71.94366
+      },
+      "recirculated_m3": 128.681349
+    },
+    {
+      "action": "stop",
+      "reason": "suministro_lleno",
+      "t_s": 55888.37615,
+      "levels_pct": {
+        "tank-supply-01": 90.0,
+        "tank-recirc-01": 22.85839,
+        "tank-recirc-02": 22.8948
+      },
+      "recirculated_m3": 133.090497
+    },
+    {
+      "action": "start",
+      "reason": "suministro_bajo",
+      "t_s": 56757.10141,
+      "levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 77.21416,
+        "tank-recirc-02": 71.94329
+      },
+      "recirculated_m3": 133.090497
+    },
+    {
+      "action": "stop",
+      "reason": "suministro_lleno",
+      "t_s": 57530.32496,
+      "levels_pct": {
+        "tank-supply-01": 90.0,
+        "tank-recirc-01": 22.85839,
+        "tank-recirc-02": 22.8948
+      },
+      "recirculated_m3": 137.499645
+    },
+    {
+      "action": "start",
+      "reason": "suministro_bajo",
+      "t_s": 58476.35201,
+      "levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 77.09019,
+        "tank-recirc-02": 72.06726
+      },
+      "recirculated_m3": 137.499645
+    },
+    {
+      "action": "stop",
+      "reason": "suministro_lleno",
+      "t_s": 59193.13912,
+      "levels_pct": {
+        "tank-supply-01": 90.00083,
+        "tank-recirc-01": 22.84147,
+        "tank-recirc-02": 22.91029
+      },
+      "recirculated_m3": 141.581474
+    },
+    {
+      "action": "start",
+      "reason": "suministro_bajo",
+      "t_s": 60149.19829,
+      "levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 77.05795,
+        "tank-recirc-02": 72.0995
+      },
+      "recirculated_m3": 141.581474
+    },
+    {
+      "action": "stop",
+      "reason": "suministro_lleno",
+      "t_s": 60865.98463,
+      "levels_pct": {
+        "tank-supply-01": 90.00083,
+        "tank-recirc-01": 22.84147,
+        "tank-recirc-02": 22.91029
+      },
+      "recirculated_m3": 145.6633
+    },
+    {
+      "action": "start",
+      "reason": "suministro_bajo",
+      "t_s": 61893.65581,
+      "levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 76.97216,
+        "tank-recirc-02": 72.18529
+      },
+      "recirculated_m3": 145.6633
+    },
+    {
+      "action": "stop",
+      "reason": "suministro_lleno",
+      "t_s": 62558.34136,
+      "levels_pct": {
+        "tank-supply-01": 90.0,
+        "tank-recirc-01": 22.8253,
+        "tank-recirc-02": 22.9279
+      },
+      "recirculated_m3": 149.442958
+    },
+    {
+      "action": "start",
+      "reason": "suministro_bajo",
+      "t_s": 63630.02807,
+      "levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 76.90248,
+        "tank-recirc-02": 72.25496
+      },
+      "recirculated_m3": 149.442958
+    },
+    {
+      "action": "stop",
+      "reason": "suministro_lleno",
+      "t_s": 64294.72224,
+      "levels_pct": {
+        "tank-supply-01": 90.0009,
+        "tank-recirc-01": 22.82457,
+        "tank-recirc-02": 22.92708
+      },
+      "recirculated_m3": 153.22267
+    },
+    {
+      "action": "start",
+      "reason": "suministro_bajo",
+      "t_s": 65439.51383,
+      "levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 76.8403,
+        "tank-recirc-02": 72.31715
+      },
+      "recirculated_m3": 153.22267
+    },
+    {
+      "action": "stop",
+      "reason": "suministro_lleno",
+      "t_s": 66059.49784,
+      "levels_pct": {
+        "tank-supply-01": 90.0,
+        "tank-recirc-01": 22.82068,
+        "tank-recirc-02": 22.93251
+      },
+      "recirculated_m3": 156.743194
+    },
+    {
+      "action": "start",
+      "reason": "suministro_bajo",
+      "t_s": 67277.20385,
+      "levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 76.77347,
+        "tank-recirc-02": 72.38398
+      },
+      "recirculated_m3": 156.743194
+    },
+    {
+      "action": "stop",
+      "reason": "suministro_lleno",
+      "t_s": 67897.18718,
+      "levels_pct": {
+        "tank-supply-01": 90.0,
+        "tank-recirc-01": 22.82044,
+        "tank-recirc-02": 22.93275
+      },
+      "recirculated_m3": 160.263717
+    },
+    {
+      "action": "start",
+      "reason": "suministro_bajo",
+      "t_s": 69212.58335,
+      "levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 76.71583,
+        "tank-recirc-02": 72.44161
+      },
+      "recirculated_m3": 160.263717
+    },
+    {
+      "action": "stop",
+      "reason": "suministro_lleno",
+      "t_s": 69796.66969,
+      "levels_pct": {
+        "tank-supply-01": 90.0,
+        "tank-recirc-01": 22.79753,
+        "tank-recirc-02": 22.95566
+      },
+      "recirculated_m3": 163.575791
+    },
+    {
+      "action": "start",
+      "reason": "suministro_bajo",
+      "t_s": 71188.06393,
+      "levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 76.64827,
+        "tank-recirc-02": 72.50918
+      },
+      "recirculated_m3": 163.575791
+    },
+    {
+      "action": "stop",
+      "reason": "suministro_lleno",
+      "t_s": 71772.1499,
+      "levels_pct": {
+        "tank-supply-01": 90.0,
+        "tank-recirc-01": 22.79767,
+        "tank-recirc-02": 22.95552
+      },
+      "recirculated_m3": 166.887865
+    },
+    {
+      "action": "start",
+      "reason": "suministro_bajo",
+      "t_s": 73320.37344,
+      "levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 76.5853,
+        "tank-recirc-02": 72.57215
+      },
+      "recirculated_m3": 166.887865
+    },
+    {
+      "action": "stop",
+      "reason": "suministro_lleno",
+      "t_s": 73876.9222,
+      "levels_pct": {
+        "tank-supply-01": 90.0,
+        "tank-recirc-01": 22.78314,
+        "tank-recirc-02": 22.97005
+      },
+      "recirculated_m3": 170.040362
+    },
+    {
+      "action": "start",
+      "reason": "suministro_bajo",
+      "t_s": 75460.82008,
+      "levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 76.55641,
+        "tank-recirc-02": 72.60104
+      },
+      "recirculated_m3": 170.040362
+    },
+    {
+      "action": "stop",
+      "reason": "suministro_lleno",
+      "t_s": 76003.69664,
+      "levels_pct": {
+        "tank-supply-01": 90.00112,
+        "tank-recirc-01": 22.78871,
+        "tank-recirc-02": 22.96255
+      },
+      "recirculated_m3": 173.113799
+    },
+    {
+      "action": "start",
+      "reason": "suministro_bajo",
+      "t_s": 77777.68459,
+      "levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 76.50943,
+        "tank-recirc-02": 72.64802
+      },
+      "recirculated_m3": 173.113799
+    },
+    {
+      "action": "stop",
+      "reason": "suministro_lleno",
+      "t_s": 78314.69827,
+      "levels_pct": {
+        "tank-supply-01": 90.0,
+        "tank-recirc-01": 22.78668,
+        "tank-recirc-02": 22.96652
+      },
+      "recirculated_m3": 176.152787
+    },
+    {
+      "action": "start",
+      "reason": "suministro_bajo",
+      "t_s": 80158.01783,
+      "levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 76.49153,
+        "tank-recirc-02": 72.66592
+      },
+      "recirculated_m3": 176.152787
+    },
+    {
+      "action": "stop",
+      "reason": "suministro_lleno",
+      "t_s": 80683.5212,
+      "levels_pct": {
+        "tank-supply-01": 90.0,
+        "tank-recirc-01": 22.7886,
+        "tank-recirc-02": 22.96459
+      },
+      "recirculated_m3": 179.124986
+    },
+    {
+      "action": "start",
+      "reason": "suministro_bajo",
+      "t_s": 82600.78163,
+      "levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 76.47761,
+        "tank-recirc-02": 72.67984
+      },
+      "recirculated_m3": 179.124986
+    },
+    {
+      "action": "stop",
+      "reason": "suministro_lleno",
+      "t_s": 83124.11299,
+      "levels_pct": {
+        "tank-supply-01": 90.0,
+        "tank-recirc-01": 22.78478,
+        "tank-recirc-02": 22.96841
+      },
+      "recirculated_m3": 182.084634
+    },
+    {
+      "action": "start",
+      "reason": "suministro_bajo",
+      "t_s": 85095.9654,
+      "levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 76.46372,
+        "tank-recirc-02": 72.69373
+      },
+      "recirculated_m3": 182.084634
+    },
+    {
+      "action": "stop",
+      "reason": "suministro_lleno",
+      "t_s": 85617.63298,
+      "levels_pct": {
+        "tank-supply-01": 90.0,
+        "tank-recirc-01": 22.78915,
+        "tank-recirc-02": 22.96404
+      },
+      "recirculated_m3": 185.034593
+    }
+  ],
+  "emulator_events": [
+    {
+      "t_s": 1317.0,
+      "levels_pct": {
+        "tank-supply-01": 29.9423,
+        "tank-recirc-01": 74.51841,
+        "tank-recirc-02": 74.51719
+      },
+      "recirculated_m3": 0.0,
+      "bypass_m3": 0.029006,
+      "auto_active": true,
+      "action": "start",
+      "reason": "suministro_bajo"
+    },
+    {
+      "t_s": 1842.0,
+      "levels_pct": {
+        "tank-supply-01": 90.1637,
+        "tank-recirc-01": 22.52986,
+        "tank-recirc-02": 22.71991
+      },
+      "recirculated_m3": 2.962774,
+      "bypass_m3": 0.029006,
+      "auto_active": false,
+      "action": "stop",
+      "reason": "suministro_lleno"
+    },
+    {
+      "t_s": 3814.0,
+      "levels_pct": {
+        "tank-supply-01": 29.94395,
+        "tank-recirc-01": 74.51702,
+        "tank-recirc-02": 74.51574
+      },
+      "recirculated_m3": 2.962774,
+      "bypass_m3": 0.073581,
+      "auto_active": true,
+      "action": "start",
+      "reason": "suministro_bajo"
+    },
+    {
+      "t_s": 4344.0,
+      "levels_pct": {
+        "tank-supply-01": 90.22126,
+        "tank-recirc-01": 22.48175,
+        "tank-recirc-02": 22.66884
+      },
+      "recirculated_m3": 5.954473,
+      "bypass_m3": 0.073581,
+      "auto_active": false,
+      "action": "stop",
+      "reason": "suministro_lleno"
+    },
+    {
+      "t_s": 6261.0,
+      "levels_pct": {
+        "tank-supply-01": 29.95149,
+        "tank-recirc-01": 74.51052,
+        "tank-recirc-02": 74.50924
+      },
+      "recirculated_m3": 5.954473,
+      "bypass_m3": 0.118399,
+      "auto_active": true,
+      "action": "start",
+      "reason": "suministro_bajo"
+    },
+    {
+      "t_s": 6790.0,
+      "levels_pct": {
+        "tank-supply-01": 90.11464,
+        "tank-recirc-01": 22.5736,
+        "tank-recirc-02": 22.76073
+      },
+      "recirculated_m3": 8.940497,
+      "bypass_m3": 0.118399,
+      "auto_active": false,
+      "action": "stop",
+      "reason": "suministro_lleno"
+    },
+    {
+      "t_s": 8571.0,
+      "levels_pct": {
+        "tank-supply-01": 29.96374,
+        "tank-recirc-01": 74.50006,
+        "tank-recirc-02": 74.49861
+      },
+      "recirculated_m3": 8.940497,
+      "bypass_m3": 0.163816,
+      "auto_active": true,
+      "action": "start",
+      "reason": "suministro_bajo"
+    },
+    {
+      "t_s": 9114.0,
+      "levels_pct": {
+        "tank-supply-01": 90.12538,
+        "tank-recirc-01": 22.56893,
+        "tank-recirc-02": 22.74693
+      },
+      "recirculated_m3": 12.007692,
+      "bypass_m3": 0.163816,
+      "auto_active": false,
+      "action": "stop",
+      "reason": "suministro_lleno"
+    },
+    {
+      "t_s": 10853.0,
+      "levels_pct": {
+        "tank-supply-01": 29.92949,
+        "tank-recirc-01": 74.52975,
+        "tank-recirc-02": 74.528
+      },
+      "recirculated_m3": 12.007692,
+      "bypass_m3": 0.209451,
+      "auto_active": true,
+      "action": "start",
+      "reason": "suministro_bajo"
+    },
+    {
+      "t_s": 11420.0,
+      "levels_pct": {
+        "tank-supply-01": 90.17094,
+        "tank-recirc-01": 22.5372,
+        "tank-recirc-02": 22.70019
+      },
+      "recirculated_m3": 15.214062,
+      "bypass_m3": 0.209451,
+      "auto_active": false,
+      "action": "stop",
+      "reason": "suministro_lleno"
+    },
+    {
+      "t_s": 12957.0,
+      "levels_pct": {
+        "tank-supply-01": 29.93579,
+        "tank-recirc-01": 74.52433,
+        "tank-recirc-02": 74.52257
+      },
+      "recirculated_m3": 15.214062,
+      "bypass_m3": 0.256537,
+      "auto_active": true,
+      "action": "start",
+      "reason": "suministro_bajo"
+    },
+    {
+      "t_s": 13524.0,
+      "levels_pct": {
+        "tank-supply-01": 90.17604,
+        "tank-recirc-01": 22.5328,
+        "tank-recirc-02": 22.69579
+      },
+      "recirculated_m3": 18.420419,
+      "bypass_m3": 0.256537,
+      "auto_active": false,
+      "action": "stop",
+      "reason": "suministro_lleno"
+    },
+    {
+      "t_s": 14972.0,
+      "levels_pct": {
+        "tank-supply-01": 29.93664,
+        "tank-recirc-01": 74.52387,
+        "tank-recirc-02": 74.52166
+      },
+      "recirculated_m3": 18.420419,
+      "bypass_m3": 0.304526,
+      "auto_active": true,
+      "action": "start",
+      "reason": "suministro_bajo"
+    },
+    {
+      "t_s": 15572.0,
+      "levels_pct": {
+        "tank-supply-01": 90.13326,
+        "tank-recirc-01": 22.58031,
+        "tank-recirc-02": 22.72211
+      },
+      "recirculated_m3": 21.81822,
+      "bypass_m3": 0.304526,
+      "auto_active": false,
+      "action": "stop",
+      "reason": "suministro_lleno"
+    },
+    {
+      "t_s": 16901.0,
+      "levels_pct": {
+        "tank-supply-01": 29.91006,
+        "tank-recirc-01": 74.54677,
+        "tank-recirc-02": 74.54456
+      },
+      "recirculated_m3": 21.81822,
+      "bypass_m3": 0.353695,
+      "auto_active": true,
+      "action": "start",
+      "reason": "suministro_bajo"
+    },
+    {
+      "t_s": 17501.0,
+      "levels_pct": {
+        "tank-supply-01": 90.10814,
+        "tank-recirc-01": 22.60195,
+        "tank-recirc-02": 22.74376
+      },
+      "recirculated_m3": 25.216094,
+      "bypass_m3": 0.353695,
+      "auto_active": false,
+      "action": "stop",
+      "reason": "suministro_lleno"
+    },
+    {
+      "t_s": 18719.0,
+      "levels_pct": {
+        "tank-supply-01": 29.91434,
+        "tank-recirc-01": 74.54346,
+        "tank-recirc-02": 74.54064
+      },
+      "recirculated_m3": 25.216094,
+      "bypass_m3": 0.404541,
+      "auto_active": true,
+      "action": "start",
+      "reason": "suministro_bajo"
+    },
+    {
+      "t_s": 19362.0,
+      "levels_pct": {
+        "tank-supply-01": 90.09339,
+        "tank-recirc-01": 22.62813,
+        "tank-recirc-02": 22.74314
+      },
+      "recirculated_m3": 28.863363,
+      "bypass_m3": 0.404541,
+      "auto_active": false,
+      "action": "stop",
+      "reason": "suministro_lleno"
+    },
+    {
+      "t_s": 20513.0,
+      "levels_pct": {
+        "tank-supply-01": 29.90702,
+        "tank-recirc-01": 74.54976,
+        "tank-recirc-02": 74.54694
+      },
+      "recirculated_m3": 28.863363,
+      "bypass_m3": 0.45643,
+      "auto_active": true,
+      "action": "start",
+      "reason": "suministro_bajo"
+    },
+    {
+      "t_s": 21157.0,
+      "levels_pct": {
+        "tank-supply-01": 90.1794,
+        "tank-recirc-01": 22.55403,
+        "tank-recirc-02": 22.66901
+      },
+      "recirculated_m3": 32.516311,
+      "bypass_m3": 0.45643,
+      "auto_active": false,
+      "action": "stop",
+      "reason": "suministro_lleno"
+    },
+    {
+      "t_s": 22222.0,
+      "levels_pct": {
+        "tank-supply-01": 29.90167,
+        "tank-recirc-01": 74.55486,
+        "tank-recirc-02": 74.55125
+      },
+      "recirculated_m3": 32.516311,
+      "bypass_m3": 0.510404,
+      "auto_active": true,
+      "action": "start",
+      "reason": "suministro_bajo"
+    },
+    {
+      "t_s": 22919.0,
+      "levels_pct": {
+        "tank-supply-01": 90.14698,
+        "tank-recirc-01": 22.59801,
+        "tank-recirc-02": 22.68109
+      },
+      "recirculated_m3": 36.476673,
+      "bypass_m3": 0.510404,
+      "auto_active": false,
+      "action": "stop",
+      "reason": "suministro_lleno"
+    },
+    {
+      "t_s": 23928.0,
+      "levels_pct": {
+        "tank-supply-01": 29.91189,
+        "tank-recirc-01": 74.54606,
+        "tank-recirc-02": 74.54245
+      },
+      "recirculated_m3": 36.476673,
+      "bypass_m3": 0.565615,
+      "auto_active": true,
+      "action": "start",
+      "reason": "suministro_bajo"
+    },
+    {
+      "t_s": 24625.0,
+      "levels_pct": {
+        "tank-supply-01": 90.15594,
+        "tank-recirc-01": 22.59029,
+        "tank-recirc-02": 22.67337
+      },
+      "recirculated_m3": 40.437004,
+      "bypass_m3": 0.565615,
+      "auto_active": false,
+      "action": "stop",
+      "reason": "suministro_lleno"
+    },
+    {
+      "t_s": 25588.0,
+      "levels_pct": {
+        "tank-supply-01": 29.93118,
+        "tank-recirc-01": 74.53001,
+        "tank-recirc-02": 74.52547
+      },
+      "recirculated_m3": 40.437004,
+      "bypass_m3": 0.622295,
+      "auto_active": true,
+      "action": "start",
+      "reason": "suministro_bajo"
+    },
+    {
+      "t_s": 26344.0,
+      "levels_pct": {
+        "tank-supply-01": 90.08379,
+        "tank-recirc-01": 22.66968,
+        "tank-recirc-02": 22.71854
+      },
+      "recirculated_m3": 44.739561,
+      "bypass_m3": 0.622295,
+      "auto_active": false,
+      "action": "stop",
+      "reason": "suministro_lleno"
+    },
+    {
+      "t_s": 27245.0,
+      "levels_pct": {
+        "tank-supply-01": 29.89381,
+        "tank-recirc-01": 74.56221,
+        "tank-recirc-02": 74.55767
+      },
+      "recirculated_m3": 44.739561,
+      "bypass_m3": 0.680942,
+      "auto_active": true,
+      "action": "start",
+      "reason": "suministro_bajo"
+    },
+    {
+      "t_s": 28002.0,
+      "levels_pct": {
+        "tank-supply-01": 90.12786,
+        "tank-recirc-01": 22.63171,
+        "tank-recirc-02": 22.68056
+      },
+      "recirculated_m3": 49.047903,
+      "bypass_m3": 0.680942,
+      "auto_active": false,
+      "action": "stop",
+      "reason": "suministro_lleno"
+    },
+    {
+      "t_s": 28895.0,
+      "levels_pct": {
+        "tank-supply-01": 29.89064,
+        "tank-recirc-01": 74.56555,
+        "tank-recirc-02": 74.56002
+      },
+      "recirculated_m3": 49.047903,
+      "bypass_m3": 0.740012,
+      "auto_active": true,
+      "action": "start",
+      "reason": "suministro_bajo"
+    },
+    {
+      "t_s": 29715.0,
+      "levels_pct": {
+        "tank-supply-01": 90.11128,
+        "tank-recirc-01": 22.66301,
+        "tank-recirc-02": 22.67805
+      },
+      "recirculated_m3": 53.721589,
+      "bypass_m3": 0.740012,
+      "auto_active": false,
+      "action": "stop",
+      "reason": "suministro_lleno"
+    },
+    {
+      "t_s": 30538.0,
+      "levels_pct": {
+        "tank-supply-01": 29.9103,
+        "tank-recirc-01": 74.54861,
+        "tank-recirc-02": 74.54308
+      },
+      "recirculated_m3": 53.721589,
+      "bypass_m3": 0.802059,
+      "auto_active": true,
+      "action": "start",
+      "reason": "suministro_bajo"
+    },
+    {
+      "t_s": 31358.0,
+      "levels_pct": {
+        "tank-supply-01": 90.12811,
+        "tank-recirc-01": 22.64851,
+        "tank-recirc-02": 22.66355
+      },
+      "recirculated_m3": 58.395208,
+      "bypass_m3": 0.802059,
+      "auto_active": false,
+      "action": "stop",
+      "reason": "suministro_lleno"
+    },
+    {
+      "t_s": 32181.0,
+      "levels_pct": {
+        "tank-supply-01": 29.92661,
+        "tank-recirc-01": 74.53455,
+        "tank-recirc-02": 74.52903
+      },
+      "recirculated_m3": 58.395208,
+      "bypass_m3": 0.864096,
+      "auto_active": true,
+      "action": "start",
+      "reason": "suministro_bajo"
+    },
+    {
+      "t_s": 33043.0,
+      "levels_pct": {
+        "tank-supply-01": 90.12817,
+        "tank-recirc-01": 22.66286,
+        "tank-recirc-02": 22.64928
+      },
+      "recirculated_m3": 63.310691,
+      "bypass_m3": 0.864096,
+      "auto_active": false,
+      "action": "stop",
+      "reason": "suministro_lleno"
+    },
+    {
+      "t_s": 33814.0,
+      "levels_pct": {
+        "tank-supply-01": 29.91246,
+        "tank-recirc-01": 74.54729,
+        "tank-recirc-02": 74.54086
+      },
+      "recirculated_m3": 63.310691,
+      "bypass_m3": 0.929092,
+      "auto_active": true,
+      "action": "start",
+      "reason": "suministro_bajo"
+    },
+    {
+      "t_s": 34691.0,
+      "levels_pct": {
+        "tank-supply-01": 90.11826,
+        "tank-recirc-01": 22.6714,
+        "tank-recirc-02": 22.65783
+      },
+      "recirculated_m3": 68.314822,
+      "bypass_m3": 0.929092,
+      "auto_active": false,
+      "action": "stop",
+      "reason": "suministro_lleno"
+    },
+    {
+      "t_s": 35462.0,
+      "levels_pct": {
+        "tank-supply-01": 29.90207,
+        "tank-recirc-01": 74.55625,
+        "tank-recirc-02": 74.54982
+      },
+      "recirculated_m3": 68.314822,
+      "bypass_m3": 0.99408,
+      "auto_active": true,
+      "action": "start",
+      "reason": "suministro_bajo"
+    },
+    {
+      "t_s": 36355.0,
+      "levels_pct": {
+        "tank-supply-01": 90.08016,
+        "tank-recirc-01": 22.71414,
+        "tank-recirc-02": 22.68088
+      },
+      "recirculated_m3": 73.410382,
+      "bypass_m3": 0.99408,
+      "auto_active": false,
+      "action": "stop",
+      "reason": "suministro_lleno"
+    },
+    {
+      "t_s": 37095.0,
+      "levels_pct": {
+        "tank-supply-01": 29.90186,
+        "tank-recirc-01": 74.55682,
+        "tank-recirc-02": 74.54974
+      },
+      "recirculated_m3": 73.410382,
+      "bypass_m3": 1.061102,
+      "auto_active": true,
+      "action": "start",
+      "reason": "suministro_bajo"
+    },
+    {
+      "t_s": 38013.0,
+      "levels_pct": {
+        "tank-supply-01": 90.066,
+        "tank-recirc-01": 22.72635,
+        "tank-recirc-02": 22.69308
+      },
+      "recirculated_m3": 78.652363,
+      "bypass_m3": 1.061102,
+      "auto_active": false,
+      "action": "stop",
+      "reason": "suministro_lleno"
+    },
+    {
+      "t_s": 38753.0,
+      "levels_pct": {
+        "tank-supply-01": 29.88723,
+        "tank-recirc-01": 74.56943,
+        "tank-recirc-02": 74.56235
+      },
+      "recirculated_m3": 78.652363,
+      "bypass_m3": 1.128115,
+      "auto_active": true,
+      "action": "start",
+      "reason": "suministro_bajo"
+    },
+    {
+      "t_s": 39673.0,
+      "levels_pct": {
+        "tank-supply-01": 90.10773,
+        "tank-recirc-01": 22.69333,
+        "tank-recirc-02": 22.65423
+      },
+      "recirculated_m3": 83.905726,
+      "bypass_m3": 1.128115,
+      "auto_active": false,
+      "action": "stop",
+      "reason": "suministro_lleno"
+    },
+    {
+      "t_s": 40404.0,
+      "levels_pct": {
+        "tank-supply-01": 29.8739,
+        "tank-recirc-01": 74.58105,
+        "tank-recirc-02": 74.57374
+      },
+      "recirculated_m3": 83.905726,
+      "bypass_m3": 1.195893,
+      "auto_active": true,
+      "action": "start",
+      "reason": "suministro_bajo"
+    },
+    {
+      "t_s": 41338.0,
+      "levels_pct": {
+        "tank-supply-01": 90.1151,
+        "tank-recirc-01": 22.68746,
+        "tank-recirc-02": 22.6474
+      },
+      "recirculated_m3": 89.240422,
+      "bypass_m3": 1.195893,
+      "auto_active": false,
+      "action": "stop",
+      "reason": "suministro_lleno"
+    },
+    {
+      "t_s": 42069.0,
+      "levels_pct": {
+        "tank-supply-01": 29.88054,
+        "tank-recirc-01": 74.57533,
+        "tank-recirc-02": 74.56802
+      },
+      "recirculated_m3": 89.240422,
+      "bypass_m3": 1.263673,
+      "auto_active": true,
+      "action": "start",
+      "reason": "suministro_bajo"
+    },
+    {
+      "t_s": 43003.0,
+      "levels_pct": {
+        "tank-supply-01": 90.12162,
+        "tank-recirc-01": 22.68184,
+        "tank-recirc-02": 22.64179
+      },
+      "recirculated_m3": 94.575089,
+      "bypass_m3": 1.263673,
+      "auto_active": false,
+      "action": "stop",
+      "reason": "suministro_lleno"
+    },
+    {
+      "t_s": 43740.0,
+      "levels_pct": {
+        "tank-supply-01": 29.88807,
+        "tank-recirc-01": 74.56873,
+        "tank-recirc-02": 74.56161
+      },
+      "recirculated_m3": 94.575089,
+      "bypass_m3": 1.331066,
+      "auto_active": true,
+      "action": "start",
+      "reason": "suministro_bajo"
+    },
+    {
+      "t_s": 44661.0,
+      "levels_pct": {
+        "tank-supply-01": 90.11207,
+        "tank-recirc-01": 22.68714,
+        "tank-recirc-02": 22.65291
+      },
+      "recirculated_m3": 99.834391,
+      "bypass_m3": 1.331066,
+      "auto_active": false,
+      "action": "stop",
+      "reason": "suministro_lleno"
+    },
+    {
+      "t_s": 45400.0,
+      "levels_pct": {
+        "tank-supply-01": 29.90095,
+        "tank-recirc-01": 74.55763,
+        "tank-recirc-02": 74.55052
+      },
+      "recirculated_m3": 99.834391,
+      "bypass_m3": 1.398215,
+      "auto_active": true,
+      "action": "start",
+      "reason": "suministro_bajo"
+    },
+    {
+      "t_s": 46321.0,
+      "levels_pct": {
+        "tank-supply-01": 90.12417,
+        "tank-recirc-01": 22.6767,
+        "tank-recirc-02": 22.64247
+      },
+      "recirculated_m3": 105.093638,
+      "bypass_m3": 1.398215,
+      "auto_active": false,
+      "action": "stop",
+      "reason": "suministro_lleno"
+    },
+    {
+      "t_s": 47069.0,
+      "levels_pct": {
+        "tank-supply-01": 29.89203,
+        "tank-recirc-01": 74.56498,
+        "tank-recirc-02": 74.55842
+      },
+      "recirculated_m3": 105.093638,
+      "bypass_m3": 1.46485,
+      "auto_active": true,
+      "action": "start",
+      "reason": "suministro_bajo"
+    },
+    {
+      "t_s": 47955.0,
+      "levels_pct": {
+        "tank-supply-01": 90.12729,
+        "tank-recirc-01": 22.6657,
+        "tank-recirc-02": 22.64799
+      },
+      "recirculated_m3": 110.149972,
+      "bypass_m3": 1.46485,
+      "auto_active": false,
+      "action": "stop",
+      "reason": "suministro_lleno"
+    },
+    {
+      "t_s": 48720.0,
+      "levels_pct": {
+        "tank-supply-01": 29.85274,
+        "tank-recirc-01": 74.59883,
+        "tank-recirc-02": 74.59227
+      },
+      "recirculated_m3": 110.149972,
+      "bypass_m3": 1.530337,
+      "auto_active": true,
+      "action": "start",
+      "reason": "suministro_bajo"
+    },
+    {
+      "t_s": 49606.0,
+      "levels_pct": {
+        "tank-supply-01": 90.09252,
+        "tank-recirc-01": 22.69567,
+        "tank-recirc-02": 22.67796
+      },
+      "recirculated_m3": 115.206458,
+      "bypass_m3": 1.530337,
+      "auto_active": false,
+      "action": "stop",
+      "reason": "suministro_lleno"
+    },
+    {
+      "t_s": 50370.0,
+      "levels_pct": {
+        "tank-supply-01": 29.89724,
+        "tank-recirc-01": 74.56049,
+        "tank-recirc-02": 74.55393
+      },
+      "recirculated_m3": 115.206458,
+      "bypass_m3": 1.595749,
+      "auto_active": true,
+      "action": "start",
+      "reason": "suministro_bajo"
+    },
+    {
+      "t_s": 51207.0,
+      "levels_pct": {
+        "tank-supply-01": 90.12544,
+        "tank-recirc-01": 22.65469,
+        "tank-recirc-02": 22.66203
+      },
+      "recirculated_m3": 119.978941,
+      "bypass_m3": 1.595749,
+      "auto_active": false,
+      "action": "stop",
+      "reason": "suministro_lleno"
+    },
+    {
+      "t_s": 52015.0,
+      "levels_pct": {
+        "tank-supply-01": 29.91615,
+        "tank-recirc-01": 74.54372,
+        "tank-recirc-02": 74.53795
+      },
+      "recirculated_m3": 119.978941,
+      "bypass_m3": 1.658591,
+      "auto_active": true,
+      "action": "start",
+      "reason": "suministro_bajo"
+    },
+    {
+      "t_s": 52850.0,
+      "levels_pct": {
+        "tank-supply-01": 90.13186,
+        "tank-recirc-01": 22.64916,
+        "tank-recirc-02": 22.6565
+      },
+      "recirculated_m3": 124.739515,
+      "bypass_m3": 1.658591,
+      "auto_active": false,
+      "action": "stop",
+      "reason": "suministro_lleno"
+    },
+    {
+      "t_s": 53658.0,
+      "levels_pct": {
+        "tank-supply-01": 29.92307,
+        "tank-recirc-01": 74.53775,
+        "tank-recirc-02": 74.53199
+      },
+      "recirculated_m3": 124.739515,
+      "bypass_m3": 1.721444,
+      "auto_active": true,
+      "action": "start",
+      "reason": "suministro_bajo"
+    },
+    {
+      "t_s": 54459.0,
+      "levels_pct": {
+        "tank-supply-01": 90.13654,
+        "tank-recirc-01": 22.63012,
+        "tank-recirc-02": 22.66729
+      },
+      "recirculated_m3": 129.304923,
+      "bypass_m3": 1.721444,
+      "auto_active": false,
+      "action": "stop",
+      "reason": "suministro_lleno"
+    },
+    {
+      "t_s": 55331.0,
+      "levels_pct": {
+        "tank-supply-01": 29.91344,
+        "tank-recirc-01": 74.54551,
+        "tank-recirc-02": 74.54064
+      },
+      "recirculated_m3": 129.304923,
+      "bypass_m3": 1.781289,
+      "auto_active": true,
+      "action": "start",
+      "reason": "suministro_bajo"
+    },
+    {
+      "t_s": 56109.0,
+      "levels_pct": {
+        "tank-supply-01": 90.11914,
+        "tank-recirc-01": 22.64511,
+        "tank-recirc-02": 22.68228
+      },
+      "recirculated_m3": 133.735017,
+      "bypass_m3": 1.781289,
+      "auto_active": false,
+      "action": "stop",
+      "reason": "suministro_lleno"
+    },
+    {
+      "t_s": 56981.0,
+      "levels_pct": {
+        "tank-supply-01": 29.89659,
+        "tank-recirc-01": 74.56003,
+        "tank-recirc-02": 74.55516
+      },
+      "recirculated_m3": 133.735017,
+      "bypass_m3": 1.841145,
+      "auto_active": true,
+      "action": "start",
+      "reason": "suministro_bajo"
+    },
+    {
+      "t_s": 57747.0,
+      "levels_pct": {
+        "tank-supply-01": 90.0857,
+        "tank-recirc-01": 22.65831,
+        "tank-recirc-02": 22.72654
+      },
+      "recirculated_m3": 138.096957,
+      "bypass_m3": 1.841145,
+      "auto_active": false,
+      "action": "stop",
+      "reason": "suministro_lleno"
+    },
+    {
+      "t_s": 58706.0,
+      "levels_pct": {
+        "tank-supply-01": 29.9022,
+        "tank-recirc-01": 74.55467,
+        "tank-recirc-02": 74.55068
+      },
+      "recirculated_m3": 138.096957,
+      "bypass_m3": 1.897746,
+      "auto_active": true,
+      "action": "start",
+      "reason": "suministro_bajo"
+    },
+    {
+      "t_s": 59427.0,
+      "levels_pct": {
+        "tank-supply-01": 90.09198,
+        "tank-recirc-01": 22.65261,
+        "tank-recirc-02": 22.72143
+      },
+      "recirculated_m3": 142.196587,
+      "bypass_m3": 1.897746,
+      "auto_active": false,
+      "action": "stop",
+      "reason": "suministro_lleno"
+    },
+    {
+      "t_s": 60386.0,
+      "levels_pct": {
+        "tank-supply-01": 29.90914,
+        "tank-recirc-01": 74.54869,
+        "tank-recirc-02": 74.5447
+      },
+      "recirculated_m3": 142.196587,
+      "bypass_m3": 1.954348,
+      "auto_active": true,
+      "action": "start",
+      "reason": "suministro_bajo"
+    },
+    {
+      "t_s": 61107.0,
+      "levels_pct": {
+        "tank-supply-01": 90.09788,
+        "tank-recirc-01": 22.64752,
+        "tank-recirc-02": 22.71633
+      },
+      "recirculated_m3": 146.296197,
+      "bypass_m3": 1.954348,
+      "auto_active": false,
+      "action": "stop",
+      "reason": "suministro_lleno"
+    },
+    {
+      "t_s": 62170.0,
+      "levels_pct": {
+        "tank-supply-01": 29.93727,
+        "tank-recirc-01": 74.52397,
+        "tank-recirc-02": 74.52078
+      },
+      "recirculated_m3": 146.296197,
+      "bypass_m3": 2.008086,
+      "auto_active": true,
+      "action": "start",
+      "reason": "suministro_bajo"
+    },
+    {
+      "t_s": 62839.0,
+      "levels_pct": {
+        "tank-supply-01": 90.15948,
+        "tank-recirc-01": 22.579,
+        "tank-recirc-02": 22.67853
+      },
+      "recirculated_m3": 150.09411,
+      "bypass_m3": 2.008086,
+      "auto_active": false,
+      "action": "stop",
+      "reason": "suministro_lleno"
+    },
+    {
+      "t_s": 63915.0,
+      "levels_pct": {
+        "tank-supply-01": 29.9192,
+        "tank-recirc-01": 74.53954,
+        "tank-recirc-02": 74.53635
+      },
+      "recirculated_m3": 150.09411,
+      "bypass_m3": 2.061597,
+      "auto_active": true,
+      "action": "start",
+      "reason": "suministro_bajo"
+    },
+    {
+      "t_s": 64584.0,
+      "levels_pct": {
+        "tank-supply-01": 90.14238,
+        "tank-recirc-01": 22.59373,
+        "tank-recirc-02": 22.69327
+      },
+      "recirculated_m3": 153.892078,
+      "bypass_m3": 2.061597,
+      "auto_active": false,
+      "action": "stop",
+      "reason": "suministro_lleno"
+    },
+    {
+      "t_s": 65776.0,
+      "levels_pct": {
+        "tank-supply-01": 29.94299,
+        "tank-recirc-01": 74.51866,
+        "tank-recirc-02": 74.51612
+      },
+      "recirculated_m3": 153.892078,
+      "bypass_m3": 2.112805,
+      "auto_active": true,
+      "action": "start",
+      "reason": "suministro_bajo"
+    },
+    {
+      "t_s": 66400.0,
+      "levels_pct": {
+        "tank-supply-01": 90.16071,
+        "tank-recirc-01": 22.56417,
+        "tank-recirc-02": 22.69112
+      },
+      "recirculated_m3": 157.429017,
+      "bypass_m3": 2.112805,
+      "auto_active": false,
+      "action": "stop",
+      "reason": "suministro_lleno"
+    },
+    {
+      "t_s": 67622.0,
+      "levels_pct": {
+        "tank-supply-01": 29.94907,
+        "tank-recirc-01": 74.51342,
+        "tank-recirc-02": 74.51088
+      },
+      "recirculated_m3": 157.429017,
+      "bypass_m3": 2.163497,
+      "auto_active": true,
+      "action": "start",
+      "reason": "suministro_bajo"
+    },
+    {
+      "t_s": 68246.0,
+      "levels_pct": {
+        "tank-supply-01": 90.16596,
+        "tank-recirc-01": 22.55965,
+        "tank-recirc-02": 22.68659
+      },
+      "recirculated_m3": 160.96594,
+      "bypass_m3": 2.163497,
+      "auto_active": false,
+      "action": "stop",
+      "reason": "suministro_lleno"
+    },
+    {
+      "t_s": 69620.0,
+      "levels_pct": {
+        "tank-supply-01": 29.95482,
+        "tank-recirc-01": 74.50816,
+        "tank-recirc-02": 74.50612
+      },
+      "recirculated_m3": 160.96594,
+      "bypass_m3": 2.212151,
+      "auto_active": true,
+      "action": "start",
+      "reason": "suministro_bajo"
+    },
+    {
+      "t_s": 70208.0,
+      "levels_pct": {
+        "tank-supply-01": 90.19125,
+        "tank-recirc-01": 22.52648,
+        "tank-recirc-02": 22.67609
+      },
+      "recirculated_m3": 164.29404,
+      "bypass_m3": 2.212151,
+      "auto_active": false,
+      "action": "stop",
+      "reason": "suministro_lleno"
+    },
+    {
+      "t_s": 71605.0,
+      "levels_pct": {
+        "tank-supply-01": 29.94852,
+        "tank-recirc-01": 74.51359,
+        "tank-recirc-02": 74.51155
+      },
+      "recirculated_m3": 164.29404,
+      "bypass_m3": 2.260564,
+      "auto_active": true,
+      "action": "start",
+      "reason": "suministro_bajo"
+    },
+    {
+      "t_s": 72184.0,
+      "levels_pct": {
+        "tank-supply-01": 90.20773,
+        "tank-recirc-01": 22.50349,
+        "tank-recirc-02": 22.67061
+      },
+      "recirculated_m3": 167.570824,
+      "bypass_m3": 2.260564,
+      "auto_active": false,
+      "action": "stop",
+      "reason": "suministro_lleno"
+    },
+    {
+      "t_s": 73775.0,
+      "levels_pct": {
+        "tank-supply-01": 29.93577,
+        "tank-recirc-01": 74.52436,
+        "tank-recirc-02": 74.52269
+      },
+      "recirculated_m3": 167.570824,
+      "bypass_m3": 2.307242,
+      "auto_active": true,
+      "action": "start",
+      "reason": "suministro_bajo"
+    },
+    {
+      "t_s": 74335.0,
+      "levels_pct": {
+        "tank-supply-01": 90.14006,
+        "tank-recirc-01": 22.56173,
+        "tank-recirc-02": 22.729
+      },
+      "recirculated_m3": 170.736631,
+      "bypass_m3": 2.307242,
+      "auto_active": false,
+      "action": "stop",
+      "reason": "suministro_lleno"
+    },
+    {
+      "t_s": 75963.0,
+      "levels_pct": {
+        "tank-supply-01": 29.93411,
+        "tank-recirc-01": 74.52565,
+        "tank-recirc-02": 74.52423
+      },
+      "recirculated_m3": 170.736631,
+      "bypass_m3": 2.35364,
+      "auto_active": true,
+      "action": "start",
+      "reason": "suministro_bajo"
+    },
+    {
+      "t_s": 76504.0,
+      "levels_pct": {
+        "tank-supply-01": 90.21661,
+        "tank-recirc-01": 22.4894,
+        "tank-recirc-02": 22.66936
+      },
+      "recirculated_m3": 173.792145,
+      "bypass_m3": 2.35364,
+      "auto_active": false,
+      "action": "stop",
+      "reason": "suministro_lleno"
+    },
+    {
+      "t_s": 78286.0,
+      "levels_pct": {
+        "tank-supply-01": 29.94102,
+        "tank-recirc-01": 74.51969,
+        "tank-recirc-02": 74.51828
+      },
+      "recirculated_m3": 173.792145,
+      "bypass_m3": 2.399105,
+      "auto_active": true,
+      "action": "start",
+      "reason": "suministro_bajo"
+    },
+    {
+      "t_s": 78826.0,
+      "levels_pct": {
+        "tank-supply-01": 90.11178,
+        "tank-recirc-01": 22.57971,
+        "tank-recirc-02": 22.75972
+      },
+      "recirculated_m3": 176.841985,
+      "bypass_m3": 2.399105,
+      "auto_active": false,
+      "action": "stop",
+      "reason": "suministro_lleno"
+    },
+    {
+      "t_s": 80718.0,
+      "levels_pct": {
+        "tank-supply-01": 29.95255,
+        "tank-recirc-01": 74.50967,
+        "tank-recirc-02": 74.5084
+      },
+      "recirculated_m3": 176.841985,
+      "bypass_m3": 2.443954,
+      "auto_active": true,
+      "action": "start",
+      "reason": "suministro_bajo"
+    },
+    {
+      "t_s": 81247.0,
+      "levels_pct": {
+        "tank-supply-01": 90.1893,
+        "tank-recirc-01": 22.50914,
+        "tank-recirc-02": 22.69667
+      },
+      "recirculated_m3": 179.827915,
+      "bypass_m3": 2.443954,
+      "auto_active": false,
+      "action": "stop",
+      "reason": "suministro_lleno"
+    },
+    {
+      "t_s": 83182.0,
+      "levels_pct": {
+        "tank-supply-01": 29.96261,
+        "tank-recirc-01": 74.50098,
+        "tank-recirc-02": 74.49975
+      },
+      "recirculated_m3": 179.827915,
+      "bypass_m3": 2.488659,
+      "auto_active": true,
+      "action": "start",
+      "reason": "suministro_bajo"
+    },
+    {
+      "t_s": 83707.0,
+      "levels_pct": {
+        "tank-supply-01": 90.18279,
+        "tank-recirc-01": 22.51349,
+        "tank-recirc-02": 22.70353
+      },
+      "recirculated_m3": 182.790641,
+      "bypass_m3": 2.488659,
+      "auto_active": false,
+      "action": "stop",
+      "reason": "suministro_lleno"
+    },
+    {
+      "t_s": 85686.0,
+      "levels_pct": {
+        "tank-supply-01": 29.96477,
+        "tank-recirc-01": 74.49912,
+        "tank-recirc-02": 74.49789
+      },
+      "recirculated_m3": 182.790641,
+      "bypass_m3": 2.533203,
+      "auto_active": true,
+      "action": "start",
+      "reason": "suministro_bajo"
+    },
+    {
+      "t_s": 86211.0,
+      "levels_pct": {
+        "tank-supply-01": 90.18448,
+        "tank-recirc-01": 22.51203,
+        "tank-recirc-02": 22.70207
+      },
+      "recirculated_m3": 185.753363,
+      "bypass_m3": 2.533203,
+      "auto_active": false,
+      "action": "stop",
+      "reason": "suministro_lleno"
+    }
+  ],
+  "paired_events": [
+    {
+      "action": "start",
+      "cycle": 1,
+      "fractal_t_s": 1318.27691,
+      "emulator_t_s": 1317.0,
+      "time_difference_s": 1.277,
+      "fractal_levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 75.87024,
+        "tank-recirc-02": 73.28721
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 29.9423,
+        "tank-recirc-01": 74.51841,
+        "tank-recirc-02": 74.51719
+      },
+      "same_time_supply_difference_pp": 0.08813,
+      "fractal_recirculated_m3": 0.0,
+      "emulator_recirculated_m3_at_own_event": 0.0,
+      "same_time_transfer_difference_m3": 0.0,
+      "emulator_bypass_m3_at_fractal_event": 0.029006,
+      "fractal_reason": "suministro_bajo",
+      "emulator_reason": "suministro_bajo"
+    },
+    {
+      "action": "stop",
+      "cycle": 1,
+      "fractal_t_s": 1839.95235,
+      "emulator_t_s": 1842.0,
+      "time_difference_s": -2.048,
+      "fractal_levels_pct": {
+        "tank-supply-01": 90.00115,
+        "tank-recirc-01": 22.78562,
+        "tank-recirc-02": 22.96559
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 90.1637,
+        "tank-recirc-01": 22.52986,
+        "tank-recirc-02": 22.71991
+      },
+      "same_time_supply_difference_pp": 0.06758,
+      "fractal_recirculated_m3": 2.950013,
+      "emulator_recirculated_m3_at_own_event": 2.962774,
+      "same_time_transfer_difference_m3": -0.007104,
+      "emulator_bypass_m3_at_fractal_event": 0.029006,
+      "fractal_reason": "suministro_lleno",
+      "emulator_reason": "suministro_lleno"
+    },
+    {
+      "action": "start",
+      "cycle": 2,
+      "fractal_t_s": 3805.99613,
+      "emulator_t_s": 3814.0,
+      "time_difference_s": -8.004,
+      "fractal_levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 76.46665,
+        "tank-recirc-02": 72.69079
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 29.94395,
+        "tank-recirc-01": 74.51702,
+        "tank-recirc-02": 74.51574
+      },
+      "same_time_supply_difference_pp": -0.19546,
+      "fractal_recirculated_m3": 2.950013,
+      "emulator_recirculated_m3_at_own_event": 2.962774,
+      "same_time_transfer_difference_m3": -0.012761,
+      "emulator_bypass_m3_at_fractal_event": 0.073393,
+      "fractal_reason": "suministro_bajo",
+      "emulator_reason": "suministro_bajo"
+    },
+    {
+      "action": "stop",
+      "cycle": 2,
+      "fractal_t_s": 4332.1438,
+      "emulator_t_s": 4344.0,
+      "time_difference_s": -11.856,
+      "fractal_levels_pct": {
+        "tank-supply-01": 90.0,
+        "tank-recirc-01": 22.78841,
+        "tank-recirc-02": 22.96478
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 90.22126,
+        "tank-recirc-01": 22.48175,
+        "tank-recirc-02": 22.66884
+      },
+      "same_time_supply_difference_pp": 1.14816,
+      "fractal_recirculated_m3": 5.925949,
+      "emulator_recirculated_m3_at_own_event": 5.954473,
+      "same_time_transfer_difference_m3": 0.03373,
+      "emulator_bypass_m3_at_fractal_event": 0.073581,
+      "fractal_reason": "suministro_lleno",
+      "emulator_reason": "suministro_lleno"
+    },
+    {
+      "action": "start",
+      "cycle": 3,
+      "fractal_t_s": 6240.59883,
+      "emulator_t_s": 6261.0,
+      "time_difference_s": -20.401,
+      "fractal_levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 76.47899,
+        "tank-recirc-02": 72.67846
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 29.95149,
+        "tank-recirc-01": 74.51052,
+        "tank-recirc-02": 74.50924
+      },
+      "same_time_supply_difference_pp": -0.58028,
+      "fractal_recirculated_m3": 5.925949,
+      "emulator_recirculated_m3_at_own_event": 5.954473,
+      "same_time_transfer_difference_m3": -0.028524,
+      "emulator_bypass_m3_at_fractal_event": 0.11793,
+      "fractal_reason": "suministro_bajo",
+      "emulator_reason": "suministro_bajo"
+    },
+    {
+      "action": "stop",
+      "cycle": 3,
+      "fractal_t_s": 6766.7566,
+      "emulator_t_s": 6790.0,
+      "time_difference_s": -23.243,
+      "fractal_levels_pct": {
+        "tank-supply-01": 90.00114,
+        "tank-recirc-01": 22.78747,
+        "tank-recirc-02": 22.96376
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 90.11464,
+        "tank-recirc-01": 22.5736,
+        "tank-recirc-02": 22.76073
+      },
+      "same_time_supply_difference_pp": 2.51332,
+      "fractal_recirculated_m3": 8.901943,
+      "emulator_recirculated_m3_at_own_event": 8.940497,
+      "same_time_transfer_difference_m3": 0.086033,
+      "emulator_bypass_m3_at_fractal_event": 0.118399,
+      "fractal_reason": "suministro_lleno",
+      "emulator_reason": "suministro_lleno"
+    },
+    {
+      "action": "start",
+      "cycle": 4,
+      "fractal_t_s": 8548.01305,
+      "emulator_t_s": 8571.0,
+      "time_difference_s": -22.987,
+      "fractal_levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 76.50732,
+        "tank-recirc-02": 72.65013
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 29.96374,
+        "tank-recirc-01": 74.50006,
+        "tank-recirc-02": 74.49861
+      },
+      "same_time_supply_difference_pp": -0.75667,
+      "fractal_recirculated_m3": 8.901943,
+      "emulator_recirculated_m3_at_own_event": 8.940497,
+      "same_time_transfer_difference_m3": -0.038554,
+      "emulator_bypass_m3_at_fractal_event": 0.163213,
+      "fractal_reason": "suministro_bajo",
+      "emulator_reason": "suministro_bajo"
+    },
+    {
+      "action": "stop",
+      "cycle": 4,
+      "fractal_t_s": 9088.08146,
+      "emulator_t_s": 9114.0,
+      "time_difference_s": -25.919,
+      "fractal_levels_pct": {
+        "tank-supply-01": 90.00111,
+        "tank-recirc-01": 22.78521,
+        "tank-recirc-02": 22.96607
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 90.12538,
+        "tank-recirc-01": 22.56893,
+        "tank-recirc-02": 22.74693
+      },
+      "same_time_supply_difference_pp": 2.7666,
+      "fractal_recirculated_m3": 11.958667,
+      "emulator_recirculated_m3_at_own_event": 12.007692,
+      "same_time_transfer_difference_m3": 0.092565,
+      "emulator_bypass_m3_at_fractal_event": 0.163816,
+      "fractal_reason": "suministro_lleno",
+      "emulator_reason": "suministro_lleno"
+    },
+    {
+      "action": "start",
+      "cycle": 5,
+      "fractal_t_s": 10828.5546,
+      "emulator_t_s": 10853.0,
+      "time_difference_s": -24.445,
+      "fractal_levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 76.51409,
+        "tank-recirc-02": 72.64336
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 29.92949,
+        "tank-recirc-01": 74.52975,
+        "tank-recirc-02": 74.528
+      },
+      "same_time_supply_difference_pp": -0.86938,
+      "fractal_recirculated_m3": 11.958667,
+      "emulator_recirculated_m3_at_own_event": 12.007692,
+      "same_time_transfer_difference_m3": -0.049025,
+      "emulator_bypass_m3_at_fractal_event": 0.208713,
+      "fractal_reason": "suministro_bajo",
+      "emulator_reason": "suministro_bajo"
+    },
+    {
+      "action": "stop",
+      "cycle": 5,
+      "fractal_t_s": 11374.38489,
+      "emulator_t_s": 11420.0,
+      "time_difference_s": -45.615,
+      "fractal_levels_pct": {
+        "tank-supply-01": 90.0,
+        "tank-recirc-01": 22.78224,
+        "tank-recirc-02": 22.97095
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 90.17094,
+        "tank-recirc-01": 22.5372,
+        "tank-recirc-02": 22.70019
+      },
+      "same_time_supply_difference_pp": 4.73225,
+      "fractal_recirculated_m3": 15.122865,
+      "emulator_recirculated_m3_at_own_event": 15.214062,
+      "same_time_transfer_difference_m3": 0.16387,
+      "emulator_bypass_m3_at_fractal_event": 0.209451,
+      "fractal_reason": "suministro_lleno",
+      "emulator_reason": "suministro_lleno"
+    },
+    {
+      "action": "start",
+      "cycle": 6,
+      "fractal_t_s": 12905.42842,
+      "emulator_t_s": 12957.0,
+      "time_difference_s": -51.572,
+      "fractal_levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 76.57405,
+        "tank-recirc-02": 72.58339
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 29.93579,
+        "tank-recirc-01": 74.52433,
+        "tank-recirc-02": 74.52257
+      },
+      "same_time_supply_difference_pp": -1.97367,
+      "fractal_recirculated_m3": 15.122865,
+      "emulator_recirculated_m3_at_own_event": 15.214062,
+      "same_time_transfer_difference_m3": -0.091197,
+      "emulator_bypass_m3_at_fractal_event": 0.254939,
+      "fractal_reason": "suministro_bajo",
+      "emulator_reason": "suministro_bajo"
+    },
+    {
+      "action": "stop",
+      "cycle": 6,
+      "fractal_t_s": 13468.6013,
+      "emulator_t_s": 13524.0,
+      "time_difference_s": -55.399,
+      "fractal_levels_pct": {
+        "tank-supply-01": 90.00106,
+        "tank-recirc-01": 22.78373,
+        "tank-recirc-02": 22.96763
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 90.17604,
+        "tank-recirc-01": 22.5328,
+        "tank-recirc-02": 22.69579
+      },
+      "same_time_supply_difference_pp": 5.69069,
+      "fractal_recirculated_m3": 18.313794,
+      "emulator_recirculated_m3_at_own_event": 18.420419,
+      "same_time_transfer_difference_m3": 0.199579,
+      "emulator_bypass_m3_at_fractal_event": 0.256537,
+      "fractal_reason": "suministro_lleno",
+      "emulator_reason": "suministro_lleno"
+    },
+    {
+      "action": "start",
+      "cycle": 7,
+      "fractal_t_s": 14922.66849,
+      "emulator_t_s": 14972.0,
+      "time_difference_s": -49.332,
+      "fractal_levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 76.61143,
+        "tank-recirc-02": 72.54601
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 29.93664,
+        "tank-recirc-01": 74.52387,
+        "tank-recirc-02": 74.52166
+      },
+      "same_time_supply_difference_pp": -2.15708,
+      "fractal_recirculated_m3": 18.313794,
+      "emulator_recirculated_m3_at_own_event": 18.420419,
+      "same_time_transfer_difference_m3": -0.106625,
+      "emulator_bypass_m3_at_fractal_event": 0.302706,
+      "fractal_reason": "suministro_bajo",
+      "emulator_reason": "suministro_bajo"
+    },
+    {
+      "action": "stop",
+      "cycle": 7,
+      "fractal_t_s": 15519.08612,
+      "emulator_t_s": 15572.0,
+      "time_difference_s": -52.914,
+      "fractal_levels_pct": {
+        "tank-supply-01": 90.001,
+        "tank-recirc-01": 22.80458,
+        "tank-recirc-02": 22.94689
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 90.13326,
+        "tank-recirc-01": 22.58031,
+        "tank-recirc-02": 22.72211
+      },
+      "same_time_supply_difference_pp": 5.19406,
+      "fractal_recirculated_m3": 21.69741,
+      "emulator_recirculated_m3_at_own_event": 21.81822,
+      "same_time_transfer_difference_m3": 0.173996,
+      "emulator_bypass_m3_at_fractal_event": 0.304526,
+      "fractal_reason": "suministro_lleno",
+      "emulator_reason": "suministro_lleno"
+    },
+    {
+      "action": "start",
+      "cycle": 8,
+      "fractal_t_s": 16843.19814,
+      "emulator_t_s": 16901.0,
+      "time_difference_s": -57.802,
+      "fractal_levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 76.69119,
+        "tank-recirc-02": 72.46626
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 29.91006,
+        "tank-recirc-01": 74.54677,
+        "tank-recirc-02": 74.54456
+      },
+      "same_time_supply_difference_pp": -2.5383,
+      "fractal_recirculated_m3": 21.69741,
+      "emulator_recirculated_m3_at_own_event": 21.81822,
+      "same_time_transfer_difference_m3": -0.12081,
+      "emulator_bypass_m3_at_fractal_event": 0.35154,
+      "fractal_reason": "suministro_bajo",
+      "emulator_reason": "suministro_bajo"
+    },
+    {
+      "action": "stop",
+      "cycle": 8,
+      "fractal_t_s": 17439.60621,
+      "emulator_t_s": 17501.0,
+      "time_difference_s": -61.394,
+      "fractal_levels_pct": {
+        "tank-supply-01": 90.0,
+        "tank-recirc-01": 22.80543,
+        "tank-recirc-02": 22.94776
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 90.10814,
+        "tank-recirc-01": 22.60195,
+        "tank-recirc-02": 22.74376
+      },
+      "same_time_supply_difference_pp": 6.02531,
+      "fractal_recirculated_m3": 25.08097,
+      "emulator_recirculated_m3_at_own_event": 25.216094,
+      "same_time_transfer_difference_m3": 0.205159,
+      "emulator_bypass_m3_at_fractal_event": 0.353695,
+      "fractal_reason": "suministro_lleno",
+      "emulator_reason": "suministro_lleno"
+    },
+    {
+      "action": "start",
+      "cycle": 9,
+      "fractal_t_s": 18665.80341,
+      "emulator_t_s": 18719.0,
+      "time_difference_s": -53.197,
+      "fractal_levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 76.75838,
+        "tank-recirc-02": 72.39907
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 29.91434,
+        "tank-recirc-01": 74.54346,
+        "tank-recirc-02": 74.54064
+      },
+      "same_time_supply_difference_pp": -2.68576,
+      "fractal_recirculated_m3": 25.08097,
+      "emulator_recirculated_m3_at_own_event": 25.216094,
+      "same_time_transfer_difference_m3": -0.135124,
+      "emulator_bypass_m3_at_fractal_event": 0.402143,
+      "fractal_reason": "suministro_bajo",
+      "emulator_reason": "suministro_bajo"
+    },
+    {
+      "action": "stop",
+      "cycle": 9,
+      "fractal_t_s": 19305.1539,
+      "emulator_t_s": 19362.0,
+      "time_difference_s": -56.846,
+      "fractal_levels_pct": {
+        "tank-supply-01": 90.00093,
+        "tank-recirc-01": 22.82173,
+        "tank-recirc-02": 22.92986
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 90.09339,
+        "tank-recirc-01": 22.62813,
+        "tank-recirc-02": 22.74314
+      },
+      "same_time_supply_difference_pp": 5.2385,
+      "fractal_recirculated_m3": 28.713654,
+      "emulator_recirculated_m3_at_own_event": 28.863363,
+      "same_time_transfer_difference_m3": 0.167784,
+      "emulator_bypass_m3_at_fractal_event": 0.404541,
+      "fractal_reason": "suministro_lleno",
+      "emulator_reason": "suministro_lleno"
+    },
+    {
+      "action": "start",
+      "cycle": 10,
+      "fractal_t_s": 20452.5962,
+      "emulator_t_s": 20513.0,
+      "time_difference_s": -60.404,
+      "fractal_levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 76.82962,
+        "tank-recirc-02": 72.32783
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 29.90702,
+        "tank-recirc-01": 74.54976,
+        "tank-recirc-02": 74.54694
+      },
+      "same_time_supply_difference_pp": -3.04444,
+      "fractal_recirculated_m3": 28.713654,
+      "emulator_recirculated_m3_at_own_event": 28.863363,
+      "same_time_transfer_difference_m3": -0.149709,
+      "emulator_bypass_m3_at_fractal_event": 0.453715,
+      "fractal_reason": "suministro_bajo",
+      "emulator_reason": "suministro_bajo"
+    },
+    {
+      "action": "stop",
+      "cycle": 10,
+      "fractal_t_s": 21091.94774,
+      "emulator_t_s": 21157.0,
+      "time_difference_s": -65.052,
+      "fractal_levels_pct": {
+        "tank-supply-01": 90.00093,
+        "tank-recirc-01": 22.82185,
+        "tank-recirc-02": 22.92974
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 90.1794,
+        "tank-recirc-01": 22.55403,
+        "tank-recirc-02": 22.66901
+      },
+      "same_time_supply_difference_pp": 5.90295,
+      "fractal_recirculated_m3": 32.34634,
+      "emulator_recirculated_m3_at_own_event": 32.516311,
+      "same_time_transfer_difference_m3": 0.192965,
+      "emulator_bypass_m3_at_fractal_event": 0.45643,
+      "fractal_reason": "suministro_lleno",
+      "emulator_reason": "suministro_lleno"
+    },
+    {
+      "action": "start",
+      "cycle": 11,
+      "fractal_t_s": 22163.76515,
+      "emulator_t_s": 22222.0,
+      "time_difference_s": -58.235,
+      "fractal_levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 76.90654,
+        "tank-recirc-02": 72.25091
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 29.90167,
+        "tank-recirc-01": 74.55486,
+        "tank-recirc-02": 74.55125
+      },
+      "same_time_supply_difference_pp": -3.36417,
+      "fractal_recirculated_m3": 32.34634,
+      "emulator_recirculated_m3_at_own_event": 32.516311,
+      "same_time_transfer_difference_m3": -0.169971,
+      "emulator_bypass_m3_at_fractal_event": 0.50722,
+      "fractal_reason": "suministro_bajo",
+      "emulator_reason": "suministro_bajo"
+    },
+    {
+      "action": "stop",
+      "cycle": 11,
+      "fractal_t_s": 22856.02234,
+      "emulator_t_s": 22919.0,
+      "time_difference_s": -62.978,
+      "fractal_levels_pct": {
+        "tank-supply-01": 90.0,
+        "tank-recirc-01": 22.83209,
+        "tank-recirc-02": 22.9211
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 90.14698,
+        "tank-recirc-01": 22.59801,
+        "tank-recirc-02": 22.68109
+      },
+      "same_time_supply_difference_pp": 5.27839,
+      "fractal_recirculated_m3": 36.285955,
+      "emulator_recirculated_m3_at_own_event": 36.476673,
+      "same_time_transfer_difference_m3": 0.160788,
+      "emulator_bypass_m3_at_fractal_event": 0.510404,
+      "fractal_reason": "suministro_lleno",
+      "emulator_reason": "suministro_lleno"
+    },
+    {
+      "action": "start",
+      "cycle": 12,
+      "fractal_t_s": 23861.05223,
+      "emulator_t_s": 23928.0,
+      "time_difference_s": -66.948,
+      "fractal_levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 76.98375,
+        "tank-recirc-02": 72.1737
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 29.91189,
+        "tank-recirc-01": 74.54606,
+        "tank-recirc-02": 74.54245
+      },
+      "same_time_supply_difference_pp": -3.91163,
+      "fractal_recirculated_m3": 36.285955,
+      "emulator_recirculated_m3_at_own_event": 36.476673,
+      "same_time_transfer_difference_m3": -0.190718,
+      "emulator_bypass_m3_at_fractal_event": 0.561936,
+      "fractal_reason": "suministro_bajo",
+      "emulator_reason": "suministro_bajo"
+    },
+    {
+      "action": "stop",
+      "cycle": 12,
+      "fractal_t_s": 24553.32103,
+      "emulator_t_s": 24625.0,
+      "time_difference_s": -71.679,
+      "fractal_levels_pct": {
+        "tank-supply-01": 90.00086,
+        "tank-recirc-01": 22.83125,
+        "tank-recirc-02": 22.92047
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 90.15594,
+        "tank-recirc-01": 22.59029,
+        "tank-recirc-02": 22.67337
+      },
+      "same_time_supply_difference_pp": 6.04865,
+      "fractal_recirculated_m3": 40.225631,
+      "emulator_recirculated_m3_at_own_event": 40.437004,
+      "same_time_transfer_difference_m3": 0.191286,
+      "emulator_bypass_m3_at_fractal_event": 0.565615,
+      "fractal_reason": "suministro_lleno",
+      "emulator_reason": "suministro_lleno"
+    },
+    {
+      "action": "start",
+      "cycle": 13,
+      "fractal_t_s": 25523.43118,
+      "emulator_t_s": 25588.0,
+      "time_difference_s": -64.569,
+      "fractal_levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 77.03358,
+        "tank-recirc-02": 72.12386
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 29.93118,
+        "tank-recirc-01": 74.53001,
+        "tank-recirc-02": 74.52547
+      },
+      "same_time_supply_difference_pp": -4.27343,
+      "fractal_recirculated_m3": 40.225631,
+      "emulator_recirculated_m3_at_own_event": 40.437004,
+      "same_time_transfer_difference_m3": -0.211373,
+      "emulator_bypass_m3_at_fractal_event": 0.618053,
+      "fractal_reason": "suministro_bajo",
+      "emulator_reason": "suministro_bajo"
+    },
+    {
+      "action": "stop",
+      "cycle": 13,
+      "fractal_t_s": 26275.4195,
+      "emulator_t_s": 26344.0,
+      "time_difference_s": -68.581,
+      "fractal_levels_pct": {
+        "tank-supply-01": 90.0,
+        "tank-recirc-01": 22.85409,
+        "tank-recirc-02": 22.8991
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 90.08379,
+        "tank-recirc-01": 22.66968,
+        "tank-recirc-02": 22.71854
+      },
+      "same_time_supply_difference_pp": 5.36862,
+      "fractal_recirculated_m3": 44.511693,
+      "emulator_recirculated_m3_at_own_event": 44.739561,
+      "same_time_transfer_difference_m3": 0.157677,
+      "emulator_bypass_m3_at_fractal_event": 0.622295,
+      "fractal_reason": "suministro_lleno",
+      "emulator_reason": "suministro_lleno"
+    },
+    {
+      "action": "start",
+      "cycle": 14,
+      "fractal_t_s": 27173.52631,
+      "emulator_t_s": 27245.0,
+      "time_difference_s": -71.474,
+      "fractal_levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 77.1585,
+        "tank-recirc-02": 71.99894
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 29.89381,
+        "tank-recirc-01": 74.56221,
+        "tank-recirc-02": 74.55767
+      },
+      "same_time_supply_difference_pp": -4.63685,
+      "fractal_recirculated_m3": 44.511693,
+      "emulator_recirculated_m3_at_own_event": 44.739561,
+      "same_time_transfer_difference_m3": -0.227868,
+      "emulator_bypass_m3_at_fractal_event": 0.676307,
+      "fractal_reason": "suministro_bajo",
+      "emulator_reason": "suministro_bajo"
+    },
+    {
+      "action": "stop",
+      "cycle": 14,
+      "fractal_t_s": 27925.51788,
+      "emulator_t_s": 28002.0,
+      "time_difference_s": -76.482,
+      "fractal_levels_pct": {
+        "tank-supply-01": 90.0,
+        "tank-recirc-01": 22.8542,
+        "tank-recirc-02": 22.899
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 90.12786,
+        "tank-recirc-01": 22.63171,
+        "tank-recirc-02": 22.68056
+      },
+      "same_time_supply_difference_pp": 5.87981,
+      "fractal_recirculated_m3": 48.797764,
+      "emulator_recirculated_m3_at_own_event": 49.047903,
+      "same_time_transfer_difference_m3": 0.175178,
+      "emulator_bypass_m3_at_fractal_event": 0.680942,
+      "fractal_reason": "suministro_lleno",
+      "emulator_reason": "suministro_lleno"
+    },
+    {
+      "action": "start",
+      "cycle": 15,
+      "fractal_t_s": 28823.62469,
+      "emulator_t_s": 28895.0,
+      "time_difference_s": -71.375,
+      "fractal_levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 77.15861,
+        "tank-recirc-02": 71.99884
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 29.89064,
+        "tank-recirc-01": 74.56555,
+        "tank-recirc-02": 74.56002
+      },
+      "same_time_supply_difference_pp": -5.07793,
+      "fractal_recirculated_m3": 48.797764,
+      "emulator_recirculated_m3_at_own_event": 49.047903,
+      "same_time_transfer_difference_m3": -0.250139,
+      "emulator_bypass_m3_at_fractal_event": 0.734649,
+      "fractal_reason": "suministro_bajo",
+      "emulator_reason": "suministro_bajo"
+    },
+    {
+      "action": "stop",
+      "cycle": 15,
+      "fractal_t_s": 29622.75282,
+      "emulator_t_s": 29715.0,
+      "time_difference_s": -92.247,
+      "fractal_levels_pct": {
+        "tank-supply-01": 90.0,
+        "tank-recirc-01": 22.86774,
+        "tank-recirc-02": 22.88545
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 90.11128,
+        "tank-recirc-01": 22.66301,
+        "tank-recirc-02": 22.67805
+      },
+      "same_time_supply_difference_pp": 6.58152,
+      "fractal_recirculated_m3": 53.401872,
+      "emulator_recirculated_m3_at_own_event": 53.721589,
+      "same_time_transfer_difference_m3": 0.196487,
+      "emulator_bypass_m3_at_fractal_event": 0.740012,
+      "fractal_reason": "suministro_lleno",
+      "emulator_reason": "suministro_lleno"
+    },
+    {
+      "action": "start",
+      "cycle": 16,
+      "fractal_t_s": 30442.9483,
+      "emulator_t_s": 30538.0,
+      "time_difference_s": -95.052,
+      "fractal_levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 77.31951,
+        "tank-recirc-02": 71.83794
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 29.9103,
+        "tank-recirc-01": 74.54861,
+        "tank-recirc-02": 74.54308
+      },
+      "same_time_supply_difference_pp": -6.85936,
+      "fractal_recirculated_m3": 53.401872,
+      "emulator_recirculated_m3_at_own_event": 53.721589,
+      "same_time_transfer_difference_m3": -0.319717,
+      "emulator_bypass_m3_at_fractal_event": 0.794884,
+      "fractal_reason": "suministro_bajo",
+      "emulator_reason": "suministro_bajo"
+    },
+    {
+      "action": "stop",
+      "cycle": 16,
+      "fractal_t_s": 31257.73892,
+      "emulator_t_s": 31358.0,
+      "time_difference_s": -100.261,
+      "fractal_levels_pct": {
+        "tank-supply-01": 90.00072,
+        "tank-recirc-01": 22.86747,
+        "tank-recirc-02": 22.88448
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 90.12811,
+        "tank-recirc-01": 22.64851,
+        "tank-recirc-02": 22.66355
+      },
+      "same_time_supply_difference_pp": 7.1507,
+      "fractal_recirculated_m3": 58.052127,
+      "emulator_recirculated_m3_at_own_event": 58.395208,
+      "same_time_transfer_difference_m3": 0.218633,
+      "emulator_bypass_m3_at_fractal_event": 0.802059,
+      "fractal_reason": "suministro_lleno",
+      "emulator_reason": "suministro_lleno"
+    },
+    {
+      "action": "start",
+      "cycle": 17,
+      "fractal_t_s": 32077.9443,
+      "emulator_t_s": 32181.0,
+      "time_difference_s": -103.056,
+      "fractal_levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 77.31989,
+        "tank-recirc-02": 71.83755
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 29.92661,
+        "tank-recirc-01": 74.53455,
+        "tank-recirc-02": 74.52903
+      },
+      "same_time_supply_difference_pp": -7.46092,
+      "fractal_recirculated_m3": 58.052127,
+      "emulator_recirculated_m3_at_own_event": 58.395208,
+      "same_time_transfer_difference_m3": -0.343081,
+      "emulator_bypass_m3_at_fractal_event": 0.856318,
+      "fractal_reason": "suministro_bajo",
+      "emulator_reason": "suministro_bajo"
+    },
+    {
+      "action": "stop",
+      "cycle": 17,
+      "fractal_t_s": 32925.78305,
+      "emulator_t_s": 33043.0,
+      "time_difference_s": -117.217,
+      "fractal_levels_pct": {
+        "tank-supply-01": 90.00067,
+        "tank-recirc-01": 22.88263,
+        "tank-recirc-02": 22.8694
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 90.12817,
+        "tank-recirc-01": 22.66286,
+        "tank-recirc-02": 22.64928
+      },
+      "same_time_supply_difference_pp": 7.81319,
+      "fractal_recirculated_m3": 62.891853,
+      "emulator_recirculated_m3_at_own_event": 63.310691,
+      "same_time_transfer_difference_m3": 0.239512,
+      "emulator_bypass_m3_at_fractal_event": 0.864096,
+      "fractal_reason": "suministro_lleno",
+      "emulator_reason": "suministro_lleno"
+    },
+    {
+      "action": "start",
+      "cycle": 18,
+      "fractal_t_s": 33693.97433,
+      "emulator_t_s": 33814.0,
+      "time_difference_s": -120.026,
+      "fractal_levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 77.45659,
+        "tank-recirc-02": 71.70085
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 29.91246,
+        "tank-recirc-01": 74.54729,
+        "tank-recirc-02": 74.54086
+      },
+      "same_time_supply_difference_pp": -9.28454,
+      "fractal_recirculated_m3": 62.891853,
+      "emulator_recirculated_m3_at_own_event": 63.310691,
+      "same_time_transfer_difference_m3": -0.418838,
+      "emulator_bypass_m3_at_fractal_event": 0.918988,
+      "fractal_reason": "suministro_bajo",
+      "emulator_reason": "suministro_bajo"
+    },
+    {
+      "action": "stop",
+      "cycle": 18,
+      "fractal_t_s": 34565.56193,
+      "emulator_t_s": 34691.0,
+      "time_difference_s": -125.438,
+      "fractal_levels_pct": {
+        "tank-supply-01": 90.00067,
+        "tank-recirc-01": 22.88368,
+        "tank-recirc-02": 22.86835
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 90.11826,
+        "tank-recirc-01": 22.6714,
+        "tank-recirc-02": 22.65783
+      },
+      "same_time_supply_difference_pp": 8.3703,
+      "fractal_recirculated_m3": 67.871497,
+      "emulator_recirculated_m3_at_own_event": 68.314822,
+      "same_time_transfer_difference_m3": 0.260596,
+      "emulator_bypass_m3_at_fractal_event": 0.929092,
+      "fractal_reason": "suministro_lleno",
+      "emulator_reason": "suministro_lleno"
+    },
+    {
+      "action": "start",
+      "cycle": 19,
+      "fractal_t_s": 35333.75321,
+      "emulator_t_s": 35462.0,
+      "time_difference_s": -128.247,
+      "fractal_levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 77.45765,
+        "tank-recirc-02": 71.6998
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 29.90207,
+        "tank-recirc-01": 74.55625,
+        "tank-recirc-02": 74.54982
+      },
+      "same_time_supply_difference_pp": -9.89902,
+      "fractal_recirculated_m3": 67.871497,
+      "emulator_recirculated_m3_at_own_event": 68.314822,
+      "same_time_transfer_difference_m3": -0.443325,
+      "emulator_bypass_m3_at_fractal_event": 0.983304,
+      "fractal_reason": "suministro_bajo",
+      "emulator_reason": "suministro_bajo"
+    },
+    {
+      "action": "stop",
+      "cycle": 19,
+      "fractal_t_s": 36214.06327,
+      "emulator_t_s": 36355.0,
+      "time_difference_s": -140.937,
+      "fractal_levels_pct": {
+        "tank-supply-01": 90.00064,
+        "tank-recirc-01": 22.89538,
+        "tank-recirc-02": 22.85671
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 90.08016,
+        "tank-recirc-01": 22.71414,
+        "tank-recirc-02": 22.68088
+      },
+      "same_time_supply_difference_pp": 9.04684,
+      "fractal_recirculated_m3": 72.900681,
+      "emulator_recirculated_m3_at_own_event": 73.410382,
+      "same_time_transfer_difference_m3": 0.285283,
+      "emulator_bypass_m3_at_fractal_event": 0.99408,
+      "fractal_reason": "suministro_lleno",
+      "emulator_reason": "suministro_lleno"
+    },
+    {
+      "action": "start",
+      "cycle": 20,
+      "fractal_t_s": 36951.82753,
+      "emulator_t_s": 37095.0,
+      "time_difference_s": -143.172,
+      "fractal_levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 77.55139,
+        "tank-recirc-02": 71.60605
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 29.90186,
+        "tank-recirc-01": 74.55682,
+        "tank-recirc-02": 74.54974
+      },
+      "same_time_supply_difference_pp": -11.53089,
+      "fractal_recirculated_m3": 72.900681,
+      "emulator_recirculated_m3_at_own_event": 73.410382,
+      "same_time_transfer_difference_m3": -0.509701,
+      "emulator_bypass_m3_at_fractal_event": 1.048207,
+      "fractal_reason": "suministro_bajo",
+      "emulator_reason": "suministro_bajo"
+    },
+    {
+      "action": "stop",
+      "cycle": 20,
+      "fractal_t_s": 37864.79954,
+      "emulator_t_s": 38013.0,
+      "time_difference_s": -148.2,
+      "fractal_levels_pct": {
+        "tank-supply-01": 90.00064,
+        "tank-recirc-01": 22.89236,
+        "tank-recirc-02": 22.85973
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 90.066,
+        "tank-recirc-01": 22.72635,
+        "tank-recirc-02": 22.69308
+      },
+      "same_time_supply_difference_pp": 9.51836,
+      "fractal_recirculated_m3": 78.120341,
+      "emulator_recirculated_m3_at_own_event": 78.652363,
+      "same_time_transfer_difference_m3": 0.302881,
+      "emulator_bypass_m3_at_fractal_event": 1.061102,
+      "fractal_reason": "suministro_lleno",
+      "emulator_reason": "suministro_lleno"
+    },
+    {
+      "action": "start",
+      "cycle": 21,
+      "fractal_t_s": 38602.56381,
+      "emulator_t_s": 38753.0,
+      "time_difference_s": -150.436,
+      "fractal_levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 77.54837,
+        "tank-recirc-02": 71.60907
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 29.88723,
+        "tank-recirc-01": 74.56943,
+        "tank-recirc-02": 74.56235
+      },
+      "same_time_supply_difference_pp": -12.0856,
+      "fractal_recirculated_m3": 78.120341,
+      "emulator_recirculated_m3_at_own_event": 78.652363,
+      "same_time_transfer_difference_m3": -0.532022,
+      "emulator_bypass_m3_at_fractal_event": 1.114591,
+      "fractal_reason": "suministro_bajo",
+      "emulator_reason": "suministro_bajo"
+    },
+    {
+      "action": "stop",
+      "cycle": 21,
+      "fractal_t_s": 39515.52569,
+      "emulator_t_s": 39673.0,
+      "time_difference_s": -157.474,
+      "fractal_levels_pct": {
+        "tank-supply-01": 90.0,
+        "tank-recirc-01": 22.89291,
+        "tank-recirc-02": 22.86028
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 90.10773,
+        "tank-recirc-01": 22.69333,
+        "tank-recirc-02": 22.65423
+      },
+      "same_time_supply_difference_pp": 9.98821,
+      "fractal_recirculated_m3": 83.339944,
+      "emulator_recirculated_m3_at_own_event": 83.905726,
+      "same_time_transfer_difference_m3": 0.320379,
+      "emulator_bypass_m3_at_fractal_event": 1.128115,
+      "fractal_reason": "suministro_lleno",
+      "emulator_reason": "suministro_lleno"
+    },
+    {
+      "action": "start",
+      "cycle": 22,
+      "fractal_t_s": 40245.13308,
+      "emulator_t_s": 40404.0,
+      "time_difference_s": -158.867,
+      "fractal_levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 77.57185,
+        "tank-recirc-02": 71.5856
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 29.8739,
+        "tank-recirc-01": 74.58105,
+        "tank-recirc-02": 74.57374
+      },
+      "same_time_supply_difference_pp": -12.97541,
+      "fractal_recirculated_m3": 83.339944,
+      "emulator_recirculated_m3_at_own_event": 83.905726,
+      "same_time_transfer_difference_m3": -0.565782,
+      "emulator_bypass_m3_at_fractal_event": 1.181229,
+      "fractal_reason": "suministro_bajo",
+      "emulator_reason": "suministro_bajo"
+    },
+    {
+      "action": "stop",
+      "cycle": 22,
+      "fractal_t_s": 41172.84563,
+      "emulator_t_s": 41338.0,
+      "time_difference_s": -165.154,
+      "fractal_levels_pct": {
+        "tank-supply-01": 90.00063,
+        "tank-recirc-01": 22.89569,
+        "tank-recirc-02": 22.85641
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 90.1151,
+        "tank-recirc-01": 22.68746,
+        "tank-recirc-02": 22.6474
+      },
+      "same_time_supply_difference_pp": 10.40063,
+      "fractal_recirculated_m3": 88.645075,
+      "emulator_recirculated_m3_at_own_event": 89.240422,
+      "same_time_transfer_difference_m3": 0.336431,
+      "emulator_bypass_m3_at_fractal_event": 1.195893,
+      "fractal_reason": "suministro_lleno",
+      "emulator_reason": "suministro_lleno"
+    },
+    {
+      "action": "start",
+      "cycle": 23,
+      "fractal_t_s": 41900.96401,
+      "emulator_t_s": 42069.0,
+      "time_difference_s": -168.036,
+      "fractal_levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 77.57952,
+        "tank-recirc-02": 71.57793
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 29.88054,
+        "tank-recirc-01": 74.57533,
+        "tank-recirc-02": 74.56802
+      },
+      "same_time_supply_difference_pp": -13.72375,
+      "fractal_recirculated_m3": 88.645075,
+      "emulator_recirculated_m3_at_own_event": 89.240422,
+      "same_time_transfer_difference_m3": -0.595347,
+      "emulator_bypass_m3_at_fractal_event": 1.24818,
+      "fractal_reason": "suministro_bajo",
+      "emulator_reason": "suministro_bajo"
+    },
+    {
+      "action": "stop",
+      "cycle": 23,
+      "fractal_t_s": 42828.67688,
+      "emulator_t_s": 43003.0,
+      "time_difference_s": -174.323,
+      "fractal_levels_pct": {
+        "tank-supply-01": 90.00063,
+        "tank-recirc-01": 22.89569,
+        "tank-recirc-02": 22.85641
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 90.12162,
+        "tank-recirc-01": 22.68184,
+        "tank-recirc-02": 22.64179
+      },
+      "same_time_supply_difference_pp": 10.97378,
+      "fractal_recirculated_m3": 93.950206,
+      "emulator_recirculated_m3_at_own_event": 94.575089,
+      "same_time_transfer_difference_m3": 0.358261,
+      "emulator_bypass_m3_at_fractal_event": 1.263673,
+      "fractal_reason": "suministro_lleno",
+      "emulator_reason": "suministro_lleno"
+    },
+    {
+      "action": "start",
+      "cycle": 24,
+      "fractal_t_s": 43560.49938,
+      "emulator_t_s": 43740.0,
+      "time_difference_s": -179.501,
+      "fractal_levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 77.56878,
+        "tank-recirc-02": 71.58866
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 29.88807,
+        "tank-recirc-01": 74.56873,
+        "tank-recirc-02": 74.56161
+      },
+      "same_time_supply_difference_pp": -14.5537,
+      "fractal_recirculated_m3": 93.950206,
+      "emulator_recirculated_m3_at_own_event": 94.575089,
+      "same_time_transfer_difference_m3": -0.624883,
+      "emulator_bypass_m3_at_fractal_event": 1.314782,
+      "fractal_reason": "suministro_bajo",
+      "emulator_reason": "suministro_bajo"
+    },
+    {
+      "action": "stop",
+      "cycle": 24,
+      "fractal_t_s": 44475.53138,
+      "emulator_t_s": 44661.0,
+      "time_difference_s": -185.469,
+      "fractal_levels_pct": {
+        "tank-supply-01": 90.0,
+        "tank-recirc-01": 22.89332,
+        "tank-recirc-02": 22.85987
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 90.11207,
+        "tank-recirc-01": 22.68714,
+        "tank-recirc-02": 22.65291
+      },
+      "same_time_supply_difference_pp": 11.86501,
+      "fractal_recirculated_m3": 99.181827,
+      "emulator_recirculated_m3_at_own_event": 99.834391,
+      "same_time_transfer_difference_m3": 0.393485,
+      "emulator_bypass_m3_at_fractal_event": 1.331066,
+      "fractal_reason": "suministro_lleno",
+      "emulator_reason": "suministro_lleno"
+    },
+    {
+      "action": "start",
+      "cycle": 25,
+      "fractal_t_s": 45211.89501,
+      "emulator_t_s": 45400.0,
+      "time_difference_s": -188.105,
+      "fractal_levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 77.55266,
+        "tank-recirc-02": 71.60479
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 29.90095,
+        "tank-recirc-01": 74.55763,
+        "tank-recirc-02": 74.55052
+      },
+      "same_time_supply_difference_pp": -15.21849,
+      "fractal_recirculated_m3": 99.181827,
+      "emulator_recirculated_m3_at_own_event": 99.834391,
+      "same_time_transfer_difference_m3": -0.652564,
+      "emulator_bypass_m3_at_fractal_event": 1.38121,
+      "fractal_reason": "suministro_bajo",
+      "emulator_reason": "suministro_bajo"
+    },
+    {
+      "action": "stop",
+      "cycle": 25,
+      "fractal_t_s": 46126.92634,
+      "emulator_t_s": 46321.0,
+      "time_difference_s": -194.074,
+      "fractal_levels_pct": {
+        "tank-supply-01": 90.0,
+        "tank-recirc-01": 22.89333,
+        "tank-recirc-02": 22.85986
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 90.12417,
+        "tank-recirc-01": 22.6767,
+        "tank-recirc-02": 22.64247
+      },
+      "same_time_supply_difference_pp": 12.44237,
+      "fractal_recirculated_m3": 104.413447,
+      "emulator_recirculated_m3_at_own_event": 105.093638,
+      "same_time_transfer_difference_m3": 0.417281,
+      "emulator_bypass_m3_at_fractal_event": 1.398215,
+      "fractal_reason": "suministro_lleno",
+      "emulator_reason": "suministro_lleno"
+    },
+    {
+      "action": "start",
+      "cycle": 26,
+      "fractal_t_s": 46864.42485,
+      "emulator_t_s": 47069.0,
+      "time_difference_s": -204.575,
+      "fractal_levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 77.54956,
+        "tank-recirc-02": 71.60789
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 29.89203,
+        "tank-recirc-01": 74.56498,
+        "tank-recirc-02": 74.55842
+      },
+      "same_time_supply_difference_pp": -16.04473,
+      "fractal_recirculated_m3": 104.413447,
+      "emulator_recirculated_m3_at_own_event": 105.093638,
+      "same_time_transfer_difference_m3": -0.680191,
+      "emulator_bypass_m3_at_fractal_event": 1.447331,
+      "fractal_reason": "suministro_bajo",
+      "emulator_reason": "suministro_bajo"
+    },
+    {
+      "action": "stop",
+      "cycle": 26,
+      "fractal_t_s": 47744.55387,
+      "emulator_t_s": 47955.0,
+      "time_difference_s": -210.446,
+      "fractal_levels_pct": {
+        "tank-supply-01": 90.0,
+        "tank-recirc-01": 22.8861,
+        "tank-recirc-02": 22.86709
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 90.12729,
+        "tank-recirc-01": 22.6657,
+        "tank-recirc-02": 22.64799
+      },
+      "same_time_supply_difference_pp": 14.06025,
+      "fractal_recirculated_m3": 109.442576,
+      "emulator_recirculated_m3_at_own_event": 110.149972,
+      "same_time_transfer_difference_m3": 0.481858,
+      "emulator_bypass_m3_at_fractal_event": 1.46485,
+      "fractal_reason": "suministro_lleno",
+      "emulator_reason": "suministro_lleno"
+    },
+    {
+      "action": "start",
+      "cycle": 27,
+      "fractal_t_s": 48506.02065,
+      "emulator_t_s": 48720.0,
+      "time_difference_s": -213.979,
+      "fractal_levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 77.47682,
+        "tank-recirc-02": 71.68062
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 29.85274,
+        "tank-recirc-01": 74.59883,
+        "tank-recirc-02": 74.59227
+      },
+      "same_time_supply_difference_pp": -16.71383,
+      "fractal_recirculated_m3": 109.442576,
+      "emulator_recirculated_m3_at_own_event": 110.149972,
+      "same_time_transfer_difference_m3": -0.707396,
+      "emulator_bypass_m3_at_fractal_event": 1.512052,
+      "fractal_reason": "suministro_bajo",
+      "emulator_reason": "suministro_bajo"
+    },
+    {
+      "action": "stop",
+      "cycle": 27,
+      "fractal_t_s": 49386.14672,
+      "emulator_t_s": 49606.0,
+      "time_difference_s": -219.853,
+      "fractal_levels_pct": {
+        "tank-supply-01": 90.0,
+        "tank-recirc-01": 22.88609,
+        "tank-recirc-02": 22.86711
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 90.09252,
+        "tank-recirc-01": 22.69567,
+        "tank-recirc-02": 22.67796
+      },
+      "same_time_supply_difference_pp": 14.78086,
+      "fractal_recirculated_m3": 114.471696,
+      "emulator_recirculated_m3_at_own_event": 115.206458,
+      "same_time_transfer_difference_m3": 0.511784,
+      "emulator_bypass_m3_at_fractal_event": 1.530337,
+      "fractal_reason": "suministro_lleno",
+      "emulator_reason": "suministro_lleno"
+    },
+    {
+      "action": "start",
+      "cycle": 28,
+      "fractal_t_s": 50147.6135,
+      "emulator_t_s": 50370.0,
+      "time_difference_s": -222.387,
+      "fractal_levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 77.47681,
+        "tank-recirc-02": 71.68064
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 29.89724,
+        "tank-recirc-01": 74.56049,
+        "tank-recirc-02": 74.55393
+      },
+      "same_time_supply_difference_pp": -17.38851,
+      "fractal_recirculated_m3": 114.471696,
+      "emulator_recirculated_m3_at_own_event": 115.206458,
+      "same_time_transfer_difference_m3": -0.734762,
+      "emulator_bypass_m3_at_fractal_event": 1.576778,
+      "fractal_reason": "suministro_bajo",
+      "emulator_reason": "suministro_bajo"
+    },
+    {
+      "action": "stop",
+      "cycle": 28,
+      "fractal_t_s": 50993.02341,
+      "emulator_t_s": 51207.0,
+      "time_difference_s": -213.977,
+      "fractal_levels_pct": {
+        "tank-supply-01": 90.00071,
+        "tank-recirc-01": 22.87208,
+        "tank-recirc-02": 22.87989
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 90.12544,
+        "tank-recirc-01": 22.65469,
+        "tank-recirc-02": 22.66203
+      },
+      "same_time_supply_difference_pp": 15.26336,
+      "fractal_recirculated_m3": 119.300925,
+      "emulator_recirculated_m3_at_own_event": 119.978941,
+      "same_time_transfer_difference_m3": 0.534608,
+      "emulator_bypass_m3_at_fractal_event": 1.595749,
+      "fractal_reason": "suministro_lleno",
+      "emulator_reason": "suministro_lleno"
+    },
+    {
+      "action": "start",
+      "cycle": 29,
+      "fractal_t_s": 51798.17398,
+      "emulator_t_s": 52015.0,
+      "time_difference_s": -216.826,
+      "fractal_levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 77.35754,
+        "tank-recirc-02": 71.7999
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 29.91615,
+        "tank-recirc-01": 74.54372,
+        "tank-recirc-02": 74.53795
+      },
+      "same_time_supply_difference_pp": -16.08618,
+      "fractal_recirculated_m3": 119.300925,
+      "emulator_recirculated_m3_at_own_event": 119.978941,
+      "same_time_transfer_difference_m3": -0.678016,
+      "emulator_bypass_m3_at_fractal_event": 1.641699,
+      "fractal_reason": "suministro_bajo",
+      "emulator_reason": "suministro_bajo"
+    },
+    {
+      "action": "stop",
+      "cycle": 29,
+      "fractal_t_s": 52627.9007,
+      "emulator_t_s": 52850.0,
+      "time_difference_s": -222.099,
+      "fractal_levels_pct": {
+        "tank-supply-01": 90.0,
+        "tank-recirc-01": 22.87267,
+        "tank-recirc-02": 22.88052
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 90.13186,
+        "tank-recirc-01": 22.64916,
+        "tank-recirc-02": 22.6565
+      },
+      "same_time_supply_difference_pp": 15.8393,
+      "fractal_recirculated_m3": 124.037759,
+      "emulator_recirculated_m3_at_own_event": 124.739515,
+      "same_time_transfer_difference_m3": 0.556709,
+      "emulator_bypass_m3_at_fractal_event": 1.658591,
+      "fractal_reason": "suministro_lleno",
+      "emulator_reason": "suministro_lleno"
+    },
+    {
+      "action": "start",
+      "cycle": 30,
+      "fractal_t_s": 53433.04174,
+      "emulator_t_s": 53658.0,
+      "time_difference_s": -224.958,
+      "fractal_levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 77.35749,
+        "tank-recirc-02": 71.79996
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 29.92307,
+        "tank-recirc-01": 74.53775,
+        "tank-recirc-02": 74.53199
+      },
+      "same_time_supply_difference_pp": -16.68911,
+      "fractal_recirculated_m3": 124.037759,
+      "emulator_recirculated_m3_at_own_event": 124.739515,
+      "same_time_transfer_difference_m3": -0.701756,
+      "emulator_bypass_m3_at_fractal_event": 1.703926,
+      "fractal_reason": "suministro_bajo",
+      "emulator_reason": "suministro_bajo"
+    },
+    {
+      "action": "stop",
+      "cycle": 30,
+      "fractal_t_s": 54246.42735,
+      "emulator_t_s": 54459.0,
+      "time_difference_s": -212.573,
+      "fractal_levels_pct": {
+        "tank-supply-01": 90.0,
+        "tank-recirc-01": 22.85802,
+        "tank-recirc-02": 22.89517
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 90.13654,
+        "tank-recirc-01": 22.63012,
+        "tank-recirc-02": 22.66729
+      },
+      "same_time_supply_difference_pp": 16.35526,
+      "fractal_recirculated_m3": 128.681349,
+      "emulator_recirculated_m3_at_own_event": 129.304923,
+      "same_time_transfer_difference_m3": 0.583905,
+      "emulator_bypass_m3_at_fractal_event": 1.721444,
+      "fractal_reason": "suministro_lleno",
+      "emulator_reason": "suministro_lleno"
+    },
+    {
+      "action": "start",
+      "cycle": 31,
+      "fractal_t_s": 55115.15261,
+      "emulator_t_s": 55331.0,
+      "time_difference_s": -215.847,
+      "fractal_levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 77.21378,
+        "tank-recirc-02": 71.94366
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 29.91344,
+        "tank-recirc-01": 74.54551,
+        "tank-recirc-02": 74.54064
+      },
+      "same_time_supply_difference_pp": -14.83105,
+      "fractal_recirculated_m3": 128.681349,
+      "emulator_recirculated_m3_at_own_event": 129.304923,
+      "same_time_transfer_difference_m3": -0.623574,
+      "emulator_bypass_m3_at_fractal_event": 1.766427,
+      "fractal_reason": "suministro_bajo",
+      "emulator_reason": "suministro_bajo"
+    },
+    {
+      "action": "stop",
+      "cycle": 31,
+      "fractal_t_s": 55888.37615,
+      "emulator_t_s": 56109.0,
+      "time_difference_s": -220.624,
+      "fractal_levels_pct": {
+        "tank-supply-01": 90.0,
+        "tank-recirc-01": 22.85839,
+        "tank-recirc-02": 22.8948
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 90.11914,
+        "tank-recirc-01": 22.64511,
+        "tank-recirc-02": 22.68228
+      },
+      "same_time_supply_difference_pp": 17.00109,
+      "fractal_recirculated_m3": 133.090497,
+      "emulator_recirculated_m3_at_own_event": 133.735017,
+      "same_time_transfer_difference_m3": 0.608867,
+      "emulator_bypass_m3_at_fractal_event": 1.781289,
+      "fractal_reason": "suministro_lleno",
+      "emulator_reason": "suministro_lleno"
+    },
+    {
+      "action": "start",
+      "cycle": 32,
+      "fractal_t_s": 56757.10141,
+      "emulator_t_s": 56981.0,
+      "time_difference_s": -223.899,
+      "fractal_levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 77.21416,
+        "tank-recirc-02": 71.94329
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 29.89659,
+        "tank-recirc-01": 74.56003,
+        "tank-recirc-02": 74.55516
+      },
+      "same_time_supply_difference_pp": -15.36658,
+      "fractal_recirculated_m3": 133.090497,
+      "emulator_recirculated_m3_at_own_event": 133.735017,
+      "same_time_transfer_difference_m3": -0.64452,
+      "emulator_bypass_m3_at_fractal_event": 1.82573,
+      "fractal_reason": "suministro_bajo",
+      "emulator_reason": "suministro_bajo"
+    },
+    {
+      "action": "stop",
+      "cycle": 32,
+      "fractal_t_s": 57530.32496,
+      "emulator_t_s": 57747.0,
+      "time_difference_s": -216.675,
+      "fractal_levels_pct": {
+        "tank-supply-01": 90.0,
+        "tank-recirc-01": 22.85839,
+        "tank-recirc-02": 22.8948
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 90.0857,
+        "tank-recirc-01": 22.65831,
+        "tank-recirc-02": 22.72654
+      },
+      "same_time_supply_difference_pp": 17.64566,
+      "fractal_recirculated_m3": 137.499645,
+      "emulator_recirculated_m3_at_own_event": 138.096957,
+      "same_time_transfer_difference_m3": 0.633793,
+      "emulator_bypass_m3_at_fractal_event": 1.841145,
+      "fractal_reason": "suministro_lleno",
+      "emulator_reason": "suministro_lleno"
+    },
+    {
+      "action": "start",
+      "cycle": 33,
+      "fractal_t_s": 58476.35201,
+      "emulator_t_s": 58706.0,
+      "time_difference_s": -229.648,
+      "fractal_levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 77.09019,
+        "tank-recirc-02": 72.06726
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 29.9022,
+        "tank-recirc-01": 74.55467,
+        "tank-recirc-02": 74.55068
+      },
+      "same_time_supply_difference_pp": -14.33615,
+      "fractal_recirculated_m3": 137.499645,
+      "emulator_recirculated_m3_at_own_event": 138.096957,
+      "same_time_transfer_difference_m3": -0.597312,
+      "emulator_bypass_m3_at_fractal_event": 1.884125,
+      "fractal_reason": "suministro_bajo",
+      "emulator_reason": "suministro_bajo"
+    },
+    {
+      "action": "stop",
+      "cycle": 33,
+      "fractal_t_s": 59193.13912,
+      "emulator_t_s": 59427.0,
+      "time_difference_s": -233.861,
+      "fractal_levels_pct": {
+        "tank-supply-01": 90.00083,
+        "tank-recirc-01": 22.84147,
+        "tank-recirc-02": 22.91029
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 90.09198,
+        "tank-recirc-01": 22.65261,
+        "tank-recirc-02": 22.72143
+      },
+      "same_time_supply_difference_pp": 19.54852,
+      "fractal_recirculated_m3": 141.581474,
+      "emulator_recirculated_m3_at_own_event": 142.196587,
+      "same_time_transfer_difference_m3": 0.713757,
+      "emulator_bypass_m3_at_fractal_event": 1.897746,
+      "fractal_reason": "suministro_lleno",
+      "emulator_reason": "suministro_lleno"
+    },
+    {
+      "action": "start",
+      "cycle": 34,
+      "fractal_t_s": 60149.19829,
+      "emulator_t_s": 60386.0,
+      "time_difference_s": -236.802,
+      "fractal_levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 77.05795,
+        "tank-recirc-02": 72.0995
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 29.90914,
+        "tank-recirc-01": 74.54869,
+        "tank-recirc-02": 74.5447
+      },
+      "same_time_supply_difference_pp": -14.78224,
+      "fractal_recirculated_m3": 141.581474,
+      "emulator_recirculated_m3_at_own_event": 142.196587,
+      "same_time_transfer_difference_m3": -0.615113,
+      "emulator_bypass_m3_at_fractal_event": 1.94031,
+      "fractal_reason": "suministro_bajo",
+      "emulator_reason": "suministro_bajo"
+    },
+    {
+      "action": "stop",
+      "cycle": 34,
+      "fractal_t_s": 60865.98463,
+      "emulator_t_s": 61107.0,
+      "time_difference_s": -241.015,
+      "fractal_levels_pct": {
+        "tank-supply-01": 90.00083,
+        "tank-recirc-01": 22.84147,
+        "tank-recirc-02": 22.91029
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 90.09788,
+        "tank-recirc-01": 22.64752,
+        "tank-recirc-02": 22.71633
+      },
+      "same_time_supply_difference_pp": 20.13845,
+      "fractal_recirculated_m3": 145.6633,
+      "emulator_recirculated_m3_at_own_event": 146.296197,
+      "same_time_transfer_difference_m3": 0.736226,
+      "emulator_bypass_m3_at_fractal_event": 1.954348,
+      "fractal_reason": "suministro_lleno",
+      "emulator_reason": "suministro_lleno"
+    },
+    {
+      "action": "start",
+      "cycle": 35,
+      "fractal_t_s": 61893.65581,
+      "emulator_t_s": 62170.0,
+      "time_difference_s": -276.344,
+      "fractal_levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 76.97216,
+        "tank-recirc-02": 72.18529
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 29.93727,
+        "tank-recirc-01": 74.52397,
+        "tank-recirc-02": 74.52078
+      },
+      "same_time_supply_difference_pp": -15.38936,
+      "fractal_recirculated_m3": 145.6633,
+      "emulator_recirculated_m3_at_own_event": 146.296197,
+      "same_time_transfer_difference_m3": -0.632897,
+      "emulator_bypass_m3_at_fractal_event": 1.994309,
+      "fractal_reason": "suministro_bajo",
+      "emulator_reason": "suministro_bajo"
+    },
+    {
+      "action": "stop",
+      "cycle": 35,
+      "fractal_t_s": 62558.34136,
+      "emulator_t_s": 62839.0,
+      "time_difference_s": -280.659,
+      "fractal_levels_pct": {
+        "tank-supply-01": 90.0,
+        "tank-recirc-01": 22.8253,
+        "tank-recirc-02": 22.9279
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 90.15948,
+        "tank-recirc-01": 22.579,
+        "tank-recirc-02": 22.67853
+      },
+      "same_time_supply_difference_pp": 25.42595,
+      "fractal_recirculated_m3": 149.442958,
+      "emulator_recirculated_m3_at_own_event": 150.09411,
+      "same_time_transfer_difference_m3": 0.949597,
+      "emulator_bypass_m3_at_fractal_event": 2.008086,
+      "fractal_reason": "suministro_lleno",
+      "emulator_reason": "suministro_lleno"
+    },
+    {
+      "action": "start",
+      "cycle": 36,
+      "fractal_t_s": 63630.02807,
+      "emulator_t_s": 63915.0,
+      "time_difference_s": -284.972,
+      "fractal_levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 76.90248,
+        "tank-recirc-02": 72.25496
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 29.9192,
+        "tank-recirc-01": 74.53954,
+        "tank-recirc-02": 74.53635
+      },
+      "same_time_supply_difference_pp": -15.875,
+      "fractal_recirculated_m3": 149.442958,
+      "emulator_recirculated_m3_at_own_event": 150.09411,
+      "same_time_transfer_difference_m3": -0.651152,
+      "emulator_bypass_m3_at_fractal_event": 2.047367,
+      "fractal_reason": "suministro_bajo",
+      "emulator_reason": "suministro_bajo"
+    },
+    {
+      "action": "stop",
+      "cycle": 36,
+      "fractal_t_s": 64294.72224,
+      "emulator_t_s": 64584.0,
+      "time_difference_s": -289.278,
+      "fractal_levels_pct": {
+        "tank-supply-01": 90.0009,
+        "tank-recirc-01": 22.82457,
+        "tank-recirc-02": 22.92708
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 90.14238,
+        "tank-recirc-01": 22.59373,
+        "tank-recirc-02": 22.69327
+      },
+      "same_time_supply_difference_pp": 26.18564,
+      "fractal_recirculated_m3": 153.22267,
+      "emulator_recirculated_m3_at_own_event": 153.892078,
+      "same_time_transfer_difference_m3": 0.977599,
+      "emulator_bypass_m3_at_fractal_event": 2.061597,
+      "fractal_reason": "suministro_lleno",
+      "emulator_reason": "suministro_lleno"
+    },
+    {
+      "action": "start",
+      "cycle": 37,
+      "fractal_t_s": 65439.51383,
+      "emulator_t_s": 65776.0,
+      "time_difference_s": -336.486,
+      "fractal_levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 76.8403,
+        "tank-recirc-02": 72.31715
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 29.94299,
+        "tank-recirc-01": 74.51866,
+        "tank-recirc-02": 74.51612
+      },
+      "same_time_supply_difference_pp": -16.49888,
+      "fractal_recirculated_m3": 153.22267,
+      "emulator_recirculated_m3_at_own_event": 153.892078,
+      "same_time_transfer_difference_m3": -0.669408,
+      "emulator_bypass_m3_at_fractal_event": 2.098818,
+      "fractal_reason": "suministro_bajo",
+      "emulator_reason": "suministro_bajo"
+    },
+    {
+      "action": "stop",
+      "cycle": 37,
+      "fractal_t_s": 66059.49784,
+      "emulator_t_s": 66400.0,
+      "time_difference_s": -340.502,
+      "fractal_levels_pct": {
+        "tank-supply-01": 90.0,
+        "tank-recirc-01": 22.82068,
+        "tank-recirc-02": 22.93251
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 90.16071,
+        "tank-recirc-01": 22.56417,
+        "tank-recirc-02": 22.69112
+      },
+      "same_time_supply_difference_pp": 33.33865,
+      "fractal_recirculated_m3": 156.743194,
+      "emulator_recirculated_m3_at_own_event": 157.429017,
+      "same_time_transfer_difference_m3": 1.264227,
+      "emulator_bypass_m3_at_fractal_event": 2.112805,
+      "fractal_reason": "suministro_lleno",
+      "emulator_reason": "suministro_lleno"
+    },
+    {
+      "action": "start",
+      "cycle": 38,
+      "fractal_t_s": 67277.20385,
+      "emulator_t_s": 67622.0,
+      "time_difference_s": -344.796,
+      "fractal_levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 76.77347,
+        "tank-recirc-02": 72.38398
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 29.94907,
+        "tank-recirc-01": 74.51342,
+        "tank-recirc-02": 74.51088
+      },
+      "same_time_supply_difference_pp": -16.94822,
+      "fractal_recirculated_m3": 156.743194,
+      "emulator_recirculated_m3_at_own_event": 157.429017,
+      "same_time_transfer_difference_m3": -0.685823,
+      "emulator_bypass_m3_at_fractal_event": 2.149131,
+      "fractal_reason": "suministro_bajo",
+      "emulator_reason": "suministro_bajo"
+    },
+    {
+      "action": "stop",
+      "cycle": 38,
+      "fractal_t_s": 67897.18718,
+      "emulator_t_s": 68246.0,
+      "time_difference_s": -348.813,
+      "fractal_levels_pct": {
+        "tank-supply-01": 90.0,
+        "tank-recirc-01": 22.82044,
+        "tank-recirc-02": 22.93275
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 90.16596,
+        "tank-recirc-01": 22.55965,
+        "tank-recirc-02": 22.68659
+      },
+      "same_time_supply_difference_pp": 34.13556,
+      "fractal_recirculated_m3": 160.263717,
+      "emulator_recirculated_m3_at_own_event": 160.96594,
+      "same_time_transfer_difference_m3": 1.29435,
+      "emulator_bypass_m3_at_fractal_event": 2.163497,
+      "fractal_reason": "suministro_lleno",
+      "emulator_reason": "suministro_lleno"
+    },
+    {
+      "action": "start",
+      "cycle": 39,
+      "fractal_t_s": 69212.58335,
+      "emulator_t_s": 69620.0,
+      "time_difference_s": -407.417,
+      "fractal_levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 76.71583,
+        "tank-recirc-02": 72.44161
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 29.95482,
+        "tank-recirc-01": 74.50816,
+        "tank-recirc-02": 74.50612
+      },
+      "same_time_supply_difference_pp": -17.50604,
+      "fractal_recirculated_m3": 160.263717,
+      "emulator_recirculated_m3_at_own_event": 160.96594,
+      "same_time_transfer_difference_m3": -0.702223,
+      "emulator_bypass_m3_at_fractal_event": 2.197997,
+      "fractal_reason": "suministro_bajo",
+      "emulator_reason": "suministro_bajo"
+    },
+    {
+      "action": "stop",
+      "cycle": 39,
+      "fractal_t_s": 69796.66969,
+      "emulator_t_s": 70208.0,
+      "time_difference_s": -411.33,
+      "fractal_levels_pct": {
+        "tank-supply-01": 90.0,
+        "tank-recirc-01": 22.79753,
+        "tank-recirc-02": 22.95566
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 90.19125,
+        "tank-recirc-01": 22.52648,
+        "tank-recirc-02": 22.67609
+      },
+      "same_time_supply_difference_pp": 42.94707,
+      "fractal_recirculated_m3": 163.575791,
+      "emulator_recirculated_m3_at_own_event": 164.29404,
+      "same_time_transfer_difference_m3": 1.642384,
+      "emulator_bypass_m3_at_fractal_event": 2.212151,
+      "fractal_reason": "suministro_lleno",
+      "emulator_reason": "suministro_lleno"
+    },
+    {
+      "action": "start",
+      "cycle": 40,
+      "fractal_t_s": 71188.06393,
+      "emulator_t_s": 71605.0,
+      "time_difference_s": -416.936,
+      "fractal_levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 76.64827,
+        "tank-recirc-02": 72.50918
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 29.94852,
+        "tank-recirc-01": 74.51359,
+        "tank-recirc-02": 74.51155
+      },
+      "same_time_supply_difference_pp": -17.93073,
+      "fractal_recirculated_m3": 163.575791,
+      "emulator_recirculated_m3_at_own_event": 164.29404,
+      "same_time_transfer_difference_m3": -0.718249,
+      "emulator_bypass_m3_at_fractal_event": 2.246057,
+      "fractal_reason": "suministro_bajo",
+      "emulator_reason": "suministro_bajo"
+    },
+    {
+      "action": "stop",
+      "cycle": 40,
+      "fractal_t_s": 71772.1499,
+      "emulator_t_s": 72184.0,
+      "time_difference_s": -411.85,
+      "fractal_levels_pct": {
+        "tank-supply-01": 90.0,
+        "tank-recirc-01": 22.79767,
+        "tank-recirc-02": 22.95552
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 90.20773,
+        "tank-recirc-01": 22.50349,
+        "tank-recirc-02": 22.67061
+      },
+      "same_time_supply_difference_pp": 44.02977,
+      "fractal_recirculated_m3": 166.887865,
+      "emulator_recirculated_m3_at_own_event": 167.570824,
+      "same_time_transfer_difference_m3": 1.684969,
+      "emulator_bypass_m3_at_fractal_event": 2.260564,
+      "fractal_reason": "suministro_lleno",
+      "emulator_reason": "suministro_lleno"
+    },
+    {
+      "action": "start",
+      "cycle": 41,
+      "fractal_t_s": 73320.37344,
+      "emulator_t_s": 73775.0,
+      "time_difference_s": -454.627,
+      "fractal_levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 76.5853,
+        "tank-recirc-02": 72.57215
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 29.93577,
+        "tank-recirc-01": 74.52436,
+        "tank-recirc-02": 74.52269
+      },
+      "same_time_supply_difference_pp": -17.17249,
+      "fractal_recirculated_m3": 166.887865,
+      "emulator_recirculated_m3_at_own_event": 167.570824,
+      "same_time_transfer_difference_m3": -0.682959,
+      "emulator_bypass_m3_at_fractal_event": 2.293845,
+      "fractal_reason": "suministro_bajo",
+      "emulator_reason": "suministro_bajo"
+    },
+    {
+      "action": "stop",
+      "cycle": 41,
+      "fractal_t_s": 73876.9222,
+      "emulator_t_s": 74335.0,
+      "time_difference_s": -458.078,
+      "fractal_levels_pct": {
+        "tank-supply-01": 90.0,
+        "tank-recirc-01": 22.78314,
+        "tank-recirc-02": 22.97005
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 90.14006,
+        "tank-recirc-01": 22.56173,
+        "tank-recirc-02": 22.729
+      },
+      "same_time_supply_difference_pp": 50.53893,
+      "fractal_recirculated_m3": 170.040362,
+      "emulator_recirculated_m3_at_own_event": 170.736631,
+      "same_time_transfer_difference_m3": 1.943027,
+      "emulator_bypass_m3_at_fractal_event": 2.307242,
+      "fractal_reason": "suministro_lleno",
+      "emulator_reason": "suministro_lleno"
+    },
+    {
+      "action": "start",
+      "cycle": 42,
+      "fractal_t_s": 75460.82008,
+      "emulator_t_s": 75963.0,
+      "time_difference_s": -502.18,
+      "fractal_levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 76.55641,
+        "tank-recirc-02": 72.60104
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 29.93411,
+        "tank-recirc-01": 74.52565,
+        "tank-recirc-02": 74.52423
+      },
+      "same_time_supply_difference_pp": -17.48438,
+      "fractal_recirculated_m3": 170.040362,
+      "emulator_recirculated_m3_at_own_event": 170.736631,
+      "same_time_transfer_difference_m3": -0.696269,
+      "emulator_bypass_m3_at_fractal_event": 2.340242,
+      "fractal_reason": "suministro_bajo",
+      "emulator_reason": "suministro_bajo"
+    },
+    {
+      "action": "stop",
+      "cycle": 42,
+      "fractal_t_s": 76003.69664,
+      "emulator_t_s": 76504.0,
+      "time_difference_s": -500.303,
+      "fractal_levels_pct": {
+        "tank-supply-01": 90.00112,
+        "tank-recirc-01": 22.78871,
+        "tank-recirc-02": 22.96255
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 90.21661,
+        "tank-recirc-01": 22.4894,
+        "tank-recirc-02": 22.66936
+      },
+      "same_time_supply_difference_pp": 57.33768,
+      "fractal_recirculated_m3": 173.113799,
+      "emulator_recirculated_m3_at_own_event": 173.792145,
+      "same_time_transfer_difference_m3": 2.211195,
+      "emulator_bypass_m3_at_fractal_event": 2.35364,
+      "fractal_reason": "suministro_lleno",
+      "emulator_reason": "suministro_lleno"
+    },
+    {
+      "action": "start",
+      "cycle": 43,
+      "fractal_t_s": 77777.68459,
+      "emulator_t_s": 78286.0,
+      "time_difference_s": -508.315,
+      "fractal_levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 76.50943,
+        "tank-recirc-02": 72.64802
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 29.94102,
+        "tank-recirc-01": 74.51969,
+        "tank-recirc-02": 74.51828
+      },
+      "same_time_supply_difference_pp": -17.12388,
+      "fractal_recirculated_m3": 173.113799,
+      "emulator_recirculated_m3_at_own_event": 173.792145,
+      "same_time_transfer_difference_m3": -0.678346,
+      "emulator_bypass_m3_at_fractal_event": 2.386097,
+      "fractal_reason": "suministro_bajo",
+      "emulator_reason": "suministro_bajo"
+    },
+    {
+      "action": "stop",
+      "cycle": 43,
+      "fractal_t_s": 78314.69827,
+      "emulator_t_s": 78826.0,
+      "time_difference_s": -511.302,
+      "fractal_levels_pct": {
+        "tank-supply-01": 90.0,
+        "tank-recirc-01": 22.78668,
+        "tank-recirc-02": 22.96652
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 90.11178,
+        "tank-recirc-01": 22.57971,
+        "tank-recirc-02": 22.75972
+      },
+      "same_time_supply_difference_pp": 58.75362,
+      "fractal_recirculated_m3": 176.152787,
+      "emulator_recirculated_m3_at_own_event": 176.841985,
+      "same_time_transfer_difference_m3": 2.265814,
+      "emulator_bypass_m3_at_fractal_event": 2.399105,
+      "fractal_reason": "suministro_lleno",
+      "emulator_reason": "suministro_lleno"
+    },
+    {
+      "action": "start",
+      "cycle": 44,
+      "fractal_t_s": 80158.01783,
+      "emulator_t_s": 80718.0,
+      "time_difference_s": -559.982,
+      "fractal_levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 76.49153,
+        "tank-recirc-02": 72.66592
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 29.95255,
+        "tank-recirc-01": 74.50967,
+        "tank-recirc-02": 74.5084
+      },
+      "same_time_supply_difference_pp": -17.47746,
+      "fractal_recirculated_m3": 176.152787,
+      "emulator_recirculated_m3_at_own_event": 176.841985,
+      "same_time_transfer_difference_m3": -0.689198,
+      "emulator_bypass_m3_at_fractal_event": 2.430885,
+      "fractal_reason": "suministro_bajo",
+      "emulator_reason": "suministro_bajo"
+    },
+    {
+      "action": "stop",
+      "cycle": 44,
+      "fractal_t_s": 80683.5212,
+      "emulator_t_s": 81247.0,
+      "time_difference_s": -563.479,
+      "fractal_levels_pct": {
+        "tank-supply-01": 90.0,
+        "tank-recirc-01": 22.7886,
+        "tank-recirc-02": 22.96459
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 90.1893,
+        "tank-recirc-01": 22.50914,
+        "tank-recirc-02": 22.69667
+      },
+      "same_time_supply_difference_pp": 58.98344,
+      "fractal_recirculated_m3": 179.124986,
+      "emulator_recirculated_m3_at_own_event": 179.827915,
+      "same_time_transfer_difference_m3": 2.283001,
+      "emulator_bypass_m3_at_fractal_event": 2.443161,
+      "fractal_reason": "suministro_lleno",
+      "emulator_reason": "suministro_lleno"
+    },
+    {
+      "action": "start",
+      "cycle": 45,
+      "fractal_t_s": 82600.78163,
+      "emulator_t_s": 83182.0,
+      "time_difference_s": -581.218,
+      "fractal_levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 76.47761,
+        "tank-recirc-02": 72.67984
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 29.96261,
+        "tank-recirc-01": 74.50098,
+        "tank-recirc-02": 74.49975
+      },
+      "same_time_supply_difference_pp": -17.81547,
+      "fractal_recirculated_m3": 179.124986,
+      "emulator_recirculated_m3_at_own_event": 179.827915,
+      "same_time_transfer_difference_m3": -0.702929,
+      "emulator_bypass_m3_at_fractal_event": 2.475395,
+      "fractal_reason": "suministro_bajo",
+      "emulator_reason": "suministro_bajo"
+    },
+    {
+      "action": "stop",
+      "cycle": 45,
+      "fractal_t_s": 83124.11299,
+      "emulator_t_s": 83707.0,
+      "time_difference_s": -582.887,
+      "fractal_levels_pct": {
+        "tank-supply-01": 90.0,
+        "tank-recirc-01": 22.78478,
+        "tank-recirc-02": 22.96841
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 90.18279,
+        "tank-recirc-01": 22.51349,
+        "tank-recirc-02": 22.70353
+      },
+      "same_time_supply_difference_pp": 58.27251,
+      "fractal_recirculated_m3": 182.084634,
+      "emulator_recirculated_m3_at_own_event": 182.790641,
+      "same_time_transfer_difference_m3": 2.256719,
+      "emulator_bypass_m3_at_fractal_event": 2.48735,
+      "fractal_reason": "suministro_lleno",
+      "emulator_reason": "suministro_lleno"
+    },
+    {
+      "action": "start",
+      "cycle": 46,
+      "fractal_t_s": 85095.9654,
+      "emulator_t_s": 85686.0,
+      "time_difference_s": -590.035,
+      "fractal_levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 76.46372,
+        "tank-recirc-02": 72.69373
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 29.96477,
+        "tank-recirc-01": 74.49912,
+        "tank-recirc-02": 74.49789
+      },
+      "same_time_supply_difference_pp": -17.91752,
+      "fractal_recirculated_m3": 182.084634,
+      "emulator_recirculated_m3_at_own_event": 182.790641,
+      "same_time_transfer_difference_m3": -0.706007,
+      "emulator_bypass_m3_at_fractal_event": 2.519882,
+      "fractal_reason": "suministro_bajo",
+      "emulator_reason": "suministro_bajo"
+    },
+    {
+      "action": "stop",
+      "cycle": 46,
+      "fractal_t_s": 85617.63298,
+      "emulator_t_s": 86211.0,
+      "time_difference_s": -593.367,
+      "fractal_levels_pct": {
+        "tank-supply-01": 90.0,
+        "tank-recirc-01": 22.78915,
+        "tank-recirc-02": 22.96404
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 90.18448,
+        "tank-recirc-01": 22.51203,
+        "tank-recirc-02": 22.70207
+      },
+      "same_time_supply_difference_pp": 57.9661,
+      "fractal_recirculated_m3": 185.034593,
+      "emulator_recirculated_m3_at_own_event": 185.753363,
+      "same_time_transfer_difference_m3": 2.243952,
+      "emulator_bypass_m3_at_fractal_event": 2.531668,
+      "fractal_reason": "suministro_lleno",
+      "emulator_reason": "suministro_lleno"
+    }
+  ],
+  "hourly": [
+    {
+      "hour": 1,
+      "t_s": 3630.0,
+      "supply_difference_pp": -0.19554,
+      "transfer_difference_m3": -0.012761
+    },
+    {
+      "hour": 2,
+      "t_s": 7230.0,
+      "supply_difference_pp": -0.75756,
+      "transfer_difference_m3": -0.038554
+    },
+    {
+      "hour": 3,
+      "t_s": 10830.0,
+      "supply_difference_pp": -0.88023,
+      "transfer_difference_m3": -0.049025
+    },
+    {
+      "hour": 4,
+      "t_s": 14430.0,
+      "supply_difference_pp": -2.17056,
+      "transfer_difference_m3": -0.106625
+    },
+    {
+      "hour": 5,
+      "t_s": 18030.0,
+      "supply_difference_pp": -2.69296,
+      "transfer_difference_m3": -0.135124
+    },
+    {
+      "hour": 6,
+      "t_s": 21630.0,
+      "supply_difference_pp": -3.37301,
+      "transfer_difference_m3": -0.169971
+    },
+    {
+      "hour": 7,
+      "t_s": 25230.0,
+      "supply_difference_pp": -4.23901,
+      "transfer_difference_m3": -0.211373
+    },
+    {
+      "hour": 8,
+      "t_s": 28830.0,
+      "supply_difference_pp": -5.06636,
+      "transfer_difference_m3": -0.250139
+    },
+    {
+      "hour": 9,
+      "t_s": 32430.0,
+      "supply_difference_pp": 8.18841,
+      "transfer_difference_m3": 0.254437
+    },
+    {
+      "hour": 10,
+      "t_s": 36030.0,
+      "supply_difference_pp": 9.20731,
+      "transfer_difference_m3": 0.291132
+    },
+    {
+      "hour": 11,
+      "t_s": 39630.0,
+      "supply_difference_pp": -6.69689,
+      "transfer_difference_m3": -0.327933
+    },
+    {
+      "hour": 12,
+      "t_s": 43230.0,
+      "supply_difference_pp": -14.51177,
+      "transfer_difference_m3": -0.624883
+    },
+    {
+      "hour": 13,
+      "t_s": 46830.0,
+      "supply_difference_pp": -16.01258,
+      "transfer_difference_m3": -0.680191
+    },
+    {
+      "hour": 14,
+      "t_s": 50430.0,
+      "supply_difference_pp": 16.17301,
+      "transfer_difference_m3": 0.569939
+    },
+    {
+      "hour": 15,
+      "t_s": 54030.0,
+      "supply_difference_pp": 16.6927,
+      "transfer_difference_m3": 0.596004
+    },
+    {
+      "hour": 16,
+      "t_s": 57630.0,
+      "supply_difference_pp": 2.77568,
+      "transfer_difference_m3": 0.061568
+    },
+    {
+      "hour": 17,
+      "t_s": 61230.0,
+      "supply_difference_pp": -15.41176,
+      "transfer_difference_m3": -0.632897
+    },
+    {
+      "hour": 18,
+      "t_s": 64830.0,
+      "supply_difference_pp": -16.52562,
+      "transfer_difference_m3": -0.669408
+    },
+    {
+      "hour": 19,
+      "t_s": 68430.0,
+      "supply_difference_pp": -17.52677,
+      "transfer_difference_m3": -0.702223
+    },
+    {
+      "hour": 20,
+      "t_s": 72030.0,
+      "supply_difference_pp": 5.39865,
+      "transfer_difference_m3": 0.188537
+    },
+    {
+      "hour": 21,
+      "t_s": 75630.0,
+      "supply_difference_pp": 5.94674,
+      "transfer_difference_m3": 0.219518
+    },
+    {
+      "hour": 22,
+      "t_s": 79230.0,
+      "supply_difference_pp": -17.47726,
+      "transfer_difference_m3": -0.689198
+    },
+    {
+      "hour": 23,
+      "t_s": 82830.0,
+      "supply_difference_pp": 14.73927,
+      "transfer_difference_m3": 0.564008
+    },
+    {
+      "hour": 24,
+      "t_s": 86430.0,
+      "supply_difference_pp": -18.23945,
+      "transfer_difference_m3": -0.71877
+    }
+  ],
+  "emulator_bypass_total_m3": 2.53801,
+  "elapsed_real_s": 2481.0
+}

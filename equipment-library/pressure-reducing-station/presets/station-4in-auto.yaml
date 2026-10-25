@@ -1,4 +1,4 @@
 preset: station-4in-auto
 description: Estación de 4" del acueducto a escala en la rama automática, sosteniendo 20 mca en la válvula más crítica
 params: { diameter_in: 4, prv_kv_m3h: 60, isolation_kv_m3h: 400, branch: auto, critical_setpoint_mca: 20, manual_setting_mca: 26.66, auto_min_outlet_mca: 15, auto_max_outlet_mca: 40, pid_kp: 0.3, pid_ki: 0.05, switch_time_s: 20, bench_inlet_mca: 79, bench_network_kv_m3h: 16.09, bench_load_kv_m3h: 9.283 }
-provenance: { diameter_in: user, branch: user, critical_setpoint_mca: user, manual_setting_mca: assumed, prv_kv_m3h: assumed, isolation_kv_m3h: assumed, pid_kp: assumed, pid_ki: assumed, switch_time_s: assumed, bench_inlet_mca: assumed, bench_network_kv_m3h: assumed, bench_load_kv_m3h: assumed }
+provenance: { diameter_in: user, branch: user, critical_setpoint_mca: user, manual_setting_mca: assumed, prv_kv_m3h: assumed, isolation_kv_m3h: assumed, outlet_check_kv_m3h: assumed, pid_kp: assumed, pid_ki: assumed, switch_time_s: assumed, bench_inlet_mca: assumed, bench_network_kv_m3h: assumed, bench_load_kv_m3h: assumed }

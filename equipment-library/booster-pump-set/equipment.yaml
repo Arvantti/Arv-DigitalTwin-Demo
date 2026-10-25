@@ -31,6 +31,8 @@ params:
   start_level_pct:   { type: number, unit: "%", min: 5, max: 100, default: 60, description: "Modo nivel: arranca con el tanque de origen sobre este nivel", affects: [behavior] }
   stop_level_pct:    { type: number, unit: "%", min: 0, max: 95, default: 20, description: "Modo nivel: para con el tanque de origen bajo este nivel", affects: [behavior] }
   target_full_pct:   { type: number, unit: "%", min: 50, max: 100, default: 90, description: "Modo nivel: no arranca (y para) si el tanque de destino pasa este nivel", affects: [behavior] }
+  supply_start_pct: { type: number, unit: "%", min: 0, max: 95, default: 0, description: "Modo nivel: demanda prioritaria si el tanque de destino baja a este nivel; 0 desactiva esta política", affects: [behavior] }
+  return_high_start_pct: { type: number, unit: "%", min: 0, max: 100, default: 100, description: "Modo nivel: arranque preventivo si cualquier tanque de origen llega aquí; 100 desactiva esta política", affects: [behavior] }
   header_diameter_in: { type: number, unit: in, min: 1, max: 24, default: 4, description: Diámetro nominal de los colectores, affects: [geometry] }
   suction_head_m:    { type: number, unit: m, min: -5, max: 50, default: 1.0, description: "Banco de prueba: cabeza en la succión (nivel del tanque sobre las bombas) si el entorno no la fija", affects: [behavior] }
   bench_static_head_m: { type: number, unit: m, min: 0, max: 200, default: 0, description: "Banco de prueba: cabeza fija a la salida del sistema (elevación del destino)", affects: [behavior] }
@@ -40,7 +42,9 @@ params:
 ports:
   - { id: suction, kind: material, direction: in, medium: agua, unit: m3/h, hydraulic: suction, description: Colector de succión desde los tanques }
   - { id: discharge, kind: material, direction: out, medium: agua a presión, unit: m3/h, hydraulic: discharge, link: { units: volume_m3 }, description: Colector de descarga hacia la red (publica el volumen bombeado acumulado) }
-  - { id: source_level, kind: signal, direction: in, medium: nivel del tanque de origen, unit: "%", link: { level_pct: source_level_pct }, description: "Modo nivel: nivel de los tanques de donde toma el agua" }
+  - { id: source_level, kind: signal, direction: in, medium: nivel del tanque de origen, unit: "%", link: { level_pct: source_level_pct }, description: "Modo nivel: nivel medio de los tanques de donde toma el agua" }
+  - { id: source_level_1, kind: signal, direction: in, medium: nivel del primer tanque de origen, unit: "%", link: { level_pct: source_level_1_pct }, description: "Nivel individual para protección contra rebose" }
+  - { id: source_level_2, kind: signal, direction: in, medium: nivel del segundo tanque de origen, unit: "%", link: { level_pct: source_level_2_pct }, description: "Nivel individual para protección contra rebose" }
   - { id: target_level, kind: signal, direction: in, medium: nivel del tanque de destino, unit: "%", link: { level_pct: target_level_pct }, description: "Modo nivel: nivel del tanque que llena" }
   - { id: power, kind: utility, direction: in, medium: energía eléctrica }
 

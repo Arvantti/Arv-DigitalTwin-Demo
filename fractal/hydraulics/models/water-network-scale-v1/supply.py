@@ -45,6 +45,9 @@ def pump_and_prs(model: dict[str, Any], tags: dict[str, Any], flow: float, setti
     supply_level = float(tags.get("PLC.Tank.Supply.LevelPct") if tags.get("PLC.Tank.Supply.LevelPct") is not None else 70)
     water_head = tank_head(model, "tank-supply-01", supply_level)
     outlet_loss = MCA_PER_BAR * (flow / 400) ** 2  # válvula de fondo del tanque, Kv 400
+    if model["equipment_models"]["tank-supply-01"]["params"]["outlet_check_valve"]:
+        check_kv = model["equipment_models"]["tank-supply-01"]["params"]["outlet_check_kv_m3h"]
+        outlet_loss += MCA_PER_BAR * (flow / check_kv) ** 2  # antirretorno individual
     suction_head = water_head - outlet_loss - pipe_loss(model, "tank-supply-01", "pumpset-main-01", flow)
     running_tag = tags.get("PLC.Pump.RunningCount")
     count = int(pump.get("min_running", pump["pumps"]) if running_tag is None else running_tag)
@@ -68,6 +71,9 @@ def pump_and_prs(model: dict[str, Any], tags: dict[str, Any], flow: float, setti
     isolation_loss = MCA_PER_BAR * (flow / float(station["isolation_kv_m3h"])) ** 2
     prv_loss = MCA_PER_BAR * (flow / float(station["prv_kv_m3h"])) ** 2
     outlet = min(setting - isolation_loss, inlet_pressure - 2 * isolation_loss - prv_loss)
+    check_kv = float(station["outlet_check_kv_m3h"])
+    if check_kv > 0:
+        outlet -= MCA_PER_BAR * (flow / check_kv) ** 2  # antirretorno PRS → nivel 1
     hydraulic_power = 998 * G * (flow / 3600) * max(0.0, discharge_z + discharge + check_loss - suction_head) / 1000
     return {
         "pump_speed_pct": round(speed_limited * 100, 5),
