@@ -227,3 +227,21 @@ Herramientas (resumen): ejecución de 24 h offline con 86.400 pasos PLC, CSV de 
 Se aclaró que la corrida D76 de ciclos ya estaba completa, pero no había conservado todos los niveles absolutos horarios. Se repitieron las 24 h guardando simultáneamente niveles/volúmenes verdaderos de los tres tanques, caudal principal y presiones; el pico del suministro fue hora 24/t=86430, Fractal 65,958 % (2,564447 m³) vs emulador 84,73776 % (3,294604 m³): −18,77976 pp o −0,730157 m³. Cero desacuerdos con presión ≥15 mca **en 24 marcas**, no entre marcas. Se identificó una desalineación de entrada: Fractal usa la consigna de hora 0 durante 3600 s desde t=30, pero el PLC cambia a la hora siguiente desde t=3600. Los 30 s finales antes de cada muestra igualada en t no tienen idéntico perfil. Esto impide tratar la tabla como certificación dinámica y deja pendiente modelar la primera franja parcial. La optimización continúa apagada.
 
 Herramientas (resumen): instrumentación del trazador horario, corrida offline completa de 86.400 pasos PLC, JSON+CSV y cálculo de desviaciones; revisión de seguridad solo en marcas horarias. Sin credenciales.
+
+## Autor — 2026-10-24 UTC
+
+> a la salida de la Estacion reguladora de presion antes de entrar en el piso 1 tambien hay antirretorno, eso cambia mucho ?
+
+## Asistente — 2026-10-24 UTC
+
+Se modeló una válvula antirretorno común en la salida de la PRS después de la unión de ramas y antes del piso 1. Su Kv de 400 m³/h es supuesto; pérdida directa para 11,53 m³/h ~0,0085 mca. Contraste Fractal en punto estacionario: rama manual punto crítico 15,46150→15,45427 mca, AUTO asentada 15,45171→15,45064 mca. Se indicó que con un Kv menor la pérdida podría ser mayor y que las tablas D76 anteriores no validan esta nueva topología.
+
+## Autor — 2026-10-24 UTC
+
+> y entre pisos afectaria ?
+
+## Asistente — 2026-10-24 UTC
+
+El antirretorno común aguas arriba sí afecta la cabeza disponible a **todos** los pisos, pero con el Kv supuesto la caída normal calculada es pequeña; en automático la PRS tiende a compensarla mientras tenga margen, en manual se propaga. Antirretornos **adicionales** entre pisos sumarían pérdidas en serie a los pisos altos y pueden reducir la presión crítica; su existencia y Kv no fueron confirmados y no se agregaron al modelo. No se declaró validación dinámica de 24 h ni presión garantizada entre muestras.
+
+Herramientas (resumen): lectura de estación, modelo de válvula y topología, edición de contrato/solver/escenario, comparación estacionaria manual/AUTO y pruebas de flujo directo, Ruff/validación. Sin credenciales.

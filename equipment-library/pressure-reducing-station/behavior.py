@@ -26,6 +26,10 @@ def add_pressure_reducing_station(net: HydraulicNetwork, prefix: str, inlet: str
     z = net.nodes[inlet].elevation_m
     auto = p["branch"] == "auto"
     ids = {}
+    branch_out = outlet
+    if p["outlet_check_kv_m3h"] > 0:
+        branch_out = prefix + "regulated"
+        net.add_node(branch_out, z)
     for tag, is_open in (("a", auto), ("b", not auto)):
         n_in, n_prv = f"{prefix}{tag}_in", f"{prefix}{tag}_prv"
         net.add_node(n_in, z)
@@ -33,9 +37,11 @@ def add_pressure_reducing_station(net: HydraulicNetwork, prefix: str, inlet: str
         opening = 1.0 if is_open else 0.0
         net.add_valve(f"{prefix}iso_{tag}_in", inlet, n_in, kv_m3h=p["isolation_kv_m3h"], opening=opening)
         net.add_prv(f"{prefix}prv_{tag}", n_in, n_prv, setting_mca=p["manual_setting_mca"], kv_m3h=p["prv_kv_m3h"])
-        net.add_valve(f"{prefix}iso_{tag}_out", n_prv, outlet, kv_m3h=p["isolation_kv_m3h"], opening=opening)
+        net.add_valve(f"{prefix}iso_{tag}_out", n_prv, branch_out, kv_m3h=p["isolation_kv_m3h"], opening=opening)
         for name in (f"prv_{tag}", f"iso_{tag}_in", f"iso_{tag}_out"):
             ids[name] = prefix + name
+    if p["outlet_check_kv_m3h"] > 0:
+        net.add_check_valve(prefix + "outlet_check", branch_out, outlet, kv_m3h=p["outlet_check_kv_m3h"])
     return ids
 
 
