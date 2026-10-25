@@ -1,0 +1,36 @@
+# Rutas agregadas a los cinco puestos de cada módulo; los SAM son supuestos de la ruta conceptual.
+products:
+  - id: camiseta-polo
+    name: Camiseta Polo
+    family: polo
+    kind: finished
+    unit: u
+    size: talla adulta (supuesto)
+    color: '#285b83'
+    routing:
+      - { stage: corte por lote, equipment: [corte-tela-01, rack-paquetes], batch_qty: 30 }
+      - { stage: plana 1, equipment: [modulo-01, modulo-02, modulo-03], cycle_s: 147 }
+      - { stage: plana 2, equipment: [modulo-01, modulo-02, modulo-03], cycle_s: 141 }
+      - { stage: fileteadora 1, equipment: [modulo-01, modulo-02, modulo-03], cycle_s: 72 }
+      - { stage: fileteadora 2, equipment: [modulo-01, modulo-02, modulo-03], cycle_s: 63 }
+      - { stage: recubridora, equipment: [modulo-01, modulo-02, modulo-03], cycle_s: 93 }
+      - { stage: inspección y limpieza de hilos, equipment: [inspeccion-final-01], cycle_s: 33 }
+      - { stage: almacenamiento producto terminado, equipment: [almacen-pt-01], batch_qty: 20 }
+    assumed: true
+  - id: camiseta-oversize
+    name: Camiseta Oversize
+    family: oversize
+    kind: finished
+    unit: u
+    size: talla adulta (supuesto)
+    color: '#a25e42'
+    routing:
+      - { stage: corte por lote, equipment: [corte-tela-01, rack-paquetes], batch_qty: 30 }
+      - { stage: plana 1, equipment: [modulo-01, modulo-02, modulo-03], cycle_s: 60 }
+      - { stage: plana 2, equipment: [modulo-01, modulo-02, modulo-03], cycle_s: 33 }
+      - { stage: fileteadora 1, equipment: [modulo-01, modulo-02, modulo-03], cycle_s: 132 }
+      - { stage: fileteadora 2, equipment: [modulo-01, modulo-02, modulo-03], cycle_s: 63 }
+      - { stage: recubridora, equipment: [modulo-01, modulo-02, modulo-03], cycle_s: 87 }
+      - { stage: revisión final y limpieza de hilos, equipment: [inspeccion-final-01], cycle_s: 33 }
+      - { stage: almacenamiento producto terminado, equipment: [almacen-pt-01], batch_qty: 20 }
+    assumed: true

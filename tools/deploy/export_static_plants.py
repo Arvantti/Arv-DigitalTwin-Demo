@@ -1,9 +1,9 @@
 """Exporta el plano de cada planta como archivo estático para publicar la galería sin la API.
 
-La escena de planta pide `/api/plants/{id}`; este script guarda esa misma respuesta (la que arma `twin_api.main`)
+La escena de planta pide `/api/plants/{id}`; este script guarda esa misma respuesta (la que arma `twin_emulator_api.main`)
 en apps/gallery/public/api/plants/{id}, sin extensión, para que Cloudflare Pages la sirva en la misma ruta.
 La simulación en vivo (WebSocket) sigue necesitando la API; para las plantas con simulación conectada guarda además
-una grabación de la operación normal en apps/gallery/public/api/replays/{id}.json (twin_api.replay), que la escena
+una grabación de la operación normal en apps/gallery/public/api/replays/{id}.json (twin_emulator_api.replay), que la escena
 reproduce con ▶ SIMULAR cuando no hay API. Para las plantas con demanda (fase E) guarda la programación de
 producción de 35 días atrás a 45 días adelante en apps/gallery/public/api/schedules/{id}.json; la escena recorta de
 ahí el rango que pide el usuario (por defecto el mes en curso y 30 días adelante). El despliegue corre cada semana
@@ -23,8 +23,8 @@ warnings.filterwarnings("ignore")
 from datetime import timedelta  # noqa: E402
 
 from fastapi.testclient import TestClient  # noqa: E402
-from twin_api.main import _catalog, _plant_model, app  # noqa: E402
-from twin_api.replay import record_plant  # noqa: E402
+from twin_emulator_api.main import _catalog, _plant_model, app  # noqa: E402
+from twin_emulator_api.replay import record_plant  # noqa: E402
 from twin_runtime import planning  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]

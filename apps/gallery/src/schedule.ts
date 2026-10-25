@@ -84,6 +84,8 @@ interface Options {
   select: (id: string) => void;
   /** Resalta en el 3D la ruta de un producto. */
   showProduct?: (id: string) => void;
+  /** URL de la API del emulador (puede vivir en otro origen, parámetro ?api=). */
+  apiUrl?: (path: string) => string;
 }
 
 const BACK_OPTIONS: [string, string][] = [
@@ -153,6 +155,7 @@ function clip(plan: PlanDoc, first: string, last: string): PlanDoc {
 export function buildSchedule(opts: Options): void {
   const section = document.getElementById("schedule-section") as HTMLElement;
   const sidebar = document.getElementById("sidebar") as HTMLElement;
+  const api = opts.apiUrl ?? ((path: string) => path);
   const key = (k: string) => `twin.schedule.${opts.plantId}.${k}`;
   let back = store.get(key("back")) ?? "month";
   let filter = "all";
@@ -195,12 +198,12 @@ export function buildSchedule(opts: Options): void {
   async function fetchPlan(first: string, last: string, urgent: UrgentInput[], now: string): Promise<PlanDoc> {
     try {
       const r = urgent.length
-        ? await fetch(`/api/schedules/${opts.plantId}/urgent`, {
+        ? await fetch(api(`/api/schedules/${opts.plantId}/urgent`), {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ from: first, to: last, now, orders: urgent }),
           })
-        : await fetch(`/api/schedules/${opts.plantId}?from=${first}&to=${last}`);
+        : await fetch(api(`/api/schedules/${opts.plantId}?from=${first}&to=${last}`));
       if (r.status === 422) throw new Error(((await r.json()) as { detail: string }).detail);
       if (!r.ok || !(r.headers.get("content-type") ?? "").includes("json")) throw new TypeError("sin API");
       live = true;

@@ -143,6 +143,19 @@ export default function build(params: Params): EquipmentModel {
   inGauge.position.set(xIn + s * 0.5, gy + r * 0.9, zHead);
   root.add(inGauge);
 
+  // Indicadores pequeños de dirección: el caudal entra por el cabezal (+X) y se reparte hacia el fondo (−Z).
+  // Solo se hacen visibles cuando el comportamiento publica `flow_in_norm` positivo.
+  const gridFlowMat = new THREE.MeshStandardMaterial({ color: "#a8f4ff", emissive: "#39c8e8", emissiveIntensity: 1.1 });
+  const gridFlowArrows: { mesh: THREE.Mesh; from: THREE.Vector3; to: THREE.Vector3; offset: number }[] = [];
+  const addGridFlowArrow = (from: THREE.Vector3, to: THREE.Vector3, offset: number) => {
+    const mesh = new THREE.Mesh(new THREE.ConeGeometry(Math.max(0.018, r * 0.9), Math.max(0.07, r * 2.8), 4), gridFlowMat);
+    mesh.visible = false;
+    root.add(mesh);
+    gridFlowArrows.push({ mesh, from, to, offset });
+  };
+  addGridFlowArrow(v3(xIn + s * 0.25, gy, zHead), v3(xNode(4), gy, zHead), 0);
+  for (let j = 1; j <= 4; j++) addGridFlowArrow(v3(xNode(j), gy, zHead - s * 0.18), v3(xNode(j), gy, zNode(5)), j / 4);
+
   const valves: ValveHandle[] = [];
   const consumerMat = M.paint(blue, 0.4);
   const leakMat = M.paint(red, 0.4);
@@ -335,7 +348,18 @@ export default function build(params: Params): EquipmentModel {
   root.add(sign);
 
   const fullScale = 40;
-  function update(frame: AnimationFrame): void {
+  let flowPhase = 0;
+  function update(frame: AnimationFrame, dt = 0): void {
+    const flow = Math.max(0, ch(frame, "flow_in_norm"));
+    flowPhase = (flowPhase + dt * (0.2 + Math.min(1, flow) * 0.45)) % 1;
+    for (const arrow of gridFlowArrows) {
+      arrow.mesh.visible = flow > 0.01;
+      if (arrow.mesh.visible) {
+        const progress = (flowPhase + arrow.offset) % 1;
+        arrow.mesh.position.copy(arrow.from).lerp(arrow.to, 0.15 + progress * 0.7);
+        arrow.mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), arrow.to.clone().sub(arrow.from).normalize());
+      }
+    }
     for (const v of valves) {
       const open = clamp(ch(frame, `open_${v.id}`), 0, 1);
       v.lever.rotation.z = (1 - open) * (Math.PI / 2);

@@ -2,7 +2,7 @@
  * Página del gemelo de ciudad (centro de Medellín, zona B): plano de la red e indicadores de la línea base.
  *
  * Los datos salen de `tools/city/sumo_city.py` (resultados/linea-base.json del modelo) y se copian a
- * `public/data/ciudad-linea-base.json`; el plano es `layout.svg` del modelo copiado a `public/data/ciudad-plano.svg`.
+ * `public/data/ciudad-linea-base.json`; el plano OSM generado es `layout.svg`, copiado a `public/data/ciudad-plano.svg`.
  * Una prueba en tools/city/tests revisa que las copias sigan iguales al original.
  */
 import "./acueducto-panel.css";

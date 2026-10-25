@@ -31,6 +31,9 @@ import { type CatalogDoc, type ProductsApi, buildProducts } from "./products.ts"
 import { buildSchedule } from "./schedule.ts";
 import "./styles.css";
 
+// Evita que el HTML sin estilos aparezca mientras Vite descarga el módulo CSS.
+document.body.classList.remove("loading");
+
 interface Zone {
   id: string;
   name: string;
@@ -115,6 +118,15 @@ interface Spec {
 
 const specs: Record<string, Spec> = Object.fromEntries(Object.entries(rawSpecs).map(([k, v]) => [k, yaml.load(v) as Spec]));
 const url = new URLSearchParams(location.search);
+// En una galería estática, el emulador puede vivir en un origen HTTPS/WSS aparte.
+const apiOrigin = (url.get("api") ?? location.origin).replace(/\/$/, "");
+const apiUrl = (path: string) => `${apiOrigin}${path}`;
+const websocketUrl = (path: string) => `${apiOrigin.replace(/^http/, "ws")}${path}`;
+let sessionId = url.get("session");
+let forecastStudyId = url.get("study");
+let latestLiveMessage: SimMessage | null = null;
+let historicalTime: number | null = null;
+let historyRequest = 0;
 const shotMode = url.get("shot") === "1";
 if (shotMode && url.get("ui") !== "1") document.body.classList.add("shot");
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -154,6 +166,8 @@ let latest: Record<string, EquipmentSnapshot> = {};
 let socket: WebSocket | null = null;
 let paused = false;
 let messages = 0;
+type EquipmentHistorySample = { t: number; values: Record<string, number> };
+const equipmentHistory = new Map<string, EquipmentHistorySample[]>();
 
 // ------------------------------------------------------------------ construcción
 function buildZones(): void {
@@ -249,6 +263,9 @@ const warehouseBuilders: Record<string, (eq: PlantEquipment) => THREE.Object3D> 
 
 /** Tipos del plano sin simulación que sí tienen forma en la librería. */
 const LIBRARY_FALLBACK: Record<string, string> = {
+  "lockstitch-sewing-machine": "lockstitch-sewing-machine",
+  "overlock-sewing-machine": "overlock-sewing-machine",
+  "coverstitch-sewing-machine": "coverstitch-sewing-machine",
   vffs_sachet: "vffs-sachet-filler",
   checkweigher: "checkweigher",
   cooling_tunnel: "cooling-tunnel",
@@ -391,6 +408,7 @@ interface PipeRun {
   points: THREE.Vector3[];
   cumulative: number[];
   beads: THREE.Mesh[];
+  arrows: THREE.Mesh[];
   links: string[];
   /** Caudal de referencia en kg/h: el del plano si viene en kg/h o L/h; si no, el máximo visto en la simulación. */
   reference: number | null;
@@ -398,6 +416,8 @@ interface PipeRun {
   phase: number;
   /** Velocidad real del agua en m/s (tubos de la red de agua); null si el tramo no la publica. */
   velocity: number | null;
+  /** Sentido físico del caudal respecto al trazado from → to. */
+  direction: 1 | -1;
 }
 const pipeRuns: PipeRun[] = [];
 let latestLinks: Record<string, LinkState> = {};
@@ -717,9 +737,18 @@ function buildPipes(): void {
       stage.content.add(bead);
       return bead;
     });
+    // Flechas visibles: se orientan con el signo de la velocidad hidráulica, no con una dirección decorativa fija.
+    const arrowMat = new THREE.MeshStandardMaterial({ color: "#8ff3ff", emissive: "#4de0ff", emissiveIntensity: 1.2 });
+    const arrows = Array.from({ length: Math.max(1, Math.ceil(count / 5)) }, () => {
+      // Indicador deliberadamente más pequeño que la tubería: informa sentido sin ocultar válvulas ni equipos.
+      const arrow = new THREE.Mesh(new THREE.ConeGeometry(Math.max(0.018, radius * 1.15), Math.max(0.08, radius * 3.2), 4), arrowMat);
+      arrow.visible = false;
+      stage.content.add(arrow);
+      return arrow;
+    });
     const perUnit: Record<string, number> = { "kg/h": 1, "L/h": 1, "m3/h": 1000 };
     const reference = pipe.rate && pipe.unit && perUnit[pipe.unit] ? pipe.rate * perUnit[pipe.unit] : null;
-    pipeRuns.push({ from: pipe.from, to: pipe.to, points, cumulative, beads, links: pipe.links ?? [], reference, peak: 0, phase: 0, velocity: null });
+    pipeRuns.push({ from: pipe.from, to: pipe.to, points, cumulative, beads, arrows, links: pipe.links ?? [], reference, peak: 0, phase: 0, velocity: null, direction: 1 });
   }
 }
 
@@ -728,6 +757,12 @@ function pointAt(run: PipeRun, distance: number): THREE.Vector3 {
   while (k < run.cumulative.length - 1 && run.cumulative[k] < distance) k++;
   const span = run.cumulative[k] - run.cumulative[k - 1] || 1;
   return run.points[k - 1].clone().lerp(run.points[k], Math.min(1, Math.max(0, (distance - run.cumulative[k - 1]) / span)));
+}
+
+function tangentAt(run: PipeRun, distance: number): THREE.Vector3 {
+  let k = 1;
+  while (k < run.cumulative.length - 1 && run.cumulative[k] < distance) k++;
+  return run.points[k].clone().sub(run.points[k - 1]).normalize();
 }
 
 /**
@@ -739,7 +774,9 @@ function pointAt(run: PipeRun, distance: number): THREE.Vector3 {
 function pipeLoad(run: PipeRun): number {
   const states = run.links.map((id) => latestLinks[id]).filter((l): l is LinkState => !!l);
   const velocities = states.map((l) => l.velocity_m_s).filter((v): v is number => v !== undefined);
-  run.velocity = velocities.length ? Math.max(...velocities) : null;
+  const signedVelocity = velocities.reduce((sum, velocity) => sum + velocity, 0);
+  run.direction = signedVelocity < 0 ? -1 : 1;
+  run.velocity = velocities.length ? Math.max(...velocities.map((velocity) => Math.abs(velocity))) : null;
   if (states.length) {
     const flow = states.reduce((sum, l) => sum + (l.flow_kg_h ?? 0), 0);
     run.peak = Math.max(run.peak, flow);
@@ -766,7 +803,20 @@ function animatePipes(time: number): void {
     const shown = load > 0.005 ? Math.max(1, Math.ceil(run.beads.length * Math.min(1, load))) : 0;
     run.beads.forEach((bead, i) => {
       bead.visible = i < shown;
-      if (i < shown) bead.position.copy(pointAt(run, ((run.phase + (i * total) / run.beads.length) % total + total) % total));
+      if (i < shown) {
+        const phase = ((run.phase + (i * total) / run.beads.length) % total + total) % total;
+        bead.position.copy(pointAt(run, run.direction > 0 ? phase : total - phase));
+      }
+    });
+    run.arrows.forEach((arrow, i) => {
+      arrow.visible = shown > 0;
+      if (shown > 0) {
+        const phase = ((run.phase + ((i + 0.5) * total) / run.arrows.length) % total + total) % total;
+        const distance = run.direction > 0 ? phase : total - phase;
+        arrow.position.copy(pointAt(run, distance));
+        const tangent = tangentAt(run, distance).multiplyScalar(run.direction);
+        arrow.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), tangent);
+      }
     });
   }
 }
@@ -807,12 +857,12 @@ stage.renderer.domElement.addEventListener("pointerup", (e) => {
 });
 
 // ------------------------------------------------------------------ cámaras
-function focusRect(rect: [number, number, number, number], height = 4, distanceFactor = 0.85, base = 0): void {
+function focusRect(rect: [number, number, number, number], height = 4, distanceFactor = 0.85, base = 0, direction?: THREE.Vector3): void {
   const [x0, y0, w, l] = rect;
   const probe = new THREE.Mesh(new THREE.BoxGeometry(w, height, l));
   probe.position.copy(toScene(x0 + w / 2, y0 + l / 2)).setY(base + height / 2);
   probe.updateMatrixWorld(true);
-  stage.frame(probe, distanceFactor);
+  stage.frame(probe, distanceFactor, direction);
 }
 
 function buildCameras(): void {
@@ -820,7 +870,7 @@ function buildCameras(): void {
   const building = doc.zones.some((z) => (z.elevation ?? 0) > 0);
   const top = Math.max(6, ...doc.zones.map((z) => (z.elevation ?? 0) + z.height));
   const entries: [string, string, () => void][] = [
-    ["VISTA GENERAL", "general", () => focusRect([0, 0, doc.plant.site?.width_x ?? 112, doc.plant.site?.length_y ?? 72], top, building ? 0.9 : 0.62)],
+    ["VISTA GENERAL", "general", () => focusRect([0, 0, doc.plant.site?.width_x ?? 112, doc.plant.site?.length_y ?? 72], top, building ? 0.9 : 0.62, 0, new THREE.Vector3(1.2, 0.85, 1.35))],
   ];
   // Edificio por pisos: una cámara por zona (cada piso) y una por nivel de los equipos que lo declaran (la rejilla).
   const featured = building
@@ -833,11 +883,21 @@ function buildCameras(): void {
           // halls de pasajeros (aeropuerto): zonas administrativas con equipos simulados
           (z.kind === "admin" && doc.equipment.some((e) => e.zone === z.id && e.sim)),
       );
-  for (const z of featured) entries.push([z.name.toUpperCase(), z.id, () => focusRect(z.rect, Math.max(3, z.height), 0.85, z.elevation ?? 0)]);
+  const zoneDirections = [
+    new THREE.Vector3(-1.25, 0.5, 1.1),
+    new THREE.Vector3(1.15, 0.65, -1.25),
+    new THREE.Vector3(0.8, 0.38, 1.7),
+    new THREE.Vector3(-1.0, 0.8, -1.35),
+  ];
+  for (const [index, z] of featured.entries())
+    entries.push([z.name.toUpperCase(), z.id, () => focusRect(z.rect, Math.max(3, z.height), 0.78, z.elevation ?? 0, zoneDirections[index % zoneDirections.length])]);
   if (building)
     for (const a of assets.values()) {
       const level = a.eq.params?.level;
-      if (typeof level === "number") entries.push([`NIVEL ${level}`, `nivel-${level}`, () => stage.frame(a.root, 1.4)]);
+      if (typeof level === "number") {
+        const direction = level % 2 ? new THREE.Vector3(1.2, 0.42, -1.4) : new THREE.Vector3(-1.3, 0.48, 1.2);
+        entries.push([`NIVEL ${level}`, `nivel-${level}`, () => stage.frame(a.root, 1.05, direction)]);
+      }
     }
   // bodega de producto terminado junto con el patio de despacho (la planta de salsas): una sola vista
   const bodega = doc.zones.find((z) => z.id === "bodega-pt");
@@ -871,12 +931,17 @@ function buildCameras(): void {
   for (const [label, key, go] of entries) {
     const b = document.createElement("button");
     b.textContent = label;
-    b.onclick = go;
+    b.onclick = () => {
+      go();
+      box.querySelectorAll("button").forEach((item) => item.classList.toggle("active", item === b));
+    };
     b.dataset.camera = key;
     box.appendChild(b);
   }
   const initial = url.get("camera") ?? "general";
-  (entries.find((e) => e[1] === initial) ?? entries[0])[2]();
+  const initialEntry = entries.find((entry) => entry[1] === initial) ?? entries[0];
+  initialEntry[2]();
+  box.querySelector<HTMLButtonElement>(`[data-camera="${initialEntry[1]}"]`)?.classList.add("active");
 }
 
 // ------------------------------------------------------------------ recorrido
@@ -963,6 +1028,7 @@ function disconnect(): void {
 type SimMessage = {
   t: number;
   speed?: number;
+  running?: boolean;
   snapshot: { equipment: Record<string, EquipmentSnapshot>; lines: Parameters<typeof renderLines>[0]; links?: Record<string, LinkState> };
   events: Parameters<typeof appendEvents>[0];
 };
@@ -974,6 +1040,11 @@ function applyMessage(msg: SimMessage, label: string): void {
   for (const [id, snap] of Object.entries(latest)) {
     const asset = assets.get(id);
     if (asset) asset.frame = { channels: snap.animation, state: snap.state, phase: snap.phase, variables: snap.variables, items: snap.items, label: id.toUpperCase() };
+    const values = Object.fromEntries(Object.entries(snap.variables).filter(([, value]) => typeof value === "number" && Number.isFinite(value))) as Record<string, number>;
+    const samples = equipmentHistory.get(id) ?? [];
+    if (!samples.length || samples.at(-1)!.t !== msg.t) samples.push({ t: msg.t, values });
+    if (samples.length > 720) samples.shift();
+    equipmentHistory.set(id, samples);
   }
   for (const piece of controlPieces) piece.feed?.(latest, msg.t);
   beltPlc?.update(latest);
@@ -988,15 +1059,21 @@ function applyMessage(msg: SimMessage, label: string): void {
 }
 
 function connect(): void {
+  // La escena no crea runtimes propios: el PLC es quien inicia la operación y entrega su session_id.
+  if (!sessionId) {
+    $("view-plc").click(); // El PLC crea la sesión sin sacar al operador del 3D.
+    return;
+  }
   if (socket || replay) return disconnect();
   const q = new URLSearchParams({ speed: String(speedFromSlider()) });
   const scenario = $<HTMLSelectElement>("scenario").value;
   if (scenario) q.set("scenario", scenario);
-  const proto = location.protocol === "https:" ? "wss" : "ws";
-  const ws = new WebSocket(`${proto}://${location.host}/api/plants/${doc.plant.id}/simulate?${q}`);
+  const endpoint = sessionId ? `/api/plants/${doc.plant.id}/sessions/${sessionId}?role=viewer` : `/api/plants/${doc.plant.id}/simulate?${q}`;
+  const ws = new WebSocket(websocketUrl(endpoint));
   socket = ws;
+  equipmentHistory.clear();
   let received = 0;
-  $("btn-connect").textContent = "■ DETENER";
+  $("btn-connect").textContent = sessionId ? "● SIGUIENDO OPERACIÓN PLC" : "■ DETENER";
   ws.onmessage = (ev) => {
     const msg = JSON.parse(ev.data);
     if (msg.error) {
@@ -1004,13 +1081,17 @@ function connect(): void {
       return;
     }
     received++;
-    applyMessage(msg, "SIM");
+    latestLiveMessage = msg as SimMessage;
+    const slider = $<HTMLInputElement>("history-time");
+    slider.max = String(Math.floor(msg.t / 60) * 60);
+    if (historicalTime === null && !forecastStudyId) applyMessage(msg, msg.running === false ? "PLC.DETENIDO" : "PLC.ACTUAL");
   };
   // sin API (sitio publicado): se reproduce la grabación de la operación normal
   ws.onclose = () => {
     if (socket !== ws) return;
     socket = null;
-    if (received === 0) void startReplay();
+    if (sessionId) disconnect();
+    else if (received === 0) void startReplay();
     else disconnect();
   };
   ws.onerror = () => {
@@ -1019,7 +1100,7 @@ function connect(): void {
 }
 
 // ------------------------------------------------------------------ reproducción grabada (sin API)
-// La genera tools/deploy/export_static_plants.py con twin_api.replay: cada cuadro trae solo lo que cambió.
+// La genera tools/deploy/export_static_plants.py con twin_emulator_api.replay: cada cuadro trae solo lo que cambió.
 type Replay = { interval_s: number; frames: SimMessage[] };
 let replayData: Replay | null = null;
 let replay: { timer: number; t: number; next: number; state: Record<string, EquipmentSnapshot>; links: Record<string, LinkState> } | null = null;
@@ -1081,6 +1162,35 @@ function fmt(v: unknown, unit = ""): string {
   return String(v);
 }
 
+function renderAssetChart(): void {
+  const asset = selectedId ? assets.get(selectedId) : undefined;
+  const spec = asset?.eq.sim ? specs[asset.eq.sim.type] : undefined;
+  const samples = selectedId ? equipmentHistory.get(selectedId) ?? [] : [];
+  const available = (spec?.variables ?? []).filter((variable) => samples.some((sample) => Number.isFinite(sample.values[variable.id])));
+  const select = $<HTMLSelectElement>("asset-chart-variable");
+  const previouslySelected = select.value;
+  select.innerHTML = available.map((variable) => `<option value="${variable.id}">${variable.id} · ${variable.unit || "sin unidad"}</option>`).join("");
+  select.value = previouslySelected;
+  if (!available.length) {
+    $("asset-chart-content").innerHTML = `<p class="dim">Aún no hay muestras numéricas del equipo. Inicie la simulación para registrar su tendencia.</p>`;
+    return;
+  }
+  const variable = available.some((item) => item.id === select.value) ? select.value : available[0].id;
+  select.value = variable;
+  const unit = available.find((item) => item.id === variable)?.unit ?? "";
+  const points = samples.filter((sample) => Number.isFinite(sample.values[variable]));
+  const values = points.map((sample) => sample.values[variable]);
+  const width = 920, height = 400, left = 58, right = 20, top = 18, bottom = 36;
+  const low = Math.min(...values), high = Math.max(...values), range = Math.max(0.01, high - low);
+  const x = (index: number) => left + (index * (width - left - right)) / Math.max(1, points.length - 1);
+  const y = (reading: number) => top + height - top - bottom - ((reading - low) / range) * (height - top - bottom);
+  const grid = [0, .25, .5, .75, 1].map((fraction) => { const reading = low + range * fraction; return `<line class="axis" x1="${left}" x2="${width - right}" y1="${y(reading)}" y2="${y(reading)}"/><text x="${left - 7}" y="${y(reading) + 4}" text-anchor="end">${fmt(reading, unit)}</text>`; }).join("");
+  const times = [0, .25, .5, .75, 1].map((fraction) => { const sample = points[Math.round((points.length - 1) * fraction)]; const seconds = Math.floor(sample.t); return `<text x="${left + fraction * (width - left - right)}" y="${height - 10}" text-anchor="middle">${String(Math.floor(seconds / 3600)).padStart(2, "0")}:${String(Math.floor(seconds / 60) % 60).padStart(2, "0")}</text>`; }).join("");
+  const line = points.map((sample, index) => `${x(index)},${y(sample.values[variable])}`).join(" ");
+  $("asset-chart-title").textContent = `${asset!.eq.id.toUpperCase()} · ${variable.toUpperCase()}`;
+  $("asset-chart-content").innerHTML = `<svg class="asset-chart-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="Tendencia de ${variable}"><g class="day-axis">${grid}${times}</g><polyline points="${line}" fill="none" stroke="#4EA7FF" stroke-width="3"/></svg><p class="asset-chart-legend"><i></i> Señal simulada publicada por el equipo · mín. ${fmt(low, unit)} · máx. ${fmt(high, unit)} · ${points.length} muestras</p>`;
+}
+
 function renderAsset(): void {
   const asset = selectedId ? assets.get(selectedId) : undefined;
   const snap = selectedId ? latest[selectedId] : undefined;
@@ -1097,11 +1207,12 @@ function renderAsset(): void {
   $("vars").innerHTML = (spec?.variables ?? [])
     .map((v) => `<div title="${v.description}"><span>${v.id}</span><span>${fmt(snap?.variables?.[v.id], v.unit)}</span></div>`)
     .join("");
+  $("asset-chart").hidden = !asset?.eq.sim || Boolean(forecastStudyId);
   const cmds = $("commands");
   if (cmds.dataset.for !== (selectedId ?? "")) {
     cmds.dataset.for = selectedId ?? "";
     cmds.innerHTML = "";
-    if (spec) {
+    if (spec && !forecastStudyId && !sessionId) {
       for (const c of (spec.commands ?? []).filter((c) => !c.args)) cmds.appendChild(commandButton(c.id.replace(/_/g, " ").toUpperCase(), c.description, c.id, {}));
       for (const f of spec.faults ?? []) cmds.appendChild(commandButton(`⚠ ${f.id.replace(/_/g, " ")}`, f.description, "inject_fault", { fault: f.id }));
     }
@@ -1172,20 +1283,129 @@ function buildLighting(): void {
   }
 }
 
+// ------------------------------------------------------------------ un solo escritorio: 3D + HMI y pasado de solo lectura
+function waterView(view: "3d" | "plc" | "history"): void {
+  $("water-plc-panel").hidden = view !== "plc";
+  $("water-history-panel").hidden = view !== "history";
+  for (const key of ["3d", "plc", "history"]) $(`view-${key}`).classList.toggle("active", view === key);
+  if (view === "plc") {
+    const frame = $<HTMLIFrameElement>("water-plc-frame");
+    if (!frame.src) {
+      const params = new URLSearchParams({ plant: doc.plant.id, embedded: "1" });
+      if (sessionId) params.set("session", sessionId);
+      if (url.get("api")) params.set("api", apiOrigin);
+      if (url.get("fractal")) params.set("fractal", url.get("fractal")!);
+      frame.src = `/plc.html?${params}`;
+    }
+  }
+  if (view === "history") {
+    // Pasado y futuro nunca se superponen: el estudio sigue guardado, pero la vista
+    // vuelve a PLC.Actual antes de pintar un fotograma histórico.
+    if (forecastStudyId) {
+      forecastStudyId = null; url.delete("study"); history.replaceState(null, "", `${location.pathname}?${url}`);
+      $("forecast-panel").hidden = true; document.body.classList.remove("forecast-mode");
+    }
+    equipmentHistory.clear();
+    if (sessionId) void showHistory(Number($<HTMLInputElement>("history-time").value));
+    else $("history-caption").textContent = "Inicie una sesión PLC para generar historia.";
+  } else if (historicalTime !== null) {
+    historicalTime = null;
+    equipmentHistory.clear();
+    if (!forecastStudyId && latestLiveMessage) applyMessage(latestLiveMessage, "PLC.ACTUAL");
+  }
+}
+
+async function showHistory(t: number): Promise<void> {
+  if (!sessionId) return;
+  const request = ++historyRequest;
+  try {
+    const response = await fetch(apiUrl(`/api/plants/${doc.plant.id}/sessions/${sessionId}/historian/frame?at_t=${encodeURIComponent(t)}`));
+    if (!response.ok) throw Error(`sin fotograma (${response.status})`);
+    const data = await response.json() as { t: number; snapshot: SimMessage["snapshot"]; temporal_context: string };
+    if (request !== historyRequest || $("water-history-panel").hidden) return;
+    historicalTime = data.t;
+    applyMessage({ t: data.t, snapshot: data.snapshot, events: [] }, "HISTÓRICO · NO OPERATIVO");
+    $("history-caption").textContent = `t=${Math.floor(data.t)} s · PLC sigue en play · vista de solo lectura`;
+  } catch (error) { if (request === historyRequest) $("history-caption").textContent = `No se pudo leer el histórico: ${String(error)}`; }
+}
+
 // ------------------------------------------------------------------ arranque
+async function loadForecast(): Promise<void> {
+  if (!sessionId || !forecastStudyId) return;
+  historicalTime = null;
+  const response = await fetch(apiUrl(`/api/plants/${doc.plant.id}/sessions/${sessionId}/fractal/studies/${forecastStudyId}/frames`));
+  if (!response.ok) throw new Error("No se pudo cargar el estudio Fractal desde PLC");
+  const data = await response.json() as { base_time: number; frames: { hour: number; supply_level_pct: number; robust: boolean; snapshot: SimMessage["snapshot"]; scenarios: { demand_factor: number; state: Record<string, number>; feasible: boolean }[] }[] };
+  const panel = $("forecast-panel");
+  const selector = $<HTMLSelectElement>("forecast-hour");
+  panel.hidden = false;
+  document.body.classList.add("forecast-mode");
+  $("forecast-study-meta").textContent = `Estudio ${forecastStudyId} · ${data.frames.length} horas · PLC.Actual no se modifica`;
+  selector.innerHTML = data.frames.map((frame) => `<option value="${frame.hour}">Hora ${String(frame.hour + 1).padStart(2, "0")}</option>`).join("");
+  const showHour = () => {
+    const frame = data.frames[Number(selector.value)];
+    const nominal = frame?.scenarios?.[1];
+    if (!frame || !nominal) { $("forecast-values").textContent = "El estudio no contiene métricas para esta hora."; return; }
+    applyMessage({ t: data.base_time + (frame.hour + 1) * 3600, speed: 240, snapshot: frame.snapshot, events: [] }, "FUTURO FRACTAL");
+    $("forecast-values").textContent = `Tanque estimado ${frame.supply_level_pct.toFixed(1)} % (nivel sensible a la histéresis de retorno) · presión crítica ${Number(nominal.state.critical_pressure_mca).toFixed(2)} mca · fuga ${Number(nominal.state.leakage_m3h).toFixed(3)} m³/h · ${frame.robust ? "FACTIBLE EN MODELO · NO VALIDADO DINÁMICAMENTE" : "REVISAR RESTRICCIONES"}`;
+  };
+  selector.onchange = showHour;
+  showHour();
+}
+
 async function start(): Promise<void> {
   const plantId = url.get("plant") ?? "sauce-plant-v1";
   await bootStage(6, "Conectando con el gemelo digital…");
-  const res = await fetch(`/api/plants/${plantId}`);
-  if (!res.ok) {
-    const message = `No se pudo cargar ${plantId} (${res.status}). ¿Está corriendo la API?`;
+  const res = await fetch(apiUrl(`/api/plants/${plantId}`)).catch(() => null);
+  if (!res?.ok) {
+    const message = `No se pudo cargar ${plantId}. Configure ?api=https://host-del-emulador.`;
     $("plant-name").textContent = message;
     bootError(message);
     return;
   }
   await bootStage(22, "Descargando el plano de la planta…");
   doc = await res.json();
+  // La cuadrícula de referencia sigue el piso más bajo declarado. Así un sótano/foso del plano no parece equipo enterrado
+  // y se conservan intactas todas las cotas hidráulicas, equipos y rutas.
+  stage.setGroundElevation(Math.min(...doc.zones.map((zone) => zone.elevation ?? 0)));
   $<HTMLAnchorElement>("link-equipos").href = `/equipos.html?plant=${plantId}`;
+  const plcLink = $<HTMLAnchorElement>("link-plc");
+  $("forecast-return").onclick = () => {
+    forecastStudyId = null; url.delete("study"); history.replaceState(null, "", `${location.pathname}?${url}`);
+    $("forecast-panel").hidden = true; document.body.classList.remove("forecast-mode");
+    if (latestLiveMessage) applyMessage(latestLiveMessage, "PLC.ACTUAL");
+    else if (sessionId && !socket) connect();
+  };
+  const plcSchema = await fetch(apiUrl(`/api/plants/${plantId}/plc-schema`)).catch(() => null);
+  if (plcSchema?.ok) {
+    document.body.classList.add("plc-viewer-mode");
+    plcLink.href = "#plc";
+    plcLink.hidden = false;
+    $("water-workspace-nav").hidden = false;
+    plcLink.onclick = (event) => { event.preventDefault(); waterView("plc"); };
+    $("view-3d").onclick = () => waterView("3d");
+    $("view-plc").onclick = () => waterView("plc");
+    $("view-history").onclick = () => waterView("history");
+    $<HTMLInputElement>("history-time").oninput = (event) => { void showHistory(Number((event.target as HTMLInputElement).value)); };
+    $("history-return").onclick = () => { historyRequest++; historicalTime = null; waterView("3d"); if (latestLiveMessage) applyMessage(latestLiveMessage, "PLC.ACTUAL"); };
+    window.addEventListener("message", (event: MessageEvent<{ type?: string; sessionId?: string; studyId?: string; plantId?: string }>) => {
+      const frame = $<HTMLIFrameElement>("water-plc-frame");
+      if (event.origin !== location.origin || event.source !== frame.contentWindow || event.data.plantId !== doc.plant.id) return;
+      if (event.data.type === "plc-session-created" && event.data.sessionId && /^[\w-]+$/.test(event.data.sessionId)) {
+        if (sessionId !== event.data.sessionId) {
+          disconnect(); sessionId = event.data.sessionId; url.set("session", sessionId); history.replaceState(null, "", `${location.pathname}?${url}`);
+          connect();
+        }
+      }
+      if (event.data.type === "plc-show-3d") {
+        waterView("3d");
+        if (event.data.studyId && /^[\w-]+$/.test(event.data.studyId)) {
+          forecastStudyId = event.data.studyId; url.set("study", forecastStudyId); history.replaceState(null, "", `${location.pathname}?${url}`);
+          void loadForecast();
+        }
+      }
+    });
+  }
   $("plant-name").textContent = doc.plant.name.toUpperCase();
   const simulated = doc.equipment.filter((e) => e.sim).length;
   await bootStage(34, "Construyendo zonas y pisos…");
@@ -1237,7 +1457,7 @@ async function start(): Promise<void> {
     updateProducts = productsApi.update;
   }
   // Programación de producción (fase E): solo las plantas con demanda en el catálogo (salsas y plásticos).
-  if (doc.catalog?.schedule) buildSchedule({ plantId, select, showProduct: (id) => productsApi?.show(id) });
+  if (doc.catalog?.schedule) buildSchedule({ plantId, select, apiUrl, showProduct: (id) => productsApi?.show(id) });
   if (url.get("select")) select(url.get("select"));
   const focusAsset = url.get("focus") ? assets.get(url.get("focus")!) : undefined;
   if (focusAsset) stage.frame(focusAsset.root, 1.1);
@@ -1256,7 +1476,30 @@ async function start(): Promise<void> {
     }
     connect();
   }
+  $("asset-chart").onclick = () => {
+    if (!selectedId) return;
+    renderAssetChart();
+    $<HTMLDialogElement>("asset-chart-modal").showModal();
+  };
+  $("asset-chart-close").onclick = () => $<HTMLDialogElement>("asset-chart-modal").close();
+  $<HTMLSelectElement>("asset-chart-variable").onchange = renderAssetChart;
+  if (forecastStudyId) {
+    try { await loadForecast(); } catch (error) { bootError(String(error)); }
+    $("btn-connect").textContent = "◆ VISTA DE ESCENARIO FRACTAL";
+    $<HTMLButtonElement>("btn-connect").disabled = true;
+    $<HTMLSelectElement>("scenario").disabled = true;
+    connect(); // Sigue PLC.Actual en memoria sin sobrescribir el futuro seleccionado.
+  } else if (sessionId) {
+    $("btn-connect").textContent = "● SIGUIENDO OPERACIÓN PLC";
+    $<HTMLButtonElement>("btn-connect").disabled = true;
+    $<HTMLSelectElement>("scenario").disabled = true;
+    connect();
+  } else {
+    $("btn-connect").textContent = "▣ ABRIR PLC MASTER";
+    $<HTMLSelectElement>("scenario").disabled = true;
+  }
   renderAsset();
+  if (plcSchema?.ok && url.get("workspace") === "plc") waterView("plc");
   await bootStage(94, "Renderizando la escena 3D…");
   loop();
 }

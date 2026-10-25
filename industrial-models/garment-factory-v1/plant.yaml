@@ -1,0 +1,53 @@
+schema_version: 0.1.0
+plant:
+  id: garment-factory-v1
+  name: Planta de confecciones (referencia)
+  kind: discrete
+  units: { length: m, angle: deg, mass: kg, time: s }
+  frame: { origin: esquina suroeste, x: este, y: norte, z: arriba }
+  site: { width_x: 60, length_y: 36 }
+  context:
+    location: Colombia (referencia ficticia)
+    shifts: 1 turno de 8 h
+    products: [camiseta-polo, camiseta-oversize]
+    sewing_modules: 3
+    sewing_operators: 15
+    assumptions: ["Diseño conceptual; tiempos y capacidades estimados, requieren validación en planta."]
+zones:
+  - { id: almacen-tela, name: Almacén de tela e inspección, kind: storage, hygiene_class: clean, rect: [0, 22, 14, 14], height: 6 }
+  - { id: corte, name: Línea de corte y preparación de paquetes, kind: production, hygiene_class: clean, rect: [14, 22, 26, 14], height: 6 }
+  - { id: modulo-1, name: Módulo de confección 1, kind: production, hygiene_class: clean, rect: [14, 8.5, 10, 5], height: 6 }
+  - { id: modulo-2, name: Módulo de confección 2, kind: production, hygiene_class: clean, rect: [24, 8.5, 10, 5], height: 6 }
+  - { id: modulo-3, name: Módulo de confección 3, kind: production, hygiene_class: clean, rect: [34, 8.5, 10, 5], height: 6 }
+  - { id: calidad, name: Inspección y acabado final, kind: production, hygiene_class: clean, rect: [44, 12, 16, 8], height: 5 }
+  - { id: almacen-pt, name: Almacén de producto terminado y despacho, kind: storage, hygiene_class: clean, rect: [44, 0, 16, 12], height: 7 }
+  - { id: servicios, name: "Vestieres, mantenimiento y servicios", kind: service, hygiene_class: service, rect: [0, 0, 14, 20], height: 5 }
+flows:
+  - { from: almacen-tela-01, to: inspeccion-rollos, medium: rollos liberados, rate: 20, unit: rollos/h }
+  - { from: inspeccion-rollos, to: corte-tela-01, medium: rollos liberados, rate: 20, unit: rollos/h }
+  - { from: corte-tela-01, to: rack-paquetes, medium: paquetes Polo y Oversize, rate: 100, unit: prendas/h }
+  - { from: rack-paquetes, to: modulo-01, medium: paquetes cortados, rate: 100, unit: prendas/h }
+  - { from: rack-paquetes, to: modulo-02, medium: paquetes cortados, rate: 100, unit: prendas/h }
+  - { from: rack-paquetes, to: modulo-03, medium: paquetes cortados, rate: 100, unit: prendas/h }
+  - { from: modulo-01, to: inspeccion-final-01, medium: camisetas cosidas, rate: 40, unit: prendas/h }
+  - { from: modulo-02, to: inspeccion-final-01, medium: camisetas cosidas, rate: 40, unit: prendas/h }
+  - { from: modulo-03, to: inspeccion-final-01, medium: camisetas cosidas, rate: 40, unit: prendas/h }
+  - { from: inspeccion-final-01, to: almacen-pt-01, medium: camisetas inspeccionadas, rate: 100, unit: prendas/h }
+equipment:
+  - { id: almacen-tela-01, type: garment-fabric-store, zone: almacen-tela, position: [7, 29, 0], footprint: [5.4, 1.9, 3.8] }
+  - { id: inspeccion-rollos, type: manual_table, zone: almacen-tela, position: [7, 24, 0], footprint: [4, 2, 1], params: { task: inspección y liberación de rollos } }
+  - { id: corte-tela-01, type: garment-cutting-line, zone: corte, position: [27, 30, 0], footprint: [14, 3.2, 2.1] }
+  - { id: rack-paquetes, type: shelving, zone: corte, position: [35, 24, 0], footprint: [7, 1, 3], params: { content: "paquetes cortados por orden, talla y color" } }
+  - { id: modulo-01, type: garment-sewing-module, zone: modulo-1, position: [19, 11, 0], footprint: [9.3, 3.8, 2.1], params: { row_length_m: 9, row_width_m: 3.6 } }
+  - { id: modulo-02, type: garment-sewing-module, zone: modulo-2, position: [29, 11, 0], footprint: [9.3, 3.8, 2.1], params: { row_length_m: 9, row_width_m: 3.6 } }
+  - { id: modulo-03, type: garment-sewing-module, zone: modulo-3, position: [39, 11, 0], footprint: [9.3, 3.8, 2.1], params: { row_length_m: 9, row_width_m: 3.6 } }
+  - { id: inspeccion-final-01, type: garment-final-inspection, zone: calidad, position: [51, 16, 0], footprint: [5.8, 3, 1.8] }
+  - { id: almacen-pt-01, type: garment-finished-goods-store, zone: almacen-pt, position: [52, 5, 0], footprint: [5.5, 2, 3.8] }
+  - { id: banco-mantenimiento, type: workbench, zone: servicios, position: [7, 5, 0], footprint: [3, 1, 1], params: { task: mantenimiento de máquinas de costura } }
+lines:
+  - { id: corte, name: Corte y preparación de paquetes, equipment: [inspeccion-rollos, corte-tela-01, rack-paquetes] }
+  - { id: modulo-1, name: Módulo de confección 1, equipment: [modulo-01] }
+  - { id: modulo-2, name: Módulo de confección 2, equipment: [modulo-02] }
+  - { id: modulo-3, name: Módulo de confección 3, equipment: [modulo-03] }
+  - { id: terminado, name: "Inspección final y producto terminado", equipment: [inspeccion-final-01, almacen-pt-01] }
+scenarios: {}

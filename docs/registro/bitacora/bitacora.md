@@ -1,7 +1,7 @@
 ---
 tipo: bitacora
 tags: [registro, bitacora]
-actualizado: 2026-10-20
+actualizado: 2026-10-24
 ---
 # Bitácora de avances
 
@@ -10,6 +10,29 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
+| 2026-10-24 | PR #79 · escritorio acueducto desktop | Por instrucción del autor se sustituyeron tres presets auxiliares por dos curvas de referencia y una plantilla personalizada; administración CRUD de escenarios nombrados con 64 viviendas/8 fugas por hora, protección de perfil en uso, gráfica dual apertura/PRS autoescalada con presión Fractal bajo demanda desde PLC en play. `plant.html` conserva el 3D y muestra PLC e histórico en pestañas de la misma pantalla; fotogramas SQLite de solo lectura permiten regresar al pasado sin rebobinar la operación; Fractal queda opcional y la optimización sigue apagada. Ver [[../../architecture/plc-fractal-desktop-workspace]]. Verificación: 41 pruebas API/Fractal, 149 de geometría con un worker, Ruff, typecheck/build y smoke browser de editor, presión, 3D histórico y regreso a actual. Mobile y despliegue API integrados siguen pendientes. [[2026-10-24-escenarios-integrados-3d]] | PLC/Fractal |
+| 2026-10-24 | PR #79 · rama `feat/fractal-240x-replay` | El autor eligió D73: reproducir 24 horas **precalculadas** a 15 s/h sin presentarlas como cálculo en vivo. Corrida continua poscorrección completa: 2596,71 s offline, sin desacuerdos sobre presión ≥15 mca; desfase máximo de suministro **34,268 pp en hora 18**, por tanto niveles aún no validados. Reproducción de 24 muestras en **360,004 s reales** (máx. ≈0,007 s de desfase de reloj); ×240 en vivo no se acredita (se midió ≈×21,4 efectivo), y dt=15 s degrada presión hasta 6,8 mca. Evidencia [[../../architecture/validation/pdd-rca-01-continuous-post-cache.json|día poscorrección]] y [[../../architecture/validation/pdd-rca-01-replay-240x.json|marcas ×240]]. [[2026-10-24-prioridad-futuro-plc]] | PLC/Fractal |
+| 2026-10-24 | PR #78 · causa del desfase de niveles | A petición del autor se contrastó 24 h **continuas**, no 24 puntos estabilizados: hasta 34,47 pp de diferencia en suministro a la hora 18, pero caudal/presión <0,6 % en picos y volumen combinado ≈4,53 m³ conservado. Un banco de cuatro horas **poscorrección** reanclado desde PLC reduce error de suministro en hora 4 de 13,94 a 3,17 pp (retorno 0,688→0,122 m³); curva de bomba del retorno coincide en 25 muestras dentro de 0,054 m³/h. Se halló además un defecto en el gateway: lecturas repetidas al mismo segundo producían sensores diferentes. Se estabilizó el snapshot por tick para PLC/3D; se descartó una integración de tres tanques por escenario por latencia y porque el rango de demanda no cubre la incertidumbre de fase del retorno; evidencia: [[../../architecture/validation/pdd-rca-01-continuous-pre-cache.json|24 h pre-arreglo]] y [[../../architecture/validation/pdd-rca-01-recirculation-pump.json|curva de retorno]] y [[../../architecture/validation/pdd-rca-01-recirculation-reanchored-4h.json|reanclaje poscorrección]]; los niveles se marcan **no validados dinámicamente**, sin tocar el reloj PLC ×240. Pendiente repetir prueba continua poscorrección. [[2026-10-24-prioridad-futuro-plc]] | PLC/Fractal |
+| 2026-10-24 | PR #78 · 24 consignas y criterio de discrepancia | Según D72, no se obliga a Fractal a reproducir exactamente el emulador ni se añade ruido artificial. Se incorporó validador reproducible `tools/hydraulics/validate_fractal_hourly.py`: perfil diurno PDD-RCA-01, 24 consignas con ventana operativa de 120 s; errores medios/picos caudal 0,20/0,65 %, presión crítica 0,15/0,44 %, descarga 0,06/0,15 %, PRS 0,16/0,42 %, sin desacuerdos de umbral ≥15 mca. Informe completo en [[../../architecture/validation/pdd-rca-01-hourly.json]]. No constituye comparación continua de tanques de 24 horas. [[2026-10-24-prioridad-futuro-plc]] | PLC/Fractal |
+| 2026-10-24 | PR #78 · contraste hora real | Perfil 30 % y PRS AUTO: a t=12 s se proyectó una hora y se corrió 3600 pasos del emulador. Fractal 4,259 m³/h nominal frente a promedio emulador ≈4,263 m³/h. Se añadió rampa de variador independiente en Fractal: recirculación mejoró de 4,217 a 4,260 m³ (emulador 4,295); niveles finales 69,83/40,84/39,62 % vs 70,7/39,7/39,7 %. La diferencia residual de fase de histéresis obliga a mantener el forecast **no validado dinámicamente** y la optimización apagada. [[2026-10-24-prioridad-futuro-plc]] | PLC/Fractal |
+| 2026-10-24 | PR #78 · continuación | E2E de API con sesión PLC estabilizada: lee perfil/tags del gateway, genera y publica 24 frames base + 24 alternativos; comprueba horas, caudales, enlaces, ocho fugas, persistencia y que no se cambien consignas ni tiempo operativo. Bloqueo explícito del arranque frío (bombas paradas) y endpoint offline incapaz de publicar tags falsificados. Smoke real entre dos procesos FastAPI: estudio de 24 h, frame 23 persistido. 39 pruebas específicas, Ruff y typecheck pasan. El contraste transitorio completo de 24 h y la prueba browser de 3D siguen pendientes; no se proclama paridad dinámica. [[2026-10-24-prioridad-futuro-plc]] | PLC/Fractal/3D |
+| 2026-10-24 | PR #78 · 582e7ef | Futuro simulado antes de optimización · Por pedido del autor, prioridad a estudios base/alternativos de 24 horas con estado y perfil activo leídos del gateway PLC por Fractal, nunca de la copia del navegador. La HMI muestra solo esos dos tipos y conserva los frames NO APLICADOS; las rutas de optimización quedan deshabilitadas por defecto. Se distingue despliegue estático de Gallery del despliegue pendiente de las APIs. D71. [[2026-10-24-prioridad-futuro-plc]] | PLC/Fractal/3D |
+| 2026-10-24 | Paridad física Fractal: bombas, PRS y recirculación | Se examinó el montaje del emulador (curvas H=s²H0−rQ², antirretornos, PRS con PID, vasos como cabezas fijas y balance de masa). Fractal calcula por separado equilibrio de bombeo/PRS, presión efectiva condicionada a entrada disponible, rama AUTO asentada, caudales de dos tanques de retorno, bomba 1+1 e integración de nivel con histéresis; publica velocidad, potencia, descarga y tags futuros. Un estudio optimizado convierte su mando de PRS a rama manual, en lugar de dejar AUTO anulando la consigna. Pruebas del punto estacionario de bomba/PRS y recirculación y conservación de agua; 33 pruebas específicas, Ruff, typecheck/build, validador y diff-check pasan; estudio optimizado de 24 h con tags nominales terminó en ≈18 s y las 24 franjas resultaron factibles en ese caso. Se mantienen pendientes validación integral de 24 h y transitorios PID/rampa/fallas. [[2026-10-24-solver-fractal-y-estudios]] | Fractal/PLC |
+| 2026-10-24 | Estudios Fractal y solver hidráulico nodal independiente | Fractal arma y resuelve continuidad/presión de columna, cabezales, ramales y cruces de cuatro niveles, 64 viviendas y ocho fugas con Darcy-Weisbach, Kv y emisores; consume aperturas del PLC y compara día, noche, válvula restringida y fuga ×5 contra el banco operativo (tolerancia 0,04 mca/m³/h). El horizonte aplica perfiles por vivienda/fuga y evalúa un mismo mando nominal con demanda −10 %, prevista y +10 %. PLC persiste frames futuros, separados de la operación, aprobación y programación. Pendientes: curva/control de bombas y PRS AUTO, tanques dinámicos validados y E2E browser integral. Ruff, 31 pruebas específicas, typecheck/build Gallery, validador y diff-check pasan; la suite general excedió el timeout durante pruebas de planta. [[../../architecture/fractal-studies-and-temporal-views]] | Fractal/PLC/3D |
+| 2026-10-23 | Arquitectura temporal Fractal | Se define Fractal como motor de proyección base, escenarios alternativos y optimización; una geometría 3D con líneas temporales separadas de operación PLC y futuro no aplicado, barrera temporal, contratos de forecast publicados por PLC y velocidad por defecto ×240 configurable desde PLC. [[../../architecture/fractal-studies-and-temporal-views]] | arquitectura/Fractal |
+| 2026-10-22 | Sesión PLC compartida inicial | Runtime compartido, roles WebSocket y clientes PLC/3D enlazados por `session_id`; transición conserva endpoint anterior. [[2026-10-22-perfiles-plc-fractal]] | PLC/3D |
+| 2026-10-22 | Plan de sesión PLC compartida y Fractal | Plan versionado para una sesión única, 3D visor, tags por sesión, objetivos y recomendaciones Fractal instantáneas/futuras. [[2026-10-22-perfiles-plc-fractal]] | arquitectura/PLC |
+| 2026-10-22 | Escena 3D contra emulador externo | `plant.html` consume API/WebSocket configurable con `?api=` y conserva el origen al enlazar al PLC. [[2026-10-22-perfiles-plc-fractal]] | acueducto/3D |
+| 2026-10-22 | Contenedores Node 26 y emulador | Node 26.12.1 alineado en frontend/CI, `Containerfile` Podman para galería y FastAPI, y guía de HTTPS/WSS + CORS. [[2026-10-22-perfiles-plc-fractal]] | despliegue |
+| 2026-10-22 | Perfiles PLC y acceso al emulador | Perfiles operativos explícitos para demanda/PRS/restricción; HMI con API configurable y validación JSON; FastAPI con CORS configurable por entorno. [[2026-10-22-perfiles-plc-fractal]] | acueducto/PLC |
+| 2026-10-22 | Disponibilidad de emulador PLC | La HMI valida que el backend responda JSON, informa claramente la ausencia del emulador en Pages y permite indicar un host API con `?api=`. [[2026-10-22-perfiles-plc-fractal]] | acueducto/HMI |
+| 2026-10-22 | Cámaras 3D y respuesta PLC | Cámaras por zona/nivel con dirección y zoom propios; botón PLC informa conexión/error, bloquea doble inicio y la HMI solo redibuja su pantalla visible. [[2026-10-22-perfiles-plc-fractal]] | acueducto/3D/HMI |
+| 2026-10-22 | Escena hidráulica y tendencias por equipo | La escena sitúa suelo/cuadrícula en la cota mínima visual sin cambiar hidráulica, reduce indicadores externos, añade dirección dentro de rejillas y abre tendencias modales de cualquier equipo simulado. [[2026-10-22-perfiles-plc-fractal]] | acueducto/3D |
+| 2026-10-22 | Perfiles PLC y frontera Fractal | Perfiles horarios persistentes y ejecutables para el acueducto, tags PLC de solo lectura para OPC UA simulado, documentación de co-simulación y escena con tanques transparentes/flechas de flujo. D69. [[2026-10-22-perfiles-plc-fractal]] | acueducto |
+| 2026-10-22 | PLC Master y carga visual | Se integra el PLC Master simulado, se evitan destellos de HTML sin CSS al abrir la escena y se exponen mandos de casas/fugas y telemetría completa de la reguladora. [[2026-10-22-arquitectura-modelos-portables]] | acueducto |
+| 2026-10-22 | Arquitectura portable de modelos | `apps/twin-emulator-api` reemplaza el nombre genérico `apps/api`; los seis modelos industriales incluyen manifiesto con dependencias explícitas de equipos, validador y guía de empaquetado futuro. D68. [[2026-10-22-arquitectura-modelos-portables]] | arquitectura |
+| 2026-10-22 | Gemelo 3D de ciudad desde OSM | Escena Three.js con vías y edificios OSM, semáforos y vehículos siguiendo trayectorias FCD de SUMO; muestra x3 el volumen base con coloración vial por velocidad media y barra de km/h. Escenario y velocidades son supuestos, no aforos medidos; la red analítica previa de 35 cruces permanece separada. Se incluye `docs/arvantti-industrial-digital-twin.md` aportado por el autor. Typecheck y diff-check pasan; pruebas Python para CI. [[2026-10-22-mapa-ciudad-osm]] | ciudad |
+| 2026-10-21 | Gemelo de confecciones v1 | Planta con 3 tipos nuevos de máquinas reutilizables (plana, overlock y recubridora), comportamiento discreto, geometría animada y 15 máquinas/operarias en layout; 2 productos, operaciones, SAM y tarjeta del portal. Tests específicos, suite de geometrías, layout, catálogo y build pasan. La simulación conectada de flujo completo aún queda pendiente. [[2026-10-21-gemelo-confecciones]] | gemelos |
 | 2026-10-20 | Ciudad en la página principal | El gemelo de ciudad entra al portal con su tarjeta (plano de la red) y una página propia `/ciudad.html`: indicadores de la línea base, plano, índice por corredor con semáforo, tramos con más minutos de atasco y curva de 24 h. Pedido de Andy | ciudad |
 | 2026-10-20 | Gemelo de ciudad, fase 2 | El día completo del centro corre en SUMO: red y semáforos por franja convertidos, 7 tipos de vehículo con variante de afán y motos entre carriles, 60.000 viajes con semilla fija, e indicadores (ruta crítica, índice por corredor, atascos, demora, bloqueos). Línea base: 60.000 viajes completados, 27,6 km/h, 63 s de demora media; no colapsa con los supuestos actuales. D66 | ciudad |
 | 2026-10-19 | Personas con modelo 3D real | Las personas de todas las plantas pasan a ser modelos 3D reales (piel, ropa, esqueleto) con animaciones de reposo, caminar y trabajar: operario y operaria con casco y chaleco, y hombre y mujer de ropa común para pasajeros y agentes. Biblioteca con licencia MIT; cada modelo pesa ≈ 1,2 MB, se descarga una vez y lo comparten todas las personas de la escena; la figura orgánica queda de respaldo. D67 | 4 |
@@ -84,6 +107,143 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 | 2026-10-16 | #1 | Layouts de las plantas | 1 |
 
 ## Entradas
+
+### 2026-10-24 · Escritorio único y administración de escenarios
+- **Fecha/hora (UTC):** 2026-10-24.
+- **Fase del plan:** PLC/Fractal + gemelo 3D desktop.
+- **Solicitado por:** el autor retiró el nocturno plano, pidió tres familias de escenarios (base, diurna, personalizada), gráfica dual de apertura/PRS, poder regresar en el tiempo mientras PLC funciona y administrar personalizados con nombre, edición y borrado sin salir del 3D; mobile después.
+- **Qué se hizo:** plantilla personalizable 64 hogares/8 fugas por hora, migración de presets retirados, CRUD protegido y programación diferida; vista previa Fractal de presión desde PLC en play, eje derecho autoescalado o estado pendiente explícito; barra 3D/PLC/histórico con historian de fotogramas SQLite y sesión única.
+- **Commits:** `97e08c5`, `c1bd258`, `4d7a77b` (+ registro); PR #79.
+- **Verificación:** 41 pruebas API/Fractal, 149 de geometría con `--maxWorkers=1`, Ruff, typecheck, build, smoke browser de CRUD (crear, editar, borrar), cálculo Fractal de presión vía proxy local y recorrido del histórico 3D al presente sin modificar PLC. El comando web paralelo inicial excedió timeout bajo competencia de CPU; la suite de geometría pasó al limitar workers.
+- **Decisiones:** D74; el emulador puede correr sin Fractal, pero no se inventa presión futura si faltan servicio/tags. Mobile, seguridad/retención y ×240 efectivo quedan pendientes.
+- **Conversación:** [[2026-10-24-escenarios-integrados-3d]].
+
+### 2026-10-24 · Reproducción poscorrección a ×240
+- **Fecha/hora (UTC):** 2026-10-24.
+- **Fase del plan:** validación del horizonte antes de optimización.
+- **Solicitado por:** el autor eligió reproducir el contraste precalculado a 15 segundos reales por hora en vez de atribuir ese rendimiento a la física en vivo.
+- **Qué se hizo:** corrida de 24 h poscorrección completa, validador con procedencia explícita y reproductor a reloj monotónico que rechaza reportes pre-cache/incompletos.
+- **Commits:** `97e08c5`, `c1bd258`, `4d7a77b` (+ registro); PR #79.
+- **Verificación:** informe de 24 h en 2596,71 s de cómputo, reproducción de 24 horas en 360,004 s (jitter máximo ≈0,007 s); presión ≥15 mca sin desacuerdos, suministro con 34,268 pp de error máximo hora 18. Referencias en `docs/architecture/validation/`.
+- **Decisiones:** D73 y D72; niveles futuros **no validados**, optimización deshabilitada.
+- **Conversación:** [[2026-10-24-prioridad-futuro-plc]].
+
+### 2026-10-22 · Sesión PLC compartida inicial
+- **Fecha/hora (UTC):** 2026-10-22.
+- **Fase del plan:** A–C de sesión compartida.
+- **Solicitado por:** Andy autorizó implementar la sincronización PLC, emulador y 3D.
+- **Qué se hizo:** se añade administrador de sesión con runtime único y difusión de snapshots; API REST/WS con roles; PLC crea e inicia sesión; el 3D recibe `session_id` y se conecta como visor sin control.
+- **Commits:** `4db7b19` (implementación); actualización de registro incluida en el commit siguiente.
+- **Verificación:** API `18 passed`, ruff API y typecheck de galería.
+- **Decisiones:** endpoint histórico de simulación se conserva temporalmente para compatibilidad.
+- **Conversación:** [[2026-10-22-perfiles-plc-fractal]].
+
+### 2026-10-22 · Plan de sesión PLC compartida y Fractal
+- **Fecha/hora (UTC):** 2026-10-22.
+- **Fase del plan:** arquitectura PLC, 3D y Fractal.
+- **Solicitado por:** Andy pidió dejar el plan completo en Markdown antes de implementar.
+- **Qué se hizo:** se documentó el roadmap por fases para sesión hidráulica única, roles PLC/visor/Fractal, historian, objetivos configurables, optimización instantánea y futura, recomendaciones aprobadas por operador, Podman y pruebas de aceptación.
+- **Commits:** `4db7b19` (implementación); actualización de registro incluida en el commit siguiente.
+- **Verificación:** revisión de coherencia con el contrato de co-simulación existente.
+- **Decisiones:** PLC es propietario de mando; 3D es visor; Fractal es lector de tags y asesor sin escritura automática.
+- **Conversación:** [[2026-10-22-perfiles-plc-fractal]].
+
+### 2026-10-22 · Escena 3D contra emulador externo
+- **Fecha/hora (UTC):** 2026-10-22.
+- **Fase del plan:** acueducto/escena 3D desplegada.
+- **Solicitado por:** Andy reportó que la escena 3D no cargaba con los contenedores locales.
+- **Qué se hizo:** se propaga `?api=` a las solicitudes del plano, WebSocket de simulación y enlace a PLC; el frontend estático puede usar un emulador FastAPI separado.
+- **Commits:** `4db7b19` (implementación); actualización de registro incluida en el commit siguiente.
+- **Verificación:** typecheck/build de galería, imagen Podman y Playwright: 13 activos cargados y simulación WebSocket en vivo.
+- **Decisiones:** ninguna nueva.
+- **Conversación:** [[2026-10-22-perfiles-plc-fractal]].
+
+### 2026-10-22 · Contenedores Node 26 y emulador
+- **Fecha/hora (UTC):** 2026-10-22.
+- **Fase del plan:** despliegue de frontend y emulador.
+- **Solicitado por:** Andy definió Node 26 como versión aprobada y pidió ajustar frontend y backend.
+- **Qué se hizo:** se fija Node 26.12.1 para pnpm/CI, se añade el `Containerfile` Podman de build/servicio de galería y el `Containerfile` Python 3.12/FastAPI para el emulador; la guía documenta volumen persistente, CORS y URL WSS.
+- **Commits:** `196099d` (implementación); actualización de registro incluida en el commit siguiente.
+- **Verificación:** Node `v26.12.1`; build/typecheck de galería; ambas imágenes Podman construyen y el contenedor API responde `GET /api/health`; API `17 passed`; ruff API.
+- **Decisiones:** Node se aplica únicamente al frontend/CI; el backend conserva Python 3.12.
+- **Conversación:** [[2026-10-22-perfiles-plc-fractal]].
+
+### 2026-10-22 · Perfiles PLC y acceso al emulador
+- **Fecha/hora (UTC):** 2026-10-22.
+- **Fase del plan:** acueducto/PLC y despliegue.
+- **Solicitado por:** Andy autorizó separar perfiles operativos de pruebas de falla y corregir la conexión HMI–emulador.
+- **Qué se hizo:** se versionan PFL-BASE-01, PFL-NOC-01, PFL-NOC-02 y PFL-RES-01; la HMI los agrupa como perfiles PLC; las respuestas no JSON se detectan antes de parsear y el origen del API se puede indicar mediante `?api=`; FastAPI limita CORS a `TWIN_CORS_ORIGINS`.
+- **Commits:** `6baba5e` (implementación); actualización de registro incluida en el commit siguiente.
+- **Verificación:** API `17 passed`, typecheck de galería y ruff de API.
+- **Decisiones:** fallas transitorias permanecen como pruebas técnicas del modelo, no perfiles rutinarios.
+- **Conversación:** [[2026-10-22-perfiles-plc-fractal]].
+
+### 2026-10-22 · Disponibilidad de emulador PLC
+- **Fecha/hora (UTC):** 2026-10-22.
+- **Fase del plan:** acueducto/HMI desplegada.
+- **Solicitado por:** Andy reportó el error de sintaxis al abrir la HMI publicada.
+- **Qué se hizo:** se detecta una respuesta HTML/no JSON antes de decodificarla y se informa la falta del emulador; se permite configurar el origen FastAPI mediante `?api=https://host-del-emulador`.
+- **Commits:** `6baba5e` (implementación); actualización de registro incluida en el commit siguiente.
+- **Verificación:** `pnpm --filter @twin/gallery typecheck`.
+- **Decisiones:** el despliegue estático no ejecuta FastAPI ni WebSocket; requiere host de emulador separado.
+- **Conversación:** [[2026-10-22-perfiles-plc-fractal]].
+
+### 2026-10-22 · Cámaras 3D y respuesta PLC
+- **Fecha/hora (UTC):** 2026-10-22.
+- **Fase del plan:** acueducto/escena 3D y HMI.
+- **Solicitado por:** Andy: diferenciar cámaras con zoom real y corregir el inicio de la simulación PLC.
+- **Qué se hizo:** el encuadre 3D recibe direcciones independientes para cada piso/zona y nivel; el PLC informa el handshake, errores y conexión, impide doble clic durante la apertura del WebSocket y redibuja solo la pantalla visible para mantener respuesta fluida.
+- **Commits:** `d7bf741` (implementación); actualización de registro incluida en el commit siguiente.
+- **Verificación:** `pnpm --filter @twin/gallery typecheck`; conexión WebSocket PLC comprobada contra el emulador local.
+- **Decisiones:** ninguna nueva.
+- **Conversación:** [[2026-10-22-perfiles-plc-fractal]].
+
+### 2026-10-22 · Escena hidráulica y tendencias por equipo
+- **Fecha/hora (UTC):** 2026-10-22.
+- **Fase del plan:** acueducto/escena 3D y observabilidad.
+- **Solicitado por:** Andy: corregir la percepción de equipos enterrados, reducir flechas, mostrar flujo interno de rejillas y abrir una gráfica al seleccionar un equipo.
+- **Qué se hizo:** el suelo y cuadrícula del render siguen la cota más baja del plano sin cambiar cotas hidráulicas; las flechas de tuberías externas son más pequeñas; cada rejilla visualiza flujo de entrada y reparto interno; el HUD registra muestras numéricas y abre una tendencia modal con selector de señal; las cámaras usan encuadres, objetivos, cotas y direcciones diferenciados por zona y nivel.
+- **Commits:** `fffa104` (implementación); actualización de registro incluida en el commit siguiente.
+- **Verificación:** `pnpm --filter @twin/gallery typecheck`, `pnpm --filter @twin/3d typecheck`, `pnpm -r test` (149 pruebas).
+- **Decisiones:** ninguna nueva.
+- **Conversación:** [[2026-10-22-perfiles-plc-fractal]].
+
+### 2026-10-22 · Perfiles PLC y frontera Fractal
+- **Fecha/hora (UTC):** 2026-10-22 23:02.
+- **Fase del plan:** acueducto/HMI, perfiles operativos y preparación de co-simulación.
+- **Solicitado por:** Andy: perfiles de 24 franjas con alcance C, Fractal que lea exclusivamente del PLC por OPC UA simulado, y visualización hidráulica de tanques/niveles/flechas.
+- **Qué se hizo:** se documentó la arquitectura; se agregaron perfiles persistentes SQLite con CRUD, validación, plantilla `PDD-RCA-01` y aplicación por hora simulada (15 s reales/hora, ciclo de 6 min); la HMI crea, carga, guarda, clona la hora siguiente y captura mandos actuales; el WebSocket publica tags planos PLC de solo lectura y el contrato OPC UA simulado; los tanques de agua son translúcidos y su líquido sigue `level`; las tuberías muestran flechas reducidas según velocidad y sentido publicados, y las rejillas muestran dirección interna; el suelo visual sigue el piso más bajo sin cambiar cotas hidráulicas; el HUD 3D abre tendencias por equipo; las gráficas llevan leyendas legibles, tres tarjetas por fila en el día hidráulico y ampliación modal; la recirculación muestra estado AUTO/paro, niveles y umbrales de arranque/parada. Se creó el esqueleto independiente `fractal/hydraulics/models/water-network-scale-v1/`.
+- **Commits:** `30cd6fc` (implementación inicial); actualización de registro incluida en el commit siguiente.
+- **Verificación:** pruebas API (17), Ruff, typecheck de galería y 3D, y pruebas de geometría (149).
+- **Decisiones:** [[decisiones]] D69.
+- **Conversación:** [[2026-10-22-perfiles-plc-fractal]].
+
+### 2026-10-22 · PLC Master y carga visual de la escena
+- **Fecha/hora (UTC):** 2026-10-22
+- **Fase del plan:** acueducto/HMI.
+- **Solicitado por:** Andy: corregir el HTML sin estilos durante la carga y hacer visibles los mandos de aperturas y la telemetría de la estación reguladora.
+- **Qué se hizo:** se integra el PLC Master en la rama de arquitectura; `plant.html` conserva una pantalla de carga crítica hasta que el CSS del módulo está disponible; la rejilla expone los controles de fugas L1/L2 por nivel además de casas/global/nivel; la reguladora muestra presiones antes/después, caudal total y por rama, y apertura de cada PRV.
+- **Verificación:** `pnpm --filter @twin/gallery typecheck`, `pnpm --filter @twin/gallery build`, `uv run pytest apps/twin-emulator-api/tests` (17 passed) y diff-check.
+- **Decisiones:** ninguna nueva.
+- **Conversación:** [[2026-10-22-arquitectura-modelos-portables]].
+
+### 2026-10-22 · Arquitectura portable de modelos industriales
+- **Fecha/hora (UTC):** 2026-10-22
+- **Fase del plan:** arquitectura transversal.
+- **Solicitado por:** Andy: separar lo general de lo particular y permitir llevar un único modelo industrial a un cliente.
+- **Qué se hizo:** se renombra `apps/api` a `apps/twin-emulator-api`; se añade `manifest.yaml` a los seis modelos, con sus dependencias de `equipment-library`; se crea el esquema, `tools/validate_model.py`, guía de arquitectura y las bases `integrations/` y `deployments/`.
+- **Verificación:** `uv run python tools/validate_model.py` (6 modelos), `uv run pytest apps/twin-emulator-api/tests` (15 passed), `uv run ruff check apps/twin-emulator-api tools/validate_model.py`, `pnpm --filter @twin/gallery typecheck` y diff-check.
+- **Decisiones:** [[decisiones#D68]].
+- **Conversación:** [[2026-10-22-arquitectura-modelos-portables]].
+
+### 2026-10-22 · Cartografía vial de OpenStreetMap
+- **Fecha/hora (UTC):** 2026-10-22
+- **Fase del plan:** [[plan-del-proyecto]] gemelo de ciudad, corrección cartográfica.
+- **Solicitado por:** Andy (sesión de código): continuar el trabajo de mapa OSM en rama aparte y usar el extracto que guardó en `city-models/`; pidió que `docs/arvantti-industrial-digital-twin.md`, que él aportó, se incluya en el mismo commit.
+- **Qué se hizo:** `tools/city/osm_map.py` lee `city-models/map.osm` (extracto XML con atribución ODbL), recorta vías reales del corredor Ferrocarril–Oriental / San Juan–Juan del Corral, representa clasificación, geometría y nombres, y marca nodos de semáforo presentes en OSM. `network.py` renderiza esa base en `layout.svg`; se actualizó la copia estática de galería, el rótulo alternativo y la tarjeta del portal. El grafo SUMO reducido de 35 cruces y sus indicadores permanecen hipotéticos; no se afirma que SUMO ya use la topología OSM.
+- **Verificación:** generado `layout.svg` desde el XML local y sincronizado a `apps/gallery/public/data/ciudad-plano.svg`; no se corrieron pruebas Python localmente por instrucción del autor. CI de GitHub queda a cargo de esa validación.
+- **Archivos incluidos en el commit:** extracto OSM aportado por Andy y `docs/arvantti-industrial-digital-twin.md`, sin modificar este último.
+- **Conversación:** [[2026-10-22-mapa-ciudad-osm]]
 
 ### 2026-10-20 12:10 · Gemelo de ciudad en la página principal
 - **Fecha/hora (UTC):** 2026-10-20 11:45 a 12:10
@@ -179,7 +339,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 - **Fecha/hora (UTC):** 2026-10-19 09:58–10:30
 - **Fase del plan:** [[plan-del-proyecto]] «Datos reales y pedidos», fase D
 - **Solicitado por:** Carlos Andrés Quiceño: «d y luego c».
-- **Qué se hizo:** `twin_runtime/catalog.py` con `route_graph`, `summary` y `with_product`; la API (`apps/api`) agrega `catalog` a `GET /api/plants/{id}` y el endpoint `POST /api/plants/{id}/products/check`; escena de planta (`apps/gallery/src/products.ts`, `plant.html`, `plant.ts`, `styles.css`) con panel PRODUCTOS, ruta resaltada y numerada, alternativas en gris, arcos animados con el color del producto, ficha con moldes, materiales y etapas, enlace `?product=` y botón CARGAR PRODUCTO; tamaño del equipo en el HUD. Documentado en `docs/datos-reales.md`, `docs/plant-scene.md`, `docs/roadmap.md` y el plan.
+- **Qué se hizo:** `twin_runtime/catalog.py` con `route_graph`, `summary` y `with_product`; la API (`apps/twin-emulator-api`) agrega `catalog` a `GET /api/plants/{id}` y el endpoint `POST /api/plants/{id}/products/check`; escena de planta (`apps/gallery/src/products.ts`, `plant.html`, `plant.ts`, `styles.css`) con panel PRODUCTOS, ruta resaltada y numerada, alternativas en gris, arcos animados con el color del producto, ficha con moldes, materiales y etapas, enlace `?product=` y botón CARGAR PRODUCTO; tamaño del equipo en el HUD. Documentado en `docs/datos-reales.md`, `docs/plant-scene.md`, `docs/roadmap.md` y el plan.
 - **Verificación:** 2 pruebas nuevas de la API (14 pasan), `ruff check`, `pytest`, `pnpm -r typecheck` y `pnpm -r test`, `twin-lib catalog validate`; capturas con la papelera 20 L (11 etapas numeradas) [[plasticos-ruta-papelera.jpg]] y con un kit cargado desde YAML [[plasticos-producto-cargado.jpg]]; un balde gris con el molde del balde blanco se rechaza con el mensaje esperado.
 - **Decisiones:** [[decisiones#D59]]
 - **Conversación:** [[hilo-datos-reales]]
@@ -187,7 +347,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 - **Fecha/hora (UTC):** 2026-10-19 00:05–00:40
 - **Fase del plan:** [[plan-del-proyecto]] gemelos nuevos (logística) y despliegue
 - **Solicitado por:** Carlos Andrés Quiceño (con captura): «corregir esos traslapamientos en aeropuerto» y «faltaría dar play a la simulación de las maletas».
-- **Qué se hizo:** las dos bandas de inducción del clasificador corrían sobre las bandejas los últimos ≈ 3 m. Ahora llegan por fuera de cada recta, a 1,3 m del eje de las bandejas, con un empujador que pasa la maleta de costado; el lector de etiquetas se corrió a 2,2 m del inicio de la recta. Para que cada inducción siga en línea con su CT el lazo pasa a 31,1 m de recta por 7,4 m de ancho (85 m de lazo, antes 89 m) y rampas de 5,6 m; los carruseles de armado, los carros y la codificación se realinearon con las rampas. Reproducción sin API: `twin_api.replay.record_plant` graba 15 min de operación normal (tras 15 min de calentamiento), un cuadro por segundo con solo lo que cambió; `tools/deploy/export_static_plants.py` la escribe en `api/replays/{id}.json` al desplegar y la escena la reproduce con ▶ SIMULAR cuando el WebSocket no responde (reloj «GRABACIÓN», velocidad y pausa funcionan).
+- **Qué se hizo:** las dos bandas de inducción del clasificador corrían sobre las bandejas los últimos ≈ 3 m. Ahora llegan por fuera de cada recta, a 1,3 m del eje de las bandejas, con un empujador que pasa la maleta de costado; el lector de etiquetas se corrió a 2,2 m del inicio de la recta. Para que cada inducción siga en línea con su CT el lazo pasa a 31,1 m de recta por 7,4 m de ancho (85 m de lazo, antes 89 m) y rampas de 5,6 m; los carruseles de armado, los carros y la codificación se realinearon con las rampas. Reproducción sin API: `twin_emulator_api.replay.record_plant` graba 15 min de operación normal (tras 15 min de calentamiento), un cuadro por segundo con solo lo que cambió; `tools/deploy/export_static_plants.py` la escribe en `api/replays/{id}.json` al desplegar y la escena la reproduce con ▶ SIMULAR cuando el WebSocket no responde (reloj «GRABACIÓN», velocidad y pausa funcionan).
 - **Verificación:** `twin-lib plant validate` (4 plantas), escenarios del aeropuerto, `pytest` (prueba nueva de la grabación), `ruff`, `pnpm -r typecheck`, `pnpm -r test`; prueba en un servidor estático sin API (como Cloudflare Pages): el WebSocket falla, la escena carga la grabación y el reloj avanza; capturas `evidencia/aeropuerto-inducciones-*.jpg`.
 - **Ampliación (09:55):** el autor pide un equipo para cada paso de una banda a otra («ahí se caerían las maletas»). La entrega de costado se reemplaza por una inducción en ángulo de 30° a favor del flujo (tramo recto, curva motorizada y banda en ángulo dibujados por el clasificador); la salida de la CT 1 gira con una curva motorizada (pieza nueva `belt_curve`) y su banda entra de costado a la línea sur por una abertura de la guía (`merge_at_m` nuevo en `belt-conveyor`); en el motor `induct-01` entrega a `induct-02`. Los 6 escenarios del aeropuerto se siguen cumpliendo; capturas `evidencia/aeropuerto-traspasos-*.jpg`.
 - **Ampliación (10:37):** el autor pide pasar «el sensor» al otro lado, el «círculo» que falta en la transición entre bandas, sensores que paren o avancen las bandas para que no choquen las maletas y las bandas que devuelven al clasificador las maletas de nivel 3 y de codificación manual. Se hizo: tambor en cada extremo de banda (curvas `belt_curve`, inducción del clasificador y banda de reingreso de las estaciones, que ahora llega al borde de su huella); `zone_control` en `belt-conveyor` (zonas del largo de una maleta con fotocelda: cada zona para si la de adelante está ocupada; fotocelda de descarga dibujada, haz rojo mientras detiene la zona de cabeza; variables `photo_eye` y `zone_stopped`; escenario `queue-zone-control`) activado en todas las bandas de maletas; regreso de nivel 3 norte (curva, 2 bandas, curva y banda que entra de costado a la banda norte) y de nivel 3 sur (curva, 2 bandas que suben a 2,72 m y dos curvas que entran de costado a la inducción, segunda abertura `merge2_at_m`); regreso de codificación por el costado este (curva, banda que sube a 3,5 m y curva) a una reinducción que el clasificador dibuja con `reinduct: true`. En el motor las estaciones ya no entregan directo al clasificador sino a sus bandas. El escenario `slippery-collector` ahora espera 0 choques (las fotoceldas paran a las que llegan) y la isla A se sigue bloqueando. Queda abierta la pregunta de cuál sensor pasar al otro lado. Verificación: 6 escenarios del aeropuerto, `twin-lib validate`, `twin-lib plant validate` (5 plantas), `pytest` (288), `pnpm -r test` (129), `pnpm -r typecheck`, `ruff check`; capturas `evidencia/aeropuerto-retorno*.jpg`, `aeropuerto-reinduccion-codificacion.jpg` y `aeropuerto-fotoceldas-y-tambores.jpg`.
@@ -198,7 +358,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 - **Fecha/hora (UTC):** 2026-10-18 23:53–2026-10-19 01:30
 - **Solicitado por:** Andy (23:53, hilo «Desagüe por gravedad del nivel 1»; 01:09: «bajar los tanques 1 metro»). Antes se le propuso una boquilla lateral a 2,2 m, sin obra civil, como recomendación; él eligió bajar.
 - **Qué se hizo:** `industrial-models/water-network-scale-v1/plant.yaml`: tanques `tank-recirc-01..02` y bomba `pumpset-recirc-01` con la base a −1,0 m; boquillas de entrada en 2,245 m (las cuatro bajantes); salidas en −0,75 m y succiones en −0,68 m; el retorno de la bomba sale en −0,103 m. Comentario de la sección de recirculación actualizado. Documentación: `docs/water-network-plant.md` (tabla de equipos y de boquillas, y la simplificación ya resuelta) y la evidencia del acueducto.
-- **Verificación:** `apps/api` `pytest` 12 de 12 en verde (incluida la prueba de la bajante, que ahora termina en 2,245 m). Motor: `twin-lib plant validate water-network-scale-v1` en OK y 72 pruebas de runtime en verde. Capturas de la galería local: `docs/registro/evidencia/acueducto-tanques-bajados-1m.png` (vista general) y `docs/registro/evidencia/acueducto-recirculacion-foso-piso-0.png` (piso 0). Desde la zona corregida (−1,0 m), la losa del piso 0 baja al nivel de la base de los tanques: la captura de piso 0 se rehizo y muestra el foso.
+- **Verificación:** `apps/twin-emulator-api` `pytest` 12 de 12 en verde (incluida la prueba de la bajante, que ahora termina en 2,245 m). Motor: `twin-lib plant validate water-network-scale-v1` en OK y 72 pruebas de runtime en verde. Capturas de la galería local: `docs/registro/evidencia/acueducto-tanques-bajados-1m.png` (vista general) y `docs/registro/evidencia/acueducto-recirculacion-foso-piso-0.png` (piso 0). Desde la zona corregida (−1,0 m), la losa del piso 0 baja al nivel de la base de los tanques: la captura de piso 0 se rehizo y muestra el foso.
 - **Decisiones:** [[decisiones]] D55.
 - **Conversación:** [[hilo-desague-nivel-1]].
 
@@ -255,7 +415,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 - **Fase del plan:** [[plan-del-proyecto]] acueducto
 - **Solicitado por:** Andy: las conexiones 1-2, 2-3 y 3-4 deben salir del tubo principal de cada nivel, al final después del último ramal (con captura marcada).
 - **Qué se hizo:** `distribution-grid` prolonga el cabezal 0,25 m después del último ramal y lo lleva por fuera del costado este hasta el punto de subida (`riser_in_lz`, `riser_out_lz`); las rutas de `plant.yaml` suben en x = 12,25 con y = 4,4 / 5,25 / 6,2; válvulas verticales a 180°.
-- **Verificación:** `twin-lib validate`, `twin-lib plant validate`, `pytest apps/api`, `ruff check`, `pnpm typecheck`, captura `evidencia/acueducto-subidas-desde-cabezal.png`.
+- **Verificación:** `twin-lib validate`, `twin-lib plant validate`, `pytest apps/twin-emulator-api`, `ruff check`, `pnpm typecheck`, captura `evidencia/acueducto-subidas-desde-cabezal.png`.
 - **Decisiones:** [[decisiones]] D50
 - **Conversación:** [[hilo-secuencia-acueducto]]
 ### 2026-10-18 15:04 · Sistema de equipaje de aeropuerto (gemelo nuevo)
@@ -274,7 +434,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 - **Fase del plan:** [[plan-del-proyecto]] acueducto
 - **Solicitado por:** Carlos Andrés Quiceño: «la tubería se cruza con la estructura» y, después, que la conexión entre niveles sea directa, con válvula, en puntos distintos de la cuadrícula y con un reductor tras la estación.
 - **Qué se hizo:** el travesaño del cabezal de la rejilla arranca después del montante (no lo atraviesa); se quitó la columna lateral; subidas rectas de 2" nivel 1→2→3→4 con válvula vertical (`regulating-valve` con `vertical: true`) entre caminos de ramales del nivel de abajo y de arriba; los niveles 2 a 4 sin montante propio (`inlet_riser: false`); reductor dibujado en el tubo de la estación (`reduce_at`, `reduce_to_in`).
-- **Verificación:** `twin-lib validate`, `twin-lib plant validate` (escenarios en tolerancia), `pytest apps/api`, `ruff check`, `pnpm typecheck`, captura `evidencia/acueducto-subidas-directas.png`.
+- **Verificación:** `twin-lib validate`, `twin-lib plant validate` (escenarios en tolerancia), `pytest apps/twin-emulator-api`, `ruff check`, `pnpm typecheck`, captura `evidencia/acueducto-subidas-directas.png`.
 - **Decisiones:** [[decisiones]] D46
 - **Conversación:** [[hilo-secuencia-acueducto]]
 
@@ -290,7 +450,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 - **Fecha/hora (UTC):** 2026-10-18 15:04–17:30
 - **Solicitado por:** Carlos Andrés Quiceño (15:04): construir en otro hilo «un sistema de transporte de una fábrica de cajas», como gemelo digital aparte, tomando como inspiración el sitio web de un fabricante de transportadores; (15:07): no mencionar nunca esa empresa. (17:14): «todo es imaginario no nos pongamos trabajo de más», varios tamaños de caja, lo que consuma menos, y una línea con paletizador y otras dos con uno compartido.
 - **Qué se hizo:** planta `industrial-models/corrugated-box-plant-v1` (230 × 135 m, 17 zonas, 69 equipos, tres líneas de conversión por tamaño de caja, paletizador 1 para la línea 1 y paletizador 2 compartido por las líneas 2 y 3 con una banda de unión, flujos, pasillos y rutas de montacargas; `layout.svg`); 20 piezas de escena en `apps/gallery/src/box-plant-pieces.ts` (bobinas, portabobinas, single facer, puente, engomadora, doble mesa, cortadoras, apilador, transportadores de pilas, mesas giratorias, carro de transferencia, impresoras-plegadoras-pegadoras, troqueladora rotativa, amarradora, banda de fajos, paletizador, cocina de almidón, ciclón, compactadora); tarjeta en el portal; ficha en `docs/box-plant.md` y ficha de diseño en `/mnt/project-files/fabrica-cajas/ficha-diseno.md`.
-- **Verificación:** `render_layout.py` sin errores ni avisos, `pnpm -r typecheck` y `pnpm -r test`, `pytest apps/api`; capturas de la escena: ![[cajas-general.jpg]] ![[cajas-pilas.jpg]] ![[cajas-corrugadora.jpg]] ![[cajas-paletizado-compartido.jpg]]
+- **Verificación:** `render_layout.py` sin errores ni avisos, `pnpm -r typecheck` y `pnpm -r test`, `pytest apps/twin-emulator-api`; capturas de la escena: ![[cajas-general.jpg]] ![[cajas-pilas.jpg]] ![[cajas-corrugadora.jpg]] ![[cajas-paletizado-compartido.jpg]]
 - **Pendiente (siguiente PR):** tipos de librería y `simulation.yaml` para conectar el transporte en el motor (corrugadora → transportadores → carro → carriles → máquinas → paletizado), con la regla de reparto del carro entre carriles.
 - **Decisiones:** [[decisiones]] D44.
 - **Conversación:** [[hilo-fabrica-de-cajas]].
@@ -334,7 +494,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 - **Fecha/hora (UTC):** 2026-10-18 14:17–14:50
 - **Solicitado por:** Carlos Andrés Quiceño (14:17): los montacargas se traspasan entre sí, deben tener carriles de ida y regreso distintos y no cruzar la banda transportadora; la línea de ensamble no se ve y no se muestran sus operarios. (14:19): cada máquina con un buffer que se llena con X productos, estiba al almacén de semielaborados, de ahí al ensamble; diferenciar semielaborados de terminado. (14:24): los procesos deben estar conectados entre sí.
 - **Qué se hizo:** zona `almacen-semielaborado` al norte de la nave con las 4 estanterías (cajas plásticas azules, `stage: semielaborado`; la bodega de terminado usa cartón, `stage: terminado`); rutas de montacargas rehechas por el norte (ya no cruzan la banda, se quita `passes_under`); `routes.ts` dibuja y usa dos carriles por ruta (0,8 m del eje para montacargas, 0,5 m para carros); cámara «LÍNEA DE ENSAMBLE» desde el oeste; formas propias para tampografía, etiquetadora y estación de espumado (eran cubos grises); la grúa puente se acorta para caber en la nave. Descripción del flujo y de lo que falta conectar en el motor: `/mnt/project-files/inspeccion/flujo-planta-plasticos.md`.
-- **Verificación:** `render_layout.py` sin errores, `twin-lib plant validate` en OK, `pytest apps/api` (11), `pnpm -r typecheck` y `pnpm -r test` (82); capturas de la vista general, del almacén y de la línea de ensamble.
+- **Verificación:** `render_layout.py` sin errores, `twin-lib plant validate` en OK, `pytest apps/twin-emulator-api` (11), `pnpm -r typecheck` y `pnpm -r test` (82); capturas de la vista general, del almacén y de la línea de ensamble.
 - **Pendiente (siguiente PR):** conectar el proceso en el motor: buffer por máquina (X = 1.000 piezas, supuesto), almacén con inventario y viaje del montacargas.
 - **Decisiones:** [[decisiones]] D40.
 - **Conversación:** [[hilo-inspeccion-visual]].

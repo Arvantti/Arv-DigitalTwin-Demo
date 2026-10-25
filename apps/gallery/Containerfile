@@ -1,0 +1,12 @@
+# Build context: raíz del repositorio (`podman build -f apps/gallery/Containerfile .`).
+FROM node:26.12.1-alpine AS build
+
+WORKDIR /workspace
+RUN npm install --global pnpm@10.28.0
+COPY . .
+RUN pnpm install --frozen-lockfile
+RUN pnpm --filter @twin/gallery build
+
+FROM nginx:1.29-alpine
+COPY --from=build /workspace/apps/gallery/dist /usr/share/nginx/html
+EXPOSE 80

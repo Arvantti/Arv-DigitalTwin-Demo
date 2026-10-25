@@ -1,0 +1,310 @@
+{
+  "plant_id": "water-network-scale-v1",
+  "profile_id": "pdd-rca-01",
+  "duration_s": 3600,
+  "sample_every_s": 30,
+  "mean_delta_m3h": -0.00288,
+  "max_absolute_delta_m3h": 0.05403,
+  "samples": [
+    {
+      "t": 780.0,
+      "levels_pct": {
+        "tank-supply-01": 46.7,
+        "tank-recirc-01": 60.300000000000004,
+        "tank-recirc-02": 60.2
+      },
+      "speed_pct": 80.00000000000001,
+      "fractal_m3h": 14.27562,
+      "emulator_m3h": 14.26,
+      "delta_m3h": 0.01562
+    },
+    {
+      "t": 810.0,
+      "levels_pct": {
+        "tank-supply-01": 50.0,
+        "tank-recirc-01": 56.900000000000006,
+        "tank-recirc-02": 57.300000000000004
+      },
+      "speed_pct": 100.0,
+      "fractal_m3h": 21.04034,
+      "emulator_m3h": 21.03,
+      "delta_m3h": 0.01034
+    },
+    {
+      "t": 840.0,
+      "levels_pct": {
+        "tank-supply-01": 53.800000000000004,
+        "tank-recirc-01": 54.0,
+        "tank-recirc-02": 54.2
+      },
+      "speed_pct": 100.0,
+      "fractal_m3h": 20.98223,
+      "emulator_m3h": 20.98,
+      "delta_m3h": 0.00223
+    },
+    {
+      "t": 870.0,
+      "levels_pct": {
+        "tank-supply-01": 57.2,
+        "tank-recirc-01": 50.800000000000004,
+        "tank-recirc-02": 51.0
+      },
+      "speed_pct": 100.0,
+      "fractal_m3h": 20.91995,
+      "emulator_m3h": 20.900000000000002,
+      "delta_m3h": 0.01995
+    },
+    {
+      "t": 900.0,
+      "levels_pct": {
+        "tank-supply-01": 60.800000000000004,
+        "tank-recirc-01": 48.0,
+        "tank-recirc-02": 47.900000000000006
+      },
+      "speed_pct": 100.0,
+      "fractal_m3h": 20.86247,
+      "emulator_m3h": 20.88,
+      "delta_m3h": -0.01753
+    },
+    {
+      "t": 930.0,
+      "levels_pct": {
+        "tank-supply-01": 64.3,
+        "tank-recirc-01": 44.900000000000006,
+        "tank-recirc-02": 44.800000000000004
+      },
+      "speed_pct": 100.0,
+      "fractal_m3h": 20.8018,
+      "emulator_m3h": 20.84,
+      "delta_m3h": -0.0382
+    },
+    {
+      "t": 960.0,
+      "levels_pct": {
+        "tank-supply-01": 67.8,
+        "tank-recirc-01": 42.0,
+        "tank-recirc-02": 42.1
+      },
+      "speed_pct": 100.0,
+      "fractal_m3h": 20.7468,
+      "emulator_m3h": 20.76,
+      "delta_m3h": -0.0132
+    },
+    {
+      "t": 990.0,
+      "levels_pct": {
+        "tank-supply-01": 71.60000000000001,
+        "tank-recirc-01": 38.6,
+        "tank-recirc-02": 39.1
+      },
+      "speed_pct": 100.0,
+      "fractal_m3h": 20.68362,
+      "emulator_m3h": 20.71,
+      "delta_m3h": -0.02638
+    },
+    {
+      "t": 1020.0,
+      "levels_pct": {
+        "tank-supply-01": 74.9,
+        "tank-recirc-01": 35.6,
+        "tank-recirc-02": 35.800000000000004
+      },
+      "speed_pct": 100.0,
+      "fractal_m3h": 20.62161,
+      "emulator_m3h": 20.62,
+      "delta_m3h": 0.00161
+    },
+    {
+      "t": 1050.0,
+      "levels_pct": {
+        "tank-supply-01": 78.7,
+        "tank-recirc-01": 32.800000000000004,
+        "tank-recirc-02": 33.0
+      },
+      "speed_pct": 100.0,
+      "fractal_m3h": 20.56618,
+      "emulator_m3h": 20.57,
+      "delta_m3h": -0.00382
+    },
+    {
+      "t": 1080.0,
+      "levels_pct": {
+        "tank-supply-01": 81.7,
+        "tank-recirc-01": 29.5,
+        "tank-recirc-02": 30.0
+      },
+      "speed_pct": 100.0,
+      "fractal_m3h": 20.50348,
+      "emulator_m3h": 20.51,
+      "delta_m3h": -0.00652
+    },
+    {
+      "t": 1110.0,
+      "levels_pct": {
+        "tank-supply-01": 85.7,
+        "tank-recirc-01": 26.6,
+        "tank-recirc-02": 26.900000000000002
+      },
+      "speed_pct": 100.0,
+      "fractal_m3h": 20.44387,
+      "emulator_m3h": 20.48,
+      "delta_m3h": -0.03613
+    },
+    {
+      "t": 1140.0,
+      "levels_pct": {
+        "tank-supply-01": 88.5,
+        "tank-recirc-01": 23.6,
+        "tank-recirc-02": 24.0
+      },
+      "speed_pct": 100.0,
+      "fractal_m3h": 20.38491,
+      "emulator_m3h": 20.37,
+      "delta_m3h": 0.01491
+    },
+    {
+      "t": 2610.0,
+      "levels_pct": {
+        "tank-supply-01": 48.0,
+        "tank-recirc-01": 58.7,
+        "tank-recirc-02": 58.800000000000004
+      },
+      "speed_pct": 100.0,
+      "fractal_m3h": 21.07243,
+      "emulator_m3h": 21.07,
+      "delta_m3h": 0.00243
+    },
+    {
+      "t": 2640.0,
+      "levels_pct": {
+        "tank-supply-01": 51.900000000000006,
+        "tank-recirc-01": 55.7,
+        "tank-recirc-02": 55.800000000000004
+      },
+      "speed_pct": 100.0,
+      "fractal_m3h": 21.0143,
+      "emulator_m3h": 21.0,
+      "delta_m3h": 0.0143
+    },
+    {
+      "t": 2670.0,
+      "levels_pct": {
+        "tank-supply-01": 55.300000000000004,
+        "tank-recirc-01": 52.7,
+        "tank-recirc-02": 52.800000000000004
+      },
+      "speed_pct": 100.0,
+      "fractal_m3h": 20.95601,
+      "emulator_m3h": 20.96,
+      "delta_m3h": -0.00399
+    },
+    {
+      "t": 2700.0,
+      "levels_pct": {
+        "tank-supply-01": 59.0,
+        "tank-recirc-01": 49.5,
+        "tank-recirc-02": 49.2
+      },
+      "speed_pct": 100.0,
+      "fractal_m3h": 20.88982,
+      "emulator_m3h": 20.93,
+      "delta_m3h": -0.04018
+    },
+    {
+      "t": 2730.0,
+      "levels_pct": {
+        "tank-supply-01": 62.6,
+        "tank-recirc-01": 46.1,
+        "tank-recirc-02": 46.400000000000006
+      },
+      "speed_pct": 100.0,
+      "fractal_m3h": 20.82909,
+      "emulator_m3h": 20.86,
+      "delta_m3h": -0.03091
+    },
+    {
+      "t": 2760.0,
+      "levels_pct": {
+        "tank-supply-01": 66.2,
+        "tank-recirc-01": 43.2,
+        "tank-recirc-02": 43.2
+      },
+      "speed_pct": 100.0,
+      "fractal_m3h": 20.76942,
+      "emulator_m3h": 20.79,
+      "delta_m3h": -0.02058
+    },
+    {
+      "t": 2790.0,
+      "levels_pct": {
+        "tank-supply-01": 69.60000000000001,
+        "tank-recirc-01": 40.2,
+        "tank-recirc-02": 40.400000000000006
+      },
+      "speed_pct": 100.0,
+      "fractal_m3h": 20.71235,
+      "emulator_m3h": 20.72,
+      "delta_m3h": -0.00765
+    },
+    {
+      "t": 2820.0,
+      "levels_pct": {
+        "tank-supply-01": 73.3,
+        "tank-recirc-01": 37.1,
+        "tank-recirc-02": 37.6
+      },
+      "speed_pct": 100.0,
+      "fractal_m3h": 20.65403,
+      "emulator_m3h": 20.6,
+      "delta_m3h": 0.05403
+    },
+    {
+      "t": 2850.0,
+      "levels_pct": {
+        "tank-supply-01": 76.9,
+        "tank-recirc-01": 34.0,
+        "tank-recirc-02": 34.5
+      },
+      "speed_pct": 100.0,
+      "fractal_m3h": 20.59275,
+      "emulator_m3h": 20.6,
+      "delta_m3h": -0.00725
+    },
+    {
+      "t": 2880.0,
+      "levels_pct": {
+        "tank-supply-01": 80.0,
+        "tank-recirc-01": 31.1,
+        "tank-recirc-02": 31.400000000000002
+      },
+      "speed_pct": 100.0,
+      "fractal_m3h": 20.5334,
+      "emulator_m3h": 20.53,
+      "delta_m3h": 0.0034
+    },
+    {
+      "t": 2910.0,
+      "levels_pct": {
+        "tank-supply-01": 83.60000000000001,
+        "tank-recirc-01": 28.1,
+        "tank-recirc-02": 28.6
+      },
+      "speed_pct": 100.0,
+      "fractal_m3h": 20.47562,
+      "emulator_m3h": 20.45,
+      "delta_m3h": 0.02562
+    },
+    {
+      "t": 2940.0,
+      "levels_pct": {
+        "tank-supply-01": 87.0,
+        "tank-recirc-01": 25.200000000000003,
+        "tank-recirc-02": 25.5
+      },
+      "speed_pct": 100.0,
+      "fractal_m3h": 20.41594,
+      "emulator_m3h": 20.400000000000002,
+      "delta_m3h": 0.01594
+    }
+  ]
+}

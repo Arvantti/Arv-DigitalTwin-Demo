@@ -68,6 +68,15 @@ button.primary { background: rgba(45, 127, 249, 0.22); border-color: var(--accen
 .vars { font: 12px "IBM Plex Mono", monospace; }
 .vars div { display: flex; justify-content: space-between; padding: 3px 0; border-bottom: 1px dashed rgba(120, 180, 230, 0.08); }
 .vars div span:first-child { color: var(--dim); }
+#asset-chart { width:100%; margin:10px 0 2px; color:var(--cyan); }
+.asset-chart-modal { width:min(92vw,1100px); max-width:none; max-height:90vh; color:var(--text); border:1px solid var(--accent); background:#07132a; padding:0; box-shadow:0 16px 70px #000c; }
+.asset-chart-modal::backdrop { background:#000b; }
+.asset-chart-head { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 16px; border-bottom:1px solid var(--line); color:var(--cyan); font:700 13px Orbitron,sans-serif; }
+.asset-chart-modal > label { display:flex; align-items:center; gap:10px; padding:12px 16px 0; color:var(--dim); font-size:12px; }
+.asset-chart-modal select { min-width:220px; }
+#asset-chart-content { padding:12px 16px 18px; }
+.asset-chart-svg { display:block; width:100%; height:min(58vh,500px); overflow:visible; }
+.asset-chart-legend { margin-top:12px; color:var(--dim); font:12px "IBM Plex Mono",monospace; }.asset-chart-legend i { display:inline-block; width:20px; border-top:3px solid var(--cyan); vertical-align:middle; margin-right:6px; }
 .events { right: 12px; bottom: 12px; width: 320px; height: 180px; padding: 4px 14px; overflow-y: auto; }
 .events ol { list-style: none; margin: 0; padding: 0; font: 11px "IBM Plex Mono", monospace; }
 .events li { padding: 2px 0; color: var(--dim); }
@@ -290,3 +299,16 @@ button.pick { padding: 2px 8px; font-size: 11px; }
 @media (max-width: 900px) { .sidebar.wide { width: calc(100vw - 24px); } }
 @media (max-width: 700px) { .sidebar.wide { width: auto; } .sched-scroll { max-height: none; } }
 @media (min-width: 901px) { body:has(.sidebar.wide) .route-panel { left: calc(min(820px, 100vw - 360px) + 24px); } }
+/* Escritorio: una sola pantalla con escena siempre montada y HMI en panel. */
+.water-workspace-nav { display:flex; gap:5px; margin-left:auto; }
+.water-workspace-nav[hidden], .water-plc-panel[hidden], .water-history-panel[hidden] { display:none; }
+.water-workspace-nav button { white-space:nowrap; padding:7px 9px; border:1px solid #456080; background:#09142b; color:#c8d8ed; font:600 10px Orbitron,Inter,sans-serif; }
+.water-workspace-nav button.active { color:#4ea7ff; border-color:#4ea7ff; }
+.topbar:has(.water-workspace-nav:not([hidden])) .clock { min-width:150px; }
+.water-plc-panel { position:fixed; z-index:36; top:76px; right:12px; width:min(1050px,76vw); height:calc(100vh - 90px); overflow:hidden; background:#040421; border:1px solid #4ea7ff; box-shadow:0 14px 45px #000a; }
+.water-plc-panel iframe { width:100%; height:100%; border:0; background:#040421; }
+.water-history-panel { position:fixed; z-index:37; top:76px; right:12px; width:min(520px,55vw); padding:18px; }
+.water-history-panel label { display:grid; gap:8px; margin:16px 0; }
+.water-history-panel input { width:100%; }
+.water-history-panel strong { display:block; margin:12px 0; color:#4ea7ff; font:12px "IBM Plex Mono",monospace; }
+.plc-viewer-mode #btn-pause,.plc-viewer-mode .speed,.plc-viewer-mode #scenario,.plc-viewer-mode #commands { display:none; }

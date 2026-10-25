@@ -37,16 +37,21 @@ export default function build(params: Params): EquipmentModel {
   const { d, h } = vesselDimensions(volume, form, num(params, "diameter_m", 0));
   const r = d / 2;
   const finish = str(params, "finish", form === "silo" ? "galvanized" : "stainless");
-  const shell = shellMaterial(finish, str(params, "color", "#d9dde1"));
+  const content = str(params, "content", "producto");
+  const waterTank = form === "vertical_tank" && /agua/i.test(content);
+  // Para agua, la carcasa es una envolvente translúcida; el nivel visible sigue exclusivamente el canal `level`.
+  const shell: THREE.Material = waterTank
+    ? new THREE.MeshPhysicalMaterial({ color: "#8fc8ef", roughness: 0.2, metalness: 0.15, transparent: true, opacity: 0.26, depthWrite: false })
+    : shellMaterial(finish, str(params, "color", "#d9dde1"));
   const jacketed = bool(params, "jacketed", false);
   const agitator = bool(params, "agitator", false);
-  const content = str(params, "content", "producto");
 
   const root = P.group("vessel");
   let yBottom: number; // altura del fondo del cuerpo cilíndrico
   let totalH: number;
   const levelMat = M.emissive("#3fd0ff", 1.5);
   let levelBar: THREE.Mesh | null = null;
+  let liquid: THREE.Mesh | null = null;
   let levelSpan = 0;
   const agitatorParts: THREE.Object3D[] = [];
 
@@ -153,6 +158,16 @@ export default function build(params: Params): EquipmentModel {
     const body = P.cylinder(r, r, h, shell, 64, "shell");
     body.position.y = yBottom;
     root.add(body);
+    if (waterTank) {
+      const liquidMaterial = new THREE.MeshPhysicalMaterial({
+        color: "#1677c8", emissive: "#0b3d91", emissiveIntensity: 0.22, roughness: 0.18, metalness: 0.05,
+        transparent: true, opacity: 0.68, depthWrite: false,
+      });
+      liquid = P.cylinder(r * 0.94, r * 0.94, h, liquidMaterial, 64, "water_level");
+      liquid.position.y = yBottom;
+      liquid.renderOrder = 1;
+      root.add(liquid);
+    }
     const top = P.dishedHead(r, shell, false, 0.25, "top_head");
     top.position.y = yBottom + h;
     root.add(top);
@@ -246,6 +261,7 @@ export default function build(params: Params): EquipmentModel {
   function update(frame: AnimationFrame, dt: number): void {
     const level = Math.max(0.001, Math.min(1, ch(frame, "level", 0.5)));
     if (levelBar) levelBar.scale.y = levelSpan * level;
+    if (liquid) liquid.scale.y = level;
     levelMat.emissive.set(level < 0.1 ? "#ff3b3b" : level > 0.9 ? "#ffb000" : "#3fd0ff");
     angle += (ch(frame, "agitator_rpm") / 60) * Math.PI * 2 * dt;
     agitatorParts.forEach((p) => (p.rotation.y = angle));

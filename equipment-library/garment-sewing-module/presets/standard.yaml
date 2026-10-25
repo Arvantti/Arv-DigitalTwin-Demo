@@ -1,0 +1,4 @@
+preset: standard
+description: SAM agrupado en cinco puestos de una fila; valores heredados del estudio conceptual
+params: { polo_lock_1_s: 147, polo_lock_2_s: 141, polo_over_1_s: 72, polo_over_2_s: 63, polo_cover_s: 93, oversize_lock_1_s: 60, oversize_lock_2_s: 33, oversize_over_1_s: 132, oversize_over_2_s: 63, oversize_cover_s: 87, queue_capacity: 180, row_length_m: 9, row_width_m: 3.6 }
+provenance: { polo_lock_1_s: assumed, polo_lock_2_s: assumed, polo_over_1_s: assumed, polo_over_2_s: assumed, polo_cover_s: assumed, oversize_lock_1_s: assumed, oversize_lock_2_s: assumed, oversize_over_1_s: assumed, oversize_cover_s: assumed, queue_capacity: assumed, row_length_m: assumed, row_width_m: assumed }

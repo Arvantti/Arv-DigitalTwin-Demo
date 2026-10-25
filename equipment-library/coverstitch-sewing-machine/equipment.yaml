@@ -1,0 +1,70 @@
+schema_version: 0.1.0
+type: coverstitch-sewing-machine
+version: 0.1.0
+name: Recubridora industrial de cama plana
+manufacturing: discrete
+category: sewing.coverstitch
+description: Máquina interlock de cama plana que forma puntada de recubrimiento por el derecho y cadeneta por el revés; se usa en dobladillos de manga y ruedo.
+aliases: [recubridora, collaretera, coverstitch, interlock de cama plana]
+fidelity: { visual: V2, behavior: B2 }
+params:
+  machine_style: { type: enum, values: [coverstitch], default: coverstitch, description: Variante geométrica de puntada de recubrimiento, affects: [geometry] }
+  cycle_s: { type: number, unit: s, min: 1, max: 600, default: 45, description: SAM de la operación asignada al puesto, affects: [behavior] }
+  max_speed_spm: { type: integer, unit: puntadas/min, min: 500, max: 5500, default: 5500, description: Velocidad mecánica aproximada; máximo no es producción real, affects: [behavior, geometry] }
+  stitch_length_mm: { type: number, unit: mm, min: 1, max: 6, default: 3.5, description: Longitud de puntada; el catálogo de referencia anuncia hasta 6 mm, affects: [geometry] }
+  needle_count: { type: integer, min: 2, max: 4, default: 3, description: Agujas instaladas en configuración de recubrimiento, affects: [geometry] }
+  thread_count: { type: integer, min: 4, max: 8, default: 5, description: Hilos montados según configuración, affects: [geometry] }
+  nominal_inflow_upm: { type: number, unit: u/min, min: 0, max: 100, default: 2, description: Alimentación nominal, affects: [behavior] }
+  queue_capacity: { type: integer, min: 1, max: 100, default: 8, description: Capacidad de la cola de entrada, affects: [behavior, geometry] }
+  length_m: { type: number, unit: m, min: 0.8, max: 2, default: 1.2, description: Largo de mesa y máquina, affects: [geometry] }
+  width_m: { type: number, unit: m, min: 0.45, max: 1.2, default: 0.65, description: Ancho de mesa y máquina, affects: [geometry] }
+  power_kw: { type: number, unit: kW, min: 0.1, max: 2, default: 0.55, description: Potencia estimada del motor integrado, affects: [behavior] }
+ports:
+  - { id: garments_in, kind: item, direction: in, medium: piezas textiles, unit: u/min, link: { units: inflow_upm, ready: accepting_infeed } }
+  - { id: garments_out, kind: item, direction: out, medium: piezas recubiertas, unit: u/min, link: { units: units_processed, ready: downstream_free } }
+states:
+  - { id: idle, description: Puesto detenido o sin operaria }
+  - { id: running, description: La operaria ejecuta la costura de recubrimiento }
+  - { id: starved, description: Cola de entrada vacía }
+  - { id: blocked, description: Salida bloqueada }
+  - { id: fault, description: Parada por rotura de hilo o aguja }
+phases:
+  - { id: sewing, description: Costura de recubrimiento/dobladillo de la pieza }
+variables:
+  - { id: units_processed, unit: u, kind: counter, description: Piezas procesadas }
+  - { id: feed_queue, unit: u, kind: calculated, description: Piezas en cola }
+  - { id: output_upm, unit: u/min, kind: calculated, description: Caudal de salida nominal }
+  - { id: cycle_pct, unit: "%", kind: calculated, range: [0, 100], description: Avance del ciclo asignado }
+  - { id: needle_speed_spm, unit: puntadas/min, kind: calculated, range: [0, 5500], description: Velocidad aproximada de agujas }
+  - { id: power_kw, unit: kW, kind: measured, range: [0, 2], noise_sd: 0.02, resolution: 0.01, description: Consumo eléctrico estimado }
+  - { id: accepting_infeed, unit: "", kind: status, description: 1 si acepta entrada }
+events:
+  - { id: garment_completed, description: Pieza terminada }
+  - { id: queue_full, description: Cola llena }
+  - { id: starved, description: Sin piezas por procesar }
+faults:
+  - { id: thread_break, description: Rotura de hilo de recubrimiento y re enhebrado, mtbf_h: 28, mttr_min: 3, severity: low, effect: "Parada y revisión del dobladillo" }
+  - { id: needle_break, description: Rotura de una aguja múltiple, mtbf_h: 100, mttr_min: 5, severity: medium, effect: "Parada para sustituir aguja y comprobar puntada" }
+commands:
+  - { id: start, description: Habilita el puesto }
+  - { id: stop, description: Detiene al terminar la pieza actual }
+  - { id: inject_fault, description: Inyecta una falla, args: { fault: string, duration_s: number } }
+  - { id: clear_fault, description: Repara una falla activa, args: { fault: string } }
+kpis:
+  - { id: utilization, unit: "", description: Fracción del tiempo cosiendo }
+  - { id: units_per_h, unit: u/h, description: Piezas terminadas por hora }
+  - { id: starved_pct, unit: "", description: Fracción del tiempo sin piezas }
+animation_channels:
+  - { id: needle, range: [0, 1], description: Movimiento normalizado de agujas }
+  - { id: handwheel, range: [0, 1], description: Giro del volante }
+  - { id: operator_working, range: [0, 1], description: Postura de trabajo }
+  - { id: progress, range: [0, 1], description: Avance del dobladillo }
+  - { id: stack_light, range: [0, 3], description: "Baliza: 0 apagada, 1 verde, 2 amarilla, 3 roja" }
+geometry:
+  parts: [table, head, needle_bar, looper, cover_stitch_spreader, presser_foot, feed_dogs, thread_cones, handwheel, operator, stack_light, hmi]
+assumptions:
+  - "Se tomó como referencia una interlock de cama plana para dobladillos; el fabricante indica puntada de recubrimiento y longitud de hasta 6 mm."
+  - "5.500 puntadas/min, aguja/hilos, dimensiones, potencia, cola y fallas son configuración supuesta porque varían por submodelo y accesorios."
+  - "El ciclo es el SAM asignado al puesto, no una conversión de puntadas por minuto a unidades."
+references:
+  - https://siruba.com/product/f007k-f007kd/

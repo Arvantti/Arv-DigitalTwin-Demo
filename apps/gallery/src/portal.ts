@@ -40,7 +40,7 @@ const plants: PlantCard[] = [
     family: "OPERACIONES",
     title: "Planta de acueducto",
     text: "Bombeo, estación reguladora y rejilla de distribución por pisos, con la presión de cada casa y el panel del PLC.",
-    extra: { href: "/acueducto.html", label: "PANEL DEL PLC" },
+    extra: { href: "/plant.html?plant=water-network-scale-v1&workspace=plc", label: "PLC MASTER EN 3D" },
   },
   {
     id: "airport-baggage-v1",
@@ -57,6 +57,14 @@ const plants: PlantCard[] = [
     family: "MANEJO DE MATERIALES",
     title: "Fábrica de cajas",
     text: "Corrugadora, transporte de pilas con carro de transferencia y pulmón, conversión, paletizado y bodega de cartón corrugado.",
+  },
+  {
+    id: "garment-factory-v1",
+    image: "/portal/confecciones.jpg",
+    alt: "Captura de la escena 3D de la fábrica de confecciones",
+    family: "MANUFACTURA DISCRETA",
+    title: "Fábrica de confecciones",
+    text: "Corte y almacén de tela, tres módulos con 15 máquinas de costura, inspección y bodega de producto terminado. SAM de referencia para camisetas Polo y Oversize.",
   },
   {
     id: "centro-medellin-v1",

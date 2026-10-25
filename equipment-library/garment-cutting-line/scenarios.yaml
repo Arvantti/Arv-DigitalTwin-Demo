@@ -1,0 +1,11 @@
+scenarios:
+  - id: one-roll-nominal
+    description: "Dos horas a 0,2 rollos/min: cada rollo dedicado rinde 48 Polo o 60 Oversize; la cuota asumida 50/50 alterna los SKU y reparte cada lote entre los tres módulos"
+    preset: standard
+    duration_s: 7200
+    timeline:
+      - { at_s: 0, inputs: { rolls_inflow_upm: 0.2 } }
+    expect:
+      - { path: variables.rolls_cut, min: 20, max: 24 }
+      - { path: variables.polo_cut, min: 480, max: 576 }
+      - { path: variables.oversize_cut, min: 600, max: 720 }

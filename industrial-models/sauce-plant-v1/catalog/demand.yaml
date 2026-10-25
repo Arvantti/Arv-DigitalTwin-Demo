@@ -1,4 +1,4 @@
-# Demanda de la demo (fase E de docs/datos-reales.md, decisión D68). twin_runtime.planning genera con esto los
+# Demanda de la demo (fase E de docs/datos-reales.md, decisión D75). twin_runtime.planning genera con esto los
 # pedidos de cualquier fecha: la semilla es (planta, fecha de entrega), así que el pedido del 5 de noviembre es el
 # mismo hoy y mañana, y la ventana de hoy a +30 días siempre tiene pedidos sin mantener ningún archivo.
 #

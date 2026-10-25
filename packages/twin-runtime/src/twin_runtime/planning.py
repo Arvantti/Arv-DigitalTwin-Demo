@@ -1,4 +1,4 @@
-"""Programación de producción de la demo: pedidos inventados y secuenciador de referencia (fase E, decisión D68).
+"""Programación de producción de la demo: pedidos inventados y secuenciador de referencia (fase E, decisión D75).
 
 Plan en docs/datos-reales.md y docs/programacion.md. Dos piezas:
 

@@ -230,6 +230,10 @@ export interface OperatorLook {
   helmet?: string;
   /** Persona sin dotación (pasajero, agente de mostrador): sin casco, chaleco ni gafas. */
   civilian?: boolean;
+  /** Género visual explícito cuando lo requiere el contexto; si se omite, se conserva la alternancia global. */
+  gender?: "female" | "male";
+  /** Puesto sentado, por ejemplo operaria ante una máquina plana. Usa figura orgánica para mantener la pose en escena. */
+  seated?: boolean;
 }
 
 /** Extremidad orgánica: tubo que se afina de rTop a rBottom con extremos redondeados y un abultamiento opcional (músculo). */
@@ -308,8 +312,8 @@ export function operator(vest = "#f26b1d", shirt = "#2f5f8f", look: OperatorLook
   const fig = operatorFigure(vest, shirt, look);
   g.add(fig.object);
   const state: HumanState = { work: 0, walk: null };
-  const { kind, seed } = pickHuman(!!look.civilian);
-  attachHuman(g, fig.object, kind, state, seed);
+  const { kind, seed } = pickHuman(!!look.civilian, look.gender);
+  if (!look.seated) attachHuman(g, fig.object, kind, state, seed);
   return {
     object: g,
     setPose(work: number): void {
@@ -501,20 +505,20 @@ export function operatorFigure(vest = "#f26b1d", shirt = "#2f5f8f", look: Operat
   g.add(torso);
   function setPose(work: number): void {
     const w = Math.max(0, Math.min(1, work));
-    torso.rotation.x = 0.28 * w;
+    const seated = !!look.seated;
+    torso.rotation.x = (seated ? 0.12 : 0.28) * w;
     torso.rotation.y = 0;
     head.rotation.x = 0.15 * w;
     g.position.y = 0;
     for (const [i, arm] of arms.entries()) {
       const s = i ? -1 : 1;
-      arm.rotation.x = -0.55 * w - 0.06;
-      // en reposo los brazos cuelgan algo separados del cuerpo, con el codo un poco doblado
-      arm.rotation.z = s * (0.09 - 0.04 * w);
-      (arm.userData.fore as THREE.Group).rotation.x = -(0.22 + 0.75 * w + 0.12 * Math.sin(i * 2) * w);
+      arm.rotation.x = seated ? -0.95 - 0.18 * w : -0.55 * w - 0.06;
+      arm.rotation.z = s * (seated ? 0.12 : 0.09 - 0.04 * w);
+      (arm.userData.fore as THREE.Group).rotation.x = seated ? -0.45 - 0.45 * w : -(0.22 + 0.75 * w + 0.12 * Math.sin(i * 2) * w);
     }
     for (const l of legs) {
-      l.hip.rotation.x = -0.04 * w;
-      l.knee.rotation.x = 0.06 * w;
+      l.hip.rotation.x = seated ? -Math.PI / 2 : -0.04 * w;
+      l.knee.rotation.x = seated ? Math.PI / 2 : 0.06 * w;
     }
   }
   function setWalk(phase: number): void {

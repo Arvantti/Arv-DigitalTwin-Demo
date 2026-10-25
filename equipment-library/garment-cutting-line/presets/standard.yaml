@@ -1,0 +1,4 @@
+preset: standard
+description: Corte de referencia, 48 kits Polo y 60 Oversize por rollo
+params: { cut_cycle_s: 180, roll_queue_capacity: 2, polo_per_roll: 48, oversize_per_roll: 60, polo_share: 0.5 }
+provenance: { cut_cycle_s: assumed, roll_queue_capacity: assumed, polo_per_roll: assumed, oversize_per_roll: assumed, polo_share: assumed }

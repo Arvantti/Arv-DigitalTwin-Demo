@@ -1,0 +1,4 @@
+preset: standard
+description: Capacidad de almacenamiento conceptual de producto terminado
+params: { capacity_units: 2400, rack_count: 2 }
+provenance: { capacity_units: assumed, rack_count: assumed }

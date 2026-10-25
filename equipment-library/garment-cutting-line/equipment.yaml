@@ -1,0 +1,71 @@
+schema_version: 0.1.0
+type: garment-cutting-line
+version: 0.1.0
+name: Línea de tendido y corte de prendas
+manufacturing: discrete
+category: garment.cutting
+description: "Recibe rollos, representa extendido y corte por lote, y distribuye paquetes cortados por producto a los supermercados de tres módulos."
+aliases: [corte de tela, mesa de corte, tendido]
+fidelity: { visual: V2, behavior: B2 }
+params:
+  cut_cycle_s: { type: number, unit: s, min: 30, max: 7200, default: 180, description: "Ciclo supuesto de tendido, corte y separación de un rollo", affects: [behavior, geometry] }
+  roll_queue_capacity: { type: integer, min: 1, max: 20, default: 2, description: Rollos máximo en cola más posición de corte, affects: [behavior, geometry] }
+  polo_per_roll: { type: integer, min: 1, max: 1000, default: 48, description: "Kits Polo obtenidos por rollo dedicado; supuesto", affects: [behavior] }
+  oversize_per_roll: { type: integer, min: 1, max: 1000, default: 60, description: "Kits Oversize obtenidos por rollo dedicado; supuesto", affects: [behavior] }
+  polo_share: { type: number, min: 0, max: 1, default: 0.5, description: "Fracción supuesta de rollos asignada a Polo; 0,5 alterna los SKU", affects: [behavior] }
+ports:
+  - { id: rolls_in, kind: item, direction: in, medium: rollos liberados, unit: u/min, link: { units: rolls_inflow_upm, ready: accepting_rolls } }
+  - { id: module_1_polo, kind: item, direction: out, medium: paquetes Polo al módulo 1, unit: u/min, link: { units: polo_module_1_out, ready: module_1_polo_ready } }
+  - { id: module_1_oversize, kind: item, direction: out, medium: paquetes Oversize al módulo 1, unit: u/min, link: { units: oversize_module_1_out, ready: module_1_oversize_ready } }
+  - { id: module_2_polo, kind: item, direction: out, medium: paquetes Polo al módulo 2, unit: u/min, link: { units: polo_module_2_out, ready: module_2_polo_ready } }
+  - { id: module_2_oversize, kind: item, direction: out, medium: paquetes Oversize al módulo 2, unit: u/min, link: { units: oversize_module_2_out, ready: module_2_oversize_ready } }
+  - { id: module_3_polo, kind: item, direction: out, medium: paquetes Polo al módulo 3, unit: u/min, link: { units: polo_module_3_out, ready: module_3_polo_ready } }
+  - { id: module_3_oversize, kind: item, direction: out, medium: paquetes Oversize al módulo 3, unit: u/min, link: { units: oversize_module_3_out, ready: module_3_oversize_ready } }
+states:
+  - { id: idle, description: Línea detenida }
+  - { id: running, description: Rollo en extendido/corte }
+  - { id: starved, description: Sin rollos liberados }
+  - { id: blocked, description: Algún supermercado de módulo está lleno }
+  - { id: fault, description: Línea parada por falla }
+phases:
+  - { id: cutting, description: "Extendido, marcado, corte y armado de paquetes" }
+variables:
+  - { id: rolls_queue, unit: rollos, kind: calculated, description: Rollos pendientes o en proceso }
+  - { id: rolls_cut, unit: rollos, kind: counter, description: Rollos procesados }
+  - { id: polo_cut, unit: u, kind: counter, description: Kits Polo cortados }
+  - { id: oversize_cut, unit: u, kind: counter, description: Kits Oversize cortados }
+  - { id: cut_progress, unit: "%", kind: calculated, range: [0, 1], description: Avance del lote de corte }
+  - { id: accepting_rolls, unit: "", kind: status, description: 1 si puede aceptar rollos }
+  - { id: module_1_polo_ready, unit: "", kind: status, description: 1 si el módulo 1 admite paquetes Polo }
+  - { id: module_1_oversize_ready, unit: "", kind: status, description: 1 si el módulo 1 admite paquetes Oversize }
+  - { id: module_2_polo_ready, unit: "", kind: status, description: 1 si el módulo 2 admite paquetes Polo }
+  - { id: module_2_oversize_ready, unit: "", kind: status, description: 1 si el módulo 2 admite paquetes Oversize }
+  - { id: module_3_polo_ready, unit: "", kind: status, description: 1 si el módulo 3 admite paquetes Polo }
+  - { id: module_3_oversize_ready, unit: "", kind: status, description: 1 si el módulo 3 admite paquetes Oversize }
+  - { id: polo_module_1_out, unit: u, kind: counter, description: Kits Polo enviados al módulo 1 }
+  - { id: oversize_module_1_out, unit: u, kind: counter, description: Kits Oversize enviados al módulo 1 }
+  - { id: polo_module_2_out, unit: u, kind: counter, description: Kits Polo enviados al módulo 2 }
+  - { id: oversize_module_2_out, unit: u, kind: counter, description: Kits Oversize enviados al módulo 2 }
+  - { id: polo_module_3_out, unit: u, kind: counter, description: Kits Polo enviados al módulo 3 }
+  - { id: oversize_module_3_out, unit: u, kind: counter, description: Kits Oversize enviados al módulo 3 }
+events:
+  - { id: roll_cut, description: Rollo tendido y cortado }
+  - { id: queue_full, description: Cola de rollos llena }
+faults:
+  - { id: cutter_stop, description: Parada supuesta del cabezal de corte, mtbf_h: 250, mttr_min: 15, severity: medium, effect: "Detiene el corte; los paquetes ya liberados permanecen en los módulos" }
+commands:
+  - { id: inject_fault, description: Inyecta una falla, args: { fault: string, duration_s: number } }
+  - { id: clear_fault, description: Repara una falla activa, args: { fault: string } }
+kpis:
+  - { id: rolls_per_h, unit: rollos/h, description: Rollos cortados por hora }
+  - { id: garments_cut, unit: u, description: Kits cortados acumulados }
+animation_channels:
+  - { id: table_fill, range: [0, 1], description: Cola de rollos }
+  - { id: cutting, range: [0, 1], description: Cabezal trabajando }
+  - { id: progress, range: [0, 1], description: Avance del rollo }
+  - { id: stack_light, range: [0, 3], description: Baliza de corte }
+geometry: { parts: [spreading_tables, fabric_layers, marker, gantry, cutting_head, safety_light, operator] }
+assumptions:
+  - "Ciclo 180 s/rollo y rendimientos 48 Polo + 60 Oversize por rollo son supuestos de demostración; reemplazar con marcador, metraje y rendimiento real."
+  - "Cada rollo se asigna a un solo SKU; por defecto se alternan Polo y Oversize. La cuota de mezcla 50/50 es supuesta y no implica que compartan un mismo marcador."
+  - "Cada lote se reparte en tres paquetes equivalentes por referencia, uno por módulo; el corte no simula geometría de patrones ni desperdicio."
