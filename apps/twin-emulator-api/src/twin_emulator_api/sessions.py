@@ -12,7 +12,7 @@ from twin_runtime.plant import PlantModel
 
 from .historian import historian
 from .plc_tags import plc_tags
-from .profiles import commands_for_hour
+from .profiles import commands_for_hour, current_prs_inlet_offset_mca
 
 TICK_S = 0.1
 MAX_STEPS_PER_TICK = 4000
@@ -90,7 +90,8 @@ class PlantSession:
             self.applied_profile_hour = None
         if self.profile is None or self.applied_profile_hour == hour:
             return
-        for item in commands_for_hour(self.profile, hour):
+        inlet_offset = current_prs_inlet_offset_mca(self.plant)
+        for item in commands_for_hour(self.profile, hour, inlet_pressure_offset_mca=inlet_offset):
             equipment = self.plant.equipment[item["equipment"]]
             equipment.command(item["command"], item["args"])
             self.plant.events.extend(equipment.drain_events())

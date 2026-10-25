@@ -91,13 +91,24 @@ def build(
     height = tank["volume_l"] / 1000 / (3.14159265 * tank["diameter_m"] ** 2 / 4)
     net.add_fixed_head("tanque", z["tank-supply-01"] + height * SUPPLY_LEVEL_PCT / 100, elevation_m=z["tank-supply-01"])
     net.add_node("succion", z["pumpset-main-01"])
-    pipe("tank-supply-01", "pumpset-main-01", "tanque", "succion")
+    supply_check_kv = float(sim["tank-supply-01"].get("params", {}).get("outlet_check_kv_m3h", 0.0))
+    if supply_check_kv > 0:
+        net.add_node("check_succion", z["tank-supply-01"])
+        net.add_check_valve("check_tanque_suministro", "tanque", "check_succion", kv_m3h=supply_check_kv)
+        pipe("tank-supply-01", "pumpset-main-01", "check_succion", "succion")
+    else:
+        pipe("tank-supply-01", "pumpset-main-01", "tanque", "succion")
     pumps_p = resolved("booster-pump-set", sim["pumpset-main-01"]["preset"])
     net.add_node("descarga", z["pumpset-main-01"])
     for pid in pump_mod.add_pump_set(net, "bombas_", "succion", "descarga", pumps_p):
         net.set(pid, speed=pump_speed)
 
-    st_p = resolved("pressure-reducing-station", "station-4in-manual", manual_setting_mca=station_setting_mca)
+    st_p = resolved(
+        "pressure-reducing-station",
+        "station-4in-manual",
+        manual_setting_mca=station_setting_mca,
+        outlet_check_kv_m3h=float(sim["prs-01"].get("params", {}).get("outlet_check_kv_m3h", 0.0)),
+    )
     net.add_node("entrada_est", z["prs-01"])
     net.add_node("salida_est", z["prs-01"])
     pipe("pumpset-main-01", "prs-01", "descarga", "entrada_est")
@@ -119,7 +130,12 @@ def build(
             net.set(grids[f"nivel{k}"]["l1"]["link"], kv_m3h=gp["leak_kv_m3h"] * grid_mod.BURST_FACTOR)
         if k < LEVELS:
             vid = f"valve-between-{k}{k + 1}"
-            vp = resolved("regulating-valve", sim[vid]["preset"], opening_pct=between_opening_pct[k - 1])
+            vp = resolved(
+                "regulating-valve",
+                sim[vid]["preset"],
+                opening_pct=between_opening_pct[k - 1],
+                outlet_check_kv_m3h=float(sim[vid].get("params", {}).get("outlet_check_kv_m3h", 0.0)),
+            )
             net.add_node(f"{vid}_in", z[vid])
             net.add_node(f"{vid}_out", z[vid])
             pipe(gid, vid, inlet, f"{vid}_in")

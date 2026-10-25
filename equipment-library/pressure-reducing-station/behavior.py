@@ -71,6 +71,8 @@ class PressureReducingStation(EquipmentBehavior):
         self.pid = PID(kp=p["pid_kp"], ki=p["pid_ki"], out_min=p["auto_min_outlet_mca"], out_max=p["auto_max_outlet_mca"])
         self.pid.integral = self.pid.output = self.manual_setting  # arranca desde la salida de diseño
         self.auto_setting = self.manual_setting
+        self.auto_control_mode = "critical_pressure"
+        self.auto_fixed_outlet_mca = self.auto_setting
         self.p_in = p["bench_inlet_mca"]
         self.p_out = 0.0
         self.critical = self.critical_sp
@@ -106,6 +108,20 @@ class PressureReducingStation(EquipmentBehavior):
             self.critical_sp = float(args["mca"])
         elif name == "set_manual_setting":
             self.manual_setting = float(args["mca"])
+        elif name == "set_auto_control":
+            mode = str(args["mode"])
+            if mode not in {"critical_pressure", "fixed_outlet"}:
+                raise ValueError("mode debe ser critical_pressure o fixed_outlet")
+            if mode == "fixed_outlet":
+                outlet = float(args["mca"])
+                if not self.p["auto_min_outlet_mca"] <= outlet <= self.p["auto_max_outlet_mca"]:
+                    raise ValueError("mca debe estar dentro de los límites de salida automática")
+                self.auto_fixed_outlet_mca = outlet
+                self.auto_setting = outlet
+                self.pid.integral = self.pid.output = outlet
+            elif self.auto_control_mode == "fixed_outlet":
+                self.pid.integral = self.pid.output = self.auto_setting
+            self.auto_control_mode = mode
         else:
             return False
         return True
@@ -132,7 +148,9 @@ class PressureReducingStation(EquipmentBehavior):
                     self.emit("branch_changed", branch=self.branch)
         # PRV automática: el PID mueve su consigna de salida con la presión crítica del paso anterior
         auto_in_service = self.open_a.value > 0
-        if auto_in_service and not self.failures.is_active("telemetry_loss"):
+        if auto_in_service and self.auto_control_mode == "fixed_outlet":
+            self.auto_setting = self.auto_fixed_outlet_mca
+        elif auto_in_service and not self.failures.is_active("telemetry_loss"):
             self.auto_setting = self.pid.step(self.critical_sp, self.critical, dt)
         a_setting = WIDE_OPEN_MCA if self.failures.is_active("diaphragm_failure") else self.auto_setting
         b_setting = self.manual_setting * (PILOT_DRIFT if self.failures.is_active("pilot_drift") else 1.0)
@@ -189,6 +207,8 @@ class PressureReducingStation(EquipmentBehavior):
             "flow_auto_m3h": self.flow_a,
             "flow_manual_m3h": self.flow_b,
             "auto_outlet_setpoint_mca": self.auto_setting,
+            "auto_fixed_outlet_mca": self.auto_fixed_outlet_mca,
+            "auto_fixed_mode": 1 if self.auto_control_mode == "fixed_outlet" else 0,
             "critical_setpoint_mca": self.critical_sp,
             "manual_setting_mca": self.manual_setting,
             "branch_auto": 1 if self.branch == "auto" else 0,

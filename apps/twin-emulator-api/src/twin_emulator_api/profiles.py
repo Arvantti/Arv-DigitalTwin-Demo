@@ -109,6 +109,21 @@ def normalize_profile(payload: Mapping[str, Any]) -> dict[str, Any]:
                 checked["critical_setpoint_mca"] = _number(prs["critical_setpoint_mca"], f"hours.{hour}.prs.critical_setpoint_mca", 15, 30)
             if "manual_setting_mca" in prs:
                 checked["manual_setting_mca"] = _number(prs["manual_setting_mca"], f"hours.{hour}.prs.manual_setting_mca", 15, 35)
+            mode = prs.get("control_mode", "fixed_outlet" if "auto_outlet_mca" in prs else None)
+            if mode is not None:
+                if mode not in {"critical_pressure", "fixed_outlet"}:
+                    raise ValueError(f"hours.{hour}.prs.control_mode debe ser critical_pressure o fixed_outlet")
+                checked["control_mode"] = mode
+            if "auto_outlet_mca" in prs:
+                checked["auto_outlet_mca"] = _number(prs["auto_outlet_mca"], f"hours.{hour}.prs.auto_outlet_mca", 15, 40)
+            if "inlet_pressure_mca" in prs:
+                checked["inlet_pressure_mca"] = _number(prs["inlet_pressure_mca"], f"hours.{hour}.prs.inlet_pressure_mca", 15, 100)
+            if checked.get("control_mode") == "fixed_outlet":
+                if checked.get("branch", "auto") != "auto":
+                    raise ValueError(f"hours.{hour}.prs fixed_outlet requiere la rama auto")
+                checked["branch"] = "auto"
+                if "auto_outlet_mca" not in checked:
+                    raise ValueError(f"hours.{hour}.prs.auto_outlet_mca es obligatorio en fixed_outlet")
             if checked:
                 item["prs"] = checked
         hours[str(hour)] = item
@@ -116,7 +131,9 @@ def normalize_profile(payload: Mapping[str, Any]) -> dict[str, Any]:
     return {"schema_version": PROFILE_VERSION, "name": name.strip(), "description": description.strip(), "hours": hours}
 
 
-def commands_for_hour(profile: Mapping[str, Any], hour: int) -> list[dict[str, Any]]:
+def commands_for_hour(
+    profile: Mapping[str, Any], hour: int, *, inlet_pressure_offset_mca: float = 0.0
+) -> list[dict[str, Any]]:
     """Resuelve una hora a comandos declarados del PLC virtual.
 
     El orden hace explícita la precedencia global → nivel → vivienda.
@@ -142,13 +159,43 @@ def commands_for_hour(profile: Mapping[str, Any], hour: int) -> list[dict[str, A
     for valve, opening in entry.get("between_levels", {}).items():
         commands.append({"equipment": f"valve-between-{valve}", "command": "set_opening", "args": {"pct": opening}})
     prs = entry.get("prs", {})
+    if "inlet_pressure_mca" in prs:
+        commands.append({
+            "equipment": "pumpset-main-01", "command": "set_setpoint",
+            "args": {"mca": prs["inlet_pressure_mca"] + float(inlet_pressure_offset_mca)},
+        })
     if "branch" in prs:
         commands.append({"equipment": "prs-01", "command": "select_branch", "args": {"branch": prs["branch"]}})
     if "critical_setpoint_mca" in prs:
         commands.append({"equipment": "prs-01", "command": "set_critical_setpoint", "args": {"mca": prs["critical_setpoint_mca"]}})
     if "manual_setting_mca" in prs:
         commands.append({"equipment": "prs-01", "command": "set_manual_setting", "args": {"mca": prs["manual_setting_mca"]}})
+    if prs.get("control_mode") == "fixed_outlet":
+        commands.append({
+            "equipment": "prs-01", "command": "set_auto_control",
+            "args": {"mode": "fixed_outlet", "mca": prs["auto_outlet_mca"]},
+        })
+    elif prs.get("control_mode") == "critical_pressure":
+        commands.append({
+            "equipment": "prs-01", "command": "set_auto_control",
+            "args": {"mode": "critical_pressure", "mca": prs.get("auto_outlet_mca", 20.94)},
+        })
     return commands
+
+
+def current_prs_inlet_offset_mca(plant: Any) -> float:
+    """Diferencia actual descarga de bomba→entrada PRS para aproximar una presión objetivo a la llegada.
+
+    El perfil traduce la presión objetivo de entrada PRS en consigna de descarga de la bomba usando este diferencial
+    medido; pérdidas y caudal futuros pueden hacer que la llegada real difiera, por lo que se informa la medición.
+    """
+    pump = plant.equipment["pumpset-main-01"].true_values()
+    station = plant.equipment["prs-01"].true_values()
+    discharge = float(pump.get("discharge_pressure_mca") or 0.0)
+    inlet = float(station.get("inlet_pressure_mca") or 0.0)
+    if int(pump.get("pumps_running") or 0) <= 0 or discharge < 5 or inlet < 5:
+        return 0.0
+    return discharge - inlet
 
 
 class ProfileStore:

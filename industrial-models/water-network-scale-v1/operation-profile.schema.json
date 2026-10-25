@@ -38,7 +38,10 @@
           "properties": {
             "branch": { "enum": ["auto", "manual"] },
             "critical_setpoint_mca": { "type": "number", "minimum": 15, "maximum": 30 },
-            "manual_setting_mca": { "type": "number", "minimum": 15, "maximum": 35 }
+            "manual_setting_mca": { "type": "number", "minimum": 15, "maximum": 35 },
+            "control_mode": { "enum": ["critical_pressure", "fixed_outlet"] },
+            "inlet_pressure_mca": { "type": "number", "minimum": 15, "maximum": 100 },
+            "auto_outlet_mca": { "type": "number", "minimum": 15, "maximum": 40 }
           },
           "additionalProperties": false
         }

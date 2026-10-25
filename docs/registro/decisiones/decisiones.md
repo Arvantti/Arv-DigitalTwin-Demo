@@ -5,6 +5,10 @@ actualizado: 2026-10-24
 ---
 # Decisiones y reglas del autor
 
+## PRS automática: salida fija y objetivo de entrada · 2026-10-25
+
+Primer escenario hidráulico después de alinear el horizonte PLC→Fractal: rama automática A activa, rama manual B cerrada y consigna de salida fija de 40 mca, configurable por perfil horario. La entrada PRS se configura como **objetivo** (inicialmente 70 mca), no como condición de borde: el emulador aproxima el objetivo ajustando la consigna de descarga según el diferencial bomba→PRS medido al programar cada hora, y la presión real de entrada debe informarse porque cambia con caudal, pérdidas y dinámica. Esta aproximación no reconstruye la lógica del controlador Grundfos. Fractal hereda la consigna PLC vigente en la franja inicial desde un snapshot no alineado a hora; recalcula el objetivo al avanzar a las siguientes franjas. La seguridad inicial a comprobar es que ninguna de las 64 viviendas caiga bajo 15 mca; una proyección solo por marcas horarias no certifica presión continua. No se mide ni inventa porcentaje de carrera de la PRV. No activar optimización ni abordar todavía el control variable a 18 mca en C44. [[../../architecture/prs-fixed-outlet-scenario]]
+
 ## Alineación temporal PLC→Fractal · 2026-10-25
 
 Desde un snapshot PLC en t=30 s, el primer frame Fractal cubre solo los 3570 s hasta el siguiente límite horario absoluto t=3600; los siguientes frames duran 3600 s. Los puntos de comparación son t=3600…86400 con el mismo perfil en ambos motores. Se retiró del contraste la corrida anterior que evaluaba t=3630…86430 y, por tanto, comparaba entradas horarias distintas durante 30 s. El horizonte hasta t=86400 representa 86.370 s desde el snapshot (no 24 h relativas). La corrida alineada aún presenta +34,02598 pp de diferencia final en el tanque de suministro; presión solo comparada en 24 fronteras y niveles no validados. No se habilita optimización.

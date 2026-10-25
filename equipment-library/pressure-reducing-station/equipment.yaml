@@ -6,8 +6,7 @@ manufacturing: utility
 category: utilities.water.pressure_control
 description: >
   Estación reguladora de presión de una red de agua: la línea de entrada se bifurca en dos ramas con
-  válvulas de corte manuales; la rama A tiene una válvula reductora (PRV) automática cuya consigna de
-  salida la ajusta un PID para sostener la presión medida en el punto más crítico de la red; la rama B
+  válvulas de corte manuales; la rama A tiene una válvula reductora (PRV) automática cuya consigna de salida puede regularse por PID sobre el punto crítico o fijarse como presión de salida; la rama B
   tiene una PRV de piloto con salida fija ajustada a mano. Las ramas se unen y siguen hacia la red. El
   cambio de rama abre primero la que entra y después cierra la que sale, para no cortar el suministro.
 aliases: [estación reguladora, PRV, válvula reductora de presión, VRP, estación de control de presión, by-pass de PRV]
@@ -48,7 +47,9 @@ variables:
   - { id: flow_m3h, unit: m3/h, kind: measured, range: [0, 5000], noise_sd: 0.02, resolution: 0.01, description: Caudal total }
   - { id: flow_auto_m3h, unit: m3/h, kind: measured, range: [0, 5000], noise_sd: 0.02, resolution: 0.01, description: Caudal por la rama A (automática) }
   - { id: flow_manual_m3h, unit: m3/h, kind: measured, range: [0, 5000], noise_sd: 0.02, resolution: 0.01, description: Caudal por la rama B (manual) }
-  - { id: auto_outlet_setpoint_mca, unit: mca, kind: setpoint, description: Consigna de salida que el PID le da a la PRV automática }
+  - { id: auto_outlet_setpoint_mca, unit: mca, kind: setpoint, description: Consigna actual de salida de la PRV automática }
+  - { id: auto_fixed_outlet_mca, unit: mca, kind: setpoint, description: Consigna de salida fija seleccionada para la rama automática }
+  - { id: auto_fixed_mode, unit: "", kind: status, description: "1 si la rama automática mantiene salida fija; 0 si regula por presión crítica" }
   - { id: critical_setpoint_mca, unit: mca, kind: setpoint, description: Consigna en el punto crítico }
   - { id: manual_setting_mca, unit: mca, kind: setpoint, description: Salida fija de la PRV manual }
   - { id: branch_auto, unit: "", kind: status, description: "1 si la rama automática está en servicio, 0 si es la manual" }
@@ -72,6 +73,7 @@ commands:
   - { id: select_branch, description: "Cambia la rama en servicio (abre la que entra y luego cierra la que sale)", args: { branch: string } }
   - { id: set_critical_setpoint, description: Cambia la consigna del punto crítico, args: { mca: number } }
   - { id: set_manual_setting, description: Ajusta la salida fija de la PRV manual, args: { mca: number } }
+  - { id: set_auto_control, description: Selecciona regulación automática por presión crítica o salida fija, args: { mode: string, mca: number } }
   - { id: inject_fault, description: Inyecta una falla declarada, args: { fault: string, duration_s: number } }
   - { id: clear_fault, description: Repara una falla activa, args: { fault: string } }
   - { id: set_param, description: Cambia un parámetro en caliente, args: { name: string, value: any } }
@@ -97,6 +99,6 @@ geometry:
 
 assumptions:
   - "Cada PRV sigue los estados de EPANET: activa (fija su salida), abierta (no le alcanza la entrada) o cerrada (aguas abajo hay más que su consigna)."
-  - "PID de la rama automática sobre la presión crítica del paso anterior, con salida limitada a [auto_min_outlet_mca, auto_max_outlet_mca] y sin windup."
+  - "Por defecto, PID de la rama automática sobre la presión crítica del paso anterior, con salida limitada a [auto_min_outlet_mca, auto_max_outlet_mca] y sin windup; un escenario puede sustituirlo por una consigna fija de salida dentro de esos límites."
   - "Fuera de una planta, la red aguas abajo es un Kv equivalente hasta el punto crítico (bench_network_kv_m3h) y un consumo como descarga a la atmósfera (bench_load_kv_m3h); la entrada load_factor escala ese consumo."
   - "La presión crítica la mide la propia red del banco; en la planta llega por la entrada critical_pressure_mca."

@@ -66,6 +66,52 @@ def test_horizon_starts_with_partial_interval_to_absolute_plc_hour_boundary() ->
     assert frames[0]["snapshot"]["equipment"]["pumpset-main-01"]["variables"]["flow_m3h"] == frames[0]["end_state"]["flow_m3h"]
 
 
+def test_fixed_outlet_prs_profile_checks_every_dwelling_and_keeps_auto_branch() -> None:
+    tags = {
+        "PLC.Session.SimulatedTime": 30,
+        "PLC.Tank.Supply.LevelPct": 70,
+        "PLC.Tank.Recirc01.LevelPct": 40,
+        "PLC.Tank.Recirc02.LevelPct": 40,
+        "PLC.Pump.FlowM3h": 11.53,
+        "PLC.Pump.RunningCount": 2,
+        "PLC.Pump.DischargePressureMca": 72,
+        "PLC.Pump.SetpointMca": 70,
+        "PLC.PRS.InletPressureMca": 70,
+        "PLC.PRS.OutletPressureMca": 20,
+        "PLC.PRS.BranchAuto": True,
+        "PLC.PRS.CriticalSetpointMca": 15.45,
+        "PLC.Pump.RecirculationAutoActive": False,
+    }
+    profile = {
+        "hours": {
+            "0": {
+                "global_consumers_pct": 30,
+                "prs": {
+                    "branch": "auto",
+                    "control_mode": "fixed_outlet",
+                    "inlet_pressure_mca": 70,
+                    "auto_outlet_mca": 40,
+                },
+            }
+        }
+    }
+    frame = mpc.project_24h(tags, profile, horizon_hours=1)[0]
+    state = frame["end_state"]
+    dwelling_min = min(state["consumer_pressures_mca"].values())
+    assert frame["plc_tags"]["PLC.Pump.SetpointMca"] == 70
+    next_boundary = {**tags, "PLC.Session.SimulatedTime": 3600}
+    next_profile = {"hours": {"1": profile["hours"]["0"]}}
+    boundary_frame = mpc.project_24h(next_boundary, next_profile, horizon_hours=1)[0]
+    assert abs(boundary_frame["plc_tags"]["PLC.Pump.SetpointMca"] - 72) < 0.01
+    assert state["prs_mca"] == 40
+    assert state["prs_inlet_mca"] > 40
+    assert state["prs_outlet_mca"] <= 40
+    assert dwelling_min == state["critical_pressure_mca"] and dwelling_min >= 15
+    assert all(min(item["state"]["consumer_pressures_mca"].values()) >= 15 for item in frame["scenarios"])
+    assert frame["plc_tags"]["PLC.PRS.BranchAuto"] is True
+    assert frame["snapshot"]["equipment"]["prs-01"]["animation"]["valve_b_open"] == 0
+
+
 def test_horizon_transition_trace_is_observational() -> None:
     tags = {
         "PLC.Session.SimulatedTime": 30,

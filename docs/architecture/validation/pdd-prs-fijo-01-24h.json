@@ -1,0 +1,1352 @@
+{
+  "scenario": "PDD · Entrada PRS 70 / salida AUTO fija 40 mca",
+  "assumptions": [
+    "70 mca es objetivo de entrada PRS; el emulador lo aproxima ajustando el setpoint de descarga según el diferencial medido bomba→PRS al aplicar cada hora.",
+    "La presión de entrada resultante es medida y puede apartarse del objetivo por dinámica del caudal y el control de la bomba.",
+    "La salida AUTO se fija en 40 mca; la rama manual permanece cerrada. El control hidráulico simulado no identifica la lógica del PLC Grundfos real.",
+    "No se aplicaron mandos a infraestructura física; proyección y reproducción son de solo lectura sobre el PLC virtual."
+  ],
+  "emulator": {
+    "coverage_t_s": [
+      30,
+      86400
+    ],
+    "one_second_samples": 86371,
+    "minimum_dwelling_pressure": {
+      "pressure_mca": 30.40013219529949,
+      "t_s": 41555.0,
+      "dwelling": "L4.C44"
+    },
+    "prs_inlet_range_mca": [
+      68.99574,
+      70.90799
+    ],
+    "prs_outlet_range_mca": [
+      39.88074,
+      39.98105
+    ],
+    "manual_branch_flow_max_m3h": 0.0,
+    "pressure_below_15_one_second_sample_count": 0,
+    "pressure_below_15_hour_boundary_count": 0,
+    "hourly": [
+      {
+        "hour_boundary": 1,
+        "t_s": 3600.0,
+        "prs_inlet_mca": 68.99574,
+        "prs_outlet_mca": 39.98105,
+        "minimum_dwelling_pressure_mca": 36.2339,
+        "minimum_dwelling": "L4.C44",
+        "manual_branch_flow_m3h": 0.0
+      },
+      {
+        "hour_boundary": 2,
+        "t_s": 7200.0,
+        "prs_inlet_mca": 70.00305,
+        "prs_outlet_mca": 39.9798,
+        "minimum_dwelling_pressure_mca": 36.1582,
+        "minimum_dwelling": "L4.C44",
+        "manual_branch_flow_m3h": 0.0
+      },
+      {
+        "hour_boundary": 3,
+        "t_s": 10800.0,
+        "prs_inlet_mca": 70.00257,
+        "prs_outlet_mca": 39.97586,
+        "minimum_dwelling_pressure_mca": 35.91828,
+        "minimum_dwelling": "L4.C44",
+        "manual_branch_flow_m3h": 0.0
+      },
+      {
+        "hour_boundary": 4,
+        "t_s": 14400.0,
+        "prs_inlet_mca": 69.99725,
+        "prs_outlet_mca": 39.96911,
+        "minimum_dwelling_pressure_mca": 35.51039,
+        "minimum_dwelling": "L4.C44",
+        "manual_branch_flow_m3h": 0.0
+      },
+      {
+        "hour_boundary": 5,
+        "t_s": 18000.0,
+        "prs_inlet_mca": 69.99662,
+        "prs_outlet_mca": 39.9593,
+        "minimum_dwelling_pressure_mca": 34.92161,
+        "minimum_dwelling": "L4.C44",
+        "manual_branch_flow_m3h": 0.0
+      },
+      {
+        "hour_boundary": 6,
+        "t_s": 21600.0,
+        "prs_inlet_mca": 69.99603,
+        "prs_outlet_mca": 39.94681,
+        "minimum_dwelling_pressure_mca": 34.17974,
+        "minimum_dwelling": "L4.C44",
+        "manual_branch_flow_m3h": 0.0
+      },
+      {
+        "hour_boundary": 7,
+        "t_s": 25200.0,
+        "prs_inlet_mca": 69.99551,
+        "prs_outlet_mca": 39.93219,
+        "minimum_dwelling_pressure_mca": 33.32238,
+        "minimum_dwelling": "L4.C44",
+        "manual_branch_flow_m3h": 0.0
+      },
+      {
+        "hour_boundary": 8,
+        "t_s": 28800.0,
+        "prs_inlet_mca": 69.9952,
+        "prs_outlet_mca": 39.91704,
+        "minimum_dwelling_pressure_mca": 32.44616,
+        "minimum_dwelling": "L4.C44",
+        "manual_branch_flow_m3h": 0.0
+      },
+      {
+        "hour_boundary": 9,
+        "t_s": 32400.0,
+        "prs_inlet_mca": 69.99508,
+        "prs_outlet_mca": 39.90272,
+        "minimum_dwelling_pressure_mca": 31.62983,
+        "minimum_dwelling": "L4.C44",
+        "manual_branch_flow_m3h": 0.0
+      },
+      {
+        "hour_boundary": 10,
+        "t_s": 36000.0,
+        "prs_inlet_mca": 69.99984,
+        "prs_outlet_mca": 39.8911,
+        "minimum_dwelling_pressure_mca": 30.97609,
+        "minimum_dwelling": "L4.C44",
+        "manual_branch_flow_m3h": 0.0
+      },
+      {
+        "hour_boundary": 11,
+        "t_s": 39600.0,
+        "prs_inlet_mca": 70.0003,
+        "prs_outlet_mca": 39.88336,
+        "minimum_dwelling_pressure_mca": 30.54511,
+        "minimum_dwelling": "L4.C44",
+        "manual_branch_flow_m3h": 0.0
+      },
+      {
+        "hour_boundary": 12,
+        "t_s": 43200.0,
+        "prs_inlet_mca": 70.0007,
+        "prs_outlet_mca": 39.88074,
+        "minimum_dwelling_pressure_mca": 30.40013,
+        "minimum_dwelling": "L4.C44",
+        "manual_branch_flow_m3h": 0.0
+      },
+      {
+        "hour_boundary": 13,
+        "t_s": 46800.0,
+        "prs_inlet_mca": 70.00142,
+        "prs_outlet_mca": 39.88299,
+        "minimum_dwelling_pressure_mca": 30.52444,
+        "minimum_dwelling": "L4.C44",
+        "manual_branch_flow_m3h": 0.0
+      },
+      {
+        "hour_boundary": 14,
+        "t_s": 50400.0,
+        "prs_inlet_mca": 69.99732,
+        "prs_outlet_mca": 39.88945,
+        "minimum_dwelling_pressure_mca": 30.88426,
+        "minimum_dwelling": "L4.C44",
+        "manual_branch_flow_m3h": 0.0
+      },
+      {
+        "hour_boundary": 15,
+        "t_s": 54000.0,
+        "prs_inlet_mca": 70.00246,
+        "prs_outlet_mca": 39.89954,
+        "minimum_dwelling_pressure_mca": 31.45055,
+        "minimum_dwelling": "L4.C44",
+        "manual_branch_flow_m3h": 0.0
+      },
+      {
+        "hour_boundary": 16,
+        "t_s": 57600.0,
+        "prs_inlet_mca": 70.00298,
+        "prs_outlet_mca": 39.91202,
+        "minimum_dwelling_pressure_mca": 32.15869,
+        "minimum_dwelling": "L4.C44",
+        "manual_branch_flow_m3h": 0.0
+      },
+      {
+        "hour_boundary": 17,
+        "t_s": 61200.0,
+        "prs_inlet_mca": 70.00339,
+        "prs_outlet_mca": 39.9258,
+        "minimum_dwelling_pressure_mca": 32.95096,
+        "minimum_dwelling": "L4.C44",
+        "manual_branch_flow_m3h": 0.0
+      },
+      {
+        "hour_boundary": 18,
+        "t_s": 64800.0,
+        "prs_inlet_mca": 69.99907,
+        "prs_outlet_mca": 39.93968,
+        "minimum_dwelling_pressure_mca": 33.76012,
+        "minimum_dwelling": "L4.C44",
+        "manual_branch_flow_m3h": 0.0
+      },
+      {
+        "hour_boundary": 19,
+        "t_s": 68400.0,
+        "prs_inlet_mca": 69.99924,
+        "prs_outlet_mca": 39.95237,
+        "minimum_dwelling_pressure_mca": 34.50922,
+        "minimum_dwelling": "L4.C44",
+        "manual_branch_flow_m3h": 0.0
+      },
+      {
+        "hour_boundary": 20,
+        "t_s": 72000.0,
+        "prs_inlet_mca": 69.99927,
+        "prs_outlet_mca": 39.96294,
+        "minimum_dwelling_pressure_mca": 35.13952,
+        "minimum_dwelling": "L4.C44",
+        "manual_branch_flow_m3h": 0.0
+      },
+      {
+        "hour_boundary": 21,
+        "t_s": 75600.0,
+        "prs_inlet_mca": 69.99922,
+        "prs_outlet_mca": 39.97105,
+        "minimum_dwelling_pressure_mca": 35.62767,
+        "minimum_dwelling": "L4.C44",
+        "manual_branch_flow_m3h": 0.0
+      },
+      {
+        "hour_boundary": 22,
+        "t_s": 79200.0,
+        "prs_inlet_mca": 69.9991,
+        "prs_outlet_mca": 39.97673,
+        "minimum_dwelling_pressure_mca": 35.97129,
+        "minimum_dwelling": "L4.C44",
+        "manual_branch_flow_m3h": 0.0
+      },
+      {
+        "hour_boundary": 23,
+        "t_s": 82800.0,
+        "prs_inlet_mca": 69.99891,
+        "prs_outlet_mca": 39.97998,
+        "minimum_dwelling_pressure_mca": 36.16915,
+        "minimum_dwelling": "L4.C44",
+        "manual_branch_flow_m3h": 0.0
+      },
+      {
+        "hour_boundary": 24,
+        "t_s": 86400.0,
+        "prs_inlet_mca": 69.99866,
+        "prs_outlet_mca": 39.98105,
+        "minimum_dwelling_pressure_mca": 36.2339,
+        "minimum_dwelling": "L4.C44",
+        "manual_branch_flow_m3h": 0.0
+      }
+    ]
+  },
+  "fractal": {
+    "coverage_t_s": [
+      30.0,
+      86400.0
+    ],
+    "hourly_frames": 24,
+    "minimum_dwelling_pressure": {
+      "pressure_mca": 29.33345,
+      "profile_hour": 11,
+      "demand_factor": 1.1,
+      "dwelling": "L4.C44"
+    },
+    "nominal_minimum_dwelling_pressure": {
+      "pressure_mca": 30.38644,
+      "profile_hour": 11,
+      "dwelling": "L4.C44"
+    },
+    "hourly": [
+      {
+        "profile_hour": 0,
+        "start_t_s": 30.0,
+        "end_t_s": 3600.0,
+        "prs_inlet_mca": 68.99724,
+        "prs_outlet_mca": 39.98105,
+        "minimum_dwelling_pressure_mca": 36.23123,
+        "minimum_dwelling": "L4.C43",
+        "minimum_across_demand_scenarios": 36.06602,
+        "worst_demand_factor": 1.1,
+        "worst_demand_dwelling": "L4.C43",
+        "demand_scenarios": [
+          {
+            "demand_factor": 0.9,
+            "minimum_dwelling_pressure_mca": 36.38639,
+            "minimum_dwelling": "L4.C43",
+            "feasible": true
+          },
+          {
+            "demand_factor": 1.0,
+            "minimum_dwelling_pressure_mca": 36.23123,
+            "minimum_dwelling": "L4.C43",
+            "feasible": true
+          },
+          {
+            "demand_factor": 1.1,
+            "minimum_dwelling_pressure_mca": 36.06602,
+            "minimum_dwelling": "L4.C43",
+            "feasible": true
+          }
+        ],
+        "manual_branch_open": false
+      },
+      {
+        "profile_hour": 1,
+        "start_t_s": 3600.0,
+        "end_t_s": 7200.0,
+        "prs_inlet_mca": 69.99984,
+        "prs_outlet_mca": 39.97981,
+        "minimum_dwelling_pressure_mca": 36.15537,
+        "minimum_dwelling": "L4.C43",
+        "minimum_across_demand_scenarios": 35.97739,
+        "worst_demand_factor": 1.1,
+        "worst_demand_dwelling": "L4.C43",
+        "demand_scenarios": [
+          {
+            "demand_factor": 0.9,
+            "minimum_dwelling_pressure_mca": 36.32247,
+            "minimum_dwelling": "L4.C24",
+            "feasible": true
+          },
+          {
+            "demand_factor": 1.0,
+            "minimum_dwelling_pressure_mca": 36.15537,
+            "minimum_dwelling": "L4.C43",
+            "feasible": true
+          },
+          {
+            "demand_factor": 1.1,
+            "minimum_dwelling_pressure_mca": 35.97739,
+            "minimum_dwelling": "L4.C43",
+            "feasible": true
+          }
+        ],
+        "manual_branch_open": false
+      },
+      {
+        "profile_hour": 2,
+        "start_t_s": 7200.0,
+        "end_t_s": 10800.0,
+        "prs_inlet_mca": 69.99952,
+        "prs_outlet_mca": 39.97586,
+        "minimum_dwelling_pressure_mca": 35.9149,
+        "minimum_dwelling": "L4.C44",
+        "minimum_across_demand_scenarios": 35.6964,
+        "worst_demand_factor": 1.1,
+        "worst_demand_dwelling": "L4.C43",
+        "demand_scenarios": [
+          {
+            "demand_factor": 0.9,
+            "minimum_dwelling_pressure_mca": 36.11996,
+            "minimum_dwelling": "L4.C43",
+            "feasible": true
+          },
+          {
+            "demand_factor": 1.0,
+            "minimum_dwelling_pressure_mca": 35.9149,
+            "minimum_dwelling": "L4.C44",
+            "feasible": true
+          },
+          {
+            "demand_factor": 1.1,
+            "minimum_dwelling_pressure_mca": 35.6964,
+            "minimum_dwelling": "L4.C43",
+            "feasible": true
+          }
+        ],
+        "manual_branch_open": false
+      },
+      {
+        "profile_hour": 3,
+        "start_t_s": 10800.0,
+        "end_t_s": 14400.0,
+        "prs_inlet_mca": 69.99917,
+        "prs_outlet_mca": 39.96911,
+        "minimum_dwelling_pressure_mca": 35.50614,
+        "minimum_dwelling": "L4.C43",
+        "minimum_across_demand_scenarios": 35.21879,
+        "worst_demand_factor": 1.1,
+        "worst_demand_dwelling": "L4.C43",
+        "demand_scenarios": [
+          {
+            "demand_factor": 0.9,
+            "minimum_dwelling_pressure_mca": 35.77587,
+            "minimum_dwelling": "L4.C44",
+            "feasible": true
+          },
+          {
+            "demand_factor": 1.0,
+            "minimum_dwelling_pressure_mca": 35.50614,
+            "minimum_dwelling": "L4.C43",
+            "feasible": true
+          },
+          {
+            "demand_factor": 1.1,
+            "minimum_dwelling_pressure_mca": 35.21879,
+            "minimum_dwelling": "L4.C43",
+            "feasible": true
+          }
+        ],
+        "manual_branch_open": false
+      },
+      {
+        "profile_hour": 4,
+        "start_t_s": 14400.0,
+        "end_t_s": 18000.0,
+        "prs_inlet_mca": 69.99879,
+        "prs_outlet_mca": 39.9593,
+        "minimum_dwelling_pressure_mca": 34.91612,
+        "minimum_dwelling": "L4.C43",
+        "minimum_across_demand_scenarios": 34.53042,
+        "worst_demand_factor": 1.1,
+        "worst_demand_dwelling": "L4.C43",
+        "demand_scenarios": [
+          {
+            "demand_factor": 0.9,
+            "minimum_dwelling_pressure_mca": 35.27887,
+            "minimum_dwelling": "L4.C34",
+            "feasible": true
+          },
+          {
+            "demand_factor": 1.0,
+            "minimum_dwelling_pressure_mca": 34.91612,
+            "minimum_dwelling": "L4.C43",
+            "feasible": true
+          },
+          {
+            "demand_factor": 1.1,
+            "minimum_dwelling_pressure_mca": 34.53042,
+            "minimum_dwelling": "L4.C43",
+            "feasible": true
+          }
+        ],
+        "manual_branch_open": false
+      },
+      {
+        "profile_hour": 5,
+        "start_t_s": 18000.0,
+        "end_t_s": 21600.0,
+        "prs_inlet_mca": 69.99843,
+        "prs_outlet_mca": 39.94682,
+        "minimum_dwelling_pressure_mca": 34.17274,
+        "minimum_dwelling": "L4.C43",
+        "minimum_across_demand_scenarios": 33.66598,
+        "worst_demand_factor": 1.1,
+        "worst_demand_dwelling": "L4.C44",
+        "demand_scenarios": [
+          {
+            "demand_factor": 0.9,
+            "minimum_dwelling_pressure_mca": 34.65116,
+            "minimum_dwelling": "L4.C43",
+            "feasible": true
+          },
+          {
+            "demand_factor": 1.0,
+            "minimum_dwelling_pressure_mca": 34.17274,
+            "minimum_dwelling": "L4.C43",
+            "feasible": true
+          },
+          {
+            "demand_factor": 1.1,
+            "minimum_dwelling_pressure_mca": 33.66598,
+            "minimum_dwelling": "L4.C44",
+            "feasible": true
+          }
+        ],
+        "manual_branch_open": false
+      },
+      {
+        "profile_hour": 6,
+        "start_t_s": 21600.0,
+        "end_t_s": 25200.0,
+        "prs_inlet_mca": 69.99823,
+        "prs_outlet_mca": 39.9322,
+        "minimum_dwelling_pressure_mca": 33.31371,
+        "minimum_dwelling": "L4.C43",
+        "minimum_across_demand_scenarios": 32.67211,
+        "worst_demand_factor": 1.1,
+        "worst_demand_dwelling": "L4.C44",
+        "demand_scenarios": [
+          {
+            "demand_factor": 0.9,
+            "minimum_dwelling_pressure_mca": 33.92273,
+            "minimum_dwelling": "L4.C44",
+            "feasible": true
+          },
+          {
+            "demand_factor": 1.0,
+            "minimum_dwelling_pressure_mca": 33.31371,
+            "minimum_dwelling": "L4.C43",
+            "feasible": true
+          },
+          {
+            "demand_factor": 1.1,
+            "minimum_dwelling_pressure_mca": 32.67211,
+            "minimum_dwelling": "L4.C44",
+            "feasible": true
+          }
+        ],
+        "manual_branch_open": false
+      },
+      {
+        "profile_hour": 7,
+        "start_t_s": 25200.0,
+        "end_t_s": 28800.0,
+        "prs_inlet_mca": 69.99823,
+        "prs_outlet_mca": 39.91706,
+        "minimum_dwelling_pressure_mca": 32.43589,
+        "minimum_dwelling": "L4.C44",
+        "minimum_across_demand_scenarios": 31.66281,
+        "worst_demand_factor": 1.1,
+        "worst_demand_dwelling": "L4.C43",
+        "demand_scenarios": [
+          {
+            "demand_factor": 0.9,
+            "minimum_dwelling_pressure_mca": 33.1743,
+            "minimum_dwelling": "L4.C44",
+            "feasible": true
+          },
+          {
+            "demand_factor": 1.0,
+            "minimum_dwelling_pressure_mca": 32.43589,
+            "minimum_dwelling": "L4.C44",
+            "feasible": true
+          },
+          {
+            "demand_factor": 1.1,
+            "minimum_dwelling_pressure_mca": 31.66281,
+            "minimum_dwelling": "L4.C43",
+            "feasible": true
+          }
+        ],
+        "manual_branch_open": false
+      },
+      {
+        "profile_hour": 8,
+        "start_t_s": 28800.0,
+        "end_t_s": 32400.0,
+        "prs_inlet_mca": 69.99835,
+        "prs_outlet_mca": 39.90274,
+        "minimum_dwelling_pressure_mca": 31.61813,
+        "minimum_dwelling": "L4.C44",
+        "minimum_across_demand_scenarios": 30.72871,
+        "worst_demand_factor": 1.1,
+        "worst_demand_dwelling": "L4.C44",
+        "demand_scenarios": [
+          {
+            "demand_factor": 0.9,
+            "minimum_dwelling_pressure_mca": 32.47297,
+            "minimum_dwelling": "L4.C43",
+            "feasible": true
+          },
+          {
+            "demand_factor": 1.0,
+            "minimum_dwelling_pressure_mca": 31.61813,
+            "minimum_dwelling": "L4.C44",
+            "feasible": true
+          },
+          {
+            "demand_factor": 1.1,
+            "minimum_dwelling_pressure_mca": 30.72871,
+            "minimum_dwelling": "L4.C44",
+            "feasible": true
+          }
+        ],
+        "manual_branch_open": false
+      },
+      {
+        "profile_hour": 9,
+        "start_t_s": 32400.0,
+        "end_t_s": 36000.0,
+        "prs_inlet_mca": 69.99868,
+        "prs_outlet_mca": 39.89113,
+        "minimum_dwelling_pressure_mca": 30.96331,
+        "minimum_dwelling": "L4.C44",
+        "minimum_across_demand_scenarios": 29.98515,
+        "worst_demand_factor": 1.1,
+        "worst_demand_dwelling": "L4.C44",
+        "demand_scenarios": [
+          {
+            "demand_factor": 0.9,
+            "minimum_dwelling_pressure_mca": 31.90829,
+            "minimum_dwelling": "L4.C44",
+            "feasible": true
+          },
+          {
+            "demand_factor": 1.0,
+            "minimum_dwelling_pressure_mca": 30.96331,
+            "minimum_dwelling": "L4.C44",
+            "feasible": true
+          },
+          {
+            "demand_factor": 1.1,
+            "minimum_dwelling_pressure_mca": 29.98515,
+            "minimum_dwelling": "L4.C44",
+            "feasible": true
+          }
+        ],
+        "manual_branch_open": false
+      },
+      {
+        "profile_hour": 10,
+        "start_t_s": 36000.0,
+        "end_t_s": 39600.0,
+        "prs_inlet_mca": 69.99905,
+        "prs_outlet_mca": 39.88339,
+        "minimum_dwelling_pressure_mca": 30.53164,
+        "minimum_dwelling": "L4.C44",
+        "minimum_across_demand_scenarios": 29.49719,
+        "worst_demand_factor": 1.1,
+        "worst_demand_dwelling": "L4.C44",
+        "demand_scenarios": [
+          {
+            "demand_factor": 0.9,
+            "minimum_dwelling_pressure_mca": 31.5345,
+            "minimum_dwelling": "L4.C44",
+            "feasible": true
+          },
+          {
+            "demand_factor": 1.0,
+            "minimum_dwelling_pressure_mca": 30.53164,
+            "minimum_dwelling": "L4.C44",
+            "feasible": true
+          },
+          {
+            "demand_factor": 1.1,
+            "minimum_dwelling_pressure_mca": 29.49719,
+            "minimum_dwelling": "L4.C44",
+            "feasible": true
+          }
+        ],
+        "manual_branch_open": false
+      },
+      {
+        "profile_hour": 11,
+        "start_t_s": 39600.0,
+        "end_t_s": 43200.0,
+        "prs_inlet_mca": 69.99968,
+        "prs_outlet_mca": 39.88078,
+        "minimum_dwelling_pressure_mca": 30.38644,
+        "minimum_dwelling": "L4.C44",
+        "minimum_across_demand_scenarios": 29.33345,
+        "worst_demand_factor": 1.1,
+        "worst_demand_dwelling": "L4.C44",
+        "demand_scenarios": [
+          {
+            "demand_factor": 0.9,
+            "minimum_dwelling_pressure_mca": 31.40849,
+            "minimum_dwelling": "L4.C44",
+            "feasible": true
+          },
+          {
+            "demand_factor": 1.0,
+            "minimum_dwelling_pressure_mca": 30.38644,
+            "minimum_dwelling": "L4.C44",
+            "feasible": true
+          },
+          {
+            "demand_factor": 1.1,
+            "minimum_dwelling_pressure_mca": 29.33345,
+            "minimum_dwelling": "L4.C44",
+            "feasible": true
+          }
+        ],
+        "manual_branch_open": false
+      },
+      {
+        "profile_hour": 12,
+        "start_t_s": 43200.0,
+        "end_t_s": 46800.0,
+        "prs_inlet_mca": 70.00021,
+        "prs_outlet_mca": 39.88302,
+        "minimum_dwelling_pressure_mca": 30.51094,
+        "minimum_dwelling": "L4.C44",
+        "minimum_across_demand_scenarios": 29.47383,
+        "worst_demand_factor": 1.1,
+        "worst_demand_dwelling": "L4.C44",
+        "demand_scenarios": [
+          {
+            "demand_factor": 0.9,
+            "minimum_dwelling_pressure_mca": 31.51655,
+            "minimum_dwelling": "L4.C43",
+            "feasible": true
+          },
+          {
+            "demand_factor": 1.0,
+            "minimum_dwelling_pressure_mca": 30.51094,
+            "minimum_dwelling": "L4.C44",
+            "feasible": true
+          },
+          {
+            "demand_factor": 1.1,
+            "minimum_dwelling_pressure_mca": 29.47383,
+            "minimum_dwelling": "L4.C44",
+            "feasible": true
+          }
+        ],
+        "manual_branch_open": false
+      },
+      {
+        "profile_hour": 13,
+        "start_t_s": 46800.0,
+        "end_t_s": 50400.0,
+        "prs_inlet_mca": 70.00073,
+        "prs_outlet_mca": 39.88948,
+        "minimum_dwelling_pressure_mca": 30.87133,
+        "minimum_dwelling": "L4.C44",
+        "minimum_across_demand_scenarios": 29.88104,
+        "worst_demand_factor": 1.1,
+        "worst_demand_dwelling": "L4.C44",
+        "demand_scenarios": [
+          {
+            "demand_factor": 0.9,
+            "minimum_dwelling_pressure_mca": 31.82876,
+            "minimum_dwelling": "L4.C43",
+            "feasible": true
+          },
+          {
+            "demand_factor": 1.0,
+            "minimum_dwelling_pressure_mca": 30.87133,
+            "minimum_dwelling": "L4.C44",
+            "feasible": true
+          },
+          {
+            "demand_factor": 1.1,
+            "minimum_dwelling_pressure_mca": 29.88104,
+            "minimum_dwelling": "L4.C44",
+            "feasible": true
+          }
+        ],
+        "manual_branch_open": false
+      },
+      {
+        "profile_hour": 14,
+        "start_t_s": 50400.0,
+        "end_t_s": 54000.0,
+        "prs_inlet_mca": 70.00118,
+        "prs_outlet_mca": 39.89957,
+        "minimum_dwelling_pressure_mca": 31.43855,
+        "minimum_dwelling": "L4.C44",
+        "minimum_across_demand_scenarios": 30.52439,
+        "worst_demand_factor": 1.1,
+        "worst_demand_dwelling": "L4.C44",
+        "demand_scenarios": [
+          {
+            "demand_factor": 0.9,
+            "minimum_dwelling_pressure_mca": 32.31839,
+            "minimum_dwelling": "L4.C44",
+            "feasible": true
+          },
+          {
+            "demand_factor": 1.0,
+            "minimum_dwelling_pressure_mca": 31.43855,
+            "minimum_dwelling": "L4.C44",
+            "feasible": true
+          },
+          {
+            "demand_factor": 1.1,
+            "minimum_dwelling_pressure_mca": 30.52439,
+            "minimum_dwelling": "L4.C44",
+            "feasible": true
+          }
+        ],
+        "manual_branch_open": false
+      },
+      {
+        "profile_hour": 15,
+        "start_t_s": 54000.0,
+        "end_t_s": 57600.0,
+        "prs_inlet_mca": 70.00149,
+        "prs_outlet_mca": 39.91204,
+        "minimum_dwelling_pressure_mca": 32.1479,
+        "minimum_dwelling": "L4.C44",
+        "minimum_across_demand_scenarios": 31.33315,
+        "worst_demand_factor": 1.1,
+        "worst_demand_dwelling": "L4.C44",
+        "demand_scenarios": [
+          {
+            "demand_factor": 0.9,
+            "minimum_dwelling_pressure_mca": 32.92778,
+            "minimum_dwelling": "L4.C44",
+            "feasible": true
+          },
+          {
+            "demand_factor": 1.0,
+            "minimum_dwelling_pressure_mca": 32.1479,
+            "minimum_dwelling": "L4.C44",
+            "feasible": true
+          },
+          {
+            "demand_factor": 1.1,
+            "minimum_dwelling_pressure_mca": 31.33315,
+            "minimum_dwelling": "L4.C44",
+            "feasible": true
+          }
+        ],
+        "manual_branch_open": false
+      },
+      {
+        "profile_hour": 16,
+        "start_t_s": 57600.0,
+        "end_t_s": 61200.0,
+        "prs_inlet_mca": 70.0016,
+        "prs_outlet_mca": 39.92581,
+        "minimum_dwelling_pressure_mca": 32.9416,
+        "minimum_dwelling": "L4.C44",
+        "minimum_across_demand_scenarios": 32.24346,
+        "worst_demand_factor": 1.1,
+        "worst_demand_dwelling": "L4.C44",
+        "demand_scenarios": [
+          {
+            "demand_factor": 0.9,
+            "minimum_dwelling_pressure_mca": 33.60601,
+            "minimum_dwelling": "L4.C44",
+            "feasible": true
+          },
+          {
+            "demand_factor": 1.0,
+            "minimum_dwelling_pressure_mca": 32.9416,
+            "minimum_dwelling": "L4.C44",
+            "feasible": true
+          },
+          {
+            "demand_factor": 1.1,
+            "minimum_dwelling_pressure_mca": 32.24346,
+            "minimum_dwelling": "L4.C44",
+            "feasible": true
+          }
+        ],
+        "manual_branch_open": false
+      },
+      {
+        "profile_hour": 17,
+        "start_t_s": 61200.0,
+        "end_t_s": 64800.0,
+        "prs_inlet_mca": 70.00166,
+        "prs_outlet_mca": 39.93969,
+        "minimum_dwelling_pressure_mca": 33.7523,
+        "minimum_dwelling": "L4.C43",
+        "minimum_across_demand_scenarios": 33.17882,
+        "worst_demand_factor": 1.1,
+        "worst_demand_dwelling": "L4.C44",
+        "demand_scenarios": [
+          {
+            "demand_factor": 0.9,
+            "minimum_dwelling_pressure_mca": 34.2951,
+            "minimum_dwelling": "L4.C43",
+            "feasible": true
+          },
+          {
+            "demand_factor": 1.0,
+            "minimum_dwelling_pressure_mca": 33.7523,
+            "minimum_dwelling": "L4.C43",
+            "feasible": true
+          },
+          {
+            "demand_factor": 1.1,
+            "minimum_dwelling_pressure_mca": 33.17882,
+            "minimum_dwelling": "L4.C44",
+            "feasible": true
+          }
+        ],
+        "manual_branch_open": false
+      },
+      {
+        "profile_hour": 18,
+        "start_t_s": 64800.0,
+        "end_t_s": 68400.0,
+        "prs_inlet_mca": 70.00154,
+        "prs_outlet_mca": 39.95238,
+        "minimum_dwelling_pressure_mca": 34.50288,
+        "minimum_dwelling": "L4.C43",
+        "minimum_across_demand_scenarios": 34.04943,
+        "worst_demand_factor": 1.1,
+        "worst_demand_dwelling": "L4.C44",
+        "demand_scenarios": [
+          {
+            "demand_factor": 0.9,
+            "minimum_dwelling_pressure_mca": 34.93019,
+            "minimum_dwelling": "L4.C44",
+            "feasible": true
+          },
+          {
+            "demand_factor": 1.0,
+            "minimum_dwelling_pressure_mca": 34.50288,
+            "minimum_dwelling": "L4.C43",
+            "feasible": true
+          },
+          {
+            "demand_factor": 1.1,
+            "minimum_dwelling_pressure_mca": 34.04943,
+            "minimum_dwelling": "L4.C44",
+            "feasible": true
+          }
+        ],
+        "manual_branch_open": false
+      },
+      {
+        "profile_hour": 19,
+        "start_t_s": 68400.0,
+        "end_t_s": 72000.0,
+        "prs_inlet_mca": 70.00128,
+        "prs_outlet_mca": 39.96294,
+        "minimum_dwelling_pressure_mca": 35.13447,
+        "minimum_dwelling": "L4.C44",
+        "minimum_across_demand_scenarios": 34.78498,
+        "worst_demand_factor": 1.1,
+        "worst_demand_dwelling": "L4.C44",
+        "demand_scenarios": [
+          {
+            "demand_factor": 0.9,
+            "minimum_dwelling_pressure_mca": 35.46291,
+            "minimum_dwelling": "L4.C43",
+            "feasible": true
+          },
+          {
+            "demand_factor": 1.0,
+            "minimum_dwelling_pressure_mca": 35.13447,
+            "minimum_dwelling": "L4.C44",
+            "feasible": true
+          },
+          {
+            "demand_factor": 1.1,
+            "minimum_dwelling_pressure_mca": 34.78498,
+            "minimum_dwelling": "L4.C44",
+            "feasible": true
+          }
+        ],
+        "manual_branch_open": false
+      },
+      {
+        "profile_hour": 20,
+        "start_t_s": 72000.0,
+        "end_t_s": 75600.0,
+        "prs_inlet_mca": 70.00106,
+        "prs_outlet_mca": 39.97106,
+        "minimum_dwelling_pressure_mca": 35.62367,
+        "minimum_dwelling": "L4.C44",
+        "minimum_across_demand_scenarios": 35.35608,
+        "worst_demand_factor": 1.1,
+        "worst_demand_dwelling": "L4.C43",
+        "demand_scenarios": [
+          {
+            "demand_factor": 0.9,
+            "minimum_dwelling_pressure_mca": 35.87481,
+            "minimum_dwelling": "L4.C34",
+            "feasible": true
+          },
+          {
+            "demand_factor": 1.0,
+            "minimum_dwelling_pressure_mca": 35.62367,
+            "minimum_dwelling": "L4.C44",
+            "feasible": true
+          },
+          {
+            "demand_factor": 1.1,
+            "minimum_dwelling_pressure_mca": 35.35608,
+            "minimum_dwelling": "L4.C43",
+            "feasible": true
+          }
+        ],
+        "manual_branch_open": false
+      },
+      {
+        "profile_hour": 21,
+        "start_t_s": 75600.0,
+        "end_t_s": 79200.0,
+        "prs_inlet_mca": 70.00071,
+        "prs_outlet_mca": 39.97673,
+        "minimum_dwelling_pressure_mca": 35.96804,
+        "minimum_dwelling": "L4.C43",
+        "minimum_across_demand_scenarios": 35.75849,
+        "worst_demand_factor": 1.1,
+        "worst_demand_dwelling": "L4.C44",
+        "demand_scenarios": [
+          {
+            "demand_factor": 0.9,
+            "minimum_dwelling_pressure_mca": 36.16469,
+            "minimum_dwelling": "L4.C43",
+            "feasible": true
+          },
+          {
+            "demand_factor": 1.0,
+            "minimum_dwelling_pressure_mca": 35.96804,
+            "minimum_dwelling": "L4.C43",
+            "feasible": true
+          },
+          {
+            "demand_factor": 1.1,
+            "minimum_dwelling_pressure_mca": 35.75849,
+            "minimum_dwelling": "L4.C44",
+            "feasible": true
+          }
+        ],
+        "manual_branch_open": false
+      },
+      {
+        "profile_hour": 22,
+        "start_t_s": 79200.0,
+        "end_t_s": 82800.0,
+        "prs_inlet_mca": 70.00039,
+        "prs_outlet_mca": 39.97998,
+        "minimum_dwelling_pressure_mca": 36.16633,
+        "minimum_dwelling": "L4.C43",
+        "minimum_across_demand_scenarios": 35.9902,
+        "worst_demand_factor": 1.1,
+        "worst_demand_dwelling": "L4.C44",
+        "demand_scenarios": [
+          {
+            "demand_factor": 0.9,
+            "minimum_dwelling_pressure_mca": 36.33171,
+            "minimum_dwelling": "L4.C43",
+            "feasible": true
+          },
+          {
+            "demand_factor": 1.0,
+            "minimum_dwelling_pressure_mca": 36.16633,
+            "minimum_dwelling": "L4.C43",
+            "feasible": true
+          },
+          {
+            "demand_factor": 1.1,
+            "minimum_dwelling_pressure_mca": 35.9902,
+            "minimum_dwelling": "L4.C44",
+            "feasible": true
+          }
+        ],
+        "manual_branch_open": false
+      },
+      {
+        "profile_hour": 23,
+        "start_t_s": 82800.0,
+        "end_t_s": 86400.0,
+        "prs_inlet_mca": 70.00015,
+        "prs_outlet_mca": 39.98105,
+        "minimum_dwelling_pressure_mca": 36.23123,
+        "minimum_dwelling": "L4.C43",
+        "minimum_across_demand_scenarios": 36.06602,
+        "worst_demand_factor": 1.1,
+        "worst_demand_dwelling": "L4.C43",
+        "demand_scenarios": [
+          {
+            "demand_factor": 0.9,
+            "minimum_dwelling_pressure_mca": 36.38639,
+            "minimum_dwelling": "L4.C43",
+            "feasible": true
+          },
+          {
+            "demand_factor": 1.0,
+            "minimum_dwelling_pressure_mca": 36.23123,
+            "minimum_dwelling": "L4.C43",
+            "feasible": true
+          },
+          {
+            "demand_factor": 1.1,
+            "minimum_dwelling_pressure_mca": 36.06602,
+            "minimum_dwelling": "L4.C43",
+            "feasible": true
+          }
+        ],
+        "manual_branch_open": false
+      }
+    ]
+  },
+  "comparison_at_same_hour_boundaries": [
+    {
+      "t_s": 3600.0,
+      "profile_hour": 0,
+      "emulator_prs_inlet_mca": 68.99574,
+      "fractal_prs_inlet_mca": 68.99724,
+      "emulator_prs_outlet_mca": 39.98105,
+      "fractal_prs_outlet_mca": 39.98105,
+      "emulator_min_dwelling_pressure_mca": 36.2339,
+      "fractal_min_dwelling_pressure_mca": 36.23123,
+      "fractal_worst_demand_minimum_mca": 36.06602,
+      "fractal_worst_demand_factor": 1.1
+    },
+    {
+      "t_s": 7200.0,
+      "profile_hour": 1,
+      "emulator_prs_inlet_mca": 70.00305,
+      "fractal_prs_inlet_mca": 69.99984,
+      "emulator_prs_outlet_mca": 39.9798,
+      "fractal_prs_outlet_mca": 39.97981,
+      "emulator_min_dwelling_pressure_mca": 36.1582,
+      "fractal_min_dwelling_pressure_mca": 36.15537,
+      "fractal_worst_demand_minimum_mca": 35.97739,
+      "fractal_worst_demand_factor": 1.1
+    },
+    {
+      "t_s": 10800.0,
+      "profile_hour": 2,
+      "emulator_prs_inlet_mca": 70.00257,
+      "fractal_prs_inlet_mca": 69.99952,
+      "emulator_prs_outlet_mca": 39.97586,
+      "fractal_prs_outlet_mca": 39.97586,
+      "emulator_min_dwelling_pressure_mca": 35.91828,
+      "fractal_min_dwelling_pressure_mca": 35.9149,
+      "fractal_worst_demand_minimum_mca": 35.6964,
+      "fractal_worst_demand_factor": 1.1
+    },
+    {
+      "t_s": 14400.0,
+      "profile_hour": 3,
+      "emulator_prs_inlet_mca": 69.99725,
+      "fractal_prs_inlet_mca": 69.99917,
+      "emulator_prs_outlet_mca": 39.96911,
+      "fractal_prs_outlet_mca": 39.96911,
+      "emulator_min_dwelling_pressure_mca": 35.51039,
+      "fractal_min_dwelling_pressure_mca": 35.50614,
+      "fractal_worst_demand_minimum_mca": 35.21879,
+      "fractal_worst_demand_factor": 1.1
+    },
+    {
+      "t_s": 18000.0,
+      "profile_hour": 4,
+      "emulator_prs_inlet_mca": 69.99662,
+      "fractal_prs_inlet_mca": 69.99879,
+      "emulator_prs_outlet_mca": 39.9593,
+      "fractal_prs_outlet_mca": 39.9593,
+      "emulator_min_dwelling_pressure_mca": 34.92161,
+      "fractal_min_dwelling_pressure_mca": 34.91612,
+      "fractal_worst_demand_minimum_mca": 34.53042,
+      "fractal_worst_demand_factor": 1.1
+    },
+    {
+      "t_s": 21600.0,
+      "profile_hour": 5,
+      "emulator_prs_inlet_mca": 69.99603,
+      "fractal_prs_inlet_mca": 69.99843,
+      "emulator_prs_outlet_mca": 39.94681,
+      "fractal_prs_outlet_mca": 39.94682,
+      "emulator_min_dwelling_pressure_mca": 34.17974,
+      "fractal_min_dwelling_pressure_mca": 34.17274,
+      "fractal_worst_demand_minimum_mca": 33.66598,
+      "fractal_worst_demand_factor": 1.1
+    },
+    {
+      "t_s": 25200.0,
+      "profile_hour": 6,
+      "emulator_prs_inlet_mca": 69.99551,
+      "fractal_prs_inlet_mca": 69.99823,
+      "emulator_prs_outlet_mca": 39.93219,
+      "fractal_prs_outlet_mca": 39.9322,
+      "emulator_min_dwelling_pressure_mca": 33.32238,
+      "fractal_min_dwelling_pressure_mca": 33.31371,
+      "fractal_worst_demand_minimum_mca": 32.67211,
+      "fractal_worst_demand_factor": 1.1
+    },
+    {
+      "t_s": 28800.0,
+      "profile_hour": 7,
+      "emulator_prs_inlet_mca": 69.9952,
+      "fractal_prs_inlet_mca": 69.99823,
+      "emulator_prs_outlet_mca": 39.91704,
+      "fractal_prs_outlet_mca": 39.91706,
+      "emulator_min_dwelling_pressure_mca": 32.44616,
+      "fractal_min_dwelling_pressure_mca": 32.43589,
+      "fractal_worst_demand_minimum_mca": 31.66281,
+      "fractal_worst_demand_factor": 1.1
+    },
+    {
+      "t_s": 32400.0,
+      "profile_hour": 8,
+      "emulator_prs_inlet_mca": 69.99508,
+      "fractal_prs_inlet_mca": 69.99835,
+      "emulator_prs_outlet_mca": 39.90272,
+      "fractal_prs_outlet_mca": 39.90274,
+      "emulator_min_dwelling_pressure_mca": 31.62983,
+      "fractal_min_dwelling_pressure_mca": 31.61813,
+      "fractal_worst_demand_minimum_mca": 30.72871,
+      "fractal_worst_demand_factor": 1.1
+    },
+    {
+      "t_s": 36000.0,
+      "profile_hour": 9,
+      "emulator_prs_inlet_mca": 69.99984,
+      "fractal_prs_inlet_mca": 69.99868,
+      "emulator_prs_outlet_mca": 39.8911,
+      "fractal_prs_outlet_mca": 39.89113,
+      "emulator_min_dwelling_pressure_mca": 30.97609,
+      "fractal_min_dwelling_pressure_mca": 30.96331,
+      "fractal_worst_demand_minimum_mca": 29.98515,
+      "fractal_worst_demand_factor": 1.1
+    },
+    {
+      "t_s": 39600.0,
+      "profile_hour": 10,
+      "emulator_prs_inlet_mca": 70.0003,
+      "fractal_prs_inlet_mca": 69.99905,
+      "emulator_prs_outlet_mca": 39.88336,
+      "fractal_prs_outlet_mca": 39.88339,
+      "emulator_min_dwelling_pressure_mca": 30.54511,
+      "fractal_min_dwelling_pressure_mca": 30.53164,
+      "fractal_worst_demand_minimum_mca": 29.49719,
+      "fractal_worst_demand_factor": 1.1
+    },
+    {
+      "t_s": 43200.0,
+      "profile_hour": 11,
+      "emulator_prs_inlet_mca": 70.0007,
+      "fractal_prs_inlet_mca": 69.99968,
+      "emulator_prs_outlet_mca": 39.88074,
+      "fractal_prs_outlet_mca": 39.88078,
+      "emulator_min_dwelling_pressure_mca": 30.40013,
+      "fractal_min_dwelling_pressure_mca": 30.38644,
+      "fractal_worst_demand_minimum_mca": 29.33345,
+      "fractal_worst_demand_factor": 1.1
+    },
+    {
+      "t_s": 46800.0,
+      "profile_hour": 12,
+      "emulator_prs_inlet_mca": 70.00142,
+      "fractal_prs_inlet_mca": 70.00021,
+      "emulator_prs_outlet_mca": 39.88299,
+      "fractal_prs_outlet_mca": 39.88302,
+      "emulator_min_dwelling_pressure_mca": 30.52444,
+      "fractal_min_dwelling_pressure_mca": 30.51094,
+      "fractal_worst_demand_minimum_mca": 29.47383,
+      "fractal_worst_demand_factor": 1.1
+    },
+    {
+      "t_s": 50400.0,
+      "profile_hour": 13,
+      "emulator_prs_inlet_mca": 69.99732,
+      "fractal_prs_inlet_mca": 70.00073,
+      "emulator_prs_outlet_mca": 39.88945,
+      "fractal_prs_outlet_mca": 39.88948,
+      "emulator_min_dwelling_pressure_mca": 30.88426,
+      "fractal_min_dwelling_pressure_mca": 30.87133,
+      "fractal_worst_demand_minimum_mca": 29.88104,
+      "fractal_worst_demand_factor": 1.1
+    },
+    {
+      "t_s": 54000.0,
+      "profile_hour": 14,
+      "emulator_prs_inlet_mca": 70.00246,
+      "fractal_prs_inlet_mca": 70.00118,
+      "emulator_prs_outlet_mca": 39.89954,
+      "fractal_prs_outlet_mca": 39.89957,
+      "emulator_min_dwelling_pressure_mca": 31.45055,
+      "fractal_min_dwelling_pressure_mca": 31.43855,
+      "fractal_worst_demand_minimum_mca": 30.52439,
+      "fractal_worst_demand_factor": 1.1
+    },
+    {
+      "t_s": 57600.0,
+      "profile_hour": 15,
+      "emulator_prs_inlet_mca": 70.00298,
+      "fractal_prs_inlet_mca": 70.00149,
+      "emulator_prs_outlet_mca": 39.91202,
+      "fractal_prs_outlet_mca": 39.91204,
+      "emulator_min_dwelling_pressure_mca": 32.15869,
+      "fractal_min_dwelling_pressure_mca": 32.1479,
+      "fractal_worst_demand_minimum_mca": 31.33315,
+      "fractal_worst_demand_factor": 1.1
+    },
+    {
+      "t_s": 61200.0,
+      "profile_hour": 16,
+      "emulator_prs_inlet_mca": 70.00339,
+      "fractal_prs_inlet_mca": 70.0016,
+      "emulator_prs_outlet_mca": 39.9258,
+      "fractal_prs_outlet_mca": 39.92581,
+      "emulator_min_dwelling_pressure_mca": 32.95096,
+      "fractal_min_dwelling_pressure_mca": 32.9416,
+      "fractal_worst_demand_minimum_mca": 32.24346,
+      "fractal_worst_demand_factor": 1.1
+    },
+    {
+      "t_s": 64800.0,
+      "profile_hour": 17,
+      "emulator_prs_inlet_mca": 69.99907,
+      "fractal_prs_inlet_mca": 70.00166,
+      "emulator_prs_outlet_mca": 39.93968,
+      "fractal_prs_outlet_mca": 39.93969,
+      "emulator_min_dwelling_pressure_mca": 33.76012,
+      "fractal_min_dwelling_pressure_mca": 33.7523,
+      "fractal_worst_demand_minimum_mca": 33.17882,
+      "fractal_worst_demand_factor": 1.1
+    },
+    {
+      "t_s": 68400.0,
+      "profile_hour": 18,
+      "emulator_prs_inlet_mca": 69.99924,
+      "fractal_prs_inlet_mca": 70.00154,
+      "emulator_prs_outlet_mca": 39.95237,
+      "fractal_prs_outlet_mca": 39.95238,
+      "emulator_min_dwelling_pressure_mca": 34.50922,
+      "fractal_min_dwelling_pressure_mca": 34.50288,
+      "fractal_worst_demand_minimum_mca": 34.04943,
+      "fractal_worst_demand_factor": 1.1
+    },
+    {
+      "t_s": 72000.0,
+      "profile_hour": 19,
+      "emulator_prs_inlet_mca": 69.99927,
+      "fractal_prs_inlet_mca": 70.00128,
+      "emulator_prs_outlet_mca": 39.96294,
+      "fractal_prs_outlet_mca": 39.96294,
+      "emulator_min_dwelling_pressure_mca": 35.13952,
+      "fractal_min_dwelling_pressure_mca": 35.13447,
+      "fractal_worst_demand_minimum_mca": 34.78498,
+      "fractal_worst_demand_factor": 1.1
+    },
+    {
+      "t_s": 75600.0,
+      "profile_hour": 20,
+      "emulator_prs_inlet_mca": 69.99922,
+      "fractal_prs_inlet_mca": 70.00106,
+      "emulator_prs_outlet_mca": 39.97105,
+      "fractal_prs_outlet_mca": 39.97106,
+      "emulator_min_dwelling_pressure_mca": 35.62767,
+      "fractal_min_dwelling_pressure_mca": 35.62367,
+      "fractal_worst_demand_minimum_mca": 35.35608,
+      "fractal_worst_demand_factor": 1.1
+    },
+    {
+      "t_s": 79200.0,
+      "profile_hour": 21,
+      "emulator_prs_inlet_mca": 69.9991,
+      "fractal_prs_inlet_mca": 70.00071,
+      "emulator_prs_outlet_mca": 39.97673,
+      "fractal_prs_outlet_mca": 39.97673,
+      "emulator_min_dwelling_pressure_mca": 35.97129,
+      "fractal_min_dwelling_pressure_mca": 35.96804,
+      "fractal_worst_demand_minimum_mca": 35.75849,
+      "fractal_worst_demand_factor": 1.1
+    },
+    {
+      "t_s": 82800.0,
+      "profile_hour": 22,
+      "emulator_prs_inlet_mca": 69.99891,
+      "fractal_prs_inlet_mca": 70.00039,
+      "emulator_prs_outlet_mca": 39.97998,
+      "fractal_prs_outlet_mca": 39.97998,
+      "emulator_min_dwelling_pressure_mca": 36.16915,
+      "fractal_min_dwelling_pressure_mca": 36.16633,
+      "fractal_worst_demand_minimum_mca": 35.9902,
+      "fractal_worst_demand_factor": 1.1
+    },
+    {
+      "t_s": 86400.0,
+      "profile_hour": 23,
+      "emulator_prs_inlet_mca": 69.99866,
+      "fractal_prs_inlet_mca": 70.00015,
+      "emulator_prs_outlet_mca": 39.98105,
+      "fractal_prs_outlet_mca": 39.98105,
+      "emulator_min_dwelling_pressure_mca": 36.2339,
+      "fractal_min_dwelling_pressure_mca": 36.23123,
+      "fractal_worst_demand_minimum_mca": 36.06602,
+      "fractal_worst_demand_factor": 1.1
+    }
+  ]
+}
