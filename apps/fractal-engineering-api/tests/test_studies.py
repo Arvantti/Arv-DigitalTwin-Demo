@@ -50,6 +50,22 @@ def test_horizon_baseline_is_forecast_without_operator_acceptance() -> None:
         assert abs(drain["flow_kg_h"] / 1000 - states["level_flows_m3h"][str(level)]) < 0.0001
 
 
+def test_horizon_starts_with_partial_interval_to_absolute_plc_hour_boundary() -> None:
+    tags = {
+        "PLC.Session.SimulatedTime": 30,
+        "PLC.Tank.Supply.LevelPct": 70,
+        "PLC.Tank.Recirc01.LevelPct": 40,
+        "PLC.Tank.Recirc02.LevelPct": 40,
+        "PLC.Pump.RecirculationAutoActive": False,
+    }
+    frames = mpc.project_24h(tags, {"hours": {}}, horizon_hours=2)
+    assert [frame["duration_s"] for frame in frames] == [3570, 3600]
+    assert [frame["start_t_s"] for frame in frames] == [30, 3600]
+    assert [frame["end_t_s"] for frame in frames] == [3600, 7200]
+    assert [frame["profile_hour"] for frame in frames] == [0, 1]
+    assert frames[0]["snapshot"]["equipment"]["pumpset-main-01"]["variables"]["flow_m3h"] == frames[0]["end_state"]["flow_m3h"]
+
+
 def test_horizon_transition_trace_is_observational() -> None:
     tags = {
         "PLC.Session.SimulatedTime": 30,
@@ -335,7 +351,8 @@ def test_plc_to_fractal_to_forecast_frames_without_applying_commands(monkeypatch
     assert all(not frame["applied"] and frame["commands"] == {} for frame in result["hours"])
     assert [frame["profile_hour"] for frame in result["hours"]] == list(range(24))
     for hour, projected in enumerate(result["hours"]):
-        assert projected["plc_tags"]["PLC.Session.SimulatedTime"] == t + (hour + 1) * 3600
+        expected_boundary = (int(t // 3600) + hour + 1) * 3600
+        assert projected["plc_tags"]["PLC.Session.SimulatedTime"] == expected_boundary
         state = projected["scenarios"][1]["state"]
         assert abs(state["flow_m3h"] - sum(state["level_flows_m3h"].values())) < 0.0001
     alternative = client.post(

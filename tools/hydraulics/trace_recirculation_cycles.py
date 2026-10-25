@@ -42,6 +42,8 @@ def diagnose(output: Path, hours: int = 24) -> dict[str, Any]:
     for _ in range(30):
         session.plant.step()
     base_t = session.plant.t
+    first_boundary = (int(base_t // 3600) + 1) * 3600
+    horizon_end = first_boundary + (hours - 1) * 3600
     pump = session.plant.equipment["pumpset-recirc-01"]
     base_volume = pump.volume_m3
     tags = session.message()["plc_tags"]
@@ -53,14 +55,17 @@ def diagnose(output: Path, hours: int = 24) -> dict[str, Any]:
         totals.append(totals[-1] + float(frame["snapshot"]["lines"]["recirculacion"]["output_units"]))
     fractal_events = []
     for event in transitions:
-        hour = min(hours - 1, int((event["t_s"] - base_t) // 3600))
+        hour = next(
+            (index for index, frame in enumerate(frames) if event["t_s"] <= frame["end_t_s"] + 1e-8),
+            len(frames) - 1,
+        )
         fractal_events.append({
             "action": event["action"], "reason": event["reason"], "t_s": round(event["t_s"], 5),
             "levels_pct": {tank: round(event["levels_pct"][tank], 5) for tank in TANKS},
             "recirculated_m3": round(totals[hour] + event["recirculated_m3"], 6),
         })
     targets = {round(event["t_s"]) for event in fractal_events}
-    hourly_targets = {round(base_t + h * 3600): h for h in range(1, hours + 1)}
+    hourly_targets = {round(first_boundary + (h - 1) * 3600): h for h in range(1, hours + 1)}
     targets.update(hourly_targets)
     samples: dict[int, dict[str, Any]] = {}
     emulator_events: list[dict[str, Any]] = []
@@ -68,7 +73,7 @@ def diagnose(output: Path, hours: int = 24) -> dict[str, Any]:
     tank_capacities = {tank: session.plant.equipment[tank].p["volume_l"] / 1000 for tank in TANKS}
     previous = pump.level_on
     bypass_m3 = 0.0
-    for _ in range(int(hours * 3600 / session.plant.model.dt)):
+    for _ in range(round((horizon_end - base_t) / session.plant.model.dt)):
         session.apply_profile_hour(int(session.plant.t // 3600) % 24)
         session.plant.step()
         now = pump.level_on
@@ -89,14 +94,14 @@ def diagnose(output: Path, hours: int = 24) -> dict[str, Any]:
             if int(session.plant.t) in hourly_targets:
                 hour = hourly_targets[int(session.plant.t)]
                 projected = frames[hour - 1]["tank_levels_pct"]
-                state = frames[hour - 1]["scenarios"][1]["state"]
+                state = frames[hour - 1]["end_state"]
                 actual = sample["levels_pct"]
                 operational_pump = session.plant.equipment["pumpset-main-01"].true_values()
                 operational_prs = session.plant.equipment["prs-01"].true_values()
                 hourly.append({
                     "hour": hour, "t_s": sample["t_s"],
-                    "fractal_profile_hour": (int(base_t // 3600) + hour - 1) % 24,
-                    "emulator_profile_hour": int(session.plant.t // 3600) % 24,
+                    "fractal_profile_hour": frames[hour - 1]["profile_hour"],
+                    "emulator_profile_hour": frames[hour - 1]["profile_hour"],
                     "emulator_levels_pct": actual,
                     "fractal_levels_pct": {tank: round(projected[tank], 5) for tank in TANKS},
                     "emulator_volumes_m3": {tank: round(tank_capacities[tank] * actual[tank] / 100, 6) for tank in TANKS},
@@ -138,14 +143,14 @@ def diagnose(output: Path, hours: int = 24) -> dict[str, Any]:
             })
     compared.sort(key=lambda event: (event["cycle"], event["action"] != "start"))
     result = {
-        "scope": "independent Fractal forecast vs PLC emulator; same 30 s PLC snapshot, full physical second per emulator step",
+        "scope": "independent Fractal forecast vs PLC emulator; same PLC snapshot and full physical second per emulator step; "
+        "first interval shortened to the next absolute PLC hour boundary",
         "base_t_s": base_t, "hours": hours, "profile_id": profile["id"],
         "note": "Ordinal pairing is diagnostic, not proof of event identity if cycle counts differ. "
-        "Same-time emulator readings are taken at nearest 1 s; hourly levels, main flow and pressures are TRUE values "
-        "(not noisy PLC sensor snapshots). Starting at t=30 s, Fractal holds each profile entry for a full 3600 s "
-        "while operational PLC switches at t=3600,7200,...: at the recorded hour ends the emulator has applied "
-        "the NEXT entry for 30 s. This is an input-boundary mismatch, not time alignment validation. "
-        "Fractal holds hourly distribution fixed. "
+        "Emulator readings are taken at exact absolute PLC hour boundaries; levels, main flow and pressures are TRUE values "
+        "(not noisy PLC sensor snapshots). Fractal shortens its first interval to the next absolute PLC boundary "
+        "(e.g. 3570 s from an initial t=30 s), then uses complete 3600 s profile intervals. "
+        "Both models use the same profile entry up to each comparison boundary. Fractal holds hourly distribution fixed. "
         "Fractal recirculation totals are accumulated across hours, no commands applied.",
         "initial_tags": {key: tags[key] for key in (
             "PLC.Tank.Supply.LevelPct", "PLC.Tank.Recirc01.LevelPct", "PLC.Tank.Recirc02.LevelPct",

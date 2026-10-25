@@ -252,11 +252,18 @@ def project_24h(
         float(tags.get(f"PLC.Valve.Vertical{n}OpeningPct") if tags.get(f"PLC.Valve.Vertical{n}OpeningPct") is not None else 100.0)
         for n in (12, 23, 34)
     )
-    base_hour = int(float(tags.get("PLC.Session.SimulatedTime") or 0) // 3600) % 24
+    initial_time_s = float(tags.get("PLC.Session.SimulatedTime") or 0)
+    base_hour = int(initial_time_s // 3600) % 24
+    first_interval_s = 3600.0 - initial_time_s % 3600.0
+    if first_interval_s <= 1e-9:
+        first_interval_s = 3600.0
+    elapsed_s = 0.0
     carried_tags = dict(tags)  # Mandos horarios del PLC persisten cuando una hora no los redefine.
     prs_branch = "auto" if tags.get("PLC.PRS.BranchAuto") else "manual"
     critical_setpoint = float(tags.get("PLC.PRS.CriticalSetpointMca") or 15.45)
     for hour in range(horizon_hours):
+        interval_s = first_interval_s if hour == 0 else 3600.0
+        segment_start_s = initial_time_s + elapsed_s
         profile_hour = (base_hour + hour) % 24
         entry = profile.get("hours", {}).get(str(profile_hour), {})
         overrides = profile.get("overrides", {}) if study_type == "alternative" else {}
@@ -343,21 +350,38 @@ def project_24h(
         # Una hora con control por nivel e histéresis; cada minuto usa la curva
         # de recirculación, la cabeza de los tres tanques y el caudal por piso.
         flow_out = float(nominal_state["flow_m3h"])
-        def trace_transition(
-            event: dict[str, Any], hour_offset: float = float(tags.get("PLC.Session.SimulatedTime") or 0) + hour * 3600
-        ) -> None:
+        def trace_transition(event: dict[str, Any], hour_offset: float = segment_start_s) -> None:
             if on_recirculation_transition is not None:
                 on_recirculation_transition({**event, "t_s": hour_offset + event["t_s"]})
 
         tank_levels, recirc_volume, recirc_on, overflow = _recirc.advance_hour(
             _MODEL, tank_levels, nominal_state["level_flows_m3h"], recirc_on,
+            duration_s=interval_s,
             on_transition=trace_transition if on_recirculation_transition is not None else None,
         )
         supply_level = tank_levels["tank-supply-01"]
+        elapsed_s += interval_s
+        end_tags = dict(scenario_tags)
+        end_tags.update({
+            "PLC.Tank.Supply.LevelPct": tank_levels["tank-supply-01"],
+            "PLC.Tank.Recirc01.LevelPct": tank_levels["tank-recirc-01"],
+            "PLC.Tank.Recirc02.LevelPct": tank_levels["tank-recirc-02"],
+        })
+        end_prs = float(optimized_controls["prs_mca"]) if optimized_controls is not None else prs_setpoint
+        end_openings = (
+            tuple(float(optimized_controls[f"valve_{key}_pct"]) for key in ("12", "23", "34"))
+            if optimized_controls is not None else scenario_openings
+        )
+        end_state = _solver.evaluate(
+            end_tags, prs_mca=end_prs, vertical_openings_pct=end_openings,
+            demand_factor=demand_multiplier, prs_auto=prs_auto and optimized_controls is None,
+            critical_target_mca=critical_target,
+        )
+        flow_out = float(end_state["flow_m3h"])
         recirc_end_flow, recirc_a, recirc_b = _recirc.pump_flow(_MODEL, tank_levels) if recirc_on else (0.0, 0.0, 0.0)
         levels_in_bounds = not overflow and all(0 <= value <= 100 for value in tank_levels.values())
         robust = all(item["feasible"] for item in scenarios) and levels_in_bounds and 20 <= supply_level <= 95
-        nominal_state = scenarios[1]["state"]
+        nominal_state = end_state
         effective_openings = tuple(float(nominal_state[f"valve_{key}_pct"]) for key in ("12", "23", "34"))
         snapshot_entry = {
             **entry,
@@ -379,8 +403,8 @@ def project_24h(
         forecast_tags = dict(tags)
         forecast_tags.update(
             {
-                "PLC.Session.SimulatedTime": float(tags.get("PLC.Session.SimulatedTime") or 0) + (hour + 1) * 3600,
-                "PLC.Profile.CurrentHour": profile_hour,
+                "PLC.Session.SimulatedTime": initial_time_s + elapsed_s,
+                "PLC.Profile.CurrentHour": (profile_hour + 1) % 24,
                 "PLC.Tank.Supply.LevelPct": round(supply_level, 3),
                 "PLC.Tank.Recirc01.LevelPct": round(tank_levels["tank-recirc-01"], 3),
                 "PLC.Tank.Recirc02.LevelPct": round(tank_levels["tank-recirc-02"], 3),
@@ -425,11 +449,15 @@ def project_24h(
             {
                 "hour": hour,
                 "profile_hour": profile_hour,
+                "duration_s": interval_s,
+                "start_t_s": segment_start_s,
+                "end_t_s": initial_time_s + elapsed_s,
                 "temporal_context": "forecast",
                 "study_type": study_type,
                 "applied": False,
                 "profile_commands": entry,
                 "scenarios": scenarios,
+                "end_state": end_state,
                 "snapshot": frame_snapshot,
                 "plc_tags": forecast_tags,
                 "supply_level_pct": round(supply_level, 3),

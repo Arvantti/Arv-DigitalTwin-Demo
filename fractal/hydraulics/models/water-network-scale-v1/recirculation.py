@@ -73,9 +73,12 @@ def pump_flow(model: dict[str, Any], levels: dict[str, float], speed: float = 1.
 
 def advance_hour(
     model: dict[str, Any], levels: dict[str, float], distribution_by_level: dict[str, float], initially_on: bool,
-    *, on_transition: Callable[[dict[str, Any]], None] | None = None,
+    *, duration_s: float = 3600.0,
+    on_transition: Callable[[dict[str, Any]], None] | None = None,
 ) -> tuple[dict[str, float], float, bool, bool]:
-    """Integra con eventos de histéresis y limitación de masa de los vasos."""
+    """Integra un intervalo de duración explícita con eventos de histéresis y balance de masa."""
+    if not 0 < duration_s <= 3600:
+        raise ValueError("duration_s debe ser > 0 y <= 3600")
     pump = model["equipment_models"]["pumpset-recirc-01"]["params"]
     capacities = {tank: float(model["equipment_models"][tank]["params"]["volume_l"]) / 1000 for tank in levels}
     volumes = {tank: capacities[tank] * pct / 100 for tank, pct in levels.items()}
@@ -89,7 +92,7 @@ def advance_hour(
     moved = 0.0
     overflow = False
     elapsed = 0.0
-    while elapsed < 3600 - 1e-9:
+    while elapsed < duration_s - 1e-9:
         current = {tank: 100 * max(0.0, volume) / capacities[tank] for tank, volume in volumes.items()}
         source = (current["tank-recirc-01"] + current["tank-recirc-02"]) / 2
         full = current["tank-supply-01"] >= float(pump["target_full_pct"])
@@ -117,7 +120,7 @@ def advance_hour(
             speed = 0.0
         # El variador operativo sube a 100 % en 20 s tras cada arranque.
         # Integramos la curva a velocidad media durante pasos cortos de rampa.
-        dt = min(5.0 if on and speed < 1.0 else 60.0, 3600 - elapsed)
+        dt = min(5.0 if on and speed < 1.0 else 60.0, duration_s - elapsed)
         ramp_speed = min(1.0, speed + 0.025 * dt)
         _flow, qa, qb = pump_flow(model, current, ramp_speed) if on else (0.0, 0.0, 0.0)
         supply = "tank-supply-01"
