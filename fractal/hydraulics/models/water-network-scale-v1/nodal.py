@@ -67,7 +67,13 @@ class Network:
                 characteristic = params.get("characteristic", "linear")
                 if characteristic == "equal_percentage" and opening > 0:
                     opening = 50 ** (opening - 1)
-                self.valve(connection, f"V{level}.in", f"V{level}.out", float(params["kv_m3h"]) * opening)
+                check_kv = float(params["outlet_check_kv_m3h"])
+                regulated = f"V{level}.regulated" if check_kv > 0 else f"V{level}.out"
+                if check_kv > 0:
+                    self.add_node(regulated, self.z[connection])
+                self.valve(connection, f"V{level}.in", regulated, float(params["kv_m3h"]) * opening)
+                if check_kv > 0:
+                    self.edges[connection + ".check"] = Edge(regulated, f"V{level}.out", "check", kv=check_kv)
 
     def add_node(self, name: str, z: float, head: float | None = None) -> None:
         self.elevation[name] = z
@@ -136,7 +142,7 @@ class Network:
     @staticmethod
     def _linear(edge: Edge) -> tuple[float, float]:
         q = edge.flow
-        if edge.kind != "pipe" and edge.kv <= 0:
+        if edge.kind != "pipe" and (edge.kv <= 0 or (edge.kind == "check" and q <= 0)):
             return CLOSED_P, 0.0
         if edge.kind == "pipe":
             d = edge.diameter
@@ -206,7 +212,7 @@ class Network:
                 new = c + p * (heads[edge.start] - heads[edge.end])
                 change += abs(new - edge.flow)
                 total += abs(new)
-                edge.flow = new
+                edge.flow = max(0.0, new) if edge.kind == "check" else new
             if change <= 5e-4 * max(total, 1e-6) and _ > 0:
                 converged = True
                 break

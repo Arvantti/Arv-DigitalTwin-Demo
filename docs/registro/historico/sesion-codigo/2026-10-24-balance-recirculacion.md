@@ -245,3 +245,17 @@ Se modeló una válvula antirretorno común en la salida de la PRS después de l
 El antirretorno común aguas arriba sí afecta la cabeza disponible a **todos** los pisos, pero con el Kv supuesto la caída normal calculada es pequeña; en automático la PRS tiende a compensarla mientras tenga margen, en manual se propaga. Antirretornos **adicionales** entre pisos sumarían pérdidas en serie a los pisos altos y pueden reducir la presión crítica; su existencia y Kv no fueron confirmados y no se agregaron al modelo. No se declaró validación dinámica de 24 h ni presión garantizada entre muestras.
 
 Herramientas (resumen): lectura de estación, modelo de válvula y topología, edición de contrato/solver/escenario, comparación estacionaria manual/AUTO y pruebas de flujo directo, Ruff/validación. Sin credenciales.
+
+## Autor — 2026-10-24 UTC
+
+> si hay una etre pisos despues de cada valvula de las que hay entre pisos
+
+## Asistente — 2026-10-24 UTC
+
+Se incorporaron las tres válvulas de retención después de cada reguladora 1→2, 2→3 y 3→4, con geometría visible en las instancias 3D de cada equipo y de la escena de planta. La referencia es ficha oficial Spirax Sarco DCV6, Kv DN50 39, DN80 86, DN100 158 m³/h, no identificación de válvula real. Se eligió DN50 para líneas 2\", DN100 PRS y succión suministro 4\", DN80 retornos 3\". Aun con Kv DN50 alto, pérdidas calculadas en el punto inicial: 2,28, 0,96, 0,23 mca; PRS sube presión de salida hasta sostener ~15,54 mca en ese estado. Plant validation, types, geometry tests y checks hidráulicos pasan. Está ejecutándose nueva corrida 24 h D78; niveles de D76 no se transfieren como conclusión. No habilitar optimización.
+
+## Asistente — 2026-10-24 UTC
+
+La primera corrida D78 recorrió las 24 horas, pero el generador del CSV suponía un número par de eventos emparejados y falló porque el emulador tuvo una parada menos que Fractal. Se corrigió para conservar eventos sin pareja y se repitió el día completo. El reporte guardado [[../../../../architecture/validation/pdd-rca-01-d78-interfloor-checks-24h.json]] registra 46 arranques ambos, 46 paradas Fractal/45 emulador; al cierre el emulador seguía en recirculación. El error máximo horario de suministro fue +29,89042 pp/+1,16214 m³ en hora 24; retornos −26,04167 y −25,25137 pp. Presión ≥15 mca concordó solo en las 24 marcas horarias, mínimas 15,32765 y 15,44824 mca; no acredita seguridad entre marcas. La corrida tomó 1899,6 s (31,7 min) para 24 h simuladas. Desfase de 30 s de consigna por perfil persiste. No optimización.
+
+Herramientas (resumen): replay completo con 86.400 pasos PLC, 24 proyecciones y JSON/CSV; arreglo de escritura ante evento no emparejado. Sin credenciales.

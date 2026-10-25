@@ -12,7 +12,6 @@ AMBIENT_C = 22.0
 LOSS_W_M2K = 8.0
 CP_KJ_KGK = 3.8
 HEATING_KW_PER_M3 = 6.0  # potencia de chaqueta típica por m³ de volumen
-OUTLET_KV_M3H = 400.0  # válvula de fondo abierta (4"): casi sin pérdida
 
 
 def vessel_dimensions(volume_l: float, form: str, diameter_m: float = 0.0) -> tuple[float, float]:
@@ -64,9 +63,9 @@ class Vessel(EquipmentBehavior):
         if self.p["outlet_check_valve"]:
             valve_end = prefix + "check_inlet"
             net.add_node(valve_end, elevation_m)
-        net.add_valve(prefix + "outlet_valve", prefix + "water", valve_end, kv_m3h=OUTLET_KV_M3H)
+        net.add_valve(prefix + "outlet_valve", prefix + "water", valve_end, kv_m3h=400.0)  # válvula de fondo, distinta del antirretorno
         if self.p["outlet_check_valve"]:
-            net.add_check_valve(prefix + "outlet_check", valve_end, prefix + "outlet", kv_m3h=OUTLET_KV_M3H)
+            net.add_check_valve(prefix + "outlet_check", valve_end, prefix + "outlet", kv_m3h=self.p["outlet_check_kv_m3h"])
         top = elevation_m + self.height
         net.add_fixed_head(prefix + "inlet", top, elevation_m=top)
 

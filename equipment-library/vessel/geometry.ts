@@ -215,6 +215,11 @@ export default function build(params: Params): EquipmentModel {
     valve.position.set(r * 0.6, Math.max(0.25, yBottom - headDepth - 0.3), 0);
     valve.rotation.z = Math.PI / 2;
     root.add(valve);
+    if (bool(params, "outlet_check_valve", false)) {
+      const check = P.checkValve(0.04);
+      check.position.set(r + 0.13, Math.max(0.25, yBottom - headDepth - 0.3), 0);
+      root.add(check); // después de la válvula de fondo, antes de la succión
+    }
     if (agitator) {
       const drive = P.group("agitator_motor");
       const gb = P.gearbox(0.28);

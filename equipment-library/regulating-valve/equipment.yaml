@@ -15,6 +15,7 @@ fidelity: { visual: V2, behavior: B2 }
 params:
   diameter_in:     { type: number, unit: in, min: 0.5, max: 24, default: 2, description: Diámetro nominal, affects: [geometry] }
   kv_m3h:          { type: number, unit: m3/h, min: 0.1, max: 5000, default: 20, description: Kv a apertura total, affects: [behavior] }
+  outlet_check_kv_m3h: { type: number, unit: m3/h, min: 0, max: 5000, default: 0, description: "Antirretorno después de la válvula; 0 = no instalado", affects: [behavior, geometry] }
   characteristic:  { type: enum, values: [linear, equal_percentage], default: linear, description: Característica de apertura, affects: [behavior] }
   opening_pct:     { type: number, unit: "%", min: 0, max: 100, default: 100, description: Apertura fija inicial, affects: [behavior] }
   actuated:        { type: boolean, default: false, description: "Tiene actuador eléctrico (si no, volante manual)", affects: [geometry, behavior] }
@@ -73,7 +74,7 @@ animation_channels:
   - { id: outlet_pressure_mca, unit: mca, range: [0, 300], description: Manómetro de salida }
 
 geometry:
-  parts: [spool, flanges, valve_body, handwheel_or_actuator, position_indicator, gauges, supports]
+  parts: [spool, flanges, valve_body, handwheel_or_actuator, position_indicator, gauges, supports, optional_outlet_check]
 
 assumptions:
   - "Q[m³/h] = Kv · c(apertura) · √(Δp[bar]); c lineal o de igual porcentaje con rangeabilidad 50."

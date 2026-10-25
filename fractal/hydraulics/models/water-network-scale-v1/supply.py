@@ -46,7 +46,8 @@ def pump_and_prs(model: dict[str, Any], tags: dict[str, Any], flow: float, setti
     water_head = tank_head(model, "tank-supply-01", supply_level)
     outlet_loss = MCA_PER_BAR * (flow / 400) ** 2  # válvula de fondo del tanque, Kv 400
     if model["equipment_models"]["tank-supply-01"]["params"]["outlet_check_valve"]:
-        outlet_loss += MCA_PER_BAR * (flow / 400) ** 2  # antirretorno individual antes de succión principal
+        check_kv = model["equipment_models"]["tank-supply-01"]["params"]["outlet_check_kv_m3h"]
+        outlet_loss += MCA_PER_BAR * (flow / check_kv) ** 2  # antirretorno individual
     suction_head = water_head - outlet_loss - pipe_loss(model, "tank-supply-01", "pumpset-main-01", flow)
     running_tag = tags.get("PLC.Pump.RunningCount")
     count = int(pump.get("min_running", pump["pumps"]) if running_tag is None else running_tag)
