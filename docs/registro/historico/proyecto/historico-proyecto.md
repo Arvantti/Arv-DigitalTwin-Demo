@@ -39,3 +39,4 @@ Conversaciones del 2026-10-16 (UTC) entre el autor y Claude dentro del proyecto 
 27. [[hilo-datos-reales]] (plan de datos reales, pedidos y Fractal para todos los gemelos, 2026-10-18 23:53 UTC)
 28. [[hilo-imagenes-portal]] (imágenes de cada planta en las tarjetas del portal, 2026-10-19 16:12 UTC)
 29. [[hilo-gemelo-de-ciudad]] (gemelo nuevo de ciudad: plan, escenario hipotético, monitoreo y red de la zona B con 35 cruces, 2026-10-19 12:05 UTC)
+30. [[hilo-programacion-de-produccion]] (programación de producción a 30 días en salsas y plásticos: arquitectura, pedidos, secuenciador, tabla y pedido urgente, 2026-10-20 17:03 UTC)

@@ -372,3 +372,24 @@ def test_new_product_is_checked_against_the_plant() -> None:
     ok = client.post(url, json=product).json()
     assert ok["ok"] and [s["active"] for s in ok["product"]["stages"]] == [["imm-21", "imm-01"], ["buf-21"]]
     assert not client.post(url, json={"id": "x"}).json()["ok"]
+
+
+def test_schedule_window_and_urgent_order() -> None:
+    """Programación de la demo (fase E): pedidos y plan del rango, y un pedido urgente que replanea desde ahora."""
+    r = client.get("/api/schedules/plastic-injection-plant-v1?from=2026-10-01&to=2026-11-19")
+    assert r.status_code == 200
+    plan = r.json()
+    assert plan["from"] == "2026-10-01" and plan["to"] == "2026-11-19" and plan["load_pct"] == 85
+    assert plan["orders"] and plan["schedule"] and "imm-21" in plan["equipment"]
+    assert {p["id"] for p in plan["products"]} == {"cubiertos", "balde-12l", "papelera-20l"}
+    urgent = [{"product": "balde-12l", "quantity": 2000, "due": "2026-10-22"}]
+    body = {"from": "2026-10-01", "to": "2026-11-19", "now": "2026-10-20T10:00", "orders": urgent}
+    r = client.post("/api/schedules/plastic-injection-plant-v1/urgent", json=body)
+    assert r.status_code == 200
+    out = r.json()
+    assert out["impact"]["urgent"][0]["order"] == "URG-01"
+    assert any(o.get("urgent") for o in out["orders"])
+    bad = {**body, "orders": [{"product": "no-existe", "quantity": 1, "due": "2026-10-22"}]}
+    assert client.post("/api/schedules/plastic-injection-plant-v1/urgent", json=bad).status_code == 422
+    assert client.get("/api/schedules/corrugated-box-plant-v1").status_code == 404
+    assert client.get("/api/schedules/sauce-plant-v1?back=7d").json()["orders"]

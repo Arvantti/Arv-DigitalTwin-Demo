@@ -21,7 +21,7 @@ plant:
   site: { width_x: 200, length_y: 110 }
   context:
     location: Valle de Aburrá, Colombia (~1.500 m s. n. m., ~24 °C)
-    shifts: 3 turnos, 24/6
+    shifts: 2 turnos, 6 días
     daily_output_t: 22
     injection_machines: 29
     shot_weight_range_kg: [0.014, 7.0]

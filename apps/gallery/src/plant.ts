@@ -28,6 +28,7 @@ import { dockLeveler, deliveryTruck, palletRack, passThroughDoor } from "./wareh
 import { type ControlPiece, type PanelConfig, controlPanel, operatorDesk, plcCabinet } from "./control-room.ts";
 import { bootDone, bootError, bootStage } from "./boot.ts";
 import { type CatalogDoc, type ProductsApi, buildProducts } from "./products.ts";
+import { buildSchedule } from "./schedule.ts";
 import "./styles.css";
 
 // Evita que el HTML sin estilos aparezca mientras Vite descarga el módulo CSS.
@@ -1455,6 +1456,8 @@ async function start(): Promise<void> {
     productsApi = buildProducts({ plantId, catalog: doc.catalog, stage, rootOf: (id) => assets.get(id)?.root, select });
     updateProducts = productsApi.update;
   }
+  // Programación de producción (fase E): solo las plantas con demanda en el catálogo (salsas y plásticos).
+  if (doc.catalog?.schedule) buildSchedule({ plantId, select, apiUrl, showProduct: (id) => productsApi?.show(id) });
   if (url.get("select")) select(url.get("select"));
   const focusAsset = url.get("focus") ? assets.get(url.get("focus")!) : undefined;
   if (focusAsset) stage.frame(focusAsset.root, 1.1);

@@ -9,6 +9,8 @@
     GET  /api/plants/{id}/plc-schema         contrato declarativo del PLC/HMI simulado (si la planta lo configura)
     WS   /api/plants/{id}/simulate           simulación en vivo de la planta conectada (motor de planta)
     POST /api/plants/{id}/products/check     valida un producto nuevo contra el catálogo y devuelve su ruta (no guarda)
+    GET  /api/schedules/{id}                 programación de producción: pedidos y plan (?from, ?to, ?back=month|Nd)
+    POST /api/schedules/{id}/urgent          replanea desde ahora con pedidos urgentes y dice qué cambia (no guarda)
 
 Protocolo del WebSocket de un equipo
     Query: preset, scenario, params (JSON), speed (×tiempo real), seed
@@ -27,11 +29,12 @@ import asyncio
 import json
 import math
 import os
+from datetime import date
 from typing import Annotated, Any
 
-from fastapi import Body, FastAPI, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi import Body, FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
-from twin_runtime import Library, Simulator
+from twin_runtime import Library, Simulator, planning
 from twin_runtime.catalog import Catalog
 from twin_runtime.plant import SIM_FILE, PlantModel, find_models_root
 from twin_runtime.spec import SpecError, load_yaml
@@ -674,6 +677,72 @@ def check_product(plant_id: str, product: Annotated[dict[str, Any], Body()]) -> 
         return {"ok": False, "errors": errors}
     summary = extended.summary(layout)
     return {"ok": True, "errors": [], "product": next(p for p in summary["products"] if p["id"] == product["id"])}
+
+
+# ------------------------------------------------------------------ programación (fase E, docs/programacion.md)
+def _plan_inputs(plant_id: str) -> tuple[Catalog, dict[str, Any]]:
+    folders = _plant_folders()
+    if plant_id not in folders:
+        raise HTTPException(404, f"planta desconocida: {plant_id}")
+    catalog = _catalog(plant_id)
+    if catalog is None or not catalog.data.get("demand"):
+        raise HTTPException(404, f"{plant_id} no tiene demanda en su catálogo (catalog/demand.yaml)")
+    return catalog, load_yaml(folders[plant_id] / "plant.yaml")
+
+
+def _plan_range(catalog: Catalog, first: str | None, last: str | None, back: str) -> tuple[Any, Any]:
+    try:
+        d_first, d_last = planning.default_range(planning.tz_of(catalog), back)
+        if first:
+            d_first = date.fromisoformat(first)
+        if last:
+            d_last = date.fromisoformat(last)
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
+    if d_last < d_first or (d_last - d_first).days > 400:
+        raise HTTPException(422, "rango de fechas inválido (máximo 400 días)")
+    return d_first, d_last
+
+
+@app.get("/api/schedules/{plant_id}")
+def get_schedule(
+    plant_id: str,
+    back: str = "month",
+    first: Annotated[str | None, Query(alias="from")] = None,
+    last: Annotated[str | None, Query(alias="to")] = None,
+) -> dict[str, Any]:
+    """Pedidos inventados y su plan en el rango: por defecto el mes en curso hacia atrás y 30 días hacia adelante.
+
+    `from` y `to` (fechas ISO) fijan el rango; `back` (month o Nd, p. ej. 7d o 90d) cambia el inicio por defecto.
+    El plan no depende de la hora: la escena calcula qué está hecho, en curso o programado con su propio reloj.
+    """
+    catalog, layout = _plan_inputs(plant_id)
+    d_first, d_last = _plan_range(catalog, first, last, back)
+    return planning.to_json(planning.build_plan(plant_id, catalog, layout, d_first, d_last), layout)
+
+
+@app.post("/api/schedules/{plant_id}/urgent")
+def urgent_schedule(plant_id: str, body: Annotated[dict[str, Any], Body()]) -> dict[str, Any]:
+    """Replanea desde ahora con uno o más pedidos urgentes (producto, cantidad, entrega y color).
+
+    Lo que empezó antes de ahora queda como está; el resto se vuelve a programar con los urgentes primero.
+    Devuelve el plan nuevo y `impact`: órdenes movidas, pedidos que pasan a tarde y cómo sale cada urgente.
+    No guarda nada: aceptar el escenario lo guarda la escena en el navegador hasta la fase F.
+    """
+    catalog, layout = _plan_inputs(plant_id)
+    d_first, d_last = _plan_range(catalog, body.get("from"), body.get("to"), body.get("back") or "month")
+    tz = planning.tz_of(catalog)
+    try:
+        now = planning.parse_local(body["now"], tz) if body.get("now") else planning.to_s(planning.local_now(tz))
+        raw = body.get("orders") or []
+        if not raw:
+            raise ValueError("falta al menos un pedido urgente (orders)")
+        urgent = [planning.urgent_order(catalog, r, now, i + 1, lambda s: planning.parse_local(s, tz)) for i, r in enumerate(raw)]
+    except (KeyError, ValueError) as exc:
+        raise HTTPException(422, f"pedido urgente inválido: {exc}") from exc
+    base = planning.build_plan(plant_id, catalog, layout, d_first, d_last)
+    new = planning.build_plan(plant_id, catalog, layout, d_first, d_last, urgent=urgent, now=now)
+    return {**planning.to_json(new, layout), "impact": planning.impact(base, new)}
 
 
 @app.websocket("/api/plants/{plant_id}/simulate")

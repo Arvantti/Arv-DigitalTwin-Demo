@@ -12,7 +12,8 @@
     "equipment_sizes": { "type": "array", "items": { "$ref": "#/$defs/equipmentSizes" } },
     "setup": { "type": "object", "additionalProperties": { "$ref": "#/$defs/mounted" } },
     "orders": { "type": "array", "items": { "$ref": "#/$defs/order" } },
-    "schedule": { "type": "array", "items": { "$ref": "#/$defs/assignment" } }
+    "schedule": { "type": "array", "items": { "$ref": "#/$defs/assignment" } },
+    "demand": { "$ref": "#/$defs/demand" }
   },
   "$defs": {
     "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
@@ -153,6 +154,78 @@
       "required": ["tooling"],
       "additionalProperties": false,
       "properties": { "tooling": { "$ref": "#/$defs/id" }, "color": { "$ref": "#/$defs/id" } }
+    },
+    "demand": {
+      "type": "object",
+      "description": "Demanda de la demo: con ella twin_runtime.planning genera los pedidos de cualquier fecha (fase E, docs/datos-reales.md).",
+      "required": ["load_pct", "workdays", "shifts", "products"],
+      "additionalProperties": false,
+      "properties": {
+        "load_pct": { "type": "number", "exclusiveMinimum": 0, "maximum": 150 },
+        "timezone": { "type": "string", "pattern": "^[+-][0-9]{2}:[0-9]{2}$" },
+        "workdays": { "type": "array", "items": { "type": "integer", "minimum": 1, "maximum": 7 }, "minItems": 1 },
+        "shifts": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["start", "end"],
+            "additionalProperties": false,
+            "properties": {
+              "name": { "type": "string" },
+              "start": { "type": "string", "pattern": "^[0-2][0-9]:[0-5][0-9]$" },
+              "end": { "type": "string", "pattern": "^[0-2][0-9]:[0-5][0-9]$" }
+            }
+          }
+        },
+        "lead_days": { "$ref": "#/$defs/range" },
+        "rush": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": { "share_pct": { "type": "number", "minimum": 0, "maximum": 100 }, "lead_days": { "$ref": "#/$defs/range" } }
+        },
+        "late": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "share_pct": { "type": "number", "minimum": 0, "maximum": 100 },
+            "hold_hours": {
+              "type": "array",
+              "items": { "type": "number" },
+              "minItems": 2,
+              "maxItems": 2,
+              "description": "Horas después de la entrega en que llega el insumo (negativo = antes)"
+            },
+            "materials": { "type": "array", "items": { "$ref": "#/$defs/id" } }
+          }
+        },
+        "downtime": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "per_day_pct": { "type": "number", "minimum": 0, "maximum": 100 },
+            "hours": { "$ref": "#/$defs/range" },
+            "reasons": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "color_change_min": { "type": "number", "minimum": 0 },
+        "customers": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "products": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["product", "daily", "order_qty"],
+            "additionalProperties": false,
+            "properties": {
+              "product": { "$ref": "#/$defs/id" },
+              "daily": { "type": "number", "exclusiveMinimum": 0, "description": "Capacidad diaria del producto en su unidad" },
+              "order_qty": { "$ref": "#/$defs/range" },
+              "round": { "type": "number", "exclusiveMinimum": 0, "description": "Las cantidades son múltiplo de esto (unidades por caja, piezas por fajo)" }
+            }
+          }
+        }
+      }
     },
     "order": {
       "type": "object",

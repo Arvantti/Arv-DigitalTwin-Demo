@@ -30,6 +30,7 @@ uv run twin-lib plant validate    # plantas conectadas: enlaces y escenarios
 uv run twin-lib plant run sauce-plant-v1 --scenario boiler-trip
 uv run twin-lib catalog validate    # catálogos de datos (productos, moldes o recetas, tamaños, montaje)
 uv run twin-lib catalog route plastic-injection-plant-v1 papelera-20l
+uv run twin-lib plan sauce-plant-v1   # pedidos inventados y su programación (docs/programacion.md)
 uv run pytest                     # pruebas de Python
 uv run ruff check .
 pnpm -r typecheck && pnpm -r test   # tipos y prueba genérica de geometrías
