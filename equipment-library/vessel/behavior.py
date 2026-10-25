@@ -60,7 +60,13 @@ class Vessel(EquipmentBehavior):
         self.base_m = elevation_m
         net.add_fixed_head(prefix + "water", elevation_m + self._water_height(), elevation_m=elevation_m)
         net.add_node(prefix + "outlet", elevation_m)
-        net.add_valve(prefix + "outlet_valve", prefix + "water", prefix + "outlet", kv_m3h=OUTLET_KV_M3H)
+        valve_end = prefix + "outlet"
+        if self.p["outlet_check_valve"]:
+            valve_end = prefix + "check_inlet"
+            net.add_node(valve_end, elevation_m)
+        net.add_valve(prefix + "outlet_valve", prefix + "water", valve_end, kv_m3h=OUTLET_KV_M3H)
+        if self.p["outlet_check_valve"]:
+            net.add_check_valve(prefix + "outlet_check", valve_end, prefix + "outlet", kv_m3h=OUTLET_KV_M3H)
         top = elevation_m + self.height
         net.add_fixed_head(prefix + "inlet", top, elevation_m=top)
 

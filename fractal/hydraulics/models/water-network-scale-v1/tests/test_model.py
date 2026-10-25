@@ -122,6 +122,16 @@ def test_return_pump_matches_operational_fixed_head_point_and_balances_tanks() -
     assert abs(after - before) < 1e-5  # circuito cerrado; no crea ni destruye agua
 
 
+def test_individual_tank_checks_are_declared_and_return_flow_is_forward_only() -> None:
+    params = model.MODEL["equipment_models"]
+    for tank in ("tank-supply-01", "tank-recirc-01", "tank-recirc-02"):
+        assert params[tank]["params"]["outlet_check_valve"] is True
+    levels = {"tank-supply-01": 30, "tank-recirc-01": 75, "tank-recirc-02": 75}
+    total, first, second = recirc.pump_flow(model.MODEL, levels)
+    assert first > 0 and second > 0
+    assert abs(total - first - second) < 0.001
+
+
 def test_recirculation_diagnostic_callback_does_not_change_physics() -> None:
     levels = {"tank-supply-01": 70, "tank-recirc-01": 40, "tank-recirc-02": 40}
     demand = {str(level): 1.06 for level in range(1, 5)}
