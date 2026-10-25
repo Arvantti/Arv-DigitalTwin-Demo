@@ -5,6 +5,10 @@ actualizado: 2026-10-24
 ---
 # Decisiones y reglas del autor
 
+## D77 · Antirretorno de PRS antes del piso 1 · 2026-10-24
+
+El autor confirmó un antirretorno **a la salida de la estación reguladora**, antes del nivel 1, y preguntó por su incidencia entre niveles. Se modela común a ambas ramas de PRS, aguas arriba del primer tubo a la rejilla; Kv=400 m³/h **supuesto**, no obtenido de fabricante. A ~11,53 m³/h, su caída calculada es ~0,0085 mca: en rama AUTO asentada la reguladora puede compensar casi toda la caída; en rama manual la reducción de presión progresa hacia los pisos superiores. La incidencia real depende del Kv, sentido e instalación; no se inventan antirretornos entre niveles sin confirmación. Todos los niveles futuros D76 deben volver a contrastarse para afirmar paridad con D77 y el umbral ≥15 mca no se garantiza entre muestras. [[../../architecture/recirculation-inventory-and-control]]
+
 ## D76 · Antirretorno propio en la salida de cada tanque · 2026-10-24
 
 El autor confirmó que **cada tanque tiene su válvula antirretorno**, después de aclarar que se preguntaba si estaban en cada línea de tanque antes de la unión de succión o solo después de las bombas. Se modelan en las salidas de los tres tanques del acueducto antes de las succiones respectivas, con sentido tanque → bomba, sin quitar los antirretornos existentes a la descarga de cada bomba. El Kv de cada antirretorno se **asume** igual a 400 m³/h hasta obtener ficha técnica. El emulador no debe permitir trasvase inverso entre los dos retornos con la bomba parada; Fractal incluye la pérdida directa del nuevo elemento, sin compartir solver. Los informes de D75 anteriores al cambio son históricos: es obligatorio volver a comparar 24 h, sin proclamar validados los niveles ni activar optimización. [[../../architecture/recirculation-inventory-and-control]]

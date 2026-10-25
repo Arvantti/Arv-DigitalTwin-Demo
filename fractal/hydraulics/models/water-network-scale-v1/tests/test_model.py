@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+from copy import deepcopy
 from pathlib import Path
 
 MODEL_FILE = Path(__file__).resolve().parent.parent / "model.py"
@@ -154,6 +155,18 @@ def test_fractal_return_switches_on_supply_or_individual_high_return() -> None:
     ):
         _end, moved, _on, _overflow = recirc.advance_hour(model.MODEL, levels, no_drain, False)
         assert (moved > 0) is should_move
+
+
+def test_prs_outlet_check_adds_forward_loss_in_fractal() -> None:
+    tags = base_tags()
+    model_with_check = model.MODEL
+    model_without_check = deepcopy(model.MODEL)
+    assert model_with_check["equipment_models"]["prs-01"]["params"]["outlet_check_kv_m3h"] == 400
+    model_without_check["equipment_models"]["prs-01"]["params"]["outlet_check_kv_m3h"] = 0
+    flow = 11.53
+    with_check = model._supply.pump_and_prs(model_with_check, tags, flow, 20.94)
+    without_check = model._supply.pump_and_prs(model_without_check, tags, flow, 20.94)
+    assert abs(without_check["prs_outlet_mca"] - with_check["prs_outlet_mca"] - 10.197 * (flow / 400) ** 2) < 1e-4
 
 
 def test_pump_curve_and_prs_auto_react_to_hydraulic_demand() -> None:

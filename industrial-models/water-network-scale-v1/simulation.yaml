@@ -22,7 +22,8 @@ equipment:
   pumpset-main-01:   { type: booster-pump-set, preset: multistage-2x13m3h-80m, params: { setpoint_mca: 72.1, min_running: 2 } }
   # Rama automática por punto crítico: casa más crítica en 15,45 mca (15 mca + 3 %, D29). La rama manual queda en la
   # salida que da lo mismo de día con la columna en serie (20,94 mca, banco network.py).
-  prs-01:            { type: pressure-reducing-station, preset: station-4in-auto, params: { critical_setpoint_mca: 15.45, manual_setting_mca: 20.94 } }
+    # D77: antirretorno aguas abajo de la estación antes del piso 1; Kv=400 m³/h supuesto hasta disponer de ficha.
+  prs-01:            { type: pressure-reducing-station, preset: station-4in-auto, params: { critical_setpoint_mca: 15.45, manual_setting_mca: 20.94, outlet_check_kv_m3h: 400 } }
   grid-01:           { type: distribution-grid, preset: level-1, params: { riser_out_lz: 0.6 } }
   grid-02:           { type: distribution-grid, preset: level-2, params: { inlet_riser: false, riser_in_lz: 0.6, riser_out_lz: -0.25 } }
   grid-03:           { type: distribution-grid, preset: level-3, params: { inlet_riser: false, riser_in_lz: -0.25, riser_out_lz: -1.2 } }

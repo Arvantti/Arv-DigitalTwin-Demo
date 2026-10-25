@@ -70,6 +70,9 @@ def pump_and_prs(model: dict[str, Any], tags: dict[str, Any], flow: float, setti
     isolation_loss = MCA_PER_BAR * (flow / float(station["isolation_kv_m3h"])) ** 2
     prv_loss = MCA_PER_BAR * (flow / float(station["prv_kv_m3h"])) ** 2
     outlet = min(setting - isolation_loss, inlet_pressure - 2 * isolation_loss - prv_loss)
+    check_kv = float(station["outlet_check_kv_m3h"])
+    if check_kv > 0:
+        outlet -= MCA_PER_BAR * (flow / check_kv) ** 2  # antirretorno PRS → nivel 1
     hydraulic_power = 998 * G * (flow / 3600) * max(0.0, discharge_z + discharge + check_loss - suction_head) / 1000
     return {
         "pump_speed_pct": round(speed_limited * 100, 5),
