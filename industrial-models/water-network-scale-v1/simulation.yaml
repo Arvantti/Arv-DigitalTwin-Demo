@@ -10,12 +10,13 @@ description: "Acueducto a escala: recirculación, bombeo a ≥ 70 mca, estación
 dt: 1.0
 
 equipment:
-  tank-recirc-01:    { type: vessel, preset: water-1000l, params: { volume_l: 2256, diameter_m: 1.3, initial_level_pct: 40, inlet_max_kg_h: 40000, outlet_max_kg_h: 40000, high_level_pct: 95 } }
-  tank-recirc-02:    { type: vessel, preset: water-1000l, params: { volume_l: 2256, diameter_m: 1.3, initial_level_pct: 40, inlet_max_kg_h: 40000, outlet_max_kg_h: 40000, high_level_pct: 95 } }
+  # D76: antirretorno individual en cada salida de tanque antes de la succión compartida; Kv=400 m³/h asumido.
+  tank-recirc-01:    { type: vessel, preset: water-1000l, params: { volume_l: 2256, diameter_m: 1.3, initial_level_pct: 40, inlet_max_kg_h: 40000, outlet_max_kg_h: 40000, high_level_pct: 95, outlet_check_valve: true } }
+  tank-recirc-02:    { type: vessel, preset: water-1000l, params: { volume_l: 2256, diameter_m: 1.3, initial_level_pct: 40, inlet_max_kg_h: 40000, outlet_max_kg_h: 40000, high_level_pct: 95, outlet_check_valve: true } }
   # Supuestos de control D75: suministro <=30 % solicita bombeo; cualquiera de los retornos >=90 % lo adelanta.
   # La bomba para al llegar suministro >=90 % o nivel medio de retornos <20 %; alto-alto de cada retorno: 95 %.
   pumpset-recirc-01: { type: booster-pump-set, preset: recirculation-2x15m3h, params: { supply_start_pct: 30, return_high_start_pct: 90 } }
-  tank-supply-01:    { type: vessel, preset: water-1000l, params: { volume_l: 3888, diameter_m: 1.5, initial_level_pct: 70, inlet_max_kg_h: 40000, outlet_max_kg_h: 40000, high_level_pct: 95 } }
+  tank-supply-01:    { type: vessel, preset: water-1000l, params: { volume_l: 3888, diameter_m: 1.5, initial_level_pct: 70, inlet_max_kg_h: 40000, outlet_max_kg_h: 40000, high_level_pct: 95, outlet_check_valve: true } }
   # Las dos bombas trabajan siempre (D26, sin reserva). Consigna 72,1 mca en el sensor de descarga = 70 mca + 3 %
   # (supuesto: el PLC de las bombas es cerrado, D29).
   pumpset-main-01:   { type: booster-pump-set, preset: multistage-2x13m3h-80m, params: { setpoint_mca: 72.1, min_running: 2 } }

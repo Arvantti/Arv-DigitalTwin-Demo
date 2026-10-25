@@ -77,7 +77,7 @@ def trace(output: Path) -> dict[str, Any]:
         if not previous and suction_a > 0 and suction_b < 0:
             bypass_volume_m3 += min(suction_a, -suction_b) * session.plant.model.dt / 3600
         if session.plant.t == 600:
-            bypass_flow_at_600_m3h = round(min(suction_a, -suction_b), 6)
+            bypass_flow_at_600_m3h = round(max(0.0, min(suction_a, -suction_b)), 6)
         sample = _record(session.plant.t, _levels(session.plant), pump.volume_m3 - initial_volume, now)
         samples[int(session.plant.t)] = sample
         if now != previous:

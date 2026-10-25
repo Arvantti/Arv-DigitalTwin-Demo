@@ -27,6 +27,31 @@ def test_supply_demand_and_either_return_start_recirculation() -> None:
     assert not pump.level_on  # no se bombea si falta agua en los retornos
 
 
+def test_individual_check_valves_prevent_reverse_crossflow_before_shared_suction() -> None:
+    plant = _plant_model("water-network-scale-v1").create(seed=1, random_faults=False)
+    tanks = plant.equipment
+    for name, level in (("tank-supply-01", 70), ("tank-recirc-01", 80), ("tank-recirc-02", 30)):
+        vessel = tanks[name]
+        vessel.mass = vessel.capacity_kg * level / 100
+    plant.step()  # dos cabezas diferentes, bomba de retorno apagada
+    net = plant.hydraulics.net
+    assert net.links["tank-recirc-02/outlet_check"].status == "closed"  # el más bajo rechaza el retorno
+    for name in ("tank-recirc-01", "tank-recirc-02"):
+        pipe = plant.link_state[f"{name}:outlet>pumpset-recirc-01:suction"]
+        assert abs(pipe["flow_m3h"]) < 0.001  # cierre numérico: no hay paso de un vaso al otro
+
+    for name, level in (("tank-supply-01", 29), ("tank-recirc-01", 75), ("tank-recirc-02", 75)):
+        vessel = tanks[name]
+        vessel.mass = vessel.capacity_kg * level / 100
+    for _ in range(30):
+        plant.step()
+    assert tanks["pumpset-recirc-01"].flow > 0
+    assert all(net.links[f"{name}/outlet_check"].status == "open" for name in ("tank-recirc-01", "tank-recirc-02"))
+    assert tanks["pumpset-main-01"].flow > 0
+    assert net.links["tank-supply-01/outlet_check"].status == "open"
+    assert plant.link_state["tank-supply-01:outlet>pumpset-main-01:suction"]["flow_m3h"] > 0
+
+
 def test_initial_tank_inventory_and_capacity_at_supply_30_percent() -> None:
     plant = _plant_model("water-network-scale-v1").create(seed=1, random_faults=False)
     tanks = plant.equipment

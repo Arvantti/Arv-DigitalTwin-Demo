@@ -108,3 +108,112 @@ Herramientas (resumen): script de trazado de eventos y caudales del enlace de su
 Se instrumentó el horizonte Fractal con un callback opcional observacional por evento, y se ejecutaron 24 h del emulador desde los mismos tags de t=30 s, 86.400 pasos de un segundo. Ambos calcularon 46 arranques y 46 paradas; la parada se adelanta −2 s en el primer ciclo, −46 s en el quinto, −61 s en el octavo y −593 s en el 46. El volumen total bombeado en esos ciclos difirió −0,719 m³ (185,035 Fractal frente a 185,753 emulador). Se midieron 2,538 m³ acumulados de igualación interna de retorno 1 a retorno 2 con bomba apagada, que no son pérdida neta del circuito. El CSV contiene hora de arranque/parada, desfases y volúmenes de **cada** ciclo; el JSON contiene niveles y transferencias comparados en el mismo instante. Se documentó que el origen de toda la deriva aún no está probado y el futuro de tanques sigue sin validar.
 
 Herramientas (resumen): edición del callback del horizonte, ejecución de 24 h offline, revisión de 92 eventos por motor, generación de JSON/CSV, lint y pruebas del flujo de proyección. No se incluyeron credenciales.
+
+## Autor — 2026-10-24 UTC
+
+> cual es la desviacion de porcentaje  de cada franja
+
+## Asistente — 2026-10-24 UTC
+
+Se entregó tabla de 24 horas del nivel del suministro con porcentajes relativos `(Fractal−emulador)/emulador` y diferencia en puntos porcentuales; la mayor desviación relativa fue +61,59 % en hora 14 y la máxima diferencia de nivel +19,276 pp en hora 15, usando el informe D75.
+
+## Autor — 2026-10-24 UTC
+
+> damelo en valor neto de volumen
+
+## Asistente — 2026-10-24 UTC
+
+Se convirtieron los niveles de las 24 franjas a volumen de suministro mediante 3,888 m³ de capacidad. El mayor desvío era +0,749 m³ en hora 15, redistribución de inventario, no pérdida; muestras D75 con desfase de 30 s.
+
+## Autor — 2026-10-24 UTC
+
+> agrega % de la diferencia de bvolumen a esa tabla
+
+## Asistente — 2026-10-24 UTC
+
+Se añadió la diferencia porcentual relativa al volumen emulado, junto a m³ emulador, m³ Fractal y diferencia neta, sin confundir porcentaje relativo con puntos porcentuales.
+
+## Autor — 2026-10-24 UTC
+
+> si emulador calculara solo sin historico con los valores de hora 9 que resultado tendria
+
+## Asistente — 2026-10-24 UTC
+
+Se corrió hora 9 aislada desde 70/40/40 % en el emulador: suministro 47,20 % (1,835 m³), retornos ~59,65 % (1,346 m³ cada uno); frente a día continuo hora 9 suministro 44,9 % (1,746 m³). Se aclaró que sin historia todavía se necesita un estado inicial.
+
+## Autor — 2026-10-24 UTC
+
+> de esta tabla dame los valores  en m3 tambien
+>
+> y en los escenarios del dia, como se comporta la VRP? es fija o es variable?
+> puedes comparar los resultados de las bombas grundfus? caudales y presiones de salida? el efecto de tanque pulmon tendra algo de incidencia? en los dos escenarios las bombas funcionan al mismo tiempo una sola otra sola? comparas emulado con fractal?
+
+## Asistente — 2026-10-24 UTC
+
+Se documentaron volúmenes de tres vasos en hora aislada y continua; PRS de rama automática variable con consigna crítica fija 15,45 mca; grupo principal dos bombas simultáneas, retorno una bomba de las dos instaladas, ambos grupos pueden coincidir. En hora 9 aislada, caudal principal 10,21 vs 10,239 m³/h y descarga 72,05 vs 72,1 mca (emulador/Fractal). El pulmón modifica succión y fase del retorno, mientras el control mantiene descarga.
+
+## Autor — 2026-10-24 UTC
+
+> osea que el estado heredado influye muchisimo
+
+## Asistente — 2026-10-24 UTC
+
+Se explicó que los niveles y la fase de recirculación heredados importan mucho; reiniciar cada hora ocultaría el error acumulado.
+
+## Autor — 2026-10-24 UTC
+
+> fractal esta ignorando incluso su propio pasado?
+
+## Asistente — 2026-10-24 UTC
+
+Se aclaró que Fractal arrastra niveles y estado encendido/apagado, pero no toda la dinámica: su caudal de distribución es fijo por hora, reinicia rampa de velocidad en la frontera horaria si ya estaba encendido y omite la igualación de retornos del montaje D75; no reancla cada hora al PLC.
+
+## Autor — 2026-10-24 UTC
+
+> los paros y encendidos de la recirculacion en emulacion y en fractal ocurren iguales en los mismos momentos? que tan desfasados son ?
+
+## Asistente — 2026-10-24 UTC
+
+Se mostraron los 46 ciclos D75: primera parada ~2 s antes en Fractal, octava ~61 s antes y 46.ª ~593 s antes; CSV por ciclo.
+
+## Autor — 2026-10-24 UTC
+
+> desde el punto de vista de mecanica de fluidos que me recomiendas para disminuir esas diferencias
+
+## Asistente — 2026-10-24 UTC
+
+Se recomendó verificar primero si había antirretornos individuales en los tanques (no añadir un paso de igualación a Fractal sin verificarlo), resolver balances en eventos y medir caudal real/ciclos antes de ajustar números.
+
+## Autor — 2026-10-24 UTC
+
+> si tienen valvulas antiretorno
+
+## Asistente — 2026-10-24 UTC
+
+Se distinguieron antirretornos de descarga de bombas de los que irían en las salidas de cada tanque antes del colector; se preguntó la ubicación para decidir si corregir el emulador.
+
+## Autor — 2026-10-24 UTC
+
+> cada tanque tiene su valvula
+
+## Asistente — 2026-10-24 UTC
+
+Con esa confirmación, se modelaron antirretornos individuales en los tres tanques antes de sus respectivas succiones. El emulador ya no deja pasar agua de un retorno al otro con bomba apagada; el diagnóstico de un primer ciclo redujo el desvío de nivel por retorno de ~1,3 pp a <0,071 pp. Fractal suma la pérdida de cada válvula en su propio solver, Kv supuesto 400 m³/h. La corrida nueva de 24 h bajo D76 debe reemplazar las estadísticas anteriores de la topología D75; hasta entonces no se atribuye todo el desfase a esta sola corrección.
+
+Herramientas (resumen): contrato/behavior hidráulico, edición de parámetros y topología, pruebas de retroceso en vasos, primer ciclo independiente y validación de planta; corrida de 24 h en curso. Sin credenciales.
+
+## Autor — 2026-10-24 UTC
+
+> tambien a la salida de l tanque de alimentacion hay antiretorno antes de la bomba
+
+## Asistente — 2026-10-24 UTC
+
+Se confirmó que el antirretorno de alimentación ya estaba incluido entre la salida del vaso y la succión del grupo principal en D76, además de los dos de retorno. Se añadió una prueba de que permite caudal directo cuando las bombas principales están en marcha. La corrida continua de 24 h del montaje con los tres antirretornos sigue en ejecución; no se confunden sus resultados con los informes anteriores sin esas válvulas.
+
+Herramientas (resumen): lectura de topología, prueba de antirretorno de suministro abierto con flujo directo, Ruff y validación del estado de la corrida. Sin credenciales.
+
+## Asistente — 2026-10-24 UTC, resultado de la corrida D76
+
+Con los tres antirretornos montados y el suministro antes del grupo principal, la corrida completa alineada de 24 h terminó: 46 ciclos por motor, paso entre retornos con retorno apagado 0 m³ (antes 2,538 m³), pero parada 46 adelantada 612 s en Fractal (antes 593 s) y −0,738 m³ de diferencia de retorno acumulada (antes −0,719 m³). El primer reparto desigual era producto de una topología incompleta; la deriva mayor no desapareció. Evidencia JSON/CSV en `docs/architecture/validation/pdd-rca-01-recirculation-cycles-checks-24h.*`. No se declaró validada la presión crítica continua ni el nivel futuro; optimización apagada.
+
+Herramientas (resumen): ejecución de 24 h offline con 86.400 pasos PLC, CSV de 46 ciclos y JSON con eventos/niveles; comparación contra la corrida anterior en las mismas marcas, tests y Ruff. Sin credenciales.

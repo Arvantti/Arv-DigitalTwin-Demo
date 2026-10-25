@@ -5,6 +5,10 @@ actualizado: 2026-10-24
 ---
 # Decisiones y reglas del autor
 
+## D76 · Antirretorno propio en la salida de cada tanque · 2026-10-24
+
+El autor confirmó que **cada tanque tiene su válvula antirretorno**, después de aclarar que se preguntaba si estaban en cada línea de tanque antes de la unión de succión o solo después de las bombas. Se modelan en las salidas de los tres tanques del acueducto antes de las succiones respectivas, con sentido tanque → bomba, sin quitar los antirretornos existentes a la descarga de cada bomba. El Kv de cada antirretorno se **asume** igual a 400 m³/h hasta obtener ficha técnica. El emulador no debe permitir trasvase inverso entre los dos retornos con la bomba parada; Fractal incluye la pérdida directa del nuevo elemento, sin compartir solver. Los informes de D75 anteriores al cambio son históricos: es obligatorio volver a comparar 24 h, sin proclamar validados los niveles ni activar optimización. [[../../architecture/recirculation-inventory-and-control]]
+
 ## D75 · Balance cerrado y prioridad del suministro en la recirculación · 2026-10-24
 
 El autor aclaró que los tubos deben suponerse llenos y que la solicitud primaria de recirculación debe originarse en el **tanque de alimentación** cuando llega al 30 %, no esperar al 60 % medio de los retornos. Si cualquiera de los dos retornos llega a un alto preventivo antes, debe poder pedir bombeo para evitar rebose. El 90 % preventivo del retorno, el 90 % de parada por tanque de alimentación lleno y el 20 % de protección de falta de retorno son **supuestos de la simulación**, no límites industriales medidos; sus sensores individuales, conservación, caudal real y prioridad de interlocks se verifican en [[../../architecture/recirculation-inventory-and-control]]. El balance inicial de tres tanques (4,5264 m³) excluye la capacidad estática no cuantificada de tuberías llenas. No se declara implementada la secuencia automática de paro/cierre de válvulas ni se validan aún 24 h de niveles futuros con este nuevo control; la optimización sigue deshabilitada. El tiempo de pared para reproducción no altera el paso físico de 1 s del emulador.
