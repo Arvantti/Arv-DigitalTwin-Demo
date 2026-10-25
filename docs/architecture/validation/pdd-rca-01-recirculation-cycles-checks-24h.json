@@ -3,7 +3,7 @@
   "base_t_s": 30.0,
   "hours": 24,
   "profile_id": "pdd-rca-01",
-  "note": "Ordinal pairing is diagnostic, not proof of event identity if cycle counts differ. Same-time emulator readings are taken at nearest 1 s; Fractal holds hourly distribution fixed. Fractal recirculation totals are accumulated across hours, no commands applied.",
+  "note": "Ordinal pairing is diagnostic, not proof of event identity if cycle counts differ. Same-time emulator readings are taken at nearest 1 s; hourly levels, main flow and pressures are TRUE values (not noisy PLC sensor snapshots). Starting at t=30 s, Fractal holds each profile entry for a full 3600 s while operational PLC switches at t=3600,7200,...: at the recorded hour ends the emulator has applied the NEXT entry for 30 s. This is an input-boundary mismatch, not time alignment validation. Fractal holds hourly distribution fixed. Fractal recirculation totals are accumulated across hours, no commands applied.",
   "initial_tags": {
     "PLC.Tank.Supply.LevelPct": 69.2,
     "PLC.Tank.Recirc01.LevelPct": 40.800000000000004,
@@ -4436,148 +4436,1012 @@
     {
       "hour": 1,
       "t_s": 3630.0,
+      "fractal_profile_hour": 0,
+      "emulator_profile_hour": 1,
+      "emulator_levels_pct": {
+        "tank-supply-01": 35.70266,
+        "tank-recirc-01": 71.25858,
+        "tank-recirc-02": 67.8496
+      },
+      "fractal_levels_pct": {
+        "tank-supply-01": 35.539,
+        "tank-recirc-01": 71.511,
+        "tank-recirc-02": 68.1
+      },
+      "emulator_volumes_m3": {
+        "tank-supply-01": 1.388119,
+        "tank-recirc-01": 1.607594,
+        "tank-recirc-02": 1.530687
+      },
+      "fractal_volumes_m3": {
+        "tank-supply-01": 1.381756,
+        "tank-recirc-01": 1.613288,
+        "tank-recirc-02": 1.536336
+      },
+      "level_difference_pp": {
+        "tank-supply-01": -0.16366,
+        "tank-recirc-01": 0.25242,
+        "tank-recirc-02": 0.2504
+      },
       "supply_difference_pp": -0.16366,
-      "transfer_difference_m3": -0.01143
+      "transfer_difference_m3": -0.01143,
+      "emulator_main_flow_m3h": 4.39931,
+      "fractal_main_flow_m3h": 4.25898,
+      "emulator_main_discharge_mca": 72.09897,
+      "fractal_main_discharge_mca": 72.1,
+      "emulator_prs_outlet_mca": 18.47563,
+      "fractal_prs_outlet_mca": 18.4581,
+      "emulator_critical_pressure_mca": 15.44315,
+      "fractal_critical_pressure_mca": 15.45159,
+      "pressure_safety_agreement": true
     },
     {
       "hour": 2,
       "t_s": 7230.0,
+      "fractal_profile_hour": 1,
+      "emulator_profile_hour": 2,
+      "emulator_levels_pct": {
+        "tank-supply-01": 76.25891,
+        "tank-recirc-01": 34.98255,
+        "tank-recirc-02": 34.23082
+      },
+      "fractal_levels_pct": {
+        "tank-supply-01": 75.458,
+        "tank-recirc-01": 35.802,
+        "tank-recirc-02": 35.012
+      },
+      "emulator_volumes_m3": {
+        "tank-supply-01": 2.964946,
+        "tank-recirc-01": 0.789206,
+        "tank-recirc-02": 0.772247
+      },
+      "fractal_volumes_m3": {
+        "tank-supply-01": 2.933807,
+        "tank-recirc-01": 0.807693,
+        "tank-recirc-02": 0.789871
+      },
+      "level_difference_pp": {
+        "tank-supply-01": -0.80091,
+        "tank-recirc-01": 0.81945,
+        "tank-recirc-02": 0.78118
+      },
       "supply_difference_pp": -0.80091,
-      "transfer_difference_m3": -0.040038
+      "transfer_difference_m3": -0.040038,
+      "emulator_main_flow_m3h": 4.8221,
+      "fractal_main_flow_m3h": 4.40046,
+      "emulator_main_discharge_mca": 72.09882,
+      "fractal_main_discharge_mca": 72.1,
+      "emulator_prs_outlet_mca": 18.54738,
+      "fractal_prs_outlet_mca": 18.48552,
+      "emulator_critical_pressure_mca": 15.42808,
+      "fractal_critical_pressure_mca": 15.45178,
+      "pressure_safety_agreement": true
     },
     {
       "hour": 3,
       "t_s": 10830.0,
+      "fractal_profile_hour": 2,
+      "emulator_profile_hour": 3,
+      "emulator_levels_pct": {
+        "tank-supply-01": 31.01417,
+        "tank-recirc-01": 75.51152,
+        "tank-recirc-02": 71.67689
+      },
+      "fractal_levels_pct": {
+        "tank-supply-01": 29.979,
+        "tank-recirc-01": 76.542,
+        "tank-recirc-02": 72.652
+      },
+      "emulator_volumes_m3": {
+        "tank-supply-01": 1.205831,
+        "tank-recirc-01": 1.70354,
+        "tank-recirc-02": 1.617031
+      },
+      "fractal_volumes_m3": {
+        "tank-supply-01": 1.165584,
+        "tank-recirc-01": 1.726788,
+        "tank-recirc-02": 1.639029
+      },
+      "level_difference_pp": {
+        "tank-supply-01": -1.03517,
+        "tank-recirc-01": 1.03048,
+        "tank-recirc-02": 0.97511
+      },
       "supply_difference_pp": -1.03517,
-      "transfer_difference_m3": -0.054754
+      "transfer_difference_m3": -0.054754,
+      "emulator_main_flow_m3h": 5.47903,
+      "fractal_main_flow_m3h": 4.82526,
+      "emulator_main_discharge_mca": 72.09861,
+      "fractal_main_discharge_mca": 72.1,
+      "emulator_prs_outlet_mca": 18.68113,
+      "fractal_prs_outlet_mca": 18.57077,
+      "emulator_critical_pressure_mca": 15.41205,
+      "fractal_critical_pressure_mca": 15.45008,
+      "pressure_safety_agreement": true
     },
     {
       "hour": 4,
       "t_s": 14430.0,
+      "fractal_profile_hour": 3,
+      "emulator_profile_hour": 4,
+      "emulator_levels_pct": {
+        "tank-supply-01": 54.61915,
+        "tank-recirc-01": 54.4197,
+        "tank-recirc-02": 52.08788
+      },
+      "fractal_levels_pct": {
+        "tank-supply-01": 52.335,
+        "tank-recirc-01": 56.571,
+        "tank-recirc-02": 54.094
+      },
+      "emulator_volumes_m3": {
+        "tank-supply-01": 2.123593,
+        "tank-recirc-01": 1.227708,
+        "tank-recirc-02": 1.175103
+      },
+      "fractal_volumes_m3": {
+        "tank-supply-01": 2.034785,
+        "tank-recirc-01": 1.276242,
+        "tank-recirc-02": 1.220361
+      },
+      "level_difference_pp": {
+        "tank-supply-01": -2.28415,
+        "tank-recirc-01": 2.1513,
+        "tank-recirc-02": 2.00612
+      },
       "supply_difference_pp": -2.28415,
-      "transfer_difference_m3": -0.110651
+      "transfer_difference_m3": -0.110651,
+      "emulator_main_flow_m3h": 6.33193,
+      "fractal_main_flow_m3h": 5.4852,
+      "emulator_main_discharge_mca": 72.09829,
+      "fractal_main_discharge_mca": 72.1,
+      "emulator_prs_outlet_mca": 18.88429,
+      "fractal_prs_outlet_mca": 18.7213,
+      "emulator_critical_pressure_mca": 15.39367,
+      "fractal_critical_pressure_mca": 15.45015,
+      "pressure_safety_agreement": true
     },
     {
       "hour": 5,
       "t_s": 18030.0,
+      "fractal_profile_hour": 4,
+      "emulator_profile_hour": 5,
+      "emulator_levels_pct": {
+        "tank-supply-01": 66.29197,
+        "tank-recirc-01": 44.0073,
+        "tank-recirc-02": 42.38343
+      },
+      "fractal_levels_pct": {
+        "tank-supply-01": 63.285,
+        "tank-recirc-01": 46.808,
+        "tank-recirc-02": 44.985
+      },
+      "emulator_volumes_m3": {
+        "tank-supply-01": 2.577432,
+        "tank-recirc-01": 0.992805,
+        "tank-recirc-02": 0.95617
+      },
+      "fractal_volumes_m3": {
+        "tank-supply-01": 2.460521,
+        "tank-recirc-01": 1.055988,
+        "tank-recirc-02": 1.014862
+      },
+      "level_difference_pp": {
+        "tank-supply-01": -3.00697,
+        "tank-recirc-01": 2.8007,
+        "tank-recirc-02": 2.60157
+      },
       "supply_difference_pp": -3.00697,
-      "transfer_difference_m3": -0.146854
+      "transfer_difference_m3": -0.146854,
+      "emulator_main_flow_m3h": 7.303,
+      "fractal_main_flow_m3h": 6.34253,
+      "emulator_main_discharge_mca": 72.0979,
+      "fractal_main_discharge_mca": 72.1,
+      "emulator_prs_outlet_mca": 19.15577,
+      "fractal_prs_outlet_mca": 18.94444,
+      "emulator_critical_pressure_mca": 15.3763,
+      "fractal_critical_pressure_mca": 15.4503,
+      "pressure_safety_agreement": true
     },
     {
       "hour": 6,
       "t_s": 21630.0,
+      "fractal_profile_hour": 5,
+      "emulator_profile_hour": 6,
+      "emulator_levels_pct": {
+        "tank-supply-01": 65.67079,
+        "tank-recirc-01": 44.62975,
+        "tank-recirc-02": 42.83173
+      },
+      "fractal_levels_pct": {
+        "tank-supply-01": 61.941,
+        "tank-recirc-01": 48.088,
+        "tank-recirc-02": 46.022
+      },
+      "emulator_volumes_m3": {
+        "tank-supply-01": 2.55328,
+        "tank-recirc-01": 1.006847,
+        "tank-recirc-02": 0.966284
+      },
+      "fractal_volumes_m3": {
+        "tank-supply-01": 2.408266,
+        "tank-recirc-01": 1.084865,
+        "tank-recirc-02": 1.038256
+      },
+      "level_difference_pp": {
+        "tank-supply-01": -3.72979,
+        "tank-recirc-01": 3.45825,
+        "tank-recirc-02": 3.19027
+      },
       "supply_difference_pp": -3.72979,
-      "transfer_difference_m3": -0.183323
+      "transfer_difference_m3": -0.183323,
+      "emulator_main_flow_m3h": 8.33377,
+      "fractal_main_flow_m3h": 7.31907,
+      "emulator_main_discharge_mca": 72.09744,
+      "fractal_main_discharge_mca": 72.1,
+      "emulator_prs_outlet_mca": 19.48869,
+      "fractal_prs_outlet_mca": 19.23603,
+      "emulator_critical_pressure_mca": 15.36082,
+      "fractal_critical_pressure_mca": 15.45058,
+      "pressure_safety_agreement": true
     },
     {
       "hour": 7,
       "t_s": 25230.0,
+      "fractal_profile_hour": 6,
+      "emulator_profile_hour": 7,
+      "emulator_levels_pct": {
+        "tank-supply-01": 54.20179,
+        "tank-recirc-01": 55.05711,
+        "tank-recirc-02": 52.17029
+      },
+      "fractal_levels_pct": {
+        "tank-supply-01": 49.727,
+        "tank-recirc-01": 59.197,
+        "tank-recirc-02": 55.962
+      },
+      "emulator_volumes_m3": {
+        "tank-supply-01": 2.107366,
+        "tank-recirc-01": 1.242088,
+        "tank-recirc-02": 1.176962
+      },
+      "fractal_volumes_m3": {
+        "tank-supply-01": 1.933386,
+        "tank-recirc-01": 1.335484,
+        "tank-recirc-02": 1.262503
+      },
+      "level_difference_pp": {
+        "tank-supply-01": -4.47479,
+        "tank-recirc-01": 4.13989,
+        "tank-recirc-02": 3.79171
+      },
       "supply_difference_pp": -4.47479,
-      "transfer_difference_m3": -0.219951
+      "transfer_difference_m3": -0.219951,
+      "emulator_main_flow_m3h": 9.3239,
+      "fractal_main_flow_m3h": 8.35605,
+      "emulator_main_discharge_mca": 72.09702,
+      "fractal_main_discharge_mca": 72.1,
+      "emulator_prs_outlet_mca": 19.856,
+      "fractal_prs_outlet_mca": 19.58832,
+      "emulator_critical_pressure_mca": 15.35412,
+      "fractal_critical_pressure_mca": 15.45096,
+      "pressure_safety_agreement": true
     },
     {
       "hour": 8,
       "t_s": 28830.0,
+      "fractal_profile_hour": 7,
+      "emulator_profile_hour": 8,
+      "emulator_levels_pct": {
+        "tank-supply-01": 35.0699,
+        "tank-recirc-01": 72.48348,
+        "tank-recirc-02": 67.71613
+      },
+      "fractal_levels_pct": {
+        "tank-supply-01": 29.766,
+        "tank-recirc-01": 77.386,
+        "tank-recirc-02": 72.174
+      },
+      "emulator_volumes_m3": {
+        "tank-supply-01": 1.363518,
+        "tank-recirc-01": 1.635227,
+        "tank-recirc-02": 1.527676
+      },
+      "fractal_volumes_m3": {
+        "tank-supply-01": 1.157302,
+        "tank-recirc-01": 1.745828,
+        "tank-recirc-02": 1.628245
+      },
+      "level_difference_pp": {
+        "tank-supply-01": -5.3039,
+        "tank-recirc-01": 4.90252,
+        "tank-recirc-02": 4.45787
+      },
       "supply_difference_pp": -5.3039,
-      "transfer_difference_m3": -0.258716
+      "transfer_difference_m3": -0.258716,
+      "emulator_main_flow_m3h": 10.21003,
+      "fractal_main_flow_m3h": 9.35087,
+      "emulator_main_discharge_mca": 72.09671,
+      "fractal_main_discharge_mca": 72.1,
+      "emulator_prs_outlet_mca": 20.22451,
+      "fractal_prs_outlet_mca": 19.96643,
+      "emulator_critical_pressure_mca": 15.35606,
+      "fractal_critical_pressure_mca": 15.4513,
+      "pressure_safety_agreement": true
     },
     {
       "hour": 9,
       "t_s": 32430.0,
+      "fractal_profile_hour": 8,
+      "emulator_profile_hour": 9,
+      "emulator_levels_pct": {
+        "tank-supply-01": 46.50786,
+        "tank-recirc-01": 60.27767,
+        "tank-recirc-02": 60.2099
+      },
+      "fractal_levels_pct": {
+        "tank-supply-01": 55.504,
+        "tank-recirc-01": 52.61,
+        "tank-recirc-02": 52.594
+      },
+      "emulator_volumes_m3": {
+        "tank-supply-01": 1.808226,
+        "tank-recirc-01": 1.359864,
+        "tank-recirc-02": 1.358335
+      },
+      "fractal_volumes_m3": {
+        "tank-supply-01": 2.157996,
+        "tank-recirc-01": 1.186882,
+        "tank-recirc-02": 1.186521
+      },
+      "level_difference_pp": {
+        "tank-supply-01": 8.99614,
+        "tank-recirc-01": -7.66767,
+        "tank-recirc-02": -7.6159
+      },
       "supply_difference_pp": 8.99614,
-      "transfer_difference_m3": 0.286535
+      "transfer_difference_m3": 0.286535,
+      "emulator_main_flow_m3h": 10.90621,
+      "fractal_main_flow_m3h": 10.23912,
+      "emulator_main_discharge_mca": 72.10141,
+      "fractal_main_discharge_mca": 72.1,
+      "emulator_prs_outlet_mca": 20.54815,
+      "fractal_prs_outlet_mca": 20.33627,
+      "emulator_critical_pressure_mca": 15.37135,
+      "fractal_critical_pressure_mca": 15.45144,
+      "pressure_safety_agreement": true
     },
     {
       "hour": 10,
       "t_s": 36030.0,
+      "fractal_profile_hour": 9,
+      "emulator_profile_hour": 10,
+      "emulator_levels_pct": {
+        "tank-supply-01": 67.99071,
+        "tank-recirc-01": 41.76616,
+        "tank-recirc-02": 41.69791
+      },
+      "fractal_levels_pct": {
+        "tank-supply-01": 77.976,
+        "tank-recirc-01": 33.267,
+        "tank-recirc-02": 33.208
+      },
+      "emulator_volumes_m3": {
+        "tank-supply-01": 2.643479,
+        "tank-recirc-01": 0.942245,
+        "tank-recirc-02": 0.940705
+      },
+      "fractal_volumes_m3": {
+        "tank-supply-01": 3.031707,
+        "tank-recirc-01": 0.750504,
+        "tank-recirc-02": 0.749172
+      },
+      "level_difference_pp": {
+        "tank-supply-01": 9.98529,
+        "tank-recirc-01": -8.49916,
+        "tank-recirc-02": -8.48991
+      },
       "supply_difference_pp": 9.98529,
-      "transfer_difference_m3": 0.322116
+      "transfer_difference_m3": 0.322116,
+      "emulator_main_flow_m3h": 11.36438,
+      "fractal_main_flow_m3h": 10.9324,
+      "emulator_main_discharge_mca": 72.10147,
+      "fractal_main_discharge_mca": 72.1,
+      "emulator_prs_outlet_mca": 20.78551,
+      "fractal_prs_outlet_mca": 20.64538,
+      "emulator_critical_pressure_mca": 15.39639,
+      "fractal_critical_pressure_mca": 15.45129,
+      "pressure_safety_agreement": true
     },
     {
       "hour": 11,
       "t_s": 39630.0,
+      "fractal_profile_hour": 10,
+      "emulator_profile_hour": 11,
+      "emulator_levels_pct": {
+        "tank-supply-01": 86.20635,
+        "tank-recirc-01": 26.07881,
+        "tank-recirc-02": 25.99241
+      },
+      "fractal_levels_pct": {
+        "tank-supply-01": 80.86,
+        "tank-recirc-01": 31.244,
+        "tank-recirc-02": 30.261
+      },
+      "emulator_volumes_m3": {
+        "tank-supply-01": 3.351703,
+        "tank-recirc-01": 0.588338,
+        "tank-recirc-02": 0.586389
+      },
+      "fractal_volumes_m3": {
+        "tank-supply-01": 3.143837,
+        "tank-recirc-01": 0.704865,
+        "tank-recirc-02": 0.682688
+      },
+      "level_difference_pp": {
+        "tank-supply-01": -5.34635,
+        "tank-recirc-01": 5.16519,
+        "tank-recirc-02": 4.26859
+      },
       "supply_difference_pp": -5.34635,
-      "transfer_difference_m3": -0.274687
+      "transfer_difference_m3": -0.274687,
+      "emulator_main_flow_m3h": 11.52685,
+      "fractal_main_flow_m3h": 11.38327,
+      "emulator_main_discharge_mca": 72.1018,
+      "fractal_main_discharge_mca": 72.1,
+      "emulator_prs_outlet_mca": 20.89719,
+      "fractal_prs_outlet_mca": 20.85575,
+      "emulator_critical_pressure_mca": 15.43164,
+      "fractal_critical_pressure_mca": 15.45098,
+      "pressure_safety_agreement": true
     },
     {
       "hour": 12,
       "t_s": 43230.0,
+      "fractal_profile_hour": 11,
+      "emulator_profile_hour": 12,
+      "emulator_levels_pct": {
+        "tank-supply-01": 72.92814,
+        "tank-recirc-01": 38.37537,
+        "tank-recirc-02": 36.57952
+      },
+      "fractal_levels_pct": {
+        "tank-supply-01": 57.225,
+        "tank-recirc-01": 52.793,
+        "tank-recirc-02": 49.445
+      },
+      "emulator_volumes_m3": {
+        "tank-supply-01": 2.835446,
+        "tank-recirc-01": 0.865748,
+        "tank-recirc-02": 0.825234
+      },
+      "fractal_volumes_m3": {
+        "tank-supply-01": 2.224908,
+        "tank-recirc-01": 1.19101,
+        "tank-recirc-02": 1.115479
+      },
+      "level_difference_pp": {
+        "tank-supply-01": -15.70314,
+        "tank-recirc-01": 14.41763,
+        "tank-recirc-02": 12.86548
+      },
       "supply_difference_pp": -15.70314,
-      "transfer_difference_m3": -0.670416
+      "transfer_difference_m3": -0.670416,
+      "emulator_main_flow_m3h": 11.40899,
+      "fractal_main_flow_m3h": 11.53407,
+      "emulator_main_discharge_mca": 72.0976,
+      "fractal_main_discharge_mca": 72.1,
+      "emulator_prs_outlet_mca": 20.87412,
+      "fractal_prs_outlet_mca": 20.92774,
+      "emulator_critical_pressure_mca": 15.46575,
+      "fractal_critical_pressure_mca": 15.45084,
+      "pressure_safety_agreement": true
     },
     {
       "hour": 13,
       "t_s": 46830.0,
+      "fractal_profile_hour": 12,
+      "emulator_profile_hour": 13,
+      "emulator_levels_pct": {
+        "tank-supply-01": 50.26167,
+        "tank-recirc-01": 59.01034,
+        "tank-recirc-02": 55.00793
+      },
+      "fractal_levels_pct": {
+        "tank-supply-01": 33.128,
+        "tank-recirc-01": 74.729,
+        "tank-recirc-02": 69.038
+      },
+      "emulator_volumes_m3": {
+        "tank-supply-01": 1.954174,
+        "tank-recirc-01": 1.331273,
+        "tank-recirc-02": 1.240979
+      },
+      "fractal_volumes_m3": {
+        "tank-supply-01": 1.288017,
+        "tank-recirc-01": 1.685886,
+        "tank-recirc-02": 1.557497
+      },
+      "level_difference_pp": {
+        "tank-supply-01": -17.13367,
+        "tank-recirc-01": 15.71866,
+        "tank-recirc-02": 14.03007
+      },
       "supply_difference_pp": -17.13367,
-      "transfer_difference_m3": -0.722955
+      "transfer_difference_m3": -0.722955,
+      "emulator_main_flow_m3h": 11.04222,
+      "fractal_main_flow_m3h": 11.4048,
+      "emulator_main_discharge_mca": 72.09802,
+      "fractal_main_discharge_mca": 72.1,
+      "emulator_prs_outlet_mca": 20.73061,
+      "fractal_prs_outlet_mca": 20.86598,
+      "emulator_critical_pressure_mca": 15.4949,
+      "fractal_critical_pressure_mca": 15.45097,
+      "pressure_safety_agreement": true
     },
     {
       "hour": 14,
       "t_s": 50430.0,
+      "fractal_profile_hour": 13,
+      "emulator_profile_hour": 14,
+      "emulator_levels_pct": {
+        "tank-supply-01": 30.83909,
+        "tank-recirc-01": 75.28554,
+        "tank-recirc-02": 72.20554
+      },
+      "fractal_levels_pct": {
+        "tank-supply-01": 47.988,
+        "tank-recirc-01": 59.127,
+        "tank-recirc-02": 59.03
+      },
+      "emulator_volumes_m3": {
+        "tank-supply-01": 1.199024,
+        "tank-recirc-01": 1.698442,
+        "tank-recirc-02": 1.628957
+      },
+      "fractal_volumes_m3": {
+        "tank-supply-01": 1.865773,
+        "tank-recirc-01": 1.333905,
+        "tank-recirc-02": 1.331717
+      },
+      "level_difference_pp": {
+        "tank-supply-01": 17.14891,
+        "tank-recirc-01": -16.15854,
+        "tank-recirc-02": -13.17554
+      },
       "supply_difference_pp": 17.14891,
-      "transfer_difference_m3": 0.608735
+      "transfer_difference_m3": 0.608735,
+      "emulator_main_flow_m3h": 10.45045,
+      "fractal_main_flow_m3h": 11.02882,
+      "emulator_main_discharge_mca": 72.10321,
+      "fractal_main_discharge_mca": 72.1,
+      "emulator_prs_outlet_mca": 20.48684,
+      "fractal_prs_outlet_mca": 20.68976,
+      "emulator_critical_pressure_mca": 15.51865,
+      "fractal_critical_pressure_mca": 15.45124,
+      "pressure_safety_agreement": true
     },
     {
       "hour": 15,
       "t_s": 54030.0,
+      "fractal_profile_hour": 14,
+      "emulator_profile_hour": 15,
+      "emulator_levels_pct": {
+        "tank-supply-01": 54.96238,
+        "tank-recirc-01": 52.96586,
+        "tank-recirc-02": 52.95085
+      },
+      "fractal_levels_pct": {
+        "tank-supply-01": 72.597,
+        "tank-recirc-01": 37.889,
+        "tank-recirc-02": 37.856
+      },
+      "emulator_volumes_m3": {
+        "tank-supply-01": 2.136937,
+        "tank-recirc-01": 1.19491,
+        "tank-recirc-02": 1.194571
+      },
+      "fractal_volumes_m3": {
+        "tank-supply-01": 2.822571,
+        "tank-recirc-01": 0.854776,
+        "tank-recirc-02": 0.854031
+      },
+      "level_difference_pp": {
+        "tank-supply-01": 17.63462,
+        "tank-recirc-01": -15.07686,
+        "tank-recirc-02": -15.09485
+      },
       "supply_difference_pp": 17.63462,
-      "transfer_difference_m3": 0.633543
+      "transfer_difference_m3": 0.633543,
+      "emulator_main_flow_m3h": 9.68954,
+      "fractal_main_flow_m3h": 10.43057,
+      "emulator_main_discharge_mca": 72.10335,
+      "fractal_main_discharge_mca": 72.1,
+      "emulator_prs_outlet_mca": 20.17645,
+      "fractal_prs_outlet_mca": 20.41987,
+      "emulator_critical_pressure_mca": 15.53256,
+      "fractal_critical_pressure_mca": 15.45143,
+      "pressure_safety_agreement": true
     },
     {
       "hour": 16,
       "t_s": 57630.0,
+      "fractal_profile_hour": 15,
+      "emulator_profile_hour": 16,
+      "emulator_levels_pct": {
+        "tank-supply-01": 78.77278,
+        "tank-recirc-01": 32.43093,
+        "tank-recirc-02": 32.45066
+      },
+      "fractal_levels_pct": {
+        "tank-supply-01": 83.709,
+        "tank-recirc-01": 28.576,
+        "tank-recirc-02": 28.019
+      },
+      "emulator_volumes_m3": {
+        "tank-supply-01": 3.062686,
+        "tank-recirc-01": 0.731642,
+        "tank-recirc-02": 0.732087
+      },
+      "fractal_volumes_m3": {
+        "tank-supply-01": 3.254606,
+        "tank-recirc-01": 0.644675,
+        "tank-recirc-02": 0.632109
+      },
+      "level_difference_pp": {
+        "tank-supply-01": 4.93622,
+        "tank-recirc-01": -3.85493,
+        "tank-recirc-02": -4.43166
+      },
       "supply_difference_pp": 4.93622,
-      "transfer_difference_m3": 0.146529
+      "transfer_difference_m3": 0.146529,
+      "emulator_main_flow_m3h": 8.80613,
+      "fractal_main_flow_m3h": 9.66713,
+      "emulator_main_discharge_mca": 72.1034,
+      "fractal_main_discharge_mca": 72.1,
+      "emulator_prs_outlet_mca": 19.83379,
+      "fractal_prs_outlet_mca": 20.09468,
+      "emulator_critical_pressure_mca": 15.53828,
+      "fractal_critical_pressure_mca": 15.45138,
+      "pressure_safety_agreement": true
     },
     {
       "hour": 17,
       "t_s": 61230.0,
+      "fractal_profile_hour": 16,
+      "emulator_profile_hour": 17,
+      "emulator_levels_pct": {
+        "tank-supply-01": 83.99454,
+        "tank-recirc-01": 28.17627,
+        "tank-recirc-02": 27.70595
+      },
+      "fractal_levels_pct": {
+        "tank-supply-01": 67.804,
+        "tank-recirc-01": 42.915,
+        "tank-recirc-02": 41.091
+      },
+      "emulator_volumes_m3": {
+        "tank-supply-01": 3.265708,
+        "tank-recirc-01": 0.635657,
+        "tank-recirc-02": 0.625046
+      },
+      "fractal_volumes_m3": {
+        "tank-supply-01": 2.63622,
+        "tank-recirc-01": 0.968162,
+        "tank-recirc-02": 0.927013
+      },
+      "level_difference_pp": {
+        "tank-supply-01": -16.19054,
+        "tank-recirc-01": 14.73873,
+        "tank-recirc-02": 13.38505
+      },
       "supply_difference_pp": -16.19054,
-      "transfer_difference_m3": -0.662149
+      "transfer_difference_m3": -0.662149,
+      "emulator_main_flow_m3h": 7.85551,
+      "fractal_main_flow_m3h": 8.78418,
+      "emulator_main_discharge_mca": 72.09873,
+      "fractal_main_discharge_mca": 72.1,
+      "emulator_prs_outlet_mca": 19.49107,
+      "fractal_prs_outlet_mca": 19.74629,
+      "emulator_critical_pressure_mca": 15.53599,
+      "fractal_critical_pressure_mca": 15.45111,
+      "pressure_safety_agreement": true
     },
     {
       "hour": 18,
       "t_s": 64830.0,
+      "fractal_profile_hour": 17,
+      "emulator_profile_hour": 18,
+      "emulator_levels_pct": {
+        "tank-supply-01": 77.91821,
+        "tank-recirc-01": 33.61968,
+        "tank-recirc-02": 32.73439
+      },
+      "fractal_levels_pct": {
+        "tank-supply-01": 60.726,
+        "tank-recirc-01": 49.225,
+        "tank-recirc-02": 46.979
+      },
+      "emulator_volumes_m3": {
+        "tank-supply-01": 3.02946,
+        "tank-recirc-01": 0.75846,
+        "tank-recirc-02": 0.738488
+      },
+      "fractal_volumes_m3": {
+        "tank-supply-01": 2.361027,
+        "tank-recirc-01": 1.110516,
+        "tank-recirc-02": 1.059846
+      },
+      "level_difference_pp": {
+        "tank-supply-01": -17.19221,
+        "tank-recirc-01": 15.60532,
+        "tank-recirc-02": 14.24461
+      },
       "supply_difference_pp": -17.19221,
-      "transfer_difference_m3": -0.694233
+      "transfer_difference_m3": -0.694233,
+      "emulator_main_flow_m3h": 6.91165,
+      "fractal_main_flow_m3h": 7.83632,
+      "emulator_main_discharge_mca": 72.09878,
+      "fractal_main_discharge_mca": 72.1,
+      "emulator_prs_outlet_mca": 19.17936,
+      "fractal_prs_outlet_mca": 19.40633,
+      "emulator_critical_pressure_mca": 15.52609,
+      "fractal_critical_pressure_mca": 15.45075,
+      "pressure_safety_agreement": true
     },
     {
       "hour": 19,
       "t_s": 68430.0,
+      "fractal_profile_hour": 18,
+      "emulator_profile_hour": 19,
+      "emulator_levels_pct": {
+        "tank-supply-01": 82.56984,
+        "tank-recirc-01": 29.39776,
+        "tank-recirc-02": 28.93957
+      },
+      "fractal_levels_pct": {
+        "tank-supply-01": 64.475,
+        "tank-recirc-01": 45.777,
+        "tank-recirc-02": 43.966
+      },
+      "emulator_volumes_m3": {
+        "tank-supply-01": 3.210315,
+        "tank-recirc-01": 0.663213,
+        "tank-recirc-02": 0.652877
+      },
+      "fractal_volumes_m3": {
+        "tank-supply-01": 2.506788,
+        "tank-recirc-01": 1.032729,
+        "tank-recirc-02": 0.991873
+      },
+      "level_difference_pp": {
+        "tank-supply-01": -18.09484,
+        "tank-recirc-01": 16.37924,
+        "tank-recirc-02": 15.02643
+      },
       "supply_difference_pp": -18.09484,
-      "transfer_difference_m3": -0.723152
+      "transfer_difference_m3": -0.723152,
+      "emulator_main_flow_m3h": 6.04638,
+      "fractal_main_flow_m3h": 6.89664,
+      "emulator_main_discharge_mca": 72.09883,
+      "fractal_main_discharge_mca": 72.1,
+      "emulator_prs_outlet_mca": 18.92049,
+      "fractal_prs_outlet_mca": 19.10506,
+      "emulator_critical_pressure_mca": 15.51156,
+      "fractal_critical_pressure_mca": 15.45044,
+      "pressure_safety_agreement": true
     },
     {
       "hour": 20,
       "t_s": 72030.0,
+      "fractal_profile_hour": 19,
+      "emulator_profile_hour": 20,
+      "emulator_levels_pct": {
+        "tank-supply-01": 70.29958,
+        "tank-recirc-01": 39.66903,
+        "tank-recirc-02": 39.81486
+      },
+      "fractal_levels_pct": {
+        "tank-supply-01": 79.636,
+        "tank-recirc-01": 32.113,
+        "tank-recirc-02": 31.501
+      },
+      "emulator_volumes_m3": {
+        "tank-supply-01": 2.733248,
+        "tank-recirc-01": 0.894933,
+        "tank-recirc-02": 0.898223
+      },
+      "fractal_volumes_m3": {
+        "tank-supply-01": 3.096248,
+        "tank-recirc-01": 0.724469,
+        "tank-recirc-02": 0.710663
+      },
+      "level_difference_pp": {
+        "tank-supply-01": 9.33642,
+        "tank-recirc-01": -7.55603,
+        "tank-recirc-02": -8.31386
+      },
       "supply_difference_pp": 9.33642,
-      "transfer_difference_m3": 0.342892
+      "transfer_difference_m3": 0.342892,
+      "emulator_main_flow_m3h": 5.30919,
+      "fractal_main_flow_m3h": 6.03573,
+      "emulator_main_discharge_mca": 72.10372,
+      "fractal_main_discharge_mca": 72.1,
+      "emulator_prs_outlet_mca": 18.72181,
+      "fractal_prs_outlet_mca": 18.86103,
+      "emulator_critical_pressure_mca": 15.49621,
+      "fractal_critical_pressure_mca": 15.45024,
+      "pressure_safety_agreement": true
     },
     {
       "hour": 21,
       "t_s": 75630.0,
+      "fractal_profile_hour": 20,
+      "emulator_profile_hour": 21,
+      "emulator_levels_pct": {
+        "tank-supply-01": 42.40732,
+        "tank-recirc-01": 65.34982,
+        "tank-recirc-02": 62.20367
+      },
+      "fractal_levels_pct": {
+        "tank-supply-01": 44.85,
+        "tank-recirc-01": 61.843,
+        "tank-recirc-02": 61.723
+      },
+      "emulator_volumes_m3": {
+        "tank-supply-01": 1.648797,
+        "tank-recirc-01": 1.474292,
+        "tank-recirc-02": 1.403315
+      },
+      "fractal_volumes_m3": {
+        "tank-supply-01": 1.743768,
+        "tank-recirc-01": 1.395178,
+        "tank-recirc-02": 1.392471
+      },
+      "level_difference_pp": {
+        "tank-supply-01": 2.44268,
+        "tank-recirc-01": -3.50682,
+        "tank-recirc-02": -0.48067
+      },
       "supply_difference_pp": 2.44268,
-      "transfer_difference_m3": 0.084575
+      "transfer_difference_m3": 0.084575,
+      "emulator_main_flow_m3h": 4.7384,
+      "fractal_main_flow_m3h": 5.30216,
+      "emulator_main_discharge_mca": 72.09898,
+      "fractal_main_discharge_mca": 72.1,
+      "emulator_prs_outlet_mca": 18.58137,
+      "fractal_prs_outlet_mca": 18.67768,
+      "emulator_critical_pressure_mca": 15.48179,
+      "fractal_critical_pressure_mca": 15.45013,
+      "pressure_safety_agreement": true
     },
     {
       "hour": 22,
       "t_s": 79230.0,
+      "fractal_profile_hour": 21,
+      "emulator_profile_hour": 22,
+      "emulator_levels_pct": {
+        "tank-supply-01": 77.81689,
+        "tank-recirc-01": 33.59675,
+        "tank-recirc-02": 32.93172
+      },
+      "fractal_levels_pct": {
+        "tank-supply-01": 59.719,
+        "tank-recirc-01": 49.905,
+        "tank-recirc-02": 48.034
+      },
+      "emulator_volumes_m3": {
+        "tank-supply-01": 3.025521,
+        "tank-recirc-01": 0.757943,
+        "tank-recirc-02": 0.74294
+      },
+      "fractal_volumes_m3": {
+        "tank-supply-01": 2.321875,
+        "tank-recirc-01": 1.125857,
+        "tank-recirc-02": 1.083647
+      },
+      "level_difference_pp": {
+        "tank-supply-01": -18.09789,
+        "tank-recirc-01": 16.30825,
+        "tank-recirc-02": 15.10228
+      },
       "supply_difference_pp": -18.09789,
-      "transfer_difference_m3": -0.711906
+      "transfer_difference_m3": -0.711906,
+      "emulator_main_flow_m3h": 4.38228,
+      "fractal_main_flow_m3h": 4.7341,
+      "emulator_main_discharge_mca": 72.09902,
+      "fractal_main_discharge_mca": 72.1,
+      "emulator_prs_outlet_mca": 18.49626,
+      "fractal_prs_outlet_mca": 18.55145,
+      "emulator_critical_pressure_mca": 15.46804,
+      "fractal_critical_pressure_mca": 15.45007,
+      "pressure_safety_agreement": true
     },
     {
       "hour": 23,
       "t_s": 82830.0,
+      "fractal_profile_hour": 22,
+      "emulator_profile_hour": 23,
+      "emulator_levels_pct": {
+        "tank-supply-01": 41.94504,
+        "tank-recirc-01": 65.68433,
+        "tank-recirc-02": 62.66584
+      },
+      "fractal_levels_pct": {
+        "tank-supply-01": 52.802,
+        "tank-recirc-01": 54.788,
+        "tank-recirc-02": 55.072
+      },
+      "emulator_volumes_m3": {
+        "tank-supply-01": 1.630823,
+        "tank-recirc-01": 1.481838,
+        "tank-recirc-02": 1.413741
+      },
+      "fractal_volumes_m3": {
+        "tank-supply-01": 2.052942,
+        "tank-recirc-01": 1.236017,
+        "tank-recirc-02": 1.242424
+      },
+      "level_difference_pp": {
+        "tank-supply-01": 10.85696,
+        "tank-recirc-01": -10.89633,
+        "tank-recirc-02": -7.59384
+      },
       "supply_difference_pp": 10.85696,
-      "transfer_difference_m3": 0.414637
+      "transfer_difference_m3": 0.414637,
+      "emulator_main_flow_m3h": 4.25948,
+      "fractal_main_flow_m3h": 4.38025,
+      "emulator_main_discharge_mca": 72.09902,
+      "fractal_main_discharge_mca": 72.1,
+      "emulator_prs_outlet_mca": 18.46103,
+      "fractal_prs_outlet_mca": 18.48155,
+      "emulator_critical_pressure_mca": 15.45586,
+      "fractal_critical_pressure_mca": 15.45175,
+      "pressure_safety_agreement": true
     },
     {
       "hour": 24,
       "t_s": 86430.0,
+      "fractal_profile_hour": 23,
+      "emulator_profile_hour": 0,
+      "emulator_levels_pct": {
+        "tank-supply-01": 84.73776,
+        "tank-recirc-01": 27.3901,
+        "tank-recirc-02": 27.21091
+      },
+      "fractal_levels_pct": {
+        "tank-supply-01": 65.958,
+        "tank-recirc-01": 44.297,
+        "tank-recirc-02": 42.89
+      },
+      "emulator_volumes_m3": {
+        "tank-supply-01": 3.294604,
+        "tank-recirc-01": 0.617921,
+        "tank-recirc-02": 0.613878
+      },
+      "fractal_volumes_m3": {
+        "tank-supply-01": 2.564447,
+        "tank-recirc-01": 0.99934,
+        "tank-recirc-02": 0.967598
+      },
+      "level_difference_pp": {
+        "tank-supply-01": -18.77976,
+        "tank-recirc-01": 16.9069,
+        "tank-recirc-02": 15.67909
+      },
       "supply_difference_pp": -18.77976,
-      "transfer_difference_m3": -0.738186
+      "transfer_difference_m3": -0.738186,
+      "emulator_main_flow_m3h": 4.25875,
+      "fractal_main_flow_m3h": 4.25898,
+      "emulator_main_discharge_mca": 72.09901,
+      "fractal_main_discharge_mca": 72.1,
+      "emulator_prs_outlet_mca": 18.45526,
+      "fractal_prs_outlet_mca": 18.4581,
+      "emulator_critical_pressure_mca": 15.45,
+      "fractal_critical_pressure_mca": 15.45159,
+      "pressure_safety_agreement": true
     }
   ],
   "emulator_bypass_total_m3": 0.0,
-  "elapsed_real_s": 2268.04
+  "elapsed_real_s": 2096.19
 }

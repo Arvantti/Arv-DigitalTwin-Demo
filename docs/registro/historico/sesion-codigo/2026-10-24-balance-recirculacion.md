@@ -217,3 +217,13 @@ Herramientas (resumen): lectura de topología, prueba de antirretorno de suminis
 Con los tres antirretornos montados y el suministro antes del grupo principal, la corrida completa alineada de 24 h terminó: 46 ciclos por motor, paso entre retornos con retorno apagado 0 m³ (antes 2,538 m³), pero parada 46 adelantada 612 s en Fractal (antes 593 s) y −0,738 m³ de diferencia de retorno acumulada (antes −0,719 m³). El primer reparto desigual era producto de una topología incompleta; la deriva mayor no desapareció. Evidencia JSON/CSV en `docs/architecture/validation/pdd-rca-01-recirculation-cycles-checks-24h.*`. No se declaró validada la presión crítica continua ni el nivel futuro; optimización apagada.
 
 Herramientas (resumen): ejecución de 24 h offline con 86.400 pasos PLC, CSV de 46 ciclos y JSON con eventos/niveles; comparación contra la corrida anterior en las mismas marcas, tests y Ruff. Sin credenciales.
+
+## Autor — 2026-10-24 UTC
+
+> como quedo los datos de los niveles? hay que volver a correr?
+
+## Asistente — 2026-10-24 UTC
+
+Se aclaró que la corrida D76 de ciclos ya estaba completa, pero no había conservado todos los niveles absolutos horarios. Se repitieron las 24 h guardando simultáneamente niveles/volúmenes verdaderos de los tres tanques, caudal principal y presiones; el pico del suministro fue hora 24/t=86430, Fractal 65,958 % (2,564447 m³) vs emulador 84,73776 % (3,294604 m³): −18,77976 pp o −0,730157 m³. Cero desacuerdos con presión ≥15 mca **en 24 marcas**, no entre marcas. Se identificó una desalineación de entrada: Fractal usa la consigna de hora 0 durante 3600 s desde t=30, pero el PLC cambia a la hora siguiente desde t=3600. Los 30 s finales antes de cada muestra igualada en t no tienen idéntico perfil. Esto impide tratar la tabla como certificación dinámica y deja pendiente modelar la primera franja parcial. La optimización continúa apagada.
+
+Herramientas (resumen): instrumentación del trazador horario, corrida offline completa de 86.400 pasos PLC, JSON+CSV y cálculo de desviaciones; revisión de seguridad solo en marcas horarias. Sin credenciales.

@@ -65,6 +65,7 @@ def diagnose(output: Path, hours: int = 24) -> dict[str, Any]:
     samples: dict[int, dict[str, Any]] = {}
     emulator_events: list[dict[str, Any]] = []
     hourly: list[dict[str, Any]] = []
+    tank_capacities = {tank: session.plant.equipment[tank].p["volume_l"] / 1000 for tank in TANKS}
     previous = pump.level_on
     bypass_m3 = 0.0
     for _ in range(int(hours * 3600 / session.plant.model.dt)):
@@ -88,10 +89,31 @@ def diagnose(output: Path, hours: int = 24) -> dict[str, Any]:
             if int(session.plant.t) in hourly_targets:
                 hour = hourly_targets[int(session.plant.t)]
                 projected = frames[hour - 1]["tank_levels_pct"]
+                state = frames[hour - 1]["scenarios"][1]["state"]
+                actual = sample["levels_pct"]
+                operational_pump = session.plant.equipment["pumpset-main-01"].true_values()
+                operational_prs = session.plant.equipment["prs-01"].true_values()
                 hourly.append({
                     "hour": hour, "t_s": sample["t_s"],
-                    "supply_difference_pp": round(projected[TANKS[0]] - sample["levels_pct"][TANKS[0]], 5),
+                    "fractal_profile_hour": (int(base_t // 3600) + hour - 1) % 24,
+                    "emulator_profile_hour": int(session.plant.t // 3600) % 24,
+                    "emulator_levels_pct": actual,
+                    "fractal_levels_pct": {tank: round(projected[tank], 5) for tank in TANKS},
+                    "emulator_volumes_m3": {tank: round(tank_capacities[tank] * actual[tank] / 100, 6) for tank in TANKS},
+                    "fractal_volumes_m3": {tank: round(tank_capacities[tank] * projected[tank] / 100, 6) for tank in TANKS},
+                    "level_difference_pp": {tank: round(projected[tank] - actual[tank], 5) for tank in TANKS},
+                    "supply_difference_pp": round(projected[TANKS[0]] - actual[TANKS[0]], 5),
                     "transfer_difference_m3": round(totals[hour] - sample["recirculated_m3"], 6),
+                    "emulator_main_flow_m3h": round(operational_pump["flow_m3h"], 5),
+                    "fractal_main_flow_m3h": state["flow_m3h"],
+                    "emulator_main_discharge_mca": round(operational_pump["discharge_pressure_mca"], 5),
+                    "fractal_main_discharge_mca": state["pump_discharge_mca"],
+                    "emulator_prs_outlet_mca": round(operational_prs["outlet_pressure_mca"], 5),
+                    "fractal_prs_outlet_mca": state["prs_outlet_mca"],
+                    "emulator_critical_pressure_mca": round(operational_prs["critical_pressure_mca"], 5),
+                    "fractal_critical_pressure_mca": state["critical_pressure_mca"],
+                    "pressure_safety_agreement": (operational_prs["critical_pressure_mca"] >= 15)
+                    == (state["critical_pressure_mca"] >= 15),
                 })
                 print(f"hora {hour:02}/{hours:02} · suministro Δ {hourly[-1]['supply_difference_pp']:+.2f} pp · "
                       f"retorno Δ {hourly[-1]['transfer_difference_m3']:+.3f} m³", flush=True)
@@ -119,7 +141,11 @@ def diagnose(output: Path, hours: int = 24) -> dict[str, Any]:
         "scope": "independent Fractal forecast vs PLC emulator; same 30 s PLC snapshot, full physical second per emulator step",
         "base_t_s": base_t, "hours": hours, "profile_id": profile["id"],
         "note": "Ordinal pairing is diagnostic, not proof of event identity if cycle counts differ. "
-        "Same-time emulator readings are taken at nearest 1 s; Fractal holds hourly distribution fixed. "
+        "Same-time emulator readings are taken at nearest 1 s; hourly levels, main flow and pressures are TRUE values "
+        "(not noisy PLC sensor snapshots). Starting at t=30 s, Fractal holds each profile entry for a full 3600 s "
+        "while operational PLC switches at t=3600,7200,...: at the recorded hour ends the emulator has applied "
+        "the NEXT entry for 30 s. This is an input-boundary mismatch, not time alignment validation. "
+        "Fractal holds hourly distribution fixed. "
         "Fractal recirculation totals are accumulated across hours, no commands applied.",
         "initial_tags": {key: tags[key] for key in (
             "PLC.Tank.Supply.LevelPct", "PLC.Tank.Recirc01.LevelPct", "PLC.Tank.Recirc02.LevelPct",
@@ -131,6 +157,24 @@ def diagnose(output: Path, hours: int = 24) -> dict[str, Any]:
     }
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    hourly_path = output.with_name(output.stem + "-hourly.csv")
+    with hourly_path.open("w", encoding="utf-8", newline="") as handle:
+        writer = csv.writer(handle, lineterminator="\n")
+        writer.writerow(("hora", "t_s", "fractal_perfil_h", "emulador_perfil_h", *(
+            f"{motor}_{tank}_{unit}" for tank in ("supply", "recirc01", "recirc02")
+            for unit in ("pct", "m3") for motor in ("emulador", "fractal")
+        ), "diferencia_suministro_pp", "diferencia_retorno_acumulado_m3", "presion_critica_emulador_mca",
+            "presion_critica_fractal_mca", "acuerdo_presion_15mca"))
+        for row in hourly:
+            cells = []
+            for tank in TANKS:
+                for _unit, field in (("pct", "levels_pct"), ("m3", "volumes_m3")):
+                    for motor in ("emulator", "fractal"):
+                        cells.append(row[f"{motor}_{field}"][tank])
+            writer.writerow((row["hour"], row["t_s"], row["fractal_profile_hour"], row["emulator_profile_hour"],
+                             *cells, row["supply_difference_pp"], row["transfer_difference_m3"],
+                             row["emulator_critical_pressure_mca"], row["fractal_critical_pressure_mca"],
+                             row["pressure_safety_agreement"]))
     with output.with_suffix(".csv").open("w", encoding="utf-8", newline="") as handle:
         writer = csv.writer(handle, lineterminator="\n")
         writer.writerow((
