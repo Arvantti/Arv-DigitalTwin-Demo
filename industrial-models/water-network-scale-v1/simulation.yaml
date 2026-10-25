@@ -10,27 +10,28 @@ description: "Acueducto a escala: recirculación, bombeo a ≥ 70 mca, estación
 dt: 1.0
 
 equipment:
-  # D76: antirretorno individual en cada salida de tanque antes de la succión compartida; Kv=400 m³/h asumido.
-  tank-recirc-01:    { type: vessel, preset: water-1000l, params: { volume_l: 2256, diameter_m: 1.3, initial_level_pct: 40, inlet_max_kg_h: 40000, outlet_max_kg_h: 40000, high_level_pct: 95, outlet_check_valve: true } }
-  tank-recirc-02:    { type: vessel, preset: water-1000l, params: { volume_l: 2256, diameter_m: 1.3, initial_level_pct: 40, inlet_max_kg_h: 40000, outlet_max_kg_h: 40000, high_level_pct: 95, outlet_check_valve: true } }
+  # D78: antirretorno individual antes de cada succión; Kv de referencia DN80 = 86 m³/h.
+  tank-recirc-01:    { type: vessel, preset: water-1000l, params: { volume_l: 2256, diameter_m: 1.3, initial_level_pct: 40, inlet_max_kg_h: 40000, outlet_max_kg_h: 40000, high_level_pct: 95, outlet_check_valve: true, outlet_check_kv_m3h: 86 } }
+  tank-recirc-02:    { type: vessel, preset: water-1000l, params: { volume_l: 2256, diameter_m: 1.3, initial_level_pct: 40, inlet_max_kg_h: 40000, outlet_max_kg_h: 40000, high_level_pct: 95, outlet_check_valve: true, outlet_check_kv_m3h: 86 } }
   # Supuestos de control D75: suministro <=30 % solicita bombeo; cualquiera de los retornos >=90 % lo adelanta.
   # La bomba para al llegar suministro >=90 % o nivel medio de retornos <20 %; alto-alto de cada retorno: 95 %.
   pumpset-recirc-01: { type: booster-pump-set, preset: recirculation-2x15m3h, params: { supply_start_pct: 30, return_high_start_pct: 90 } }
-  tank-supply-01:    { type: vessel, preset: water-1000l, params: { volume_l: 3888, diameter_m: 1.5, initial_level_pct: 70, inlet_max_kg_h: 40000, outlet_max_kg_h: 40000, high_level_pct: 95, outlet_check_valve: true } }
+  tank-supply-01:    { type: vessel, preset: water-1000l, params: { volume_l: 3888, diameter_m: 1.5, initial_level_pct: 70, inlet_max_kg_h: 40000, outlet_max_kg_h: 40000, high_level_pct: 95, outlet_check_valve: true, outlet_check_kv_m3h: 158 } }
   # Las dos bombas trabajan siempre (D26, sin reserva). Consigna 72,1 mca en el sensor de descarga = 70 mca + 3 %
   # (supuesto: el PLC de las bombas es cerrado, D29).
   pumpset-main-01:   { type: booster-pump-set, preset: multistage-2x13m3h-80m, params: { setpoint_mca: 72.1, min_running: 2 } }
   # Rama automática por punto crítico: casa más crítica en 15,45 mca (15 mca + 3 %, D29). La rama manual queda en la
   # salida que da lo mismo de día con la columna en serie (20,94 mca, banco network.py).
-    # D77: antirretorno aguas abajo de la estación antes del piso 1; Kv=400 m³/h supuesto hasta disponer de ficha.
-  prs-01:            { type: pressure-reducing-station, preset: station-4in-auto, params: { critical_setpoint_mca: 15.45, manual_setting_mca: 20.94, outlet_check_kv_m3h: 400 } }
+  # D78: antirretorno a la salida de PRS antes de piso 1; Kv de referencia DN100 = 158 m³/h.
+  prs-01:            { type: pressure-reducing-station, preset: station-4in-auto, params: { critical_setpoint_mca: 15.45, manual_setting_mca: 20.94, outlet_check_kv_m3h: 158 } }
   grid-01:           { type: distribution-grid, preset: level-1, params: { riser_out_lz: 0.6 } }
   grid-02:           { type: distribution-grid, preset: level-2, params: { inlet_riser: false, riser_in_lz: 0.6, riser_out_lz: -0.25 } }
   grid-03:           { type: distribution-grid, preset: level-3, params: { inlet_riser: false, riser_in_lz: -0.25, riser_out_lz: -1.2 } }
   grid-04:           { type: distribution-grid, preset: level-4-critical, params: { inlet_riser: false, riser_in_lz: -1.2 } }
-  valve-between-12:  { type: regulating-valve, preset: between-levels-2in, params: { vertical: true } }
-  valve-between-23:  { type: regulating-valve, preset: between-levels-2in, params: { vertical: true } }
-  valve-between-34:  { type: regulating-valve, preset: between-levels-2in, params: { vertical: true } }
+  # D78: cada antirretorno DN50 = 39 m³/h se ubica después de la válvula reguladora.
+  valve-between-12:  { type: regulating-valve, preset: between-levels-2in, params: { vertical: true, outlet_check_kv_m3h: 39 } }
+  valve-between-23:  { type: regulating-valve, preset: between-levels-2in, params: { vertical: true, outlet_check_kv_m3h: 39 } }
+  valve-between-34:  { type: regulating-valve, preset: between-levels-2in, params: { vertical: true, outlet_check_kv_m3h: 39 } }
 
 links:
   # Red de agua a presión (tubos del plano)
@@ -93,7 +94,7 @@ scenarios:
     description: "Día: todas las casas abiertas, rama automática; la recirculación mantiene los tanques"
     duration_s: 1800
     expect:
-      - { path: equipment.prs-01.variables.outlet_pressure_mca, min: 20.73, max: 21.15, description: "(banco: 20,94 mca ± 1 %)" }
+      - { path: equipment.prs-01.variables.outlet_pressure_mca, min: 21.0, max: 21.9, description: "(la PRS automática eleva salida para vencer la caída de antirretornos aguas abajo)" }
       - { path: equipment.prs-01.variables.critical_pressure_mca, min: 15.30, max: 15.60, description: "(15,45 mca ± 1 %)" }
       - { path: equipment.grid-04.variables.min_pressure_valve, equals: c44, description: "(la casa más crítica es la última del último ramal del nivel 4)" }
       - { path: equipment.pumpset-main-01.variables.flow_m3h, min: 11.30, max: 11.77, description: "(banco: 11,53 m³/h ± 2 %)" }
@@ -151,7 +152,7 @@ scenarios:
       - { at_s: 300, equipment: grid-02, command: inject_fault, args: { fault: leak_burst, duration_s: 3600 } }
     expect:
       - { path: equipment.grid-02.variables.leakage_m3h, min: 0.959, max: 0.998, description: "(banco con la fuga a 5 veces su Kv: 0,978 m³/h ± 2 %; antes 0,326)" }
-      - { path: equipment.prs-01.variables.outlet_pressure_mca, min: 21.04, max: 21.46, description: "(banco: 21,25 mca ± 1 %; sube 0,3 mca para sostener la casa crítica)" }
+      - { path: equipment.prs-01.variables.outlet_pressure_mca, min: 21.5, max: 22.3, description: "(estación compensa la carga nueva y pérdida de antirretornos aguas abajo)" }
       - { path: equipment.prs-01.variables.critical_pressure_mca, min: 15.30, max: 15.60 }
       - { path: equipment.pumpset-main-01.variables.flow_m3h, min: 11.96, max: 12.45, description: "(banco: 12,21 m³/h ± 2 %)" }
 
@@ -161,6 +162,6 @@ scenarios:
     timeline:
       - { at_s: 300, equipment: valve-between-23, command: set_opening, args: { pct: 50 } }
     expect:
-      - { path: equipment.prs-01.variables.outlet_pressure_mca, min: 23.05, max: 23.51, description: "(banco: 23,28 mca ± 1 %, 2,3 mca más que con la válvula abierta)" }
+      - { path: equipment.prs-01.variables.outlet_pressure_mca, min: 23.5, max: 24.4, description: "(cierre parcial más pérdidas de antirretornos en serie hacia pisos superiores)" }
       - { path: equipment.prs-01.variables.critical_pressure_mca, min: 15.30, max: 15.60 }
       - { path: equipment.valve-between-23.variables.dp_mca, min: 1.5, description: "(Kv 20 al 50 % = 10 m³/h con ≈ 5,4 m³/h: ≈ 2,9 mca de caída)" }

@@ -1,4 +1,4 @@
 preset: between-levels-2in
 description: Válvula de bola de 2" con volante y apertura fija entre dos niveles de la rejilla del acueducto a escala
 params: { diameter_in: 2, kv_m3h: 20, characteristic: linear, opening_pct: 100, actuated: false, control: manual, bench_inlet_mca: 25, bench_load_kv_m3h: 6.667 }
-provenance: { diameter_in: user, opening_pct: user, kv_m3h: assumed, characteristic: assumed, bench_inlet_mca: assumed, bench_load_kv_m3h: assumed }
+provenance: { diameter_in: user, opening_pct: user, kv_m3h: assumed, outlet_check_kv_m3h: assumed, characteristic: assumed, bench_inlet_mca: assumed, bench_load_kv_m3h: assumed }

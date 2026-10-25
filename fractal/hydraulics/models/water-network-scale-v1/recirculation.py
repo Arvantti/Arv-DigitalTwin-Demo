@@ -34,7 +34,8 @@ def pump_flow(model: dict[str, Any], levels: dict[str, float], speed: float = 1.
         def loss(q: float) -> float:
             valve_loss = MCA_PER_BAR * (q / 400) ** 2
             if model["equipment_models"][source]["params"]["outlet_check_valve"]:
-                valve_loss += MCA_PER_BAR * (q / 400) ** 2  # antirretorno aguas abajo de válvula de fondo
+                check_kv = model["equipment_models"][source]["params"]["outlet_check_kv_m3h"]
+                valve_loss += MCA_PER_BAR * (q / check_kv) ** 2  # antirretorno individual
             return valve_loss + pipe_loss(model, source, "pumpset-recirc-01", q)
 
         if loss(40) < head - suction:

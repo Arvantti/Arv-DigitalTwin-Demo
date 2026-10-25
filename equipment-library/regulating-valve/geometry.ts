@@ -91,6 +91,11 @@ export default function build(params: Params): EquipmentModel {
   const neck = P.cylinderX(r * 1.15, bodyHalf * 2, bodyMat, 24);
   neck.position.y = axisY;
   body.add(neck);
+  if (num(params, "outlet_check_kv_m3h", 0) > 0) {
+    const check = P.checkValve(r);
+    check.position.set(L * 0.36, axisY, 0); // +X = aguas arriba → aguas abajo, incluso en la columna vertical
+    body.add(check);
+  }
   const bonnetFl = P.cylinder(r * 1.45, r * 1.45, r * 0.3, bodyMat, 24);
   bonnetFl.position.y = axisY + r * 1.45;
   body.add(bonnetFl);

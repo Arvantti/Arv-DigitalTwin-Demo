@@ -48,6 +48,7 @@ params:
     default: 1000
     description: Densidad del contenido (aparente si es sólido a granel)
     affects: [behavior]
+  outlet_check_kv_m3h: { type: number, unit: m3/h, min: 1, max: 20000, default: 400, description: "Kv del antirretorno individual si está instalado; valor por defecto supuesto", affects: [behavior] }
   outlet_check_valve:
     type: boolean
     default: false

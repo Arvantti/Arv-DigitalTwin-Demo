@@ -13,8 +13,14 @@ SEAT_LEAK = 0.02
 
 def add_regulating_valve(net: HydraulicNetwork, link_id: str, inlet: str, outlet: str, p: dict[str, Any]) -> None:
     """Agrega la válvula a una red (la misma función la usará el motor de planta)."""
-    net.add_valve(link_id, inlet, outlet, kv_m3h=p["kv_m3h"], opening=p["opening_pct"] / 100,
+    valve_out = outlet
+    if p["outlet_check_kv_m3h"] > 0:
+        valve_out = link_id + "_regulated"
+        net.add_node(valve_out, net.nodes[outlet].elevation_m)
+    net.add_valve(link_id, inlet, valve_out, kv_m3h=p["kv_m3h"], opening=p["opening_pct"] / 100,
                   characteristic=p["characteristic"])
+    if valve_out != outlet:
+        net.add_check_valve(link_id + "_check", valve_out, outlet, kv_m3h=p["outlet_check_kv_m3h"])
 
 
 class RegulatingValve(EquipmentBehavior):

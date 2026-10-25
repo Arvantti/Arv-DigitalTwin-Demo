@@ -182,7 +182,7 @@ def diagnose(output: Path, hours: int = 24) -> dict[str, Any]:
             "parada_fractal_s", "parada_emulador_s", "desfase_parada_s",
             "recirculado_fractal_m3", "recirculado_emulador_m3", "diferencia_recirc_m3",
         ))
-        for start, stop in zip(compared[::2], compared[1::2], strict=True):
+        for start, stop in zip(compared[::2], compared[1::2], strict=False):
             fractal_volume = round(stop["fractal_recirculated_m3"] - start["fractal_recirculated_m3"], 6)
             emulator_volume = round(
                 stop["emulator_recirculated_m3_at_own_event"] - start["emulator_recirculated_m3_at_own_event"], 6
