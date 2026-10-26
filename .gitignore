@@ -9,6 +9,8 @@ dist/
 .pytest_cache/
 .ruff_cache/
 .twin-data/
+# Registro privado de autoría y conversaciones; conservar solo localmente.
+/docs/registro/
 .playwright-mcp/
 apps/gallery/public/api/
 city-models/centro-medellin-v1/osm-build/
