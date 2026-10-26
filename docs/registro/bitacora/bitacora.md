@@ -10,6 +10,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
+| 2026-10-26 | PR (este) · Dos formas de gemelo (D79) | Andy decidió que plásticos, salsas, cajas y confecciones son gemelos solo optimizadores: sin emulador ni Fractal de aplicación (huecos a propósito), la programación de producción del cliente en lugar del PLC, contingencias grabadas en la programación como homólogo de los cambios de válvulas y Fractal de optimización que reprograma. Se reescribieron §3–§7 del documento de esquema y se armó una matriz editable (Claude Doc). [[../../architecture/esquema-gemelo-todos-los-modelos]] · [[hilo-arquitectura-para-todos-los-gemelos]] | arquitectura/Fractal |
 | 2026-10-25 | PR #82 · Alineación absoluta del horizonte D78 | Fractal acorta la primera franja hasta el siguiente límite horario PLC y compara en t=3600…86400 con perfil idéntico. Replay D78: 24 fronteras horarias (t=30…86400; 86.370 s simulados) en 2032,79 s reales; suministro al final difiere +34,02598 pp (+1,322930 m³); 46 arranques ambos, 46/45 paradas; cero desacuerdos de presión ≥15 mca en 24 marcas, no cada segundo. Niveles siguen sin validar; optimización apagada. Evidencia alineada adjunta. | PLC/Fractal |
 | 2026-10-25 | PR (este) · Esquema del acueducto para los demás gemelos | Propuesta sin código: cómo el acueducto define emulador, PLC virtual, gateway OPC UA simulado, gemelo 3D y Fractal (simulador de escenarios hecho, optimizador pendiente), qué parte del código es genérica y cómo se traduce a plásticos, salsas, cajas, aeropuerto, ciudad y confecciones; piloto sugerido plásticos; decisiones abiertas para Andy. No toca el acueducto. [[../../architecture/esquema-gemelo-todos-los-modelos]] · [[hilo-arquitectura-para-todos-los-gemelos]] | arquitectura/Fractal |
 | 2026-10-25 | #80 · Programación de producción a 30 días | Salsas y plásticos tienen pedidos inventados con ventana móvil (semilla por fecha de entrega, 85 % de la capacidad, algunos tarde al azar), un secuenciador de referencia con turnos, paradas y herramental montado, la sección PROGRAMACIÓN del panel lateral con tabla de órdenes, rango hacia atrás a elección (por defecto el mes en curso) y pedido urgente con escenario que se acepta o descarta. API `/api/schedules`, export estático y despliegue semanal. D75. Pedido de Andy | datos reales |
@@ -117,6 +118,15 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 | 2026-10-16 | #1 | Layouts de las plantas | 1 |
 
 ## Entradas
+
+### 2026-10-26 · PR (este) · Dos formas de gemelo: con emulador y solo optimizador
+- **Fecha/hora (UTC):** 2026-10-25 04:17 a 2026-10-26 00:40
+- **Fase del plan:** [[plan-del-proyecto]] arquitectura PLC/Fractal y datos reales (fases E y F)
+- **Solicitado por:** Andy pidió una tabla con los gemelos en filas y sus piezas en columnas (04:17); aclaró que plásticos y salsas serán solo optimizadores (04:25) y que cajas y confecciones siguen la misma estructura (2026-10-26 00:24).
+- **Qué se hizo:** matriz editable en Claude Docs (https://claude.ai/artifact/NnYGE1QKXvQbjLxYnbq5SW) y reescritura de §3–§7 de `docs/architecture/esquema-gemelo-todos-los-modelos.md`: dos formas de gemelo, flujo de la forma solo optimizador, traducción por gemelo, el pedido urgente como primera contingencia, contrato y orden de PR.
+- **Verificación:** solo documentación.
+- **Decisiones:** [[decisiones]] D79.
+- **Conversación:** [[hilo-arquitectura-para-todos-los-gemelos]]
 
 ### 2026-10-25 · Alineación del horizonte PLC→Fractal y repetición D78
 - **Fecha/hora (UTC):** 2026-10-25 01:00–06:10.

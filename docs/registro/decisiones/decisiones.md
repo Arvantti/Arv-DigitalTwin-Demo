@@ -5,6 +5,10 @@ actualizado: 2026-10-24
 ---
 # Decisiones y reglas del autor
 
+## D79 · Dos formas de gemelo: con emulador y solo optimizador · 2026-10-26 00:24
+
+Andy (2026-10-25 04:25 y 2026-10-26 00:24): plásticos, salsas, cajas y confecciones se presentan **solo como optimizadores**. El emulador queda vacío a propósito (un emulador de proceso, por ejemplo con presiones y máquinas en salsas, sería muy largo y no es el nivel de detalle buscado hoy, aunque puede llegar en el futuro). La pantalla PLC la reemplaza la **programación de producción que ya tiene el cliente**, como un MES. El homólogo de los escenarios de cambios de válvulas del acueducto son **escenarios de contingencia grabados en esa programación**: cambios de pedidos, de venta, de insumos, mantenimientos, paros y condiciones inesperadas. El **Fractal de aplicación no va**, porque no hace falta simular lo que ya está programado; sí va el **Fractal de optimización**, que reorganiza la programación y se compara contra ella. Acueducto, aeropuerto y ciudad siguen con emulador. Detalle: [[../../architecture/esquema-gemelo-todos-los-modelos]].
+
 ## Alineación temporal PLC→Fractal · 2026-10-25
 
 Desde un snapshot PLC en t=30 s, el primer frame Fractal cubre solo los 3570 s hasta el siguiente límite horario absoluto t=3600; los siguientes frames duran 3600 s. Los puntos de comparación son t=3600…86400 con el mismo perfil en ambos motores. Se retiró del contraste la corrida anterior que evaluaba t=3630…86430 y, por tanto, comparaba entradas horarias distintas durante 30 s. El horizonte hasta t=86400 representa 86.370 s desde el snapshot (no 24 h relativas). La corrida alineada aún presenta +34,02598 pp de diferencia final en el tanque de suministro; presión solo comparada en 24 fronteras y niveles no validados. No se habilita optimización.
