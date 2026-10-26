@@ -1,0 +1,771 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PLC integrado · Maqueta de interfaz</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --bg: #07111b;
+        --bg-deep: #040b12;
+        --panel: #0d1a27;
+        --panel-raised: #122435;
+        --panel-soft: #10202f;
+        --line: #223c4f;
+        --line-strong: #31566d;
+        --ink: #edf6f8;
+        --muted: #8fa8b5;
+        --quiet: #607986;
+        --cyan: #57d8ed;
+        --cyan-soft: #143d4b;
+        --green: #73e0a0;
+        --amber: #f4bf61;
+        --red: #f37f83;
+        --purple: #b9a4ff;
+        --radius-card: 6px;
+        --radius-control: 4px;
+        --shadow: 0 18px 45px rgb(0 0 0 / 24%);
+      }
+
+      * { box-sizing: border-box; }
+      html { min-width: 320px; background: var(--bg-deep); }
+      body {
+        margin: 0;
+        min-width: 0;
+        min-height: 100vh;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 82% -8%, rgb(29 91 111 / 25%), transparent 35rem),
+          linear-gradient(135deg, var(--bg-deep), var(--bg) 48%, #091923);
+        font-family: Manrope, sans-serif;
+        line-height: 1.45;
+      }
+
+      button, input, select { font: inherit; }
+      button, select { color: var(--ink); }
+      button {
+        border: 1px solid var(--line-strong);
+        border-radius: var(--radius-control);
+        padding: 9px 12px;
+        background: #102231;
+        cursor: pointer;
+        transition: border-color .18s ease, background .18s ease, color .18s ease, transform .18s ease;
+      }
+      button:hover { border-color: var(--cyan); color: var(--cyan); }
+      button:active { transform: translateY(1px); }
+      button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+      button.primary { border-color: var(--cyan); background: var(--cyan); color: #06202a; font-weight: 800; }
+      button.primary:hover { background: #82e8f5; color: #06202a; }
+      button.danger { border-color: rgb(243 127 131 / 55%); color: var(--red); }
+      button.ghost { background: transparent; }
+      button.small { padding: 6px 9px; font-size: 12px; }
+      select, input[type="number"] {
+        min-height: 38px;
+        border: 1px solid var(--line-strong);
+        border-radius: var(--radius-control);
+        padding: 8px 10px;
+        background: #0b1824;
+      }
+      input[type="range"] { width: 100%; accent-color: var(--cyan); }
+
+      .app-shell { min-height: 100vh; }
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        min-height: 70px;
+        padding: 12px clamp(16px, 3vw, 42px);
+        border-bottom: 1px solid var(--line);
+        background: rgb(4 11 18 / 92%);
+        backdrop-filter: blur(18px);
+      }
+      .brand { display: flex; align-items: center; gap: 10px; flex: 0 0 auto; }
+      .brand-mark { color: var(--cyan); font-size: 21px; }
+      .brand-name { font-size: 13px; font-weight: 800; letter-spacing: .16em; }
+      .brand-name span { color: var(--muted); font-weight: 500; }
+      .plant-context { min-width: 0; flex: 1 1 auto; }
+      .plant-context strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; }
+      .plant-context small { color: var(--muted); font: 11px "DM Mono", monospace; }
+      .top-status { display: flex; align-items: center; gap: 12px; flex: 0 0 auto; color: var(--muted); font: 12px "DM Mono", monospace; }
+      .status-live { color: var(--green); }
+      .status-live::before { content: ""; display: inline-block; width: 7px; height: 7px; margin-right: 6px; border-radius: 50%; background: currentColor; box-shadow: 0 0 12px currentColor; }
+      .clock { color: var(--cyan); white-space: nowrap; }
+
+      .workspace {
+        display: grid;
+        grid-template-columns: minmax(210px, 248px) minmax(0, 1fr);
+        gap: 18px;
+        width: min(1480px, 100%);
+        margin: 0 auto;
+        padding: 18px clamp(16px, 3vw, 42px) 42px;
+      }
+      .rail { position: sticky; top: 88px; align-self: start; display: grid; gap: 14px; }
+      .surface {
+        min-width: 0;
+        border: 1px solid var(--line);
+        border-radius: var(--radius-card);
+        background: linear-gradient(145deg, rgb(18 36 53 / 90%), rgb(10 23 34 / 94%));
+        box-shadow: var(--shadow);
+      }
+      .rail-card { padding: 15px; }
+      .eyebrow { margin: 0 0 6px; color: var(--cyan); font: 500 10px "DM Mono", monospace; letter-spacing: .13em; text-transform: uppercase; }
+      h1, h2, h3, p { margin-top: 0; }
+      h1 { margin-bottom: 8px; font-size: clamp(22px, 3vw, 34px); line-height: 1.08; letter-spacing: -.035em; }
+      h2 { margin-bottom: 4px; font-size: 16px; letter-spacing: -.01em; }
+      h3 { margin-bottom: 6px; font-size: 13px; }
+      .muted { color: var(--muted); }
+      .quiet { color: var(--quiet); }
+      .mono { font-family: "DM Mono", monospace; }
+      .rail-title { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; margin-bottom: 12px; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; }
+      .asset-list { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; }
+      .asset-list li { display: flex; justify-content: space-between; gap: 8px; padding: 7px 0; border-bottom: 1px solid rgb(49 86 109 / 35%); color: var(--muted); font: 11px "DM Mono", monospace; }
+      .asset-list li strong { color: var(--ink); font-weight: 500; }
+      .asset-dot { color: var(--green); }
+      .alarm-empty { display: flex; align-items: center; gap: 8px; color: var(--green); font-size: 12px; }
+      .alarm-empty span { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+      .legend-stack { display: grid; gap: 8px; color: var(--muted); font-size: 11px; }
+      .legend-item { display: flex; align-items: center; gap: 8px; }
+      .legend-swatch { width: 22px; height: 3px; border-radius: 2px; background: var(--cyan); }
+      .legend-swatch.amber { background: var(--amber); }
+      .legend-swatch.purple { background: var(--purple); }
+
+      .main-column { min-width: 0; }
+      .warning {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 14px;
+        padding: 10px 13px;
+        border: 1px solid rgb(244 191 97 / 42%);
+        border-radius: var(--radius-card);
+        background: rgb(244 191 97 / 9%);
+        color: #f9d89c;
+        font-size: 12px;
+      }
+      .warning strong { font: 500 11px "DM Mono", monospace; letter-spacing: .06em; }
+      .workspace-tabs {
+        position: sticky;
+        top: 70px;
+        z-index: 10;
+        display: flex;
+        gap: 4px;
+        overflow-x: auto;
+        margin-bottom: 18px;
+        padding: 5px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius-card);
+        background: rgb(7 17 27 / 95%);
+        scrollbar-width: thin;
+      }
+      .workspace-tabs button { flex: 0 0 auto; border-color: transparent; padding: 9px 11px; background: transparent; color: var(--muted); font-size: 11px; font-weight: 800; letter-spacing: .04em; white-space: nowrap; }
+      .workspace-tabs button.active { border-color: var(--cyan); background: var(--cyan-soft); color: var(--cyan); }
+      .screen { display: none; min-width: 0; animation: appear .24s ease both; }
+      .screen.active { display: block; }
+      @keyframes appear { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+      .screen-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; margin: 6px 0 18px; }
+      .screen-head > div:first-child { min-width: 0; }
+      .screen-head p { max-width: 720px; margin-bottom: 0; color: var(--muted); font-size: 13px; }
+      .actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+      .grid { display: grid; gap: 14px; min-width: 0; }
+      .grid.kpis { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .card { min-width: 0; padding: 16px; }
+      .card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 13px; }
+      .card-header h2, .card-header h3 { margin-bottom: 0; }
+      .card-header small { color: var(--muted); font: 11px "DM Mono", monospace; }
+      .kpi { position: relative; overflow: hidden; }
+      .kpi::after { content: ""; position: absolute; right: -18px; bottom: -30px; width: 90px; height: 90px; border: 1px solid rgb(87 216 237 / 20%); border-radius: 50%; }
+      .kpi-label { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
+      .kpi-value { display: block; margin: 6px 0 4px; color: var(--ink); font-size: 26px; letter-spacing: -.05em; }
+      .kpi-value em { color: var(--cyan); font: 500 12px "DM Mono", monospace; font-style: normal; letter-spacing: 0; }
+      .kpi-note { color: var(--quiet); font: 11px "DM Mono", monospace; }
+      .metric-row { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid rgb(49 86 109 / 42%); color: var(--muted); font-size: 12px; }
+      .metric-row:last-child { border-bottom: 0; }
+      .metric-row strong { color: var(--ink); font: 500 12px "DM Mono", monospace; text-align: right; }
+      .state-chip { display: inline-flex; align-items: center; gap: 6px; border: 1px solid rgb(115 224 160 / 35%); border-radius: var(--radius-control); padding: 5px 8px; color: var(--green); font: 11px "DM Mono", monospace; }
+      .state-chip.amber { border-color: rgb(244 191 97 / 42%); color: var(--amber); }
+      .mode-badge { display: inline-flex; align-items: center; gap: 7px; border: 1px solid; border-radius: var(--radius-control); padding: 7px 9px; font: 500 10px "DM Mono", monospace; letter-spacing: .04em; }
+      .mode-badge.live { border-color: rgb(115 224 160 / 45%); background: rgb(115 224 160 / 8%); color: var(--green); }
+      .mode-badge.draft { border-color: rgb(185 164 255 / 48%); background: rgb(185 164 255 / 8%); color: var(--purple); }
+      .mode-badge::before { content: "●"; font-size: 8px; }
+      .state-chip::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+      .hero { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 22px; margin-bottom: 14px; padding: 22px; background: linear-gradient(120deg, rgb(18 62 78 / 56%), rgb(13 26 39 / 94%) 58%); }
+      .hero h1 { max-width: 650px; }
+      .hero p { max-width: 680px; margin-bottom: 0; color: var(--muted); font-size: 13px; }
+      .signal-card { min-height: 182px; }
+      .chart-wrap { min-width: 0; overflow: hidden; }
+      .chart-wrap { position: relative; cursor: zoom-in; }
+      .chart-wrap::after { content: "⤢ abrir y medir"; position: absolute; right: 8px; bottom: 7px; padding: 3px 6px; border: 1px solid var(--line); border-radius: var(--radius-control); background: rgb(4 11 18 / 78%); color: var(--muted); font: 10px "DM Mono", monospace; opacity: 0; pointer-events: none; transition: opacity .18s ease; }
+      .chart-wrap:hover::after, .chart-wrap:focus-within::after { opacity: 1; }
+      .chart-wrap svg { display: block; width: 100%; height: auto; min-width: 0; }
+      .chart-grid-line { stroke: #244054; stroke-width: 1; stroke-dasharray: 4 6; }
+      .chart-axis { fill: var(--quiet); font: 10px "DM Mono", monospace; }
+      .chart-line { fill: none; stroke: var(--cyan); stroke-width: 3; stroke-linejoin: round; stroke-linecap: round; }
+      .chart-line.amber { stroke: var(--amber); }
+      .chart-line.purple { stroke: var(--purple); }
+      .chart-area { fill: url(#area); opacity: .2; }
+      .chart-key { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 9px; color: var(--muted); font: 11px "DM Mono", monospace; }
+      .chart-key span { display: inline-flex; align-items: center; gap: 6px; }
+      .chart-key i { display: inline-block; width: 16px; height: 3px; border-radius: 2px; background: var(--cyan); }
+      .chart-key i.amber { background: var(--amber); }
+      .chart-key i.purple { background: var(--purple); }
+      .flow { display: flex; align-items: center; gap: 8px; overflow-x: auto; padding: 14px; color: var(--muted); font: 11px "DM Mono", monospace; white-space: nowrap; }
+      .flow b { color: var(--cyan); font-size: 17px; }
+      .tank { display: grid; grid-template-columns: 50px 1fr; align-items: center; gap: 12px; }
+      .tank-gauge { position: relative; width: 42px; height: 74px; overflow: hidden; border: 1px solid var(--line-strong); border-radius: 5px; background: #09141e; }
+      .tank-gauge::after { content: ""; position: absolute; inset: 0; background: linear-gradient(transparent 49%, rgb(87 216 237 / 15%) 50%, transparent 51%); background-size: 100% 14px; }
+      .tank-fill { position: absolute; right: 0; bottom: 0; left: 0; height: 68%; background: linear-gradient(#65e5ef, #2587a0); }
+      .tank-copy strong { display: block; margin-bottom: 3px; font-size: 13px; }
+      .tank-copy span { color: var(--muted); font: 11px "DM Mono", monospace; }
+      .control-stack { display: grid; gap: 12px; }
+      .field { display: grid; gap: 6px; min-width: 0; color: var(--muted); font-size: 12px; }
+      .field output { color: var(--cyan); font: 500 12px "DM Mono", monospace; }
+      .control-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+      .level { padding: 14px; }
+      .level-title { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+      .level-title strong { font-size: 14px; }
+      .level-title span { color: var(--cyan); font: 11px "DM Mono", monospace; }
+      .house-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; }
+      .house { min-width: 0; padding: 9px; border: 1px solid var(--line); border-radius: var(--radius-control); background: rgb(7 17 27 / 58%); }
+      .house.critical { border-color: rgb(244 191 97 / 65%); }
+      .house-id { display: block; overflow: hidden; color: var(--muted); font: 10px "DM Mono", monospace; text-overflow: ellipsis; white-space: nowrap; }
+      .house-value { display: block; margin: 5px 0; font: 500 13px "DM Mono", monospace; }
+      .house small { color: var(--quiet); font-size: 10px; }
+      .profile-grid { display: grid; grid-template-columns: 0.8fr 1.2fr; gap: 14px; }
+      .profile-grid.cascade-layout { grid-template-columns: 1fr; }
+      .profile-grid.cascade-layout > article:nth-child(2) { order: -1; }
+      .cascade-help { margin: -3px 0 14px; color: var(--muted); font-size: 11px; }
+      .cascade-tree { display: grid; gap: 0; }
+      .cascade-node { position: relative; min-width: 0; }
+      .cascade-node.total { padding-bottom: 13px; }
+      .cascade-node.total::after { content: ""; position: absolute; top: 58px; bottom: 0; left: 12px; border-left: 1px solid var(--line-strong); }
+      .cascade-levels { display: grid; gap: 8px; padding-left: 25px; }
+      .cascade-level { padding: 11px 0 0 16px; border-left: 1px solid var(--line-strong); }
+      .cascade-level::before { content: ""; position: absolute; left: 0; width: 16px; margin-top: 19px; border-top: 1px solid var(--line-strong); }
+      .cascade-level:last-child { border-left-color: transparent; }
+      .cascade-level-head, .cascade-total-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; min-width: 0; }
+      .cascade-label { display: flex; align-items: center; gap: 8px; min-width: 0; }
+      .cascade-branch { display: inline-grid; place-items: center; flex: 0 0 auto; width: 22px; height: 22px; border: 1px solid var(--cyan); border-radius: 50%; color: var(--cyan); font: 500 10px "DM Mono", monospace; }
+      .cascade-total .cascade-branch { border-color: var(--purple); color: var(--purple); }
+      .cascade-label strong { display: block; font-size: 12px; }
+      .cascade-label small { display: block; color: var(--quiet); font: 10px "DM Mono", monospace; }
+      .cascade-value { flex: 0 0 auto; color: var(--cyan); font: 500 12px "DM Mono", monospace; }
+      .cascade-node input[type="range"] { display: block; margin: 8px 0 0; }
+      .cascade-leaves { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; margin: 8px 0 0 30px; padding: 7px; border-left: 1px dashed var(--line-strong); background: rgb(4 11 18 / 28%); }
+      .cascade-leaf { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 3px 8px; min-width: 0; padding: 6px 7px; border: 1px solid rgb(49 86 109 / 62%); border-radius: var(--radius-control); background: rgb(18 36 53 / 55%); color: var(--muted); font: 10px "DM Mono", monospace; }
+      .cascade-leaf span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .cascade-leaf output { flex: 0 0 auto; color: var(--ink); }
+      .cascade-leaf input[type="range"] { grid-column: 1 / -1; width: 100%; margin: 2px 0 0; }
+      .cascade-leaf.loss { border-color: rgb(244 191 97 / 38%); color: #d7b777; }
+      .cascade-leaf.loss output { color: var(--amber); }
+      .cascade-sync { display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; color: var(--quiet); font: 10px "DM Mono", monospace; }
+      .cascade-sync::before { content: "↳"; color: var(--cyan); font-size: 16px; }
+      /* Control de sesión compacto; no cambia la cascada del editor de perfiles. */
+      .live-demand-card { padding: 12px; }
+      .live-demand-card .card-header { margin-bottom: 6px; align-items: center; flex-wrap: wrap; }
+      .live-demand-card h2 { font-size: 15px; }
+      .live-demand-card .cascade-help { margin: 0 0 8px; }
+      .live-demand-card .cascade-node.total { padding-bottom: 6px; }
+      .live-demand-card .cascade-node.total::after,
+      .live-demand-card .cascade-level::before { display: none; }
+      .live-demand-card .cascade-levels { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; padding-left: 0; }
+      .live-demand-card .cascade-level { padding: 8px; border: 1px solid var(--line); border-radius: var(--radius-control); }
+      .live-demand-card .cascade-level-head { gap: 5px; }
+      .live-demand-card .cascade-label small { display: none; }
+      .live-demand-card .cascade-leaves { margin: 5px 0 0; padding: 0; gap: 3px; border: 0; background: none; }
+      .live-demand-card .cascade-leaf { padding: 4px; gap: 2px; }
+      .live-demand-card .cascade-sync { margin-top: 6px; }
+      @media (max-width: 1200px) { .live-demand-card .cascade-levels { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+      @media (max-width: 480px) { .live-demand-card .cascade-levels { grid-template-columns: 1fr; } }
+      [hidden] { display: none !important; }
+      .group-nav { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0 0 10px; }
+      .group-nav button { padding: 6px 10px; font-size: 12px; }
+      .group-nav button[aria-pressed="true"] { border-color: var(--cyan); background: var(--cyan-soft); color: var(--cyan); }
+      .level-picker { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; color: var(--muted); font-size: 12px; }
+      .cascade-tree .cascade-levels { display: block; padding-left: 0; }
+      .cascade-tree .cascade-level { padding: 8px; border: 1px solid var(--line); }
+      .cascade-tree .cascade-level::before, .cascade-tree .total::after { display: none; }
+      .cascade-tree .cascade-leaves { grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 6px 0 0; padding: 0; border: 0; }
+      .live-demand-card .cascade-levels { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+      .live-demand-card .cascade-level { padding: 6px 8px; }
+      .live-demand-card .cascade-node input[type="range"] { margin-top: 3px; }
+      .live-demand-card .cascade-leaves[popover]:not(:popover-open) { display: none; }
+      .live-demand-card .cascade-leaves[popover]:popover-open { position: fixed; inset: 0; margin: auto; width: min(560px, 90vw); height: fit-content; padding: 16px; border: 1px solid var(--cyan); background: var(--bg); color: var(--ink); }
+      .live-demand-card .cascade-leaves[popover]::backdrop { background: rgb(0 0 0 / 55%); }
+      .live-demand-card .valve-detail { padding: 3px 6px; font-size: 10px; }
+      .group-page { margin: 0 !important; }
+      @media (min-width: 1000px) and (min-height: 650px) {
+        .workspace { padding-top: 10px; padding-bottom: 10px; gap: 12px; }
+        .rail { gap: 8px; }
+        .rail-card { padding: 10px; }
+        .asset-list li { padding: 4px 0; }
+        .warning, .workspace-tabs { margin-bottom: 8px; }
+        .screen-head { margin: 0 0 10px; }
+        .screen-head h1, .hero h1 { font-size: 23px; }
+        .screen-head p, .hero p { font-size: 11px; }
+        .hero { padding: 12px; gap: 12px; margin-bottom: 10px; }
+        .card { padding: 12px; }
+        .card-header { margin-bottom: 8px; }
+        .chart-wrap svg { max-height: 250px; }
+        .cascade-help { margin-bottom: 8px; }
+        .cascade-node.total { padding-bottom: 6px; }
+        .cascade-sync { margin-top: 5px; }
+        .footer-note { margin: 8px 0 0; }
+      }
+      @media (max-width: 600px) { .cascade-tree .cascade-leaves { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+      .profile-hours { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 5px; }
+      .hour { padding: 8px 4px; border: 1px solid var(--line); border-radius: var(--radius-control); background: transparent; color: var(--muted); font: 11px "DM Mono", monospace; }
+      .hour.active { border-color: var(--cyan); background: var(--cyan-soft); color: var(--cyan); }
+      .history-row { display: grid; grid-template-columns: 1.2fr .7fr .7fr auto; align-items: center; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--line); }
+      .history-row:last-child { border-bottom: 0; }
+      .history-row strong { font-size: 13px; }
+      .history-row span { color: var(--muted); font: 11px "DM Mono", monospace; }
+      .subview { margin-top: 14px; border-left: 3px solid var(--purple); }
+      .subview .eyebrow { color: var(--purple); }
+      .compare-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+      .compare-table th, .compare-table td { padding: 10px 8px; border-bottom: 1px solid var(--line); text-align: left; }
+      .compare-table th { color: var(--muted); font: 10px "DM Mono", monospace; letter-spacing: .07em; text-transform: uppercase; }
+      .compare-table td:not(:first-child) { color: var(--cyan); font-family: "DM Mono", monospace; }
+      .footer-note { margin-top: 18px; color: var(--quiet); font: 11px "DM Mono", monospace; text-align: center; }
+      .chart-modal { width: min(1100px, calc(100vw - 28px)); max-width: none; height: min(800px, calc(100vh - 28px)); max-height: none; overflow: hidden; padding: 0; border: 1px solid var(--line-strong); border-radius: var(--radius-card); background: #081521; color: var(--ink); box-shadow: 0 24px 80px rgb(0 0 0 / 55%); }
+      .chart-modal::backdrop { background: rgb(1 7 12 / 82%); backdrop-filter: blur(4px); }
+      .chart-modal-head { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 14px 16px; border-bottom: 1px solid var(--line); }
+      .chart-modal-head h2 { margin: 0; }
+      .chart-modal-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; padding: 10px 16px; border-bottom: 1px solid var(--line); background: #0b1b29; }
+      .chart-modal-toolbar button { padding: 6px 9px; font-size: 12px; }
+      .chart-modal-toolbar button.active { border-color: var(--cyan); background: var(--cyan-soft); color: var(--cyan); }
+      .chart-modal-help { margin-left: auto; color: var(--muted); font: 11px "DM Mono", monospace; }
+      .chart-modal-viewport { position: relative; height: calc(100% - 105px); overflow: auto; padding: 20px; background: radial-gradient(circle at 50% 0, rgb(26 72 91 / 22%), transparent 60%); }
+      .chart-modal-stage { min-width: 700px; transform-origin: top left; transition: transform .18s ease; }
+      .chart-modal-stage svg { display: block; width: 100%; height: auto; min-height: 330px; }
+      .measure-guide { position: absolute; z-index: 2; display: none; width: 0; height: 0; pointer-events: none; }
+      .measure-guide.visible { display: block; }
+      .measure-guide::before { content: ""; position: absolute; left: 0; top: -1000px; width: 1px; height: 2000px; background: var(--cyan); opacity: .75; }
+      .measure-guide::after { content: ""; position: absolute; left: -1000px; top: 0; width: 2000px; height: 1px; background: var(--cyan); opacity: .75; }
+      .measure-tooltip { position: absolute; z-index: 3; display: none; min-width: 180px; padding: 8px 10px; border: 1px solid var(--cyan); border-radius: var(--radius-control); background: #07131e; color: var(--ink); box-shadow: var(--shadow); font: 11px "DM Mono", monospace; pointer-events: none; }
+      .measure-tooltip.visible { display: block; }
+      .measure-tooltip strong { display: block; margin-bottom: 3px; color: var(--cyan); font-weight: 500; }
+
+      @media (max-width: 1100px) {
+        .workspace { grid-template-columns: minmax(170px, 210px) minmax(0, 1fr); gap: 12px; }
+        .grid.kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .house-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .profile-grid, .profile-grid.cascade-layout { grid-template-columns: 1fr; }
+      }
+      @media (max-width: 760px) {
+        .topbar { flex-wrap: wrap; gap: 8px 12px; min-height: 96px; }
+        .plant-context { order: 3; flex-basis: 100%; }
+        .top-status { margin-left: auto; }
+        .workspace { display: block; padding: 12px 12px 30px; }
+        .rail { position: static; grid-template-columns: repeat(2, minmax(0, 1fr)); margin-bottom: 12px; }
+        .rail-card { padding: 12px; }
+        .workspace-tabs { top: 96px; margin-bottom: 14px; }
+        .warning { align-items: flex-start; flex-direction: column; gap: 4px; }
+        .hero { grid-template-columns: 1fr; padding: 17px; }
+        .actions { justify-content: flex-start; }
+        .screen-head { display: block; }
+        .screen-head .actions { margin-top: 14px; }
+        .grid.two, .grid.three, .control-grid { grid-template-columns: 1fr; }
+        .profile-hours { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+        .cascade-leaves { grid-template-columns: 1fr; }
+        .history-row { grid-template-columns: 1fr 1fr; }
+        .history-row .actions { grid-column: 1 / -1; justify-content: flex-start; }
+      }
+      @media (max-width: 480px) {
+        .topbar { padding: 10px 12px; }
+        .brand-name { font-size: 11px; }
+        .top-status { width: 100%; justify-content: space-between; margin-left: 0; }
+        .workspace { padding-inline: 8px; }
+        .rail { grid-template-columns: 1fr; }
+        .workspace-tabs { top: 120px; }
+        .grid.kpis { grid-template-columns: 1fr 1fr; gap: 8px; }
+        .card { padding: 13px; }
+        .kpi-value { font-size: 21px; }
+        .house-grid { grid-template-columns: 1fr 1fr; gap: 6px; }
+        .profile-hours { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+        .chart-key { gap: 8px; font-size: 10px; }
+        .chart-modal { width: calc(100vw - 16px); height: calc(100vh - 16px); }
+        .chart-modal-stage { min-width: 620px; }
+        .chart-modal-help { width: 100%; margin-left: 0; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand"><span class="brand-mark">◆</span><div class="brand-name">TWIN<span>/PLANT</span></div></div>
+        <div class="plant-context"><strong>Acueducto a escala · Sala de control</strong><small>PLC integrado en el modelo 3D · maqueta visual</small></div>
+        <div class="top-status"><span class="status-live">PLC CONECTADO</span><span class="clock">SIM 08:42:16</span></div>
+      </header>
+
+      <div class="workspace">
+        <aside class="rail" aria-label="Resumen operacional">
+          <section class="surface rail-card">
+            <div class="rail-title"><span>Activos</span><span class="quiet mono">13</span></div>
+            <ul class="asset-list">
+              <li><strong>Bombas principales</strong><span class="asset-dot">● AUTO</span></li>
+              <li><strong>Recirculación</strong><span class="asset-dot">● AUTO</span></li>
+              <li><strong>Tanque de bombeo</strong><span>68.4 %</span></li>
+              <li><strong>PRS-01 reguladora</strong><span class="asset-dot">● OK</span></li>
+              <li><strong>Red residencial</strong><span>64 casas</span></li>
+            </ul>
+          </section>
+          <section class="surface rail-card">
+            <div class="rail-title"><span>Alarmas</span><span class="quiet mono">0 activas</span></div>
+            <div class="alarm-empty"><span></span> Sin alarmas activas</div>
+            <p class="quiet" style="margin:10px 0 0;font-size:11px">Los eventos recientes aparecen en el histórico de sesión.</p>
+          </section>
+          <section class="surface rail-card">
+            <div class="rail-title"><span>Lectura</span></div>
+            <div class="legend-stack">
+              <div class="legend-item"><i class="legend-swatch"></i> Medición PLC</div>
+              <div class="legend-item"><i class="legend-swatch amber"></i> Límite de servicio</div>
+              <div class="legend-item"><i class="legend-swatch purple"></i> Futuro no aplicado</div>
+            </div>
+          </section>
+        </aside>
+
+        <main class="main-column">
+          <div class="warning"><strong>SIMULACIÓN · PLC VIRTUAL · SIN CONEXIÓN A INFRAESTRUCTURA FÍSICA</strong><span>Estado actual · solo modelo</span></div>
+
+          <nav class="workspace-tabs" aria-label="Pantallas PLC">
+            <button class="active" data-screen="master">MASTER</button>
+            <button data-screen="day">DÍA 24 H</button>
+            <button data-screen="pumping">BOMBEO Y TANQUES</button>
+            <button data-screen="grid">REJILLA Y CONSUMO</button>
+            <button data-screen="profiles">PERFILES</button>
+            <button data-screen="trends">TENDENCIAS EN VIVO</button>
+            <button data-screen="history">HISTORIAL</button>
+          </nav>
+
+          <section id="master" class="screen active" aria-labelledby="master-title">
+            <div class="surface hero">
+              <div><p class="eyebrow">Emulador de realidad ficticia</p><h1 id="master-title">Control hidráulico, visible de un vistazo.</h1><p>La pantalla principal concentra el estado operativo, las señales críticas y las acciones de mayor prioridad sin esconder el contexto de la red.</p></div>
+              <div class="actions"><button class="primary">▣ PLC EN OPERACIÓN</button><button class="ghost">❚❚ PAUSAR</button></div>
+            </div>
+            <div class="grid kpis">
+              <article class="surface card kpi"><span class="kpi-label">Presión crítica</span><strong class="kpi-value">18.42 <em>mca</em></strong><span class="kpi-note">mínimo 15.00 mca · margen +3.42</span></article>
+              <article class="surface card kpi"><span class="kpi-label">Caudal principal</span><strong class="kpi-value">142.8 <em>m³/h</em></strong><span class="kpi-note">bombeo estable · tendencia +2.4%</span></article>
+              <article class="surface card kpi"><span class="kpi-label">Consumo de red</span><strong class="kpi-value">118.6 <em>m³/h</em></strong><span class="kpi-note">64 viviendas · demanda actual</span></article>
+              <article class="surface card kpi"><span class="kpi-label">Tanque de bombeo</span><strong class="kpi-value">68.4 <em>%</em></strong><span class="kpi-note">recirculación automática activa</span></article>
+            </div>
+            <div class="grid two" style="margin-top:14px">
+              <article class="surface card signal-card"><div class="card-header"><div><p class="eyebrow">Estado operativo</p><h2>Rama principal</h2></div><span class="state-chip">AUTO · ESTABLE</span></div><div class="metric-row"><span>Bombas activas</span><strong>2 / 3</strong></div><div class="metric-row"><span>Salida PRS-01</span><strong>20.94 mca</strong></div><div class="metric-row"><span>Última muestra</span><strong>hace 2 s</strong></div></article>
+              <article class="surface card signal-card"><div class="card-header"><div><p class="eyebrow">Análisis de escenarios</p><h2>Futuro simulado</h2></div><span class="state-chip amber">NO APLICADO</span></div><p class="muted" style="font-size:12px">La comparación queda dentro de Master como contexto de decisión, sin convertirse en una pestaña adicional.</p><div class="actions" style="justify-content:flex-start"><button class="small">VER PROYECCIÓN</button><button class="small ghost">COMPARAR</button></div></article>
+            </div>
+          </section>
+
+          <section id="day" class="screen" aria-labelledby="day-title">
+            <div class="screen-head"><div><p class="eyebrow">Historiador de la simulación</p><h1 id="day-title">Curva del día · 24 horas</h1><p>Una lectura continua para entender cómo cambian presión, caudal y demanda durante la jornada.</p></div><div class="actions"><button class="small">ÚLTIMAS 24 H</button><button class="small ghost">EXPORTAR</button></div></div>
+            <div class="grid kpis"><article class="surface card kpi"><span class="kpi-label">Presión mínima</span><strong class="kpi-value">16.8 <em>mca</em></strong><span class="kpi-note">06:45 · nivel 4</span></article><article class="surface card kpi"><span class="kpi-label">Pico de demanda</span><strong class="kpi-value">154.2 <em>m³/h</em></strong><span class="kpi-note">19:00 · hora punta</span></article><article class="surface card kpi"><span class="kpi-label">Fugas acumuladas</span><strong class="kpi-value">3.8 <em>m³</em></strong><span class="kpi-note">sin alarma de rotura</span></article><article class="surface card kpi"><span class="kpi-label">Muestras</span><strong class="kpi-value">1,440</strong><span class="kpi-note">intervalo de 60 segundos</span></article></div>
+            <div class="grid two" style="margin-top:14px"><article class="surface card"><div class="card-header"><div><p class="eyebrow">Señales de red</p><h2>Caudal y consumo</h2></div><small>m³/h</small></div><div class="chart-wrap"><svg viewBox="0 0 720 230" role="img" aria-label="Curva diaria de caudal y consumo"><defs><linearGradient id="area" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#57d8ed"/><stop offset="1" stop-color="#57d8ed" stop-opacity="0"/></linearGradient></defs><path class="chart-grid-line" d="M45 35H690M45 95H690M45 155H690M45 205H690"/><path class="chart-area" d="M45 178 C120 168 135 145 190 152 S285 75 345 110 S430 178 490 126 S590 54 690 95 V205H45Z"/><path class="chart-line" d="M45 178 C120 168 135 145 190 152 S285 75 345 110 S430 178 490 126 S590 54 690 95"/><path class="chart-line amber" d="M45 188 C130 184 155 172 205 176 S290 108 350 128 S445 180 500 142 S610 82 690 119"/><g class="chart-axis"><text x="45" y="222">00:00</text><text x="195" y="222">06:00</text><text x="345" y="222">12:00</text><text x="495" y="222">18:00</text><text x="650" y="222">24:00</text></g></svg></div><div class="chart-key"><span><i></i> Caudal principal</span><span><i class="amber"></i> Consumo</span></div></article><article class="surface card"><div class="card-header"><div><p class="eyebrow">Servicio</p><h2>Presión por tramo</h2></div><small>mca</small></div><div class="chart-wrap"><svg viewBox="0 0 720 230" role="img" aria-label="Presión de red por tramo"><path class="chart-grid-line" d="M45 35H690M45 95H690M45 155H690M45 205H690"/><path class="chart-line purple" d="M45 86 C130 91 180 100 240 108 S350 124 410 132 S520 146 690 171"/><path class="chart-line amber" d="M45 72 C130 77 180 88 240 95 S350 113 410 118 S520 131 690 149"/><g class="chart-axis"><text x="45" y="222">PRS</text><text x="195" y="222">N1</text><text x="345" y="222">N2</text><text x="495" y="222">N3</text><text x="650" y="222">N4</text></g></svg></div><div class="chart-key"><span><i class="purple"></i> Mínimo registrado</span><span><i class="amber"></i> Límite de servicio</span></div></article></div>
+          </section>
+
+          <section id="pumping" class="screen" aria-labelledby="pumping-title">
+            <div class="screen-head"><div><p class="eyebrow">Operación hidráulica</p><h1 id="pumping-title">Bombeo, tanques y regulación</h1><p>El flujo se lee de izquierda a derecha; cada bloque mantiene sus lecturas y mandos en la misma tarjeta.</p></div><span class="state-chip">RAMA · AUTO</span></div>
+            <div class="surface flow"><span>RETORNO</span><b>→</b><span>RECIRCULACIÓN</span><b>→</b><span>TANQUE DE BOMBEO</span><b>→</b><span>BOMBAS PRINCIPALES</span><b>→</b><span>PRS-01</span></div>
+            <div class="grid three" style="margin-top:14px"><article class="surface card tank"><div class="tank-gauge"><i class="tank-fill"></i></div><div class="tank-copy"><strong>Tanque de retorno 1</strong><span>68.4 % · entrada 42.1 m³/h</span></div></article><article class="surface card tank"><div class="tank-gauge"><i class="tank-fill" style="height:48%"></i></div><div class="tank-copy"><strong>Tanque de retorno 2</strong><span>48.1 % · salida 21.8 m³/h</span></div></article><article class="surface card tank"><div class="tank-gauge"><i class="tank-fill" style="height:76%"></i></div><div class="tank-copy"><strong>Tanque de bombeo</strong><span>76.2 % · margen normal</span></div></article></div>
+            <div class="grid two" style="margin-top:14px"><article class="surface card"><div class="card-header"><div><p class="eyebrow">Grupo principal</p><h2>Bombas principales</h2></div><span class="state-chip">2 / 3 ACTIVAS</span></div><div class="metric-row"><span>Caudal</span><strong>142.8 m³/h</strong></div><div class="metric-row"><span>Descarga</span><strong>24.10 mca</strong></div><div class="metric-row"><span>VFD</span><strong>78 %</strong></div><div class="actions" style="justify-content:flex-start;margin-top:13px"><button class="small primary">REARMAR AUTO</button><button class="small danger">PARO MANUAL</button></div></article><article class="surface card"><div class="card-header"><div><p class="eyebrow">Estación reguladora</p><h2>PRS-01</h2></div><span class="state-chip">AUTO</span></div><div class="metric-row"><span>Presión entrada</span><strong>24.10 mca</strong></div><div class="metric-row"><span>Presión salida</span><strong>20.94 mca</strong></div><div class="metric-row"><span>Casa crítica</span><strong>18.42 mca</strong></div><div class="control-grid" style="margin-top:13px"><label class="field">Consigna crítica <output>15.45 mca</output><input type="range" value="42" /></label><label class="field">Salida manual <output>20.94 mca</output><input type="range" value="59" /></label></div></article></div>
+            <article class="surface card" style="margin-top:14px"><div class="card-header"><div><p class="eyebrow">Monitoreo hidráulico en vivo</p><h2>Presión y caudal a lo largo de la red</h2></div><button class="small ghost">⤢ AMPLIAR</button></div><div class="chart-wrap"><svg viewBox="0 0 900 210" role="img" aria-label="Perfil hidráulico de presión y caudal"><path class="chart-grid-line" d="M30 30H870M30 90H870M30 150H870"/><path class="chart-line" d="M30 74 C130 65 170 80 260 92 S390 108 480 116 S660 136 870 160"/><path class="chart-line amber" d="M30 166 C170 158 240 150 340 147 S560 130 870 110"/><g class="chart-axis"><text x="30" y="198">Entrada</text><text x="420" y="198">N2</text><text x="820" y="198">N4</text></g></svg></div><div class="chart-key"><span><i></i> Presión</span><span><i class="amber"></i> Caudal normalizado</span></div></article>
+          </section>
+
+          <section id="grid" class="screen" aria-labelledby="grid-title">
+            <div class="screen-head"><div><p class="eyebrow">Demanda residencial</p><h1 id="grid-title">Rejilla y consumo</h1><p>Primero se muestra el estado de la red; el detalle de cada vivienda queda organizado por nivel para no saturar la pantalla.</p></div><div class="actions"><button class="small primary">APLICAR DEMANDA</button><button class="small">⚄ ALEATORIO</button></div></div>
+            <div class="surface card live-demand-card"><div class="card-header"><div><p class="eyebrow">Control global · sesión actual</p><h2>Demanda de consumidores</h2></div><span class="mode-badge live">EN VIVO · CAMBIOS APLICADOS AHORA</span></div><p class="cascade-help">Misma cascada que en Perfiles, pero aplicada directamente a la sesión PLC actual. Total → nivel → casa o fuga.</p><div class="cascade-tree" data-cascade>
+              <div class="cascade-node total"><div class="cascade-total-head"><div class="cascade-label"><span class="cascade-branch">Σ</span><div><strong>Todas las válvulas</strong><small>4 niveles · 16 casas · 8 pérdidas</small></div></div><output class="cascade-value" data-cascade-total-output>100 % · todos</output></div><input type="range" min="0" max="100" value="100" data-cascade-total aria-label="Apertura en vivo de todas las válvulas" /></div>
+              <div class="cascade-levels">
+                <div class="cascade-node cascade-level" data-cascade-level="1"><div class="cascade-level-head"><div class="cascade-label"><span class="cascade-branch">N1</span><div><strong>Nivel 1</strong><small>casas y pérdidas · EN VIVO</small></div></div><output class="cascade-value" data-cascade-level-output>100 %</output></div><input type="range" min="0" max="100" value="100" data-cascade-level-slider aria-label="Apertura en vivo del nivel 1" /><div class="cascade-leaves"><div class="cascade-leaf"><span>Casa C11</span><output data-cascade-leaf>100 %</output></div><div class="cascade-leaf"><span>Casa C12</span><output data-cascade-leaf>100 %</output></div><div class="cascade-leaf"><span>Casa C13</span><output data-cascade-leaf>100 %</output></div><div class="cascade-leaf"><span>Casa C14</span><output data-cascade-leaf>100 %</output></div><div class="cascade-leaf loss"><span>Pérdida L1</span><output data-cascade-leaf>100 %</output></div><div class="cascade-leaf loss"><span>Pérdida L2</span><output data-cascade-leaf>100 %</output></div></div></div>
+                <div class="cascade-node cascade-level" data-cascade-level="2"><div class="cascade-level-head"><div class="cascade-label"><span class="cascade-branch">N2</span><div><strong>Nivel 2</strong><small>casas y pérdidas · EN VIVO</small></div></div><output class="cascade-value" data-cascade-level-output>100 %</output></div><input type="range" min="0" max="100" value="100" data-cascade-level-slider aria-label="Apertura en vivo del nivel 2" /><div class="cascade-leaves"><div class="cascade-leaf"><span>Casa C21</span><output data-cascade-leaf>100 %</output></div><div class="cascade-leaf"><span>Casa C22</span><output data-cascade-leaf>100 %</output></div><div class="cascade-leaf"><span>Casa C23</span><output data-cascade-leaf>100 %</output></div><div class="cascade-leaf"><span>Casa C24</span><output data-cascade-leaf>100 %</output></div><div class="cascade-leaf loss"><span>Pérdida L1</span><output data-cascade-leaf>100 %</output></div><div class="cascade-leaf loss"><span>Pérdida L2</span><output data-cascade-leaf>100 %</output></div></div></div>
+                <div class="cascade-node cascade-level" data-cascade-level="3"><div class="cascade-level-head"><div class="cascade-label"><span class="cascade-branch">N3</span><div><strong>Nivel 3</strong><small>casas y pérdidas · EN VIVO</small></div></div><output class="cascade-value" data-cascade-level-output>100 %</output></div><input type="range" min="0" max="100" value="100" data-cascade-level-slider aria-label="Apertura en vivo del nivel 3" /><div class="cascade-leaves"><div class="cascade-leaf"><span>Casa C31</span><output data-cascade-leaf>100 %</output></div><div class="cascade-leaf"><span>Casa C32</span><output data-cascade-leaf>100 %</output></div><div class="cascade-leaf"><span>Casa C33</span><output data-cascade-leaf>100 %</output></div><div class="cascade-leaf"><span>Casa C34</span><output data-cascade-leaf>100 %</output></div><div class="cascade-leaf loss"><span>Pérdida L1</span><output data-cascade-leaf>100 %</output></div><div class="cascade-leaf loss"><span>Pérdida L2</span><output data-cascade-leaf>100 %</output></div></div></div>
+                <div class="cascade-node cascade-level" data-cascade-level="4"><div class="cascade-level-head"><div class="cascade-label"><span class="cascade-branch">N4</span><div><strong>Nivel 4</strong><small>casas y pérdidas · EN VIVO</small></div></div><output class="cascade-value" data-cascade-level-output>100 %</output></div><input type="range" min="0" max="100" value="100" data-cascade-level-slider aria-label="Apertura en vivo del nivel 4" /><div class="cascade-leaves"><div class="cascade-leaf"><span>Casa C41</span><output data-cascade-leaf>100 %</output></div><div class="cascade-leaf"><span>Casa C42</span><output data-cascade-leaf>100 %</output></div><div class="cascade-leaf"><span>Casa C43</span><output data-cascade-leaf>100 %</output></div><div class="cascade-leaf"><span>Casa C44</span><output data-cascade-leaf>100 %</output></div><div class="cascade-leaf loss"><span>Pérdida L1</span><output data-cascade-leaf>100 %</output></div><div class="cascade-leaf loss"><span>Pérdida L2</span><output data-cascade-leaf>100 %</output></div></div></div>
+              </div>
+            </div><span class="cascade-sync">Cada cambio se aplica inmediatamente al PLC virtual.</span></div>
+            <div class="grid two" style="margin-top:14px"><article class="surface card"><div class="card-header"><div><p class="eyebrow">Mínimo de red</p><h2>Nivel 4 · Casa C44</h2></div><span class="state-chip amber">18.42 mca</span></div><div class="metric-row"><span>Caudal del nivel</span><strong>29.6 m³/h</strong></div><div class="metric-row"><span>Apertura crítica</span><strong>74 %</strong></div></article><article class="surface card"><div class="card-header"><div><p class="eyebrow">Distribución</p><h2>Resumen por nivel</h2></div><small>presión mínima</small></div><div class="metric-row"><span>Nivel 1</span><strong>23.90 mca</strong></div><div class="metric-row"><span>Nivel 2</span><strong>22.14 mca</strong></div><div class="metric-row"><span>Nivel 3</span><strong>20.06 mca</strong></div><div class="metric-row"><span>Nivel 4</span><strong>18.42 mca</strong></div></article></div>
+            <div class="grid two" style="margin-top:14px"><article class="surface level"><div class="level-title"><strong>NIVEL 1</strong><span>23.90 mca · 30.2 m³/h</span></div><div class="house-grid"><div class="house"><span class="house-id">L1 · C11</span><strong class="house-value">24.2 mca</strong><small>apertura 80 %</small></div><div class="house"><span class="house-id">L1 · C12</span><strong class="house-value">24.0 mca</strong><small>apertura 76 %</small></div><div class="house"><span class="house-id">L1 · C13</span><strong class="house-value">23.9 mca</strong><small>apertura 74 %</small></div><div class="house"><span class="house-id">L1 · C14</span><strong class="house-value">24.1 mca</strong><small>apertura 79 %</small></div></div></article><article class="surface level"><div class="level-title"><strong>NIVEL 2</strong><span>22.14 mca · 31.1 m³/h</span></div><div class="house-grid"><div class="house"><span class="house-id">L2 · C21</span><strong class="house-value">22.5 mca</strong><small>apertura 82 %</small></div><div class="house"><span class="house-id">L2 · C22</span><strong class="house-value">22.2 mca</strong><small>apertura 78 %</small></div><div class="house"><span class="house-id">L2 · C23</span><strong class="house-value">22.1 mca</strong><small>apertura 77 %</small></div><div class="house"><span class="house-id">L2 · C24</span><strong class="house-value">22.4 mca</strong><small>apertura 81 %</small></div></div></article><article class="surface level"><div class="level-title"><strong>NIVEL 3</strong><span>20.06 mca · 27.7 m³/h</span></div><div class="house-grid"><div class="house"><span class="house-id">L3 · C31</span><strong class="house-value">20.5 mca</strong><small>apertura 74 %</small></div><div class="house"><span class="house-id">L3 · C32</span><strong class="house-value">20.2 mca</strong><small>apertura 71 %</small></div><div class="house"><span class="house-id">L3 · C33</span><strong class="house-value">20.1 mca</strong><small>apertura 70 %</small></div><div class="house"><span class="house-id">L3 · C34</span><strong class="house-value">20.4 mca</strong><small>apertura 73 %</small></div></div></article><article class="surface level"><div class="level-title"><strong>NIVEL 4</strong><span>18.42 mca · 29.6 m³/h</span></div><div class="house-grid"><div class="house"><span class="house-id">L4 · C41</span><strong class="house-value">18.8 mca</strong><small>apertura 75 %</small></div><div class="house"><span class="house-id">L4 · C42</span><strong class="house-value">18.6 mca</strong><small>apertura 73 %</small></div><div class="house"><span class="house-id">L4 · C43</span><strong class="house-value">18.5 mca</strong><small>apertura 72 %</small></div><div class="house critical"><span class="house-id">L4 · C44</span><strong class="house-value">18.42 mca</strong><small>mínimo de red</small></div></div></article></div>
+          </section>
+
+          <section id="profiles" class="screen" aria-labelledby="profiles-title">
+            <div class="screen-head"><div><p class="eyebrow">PLC virtual · programación</p><h1 id="profiles-title">Perfiles de operación</h1><p>Los controles globales aparecen primero; el detalle por nivel se abre después, sin una pared interminable de controles.</p></div><div class="actions"><span class="mode-badge draft">ESCENARIO · NO APLICADO</span><button class="small">NUEVO</button><button class="small primary">GUARDAR CAMBIOS</button><button class="small">EJECUTAR</button></div></div>
+            <article class="surface card" style="margin-bottom:14px"><div class="control-grid"><label class="field">Perfil<select><option>Demanda diurna</option><option>Noche de bajo consumo</option></select></label><label class="field">Hora simulada<select><option>08 · 00:00–01:00</option><option>09 · 01:00–02:00</option></select></label></div><div class="profile-hours" style="margin-top:14px"><button class="hour">01</button><button class="hour">02</button><button class="hour">03</button><button class="hour">04</button><button class="hour">05</button><button class="hour active">08</button></div><div class="actions" style="justify-content:flex-start;margin-top:14px"><button class="small ghost">↳ CAPTURAR ESTADO ACTUAL</button><span class="quiet" style="font-size:11px">Copia la demanda EN VIVO a este escenario.</span></div></article>
+            <div class="profile-grid cascade-layout"><article class="surface card"><div class="card-header"><div><p class="eyebrow">Hora 08 · demanda programada</p><h2>Mandos en cascada</h2></div><span class="mode-badge draft">BORRADOR · NO APLICADO</span></div><p class="cascade-help">Total → nivel → válvulas. Un mando superior se propaga a todos sus descendientes; un mando de nivel solo mueve las casas y pérdidas de ese piso. Estos valores no cambian la operación actual.</p><div class="cascade-tree" data-cascade>
+              <div class="cascade-node total">
+                <div class="cascade-total-head"><div class="cascade-label"><span class="cascade-branch">Σ</span><div><strong>Todas las válvulas</strong><small>4 niveles · 16 casas · 8 pérdidas</small></div></div><output class="cascade-value" data-cascade-total-output>82 %</output></div>
+                <input type="range" min="0" max="100" value="82" data-cascade-total aria-label="Apertura de todas las válvulas" />
+              </div>
+              <div class="cascade-levels">
+                <div class="cascade-node cascade-level" data-cascade-level="1"><div class="cascade-level-head"><div class="cascade-label"><span class="cascade-branch">N1</span><div><strong>Nivel 1</strong><small>4 casas + 2 pérdidas</small></div></div><output class="cascade-value" data-cascade-level-output>86 %</output></div><input type="range" min="0" max="100" value="86" data-cascade-level-slider aria-label="Apertura de todas las válvulas del nivel 1" /><div class="cascade-leaves"><div class="cascade-leaf"><span>Casa C11</span><output data-cascade-leaf>86 %</output></div><div class="cascade-leaf"><span>Casa C12</span><output data-cascade-leaf>86 %</output></div><div class="cascade-leaf"><span>Casa C13</span><output data-cascade-leaf>86 %</output></div><div class="cascade-leaf"><span>Casa C14</span><output data-cascade-leaf>86 %</output></div><div class="cascade-leaf loss"><span>Pérdida L1</span><output data-cascade-leaf>86 %</output></div><div class="cascade-leaf loss"><span>Pérdida L2</span><output data-cascade-leaf>86 %</output></div></div></div>
+                <div class="cascade-node cascade-level" data-cascade-level="2"><div class="cascade-level-head"><div class="cascade-label"><span class="cascade-branch">N2</span><div><strong>Nivel 2</strong><small>4 casas + 2 pérdidas</small></div></div><output class="cascade-value" data-cascade-level-output>84 %</output></div><input type="range" min="0" max="100" value="84" data-cascade-level-slider aria-label="Apertura de todas las válvulas del nivel 2" /><div class="cascade-leaves"><div class="cascade-leaf"><span>Casa C21</span><output data-cascade-leaf>84 %</output></div><div class="cascade-leaf"><span>Casa C22</span><output data-cascade-leaf>84 %</output></div><div class="cascade-leaf"><span>Casa C23</span><output data-cascade-leaf>84 %</output></div><div class="cascade-leaf"><span>Casa C24</span><output data-cascade-leaf>84 %</output></div><div class="cascade-leaf loss"><span>Pérdida L1</span><output data-cascade-leaf>84 %</output></div><div class="cascade-leaf loss"><span>Pérdida L2</span><output data-cascade-leaf>84 %</output></div></div></div>
+                <div class="cascade-node cascade-level" data-cascade-level="3"><div class="cascade-level-head"><div class="cascade-label"><span class="cascade-branch">N3</span><div><strong>Nivel 3</strong><small>4 casas + 2 pérdidas</small></div></div><output class="cascade-value" data-cascade-level-output>80 %</output></div><input type="range" min="0" max="100" value="80" data-cascade-level-slider aria-label="Apertura de todas las válvulas del nivel 3" /><div class="cascade-leaves"><div class="cascade-leaf"><span>Casa C31</span><output data-cascade-leaf>80 %</output></div><div class="cascade-leaf"><span>Casa C32</span><output data-cascade-leaf>80 %</output></div><div class="cascade-leaf"><span>Casa C33</span><output data-cascade-leaf>80 %</output></div><div class="cascade-leaf"><span>Casa C34</span><output data-cascade-leaf>80 %</output></div><div class="cascade-leaf loss"><span>Pérdida L1</span><output data-cascade-leaf>80 %</output></div><div class="cascade-leaf loss"><span>Pérdida L2</span><output data-cascade-leaf>80 %</output></div></div></div>
+                <div class="cascade-node cascade-level" data-cascade-level="4"><div class="cascade-level-head"><div class="cascade-label"><span class="cascade-branch">N4</span><div><strong>Nivel 4</strong><small>4 casas + 2 pérdidas</small></div></div><output class="cascade-value" data-cascade-level-output>78 %</output></div><input type="range" min="0" max="100" value="78" data-cascade-level-slider aria-label="Apertura de todas las válvulas del nivel 4" /><div class="cascade-leaves"><div class="cascade-leaf"><span>Casa C41</span><output data-cascade-leaf>78 %</output></div><div class="cascade-leaf"><span>Casa C42</span><output data-cascade-leaf>78 %</output></div><div class="cascade-leaf"><span>Casa C43</span><output data-cascade-leaf>78 %</output></div><div class="cascade-leaf"><span>Casa C44</span><output data-cascade-leaf>78 %</output></div><div class="cascade-leaf loss"><span>Pérdida L1</span><output data-cascade-leaf>78 %</output></div><div class="cascade-leaf loss"><span>Pérdida L2</span><output data-cascade-leaf>78 %</output></div></div></div>
+              </div>
+            </div><span class="cascade-sync">Los descendientes se mueven simultáneamente con su nivel.</span></article><article class="surface card"><div class="card-header"><div><p class="eyebrow">Red y PRV</p><h2>Regulación programada</h2></div><span class="state-chip">AUTO</span></div><div class="control-grid"><label class="field">Válvula N1–N2 <output>100 %</output><input type="range" value="100" /></label><label class="field">Válvula N2–N3 <output>94 %</output><input type="range" value="94" /></label><label class="field">Consigna crítica <output>15.45 mca</output><input type="range" value="42" /></label><label class="field">Salida manual <output>20.94 mca</output><input type="range" value="59" /></label></div><p class="quiet" style="margin:15px 0 0;font-size:11px">Las aperturas individuales y fugas se capturan desde Rejilla y consumo.</p></article></div>
+          </section>
+
+          <section id="trends" class="screen" aria-labelledby="trends-title">
+            <div class="screen-head"><div><p class="eyebrow">Tendencias · sesión actual</p><h1 id="trends-title">Tendencias en vivo</h1><p>Señales de la sesión PLC actual, actualizadas continuamente. Para curvas históricas de 24 horas, usa Día 24 h.</p></div><div class="actions"><span class="mode-badge live">EN VIVO · ACTUALIZADO HACE 2 s</span><button class="small ghost">⤢ PANTALLA COMPLETA</button></div></div>
+            <div class="grid two"><article class="surface card"><div class="card-header"><h2>Presión crítica</h2><small>mca · 18.42 actual</small></div><div class="chart-wrap"><svg viewBox="0 0 720 210" role="img" aria-label="Tendencia de presión crítica"><path class="chart-grid-line" d="M30 30H690M30 90H690M30 150H690"/><path class="chart-line" d="M30 120 C120 112 160 138 240 112 S360 86 430 100 S550 52 690 76"/></svg></div><div class="chart-key"><span><i></i> Medición PLC</span><span class="quiet">mín 16.80 · máx 19.10</span></div></article><article class="surface card"><div class="card-header"><h2>Caudal principal</h2><small>m³/h · 142.8 actual</small></div><div class="chart-wrap"><svg viewBox="0 0 720 210" role="img" aria-label="Tendencia de caudal principal"><path class="chart-grid-line" d="M30 30H690M30 90H690M30 150H690"/><path class="chart-line amber" d="M30 145 C120 130 150 155 240 116 S365 142 430 106 S560 72 690 83"/></svg></div><div class="chart-key"><span><i class="amber"></i> Medición PLC</span><span class="quiet">mín 112.4 · máx 154.2</span></div></article><article class="surface card"><div class="card-header"><h2>Nivel de tanque</h2><small>% · 68.4 actual</small></div><div class="chart-wrap"><svg viewBox="0 0 720 210" role="img" aria-label="Tendencia del nivel del tanque"><path class="chart-grid-line" d="M30 30H690M30 90H690M30 150H690"/><path class="chart-line purple" d="M30 110 C130 92 180 132 260 118 S400 55 470 94 S570 140 690 80"/></svg></div><div class="chart-key"><span><i class="purple"></i> Medición PLC</span><span class="quiet">mín 54.0 · máx 76.2</span></div></article><article class="surface card"><div class="card-header"><h2>Presión por nivel</h2><small>mca · lectura actual</small></div><div class="chart-wrap"><svg viewBox="0 0 720 210" role="img" aria-label="Tendencia de presión por nivel"><path class="chart-grid-line" d="M30 30H690M30 90H690M30 150H690"/><path class="chart-line" d="M30 74 C100 80 170 77 240 98 S400 105 470 122 S590 132 690 156"/><path class="chart-line amber" d="M30 168H690"/></svg></div><div class="chart-key"><span><i></i> Mínimo de red</span><span><i class="amber"></i> Límite de servicio</span></div></article></div>
+          </section>
+
+          <section id="history" class="screen" aria-labelledby="history-title">
+            <div class="screen-head"><div><p class="eyebrow">Archivo local del operador</p><h1 id="history-title">Historial de sesiones</h1><p>Sesiones finalizadas y sus curvas para comparación. Esta vista no modifica la operación actual.</p></div><button class="small ghost">ACTUALIZAR</button></div>
+            <article class="surface card"><div class="card-header"><h2>Sesiones guardadas</h2><small>máximo 12 registros</small></div><div class="history-row"><div><strong>Simulación demanda diurna</strong><br><span>26 oct 2026 · 08:42</span></div><span>6.0 h simuladas</span><span>mín 16.80 mca</span><div class="actions"><button class="small">VER CURVAS</button><button class="small danger">ELIMINAR</button></div></div><div class="history-row"><div><strong>Escenario nocturno</strong><br><span>25 oct 2026 · 22:10</span></div><span>6.0 h simuladas</span><span>mín 19.12 mca</span><div class="actions"><button class="small">VER CURVAS</button><button class="small danger">ELIMINAR</button></div></div><div class="history-row"><div><strong>Prueba de presión PRS</strong><br><span>24 oct 2026 · 14:18</span></div><span>2.5 h simuladas</span><span>mín 15.92 mca</span><div class="actions"><button class="small">VER CURVAS</button><button class="small danger">ELIMINAR</button></div></div></article>
+            <article class="surface card subview"><p class="eyebrow">Comparativas · subvista</p><h2>Comparación de señales</h2><p class="muted" style="font-size:12px">Las comparativas viven dentro de Historial para no multiplicar pestañas ni romper la jerarquía del panel.</p><div style="overflow-x:auto"><table class="compare-table"><thead><tr><th>Señal</th><th>PLC actual</th><th>Sesión seleccionada</th><th>Diferencia</th></tr></thead><tbody><tr><td>Presión crítica</td><td>18.42 mca</td><td>16.80 mca</td><td>+1.62 mca</td></tr><tr><td>Caudal principal</td><td>142.8 m³/h</td><td>154.2 m³/h</td><td>-11.4 m³/h</td></tr><tr><td>Nivel de tanque</td><td>68.4 %</td><td>54.0 %</td><td>+14.4 %</td></tr></tbody></table></div></article>
+          </section>
+
+          <p class="footer-note">MAQUETA VISUAL · Datos ficticios · No envía comandos al PLC</p>
+        </main>
+      </div>
+    </div>
+
+    <dialog id="chart-modal" class="chart-modal" aria-labelledby="chart-modal-title">
+      <div class="chart-modal-head"><div><p class="eyebrow">Vista ampliada</p><h2 id="chart-modal-title">Gráfica</h2></div><button id="chart-modal-close" class="small">× CERRAR</button></div>
+      <div class="chart-modal-toolbar"><button id="chart-zoom-out" class="small">−</button><button id="chart-zoom-reset" class="small">100 %</button><button id="chart-zoom-in" class="small">+</button><button id="chart-measure" class="small">⌖ MEDIR PUNTO</button><span class="chart-modal-help">Haz clic sobre la línea para fijar una lectura · rueda para zoom</span></div>
+      <div id="chart-modal-viewport" class="chart-modal-viewport"><div id="chart-modal-stage" class="chart-modal-stage"></div><div id="measure-guide" class="measure-guide"></div><div id="measure-tooltip" class="measure-tooltip"></div></div>
+    </dialog>
+
+    <script>
+      const tabs = [...document.querySelectorAll("[data-screen]")];
+      const screens = [...document.querySelectorAll(".screen")];
+      tabs.forEach((tab) => tab.addEventListener("click", () => {
+        const id = tab.dataset.screen;
+        tabs.forEach((item) => item.classList.toggle("active", item === tab));
+        screens.forEach((screen) => screen.classList.toggle("active", screen.id === id));
+        history.replaceState(null, "", `#${id}`);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }));
+
+      // Cambiar de grupo conserva los nodos y los valores: no recrea controles ni sus eventos.
+      const groupLabels = {
+        master: ["Indicadores", "Estado y proyección"],
+        day: ["Resumen diario", "Curvas"],
+        pumping: ["Circuito", "Tanques", "Bombas y PRS", "Perfil hidráulico"],
+        grid: ["Demanda", "Resumen de red", "Viviendas"],
+        profiles: ["Perfil y hora", "Demanda programada", "Regulación"],
+        trends: ["Presión crítica", "Caudal", "Nivel de tanque", "Presión por nivel"],
+        history: ["Sesiones", "Comparación"],
+      };
+      function addGroupPicker(parent, nodes, labels) {
+        const nav = document.createElement("nav");
+        nav.className = "group-nav";
+        nav.setAttribute("aria-label", "Grupos de " + (parent.querySelector("h1")?.textContent || "detalle"));
+        nodes[0].before(nav);
+        const buttons = nodes.map((node, index) => {
+          node.classList.add("group-page");
+          node.id ||= `${parent.id || "detail"}-group-${index}`;
+          const button = document.createElement("button");
+          button.type = "button";
+          button.textContent = labels[index];
+          button.setAttribute("aria-controls", node.id);
+          button.addEventListener("click", () => show(index));
+          nav.append(button);
+          return button;
+        });
+        function show(index) {
+          nodes.forEach((node, i) => { node.hidden = i !== index; });
+          buttons.forEach((button, i) => button.setAttribute("aria-pressed", String(i === index)));
+        }
+        show(0);
+      }
+      screens.forEach((screen) => {
+        // Separar grandes rejillas en grupos, en vez de esconder el desborde con CSS.
+        if (screen.id === "profiles") {
+          const layout = screen.querySelector(".profile-grid");
+          layout.replaceWith(...layout.children);
+        }
+        if (screen.id === "trends") {
+          const layout = screen.querySelector(".grid");
+          layout.replaceWith(...layout.children);
+        }
+        const nodes = [...screen.children].filter(el => !el.matches(".screen-head, .hero"));
+        addGroupPicker(screen, nodes, groupLabels[screen.id]);
+      });
+      document.querySelectorAll("[data-cascade]").forEach((tree, index) => {
+        const levels = [...tree.querySelectorAll("[data-cascade-level]")];
+        if (tree.closest(".live-demand-card")) {
+          // En vivo: todos los niveles visibles, sin selector intermedio.
+          levels.forEach(node => {
+            const leaves = node.querySelector(".cascade-leaves");
+            leaves.id = `live-valves-${node.dataset.cascadeLevel}`;
+            leaves.setAttribute("popover", "auto");
+            leaves.setAttribute("aria-label", `Válvulas del nivel ${node.dataset.cascadeLevel}`);
+            const heading = document.createElement("strong");
+            heading.textContent = `Nivel ${node.dataset.cascadeLevel} · válvulas individuales`;
+            heading.style.gridColumn = "1 / -1";
+            leaves.prepend(heading);
+            const close = document.createElement("button");
+            close.type = "button";
+            close.textContent = "Cerrar";
+            close.style.gridColumn = "1 / -1";
+            close.setAttribute("popovertarget", leaves.id);
+            close.setAttribute("popovertargetaction", "hide");
+            leaves.append(close);
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "valve-detail";
+            button.textContent = "Válvulas";
+            button.setAttribute("popovertarget", leaves.id);
+            button.setAttribute("aria-label", `Ver válvulas del nivel ${node.dataset.cascadeLevel}`);
+            node.querySelector(".cascade-level-head").append(button);
+          });
+          return;
+        }
+        const label = document.createElement("label");
+        label.className = "level-picker";
+        label.textContent = "Detalle del nivel ";
+        const select = document.createElement("select");
+        select.id = `cascade-level-picker-${index}`;
+        levels.forEach((node) => select.add(new Option(`Nivel ${node.dataset.cascadeLevel}`, node.dataset.cascadeLevel)));
+        label.append(select);
+        tree.querySelector(".cascade-levels").before(label);
+        const choose = () => levels.forEach(node => { node.hidden = node.dataset.cascadeLevel !== select.value; });
+        select.addEventListener("change", choose);
+        choose();
+      });
+      const houses = document.querySelector("#grid .group-page:last-child");
+      const houseLevels = [...houses.children];
+      houses.classList.remove("grid", "two");
+      addGroupPicker(houses, houseLevels, ["Nivel 1", "Nivel 2", "Nivel 3", "Nivel 4"]);
+
+      const chartModal = document.querySelector("#chart-modal");
+      const chartStage = document.querySelector("#chart-modal-stage");
+      const chartViewport = document.querySelector("#chart-modal-viewport");
+      const measureGuide = document.querySelector("#measure-guide");
+      const measureTooltip = document.querySelector("#measure-tooltip");
+      const measureButton = document.querySelector("#chart-measure");
+      let chartZoom = 1;
+      let chartUnit = "valor";
+      let chartTitle = "Gráfica";
+
+      const renderChartZoom = () => {
+        chartStage.style.width = `${Math.round(chartZoom * 100)}%`;
+        document.querySelector("#chart-zoom-reset").textContent = `${Math.round(chartZoom * 100)} %`;
+      };
+      const clearMeasurement = () => {
+        measureGuide.classList.remove("visible");
+        measureTooltip.classList.remove("visible");
+      };
+      const measureChartPoint = (event) => {
+        const svg = chartStage.querySelector("svg");
+        if (!svg) return;
+        const rect = svg.getBoundingClientRect();
+        const xRatio = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
+        const yRatio = Math.max(0, Math.min(1, (event.clientY - rect.top) / rect.height));
+        const hour = Math.round(xRatio * 24) % 24;
+        const visualValue = ((1 - yRatio) * 100).toFixed(1);
+        const viewportRect = chartViewport.getBoundingClientRect();
+        const left = event.clientX - viewportRect.left + chartViewport.scrollLeft;
+        const top = event.clientY - viewportRect.top + chartViewport.scrollTop;
+        measureGuide.style.left = `${left}px`;
+        measureGuide.style.top = `${top}px`;
+        measureTooltip.style.left = `${Math.min(left + 12, chartViewport.scrollWidth - 205)}px`;
+        measureTooltip.style.top = `${Math.max(12, top - 66)}px`;
+        measureTooltip.innerHTML = `<strong>${chartTitle}</strong><span>${String(hour).padStart(2, "0")}:00 · ${visualValue} ${chartUnit}</span><br><span class="quiet">Punto de referencia visual</span>`;
+        measureGuide.classList.add("visible");
+        measureTooltip.classList.add("visible");
+      };
+      const openChart = (wrap) => {
+        const svg = wrap.querySelector("svg");
+        if (!svg) return;
+        chartTitle = wrap.closest(".card")?.querySelector("h2")?.textContent ?? "Gráfica";
+        chartUnit = wrap.closest(".card")?.querySelector(".card-header small")?.textContent?.split("·")[0].trim() || "valor";
+        document.querySelector("#chart-modal-title").textContent = chartTitle;
+        chartStage.innerHTML = svg.outerHTML;
+        chartZoom = 1;
+        renderChartZoom();
+        clearMeasurement();
+        chartModal.showModal();
+      };
+      document.querySelectorAll(".chart-wrap").forEach((wrap) => {
+        wrap.tabIndex = 0;
+        wrap.setAttribute("role", "button");
+        wrap.setAttribute("aria-label", `Abrir ${wrap.closest(".card")?.querySelector("h2")?.textContent ?? "gráfica"} en tamaño completo`);
+        wrap.addEventListener("click", () => openChart(wrap));
+        wrap.addEventListener("keydown", (event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); openChart(wrap); } });
+      });
+      chartStage.addEventListener("click", (event) => measureChartPoint(event));
+      document.querySelector("#chart-zoom-in").addEventListener("click", () => { chartZoom = Math.min(2.5, chartZoom + .25); renderChartZoom(); });
+      document.querySelector("#chart-zoom-out").addEventListener("click", () => { chartZoom = Math.max(.75, chartZoom - .25); renderChartZoom(); });
+      document.querySelector("#chart-zoom-reset").addEventListener("click", () => { chartZoom = 1; renderChartZoom(); chartViewport.scrollTo({ top: 0, left: 0 }); });
+      measureButton.addEventListener("click", () => {
+        measureButton.classList.toggle("active");
+        measureButton.textContent = measureButton.classList.contains("active") ? "⌖ MEDICIÓN ACTIVA" : "⌖ MEDIR PUNTO";
+      });
+      document.querySelector("#chart-modal-close").addEventListener("click", () => chartModal.close());
+      chartModal.addEventListener("close", clearMeasurement);
+
+      document.querySelectorAll("[data-cascade]").forEach((cascade) => {
+        const total = cascade.querySelector("[data-cascade-total]");
+        const totalOutput = cascade.querySelector("[data-cascade-total-output]");
+        const levelNodes = [...cascade.querySelectorAll("[data-cascade-level]")];
+
+        levelNodes.forEach((node) => node.querySelectorAll("[data-cascade-leaf]").forEach((output) => {
+          const leaf = output.closest(".cascade-leaf");
+          const input = document.createElement("input");
+          input.type = "range";
+          input.min = "0";
+          input.max = "100";
+          input.value = output.textContent.replace(" %", "");
+          input.setAttribute("aria-label", `Apertura ${leaf.querySelector("span").textContent}`);
+          input.dataset.cascadeLeafSlider = "";
+          leaf.append(input);
+        }));
+
+        const leafValues = (node) => [...node.querySelectorAll("[data-cascade-leaf-slider]")].map((input) => Number(input.value));
+        const updateLevelSummary = (node) => {
+          const values = leafValues(node);
+          const average = Math.round(values.reduce((sum, value) => sum + value, 0) / values.length);
+          const same = values.every((value) => value === values[0]);
+          node.querySelector("[data-cascade-level-slider]").value = String(average);
+          node.querySelector("[data-cascade-level-output]").textContent = same ? `${average} %` : `${average} % · mixto`;
+        };
+
+        const setLevel = (node, value) => {
+          const slider = node.querySelector("[data-cascade-level-slider]");
+          const output = node.querySelector("[data-cascade-level-output]");
+          if (slider) slider.value = value;
+          if (output) output.textContent = `${value} %`;
+          node.querySelectorAll("[data-cascade-leaf]").forEach((leaf) => { leaf.textContent = `${value} %`; });
+          node.querySelectorAll("[data-cascade-leaf-slider]").forEach((leaf) => { leaf.value = value; });
+        };
+
+        const updateTotalSummary = () => {
+          const values = levelNodes.flatMap(leafValues);
+          const average = Math.round(values.reduce((sum, value) => sum + value, 0) / values.length);
+          const same = values.every((value) => value === values[0]);
+          total.value = String(average);
+          totalOutput.textContent = same ? `${average} % · todos` : `${average} % · mixto`;
+        };
+
+        total.addEventListener("input", () => {
+          levelNodes.forEach((node) => setLevel(node, total.value));
+          updateTotalSummary();
+        });
+        levelNodes.forEach((node) => {
+          node.querySelector("[data-cascade-level-slider]").addEventListener("input", (event) => {
+            setLevel(node, event.target.value);
+            updateTotalSummary();
+          });
+          node.querySelectorAll("[data-cascade-leaf-slider]").forEach((input) => input.addEventListener("input", (event) => {
+            event.target.closest(".cascade-leaf").querySelector("[data-cascade-leaf]").textContent = `${event.target.value} %`;
+            updateLevelSummary(node);
+            updateTotalSummary();
+          }));
+        });
+        updateTotalSummary();
+      });
+
+      const initial = location.hash.slice(1);
+      if (initial && document.getElementById(initial) && document.querySelector(`[data-screen="${initial}"]`)) {
+        document.querySelector(`[data-screen="${initial}"]`).click();
+      }
+    </script>
+  </body>
+</html>
