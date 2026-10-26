@@ -26,6 +26,22 @@ La evaluación Fractal abarca 24 horas y 72 escenarios de demanda: en todos, C44
 
 Evidencia: [[../../architecture/validation/pdd-prs-critical-point-18-01-validation.json]], [[../../architecture/validation/pdd-prs-critical-point-18-01-validation-hourly.csv]] y [gráfica HTML por piso](../../architecture/validation/pdd-prs-critical-point-18-01-pressure-by-floor.html). Diseño y límites: [[../../architecture/prs-critical-point-scenario]]. Verificación: suite completa Python, 368 pasaron y 1 omitida, antes de los últimos ajustes de pantalla/contrato; luego pasaron 22 pruebas dirigidas de API, Fractal y modelo. Con el código final pasaron Ruff, `twin-lib validate`, validación de planta y modelo Fractal, typecheck, 149 pruebas de geometría, build de Gallery, validación JSON Schema del perfil normalizado y diff-check.
 
+## Continuación 2026-10-26 UTC: diagnóstico de ciclos
+
+**Andy (hora exacta no disponible):** «haz la comparacion, he asignado un modelomas potente astra para revisar la tarea de entender por que los flujos y caudales varian tanto entre emulado y fractal,».
+
+**IA:** «Voy a comparar los arranques, las paradas y los volúmenes transferidos, empezando por los primeros ciclos del perfil C44. Mantendré los modelos sin cambios para localizar dónde empieza la divergencia; después podremos probar cada posible causa por separado.»
+
+Herramientas: lectura de integración Fractal y secuencia PLC; ejecución de `trace_recirculation_cycles.diagnose` con perfil C44 durante 2 h; JSON/CSV persistidos. Tres ciclos; desfases de parada −3,919/−11,465/−20,138 s. Fractal contabiliza 9,101991 m³, PLC 9,137727 m³. Sobrepaso de nivel PLC y conmutación interpolada Fractal identificados; todavía no se ha aislado cada contribución ni cerrado balances efectivos de vasos. Informe: [[../../architecture/validation/pdd-prs-c44-cycles-diagnosis]]. No se modificaron modelos ni mandos operativos.
+
+## Plan y primeras pruebas, 2026-10-26 UTC
+
+**Andy (hora exacta no disponible):** «escribe un plan md para esas pruebas y comienza con ellas y ve dejando evidencia, necesitamos resolver eso pronto».
+
+**IA:** «Voy a dejar el plan en Markdown y empezar con el balance de los tanques y el primer ciclo con demanda constante. Guardaré las muestras por segundo y los resultados de cada prueba, sin modificar todavía los modelos.»
+
+Herramientas: nuevo plan y script `diagnose_c44_tank_balance.py`, ejecución real de t=30 a 1800, 5310 filas CSV y resumen JSON. Balance PLC por vaso, por paso y contra contadores verificado por aserciones (<1e-8 m³). Diferencia bomba/recepción 0,309 litros. Experimento de niveles verdaderos reduce adelanto de parada 3,919→2,668 s; aún quedan 10,158 litros de diferencia en retorno Fractal frente al recibido PLC. No se cambió física ni se declaró causa raíz completa. Detalle y estado: [[../../architecture/recirculation-parity-test-plan]].
+
 ## Herramientas
 
 Lectura de contratos, perfiles, runtime, solver y HMI; ediciones de Python/YAML/JSON/TypeScript; pruebas dirigidas de emulador y Fractal, validación del modelo y tipo/build de Gallery; proyección completa Fractal de 24 horas; replay PLC virtual de 1 hora; generación de JSON/CSV reproducibles.

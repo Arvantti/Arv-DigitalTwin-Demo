@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import statistics
 import sys
 from pathlib import Path
 from typing import Any
@@ -22,6 +23,40 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 PLANT_ID = "water-network-scale-v1"
 PROFILE_PATH = ROOT / "industrial-models" / PLANT_ID / "operation-profiles" / "pdd-prs-fijo-01.json"
+FLOW_KEYS = ("pump_supply_outlet", "prs_outlet", *(f"floor_{level}_local" for level in range(1, 5)), "supply_tank_inlet")
+
+
+def _error_statistics(pairs: list[tuple[float, float]]) -> dict[str, Any]:
+    """Errores emparejados F−PLC; porcentaje indefinido con referencia cero."""
+    def describe(values: list[float]) -> dict[str, Any]:
+        return {
+            "n": len(values), "mean": statistics.mean(values) if values else None,
+            "population_std": statistics.pstdev(values) if values else None,
+            "population_variance": statistics.pvariance(values) if values else None,
+            "max_absolute": max(map(abs, values)) if values else None,
+        }
+
+    return {
+        "absolute_m3h": describe([f - e for e, f in pairs]),
+        "relative_pct_nonzero_reference": describe([100 * (f - e) / e for e, f in pairs if e != 0]),
+        "zero_reference_count": sum(e == 0 for e, _ in pairs),
+        "both_zero_count": sum(e == f == 0 for e, f in pairs),
+        "zero_reference_nonzero_forecast_count": sum(e == 0 and f != 0 for e, f in pairs),
+    }
+
+
+def _flow_statistics(comparison: list[dict[str, Any]]) -> dict[str, Any]:
+    pairs = {
+        key: [(row[f"emulator_{key}_m3h"], row[f"fractal_{key}_m3h"]) for row in comparison
+              if row.get(f"emulator_{key}_m3h") is not None and row.get(f"fractal_{key}_m3h") is not None]
+        for key in FLOW_KEYS
+    }
+    return {
+        "method": "100*(Fractal-PLC)/PLC; population statistics; nominal hourly endpoints, equal weight per signal; "
+                  "not physical confidence or independent samples; zero references excluded only from relative statistics",
+        "by_signal": {key: _error_statistics(values) for key, values in pairs.items()},
+        "distribution_only_pooled": _error_statistics([pair for key in FLOW_KEYS[:-1] for pair in pairs[key]]),
+    }
 
 
 def _house_pressures(plant: Any) -> dict[str, float]:
@@ -73,6 +108,12 @@ def _fractal_results(frames: list[dict[str, Any]], emulator_hourly: list[dict[st
                 "prs_outlet_mca": round(float(state["prs_outlet_mca"]), 5),
                 "minimum_dwelling_pressure_mca": round(float(pressure), 5),
                 "minimum_dwelling": dwelling,
+                "flows_m3h": {
+                    "pump_supply_outlet": float(state["flow_m3h"]),
+                    "prs_outlet": float(state["flow_m3h"]),
+                    **{f"floor_{level}_local": float(state["level_flows_m3h"][str(level)]) for level in range(1, 5)},
+                    "supply_tank_inlet": float(frame["plc_tags"]["PLC.Pump.RecirculationFlowM3h"]),
+                },
                 "minimum_across_demand_scenarios": worst_scenario["minimum_dwelling_pressure_mca"],
                 "worst_demand_factor": worst_scenario["demand_factor"],
                 "worst_demand_dwelling": worst_scenario["minimum_dwelling"],
@@ -94,6 +135,8 @@ def _fractal_results(frames: list[dict[str, Any]], emulator_hourly: list[dict[st
             "fractal_min_dwelling_pressure_mca": fractal["minimum_dwelling_pressure_mca"],
             "fractal_worst_demand_minimum_mca": fractal["minimum_across_demand_scenarios"],
             "fractal_worst_demand_factor": fractal["worst_demand_factor"],
+            **{f"{source}_{key}_m3h": row.get("flows_m3h", {}).get(key)
+               for source, row in (("emulator", emulator), ("fractal", fractal)) for key in FLOW_KEYS},
         }
         for emulator, fractal in zip(emulator_hourly, fractal_hourly, strict=True)
     ]
@@ -121,6 +164,7 @@ def refresh_fractal(output: Path) -> dict[str, Any]:
 
     frames = project_24h(tags, profile, horizon_hours=24)
     result["fractal"], result["comparison_at_same_hour_boundaries"] = _fractal_results(frames, result["emulator"]["hourly"])
+    result["flow_error_statistics"] = _flow_statistics(result["comparison_at_same_hour_boundaries"])
     output.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     _write_hourly_csv(result, output.with_name(f"{output.stem}-hourly.csv"))
     return result
@@ -133,6 +177,7 @@ def _write_hourly_csv(result: dict[str, Any], output: Path) -> None:
         "emulator_min_dwelling_pressure_mca", "fractal_min_dwelling_pressure_mca",
         "fractal_worst_demand_minimum_mca", "fractal_worst_demand_factor",
     ]
+    fields += [f"{source}_{key}_m3h" for key in FLOW_KEYS for source in ("emulator", "fractal")]
     output.parent.mkdir(parents=True, exist_ok=True)
     with output.open("w", encoding="utf-8", newline="") as stream:
         writer = csv.DictWriter(stream, fieldnames=fields, lineterminator="\n")
@@ -191,6 +236,14 @@ def run(output: Path) -> dict[str, Any]:
                     "minimum_dwelling_pressure_mca": round(pressure, 5),
                     "minimum_dwelling": dwelling,
                     "manual_branch_flow_m3h": round(float(prs["flow_manual_m3h"]), 8),
+                    "flows_m3h": {
+                        "pump_supply_outlet": float(plant.equipment["pumpset-main-01"].true_values()["flow_m3h"]),
+                        "prs_outlet": float(prs["flow_m3h"]),
+                        **{f"floor_{level}_local": float(plant.equipment[f"grid-0{level}"].true_values()["flow_in_m3h"])
+                           for level in range(1, 5)},
+                        "supply_tank_inlet": float(plant.equipment["tank-supply-01"].true_values()["inflow_kg_h"])
+                        / float(plant.equipment["tank-supply-01"].p["density_kg_m3"]),
+                    },
                 }
             )
             if hour % 4 == 0:
@@ -221,6 +274,7 @@ def run(output: Path) -> dict[str, Any]:
         },
         "fractal": fractal_report,
         "comparison_at_same_hour_boundaries": comparison,
+        "flow_error_statistics": _flow_statistics(comparison),
     }
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

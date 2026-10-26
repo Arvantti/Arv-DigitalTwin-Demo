@@ -1,4 +1,5 @@
 import "./plc.css";
+import { mountComparisons } from "./plc-comparisons";
 
 type Value = number | string | null;
 type Snapshot = { state: string; variables: Record<string, Value>; animation: Record<string, number>; active_faults: string[] };
@@ -726,9 +727,8 @@ async function start(): Promise<void> {
   $("plant-name").textContent = ` · ${schema.name.toUpperCase()}`;
   $<HTMLAnchorElement>("link-plant").href = `/plant.html?plant=${plantId}${sessionId ? `&session=${encodeURIComponent(sessionId)}` : ""}${query.get("api") ? `&api=${encodeURIComponent(apiOrigin)}` : ""}`;
   buildAssets();
-  document.querySelectorAll<HTMLButtonElement>(".tabs button").forEach((button) => button.onclick = () => selectScreen(button.dataset.screen!));
-  const initialScreen = new URLSearchParams(location.search).get("screen");
-  if (["master", "day", "pumping", "grid", "profiles", "trends", "fractal", "history"].includes(initialScreen ?? "")) selectScreen(initialScreen!);
+  const initialScreen = query.get("screen");
+  if (["master", "day", "pumping", "grid", "profiles", "trends", "fractal", "history", "comparisons"].includes(initialScreen ?? "")) selectScreen(initialScreen!);
   $("connect").onclick = () => { void connect(); };
   $("pause").onclick = () => { paused = !paused; socket?.send(JSON.stringify({ pause: paused })); $("pause").textContent = paused ? "▶ REANUDAR" : "❚❚ PAUSA"; };
   document.querySelectorAll<HTMLButtonElement>("[data-command]").forEach((button) => button.onclick = () => send("prs-01", "select_branch", { branch: button.dataset.command }));
@@ -845,4 +845,7 @@ async function start(): Promise<void> {
   }
 }
 
+mountComparisons();
+document.querySelectorAll<HTMLButtonElement>(".tabs button").forEach((button) => button.onclick = () => selectScreen(button.dataset.screen!));
+if (query.get("screen") === "comparisons") selectScreen("comparisons");
 start().catch((error: unknown) => { $("plant-name").textContent = ` · ERROR: ${String(error)}`; });

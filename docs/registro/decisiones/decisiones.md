@@ -5,6 +5,10 @@ actualizado: 2026-10-24
 ---
 # Decisiones y reglas del autor
 
+## PLC solo dentro del modelo 3D · 2026-10-26
+
+Andy pide que el panel PLC y las gráficas comparativas de escenarios queden en la página del modelo 3D. Se elimina la experiencia de HMI independiente: las URLs antiguas redirigen al escritorio preservando contexto. `plc.html` permanece como recurso interno del iframe; no se cambia el motor ni se duplica sesión. Las comparativas precalculadas se distinguen de la operación en vivo y no aplican mandos. [[2026-10-26-plc-integrado-comparativas]]
+
 ## PRS AUTO por punto fijo L4.C44 a 18 mca · 2026-10-25
 
 Continuación del escenario de salida fija: habilitar un modo AUTO de salida **variable** cuyo PID usa la señal hidráulica separada de `grid-04.p_c44`, objetivo provisional 18 mca y rama manual cerrada. La telemetría y las alarmas de presión mínima global siguen usando el mínimo de las 64 viviendas; no se debe confundir el punto de control con el mínimo global. El perfil `pdd-prs-punto-critico-18-01` mantiene la demanda diurna y fija C44 como candidato, no como sensor físico confirmado. En el solver Fractal independiente, C44 está empatado con el mínimo global dentro de 0,00001 mca en 72/72 casos de 24 horas (demanda ×0,9/×1,0/×1,1); varias viviendas empatan, así que C44 no es único. Mínimo calculado 17,99807 mca, sobre 15 mca. El replay dinámico reproducible del PLC virtual cubre 24 h a paso de 1 s: mínima 17,51569 mca en C44 y cero muestras bajo 15. La curva comparativa por piso usa las 24 fronteras horarias coincidentes; no certifica presión física continua. La salida de PRS es variable; no se inventa el porcentaje de carrera real ni el control Grundfos. La optimización permanece apagada y los niveles de tanques futuros siguen sin validar. El escenario de salida fija anterior continúa disponible como perfil separado. [[../../architecture/prs-critical-point-scenario]]

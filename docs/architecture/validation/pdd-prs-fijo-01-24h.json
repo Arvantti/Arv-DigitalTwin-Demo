@@ -36,7 +36,16 @@
         "prs_outlet_mca": 39.98105,
         "minimum_dwelling_pressure_mca": 36.2339,
         "minimum_dwelling": "L4.C44",
-        "manual_branch_flow_m3h": 0.0
+        "manual_branch_flow_m3h": 0.0,
+        "flows_m3h": {
+          "pump_supply_outlet": 6.335451510031685,
+          "prs_outlet": 6.335118053473772,
+          "floor_1_local": 1.6356392715538508,
+          "floor_2_local": 1.596524152910529,
+          "floor_3_local": 1.5651063652396824,
+          "floor_4_local": 1.538196243247555,
+          "supply_tank_inlet": 0.0
+        }
       },
       {
         "hour_boundary": 2,
@@ -45,7 +54,16 @@
         "prs_outlet_mca": 39.9798,
         "minimum_dwelling_pressure_mca": 36.1582,
         "minimum_dwelling": "L4.C44",
-        "manual_branch_flow_m3h": 0.0
+        "manual_branch_flow_m3h": 0.0,
+        "flows_m3h": {
+          "pump_supply_outlet": 6.539873954584399,
+          "prs_outlet": 6.539529370944742,
+          "floor_1_local": 1.6894793120327043,
+          "floor_2_local": 1.6480633178296653,
+          "floor_3_local": 1.6151409706435087,
+          "floor_4_local": 1.5872058397870346,
+          "supply_tank_inlet": 20.282940762880262
+        }
       },
       {
         "hour_boundary": 3,
@@ -54,7 +72,16 @@
         "prs_outlet_mca": 39.97586,
         "minimum_dwelling_pressure_mca": 35.91828,
         "minimum_dwelling": "L4.C44",
-        "manual_branch_flow_m3h": 0.0
+        "manual_branch_flow_m3h": 0.0,
+        "flows_m3h": {
+          "pump_supply_outlet": 7.150680887524416,
+          "prs_outlet": 7.150339364597789,
+          "floor_1_local": 1.8509767087074849,
+          "floor_2_local": 1.8020761369428986,
+          "floor_3_local": 1.7643686351854437,
+          "floor_4_local": 1.7332779534516398,
+          "supply_tank_inlet": 20.352514034665823
+        }
       },
       {
         "hour_boundary": 4,
@@ -63,7 +90,16 @@
         "prs_outlet_mca": 39.96911,
         "minimum_dwelling_pressure_mca": 35.51039,
         "minimum_dwelling": "L4.C44",
-        "manual_branch_flow_m3h": 0.0
+        "manual_branch_flow_m3h": 0.0,
+        "flows_m3h": {
+          "pump_supply_outlet": 8.088160941999355,
+          "prs_outlet": 8.087824706636127,
+          "floor_1_local": 2.100840287619948,
+          "floor_2_local": 2.0385098954043825,
+          "floor_3_local": 1.9925328151444912,
+          "floor_4_local": 1.9563017254293085,
+          "supply_tank_inlet": 0.0
+        }
       },
       {
         "hour_boundary": 5,
@@ -72,7 +108,16 @@
         "prs_outlet_mca": 39.9593,
         "minimum_dwelling_pressure_mca": 34.92161,
         "minimum_dwelling": "L4.C44",
-        "manual_branch_flow_m3h": 0.0
+        "manual_branch_flow_m3h": 0.0,
+        "flows_m3h": {
+          "pump_supply_outlet": 9.284164478624852,
+          "prs_outlet": 9.283835855204652,
+          "floor_1_local": 2.423595975031853,
+          "floor_2_local": 2.3402513268150766,
+          "floor_3_local": 2.281868039730095,
+          "floor_4_local": 2.2384805391761677,
+          "supply_tank_inlet": 0.0
+        }
       },
       {
         "hour_boundary": 6,
@@ -81,7 +126,16 @@
         "prs_outlet_mca": 39.94681,
         "minimum_dwelling_pressure_mca": 34.17974,
         "minimum_dwelling": "L4.C44",
-        "manual_branch_flow_m3h": 0.0
+        "manual_branch_flow_m3h": 0.0,
+        "flows_m3h": {
+          "pump_supply_outlet": 10.613453174782771,
+          "prs_outlet": 10.613134248446647,
+          "floor_1_local": 2.7883977451224786,
+          "floor_2_local": 2.675793842676783,
+          "floor_3_local": 2.6007819491068136,
+          "floor_4_local": 2.5485207503307454,
+          "supply_tank_inlet": 0.0
+        }
       },
       {
         "hour_boundary": 7,
@@ -90,7 +144,16 @@
         "prs_outlet_mca": 39.93219,
         "minimum_dwelling_pressure_mca": 33.32238,
         "minimum_dwelling": "L4.C44",
-        "manual_branch_flow_m3h": 0.0
+        "manual_branch_flow_m3h": 0.0,
+        "flows_m3h": {
+          "pump_supply_outlet": 11.983374844605876,
+          "prs_outlet": 11.983067327083765,
+          "floor_1_local": 3.1721209173074025,
+          "floor_2_local": 3.021832612105861,
+          "floor_3_local": 2.9260346817356107,
+          "floor_4_local": 2.863439171960267,
+          "supply_tank_inlet": 0.0
+        }
       },
       {
         "hour_boundary": 8,
@@ -99,7 +162,16 @@
         "prs_outlet_mca": 39.91704,
         "minimum_dwelling_pressure_mca": 32.44616,
         "minimum_dwelling": "L4.C44",
-        "manual_branch_flow_m3h": 0.0
+        "manual_branch_flow_m3h": 0.0,
+        "flows_m3h": {
+          "pump_supply_outlet": 13.254834785746553,
+          "prs_outlet": 13.254538937428181,
+          "floor_1_local": 3.5363692938199667,
+          "floor_2_local": 3.3432697848429487,
+          "floor_3_local": 3.224351694139887,
+          "floor_4_local": 3.1509082410720937,
+          "supply_tank_inlet": 0.0
+        }
       },
       {
         "hour_boundary": 9,
@@ -108,7 +180,16 @@
         "prs_outlet_mca": 39.90272,
         "minimum_dwelling_pressure_mca": 31.62983,
         "minimum_dwelling": "L4.C44",
-        "manual_branch_flow_m3h": 0.0
+        "manual_branch_flow_m3h": 0.0,
+        "flows_m3h": {
+          "pump_supply_outlet": 14.35344871754734,
+          "prs_outlet": 14.353164050492445,
+          "floor_1_local": 3.858191046955675,
+          "floor_2_local": 3.6212635790215155,
+          "floor_3_local": 3.479000307446412,
+          "floor_4_local": 3.395069215650432,
+          "supply_tank_inlet": 0.0
+        }
       },
       {
         "hour_boundary": 10,
@@ -117,7 +198,16 @@
         "prs_outlet_mca": 39.8911,
         "minimum_dwelling_pressure_mca": 30.97609,
         "minimum_dwelling": "L4.C44",
-        "manual_branch_flow_m3h": 0.0
+        "manual_branch_flow_m3h": 0.0,
+        "flows_m3h": {
+          "pump_supply_outlet": 15.186499201790646,
+          "prs_outlet": 15.18622345984678,
+          "floor_1_local": 4.1070502976685965,
+          "floor_2_local": 3.832242956945467,
+          "floor_3_local": 3.669971240261275,
+          "floor_4_local": 3.577319139258654,
+          "supply_tank_inlet": 20.487218249096685
+        }
       },
       {
         "hour_boundary": 11,
@@ -126,7 +216,16 @@
         "prs_outlet_mca": 39.88336,
         "minimum_dwelling_pressure_mca": 30.54511,
         "minimum_dwelling": "L4.C44",
-        "manual_branch_flow_m3h": 0.0
+        "manual_branch_flow_m3h": 0.0,
+        "flows_m3h": {
+          "pump_supply_outlet": 15.716703502577577,
+          "prs_outlet": 15.716433817825042,
+          "floor_1_local": 4.267770413050276,
+          "floor_2_local": 3.9666162016183906,
+          "floor_3_local": 3.7904923932199615,
+          "floor_4_local": 3.6919150027619483,
+          "supply_tank_inlet": 21.069876814185253
+        }
       },
       {
         "hour_boundary": 12,
@@ -135,7 +234,16 @@
         "prs_outlet_mca": 39.88074,
         "minimum_dwelling_pressure_mca": 30.40013,
         "minimum_dwelling": "L4.C44",
-        "manual_branch_flow_m3h": 0.0
+        "manual_branch_flow_m3h": 0.0,
+        "flows_m3h": {
+          "pump_supply_outlet": 15.892016351524529,
+          "prs_outlet": 15.891748645337548,
+          "floor_1_local": 4.321329338863103,
+          "floor_2_local": 4.011064066043185,
+          "floor_3_local": 3.830159698941441,
+          "floor_4_local": 3.729555742951252,
+          "supply_tank_inlet": 20.34917808116261
+        }
       },
       {
         "hour_boundary": 13,
@@ -144,7 +252,16 @@
         "prs_outlet_mca": 39.88299,
         "minimum_dwelling_pressure_mca": 30.52444,
         "minimum_dwelling": "L4.C44",
-        "manual_branch_flow_m3h": 0.0
+        "manual_branch_flow_m3h": 0.0,
+        "flows_m3h": {
+          "pump_supply_outlet": 15.741791851411659,
+          "prs_outlet": 15.741522393944733,
+          "floor_1_local": 4.275422133299733,
+          "floor_2_local": 3.9729764306268445,
+          "floor_3_local": 3.796174649511629,
+          "floor_4_local": 3.6973093869894886,
+          "supply_tank_inlet": 20.928070940173356
+        }
       },
       {
         "hour_boundary": 14,
@@ -153,7 +270,16 @@
         "prs_outlet_mca": 39.88945,
         "minimum_dwelling_pressure_mca": 30.88426,
         "minimum_dwelling": "L4.C44",
-        "manual_branch_flow_m3h": 0.0
+        "manual_branch_flow_m3h": 0.0,
+        "flows_m3h": {
+          "pump_supply_outlet": 15.300651236060892,
+          "prs_outlet": 15.30037689995551,
+          "floor_1_local": 4.141495755661676,
+          "floor_2_local": 3.861166909860939,
+          "floor_3_local": 3.6959883970916763,
+          "floor_4_local": 3.602085984038606,
+          "supply_tank_inlet": 0.0
+        }
       },
       {
         "hour_boundary": 15,
@@ -162,7 +288,16 @@
         "prs_outlet_mca": 39.89954,
         "minimum_dwelling_pressure_mca": 31.45055,
         "minimum_dwelling": "L4.C44",
-        "manual_branch_flow_m3h": 0.0
+        "manual_branch_flow_m3h": 0.0,
+        "flows_m3h": {
+          "pump_supply_outlet": 14.585647566288337,
+          "prs_outlet": 14.585365277079504,
+          "floor_1_local": 3.92712100838055,
+          "floor_2_local": 3.6800535382821398,
+          "floor_3_local": 3.5324215989888974,
+          "floor_4_local": 3.4461293233703665,
+          "supply_tank_inlet": 20.27833762471197
+        }
       },
       {
         "hour_boundary": 16,
@@ -171,7 +306,16 @@
         "prs_outlet_mca": 39.91202,
         "minimum_dwelling_pressure_mca": 32.15869,
         "minimum_dwelling": "L4.C44",
-        "manual_branch_flow_m3h": 0.0
+        "manual_branch_flow_m3h": 0.0,
+        "flows_m3h": {
+          "pump_supply_outlet": 13.650010790577959,
+          "prs_outlet": 13.649718904777057,
+          "floor_1_local": 3.6513333704254385,
+          "floor_2_local": 3.4432359189429333,
+          "floor_3_local": 3.3162998463045286,
+          "floor_4_local": 3.2392099475349223,
+          "supply_tank_inlet": 20.368165484995963
+        }
       },
       {
         "hour_boundary": 17,
@@ -180,7 +324,16 @@
         "prs_outlet_mca": 39.9258,
         "minimum_dwelling_pressure_mca": 32.95096,
         "minimum_dwelling": "L4.C44",
-        "manual_branch_flow_m3h": 0.0
+        "manual_branch_flow_m3h": 0.0,
+        "flows_m3h": {
+          "pump_supply_outlet": 12.535797592297456,
+          "prs_outlet": 12.535494993480208,
+          "floor_1_local": 3.3293586082141915,
+          "floor_2_local": 3.161455210712858,
+          "floor_3_local": 3.0560953925209775,
+          "floor_4_local": 2.988945942767928,
+          "supply_tank_inlet": 20.253130951808064
+        }
       },
       {
         "hour_boundary": 18,
@@ -189,7 +342,16 @@
         "prs_outlet_mca": 39.93968,
         "minimum_dwelling_pressure_mca": 33.76012,
         "minimum_dwelling": "L4.C44",
-        "manual_branch_flow_m3h": 0.0
+        "manual_branch_flow_m3h": 0.0,
+        "flows_m3h": {
+          "pump_supply_outlet": 11.30232750590767,
+          "prs_outlet": 11.302014077591771,
+          "floor_1_local": 2.980296740415965,
+          "floor_2_local": 2.8497678912877915,
+          "floor_3_local": 2.7648022008212125,
+          "floor_4_local": 2.7075073316806413,
+          "supply_tank_inlet": 0.0
+        }
       },
       {
         "hour_boundary": 19,
@@ -198,7 +360,16 @@
         "prs_outlet_mca": 39.95237,
         "minimum_dwelling_pressure_mca": 34.50922,
         "minimum_dwelling": "L4.C44",
-        "manual_branch_flow_m3h": 0.0
+        "manual_branch_flow_m3h": 0.0,
+        "flows_m3h": {
+          "pump_supply_outlet": 10.04295197101427,
+          "prs_outlet": 10.042628688135226,
+          "floor_1_local": 2.6309871740361213,
+          "floor_2_local": 2.5317613322599875,
+          "floor_3_local": 2.4642821960460477,
+          "floor_4_local": 2.4159580537948617,
+          "supply_tank_inlet": 0.0
+        }
       },
       {
         "hour_boundary": 20,
@@ -207,7 +378,16 @@
         "prs_outlet_mca": 39.96294,
         "minimum_dwelling_pressure_mca": 35.13952,
         "minimum_dwelling": "L4.C44",
-        "manual_branch_flow_m3h": 0.0
+        "manual_branch_flow_m3h": 0.0,
+        "flows_m3h": {
+          "pump_supply_outlet": 8.859137776679448,
+          "prs_outlet": 8.858806298286801,
+          "floor_1_local": 2.3083459161403397,
+          "floor_2_local": 2.2330054254234035,
+          "floor_3_local": 2.1792881265922213,
+          "floor_4_local": 2.1385268813963494,
+          "supply_tank_inlet": 0.0
+        }
       },
       {
         "hour_boundary": 21,
@@ -216,7 +396,16 @@
         "prs_outlet_mca": 39.97105,
         "minimum_dwelling_pressure_mca": 35.62767,
         "minimum_dwelling": "L4.C44",
-        "manual_branch_flow_m3h": 0.0
+        "manual_branch_flow_m3h": 0.0,
+        "flows_m3h": {
+          "pump_supply_outlet": 7.829548854434432,
+          "prs_outlet": 7.829211090095184,
+          "floor_1_local": 2.031656672717852,
+          "floor_2_local": 1.9732807927950118,
+          "floor_3_local": 1.9297041767860363,
+          "floor_4_local": 1.8949294850342246,
+          "supply_tank_inlet": 0.0
+        }
       },
       {
         "hour_boundary": 22,
@@ -225,7 +414,16 @@
         "prs_outlet_mca": 39.97673,
         "minimum_dwelling_pressure_mca": 35.97129,
         "minimum_dwelling": "L4.C44",
-        "manual_branch_flow_m3h": 0.0
+        "manual_branch_flow_m3h": 0.0,
+        "flows_m3h": {
+          "pump_supply_outlet": 7.020113504636454,
+          "prs_outlet": 7.019771347119418,
+          "floor_1_local": 1.8163730979179737,
+          "floor_2_local": 1.769151958669867,
+          "floor_3_local": 1.7325051626612404,
+          "floor_4_local": 1.7021011549740268,
+          "supply_tank_inlet": 0.0
+        }
       },
       {
         "hour_boundary": 23,
@@ -234,7 +432,16 @@
         "prs_outlet_mca": 39.97998,
         "minimum_dwelling_pressure_mca": 36.16915,
         "minimum_dwelling": "L4.C44",
-        "manual_branch_flow_m3h": 0.0
+        "manual_branch_flow_m3h": 0.0,
+        "flows_m3h": {
+          "pump_supply_outlet": 6.5106951470158325,
+          "prs_outlet": 6.510350474099837,
+          "floor_1_local": 1.6817880976524318,
+          "floor_2_local": 1.640706578999776,
+          "floor_3_local": 1.6080018602023318,
+          "floor_4_local": 1.580213956850513,
+          "supply_tank_inlet": 0.0
+        }
       },
       {
         "hour_boundary": 24,
@@ -243,7 +450,16 @@
         "prs_outlet_mca": 39.98105,
         "minimum_dwelling_pressure_mca": 36.2339,
         "minimum_dwelling": "L4.C44",
-        "manual_branch_flow_m3h": 0.0
+        "manual_branch_flow_m3h": 0.0,
+        "flows_m3h": {
+          "pump_supply_outlet": 6.335451511007542,
+          "prs_outlet": 6.3351060189189585,
+          "floor_1_local": 1.6356392717478017,
+          "floor_2_local": 1.5965241531053147,
+          "floor_3_local": 1.5651063654363724,
+          "floor_4_local": 1.5381962434470957,
+          "supply_tank_inlet": 0.0
+        }
       }
     ]
   },
@@ -273,6 +489,15 @@
         "prs_outlet_mca": 39.98105,
         "minimum_dwelling_pressure_mca": 36.23123,
         "minimum_dwelling": "L4.C43",
+        "flows_m3h": {
+          "pump_supply_outlet": 6.33531,
+          "prs_outlet": 6.33531,
+          "floor_1_local": 1.63564,
+          "floor_2_local": 1.59648,
+          "floor_3_local": 1.56505,
+          "floor_4_local": 1.53814,
+          "supply_tank_inlet": 0.0
+        },
         "minimum_across_demand_scenarios": 36.06602,
         "worst_demand_factor": 1.1,
         "worst_demand_dwelling": "L4.C43",
@@ -306,6 +531,15 @@
         "prs_outlet_mca": 39.97981,
         "minimum_dwelling_pressure_mca": 36.15537,
         "minimum_dwelling": "L4.C43",
+        "flows_m3h": {
+          "pump_supply_outlet": 6.53971,
+          "prs_outlet": 6.53971,
+          "floor_1_local": 1.68948,
+          "floor_2_local": 1.64801,
+          "floor_3_local": 1.61508,
+          "floor_4_local": 1.58714,
+          "supply_tank_inlet": 20.2304
+        },
         "minimum_across_demand_scenarios": 35.97739,
         "worst_demand_factor": 1.1,
         "worst_demand_dwelling": "L4.C43",
@@ -339,6 +573,15 @@
         "prs_outlet_mca": 39.97586,
         "minimum_dwelling_pressure_mca": 35.9149,
         "minimum_dwelling": "L4.C44",
+        "flows_m3h": {
+          "pump_supply_outlet": 7.15048,
+          "prs_outlet": 7.15048,
+          "floor_1_local": 1.85098,
+          "floor_2_local": 1.80201,
+          "floor_3_local": 1.76429,
+          "floor_4_local": 1.7332,
+          "supply_tank_inlet": 20.2748
+        },
         "minimum_across_demand_scenarios": 35.6964,
         "worst_demand_factor": 1.1,
         "worst_demand_dwelling": "L4.C43",
@@ -372,6 +615,15 @@
         "prs_outlet_mca": 39.96911,
         "minimum_dwelling_pressure_mca": 35.50614,
         "minimum_dwelling": "L4.C43",
+        "flows_m3h": {
+          "pump_supply_outlet": 8.08786,
+          "prs_outlet": 8.08786,
+          "floor_1_local": 2.10084,
+          "floor_2_local": 2.03842,
+          "floor_3_local": 1.99242,
+          "floor_4_local": 1.95618,
+          "supply_tank_inlet": 0.0
+        },
         "minimum_across_demand_scenarios": 35.21879,
         "worst_demand_factor": 1.1,
         "worst_demand_dwelling": "L4.C43",
@@ -405,6 +657,15 @@
         "prs_outlet_mca": 39.9593,
         "minimum_dwelling_pressure_mca": 34.91612,
         "minimum_dwelling": "L4.C43",
+        "flows_m3h": {
+          "pump_supply_outlet": 9.2837,
+          "prs_outlet": 9.2837,
+          "floor_1_local": 2.4236,
+          "floor_2_local": 2.34011,
+          "floor_3_local": 2.28169,
+          "floor_4_local": 2.2383,
+          "supply_tank_inlet": 0.0
+        },
         "minimum_across_demand_scenarios": 34.53042,
         "worst_demand_factor": 1.1,
         "worst_demand_dwelling": "L4.C43",
@@ -438,6 +699,15 @@
         "prs_outlet_mca": 39.94682,
         "minimum_dwelling_pressure_mca": 34.17274,
         "minimum_dwelling": "L4.C43",
+        "flows_m3h": {
+          "pump_supply_outlet": 10.61277,
+          "prs_outlet": 10.61277,
+          "floor_1_local": 2.7884,
+          "floor_2_local": 2.67559,
+          "floor_3_local": 2.60052,
+          "floor_4_local": 2.54826,
+          "supply_tank_inlet": 0.0
+        },
         "minimum_across_demand_scenarios": 33.66598,
         "worst_demand_factor": 1.1,
         "worst_demand_dwelling": "L4.C44",
@@ -471,6 +741,15 @@
         "prs_outlet_mca": 39.9322,
         "minimum_dwelling_pressure_mca": 33.31371,
         "minimum_dwelling": "L4.C43",
+        "flows_m3h": {
+          "pump_supply_outlet": 11.98239,
+          "prs_outlet": 11.98239,
+          "floor_1_local": 3.17212,
+          "floor_2_local": 3.02153,
+          "floor_3_local": 2.92567,
+          "floor_4_local": 2.86307,
+          "supply_tank_inlet": 21.1763
+        },
         "minimum_across_demand_scenarios": 32.67211,
         "worst_demand_factor": 1.1,
         "worst_demand_dwelling": "L4.C44",
@@ -504,6 +783,15 @@
         "prs_outlet_mca": 39.91706,
         "minimum_dwelling_pressure_mca": 32.43589,
         "minimum_dwelling": "L4.C44",
+        "flows_m3h": {
+          "pump_supply_outlet": 13.25351,
+          "prs_outlet": 13.25351,
+          "floor_1_local": 3.53637,
+          "floor_2_local": 3.34287,
+          "floor_3_local": 3.22386,
+          "floor_4_local": 3.15041,
+          "supply_tank_inlet": 21.17
+        },
         "minimum_across_demand_scenarios": 31.66281,
         "worst_demand_factor": 1.1,
         "worst_demand_dwelling": "L4.C43",
@@ -537,6 +825,15 @@
         "prs_outlet_mca": 39.90274,
         "minimum_dwelling_pressure_mca": 31.61813,
         "minimum_dwelling": "L4.C44",
+        "flows_m3h": {
+          "pump_supply_outlet": 14.35177,
+          "prs_outlet": 14.35177,
+          "floor_1_local": 3.85819,
+          "floor_2_local": 3.62076,
+          "floor_3_local": 3.47838,
+          "floor_4_local": 3.39444,
+          "supply_tank_inlet": 0.0
+        },
         "minimum_across_demand_scenarios": 30.72871,
         "worst_demand_factor": 1.1,
         "worst_demand_dwelling": "L4.C44",
@@ -570,6 +867,15 @@
         "prs_outlet_mca": 39.89113,
         "minimum_dwelling_pressure_mca": 30.96331,
         "minimum_dwelling": "L4.C44",
+        "flows_m3h": {
+          "pump_supply_outlet": 15.18452,
+          "prs_outlet": 15.18452,
+          "floor_1_local": 4.10705,
+          "floor_2_local": 3.83165,
+          "floor_3_local": 3.66924,
+          "floor_4_local": 3.57658,
+          "supply_tank_inlet": 20.3861
+        },
         "minimum_across_demand_scenarios": 29.98515,
         "worst_demand_factor": 1.1,
         "worst_demand_dwelling": "L4.C44",
@@ -603,6 +909,15 @@
         "prs_outlet_mca": 39.88339,
         "minimum_dwelling_pressure_mca": 30.53164,
         "minimum_dwelling": "L4.C44",
+        "flows_m3h": {
+          "pump_supply_outlet": 15.71452,
+          "prs_outlet": 15.71452,
+          "floor_1_local": 4.26777,
+          "floor_2_local": 3.96596,
+          "floor_3_local": 3.78969,
+          "floor_4_local": 3.6911,
+          "supply_tank_inlet": 20.9466
+        },
         "minimum_across_demand_scenarios": 29.49719,
         "worst_demand_factor": 1.1,
         "worst_demand_dwelling": "L4.C44",
@@ -636,6 +951,15 @@
         "prs_outlet_mca": 39.88078,
         "minimum_dwelling_pressure_mca": 30.38644,
         "minimum_dwelling": "L4.C44",
+        "flows_m3h": {
+          "pump_supply_outlet": 15.88977,
+          "prs_outlet": 15.88977,
+          "floor_1_local": 4.32133,
+          "floor_2_local": 4.01039,
+          "floor_3_local": 3.82933,
+          "floor_4_local": 3.72872,
+          "supply_tank_inlet": 20.2297
+        },
         "minimum_across_demand_scenarios": 29.33345,
         "worst_demand_factor": 1.1,
         "worst_demand_dwelling": "L4.C44",
@@ -669,6 +993,15 @@
         "prs_outlet_mca": 39.88302,
         "minimum_dwelling_pressure_mca": 30.51094,
         "minimum_dwelling": "L4.C44",
+        "flows_m3h": {
+          "pump_supply_outlet": 15.7396,
+          "prs_outlet": 15.7396,
+          "floor_1_local": 4.27542,
+          "floor_2_local": 3.97232,
+          "floor_3_local": 3.79537,
+          "floor_4_local": 3.69649,
+          "supply_tank_inlet": 20.7827
+        },
         "minimum_across_demand_scenarios": 29.47383,
         "worst_demand_factor": 1.1,
         "worst_demand_dwelling": "L4.C44",
@@ -702,6 +1035,15 @@
         "prs_outlet_mca": 39.88948,
         "minimum_dwelling_pressure_mca": 30.87133,
         "minimum_dwelling": "L4.C44",
+        "flows_m3h": {
+          "pump_supply_outlet": 15.29863,
+          "prs_outlet": 15.29863,
+          "floor_1_local": 4.1415,
+          "floor_2_local": 3.86056,
+          "floor_3_local": 3.69524,
+          "floor_4_local": 3.60133,
+          "supply_tank_inlet": 0.0
+        },
         "minimum_across_demand_scenarios": 29.88104,
         "worst_demand_factor": 1.1,
         "worst_demand_dwelling": "L4.C44",
@@ -735,6 +1077,15 @@
         "prs_outlet_mca": 39.89957,
         "minimum_dwelling_pressure_mca": 31.43855,
         "minimum_dwelling": "L4.C44",
+        "flows_m3h": {
+          "pump_supply_outlet": 14.58389,
+          "prs_outlet": 14.58389,
+          "floor_1_local": 3.92712,
+          "floor_2_local": 3.67953,
+          "floor_3_local": 3.53177,
+          "floor_4_local": 3.44547,
+          "supply_tank_inlet": 0.0
+        },
         "minimum_across_demand_scenarios": 30.52439,
         "worst_demand_factor": 1.1,
         "worst_demand_dwelling": "L4.C44",
@@ -768,6 +1119,15 @@
         "prs_outlet_mca": 39.91204,
         "minimum_dwelling_pressure_mca": 32.1479,
         "minimum_dwelling": "L4.C44",
+        "flows_m3h": {
+          "pump_supply_outlet": 13.64856,
+          "prs_outlet": 13.64856,
+          "floor_1_local": 3.65133,
+          "floor_2_local": 3.4428,
+          "floor_3_local": 3.31576,
+          "floor_4_local": 3.23867,
+          "supply_tank_inlet": 0.0
+        },
         "minimum_across_demand_scenarios": 31.33315,
         "worst_demand_factor": 1.1,
         "worst_demand_dwelling": "L4.C44",
@@ -801,6 +1161,15 @@
         "prs_outlet_mca": 39.92581,
         "minimum_dwelling_pressure_mca": 32.9416,
         "minimum_dwelling": "L4.C44",
+        "flows_m3h": {
+          "pump_supply_outlet": 12.53468,
+          "prs_outlet": 12.53468,
+          "floor_1_local": 3.32936,
+          "floor_2_local": 3.16112,
+          "floor_3_local": 3.05568,
+          "floor_4_local": 2.98852,
+          "supply_tank_inlet": 0.0
+        },
         "minimum_across_demand_scenarios": 32.24346,
         "worst_demand_factor": 1.1,
         "worst_demand_dwelling": "L4.C44",
@@ -834,6 +1203,15 @@
         "prs_outlet_mca": 39.93969,
         "minimum_dwelling_pressure_mca": 33.7523,
         "minimum_dwelling": "L4.C43",
+        "flows_m3h": {
+          "pump_supply_outlet": 11.3015,
+          "prs_outlet": 11.3015,
+          "floor_1_local": 2.9803,
+          "floor_2_local": 2.84952,
+          "floor_3_local": 2.76449,
+          "floor_4_local": 2.70719,
+          "supply_tank_inlet": 0.0
+        },
         "minimum_across_demand_scenarios": 33.17882,
         "worst_demand_factor": 1.1,
         "worst_demand_dwelling": "L4.C44",
@@ -867,6 +1245,15 @@
         "prs_outlet_mca": 39.95238,
         "minimum_dwelling_pressure_mca": 34.50288,
         "minimum_dwelling": "L4.C43",
+        "flows_m3h": {
+          "pump_supply_outlet": 10.04237,
+          "prs_outlet": 10.04237,
+          "floor_1_local": 2.63099,
+          "floor_2_local": 2.53158,
+          "floor_3_local": 2.46406,
+          "floor_4_local": 2.41574,
+          "supply_tank_inlet": 21.1644
+        },
         "minimum_across_demand_scenarios": 34.04943,
         "worst_demand_factor": 1.1,
         "worst_demand_dwelling": "L4.C44",
@@ -900,6 +1287,15 @@
         "prs_outlet_mca": 39.96294,
         "minimum_dwelling_pressure_mca": 35.13447,
         "minimum_dwelling": "L4.C44",
+        "flows_m3h": {
+          "pump_supply_outlet": 8.85874,
+          "prs_outlet": 8.85874,
+          "floor_1_local": 2.30835,
+          "floor_2_local": 2.23288,
+          "floor_3_local": 2.17914,
+          "floor_4_local": 2.13837,
+          "supply_tank_inlet": 20.8198
+        },
         "minimum_across_demand_scenarios": 34.78498,
         "worst_demand_factor": 1.1,
         "worst_demand_dwelling": "L4.C44",
@@ -933,6 +1329,15 @@
         "prs_outlet_mca": 39.97106,
         "minimum_dwelling_pressure_mca": 35.62367,
         "minimum_dwelling": "L4.C44",
+        "flows_m3h": {
+          "pump_supply_outlet": 7.82928,
+          "prs_outlet": 7.82928,
+          "floor_1_local": 2.03166,
+          "floor_2_local": 1.9732,
+          "floor_3_local": 1.9296,
+          "floor_4_local": 1.89482,
+          "supply_tank_inlet": 20.6522
+        },
         "minimum_across_demand_scenarios": 35.35608,
         "worst_demand_factor": 1.1,
         "worst_demand_dwelling": "L4.C43",
@@ -966,6 +1371,15 @@
         "prs_outlet_mca": 39.97673,
         "minimum_dwelling_pressure_mca": 35.96804,
         "minimum_dwelling": "L4.C43",
+        "flows_m3h": {
+          "pump_supply_outlet": 7.01991,
+          "prs_outlet": 7.01991,
+          "floor_1_local": 1.81637,
+          "floor_2_local": 1.76909,
+          "floor_3_local": 1.73243,
+          "floor_4_local": 1.70202,
+          "supply_tank_inlet": 20.7492
+        },
         "minimum_across_demand_scenarios": 35.75849,
         "worst_demand_factor": 1.1,
         "worst_demand_dwelling": "L4.C44",
@@ -999,6 +1413,15 @@
         "prs_outlet_mca": 39.97998,
         "minimum_dwelling_pressure_mca": 36.16633,
         "minimum_dwelling": "L4.C43",
+        "flows_m3h": {
+          "pump_supply_outlet": 6.51054,
+          "prs_outlet": 6.51054,
+          "floor_1_local": 1.68179,
+          "floor_2_local": 1.64066,
+          "floor_3_local": 1.60794,
+          "floor_4_local": 1.58015,
+          "supply_tank_inlet": 21.0919
+        },
         "minimum_across_demand_scenarios": 35.9902,
         "worst_demand_factor": 1.1,
         "worst_demand_dwelling": "L4.C44",
@@ -1032,6 +1455,15 @@
         "prs_outlet_mca": 39.98105,
         "minimum_dwelling_pressure_mca": 36.23123,
         "minimum_dwelling": "L4.C43",
+        "flows_m3h": {
+          "pump_supply_outlet": 6.33531,
+          "prs_outlet": 6.33531,
+          "floor_1_local": 1.63564,
+          "floor_2_local": 1.59648,
+          "floor_3_local": 1.56505,
+          "floor_4_local": 1.53814,
+          "supply_tank_inlet": 0.0
+        },
         "minimum_across_demand_scenarios": 36.06602,
         "worst_demand_factor": 1.1,
         "worst_demand_dwelling": "L4.C43",
@@ -1070,7 +1502,21 @@
       "emulator_min_dwelling_pressure_mca": 36.2339,
       "fractal_min_dwelling_pressure_mca": 36.23123,
       "fractal_worst_demand_minimum_mca": 36.06602,
-      "fractal_worst_demand_factor": 1.1
+      "fractal_worst_demand_factor": 1.1,
+      "emulator_pump_supply_outlet_m3h": 6.335451510031685,
+      "emulator_prs_outlet_m3h": 6.335118053473772,
+      "emulator_floor_1_local_m3h": 1.6356392715538508,
+      "emulator_floor_2_local_m3h": 1.596524152910529,
+      "emulator_floor_3_local_m3h": 1.5651063652396824,
+      "emulator_floor_4_local_m3h": 1.538196243247555,
+      "emulator_supply_tank_inlet_m3h": 0.0,
+      "fractal_pump_supply_outlet_m3h": 6.33531,
+      "fractal_prs_outlet_m3h": 6.33531,
+      "fractal_floor_1_local_m3h": 1.63564,
+      "fractal_floor_2_local_m3h": 1.59648,
+      "fractal_floor_3_local_m3h": 1.56505,
+      "fractal_floor_4_local_m3h": 1.53814,
+      "fractal_supply_tank_inlet_m3h": 0.0
     },
     {
       "t_s": 7200.0,
@@ -1082,7 +1528,21 @@
       "emulator_min_dwelling_pressure_mca": 36.1582,
       "fractal_min_dwelling_pressure_mca": 36.15537,
       "fractal_worst_demand_minimum_mca": 35.97739,
-      "fractal_worst_demand_factor": 1.1
+      "fractal_worst_demand_factor": 1.1,
+      "emulator_pump_supply_outlet_m3h": 6.539873954584399,
+      "emulator_prs_outlet_m3h": 6.539529370944742,
+      "emulator_floor_1_local_m3h": 1.6894793120327043,
+      "emulator_floor_2_local_m3h": 1.6480633178296653,
+      "emulator_floor_3_local_m3h": 1.6151409706435087,
+      "emulator_floor_4_local_m3h": 1.5872058397870346,
+      "emulator_supply_tank_inlet_m3h": 20.282940762880262,
+      "fractal_pump_supply_outlet_m3h": 6.53971,
+      "fractal_prs_outlet_m3h": 6.53971,
+      "fractal_floor_1_local_m3h": 1.68948,
+      "fractal_floor_2_local_m3h": 1.64801,
+      "fractal_floor_3_local_m3h": 1.61508,
+      "fractal_floor_4_local_m3h": 1.58714,
+      "fractal_supply_tank_inlet_m3h": 20.2304
     },
     {
       "t_s": 10800.0,
@@ -1094,7 +1554,21 @@
       "emulator_min_dwelling_pressure_mca": 35.91828,
       "fractal_min_dwelling_pressure_mca": 35.9149,
       "fractal_worst_demand_minimum_mca": 35.6964,
-      "fractal_worst_demand_factor": 1.1
+      "fractal_worst_demand_factor": 1.1,
+      "emulator_pump_supply_outlet_m3h": 7.150680887524416,
+      "emulator_prs_outlet_m3h": 7.150339364597789,
+      "emulator_floor_1_local_m3h": 1.8509767087074849,
+      "emulator_floor_2_local_m3h": 1.8020761369428986,
+      "emulator_floor_3_local_m3h": 1.7643686351854437,
+      "emulator_floor_4_local_m3h": 1.7332779534516398,
+      "emulator_supply_tank_inlet_m3h": 20.352514034665823,
+      "fractal_pump_supply_outlet_m3h": 7.15048,
+      "fractal_prs_outlet_m3h": 7.15048,
+      "fractal_floor_1_local_m3h": 1.85098,
+      "fractal_floor_2_local_m3h": 1.80201,
+      "fractal_floor_3_local_m3h": 1.76429,
+      "fractal_floor_4_local_m3h": 1.7332,
+      "fractal_supply_tank_inlet_m3h": 20.2748
     },
     {
       "t_s": 14400.0,
@@ -1106,7 +1580,21 @@
       "emulator_min_dwelling_pressure_mca": 35.51039,
       "fractal_min_dwelling_pressure_mca": 35.50614,
       "fractal_worst_demand_minimum_mca": 35.21879,
-      "fractal_worst_demand_factor": 1.1
+      "fractal_worst_demand_factor": 1.1,
+      "emulator_pump_supply_outlet_m3h": 8.088160941999355,
+      "emulator_prs_outlet_m3h": 8.087824706636127,
+      "emulator_floor_1_local_m3h": 2.100840287619948,
+      "emulator_floor_2_local_m3h": 2.0385098954043825,
+      "emulator_floor_3_local_m3h": 1.9925328151444912,
+      "emulator_floor_4_local_m3h": 1.9563017254293085,
+      "emulator_supply_tank_inlet_m3h": 0.0,
+      "fractal_pump_supply_outlet_m3h": 8.08786,
+      "fractal_prs_outlet_m3h": 8.08786,
+      "fractal_floor_1_local_m3h": 2.10084,
+      "fractal_floor_2_local_m3h": 2.03842,
+      "fractal_floor_3_local_m3h": 1.99242,
+      "fractal_floor_4_local_m3h": 1.95618,
+      "fractal_supply_tank_inlet_m3h": 0.0
     },
     {
       "t_s": 18000.0,
@@ -1118,7 +1606,21 @@
       "emulator_min_dwelling_pressure_mca": 34.92161,
       "fractal_min_dwelling_pressure_mca": 34.91612,
       "fractal_worst_demand_minimum_mca": 34.53042,
-      "fractal_worst_demand_factor": 1.1
+      "fractal_worst_demand_factor": 1.1,
+      "emulator_pump_supply_outlet_m3h": 9.284164478624852,
+      "emulator_prs_outlet_m3h": 9.283835855204652,
+      "emulator_floor_1_local_m3h": 2.423595975031853,
+      "emulator_floor_2_local_m3h": 2.3402513268150766,
+      "emulator_floor_3_local_m3h": 2.281868039730095,
+      "emulator_floor_4_local_m3h": 2.2384805391761677,
+      "emulator_supply_tank_inlet_m3h": 0.0,
+      "fractal_pump_supply_outlet_m3h": 9.2837,
+      "fractal_prs_outlet_m3h": 9.2837,
+      "fractal_floor_1_local_m3h": 2.4236,
+      "fractal_floor_2_local_m3h": 2.34011,
+      "fractal_floor_3_local_m3h": 2.28169,
+      "fractal_floor_4_local_m3h": 2.2383,
+      "fractal_supply_tank_inlet_m3h": 0.0
     },
     {
       "t_s": 21600.0,
@@ -1130,7 +1632,21 @@
       "emulator_min_dwelling_pressure_mca": 34.17974,
       "fractal_min_dwelling_pressure_mca": 34.17274,
       "fractal_worst_demand_minimum_mca": 33.66598,
-      "fractal_worst_demand_factor": 1.1
+      "fractal_worst_demand_factor": 1.1,
+      "emulator_pump_supply_outlet_m3h": 10.613453174782771,
+      "emulator_prs_outlet_m3h": 10.613134248446647,
+      "emulator_floor_1_local_m3h": 2.7883977451224786,
+      "emulator_floor_2_local_m3h": 2.675793842676783,
+      "emulator_floor_3_local_m3h": 2.6007819491068136,
+      "emulator_floor_4_local_m3h": 2.5485207503307454,
+      "emulator_supply_tank_inlet_m3h": 0.0,
+      "fractal_pump_supply_outlet_m3h": 10.61277,
+      "fractal_prs_outlet_m3h": 10.61277,
+      "fractal_floor_1_local_m3h": 2.7884,
+      "fractal_floor_2_local_m3h": 2.67559,
+      "fractal_floor_3_local_m3h": 2.60052,
+      "fractal_floor_4_local_m3h": 2.54826,
+      "fractal_supply_tank_inlet_m3h": 0.0
     },
     {
       "t_s": 25200.0,
@@ -1142,7 +1658,21 @@
       "emulator_min_dwelling_pressure_mca": 33.32238,
       "fractal_min_dwelling_pressure_mca": 33.31371,
       "fractal_worst_demand_minimum_mca": 32.67211,
-      "fractal_worst_demand_factor": 1.1
+      "fractal_worst_demand_factor": 1.1,
+      "emulator_pump_supply_outlet_m3h": 11.983374844605876,
+      "emulator_prs_outlet_m3h": 11.983067327083765,
+      "emulator_floor_1_local_m3h": 3.1721209173074025,
+      "emulator_floor_2_local_m3h": 3.021832612105861,
+      "emulator_floor_3_local_m3h": 2.9260346817356107,
+      "emulator_floor_4_local_m3h": 2.863439171960267,
+      "emulator_supply_tank_inlet_m3h": 0.0,
+      "fractal_pump_supply_outlet_m3h": 11.98239,
+      "fractal_prs_outlet_m3h": 11.98239,
+      "fractal_floor_1_local_m3h": 3.17212,
+      "fractal_floor_2_local_m3h": 3.02153,
+      "fractal_floor_3_local_m3h": 2.92567,
+      "fractal_floor_4_local_m3h": 2.86307,
+      "fractal_supply_tank_inlet_m3h": 21.1763
     },
     {
       "t_s": 28800.0,
@@ -1154,7 +1684,21 @@
       "emulator_min_dwelling_pressure_mca": 32.44616,
       "fractal_min_dwelling_pressure_mca": 32.43589,
       "fractal_worst_demand_minimum_mca": 31.66281,
-      "fractal_worst_demand_factor": 1.1
+      "fractal_worst_demand_factor": 1.1,
+      "emulator_pump_supply_outlet_m3h": 13.254834785746553,
+      "emulator_prs_outlet_m3h": 13.254538937428181,
+      "emulator_floor_1_local_m3h": 3.5363692938199667,
+      "emulator_floor_2_local_m3h": 3.3432697848429487,
+      "emulator_floor_3_local_m3h": 3.224351694139887,
+      "emulator_floor_4_local_m3h": 3.1509082410720937,
+      "emulator_supply_tank_inlet_m3h": 0.0,
+      "fractal_pump_supply_outlet_m3h": 13.25351,
+      "fractal_prs_outlet_m3h": 13.25351,
+      "fractal_floor_1_local_m3h": 3.53637,
+      "fractal_floor_2_local_m3h": 3.34287,
+      "fractal_floor_3_local_m3h": 3.22386,
+      "fractal_floor_4_local_m3h": 3.15041,
+      "fractal_supply_tank_inlet_m3h": 21.17
     },
     {
       "t_s": 32400.0,
@@ -1166,7 +1710,21 @@
       "emulator_min_dwelling_pressure_mca": 31.62983,
       "fractal_min_dwelling_pressure_mca": 31.61813,
       "fractal_worst_demand_minimum_mca": 30.72871,
-      "fractal_worst_demand_factor": 1.1
+      "fractal_worst_demand_factor": 1.1,
+      "emulator_pump_supply_outlet_m3h": 14.35344871754734,
+      "emulator_prs_outlet_m3h": 14.353164050492445,
+      "emulator_floor_1_local_m3h": 3.858191046955675,
+      "emulator_floor_2_local_m3h": 3.6212635790215155,
+      "emulator_floor_3_local_m3h": 3.479000307446412,
+      "emulator_floor_4_local_m3h": 3.395069215650432,
+      "emulator_supply_tank_inlet_m3h": 0.0,
+      "fractal_pump_supply_outlet_m3h": 14.35177,
+      "fractal_prs_outlet_m3h": 14.35177,
+      "fractal_floor_1_local_m3h": 3.85819,
+      "fractal_floor_2_local_m3h": 3.62076,
+      "fractal_floor_3_local_m3h": 3.47838,
+      "fractal_floor_4_local_m3h": 3.39444,
+      "fractal_supply_tank_inlet_m3h": 0.0
     },
     {
       "t_s": 36000.0,
@@ -1178,7 +1736,21 @@
       "emulator_min_dwelling_pressure_mca": 30.97609,
       "fractal_min_dwelling_pressure_mca": 30.96331,
       "fractal_worst_demand_minimum_mca": 29.98515,
-      "fractal_worst_demand_factor": 1.1
+      "fractal_worst_demand_factor": 1.1,
+      "emulator_pump_supply_outlet_m3h": 15.186499201790646,
+      "emulator_prs_outlet_m3h": 15.18622345984678,
+      "emulator_floor_1_local_m3h": 4.1070502976685965,
+      "emulator_floor_2_local_m3h": 3.832242956945467,
+      "emulator_floor_3_local_m3h": 3.669971240261275,
+      "emulator_floor_4_local_m3h": 3.577319139258654,
+      "emulator_supply_tank_inlet_m3h": 20.487218249096685,
+      "fractal_pump_supply_outlet_m3h": 15.18452,
+      "fractal_prs_outlet_m3h": 15.18452,
+      "fractal_floor_1_local_m3h": 4.10705,
+      "fractal_floor_2_local_m3h": 3.83165,
+      "fractal_floor_3_local_m3h": 3.66924,
+      "fractal_floor_4_local_m3h": 3.57658,
+      "fractal_supply_tank_inlet_m3h": 20.3861
     },
     {
       "t_s": 39600.0,
@@ -1190,7 +1762,21 @@
       "emulator_min_dwelling_pressure_mca": 30.54511,
       "fractal_min_dwelling_pressure_mca": 30.53164,
       "fractal_worst_demand_minimum_mca": 29.49719,
-      "fractal_worst_demand_factor": 1.1
+      "fractal_worst_demand_factor": 1.1,
+      "emulator_pump_supply_outlet_m3h": 15.716703502577577,
+      "emulator_prs_outlet_m3h": 15.716433817825042,
+      "emulator_floor_1_local_m3h": 4.267770413050276,
+      "emulator_floor_2_local_m3h": 3.9666162016183906,
+      "emulator_floor_3_local_m3h": 3.7904923932199615,
+      "emulator_floor_4_local_m3h": 3.6919150027619483,
+      "emulator_supply_tank_inlet_m3h": 21.069876814185253,
+      "fractal_pump_supply_outlet_m3h": 15.71452,
+      "fractal_prs_outlet_m3h": 15.71452,
+      "fractal_floor_1_local_m3h": 4.26777,
+      "fractal_floor_2_local_m3h": 3.96596,
+      "fractal_floor_3_local_m3h": 3.78969,
+      "fractal_floor_4_local_m3h": 3.6911,
+      "fractal_supply_tank_inlet_m3h": 20.9466
     },
     {
       "t_s": 43200.0,
@@ -1202,7 +1788,21 @@
       "emulator_min_dwelling_pressure_mca": 30.40013,
       "fractal_min_dwelling_pressure_mca": 30.38644,
       "fractal_worst_demand_minimum_mca": 29.33345,
-      "fractal_worst_demand_factor": 1.1
+      "fractal_worst_demand_factor": 1.1,
+      "emulator_pump_supply_outlet_m3h": 15.892016351524529,
+      "emulator_prs_outlet_m3h": 15.891748645337548,
+      "emulator_floor_1_local_m3h": 4.321329338863103,
+      "emulator_floor_2_local_m3h": 4.011064066043185,
+      "emulator_floor_3_local_m3h": 3.830159698941441,
+      "emulator_floor_4_local_m3h": 3.729555742951252,
+      "emulator_supply_tank_inlet_m3h": 20.34917808116261,
+      "fractal_pump_supply_outlet_m3h": 15.88977,
+      "fractal_prs_outlet_m3h": 15.88977,
+      "fractal_floor_1_local_m3h": 4.32133,
+      "fractal_floor_2_local_m3h": 4.01039,
+      "fractal_floor_3_local_m3h": 3.82933,
+      "fractal_floor_4_local_m3h": 3.72872,
+      "fractal_supply_tank_inlet_m3h": 20.2297
     },
     {
       "t_s": 46800.0,
@@ -1214,7 +1814,21 @@
       "emulator_min_dwelling_pressure_mca": 30.52444,
       "fractal_min_dwelling_pressure_mca": 30.51094,
       "fractal_worst_demand_minimum_mca": 29.47383,
-      "fractal_worst_demand_factor": 1.1
+      "fractal_worst_demand_factor": 1.1,
+      "emulator_pump_supply_outlet_m3h": 15.741791851411659,
+      "emulator_prs_outlet_m3h": 15.741522393944733,
+      "emulator_floor_1_local_m3h": 4.275422133299733,
+      "emulator_floor_2_local_m3h": 3.9729764306268445,
+      "emulator_floor_3_local_m3h": 3.796174649511629,
+      "emulator_floor_4_local_m3h": 3.6973093869894886,
+      "emulator_supply_tank_inlet_m3h": 20.928070940173356,
+      "fractal_pump_supply_outlet_m3h": 15.7396,
+      "fractal_prs_outlet_m3h": 15.7396,
+      "fractal_floor_1_local_m3h": 4.27542,
+      "fractal_floor_2_local_m3h": 3.97232,
+      "fractal_floor_3_local_m3h": 3.79537,
+      "fractal_floor_4_local_m3h": 3.69649,
+      "fractal_supply_tank_inlet_m3h": 20.7827
     },
     {
       "t_s": 50400.0,
@@ -1226,7 +1840,21 @@
       "emulator_min_dwelling_pressure_mca": 30.88426,
       "fractal_min_dwelling_pressure_mca": 30.87133,
       "fractal_worst_demand_minimum_mca": 29.88104,
-      "fractal_worst_demand_factor": 1.1
+      "fractal_worst_demand_factor": 1.1,
+      "emulator_pump_supply_outlet_m3h": 15.300651236060892,
+      "emulator_prs_outlet_m3h": 15.30037689995551,
+      "emulator_floor_1_local_m3h": 4.141495755661676,
+      "emulator_floor_2_local_m3h": 3.861166909860939,
+      "emulator_floor_3_local_m3h": 3.6959883970916763,
+      "emulator_floor_4_local_m3h": 3.602085984038606,
+      "emulator_supply_tank_inlet_m3h": 0.0,
+      "fractal_pump_supply_outlet_m3h": 15.29863,
+      "fractal_prs_outlet_m3h": 15.29863,
+      "fractal_floor_1_local_m3h": 4.1415,
+      "fractal_floor_2_local_m3h": 3.86056,
+      "fractal_floor_3_local_m3h": 3.69524,
+      "fractal_floor_4_local_m3h": 3.60133,
+      "fractal_supply_tank_inlet_m3h": 0.0
     },
     {
       "t_s": 54000.0,
@@ -1238,7 +1866,21 @@
       "emulator_min_dwelling_pressure_mca": 31.45055,
       "fractal_min_dwelling_pressure_mca": 31.43855,
       "fractal_worst_demand_minimum_mca": 30.52439,
-      "fractal_worst_demand_factor": 1.1
+      "fractal_worst_demand_factor": 1.1,
+      "emulator_pump_supply_outlet_m3h": 14.585647566288337,
+      "emulator_prs_outlet_m3h": 14.585365277079504,
+      "emulator_floor_1_local_m3h": 3.92712100838055,
+      "emulator_floor_2_local_m3h": 3.6800535382821398,
+      "emulator_floor_3_local_m3h": 3.5324215989888974,
+      "emulator_floor_4_local_m3h": 3.4461293233703665,
+      "emulator_supply_tank_inlet_m3h": 20.27833762471197,
+      "fractal_pump_supply_outlet_m3h": 14.58389,
+      "fractal_prs_outlet_m3h": 14.58389,
+      "fractal_floor_1_local_m3h": 3.92712,
+      "fractal_floor_2_local_m3h": 3.67953,
+      "fractal_floor_3_local_m3h": 3.53177,
+      "fractal_floor_4_local_m3h": 3.44547,
+      "fractal_supply_tank_inlet_m3h": 0.0
     },
     {
       "t_s": 57600.0,
@@ -1250,7 +1892,21 @@
       "emulator_min_dwelling_pressure_mca": 32.15869,
       "fractal_min_dwelling_pressure_mca": 32.1479,
       "fractal_worst_demand_minimum_mca": 31.33315,
-      "fractal_worst_demand_factor": 1.1
+      "fractal_worst_demand_factor": 1.1,
+      "emulator_pump_supply_outlet_m3h": 13.650010790577959,
+      "emulator_prs_outlet_m3h": 13.649718904777057,
+      "emulator_floor_1_local_m3h": 3.6513333704254385,
+      "emulator_floor_2_local_m3h": 3.4432359189429333,
+      "emulator_floor_3_local_m3h": 3.3162998463045286,
+      "emulator_floor_4_local_m3h": 3.2392099475349223,
+      "emulator_supply_tank_inlet_m3h": 20.368165484995963,
+      "fractal_pump_supply_outlet_m3h": 13.64856,
+      "fractal_prs_outlet_m3h": 13.64856,
+      "fractal_floor_1_local_m3h": 3.65133,
+      "fractal_floor_2_local_m3h": 3.4428,
+      "fractal_floor_3_local_m3h": 3.31576,
+      "fractal_floor_4_local_m3h": 3.23867,
+      "fractal_supply_tank_inlet_m3h": 0.0
     },
     {
       "t_s": 61200.0,
@@ -1262,7 +1918,21 @@
       "emulator_min_dwelling_pressure_mca": 32.95096,
       "fractal_min_dwelling_pressure_mca": 32.9416,
       "fractal_worst_demand_minimum_mca": 32.24346,
-      "fractal_worst_demand_factor": 1.1
+      "fractal_worst_demand_factor": 1.1,
+      "emulator_pump_supply_outlet_m3h": 12.535797592297456,
+      "emulator_prs_outlet_m3h": 12.535494993480208,
+      "emulator_floor_1_local_m3h": 3.3293586082141915,
+      "emulator_floor_2_local_m3h": 3.161455210712858,
+      "emulator_floor_3_local_m3h": 3.0560953925209775,
+      "emulator_floor_4_local_m3h": 2.988945942767928,
+      "emulator_supply_tank_inlet_m3h": 20.253130951808064,
+      "fractal_pump_supply_outlet_m3h": 12.53468,
+      "fractal_prs_outlet_m3h": 12.53468,
+      "fractal_floor_1_local_m3h": 3.32936,
+      "fractal_floor_2_local_m3h": 3.16112,
+      "fractal_floor_3_local_m3h": 3.05568,
+      "fractal_floor_4_local_m3h": 2.98852,
+      "fractal_supply_tank_inlet_m3h": 0.0
     },
     {
       "t_s": 64800.0,
@@ -1274,7 +1944,21 @@
       "emulator_min_dwelling_pressure_mca": 33.76012,
       "fractal_min_dwelling_pressure_mca": 33.7523,
       "fractal_worst_demand_minimum_mca": 33.17882,
-      "fractal_worst_demand_factor": 1.1
+      "fractal_worst_demand_factor": 1.1,
+      "emulator_pump_supply_outlet_m3h": 11.30232750590767,
+      "emulator_prs_outlet_m3h": 11.302014077591771,
+      "emulator_floor_1_local_m3h": 2.980296740415965,
+      "emulator_floor_2_local_m3h": 2.8497678912877915,
+      "emulator_floor_3_local_m3h": 2.7648022008212125,
+      "emulator_floor_4_local_m3h": 2.7075073316806413,
+      "emulator_supply_tank_inlet_m3h": 0.0,
+      "fractal_pump_supply_outlet_m3h": 11.3015,
+      "fractal_prs_outlet_m3h": 11.3015,
+      "fractal_floor_1_local_m3h": 2.9803,
+      "fractal_floor_2_local_m3h": 2.84952,
+      "fractal_floor_3_local_m3h": 2.76449,
+      "fractal_floor_4_local_m3h": 2.70719,
+      "fractal_supply_tank_inlet_m3h": 0.0
     },
     {
       "t_s": 68400.0,
@@ -1286,7 +1970,21 @@
       "emulator_min_dwelling_pressure_mca": 34.50922,
       "fractal_min_dwelling_pressure_mca": 34.50288,
       "fractal_worst_demand_minimum_mca": 34.04943,
-      "fractal_worst_demand_factor": 1.1
+      "fractal_worst_demand_factor": 1.1,
+      "emulator_pump_supply_outlet_m3h": 10.04295197101427,
+      "emulator_prs_outlet_m3h": 10.042628688135226,
+      "emulator_floor_1_local_m3h": 2.6309871740361213,
+      "emulator_floor_2_local_m3h": 2.5317613322599875,
+      "emulator_floor_3_local_m3h": 2.4642821960460477,
+      "emulator_floor_4_local_m3h": 2.4159580537948617,
+      "emulator_supply_tank_inlet_m3h": 0.0,
+      "fractal_pump_supply_outlet_m3h": 10.04237,
+      "fractal_prs_outlet_m3h": 10.04237,
+      "fractal_floor_1_local_m3h": 2.63099,
+      "fractal_floor_2_local_m3h": 2.53158,
+      "fractal_floor_3_local_m3h": 2.46406,
+      "fractal_floor_4_local_m3h": 2.41574,
+      "fractal_supply_tank_inlet_m3h": 21.1644
     },
     {
       "t_s": 72000.0,
@@ -1298,7 +1996,21 @@
       "emulator_min_dwelling_pressure_mca": 35.13952,
       "fractal_min_dwelling_pressure_mca": 35.13447,
       "fractal_worst_demand_minimum_mca": 34.78498,
-      "fractal_worst_demand_factor": 1.1
+      "fractal_worst_demand_factor": 1.1,
+      "emulator_pump_supply_outlet_m3h": 8.859137776679448,
+      "emulator_prs_outlet_m3h": 8.858806298286801,
+      "emulator_floor_1_local_m3h": 2.3083459161403397,
+      "emulator_floor_2_local_m3h": 2.2330054254234035,
+      "emulator_floor_3_local_m3h": 2.1792881265922213,
+      "emulator_floor_4_local_m3h": 2.1385268813963494,
+      "emulator_supply_tank_inlet_m3h": 0.0,
+      "fractal_pump_supply_outlet_m3h": 8.85874,
+      "fractal_prs_outlet_m3h": 8.85874,
+      "fractal_floor_1_local_m3h": 2.30835,
+      "fractal_floor_2_local_m3h": 2.23288,
+      "fractal_floor_3_local_m3h": 2.17914,
+      "fractal_floor_4_local_m3h": 2.13837,
+      "fractal_supply_tank_inlet_m3h": 20.8198
     },
     {
       "t_s": 75600.0,
@@ -1310,7 +2022,21 @@
       "emulator_min_dwelling_pressure_mca": 35.62767,
       "fractal_min_dwelling_pressure_mca": 35.62367,
       "fractal_worst_demand_minimum_mca": 35.35608,
-      "fractal_worst_demand_factor": 1.1
+      "fractal_worst_demand_factor": 1.1,
+      "emulator_pump_supply_outlet_m3h": 7.829548854434432,
+      "emulator_prs_outlet_m3h": 7.829211090095184,
+      "emulator_floor_1_local_m3h": 2.031656672717852,
+      "emulator_floor_2_local_m3h": 1.9732807927950118,
+      "emulator_floor_3_local_m3h": 1.9297041767860363,
+      "emulator_floor_4_local_m3h": 1.8949294850342246,
+      "emulator_supply_tank_inlet_m3h": 0.0,
+      "fractal_pump_supply_outlet_m3h": 7.82928,
+      "fractal_prs_outlet_m3h": 7.82928,
+      "fractal_floor_1_local_m3h": 2.03166,
+      "fractal_floor_2_local_m3h": 1.9732,
+      "fractal_floor_3_local_m3h": 1.9296,
+      "fractal_floor_4_local_m3h": 1.89482,
+      "fractal_supply_tank_inlet_m3h": 20.6522
     },
     {
       "t_s": 79200.0,
@@ -1322,7 +2048,21 @@
       "emulator_min_dwelling_pressure_mca": 35.97129,
       "fractal_min_dwelling_pressure_mca": 35.96804,
       "fractal_worst_demand_minimum_mca": 35.75849,
-      "fractal_worst_demand_factor": 1.1
+      "fractal_worst_demand_factor": 1.1,
+      "emulator_pump_supply_outlet_m3h": 7.020113504636454,
+      "emulator_prs_outlet_m3h": 7.019771347119418,
+      "emulator_floor_1_local_m3h": 1.8163730979179737,
+      "emulator_floor_2_local_m3h": 1.769151958669867,
+      "emulator_floor_3_local_m3h": 1.7325051626612404,
+      "emulator_floor_4_local_m3h": 1.7021011549740268,
+      "emulator_supply_tank_inlet_m3h": 0.0,
+      "fractal_pump_supply_outlet_m3h": 7.01991,
+      "fractal_prs_outlet_m3h": 7.01991,
+      "fractal_floor_1_local_m3h": 1.81637,
+      "fractal_floor_2_local_m3h": 1.76909,
+      "fractal_floor_3_local_m3h": 1.73243,
+      "fractal_floor_4_local_m3h": 1.70202,
+      "fractal_supply_tank_inlet_m3h": 20.7492
     },
     {
       "t_s": 82800.0,
@@ -1334,7 +2074,21 @@
       "emulator_min_dwelling_pressure_mca": 36.16915,
       "fractal_min_dwelling_pressure_mca": 36.16633,
       "fractal_worst_demand_minimum_mca": 35.9902,
-      "fractal_worst_demand_factor": 1.1
+      "fractal_worst_demand_factor": 1.1,
+      "emulator_pump_supply_outlet_m3h": 6.5106951470158325,
+      "emulator_prs_outlet_m3h": 6.510350474099837,
+      "emulator_floor_1_local_m3h": 1.6817880976524318,
+      "emulator_floor_2_local_m3h": 1.640706578999776,
+      "emulator_floor_3_local_m3h": 1.6080018602023318,
+      "emulator_floor_4_local_m3h": 1.580213956850513,
+      "emulator_supply_tank_inlet_m3h": 0.0,
+      "fractal_pump_supply_outlet_m3h": 6.51054,
+      "fractal_prs_outlet_m3h": 6.51054,
+      "fractal_floor_1_local_m3h": 1.68179,
+      "fractal_floor_2_local_m3h": 1.64066,
+      "fractal_floor_3_local_m3h": 1.60794,
+      "fractal_floor_4_local_m3h": 1.58015,
+      "fractal_supply_tank_inlet_m3h": 21.0919
     },
     {
       "t_s": 86400.0,
@@ -1346,7 +2100,178 @@
       "emulator_min_dwelling_pressure_mca": 36.2339,
       "fractal_min_dwelling_pressure_mca": 36.23123,
       "fractal_worst_demand_minimum_mca": 36.06602,
-      "fractal_worst_demand_factor": 1.1
+      "fractal_worst_demand_factor": 1.1,
+      "emulator_pump_supply_outlet_m3h": 6.335451511007542,
+      "emulator_prs_outlet_m3h": 6.3351060189189585,
+      "emulator_floor_1_local_m3h": 1.6356392717478017,
+      "emulator_floor_2_local_m3h": 1.5965241531053147,
+      "emulator_floor_3_local_m3h": 1.5651063654363724,
+      "emulator_floor_4_local_m3h": 1.5381962434470957,
+      "emulator_supply_tank_inlet_m3h": 0.0,
+      "fractal_pump_supply_outlet_m3h": 6.33531,
+      "fractal_prs_outlet_m3h": 6.33531,
+      "fractal_floor_1_local_m3h": 1.63564,
+      "fractal_floor_2_local_m3h": 1.59648,
+      "fractal_floor_3_local_m3h": 1.56505,
+      "fractal_floor_4_local_m3h": 1.53814,
+      "fractal_supply_tank_inlet_m3h": 0.0
     }
-  ]
+  ],
+  "flow_error_statistics": {
+    "method": "100*(Fractal-PLC)/PLC; population statistics; nominal hourly endpoints, equal weight per signal; not physical confidence or independent samples; zero references excluded only from relative statistics",
+    "by_signal": {
+      "pump_supply_outlet": {
+        "absolute_m3h": {
+          "n": 24,
+          "mean": -0.0009778191113313979,
+          "population_std": 0.0007599119082269271,
+          "population_variance": 5.774661082650896e-07,
+          "max_absolute": 0.002246351524528123
+        },
+        "relative_pct_nonzero_reference": {
+          "n": 24,
+          "mean": -0.0075401314067445515,
+          "population_std": 0.004311360245394541,
+          "population_variance": 1.8587827165568475e-05,
+          "max_absolute": 0.014135094470328992
+        },
+        "zero_reference_count": 0,
+        "both_zero_count": 0,
+        "zero_reference_nonzero_forecast_count": 0
+      },
+      "prs_outlet": {
+        "absolute_m3h": {
+          "n": 24,
+          "mean": -0.0006668458667374125,
+          "population_std": 0.0007873390270095994,
+          "population_variance": 6.199027434524227e-07,
+          "max_absolute": 0.0019786453375481017
+        },
+        "relative_pct_nonzero_reference": {
+          "n": 24,
+          "mean": -0.0043039897282816895,
+          "population_std": 0.005602977779313925,
+          "population_variance": 3.1393359995485606e-05,
+          "max_absolute": 0.012450771665889725
+        },
+        "zero_reference_count": 0,
+        "both_zero_count": 0,
+        "zero_reference_nonzero_forecast_count": 0
+      },
+      "floor_1_local": {
+        "absolute_m3h": {
+          "n": 24,
+          "mean": 8.977356910448245e-07,
+          "population_std": 2.1792532253755664e-06,
+          "population_variance": 4.74914462030981e-12,
+          "max_absolute": 4.244338323466934e-06
+        },
+        "relative_pct_nonzero_reference": {
+          "n": 24,
+          "mean": 4.081537745867706e-05,
+          "population_std": 8.692507474523707e-05,
+          "population_variance": 7.555968619465052e-09,
+          "max_absolute": 0.00017781382659824935
+        },
+        "zero_reference_count": 0,
+        "both_zero_count": 0,
+        "zero_reference_nonzero_forecast_count": 0
+      },
+      "floor_2_local": {
+        "absolute_m3h": {
+          "n": 24,
+          "mean": -0.00029475058848205116,
+          "population_std": 0.0002268932656739334,
+          "population_variance": 5.148055400818213e-08,
+          "max_absolute": 0.0006740660431852064
+        },
+        "relative_pct_nonzero_reference": {
+          "n": 24,
+          "mean": -0.009035256611744431,
+          "population_std": 0.005069627641912767,
+          "population_variance": 2.5701124427646006e-05,
+          "max_absolute": 0.01680516770828235
+        },
+        "zero_reference_count": 0,
+        "both_zero_count": 0,
+        "zero_reference_nonzero_forecast_count": 0
+      },
+      "floor_3_local": {
+        "absolute_m3h": {
+          "n": 24,
+          "mean": -0.00036369848990802645,
+          "population_std": 0.0002788652908577815,
+          "population_variance": 7.776585044519507e-08,
+          "max_absolute": 0.000829698941440693
+        },
+        "relative_pct_nonzero_reference": {
+          "n": 24,
+          "mean": -0.01157171944068792,
+          "population_std": 0.006544578305855962,
+          "population_variance": 4.2831505201480487e-05,
+          "max_absolute": 0.021662254492156054
+        },
+        "zero_reference_count": 0,
+        "both_zero_count": 0,
+        "zero_reference_nonzero_forecast_count": 0
+      },
+      "floor_4_local": {
+        "absolute_m3h": {
+          "n": 24,
+          "mean": -0.0003688857065050899,
+          "population_std": 0.00028150448282123625,
+          "population_variance": 7.924477384845169e-08,
+          "max_absolute": 0.0008357429512519943
+        },
+        "relative_pct_nonzero_reference": {
+          "n": 24,
+          "mean": -0.012030742138824197,
+          "population_std": 0.0067661710098485175,
+          "population_variance": 4.578107013451451e-05,
+          "max_absolute": 0.022408646199524523
+        },
+        "zero_reference_count": 0,
+        "both_zero_count": 0,
+        "zero_reference_nonzero_forecast_count": 0
+      },
+      "supply_tank_inlet": {
+        "absolute_m3h": {
+          "n": 24,
+          "mean": 3.554361127346667,
+          "population_std": 12.930970388968513,
+          "population_variance": 167.20999520038046,
+          "max_absolute": 21.1763
+        },
+        "relative_pct_nonzero_reference": {
+          "n": 9,
+          "mean": -33.66681040195403,
+          "population_std": 46.904795970894,
+          "population_variance": 2200.0598850711945,
+          "max_absolute": 100.0
+        },
+        "zero_reference_count": 15,
+        "both_zero_count": 8,
+        "zero_reference_nonzero_forecast_count": 7
+      }
+    },
+    "distribution_only_pooled": {
+      "absolute_m3h": {
+        "n": 144,
+        "mean": -0.00044518367121215555,
+        "population_std": 0.0005734078490793859,
+        "population_variance": 3.2879656138584775e-07,
+        "max_absolute": 0.002246351524528123
+      },
+      "relative_pct_nonzero_reference": {
+        "n": 144,
+        "mean": -0.007406837324804019,
+        "population_std": 0.006718058900316968,
+        "population_variance": 4.5132315388128036e-05,
+        "max_absolute": 0.022408646199524523
+      },
+      "zero_reference_count": 0,
+      "both_zero_count": 0,
+      "zero_reference_nonzero_forecast_count": 0
+    }
+  }
 }

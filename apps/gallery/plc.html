@@ -1,9 +1,10 @@
 <!doctype html>
-<html lang="es">
+<html lang="es" data-plc-pending>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PLC Master · Acueducto</title>
+    <style>html[data-plc-pending] body { display: none; }</style>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Orbitron:wght@500;600;700&display=swap" />
   </head>
@@ -32,6 +33,7 @@
           <button data-screen="profiles">PERFILES</button>
           <button data-screen="trends">TENDENCIAS</button>
           <button data-screen="fractal">FRACTAL</button>
+          <button data-screen="comparisons">COMPARATIVAS</button>
           <button data-screen="history">HISTORIAL</button>
         </nav>
         <section id="master" class="screen active">
@@ -83,6 +85,16 @@
           <div id="fractal-recommendations" class="cards"><p class="muted">Conecte una sesión PLC con un perfil activo para proyectar su futuro simulado.</p></div>
           <div id="fractal-saved" class="cards" aria-label="Estudios futuros publicados en PLC"></div>
         </section>
+        <section id="comparisons" class="screen">
+          <article class="panel">
+            <h2>EMULADOR / FRACTAL · EVIDENCIA PRECALCULADA</h2>
+            <p>Replay de validación de 24 horas, no datos de la sesión en vivo. Seleccionar una comparación no cambia perfiles ni envía mandos.</p>
+            <label>Escenario <select id="comparison-scenario"><option value="c44">C44 · objetivo 18 mca · PRS AUTO variable</option><option value="fixed">PRS AUTO · salida fija 40 mca · entrada objetivo 70 mca</option></select></label>
+            <p>Fractal nominal ×1,0 frente al emulador, en 24 fronteras horarias. Presiones y caudales instantáneos, no promedios horarios. Caudales de piso = consumos + fugas locales, no montante hacia el piso siguiente.</p>
+            <p>Azul: Fractal · naranja: emulador. Debajo de cada gráfica: diferencia relativa 100 × (Fractal − emulador) / emulador. Sin porcentaje cuando el emulador vale cero. No certifica una instalación real.</p>
+          </article>
+          <div id="comparison-charts"></div>
+        </section>
         <section id="trends" class="screen">
           <div class="section-head"><div><p class="eyebrow">HISTORIADOR DE SESIÓN</p><h1>Tendencias de operación</h1><p class="muted">Muestras del emulador hidráulico durante esta sesión. Un perfil de 24 h se incorporará como escenario programable.</p></div></div>
           <div id="trends-charts" class="trend-charts"></div>
@@ -94,6 +106,6 @@
       </section>
     </main>
     <dialog id="chart-modal" class="chart-modal"><div class="chart-modal-head"><strong id="chart-modal-title">GRÁFICA AMPLIADA</strong><button id="chart-modal-close">× CERRAR</button></div><div id="chart-modal-content"></div></dialog>
-    <script type="module" src="/src/plc.ts"></script>
+    <script type="module" src="/src/plc-entry.ts"></script>
   </body>
 </html>

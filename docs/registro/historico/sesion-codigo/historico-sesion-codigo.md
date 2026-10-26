@@ -11,6 +11,7 @@ Conversación entre Carlos Andrés Quiceño (autor) y Claude (modelo Opus 5.5, C
 
 - [[sesion-codigo-parte-01]]: 2026-10-15 23:17 → 2026-10-16 04:18 (repositorio vacío, plan, layouts de plantas, librería de equipos).
 - [[sesion-codigo-parte-02]]: 2026-10-16 04:18 → 13:54 (geometría, galería, MCP, entrevista, PR #1–#4, sachets).
+- [[2026-10-26-plc-integrado-comparativas]]: PLC solo dentro del escritorio 3D y comparativas precalculadas C44/fija con diferencias relativas.
 - [[2026-10-25-escenario-prs-punto-critico]]: 2026-10-25 (modo PRS AUTO de punto fijo C44, comparación de 64 viviendas y escenarios Fractal de 24 h; replay dinámico PLC virtual de la primera hora).
 - [[2026-10-25-escenario-prs-salida-fija]]: 2026-10-25 06:08–07:17 UTC (PRS con salida AUTO fija, validación de presión 24 h y arreglo del benchmark de antirretornos).
 - [[2026-10-25-alineacion-horizonte-d78]]: 2026-10-25 (franja inicial parcial alineada al reloj PLC, replay D78 de 24 h y preparación del PR).
