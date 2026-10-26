@@ -1,0 +1,24 @@
+{
+  "name": "@twin/cloudflare-emulator-worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "dev": "wrangler dev --config ../../wrangler.acueducto.jsonc",
+    "deploy": "wrangler deploy --config ../../wrangler.acueducto.jsonc",
+    "d1:local": "wrangler d1 migrations apply acueducto-emulator --local --config ../../wrangler.acueducto.jsonc",
+    "d1:remote": "wrangler d1 migrations apply acueducto-emulator --remote --config ../../wrangler.acueducto.jsonc"
+  },
+  "dependencies": {
+    "@cloudflare/containers": "0.3.7",
+    "jose": "^6.1.3"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "5.20261026.1",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4",
+    "wrangler": "^4.45.0"
+  }
+}

@@ -10,12 +10,15 @@ from uuid import uuid4
 
 from twin_runtime.plant import PlantModel
 
+from .audit import audit
 from .historian import historian
 from .plc_tags import plc_tags
 from .profiles import commands_for_hour, current_prs_inlet_offset_mca
+from .session_checkpoints import checkpoints
 
 TICK_S = 0.1
 MAX_STEPS_PER_TICK = 4000
+CHECKPOINT_INTERVAL_S = 3600.0
 
 
 def clean(value: Any) -> Any:
@@ -47,6 +50,7 @@ class PlantSession:
     budget: float = 0.0
     sent_events: int = 0
     last_sample_t: float = -60.0
+    last_checkpoint_t: float = 0.0
     recommendations: list[dict[str, Any]] = field(default_factory=list)
     _snapshot_t: float | None = field(default=None, repr=False)
     _snapshot: dict[str, Any] | None = field(default=None, repr=False)
@@ -108,6 +112,9 @@ class PlantSession:
             )
             historian.frame(self.id, message["t"], message["snapshot"])
             self.last_sample_t = message["t"]
+        if message["t"] - self.last_checkpoint_t >= CHECKPOINT_INTERVAL_S:
+            self.last_checkpoint_t = message["t"]
+            checkpoints.save(self)
         for queue in list(self.subscribers):
             if queue.full():
                 try:
@@ -127,17 +134,52 @@ class SessionManager:
         plant = model.create(seed=1, random_faults=False, horizon_s=86400.0)
         session = PlantSession(str(uuid4()), plant_id, plant, profile_id, profile)
         self.sessions[session.id] = session
+        checkpoints.save(session)
+        audit.record(plant_id, "session.created", session_id=session.id, details={"profile_id": profile_id})
         return session
 
     def get(self, plant_id: str, session_id: str) -> PlantSession | None:
         session = self.sessions.get(session_id)
-        return session if session and session.plant_id == plant_id else None
+        if session is not None:
+            return session if session.plant_id == plant_id else None
+        # PlantModel registers behavior classes from equipment-library as dynamic modules.
+        # Load the plant before unpickling so those module names exist after a fresh process boot.
+        from .main import _plant_model
+
+        _plant_model(plant_id)
+        state = checkpoints.load(plant_id, session_id)
+        if state is None:
+            return None
+        plant = state["plant"]
+        session = PlantSession(
+            id=session_id,
+            plant_id=plant_id,
+            plant=plant,
+            profile_id=state.get("profile_id"),
+            profile=state.get("profile"),
+            speed=float(state.get("speed", 240.0)),
+            paused=bool(state.get("paused", False)),
+            running=bool(state.get("running", False)),
+            created_at=float(state.get("created_at", time())),
+            last_activity=float(state.get("last_activity", time())),
+            applied_profile_hour=state.get("applied_profile_hour"),
+            pending_profile=state.get("pending_profile"),
+            budget=float(state.get("budget", 0.0)),
+            sent_events=int(state.get("sent_events", 0)),
+            last_sample_t=float(state.get("last_sample_t", -60.0)),
+            last_checkpoint_t=float(state.get("last_checkpoint_t", plant.t)),
+            recommendations=state.get("recommendations", []),
+        )
+        self.sessions[session_id] = session
+        return session
 
     def start(self, session: PlantSession) -> None:
         if session.running and session.task is not None and not session.task.done():
             return
         session.running = True
         session.last_activity = time()
+        checkpoints.save(session)
+        audit.record(session.plant_id, "session.started", session_id=session.id)
         session.task = asyncio.create_task(self._run(session))
 
     async def _run(self, session: PlantSession) -> None:
@@ -161,12 +203,21 @@ class SessionManager:
     def stop(self, session: PlantSession) -> None:
         session.running = False
         session.last_activity = time()
+        checkpoints.save(session)
+        audit.record(session.plant_id, "session.stopped", session_id=session.id, details={"simulated_t": session.plant.t})
 
     def schedule_profile(self, session: PlantSession, profile_id: str, profile: dict[str, Any]) -> int:
         """Programa el perfil para la siguiente hora simulada; no envía mandos al aceptarlo."""
         current_hour = int(session.plant.t // 3600)
         session.pending_profile = (current_hour + 1, profile_id, profile)
         session.last_activity = time()
+        checkpoints.save(session)
+        audit.record(
+            session.plant_id,
+            "profile.scheduled",
+            session_id=session.id,
+            details={"profile_id": profile_id, "starts_at_hour": current_hour + 1},
+        )
         return current_hour + 1
 
     def command(self, session: PlantSession, payload: dict[str, Any]) -> None:
@@ -184,12 +235,16 @@ class SessionManager:
             session.invalidate_snapshot()
         historian.command(session.id, session.plant.t, payload)
         session.last_activity = time()
+        checkpoints.save(session)
+        audit.record(session.plant_id, "operator.command", session_id=session.id, details=payload)
 
     def publish_recommendation(self, session: PlantSession, recommendation: dict[str, Any]) -> dict[str, Any]:
         item = {"id": str(uuid4()), "status": "pending", "created_t": session.plant.t, **recommendation}
         session.recommendations.append(item)
         historian.command(session.id, session.plant.t, {"source": "fractal", "recommendation": item})
         historian.recommendation(session.id, item["id"], session.plant.t, item)
+        checkpoints.save(session)
+        audit.record(session.plant_id, "fractal.recommendation", session_id=session.id, details={"recommendation_id": item["id"]})
         return item
 
     def decide_recommendation(self, session: PlantSession, recommendation_id: str, accept: bool) -> dict[str, Any]:
@@ -206,6 +261,13 @@ class SessionManager:
             {"source": "operator", "recommendation_id": recommendation_id, "decision": item["status"]},
         )
         historian.recommendation(session.id, recommendation_id, session.plant.t, item)
+        checkpoints.save(session)
+        audit.record(
+            session.plant_id,
+            "fractal.recommendation_decided",
+            session_id=session.id,
+            details={"recommendation_id": recommendation_id, "decision": item["status"]},
+        )
         return item
 
     def subscribe(self, session: PlantSession) -> asyncio.Queue[dict[str, Any]]:

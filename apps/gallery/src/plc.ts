@@ -18,17 +18,23 @@ function notify3d(type: "plc-session-created" | "plc-show-3d", data: { sessionId
   if (embedded && window.parent !== window) window.parent.postMessage({ type, plantId, ...data }, location.origin);
 }
 // En desarrollo usa el proxy local. Una HMI publicada puede apuntar a un host FastAPI explícito:
-// plc.html?plant=water-network-scale-v1&api=https://emulador.ejemplo.com
+// plc.html?plant=water-network-scale-v1&api=https://planta-real.ejemplo.com
 const apiOrigin = (query.get("api") ?? location.origin).replace(/\/$/, "");
 const apiUrl = (path: string) => `${apiOrigin}${path}`;
+const serviceAuthLink = document.getElementById("service-auth") as HTMLAnchorElement | null;
+if (serviceAuthLink && new URL(apiOrigin, location.origin).origin !== location.origin) {
+  serviceAuthLink.href = apiUrl("/api/health");
+  serviceAuthLink.hidden = false;
+}
+const apiFetch = (path: string, init: RequestInit = {}) => fetch(apiUrl(path), { ...init, credentials: "include" });
 const websocketUrl = (path: string) => `${apiOrigin.replace(/^http/, "ws")}${path}`;
 const fractalOrigin = (query.get("fractal") ?? (["localhost", "127.0.0.1"].includes(location.hostname) ? `${location.origin}/fractal-api` : "")).replace(/\/$/, "");
 
 async function getJson<T>(path: string): Promise<T> {
-  const response = await fetch(apiUrl(path));
+  const response = await apiFetch(path);
   const contentType = response.headers.get("content-type") ?? "";
   if (!response.ok || !contentType.includes("application/json")) {
-    throw Error("El emulador API no está disponible en esta dirección. La galería publicada es estática; abra la HMI local con el API o proporcione ?api=https://host-del-emulador.");
+    throw Error("La API de Planta Real no está disponible en esta dirección. La galería publicada es estática; abra la HMI local con el servicio o proporcione ?api=https://host-de-planta-real.");
   }
   return response.json() as Promise<T>;
 }
@@ -204,8 +210,8 @@ function renderSavedRuns(): void {
   $("saved-runs").innerHTML = runs.length ? runs.map((run) => {
     const min = Math.min(...run.samples.map((sample) => sample.critical));
     const consumption = run.samples.slice(1).reduce((total, sample, index) => total + sample.consumption * (sample.t - run.samples[index].t) / 3600, 0);
-    return `<article class="card panel"><p class="eyebrow">SIMULACIÓN ${new Date(run.startedAt).toLocaleString("es-CO")}</p><h2>${fmt(run.durationS / 3600, 2)} h simuladas</h2><div class="readings"><span>Presión mín. <b>${fmt(min)} mca</b></span><span>Consumo <b>${fmt(consumption, 2)} m³</b></span><span>Muestras <b>${run.samples.length}</b></span></div><div class="controls"><button data-load-run="${run.id}">VER CURVAS</button><button data-delete-run="${run.id}">ELIMINAR</button></div></article>`;
-  }).join("") : `<p class="muted">Aún no hay sesiones guardadas. Al desconectar o completar una simulación, sus señales se archivarán aquí.</p>`;
+    return `<article class="card panel"><p class="eyebrow">PLANTA REAL · ${new Date(run.startedAt).toLocaleString("es-CO")}</p><h2>${fmt(run.durationS / 3600, 2)} h de sesión</h2><div class="readings"><span>Presión mín. <b>${fmt(min)} mca</b></span><span>Consumo <b>${fmt(consumption, 2)} m³</b></span><span>Muestras <b>${run.samples.length}</b></span></div><div class="controls"><button data-load-run="${run.id}">VER CURVAS</button><button data-delete-run="${run.id}">ELIMINAR</button></div></article>`;
+  }).join("") : `<p class="muted">Aún no hay sesiones guardadas. Al desconectar o completar una sesión de Planta Real, sus señales se archivarán aquí.</p>`;
   document.querySelectorAll<HTMLButtonElement>("[data-load-run]").forEach((button) => button.onclick = () => {
     const run = savedRuns().find((item) => item.id === button.dataset.loadRun);
     if (!run) return;
@@ -360,7 +366,7 @@ function integrate(reading: (sample: Sample) => number): number {
 function renderDay(): void {
   if (history.length < 2) {
     $("day-kpis").innerHTML = "";
-    $("day-charts").innerHTML = `<p class="muted">Conecta la simulación para registrar señales del emulador. Esta pantalla no usa datos precalculados.</p>`;
+    $("day-charts").innerHTML = `<p class="muted">Conecta la sesión de Planta Real para registrar señales operativas. Esta pantalla no usa datos precalculados.</p>`;
     return;
   }
   const peak = history.reduce((best, sample) => sample.consumption > best.consumption ? sample : best, history[0]);
@@ -369,14 +375,14 @@ function renderDay(): void {
   const leakage = integrate((sample) => sample.leakage);
   const duration = history[history.length - 1].t - history[0].t;
   const dayKpis: [string, string, string][] = [
-    ["CONSUMO ACUMULADO", `${fmt(consumption, 2)} m³`, `historial de ${fmt(duration / 3600, 2)} h simuladas`],
+    ["CONSUMO ACUMULADO", `${fmt(consumption, 2)} m³`, `historial de ${fmt(duration / 3600, 2)} h de sesión`],
     ["FUGAS ACUMULADAS", `${fmt(leakage, 2)} m³`, `${fmt(100 * leakage / Math.max(0.001, leakage + consumption), 1)} % del caudal registrado`],
     ["PICO REGISTRADO", `${String(Math.floor(peak.t / 3600)).padStart(2, "0")}:${String(Math.floor(peak.t / 60) % 60).padStart(2, "0")}`, `${fmt(peak.consumption)} m³/h residencial`],
     ["PRESIÓN MÍNIMA", `${fmt(minimum, 2)} mca`, `límite ${fmt(schema.service_constraint.critical_pressure_min_mca, 0)} mca`],
   ];
   $("day-kpis").innerHTML = dayKpis.map(([label, reading, detail]) => `<div class="kpi panel"><small>${label}</small><b>${reading}</b><small>${detail}</small></div>`).join("");
   $("day-charts").innerHTML = [
-    dayChart("Caudales medidos por el emulador", "m³/h", [{ name: "Consumo residencial", values: history.map((sample) => sample.consumption), color: "#2D7FF9" }, { name: "Fugas", values: history.map((sample) => sample.leakage), color: "#f17474" }, { name: "Bombeo", values: history.map((sample) => sample.main), color: "#4EA7FF" }]),
+    dayChart("Caudales calculados por Planta Real", "m³/h", [{ name: "Consumo residencial", values: history.map((sample) => sample.consumption), color: "#2D7FF9" }, { name: "Fugas", values: history.map((sample) => sample.leakage), color: "#f17474" }, { name: "Bombeo", values: history.map((sample) => sample.main), color: "#4EA7FF" }]),
     dayChart("Presiones medidas", "mca", [{ name: "Salida de bombeo", values: history.map((sample) => sample.pumpDischarge), color: "#4EA7FF" }, { name: "Entrada reguladora", values: history.map((sample) => sample.stationIn), color: "#2D7FF9" }, { name: "Salida reguladora", values: history.map((sample) => sample.stationOut), color: "#55d58c" }, { name: "Punto crítico", values: history.map((sample) => sample.critical), color: "#f17474" }], schema.service_constraint.critical_pressure_min_mca),
     dayChart("Presión de la red por tramo", "mca", [{ name: "Entrada rejilla 1", values: history.map((sample) => sample.grid1In), color: "#4EA7FF" }, { name: "Salida rejilla 1", values: history.map((sample) => sample.grid1Out), color: "#2D7FF9" }, { name: "Salida rejilla 2", values: history.map((sample) => sample.grid2Out), color: "#55d58c" }, { name: "Salida rejilla 3", values: history.map((sample) => sample.grid3Out), color: "#9869ed" }]),
   ].join("");
@@ -394,7 +400,7 @@ function renderAlarms(): void {
 async function renderFractal(): Promise<void> {
   const box = $("fractal-saved");
   if (!sessionId) { box.innerHTML = `<p class="muted">Inicie una sesión PLC para consultar estudios.</p>`; return; }
-  const response = await fetch(apiUrl(`/api/plants/${plantId}/sessions/${sessionId}/fractal/studies`));
+  const response = await apiFetch(`/api/plants/${plantId}/sessions/${sessionId}/fractal/studies`);
   if (!response.ok) { box.innerHTML = `<p class="muted">No se pudo consultar estudios de esta sesión.</p>`; return; }
   const studies = await response.json() as { study_id: string; study_type: string; base_time: number }[];
   box.innerHTML = studies.length ? `<article class="panel"><p class="eyebrow">ESTUDIOS GUARDADOS EN PLC · FUTURO NO APLICADO</p>${studies.filter((study) => ["baseline", "alternative"].includes(study.study_type)).map((study) => `<p>${study.study_type === "baseline" ? "Proyección base" : "Escenario alternativo"} · ${study.study_id.replace(/[&<>"']/g, "")} · t=${fmt(study.base_time, 0)} s · <a href="/plant.html?plant=${plantId}&session=${encodeURIComponent(sessionId!)}&study=${encodeURIComponent(study.study_id)}${query.get("api") ? `&api=${encodeURIComponent(apiOrigin)}` : ""}">VER FUTURO EN 3D</a></p>`).join("")}</article>` : `<p class="muted">No hay estudios futuros guardados en esta sesión.</p>`;
@@ -428,7 +434,7 @@ function render(message: Message): void {  latest = message.snapshot.equipment;
   const hh = String(Math.floor(simTime / 3600)).padStart(2, "0");
   const mm = String(Math.floor((simTime % 3600) / 60)).padStart(2, "0");
   const ss = String(Math.floor(simTime % 60)).padStart(2, "0");
-  $("clock").textContent = `SIM · ${hh}:${mm}:${ss} · ×${message.speed}`;
+  $("clock").textContent = `PLANTA REAL · ${hh}:${mm}:${ss} · ×${message.speed}`;
   $<HTMLSelectElement>("session-speed").value = String(message.speed);
   recordHistory(message);
   renderVisibleScreen();
@@ -439,7 +445,7 @@ function render(message: Message): void {  latest = message.snapshot.equipment;
 async function connect(): Promise<void> {
   if (!sessionId && !activeProfileId) { window.alert("Seleccione y guarde un escenario antes de iniciar el PLC."); return; }
   if (socket?.readyState === WebSocket.OPEN) {
-    if (sessionId) await fetch(apiUrl(`/api/plants/${plantId}/sessions/${sessionId}/stop`), { method: "POST" });
+    if (sessionId) await apiFetch(`/api/plants/${plantId}/sessions/${sessionId}/stop`, { method: "POST" });
     plcRunning = false;
     socket.close();
     return;
@@ -457,7 +463,7 @@ async function connect(): Promise<void> {
   $("connect").textContent = "… CONECTANDO";
   try {
     if (!sessionId) {
-      const created = await fetch(apiUrl(`/api/plants/${plantId}/sessions`), { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ profile_id: activeProfileId }) });
+      const created = await apiFetch(`/api/plants/${plantId}/sessions`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ profile_id: activeProfileId }) });
       if (!created.ok) throw Error("no se pudo crear la sesión");
       sessionId = (await created.json() as { id: string }).id;
       notify3d("plc-session-created", { sessionId });
@@ -465,7 +471,7 @@ async function connect(): Promise<void> {
       window.history.replaceState(null, "", `${location.pathname}?${query}`);
       $<HTMLAnchorElement>("link-plant").href = `/plant.html?plant=${plantId}&session=${encodeURIComponent(sessionId)}${query.get("api") ? `&api=${encodeURIComponent(apiOrigin)}` : ""}`;
     }
-    const started = await fetch(apiUrl(`/api/plants/${plantId}/sessions/${sessionId}/start`), { method: "POST" });
+    const started = await apiFetch(`/api/plants/${plantId}/sessions/${sessionId}/start`, { method: "POST" });
     if (!started.ok) throw Error("no se pudo iniciar la sesión");
     plcRunning = true;
   } catch (error) {
@@ -474,7 +480,7 @@ async function connect(): Promise<void> {
     return;
   }
   socket = new WebSocket(websocketUrl(`/api/plants/${plantId}/sessions/${sessionId}?role=plc`));
-  socket.onopen = () => { $("connection").textContent = "● SIMULACIÓN CONECTADA · ×240 SOLICITADO"; $("connection").classList.add("on"); $("connect").textContent = "■ DETENER Y GUARDAR"; };
+  socket.onopen = () => { $("connection").textContent = "● PLANTA REAL CONECTADA · ×240 SOLICITADO"; $("connection").classList.add("on"); $("connect").textContent = "■ DETENER Y GUARDAR"; };
   socket.onmessage = (event) => {
     const message = JSON.parse(event.data) as Message & { error?: string };
     if (message.error) {
@@ -483,8 +489,8 @@ async function connect(): Promise<void> {
     }
     render(message);
   };
-  socket.onerror = () => { $("connection").textContent = "● ERROR DE CONEXIÓN CON EL EMULADOR"; };
-  socket.onclose = () => { saveCurrentRun(); socket = null; $("connection").textContent = "● DESCONECTADO"; $("connection").classList.remove("on"); $("connect").textContent = "▶ INICIAR SIMULACIÓN 24 H"; };
+  socket.onerror = () => { $("connection").textContent = "● ERROR DE CONEXIÓN CON PLANTA REAL"; };
+  socket.onclose = () => { saveCurrentRun(); socket = null; $("connection").textContent = "● DESCONECTADO"; $("connection").classList.remove("on"); $("connect").textContent = "▶ INICIAR SESIÓN PLANTA REAL · 24 H"; };
 }
 
 function currentProfileHour(): ProfileHour {
@@ -668,14 +674,14 @@ async function loadProfilePressure(): Promise<void> {
   nextPressureAttempt = Date.now() + 60000;
   profilePressure = [];
   if (!sessionId || !activeProfileId || !fractalOrigin || !plcRunning) {
-    profilePressureMessage = "Presión pendiente: inicie el PLC y habilite Fractal para proyectar el perfil guardado. El emulador no requiere Fractal para funcionar.";
+    profilePressureMessage = "Presión pendiente: inicie el PLC y habilite Fractal para proyectar el perfil guardado. Planta Real opera de forma independiente de Fractal.";
     renderProfileChart();
     return;
   }
   profilePressureMessage = "Calculando presión de salida desde tags PLC; futuro no aplicado…";
   renderProfileChart();
   try {
-    const response = await fetch(`${fractalOrigin}/studies/profile-preview/from-plc`, {
+    const response = await fetch(`${fractalOrigin}/studies/profile-preview/from-plc`, { credentials: "include",
       method: "POST", headers: { "content-type": "application/json" },
       body: JSON.stringify({ plant_id: plantId, session_id: sessionId, profile_id: activeProfileId, emulator_api: apiOrigin }),
     });
@@ -706,7 +712,7 @@ async function saveProfile(): Promise<void> {
   if (!activeProfile.name) { window.alert("Asigne un nombre al perfil antes de guardarlo."); return; }
   if (activeProfileId?.startsWith("builtin-")) { window.alert("Duplique la plantilla para crear su escenario editable."); return; }
   const url = activeProfileId ? `/api/plants/${plantId}/operation-profiles/${activeProfileId}` : `/api/plants/${plantId}/operation-profiles`;
-  const response = await fetch(apiUrl(url), { method: activeProfileId ? "PUT" : "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(activeProfile) });
+  const response = await apiFetch(url, { method: activeProfileId ? "PUT" : "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(activeProfile) });
   const contentType = response.headers.get("content-type") ?? "";
   if (!response.ok) { const error = await response.json().catch(() => ({})) as { detail?: string }; window.alert(error.detail ?? "No se pudo guardar el escenario."); return; }
   if (!contentType.includes("application/json")) { window.alert("La respuesta del PLC no es JSON."); return; }
@@ -716,7 +722,7 @@ async function saveProfile(): Promise<void> {
 }
 
 function captureCurrentCommands(): void {
-  if (!Object.keys(latest).length) { window.alert("Inicie la simulación y ajuste la Rejilla antes de capturar los mandos actuales."); return; }
+  if (!Object.keys(latest).length) { window.alert("Inicie una sesión de Planta Real y ajuste la Rejilla antes de capturar los mandos actuales."); return; }
   updateProfileHourFromForm();
   const hour = currentProfileHour();
   hour.dwellings = {};
@@ -805,7 +811,7 @@ async function start(): Promise<void> {
     button.disabled = true; button.textContent = "… LEYENDO PLC Y PROYECTANDO";
     let study: { study_id: string; study_type: string; base_time: number; hours: { hour: number; supply_level_pct: number; robust: boolean; profile_commands?: { prs?: { control_mode?: string; critical_control_point?: string; critical_setpoint_mca?: number } }; scenarios: { demand_factor: number; state: Record<string, number> & { prs_inlet_mca: number; prs_outlet_mca: number; critical_pressure_mca: number; control_point_pressure_mca: number; consumer_pressures_mca: Record<string, number> }; feasible: boolean }[] }[]; published?: unknown };
     try {
-      const response = await fetch(`${fractalOrigin}/studies/horizon/from-plc`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ session_id: sessionId, plant_id: plantId, emulator_api: apiOrigin, overrides, study_type: studyType }) });
+      const response = await fetch(`${fractalOrigin}/studies/horizon/from-plc`, { credentials: "include", method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ session_id: sessionId, plant_id: plantId, emulator_api: apiOrigin, overrides, study_type: studyType }) });
       if (!response.ok) { const detail = await response.json().catch(() => ({})) as { detail?: string }; throw Error(detail.detail ?? "Fractal no pudo proyectar el perfil PLC"); }
       study = await response.json();
     } catch (error) { window.alert(String(error)); return; }
@@ -843,7 +849,7 @@ async function start(): Promise<void> {
   $("profile-delete").onclick = async () => {
     if (!activeProfileId || activeProfileId.startsWith("builtin-")) return;
     if (!window.confirm(`¿Eliminar definitivamente «${activeProfile.name}»? El PLC no se modifica.`)) return;
-    const response = await fetch(apiUrl(`/api/plants/${plantId}/operation-profiles/${activeProfileId}`), { method: "DELETE" });
+    const response = await apiFetch(`/api/plants/${plantId}/operation-profiles/${activeProfileId}`, { method: "DELETE" });
     if (!response.ok) { const error = await response.json().catch(() => ({})) as { detail?: string }; window.alert(error.detail ?? "No se pudo eliminar el escenario"); return; }
     activeProfile = { name: "", description: "", hours: {} }; activeProfileId = null; profileHour = 0;
     await loadProfiles();
@@ -852,7 +858,7 @@ async function start(): Promise<void> {
     if (!activeProfileId) { window.alert("Guarde el escenario antes de ejecutarlo."); return; }
     if (socket?.readyState === WebSocket.OPEN && sessionId) {
       if (activeSessionProfileId === activeProfileId) { window.alert("Este escenario ya está activo en el PLC."); return; }
-      const response = await fetch(apiUrl(`/api/plants/${plantId}/sessions/${sessionId}/schedule-profile`), { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ profile_id: activeProfileId }) });
+      const response = await apiFetch(`/api/plants/${plantId}/sessions/${sessionId}/schedule-profile`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ profile_id: activeProfileId }) });
       const result = await response.json() as { starts_at_hour?: number; detail?: string };
       window.alert(response.ok ? `Escenario programado en el PLC para la hora ${String((result.starts_at_hour ?? 0) + 1).padStart(2, "0")}; no aplicado ahora.` : result.detail ?? "No se pudo programar");
       return;

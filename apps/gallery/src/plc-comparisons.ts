@@ -45,7 +45,7 @@ function plot(title: string, unit: string, plc: Reading[], fractal: Reading[], p
     return `<line x1="${left}" y1="${y(v)}" x2="${width - right}" y2="${y(v)}" stroke="#34465a"/><text x="${left - 6}" y="${y(v) + 4}" text-anchor="end">${format(v)}</text>`;
   }).join("");
   const hours = [0, 3, 7, 11, 15, 19, 23].map(i => `<text x="${x(i)}" y="${height - 8}" text-anchor="middle">${i + 1} h</text>`).join("");
-  return `<svg viewBox="0 0 ${width} ${height}" role="img" aria-label="${title}" style="width:100%;display:block;font:11px system-ui;fill:#c6d6e8">${ticks}${hours}<text x="${left}" y="14">${unit}</text>${series(plc, percentage ? "#c4b8ff" : "#ff9b62", percentage ? "Error relativo" : "Emulador", !percentage)}${percentage ? "" : series(fractal, "#56b4ff", "Fractal", false)}</svg>`;
+  return `<svg viewBox="0 0 ${width} ${height}" role="img" aria-label="${title}" style="width:100%;display:block;font:11px system-ui;fill:#c6d6e8">${ticks}${hours}<text x="${left}" y="14">${unit}</text>${series(plc, percentage ? "#c4b8ff" : "#ff9b62", percentage ? "Error relativo" : "Planta Real", !percentage)}${percentage ? "" : series(fractal, "#56b4ff", "Fractal", false)}</svg>`;
 }
 
 export function mountComparisons(): void {
@@ -67,7 +67,7 @@ export function mountComparisons(): void {
       }
       const delta = a.map((v, i) => v === undefined || v === 0 || b[i] === undefined ? undefined : 100 * (b[i]! - v) / v);
       const undefinedCount = delta.filter(v => v === undefined).length;
-      panels.push(`<article class="panel"><h3>${title}</h3>${plot(title, unit, a, b)}<p>Diferencia relativa Fractal − emulador (%)${undefinedCount ? ` · ${undefinedCount} horas sin porcentaje definido` : ""}</p>${plot(`Diferencia relativa · ${title}`, "%", delta, [], true)}</article>`);
+      panels.push(`<article class="panel"><h3>${title}</h3>${plot(title, unit, a, b)}<p>Diferencia relativa Fractal − Planta Real (%)${undefinedCount ? ` · ${undefinedCount} horas sin porcentaje definido` : ""}</p>${plot(`Diferencia relativa · ${title}`, "%", delta, [], true)}</article>`);
     };
     add("Presión de entrada PRS", "mca", r => r.prs_inlet_mca);
     add("Presión de salida PRS", "mca", r => r.prs_outlet_mca);

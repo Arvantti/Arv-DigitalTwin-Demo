@@ -118,9 +118,10 @@ interface Spec {
 
 const specs: Record<string, Spec> = Object.fromEntries(Object.entries(rawSpecs).map(([k, v]) => [k, yaml.load(v) as Spec]));
 const url = new URLSearchParams(location.search);
-// En una galería estática, el emulador puede vivir en un origen HTTPS/WSS aparte.
+// En una galería estática, el servicio de Planta Real puede vivir en un origen HTTPS/WSS aparte.
 const apiOrigin = (url.get("api") ?? location.origin).replace(/\/$/, "");
 const apiUrl = (path: string) => `${apiOrigin}${path}`;
+const apiFetch = (path: string, init: RequestInit = {}) => fetch(apiUrl(path), { ...init, credentials: "include" });
 const websocketUrl = (path: string) => `${apiOrigin.replace(/^http/, "ws")}${path}`;
 let sessionId = url.get("session");
 let forecastStudyId = url.get("study");
@@ -1320,7 +1321,7 @@ async function showHistory(t: number): Promise<void> {
   if (!sessionId) return;
   const request = ++historyRequest;
   try {
-    const response = await fetch(apiUrl(`/api/plants/${doc.plant.id}/sessions/${sessionId}/historian/frame?at_t=${encodeURIComponent(t)}`));
+    const response = await apiFetch(`/api/plants/${doc.plant.id}/sessions/${sessionId}/historian/frame?at_t=${encodeURIComponent(t)}`);
     if (!response.ok) throw Error(`sin fotograma (${response.status})`);
     const data = await response.json() as { t: number; snapshot: SimMessage["snapshot"]; temporal_context: string };
     if (request !== historyRequest || $("water-history-panel").hidden) return;
@@ -1334,7 +1335,7 @@ async function showHistory(t: number): Promise<void> {
 async function loadForecast(): Promise<void> {
   if (!sessionId || !forecastStudyId) return;
   historicalTime = null;
-  const response = await fetch(apiUrl(`/api/plants/${doc.plant.id}/sessions/${sessionId}/fractal/studies/${forecastStudyId}/frames`));
+  const response = await apiFetch(`/api/plants/${doc.plant.id}/sessions/${sessionId}/fractal/studies/${forecastStudyId}/frames`);
   if (!response.ok) throw new Error("No se pudo cargar el estudio Fractal desde PLC");
   const data = await response.json() as { base_time: number; frames: { hour: number; supply_level_pct: number; robust: boolean; snapshot: SimMessage["snapshot"]; scenarios: { demand_factor: number; state: Record<string, number>; feasible: boolean }[] }[] };
   const panel = $("forecast-panel");
@@ -1357,9 +1358,9 @@ async function loadForecast(): Promise<void> {
 async function start(): Promise<void> {
   const plantId = url.get("plant") ?? "sauce-plant-v1";
   await bootStage(6, "Conectando con el gemelo digital…");
-  const res = await fetch(apiUrl(`/api/plants/${plantId}`)).catch(() => null);
+  const res = await apiFetch(`/api/plants/${plantId}`).catch(() => null);
   if (!res?.ok) {
-    const message = `No se pudo cargar ${plantId}. Configure ?api=https://host-del-emulador.`;
+    const message = `No se pudo cargar ${plantId}. Configure ?api=https://host-de-planta-real.`;
     $("plant-name").textContent = message;
     bootError(message);
     return;
@@ -1377,7 +1378,7 @@ async function start(): Promise<void> {
     if (latestLiveMessage) applyMessage(latestLiveMessage, "PLC.ACTUAL");
     else if (sessionId && !socket) connect();
   };
-  const plcSchema = await fetch(apiUrl(`/api/plants/${plantId}/plc-schema`)).catch(() => null);
+  const plcSchema = await apiFetch(`/api/plants/${plantId}/plc-schema`).catch(() => null);
   if (plcSchema?.ok) {
     document.body.classList.add("plc-viewer-mode");
     plcLink.href = "#plc";

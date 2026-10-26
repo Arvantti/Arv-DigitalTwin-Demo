@@ -12,11 +12,12 @@
     <header class="topbar">
       <a id="link-plant" href="/plant.html?plant=water-network-scale-v1" class="back">← GEMELO 3D</a>
       <div><strong>PLC MASTER</strong><span id="plant-name"> · CARGANDO…</span></div>
+      <a id="service-auth" class="service-auth" hidden target="_blank" rel="noopener">INICIAR SESIÓN API</a>
       <div class="connection" id="connection">● DESCONECTADO</div>
       <label class="clock">VELOCIDAD <select id="session-speed"><option value="60">×60</option><option value="120">×120</option><option value="240" selected>×240 · DEFAULT</option><option value="600">×600</option></select></label>
-      <div class="clock" id="clock">SIM · —</div>
+      <div class="clock" id="clock">PLANTA REAL · —</div>
     </header>
-    <div class="warning">SIMULACIÓN · PLC VIRTUAL · SIN CONEXIÓN A INFRAESTRUCTURA FÍSICA</div>
+    <div class="warning">PLANTA REAL · SESIÓN OPERATIVA VIRTUAL · SIN CONEXIÓN A INFRAESTRUCTURA FÍSICA</div>
     <main>
       <aside class="asset-tree panel">
         <h2>ÁRBOL DE ACTIVOS</h2>
@@ -31,20 +32,20 @@
           <button data-screen="pumping">BOMBEO Y TANQUES</button>
           <button data-screen="grid">REJILLA Y CONSUMO</button>
           <button data-screen="profiles">PERFILES</button>
-          <button data-screen="trends">TENDENCIAS</button>
+          <button data-screen="trends">TENDENCIAS EN VIVO</button>
           <button data-screen="history">HISTORIAL</button>
           <span id="profile-draft-context" class="draft-context" hidden></span>
         </nav>
         <section id="master" class="screen active">
           <div class="hero panel">
-            <div><p class="eyebrow">EMULADOR DE REALIDAD FICTICIA</p><h1>Acueducto a escala</h1><p>La calculadora hidráulica estacionaria simula las señales que leería el PLC. Fractal de Ingeniería usa otro modelo independiente y solo recomienda cambios.</p></div>
-            <div class="hero-actions"><button id="connect" class="primary">▶ INICIAR SIMULACIÓN 24 H</button><button id="pause">❚❚ PAUSA</button><button data-screen="fractal">VER PROYECCIÓN FRACTAL</button></div>
+            <div><p class="eyebrow">PLANTA REAL · MODELO OPERATIVO VIRTUAL</p><h1>Acueducto a escala</h1><p>Planta Real calcula las señales hidráulicas que recibe el PLC virtual. Fractal de Ingeniería proyecta un futuro independiente y solo recomienda cambios.</p></div>
+            <div class="hero-actions"><button id="connect" class="primary">▶ INICIAR SESIÓN PLANTA REAL · 24 H</button><button id="pause">❚❚ PAUSA</button><button data-screen="fractal">VER PROYECCIÓN FRACTAL</button></div>
           </div>
           <div class="kpis" id="kpis"></div>
           <div class="panel recommendation"><p class="eyebrow">FRACTAL DE INGENIERÍA</p><strong>Sin recomendación aplicada</strong><span>Las sugerencias futuras se validarán contra una calculadora hidráulica independiente y requerirán aceptación del operador.</span></div>
         </section>
         <section id="day" class="screen">
-          <div class="section-head"><div><p class="eyebrow">HISTORIADOR DE LA SIMULACIÓN</p><h1>Curva del día · 24 horas</h1><p class="muted">Una hora hidráulica equivale a 15 segundos reales: el ciclo completo dura 6 minutos. Cada punto proviene de las señales del emulador y refleja los mandos aplicados durante la sesión.</p></div></div>
+          <div class="section-head"><div><p class="eyebrow">HISTORIADOR DE PLANTA REAL</p><h1>Curva del día · 24 horas</h1><p class="muted">Una hora hidráulica equivale a 15 segundos reales: el ciclo completo dura 6 minutos. Cada punto proviene de las señales de Planta Real y refleja los mandos aplicados durante la sesión.</p></div></div>
           <div class="kpis" id="day-kpis"></div>
           <div id="day-charts" class="trend-charts"></div>
         </section>
@@ -67,7 +68,7 @@
             <label>Perfil <select id="profile-select"><option value="">Nuevo perfil</option></select></label>
             <label>Nombre <input id="profile-name" maxlength="80" placeholder="Ej.: demanda diurna" /></label>
             <label class="profile-description">Descripción <input id="profile-description" maxlength="240" placeholder="Objetivo y condiciones del escenario" /></label>
-            <label>Hora simulada <select id="profile-hour"></select></label>
+            <label>Hora de operación <select id="profile-hour"></select></label>
             <div class="controls"><button id="profile-clone">CLONAR A HORA SIGUIENTE</button><button id="profile-capture">CAPTURAR MANDOS ACTUALES</button></div>
           </section>
           <section class="profile-hour-layout">
@@ -87,16 +88,16 @@
         </section>
         <section id="comparisons" class="screen">
           <article class="panel">
-            <h2>EMULADOR / FRACTAL · EVIDENCIA PRECALCULADA</h2>
+            <h2>PLANTA REAL / FRACTAL · EVIDENCIA PRECALCULADA</h2>
             <p>Replay de validación de 24 horas, no datos de la sesión en vivo. Seleccionar una comparación no cambia perfiles ni envía mandos.</p>
             <label>Escenario <select id="comparison-scenario"><option value="c44">C44 · objetivo 18 mca · PRS AUTO variable</option><option value="fixed">PRS AUTO · salida fija 40 mca · entrada objetivo 70 mca</option></select></label>
-            <p>Fractal nominal ×1,0 frente al emulador, en 24 fronteras horarias. Presiones y caudales instantáneos, no promedios horarios. Caudales de piso = consumos + fugas locales, no montante hacia el piso siguiente.</p>
-            <p>Azul: Fractal · naranja: emulador. Debajo de cada gráfica: diferencia relativa 100 × (Fractal − emulador) / emulador. Sin porcentaje cuando el emulador vale cero. No certifica una instalación real.</p>
+            <p>Fractal nominal ×1,0 frente a Planta Real, en 24 fronteras horarias. Presiones y caudales instantáneos, no promedios horarios. Caudales de piso = consumos + fugas locales, no montante hacia el piso siguiente.</p>
+            <p>Azul: Fractal · naranja: Planta Real. Debajo de cada gráfica: diferencia relativa 100 × (Fractal − Planta Real) / Planta Real. Sin porcentaje cuando Planta Real vale cero. No certifica una instalación real.</p>
           </article>
           <div id="comparison-charts"></div>
         </section>
         <section id="trends" class="screen">
-          <div class="section-head"><div><p class="eyebrow">HISTORIADOR DE SESIÓN</p><h1>Tendencias de operación</h1><p class="muted">Muestras del emulador hidráulico durante esta sesión. Un perfil de 24 h se incorporará como escenario programable.</p></div></div>
+          <div class="section-head"><div><p class="eyebrow">HISTORIADOR DE SESIÓN</p><h1>Tendencias de operación</h1><p class="muted">Muestras de Planta Real durante esta sesión. Un perfil de 24 h se incorporará como escenario programable.</p></div></div>
           <div id="trends-charts" class="trend-charts"></div>
         </section>
         <section id="grid" class="screen">

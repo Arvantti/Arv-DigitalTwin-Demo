@@ -14,3 +14,5 @@ dist/
 .playwright-mcp/
 apps/gallery/public/api/
 city-models/centro-medellin-v1/osm-build/
+.wrangler/
+.dev.vars*

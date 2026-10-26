@@ -2,9 +2,13 @@
 
 El acueducto se abre en `plant.html?plant=water-network-scale-v1&workspace=plc`. La barra superior ofrece **3D**, **PLC Y ESCENARIOS** e **HISTÓRICO** sin abrir otra ventana. La escena permanece montada; la HMI preexistente se incorpora como panel en un iframe del **mismo origen** (`plc.html?embedded=1`) mientras se migra su interfaz al módulo del escritorio. Esto mantiene el contrato y el estado del PLC: dos clientes WebSocket comparten `session_id`, no dos simuladores. El panel notifica creación de sesión y estudio al padre mediante `postMessage`, que verifica origen, ventana e ID de planta. `plc.html` se conserva únicamente como recurso interno del iframe. Abrirlo directamente redirige con `location.replace` a `plant.html?workspace=plc`, conservando planta, sesión, API, Fractal y pantalla. Incluso `embedded=1` fuera del iframe del escritorio redirige: ya no existe una HMI operativa independiente.
 
+## Navegación canónica de la HMI
+
+La navegación aprobada conserva siete pantallas principales, en este orden: **MASTER**, **DÍA 24 H**, **BOMBEO Y TANQUES**, **REJILLA Y CONSUMO**, **PERFILES**, **TENDENCIAS EN VIVO** e **HISTORIAL**. Fractal se abre como vista secundaria desde MASTER; las comparativas precalculadas viven como subvista de HISTORIAL. Sus datos y acciones siguen siendo los mismos contratos anteriores; no son pestañas principales adicionales.
+
 ## Comparativas de escenarios
 
-La pestaña **COMPARATIVAS** del PLC integrado permite elegir C44 a 18 mca o salida AUTO fija a 40 mca. Las evidencias JSON de `docs/architecture/validation/` se empaquetan con Vite, sin depender de que el servidor publique `/docs`. Son resultados precalculados, no datos de la sesión actual; cambiar el selector no escribe mandos ni cambia el perfil activo.
+La subvista **COMPARATIVAS PRECALCULADAS** de HISTORIAL permite elegir C44 a 18 mca o salida AUTO fija a 40 mca. Las evidencias JSON de `docs/architecture/validation/` se empaquetan con Vite, sin depender de que el servidor publique `/docs`. Son resultados precalculados, no datos de la sesión actual; cambiar el selector no escribe mandos ni cambia el perfil activo.
 
 Se muestran presiones, siete caudales (incluida recirculación) y niveles donde fueron registrados. Cada panel incluye diferencia relativa `100*(Fractal−PLC)/PLC`, con cortes explícitos cuando PLC=0. Los niveles del escenario fijo no están registrados y se muestran como pendientes. No se infieren ni extrapolan. Las marcas corresponden a las mismas 24 fronteras horarias; las líneas son guías visuales, no evidencia de los transitorios entre muestras. Acceso directo integrado: `plant.html?plant=water-network-scale-v1&workspace=plc&screen=comparisons`.
 
