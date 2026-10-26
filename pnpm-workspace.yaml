@@ -2,3 +2,4 @@ packages:
   - packages/twin-3d
   - equipment-library
   - apps/gallery
+  - apps/cloudflare-emulator-worker

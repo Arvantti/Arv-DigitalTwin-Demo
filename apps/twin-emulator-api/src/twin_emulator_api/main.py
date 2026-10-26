@@ -39,6 +39,7 @@ from twin_runtime.catalog import Catalog
 from twin_runtime.plant import SIM_FILE, PlantModel, find_models_root
 from twin_runtime.spec import SpecError, load_yaml
 
+from .audit import audit
 from .historian import historian
 from .plc_tags import opcua_schema, plc_tags
 from .profiles import ProfileStore, commands_for_hour, current_prs_inlet_offset_mca
@@ -82,7 +83,12 @@ def _clean(value: Any) -> Any:
 
 @app.get("/api/health")
 def health() -> dict[str, Any]:
-    return {"status": "ok", "library": str(library.root), "types": len(library.folders())}
+    return {
+        "status": "ok",
+        "service": os.environ.get("TWIN_SERVICE_ID", "local"),
+        "library": str(library.root),
+        "types": len(library.folders()),
+    }
 
 
 @app.get("/api/equipment")
@@ -194,7 +200,14 @@ async def simulate(ws: WebSocket, type_id: str) -> None:
 # ------------------------------------------------------------------ plantas
 def _plant_folders() -> dict[str, Any]:
     root = find_models_root(library.root)
-    return {f.name: f for f in sorted(root.iterdir()) if (f / "plant.yaml").exists()} if root.exists() else {}
+    if not root.exists():
+        return {}
+    allowed = {item.strip() for item in os.environ.get("TWIN_ALLOWED_PLANTS", "").split(",") if item.strip()}
+    return {
+        folder.name: folder
+        for folder in sorted(root.iterdir())
+        if (folder / "plant.yaml").exists() and (not allowed or folder.name in allowed)
+    }
 
 
 def _plant_model(plant_id: str) -> PlantModel:
@@ -356,6 +369,7 @@ def publish_fractal_study(plant_id: str, session_id: str, payload: Annotated[dic
         raise HTTPException(422, "study_id y forecast no aplicado son obligatorios")
     studies.save(session_id, study_id, session.plant.t, payload)
     historian.command(session_id, session.plant.t, {"source": "fractal", "study_id": study_id, "event": "study_published"})
+    audit.record(plant_id, "fractal.study_published", session_id=session_id, details={"study_id": study_id})
     return {"study_id": study_id, "temporal_context": "forecast", "applied": False}
 
 
@@ -407,11 +421,23 @@ def decide_fractal_study(plant_id: str, session_id: str, study_id: str, payload:
             raise HTTPException(422, str(exc)) from exc
         study["profile_id"] = profile["id"]
         study["profile_status"] = "approved_pending_activation"
+        audit.record(
+            plant_id,
+            "profile.created_from_fractal",
+            session_id=session_id,
+            details={"profile_id": profile["id"], "study_id": study_id},
+        )
     studies.update(session_id, study_id, session.plant.t, study)
     historian.command(
         session_id,
         session.plant.t,
         {"source": "operator", "study_id": study_id, "decision": study["decision"], "profile_id": study.get("profile_id")},
+    )
+    audit.record(
+        plant_id,
+        "fractal.study_decided",
+        session_id=session_id,
+        details={"study_id": study_id, "decision": study["decision"], "profile_id": study.get("profile_id")},
     )
     return study
 
@@ -607,6 +633,13 @@ def get_plant_opcua_schema(plant_id: str) -> dict[str, Any]:
     return {"plant_id": plant_id, **opcua_schema()}
 
 
+@app.get("/api/plants/{plant_id}/audit-events")
+def list_audit_events(plant_id: str, limit: int = Query(100, ge=1, le=1000)) -> list[dict[str, Any]]:
+    if plant_id not in _plant_folders():
+        raise HTTPException(404, f"planta desconocida: {plant_id}")
+    return audit.list(plant_id, limit=limit)
+
+
 @app.get("/api/plants/{plant_id}/operation-profiles")
 def list_operation_profiles(plant_id: str) -> list[dict[str, Any]]:
     if plant_id not in _plant_folders():
@@ -619,7 +652,9 @@ def create_operation_profile(plant_id: str, profile: Annotated[dict[str, Any], B
     if plant_id not in _plant_folders():
         raise HTTPException(404, f"planta desconocida: {plant_id}")
     try:
-        return ProfileStore(plant_id).create(profile)
+        created = ProfileStore(plant_id).create(profile)
+        audit.record(plant_id, "profile.created", details={"profile_id": created["id"]})
+        return created
     except ValueError as exc:
         raise HTTPException(422, str(exc)) from exc
 
@@ -646,6 +681,7 @@ def update_operation_profile(plant_id: str, profile_id: str, profile: Annotated[
         raise HTTPException(422, str(exc)) from exc
     if updated is None:
         raise HTTPException(404, f"perfil desconocido: {profile_id}")
+    audit.record(plant_id, "profile.updated", details={"profile_id": profile_id})
     return updated
 
 
@@ -657,6 +693,7 @@ def delete_operation_profile(plant_id: str, profile_id: str) -> None:
         raise HTTPException(409, "no se puede eliminar el perfil activo mientras el PLC esté en play")
     if not ProfileStore(plant_id).delete(profile_id):
         raise HTTPException(404, f"perfil desconocido: {profile_id}")
+    audit.record(plant_id, "profile.deleted", details={"profile_id": profile_id})
 
 
 @app.post("/api/plants/{plant_id}/products/check")

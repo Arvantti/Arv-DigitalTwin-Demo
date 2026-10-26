@@ -4,9 +4,10 @@ from __future__ import annotations
 
 import json
 import os
-import sqlite3
 from pathlib import Path
 from typing import Any
+
+from .d1_storage import connect
 
 
 def _path() -> Path:
@@ -28,8 +29,8 @@ class SessionHistorian:
                 "PRIMARY KEY(session_id, recommendation_id))"
             )
 
-    def _connect(self) -> sqlite3.Connection:
-        return sqlite3.connect(self.path)
+    def _connect(self) -> Any:
+        return connect(self.path)
 
     def sample(self, session_id: str, t: float, payload: dict[str, Any]) -> None:
         with self._connect() as conn:

@@ -9,8 +9,8 @@
   --ok: #22e06b;
   --warn: #ffb000;
   --bad: #ff3b3b;
-  --radius-control: 6px;
-  --radius-surface: 10px;
+  --radius-control: 4px;
+  --radius-surface: 8px;
   font-family: Inter, system-ui, sans-serif;
   color: var(--text);
 }
@@ -22,7 +22,7 @@ html, body { margin: 0; height: 100%; background: var(--bg); overflow: hidden; }
   background: var(--glass);
   backdrop-filter: blur(24px) saturate(140%);
   border: 1px solid var(--line);
-  border-radius: 0;
+  border-radius: var(--radius-surface);
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 .dim { color: var(--dim); font-weight: 400; }
@@ -36,14 +36,14 @@ h3 { font: 700 12px Inter, sans-serif; letter-spacing: 0.18em; color: var(--acce
 .clock { font: 600 13px "IBM Plex Mono", monospace; color: var(--cyan); min-width: 210px; text-align: right; }
 button, select {
   background: rgba(20, 28, 80, 0.7); color: var(--text); border: 1px solid var(--line);
-  border-radius: 0; padding: 6px 10px; font: 600 12px Inter, sans-serif; letter-spacing: 0.08em; cursor: pointer;
+  border-radius: var(--radius-control); padding: 6px 10px; font: 600 12px Inter, sans-serif; letter-spacing: 0.08em; cursor: pointer;
 }
 button:hover { border-color: var(--accent); }
 button.active { background: rgba(45, 127, 249, 0.18); border-color: var(--accent); color: #fff; }
 button.primary { background: rgba(45, 127, 249, 0.22); border-color: var(--accent); }
 .sidebar { top: 76px; left: 12px; width: 250px; bottom: 12px; padding: 4px 14px 14px; overflow-y: auto; }
 .sidebar ul { list-style: none; margin: 0; padding: 0; }
-.sidebar li { padding: 8px 10px; border-radius: 0; cursor: pointer; border: 1px solid transparent; margin-bottom: 4px; }
+.sidebar li { padding: 8px 10px; border-radius: var(--radius-control); cursor: pointer; border: 1px solid transparent; margin-bottom: 4px; }
 .sidebar li:hover { border-color: var(--line); }
 .sidebar li.active { border-color: var(--accent); background: rgba(45, 127, 249, 0.1); }
 .sidebar li small { display: block; color: var(--dim); font-size: 11px; }
@@ -62,9 +62,9 @@ button.primary { background: rgba(45, 127, 249, 0.22); border-color: var(--accen
 .state.blocked, .state.starved, .state.setup, .state.starting, .state.cleaning, .state.maintenance { color: var(--warn); }
 .phase { color: var(--cyan); }
 .faults { margin-top: 8px; }
-.faults span { display: inline-block; background: rgba(255, 59, 59, 0.16); border: 1px solid var(--bad); color: #ffb3b3; border-radius: 0; padding: 2px 6px; font: 600 11px "IBM Plex Mono"; margin: 2px; }
+.faults span { display: inline-block; background: rgba(255, 59, 59, 0.16); border: 1px solid var(--bad); color: #ffb3b3; border-radius: var(--radius-control); padding: 2px 6px; font: 600 11px "IBM Plex Mono"; margin: 2px; }
 .kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-.kpi { border: 1px solid var(--line); border-radius: 0; padding: 6px 8px; }
+.kpi { border: 1px solid var(--line); border-radius: var(--radius-surface); padding: 6px 8px; }
 .kpi .v { font: 700 18px Inter, sans-serif; color: #fff; }
 .kpi .k { font-size: 10px; color: var(--dim); text-transform: uppercase; letter-spacing: 0.06em; }
 .vars { font: 12px "IBM Plex Mono", monospace; }
@@ -118,10 +118,10 @@ body.portal { overflow: auto; background: var(--bg); }
 .portal-card h2 { font: 700 22px Orbitron, sans-serif; letter-spacing: 0.04em; margin: 0; }
 .portal-card p { color: var(--dim); margin: 4px 0 14px; flex: 1; line-height: 1.5; }
 .portal-actions { display: flex; flex-wrap: wrap; gap: 8px; }
-.btn { display: inline-block; background: rgba(20, 28, 80, 0.7); color: var(--text); border: 1px solid var(--line); border-radius: 0; padding: 8px 12px; font: 600 12px Inter, sans-serif; letter-spacing: 0.08em; text-decoration: none; }
+.btn { display: inline-block; background: rgba(20, 28, 80, 0.7); color: var(--text); border: 1px solid var(--line); border-radius: var(--radius-control); padding: 8px 12px; font: 600 12px Inter, sans-serif; letter-spacing: 0.08em; text-decoration: none; }
 .btn:hover { border-color: var(--accent); }
 .btn.primary { background: rgba(45, 127, 249, 0.18); border-color: var(--accent); }
-.lil-gui, .lil-gui * { border-radius: 0 !important; }
+.lil-gui, .lil-gui * { border-radius: var(--radius-control) !important; }
 
 /* Móvil: los paneles se ven de a uno desde la barra inferior */
 .dock { display: none; }
@@ -158,7 +158,7 @@ body.portal { overflow: auto; background: var(--bg); }
 .boot-card { width: min(420px, calc(100vw - 32px)); }
 .boot-brand { font: 700 13px Orbitron, sans-serif; letter-spacing: 0.2em; margin-bottom: 18px; }
 .boot-title { font: 600 20px Orbitron, sans-serif; margin: 0 0 18px; }
-.boot-track { height: 6px; background: rgba(255, 255, 255, 0.12); border: 1px solid var(--line); border-radius: 0; overflow: hidden; }
+.boot-track { height: 6px; background: rgba(255, 255, 255, 0.12); border: 1px solid var(--line); border-radius: var(--radius-control); overflow: hidden; }
 .boot-fill { height: 100%; width: 0; background: var(--accent); box-shadow: 0 0 10px rgba(45, 127, 249, 0.6); transition: width 0.45s ease; }
 .boot-row { display: flex; justify-content: space-between; gap: 12px; margin-top: 10px; font: 500 12px Inter, sans-serif; letter-spacing: 0.04em; }
 .boot-pct { font-family: "IBM Plex Mono", monospace; color: var(--accent); }
@@ -217,9 +217,9 @@ body.shot .boot { display: none; }
 
 
 /* Sistema visual compartido: Inter y radios discretos en controles/superficies. No afecta el canvas 3D. */
-body :is(h1,h2,h3,.brand,.title,.asset-name,.portal-head h1,.portal-card h2,.asset-chart-head,.water-workspace-nav button) { font-family: Inter, system-ui, sans-serif; }
-body :is(button,select,input:not([type="range"]),.glass,.sidebar li,.faults span,.kpi,.portal-card,.btn,.asset-chart-modal,.route-panel,.sched-scroll,.sched-kpis>div,.sched-form input,.sched-form select,.route-panel input,.route-panel select,.chip,.validation) { border-radius: var(--radius-control); }
-.glass,.portal-card,.asset-chart-modal { border-radius: var(--radius-surface); }
+body :is(h1,h2,h3,.brand,.title,.asset-name,.portal-head h1,.portal-card h2,.asset-chart-head,.water-workspace-nav button,.boot-brand,.boot-title) { font-family: Inter, system-ui, sans-serif; }
+body :is(button,select,input:not([type="range"]),.glass,.sidebar li,.faults span,.kpi,.card,.panel,.surface,.portal-card,.btn,.asset-chart-modal,.route-panel,.sched-scroll,.sched-kpis>div,.sched-form input,.sched-form select,.route-panel input,.route-panel select,.chip,.validation,.hud,.events,.right-col,.plc,.trend,.level,.house,.recommendation,.water-plc-panel,.water-history-panel,.regulation,.flow-diagram,.leak-controls,.profile-level-controls label) { border-radius: var(--radius-control); }
+body :is(.glass,.portal-card,.asset-chart-modal,.card,.panel,.surface,.kpi,.route-panel,.sched-scroll,.sched-kpis>div,.validation,.hud,.events,.right-col,.plc,.trend,.level,.house,.recommendation,.water-plc-panel,.water-history-panel,.regulation,.flow-diagram,.leak-controls,.profile-level-controls label) { border-radius: var(--radius-surface); }
 .lil-gui, .lil-gui * { border-radius: var(--radius-control) !important; }
 
 /* Hoja de ruta: tabla y editor (products.ts) */

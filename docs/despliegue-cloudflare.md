@@ -10,7 +10,7 @@ Cada push a `main` publica la galería web en **Cloudflare Pages** con el workfl
 | PLC Master del acueducto (`plc.html?plant=water-network-scale-v1`) | Se publica como HMI; las señales, mandos y curvas de sesión requieren el emulador API. |
 | API de simulación (`apps/twin-emulator-api`, FastAPI + WebSocket) | **Fuera de Pages.** Es Python con numpy y WebSocket; no corre en Pages ni en Workers de Python. Opciones: contenedor (Cloudflare Containers) o un VPS detrás de un túnel de Cloudflare. La HMI publicada se abre con `plc.html?plant=water-network-scale-v1&api=https://<host-del-emulador>`; el host debe exponer HTTPS/WSS y definir `TWIN_CORS_ORIGINS=https://digitaltwin.arvantti.online` (más los dominios autorizados). |
 
-La sesión, el historiador y los estudios usan SQLite local en el volumen del emulador. Pages solo publica archivos estáticos: para proyectar desde PLC se necesitan **ambas APIs** desplegadas aparte (emulador y Fractal).
+En desarrollo local, perfiles e historian usan SQLite y la sesión vive en memoria. El Worker/Container de Cloudflare se implementó con D1 para perfiles, historian, comandos, estudios del emulador y checkpoints, pero **todavía no se ha desplegado**. El Worker no sustituye la API Fractal independiente: para proyectar desde PLC se necesitan ambas APIs y la integración de Fractal requiere despliegue/configuración propia. CORS nunca se considera autenticación.
 
 ## Contenedores para frontend y emulador
 
@@ -38,6 +38,12 @@ podman run --rm -p 8100:8100 \
 ```
 
 La HMI publicada apunta a ambos servicios con `?api=https://<host-del-emulador>&fractal=https://<host-fractal>`. Fractal usa `FRACTAL_PLC_API_URL` **interno** para obtener tags y perfil PLC y publicar el estudio; nunca acepta la copia de tags/perfil del navegador en `/studies/horizon/from-plc`. Por defecto la optimización está deshabilitada (`FRACTAL_ENABLE_OPTIMIZATION=0`) hasta validar el horizonte. El proxy HTTPS delante de ambos APIs debe conservar la actualización WebSocket (`wss`). **El workflow Deploy solo publica la galería; no despliega las APIs ni configura un proxy.**
+
+## Emulador en Cloudflare: infraestructura preparada, falta despliegue
+
+El gateway está en `apps/cloudflare-emulator-worker/` y su configuración en `wrangler.acueducto.jsonc`. El Container Python usa D1 a través de un Worker bridge autenticado; Cloudflare Access protege las rutas HTTP y WebSocket y el Worker permite solo `water-network-scale-v1`. Lee `apps/cloudflare-emulator-worker/README.md` para crear la base, completar los placeholders y desplegar. Los nombres y hosts del ejemplo no crean recursos DNS ni bases automáticamente.
+
+D1 es el almacenamiento persistente obligatorio en Cloudflare; el disco efímero del Container no es una fuente de verdad. Los checkpoints versionados usan pickle comprimido: la recuperación depende de compatibilidad de código y la cadencia actual permite retroceder hasta 3600 segundos simulados. Validar límites, coste, latencia y recuperación con los recursos reales antes de declarar continuidad o habilitar el servicio. No hay credenciales de cuenta disponibles en este entorno. El workflow manual `.github/workflows/deploy-acueducto-emulator.yml` puede desplegar el Worker/Container cuando se provisionen recursos y secretos; no corre automáticamente. `deploy.yml` sigue publicando solo Pages.
 
 ## Pasos de una sola vez (en dash.cloudflare.com, cuenta Arvantti)
 1. **Account ID.** Entra a la cuenta Arvantti, abre *Workers & Pages* y copia el **Account ID** del panel derecho (o de la URL: `dash.cloudflare.com/<ACCOUNT_ID>/...`).

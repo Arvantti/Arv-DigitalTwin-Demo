@@ -9,12 +9,13 @@ from __future__ import annotations
 
 import json
 import os
-import sqlite3
 from collections.abc import Mapping
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 from uuid import uuid4
+
+from .d1_storage import connect
 
 PROFILE_VERSION = 1
 HOURS_PER_DAY = 24
@@ -255,8 +256,8 @@ class ProfileStore:
                     (profile_id, self.plant_id, profile["name"], profile["description"], json.dumps(profile), now, now),
                 )
 
-    def _connect(self) -> sqlite3.Connection:
-        return sqlite3.connect(self.path)
+    def _connect(self) -> Any:
+        return connect(self.path)
 
     @staticmethod
     def _row(row: tuple[Any, ...]) -> dict[str, Any]:

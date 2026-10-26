@@ -84,7 +84,7 @@ interface Options {
   select: (id: string) => void;
   /** Resalta en el 3D la ruta de un producto. */
   showProduct?: (id: string) => void;
-  /** URL de la API del emulador (puede vivir en otro origen, parámetro ?api=). */
+  /** URL de la API de Planta Real (puede vivir en otro origen, parámetro ?api=). */
   apiUrl?: (path: string) => string;
 }
 
