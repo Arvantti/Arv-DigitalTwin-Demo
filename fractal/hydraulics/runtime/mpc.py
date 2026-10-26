@@ -88,7 +88,10 @@ def _snapshot(
             }
         elif node == "prs-01":
             outlet = float(state.get("prs_outlet_mca", tags.get("PLC.PRS.OutletPressureMca") or 20))
-            branch_auto = entry.get("prs", {}).get("branch", "auto") == "auto"
+            prs_entry = entry.get("prs", {})
+            branch_auto = prs_entry.get("branch", "auto") == "auto"
+            control_mode = prs_entry.get("control_mode", "critical_pressure")
+            controller_pressure = state.get("control_point_pressure_mca", pressure) if control_mode == "critical_point" else pressure
             equipment[node] = {
                 "state": "running",
                 "phase": None,
@@ -99,7 +102,7 @@ def _snapshot(
                     "flow_b_norm": 0 if branch_auto else min(1, flow / 26),
                     "inlet_pressure_mca": state["prs_inlet_mca"],
                     "outlet_pressure_mca": outlet,
-                    "critical_pressure_mca": pressure,
+                    "critical_pressure_mca": controller_pressure,
                     "auto_setpoint_mca": outlet,
                     "stack_light": 1,
                 },
@@ -107,6 +110,8 @@ def _snapshot(
                     "inlet_pressure_mca": state["prs_inlet_mca"],
                     "outlet_pressure_mca": outlet,
                     "critical_pressure_mca": pressure,
+                    "control_point_pressure_mca": state.get("control_point_pressure_mca", pressure),
+                    "auto_control_mode": control_mode,
                     "flow_m3h": flow,
                 },
             }
@@ -297,8 +302,16 @@ def project_24h(
         current_prs = float(prs_entry.get("manual_setting_mca", current_prs))
         prs_branch = prs_entry.get("branch", prs_branch)
         critical_setpoint = float(prs_entry.get("critical_setpoint_mca", critical_setpoint))
-        prs_setpoint = float(overrides.get("prs_mca", current_prs))
-        prs_auto = prs_branch == "auto" and "prs_mca" not in overrides
+        apply_current_entry = hour > 0 or initial_time_s % 3600.0 <= 1e-9
+        if "inlet_pressure_mca" in prs_entry and apply_current_entry:
+            current_discharge = float(carried_tags.get("PLC.Pump.DischargePressureMca") or 0.0)
+            current_inlet = float(carried_tags.get("PLC.PRS.InletPressureMca") or 0.0)
+            scenario_tags["PLC.Pump.SetpointMca"] = float(prs_entry["inlet_pressure_mca"]) + current_discharge - current_inlet
+        prs_control_mode = prs_entry.get("control_mode", "critical_pressure")
+        prs_branch_auto = prs_branch == "auto" and "prs_mca" not in overrides
+        prs_auto = prs_branch_auto and prs_control_mode in {"critical_pressure", "critical_point"}
+        critical_consumer_id = prs_entry.get("critical_control_point") if prs_control_mode == "critical_point" else None
+        prs_setpoint = float(overrides.get("prs_mca", prs_entry.get("auto_outlet_mca", current_prs)))
         critical_target = critical_setpoint
         between = entry.get("between_levels", {})
         openings = tuple(float(between.get(str(n), opening)) for n, opening in zip((12, 23, 34), openings, strict=True))
@@ -343,6 +356,7 @@ def project_24h(
                     demand_factor=factor,
                     prs_auto=prs_auto,
                     critical_target_mca=critical_target,
+                    critical_consumer_id=critical_consumer_id,
                 )
             feasible = bool(state["feasible"])
             scenarios.append({"demand_factor": round(factor, 3), "state": state, "feasible": feasible})
@@ -376,6 +390,7 @@ def project_24h(
             end_tags, prs_mca=end_prs, vertical_openings_pct=end_openings,
             demand_factor=demand_multiplier, prs_auto=prs_auto and optimized_controls is None,
             critical_target_mca=critical_target,
+            critical_consumer_id=critical_consumer_id,
         )
         flow_out = float(end_state["flow_m3h"])
         recirc_end_flow, recirc_a, recirc_b = _recirc.pump_flow(_MODEL, tank_levels) if recirc_on else (0.0, 0.0, 0.0)
@@ -385,7 +400,7 @@ def project_24h(
         effective_openings = tuple(float(nominal_state[f"valve_{key}_pct"]) for key in ("12", "23", "34"))
         snapshot_entry = {
             **entry,
-            "prs": {**prs_entry, "branch": "manual" if optimized_controls is not None else "auto" if prs_auto else "manual"},
+            "prs": {**prs_entry, "branch": "manual" if optimized_controls is not None else "auto" if prs_branch_auto else "manual"},
         }
         frame_snapshot = _snapshot(scenario_tags, nominal_state, tank_levels, demand, effective_openings, snapshot_entry)
         recirc_snapshot = frame_snapshot["equipment"].get("pumpset-recirc-01")
@@ -410,14 +425,16 @@ def project_24h(
                 "PLC.Tank.Recirc02.LevelPct": round(tank_levels["tank-recirc-02"], 3),
                 "PLC.Pump.FlowM3h": round(flow_out, 4),
                 "PLC.Pump.DischargePressureMca": nominal_state["pump_discharge_mca"],
+                "PLC.Pump.SetpointMca": scenario_tags.get("PLC.Pump.SetpointMca", carried_tags.get("PLC.Pump.SetpointMca")),
                 "PLC.Pump.SpeedPct": nominal_state["pump_speed_pct"],
                 "PLC.Pump.PowerKw": nominal_state["pump_power_kw"],
                 "PLC.Pump.RecirculationFlowM3h": round(recirc_end_flow, 4),
                 "PLC.Pump.RecirculationAutoActive": recirc_on,
                 "PLC.PRS.CriticalPressureMca": nominal_state["critical_pressure_mca"],
+                "PLC.PRS.ControlPointPressureMca": nominal_state["control_point_pressure_mca"],
                 "PLC.PRS.OutletPressureMca": nominal_state["prs_outlet_mca"],
                 "PLC.PRS.InletPressureMca": nominal_state["prs_inlet_mca"],
-                "PLC.PRS.BranchAuto": prs_auto and optimized_controls is None,
+                "PLC.PRS.BranchAuto": prs_branch_auto and optimized_controls is None,
             }
         )
         for connection, opening in zip((12, 23, 34), effective_openings, strict=True):
@@ -445,6 +462,11 @@ def project_24h(
                 forecast_tags[f"{tag_prefix}.PressureMca"] = nominal_state["leak_pressures_mca"].get(
                     f"L{level}.{leak_id}", nominal_state["level_pressures_mca"][str(level)]
                 )
+        carried_tags.update({
+            "PLC.Pump.DischargePressureMca": nominal_state["pump_discharge_mca"],
+            "PLC.PRS.InletPressureMca": nominal_state["prs_inlet_mca"],
+            "PLC.Pump.SetpointMca": scenario_tags.get("PLC.Pump.SetpointMca", carried_tags.get("PLC.Pump.SetpointMca")),
+        })
         plan.append(
             {
                 "hour": hour,

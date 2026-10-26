@@ -1,4 +1,5 @@
 import "./plc.css";
+import { mountComparisons } from "./plc-comparisons";
 
 type Value = number | string | null;
 type Snapshot = { state: string; variables: Record<string, Value>; animation: Record<string, number>; active_faults: string[] };
@@ -51,7 +52,7 @@ type ProfileHour = {
   dwellings?: Record<string, Record<string, number>>;
   leaks?: Record<string, Record<string, number>>;
   between_levels?: Record<string, number>;
-  prs?: { branch?: "auto" | "manual"; critical_setpoint_mca?: number; manual_setting_mca?: number };
+  prs?: { branch?: "auto" | "manual"; control_mode?: "critical_pressure" | "critical_point" | "fixed_outlet"; critical_control_point?: "L4.C44"; inlet_pressure_mca?: number; auto_outlet_mca?: number; critical_setpoint_mca?: number; manual_setting_mca?: number };
 };
 type OperationProfile = { id?: string; name: string; description: string; hours: Record<string, ProfileHour> };
 let profiles: OperationProfile[] = [];
@@ -471,11 +472,22 @@ function updateProfileHourFromForm(): void {
   hour.global_consumers_pct = Number($<HTMLInputElement>("profile-global").value);
   hour.levels = Object.fromEntries([...document.querySelectorAll<HTMLInputElement>("[data-profile-level]")].map((input) => [input.dataset.profileLevel!, Number(input.value)]));
   hour.between_levels = Object.fromEntries([...document.querySelectorAll<HTMLInputElement>("[data-profile-between]")].map((input) => [input.dataset.profileBetween!, Number(input.value)]));
+  const mode = $<HTMLSelectElement>("profile-prs-mode").value as "critical_pressure" | "critical_point" | "fixed_outlet";
+  const inletValue = $<HTMLInputElement>("profile-prs-inlet").value;
+  const autoOutlet = Number($<HTMLInputElement>("profile-prs-auto-outlet").value);
   hour.prs = {
-    branch: $<HTMLSelectElement>("profile-prs-branch").value as "auto" | "manual",
+    ...hour.prs,
+    branch: mode === "fixed_outlet" || mode === "critical_point" ? "auto" : $<HTMLSelectElement>("profile-prs-branch").value as "auto" | "manual",
+    control_mode: mode,
     critical_setpoint_mca: Number($<HTMLInputElement>("profile-prs-critical").value),
     manual_setting_mca: Number($<HTMLInputElement>("profile-prs-manual").value),
   };
+  if (inletValue.trim()) hour.prs.inlet_pressure_mca = Number(inletValue);
+  else delete hour.prs.inlet_pressure_mca;
+  if (mode === "critical_point") hour.prs.critical_control_point = "L4.C44";
+  else delete hour.prs.critical_control_point;
+  if (mode === "fixed_outlet") hour.prs.auto_outlet_mca = autoOutlet;
+  else delete hour.prs.auto_outlet_mca;
 }
 
 function effectiveOpenings(upToHour: number): { consumers: Record<string, number>; leaks: Record<string, number> } {
@@ -531,7 +543,7 @@ function renderProfileEditor(): void {
   const templates = profiles.filter((profile) => profile.id?.startsWith("builtin-"));
   const customs = profiles.filter((profile) => !profile.id?.startsWith("builtin-"));
   const options = (items: OperationProfile[]) => items.map((profile) => `<option value="${profile.id}">${profile.name.replace(/[&<>"']/g, "")}</option>`).join("");
-  profileSelect.innerHTML = `<option value="">Nuevo personalizado sin guardar</option><optgroup label="DOS CURVAS Y PLANTILLA PERSONALIZADA">${options(templates)}</optgroup>${customs.length ? `<optgroup label="ESCENARIOS PERSONALIZADOS GUARDADOS">${options(customs)}</optgroup>` : ""}`;
+  profileSelect.innerHTML = `<option value="">Nuevo personalizado sin guardar</option><optgroup label="PLANTILLAS DE OPERACIÓN">${options(templates)}</optgroup>${customs.length ? `<optgroup label="ESCENARIOS PERSONALIZADOS GUARDADOS">${options(customs)}</optgroup>` : ""}`;
   $<HTMLButtonElement>("profile-delete").hidden = !activeProfileId || activeProfileId.startsWith("builtin-");
   $<HTMLButtonElement>("profile-save").disabled = Boolean(activeProfileId?.startsWith("builtin-"));
   profileSelect.value = activeProfileId ?? "";
@@ -554,7 +566,23 @@ function renderProfileEditor(): void {
   $("profile-global-output").textContent = `${global.value} %`;
   $("profile-level-controls").innerHTML = [1, 2, 3, 4].map((level) => `<label>Nivel ${level}<input data-profile-level="${level}" type="range" min="0" max="100" value="${hour.levels?.[level] ?? hour.global_consumers_pct ?? 100}" /><output>${hour.levels?.[level] ?? hour.global_consumers_pct ?? 100} %</output></label>`).join("");
   $("profile-between-controls").innerHTML = [["12", "Nivel 1 → 2"], ["23", "Nivel 2 → 3"], ["34", "Nivel 3 → 4"]].map(([valve, label]) => `<label>${label}<input data-profile-between="${valve}" type="range" min="0" max="100" value="${hour.between_levels?.[valve] ?? 100}" /><output>${hour.between_levels?.[valve] ?? 100} %</output></label>`).join("");
-  $<HTMLSelectElement>("profile-prs-branch").value = hour.prs?.branch ?? "auto";
+  const mode = $<HTMLSelectElement>("profile-prs-mode");
+  mode.value = hour.prs?.control_mode ?? "critical_pressure";
+  const branch = $<HTMLSelectElement>("profile-prs-branch");
+  branch.value = hour.prs?.branch ?? "auto";
+  const fixedAutoMode = mode.value === "fixed_outlet" || mode.value === "critical_point";
+  branch.disabled = fixedAutoMode;
+  $<HTMLLabelElement>("profile-prs-fixed-outlet-control").hidden = mode.value !== "fixed_outlet";
+  $<HTMLLabelElement>("profile-prs-critical-control").hidden = mode.value === "fixed_outlet";
+  $("profile-prs-mode-description").textContent = mode.value === "critical_point"
+    ? "AUTO usa la señal independiente de C44 del piso 4; es un punto de control provisional y se contrasta con toda la red."
+    : mode.value === "fixed_outlet"
+      ? "AUTO sostiene la salida indicada, sin usar el PID de presión crítica."
+      : "AUTO regula sobre la presión mínima global medida en las viviendas.";
+  const inlet = $<HTMLInputElement>("profile-prs-inlet");
+  inlet.value = hour.prs?.inlet_pressure_mca === undefined ? "" : String(hour.prs.inlet_pressure_mca);
+  const autoOutlet = $<HTMLInputElement>("profile-prs-auto-outlet");
+  autoOutlet.value = String(hour.prs?.auto_outlet_mca ?? 40);
   const critical = $<HTMLInputElement>("profile-prs-critical");
   critical.value = String(hour.prs?.critical_setpoint_mca ?? schema.service_constraint.automatic_target_mca);
   $("profile-prs-critical-output").textContent = `${Number(critical.value).toFixed(2)} mca`;
@@ -564,6 +592,23 @@ function renderProfileEditor(): void {
   const individualCount = Object.values(hour.dwellings ?? {}).reduce((total, valves) => total + Object.keys(valves).length, 0);
   const leakCount = Object.values(hour.leaks ?? {}).reduce((total, valves) => total + Object.keys(valves).length, 0);
   $("profile-capture-summary").textContent = individualCount || leakCount ? `${individualCount} viviendas y ${leakCount} válvulas de fuga capturadas para esta hora.` : "Sin mandos individuales capturados.";
+  const inletControls = [mode, inlet, autoOutlet];
+  inletControls.forEach((control) => control.onchange = () => {
+    if (mode.value === "fixed_outlet" || mode.value === "critical_point") branch.value = "auto";
+    branch.disabled = mode.value === "fixed_outlet" || mode.value === "critical_point";
+    $<HTMLLabelElement>("profile-prs-fixed-outlet-control").hidden = mode.value !== "fixed_outlet";
+    $<HTMLLabelElement>("profile-prs-critical-control").hidden = mode.value === "fixed_outlet";
+    $("profile-prs-mode-description").textContent = mode.value === "critical_point"
+      ? "AUTO usa la señal independiente de C44 del piso 4; es un punto de control provisional y se contrasta con toda la red."
+      : mode.value === "fixed_outlet"
+        ? "AUTO sostiene la salida indicada, sin usar el PID de presión crítica."
+        : "AUTO regula sobre la presión mínima global medida en las viviendas.";
+    updateProfileHourFromForm();
+    pressureRequest++;
+    profilePressure = [];
+    profilePressureMessage = "Cambios sin recalcular: guarde el perfil para actualizar la presión.";
+    renderProfileChart();
+  });
   const ranges = [global, ...document.querySelectorAll<HTMLInputElement>("[data-profile-level], [data-profile-between]"), critical, manual];
   ranges.forEach((input) => input.oninput = () => {
     const output = input.parentElement?.querySelector("output");
@@ -657,7 +702,16 @@ function captureCurrentCommands(): void {
     for (const valve of ["l1", "l2"]) hour.leaks[grid][valve] = Math.round((eq(grid)?.animation[`open_${valve}`] ?? 0) * 100);
   }
   hour.between_levels = Object.fromEntries([["12", "valve-between-12"], ["23", "valve-between-23"], ["34", "valve-between-34"]].map(([key, id]) => [key, Math.round(n(value(id, "opening_target_pct")) ?? 100)]));
-  hour.prs = { branch: String(value("prs-01", "branch_auto")) === "1" ? "auto" : "manual", critical_setpoint_mca: n(value("prs-01", "critical_setpoint_mca")) ?? schema.service_constraint.automatic_target_mca, manual_setting_mca: n(value("prs-01", "manual_setting_mca")) ?? 20.94 };
+  const controlMode = String(value("prs-01", "auto_control_mode") ?? "critical_pressure") as "critical_pressure" | "critical_point" | "fixed_outlet";
+  hour.prs = {
+    branch: controlMode === "fixed_outlet" || controlMode === "critical_point" || String(value("prs-01", "branch_auto")) === "1" ? "auto" : "manual",
+    control_mode: controlMode,
+    inlet_pressure_mca: n(value("prs-01", "inlet_pressure_mca")) ?? 70,
+    critical_setpoint_mca: n(value("prs-01", "critical_setpoint_mca")) ?? schema.service_constraint.automatic_target_mca,
+    manual_setting_mca: n(value("prs-01", "manual_setting_mca")) ?? 20.94,
+  };
+  if (controlMode === "critical_point") hour.prs.critical_control_point = "L4.C44";
+  if (controlMode === "fixed_outlet") hour.prs.auto_outlet_mca = n(value("prs-01", "auto_fixed_outlet_mca")) ?? 40;
   pressureRequest++; profilePressure = [];
   renderProfileEditor();
 }
@@ -673,9 +727,8 @@ async function start(): Promise<void> {
   $("plant-name").textContent = ` · ${schema.name.toUpperCase()}`;
   $<HTMLAnchorElement>("link-plant").href = `/plant.html?plant=${plantId}${sessionId ? `&session=${encodeURIComponent(sessionId)}` : ""}${query.get("api") ? `&api=${encodeURIComponent(apiOrigin)}` : ""}`;
   buildAssets();
-  document.querySelectorAll<HTMLButtonElement>(".tabs button").forEach((button) => button.onclick = () => selectScreen(button.dataset.screen!));
-  const initialScreen = new URLSearchParams(location.search).get("screen");
-  if (["master", "day", "pumping", "grid", "profiles", "trends", "fractal", "history"].includes(initialScreen ?? "")) selectScreen(initialScreen!);
+  const initialScreen = query.get("screen");
+  if (["master", "day", "pumping", "grid", "profiles", "trends", "fractal", "history", "comparisons"].includes(initialScreen ?? "")) selectScreen(initialScreen!);
   $("connect").onclick = () => { void connect(); };
   $("pause").onclick = () => { paused = !paused; socket?.send(JSON.stringify({ pause: paused })); $("pause").textContent = paused ? "▶ REANUDAR" : "❚❚ PAUSA"; };
   document.querySelectorAll<HTMLButtonElement>("[data-command]").forEach((button) => button.onclick = () => send("prs-01", "select_branch", { branch: button.dataset.command }));
@@ -720,7 +773,7 @@ async function start(): Promise<void> {
     } : undefined;
     const button = $<HTMLButtonElement>("fractal-horizon");
     button.disabled = true; button.textContent = "… LEYENDO PLC Y PROYECTANDO";
-    let study: { study_id: string; study_type: string; base_time: number; hours: { hour: number; supply_level_pct: number; robust: boolean; scenarios: { demand_factor: number; state: Record<string, number>; feasible: boolean }[] }[]; published?: unknown };
+    let study: { study_id: string; study_type: string; base_time: number; hours: { hour: number; supply_level_pct: number; robust: boolean; profile_commands?: { prs?: { control_mode?: string; critical_control_point?: string; critical_setpoint_mca?: number } }; scenarios: { demand_factor: number; state: Record<string, number> & { prs_inlet_mca: number; prs_outlet_mca: number; critical_pressure_mca: number; control_point_pressure_mca: number; consumer_pressures_mca: Record<string, number> }; feasible: boolean }[] }[]; published?: unknown };
     try {
       const response = await fetch(`${fractalOrigin}/studies/horizon/from-plc`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ session_id: sessionId, plant_id: plantId, emulator_api: apiOrigin, overrides, study_type: studyType }) });
       if (!response.ok) { const detail = await response.json().catch(() => ({})) as { detail?: string }; throw Error(detail.detail ?? "Fractal no pudo proyectar el perfil PLC"); }
@@ -728,11 +781,12 @@ async function start(): Promise<void> {
     } catch (error) { window.alert(String(error)); return; }
     finally { button.disabled = false; button.textContent = "◫ PROYECTAR 24 H DESDE PLC"; }
     if (study.published) $<HTMLAnchorElement>("link-plant").href = `/plant.html?plant=${plantId}&session=${encodeURIComponent(sessionId)}&study=${encodeURIComponent(study.study_id)}${query.get("api") ? `&api=${encodeURIComponent(apiOrigin)}` : ""}`;
-    $("fractal-recommendations").innerHTML = `<article class="panel"><p class="eyebrow">◆ FUTURO SIMULADO · NO APLICADO · ${study.study_type.toUpperCase()}</p><p><b>Estudio ${study.study_id}</b> · origen PLC t=${fmt(study.base_time, 0)} s · ${study.published ? "persistido en PLC" : "resultado Fractal (no persistido en PLC)"}</p>${study.hours.map((item) => `<p>Hora ${String(item.hour + 1).padStart(2, "0")} · tanque ${fmt(item.supply_level_pct)} % (estimación sensible a ciclos del retorno) · ${item.robust ? "FACTIBLE EN MODELO · NO VALIDADO DINÁMICAMENTE" : "REVISAR · NO VALIDADO"} · presión nominal ${fmt(item.scenarios[1]?.state.critical_pressure_mca)} mca</p>`).join("")}</article>`;
+    $("fractal-recommendations").innerHTML = `<article class="panel"><p class="eyebrow">◆ FUTURO SIMULADO · NO APLICADO · ${study.study_type.toUpperCase()}</p><p><b>Estudio ${study.study_id}</b> · origen PLC t=${fmt(study.base_time, 0)} s · ${study.published ? "persistido en PLC" : "resultado Fractal (no persistido en PLC)"}</p>${study.hours.map((item) => { const state = item.scenarios[1]?.state; const pressureScenarios = item.scenarios.map((scenario) => ({ factor: scenario.demand_factor, minimum: Math.min(...Object.values(scenario.state.consumer_pressures_mca)) })); const worst = pressureScenarios.reduce((a, b) => b.minimum < a.minimum ? b : a, { factor: Number.NaN, minimum: Number.POSITIVE_INFINITY }); const safe = worst.minimum >= 15; const point = item.profile_commands?.prs?.critical_control_point; const pointText = point ? `Control ${point}: ${fmt(state?.control_point_pressure_mca)} mca / objetivo ${fmt(item.profile_commands?.prs?.critical_setpoint_mca)} mca · ` : ""; const outletLabel = item.profile_commands?.prs?.control_mode === "fixed_outlet" ? "salida fija" : "salida variable"; return `<p>Hora ${String(item.hour + 1).padStart(2, "0")} · tanque ${fmt(item.supply_level_pct)} % · entrada PRS ${fmt(state?.prs_inlet_mca)} / ${outletLabel} ${fmt(state?.prs_outlet_mca)} mca · ${pointText}mínima de las 64 viviendas ${fmt(worst.minimum)} mca (demanda ×${fmt(worst.factor, 2)}) · ${safe ? "TODAS ≥15 mca EN LOS ESCENARIOS · NO VALIDADO DINÁMICAMENTE" : "AL MENOS UNA <15 mca · REVISAR"} · ${item.robust ? "factible en modelo" : "restricciones no factibles"}</p>`; }).join("")}</article>`;
     void renderFractal();
   };
   $("profile-new").onclick = () => {
-    const template = profiles.find((profile) => profile.id?.endsWith("pfl-personalizado-01"));
+    const selected = profiles.find((profile) => profile.id === activeProfileId);
+    const template = selected?.id?.startsWith("builtin-") ? selected : profiles.find((profile) => profile.id?.endsWith("pfl-personalizado-01"));
     activeProfile = template ? structuredClone(template) : { name: "", description: "", hours: {} };
     delete activeProfile.id;
     activeProfile.name = "Mi escenario personalizado";
@@ -791,4 +845,7 @@ async function start(): Promise<void> {
   }
 }
 
+mountComparisons();
+document.querySelectorAll<HTMLButtonElement>(".tabs button").forEach((button) => button.onclick = () => selectScreen(button.dataset.screen!));
+if (query.get("screen") === "comparisons") selectScreen("comparisons");
 start().catch((error: unknown) => { $("plant-name").textContent = ` · ERROR: ${String(error)}`; });

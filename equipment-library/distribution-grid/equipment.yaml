@@ -40,7 +40,8 @@ ports:
   - { id: inlet, kind: material, direction: in, medium: agua, unit: m3/h, hydraulic: inlet }
   - { id: riser_out, kind: material, direction: out, medium: agua, unit: m3/h, hydraulic: inlet, description: Sigue la columna desde la entrada hacia el nivel de arriba }
   - { id: drain, kind: material, direction: out, medium: "agua a la canaleta (consumo y fugas)", unit: kg/h, link: { flow_kg_h: drain_kg_h } }
-  - { id: telemetry, kind: signal, direction: out, medium: presión de la casa más crítica del nivel, unit: mca, link: { pressure_mca: min_pressure_mca } }
+  - { id: telemetry, kind: signal, direction: out, medium: presión mínima de las viviendas del nivel, unit: mca, link: { pressure_mca: min_pressure_mca } }
+  - { id: control_point, kind: signal, direction: out, medium: presión del punto fijo de control C44 del nivel, unit: mca, link: { pressure_mca: p_c44 } }
 
 states:
   - { id: idle, description: Todas las válvulas cerradas }

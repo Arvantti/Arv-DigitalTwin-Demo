@@ -1,0 +1,395 @@
+{
+  "scope": "independent Fractal forecast vs PLC emulator; same PLC snapshot and full physical second per emulator step; first interval shortened to the next absolute PLC hour boundary",
+  "base_t_s": 30.0,
+  "hours": 2,
+  "profile_id": "pdd-prs-punto-critico-18-01",
+  "note": "Ordinal pairing is diagnostic, not proof of event identity if cycle counts differ. Emulator readings are taken at exact absolute PLC hour boundaries; levels, main flow and pressures are TRUE values (not noisy PLC sensor snapshots). Fractal shortens its first interval to the next absolute PLC boundary (e.g. 3570 s from an initial t=30 s), then uses complete 3600 s profile intervals. Both models use the same profile entry up to each comparison boundary. Fractal holds hourly distribution fixed. Fractal recirculation totals are accumulated across hours, no commands applied.",
+  "initial_tags": {
+    "PLC.Tank.Supply.LevelPct": 69.10000000000001,
+    "PLC.Tank.Recirc01.LevelPct": 40.800000000000004,
+    "PLC.Tank.Recirc02.LevelPct": 40.800000000000004,
+    "PLC.Pump.RecirculationAutoActive": 0.0
+  },
+  "fractal_events": [
+    {
+      "action": "start",
+      "reason": "suministro_bajo",
+      "t_s": 1227.97318,
+      "levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 75.66035,
+        "tank-recirc-02": 73.32476
+      },
+      "recirculated_m3": 0.0
+    },
+    {
+      "action": "stop",
+      "reason": "suministro_lleno",
+      "t_s": 1765.08073,
+      "levels_pct": {
+        "tank-supply-01": 90.00112,
+        "tank-recirc-01": 22.85175,
+        "tank-recirc-02": 22.72718
+      },
+      "recirculated_m3": 3.014424
+    },
+    {
+      "action": "start",
+      "reason": "suministro_bajo",
+      "t_s": 3603.32625,
+      "levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 76.34691,
+        "tank-recirc-02": 72.6382
+      },
+      "recirculated_m3": 3.014424
+    },
+    {
+      "action": "stop",
+      "reason": "suministro_lleno",
+      "t_s": 4145.53526,
+      "levels_pct": {
+        "tank-supply-01": 90.0,
+        "tank-recirc-01": 22.87432,
+        "tank-recirc-02": 22.70653
+      },
+      "recirculated_m3": 6.058179
+    },
+    {
+      "action": "start",
+      "reason": "suministro_bajo",
+      "t_s": 5924.64249,
+      "levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 76.38314,
+        "tank-recirc-02": 72.60197
+      },
+      "recirculated_m3": 6.058179
+    },
+    {
+      "action": "stop",
+      "reason": "suministro_lleno",
+      "t_s": 6466.86222,
+      "levels_pct": {
+        "tank-supply-01": 90.00111,
+        "tank-recirc-01": 22.8742,
+        "tank-recirc-02": 22.70475
+      },
+      "recirculated_m3": 9.101991
+    }
+  ],
+  "emulator_events": [
+    {
+      "t_s": 1229.0,
+      "levels_pct": {
+        "tank-supply-01": 29.95857,
+        "tank-recirc-01": 75.70831,
+        "tank-recirc-02": 73.29922
+      },
+      "recirculated_m3": -0.0,
+      "bypass_m3": 0.0,
+      "auto_active": true,
+      "action": "start",
+      "reason": "suministro_bajo"
+    },
+    {
+      "t_s": 1769.0,
+      "levels_pct": {
+        "tank-supply-01": 90.1258,
+        "tank-recirc-01": 22.74634,
+        "tank-recirc-02": 22.56872
+      },
+      "recirculated_m3": 3.024855,
+      "bypass_m3": 0.0,
+      "auto_active": false,
+      "action": "stop",
+      "reason": "suministro_lleno"
+    },
+    {
+      "t_s": 3612.0,
+      "levels_pct": {
+        "tank-supply-01": 29.95975,
+        "tank-recirc-01": 76.38796,
+        "tank-recirc-02": 72.61754
+      },
+      "recirculated_m3": 3.024855,
+      "bypass_m3": 0.0,
+      "auto_active": true,
+      "action": "start",
+      "reason": "suministro_bajo"
+    },
+    {
+      "t_s": 4157.0,
+      "levels_pct": {
+        "tank-supply-01": 90.11189,
+        "tank-recirc-01": 22.79407,
+        "tank-recirc-02": 22.54498
+      },
+      "recirculated_m3": 6.078469,
+      "bypass_m3": 0.0,
+      "auto_active": false,
+      "action": "stop",
+      "reason": "suministro_lleno"
+    },
+    {
+      "t_s": 5941.0,
+      "levels_pct": {
+        "tank-supply-01": 29.94537,
+        "tank-recirc-01": 76.45079,
+        "tank-recirc-02": 72.57949
+      },
+      "recirculated_m3": 6.078468,
+      "bypass_m3": 0.0,
+      "auto_active": true,
+      "action": "start",
+      "reason": "suministro_bajo"
+    },
+    {
+      "t_s": 6487.0,
+      "levels_pct": {
+        "tank-supply-01": 90.20852,
+        "tank-recirc-01": 22.71259,
+        "tank-recirc-02": 22.45992
+      },
+      "recirculated_m3": 9.137727,
+      "bypass_m3": 0.0,
+      "auto_active": false,
+      "action": "stop",
+      "reason": "suministro_lleno"
+    }
+  ],
+  "paired_events": [
+    {
+      "action": "start",
+      "cycle": 1,
+      "fractal_t_s": 1227.97318,
+      "emulator_t_s": 1229.0,
+      "time_difference_s": -1.027,
+      "fractal_levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 75.66035,
+        "tank-recirc-02": 73.32476
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 29.95857,
+        "tank-recirc-01": 75.70831,
+        "tank-recirc-02": 73.29922
+      },
+      "same_time_supply_difference_pp": 0.0088,
+      "fractal_recirculated_m3": 0.0,
+      "emulator_recirculated_m3_at_own_event": -0.0,
+      "same_time_transfer_difference_m3": 0.0,
+      "emulator_bypass_m3_at_fractal_event": 0.0,
+      "fractal_reason": "suministro_bajo",
+      "emulator_reason": "suministro_bajo"
+    },
+    {
+      "action": "stop",
+      "cycle": 1,
+      "fractal_t_s": 1765.08073,
+      "emulator_t_s": 1769.0,
+      "time_difference_s": -3.919,
+      "fractal_levels_pct": {
+        "tank-supply-01": 90.00112,
+        "tank-recirc-01": 22.85175,
+        "tank-recirc-02": 22.72718
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 90.1258,
+        "tank-recirc-01": 22.74634,
+        "tank-recirc-02": 22.56872
+      },
+      "same_time_supply_difference_pp": 0.32206,
+      "fractal_recirculated_m3": 3.014424,
+      "emulator_recirculated_m3_at_own_event": 3.024855,
+      "same_time_transfer_difference_m3": 0.006403,
+      "emulator_bypass_m3_at_fractal_event": 0.0,
+      "fractal_reason": "suministro_lleno",
+      "emulator_reason": "suministro_lleno"
+    },
+    {
+      "action": "start",
+      "cycle": 2,
+      "fractal_t_s": 3603.32625,
+      "emulator_t_s": 3612.0,
+      "time_difference_s": -8.674,
+      "fractal_levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 76.34691,
+        "tank-recirc-02": 72.6382
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 29.95975,
+        "tank-recirc-01": 76.38796,
+        "tank-recirc-02": 72.61754
+      },
+      "same_time_supply_difference_pp": -0.2631,
+      "fractal_recirculated_m3": 3.014424,
+      "emulator_recirculated_m3_at_own_event": 3.024855,
+      "same_time_transfer_difference_m3": -0.010431,
+      "emulator_bypass_m3_at_fractal_event": 0.0,
+      "fractal_reason": "suministro_bajo",
+      "emulator_reason": "suministro_bajo"
+    },
+    {
+      "action": "stop",
+      "cycle": 2,
+      "fractal_t_s": 4145.53526,
+      "emulator_t_s": 4157.0,
+      "time_difference_s": -11.465,
+      "fractal_levels_pct": {
+        "tank-supply-01": 90.0,
+        "tank-recirc-01": 22.87432,
+        "tank-recirc-02": 22.70653
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 90.11189,
+        "tank-recirc-01": 22.79407,
+        "tank-recirc-02": 22.54498
+      },
+      "same_time_supply_difference_pp": 1.10522,
+      "fractal_recirculated_m3": 6.058179,
+      "emulator_recirculated_m3_at_own_event": 6.078469,
+      "same_time_transfer_difference_m3": 0.035845,
+      "emulator_bypass_m3_at_fractal_event": 0.0,
+      "fractal_reason": "suministro_lleno",
+      "emulator_reason": "suministro_lleno"
+    },
+    {
+      "action": "start",
+      "cycle": 3,
+      "fractal_t_s": 5924.64249,
+      "emulator_t_s": 5941.0,
+      "time_difference_s": -16.358,
+      "fractal_levels_pct": {
+        "tank-supply-01": 30.0,
+        "tank-recirc-01": 76.38314,
+        "tank-recirc-02": 72.60197
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 29.94537,
+        "tank-recirc-01": 76.45079,
+        "tank-recirc-02": 72.57949
+      },
+      "same_time_supply_difference_pp": -0.48498,
+      "fractal_recirculated_m3": 6.058179,
+      "emulator_recirculated_m3_at_own_event": 6.078468,
+      "same_time_transfer_difference_m3": -0.02029,
+      "emulator_bypass_m3_at_fractal_event": 0.0,
+      "fractal_reason": "suministro_bajo",
+      "emulator_reason": "suministro_bajo"
+    },
+    {
+      "action": "stop",
+      "cycle": 3,
+      "fractal_t_s": 6466.86222,
+      "emulator_t_s": 6487.0,
+      "time_difference_s": -20.138,
+      "fractal_levels_pct": {
+        "tank-supply-01": 90.00111,
+        "tank-recirc-01": 22.8742,
+        "tank-recirc-02": 22.70475
+      },
+      "emulator_levels_pct_at_own_event": {
+        "tank-supply-01": 90.20852,
+        "tank-recirc-01": 22.71259,
+        "tank-recirc-02": 22.45992
+      },
+      "same_time_supply_difference_pp": 2.00649,
+      "fractal_recirculated_m3": 9.101991,
+      "emulator_recirculated_m3_at_own_event": 9.137727,
+      "same_time_transfer_difference_m3": 0.070956,
+      "emulator_bypass_m3_at_fractal_event": 0.0,
+      "fractal_reason": "suministro_lleno",
+      "emulator_reason": "suministro_lleno"
+    }
+  ],
+  "hourly": [
+    {
+      "hour": 1,
+      "t_s": 3600.0,
+      "fractal_profile_hour": 0,
+      "emulator_profile_hour": 0,
+      "emulator_levels_pct": {
+        "tank-supply-01": 30.36314,
+        "tank-recirc-01": 76.02821,
+        "tank-recirc-02": 72.28208
+      },
+      "fractal_levels_pct": {
+        "tank-supply-01": 30.112,
+        "tank-recirc-01": 76.247,
+        "tank-recirc-02": 72.545
+      },
+      "emulator_volumes_m3": {
+        "tank-supply-01": 1.180519,
+        "tank-recirc-01": 1.715196,
+        "tank-recirc-02": 1.630684
+      },
+      "fractal_volumes_m3": {
+        "tank-supply-01": 1.170755,
+        "tank-recirc-01": 1.720132,
+        "tank-recirc-02": 1.636615
+      },
+      "level_difference_pp": {
+        "tank-supply-01": -0.25114,
+        "tank-recirc-01": 0.21879,
+        "tank-recirc-02": 0.26292
+      },
+      "supply_difference_pp": -0.25114,
+      "transfer_difference_m3": -0.010431,
+      "emulator_main_flow_m3h": 4.56829,
+      "fractal_main_flow_m3h": 4.56834,
+      "emulator_main_discharge_mca": 72.09894,
+      "fractal_main_discharge_mca": 72.1,
+      "emulator_prs_outlet_mca": 21.18489,
+      "fractal_prs_outlet_mca": 21.18636,
+      "emulator_critical_pressure_mca": 18.0,
+      "fractal_critical_pressure_mca": 18.00006,
+      "pressure_safety_agreement": true
+    },
+    {
+      "hour": 2,
+      "t_s": 7200.0,
+      "fractal_profile_hour": 1,
+      "emulator_profile_hour": 1,
+      "emulator_levels_pct": {
+        "tank-supply-01": 66.1621,
+        "tank-recirc-01": 44.15728,
+        "tank-recirc-02": 42.45693
+      },
+      "fractal_levels_pct": {
+        "tank-supply-01": 65.276,
+        "tank-recirc-01": 44.924,
+        "tank-recirc-02": 43.266
+      },
+      "emulator_volumes_m3": {
+        "tank-supply-01": 2.572382,
+        "tank-recirc-01": 0.996188,
+        "tank-recirc-02": 0.957828
+      },
+      "fractal_volumes_m3": {
+        "tank-supply-01": 2.537931,
+        "tank-recirc-01": 1.013485,
+        "tank-recirc-02": 0.976081
+      },
+      "level_difference_pp": {
+        "tank-supply-01": -0.8861,
+        "tank-recirc-01": 0.76672,
+        "tank-recirc-02": 0.80907
+      },
+      "supply_difference_pp": -0.8861,
+      "transfer_difference_m3": -0.035736,
+      "emulator_main_flow_m3h": 4.72033,
+      "fractal_main_flow_m3h": 4.72039,
+      "emulator_main_discharge_mca": 72.0989,
+      "fractal_main_discharge_mca": 72.1,
+      "emulator_prs_outlet_mca": 21.22411,
+      "fractal_prs_outlet_mca": 21.22569,
+      "emulator_critical_pressure_mca": 18.0,
+      "fractal_critical_pressure_mca": 18.00008,
+      "pressure_safety_agreement": true
+    }
+  ],
+  "emulator_bypass_total_m3": 0.0,
+  "elapsed_real_s": 220.51
+}

@@ -1,0 +1,4 @@
+ciclo,arranque_fractal_s,arranque_emulador_s,desfase_arranque_s,parada_fractal_s,parada_emulador_s,desfase_parada_s,recirculado_fractal_m3,recirculado_emulador_m3,diferencia_recirc_m3
+1,1227.97318,1229.0,-1.027,1765.08073,1769.0,-3.919,3.014424,3.024855,-0.010431
+2,3603.32625,3612.0,-8.674,4145.53526,4157.0,-11.465,3.043755,3.053614,-0.009859
+3,5924.64249,5941.0,-16.358,6466.86222,6487.0,-20.138,3.043812,3.059259,-0.015447
