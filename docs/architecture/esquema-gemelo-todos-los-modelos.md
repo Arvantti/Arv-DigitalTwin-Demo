@@ -1,12 +1,13 @@
 ---
 tipo: propuesta
 tags: [arquitectura, fractal, plc, propuesta]
-estado: propuesta para revisión de Andy
+estado: propuesta con la forma de los gemelos decidida por Andy (D79)
 fecha: 2026-10-25
 ---
 # Esquema del acueducto (emulador · PLC · gemelo · Fractal) aplicado a los demás gemelos
 
-> Estado: **propuesta, sin decisión**. No cambia código ni el acueducto.
+> Estado: **propuesta**; Andy ya decidió las dos formas de gemelo (D79, §3). No cambia código ni el acueducto.
+> Matriz editable para complementar: [Matriz de gemelos digitales](https://claude.ai/artifact/NnYGE1QKXvQbjLxYnbq5SW).
 > Pedido de Andy (2026-10-25): revisar cómo el acueducto define el gemelo digital, Fractal, el simulador y el emulador, y cómo se adaptaría a plásticos, salsas y los demás.
 > Aclaración de Andy: el acueducto **no está terminado**; hoy existe el **Fractal simulador de escenarios** (proyección base y alternativa) y **falta el Fractal optimizador**.
 > Fuentes leídas en `main` (8a05343): [co-simulación PLC/Fractal](plc-fractal-cosimulation.md), [estudios y vistas temporales](fractal-studies-and-temporal-views.md), [plan de sesión PLC](plc-session-fractal-implementation-plan.md), [escritorio PLC](plc-fractal-desktop-workspace.md), [modelos portables](portable-industrial-models.md), `docs/plc-simulation.md`, `docs/programacion.md`, `docs/datos-reales.md`, `docs/ciudad.md`, decisiones D70 a D75 y el código de `apps/twin-emulator-api` y `apps/fractal-engineering-api`.
@@ -71,99 +72,106 @@ Revisado en el código de `main`:
 
 Nada de esto exige tocar el acueducto si la generalización se hace **al lado**: las plantas nuevas usan el mapa declarativo y el acueducto sigue con su `plc_tags.py` hasta que Andy decida migrarlo.
 
-## 3. Cómo se traduce a cada gemelo
+## 3. Dos formas de gemelo (decisión de Andy, D79)
 
-La idea: cada gemelo tiene las mismas cinco piezas; lo que cambia es **qué es el PLC**, **qué es el plan** y **qué calcula Fractal**.
+Andy definió el 2026-10-25 y el 2026-10-26 que no todos los gemelos llevan las cinco piezas. Hay dos formas:
 
-| | Plásticos | Salsas | Cajas | Aeropuerto | Ciudad |
-|---|---|---|---|---|---|
-| **Emulador (A)** | Motor de planta: inyectoras, buffers, montacargas, almacenes, ensamble | Motor de proceso: marmitas, pasteurizador, caldera, llenado, empaque | Corrugadora, carros de transferencia, convertidoras, bandas con fotoceldas, paletizado | Check-in, inspección, clasificador, bandas, carruseles | SUMO (física de tráfico); JEV decide ruta y afán de cada agente (D66) |
-| **«PLC»** (autoridad de mando) | PLC/MES de planta: arranque y paro por máquina, molde y color montados, liberación de órdenes | PLC de proceso: consignas de temperatura y nivel, CIP, liberación de lotes | PLC de transporte: start/stop por banda, zonas, paradas manuales (ya modelado, D63) | PLC de bandas (ya existe, D62) más asignación de carruseles | Centro de control de tráfico: plan semafórico por cruce y franja |
-| **Tags de ejemplo** | `PLC.IMM.<id>.State`, `.CycleS`, `.Mold`, `.Color`, `.Parts`; `PLC.Buffer.<id>.Level`; `PLC.Order.<id>.Progress` | `PLC.Kettle.<id>.TempC`, `.Batch`; `PLC.Pasteurizer.HoldTempC`; `PLC.CIP.<id>.State`; `PLC.Filler.<id>.Rate` | `PLC.Belt.<id>.Run`, `.PhotoEye`, `.Jam`; `PLC.Corrugator.Width`, `.Flute`; `PLC.Stack.<id>.Location` | `PLC.Belt.<id>.Run`; `PLC.Screening.Queue`; `PLC.Sorter.Rate`; `PLC.Carousel.<id>.Flight`, `.Bags` | `TCC.Signal.<cruce>.Phase`, `.Plan`; `TCC.Link.<tramo>.Flow`, `.Queue`, `.SpeedKmh` |
-| **Plan publicado** (`PLC.Plan`) | Programa de órdenes por máquina y turno (hoy el secuenciador de referencia) | Programa de lotes por receta y familia | Combinación de pedidos en corrugadora y reparto a convertidoras | Itinerario de vuelos y llegada de maletas (solo entrada y destino, regla de Andy) | Demanda por franja y planes semafóricos |
-| **Horizonte y paso** | 30 días, por turno u hora | 1 a 7 días, por lote u hora | 1 a 3 días, por hora | Ventana de vuelos, por minuto | 24 h, por franja de 15 min |
-| **Fractal (B)** | Simulación de eventos discretos propia de capacidad y flujo | Modelo de lotes, tiempos de retención y servicios (vapor, frío) | Modelo de flujo de pilas y de combinación de pedidos | Modelo de colas y rutas del BHS | Modelo de tráfico propio (ver decisión abierta 4) |
-| **Base** | Fechas reales de entrega si el plan se ejecuta desde el estado actual (buffers, paradas, moldes montados) | Lotes terminados por día, cuellos (túnel, marmitas, mesa de 250 ml) | Pilas por hora y esperas por banda | Maletas que llegan a tiempo al carrusel de su vuelo | Indicadores del día con los planes actuales |
-| **Alternativo** | Pedido urgente, falla de inyectora, molde fuera de servicio, material tarde | Falla de caldera, CIP extra, cambio de mezcla 40/45/15 | Atasco, falla de un carro de transferencia | Falla de un escáner o del clasificador, ola de llegadas | Cierre de vía, evento, cambio de plan semafórico |
-| **Optimizado** (después) | Re-secuenciar: menos cambios de molde y color, menos atrasos | Secuenciar por familia y alérgenos, menos CIP, menos vapor | Mejor combinación en corrugadora (menos desperdicio de ancho) | Asignación de carruseles, alertas de cierre de vuelo | Planes semafóricos que reducen demora |
-| **Restricciones duras** | Molde compatible con la inyectora, 2 turnos de lunes a sábado | Temperatura de pasteurización y retención, alérgenos: Fractal **nunca** propone bajarlas | Capacidad de bandas, seguridad del operario en mesas | Cierre de vuelo, inspección obligatoria | Tiempos mínimos de verde peatonal |
-| **Qué se acepta** | Un borrador de programa que el PLC/MES libera desde el siguiente turno | Un borrador de programa de lotes | Un borrador de combinación | Un borrador de asignación de carruseles | Un borrador de planes semafóricos desde la siguiente franja |
-| **Validación** | Fractal vs emulador: piezas por máquina y turno, fechas de fin, WIP | Litros por lote, temperaturas, tiempos | Pilas por hora, tiempos de espera | Maletas a tiempo, tiempos de tránsito | Demora, velocidad y colas por tramo |
+| Forma | Gemelos | Emulador | «PLC» | Escenarios | Fractal de aplicación | Fractal de optimización |
+|---|---|---|---|---|---|---|
+| **Con emulador** | Acueducto, aeropuerto, ciudad | Sí: calcula la «realidad» | PLC virtual (o centro de control en ciudad) | Perfiles guardados en el PLC (en el acueducto, cambios de válvulas, fugas y PRS) | Sí: simula escenarios con su propio modelo | Sí (en el acueducto todavía falta) |
+| **Solo optimizador** | Plásticos, salsas, cajas, confecciones | **Vacío a propósito** | **Programación de producción del cliente**, como un MES | **Contingencias grabadas en la programación** | **No va**: la programación ya tiene los tiempos | **Sí**: reprograma ante cada contingencia |
 
-**Confecciones** (`garment-factory-v1`) entra igual que plásticos: el plan es el programa de módulos y el «PLC» es el tablero de producción (como ya anticipa `docs/plc-simulation.md`).
+Los huecos de la forma «solo optimizador» son intencionales: se pueden llenar después (por ejemplo, un emulador de proceso de salsas con presiones y máquinas) sin cambiar el resto. Hoy ese nivel de detalle no se busca; lo que se busca es optimizar la manufactura discreta y de procesos sobre la programación.
 
-### 3.1 Lo que cambia frente al acueducto
+### 3.1 Cómo funciona la forma «solo optimizador»
 
-1. **El plan no es un perfil de 24 aperturas.** En manufactura el plan son órdenes (`orders → schedule`, D75). El contrato de perfil se generaliza a «plan publicado por el PLC» con un esquema por dominio; el de 24 franjas sigue siendo el del acueducto.
-2. **El tiempo es más largo.** Un horizonte de 30 días no se mira a ×240 en vivo; la línea de tiempo de D75 (pasado congelado, ahora en vivo, futuro proyectado) ya es la versión de manufactura de las «dos líneas temporales» de D70. Hay que unir ambas ideas en un solo contrato de `temporal_context`.
-3. **Fractal debe ser rápido.** En manufactura un estudio de 30 días con eventos discretos tarda segundos, mucho menos que la hidráulica de 1 s.
-4. **Seguridad del proceso.** En salsas, ciertos tags (temperatura de pasteurización, retención) son de seguridad alimentaria: se marcan como **no negociables** en el contrato y ningún estudio optimizado los puede proponer.
+```text
+Programación vigente (MES del cliente)
+   │  + escenario de contingencia grabado en ella («¿qué pasaría si…?»)
+   ▼
+Fractal de optimización ──► programación propuesta (rama futura NO APLICADA)
+   │                               │
+   │                               ▼
+   │                    comparación contra la programación vigente
+   ▼                    (atrasos, cambios, ocupación)
+Planificador acepta o descarta ──► la aceptada pasa a ser la vigente
+   │
+   ▼
+Gemelo 3D: muestra la programación (vigente o propuesta) en una fecha
+```
 
-## 4. Punto a ordenar: dónde vive la programación
+- **El homólogo de los perfiles de válvulas** son las contingencias: cambios de pedidos (urgente, cancelación, cantidad, fecha), cambios de venta, mantenimientos de máquinas, paros de operación, insumos tarde y condiciones inesperadas.
+- **Las contingencias se guardan en la misma programación**, con nombre, como los escenarios personalizados del acueducto, y se pueden volver a correr.
+- **La comparación se hace sobre la programación**, porque ya tiene tiempos, turnos, herramental y rutas.
+- **Fractal nunca cambia la programación vigente**: entrega una propuesta y el planificador decide, igual que la aprobación de `PFL-FRA-*` en el acueducto.
 
-Hoy el secuenciador de referencia y el pedido urgente corren en el emulador (`/api/schedules`). Con el esquema del acueducto quedaría así:
+### 3.2 Traducción por gemelo
+
+| | Plásticos | Salsas | Cajas | Confecciones | Aeropuerto | Ciudad |
+|---|---|---|---|---|---|---|
+| **Forma** | Solo optimizador | Solo optimizador | Solo optimizador | Solo optimizador | Con emulador | Con emulador |
+| **Emulador** | Vacío (futuro: inyección y ensamble) | Vacío (futuro: proceso con presiones y máquinas) | Vacío (la simulación de bandas actual sirve de punto de partida) | Vacío (futuro: corte y módulos) | Check-in, inspección, clasificador, bandas, carruseles | SUMO; JEV decide ruta y afán (D66) |
+| **«PLC»** | Programación MES: órdenes por inyectora y turno, moldes, colores, ensamble | Programación MES: lotes por receta y familia, llenado por formato | Programación MES: combinación en corrugadora, órdenes por convertidora | Programación MES: órdenes por módulo, referencia y talla (SAM) | PLC de bandas (ya existe, D62) | Centro de control de tráfico |
+| **Escenarios** | Pedidos, urgentes, mantenimiento de inyectoras y moldes, paros, resina o color tarde, ventas, imprevistos | Pedidos, mantenimiento (caldera, CIP, sachetadoras), paros, tomate, aceite o empaque tarde, ventas, imprevistos | Pedidos, mantenimiento de corrugadora y convertidoras, paros, papel o almidón tarde, ventas, imprevistos | Pedidos, mantenimiento, ausencia de operaria, tela tarde, ventas, imprevistos | Itinerario de vuelos y llegada de maletas (solo entrada y destino), fallas de escáner o clasificador | Demanda por franja, cierre de vía, evento |
+| **Fractal de aplicación** | No va | No va | No va | No va | Modelo de colas y rutas del BHS | Modelo de tráfico propio (decisión abierta) |
+| **Fractal de optimización** | Menos atrasos y cambios de molde y color | Secuencia por familia y alérgenos, menos CIP; nunca toca pasteurización ni retención | Menos desperdicio de ancho y cambios de formato | Balanceo de módulos y secuencia | Asignación de carruseles, alertas de cierre de vuelo | Planes semafóricos con menos demora |
+| **Qué lee Fractal** | Programación + contingencia (sin OPC UA por ahora) | Igual | Igual | Igual | Tags OPC UA simulados del PLC | Tags del centro de control |
+
+## 4. Dónde vive la programación
 
 | Hoy | Con el esquema |
 |---|---|
-| Secuenciador de referencia en `twin_runtime.planning` | Es el **planificador del PLC/MES**: genera el plan que el PLC publica. Puede quedarse donde está. |
-| Pedido urgente replaneado en el emulador | **Estudio alternativo de Fractal**: lee estado y plan del gateway, devuelve la rama futura NO APLICADA y el impacto. |
-| Aceptar urgente lo guarda el navegador | Aceptar crea un **borrador de plan** que el PLC libera desde el siguiente turno (igual que `PFL-FRA-*`). |
-| Fractal «reemplaza al secuenciador» (fase F de datos reales) | Fractal **no reemplaza**: el optimizador propone un plan mejor y el operador lo acepta. El secuenciador sigue como línea base para medir la mejora. |
-
-Así la programación queda igual que el acueducto: el emulador ejecuta, el PLC manda y publica el plan, Fractal estudia y recomienda.
+| Secuenciador de referencia en `twin_runtime.planning` y tabla del panel (D75) | Es la **programación vigente** que en la demo hace las veces del MES del cliente. |
+| Pedido urgente replaneado en el emulador (`/api/schedules/{planta}/urgent`) | Es la primera **contingencia**; pasa a ser un escenario guardado y lo resuelve el **Fractal de optimización**. |
+| Aceptar urgente lo guarda el navegador | Aceptar convierte la propuesta en la programación vigente, guardada en el servidor (fase F de datos reales). |
+| Fase F: «Fractal reemplaza al secuenciador» | Fractal **propone**; el secuenciador queda como línea base para medir cuánto mejora. |
 
 ## 5. Contrato común propuesto
 
-Por planta, al lado de lo que ya existe en `industrial-models/<planta>/`:
+Forma «solo optimizador», por planta:
 
 ```text
 industrial-models/<planta>/
-  plc.yaml                # activos, pantallas, mandos permitidos con rango y ahora también:
-                          #   tags: { "PLC.IMM.imm-21.State": "imm-21.variables.state", ... }
-                          #   safety_tags: [...]  # nunca propuestos por un estudio
-  plan.schema.json        # forma del plan de ese dominio (perfil 24 h, órdenes, lotes, vuelos, planes semafóricos)
+  catalog/                  # ya existe: productos, rutas, herramental, tamaños, demanda
+  contingencies.schema.json # tipos de contingencia (pedido, mantenimiento, paro, insumo, venta, imprevisto)
   fractal/
-    objectives.yaml       # objetivos autorizados (el operador elige, no escribe fórmulas)
-    constraints.yaml      # restricciones con su unidad
-fractal/<dominio>/models/<planta>/   # calculadora B propia, sin importar el emulador
+    objectives.yaml         # atrasos, cambios de herramental, CIP, ocupación (el planificador elige)
+    constraints.yaml        # turnos, compatibilidad de moldes, alérgenos, seguridad alimentaria
+fractal/manufacturing/models/<planta>/   # optimizador propio, lee programación + contingencia
 ```
 
-En el API, el mismo juego de rutas que ya tiene el acueducto, sin cambiar sus nombres:
+API sugerida (al lado de `/api/schedules`, sin tocar el acueducto):
 
 ```text
-POST /api/plants/{planta}/sessions                     (crear; PLC propietario)
-WS   /api/plants/{planta}/sessions/{id}?role=plc|viewer
-GET  /api/plants/{planta}/sessions/{id}/opcua-schema   (tags declarados en plc.yaml)
-WS   /api/plants/{planta}/sessions/{id}/opcua
-POST /api/plants/{planta}/sessions/{id}/fractal/studies   (base | alternative | optimized)
-GET  …/fractal/studies/{estudio}/frames                (temporal_context: forecast, applied: false)
-POST …/fractal/studies/{estudio}/decision
+GET  /api/schedules/{planta}                         (programación vigente)
+POST /api/schedules/{planta}/contingencies           (guardar una contingencia con nombre)
+POST /api/schedules/{planta}/contingencies/{id}/optimize  (Fractal de optimización → propuesta)
+POST /api/schedules/{planta}/proposals/{id}/decision      (aceptar o descartar)
 ```
 
-Y el MCP de la visión (escenarios por conversación) se apoya en estas mismas rutas: Claude crea un escenario alternativo y pide un estudio, nunca manda al emulador.
+Forma «con emulador»: la del acueducto (sesión, `plc.yaml`, tags OPC UA de solo lectura, `fractal/studies`), con un mapa de tags declarativo en el `plc.yaml` de cada planta en vez de `plc_tags.py` escrito a mano.
+
+El MCP de la visión (escenarios por conversación) usa las mismas rutas: Claude graba una contingencia y pide la optimización, nunca cambia la programación vigente.
 
 ## 6. Orden sugerido (PR pequeños, sin tocar el acueducto)
 
 | Paso | Contenido | Toca |
 |---|---|---|
-| 0 | Este documento | Solo docs |
-| 1 | Mapa declarativo de tags en `plc.yaml`; `plc_tags.py` lo usa para plantas sin función propia | `twin-emulator-api` (sin cambiar la ruta del acueducto) |
-| 2 | Piloto: `plc.yaml` de **plásticos**, escena unida a la sesión como `viewer` | Plásticos |
-| 3 | `fractal/manufacturing/models/plastic-injection-plant-v1`: proyección base y alternativa (urgente, falla de inyectora) desde el gateway | Fractal nuevo |
-| 4 | Banco de contraste Fractal vs emulador para plásticos (como `validate_fractal_hourly`) | `tools/` |
-| 5 | Repetir 1–4 en aeropuerto (ya tiene PLC de bandas), salsas, cajas y confecciones | Cada planta |
-| 6 | Ciudad, cuando haya calibración y servicio SUMO en el VPS | Ciudad |
-| 7 | Optimizador: primero en el acueducto (D71), luego el mismo contrato de objetivos y restricciones en los demás | Todos |
-
-Por qué plásticos de piloto: ya tiene catálogo, rutas, programación y pedido urgente, que es justo un **escenario alternativo**; es lo que más se parece al Fractal simulador de escenarios que hoy existe en el acueducto. El aeropuerto sería el segundo porque su PLC de bandas ya existe.
+| 0 | Este documento y la matriz | Solo docs |
+| 1 | Esquema de contingencias y contingencias guardadas en el servidor para plásticos (el urgente es la primera) | `catalog`, API de programación |
+| 2 | `fractal/manufacturing/models/plastic-injection-plant-v1`: optimizador que reprograma ante una contingencia y compara contra la vigente | Fractal nuevo |
+| 3 | Panel de la escena: lista de contingencias, propuesta, comparación y aceptar o descartar | Galería |
+| 4 | Repetir 1–3 en salsas, cajas y confecciones | Cada planta |
+| 5 | Aeropuerto y ciudad con la forma «con emulador» | Cada uno |
+| 6 | Optimizador del acueducto (D71) cuando Andy lo libere | Acueducto (Andy) |
 
 ## 7. Decisiones abiertas para Andy
 
-1. **Piloto**: ¿plásticos (recomendado) o aeropuerto?
-2. **Programación**: ¿de acuerdo con §4 (secuenciador = planificador del PLC/MES, urgente = estudio alternativo de Fractal, Fractal no reemplaza sino recomienda)?
-3. **Nombre del protocolo**: ¿«OPC UA simulado» para todos, o dejar el contrato neutro («gateway de tags») y marcar el protocolo por planta (OPC UA en industria, otro en tráfico)?
-4. **Independencia en ciudad**: SUMO es el emulador. Para Fractal, ¿un modelo de tráfico propio y más simple (macroscópico), o una segunda instancia de SUMO con su propia configuración? La regla del acueducto pide cálculos independientes.
-5. **Cuándo generalizar `sessions.py`, `profiles.py` y `plc_tags.py`**: son archivos que Andy está usando en el acueducto. Propuesta: el paso 1 solo agrega, no mueve nada, y se hace cuando Andy lo apruebe.
+1. **Piloto**: ¿plásticos primero (recomendado, ya tiene programación y urgente)?
+2. **Objetivos del optimizador** en manufactura: ¿atrasos, cambios de herramental o CIP y ocupación, con pesos predefinidos como en el acueducto?
+3. **Nombre del protocolo** en la forma «con emulador»: ¿«OPC UA simulado» para todos o un gateway neutro con el protocolo por planta?
+4. **Ciudad**: ¿Fractal con un modelo de tráfico propio más simple o una segunda instancia de SUMO?
+5. **Archivos del API que usa el acueducto** (`sessions.py`, `profiles.py`, `plc_tags.py`): solo se generalizan cuando Andy lo apruebe.
 
 ## 8. Fuera de alcance
 
