@@ -9,6 +9,8 @@
   --ok: #22e06b;
   --warn: #ffb000;
   --bad: #ff3b3b;
+  --radius-control: 6px;
+  --radius-surface: 10px;
   font-family: Inter, system-ui, sans-serif;
   color: var(--text);
 }
@@ -213,6 +215,12 @@ body.shot .boot { display: none; }
 .product-errors ul { margin: 6px 0 0; padding-left: 16px; }
 .product-errors li { cursor: default; padding: 2px 0; border: 0; }
 
+
+/* Sistema visual compartido: Inter y radios discretos en controles/superficies. No afecta el canvas 3D. */
+body :is(h1,h2,h3,.brand,.title,.asset-name,.portal-head h1,.portal-card h2,.asset-chart-head,.water-workspace-nav button) { font-family: Inter, system-ui, sans-serif; }
+body :is(button,select,input:not([type="range"]),.glass,.sidebar li,.faults span,.kpi,.portal-card,.btn,.asset-chart-modal,.route-panel,.sched-scroll,.sched-kpis>div,.sched-form input,.sched-form select,.route-panel input,.route-panel select,.chip,.validation) { border-radius: var(--radius-control); }
+.glass,.portal-card,.asset-chart-modal { border-radius: var(--radius-surface); }
+.lil-gui, .lil-gui * { border-radius: var(--radius-control) !important; }
 
 /* Hoja de ruta: tabla y editor (products.ts) */
 .route-panel { left: 274px; right: 344px; bottom: 12px; max-height: 36vh; overflow: auto; padding: 8px 14px 12px; font-size: 12px; z-index: 3; }

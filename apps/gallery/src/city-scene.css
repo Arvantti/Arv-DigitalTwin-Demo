@@ -19,3 +19,7 @@ body[data-panel="info"] .city-info,body[data-panel="sim"] .city-playback{display
 .city-dock button{flex:1;min-height:44px;border:1px solid #80908d;background:#fff;color:#26393d;border-radius:5px;font:700 12px Inter,system-ui,sans-serif;letter-spacing:.04em}
 .city-dock button.active{background:#dcebe4;border-color:#2e7890}
 }
+
+/* Interfaz del gemelo de ciudad alineada con la tipografía y radios sutiles del Digital Twin. */
+.city-page :is(.city-top strong,.city-info h1){font-family:Inter,system-ui,sans-serif!important}
+.city-page :is(.glass,button,.city-loading){border-radius:6px!important}

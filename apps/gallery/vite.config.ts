@@ -16,6 +16,6 @@ export default defineConfig({
   } },
   build: {
     chunkSizeWarningLimit: 2000,
-    rollupOptions: { input: { index: "index.html", equipos: "equipos.html", plant: "plant.html", plc: "plc.html", ciudad: "ciudad.html" } },
+    rollupOptions: { input: { index: "index.html", equipos: "equipos.html", plant: "plant.html", plc: "plc.html", plcMockup: "plc-mockup.html", ciudad: "ciudad.html" } },
   },
 });

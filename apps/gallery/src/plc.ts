@@ -77,8 +77,12 @@ const value = (id: string, key: string) => eq(id)?.variables[key];
 const send = (equipment: string, command: string, args: Record<string, unknown> = {}) => socket?.readyState === WebSocket.OPEN && socket.send(JSON.stringify({ equipment, command, args }));
 
 function selectScreen(id: string): void {
-  document.querySelectorAll<HTMLElement>(".screen").forEach((node) => node.classList.toggle("active", node.id === id));
-  document.querySelectorAll<HTMLButtonElement>(".tabs button").forEach((node) => node.classList.toggle("active", node.dataset.screen === id));
+  const primary = id === "fractal" ? "master" : id === "comparisons" ? "history" : id;
+  document.querySelectorAll<HTMLElement>(".screen").forEach((node) => node.classList.toggle("active", node.id === id || node.id === primary));
+  document.querySelectorAll<HTMLButtonElement>(".tabs button").forEach((node) => node.classList.toggle("active", node.dataset.screen === primary));
+  document.body.classList.toggle("screen-fractal", id === "fractal");
+  document.body.classList.toggle("screen-comparisons", id === "comparisons");
+  document.body.classList.toggle("screen-history", primary === "history");
   document.body.classList.toggle("screen-grid", id === "grid");
   document.body.classList.toggle("screen-day", id === "day");
   document.body.classList.toggle("screen-pumping", id === "pumping");
@@ -97,6 +101,7 @@ function renderMaster(): void {
   const mainFlow = value("pumpset-main-01", "flow_m3h");
   const recircFlow = value("pumpset-recirc-01", "flow_m3h");
   const consumption = ["grid-01", "grid-02", "grid-03", "grid-04"].reduce((sum, id) => sum + (n(value(id, "consumption_m3h")) ?? 0), 0);
+  $("live-demand-total").textContent = `${fmt(consumption)} m³/h`;
   $("kpis").innerHTML = [
     ["PRESIÓN CRÍTICA", `${fmt(critical)} mca`, `mínimo ${schema.service_constraint.critical_pressure_min_mca} mca`],
     ["CAUDAL PRINCIPAL", `${fmt(mainFlow)} m³/h`, "bombeo a la red"],
@@ -149,6 +154,8 @@ function renderPumping(): void {
 }
 
 function renderGrid(): void {
+  const liveDemand = ["grid-01", "grid-02", "grid-03", "grid-04"].reduce((sum, id) => sum + (n(value(id, "consumption_m3h")) ?? 0), 0);
+  $("live-demand-total").textContent = `${fmt(liveDemand)} m³/h`;
   type LowPoint = { grid: string; valve: string; pressure: number };
   const cards: string[] = [];
   let networkLowest: LowPoint | null = null;
@@ -179,7 +186,7 @@ function renderGrid(): void {
       const open = Math.round((eq(id)?.animation[`open_${valve}`] ?? 0) * 100);
       return `<label>FUGA ${valve.toUpperCase()} <input data-grid="${id}" data-valve="${valve}" type="range" min="0" max="100" value="${open}" title="Apertura fuga ${valve}" /><output>${open} %</output></label>`;
     }).join("");
-    cards.push(`<section class="level panel"><h2>NIVEL ${level}<span>${fmt(value(id, "consumption_m3h"))} m³/h</span></h2><p class="level-min">Mín. nivel: <b>L${level}.${minimum.valve.toUpperCase()} · ${fmt(minimum.pressure)} mca</b>${networkLowest?.grid === id ? " · MÍNIMO DE RED" : ""}</p><div class="leak-controls"><span>VÁLVULAS DE FUGA</span>${leaks}</div><div class="houses">${houses.join("")}</div></section>`);
+    cards.push(`<section class="level panel"><h2>NIVEL ${level}<span>${fmt(value(id, "consumption_m3h"))} m³/h</span></h2><p class="level-min">Mín. nivel: <b>L${level}.${minimum.valve.toUpperCase()} · ${fmt(minimum.pressure)} mca</b>${networkLowest?.grid === id ? " · MÍNIMO DE RED" : ""}</p><div class="leak-controls"><span>VÁLVULAS DE FUGA</span>${leaks}</div><details class="live-level-detail"><summary>DETALLE INDIVIDUAL · 16 VIVIENDAS</summary><div class="houses">${houses.join("")}</div></details></section>`);
   }
   $("grid-levels").innerHTML = cards.join("");
   document.querySelectorAll<HTMLInputElement>("[data-grid]").forEach((input) => {
@@ -258,7 +265,7 @@ function trend(title: string, unit: string, samples: number[], color = "", refer
   const point = (value: number, index: number) => `${pad + (index * (width - 2 * pad)) / (samples.length - 1)},${height - pad - ((value - lo) / range) * (height - 2 * pad)}`;
   const path = samples.map(point).join(" ");
   const refY = reference === undefined ? "" : `<line class="ref" x1="${pad}" x2="${width - pad}" y1="${height - pad - ((reference - lo) / range) * (height - 2 * pad)}" y2="${height - pad - ((reference - lo) / range) * (height - 2 * pad)}" />`;
-  return `<article class="trend panel"><h2>${title}<span>${fmt(samples.at(-1), 2)} ${unit}</span></h2><button class="chart-expand" data-expand-chart aria-label="Ampliar ${title}">⤢ AMPLIAR</button><svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Tendencia de ${title}"><line class="axis" x1="${pad}" x2="${width - pad}" y1="${height - pad}" y2="${height - pad}" />${refY}<polyline class="line ${color}" points="${path}" /></svg>${legend}<p class="muted">Mín. ${fmt(lo, 2)} · Máx. ${fmt(hi, 2)} · ${history.length} muestras</p></article>`;
+  return `<article class="trend panel"><h2>${title}<span>${fmt(samples.at(-1), 2)} ${unit}</span></h2><button class="chart-expand" data-expand-chart aria-label="Ampliar ${title}">⤢ AMPLIAR</button><svg data-live-samples="${samples.join(",")}" viewBox="0 0 ${width} ${height}" role="img" aria-label="Tendencia de ${title}"><line class="axis" x1="${pad}" x2="${width - pad}" y1="${height - pad}" y2="${height - pad}" />${refY}<polyline class="line ${color}" points="${path}" /></svg>${legend}<p class="muted">Mín. ${fmt(lo, 2)} · Máx. ${fmt(hi, 2)} · ${history.length} muestras</p></article>`;
 }
 
 function bindChartExpanders(): void {
@@ -272,6 +279,24 @@ function bindChartExpanders(): void {
       $("chart-modal-title").textContent = title;
       content.innerHTML = target.classList.contains("hydraulic-profile-chart") ? `<div class="hydraulic-profile-chart">${target.innerHTML}</div>` : target.innerHTML;
       modal.showModal();
+      const chart = content.querySelector<SVGSVGElement>("svg[data-live-samples]");
+      if (chart) {
+        const readings = (chart.dataset.liveSamples ?? "").split(",").map(Number);
+        const measure = document.createElement("p");
+        measure.className = "chart-measurement muted";
+        measure.setAttribute("aria-live", "polite");
+        measure.textContent = "Mueva el cursor sobre la curva para consultar una muestra PLC.";
+        content.append(measure);
+        chart.onpointermove = (pointer) => {
+          const bounds = chart.getBoundingClientRect();
+          const fraction = Math.max(0, Math.min(1, (pointer.clientX - bounds.left) / bounds.width));
+          const index = Math.round(fraction * (readings.length - 1));
+          const sample = history[index];
+          if (!sample || !Number.isFinite(readings[index])) return;
+          const elapsed = Math.floor(sample.t / 60);
+          measure.textContent = `Medición PLC · ${String(Math.floor(elapsed / 60)).padStart(2, "0")}:${String(elapsed % 60).padStart(2, "0")} · ${fmt(readings[index], 2)} · muestra ${index + 1}/${readings.length}`;
+        };
+      }
     };
   });
 }
@@ -589,6 +614,11 @@ function renderProfileEditor(): void {
   const manual = $<HTMLInputElement>("profile-prs-manual");
   manual.value = String(hour.prs?.manual_setting_mca ?? 20.94);
   $("profile-prs-manual-output").textContent = `${Number(manual.value).toFixed(2)} mca`;
+  const draftContext = $("profile-draft-context");
+  draftContext.hidden = false;
+  const updateDraftContext = () => { draftContext.textContent = `BORRADOR · NO APLICADO · ${$<HTMLInputElement>("profile-name").value.trim() || activeProfile.name || "Perfil sin guardar"} · HORA ${String(profileHour + 1).padStart(2, "0")}`; };
+  updateDraftContext();
+  $<HTMLInputElement>("profile-name").oninput = updateDraftContext;
   const individualCount = Object.values(hour.dwellings ?? {}).reduce((total, valves) => total + Object.keys(valves).length, 0);
   const leakCount = Object.values(hour.leaks ?? {}).reduce((total, valves) => total + Object.keys(valves).length, 0);
   $("profile-capture-summary").textContent = individualCount || leakCount ? `${individualCount} viviendas y ${leakCount} válvulas de fuga capturadas para esta hora.` : "Sin mandos individuales capturados.";
@@ -846,6 +876,6 @@ async function start(): Promise<void> {
 }
 
 mountComparisons();
-document.querySelectorAll<HTMLButtonElement>(".tabs button").forEach((button) => button.onclick = () => selectScreen(button.dataset.screen!));
+document.querySelectorAll<HTMLButtonElement>("[data-screen]").forEach((button) => button.onclick = () => selectScreen(button.dataset.screen!));
 if (query.get("screen") === "comparisons") selectScreen("comparisons");
 start().catch((error: unknown) => { $("plant-name").textContent = ` · ERROR: ${String(error)}`; });

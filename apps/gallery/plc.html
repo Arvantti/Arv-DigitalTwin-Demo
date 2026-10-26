@@ -32,14 +32,13 @@
           <button data-screen="grid">REJILLA Y CONSUMO</button>
           <button data-screen="profiles">PERFILES</button>
           <button data-screen="trends">TENDENCIAS</button>
-          <button data-screen="fractal">FRACTAL</button>
-          <button data-screen="comparisons">COMPARATIVAS</button>
           <button data-screen="history">HISTORIAL</button>
+          <span id="profile-draft-context" class="draft-context" hidden></span>
         </nav>
         <section id="master" class="screen active">
           <div class="hero panel">
             <div><p class="eyebrow">EMULADOR DE REALIDAD FICTICIA</p><h1>Acueducto a escala</h1><p>La calculadora hidráulica estacionaria simula las señales que leería el PLC. Fractal de Ingeniería usa otro modelo independiente y solo recomienda cambios.</p></div>
-            <div class="hero-actions"><button id="connect" class="primary">▶ INICIAR SIMULACIÓN 24 H</button><button id="pause">❚❚ PAUSA</button></div>
+            <div class="hero-actions"><button id="connect" class="primary">▶ INICIAR SIMULACIÓN 24 H</button><button id="pause">❚❚ PAUSA</button><button data-screen="fractal">VER PROYECCIÓN FRACTAL</button></div>
           </div>
           <div class="kpis" id="kpis"></div>
           <div class="panel recommendation"><p class="eyebrow">FRACTAL DE INGENIERÍA</p><strong>Sin recomendación aplicada</strong><span>Las sugerencias futuras se validarán contra una calculadora hidráulica independiente y requerirán aceptación del operador.</span></div>
@@ -59,6 +58,7 @@
         </section>
         <section id="history" class="screen">
           <div class="section-head"><div><p class="eyebrow">ARCHIVO LOCAL DEL OPERADOR</p><h1>Historial de desempeños</h1><p class="muted">Sesiones finalizadas guardadas en este navegador. Permite recuperar sus curvas para comparación; no se envían a infraestructura física.</p></div></div>
+          <div class="history-subviews"><button data-screen="comparisons">COMPARATIVAS PRECALCULADAS</button></div>
           <div id="saved-runs" class="cards"></div>
         </section>
         <section id="profiles" class="screen">
@@ -100,7 +100,7 @@
           <div id="trends-charts" class="trend-charts"></div>
         </section>
         <section id="grid" class="screen">
-          <div class="section-head"><div><p class="eyebrow">DEMANDA RESIDENCIAL</p><h1>Rejilla y consumo</h1><p class="muted">Cada tarjeta representa una vivienda: apertura, presión y caudal. Se resalta el mínimo de cada nivel; <b>MÍN. RED</b> identifica además la presión más baja de toda la red.</p></div><div class="controls inline"><label>Todas <input id="all-consumers" type="range" min="0" max="100" value="100" /><output id="all-consumers-output">100 %</output></label><label>N1 <input data-level-consumers="1" type="range" min="0" max="100" value="100" /><output data-level-output="1">100 %</output></label><label>N2 <input data-level-consumers="2" type="range" min="0" max="100" value="100" /><output data-level-output="2">100 %</output></label><label>N3 <input data-level-consumers="3" type="range" min="0" max="100" value="100" /><output data-level-output="3">100 %</output></label><label>N4 <input data-level-consumers="4" type="range" min="0" max="100" value="100" /><output data-level-output="4">100 %</output></label><button id="random">⚄ ALEATORIO</button></div></div>
+          <div class="section-head"><div><p class="eyebrow">DEMANDA RESIDENCIAL · EN VIVO</p><h1>Rejilla y consumo</h1><p class="muted">Los controles de esta pantalla envían mandos a la sesión PLC en vivo. Cada tarjeta representa una vivienda: apertura, presión y caudal. Se resalta el mínimo de cada nivel; <b>MÍN. RED</b> identifica además la presión más baja de toda la red.</p></div><div class="controls inline"><strong class="live-demand-total">DEMANDA TOTAL EN VIVO <output id="live-demand-total">— m³/h</output></strong><label>Todas <input id="all-consumers" type="range" min="0" max="100" value="100" /><output id="all-consumers-output">100 %</output></label><label>N1 <input data-level-consumers="1" type="range" min="0" max="100" value="100" /><output data-level-output="1">100 %</output></label><label>N2 <input data-level-consumers="2" type="range" min="0" max="100" value="100" /><output data-level-output="2">100 %</output></label><label>N3 <input data-level-consumers="3" type="range" min="0" max="100" value="100" /><output data-level-output="3">100 %</output></label><label>N4 <input data-level-consumers="4" type="range" min="0" max="100" value="100" /><output data-level-output="4">100 %</output></label><button id="random">⚄ ALEATORIO</button></div></div>
           <div id="grid-levels" class="grid-levels"></div>
         </section>
       </section>
