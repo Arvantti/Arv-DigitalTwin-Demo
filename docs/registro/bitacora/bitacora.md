@@ -10,6 +10,7 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 
 | Fecha | PR | Resumen | Fase |
 |---|---|---|---|
+| 2026-10-26 | Ciudad en el celular | En pantallas angostas el mapa 3D de la ciudad ocupa toda la pantalla y los paneles «Información» (leyenda, velocidades, datos OSM) y «Simulación» (reproducción, tiempo, velocidad) se abren de a uno desde una barra inferior, como en las plantas. Escritorio sin cambios. Pedido de Andy | ciudad |
 | 2026-10-25 | PR #82 · Alineación absoluta del horizonte D78 | Fractal acorta la primera franja hasta el siguiente límite horario PLC y compara en t=3600…86400 con perfil idéntico. Replay D78: 24 fronteras horarias (t=30…86400; 86.370 s simulados) en 2032,79 s reales; suministro al final difiere +34,02598 pp (+1,322930 m³); 46 arranques ambos, 46/45 paradas; cero desacuerdos de presión ≥15 mca en 24 marcas, no cada segundo. Niveles siguen sin validar; optimización apagada. Evidencia alineada adjunta. | PLC/Fractal |
 | 2026-10-25 | PR (este) · Esquema del acueducto para los demás gemelos | Propuesta sin código: cómo el acueducto define emulador, PLC virtual, gateway OPC UA simulado, gemelo 3D y Fractal (simulador de escenarios hecho, optimizador pendiente), qué parte del código es genérica y cómo se traduce a plásticos, salsas, cajas, aeropuerto, ciudad y confecciones; piloto sugerido plásticos; decisiones abiertas para Andy. No toca el acueducto. [[../../architecture/esquema-gemelo-todos-los-modelos]] · [[hilo-arquitectura-para-todos-los-gemelos]] | arquitectura/Fractal |
 | 2026-10-25 | #80 · Programación de producción a 30 días | Salsas y plásticos tienen pedidos inventados con ventana móvil (semilla por fecha de entrega, 85 % de la capacidad, algunos tarde al azar), un secuenciador de referencia con turnos, paradas y herramental montado, la sección PROGRAMACIÓN del panel lateral con tabla de órdenes, rango hacia atrás a elección (por defecto el mes en curso) y pedido urgente con escenario que se acepta o descarta. API `/api/schedules`, export estático y despliegue semanal. D75. Pedido de Andy | datos reales |
@@ -117,6 +118,15 @@ Horas en UTC (Colombia = UTC−5). Más reciente arriba. PR = pull request en `A
 | 2026-10-16 | #1 | Layouts de las plantas | 1 |
 
 ## Entradas
+
+### 2026-10-26 · Gemelo de ciudad legible en el celular
+- **Fecha/hora (UTC):** 2026-10-26 00:23 a 00:45
+- **Fase del plan:** [[plan-del-proyecto]] gemelo de ciudad (visor)
+- **Solicitado por:** Andy (00:23, chat del proyecto, con captura del celular): los tableros de medidas y la reproducción tapan el mapa 3D en el móvil; pide menús para ocultarlos o mostrarlos como en los otros modelos.
+- **Qué se hizo:** `apps/gallery/src/city-dock.ts` crea una barra inferior con «INFORMACIÓN» y «SIMULACIÓN»; en `city-scene.css`, por debajo de 700 px los dos paneles quedan ocultos y se abren de a uno como hoja sobre la barra (máximo 58 % de la altura, con desplazamiento); el encabezado queda en una línea. En escritorio la barra no aparece.
+- **Verificación:** `pnpm typecheck` y `pnpm build` de la galería; capturas a 390 × 844 con los paneles cerrados, información abierta y simulación abierta, sin desborde horizontal ni errores de página; captura de escritorio igual que antes. Evidencia: `evidencia/ciudad-movil-paneles.png`.
+- **Decisiones:** ninguna nueva.
+- **Conversación:** [[hilo-gemelo-de-ciudad]]
 
 ### 2026-10-25 · Alineación del horizonte PLC→Fractal y repetición D78
 - **Fecha/hora (UTC):** 2026-10-25 01:00–06:10.

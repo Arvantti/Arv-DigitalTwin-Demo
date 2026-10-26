@@ -2,7 +2,7 @@
 tipo: historico-ia
 fuente: hilo «Gemelo digital de ciudad» (Claude Projects)
 desde: 2026-10-19 11:59
-hasta: 2026-10-20 12:10
+hasta: 2026-10-26 00:45
 tags: [registro, historico-ia, ciudad]
 ---
 # Hilo: gemelo digital de ciudad
@@ -206,3 +206,42 @@ ya agregaste a la home el gemelo de ciudad?
 Todavía no estaba en la página principal. Reviso cómo están las tarjetas de las otras plantas y le agrego la suya.
 
 *(Herramientas: tarjeta en `apps/gallery/src/portal.ts`, página `ciudad.html` con `src/ciudad.ts` y `src/ciudad.css`, copias del plano y la línea base en `public/data/`, prueba de copias, capturas, este registro y el PR.)*
+
+### 🤖 Claude · 2026-10-20 12:04 UTC
+
+El PR #68 ya pasó el CI y no tiene conflictos, así que está listo para fusionar. Al fusionarlo, la tarjeta de la ciudad aparece en la página principal publicada. [Edit: fusionado a las 13:32 UTC.]
+
+### 👤 Andy · 2026-10-20 13:23 UTC
+
+Si usaste una vista real de esa zona ?
+
+### 🤖 Claude · 2026-10-20 13:24 UTC
+
+No, el plano no sale de una vista real de la zona. Lo armé a mano porque desde aquí no tengo acceso a OpenStreetMap (el pedido sale bloqueado) y las imágenes satelitales se descartaron. Lo real son los nombres de las vías y su orden; lo supuesto, la cuadrícula de 150 × 180 m, sentidos, carriles, límites y semáforos. Propuse exportar la zona en openstreetmap.org (archivo .osm) y subirlo para convertirlo con SUMO.
+
+### 👤 Andy · 2026-10-20 13:24 UTC
+
+Dime el paso a paso
+
+### 🤖 Claude · 2026-10-20 13:25 UTC
+
+*(Tarjeta de pasos: abrir openstreetmap.org, pulsar Exportar, marcar la zona del Ferrocarril a la Oriental y de San Juan a Juan del Corral, descargar map.osm y subirlo al hilo.)* Las coordenadas son aproximadas; mejor que sobre zona a que falte.
+
+### 👤 Andy · 2026-10-25 02:48 UTC
+
+Revisa que todo eso ya lo hice con otro agente, revisa el repo
+
+### 🤖 Claude · 2026-10-25 02:50 UTC
+
+Sí, ya está hecho en main con el PR #71 (22 de octubre): extracto real de OpenStreetMap, escena 3D con calles, edificios y 137 semáforos, SUMO sobre la red real con una corrida visual de 15 minutos y el plano desde OSM. Siguen sin actualizar los indicadores del día completo (calculados sobre la cuadrícula supuesta) y el texto de la tarjeta de la página principal.
+
+### 👤 Andy · 2026-10-26 00:23 UTC (chat del proyecto, reenviado por el coordinador, con captura del celular)
+
+arregla esta parte que en el dispositivo móvil no se logra ver el mapa de ciudad porque no hay una distribución correcta para versión mobile, donde los tableros de medidas y charts no tapen el modelo 3D. Tiene que ser como en los otros modelos, que hay unos menús que permiten ocultar o mostrar esos modelos.
+
+### 🤖 Claude · 2026-10-26 00:24 UTC
+
+Entendido: en el celular los paneles tapan el mapa de la ciudad. Reviso cómo lo resuelven los otros gemelos y lo aplico igual.
+
+*(Herramientas: barra inferior `src/city-dock.ts`, reglas móviles en `src/city-scene.css`, capturas a 390 px y en escritorio, este registro y el PR.)*
+
