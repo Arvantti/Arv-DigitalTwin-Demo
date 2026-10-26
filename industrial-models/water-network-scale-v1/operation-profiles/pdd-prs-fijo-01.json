@@ -2,7 +2,7 @@
   "schema_version": 1,
   "id": "pdd-prs-fijo-01",
   "name": "PDD · Entrada PRS 70 / salida AUTO fija 40 mca",
-  "description": "Escenario de referencia: misma curva diurna PDD-RCA-01, rama AUTO únicamente, presión objetivo de entrada a PRS 70 mca y salida fija de la rama automática 40 mca. La entrada se aproxima mediante el setpoint de descarga de la bomba y se debe evaluar con la presión real medida; no es un control Grundfos identificado.",
+  "description": "PDD-RCA-01, rama AUTO y salida fija 40 mca. La entrada PRS es objetivo de 70 mca aproximado por ajuste de bomba; revisar presión medida. No representa la lógica Grundfos real.",
   "hours": {
     "0": { "global_consumers_pct": 30.0, "prs": { "branch": "auto", "control_mode": "fixed_outlet", "inlet_pressure_mca": 70.0, "auto_outlet_mca": 40.0 } },
     "1": { "global_consumers_pct": 31.4, "prs": { "branch": "auto", "control_mode": "fixed_outlet", "inlet_pressure_mca": 70.0, "auto_outlet_mca": 40.0 } },

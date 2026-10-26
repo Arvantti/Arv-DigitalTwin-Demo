@@ -1,6 +1,7 @@
 import io
 import json
 
+import pytest
 from fastapi.testclient import TestClient
 from fractal_engineering_api import main as fractal_api
 from fractal_engineering_api.main import app
@@ -110,6 +111,54 @@ def test_fixed_outlet_prs_profile_checks_every_dwelling_and_keeps_auto_branch() 
     assert all(min(item["state"]["consumer_pressures_mca"].values()) >= 15 for item in frame["scenarios"])
     assert frame["plc_tags"]["PLC.PRS.BranchAuto"] is True
     assert frame["snapshot"]["equipment"]["prs-01"]["animation"]["valve_b_open"] == 0
+
+
+def test_critical_point_prs_controls_c44_but_checks_all_houses_and_keeps_global_telemetry() -> None:
+    tags = {
+        "PLC.Session.SimulatedTime": 30,
+        "PLC.Tank.Supply.LevelPct": 70,
+        "PLC.Tank.Recirc01.LevelPct": 40,
+        "PLC.Tank.Recirc02.LevelPct": 40,
+        "PLC.Pump.FlowM3h": 11.53,
+        "PLC.Pump.RunningCount": 2,
+        "PLC.Pump.DischargePressureMca": 72,
+        "PLC.Pump.SetpointMca": 70,
+        "PLC.PRS.InletPressureMca": 70,
+        "PLC.PRS.OutletPressureMca": 20,
+        "PLC.PRS.BranchAuto": True,
+        "PLC.PRS.CriticalSetpointMca": 18,
+        "PLC.Pump.RecirculationAutoActive": False,
+    }
+    profile = {
+        "hours": {
+            "0": {
+                "prs": {
+                    "branch": "auto",
+                    "control_mode": "critical_point",
+                    "critical_control_point": "L4.C44",
+                    "critical_setpoint_mca": 18,
+                }
+            }
+        }
+    }
+    frame = mpc.project_24h(tags, profile, horizon_hours=1)[0]
+    state = frame["end_state"]
+    assert frame["profile_commands"]["prs"]["critical_control_point"] == "L4.C44"
+    assert state["control_point_pressure_mca"] == pytest.approx(18, abs=0.003)
+    assert state["consumer_pressures_mca"]["L4.C44"] == state["control_point_pressure_mca"]
+    assert state["critical_pressure_mca"] == min(state["consumer_pressures_mca"].values())
+    assert state["critical_pressure_mca"] >= 15
+    assert all(min(scenario["state"]["consumer_pressures_mca"].values()) >= 15 for scenario in frame["scenarios"])
+    assert all(
+        scenario["state"]["consumer_pressures_mca"]["L4.C44"]
+        == min(scenario["state"]["consumer_pressures_mca"].values())
+        for scenario in frame["scenarios"]
+    )
+    prs_snapshot = frame["snapshot"]["equipment"]["prs-01"]
+    assert prs_snapshot["animation"]["critical_pressure_mca"] == state["control_point_pressure_mca"]
+    assert prs_snapshot["variables"]["control_point_pressure_mca"] == state["control_point_pressure_mca"]
+    assert prs_snapshot["variables"]["critical_pressure_mca"] == state["critical_pressure_mca"]
+    assert prs_snapshot["animation"]["valve_b_open"] == 0
 
 
 def test_horizon_transition_trace_is_observational() -> None:

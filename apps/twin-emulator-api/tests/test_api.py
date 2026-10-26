@@ -211,6 +211,7 @@ def test_operation_profiles_persist_and_drive_the_plc_virtual(tmp_path, monkeypa
         ("pfl", "base", "01"),
         ("pfl", "personalizado", "01"),
         ("prs", "fijo", "01"),
+        ("critico", "18", "01"),
     }
     custom = next(item for item in builtins if item["id"].endswith("pfl-personalizado-01"))
     assert custom["hours"]["0"]["leaks"]["grid-01"] == {"l1": 0, "l2": 0}

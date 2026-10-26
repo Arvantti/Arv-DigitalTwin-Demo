@@ -39,10 +39,28 @@
             "branch": { "enum": ["auto", "manual"] },
             "critical_setpoint_mca": { "type": "number", "minimum": 15, "maximum": 30 },
             "manual_setting_mca": { "type": "number", "minimum": 15, "maximum": 35 },
-            "control_mode": { "enum": ["critical_pressure", "fixed_outlet"] },
+            "control_mode": { "enum": ["critical_pressure", "critical_point", "fixed_outlet"] },
+            "critical_control_point": { "enum": ["L4.C44"] },
             "inlet_pressure_mca": { "type": "number", "minimum": 15, "maximum": 100 },
             "auto_outlet_mca": { "type": "number", "minimum": 15, "maximum": 40 }
           },
+          "allOf": [
+            {
+              "if": { "properties": { "control_mode": { "const": "fixed_outlet" } }, "required": ["control_mode"] },
+              "then": { "required": ["auto_outlet_mca"], "properties": { "branch": { "const": "auto" } } }
+            },
+            {
+              "if": { "properties": { "control_mode": { "const": "critical_point" } }, "required": ["control_mode"] },
+              "then": {
+                "required": ["critical_control_point", "critical_setpoint_mca"],
+                "properties": { "branch": { "const": "auto" } }
+              }
+            },
+            {
+              "if": { "required": ["critical_control_point"] },
+              "then": { "properties": { "control_mode": { "const": "critical_point" } } }
+            }
+          ],
           "additionalProperties": false
         }
       },

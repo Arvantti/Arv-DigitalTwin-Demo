@@ -48,7 +48,12 @@ def add_pressure_reducing_station(net: HydraulicNetwork, prefix: str, inlet: str
 class PressureReducingStation(EquipmentBehavior):
     type = "pressure-reducing-station"
     INITIAL_STATE = "running"
-    DEFAULT_INPUTS = {"inlet_pressure_mca": None, "critical_pressure_mca": None, "load_factor": None}
+    DEFAULT_INPUTS = {
+        "inlet_pressure_mca": None,
+        "critical_pressure_mca": None,
+        "control_point_pressure_mca": None,
+        "load_factor": None,
+    }
 
     def setup(self) -> None:
         p = self.p
@@ -76,6 +81,7 @@ class PressureReducingStation(EquipmentBehavior):
         self.p_in = p["bench_inlet_mca"]
         self.p_out = 0.0
         self.critical = self.critical_sp
+        self.control_point_pressure: float | None = None
         self.flow = self.flow_a = self.flow_b = 0.0
         self.power_kw = 0.0
         self.energy_kwh = 0.0
@@ -110,8 +116,8 @@ class PressureReducingStation(EquipmentBehavior):
             self.manual_setting = float(args["mca"])
         elif name == "set_auto_control":
             mode = str(args["mode"])
-            if mode not in {"critical_pressure", "fixed_outlet"}:
-                raise ValueError("mode debe ser critical_pressure o fixed_outlet")
+            if mode not in {"critical_pressure", "critical_point", "fixed_outlet"}:
+                raise ValueError("mode debe ser critical_pressure, critical_point o fixed_outlet")
             if mode == "fixed_outlet":
                 outlet = float(args["mca"])
                 if not self.p["auto_min_outlet_mca"] <= outlet <= self.p["auto_max_outlet_mca"]:
@@ -119,7 +125,11 @@ class PressureReducingStation(EquipmentBehavior):
                 self.auto_fixed_outlet_mca = outlet
                 self.auto_setting = outlet
                 self.pid.integral = self.pid.output = outlet
-            elif self.auto_control_mode == "fixed_outlet":
+            elif mode == "critical_point":
+                self.critical_sp = float(args["mca"])
+                if self.auto_control_mode == "fixed_outlet":
+                    self.pid.integral = self.pid.output = self.auto_setting
+            elif self.auto_control_mode == "fixed_outlet" and mode != "fixed_outlet":
                 self.pid.integral = self.pid.output = self.auto_setting
             self.auto_control_mode = mode
         else:
@@ -151,7 +161,12 @@ class PressureReducingStation(EquipmentBehavior):
         if auto_in_service and self.auto_control_mode == "fixed_outlet":
             self.auto_setting = self.auto_fixed_outlet_mca
         elif auto_in_service and not self.failures.is_active("telemetry_loss"):
-            self.auto_setting = self.pid.step(self.critical_sp, self.critical, dt)
+            if self.auto_control_mode == "critical_point":
+                point_pressure = self.inputs["control_point_pressure_mca"]
+                if point_pressure is not None:
+                    self.auto_setting = self.pid.step(self.critical_sp, float(point_pressure), dt)
+            else:
+                self.auto_setting = self.pid.step(self.critical_sp, self.critical, dt)
         a_setting = WIDE_OPEN_MCA if self.failures.is_active("diaphragm_failure") else self.auto_setting
         b_setting = self.manual_setting * (PILOT_DRIFT if self.failures.is_active("pilot_drift") else 1.0)
         net = self.net
@@ -172,6 +187,8 @@ class PressureReducingStation(EquipmentBehavior):
         self.p_out = res.pressures_mca["outlet"]
         measured = self.inputs["critical_pressure_mca"]
         self.critical = res.pressures_mca["critical"] if measured is None else float(measured)
+        point_pressure = self.inputs["control_point_pressure_mca"]
+        self.control_point_pressure = None if point_pressure is None else float(point_pressure)
         self.power_kw = RHO_G * (self.flow / 3600) * max(0.0, self.p_in - self.p_out) / 1000
         self.energy_kwh += self.power_kw * dt / 3600
         self.volume_m3 += self.flow * dt / 3600
@@ -203,12 +220,14 @@ class PressureReducingStation(EquipmentBehavior):
             "inlet_pressure_mca": self.p_in,
             "outlet_pressure_mca": self.p_out,
             "critical_pressure_mca": self.critical,
+            "control_point_pressure_mca": self.control_point_pressure,
             "flow_m3h": self.flow,
             "flow_auto_m3h": self.flow_a,
             "flow_manual_m3h": self.flow_b,
             "auto_outlet_setpoint_mca": self.auto_setting,
             "auto_fixed_outlet_mca": self.auto_fixed_outlet_mca,
             "auto_fixed_mode": 1 if self.auto_control_mode == "fixed_outlet" else 0,
+            "auto_control_mode": self.auto_control_mode,
             "critical_setpoint_mca": self.critical_sp,
             "manual_setting_mca": self.manual_setting,
             "branch_auto": 1 if self.branch == "auto" else 0,
@@ -227,6 +246,11 @@ class PressureReducingStation(EquipmentBehavior):
 
     def animation(self) -> dict[str, float]:
         kv = self.p["prv_kv_m3h"]
+        controller_pressure = (
+            self.control_point_pressure
+            if self.auto_control_mode == "critical_point" and self.control_point_pressure is not None
+            else self.critical
+        )
         if self.failures.active:
             light = 3.0 if self.failures.is_active("diaphragm_failure") else 2.0
         else:
@@ -238,7 +262,7 @@ class PressureReducingStation(EquipmentBehavior):
             "flow_b_norm": min(2.0, self.flow_b / kv),
             "inlet_pressure_mca": max(0.0, self.p_in),
             "outlet_pressure_mca": max(0.0, self.p_out),
-            "critical_pressure_mca": max(0.0, self.critical),
+            "critical_pressure_mca": max(0.0, controller_pressure),
             "auto_setpoint_mca": self.auto_setting,
             "stack_light": light,
         }

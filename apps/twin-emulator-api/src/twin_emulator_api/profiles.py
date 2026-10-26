@@ -111,19 +111,31 @@ def normalize_profile(payload: Mapping[str, Any]) -> dict[str, Any]:
                 checked["manual_setting_mca"] = _number(prs["manual_setting_mca"], f"hours.{hour}.prs.manual_setting_mca", 15, 35)
             mode = prs.get("control_mode", "fixed_outlet" if "auto_outlet_mca" in prs else None)
             if mode is not None:
-                if mode not in {"critical_pressure", "fixed_outlet"}:
-                    raise ValueError(f"hours.{hour}.prs.control_mode debe ser critical_pressure o fixed_outlet")
+                if mode not in {"critical_pressure", "critical_point", "fixed_outlet"}:
+                    raise ValueError(f"hours.{hour}.prs.control_mode no es compatible")
                 checked["control_mode"] = mode
             if "auto_outlet_mca" in prs:
                 checked["auto_outlet_mca"] = _number(prs["auto_outlet_mca"], f"hours.{hour}.prs.auto_outlet_mca", 15, 40)
             if "inlet_pressure_mca" in prs:
                 checked["inlet_pressure_mca"] = _number(prs["inlet_pressure_mca"], f"hours.{hour}.prs.inlet_pressure_mca", 15, 100)
-            if checked.get("control_mode") == "fixed_outlet":
+            if "critical_control_point" in prs:
+                point = prs["critical_control_point"]
+                if point != "L4.C44":
+                    raise ValueError(f"hours.{hour}.prs.critical_control_point solo admite L4.C44 en este modelo")
+                if checked.get("control_mode") != "critical_point":
+                    raise ValueError(f"hours.{hour}.prs.critical_control_point requiere control_mode critical_point")
+                checked["critical_control_point"] = point
+            if checked.get("control_mode") in {"fixed_outlet", "critical_point"}:
                 if checked.get("branch", "auto") != "auto":
-                    raise ValueError(f"hours.{hour}.prs fixed_outlet requiere la rama auto")
+                    raise ValueError(f"hours.{hour}.prs con este modo requiere la rama auto")
                 checked["branch"] = "auto"
-                if "auto_outlet_mca" not in checked:
+                if checked["control_mode"] == "fixed_outlet" and "auto_outlet_mca" not in checked:
                     raise ValueError(f"hours.{hour}.prs.auto_outlet_mca es obligatorio en fixed_outlet")
+                if checked["control_mode"] == "critical_point":
+                    if checked.get("critical_control_point") != "L4.C44":
+                        raise ValueError(f"hours.{hour}.prs.critical_control_point debe ser L4.C44 en critical_point")
+                    if "critical_setpoint_mca" not in checked:
+                        raise ValueError(f"hours.{hour}.prs.critical_setpoint_mca es obligatorio en critical_point")
             if checked:
                 item["prs"] = checked
         hours[str(hour)] = item
@@ -175,10 +187,13 @@ def commands_for_hour(
             "equipment": "prs-01", "command": "set_auto_control",
             "args": {"mode": "fixed_outlet", "mca": prs["auto_outlet_mca"]},
         })
-    elif prs.get("control_mode") == "critical_pressure":
+    elif prs.get("control_mode") in {"critical_pressure", "critical_point"}:
         commands.append({
             "equipment": "prs-01", "command": "set_auto_control",
-            "args": {"mode": "critical_pressure", "mca": prs.get("auto_outlet_mca", 20.94)},
+            "args": {
+                "mode": prs["control_mode"],
+                "mca": prs.get("critical_setpoint_mca", prs.get("auto_outlet_mca", 20.94)),
+            },
         })
     return commands
 
