@@ -41,7 +41,7 @@ from twin_runtime.spec import SpecError, load_yaml
 
 from .historian import historian
 from .plc_tags import opcua_schema, plc_tags
-from .profiles import ProfileStore, commands_for_hour
+from .profiles import ProfileStore, commands_for_hour, current_prs_inlet_offset_mca
 from .sessions import manager as session_manager
 from .studies import studies
 
@@ -782,7 +782,8 @@ async def simulate_plant(ws: WebSocket, plant_id: str) -> None:
         nonlocal applied_profile_hour
         if profile is None or applied_profile_hour == hour:
             return
-        for item in commands_for_hour(profile, hour):
+        inlet_offset = current_prs_inlet_offset_mca(plant)
+        for item in commands_for_hour(profile, hour, inlet_pressure_offset_mca=inlet_offset):
             equipment = plant.equipment[item["equipment"]]
             equipment.command(item["command"], item["args"])
             plant.events.extend(equipment.drain_events())

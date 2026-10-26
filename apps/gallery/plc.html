@@ -1,9 +1,10 @@
 <!doctype html>
-<html lang="es">
+<html lang="es" data-plc-pending>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PLC Master · Acueducto</title>
+    <style>html[data-plc-pending] body { display: none; }</style>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Orbitron:wght@500;600;700&display=swap" />
   </head>
@@ -32,6 +33,7 @@
           <button data-screen="profiles">PERFILES</button>
           <button data-screen="trends">TENDENCIAS</button>
           <button data-screen="fractal">FRACTAL</button>
+          <button data-screen="comparisons">COMPARATIVAS</button>
           <button data-screen="history">HISTORIAL</button>
         </nav>
         <section id="master" class="screen active">
@@ -60,7 +62,7 @@
           <div id="saved-runs" class="cards"></div>
         </section>
         <section id="profiles" class="screen">
-          <div class="section-head"><div><p class="eyebrow">PLC VIRTUAL · ADMINISTRACIÓN DE ESCENARIOS</p><h1>Escenarios de operación</h1><p class="muted">Dos curvas de referencia y una plantilla personalizada. Cree, nombre, edite y elimine sus escenarios guardados sin cambiar la operación hasta que los programe desde el PLC.</p></div><div class="controls"><button id="profile-new">+ NUEVO PERSONALIZADO</button><button id="profile-save" class="primary">GUARDAR CAMBIOS</button><button id="profile-delete" hidden>ELIMINAR PERSONALIZADO</button><button id="profile-run">▶ EJECUTAR</button></div></div>
+          <div class="section-head"><div><p class="eyebrow">PLC VIRTUAL · ADMINISTRACIÓN DE ESCENARIOS</p><h1>Escenarios de operación</h1><p class="muted">Plantillas de operación para demanda y regulación PRS. Cree, nombre, edite y elimine escenarios sin cambiar la operación hasta que los programe desde el PLC.</p></div><div class="controls"><button id="profile-new">+ NUEVO PERSONALIZADO</button><button id="profile-save" class="primary">GUARDAR CAMBIOS</button><button id="profile-delete" hidden>ELIMINAR PERSONALIZADO</button><button id="profile-run">▶ EJECUTAR</button></div></div>
           <section class="panel profile-editor">
             <label>Perfil <select id="profile-select"><option value="">Nuevo perfil</option></select></label>
             <label>Nombre <input id="profile-name" maxlength="80" placeholder="Ej.: demanda diurna" /></label>
@@ -70,7 +72,7 @@
           </section>
           <section class="profile-hour-layout">
             <article class="panel profile-hour-controls"><p class="eyebrow">HORA <span id="profile-hour-title">01</span> · DEMANDA</p><label>Todas las viviendas <input id="profile-global" type="range" min="0" max="100" value="100" /><output id="profile-global-output">—</output></label><div id="profile-level-controls" class="profile-level-controls"></div><p class="muted">La secuencia es global → nivel → vivienda individual. La secuencia es global → nivel → vivienda. Configure viviendas y fugas <b>antes</b> de iniciar el PLC, o capture los mandos actuales desde Rejilla.</p></article>
-            <article class="panel profile-hour-controls"><p class="eyebrow">HORA <span class="profile-hour-duplicate">01</span> · RED Y PRV</p><div id="profile-between-controls" class="profile-level-controls"></div><label>Rama PRV <select id="profile-prs-branch"><option value="auto">AUTO</option><option value="manual">MANUAL</option></select></label><label>Consigna crítica <input id="profile-prs-critical" type="range" min="15" max="30" step="0.05" value="15.45" /><output id="profile-prs-critical-output">15.45 mca</output></label><label>Salida manual <input id="profile-prs-manual" type="range" min="15" max="35" step="0.05" value="20.94" /><output id="profile-prs-manual-output">20.94 mca</output></label><p id="profile-capture-summary" class="muted">Sin mandos individuales capturados.</p></article>
+            <article class="panel profile-hour-controls"><p class="eyebrow">HORA <span class="profile-hour-duplicate">01</span> · RED Y PRS</p><div id="profile-between-controls" class="profile-level-controls"></div><label>Control rama automática <select id="profile-prs-mode"><option value="critical_pressure">Regular presión mínima global</option><option value="critical_point">Sostener punto fijo C44</option><option value="fixed_outlet">Salida fija</option></select></label><p id="profile-prs-mode-description" class="muted">La regulación usa la presión mínima de toda la red.</p><label>Entrada objetivo PRS (mca) <input id="profile-prs-inlet" type="number" min="15" max="100" step="0.1" placeholder="Mantener entrada actual" /></label><p class="muted">La consigna de entrada se aproxima ajustando la descarga de la bomba según el diferencial actual bomba→PRS; la presión real de entrada se mide y puede variar con caudal/pérdidas.</p><label id="profile-prs-fixed-outlet-control">Salida fija rama AUTO (mca) <input id="profile-prs-auto-outlet" type="number" min="15" max="40" step="0.1" value="40" /></label><label>Rama de la PRS <select id="profile-prs-branch"><option value="auto">AUTO · rama manual cerrada</option><option value="manual">MANUAL</option></select></label><label id="profile-prs-critical-control">Consigna del punto controlado (mca) <input id="profile-prs-critical" type="range" min="15" max="30" step="0.05" value="15.45" /><output id="profile-prs-critical-output">15.45 mca</output></label><label>Salida manual <input id="profile-prs-manual" type="range" min="15" max="35" step="0.05" value="20.94" /><output id="profile-prs-manual-output">20.94 mca</output></label><p id="profile-capture-summary" class="muted">Sin mandos individuales capturados.</p></article>
           </section>
           <details class="panel profile-house-editor"><summary>EDITAR APERTURAS DE 64 VIVIENDAS Y 8 FUGAS · HORA <span class="profile-hour-duplicate">01</span></summary><div id="profile-individual-controls" class="profile-individual-controls"></div></details>
           <section class="panel profile-preview"><h2>APERTURA Y PRESIÓN DE SALIDA PRS · 24 H</h2><p class="muted">La apertura es un promedio de viviendas; las fugas se muestran aparte. La presión debe calcularse desde condiciones hidráulicas conocidas: nunca se presenta la consigna crítica como presión de salida.</p><div id="profile-preview-chart" role="img" aria-label="Apertura promedio por hora y presión de salida PRS"></div></section>
@@ -83,6 +85,16 @@
           <div id="fractal-recommendations" class="cards"><p class="muted">Conecte una sesión PLC con un perfil activo para proyectar su futuro simulado.</p></div>
           <div id="fractal-saved" class="cards" aria-label="Estudios futuros publicados en PLC"></div>
         </section>
+        <section id="comparisons" class="screen">
+          <article class="panel">
+            <h2>EMULADOR / FRACTAL · EVIDENCIA PRECALCULADA</h2>
+            <p>Replay de validación de 24 horas, no datos de la sesión en vivo. Seleccionar una comparación no cambia perfiles ni envía mandos.</p>
+            <label>Escenario <select id="comparison-scenario"><option value="c44">C44 · objetivo 18 mca · PRS AUTO variable</option><option value="fixed">PRS AUTO · salida fija 40 mca · entrada objetivo 70 mca</option></select></label>
+            <p>Fractal nominal ×1,0 frente al emulador, en 24 fronteras horarias. Presiones y caudales instantáneos, no promedios horarios. Caudales de piso = consumos + fugas locales, no montante hacia el piso siguiente.</p>
+            <p>Azul: Fractal · naranja: emulador. Debajo de cada gráfica: diferencia relativa 100 × (Fractal − emulador) / emulador. Sin porcentaje cuando el emulador vale cero. No certifica una instalación real.</p>
+          </article>
+          <div id="comparison-charts"></div>
+        </section>
         <section id="trends" class="screen">
           <div class="section-head"><div><p class="eyebrow">HISTORIADOR DE SESIÓN</p><h1>Tendencias de operación</h1><p class="muted">Muestras del emulador hidráulico durante esta sesión. Un perfil de 24 h se incorporará como escenario programable.</p></div></div>
           <div id="trends-charts" class="trend-charts"></div>
@@ -94,6 +106,6 @@
       </section>
     </main>
     <dialog id="chart-modal" class="chart-modal"><div class="chart-modal-head"><strong id="chart-modal-title">GRÁFICA AMPLIADA</strong><button id="chart-modal-close">× CERRAR</button></div><div id="chart-modal-content"></div></dialog>
-    <script type="module" src="/src/plc.ts"></script>
+    <script type="module" src="/src/plc-entry.ts"></script>
   </body>
 </html>

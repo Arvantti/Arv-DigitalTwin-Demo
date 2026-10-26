@@ -1293,6 +1293,7 @@ function waterView(view: "3d" | "plc" | "history"): void {
     if (!frame.src) {
       const params = new URLSearchParams({ plant: doc.plant.id, embedded: "1" });
       if (sessionId) params.set("session", sessionId);
+      if (url.get("screen")) params.set("screen", url.get("screen")!);
       if (url.get("api")) params.set("api", apiOrigin);
       if (url.get("fractal")) params.set("fractal", url.get("fractal")!);
       frame.src = `/plc.html?${params}`;

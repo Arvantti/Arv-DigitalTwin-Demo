@@ -57,6 +57,8 @@ links:
   - { from: grid-02.telemetry, to: prs-01.critical_pressure }
   - { from: grid-03.telemetry, to: prs-01.critical_pressure }
   - { from: grid-04.telemetry, to: prs-01.critical_pressure }
+  # Escenario de control fijo: solo enlaza C44 del piso 4; la presión mínima global sigue separada para alarmas.
+  - { from: grid-04.control_point, to: prs-01.control_point_pressure }
   # Niveles de control: prioridad de suministro, protección individual de cada retorno y nivel medio para evitar succión seca.
   - { from: tank-recirc-01.level, to: pumpset-recirc-01.source_level }
   - { from: tank-recirc-02.level, to: pumpset-recirc-01.source_level }

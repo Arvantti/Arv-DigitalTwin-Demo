@@ -4,6 +4,8 @@ import importlib.util
 from copy import deepcopy
 from pathlib import Path
 
+import pytest
+
 MODEL_FILE = Path(__file__).resolve().parent.parent / "model.py"
 spec = importlib.util.spec_from_file_location("fractal_water_model_test", MODEL_FILE)
 model = importlib.util.module_from_spec(spec)
@@ -54,6 +56,20 @@ def test_declared_base_point_needs_prs_compensation_with_series_checks() -> None
     assert result["constraint_results"]["hydraulic_convergence"] is True
     assert abs(result["flow_m3h"] - sum(result["level_flows_m3h"].values())) < 0.0001
     assert abs(result["leakage_m3h"] - sum(result["leakage_by_level_m3h"].values())) < 0.0001
+
+
+def test_automatic_control_can_hold_a_fixed_household_without_confusing_global_minimum() -> None:
+    result = model.evaluate(
+        base_tags(),
+        prs_mca=20.94,
+        prs_auto=True,
+        critical_target_mca=18.0,
+        critical_consumer_id="L4.C44",
+    )
+    assert abs(result["control_point_pressure_mca"] - 18.0) < 0.02
+    assert result["consumer_pressures_mca"]["L4.C44"] == result["control_point_pressure_mca"]
+    assert result["critical_pressure_mca"] == min(result["consumer_pressures_mca"].values())
+    assert result["prs_outlet_mca"] != pytest.approx(18.0)
 
 
 def test_valve_restriction_increases_loss_and_reduces_critical_pressure() -> None:

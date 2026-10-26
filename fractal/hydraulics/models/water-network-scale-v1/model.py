@@ -54,6 +54,7 @@ def evaluate(
     demand_factor: float = 1.0,
     prs_auto: bool = False,
     critical_target_mca: float | None = None,
+    critical_consumer_id: str | None = None,
 ) -> dict[str, Any]:
     """Acopla la red nodal con curva de bomba, disponibilidad PRS y lazo AUTO asentado."""
 
@@ -84,11 +85,15 @@ def evaluate(
             else tags.get("PLC.PRS.CriticalSetpointMca") or station["critical_setpoint_mca"]
         )
         for _ in range(5):
-            critical_now = min(
-                pressures[net.emitters[f"L{level}.C{branch}{position}"]]
-                for level in range(1, 5)
-                for branch in range(1, 5)
-                for position in range(1, 5)
+            critical_now = (
+                pressures[net.emitters[critical_consumer_id]]
+                if critical_consumer_id is not None
+                else min(
+                    pressures[net.emitters[f"L{level}.C{branch}{position}"]]
+                    for level in range(1, 5)
+                    for branch in range(1, 5)
+                    for position in range(1, 5)
+                )
             )
             if abs(critical_now - target) < 0.002:
                 break
@@ -137,6 +142,7 @@ def evaluate(
         "level_pressures_mca": level_pressures,
         "consumer_flows_l_min": consumer_flows,
         "consumer_pressures_mca": consumer_pressures,
+        "control_point_pressure_mca": consumer_pressures.get(critical_consumer_id) if critical_consumer_id else critical,
         "leak_flows_l_min": leak_flows,
         "leak_pressures_mca": leak_pressures,
         "level_flows_m3h": level_flows,
