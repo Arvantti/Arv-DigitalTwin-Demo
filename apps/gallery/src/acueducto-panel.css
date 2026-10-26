@@ -4,9 +4,10 @@
   --accent:#2D7FF9; --accent-soft:#e6f0ff;
   --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#e87ba4;
   --good:#0ca30c; --warn:#fab219; --serious:#ec835a; --crit:#d03b3b;
-  --f-disp:Orbitron,"Arial Narrow",Arial,sans-serif;
+  --f-disp:Inter,system-ui,sans-serif;
   --f-body:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
   --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  --radius-control:6px; --radius-surface:10px;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#040421; --panel:#0b0d33; --ink:#F8FAFC; --ink2:#D8DADF; --ink3:#9a9fb0; --line:rgba(255,255,255,.2); --grid:#171a45;
@@ -88,4 +89,7 @@ select{font:500 13px var(--f-body);color:var(--ink);background:var(--panel);bord
 footer{font-size:12px;color:var(--ink3)}
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
 a.tag{text-decoration:none}
+/* Tokens visuales compartidos; el gráfico y la geometría permanecen intactos. */
+button,select,.tag,.kpi,.card,.tip,.pill,.sensor,.seg,.cell{border-radius:var(--radius-control)}
+
 .load-error{color:var(--crit);font-weight:600}

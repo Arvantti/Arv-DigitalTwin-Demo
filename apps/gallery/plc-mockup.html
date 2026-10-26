@@ -301,6 +301,9 @@
       .live-demand-card .cascade-leaves[popover]:popover-open { position: fixed; inset: 0; margin: auto; width: min(560px, 90vw); height: fit-content; padding: 16px; border: 1px solid var(--cyan); background: var(--bg); color: var(--ink); }
       .live-demand-card .cascade-leaves[popover]::backdrop { background: rgb(0 0 0 / 55%); }
       .live-demand-card .valve-detail { padding: 3px 6px; font-size: 10px; }
+      .editing-context { display: flex; flex-wrap: wrap; align-items: center; gap: 5px 14px; margin-bottom: 8px; padding: 7px 10px; border: 1px solid rgb(185 164 255 / 48%); border-radius: var(--radius-control); background: rgb(185 164 255 / 8%); color: var(--purple); font-size: 12px; }
+      .editing-context small { color: var(--muted); font-size: 10px; }
+      .editing-context strong { overflow-wrap: anywhere; }
       .group-page { margin: 0 !important; }
       @media (min-width: 1000px) and (min-height: 650px) {
         .workspace { padding-top: 10px; padding-bottom: 10px; gap: 12px; }
@@ -316,12 +319,18 @@
         .card-header { margin-bottom: 8px; }
         .chart-wrap svg { max-height: 250px; }
         .cascade-help { margin-bottom: 8px; }
+        #profiles .cascade-leaf { padding: 3px 5px; }
+        #profiles .cascade-label small { display: none; }
+        #profiles .cascade-level { padding: 5px; }
+        #profiles .cascade-node input[type="range"] { margin-top: 2px; }
+        #profiles .cascade-help { font-size: 10px; margin-bottom: 5px; }
+        #profiles .level-picker { margin-bottom: 4px; }
         .cascade-node.total { padding-bottom: 6px; }
         .cascade-sync { margin-top: 5px; }
         .footer-note { margin: 8px 0 0; }
       }
       @media (max-width: 600px) { .cascade-tree .cascade-leaves { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-      .profile-hours { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 5px; }
+      .profile-hours { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 5px; }
       .hour { padding: 8px 4px; border: 1px solid var(--line); border-radius: var(--radius-control); background: transparent; color: var(--muted); font: 11px "DM Mono", monospace; }
       .hour.active { border-color: var(--cyan); background: var(--cyan-soft); color: var(--cyan); }
       .history-row { display: grid; grid-template-columns: 1.2fr .7fr .7fr auto; align-items: center; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--line); }
@@ -446,6 +455,12 @@
             <button data-screen="history">HISTORIAL</button>
           </nav>
 
+          <div class="editing-context" role="status" aria-live="polite" aria-atomic="true">
+            <span>EDITANDO: <strong id="editing-profile-name">Demanda diurna</strong></span>
+            <span id="editing-profile-hour">Hora 08 · 07:00–08:00</span>
+            <small>BORRADOR · NO APLICADO A LA SESIÓN EN VIVO</small>
+          </div>
+
           <section id="master" class="screen active" aria-labelledby="master-title">
             <div class="surface hero">
               <div><p class="eyebrow">Emulador de realidad ficticia</p><h1 id="master-title">Control hidráulico, visible de un vistazo.</h1><p>La pantalla principal concentra el estado operativo, las señales críticas y las acciones de mayor prioridad sin esconder el contexto de la red.</p></div>
@@ -494,8 +509,8 @@
 
           <section id="profiles" class="screen" aria-labelledby="profiles-title">
             <div class="screen-head"><div><p class="eyebrow">PLC virtual · programación</p><h1 id="profiles-title">Perfiles de operación</h1><p>Los controles globales aparecen primero; el detalle por nivel se abre después, sin una pared interminable de controles.</p></div><div class="actions"><span class="mode-badge draft">ESCENARIO · NO APLICADO</span><button class="small">NUEVO</button><button class="small primary">GUARDAR CAMBIOS</button><button class="small">EJECUTAR</button></div></div>
-            <article class="surface card" style="margin-bottom:14px"><div class="control-grid"><label class="field">Perfil<select><option>Demanda diurna</option><option>Noche de bajo consumo</option></select></label><label class="field">Hora simulada<select><option>08 · 00:00–01:00</option><option>09 · 01:00–02:00</option></select></label></div><div class="profile-hours" style="margin-top:14px"><button class="hour">01</button><button class="hour">02</button><button class="hour">03</button><button class="hour">04</button><button class="hour">05</button><button class="hour active">08</button></div><div class="actions" style="justify-content:flex-start;margin-top:14px"><button class="small ghost">↳ CAPTURAR ESTADO ACTUAL</button><span class="quiet" style="font-size:11px">Copia la demanda EN VIVO a este escenario.</span></div></article>
-            <div class="profile-grid cascade-layout"><article class="surface card"><div class="card-header"><div><p class="eyebrow">Hora 08 · demanda programada</p><h2>Mandos en cascada</h2></div><span class="mode-badge draft">BORRADOR · NO APLICADO</span></div><p class="cascade-help">Total → nivel → válvulas. Un mando superior se propaga a todos sus descendientes; un mando de nivel solo mueve las casas y pérdidas de ese piso. Estos valores no cambian la operación actual.</p><div class="cascade-tree" data-cascade>
+            <article class="surface card" style="margin-bottom:14px"><div class="control-grid"><label class="field">Perfil<select id="editing-profile-select"><option>Demanda diurna</option><option>Noche de bajo consumo</option></select></label><label class="field">Hora simulada<select id="profile-hour-select" aria-describedby="profile-hour-convention"></select></label></div><p id="profile-hour-convention" class="quiet" style="font-size:11px;margin:8px 0">24 franjas: hora 01 = 00:00–01:00; hora 24 = 23:00–24:00. Selección visual de maqueta; no programa el PLC.</p><div id="profile-hour-buttons" class="profile-hours" style="margin-top:10px" aria-label="Horas del perfil"></div><div class="actions" style="justify-content:flex-start;margin-top:14px"><button class="small ghost">↳ CAPTURAR ESTADO ACTUAL</button><span class="quiet" style="font-size:11px">Copia la demanda EN VIVO a este escenario.</span></div></article>
+            <div class="profile-grid cascade-layout"><article class="surface card"><div class="card-header"><div><p class="eyebrow" id="profile-demand-hour">Hora 08 · 07:00–08:00 · demanda programada</p><h2>Mandos en cascada</h2></div><span class="mode-badge draft">BORRADOR · NO APLICADO</span></div><p class="cascade-help">Total → nivel → válvulas. Un mando superior se propaga a todos sus descendientes; un mando de nivel solo mueve las casas y pérdidas de ese piso. Estos valores no cambian la operación actual.</p><div class="cascade-tree" data-cascade>
               <div class="cascade-node total">
                 <div class="cascade-total-head"><div class="cascade-label"><span class="cascade-branch">Σ</span><div><strong>Todas las válvulas</strong><small>4 niveles · 16 casas · 8 pérdidas</small></div></div><output class="cascade-value" data-cascade-total-output>82 %</output></div>
                 <input type="range" min="0" max="100" value="82" data-cascade-total aria-label="Apertura de todas las válvulas" />
@@ -633,6 +648,37 @@
       const houseLevels = [...houses.children];
       houses.classList.remove("grid", "two");
       addGroupPicker(houses, houseLevels, ["Nivel 1", "Nivel 2", "Nivel 3", "Nivel 4"]);
+
+      const profileSelect = document.querySelector("#editing-profile-select");
+      const updateEditingProfile = () => {
+        document.querySelector("#editing-profile-name").textContent = profileSelect.selectedOptions[0].textContent;
+      };
+      profileSelect.addEventListener("change", updateEditingProfile);
+      updateEditingProfile();
+      const hourSelect = document.querySelector("#profile-hour-select");
+      const hourButtons = document.querySelector("#profile-hour-buttons");
+      const hourLabel = (hour) => `${String(hour + 1).padStart(2, "0")} · ${String(hour).padStart(2, "0")}:00–${String(hour + 1).padStart(2, "0")}:00`;
+      const selectProfileHour = (hour) => {
+        hourSelect.value = String(hour);
+        document.querySelector("#editing-profile-hour").textContent = `Hora ${hourLabel(hour)}`;
+        [...hourButtons.children].forEach((button, index) => {
+          button.classList.toggle("active", index === hour);
+          button.setAttribute("aria-pressed", String(index === hour));
+        });
+        document.querySelector("#profile-demand-hour").textContent = `Hora ${hourLabel(hour)} · demanda programada`;
+      };
+      for (let hour = 0; hour < 24; hour++) {
+        hourSelect.add(new Option(hourLabel(hour), String(hour)));
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "hour";
+        button.textContent = String(hour + 1).padStart(2, "0");
+        button.setAttribute("aria-label", `Hora ${hourLabel(hour)}`);
+        button.addEventListener("click", () => selectProfileHour(hour));
+        hourButtons.append(button);
+      }
+      hourSelect.addEventListener("change", () => selectProfileHour(Number(hourSelect.value)));
+      selectProfileHour(7);
 
       const chartModal = document.querySelector("#chart-modal");
       const chartStage = document.querySelector("#chart-modal-stage");

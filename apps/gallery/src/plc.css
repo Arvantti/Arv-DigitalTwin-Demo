@@ -12,6 +12,41 @@
 .profile-individual-controls output { min-width:0; text-align:right; }
 .profile-preview svg { width:100%; max-height:300px; }
 @media(max-width:1200px) { .profile-individual-controls { grid-template-columns:repeat(2,minmax(190px,1fr)); } }
+/* HMI uses the shared Gallery typography/radius system without touching the 3D canvas. */
+body :is(.topbar,h1,h2,.tabs button,.kpi b,.tank-level span,.chart-modal-head,.profile-house-editor summary) { font-family:Inter,system-ui,sans-serif; }
+.panel,.card,.kpi,.house,.level,.profile-editor,.profile-hour-controls,.profile-preview,.profile-house-editor,.chart-modal,button,select,input:not([type="range"]),.mode { border-radius:6px; }
+.draft-context { flex:1 0 100%; padding:7px 10px; border:1px solid #b9a4ff77; border-radius:6px; background:#b9a4ff12; color:#d1c2ff; font:600 10px Inter,system-ui,sans-serif; letter-spacing:.03em; }
+.draft-context[hidden] { display:none; }
+.live-demand-total { display:flex; align-items:center; gap:7px; color:var(--good); font-size:10px; white-space:nowrap; }
+.live-level-detail { margin-top:8px; border-top:1px solid #284650; padding-top:7px; }
+.live-level-detail summary { cursor:pointer; color:var(--cyan); font:600 10px Inter,system-ui,sans-serif; }
+.live-level-detail .houses { margin-top:8px; }
+.live-demand-total output { color:var(--good); min-width:0; font:600 12px "IBM Plex Mono",monospace; }
+.history-subviews { display:flex; justify-content:flex-end; margin-bottom:12px; }
+#comparison-scenario { display:block; width:min(100%,420px); max-width:100%; min-width:0; margin-top:5px; }
+#comparisons > article > label { display:block; max-width:100%; }
+.chart-measurement { position:sticky; bottom:0; padding:10px; border:1px solid var(--cyan); border-radius:6px; background:#07132a; font:12px "IBM Plex Mono",monospace; }
+html:has(body.embedded-plc),body.embedded-plc { height:auto; min-height:100%; overflow:auto; }
+body.screen-fractal #master,body.screen-comparisons #history { display:none; }
+@media(max-width:800px) {
+  .embedded-plc .content { padding:8px; }
+  .tabs { gap:4px; }
+  .tabs button { flex:1 0 auto; padding:7px; font-size:10px; }
+  .draft-context { font-size:9px; }
+  .inline { justify-content:flex-start; }
+  .live-demand-total { flex-wrap:wrap; }
+  .houses { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .profile-individual-controls { grid-template-columns:1fr; }
+  .profile-hour-layout { grid-template-columns:minmax(0,1fr); }
+  .grid-levels { grid-template-columns:minmax(0,1fr); }
+}
+@media(max-width:380px) {
+  .topbar { height:auto; min-height:58px; flex-wrap:wrap; }
+  .connection { margin-left:0; }
+  .tabs button { font-size:9px; padding:6px 5px; }
+  .live-demand-total { width:100%; }
+  .houses { grid-template-columns:1fr 1fr; }
+}
 .embedded-plc .topbar .back { display:none; }
 .embedded-plc main { min-height:0; display:block; }
 .embedded-plc .asset-tree { display:none; }
