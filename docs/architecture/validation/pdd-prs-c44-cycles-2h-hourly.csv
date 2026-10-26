@@ -1,0 +1,3 @@
+hora,t_s,fractal_perfil_h,emulador_perfil_h,emulador_supply_pct,fractal_supply_pct,emulador_supply_m3,fractal_supply_m3,emulador_recirc01_pct,fractal_recirc01_pct,emulador_recirc01_m3,fractal_recirc01_m3,emulador_recirc02_pct,fractal_recirc02_pct,emulador_recirc02_m3,fractal_recirc02_m3,diferencia_suministro_pp,diferencia_retorno_acumulado_m3,presion_critica_emulador_mca,presion_critica_fractal_mca,acuerdo_presion_15mca
+1,3600.0,0,0,30.36314,30.112,1.180519,1.170755,76.02821,76.247,1.715196,1.720132,72.28208,72.545,1.630684,1.636615,-0.25114,-0.010431,18.0,18.00006,True
+2,7200.0,1,1,66.1621,65.276,2.572382,2.537931,44.15728,44.924,0.996188,1.013485,42.45693,43.266,0.957828,0.976081,-0.8861,-0.035736,18.0,18.00008,True

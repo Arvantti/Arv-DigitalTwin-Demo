@@ -1,0 +1,164 @@
+{
+  "scope": "P1-P3; C44, constant 30% opening; t=30..1800; no physics modifications",
+  "coverage_t_s": [
+    30,
+    1800
+  ],
+  "emulator_dt_s": 1.0,
+  "profile_path": "industrial-models/water-network-scale-v1/operation-profiles/pdd-prs-punto-critico-18-01.json",
+  "distribution_fixed_for_fractal_m3h": {
+    "1": 1.20348,
+    "2": 1.15986,
+    "3": 1.12085,
+    "4": 1.08415
+  },
+  "emulator_events": [
+    {
+      "t_s": 1229.0,
+      "action": "start",
+      "levels_pct": {
+        "tank-supply-01": 29.958565584146502,
+        "tank-recirc-01": 75.70830752223931,
+        "tank-recirc-02": 73.2992207981338
+      },
+      "pump_volume_m3": -8.763577045815818e-08,
+      "received_supply_m3": 0.0
+    },
+    {
+      "t_s": 1769.0,
+      "action": "stop",
+      "levels_pct": {
+        "tank-supply-01": 90.12579958800424,
+        "tank-recirc-01": 22.74633740552456,
+        "tank-recirc-02": 22.568723799463083
+      },
+      "pump_volume_m3": 3.024855220633952,
+      "received_supply_m3": 3.024546178961614
+    }
+  ],
+  "emulator_balances": {
+    "tank-supply-01": {
+      "in_m3": 3.024546178961614,
+      "out_m3": 2.2479826717434896,
+      "max_step_residual_m3": 4.215378046623641e-16,
+      "volume_change_m3": 0.7765635072181201,
+      "residual_m3": -4.440892098500626e-15,
+      "counter_in_m3": 3.0245461789616086,
+      "counter_out_m3": 2.247982671743487,
+      "initial_level_pct": 69.14063483872147,
+      "final_level_pct": 89.11397607375541
+    },
+    "tank-recirc-01": {
+      "in_m3": 1.1628809690168846,
+      "out_m3": 1.5493155973496828,
+      "max_step_residual_m3": 2.1380466841414147e-16,
+      "volume_change_m3": -0.3864346283327978,
+      "residual_m3": 4.440892098500626e-16,
+      "counter_in_m3": 1.162880969016887,
+      "counter_out_m3": 1.5493155973496828,
+      "initial_level_pct": 40.77763122460114,
+      "final_level_pct": 23.64843670630336
+    },
+    "tank-recirc-02": {
+      "in_m3": 1.0851017026309386,
+      "out_m3": 1.4752305816482127,
+      "max_step_residual_m3": 2.172741153660951e-16,
+      "volume_change_m3": -0.39012887901727894,
+      "residual_m3": -4.884981308350689e-15,
+      "counter_in_m3": 1.0851017026309373,
+      "counter_out_m3": 1.4752305816482145,
+      "initial_level_pct": 40.70335221361521,
+      "final_level_pct": 23.4104054486649
+    }
+  },
+  "emulator_total_inventory_change_m3": -1.319566678148476e-10,
+  "pump_accounted_m3": 3.024855220633952,
+  "pump_minus_received_supply_m3": 0.0003090416723381395,
+  "fractal": {
+    "plc_tags": {
+      "initial_levels_pct": {
+        "tank-supply-01": 69.10000000000001,
+        "tank-recirc-01": 40.800000000000004,
+        "tank-recirc-02": 40.800000000000004
+      },
+      "final_levels_pct": {
+        "tank-supply-01": 88.86140552010033,
+        "tank-recirc-01": 23.86787690265294,
+        "tank-recirc-02": 23.675232732918833
+      },
+      "recirculated_m3": 3.0144239466214997,
+      "final_on": false,
+      "overflow": false,
+      "events": [
+        {
+          "t_s": 1227.9731806301643,
+          "action": "start",
+          "reason": "suministro_bajo",
+          "levels_pct": {
+            "tank-supply-01": 30.000000000000004,
+            "tank-recirc-01": 75.66034693546206,
+            "tank-recirc-02": 73.32475944751671
+          },
+          "recirculated_m3": 0.0
+        },
+        {
+          "t_s": 1765.0807308248677,
+          "action": "stop",
+          "reason": "suministro_lleno",
+          "levels_pct": {
+            "tank-supply-01": 90.00111669796615,
+            "tank-recirc-01": 22.85174577562924,
+            "tank-recirc-02": 22.727180766173777
+          },
+          "recirculated_m3": 3.0144239466214997
+        }
+      ],
+      "total_inventory_change_m3": -2.220446049250313e-16
+    },
+    "true_levels": {
+      "initial_levels_pct": {
+        "tank-supply-01": 69.14063483872147,
+        "tank-recirc-01": 40.77763122460114,
+        "tank-recirc-02": 40.70335221361521
+      },
+      "final_levels_pct": {
+        "tank-supply-01": 88.90112743923471,
+        "tank-recirc-01": 23.80884820610041,
+        "tank-recirc-02": 23.61681819718892
+      },
+      "recirculated_m3": 3.0143884523079523,
+      "final_on": false,
+      "overflow": false,
+      "events": [
+        {
+          "t_s": 1229.2181792743468,
+          "action": "start",
+          "reason": "suministro_bajo",
+          "levels_pct": {
+            "tank-supply-01": 29.999999999999996,
+            "tank-recirc-01": 75.67420692158484,
+            "tank-recirc-02": 73.26191315357701
+          },
+          "recirculated_m3": 0.0
+        },
+        {
+          "t_s": 1766.3319729737284,
+          "action": "stop",
+          "reason": "suministro_lleno",
+          "levels_pct": {
+            "tank-supply-01": 90.0,
+            "tank-recirc-01": 22.829127523078977,
+            "tank-recirc-02": 22.702737232933984
+          },
+          "recirculated_m3": 3.0143884523079523
+        }
+      ],
+      "total_inventory_change_m3": 1.4432899320127035e-15
+    }
+  },
+  "limits": [
+    "P2 changes only initial tank levels; distribution remains identical across the two forecasts.",
+    "Fractal per-tank internal inflow/outflow trace and step-size sensitivity still pending.",
+    "No declaration of full-day parity or physical validation; sensor uncertainty not eliminated in baseline."
+  ]
+}
