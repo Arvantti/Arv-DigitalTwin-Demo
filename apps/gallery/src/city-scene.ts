@@ -1,6 +1,7 @@
 /** Interactive Three.js city scene built from the local OSM extract and SUMO vehicle snapshots. */
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import "./city-dock.ts";
 
 interface Road { id:string; name:string; class:string; points:number[][]; width:number; lanes:number; lanesAssumed:boolean; oneway:boolean; reverse:boolean }
 interface Building { id:string; name:string; kind:string; points:number[][]; height:number; heightSource:string }
