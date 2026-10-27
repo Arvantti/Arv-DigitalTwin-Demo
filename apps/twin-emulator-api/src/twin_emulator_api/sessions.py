@@ -38,9 +38,12 @@ class PlantSession:
     plant: Any
     profile_id: str | None
     profile: dict[str, Any] | None
+    demo_client_id: str | None = None
+    demo_expires_at: float | None = None
     speed: float = 240.0
     paused: bool = False
     running: bool = False
+    plc_operator_connected: bool = field(default=False, repr=False, compare=False)
     created_at: float = field(default_factory=time)
     last_activity: float = field(default_factory=time)
     subscribers: set[asyncio.Queue[dict[str, Any]]] = field(default_factory=set)
@@ -129,10 +132,16 @@ class SessionManager:
         self.sessions: dict[str, PlantSession] = {}
 
     def create(
-        self, plant_id: str, model: PlantModel, profile_id: str | None = None, profile: dict[str, Any] | None = None
+        self,
+        plant_id: str,
+        model: PlantModel,
+        profile_id: str | None = None,
+        profile: dict[str, Any] | None = None,
+        demo_client_id: str | None = None,
+        demo_expires_at: float | None = None,
     ) -> PlantSession:
         plant = model.create(seed=1, random_faults=False, horizon_s=86400.0)
-        session = PlantSession(str(uuid4()), plant_id, plant, profile_id, profile)
+        session = PlantSession(str(uuid4()), plant_id, plant, profile_id, profile, demo_client_id, demo_expires_at)
         self.sessions[session.id] = session
         checkpoints.save(session)
         audit.record(plant_id, "session.created", session_id=session.id, details={"profile_id": profile_id})
@@ -157,6 +166,8 @@ class SessionManager:
             plant=plant,
             profile_id=state.get("profile_id"),
             profile=state.get("profile"),
+            demo_client_id=state.get("demo_client_id"),
+            demo_expires_at=state.get("demo_expires_at"),
             speed=float(state.get("speed", 240.0)),
             paused=bool(state.get("paused", False)),
             running=bool(state.get("running", False)),
@@ -185,6 +196,9 @@ class SessionManager:
     async def _run(self, session: PlantSession) -> None:
         try:
             while session.running:
+                if session.demo_expires_at is not None and time() >= session.demo_expires_at:
+                    self.stop(session)
+                    break
                 if not session.paused:
                     session.apply_profile_hour(int(session.plant.t // 3600))
                     session.budget += session.speed * TICK_S

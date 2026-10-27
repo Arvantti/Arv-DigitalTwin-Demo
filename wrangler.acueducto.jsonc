@@ -1,39 +1,99 @@
 {
-  "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "acueducto-emulator-api",
-  "main": "apps/cloudflare-emulator-worker/src/index.ts",
-  "compatibility_date": "2026-10-26",
-  "compatibility_flags": ["nodejs_compat"],
-  "workers_dev": true,
-  "containers": [
-    {
-      "class_name": "AcueductoContainer",
-      "image": "./Dockerfile",
-      "instance_type": "basic",
-      "max_instances": 1
-    }
-  ],
-  "durable_objects": {
-    "bindings": [
-      { "name": "ACUEDUCTO_CONTAINER", "class_name": "AcueductoContainer" }
-    ]
-  },
-  "migrations": [
-    { "tag": "v1", "new_sqlite_classes": ["AcueductoContainer"] }
-  ],
-  "d1_databases": [
-    {
-      "binding": "DB",
-      "database_name": "acueducto-emulator",
-      "database_id": "00000000-0000-0000-0000-000000000000",
-      "migrations_dir": "apps/cloudflare-emulator-worker/migrations"
-    }
-  ],
-  "vars": {
-    "ALLOWED_PLANT_IDS": "water-network-scale-v1",
-    "D1_GATEWAY_ORIGIN": "https://acueducto-emulator-api.REPLACE_WITH_CF_SUBDOMAIN.workers.dev",
-    "ACCESS_TEAM_DOMAIN": "REPLACE_WITH_TEAM.cloudflareaccess.com",
-    "ACCESS_AUD": "REPLACE_WITH_CLOUDFLARE_ACCESS_APPLICATION_AUD",
-    "CORS_ORIGINS": "https://REPLACE_WITH_GALLERY_DOMAIN"
-  }
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "acueducto-emulator-api",
+	"main": "apps/cloudflare-emulator-worker/src/index.ts",
+	"compatibility_date": "2026-10-26",
+	"compatibility_flags": [
+		"nodejs_compat"
+	],
+	"workers_dev": true,
+	"containers": [
+		{
+			"name": "acueducto-emulator-api-acueductocontainer",
+			"class_name": "AcueductoContainer",
+			"scheduling_policy": "durable_object",
+			"images": {
+				"default": {
+					"dockerfile": "./Dockerfile",
+					"build_context": "."
+				}
+			}
+		},
+		{
+			"name": "acueducto-emulator-api-fractalcontainer",
+			"class_name": "FractalContainer",
+			"scheduling_policy": "durable_object",
+			"images": {
+				"default": {
+					"dockerfile": "./apps/fractal-engineering-api/Containerfile",
+					"build_context": "."
+				}
+			}
+		}
+	],
+	"durable_objects": {
+		"bindings": [
+			{
+				"name": "ACUEDUCTO_CONTAINER",
+				"class_name": "AcueductoContainer"
+			},
+			{
+				"name": "FRACTAL_CONTAINER",
+				"class_name": "FractalContainer"
+			}
+		]
+	},
+	"migrations": [
+		{
+			"tag": "v1",
+			"new_sqlite_classes": [
+				"AcueductoContainer"
+			]
+		},
+		{
+			"tag": "v2",
+			"new_sqlite_classes": [
+				"FractalContainer"
+			]
+		}
+	],
+	"ratelimits": [
+		{
+			"name": "DEMO_BOOTSTRAP_LIMITER",
+			"namespace_id": "73501",
+			"simple": {
+				"limit": 10,
+				"period": 60
+			}
+		},
+		{
+			"name": "DEMO_API_LIMITER",
+			"namespace_id": "73502",
+			"simple": {
+				"limit": 120,
+				"period": 60
+			}
+		},
+		{
+			"name": "DEMO_FRACTAL_LIMITER",
+			"namespace_id": "73503",
+			"simple": {
+				"limit": 10,
+				"period": 60
+			}
+		}
+	],
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "acueducto-emulator",
+			"database_id": "09a7d4d9-42ea-431c-a80a-11218e33254b",
+			"migrations_dir": "apps/cloudflare-emulator-worker/migrations"
+		}
+	],
+	"vars": {
+		"ALLOWED_PLANT_IDS": "water-network-scale-v1",
+		"D1_GATEWAY_ORIGIN": "https://acueducto-emulator-api.andres-quiceno.workers.dev",
+		"CORS_ORIGINS": "https://digitaltwin.arvantti.online,https://digitaltwin-arvantti.pages.dev"
+	}
 }

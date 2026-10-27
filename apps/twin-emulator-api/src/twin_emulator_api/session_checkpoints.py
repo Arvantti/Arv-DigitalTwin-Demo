@@ -16,7 +16,7 @@ from typing import Any
 
 from .d1_storage import connect
 
-CHECKPOINT_VERSION = 1
+CHECKPOINT_VERSION = 2
 MAX_CHECKPOINT_BYTES = 2_000_000
 
 
@@ -43,6 +43,8 @@ class SessionCheckpointStore:
             "plant": session.plant,
             "profile_id": session.profile_id,
             "profile": session.profile,
+            "demo_client_id": session.demo_client_id,
+            "demo_expires_at": session.demo_expires_at,
             "speed": session.speed,
             "paused": session.paused,
             "running": session.running,

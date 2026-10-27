@@ -57,6 +57,8 @@ jobs:
           uv sync
           uv run python tools/deploy/export_static_plants.py
       - if: steps.secrets.outputs.ready == 'true'
+        env:
+          VITE_EMULATOR_API_URL: ${{ vars.EMULATOR_API_URL }}
         run: pnpm gallery:build
       - name: Desplegar en Cloudflare Pages
         if: steps.secrets.outputs.ready == 'true'

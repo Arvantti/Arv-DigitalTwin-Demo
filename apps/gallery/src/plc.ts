@@ -1,5 +1,6 @@
 import "./plc.css";
 import { mountComparisons } from "./plc-comparisons";
+import { demoFetch, demoWebSocket } from "./demo-client";
 
 type Value = number | string | null;
 type Snapshot = { state: string; variables: Record<string, Value>; animation: Record<string, number>; active_faults: string[] };
@@ -19,16 +20,13 @@ function notify3d(type: "plc-session-created" | "plc-show-3d", data: { sessionId
 }
 // En desarrollo usa el proxy local. Una HMI publicada puede apuntar a un host FastAPI explícito:
 // plc.html?plant=water-network-scale-v1&api=https://planta-real.ejemplo.com
-const apiOrigin = (query.get("api") ?? location.origin).replace(/\/$/, "");
-const apiUrl = (path: string) => `${apiOrigin}${path}`;
-const serviceAuthLink = document.getElementById("service-auth") as HTMLAnchorElement | null;
-if (serviceAuthLink && new URL(apiOrigin, location.origin).origin !== location.origin) {
-  serviceAuthLink.href = apiUrl("/api/health");
-  serviceAuthLink.hidden = false;
-}
-const apiFetch = (path: string, init: RequestInit = {}) => fetch(apiUrl(path), { ...init, credentials: "include" });
-const websocketUrl = (path: string) => `${apiOrigin.replace(/^http/, "ws")}${path}`;
-const fractalOrigin = (query.get("fractal") ?? (["localhost", "127.0.0.1"].includes(location.hostname) ? `${location.origin}/fractal-api` : "")).replace(/\/$/, "");
+const apiOrigin = (query.get("api") ?? import.meta.env.VITE_EMULATOR_API_URL ?? location.origin).replace(/\/$/, "");
+const apiFetch = (path: string, init: RequestInit = {}) => demoFetch(apiOrigin, path, init);
+const localHost = ["localhost", "127.0.0.1"].includes(location.hostname);
+const fractalOrigin = (query.get("fractal") ?? (localHost ? `${location.origin}/fractal-api` : `${apiOrigin}/fractal`)).replace(/\/$/, "");
+const fractalFetch = (path: string, init: RequestInit = {}) => fractalOrigin === `${apiOrigin}/fractal`
+  ? demoFetch(apiOrigin, `/fractal${path}`, init)
+  : fetch(`${fractalOrigin}${path}`, init);
 
 async function getJson<T>(path: string): Promise<T> {
   const response = await apiFetch(path);
@@ -471,15 +469,21 @@ async function connect(): Promise<void> {
       window.history.replaceState(null, "", `${location.pathname}?${query}`);
       $<HTMLAnchorElement>("link-plant").href = `/plant.html?plant=${plantId}&session=${encodeURIComponent(sessionId)}${query.get("api") ? `&api=${encodeURIComponent(apiOrigin)}` : ""}`;
     }
-    const started = await apiFetch(`/api/plants/${plantId}/sessions/${sessionId}/start`, { method: "POST" });
-    if (!started.ok) throw Error("no se pudo iniciar la sesión");
+    // El propio WebSocket de rol PLC inicia la simulación; si no conecta, no queda un ciclo anónimo huérfano consumiendo CPU.
     plcRunning = true;
   } catch (error) {
     $("connection").textContent = `● ERROR · ${String(error)}`;
     $("connect").textContent = "▶ INICIAR OPERACIÓN PLC";
     return;
   }
-  socket = new WebSocket(websocketUrl(`/api/plants/${plantId}/sessions/${sessionId}?role=plc`));
+  try {
+    socket = await demoWebSocket(apiOrigin, `/api/plants/${plantId}/sessions/${sessionId}?role=plc`);
+  } catch (error) {
+    plcRunning = false;
+    $("connection").textContent = `● ERROR · ${String(error)}`;
+    $("connect").textContent = "▶ INICIAR SESIÓN PLANTA REAL · 24 H";
+    return;
+  }
   socket.onopen = () => { $("connection").textContent = "● PLANTA REAL CONECTADA · ×240 SOLICITADO"; $("connection").classList.add("on"); $("connect").textContent = "■ DETENER Y GUARDAR"; };
   socket.onmessage = (event) => {
     const message = JSON.parse(event.data) as Message & { error?: string };
@@ -490,7 +494,7 @@ async function connect(): Promise<void> {
     render(message);
   };
   socket.onerror = () => { $("connection").textContent = "● ERROR DE CONEXIÓN CON PLANTA REAL"; };
-  socket.onclose = () => { saveCurrentRun(); socket = null; $("connection").textContent = "● DESCONECTADO"; $("connection").classList.remove("on"); $("connect").textContent = "▶ INICIAR SESIÓN PLANTA REAL · 24 H"; };
+  socket.onclose = () => { saveCurrentRun(); socket = null; plcRunning = false; $("connection").textContent = "● DESCONECTADO"; $("connection").classList.remove("on"); $("connect").textContent = "▶ INICIAR SESIÓN PLANTA REAL · 24 H"; };
 }
 
 function currentProfileHour(): ProfileHour {
@@ -681,7 +685,7 @@ async function loadProfilePressure(): Promise<void> {
   profilePressureMessage = "Calculando presión de salida desde tags PLC; futuro no aplicado…";
   renderProfileChart();
   try {
-    const response = await fetch(`${fractalOrigin}/studies/profile-preview/from-plc`, { credentials: "include",
+    const response = await fractalFetch("/studies/profile-preview/from-plc", {
       method: "POST", headers: { "content-type": "application/json" },
       body: JSON.stringify({ plant_id: plantId, session_id: sessionId, profile_id: activeProfileId, emulator_api: apiOrigin }),
     });
@@ -811,7 +815,7 @@ async function start(): Promise<void> {
     button.disabled = true; button.textContent = "… LEYENDO PLC Y PROYECTANDO";
     let study: { study_id: string; study_type: string; base_time: number; hours: { hour: number; supply_level_pct: number; robust: boolean; profile_commands?: { prs?: { control_mode?: string; critical_control_point?: string; critical_setpoint_mca?: number } }; scenarios: { demand_factor: number; state: Record<string, number> & { prs_inlet_mca: number; prs_outlet_mca: number; critical_pressure_mca: number; control_point_pressure_mca: number; consumer_pressures_mca: Record<string, number> }; feasible: boolean }[] }[]; published?: unknown };
     try {
-      const response = await fetch(`${fractalOrigin}/studies/horizon/from-plc`, { credentials: "include", method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ session_id: sessionId, plant_id: plantId, emulator_api: apiOrigin, overrides, study_type: studyType }) });
+      const response = await fractalFetch("/studies/horizon/from-plc", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ session_id: sessionId, plant_id: plantId, emulator_api: apiOrigin, overrides, study_type: studyType }) });
       if (!response.ok) { const detail = await response.json().catch(() => ({})) as { detail?: string }; throw Error(detail.detail ?? "Fractal no pudo proyectar el perfil PLC"); }
       study = await response.json();
     } catch (error) { window.alert(String(error)); return; }

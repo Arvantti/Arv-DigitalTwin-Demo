@@ -119,11 +119,25 @@ def test_retired_nocturnal_templates_are_removed_from_existing_local_store(tmp_p
     store = ProfileStore(PLANT)
     with store._connect() as conn:
         conn.execute(
-            "INSERT INTO operation_profiles VALUES (?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO operation_profiles (id, plant_id, name, description, data, created_at, updated_at) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?)",
             (f"builtin-{PLANT}-pfl-noc-01", PLANT, "Retirado", "", "{}", "old", "old"),
         )
     assert len([p for p in ProfileStore(PLANT).list() if p["id"].startswith("builtin-")]) == 5
     assert ProfileStore(PLANT).get(f"builtin-{PLANT}-pfl-noc-01") is None
+
+
+def test_demo_custom_profiles_are_isolated_per_anonymous_visitor(tmp_path, monkeypatch) -> None:
+    monkeypatch.setenv("TWIN_DATA", str(tmp_path))
+    owner = ProfileStore(PLANT, owner_id="visitor-a")
+    other = ProfileStore(PLANT, owner_id="visitor-b")
+    profile = owner.create({"name": "Solo visitante A", "description": "Privado", "hours": {}})
+    assert owner.get(profile["id"]) is not None
+    assert other.get(profile["id"]) is None
+    assert all(item["id"] != profile["id"] for item in other.list())
+    assert other.update(profile["id"], {"name": "Cambio no autorizado", "hours": {}}) is None
+    assert not other.delete(profile["id"])
+    assert any(item["id"].startswith("builtin-") for item in other.list())
 
 
 def test_custom_profiles_can_be_named_edited_deleted_but_builtins_are_protected() -> None:

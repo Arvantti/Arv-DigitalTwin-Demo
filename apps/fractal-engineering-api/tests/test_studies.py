@@ -11,6 +11,20 @@ from fractal.hydraulics.runtime import mpc, optimizer
 client = TestClient(app)
 
 
+def test_gateway_json_forwards_the_anonymous_demo_capability(monkeypatch) -> None:
+    seen = {}
+
+    def fake_urlopen(request, timeout):
+        seen["headers"] = dict(request.header_items())
+        seen["timeout"] = timeout
+        return io.BytesIO(b'{"id":"session-1"}')
+
+    monkeypatch.setattr(fractal_api, "urlopen", fake_urlopen)
+    assert fractal_api.gateway_json("https://gateway.example/api/session", "demo-capability") == {"id": "session-1"}
+    assert seen["headers"]["Authorization"] == "Bearer demo-capability"
+    assert seen["timeout"] == 10
+
+
 def test_horizon_baseline_is_forecast_without_operator_acceptance() -> None:
     response = client.post(
         "/studies/horizon",

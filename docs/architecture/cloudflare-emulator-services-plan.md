@@ -1,6 +1,6 @@
 # Plan de servicios de emulación en Cloudflare
 
-> Estado: primer vertical de código implementado localmente; todavía no se ha desplegado ni validado en una cuenta Cloudflare.
+> Estado: Worker/Containers de Acueducto y D1 desplegados. Se verificaron salud, sesiones anónimas aisladas, WSS PLC y una proyección Fractal PLC-backed en Cloudflare; quedan pendientes la publicación de la galería modificada y la comprobación de cierre WSS tras renovar la instancia.
 > Alcance inicial: gemelo digital del acueducto (`water-network-scale-v1`).
 > Regla: el emulador y toda la HMI son simulados; no hay conexión ni escritura a infraestructura física.
 
@@ -17,11 +17,12 @@ La galería estática ya publicada en Cloudflare Pages es solo el frontend. Que 
 
 ## Estado de implementación
 
-- Implementado en el repo: `apps/cloudflare-emulator-worker/` (Worker, Container binding, Access JWT, allowlist, CORS con credenciales y bridge interno D1), migración `0001_initial.sql`, `wrangler.acueducto.jsonc`, Dockerfile en raíz, adaptador SQLite/D1, historian/perfiles/estudios del emulador, acciones auditadas en D1 y checkpoints de sesión versionados.
-- Validado localmente: typecheck y pruebas del adaptador/checkpoint/allowlist; D1 migration local; `podman build` de la imagen y smoke test FastAPI/allowlist más reinicio de Container con recuperación de checkpoint local SQLite; Wrangler empaqueta el Worker con `--containers-rollout=none`.
-- El dry-run completo de Wrangler no pasó con el Podman disponible porque el CLI invoca `podman build --provenance`, flag no soportado por esta versión. El workflow manual usa Docker Buildx en GitHub Actions.
-- Pendiente: `database_id`, dominio Worker, D1 remoto, secrets, Cloudflare Access, CORS, costos/cuotas, prueba WSS y recuperación con Container/D1 remotos. El `actor_id` de auditoría aún es el rol genérico `operator`, no la identidad individual de Access. Los valores placeholder impiden publicar por accidente.
-- La API Fractal independiente (`apps/fractal-engineering-api`) conserva su propio `StudyStore` SQLite. Esta entrega no migra ni despliega ese servicio; no declarar sus estudios persistidos en D1 hasta resolverlo.
+- Implementado en el repo: `apps/cloudflare-emulator-worker/` (Worker, Container bindings, allowlist, capacidades anónimas HMAC, cuotas por IP/capacidad, aislamiento de sesiones, expiración/limpieza, CORS y bridge D1), migraciones D1, `wrangler.acueducto.jsonc`, Dockerfiles, adaptador SQLite/D1, historian/perfiles/estudios del emulador y checkpoints versionados.
+- Implementado en la galería: cliente HTTP/WSS de capacidad anónima; endpoint Worker configurable mediante `EMULATOR_API_URL`/`VITE_EMULATOR_API_URL` o `?api=`. Los enlaces públicos no contienen secretos ni apuntan directamente a Containers.
+- Validado localmente: typecheck y pruebas del Worker; suite Python, migraciones D1 locales, build/typecheck de Gallery y dry-run Wrangler. En Cloudflare se comprobó `/api/health`, bootstrap/CORS, schema y perfiles PLC, creación/aislamiento de sesiones, handshake WSS y proyección Fractal PLC-backed; D1 persiste tras reiniciar el Container.
+- Desplegados D1 remoto, Worker y Containers con imágenes fijadas por digest; no se exponen URLs directas de Container. La galería modificada todavía no está publicada porque requiere el despliegue Pages autorizado.
+- Pendiente: comprobar el auto-stop al cerrar WSS tras renovar la instancia, medir costos/cuotas/latencia y completar pruebas de expiración y recuperación. Los eventos de ciclo de sesión aún usan actor genérico `operator`; las mutaciones de perfiles registran el id anónimo efímero, no una identidad humana.
+- Fractal (`apps/fractal-engineering-api`) se ejecuta en un Container separado y sin estado persistente local. La ruta pública solo permite estudios PLC-backed y los almacena en la sesión PLC/D1 mediante el Worker; vistas previas de perfil son transitorias. La optimización sigue deshabilitada.
 - Los checkpoints almacenan el objeto hidráulico Python con pickle comprimido y schema version. Son datos internos de D1 vía bearer bridge; recuperar exige compatibilidad de clases y pruebas. La sesión se reanuda en el siguiente websocket PLC, no corre durante el sueño del Container; el intervalo es 3600 s simulados y puede causar retroceso.
 
 ## 2. Arquitectura objetivo
@@ -72,7 +73,7 @@ Aquí «separar» no significa que haya que desplegar tres plataformas ni duplic
 | Ciclo | Acción | Responsable | Efecto y límites |
 |---|---|---|---|
 | Servicio emulador | Desplegar/arrancar/consultar salud del servicio | Infraestructura/administrador | Pone disponible la API del gemelo. No crea sesión ni inicia hidráulica. En Containers, una petición puede despertar el Container automáticamente; eso no significa que el PLC esté simulando. |
-| Simulación | Crear sesión (`POST .../sessions`), iniciarla (`POST .../start`), pausar/reanudar por el protocolo vigente y detenerla (`POST .../stop`) | Operador PLC autorizado | Ejecuta una instancia independiente del modelo hidráulico y emite señales PLC. No despliega el backend, no inicia Fractal y no optimiza. |
+| Simulación | Crear sesión (`POST .../sessions`), conectar el WebSocket del rol PLC para iniciarla, pausar/reanudar por el protocolo vigente y detenerla (`POST .../stop`) | Operador PLC de la demo | Ejecuta una instancia del modelo hidráulico y emite señales PLC. El WebSocket inicia la sesión para evitar ciclos anónimos huérfanos; no despliega el backend, no inicia Fractal y no optimiza. |
 | Proyección Fractal | Solicitar estudio base/alternativo | Operador/flujo de análisis autorizado | Lee el estado y perfil válidos de la sesión; produce futuro simulado `NO APLICADO`. No manda órdenes ni inicia optimización. |
 | Optimización | Acción explícita y separada, aún no disponible en operación | Rol autorizado, tras compuerta de seguridad | Permanece apagada hasta validar dependencias hidráulicas, restricciones, autorización y revisión humana. Nunca se dispara automáticamente al arrancar otro ciclo. |
 
@@ -98,14 +99,15 @@ Por tanto, cambiar solo la ruta del archivo SQLite no basta. El plan requiere:
 
 ## 5. Seguridad y límites de acceso
 
-CORS no autentica ni autoriza. Antes de hacer accesibles los endpoints que crean sesiones, modifican perfiles o envían mandos:
+La galería permanece abierta y sin login. El acceso API usa una capacidad anónima firmada, temporal, emitida por el Worker; no representa identidad autenticada y puede ser automatizada. CORS controla navegadores, no autentica. La política implementada reduce abuso, no promete impedirlo:
 
-- Elegir autenticación para operadores y autorización por planta/sesión/acción. Para una prueba privada puede evaluarse Cloudflare Access; para acceso integrado público, definir identidad/tokens de aplicación con rotación y validación. No incluir secretos en URLs, código del navegador ni logs.
-- Proteger también el enlace Worker → Container y Container → almacenamiento; definir secretos como bindings/secretos de Cloudflare, con mínimo privilegio.
-- Autorizar HTTPS y WebSockets WSS desde los dominios permitidos, comprobar el origen y limitar tasa/cuotas por identidad.
-- Aislar el tenant del acueducto del de manufactura plástica: allowlist de plantas, sesiones y datos separados.
-- Mantener Fractal de lectura/proyección bajo su contrato actual; la aceptación de un humano y la emisión de mandos PLC son una ruta independiente.
-- Mantener `FRACTAL_ENABLE_OPTIMIZATION=0`; no activar optimización como parte del despliegue de Container.
+- Las solicitudes API y WSS requieren capacidad; health está expuesto y limitado. El Worker valida firma/expiración, allowlist, origen del bootstrap, propiedad de sesión en D1 y cuotas por IP/capacidad. Las sesiones vencen en 2 h; máximo 2 por visitante y 10 retenidas globales. El PLC WebSocket admite una conexión operativa y 30 mensajes/s.
+- Solicitudes a Fractal tienen límites inferiores. Optimización, auditoría pública y decisiones/activación están bloqueadas. Perfiles se filtran por propietario anónimo. Datos vencidos se limpian al emitir una nueva capacidad.
+- La autorización administrativa de `/_admin/` usa Cloudflare Access si se configura y deniega por defecto. No poner Access delante de Pages ni de la experiencia de demo pública.
+- El bridge Worker → D1 requiere secreto; Containers solo se alcanzan mediante bindings Worker, nunca por URL pública. Las APIs hablan HTTPS/WSS; no guardar credenciales Cloudflare en el frontend.
+- Acueducto solo acepta `water-network-scale-v1`; otros gemelos requieren servicios, allowlists y datos aislados propios.
+- Fractal lee la sesión PLC autorizada y publica estudios `NO APLICADO`; revisión humana y emisión de mandos son rutas independientes. Mantener `FRACTAL_ENABLE_OPTIMIZATION=0`.
+- Antes de publicar, ajustar quotas, costos, WAF/Turnstile opcional, política de retención, alertas y respuesta a abuso según límites reales del plan. Sin login no se identifica al usuario ni se evita abuso distribuido.
 
 ## 6. Fases de implementación
 
@@ -126,13 +128,13 @@ CORS no autentica ni autoriza. Antes de hacer accesibles los endpoints que crean
 - Añadir checkpoints/versionado de sesión, restauración y pruebas ante reinicio.
 - Separar de forma verificable health del emulador, creación/inicio/pausa/parada de simulación, proyección y optimización.
 
-### Fase 2 — Worker y Container del acueducto en entorno privado
+### Fase 2 — Worker y Container del acueducto (implementada en código; despliegue pendiente)
 
 - Desplegar la imagen del emulador en Cloudflare Containers, configurada únicamente para `water-network-scale-v1`.
-- Implementar Worker de gateway que enrute `acueducto-api...`, autenticación, HTTP y upgrades WebSocket al Container/DO adecuado.
-- Implementar el acceso autenticado FastAPI → Worker → binding D1; no guardar datos de producción en el disco efímero.
-- Crear endpoints de salud y versión que indiquen por separado el estado del Worker, Container y almacenamiento persistente.
-- Usar entorno privado de prueba (Access o mecanismo de auth definido), no abrir aún a usuarios anónimos.
+- El Worker enruta HTTP/WSS y aplica capacidades anónimas temporales, aislamiento de sesión, cuotas por IP/capacidad y límites de carga; no expone Containers.
+- FastAPI → Worker → binding D1 usa bridge autenticado; no guardar datos persistentes en disco efímero.
+- Health del servicio es distinto del estado de sesión. Validar remótamente salud, cuotas y recuperación.
+- Demo de galería abierta, con Workers variables/secrets y dominio reales; `/_admin/` opcionalmente bajo Access. No requerir login Access para la HMI pública.
 
 ### Fase 3 — Conectar Gallery/HMI
 
@@ -143,18 +145,17 @@ CORS no autentica ni autoriza. Antes de hacer accesibles los endpoints que crean
 - No ofrecer acción de optimización hasta que se levante su compuerta y se habilite mediante un despliegue/configuración diferente.
 - Mantener `plant.html` en modo replay estático si el API no está configurado, explicando que es reproducción y no sesión en vivo.
 
-### Fase 4 — Verificación y piloto
+### Fase 4 — Verificación y piloto público controlado (pendiente en Cloudflare)
 
-- Contratos HTTP: health, esquema PLC, perfiles, crear/consultar/iniciar/detener sesión, historian y códigos de error.
-- WebSocket: handshake WSS, streaming, mandos autorizados, reconexión, pausa/reanudación y desconexión del navegador.
-- Persistencia: dormir/reiniciar Container, restaurar sesión según política acordada, conservar en D1 historian/perfiles/comandos y verificar no duplicar ni perder muestras.
-- Aislamiento: endpoint acueducto rechaza `plant_id` ajeno; credenciales de un usuario no leen/modifican otra sesión.
-- Seguridad: no auth → 401/403; CORS no usado como sustituto de autorización; secretos ausentes de artefactos/logs.
-- Comportamiento: ninguna API/deploy inicia por sí mismo la simulación; ninguna simulación lanza Fractal; ningún estudio de proyección cambia PLC; optimización permanece en 409/deshabilitada.
-- Rendimiento y coste: medir startup frío, duración y presupuesto por sesión; probar escalado/concurrencia y límite de conexiones.
-- E2E browser en desktop/móvil con backend de prueba real, no mocks.
+- Contratos HTTP: health, esquema PLC, perfiles propios, crear/consultar/iniciar/detener sesión, historian y errores.
+- WebSocket: handshake WSS con subprotocolo sin secreto, streaming, mandos, reconexión, pausa/reanudación, una conexión PLC y límite de mensajes.
+- Persistencia/retención: dormir/reiniciar Container, restaurar D1, comprobar checkpoints y cuotas, limpieza de sesiones/datos vencidos, consistencia historian y ausencia de muestras duplicadas/perdidas.
+- Aislamiento: planta ajena rechazada; capacidad anónima A no lee/modifica sesión/perfiles de B; API sin capacidad 401; manipulación de origin no sustituye capacidad.
+- Comportamiento: despliegue no inicia simulación; proyección no cambia PLC; decisiones/optimización bloqueadas.
+- Rendimiento/costo: medir cold start, sesiones simultáneas, CPU, cuotas, egreso, latencia y presupuesto; probar respuesta a límites y abuso.
+- E2E navegador desktop/móvil contra API/WSS y D1/Containers reales.
 
-**Salida:** piloto privado aprobado; publicar solo tras superar durabilidad, autorización y WSS.
+**Salida:** abrir la demo solo tras revisar costos, cuotas, políticas de retención, WSS, aislamiento y recuperación con recursos reales.
 
 ### Fase 5 — Añadir manufactura de plásticos y futuros gemelos
 
@@ -169,7 +170,7 @@ CORS no autentica ni autoriza. Antes de hacer accesibles los endpoints que crean
 - La simulación puede iniciar/parar sin arrancar/desplegar el servicio ni activar Fractal.
 - Fractal base/alternativo y optimización son operaciones y permisos distintos; proyección no emite mandos.
 - Los estados hidráulicos y datos que deban persistir sobreviven a los eventos de ciclo de vida definidos.
-- WSS y autorización funcionan desde el dominio publicado; denegación por defecto para acciones sin permiso.
+- WSS y capacidades anónimas limitadas funcionan desde el dominio publicado; denegación por defecto para sesiones/acciones no autorizadas, entendiendo que la demo no identifica usuarios.
 - Un hostname de API solo acepta los gemelos configurados para ese servicio.
 - Pages sin `api` no se presenta como simulador en vivo; la reproducción estática se identifica como tal.
 - No se cambia geometría 3D por desplegar los servicios.

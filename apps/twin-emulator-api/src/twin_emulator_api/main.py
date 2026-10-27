@@ -29,10 +29,11 @@ import asyncio
 import json
 import math
 import os
+import time
 from datetime import date
 from typing import Annotated, Any
 
-from fastapi import Body, FastAPI, HTTPException, Query, WebSocket, WebSocketDisconnect
+from fastapi import Body, FastAPI, HTTPException, Query, Request, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from twin_runtime import Library, Simulator, planning
 from twin_runtime.catalog import Catalog
@@ -296,13 +297,23 @@ def get_plant_plc_schema(plant_id: str) -> dict[str, Any]:
 
 
 @app.post("/api/plants/{plant_id}/sessions", status_code=201)
-def create_plant_session(plant_id: str, payload: Annotated[dict[str, Any] | None, Body()] = None) -> dict[str, Any]:
+def create_plant_session(
+    plant_id: str, request: Request, payload: Annotated[dict[str, Any] | None, Body()] = None
+) -> dict[str, Any]:
     model = _plant_model(plant_id)
+    demo_client_id = request.headers.get("x-twin-demo-id")
+    try:
+        demo_expires_at = float(request.headers["x-twin-demo-expires-at"]) if "x-twin-demo-expires-at" in request.headers else None
+    except ValueError as exc:
+        raise HTTPException(400, "demo expiry inválido") from exc
     profile_id = (payload or {}).get("profile_id")
-    profile = ProfileStore(plant_id).get(profile_id) if profile_id else None
+    profile = ProfileStore(plant_id, demo_client_id).get(profile_id) if profile_id else None
     if profile_id and profile is None:
         raise HTTPException(404, "perfil desconocido")
-    session = session_manager.create(plant_id, model, profile_id=profile_id, profile=profile)
+    session = session_manager.create(
+        plant_id, model, profile_id=profile_id, profile=profile,
+        demo_client_id=demo_client_id, demo_expires_at=demo_expires_at,
+    )
     return {"id": session.id, "plant_id": plant_id, "running": session.running, "profile_id": profile_id}
 
 
@@ -332,7 +343,9 @@ async def start_plant_session(plant_id: str, session_id: str) -> dict[str, Any]:
 
 
 @app.post("/api/plants/{plant_id}/sessions/{session_id}/schedule-profile")
-def schedule_saved_profile(plant_id: str, session_id: str, payload: Annotated[dict[str, Any], Body()]) -> dict[str, Any]:
+def schedule_saved_profile(
+    plant_id: str, session_id: str, request: Request, payload: Annotated[dict[str, Any], Body()]
+) -> dict[str, Any]:
     """El operador PLC programa un escenario persistido para la próxima hora, nunca Fractal."""
     session = session_manager.get(plant_id, session_id)
     if session is None:
@@ -340,7 +353,7 @@ def schedule_saved_profile(plant_id: str, session_id: str, payload: Annotated[di
     if not session.running:
         raise HTTPException(409, "el PLC debe estar en play para programar un perfil")
     profile_id = payload.get("profile_id")
-    profile = ProfileStore(plant_id).get(profile_id) if isinstance(profile_id, str) else None
+    profile = ProfileStore(plant_id, request.headers.get("x-twin-demo-id")).get(profile_id) if isinstance(profile_id, str) else None
     if profile is None:
         raise HTTPException(404, "escenario guardado desconocido")
     starts_at_hour = session_manager.schedule_profile(session, profile_id, profile)
@@ -416,7 +429,7 @@ def decide_fractal_study(plant_id: str, session_id: str, study_id: str, payload:
         if not isinstance(draft, dict):
             raise HTTPException(422, "el estudio no incluye borrador de perfil")
         try:
-            profile = ProfileStore(plant_id).create(draft)
+            profile = ProfileStore(plant_id, session.demo_client_id).create(draft)
         except ValueError as exc:
             raise HTTPException(422, str(exc)) from exc
         study["profile_id"] = profile["id"]
@@ -450,7 +463,7 @@ def activate_fractal_profile(plant_id: str, session_id: str, study_id: str) -> d
         raise HTTPException(404, "sesión o estudio desconocido")
     if study.get("decision") != "accepted" or not study.get("profile_id"):
         raise HTTPException(409, "el estudio debe estar aprobado antes de programar el perfil")
-    profile = ProfileStore(plant_id).get(study["profile_id"])
+    profile = ProfileStore(plant_id, session.demo_client_id).get(study["profile_id"])
     if profile is None:
         raise HTTPException(404, "perfil aprobado desconocido")
     starts_at_hour = session_manager.schedule_profile(session, profile["id"], profile)
@@ -531,23 +544,40 @@ def stop_plant_session(plant_id: str, session_id: str) -> dict[str, Any]:
 
 @app.websocket("/api/plants/{plant_id}/sessions/{session_id}")
 async def subscribe_plant_session(ws: WebSocket, plant_id: str, session_id: str) -> None:
-    await ws.accept()
+    subprotocol = "arvantti-demo" if "arvantti-demo" in ws.scope.get("subprotocols", []) else None
+    await ws.accept(subprotocol=subprotocol)
     session = session_manager.get(plant_id, session_id)
     role = ws.query_params.get("role", "viewer")
     if session is None or role not in {"plc", "viewer", "fractal"}:
         await ws.send_json({"error": "sesión o rol no válido"})
         await ws.close()
         return
+    if role == "plc" and getattr(session, "plc_operator_connected", False):
+        await ws.send_json({"error": "ya existe una conexión PLC para esta sesión"})
+        await ws.close(code=1008)
+        return
     if role == "plc":
+        session.plc_operator_connected = True
         session_manager.start(session)
     queue = session_manager.subscribe(session)
 
     async def receive() -> None:
+        window_started = time.monotonic()
+        message_count = 0
         while True:
             payload = await ws.receive_json()
             if role != "plc":
                 await ws.send_json({"error": "rol de solo lectura"})
                 continue
+            now = time.monotonic()
+            if now - window_started >= 1:
+                window_started = now
+                message_count = 0
+            message_count += 1
+            if message_count > 30:
+                await ws.send_json({"error": "límite de mandos PLC excedido"})
+                await ws.close(code=1008)
+                return
             try:
                 session_manager.command(session, payload)
             except (KeyError, ValueError) as exc:
@@ -556,12 +586,22 @@ async def subscribe_plant_session(ws: WebSocket, plant_id: str, session_id: str)
     receiver = asyncio.create_task(receive())
     try:
         while not receiver.done():
-            await ws.send_json(await queue.get())
+            if session.demo_expires_at is not None and time.time() >= session.demo_expires_at:
+                await ws.close(code=1008, reason="demo session expired")
+                break
+            try:
+                message = await asyncio.wait_for(queue.get(), timeout=1.0)
+            except TimeoutError:
+                continue
+            await ws.send_json(message)
     except WebSocketDisconnect:
         pass
     finally:
         receiver.cancel()
         session_manager.unsubscribe(session, queue)
+        if role == "plc":
+            session_manager.stop(session)
+            session.plc_operator_connected = False
 
 
 @app.get("/api/plants/{plant_id}/fractal/objectives")
@@ -641,34 +681,43 @@ def list_audit_events(plant_id: str, limit: int = Query(100, ge=1, le=1000)) -> 
 
 
 @app.get("/api/plants/{plant_id}/operation-profiles")
-def list_operation_profiles(plant_id: str) -> list[dict[str, Any]]:
+def list_operation_profiles(plant_id: str, request: Request) -> list[dict[str, Any]]:
     if plant_id not in _plant_folders():
         raise HTTPException(404, f"planta desconocida: {plant_id}")
-    return ProfileStore(plant_id).list()
+    return ProfileStore(plant_id, request.headers.get("x-twin-demo-id")).list()
 
 
 @app.post("/api/plants/{plant_id}/operation-profiles", status_code=201)
-def create_operation_profile(plant_id: str, profile: Annotated[dict[str, Any], Body()]) -> dict[str, Any]:
+def create_operation_profile(
+    plant_id: str, request: Request, profile: Annotated[dict[str, Any], Body()]
+) -> dict[str, Any]:
     if plant_id not in _plant_folders():
         raise HTTPException(404, f"planta desconocida: {plant_id}")
     try:
-        created = ProfileStore(plant_id).create(profile)
-        audit.record(plant_id, "profile.created", details={"profile_id": created["id"]})
+        created = ProfileStore(plant_id, request.headers.get("x-twin-demo-id")).create(profile)
+        audit.record(
+            plant_id,
+            "profile.created",
+            actor_id=request.headers.get("x-twin-demo-id") or "operator",
+            details={"profile_id": created["id"]},
+        )
         return created
     except ValueError as exc:
         raise HTTPException(422, str(exc)) from exc
 
 
 @app.get("/api/plants/{plant_id}/operation-profiles/{profile_id}")
-def get_operation_profile(plant_id: str, profile_id: str) -> dict[str, Any]:
-    profile = ProfileStore(plant_id).get(profile_id)
+def get_operation_profile(plant_id: str, profile_id: str, request: Request) -> dict[str, Any]:
+    profile = ProfileStore(plant_id, request.headers.get("x-twin-demo-id")).get(profile_id)
     if profile is None:
         raise HTTPException(404, f"perfil desconocido: {profile_id}")
     return profile
 
 
 @app.put("/api/plants/{plant_id}/operation-profiles/{profile_id}")
-def update_operation_profile(plant_id: str, profile_id: str, profile: Annotated[dict[str, Any], Body()]) -> dict[str, Any]:
+def update_operation_profile(
+    plant_id: str, profile_id: str, request: Request, profile: Annotated[dict[str, Any], Body()]
+) -> dict[str, Any]:
     if plant_id not in _plant_folders():
         raise HTTPException(404, f"planta desconocida: {plant_id}")
     if profile_id.startswith("builtin-"):
@@ -676,24 +725,34 @@ def update_operation_profile(plant_id: str, profile_id: str, profile: Annotated[
     if any(s.plant_id == plant_id and s.profile_id == profile_id and s.running for s in session_manager.sessions.values()):
         raise HTTPException(409, "no se puede editar el perfil activo mientras el PLC esté en play")
     try:
-        updated = ProfileStore(plant_id).update(profile_id, profile)
+        updated = ProfileStore(plant_id, request.headers.get("x-twin-demo-id")).update(profile_id, profile)
     except ValueError as exc:
         raise HTTPException(422, str(exc)) from exc
     if updated is None:
         raise HTTPException(404, f"perfil desconocido: {profile_id}")
-    audit.record(plant_id, "profile.updated", details={"profile_id": profile_id})
+    audit.record(
+        plant_id,
+        "profile.updated",
+        actor_id=request.headers.get("x-twin-demo-id") or "operator",
+        details={"profile_id": profile_id},
+    )
     return updated
 
 
 @app.delete("/api/plants/{plant_id}/operation-profiles/{profile_id}", status_code=204)
-def delete_operation_profile(plant_id: str, profile_id: str) -> None:
+def delete_operation_profile(plant_id: str, profile_id: str, request: Request) -> None:
     if profile_id.startswith("builtin-"):
         raise HTTPException(409, "las plantillas del modelo no se eliminan")
     if any(s.plant_id == plant_id and s.profile_id == profile_id and s.running for s in session_manager.sessions.values()):
         raise HTTPException(409, "no se puede eliminar el perfil activo mientras el PLC esté en play")
-    if not ProfileStore(plant_id).delete(profile_id):
+    if not ProfileStore(plant_id, request.headers.get("x-twin-demo-id")).delete(profile_id):
         raise HTTPException(404, f"perfil desconocido: {profile_id}")
-    audit.record(plant_id, "profile.deleted", details={"profile_id": profile_id})
+    audit.record(
+        plant_id,
+        "profile.deleted",
+        actor_id=request.headers.get("x-twin-demo-id") or "operator",
+        details={"profile_id": profile_id},
+    )
 
 
 @app.post("/api/plants/{plant_id}/products/check")

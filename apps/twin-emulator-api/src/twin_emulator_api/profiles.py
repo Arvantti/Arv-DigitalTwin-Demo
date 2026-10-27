@@ -217,16 +217,20 @@ def current_prs_inlet_offset_mca(plant: Any) -> float:
 class ProfileStore:
     """Almacenamiento local persistente por planta para el primer despliegue."""
 
-    def __init__(self, plant_id: str) -> None:
+    def __init__(self, plant_id: str, owner_id: str | None = None) -> None:
         self.plant_id = plant_id
+        self.owner_id = owner_id
         self.path = _data_root() / "plc-profiles.sqlite3"
         with self._connect() as conn:
             conn.execute(
                 """CREATE TABLE IF NOT EXISTS operation_profiles (
                 id TEXT PRIMARY KEY, plant_id TEXT NOT NULL, name TEXT NOT NULL,
                 description TEXT NOT NULL, data TEXT NOT NULL, created_at TEXT NOT NULL,
-                updated_at TEXT NOT NULL)"""
+                updated_at TEXT NOT NULL, owner_id TEXT)"""
             )
+            columns = {row[1] for row in conn.execute("PRAGMA table_info(operation_profiles)").fetchall()}
+            if "owner_id" not in columns:
+                conn.execute("ALTER TABLE operation_profiles ADD COLUMN owner_id TEXT")
         self._seed_model_profiles()
 
     def _seed_model_profiles(self) -> None:
@@ -252,7 +256,8 @@ class ProfileStore:
             profile_id = f"builtin-{self.plant_id}-{template_id}"
             with self._connect() as conn:
                 conn.execute(
-                    "INSERT OR IGNORE INTO operation_profiles VALUES (?, ?, ?, ?, ?, ?, ?)",
+                    "INSERT OR IGNORE INTO operation_profiles "
+                    "(id, plant_id, name, description, data, created_at, updated_at, owner_id) VALUES (?, ?, ?, ?, ?, ?, ?, NULL)",
                     (profile_id, self.plant_id, profile["name"], profile["description"], json.dumps(profile), now, now),
                 )
 
@@ -266,19 +271,26 @@ class ProfileStore:
 
     def list(self) -> list[dict[str, Any]]:
         with self._connect() as conn:
-            rows = conn.execute(
-                "SELECT id, plant_id, name, data, created_at, updated_at "
-                "FROM operation_profiles WHERE plant_id = ? ORDER BY updated_at DESC",
-                (self.plant_id,),
-            ).fetchall()
+            if self.owner_id is None:
+                rows = conn.execute(
+                    "SELECT id, plant_id, name, data, created_at, updated_at "
+                    "FROM operation_profiles WHERE plant_id = ? ORDER BY updated_at DESC",
+                    (self.plant_id,),
+                ).fetchall()
+            else:
+                rows = conn.execute(
+                    "SELECT id, plant_id, name, data, created_at, updated_at "
+                    "FROM operation_profiles WHERE plant_id = ? AND (owner_id = ? OR id LIKE 'builtin-%') ORDER BY updated_at DESC",
+                    (self.plant_id, self.owner_id),
+                ).fetchall()
         return [self._row(row) for row in rows]
 
     def get(self, profile_id: str) -> dict[str, Any] | None:
         with self._connect() as conn:
-            row = conn.execute(
-                "SELECT id, plant_id, name, data, created_at, updated_at FROM operation_profiles WHERE plant_id = ? AND id = ?",
-                (self.plant_id, profile_id),
-            ).fetchone()
+            owner_clause = " AND (owner_id = ? OR id LIKE 'builtin-%')" if self.owner_id is not None else ""
+            params = (self.plant_id, profile_id, self.owner_id) if self.owner_id is not None else (self.plant_id, profile_id)
+            query = "SELECT id, plant_id, name, data, created_at, updated_at FROM operation_profiles WHERE plant_id = ? AND id = ?"
+            row = conn.execute(query + owner_clause, params).fetchone()
         return self._row(row) if row else None
 
     def create(self, payload: Mapping[str, Any]) -> dict[str, Any]:
@@ -286,8 +298,9 @@ class ProfileStore:
         profile_id, now = str(uuid4()), _now()
         with self._connect() as conn:
             conn.execute(
-                "INSERT INTO operation_profiles VALUES (?, ?, ?, ?, ?, ?, ?)",
-                (profile_id, self.plant_id, profile["name"], profile["description"], json.dumps(profile), now, now),
+                "INSERT INTO operation_profiles "
+                "(id, plant_id, name, description, data, created_at, updated_at, owner_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                (profile_id, self.plant_id, profile["name"], profile["description"], json.dumps(profile), now, now, self.owner_id),
             )
         return self.get(profile_id)  # type: ignore[return-value]
 
@@ -296,12 +309,16 @@ class ProfileStore:
         now = _now()
         with self._connect() as conn:
             result = conn.execute(
-                "UPDATE operation_profiles SET name = ?, description = ?, data = ?, updated_at = ? WHERE plant_id = ? AND id = ?",
-                (profile["name"], profile["description"], json.dumps(profile), now, self.plant_id, profile_id),
+                "UPDATE operation_profiles SET name = ?, description = ?, data = ?, updated_at = ? "
+                "WHERE plant_id = ? AND id = ? AND owner_id IS ?",
+                (profile["name"], profile["description"], json.dumps(profile), now, self.plant_id, profile_id, self.owner_id),
             )
         return self.get(profile_id) if result.rowcount else None
 
     def delete(self, profile_id: str) -> bool:
         with self._connect() as conn:
-            result = conn.execute("DELETE FROM operation_profiles WHERE plant_id = ? AND id = ?", (self.plant_id, profile_id))
+            result = conn.execute(
+                "DELETE FROM operation_profiles WHERE plant_id = ? AND id = ? AND owner_id IS ?",
+                (self.plant_id, profile_id, self.owner_id),
+            )
         return bool(result.rowcount)

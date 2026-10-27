@@ -30,6 +30,7 @@ import { bootDone, bootError, bootStage } from "./boot.ts";
 import { type CatalogDoc, type ProductsApi, buildProducts } from "./products.ts";
 import { buildSchedule } from "./schedule.ts";
 import "./styles.css";
+import { demoFetch, demoWebSocket } from "./demo-client";
 
 // Evita que el HTML sin estilos aparezca mientras Vite descarga el módulo CSS.
 document.body.classList.remove("loading");
@@ -119,10 +120,9 @@ interface Spec {
 const specs: Record<string, Spec> = Object.fromEntries(Object.entries(rawSpecs).map(([k, v]) => [k, yaml.load(v) as Spec]));
 const url = new URLSearchParams(location.search);
 // En una galería estática, el servicio de Planta Real puede vivir en un origen HTTPS/WSS aparte.
-const apiOrigin = (url.get("api") ?? location.origin).replace(/\/$/, "");
+const apiOrigin = (url.get("api") ?? import.meta.env.VITE_EMULATOR_API_URL ?? location.origin).replace(/\/$/, "");
 const apiUrl = (path: string) => `${apiOrigin}${path}`;
-const apiFetch = (path: string, init: RequestInit = {}) => fetch(apiUrl(path), { ...init, credentials: "include" });
-const websocketUrl = (path: string) => `${apiOrigin.replace(/^http/, "ws")}${path}`;
+const apiFetch = (path: string, init: RequestInit = {}) => demoFetch(apiOrigin, path, init);
 let sessionId = url.get("session");
 let forecastStudyId = url.get("study");
 let latestLiveMessage: SimMessage | null = null;
@@ -1059,7 +1059,7 @@ function applyMessage(msg: SimMessage, label: string): void {
   $("clock").textContent = `${label} ${hh}:${mm}:${ss} · ×${msg.speed ?? speedFromSlider()}`;
 }
 
-function connect(): void {
+async function connect(): Promise<void> {
   // La escena no crea runtimes propios: el PLC es quien inicia la operación y entrega su session_id.
   if (!sessionId) {
     $("view-plc").click(); // El PLC crea la sesión sin sacar al operador del 3D.
@@ -1070,7 +1070,7 @@ function connect(): void {
   const scenario = $<HTMLSelectElement>("scenario").value;
   if (scenario) q.set("scenario", scenario);
   const endpoint = sessionId ? `/api/plants/${doc.plant.id}/sessions/${sessionId}?role=viewer` : `/api/plants/${doc.plant.id}/simulate?${q}`;
-  const ws = new WebSocket(websocketUrl(endpoint));
+  const ws = await demoWebSocket(apiOrigin, endpoint);
   socket = ws;
   equipmentHistory.clear();
   let received = 0;

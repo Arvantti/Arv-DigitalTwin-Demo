@@ -253,6 +253,27 @@ def test_plc_and_3d_read_the_same_sensor_sample_at_each_simulated_instant() -> N
     assert session.snapshot() is not next_snapshot
 
 
+def test_session_websocket_negotiates_a_non_secret_demo_subprotocol() -> None:
+    plant = "water-network-scale-v1"
+    session_id = client.post(f"/api/plants/{plant}/sessions", json={}).json()["id"]
+    with client.websocket_connect(
+        f"/api/plants/{plant}/sessions/{session_id}?role=viewer", subprotocols=["arvantti-demo"]
+    ) as websocket:
+        assert websocket.accepted_subprotocol == "arvantti-demo"
+
+
+def test_plc_session_stops_when_operator_disconnects() -> None:
+    plant = "water-network-scale-v1"
+    session_id = client.post(f"/api/plants/{plant}/sessions", json={}).json()["id"]
+    session = session_manager.get(plant, session_id)
+    assert session is not None
+    with client.websocket_connect(f"/api/plants/{plant}/sessions/{session_id}?role=plc") as websocket:
+        websocket.receive_json()
+        assert session.running
+    assert not session.running
+    assert not session.plc_operator_connected
+
+
 def test_shared_session_can_be_created_and_inspected() -> None:
     created = client.post("/api/plants/water-network-scale-v1/sessions", json={})
     assert created.status_code == 201

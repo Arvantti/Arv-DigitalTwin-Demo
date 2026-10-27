@@ -15,11 +15,12 @@ jobs:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
       D1_BRIDGE_TOKEN: ${{ secrets.D1_BRIDGE_TOKEN }}
+      DEMO_TOKEN_SECRET: ${{ secrets.DEMO_TOKEN_SECRET }}
       D1_GATEWAY_ORIGIN: ${{ vars.D1_GATEWAY_ORIGIN }}
-      ACCESS_TEAM_DOMAIN: ${{ vars.ACCESS_TEAM_DOMAIN }}
-      ACCESS_AUD: ${{ vars.ACCESS_AUD }}
       CORS_ORIGINS: ${{ vars.CORS_ORIGINS }}
       EMULATOR_API_DOMAIN: ${{ vars.EMULATOR_API_DOMAIN }}
+      ACCESS_TEAM_DOMAIN: ${{ vars.ACCESS_TEAM_DOMAIN }}
+      ACCESS_AUD: ${{ vars.ACCESS_AUD }}
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -38,18 +39,22 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for name in CLOUDFLARE_API_TOKEN CLOUDFLARE_ACCOUNT_ID D1_BRIDGE_TOKEN D1_GATEWAY_ORIGIN ACCESS_TEAM_DOMAIN ACCESS_AUD CORS_ORIGINS EMULATOR_API_DOMAIN; do
+          for name in CLOUDFLARE_API_TOKEN CLOUDFLARE_ACCOUNT_ID D1_BRIDGE_TOKEN DEMO_TOKEN_SECRET D1_GATEWAY_ORIGIN CORS_ORIGINS; do
             if [[ -z "${!name}" ]]; then echo "Missing required GitHub secret/variable: $name" >&2; exit 1; fi
           done
           if grep -q '00000000-0000-0000-0000-000000000000' wrangler.acueducto.jsonc; then
             echo 'Set the real D1 database_id in wrangler.acueducto.jsonc after provisioning D1.' >&2
             exit 1
           fi
-          for name in D1_GATEWAY_ORIGIN ACCESS_TEAM_DOMAIN ACCESS_AUD CORS_ORIGINS EMULATOR_API_DOMAIN; do
+          for name in D1_GATEWAY_ORIGIN CORS_ORIGINS; do
             if [[ "${!name}" == *REPLACE* ]]; then echo "Replace placeholder GitHub variable: $name" >&2; exit 1; fi
           done
           if [[ "$D1_GATEWAY_ORIGIN" != https://*.workers.dev ]]; then
             echo 'D1_GATEWAY_ORIGIN must be the Worker HTTPS workers.dev origin.' >&2
+            exit 1
+          fi
+          if [[ -n "$ACCESS_TEAM_DOMAIN" && -z "$ACCESS_AUD" || -z "$ACCESS_TEAM_DOMAIN" && -n "$ACCESS_AUD" ]]; then
+            echo 'Set both ACCESS_TEAM_DOMAIN and ACCESS_AUD to enable the optional Access-protected admin path.' >&2
             exit 1
           fi
       - name: Install and test
@@ -58,18 +63,20 @@ jobs:
           pnpm --filter @twin/cloudflare-emulator-worker typecheck
           pnpm --filter @twin/cloudflare-emulator-worker test
           uv sync --frozen
-          uv run ruff check apps/twin-emulator-api/src/twin_emulator_api apps/twin-emulator-api/tests/test_cloudflare_storage.py
-          uv run pytest apps/twin-emulator-api/tests/test_cloudflare_storage.py
+          uv run ruff check apps/twin-emulator-api/src/twin_emulator_api apps/twin-emulator-api/tests apps/fractal-engineering-api/src apps/fractal-engineering-api/tests
+          uv run pytest apps/twin-emulator-api/tests apps/fractal-engineering-api/tests
       - name: Apply D1 migrations
         run: pnpm --filter @twin/cloudflare-emulator-worker exec wrangler d1 migrations apply acueducto-emulator --remote --config ../../wrangler.acueducto.jsonc
-      - name: Set D1 bridge secret
-        run: printf '%s' "$D1_BRIDGE_TOKEN" | pnpm --filter @twin/cloudflare-emulator-worker exec wrangler secret put D1_BRIDGE_TOKEN --config ../../wrangler.acueducto.jsonc
+      - name: Set Worker secrets
+        run: |
+          printf '%s' "$D1_BRIDGE_TOKEN" | pnpm --filter @twin/cloudflare-emulator-worker exec wrangler secret put D1_BRIDGE_TOKEN --config ../../wrangler.acueducto.jsonc
+          printf '%s' "$DEMO_TOKEN_SECRET" | pnpm --filter @twin/cloudflare-emulator-worker exec wrangler secret put DEMO_TOKEN_SECRET --config ../../wrangler.acueducto.jsonc
       - name: Deploy Worker and Container
-        run: >-
-          pnpm --filter @twin/cloudflare-emulator-worker exec wrangler deploy
-          --config ../../wrangler.acueducto.jsonc
-          --domain "$EMULATOR_API_DOMAIN"
-          --var "D1_GATEWAY_ORIGIN:$D1_GATEWAY_ORIGIN"
-          --var "ACCESS_TEAM_DOMAIN:$ACCESS_TEAM_DOMAIN"
-          --var "ACCESS_AUD:$ACCESS_AUD"
-          --var "CORS_ORIGINS:$CORS_ORIGINS"
+        shell: bash
+        run: |
+          args=(--config ../../wrangler.acueducto.jsonc --var "D1_GATEWAY_ORIGIN:$D1_GATEWAY_ORIGIN" --var "CORS_ORIGINS:$CORS_ORIGINS")
+          if [[ -n "$ACCESS_TEAM_DOMAIN" ]]; then
+            args+=(--var "ACCESS_TEAM_DOMAIN:$ACCESS_TEAM_DOMAIN" --var "ACCESS_AUD:$ACCESS_AUD")
+          fi
+          if [[ -n "$EMULATOR_API_DOMAIN" ]]; then args+=(--domain "$EMULATOR_API_DOMAIN"); fi
+          pnpm --filter @twin/cloudflare-emulator-worker exec wrangler deploy "${args[@]}"

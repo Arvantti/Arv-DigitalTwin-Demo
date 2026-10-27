@@ -9,10 +9,11 @@ from pathlib import Path
 from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlparse
-from urllib.request import Request, urlopen
+from urllib.request import Request as UrlRequest
+from urllib.request import urlopen
 from uuid import uuid4
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 ROOT = Path(__file__).resolve().parents[4]
@@ -55,16 +56,22 @@ def plc_gateway(payload: dict[str, Any]) -> str:
     raise HTTPException(503, "Configure FRACTAL_PLC_API_URL para leer el gateway PLC de sesión")
 
 
-def gateway_json(url: str) -> dict[str, Any]:
+def gateway_json(url: str, demo_token: str | None = None) -> dict[str, Any]:
+    headers = {"authorization": f"Bearer {demo_token}"} if demo_token else {}
+    request = UrlRequest(url, headers=headers)
     try:
-        with urlopen(url, timeout=10) as response:  # noqa: S310 — host configurado por despliegue
+        with urlopen(request, timeout=10) as response:  # noqa: S310 — host configurado por despliegue
             return json.load(response)
     except (HTTPError, URLError, TimeoutError, ValueError) as exc:
         raise HTTPException(502, f"No se pudo leer el gateway PLC: {type(exc).__name__}") from exc
 
 
+def _gateway_read(url: str, demo_token: str | None) -> dict[str, Any]:
+    return gateway_json(url, demo_token) if demo_token else gateway_json(url)
+
+
 @app.post("/studies/horizon/from-plc")
-def horizon_from_plc(payload: dict[str, Any]) -> dict[str, Any]:
+def horizon_from_plc(payload: dict[str, Any], request: Request) -> dict[str, Any]:
     """Lee estado y perfil persistido de la misma sesión; ignora copias de navegador."""
     session_id = payload.get("session_id")
     plant_id = payload.get("plant_id")
@@ -73,14 +80,15 @@ def horizon_from_plc(payload: dict[str, Any]) -> dict[str, Any]:
     if "/" in session_id or "/" in plant_id or ".." in session_id or ".." in plant_id:
         raise HTTPException(422, "identificador de sesión/planta inválido")
     origin = plc_gateway(payload)
+    demo_token = request.headers.get("x-twin-demo-token")
     base = f"{origin}/api/plants/{plant_id}"
-    session = gateway_json(f"{base}/sessions/{session_id}")
+    session = _gateway_read(f"{base}/sessions/{session_id}", demo_token)
     if session.get("id") != session_id or session.get("plant_id") != plant_id or not session.get("profile_id"):
         raise HTTPException(409, "la sesión PLC debe tener un perfil activo guardado")
     if not session.get("running") or session.get("paused"):
         raise HTTPException(409, "el PLC debe estar en play para solicitar Fractal")
-    profile = gateway_json(f"{base}/operation-profiles/{session['profile_id']}")
-    tags = gateway_json(f"{base}/sessions/{session_id}/plc-tags").get("plc_tags")
+    profile = _gateway_read(f"{base}/operation-profiles/{session['profile_id']}", demo_token)
+    tags = _gateway_read(f"{base}/sessions/{session_id}/plc-tags", demo_token).get("plc_tags")
     if not isinstance(tags, dict) or tags.get("PLC.Profile.ActiveId") != session["profile_id"]:
         raise HTTPException(409, "el perfil y los tags PLC no corresponden a la misma sesión")
     # La red cuasiestacionaria no representa el arranque: con bomba parada la
@@ -100,23 +108,25 @@ def horizon_from_plc(payload: dict[str, Any]) -> dict[str, Any]:
             "study_type": study_type,
         },
         publish=True,
+        **({"plc_token": demo_token} if demo_token else {}),
     )
 
 
 @app.post("/studies/profile-preview/from-plc")
-def profile_preview_from_plc(payload: dict[str, Any]) -> dict[str, Any]:
+def profile_preview_from_plc(payload: dict[str, Any], request: Request) -> dict[str, Any]:
     """Vista de presión de un perfil guardado; lectura PLC, sin publicar estudio ni mandar controles."""
     plant_id, session_id, profile_id = (payload.get(key) for key in ("plant_id", "session_id", "profile_id"))
     if not all(isinstance(value, str) and value and "/" not in value and ".." not in value for value in (plant_id, session_id, profile_id)):
         raise HTTPException(422, "planta, sesión y perfil guardado son obligatorios")
+    demo_token = request.headers.get("x-twin-demo-token")
     base = f"{plc_gateway(payload)}/api/plants/{plant_id}"
-    session = gateway_json(f"{base}/sessions/{session_id}")
+    session = _gateway_read(f"{base}/sessions/{session_id}", demo_token)
     if session.get("id") != session_id or session.get("plant_id") != plant_id or not session.get("running") or session.get("paused"):
         raise HTTPException(409, "el PLC debe estar en play para proyectar la presión")
-    profile = gateway_json(f"{base}/operation-profiles/{profile_id}")
+    profile = _gateway_read(f"{base}/operation-profiles/{profile_id}", demo_token)
     if profile.get("id") != profile_id:
         raise HTTPException(409, "perfil no corresponde al guardado en PLC")
-    tags = gateway_json(f"{base}/sessions/{session_id}/plc-tags").get("plc_tags")
+    tags = _gateway_read(f"{base}/sessions/{session_id}/plc-tags", demo_token).get("plc_tags")
     if (
         not isinstance(tags, dict)
         or int(tags.get("PLC.Pump.RunningCount") or 0) == 0
@@ -143,7 +153,7 @@ def horizon_study(payload: dict[str, Any]) -> dict[str, Any]:
     return _horizon_study(payload, publish=False)
 
 
-def _horizon_study(payload: dict[str, Any], *, publish: bool) -> dict[str, Any]:
+def _horizon_study(payload: dict[str, Any], *, publish: bool, plc_token: str | None = None) -> dict[str, Any]:
     """Proyección futura: solo la ruta from-plc publica en la sesión verificada."""
     session_id, tags, profile, objective_id = (
         payload.get("session_id"),
@@ -208,10 +218,10 @@ def _horizon_study(payload: dict[str, Any], *, publish: bool) -> dict[str, Any]:
     plant_id = payload.get("plant_id")
     if publish and isinstance(plant_id, str):
         emulator_api = plc_gateway(payload)
-        request = Request(
+        request = UrlRequest(
             f"{emulator_api}/api/plants/{plant_id}/sessions/{session_id}/fractal/studies",
             data=json.dumps(result).encode(),
-            headers={"content-type": "application/json"},
+            headers={"content-type": "application/json", **({"authorization": f"Bearer {plc_token}"} if plc_token else {})},
             method="POST",
         )
         with urlopen(request, timeout=5) as response:  # noqa: S310
@@ -233,7 +243,7 @@ def instant_study_publish(payload: dict[str, Any]) -> dict[str, Any]:
     with urlopen(f"{emulator_api}/api/plants/{plant_id}/sessions/{session_id}/plc-tags", timeout=5) as response:  # noqa: S310
         tags = json.load(response)["plc_tags"]
     result = recommend_instant(tags, objective_id)
-    request = Request(
+    request = UrlRequest(
         f"{emulator_api}/api/plants/{plant_id}/sessions/{session_id}/fractal/recommendations",
         data=json.dumps({**result, "source": "fractal-engineering-api"}).encode(),
         headers={"content-type": "application/json"},

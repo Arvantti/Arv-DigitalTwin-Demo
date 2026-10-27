@@ -1,40 +1,47 @@
-# Worker/Container del emulador hidráulico
+# Gateway público del emulador hidráulico
 
-Este paquete despliega el gateway del acueducto. El Worker valida Cloudflare Access, restringe las plantas permitidas, termina HTTP/WebSocket y expone al Container un bridge D1 autenticado. El Container Python usa SQLite solo fuera de Cloudflare; en el despliegue, perfiles, historian, estudios, comandos, bitácora de auditoría y checkpoints se guardan en D1. No publicar la HMI apuntando a este servicio hasta completar los secretos y probar la política Access.
+Este Worker expone la demo de `water-network-scale-v1` a la galería pública sin pedir cuenta de usuario. Emite una capacidad anónima firmada y temporal, limita el tráfico y asocia cada sesión de simulación a esa capacidad en D1. Esto **no identifica visitantes** ni impide toda automatización: las cuotas reducen abuso, pero no sustituyen autenticación humana. El servicio es un modelo virtual, sin conexión a un PLC físico.
 
-## Recursos y requisitos
+## Arquitectura y límites
 
-- Cuenta Cloudflare con Workers Containers, D1 y Durable Objects habilitados; costes/cuotas deben revisarse en esa cuenta antes de publicar.
-- Docker CLI y daemon local (para `wrangler deploy`, también en dry-run normal), o un runner CI con Docker.
-- Un host HTTPS para el API, otro host de galería y un Cloudflare Access self-hosted application para el API. No se presupone que existan esos dominios.
-- Acceso a la cuenta para crear D1, definir dominios/Access y cargar secretos. CORS no autentica.
+- Pages aloja la galería; este Worker es el único endpoint público de la API. No publicar URLs de Containers.
+- El gateway permite solo `water-network-scale-v1`; D1 conserva perfiles, historian, estudios, auditoría y checkpoints. SQLite es únicamente para desarrollo local.
+- Las rutas de API requieren una capacidad Bearer anónima emitida por `POST /api/demo/session`; `/api/health` es público y limitado. WebSocket usa dos subprotocolos: el token viaja al Worker y el Container recibe únicamente `arvantti-demo`.
+- Las clases de Container usan la API nativa de Containers dentro de Durable Objects, con `scheduling_policy: durable_object`, imagen fijada por digest y `standard-1`. El acceso a Internet está deshabilitado: solo se intercepta HTTPS al Worker para el bridge D1; el proxy rechaza otros hosts y rutas. No cambiar la política de scheduling ni exponer el Container directamente.
+- La capacidad vence a las 12 h. La sesión vence a las 2 h, cada visitante puede crear 2 y el gateway limita a 10 sesiones retenidas simultáneamente. Se eliminan datos asociados a visitantes vencidos al emitir nuevas capacidades.
+- Límite Worker: 10 emisiones/min/IP, 120 llamadas API/min/IP y por capacidad, y 10 solicitudes Fractal/min/IP y por capacidad. Mandos WebSocket PLC: hasta 30 mensajes/s, una conexión PLC operativa por sesión. La API detiene la simulación PLC al cerrar la conexión en pruebas locales; verifica ese comportamiento a través del relay WSS antes de darlo por garantizado en Cloudflare.
+- Las acciones de decisión/activación Fractal y los estudios de optimización no están disponibles; optimización permanece deshabilitada. Perfiles editables se aíslan por capacidad anónima.
+- `/_internal/d1` solo acepta el secreto de bridge. `/_admin/*` deniega por defecto; puede protegerse además con Cloudflare Access. CORS solo controla lectura desde navegadores, **no es autenticación**.
 
-## Primer despliegue (manual y aún privado)
+Los límites son defensas de abuso, no una garantía de costo máximo ni de continuidad. Vigilar consumo/cuotas y ajustar límites en Cloudflare después de medir carga real. La demo abierta permite a cualquier visitante anónimo que llegue al gateway crear una sesión hasta alcanzar las cuotas globales; si el presupuesto no admite ese riesgo, no publicar el endpoint todavía o añadir Turnstile/WAF.
+
+## Recursos Cloudflare requeridos
+
+- Workers Paid/Containers, Durable Objects y D1 habilitados; revisar costes, límites y compatibilidad en la cuenta antes de publicar.
+- Cuenta/subdominio `workers.dev`; opcionalmente un hostname propio HTTPS para el gateway. No se asume que exista ningún dominio o recurso.
+- GitHub Actions con un API token de privilegios mínimos, `CLOUDFLARE_ACCOUNT_ID` y los secretos/variables descritos abajo.
+- Docker Buildx en Actions. El Worker no expone el Container directamente.
+
+## Provisionamiento y despliegue
 
 Desde la raíz del repo:
 
-1. Crear D1 con Wrangler: `pnpm --filter @twin/cloudflare-emulator-worker exec wrangler d1 create acueducto-emulator --config ../../wrangler.acueducto.jsonc`. Copiar el `database_id` que informa y sustituir el placeholder en `wrangler.acueducto.jsonc`.
-2. En el panel Cloudflare, obtener el subdominio Workers de la cuenta y formar `https://acueducto-emulator-api.<subdominio>.workers.dev`. Crear el Access application para el host custom del API, con política de usuarios autorizados; guardar el team domain y el Audience (AUD) como variables de GitHub Actions (o en el archivo Wrangler para despliegue local). El dominio debe pertenecer a una zona activa de la cuenta.
-3. Configurar `D1_GATEWAY_ORIGIN` con esa URL `workers.dev` y `CORS_ORIGINS` con el origen exacto de la galería. **El bridge Container→D1 usa `workers.dev`**, que no debe pasar por Access; las rutas públicas validan JWT Access en el Worker aun si alguien usa `workers.dev` directamente.
-4. La galería envía cookies de credenciales; el enlace «INICIAR SESIÓN API» abre `/api/health` para completar el login antes de volver a la HMI. El workflow asocia el Worker al host configurado en `EMULATOR_API_DOMAIN`.
-5. Cargar secreto aleatorio sin imprimirlo en consola ni guardarlo en el repo: `openssl rand -hex 32 | pnpm --filter @twin/cloudflare-emulator-worker exec wrangler secret put D1_BRIDGE_TOKEN --config ../../wrangler.acueducto.jsonc`.
-6. Aplicar el esquema y desplegar desde la raíz: `pnpm --filter @twin/cloudflare-emulator-worker exec wrangler d1 migrations apply acueducto-emulator --remote --config ../../wrangler.acueducto.jsonc`, luego `pnpm --filter @twin/cloudflare-emulator-worker exec wrangler deploy --config ../../wrangler.acueducto.jsonc --domain <host-custom-del-api>`.
-7. Verificar `/_worker/health`, login Access, preflight con credenciales desde el origen configurado, `/api/health`, perfil, sesión WebSocket, persistencia tras reinicio y restauración de checkpoint. La URL pública para la HMI es `?api=https://<custom-host-api>`.
+1. Provisionar D1: `pnpm --filter @twin/cloudflare-emulator-worker exec wrangler d1 create acueducto-emulator --config ../../wrangler.acueducto.jsonc`. Configurar localmente el identificador devuelto en `wrangler.acueducto.jsonc`; no copiarlo a documentación, capturas ni notas.
+2. Configurar GitHub Actions secrets: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `D1_BRIDGE_TOKEN` (aleatorio, 32 bytes o más) y `DEMO_TOKEN_SECRET` (aleatorio, al menos 32 caracteres). No pegarlos en el repositorio, navegador ni chat.
+3. Configurar GitHub Actions variables: `D1_GATEWAY_ORIGIN` (origen HTTPS `workers.dev` del mismo Worker), `CORS_ORIGINS` (orígenes exactos de Pages, actualmente `https://digitaltwin.arvantti.online,https://digitaltwin-arvantti.pages.dev`) y, opcionalmente, `EMULATOR_API_DOMAIN` (hostname propio HTTPS del Worker). Mantener `D1_GATEWAY_ORIGIN` en `workers.dev` porque lo usa el bridge interno Container→Worker→D1. Para Access administrativo opcional, configurar juntas `ACCESS_TEAM_DOMAIN` y `ACCESS_AUD` y crear una aplicación Access limitada a `/_admin/*`; no proteger el hostname completo que usa la galería.
+4. Tras el primer despliegue, configurar también la variable Pages `EMULATOR_API_URL` con el endpoint HTTPS público del Worker. El workflow Pages la compila como `VITE_EMULATOR_API_URL`; el parámetro `?api=` puede sustituirlo para pruebas. Sin esta variable, la HMI buscará la API en el origen de Pages.
+5. Ejecutar manualmente `Actions → Deploy acueducto emulator → Run workflow` en `main`. El workflow valida placeholders, corre pruebas, aplica migraciones D1, carga secretos y despliega Worker/Containers. Para Pages, `Actions → Deploy` publica la galería con el endpoint configurado.
+6. Comprobar `/_worker/health`, `POST /api/demo/session` desde el origen Pages, `/api/health`, crear sesión, conexión WSS PLC y espectador 3D, aislamiento con otra capacidad, perfiles, proyección Fractal de solo lectura y persistencia tras dormir/reiniciar Container. Probar explícitamente cuotas, recuperación y eliminación de sesiones vencidas. No aceptar despliegue como validado hasta hacer estas pruebas con D1/Containers remotos.
 
-El archivo `wrangler.acueducto.jsonc` tiene valores placeholder intencionales; no desplegarlo tal cual. La migración D1 es versionada en `migrations/`. El gateway bridge interno solo acepta el Bearer secreto y no registra sentencias ni valores. La auditoría registra acciones con `actor_id=operator` (aún no vincula cada evento con una identidad Access individual) y se consulta mediante `GET /api/plants/{plant_id}/audit-events?limit=100`. El Worker separa el tráfico de cada servicio y permite solo `water-network-scale-v1`.
+El workflow se ejecuta solo a demanda, no con cada push. Los nombres/URLs placeholder son intencionales; el despliegue falla antes de publicar si `database_id` o los secretos no están configurados. Ninguna URL de Container ni credencial se debe incluir en JavaScript.
 
-## Despliegue manual desde GitHub Actions
+## Desarrollo local y validaciones
 
-El workflow `.github/workflows/deploy-acueducto-emulator.yml` solo se ejecuta a demanda en `main` (`Actions → Deploy acueducto emulator → Run workflow`). Antes, provisiona D1, Access y dominio; completa el `database_id` en `wrangler.acueducto.jsonc`. Configura estos repository secrets: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `D1_BRIDGE_TOKEN`. Configura estas variables: `D1_GATEWAY_ORIGIN` (URL workers.dev del mismo Worker, para el bridge interno), `ACCESS_TEAM_DOMAIN`, `ACCESS_AUD`, `CORS_ORIGINS` (origen exacto Pages) y `EMULATOR_API_DOMAIN` (host HTTPS protegido por Access). El token Cloudflare requiere permisos mínimos para Workers/Containers, Durable Objects, D1 y DNS/custom domains. El workflow aplica migraciones, carga el bearer secreto y construye/despliega Worker + Container; no corre automáticamente al hacer push.
-
-Antes del primer despliegue, conoce el subdominio `workers.dev` de la cuenta, configura Access para el host custom y carga las variables/secrets indicados. Si recursos, permisos o secretos no están provisionados, el workflow falla antes del despliegue.
-
-## Desarrollo y pruebas
-
-- Backend local: no definir `TWIN_DATA_BACKEND`; el emulador usa SQLite.
-- `pnpm --filter @twin/cloudflare-emulator-worker test`
+- Desarrollo local de FastAPI usa SQLite; no defina `TWIN_DATA_BACKEND`.
 - `pnpm --filter @twin/cloudflare-emulator-worker typecheck`
-- Validación del bundle Worker (no construye la imagen): `pnpm --filter @twin/cloudflare-emulator-worker exec wrangler deploy --dry-run --containers-rollout=none --config ../../wrangler.acueducto.jsonc`.
-- Build/deploy completo requiere Docker, Cloudflare credentials, `database_id`, Access y secretos; solo se ejecuta mediante el workflow manual de Cloudflare, nunca automáticamente con un push.
+- `pnpm --filter @twin/cloudflare-emulator-worker test`
+- `pnpm --filter @twin/cloudflare-emulator-worker exec wrangler d1 migrations apply acueducto-emulator --local --config ../../wrangler.acueducto.jsonc`
+- `pnpm --filter @twin/cloudflare-emulator-worker exec wrangler deploy --dry-run --containers-rollout=none --config ../../wrangler.acueducto.jsonc`
+- El build completo de Container/despliegue requiere Docker Buildx y recursos/secretos Cloudflare reales.
 
-Los checkpoints usan pickle comprimido y `schema_version=1`, aceptado solo desde D1 detrás del bridge de servicio; cualquier cambio de clases/modelo que rompa compatibilidad requiere migración/versionado antes de reanudar sesiones antiguas. El Container duerme tras 10 min sin actividad: al reconectar el rol PLC se reanuda desde el último checkpoint, con posible retroceso de hasta 3600 segundos simulados (y cambios de mando siempre checkpointados inmediatamente). Esta cadencia/recuperación debe medirse con la imagen y D1 reales antes de declarar continuidad de operación.
+Los checkpoints internos usan pickle comprimido y versión de esquema. Restaurar exige compatibilidad de clases/modelo. El Container puede dormir tras 10 minutos inactivo. La continuidad/retroceso, comportamiento de desconexión WSS, latencia, costos y recuperación requieren seguimiento en Cloudflare antes de presentar la demo como servicio confiable.
