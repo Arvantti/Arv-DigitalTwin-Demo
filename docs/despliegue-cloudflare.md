@@ -48,7 +48,7 @@ D1 es el almacenamiento persistente obligatorio en Cloudflare; el disco efímero
 ## Pasos de una sola vez (en dash.cloudflare.com, cuenta Arvantti)
 1. **Account ID.** Entra a la cuenta Arvantti, abre *Workers & Pages* y copia el **Account ID** del panel derecho (o de la URL: `dash.cloudflare.com/<ACCOUNT_ID>/...`).
 2. **Token de API con permisos mínimos.** *Mi perfil → Tokens de API → Crear token → Crear token personalizado*:
-   - Permisos mínimos requeridos para Pages: **Cuenta → Cloudflare Pages → Editar**. Para el despliegue opcional del emulador, agrega Workers Scripts, Workers Containers, Durable Objects y D1 (Edit) y únicamente los permisos de custom domains/routes si `EMULATOR_API_DOMAIN` los usa. No agregues R2, KV o Tunnel si el workflow no los usa.
+   - Permisos mínimos requeridos para Pages: **Cuenta → Cloudflare Pages → Editar**. Para el emulador, agrega **Containers → Read y Edit**, Workers Scripts, Durable Objects y D1 (Edit), todos limitados a la cuenta del proyecto. Añade permisos de custom domains/routes solo si `EMULATOR_API_DOMAIN` se configura. No agregues R2, KV o Tunnel si el workflow no los usa.
    - Recursos de la cuenta: *Incluir → Arvantti* (solo esa cuenta).
    - Caducidad de 90 días y filtro de IP vacío.
    - Crear y **copiar el token ahora**: no se vuelve a mostrar.
