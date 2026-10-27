@@ -62,7 +62,7 @@ jobs:
           pnpm install --frozen-lockfile
           pnpm --filter @twin/cloudflare-emulator-worker typecheck
           pnpm --filter @twin/cloudflare-emulator-worker test
-          uv sync --frozen
+          uv sync --frozen --all-packages
           uv run ruff check apps/twin-emulator-api/src/twin_emulator_api apps/twin-emulator-api/tests apps/fractal-engineering-api/src apps/fractal-engineering-api/tests
           uv run pytest apps/twin-emulator-api/tests apps/fractal-engineering-api/tests
       - name: Apply D1 migrations
