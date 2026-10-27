@@ -57,6 +57,31 @@ jobs:
             echo 'Set both ACCESS_TEAM_DOMAIN and ACCESS_AUD to enable the optional Access-protected admin path.' >&2
             exit 1
           fi
+      - name: Check Cloudflare Containers API access
+        shell: bash
+        run: |
+          set -euo pipefail
+          body_file=$(mktemp)
+          trap 'rm -f "$body_file"' EXIT
+          if ! status=$(curl --silent --show-error --max-time 30 \
+            --output "$body_file" --write-out '%{http_code}' \
+            --header "Authorization: Bearer ${CLOUDFLARE_API_TOKEN}" \
+            --header 'Content-Type: application/json' \
+            "https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/containers/me"); then
+            echo 'Could not reach the Cloudflare Containers API.' >&2
+            exit 1
+          fi
+          if [[ "$status" != 2* ]]; then
+            echo "Cloudflare Containers API preflight returned HTTP ${status}." >&2
+            details=$(jq -r '(.errors // [])[] | "Cloudflare error \(.code): \(.message)"' "$body_file")
+            if [[ -n "$details" ]]; then
+              printf '%s\n' "$details" | sed "s/${CLOUDFLARE_ACCOUNT_ID}/[account-id-redacted]/g" >&2
+            else
+              echo 'The API returned no structured error details.' >&2
+            fi
+            exit 1
+          fi
+          echo 'Cloudflare Containers API preflight passed.'
       - name: Install and test
         run: |
           pnpm install --frozen-lockfile
