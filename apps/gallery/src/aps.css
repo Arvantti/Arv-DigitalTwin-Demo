@@ -21,7 +21,7 @@ body.aps-page { font: 400 13px Inter, sans-serif; background: radial-gradient(ci
 .aps-proposal { margin: 0 16px 12px; padding: 12px 16px; border: 1px solid var(--accent); background: rgba(45, 127, 249, 0.1); border-radius: var(--radius-surface); }
 .aps-proposal p { margin: 4px 0; }
 .aps-prop-head { display: grid; grid-template-columns: minmax(240px, 1.3fr) 2fr auto; gap: 16px; align-items: center; }
-.aps-prop-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.aps-prop-kpis { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
 .aps-prop-kpis > div { display: flex; flex-direction: column; gap: 2px; padding: 6px 8px; border: 1px solid var(--line); border-radius: var(--radius-control); background: rgba(0, 0, 0, 0.2); }
 .aps-prop-kpis small { color: var(--dim); font-size: 11px; }
 .aps-prop-kpis span { color: var(--dim); text-decoration: line-through; font: 500 12px "IBM Plex Mono", monospace; }

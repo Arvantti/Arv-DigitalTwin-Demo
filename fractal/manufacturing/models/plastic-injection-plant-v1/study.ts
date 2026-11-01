@@ -108,11 +108,14 @@ export function loadsOf(model: PlasticsModel, plan: ProductionPlan, a: number, b
 const maxOf = (loads: Record<string, number>) =>
   Object.entries(loads).reduce((best, [equipment, pct]) => (pct > best.pct ? { equipment, pct } : best), { equipment: "", pct: 0 });
 
-const hm = (iso: string) => `${iso.slice(8, 10)}/${iso.slice(5, 7)} ${iso.slice(11, 16)}`;
+/** "día N HH:MM", con el día 0 en el arranque de la cartera (sin fechas de calendario en los textos). */
+let day0 = 0;
+const hm = (iso: string) => `día ${Math.round((Date.parse(`${iso.slice(0, 10)}T00:00:00Z`) - day0) / 864e5)} ${iso.slice(11, 16)}`;
 const label = (m: string) => m.replace("assembly-", "ensamble-").toUpperCase();
 
 export async function runStudy(newHighs: () => Promise<HighsLike>, cat: CatalogData, input: StudyInput): Promise<FractalStudy> {
   const t0 = Date.now();
+  day0 = Date.parse(`${input.portfolio.plan_start.slice(0, 10)}T00:00:00Z`);
   const molds = input.molds ?? {};
   const baseModel = modelFor(cat, molds);
   const baseSetup = setupWith(cat, molds);

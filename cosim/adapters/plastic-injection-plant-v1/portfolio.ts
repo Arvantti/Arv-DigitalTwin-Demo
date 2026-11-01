@@ -45,7 +45,8 @@ export function inventPortfolio(model: PlasticsModel, opt: PortfolioOptions): Cu
         const importance: Importance = x < rushShare ? "alta" : x < rushShare + LOW_SHARE ? "baja" : "normal";
         const lead = between(importance === "alta" ? model.rushLeadDays : model.leadDays);
         const order: CustomerOrder = {
-          id: `PED-${day.slice(2, 4)}${day.slice(5, 7)}${day.slice(8, 10)}-${String(n).padStart(2, "0")}`,
+          // Sin fecha en el código: D = día de entrega contado desde el arranque de la cartera (día 0).
+          id: `PED-D${String(Math.round((d - parseLocal(opt.planStart)) / DAY_MIN)).padStart(2, "0")}-${String(n).padStart(2, "0")}`,
           customer: model.customers[Math.floor(r() * model.customers.length)],
           product: p.id,
           quantity,

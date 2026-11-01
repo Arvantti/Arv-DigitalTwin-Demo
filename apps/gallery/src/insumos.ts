@@ -15,7 +15,7 @@ import toolingYaml from "../../../industrial-models/plastic-injection-plant-v1/c
 import materialsYaml from "../../../industrial-models/plastic-injection-plant-v1/catalog/materials.yaml?raw";
 import productsYaml from "../../../industrial-models/plastic-injection-plant-v1/catalog/products.yaml?raw";
 import { model, now } from "./aps-store.ts";
-import { esc, nf } from "./schedule.ts";
+import { dayTag, esc, nf } from "./schedule.ts";
 
 interface Tool {
   id: string;
@@ -44,7 +44,6 @@ const toolOf = (product: string) => tools.find((t) => t.product === product);
 const matOf = (id?: string) => materials.find((m) => m.id === id);
 
 const MIN = (iso: string) => Date.parse(`${iso.slice(0, 16)}:00Z`) / 60000;
-const WD = ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"];
 /** Inyectoras que atiende un operario (supuesto). */
 const IMM_PER_OPERATOR = 4;
 
@@ -110,8 +109,7 @@ export function renderInsumos(el: HTMLElement, plan: ProductionPlan): void {
   for (let d = start; d < start + 7 * 1440; d += 1440) if (model.calendar.isWorkday(d)) days.push(d);
   const n = needs(plan, days);
   const head = days.map((d) => {
-    const dt = new Date(d * 60000);
-    return `<th class="num">${WD[dt.getUTCDay()]} ${dt.getUTCDate()}</th>`;
+    return `<th class="num">${dayTag(d)}</th>`;
   });
   const row = (name: string, vals: number[], fmt: (x: number) => string, extra = "") =>
     `<tr><td>${name}</td>${vals.map((v) => `<td class="num">${v ? fmt(v) : "—"}</td>`).join("")}<td class="num"><b>${fmt(sum(vals))}</b></td>${extra}</tr>`;

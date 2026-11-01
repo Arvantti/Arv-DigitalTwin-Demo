@@ -29,7 +29,10 @@ programación manual (manual-sequence.v1) ──┘                             
 
 - `aps.html`: PEDIDOS (indicadores, agregar pedido, tabla con estado) y PROGRAMACIÓN · GANTT (arriba una fila por
   orden con inicio, fin y entrega; abajo los recursos con los lotes de esas órdenes, cambios de color, paradas y carga).
-  `?now=2026-11-04T10:00` fija la hora de la demo y `?reset=1` vuelve a la cartera inicial.
+  **Reloj de la demo:** las pantallas de plásticos muestran "día N" en vez de fechas (día 0 = arranque de la cartera,
+  lunes 26-oct-2026; ids de pedido `PED-D<día de entrega>-NN`). AHORA es siempre el día 9 (`DEMO_DAY` en
+  `aps-store.ts`) con la hora real, así la demo no depende de la fecha en que se presente. `?now=2026-11-04T10:00` fija
+  el instante, `?live=1` usa el calendario real y `?reset=1` vuelve a la cartera inicial.
 - `emulador.html`: plano 2D en tiempo real (ver abajo).
 - `plant.html?plant=plastic-injection-plant-v1`: el panel lateral muestra la programación vigente y abre el APS y el
   emulador.
@@ -55,12 +58,17 @@ El evento (`plant-event.v1`) llega a la vez a:
 Con la vigente del cosimulador y una falla de IMM-01 el miércoles a las 10:00, el cosimulador no queda peor que la
 secuencia manual (prueba en `cosim/adapters/plastic-injection-plant-v1/tests`).
 
-## Resultado con la cartera de la demo (AHORA = 2026-11-04 10:00)
+## Resultado con la cartera de la demo (AHORA = día 9, 10:00)
 
-| Programación | A tiempo | Pedidos tarde | Atraso total | Cambios de color |
-|---|---|---|---|---|
-| Manual APS-MAN-01 | 90,3 % | 9 | 228,9 h | 23 |
-| Cosimulador desde AHORA | 92,5 % | 7 | 181,8 h | 34 |
+| Programación | A tiempo | Pedidos tarde | Atraso total | Cambios de color | Ocupación planta (7 días) |
+|---|---|---|---|---|---|
+| Manual APS-MAN-01 | 90,3 % | 9 | 228,9 h | 23 | 69,3 % (794 de 1.146 h) |
+| Cosimulador desde AHORA | 92,5 % | 7 | 181,8 h | 34 | 62 % (711 h) |
+| + Fractal balancear (molde de repuesto en IMM-20) | 92,5 % | 7 | 181,8 h | 35 | 59,1 % (733 de 1.240 h) |
+
+Ocupación de planta = horas programadas / horas disponibles de las máquinas con molde u orden en los 7 días desde AHORA
+(la misma cuenta del centro de control). Se muestra en la etiqueta VIGENTE, en la propuesta y en la tabla de Fractal.
+El cosimulador hace la misma producción con menos horas de máquina, así que la ocupación baja y queda capacidad libre.
 
 Lo que ya empezó antes de AHORA queda congelado y el cosimulador no lo mueve. Hace más cambios de color porque el
 programa lineal no los modela (reserva una purga por turno); es un punto para Fractal.

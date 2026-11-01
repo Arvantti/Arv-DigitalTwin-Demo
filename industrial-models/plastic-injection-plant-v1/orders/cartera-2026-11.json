@@ -6,7 +6,7 @@
  "plan_start": "2026-10-26T06:00-05:00",
  "orders": [
   {
-   "id": "PED-261027-01",
+   "id": "PED-D01-01",
    "customer": "Supermercados La Esquina",
    "product": "cubiertos",
    "quantity": 276000,
@@ -17,7 +17,7 @@
    "color": "mb-blanco"
   },
   {
-   "id": "PED-261027-02",
+   "id": "PED-D01-02",
    "customer": "Ferretería La 80",
    "product": "cubiertos",
    "quantity": 371000,
@@ -28,7 +28,7 @@
    "color": "mb-blanco"
   },
   {
-   "id": "PED-261027-03",
+   "id": "PED-D01-03",
    "customer": "Hogar Express",
    "product": "balde-12l",
    "quantity": 1450,
@@ -39,7 +39,7 @@
    "color": "mb-blanco"
   },
   {
-   "id": "PED-261027-04",
+   "id": "PED-D01-04",
    "customer": "Mayorista San Andresito",
    "product": "balde-12l",
    "quantity": 2050,
@@ -50,7 +50,7 @@
    "color": "mb-azul"
   },
   {
-   "id": "PED-261027-05",
+   "id": "PED-D01-05",
    "customer": "Mayorista San Andresito",
    "product": "papelera-20l",
    "quantity": 1050,
@@ -61,7 +61,7 @@
    "color": "mb-gris"
   },
   {
-   "id": "PED-261028-01",
+   "id": "PED-D02-01",
    "customer": "Plásticos del Caribe",
    "product": "cubiertos",
    "quantity": 128000,
@@ -72,7 +72,7 @@
    "color": "mb-blanco"
   },
   {
-   "id": "PED-261028-02",
+   "id": "PED-D02-02",
    "customer": "Ferretería La 80",
    "product": "balde-12l",
    "quantity": 1650,
@@ -83,7 +83,7 @@
    "color": "mb-azul"
   },
   {
-   "id": "PED-261028-03",
+   "id": "PED-D02-03",
    "customer": "Plásticos del Caribe",
    "product": "balde-12l",
    "quantity": 1300,
@@ -94,7 +94,7 @@
    "color": "mb-blanco"
   },
   {
-   "id": "PED-261028-04",
+   "id": "PED-D02-04",
    "customer": "Hogar Express",
    "product": "papelera-20l",
    "quantity": 1275,
@@ -105,7 +105,7 @@
    "color": "mb-gris"
   },
   {
-   "id": "PED-261028-05",
+   "id": "PED-D02-05",
    "customer": "Mayorista San Andresito",
    "product": "papelera-20l",
    "quantity": 1325,
@@ -116,7 +116,7 @@
    "color": "mb-gris"
   },
   {
-   "id": "PED-261029-01",
+   "id": "PED-D03-01",
    "customer": "Distribuidora Oriente",
    "product": "cubiertos",
    "quantity": 257000,
@@ -127,7 +127,7 @@
    "color": "mb-blanco"
   },
   {
-   "id": "PED-261029-02",
+   "id": "PED-D03-02",
    "customer": "Supermercados La Esquina",
    "product": "balde-12l",
    "quantity": 850,
@@ -138,7 +138,7 @@
    "color": "mb-blanco"
   },
   {
-   "id": "PED-261029-03",
+   "id": "PED-D03-03",
    "customer": "Plásticos del Caribe",
    "product": "balde-12l",
    "quantity": 1000,
@@ -149,7 +149,7 @@
    "color": "mb-azul"
   },
   {
-   "id": "PED-261029-04",
+   "id": "PED-D03-04",
    "customer": "Hogar Express",
    "product": "papelera-20l",
    "quantity": 375,
@@ -160,7 +160,7 @@
    "color": "mb-gris"
   },
   {
-   "id": "PED-261029-05",
+   "id": "PED-D03-05",
    "customer": "Mayorista San Andresito",
    "product": "papelera-20l",
    "quantity": 425,
@@ -171,7 +171,7 @@
    "color": "mb-gris"
   },
   {
-   "id": "PED-261030-01",
+   "id": "PED-D04-01",
    "customer": "Plásticos del Caribe",
    "product": "cubiertos",
    "quantity": 342000,
@@ -182,7 +182,7 @@
    "color": "mb-blanco"
   },
   {
-   "id": "PED-261030-02",
+   "id": "PED-D04-02",
    "customer": "Hogar Express",
    "product": "cubiertos",
    "quantity": 330000,
@@ -193,7 +193,7 @@
    "color": "mb-blanco"
   },
   {
-   "id": "PED-261030-03",
+   "id": "PED-D04-03",
    "customer": "Supermercados La Esquina",
    "product": "balde-12l",
    "quantity": 1000,
@@ -204,7 +204,7 @@
    "color": "mb-azul"
   },
   {
-   "id": "PED-261030-04",
+   "id": "PED-D04-04",
    "customer": "Institucional Andina",
    "product": "balde-12l",
    "quantity": 1300,
@@ -215,7 +215,7 @@
    "color": "mb-blanco"
   },
   {
-   "id": "PED-261030-05",
+   "id": "PED-D04-05",
    "customer": "Ferretería La 80",
    "product": "papelera-20l",
    "quantity": 575,
@@ -226,7 +226,7 @@
    "color": "mb-gris"
   },
   {
-   "id": "PED-261030-06",
+   "id": "PED-D04-06",
    "customer": "Hogar Express",
    "product": "papelera-20l",
    "quantity": 1225,
@@ -237,7 +237,7 @@
    "color": "mb-gris"
   },
   {
-   "id": "PED-261031-01",
+   "id": "PED-D05-01",
    "customer": "Plásticos del Caribe",
    "product": "cubiertos",
    "quantity": 319000,
@@ -248,7 +248,7 @@
    "color": "mb-blanco"
   },
   {
-   "id": "PED-261031-02",
+   "id": "PED-D05-02",
    "customer": "Ferretería La 80",
    "product": "balde-12l",
    "quantity": 1200,
@@ -259,7 +259,7 @@
    "color": "mb-azul"
   },
   {
-   "id": "PED-261031-03",
+   "id": "PED-D05-03",
    "customer": "Institucional Andina",
    "product": "balde-12l",
    "quantity": 1750,
@@ -270,7 +270,7 @@
    "color": "mb-azul"
   },
   {
-   "id": "PED-261031-04",
+   "id": "PED-D05-04",
    "customer": "Mayorista San Andresito",
    "product": "papelera-20l",
    "quantity": 850,
@@ -281,7 +281,7 @@
    "color": "mb-gris"
   },
   {
-   "id": "PED-261031-05",
+   "id": "PED-D05-05",
    "customer": "Hogar Express",
    "product": "papelera-20l",
    "quantity": 1400,
@@ -292,7 +292,7 @@
    "color": "mb-gris"
   },
   {
-   "id": "PED-261102-01",
+   "id": "PED-D07-01",
    "customer": "Supermercados La Esquina",
    "product": "cubiertos",
    "quantity": 250000,
@@ -303,7 +303,7 @@
    "color": "mb-blanco"
   },
   {
-   "id": "PED-261102-02",
+   "id": "PED-D07-02",
    "customer": "Hogar Express",
    "product": "balde-12l",
    "quantity": 500,
@@ -314,7 +314,7 @@
    "color": "mb-blanco"
   },
   {
-   "id": "PED-261102-03",
+   "id": "PED-D07-03",
    "customer": "Supermercados La Esquina",
    "product": "balde-12l",
    "quantity": 2350,
@@ -325,7 +325,7 @@
    "color": "mb-azul"
   },
   {
-   "id": "PED-261102-04",
+   "id": "PED-D07-04",
    "customer": "Supermercados La Esquina",
    "product": "papelera-20l",
    "quantity": 725,
@@ -336,7 +336,7 @@
    "color": "mb-gris"
   },
   {
-   "id": "PED-261103-01",
+   "id": "PED-D08-01",
    "customer": "Ferretería La 80",
    "product": "cubiertos",
    "quantity": 277000,
@@ -347,7 +347,7 @@
    "color": "mb-blanco"
   },
   {
-   "id": "PED-261103-02",
+   "id": "PED-D08-02",
    "customer": "Supermercados La Esquina",
    "product": "cubiertos",
    "quantity": 159000,
@@ -358,7 +358,7 @@
    "color": "mb-blanco"
   },
   {
-   "id": "PED-261103-03",
+   "id": "PED-D08-03",
    "customer": "Institucional Andina",
    "product": "balde-12l",
    "quantity": 2550,
@@ -369,7 +369,7 @@
    "color": "mb-azul"
   },
   {
-   "id": "PED-261103-04",
+   "id": "PED-D08-04",
    "customer": "Institucional Andina",
    "product": "balde-12l",
    "quantity": 850,
@@ -380,7 +380,7 @@
    "color": "mb-blanco"
   },
   {
-   "id": "PED-261103-05",
+   "id": "PED-D08-05",
    "customer": "Distribuidora Oriente",
    "product": "balde-12l",
    "quantity": 1300,
@@ -391,7 +391,7 @@
    "color": "mb-blanco"
   },
   {
-   "id": "PED-261103-06",
+   "id": "PED-D08-06",
    "customer": "Mayorista San Andresito",
    "product": "papelera-20l",
    "quantity": 600,
@@ -402,7 +402,7 @@
    "color": "mb-gris"
   },
   {
-   "id": "PED-261103-07",
+   "id": "PED-D08-07",
    "customer": "Ferretería La 80",
    "product": "papelera-20l",
    "quantity": 750,
@@ -413,7 +413,7 @@
    "color": "mb-gris"
   },
   {
-   "id": "PED-261104-01",
+   "id": "PED-D09-01",
    "customer": "Ferretería La 80",
    "product": "cubiertos",
    "quantity": 269000,
@@ -424,7 +424,7 @@
    "color": "mb-blanco"
   },
   {
-   "id": "PED-261104-02",
+   "id": "PED-D09-02",
    "customer": "Ferretería La 80",
    "product": "cubiertos",
    "quantity": 155000,
@@ -435,7 +435,7 @@
    "color": "mb-blanco"
   },
   {
-   "id": "PED-261104-03",
+   "id": "PED-D09-03",
    "customer": "Plásticos del Caribe",
    "product": "balde-12l",
    "quantity": 2000,
@@ -446,7 +446,7 @@
    "color": "mb-blanco"
   },
   {
-   "id": "PED-261104-04",
+   "id": "PED-D09-04",
    "customer": "Distribuidora Oriente",
    "product": "balde-12l",
    "quantity": 1500,
@@ -457,7 +457,7 @@
    "color": "mb-blanco"
   },
   {
-   "id": "PED-261104-05",
+   "id": "PED-D09-05",
    "customer": "Distribuidora Oriente",
    "product": "papelera-20l",
    "quantity": 675,
@@ -468,7 +468,7 @@
    "color": "mb-gris"
   },
   {
-   "id": "PED-261104-06",
+   "id": "PED-D09-06",
    "customer": "Hogar Express",
    "product": "papelera-20l",
    "quantity": 1400,
@@ -479,7 +479,7 @@
    "color": "mb-gris"
   },
   {
-   "id": "PED-261105-01",
+   "id": "PED-D10-01",
    "customer": "Hogar Express",
    "product": "cubiertos",
    "quantity": 179000,
@@ -490,7 +490,7 @@
    "color": "mb-blanco"
   },
   {
-   "id": "PED-261105-02",
+   "id": "PED-D10-02",
    "customer": "Ferretería La 80",
    "product": "balde-12l",
    "quantity": 1900,
@@ -501,7 +501,7 @@
    "color": "mb-blanco"
   },
   {
-   "id": "PED-261105-03",
+   "id": "PED-D10-03",
    "customer": "Plásticos del Caribe",
    "product": "balde-12l",
    "quantity": 1500,
@@ -512,7 +512,7 @@
    "color": "mb-azul"
   },
   {
-   "id": "PED-261105-04",
+   "id": "PED-D10-04",
    "customer": "Supermercados La Esquina",
    "product": "papelera-20l",
    "quantity": 425,
@@ -523,7 +523,7 @@
    "color": "mb-gris"
   },
   {
-   "id": "PED-261105-05",
+   "id": "PED-D10-05",
    "customer": "Hogar Express",
    "product": "papelera-20l",
    "quantity": 875,
@@ -534,7 +534,7 @@
    "color": "mb-gris"
   },
   {
-   "id": "PED-261106-01",
+   "id": "PED-D11-01",
    "customer": "Distribuidora Oriente",
    "product": "cubiertos",
    "quantity": 124000,
@@ -545,7 +545,7 @@
    "color": "mb-blanco"
   },
   {
-   "id": "PED-261106-02",
+   "id": "PED-D11-02",
    "customer": "Hogar Express",
    "product": "cubiertos",
    "quantity": 367000,
@@ -556,7 +556,7 @@
    "color": "mb-blanco"
   },
   {
-   "id": "PED-261106-03",
+   "id": "PED-D11-03",
    "customer": "Hogar Express",
    "product": "balde-12l",
    "quantity": 2350,
@@ -567,7 +567,7 @@
    "color": "mb-blanco"
   },
   {
-   "id": "PED-261106-04",
+   "id": "PED-D11-04",
    "customer": "Hogar Express",
    "product": "balde-12l",
    "quantity": 1500,
@@ -578,7 +578,7 @@
    "color": "mb-azul"
   },
   {
-   "id": "PED-261106-05",
+   "id": "PED-D11-05",
    "customer": "Distribuidora Oriente",
    "product": "balde-12l",
    "quantity": 750,
@@ -589,7 +589,7 @@
    "color": "mb-blanco"
   },
   {
-   "id": "PED-261106-06",
+   "id": "PED-D11-06",
    "customer": "Hogar Express",
    "product": "papelera-20l",
    "quantity": 550,
@@ -600,7 +600,7 @@
    "color": "mb-gris"
   },
   {
-   "id": "PED-261107-01",
+   "id": "PED-D12-01",
    "customer": "Supermercados La Esquina",
    "product": "cubiertos",
    "quantity": 211000,
@@ -611,7 +611,7 @@
    "color": "mb-blanco"
   },
   {
-   "id": "PED-261107-02",
+   "id": "PED-D12-02",
    "customer": "Institucional Andina",
    "product": "cubiertos",
    "quantity": 249000,
@@ -622,7 +622,7 @@
    "color": "mb-blanco"
   },
   {
-   "id": "PED-261107-03",
+   "id": "PED-D12-03",
    "customer": "Supermercados La Esquina",
    "product": "balde-12l",
    "quantity": 700,
@@ -633,7 +633,7 @@
    "color": "mb-blanco"
   },
   {
-   "id": "PED-261107-04",
+   "id": "PED-D12-04",
    "customer": "Supermercados La Esquina",
    "product": "balde-12l",
    "quantity": 1550,
@@ -644,7 +644,7 @@
    "color": "mb-azul"
   },
   {
-   "id": "PED-261107-05",
+   "id": "PED-D12-05",
    "customer": "Plásticos del Caribe",
    "product": "balde-12l",
    "quantity": 2250,
@@ -655,7 +655,7 @@
    "color": "mb-azul"
   },
   {
-   "id": "PED-261107-06",
+   "id": "PED-D12-06",
    "customer": "Ferretería La 80",
    "product": "papelera-20l",
    "quantity": 1000,
@@ -666,7 +666,7 @@
    "color": "mb-gris"
   },
   {
-   "id": "PED-261107-07",
+   "id": "PED-D12-07",
    "customer": "Distribuidora Oriente",
    "product": "papelera-20l",
    "quantity": 1150,
@@ -677,7 +677,7 @@
    "color": "mb-gris"
   },
   {
-   "id": "PED-261109-01",
+   "id": "PED-D14-01",
    "customer": "Ferretería La 80",
    "product": "cubiertos",
    "quantity": 394000,
@@ -688,7 +688,7 @@
    "color": "mb-blanco"
   },
   {
-   "id": "PED-261109-02",
+   "id": "PED-D14-02",
    "customer": "Hogar Express",
    "product": "cubiertos",
    "quantity": 117000,
@@ -699,7 +699,7 @@
    "color": "mb-blanco"
   },
   {
-   "id": "PED-261109-03",
+   "id": "PED-D14-03",
    "customer": "Plásticos del Caribe",
    "product": "balde-12l",
    "quantity": 2250,
@@ -710,7 +710,7 @@
    "color": "mb-azul"
   },
   {
-   "id": "PED-261109-04",
+   "id": "PED-D14-04",
    "customer": "Mayorista San Andresito",
    "product": "balde-12l",
    "quantity": 1450,
@@ -721,7 +721,7 @@
    "color": "mb-blanco"
   },
   {
-   "id": "PED-261109-05",
+   "id": "PED-D14-05",
    "customer": "Supermercados La Esquina",
    "product": "papelera-20l",
    "quantity": 650,
@@ -732,7 +732,7 @@
    "color": "mb-gris"
   },
   {
-   "id": "PED-261109-06",
+   "id": "PED-D14-06",
    "customer": "Ferretería La 80",
    "product": "papelera-20l",
    "quantity": 1175,
@@ -743,7 +743,7 @@
    "color": "mb-gris"
   },
   {
-   "id": "PED-261110-01",
+   "id": "PED-D15-01",
    "customer": "Institucional Andina",
    "product": "cubiertos",
    "quantity": 140000,
@@ -754,7 +754,7 @@
    "color": "mb-blanco"
   },
   {
-   "id": "PED-261110-02",
+   "id": "PED-D15-02",
    "customer": "Hogar Express",
    "product": "balde-12l",
    "quantity": 1200,
@@ -765,7 +765,7 @@
    "color": "mb-azul"
   },
   {
-   "id": "PED-261110-03",
+   "id": "PED-D15-03",
    "customer": "Hogar Express",
    "product": "balde-12l",
    "quantity": 2500,
@@ -776,7 +776,7 @@
    "color": "mb-blanco"
   },
   {
-   "id": "PED-261110-04",
+   "id": "PED-D15-04",
    "customer": "Ferretería La 80",
    "product": "balde-12l",
    "quantity": 1400,
@@ -787,7 +787,7 @@
    "color": "mb-blanco"
   },
   {
-   "id": "PED-261110-05",
+   "id": "PED-D15-05",
    "customer": "Mayorista San Andresito",
    "product": "papelera-20l",
    "quantity": 650,
@@ -798,7 +798,7 @@
    "color": "mb-gris"
   },
   {
-   "id": "PED-261110-06",
+   "id": "PED-D15-06",
    "customer": "Institucional Andina",
    "product": "papelera-20l",
    "quantity": 375,
@@ -809,7 +809,7 @@
    "color": "mb-gris"
   },
   {
-   "id": "PED-261111-01",
+   "id": "PED-D16-01",
    "customer": "Supermercados La Esquina",
    "product": "cubiertos",
    "quantity": 334000,
@@ -820,7 +820,7 @@
    "color": "mb-blanco"
   },
   {
-   "id": "PED-261111-02",
+   "id": "PED-D16-02",
    "customer": "Institucional Andina",
    "product": "balde-12l",
    "quantity": 1700,
@@ -831,7 +831,7 @@
    "color": "mb-azul"
   },
   {
-   "id": "PED-261111-03",
+   "id": "PED-D16-03",
    "customer": "Supermercados La Esquina",
    "product": "balde-12l",
    "quantity": 2250,
@@ -842,7 +842,7 @@
    "color": "mb-azul"
   },
   {
-   "id": "PED-261111-04",
+   "id": "PED-D16-04",
    "customer": "Ferretería La 80",
    "product": "papelera-20l",
    "quantity": 1200,
@@ -853,7 +853,7 @@
    "color": "mb-gris"
   },
   {
-   "id": "PED-261112-01",
+   "id": "PED-D17-01",
    "customer": "Supermercados La Esquina",
    "product": "cubiertos",
    "quantity": 223000,
@@ -864,7 +864,7 @@
    "color": "mb-blanco"
   },
   {
-   "id": "PED-261112-02",
+   "id": "PED-D17-02",
    "customer": "Institucional Andina",
    "product": "cubiertos",
    "quantity": 283000,
@@ -875,7 +875,7 @@
    "color": "mb-blanco"
   },
   {
-   "id": "PED-261112-03",
+   "id": "PED-D17-03",
    "customer": "Hogar Express",
    "product": "balde-12l",
    "quantity": 950,
@@ -886,7 +886,7 @@
    "color": "mb-blanco"
   },
   {
-   "id": "PED-261112-04",
+   "id": "PED-D17-04",
    "customer": "Distribuidora Oriente",
    "product": "balde-12l",
    "quantity": 500,
@@ -897,7 +897,7 @@
    "color": "mb-azul"
   },
   {
-   "id": "PED-261112-05",
+   "id": "PED-D17-05",
    "customer": "Hogar Express",
    "product": "papelera-20l",
    "quantity": 400,
@@ -908,7 +908,7 @@
    "color": "mb-gris"
   },
   {
-   "id": "PED-261113-01",
+   "id": "PED-D18-01",
    "customer": "Hogar Express",
    "product": "cubiertos",
    "quantity": 156000,
@@ -919,7 +919,7 @@
    "color": "mb-blanco"
   },
   {
-   "id": "PED-261113-02",
+   "id": "PED-D18-02",
    "customer": "Mayorista San Andresito",
    "product": "balde-12l",
    "quantity": 1950,
@@ -930,7 +930,7 @@
    "color": "mb-blanco"
   },
   {
-   "id": "PED-261113-03",
+   "id": "PED-D18-03",
    "customer": "Supermercados La Esquina",
    "product": "balde-12l",
    "quantity": 1200,
@@ -941,7 +941,7 @@
    "color": "mb-azul"
   },
   {
-   "id": "PED-261113-04",
+   "id": "PED-D18-04",
    "customer": "Plásticos del Caribe",
    "product": "papelera-20l",
    "quantity": 450,
@@ -952,7 +952,7 @@
    "color": "mb-gris"
   },
   {
-   "id": "PED-261113-05",
+   "id": "PED-D18-05",
    "customer": "Plásticos del Caribe",
    "product": "papelera-20l",
    "quantity": 1025,
@@ -963,7 +963,7 @@
    "color": "mb-gris"
   },
   {
-   "id": "PED-261114-01",
+   "id": "PED-D19-01",
    "customer": "Mayorista San Andresito",
    "product": "cubiertos",
    "quantity": 290000,
@@ -974,7 +974,7 @@
    "color": "mb-blanco"
   },
   {
-   "id": "PED-261114-02",
+   "id": "PED-D19-02",
    "customer": "Hogar Express",
    "product": "cubiertos",
    "quantity": 299000,
@@ -985,7 +985,7 @@
    "color": "mb-blanco"
   },
   {
-   "id": "PED-261114-03",
+   "id": "PED-D19-03",
    "customer": "Distribuidora Oriente",
    "product": "balde-12l",
    "quantity": 1500,
@@ -996,7 +996,7 @@
    "color": "mb-azul"
   },
   {
-   "id": "PED-261114-04",
+   "id": "PED-D19-04",
    "customer": "Mayorista San Andresito",
    "product": "balde-12l",
    "quantity": 600,
@@ -1007,7 +1007,7 @@
    "color": "mb-azul"
   },
   {
-   "id": "PED-261114-05",
+   "id": "PED-D19-05",
    "customer": "Plásticos del Caribe",
    "product": "papelera-20l",
    "quantity": 1000,
@@ -1018,7 +1018,7 @@
    "color": "mb-gris"
   },
   {
-   "id": "PED-261114-06",
+   "id": "PED-D19-06",
    "customer": "Supermercados La Esquina",
    "product": "papelera-20l",
    "quantity": 1025,

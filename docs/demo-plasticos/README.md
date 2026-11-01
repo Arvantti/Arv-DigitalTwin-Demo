@@ -37,10 +37,10 @@ Cada segmento del guion tiene esta forma:
 
 ## Datos de la corrida
 
-- Fecha simulada ("AHORA"): miércoles 4 de noviembre de 2026, 10:00.
-- Cartera: 93 pedidos inventados con entrega entre el 26 de octubre y el 23 de noviembre, carga objetivo 85 % de la capacidad.
+- Sin fechas de calendario: todo se muestra como "día N". El día 0 es el arranque de la cartera y AHORA es siempre el día 9 (en las capturas, a las 10:00). Los pedidos se llaman `PED-D<día de entrega>-NN`.
+- Cartera: 93 pedidos inventados con entrega entre el día 1 y el día 19, carga objetivo 85 % de la capacidad.
 - 12 inyectoras con molde montado (cubiertos IMM-01, 02, 04, 05 y 08; pedal IMM-06 y 07; cuerpo de papelera IMM-18 y 19; balde IMM-21 y 23) y la línea de ensamble ENSAMBLE-01.
-- Programación manual: 90,3 % a tiempo (9 tarde, 228,9 h de atraso). Cosimulador: 92,5 % a tiempo (7 tarde, 181,8 h).
+- Programación manual: 90,3 % a tiempo (9 tarde, 228,9 h de atraso), ocupación de planta 69,3 % (794 de 1.146 h en 7 días). Cosimulador: 92,5 % a tiempo (7 tarde, 181,8 h), ocupación 62 % (711 h): la misma producción con 83 h de máquina menos. Balanceado con Fractal: 59,1 % de 1.240 h.
 - Todos los datos son supuestos; ninguna marca ni cliente es real.
 
-Las capturas se tomaron con el código de `main` corriendo en local (`pnpm gallery:dev` y la API del emulador). Para volver a tomarlas, abra las páginas con `?now=2026-11-04T10:00` y, la primera vez, `aps.html?reset=1`.
+Para producir el video (voz con ElevenLabs y montaje con HyperFrames) siga [VIDEO.md](VIDEO.md): trae el guion de apertura y cierre, el prompt para el agente y cómo volver a tomar las capturas o grabar los recorridos con `tools/demo-video/grabar.cjs`.

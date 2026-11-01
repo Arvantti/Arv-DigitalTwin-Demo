@@ -12,23 +12,23 @@ Mensaje central: un cliente pide su pedido antes. El sistema dice en segundos si
 ### S01 · La cartera de pedidos
 - imagen: capturas/01-pedidos.png
 - duración: 16 s
-- en pantalla: la fila PED-261107-01
+- en pantalla: la fila PED-D12-01
 
-> Esta es la cartera de pedidos: noventa y tres pedidos con su producto, cantidad y fecha de entrega. Supermercados La Esquina tiene un pedido de doscientos once mil cubiertos desechables para el sábado siete de noviembre. Ahora llama y lo necesita un día antes.
+> Esta es la cartera de pedidos: noventa y tres pedidos con su producto, cantidad y fecha de entrega. Supermercados La Esquina tiene un pedido de doscientos once mil cubiertos desechables para el día doce. Hoy es el día nueve. El cliente llama y lo necesita un día antes, el día once.
 
 ### S02 · La pregunta a Fractal
 - imagen: capturas/02-fractal-pregunta.png
 - duración: 14 s
 - en pantalla: tarjeta "Adelantar un pedido" con el pedido y la nueva fecha
 
-> En Fractal elegimos el pedido y la nueva fecha, el viernes seis de noviembre, y pulsamos estudiar. La pregunta es: ¿cómo movemos todo para cumplirle sin atrasar a los demás?
+> En Fractal elegimos el pedido y la nueva fecha, el día once, y pulsamos estudiar. La pregunta es: ¿cómo movemos todo para cumplirle sin atrasar a los demás?
 
 ### S03 · La respuesta
 - imagen: capturas/03-fractal.png
 - duración: 24 s
-- en pantalla: la frase de recomendación y la fila A "MEJOR"
+- en pantalla: la frase de recomendación, la fila A "MEJOR" y la columna OCUPACIÓN PLANTA
 
-> Con el plan vigente el pedido terminaría el sábado a las siete de la mañana: tarde para la nueva fecha. Fractal prueba dos combinaciones en menos de un segundo. La recomendación es recalcular con la nueva fecha. No hace falta cambiar moldes; basta con recolocar la secuencia, y el resto de la cartera sigue igual: noventa y dos coma cinco por ciento a tiempo.
+> Con el plan vigente el pedido terminaría el día doce a las siete de la mañana: tarde para la nueva fecha. Fractal prueba dos combinaciones en menos de un segundo. La recomendación es recalcular con la nueva fecha. No hace falta cambiar moldes; basta con recolocar la secuencia, y el resto de la cartera sigue igual: noventa y dos coma cinco por ciento a tiempo, y la ocupación de la planta incluso baja un punto, del sesenta y dos al sesenta y uno por ciento.
 
 ### S04 · Ocupación por máquina
 - imagen: capturas/03b-fractal-full.png
@@ -40,7 +40,7 @@ Mensaje central: un cliente pide su pedido antes. El sistema dice en segundos si
 ### S05 · El Gantt adoptado
 - imagen: capturas/04-gantt-adoptado.png
 - duración: 14 s
-- en pantalla: las barras del pedido PED-261107-01 en el Gantt
+- en pantalla: las barras del pedido PED-D12-01 en el Gantt
 
 > Adoptamos la recomendación, aunque cualquier opción se puede adoptar, y el Gantt muestra el pedido adelantado en las inyectoras de cubiertos.
 

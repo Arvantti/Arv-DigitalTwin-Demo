@@ -8,7 +8,7 @@
 import type { PlanDoc } from "./schedule.ts";
 import { buildSchedule, esc } from "./schedule.ts";
 import type * as THREE from "three";
-import { activeEvents, events, onChange, SOURCE_NAMES, vigente } from "./aps-store.ts";
+import { activeEvents, events, onChange, SOURCE_NAMES, useDemoDays, vigente } from "./aps-store.ts";
 import { buildTwinPlay, plcCard } from "./twin-play.ts";
 
 interface Options {
@@ -26,6 +26,7 @@ interface Options {
 }
 
 export function buildAps(opts: Options): void {
+  useDemoDays();
   let current = vigente();
   const section = document.createElement("div");
   section.id = "aps-section";

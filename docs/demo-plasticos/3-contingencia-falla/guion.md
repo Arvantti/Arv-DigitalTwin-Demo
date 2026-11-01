@@ -14,7 +14,7 @@ Mensaje central: cuando una máquina falla, el gemelo avisa, el cosimulador repl
 - duración: 14 s
 - en pantalla: vista general del emulador 2D
 
-> Este es el emulador de la planta de inyección de plásticos. Cada rectángulo es una máquina trabajando en tiempo real: inyectoras, buffers, montacargas y la línea de ensamble. Son las diez de la mañana del miércoles cuatro de noviembre.
+> Este es el emulador de la planta de inyección de plásticos. Cada rectángulo es una máquina trabajando en tiempo real: inyectoras, buffers, montacargas y la línea de ensamble. Son las diez de la mañana del día nueve de la programación.
 
 ### S02 · El PLC de la inyectora veintiuno
 - imagen: capturas/02-plc-imm21.png
@@ -28,7 +28,7 @@ Mensaje central: cuando una máquina falla, el gemelo avisa, el cosimulador repl
 - duración: 14 s
 - en pantalla: resaltar la alarma roja de la IMM-21
 
-> De pronto se quema la resistencia del cañón de la inyectora veintiuno. Mantenimiento estima tres días de reparación: hasta el sábado siete de noviembre a las diez de la mañana.
+> De pronto se quema la resistencia del cañón de la inyectora veintiuno. Mantenimiento estima tres días de reparación: hasta el día doce a las diez de la mañana.
 
 ### S04 · El centro de control lo ve
 - imagen: capturas/04-centro-control.png
@@ -47,9 +47,9 @@ Mensaje central: cuando una máquina falla, el gemelo avisa, el cosimulador repl
 ### S06 · Fractal estudia las opciones
 - imagen: capturas/06-fractal.png
 - duración: 30 s
-- en pantalla: tabla de opciones A a E; resaltar la fila D "MEJOR"
+- en pantalla: tabla de opciones A a E; resaltar la fila D "MEJOR" y la columna OCUPACIÓN PLANTA
 
-> Aquí entra Fractal. En poco más de un segundo prueba cinco combinaciones. No solo reordena la secuencia: también prueba cambios en la planta, como mudar el molde a otra máquina o montar el molde de repuesto que está en el almacén. Si solo esperamos y repartimos, quedan nueve pedidos tarde, con doscientas ocho horas de atraso. La recomendación es montar el molde de repuesto del balde en la inyectora veinte, con noventa minutos de montaje. Así quedan siete pedidos tarde y el atraso baja a ciento ochenta y dos horas.
+> Aquí entra Fractal. En poco más de un segundo prueba cinco combinaciones. No solo reordena la secuencia: también prueba cambios en la planta, como mudar el molde a otra máquina o montar el molde de repuesto que está en el almacén. Si solo esperamos y repartimos, quedan nueve pedidos tarde, con doscientas ocho horas de atraso. La recomendación es montar el molde de repuesto del balde en la inyectora veinte, con noventa minutos de montaje. Así quedan siete pedidos tarde y el atraso baja a ciento ochenta y dos horas. La tabla también muestra la ocupación de la planta con cada opción: con la recomendada queda en sesenta y uno por ciento.
 
 ### S07 · Comparar antes de decidir
 - imagen: capturas/06b-fractal-full.png

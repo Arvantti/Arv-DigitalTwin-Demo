@@ -7,7 +7,7 @@
  */
 import "./styles.css";
 import "./aps.css";
-import { events, model, now, onChange, SOURCE_NAMES, vigente } from "./aps-store.ts";
+import { events, model, now, onChange, SOURCE_NAMES, useDemoDays, vigente } from "./aps-store.ts";
 import { eventsAt, dayLoads, dayStrip, loadAt, loadColor, machineAt, machineLabel, minOf, moldOf, oeeAt, PLC_MACHINES, plantOee, STATE_COLORS, STATE_NAMES, unitsUntil, type MachineState } from "./plant-state.ts";
 import { COLOR_NAMES, esc, nf, when } from "./schedule.ts";
 
@@ -37,6 +37,8 @@ function fillOrders(t: number): void {
   }
   sel.value = order;
 }
+
+useDemoDays();
 
 function render(): void {
   const t = minOf(now());

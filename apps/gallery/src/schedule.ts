@@ -121,9 +121,26 @@ const MONTHS = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "
 export const COLOR_NAMES: Record<string, string> = { "mb-blanco": "blanco", "mb-azul": "azul", "mb-gris": "gris" };
 export const esc = (s: unknown) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
 export const nf = (v: number, digits = 0) => v.toLocaleString("es-CO", { maximumFractionDigits: digits });
-/** "2026-10-22T08:31-05:00" → "22-oct 08:31" (hora de la planta, tal como viene). */
-export const when = (iso: string) => `${Number(iso.slice(8, 10))}-${MONTHS[Number(iso.slice(5, 7)) - 1]} ${iso.slice(11, 16)}`;
-export const day = (iso: string) => `${Number(iso.slice(8, 10))}-${MONTHS[Number(iso.slice(5, 7)) - 1]}`;
+/**
+ * Días relativos para presentar sin fechas de calendario: con un día 0 fijado (el arranque de la cartera), las fechas se
+ * muestran como "día N". Sin día 0, como fecha corta ("22-oct").
+ */
+let dayZero: number | null = null;
+export function setDayZero(isoDate: string | null): void {
+  dayZero = isoDate ? Date.parse(`${isoDate.slice(0, 10)}T00:00:00Z`) : null;
+}
+/** Número de día desde el día 0 (fecha "AAAA-MM-DD..." en hora de la planta). */
+export const dayNumber = (iso: string) => Math.round((Date.parse(`${iso.slice(0, 10)}T00:00:00Z`) - (dayZero ?? 0)) / 864e5);
+export const relativeDays = () => dayZero !== null;
+/** "2026-10-22T08:31-05:00" → "22-oct 08:31" o "día 9 08:31" (hora de la planta, tal como viene). */
+export const day = (iso: string) => (dayZero !== null ? `día ${dayNumber(iso)}` : `${Number(iso.slice(8, 10))}-${MONTHS[Number(iso.slice(5, 7)) - 1]}`);
+export const when = (iso: string) => `${day(iso)} ${iso.slice(11, 16)}`;
+const WEEKDAYS = ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"];
+/** Etiqueta corta de un día dado en minutos de la planta: "día 9" o "mié 4". */
+export const dayTag = (tMin: number) => {
+  const d = new Date(tMin * 60000);
+  return dayZero !== null ? day(d.toISOString()) : `${WEEKDAYS[d.getUTCDay()]} ${d.getUTCDate()}`;
+};
 const hours = (a: string, b: string) => (Date.parse(b) - Date.parse(a)) / 3.6e6;
 export const store = {
   get: (k: string) => {

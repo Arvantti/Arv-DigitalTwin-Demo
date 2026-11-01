@@ -19,9 +19,9 @@ Mensaje central: a partir de los pedidos y sus fechas de entrega, el cosimulador
 ### S02 · La programación manual
 - imagen: capturas/02-gantt-manual.png
 - duración: 18 s
-- en pantalla: la etiqueta VIGENTE · MANUAL arriba y los rombos de entrega
+- en pantalla: la etiqueta VIGENTE · MANUAL arriba (a tiempo y ocupación) y los rombos de entrega
 
-> Así está hoy la programación, hecha a mano: cada barra es una orden y cada rombo, su fecha de entrega. Con este plan, el noventa coma tres por ciento de los pedidos sale a tiempo: nueve pedidos llegan tarde, con doscientas veintinueve horas de atraso.
+> Así está hoy, día nueve, la programación hecha a mano: cada barra es una orden y cada rombo, su fecha de entrega. Las fechas se cuentan en días desde el arranque de la programación, el día cero. Con este plan, el noventa coma tres por ciento de los pedidos sale a tiempo: nueve pedidos llegan tarde, con doscientas veintinueve horas de atraso. Y la planta queda ocupada al sesenta y nueve por ciento de sus horas disponibles en la semana.
 
 ### S03 · La planta con el plan manual
 - imagen: capturas/03-centro-control-manual.png
@@ -33,9 +33,9 @@ Mensaje central: a partir de los pedidos y sus fechas de entrega, el cosimulador
 ### S04 · Calcular con el cosimulador
 - imagen: capturas/04-calcular.png
 - duración: 24 s
-- en pantalla: el recuadro de PROPUESTA con los cuatro indicadores
+- en pantalla: el recuadro de PROPUESTA con los cinco indicadores; resaltar "Ocupación planta"
 
-> Pulsamos calcular. El cosimulador arma un modelo de programación lineal con casi cinco mil variables y lo resuelve en menos de un segundo. Respeta lo que ya empezó, los turnos, los moldes montados en cada máquina y las fechas de entrega. El resultado: noventa y dos coma cinco por ciento a tiempo, dos pedidos tarde menos y cuarenta y siete horas menos de atraso. A cambio hace más cambios de color.
+> Pulsamos calcular. El cosimulador arma un modelo de programación lineal con casi cinco mil variables y lo resuelve en menos de un segundo. Respeta lo que ya empezó, los turnos, los moldes montados en cada máquina y las fechas de entrega. El resultado: noventa y dos coma cinco por ciento a tiempo, dos pedidos tarde menos y cuarenta y siete horas menos de atraso. Y la ocupación de la planta baja del sesenta y nueve al sesenta y dos por ciento: la misma producción con ochenta y tres horas de máquina menos en la semana. Esas horas quedan libres para más pedidos. A cambio hace más cambios de color.
 
 ### S05 · El Gantt del cosimulador
 - imagen: capturas/05-gantt-cosimulador.png
@@ -49,14 +49,14 @@ Mensaje central: a partir de los pedidos y sus fechas de entrega, el cosimulador
 - duración: 18 s
 - en pantalla: las tarjetas de IMM-21 e IMM-23 en ámbar y rojo
 
-> La planta queda ocupada al sesenta y dos por ciento en la semana. Pero si miramos máquina por máquina, las dos inyectoras del balde y la línea de ensamble están casi llenas, mientras otras tienen tiempo libre. Ese es el cuello de botella.
+> Con el plan del cosimulador, la planta queda ocupada al sesenta y dos por ciento en la semana. Pero si miramos máquina por máquina, las dos inyectoras del balde y la línea de ensamble están casi llenas, mientras otras tienen tiempo libre. Ese es el cuello de botella.
 
 ### S07 · Fractal balancea la ocupación
 - imagen: capturas/07-fractal-balancear.png
 - duración: 26 s
-- en pantalla: la recomendación y la fila B "MEJOR"
+- en pantalla: la recomendación, la fila B "MEJOR" y la columna OCUPACIÓN PLANTA
 
-> Aquí entra Fractal. Además de la secuencia, prueba cambios en la planta. Su recomendación: montar el molde de repuesto del balde, que está en el almacén, en la inyectora veinte, que está libre. Con noventa minutos de montaje, la máquina más cargada baja del setenta al sesenta y dos por ciento, sin atrasar ningún pedido. Cada opción se puede ver en el Gantt y adoptar; Fractal recomienda y la persona decide.
+> Aquí entra Fractal. Además de la secuencia, prueba cambios en la planta. Su recomendación: montar el molde de repuesto del balde, que está en el almacén, en la inyectora veinte, que está libre. Con noventa minutos de montaje, la máquina más cargada baja del setenta al sesenta y dos por ciento, sin atrasar ningún pedido, y la ocupación de la planta baja al cincuenta y nueve por ciento. Cada opción se puede ver en el Gantt y adoptar; Fractal recomienda y la persona decide.
 
 ### S08 · El Gantt balanceado
 - imagen: capturas/08-gantt-balanceado.png

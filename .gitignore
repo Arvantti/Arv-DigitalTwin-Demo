@@ -16,3 +16,8 @@ apps/gallery/public/api/
 city-models/centro-medellin-v1/osm-build/
 .wrangler/
 .dev.vars*
+
+# Videos de la demo de plásticos (se generan con tools/demo-video/grabar.cjs --video)
+docs/demo-plasticos/*/video/
+docs/demo-plasticos/audio/
+docs/demo-plasticos/*.mp4

@@ -11,7 +11,7 @@ import "./aps.css";
 import yaml from "js-yaml";
 import plantYaml from "../../../industrial-models/plastic-injection-plant-v1/plant.yaml?raw";
 import type { PlantEvent, PlanScheduleRow } from "@twin/cosim/core/contracts.ts";
-import { activeEvents, events, model, now, onChange, PLASTICS, setEvents, vigente } from "./aps-store.ts";
+import { activeEvents, events, model, now, onChange, PLASTICS, setEvents, useDemoDays, vigente } from "./aps-store.ts";
 import { COLOR_NAMES, esc, nf, when } from "./schedule.ts";
 import { moldOf } from "./plant-state.ts";
 
@@ -65,6 +65,8 @@ function stateOf(id: string): { state: State; row?: PlanScheduleRow; ev?: PlantE
 }
 
 const label = (id: string) => id.toUpperCase();
+
+useDemoDays();
 
 function renderFloor(): void {
   const svg = $("emu-svg");
