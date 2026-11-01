@@ -894,6 +894,8 @@ stage.renderer.domElement.addEventListener("pointerup", (e) => {
   // El editor de rutas toma el clic cuando está agregando equipos a una etapa.
   if (o && productsApi?.pick(o.userData.assetId as string)) return;
   select(o ? (o.userData.assetId as string) : null);
+  // El centro del equipo seleccionado pasa a ser el pivote de la rotación (clic derecho sostenido).
+  if (o) stage.setPivot(o);
 });
 
 // ------------------------------------------------------------------ cámaras
