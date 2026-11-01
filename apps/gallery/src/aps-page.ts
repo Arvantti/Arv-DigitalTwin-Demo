@@ -16,6 +16,7 @@ import "./aps.css";
 import type { CustomerOrder, Importance, ProductionPlan } from "@twin/cosim/core/contracts.ts";
 import { activeEvents, addedOrders, baseManual, molds, modelNow, manualPlan, model, now, onChange, portfolio, resetDemo, setAdded, setVigente, SOURCE_NAMES, vigente } from "./aps-store.ts";
 import { COLOR_NAMES, day, esc, nf, when } from "./schedule.ts";
+import { renderInsumos } from "./insumos.ts";
 import type { FractalStudy } from "@twin/fractal-manufacturing/contracts.ts";
 import type { StudyInput } from "@twin/fractal-manufacturing/models/plastic-injection-plant-v1/study.ts";
 
@@ -44,7 +45,7 @@ if (new URLSearchParams(location.search).get("reset") === "1") resetDemo();
 
 let proposal: ProductionPlan | null = null;
 let current = vigente();
-const TABS = ["orders", "gantt", "fractal"];
+const TABS = ["orders", "gantt", "insumos", "fractal"];
 let tab = TABS.find((x) => x === new URLSearchParams(location.search).get("tab")) ?? "orders";
 let selected: string | null = null;
 let viewFrom = ms(`${now().slice(0, 10)}T00:00`) - 2 * DAY_MS;
@@ -64,11 +65,13 @@ function render(): void {
   $("tab-orders").hidden = tab !== "orders";
   $("tab-gantt").hidden = tab !== "gantt";
   $("tab-fractal").hidden = tab !== "fractal";
+  $("tab-insumos").hidden = tab !== "insumos";
   $("aps-calc").toggleAttribute("disabled", !!running);
   renderAlarm();
   renderProposal();
   if (tab === "orders") renderOrders(p);
   else if (tab === "gantt") renderGantt(p);
+  else if (tab === "insumos") renderInsumos($("tab-insumos"), p);
   else renderFractal();
 }
 

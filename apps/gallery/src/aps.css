@@ -215,3 +215,5 @@ button.danger:hover { background: rgba(255, 59, 59, 0.4); border-color: #fff; }
 .cc-load .cc-strip { grid-column: 1 / -1; }
 .cc-filter { display: flex; align-items: center; gap: 6px; }
 .cc-filter select { background: rgba(6, 8, 40, 0.9); color: inherit; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 4px; font: 500 12px "IBM Plex Mono", monospace; padding: 2px 4px; max-width: 360px; }
+.aps-h3 { font: 700 12px Inter, sans-serif; letter-spacing: 0.1em; color: var(--cyan); margin: 18px 0 6px; }
+#tab-insumos .swatch { margin-right: 6px; vertical-align: -1px; border-radius: 2px; }
