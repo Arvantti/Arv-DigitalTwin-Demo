@@ -24,6 +24,6 @@ demand:
   color_change_min: 40          # purga de color (de claro a oscuro se prefiere)
   customers: [Hogar Express, Plásticos del Caribe, Mayorista San Andresito, Supermercados La Esquina, Institucional Andina, Ferretería La 80, Distribuidora Oriente]
   products:
-    - { product: cubiertos,    daily: 204800, order_qty: [60000, 200000], round: 1000 }
-    - { product: balde-12l,    daily: 1920,   order_qty: [400, 2400],     round: 50 }
+    - { product: cubiertos,    daily: 512000, order_qty: [100000, 400000], round: 1000 }
+    - { product: balde-12l,    daily: 3840,   order_qty: [500, 2600],     round: 50 }
     - { product: papelera-20l, daily: 1645,   order_qty: [300, 1500],     round: 25 }

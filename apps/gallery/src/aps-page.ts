@@ -14,8 +14,10 @@
 import "./styles.css";
 import "./aps.css";
 import type { CustomerOrder, Importance, ProductionPlan } from "@twin/cosim/core/contracts.ts";
-import { activeEvents, addedOrders, baseManual, molds, modelNow, manualPlan, model, now, onChange, portfolio, resetDemo, setAdded, setVigente, SOURCE_NAMES, vigente } from "./aps-store.ts";
+import { activeEvents, addedOrders, baseManual, molds, modelNow, manualPlan, model, now, onChange, portfolio, resetDemo, setAdded, setVigente, SOURCE_NAMES, useDemoDays, vigente } from "./aps-store.ts";
 import { COLOR_NAMES, day, esc, nf, when } from "./schedule.ts";
+import { renderInsumos } from "./insumos.ts";
+import { plantLoadAt } from "./plant-state.ts";
 import type { FractalStudy } from "@twin/fractal-manufacturing/contracts.ts";
 import type { StudyInput } from "@twin/fractal-manufacturing/models/plastic-injection-plant-v1/study.ts";
 
@@ -44,7 +46,7 @@ if (new URLSearchParams(location.search).get("reset") === "1") resetDemo();
 
 let proposal: ProductionPlan | null = null;
 let current = vigente();
-const TABS = ["orders", "gantt", "fractal"];
+const TABS = ["orders", "gantt", "insumos", "fractal"];
 let tab = TABS.find((x) => x === new URLSearchParams(location.search).get("tab")) ?? "orders";
 let selected: string | null = null;
 let viewFrom = ms(`${now().slice(0, 10)}T00:00`) - 2 * DAY_MS;
@@ -56,24 +58,34 @@ let runId = 0;
 
 const shown = () => proposal ?? current;
 
+useDemoDays();
+
 function render(): void {
   const p = shown();
   $("aps-clock").textContent = `AHORA · ${when(now())}`;
-  $("aps-vigente").innerHTML = `VIGENTE · <b>${esc(SOURCE_NAMES[current.source])} ${esc(current.plan_id)}</b> · ${nf(current.kpis.on_time_pct, 1)} % a tiempo`;
+  const occ = occOf(current, loadIds(current));
+  $("aps-vigente").innerHTML = `VIGENTE · <b>${esc(SOURCE_NAMES[current.source])} ${esc(current.plan_id)}</b> · ${nf(current.kpis.on_time_pct, 1)} % a tiempo · ocupación ${pctTxt(occ.occupancy)}`;
   document.querySelectorAll<HTMLButtonElement>(".aps-tabs [data-tab]").forEach((b) => b.classList.toggle("active", b.dataset.tab === tab));
   $("tab-orders").hidden = tab !== "orders";
   $("tab-gantt").hidden = tab !== "gantt";
   $("tab-fractal").hidden = tab !== "fractal";
+  $("tab-insumos").hidden = tab !== "insumos";
   $("aps-calc").toggleAttribute("disabled", !!running);
   renderAlarm();
   renderProposal();
   if (tab === "orders") renderOrders(p);
   else if (tab === "gantt") renderGantt(p);
+  else if (tab === "insumos") renderInsumos($("tab-insumos"), p);
   else renderFractal();
 }
 
 // ------------------------------------------------------------------ fallas del emulador
 const machineLabel = (m: string) => (MACHINE_NAMES[m] ?? m).toUpperCase();
+/** Ocupación de la planta en los 7 días desde AHORA: horas programadas / disponibles de las máquinas con molde u orden (como el centro de control). */
+const T_MIN = () => Date.parse(`${now().slice(0, 16)}:00Z`) / 60000;
+const loadIds = (...plans: ProductionPlan[]) => [...new Set([...model.machines, ...plans.flatMap((p) => p.schedule.map((r) => r.equipment))])];
+const occOf = (plan: ProductionPlan, ids: string[]) => plantLoadAt(plan, activeEvents(), ids, T_MIN());
+const pctTxt = (x: number) => `${nf(x * 100, 1)} %`;
 
 /** Fallas y paros que llegaron del emulador y que la programación vigente todavía no tiene en cuenta. */
 function pendingEvents() {
@@ -116,6 +128,9 @@ function renderProposal(): void {
   }
   const v = current.kpis;
   const k = proposal.kpis;
+  const ids = loadIds(current, proposal);
+  const ov = occOf(current, ids);
+  const op = occOf(proposal, ids);
   const s = proposal.solver;
   const cell = (a: number, b: number, fmt: (x: number) => string, lowerIsBetter: boolean) =>
     `<span>${fmt(a)}</span><b class="${a === b ? "" : (b < a) === lowerIsBetter ? "ok" : "bad"}">${fmt(b)}</b>`;
@@ -129,6 +144,7 @@ function renderProposal(): void {
         <div><small>Pedidos tarde</small>${cell(v.late_orders, k.late_orders, (x) => nf(x), true)}</div>
         <div><small>Atraso total</small>${cell(v.tardiness_h, k.tardiness_h, (x) => `${nf(x, 1)} h`, true)}</div>
         <div><small>Cambios de color</small>${cell(v.changeovers, k.changeovers, (x) => nf(x), true)}</div>
+        <div title="Horas programadas / horas disponibles de la planta en los 7 días desde AHORA"><small>Ocupación planta · 7 días</small>${cell(ov.occupancy, op.occupancy, pctTxt, true)}<small>${nf(ov.busyH, 0)} → ${nf(op.busyH, 0)} h de ${nf(op.availH, 0)} h</small></div>
       </div>
       <div class="aps-prop-actions"><button id="aps-adopt" class="primary">✓ ADOPTAR COMO VIGENTE</button><button id="aps-discard">✕ DESCARTAR</button></div>
     </div>`;
@@ -179,6 +195,12 @@ function stateChips(p: ProductionPlan, id: string): string {
   return `<span class="chip ${st[0]}">${st[1]}</span>${row.late_h > 0 ? `<span class="chip late">TARDE ${nf(row.late_h, 1)} h</span>` : ""}`;
 }
 
+/** Opciones de fecha de entrega como "día N" (el valor sigue siendo la fecha de la planta). */
+const dayOptions = (plus: (n: number) => string, from: number, to: number, selected: number) =>
+  Array.from({ length: to - from + 1 }, (_, i) => from + i)
+    .map((n) => `<option value="${plus(n)}"${n === selected ? " selected" : ""}>${esc(day(plus(n)))}${n === 1 ? " (mañana)" : ""}</option>`)
+    .join("");
+
 function renderOrders(p: ProductionPlan): void {
   const el = $("tab-orders");
   const t = now();
@@ -206,7 +228,7 @@ function renderOrders(p: ProductionPlan): void {
       <label>Producto <select id="f-product">${products.map((x) => `<option value="${esc(x.id)}">${esc(x.name)}</option>`).join("")}</select></label>
       <label>Color <select id="f-color"></select></label>
       <label>Cantidad <input id="f-qty" type="number" min="1" step="1" /></label>
-      <label>Entrega <input id="f-due" type="date" min="${plus(1)}" max="${plus(model.windowDays)}" value="${plus(Math.min(5, model.windowDays))}" /></label>
+      <label>Entrega <select id="f-due">${dayOptions(plus, 1, model.windowDays, Math.min(5, model.windowDays))}</select></label>
       <label>Importancia <select id="f-imp">${IMPORTANCE.map(([v, l]) => `<option value="${v}"${v === "normal" ? " selected" : ""}>${l}</option>`).join("")}</select></label>
       <button id="f-add" class="primary">＋ AGREGAR</button>
       <span id="f-msg" class="small">${formMsg}</span>
@@ -241,7 +263,7 @@ function renderOrders(p: ProductionPlan): void {
   $("f-add").onclick = () => {
     const customer = $<HTMLInputElement>("f-customer").value.trim();
     const qty = Math.round(Number($<HTMLInputElement>("f-qty").value));
-    const due = $<HTMLInputElement>("f-due").value;
+    const due = $<HTMLSelectElement>("f-due").value;
     const bad = (m: string) => ((formMsg = `<span class="bad">${m}</span>`), render());
     if (!customer) return bad("Falta el cliente.");
     if (!(qty > 0)) return bad("La cantidad debe ser mayor que cero.");
@@ -482,7 +504,7 @@ function renderFractal(): void {
     <div class="fr-cards">
       <article class="fr-card"><div class="label">1 · ADELANTAR UN PEDIDO</div><p class="dim small">Un cliente pide su pedido antes. ¿Cómo mover todo para cumplirle sin atrasar a los demás?</p>
         <label>Pedido <select id="fr-order">${movable.map((o) => `<option value="${esc(o.id)}">${esc(o.id)} · ${esc(o.product_name)} · ${nf(o.quantity)} · entrega ${day(o.due)}</option>`).join("")}</select></label>
-        <label>Nueva entrega <input id="fr-due" type="date" min="${plus(1)}" value="${plus(2)}" /></label>
+        <label>Nueva entrega <select id="fr-due">${dayOptions(plus, 1, model.windowDays, 2)}</select></label>
         <button id="fr-run-adelantar" class="primary"${movable.length && !studying ? "" : " disabled"}>◆ ESTUDIAR</button></article>
       <article class="fr-card"><div class="label">2 · BALANCEAR LA OCUPACIÓN</div><p class="dim small">Repartir la carga de la próxima semana sin sobrecargas ni cuellos de botella (objetivo 70 % por etapa).</p>
         <button id="fr-run-balancear" class="primary"${studying ? " disabled" : ""}>◆ ESTUDIAR</button></article>
@@ -502,14 +524,14 @@ function renderFractal(): void {
         <p class="fr-q">${esc(study.question)}</p>
         <p class="fr-rec">◆ ${esc(study.recommendation)}</p>
         <div class="aps-table-wrap"><table class="route-table aps-table fr-table">
-          <thead><tr><th>Opción</th><th>Qué cambia</th><th class="num">A tiempo</th><th class="num">Tarde</th><th class="num">Atraso</th><th class="num">Cambios de color</th><th class="num">Montaje de moldes</th><th>Carga máxima</th><th class="num">Puntaje</th><th></th></tr></thead>
+          <thead><tr><th>Opción</th><th>Qué cambia</th><th class="num">A tiempo</th><th class="num">Tarde</th><th class="num">Atraso</th><th class="num">Cambios de color</th><th class="num">Montaje de moldes</th><th class="num">Ocupación planta</th><th>Carga máxima</th><th class="num">Puntaje</th><th></th></tr></thead>
           <tbody>
-            <tr class="past"><td>VIGENTE</td><td>${esc(SOURCE_NAMES[current.source])} ${esc(study.baseline.plan_id)}</td><td class="num">${nf(study.baseline.kpis.on_time_pct, 1)} %</td><td class="num">${study.baseline.kpis.late_orders}</td><td class="num">${nf(study.baseline.kpis.tardiness_h, 1)} h</td><td class="num">${study.baseline.kpis.changeovers}</td><td class="num">—</td><td>${esc(machineLabel(study.baseline.max_load.equipment))} ${nf(study.baseline.max_load.pct, 0)} %</td><td></td><td></td></tr>
+            <tr class="past"><td>VIGENTE</td><td>${esc(SOURCE_NAMES[current.source])} ${esc(study.baseline.plan_id)}</td><td class="num">${nf(study.baseline.kpis.on_time_pct, 1)} %</td><td class="num">${study.baseline.kpis.late_orders}</td><td class="num">${nf(study.baseline.kpis.tardiness_h, 1)} h</td><td class="num">${study.baseline.kpis.changeovers}</td><td class="num">—</td><td class="num">${pctTxt(occOf(current, loadIds(current)).occupancy)}</td><td>${esc(machineLabel(study.baseline.max_load.equipment))} ${nf(study.baseline.max_load.pct, 0)} %</td><td></td><td></td></tr>
             ${study.options
               .map(
                 (o) => `<tr class="${o.id === study!.best ? "best" : ""}"><td><b>${esc(o.id.split("-").at(-1)!)}</b>${o.id === study!.best ? ' <span class="chip done">MEJOR</span>' : ""}</td><td>${esc(o.label)}<br/><small class="dim">${o.levers.map((l) => esc(l.text)).join(" · ")}</small></td>
-                <td class="num">${nf(o.kpis.on_time_pct, 1)} %</td><td class="num">${o.kpis.late_orders}</td><td class="num">${nf(o.kpis.tardiness_h, 1)} h</td><td class="num">${o.kpis.changeovers}</td><td class="num">${o.mold_change_h ? `${nf(o.mold_change_h, 1)} h` : "—"}</td><td>${esc(machineLabel(o.max_load.equipment))} ${nf(o.max_load.pct, 0)} %</td><td class="num">${nf(o.score, 1)}</td>
-                <td><button class="fr-see" data-id="${esc(o.id)}">VER EN GANTT</button></td></tr>`,
+                <td class="num">${nf(o.kpis.on_time_pct, 1)} %</td><td class="num">${o.kpis.late_orders}</td><td class="num">${nf(o.kpis.tardiness_h, 1)} h</td><td class="num">${o.kpis.changeovers}</td><td class="num">${o.mold_change_h ? `${nf(o.mold_change_h, 1)} h` : "—"}</td><td class="num">${pctTxt(occOf(o.plan, loadIds(o.plan)).occupancy)}</td><td>${esc(machineLabel(o.max_load.equipment))} ${nf(o.max_load.pct, 0)} %</td><td class="num">${nf(o.score, 1)}</td>
+                <td class="fr-btns"><button class="fr-see" data-id="${esc(o.id)}">VER EN GANTT</button><button class="fr-see fr-pick" data-id="${esc(o.id)}">ADOPTAR</button></td></tr>`,
               )
               .join("")}
           </tbody></table></div>
@@ -518,10 +540,20 @@ function renderFractal(): void {
       </section>`
         : ""
     }`;
-  $("fr-run-adelantar").onclick = () => runFractal({ scenario: "adelantar", order: { id: $<HTMLSelectElement>("fr-order").value, due: `${$<HTMLInputElement>("fr-due").value}T${model.calendar.shifts.map((x) => x.end).sort().at(-1)}` } });
+  $("fr-run-adelantar").onclick = () => runFractal({ scenario: "adelantar", order: { id: $<HTMLSelectElement>("fr-order").value, due: `${$<HTMLSelectElement>("fr-due").value}T${model.calendar.shifts.map((x) => x.end).sort().at(-1)}` } });
   $("fr-run-balancear").onclick = () => runFractal({ scenario: "balancear" });
   $("fr-run-falla").onclick = () => runFractal({ scenario: "falla" });
-  el.querySelectorAll<HTMLButtonElement>(".fr-see").forEach(
+  // Cualquier opción se puede adoptar, no solo la recomendada: Fractal recomienda y la persona decide.
+  const adoptOption = (id: string) => {
+    setVigente(study!.options.find((o) => o.id === id)!.plan);
+    current = vigente();
+    proposal = null;
+    study = null;
+    tab = "gantt";
+    render();
+  };
+  el.querySelectorAll<HTMLButtonElement>(".fr-pick").forEach((b) => (b.onclick = () => adoptOption(b.dataset.id!)));
+  el.querySelectorAll<HTMLButtonElement>(".fr-see:not(.fr-pick)").forEach(
     (b) =>
       (b.onclick = () => {
         proposal = study!.options.find((o) => o.id === b.dataset.id)!.plan;
@@ -531,14 +563,7 @@ function renderFractal(): void {
   );
   const adopt = document.getElementById("fr-adopt");
   if (adopt)
-    adopt.onclick = () => {
-      setVigente(study!.options.find((o) => o.id === study!.best)!.plan);
-      current = vigente();
-      proposal = null;
-      study = null;
-      tab = "gantt";
-      render();
-    };
+    adopt.onclick = () => adoptOption(study!.best);
 }
 
 // ------------------------------------------------------------------ arranque

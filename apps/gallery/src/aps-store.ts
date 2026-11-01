@@ -10,7 +10,7 @@ import type { CustomerOrder, CustomerOrders, PlantEvent, ProductionPlan } from "
 import { basePortfolio, baseManual, catalogData, plasticsModel } from "@twin/cosim/adapters/plastic-injection-plant-v1/catalog.ts";
 import { modelFor } from "@twin/fractal-manufacturing/models/plastic-injection-plant-v1/study.ts";
 import { manualPlan } from "@twin/cosim/adapters/plastic-injection-plant-v1/manual.ts";
-import { plantNow, store } from "./schedule.ts";
+import { plantNow, setDayZero, store } from "./schedule.ts";
 
 export const PLASTICS = "plastic-injection-plant-v1";
 export const model = plasticsModel();
@@ -28,9 +28,25 @@ function read<T>(k: string, fallback: T): T {
   }
 }
 
-/** AHORA en hora de la planta (con ?now= para presentaciones); nunca antes del arranque de la cartera. */
+/**
+ * Reloj de la demo: la cartera es fija, así que AHORA es siempre el mismo día de la cartera (DEMO_DAY, contado desde el
+ * arranque = día 0) con la hora real del reloj. Así la presentación no depende de la fecha en que se haga.
+ * ?now=AAAA-MM-DDTHH:MM fija el instante; ?live=1 usa el calendario real.
+ */
+export const DEMO_DAY = 9;
+const DAY0 = basePortfolio.plan_start.slice(0, 10);
+const DEMO_DATE = new Date(Date.parse(`${DAY0}T00:00:00Z`) + DEMO_DAY * 864e5).toISOString().slice(0, 10);
+
+/** Las pantallas de plásticos muestran "día N" en vez de fechas de calendario. */
+export function useDemoDays(): void {
+  setDayZero(DAY0);
+}
+
+/** AHORA en hora de la planta; nunca antes del arranque de la cartera. */
 export function now(): string {
-  const t = plantNow(model.timezone);
+  const params = typeof location === "undefined" ? new URLSearchParams() : new URLSearchParams(location.search);
+  const real = plantNow(model.timezone);
+  const t = params.has("now") || params.get("live") === "1" ? real : `${DEMO_DATE}T${real.slice(11, 16)}`;
   const start = basePortfolio.plan_start.slice(0, 16);
   return t < start ? start : t;
 }

@@ -13,7 +13,7 @@ programación manual (manual-sequence.v1) ──┘                             
                                                     gemelo 3D (tabla y play) · centro de control · Fractal
 ```
 
-- **Pedidos**: cartera inventada `CART-2026-11` (71 pedidos, clientes ficticios) más los que se agregan en pantalla.
+- **Pedidos**: cartera inventada `CART-2026-11` (93 pedidos, clientes ficticios) más los que se agregan en pantalla.
   Ventana de entrega de una semana (`aps/aps.yaml`): un pedido llega entre 3 y 7 días antes de su entrega; los de
   importancia alta, entre 1 y 2.
 - **Dos entradas**: la secuencia manual del planificador (`aps/plans/APS-MAN-01.json`, por orden de llegada y sin
@@ -29,7 +29,10 @@ programación manual (manual-sequence.v1) ──┘                             
 
 - `aps.html`: PEDIDOS (indicadores, agregar pedido, tabla con estado) y PROGRAMACIÓN · GANTT (arriba una fila por
   orden con inicio, fin y entrega; abajo los recursos con los lotes de esas órdenes, cambios de color, paradas y carga).
-  `?now=2026-11-04T10:00` fija la hora de la demo y `?reset=1` vuelve a la cartera inicial.
+  **Reloj de la demo:** las pantallas de plásticos muestran "día N" en vez de fechas (día 0 = arranque de la cartera,
+  lunes 26-oct-2026; ids de pedido `PED-D<día de entrega>-NN`). AHORA es siempre el día 9 (`DEMO_DAY` en
+  `aps-store.ts`) con la hora real, así la demo no depende de la fecha en que se presente. `?now=2026-11-04T10:00` fija
+  el instante, `?live=1` usa el calendario real y `?reset=1` vuelve a la cartera inicial.
 - `emulador.html`: plano 2D en tiempo real (ver abajo).
 - `plant.html?plant=plastic-injection-plant-v1`: el panel lateral muestra la programación vigente y abre el APS y el
   emulador.
@@ -52,19 +55,32 @@ El evento (`plant-event.v1`) llega a la vez a:
   mismo molde (por ejemplo, cubiertos de IMM-01 a IMM-02).
 - **Gemelo 3D**: la máquina queda marcada en rojo y el panel lateral la lista fuera de servicio.
 
-Con la vigente del cosimulador y una falla de IMM-01 el miércoles a las 10:00, la secuencia manual queda con 5 pedidos
-tarde y el cosimulador mantiene el 100 % a tiempo (prueba en `cosim/adapters/plastic-injection-plant-v1/tests`).
+Con la vigente del cosimulador y una falla de IMM-01 el miércoles a las 10:00, el cosimulador no queda peor que la
+secuencia manual (prueba en `cosim/adapters/plastic-injection-plant-v1/tests`).
 
-## Resultado con la cartera de la demo (AHORA = 2026-11-04 10:00)
+## Resultado con la cartera de la demo (AHORA = día 9, 10:00)
 
-| Programación | A tiempo | Pedidos tarde | Atraso total | Cambios de color |
-|---|---|---|---|---|
-| Manual APS-MAN-01 | 91,5 % | 6 | 153,2 h | 11 |
-| Cosimulador desde AHORA | 95,8 % | 3 | 80,1 h | 15 |
+| Programación | A tiempo | Pedidos tarde | Atraso total | Cambios de color | Ocupación planta (7 días) |
+|---|---|---|---|---|---|
+| Manual APS-MAN-01 | 90,3 % | 9 | 228,9 h | 23 | 69,3 % (794 de 1.146 h) |
+| Cosimulador desde AHORA | 92,5 % | 7 | 181,8 h | 34 | 62 % (711 h) |
+| + Fractal balancear (molde de repuesto en IMM-20) | 92,5 % | 7 | 181,8 h | 35 | 59,1 % (733 de 1.240 h) |
 
-Los 3 pedidos tarde que quedan ya estaban en producción antes de AHORA (congelados). Desde el arranque de la cartera
-el cosimulador llega al 100 %. Hace más cambios de color porque el programa lineal no los modela (reserva una purga por
-turno); es un punto para Fractal.
+Ocupación de planta = horas programadas / horas disponibles de las máquinas con molde u orden en los 7 días desde AHORA
+(la misma cuenta del centro de control). Se muestra en la etiqueta VIGENTE, en la propuesta y en la tabla de Fractal.
+El cosimulador hace la misma producción con menos horas de máquina, así que la ocupación baja y queda capacidad libre.
+
+Lo que ya empezó antes de AHORA queda congelado y el cosimulador no lo mueve. Hace más cambios de color porque el
+programa lineal no los modela (reserva una purga por turno); es un punto para Fractal.
+
+**Máquinas con molde** (`catalog/setup.yaml`, decisión de Andy del 2026-11-01: duplicar moldes de los 4 productos):
+cubiertos en IMM-01, 02, 04, 05 y 08; pedal y palanca en IMM-06 y 07; cuerpo de papelera en IMM-18 y 19; balde en
+IMM-21 y 23; ensamble en ENSAMBLE-01. Son 12 inyectoras con orden; las demás quedan en reserva para que Fractal monte
+un molde de repuesto. La demanda diaria de `catalog/demand.yaml` sigue esa capacidad.
+
+**Insumos**: la pestaña INSUMOS del APS calcula, para la semana que empieza hoy y por día, los kg de resina por material
+(unidades / cavidades × peso de inyección con colada), los kg de masterbatch por color, las unidades por producto, las
+horas de máquina, los turnos-máquina, los cambios de color y las horas de operario (`apps/gallery/src/insumos.ts`).
 
 ## Centro de control, PLC por máquina y play
 
@@ -104,16 +120,22 @@ animación se apaga. `?transport=0` la desactiva.
 
 Pestaña FRACTAL · ESCENARIOS del APS (`fractal/manufacturing/`, contrato `fractal-study.v1`). Fractal prueba
 combinaciones, cada una la coloca el cosimulador, y recomienda la mejor con su tabla de comparación y la ocupación de
-cada máquina antes y después. ADOPTAR deja la recomendación como vigente, con sus cambios de moldes y de fechas.
+cada máquina antes y después. Puntaje (menor es mejor): horas de atraso + 20 por pedido tarde + 2 por hora de montaje de
+molde + 0,5 por cambio de color; al balancear suma 1,5 × la carga máxima y 3 × lo que pase del 70 %. Cada opción se
+puede VER EN GANTT y ADOPTAR, no solo la recomendada; la adoptada queda vigente con sus cambios de moldes y de fechas.
 
 1. **Adelantar un pedido**: nueva fecha de entrega; prueba recalcular, prioridad alta y montar un molde de repuesto.
 2. **Balancear la ocupación**: busca las etapas más cargadas y prueba montar el molde de repuesto en una inyectora
-   libre (objetivo 70 % por etapa).
+   libre (objetivo 70 % por etapa). Un molde montado en dos máquinas (balde en IMM-21 e IMM-23) se prueba una sola vez.
 3. **Falla en curso**: con una máquina detenida en el emulador, compara esperar la reparación con mudar su molde a
-   otra máquina del mismo tamaño o montar el repuesto. Con IMM-21 parada 48 h, la secuencia sin cambios deja 6 pedidos
-   tarde (165,8 h) y montar el molde de balde de repuesto en IMM-22 deja 3 (80,1 h, los que ya venían tarde).
+   otra máquina del mismo tamaño o montar el repuesto. Con IMM-21 parada 72 h (lo que propone el emulador) y la cartera inicial, solo recolocar
+   deja 9 pedidos tarde (208,9 h) y montar el molde de balde de repuesto en IMM-20 deja 7 (181,8 h).
 
 Moldes de repuesto de la demo (`aps/aps.yaml`): uno de balde de 12 L y uno de cuerpo de papelera.
+
+## Demo grabada
+
+Capturas y guiones de narración por escenario en [`docs/demo-plasticos/`](demo-plasticos/README.md).
 
 ## Siguiente
 

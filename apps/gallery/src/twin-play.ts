@@ -9,7 +9,7 @@ import * as THREE from "three";
 import type { PlantEvent, ProductionPlan } from "@twin/cosim/core/contracts.ts";
 import { model, now } from "./aps-store.ts";
 import { dayLoadAt, dayLoads, dayStrip, isoOf, loadAt, loadColor, machineAt, machineLabel, minOf, moldOf, oeeAt, PLC_MACHINES, STATE_COLORS, STATE_NAMES, unitsUntil } from "./plant-state.ts";
-import { COLOR_NAMES, day, esc, nf } from "./schedule.ts";
+import { COLOR_NAMES, day, dayTag, esc, nf, relativeDays } from "./schedule.ts";
 
 const SPEEDS: [number, string][] = [
   [15, "15 min/s"],
@@ -69,9 +69,8 @@ export function buildTwinPlay(opts: Opts): TwinPlay {
   const span = to - from;
   let days = "";
   for (let d = from; d < to; d += 1440) {
-    const date = new Date(d * 60000);
     const work = model.calendar.isWorkday(d);
-    days += `<span class="${work ? "" : "off"}" style="left:${((100 * (d - from)) / span).toFixed(2)}%;width:${((100 * 1440) / span).toFixed(2)}%">${WEEKDAYS[date.getUTCDay()]} ${date.getUTCDate()}</span>`;
+    days += `<span class="${work ? "" : "off"}" style="left:${((100 * (d - from)) / span).toFixed(2)}%;width:${((100 * 1440) / span).toFixed(2)}%">${dayTag(d)}</span>`;
   }
   $("tt-days").innerHTML = `${days}<i class="tt-past" style="width:${((100 * (live() - from)) / span).toFixed(2)}%"></i><i class="tt-now" style="left:${((100 * (live() - from)) / span).toFixed(2)}%"></i>`;
 
@@ -149,7 +148,7 @@ export function buildTwinPlay(opts: Opts): TwinPlay {
     const n = live();
     range.value = String(t);
     const date = new Date(t * 60000);
-    $("tt-when").textContent = `${WEEKDAYS[date.getUTCDay()]} ${day(isoOf(t))} ${isoOf(t).slice(11, 16)}`;
+    $("tt-when").textContent = `${relativeDays() ? "" : `${WEEKDAYS[date.getUTCDay()]} `}${day(isoOf(t))} ${isoOf(t).slice(11, 16)}`;
     const zone = following ? "EN VIVO" : t < n - 1 ? "PASADO · ejecutado" : t > n + 1 ? "FUTURO · programado" : "AHORA";
     $("tt-zone").textContent = zone;
     $("tt-zone").className = following ? "live" : t < n ? "past" : "future";

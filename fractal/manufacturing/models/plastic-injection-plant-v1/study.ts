@@ -108,11 +108,14 @@ export function loadsOf(model: PlasticsModel, plan: ProductionPlan, a: number, b
 const maxOf = (loads: Record<string, number>) =>
   Object.entries(loads).reduce((best, [equipment, pct]) => (pct > best.pct ? { equipment, pct } : best), { equipment: "", pct: 0 });
 
-const hm = (iso: string) => `${iso.slice(8, 10)}/${iso.slice(5, 7)} ${iso.slice(11, 16)}`;
+/** "día N HH:MM", con el día 0 en el arranque de la cartera (sin fechas de calendario en los textos). */
+let day0 = 0;
+const hm = (iso: string) => `día ${Math.round((Date.parse(`${iso.slice(0, 10)}T00:00:00Z`) - day0) / 864e5)} ${iso.slice(11, 16)}`;
 const label = (m: string) => m.replace("assembly-", "ensamble-").toUpperCase();
 
 export async function runStudy(newHighs: () => Promise<HighsLike>, cat: CatalogData, input: StudyInput): Promise<FractalStudy> {
   const t0 = Date.now();
+  day0 = Date.parse(`${input.portfolio.plan_start.slice(0, 10)}T00:00:00Z`);
   const molds = input.molds ?? {};
   const baseModel = modelFor(cat, molds);
   const baseSetup = setupWith(cat, molds);
@@ -162,8 +165,9 @@ export async function runStudy(newHighs: () => Promise<HighsLike>, cat: CatalogD
       .sort((a, b) => b[1] - a[1]);
     question = `¿Cómo repartir la ocupación de la próxima semana sin sobrecargas (objetivo ${TARGET_LOAD} %)? Hoy la máquina más cargada es ${label(top[0]?.[0] ?? "")} al ${top[0]?.[1] ?? 0} %.`;
     variants.push({ label: "Solo recolocar la secuencia", levers: [{ kind: "recalcular", text: "Recolocar con el cosimulador sin cambiar moldes" }] });
-    // Los dos cuellos de botella con molde de repuesto en el almacén.
-    for (const [m] of top.filter(([m]) => sparesLeft(cat, baseSetup, baseSetup[m].tooling) > 0).slice(0, 2)) variants.push(...mountSpare(baseSetup[m].tooling));
+    // Los moldes de los dos cuellos de botella con repuesto en el almacén (un molde montado en dos máquinas cuenta una vez).
+    const toolings = [...new Set(top.map(([m]) => baseSetup[m].tooling))].filter((t) => sparesLeft(cat, baseSetup, t) > 0);
+    for (const t of toolings.slice(0, 2)) variants.push(...mountSpare(t));
   } else {
     const ev = events.find((e) => failed.has(e.equipment));
     if (!ev) throw new Error("No hay ninguna máquina fuera de servicio en el emulador.");

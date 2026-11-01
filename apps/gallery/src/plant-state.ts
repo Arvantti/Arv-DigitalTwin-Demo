@@ -13,6 +13,7 @@ import yaml from "js-yaml";
 import plantYaml from "../../../industrial-models/plastic-injection-plant-v1/plant.yaml?raw";
 import setupYaml from "../../../industrial-models/plastic-injection-plant-v1/catalog/setup.yaml?raw";
 import { model, molds } from "./aps-store.ts";
+import { dayTag } from "./schedule.ts";
 
 export type MachineState = "run" | "change" | "idle" | "plan" | "fault" | "off";
 export const STATE_NAMES: Record<MachineState, string> = {
@@ -61,6 +62,21 @@ export function machineAt(plan: ProductionPlan, events: PlantEvent[], id: string
 
 const overlap = (a: number, b: number, c: number, d: number) => model.calendar.workBetween(Math.max(a, c), Math.min(b, d));
 
+/** Paradas programadas y fallas de una máquina, unidas: una falla que la programación ya trae como parada cuenta una vez. */
+function downsOf(plan: ProductionPlan, events: PlantEvent[], id: string): [number, number][] {
+  const list: [number, number][] = [
+    ...plan.downtime.filter((d) => d.equipment === id).map((d) => [minOf(d.start), minOf(d.end)] as [number, number]),
+    ...events.filter((e) => e.equipment === id).map((e) => [minOf(e.start), evEnd(e)] as [number, number]),
+  ].sort((x, y) => x[0] - y[0]);
+  const out: [number, number][] = [];
+  for (const [a, b] of list) {
+    const last = out[out.length - 1];
+    if (last && a <= last[1]) last[1] = Math.max(last[1], b);
+    else out.push([a, b]);
+  }
+  return out;
+}
+
 /** Unidades de una fila hechas hasta t (avance por tiempo de trabajo, después del cambio de color). */
 export function unitsUntil(r: PlanScheduleRow, t: number): number {
   const a = minOf(r.start);
@@ -102,10 +118,7 @@ export function oeeAt(plan: ProductionPlan, events: PlantEvent[], id: string, t:
   }
   const from = shift[0];
   const rows = plan.schedule.filter((r) => r.equipment === id && minOf(r.end) > from && minOf(r.start) < until);
-  const downs: [number, number][] = [
-    ...plan.downtime.filter((d) => d.equipment === id).map((d) => [minOf(d.start), minOf(d.end)] as [number, number]),
-    ...events.filter((e) => e.equipment === id).map((e) => [minOf(e.start), evEnd(e)] as [number, number]),
-  ];
+  const downs = downsOf(plan, events, id);
   const downMin = downs.reduce((s, [a, b]) => s + overlap(a, b, from, until), 0);
   let busy = 0;
   let change = 0;
@@ -206,6 +219,22 @@ export function loadAt(plan: ProductionPlan, events: PlantEvent[], id: string, t
   return loadIn(plan, events, id, from, from + days * 1440, order);
 }
 
+/** Ocupación de la planta en la semana: horas programadas / horas disponibles de las máquinas dadas, y la más cargada. */
+export interface PlantLoad {
+  busyH: number;
+  availH: number;
+  occupancy: number;
+  max: { id: string; occupancy: number };
+}
+
+export function plantLoadAt(plan: ProductionPlan, events: PlantEvent[], ids: string[], t: number, days = 7): PlantLoad {
+  const loads = ids.map((id) => ({ id, ld: loadAt(plan, events, id, t, days) }));
+  const busyH = loads.reduce((s, x) => s + x.ld.busyH, 0);
+  const availH = loads.reduce((s, x) => s + x.ld.availH, 0);
+  const top = loads.reduce((a, b) => (b.ld.occupancy > a.ld.occupancy ? b : a), loads[0]);
+  return { busyH, availH, occupancy: availH ? busyH / availH : 0, max: { id: top?.id ?? "", occupancy: top?.ld.occupancy ?? 0 } };
+}
+
 /** Ocupación por día en la semana que empieza el día del instante (solo días laborables). */
 export function dayLoads(plan: ProductionPlan, events: PlantEvent[], id: string, t: number, days = 7, order?: string): Load[] {
   const start = Math.floor(t / 1440) * 1440;
@@ -222,10 +251,7 @@ export function dayLoadAt(plan: ProductionPlan, events: PlantEvent[], id: string
 /** Ocupación contra disponibilidad entre dos instantes; con `order`, solo cuentan las horas de esa orden. */
 export function loadIn(plan: ProductionPlan, events: PlantEvent[], id: string, from: number, to: number, order?: string): Load {
   const shift = model.calendar.workBetween(from, to);
-  const downs: [number, number][] = [
-    ...plan.downtime.filter((d) => d.equipment === id).map((d) => [minOf(d.start), minOf(d.end)] as [number, number]),
-    ...events.filter((e) => e.equipment === id).map((e) => [minOf(e.start), evEnd(e)] as [number, number]),
-  ];
+  const downs = downsOf(plan, events, id);
   const down = Math.min(shift, downs.reduce((s, [a, b]) => s + overlap(a, b, from, to), 0));
   const rows = plan.schedule.filter((r) => r.equipment === id && (!order || r.order === order) && minOf(r.end) > from && minOf(r.start) < to);
   let busy = 0;
@@ -251,7 +277,6 @@ export function loadIn(plan: ProductionPlan, events: PlantEvent[], id: string, f
 /** Color de la ocupación: baja (gris), sana (verde), alta (ámbar), saturada (rojo). */
 export const loadColor = (x: number) => (x >= 0.95 ? "#ff3b3b" : x >= 0.85 ? "#ffb000" : x >= 0.3 ? "#22e06b" : "#8a93ad");
 
-const WD = ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"];
 
 /**
  * Tira de la semana por día: una barra por día con la disponibilidad (fondo gris) y la ocupación encima (color).
@@ -261,9 +286,8 @@ export function dayStrip(list: Load[], t: number): string {
   const cells = list.map((x) => {
     const occ = Math.round(x.occupancy * 100);
     const av = Math.round(x.availability * 100);
-    const date = new Date(x.from * 60000);
     const now = t >= x.from && t < x.to ? " now" : "";
-    return `<div class="ss-day${now}" title="${WD[date.getUTCDay()]} ${date.getUTCDate()}: ocupación ${occ} % (${x.busyH.toFixed(1)} de ${x.availH.toFixed(1)} h) · disponibilidad ${av} %"><span class="ss-cell"><i class="av" style="height:${av}%"></i><i class="oc" style="height:${(av * Math.min(1, x.occupancy)).toFixed(0)}%;background:${loadColor(x.occupancy)}"></i></span><b>${occ}</b><small>${WD[date.getUTCDay()]} ${date.getUTCDate()}</small></div>`;
+    return `<div class="ss-day${now}" title="${dayTag(x.from)}: ocupación ${occ} % (${x.busyH.toFixed(1)} de ${x.availH.toFixed(1)} h) · disponibilidad ${av} %"><span class="ss-cell"><i class="av" style="height:${av}%"></i><i class="oc" style="height:${(av * Math.min(1, x.occupancy)).toFixed(0)}%;background:${loadColor(x.occupancy)}"></i></span><b>${occ}</b><small>${dayTag(x.from)}</small></div>`;
   });
   return `<div class="shift-strip">${cells.join("")}</div>`;
 }

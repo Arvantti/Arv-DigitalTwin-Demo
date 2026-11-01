@@ -26,11 +26,11 @@ equipment:
   imm-01: { type: injection-molding-machine, preset: 100t-cutlery, params: {"clamp_t": 100, "max_shot_kg": 0.15, "robot": "sprue_picker"} }  # molde en catalog/setup.yaml
   imm-02: { type: injection-molding-machine, preset: 100t-cutlery, params: {"clamp_t": 100, "max_shot_kg": 0.15, "robot": "sprue_picker"} }  # molde en catalog/setup.yaml
   imm-03: { type: injection-molding-machine, preset: 300t-container, params: {"clamp_t": 120, "max_shot_kg": 0.2, "product": "tapa recipiente 0,5 L", "material": "PP", "cavities": 4, "part_g": 12, "cycle_s": 12, "robot": "cartesiano"} }
-  imm-04: { type: injection-molding-machine, preset: 300t-container, params: {"clamp_t": 120, "max_shot_kg": 0.2, "product": "tapa recipiente 1 L", "material": "PP", "cavities": 4, "part_g": 18, "cycle_s": 13, "robot": "cartesiano"} }
-  imm-05: { type: injection-molding-machine, preset: 300t-container, params: {"clamp_t": 150, "max_shot_kg": 0.25, "product": "vajilla infantil (plato)", "material": "PP", "cavities": 2, "part_g": 45, "cycle_s": 18, "robot": "cartesiano"} }
+  imm-04: { type: injection-molding-machine, preset: 300t-container, params: {"clamp_t": 120, "max_shot_kg": 0.2, "robot": "cartesiano"} }  # molde en catalog/setup.yaml
+  imm-05: { type: injection-molding-machine, preset: 300t-container, params: {"clamp_t": 150, "max_shot_kg": 0.25, "robot": "cartesiano"} }  # molde en catalog/setup.yaml
   imm-06: { type: injection-molding-machine, preset: 300t-container, params: {"clamp_t": 150, "max_shot_kg": 0.25, "robot": "sprue_picker"} }  # molde en catalog/setup.yaml
-  imm-07: { type: injection-molding-machine, preset: 300t-container, params: {"clamp_t": 150, "max_shot_kg": 0.25, "product": "vaso", "material": "PP", "cavities": 4, "part_g": 22, "cycle_s": 11, "robot": "cartesiano"} }
-  imm-08: { type: injection-molding-machine, preset: 100t-cutlery, params: {"clamp_t": 80, "max_shot_kg": 0.12, "product": "bisagras y piezas pequeñas", "material": "PP", "cavities": 8, "part_g": 1.75, "cycle_s": 14, "robot": "sprue_picker"} }
+  imm-07: { type: injection-molding-machine, preset: 300t-container, params: {"clamp_t": 150, "max_shot_kg": 0.25, "robot": "cartesiano"} }  # molde en catalog/setup.yaml
+  imm-08: { type: injection-molding-machine, preset: 100t-cutlery, params: {"clamp_t": 80, "max_shot_kg": 0.12, "robot": "sprue_picker"} }  # molde en catalog/setup.yaml
   imm-09: { type: injection-molding-machine, preset: 300t-container, params: {"clamp_t": 150, "max_shot_kg": 0.25, "product": "tapa de termo", "material": "PP", "cavities": 4, "part_g": 28, "cycle_s": 16, "robot": "cartesiano"} }
   imm-10: { type: injection-molding-machine, preset: 300t-container, params: {"clamp_t": 150, "max_shot_kg": 0.25, "product": "cucharón", "material": "PP", "cavities": 4, "part_g": 30, "cycle_s": 15, "robot": "sprue_picker"} }
   imm-11: { type: injection-molding-machine, preset: 300t-container, params: {"clamp_t": 300, "max_shot_kg": 0.9, "product": "recipiente para alimentos 1 L", "material": "PP", "cavities": 2, "part_g": 75, "cycle_s": 18, "robot": "cartesiano"} }
@@ -40,12 +40,12 @@ equipment:
   imm-15: { type: injection-molding-machine, preset: 300t-container, params: {"clamp_t": 300, "max_shot_kg": 0.9, "product": "balde 4 L", "material": "HDPE", "cavities": 1, "part_g": 230, "cycle_s": 26, "robot": "cartesiano"} }
   imm-16: { type: injection-molding-machine, preset: 300t-container, params: {"clamp_t": 300, "max_shot_kg": 0.9, "product": "bandeja", "material": "PP", "cavities": 1, "part_g": 320, "cycle_s": 25, "robot": "cartesiano"} }
   imm-17: { type: injection-molding-machine, preset: 300t-container, params: {"clamp_t": 300, "max_shot_kg": 0.9, "product": "cuerpo de termo", "material": "PP", "cavities": 2, "part_g": 140, "cycle_s": 28, "robot": "cartesiano"} }
-  imm-18: { type: injection-molding-machine, preset: 650t-bucket, params: {"clamp_t": 350, "max_shot_kg": 1.2, "product": "señal de prevención plegable", "material": "PP", "cavities": 1, "part_g": 650, "cycle_s": 40, "robot": "cartesiano"} }
+  imm-18: { type: injection-molding-machine, preset: 650t-bucket, params: {"clamp_t": 350, "max_shot_kg": 1.2, "robot": "cartesiano"} }  # molde en catalog/setup.yaml
   imm-19: { type: injection-molding-machine, preset: 650t-bucket, params: {"clamp_t": 350, "max_shot_kg": 1.2, "robot": "cartesiano"} }  # molde en catalog/setup.yaml
   imm-20: { type: injection-molding-machine, preset: 650t-bucket, params: {"clamp_t": 650, "max_shot_kg": 2.5, "product": "caja organizadora 40 L", "material": "PP", "cavities": 1, "part_g": 1100, "cycle_s": 38, "robot": "cartesiano"} }
   imm-21: { type: injection-molding-machine, preset: 650t-bucket, params: {"clamp_t": 650, "max_shot_kg": 2.5, "robot": "cartesiano"} }  # molde en catalog/setup.yaml
   imm-22: { type: injection-molding-machine, preset: 650t-bucket, params: {"clamp_t": 650, "max_shot_kg": 2.5, "product": "balde 20 L", "material": "HDPE reciclado", "cavities": 1, "part_g": 850, "cycle_s": 36, "robot": "cartesiano"} }
-  imm-23: { type: injection-molding-machine, preset: 650t-bucket, params: {"clamp_t": 650, "max_shot_kg": 2.5, "product": "tapa de nevera", "material": "PP", "cavities": 1, "part_g": 600, "cycle_s": 34, "robot": "cartesiano"} }
+  imm-23: { type: injection-molding-machine, preset: 650t-bucket, params: {"clamp_t": 650, "max_shot_kg": 2.5, "robot": "cartesiano"} }  # molde en catalog/setup.yaml
   imm-24: { type: injection-molding-machine, preset: 650t-bucket, params: {"clamp_t": 650, "max_shot_kg": 2.5, "product": "bandeja industrial", "material": "HDPE", "cavities": 1, "part_g": 1300, "cycle_s": 42, "robot": "cartesiano"} }
   imm-25: { type: injection-molding-machine, preset: 1500t-bin, params: {"clamp_t": 1100, "max_shot_kg": 4.5, "product": "canasta industrial apilable", "material": "HDPE", "cavities": 1, "part_g": 2000, "cycle_s": 50, "robot": "cartesiano"} }
   imm-26: { type: injection-molding-machine, preset: 1500t-bin, params: {"clamp_t": 1100, "max_shot_kg": 4.5, "product": "caneca 50 L", "material": "HDPE reciclado", "cavities": 1, "part_g": 2600, "cycle_s": 60, "robot": "cartesiano"} }
@@ -69,11 +69,11 @@ equipment:
   assembly-02: { type: assembly-cell, preset: hinges-lids-20s }
   buf-01: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 48000, "product": "cubiertos"} }
   buf-02: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 48000, "product": "cubiertos"} }
-  buf-04: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 18000, "product": "tapa recipiente 1 L"} }
-  buf-05: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 5760, "product": "vajilla infantil (plato)"} }
+  buf-04: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 48000, "product": "cubiertos"} }
+  buf-05: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 48000, "product": "cubiertos"} }
   buf-06: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 7200, "product": "pedal y palanca de papelera"} }
-  buf-07: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 14400, "product": "vaso"} }
-  buf-08: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 72000, "product": "bisagras y piezas pequeñas"} }
+  buf-07: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 7200, "product": "pedal y palanca de papelera"} }
+  buf-08: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 48000, "product": "cubiertos"} }
   buf-09: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 9600, "product": "tapa de termo"} }
   buf-10: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 4110, "product": "cucharón"} }
   buf-11: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 3200, "product": "recipiente para alimentos 1 L"} }
@@ -83,12 +83,12 @@ equipment:
   buf-15: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 1440, "product": "balde 4 L"} }
   buf-16: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 1600, "product": "bandeja"} }
   buf-17: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 960, "product": "cuerpo de termo"} }
-  buf-18: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 960, "product": "señal de prevención plegable"} }
+  buf-18: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 240, "product": "cuerpo papelera 20 L"} }
   buf-19: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 240, "product": "cuerpo papelera 20 L"} }
   buf-20: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 100, "product": "caja organizadora 40 L"} }
   buf-21: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 410, "product": "balde 12 L"} }
   buf-22: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 260, "product": "balde 20 L"} }
-  buf-23: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 360, "product": "tapa de nevera"} }
+  buf-23: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 410, "product": "balde 12 L"} }
   buf-24: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 280, "product": "bandeja industrial"} }
   buf-25: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 160, "product": "canasta industrial apilable"} }
   buf-26: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 100, "product": "caneca 50 L"} }
@@ -97,9 +97,9 @@ equipment:
   buf-29: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 50, "product": "tapa caneca 121 L y estiba liviana"} }
   rack-sf-01: { type: pallet-store, preset: semielaborado-48, params: {"pallet_pieces": 7200, "initial_pallets": 6, "content": "pedal y palanca de papelera"} }
   rack-sf-02: { type: pallet-store, preset: semielaborado-48, params: {"pallet_pieces": 240, "initial_pallets": 6, "content": "cuerpos de papelera"} }
-  rack-sf-03: { type: pallet-store, preset: semielaborado-48, params: {"pallet_pieces": 72000, "initial_pallets": 6, "content": "bisagras"} }
+  rack-sf-03: { type: pallet-store, preset: semielaborado-48, params: {"pallet_pieces": 48000, "initial_pallets": 6, "content": "bisagras"} }
   rack-sf-04: { type: pallet-store, preset: semielaborado-48, params: {"pallet_pieces": 2050, "initial_pallets": 6, "content": "tapas de caja organizadora"} }
-  fleet-01: { type: forklift-fleet, preset: plant-6, params: {"route_1_pallet_pieces": 7200, "route_5_pallet_pieces": -1, "route_2_pallet_pieces": 240, "route_3_pallet_pieces": 72000, "route_4_pallet_pieces": 2050, "route_6_pallet_pieces": 7200, "route_7_pallet_pieces": 240, "route_8_pallet_pieces": 72000, "route_9_pallet_pieces": 2050} }
+  fleet-01: { type: forklift-fleet, preset: plant-6, params: {"route_1_pallet_pieces": 7200, "route_5_pallet_pieces": -1, "route_2_pallet_pieces": 240, "route_3_pallet_pieces": 48000, "route_4_pallet_pieces": 2050, "route_6_pallet_pieces": 7200, "route_7_pallet_pieces": 240, "route_8_pallet_pieces": 48000, "route_9_pallet_pieces": 2050} }
   silo-05: { type: vessel, preset: resin-silo-40t, params: {"volume_l": 54545, "content": "pellet de PP reciclado", "initial_level_pct": 20} }
 
 links:

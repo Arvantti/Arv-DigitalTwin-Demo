@@ -364,7 +364,7 @@ def test_plant_catalog_gives_products_routes_and_sizes() -> None:
     # cuerpo (4 etapas) y pedal (4 etapas) llegan al ensamble (etapa 8), que sigue a empaque y bodega
     assert [s["stage"] for s in papelera["stages"]][-3:] == ["ensamble", "empaque", "almacen-terminado"]
     assert [3, 8] in papelera["edges"] and [7, 8] in papelera["edges"]
-    assert papelera["stages"][0]["active"] == ["imm-19"]
+    assert papelera["stages"][0]["active"] == ["imm-18", "imm-19"]
     assert products["balde-12l"]["colors"][0] == {"id": "mb-azul", "name": "Masterbatch azul", "hex": "#1e6fd9"}
     assert catalog["sizes"]["imm-28"] == "Grande"
     assert client.get("/api/plants/sauce-plant-v1").json()["catalog"]["sizes"]["filler-pouch-03"] == "500 ml"
