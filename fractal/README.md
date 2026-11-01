@@ -23,7 +23,7 @@ fractal/
       water-network-scale-v1/   modelo independiente, mapa de tags y optimizador
   process/                      futuros modelos de proceso
   logistics/                    futuros modelos logísticos
-  manufacturing/                futuros modelos de manufactura
+  manufacturing/                manufactura: escenarios sobre la programación (plásticos, en TypeScript)
 ```
 
 El contrato de tags inicial está disponible en:

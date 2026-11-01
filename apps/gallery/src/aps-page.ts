@@ -14,8 +14,10 @@
 import "./styles.css";
 import "./aps.css";
 import type { CustomerOrder, Importance, ProductionPlan } from "@twin/cosim/core/contracts.ts";
-import { activeEvents, addedOrders, baseManual, manualPlan, model, now, onChange, portfolio, resetDemo, setAdded, setVigente, SOURCE_NAMES, vigente } from "./aps-store.ts";
+import { activeEvents, addedOrders, baseManual, molds, modelNow, manualPlan, model, now, onChange, portfolio, resetDemo, setAdded, setVigente, SOURCE_NAMES, vigente } from "./aps-store.ts";
 import { COLOR_NAMES, day, esc, nf, when } from "./schedule.ts";
+import type { FractalStudy } from "@twin/fractal-manufacturing/contracts.ts";
+import type { StudyInput } from "@twin/fractal-manufacturing/models/plastic-injection-plant-v1/study.ts";
 
 const IMPORTANCE: [Importance, string][] = [
   ["alta", "Alta"],
@@ -42,7 +44,8 @@ if (new URLSearchParams(location.search).get("reset") === "1") resetDemo();
 
 let proposal: ProductionPlan | null = null;
 let current = vigente();
-let tab = new URLSearchParams(location.search).get("tab") === "gantt" ? "gantt" : "orders";
+const TABS = ["orders", "gantt", "fractal"];
+let tab = TABS.find((x) => x === new URLSearchParams(location.search).get("tab")) ?? "orders";
 let selected: string | null = null;
 let viewFrom = ms(`${now().slice(0, 10)}T00:00`) - 2 * DAY_MS;
 let running = "";
@@ -60,11 +63,13 @@ function render(): void {
   document.querySelectorAll<HTMLButtonElement>(".aps-tabs [data-tab]").forEach((b) => b.classList.toggle("active", b.dataset.tab === tab));
   $("tab-orders").hidden = tab !== "orders";
   $("tab-gantt").hidden = tab !== "gantt";
+  $("tab-fractal").hidden = tab !== "fractal";
   $("aps-calc").toggleAttribute("disabled", !!running);
   renderAlarm();
   renderProposal();
   if (tab === "orders") renderOrders(p);
-  else renderGantt(p);
+  else if (tab === "gantt") renderGantt(p);
+  else renderFractal();
 }
 
 // ------------------------------------------------------------------ fallas del emulador
@@ -162,7 +167,7 @@ function calculate(): void {
     error = `El cosimulador no pudo arrancar: ${e.message}`;
     render();
   };
-  worker.postMessage({ id, portfolio: portfolio(), now: now(), previous: current, planId: `APS-SOL-${String(n).padStart(2, "0")}`, events: activeEvents() });
+  worker.postMessage({ id, portfolio: portfolio(), now: now(), previous: current, planId: `APS-SOL-${String(n).padStart(2, "0")}`, events: activeEvents(), molds: molds() });
 }
 
 // ------------------------------------------------------------------ pedidos
@@ -325,7 +330,7 @@ function renderGantt(p: ProductionPlan): void {
 
   // Abajo: recursos con los lotes de esas órdenes.
   const visible = new Set(orders.map((o) => o.id));
-  const machines = model.machines;
+  const machines = [...new Set([...model.machines, ...p.schedule.map((r) => r.equipment)])].sort();
   const resRows = machines
     .map((m) => {
       const rows = p.schedule.filter((r) => r.equipment === m && inView(ms(r.start), ms(r.end)));
@@ -413,7 +418,127 @@ function machineProducts(m: string): string {
     if (p.final.machines.includes(m)) ids.add(p.id);
     for (const c of p.components) if (c.step.machines.includes(m)) ids.add(c.step.product);
   }
+  const moved = shown().molds?.[m];
+  if (moved) return `molde ${moved} (Fractal)`;
+  if (shown().molds?.[m] === null) return "molde desmontado (Fractal)";
   return [...ids].map((id) => productName(id)).join(", ");
+}
+
+// ------------------------------------------------------------------ Fractal
+let study: FractalStudy | null = null;
+let studying = "";
+let studyError = "";
+let fractalWorker: Worker | null = null;
+let studyN = 0;
+const SCENARIO_NAMES: Record<string, string> = { adelantar: "ADELANTAR UN PEDIDO", balancear: "BALANCEAR LA OCUPACIÓN", falla: "FALLA EN CURSO" };
+
+function runFractal(input: Omit<StudyInput, "portfolio" | "now" | "previous" | "events" | "molds" | "studyId">): void {
+  studyError = "";
+  study = null;
+  studying = `Fractal está probando combinaciones para «${SCENARIO_NAMES[input.scenario].toLowerCase()}»: cada una la coloca el cosimulador…`;
+  render();
+  fractalWorker?.terminate();
+  fractalWorker = new Worker(new URL("./fractal-worker.ts", import.meta.url), { type: "module" });
+  const id = ++studyN;
+  fractalWorker.onmessage = (e: MessageEvent<{ id: number; ok: boolean; study?: FractalStudy; error?: string }>) => {
+    if (e.data.id !== id) return;
+    studying = "";
+    if (e.data.ok) study = e.data.study!;
+    else studyError = `Fractal no pudo terminar el estudio: ${e.data.error}`;
+    fractalWorker?.terminate();
+    fractalWorker = null;
+    render();
+  };
+  fractalWorker.onerror = (e) => {
+    studying = "";
+    studyError = `Fractal no pudo arrancar: ${e.message}`;
+    render();
+  };
+  fractalWorker.postMessage({ id, input: { ...input, portfolio: portfolio(), now: now(), previous: current, events: activeEvents(), molds: molds(), studyId: `FRA-${String(id).padStart(2, "0")}` } });
+}
+
+function renderFractal(): void {
+  const el = $("tab-fractal");
+  const t = now();
+  const plus = (n: number) => new Date(ms(`${t.slice(0, 10)}T00:00`) + n * DAY_MS).toISOString().slice(0, 10);
+  // Pedidos que aún no empiezan en la vigente: los que se pueden adelantar.
+  const movable = current.orders
+    .filter((o) => o.start.slice(0, 16) > t && o.due.slice(0, 10) > plus(2))
+    .sort((a, b) => (a.due < b.due ? -1 : 1));
+  const ev = activeEvents()[0];
+  const loadsRow = (s: FractalStudy) => {
+    const best = s.options.find((o) => o.id === s.best)!;
+    const ids = Object.keys({ ...s.baseline.loads, ...best.loads }).filter((m) => (s.baseline.loads[m] ?? 0) > 0 || (best.loads[m] ?? 0) > 0).sort();
+    return ids
+      .map((m) => {
+        const a = s.baseline.loads[m] ?? 0;
+        const b = best.loads[m] ?? 0;
+        return `<div class="fr-load"><span>${esc(machineLabel(m))}</span><div class="fr-bars"><i class="was" style="width:${Math.min(100, a)}%"></i><i class="${b > 85 ? "hot" : ""}" style="width:${Math.min(100, b)}%"></i></div><b>${nf(a, 0)} → ${nf(b, 0)} %</b></div>`;
+      })
+      .join("");
+  };
+  el.innerHTML = `
+    <p class="dim small fr-intro">Fractal es la optimización multivariable: además de la secuencia, prueba cambiar la planta (prioridades, montar un molde de repuesto del almacén en una inyectora libre del tamaño correcto, mudar el molde de una máquina parada). Cada combinación la coloca el cosimulador y Fractal recomienda la mejor. Recomienda; el APS decide.</p>
+    <div class="fr-cards">
+      <article class="fr-card"><div class="label">1 · ADELANTAR UN PEDIDO</div><p class="dim small">Un cliente pide su pedido antes. ¿Cómo mover todo para cumplirle sin atrasar a los demás?</p>
+        <label>Pedido <select id="fr-order">${movable.map((o) => `<option value="${esc(o.id)}">${esc(o.id)} · ${esc(o.product_name)} · ${nf(o.quantity)} · entrega ${day(o.due)}</option>`).join("")}</select></label>
+        <label>Nueva entrega <input id="fr-due" type="date" min="${plus(1)}" value="${plus(2)}" /></label>
+        <button id="fr-run-adelantar" class="primary"${movable.length && !studying ? "" : " disabled"}>◆ ESTUDIAR</button></article>
+      <article class="fr-card"><div class="label">2 · BALANCEAR LA OCUPACIÓN</div><p class="dim small">Repartir la carga de la próxima semana sin sobrecargas ni cuellos de botella (objetivo 70 % por etapa).</p>
+        <button id="fr-run-balancear" class="primary"${studying ? " disabled" : ""}>◆ ESTUDIAR</button></article>
+      <article class="fr-card${ev ? " alarm" : ""}"><div class="label">3 · FALLA EN CURSO</div>${
+        ev
+          ? `<p class="small"><b class="bad">⚠ ${esc(machineLabel(ev.equipment))}</b> fuera de servicio desde ${when(ev.start)} · ${esc(ev.reason)} · reparación estimada ${when(ev.est_end)}.</p><p class="dim small">¿Esperar la reparación o desviar su trabajo a otra máquina del mismo tamaño?</p>`
+          : `<p class="dim small">No hay máquinas fuera de servicio. Detén una en el <a href="/emulador.html" target="_blank" rel="noopener">emulador</a> y vuelve aquí.</p>`
+      }
+        <button id="fr-run-falla" class="primary"${ev && !studying ? "" : " disabled"}>◆ ESTUDIAR</button></article>
+    </div>
+    ${studying ? `<p class="fr-status"><span class="spin">◌</span> ${esc(studying)}</p>` : ""}
+    ${studyError ? `<p class="fr-status bad">${esc(studyError)}</p>` : ""}
+    ${
+      study
+        ? `<section class="fr-result">
+        <div class="label">ESTUDIO ${esc(study.study_id)} · ${SCENARIO_NAMES[study.scenario]} · ${study.options.length} combinaciones en ${nf(study.seconds, 1)} s</div>
+        <p class="fr-q">${esc(study.question)}</p>
+        <p class="fr-rec">◆ ${esc(study.recommendation)}</p>
+        <div class="aps-table-wrap"><table class="route-table aps-table fr-table">
+          <thead><tr><th>Opción</th><th>Qué cambia</th><th class="num">A tiempo</th><th class="num">Tarde</th><th class="num">Atraso</th><th class="num">Cambios de color</th><th class="num">Montaje de moldes</th><th>Carga máxima</th><th class="num">Puntaje</th><th></th></tr></thead>
+          <tbody>
+            <tr class="past"><td>VIGENTE</td><td>${esc(SOURCE_NAMES[current.source])} ${esc(study.baseline.plan_id)}</td><td class="num">${nf(study.baseline.kpis.on_time_pct, 1)} %</td><td class="num">${study.baseline.kpis.late_orders}</td><td class="num">${nf(study.baseline.kpis.tardiness_h, 1)} h</td><td class="num">${study.baseline.kpis.changeovers}</td><td class="num">—</td><td>${esc(machineLabel(study.baseline.max_load.equipment))} ${nf(study.baseline.max_load.pct, 0)} %</td><td></td><td></td></tr>
+            ${study.options
+              .map(
+                (o) => `<tr class="${o.id === study!.best ? "best" : ""}"><td><b>${esc(o.id.split("-").at(-1)!)}</b>${o.id === study!.best ? ' <span class="chip done">MEJOR</span>' : ""}</td><td>${esc(o.label)}<br/><small class="dim">${o.levers.map((l) => esc(l.text)).join(" · ")}</small></td>
+                <td class="num">${nf(o.kpis.on_time_pct, 1)} %</td><td class="num">${o.kpis.late_orders}</td><td class="num">${nf(o.kpis.tardiness_h, 1)} h</td><td class="num">${o.kpis.changeovers}</td><td class="num">${o.mold_change_h ? `${nf(o.mold_change_h, 1)} h` : "—"}</td><td>${esc(machineLabel(o.max_load.equipment))} ${nf(o.max_load.pct, 0)} %</td><td class="num">${nf(o.score, 1)}</td>
+                <td><button class="fr-see" data-id="${esc(o.id)}">VER EN GANTT</button></td></tr>`,
+              )
+              .join("")}
+          </tbody></table></div>
+        <div class="fr-foot"><div><div class="label">OCUPACIÓN POR MÁQUINA · VIGENTE → MEJOR OPCIÓN · próximos 7 días</div><div class="fr-loads">${loadsRow(study)}</div></div>
+        <div class="fr-actions"><button id="fr-adopt" class="primary">✓ ADOPTAR LA RECOMENDACIÓN</button><p class="dim small">Pasa a ser la programación vigente; los cambios de moldes y de fechas quedan en la planta y el gemelo los muestra.</p></div></div>
+      </section>`
+        : ""
+    }`;
+  $("fr-run-adelantar").onclick = () => runFractal({ scenario: "adelantar", order: { id: $<HTMLSelectElement>("fr-order").value, due: `${$<HTMLInputElement>("fr-due").value}T${model.calendar.shifts.map((x) => x.end).sort().at(-1)}` } });
+  $("fr-run-balancear").onclick = () => runFractal({ scenario: "balancear" });
+  $("fr-run-falla").onclick = () => runFractal({ scenario: "falla" });
+  el.querySelectorAll<HTMLButtonElement>(".fr-see").forEach(
+    (b) =>
+      (b.onclick = () => {
+        proposal = study!.options.find((o) => o.id === b.dataset.id)!.plan;
+        tab = "gantt";
+        render();
+      }),
+  );
+  const adopt = document.getElementById("fr-adopt");
+  if (adopt)
+    adopt.onclick = () => {
+      setVigente(study!.options.find((o) => o.id === study!.best)!.plan);
+      current = vigente();
+      proposal = null;
+      study = null;
+      tab = "gantt";
+      render();
+    };
 }
 
 // ------------------------------------------------------------------ arranque
@@ -422,7 +547,7 @@ $("aps-calc").onclick = () => calculate();
 $("aps-manual").onclick = () => {
   error = "";
   try {
-    proposal = manualPlan(model, portfolio(), baseManual, { now: now(), previous: current, events: activeEvents() });
+    proposal = manualPlan(modelNow(), portfolio(), baseManual, { now: now(), previous: current, events: activeEvents() });
     tab = "gantt";
   } catch (err) {
     error = (err as Error).message;

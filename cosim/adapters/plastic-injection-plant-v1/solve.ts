@@ -11,7 +11,7 @@
  * Objetivo: atraso ponderado por importancia (alta 3, normal 1, baja 0,5) + 0,5 por cada color encendido en un turno
  * (purgas) + un empujón mínimo a producir temprano. HiGHS (compilado a WebAssembly) lo resuelve en el navegador.
  */
-import type { CustomerOrders, PlantEvent, ProductionPlan } from "../../core/contracts.ts";
+import type { CustomerOrders, PlannedStop, PlantEvent, ProductionPlan } from "../../core/contracts.ts";
 import { context, dispatch, toPlan, type Chunk, type Context, type Job } from "./plan.ts";
 import type { PlasticsModel } from "./model.ts";
 
@@ -44,6 +44,8 @@ export interface SolveOptions {
   colors?: boolean;
   /** Fallas y paros del emulador (plant-event.v1). */
   events?: PlantEvent[];
+  /** Paradas decididas desde AHORA (montaje de un molde). */
+  stops?: PlannedStop[];
 }
 
 /** Arma el modelo LP (formato CPLEX LP que lee HiGHS). Exportado para las pruebas. */
@@ -162,7 +164,7 @@ export function buildLp(ctx: Context, colors = false): { lp: string; vars: Map<s
 
 /** Resuelve la cartera y devuelve la programación propuesta por el cosimulador. */
 export function solve(highs: HighsLike, model: PlasticsModel, portfolio: CustomerOrders, opt: SolveOptions = {}): ProductionPlan {
-  const ctx = context(model, portfolio, opt.now, opt.previous, opt.events);
+  const ctx = context(model, portfolio, opt.now, opt.previous, opt.events, opt.stops);
   const t0 = performance.now();
   const { lp, vars, buckets, nVars, nRows } = buildLp(ctx, opt.colors);
   const res = highs.solve(lp, { time_limit: opt.timeLimitS ?? 20, mip_rel_gap: 0.01, presolve: "on" });

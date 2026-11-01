@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Centro de control · Plásticos</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Orbitron:wght@500;600;700&display=swap" />
+  </head>
+  <body class="aps-page cc-page">
+    <header class="aps-top">
+      <a class="aps-back" href="/plant.html?plant=plastic-injection-plant-v1">← GEMELO 3D</a>
+      <a class="aps-back" href="/aps.html">APS</a>
+      <a class="aps-back" href="/emulador.html">EMULADOR</a>
+      <div class="aps-title"><strong>CENTRO DE CONTROL</strong><span class="dim"> · señales de los PLC de todas las máquinas · planta de inyección de plásticos</span></div>
+      <div id="cc-plan" class="aps-chip"></div>
+      <div id="cc-clock" class="aps-clock">—</div>
+    </header>
+    <section id="cc-alarms" class="aps-alarm" hidden></section>
+    <section id="cc-kpis" class="cc-kpis"></section>
+    <main class="cc-main">
+      <div id="cc-grid" class="cc-grid"></div>
+    </main>
+    <script type="module" src="/src/control.ts"></script>
+  </body>
+</html>

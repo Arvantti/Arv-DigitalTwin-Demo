@@ -66,7 +66,36 @@ Los 3 pedidos tarde que quedan ya estaban en producción antes de AHORA (congela
 el cosimulador llega al 100 %. Hace más cambios de color porque el programa lineal no los modela (reserva una purga por
 turno); es un punto para Fractal.
 
+## Centro de control, PLC por máquina y play
+
+- `control.html` (centro de control): recibe las señales de los PLC de todas las máquinas. OEE de la planta y de cada
+  máquina en el turno (disponibilidad × rendimiento × calidad), unidades buenas, orden y lote en curso con su avance,
+  alarmas del emulador y las inyectoras en reserva. No manda nada: la programación es del APS.
+- PLC de cada máquina: al hacer clic en una inyectora o en la celda de ensamble del gemelo 3D, el panel muestra sus
+  señales en el instante del gemelo (estado, orden, producto, color, lote, unidades, ciclo, OEE del turno).
+- Play por día y hora: barra de tiempo en el gemelo 3D desde 3 días atrás (lo ejecutado) hasta una semana adelante
+  (lo programado), con velocidad de 15 min/s a 12 h/s y EN VIVO. Sobre cada máquina va un letrero con su estado, la
+  orden, el producto, el color y el lote, así se ve cuándo pasa de un producto a otro o hace un cambio de color.
+
+Las señales salen del gemelo (`apps/gallery/src/plant-state.ts`): la programación vigente más los eventos del
+emulador. El rendimiento y la calidad son supuestos por máquina y día (88–97 % y 97,5–99,6 %).
+
+## Fractal: escenarios
+
+Pestaña FRACTAL · ESCENARIOS del APS (`fractal/manufacturing/`, contrato `fractal-study.v1`). Fractal prueba
+combinaciones, cada una la coloca el cosimulador, y recomienda la mejor con su tabla de comparación y la ocupación de
+cada máquina antes y después. ADOPTAR deja la recomendación como vigente, con sus cambios de moldes y de fechas.
+
+1. **Adelantar un pedido**: nueva fecha de entrega; prueba recalcular, prioridad alta y montar un molde de repuesto.
+2. **Balancear la ocupación**: busca las etapas más cargadas y prueba montar el molde de repuesto en una inyectora
+   libre (objetivo 70 % por etapa).
+3. **Falla en curso**: con una máquina detenida en el emulador, compara esperar la reparación con mudar su molde a
+   otra máquina del mismo tamaño o montar el repuesto. Con IMM-21 parada 48 h, la secuencia sin cambios deja 6 pedidos
+   tarde (165,8 h) y montar el molde de balde de repuesto en IMM-22 deja 3 (80,1 h, los que ya venían tarde).
+
+Moldes de repuesto de la demo (`aps/aps.yaml`): uno de balde de 12 L y uno de cuerpo de papelera.
+
 ## Siguiente
 
-Play por día y hora sobre el gemelo, PLC por máquina y centro de control, y escenarios de Fractal (adelantar un pedido,
-balancear la ocupación, falla con mudanza de molde a otra máquina del mismo tamaño).
+Ensayo del guion completo en el sitio publicado antes de la reunión del 2026-11-04. Después: señales reales de los PLC
+en lugar de las del gemelo y más palancas de Fractal (turno extra, segunda celda de ensamble).

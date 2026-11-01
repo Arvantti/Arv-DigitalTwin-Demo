@@ -17,6 +17,7 @@
     <nav class="aps-tabs" aria-label="Pantallas del APS">
       <button data-tab="orders" class="active">PEDIDOS</button>
       <button data-tab="gantt">PROGRAMACIÓN · GANTT</button>
+      <button data-tab="fractal">FRACTAL · ESCENARIOS</button>
       <span class="aps-spacer"></span>
       <button id="aps-calc" class="primary" title="El cosimulador coloca la producción con restricciones lineales, priorizando las fechas de entrega">⚙ CALCULAR CON EL COSIMULADOR</button>
       <button id="aps-manual" title="Programación manual del planificador (APS-MAN-01), recalculada desde AHORA">✎ PROGRAMACIÓN MANUAL</button>
@@ -26,6 +27,7 @@
     <main>
       <section id="tab-orders" class="aps-panel"></section>
       <section id="tab-gantt" class="aps-panel" hidden></section>
+      <section id="tab-fractal" class="aps-panel" hidden></section>
     </main>
     <script type="module" src="/src/aps-page.ts"></script>
   </body>

@@ -105,6 +105,10 @@ export interface ProductionPlan {
   /** Replaneado desde este instante: lo anterior quedó congelado. */
   frozen_until?: string;
   notes?: string[];
+  /** Cambios de moldes con los que se calculó (máquina → molde montado, o null si se desmontó). */
+  molds?: Record<string, string | null>;
+  /** Cambios a la cartera con los que se calculó (p. ej. un pedido adelantado). */
+  order_changes?: { order: string; due?: string; importance?: Importance }[];
 }
 
 /**
@@ -123,4 +127,12 @@ export interface PlantEvent {
   est_end: string;
   /** Cuándo volvió a servicio; mientras no tenga, sigue fuera de servicio. */
   cleared?: string;
+}
+
+/** Parada que decide el planificador o Fractal desde AHORA (por ejemplo, montar un molde en otra máquina). */
+export interface PlannedStop {
+  equipment: string;
+  start: string;
+  end: string;
+  reason: string;
 }
