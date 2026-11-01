@@ -92,6 +92,7 @@ export class Stage {
   private clock = new THREE.Clock();
   private pulseMats: THREE.MeshStandardMaterial[] = [];
   lighting: LightingPreset;
+  private pivotMove: { from: THREE.Vector3; to: THREE.Vector3; dist0: number; dist1: number; t: number } | null = null;
 
   constructor(opts: StageOptions) {
     const quality = opts.quality ?? "high";
@@ -119,6 +120,10 @@ export class Stage {
     this.controls.maxPolarAngle = Math.PI * 0.49;
     this.controls.minDistance = 1.2;
     this.controls.maxDistance = 120;
+    // Clic derecho sostenido = rotar (el pivote es el centro del equipo seleccionado); clic izquierdo = desplazar.
+    this.controls.mouseButtons = { LEFT: THREE.MOUSE.PAN, MIDDLE: THREE.MOUSE.DOLLY, RIGHT: THREE.MOUSE.ROTATE };
+    this.controls.addEventListener("start", () => (this.pivotMove = null));
+    opts.canvas.addEventListener("contextmenu", (e) => e.preventDefault());
 
     const { map, roughness } = epoxyFloor();
     const floorMat = new THREE.MeshStandardMaterial({
@@ -310,6 +315,40 @@ export class Stage {
     this.camera.updateProjectionMatrix();
   }
 
+  /**
+   * Fija el centro del objeto como pivote de la rotación (clic derecho sostenido) con transición suave.
+   * Conserva la dirección de la cámara y solo acerca si el equipo queda lejos; nunca la aleja de golpe.
+   */
+  setPivot(object: THREE.Object3D | null): void {
+    if (!object) return;
+    const bbox = new THREE.Box3().setFromObject(object);
+    if (bbox.isEmpty()) return;
+    const size = bbox.getSize(new THREE.Vector3());
+    const radius = Math.max(size.x, size.y, size.z) * 0.5 + 0.5;
+    const vfov = (this.camera.fov * Math.PI) / 180;
+    const hfov = 2 * Math.atan(Math.tan(vfov / 2) * this.camera.aspect);
+    const fit = (radius / Math.sin(Math.min(vfov, hfov) / 2)) * 1.1;
+    const dist0 = this.camera.position.distanceTo(this.controls.target);
+    this.pivotMove = {
+      from: this.controls.target.clone(),
+      to: bbox.getCenter(new THREE.Vector3()),
+      dist0,
+      dist1: Math.min(dist0, Math.max(fit, this.controls.minDistance)),
+      t: 0,
+    };
+  }
+
+  private stepPivot(dt: number): void {
+    const m = this.pivotMove;
+    if (!m) return;
+    m.t = Math.min(1, m.t + dt / 0.6);
+    const e = m.t * m.t * (3 - 2 * m.t);
+    const dir = this.camera.position.clone().sub(this.controls.target).normalize();
+    this.controls.target.lerpVectors(m.from, m.to, e);
+    this.camera.position.copy(this.controls.target).addScaledVector(dir, m.dist0 + (m.dist1 - m.dist0) * e);
+    if (m.t >= 1) this.pivotMove = null;
+  }
+
   /** Dibuja un cuadro. Devuelve dt real en segundos. */
   render(): number {
     const size = this.renderer.getSize(new THREE.Vector2());
@@ -317,6 +356,7 @@ export class Stage {
     const dt = Math.min(0.1, this.clock.getDelta());
     const t = this.clock.elapsedTime;
     this.pulseMats.forEach((m, i) => (m.emissiveIntensity = 1.8 + 0.5 * Math.sin(t * 1.6 + i)));
+    this.stepPivot(dt);
     this.controls.update();
     this.composer.render(dt);
     return dt;
