@@ -2,12 +2,13 @@
  * Play del gemelo 3D de plásticos por día y hora: una barra de tiempo con velocidad que recorre la programación
  * vigente desde unos días atrás (lo ejecutado) hasta una semana adelante (lo programado). Sobre cada máquina con PLC
  * va un letrero con su estado, la orden, el producto, el color y el lote en ese instante, así se ve cuándo una
- * máquina pasa de un producto a otro o hace un cambio de color.
+ * máquina pasa de un producto a otro o hace un cambio de color. Debajo, la ocupación de la máquina contra su
+ * disponibilidad en el día.
  */
 import * as THREE from "three";
 import type { PlantEvent, ProductionPlan } from "@twin/cosim/core/contracts.ts";
 import { model, now } from "./aps-store.ts";
-import { isoOf, machineAt, machineLabel, minOf, moldOf, oeeAt, PLC_MACHINES, STATE_COLORS, STATE_NAMES, unitsUntil } from "./plant-state.ts";
+import { dayLoadAt, dayLoads, dayStrip, isoOf, loadAt, loadColor, machineAt, machineLabel, minOf, moldOf, oeeAt, PLC_MACHINES, STATE_COLORS, STATE_NAMES, unitsUntil } from "./plant-state.ts";
 import { COLOR_NAMES, day, esc, nf } from "./schedule.ts";
 
 const SPEEDS: [number, string][] = [
@@ -82,13 +83,13 @@ export function buildTwinPlay(opts: Opts): TwinPlay {
     if (!root) return;
     const canvas = document.createElement("canvas");
     canvas.width = 512;
-    canvas.height = 150;
+    canvas.height = 196;
     const tex = new THREE.CanvasTexture(canvas);
     tex.colorSpace = THREE.SRGBColorSpace;
     const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, depthTest: false, transparent: true }));
     const box = new THREE.Box3().setFromObject(root);
     sprite.position.set((box.min.x + box.max.x) / 2, box.max.y + 3, (box.min.z + box.max.z) / 2);
-    sprite.scale.set(9, 2.64, 1);
+    sprite.scale.set(9, (9 * 196) / 512, 1);
     sprite.renderOrder = 10;
     opts.scene.add(sprite);
     labels.set(id, { sprite, canvas, key: "" });
@@ -105,16 +106,20 @@ export function buildTwinPlay(opts: Opts): TwinPlay {
       const order = r ? plan.orders.find((o) => o.id === r.order) : undefined;
       const line2 = r ? `${r.order} · ${(order?.product_name ?? r.product).slice(0, 22)}` : s.ev ? s.ev.reason : s.why ?? "";
       const line3 = r ? `${r.color ? (COLOR_NAMES[r.color] ?? r.color) : ""}${r.batch ? ` · lote ${r.batch[0]}/${r.batch[1]}` : ""}` : "";
-      const key = `${s.state}|${line2}|${line3}`;
+      // Ocupación vs disponibilidad del día (o del siguiente laborable).
+      const ld = dayLoadAt(plan, events, id, t) ?? loadAt(plan, events, id, t, 1);
+      const occ = Math.round(ld.occupancy * 100);
+      const av = Math.round(ld.availability * 100);
+      const key = `${s.state}|${line2}|${line3}|${occ}|${av}`;
       if (key === l.key) continue;
       l.key = key;
       const g = l.canvas.getContext("2d")!;
-      g.clearRect(0, 0, 512, 150);
+      g.clearRect(0, 0, 512, 196);
       g.fillStyle = "rgba(6, 8, 40, 0.86)";
       g.strokeStyle = STATE_COLORS[s.state];
       g.lineWidth = 6;
       g.beginPath();
-      g.roundRect(4, 4, 504, 142, 14);
+      g.roundRect(4, 4, 504, 188, 14);
       g.fill();
       g.stroke();
       g.fillStyle = STATE_COLORS[s.state];
@@ -126,6 +131,16 @@ export function buildTwinPlay(opts: Opts): TwinPlay {
       g.fillStyle = "#aab0be";
       g.font = "500 28px Inter, sans-serif";
       g.fillText(line3, 22, 128);
+      // Barra de horas disponibles del día con las programadas encima.
+      g.fillStyle = "rgba(255,255,255,0.10)";
+      g.fillRect(22, 146, 180, 26);
+      g.fillStyle = "rgba(170,176,190,0.35)";
+      g.fillRect(22, 146, 180 * ld.availability, 26);
+      g.fillStyle = loadColor(ld.occupancy);
+      g.fillRect(22, 146, 180 * ld.availability * Math.min(1, ld.occupancy), 26);
+      g.fillStyle = "#F8FAFC";
+      g.font = "600 24px 'IBM Plex Mono', monospace";
+      g.fillText(`DÍA OCUP ${occ}% DISP ${av}%`, 214, 168);
       (l.sprite.material.map as THREE.CanvasTexture).needsUpdate = true;
     }
   }
@@ -204,6 +219,8 @@ export function plcCard(plan: ProductionPlan, events: PlantEvent[], id: string, 
   const eq = PLC_MACHINES.find((e) => e.id === id)!;
   const s = machineAt(plan, events, id, t);
   const o = oeeAt(plan, events, id, t);
+  const ld = loadAt(plan, events, id, t);
+  const sl = dayLoadAt(plan, events, id, t);
   const r = s.row;
   const cycle = Number(eq.params?.cycle_s ?? 0);
   const cav = Number(eq.params?.cavities ?? 0);
@@ -222,8 +239,13 @@ export function plcCard(plan: ProductionPlan, events: PlantEvent[], id: string, 
       ${tag("unidades del turno", o ? `${nf(o.good)} buenas` : "—")}
       ${tag("OEE del turno", o ? `<b>${pct(o.oee)}</b>` : "—")}
       ${o ? tag("D · R · C", `${pct(o.availability)} · ${pct(o.performance)} · ${pct(o.quality)}`) : ""}
+      ${sl ? tag("ocupación · día", `<b style="color:${loadColor(sl.occupancy)}">${pct(sl.occupancy)}</b> · disp. ${pct(sl.availability)}`) : ""}
+      ${tag("ocupación · semana", `<b style="color:${loadColor(ld.occupancy)}">${pct(ld.occupancy)}</b> · ${nf(ld.busyH, 1)} de ${nf(ld.availH, 1)} h`)}
+      ${tag("disponibilidad · semana", `${pct(ld.availability)} · ${nf(ld.availH, 1)} de ${nf(ld.shiftH, 1)} h de turno`)}
       ${s.ev ? tag("alarma", `<b class="bad">${esc(s.ev.reason)}</b>`) : ""}
     </div>
+    <div class="label" style="margin-top:6px">OCUPACIÓN VS DISPONIBILIDAD · POR DÍA (%)</div>
+    ${dayStrip(dayLoads(plan, events, id, t), t)}
     <a class="btn-link" href="/control.html" target="_blank" rel="noopener">◉ CENTRO DE CONTROL</a>
   </div>`;
 }

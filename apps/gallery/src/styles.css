@@ -347,3 +347,12 @@ button.pick { padding: 2px 8px; font-size: 11px; }
 .plc-card { margin: 8px 0 10px; border-top: 2px solid var(--st); padding-top: 4px; }
 .plc-card .plc-state { font: 700 16px Inter, sans-serif; letter-spacing: 0.08em; color: var(--st); margin: 2px 0 6px; }
 .plc-card .btn-link { margin-top: 8px; }
+/* Ocupación vs disponibilidad por día (PLC del 3D y centro de control). */
+.shift-strip { display: flex; gap: 4px; margin: 4px 0 2px; }
+.shift-strip .ss-day { flex: 1; text-align: center; }
+.shift-strip .ss-day b { display: block; font: 600 10px "IBM Plex Mono", monospace; margin-top: 2px; }
+.shift-strip .ss-day small { display: block; color: var(--dim); font: 600 9px Inter, sans-serif; }
+.shift-strip .ss-cell { position: relative; display: block; height: 30px; background: rgba(255, 255, 255, 0.07); border-radius: 2px; overflow: hidden; }
+.shift-strip .ss-cell i { position: absolute; left: 0; right: 0; bottom: 0; }
+.shift-strip .ss-cell i.av { background: rgba(170, 176, 190, 0.3); }
+.shift-strip .ss-day.now .ss-cell { outline: 1.5px solid #f8fafc; outline-offset: 1px; }

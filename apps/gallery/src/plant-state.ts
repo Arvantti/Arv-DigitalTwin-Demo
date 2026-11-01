@@ -181,3 +181,89 @@ export function moldOf(id: string): string | undefined {
   if (id in m) return m[id] ?? undefined;
   return moldSetup[id]?.tooling;
 }
+
+// ------------------------------------------------------------------ ocupación vs disponibilidad
+
+export interface Load {
+  /** Ventana medida. */
+  from: number;
+  to: number;
+  /** Horas de turno en la ventana. */
+  shiftH: number;
+  /** Horas de turno menos paradas programadas y fallas. */
+  availH: number;
+  /** Horas con orden programada (incluye cambios de color), sin las paradas. Con filtro, solo las de esa orden. */
+  busyH: number;
+  /** Disponibilidad = disponibles / turno. */
+  availability: number;
+  /** Ocupación = programadas / disponibles. */
+  occupancy: number;
+}
+
+/** Ocupación de la máquina contra su disponibilidad en la ventana de entrega (una semana desde el día del instante). */
+export function loadAt(plan: ProductionPlan, events: PlantEvent[], id: string, t: number, days = 7, order?: string): Load {
+  const from = Math.floor(t / 1440) * 1440;
+  return loadIn(plan, events, id, from, from + days * 1440, order);
+}
+
+/** Ocupación por día en la semana que empieza el día del instante (solo días laborables). */
+export function dayLoads(plan: ProductionPlan, events: PlantEvent[], id: string, t: number, days = 7, order?: string): Load[] {
+  const start = Math.floor(t / 1440) * 1440;
+  const out: Load[] = [];
+  for (let d = start; d < start + days * 1440; d += 1440) if (model.calendar.isWorkday(d)) out.push(loadIn(plan, events, id, d, d + 1440, order));
+  return out;
+}
+
+/** Día de t (o el siguiente laborable si t cae en un día sin turnos). */
+export function dayLoadAt(plan: ProductionPlan, events: PlantEvent[], id: string, t: number, order?: string): Load | undefined {
+  return dayLoads(plan, events, id, t, 3, order)[0];
+}
+
+/** Ocupación contra disponibilidad entre dos instantes; con `order`, solo cuentan las horas de esa orden. */
+export function loadIn(plan: ProductionPlan, events: PlantEvent[], id: string, from: number, to: number, order?: string): Load {
+  const shift = model.calendar.workBetween(from, to);
+  const downs: [number, number][] = [
+    ...plan.downtime.filter((d) => d.equipment === id).map((d) => [minOf(d.start), minOf(d.end)] as [number, number]),
+    ...events.filter((e) => e.equipment === id).map((e) => [minOf(e.start), evEnd(e)] as [number, number]),
+  ];
+  const down = Math.min(shift, downs.reduce((s, [a, b]) => s + overlap(a, b, from, to), 0));
+  const rows = plan.schedule.filter((r) => r.equipment === id && (!order || r.order === order) && minOf(r.end) > from && minOf(r.start) < to);
+  let busy = 0;
+  for (const r of rows) {
+    const a = minOf(r.start);
+    const b = minOf(r.end);
+    busy += overlap(a, b, from, to);
+    busy -= downs.reduce((x, [c, d]) => x + overlap(Math.max(a, c), Math.min(b, d), from, to), 0);
+  }
+  const avail = Math.max(0, shift - down);
+  busy = Math.max(0, Math.min(busy, avail));
+  return {
+    from,
+    to,
+    shiftH: shift / 60,
+    availH: avail / 60,
+    busyH: busy / 60,
+    availability: shift ? avail / shift : 0,
+    occupancy: avail ? busy / avail : 0,
+  };
+}
+
+/** Color de la ocupación: baja (gris), sana (verde), alta (ámbar), saturada (rojo). */
+export const loadColor = (x: number) => (x >= 0.95 ? "#ff3b3b" : x >= 0.85 ? "#ffb000" : x >= 0.3 ? "#22e06b" : "#8a93ad");
+
+const WD = ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"];
+
+/**
+ * Tira de la semana por día: una barra por día con la disponibilidad (fondo gris) y la ocupación encima (color).
+ * El día que contiene t queda marcado.
+ */
+export function dayStrip(list: Load[], t: number): string {
+  const cells = list.map((x) => {
+    const occ = Math.round(x.occupancy * 100);
+    const av = Math.round(x.availability * 100);
+    const date = new Date(x.from * 60000);
+    const now = t >= x.from && t < x.to ? " now" : "";
+    return `<div class="ss-day${now}" title="${WD[date.getUTCDay()]} ${date.getUTCDate()}: ocupación ${occ} % (${x.busyH.toFixed(1)} de ${x.availH.toFixed(1)} h) · disponibilidad ${av} %"><span class="ss-cell"><i class="av" style="height:${av}%"></i><i class="oc" style="height:${(av * Math.min(1, x.occupancy)).toFixed(0)}%;background:${loadColor(x.occupancy)}"></i></span><b>${occ}</b><small>${WD[date.getUTCDay()]} ${date.getUTCDate()}</small></div>`;
+  });
+  return `<div class="shift-strip">${cells.join("")}</div>`;
+}

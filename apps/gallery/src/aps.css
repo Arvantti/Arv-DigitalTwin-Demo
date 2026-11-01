@@ -205,3 +205,13 @@ button.danger:hover { background: rgba(255, 59, 59, 0.4); border-color: #fff; }
 .fr-bars i.was { top: 0; bottom: auto; background: rgba(170, 176, 190, 0.5); }
 .fr-bars i.hot { background: var(--warn); }
 .fr-actions { display: flex; flex-direction: column; gap: 6px; justify-content: center; }
+.cc-load { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 8px; margin-top: 6px; padding-top: 6px; border-top: 1px solid rgba(255, 255, 255, 0.08); font: 500 12px "IBM Plex Mono", monospace; }
+.cc-load small { display: block; color: var(--dim); font: 600 10px Inter, sans-serif; }
+.cc-load b { font-size: 15px; }
+.cc-load > small.dim { grid-column: 1 / -1; }
+.cc-load-bar { grid-column: 1 / -1; position: relative; height: 7px; background: rgba(255, 255, 255, 0.08); border-radius: 3px; overflow: hidden; }
+.cc-load-bar i { position: absolute; left: 0; top: 0; bottom: 0; }
+.cc-load-bar i.av { background: rgba(170, 176, 190, 0.35); }
+.cc-load .cc-strip { grid-column: 1 / -1; }
+.cc-filter { display: flex; align-items: center; gap: 6px; }
+.cc-filter select { background: rgba(6, 8, 40, 0.9); color: inherit; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 4px; font: 500 12px "IBM Plex Mono", monospace; padding: 2px 4px; max-width: 360px; }
