@@ -5,7 +5,7 @@
  * cosimulador (turnos, paradas, purgas de color y espera de componentes). Los pedidos que no están en la secuencia
  * (llegaron después o se agregaron en la pantalla de pedidos) van al final de la máquina menos cargada, por entrega.
  */
-import type { CustomerOrders, PlantEvent, ProductionPlan } from "../../core/contracts.ts";
+import type { CustomerOrders, PlannedStop, PlantEvent, ProductionPlan } from "../../core/contracts.ts";
 import { context, dispatch, toPlan, type Chunk, type Job } from "./plan.ts";
 import type { PlasticsModel } from "./model.ts";
 
@@ -20,8 +20,8 @@ export interface ManualPlan {
   sequence: Record<string, string[]>;
 }
 
-export function manualPlan(model: PlasticsModel, portfolio: CustomerOrders, manual: ManualPlan, opt: { now?: string; previous?: ProductionPlan | null; events?: PlantEvent[] } = {}): ProductionPlan {
-  const ctx = context(model, portfolio, opt.now, opt.previous, opt.events);
+export function manualPlan(model: PlasticsModel, portfolio: CustomerOrders, manual: ManualPlan, opt: { now?: string; previous?: ProductionPlan | null; events?: PlantEvent[]; stops?: PlannedStop[] } = {}): ProductionPlan {
+  const ctx = context(model, portfolio, opt.now, opt.previous, opt.events, opt.stops);
   const queues: Record<string, Chunk[]> = Object.fromEntries(model.machines.map((m) => [m, []]));
   const load: Record<string, number> = Object.fromEntries(model.machines.map((m) => [m, 0]));
   const placed = new Set<string>();

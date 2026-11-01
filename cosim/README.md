@@ -17,8 +17,8 @@ cosim/
   cartera de pedidos `orders/`, planes `aps/plans/`). No tiene código.
 - **Cosimulador** (`cosim/adapters/<planta>/`): la colocación de la producción con las restricciones lineales y los
   moldes como están montados. No mueve moldes ni decide escenarios.
-- **Fractal** (`fractal/`, aparte): optimización multivariable y escenarios ("¿qué pasaría si?"). Llama al cosimulador
-  y devuelve planes con `source: "fractal"`.
+- **Fractal** (`fractal/manufacturing/`, aparte): optimización multivariable y escenarios ("¿qué pasaría si?"). Cambia
+  prioridades y moldes, llama al cosimulador por cada combinación y devuelve planes con `source: "fractal"`.
 - **Gemelo** (`apps/gallery`): muestra y reproduce el plan vigente. El acueducto no usa este paquete.
 
 ## Contratos

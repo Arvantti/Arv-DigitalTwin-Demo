@@ -1222,8 +1222,20 @@ function renderAssetChart(): void {
   $("asset-chart-content").innerHTML = `<svg class="asset-chart-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="Tendencia de ${variable}"><g class="day-axis">${grid}${times}</g><polyline points="${line}" fill="none" stroke="#4EA7FF" stroke-width="3"/></svg><p class="asset-chart-legend"><i></i> Señal simulada publicada por el equipo · mín. ${fmt(low, unit)} · máx. ${fmt(high, unit)} · ${points.length} muestras</p>`;
 }
 
+/** Bloque extra del panel del equipo (plásticos: el PLC de la máquina en el instante del gemelo). */
+let assetExtra: ((id: string) => string) | null = null;
+
 function renderAsset(): void {
   const asset = selectedId ? assets.get(selectedId) : undefined;
+  if (assetExtra) {
+    let extra = document.getElementById("asset-plc");
+    if (!extra) {
+      extra = document.createElement("div");
+      extra.id = "asset-plc";
+      $("commands").before(extra);
+    }
+    extra.innerHTML = selectedId ? assetExtra(selectedId) : "";
+  }
   const snap = selectedId ? latest[selectedId] : undefined;
   const spec = asset?.eq.sim ? specs[asset.eq.sim.type] : undefined;
   $("asset-name").textContent = asset ? asset.eq.id.toUpperCase() : "Haz clic en un equipo";
@@ -1501,7 +1513,7 @@ async function start(): Promise<void> {
   }
   // Programación de producción (fase E): solo las plantas con demanda en el catálogo (salsas y plásticos).
   // En plásticos el APS corre en el navegador: pedidos, programación manual y cosimulador (docs/aps-plasticos.md).
-  if (plantId === "plastic-injection-plant-v1") buildAps({ plantId, select, showProduct: (id) => productsApi?.show(id), markDown });
+  if (plantId === "plastic-injection-plant-v1") buildAps({ plantId, select, showProduct: (id) => productsApi?.show(id), markDown, scene: stage.scene, rootOf: (id) => assets.get(id)?.root, setAssetExtra: (fn) => (assetExtra = fn), refreshAsset: renderAsset });
   else if (doc.catalog?.schedule) buildSchedule({ plantId, select, apiUrl: plantApiAvailable ? apiUrl : undefined, showProduct: (id) => productsApi?.show(id) });
   if (url.get("select")) select(url.get("select"));
   const focusAsset = url.get("focus") ? assets.get(url.get("focus")!) : undefined;

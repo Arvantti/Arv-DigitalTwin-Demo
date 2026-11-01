@@ -7,7 +7,8 @@
  * Cloudflare, este módulo es el único que cambia.
  */
 import type { CustomerOrder, CustomerOrders, PlantEvent, ProductionPlan } from "@twin/cosim/core/contracts.ts";
-import { basePortfolio, baseManual, plasticsModel } from "@twin/cosim/adapters/plastic-injection-plant-v1/catalog.ts";
+import { basePortfolio, baseManual, catalogData, plasticsModel } from "@twin/cosim/adapters/plastic-injection-plant-v1/catalog.ts";
+import { modelFor } from "@twin/fractal-manufacturing/models/plastic-injection-plant-v1/study.ts";
 import { manualPlan } from "@twin/cosim/adapters/plastic-injection-plant-v1/manual.ts";
 import { plantNow, store } from "./schedule.ts";
 
@@ -38,8 +39,29 @@ export function addedOrders(): CustomerOrder[] {
   return read<CustomerOrder[]>("added", []);
 }
 
+/** Cambios de la cartera que vienen de un estudio de Fractal adoptado (p. ej. un pedido adelantado). */
+export function orderChanges(): NonNullable<ProductionPlan["order_changes"]> {
+  return read<NonNullable<ProductionPlan["order_changes"]>>("order_changes", []);
+}
+
 export function portfolio(): CustomerOrders {
-  return { ...basePortfolio, orders: [...basePortfolio.orders, ...addedOrders()] };
+  const changes = new Map(orderChanges().map((c) => [c.order, c]));
+  const orders = [...basePortfolio.orders, ...addedOrders()].map((o) => {
+    const c = changes.get(o.id);
+    return c ? { ...o, ...(c.due ? { due: c.due } : {}), ...(c.importance ? { importance: c.importance } : {}) } : o;
+  });
+  return { ...basePortfolio, orders };
+}
+
+/** Moldes cambiados por una recomendación de Fractal adoptada (máquina → molde, null = desmontado). */
+export function molds(): Record<string, string | null> {
+  return read<Record<string, string | null>>("molds", {});
+}
+
+/** Modelo de la planta con los moldes como están montados ahora (para CALCULAR y la secuencia manual). */
+export function modelNow() {
+  const m = molds();
+  return Object.keys(m).length ? modelFor(catalogData(), m) : model;
 }
 
 export function setAdded(list: CustomerOrder[]): void {
@@ -55,6 +77,11 @@ export function vigente(): ProductionPlan {
 }
 
 export function setVigente(plan: ProductionPlan): void {
+  if (plan.molds) store.set(key("molds"), JSON.stringify(plan.molds));
+  if (plan.order_changes?.length) {
+    const ids = new Set(plan.order_changes.map((c) => c.order));
+    store.set(key("order_changes"), JSON.stringify([...orderChanges().filter((c) => !ids.has(c.order)), ...plan.order_changes]));
+  }
   store.set(key("vigente"), JSON.stringify({ ...plan, status: "vigente" }));
   channel?.postMessage({ type: "plan" });
 }
@@ -80,6 +107,8 @@ export function resetDemo(): void {
   store.set(key("added"), null);
   store.set(key("vigente"), null);
   store.set(key("events"), null);
+  store.set(key("molds"), null);
+  store.set(key("order_changes"), null);
   channel?.postMessage({ type: "plan" });
   channel?.postMessage({ type: "events" });
 }

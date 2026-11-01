@@ -41,6 +41,9 @@ importers:
       '@twin/equipment-library':
         specifier: workspace:*
         version: link:../../equipment-library
+      '@twin/fractal-manufacturing':
+        specifier: workspace:*
+        version: link:../../fractal/manufacturing
       highs:
         specifier: 1.15.3
         version: 1.15.3
@@ -110,6 +113,34 @@ importers:
       three:
         specifier: 0.186.1
         version: 0.186.1
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+      vite:
+        specifier: 8.3.1
+        version: 8.3.1(@types/node@22.19.1)(esbuild@0.28.2)
+      vitest:
+        specifier: 5.0.3
+        version: 5.0.3(@types/node@22.19.1)(vite@8.3.1(@types/node@22.19.1)(esbuild@0.28.2))
+
+  fractal/manufacturing:
+    dependencies:
+      '@twin/cosim':
+        specifier: workspace:*
+        version: link:../../cosim
+      highs:
+        specifier: 1.15.3
+        version: 1.15.3
+      js-yaml:
+        specifier: 4.3.2
+        version: 4.3.2
+    devDependencies:
+      '@types/js-yaml':
+        specifier: 4.0.9
+        version: 4.0.9
+      '@types/node':
+        specifier: 22.19.1
+        version: 22.19.1
       typescript:
         specifier: 5.9.3
         version: 5.9.3

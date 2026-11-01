@@ -5,7 +5,7 @@
  * planificador) y la del solver (unidades por máquina y turno). Las dos se convierten en "tramos" que el despacho
  * pone en el calendario respetando turnos, paradas, cambios de color y que el ensamble espere sus componentes.
  */
-import type { CustomerOrder, CustomerOrders, PlantEvent, Importance, PlanOrderRow, PlanScheduleRow, PlanSource, ProductionPlan } from "../../core/contracts.ts";
+import type { CustomerOrder, CustomerOrders, PlannedStop, PlantEvent, Importance, PlanOrderRow, PlanScheduleRow, PlanSource, ProductionPlan } from "../../core/contracts.ts";
 import { DAY_MIN, dateOf, iso, parseLocal, rng } from "../../core/time.ts";
 import type { PlasticsModel, Step } from "./model.ts";
 
@@ -113,7 +113,7 @@ export function horizonOf(model: PlasticsModel, orders: CustomerOrder[], start: 
  * Prepara el contexto de una corrida: pedidos conocidos, trabajos, paradas y lo congelado de un plan anterior
  * (filas que empezaron antes de `now` se mantienen tal cual).
  */
-export function context(model: PlasticsModel, portfolio: CustomerOrders, nowIso?: string, previous?: ProductionPlan | null, events: PlantEvent[] = []): Context {
+export function context(model: PlasticsModel, portfolio: CustomerOrders, nowIso?: string, previous?: ProductionPlan | null, events: PlantEvent[] = [], stops: PlannedStop[] = []): Context {
   const start = parseLocal(portfolio.plan_start);
   const now = Math.max(start, nowIso ? parseLocal(nowIso) : start);
   // La cartera es la del cliente: se programa completa; ningún pedido se produce antes de su llegada (`created`).
@@ -124,10 +124,10 @@ export function context(model: PlasticsModel, portfolio: CustomerOrders, nowIso?
   for (const m of model.machines) down[m] = downtime(model, m, start, horizonEnd);
   // Fallas y paros del emulador: la máquina queda fuera de servicio hasta la reparación estimada (o hasta que volvió).
   const outages = events
-    .filter((e) => down[e.equipment])
     .map((e) => ({ m: e.equipment, a: parseLocal(e.start), b: parseLocal(e.cleared ?? e.est_end), why: `${e.kind === "falla" ? "Falla" : "Paro de emergencia"}: ${e.reason}` }))
+    .concat(stops.map((x) => ({ m: x.equipment, a: parseLocal(x.start), b: parseLocal(x.end), why: x.reason })))
     .filter((e) => e.b > e.a);
-  for (const e of outages) down[e.m] = [...down[e.m].filter(([a, b]) => b <= e.a || a >= e.b), [e.a, e.b, e.why] as [number, number, string]].sort((x, y) => x[0] - y[0]);
+  for (const e of outages) if (down[e.m]) down[e.m] = [...down[e.m].filter(([a, b]) => b <= e.a || a >= e.b), [e.a, e.b, e.why] as [number, number, string]].sort((x, y) => x[0] - y[0]);
   const free: Context["free"] = {};
   for (const m of model.machines) free[m] = { at: start, color: model.initialColor[m] };
   const done: Record<string, number> = {};

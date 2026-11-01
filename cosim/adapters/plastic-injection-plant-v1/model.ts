@@ -22,8 +22,10 @@ export interface ApsYaml {
   lead_days: [number, number];
   rush_lead_days: [number, number];
   lots: Record<string, number>;
+  /** Moldes de repuesto en el almacén de moldes (molde → copias); Fractal puede montarlos en una inyectora libre. */
+  molds_in_storage?: Record<string, number>;
 }
-interface CatalogProductYaml {
+export interface CatalogProductYaml {
   id: string;
   name: string;
   kind: "finished" | "semi";

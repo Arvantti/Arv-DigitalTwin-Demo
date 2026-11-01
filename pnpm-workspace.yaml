@@ -4,3 +4,4 @@ packages:
   - apps/gallery
   - apps/cloudflare-emulator-worker
   - cosim
+  - fractal/manufacturing

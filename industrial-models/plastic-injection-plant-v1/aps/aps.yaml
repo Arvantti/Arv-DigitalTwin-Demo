@@ -12,3 +12,8 @@ aps:
     cuerpo-papelera-20l: 150
     pedal-palanca-papelera: 300
     papelera-20l: 150
+  # Almacén de moldes: copias de repuesto que Fractal puede montar en una inyectora libre del tamaño correcto
+  # (la lista de máquinas de cada producto en catalog/products.yaml). Supuesto de la demo.
+  molds_in_storage:
+    mold-balde-12l: 1
+    mold-cuerpo-papelera-20l: 1

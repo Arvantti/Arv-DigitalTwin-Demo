@@ -10,10 +10,10 @@ import "./styles.css";
 import "./aps.css";
 import yaml from "js-yaml";
 import plantYaml from "../../../industrial-models/plastic-injection-plant-v1/plant.yaml?raw";
-import setupYaml from "../../../industrial-models/plastic-injection-plant-v1/catalog/setup.yaml?raw";
 import type { PlantEvent, PlanScheduleRow } from "@twin/cosim/core/contracts.ts";
 import { activeEvents, events, model, now, onChange, PLASTICS, setEvents, vigente } from "./aps-store.ts";
 import { COLOR_NAMES, esc, nf, when } from "./schedule.ts";
+import { moldOf } from "./plant-state.ts";
 
 interface Eq {
   id: string;
@@ -34,13 +34,12 @@ interface Zone {
 type State = "run" | "idle" | "plan" | "fault" | "off";
 
 const doc = yaml.load(plantYaml) as { equipment: Eq[]; zones: Zone[] };
-const setup = ((yaml.load(setupYaml) as { setup?: Record<string, { tooling: string; color?: string }> }).setup ?? {}) as Record<string, { tooling: string; color?: string }>;
 const MACHINES = doc.equipment.filter((e) => e.type === "injection_molding_machine" || e.type === "assembly_cell");
 const SITE_Y = 110;
 const VIEW = { x: 30, y: 10, w: 118, h: 82 };
 const FAULTS = ["Resistencia del cañón quemada", "Fuga de aceite hidráulico", "Molde atascado", "Falla del robot extractor", "Falla eléctrica del tablero"];
 const STOPS = ["Paro de emergencia por seguridad", "Atrapamiento de operario (simulacro)", "Derrame en el área"];
-const REPAIR_H = [2, 4, 8, 16, 24];
+const REPAIR_H = [2, 4, 8, 16, 24, 48, 72];
 const STATE_NAMES: Record<State, string> = { run: "PRODUCIENDO", idle: "SIN ORDEN", plan: "PARADA PROGRAMADA", fault: "FUERA DE SERVICIO", off: "FUERA DE TURNO" };
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -113,7 +112,7 @@ function renderMachine(): void {
   }
   const s = stateOf(e.id);
   const p = e.params ?? {};
-  const mold = setup[e.id];
+  const mold = moldOf(e.id) ? { tooling: moldOf(e.id)! } : undefined;
   const r = s.row;
   const order = r ? plan.orders.find((o) => o.id === r.order) : undefined;
   const cycle = Number(p.cycle_s ?? 0);
@@ -142,7 +141,7 @@ function renderMachine(): void {
       : `<div class="emu-form">
         <label>Tipo <select id="emu-kind"><option value="falla">Falla de máquina</option><option value="paro-emergencia">Paro de emergencia</option></select></label>
         <label>Causa <select id="emu-reason"></select></label>
-        <label>Reparación estimada <select id="emu-hours">${REPAIR_H.map((h) => `<option value="${h}"${h === 8 ? " selected" : ""}>${h} h</option>`).join("")}</select></label>
+        <label>Reparación estimada <select id="emu-hours">${REPAIR_H.map((h) => `<option value="${h}"${h === 48 ? " selected" : ""}>${h} h</option>`).join("")}</select></label>
         <button id="emu-fail" class="danger">⚠ DETENER LA MÁQUINA AHORA</button>
       </div>`;
   el.innerHTML = `
