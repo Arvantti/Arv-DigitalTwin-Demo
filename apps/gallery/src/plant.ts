@@ -235,9 +235,22 @@ function placeholder(eq: PlantEquipment): THREE.Object3D {
     }
     const bridge = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.8, dy), RAIL);
     g.add(bridge);
-    const trolley = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.6, 1.4), PLACEHOLDER);
+    const trolley = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.6, 1.4), RAIL);
     trolley.position.y = -0.7;
     g.add(trolley);
+    // Polipasto con su tambor, cable y gancho.
+    const drum = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 1.0, 20).rotateZ(Math.PI / 2), SUPPORT);
+    drum.position.y = -1.2;
+    g.add(drum);
+    const cable = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 2.2, 8), SUPPORT);
+    cable.position.y = -2.5;
+    g.add(cable);
+    const block = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.45, 0.25), RAIL);
+    block.position.y = -3.7;
+    g.add(block);
+    const hook = new THREE.Mesh(new THREE.TorusGeometry(0.16, 0.05, 8, 16, Math.PI * 1.5), SUPPORT);
+    hook.position.y = -4.1;
+    g.add(hook);
     g.traverse((o) => (o.castShadow = true));
     return g;
   }

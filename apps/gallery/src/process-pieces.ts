@@ -11,6 +11,7 @@ import * as THREE from "three";
 import { materials as M, parts as P } from "@twin/3d";
 import { aircraft, baggageCartTrain, beltCurve } from "./airport-pieces.ts";
 import { boxPlantBuilders } from "./box-plant-pieces.ts";
+import { plasticPlantBuilders } from "./plastic-plant-pieces.ts";
 
 type Footprint = [number, number, number];
 export type PieceBuilder = (footprint: Footprint, params: Record<string, unknown>) => THREE.Object3D;
@@ -666,6 +667,8 @@ export const processBuilders: Record<string, PieceBuilder> = {
   pu_foaming_station: foamingStation,
   // fábrica de cajas de cartón corrugado
   ...boxPlantBuilders,
+  // planta de inyección de plásticos
+  ...plasticPlantBuilders,
 };
 
 /** Construye la pieza de un tipo del plano; `null` si ese tipo aún no tiene forma propia. */
