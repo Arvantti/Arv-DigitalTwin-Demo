@@ -55,6 +55,7 @@ def build_net(model: dict, build: Path) -> Path:
                 seen.add(node_id)
     edges = ET.Element("edges")
     used = set()
+    oneway_parts = {p["id"]: p["oneway"] for p in model["roadParts"]}
     for seg in model["segments"]:
         if seg["id"] in used or seg["from"] == seg["to"]:
             continue
@@ -70,6 +71,10 @@ def build_net(model: dict, build: Path) -> Path:
         # Preserve the OSM centerline shape; SUMO models this as a directed edge.
         shape = " ".join(f"{x:.2f},{y:.2f}" for x, y in seg["points"])
         attrs["shape"] = shape
+        # Sentido único: carriles centrados en el eje OSM. Doble sentido: SUMO apoya cada sentido a la
+        # derecha del eje, que es como la escena 3D dibuja la calzada completa (ver city_scene.py).
+        if oneway_parts.get(seg["part"], False):
+            attrs["spreadType"] = "center"
         ET.SubElement(edges, "edge", attrs)
     write(build / "osm.nod.xml", nodes)
     write(build / "osm.edg.xml", edges)
