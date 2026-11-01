@@ -3,6 +3,10 @@ title: Guion · Calcular la programación
 escenario: 1-calcular-programacion
 tags: [demo, plasticos, guion, aps, cosimulador, fractal]
 duracion_aprox: 3 min 15 s
+cifras:
+  - ["90,3 % → 92,5 %", "pedidos a tiempo: manual contra cosimulador"]
+  - ["69,3 % → 59,1 %", "ocupación de planta en la semana, con la misma producción"]
+  - ["27,5 t", "de resina para la semana, calculadas del plan"]
 ---
 
 # Escenario 1 · Calcular la programación según las entregas

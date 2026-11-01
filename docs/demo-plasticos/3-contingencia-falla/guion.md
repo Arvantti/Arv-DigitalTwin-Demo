@@ -3,6 +3,10 @@ title: Guion · Contingencia por falla de máquina
 escenario: 3-contingencia-falla
 tags: [demo, plasticos, guion, fractal]
 duracion_aprox: 3 min
+cifras:
+  - ["9 → 7", "pedidos tarde con la recomendación de Fractal"]
+  - ["208,9 → 181,8 h", "de atraso total"]
+  - ["90 min", "para montar el molde de repuesto en la IMM-20"]
 ---
 
 # Escenario 3 · Contingencia: falla de máquina

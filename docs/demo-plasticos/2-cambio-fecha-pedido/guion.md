@@ -3,6 +3,10 @@ title: Guion · Cambio de fecha de un pedido
 escenario: 2-cambio-fecha-pedido
 tags: [demo, plasticos, guion, fractal]
 duracion_aprox: 2,5 min
+cifras:
+  - ["día 12 → día 11", "nueva fecha de entrega del pedido"]
+  - ["0,7 s", "para estudiar las opciones"]
+  - ["92,5 %", "de pedidos a tiempo: el resto no se atrasa"]
 ---
 
 # Escenario 2 · Cambio de fecha de un pedido

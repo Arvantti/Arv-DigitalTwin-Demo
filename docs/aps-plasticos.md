@@ -145,6 +145,12 @@ Moldes de repuesto de la demo (`aps/aps.yaml`): uno de balde de 12 L y uno de cu
 
 Capturas y guiones de narración por escenario en [`docs/demo-plasticos/`](demo-plasticos/README.md).
 
+**Presentaciones en el sitio** (`presentaciones.html`, enlazada desde el APS y el panel del gemelo 3D): una por escenario,
+armada al compilar con los `guion.md` y las capturas de `docs/demo-plasticos/`: portada, una lámina por segmento con su
+captura, lo que se señala y las notas del orador, y un cierre con las cifras del frontmatter (`cifras`). Cada lámina
+tiene **ABRIR EN VIVO**, que abre la pantalla real que muestra la captura. Teclas: ← → o espacio, N notas, F pantalla
+completa, Esc volver; `?esc=2&s=4` abre una lámina.
+
 ## Siguiente
 
 Ensayo del guion completo en el sitio publicado antes de la reunión del 2026-11-04. Después: señales reales de los PLC

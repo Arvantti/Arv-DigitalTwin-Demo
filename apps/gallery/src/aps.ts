@@ -51,7 +51,8 @@ export function buildAps(opts: Options): { time: () => number; plan: () => Produ
       ${down.map((e) => `<p class="aps-down" title="${esc(e.reason)}">⚠ ${e.equipment.toUpperCase()} fuera de servicio · ${e.kind === "falla" ? "falla" : "paro de emergencia"}</p>`).join("")}
       <div class="sim-controls"><a class="btn-link" href="/aps.html" target="_blank" rel="noopener">▦ ABRIR APS · PEDIDOS Y GANTT</a></div>
       <div class="sim-controls"><a class="btn-link alt" href="/emulador.html" target="_blank" rel="noopener">◫ EMULADOR DE PLANTA · 2D</a></div>
-      <div class="sim-controls"><a class="btn-link" href="/control.html" target="_blank" rel="noopener">◉ CENTRO DE CONTROL</a></div>`;
+      <div class="sim-controls"><a class="btn-link" href="/control.html" target="_blank" rel="noopener">◉ CENTRO DE CONTROL</a></div>
+      <div class="sim-controls"><a class="btn-link alt" href="/presentaciones.html" target="_blank" rel="noopener">▶ PRESENTACIONES · RESULTADOS</a></div>`;
   };
   render();
   onChange((what) => {
