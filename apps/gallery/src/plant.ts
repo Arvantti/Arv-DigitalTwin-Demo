@@ -30,6 +30,7 @@ import { bootDone, bootError, bootStage } from "./boot.ts";
 import { type CatalogDoc, type ProductsApi, buildProducts } from "./products.ts";
 import { buildSchedule } from "./schedule.ts";
 import { buildAps } from "./aps.ts";
+import { buildPalletTransport, type PalletTransport } from "./pallet-transport.ts";
 import "./styles.css";
 import { demoFetch, demoWebSocket } from "./demo-client";
 
@@ -1492,6 +1493,8 @@ async function start(): Promise<void> {
         const n = Number(a.eq.sim.params.vehicles ?? a.eq.params?.vehicles ?? 0);
         return n > 0 ? { center: a.root.position.clone(), vehicles: Math.min(12, n) } : undefined;
       },
+      // en plásticos, sin el motor conectado, los montacargas los mueve la programación (pallet-transport.ts)
+      external: () => transport !== null && messages === 0,
     });
   await bootStage(78, "Procesando conexiones y tuberías…");
   buildPipes();
@@ -1528,8 +1531,22 @@ async function start(): Promise<void> {
   }
   // Programación de producción (fase E): solo las plantas con demanda en el catálogo (salsas y plásticos).
   // En plásticos el APS corre en el navegador: pedidos, programación manual y cosimulador (docs/aps-plasticos.md).
-  if (plantId === "plastic-injection-plant-v1") buildAps({ plantId, select, showProduct: (id) => productsApi?.show(id), markDown, scene: stage.scene, rootOf: (id) => assets.get(id)?.root, setAssetExtra: (fn) => (assetExtra = fn), refreshAsset: renderAsset });
-  else if (doc.catalog?.schedule) buildSchedule({ plantId, select, apiUrl: plantApiAvailable ? apiUrl : undefined, showProduct: (id) => productsApi?.show(id) });
+  if (plantId === "plastic-injection-plant-v1") {
+    const aps = buildAps({ plantId, select, showProduct: (id) => productsApi?.show(id), markDown, scene: stage.scene, rootOf: (id) => assets.get(id)?.root, setAssetExtra: (fn) => (assetExtra = fn), refreshAsset: renderAsset });
+    // Transporte de estibas por el piso: cuando una estiba se llena, un montacargas la lleva al siguiente punto.
+    if (url.get("transport") !== "0") transport = buildPalletTransport({
+      equipment: doc.equipment,
+      plan: aps.plan,
+      time: aps.time,
+      parent: stage.content,
+      toScene,
+      active: () => messages === 0,
+      setChannels: (id, channels) => {
+        const a = assets.get(id);
+        if (a) a.frame = { ...a.frame, channels: { ...a.frame.channels, ...channels }, state: "running" };
+      },
+    });
+  } else if (doc.catalog?.schedule) buildSchedule({ plantId, select, apiUrl: plantApiAvailable ? apiUrl : undefined, showProduct: (id) => productsApi?.show(id) });
   if (url.get("select")) select(url.get("select"));
   const focusAsset = url.get("focus") ? assets.get(url.get("focus")!) : undefined;
   if (focusAsset) stage.frame(focusAsset.root, 1.1);
@@ -1606,9 +1623,11 @@ let frames = 0;
 let updateRoutes: ((time: number, dt: number) => void) | null = null;
 let updateProducts: ((time: number) => void) | null = null;
 let productsApi: ProductsApi | null = null;
+let transport: PalletTransport | null = null;
 function loop(): void {
   const dt = stage.render();
   updateRoutes?.(stage.time, dt);
+  transport?.update(dt);
   for (const a of assets.values()) {
     if (a.model && messages === 0 && a.eq.sim?.type === "injection-molding-machine") a.frame = ambientInjectionFrame(a.eq.id, a.eq.sim.params, stage.time);
     a.model?.update(a.frame, dt);
@@ -1625,4 +1644,4 @@ function loop(): void {
 }
 
 void start();
-Object.assign(window, { stage, THREE });
+Object.assign(window, { stage, THREE, transportStats: () => transport?.stats() });

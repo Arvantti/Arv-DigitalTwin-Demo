@@ -6,6 +6,7 @@
  * la vigente en otra ventana, el gemelo se entera al instante.
  */
 import type { PlanDoc } from "./schedule.ts";
+import type { ProductionPlan } from "@twin/cosim/core/contracts.ts";
 import { buildSchedule, esc } from "./schedule.ts";
 import type * as THREE from "three";
 import { activeEvents, events, onChange, SOURCE_NAMES, useDemoDays, vigente } from "./aps-store.ts";
@@ -25,7 +26,7 @@ interface Options {
   refreshAsset: () => void;
 }
 
-export function buildAps(opts: Options): void {
+export function buildAps(opts: Options): { time: () => number; plan: () => ProductionPlan } {
   useDemoDays();
   let current = vigente();
   const section = document.createElement("div");
@@ -59,4 +60,5 @@ export function buildAps(opts: Options): void {
     else schedule.refresh();
     play.refresh();
   });
+  return { time: play.time, plan: () => current };
 }
