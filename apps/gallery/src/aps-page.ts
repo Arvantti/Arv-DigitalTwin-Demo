@@ -512,7 +512,7 @@ function renderFractal(): void {
               .map(
                 (o) => `<tr class="${o.id === study!.best ? "best" : ""}"><td><b>${esc(o.id.split("-").at(-1)!)}</b>${o.id === study!.best ? ' <span class="chip done">MEJOR</span>' : ""}</td><td>${esc(o.label)}<br/><small class="dim">${o.levers.map((l) => esc(l.text)).join(" · ")}</small></td>
                 <td class="num">${nf(o.kpis.on_time_pct, 1)} %</td><td class="num">${o.kpis.late_orders}</td><td class="num">${nf(o.kpis.tardiness_h, 1)} h</td><td class="num">${o.kpis.changeovers}</td><td class="num">${o.mold_change_h ? `${nf(o.mold_change_h, 1)} h` : "—"}</td><td>${esc(machineLabel(o.max_load.equipment))} ${nf(o.max_load.pct, 0)} %</td><td class="num">${nf(o.score, 1)}</td>
-                <td><button class="fr-see" data-id="${esc(o.id)}">VER EN GANTT</button></td></tr>`,
+                <td class="fr-btns"><button class="fr-see" data-id="${esc(o.id)}">VER EN GANTT</button><button class="fr-see fr-pick" data-id="${esc(o.id)}">ADOPTAR</button></td></tr>`,
               )
               .join("")}
           </tbody></table></div>
@@ -524,7 +524,17 @@ function renderFractal(): void {
   $("fr-run-adelantar").onclick = () => runFractal({ scenario: "adelantar", order: { id: $<HTMLSelectElement>("fr-order").value, due: `${$<HTMLInputElement>("fr-due").value}T${model.calendar.shifts.map((x) => x.end).sort().at(-1)}` } });
   $("fr-run-balancear").onclick = () => runFractal({ scenario: "balancear" });
   $("fr-run-falla").onclick = () => runFractal({ scenario: "falla" });
-  el.querySelectorAll<HTMLButtonElement>(".fr-see").forEach(
+  // Cualquier opción se puede adoptar, no solo la recomendada: Fractal recomienda y la persona decide.
+  const adoptOption = (id: string) => {
+    setVigente(study!.options.find((o) => o.id === id)!.plan);
+    current = vigente();
+    proposal = null;
+    study = null;
+    tab = "gantt";
+    render();
+  };
+  el.querySelectorAll<HTMLButtonElement>(".fr-pick").forEach((b) => (b.onclick = () => adoptOption(b.dataset.id!)));
+  el.querySelectorAll<HTMLButtonElement>(".fr-see:not(.fr-pick)").forEach(
     (b) =>
       (b.onclick = () => {
         proposal = study!.options.find((o) => o.id === b.dataset.id)!.plan;
@@ -534,14 +544,7 @@ function renderFractal(): void {
   );
   const adopt = document.getElementById("fr-adopt");
   if (adopt)
-    adopt.onclick = () => {
-      setVigente(study!.options.find((o) => o.id === study!.best)!.plan);
-      current = vigente();
-      proposal = null;
-      study = null;
-      tab = "gantt";
-      render();
-    };
+    adopt.onclick = () => adoptOption(study!.best);
 }
 
 // ------------------------------------------------------------------ arranque

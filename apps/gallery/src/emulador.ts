@@ -141,7 +141,7 @@ function renderMachine(): void {
       : `<div class="emu-form">
         <label>Tipo <select id="emu-kind"><option value="falla">Falla de máquina</option><option value="paro-emergencia">Paro de emergencia</option></select></label>
         <label>Causa <select id="emu-reason"></select></label>
-        <label>Reparación estimada <select id="emu-hours">${REPAIR_H.map((h) => `<option value="${h}"${h === 48 ? " selected" : ""}>${h} h</option>`).join("")}</select></label>
+        <label>Reparación estimada <select id="emu-hours">${REPAIR_H.map((h) => `<option value="${h}"${h === 72 ? " selected" : ""}>${h} h</option>`).join("")}</select></label>
         <button id="emu-fail" class="danger">⚠ DETENER LA MÁQUINA AHORA</button>
       </div>`;
   el.innerHTML = `

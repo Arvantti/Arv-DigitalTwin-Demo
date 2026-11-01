@@ -162,8 +162,9 @@ export async function runStudy(newHighs: () => Promise<HighsLike>, cat: CatalogD
       .sort((a, b) => b[1] - a[1]);
     question = `¿Cómo repartir la ocupación de la próxima semana sin sobrecargas (objetivo ${TARGET_LOAD} %)? Hoy la máquina más cargada es ${label(top[0]?.[0] ?? "")} al ${top[0]?.[1] ?? 0} %.`;
     variants.push({ label: "Solo recolocar la secuencia", levers: [{ kind: "recalcular", text: "Recolocar con el cosimulador sin cambiar moldes" }] });
-    // Los dos cuellos de botella con molde de repuesto en el almacén.
-    for (const [m] of top.filter(([m]) => sparesLeft(cat, baseSetup, baseSetup[m].tooling) > 0).slice(0, 2)) variants.push(...mountSpare(baseSetup[m].tooling));
+    // Los moldes de los dos cuellos de botella con repuesto en el almacén (un molde montado en dos máquinas cuenta una vez).
+    const toolings = [...new Set(top.map(([m]) => baseSetup[m].tooling))].filter((t) => sparesLeft(cat, baseSetup, t) > 0);
+    for (const t of toolings.slice(0, 2)) variants.push(...mountSpare(t));
   } else {
     const ev = events.find((e) => failed.has(e.equipment));
     if (!ev) throw new Error("No hay ninguna máquina fuera de servicio en el emulador.");

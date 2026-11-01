@@ -195,6 +195,8 @@ button.danger:hover { background: rgba(255, 59, 59, 0.4); border-color: #fff; }
 .fr-table td { white-space: normal; }
 .fr-table small { font-size: 11px; }
 .fr-see { padding: 3px 8px; font-size: 10px; }
+.fr-btns { white-space: nowrap; }
+.fr-btns .fr-pick { margin-left: 4px; }
 .fr-foot { display: grid; grid-template-columns: 1fr 280px; gap: 16px; margin-top: 10px; }
 @media (max-width: 900px) { .fr-foot { grid-template-columns: 1fr; } }
 .fr-loads { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 4px 16px; }

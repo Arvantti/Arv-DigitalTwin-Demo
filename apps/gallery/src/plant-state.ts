@@ -61,6 +61,21 @@ export function machineAt(plan: ProductionPlan, events: PlantEvent[], id: string
 
 const overlap = (a: number, b: number, c: number, d: number) => model.calendar.workBetween(Math.max(a, c), Math.min(b, d));
 
+/** Paradas programadas y fallas de una máquina, unidas: una falla que la programación ya trae como parada cuenta una vez. */
+function downsOf(plan: ProductionPlan, events: PlantEvent[], id: string): [number, number][] {
+  const list: [number, number][] = [
+    ...plan.downtime.filter((d) => d.equipment === id).map((d) => [minOf(d.start), minOf(d.end)] as [number, number]),
+    ...events.filter((e) => e.equipment === id).map((e) => [minOf(e.start), evEnd(e)] as [number, number]),
+  ].sort((x, y) => x[0] - y[0]);
+  const out: [number, number][] = [];
+  for (const [a, b] of list) {
+    const last = out[out.length - 1];
+    if (last && a <= last[1]) last[1] = Math.max(last[1], b);
+    else out.push([a, b]);
+  }
+  return out;
+}
+
 /** Unidades de una fila hechas hasta t (avance por tiempo de trabajo, después del cambio de color). */
 export function unitsUntil(r: PlanScheduleRow, t: number): number {
   const a = minOf(r.start);
@@ -102,10 +117,7 @@ export function oeeAt(plan: ProductionPlan, events: PlantEvent[], id: string, t:
   }
   const from = shift[0];
   const rows = plan.schedule.filter((r) => r.equipment === id && minOf(r.end) > from && minOf(r.start) < until);
-  const downs: [number, number][] = [
-    ...plan.downtime.filter((d) => d.equipment === id).map((d) => [minOf(d.start), minOf(d.end)] as [number, number]),
-    ...events.filter((e) => e.equipment === id).map((e) => [minOf(e.start), evEnd(e)] as [number, number]),
-  ];
+  const downs = downsOf(plan, events, id);
   const downMin = downs.reduce((s, [a, b]) => s + overlap(a, b, from, until), 0);
   let busy = 0;
   let change = 0;
@@ -222,10 +234,7 @@ export function dayLoadAt(plan: ProductionPlan, events: PlantEvent[], id: string
 /** Ocupación contra disponibilidad entre dos instantes; con `order`, solo cuentan las horas de esa orden. */
 export function loadIn(plan: ProductionPlan, events: PlantEvent[], id: string, from: number, to: number, order?: string): Load {
   const shift = model.calendar.workBetween(from, to);
-  const downs: [number, number][] = [
-    ...plan.downtime.filter((d) => d.equipment === id).map((d) => [minOf(d.start), minOf(d.end)] as [number, number]),
-    ...events.filter((e) => e.equipment === id).map((e) => [minOf(e.start), evEnd(e)] as [number, number]),
-  ];
+  const downs = downsOf(plan, events, id);
   const down = Math.min(shift, downs.reduce((s, [a, b]) => s + overlap(a, b, from, to), 0));
   const rows = plan.schedule.filter((r) => r.equipment === id && (!order || r.order === order) && minOf(r.end) > from && minOf(r.start) < to);
   let busy = 0;

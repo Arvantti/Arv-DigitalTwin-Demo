@@ -74,8 +74,8 @@ def test_route_of_the_assembled_product(catalog):
         ("cuerpo-papelera-20l", "inyeccion"), ("pedal-palanca-papelera", "inyeccion"), ("papelera-20l", "ensamble"),
     ]
     active = [eid for s in route for eid in s["active"]]
-    assert active == ["imm-19", "buf-19", "fleet-01", "rack-sf-02", "imm-06", "buf-06", "fleet-01", "rack-sf-01",
-                      "assembly-01", "pack-station-03", "rack-pt-01"]
+    assert active == ["imm-18", "imm-19", "buf-19", "fleet-01", "rack-sf-02", "imm-06", "imm-07", "buf-06", "fleet-01",
+                      "rack-sf-01", "assembly-01", "pack-station-03", "rack-pt-01"]
     # En la etapa con molde, la ruta conoce todas las inyectoras donde cabe (alternativas para secuenciar).
     assert route[0]["equipment"] == ["imm-18", "imm-19"]
 
@@ -105,7 +105,9 @@ def test_layout_must_match_the_mounted_mold(tmp_path, lib):
     folder = _copy(tmp_path)
     _edit(folder, "tooling.yaml", lambda d: d["tooling"][1].update(cycle_s=28))
     errors = Catalog.load(folder).validate(yaml.safe_load((folder / "plant.yaml").read_text(encoding="utf-8")), lib)
-    assert errors == ["montaje imm-21: plant.yaml dice cycle_s=30 y el molde 28"]
+    # El molde del balde está montado en la imm-21 y en la imm-23.
+    assert errors == ["montaje imm-21: plant.yaml dice cycle_s=30 y el molde 28",
+                      "montaje imm-23: plant.yaml dice cycle_s=30 y el molde 28"]
 
 
 def test_schema_requires_the_mold_fields(tmp_path):

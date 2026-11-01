@@ -13,7 +13,7 @@ products:
     colors: [mb-blanco]
     bulk_l: 0.03
     routing:
-      - { stage: inyeccion, tooling: mold-cubiertos-16c, equipment: [imm-01, imm-02, imm-08], transfer_min: 0 }
+      - { stage: inyeccion, tooling: mold-cubiertos-16c, equipment: [imm-01, imm-02, imm-04, imm-05, imm-08], transfer_min: 0 }
       - { stage: estiba,    equipment: [buf-01, buf-02], transfer_min: 30 }
       - { stage: transporte, equipment: [fleet-01], transfer_min: 10 }
       - { stage: almacen-terminado, equipment: [rack-pt-03] }

@@ -7,3 +7,9 @@ setup:
   imm-06: { tooling: mold-pedal-palanca-2c,    color: mb-azul }
   imm-19: { tooling: mold-cuerpo-papelera-20l, color: mb-gris }
   imm-21: { tooling: mold-balde-12l,           color: mb-azul }
+  imm-05: { tooling: mold-cubiertos-16c,       color: mb-blanco }
+  imm-04: { tooling: mold-cubiertos-16c,       color: mb-blanco }
+  imm-08: { tooling: mold-cubiertos-16c,       color: mb-blanco }
+  imm-07: { tooling: mold-pedal-palanca-2c,    color: mb-azul }
+  imm-18: { tooling: mold-cuerpo-papelera-20l, color: mb-gris }
+  imm-23: { tooling: mold-balde-12l,           color: mb-blanco }
