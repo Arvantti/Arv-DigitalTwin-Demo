@@ -29,6 +29,7 @@ import { type ControlPiece, type PanelConfig, controlPanel, operatorDesk, plcCab
 import { bootDone, bootError, bootStage } from "./boot.ts";
 import { type CatalogDoc, type ProductsApi, buildProducts } from "./products.ts";
 import { buildSchedule } from "./schedule.ts";
+import { buildAps } from "./aps.ts";
 import "./styles.css";
 import { demoFetch, demoWebSocket } from "./demo-client";
 
@@ -823,6 +824,30 @@ function animatePipes(time: number): void {
   }
 }
 
+// ------------------------------------------------------------------ fallas del emulador
+const downMarks = new Map<string, THREE.Object3D>();
+/** Caja roja sobre cada máquina que el emulador sacó de servicio. */
+function markDown(ids: string[]): void {
+  for (const [id, mark] of downMarks) {
+    if (ids.includes(id)) continue;
+    mark.parent?.remove(mark);
+    downMarks.delete(id);
+  }
+  for (const id of ids) {
+    const asset = assets.get(id);
+    if (!asset || downMarks.has(id)) continue;
+    const box = new THREE.Box3().setFromObject(asset.root);
+    const size = box.getSize(new THREE.Vector3());
+    const geo = new THREE.BoxGeometry(size.x + 0.6, size.y + 0.6, size.z + 0.6);
+    const group = new THREE.Group();
+    group.add(new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: "#ff3b3b", transparent: true, opacity: 0.22, depthWrite: false })));
+    group.add(new THREE.LineSegments(new THREE.EdgesGeometry(geo), new THREE.LineBasicMaterial({ color: "#ff3b3b" })));
+    group.position.copy(box.getCenter(new THREE.Vector3()));
+    stage.scene.add(group);
+    downMarks.set(id, group);
+  }
+}
+
 // ------------------------------------------------------------------ selección
 function select(id: string | null): void {
   selectedId = id;
@@ -1475,7 +1500,9 @@ async function start(): Promise<void> {
     updateProducts = productsApi.update;
   }
   // Programación de producción (fase E): solo las plantas con demanda en el catálogo (salsas y plásticos).
-  if (doc.catalog?.schedule) buildSchedule({ plantId, select, apiUrl: plantApiAvailable ? apiUrl : undefined, showProduct: (id) => productsApi?.show(id) });
+  // En plásticos el APS corre en el navegador: pedidos, programación manual y cosimulador (docs/aps-plasticos.md).
+  if (plantId === "plastic-injection-plant-v1") buildAps({ plantId, select, showProduct: (id) => productsApi?.show(id), markDown });
+  else if (doc.catalog?.schedule) buildSchedule({ plantId, select, apiUrl: plantApiAvailable ? apiUrl : undefined, showProduct: (id) => productsApi?.show(id) });
   if (url.get("select")) select(url.get("select"));
   const focusAsset = url.get("focus") ? assets.get(url.get("focus")!) : undefined;
   if (focusAsset) stage.frame(focusAsset.root, 1.1);

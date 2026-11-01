@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Emulador · Plásticos</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Orbitron:wght@500;600;700&display=swap" />
+  </head>
+  <body class="aps-page emu-page">
+    <header class="aps-top">
+      <a class="aps-back" href="/plant.html?plant=plastic-injection-plant-v1">← GEMELO 3D</a>
+      <a class="aps-back" href="/aps.html">APS</a>
+      <div class="aps-title"><strong>EMULADOR</strong><span class="dim"> · planta de inyección de plásticos en tiempo real · señales hacia el centro de control</span></div>
+      <div id="emu-summary" class="aps-chip"></div>
+      <div id="emu-clock" class="aps-clock">—</div>
+    </header>
+    <main class="emu-main">
+      <section class="emu-floor"><svg id="emu-svg" role="img" aria-label="Plano de la planta con el estado de cada máquina"></svg>
+        <div class="emu-legend"><span><i class="run"></i>produciendo</span><span><i class="idle"></i>sin orden</span><span><i class="plan"></i>parada programada</span><span><i class="fault"></i>falla o paro</span><span><i class="off"></i>fuera de turno</span></div>
+      </section>
+      <aside class="emu-side">
+        <div id="emu-machine"></div>
+        <div class="label">EVENTOS DE PLANTA</div>
+        <div id="emu-events" class="emu-events"></div>
+      </aside>
+    </main>
+    <script type="module" src="/src/emulador.ts"></script>
+  </body>
+</html>

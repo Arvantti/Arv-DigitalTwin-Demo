@@ -320,3 +320,13 @@ button.pick { padding: 2px 8px; font-size: 11px; }
 .water-history-panel input { width:100%; }
 .water-history-panel strong { display:block; margin:12px 0; color:#4ea7ff; font:12px "IBM Plex Mono",monospace; }
 .plc-viewer-mode #btn-pause,.plc-viewer-mode .speed,.plc-viewer-mode #scenario,.plc-viewer-mode #commands { display:none; }
+/* APS de plásticos: pedidos y programación (src/aps.ts) */
+.imp { font: 700 10px Inter, sans-serif; letter-spacing: 0.04em; padding: 2px 6px; border: 1px solid var(--line); }
+.imp-alta { color: var(--bad); border-color: currentColor; }
+.imp-baja { color: var(--dim); }
+.spin { display: inline-block; animation: aps-spin 1s linear infinite; }
+@keyframes aps-spin { to { transform: rotate(360deg); } }
+.btn-link { flex: 1; display: block; text-align: center; text-decoration: none; color: var(--text); background: rgba(45, 127, 249, 0.22); border: 1px solid var(--accent); border-radius: var(--radius-control); padding: 7px 10px; font: 600 12px Inter, sans-serif; letter-spacing: 0.08em; }
+.btn-link:hover { background: rgba(45, 127, 249, 0.35); }
+.aps-down { margin: 4px 0; padding: 5px 8px; border: 1px solid var(--bad); background: rgba(255, 59, 59, 0.15); color: #ffb3b3; font: 600 11px Inter, sans-serif; letter-spacing: 0.04em; border-radius: var(--radius-control); }
+.btn-link.alt { background: rgba(255, 59, 59, 0.12); border-color: rgba(255, 59, 59, 0.6); }

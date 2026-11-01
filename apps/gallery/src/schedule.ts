@@ -28,6 +28,9 @@ export interface PlanOrder {
   color?: string;
   hold?: { until: string; reason: string };
   urgent?: boolean;
+  importance?: "alta" | "normal" | "baja";
+  added?: boolean;
+  unscheduled?: number;
 }
 export interface PlanRow {
   op: string;
@@ -86,6 +89,19 @@ interface Options {
   showProduct?: (id: string) => void;
   /** URL de la API de Planta Real; si se omite, usa solo el plan estático publicado. */
   apiUrl?: (path: string) => string;
+  /**
+   * Programación que entrega el APS del navegador (plásticos: cosimulador). Si está, la tabla muestra ese plan y no
+   * pide nada a la API; el ingreso de pedidos reemplaza al botón de urgente.
+   */
+  provider?: () => { plan: PlanDoc | null; label: string; message?: string };
+  /** Avisa cuando la tabla se abre, para cerrar otras vistas anchas del panel. */
+  onWide?: (wide: boolean) => void;
+}
+export interface ScheduleApi {
+  /** Vuelve a leer el plan del proveedor y redibuja. */
+  refresh: () => void;
+  /** Cierra la tabla ancha. */
+  closeWide: () => void;
 }
 
 const BACK_OPTIONS: [string, string][] = [
@@ -102,14 +118,14 @@ const FILTERS: [string, string][] = [
   ["done", "Hechas"],
 ];
 const MONTHS = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
-const COLOR_NAMES: Record<string, string> = { "mb-blanco": "blanco", "mb-azul": "azul", "mb-gris": "gris" };
-const esc = (s: unknown) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
-const nf = (v: number, digits = 0) => v.toLocaleString("es-CO", { maximumFractionDigits: digits });
+export const COLOR_NAMES: Record<string, string> = { "mb-blanco": "blanco", "mb-azul": "azul", "mb-gris": "gris" };
+export const esc = (s: unknown) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
+export const nf = (v: number, digits = 0) => v.toLocaleString("es-CO", { maximumFractionDigits: digits });
 /** "2026-10-22T08:31-05:00" → "22-oct 08:31" (hora de la planta, tal como viene). */
-const when = (iso: string) => `${Number(iso.slice(8, 10))}-${MONTHS[Number(iso.slice(5, 7)) - 1]} ${iso.slice(11, 16)}`;
-const day = (iso: string) => `${Number(iso.slice(8, 10))}-${MONTHS[Number(iso.slice(5, 7)) - 1]}`;
+export const when = (iso: string) => `${Number(iso.slice(8, 10))}-${MONTHS[Number(iso.slice(5, 7)) - 1]} ${iso.slice(11, 16)}`;
+export const day = (iso: string) => `${Number(iso.slice(8, 10))}-${MONTHS[Number(iso.slice(5, 7)) - 1]}`;
 const hours = (a: string, b: string) => (Date.parse(b) - Date.parse(a)) / 3.6e6;
-const store = {
+export const store = {
   get: (k: string) => {
     try {
       return localStorage.getItem(k);
@@ -128,7 +144,7 @@ const store = {
 };
 
 /** Hora local de la planta "AAAA-MM-DDTHH:MM" con su desfase ("-05:00"); se compara como texto con las del plan. */
-function plantNow(tz: string): string {
+export function plantNow(tz: string): string {
   const sign = tz.startsWith("-") ? -1 : 1;
   const [h, m] = tz.slice(1).split(":").map(Number);
   const forced = new URLSearchParams(location.search).get("now");
@@ -152,7 +168,7 @@ function clip(plan: PlanDoc, first: string, last: string): PlanDoc {
   return { ...plan, from: first, to: last, orders: plan.orders.filter((o) => keep.has(o.id)), schedule: plan.schedule.filter((r) => keep.has(r.order)) };
 }
 
-export function buildSchedule(opts: Options): void {
+export function buildSchedule(opts: Options): ScheduleApi {
   const section = document.getElementById("schedule-section") as HTMLElement;
   const sidebar = document.getElementById("sidebar") as HTMLElement;
   const api = opts.apiUrl;
@@ -169,11 +185,12 @@ export function buildSchedule(opts: Options): void {
   let message = "";
 
   section.hidden = false;
+  const provided = !!opts.provider;
   section.innerHTML = `
-    <h3>PROGRAMACIÓN</h3>
-    <label class="sched-back">Hacia atrás <select id="sched-back">${BACK_OPTIONS.map(([v, l]) => `<option value="${v}">${l}</option>`).join("")}</select></label>
+    <h3>PROGRAMACIÓN${provided ? ' <span class="dim" id="sched-label"></span>' : ""}</h3>
+    <label class="sched-back"${provided ? " hidden" : ""}>Hacia atrás <select id="sched-back">${BACK_OPTIONS.map(([v, l]) => `<option value="${v}">${l}</option>`).join("")}</select></label>
     <div id="sched-kpis" class="sched-kpis"></div>
-    <div class="sim-controls"><button id="sched-toggle" title="Ver la tabla de órdenes de producción en el panel">▦ TABLA</button><button id="sched-urgent" title="Pedir un pedido urgente y ver qué cambia">＋ URGENTE</button></div>
+    <div class="sim-controls"><button id="sched-toggle" title="Ver la tabla de órdenes de producción en el panel">▦ TABLA</button>${provided ? "" : '<button id="sched-urgent" title="Pedir un pedido urgente y ver qué cambia">＋ URGENTE</button>'}</div>
     <div id="sched-form" class="sched-form" hidden></div>
     <div id="sched-msg" class="sched-msg"></div>
     <div id="sched-body" class="sched-body" hidden></div>`;
@@ -188,12 +205,15 @@ export function buildSchedule(opts: Options): void {
   $("sched-toggle").onclick = () => {
     wide = !wide;
     store.set(key("wide"), wide ? "1" : null);
+    if (wide) opts.onWide?.(true);
     render();
   };
-  $("sched-urgent").onclick = () => {
-    formOpen = !formOpen;
-    renderForm();
-  };
+  const urgentBtn = document.getElementById("sched-urgent");
+  if (urgentBtn)
+    urgentBtn.onclick = () => {
+      formOpen = !formOpen;
+      renderForm();
+    };
 
   async function fetchPlan(first: string, last: string, urgent: UrgentInput[], now: string): Promise<PlanDoc> {
     if (api) {
@@ -220,6 +240,17 @@ export function buildSchedule(opts: Options): void {
   }
 
   async function load(): Promise<void> {
+    if (opts.provider) {
+      const got = opts.provider();
+      plan = got.plan;
+      message = got.message ?? "";
+      live = true;
+      const label = document.getElementById("sched-label");
+      if (label) label.textContent = got.label;
+      preview = null;
+      render();
+      return;
+    }
     const now = plantNow(plan?.timezone ?? "-05:00");
     const [first, last] = windowFor(back, now.slice(0, 10));
     try {
@@ -304,7 +335,7 @@ export function buildSchedule(opts: Options): void {
       const qty = o.batches ? `${o.batches} lote${o.batches > 1 ? "s" : ""} · ${nf(o.quantity)} ${o.unit}` : `${nf(o.quantity)} ${o.unit}`;
       const chip = { done: "HECHA", now: "EN CURSO", todo: "PROGRAMADA" }[st];
       tr.push(`<tr data-op="${esc(o.op)}" class="${st}${o.op === chosen ? " chosen" : ""}${o.order.urgent ? " urgent" : ""}">
-        <td><b>${esc(o.op)}</b><small>${esc(o.order.id)}${o.order.urgent ? " · URGENTE" : ""}</small></td>
+        <td><b>${esc(o.op)}</b><small>${esc(o.order.id)}${o.order.importance === "alta" ? " · ALTA" : o.order.urgent ? " · URGENTE" : ""}</small></td>
         <td>${esc(o.order.product_name)}<small>${esc(o.order.customer)}</small></td>
         <td>${esc(stageName(o.stage))}<small>${o.equipment.map((e) => esc(e.toUpperCase())).join(", ")}</small></td>
         <td>${when(o.start)}<small>${when(o.end)}</small></td>
@@ -351,7 +382,7 @@ export function buildSchedule(opts: Options): void {
     el.innerHTML = `
       <div class="label">${esc(o.op)} · ${esc(stageName(o.stage))}</div>
       <p>Pedido <b>${esc(ord.id)}</b> de ${esc(ord.customer)}: ${nf(ord.quantity)} ${esc(ord.unit)} de ${esc(ord.product_name)}${ord.color ? ` (${esc(COLOR_NAMES[ord.color] ?? ord.color)})` : ""}.
-      Llegó el ${when(ord.created)}, entrega el ${when(ord.due)}${ord.priority === 2 ? " (plazo corto)" : ""}${ord.urgent ? " (urgente)" : ""}.</p>
+      Llegó el ${when(ord.created)}, entrega el ${when(ord.due)}${ord.importance ? ` · importancia ${ord.importance}` : ord.priority === 2 ? " (plazo corto)" : ""}${ord.urgent && !ord.importance ? " (urgente)" : ""}${ord.added ? " · agregado en la pantalla de pedidos" : ""}.</p>
       <p>Esta orden: ${o.equipment.map((e) => esc(e.toUpperCase())).join(", ")}${o.tooling ? ` con ${esc(o.tooling)}` : ""}, de ${when(o.start)} a ${when(o.end)}.
       El pedido termina el ${when(ord.completion)}: ${ord.late_h > 0 ? `<span class="bad">${nf(ord.late_h, 1)} h tarde</span>` : "a tiempo"}.</p>
       ${ord.hold ? `<p class="warn">Retenido hasta el ${when(ord.hold.until)}: ${esc(ord.hold.reason)}.</p>` : ""}`;
@@ -359,7 +390,7 @@ export function buildSchedule(opts: Options): void {
 
   function renderForm(): void {
     const el = $("sched-form");
-    $("sched-urgent").classList.toggle("active", formOpen);
+    document.getElementById("sched-urgent")?.classList.toggle("active", formOpen);
     el.hidden = !formOpen;
     if (!formOpen) return;
     if (!live) {
@@ -456,4 +487,13 @@ export function buildSchedule(opts: Options): void {
   }
 
   void load();
+  return {
+    refresh: () => void load(),
+    closeWide: () => {
+      if (!wide) return;
+      wide = false;
+      store.set(key("wide"), null);
+      render();
+    },
+  };
 }

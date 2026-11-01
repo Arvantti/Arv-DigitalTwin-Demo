@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "cosim/plant-event.v1",
+  "title": "Evento de planta del emulador",
+  "description": "Una máquina sale de servicio AHORA por falla o paro de emergencia. El emulador no programa paradas futuras.",
+  "type": "object",
+  "required": ["contract", "id", "plant", "equipment", "kind", "reason", "start", "est_end"],
+  "properties": {
+    "contract": { "const": "plant-event.v1" },
+    "id": { "type": "string" },
+    "plant": { "type": "string" },
+    "equipment": { "type": "string" },
+    "kind": { "enum": ["falla", "paro-emergencia"] },
+    "reason": { "type": "string" },
+    "start": { "type": "string", "description": "Instante en que ocurrió (hora de la planta)." },
+    "est_end": { "type": "string", "description": "Reparación estimada." },
+    "cleared": { "type": "string", "description": "Cuándo volvió a servicio." }
+  }
+}
