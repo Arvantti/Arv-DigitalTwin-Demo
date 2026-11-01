@@ -93,6 +93,11 @@ body.aps-page { font: 400 13px Inter, sans-serif; background: radial-gradient(ci
 .g-due.late::after { color: var(--bad); }
 .g-lot { position: absolute; top: 6px; bottom: 6px; min-width: 2px; background: linear-gradient(90deg, transparent 0 var(--co), var(--c) var(--co)), repeating-linear-gradient(135deg, #fff 0 2px, transparent 2px 5px); border-right: 1px solid rgba(4, 4, 33, 0.8); z-index: 1; cursor: pointer; }
 .g-lot.dim { opacity: 0.22; }
+.g-lot.sel { outline: 2px solid #ffffff; outline-offset: -1px; z-index: 2; }
+.g-row.res.used { background: rgba(45, 127, 249, 0.14); }
+.g-row.res.used .g-label b { color: #6fb1ff; }
+.g-row.res.unused { opacity: 0.4; }
+.g-uses { color: #6fb1ff; }
 .g-down { position: absolute; top: 2px; bottom: 2px; background: repeating-linear-gradient(45deg, var(--bad) 0 3px, rgba(255, 59, 59, 0.25) 3px 6px); opacity: 0.8; z-index: 1; }
 #tab-gantt { overflow-x: auto; }
 .g-scroll { max-height: 48vh; overflow-y: auto; border-bottom: 1px solid var(--line); }

@@ -91,6 +91,12 @@ const SCENARIOS = {
     await shot("04-calcular.png");
     await click(pg, "#aps-adopt");
     await shot("05-gantt-cosimulador.png");
+    // Clic en una orden de papelera (cuerpo, pedal y ensamble): sus máquinas suben y se resaltan.
+    await pg.$$eval(".g-orders .g-row[data-order]", (rows) => {
+      const r = rows.find((x) => x.innerText.includes("Papelera de pedal") && !x.querySelector(".g-bar.done"));
+      if (r) r.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+    await shot("05b-gantt-orden.png");
     await go(`/control.html${NOW}`);
     await shot("06-centro-control.png");
     await go(`/aps.html${NOW}`);
