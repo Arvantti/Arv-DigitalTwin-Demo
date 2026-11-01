@@ -17,7 +17,7 @@ def _sizing():
 
 def test_buffers_use_the_sized_pallet():
     expected = _sizing().table()
-    assert len(expected) == 28
+    assert len(expected) == 12  # un buffer por inyectora (planta simplificada)
     for name in ("plant.yaml", "simulation.yaml"):
         text = (PLANT / name).read_text(encoding="utf-8")
         for buf, n in expected.items():
@@ -28,8 +28,8 @@ def test_buffers_use_the_sized_pallet():
 def test_rack_and_route_pallets_match_their_product():
     expected = _sizing().table()
     sim = (PLANT / "simulation.yaml").read_text(encoding="utf-8")
-    for rack, buf in (("rack-sf-01", "buf-06"), ("rack-sf-02", "buf-19"), ("rack-sf-03", "buf-08"), ("rack-sf-04", "buf-14")):
+    for rack, buf in (("rack-sf-01", "buf-06"), ("rack-sf-02", "buf-19")):
         assert f'{rack}: {{ type: pallet-store, preset: semielaborado-48, params: {{"pallet_pieces": {expected[buf]},' in sim
-    for route_in, route_out, buf in ((1, 6, "buf-06"), (2, 7, "buf-19"), (3, 8, "buf-08"), (4, 9, "buf-14")):
+    for route_in, route_out, buf in ((1, 6, "buf-06"), (2, 7, "buf-19")):
         for route in (route_in, route_out):
             assert f'"route_{route}_pallet_pieces": {expected[buf]}' in sim

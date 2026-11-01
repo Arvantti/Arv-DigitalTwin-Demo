@@ -5,7 +5,7 @@
  * OEE del turno = disponibilidad × rendimiento × calidad, desde que empezó el turno hasta el instante pedido:
  * - disponibilidad: tiempo produciendo / tiempo cargado (produciendo + cambios de color + paradas). El tiempo sin orden
  *   no cuenta como pérdida (no estaba programado);
- * - rendimiento y calidad: supuestos por máquina y día con semilla (88–97 % y 97,5–99,6 %), hasta tener señales reales.
+ * - rendimiento: supuesto por máquina y día con semilla (88–97 %); calidad fija de 99 % (1 % de piezas defectuosas), hasta tener señales reales.
  */
 import type { PlanScheduleRow, PlantEvent, ProductionPlan } from "@twin/cosim/core/contracts.ts";
 import { rng } from "@twin/cosim/core/time.ts";
@@ -137,7 +137,7 @@ export function oeeAt(plan: ProductionPlan, events: PlantEvent[], id: string, t:
   if (loaded <= 0) return null;
   const r = rng(`${model.plant}:oee:${id}:${isoOf(from).slice(0, 10)}`);
   const performance = 0.88 + r() * 0.09;
-  const quality = 0.975 + r() * 0.021;
+  const quality = QUALITY;
   const availability = run / loaded;
   const made = Math.round(units * performance);
   return {
@@ -156,6 +156,9 @@ export function oeeAt(plan: ProductionPlan, events: PlantEvent[], id: string, t:
 }
 
 /** OEE de la planta: promedio ponderado por el tiempo cargado de cada máquina. */
+/** Calidad supuesta: 1 % de piezas defectuosas (Andy, 2026-11-01). */
+export const QUALITY = 0.99;
+
 export function plantOee(list: (Oee | null)[]): { oee: number; availability: number; performance: number; quality: number } | null {
   const ok = list.filter((x): x is Oee => !!x);
   const w = ok.reduce((s, x) => s + x.loadedH, 0);

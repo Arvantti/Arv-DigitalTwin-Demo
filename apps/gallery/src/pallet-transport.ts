@@ -62,6 +62,9 @@ const LIVE_SPEED = 2.5; // m/s, velocidad real en planta
 const PLAY_SPEED = 9; // m/s, mientras el play corre a 15 min/s o más
 const DWELL_S = 2.5; // recoger o dejar la estiba, a velocidad real
 const MAX_QUEUE = 8;
+const LANE_OFFSET = 1.0; // m: ida y regreso van por carriles distintos, a la derecha del eje del pasillo
+const GAP = 3.5; // m: distancia mínima con el montacargas de adelante en el mismo sentido
+const MAX_HOLD_S = 4; // s: si sigue detenido más que esto, avanza igual (evita bloqueos en los cruces)
 
 /**
  * Carriles de los montacargas en el plano (x este, y norte, m): los mismos ejes de las rutas `forklift` del plant.yaml,
@@ -404,8 +407,35 @@ interface Vehicle {
   reverseFirst: boolean;
   phase: "idle" | "toPickup" | "loading" | "toDrop" | "unloading" | "toBay";
   wait: number;
+  /** Segundos que lleva detenido detrás de otro montacargas. */
+  hold: number;
   trip: Trip | null;
   heading: number;
+}
+
+/**
+ * Corre la polilínea del pasillo a su derecha (mano derecha): así los que van y los que vienen por el mismo pasillo
+ * no se cruzan. En las esquinas el punto corrido es el de la unión a inglete de los dos tramos.
+ */
+function keepRight(line: P2[], d: number): P2[] {
+  if (line.length < 2) return line;
+  const normal = (a: P2, b: P2): P2 => {
+    const l = Math.max(1e-9, d2(a, b));
+    return [(b[1] - a[1]) / l, -(b[0] - a[0]) / l];
+  };
+  return line.map((p, i) => {
+    const n0 = i > 0 ? normal(line[i - 1], p) : null;
+    const n1 = i < line.length - 1 ? normal(p, line[i + 1]) : null;
+    if (!n0 || !n1) {
+      const n = (n0 ?? n1)!;
+      return [p[0] + n[0] * d, p[1] + n[1] * d];
+    }
+    const m: P2 = [n0[0] + n1[0], n0[1] + n1[1]];
+    const ml = Math.hypot(m[0], m[1]);
+    if (ml < 0.2) return [p[0] + n1[0] * d, p[1] + n1[1] * d]; // media vuelta: se queda del lado del tramo que sigue
+    const k = d / Math.max(0.5, (m[0] * n0[0] + m[1] * n0[1]) / ml);
+    return [p[0] + (m[0] / ml) * k, p[1] + (m[1] / ml) * k];
+  });
 }
 
 interface Opts {
@@ -499,7 +529,7 @@ export function buildPalletTransport(opts: Opts): PalletTransport {
     sprite.renderOrder = 11;
     sprite.visible = false;
     opts.parent.add(sprite);
-    vehicles.push({ object, load: object.getObjectByName("load"), label: { sprite, canvas, key: "" }, slot, at: slot, path: [], cum: [0], s: 0, reverseFirst: false, phase: "idle", wait: 0, trip: null, heading: Math.PI });
+    vehicles.push({ object, load: object.getObjectByName("load"), label: { sprite, canvas, key: "" }, slot, at: slot, path: [], cum: [0], s: 0, reverseFirst: false, phase: "idle", wait: 0, hold: 0, trip: null, heading: Math.PI });
   }
 
   const nameOf = opts.nameOf ?? ((id: string) => id.toUpperCase());
@@ -530,7 +560,8 @@ export function buildPalletTransport(opts: Opts): PalletTransport {
   }
 
   function setPath(v: Vehicle, to: Stop, reverseFirst: boolean): void {
-    const mid = graph.route({ q: v.at.q, seg: v.at.seg }, { q: to.q, seg: to.seg });
+    const lane = graph.route({ q: v.at.q, seg: v.at.seg }, { q: to.q, seg: to.seg }).filter((p, i, a) => i === 0 || d2(p, a[i - 1]) > 0.05);
+    const mid = lane.length > 1 ? keepRight(lane, LANE_OFFSET) : lane;
     const path: P2[] = [v.at.e, ...mid, to.e].filter((p, i, a) => i === 0 || d2(p, a[i - 1]) > 0.05);
     v.path = path;
     v.cum = [0];
@@ -660,7 +691,11 @@ export function buildPalletTransport(opts: Opts): PalletTransport {
           }
         }
       } else if (v.phase !== "idle") {
-        v.s += speed * dt;
+        if (behindAnother(v) && v.hold < MAX_HOLD_S) v.hold += dt;
+        else {
+          v.hold = 0;
+          v.s += speed * dt;
+        }
         if (v.s >= v.cum.at(-1)!) {
           if (v.phase === "toPickup") {
             v.phase = "loading";
@@ -682,6 +717,22 @@ export function buildPalletTransport(opts: Opts): PalletTransport {
       const waiting = queue.filter((x) => x.from === id).length + vehicles.filter((v) => v.trip?.from === id && v.phase === "toPickup").length;
       opts.setChannels(id, { fill: tripPlan.fillAt(id, t) ?? 0, waiting: Math.min(2, waiting), blocked: 0 });
     }
+  }
+
+  /** ¿Hay otro montacargas delante, a menos de GAP y andando en el mismo sentido? Entonces este espera. */
+  function behindAnother(v: Vehicle): boolean {
+    const fx = Math.sin(v.heading);
+    const fz = Math.cos(v.heading);
+    const p = v.object.position;
+    return vehicles.some((w) => {
+      if (w === v || w.phase === "idle") return false;
+      const dx = w.object.position.x - p.x;
+      const dz = w.object.position.z - p.z;
+      const ahead = dx * fx + dz * fz;
+      const side = Math.abs(dx * fz - dz * fx);
+      const same = Math.sin(w.heading) * fx + Math.cos(w.heading) * fz > 0.7 || w.phase === "loading" || w.phase === "unloading";
+      return ahead > 0.1 && ahead < GAP && side < 1.2 && same;
+    });
   }
 
   /** Mientras regresa al estacionamiento, la parada que acaba de dejar (para rehacer la ruta desde el carril). */

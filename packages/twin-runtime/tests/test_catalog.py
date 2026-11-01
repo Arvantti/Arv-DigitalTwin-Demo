@@ -51,10 +51,10 @@ def test_catalog_is_valid(catalog, lib):
     assert set(catalog.products) == {"cubiertos", "balde-12l", "cuerpo-papelera-20l", "pedal-palanca-papelera", "papelera-20l"}
 
 
-def test_three_machine_sizes_cover_the_29_machines(catalog):
+def test_machine_sizes_cover_the_12_machines(catalog):
     sizes = Counter(catalog.size_of(e) for e in _layout()["equipment"] if e["type"] == "injection_molding_machine")
-    # 80 a 150 t: 10 pequeñas; 300 a 650 t: 14 medianas; 1.100 y 1.500 t: 5 grandes (conteo del plant.yaml)
-    assert sizes == {"pequena": 10, "mediana": 14, "grande": 5}
+    # 80 a 150 t: 7 pequeñas; 350 a 650 t: 5 medianas (planta simplificada: no quedan grandes)
+    assert sizes == {"pequena": 7, "mediana": 5}
 
 
 def test_mounted_mold_feeds_the_machine(catalog, lib):
@@ -65,7 +65,7 @@ def test_mounted_mold_feeds_the_machine(catalog, lib):
         "product": "balde 12 L", "material": "HDPE", "cavities": 1, "part_g": 520, "cycle_s": 30,
     }
     assert catalog.machine_params("imm-01")["cavities"] == 16
-    assert catalog.machine_params("imm-03") == {}
+    assert catalog.machine_params("imm-20") == {}
 
 
 def test_route_of_the_assembled_product(catalog):

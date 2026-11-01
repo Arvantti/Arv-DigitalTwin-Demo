@@ -53,7 +53,7 @@ NODE_PATH="$(pnpm root -g)" node tools/demo-video/grabar.cjs todos --video   # o
 - imagen: 3-contingencia-falla/capturas/10-gemelo-3d.png
 - duración: 16 s
 
-> Esta es una planta de inyección de plásticos y su gemelo digital. Tiene veintinueve inyectoras, una línea de ensamble, almacenes y montacargas, y fabrica cuatro productos: cubiertos desechables, baldes de doce litros y papeleras de pedal.
+> Esta es una planta de inyección de plásticos y su gemelo digital. Tiene doce inyectoras, una celda de ensamble, almacenes y montacargas, y fabrica cuatro productos: cubiertos desechables, baldes de doce litros y papeleras de pedal.
 
 ### 0-S02 · Cómo se conecta todo
 - imagen: 3-contingencia-falla/capturas/01-emulador.png

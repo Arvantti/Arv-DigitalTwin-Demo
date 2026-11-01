@@ -1,58 +1,38 @@
 # Simulación de la planta de inyección con el motor de planta (docs/plant-engine.md).
-# Las 29 inyectoras de la nave se simulan con los parámetros del plant.yaml (tonelaje, cavidades, peso de la pieza,
-# ciclo y robot); el preset solo aporta lo que el plano no dice (zonas del cilindro, temperatura del molde),
-# elegido por el tonelaje. La banda principal (88 m) recibe las piezas de la inyectora 3 y las lleva a la
-# estación de empaque 1. Las demás inyectoras trabajan solas: sus piezas se retiran a mano o con montacargas
-# (flujos del plano sin enlace de banda). También se simulan los 4 secadores de resina, los 2 chillers (el
-# segundo de respaldo, apagado), el molino de reciclaje y las otras 3 estaciones de empaque (sin banda: se
-# alimentan a mano, sin llegadas).
+# Las 12 inyectoras de la nave (planta simplificada para la demo, 2026-11-01: solo las de los 4 productos del
+# catálogo y la IMM-20 de reserva) se simulan con los parámetros del plant.yaml y del molde montado; el preset solo
+# aporta lo que el plano no dice (zonas del cilindro, temperatura del molde), elegido por el tonelaje. Sus piezas
+# van a un buffer de estibas y de ahí en montacargas. También se simulan los 4 secadores de resina, los 2 chillers
+# (el segundo de respaldo, apagado), el molino de reciclaje y las 4 estaciones de empaque.
 #
 # Cascada de materiales y servicios (docs/plant-engine.md, sección 3):
-#  - resina seca: el secador 3 (PS) alimenta a la imm-01 y el secador 4 (PP/HDPE reciclado) a la imm-28. Cada salida
+#  - resina seca: el secador 3 (PS) alimenta a la imm-01 y el secador 4 (PP/HDPE reciclado) a la imm-19. Cada salida
 #    de resina atiende a un solo destino (el motor no reparte caudal); los secadores 1 y 2 son de ABS y ninguna
 #    inyectora del plano moldea ABS, y la imm-02 (también PS) queda con la resina por defecto;
-#  - agua de moldes: el chiller 1 alimenta a las 29 inyectoras; el chiller 2 es de respaldo y no está enlazado;
-#  - scrap: las 29 inyectoras entregan rechazos y coladas al molino de reciclaje (pasando por la clasificación y el
+#  - agua de moldes: el chiller 1 alimenta a las 12 inyectoras; el chiller 2 es de respaldo y no está enlazado;
+#  - scrap: las 12 inyectoras entregan rechazos y coladas al molino de reciclaje (pasando por la clasificación y el
 #    lavado, que no se simulan);
 #  - reciclaje: el molino entrega el molido a la línea de peletizado (extruder-pel-01) y esta el pellet al silo 5 de
 #    reciclado (por la estación de big-bag, que no se simula). Del silo 5 al manifold y a las inyectoras (la mezcla
 #    de pellet reciclado en la resina) aún no hay enlace: el silo solo acumula.
 
 schema_version: 0.1.0
-description: Nave de inyección (29 inyectoras) y la banda principal hacia empaque
+description: Nave de inyección (12 inyectoras), buffers de estibas, montacargas y celda de ensamble
 dt: 1.0
 
 equipment:
   imm-01: { type: injection-molding-machine, preset: 100t-cutlery, params: {"clamp_t": 100, "max_shot_kg": 0.15, "robot": "sprue_picker"} }  # molde en catalog/setup.yaml
   imm-02: { type: injection-molding-machine, preset: 100t-cutlery, params: {"clamp_t": 100, "max_shot_kg": 0.15, "robot": "sprue_picker"} }  # molde en catalog/setup.yaml
-  imm-03: { type: injection-molding-machine, preset: 300t-container, params: {"clamp_t": 120, "max_shot_kg": 0.2, "product": "tapa recipiente 0,5 L", "material": "PP", "cavities": 4, "part_g": 12, "cycle_s": 12, "robot": "cartesiano"} }
   imm-04: { type: injection-molding-machine, preset: 300t-container, params: {"clamp_t": 120, "max_shot_kg": 0.2, "robot": "cartesiano"} }  # molde en catalog/setup.yaml
   imm-05: { type: injection-molding-machine, preset: 300t-container, params: {"clamp_t": 150, "max_shot_kg": 0.25, "robot": "cartesiano"} }  # molde en catalog/setup.yaml
   imm-06: { type: injection-molding-machine, preset: 300t-container, params: {"clamp_t": 150, "max_shot_kg": 0.25, "robot": "sprue_picker"} }  # molde en catalog/setup.yaml
   imm-07: { type: injection-molding-machine, preset: 300t-container, params: {"clamp_t": 150, "max_shot_kg": 0.25, "robot": "cartesiano"} }  # molde en catalog/setup.yaml
   imm-08: { type: injection-molding-machine, preset: 100t-cutlery, params: {"clamp_t": 80, "max_shot_kg": 0.12, "robot": "sprue_picker"} }  # molde en catalog/setup.yaml
-  imm-09: { type: injection-molding-machine, preset: 300t-container, params: {"clamp_t": 150, "max_shot_kg": 0.25, "product": "tapa de termo", "material": "PP", "cavities": 4, "part_g": 28, "cycle_s": 16, "robot": "cartesiano"} }
-  imm-10: { type: injection-molding-machine, preset: 300t-container, params: {"clamp_t": 150, "max_shot_kg": 0.25, "product": "cucharón", "material": "PP", "cavities": 4, "part_g": 30, "cycle_s": 15, "robot": "sprue_picker"} }
-  imm-11: { type: injection-molding-machine, preset: 300t-container, params: {"clamp_t": 300, "max_shot_kg": 0.9, "product": "recipiente para alimentos 1 L", "material": "PP", "cavities": 2, "part_g": 75, "cycle_s": 18, "robot": "cartesiano"} }
-  imm-12: { type: injection-molding-machine, preset: 300t-container, params: {"clamp_t": 300, "max_shot_kg": 0.9, "product": "recipiente para alimentos 3 L", "material": "PP", "cavities": 1, "part_g": 160, "cycle_s": 22, "robot": "cartesiano"} }
-  imm-13: { type: injection-molding-machine, preset: 300t-container, params: {"clamp_t": 300, "max_shot_kg": 0.9, "product": "caja organizadora 6 L", "material": "PP", "cavities": 1, "part_g": 280, "cycle_s": 24, "robot": "cartesiano"} }
-  imm-14: { type: injection-molding-machine, preset: 300t-container, params: {"clamp_t": 300, "max_shot_kg": 0.9, "product": "tapa caja organizadora", "material": "PP", "cavities": 2, "part_g": 110, "cycle_s": 20, "robot": "cartesiano"} }
-  imm-15: { type: injection-molding-machine, preset: 300t-container, params: {"clamp_t": 300, "max_shot_kg": 0.9, "product": "balde 4 L", "material": "HDPE", "cavities": 1, "part_g": 230, "cycle_s": 26, "robot": "cartesiano"} }
-  imm-16: { type: injection-molding-machine, preset: 300t-container, params: {"clamp_t": 300, "max_shot_kg": 0.9, "product": "bandeja", "material": "PP", "cavities": 1, "part_g": 320, "cycle_s": 25, "robot": "cartesiano"} }
-  imm-17: { type: injection-molding-machine, preset: 300t-container, params: {"clamp_t": 300, "max_shot_kg": 0.9, "product": "cuerpo de termo", "material": "PP", "cavities": 2, "part_g": 140, "cycle_s": 28, "robot": "cartesiano"} }
   imm-18: { type: injection-molding-machine, preset: 650t-bucket, params: {"clamp_t": 350, "max_shot_kg": 1.2, "robot": "cartesiano"} }  # molde en catalog/setup.yaml
   imm-19: { type: injection-molding-machine, preset: 650t-bucket, params: {"clamp_t": 350, "max_shot_kg": 1.2, "robot": "cartesiano"} }  # molde en catalog/setup.yaml
   imm-20: { type: injection-molding-machine, preset: 650t-bucket, params: {"clamp_t": 650, "max_shot_kg": 2.5, "product": "caja organizadora 40 L", "material": "PP", "cavities": 1, "part_g": 1100, "cycle_s": 38, "robot": "cartesiano"} }
   imm-21: { type: injection-molding-machine, preset: 650t-bucket, params: {"clamp_t": 650, "max_shot_kg": 2.5, "robot": "cartesiano"} }  # molde en catalog/setup.yaml
-  imm-22: { type: injection-molding-machine, preset: 650t-bucket, params: {"clamp_t": 650, "max_shot_kg": 2.5, "product": "balde 20 L", "material": "HDPE reciclado", "cavities": 1, "part_g": 850, "cycle_s": 36, "robot": "cartesiano"} }
   imm-23: { type: injection-molding-machine, preset: 650t-bucket, params: {"clamp_t": 650, "max_shot_kg": 2.5, "robot": "cartesiano"} }  # molde en catalog/setup.yaml
-  imm-24: { type: injection-molding-machine, preset: 650t-bucket, params: {"clamp_t": 650, "max_shot_kg": 2.5, "product": "bandeja industrial", "material": "HDPE", "cavities": 1, "part_g": 1300, "cycle_s": 42, "robot": "cartesiano"} }
-  imm-25: { type: injection-molding-machine, preset: 1500t-bin, params: {"clamp_t": 1100, "max_shot_kg": 4.5, "product": "canasta industrial apilable", "material": "HDPE", "cavities": 1, "part_g": 2000, "cycle_s": 50, "robot": "cartesiano"} }
-  imm-26: { type: injection-molding-machine, preset: 1500t-bin, params: {"clamp_t": 1100, "max_shot_kg": 4.5, "product": "caneca 50 L", "material": "HDPE reciclado", "cavities": 1, "part_g": 2600, "cycle_s": 60, "robot": "cartesiano"} }
-  imm-27: { type: injection-molding-machine, preset: 1500t-bin, params: {"clamp_t": 1100, "max_shot_kg": 4.5, "product": "cuerpo de nevera portátil", "material": "PP", "cavities": 1, "part_g": 1800, "cycle_s": 55, "robot": "cartesiano"} }
-  imm-28: { type: injection-molding-machine, preset: 1500t-bin, params: {"clamp_t": 1500, "max_shot_kg": 7.5, "product": "caneca 121 L", "material": "HDPE reciclado", "cavities": 1, "part_g": 7000, "cycle_s": 95, "robot": "cartesiano"} }
-  imm-29: { type: injection-molding-machine, preset: 1500t-bin, params: {"clamp_t": 1500, "max_shot_kg": 7.5, "product": "tapa caneca 121 L y estiba liviana", "material": "HDPE reciclado", "cavities": 1, "part_g": 3200, "cycle_s": 70, "robot": "cartesiano"} }
-  conveyor-main-01: { type: belt-conveyor, preset: imm-main-88m }
   pack-station-01: { type: packing-station, preset: lids-250 }
   pack-station-02: { type: packing-station, preset: buckets-20, params: {"nominal_inflow_upm": 0} }
   pack-station-03: { type: packing-station, preset: lids-250, params: {"nominal_inflow_upm": 0} }
@@ -66,7 +46,6 @@ equipment:
   grinder-rec-01: { type: granulator, preset: 500kg-recycling, params: {"throughput_kg_h": 500, "screen_mm": 10} }
   extruder-pel-01: { type: pelletizing-line, preset: 350kg-recycling, params: {"throughput_kg_h": 350} }
   assembly-01: { type: assembly-cell, preset: pedal-lever-35s }
-  assembly-02: { type: assembly-cell, preset: hinges-lids-20s }
   buf-01: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 48000, "product": "cubiertos"} }
   buf-02: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 48000, "product": "cubiertos"} }
   buf-04: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 48000, "product": "cubiertos"} }
@@ -74,47 +53,25 @@ equipment:
   buf-06: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 7200, "product": "pedal y palanca de papelera"} }
   buf-07: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 7200, "product": "pedal y palanca de papelera"} }
   buf-08: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 48000, "product": "cubiertos"} }
-  buf-09: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 9600, "product": "tapa de termo"} }
-  buf-10: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 4110, "product": "cucharón"} }
-  buf-11: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 3200, "product": "recipiente para alimentos 1 L"} }
-  buf-12: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 1300, "product": "recipiente para alimentos 3 L"} }
-  buf-13: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 720, "product": "caja organizadora 6 L"} }
-  buf-14: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 2050, "product": "tapa caja organizadora"} }
-  buf-15: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 1440, "product": "balde 4 L"} }
-  buf-16: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 1600, "product": "bandeja"} }
-  buf-17: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 960, "product": "cuerpo de termo"} }
   buf-18: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 240, "product": "cuerpo papelera 20 L"} }
   buf-19: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 240, "product": "cuerpo papelera 20 L"} }
   buf-20: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 100, "product": "caja organizadora 40 L"} }
   buf-21: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 410, "product": "balde 12 L"} }
-  buf-22: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 260, "product": "balde 20 L"} }
   buf-23: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 410, "product": "balde 12 L"} }
-  buf-24: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 280, "product": "bandeja industrial"} }
-  buf-25: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 160, "product": "canasta industrial apilable"} }
-  buf-26: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 100, "product": "caneca 50 L"} }
-  buf-27: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 40, "product": "cuerpo de nevera portátil"} }
-  buf-28: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 30, "product": "caneca 121 L"} }
-  buf-29: { type: pallet-buffer, preset: pallet-1000, params: {"pallet_pieces": 50, "product": "tapa caneca 121 L y estiba liviana"} }
   rack-sf-01: { type: pallet-store, preset: semielaborado-48, params: {"pallet_pieces": 7200, "initial_pallets": 6, "content": "pedal y palanca de papelera"} }
   rack-sf-02: { type: pallet-store, preset: semielaborado-48, params: {"pallet_pieces": 240, "initial_pallets": 6, "content": "cuerpos de papelera"} }
-  rack-sf-03: { type: pallet-store, preset: semielaborado-48, params: {"pallet_pieces": 48000, "initial_pallets": 6, "content": "bisagras"} }
-  rack-sf-04: { type: pallet-store, preset: semielaborado-48, params: {"pallet_pieces": 2050, "initial_pallets": 6, "content": "tapas de caja organizadora"} }
-  fleet-01: { type: forklift-fleet, preset: plant-6, params: {"route_1_pallet_pieces": 7200, "route_5_pallet_pieces": -1, "route_2_pallet_pieces": 240, "route_3_pallet_pieces": 48000, "route_4_pallet_pieces": 2050, "route_6_pallet_pieces": 7200, "route_7_pallet_pieces": 240, "route_8_pallet_pieces": 48000, "route_9_pallet_pieces": 2050} }
+  fleet-01: { type: forklift-fleet, preset: plant-6, params: {"route_1_pallet_pieces": 7200, "route_5_pallet_pieces": -1, "route_2_pallet_pieces": 240, "route_6_pallet_pieces": 7200, "route_7_pallet_pieces": 240} }
   silo-05: { type: vessel, preset: resin-silo-40t, params: {"volume_l": 54545, "content": "pellet de PP reciclado", "initial_level_pct": 20} }
 
 links:
-  # imm-03 → conveyor-main-01 → pack-station-01 (plant.yaml).
-  - { from: imm-03.parts_out, to: conveyor-main-01.items_in }
-  - { from: conveyor-main-01.items_out, to: pack-station-01.items_in }
 
   # Cascada de materiales y servicios (docs/plant-engine.md): resina seca → inyectora, agua de moldes y scrap → molino.
   - { from: dryer-03.resin_out, to: imm-01.resin_in }
-  - { from: dryer-04.resin_out, to: imm-28.resin_in }
+  - { from: dryer-04.resin_out, to: imm-19.resin_in }
   - { from: grinder-rec-01.granulate_out, to: extruder-pel-01.granulate_in }
   - { from: extruder-pel-01.pellet_out, to: silo-05.inlet, via: [bagger-01] }
 
-  # Celdas de ensamble con operario: pedal/palanca (imm-06) y cuerpo de papelera (imm-19) → assembly-01 → empaque 3;
-  # bisagras (imm-08) y tapas (imm-14) → assembly-02 (sin salida simulada: las unidades terminadas las lleva un montacargas).
+  # Celda de ensamble con operario: pedal/palanca (imm-06) y cuerpo de papelera (imm-19) → assembly-01 → empaque 3.
   - { from: assembly-01.units_out, to: pack-station-03.items_in }
   # Proceso conectado (docs/plant-engine.md): inyectora → buffer → montacargas → estantería de semielaborado → montacargas → celda
   - { from: imm-01.parts_out, to: buf-01.pieces_in }
@@ -124,220 +81,103 @@ links:
   - { from: imm-06.parts_out, to: buf-06.pieces_in }
   - { from: imm-07.parts_out, to: buf-07.pieces_in }
   - { from: imm-08.parts_out, to: buf-08.pieces_in }
-  - { from: imm-09.parts_out, to: buf-09.pieces_in }
-  - { from: imm-10.parts_out, to: buf-10.pieces_in }
-  - { from: imm-11.parts_out, to: buf-11.pieces_in }
-  - { from: imm-12.parts_out, to: buf-12.pieces_in }
-  - { from: imm-13.parts_out, to: buf-13.pieces_in }
-  - { from: imm-14.parts_out, to: buf-14.pieces_in }
-  - { from: imm-15.parts_out, to: buf-15.pieces_in }
-  - { from: imm-16.parts_out, to: buf-16.pieces_in }
-  - { from: imm-17.parts_out, to: buf-17.pieces_in }
   - { from: imm-18.parts_out, to: buf-18.pieces_in }
   - { from: imm-19.parts_out, to: buf-19.pieces_in }
   - { from: imm-20.parts_out, to: buf-20.pieces_in }
   - { from: imm-21.parts_out, to: buf-21.pieces_in }
-  - { from: imm-22.parts_out, to: buf-22.pieces_in }
   - { from: imm-23.parts_out, to: buf-23.pieces_in }
-  - { from: imm-24.parts_out, to: buf-24.pieces_in }
-  - { from: imm-25.parts_out, to: buf-25.pieces_in }
-  - { from: imm-26.parts_out, to: buf-26.pieces_in }
-  - { from: imm-27.parts_out, to: buf-27.pieces_in }
-  - { from: imm-28.parts_out, to: buf-28.pieces_in }
-  - { from: imm-29.parts_out, to: buf-29.pieces_in }
   - { from: buf-01.pallets_out, to: fleet-01.pallets_in_5 }
   - { from: buf-02.pallets_out, to: fleet-01.pallets_in_5 }
   - { from: buf-04.pallets_out, to: fleet-01.pallets_in_5 }
   - { from: buf-05.pallets_out, to: fleet-01.pallets_in_5 }
   - { from: buf-06.pallets_out, to: fleet-01.pallets_in_1 }
   - { from: buf-07.pallets_out, to: fleet-01.pallets_in_5 }
-  - { from: buf-08.pallets_out, to: fleet-01.pallets_in_3 }
-  - { from: buf-09.pallets_out, to: fleet-01.pallets_in_5 }
-  - { from: buf-10.pallets_out, to: fleet-01.pallets_in_5 }
-  - { from: buf-11.pallets_out, to: fleet-01.pallets_in_5 }
-  - { from: buf-12.pallets_out, to: fleet-01.pallets_in_5 }
-  - { from: buf-13.pallets_out, to: fleet-01.pallets_in_5 }
-  - { from: buf-14.pallets_out, to: fleet-01.pallets_in_4 }
-  - { from: buf-15.pallets_out, to: fleet-01.pallets_in_5 }
-  - { from: buf-16.pallets_out, to: fleet-01.pallets_in_5 }
-  - { from: buf-17.pallets_out, to: fleet-01.pallets_in_5 }
+  - { from: buf-08.pallets_out, to: fleet-01.pallets_in_5 }
   - { from: buf-18.pallets_out, to: fleet-01.pallets_in_5 }
   - { from: buf-19.pallets_out, to: fleet-01.pallets_in_2 }
   - { from: buf-20.pallets_out, to: fleet-01.pallets_in_5 }
   - { from: buf-21.pallets_out, to: fleet-01.pallets_in_5 }
-  - { from: buf-22.pallets_out, to: fleet-01.pallets_in_5 }
   - { from: buf-23.pallets_out, to: fleet-01.pallets_in_5 }
-  - { from: buf-24.pallets_out, to: fleet-01.pallets_in_5 }
-  - { from: buf-25.pallets_out, to: fleet-01.pallets_in_5 }
-  - { from: buf-26.pallets_out, to: fleet-01.pallets_in_5 }
-  - { from: buf-27.pallets_out, to: fleet-01.pallets_in_5 }
-  - { from: buf-28.pallets_out, to: fleet-01.pallets_in_5 }
-  - { from: buf-29.pallets_out, to: fleet-01.pallets_in_5 }
   - { from: fleet-01.pieces_out_1, to: rack-sf-01.pallets_in }
   - { from: rack-sf-01.pallets_out, to: fleet-01.pallets_in_6 }
   - { from: fleet-01.pieces_out_2, to: rack-sf-02.pallets_in }
   - { from: rack-sf-02.pallets_out, to: fleet-01.pallets_in_7 }
-  - { from: fleet-01.pieces_out_3, to: rack-sf-03.pallets_in }
-  - { from: rack-sf-03.pallets_out, to: fleet-01.pallets_in_8 }
-  - { from: fleet-01.pieces_out_4, to: rack-sf-04.pallets_in }
-  - { from: rack-sf-04.pallets_out, to: fleet-01.pallets_in_9 }
   - { from: fleet-01.pieces_out_6, to: assembly-01.parts_a_in }
   - { from: fleet-01.pieces_out_7, to: assembly-01.parts_b_in }
-  - { from: fleet-01.pieces_out_8, to: assembly-02.parts_a_in }
-  - { from: fleet-01.pieces_out_9, to: assembly-02.parts_b_in }
   - { from: chiller-01.water_out, to: imm-01.cooling_water }
   - { from: chiller-01.water_out, to: imm-02.cooling_water }
-  - { from: chiller-01.water_out, to: imm-03.cooling_water }
   - { from: chiller-01.water_out, to: imm-04.cooling_water }
   - { from: chiller-01.water_out, to: imm-05.cooling_water }
   - { from: chiller-01.water_out, to: imm-06.cooling_water }
   - { from: chiller-01.water_out, to: imm-07.cooling_water }
   - { from: chiller-01.water_out, to: imm-08.cooling_water }
-  - { from: chiller-01.water_out, to: imm-09.cooling_water }
-  - { from: chiller-01.water_out, to: imm-10.cooling_water }
-  - { from: chiller-01.water_out, to: imm-11.cooling_water }
-  - { from: chiller-01.water_out, to: imm-12.cooling_water }
-  - { from: chiller-01.water_out, to: imm-13.cooling_water }
-  - { from: chiller-01.water_out, to: imm-14.cooling_water }
-  - { from: chiller-01.water_out, to: imm-15.cooling_water }
-  - { from: chiller-01.water_out, to: imm-16.cooling_water }
-  - { from: chiller-01.water_out, to: imm-17.cooling_water }
   - { from: chiller-01.water_out, to: imm-18.cooling_water }
   - { from: chiller-01.water_out, to: imm-19.cooling_water }
   - { from: chiller-01.water_out, to: imm-20.cooling_water }
   - { from: chiller-01.water_out, to: imm-21.cooling_water }
-  - { from: chiller-01.water_out, to: imm-22.cooling_water }
   - { from: chiller-01.water_out, to: imm-23.cooling_water }
-  - { from: chiller-01.water_out, to: imm-24.cooling_water }
-  - { from: chiller-01.water_out, to: imm-25.cooling_water }
-  - { from: chiller-01.water_out, to: imm-26.cooling_water }
-  - { from: chiller-01.water_out, to: imm-27.cooling_water }
-  - { from: chiller-01.water_out, to: imm-28.cooling_water }
-  - { from: chiller-01.water_out, to: imm-29.cooling_water }
   - { from: imm-01.scrap_out, to: grinder-rec-01.scrap_in, via: [sort-01, wash-line-01] }
   - { from: imm-02.scrap_out, to: grinder-rec-01.scrap_in, via: [sort-01, wash-line-01] }
-  - { from: imm-03.scrap_out, to: grinder-rec-01.scrap_in, via: [sort-01, wash-line-01] }
   - { from: imm-04.scrap_out, to: grinder-rec-01.scrap_in, via: [sort-01, wash-line-01] }
   - { from: imm-05.scrap_out, to: grinder-rec-01.scrap_in, via: [sort-01, wash-line-01] }
   - { from: imm-06.scrap_out, to: grinder-rec-01.scrap_in, via: [sort-01, wash-line-01] }
   - { from: imm-07.scrap_out, to: grinder-rec-01.scrap_in, via: [sort-01, wash-line-01] }
   - { from: imm-08.scrap_out, to: grinder-rec-01.scrap_in, via: [sort-01, wash-line-01] }
-  - { from: imm-09.scrap_out, to: grinder-rec-01.scrap_in, via: [sort-01, wash-line-01] }
-  - { from: imm-10.scrap_out, to: grinder-rec-01.scrap_in, via: [sort-01, wash-line-01] }
-  - { from: imm-11.scrap_out, to: grinder-rec-01.scrap_in, via: [sort-01, wash-line-01] }
-  - { from: imm-12.scrap_out, to: grinder-rec-01.scrap_in, via: [sort-01, wash-line-01] }
-  - { from: imm-13.scrap_out, to: grinder-rec-01.scrap_in, via: [sort-01, wash-line-01] }
-  - { from: imm-14.scrap_out, to: grinder-rec-01.scrap_in, via: [sort-01, wash-line-01] }
-  - { from: imm-15.scrap_out, to: grinder-rec-01.scrap_in, via: [sort-01, wash-line-01] }
-  - { from: imm-16.scrap_out, to: grinder-rec-01.scrap_in, via: [sort-01, wash-line-01] }
-  - { from: imm-17.scrap_out, to: grinder-rec-01.scrap_in, via: [sort-01, wash-line-01] }
   - { from: imm-18.scrap_out, to: grinder-rec-01.scrap_in, via: [sort-01, wash-line-01] }
   - { from: imm-19.scrap_out, to: grinder-rec-01.scrap_in, via: [sort-01, wash-line-01] }
   - { from: imm-20.scrap_out, to: grinder-rec-01.scrap_in, via: [sort-01, wash-line-01] }
   - { from: imm-21.scrap_out, to: grinder-rec-01.scrap_in, via: [sort-01, wash-line-01] }
-  - { from: imm-22.scrap_out, to: grinder-rec-01.scrap_in, via: [sort-01, wash-line-01] }
   - { from: imm-23.scrap_out, to: grinder-rec-01.scrap_in, via: [sort-01, wash-line-01] }
-  - { from: imm-24.scrap_out, to: grinder-rec-01.scrap_in, via: [sort-01, wash-line-01] }
-  - { from: imm-25.scrap_out, to: grinder-rec-01.scrap_in, via: [sort-01, wash-line-01] }
-  - { from: imm-26.scrap_out, to: grinder-rec-01.scrap_in, via: [sort-01, wash-line-01] }
-  - { from: imm-27.scrap_out, to: grinder-rec-01.scrap_in, via: [sort-01, wash-line-01] }
-  - { from: imm-28.scrap_out, to: grinder-rec-01.scrap_in, via: [sort-01, wash-line-01] }
-  - { from: imm-29.scrap_out, to: grinder-rec-01.scrap_in, via: [sort-01, wash-line-01] }
 
 startup:
   - { equipment: imm-01, command: start }
   - { equipment: imm-02, command: start }
-  - { equipment: imm-03, command: start }
   - { equipment: imm-04, command: start }
   - { equipment: imm-05, command: start }
   - { equipment: imm-06, command: start }
   - { equipment: imm-07, command: start }
   - { equipment: imm-08, command: start }
-  - { equipment: imm-09, command: start }
-  - { equipment: imm-10, command: start }
-  - { equipment: imm-11, command: start }
-  - { equipment: imm-12, command: start }
-  - { equipment: imm-13, command: start }
-  - { equipment: imm-14, command: start }
-  - { equipment: imm-15, command: start }
-  - { equipment: imm-16, command: start }
-  - { equipment: imm-17, command: start }
   - { equipment: imm-18, command: start }
   - { equipment: imm-19, command: start }
   - { equipment: imm-20, command: start }
   - { equipment: imm-21, command: start }
-  - { equipment: imm-22, command: start }
   - { equipment: imm-23, command: start }
-  - { equipment: imm-24, command: start }
-  - { equipment: imm-25, command: start }
-  - { equipment: imm-26, command: start }
-  - { equipment: imm-27, command: start }
-  - { equipment: imm-28, command: start }
-  - { equipment: imm-29, command: start }
-
-lines:
-  - id: lids-05l
-    name: Tapas de recipiente 0,5 L hacia empaque
-    output: conveyor-main-01.items_out
-    equipment: [imm-03, conveyor-main-01, pack-station-01]
 
 scenarios:
   - id: nominal
-    description: "Una hora de producción estable de las 29 inyectoras; las piezas de la imm-03 viajan por la banda de 88 m"
+    description: "Una hora de producción estable de las 12 inyectoras, con la celda de ensamble abastecida por montacargas"
     duration_s: 3600
     expect:
-      - { path: equipment.imm-03.variables.cycle_count, min: 295, max: 301, description: "(3.600 s ÷ 12 s = 300 ciclos)" }
-      - { path: lines.lids-05l.output_units, min: 1040, max: 1130, description: "(299 ciclos × 4 cavidades = 1.196 piezas, menos ≈ 0,6 % de rechazo, menos ≈ 98 que siguen en la banda: 88 m ÷ 0,3 m/s = 293 s ≈ 24 ciclos × 4)" }
-      - { path: equipment.imm-03.state_share.blocked, equals: 0.0, description: "(la banda recibe 4 piezas cada 12 s, bastante menos que lo que admite: 1 pieza cada 1,33 s)" }
-      - { path: equipment.pack-station-01.variables.units_packed, min: 1040, max: 1130, description: "(todo lo que entrega la banda llega a la mesa de empaque y se cuenta; el operario cuenta a 120 u/min, muy por encima de las ≈ 18 u/min que llegan)" }
-      - { path: equipment.pack-station-01.variables.boxes_count, equals: 4, description: "(≈ 1.092 piezas ÷ 250 por caja = 4,4 cajas)" }
       - { path: equipment.dryer-01.variables.resin_dry, equals: 1, description: "(el secador de ABS no tiene inyectora enlazada: solo se vigilan sus propias variables)" }
       - { path: equipment.dryer-01.variables.processed_kg, min: 149, max: 151, description: "(sin enlace entrega su caudal nominal: 150 kg/h × 1 h)" }
-      - { path: equipment.dryer-04.variables.processed_kg, min: 268, max: 276, description: "(ahora entrega lo que pide la imm-28, no su caudal nominal: 7 kg × 1,03 = 7,21 kg por ciclo de 95 s = 273 kg/h × 1 h)" }
       - { path: equipment.dryer-03.variables.processed_kg, min: 23.5, max: 25.5, description: "(lo que pide la imm-01: 16 cavidades × 3,5 g × 1,10 de colada = 61,6 g cada 9 s = 24,6 kg/h × 1 h)" }
       - { path: equipment.assembly-01.variables.units_assembled, min: 96, max: 98, description: "(las estibas de pedal/palanca y de cuerpos salen de las estanterías en t = 1 s, las carga el montacargas (45 s), salen por el corredor con 30 s de separación y llegan a los 148 y 169 s; con 5 s más para la primera pieza el operario arranca a los ≈ 174 s: (3.600 − 174) ÷ 35 = 97,9, o sea 97 unidades; la 98.ª terminaría a los 3.604 s)" }
       - { path: equipment.assembly-01.state_share.starved, min: 0.04, max: 0.06, description: "(espera la primera pieza de cada cubeta ≈ 174 s de 3.600 s = 0,048)" }
       - { path: equipment.pack-station-03.variables.units_packed, min: 95, max: 97, description: "(todo lo que arma la celda 1 llega a la mesa de empaque 3, con un paso de retraso)" }
       - { path: equipment.imm-06.state_share.blocked, equals: 0.0, description: "(el buffer de 7.200 piezas absorbe las 288 u/h de la imm-06: ya no se bloquea porque la celda use solo 103 u/h)" }
       - { path: equipment.buf-06.variables.loose_pieces, min: 276, max: 288, description: "(144 ciclos × 2 piezas = 288, menos ≈ 1 % de rechazo; todavía no completa la estiba de 7.200)" }
-      - { path: equipment.buf-27.variables.pallets_delivered, equals: 1, description: "(la estiba de cuerpos de nevera portátil es de 40 piezas de 1,8 kg: 40 ciclos de 55 s = 2.200 s, con 120 s de cierre sale a los ≈ 2.320 s)" }
-      - { path: equipment.buf-28.variables.pallets_delivered, equals: 1, description: "(la estiba de caneca de 121 L es de 30 piezas de 7 kg: 31 ciclos de 95 s con el rechazo ≈ 2.950 s, con 120 s de cierre sale a los ≈ 3.070 s)" }
       - { path: equipment.buf-01.variables.pallets_delivered, equals: 0, description: "(la estiba de cubiertos es de 48.000 piezas: la imm-01 junta ≈ 6.300 por hora, la primera estiba tarda ≈ 7,6 h)" }
-      - { path: equipment.fleet-01.variables.trips_completed, min: 10, max: 10, description: "(8 viajes de las estanterías a las celdas, 2 por ruta, y las 2 estibas de buffer de las imm-27 e imm-28, que ya descargaron a los ≈ 2.450 y ≈ 3.210 s)" }
+      - { path: equipment.fleet-01.variables.trips_completed, equals: 4, description: "(los 4 viajes de las estanterías a la celda, 2 por componente; ninguna estiba de buffer se llena en la hora)" }
       - { path: equipment.fleet-01.variables.vehicles_busy, max: 6 }
-      - { path: equipment.assembly-02.variables.units_assembled, min: 166, max: 168, description: "(las estibas de bisagras y tapas salen en t = 1 s y despachan a los 107 y 137 s por la separación de 30 s; llegan a los 203 y 242 s, la primera tapa 5 s después: (3.600 − 247) ÷ 20 = 167,7, o sea 167 unidades)" }
-      - { path: equipment.extruder-pel-01.variables.processed_kg, min: 94, max: 102, description: "(todo el molido que entrega el molino llega a la línea de peletizado, que procesa 350 kg/h: ≈ 99 kg de los 100,6 kg/h que trituró, menos lo que el paso de retraso del motor aún no pasó)" }
-      - { path: equipment.silo-05.variables.total_in_kg, min: 94, max: 102, description: "(el pellet que sale de la línea llega al silo 5)" }
-      - { path: equipment.silo-05.variables.mass_kg, min: 6090, max: 6110, description: "(30 t × 20 % = 6.000 kg de inicio + ≈ 99 kg recibidos)" }
-      - { path: equipment.imm-28.state_share.starved, equals: 0.0, description: "(el secador 4 entrega todo lo que pide la imm-28)" }
+      - { path: equipment.dryer-04.variables.processed_kg, min: 72, max: 76, description: "(lo que pide la imm-19: 700 g × 1,06 de colada = 0,74 kg cada 35 s = 76 kg/h, menos el primer ciclo)" }
+      - { path: equipment.imm-19.state_share.starved, equals: 0.0, description: "(el secador 4 entrega todo lo que pide la imm-19)" }
+      - { path: equipment.extruder-pel-01.variables.processed_kg, min: 29, max: 32, description: "(todo el molido que entrega el molino llega a la línea de peletizado, que procesa 350 kg/h: ≈ 30,7 kg por hora)" }
+      - { path: equipment.silo-05.variables.total_in_kg, min: 29, max: 32, description: "(el pellet que sale de la línea llega al silo 5)" }
+      - { path: equipment.silo-05.variables.mass_kg, min: 6025, max: 6035, description: "(30 t × 20 % = 6.000 kg de inicio + ≈ 30,7 kg recibidos)" }
       - { path: equipment.chiller-01.variables.water_ok, equals: 1, description: "(el agua de moldes se mantiene dentro de la banda de 3 °C)" }
-      - { path: equipment.chiller-01.variables.supply_temp_c, min: 11.2, max: 12.8, description: "(el chiller de 600 kW con 360 kW de carga mantiene 12 °C ± 0,5 °C por etapas)" }
+      - { path: equipment.chiller-01.variables.supply_temp_c, min: 11.2, max: 12.8, description: "(el chiller de 600 kW mantiene 12 °C ± 0,5 °C por etapas)" }
       - { path: equipment.chiller-02.state, equals: "off", description: "(el chiller de respaldo está apagado)" }
-      - { path: equipment.grinder-rec-01.variables.processed_kg, min: 95, max: 104, description: "(el molino recibe el scrap de las 29 inyectoras y lo tritura todo. Coladas: Σ (disparo − piezas) × ciclos/h = 79 kg/h; rechazos base: Σ 1 % (1,4 % si es reciclado) de la masa de piezas = 21,6 kg/h; total ≈ 100,6 kg/h)" }
-      - { path: equipment.imm-28.variables.cycle_count, min: 36, max: 38, description: "(la inyectora más grande: 3.600 s ÷ 95 s ≈ 38 ciclos; el primero termina al cerrar el ciclo)" }
-
-  - id: conveyor-trip
-    description: "El motor de la banda principal se dispara 20 min: las piezas se acumulan en la entrada y la inyectora 3 se bloquea"
-    duration_s: 3600
-    timeline:
-      - { at_s: 1800, equipment: conveyor-main-01, command: inject_fault, args: { fault: motor_trip, duration_s: 1200 } }
-    expect:
-      - { path: equipment.imm-03.state_share.blocked, min: 0.3, description: "(la zona de entrada guarda 8 piezas = 2 ciclos; después la inyectora espera ≈ 1.200 − 60 s de 3.600)" }
-      - { path: events.conveyor-main-01.full, min: 1 }
-      - { path: lines.lids-05l.output_units, min: 650, max: 760, description: "(≈ 596 piezas que entraron antes del paro llegan al final; después del paro entran ≈ 100 más en los 300 s que quedan, más las 8 de la entrada)" }
-      - { path: equipment.pack-station-01.variables.units_packed, min: 650, max: 760, description: "(la estación solo cuenta lo que entrega la banda, igual que el KPI de la línea)" }
-      - { path: equipment.pack-station-01.variables.boxes_count, min: 2, max: 3, description: "(≈ 700 piezas ÷ 250 por caja)" }
-      - { path: equipment.imm-01.variables.cycle_count, min: 395, description: "(las demás inyectoras no se enteran: 3.600 s ÷ 9 s = 400 ciclos)" }
+      - { path: equipment.grinder-rec-01.variables.processed_kg, min: 29, max: 32, description: "(el molino recibe el scrap de las 12 inyectoras (coladas y rechazos) y lo tritura todo: ≈ 30,7 kg/h)" }
 
   - id: dryer-stop
-    description: "El secador 4 se apaga a los 30 min: la imm-28 (HDPE reciclado, 273 kg/h) se queda sin resina seca y espera; las demás no se enteran"
+    description: "El secador 4 se apaga a los 30 min: la imm-19 (cuerpo de papelera en PP reciclado, 76 kg/h) se queda sin resina seca y espera; las demás no se enteran"
     duration_s: 3600
     timeline:
       - { at_s: 1800, equipment: dryer-04, command: stop }
     expect:
       - { path: equipment.dryer-04.state, equals: "off" }
-      - { path: equipment.imm-28.variables.cycle_count, min: 19, max: 21, description: "(1.800 s ÷ 95 s = 18,9: el ciclo 19 termina a los 1.805 s y la tolva de la máquina aguanta 10 s más, lo que alcanza para el ciclo 20)" }
-      - { path: equipment.imm-28.state_share.starved, min: 0.40, max: 0.52, description: "(espera desde ≈ 1.900 s hasta el final: ≈ 1.700 s de 3.600 s = 0,47)" }
+      - { path: equipment.imm-19.variables.cycle_count, min: 51, max: 53, description: "(1.800 s ÷ 35 s = 51,4: con lo que guarda la tolva de la máquina alcanza a cerrar el ciclo 52)" }
+      - { path: equipment.imm-19.state_share.starved, min: 0.45, max: 0.52, description: "(espera desde ≈ 1.820 s hasta el final: ≈ 1.780 s de 3.600 s = 0,49)" }
       - { path: equipment.imm-01.variables.cycle_count, min: 395, description: "(la imm-01 tiene su propio secador y sigue ciclando: 3.600 s ÷ 9 s = 400)" }
       - { path: equipment.dryer-03.variables.resin_dry, equals: 1 }
 
@@ -352,18 +192,17 @@ scenarios:
       - { path: equipment.assembly-01.variables.units_assembled, min: 96, max: 98, description: "(el inventario de cuerpos cubre la hora: igual que en nominal)" }
       - { path: equipment.assembly-01.state, equals: running }
       - { path: equipment.assembly-01.state_share.starved, max: 0.06 }
-      - { path: equipment.assembly-02.variables.units_assembled, min: 166, max: 168, description: "(la celda 2 no se entera)" }
 
   - id: fleet-short
-    description: "La flota se reduce a 1 montacargas desde el inicio: las 8 estibas con que arrancan las celdas se sirven una por vez (ciclo de ≈ 177 s), esperan en cola y las celdas arrancan tarde"
+    description: "La flota se reduce a 1 montacargas desde el inicio: las 4 estibas con que arranca la celda se sirven una por vez, esperan en cola y la celda arranca tarde"
     duration_s: 3600
     timeline:
       - { at_s: 0, equipment: fleet-01, command: set_param, args: { name: vehicles, value: 1 } }
     expect:
-      - { path: equipment.fleet-01.variables.trips_completed, min: 10, max: 10, description: "(un montacargas hace los 8 viajes de las celdas en ≈ 1.520 s y las 2 estibas de buffer, de las imm-27 e imm-28, a los ≈ 2.450 y ≈ 3.210 s)" }
+      - { path: equipment.fleet-01.variables.trips_completed, equals: 4, description: "(un montacargas hace los 4 viajes a la celda)" }
+      - { path: equipment.assembly-01.variables.units_assembled, min: 92, max: 95, description: "(la celda arranca más tarde que con 6 montacargas: 93 unidades contra 97)" }
       - { path: equipment.fleet-01.variables.pallets_queued, equals: 0, description: "(a la hora ya no queda nadie en cola: con estibas por producto el pedido de viajes es bajo y un montacargas alcanza)" }
       - { path: events.fleet-01.fleet_saturated, min: 1 }
-      - { path: equipment.assembly-02.variables.units_assembled, min: 130, max: 150, description: "(sirve primero lo que pidió primero: cuerpos, pedal, bisagras y tapas; la tapa llega a los ≈ 730 s y arranca: (3.600 − 735) ÷ 20 = 143)" }
 
   - id: pallet-chain
     description: "Cuatro horas: la imm-19 junta 240 cuerpos de papelera (la estiba de ese producto), el buffer cierra la estiba (120 s), un montacargas la lleva a la estantería 2 y esta recibe sus 240 piezas"
@@ -385,16 +224,16 @@ scenarios:
       - { path: equipment.chiller-01.variables.water_ok, equals: 0, description: "(pasó de 15 °C a los ≈ 2.500 s)" }
       - { path: equipment.imm-01.variables.mold_temp, min: 48, description: "(sin agua el molde busca la consigna + 25 °C = 55 °C con constante de 300 s, desde los ≈ 2.500 s)" }
       - { path: equipment.imm-01.variables.parts_rejected, min: 200, description: "(≈ 1.100 s con el molde caliente: ≈ 120 ciclos × 16 cavidades × ≈ 10 a 20 % de rechazo por rechupes y deformación; con agua son ≈ 65 en toda la hora)" }
-      - { path: equipment.grinder-rec-01.variables.processed_kg, min: 140, description: "(el rechazo extra llega al molino: ≈ 100 kg en la hora nominal)" }
+      - { path: equipment.grinder-rec-01.variables.processed_kg, min: 50, description: "(el rechazo extra llega al molino: ≈ 31 kg en la hora nominal)" }
       - { path: equipment.dryer-04.variables.resin_dry, equals: 1, description: "(los secadores no dependen del chiller)" }
 
   - id: pelletizer-jam
-    description: "La cortadora de la línea de peletizado se atasca a los 10 min durante 45 min: el pellet deja de llegar al silo 5 y el molido se acumula en la tolva de la extrusora; el molino y las inyectoras no se enteran"
+    description: "La cortadora de la línea de peletizado se atasca a los 30 min y sigue atascada al final de la hora: el pellet deja de llegar al silo 5 y el molido se acumula en la tolva de la extrusora; el molino y las inyectoras no se enteran"
     duration_s: 3600
     timeline:
-      - { at_s: 600, equipment: extruder-pel-01, command: inject_fault, args: { fault: cutter_jam, duration_s: 2700 } }
+      - { at_s: 1800, equipment: extruder-pel-01, command: inject_fault, args: { fault: cutter_jam, duration_s: 2700 } }
     expect:
-      - { path: equipment.extruder-pel-01.variables.hopper_level_pct, min: 25, max: 29.5, description: "(durante el atasco llegan ≈ 100,6 kg/h × 0,75 h = 75 kg; al arreglarlo, en los 300 s que quedan entran 8,4 kg y salen 350 kg/h × 300 s = 29,2 kg: ≈ 54 kg de 200 kg = 27 %)" }
-      - { path: equipment.silo-05.variables.total_in_kg, min: 42, max: 49, description: "(≈ 99 kg que trituró el molino − 54 kg que siguen en la tolva = ≈ 45 kg)" }
-      - { path: equipment.grinder-rec-01.variables.processed_kg, min: 95, max: 104, description: "(el molino sigue triturando todo lo que llega: la tolva de la extrusora no se llena)" }
+      - { path: equipment.extruder-pel-01.variables.hopper_level_pct, min: 6.5, max: 8.5, description: "(durante la media hora de atasco llegan ≈ 30,7 kg/h × 0,5 h = 15,4 kg de 200 kg = 7,7 %)" }
+      - { path: equipment.silo-05.variables.total_in_kg, min: 14, max: 17, description: "(≈ 30,7 kg que trituró el molino − 15,4 kg que siguen en la tolva = ≈ 15,3 kg)" }
+      - { path: equipment.grinder-rec-01.variables.processed_kg, min: 29, max: 32, description: "(el molino sigue triturando todo lo que llega: la tolva de la extrusora no se llena)" }
       - { path: equipment.imm-01.variables.cycle_count, min: 395, description: "(las inyectoras no se enteran)" }
