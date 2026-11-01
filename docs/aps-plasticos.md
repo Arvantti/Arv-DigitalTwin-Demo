@@ -80,6 +80,26 @@ turno); es un punto para Fractal.
 Las señales salen del gemelo (`apps/gallery/src/plant-state.ts`): la programación vigente más los eventos del
 emulador. El rendimiento y la calidad son supuestos por máquina y día (88–97 % y 97,5–99,6 %).
 
+### Transporte de estibas por el piso
+
+Las rutas aéreas de producto siguen igual. Además, el gemelo 3D muestra el movimiento físico de las estibas a partir de
+la programación vigente (`apps/gallery/src/pallet-transport.ts`):
+
+- la estiba en armado del buffer de cada inyectora se llena con las unidades hechas hasta el instante del play
+  (piezas por estiba del buffer, `pallet-sizing.yaml`);
+- cuando se llena, o se cierra la corrida de un producto, queda esperando y un montacargas de la flota `fleet-01` sale
+  del estacionamiento, la recoge y la lleva por los pasillos al siguiente almacén de la ruta del producto
+  (`catalog/products.yaml`): semielaborado o bodega de producto terminado. Encima va un letrero con la estiba, el producto,
+  el pedido y el destino;
+- la celda de ensamble pide una estiba de cada componente al arrancar y cada vez que consume la anterior, y lo armado
+  sale en estibas del empaque a la bodega;
+- con el gemelo EN VIVO los montacargas andan a velocidad real (≈ 2,5 m/s); en play rápido van a 9 m/s para que el
+  recorrido se vea. Si hay más estibas que montacargas libres, esperan en cola (máximo 8; las demás no se animan).
+
+El buffer del motor (`pallet-buffer`) tiene una estiba en armado y hasta 2 llenas esperando (`max_waiting_pallets`):
+la máquina solo se bloquea si las dos siguen sin recoger. Con el motor de planta conectado mandan sus canales y esta
+animación se apaga. `?transport=0` la desactiva.
+
 ## Fractal: escenarios
 
 Pestaña FRACTAL · ESCENARIOS del APS (`fractal/manufacturing/`, contrato `fractal-study.v1`). Fractal prueba
