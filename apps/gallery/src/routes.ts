@@ -31,6 +31,8 @@ export interface Route {
 export interface FleetSource {
   channels: (id: string) => Record<string, number> | undefined;
   bay: (id: string) => { center: THREE.Vector3; vehicles: number } | undefined;
+  /** true mientras otro módulo mueve los montacargas de la flota (pallet-transport.ts, desde la programación). */
+  external?: (id: string) => boolean;
 }
 type ToScene = (x: number, y: number, z?: number) => THREE.Vector3;
 
@@ -236,6 +238,10 @@ export function buildRoutes(aisles: Aisle[], routes: Route[], parent: THREE.Obje
 
   return (time, dt) => {
     for (const v of vehicles) {
+      if (fleets?.external?.(v.fleet)) {
+        v.onRoute = true;
+        continue;
+      }
       const ch = fleets?.channels(v.fleet);
       const bay = bays.get(v.fleet);
       if (!ch || !bay) continue;
