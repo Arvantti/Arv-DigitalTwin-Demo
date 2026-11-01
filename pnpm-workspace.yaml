@@ -3,3 +3,4 @@ packages:
   - equipment-library
   - apps/gallery
   - apps/cloudflare-emulator-worker
+  - cosim

@@ -1,0 +1,14 @@
+# Configuración del APS de la planta de plásticos (docs/aps-plasticos.md). Lo leen el cosimulador y las pantallas.
+# Todo es supuesto de la demo.
+aps:
+  # Ventana de entrega: un pedido llega entre 3 y 7 días antes de su entrega (importancia alta: 1 a 2 días).
+  window_days: 7
+  lead_days: [3, 7]
+  rush_lead_days: [1, 2]
+  # La producción se hace por lotes (unidades por lote); el último lote de un pedido puede quedar incompleto.
+  lots:
+    cubiertos: 20000
+    balde-12l: 200
+    cuerpo-papelera-20l: 150
+    pedal-palanca-papelera: 300
+    papelera-20l: 150

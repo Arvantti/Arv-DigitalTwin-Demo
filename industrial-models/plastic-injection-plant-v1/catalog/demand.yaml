@@ -22,7 +22,7 @@ demand:
   late: { share_pct: 8, hold_hours: [-3, 16], materials: [ps, hdpe, pp-reciclado, mb-azul, mb-gris] }
   downtime: { per_day_pct: 5, hours: [1, 5], reasons: [falla mecánica, cambio de resistencia, mantenimiento correctivo, falta de operario] }
   color_change_min: 40          # purga de color (de claro a oscuro se prefiere)
-  customers: [Hogar Express, Plásticos del Caribe, Mayorista San Andresito, Cadena Éxito Local, Institucional Andina, Ferretería La 80, Distribuidora Oriente]
+  customers: [Hogar Express, Plásticos del Caribe, Mayorista San Andresito, Supermercados La Esquina, Institucional Andina, Ferretería La 80, Distribuidora Oriente]
   products:
     - { product: cubiertos,    daily: 204800, order_qty: [60000, 200000], round: 1000 }
     - { product: balde-12l,    daily: 1920,   order_qty: [400, 2400],     round: 50 }

@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>APS · Plásticos</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Orbitron:wght@500;600;700&display=swap" />
+  </head>
+  <body class="aps-page">
+    <header class="aps-top">
+      <a class="aps-back" href="/plant.html?plant=plastic-injection-plant-v1">← GEMELO 3D</a>
+      <div class="aps-title"><strong>APS</strong><span class="dim"> · programación detallada · planta de inyección de plásticos</span></div>
+      <div id="aps-vigente" class="aps-chip"></div>
+      <div id="aps-clock" class="aps-clock">AHORA · —</div>
+    </header>
+    <nav class="aps-tabs" aria-label="Pantallas del APS">
+      <button data-tab="orders" class="active">PEDIDOS</button>
+      <button data-tab="gantt">PROGRAMACIÓN · GANTT</button>
+      <span class="aps-spacer"></span>
+      <button id="aps-calc" class="primary" title="El cosimulador coloca la producción con restricciones lineales, priorizando las fechas de entrega">⚙ CALCULAR CON EL COSIMULADOR</button>
+      <button id="aps-manual" title="Programación manual del planificador (APS-MAN-01), recalculada desde AHORA">✎ PROGRAMACIÓN MANUAL</button>
+    </nav>
+    <section id="aps-proposal" class="aps-proposal" hidden></section>
+    <main>
+      <section id="tab-orders" class="aps-panel"></section>
+      <section id="tab-gantt" class="aps-panel" hidden></section>
+    </main>
+    <script type="module" src="/src/aps-page.ts"></script>
+  </body>
+</html>

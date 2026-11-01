@@ -29,6 +29,7 @@ import { type ControlPiece, type PanelConfig, controlPanel, operatorDesk, plcCab
 import { bootDone, bootError, bootStage } from "./boot.ts";
 import { type CatalogDoc, type ProductsApi, buildProducts } from "./products.ts";
 import { buildSchedule } from "./schedule.ts";
+import { buildAps } from "./aps.ts";
 import "./styles.css";
 import { demoFetch, demoWebSocket } from "./demo-client";
 
@@ -1475,7 +1476,9 @@ async function start(): Promise<void> {
     updateProducts = productsApi.update;
   }
   // Programación de producción (fase E): solo las plantas con demanda en el catálogo (salsas y plásticos).
-  if (doc.catalog?.schedule) buildSchedule({ plantId, select, apiUrl: plantApiAvailable ? apiUrl : undefined, showProduct: (id) => productsApi?.show(id) });
+  // En plásticos el APS corre en el navegador: pedidos, programación manual y cosimulador (docs/aps-plasticos.md).
+  if (plantId === "plastic-injection-plant-v1") buildAps({ plantId, select, showProduct: (id) => productsApi?.show(id) });
+  else if (doc.catalog?.schedule) buildSchedule({ plantId, select, apiUrl: plantApiAvailable ? apiUrl : undefined, showProduct: (id) => productsApi?.show(id) });
   if (url.get("select")) select(url.get("select"));
   const focusAsset = url.get("focus") ? assets.get(url.get("focus")!) : undefined;
   if (focusAsset) stage.frame(focusAsset.root, 1.1);
