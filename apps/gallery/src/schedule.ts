@@ -84,7 +84,7 @@ interface Options {
   select: (id: string) => void;
   /** Resalta en el 3D la ruta de un producto. */
   showProduct?: (id: string) => void;
-  /** URL de la API de Planta Real (puede vivir en otro origen, parámetro ?api=). */
+  /** URL de la API de Planta Real; si se omite, usa solo el plan estático publicado. */
   apiUrl?: (path: string) => string;
 }
 
@@ -155,7 +155,7 @@ function clip(plan: PlanDoc, first: string, last: string): PlanDoc {
 export function buildSchedule(opts: Options): void {
   const section = document.getElementById("schedule-section") as HTMLElement;
   const sidebar = document.getElementById("sidebar") as HTMLElement;
-  const api = opts.apiUrl ?? ((path: string) => path);
+  const api = opts.apiUrl;
   const key = (k: string) => `twin.schedule.${opts.plantId}.${k}`;
   let back = store.get(key("back")) ?? "month";
   let filter = "all";
@@ -196,25 +196,27 @@ export function buildSchedule(opts: Options): void {
   };
 
   async function fetchPlan(first: string, last: string, urgent: UrgentInput[], now: string): Promise<PlanDoc> {
-    try {
-      const r = urgent.length
-        ? await fetch(api(`/api/schedules/${opts.plantId}/urgent`), {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ from: first, to: last, now, orders: urgent }),
-          })
-        : await fetch(api(`/api/schedules/${opts.plantId}?from=${first}&to=${last}`));
-      if (r.status === 422) throw new Error(((await r.json()) as { detail: string }).detail);
-      if (!r.ok || !(r.headers.get("content-type") ?? "").includes("json")) throw new TypeError("sin API");
-      live = true;
-      return await r.json();
-    } catch (err) {
-      if (!(err instanceof TypeError)) throw err;
-      const r = await fetch(`/api/schedules/${opts.plantId}.json`);
-      if (!r.ok) throw new Error("No hay programación publicada para esta planta.");
-      live = false;
-      return clip(await r.json(), first, last);
+    if (api) {
+      try {
+        const r = urgent.length
+          ? await fetch(api(`/api/schedules/${opts.plantId}/urgent`), {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ from: first, to: last, now, orders: urgent }),
+            })
+          : await fetch(api(`/api/schedules/${opts.plantId}?from=${first}&to=${last}`));
+        if (r.status === 422) throw new Error(((await r.json()) as { detail: string }).detail);
+        if (!r.ok || !(r.headers.get("content-type") ?? "").includes("json")) throw new TypeError("sin API");
+        live = true;
+        return await r.json();
+      } catch (err) {
+        if (!(err instanceof TypeError)) throw err;
+      }
     }
+    const r = await fetch(`/api/schedules/${opts.plantId}.json`);
+    if (!r.ok) throw new Error("No hay programación publicada para esta planta.");
+    live = false;
+    return clip(await r.json(), first, last);
   }
 
   async function load(): Promise<void> {

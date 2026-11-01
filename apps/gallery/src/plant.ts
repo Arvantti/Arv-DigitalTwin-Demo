@@ -1475,7 +1475,7 @@ async function start(): Promise<void> {
     updateProducts = productsApi.update;
   }
   // Programación de producción (fase E): solo las plantas con demanda en el catálogo (salsas y plásticos).
-  if (doc.catalog?.schedule) buildSchedule({ plantId, select, apiUrl, showProduct: (id) => productsApi?.show(id) });
+  if (doc.catalog?.schedule) buildSchedule({ plantId, select, apiUrl: plantApiAvailable ? apiUrl : undefined, showProduct: (id) => productsApi?.show(id) });
   if (url.get("select")) select(url.get("select"));
   const focusAsset = url.get("focus") ? assets.get(url.get("focus")!) : undefined;
   if (focusAsset) stage.frame(focusAsset.root, 1.1);
