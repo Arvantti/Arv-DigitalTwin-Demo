@@ -10,8 +10,8 @@
  * - Las celdas de ensamble piden una estiba de cada componente cada vez que consumen la anterior, y el producto armado
  *   sale en estibas del empaque a la bodega.
  * Los montacargas van por los pasillos (red de carriles de abajo), retroceden al salir de un punto y regresan al
- * estacionamiento sin cola. Con el gemelo en vivo andan a velocidad real (≈ 2,5 m/s); en play van más rápido para que
- * el recorrido se alcance a ver. Si el motor de planta está conectado, sus canales mandan y esto se apaga.
+ * estacionamiento sin cola. Con el gemelo en vivo andan a velocidad real (≈ 2,5 m/s); con el play, a la escala de la
+ * escena (motion.ts). Si el motor de planta está conectado, sus canales mandan y esto se apaga.
  */
 import * as THREE from "three";
 import yaml from "js-yaml";
@@ -58,8 +58,7 @@ const FLEET = "fleet-01";
 const PALLET_L = 1.2 * 1.0 * 1.6 * 0.75 * 1000;
 /** Del centro del montacargas a la punta de las uñas (m). */
 const REACH = 2.0;
-const LIVE_SPEED = 2.5; // m/s, velocidad real en planta
-const PLAY_SPEED = 9; // m/s, mientras el play corre a 15 min/s o más
+const LIVE_SPEED = 2.5; // m/s, velocidad real en planta; con el play se multiplica por la escala (motion.ts)
 const DWELL_S = 2.5; // recoger o dejar la estiba, a velocidad real
 const MAX_QUEUE = 8;
 const LANE_OFFSET = 1.0; // m: ida y regreso van por carriles distintos, a la derecha del eje del pasillo
@@ -454,7 +453,8 @@ interface Opts {
 }
 
 export interface PalletTransport {
-  update: (dt: number) => void;
+  /** `scale`: multiplicador de velocidad del play (motion.ts), 1 en vivo. */
+  update: (dt: number, scale?: number) => void;
   stats: () => { trips: number; moving: number; queued: number; skipped: number; lastTrip: Trip | null; nextTrip: Trip | null; vehicles: { phase: string; x: number; y: number; to?: string }[] };
 }
 
@@ -510,6 +510,7 @@ export function buildPalletTransport(opts: Opts): PalletTransport {
       const fk = parts.forklift(k % 2 ? "#e8731a" : "#f2b705");
       object = fk.object;
       object.name = `transport-${k}`;
+      object.userData.trail = "#ff7a1a";
       opts.parent.add(object);
     }
     // mismo estacionamiento que routes.ts
@@ -580,7 +581,6 @@ export function buildPalletTransport(opts: Opts): PalletTransport {
   let planRef: ProductionPlan | null = null;
   let cursor = 0;
   let lastT: number | null = null;
-  let rate = 0;
   let skipped = 0;
   let lastTrip: Trip | null = null;
   const queue: Trip[] = [];
@@ -595,6 +595,7 @@ export function buildPalletTransport(opts: Opts): PalletTransport {
       v.at = v.slot;
       v.path = [];
       v.heading = Math.PI;
+      v.object.userData.trailCut = true; // vuelve al estacionamiento de un salto: sin estela
     }
   }
 
@@ -639,7 +640,7 @@ export function buildPalletTransport(opts: Opts): PalletTransport {
 
   const buffersInPlay = new Set<string>();
 
-  function update(dt: number): void {
+  function update(dt: number, scale = 1): void {
     if (!opts.active()) return;
     const plan = opts.plan();
     const t = opts.time();
@@ -654,7 +655,6 @@ export function buildPalletTransport(opts: Opts): PalletTransport {
     const step = lastT === null ? 0 : t - lastT;
     if (lastT === null || step < 0 || step > 240) reset(t);
     else {
-      rate += ((step / Math.max(1e-3, dt)) - rate) * Math.min(1, dt * 2);
       while (cursor < tripPlan.trips.length && tripPlan.trips[cursor].t <= t) {
         queue.push(tripPlan.trips[cursor++]);
         while (queue.length > MAX_QUEUE) {
@@ -664,9 +664,9 @@ export function buildPalletTransport(opts: Opts): PalletTransport {
       }
     }
     lastT = t;
-    const fast = rate > 3;
-    const speed = fast ? PLAY_SPEED : LIVE_SPEED;
-    const dwell = fast ? 0.6 : DWELL_S;
+    // con el play, todo al ritmo de la escala: más rápido en la vía y menos tiempo cargando o descargando
+    const speed = LIVE_SPEED * scale;
+    const dwell = DWELL_S / scale;
 
     for (const v of vehicles) {
       if ((v.phase === "idle" || v.phase === "toBay") && queue.length) {

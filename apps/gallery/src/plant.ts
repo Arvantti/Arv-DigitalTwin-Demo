@@ -31,6 +31,7 @@ import { type CatalogDoc, type ProductsApi, buildProducts } from "./products.ts"
 import { buildSchedule } from "./schedule.ts";
 import { buildAps } from "./aps.ts";
 import { buildPalletTransport, type PalletTransport } from "./pallet-transport.ts";
+import { buildTrails, visualScale, type Trails } from "./motion.ts";
 import "./styles.css";
 import { demoFetch, demoWebSocket } from "./demo-client";
 
@@ -1533,6 +1534,7 @@ async function start(): Promise<void> {
   // En plásticos el APS corre en el navegador: pedidos, programación manual y cosimulador (docs/aps-plasticos.md).
   if (plantId === "plastic-injection-plant-v1") {
     const aps = buildAps({ plantId, select, showProduct: (id) => productsApi?.show(id), markDown, scene: stage.scene, rootOf: (id) => assets.get(id)?.root, setAssetExtra: (fn) => (assetExtra = fn), refreshAsset: renderAsset });
+    playRate = aps.rate;
     // Transporte de estibas por el piso: cuando una estiba se llena, un montacargas la lleva al siguiente punto.
     if (url.get("transport") !== "0") transport = buildPalletTransport({
       equipment: doc.equipment,
@@ -1620,20 +1622,29 @@ function ambientInjectionFrame(id: string, params: Record<string, unknown>, time
 }
 
 let frames = 0;
-let updateRoutes: ((time: number, dt: number) => void) | null = null;
+let updateRoutes: ((time: number, dt: number, simDt?: number) => void) | null = null;
+/** Tasa del play (segundos de planta por segundo real); con ella la escena se acelera y deja estela (motion.ts). */
+let playRate: (() => number) | null = null;
+let trails: Trails | null = null;
+let sceneTime: number | null = null;
 let updateProducts: ((time: number) => void) | null = null;
 let productsApi: ProductsApi | null = null;
 let transport: PalletTransport | null = null;
 function loop(): void {
   const dt = stage.render();
-  updateRoutes?.(stage.time, dt);
-  transport?.update(dt);
+  // con el play, la escena corre `scale` veces más rápido: agentes, montacargas, ciclos de las máquinas y productos
+  const scale = visualScale(playRate?.() ?? 1);
+  const simDt = dt * scale;
+  sceneTime = sceneTime === null ? stage.time : sceneTime + simDt;
+  updateRoutes?.(sceneTime, dt, simDt);
+  transport?.update(dt, scale);
   for (const a of assets.values()) {
-    if (a.model && messages === 0 && a.eq.sim?.type === "injection-molding-machine") a.frame = ambientInjectionFrame(a.eq.id, a.eq.sim.params, stage.time);
-    a.model?.update(a.frame, dt);
+    if (a.model && messages === 0 && a.eq.sim?.type === "injection-molding-machine") a.frame = ambientInjectionFrame(a.eq.id, a.eq.sim.params, sceneTime);
+    a.model?.update(a.frame, Math.min(simDt, dt * 4));
   }
-  animatePipes(stage.time);
-  updateProducts?.(stage.time);
+  animatePipes(sceneTime);
+  updateProducts?.(sceneTime);
+  if (playRate) (trails ??= buildTrails(stage.content, stage.scene)).update(scale, stage.time);
   for (const piece of controlPieces) piece.redraw?.();
   updateTour();
   frames++;
@@ -1644,4 +1655,4 @@ function loop(): void {
 }
 
 void start();
-Object.assign(window, { stage, THREE, transportStats: () => transport?.stats() });
+Object.assign(window, { stage, THREE, transportStats: () => transport?.stats(), playScale: () => visualScale(playRate?.() ?? 1) });

@@ -94,6 +94,12 @@ horas de máquina, los turnos-máquina, los cambios de color y las horas de oper
 - Play por día y hora: barra de tiempo en el gemelo 3D desde 3 días atrás (lo ejecutado) hasta una semana adelante
   (lo programado), con velocidad de 15 min/s a 12 h/s y EN VIVO. Sobre cada máquina va un letrero con su estado, la
   orden, el producto, el color y el lote, así se ve cuándo pasa de un producto a otro o hace un cambio de color.
+- Movimiento al ritmo del play (`motion.ts`): con el play corriendo, operarios, carros, montacargas, ciclos de las
+  máquinas y productos se aceleran según la velocidad elegida: 15 min/s ≈ ×9, 1 h/s ≈ ×19, 4 h/s ≈ ×38 y 12 h/s ×60
+  (tope). La escala es la raíz cuadrada de la tasa del play: la literal (1 h/s = ×3.600) haría que un operario cruzara la
+  nave varias veces por cuadro y no se vería nada. Desde ×8 cada agente deja una estela del color de su ruta (naranja
+  montacargas, azul carros, verde operarios) que se desvanece en menos de un segundo. En vivo o en pausa todo vuelve a
+  velocidad real.
 - Órdenes en el gemelo: sobre la barra, un panel con las órdenes que se están procesando en el instante del play
   (unidades hechas contra pedidas y en qué máquinas). Al elegir una (clic en la lista, el selector o `?order=`), el panel
   la sigue con el play: unidades terminadas, estado (pendiente, en proceso, terminada), entrega, fin programado y lo
@@ -117,8 +123,9 @@ la programación vigente (`apps/gallery/src/pallet-transport.ts`):
   sale en estibas del empaque a la bodega;
 - cada montacargas va por el carril derecho del pasillo, así la ida y el regreso no se cruzan, y espera si tiene otro
   adelante a menos de 3,5 m en el mismo sentido;
-- con el gemelo EN VIVO los montacargas andan a velocidad real (≈ 2,5 m/s); en play rápido van a 9 m/s para que el
-  recorrido se vea. Si hay más estibas que montacargas libres, esperan en cola (máximo 8; las demás no se animan).
+- con el gemelo EN VIVO los montacargas andan a velocidad real (≈ 2,5 m/s); con el play van al ritmo de la escena
+  (ver abajo) y cargan y descargan en proporción. Si hay más estibas que montacargas libres, esperan en cola (máximo 8;
+  las demás no se animan).
 
 El buffer del motor (`pallet-buffer`) tiene una estiba en armado y hasta 2 llenas esperando (`max_waiting_pallets`):
 la máquina solo se bloquea si las dos siguen sin recoger. Con el motor de planta conectado mandan sus canales y esta

@@ -130,7 +130,7 @@ function locate(lane: Lane, fraction: number): { pos: THREE.Vector3; dir: THREE.
   return { pos: new THREE.Vector3().lerpVectors(a, b, Math.min(1, Math.max(0, t))), dir: new THREE.Vector3().subVectors(b, a).normalize() };
 }
 
-export function buildRoutes(aisles: Aisle[], routes: Route[], parent: THREE.Object3D, toScene: ToScene, fleets?: FleetSource): (time: number, dt: number) => void {
+export function buildRoutes(aisles: Aisle[], routes: Route[], parent: THREE.Object3D, toScene: ToScene, fleets?: FleetSource): (time: number, dt: number, simDt?: number) => void {
   const group = new THREE.Group();
   group.name = "routes";
   parent.add(group);
@@ -204,6 +204,9 @@ export function buildRoutes(aisles: Aisle[], routes: Route[], parent: THREE.Obje
       };
     }
     agent.object.name = `agent-${r.id}`;
+    // estela con el play rápido (motion.ts), del color de la ruta
+    agent.object.userData.trail = r.kind === "forklift" ? "#ff7a1a" : r.kind === "cart" ? "#3fa7ff" : "#2ecc71";
+    agent.object.userData.trailWidth = r.kind === "pedestrian" ? 0.6 : 1.0;
     group.add(agent.object);
     agents.push(agent);
   });
@@ -217,6 +220,7 @@ export function buildRoutes(aisles: Aisle[], routes: Route[], parent: THREE.Obje
     for (let k = 0; k < bay.vehicles; k++) {
       const fk = parts.forklift(k % 2 ? "#f2b705" : "#e8731a");
       fk.object.name = `fleet-${id}-${k + 1}`;
+      fk.object.userData.trail = "#ff7a1a";
       group.add(fk.object);
       vehicles.push({ fleet: id, index: k + 1, object: fk.object, setLoaded: fk.setLoaded, heading: 0, onRoute: false });
     }
@@ -236,7 +240,8 @@ export function buildRoutes(aisles: Aisle[], routes: Route[], parent: THREE.Obje
     return h;
   };
 
-  return (time, dt) => {
+  // simDt: el paso de la escena con el play (motion.ts); dt sigue siendo el real para giros y animación
+  return (time, dt, simDt = dt) => {
     for (const v of vehicles) {
       if (fleets?.external?.(v.fleet)) {
         v.onRoute = true;
@@ -290,11 +295,12 @@ export function buildRoutes(aisles: Aisle[], routes: Route[], parent: THREE.Obje
       if (!forward) dir.negate();
       // un montacargas de la escena cede el paso a cualquier vehículo de la flota que esté cerca: nunca se traspasan
       const blocked = a.yields && moving && vehicles.some((v) => v.onRoute && v.object.position.distanceTo(pos) < YIELD_M);
-      if (!blocked) a.clock += dt;
+      if (!blocked) a.clock += simDt;
       else moving = false;
       a.object.position.copy(blocked ? a.object.position : pos);
       a.heading = turn(a.object, a.heading, dir, dt);
-      a.step(forward, moving, dt);
+      // el paso de las piernas se acelera poco: a la escala del play sería un parpadeo
+      a.step(forward, moving, Math.min(simDt, dt * 3));
     }
     void time;
   };
