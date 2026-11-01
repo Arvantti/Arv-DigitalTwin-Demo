@@ -37,6 +37,8 @@ interface Opts {
 export interface TwinPlay {
   /** Instante que muestra el gemelo, en minutos de la planta. */
   time: () => number;
+  /** Segundos de planta por segundo real: 1 en vivo o en pausa; con el play, la velocidad elegida (15 min/s = 900). */
+  rate: () => number;
   /** Vuelve a pintar los letreros (cambió la programación o llegó un evento). */
   refresh: () => void;
 }
@@ -288,6 +290,7 @@ export function buildTwinPlay(opts: Opts): TwinPlay {
   show();
   return {
     time: () => t,
+    rate: () => (playing ? speed * 60 : 1),
     refresh: () => {
       for (const l of labels.values()) l.key = "";
       show();

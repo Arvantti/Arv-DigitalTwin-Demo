@@ -26,7 +26,7 @@ interface Options {
   refreshAsset: () => void;
 }
 
-export function buildAps(opts: Options): { time: () => number; plan: () => ProductionPlan } {
+export function buildAps(opts: Options): { time: () => number; rate: () => number; plan: () => ProductionPlan } {
   useDemoDays();
   let current = vigente();
   const section = document.createElement("div");
@@ -61,5 +61,5 @@ export function buildAps(opts: Options): { time: () => number; plan: () => Produ
     else schedule.refresh();
     play.refresh();
   });
-  return { time: play.time, plan: () => current };
+  return { time: play.time, rate: play.rate, plan: () => current };
 }
