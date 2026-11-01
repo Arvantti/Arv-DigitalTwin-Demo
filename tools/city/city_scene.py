@@ -27,6 +27,7 @@ MOTOR_ROADS = {
     "living_street",
     "service",
 }
+LANE_WIDTH_M = 3.2  # mismo ancho de carril que usa SUMO por defecto
 DEFAULT_LANES = {
     "motorway": 3,
     "motorway_link": 1,
@@ -212,6 +213,8 @@ def build_scene(osm_path: Path, bbox_values: list[float]) -> dict[str, Any]:
         width_f, assumed_f = _lanes(tags, "forward", oneway, highway)
         width_b, assumed_b = _lanes(tags, "backward", oneway, highway)
         lane_count = max(width_f, width_b)
+        # Calzada completa: en doble sentido suma ambos sentidos (SUMO apoya cada sentido a un lado del eje).
+        carriageway_lanes = lane_count if oneway else width_f + width_b
         speed = _number(tags.get("maxspeed"))
         speed_assumed = speed is None
         speed = speed if speed is not None else DEFAULT_SPEED[highway]
@@ -224,7 +227,7 @@ def build_scene(osm_path: Path, bbox_values: list[float]) -> dict[str, Any]:
                 "name": name,
                 "class": highway,
                 "points": coords_list,
-                "width": round(max(3.0, lane_count * 3.15), 2),
+                "width": round(max(3.2, carriageway_lanes * LANE_WIDTH_M), 2),
                 "lanes": lane_count,
                 "lanesAssumed": assumed_f or assumed_b,
                 "oneway": oneway,
