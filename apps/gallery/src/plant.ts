@@ -125,6 +125,7 @@ const apiUrl = (path: string) => `${apiOrigin}${path}`;
 const apiFetch = (path: string, init: RequestInit = {}) => demoFetch(apiOrigin, path, init);
 let sessionId = url.get("session");
 let forecastStudyId = url.get("study");
+let plantApiAvailable = false;
 let latestLiveMessage: SimMessage | null = null;
 let historicalTime: number | null = null;
 let historyRequest = 0;
@@ -1061,11 +1062,15 @@ function applyMessage(msg: SimMessage, label: string): void {
 
 async function connect(): Promise<void> {
   // La escena no crea runtimes propios: el PLC es quien inicia la operación y entrega su session_id.
-  if (!sessionId) {
+  if (!sessionId && document.body.classList.contains("plc-viewer-mode")) {
     $("view-plc").click(); // El PLC crea la sesión sin sacar al operador del 3D.
     return;
   }
   if (socket || replay) return disconnect();
+  if (!sessionId && !plantApiAvailable) {
+    void startReplay();
+    return;
+  }
   const q = new URLSearchParams({ speed: String(speedFromSlider()) });
   const scenario = $<HTMLSelectElement>("scenario").value;
   if (scenario) q.set("scenario", scenario);
@@ -1358,9 +1363,18 @@ async function loadForecast(): Promise<void> {
 async function start(): Promise<void> {
   const plantId = url.get("plant") ?? "sauce-plant-v1";
   await bootStage(6, "Conectando con el gemelo digital…");
-  const res = await apiFetch(`/api/plants/${plantId}`).catch(() => null);
+  // El Worker público admite operación en vivo solo para el acueducto. En Pages, los demás
+  // modelos usan los planos y replays estáticos; en local o con ?api= se prueba la API indicada.
+  const useApi = url.has("api") || import.meta.env.DEV || (
+    plantId === "water-network-scale-v1" && Boolean(import.meta.env.VITE_EMULATOR_API_URL)
+  );
+  const apiRes = useApi ? await apiFetch(`/api/plants/${encodeURIComponent(plantId)}`).catch(() => null) : null;
+  plantApiAvailable = Boolean(apiRes?.ok);
+  const res = apiRes?.ok
+    ? apiRes
+    : await fetch(`/api/plants/${encodeURIComponent(plantId)}`, { cache: "no-store" }).catch(() => null);
   if (!res?.ok) {
-    const message = `No se pudo cargar ${plantId}. Configure ?api=https://host-de-planta-real.`;
+    const message = `No se pudo cargar ${plantId} desde la API ni desde el plano estático publicado.`;
     $("plant-name").textContent = message;
     bootError(message);
     return;
@@ -1378,7 +1392,9 @@ async function start(): Promise<void> {
     if (latestLiveMessage) applyMessage(latestLiveMessage, "PLC.ACTUAL");
     else if (sessionId && !socket) connect();
   };
-  const plcSchema = await apiFetch(`/api/plants/${plantId}/plc-schema`).catch(() => null);
+  const plcSchema = apiRes?.ok
+    ? await apiFetch(`/api/plants/${encodeURIComponent(plantId)}/plc-schema`).catch(() => null)
+    : null;
   if (plcSchema?.ok) {
     document.body.classList.add("plc-viewer-mode");
     plcLink.href = "#plc";
@@ -1497,8 +1513,8 @@ async function start(): Promise<void> {
     $<HTMLSelectElement>("scenario").disabled = true;
     connect();
   } else {
-    $("btn-connect").textContent = "▣ ABRIR PLC MASTER";
-    $<HTMLSelectElement>("scenario").disabled = true;
+    $("btn-connect").textContent = plcSchema?.ok ? "▣ ABRIR PLC MASTER" : "▶ SIMULAR";
+    $<HTMLSelectElement>("scenario").disabled = !plcSchema?.ok;
   }
   renderAsset();
   if (plcSchema?.ok && url.get("workspace") === "plc") waterView("plc");
