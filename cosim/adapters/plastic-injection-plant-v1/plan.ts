@@ -5,7 +5,7 @@
  * planificador) y la del solver (unidades por máquina y turno). Las dos se convierten en "tramos" que el despacho
  * pone en el calendario respetando turnos, paradas, cambios de color y que el ensamble espere sus componentes.
  */
-import type { CustomerOrder, CustomerOrders, Importance, PlanOrderRow, PlanScheduleRow, PlanSource, ProductionPlan } from "../../core/contracts.ts";
+import type { CustomerOrder, CustomerOrders, PlantEvent, Importance, PlanOrderRow, PlanScheduleRow, PlanSource, ProductionPlan } from "../../core/contracts.ts";
 import { DAY_MIN, dateOf, iso, parseLocal, rng } from "../../core/time.ts";
 import type { PlasticsModel, Step } from "./model.ts";
 
@@ -113,7 +113,7 @@ export function horizonOf(model: PlasticsModel, orders: CustomerOrder[], start: 
  * Prepara el contexto de una corrida: pedidos conocidos, trabajos, paradas y lo congelado de un plan anterior
  * (filas que empezaron antes de `now` se mantienen tal cual).
  */
-export function context(model: PlasticsModel, portfolio: CustomerOrders, nowIso?: string, previous?: ProductionPlan | null): Context {
+export function context(model: PlasticsModel, portfolio: CustomerOrders, nowIso?: string, previous?: ProductionPlan | null, events: PlantEvent[] = []): Context {
   const start = parseLocal(portfolio.plan_start);
   const now = Math.max(start, nowIso ? parseLocal(nowIso) : start);
   // La cartera es la del cliente: se programa completa; ningún pedido se produce antes de su llegada (`created`).
@@ -122,6 +122,12 @@ export function context(model: PlasticsModel, portfolio: CustomerOrders, nowIso?
   const horizonEnd = horizonOf(model, orders, start);
   const down: Context["down"] = {};
   for (const m of model.machines) down[m] = downtime(model, m, start, horizonEnd);
+  // Fallas y paros del emulador: la máquina queda fuera de servicio hasta la reparación estimada (o hasta que volvió).
+  const outages = events
+    .filter((e) => down[e.equipment])
+    .map((e) => ({ m: e.equipment, a: parseLocal(e.start), b: parseLocal(e.cleared ?? e.est_end), why: `${e.kind === "falla" ? "Falla" : "Paro de emergencia"}: ${e.reason}` }))
+    .filter((e) => e.b > e.a);
+  for (const e of outages) down[e.m] = [...down[e.m].filter(([a, b]) => b <= e.a || a >= e.b), [e.a, e.b, e.why] as [number, number, string]].sort((x, y) => x[0] - y[0]);
   const free: Context["free"] = {};
   for (const m of model.machines) free[m] = { at: start, color: model.initialColor[m] };
   const done: Record<string, number> = {};
@@ -134,8 +140,17 @@ export function context(model: PlasticsModel, portfolio: CustomerOrders, nowIso?
       const job = byKey.get(`${r.order}|${r.product}`);
       if (!job) continue;
       const row: Row = { job, machine: r.equipment, start: t0, end: parseLocal(r.end), qty: r.quantity, changeoverMin: r.changeover_min, color: r.color, frozenBatch: r.batch ?? [1, 1] };
+      // Un lote que estaba corriendo cuando la máquina falló se corta ahí: lo que faltaba se vuelve a programar.
+      const cut = outages.find((e) => e.m === r.equipment && e.a > row.start && e.a < row.end);
+      if (cut) {
+        const share = model.calendar.workBetween(row.start, cut.a) / Math.max(1, model.calendar.workBetween(row.start, row.end));
+        row.qty = Math.floor(row.qty * share);
+        row.end = cut.a;
+        if (row.qty <= 0) continue;
+      }
+      if (outages.some((e) => e.m === r.equipment && e.a <= row.start && e.b > row.start)) continue;
       frozen.push(row);
-      done[job.key] = (done[job.key] ?? 0) + r.quantity;
+      done[job.key] = (done[job.key] ?? 0) + row.qty;
       const f = free[r.equipment];
       if (f && row.end >= f.at) {
         f.at = row.end;
@@ -196,6 +211,8 @@ export function dispatch(ctx: Context, queues: Record<string, Chunk[]>): { rows:
         t = Math.max(t, first);
       }
       t = cal.nextWork(t);
+      // Si la máquina está parada en ese instante, el tramo arranca cuando vuelve.
+      for (let stop = blocked.find(([a, b]) => t >= a && t < b); stop; stop = blocked.find(([a, b]) => t >= a && t < b)) t = cal.nextWork(stop[1]);
       let co = 0;
       if (ch.job.color && color && ch.job.color !== color && multiColor(m) && model.colorChangeMin) co = model.colorChangeMin;
       const end = Math.max(cal.advance(t, co + ch.qty * ch.job.step.unitMin, blocked), Number.isFinite(lastReady) ? cal.advance(lastReady, ch.job.step.unitMin, blocked) : -Infinity);

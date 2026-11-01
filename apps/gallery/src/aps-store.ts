@@ -6,7 +6,7 @@
  * cada cambio se avisa por BroadcastChannel, así dos ventanas abiertas se enteran al instante. Cuando exista la API en
  * Cloudflare, este módulo es el único que cambia.
  */
-import type { CustomerOrder, CustomerOrders, ProductionPlan } from "@twin/cosim/core/contracts.ts";
+import type { CustomerOrder, CustomerOrders, PlantEvent, ProductionPlan } from "@twin/cosim/core/contracts.ts";
 import { basePortfolio, baseManual, plasticsModel } from "@twin/cosim/adapters/plastic-injection-plant-v1/catalog.ts";
 import { manualPlan } from "@twin/cosim/adapters/plastic-injection-plant-v1/manual.ts";
 import { plantNow, store } from "./schedule.ts";
@@ -59,19 +59,40 @@ export function setVigente(plan: ProductionPlan): void {
   channel?.postMessage({ type: "plan" });
 }
 
-/** Vuelve a la cartera y la programación iniciales de la demo. */
+/** Eventos del emulador (fallas y paros), del más reciente al más viejo. */
+export function events(): PlantEvent[] {
+  return read<PlantEvent[]>("events", []);
+}
+
+/** Los que siguen fuera de servicio AHORA. */
+export function activeEvents(): PlantEvent[] {
+  const t = now();
+  return events().filter((e) => !e.cleared && e.start.slice(0, 16) <= t);
+}
+
+export function setEvents(list: PlantEvent[]): void {
+  store.set(key("events"), JSON.stringify(list));
+  channel?.postMessage({ type: "events" });
+}
+
+/** Vuelve a la cartera, la programación y la planta iniciales de la demo. */
 export function resetDemo(): void {
   store.set(key("added"), null);
   store.set(key("vigente"), null);
+  store.set(key("events"), null);
   channel?.postMessage({ type: "plan" });
+  channel?.postMessage({ type: "events" });
 }
 
+export type Change = "orders" | "plan" | "events";
+
 /** Avisa cuando otra ventana cambia pedidos o programación. */
-export function onChange(fn: (what: "orders" | "plan") => void): void {
-  channel?.addEventListener("message", (e: MessageEvent<{ type: "orders" | "plan" }>) => fn(e.data.type));
+export function onChange(fn: (what: Change) => void): void {
+  channel?.addEventListener("message", (e: MessageEvent<{ type: Change }>) => fn(e.data.type));
   addEventListener("storage", (e) => {
     if (e.key === key("added")) fn("orders");
     if (e.key === key("vigente")) fn("plan");
+    if (e.key === key("events")) fn("events");
   });
 }
 

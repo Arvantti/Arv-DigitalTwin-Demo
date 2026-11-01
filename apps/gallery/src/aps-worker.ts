@@ -6,16 +6,16 @@ import highsLoader from "highs";
 import wasmUrl from "highs/runtime?url";
 import { plasticsModel } from "@twin/cosim/adapters/plastic-injection-plant-v1/catalog.ts";
 import { solve } from "@twin/cosim/adapters/plastic-injection-plant-v1/solve.ts";
-import type { CustomerOrders, ProductionPlan } from "@twin/cosim/core/contracts.ts";
+import type { CustomerOrders, PlantEvent, ProductionPlan } from "@twin/cosim/core/contracts.ts";
 
 const model = plasticsModel();
 
-self.onmessage = async (e: MessageEvent<{ id: number; portfolio: CustomerOrders; now?: string; previous?: ProductionPlan | null; planId: string }>) => {
-  const { id, portfolio, now, previous, planId } = e.data;
+self.onmessage = async (e: MessageEvent<{ id: number; portfolio: CustomerOrders; now?: string; previous?: ProductionPlan | null; planId: string; events?: PlantEvent[] }>) => {
+  const { id, portfolio, now, previous, planId, events } = e.data;
   try {
     // Una instancia nueva por corrida: highs-js no garantiza poder resolver varias veces con la misma.
     const highs = await highsLoader({ locateFile: () => wasmUrl });
-    const plan = solve(highs, model, portfolio, { now, previous, planId });
+    const plan = solve(highs, model, portfolio, { now, previous, planId, events });
     self.postMessage({ id, ok: true, plan });
   } catch (err) {
     self.postMessage({ id, ok: false, error: (err as Error).message ?? String(err) });

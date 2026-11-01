@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import highsLoader from "highs";
 import { describe, expect, it } from "vitest";
-import type { CustomerOrders, ProductionPlan } from "../../../core/contracts.ts";
+import type { CustomerOrders, PlantEvent, ProductionPlan } from "../../../core/contracts.ts";
 import { parseLocal } from "../../../core/time.ts";
 import { manualPlan, type ManualPlan } from "../manual.ts";
 import { buildModel } from "../model.ts";
@@ -59,5 +59,23 @@ describe("APS de plásticos", () => {
     expect(a).toEqual(b0);
     const nuevo = again.orders.find((o) => o.id === "PED-NUEVO-01")!;
     expect(nuevo.late_h).toBe(0);
+  });
+
+  it("una falla del emulador corta el lote en curso y el cosimulador desvía el trabajo", async () => {
+    const highs = await highsLoader();
+    const base = solve(highs, model, portfolio);
+    const falla: PlantEvent = { contract: "plant-event.v1", id: "EV-1", plant: model.plant, equipment: "imm-01", kind: "falla", reason: "resistencia del cañón", start: `${NOW}-05:00`, est_end: "2026-11-05T14:00-05:00" };
+    const sol = solve(await highsLoader(), model, portfolio, { now: NOW, previous: base, events: [falla] });
+    const man = manualPlan(model, portfolio, manual, { now: NOW, previous: base, events: [falla] });
+    for (const plan of [sol, man]) {
+      checkPlan(plan);
+      const clash = plan.schedule.filter((r) => r.equipment === "imm-01" && r.end.slice(0, 16) > NOW && r.start.slice(0, 16) < "2026-11-05T14:00");
+      expect(clash.map((r) => `${r.op} ${r.start} ${r.end} ${r.quantity}`), "nada corre en la máquina parada").toEqual([]);
+      expect(plan.downtime.some((d) => d.equipment === "imm-01" && d.reason.startsWith("Falla"))).toBe(true);
+    }
+    const moved = sol.schedule.filter((r) => r.equipment === "imm-02" && r.start.slice(0, 16) >= NOW && r.start.slice(0, 16) < "2026-11-05T14:00");
+    expect(moved.length).toBeGreaterThan(0);
+    console.log("falla imm-01 · manual", JSON.stringify(man.kpis), "· cosimulador", JSON.stringify(sol.kpis));
+    expect(sol.kpis.tardiness_h).toBeLessThanOrEqual(man.kpis.tardiness_h);
   });
 });

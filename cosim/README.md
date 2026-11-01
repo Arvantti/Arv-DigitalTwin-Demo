@@ -28,6 +28,7 @@ cosim/
 | `customer-orders.v1` | pantalla de pedidos del APS, cartera inventada | cosimulador |
 | `manual-sequence.v1` | planificador (`aps/plans/APS-MAN-01.json`) | cosimulador (`manualPlan`) |
 | `production-plan.v1` | cosimulador, plan manual, Fractal | APS (Gantt), gemelo 3D, centro de control |
+| `plant-event.v1` | emulador (falla o paro de emergencia AHORA) | APS, gemelo 3D, cosimulador (parada) |
 
 ## Plásticos
 
@@ -37,6 +38,9 @@ cosim/
   Después se ordena cada máquina y se despacha minuto a minuto con los cambios de color.
 - `manual.ts`: sigue la secuencia del planificador; los pedidos que no están en ella van al final.
 - Ambos replanean desde AHORA: lo que ya empezó queda congelado.
+- Una falla del emulador es una parada desde AHORA hasta la reparación estimada: el lote en curso se corta y lo que
+  faltaba se vuelve a programar. El cosimulador lo pasa a otra máquina con el mismo molde montado; mover un molde a
+  otra máquina es decisión de Fractal.
 - Los lotes salen de `aps/aps.yaml` y se marcan al publicar el plan (`batch: [n, de]`).
 
 ```bash

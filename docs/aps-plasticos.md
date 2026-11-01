@@ -30,11 +30,30 @@ programación manual (manual-sequence.v1) ──┘                             
 - `aps.html`: PEDIDOS (indicadores, agregar pedido, tabla con estado) y PROGRAMACIÓN · GANTT (arriba una fila por
   orden con inicio, fin y entrega; abajo los recursos con los lotes de esas órdenes, cambios de color, paradas y carga).
   `?now=2026-11-04T10:00` fija la hora de la demo y `?reset=1` vuelve a la cartera inicial.
-- `plant.html?plant=plastic-injection-plant-v1`: el panel lateral muestra la programación vigente y abre el APS.
+- `emulador.html`: plano 2D en tiempo real (ver abajo).
+- `plant.html?plant=plastic-injection-plant-v1`: el panel lateral muestra la programación vigente y abre el APS y el
+  emulador.
 
 El sitio publicado no tiene servidor: pedidos agregados y programación vigente viven en el navegador
 (`apps/gallery/src/aps-store.ts`, localStorage y BroadcastChannel), así el APS y el gemelo abiertos en dos ventanas se
 enteran de los cambios. Cuando exista la API, solo cambia ese módulo.
+
+## Emulador y falla de una máquina
+
+`emulador.html` es el plano 2D de la planta en tiempo real: cada inyectora y celda de ensamble con su estado (produciendo,
+sin orden, parada programada, fuera de servicio, fuera de turno), la orden y el lote en curso y las piezas que va
+haciendo. Ahí, y solo ahí, se detiene una máquina AHORA por falla o paro de emergencia con una reparación estimada; el
+emulador no programa paradas futuras (eso son escenarios del cosimulador y de Fractal).
+
+El evento (`plant-event.v1`) llega a la vez a:
+
+- **APS**: alerta con las órdenes de la vigente que quedan afectadas y la parada en la fila de la máquina del Gantt.
+  CALCULAR replanea desde AHORA sin esa máquina: corta el lote en curso y pasa lo que faltaba a otra máquina con el
+  mismo molde (por ejemplo, cubiertos de IMM-01 a IMM-02).
+- **Gemelo 3D**: la máquina queda marcada en rojo y el panel lateral la lista fuera de servicio.
+
+Con la vigente del cosimulador y una falla de IMM-01 el miércoles a las 10:00, la secuencia manual queda con 5 pedidos
+tarde y el cosimulador mantiene el 100 % a tiempo (prueba en `cosim/adapters/plastic-injection-plant-v1/tests`).
 
 ## Resultado con la cartera de la demo (AHORA = 2026-11-04 10:00)
 
@@ -49,5 +68,5 @@ turno); es un punto para Fractal.
 
 ## Siguiente
 
-Play por día y hora sobre el gemelo, PLC por máquina y centro de control, emulador 2D con falla de una inyectora y
-escenarios de Fractal (adelantar un pedido, balancear la ocupación, falla con mudanza de molde).
+Play por día y hora sobre el gemelo, PLC por máquina y centro de control, y escenarios de Fractal (adelantar un pedido,
+balancear la ocupación, falla con mudanza de molde a otra máquina del mismo tamaño).

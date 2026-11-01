@@ -14,7 +14,7 @@
 import "./styles.css";
 import "./aps.css";
 import type { CustomerOrder, Importance, ProductionPlan } from "@twin/cosim/core/contracts.ts";
-import { addedOrders, baseManual, manualPlan, model, now, onChange, portfolio, resetDemo, setAdded, setVigente, SOURCE_NAMES, vigente } from "./aps-store.ts";
+import { activeEvents, addedOrders, baseManual, manualPlan, model, now, onChange, portfolio, resetDemo, setAdded, setVigente, SOURCE_NAMES, vigente } from "./aps-store.ts";
 import { COLOR_NAMES, day, esc, nf, when } from "./schedule.ts";
 
 const IMPORTANCE: [Importance, string][] = [
@@ -61,9 +61,35 @@ function render(): void {
   $("tab-orders").hidden = tab !== "orders";
   $("tab-gantt").hidden = tab !== "gantt";
   $("aps-calc").toggleAttribute("disabled", !!running);
+  renderAlarm();
   renderProposal();
   if (tab === "orders") renderOrders(p);
   else renderGantt(p);
+}
+
+// ------------------------------------------------------------------ fallas del emulador
+const machineLabel = (m: string) => (MACHINE_NAMES[m] ?? m).toUpperCase();
+
+/** Fallas y paros que llegaron del emulador y que la programación vigente todavía no tiene en cuenta. */
+function pendingEvents() {
+  return activeEvents().filter((e) => !current.downtime.some((d) => d.equipment === e.equipment && d.start.slice(0, 16) === e.start.slice(0, 16)));
+}
+
+function renderAlarm(): void {
+  const el = $("aps-alarm");
+  const list = activeEvents();
+  el.hidden = !list.length;
+  if (!list.length) return;
+  const pending = pendingEvents();
+  el.innerHTML = list
+    .map((e) => {
+      const hit = current.schedule.filter((r) => r.equipment === e.equipment && r.end.slice(0, 16) > e.start.slice(0, 16) && r.start.slice(0, 16) < e.est_end.slice(0, 16));
+      const orders = [...new Set(hit.map((r) => r.order))];
+      return `<p><b>⚠ ${esc(machineLabel(e.equipment))} · ${e.kind === "falla" ? "FALLA" : "PARO DE EMERGENCIA"}</b> desde ${when(e.start)} · ${esc(e.reason)} · reparación estimada hasta ${when(e.est_end)}${
+        pending.some((x) => x.id === e.id) && orders.length ? ` · <span class="bad">afecta ${orders.length} orden${orders.length === 1 ? "" : "es"} de la vigente: ${orders.slice(0, 6).map(esc).join(", ")}${orders.length > 6 ? "…" : ""}</span>` : ""
+      }</p>`;
+    })
+    .join("") + (pending.length ? '<p class="dim small">Avisado por el emulador a través del centro de control. Pulsa CALCULAR: el cosimulador replanea desde AHORA sin esa máquina y pasa su trabajo a las que tienen el mismo molde.</p>' : '<p class="dim small">La programación vigente ya tiene en cuenta esta parada.</p>');
 }
 
 // ------------------------------------------------------------------ propuesta
@@ -92,7 +118,7 @@ function renderProposal(): void {
   el.innerHTML = `
     <div class="aps-prop-head">
       <div><div class="label">PROPUESTA · ${esc(SOURCE_NAMES[proposal.source])} ${esc(proposal.plan_id)}</div>
-      <p class="dim small">${s ? `Colocación lineal con HiGHS: ${s.status === "Optimal" ? "óptima" : esc(s.status)} en ${nf(s.seconds, 1)} s, ${nf(s.variables)} variables y ${nf(s.constraints)} restricciones. ` : ""}${proposal.frozen_until ? `Replaneada desde ${when(proposal.frozen_until)}: lo que ya empezó no cambia.` : ""} ${proposal.notes?.map(esc).join(" ") ?? ""}</p></div>
+      <p class="dim small">${s ? `Colocación lineal con HiGHS: ${s.status === "Optimal" ? "óptima" : esc(s.status)} en ${nf(s.seconds, 1)} s, ${nf(s.variables)} variables y ${nf(s.constraints)} restricciones. ` : ""}${proposal.frozen_until ? `Replaneada desde ${when(proposal.frozen_until)}: lo que ya empezó no cambia.` : ""}${activeEvents().length ? ` Sin ${activeEvents().map((e) => `${machineLabel(e.equipment)} hasta ${when(e.est_end)}`).join(", ")}: el lote en curso se corta y lo que falta se reprograma.` : ""} ${proposal.notes?.map(esc).join(" ") ?? ""}</p></div>
       <div class="aps-prop-kpis">
         <div><small>A tiempo</small>${cell(v.on_time_pct, k.on_time_pct, (x) => `${nf(x, 1)} %`, false)}</div>
         <div><small>Pedidos tarde</small>${cell(v.late_orders, k.late_orders, (x) => nf(x), true)}</div>
@@ -136,7 +162,7 @@ function calculate(): void {
     error = `El cosimulador no pudo arrancar: ${e.message}`;
     render();
   };
-  worker.postMessage({ id, portfolio: portfolio(), now: now(), previous: current, planId: `APS-SOL-${String(n).padStart(2, "0")}` });
+  worker.postMessage({ id, portfolio: portfolio(), now: now(), previous: current, planId: `APS-SOL-${String(n).padStart(2, "0")}`, events: activeEvents() });
 }
 
 // ------------------------------------------------------------------ pedidos
@@ -322,7 +348,8 @@ function renderGantt(p: ProductionPlan): void {
             .join("");
         })
         .join("");
-      const downs = p.downtime
+      const extra = proposal ? [] : pendingEvents().map((e) => ({ equipment: e.equipment, start: e.start, end: e.est_end, reason: `${e.kind === "falla" ? "Falla" : "Paro de emergencia"}: ${e.reason} (del emulador, sin replanear)` }));
+      const downs = [...p.downtime, ...extra]
         .filter((d) => d.equipment === m && inView(ms(d.start), ms(d.end)))
         .map((d) => `<div class="g-down" style="${span(ms(d.start), ms(d.end))}" title="Parada: ${esc(d.reason)} · ${when(d.start)} → ${when(d.end)}"></div>`)
         .join("");
@@ -395,15 +422,16 @@ $("aps-calc").onclick = () => calculate();
 $("aps-manual").onclick = () => {
   error = "";
   try {
-    proposal = manualPlan(model, portfolio(), baseManual, { now: now(), previous: current });
+    proposal = manualPlan(model, portfolio(), baseManual, { now: now(), previous: current, events: activeEvents() });
     tab = "gantt";
   } catch (err) {
     error = (err as Error).message;
   }
   render();
 };
-onChange(() => {
+onChange((what) => {
   current = vigente();
+  if (what === "events") error = "";
   render();
 });
 addEventListener("resize", () => render());

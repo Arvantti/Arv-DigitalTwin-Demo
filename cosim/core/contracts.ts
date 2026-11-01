@@ -106,3 +106,21 @@ export interface ProductionPlan {
   frozen_until?: string;
   notes?: string[];
 }
+
+/**
+ * Evento de planta en tiempo real (`plant-event.v1`), lo emite el emulador: una máquina sale de servicio por falla o
+ * paro de emergencia. El emulador no programa paradas futuras: `start` es siempre el instante en que ocurrió y
+ * `est_end` la reparación estimada. El cosimulador lo trata como parada y replanea desde AHORA.
+ */
+export interface PlantEvent {
+  contract: "plant-event.v1";
+  id: string;
+  plant: string;
+  equipment: string;
+  kind: "falla" | "paro-emergencia";
+  reason: string;
+  start: string;
+  est_end: string;
+  /** Cuándo volvió a servicio; mientras no tenga, sigue fuera de servicio. */
+  cleared?: string;
+}

@@ -6,13 +6,15 @@
  * la vigente en otra ventana, el gemelo se entera al instante.
  */
 import type { PlanDoc } from "./schedule.ts";
-import { buildSchedule } from "./schedule.ts";
-import { onChange, SOURCE_NAMES, vigente } from "./aps-store.ts";
+import { buildSchedule, esc } from "./schedule.ts";
+import { activeEvents, onChange, SOURCE_NAMES, vigente } from "./aps-store.ts";
 
 interface Options {
   plantId: string;
   select: (id: string) => void;
   showProduct?: (id: string) => void;
+  /** Marca en el 3D las máquinas fuera de servicio por una falla o paro que llegó del emulador. */
+  markDown?: (ids: string[]) => void;
 }
 
 export function buildAps(opts: Options): void {
@@ -28,11 +30,19 @@ export function buildAps(opts: Options): void {
     provider: () => ({ plan: current as unknown as PlanDoc, label: `${SOURCE_NAMES[current.source]} ${current.plan_id}` }),
   });
 
-  section.innerHTML = `
-    <h3>APS <span class="dim">· pedidos y programación</span></h3>
-    <div class="sim-controls"><a class="btn-link" href="/aps.html" target="_blank" rel="noopener">▦ ABRIR APS · PEDIDOS Y GANTT</a></div>`;
-  onChange(() => {
+  const render = () => {
+    const down = activeEvents();
+    opts.markDown?.(down.map((e) => e.equipment));
+    section.innerHTML = `
+      <h3>APS <span class="dim">· pedidos y programación</span></h3>
+      ${down.map((e) => `<p class="aps-down" title="${esc(e.reason)}">⚠ ${e.equipment.toUpperCase()} fuera de servicio · ${e.kind === "falla" ? "falla" : "paro de emergencia"}</p>`).join("")}
+      <div class="sim-controls"><a class="btn-link" href="/aps.html" target="_blank" rel="noopener">▦ ABRIR APS · PEDIDOS Y GANTT</a></div>
+      <div class="sim-controls"><a class="btn-link alt" href="/emulador.html" target="_blank" rel="noopener">◫ EMULADOR DE PLANTA · 2D</a></div>`;
+  };
+  render();
+  onChange((what) => {
     current = vigente();
-    schedule.refresh();
+    if (what === "events") render();
+    else schedule.refresh();
   });
 }
