@@ -12,20 +12,4 @@ pallet:
 # hasta tener los moldes reales. Las inyectoras con molde en el catálogo (catalog/setup.yaml)
 # toman el volumen de su producto en catalog/products.yaml.
 bulk_l:
-  imm-09: 0.15    # tapa de termo
-  imm-10: 0.35    # cucharón
-  imm-11: 0.45    # recipiente 1 L
-  imm-12: 1.1     # recipiente 3 L
-  imm-13: 2.0     # caja organizadora 6 L
-  imm-14: 0.7     # tapa caja organizadora
-  imm-15: 1.0     # balde 4 L
-  imm-16: 0.9     # bandeja
-  imm-17: 1.5     # cuerpo de termo
   imm-20: 14.0    # caja organizadora 40 L
-  imm-22: 5.5     # balde 20 L
-  imm-24: 5.0     # bandeja industrial
-  imm-25: 9.0     # canasta industrial apilable
-  imm-26: 14.0    # caneca 50 L
-  imm-27: 30.0    # cuerpo de nevera portátil
-  imm-28: 40.0    # caneca 121 L
-  imm-29: 25.0    # tapa caneca 121 L y estiba liviana

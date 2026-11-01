@@ -75,8 +75,10 @@ programa lineal no los modela (reserva una purga por turno); es un punto para Fr
 
 **Máquinas con molde** (`catalog/setup.yaml`, decisión de Andy del 2026-11-01: duplicar moldes de los 4 productos):
 cubiertos en IMM-01, 02, 04, 05 y 08; pedal y palanca en IMM-06 y 07; cuerpo de papelera en IMM-18 y 19; balde en
-IMM-21 y 23; ensamble en ENSAMBLE-01. Son 12 inyectoras con orden; las demás quedan en reserva para que Fractal monte
-un molde de repuesto. La demanda diaria de `catalog/demand.yaml` sigue esa capacidad.
+IMM-21 y 23; ensamble en ENSAMBLE-01. **Planta simplificada** (pedido de Andy, 2026-11-01): se quitaron del plano y del
+motor las inyectoras sin producto (IMM-03, 09 a 17, 22, 24 y 25 a 29), la banda, la segunda celda de ensamble y sus
+estanterías, y la nave quedó con dos hileras. Son 12 inyectoras: 11 con molde y la IMM-20 en reserva para el molde de
+repuesto de Fractal. Las máquinas conservan sus ids. La demanda diaria de `catalog/demand.yaml` sigue esa capacidad.
 
 **Insumos**: la pestaña INSUMOS del APS calcula, para la semana que empieza hoy y por día, los kg de resina por material
 (unidades / cavidades × peso de inyección con colada), los kg de masterbatch por color, las unidades por producto, las
@@ -92,9 +94,13 @@ horas de máquina, los turnos-máquina, los cambios de color y las horas de oper
 - Play por día y hora: barra de tiempo en el gemelo 3D desde 3 días atrás (lo ejecutado) hasta una semana adelante
   (lo programado), con velocidad de 15 min/s a 12 h/s y EN VIVO. Sobre cada máquina va un letrero con su estado, la
   orden, el producto, el color y el lote, así se ve cuándo pasa de un producto a otro o hace un cambio de color.
+- Órdenes en el gemelo: sobre la barra, un panel con las órdenes que se están procesando en el instante del play
+  (unidades hechas contra pedidas y en qué máquinas). Al elegir una (clic en la lista, el selector o `?order=`), el panel
+  la sigue con el play: unidades terminadas, estado (pendiente, en proceso, terminada), entrega, fin programado y lo
+  producido por etapa; sus máquinas llevan una estrella y borde amarillo en el letrero. El panel se pliega con su título.
 
 Las señales salen del gemelo (`apps/gallery/src/plant-state.ts`): la programación vigente más los eventos del
-emulador. El rendimiento y la calidad son supuestos por máquina y día (88–97 % y 97,5–99,6 %).
+emulador. El rendimiento es un supuesto por máquina y día (88–97 %) y la calidad es fija en 99 % (1 % de piezas defectuosas).
 
 ### Transporte de estibas por el piso
 
@@ -109,6 +115,8 @@ la programación vigente (`apps/gallery/src/pallet-transport.ts`):
   el pedido y el destino;
 - la celda de ensamble pide una estiba de cada componente al arrancar y cada vez que consume la anterior, y lo armado
   sale en estibas del empaque a la bodega;
+- cada montacargas va por el carril derecho del pasillo, así la ida y el regreso no se cruzan, y espera si tiene otro
+  adelante a menos de 3,5 m en el mismo sentido;
 - con el gemelo EN VIVO los montacargas andan a velocidad real (≈ 2,5 m/s); en play rápido van a 9 m/s para que el
   recorrido se vea. Si hay más estibas que montacargas libres, esperan en cola (máximo 8; las demás no se animan).
 
@@ -136,6 +144,12 @@ Moldes de repuesto de la demo (`aps/aps.yaml`): uno de balde de 12 L y uno de cu
 ## Demo grabada
 
 Capturas y guiones de narración por escenario en [`docs/demo-plasticos/`](demo-plasticos/README.md).
+
+**Presentaciones en el sitio** (`presentaciones.html`, enlazada desde el APS y el panel del gemelo 3D): una por escenario,
+armada al compilar con los `guion.md` y las capturas de `docs/demo-plasticos/`: portada, una lámina por segmento con su
+captura, lo que se señala y las notas del orador, y un cierre con las cifras del frontmatter (`cifras`). Cada lámina
+tiene **ABRIR EN VIVO**, que abre la pantalla real que muestra la captura. Teclas: ← → o espacio, N notas, F pantalla
+completa, Esc volver; `?esc=2&s=4` abre una lámina.
 
 ## Siguiente
 

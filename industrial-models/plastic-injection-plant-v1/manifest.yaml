@@ -12,7 +12,6 @@ entrypoints:
 
 equipment_dependencies:
   - { type: assembly-cell, version: ">=0.1,<0.2" }
-  - { type: belt-conveyor, version: ">=0.1,<0.2" }
   - { type: chiller, version: ">=0.1,<0.2" }
   - { type: desiccant-dryer, version: ">=0.1,<0.2" }
   - { type: forklift-fleet, version: ">=0.1,<0.2" }

@@ -2,7 +2,11 @@
 title: Guion · Calcular la programación
 escenario: 1-calcular-programacion
 tags: [demo, plasticos, guion, aps, cosimulador, fractal]
-duracion_aprox: 3 min
+duracion_aprox: 3 min 15 s
+cifras:
+  - ["90,3 % → 92,5 %", "pedidos a tiempo: manual contra cosimulador"]
+  - ["69,3 % → 59,1 %", "ocupación de planta en la semana, con la misma producción"]
+  - ["27,5 t", "de resina para la semana, calculadas del plan"]
 ---
 
 # Escenario 1 · Calcular la programación según las entregas
@@ -44,35 +48,42 @@ Mensaje central: a partir de los pedidos y sus fechas de entrega, el cosimulador
 
 > Adoptamos la propuesta y pasa a ser la programación vigente. Las órdenes se reacomodan para llegar antes de su fecha.
 
-### S06 · La planta con el plan nuevo
+### S06 · Qué máquinas hacen cada orden
+- imagen: capturas/05b-gantt-orden.png
+- duración: 16 s
+- en pantalla: la orden seleccionada arriba y sus tres máquinas resaltadas abajo
+
+> Al hacer clic en una orden, sus máquinas suben y se resaltan, con sus lotes y sus horas, y el resto queda atenuado. Esta papelera pasa por tres recursos: la inyectora diecinueve hace el cuerpo, la siete hace el pedal y la línea de ensamble la arma.
+
+### S07 · La planta con el plan nuevo
 - imagen: capturas/06-centro-control.png
 - duración: 18 s
 - en pantalla: las tarjetas de IMM-21 e IMM-23 en ámbar y rojo
 
 > Con el plan del cosimulador, la planta queda ocupada al sesenta y dos por ciento en la semana. Pero si miramos máquina por máquina, las dos inyectoras del balde y la línea de ensamble están casi llenas, mientras otras tienen tiempo libre. Ese es el cuello de botella.
 
-### S07 · Fractal balancea la ocupación
+### S08 · Fractal balancea la ocupación
 - imagen: capturas/07-fractal-balancear.png
 - duración: 26 s
 - en pantalla: la recomendación, la fila B "MEJOR" y la columna OCUPACIÓN PLANTA
 
 > Aquí entra Fractal. Además de la secuencia, prueba cambios en la planta. Su recomendación: montar el molde de repuesto del balde, que está en el almacén, en la inyectora veinte, que está libre. Con noventa minutos de montaje, la máquina más cargada baja del setenta al sesenta y dos por ciento, sin atrasar ningún pedido, y la ocupación de la planta baja al cincuenta y nueve por ciento. Cada opción se puede ver en el Gantt y adoptar; Fractal recomienda y la persona decide.
 
-### S08 · El Gantt balanceado
+### S09 · El Gantt balanceado
 - imagen: capturas/08-gantt-balanceado.png
 - duración: 12 s
 - en pantalla: las filas IMM-20 e IMM-21 en la parte de recursos
 
 > Adoptamos y el trabajo del balde queda repartido entre dos máquinas.
 
-### S09 · Más capacidad disponible
+### S10 · Más capacidad disponible
 - imagen: capturas/09-centro-control-balanceado.png
 - duración: 14 s
 - en pantalla: el indicador de ocupación semanal
 
 > Con una máquina más en juego, la planta tiene mil doscientas cuarenta horas disponibles en la semana y la ocupación baja al cincuenta y nueve por ciento. Queda espacio para recibir más pedidos.
 
-### S10 · Los insumos del plan
+### S11 · Los insumos del plan
 - imagen: capturas/10-insumos.png
 - duración: 24 s
 - en pantalla: los indicadores de arriba y la tabla de materia prima

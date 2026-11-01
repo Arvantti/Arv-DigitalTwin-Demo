@@ -18,25 +18,26 @@ plant:
   kind: discrete
   units: { length: m, angle: deg, mass: kg, time: s }
   frame: { origin: esquina suroeste, x: este, y: norte, z: arriba }
-  site: { width_x: 200, length_y: 110 }
+  site: { width_x: 200, length_y: 89 }
   context:
     location: Valle de Aburrá, Colombia (~1.500 m s. n. m., ~24 °C)
     shifts: 2 turnos, 6 días
-    daily_output_t: 22
-    injection_machines: 29
-    shot_weight_range_kg: [0.014, 7.0]
+    daily_output_t: 6
+    injection_machines: 12
+    shot_weight_range_kg: [0.06, 0.74]
     recycled_resin_share: 0.60
     materials: [PP, HDPE, PS, ABS]
     assumptions:
-      - Utilización media del parque de inyectoras ~45 % (mezcla de productos, cambios de molde, paradas).
-      - Capacidad teórica al 100 % ≈ 55 t/día; real ≈ 22 t/día.
+      - Planta simplificada para la demo (2026-11-01). Solo las 12 inyectoras de los 4 productos del catálogo; la IMM-20
+        queda en reserva para el molde de repuesto. Se conservan los ids originales de las máquinas.
+      - Producción ≈ 6 t/día (cubiertos, baldes de 12 L y papeleras de pedal).
       - Termorregulador de molde y molino al pie se modelan como parámetros de cada inyectora.
 
 layout_concept: >
   Flujo lineal oeste → este. Materia prima y silos al oeste; central de
   materiales (secado, mezcla y transporte neumático) contigua a la nave;
-  nave de inyección al centro con tres bahías por tonelaje (pequeñas al
-  sur, medianas al centro, grandes al norte bajo puente grúa); operaciones
+  nave de inyección al centro con dos hileras por tonelaje (pequeñas al
+  sur, medianas al norte bajo puente grúa); operaciones
   secundarias, empaque y bodega de producto terminado al este, con muelles
   de despacho. Reciclaje, taller y almacén de moldes, laboratorio y
   mantenimiento en la franja sur; servicios (subestación, aire, frío) en la
@@ -44,9 +45,9 @@ layout_concept: >
   franja sur al reciclaje, que alimenta los silos de material reciclado.
 
 zones:
-  - { id: silos,               name: Silos de resina,                  kind: exterior,   rect: [2, 40, 12, 40],   height: 16 }
-  - { id: recepcion-mp,        name: Recepción de materia prima,      kind: exterior,   rect: [0, 82, 14, 18],   height: 0 }
-  - { id: bodega-mp,           name: Bodega de materia prima,         kind: storage,    rect: [14, 50, 20, 45],  height: 10 }
+  - { id: silos,               name: Silos de resina,                  kind: exterior,   rect: [2, 40, 12, 25],   height: 16 }
+  - { id: recepcion-mp,        name: Recepción de materia prima,      kind: exterior,   rect: [0, 65, 14, 14],   height: 0 }
+  - { id: bodega-mp,           name: Bodega de materia prima,         kind: storage,    rect: [14, 50, 20, 24],  height: 10 }
   - { id: central-materiales,  name: Central de materiales,           kind: production, rect: [14, 25, 20, 25],  height: 8 }
   - { id: reciclaje,           name: Reciclaje y peletizado,          kind: production, rect: [14, 5, 30, 20],   height: 9 }
   - { id: taller-moldes,       name: Taller de moldes,                kind: service,    rect: [44, 5, 30, 20],   height: 8 }
@@ -54,27 +55,25 @@ zones:
   - { id: laboratorio-qc,      name: Laboratorio de calidad,          kind: service,    rect: [94, 5, 15, 20],   height: 4 }
   - { id: mantenimiento,       name: Mantenimiento general,           kind: service,    rect: [109, 5, 15, 20],  height: 6 }
   - { id: admin,               name: "Oficinas, vestieres y cafetería", kind: admin,      rect: [124, 5, 44, 20],  height: 7 }
-  - { id: nave-inyeccion,      name: Nave de inyección,               kind: production, rect: [34, 25, 90, 63],  height: 14 }
-  - { id: almacen-semielaborado, name: Almacén de semielaborado,    kind: storage,    rect: [34, 88, 90, 7],   height: 9 }
+  - { id: nave-inyeccion,      name: Nave de inyección,               kind: production, rect: [34, 25, 90, 42],  height: 14 }
+  - { id: almacen-semielaborado, name: Almacén de semielaborado,    kind: storage,    rect: [34, 67, 90, 7],   height: 9 }
   - { id: empaque,             name: Empaque y paletizado,            kind: production, rect: [124, 25, 20, 30], height: 9 }
-  - { id: secundarias,         name: Operaciones secundarias,         kind: production, rect: [124, 55, 20, 40], height: 9 }
-  - { id: bodega-pt,           name: Bodega de producto terminado,    kind: storage,    rect: [144, 25, 24, 70], height: 12 }
-  - { id: patio-despacho,      name: Patio y muelles de despacho,     kind: exterior,   rect: [168, 25, 30, 70], height: 0 }
-  - { id: subestacion,         name: Subestación eléctrica,           kind: utility,    rect: [34, 95, 15, 12],  height: 5 }
-  - { id: compresores,         name: Cuarto de compresores,           kind: utility,    rect: [49, 95, 15, 12],  height: 5 }
-  - { id: chillers,            name: Chillers y bombeo de agua,       kind: utility,    rect: [64, 95, 20, 12],  height: 5 }
-  - { id: torre-enfriamiento,  name: Torre de enfriamiento,           kind: exterior,   rect: [84, 95, 10, 12],  height: 0 }
+  - { id: secundarias,         name: Operaciones secundarias,         kind: production, rect: [124, 55, 20, 19], height: 9 }
+  - { id: bodega-pt,           name: Bodega de producto terminado,    kind: storage,    rect: [144, 25, 24, 49], height: 12 }
+  - { id: patio-despacho,      name: Patio y muelles de despacho,     kind: exterior,   rect: [168, 25, 30, 49], height: 0 }
+  - { id: subestacion,         name: Subestación eléctrica,           kind: utility,    rect: [34, 74, 15, 12],  height: 5 }
+  - { id: compresores,         name: Cuarto de compresores,           kind: utility,    rect: [49, 74, 15, 12],  height: 5 }
+  - { id: chillers,            name: Chillers y bombeo de agua,       kind: utility,    rect: [64, 74, 20, 12],  height: 5 }
+  - { id: torre-enfriamiento,  name: Torre de enfriamiento,           kind: exterior,   rect: [84, 74, 10, 12],  height: 0 }
   - { id: parqueadero,         name: Portería y parqueadero,          kind: exterior,   rect: [168, 0, 32, 22],  height: 0 }
 
 aisles:
-  - { id: aisle-cruce,   kind: forklift, rect: [77, 47, 4, 48] }
+  - { id: aisle-cruce,   kind: forklift, rect: [77, 47, 4, 23] }
   - { id: aisle-centro,  kind: forklift, rect: [34, 47, 90, 4] }
-  - { id: aisle-norte,   kind: forklift, rect: [34, 71, 90, 4] }
-  - { id: aisle-semielaborado, kind: forklift, rect: [34, 87.2, 90, 3.8] }
+  - { id: aisle-semielaborado, kind: forklift, rect: [34, 66.2, 90, 3.8] }
   # Pasillos del este (supuestos): del extremo oriente de la nave a las celdas de ensamble y a la bodega de producto terminado
-  - { id: aisle-sec-norte,  kind: forklift, rect: [124, 73.5, 20, 4] }
-  - { id: aisle-sec-medio,  kind: forklift, rect: [124, 64.5, 20, 4] }
-  - { id: aisle-sec-v,      kind: forklift, rect: [132.5, 52.5, 3, 25] }
+  - { id: aisle-sec-medio,  kind: forklift, rect: [124, 66.2, 20, 3.8] }
+  - { id: aisle-sec-v,      kind: forklift, rect: [132.5, 52.5, 3, 17.5] }
   - { id: aisle-pt-enlace,  kind: forklift, rect: [132.5, 52.5, 13.5, 3.5] }
   - { id: aisle-pt-oeste,   kind: forklift, rect: [144, 28, 2.25, 28] }
   - { id: aisle-pt-sur,     kind: forklift, rect: [144, 26, 24, 4] }
@@ -89,28 +88,21 @@ aisles:
 #   - trips_per_h: viajes por hora de un vehículo (supuesto); walkers: operarios que la recorren (supuesto).
 routes:
   # --- Montacargas: piezas semielaboradas de las inyectoras a las estanterías de semielaborado ---
-  - { id: fk-recolecta-oeste-norte, name: "Recolección de semielaborado, pasillo norte oeste", kind: forklift, from: nave-inyeccion, to: rack-sf-01, load: piezas inyectadas en cajas y estibas, width: 1.5, trips_per_h: 4, fleet: fleet-01, fleet_route: 1, path: [[36, 74.25], [79, 74.25], [79, 89.1], [50, 89.1]] }
-  - { id: fk-recolecta-oeste-centro, name: "Recolección de semielaborado, pasillo centro oeste", kind: forklift, from: nave-inyeccion, to: rack-sf-02, load: piezas inyectadas en cajas y estibas, width: 1.5, trips_per_h: 4, fleet: fleet-01, fleet_route: 2, path: [[36, 49], [79, 49], [79, 89.1], [68, 89.1]] }
-  - { id: fk-recolecta-este-centro, name: "Recolección de semielaborado, pasillo centro este", kind: forklift, from: nave-inyeccion, to: rack-sf-03, load: piezas inyectadas en cajas y estibas, width: 1.5, trips_per_h: 4, fleet: fleet-01, fleet_route: 3, path: [[122, 49], [79, 49], [79, 89.1], [98, 89.1]] }
-  - { id: fk-recolecta-este-norte, name: "Recolección de semielaborado, pasillo norte este", kind: forklift, from: nave-inyeccion, to: rack-sf-04, load: piezas inyectadas en cajas y estibas, width: 1.5, trips_per_h: 4, fleet: fleet-01, fleet_route: [4, 5], path: [[122, 74.25], [79, 74.25], [79, 89.1], [116, 89.1]] }
+  - { id: fk-recolecta-oeste-norte, name: "Recolección de pedal y palanca, pasillo central", kind: forklift, from: nave-inyeccion, to: rack-sf-01, load: piezas inyectadas en cajas y estibas, width: 1.5, trips_per_h: 4, fleet: fleet-01, fleet_route: 1, path: [[95, 49], [79, 49], [79, 68.1], [50, 68.1]] }
+  - { id: fk-recolecta-oeste-centro, name: "Recolección de cuerpos de papelera, pasillo del semielaborado", kind: forklift, from: nave-inyeccion, to: rack-sf-02, load: piezas inyectadas en cajas y estibas, width: 1.5, trips_per_h: 4, fleet: fleet-01, fleet_route: 2, path: [[122, 66.6], [122, 68.1], [68, 68.1]] }
+  - { id: fk-recolecta-este-norte, name: "Recolección de producto terminado de la nave (cubiertos y baldes)", kind: forklift, from: nave-inyeccion, to: fleet-01, load: piezas inyectadas en cajas y estibas, width: 1.5, trips_per_h: 4, fleet: fleet-01, fleet_route: 5, path: [[36, 49], [79, 49], [79, 68.1], [85, 68.1]] }
   # --- Montacargas: de las estanterías de semielaborado a las celdas de ensamble ---
-  - { id: fk-sf-a1, name: "Estantería 1 (pedal y palanca) a la celda de ensamble 1", kind: forklift, from: rack-sf-01, to: assembly-01, load: estibas de pedal y palanca, width: 1.5, trips_per_h: 3, fleet: fleet-01, fleet_route: 6, path: [[50, 89.1], [79, 89.1], [79, 74.25], [134, 74.25], [134, 66.5], [129, 66.5]] }
-  - { id: fk-sf-b1, name: "Estantería 2 (cuerpos de papelera) a la celda de ensamble 1", kind: forklift, from: rack-sf-02, to: assembly-01, load: estibas de cuerpos de papelera, width: 1.5, trips_per_h: 3, fleet: fleet-01, fleet_route: 7, path: [[68, 89.1], [79, 89.1], [79, 74.25], [134, 74.25], [134, 66.5], [129, 66.5]] }
-  - { id: fk-sf-a2, name: "Estantería 3 (bisagras) a la celda de ensamble 2", kind: forklift, from: rack-sf-03, to: assembly-02, load: estibas de bisagras, width: 1.5, trips_per_h: 3, fleet: fleet-01, fleet_route: 8, path: [[98, 89.1], [79, 89.1], [79, 74.25], [134, 74.25], [134, 66.5], [139, 66.5]] }
-  - { id: fk-sf-b2, name: "Estantería 4 (tapas) a la celda de ensamble 2", kind: forklift, from: rack-sf-04, to: assembly-02, load: estibas de tapas, width: 1.5, trips_per_h: 3, fleet: fleet-01, fleet_route: 9, path: [[116, 89.1], [79, 89.1], [79, 74.25], [134, 74.25], [134, 66.5], [139, 66.5]] }
+  - { id: fk-sf-a1, name: "Estantería 1 (pedal y palanca) a la celda de ensamble 1", kind: forklift, from: rack-sf-01, to: assembly-01, load: estibas de pedal y palanca, width: 1.5, trips_per_h: 3, fleet: fleet-01, fleet_route: 6, path: [[50, 68.1], [129, 68.1]] }
+  - { id: fk-sf-b1, name: "Estantería 2 (cuerpos de papelera) a la celda de ensamble 1", kind: forklift, from: rack-sf-02, to: assembly-01, load: estibas de cuerpos de papelera, width: 1.5, trips_per_h: 3, fleet: fleet-01, fleet_route: 7, path: [[68, 68.1], [129, 68.1]] }
   # --- Montacargas: de las celdas de ensamble a la bodega de producto terminado ---
-  - { id: fk-ensamble-pt-1, name: "Producto terminado de la celda 1 a la bodega", kind: forklift, from: assembly-01, to: rack-pt-01, load: papeleras armadas en estibas, width: 1.5, trips_per_h: 2, path: [[129, 66.5], [134, 66.5], [134, 54.25], [145.1, 54.25], [145.1, 28], [151, 28], [151, 58]] }
-  - { id: fk-ensamble-pt-2, name: "Producto terminado de la celda 2 a la bodega", kind: forklift, from: assembly-02, to: rack-pt-02, load: tapas con bisagras en estibas, width: 1.5, trips_per_h: 2, path: [[139, 66.5], [134, 66.5], [134, 54.25], [145.1, 54.25], [145.1, 28], [151, 28], [151, 58]] }
+  - { id: fk-ensamble-pt-1, name: "Producto terminado de la celda 1 a la bodega", kind: forklift, from: assembly-01, to: rack-pt-01, load: papeleras armadas en estibas, width: 1.5, trips_per_h: 2, path: [[129, 68.1], [134, 68.1], [134, 54.25], [145.1, 54.25], [145.1, 28], [151, 28], [151, 58]] }
   # --- Carros de canastillas: de las inyectoras al pasillo de los montacargas (recorrido ilustrativo) ---
   - { id: ca-pequenas-oeste, name: "Carro de canastillas, hilera de inyectoras pequeñas (oeste)", kind: cart, from: nave-inyeccion, to: nave-inyeccion, load: piezas inyectadas en canastillas, width: 0.8, path: [[38, 46.6], [77, 46.6]] }
-  - { id: ca-pequenas-este, name: "Carro de canastillas, hilera de inyectoras pequeñas (este)", kind: cart, from: nave-inyeccion, to: nave-inyeccion, load: piezas inyectadas en canastillas, width: 0.8, path: [[114, 46.6], [81, 46.6]] }
-  - { id: ca-medianas-oeste, name: "Carro de canastillas, hilera de inyectoras medianas (oeste)", kind: cart, from: nave-inyeccion, to: nave-inyeccion, load: piezas inyectadas en canastillas, width: 0.8, path: [[40, 63.4], [77, 63.4]] }
-  - { id: ca-medianas-este, name: "Carro de canastillas, hilera de inyectoras medianas (este)", kind: cart, from: nave-inyeccion, to: nave-inyeccion, load: piezas inyectadas en canastillas, width: 0.8, path: [[121, 63.4], [81, 63.4]] }
+  - { id: ca-pequenas-este, name: "Carro de canastillas, hilera de inyectoras pequeñas (este)", kind: cart, from: nave-inyeccion, to: nave-inyeccion, load: piezas inyectadas en canastillas, width: 0.8, path: [[100, 46.6], [81, 46.6]] }
   # --- Operarios a pie ---
-  - { id: pe-ronda-pequenas, name: "Ronda del operador de inyección, hilera de las inyectoras pequeñas", kind: pedestrian, from: imm-01, to: imm-10, width: 1.0, walkers: 1, path: [[36, 45], [114, 45]] }
-  - { id: pe-ronda-medianas, name: "Ronda del operador de inyección, hileras de las medianas", kind: pedestrian, from: imm-11, to: imm-19, width: 1.0, walkers: 1, path: [[38, 62], [121, 62]] }
-  - { id: pe-ronda-grandes, name: "Ronda del operador de inyección, inyectoras grandes", kind: pedestrian, from: imm-28, to: imm-27, width: 1.0, walkers: 1, path: [[44, 80.5], [116, 80.5]] }
-  - { id: pe-vestier-ensamble, name: "Del vestier a las celdas de ensamble", kind: pedestrian, from: admin, to: assembly-01, width: 1.0, walkers: 1, path: [[143, 24.5], [143, 58], [127, 58]] }
+  - { id: pe-ronda-pequenas, name: "Ronda del operador de inyección, hilera de las inyectoras pequeñas", kind: pedestrian, from: imm-01, to: imm-08, width: 1.0, walkers: 1, path: [[36, 45], [102, 45]] }
+  - { id: pe-ronda-medianas, name: "Ronda del operador de inyección, hilera de las medianas", kind: pedestrian, from: imm-20, to: imm-19, width: 1.0, walkers: 1, path: [[38, 61.5], [121, 61.5]] }
+  - { id: pe-vestier-ensamble, name: "Del vestier a las celdas de ensamble", kind: pedestrian, from: admin, to: assembly-01, width: 1.0, walkers: 1, path: [[143, 24.5], [143, 58.6], [127, 58.6]] }
   - { id: pe-ensamble-empaque, name: "Operario lleva unidades armadas de la celda 1 al empaque 3", kind: pedestrian, from: assembly-01, to: pack-station-03, width: 1.0, walkers: 1, path: [[131, 59], [131, 53], [136, 53], [136, 33]] }
 
 equipment:
@@ -125,11 +117,11 @@ equipment:
   - { id: silo-08, type: silo, zone: silos, position: [10.5, 62, 0],   footprint: [3.5, 3.5, 14], params: { material: HDPE, source: reciclado, capacity_t: 30 } }
 
   # --- Recepción y bodega de materia prima ---
-  - { id: dock-mp-01, type: dock_leveler, zone: recepcion-mp, position: [7, 91, 0], footprint: [4, 3, 1.2], params: { trucks_per_day: 3 } }
-  - { id: rack-mp-01, type: pallet_rack, zone: bodega-mp, position: [24, 60, 0], footprint: [16, 2.5, 8], params: { content: big-bags y sacos de resina, positions: 60 } }
-  - { id: rack-mp-02, type: pallet_rack, zone: bodega-mp, position: [24, 70, 0], footprint: [16, 2.5, 8], params: { content: PS y ABS en sacos, positions: 60 } }
-  - { id: rack-mp-03, type: pallet_rack, zone: bodega-mp, position: [24, 80, 0], footprint: [16, 2.5, 8], params: { content: material reciclado peletizado, positions: 60 } }
-  - { id: rack-mb-01, type: pallet_rack, zone: bodega-mp, position: [24, 90, 0], footprint: [16, 2.0, 6], params: { content: masterbatch y aditivos, positions: 40 } }
+  - { id: dock-mp-01, type: dock_leveler, zone: recepcion-mp, position: [7, 74, 0], footprint: [4, 3, 1.2], params: { trucks_per_day: 3 } }
+  - { id: rack-mp-01, type: pallet_rack, zone: bodega-mp, position: [24, 53.5, 0], footprint: [16, 2.5, 8], params: { content: big-bags y sacos de resina, positions: 60 } }
+  - { id: rack-mp-02, type: pallet_rack, zone: bodega-mp, position: [24, 59.5, 0], footprint: [16, 2.5, 8], params: { content: PS y ABS en sacos, positions: 60 } }
+  - { id: rack-mp-03, type: pallet_rack, zone: bodega-mp, position: [24, 65.5, 0], footprint: [16, 2.5, 8], params: { content: material reciclado peletizado, positions: 60 } }
+  - { id: rack-mb-01, type: pallet_rack, zone: bodega-mp, position: [24, 71, 0], footprint: [16, 2.0, 6], params: { content: masterbatch y aditivos, positions: 40 } }
 
   # --- Central de materiales ---
   - { id: dryer-01,   type: desiccant_dryer, zone: central-materiales, position: [17, 45, 0], footprint: [2, 1.5, 3], params: { material: ABS, throughput_kg_h: 150, dew_point_c: -40, temp_c: 80 } }
@@ -169,46 +161,28 @@ equipment:
   - { id: parts-rack-01, type: shelving,      zone: mantenimiento,  position: [116, 20, 0], footprint: [10, 1.5, 3], params: { content: repuestos } }
 
   # --- Nave de inyección ---
-  - { id: crane-01, type: overhead_crane, zone: nave-inyeccion, position: [79, 81.5, 9], footprint: [88, 13, 1], overhead: true, params: { capacity_t: 15, span_m: 13, runway_m: 88 } }
-  - { id: conveyor-main-01, type: belt_conveyor, zone: nave-inyeccion, position: [79, 33.5, 0], footprint: [88, 1, 1], params: { speed_m_s: 0.3, to: empaque, note: "cruza el pasillo central elevado a 2,5 m" } }
-  - { id: mold-cart-01, type: mold_staging, zone: nave-inyeccion, position: [72, 85, 0], footprint: [4, 3, 1], params: { use: preparación de cambio de molde (SMED) } }
+  - { id: crane-01, type: overhead_crane, zone: nave-inyeccion, position: [79, 57, 9], footprint: [88, 13, 1], overhead: true, params: { capacity_t: 15, span_m: 13, runway_m: 88 } }
+  - { id: mold-cart-01, type: mold_staging, zone: nave-inyeccion, position: [72, 30, 0], footprint: [4, 3, 1], params: { use: preparación de cambio de molde (SMED) } }
 
   # Bahía sur: inyectoras pequeñas (80–150 t), huella 5 × 1,6 m
   - { id: imm-01, type: injection_molding_machine, zone: nave-inyeccion, position: [38.5, 42, 0],  footprint: [5, 1.6, 2.2], params: { clamp_t: 100, max_shot_kg: 0.15, product: cubiertos, material: PS, cavities: 16, part_g: 3.5, cycle_s: 9,  robot: sprue_picker, grinder: false } }
   - { id: imm-02, type: injection_molding_machine, zone: nave-inyeccion, position: [45.5, 42, 0],  footprint: [5, 1.6, 2.2], params: { clamp_t: 100, max_shot_kg: 0.15, product: cubiertos, material: PS, cavities: 16, part_g: 3.5, cycle_s: 9,  robot: sprue_picker, grinder: false } }
-  - { id: imm-03, type: injection_molding_machine, zone: nave-inyeccion, position: [52.5, 42, 0],  footprint: [5, 1.6, 2.2], params: { clamp_t: 120, max_shot_kg: 0.2,  product: "tapa recipiente 0,5 L", material: PP, cavities: 4, part_g: 12, cycle_s: 12, robot: cartesiano, grinder: true } }
   - { id: imm-04, type: injection_molding_machine, zone: nave-inyeccion, position: [59.5, 42, 0],  footprint: [5, 1.6, 2.2], params: { clamp_t: 120, max_shot_kg: 0.2,  product: cubiertos, material: PS, cavities: 16, part_g: 3.5, cycle_s: 9, robot: cartesiano, grinder: true } }
   - { id: imm-05, type: injection_molding_machine, zone: nave-inyeccion, position: [66.5, 42, 0],  footprint: [5, 1.6, 2.2], params: { clamp_t: 150, max_shot_kg: 0.25, product: cubiertos, material: PS, cavities: 16, part_g: 3.5, cycle_s: 9, robot: cartesiano, grinder: true } }
   - { id: imm-06, type: injection_molding_machine, zone: nave-inyeccion, position: [85.5, 42, 0],  footprint: [5, 1.6, 2.2], params: { clamp_t: 150, max_shot_kg: 0.25, product: pedal y palanca de papelera, material: PP reciclado, cavities: 2, part_g: 60, cycle_s: 25, robot: sprue_picker, grinder: true } }
   - { id: imm-07, type: injection_molding_machine, zone: nave-inyeccion, position: [92.5, 42, 0],  footprint: [5, 1.6, 2.2], params: { clamp_t: 150, max_shot_kg: 0.25, product: "pedal y palanca de papelera", material: "PP reciclado", cavities: 2, part_g: 60, cycle_s: 25, robot: cartesiano, grinder: true } }
   - { id: imm-08, type: injection_molding_machine, zone: nave-inyeccion, position: [99.5, 42, 0],  footprint: [5, 1.6, 2.2], params: { clamp_t: 80,  max_shot_kg: 0.12, product: cubiertos, material: PS, cavities: 16, part_g: 3.5, cycle_s: 9, robot: sprue_picker, grinder: true } }
-  - { id: imm-09, type: injection_molding_machine, zone: nave-inyeccion, position: [106.5, 42, 0], footprint: [5, 1.6, 2.2], params: { clamp_t: 150, max_shot_kg: 0.25, product: tapa de termo, material: PP, cavities: 4, part_g: 28, cycle_s: 16, robot: cartesiano, grinder: true } }
-  - { id: imm-10, type: injection_molding_machine, zone: nave-inyeccion, position: [113.5, 42, 0], footprint: [5, 1.6, 2.2], params: { clamp_t: 150, max_shot_kg: 0.25, product: cucharón, material: PP, cavities: 4, part_g: 30, cycle_s: 15, robot: sprue_picker, grinder: true } }
 
   # Bahía central: inyectoras medianas (300–350 t), huella 7 × 2 m
-  - { id: imm-11, type: injection_molding_machine, zone: nave-inyeccion, position: [39.5, 58, 0],  footprint: [7, 2, 2.5], params: { clamp_t: 300, max_shot_kg: 0.9, product: recipiente para alimentos 1 L, material: PP, cavities: 2, part_g: 75,  cycle_s: 18, robot: cartesiano, grinder: true } }
-  - { id: imm-12, type: injection_molding_machine, zone: nave-inyeccion, position: [49.5, 58, 0],  footprint: [7, 2, 2.5], params: { clamp_t: 300, max_shot_kg: 0.9, product: recipiente para alimentos 3 L, material: PP, cavities: 1, part_g: 160, cycle_s: 22, robot: cartesiano, grinder: true } }
-  - { id: imm-13, type: injection_molding_machine, zone: nave-inyeccion, position: [59.5, 58, 0],  footprint: [7, 2, 2.5], params: { clamp_t: 300, max_shot_kg: 0.9, product: caja organizadora 6 L, material: PP, cavities: 1, part_g: 280, cycle_s: 24, robot: cartesiano, grinder: true } }
-  - { id: imm-14, type: injection_molding_machine, zone: nave-inyeccion, position: [69.5, 58, 0],  footprint: [7, 2, 2.5], params: { clamp_t: 300, max_shot_kg: 0.9, product: tapa caja organizadora, material: PP, cavities: 2, part_g: 110, cycle_s: 20, robot: cartesiano, grinder: true } }
-  - { id: imm-15, type: injection_molding_machine, zone: nave-inyeccion, position: [86.5, 58, 0],  footprint: [7, 2, 2.5], params: { clamp_t: 300, max_shot_kg: 0.9, product: balde 4 L, material: HDPE, cavities: 1, part_g: 230, cycle_s: 26, robot: cartesiano, grinder: true } }
-  - { id: imm-16, type: injection_molding_machine, zone: nave-inyeccion, position: [96.5, 58, 0],  footprint: [7, 2, 2.5], params: { clamp_t: 300, max_shot_kg: 0.9, product: bandeja, material: PP, cavities: 1, part_g: 320, cycle_s: 25, robot: cartesiano, grinder: true } }
-  - { id: imm-17, type: injection_molding_machine, zone: nave-inyeccion, position: [106.5, 58, 0], footprint: [7, 2, 2.5], params: { clamp_t: 300, max_shot_kg: 0.9, product: cuerpo de termo, material: PP, cavities: 2, part_g: 140, cycle_s: 28, robot: cartesiano, grinder: true } }
-  - { id: imm-18, type: injection_molding_machine, zone: nave-inyeccion, position: [110.5, 66, 0], footprint: [7, 2, 2.5], params: { clamp_t: 350, max_shot_kg: 1.2, product: "cuerpo papelera 20 L", material: "PP reciclado", cavities: 1, part_g: 700, cycle_s: 35, robot: cartesiano, grinder: true } }
-  - { id: imm-19, type: injection_molding_machine, zone: nave-inyeccion, position: [119.5, 66, 0], footprint: [7, 2, 2.5], params: { clamp_t: 350, max_shot_kg: 1.2, product: cuerpo papelera 20 L, material: PP reciclado, cavities: 1, part_g: 700, cycle_s: 35, robot: cartesiano, grinder: true } }
+  - { id: imm-18, type: injection_molding_machine, zone: nave-inyeccion, position: [110.5, 57, 0], footprint: [7, 2, 2.5], params: { clamp_t: 350, max_shot_kg: 1.2, product: "cuerpo papelera 20 L", material: "PP reciclado", cavities: 1, part_g: 700, cycle_s: 35, robot: cartesiano, grinder: true } }
+  - { id: imm-19, type: injection_molding_machine, zone: nave-inyeccion, position: [119.5, 57, 0], footprint: [7, 2, 2.5], params: { clamp_t: 350, max_shot_kg: 1.2, product: cuerpo papelera 20 L, material: PP reciclado, cavities: 1, part_g: 700, cycle_s: 35, robot: cartesiano, grinder: true } }
 
   # Bahía central-norte: inyectoras grandes (650 t), huella 9 × 2,4 m
-  - { id: imm-20, type: injection_molding_machine, zone: nave-inyeccion, position: [40.5, 66, 0],  footprint: [9, 2.4, 2.8], params: { clamp_t: 650, max_shot_kg: 2.5, product: caja organizadora 40 L, material: PP, cavities: 1, part_g: 1100, cycle_s: 38, robot: cartesiano, grinder: true } }
-  - { id: imm-21, type: injection_molding_machine, zone: nave-inyeccion, position: [52.5, 66, 0],  footprint: [9, 2.4, 2.8], params: { clamp_t: 650, max_shot_kg: 2.5, product: balde 12 L, material: HDPE, cavities: 1, part_g: 520, cycle_s: 30, robot: cartesiano, grinder: true } }
-  - { id: imm-22, type: injection_molding_machine, zone: nave-inyeccion, position: [64.5, 66, 0],  footprint: [9, 2.4, 2.8], params: { clamp_t: 650, max_shot_kg: 2.5, product: balde 20 L, material: HDPE reciclado, cavities: 1, part_g: 850, cycle_s: 36, robot: cartesiano, grinder: true } }
-  - { id: imm-23, type: injection_molding_machine, zone: nave-inyeccion, position: [87.5, 66, 0],  footprint: [9, 2.4, 2.8], params: { clamp_t: 650, max_shot_kg: 2.5, product: "balde 12 L", material: HDPE, cavities: 1, part_g: 520, cycle_s: 30, robot: cartesiano, grinder: true } }
-  - { id: imm-24, type: injection_molding_machine, zone: nave-inyeccion, position: [99.5, 66, 0],  footprint: [9, 2.4, 2.8], params: { clamp_t: 650, max_shot_kg: 2.5, product: bandeja industrial, material: HDPE, cavities: 1, part_g: 1300, cycle_s: 42, robot: cartesiano, grinder: true } }
+  - { id: imm-20, type: injection_molding_machine, zone: nave-inyeccion, position: [40.5, 57, 0],  footprint: [9, 2.4, 2.8], params: { clamp_t: 650, max_shot_kg: 2.5, product: caja organizadora 40 L, material: PP, cavities: 1, part_g: 1100, cycle_s: 38, robot: cartesiano, grinder: true } }
+  - { id: imm-21, type: injection_molding_machine, zone: nave-inyeccion, position: [52.5, 57, 0],  footprint: [9, 2.4, 2.8], params: { clamp_t: 650, max_shot_kg: 2.5, product: balde 12 L, material: HDPE, cavities: 1, part_g: 520, cycle_s: 30, robot: cartesiano, grinder: true } }
+  - { id: imm-23, type: injection_molding_machine, zone: nave-inyeccion, position: [87.5, 57, 0],  footprint: [9, 2.4, 2.8], params: { clamp_t: 650, max_shot_kg: 2.5, product: "balde 12 L", material: HDPE, cavities: 1, part_g: 520, cycle_s: 30, robot: cartesiano, grinder: true } }
 
   # Bahía norte (bajo puente grúa): 1.100 t (11,5 × 3 m) y 1.500 t (14 × 3,5 m)
-  - { id: imm-25, type: injection_molding_machine, zone: nave-inyeccion, position: [88.75, 85, 0],  footprint: [11.5, 3, 3.2], params: { clamp_t: 1100, max_shot_kg: 4.5, product: canasta industrial apilable, material: HDPE, cavities: 1, part_g: 2000, cycle_s: 50, robot: cartesiano, grinder: false } }
-  - { id: imm-26, type: injection_molding_machine, zone: nave-inyeccion, position: [102.75, 85, 0], footprint: [11.5, 3, 3.2], params: { clamp_t: 1100, max_shot_kg: 4.5, product: caneca 50 L, material: HDPE reciclado, cavities: 1, part_g: 2600, cycle_s: 60, robot: cartesiano, grinder: false } }
-  - { id: imm-27, type: injection_molding_machine, zone: nave-inyeccion, position: [116.75, 85, 0], footprint: [11.5, 3, 3.2], params: { clamp_t: 1100, max_shot_kg: 4.5, product: cuerpo de nevera portátil, material: PP, cavities: 1, part_g: 1800, cycle_s: 55, robot: cartesiano, grinder: false } }
-  - { id: imm-28, type: injection_molding_machine, zone: nave-inyeccion, position: [43, 85, 0],     footprint: [14, 3.5, 3.5], params: { clamp_t: 1500, max_shot_kg: 7.5, product: caneca 121 L, material: HDPE reciclado, cavities: 1, part_g: 7000, cycle_s: 95, robot: cartesiano, grinder: false } }
-  - { id: imm-29, type: injection_molding_machine, zone: nave-inyeccion, position: [60, 85, 0],     footprint: [14, 3.5, 3.5], params: { clamp_t: 1500, max_shot_kg: 7.5, product: tapa caneca 121 L y estiba liviana, material: HDPE reciclado, cavities: 1, part_g: 3200, cycle_s: 70, robot: cartesiano, grinder: false } }
   # Buffers de máquina: una estiba junto a cada inyectora (menos la 3, que entrega a la banda principal)
   - { id: buf-01, type: pallet_buffer, zone: nave-inyeccion, position: [38.5, 43.7, 0], footprint: [3.4, 1, 1.4], params: { product: "cubiertos", pallet_pieces: 48000 } }
   - { id: buf-02, type: pallet_buffer, zone: nave-inyeccion, position: [45.5, 43.7, 0], footprint: [3.4, 1, 1.4], params: { product: "cubiertos", pallet_pieces: 48000 } }
@@ -217,27 +191,11 @@ equipment:
   - { id: buf-06, type: pallet_buffer, zone: nave-inyeccion, position: [85.5, 43.7, 0], footprint: [3.4, 1, 1.4], params: { product: "pedal y palanca de papelera", pallet_pieces: 7200 } }
   - { id: buf-07, type: pallet_buffer, zone: nave-inyeccion, position: [92.5, 43.7, 0], footprint: [3.4, 1, 1.4], params: { product: "pedal y palanca de papelera", pallet_pieces: 7200 } }
   - { id: buf-08, type: pallet_buffer, zone: nave-inyeccion, position: [99.5, 43.7, 0], footprint: [3.4, 1, 1.4], params: { product: "cubiertos", pallet_pieces: 48000 } }
-  - { id: buf-09, type: pallet_buffer, zone: nave-inyeccion, position: [106.5, 43.7, 0], footprint: [3.4, 1, 1.4], params: { product: "tapa de termo", pallet_pieces: 9600 } }
-  - { id: buf-10, type: pallet_buffer, zone: nave-inyeccion, position: [113.5, 43.7, 0], footprint: [3.4, 1, 1.4], params: { product: "cucharón", pallet_pieces: 4110 } }
-  - { id: buf-11, type: pallet_buffer, zone: nave-inyeccion, position: [39.5, 60.9, 0], footprint: [3.4, 1, 1.4], params: { product: "recipiente para alimentos 1 L", pallet_pieces: 3200 } }
-  - { id: buf-12, type: pallet_buffer, zone: nave-inyeccion, position: [49.5, 60.9, 0], footprint: [3.4, 1, 1.4], params: { product: "recipiente para alimentos 3 L", pallet_pieces: 1300 } }
-  - { id: buf-13, type: pallet_buffer, zone: nave-inyeccion, position: [59.5, 60.9, 0], footprint: [3.4, 1, 1.4], params: { product: "caja organizadora 6 L", pallet_pieces: 720 } }
-  - { id: buf-14, type: pallet_buffer, zone: nave-inyeccion, position: [69.5, 60.9, 0], footprint: [3.4, 1, 1.4], params: { product: "tapa caja organizadora", pallet_pieces: 2050 } }
-  - { id: buf-15, type: pallet_buffer, zone: nave-inyeccion, position: [86.5, 60.9, 0], footprint: [3.4, 1, 1.4], params: { product: "balde 4 L", pallet_pieces: 1440 } }
-  - { id: buf-16, type: pallet_buffer, zone: nave-inyeccion, position: [96.5, 60.9, 0], footprint: [3.4, 1, 1.4], params: { product: "bandeja", pallet_pieces: 1600 } }
-  - { id: buf-17, type: pallet_buffer, zone: nave-inyeccion, position: [106.5, 60.9, 0], footprint: [3.4, 1, 1.4], params: { product: "cuerpo de termo", pallet_pieces: 960 } }
-  - { id: buf-18, type: pallet_buffer, zone: nave-inyeccion, position: [110.5, 69.4, 0], footprint: [3.4, 1, 1.4], params: { product: "cuerpo papelera 20 L", pallet_pieces: 240 } }
-  - { id: buf-19, type: pallet_buffer, zone: nave-inyeccion, position: [119.5, 69.4, 0], footprint: [3.4, 1, 1.4], params: { product: "cuerpo papelera 20 L", pallet_pieces: 240 } }
-  - { id: buf-20, type: pallet_buffer, zone: nave-inyeccion, position: [40.5, 69.4, 0], footprint: [3.4, 1, 1.4], params: { product: "caja organizadora 40 L", pallet_pieces: 100 } }
-  - { id: buf-21, type: pallet_buffer, zone: nave-inyeccion, position: [52.5, 69.4, 0], footprint: [3.4, 1, 1.4], params: { product: "balde 12 L", pallet_pieces: 410 } }
-  - { id: buf-22, type: pallet_buffer, zone: nave-inyeccion, position: [64.5, 69.4, 0], footprint: [3.4, 1, 1.4], params: { product: "balde 20 L", pallet_pieces: 260 } }
-  - { id: buf-23, type: pallet_buffer, zone: nave-inyeccion, position: [87.5, 69.4, 0], footprint: [3.4, 1, 1.4], params: { product: "balde 12 L", pallet_pieces: 410 } }
-  - { id: buf-24, type: pallet_buffer, zone: nave-inyeccion, position: [99.5, 69.4, 0], footprint: [3.4, 1, 1.4], params: { product: "bandeja industrial", pallet_pieces: 280 } }
-  - { id: buf-25, type: pallet_buffer, zone: nave-inyeccion, position: [88.75, 82.3, 0], footprint: [3.4, 1, 1.4], params: { product: "canasta industrial apilable", pallet_pieces: 160 } }
-  - { id: buf-26, type: pallet_buffer, zone: nave-inyeccion, position: [102.75, 82.3, 0], footprint: [3.4, 1, 1.4], params: { product: "caneca 50 L", pallet_pieces: 100 } }
-  - { id: buf-27, type: pallet_buffer, zone: nave-inyeccion, position: [116.75, 82.3, 0], footprint: [3.4, 1, 1.4], params: { product: "cuerpo de nevera portátil", pallet_pieces: 40 } }
-  - { id: buf-28, type: pallet_buffer, zone: nave-inyeccion, position: [43, 82.3, 0], footprint: [3.4, 1, 1.4], params: { product: "caneca 121 L", pallet_pieces: 30 } }
-  - { id: buf-29, type: pallet_buffer, zone: nave-inyeccion, position: [60, 82.3, 0], footprint: [3.4, 1, 1.4], params: { product: "tapa caneca 121 L y estiba liviana", pallet_pieces: 50 } }
+  - { id: buf-18, type: pallet_buffer, zone: nave-inyeccion, position: [110.5, 60.4, 0], footprint: [3.4, 1, 1.4], params: { product: "cuerpo papelera 20 L", pallet_pieces: 240 } }
+  - { id: buf-19, type: pallet_buffer, zone: nave-inyeccion, position: [119.5, 60.4, 0], footprint: [3.4, 1, 1.4], params: { product: "cuerpo papelera 20 L", pallet_pieces: 240 } }
+  - { id: buf-20, type: pallet_buffer, zone: nave-inyeccion, position: [40.5, 60.4, 0], footprint: [3.4, 1, 1.4], params: { product: "caja organizadora 40 L", pallet_pieces: 100 } }
+  - { id: buf-21, type: pallet_buffer, zone: nave-inyeccion, position: [52.5, 60.4, 0], footprint: [3.4, 1, 1.4], params: { product: "balde 12 L", pallet_pieces: 410 } }
+  - { id: buf-23, type: pallet_buffer, zone: nave-inyeccion, position: [87.5, 60.4, 0], footprint: [3.4, 1, 1.4], params: { product: "balde 12 L", pallet_pieces: 410 } }
 
   # --- Empaque ---
   - { id: pack-station-01, type: packing_station, zone: empaque, position: [128.5, 31, 0], footprint: [3, 2, 1], params: {} }
@@ -247,25 +205,21 @@ equipment:
   - { id: wrapper-01,      type: stretch_wrapper, zone: empaque, position: [133.5, 48, 0], footprint: [3, 3, 2.5], params: { pallets_h: 30 } }
 
   # --- Estanterías de material semielaborado (piezas inyectadas por consumir en ensamble o empaque), frente al pasillo sur (supuesto) ---
-  - { id: rack-sf-01, type: pallet_rack, zone: almacen-semielaborado, position: [50, 92.5, 0],  footprint: [16, 2.5, 6], params: { stage: semielaborado, content: pedal y palanca de papelera (imm-06), positions: 48 } }
-  - { id: rack-sf-02, type: pallet_rack, zone: almacen-semielaborado, position: [68, 92.5, 0],  footprint: [16, 2.5, 6], params: { stage: semielaborado, content: cuerpos de papelera (imm-19), positions: 48 } }
-  - { id: rack-sf-03, type: pallet_rack, zone: almacen-semielaborado, position: [98, 92.5, 0],  footprint: [16, 2.5, 6], params: { stage: semielaborado, content: bisagras (imm-08), positions: 48 } }
-  - { id: rack-sf-04, type: pallet_rack, zone: almacen-semielaborado, position: [116, 92.5, 0], footprint: [16, 2.5, 6], params: { stage: semielaborado, content: tapas de caja organizadora (imm-14), positions: 48 } }
+  - { id: rack-sf-01, type: pallet_rack, zone: almacen-semielaborado, position: [50, 71.5, 0],  footprint: [16, 2.5, 6], params: { stage: semielaborado, content: pedal y palanca de papelera (imm-06 e imm-07), positions: 48 } }
+  - { id: rack-sf-02, type: pallet_rack, zone: almacen-semielaborado, position: [68, 71.5, 0],  footprint: [16, 2.5, 6], params: { stage: semielaborado, content: cuerpos de papelera (imm-18 e imm-19), positions: 48 } }
   # Flota de montacargas (estacionamiento)
-  - { id: fleet-01, type: forklift_fleet, zone: almacen-semielaborado, position: [85, 92.5, 0], footprint: [8, 3, 2], params: { vehicles: 6, role: flota de montacargas de la planta (recolección de la nave y abastecimiento de las celdas de ensamble) } }
+  - { id: fleet-01, type: forklift_fleet, zone: almacen-semielaborado, position: [85, 71.5, 0], footprint: [8, 3, 2], params: { vehicles: 6, role: flota de montacargas de la planta (recolección de la nave y abastecimiento de las celdas de ensamble) } }
 
   # --- Operaciones secundarias ---
-  - { id: assembly-01,   type: assembly_cell,   zone: secundarias, position: [129, 62, 0], footprint: [6, 3, 1.5], params: { operation: ensamble pedal/palanca en papelera } }
-  - { id: assembly-02,   type: assembly_cell,   zone: secundarias, position: [139, 62, 0], footprint: [6, 3, 1.5], params: { operation: ensamble bisagras y tapas } }
-  - { id: pad-print-01,  type: pad_printer,     zone: secundarias, position: [129, 72, 0], footprint: [3, 2, 1.8], params: { colors: 2 } }
-  - { id: labeler-01,    type: labeler,         zone: secundarias, position: [139, 72, 0], footprint: [3, 2, 1.8], params: { method: etiqueta adhesiva } }
-  - { id: foam-01,       type: pu_foaming_station, zone: secundarias, position: [134, 85, 0], footprint: [8, 4, 3], params: { product: aislamiento de neveras, fixtures: 4 } }
+  - { id: assembly-01,   type: assembly_cell,   zone: secundarias, position: [129, 63.5, 0], footprint: [6, 3, 1.5], params: { operation: ensamble pedal/palanca en papelera } }
+  - { id: pad-print-01,  type: pad_printer,     zone: secundarias, position: [139, 63.5, 0], footprint: [3, 2, 1.8], params: { colors: 2 } }
+  - { id: labeler-01,    type: labeler,         zone: secundarias, position: [138, 60.5, 0], footprint: [3, 2, 1.8], params: { method: etiqueta adhesiva } }
 
   # --- Bodega de producto terminado (racks dobles 2,5 m, pasillos 4–4,5 m) ---
-  - { id: rack-pt-01, type: pallet_rack, zone: bodega-pt, position: [147.5, 62, 0], footprint: [2.5, 60, 9], params: { stage: terminado, positions: 240 } }
-  - { id: rack-pt-02, type: pallet_rack, zone: bodega-pt, position: [154.5, 62, 0], footprint: [2.5, 60, 9], params: { stage: terminado, positions: 240 } }
-  - { id: rack-pt-03, type: pallet_rack, zone: bodega-pt, position: [161.5, 62, 0], footprint: [2.5, 60, 9], params: { stage: terminado, positions: 240 } }
-  - { id: rack-pt-04, type: pallet_rack, zone: bodega-pt, position: [166.5, 62, 0], footprint: [2.5, 60, 9], params: { stage: terminado, positions: 120, note: rack sencillo contra muro } }
+  - { id: rack-pt-01, type: pallet_rack, zone: bodega-pt, position: [147.5, 52, 0], footprint: [2.5, 40, 9], params: { stage: terminado, positions: 160 } }
+  - { id: rack-pt-02, type: pallet_rack, zone: bodega-pt, position: [154.5, 52, 0], footprint: [2.5, 40, 9], params: { stage: terminado, positions: 160 } }
+  - { id: rack-pt-03, type: pallet_rack, zone: bodega-pt, position: [161.5, 52, 0], footprint: [2.5, 40, 9], params: { stage: terminado, positions: 160 } }
+  - { id: rack-pt-04, type: pallet_rack, zone: bodega-pt, position: [166.5, 52, 0], footprint: [2.5, 40, 9], params: { stage: terminado, positions: 80, note: rack sencillo contra muro } }
 
   # --- Muelles de despacho ---
   - { id: dock-01, type: dock_leveler, zone: patio-despacho, position: [170, 35, 0], footprint: [3, 4, 1.2], params: {} }
@@ -274,13 +228,13 @@ equipment:
   - { id: dock-04, type: dock_leveler, zone: patio-despacho, position: [170, 65, 0], footprint: [3, 4, 1.2], params: {} }
 
   # --- Servicios ---
-  - { id: transformer-01,    type: transformer,      zone: subestacion,        position: [41.5, 101, 0], footprint: [4, 3, 2.5],   params: { rating_kva: 3000, voltage: 13.2 kV / 440 V } }
-  - { id: compressor-01,     type: air_compressor,   zone: compresores,        position: [53, 101, 0],   footprint: [2.5, 1.8, 2], params: { power_kw: 75, flow_m3_min: 12, pressure_bar: 7.5 } }
-  - { id: compressor-02,     type: air_compressor,   zone: compresores,        position: [57, 101, 0],   footprint: [2.5, 1.8, 2], params: { power_kw: 75, flow_m3_min: 12, pressure_bar: 7.5, role: respaldo } }
-  - { id: air-dryer-01,      type: air_dryer,        zone: compresores,        position: [61, 101, 0],   footprint: [1.5, 1.5, 1.8], params: { type: refrigerado } }
-  - { id: chiller-01,        type: chiller,          zone: chillers,           position: [69, 101, 0],   footprint: [6, 2.5, 2.5], params: { capacity_kw: 600, supply_c: 12, role: agua de moldes } }
-  - { id: chiller-02,        type: chiller,          zone: chillers,           position: [78, 101, 0],   footprint: [6, 2.5, 2.5], params: { capacity_kw: 600, supply_c: 12, role: respaldo } }
-  - { id: cooling-tower-01,  type: cooling_tower,    zone: torre-enfriamiento, position: [89, 101, 0],   footprint: [4, 4, 5],     params: { capacity_kw: 1200, supply_c: 28, role: aceite hidráulico } }
+  - { id: transformer-01,    type: transformer,      zone: subestacion,        position: [41.5, 80, 0], footprint: [4, 3, 2.5],   params: { rating_kva: 3000, voltage: 13.2 kV / 440 V } }
+  - { id: compressor-01,     type: air_compressor,   zone: compresores,        position: [53, 80, 0],   footprint: [2.5, 1.8, 2], params: { power_kw: 75, flow_m3_min: 12, pressure_bar: 7.5 } }
+  - { id: compressor-02,     type: air_compressor,   zone: compresores,        position: [57, 80, 0],   footprint: [2.5, 1.8, 2], params: { power_kw: 75, flow_m3_min: 12, pressure_bar: 7.5, role: respaldo } }
+  - { id: air-dryer-01,      type: air_dryer,        zone: compresores,        position: [61, 80, 0],   footprint: [1.5, 1.5, 1.8], params: { type: refrigerado } }
+  - { id: chiller-01,        type: chiller,          zone: chillers,           position: [69, 80, 0],   footprint: [6, 2.5, 2.5], params: { capacity_kw: 600, supply_c: 12, role: agua de moldes } }
+  - { id: chiller-02,        type: chiller,          zone: chillers,           position: [78, 80, 0],   footprint: [6, 2.5, 2.5], params: { capacity_kw: 600, supply_c: 12, role: respaldo } }
+  - { id: cooling-tower-01,  type: cooling_tower,    zone: torre-enfriamiento, position: [89, 80, 0],   footprint: [4, 4, 5],     params: { capacity_kw: 1200, supply_c: 28, role: aceite hidráulico } }
 
 flows:
   # Material
@@ -290,12 +244,8 @@ flows:
   - { from: rack-mp-02,       to: dryer-01,         medium: resina,           rate: 150,  unit: kg/h }
   - { from: rack-mb-01,       to: blender-01,       medium: masterbatch,      rate: 20,   unit: kg/h }
   - { from: dryer-03,         to: imm-01,           medium: resina seca,      rate: 22,   unit: kg/h }
-  - { from: dryer-04,         to: imm-28,           medium: resina seca,      rate: 265,  unit: kg/h }
-  - { from: manifold-01,      to: imm-11,           medium: resina,           rate: 2300, unit: kg/h, piped: true, show: true, note: transporte neumático a las 29 inyectoras }
-  - { from: imm-03,           to: conveyor-main-01, medium: piezas,           rate: 1200, unit: u/h }
-  - { from: conveyor-main-01, to: pack-station-01,  medium: piezas,           rate: 6000, unit: u/h,  show: true }
-  - { from: imm-28,           to: pack-station-03,  medium: piezas,           rate: 38,   unit: u/h,  note: montacargas por pasillo norte }
-  - { from: imm-27,           to: foam-01,          medium: piezas,           rate: 65,   unit: u/h,  show: true }
+  - { from: dryer-04,         to: imm-19,           medium: resina seca,      rate: 75,   unit: kg/h }
+  - { from: manifold-01,      to: imm-21,           medium: resina,           rate: 2300, unit: kg/h, piped: true, show: true, note: transporte neumático a las 12 inyectoras }
   - { from: assembly-01,      to: pack-station-03,  medium: piezas,           rate: 100,  unit: u/h }
   - { from: pack-station-01,  to: wrapper-01,       medium: cajas,            rate: 40,   unit: pallets/d }
   - { from: wrapper-01,       to: rack-pt-01,       medium: estibas,          rate: 40,   unit: pallets/d, show: true }
@@ -308,97 +258,42 @@ flows:
   - { from: imm-06, to: buf-06, medium: piezas, rate: 288, unit: u/h }
   - { from: imm-07, to: buf-07, medium: piezas, rate: 1309, unit: u/h }
   - { from: imm-08, to: buf-08, medium: piezas, rate: 2057, unit: u/h }
-  - { from: imm-09, to: buf-09, medium: piezas, rate: 900, unit: u/h }
-  - { from: imm-10, to: buf-10, medium: piezas, rate: 960, unit: u/h }
-  - { from: imm-11, to: buf-11, medium: piezas, rate: 400, unit: u/h }
-  - { from: imm-12, to: buf-12, medium: piezas, rate: 164, unit: u/h }
-  - { from: imm-13, to: buf-13, medium: piezas, rate: 150, unit: u/h }
-  - { from: imm-14, to: buf-14, medium: piezas, rate: 360, unit: u/h }
-  - { from: imm-15, to: buf-15, medium: piezas, rate: 138, unit: u/h }
-  - { from: imm-16, to: buf-16, medium: piezas, rate: 144, unit: u/h }
-  - { from: imm-17, to: buf-17, medium: piezas, rate: 257, unit: u/h }
   - { from: imm-18, to: buf-18, medium: piezas, rate: 90, unit: u/h }
   - { from: imm-19, to: buf-19, medium: piezas, rate: 103, unit: u/h }
   - { from: imm-20, to: buf-20, medium: piezas, rate: 95, unit: u/h }
   - { from: imm-21, to: buf-21, medium: piezas, rate: 120, unit: u/h }
-  - { from: imm-22, to: buf-22, medium: piezas, rate: 100, unit: u/h }
   - { from: imm-23, to: buf-23, medium: piezas, rate: 106, unit: u/h }
-  - { from: imm-24, to: buf-24, medium: piezas, rate: 86, unit: u/h }
-  - { from: imm-25, to: buf-25, medium: piezas, rate: 72, unit: u/h }
-  - { from: imm-26, to: buf-26, medium: piezas, rate: 60, unit: u/h }
-  - { from: imm-27, to: buf-27, medium: piezas, rate: 65, unit: u/h }
-  - { from: imm-28, to: buf-28, medium: piezas, rate: 38, unit: u/h }
-  - { from: imm-29, to: buf-29, medium: piezas, rate: 51, unit: u/h }
   - { from: buf-01, to: fleet-01, medium: estibas de cubiertos, rate: 6400, unit: u/h }
   - { from: buf-02, to: fleet-01, medium: estibas de cubiertos, rate: 6400, unit: u/h }
-  - { from: buf-04, to: fleet-01, medium: estibas de tapa recipiente 1 L, rate: 1108, unit: u/h }
-  - { from: buf-05, to: fleet-01, medium: estibas de vajilla infantil (plato), rate: 400, unit: u/h }
+  - { from: buf-04, to: fleet-01, medium: estibas de cubiertos, rate: 1108, unit: u/h }
+  - { from: buf-05, to: fleet-01, medium: estibas de cubiertos, rate: 400, unit: u/h }
   - { from: buf-06, to: fleet-01, medium: estibas de pedal y palanca de papelera, rate: 288, unit: u/h }
-  - { from: buf-07, to: fleet-01, medium: estibas de vaso, rate: 1309, unit: u/h }
-  - { from: buf-08, to: fleet-01, medium: estibas de bisagras y piezas pequeñas, rate: 2057, unit: u/h }
-  - { from: buf-09, to: fleet-01, medium: estibas de tapa de termo, rate: 900, unit: u/h }
-  - { from: buf-10, to: fleet-01, medium: estibas de cucharón, rate: 960, unit: u/h }
-  - { from: buf-11, to: fleet-01, medium: estibas de recipiente para alimentos 1 L, rate: 400, unit: u/h }
-  - { from: buf-12, to: fleet-01, medium: estibas de recipiente para alimentos 3 L, rate: 164, unit: u/h }
-  - { from: buf-13, to: fleet-01, medium: estibas de caja organizadora 6 L, rate: 150, unit: u/h }
-  - { from: buf-14, to: fleet-01, medium: estibas de tapa caja organizadora, rate: 360, unit: u/h }
-  - { from: buf-15, to: fleet-01, medium: estibas de balde 4 L, rate: 138, unit: u/h }
-  - { from: buf-16, to: fleet-01, medium: estibas de bandeja, rate: 144, unit: u/h }
-  - { from: buf-17, to: fleet-01, medium: estibas de cuerpo de termo, rate: 257, unit: u/h }
-  - { from: buf-18, to: fleet-01, medium: estibas de señal de prevención plegable, rate: 90, unit: u/h }
+  - { from: buf-07, to: fleet-01, medium: estibas de pedal y palanca de papelera, rate: 1309, unit: u/h }
+  - { from: buf-08, to: fleet-01, medium: estibas de cubiertos, rate: 2057, unit: u/h }
+  - { from: buf-18, to: fleet-01, medium: estibas de cuerpo papelera 20 L, rate: 90, unit: u/h }
   - { from: buf-19, to: fleet-01, medium: estibas de cuerpo papelera 20 L, rate: 103, unit: u/h }
-  - { from: buf-20, to: fleet-01, medium: estibas de caja organizadora 40 L, rate: 95, unit: u/h }
+  - { from: buf-20, to: fleet-01, medium: estibas de reserva (molde de repuesto), rate: 95, unit: u/h }
   - { from: buf-21, to: fleet-01, medium: estibas de balde 12 L, rate: 120, unit: u/h }
-  - { from: buf-22, to: fleet-01, medium: estibas de balde 20 L, rate: 100, unit: u/h }
-  - { from: buf-23, to: fleet-01, medium: estibas de tapa de nevera, rate: 106, unit: u/h }
-  - { from: buf-24, to: fleet-01, medium: estibas de bandeja industrial, rate: 86, unit: u/h }
-  - { from: buf-25, to: fleet-01, medium: estibas de canasta industrial apilable, rate: 72, unit: u/h }
-  - { from: buf-26, to: fleet-01, medium: estibas de caneca 50 L, rate: 60, unit: u/h }
-  - { from: buf-27, to: fleet-01, medium: estibas de cuerpo de nevera portátil, rate: 65, unit: u/h }
-  - { from: buf-28, to: fleet-01, medium: estibas de caneca 121 L, rate: 38, unit: u/h }
-  - { from: buf-29, to: fleet-01, medium: estibas de tapa caneca 121 L y estiba liviana, rate: 51, unit: u/h }
+  - { from: buf-23, to: fleet-01, medium: estibas de balde 12 L, rate: 106, unit: u/h }
   - { from: fleet-01, to: rack-sf-01, medium: estibas de semielaborado, rate: 288, unit: u/h }
   - { from: fleet-01, to: rack-sf-02, medium: estibas de semielaborado, rate: 103, unit: u/h }
-  - { from: fleet-01, to: rack-sf-03, medium: estibas de semielaborado, rate: 2057, unit: u/h }
-  - { from: fleet-01, to: rack-sf-04, medium: estibas de semielaborado, rate: 360, unit: u/h }
   - { from: rack-sf-01, to: fleet-01, medium: estibas de semielaborado, rate: 103, unit: u/h }
   - { from: fleet-01, to: assembly-01, medium: pedal y palanca, rate: 103, unit: u/h }
   - { from: rack-sf-02, to: fleet-01, medium: estibas de semielaborado, rate: 103, unit: u/h }
   - { from: fleet-01, to: assembly-01, medium: cuerpos de papelera, rate: 103, unit: u/h }
-  - { from: rack-sf-03, to: fleet-01, medium: estibas de semielaborado, rate: 360, unit: u/h }
-  - { from: fleet-01, to: assembly-02, medium: bisagras, rate: 360, unit: u/h }
-  - { from: rack-sf-04, to: fleet-01, medium: estibas de semielaborado, rate: 180, unit: u/h }
-  - { from: fleet-01, to: assembly-02, medium: tapas, rate: 180, unit: u/h }
   # Scrap y reciclaje
-  - { from: imm-22,           to: sort-01,          medium: scrap y barreduras, rate: 0.8, unit: t/d, show: true }
   - { from: imm-01, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
   - { from: imm-02, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
-  - { from: imm-03, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
   - { from: imm-04, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
   - { from: imm-05, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
   - { from: imm-06, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
   - { from: imm-07, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
   - { from: imm-08, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
-  - { from: imm-09, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
-  - { from: imm-10, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
-  - { from: imm-11, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
-  - { from: imm-12, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
-  - { from: imm-13, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
-  - { from: imm-14, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
-  - { from: imm-15, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
-  - { from: imm-16, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
-  - { from: imm-17, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
   - { from: imm-18, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
   - { from: imm-19, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
   - { from: imm-20, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
-  - { from: imm-21, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
+  - { from: imm-21, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d, show: true }
   - { from: imm-23, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
-  - { from: imm-24, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
-  - { from: imm-25, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
-  - { from: imm-26, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
-  - { from: imm-27, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
-  - { from: imm-28, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
-  - { from: imm-29, to: sort-01, medium: scrap y barreduras, rate: 0.8, unit: t/d }
   - { from: sort-01,          to: wash-line-01,     medium: scrap,            rate: 300,  unit: kg/h }
   - { from: wash-line-01,     to: grinder-rec-01,   medium: scrap lavado,     rate: 300,  unit: kg/h }
   - { from: grinder-rec-01,   to: extruder-pel-01,  medium: molido,           rate: 350,  unit: kg/h }
@@ -408,35 +303,19 @@ flows:
   - { from: mold-rack-03,     to: mold-cart-01,     medium: molde,            rate: 2,    unit: cambios/d, show: true }
   - { from: mold-rack-01,     to: cnc-01,           medium: molde,            rate: 1,    unit: mantenimientos/d }
   # Servicios
-  - { from: chiller-01,       to: imm-11,           medium: agua de enfriamiento de moldes, rate: 180, unit: m3/h, piped: true }
+  - { from: chiller-01,       to: imm-21,           medium: agua de enfriamiento de moldes, rate: 75, unit: m3/h, piped: true }
   - { from: chiller-01,       to: imm-01, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
   - { from: chiller-01,       to: imm-02, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
-  - { from: chiller-01,       to: imm-03, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
   - { from: chiller-01,       to: imm-04, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
   - { from: chiller-01,       to: imm-05, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
   - { from: chiller-01,       to: imm-06, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
   - { from: chiller-01,       to: imm-07, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
   - { from: chiller-01,       to: imm-08, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
-  - { from: chiller-01,       to: imm-09, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
-  - { from: chiller-01,       to: imm-10, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
-  - { from: chiller-01,       to: imm-12, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
-  - { from: chiller-01,       to: imm-13, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
-  - { from: chiller-01,       to: imm-14, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
-  - { from: chiller-01,       to: imm-15, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
-  - { from: chiller-01,       to: imm-16, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
-  - { from: chiller-01,       to: imm-17, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
   - { from: chiller-01,       to: imm-18, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
   - { from: chiller-01,       to: imm-19, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
   - { from: chiller-01,       to: imm-20, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
   - { from: chiller-01,       to: imm-21, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
-  - { from: chiller-01,       to: imm-22, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
   - { from: chiller-01,       to: imm-23, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
-  - { from: chiller-01,       to: imm-24, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
-  - { from: chiller-01,       to: imm-25, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
-  - { from: chiller-01,       to: imm-26, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
-  - { from: chiller-01,       to: imm-27, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
-  - { from: chiller-01,       to: imm-28, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
-  - { from: chiller-01,       to: imm-29, medium: agua de enfriamiento de moldes, rate: 6, unit: m3/h }
-  - { from: cooling-tower-01, to: imm-25,           medium: agua de torre (aceite hidráulico), rate: 250, unit: m3/h, piped: true }
+  - { from: cooling-tower-01, to: imm-21,           medium: agua de torre (aceite hidráulico), rate: 250, unit: m3/h, piped: true }
   - { from: compressor-01,    to: vacuum-central-01, medium: aire comprimido, rate: 12,   unit: m3/min, piped: true }
-  - { from: transformer-01,   to: imm-28,           medium: energía eléctrica, rate: 2100, unit: kW }
+  - { from: transformer-01,   to: imm-21,           medium: energía eléctrica, rate: 900, unit: kW }

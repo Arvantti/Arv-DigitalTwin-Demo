@@ -15,7 +15,7 @@ import "./styles.css";
 import "./aps.css";
 import type { CustomerOrder, Importance, ProductionPlan } from "@twin/cosim/core/contracts.ts";
 import { activeEvents, addedOrders, baseManual, molds, modelNow, manualPlan, model, now, onChange, portfolio, resetDemo, setAdded, setVigente, SOURCE_NAMES, useDemoDays, vigente } from "./aps-store.ts";
-import { COLOR_NAMES, day, esc, nf, when } from "./schedule.ts";
+import { COLOR_NAMES, day, esc, nf, relativeDays, when } from "./schedule.ts";
 import { renderInsumos } from "./insumos.ts";
 import { plantLoadAt } from "./plant-state.ts";
 import type { FractalStudy } from "@twin/fractal-manufacturing/contracts.ts";
@@ -318,7 +318,7 @@ function renderGantt(p: ProductionPlan): void {
     const d0 = from + d * DAY_MS;
     const date = new Date(d0);
     const work = model.calendar.workdays.includes(((date.getUTCDay() + 6) % 7) + 1);
-    head += `<div class="g-day${work ? "" : " off"}" style="${span(d0, d0 + DAY_MS)}">${WEEKDAYS[date.getUTCDay()]} ${day(isoOf(d0))}</div>`;
+    head += `<div class="g-day${work ? "" : " off"}" style="${span(d0, d0 + DAY_MS)}">${relativeDays() ? "" : `${WEEKDAYS[date.getUTCDay()]} `}${day(isoOf(d0))}</div>`;
     if (!work) grid += `<div class="g-off" style="${span(d0, d0 + DAY_MS)}"></div>`;
     else {
       const a = d0 + spans[0][0] * 60000;
@@ -328,6 +328,16 @@ function renderGantt(p: ProductionPlan): void {
     grid += `<div class="g-line" style="left:${pct(d0)}"></div>`;
   }
   const nowLine = t >= from && t <= to ? `<div class="g-now" style="left:${pct(t)}"><span>AHORA</span></div>` : "";
+
+  // Máquinas que trabajan la orden seleccionada (en todo el plan): lotes y horas.
+  const usedBy = new Map<string, { lots: number; h: number }>();
+  if (selected)
+    for (const r of p.schedule.filter((x) => x.order === selected).sort((a, b) => (a.start < b.start ? -1 : 1))) {
+      const u = usedBy.get(r.equipment) ?? { lots: 0, h: 0 };
+      u.lots += 1;
+      u.h += model.calendar.workBetween(ms(r.start) / 60000, ms(r.end) / 60000) / 60;
+      usedBy.set(r.equipment, u);
+    }
 
   // Arriba: una fila por pedido con actividad en la ventana.
   const orders = p.orders
@@ -340,8 +350,9 @@ function renderGantt(p: ProductionPlan): void {
       const due = ms(o.due);
       const color = PRODUCT_COLORS[o.product] ?? "#888";
       const late = o.late_h > 0;
-      return `<div class="g-row${o.id === selected ? " sel" : ""}" data-order="${esc(o.id)}">
-        <div class="g-label"><b>${esc(o.id)}</b><small>${esc(o.product_name)} · ${nf(o.quantity)} ${esc(o.unit)} · ${esc(o.customer)}</small></div>
+      const res = o.id === selected ? [...usedBy.keys()].map(machineLabel).join(" · ") : "";
+      return `<div class="g-row${o.id === selected ? " sel" : ""}" data-order="${esc(o.id)}" title="Clic: ver sus máquinas y lotes abajo">
+        <div class="g-label"><b>${esc(o.id)}</b><small>${esc(o.product_name)} · ${nf(o.quantity)} ${esc(o.unit)} · ${esc(o.customer)}</small>${res ? `<small class="g-uses">▸ ${esc(res)}</small>` : ""}</div>
         <div class="g-track">
           <div class="g-bar${late ? " late" : ""}${b <= t ? " done" : ""}" style="${span(a, b)};--c:${color}" title="${esc(o.id)}: ${when(o.start)} → ${when(o.completion)}${late ? ` · ${nf(o.late_h, 1)} h tarde` : ""}">
             <span>${when(o.start)} → ${when(o.completion)}</span></div>
@@ -352,7 +363,9 @@ function renderGantt(p: ProductionPlan): void {
 
   // Abajo: recursos con los lotes de esas órdenes.
   const visible = new Set(orders.map((o) => o.id));
-  const machines = [...new Set([...model.machines, ...p.schedule.map((r) => r.equipment)])].sort();
+  const machines = [...new Set([...model.machines, ...p.schedule.map((r) => r.equipment)])]
+    .sort()
+    .sort((a, b) => Number(usedBy.has(b)) - Number(usedBy.has(a)));
   const resRows = machines
     .map((m) => {
       const rows = p.schedule.filter((r) => r.equipment === m && inView(ms(r.start), ms(r.end)));
@@ -370,7 +383,8 @@ function renderGantt(p: ProductionPlan): void {
           return parts
             .map((x, i) => {
               const co = i === 0 ? Math.min(100, ((r.changeover_min * 60000) / Math.max(1, (x.end - x.start) * 60000)) * 100) : 0;
-              return `<div class="g-lot${dim}" style="${span(x.start * 60000, x.end * 60000)};--c:${PRODUCT_COLORS[r.product] ?? "#888"};--co:${co.toFixed(1)}%" data-order="${esc(r.order)}" title="${tip}"></div>`;
+              const mine = selected && r.order === selected ? " sel" : "";
+              return `<div class="g-lot${dim}${mine}" style="${span(x.start * 60000, x.end * 60000)};--c:${PRODUCT_COLORS[r.product] ?? "#888"};--co:${co.toFixed(1)}%" data-order="${esc(r.order)}" title="${tip}"></div>`;
             })
             .join("");
         })
@@ -380,7 +394,10 @@ function renderGantt(p: ProductionPlan): void {
         .filter((d) => d.equipment === m && inView(ms(d.start), ms(d.end)))
         .map((d) => `<div class="g-down" style="${span(ms(d.start), ms(d.end))}" title="Parada: ${esc(d.reason)} · ${when(d.start)} → ${when(d.end)}"></div>`)
         .join("");
-      return `<div class="g-row res"><div class="g-label"><b>${esc((MACHINE_NAMES[m] ?? m).toUpperCase())}</b><small>${esc(machineProducts(m))} · carga ${load} %</small></div><div class="g-track">${downs}${bars}</div></div>`;
+      const u = usedBy.get(m);
+      const cls = selected ? (u ? " used" : " unused") : "";
+      const info = u ? `${esc(selected!)}: ${u.lots} ${u.lots === 1 ? "lote" : "lotes"} · ${nf(u.h, 1)} h` : `${esc(machineProducts(m))} · carga ${load} %`;
+      return `<div class="g-row res${cls}"><div class="g-label"><b>${esc((MACHINE_NAMES[m] ?? m).toUpperCase())}</b><small>${info}</small></div><div class="g-track">${downs}${bars}</div></div>`;
     })
     .join("");
 
@@ -397,7 +414,7 @@ function renderGantt(p: ProductionPlan): void {
       <div class="g-section-title">ÓRDENES DE PRODUCCIÓN</div>
       <div class="g-head"><div class="g-label"></div><div class="g-track">${head}</div></div>
       <div class="g-scroll"><div class="g-body g-orders"><div class="g-gridlayer"><div class="g-label"></div><div class="g-track">${grid}${nowLine}</div></div>${orderRows || '<p class="dim small">Sin órdenes en estos días.</p>'}</div></div>
-      <div class="g-section-title">RECURSOS · lotes de las órdenes de arriba${selected ? ` · resaltada ${esc(selected)}` : ""}</div>
+      <div class="g-section-title">${selected ? `RECURSOS DE ${esc(selected)} · ${usedBy.size} ${usedBy.size === 1 ? "máquina" : "máquinas"} arriba, resaltadas; el resto atenuado · clic de nuevo en la orden para quitar` : "RECURSOS · lotes de las órdenes de arriba · clic en una orden o en un lote para ver sus máquinas"}</div>
       <div class="g-body g-res"><div class="g-gridlayer"><div class="g-label"></div><div class="g-track">${grid}${nowLine}</div></div>${resRows}</div>
     </div>`;
   // La primera vez se abre en la primera orden que aún no termina.

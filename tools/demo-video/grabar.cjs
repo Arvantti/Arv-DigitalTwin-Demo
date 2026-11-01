@@ -70,8 +70,8 @@ async function fractal(pg, run) {
   await pg.waitForSelector(".fr-result", { timeout: 120000 });
 }
 
-async function open3d(pg, go, select) {
-  await go(`/plant.html?plant=plastic-injection-plant-v1&now=2026-11-04T10:00&select=${select}&look=88,62,0,30`);
+async function open3d(pg, go, select, extra = "") {
+  await go(`/plant.html?plant=plastic-injection-plant-v1&now=2026-11-04T10:00&select=${select}&look=88,62,0,30${extra}`);
   await pg.waitForSelector("#tt-range", { timeout: 300000 });
   await pg.waitForFunction(() => !document.body.classList.contains("loading"), null, { timeout: 300000 });
   await pg.waitForTimeout(8000);
@@ -91,6 +91,12 @@ const SCENARIOS = {
     await shot("04-calcular.png");
     await click(pg, "#aps-adopt");
     await shot("05-gantt-cosimulador.png");
+    // Clic en una orden de papelera (cuerpo, pedal y ensamble): sus máquinas suben y se resaltan.
+    await pg.$$eval(".g-orders .g-row[data-order]", (rows) => {
+      const r = rows.find((x) => x.innerText.includes("Papelera de pedal") && !x.querySelector(".g-bar.done"));
+      if (r) r.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+    await shot("05b-gantt-orden.png");
     await go(`/control.html${NOW}`);
     await shot("06-centro-control.png");
     await go(`/aps.html${NOW}`);
@@ -119,6 +125,14 @@ const SCENARIOS = {
     await shot("04-gantt-adoptado.png");
     await go(`/control.html${NOW}&order=${order}`);
     await shot("05-centro-control-orden.png");
+    // Gemelo 3D siguiendo la orden: lo producido avanza con el play y sus máquinas llevan una estrella.
+    await open3d(pg, go, "imm-01", `&order=${order}`);
+    await shot("06-gemelo-orden.png");
+    await pg.$eval("#tt-range", (el) => {
+      el.value = String(Number(el.value) + 24 * 60);
+      el.dispatchEvent(new Event("input"));
+    });
+    await shot("07-gemelo-orden-play.png");
     await wait(2);
   },
   3: async ({ pg, go, shot, wait }) => {

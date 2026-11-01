@@ -33,10 +33,11 @@ interface Zone {
 }
 type State = "run" | "idle" | "plan" | "fault" | "off";
 
-const doc = yaml.load(plantYaml) as { equipment: Eq[]; zones: Zone[] };
+const doc = yaml.load(plantYaml) as { equipment: Eq[]; zones: Zone[]; plant: { site: { width_x: number; length_y: number } } };
 const MACHINES = doc.equipment.filter((e) => e.type === "injection_molding_machine" || e.type === "assembly_cell");
-const SITE_Y = 110;
-const VIEW = { x: 30, y: 10, w: 118, h: 82 };
+const SITE_Y = doc.plant.site.length_y;
+// Nave, celda de ensamble, semielaborado y central de materiales (el plano entero sobra para la pantalla).
+const VIEW = { x: 30, y: SITE_Y - 80, w: 118, h: 62 };
 const FAULTS = ["Resistencia del cañón quemada", "Fuga de aceite hidráulico", "Molde atascado", "Falla del robot extractor", "Falla eléctrica del tablero"];
 const STOPS = ["Paro de emergencia por seguridad", "Atrapamiento de operario (simulacro)", "Derrame en el área"];
 const REPAIR_H = [2, 4, 8, 16, 24, 48, 72];
@@ -88,7 +89,7 @@ function renderFloor(): void {
     const product = s.row ? ` · ${s.row.product}` : "";
     return `<g class="emu-m ${s.state}${e.id === selected ? " sel" : ""}" data-id="${esc(e.id)}"><title>${esc(label(e.id))} · ${STATE_NAMES[s.state]}${esc(product)}</title>${rect(e, "body")}<text x="${cx}" y="${cy + 0.45}">${esc(e.id.replace("imm-", "").replace("assembly-", "E"))}</text></g>`;
   }).join("");
-  svg.innerHTML = `<rect class="emu-site" x="0" y="0" width="200" height="110"/>${zones}${others}${machines}`;
+  svg.innerHTML = `<rect class="emu-site" x="0" y="0" width="${doc.plant.site.width_x}" height="${SITE_Y}"/>${zones}${others}${machines}`;
   svg.querySelectorAll<SVGGElement>(".emu-m").forEach((g) => (g.onclick = () => ((selected = g.dataset.id!), render())));
 }
 

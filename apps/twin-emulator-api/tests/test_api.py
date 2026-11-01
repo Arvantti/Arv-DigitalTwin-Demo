@@ -126,19 +126,19 @@ def test_water_plant_sequence_is_continuous_and_lines_are_published() -> None:
     assert set(lines) == {"red-distribucion", "recirculacion"}
 
 
-def test_injection_plant_exposes_its_simulated_machines_and_conveyor() -> None:
+def test_injection_plant_exposes_its_simulated_machines() -> None:
     plant = client.get("/api/plants/plastic-injection-plant-v1").json()
     by_id = {e["id"]: e for e in plant["equipment"]}
-    assert sum(1 for e in plant["equipment"] if e["type"] == "injection_molding_machine") == 29
-    assert all(by_id[f"imm-{i:02d}"]["sim"]["type"] == "injection-molding-machine" for i in range(1, 30))
-    assert by_id["imm-03"]["sim"]["params"]["cavities"] == 4
-    assert by_id["conveyor-main-01"]["sim"]["params"]["length_m"] == 88
-    assert by_id["pack-station-01"]["sim"]["type"] == "packing-station"
+    machines = [e["id"] for e in plant["equipment"] if e["type"] == "injection_molding_machine"]
+    # Planta simplificada: las 12 inyectoras de los productos del catálogo, con sus ids originales.
+    assert len(machines) == 12 and "imm-03" not in by_id and "conveyor-main-01" not in by_id
+    assert all(by_id[m]["sim"]["type"] == "injection-molding-machine" for m in machines)
+    assert by_id["imm-01"]["sim"]["params"]["cavities"] == 16
+    assert by_id["pack-station-03"]["sim"]["type"] == "packing-station"
     assert by_id["dryer-01"]["sim"]["type"] == "desiccant-dryer"
     assert by_id["chiller-02"]["sim"]["params"]["start_on"] is False
     assert by_id["grinder-rec-01"]["sim"]["type"] == "granulator"
-    assert {"nominal", "conveyor-trip"} <= set(plant["scenarios"])
-    assert plant["lines"][0]["id"] == "lids-05l"
+    assert {"nominal", "dryer-stop"} <= set(plant["scenarios"])
 
 
 def test_injection_plant_exposes_aisles_and_routes() -> None:
@@ -150,7 +150,7 @@ def test_injection_plant_exposes_aisles_and_routes() -> None:
     equipment = {e["id"]: e for e in plant["equipment"]}
     assert equipment["rack-sf-01"]["sim"]["type"] == "pallet-store"
     assert equipment["fleet-01"]["sim"]["params"]["vehicles"] == 6
-    assert sum(1 for e in plant["equipment"] if e.get("sim", {}).get("type") == "pallet-buffer") == 28
+    assert sum(1 for e in plant["equipment"] if e.get("sim", {}).get("type") == "pallet-buffer") == 12
     assert routes["fk-ensamble-pt-1"]["from"] == "assembly-01"
     assert all(len(r["path"]) >= 2 for r in routes.values())
     assert {a["id"] for a in plant["aisles"]} >= {"aisle-semielaborado", "aisle-pt-1"}
@@ -366,7 +366,7 @@ def test_plant_catalog_gives_products_routes_and_sizes() -> None:
     assert [3, 8] in papelera["edges"] and [7, 8] in papelera["edges"]
     assert papelera["stages"][0]["active"] == ["imm-18", "imm-19"]
     assert products["balde-12l"]["colors"][0] == {"id": "mb-azul", "name": "Masterbatch azul", "hex": "#1e6fd9"}
-    assert catalog["sizes"]["imm-28"] == "Grande"
+    assert catalog["sizes"]["imm-21"] == "Mediana"
     assert client.get("/api/plants/sauce-plant-v1").json()["catalog"]["sizes"]["filler-pouch-03"] == "500 ml"
     assert client.get("/api/plants/airport-baggage-v1").json()["catalog"] is None
 

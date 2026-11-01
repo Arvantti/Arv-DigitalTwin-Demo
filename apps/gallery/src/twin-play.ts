@@ -4,6 +4,10 @@
  * va un letrero con su estado, la orden, el producto, el color y el lote en ese instante, así se ve cuándo una
  * máquina pasa de un producto a otro o hace un cambio de color. Debajo, la ocupación de la máquina contra su
  * disponibilidad en el día.
+ *
+ * Arriba de la barra va el panel de órdenes: las que se están procesando en el instante del gemelo, con lo producido
+ * y su avance, y una orden seguida (selector o `?order=`) con lo producido por etapa mientras corre el play. Las
+ * máquinas de la orden seguida se marcan en sus letreros.
  */
 import * as THREE from "three";
 import type { PlantEvent, ProductionPlan } from "@twin/cosim/core/contracts.ts";
@@ -47,6 +51,7 @@ export function buildTwinPlay(opts: Opts): TwinPlay {
   let playing = false;
   let speed = 60;
   let timer: number | undefined;
+  let followed: string | null = new URLSearchParams(location.search).get("order");
 
   const bar = document.createElement("section");
   bar.className = "glass twin-time";
@@ -62,6 +67,15 @@ export function buildTwinPlay(opts: Opts): TwinPlay {
     </div>
     <div class="tt-label"><b id="tt-when"></b><small id="tt-zone"></small></div>`;
   document.body.appendChild(bar);
+  const ordersBox = document.createElement("section");
+  ordersBox.className = "glass twin-orders";
+  ordersBox.innerHTML = `
+    <div class="to-head"><button class="label to-toggle" id="to-toggle" title="Mostrar u ocultar las órdenes en proceso">▾ ÓRDENES EN EL GEMELO</button>
+      <select id="to-pick" title="Seguir una orden con el play"><option value="">seguir una orden…</option></select></div>
+    <div id="to-followed"></div>
+    <div class="label to-sub" id="to-now-title"></div>
+    <div id="to-now"></div>`;
+  document.body.appendChild(ordersBox);
   const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
   const range = $<HTMLInputElement>("tt-range");
 
@@ -109,21 +123,22 @@ export function buildTwinPlay(opts: Opts): TwinPlay {
       const ld = dayLoadAt(plan, events, id, t) ?? loadAt(plan, events, id, t, 1);
       const occ = Math.round(ld.occupancy * 100);
       const av = Math.round(ld.availability * 100);
-      const key = `${s.state}|${line2}|${line3}|${occ}|${av}`;
+      const mark = followed !== null && plan.schedule.some((x) => x.order === followed && x.equipment === id);
+      const key = `${s.state}|${line2}|${line3}|${occ}|${av}|${mark}`;
       if (key === l.key) continue;
       l.key = key;
       const g = l.canvas.getContext("2d")!;
       g.clearRect(0, 0, 512, 196);
       g.fillStyle = "rgba(6, 8, 40, 0.86)";
-      g.strokeStyle = STATE_COLORS[s.state];
-      g.lineWidth = 6;
+      g.strokeStyle = mark ? "#ffd166" : STATE_COLORS[s.state];
+      g.lineWidth = mark ? 12 : 6;
       g.beginPath();
       g.roundRect(4, 4, 504, 188, 14);
       g.fill();
       g.stroke();
       g.fillStyle = STATE_COLORS[s.state];
       g.font = "700 34px Inter, sans-serif";
-      g.fillText(`${machineLabel(id)} · ${STATE_NAMES[s.state]}`, 22, 46);
+      g.fillText(`${mark ? "★ " : ""}${machineLabel(id)} · ${STATE_NAMES[s.state]}`, 22, 46);
       g.fillStyle = "#F8FAFC";
       g.font = "600 30px 'IBM Plex Mono', monospace";
       g.fillText(line2.slice(0, 30), 22, 88);
@@ -144,6 +159,68 @@ export function buildTwinPlay(opts: Opts): TwinPlay {
     }
   }
 
+  /** Panel de órdenes: las que corren en el instante t y la orden seguida con lo producido hasta t. */
+  let pickKey = "";
+  function paintOrders(): void {
+    const plan = opts.plan();
+    const events = opts.events();
+    const pick = $<HTMLSelectElement>("to-pick");
+    // Órdenes con trabajo dentro de la ventana del play, en orden de inicio.
+    const inWindow = plan.orders.filter((o) => plan.schedule.some((r) => r.order === o.id && minOf(r.end) > from && minOf(r.start) < to)).sort((a, b) => a.start.localeCompare(b.start));
+    const k = `${plan.plan_id}|${inWindow.length}|${followed}`;
+    if (k !== pickKey) {
+      pickKey = k;
+      pick.innerHTML = `<option value="">seguir una orden…</option>${inWindow.map((o) => `<option value="${esc(o.id)}"${o.id === followed ? " selected" : ""}>${esc(o.id)} · ${esc(o.product_name)}</option>`).join("")}`;
+    }
+    const finished = (o: (typeof plan.orders)[number]) => plan.schedule.filter((r) => r.order === o.id && r.product === o.product);
+    const made = (o: (typeof plan.orders)[number]) => finished(o).reduce((n, r) => n + unitsUntil(r, t), 0);
+    const bar = (x: number) => `<span class="to-bar"><i style="width:${Math.min(100, x * 100).toFixed(1)}%"></i></span>`;
+    // Orden seguida
+    const o = followed ? plan.orders.find((x) => x.id === followed) : undefined;
+    if (o) {
+      const rows = plan.schedule.filter((r) => r.order === o.id);
+      const done = Math.min(o.quantity, made(o));
+      const start = Math.min(...rows.map((r) => minOf(r.start)));
+      const end = Math.max(...rows.map((r) => minOf(r.end)));
+      const state = t < start ? "PENDIENTE" : t >= end ? "TERMINADA" : "EN PROCESO";
+      const stages = [...new Set(rows.map((r) => `${r.stage}|${r.product}`))].map((sp) => {
+        const [stage, product] = sp.split("|");
+        const rs = rows.filter((r) => r.stage === stage && r.product === product);
+        const qty = rs.reduce((n, r) => n + r.quantity, 0);
+        const u = rs.reduce((n, r) => n + unitsUntil(r, t), 0);
+        const now = rs.filter((r) => minOf(r.start) <= t && minOf(r.end) > t && machineAt(plan, events, r.equipment, t).row === r).map((r) => machineLabel(r.equipment));
+        const machines = [...new Set(rs.map((r) => machineLabel(r.equipment)))];
+        return `<div class="to-stage"><span>${esc(stage)} · ${esc(product)}</span><span>${nf(u)} / ${nf(qty)}</span>${bar(u / Math.max(1, qty))}<small>${machines.map((m) => (now.includes(m) ? `<b>${esc(m)}</b>` : esc(m))).join(" · ")}</small></div>`;
+      }).join("");
+      $("to-followed").innerHTML = `<div class="to-card">
+        <div class="to-title"><b>${esc(o.id)}</b> · ${esc(o.product_name)} <span class="to-state ${state === "EN PROCESO" ? "run" : state === "TERMINADA" ? "done" : ""}">${state}</span></div>
+        <div class="to-qty"><b>${nf(done)}</b> de ${nf(o.quantity)} ${esc(o.unit)} terminadas ${bar(done / Math.max(1, o.quantity))}</div>
+        <small class="dim">${esc(o.customer)} · entrega ${esc(day(o.due))} ${o.due.slice(11, 16)} · fin programado ${esc(day(o.completion))} ${o.completion.slice(11, 16)}</small>
+        ${stages}</div>`;
+    } else $("to-followed").innerHTML = "";
+    // Órdenes que se están procesando en el instante
+    const running = new Map<string, string[]>();
+    for (const id of new Set([...model.machines, ...plan.schedule.map((r) => r.equipment)])) {
+      const r = machineAt(plan, events, id, t).row;
+      if (r) running.set(r.order, [...(running.get(r.order) ?? []), machineLabel(id)]);
+    }
+    $("to-now-title").textContent = `EN PROCESO AHORA EN EL GEMELO · ${running.size}`;
+    $("to-now").innerHTML = running.size
+      ? [...running].map(([id, ms]) => {
+          const x = plan.orders.find((y) => y.id === id);
+          const d = x ? Math.min(x.quantity, made(x)) : 0;
+          return `<button class="to-row${id === followed ? " sel" : ""}" data-order="${esc(id)}"><span><b>${esc(id)}</b> ${esc((x?.product_name ?? "").slice(0, 22))}</span><span>${x ? `${nf(d)} / ${nf(x.quantity)}` : ""}</span>${bar(x ? d / Math.max(1, x.quantity) : 0)}<small>${ms.map(esc).join(" · ")}</small></button>`;
+        }).join("")
+      : `<div class="dim">ninguna orden en proceso a esta hora</div>`;
+    $("to-now").querySelectorAll<HTMLButtonElement>(".to-row").forEach((b) => (b.onclick = () => follow(b.dataset.order === followed ? null : b.dataset.order!)));
+  }
+
+  function follow(id: string | null): void {
+    followed = id;
+    for (const l of labels.values()) l.key = "";
+    show();
+  }
+
   function show(): void {
     const n = live();
     range.value = String(t);
@@ -155,6 +232,7 @@ export function buildTwinPlay(opts: Opts): TwinPlay {
     $("tt-live").classList.toggle("active", following);
     $("tt-play").textContent = playing ? "❚❚" : "▶";
     paint();
+    paintOrders();
     opts.onTime?.(t);
   }
 
@@ -178,6 +256,11 @@ export function buildTwinPlay(opts: Opts): TwinPlay {
     stop();
     setTime(live(), true);
   };
+  $("to-toggle").onclick = () => {
+    const min = ordersBox.classList.toggle("min");
+    $("to-toggle").textContent = `${min ? "▸" : "▾"} ÓRDENES EN EL GEMELO`;
+  };
+  $<HTMLSelectElement>("to-pick").onchange = (e) => follow((e.target as HTMLSelectElement).value || null);
   $<HTMLSelectElement>("tt-speed").onchange = (e) => (speed = Number((e.target as HTMLSelectElement).value));
   $("tt-play").onclick = () => {
     if (playing) {

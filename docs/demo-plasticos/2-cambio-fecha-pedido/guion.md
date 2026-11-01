@@ -2,7 +2,11 @@
 title: Guion · Cambio de fecha de un pedido
 escenario: 2-cambio-fecha-pedido
 tags: [demo, plasticos, guion, fractal]
-duracion_aprox: 2 min
+duracion_aprox: 2,5 min
+cifras:
+  - ["día 12 → día 11", "nueva fecha de entrega del pedido"]
+  - ["0,7 s", "para estudiar las opciones"]
+  - ["92,5 %", "de pedidos a tiempo: el resto no se atrasa"]
 ---
 
 # Escenario 2 · Cambio de fecha de un pedido
@@ -50,3 +54,17 @@ Mensaje central: un cliente pide su pedido antes. El sistema dice en segundos si
 - en pantalla: el filtro de orden arriba y las máquinas filtradas
 
 > En el centro de control podemos filtrar por esa orden: vemos solo las máquinas que la fabrican y cuánto de su tiempo usa. El pedido ocupa treinta y tres de las trescientas setenta y ocho horas de esas máquinas en la semana. El comercial puede confirmar la nueva fecha al cliente con datos.
+
+### S07 · La orden en el gemelo 3D
+- imagen: capturas/06-gemelo-orden.png
+- duración: 16 s
+- en pantalla: el panel ÓRDENES EN EL GEMELO con PED-D12-01 seguida y la lista EN PROCESO AHORA
+
+> En el gemelo 3D seguimos la misma orden. El panel dice qué órdenes se están procesando en este instante y en qué máquinas. La orden adelantada todavía está pendiente: cero de doscientas once mil unidades, y termina programada el día once a las diez de la noche, antes de la nueva entrega.
+
+### S08 · Lo producido con el play
+- imagen: capturas/07-gemelo-orden-play.png
+- duración: 16 s
+- en pantalla: el contador de unidades terminadas y las estrellas sobre las inyectoras uno y dos
+
+> Con el play avanzamos un día. Al día diez a las diez de la mañana la orden va en cincuenta y un mil unidades, en proceso en las inyectoras uno y dos, que llevan una estrella en su letrero. Así se ve, hora a hora, cómo avanza cada pedido en la planta.
