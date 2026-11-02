@@ -57,6 +57,8 @@ let tab = TABS.find((x) => x === new URLSearchParams(location.search).get("tab")
 let selected: string | null = null;
 /** Recursos del Gantt: por máquina o por molde (cada copia del molde es una fila). */
 let resView: "maquina" | "molde" = "maquina";
+/** Orden que se acaba de mover: parpadea en el Gantt hasta que la persona le da clic. */
+let flashOrder: string | null = null;
 let viewFrom = ms(`${now().slice(0, 10)}T00:00`) - 2 * DAY_MS;
 let running = "";
 let error = "";
@@ -392,7 +394,7 @@ function renderGantt(p: ProductionPlan): void {
       return `<div class="g-row${o.id === selected ? " sel" : ""}${isFixed ? " fixed" : ""}" data-order="${esc(o.id)}" title="Clic: ver sus máquinas y lotes abajo">
         <div class="g-label"><b>${isFixed || movableOrders.has(o.id) ? `<button class="g-lock${isFixed ? " on" : ""}" data-lock="${esc(o.id)}" title="${isFixed ? "Fijada: no se mueve al replanear. Clic para soltarla" : "Fijar esta orden donde está: CALCULAR organiza el resto sin moverla"}">${isFixed ? "🔒" : "🔓"}</button>` : '<span class="g-lock-gap"></span>'}${esc(o.id)}</b><small>${esc(o.product_name)} · ${nf(o.quantity)} ${esc(o.unit)} · ${esc(o.customer)}</small>${res ? `<small class="g-uses">▸ ${esc(res)}</small>` : ""}</div>
         <div class="g-track">
-          <div class="g-bar${late ? " late" : ""}${b <= t ? " done" : ""}${movable ? " drag" : ""}${isFixed ? " fixed" : ""}" data-move-order="${esc(o.id)}" style="${span(a, b)};--c:${color}" title="${esc(o.id)}: ${when(o.start)} → ${when(o.completion)}${late ? ` · ${nf(o.late_h, 1)} h tarde` : ""}${isFixed ? " · FIJADA" : movable ? " · arrástrala para moverla en el tiempo" : ""}">
+          <div class="g-bar${late ? " late" : ""}${b <= t ? " done" : ""}${movable ? " drag" : ""}${isFixed ? " fixed" : ""}${flashOrder === o.id ? " flash" : ""}" data-move-order="${esc(o.id)}" style="${span(a, b)};--c:${color}" title="${esc(o.id)}: ${when(o.start)} → ${when(o.completion)}${late ? ` · ${nf(o.late_h, 1)} h tarde` : ""}${isFixed ? " · FIJADA" : movable ? " · arrástrala para moverla en el tiempo" : ""}">
             <span>${when(o.start)} → ${when(o.completion)}</span></div>
           ${due >= from && due <= to ? `<div class="g-due${late ? " late" : ""}" style="left:${pct(due)}" title="Entrega ${when(o.due)}"></div>` : ""}
         </div></div>`;
@@ -426,7 +428,7 @@ function renderGantt(p: ProductionPlan): void {
               const drag = !isFixed && r.start.slice(0, 16) >= nowIso ? " drag" : "";
               const pin = pins.has(`${m}|${r.order}/${r.product}`) ? " pinned" : "";
               const extra = isFixed ? " · FIJADA" : drag ? " · arrástralo a otra máquina u hora" : "";
-              return `<div class="g-lot${dim}${mine}${drag}${pin}${isFixed ? " fixed" : ""}" style="${span(x.start * 60000, x.end * 60000)};--c:${PRODUCT_COLORS[r.product] ?? "#888"};--co:${co.toFixed(1)}%" data-order="${esc(r.order)}" data-job="${esc(`${r.order}/${r.product}`)}" data-m="${esc(m)}" data-start="${r.start.slice(0, 16)}" title="${tip}${extra}"></div>`;
+              return `<div class="g-lot${dim}${mine}${drag}${pin}${isFixed ? " fixed" : ""}${flashOrder === r.order ? " flash" : ""}" style="${span(x.start * 60000, x.end * 60000)};--c:${PRODUCT_COLORS[r.product] ?? "#888"};--co:${co.toFixed(1)}%" data-order="${esc(r.order)}" data-job="${esc(`${r.order}/${r.product}`)}" data-m="${esc(m)}" data-start="${r.start.slice(0, 16)}" title="${tip}${extra}"></div>`;
             })
             .join("");
         })
@@ -511,8 +513,16 @@ function renderGantt(p: ProductionPlan): void {
       (n.onclick = (e) => {
         e.stopPropagation();
         if (suppressClick) return;
+        if (flashOrder === n.dataset.order) flashOrder = null;
         selected = selected === n.dataset.order ? null : n.dataset.order!;
         render();
+      }),
+  );
+  el.querySelectorAll<HTMLElement>(".g-bar.drag[data-move-order]").forEach(
+    (n) =>
+      (n.ondblclick = (e) => {
+        e.stopPropagation();
+        openOrderDialog(n.dataset.moveOrder!);
       }),
   );
   el.querySelectorAll<HTMLButtonElement>("[data-lock]").forEach(
@@ -588,6 +598,7 @@ function applyEdit(queues: Record<string, EditChunk[]>, move: string, fixed = fi
     error = "";
     dragMsg = { ok: true, text: move };
   } catch (err) {
+    flashOrder = null;
     dragMsg = { ok: false, text: (err as Error).message };
   }
   render();
@@ -610,6 +621,7 @@ function toggleFixed(id: string): void {
 
 const jobLabel = (job: string) => {
   const [order, product] = job.split("/");
+  flashOrder = order;
   return `${order} (${productName(product).toLowerCase()})`;
 };
 
@@ -650,6 +662,7 @@ function dropLot(job: string, fromM: string, fromStart: string, toM: string, at:
 
 /** Corre una orden entera en el tiempo: cada tramo suyo queda fijado `delta` más tarde (o más temprano) en su máquina. */
 function dropOrder(id: string, deltaMs: number): void {
+  flashOrder = id;
   let q = liveQueues();
   let first = "";
   for (const m of Object.keys(q)) {
@@ -666,6 +679,35 @@ function dropOrder(id: string, deltaMs: number): void {
   }
   if (!first) return;
   applyEdit(q, `${id} movida ${deltaMs >= 0 ? "más tarde" : "más temprano"}, desde ${when(first)}`);
+}
+
+/** Doble clic en una orden movible: fecha de inicio o de fin; al guardar corre la orden igual que arrastrarla. */
+function openOrderDialog(id: string): void {
+  const o = shown().orders.find((x) => x.id === id);
+  if (!o) return;
+  document.querySelector(".ord-dialog-backdrop")?.remove();
+  const box = document.createElement("div");
+  box.className = "ord-dialog-backdrop";
+  box.innerHTML = `<form class="ord-dialog">
+    <h3>Pedido ${esc(id)} · ${esc(o.product_name)}</h3>
+    <label>Inicio <input type="datetime-local" name="start" value="${esc(o.start.slice(0, 16))}" /></label>
+    <label>Fin <input type="datetime-local" name="end" value="${esc(o.completion.slice(0, 16))}" /></label>
+    <small class="dim">Cambia la fecha de inicio o la de fin: la orden entera se corre, igual que al arrastrarla.</small>
+    <div class="ord-dialog-actions"><button type="submit" class="primary">GUARDAR</button><button type="button" id="ord-cancel">CANCELAR</button></div>
+  </form>`;
+  document.body.appendChild(box);
+  const form = box.querySelector("form")!;
+  const startIn = form.elements.namedItem("start") as HTMLInputElement;
+  const endIn = form.elements.namedItem("end") as HTMLInputElement;
+  const oldStart = o.start.slice(0, 16);
+  const oldEnd = o.completion.slice(0, 16);
+  box.querySelector<HTMLButtonElement>("#ord-cancel")!.onclick = () => box.remove();
+  form.onsubmit = (e) => {
+    e.preventDefault();
+    const delta = startIn.value !== oldStart ? ms(startIn.value) - ms(oldStart) : endIn.value !== oldEnd ? ms(endIn.value) - ms(oldEnd) : 0;
+    box.remove();
+    if (delta) dropOrder(id, delta);
+  };
 }
 
 let lastPointer = { x: 0, y: 0 };

@@ -335,3 +335,18 @@ button.danger:hover { background: rgba(255, 59, 59, 0.4); border-color: #fff; }
 .g-legend i.pin { background: transparent; box-shadow: inset 0 0 0 2px #ffd166; }
 .g-legend i.fix { background: repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.5) 0 2px, transparent 2px 6px); box-shadow: inset 0 0 0 1px #fff; }
 .g-lock-gap { display: inline-block; width: 26px; }
+
+/* Orden recién movida: parpadea hasta que se le da clic. */
+@keyframes g-flash {
+  0%, 100% { outline: 3px solid #ffd166; box-shadow: 0 0 14px #ffd166; }
+  50% { outline: 3px solid transparent; box-shadow: none; }
+}
+.g-bar.flash, .g-lot.flash { animation: g-flash 0.8s steps(1, end) infinite; }
+
+/* Diálogo para fijar fechas de una orden. */
+.ord-dialog-backdrop { position: fixed; inset: 0; background: rgba(4, 4, 33, 0.7); display: grid; place-items: center; z-index: 50; }
+.ord-dialog { background: #0b0d3a; border: 1px solid #3b3f8a; border-radius: 8px; padding: 18px; display: grid; gap: 12px; min-width: 300px; }
+.ord-dialog h3 { margin: 0; font-size: 14px; }
+.ord-dialog label { display: grid; gap: 4px; font-size: 12px; }
+.ord-dialog input { background: #040421; color: inherit; border: 1px solid #3b3f8a; border-radius: 4px; padding: 6px; }
+.ord-dialog-actions { display: flex; gap: 8px; justify-content: flex-end; }
