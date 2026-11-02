@@ -1,5 +1,7 @@
 /** Portada: elegir la planta. Cada tarjeta lleva a su escena 3D y a su librería de equipos filtrada. */
 import "./styles.css";
+import "./portal.css";
+import { mountUniverse } from "./universe";
 
 interface PlantCard {
   id: string;
@@ -12,6 +14,8 @@ interface PlantCard {
   extra?: { href: string; label: string };
   /** Sin tipos de librería simulados todavía: no se ofrece la librería filtrada. */
   noLibrary?: boolean;
+  /** Color de acento de la tarjeta (por familia de manufactura). */
+  accent?: string;
   /** Página propia en lugar de la escena 3D (gemelos sin vista 3D todavía). */
   main?: { href: string; label: string };
 }
@@ -24,7 +28,6 @@ const plants: PlantCard[] = [
     family: "MANUFACTURA DISCRETA",
     title: "Planta de plásticos",
     text: "Inyectoras, moldes, secado, reciclaje y ensamble: piezas contables que avanzan por celdas y rutas.",
-    extra: { href: "/arquitectura.html", label: "ARQUITECTURA DEL GEMELO" },
   },
   {
     id: "sauce-plant-v1",
@@ -79,20 +82,55 @@ const plants: PlantCard[] = [
   },
 ];
 
+const FAMILY: Record<string, { color: string; glyph: string }> = {
+  "MANUFACTURA DISCRETA": { color: "#4ea7ff", glyph: "M12 3l8 4.5v9L12 21l-8-4.5v-9zM12 12l8-4.5M12 12v9M12 12L4 7.5" },
+  "MANUFACTURA DE PROCESOS": { color: "#2fd27a", glyph: "M12 3c4 5 6 8 6 11a6 6 0 0 1-12 0c0-3 2-6 6-11z" },
+  OPERACIONES: { color: "#ffb000", glyph: "M3 12h4l2-5 4 10 2-5h6" },
+  "LOGÍSTICA": { color: "#a77bff", glyph: "M3 12h14M13 6l6 6-6 6" },
+  "MANEJO DE MATERIALES": { color: "#ff7ab8", glyph: "M4 8l8-4 8 4-8 4zM4 12l8 4 8-4M4 16l8 4 8-4" },
+  "MOVILIDAD URBANA": { color: "#22d3ee", glyph: "M12 21s-6-6-6-11a6 6 0 0 1 12 0c0 5-6 11-6 11zM10 10a2 2 0 1 0 4 0a2 2 0 1 0-4 0" },
+};
+
 const root = document.getElementById("cards") as HTMLElement;
-for (const p of plants) {
+plants.forEach((p, i) => {
   const main = p.main ?? { href: `/plant.html?plant=${p.id}`, label: "VER LA PLANTA EN 3D" };
+  const fam = FAMILY[p.family] ?? { color: "#4ea7ff", glyph: "M12 3l8 4.5v9L12 21l-8-4.5v-9z" };
   const card = document.createElement("article");
-  card.className = "portal-card glass";
+  card.className = `gcard${i === 0 || i === plants.length - 1 ? " wide" : ""}`;
+  card.style.setProperty("--c", fam.color);
   card.innerHTML = `
-    <a class="portal-media" href="${main.href}" tabindex="-1"><img src="${p.image}" alt="${p.alt}" loading="lazy" width="960" height="540" /></a>
-    <div class="label">${p.family}</div>
-    <h2>${p.title}</h2>
-    <p>${p.text}</p>
-    <div class="portal-actions">
-      <a class="btn primary" href="${main.href}">${main.label}</a>
-      ${p.noLibrary ? "" : `<a class="btn" href="/equipos.html?plant=${p.id}">EQUIPOS</a>`}
-      ${p.extra ? `<a class="btn" href="${p.extra.href}">${p.extra.label}</a>` : ""}
+    <div class="gcard-in">
+      <a class="gcard-media" href="${main.href}" tabindex="-1"><img src="${p.image}" alt="${p.alt}" loading="lazy" width="960" height="540" /><span class="gcard-scan"></span></a>
+      <div class="gcard-body">
+        <span class="gcard-hex" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="${fam.glyph}"/></svg></span>
+        <div class="label">${p.family}</div>
+        <h3>${p.title}</h3>
+        <p>${p.text}</p>
+        <div class="portal-actions">
+          <a class="btn primary" href="${main.href}">${main.label}</a>
+          ${p.noLibrary ? "" : `<a class="btn" href="/equipos.html?plant=${p.id}">EQUIPOS</a>`}
+          ${p.extra ? `<a class="btn" href="${p.extra.href}">${p.extra.label}</a>` : ""}
+        </div>
+      </div>
     </div>`;
+  // Inclinación 3D y haz de luz que siguen al puntero (solo con mouse y sin movimiento reducido).
+  if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    card.addEventListener("pointermove", (e) => {
+      if (e.pointerType !== "mouse") return;
+      const r = card.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width;
+      const y = (e.clientY - r.top) / r.height;
+      card.style.setProperty("--ry", `${((x - 0.5) * 7).toFixed(2)}deg`);
+      card.style.setProperty("--rx", `${((0.5 - y) * 5).toFixed(2)}deg`);
+      card.style.setProperty("--mx", `${(x * 100).toFixed(1)}%`);
+      card.style.setProperty("--my", `${(y * 100).toFixed(1)}%`);
+    });
+    card.addEventListener("pointerleave", () => {
+      card.style.setProperty("--ry", "0deg");
+      card.style.setProperty("--rx", "0deg");
+    });
+  }
   root.appendChild(card);
-}
+});
+
+mountUniverse(document.getElementById("universe") as HTMLCanvasElement);

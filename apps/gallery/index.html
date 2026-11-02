@@ -8,10 +8,19 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&family=Orbitron:wght@500;600;700&display=swap" rel="stylesheet" />
   </head>
   <body class="portal">
-    <main class="portal-wrap">
-      <header class="portal-head">
+    <section class="uni-hero" aria-label="Arquitectura del gemelo digital">
+      <canvas id="universe" class="uni-canvas" aria-label="Seis plataformas ovales conectadas por tuberías alrededor del gemelo digital 3D"></canvas>
+      <div class="uni-top">
         <div class="brand"><span class="logo">◆</span> TWIN<span class="dim">/</span>ARVANTTI</div>
-        <h1>¿Qué planta quieres ver?</h1>
+        <h1>Gemelos digitales</h1>
+        <p class="dim">Toca una plataforma para ver qué contiene y cómo se conecta. Arrastra para girar.</p>
+      </div>
+      <div class="uni-legend" aria-hidden="true"><span><i style="background:#4aa3ff"></i>En vivo</span><span><i style="background:#f5a524"></i>Planeación</span><span><i style="background:#2fd27a"></i>Cálculo</span><span><i style="background:#a77bff"></i>Futuro</span></div>
+      <a class="uni-down" href="#plantas" aria-label="Ir a las plantas">PLANTAS ↓</a>
+    </section>
+    <main class="portal-wrap" id="plantas">
+      <header class="portal-head">
+        <h2 class="portal-q">¿Qué planta quieres ver?</h2>
         <p class="dim">Cada opción abre solo su planta y los equipos que usa.</p>
       </header>
       <section class="portal-cards" id="cards"></section>
