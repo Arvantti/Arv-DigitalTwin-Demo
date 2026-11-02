@@ -148,9 +148,8 @@ describe("un objetivo por corrida", () => {
       const sol = solve(highs, model, portfolio, { objective, timeLimitS: 30 });
       checkPlan(sol);
       console.log("objetivo", objective, JSON.stringify(sol.kpis), JSON.stringify(sol.solver));
-      // Solo entregas promete cumplir la cartera. Los demás pueden dejar unidades sin programar (checkPlan ya verifica
-      // que cada pedido cuadre con lo programado más lo no programado).
-      if (objective === "entregas") expect(sol.orders.filter((o) => o.unscheduled).length, objective).toBe(0);
+      // La cartera se programa completa con todos los objetivos.
+      expect(sol.orders.filter((o) => o.unscheduled).length, objective).toBe(0);
     }
   }, 180_000);
 });
