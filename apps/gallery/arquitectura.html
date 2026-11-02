@@ -19,7 +19,8 @@
     <main class="ar-main">
       <p class="ar-lead">Cada bloque es una pantalla real: haga clic para abrirla. Las flechas muestran hacia dónde viajan los datos.</p>
 
-      <svg class="ar-svg" viewBox="0 0 1200 850" role="img" aria-labelledby="ar-t ar-d">
+      <p class="ar-hint">↔ Desliza el diagrama para verlo completo</p>
+      <div class="ar-scroll"><svg class="ar-svg" viewBox="0 0 1200 850" role="img" aria-labelledby="ar-t ar-d">
         <title id="ar-t">Arquitectura del gemelo digital de la planta de plásticos</title>
         <desc id="ar-d">El emulador 2D representa la planta real y contiene muchos PLC; todas sus señales llegan al centro de control. El centro de control alimenta al gemelo digital, que muestra pasado, presente y futuro. El APS entrega la programación al gemelo. El cosimulador intercambia datos con el gemelo y con los PLC. Fractal, el optimizador, lee el gemelo, el cosimulador y el centro de control, genera escenarios y un usuario decide cuál aplicar en el gemelo y en el centro de control.</desc>
         <defs>
@@ -166,16 +167,16 @@
           <circle cx="984" cy="136" r="6" class="ar-dot calc" /><text class="ar-s" x="998" y="140">Cálculo (cosimulador)</text>
           <circle cx="984" cy="160" r="6" class="ar-dot fut" /><text class="ar-s" x="998" y="164">Futuro (Fractal)</text>
         </g>
-      </svg>
+      </svg></div>
 
       <h2 class="ar-h2">Cómo leerlo</h2>
       <ol class="ar-steps">
-        <li><b>El emulador 2D representa la planta real.</b> Resuelve con matemáticas las restricciones de la planta y contiene un PLC por máquina. Aquí se declara una falla o un paro, en tiempo real.</li>
-        <li><b>El centro de control</b> recibe las señales de todos los PLC (ciclo, unidades, OEE) y las entrega al gemelo.</li>
-        <li><b>El gemelo digital</b> muestra el <b>pasado</b> (play por días), el <b>presente</b> en vivo y el <b>futuro</b> con los escenarios.</li>
-        <li><b>El APS</b> entrega la programación al gemelo; la manual se ve y se edita en el mismo <a href="/aps.html">APS</a>.</li>
-        <li><b>El cosimulador</b> calcula la secuencia que cumple las entregas, la entrega al APS y se comunica con el gemelo y con los PLC.</li>
-        <li><b>Fractal, el optimizador,</b> lee el gemelo, el cosimulador y el centro de control, y genera escenarios. <b>El usuario decide</b> cuál aplicar: se aplica en el gemelo y de ahí en el centro de control.</li>
+        <li class="live"><span class="ar-num">1</span><div><b>El emulador 2D representa la planta real.</b> Resuelve con matemáticas las restricciones de la planta y contiene un PLC por máquina. Aquí se declara una falla o un paro, en tiempo real. <a href="/emulador.html">Abrir emulador →</a></div></li>
+        <li class="live"><span class="ar-num">2</span><div><b>El centro de control</b> recibe las señales de todos los PLC (ciclo, unidades, OEE) y las entrega al gemelo. <a href="/control.html">Abrir centro de control →</a></div></li>
+        <li class="twin"><span class="ar-num">3</span><div><b>El gemelo digital</b> muestra el pasado (play por días), el presente en vivo y el futuro con los escenarios. <a href="/plant.html?plant=plastic-injection-plant-v1">Abrir gemelo 3D →</a></div></li>
+        <li class="plan"><span class="ar-num">4</span><div><b>El APS</b> entrega la programación al gemelo; la manual se ve y se edita en el mismo APS. <a href="/aps.html">Abrir APS →</a></div></li>
+        <li class="calc"><span class="ar-num">5</span><div><b>El cosimulador</b> calcula la secuencia que cumple las entregas, la entrega al APS y se comunica con el gemelo y con los PLC. <a href="/aps.html?tab=gantt">Calcular en el APS →</a></div></li>
+        <li class="fut"><span class="ar-num">6</span><div><b>Fractal, el optimizador,</b> lee el gemelo, el cosimulador y el centro de control, y genera escenarios. El usuario decide cuál aplicar: se aplica en el gemelo y de ahí en el centro de control. <a href="/aps.html?tab=fractal">Abrir Fractal →</a></div></li>
       </ol>
     </main>
     <script type="module" src="/src/arquitectura.ts"></script>
