@@ -265,3 +265,68 @@ button.danger:hover { background: rgba(255, 59, 59, 0.4); border-color: #fff; }
 .pr-count { font: 600 12px "IBM Plex Mono", monospace; color: var(--dim); min-width: 56px; text-align: center; }
 :fullscreen .aps-top { display: none; }
 @media (max-width: 700px) { .pr-cover h1 { font-size: 30px; } .pr-cover ol { columns: 1; } .pr-seg h2 { font-size: 19px; } }
+
+/* Arquitectura (arquitectura.html): diagrama SVG estático con bloques enlazados a las pantallas reales. */
+.ar-main { max-width: 1240px; margin: 0 auto; }
+.ar-lead { color: var(--dim); margin: 14px 0 6px; }
+.ar-svg { width: 100%; height: auto; display: block; }
+.ar-svg a { cursor: pointer; text-decoration: none; }
+.ar-box rect { fill: rgba(11, 13, 51, 0.9); stroke-width: 1.5; transition: fill 0.15s; }
+.ar-box:hover rect { fill: rgba(45, 127, 249, 0.22); }
+.ar-box.live { --c: #4ea7ff; }
+.ar-box.plan { --c: #ffb000; }
+.ar-box.calc { --c: #22e06b; }
+.ar-box.fut { --c: #b57bff; }
+.ar-box.twin { --c: #ffffff; }
+.ar-box rect:first-of-type { stroke: var(--c); }
+.ar-box.twin rect:first-of-type { stroke-width: 2.5; }
+.ar-n { font: 700 13px "IBM Plex Mono", monospace; fill: var(--c); }
+.ar-h { font: 700 14px Orbitron, sans-serif; fill: var(--text); letter-spacing: 0.04em; }
+.ar-h.big { font-size: 16px; }
+.ar-s { font: 400 12.5px Inter, sans-serif; fill: var(--dim); }
+.ar-go { font: 600 11px Inter, sans-serif; letter-spacing: 0.08em; fill: var(--c, var(--cyan)); }
+.ar-chip { stroke-width: 1; fill: transparent; }
+.ar-chip.past { stroke: #ffb000; }
+.ar-chip.now { stroke: #4ea7ff; }
+.ar-chip-t { font: 600 11px Inter, sans-serif; fill: var(--text); }
+.ar-line { fill: none; stroke-width: 2.4; }
+.ar-line.live { stroke: #4ea7ff; }
+.ar-line.plan { stroke: #ffb000; }
+.ar-line.calc { stroke: #22e06b; stroke-dasharray: 6 4; }
+.ar-line.fut { stroke: #b57bff; stroke-dasharray: 2 5; stroke-linecap: round; }
+.ar-head { fill: var(--dim); }
+.ar-lbl { font: 500 11.5px Inter, sans-serif; fill: var(--text); }
+.ar-zone { fill: rgba(78, 167, 255, 0.05); stroke: rgba(78, 167, 255, 0.4); stroke-dasharray: 5 5; }
+.ar-zone-t { font: 600 11px Inter, sans-serif; letter-spacing: 0.1em; fill: #4ea7ff; }
+.ar-leg-box { fill: rgba(11, 13, 51, 0.6); stroke: var(--line); }
+.ar-dot.live { fill: #4ea7ff; } .ar-dot.plan { fill: #ffb000; } .ar-dot.calc { fill: #22e06b; } .ar-dot.fut { fill: #b57bff; }
+.ar-h2 { font: 600 15px Orbitron, sans-serif; letter-spacing: 0.06em; margin: 20px 0 8px; }
+.ar-hint { display: none; color: var(--dim); font-size: 12px; margin: 4px 0; }
+.ar-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.ar-steps { list-style: none; padding: 0; margin: 0 0 24px; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 10px; line-height: 1.5; }
+.ar-steps li { display: flex; gap: 10px; padding: 10px 12px; border: 1px solid var(--line); border-left: 3px solid var(--c); border-radius: var(--radius-surface); background: var(--glass); }
+.ar-steps li.live { --c: #4ea7ff; } .ar-steps li.plan { --c: #ffb000; } .ar-steps li.calc { --c: #22e06b; } .ar-steps li.fut { --c: #b57bff; } .ar-steps li.twin { --c: #fff; }
+.ar-num { font: 700 14px "IBM Plex Mono", monospace; color: var(--c); }
+.ar-steps a { color: var(--cyan); white-space: nowrap; font-weight: 600; }
+@media (max-width: 900px) {
+  .ar-svg { min-width: 1000px; }
+  .ar-hint { display: block; }
+  .ar-main { padding: 0 12px 24px; }
+}
+.ar-code-bg { fill: rgba(0, 0, 0, 0.45) !important; stroke: rgba(78, 167, 255, 0.35) !important; stroke-width: 1 !important; }
+.ar-code { font: 500 12px "IBM Plex Mono", monospace; fill: #7fe3ff; }
+.ar-code.dim { fill: var(--dim); font-size: 11px; }
+.ar-math { font: 600 20px "IBM Plex Mono", monospace; fill: #22e06b; }
+.ar-plc rect { fill: rgba(78, 167, 255, 0.15) !important; stroke: #4ea7ff !important; stroke-width: 1.5 !important; }
+.ar-plc path { fill: none; stroke: #4ea7ff; stroke-width: 1.5; }
+.ar-plc .ar-bus { stroke: #4ea7ff; stroke-width: 2; }
+.ar-bars rect { fill: #4ea7ff !important; stroke: none !important; }
+.ar-bars path { stroke: var(--dim); fill: none; }
+.ar-logo rect { fill: rgba(34, 224, 107, 0.15) !important; stroke: #22e06b !important; }
+.ar-logo path { fill: #22e06b; }
+.ar-logo text { font: 700 12px Orbitron, sans-serif; fill: var(--text); letter-spacing: 0.06em; }
+.ar-box rect.ar-frame, .ar-box:hover rect.ar-frame { fill: none; stroke: rgba(255,255,255,0.5); stroke-width: 1; }
+.ar-chip.fut { stroke: #b57bff; }
+.ar-user circle:first-child { fill: rgba(181, 123, 255, 0.15); stroke: #b57bff; stroke-width: 2; }
+.ar-user circle:nth-child(2) { fill: #b57bff; }
+.ar-user path { fill: none; stroke: #b57bff; stroke-width: 3; stroke-linecap: round; }
