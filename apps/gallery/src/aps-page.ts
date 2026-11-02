@@ -59,6 +59,8 @@ let selected: string | null = null;
 let resView: "maquina" | "molde" = "maquina";
 /** Orden que se acaba de mover: parpadea en el Gantt hasta que la persona le da clic. */
 let flashOrder: string | null = null;
+/** Al mover una orden, el Gantt la centra una vez. */
+let scrollToFlash = false;
 let viewFrom = ms(`${now().slice(0, 10)}T00:00`) - 2 * DAY_MS;
 let running = "";
 let error = "";
@@ -428,7 +430,7 @@ function renderGantt(p: ProductionPlan): void {
               const drag = !isFixed && r.start.slice(0, 16) >= nowIso ? " drag" : "";
               const pin = pins.has(`${m}|${r.order}/${r.product}`) ? " pinned" : "";
               const extra = isFixed ? " · FIJADA" : drag ? " · arrástralo a otra máquina u hora" : "";
-              return `<div class="g-lot${dim}${mine}${drag}${pin}${isFixed ? " fixed" : ""}${flashOrder === r.order ? " flash" : ""}" style="${span(x.start * 60000, x.end * 60000)};--c:${PRODUCT_COLORS[r.product] ?? "#888"};--co:${co.toFixed(1)}%" data-order="${esc(r.order)}" data-job="${esc(`${r.order}/${r.product}`)}" data-m="${esc(m)}" data-start="${r.start.slice(0, 16)}" title="${tip}${extra}"></div>`;
+              return `<div class="g-lot${dim}${mine}${drag}${pin}${isFixed ? " fixed" : ""}" style="${span(x.start * 60000, x.end * 60000)};--c:${PRODUCT_COLORS[r.product] ?? "#888"};--co:${co.toFixed(1)}%" data-order="${esc(r.order)}" data-job="${esc(`${r.order}/${r.product}`)}" data-m="${esc(m)}" data-start="${r.start.slice(0, 16)}" title="${tip}${extra}"></div>`;
             })
             .join("");
         })
@@ -532,6 +534,10 @@ function renderGantt(p: ProductionPlan): void {
         toggleFixed(b.dataset.lock!);
       }),
   );
+  if (scrollToFlash) {
+    scrollToFlash = false;
+    el.querySelector<HTMLElement>(".g-bar.flash")?.scrollIntoView({ block: "center", inline: "center", behavior: "smooth" });
+  }
   $("g-undo").onclick = () => undo();
   $("g-by-machine").onclick = () => ((resView = "maquina"), render());
   $("g-by-mold").onclick = () => ((resView = "molde"), render());
@@ -599,6 +605,7 @@ function applyEdit(queues: Record<string, EditChunk[]>, move: string, fixed = fi
     dragMsg = { ok: true, text: move };
   } catch (err) {
     flashOrder = null;
+    scrollToFlash = false;
     dragMsg = { ok: false, text: (err as Error).message };
   }
   render();
@@ -622,6 +629,7 @@ function toggleFixed(id: string): void {
 const jobLabel = (job: string) => {
   const [order, product] = job.split("/");
   flashOrder = order;
+  scrollToFlash = true;
   return `${order} (${productName(product).toLowerCase()})`;
 };
 
@@ -663,6 +671,7 @@ function dropLot(job: string, fromM: string, fromStart: string, toM: string, at:
 /** Corre una orden entera en el tiempo: cada tramo suyo queda fijado `delta` más tarde (o más temprano) en su máquina. */
 function dropOrder(id: string, deltaMs: number): void {
   flashOrder = id;
+  scrollToFlash = true;
   let q = liveQueues();
   let first = "";
   for (const m of Object.keys(q)) {
