@@ -3,6 +3,7 @@
 > Estado: decisión de arquitectura aprobada antes de completar la implementación.
 > Alcance inicial: `water-network-scale-v1`; contrato reutilizable para los demás gemelos.
 > Seguridad: todos los datos, PLC y escenarios son simulados; no hay conexión física.
+> Topología D79: los diagnósticos de retorno que aparecen abajo son anteriores a la bajante común con bifurcación en Y y no la validan. La corrida continua posterior está en `docs/architecture/validation/pdd-rca-01-d79-common-drain-y-24h.json`: no hubo desacuerdos de presión crítica ≥15 mca en 24 muestras, pero el tanque de suministro difirió hasta 33,852 pp y la recirculación acumulada 1,75046 m³. El trazado de ciclos D79 registró 92 eventos Fractal vs. 91 del emulador y hasta 383,819 s de desfase (`docs/architecture/validation/pdd-rca-01-d79-common-drain-y-cycles-24h.json`). D80–D81 cambiaron solo el trazado 3D: montante exterior, colector por el costado sur, caída vertical al centro de la T entre tanques enfrentados; sus entradas superiores conectan a los extremos de la T y sus salidas inferiores llegan a las bombas por fuera. La lógica y los reportes D79 no cambian. Niveles futuros no validados; optimización apagada.
 
 ## 1. Propósito
 
@@ -136,7 +137,7 @@ La velocidad por defecto es:
 PLC permite al operador cambiarla dentro de límites autorizados:
 
 ```text
-×60, ×120, ×240, ×600
+×60 (1 min/s), ×120 (2 min/s), ×240 (4 min/s; default), ×600 (10 min/s)
 ```
 
 El cambio se audita como `PLC.Session.Speed`, usuario y tiempo. El 3D solo informa la velocidad vigente.
@@ -166,7 +167,7 @@ El cambio se audita como `PLC.Session.Speed`, usuario y tiempo. El 3D solo infor
 - `POST /studies/horizon` conserva un contrato **offline sin publicación PLC** con `baseline`, `alternative` y, si se habilita, `optimized`; solo `/studies/horizon/from-plc` verifica sesión/perfil/tags de gateway y puede persistir frames. El gateway rechaza arranques sin bombas o sin presión PRS para no proyectar una física estacionaria inválida. Los primeros segundos de rampas siguen fuera del alcance del forecast horario. Contraste manual de una hora con el perfil `30 %` y PRS AUTO desde t=12 s: Fractal sin rampa terminó con niveles (suministro, retorno 1, retorno 2) `68,72 / 41,84 / 40,52 %`, emulador `70,7 / 39,7 / 39,7 %`; recirculación `4,217 vs 4,295 m³`. Tras incorporar la rampa del variador al cálculo Fractal independiente: `69,83 / 40,84 / 39,62 %` y `4,260 m³` retornados (diferencia `0,035 m³`). Caudal nominal Fractal `4,259 m³/h` y promedio operativo ≈`4,263 m³/h`. El desfase restante de fase del retorno impide declarar precisión de niveles hora a hora sin más contrastes; no usar estos frames para optimización todavía.
 - PLC persiste estudios por sesión y ofrece listado y frames bajo `fractal/studies/{study_id}/frames`; los frames se marcan forecast y `applied: false`.
 - PLC HMI permite elegir proyección base o alternativa, overrides alternativos iniciales y velocidad ×60/×120/×240/×600. No muestra optimización mientras se valida la proyección.
-- Frames ahora incluyen snapshot estimado de equipos, enlaces y líneas; el visor puede seleccionar hora y renderiza la rama con marca futura y controles de mando desactivados.
+- Frames ahora incluyen snapshot estimado de equipos, enlaces y líneas; el visor puede seleccionar hora y renderiza la rama con marca futura y controles de mando desactivados. La proyección se reproduce con play/pausa a 1, 2 o 4 horas de estudio por segundo real; la velocidad solo recorre los 24 frames horarios ya calculados, no cambia PLC ni interpola estados. La velocidad en vivo permanece bajo el control de sesión PLC.
 - En el prototipo de optimización (deshabilitado por defecto), la aprobación de un estudio optimizado exige que todas las horas y los tres escenarios cumplan restricciones (`robust`); si alguna falla, PLC rechaza la aprobación. Un estudio aprobado crea un perfil y su programación aplica desde la siguiente hora simulada; queda separado de la decisión y no manda cambios inmediatos.
 - El solver Fractal independiente resuelve nodos, pérdidas y cruces de la distribución, 64 consumos y ocho fugas con continuidad simultánea; reproduce curvas de bombeo, pérdidas aguas arriba y PRS (rama manual o AUTO asentada), y calcula recirculación y tanques por pasos con histéresis. Hay casos de referencia estacionarios de distribución, bombeo/PRS y recirculación. **Pendiente:** contrastar el horizonte completo y transitorios (rampas, PID y cambios de rama) contra el emulador, además de E2E browser. Los frames siguen siendo futuro simulado, nunca operación aplicada.
 

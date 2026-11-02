@@ -78,8 +78,29 @@ def test_water_plant_pipes_carry_route_diameter_and_hydraulic_link() -> None:
     assert riser["diameter_in"] == 4
     assert riser["route"][0] == [7.4865, 4.6, 4.05]  # brida de salida de la estación reguladora
     assert riser["links"] == ["prs-01:outlet>grid-01:inlet"]
-    drop = by_pipe[("grid-03", "tank-recirc-02")]  # bajante por gravedad: con ruta pero sin diámetro (no es red a presión)
-    assert drop["route"][-1] == [10.75, 2.6, 2.245] and "diameter_in" not in drop and drop["links"]
+    manifold = next(e for e in plant["equipment"] if e["id"] == "drain-manifold-01")
+    assert manifold["position"] == [11.05, 2.6, 2.245] and manifold["overhead"] is True
+    by_equipment = {e["id"]: e for e in plant["equipment"]}
+    assert by_equipment["tank-recirc-01"]["position"] == [9.8, 2.6, -1.0]
+    assert by_equipment["tank-recirc-01"]["rotation_deg"] == 180
+    assert by_equipment["tank-recirc-02"]["position"] == [12.3, 2.6, -1.0]
+    assert by_equipment["tank-recirc-02"]["rotation_deg"] == 0
+    drops = [by_pipe[(f"grid-0{i}", "drain-manifold-01")] for i in range(1, 5)]
+    assert all(drop["route"][-1] == [11.05, 2.6, 2.52] for drop in drops)  # conecta en la boca superior del cuello de la T
+    assert all([12.35, 2.6, 2.8] in drop["route"] and [11.05, 2.6, 2.8] in drop["route"] for drop in drops)
+    assert all("diameter_in" not in drop and drop["links"] for drop in drops)
+    assert all([12.35, 2.6, 2.52] in drop["route"] for drop in drops)  # colector por costado sur, fuera del bastidor
+    branch_1 = by_pipe[("drain-manifold-01", "tank-recirc-01")]
+    branch_2 = by_pipe[("drain-manifold-01", "tank-recirc-02")]
+    assert branch_1["route"] == [[11.05, 2.6, 2.245], [10.85, 2.6, 2.245]]
+    assert branch_2["route"] == [[11.05, 2.6, 2.245], [11.25, 2.6, 2.245]]
+    assert all("diameter_in" not in branch and branch["links"] for branch in (branch_1, branch_2))
+    # Las descargas inferiores también salen de las caras exteriores y llegan a la succión común sin quedar al aire.
+    outlet_1 = by_pipe[("tank-recirc-01", "pumpset-recirc-01")]["route"]
+    outlet_2 = by_pipe[("tank-recirc-02", "pumpset-recirc-01")]["route"]
+    assert outlet_1[0] == [8.85, 2.6, -0.75] and outlet_1[-1] == [13.45, 3.6, -0.75]
+    assert outlet_2[0] == [13.25, 2.6, -0.75] and outlet_2[-1] == [12.6646, 6.03, -0.68]
+    assert outlet_1[-1] in outlet_2
 
 
 def test_water_plc_schema_exposes_simulated_hmi_contract() -> None:

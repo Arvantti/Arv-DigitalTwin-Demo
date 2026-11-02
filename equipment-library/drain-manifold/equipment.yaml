@@ -1,0 +1,42 @@
+schema_version: 0.1.0
+type: drain-manifold
+version: 0.1.0
+name: Colector T de drenaje
+manufacturing: utility
+category: utilities.water.drainage
+description: Colector común de cuatro bajantes por gravedad; la T recibe el tronco vertical superior y conecta sus extremos con las entradas de dos tanques enfrentados.
+aliases: [colector de drenaje, colector T, colector de recirculación]
+fidelity: { visual: V2, behavior: B1 }
+
+params:
+  tank_1_share: { type: number, min: 0, max: 1, default: 0.5, description: "Fracción del caudal común que va al tanque 1; 0.5 supone un reparto simétrico", affects: [behavior] }
+  design_flow_kg_h: { type: number, unit: kg/h, min: 1, max: 100000, default: 16000, description: Caudal total de referencia para animación, affects: [behavior] }
+
+ports:
+  - { id: floor_1_in, kind: material, direction: in, medium: agua de drenaje, unit: kg/h, link: { flow_kg_h: inlet_flow_kg_h } }
+  - { id: floor_2_in, kind: material, direction: in, medium: agua de drenaje, unit: kg/h, link: { flow_kg_h: inlet_flow_kg_h } }
+  - { id: floor_3_in, kind: material, direction: in, medium: agua de drenaje, unit: kg/h, link: { flow_kg_h: inlet_flow_kg_h } }
+  - { id: floor_4_in, kind: material, direction: in, medium: agua de drenaje, unit: kg/h, link: { flow_kg_h: inlet_flow_kg_h } }
+  - { id: tank_1_out, kind: material, direction: out, medium: agua de drenaje, unit: kg/h, link: { flow_kg_h: tank_1_flow_kg_h } }
+  - { id: tank_2_out, kind: material, direction: out, medium: agua de drenaje, unit: kg/h, link: { flow_kg_h: tank_2_flow_kg_h } }
+
+states:
+  - { id: idle, description: Sin caudal de drenaje }
+  - { id: running, description: Conduce agua por el colector y la bifurcación }
+
+variables:
+  - { id: inlet_flow_kg_h, unit: kg/h, kind: calculated, description: Caudal combinado recibido desde los cuatro pisos }
+  - { id: tank_1_flow_kg_h, unit: kg/h, kind: calculated, description: Caudal de la rama hacia el tanque de recirculación 1 }
+  - { id: tank_2_flow_kg_h, unit: kg/h, kind: calculated, description: Caudal de la rama hacia el tanque de recirculación 2 }
+  - { id: balance_error_kg_h, unit: kg/h, kind: calculated, description: Caudal de entrada menos la suma de las dos ramas; debe ser cero }
+
+animation_channels:
+  - { id: flow_norm, range: [0, 1], description: Caudal total dividido por el caudal de referencia }
+  - { id: tank_1_share, range: [0, 1], description: Fracción del caudal enviada al tanque 1 }
+
+geometry:
+  parts: [common_trunk, t_junction, branch_1, branch_2]
+
+assumptions:
+  - Reparto simétrico 50/50 supuesto porque no se declararon diámetros, longitudes ni cotas de las ramas de la T; no representa un cálculo de flujo bifásico ni pérdidas de la tubería de drenaje.
+  - Los drenajes de los cuatro pisos se combinan antes de la bifurcación y el total de masa se conserva.

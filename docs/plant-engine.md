@@ -147,7 +147,8 @@ Una máquina que suelta varias piezas por ciclo entrega ráfagas, no un flujo co
 tanques de retorno (piso 0) ─▶ bombas de recirculación (por nivel) ─▶ tanque de bombeo (piso 1)
 tanque de bombeo ─▶ 2 bombas multietapa (las dos de trabajo, 72,1 mca) ─4", sube 1 m─▶ estación reguladora ─4", baja 1 m─▶ nivel 1
 nivel 1 ─2"─▶ válvula 1-2 ─▶ nivel 2 ─▶ válvula 2-3 ─▶ nivel 3 ─▶ válvula 3-4 ─▶ nivel 4
-niveles 1 y 2 ─bajantes─▶ tanque de retorno 1      niveles 3 y 4 ─bajantes─▶ tanque de retorno 2
+niveles 1–4 ─▶ montante común ↓ ─▶ tronco por costado sur ─▶ ↓ T entre tanques ─┬─▶ entrada tanque 1
+                                                                                 └─▶ entrada tanque 2 (50/50 supuesto)
 telemetría: la casa más baja de los 4 niveles ─▶ estación (rama automática)
 ```
 
