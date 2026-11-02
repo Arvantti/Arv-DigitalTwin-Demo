@@ -19,7 +19,7 @@
     <main class="ar-main">
       <p class="ar-lead">Cada bloque es una pantalla real: haga clic para abrirla. Las flechas muestran hacia dónde viajan los datos.</p>
 
-      <svg class="ar-svg" viewBox="0 0 1200 830" role="img" aria-labelledby="ar-t ar-d">
+      <svg class="ar-svg" viewBox="0 0 1200 850" role="img" aria-labelledby="ar-t ar-d">
         <title id="ar-t">Arquitectura del gemelo digital de la planta de plásticos</title>
         <desc id="ar-d">El emulador 2D representa la planta real y contiene muchos PLC; todas sus señales llegan al centro de control. El centro de control alimenta al gemelo digital, que muestra pasado, presente y futuro. El APS entrega la programación al gemelo. El cosimulador intercambia datos con el gemelo y con los PLC. Fractal, el optimizador, lee el gemelo, el cosimulador y el centro de control, genera escenarios y un usuario decide cuál aplicar en el gemelo y en el centro de control.</desc>
         <defs>
@@ -54,6 +54,9 @@
         <path class="ar-line fut" d="M915 390V230" marker-end="url(#ar-arrow)" />
         <text class="ar-lbl" x="175" y="692">lee el cálculo</text>
         <text class="ar-lbl" x="850" y="732" text-anchor="middle">lee las señales</text>
+
+        <path class="ar-line calc" d="M1055 480V830H100V520" marker-start="url(#ar-arrow)" marker-end="url(#ar-arrow)" />
+        <text class="ar-lbl" x="580" y="822" text-anchor="middle">pedidos y secuencia calculada</text>
 
         <!-- Emulador con PLC -->
         <a href="/emulador.html"><g class="ar-box live">
@@ -171,7 +174,7 @@
         <li><b>El centro de control</b> recibe las señales de todos los PLC (ciclo, unidades, OEE) y las entrega al gemelo.</li>
         <li><b>El gemelo digital</b> muestra el <b>pasado</b> (play por días), el <b>presente</b> en vivo y el <b>futuro</b> con los escenarios.</li>
         <li><b>El APS</b> entrega la programación al gemelo; la manual se ve y se edita en el mismo <a href="/aps.html">APS</a>.</li>
-        <li><b>El cosimulador</b> calcula la secuencia que cumple las entregas y se comunica con el gemelo y con los PLC.</li>
+        <li><b>El cosimulador</b> calcula la secuencia que cumple las entregas, la entrega al APS y se comunica con el gemelo y con los PLC.</li>
         <li><b>Fractal, el optimizador,</b> lee el gemelo, el cosimulador y el centro de control, y genera escenarios. <b>El usuario decide</b> cuál aplicar: se aplica en el gemelo y de ahí en el centro de control.</li>
       </ol>
     </main>
