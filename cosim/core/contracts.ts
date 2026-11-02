@@ -109,6 +109,8 @@ export interface ProductionPlan {
   molds?: Record<string, string | null>;
   /** Cambios a la cartera con los que se calculó (p. ej. un pedido adelantado). */
   order_changes?: { order: string; due?: string; importance?: Importance }[];
+  /** Pedidos fijados por el planificador: sus lotes no se mueven al replanear; el resto se organiza alrededor. */
+  fixed_orders?: string[];
 }
 
 /**

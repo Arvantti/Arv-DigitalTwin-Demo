@@ -8,6 +8,8 @@
  *   como propuesta frente a la vigente: se adopta o se descarta.
  * - GANTT: arriba las órdenes (una fila por pedido, días en horizontal, inicio y fin, entrega marcada); abajo los
  *   recursos (máquinas) con los lotes de esas órdenes, los cambios de color y las paradas.
+ * - AJUSTE MANUAL: en el Gantt se arrastra un lote a otra máquina u hora (o una orden entera en el tiempo) y el mismo
+ *   despacho recalcula todo desde AHORA; el candado fija una orden donde está y CALCULAR organiza el resto sin moverla.
  *
  * El estado se comparte con el gemelo 3D por aps-store.ts (mismo navegador).
  */
@@ -15,6 +17,7 @@ import "./styles.css";
 import "./aps.css";
 import type { CustomerOrder, Importance, ProductionPlan } from "@twin/cosim/core/contracts.ts";
 import { activeEvents, addedOrders, baseManual, molds, modelNow, manualPlan, model, now, onChange, portfolio, resetDemo, setAdded, setVigente, SOURCE_NAMES, useDemoDays, vigente } from "./aps-store.ts";
+import { editedPlan, moveChunk, queuesOf, type EditChunk, type ManualEdit } from "@twin/cosim/adapters/plastic-injection-plant-v1/manual.ts";
 import { COLOR_NAMES, day, esc, nf, relativeDays, when } from "./schedule.ts";
 import { renderInsumos } from "./insumos.ts";
 import { plantLoadAt } from "./plant-state.ts";
@@ -152,17 +155,21 @@ function renderProposal(): void {
     setVigente(proposal!);
     current = vigente();
     proposal = null;
+    clearEdit();
     render();
   };
   $("aps-discard").onclick = () => {
     proposal = null;
+    clearEdit();
     render();
   };
 }
 
 function calculate(): void {
   error = "";
-  running = "El cosimulador está colocando la producción con restricciones lineales…";
+  running = fixedOf().length
+    ? `El cosimulador está organizando el resto de la producción sin mover ${fixedOf().length === 1 ? "el pedido fijado" : `los ${fixedOf().length} pedidos fijados`}…`
+    : "El cosimulador está colocando la producción con restricciones lineales…";
   render();
   worker?.terminate();
   worker = new Worker(new URL("./aps-worker.ts", import.meta.url), { type: "module" });
@@ -171,8 +178,10 @@ function calculate(): void {
   worker.onmessage = (e: MessageEvent<{ id: number; ok: boolean; plan?: ProductionPlan; error?: string }>) => {
     if (e.data.id !== id) return;
     running = "";
-    if (e.data.ok) proposal = e.data.plan!;
-    else error = `El cosimulador no pudo programar: ${e.data.error}`;
+    if (e.data.ok) {
+      proposal = e.data.plan!;
+      clearEdit();
+    } else error = `El cosimulador no pudo programar: ${e.data.error}`;
     worker?.terminate();
     worker = null;
     tab = "gantt";
@@ -183,7 +192,9 @@ function calculate(): void {
     error = `El cosimulador no pudo arrancar: ${e.message}`;
     render();
   };
-  worker.postMessage({ id, portfolio: portfolio(), now: now(), previous: current, planId: `APS-SOL-${String(n).padStart(2, "0")}`, events: activeEvents(), molds: molds() });
+  // Con pedidos fijados se parte del plan que se está viendo: ahí están sus lotes, que no se mueven.
+  const fixed = fixedOf();
+  worker.postMessage({ id, portfolio: portfolio(), now: now(), previous: fixed.length ? shown() : current, planId: `APS-SOL-${String(n).padStart(2, "0")}`, events: activeEvents(), molds: molds(), fixed });
 }
 
 // ------------------------------------------------------------------ pedidos
@@ -339,6 +350,12 @@ function renderGantt(p: ProductionPlan): void {
       usedBy.set(r.equipment, u);
     }
 
+  // Ajuste manual: qué se puede arrastrar (lo que no ha empezado y no está fijado).
+  const fixed = new Set(p.fixed_orders ?? []);
+  const nowIso = now().slice(0, 16);
+  const movableOrders = new Set(p.schedule.filter((r) => r.start.slice(0, 16) >= nowIso).map((r) => r.order));
+  const pins = new Set(Object.entries(edit?.queues ?? {}).flatMap(([m, q]) => q.filter((c) => c.notBefore).map((c) => `${m}|${c.job}`)));
+
   // Arriba: una fila por pedido con actividad en la ventana.
   const orders = p.orders
     .filter((o) => inView(ms(o.start), Math.max(ms(o.completion), ms(o.due))))
@@ -351,10 +368,12 @@ function renderGantt(p: ProductionPlan): void {
       const color = PRODUCT_COLORS[o.product] ?? "#888";
       const late = o.late_h > 0;
       const res = o.id === selected ? [...usedBy.keys()].map(machineLabel).join(" · ") : "";
-      return `<div class="g-row${o.id === selected ? " sel" : ""}" data-order="${esc(o.id)}" title="Clic: ver sus máquinas y lotes abajo">
-        <div class="g-label"><b>${esc(o.id)}</b><small>${esc(o.product_name)} · ${nf(o.quantity)} ${esc(o.unit)} · ${esc(o.customer)}</small>${res ? `<small class="g-uses">▸ ${esc(res)}</small>` : ""}</div>
+      const isFixed = fixed.has(o.id);
+      const movable = !isFixed && movableOrders.has(o.id);
+      return `<div class="g-row${o.id === selected ? " sel" : ""}${isFixed ? " fixed" : ""}" data-order="${esc(o.id)}" title="Clic: ver sus máquinas y lotes abajo">
+        <div class="g-label"><b>${isFixed || movableOrders.has(o.id) ? `<button class="g-lock${isFixed ? " on" : ""}" data-lock="${esc(o.id)}" title="${isFixed ? "Fijada: no se mueve al replanear. Clic para soltarla" : "Fijar esta orden donde está: CALCULAR organiza el resto sin moverla"}">${isFixed ? "🔒" : "🔓"}</button>` : '<span class="g-lock-gap"></span>'}${esc(o.id)}</b><small>${esc(o.product_name)} · ${nf(o.quantity)} ${esc(o.unit)} · ${esc(o.customer)}</small>${res ? `<small class="g-uses">▸ ${esc(res)}</small>` : ""}</div>
         <div class="g-track">
-          <div class="g-bar${late ? " late" : ""}${b <= t ? " done" : ""}" style="${span(a, b)};--c:${color}" title="${esc(o.id)}: ${when(o.start)} → ${when(o.completion)}${late ? ` · ${nf(o.late_h, 1)} h tarde` : ""}">
+          <div class="g-bar${late ? " late" : ""}${b <= t ? " done" : ""}${movable ? " drag" : ""}${isFixed ? " fixed" : ""}" data-move-order="${esc(o.id)}" style="${span(a, b)};--c:${color}" title="${esc(o.id)}: ${when(o.start)} → ${when(o.completion)}${late ? ` · ${nf(o.late_h, 1)} h tarde` : ""}${isFixed ? " · FIJADA" : movable ? " · arrástrala para moverla en el tiempo" : ""}">
             <span>${when(o.start)} → ${when(o.completion)}</span></div>
           ${due >= from && due <= to ? `<div class="g-due${late ? " late" : ""}" style="left:${pct(due)}" title="Entrega ${when(o.due)}"></div>` : ""}
         </div></div>`;
@@ -384,7 +403,11 @@ function renderGantt(p: ProductionPlan): void {
             .map((x, i) => {
               const co = i === 0 ? Math.min(100, ((r.changeover_min * 60000) / Math.max(1, (x.end - x.start) * 60000)) * 100) : 0;
               const mine = selected && r.order === selected ? " sel" : "";
-              return `<div class="g-lot${dim}${mine}" style="${span(x.start * 60000, x.end * 60000)};--c:${PRODUCT_COLORS[r.product] ?? "#888"};--co:${co.toFixed(1)}%" data-order="${esc(r.order)}" title="${tip}"></div>`;
+              const isFixed = fixed.has(r.order);
+              const drag = !isFixed && r.start.slice(0, 16) >= nowIso ? " drag" : "";
+              const pin = pins.has(`${m}|${r.order}/${r.product}`) ? " pinned" : "";
+              const extra = isFixed ? " · FIJADA" : drag ? " · arrástralo a otra máquina u hora" : "";
+              return `<div class="g-lot${dim}${mine}${drag}${pin}${isFixed ? " fixed" : ""}" style="${span(x.start * 60000, x.end * 60000)};--c:${PRODUCT_COLORS[r.product] ?? "#888"};--co:${co.toFixed(1)}%" data-order="${esc(r.order)}" data-job="${esc(`${r.order}/${r.product}`)}" data-m="${esc(m)}" data-start="${r.start.slice(0, 16)}" title="${tip}${extra}"></div>`;
             })
             .join("");
         })
@@ -397,7 +420,7 @@ function renderGantt(p: ProductionPlan): void {
       const u = usedBy.get(m);
       const cls = selected ? (u ? " used" : " unused") : "";
       const info = u ? `${esc(selected!)}: ${u.lots} ${u.lots === 1 ? "lote" : "lotes"} · ${nf(u.h, 1)} h` : `${esc(machineProducts(m))} · carga ${load} %`;
-      return `<div class="g-row res${cls}"><div class="g-label"><b>${esc((MACHINE_NAMES[m] ?? m).toUpperCase())}</b><small>${info}</small></div><div class="g-track">${downs}${bars}</div></div>`;
+      return `<div class="g-row res${cls}" data-machine="${esc(m)}"><div class="g-label"><b>${esc((MACHINE_NAMES[m] ?? m).toUpperCase())}</b><small>${info}</small></div><div class="g-track">${downs}${bars}</div></div>`;
     })
     .join("");
 
@@ -408,7 +431,13 @@ function renderGantt(p: ProductionPlan): void {
     <div class="g-toolbar">
       <button id="g-prev" title="Un día atrás">◀</button><button id="g-today">HOY</button><button id="g-next" title="Un día adelante">▶</button>
       <span class="dim small">${day(isoOf(from))} a ${day(isoOf(to - DAY_MS))} · mostrando ${proposal ? "la PROPUESTA" : "la VIGENTE"} ${esc(p.plan_id)} · ${orders.length} órdenes</span>
-      <span class="g-legend">${legend}<span><i class="hatch"></i>cambio de color</span><span><i class="down"></i>parada</span></span>
+      <span class="g-legend">${legend}<span><i class="hatch"></i>cambio de color</span><span><i class="down"></i>parada</span><span><i class="pin"></i>hora fijada</span><span><i class="fix"></i>orden fijada</span></span>
+    </div>
+    <div class="g-manual">
+      <span>✋ <b>AJUSTE MANUAL</b> · arrastra un lote a otra máquina: sobre otro lote queda antes o después de él; en un espacio libre queda fijado a esa hora. Arrastra una orden de arriba para moverla en el tiempo. 🔒 fija una orden: CALCULAR organiza el resto sin moverla.</span>
+      <span class="aps-spacer"></span>
+      ${dragMsg ? `<span class="g-msg ${dragMsg.ok ? "ok" : "bad"}">${esc(dragMsg.text)}</span>` : ""}
+      <button id="g-undo"${history.length ? "" : " disabled"} title="Deshacer el último movimiento">↶ DESHACER${history.length ? ` (${history.length})` : ""}</button>
     </div>
     <div class="g-wrap">
       <div class="g-section-title">ÓRDENES DE PRODUCCIÓN</div>
@@ -429,10 +458,260 @@ function renderGantt(p: ProductionPlan): void {
     (n) =>
       (n.onclick = (e) => {
         e.stopPropagation();
+        if (suppressClick) return;
         selected = selected === n.dataset.order ? null : n.dataset.order!;
         render();
       }),
   );
+  el.querySelectorAll<HTMLButtonElement>("[data-lock]").forEach(
+    (b) =>
+      (b.onclick = (e) => {
+        e.stopPropagation();
+        toggleFixed(b.dataset.lock!);
+      }),
+  );
+  $("g-undo").onclick = () => undo();
+  el.querySelectorAll<HTMLElement>(".g-lot.drag, .g-bar.drag").forEach((n) => (n.onpointerdown = (e) => startDrag(e, n, from, to)));
+}
+
+// ------------------------------------------------------------------ ajuste manual en el Gantt
+/** Ajuste manual en curso: las colas por máquina y los pasos anteriores para deshacer. */
+let edit: ManualEdit | null = null;
+let history: { edit: ManualEdit | null; proposal: ProductionPlan | null }[] = [];
+let dragMsg: { ok: boolean; text: string } | null = null;
+let suppressClick = false;
+
+function clearEdit(): void {
+  edit = null;
+  history = [];
+  dragMsg = null;
+}
+
+const fixedOf = () => shown().fixed_orders ?? [];
+const SNAP_MIN = 30;
+/** Instante de la planta (ms, hora local como UTC) → "AAAA-MM-DDTHH:MM" redondeado a la media hora y nunca antes de AHORA. */
+const snapIso = (t: number) => {
+  const snapped = Math.round(t / (SNAP_MIN * 60000)) * SNAP_MIN * 60000;
+  // Fuera de turno (noche o domingo) arranca al empezar el siguiente turno, como lo haría el despacho.
+  return isoOf(model.calendar.nextWork(Math.max(snapped, ms(now())) / 60000) * 60000);
+};
+
+/** Máquinas que pueden hacer un producto con los moldes montados ahora. */
+function machinesFor(product: string): string[] {
+  const m = modelNow();
+  for (const p of Object.values(m.products)) {
+    if (p.final.product === product) return p.final.machines;
+    for (const c of p.components) if (c.step.product === product) return c.step.machines;
+  }
+  return [];
+}
+
+/** Colas de la programación que se está viendo, con las horas fijadas del ajuste en curso. */
+function liveQueues(): Record<string, EditChunk[]> {
+  const q = queuesOf(shown(), now());
+  for (const [m, list] of Object.entries(q))
+    for (const c of list) {
+      const pin = edit?.queues[m]?.find((x) => x.job === c.job && x.notBefore)?.notBefore;
+      if (pin) c.notBefore = pin;
+    }
+  return q;
+}
+
+function nextManualId(): string {
+  if (edit) return edit.plan_id;
+  const used = [current.plan_id, proposal?.plan_id ?? ""].map((id) => Number((id.match(/APS-MAN-(\d+)/) ?? [])[1] ?? 1));
+  return `APS-MAN-${String(Math.max(...used) + 1).padStart(2, "0")}`;
+}
+
+/** Recalcula con las colas nuevas desde AHORA (lo empezado y lo fijado no se mueve) y lo deja como propuesta. */
+function applyEdit(queues: Record<string, EditChunk[]>, move: string, fixed = fixedOf()): void {
+  const next: ManualEdit = { contract: "manual-edit.v1", plan_id: nextManualId(), author: "planificador", queues, moves: [...(edit?.moves ?? []), move] };
+  try {
+    const plan = editedPlan(modelNow(), portfolio(), next, { now: now(), previous: shown(), events: activeEvents(), fixed });
+    history.push({ edit, proposal });
+    edit = next;
+    proposal = plan;
+    error = "";
+    dragMsg = { ok: true, text: move };
+  } catch (err) {
+    dragMsg = { ok: false, text: (err as Error).message };
+  }
+  render();
+}
+
+function undo(): void {
+  const last = history.pop();
+  if (!last) return;
+  edit = last.edit;
+  proposal = last.proposal;
+  dragMsg = { ok: true, text: "Movimiento deshecho." };
+  render();
+}
+
+function toggleFixed(id: string): void {
+  const list = fixedOf();
+  const on = !list.includes(id);
+  applyEdit(liveQueues(), on ? `${id} fijada donde está` : `${id} suelta`, on ? [...list, id] : list.filter((x) => x !== id));
+}
+
+const jobLabel = (job: string) => {
+  const [order, product] = job.split("/");
+  return `${order} (${productName(product).toLowerCase()})`;
+};
+
+/** Suelta un lote sobre una máquina: antes o después del lote que haya ahí, o fijado a la hora si es espacio libre. */
+function dropLot(job: string, fromM: string, fromStart: string, toM: string, at: number, over: HTMLElement | null): void {
+  const product = job.split("/")[1];
+  if (!machinesFor(product).includes(toM)) {
+    dragMsg = { ok: false, text: `${machineLabel(toM)} no tiene el molde de ${productName(product).toLowerCase()}: el lote vuelve a su sitio.` };
+    render();
+    return;
+  }
+  const q = liveQueues();
+  const src = q[fromM] ?? [];
+  const index = src.reduce((k, c, i) => (c.job === job && (c.start ?? "") <= fromStart ? i : k), src.findIndex((c) => c.job === job));
+  if (index < 0) return;
+  const dst = (q[toM] ?? []).filter((_, i) => !(toM === fromM && i === index));
+  const atIso = isoOf(at);
+  let to: { machine: string; index: number; notBefore?: string };
+  let text: string;
+  const target = over && over.dataset.job !== job && over.dataset.m === toM ? over : null;
+  if (target) {
+    // Sobre otro lote: antes o después de él según la mitad donde se suelte, sin fecha fijada.
+    const box = target.getBoundingClientRect();
+    const after = lastPointer.x > box.left + box.width / 2;
+    const k = dst.reduce((acc, c, i) => (c.job === target.dataset.job && (c.start ?? "") <= target.dataset.start! ? i : acc), dst.findIndex((c) => c.job === target.dataset.job));
+    to = { machine: toM, index: k < 0 ? dst.length : k + (after ? 1 : 0) };
+    text = `${jobLabel(job)} → ${machineLabel(toM)}, ${after ? "después" : "antes"} de ${target.dataset.order}`;
+  } else {
+    const pin = snapIso(at);
+    const pos = dst.filter((c) => (c.start ?? "") < atIso).length;
+    to = { machine: toM, index: pos, notBefore: pin };
+    text = `${jobLabel(job)} → ${machineLabel(toM)}, desde ${when(pin)}`;
+  }
+  // La posición se contó sin el lote; moveChunk la cuenta con él todavía en su cola (misma máquina, más adelante).
+  if (toM === fromM && to.index >= index) to.index += 1;
+  applyEdit(moveChunk(q, { machine: fromM, index }, to), text);
+}
+
+/** Corre una orden entera en el tiempo: cada tramo suyo queda fijado `delta` más tarde (o más temprano) en su máquina. */
+function dropOrder(id: string, deltaMs: number): void {
+  let q = liveQueues();
+  let first = "";
+  for (const m of Object.keys(q)) {
+    const mine = q[m].map((c, i) => ({ c, i })).filter((x) => x.c.job.startsWith(`${id}/`));
+    for (const { c } of mine.reverse()) {
+      const from = q[m].indexOf(q[m].find((x) => x.job === c.job && x.start === c.start)!);
+      const pin = snapIso(ms(c.start ?? now()) + deltaMs);
+      const rest = q[m].filter((_, i) => i !== from);
+      let pos = rest.filter((x) => (x.start ?? "") < pin).length;
+      if (pos >= from) pos += 1;
+      q = moveChunk(q, { machine: m, index: from }, { machine: m, index: pos, notBefore: pin });
+      if (!first || pin < first) first = pin;
+    }
+  }
+  if (!first) return;
+  applyEdit(q, `${id} movida ${deltaMs >= 0 ? "más tarde" : "más temprano"}, desde ${when(first)}`);
+}
+
+let lastPointer = { x: 0, y: 0 };
+
+function startDrag(e: PointerEvent, node: HTMLElement, from: number, to: number): void {
+  if (e.button !== 0) return;
+  const x0 = e.clientX;
+  const y0 = e.clientY;
+  const isOrder = !!node.dataset.moveOrder;
+  let ghost: HTMLElement | null = null;
+  let line: HTMLElement | null = null;
+  let hot: HTMLElement | null = null;
+  const track = node.parentElement!;
+  const timeAt = (x: number, tr: HTMLElement) => {
+    const r = tr.getBoundingClientRect();
+    return from + ((x - r.left) / r.width) * (to - from);
+  };
+  const clean = () => {
+    ghost?.remove();
+    line?.remove();
+    hot?.classList.remove("drop-ok", "drop-bad");
+    document.body.classList.remove("g-dragging");
+  };
+  const move = (ev: PointerEvent) => {
+    lastPointer = { x: ev.clientX, y: ev.clientY };
+    if (!ghost && Math.hypot(ev.clientX - x0, ev.clientY - y0) < 5) return;
+    if (!ghost) {
+      ghost = document.createElement("div");
+      ghost.className = "g-ghost";
+      document.body.append(ghost);
+      line = document.createElement("div");
+      line.className = "g-dropline";
+      document.body.classList.add("g-dragging");
+    }
+    ghost.style.left = `${ev.clientX + 14}px`;
+    ghost.style.top = `${ev.clientY + 12}px`;
+    if (isOrder) {
+      const delta = timeAt(ev.clientX, track) - timeAt(x0, track);
+      const startMs = ms(shown().orders.find((o) => o.id === node.dataset.moveOrder)?.start ?? now());
+      ghost.textContent = `${node.dataset.moveOrder} → desde ${when(snapIso(startMs + delta))}`;
+      track.append(line!);
+      line!.style.left = `${((timeAt(ev.clientX, track) - from) / (to - from)) * 100}%`;
+      return;
+    }
+    const under = document.elementFromPoint(ev.clientX, ev.clientY) as HTMLElement | null;
+    const row = under?.closest<HTMLElement>(".g-row.res[data-machine]") ?? null;
+    if (row !== hot) {
+      hot?.classList.remove("drop-ok", "drop-bad");
+      hot = row;
+    }
+    if (!row) {
+      ghost.textContent = `${node.dataset.order} · suéltalo sobre una máquina`;
+      line?.remove();
+      return;
+    }
+    const m = row.dataset.machine!;
+    const ok = machinesFor(node.dataset.job!.split("/")[1]).includes(m);
+    row.classList.toggle("drop-ok", ok);
+    row.classList.toggle("drop-bad", !ok);
+    const tr = row.querySelector<HTMLElement>(".g-track")!;
+    const lot = under?.closest<HTMLElement>(".g-lot") ?? null;
+    const onLot = lot && lot.dataset.job !== node.dataset.job ? lot : null;
+    if (!ok) ghost.textContent = `${machineLabel(m)} no tiene ese molde`;
+    else if (onLot) {
+      const r = onLot.getBoundingClientRect();
+      ghost.textContent = `${node.dataset.order} → ${machineLabel(m)}, ${ev.clientX > r.left + r.width / 2 ? "después" : "antes"} de ${onLot.dataset.order}`;
+    } else ghost.textContent = `${node.dataset.order} → ${machineLabel(m)}, desde ${when(snapIso(timeAt(ev.clientX, tr)))}`;
+    tr.append(line!);
+    line!.style.left = `${((timeAt(ev.clientX, tr) - from) / (to - from)) * 100}%`;
+  };
+  const up = (ev: PointerEvent) => {
+    removeEventListener("pointermove", move);
+    removeEventListener("pointerup", up);
+    removeEventListener("pointercancel", cancel);
+    if (!ghost) return;
+    suppressClick = true;
+    setTimeout(() => (suppressClick = false), 0);
+    clean();
+    lastPointer = { x: ev.clientX, y: ev.clientY };
+    if (isOrder) {
+      const delta = timeAt(ev.clientX, track) - timeAt(x0, track);
+      if (Math.abs(delta) >= (SNAP_MIN / 2) * 60000) dropOrder(node.dataset.moveOrder!, delta);
+      return;
+    }
+    const under = document.elementFromPoint(ev.clientX, ev.clientY) as HTMLElement | null;
+    const row = under?.closest<HTMLElement>(".g-row.res[data-machine]");
+    if (!row) return;
+    const tr = row.querySelector<HTMLElement>(".g-track")!;
+    dropLot(node.dataset.job!, node.dataset.m!, node.dataset.start!, row.dataset.machine!, timeAt(ev.clientX, tr), under?.closest<HTMLElement>(".g-lot") ?? null);
+  };
+  const cancel = () => {
+    removeEventListener("pointermove", move);
+    removeEventListener("pointerup", up);
+    removeEventListener("pointercancel", cancel);
+    clean();
+  };
+  e.preventDefault();
+  addEventListener("pointermove", move);
+  addEventListener("pointerup", up);
+  addEventListener("pointercancel", cancel);
 }
 
 /** Tramos [inicio, fin] en minutos dentro de los turnos entre a y b. */
@@ -589,7 +868,9 @@ $("aps-calc").onclick = () => calculate();
 $("aps-manual").onclick = () => {
   error = "";
   try {
-    proposal = manualPlan(modelNow(), portfolio(), baseManual, { now: now(), previous: current, events: activeEvents() });
+    const fixed = fixedOf();
+    proposal = manualPlan(modelNow(), portfolio(), baseManual, { now: now(), previous: fixed.length ? shown() : current, events: activeEvents(), fixed });
+    clearEdit();
     tab = "gantt";
   } catch (err) {
     error = (err as Error).message;

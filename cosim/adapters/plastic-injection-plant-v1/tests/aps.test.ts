@@ -3,7 +3,7 @@ import highsLoader from "highs";
 import { describe, expect, it } from "vitest";
 import type { CustomerOrders, PlantEvent, ProductionPlan } from "../../../core/contracts.ts";
 import { parseLocal } from "../../../core/time.ts";
-import { manualPlan, type ManualPlan } from "../manual.ts";
+import { editedPlan, manualPlan, moveChunk, queuesOf, type ManualEdit, type ManualPlan } from "../manual.ts";
 import { buildModel } from "../model.ts";
 import { solve } from "../solve.ts";
 import { fsCatalog, MODEL_DIR } from "../scripts/fs-catalog.ts";
@@ -77,5 +77,43 @@ describe("APS de plásticos", () => {
     expect(moved.length).toBeGreaterThan(0);
     console.log("falla imm-01 · manual", JSON.stringify(man.kpis), "· cosimulador", JSON.stringify(sol.kpis));
     expect(sol.kpis.tardiness_h).toBeLessThanOrEqual(man.kpis.tardiness_h);
+  });
+
+  it("arrastrar una orden a otra máquina y fijarle la hora recalcula desde AHORA", () => {
+    const base = manualPlan(model, portfolio, manual, { now: NOW });
+    const queues = queuesOf(base, NOW);
+    // Un tramo de imm-01 que todavía no empieza pasa a imm-02, de primero, sin arrancar antes de mañana 08:00.
+    const chunk = queues["imm-01"][0];
+    const from = { machine: "imm-01", index: queues["imm-01"].indexOf(chunk) };
+    const moved = moveChunk(queues, from, { machine: "imm-02", index: 0, notBefore: "2026-11-05T08:00" });
+    expect(moved["imm-02"][0]).toMatchObject({ job: chunk.job, qty: chunk.qty, notBefore: "2026-11-05T08:00" });
+    expect(moved["imm-01"].some((c) => c.job === chunk.job)).toBe(false);
+    const edit: ManualEdit = { contract: "manual-edit.v1", plan_id: "APS-MAN-02", author: "planificador", queues: moved, moves: [`${chunk.job} a IMM-02`] };
+    const plan = editedPlan(model, portfolio, edit, { now: NOW, previous: base });
+    checkPlan(plan);
+    const [order, product] = chunk.job.split("/");
+    const rows = plan.schedule.filter((r) => r.order === order && r.product === product && r.start.slice(0, 16) >= NOW);
+    expect(rows.every((r) => r.equipment === "imm-02")).toBe(true);
+    expect(rows.every((r) => r.start.slice(0, 16) >= "2026-11-05T08:00")).toBe(true);
+    // Lo que ya empezó no cambia.
+    const before = (p: ProductionPlan) => p.schedule.filter((r) => r.start.slice(0, 16) < NOW).map((r) => `${r.order}|${r.equipment}|${r.start}|${r.quantity}`).sort();
+    expect(before(plan)).toEqual(before(base));
+  });
+
+  it("el cosimulador organiza el resto sin mover los pedidos fijados", async () => {
+    const base = manualPlan(model, portfolio, manual, { now: NOW });
+    // Fija los dos primeros pedidos que todavía no empiezan.
+    const later = base.orders.filter((o) => o.start.slice(0, 16) > NOW).slice(0, 2).map((o) => o.id);
+    expect(later.length).toBe(2);
+    const sol = solve(await highsLoader(), model, portfolio, { now: NOW, previous: base, fixed: later });
+    checkPlan(sol);
+    expect(sol.fixed_orders).toEqual(later);
+    const rowsOf = (p: ProductionPlan) => p.schedule.filter((r) => later.includes(r.order)).map((r) => `${r.order}|${r.product}|${r.equipment}|${r.start}|${r.end}|${r.quantity}`).sort();
+    expect(rowsOf(sol)).toEqual(rowsOf(base));
+    // El ajuste manual también los respeta.
+    const edit: ManualEdit = { contract: "manual-edit.v1", plan_id: "APS-MAN-02", author: "planificador", queues: queuesOf(sol, NOW), moves: [] };
+    const man = editedPlan(model, portfolio, edit, { now: NOW, previous: sol, fixed: later });
+    checkPlan(man);
+    expect(rowsOf(man)).toEqual(rowsOf(base));
   });
 });
