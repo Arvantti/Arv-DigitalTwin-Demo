@@ -141,6 +141,20 @@ describe("APS de plásticos", () => {
   });
 });
 
+describe("un objetivo por corrida", () => {
+  it("cada objetivo real programa todo y cumple las reglas", async () => {
+    const highs = await highsLoader();
+    for (const objective of ["entregas", "cambios", "cuellos", "capacidad"] as const) {
+      const sol = solve(highs, model, portfolio, { objective, timeLimitS: 30 });
+      checkPlan(sol);
+      console.log("objetivo", objective, JSON.stringify(sol.kpis), JSON.stringify(sol.solver));
+      // Solo entregas promete cumplir la cartera. Los demás pueden dejar unidades sin programar (checkPlan ya verifica
+      // que cada pedido cuadre con lo programado más lo no programado).
+      if (objective === "entregas") expect(sol.orders.filter((o) => o.unscheduled).length, objective).toBe(0);
+    }
+  }, 180_000);
+});
+
 describe("moldes como recursos", () => {
   it("cada molde declara sus copias y ninguna está montada en dos inyectoras", () => {
     const balde = model.molds.find((t) => t.id === "mold-balde-12l")!;

@@ -20,6 +20,19 @@ export const COLOR_WEIGHT = 0.5;
 const MISSING_PENALTY = 1000;
 const EARLY_NUDGE = 1e-3;
 
+/**
+ * Un solo objetivo por corrida. El cosimulador nunca mezcla objetivos: si el planificador elige varios, es trabajo
+ * de Fractal (multiobjetivo). Todos parten de cumplir la cartera (faltante muy penalizado).
+ *  - entregas: atraso ponderado por importancia (el objetivo original).
+ *  - cambios: minimizar los cambios de referencia (molde + color) encendidos por turno.
+ *  - cuellos: balancear la carga: minimizar la utilización de la máquina más cargada.
+ *  - capacidad: ocupar la capacidad desde el inicio y terminar la cartera lo antes posible.
+ */
+export type Objective = "entregas" | "cambios" | "cuellos" | "capacidad";
+export const OBJECTIVES: Objective[] = ["entregas", "cambios", "cuellos", "capacidad"];
+const CHANGE_WEIGHT = 1;
+const BALANCE_WEIGHT = 10;
+
 /** Lo mínimo que usamos de highs-js. */
 export interface HighsLike {
   solve(problem: string, options?: Record<string, unknown>): {
@@ -51,10 +64,12 @@ export interface SolveOptions {
   fixed?: string[];
   /** Cada color va solo a las máquinas que lo tienen montado en setup.yaml (si alguna lo tiene): menos purgas. */
   dedicateColors?: boolean;
+  /** Objetivo único de esta corrida (por defecto, entregas). */
+  objective?: Objective;
 }
 
 /** Arma el modelo LP (formato CPLEX LP que lee HiGHS). Exportado para las pruebas. */
-export function buildLp(ctx: Context, colors = false): { lp: string; vars: Map<string, { job: Job; machine: string; b: number }>; buckets: Bucket[]; nVars: number; nRows: number } {
+export function buildLp(ctx: Context, colors = false, objective: Objective = "entregas"): { lp: string; vars: Map<string, { job: Job; machine: string; b: number }>; buckets: Bucket[]; nVars: number; nRows: number } {
   const { model } = ctx;
   const cal = model.calendar;
   const buckets: Bucket[] = cal.shiftsBetween(ctx.start, ctx.horizonEnd).filter((s) => s.end > ctx.now);
@@ -96,6 +111,8 @@ export function buildLp(ctx: Context, colors = false): { lp: string; vars: Map<s
   const binaries: string[] = [];
   const machineTerms: Map<string, string[]> = new Map();
   const colorTerms: Map<string, string[]> = new Map();
+  /** Minutos de trabajo de cada máquina en todos los turnos (para el objetivo de cuellos). */
+  const loadTerms: Map<number, string[]> = new Map();
   /** Parte una expresión larga en renglones cortos (el lector LP de HiGHS en WebAssembly falla con renglones enormes). */
   const wrap = (terms: string[]) => terms.reduce((out, t, i) => out + (i && i % 12 === 0 ? "\n   " : " ") + t, "").trim();
   const term = (c: number, v: string) => `${c >= 0 ? "+" : "-"} ${Math.abs(c).toFixed(9)} ${v}`;
@@ -112,8 +129,12 @@ export function buildLp(ctx: Context, colors = false): { lp: string; vars: Map<s
         names.push(v);
         vars.set(v, { job: j, machine: m, b });
         const lateH = j.final ? Math.max(0, bk.end - j.due) / 60 : 0;
-        const c = (j.weight * lateH) / j.order.quantity + (EARLY_NUDGE * b) / (B * q);
+        const c =
+          objective === "entregas" ? (j.weight * lateH) / j.order.quantity + (EARLY_NUDGE * b) / (B * q)
+          : objective === "capacidad" ? (j.weight * (b / B)) / q
+          : 0;
         if (c > 1e-9) obj.push(term(c, v));
+        (loadTerms.get(k) ?? loadTerms.set(k, []).get(k)!).push(term(j.step.unitMin, v));
         bounds.push(`0 <= ${v} <= ${(capacity[k][b] / j.step.unitMin).toFixed(3)}`);
         const key = `${k}_${b}`;
         (machineTerms.get(key) ?? machineTerms.set(key, []).get(key)!).push(term(j.step.unitMin, v));
@@ -146,10 +167,22 @@ export function buildLp(ctx: Context, colors = false): { lp: string; vars: Map<s
     const y = `y${ck}`;
     if (!binaries.includes(y)) {
       binaries.push(y);
-      obj.push(term(COLOR_WEIGHT, y));
+      if (objective === "entregas") obj.push(term(COLOR_WEIGHT, y));
+      else if (objective === "cambios") obj.push(term(CHANGE_WEIGHT, y));
     }
     const big = (capacity[k][b] / Math.min(...vs.map((v) => vars.get(v)!.job.step.unitMin))).toFixed(3);
     rows.push(` k${ck}: ${wrap([...vs.map((v) => `+ ${v}`), `- ${big} ${y}`])} <= 0`);
+  }
+  // Balance de cuellos: L es la utilización de la máquina más cargada; todas las máquinas quedan por debajo de L.
+  let balance = "";
+  if (objective === "cuellos" && loadTerms.size) {
+    balance = "ulmax";
+    for (const [k, ts] of loadTerms) {
+      const total = capacity[k].reduce((s, c) => s + c, 0);
+      if (total <= 0) continue;
+      rows.push(` u${k}: ${wrap([...ts, `- ${total.toFixed(3)} ${balance}`])} <= 0`);
+    }
+    obj.push(term(BALANCE_WEIGHT, balance));
   }
   // El ensamble acumulado no pasa a los componentes hechos hasta el turno anterior.
   jobs.forEach((j, ji) => {
@@ -176,7 +209,7 @@ export function buildLp(ctx: Context, colors = false): { lp: string; vars: Map<s
     ...(binaries.length ? ["Binary", ...binaries.map((y) => ` ${y}`)] : []),
     "End",
   ].join("\n");
-  return { lp, vars, buckets, nVars: vars.size + jobs.length + binaries.length, nRows: rows.length };
+  return { lp, vars, buckets, nVars: vars.size + jobs.length + binaries.length + (balance ? 1 : 0), nRows: rows.length };
 }
 
 /** Resuelve la cartera y devuelve la programación propuesta por el cosimulador. */
@@ -188,7 +221,9 @@ export function solve(highs: HighsLike, model: PlasticsModel, portfolio: Custome
       if (own.length && own.length < j.step.machines.length) j.step = { ...j.step, machines: own };
     }
   const t0 = performance.now();
-  const { lp, vars, buckets, nVars, nRows } = buildLp(ctx, opt.colors);
+  const objective = opt.objective ?? "entregas";
+  // Cambios: hay que contar las referencias encendidas, así que el modelo lleva binarias de color/molde.
+  const { lp, vars, buckets, nVars, nRows } = buildLp(ctx, opt.colors || objective === "cambios", objective);
   const res = highs.solve(lp, { time_limit: opt.timeLimitS ?? 20, mip_rel_gap: 0.01, presolve: "on" });
   const seconds = (performance.now() - t0) / 1000;
   if (!["Optimal", "Time limit reached"].includes(res.Status)) throw new Error(`El solver no encontró programación: ${res.Status}`);
