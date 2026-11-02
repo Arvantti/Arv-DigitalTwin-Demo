@@ -141,6 +141,21 @@ describe("APS de plásticos", () => {
   });
 });
 
+describe("el cambio de molde no se parte entre turnos", () => {
+  it("cada cambio de referencia cabe entero dentro de un turno", async () => {
+    const highs = await highsLoader();
+    const sol = solve(highs, model, portfolio, { timeLimitS: 30 });
+    const cal = model.calendar;
+    const changes = sol.schedule.filter((r) => r.changeover_min > 0);
+    expect(changes.length).toBeGreaterThan(0);
+    for (const r of changes) {
+      const a = parseLocal(r.start);
+      const co = r.changeover_min;
+      expect(cal.workBetween(a, a + co), `${r.equipment} ${r.op}`).toBe(co);
+    }
+  }, 120_000);
+});
+
 describe("un objetivo por corrida", () => {
   it("cada objetivo real programa todo y cumple las reglas", async () => {
     const highs = await highsLoader();
