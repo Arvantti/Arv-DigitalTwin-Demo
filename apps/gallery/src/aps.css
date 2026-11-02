@@ -304,3 +304,21 @@ button.danger:hover { background: rgba(255, 59, 59, 0.4); border-color: #fff; }
 .ar-steps { line-height: 1.6; padding-left: 20px; max-width: 900px; }
 .ar-steps a { color: var(--cyan); }
 @media (max-width: 700px) { .ar-svg { min-width: 760px; } .ar-main { overflow-x: auto; } }
+
+.ar-code-bg { fill: rgba(0, 0, 0, 0.45) !important; stroke: rgba(78, 167, 255, 0.35) !important; stroke-width: 1 !important; }
+.ar-code { font: 500 12px "IBM Plex Mono", monospace; fill: #7fe3ff; }
+.ar-code.dim { fill: var(--dim); font-size: 11px; }
+.ar-math { font: 600 20px "IBM Plex Mono", monospace; fill: #22e06b; }
+.ar-plc rect { fill: rgba(78, 167, 255, 0.15) !important; stroke: #4ea7ff !important; stroke-width: 1.5 !important; }
+.ar-plc path { fill: none; stroke: #4ea7ff; stroke-width: 1.5; }
+.ar-plc .ar-bus { stroke: #4ea7ff; stroke-width: 2; }
+.ar-bars rect { fill: #4ea7ff !important; stroke: none !important; }
+.ar-bars path { stroke: var(--dim); fill: none; }
+.ar-logo rect { fill: rgba(34, 224, 107, 0.15) !important; stroke: #22e06b !important; }
+.ar-logo path { fill: #22e06b; }
+.ar-logo text { font: 700 12px Orbitron, sans-serif; fill: var(--text); letter-spacing: 0.06em; }
+.ar-frame { fill: none; stroke: rgba(255,255,255,0.5); stroke-width: 1; }
+.ar-chip.fut { stroke: #b57bff; }
+.ar-user circle:first-child { fill: rgba(181, 123, 255, 0.15); stroke: #b57bff; stroke-width: 2; }
+.ar-user circle:nth-child(2) { fill: #b57bff; }
+.ar-user path { fill: none; stroke: #b57bff; stroke-width: 3; stroke-linecap: round; }
