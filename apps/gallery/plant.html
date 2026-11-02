@@ -40,11 +40,13 @@
       <a class="nav-link" id="link-plc" href="#plc" hidden>▣ PLC MASTER / HMI</a>
       <div id="schedule-section" hidden></div>
       <div id="products-section" hidden>
-        <h3>PRODUCTOS</h3>
-        <ul id="products"></ul>
-        <div class="sim-controls"><button id="btn-new-product" title="Crear un producto y su hoja de ruta en el editor">＋ NUEVO</button><button id="btn-load-product" title="YAML o JSON con el formato de catalog/products.yaml">⤒ CARGAR</button></div>
-        <input id="product-file" type="file" accept=".yaml,.yml,.json" hidden />
-        <div id="product-detail" class="product-detail"></div>
+        <button id="products-toggle" class="section-toggle" type="button" aria-expanded="true" aria-controls="products-body" title="Mostrar u ocultar la lista de productos"><span>PRODUCTOS</span><span class="chev" aria-hidden="true">▾</span></button>
+        <div id="products-body">
+          <ul id="products"></ul>
+          <div class="sim-controls"><button id="btn-new-product" title="Crear un producto y su hoja de ruta en el editor">＋ NUEVO</button><button id="btn-load-product" title="YAML o JSON con el formato de catalog/products.yaml">⤒ CARGAR</button></div>
+          <input id="product-file" type="file" accept=".yaml,.yml,.json" hidden />
+          <div id="product-detail" class="product-detail"></div>
+        </div>
       </div>
       <h3>CÁMARAS</h3>
       <div id="cameras" class="commands"></div>
