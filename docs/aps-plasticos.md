@@ -94,6 +94,9 @@ horas de máquina, los turnos-máquina, los cambios de color y las horas de oper
 - Play por día y hora: barra de tiempo en el gemelo 3D desde 3 días atrás (lo ejecutado) hasta una semana adelante
   (lo programado), con velocidad de 15 min/s a 12 h/s y EN VIVO. Sobre cada máquina va un letrero con su estado, la
   orden, el producto, el color y el lote, así se ve cuándo pasa de un producto a otro o hace un cambio de color.
+  Solo cicla la inyectora que está PRODUCIENDO en ese instante: fuera de turno, sin orden, en parada programada, en
+  cambio de color o en falla queda quieta con el molde abierto, y la baliza lo dice (apagada fuera de turno o sin orden,
+  amarilla en parada o cambio, roja en falla).
 - Movimiento al ritmo del play (`motion.ts`): con el play corriendo, operarios, carros, montacargas, ciclos de las
   máquinas y productos se aceleran según la velocidad elegida: 15 min/s ≈ ×9, 1 h/s ≈ ×19, 4 h/s ≈ ×38 y 12 h/s ×60
   (tope). La escala es la raíz cuadrada de la tasa del play: la literal (1 h/s = ×3.600) haría que un operario cruzara la
@@ -104,6 +107,9 @@ horas de máquina, los turnos-máquina, los cambios de color y las horas de oper
   (unidades hechas contra pedidas y en qué máquinas). Al elegir una (clic en la lista, el selector o `?order=`), el panel
   la sigue con el play: unidades terminadas, estado (pendiente, en proceso, terminada), entrega, fin programado y lo
   producido por etapa; sus máquinas llevan una estrella y borde amarillo en el letrero. El panel se pliega con su título.
+  Bajo el selector, un filtro por estado en el instante del play (TODAS, EN PROCESO, SIN INICIAR, TERMINADAS, con su
+  conteo) acorta la lista; con TODAS, la lista va agrupada por estado. EN PROCESO cuenta las órdenes empezadas y no
+  terminadas, aunque en ese momento esperen entre etapas; la lista de abajo muestra solo las que están en máquina.
 
 Las señales salen del gemelo (`apps/gallery/src/plant-state.ts`): la programación vigente más los eventos del
 emulador. El rendimiento es un supuesto por máquina y día (88–97 %) y la calidad es fija en 99 % (1 % de piezas defectuosas).

@@ -32,6 +32,7 @@ import { buildSchedule } from "./schedule.ts";
 import { buildAps } from "./aps.ts";
 import { buildPalletTransport, type PalletTransport } from "./pallet-transport.ts";
 import { buildTrails, visualScale, type Trails } from "./motion.ts";
+import type { MachineState } from "./plant-state.ts";
 import "./styles.css";
 import { demoFetch, demoWebSocket } from "./demo-client";
 
@@ -1535,6 +1536,7 @@ async function start(): Promise<void> {
   if (plantId === "plastic-injection-plant-v1") {
     const aps = buildAps({ plantId, select, showProduct: (id) => productsApi?.show(id), markDown, scene: stage.scene, rootOf: (id) => assets.get(id)?.root, setAssetExtra: (fn) => (assetExtra = fn), refreshAsset: renderAsset });
     playRate = aps.rate;
+    machineState = aps.stateOf;
     // Transporte de estibas por el piso: cuando una estiba se llena, un montacargas la lleva al siguiente punto.
     if (url.get("transport") !== "0") transport = buildPalletTransport({
       equipment: doc.equipment,
@@ -1621,11 +1623,27 @@ function ambientInjectionFrame(id: string, params: Record<string, unknown>, time
   };
 }
 
+/**
+ * Inyectora quieta: fuera de turno, sin orden, en parada programada, en cambio de color o en falla. Molde abierto, sin
+ * pieza ni robot, y la baliza dice por qué: apagada fuera de turno o sin orden, amarilla en parada o cambio, roja en falla.
+ */
+function stoppedInjectionFrame(id: string, st: MachineState): AnimationFrame {
+  const light = st === "fault" ? 3 : st === "plan" || st === "change" ? 2 : 0;
+  return {
+    channels: { mold_open: 1, ejector: 0, screw_position: 1, screw_rpm: 0, robot_progress: 0, part_in_mold: 0, heat_glow: st === "off" ? 0 : 0.5, stack_light: light },
+    state: st === "fault" ? "fault" : "idle",
+    phase: "idle",
+    label: id.toUpperCase(),
+  };
+}
+
 let frames = 0;
 let updateRoutes: ((time: number, dt: number, simDt?: number) => void) | null = null;
 /** Tasa del play (segundos de planta por segundo real); con ella la escena se acelera y deja estela (motion.ts). */
 let playRate: (() => number) | null = null;
 let trails: Trails | null = null;
+/** Estado de cada máquina según la programación en el instante del play: solo cicla la que está produciendo. */
+let machineState: ((id: string) => MachineState) | null = null;
 let sceneTime: number | null = null;
 let updateProducts: ((time: number) => void) | null = null;
 let productsApi: ProductsApi | null = null;
@@ -1639,7 +1657,10 @@ function loop(): void {
   updateRoutes?.(sceneTime, dt, simDt);
   transport?.update(dt, scale);
   for (const a of assets.values()) {
-    if (a.model && messages === 0 && a.eq.sim?.type === "injection-molding-machine") a.frame = ambientInjectionFrame(a.eq.id, a.eq.sim.params, sceneTime);
+    if (a.model && messages === 0 && a.eq.sim?.type === "injection-molding-machine") {
+      const st = machineState?.(a.eq.id) ?? "run";
+      a.frame = st === "run" ? ambientInjectionFrame(a.eq.id, a.eq.sim.params, sceneTime) : stoppedInjectionFrame(a.eq.id, st);
+    }
     a.model?.update(a.frame, Math.min(simDt, dt * 4));
   }
   animatePipes(sceneTime);
@@ -1655,4 +1676,4 @@ function loop(): void {
 }
 
 void start();
-Object.assign(window, { stage, THREE, transportStats: () => transport?.stats(), playScale: () => visualScale(playRate?.() ?? 1) });
+Object.assign(window, { stage, THREE, transportStats: () => transport?.stats(), playScale: () => visualScale(playRate?.() ?? 1), assetFrame: (id: string) => assets.get(id)?.frame });

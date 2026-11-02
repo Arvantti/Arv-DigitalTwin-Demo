@@ -362,6 +362,11 @@ button.pick { padding: 2px 8px; font-size: 11px; }
 .to-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 .to-head select { max-width: 230px; padding: 4px; }
 .to-sub { margin-top: 2px; }
+.to-filter { display: flex; flex-wrap: wrap; gap: 4px; }
+.to-filter button { padding: 3px 7px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.14); background: rgba(255, 255, 255, 0.04); color: var(--dim); font: 600 10px Inter, sans-serif; letter-spacing: 0.06em; cursor: pointer; }
+.to-filter button b { color: var(--text); font-family: "IBM Plex Mono", monospace; }
+.to-filter button.on { border-color: var(--cyan); color: var(--text); background: rgba(0, 200, 255, 0.12); }
+.to-filter button.run.on { border-color: var(--ok); } .to-filter button.done.on { border-color: var(--cyan); }
 .to-card { border: 1px solid #ffd166; border-radius: 8px; padding: 8px; display: flex; flex-direction: column; gap: 4px; background: rgba(255, 209, 102, 0.06); }
 .to-title b { color: #ffd166; font-family: "IBM Plex Mono", monospace; }
 .to-state { float: right; font: 700 10px Inter, sans-serif; letter-spacing: 0.08em; color: var(--dim); }
