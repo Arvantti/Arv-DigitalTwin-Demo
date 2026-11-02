@@ -445,8 +445,14 @@ async function renderFractal(): Promise<void> {
   if (!sessionId) { box.innerHTML = `<p class="muted">Inicie una sesión PLC para consultar estudios.</p>`; return; }
   const response = await apiFetch(`/api/plants/${plantId}/sessions/${sessionId}/fractal/studies`);
   if (!response.ok) { box.innerHTML = `<p class="muted">No se pudo consultar estudios de esta sesión.</p>`; return; }
-  const studies = await response.json() as { study_id: string; study_type: string; base_time: number }[];
-  box.innerHTML = studies.length ? `<article class="panel"><p class="eyebrow">ESTUDIOS GUARDADOS EN PLC · FUTURO NO APLICADO</p>${studies.filter((study) => ["baseline", "alternative"].includes(study.study_type)).map((study) => `<p>${study.study_type === "baseline" ? "Proyección base" : "Escenario alternativo"} · ${study.study_id.replace(/[&<>"']/g, "")} · t=${fmt(study.base_time, 0)} s · <a href="/plant.html?plant=${plantId}&session=${encodeURIComponent(sessionId!)}&study=${encodeURIComponent(study.study_id)}${query.get("api") ? `&api=${encodeURIComponent(apiOrigin)}` : ""}">VER FUTURO EN 3D</a></p>`).join("")}</article>` : `<p class="muted">No hay estudios futuros guardados en esta sesión.</p>`;
+  const studies = await response.json() as { study_id: string; study_type: string; base_time: number; profile_id?: string; profile_name?: string }[];
+  const labels: Record<string, string> = { baseline: "Proyección base", alternative: "Escenario alternativo", optimized: "Optimización horaria" };
+  const visibleStudies = studies.filter((study) => study.study_type in labels);
+  const safe = (value: string) => value.replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]!);
+  box.innerHTML = visibleStudies.length ? `<article class="panel"><p class="eyebrow">ESCENARIOS GUARDADOS · FUTURO NO APLICADO</p>${visibleStudies.map((study) => {
+    const profile = study.profile_name ?? study.profile_id ?? "perfil";
+    return `<p>${labels[study.study_type]} · ${safe(profile)} · ${safe(study.study_id)} · t=${fmt(study.base_time, 0)} s · <a href="/plant.html?plant=${encodeURIComponent(plantId)}&session=${encodeURIComponent(sessionId!)}&study=${encodeURIComponent(study.study_id)}${query.get("api") ? `&api=${encodeURIComponent(apiOrigin)}` : ""}">VER EN GEMELO 3D</a></p>`;
+  }).join("")}</article>` : `<p class="muted">No hay escenarios futuros guardados en esta sesión.</p>`;
 }
 
 function renderVisibleScreen(): void {
