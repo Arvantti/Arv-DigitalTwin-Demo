@@ -18,7 +18,7 @@ fractal/manufacturing/
 |---|---|
 | recalcular | recolocar la secuencia con el cosimulador, sin tocar la planta |
 | prioridad | subir un pedido a importancia alta |
-| montar-molde | montar la copia de repuesto del almacén de moldes (`aps/aps.yaml`, `molds_in_storage`) en una inyectora libre de la lista del producto; para la máquina el tiempo de montaje (`change_min`) |
+| montar-molde | montar la copia de repuesto del almacén de moldes (`catalog/tooling.yaml`: `copies` menos las montadas en `setup.yaml`) en una inyectora libre de la lista del producto; para la máquina el tiempo de montaje (`change_min`) |
 | mover-molde | desmontar el molde de una máquina parada y montarlo en otra libre del mismo tamaño (`change_min` + 30 min de traslado) |
 
 Puntaje de cada opción (menor es mejor): horas de atraso + 20 × pedidos tarde + 2 × horas de montaje + 0,5 × cambios

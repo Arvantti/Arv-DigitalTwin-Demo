@@ -22,7 +22,7 @@ export interface ApsYaml {
   lead_days: [number, number];
   rush_lead_days: [number, number];
   lots: Record<string, number>;
-  /** Moldes de repuesto en el almacén de moldes (molde → copias); Fractal puede montarlos en una inyectora libre. */
+  /** Antiguo: copias de repuesto por molde. Ahora salen de `copies` en catalog/tooling.yaml (copias − montadas). */
   molds_in_storage?: Record<string, number>;
 }
 export interface CatalogProductYaml {
@@ -36,7 +36,10 @@ export interface CatalogProductYaml {
 }
 interface ToolingYaml {
   id: string;
+  name?: string;
   product: string;
+  /** Copias físicas del molde; cada una se monta en una sola inyectora a la vez. */
+  copies?: number;
   cavities: number;
   cycle_s: number;
   change_min?: number;
@@ -98,6 +101,19 @@ export interface PlasticsModel {
   machines: string[];
   /** Color montado al inicio en cada máquina. */
   initialColor: Record<string, string | undefined>;
+  /** Moldes del catálogo como recursos: cada copia está montada en una inyectora o en el almacén de moldes. */
+  molds: MoldInfo[];
+  /** Molde montado en cada inyectora (setup.yaml). */
+  mounted: Record<string, string>;
+}
+
+export interface MoldInfo {
+  id: string;
+  name: string;
+  product: string;
+  /** Copias físicas (si el catálogo no lo dice, las que están montadas). */
+  copies: number;
+  changeMin: number;
 }
 
 export function buildModel(cat: CatalogData): PlasticsModel {
@@ -139,6 +155,12 @@ export function buildModel(cat: CatalogData): PlasticsModel {
       final: stepOf(p.id),
     };
   }
+  const mounted = Object.fromEntries(Object.entries(setup).map(([m, s]) => [m, s.tooling]));
+  const molds: MoldInfo[] = cat.tooling.tooling.map((t) => {
+    const inUse = Object.values(mounted).filter((x) => x === t.id).length;
+    if (t.copies !== undefined && inUse > t.copies) throw new Error(`El molde ${t.id} está montado en ${inUse} inyectoras pero solo tiene ${t.copies} copias`);
+    return { id: t.id, name: t.name ?? t.id, product: t.product, copies: t.copies ?? inUse, changeMin: t.change_min ?? 0 };
+  });
   const initialColor: Record<string, string | undefined> = {};
   for (const m of machines) initialColor[m] = setup[m]?.color;
   return {
@@ -158,6 +180,8 @@ export function buildModel(cat: CatalogData): PlasticsModel {
     products,
     machines: [...machines].sort(),
     initialColor,
+    molds,
+    mounted,
   };
 }
 

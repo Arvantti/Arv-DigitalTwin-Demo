@@ -57,6 +57,7 @@
         "min_clamp_t": { "type": "number", "exclusiveMinimum": 0 },
         "batch_kg": { "type": "number", "exclusiveMinimum": 0 },
         "change_min": { "type": "number", "minimum": 0, "description": "Tiempo de cambio (montaje, limpieza o CIP)" },
+        "copies": { "type": "integer", "minimum": 1, "description": "Copias físicas del herramental; cada una se monta en un solo equipo a la vez" },
         "assumed": { "type": "boolean" }
       },
       "allOf": [

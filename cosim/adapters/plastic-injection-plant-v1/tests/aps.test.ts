@@ -117,3 +117,18 @@ describe("APS de plásticos", () => {
     expect(rowsOf(man)).toEqual(rowsOf(base));
   });
 });
+
+describe("moldes como recursos", () => {
+  it("cada molde declara sus copias y ninguna está montada en dos inyectoras", () => {
+    const balde = model.molds.find((t) => t.id === "mold-balde-12l")!;
+    expect(balde.copies).toBe(3);
+    expect(Object.values(model.mounted).filter((t) => t === balde.id).length).toBe(2);
+    for (const t of model.molds) expect(Object.values(model.mounted).filter((x) => x === t.id).length).toBeLessThanOrEqual(t.copies);
+  });
+
+  it("rechaza un montaje con más inyectoras que copias del molde", () => {
+    const cat = fsCatalog();
+    const tooling = cat.tooling.tooling.map((t) => (t.id === "mold-pedal-palanca-2c" ? { ...t, copies: 1 } : t));
+    expect(() => buildModel({ ...cat, tooling: { tooling } })).toThrow(/solo tiene 1 copias/);
+  });
+});
