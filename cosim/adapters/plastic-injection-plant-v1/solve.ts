@@ -2,14 +2,15 @@
  * Cosimulador en modo solver: de los pedidos a la secuencia de producción con restricciones lineales (MILP).
  *
  * Cada turno es una cubeta de tiempo. Variables: unidades de cada trabajo en cada máquina y turno (continuas) y, en
- * las máquinas que cambian de color, si el turno corre ese color (binarias). Restricciones:
+ * las máquinas que cambian de referencia (molde + color), si el turno corre esa referencia (binarias). Restricciones:
  *   1. cada trabajo se hace completo (o queda como faltante, muy penalizado);
- *   2. capacidad de cada máquina en cada turno: minutos de turno menos paradas, menos las purgas de color;
- *   3. una máquina solo produce un color en un turno si ese color está "encendido" en el turno;
+ *   2. capacidad de cada máquina en cada turno: minutos de turno menos paradas, menos los cambios de referencia
+ *      (montaje de molde y purgas de resina y color, con los tiempos de catalog/changeovers.yaml);
+ *   3. una máquina solo produce una referencia en un turno si esa referencia está "encendida" en el turno;
  *   4. el ensamble acumulado hasta un turno no supera los componentes hechos hasta el turno anterior;
  *   5. nada se produce antes de que llegue el pedido.
- * Objetivo: atraso ponderado por importancia (alta 3, normal 1, baja 0,5) + 0,5 por cada color encendido en un turno
- * (purgas) + un empujón mínimo a producir temprano. HiGHS (compilado a WebAssembly) lo resuelve en el navegador.
+ * Objetivo: atraso ponderado por importancia (alta 3, normal 1, baja 0,5) + 0,5 por cada referencia encendida en un
+ * turno (cambios) + un empujón mínimo a producir temprano. HiGHS (compilado a WebAssembly) lo resuelve en el navegador.
  */
 import type { CustomerOrders, PlannedStop, PlantEvent, ProductionPlan } from "../../core/contracts.ts";
 import { blockedOf, context, dispatch, toPlan, type Chunk, type Context, type Job } from "./plan.ts";
@@ -48,6 +49,8 @@ export interface SolveOptions {
   stops?: PlannedStop[];
   /** Pedidos fijados por el planificador: sus lotes de `previous` no se mueven y el resto se organiza alrededor. */
   fixed?: string[];
+  /** Cada color va solo a las máquinas que lo tienen montado en setup.yaml (si alguna lo tiene): menos purgas. */
+  dedicateColors?: boolean;
 }
 
 /** Arma el modelo LP (formato CPLEX LP que lee HiGHS). Exportado para las pruebas. */
@@ -66,10 +69,21 @@ export function buildLp(ctx: Context, colors = false): { lp: string; vars: Map<s
     for (const [s, e] of blockedOf(ctx, m)) free -= Math.max(0, Math.min(e, bk.end) - Math.max(s, a));
     return Math.max(0, free);
   };
-  const colorsOf = (m: string) => [...new Set(jobs.filter((j) => j.step.machines.includes(m)).map((j) => j.color ?? "-"))];
-  const multi = new Set(colors ? model.machines.filter((m) => colorsOf(m).length > 1) : []);
-  // Sin binarias, cada turno de una máquina multicolor reserva una purga de color.
-  const reserve = (m: string) => (!colors && colorsOf(m).length > 1 ? model.colorChangeMin : 0);
+  // Una referencia es molde + color. Las máquinas que corren más de una tienen cambios (montaje y purgas).
+  const refOf = (j: Job) => `${j.step.tooling ?? "-"}|${j.color ?? "-"}`;
+  const refsOf = (m: string) => [...new Set(jobs.filter((j) => j.step.machines.includes(m)).map(refOf))];
+  /** El cambio más largo entre dos referencias de la máquina, según los datos (changeovers.yaml y change_min). */
+  const maxChange = (m: string) => {
+    const refs = refsOf(m).map((r) => r.split("|").map((x) => (x === "-" ? undefined : x)));
+    let worst = 0;
+    for (const [ta, ca] of refs) for (const [tb, cb] of refs) worst = Math.max(worst, model.changeover({ tooling: ta, color: ca }, { tooling: tb, color: cb }).min);
+    return worst;
+  };
+  const change = new Map(model.machines.map((m) => [m, maxChange(m)]));
+  const multi = new Set(colors ? model.machines.filter((m) => refsOf(m).length > 1 && change.get(m)! > 0) : []);
+  // Sin binarias, cada turno de una máquina con varias referencias reserva su cambio más largo (así el despacho nunca
+  // se pasa del turno).
+  const reserve = (m: string) => (!colors && refsOf(m).length > 1 ? change.get(m)! : 0);
   // Holgura de 1 % por turno para que el redondeo a unidades enteras no desborde el turno.
   const capacity = model.machines.map((m) => buckets.map((bk) => Math.max(0, 0.99 * cap(m, bk) - reserve(m))));
   const mi = new Map(model.machines.map((m, i) => [m, i]));
@@ -104,7 +118,7 @@ export function buildLp(ctx: Context, colors = false): { lp: string; vars: Map<s
         const key = `${k}_${b}`;
         (machineTerms.get(key) ?? machineTerms.set(key, []).get(key)!).push(term(j.step.unitMin, v));
         if (multi.has(m)) {
-          const ck = `${k}_${b}_${colorsOf(m).indexOf(j.color ?? "-")}`;
+          const ck = `${k}_${b}_${refsOf(m).indexOf(refOf(j))}`;
           (colorTerms.get(ck) ?? colorTerms.set(ck, []).get(ck)!).push(v);
         }
       });
@@ -116,16 +130,17 @@ export function buildLp(ctx: Context, colors = false): { lp: string; vars: Map<s
     rows.push(` d${ji}: ${wrap([...names.map((v) => `+ ${v}`), `+ ${miss}`])} = ${q}`);
   });
 
-  // Capacidad por máquina y turno, con las purgas de color en las máquinas multicolor.
+  // Capacidad por máquina y turno, con los cambios de referencia en las máquinas que corren varias.
   for (const [key, ts] of machineTerms) {
     const [k, b] = key.split("_").map(Number);
     const m = model.machines[k];
     if (multi.has(m)) {
-      const ys = colorsOf(m).map((_, c) => `y${k}_${b}_${c}`);
-      rows.push(` c${key}: ${wrap([...ts, ...ys.map((y) => `+ ${model.colorChangeMin} ${y}`)])} <= ${(capacity[k][b] + model.colorChangeMin).toFixed(3)}`);
+      const ys = refsOf(m).map((_, c) => `y${k}_${b}_${c}`);
+      const cm = change.get(m)!;
+      rows.push(` c${key}: ${wrap([...ts, ...ys.map((y) => `+ ${cm} ${y}`)])} <= ${(capacity[k][b] + cm).toFixed(3)}`);
     } else rows.push(` c${key}: ${wrap(ts)} <= ${capacity[k][b].toFixed(3)}`);
   }
-  // Un color solo corre en el turno si está encendido.
+  // Una referencia solo corre en el turno si está encendida.
   for (const [ck, vs] of colorTerms) {
     const [k, b] = ck.split("_").map(Number);
     const y = `y${ck}`;
@@ -167,6 +182,11 @@ export function buildLp(ctx: Context, colors = false): { lp: string; vars: Map<s
 /** Resuelve la cartera y devuelve la programación propuesta por el cosimulador. */
 export function solve(highs: HighsLike, model: PlasticsModel, portfolio: CustomerOrders, opt: SolveOptions = {}): ProductionPlan {
   const ctx = context(model, portfolio, opt.now, opt.previous, opt.events, opt.stops, opt.fixed);
+  if (opt.dedicateColors)
+    for (const j of ctx.jobs) {
+      const own = j.step.machines.filter((m) => model.initialColor[m] === j.color);
+      if (own.length && own.length < j.step.machines.length) j.step = { ...j.step, machines: own };
+    }
   const t0 = performance.now();
   const { lp, vars, buckets, nVars, nRows } = buildLp(ctx, opt.colors);
   const res = highs.solve(lp, { time_limit: opt.timeLimitS ?? 20, mip_rel_gap: 0.01, presolve: "on" });
@@ -191,17 +211,23 @@ export function solve(highs: HighsLike, model: PlasticsModel, portfolio: Custome
     list.sort((a, b) => b.qty - a.qty)[0].qty += diff;
   }
 
-  // Tramos por máquina: turno a turno; dentro del turno, primero el color montado y luego por entrega.
+  // Tramos por máquina: turno a turno; dentro del turno, primero la referencia montada, luego las demás agrupadas
+  // (molde y color) y por entrega.
   const queues: Record<string, Chunk[]> = {};
   const color: Record<string, string | undefined> = Object.fromEntries(model.machines.map((m) => [m, ctx.free[m].color]));
+  const tooling: Record<string, string | undefined> = Object.fromEntries(model.machines.map((m) => [m, ctx.free[m].tooling]));
+  const ref = (t?: string, c?: string) => `${t ?? ""}|${c ?? ""}`;
   for (const m of model.machines) {
     queues[m] = [];
     for (let b = 0; b < buckets.length; b++) {
       const here = [...amounts.values()].filter((a) => a.machine === m && a.b === b && a.qty > 0);
-      here.sort((x, y) => Number(x.job.color !== color[m]) - Number(y.job.color !== color[m]) || (x.job.color ?? "").localeCompare(y.job.color ?? "") || x.job.due - y.job.due);
+      const mounted = ref(tooling[m], color[m]);
+      const refA = (a: { job: Job }) => ref(a.job.step.tooling ?? tooling[m], a.job.color ?? color[m]);
+      here.sort((x, y) => Number(refA(x) !== mounted) - Number(refA(y) !== mounted) || refA(x).localeCompare(refA(y)) || x.job.due - y.job.due);
       for (const a of here) {
         queues[m].push({ job: a.job, qty: a.qty, notBefore: buckets[b].start });
         color[m] = a.job.color ?? color[m];
+        tooling[m] = a.job.step.tooling ?? tooling[m];
       }
     }
   }

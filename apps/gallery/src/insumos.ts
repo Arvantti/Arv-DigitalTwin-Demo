@@ -146,7 +146,7 @@ export function renderInsumos(el: HTMLElement, plan: ProductionPlan): void {
     </table></div>
     <h3 class="aps-h3">HORAS DE MÁQUINA Y OPERARIOS</h3>
     <div class="aps-table-wrap"><table class="route-table aps-table">
-      <thead><tr><th>Recurso</th>${head.join("")}<th class="num">Semana</th><th class="num">Turnos</th><th class="num">Cambios de color</th></tr></thead>
+      <thead><tr><th>Recurso</th>${head.join("")}<th class="num">Semana</th><th class="num">Turnos</th><th class="num">Cambios de referencia</th></tr></thead>
       <tbody>
         ${machines.map((m) => row(label(m), n.machineH.get(m)!, (x) => nf(x, 1), `<td class="num">${nf(sum(n.machineH.get(m)!) / shiftH, 1)}</td><td class="num">${n.changeH.get(m) ? `${nf(n.changeH.get(m)!, 1)} h` : "—"}</td>`)).join("")}
         ${row("<b>Operarios (h)</b>", n.operatorH, (x) => nf(x, 1), `<td class="num">${nf(opH / shiftH, 1)}</td><td></td>`)}

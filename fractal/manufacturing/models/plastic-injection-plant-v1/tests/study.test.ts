@@ -42,6 +42,15 @@ describe("Fractal de plásticos", async () => {
     const best = s.options.find((x) => x.id === s.best)!;
     expect(best.max_load.pct).toBeLessThanOrEqual(s.options[0].max_load.pct);
   });
+
+  it("cambios: la recomendada hace menos horas de cambio sin atrasar más pedidos", async () => {
+    const s = await runStudy(highs, cat, { scenario: "cambios", portfolio, now: NOW, previous: vigente, studyId: "FRA-T4" });
+    console.log("cambios", s.options.map((x) => `${x.label}: ${x.kpis.changeovers} cambios ${x.kpis.changeover_h} h, ${x.kpis.late_orders} tarde`).join(" | "), "→", s.recommendation, `${s.seconds} s`);
+    const best = s.options.find((x) => x.id === s.best)!;
+    expect(best.kpis.changeover_h).toBeLessThan(s.options[0].kpis.changeover_h);
+    expect(best.kpis.late_orders).toBeLessThanOrEqual(s.options[0].kpis.late_orders);
+    });
+
   it("fijadas: ninguna opción mueve las órdenes bloqueadas a mano y el resto se reorganiza", async () => {
     const later = vigente.orders.filter((o) => o.start.slice(0, 16) > NOW).slice(0, 3).map((o) => o.id);
     expect(later.length).toBe(3);

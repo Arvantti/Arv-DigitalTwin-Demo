@@ -7,7 +7,7 @@
  */
 import type { CustomerOrder, CustomerOrders, PlannedStop, PlantEvent, Importance, PlanOrderRow, PlanScheduleRow, PlanSource, ProductionPlan } from "../../core/contracts.ts";
 import { DAY_MIN, dateOf, iso, parseLocal, rng } from "../../core/time.ts";
-import type { PlasticsModel, Step } from "./model.ts";
+import type { ChangeKind, PlasticsModel, Step } from "./model.ts";
 
 export const WEIGHT: Record<Importance, number> = { alta: 3, normal: 1, baja: 0.5 };
 const PRIORITY: Record<Importance, number> = { alta: 2, normal: 1, baja: 0 };
@@ -36,6 +36,8 @@ export interface Row {
   end: number;
   qty: number;
   changeoverMin: number;
+  /** Qué manda en el cambio: montaje de molde, purga de resina o purga de color. */
+  changeoverKind?: ChangeKind;
   color?: string;
   /** Fila congelada de un plan anterior: se publica tal cual, con su lote. */
   frozenBatch?: [number, number];
@@ -57,8 +59,8 @@ export interface Context {
   horizonEnd: number;
   down: Record<string, [number, number, string][]>;
   frozen: Row[];
-  /** Por máquina: cuándo queda libre después de lo congelado y con qué color. */
-  free: Record<string, { at: number; color?: string }>;
+  /** Por máquina: cuándo queda libre después de lo congelado y con qué molde y color. */
+  free: Record<string, { at: number; color?: string; tooling?: string }>;
   /** Unidades ya hechas (o en curso) de cada trabajo. */
   done: Record<string, number>;
   /** Pedidos fijados: sus lotes del plan anterior quedan donde estaban, aunque sean futuros. */
@@ -137,7 +139,7 @@ export function context(model: PlasticsModel, portfolio: CustomerOrders, nowIso?
     .filter((e) => e.b > e.a);
   for (const e of outages) if (down[e.m]) down[e.m] = [...down[e.m].filter(([a, b]) => b <= e.a || a >= e.b), [e.a, e.b, e.why] as [number, number, string]].sort((x, y) => x[0] - y[0]);
   const free: Context["free"] = {};
-  for (const m of model.machines) free[m] = { at: start, color: model.initialColor[m] };
+  for (const m of model.machines) free[m] = { at: start, color: model.initialColor[m], tooling: model.initialTooling[m] };
   const done: Record<string, number> = {};
   const frozen: Row[] = [];
   const known = new Set(orders.map((o) => o.id));
@@ -151,7 +153,7 @@ export function context(model: PlasticsModel, portfolio: CustomerOrders, nowIso?
       if (t0 >= now && !isFixed.has(r.order)) continue;
       const job = byKey.get(`${r.order}|${r.product}`);
       if (!job) continue;
-      const row: Row = { job, machine: r.equipment, start: t0, end: parseLocal(r.end), qty: r.quantity, changeoverMin: r.changeover_min, color: r.color, frozenBatch: r.batch ?? [1, 1] };
+      const row: Row = { job, machine: r.equipment, start: t0, end: parseLocal(r.end), qty: r.quantity, changeoverMin: r.changeover_min, changeoverKind: r.changeover_kind, color: r.color, frozenBatch: r.batch ?? [1, 1] };
       // Un lote que estaba corriendo cuando la máquina falló se corta ahí: lo que faltaba se vuelve a programar.
       const cut = outages.find((e) => e.m === r.equipment && e.a > row.start && e.a < row.end);
       if (cut) {
@@ -173,6 +175,7 @@ export function context(model: PlasticsModel, portfolio: CustomerOrders, nowIso?
       if (f && row.end >= f.at) {
         f.at = row.end;
         if (row.color) f.color = row.color;
+        if (job.step.tooling) f.tooling = job.step.tooling;
       }
     }
     for (const m of model.machines) free[m].at = Math.max(free[m].at, now);
@@ -189,7 +192,6 @@ export function dispatch(ctx: Context, queues: Record<string, Chunk[]>): { rows:
   const unscheduled: Record<string, number> = {};
   const isAssembly = (m: string) => ctx.jobs.some((j) => j.components.length && j.step.machines.includes(m));
   const order = [...model.machines].sort((a, b) => Number(isAssembly(a)) - Number(isAssembly(b)) || a.localeCompare(b));
-  const multiColor = (m: string) => new Set(ctx.jobs.filter((j) => j.step.machines.includes(m)).map((j) => j.color)).size > 1 || ctx.free[m].color !== undefined;
 
   /**
    * Cuándo hay `need` unidades acumuladas de un componente en el puesto de ensamble. Las piezas salen de la inyectora
@@ -213,6 +215,7 @@ export function dispatch(ctx: Context, queues: Record<string, Chunk[]>): { rows:
   for (const m of order) {
     let cursor = ctx.free[m].at;
     let color = ctx.free[m].color;
+    let tooling = ctx.free[m].tooling;
     const blocked = blockedOf(ctx, m);
     const fixedSpans = ctx.reserved[m] ?? [];
     /** Minutos de trabajo libres (sin paradas ni lotes fijados) entre a y b. */
@@ -240,8 +243,9 @@ export function dispatch(ctx: Context, queues: Record<string, Chunk[]>): { rows:
       for (let guard = 0; qty > 0 && guard < 200; guard++) {
         for (let stop = blocked.find(([a, b]) => t >= a && t < b); stop; stop = blocked.find(([a, b]) => t >= a && t < b)) t = cal.nextWork(stop[1]);
         if (t >= ctx.horizonEnd) break;
-        let co = 0;
-        if (ch.job.color && color && ch.job.color !== color && multiColor(m) && model.colorChangeMin) co = model.colorChangeMin;
+        // Cambio de referencia según los datos: montaje de molde, purga de resina y de color (changeovers.yaml).
+        const change = model.changeover({ tooling, color }, { tooling: ch.job.step.tooling, color: ch.job.color });
+        const co = change.min;
         const fence = fixedSpans.find(([a]) => a > t);
         let q = qty;
         let end = Math.max(cal.advance(t, co + q * ch.job.step.unitMin, blocked), Number.isFinite(lastReady) ? cal.advance(lastReady, ch.job.step.unitMin, blocked) : -Infinity);
@@ -255,9 +259,10 @@ export function dispatch(ctx: Context, queues: Record<string, Chunk[]>): { rows:
           }
           end = cal.advance(t, co + q * ch.job.step.unitMin, blocked);
         }
-        rows.push({ job: ch.job, machine: m, start: t, end, qty: q, changeoverMin: co, color: ch.job.color });
+        rows.push({ job: ch.job, machine: m, start: t, end, qty: q, changeoverMin: co, ...(change.kind ? { changeoverKind: change.kind } : {}), color: ch.job.color });
         assembled[ch.job.key] = (assembled[ch.job.key] ?? 0) + q;
         if (ch.job.color) color = ch.job.color;
+        if (ch.job.step.tooling) tooling = ch.job.step.tooling;
         cursor = end;
         qty -= q;
         t = end;
@@ -307,6 +312,7 @@ export function toPlan(
         changeover_min: r.changeoverMin,
         batch: r.frozenBatch,
       };
+      if (r.changeoverMin && r.changeoverKind) row.changeover_kind = r.changeoverKind;
       if (r.job.step.tooling) row.tooling = r.job.step.tooling;
       if (r.color) row.color = r.color;
       schedule.push(row);
@@ -332,6 +338,7 @@ export function toPlan(
         changeover_min: co,
         batch: [Math.min(k, lots), lots],
       };
+      if (co && r.changeoverKind) row.changeover_kind = r.changeoverKind;
       if (r.job.step.tooling) row.tooling = r.job.step.tooling;
       if (r.color) row.color = r.color;
       schedule.push(row);
@@ -414,6 +421,7 @@ export function toPlan(
       tardiness_h: Math.round(late.reduce((s, o) => s + o.late_h, 0) * 10) / 10,
       changeovers: co.length,
       changeover_h: Math.round(co.reduce((s, r) => s + r.changeoverMin, 0) / 6) / 10,
+      mold_changes: co.filter((r) => r.changeoverKind === "molde").length,
       busiest: { equipment: busiestId, busy_pct: busiestUse.busy_pct },
     },
     ...(head.solver ? { solver: head.solver } : {}),
