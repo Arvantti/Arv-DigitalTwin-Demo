@@ -133,6 +133,7 @@ let plantApiAvailable = false;
 let latestLiveMessage: SimMessage | null = null;
 let historicalTime: number | null = null;
 let historyRequest = 0;
+let forecastPlaybackStop: (() => void) | null = null;
 const shotMode = url.get("shot") === "1";
 if (shotMode && url.get("ui") !== "1") document.body.classList.add("shot");
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -867,6 +868,9 @@ function markDown(ids: string[]): void {
 // ------------------------------------------------------------------ selección
 function select(id: string | null): void {
   selectedId = id;
+  document.querySelectorAll<HTMLButtonElement>("#cameras .assembly-asset").forEach((item) => {
+    item.classList.toggle("active", item.dataset.equipment === id);
+  });
   if (selection) {
     selection.parent?.remove(selection);
     selection.geometry.dispose();
@@ -933,83 +937,47 @@ const TYPE_NAMES: Record<string, string> = {
   mold_rack: "Racks de moldes",
 };
 
-interface CameraNode {
-  run: () => void;
-  select: () => void;
-}
-
+/** Mismo árbol del acueducto (details/summary con las clases assembly-*): grupo > zona > tipo de equipo > equipo. */
 function buildCameraTree(
   box: HTMLElement,
   entries: [string, string, () => void][],
   groups: { name: string; zones: string[] }[],
-): Map<string, CameraNode> {
-  const keys = new Map<string, CameraNode>();
-  box.classList.add("cam-tree");
-  box.classList.remove("commands");
-  let activeRow: HTMLElement | null = null;
-  const leaf = (parent: HTMLElement, label: string, key: string, go: () => void): HTMLElement => {
-    const row = document.createElement("div");
-    row.className = "tree-row tree-leaf";
-    row.textContent = label;
-    row.dataset.camera = key;
-    const select = () => {
-      activeRow?.classList.remove("active");
-      row.classList.add("active");
-      activeRow = row;
-    };
-    row.onclick = () => {
-      go();
-      select();
-    };
-    parent.appendChild(row);
-    keys.set(key, { run: go, select });
-    return row;
-  };
-  /** Nodo plegable: la flecha pliega, el nombre enfoca la cámara. */
-  const branch = (parent: HTMLElement, label: string, key: string, go: (() => void) | null, open: boolean): HTMLElement => {
-    const node = document.createElement("div");
-    node.className = "tree-node" + (open ? " open" : "");
-    const row = document.createElement("div");
-    row.className = "tree-row";
-    const arrow = document.createElement("span");
-    arrow.className = "tree-arrow";
-    arrow.onclick = (ev) => {
-      ev.stopPropagation();
-      node.classList.toggle("open");
-    };
-    const text = document.createElement("span");
-    text.textContent = label;
-    row.append(arrow, text);
-    row.dataset.camera = key;
-    const select = () => {
-      activeRow?.classList.remove("active");
-      row.classList.add("active");
-      activeRow = row;
-    };
-    row.onclick = () => {
-      if (go) {
-        go();
-        select();
-      } else node.classList.toggle("open");
-    };
-    if (go) keys.set(key, { run: go, select });
-    const kids = document.createElement("div");
-    kids.className = "tree-children";
-    node.append(row, kids);
-    parent.appendChild(node);
-    return kids;
-  };
+  initial: string,
+): void {
+  box.classList.add("assembly-tree");
+  box.setAttribute("aria-label", "Árbol de cámaras de la planta");
   const byKey = new Map(entries.map((e) => [e[1], e]));
+  const buttons = new Map<string, HTMLButtonElement>();
+  const actions = new Map<string, () => void>();
+  const activate = (key: string): void => {
+    actions.get(key)?.();
+    buttons.forEach((b, k) => b.classList.toggle("active", k === key));
+  };
+  const button = (parent: HTMLElement, label: string, key: string, go: () => void, className: string): void => {
+    const b = document.createElement("button");
+    b.className = `assembly-item ${className}`;
+    b.textContent = label;
+    b.dataset.camera = key;
+    actions.set(key, go);
+    buttons.set(key, b);
+    b.onclick = () => activate(key);
+    parent.append(b);
+  };
+  const children = (group: HTMLElement): HTMLElement => {
+    const c = document.createElement("div");
+    c.className = "assembly-children";
+    group.append(c);
+    return c;
+  };
   const general = byKey.get("general");
-  if (general) leaf(box, general[0], general[1], general[2]);
-  const used = new Set<string>(["general"]);
+  if (general) button(box, "Vista general", "general", general[2], "assembly-camera");
   const zoneById = new Map(doc.zones.map((z) => [z.id, z]));
   const frameAsset = (id: string) => () => {
     const a = assets.get(id);
-    if (a) {
-      stage.frame(a.root, 1.4, new THREE.Vector3(1.1, 0.7, 1.3));
-      select(id);
-    }
+    if (!a) return;
+    select(id);
+    stage.frame(a.root, 1.4, new THREE.Vector3(1.1, 0.7, 1.3));
+    stage.setPivot(a.root);
   };
   for (const g of groups) {
     const zones = g.zones.map((id) => zoneById.get(id)).filter((z): z is NonNullable<typeof z> => !!z);
@@ -1018,35 +986,179 @@ function buildCameraTree(
     const y0 = Math.min(...zones.map((z) => z.rect[1]));
     const x1 = Math.max(...zones.map((z) => z.rect[0] + z.rect[2]));
     const y1 = Math.max(...zones.map((z) => z.rect[1] + z.rect[3]));
-    const kids = branch(box, g.name, `grupo-${g.name.toLowerCase().replace(/\W+/g, "-")}`, () => focusRect([x0, y0, x1 - x0, y1 - y0], 6, 0.8, 0, new THREE.Vector3(1.0, 0.8, 1.2)), false);
+    const group = makeAssemblyGroup(g.name, false, "assembly-root");
+    box.append(group);
+    const gKids = children(group);
+    button(gKids, "⌖ Enfocar conjunto", `grupo-${g.name.toLowerCase().replace(/\W+/g, "-")}`, () => focusRect([x0, y0, x1 - x0, y1 - y0], 6, 0.8, 0, new THREE.Vector3(1.0, 0.8, 1.2)), "assembly-focus");
     for (const z of zones) {
       const eqs = doc.equipment.filter((e) => e.zone === z.id && assets.has(e.id));
-      const entry = byKey.get(z.id);
-      const go = entry ? entry[2] : () => focusRect(z.rect, Math.max(3, z.height), 0.78, z.elevation ?? 0);
-      used.add(z.id);
+      const go = byKey.get(z.id)?.[2] ?? (() => focusRect(z.rect, Math.max(3, z.height), 0.78, z.elevation ?? 0));
       if (!eqs.length) {
-        leaf(kids, z.name, z.id, go);
+        button(gKids, z.name, z.id, go, "assembly-camera");
         continue;
       }
-      const zkids = branch(kids, z.name, z.id, go, false);
+      const zg = makeAssemblyGroup(z.name, false);
+      gKids.append(zg);
+      const zKids = children(zg);
+      button(zKids, "⌖ Enfocar zona", z.id, go, "assembly-focus");
       const types = [...new Set(eqs.map((e) => e.type))];
-      if (eqs.length > 6 && types.length > 1) {
-        for (const t of types) {
-          const list = eqs.filter((e) => e.type === t);
-          const tk = list.length > 1 ? branch(zkids, `${TYPE_NAMES[t] ?? t.replace(/_/g, " ")} (${list.length})`, `${z.id}:${t}`, null, false) : zkids;
-          for (const e of list) leaf(tk, e.id.toUpperCase(), e.id, frameAsset(e.id));
+      const grouped = eqs.length > 6 && types.length > 1;
+      for (const t of grouped ? types : [""]) {
+        const list = grouped ? eqs.filter((e) => e.type === t) : eqs;
+        let target = zKids;
+        if (grouped && list.length > 1) {
+          const tg = makeAssemblyGroup(`${TYPE_NAMES[t] ?? t.replace(/_/g, " ")} (${list.length})`, false);
+          zKids.append(tg);
+          target = children(tg);
         }
-      } else for (const e of eqs) leaf(zkids, e.id.toUpperCase(), e.id, frameAsset(e.id));
+        for (const e of list) button(target, e.id.toUpperCase(), e.id, frameAsset(e.id), "assembly-asset");
+      }
     }
   }
-  // cámaras especiales que no son una zona (p. ej. la línea de ensamble) bajo su grupo lógico
+  // cámara especial que no es una zona (la línea de ensamble), dentro de su grupo
   const ens = byKey.get("ensamble");
   if (ens) {
-    const holder = box.querySelector<HTMLElement>('[data-camera="secundarias"]')?.parentElement?.parentElement;
-    leaf(holder ?? box, ens[0], ens[1], ens[2]);
+    const holder = box.querySelector<HTMLElement>('[data-camera="secundarias"]')?.parentElement ?? box;
+    button(holder, ens[0], ens[1], ens[2], "assembly-camera");
   }
-  void used;
-  return keys;
+  const key = actions.has(initial) ? initial : "general";
+  activate(key);
+  buttons.get(key)?.closest("details")?.setAttribute("open", "");
+  for (let d = buttons.get(key)?.closest("details")?.parentElement?.closest("details"); d; d = d.parentElement?.closest("details")) d.setAttribute("open", "");
+}
+
+function buildWaterAssemblyTree(box: HTMLElement, entries: [string, string, () => void][], initial: string): void {
+  const heading = box.previousElementSibling;
+  if (heading instanceof HTMLElement) heading.textContent = "ENSAMBLE · ACUEDUCTO";
+  box.classList.add("assembly-tree");
+  box.setAttribute("aria-label", "Árbol de vistas y sistemas del acueducto");
+  const cameraByKey = new Map(entries.map((entry) => [entry[1], entry]));
+  const selectedCamera = entries.find((entry) => entry[1] === initial) ?? entries[0];
+  const root = makeAssemblyGroup("ACUEDUCTO A ESCALA", true, "assembly-root");
+  box.append(root);
+
+  const views = makeAssemblyGroup("VISTAS DE CÁMARA", true);
+  root.append(views);
+  const overview = document.createElement("div");
+  overview.className = "assembly-children";
+  views.append(overview);
+
+  const cameraButtons = new Map<string, HTMLButtonElement>();
+  const activateCamera = (key: string): void => {
+    const entry = cameraByKey.get(key);
+    if (!entry) return;
+    entry[2]();
+    cameraButtons.forEach((button, cameraKey) => button.classList.toggle("active", cameraKey === key));
+  };
+  const addCamera = (parent: HTMLElement, key: string, label: string): void => {
+    if (!cameraByKey.has(key)) return;
+    const button = document.createElement("button");
+    button.className = "assembly-item assembly-camera";
+    button.textContent = label;
+    button.dataset.camera = key;
+    button.onclick = () => activateCamera(key);
+    cameraButtons.set(key, button);
+    parent.append(button);
+  };
+  addCamera(overview, "general", "Vista general");
+  const floors = makeAssemblyGroup("PISOS", true);
+  views.append(floors);
+  const floorItems = document.createElement("div");
+  floorItems.className = "assembly-children";
+  floors.append(floorItems);
+  addCamera(floorItems, "piso-0", "Piso 0 · retorno");
+  addCamera(floorItems, "piso-1", "Piso 1 · bombeo y regulación");
+  addCamera(floorItems, "piso-2", "Piso 2");
+  const column = makeAssemblyGroup("COLUMNA DE DISTRIBUCIÓN", false);
+  views.append(column);
+  const columnItems = document.createElement("div");
+  columnItems.className = "assembly-children";
+  column.append(columnItems);
+  addCamera(columnItems, "columna", "Vista de columna");
+  for (let level = 1; level <= 4; level++) addCamera(columnItems, `nivel-${level}`, `Nivel ${level}`);
+
+  const systems = makeAssemblyGroup("SISTEMAS", false);
+  root.append(systems);
+  const equipmentNames: Record<string, string> = {
+    "tank-recirc-01": "Tanque de retorno 1",
+    "tank-recirc-02": "Tanque de retorno 2",
+    "drain-manifold-01": "Colector T de drenajes",
+    "pumpset-recirc-01": "Bombas de recirculación",
+    "tank-supply-01": "Tanque de suministro",
+    "pumpset-main-01": "Bombas principales",
+    "prs-01": "Estación reguladora",
+    "grid-01": "Rejilla · nivel 1",
+    "grid-02": "Rejilla · nivel 2",
+    "grid-03": "Rejilla · nivel 3",
+    "grid-04": "Rejilla · nivel 4",
+    "valve-between-12": "Válvula entre niveles 1–2",
+    "valve-between-23": "Válvula entre niveles 2–3",
+    "valve-between-34": "Válvula entre niveles 3–4",
+  };
+  const addSubsystem = (parent: HTMLElement, title: string, cameraKey: string, ids: string[]): void => {
+    const subsystem = makeAssemblyGroup(title, false);
+    parent.append(subsystem);
+    const children = document.createElement("div");
+    children.className = "assembly-children";
+    subsystem.append(children);
+    const focus = document.createElement("button");
+    focus.className = "assembly-item assembly-focus";
+    focus.textContent = "⌖ Enfocar conjunto";
+    focus.onclick = () => activateCamera(cameraKey);
+    children.append(focus);
+    for (const id of ids) {
+      const asset = assets.get(id);
+      if (!asset) continue;
+      const item = document.createElement("button");
+      item.className = "assembly-item assembly-asset";
+      item.textContent = equipmentNames[id] ?? id;
+      item.title = id;
+      item.dataset.equipment = id;
+      item.onclick = () => {
+        select(id);
+        stage.frame(asset.root, 1.05, new THREE.Vector3(1.2, 0.65, 1.4));
+        stage.setPivot(asset.root);
+      };
+      children.append(item);
+    }
+  };
+  const floorZero = makeAssemblyGroup("PISO 0 · RECIRCULACIÓN", true);
+  systems.append(floorZero);
+  const floorZeroItems = document.createElement("div");
+  floorZeroItems.className = "assembly-children";
+  floorZero.append(floorZeroItems);
+  addSubsystem(floorZeroItems, "Retorno por gravedad", "piso-0", ["drain-manifold-01", "tank-recirc-01", "tank-recirc-02"]);
+  addSubsystem(floorZeroItems, "Bombeo de recirculación", "piso-0", ["pumpset-recirc-01"]);
+
+  const floorOne = makeAssemblyGroup("PISO 1 · SUMINISTRO", false);
+  systems.append(floorOne);
+  const floorOneItems = document.createElement("div");
+  floorOneItems.className = "assembly-children";
+  floorOne.append(floorOneItems);
+  addSubsystem(floorOneItems, "Tanque y bombeo principal", "piso-1", ["tank-supply-01", "pumpset-main-01"]);
+  addSubsystem(floorOneItems, "Regulación", "piso-1", ["prs-01"]);
+
+  const distribution = makeAssemblyGroup("COLUMNA · DISTRIBUCIÓN", false);
+  systems.append(distribution);
+  const distributionItems = document.createElement("div");
+  distributionItems.className = "assembly-children";
+  distribution.append(distributionItems);
+  addSubsystem(distributionItems, "Rejillas y válvulas entre niveles", "columna", [
+    "grid-01", "valve-between-12", "grid-02", "valve-between-23", "grid-03", "valve-between-34", "grid-04",
+  ]);
+
+  selectedCamera[2]();
+  cameraButtons.get(selectedCamera[1])?.classList.add("active");
+}
+
+function makeAssemblyGroup(label: string, open: boolean, className = ""): HTMLDetailsElement {
+  const details = document.createElement("details");
+  details.className = `assembly-group ${className}`.trim();
+  details.open = open;
+  const summary = document.createElement("summary");
+  summary.textContent = label;
+  details.append(summary);
+  return details;
 }
 
 function buildCameras(): void {
@@ -1112,13 +1224,14 @@ function buildCameras(): void {
       },
     ]);
   }
+  const initial = url.get("camera") ?? "general";
   const groups = CAMERA_GROUPS[doc.plant.id];
   if (groups) {
-    const keys = buildCameraTree(box, entries, groups);
-    const initialKey = url.get("camera") ?? "general";
-    const go = keys.get(initialKey) ?? keys.get("general")!;
-    go.run();
-    go.select();
+    buildCameraTree(box, entries, groups, initial);
+    return;
+  }
+  if (doc.plant.id === "water-network-scale-v1") {
+    buildWaterAssemblyTree(box, entries, initial);
     return;
   }
   for (const [label, key, go] of entries) {
@@ -1131,7 +1244,6 @@ function buildCameras(): void {
     b.dataset.camera = key;
     box.appendChild(b);
   }
-  const initial = url.get("camera") ?? "general";
   const initialEntry = entries.find((entry) => entry[1] === initial) ?? entries[0];
   initialEntry[2]();
   box.querySelector<HTMLButtonElement>(`[data-camera="${initialEntry[1]}"]`)?.classList.add("active");
@@ -1248,7 +1360,7 @@ function applyMessage(msg: SimMessage, label: string): void {
   const hh = String(Math.floor(t / 3600)).padStart(2, "0");
   const mm = String(Math.floor((t % 3600) / 60)).padStart(2, "0");
   const ss = String(Math.floor(t % 60)).padStart(2, "0");
-  $("clock").textContent = `${label} ${hh}:${mm}:${ss} · ×${msg.speed ?? speedFromSlider()}`;
+  $("clock").textContent = `${label} ${hh}:${mm}:${ss}${label === "FUTURO FRACTAL" ? "" : ` · ×${msg.speed ?? speedFromSlider()}`}`;
 }
 
 async function connect(): Promise<void> {
@@ -1512,6 +1624,7 @@ function waterView(view: "3d" | "plc" | "history"): void {
     // Pasado y futuro nunca se superponen: el estudio sigue guardado, pero la vista
     // vuelve a PLC.Actual antes de pintar un fotograma histórico.
     if (forecastStudyId) {
+      forecastPlaybackStop?.(); forecastPlaybackStop = null;
       forecastStudyId = null; url.delete("study"); history.replaceState(null, "", `${location.pathname}?${url}`);
       $("forecast-panel").hidden = true; document.body.classList.remove("forecast-mode");
     }
@@ -1542,12 +1655,15 @@ async function showHistory(t: number): Promise<void> {
 // ------------------------------------------------------------------ arranque
 async function loadForecast(): Promise<void> {
   if (!sessionId || !forecastStudyId) return;
+  forecastPlaybackStop?.(); forecastPlaybackStop = null;
   historicalTime = null;
   const response = await apiFetch(`/api/plants/${doc.plant.id}/sessions/${sessionId}/fractal/studies/${forecastStudyId}/frames`);
   if (!response.ok) throw new Error("No se pudo cargar el estudio Fractal desde PLC");
   const data = await response.json() as { base_time: number; frames: { hour: number; supply_level_pct: number; robust: boolean; snapshot: SimMessage["snapshot"]; scenarios: { demand_factor: number; state: Record<string, number>; feasible: boolean }[] }[] };
   const panel = $("forecast-panel");
   const selector = $<HTMLSelectElement>("forecast-hour");
+  const playButton = $<HTMLButtonElement>("forecast-play");
+  const speedSelector = $<HTMLSelectElement>("forecast-speed");
   panel.hidden = false;
   document.body.classList.add("forecast-mode");
   $("forecast-study-meta").textContent = `Estudio ${forecastStudyId} · ${data.frames.length} horas · PLC.Actual no se modifica`;
@@ -1559,7 +1675,36 @@ async function loadForecast(): Promise<void> {
     applyMessage({ t: data.base_time + (frame.hour + 1) * 3600, speed: 240, snapshot: frame.snapshot, events: [] }, "FUTURO FRACTAL");
     $("forecast-values").textContent = `Tanque estimado ${frame.supply_level_pct.toFixed(1)} % (nivel sensible a la histéresis de retorno) · presión crítica ${Number(nominal.state.critical_pressure_mca).toFixed(2)} mca · fuga ${Number(nominal.state.leakage_m3h).toFixed(3)} m³/h · ${frame.robust ? "FACTIBLE EN MODELO · NO VALIDADO DINÁMICAMENTE" : "REVISAR RESTRICCIONES"}`;
   };
-  selector.onchange = showHour;
+  let playbackTimer: number | undefined;
+  const stopPlayback = () => {
+    if (playbackTimer !== undefined) window.clearInterval(playbackTimer);
+    playbackTimer = undefined;
+    playButton.textContent = "▶ REPRODUCIR";
+    playButton.setAttribute("aria-label", "Reproducir proyección");
+  };
+  forecastPlaybackStop = stopPlayback;
+  selector.onchange = () => { stopPlayback(); showHour(); };
+  playButton.onclick = () => {
+    if (playbackTimer !== undefined) { stopPlayback(); return; }
+    if (!data.frames.length) return;
+    if (Number(selector.value) >= data.frames.length - 1) selector.value = "0";
+    showHour();
+    playButton.textContent = "❚❚ PAUSAR";
+    playButton.setAttribute("aria-label", "Pausar proyección");
+    const frameIntervalMs = 1000 / Number(speedSelector.value);
+    playbackTimer = window.setInterval(() => {
+      const next = Number(selector.value) + 1;
+      if (next >= data.frames.length) { stopPlayback(); return; }
+      selector.value = String(next);
+      showHour();
+    }, frameIntervalMs);
+  };
+  speedSelector.onchange = () => {
+    if (playbackTimer !== undefined) {
+      stopPlayback();
+      playButton.click();
+    }
+  };
   showHour();
 }
 
@@ -1590,6 +1735,7 @@ async function start(): Promise<void> {
   $<HTMLAnchorElement>("link-equipos").href = `/equipos.html?plant=${plantId}`;
   const plcLink = $<HTMLAnchorElement>("link-plc");
   $("forecast-return").onclick = () => {
+    forecastPlaybackStop?.(); forecastPlaybackStop = null;
     forecastStudyId = null; url.delete("study"); history.replaceState(null, "", `${location.pathname}?${url}`);
     $("forecast-panel").hidden = true; document.body.classList.remove("forecast-mode");
     if (latestLiveMessage) applyMessage(latestLiveMessage, "PLC.ACTUAL");

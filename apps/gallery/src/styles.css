@@ -54,6 +54,22 @@ button.primary { background: rgba(45, 127, 249, 0.22); border-color: var(--accen
 .speed input { width: 100%; accent-color: var(--accent); }
 .commands { display: flex; flex-wrap: wrap; gap: 6px; }
 .commands button { font-size: 11px; padding: 5px 8px; }
+.assembly-tree { display: block; font-size: 11px; }
+.assembly-tree details { margin: 2px 0; }
+.assembly-tree summary { list-style: none; display: flex; align-items: center; min-height: 26px; padding: 4px 6px; border: 1px solid transparent; border-radius: var(--radius-control); color: #dce9ff; cursor: pointer; letter-spacing: 0.04em; }
+.assembly-tree summary::-webkit-details-marker { display: none; }
+.assembly-tree summary::before { content: "▸"; width: 16px; color: var(--accent); font-size: 13px; }
+.assembly-tree details[open] > summary::before { content: "▾"; }
+.assembly-tree .assembly-root > summary { color: #fff; font-weight: 700; }
+.assembly-tree summary:hover { background: rgba(45, 127, 249, 0.12); border-color: var(--line); }
+.assembly-tree .assembly-children { margin-left: 11px; padding-left: 7px; border-left: 1px solid rgba(120, 180, 230, 0.2); }
+.assembly-tree button.assembly-item { display: block; width: 100%; margin: 1px 0; padding: 5px 6px; border: 1px solid transparent; border-radius: var(--radius-control); background: transparent; color: var(--dim); text-align: left; font-size: 11px; letter-spacing: 0.01em; }
+.assembly-tree button.assembly-item::before { display: inline-block; width: 17px; color: #6f8cad; }
+.assembly-tree button.assembly-camera::before { content: "◉"; }
+.assembly-tree button.assembly-asset::before { content: "◇"; }
+.assembly-tree button.assembly-focus { color: var(--cyan); }
+.assembly-tree button.assembly-focus::before { content: "⌖"; }
+.assembly-tree button.assembly-item:hover, .assembly-tree button.assembly-item.active { border-color: var(--accent); background: rgba(45, 127, 249, 0.14); color: #fff; }
 .hud { top: 76px; right: 12px; width: 320px; max-height: calc(100vh - 280px); overflow-y: auto; padding: 12px 16px; }
 .hud-head { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .state, .phase { font: 700 20px Inter, sans-serif; letter-spacing: 0.08em; }
@@ -383,19 +399,3 @@ button.pick { padding: 2px 8px; font-size: 11px; }
 .to-row b { font-family: "IBM Plex Mono", monospace; }
 .to-toggle { background: none; border: 0; padding: 0; cursor: pointer; color: var(--dim); text-align: left; }
 .twin-orders.min #to-now, .twin-orders.min #to-now-title { display: none; }
-
-/* Árbol de cámaras tipo CAD */
-.cam-tree { font-size: 12px; user-select: none; }
-.cam-tree .tree-row { display: flex; align-items: center; gap: 4px; padding: 4px 6px; border-radius: var(--radius-control); cursor: pointer; border: 1px solid transparent; }
-.cam-tree .tree-row:hover { border-color: var(--line); }
-.cam-tree .tree-row.active { border-color: var(--accent); background: rgba(45, 127, 249, 0.12); }
-.cam-tree .tree-arrow { width: 14px; flex: none; text-align: center; color: var(--dim); }
-.cam-tree .tree-arrow::before { content: "▸"; }
-.cam-tree .tree-node.open > .tree-row > .tree-arrow::before { content: "▾"; }
-.cam-tree .tree-children { display: none; margin-left: 11px; padding-left: 5px; border-left: 1px solid var(--line); }
-.cam-tree .tree-node.open > .tree-children { display: block; }
-.cam-tree > .tree-leaf { font-weight: 600; letter-spacing: 0.05em; }
-.cam-tree .tree-leaf { color: var(--text); padding-left: 20px; }
-.cam-tree .tree-leaf::before { content: "◇"; margin-left: -14px; color: var(--dim); font-size: 10px; }
-.cam-tree > .tree-leaf { padding-left: 6px; } .cam-tree > .tree-leaf::before { content: none; }
-.cam-tree > .tree-node > .tree-row { font-weight: 600; letter-spacing: 0.04em; }
