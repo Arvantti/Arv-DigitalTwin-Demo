@@ -71,6 +71,14 @@ def pump_flow(model: dict[str, Any], levels: dict[str, float], speed: float = 1.
     return flow, qa, qb
 
 
+def split_floor_drains(model: dict[str, Any], distribution_by_level: dict[str, float]) -> tuple[float, float]:
+    """Combina el drenaje de los cuatro pisos y lo divide en la Y común hacia ambos retornos."""
+    total = sum(max(0.0, float(distribution_by_level[str(level)])) for level in range(1, 5))
+    share = float(model["equipment_models"]["drain-manifold-01"]["params"]["tank_1_share"])
+    first = total * min(1.0, max(0.0, share))
+    return first, total - first
+
+
 def advance_hour(
     model: dict[str, Any], levels: dict[str, float], distribution_by_level: dict[str, float], initially_on: bool,
     *, duration_s: float = 3600.0,
@@ -82,10 +90,8 @@ def advance_hour(
     pump = model["equipment_models"]["pumpset-recirc-01"]["params"]
     capacities = {tank: float(model["equipment_models"][tank]["params"]["volume_l"]) / 1000 for tank in levels}
     volumes = {tank: capacities[tank] * pct / 100 for tank, pct in levels.items()}
-    returned = {
-        "tank-recirc-01": distribution_by_level["1"] + distribution_by_level["2"],
-        "tank-recirc-02": distribution_by_level["3"] + distribution_by_level["4"],
-    }
+    return_1, return_2 = split_floor_drains(model, distribution_by_level)
+    returned = {"tank-recirc-01": return_1, "tank-recirc-02": return_2}
     drawn = sum(returned.values())
     on = initially_on
     speed = 1.0 if initially_on else 0.0

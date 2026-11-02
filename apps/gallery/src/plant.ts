@@ -133,6 +133,7 @@ let plantApiAvailable = false;
 let latestLiveMessage: SimMessage | null = null;
 let historicalTime: number | null = null;
 let historyRequest = 0;
+let forecastPlaybackStop: (() => void) | null = null;
 const shotMode = url.get("shot") === "1";
 if (shotMode && url.get("ui") !== "1") document.body.classList.add("shot");
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
@@ -867,6 +868,9 @@ function markDown(ids: string[]): void {
 // ------------------------------------------------------------------ selección
 function select(id: string | null): void {
   selectedId = id;
+  document.querySelectorAll<HTMLButtonElement>("#cameras .assembly-asset").forEach((item) => {
+    item.classList.toggle("active", item.dataset.equipment === id);
+  });
   if (selection) {
     selection.parent?.remove(selection);
     selection.geometry.dispose();
@@ -908,6 +912,140 @@ function focusRect(rect: [number, number, number, number], height = 4, distanceF
   probe.position.copy(toScene(x0 + w / 2, y0 + l / 2)).setY(base + height / 2);
   probe.updateMatrixWorld(true);
   stage.frame(probe, distanceFactor, direction);
+}
+
+function buildWaterAssemblyTree(box: HTMLElement, entries: [string, string, () => void][], initial: string): void {
+  const heading = box.previousElementSibling;
+  if (heading instanceof HTMLElement) heading.textContent = "ENSAMBLE · ACUEDUCTO";
+  box.classList.add("assembly-tree");
+  box.setAttribute("aria-label", "Árbol de vistas y sistemas del acueducto");
+  const cameraByKey = new Map(entries.map((entry) => [entry[1], entry]));
+  const selectedCamera = entries.find((entry) => entry[1] === initial) ?? entries[0];
+  const root = makeAssemblyGroup("ACUEDUCTO A ESCALA", true, "assembly-root");
+  box.append(root);
+
+  const views = makeAssemblyGroup("VISTAS DE CÁMARA", true);
+  root.append(views);
+  const overview = document.createElement("div");
+  overview.className = "assembly-children";
+  views.append(overview);
+
+  const cameraButtons = new Map<string, HTMLButtonElement>();
+  const activateCamera = (key: string): void => {
+    const entry = cameraByKey.get(key);
+    if (!entry) return;
+    entry[2]();
+    cameraButtons.forEach((button, cameraKey) => button.classList.toggle("active", cameraKey === key));
+  };
+  const addCamera = (parent: HTMLElement, key: string, label: string): void => {
+    if (!cameraByKey.has(key)) return;
+    const button = document.createElement("button");
+    button.className = "assembly-item assembly-camera";
+    button.textContent = label;
+    button.dataset.camera = key;
+    button.onclick = () => activateCamera(key);
+    cameraButtons.set(key, button);
+    parent.append(button);
+  };
+  addCamera(overview, "general", "Vista general");
+  const floors = makeAssemblyGroup("PISOS", true);
+  views.append(floors);
+  const floorItems = document.createElement("div");
+  floorItems.className = "assembly-children";
+  floors.append(floorItems);
+  addCamera(floorItems, "piso-0", "Piso 0 · retorno");
+  addCamera(floorItems, "piso-1", "Piso 1 · bombeo y regulación");
+  addCamera(floorItems, "piso-2", "Piso 2");
+  const column = makeAssemblyGroup("COLUMNA DE DISTRIBUCIÓN", false);
+  views.append(column);
+  const columnItems = document.createElement("div");
+  columnItems.className = "assembly-children";
+  column.append(columnItems);
+  addCamera(columnItems, "columna", "Vista de columna");
+  for (let level = 1; level <= 4; level++) addCamera(columnItems, `nivel-${level}`, `Nivel ${level}`);
+
+  const systems = makeAssemblyGroup("SISTEMAS", false);
+  root.append(systems);
+  const equipmentNames: Record<string, string> = {
+    "tank-recirc-01": "Tanque de retorno 1",
+    "tank-recirc-02": "Tanque de retorno 2",
+    "drain-manifold-01": "Colector T de drenajes",
+    "pumpset-recirc-01": "Bombas de recirculación",
+    "tank-supply-01": "Tanque de suministro",
+    "pumpset-main-01": "Bombas principales",
+    "prs-01": "Estación reguladora",
+    "grid-01": "Rejilla · nivel 1",
+    "grid-02": "Rejilla · nivel 2",
+    "grid-03": "Rejilla · nivel 3",
+    "grid-04": "Rejilla · nivel 4",
+    "valve-between-12": "Válvula entre niveles 1–2",
+    "valve-between-23": "Válvula entre niveles 2–3",
+    "valve-between-34": "Válvula entre niveles 3–4",
+  };
+  const addSubsystem = (parent: HTMLElement, title: string, cameraKey: string, ids: string[]): void => {
+    const subsystem = makeAssemblyGroup(title, false);
+    parent.append(subsystem);
+    const children = document.createElement("div");
+    children.className = "assembly-children";
+    subsystem.append(children);
+    const focus = document.createElement("button");
+    focus.className = "assembly-item assembly-focus";
+    focus.textContent = "⌖ Enfocar conjunto";
+    focus.onclick = () => activateCamera(cameraKey);
+    children.append(focus);
+    for (const id of ids) {
+      const asset = assets.get(id);
+      if (!asset) continue;
+      const item = document.createElement("button");
+      item.className = "assembly-item assembly-asset";
+      item.textContent = equipmentNames[id] ?? id;
+      item.title = id;
+      item.dataset.equipment = id;
+      item.onclick = () => {
+        select(id);
+        stage.frame(asset.root, 1.05, new THREE.Vector3(1.2, 0.65, 1.4));
+        stage.setPivot(asset.root);
+      };
+      children.append(item);
+    }
+  };
+  const floorZero = makeAssemblyGroup("PISO 0 · RECIRCULACIÓN", true);
+  systems.append(floorZero);
+  const floorZeroItems = document.createElement("div");
+  floorZeroItems.className = "assembly-children";
+  floorZero.append(floorZeroItems);
+  addSubsystem(floorZeroItems, "Retorno por gravedad", "piso-0", ["drain-manifold-01", "tank-recirc-01", "tank-recirc-02"]);
+  addSubsystem(floorZeroItems, "Bombeo de recirculación", "piso-0", ["pumpset-recirc-01"]);
+
+  const floorOne = makeAssemblyGroup("PISO 1 · SUMINISTRO", false);
+  systems.append(floorOne);
+  const floorOneItems = document.createElement("div");
+  floorOneItems.className = "assembly-children";
+  floorOne.append(floorOneItems);
+  addSubsystem(floorOneItems, "Tanque y bombeo principal", "piso-1", ["tank-supply-01", "pumpset-main-01"]);
+  addSubsystem(floorOneItems, "Regulación", "piso-1", ["prs-01"]);
+
+  const distribution = makeAssemblyGroup("COLUMNA · DISTRIBUCIÓN", false);
+  systems.append(distribution);
+  const distributionItems = document.createElement("div");
+  distributionItems.className = "assembly-children";
+  distribution.append(distributionItems);
+  addSubsystem(distributionItems, "Rejillas y válvulas entre niveles", "columna", [
+    "grid-01", "valve-between-12", "grid-02", "valve-between-23", "grid-03", "valve-between-34", "grid-04",
+  ]);
+
+  selectedCamera[2]();
+  cameraButtons.get(selectedCamera[1])?.classList.add("active");
+}
+
+function makeAssemblyGroup(label: string, open: boolean, className = ""): HTMLDetailsElement {
+  const details = document.createElement("details");
+  details.className = `assembly-group ${className}`.trim();
+  details.open = open;
+  const summary = document.createElement("summary");
+  summary.textContent = label;
+  details.append(summary);
+  return details;
 }
 
 function buildCameras(): void {
@@ -973,6 +1111,11 @@ function buildCameras(): void {
       },
     ]);
   }
+  const initial = url.get("camera") ?? "general";
+  if (doc.plant.id === "water-network-scale-v1") {
+    buildWaterAssemblyTree(box, entries, initial);
+    return;
+  }
   for (const [label, key, go] of entries) {
     const b = document.createElement("button");
     b.textContent = label;
@@ -983,7 +1126,6 @@ function buildCameras(): void {
     b.dataset.camera = key;
     box.appendChild(b);
   }
-  const initial = url.get("camera") ?? "general";
   const initialEntry = entries.find((entry) => entry[1] === initial) ?? entries[0];
   initialEntry[2]();
   box.querySelector<HTMLButtonElement>(`[data-camera="${initialEntry[1]}"]`)?.classList.add("active");
@@ -1100,7 +1242,7 @@ function applyMessage(msg: SimMessage, label: string): void {
   const hh = String(Math.floor(t / 3600)).padStart(2, "0");
   const mm = String(Math.floor((t % 3600) / 60)).padStart(2, "0");
   const ss = String(Math.floor(t % 60)).padStart(2, "0");
-  $("clock").textContent = `${label} ${hh}:${mm}:${ss} · ×${msg.speed ?? speedFromSlider()}`;
+  $("clock").textContent = `${label} ${hh}:${mm}:${ss}${label === "FUTURO FRACTAL" ? "" : ` · ×${msg.speed ?? speedFromSlider()}`}`;
 }
 
 async function connect(): Promise<void> {
@@ -1364,6 +1506,7 @@ function waterView(view: "3d" | "plc" | "history"): void {
     // Pasado y futuro nunca se superponen: el estudio sigue guardado, pero la vista
     // vuelve a PLC.Actual antes de pintar un fotograma histórico.
     if (forecastStudyId) {
+      forecastPlaybackStop?.(); forecastPlaybackStop = null;
       forecastStudyId = null; url.delete("study"); history.replaceState(null, "", `${location.pathname}?${url}`);
       $("forecast-panel").hidden = true; document.body.classList.remove("forecast-mode");
     }
@@ -1394,12 +1537,15 @@ async function showHistory(t: number): Promise<void> {
 // ------------------------------------------------------------------ arranque
 async function loadForecast(): Promise<void> {
   if (!sessionId || !forecastStudyId) return;
+  forecastPlaybackStop?.(); forecastPlaybackStop = null;
   historicalTime = null;
   const response = await apiFetch(`/api/plants/${doc.plant.id}/sessions/${sessionId}/fractal/studies/${forecastStudyId}/frames`);
   if (!response.ok) throw new Error("No se pudo cargar el estudio Fractal desde PLC");
   const data = await response.json() as { base_time: number; frames: { hour: number; supply_level_pct: number; robust: boolean; snapshot: SimMessage["snapshot"]; scenarios: { demand_factor: number; state: Record<string, number>; feasible: boolean }[] }[] };
   const panel = $("forecast-panel");
   const selector = $<HTMLSelectElement>("forecast-hour");
+  const playButton = $<HTMLButtonElement>("forecast-play");
+  const speedSelector = $<HTMLSelectElement>("forecast-speed");
   panel.hidden = false;
   document.body.classList.add("forecast-mode");
   $("forecast-study-meta").textContent = `Estudio ${forecastStudyId} · ${data.frames.length} horas · PLC.Actual no se modifica`;
@@ -1411,7 +1557,36 @@ async function loadForecast(): Promise<void> {
     applyMessage({ t: data.base_time + (frame.hour + 1) * 3600, speed: 240, snapshot: frame.snapshot, events: [] }, "FUTURO FRACTAL");
     $("forecast-values").textContent = `Tanque estimado ${frame.supply_level_pct.toFixed(1)} % (nivel sensible a la histéresis de retorno) · presión crítica ${Number(nominal.state.critical_pressure_mca).toFixed(2)} mca · fuga ${Number(nominal.state.leakage_m3h).toFixed(3)} m³/h · ${frame.robust ? "FACTIBLE EN MODELO · NO VALIDADO DINÁMICAMENTE" : "REVISAR RESTRICCIONES"}`;
   };
-  selector.onchange = showHour;
+  let playbackTimer: number | undefined;
+  const stopPlayback = () => {
+    if (playbackTimer !== undefined) window.clearInterval(playbackTimer);
+    playbackTimer = undefined;
+    playButton.textContent = "▶ REPRODUCIR";
+    playButton.setAttribute("aria-label", "Reproducir proyección");
+  };
+  forecastPlaybackStop = stopPlayback;
+  selector.onchange = () => { stopPlayback(); showHour(); };
+  playButton.onclick = () => {
+    if (playbackTimer !== undefined) { stopPlayback(); return; }
+    if (!data.frames.length) return;
+    if (Number(selector.value) >= data.frames.length - 1) selector.value = "0";
+    showHour();
+    playButton.textContent = "❚❚ PAUSAR";
+    playButton.setAttribute("aria-label", "Pausar proyección");
+    const frameIntervalMs = 1000 / Number(speedSelector.value);
+    playbackTimer = window.setInterval(() => {
+      const next = Number(selector.value) + 1;
+      if (next >= data.frames.length) { stopPlayback(); return; }
+      selector.value = String(next);
+      showHour();
+    }, frameIntervalMs);
+  };
+  speedSelector.onchange = () => {
+    if (playbackTimer !== undefined) {
+      stopPlayback();
+      playButton.click();
+    }
+  };
   showHour();
 }
 
@@ -1442,6 +1617,7 @@ async function start(): Promise<void> {
   $<HTMLAnchorElement>("link-equipos").href = `/equipos.html?plant=${plantId}`;
   const plcLink = $<HTMLAnchorElement>("link-plc");
   $("forecast-return").onclick = () => {
+    forecastPlaybackStop?.(); forecastPlaybackStop = null;
     forecastStudyId = null; url.delete("study"); history.replaceState(null, "", `${location.pathname}?${url}`);
     $("forecast-panel").hidden = true; document.body.classList.remove("forecast-mode");
     if (latestLiveMessage) applyMessage(latestLiveMessage, "PLC.ACTUAL");

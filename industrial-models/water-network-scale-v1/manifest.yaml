@@ -14,6 +14,7 @@ entrypoints:
 equipment_dependencies:
   - { type: booster-pump-set, version: ">=0.1,<0.2" }
   - { type: distribution-grid, version: ">=0.1,<0.2" }
+  - { type: drain-manifold, version: ">=0.1,<0.2" }
   - { type: pressure-reducing-station, version: ">=0.1,<0.2" }
   - { type: regulating-valve, version: ">=0.1,<0.2" }
   - { type: vessel, version: ">=0.1,<0.2" }

@@ -152,6 +152,13 @@ def test_return_pump_matches_operational_fixed_head_point_and_balances_tanks() -
     assert abs(after - before) < 1e-5  # circuito cerrado; no crea ni destruye agua
 
 
+def test_common_drain_manifold_collects_all_floors_and_splits_without_loss() -> None:
+    first, second = recirc.split_floor_drains(model.MODEL, {"1": 1.0, "2": 2.0, "3": 3.0, "4": 4.0})
+    assert first == 5.0
+    assert second == 5.0
+    assert first + second == 10.0
+
+
 def test_individual_tank_checks_are_declared_and_return_flow_is_forward_only() -> None:
     params = model.MODEL["equipment_models"]
     for tank in ("tank-supply-01", "tank-recirc-01", "tank-recirc-02"):

@@ -18,7 +18,6 @@ import yaml from "js-yaml";
 import * as THREE from "three";
 import { type AnimationFrame, type EquipmentModel, type LightingPreset, Stage, humansPending } from "@twin/3d";
 import { geometryBuilders, rawPresets, rawScenarios, rawSpecs } from "@twin/equipment-library/registry.ts";
-import "./styles.css";
 
 interface ParamDef {
   type: "number" | "integer" | "boolean" | "string" | "enum";
