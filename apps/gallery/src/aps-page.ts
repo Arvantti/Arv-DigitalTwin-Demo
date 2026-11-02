@@ -141,7 +141,7 @@ function renderProposal(): void {
   const el = $("aps-proposal");
   if (running) {
     el.hidden = false;
-    el.innerHTML = `<p><span class="spin">◌</span> ${esc(running)}</p>`;
+    el.innerHTML = `<p><span class="spin">◌</span> ${esc(running)} <span id="aps-calc-secs" class="dim"></span></p><div class="aps-bar" aria-hidden="true"><i></i></div>`;
     return;
   }
   if (error) {
@@ -199,12 +199,36 @@ const OBJECTIVE_OPTIONS: { id: Objective | "energia"; label: string; detail: str
 ];
 const OBJECTIVE_LABEL = Object.fromEntries(OBJECTIVE_OPTIONS.map((o) => [o.id, o.label])) as Record<string, string>;
 
+const CALC_LABEL = "⚙ CALCULAR CON EL COSIMULADOR";
+let calcTimer = 0;
+
+/** Muestra que el cosimulador sigue trabajando: segundos en el botón y en la propuesta. */
+function startCalcTimer(): void {
+  const t0 = Date.now();
+  const tick = () => {
+    const secs = Math.floor((Date.now() - t0) / 1000);
+    $("aps-calc").textContent = `⚙ CALCULANDO… ${secs} s`;
+    const label = document.getElementById("aps-calc-secs");
+    if (label) label.textContent = `· ${secs} s`;
+  };
+  tick();
+  clearInterval(calcTimer);
+  calcTimer = window.setInterval(tick, 250);
+}
+
+function stopCalcTimer(): void {
+  clearInterval(calcTimer);
+  calcTimer = 0;
+  $("aps-calc").textContent = CALC_LABEL;
+}
+
 function calculate(objective: Objective = "entregas"): void {
   error = "";
   running = fixedOf().length
     ? `El cosimulador está organizando el resto de la producción sin mover ${fixedOf().length === 1 ? "el pedido fijado" : `los ${fixedOf().length} pedidos fijados`} · objetivo: ${OBJECTIVE_LABEL[objective]}…`
     : `El cosimulador está colocando la producción con restricciones lineales · objetivo: ${OBJECTIVE_LABEL[objective]}…`;
   render();
+  startCalcTimer();
   worker?.terminate();
   worker = new Worker(new URL("./aps-worker.ts", import.meta.url), { type: "module" });
   const id = ++runId;
@@ -212,6 +236,7 @@ function calculate(objective: Objective = "entregas"): void {
   worker.onmessage = (e: MessageEvent<{ id: number; ok: boolean; plan?: ProductionPlan; error?: string }>) => {
     if (e.data.id !== id) return;
     running = "";
+    stopCalcTimer();
     if (e.data.ok) {
       proposal = e.data.plan!;
       clearEdit();
@@ -223,6 +248,7 @@ function calculate(objective: Objective = "entregas"): void {
   };
   worker.onerror = (e) => {
     running = "";
+    stopCalcTimer();
     error = `El cosimulador no pudo arrancar: ${e.message}`;
     render();
   };

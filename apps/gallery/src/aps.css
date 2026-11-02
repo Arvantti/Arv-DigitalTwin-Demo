@@ -374,3 +374,9 @@ button.danger:hover { background: rgba(255, 59, 59, 0.4); border-color: #fff; }
 .aps-obj-note { min-height: 2.6em; font-size: 14px; }
 .aps-obj-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
 @media (max-width: 480px) { .aps-objetivo { padding: 14px; } .aps-obj-actions button { flex: 1; } }
+
+/* Barra de avance mientras el cosimulador calcula (no sabemos cuánto falta) */
+.aps-bar { height: 4px; margin-top: 8px; background: var(--line, #2a3442); border-radius: 2px; overflow: hidden; }
+.aps-bar i { display: block; width: 30%; height: 100%; background: #4aa3ff; animation: aps-slide 1.2s ease-in-out infinite; }
+@keyframes aps-slide { from { transform: translateX(-100%); } to { transform: translateX(340%); } }
+@media (prefers-reduced-motion: reduce) { .aps-bar i { animation: none; width: 100%; opacity: 0.5; } }
