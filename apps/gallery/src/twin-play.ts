@@ -76,6 +76,7 @@ export function buildTwinPlay(opts: Opts): TwinPlay {
   ordersBox.innerHTML = `
     <div class="to-head"><button class="label to-toggle" id="to-toggle" title="Mostrar u ocultar las órdenes en proceso">▾ ÓRDENES EN EL GEMELO</button>
       <select id="to-pick" title="Seguir una orden con el play"><option value="">seguir una orden…</option></select></div>
+    <div class="to-filter" id="to-filter" title="Filtrar la lista de órdenes por su estado en el instante del play"></div>
     <div id="to-followed"></div>
     <div class="label to-sub" id="to-now-title"></div>
     <div id="to-now"></div>`;
@@ -165,16 +166,39 @@ export function buildTwinPlay(opts: Opts): TwinPlay {
 
   /** Panel de órdenes: las que corren en el instante t y la orden seguida con lo producido hasta t. */
   let pickKey = "";
+  /** Filtro de la lista de órdenes por su estado en el instante del play. */
+  type OrderPhase = "run" | "todo" | "done";
+  const PHASES: [OrderPhase | "all", string][] = [["all", "TODAS"], ["run", "EN PROCESO"], ["todo", "SIN INICIAR"], ["done", "TERMINADAS"]];
+  let phaseFilter: OrderPhase | "all" = "all";
   function paintOrders(): void {
     const plan = opts.plan();
     const events = opts.events();
     const pick = $<HTMLSelectElement>("to-pick");
     // Órdenes con trabajo dentro de la ventana del play, en orden de inicio.
     const inWindow = plan.orders.filter((o) => plan.schedule.some((r) => r.order === o.id && minOf(r.end) > from && minOf(r.start) < to)).sort((a, b) => a.start.localeCompare(b.start));
-    const k = `${plan.plan_id}|${inWindow.length}|${followed}`;
+    // Estado de cada orden en t: sin iniciar antes de su primer tramo, terminada después del último.
+    const phaseOf = (id: string): OrderPhase => {
+      const rows = plan.schedule.filter((r) => r.order === id);
+      if (t < Math.min(...rows.map((r) => minOf(r.start)))) return "todo";
+      return t >= Math.max(...rows.map((r) => minOf(r.end))) ? "done" : "run";
+    };
+    const phases = new Map(inWindow.map((o) => [o.id, phaseOf(o.id)]));
+    const count = (p: OrderPhase | "all") => (p === "all" ? inWindow.length : [...phases.values()].filter((x) => x === p).length);
+    const k = `${plan.plan_id}|${inWindow.length}|${followed}|${phaseFilter}|${[...phases.values()].join("")}`;
     if (k !== pickKey) {
       pickKey = k;
-      pick.innerHTML = `<option value="">seguir una orden…</option>${inWindow.map((o) => `<option value="${esc(o.id)}"${o.id === followed ? " selected" : ""}>${esc(o.id)} · ${esc(o.product_name)}</option>`).join("")}`;
+      $("to-filter").innerHTML = PHASES.map(([p, l]) => `<button class="${p === phaseFilter ? "on" : ""} ${p}" data-phase="${p}">${l} <b>${count(p)}</b></button>`).join("");
+      $("to-filter").querySelectorAll<HTMLButtonElement>("button").forEach((b) => (b.onclick = () => {
+        phaseFilter = b.dataset.phase as OrderPhase | "all";
+        paintOrders();
+      }));
+      const opt = (o: (typeof inWindow)[number]) => `<option value="${esc(o.id)}"${o.id === followed ? " selected" : ""}>${esc(o.id)} · ${esc(o.product_name)}</option>`;
+      // la orden seguida siempre está en la lista, aunque el filtro la deje fuera
+      const groups = PHASES.filter(([p]) => p !== "all" && (phaseFilter === "all" || p === phaseFilter))
+        .map(([p, l]) => [l, inWindow.filter((o) => phases.get(o.id) === p)] as const)
+        .filter(([, os]) => os.length);
+      const hidden = followed && !groups.some(([, os]) => os.some((o) => o.id === followed)) ? inWindow.find((o) => o.id === followed) : undefined;
+      pick.innerHTML = `<option value="">seguir una orden… (${count(phaseFilter)})</option>${hidden ? opt(hidden) : ""}${groups.map(([l, os]) => `<optgroup label="${l} · ${os.length}">${os.map(opt).join("")}</optgroup>`).join("")}`;
     }
     const finished = (o: (typeof plan.orders)[number]) => plan.schedule.filter((r) => r.order === o.id && r.product === o.product);
     const made = (o: (typeof plan.orders)[number]) => finished(o).reduce((n, r) => n + unitsUntil(r, t), 0);

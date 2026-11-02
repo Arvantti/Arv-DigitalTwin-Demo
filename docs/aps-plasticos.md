@@ -107,6 +107,9 @@ horas de máquina, los turnos-máquina, los cambios de color y las horas de oper
   (unidades hechas contra pedidas y en qué máquinas). Al elegir una (clic en la lista, el selector o `?order=`), el panel
   la sigue con el play: unidades terminadas, estado (pendiente, en proceso, terminada), entrega, fin programado y lo
   producido por etapa; sus máquinas llevan una estrella y borde amarillo en el letrero. El panel se pliega con su título.
+  Bajo el selector, un filtro por estado en el instante del play (TODAS, EN PROCESO, SIN INICIAR, TERMINADAS, con su
+  conteo) acorta la lista; con TODAS, la lista va agrupada por estado. EN PROCESO cuenta las órdenes empezadas y no
+  terminadas, aunque en ese momento esperen entre etapas; la lista de abajo muestra solo las que están en máquina.
 
 Las señales salen del gemelo (`apps/gallery/src/plant-state.ts`): la programación vigente más los eventos del
 emulador. El rendimiento es un supuesto por máquina y día (88–97 %) y la calidad es fija en 99 % (1 % de piezas defectuosas).
