@@ -66,6 +66,8 @@ export interface PlanScheduleRow {
   quantity: number;
   unit: string;
   changeover_min: number;
+  /** Qué manda en el cambio de referencia: montaje de molde, purga de resina o purga de color. */
+  changeover_kind?: "molde" | "resina" | "color";
   tooling?: string;
   color?: string;
   /** Lote [número, de cuántos] del trabajo (aps.yaml). */
@@ -80,6 +82,8 @@ export interface PlanKpis {
   tardiness_h: number;
   changeovers: number;
   changeover_h: number;
+  /** Cambios que incluyen montaje de molde. */
+  mold_changes?: number;
   busiest: { equipment: string; busy_pct: number };
 }
 

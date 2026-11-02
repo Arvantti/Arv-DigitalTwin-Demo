@@ -13,7 +13,8 @@
     "setup": { "type": "object", "additionalProperties": { "$ref": "#/$defs/mounted" } },
     "orders": { "type": "array", "items": { "$ref": "#/$defs/order" } },
     "schedule": { "type": "array", "items": { "$ref": "#/$defs/assignment" } },
-    "demand": { "$ref": "#/$defs/demand" }
+    "demand": { "$ref": "#/$defs/demand" },
+    "changeovers": { "$ref": "#/$defs/changeovers" }
   },
   "$defs": {
     "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
@@ -147,6 +148,25 @@
             }
           }
         }
+      }
+    },
+    "changeoverTable": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "default_min": { "type": "number", "minimum": 0 },
+        "pairs": { "type": "object", "additionalProperties": { "type": "object", "additionalProperties": { "type": "number", "minimum": 0 } }, "description": "material de origen → material de destino → minutos" }
+      }
+    },
+    "changeovers": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Tiempos de cambio entre referencias: purga de color y de resina por par de materiales (de → a)",
+      "properties": {
+        "color": { "$ref": "#/$defs/changeoverTable" },
+        "resin": { "$ref": "#/$defs/changeoverTable" },
+        "mold_move_extra_min": { "type": "number", "minimum": 0 },
+        "assumed": { "type": "boolean" }
       }
     },
     "mounted": {

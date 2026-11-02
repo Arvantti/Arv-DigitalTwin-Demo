@@ -18,8 +18,6 @@ import { solve, type HighsLike } from "@twin/cosim/adapters/plastic-injection-pl
 import type { FractalStudy, Lever, Scenario, StudyOption } from "../../contracts.ts";
 
 const WINDOW_DAYS = 7;
-/** Traslado y desmontaje de un molde, además del montaje (change_min del molde). */
-const MOVE_EXTRA_MIN = 30;
 /** Máquinas candidatas por molde: suficiente para la demo y mantiene el estudio en pocos segundos. */
 const MAX_TARGETS = 2;
 /** Ocupación objetivo al balancear: por encima de esto una etapa se considera cargada (supuesto de la demo). */
@@ -177,7 +175,8 @@ export async function runStudy(newHighs: () => Promise<HighsLike>, cat: CatalogD
     variants.push({ label: "Esperar la reparación y repartir", levers: [{ kind: "recalcular", text: `Recolocar con el cosimulador sin ${label(m)} hasta la reparación` }] });
     if (tooling) {
       for (const target of freeMachinesFor(cat, baseSetup, tooling, failed).slice(0, MAX_TARGETS)) {
-        const min = changeMin(cat, tooling) + MOVE_EXTRA_MIN;
+        // Montaje del molde (change_min) + traslado y desmontaje (changeovers.yaml).
+        const min = changeMin(cat, tooling) + baseModel.moldMoveExtraMin;
         variants.push({
           label: `Mudar el molde a ${label(target)}`,
           levers: [{ kind: "mover-molde", text: `Desmontar ${tooling} de ${label(m)} y montarlo en ${label(target)}: ${min} min desde AHORA`, machine: target, from: m, tooling }],

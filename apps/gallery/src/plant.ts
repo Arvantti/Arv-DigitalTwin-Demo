@@ -1979,7 +1979,7 @@ function ambientInjectionFrame(id: string, params: Record<string, unknown>, time
 }
 
 /**
- * Inyectora quieta: fuera de turno, sin orden, en parada programada, en cambio de color o en falla. Molde abierto, sin
+ * Inyectora quieta: fuera de turno, sin orden, en parada programada, en cambio de referencia o en falla. Molde abierto, sin
  * pieza ni robot, y la baliza dice por qué: apagada fuera de turno o sin orden, amarilla en parada o cambio, roja en falla.
  */
 function stoppedInjectionFrame(id: string, st: MachineState): AnimationFrame {
