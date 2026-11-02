@@ -313,7 +313,8 @@ button.danger:hover { background: rgba(255, 59, 59, 0.4); border-color: #fff; }
 .g-manual b { color: var(--cyan); letter-spacing: 0.08em; }
 .g-manual .g-msg { font: 600 11.5px "IBM Plex Mono", monospace; max-width: 520px; }
 .g-manual button[disabled] { opacity: 0.45; cursor: default; }
-.g-lot.drag, .g-bar.drag { cursor: grab; touch-action: none; }
+/* pan-y: en táctil un deslizamiento vertical sobre una barra sigue desplazando la lista; arrastrar en horizontal sigue funcionando. */
+.g-lot.drag, .g-bar.drag { cursor: grab; touch-action: pan-y; }
 .g-dragging, .g-dragging * { cursor: grabbing !important; user-select: none; }
 .g-lot.pinned { box-shadow: inset 0 0 0 2px #ffd166; }
 .g-lot.fixed, .g-bar.fixed { box-shadow: inset 0 0 0 2px #fff; background-image: linear-gradient(90deg, transparent 0 var(--co, 0%), var(--c) var(--co, 0%)), repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.35) 0 2px, transparent 2px 7px); }
