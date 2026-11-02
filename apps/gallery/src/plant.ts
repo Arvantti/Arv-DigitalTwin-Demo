@@ -152,6 +152,51 @@ function clearFog(): void {
 }
 clearFog();
 
+function addViewCube(): void {
+  const cube = document.createElement("div");
+  cube.id = "view-cube";
+  cube.setAttribute("aria-label", "Cubo de orientación de cámara");
+  cube.innerHTML = `<svg viewBox="0 0 128 112" role="group" aria-label="Vistas frontal, superior, lateral e isométricas">
+    <polygon class="cube-face cube-top" points="64,9 103,31 64,53 25,31" data-view="top" tabindex="0" role="button" aria-label="Vista superior"/><text x="64" y="34" text-anchor="middle">SUPERIOR</text>
+    <polygon class="cube-face cube-front" points="25,31 64,53 64,99 25,77" data-view="front" tabindex="0" role="button" aria-label="Vista frontal"/><text x="43" y="70" text-anchor="middle" transform="rotate(29 43 70)">FRENTE</text>
+    <polygon class="cube-face cube-side" points="64,53 103,31 103,77 64,99" data-view="right" tabindex="0" role="button" aria-label="Vista lateral derecha"/><text x="82" y="70" text-anchor="middle" transform="rotate(-29 82 70)">LATERAL</text>
+    <circle class="cube-corner" cx="25" cy="31" r="5" data-view="iso-left" tabindex="0" role="button" aria-label="Esquina isométrica izquierda superior"/>
+    <circle class="cube-corner" cx="103" cy="31" r="5" data-view="iso-right" tabindex="0" role="button" aria-label="Esquina isométrica derecha superior"/>
+    <circle class="cube-corner" cx="25" cy="77" r="5" data-view="iso-left-low" tabindex="0" role="button" aria-label="Esquina isométrica izquierda inferior"/>
+    <circle class="cube-corner" cx="103" cy="77" r="5" data-view="iso-right-low" tabindex="0" role="button" aria-label="Esquina isométrica derecha inferior"/>
+  </svg><span>ORIENTACIÓN</span>`;
+  const directions: Record<string, [THREE.Vector3, THREE.Vector3]> = {
+    front: [new THREE.Vector3(0, 0, 1), new THREE.Vector3(0, 1, 0)],
+    right: [new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 1, 0)],
+    top: [new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, -1)],
+    "iso-left": [new THREE.Vector3(-1, 1, 1), new THREE.Vector3(0, 1, 0)],
+    "iso-right": [new THREE.Vector3(1, 1, 1), new THREE.Vector3(0, 1, 0)],
+    "iso-left-low": [new THREE.Vector3(-1, -0.7, 1), new THREE.Vector3(0, 1, 0)],
+    "iso-right-low": [new THREE.Vector3(1, -0.7, 1), new THREE.Vector3(0, 1, 0)],
+  };
+  const orient = (view: string) => {
+    const direction = directions[view];
+    if (!direction) return;
+    const target = stage.controls.target.clone();
+    const distance = stage.camera.position.distanceTo(target);
+    stage.controls.maxPolarAngle = Math.PI;
+    stage.camera.up.copy(direction[1]);
+    stage.camera.position.copy(target).addScaledVector(direction[0].normalize(), distance);
+    stage.camera.lookAt(target);
+    stage.controls.update();
+  };
+  const activate = (target: EventTarget | null) => {
+    const control = target instanceof Element ? target.closest<SVGElement>("[data-view]") : null;
+    if (control?.dataset.view) orient(control.dataset.view);
+  };
+  cube.addEventListener("click", (event) => activate(event.target));
+  cube.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" || event.key === " ") { event.preventDefault(); activate(event.target); }
+  });
+  document.body.append(cube);
+}
+addViewCube();
+
 const HYGIENE_COLORS: Record<string, string> = {
   exterior: "#4a5560",
   service: "#56606b",

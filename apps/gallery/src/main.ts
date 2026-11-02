@@ -154,7 +154,7 @@ function buildLighting(): void {
 
 function buildGui(): void {
   gui?.destroy();
-  gui = new GUI({ title: "Parámetros", container: $("gui-host") });
+  gui = new GUI({ title: "PROPIEDADES CONFIGURADAS", container: $("gui-host") });
   const spec = specs[currentType];
   const presetIds = Object.keys(presets[currentType] ?? {});
   if (presetIds.length) {

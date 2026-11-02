@@ -4,7 +4,7 @@ plant_id: water-network-scale-v1
 nodes:
   - { id: supply_tank, equipment_id: tank-supply-01, kind: tank, capacity_m3: 3.888 }
   - { id: main_pumps, equipment_id: pumpset-main-01, kind: pump_set, discharge_setpoint_mca: 72.1 }
-  - { id: prs, equipment_id: prs-01, kind: pressure_reducing_station, critical_target_mca: 15.45 }
+  - { id: prs, equipment_id: prs-01, kind: pressure_reducing_station, critical_target_mca: 18.0, critical_hard_min_mca: 15.0 }
   - { id: level_1, equipment_id: grid-01, kind: demand_grid }
   - { id: level_2, equipment_id: grid-02, kind: demand_grid }
   - { id: level_3, equipment_id: grid-03, kind: demand_grid }

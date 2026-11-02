@@ -26,8 +26,7 @@
    validar las 24 horas frente a operación del emulador: demandas por vivienda, fugas, PRS,
    bomba, recirculación y tanques, incluso límites de hora y transitorios.
 2. E2E PLC → estudio base/alternativo → persistencia PLC → frame 3D futuro NO APLICADO.
-3. Solo después: reconsiderar optimización horaria, objetivos, robustez y aprobación/programación.
-   La HMI no ofrece optimización y las rutas Fractal están deshabilitadas por defecto.
+3. Optimización horaria: dos perfiles de consumo (PLC y personalizado); por hora ajustar solo salida PRS para 18 mca objetivo y 15 mca límite duro. La API no aplica mandos; la HMI ofrece la optimización como proyección pendiente de aceptación humana.
 4. Reconexión/expiración de sesiones, autorización/retención y despliegue de las dos APIs más proxy HTTPS/WSS.
 ```
 

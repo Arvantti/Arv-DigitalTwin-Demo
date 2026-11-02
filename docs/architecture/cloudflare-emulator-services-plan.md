@@ -11,7 +11,7 @@ Publicar los servicios del gemelo digital en Cloudflare sin confundir cuatro res
 1. **Disponibilidad del servicio emulador**: despliegue y salud de la API del gemelo elegido.
 2. **Sesión de simulación**: crear, iniciar, pausar/reanudar y detener una ejecución hidráulica del emulador.
 3. **Proyección Fractal**: solicitar un estudio futuro independiente y no aplicado.
-4. **Optimización**: proceso diferente de una proyección; permanece deshabilitado hasta completar sus validaciones y autorización explícita.
+4. **Optimización**: proceso separado de la proyección; la API Fractal la calcula como futuro no aplicado. El gateway público permite solo la variante horaria ligada a una sesión PLC propia; las recomendaciones instantáneas y decisiones/activaciones siguen bloqueadas.
 
 La galería estática ya publicada en Cloudflare Pages es solo el frontend. Que Pages abra no significa que el emulador esté desplegado ni que haya una sesión en ejecución.
 
@@ -22,7 +22,7 @@ La galería estática ya publicada en Cloudflare Pages es solo el frontend. Que 
 - Validado localmente: typecheck y pruebas del Worker; suite Python, migraciones D1 locales, build/typecheck de Gallery y dry-run Wrangler. En Cloudflare se comprobó `/api/health`, bootstrap/CORS, schema y perfiles PLC, creación/aislamiento de sesiones, handshake WSS y proyección Fractal PLC-backed; D1 persiste tras reiniciar el Container.
 - Desplegados D1 remoto, Worker y Containers con imágenes fijadas por digest; no se exponen URLs directas de Container. La galería modificada todavía no está publicada porque requiere el despliegue Pages autorizado.
 - Pendiente: comprobar el auto-stop al cerrar WSS tras renovar la instancia, medir costos/cuotas/latencia y completar pruebas de expiración y recuperación. Los eventos de ciclo de sesión aún usan actor genérico `operator`; las mutaciones de perfiles registran el id anónimo efímero, no una identidad humana.
-- Fractal (`apps/fractal-engineering-api`) se ejecuta en un Container separado y sin estado persistente local. La ruta pública solo permite estudios PLC-backed y los almacena en la sesión PLC/D1 mediante el Worker; vistas previas de perfil son transitorias. La optimización sigue deshabilitada.
+- Fractal (`apps/fractal-engineering-api`) se ejecuta en un Container separado y sin estado persistente local. La API calcula optimización salvo que `FRACTAL_ENABLE_OPTIMIZATION=0`; el Worker permite solo estudios horarios PLC-backed de sesiones propias y no aplicados. Recomendaciones instantáneas y rutas públicas de decisión/activación siguen bloqueadas. Los estudios permitidos se almacenan en PLC/D1; vistas previas de perfil son transitorias.
 - Los checkpoints almacenan el objeto hidráulico Python con pickle comprimido y schema version. Son datos internos de D1 vía bearer bridge; recuperar exige compatibilidad de clases y pruebas. La sesión se reanuda en el siguiente websocket PLC, no corre durante el sueño del Container; el intervalo es 3600 s simulados y puede causar retroceso.
 
 ## 2. Arquitectura objetivo
@@ -106,7 +106,7 @@ La galería permanece abierta y sin login. El acceso API usa una capacidad anón
 - La autorización administrativa de `/_admin/` usa Cloudflare Access si se configura y deniega por defecto. No poner Access delante de Pages ni de la experiencia de demo pública.
 - El bridge Worker → D1 requiere secreto; Containers solo se alcanzan mediante bindings Worker, nunca por URL pública. Las APIs hablan HTTPS/WSS; no guardar credenciales Cloudflare en el frontend.
 - Acueducto solo acepta `water-network-scale-v1`; otros gemelos requieren servicios, allowlists y datos aislados propios.
-- Fractal lee la sesión PLC autorizada y publica estudios `NO APLICADO`; revisión humana y emisión de mandos son rutas independientes. Mantener `FRACTAL_ENABLE_OPTIMIZATION=0`.
+- Fractal lee la sesión PLC autorizada y publica estudios `NO APLICADO`; revisión humana y emisión de mandos son rutas independientes. El optimizador horario ajusta la salida PRS por hora a 18 mca objetivo / 15 mca mínimo duro, con consumos PLC fijos.
 - Antes de publicar, ajustar quotas, costos, WAF/Turnstile opcional, política de retención, alertas y respuesta a abuso según límites reales del plan. Sin login no se identifica al usuario ni se evita abuso distribuido.
 
 ## 6. Fases de implementación
@@ -141,8 +141,8 @@ La galería permanece abierta y sin login. El acceso API usa una capacidad anón
 - Configurar el endpoint de API por gemelo; no codificar el endpoint del acueducto como backend universal.
 - Mostrar salud API, estado de sesión y disponibilidad de Fractal por separado.
 - «Iniciar simulación» llama al flujo de sesión existente; no arranca servicios ni estudios.
-- «Proyectar» solicita solo Fractal base/alternativo; futuro `NO APLICADO`.
-- No ofrecer acción de optimización hasta que se levante su compuerta y se habilite mediante un despliegue/configuración diferente.
+- «Proyectar» permite calcular el perfil activo o personalizado; futuro `NO APLICADO`.
+- «Optimizar VRP» calcula por hora la salida PRS para 18 mca objetivo / 15 mca mínimo duro; sigue siendo proyección y no aplica mandos. Instantánea, decisión y activación permanecen bloqueadas públicamente.
 - Mantener `plant.html` en modo replay estático si el API no está configurado, explicando que es reproducción y no sesión en vivo.
 
 ### Fase 4 — Verificación y piloto público controlado (pendiente en Cloudflare)
@@ -151,7 +151,7 @@ La galería permanece abierta y sin login. El acceso API usa una capacidad anón
 - WebSocket: handshake WSS con subprotocolo sin secreto, streaming, mandos, reconexión, pausa/reanudación, una conexión PLC y límite de mensajes.
 - Persistencia/retención: dormir/reiniciar Container, restaurar D1, comprobar checkpoints y cuotas, limpieza de sesiones/datos vencidos, consistencia historian y ausencia de muestras duplicadas/perdidas.
 - Aislamiento: planta ajena rechazada; capacidad anónima A no lee/modifica sesión/perfiles de B; API sin capacidad 401; manipulación de origin no sustituye capacidad.
-- Comportamiento: despliegue no inicia simulación; proyección no cambia PLC; decisiones/optimización bloqueadas.
+- Comportamiento: despliegue no inicia simulación; proyección/optimización horaria no cambian PLC; decisiones, activación y optimización instantánea bloqueadas.
 - Rendimiento/costo: medir cold start, sesiones simultáneas, CPU, cuotas, egreso, latencia y presupuesto; probar respuesta a límites y abuso.
 - E2E navegador desktop/móvil contra API/WSS y D1/Containers reales.
 

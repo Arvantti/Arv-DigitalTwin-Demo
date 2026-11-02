@@ -47,9 +47,9 @@ Operador ──mandos aprobados──► PLC virtual ──mandos permitidos─�
 |---|---|---|
 | Proyección base | ¿Qué pasa si se ejecuta el plan del PLC tal cual? | Hecho (`/studies/horizon/from-plc`), en validación |
 | Escenario alternativo | ¿Qué pasa con este cambio hipotético? | Hecho, en validación |
-| Escenario optimizado | ¿Qué plan mejora el objetivo y cumple las restricciones? | **Falta.** Hay un prototipo DE→SLSQP apagado por defecto (409) |
+| Perfil optimizado | ¿Qué consigna PRS sostiene la presión crítica por hora? | Implementado en el modelo Fractal: dos perfiles de consumo de entrada, aperturas PLC fijas, 18 mca objetivo y 15 mca mínimo duro; salida no aplicada |
 
-Las dos primeras filas son el **Fractal simulador de escenarios**; la tercera es el **Fractal optimizador**. Solo la optimización produce algo aceptable (borrador `PFL-FRA-*`), y aceptar nunca manda al instante: crea un perfil que el PLC aplica desde la siguiente hora.
+Los escenarios de consumo son el perfil PLC y el perfil personalizado; cualquiera puede proyectarse u optimizarse por hora. Solo la optimización produce un borrador `PFL-FRA-*`; aceptar nunca manda al instante y el PLC programa el perfil para una hora futura.
 
 ### 1.4 Validación (D72, D73)
 
