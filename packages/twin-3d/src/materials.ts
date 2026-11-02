@@ -21,10 +21,26 @@ export const SAFETY_YELLOW = "#f2b705";
 export const MACHINE_GREY = "#d7dadd";
 export const DARK_STEEL = "#2a2d31";
 
-/** Pintura industrial (esmalte semimate) con variación sutil de rugosidad. */
-export function paint(color: string, roughness = 0.42): THREE.MeshStandardMaterial {
+/**
+ * Pintura industrial metalizada: esmalte sobre chapa de acero con pigmento metálico.
+ * Tono ligeramente desaturado (el color puro se ve de caricatura), metalness medio para que
+ * refleje el entorno, rugosidad con grano sutil y una capa de barniz fina (2026-11-02, pedido de Andy).
+ */
+export function paint(color: string, roughness = 0.42): THREE.MeshPhysicalMaterial {
   return shared(`paint-${color}-${roughness}`, () => {
-    const m = new THREE.MeshStandardMaterial({ color, roughness, metalness: 0.15 });
+    const c = new THREE.Color(color);
+    const hsl = { h: 0, s: 0, l: 0 };
+    c.getHSL(hsl);
+    // desatura y baja un poco el brillo de los colores claros (blancos de plástico -> gris metálico)
+    c.setHSL(hsl.h, hsl.s * 0.72, hsl.l > 0.8 ? hsl.l * 0.9 : hsl.l * 0.94);
+    const m = new THREE.MeshPhysicalMaterial({
+      color: c,
+      roughness: Math.max(0.28, roughness * 0.85),
+      metalness: 0.6,
+      clearcoat: 0.18,
+      clearcoatRoughness: 0.35,
+      envMapIntensity: 1.15,
+    });
     const g = grime(5, 2);
     if (g) m.roughnessMap = g;
     return m;
