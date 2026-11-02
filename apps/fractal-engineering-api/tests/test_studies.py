@@ -648,6 +648,8 @@ def test_plc_to_fractal_to_forecast_frames_without_applying_commands(monkeypatch
     assert all(0 <= first["tank_levels_pct"][tank] <= 100 for tank in capacities)
     assert first["snapshot"]["lines"]["recirculacion"]["output_units"] > 0
     assert result["base_time"] == t
+    assert result["profile_id"] == saved.json()["id"]
+    assert result["profile_name"] == "PFL-FORECAST-E2E"
     assert result["published"]["study_id"] == result["study_id"]
     assert all(not frame["applied"] and frame["commands"] == {} for frame in result["hours"])
     assert [frame["profile_hour"] for frame in result["hours"]] == list(range(24))

@@ -1715,6 +1715,9 @@ function waterView(view: "3d" | "plc" | "history"): void {
   $("water-plc-panel").hidden = view !== "plc";
   $("water-history-panel").hidden = view !== "history";
   for (const key of ["3d", "plc", "history"]) $(`view-${key}`).classList.toggle("active", view === key);
+  if (view === "3d" && sessionId && doc.plant.id === "water-network-scale-v1") {
+    void loadForecast().catch((error) => { $("forecast-values").textContent = `No se pudo actualizar la lista de escenarios: ${String(error)}`; });
+  }
   if (view === "plc") {
     const frame = $<HTMLIFrameElement>("water-plc-frame");
     if (!frame.src) {
@@ -1759,11 +1762,59 @@ async function showHistory(t: number): Promise<void> {
 }
 
 // ------------------------------------------------------------------ arranque
+interface ForecastStudySummary {
+  study_id: string;
+  study_type: string;
+  base_time: number;
+  profile_id?: string;
+  profile_name?: string;
+  objective_id?: string;
+}
+
+const forecastStudyTypeLabel = (studyType: string): string => ({
+  baseline: "BASE PLC",
+  alternative: "ALTERNATIVO",
+  optimized: "OPTIMIZADO",
+}[studyType] ?? studyType.toUpperCase());
+
 async function loadForecast(): Promise<void> {
+  if (!sessionId) return;
+  const studiesResponse = await apiFetch(`/api/plants/${doc.plant.id}/sessions/${sessionId}/fractal/studies`);
+  const studies = studiesResponse.ok ? await studiesResponse.json() as ForecastStudySummary[] : [];
+  const studySelector = $<HTMLSelectElement>("forecast-study");
+  if (!forecastStudyId && studies.length) {
+    forecastStudyId = studies[0].study_id;
+    url.set("study", forecastStudyId);
+    history.replaceState(null, "", `${location.pathname}?${url}`);
+  }
+  if (!forecastStudyId) return;
+  const options = studies.some((study) => study.study_id === forecastStudyId)
+    ? studies
+    : [{ study_id: forecastStudyId, study_type: "forecast", base_time: 0 }, ...studies];
+  studySelector.replaceChildren(...options.map((study) => {
+    const option = document.createElement("option");
+    const profile = study.profile_name ?? study.profile_id ?? "perfil";
+    option.value = study.study_id;
+    option.textContent = `${forecastStudyTypeLabel(study.study_type)} · ${profile} · ${study.study_id}`;
+    return option;
+  }));
+  studySelector.value = forecastStudyId;
+  studySelector.onchange = () => {
+    if (!studySelector.value) return;
+    forecastStudyId = studySelector.value;
+    url.set("study", forecastStudyId);
+    history.replaceState(null, "", `${location.pathname}?${url}`);
+    void loadForecastFrames(studies.find((study) => study.study_id === forecastStudyId))
+      .catch((error) => { $("forecast-values").textContent = `No se pudo cargar el escenario: ${String(error)}`; });
+  };
+  await loadForecastFrames(studies.find((study) => study.study_id === forecastStudyId));
+}
+
+async function loadForecastFrames(study?: ForecastStudySummary): Promise<void> {
   if (!sessionId || !forecastStudyId) return;
   forecastPlaybackStop?.(); forecastPlaybackStop = null;
   historicalTime = null;
-  const response = await apiFetch(`/api/plants/${doc.plant.id}/sessions/${sessionId}/fractal/studies/${forecastStudyId}/frames`);
+  const response = await apiFetch(`/api/plants/${doc.plant.id}/sessions/${sessionId}/fractal/studies/${encodeURIComponent(forecastStudyId)}/frames`);
   if (!response.ok) throw new Error("No se pudo cargar el estudio Fractal desde PLC");
   const data = await response.json() as { base_time: number; frames: { hour: number; supply_level_pct: number; robust: boolean; snapshot: SimMessage["snapshot"]; scenarios: { demand_factor: number; state: Record<string, number>; feasible: boolean }[] }[] };
   const panel = $("forecast-panel");
@@ -1772,11 +1823,13 @@ async function loadForecast(): Promise<void> {
   const speedSelector = $<HTMLSelectElement>("forecast-speed");
   panel.hidden = false;
   document.body.classList.add("forecast-mode");
-  $("forecast-study-meta").textContent = `Estudio ${forecastStudyId} · ${data.frames.length} horas · PLC.Actual no se modifica`;
+  const profile = study?.profile_name ?? study?.profile_id;
+  const profileLabel = profile ? ` · ${profile}` : "";
+  $("forecast-study-meta").textContent = `${forecastStudyTypeLabel(study?.study_type ?? "forecast")}${profileLabel} · ${forecastStudyId} · ${data.frames.length} horas · PLC.Actual no se modifica`;
   selector.innerHTML = data.frames.map((frame) => `<option value="${frame.hour}">Hora ${String(frame.hour + 1).padStart(2, "0")}</option>`).join("");
   const showHour = () => {
     const frame = data.frames[Number(selector.value)];
-    const nominal = frame?.scenarios?.[1];
+    const nominal = frame?.scenarios?.[Math.floor((frame.scenarios.length - 1) / 2)];
     if (!frame || !nominal) { $("forecast-values").textContent = "El estudio no contiene métricas para esta hora."; return; }
     applyMessage({ t: data.base_time + (frame.hour + 1) * 3600, speed: 240, snapshot: frame.snapshot, events: [] }, "FUTURO FRACTAL");
     $("forecast-values").textContent = `Tanque estimado ${frame.supply_level_pct.toFixed(1)} % (nivel sensible a la histéresis de retorno) · presión crítica ${Number(nominal.state.critical_pressure_mca).toFixed(2)} mca · fuga ${Number(nominal.state.leakage_m3h).toFixed(3)} m³/h · ${frame.robust ? "FACTIBLE EN MODELO · NO VALIDADO DINÁMICAMENTE" : "REVISAR RESTRICCIONES"}`;
@@ -1976,8 +2029,10 @@ async function start(): Promise<void> {
   };
   $("asset-chart-close").onclick = () => $<HTMLDialogElement>("asset-chart-modal").close();
   $<HTMLSelectElement>("asset-chart-variable").onchange = renderAssetChart;
-  if (forecastStudyId) {
+  if (sessionId && doc.plant.id === "water-network-scale-v1") {
     try { await loadForecast(); } catch (error) { bootError(String(error)); }
+  }
+  if (forecastStudyId) {
     $("btn-connect").textContent = "◆ VISTA DE ESCENARIO FRACTAL";
     $<HTMLButtonElement>("btn-connect").disabled = true;
     $<HTMLSelectElement>("scenario").disabled = true;

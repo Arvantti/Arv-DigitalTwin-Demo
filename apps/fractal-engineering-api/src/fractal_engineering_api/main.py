@@ -208,6 +208,8 @@ def _horizon_study(payload: dict[str, Any], *, publish: bool, plc_token: str | N
         "mode": "horizon",
         "study_type": study_type,
         "objective_id": objective_id,
+        "profile_id": profile.get("id"),
+        "profile_name": profile.get("name"),
         "temporal_context": "forecast",
         "applied": False,
         "validation_status": "hydraulic_setpoints_only",
