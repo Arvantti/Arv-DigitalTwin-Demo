@@ -138,7 +138,7 @@ function strip(a: THREE.Vector3, b: THREE.Vector3, width: number, mat: THREE.Mat
 }
 
 /** Distancia de cada carril al eje de la ruta (m); a la derecha del sentido de marcha. */
-const LANE_OFFSET = { forklift: 0.8, cart: 0.5 } as const;
+const LANE_OFFSET = { forklift: 0.65, cart: 0.5 } as const;
 
 function makeLane(points: THREE.Vector3[]): Lane {
   const cumulative = [0];
