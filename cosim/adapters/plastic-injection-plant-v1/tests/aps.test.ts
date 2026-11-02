@@ -5,7 +5,7 @@ import type { CustomerOrders, PlantEvent, ProductionPlan } from "../../../core/c
 import { parseLocal } from "../../../core/time.ts";
 import { editedPlan, manualPlan, moveChunk, queuesOf, type ManualEdit, type ManualPlan } from "../manual.ts";
 import { buildModel, moldFitProblem } from "../model.ts";
-import { solve } from "../solve.ts";
+import { solve, solveScenarios } from "../solve.ts";
 import { fsCatalog, MODEL_DIR } from "../scripts/fs-catalog.ts";
 
 const model = buildModel(fsCatalog());
@@ -139,6 +139,21 @@ describe("APS de plásticos", () => {
     checkPlan(man);
     expect(rowsOf(man)).toEqual(rowsOf(base));
   });
+});
+
+describe("escenarios: entregas primero, menos cambios si no empeora", () => {
+  it("el escenario de menos cambios solo aparece si cumple entregas y baja cambios", async () => {
+    const highs = await highsLoader();
+    const sc = solveScenarios(highs, model, portfolio, { timeLimitS: 20 });
+    expect(sc[0].id).toBe("entregas");
+    for (const s of sc) checkPlan(s.plan);
+    const alt = sc.find((s) => s.id === "menos-cambios");
+    if (alt) {
+      expect(alt.plan.kpis.changeovers).toBeLessThan(sc[0].plan.kpis.changeovers);
+      expect(alt.plan.kpis.tardiness_h).toBeLessThanOrEqual(sc[0].plan.kpis.tardiness_h);
+    }
+    console.log("escenarios", sc.map((s) => `${s.id}:${s.plan.kpis.changeovers}/${s.plan.kpis.tardiness_h}`).join(" "));
+  }, 180_000);
 });
 
 describe("el cambio de molde no se parte entre turnos", () => {
