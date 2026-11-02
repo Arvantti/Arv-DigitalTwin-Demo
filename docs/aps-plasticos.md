@@ -188,6 +188,12 @@ puede VER EN GANTT y ADOPTAR, no solo la recomendada; la adoptada queda vigente 
    (`dedicateColors` del cosimulador). Con la cartera de la demo, IMM-21 queda en azul e IMM-23 en blanco: de 30 a 12
    cambios y de 22,5 a 9 h de cambio, sin pedidos tarde de más. Guion y capturas en `docs/demo-plasticos/5-menos-cambios/`.
 
+4. **Órdenes fijadas a mano**: el planificador bloquea órdenes en el Gantt (candado 🔓/🔒 o arrastrándolas a su fecha) y
+   Fractal organiza el resto sin moverlas: prueba solo reorganizar y montar el molde de repuesto en una inyectora libre
+   (puntaje como al balancear). Todas las opciones conservan máquina y hora de los lotes fijados (`fixed_orders` del plan).
+   Los demás escenarios también respetan las órdenes fijadas si las hay. Guion y capturas en
+   `docs/demo-plasticos/4-pedidos-fijados/`.
+
 Moldes de repuesto de la demo (`aps/aps.yaml`): uno de balde de 12 L y uno de cuerpo de papelera.
 
 ## Demo grabada

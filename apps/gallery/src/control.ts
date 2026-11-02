@@ -7,14 +7,13 @@
  */
 import "./styles.css";
 import "./aps.css";
-import { events, model, now, onChange, SOURCE_NAMES, useDemoDays, vigente } from "./aps-store.ts";
+import { events, model, onChange, onClock, sharedClock, shownClockText, shownNow, SOURCE_NAMES, useDemoDays, vigente } from "./aps-store.ts";
 import { eventsAt, dayLoads, dayStrip, loadAt, loadColor, machineAt, machineLabel, minOf, moldOf, oeeAt, PLC_MACHINES, plantOee, STATE_COLORS, STATE_NAMES, unitsUntil, type MachineState } from "./plant-state.ts";
-import { COLOR_NAMES, esc, nf, when } from "./schedule.ts";
+import { COLOR_NAMES, day, esc, nf, when } from "./schedule.ts";
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 const pct = (x: number) => `${nf(x * 100, 1)} %`;
 const oeeClass = (x: number) => (x >= 0.85 ? "ok" : x >= 0.65 ? "warn" : "bad");
-const loadedAt = Date.now();
 let plan = vigente();
 /** Orden filtrada: con filtro, la ocupación de cada máquina cuenta solo las horas de esa orden. */
 let order = new URLSearchParams(location.search).get("order") ?? "";
@@ -41,7 +40,7 @@ function fillOrders(t: number): void {
 useDemoDays();
 
 function render(): void {
-  const t = minOf(now());
+  const t = minOf(shownNow());
   const evs = events();
   fillOrders(t);
   const all = PLC_MACHINES.map((e) => ({ e, s: machineAt(plan, evs, e.id, t), o: oeeAt(plan, evs, e.id, t), ld: loadAt(plan, evs, e.id, t, 7, order || undefined) }));
@@ -89,8 +88,7 @@ function render(): void {
     .map(({ e, s, o, ld }) => {
       const r = s.row;
       const ord = r ? plan.orders.find((x) => x.id === r.order) : undefined;
-      const live = r && e.params?.cycle_s && s.state === "run" ? Math.floor(((Date.now() - loadedAt) / 1000 / Number(e.params.cycle_s)) * Number(e.params.cavities ?? 1)) : 0;
-      const made = r ? Math.min(r.quantity, unitsUntil(r, t) + live) : 0;
+      const made = r ? unitsUntil(r, t) : 0;
       const bar = (x: number) => `<i style="width:${Math.max(0, Math.min(100, x * 100)).toFixed(1)}%"></i>`;
       return `<article class="cc-card ${s.state}" style="--st:${STATE_COLORS[s.state]}">
         <header><b>${esc(machineLabel(e.id))}</b><span class="cc-state">${STATE_NAMES[s.state]}</span></header>
@@ -128,9 +126,7 @@ function render(): void {
 }
 
 function tick(): void {
-  const sec = Math.floor((Date.now() - loadedAt) / 1000);
-  const extra = new Date(minOf(now()) * 60000 + sec * 1000).toISOString().slice(11, 19);
-  $("cc-clock").textContent = `EN VIVO · ${when(now()).split(" ")[0]} ${extra}`;
+  $("cc-clock").textContent = `${sharedClock() ? "SIGUIENDO EL GEMELO" : "EN VIVO"} · ${day(shownNow())} ${shownClockText()}`;
 }
 
 $<HTMLSelectElement>("cc-order").onchange = (ev) => {
@@ -144,6 +140,16 @@ $<HTMLSelectElement>("cc-order").onchange = (ev) => {
 onChange(() => {
   plan = vigente();
   render();
+});
+let pending = false;
+onClock(() => {
+  tick();
+  if (pending) return;
+  pending = true;
+  setTimeout(() => {
+    pending = false;
+    render();
+  }, 250);
 });
 render();
 tick();

@@ -12,6 +12,8 @@
  * - falla: una máquina quedó fuera de servicio en el emulador; ¿esperar la reparación o desviar a otra máquina?
  * - cambios: menos cambios de referencia (montaje de molde, purgas de resina y color, con los tiempos de
  *   catalog/changeovers.yaml) sin atrasar pedidos: dedicar un color a cada máquina.
+ * - fijadas: el planificador bloqueó a mano (🔒) algunas órdenes en el Gantt; ¿cómo organizar el resto sin moverlas?
+ *   En todos los escenarios las órdenes fijadas se respetan: ninguna opción mueve sus lotes.
  */
 import type { CustomerOrders, PlannedStop, PlantEvent, ProductionPlan } from "@twin/cosim/core/contracts.ts";
 import { iso, parseLocal } from "@twin/cosim/core/time.ts";
@@ -37,6 +39,8 @@ export interface StudyInput {
   molds?: Record<string, string | null>;
   /** adelantar: el pedido y su nueva fecha de entrega. */
   order?: { id: string; due: string };
+  /** Órdenes que el planificador fijó a mano: sus lotes de `previous` no se mueven en ninguna opción. */
+  fixed?: string[];
   studyId?: string;
 }
 
@@ -128,6 +132,7 @@ export async function runStudy(newHighs: () => Promise<HighsLike>, cat: CatalogD
   const events = input.events ?? [];
   const failed = new Set(events.filter((e) => parseLocal(e.start) <= now && now < parseLocal(e.cleared ?? e.est_end)).map((e) => e.equipment));
   const baseLoads = loadsOf(baseModel, input.previous, now, winEnd);
+  const fixed = (input.fixed ?? []).filter((id) => input.previous.schedule.some((r) => r.order === id));
   const variants: Variant[] = [];
   let question = "";
   let portfolio = input.portfolio;
@@ -161,12 +166,19 @@ export async function runStudy(newHighs: () => Promise<HighsLike>, cat: CatalogD
     const toolings = [product.final.tooling, ...product.components.map((c) => c.step.tooling)].filter((x): x is string => !!x);
     for (const tooling of toolings) for (const v of mountSpare(tooling, [prio])) variants.push({ ...v, label: `Prioridad alta + ${v.label.charAt(0).toLowerCase()}${v.label.slice(1)}`, portfolio: rush, orderChanges: [{ order: o.id, due, importance: "alta" }] });
     if (was) question += ` Con la vigente terminaría el ${hm(was.completion)}.`;
-  } else if (input.scenario === "balancear") {
+  } else if (input.scenario === "balancear" || input.scenario === "fijadas") {
     const top = Object.entries(baseLoads)
       .filter(([m]) => baseSetup[m])
       .sort((a, b) => b[1] - a[1]);
-    question = `¿Cómo repartir la ocupación de la próxima semana sin sobrecargas (objetivo ${TARGET_LOAD} %)? Hoy la máquina más cargada es ${label(top[0]?.[0] ?? "")} al ${top[0]?.[1] ?? 0} %.`;
-    variants.push({ label: "Solo recolocar la secuencia", levers: [{ kind: "recalcular", text: "Recolocar con el cosimulador sin cambiar moldes" }] });
+    const hot = `Hoy la máquina más cargada es ${label(top[0]?.[0] ?? "")} al ${top[0]?.[1] ?? 0} %.`;
+    if (input.scenario === "fijadas") {
+      if (!fixed.length) throw new Error("No hay órdenes fijadas: bloquea alguna con el candado del Gantt.");
+      question = `Fijaste ${fixed.length === 1 ? "la orden" : `${fixed.length} órdenes`} ${fixed.join(", ")} donde ${fixed.length === 1 ? "está" : "están"}. ¿Cómo organizar el resto de la producción sin moverla${fixed.length === 1 ? "" : "s"}? ${hot}`;
+    } else question = `¿Cómo repartir la ocupación de la próxima semana sin sobrecargas (objetivo ${TARGET_LOAD} %)? ${hot}`;
+    variants.push({
+      label: input.scenario === "fijadas" ? "Organizar el resto sin mover lo fijado" : "Solo recolocar la secuencia",
+      levers: [{ kind: "recalcular", text: input.scenario === "fijadas" ? `Recolocar con el cosimulador todo lo demás; ${fixed.join(", ")} no se ${fixed.length === 1 ? "mueve" : "mueven"}` : "Recolocar con el cosimulador sin cambiar moldes" }],
+    });
     // Los moldes de los dos cuellos de botella con repuesto en el almacén (un molde montado en dos máquinas cuenta una vez).
     const toolings = [...new Set(top.map(([m]) => baseSetup[m].tooling))].filter((t) => sparesLeft(cat, baseSetup, t) > 0);
     for (const t of toolings.slice(0, 2)) variants.push(...mountSpare(t));
@@ -205,7 +217,7 @@ export async function runStudy(newHighs: () => Promise<HighsLike>, cat: CatalogD
     const id = `${input.studyId ?? "FRA"}-${String.fromCharCode(65 + i)}`;
     const merged = { ...molds, ...(v.molds ?? {}) };
     const model = modelFor(cat, merged);
-    const plan = solve(await newHighs(), model, v.portfolio ?? portfolio, { now: input.now, previous: input.previous, events, stops: v.stops, planId: id, ...(v.solver ?? {}) });
+    const plan = solve(await newHighs(), model, v.portfolio ?? portfolio, { now: input.now, previous: input.previous, events, stops: v.stops, planId: id, fixed, ...(v.solver ?? {}) });
     plan.source = "fractal";
     plan.status = "propuesta";
     plan.notes = [`Fractal · ${v.label}.`, ...v.levers.map((l) => l.text)];
@@ -222,7 +234,7 @@ export async function runStudy(newHighs: () => Promise<HighsLike>, cat: CatalogD
       20 * k.late_orders +
       2 * moldH +
       0.5 * k.changeovers +
-      (input.scenario === "balancear" ? 1.5 * max.pct + 3 * Math.max(0, max.pct - TARGET_LOAD) : 0) +
+      (input.scenario === "balancear" || input.scenario === "fijadas" ? 1.5 * max.pct + 3 * Math.max(0, max.pct - TARGET_LOAD) : 0) +
       (input.scenario === "cambios" ? 2 * k.changeover_h : 0);
     options.push({ id, label: v.label, levers: v.levers, kpis: k, loads, max_load: max, mold_change_h: Math.round(moldH * 10) / 10, score: Math.round(score * 10) / 10, plan });
   }

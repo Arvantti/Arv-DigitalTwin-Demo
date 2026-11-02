@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import highsLoader from "highs";
 import { describe, expect, it } from "vitest";
-import type { CustomerOrders, PlantEvent } from "@twin/cosim/core/contracts.ts";
+import type { CustomerOrders, PlantEvent, ProductionPlan } from "@twin/cosim/core/contracts.ts";
 import { buildModel } from "@twin/cosim/adapters/plastic-injection-plant-v1/model.ts";
 import { solve } from "@twin/cosim/adapters/plastic-injection-plant-v1/solve.ts";
 import { fsCatalog, MODEL_DIR } from "@twin/cosim/adapters/plastic-injection-plant-v1/scripts/fs-catalog.ts";
@@ -49,5 +49,20 @@ describe("Fractal de plásticos", async () => {
     const best = s.options.find((x) => x.id === s.best)!;
     expect(best.kpis.changeover_h).toBeLessThan(s.options[0].kpis.changeover_h);
     expect(best.kpis.late_orders).toBeLessThanOrEqual(s.options[0].kpis.late_orders);
+    });
+
+  it("fijadas: ninguna opción mueve las órdenes bloqueadas a mano y el resto se reorganiza", async () => {
+    const later = vigente.orders.filter((o) => o.start.slice(0, 16) > NOW).slice(0, 3).map((o) => o.id);
+    expect(later.length).toBe(3);
+    const s = await runStudy(highs, cat, { scenario: "fijadas", portfolio, now: NOW, previous: vigente, fixed: later, studyId: "FRA-T4" });
+    console.log("fijadas", later, s.options.map((x) => `${x.label}: ${x.kpis.late_orders} tarde ${x.kpis.tardiness_h} h, máx ${x.max_load.pct} %`).join(" | "), "→", s.recommendation);
+    const rowsOf = (p: ProductionPlan) => p.schedule.filter((r) => later.includes(r.order)).map((r) => `${r.order}|${r.product}|${r.equipment}|${r.start}|${r.end}|${r.quantity}`).sort();
+    for (const o of s.options) {
+      expect(o.plan.fixed_orders).toEqual(later);
+      expect(rowsOf(o.plan)).toEqual(rowsOf(vigente));
+    }
+    expect(s.question).toContain(later[0]);
+    // Sin órdenes fijadas el escenario no tiene sentido.
+    await expect(runStudy(highs, cat, { scenario: "fijadas", portfolio, now: NOW, previous: vigente, fixed: [] })).rejects.toThrow(/fijadas/);
   });
 });

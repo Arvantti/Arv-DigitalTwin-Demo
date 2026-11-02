@@ -16,7 +16,7 @@
 import "./styles.css";
 import "./aps.css";
 import type { CustomerOrder, Importance, ProductionPlan } from "@twin/cosim/core/contracts.ts";
-import { activeEvents, addedOrders, baseManual, molds, modelNow, manualPlan, model, now, onChange, portfolio, resetDemo, setAdded, setVigente, SOURCE_NAMES, useDemoDays, vigente } from "./aps-store.ts";
+import { activeEvents, addedOrders, baseManual, molds, modelNow, manualPlan, model, now, onChange, portfolio, resetDemo, setAdded, setVigente, setViewed, setViewMode, SOURCE_NAMES, useDemoDays, vigente, viewedPlan, viewMode } from "./aps-store.ts";
 import { editedPlan, moveChunk, queuesOf, type EditChunk, type ManualEdit } from "@twin/cosim/adapters/plastic-injection-plant-v1/manual.ts";
 import { COLOR_NAMES, day, esc, nf, relativeDays, when } from "./schedule.ts";
 import { renderInsumos } from "./insumos.ts";
@@ -66,7 +66,18 @@ const shown = () => proposal ?? current;
 
 useDemoDays();
 
+/** Lo que el APS muestra como propuesta es el escenario que ve el gemelo, hasta que el gemelo vuelva a "vigente". */
+let lastView = "";
+function syncView(): void {
+  const key = proposal?.plan_id ?? "";
+  if (key === lastView) return;
+  lastView = key;
+  setViewed(proposal);
+  setViewMode(proposal ? "escenario" : "vigente");
+}
+
 function render(): void {
+  syncView();
   const p = shown();
   $("aps-clock").textContent = `AHORA · ${when(now())}`;
   const occ = occOf(current, loadIds(current));
@@ -751,7 +762,9 @@ let studying = "";
 let studyError = "";
 let fractalWorker: Worker | null = null;
 let studyN = 0;
-const SCENARIO_NAMES: Record<string, string> = { adelantar: "ADELANTAR UN PEDIDO", balancear: "BALANCEAR LA OCUPACIÓN", falla: "FALLA EN CURSO", cambios: "MENOS CAMBIOS DE REFERENCIA" };
+/** Plan sobre el que corrió el estudio: la vigente, o el plan que se veía con órdenes fijadas. */
+let studyBase: ProductionPlan | null = null;
+const SCENARIO_NAMES: Record<string, string> = { adelantar: "ADELANTAR UN PEDIDO", balancear: "BALANCEAR LA OCUPACIÓN", falla: "FALLA EN CURSO", fijadas: "ÓRDENES FIJADAS", cambios: "MENOS CAMBIOS DE REFERENCIA" };
 
 function runFractal(input: Omit<StudyInput, "portfolio" | "now" | "previous" | "events" | "molds" | "studyId">): void {
   studyError = "";
@@ -775,7 +788,10 @@ function runFractal(input: Omit<StudyInput, "portfolio" | "now" | "previous" | "
     studyError = `Fractal no pudo arrancar: ${e.message}`;
     render();
   };
-  fractalWorker.postMessage({ id, input: { ...input, portfolio: portfolio(), now: now(), previous: current, events: activeEvents(), molds: molds(), studyId: `FRA-${String(id).padStart(2, "0")}` } });
+  // Con órdenes fijadas se parte del plan que se está viendo (ahí están sus lotes) y ninguna opción las mueve.
+  const fixed = fixedOf();
+  studyBase = fixed.length ? shown() : current;
+  fractalWorker.postMessage({ id, input: { ...input, fixed, portfolio: portfolio(), now: now(), previous: fixed.length ? shown() : current, events: activeEvents(), molds: molds(), studyId: `FRA-${String(id).padStart(2, "0")}` } });
 }
 
 function renderFractal(): void {
@@ -787,6 +803,7 @@ function renderFractal(): void {
     .filter((o) => o.start.slice(0, 16) > t && o.due.slice(0, 10) > plus(2))
     .sort((a, b) => (a.due < b.due ? -1 : 1));
   const ev = activeEvents()[0];
+  const pinned = fixedOf();
   const loadsRow = (s: FractalStudy) => {
     const best = s.options.find((o) => o.id === s.best)!;
     const ids = Object.keys({ ...s.baseline.loads, ...best.loads }).filter((m) => (s.baseline.loads[m] ?? 0) > 0 || (best.loads[m] ?? 0) > 0).sort();
@@ -813,7 +830,13 @@ function renderFractal(): void {
           : `<p class="dim small">No hay máquinas fuera de servicio. Detén una en el <a href="/emulador.html" target="_blank" rel="noopener">emulador</a> y vuelve aquí.</p>`
       }
         <button id="fr-run-falla" class="primary"${ev && !studying ? "" : " disabled"}>◆ ESTUDIAR</button></article>
-      <article class="fr-card"><div class="label">4 · MENOS CAMBIOS DE REFERENCIA</div><p class="dim small">Cada cambio cuesta montaje de molde y purgas de resina y color (tiempos del catálogo). La vigente tiene ${nf(current.kpis.changeovers)} cambios y ${nf(current.kpis.changeover_h ?? 0, 1)} h de cambio. ¿Cómo hacer menos sin atrasar pedidos?</p>
+      <article class="fr-card"><div class="label">4 · ÓRDENES FIJADAS A MANO</div>${
+        pinned.length
+          ? `<p class="small">🔒 <b>${pinned.map(esc).join(", ")}</b> ${pinned.length === 1 ? "está fijada" : "están fijadas"} donde ${pinned.length === 1 ? "está" : "están"}.</p><p class="dim small">Fractal organiza el resto de la producción sin moverlas${pinned.length === 1 ? "" : "s"} y prueba si un molde de repuesto ayuda.</p>`
+          : `<p class="dim small">Bloquea a mano órdenes en el Gantt con el candado 🔓 (o arrástralas a su día). Fractal organiza el resto sin moverlas.</p>`
+      }
+        <button id="fr-run-fijadas" class="primary"${pinned.length && !studying ? "" : " disabled"}>◆ ESTUDIAR</button></article>
+      <article class="fr-card"><div class="label">5 · MENOS CAMBIOS DE REFERENCIA</div><p class="dim small">Cada cambio cuesta montaje de molde y purgas de resina y color (tiempos del catálogo). La vigente tiene ${nf(current.kpis.changeovers)} cambios y ${nf(current.kpis.changeover_h ?? 0, 1)} h de cambio. ¿Cómo hacer menos sin atrasar pedidos?</p>
         <button id="fr-run-cambios" class="primary"${studying ? " disabled" : ""}>◆ ESTUDIAR</button></article>
     </div>
     ${studying ? `<p class="fr-status"><span class="spin">◌</span> ${esc(studying)}</p>` : ""}
@@ -827,7 +850,7 @@ function renderFractal(): void {
         <div class="aps-table-wrap"><table class="route-table aps-table fr-table">
           <thead><tr><th>Opción</th><th>Qué cambia</th><th class="num">A tiempo</th><th class="num">Tarde</th><th class="num">Atraso</th><th class="num">Cambios de referencia</th><th class="num">Montaje de moldes</th><th class="num">Ocupación planta</th><th>Carga máxima</th><th class="num">Puntaje</th><th></th></tr></thead>
           <tbody>
-            <tr class="past"><td>VIGENTE</td><td>${esc(SOURCE_NAMES[current.source])} ${esc(study.baseline.plan_id)}</td><td class="num">${nf(study.baseline.kpis.on_time_pct, 1)} %</td><td class="num">${study.baseline.kpis.late_orders}</td><td class="num">${nf(study.baseline.kpis.tardiness_h, 1)} h</td><td class="num">${study.baseline.kpis.changeovers} · ${nf(study.baseline.kpis.changeover_h ?? 0, 1)} h</td><td class="num">—</td><td class="num">${pctTxt(occOf(current, loadIds(current)).occupancy)}</td><td>${esc(machineLabel(study.baseline.max_load.equipment))} ${nf(study.baseline.max_load.pct, 0)} %</td><td></td><td></td></tr>
+            <tr class="past"><td>${studyBase && studyBase !== current ? "ACTUAL" : "VIGENTE"}</td><td>${esc(SOURCE_NAMES[(studyBase ?? current).source])} ${esc(study.baseline.plan_id)}</td><td class="num">${nf(study.baseline.kpis.on_time_pct, 1)} %</td><td class="num">${study.baseline.kpis.late_orders}</td><td class="num">${nf(study.baseline.kpis.tardiness_h, 1)} h</td><td class="num">${study.baseline.kpis.changeovers} · ${nf(study.baseline.kpis.changeover_h ?? 0, 1)} h</td><td class="num">—</td><td class="num">${pctTxt(occOf(studyBase ?? current, loadIds(studyBase ?? current)).occupancy)}</td><td>${esc(machineLabel(study.baseline.max_load.equipment))} ${nf(study.baseline.max_load.pct, 0)} %</td><td></td><td></td></tr>
             ${study.options
               .map(
                 (o) => `<tr class="${o.id === study!.best ? "best" : ""}"><td><b>${esc(o.id.split("-").at(-1)!)}</b>${o.id === study!.best ? ' <span class="chip done">MEJOR</span>' : ""}</td><td>${esc(o.label)}<br/><small class="dim">${o.levers.map((l) => esc(l.text)).join(" · ")}</small></td>
@@ -844,6 +867,7 @@ function renderFractal(): void {
   $("fr-run-adelantar").onclick = () => runFractal({ scenario: "adelantar", order: { id: $<HTMLSelectElement>("fr-order").value, due: `${$<HTMLSelectElement>("fr-due").value}T${model.calendar.shifts.map((x) => x.end).sort().at(-1)}` } });
   $("fr-run-balancear").onclick = () => runFractal({ scenario: "balancear" });
   $("fr-run-falla").onclick = () => runFractal({ scenario: "falla" });
+  $("fr-run-fijadas").onclick = () => runFractal({ scenario: "fijadas" });
   $("fr-run-cambios").onclick = () => runFractal({ scenario: "cambios" });
   // Cualquier opción se puede adoptar, no solo la recomendada: Fractal recomienda y la persona decide.
   const adoptOption = (id: string) => {
@@ -885,6 +909,12 @@ $("aps-manual").onclick = () => {
 };
 onChange((what) => {
   current = vigente();
+  if (what === "view") {
+    // El gemelo eligió: "vigente" quita la propuesta; "escenario" muestra el escenario visto.
+    if (viewMode() === "vigente") proposal = null;
+    else if (!proposal) proposal = viewedPlan();
+    lastView = proposal?.plan_id ?? "";
+  }
   if (what === "events") error = "";
   render();
 });
