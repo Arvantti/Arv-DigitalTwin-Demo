@@ -914,6 +914,119 @@ function focusRect(rect: [number, number, number, number], height = 4, distanceF
   stage.frame(probe, distanceFactor, direction);
 }
 
+// Árbol de cámaras tipo CAD (grupo > zona > tipo de equipo > equipo); los nodos se pliegan y al clic enfocan la cámara.
+const CAMERA_GROUPS: Record<string, { name: string; zones: string[] }[]> = {
+  "plastic-injection-plant-v1": [
+    { name: "MATERIAS PRIMAS", zones: ["silos", "recepcion-mp", "bodega-mp", "central-materiales", "reciclaje"] },
+    { name: "INYECCIÓN", zones: ["nave-inyeccion", "taller-moldes", "almacen-moldes"] },
+    { name: "SEMIELABORADO", zones: ["almacen-semielaborado"] },
+    { name: "ENSAMBLE", zones: ["secundarias"] },
+    { name: "EMPAQUE Y BODEGA", zones: ["empaque", "bodega-pt", "patio-despacho"] },
+    { name: "SERVICIOS", zones: ["subestacion", "compresores", "chillers", "torre-enfriamiento", "laboratorio-qc", "mantenimiento"] },
+  ],
+};
+const TYPE_NAMES: Record<string, string> = {
+  injection_molding_machine: "Inyectoras",
+  pallet_buffer: "Buffers de estiba",
+  silo: "Silos",
+  pallet_rack: "Estanterías",
+  desiccant_dryer: "Secadores",
+  gravimetric_blender: "Dosificadores",
+  packing_station: "Estaciones de empaque",
+  dock_leveler: "Muelles",
+  mold_rack: "Racks de moldes",
+};
+
+/** Mismo árbol del acueducto (details/summary con las clases assembly-*): grupo > zona > tipo de equipo > equipo. */
+function buildCameraTree(
+  box: HTMLElement,
+  entries: [string, string, () => void][],
+  groups: { name: string; zones: string[] }[],
+  initial: string,
+): void {
+  box.classList.add("assembly-tree");
+  box.setAttribute("aria-label", "Árbol de cámaras de la planta");
+  const byKey = new Map(entries.map((e) => [e[1], e]));
+  const buttons = new Map<string, HTMLButtonElement>();
+  const actions = new Map<string, () => void>();
+  const activate = (key: string): void => {
+    actions.get(key)?.();
+    buttons.forEach((b, k) => b.classList.toggle("active", k === key));
+  };
+  const button = (parent: HTMLElement, label: string, key: string, go: () => void, className: string): void => {
+    const b = document.createElement("button");
+    b.className = `assembly-item ${className}`;
+    b.textContent = label;
+    b.dataset.camera = key;
+    actions.set(key, go);
+    buttons.set(key, b);
+    b.onclick = () => activate(key);
+    parent.append(b);
+  };
+  const children = (group: HTMLElement): HTMLElement => {
+    const c = document.createElement("div");
+    c.className = "assembly-children";
+    group.append(c);
+    return c;
+  };
+  const general = byKey.get("general");
+  if (general) button(box, "Vista general", "general", general[2], "assembly-camera");
+  const zoneById = new Map(doc.zones.map((z) => [z.id, z]));
+  const frameAsset = (id: string) => () => {
+    const a = assets.get(id);
+    if (!a) return;
+    select(id);
+    stage.frame(a.root, 1.4, new THREE.Vector3(1.1, 0.7, 1.3));
+    stage.setPivot(a.root);
+  };
+  for (const g of groups) {
+    const zones = g.zones.map((id) => zoneById.get(id)).filter((z): z is NonNullable<typeof z> => !!z);
+    if (!zones.length) continue;
+    const x0 = Math.min(...zones.map((z) => z.rect[0]));
+    const y0 = Math.min(...zones.map((z) => z.rect[1]));
+    const x1 = Math.max(...zones.map((z) => z.rect[0] + z.rect[2]));
+    const y1 = Math.max(...zones.map((z) => z.rect[1] + z.rect[3]));
+    const group = makeAssemblyGroup(g.name, false, "assembly-root");
+    box.append(group);
+    const gKids = children(group);
+    button(gKids, "⌖ Enfocar conjunto", `grupo-${g.name.toLowerCase().replace(/\W+/g, "-")}`, () => focusRect([x0, y0, x1 - x0, y1 - y0], 6, 0.8, 0, new THREE.Vector3(1.0, 0.8, 1.2)), "assembly-focus");
+    for (const z of zones) {
+      const eqs = doc.equipment.filter((e) => e.zone === z.id && assets.has(e.id));
+      const go = byKey.get(z.id)?.[2] ?? (() => focusRect(z.rect, Math.max(3, z.height), 0.78, z.elevation ?? 0));
+      if (!eqs.length) {
+        button(gKids, z.name, z.id, go, "assembly-camera");
+        continue;
+      }
+      const zg = makeAssemblyGroup(z.name, false);
+      gKids.append(zg);
+      const zKids = children(zg);
+      button(zKids, "⌖ Enfocar zona", z.id, go, "assembly-focus");
+      const types = [...new Set(eqs.map((e) => e.type))];
+      const grouped = eqs.length > 6 && types.length > 1;
+      for (const t of grouped ? types : [""]) {
+        const list = grouped ? eqs.filter((e) => e.type === t) : eqs;
+        let target = zKids;
+        if (grouped && list.length > 1) {
+          const tg = makeAssemblyGroup(`${TYPE_NAMES[t] ?? t.replace(/_/g, " ")} (${list.length})`, false);
+          zKids.append(tg);
+          target = children(tg);
+        }
+        for (const e of list) button(target, e.id.toUpperCase(), e.id, frameAsset(e.id), "assembly-asset");
+      }
+    }
+  }
+  // cámara especial que no es una zona (la línea de ensamble), dentro de su grupo
+  const ens = byKey.get("ensamble");
+  if (ens) {
+    const holder = box.querySelector<HTMLElement>('[data-camera="secundarias"]')?.parentElement ?? box;
+    button(holder, ens[0], ens[1], ens[2], "assembly-camera");
+  }
+  const key = actions.has(initial) ? initial : "general";
+  activate(key);
+  buttons.get(key)?.closest("details")?.setAttribute("open", "");
+  for (let d = buttons.get(key)?.closest("details")?.parentElement?.closest("details"); d; d = d.parentElement?.closest("details")) d.setAttribute("open", "");
+}
+
 function buildWaterAssemblyTree(box: HTMLElement, entries: [string, string, () => void][], initial: string): void {
   const heading = box.previousElementSibling;
   if (heading instanceof HTMLElement) heading.textContent = "ENSAMBLE · ACUEDUCTO";
@@ -1112,6 +1225,11 @@ function buildCameras(): void {
     ]);
   }
   const initial = url.get("camera") ?? "general";
+  const groups = CAMERA_GROUPS[doc.plant.id];
+  if (groups) {
+    buildCameraTree(box, entries, groups, initial);
+    return;
+  }
   if (doc.plant.id === "water-network-scale-v1") {
     buildWaterAssemblyTree(box, entries, initial);
     return;
