@@ -5,7 +5,7 @@ tags: [demo, plasticos, guion, aps, cosimulador, fractal]
 duracion_aprox: 3 min 15 s
 cifras:
   - ["90,3 % → 92,5 %", "pedidos a tiempo: manual contra cosimulador"]
-  - ["69,3 % → 59,1 %", "ocupación de planta en la semana, con la misma producción"]
+  - ["69,3 % → 60,7 %", "ocupación de planta en la semana, con la misma producción"]
   - ["27,5 t", "de resina para la semana, calculadas del plan"]
 ---
 
@@ -39,7 +39,7 @@ Mensaje central: a partir de los pedidos y sus fechas de entrega, el cosimulador
 - duración: 24 s
 - en pantalla: el recuadro de PROPUESTA con los cinco indicadores; resaltar "Ocupación planta"
 
-> Pulsamos calcular. El cosimulador arma un modelo de programación lineal con casi cinco mil variables y lo resuelve en menos de un segundo. Respeta lo que ya empezó, los turnos, los moldes montados en cada máquina y las fechas de entrega. El resultado: noventa y dos coma cinco por ciento a tiempo, dos pedidos tarde menos y cuarenta y siete horas menos de atraso. Y la ocupación de la planta baja del sesenta y nueve al sesenta y dos por ciento: la misma producción con ochenta y tres horas de máquina menos en la semana. Esas horas quedan libres para más pedidos. A cambio hace más cambios de color.
+> Pulsamos calcular. El cosimulador arma un modelo de programación lineal con casi cinco mil variables y lo resuelve en menos de un segundo. Respeta lo que ya empezó, los turnos, los moldes montados en cada máquina y las fechas de entrega. El resultado: noventa y dos coma cinco por ciento a tiempo, dos pedidos tarde menos y cuarenta y siete horas menos de atraso. Y la ocupación de la planta baja del sesenta y nueve al sesenta y uno por ciento: la misma producción con noventa y una horas de máquina menos en la semana. Esas horas quedan libres para más pedidos. A cambio hace más cambios de referencia, y cada uno se cobra con su tiempo real de purga: de claro a oscuro es corto y de oscuro a claro es largo.
 
 ### S05 · El Gantt del cosimulador
 - imagen: capturas/05-gantt-cosimulador.png
@@ -60,14 +60,14 @@ Mensaje central: a partir de los pedidos y sus fechas de entrega, el cosimulador
 - duración: 18 s
 - en pantalla: las tarjetas de IMM-21 e IMM-23 en ámbar y rojo
 
-> Con el plan del cosimulador, la planta queda ocupada al sesenta y dos por ciento en la semana. Pero si miramos máquina por máquina, las dos inyectoras del balde y la línea de ensamble están casi llenas, mientras otras tienen tiempo libre. Ese es el cuello de botella.
+> Con el plan del cosimulador, la planta queda ocupada al sesenta y uno por ciento en la semana. Pero si miramos máquina por máquina, las dos inyectoras del balde y la línea de ensamble están casi llenas, mientras otras tienen tiempo libre. Ese es el cuello de botella.
 
 ### S08 · Fractal balancea la ocupación
 - imagen: capturas/07-fractal-balancear.png
 - duración: 26 s
 - en pantalla: la recomendación, la fila B "MEJOR" y la columna OCUPACIÓN PLANTA
 
-> Aquí entra Fractal. Además de la secuencia, prueba cambios en la planta. Su recomendación: montar el molde de repuesto del balde, que está en el almacén, en la inyectora veinte, que está libre. Con noventa minutos de montaje, la máquina más cargada baja del setenta al sesenta y dos por ciento, sin atrasar ningún pedido, y la ocupación de la planta baja al cincuenta y nueve por ciento. Cada opción se puede ver en el Gantt y adoptar; Fractal recomienda y la persona decide.
+> Aquí entra Fractal. Además de la secuencia, prueba cambios en la planta. Su recomendación: montar el molde de repuesto del balde, que está en el almacén, en la inyectora veinte, que está libre. Con noventa minutos de montaje, la máquina más cargada baja del setenta al sesenta y dos por ciento, sin atrasar ningún pedido, y la ocupación de la planta baja al sesenta coma siete por ciento. Cada opción se puede ver en el Gantt y adoptar; Fractal recomienda y la persona decide.
 
 ### S09 · El Gantt balanceado
 - imagen: capturas/08-gantt-balanceado.png
@@ -81,7 +81,7 @@ Mensaje central: a partir de los pedidos y sus fechas de entrega, el cosimulador
 - duración: 14 s
 - en pantalla: el indicador de ocupación semanal
 
-> Con una máquina más en juego, la planta tiene mil doscientas cuarenta horas disponibles en la semana y la ocupación baja al cincuenta y nueve por ciento. Queda espacio para recibir más pedidos.
+> Con una máquina más en juego, la planta tiene mil doscientas cuarenta horas disponibles en la semana y la ocupación baja al sesenta coma siete por ciento. Queda espacio para recibir más pedidos.
 
 ### S11 · Los insumos del plan
 - imagen: capturas/10-insumos.png

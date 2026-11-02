@@ -49,6 +49,8 @@ export interface SolveOptions {
   stops?: PlannedStop[];
   /** Pedidos fijados por el planificador: sus lotes de `previous` no se mueven y el resto se organiza alrededor. */
   fixed?: string[];
+  /** Cada color va solo a las máquinas que lo tienen montado en setup.yaml (si alguna lo tiene): menos purgas. */
+  dedicateColors?: boolean;
 }
 
 /** Arma el modelo LP (formato CPLEX LP que lee HiGHS). Exportado para las pruebas. */
@@ -70,17 +72,17 @@ export function buildLp(ctx: Context, colors = false): { lp: string; vars: Map<s
   // Una referencia es molde + color. Las máquinas que corren más de una tienen cambios (montaje y purgas).
   const refOf = (j: Job) => `${j.step.tooling ?? "-"}|${j.color ?? "-"}`;
   const refsOf = (m: string) => [...new Set(jobs.filter((j) => j.step.machines.includes(m)).map(refOf))];
-  /** Cambio típico entre dos referencias de la máquina: promedio de los pares según los datos (changeovers.yaml y
-   * change_min). Ida y vuelta se compensan (claro → oscuro es corto, oscuro → claro largo). */
-  const typicalChange = (m: string) => {
+  /** El cambio más largo entre dos referencias de la máquina, según los datos (changeovers.yaml y change_min). */
+  const maxChange = (m: string) => {
     const refs = refsOf(m).map((r) => r.split("|").map((x) => (x === "-" ? undefined : x)));
-    const mins: number[] = [];
-    for (const [i, [ta, ca]] of refs.entries()) for (const [k, [tb, cb]] of refs.entries()) if (i !== k) mins.push(model.changeover({ tooling: ta, color: ca }, { tooling: tb, color: cb }).min);
-    return mins.length ? mins.reduce((s, x) => s + x, 0) / mins.length : 0;
+    let worst = 0;
+    for (const [ta, ca] of refs) for (const [tb, cb] of refs) worst = Math.max(worst, model.changeover({ tooling: ta, color: ca }, { tooling: tb, color: cb }).min);
+    return worst;
   };
-  const change = new Map(model.machines.map((m) => [m, typicalChange(m)]));
+  const change = new Map(model.machines.map((m) => [m, maxChange(m)]));
   const multi = new Set(colors ? model.machines.filter((m) => refsOf(m).length > 1 && change.get(m)! > 0) : []);
-  // Sin binarias, cada turno de una máquina con varias referencias reserva un cambio típico.
+  // Sin binarias, cada turno de una máquina con varias referencias reserva su cambio más largo (así el despacho nunca
+  // se pasa del turno).
   const reserve = (m: string) => (!colors && refsOf(m).length > 1 ? change.get(m)! : 0);
   // Holgura de 1 % por turno para que el redondeo a unidades enteras no desborde el turno.
   const capacity = model.machines.map((m) => buckets.map((bk) => Math.max(0, 0.99 * cap(m, bk) - reserve(m))));
@@ -180,6 +182,11 @@ export function buildLp(ctx: Context, colors = false): { lp: string; vars: Map<s
 /** Resuelve la cartera y devuelve la programación propuesta por el cosimulador. */
 export function solve(highs: HighsLike, model: PlasticsModel, portfolio: CustomerOrders, opt: SolveOptions = {}): ProductionPlan {
   const ctx = context(model, portfolio, opt.now, opt.previous, opt.events, opt.stops, opt.fixed);
+  if (opt.dedicateColors)
+    for (const j of ctx.jobs) {
+      const own = j.step.machines.filter((m) => model.initialColor[m] === j.color);
+      if (own.length && own.length < j.step.machines.length) j.step = { ...j.step, machines: own };
+    }
   const t0 = performance.now();
   const { lp, vars, buckets, nVars, nRows } = buildLp(ctx, opt.colors);
   const res = highs.solve(lp, { time_limit: opt.timeLimitS ?? 20, mip_rel_gap: 0.01, presolve: "on" });

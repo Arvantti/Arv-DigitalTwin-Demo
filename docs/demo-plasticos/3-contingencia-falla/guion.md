@@ -4,8 +4,8 @@ escenario: 3-contingencia-falla
 tags: [demo, plasticos, guion, fractal]
 duracion_aprox: 3 min
 cifras:
-  - ["9 → 7", "pedidos tarde con la recomendación de Fractal"]
-  - ["208,9 → 181,8 h", "de atraso total"]
+  - ["10 → 7", "pedidos tarde con la recomendación de Fractal"]
+  - ["295,5 → 182,3 h", "de atraso total"]
   - ["90 min", "para montar el molde de repuesto en la IMM-20"]
 ---
 
@@ -46,14 +46,14 @@ Mensaje central: cuando una máquina falla, el gemelo avisa, el cosimulador repl
 - duración: 14 s
 - en pantalla: banda roja de alerta arriba
 
-> En la programación de producción aparece la alerta: la falla afecta nueve órdenes del plan vigente. Ahora la pregunta es: ¿esperamos la reparación o movemos el trabajo a otra máquina?
+> En la programación de producción aparece la alerta: la falla afecta ocho órdenes del plan vigente. Ahora la pregunta es: ¿esperamos la reparación o movemos el trabajo a otra máquina?
 
 ### S06 · Fractal estudia las opciones
 - imagen: capturas/06-fractal.png
 - duración: 30 s
 - en pantalla: tabla de opciones A a E; resaltar la fila D "MEJOR" y la columna OCUPACIÓN PLANTA
 
-> Aquí entra Fractal. En poco más de un segundo prueba cinco combinaciones. No solo reordena la secuencia: también prueba cambios en la planta, como mudar el molde a otra máquina o montar el molde de repuesto que está en el almacén. Si solo esperamos y repartimos, quedan nueve pedidos tarde, con doscientas ocho horas de atraso. La recomendación es montar el molde de repuesto del balde en la inyectora veinte, con noventa minutos de montaje. Así quedan siete pedidos tarde y el atraso baja a ciento ochenta y dos horas. La tabla también muestra la ocupación de la planta con cada opción: con la recomendada queda en sesenta y uno por ciento.
+> Aquí entra Fractal. En menos de un segundo prueba tres combinaciones. No solo reordena la secuencia: también prueba cambios en la planta, como mudar el molde a otra máquina o montar el molde de repuesto que está en el almacén. Si solo esperamos y repartimos, quedan diez pedidos tarde, con doscientas noventa y cinco horas de atraso. La recomendación es montar el molde de repuesto del balde en la inyectora veinte, con noventa minutos de montaje. Así quedan siete pedidos tarde y el atraso baja a ciento ochenta y dos horas. La tabla también muestra la ocupación de la planta con cada opción: con la recomendada queda en sesenta y uno por ciento.
 
 ### S07 · Comparar antes de decidir
 - imagen: capturas/06b-fractal-full.png

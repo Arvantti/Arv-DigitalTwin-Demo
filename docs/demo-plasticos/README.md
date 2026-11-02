@@ -16,6 +16,7 @@ Capturas y guiones de narración para la demo del gemelo de la planta de inyecci
 | [1-calcular-programacion](1-calcular-programacion/guion.md) | Programación según las entregas con el mayor uso de la capacidad: pedidos, manual contra cosimulador, ocupación, balanceo con Fractal e insumos | 3 min |
 | [2-cambio-fecha-pedido](2-cambio-fecha-pedido/guion.md) | Un cliente pide su pedido un día antes | 2,5 min |
 | [3-contingencia-falla](3-contingencia-falla/guion.md) | Se quema la resistencia de la IMM-21 y Fractal propone cómo seguir | 3 min |
+| [5-menos-cambios](5-menos-cambios/guion.md) | Fractal dedica un color a cada inyectora del balde: de 30 a 12 cambios de referencia sin atrasar pedidos | 2 min |
 
 Cada escenario arranca donde termina el anterior: el 2 parte del plan del cosimulador y el 3 de una falla sobre ese plan.
 
@@ -42,7 +43,7 @@ Cada segmento del guion tiene esta forma:
 - Sin fechas de calendario: todo se muestra como "día N". El día 0 es el arranque de la cartera y AHORA es siempre el día 9 (en las capturas, a las 10:00). Los pedidos se llaman `PED-D<día de entrega>-NN`.
 - Cartera: 93 pedidos inventados con entrega entre el día 1 y el día 19, carga objetivo 85 % de la capacidad.
 - 12 inyectoras con molde montado (cubiertos IMM-01, 02, 04, 05 y 08; pedal IMM-06 y 07; cuerpo de papelera IMM-18 y 19; balde IMM-21 y 23) y la línea de ensamble ENSAMBLE-01.
-- Programación manual: 90,3 % a tiempo (9 tarde, 228,9 h de atraso), ocupación de planta 69,3 % (794 de 1.146 h en 7 días). Cosimulador: 92,5 % a tiempo (7 tarde, 181,8 h), ocupación 62 % (711 h): la misma producción con 83 h de máquina menos. Balanceado con Fractal: 59,1 % de 1.240 h.
+- Programación manual: 90,3 % a tiempo (9 tarde, 229,4 h de atraso), ocupación de planta 69,3 % (794 de 1.146 h en 7 días). Cosimulador: 92,5 % a tiempo (7 tarde, 182,3 h), ocupación 61,3 % (703 h): la misma producción con 91 h de máquina menos. Balanceado con Fractal: 60,7 % de 1.240 h. Los cambios de referencia cobran montaje de molde y purgas de resina y color según `catalog/changeovers.yaml`; el escenario 4 de Fractal (menos cambios) dedica un color a cada inyectora del balde.
 - Todos los datos son supuestos; ninguna marca ni cliente es real.
 
 Para producir el video (voz con ElevenLabs y montaje con HyperFrames) siga [VIDEO.md](VIDEO.md): trae el guion de apertura y cierre, el prompt para el agente y cómo volver a tomar las capturas o grabar los recorridos con `tools/demo-video/grabar.cjs`.

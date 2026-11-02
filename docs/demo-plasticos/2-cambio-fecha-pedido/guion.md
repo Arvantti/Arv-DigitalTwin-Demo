@@ -5,7 +5,7 @@ tags: [demo, plasticos, guion, fractal]
 duracion_aprox: 2,5 min
 cifras:
   - ["día 12 → día 11", "nueva fecha de entrega del pedido"]
-  - ["0,7 s", "para estudiar las opciones"]
+  - ["0,6 s", "para estudiar las opciones"]
   - ["92,5 %", "de pedidos a tiempo: el resto no se atrasa"]
 ---
 
@@ -32,7 +32,7 @@ Mensaje central: un cliente pide su pedido antes. El sistema dice en segundos si
 - duración: 24 s
 - en pantalla: la frase de recomendación, la fila A "MEJOR" y la columna OCUPACIÓN PLANTA
 
-> Con el plan vigente el pedido terminaría el día doce a las siete de la mañana: tarde para la nueva fecha. Fractal prueba dos combinaciones en menos de un segundo. La recomendación es recalcular con la nueva fecha. No hace falta cambiar moldes; basta con recolocar la secuencia, y el resto de la cartera sigue igual: noventa y dos coma cinco por ciento a tiempo, y la ocupación de la planta incluso baja un punto, del sesenta y dos al sesenta y uno por ciento.
+> Con el plan vigente el pedido terminaría el día doce a las siete de la mañana: tarde para la nueva fecha. Fractal prueba dos combinaciones en menos de un segundo. La recomendación es recalcular con la nueva fecha. No hace falta cambiar moldes; basta con recolocar la secuencia, y el resto de la cartera sigue igual: noventa y dos coma cinco por ciento a tiempo, y la ocupación de la planta incluso baja un punto, del sesenta y uno al sesenta por ciento.
 
 ### S04 · Ocupación por máquina
 - imagen: capturas/03b-fractal-full.png

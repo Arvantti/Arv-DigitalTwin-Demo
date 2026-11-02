@@ -5,10 +5,10 @@
  */
 import type { PlanKpis, ProductionPlan } from "@twin/cosim/core/contracts.ts";
 
-export type Scenario = "adelantar" | "balancear" | "falla";
+export type Scenario = "adelantar" | "balancear" | "falla" | "cambios";
 
 export interface Lever {
-  kind: "recalcular" | "prioridad" | "montar-molde" | "mover-molde";
+  kind: "recalcular" | "prioridad" | "montar-molde" | "mover-molde" | "agrupar" | "dedicar-color";
   text: string;
   machine?: string;
   from?: string;
