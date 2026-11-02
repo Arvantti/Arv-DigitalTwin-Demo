@@ -76,6 +76,28 @@ const PRESETS: Record<LightingPreset, {
 /** Atenuación común de los tres modos: la escena se veía demasiado brillante (pedido del autor, 2026-10-18). */
 const SOFTEN = { key: 0.8, fill: 0.7, exposure: 0.9, bloom: 0.5 };
 
+/**
+ * Entorno de reflexión tipo nave industrial: la sala de RoomEnvironment más tiras luminosas
+ * (luminarias lineales) y bandas oscuras de pared. Un metal liso solo se lee como metal si
+ * refleja zonas muy claras junto a zonas oscuras; con un entorno uniforme parecía plástico.
+ */
+function studioEnvironment(): THREE.Scene {
+  const env = new RoomEnvironment() as THREE.Scene;
+  const strip = new THREE.MeshBasicMaterial({ color: new THREE.Color(9, 9, 9.5) });
+  for (const x of [-9, -3, 3, 9]) {
+    const m = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.1, 18), strip);
+    m.position.set(x, 8.6, 0);
+    env.add(m);
+  }
+  const dark = new THREE.MeshBasicMaterial({ color: "#050607" });
+  for (const z of [-1, 1]) {
+    const m = new THREE.Mesh(new THREE.BoxGeometry(20, 2.2, 0.1), dark);
+    m.position.set(0, 3.2, z * 9.4);
+    env.add(m);
+  }
+  return env;
+}
+
 export class Stage {
   readonly renderer: THREE.WebGLRenderer;
   readonly scene = new THREE.Scene();
@@ -110,7 +132,7 @@ export class Stage {
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
     const pmrem = new THREE.PMREMGenerator(this.renderer);
-    this.scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+    this.scene.environment = pmrem.fromScene(studioEnvironment(), 0.03).texture;
     pmrem.dispose();
 
     this.camera = new THREE.PerspectiveCamera(38, 1, 0.05, 400);
