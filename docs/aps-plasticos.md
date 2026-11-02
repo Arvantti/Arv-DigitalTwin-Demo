@@ -21,14 +21,14 @@ programación manual (manual-sequence.v1) ──┘                             
   navegador, menos de 1 s) priorizando las entregas. No es optimización multivariable: no mueve moldes; eso queda
   para Fractal.
 - **Replanear desde AHORA**: lo que ya empezó queda congelado; la propuesta se compara con la vigente (a tiempo,
-  pedidos tarde, atraso, cambios de color) y se adopta o se descarta.
+  pedidos tarde, atraso, cambios de referencia) y se adopta o se descarta.
 - **Lotes**: tamaño por producto en `aps/aps.yaml`; cada fila del plan lleva `batch: [n, de]`.
 - **Turnos**: dos de 8 h (06:00–14:00 y 14:00–22:00), lunes a sábado, del catálogo de demanda.
 
 ## Pantallas
 
 - `aps.html`: PEDIDOS (indicadores, agregar pedido, tabla con estado) y PROGRAMACIÓN · GANTT (arriba una fila por
-  orden con inicio, fin y entrega; abajo los recursos con los lotes de esas órdenes, cambios de color, paradas y carga).
+  orden con inicio, fin y entrega; abajo los recursos con los lotes de esas órdenes, cambios de referencia, paradas y carga).
   **Reloj de la demo:** las pantallas de plásticos muestran "día N" en vez de fechas (día 0 = arranque de la cartera,
   lunes 26-oct-2026; ids de pedido `PED-D<día de entrega>-NN`). AHORA es siempre el día 9 (`DEMO_DAY` en
   `aps-store.ts`) con la hora real, así la demo no depende de la fecha en que se presente. `?now=2026-11-04T10:00` fija
@@ -97,18 +97,28 @@ secuencia manual (prueba en `cosim/adapters/plastic-injection-plant-v1/tests`).
 
 ## Resultado con la cartera de la demo (AHORA = día 9, 10:00)
 
-| Programación | A tiempo | Pedidos tarde | Atraso total | Cambios de color | Ocupación planta (7 días) |
+| Programación | A tiempo | Pedidos tarde | Atraso total | Cambios de referencia | Ocupación planta (7 días) |
 |---|---|---|---|---|---|
-| Manual APS-MAN-01 | 90,3 % | 9 | 228,9 h | 23 | 69,3 % (794 de 1.146 h) |
-| Cosimulador desde AHORA | 92,5 % | 7 | 181,8 h | 34 | 62 % (711 h) |
-| + Fractal balancear (molde de repuesto en IMM-20) | 92,5 % | 7 | 181,8 h | 35 | 59,1 % (733 de 1.240 h) |
+| Manual APS-MAN-01 | 90,3 % | 9 | 229,4 h | 23 (17 h) | 69,3 % (794 de 1.146 h) |
+| Cosimulador desde AHORA | 92,5 % | 7 | 182,3 h | 30 (22,5 h) | 61,3 % (703 h) |
+| + Fractal balancear (molde de repuesto en IMM-20) | 92,5 % | 7 | 182,3 h | 36 (27,5 h) | 60,7 % |
+| + Fractal menos cambios (un color por inyectora del balde) | 92,5 % | 7 | 182,3 h | 12 (9 h) | 60,9 % |
 
 Ocupación de planta = horas programadas / horas disponibles de las máquinas con molde u orden en los 7 días desde AHORA
 (la misma cuenta del centro de control). Se muestra en la etiqueta VIGENTE, en la propuesta y en la tabla de Fractal.
 El cosimulador hace la misma producción con menos horas de máquina, así que la ocupación baja y queda capacidad libre.
 
-Lo que ya empezó antes de AHORA queda congelado y el cosimulador no lo mueve. Hace más cambios de color porque el
-programa lineal no los modela (reserva una purga por turno); es un punto para Fractal.
+Lo que ya empezó antes de AHORA queda congelado y el cosimulador no lo mueve. Hace más cambios de referencia que la
+manual porque el programa lineal no los modela uno a uno (reserva el cambio más largo de la máquina en cada turno, así
+el despacho no se pasa del turno); el escenario 4 de Fractal
+los reduce.
+
+**Tiempos de cambio de referencia** (`catalog/changeovers.yaml`, nada fijo en el código): cada cambio cobra el montaje
+del molde que entra (`change_min` de `catalog/tooling.yaml`) + la mayor entre la purga de resina (tabla por par de
+resinas, de → a) y la purga de color (tabla por par de masterbatch: de claro a oscuro es corta, de oscuro a claro larga).
+Cada fila del plan trae `changeover_kind` (molde, resina o color) y el Gantt lo muestra al pasar el ratón. Hoy cada
+inyectora tiene un solo molde, así que en la demo los cambios son de color (balde en IMM-21 e IMM-23); el traslado de
+un molde que se muda (`mold_move_extra_min`) también sale de ese archivo.
 
 **Máquinas con molde** (`catalog/setup.yaml`, decisión de Andy del 2026-11-01: duplicar moldes de los 4 productos):
 cubiertos en IMM-01, 02, 04, 05 y 08; pedal y palanca en IMM-06 y 07; cuerpo de papelera en IMM-18 y 19; balde en
@@ -179,7 +189,8 @@ animación se apaga. `?transport=0` la desactiva.
 Pestaña FRACTAL · ESCENARIOS del APS (`fractal/manufacturing/`, contrato `fractal-study.v1`). Fractal prueba
 combinaciones, cada una la coloca el cosimulador, y recomienda la mejor con su tabla de comparación y la ocupación de
 cada máquina antes y después. Puntaje (menor es mejor): horas de atraso + 20 por pedido tarde + 2 por hora de montaje de
-molde + 0,5 por cambio de color; al balancear suma 1,5 × la carga máxima y 3 × lo que pase del 70 %. Cada opción se
+molde + 0,5 por cambio de referencia; al balancear suma 1,5 × la carga máxima y 3 × lo que pase del 70 %, y en «menos
+cambios» suma 2 por hora de cambio. Cada opción se
 puede VER EN GANTT y ADOPTAR, no solo la recomendada; la adoptada queda vigente con sus cambios de moldes y de fechas.
 
 1. **Adelantar un pedido**: nueva fecha de entrega; prueba recalcular, prioridad alta y montar un molde de repuesto.
@@ -187,7 +198,10 @@ puede VER EN GANTT y ADOPTAR, no solo la recomendada; la adoptada queda vigente 
    libre (objetivo 70 % por etapa). Un molde montado en dos máquinas (balde en IMM-21 e IMM-23) se prueba una sola vez.
 3. **Falla en curso**: con una máquina detenida en el emulador, compara esperar la reparación con mudar su molde a
    otra máquina del mismo tamaño o montar el repuesto. Con IMM-21 parada 72 h (lo que propone el emulador) y la cartera inicial, solo recolocar
-   deja 9 pedidos tarde (208,9 h) y montar el molde de balde de repuesto en IMM-20 deja 7 (181,8 h).
+   deja 10 pedidos tarde (295,5 h) y montar el molde de balde de repuesto en IMM-20 deja 7 (182,3 h).
+4. **Menos cambios de referencia**: compara recolocar con dedicar cada color a las máquinas que ya lo tienen montado
+   (`dedicateColors` del cosimulador). Con la cartera de la demo, IMM-21 queda en azul e IMM-23 en blanco: de 30 a 12
+   cambios y de 22,5 a 9 h de cambio, sin pedidos tarde de más. Guion y capturas en `docs/demo-plasticos/5-menos-cambios/`.
 
 4. **Órdenes fijadas a mano**: el planificador bloquea órdenes en el Gantt (candado 🔓/🔒 o arrastrándolas a su fecha) y
    Fractal organiza el resto sin moverlas: prueba solo reorganizar y montar el molde de repuesto en una inyectora libre

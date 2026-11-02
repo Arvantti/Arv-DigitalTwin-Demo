@@ -3,7 +3,7 @@
  * Lo usan el emulador 2D, el centro de control, el PLC de cada máquina en el gemelo 3D y el play por día y hora.
  *
  * OEE del turno = disponibilidad × rendimiento × calidad, desde que empezó el turno hasta el instante pedido:
- * - disponibilidad: tiempo produciendo / tiempo cargado (produciendo + cambios de color + paradas). El tiempo sin orden
+ * - disponibilidad: tiempo produciendo / tiempo cargado (produciendo + cambios de referencia + paradas). El tiempo sin orden
  *   no cuenta como pérdida (no estaba programado);
  * - rendimiento: supuesto por máquina y día con semilla (88–97 %); calidad fija de 99 % (1 % de piezas defectuosas), hasta tener señales reales.
  */
@@ -18,7 +18,7 @@ import { dayTag } from "./schedule.ts";
 export type MachineState = "run" | "change" | "idle" | "plan" | "fault" | "off";
 export const STATE_NAMES: Record<MachineState, string> = {
   run: "PRODUCIENDO",
-  change: "CAMBIO DE COLOR",
+  change: "CAMBIO DE REFERENCIA",
   idle: "SIN ORDEN",
   plan: "PARADA PROGRAMADA",
   fault: "FUERA DE SERVICIO",
@@ -77,7 +77,7 @@ function downsOf(plan: ProductionPlan, events: PlantEvent[], id: string): [numbe
   return out;
 }
 
-/** Unidades de una fila hechas hasta t (avance por tiempo de trabajo, después del cambio de color). */
+/** Unidades de una fila hechas hasta t (avance por tiempo de trabajo, después del cambio de referencia). */
 export function unitsUntil(r: PlanScheduleRow, t: number): number {
   const a = minOf(r.start);
   const b = minOf(r.end);
@@ -208,7 +208,7 @@ export interface Load {
   shiftH: number;
   /** Horas de turno menos paradas programadas y fallas. */
   availH: number;
-  /** Horas con orden programada (incluye cambios de color), sin las paradas. Con filtro, solo las de esa orden. */
+  /** Horas con orden programada (incluye cambios de referencia), sin las paradas. Con filtro, solo las de esa orden. */
   busyH: number;
   /** Disponibilidad = disponibles / turno. */
   availability: number;

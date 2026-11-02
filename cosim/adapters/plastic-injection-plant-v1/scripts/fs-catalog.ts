@@ -13,4 +13,6 @@ export const fsCatalog = (): CatalogData => ({
   setup: read("setup") as CatalogData["setup"],
   demand: read("demand") as CatalogData["demand"],
   aps: yaml.load(readFileSync(`${MODEL_DIR}aps/aps.yaml`, "utf8")) as CatalogData["aps"],
+  materials: read("materials") as CatalogData["materials"],
+  changeovers: read("changeovers") as CatalogData["changeovers"],
 });

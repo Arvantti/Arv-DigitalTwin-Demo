@@ -40,8 +40,54 @@ const FORKLIFT_SPEED = 2.0; // m/s
 const WALK_SPEED = 1.2; // m/s
 const CART_SPEED = 1.0; // m/s
 const PAUSE_S = 3;
+/** Parada del carro en el destino: el operario suelta el manubrio, recoge la caja, la monta y regresa detrás. */
+const CART_PAUSE_S = 7;
 /** Un montacargas de la escena que no es de la flota espera si otro vehículo está a menos de esta distancia (m). */
 const YIELD_M = 7;
+
+/** Operario del carro: detrás y alineado con el manubrio (coordenadas del carro, +z hacia donde avanza). */
+const HANDLE = { x: 0, z: -1.08 };
+/** Dónde espera la caja en el destino y dónde queda sobre la cama del carro (coordenadas del carro). */
+const CRATE_FLOOR = { x: 1.45, z: -0.4 };
+const CART_BED = { x: 0, y: 0.5, z: 0.1 };
+/** Instante de la parada en que la caja queda montada y el carro pasa a ir cargado. */
+const CART_PLACED_T = 3.9;
+let cartWalk = 0;
+
+interface StopPose {
+  x: number;
+  z: number;
+  yaw: number;
+  walking: boolean;
+  crate: "none" | "floor" | "hand" | "lift";
+  /** avance (0..1) del izado de la caja a la cama. */
+  f: number;
+}
+
+/**
+ * Guion del operario en la parada del destino (u = segundos desde que el carro frena):
+ * 0-1,4 se separa del manubrio y camina al costado hasta la caja; 1,4-2,4 la recoge; 2,4-2,9 la lleva junto al carro;
+ * 2,9-3,9 la monta; 3,9-5,6 vuelve detrás del carro; luego espera el manubrio.
+ */
+function cartStop(u: number): StopPose {
+  const A = HANDLE;
+  const B = { x: 1.0, z: HANDLE.z };
+  const C = { x: 1.0, z: CRATE_FLOOR.z };
+  const D = { x: 0.62, z: CRATE_FLOOR.z };
+  const lerp = (p: { x: number; z: number }, q: { x: number; z: number }, f: number) => ({ x: p.x + (q.x - p.x) * f, z: p.z + (q.z - p.z) * f });
+  const yawTo = (p: { x: number; z: number }, q: { x: number; z: number }) => Math.atan2(q.x - p.x, q.z - p.z);
+  const clamp = (v: number) => Math.min(1, Math.max(0, v));
+  if (u < 0.83) return { ...lerp(A, B, u / 0.83), yaw: yawTo(A, B), walking: true, crate: "floor", f: 0 };
+  if (u < 1.4) return { ...lerp(B, C, (u - 0.83) / 0.57), yaw: yawTo(B, C), walking: true, crate: "floor", f: 0 };
+  const faceBox = Math.PI / 2; // mirando a +x
+  if (u < 2.4) return { ...C, yaw: faceBox, walking: false, crate: u < 1.9 ? "floor" : "hand", f: 0 };
+  if (u < 2.9) return { ...lerp(C, D, (u - 2.4) / 0.5), yaw: -Math.PI / 2, walking: true, crate: "hand", f: 0 };
+  if (u < CART_PLACED_T) return { ...D, yaw: -Math.PI / 2, walking: false, crate: "lift", f: clamp(u - 2.9) };
+  if (u < 4.2) return { ...lerp(D, C, (u - CART_PLACED_T) / 0.3), yaw: Math.PI / 2, walking: true, crate: "none", f: 0 };
+  if (u < 4.8) return { ...lerp(C, B, (u - 4.2) / 0.6), yaw: yawTo(C, B), walking: true, crate: "none", f: 0 };
+  if (u < 5.6) return { ...lerp(B, A, (u - 4.8) / 0.8), yaw: yawTo(B, A), walking: true, crate: "none", f: 0 };
+  return { x: A.x, z: A.z, yaw: 0, walking: false, crate: "none", f: 0 };
+}
 
 /** Un carril: polilínea con su longitud acumulada. */
 interface Lane {
@@ -59,7 +105,9 @@ interface Agent {
   offset: number;
   object: THREE.Object3D;
   heading: number;
-  step: (forward: boolean, moving: boolean, dt: number) => void;
+  step: (forward: boolean, moving: boolean, dt: number, stopT: number) => void;
+  /** Duración de la parada en cada extremo (s). */
+  pause: number;
   /** Reloj propio: se detiene mientras el agente cede el paso. */
   clock: number;
   yields: boolean;
@@ -175,25 +223,41 @@ export function buildRoutes(aisles: Aisle[], routes: Route[], parent: THREE.Obje
     if (r.kind === "forklift") {
       const fk = parts.forklift(idx % 2 ? "#f2b705" : "#e8731a");
       agent = {
-        out, back, length, speed: FORKLIFT_SPEED, offset: idx * 11, object: fk.object, heading: 0, clock: 0, yields: true,
+        out, back, length, speed: FORKLIFT_SPEED, pause: PAUSE_S, offset: idx * 11, object: fk.object, heading: 0, clock: 0, yields: true,
         step: (forward) => fk.setLoaded(forward),
       };
     } else if (r.kind === "cart") {
       const ct = parts.cart(idx % 2 ? "#2f6fb0" : "#3b8f6a");
-      // un carro nunca se mueve solo: lo empuja un operario que camina detrás, agarrado del manubrio (queda en z = -0,58)
+      // un carro nunca se mueve solo: lo empuja un operario que camina detrás, alineado con él y agarrado del manubrio (z = -1,08)
       const pusher = parts.operator(idx % 2 ? "#f2b705" : "#f26b1d", idx % 2 ? "#4a6b3a" : "#2f5f8f", { skin: idx % 2 ? "#8d5a3b" : "#c99a76", hair: "#2a1d16" });
-      pusher.object.position.set(0, 0, -1.08);
+      pusher.object.position.set(0, 0, HANDLE.z);
       pusher.object.name = "cart-pusher";
       ct.object.add(pusher.object);
-      let phase = 0;
+      // la caja que espera en el destino y la que el operario lleva en las manos
+      const cartonMat = new THREE.MeshStandardMaterial({ color: "#b08a5a", roughness: 0.85 });
+      const crate = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.3, 0.4), cartonMat);
+      crate.name = "cart-crate";
+      crate.visible = false;
+      ct.object.add(crate);
       agent = {
-        out, back, length, speed: CART_SPEED, offset: idx * 7, object: ct.object, heading: 0, clock: 0, yields: false,
-        step: (forward, moving, dt) => {
-          ct.setLoaded(forward);
-          if (moving) {
-            phase += dt * CART_SPEED * 5;
-            pusher.setWalk(phase);
-          } else pusher.setWalk(0);
+        out, back, length, speed: CART_SPEED, pause: CART_PAUSE_S, offset: idx * 7, object: ct.object, heading: 0, clock: 0, yields: false,
+        step: (forward, _moving, _dt, stopT) => {
+          // en el destino (stopT >= 0) el operario se separa; en el resto del recorrido va detrás del carro
+          const pose = stopT >= 0 && forward ? cartStop(stopT) : { x: HANDLE.x, z: HANDLE.z, yaw: 0, walking: false, crate: "none" as const, f: 0 };
+          pusher.object.position.set(pose.x, 0, pose.z);
+          pusher.object.rotation.y = pose.yaw;
+          // en marcha, las piernas siguen el paso del carro; en la parada, el del operario
+          cartWalk += pose.walking ? WALK_SPEED * 5 * _dt : _moving ? CART_SPEED * 5 * _dt : 0;
+          pusher.setWalk(pose.walking || _moving ? cartWalk : 0);
+          crate.visible = pose.crate !== "none";
+          if (pose.crate === "floor") crate.position.set(CRATE_FLOOR.x, 0.15, CRATE_FLOOR.z);
+          else if (pose.crate === "hand") {
+            // en brazos, delante del pecho
+            crate.position.set(pose.x + Math.sin(pose.yaw) * 0.38, 0.95, pose.z + Math.cos(pose.yaw) * 0.38);
+          } else if (pose.crate === "lift") {
+            crate.position.set(CRATE_FLOOR.x + (CART_BED.x - CRATE_FLOOR.x) * pose.f, 0.15 + (CART_BED.y - 0.15) * pose.f + Math.sin(pose.f * Math.PI) * 0.5, CRATE_FLOOR.z + (CART_BED.z - CRATE_FLOOR.z) * pose.f);
+          }
+          ct.setLoaded(!forward || (stopT >= CART_PLACED_T));
         },
       };
     } else {
@@ -206,7 +270,7 @@ export function buildRoutes(aisles: Aisle[], routes: Route[], parent: THREE.Obje
       const op = parts.operator(idx % 2 ? "#f2b705" : "#f26b1d", idx % 2 ? "#4a6b3a" : "#2f5f8f", looks[idx % looks.length]);
       let phase = 0;
       agent = {
-        out, back, length, speed: WALK_SPEED, offset: idx * 13, object: op.object, heading: 0, clock: 0, yields: false,
+        out, back, length, speed: WALK_SPEED, pause: PAUSE_S, offset: idx * 13, object: op.object, heading: 0, clock: 0, yields: false,
         step: (_f, moving, dt) => {
           if (moving) {
             phase += dt * WALK_SPEED * 5;
@@ -283,20 +347,22 @@ export function buildRoutes(aisles: Aisle[], routes: Route[], parent: THREE.Obje
     }
     for (const a of agents) {
       const run = a.length / a.speed;
-      const cycle = 2 * (run + PAUSE_S);
+      const cycle = 2 * (run + a.pause);
       const t = (a.clock + a.offset) % cycle;
       let s: number;
       let forward: boolean;
       let moving = true;
+      let stopT = -1;
       if (t < run) {
         s = t * a.speed;
         forward = true;
-      } else if (t < run + PAUSE_S) {
+      } else if (t < run + a.pause) {
         s = a.length;
         forward = true;
         moving = false;
-      } else if (t < 2 * run + PAUSE_S) {
-        s = a.length - (t - run - PAUSE_S) * a.speed;
+        stopT = t - run;
+      } else if (t < 2 * run + a.pause) {
+        s = a.length - (t - run - a.pause) * a.speed;
         forward = false;
       } else {
         s = 0;
@@ -312,7 +378,7 @@ export function buildRoutes(aisles: Aisle[], routes: Route[], parent: THREE.Obje
       a.object.position.copy(blocked ? a.object.position : pos);
       a.heading = turn(a.object, a.heading, dir, dt);
       // el paso de las piernas se acelera poco: a la escala del play sería un parpadeo
-      a.step(forward, moving, Math.min(simDt, dt * 3));
+      a.step(forward, moving, Math.min(simDt, dt * 3), blocked ? -1 : stopT);
     }
     void time;
   };

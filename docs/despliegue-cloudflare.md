@@ -37,7 +37,7 @@ podman run --rm -p 8100:8100 \
   arvantti/fractal-engineering-api
 ```
 
-La HMI publicada apunta a ambos servicios con `?api=https://<host-del-emulador>&fractal=https://<host-fractal>`. Fractal usa `FRACTAL_PLC_API_URL` **interno** para obtener tags y perfil PLC y publicar el estudio; nunca acepta la copia de tags/perfil del navegador en `/studies/horizon/from-plc`. Por defecto la optimización está deshabilitada (`FRACTAL_ENABLE_OPTIMIZATION=0`) hasta validar el horizonte. El proxy HTTPS delante de ambos APIs debe conservar la actualización WebSocket (`wss`). **El workflow Deploy solo publica la galería; no despliega las APIs ni configura un proxy.**
+La HMI publicada apunta a ambos servicios con `?api=https://<host-del-emulador>&fractal=https://<host-fractal>`. Fractal usa `FRACTAL_PLC_API_URL` **interno** para obtener tags y perfil PLC y publicar el estudio; nunca acepta la copia de tags/perfil del navegador en `/studies/horizon/from-plc`. El estudio horario optimizado requiere sesión/perfil PLC del visitante y permanece como futuro no aplicado; el backend puede deshabilitarlo explícitamente con `FRACTAL_ENABLE_OPTIMIZATION=0`. La recomendación instantánea y las rutas de decisión/activación siguen bloqueadas en el gateway público. El proxy HTTPS delante de ambos APIs debe conservar la actualización WebSocket (`wss`). **El workflow Deploy solo publica la galería; no despliega las APIs ni configura un proxy.**
 
 ## Emulador en Cloudflare: Acueducto desplegado
 

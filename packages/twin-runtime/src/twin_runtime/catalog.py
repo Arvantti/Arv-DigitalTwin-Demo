@@ -286,6 +286,15 @@ class Catalog:
         errors: list[str] = []
         items = {e["id"]: e for e in layout.get("equipment", [])}
 
+        # Tablas de tiempos de cambio: cada par nombra materiales del catálogo del tipo correcto.
+        changeovers = self.data.get("changeovers") or {}
+        for table, kind in (("color", "masterbatch"), ("resin", "resin")):
+            for src, row in ((changeovers.get(table) or {}).get("pairs") or {}).items():
+                for mid in (src, *row):
+                    mat = self.materials.get(mid)
+                    if mat is None or mat.get("kind") != kind:
+                        errors.append(f"cambios {table}: {mid!r} no es un material {kind} del catálogo")
+
         for tool in self.tooling.values():
             label = f"herramental {tool['id']}"
             if tool.get("product") and tool["product"] not in self.products:

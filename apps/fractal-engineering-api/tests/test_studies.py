@@ -6,9 +6,45 @@ from fastapi.testclient import TestClient
 from fractal_engineering_api import main as fractal_api
 from fractal_engineering_api.main import app
 
-from fractal.hydraulics.runtime import mpc, optimizer
+from fractal.hydraulics.runtime import instant_search, mpc, optimizer
 
 client = TestClient(app)
+
+
+def test_out_of_calibration_range_does_not_produce_an_acceptable_profile(monkeypatch) -> None:
+    monkeypatch.setattr(
+        fractal_api,
+        "project_24h",
+        lambda *_args: [{"profile_hour": 0, "commands": {"constraints_satisfied": False}}],
+    )
+    response = client.post(
+        "/studies/horizon",
+        json={
+            "session_id": "session-test",
+            "plc_tags": {},
+            "profile": {"hours": {}},
+            "objective_id": "OBJ-LEAK-01",
+            "study_type": "optimized",
+        },
+    )
+    assert response.status_code == 200
+    assert response.json()["draft_profile"] is None
+    assert response.json()["requires_operator_acceptance"] is False
+
+
+def test_horizon_rejects_unsupported_objectives() -> None:
+    response = client.post(
+        "/studies/horizon",
+        json={
+            "session_id": "session-test",
+            "plc_tags": {},
+            "profile": {"hours": {}},
+            "objective_id": "OBJ-ENERGY-01",
+            "study_type": "baseline",
+        },
+    )
+    assert response.status_code == 422
+    assert "solo está disponible" in response.json()["detail"]
 
 
 def test_gateway_json_forwards_the_anonymous_demo_capability(monkeypatch) -> None:
@@ -61,7 +97,7 @@ def test_horizon_baseline_is_forecast_without_operator_acceptance() -> None:
     for level in range(1, 5):
         grid = snapshot["equipment"][f"grid-0{level}"]
         assert grid["animation"]["q_l1"] > 0 and grid["animation"]["q_l2"] > 0
-        drain = snapshot["links"][f"grid-0{level}:drain>tank-recirc-0{1 if level <= 2 else 2}:inlet"]
+        drain = snapshot["links"][f"grid-0{level}:drain>drain-manifold-01:floor_{level}_in"]
         assert abs(drain["flow_kg_h"] / 1000 - states["level_flows_m3h"][str(level)]) < 0.0001
 
 
@@ -252,9 +288,25 @@ def test_alternative_applies_demand_leak_and_valve_overrides() -> None:
 def test_optimized_hour_uses_selected_controls_in_snapshot_and_forecast_tags(monkeypatch) -> None:
     calls = []
 
-    def fake_optimize(*_args, **_kwargs):
-        calls.append(1)
-        return {"optimized": {"prs_mca": 22.0, "valve_12_pct": 50.0, "valve_23_pct": 90.0, "valve_34_pct": 80.0}}
+    def fake_optimize(tags, *, vertical_openings_pct, **_kwargs):
+        calls.append({
+            "vertical": vertical_openings_pct,
+            "dwelling": tags.get("PLC.Grid.L1.Consumer.C11.OpeningPct"),
+            "leak": tags.get("PLC.Grid.L1.Leak.L1.OpeningPct"),
+        })
+        return {
+            "fixed_flows_m3h": {},
+            "optimized": {
+                "prs_mca": 22.0,
+                "valve_12_pct": vertical_openings_pct[0],
+                "valve_23_pct": vertical_openings_pct[1],
+                "valve_34_pct": vertical_openings_pct[2],
+                "vrp_opening_pct": 72.0,
+                "target_pressure_mca": 18.0,
+                "applied_pressure_target_mca": 18.0,
+                "target_met": True,
+            }
+        }
 
     monkeypatch.setattr(mpc, "optimize", fake_optimize)
     tags = {
@@ -268,14 +320,154 @@ def test_optimized_hour_uses_selected_controls_in_snapshot_and_forecast_tags(mon
         **{f"PLC.Grid.L{level}.MinimumPressureMca": 15.45 + (4 - level) * 0.8 for level in range(1, 5)},
         **{f"PLC.Grid.L{level}.ConsumptionM3h": 2.5 for level in range(1, 5)},
     }
-    frame = mpc.project_24h(tags, {"hours": {}}, study_type="optimized")[0]
-    assert frame["snapshot"]["equipment"]["valve-between-12"]["animation"]["opening"] == 0.5
-    assert frame["plc_tags"]["PLC.Valve.Vertical12OpeningPct"] == 50.0
-    assert frame["commands"]["between_levels"]["12"] == 50.0
+    profile = {"hours": {
+        "0": {"global_consumers_pct": 40, "between_levels": {"12": 80}},
+        "1": {
+            "global_consumers_pct": 60,
+            "dwellings": {"grid-01": {"c11": 25}},
+            "leaks": {"grid-01": {"l1": 35}},
+            "between_levels": {"12": 50},
+        },
+    }}
+    frames = mpc.project_24h(tags, profile, study_type="optimized", horizon_hours=2)
+    frame = frames[0]
+    assert frame["snapshot"]["equipment"]["valve-between-12"]["animation"]["opening"] == 0.8
+    assert frame["plc_tags"]["PLC.Valve.Vertical12OpeningPct"] == 80.0
+    assert frame["commands"]["vrp_opening_pct"] == 72.0
+    assert frame["commands"]["target_pressure_mca"] == 18.0
     assert frame["commands"]["prs"]["branch"] == "manual"
-    assert len(calls) == 1  # mismo patrón horario, física/feasibilidad se reevalúa por hora
+    assert len(frame["scenarios"]) == 1
+    assert frame["scenarios"][0]["demand_factor"] == 1.0
+    assert len(calls) == 2
+    assert calls[0] == {"vertical": (80.0, 100.0, 100.0), "dwelling": 40.0, "leak": None}
+    assert calls[1] == {"vertical": (50.0, 100.0, 100.0), "dwelling": 25.0, "leak": 35.0}
     assert frame["plc_tags"]["PLC.PRS.BranchAuto"] is False
-    assert frame["plc_tags"]["PLC.Pump.DischargePressureMca"] == frame["scenarios"][1]["state"]["pump_discharge_mca"]
+    assert frame["plc_tags"]["PLC.Pump.DischargePressureMca"] == frame["scenarios"][0]["state"]["pump_discharge_mca"]
+
+
+def _test_flow_outputs() -> dict[str, dict[str, float]]:
+    consumers = {
+        f"L{level}.C{branch}{position}": 10.0
+        for level in range(1, 5)
+        for branch in range(1, 5)
+        for position in range(1, 5)
+    }
+    leaks = {f"L{level}.{leak}": 2.0 for level in range(1, 5) for leak in ("L1", "L2")}
+    return {"consumer_flows_l_min": consumers, "leak_flows_l_min": leaks}
+
+
+def test_optimizer_interpolates_prs_pressure_for_18_mca_and_keeps_scenario_valves_fixed(monkeypatch) -> None:
+    seen_openings = []
+
+    def fake_evaluate(_tags, *, prs_mca, vertical_openings_pct, demand_factor, critical_consumer_id, fixed_flows_m3h=None):
+        seen_openings.append(vertical_openings_pct)
+        pressure = prs_mca - 3.0
+        return {
+            "critical_pressure_mca": pressure,
+            "control_point_pressure_mca": pressure,
+            "prs_inlet_mca": 30.0,
+            "prs_outlet_mca": prs_mca,
+            **_test_flow_outputs(),
+            "feasible": pressure >= 15.0,
+        }
+
+    monkeypatch.setattr(instant_search.module, "evaluate", fake_evaluate)
+    result = instant_search.optimize(
+        {"PLC.PRS.OutletPressureMca": 30.0},
+        vertical_openings_pct=(30.0, 55.0, 96.0),
+    )
+    optimized = result["optimized"]
+    assert optimized["prs_mca"] == pytest.approx(21.05, abs=0.01)
+    assert optimized["critical_pressure_mca"] >= 18.0
+    assert optimized["target_met"] is True
+    assert optimized["optimization_status"] == "target_18_met"
+    assert optimized["valve_12_pct"] == 30.0
+    assert optimized["valve_23_pct"] == 55.0
+    assert optimized["valve_34_pct"] == 96.0
+    assert set(seen_openings) == {(30.0, 55.0, 96.0)}
+
+
+def test_real_hydraulic_optimizer_holds_hourly_flow_and_reaches_18_mca() -> None:
+    tags = {
+        "PLC.Tank.Supply.LevelPct": 70,
+        "PLC.Tank.Recirc01.LevelPct": 40,
+        "PLC.Tank.Recirc02.LevelPct": 40,
+        "PLC.Pump.FlowM3h": 11.53,
+        "PLC.Pump.RunningCount": 2,
+        "PLC.Pump.DischargePressureMca": 72.1,
+        "PLC.Pump.SetpointMca": 70,
+        "PLC.PRS.ManualSettingMca": 26.66,
+        "PLC.PRS.OutletPressureMca": 20.94,
+    }
+    for level in range(1, 5):
+        for branch in range(1, 5):
+            for position in range(1, 5):
+                tags[f"PLC.Grid.L{level}.Consumer.C{branch}{position}.OpeningPct"] = 100
+        for leak in ("L1", "L2"):
+            tags[f"PLC.Grid.L{level}.Leak.{leak}.OpeningPct"] = 100
+
+    result = instant_search.optimize(tags, vertical_openings_pct=(100.0, 100.0, 100.0))
+    base, optimized = result["base"], result["optimized"]
+    assert result["constraints_satisfied"] is True
+    assert optimized["critical_pressure_mca"] >= 18.0
+    assert optimized["flow_m3h"] == pytest.approx(base["flow_m3h"], abs=1e-5)
+    assert optimized["vrp_opening_pct"] == pytest.approx(42.82, abs=0.1)
+    assert optimized["opening_curve_status"] == "within_calibrated_range"
+
+
+def test_optimizer_uses_15_mca_fallback_only_when_18_is_unreachable(monkeypatch) -> None:
+    def fake_evaluate(_tags, *, prs_mca, vertical_openings_pct, demand_factor, critical_consumer_id, fixed_flows_m3h=None):
+        pressure = prs_mca - 25.0
+        return {
+            "critical_pressure_mca": pressure,
+            "control_point_pressure_mca": pressure,
+            "prs_inlet_mca": 60.0,
+            "prs_outlet_mca": prs_mca,
+            **_test_flow_outputs(),
+            "feasible": pressure >= 15.0,
+        }
+
+    monkeypatch.setattr(instant_search.module, "evaluate", fake_evaluate)
+    result = instant_search.optimize({}, vertical_openings_pct=(100.0, 100.0, 100.0))
+    assert result["constraints_satisfied"] is True
+    assert result["target_met"] is False
+    assert result["optimized"]["critical_pressure_mca"] >= 15.0
+    assert result["optimized"]["applied_pressure_target_mca"] == 15.0
+    assert result["optimized"]["optimization_status"] == "fallback_15_used"
+
+
+def test_optimizer_refuses_candidate_below_hard_15_mca(monkeypatch) -> None:
+    def fake_evaluate(_tags, *, prs_mca, vertical_openings_pct, demand_factor, critical_consumer_id, fixed_flows_m3h=None):
+        pressure = prs_mca - 26.0
+        return {
+            "critical_pressure_mca": pressure,
+            "control_point_pressure_mca": pressure,
+            "prs_inlet_mca": 60.0,
+            "prs_outlet_mca": prs_mca,
+            **_test_flow_outputs(),
+            "feasible": False,
+        }
+
+    monkeypatch.setattr(instant_search.module, "evaluate", fake_evaluate)
+    result = instant_search.optimize({}, vertical_openings_pct=(100.0, 100.0, 100.0))
+    assert result["constraints_satisfied"] is False
+    assert result["optimized"]["optimization_status"] == "below_hard_minimum"
+
+
+def test_sinusoidal_vrp_curve_has_soft_endpoints_and_roundtrips() -> None:
+    for opening in (20.0, 21.0, 30.0, 60.0, 90.0, 99.0, 100.0):
+        outlet = instant_search._outlet_for_opening(opening, 70.0)
+        assert instant_search._opening_for_outlet(outlet, 70.0) == pytest.approx(opening, abs=0.01)
+    assert instant_search._outlet_for_opening(20.0, 70.0) == 15.0
+    assert instant_search._outlet_for_opening(100.0, 70.0) == 70.0
+    assert instant_search._outlet_for_opening(60.0, 70.0) == pytest.approx(42.5)
+    opening_delta_low = instant_search._outlet_for_opening(21.0, 70.0) - 15
+    opening_delta_next = instant_search._outlet_for_opening(22.0, 70.0) - instant_search._outlet_for_opening(21.0, 70.0)
+    closing_delta_end = 70 - instant_search._outlet_for_opening(99.0, 70.0)
+    closing_delta_previous = instant_search._outlet_for_opening(99.0, 70.0) - instant_search._outlet_for_opening(98.0, 70.0)
+    assert opening_delta_low < opening_delta_next
+    assert closing_delta_end < closing_delta_previous
+    assert instant_search._opening_for_outlet(10.0, 70.0) is None
 
 
 def test_infeasible_nodal_result_cannot_become_instant_command(monkeypatch) -> None:
@@ -504,8 +696,10 @@ def test_plc_to_fractal_to_forecast_frames_without_applying_commands(monkeypatch
     )
 
 
-def test_optimization_is_disabled_until_forecast_validation(monkeypatch) -> None:
+def test_optimization_enabled_by_default_and_explicit_disable(monkeypatch) -> None:
     monkeypatch.delenv("FRACTAL_ENABLE_OPTIMIZATION", raising=False)
+    assert fractal_api.optimization_enabled() is True
+    monkeypatch.setenv("FRACTAL_ENABLE_OPTIMIZATION", "0")
     assert client.post("/studies/horizon", json={"study_type": "optimized"}).status_code == 409
     assert client.post("/studies/instant", json={}).status_code == 409
 

@@ -24,6 +24,9 @@ import { plantLoadAt } from "./plant-state.ts";
 import type { FractalStudy } from "@twin/fractal-manufacturing/contracts.ts";
 import type { StudyInput } from "@twin/fractal-manufacturing/models/plastic-injection-plant-v1/study.ts";
 
+/** Qué manda en un cambio de referencia (cosimulador, catalog/changeovers.yaml). */
+const CHANGE_NAMES: Record<"molde" | "resina" | "color", string> = { molde: "cambio de molde", resina: "purga de resina", color: "purga de color" };
+
 const IMPORTANCE: [Importance, string][] = [
   ["alta", "Alta"],
   ["normal", "Normal"],
@@ -61,7 +64,9 @@ let formMsg = "";
 let worker: Worker | null = null;
 let runId = 0;
 
-const shown = () => proposal ?? current;
+/** Qué se muestra en el APS: la vigente, o el escenario visto (la propuesta). El selector del Gantt cambia esto. */
+let viewVigente = false;
+const shown = () => (viewVigente ? current : (proposal ?? current));
 
 useDemoDays();
 
@@ -71,6 +76,7 @@ function syncView(): void {
   const key = proposal?.plan_id ?? "";
   if (key === lastView) return;
   lastView = key;
+  if (proposal) viewVigente = false;
   setViewed(proposal);
   setViewMode(proposal ? "escenario" : "vigente");
 }
@@ -159,7 +165,7 @@ function renderProposal(): void {
         <div><small>A tiempo</small>${cell(v.on_time_pct, k.on_time_pct, (x) => `${nf(x, 1)} %`, false)}</div>
         <div><small>Pedidos tarde</small>${cell(v.late_orders, k.late_orders, (x) => nf(x), true)}</div>
         <div><small>Atraso total</small>${cell(v.tardiness_h, k.tardiness_h, (x) => `${nf(x, 1)} h`, true)}</div>
-        <div><small>Cambios de color</small>${cell(v.changeovers, k.changeovers, (x) => nf(x), true)}</div>
+        <div title="Cambios de referencia: montaje de molde, purga de resina o purga de color (tiempos de catalog/changeovers.yaml)"><small>Cambios de referencia</small>${cell(v.changeovers, k.changeovers, (x) => nf(x), true)}<small>${nf(v.changeover_h ?? 0, 1)} → ${nf(k.changeover_h ?? 0, 1)} h</small></div>
         <div title="Horas programadas / horas disponibles de la planta en los 7 días desde AHORA"><small>Ocupación planta · 7 días</small>${cell(ov.occupancy, op.occupancy, pctTxt, true)}<small>${nf(ov.busyH, 0)} → ${nf(op.busyH, 0)} h de ${nf(op.availH, 0)} h</small></div>
       </div>
       <div class="aps-prop-actions"><button id="aps-adopt" class="primary">✓ ADOPTAR COMO VIGENTE</button><button id="aps-discard">✕ DESCARTAR</button></div>
@@ -409,7 +415,7 @@ function renderGantt(p: ProductionPlan): void {
           const a = ms(r.start);
           const b = ms(r.end);
           const dim = (selected && r.order !== selected) || !visible.has(r.order) ? " dim" : "";
-          const tip = `${esc(r.order)} · ${esc(r.product)}${r.color ? ` · ${esc(COLOR_NAMES[r.color] ?? r.color)}` : ""} · lote ${r.batch ? `${r.batch[0]} de ${r.batch[1]}` : "—"} · ${nf(r.quantity)} u · ${when(r.start)} → ${when(r.end)}${r.changeover_min ? ` · cambio de color ${nf(r.changeover_min)} min` : ""}`;
+          const tip = `${esc(r.order)} · ${esc(r.product)}${r.color ? ` · ${esc(COLOR_NAMES[r.color] ?? r.color)}` : ""} · lote ${r.batch ? `${r.batch[0]} de ${r.batch[1]}` : "—"} · ${nf(r.quantity)} u · ${when(r.start)} → ${when(r.end)}${r.changeover_min ? ` · ${CHANGE_NAMES[r.changeover_kind ?? "color"]} ${nf(r.changeover_min)} min` : ""}`;
           // Un lote que cruza la noche o el domingo se dibuja solo en las horas de turno.
           const parts = workParts(a / 60000, b / 60000);
           return parts
@@ -465,8 +471,11 @@ function renderGantt(p: ProductionPlan): void {
   el.innerHTML = `
     <div class="g-toolbar">
       <button id="g-prev" title="Un día atrás">◀</button><button id="g-today">HOY</button><button id="g-next" title="Un día adelante">▶</button>
-      <span class="dim small">${day(isoOf(from))} a ${day(isoOf(to - DAY_MS))} · mostrando ${proposal ? "la PROPUESTA" : "la VIGENTE"} ${esc(p.plan_id)} · ${orders.length} órdenes</span>
-      <span class="g-legend">${legend}<span><i class="hatch"></i>cambio de color</span><span><i class="down"></i>parada</span><span><i class="pin"></i>hora fijada</span><span><i class="fix"></i>orden fijada</span></span>
+      <span class="dim small">${day(isoOf(from))} a ${day(isoOf(to - DAY_MS))} · mostrando ${p === current ? "la VIGENTE" : "el ESCENARIO"} ${esc(p.plan_id)} · ${orders.length} órdenes</span>
+      <select id="g-view" title="Qué programación muestra el Gantt: la vigente o el escenario visto">
+        <option value="vigente">VIGENTE · ${esc(current.plan_id)}</option>
+        <option value="escenario"${proposal ? "" : " disabled"}>ESCENARIO · ${esc(proposal?.plan_id ?? "ninguno visto")}</option>
+      <span class="g-legend">${legend}<span><i class="hatch"></i>cambio (molde, resina o color)</span><span><i class="down"></i>parada</span><span><i class="pin"></i>hora fijada</span><span><i class="fix"></i>orden fijada</span></span>
     </div>
     <div class="g-manual">
       <span>✋ <b>AJUSTE MANUAL</b> · arrastra un lote a otra máquina: sobre otro lote queda antes o después de él; en un espacio libre queda fijado a esa hora. Arrastra una orden de arriba para moverla en el tiempo. 🔒 fija una orden: CALCULAR organiza el resto sin moverla.</span>
@@ -486,6 +495,13 @@ function renderGantt(p: ProductionPlan): void {
   const firstOpen = orders.find((o) => ms(o.completion) > t);
   const row = firstOpen && scroller.querySelector<HTMLElement>(`.g-row[data-order="${firstOpen.id}"]`);
   scroller.scrollTop = keep ?? (row ? row.offsetTop - 4 : 0);
+  const gView = document.getElementById("g-view") as HTMLSelectElement;
+  gView.value = viewVigente || !proposal ? "vigente" : "escenario";
+  gView.onchange = () => {
+    viewVigente = gView.value === "vigente";
+    setViewMode(viewVigente ? "vigente" : "escenario");
+    render();
+  };
   $("g-prev").onclick = () => ((viewFrom -= DAY_MS), render());
   $("g-next").onclick = () => ((viewFrom += DAY_MS), render());
   $("g-today").onclick = () => ((viewFrom = ms(`${now().slice(0, 10)}T00:00`) - 2 * DAY_MS), render());
@@ -658,97 +674,155 @@ function startDrag(e: PointerEvent, node: HTMLElement, from: number, to: number)
   const x0 = e.clientX;
   const y0 = e.clientY;
   const isOrder = !!node.dataset.moveOrder;
-  let ghost: HTMLElement | null = null;
-  let line: HTMLElement | null = null;
+  const box0 = node.getBoundingClientRect();
+  // Dónde agarraste la barra: la barra flotante conserva ese punto bajo el cursor.
+  const gx = x0 - box0.left;
+  const gy = y0 - box0.top;
+  let started = false;
+  let float: HTMLElement | null = null;
+  let landing: HTMLElement | null = null;
+  let tip: HTMLElement | null = null;
   let hot: HTMLElement | null = null;
   const track = node.parentElement!;
   const timeAt = (x: number, tr: HTMLElement) => {
     const r = tr.getBoundingClientRect();
     return from + ((x - r.left) / r.width) * (to - from);
   };
+  const pctOf = (t: number) => ((Math.min(Math.max(t, from), to) - from) / (to - from)) * 100;
   const clean = () => {
-    ghost?.remove();
-    line?.remove();
+    float?.remove();
+    landing?.remove();
+    tip?.remove();
     hot?.classList.remove("drop-ok", "drop-bad");
+    node.classList.remove("g-origin");
     document.body.classList.remove("g-dragging");
   };
-  const move = (ev: PointerEvent) => {
-    lastPointer = { x: ev.clientX, y: ev.clientY };
-    if (!ghost && Math.hypot(ev.clientX - x0, ev.clientY - y0) < 5) return;
-    if (!ghost) {
-      ghost = document.createElement("div");
-      ghost.className = "g-ghost";
-      document.body.append(ghost);
-      line = document.createElement("div");
-      line.className = "g-dropline";
-      document.body.classList.add("g-dragging");
-    }
-    ghost.style.left = `${ev.clientX + 14}px`;
-    ghost.style.top = `${ev.clientY + 12}px`;
+  /** Qué pasaría si sueltas ahora: fila destino, si vale, dónde cae y el texto. */
+  const target = (ev: PointerEvent) => {
+    const under = document.elementFromPoint(ev.clientX, ev.clientY) as HTMLElement | null;
     if (isOrder) {
       const delta = timeAt(ev.clientX, track) - timeAt(x0, track);
       const startMs = ms(shown().orders.find((o) => o.id === node.dataset.moveOrder)?.start ?? now());
-      ghost.textContent = `${node.dataset.moveOrder} → desde ${when(snapIso(startMs + delta))}`;
-      track.append(line!);
-      line!.style.left = `${((timeAt(ev.clientX, track) - from) / (to - from)) * 100}%`;
-      return;
+      const at = ms(snapIso(startMs + delta));
+      return { row: track.parentElement as HTMLElement, tr: track, ok: true, left: pctOf(at), text: `${node.dataset.moveOrder} desde ${when(snapIso(startMs + delta))}` };
     }
-    const under = document.elementFromPoint(ev.clientX, ev.clientY) as HTMLElement | null;
     const row = under?.closest<HTMLElement>(".g-row.res[data-machine]") ?? null;
-    if (row !== hot) {
-      hot?.classList.remove("drop-ok", "drop-bad");
-      hot = row;
+    if (!row) return null;
+    const m = row.dataset.machine!;
+    const tr = row.querySelector<HTMLElement>(".g-track")!;
+    const trBox = tr.getBoundingClientRect();
+    const ok = machinesFor(node.dataset.job!.split("/")[1]).includes(m);
+    if (!ok) return { row, tr, ok, left: -1, text: `${machineLabel(m)} no tiene el molde de ${productName(node.dataset.job!.split("/")[1]).toLowerCase()}` };
+    const lot = under?.closest<HTMLElement>(".g-lot") ?? null;
+    const onLot = lot && lot.dataset.job !== node.dataset.job && lot.dataset.m === m ? lot : null;
+    const w = (box0.width / trBox.width) * 100;
+    if (onLot) {
+      const r = onLot.getBoundingClientRect();
+      const after = ev.clientX > r.left + r.width / 2;
+      const edge = after ? r.left : r.left - box0.width;
+      const left = (((after ? r.right : edge) - trBox.left) / trBox.width) * 100;
+      return { row, tr, ok, left, w, text: `${node.dataset.order} → ${machineLabel(m)}, ${after ? "después" : "antes"} de ${onLot.dataset.order}` };
     }
-    if (!row) {
-      ghost.textContent = `${node.dataset.order} · suéltalo sobre una máquina`;
-      line?.remove();
+    const iso = snapIso(timeAt(ev.clientX - gx, tr));
+    return { row, tr, ok, left: pctOf(ms(iso)), w, text: `${node.dataset.order} → ${machineLabel(m)}, desde ${when(iso)}` };
+  };
+  const move = (ev: PointerEvent) => {
+    lastPointer = { x: ev.clientX, y: ev.clientY };
+    if (ev.buttons === 0) return started ? up(ev) : stop();
+    if (!started && Math.hypot(ev.clientX - x0, ev.clientY - y0) < 5) return;
+    if (!started) {
+      started = true;
+      float = node.cloneNode(true) as HTMLElement;
+      float.className = `${node.className} g-float`;
+      float.removeAttribute("title");
+      float.style.cssText = `--c:${node.style.getPropertyValue("--c")};--co:${node.style.getPropertyValue("--co") || "0%"};width:${box0.width}px;height:${box0.height}px`;
+      document.body.append(float);
+      landing = document.createElement("div");
+      landing.className = "g-landing";
+      tip = document.createElement("div");
+      tip.className = "g-ghost";
+      document.body.append(tip);
+      node.classList.add("g-origin");
+      document.body.classList.add("g-dragging");
+    }
+    // La barra sigue al cursor sin demora.
+    float!.style.left = `${ev.clientX - gx}px`;
+    float!.style.top = `${ev.clientY - gy}px`;
+    tip!.style.left = `${ev.clientX + 16}px`;
+    tip!.style.top = `${ev.clientY + 18}px`;
+    const t = target(ev);
+    if (t?.row !== hot) {
+      hot?.classList.remove("drop-ok", "drop-bad");
+      hot = isOrder ? null : (t?.row ?? null);
+    }
+    if (!t) {
+      landing!.remove();
+      float!.classList.remove("ok", "bad");
+      tip!.className = "g-ghost";
+      tip!.textContent = `${node.dataset.order} · suéltala sobre una máquina`;
       return;
     }
-    const m = row.dataset.machine!;
-    const ok = machinesFor(node.dataset.job!.split("/")[1]).includes(m);
-    row.classList.toggle("drop-ok", ok);
-    row.classList.toggle("drop-bad", !ok);
-    const tr = row.querySelector<HTMLElement>(".g-track")!;
-    const lot = under?.closest<HTMLElement>(".g-lot") ?? null;
-    const onLot = lot && lot.dataset.job !== node.dataset.job ? lot : null;
-    if (!ok) ghost.textContent = `${machineLabel(m)} no tiene ese molde`;
-    else if (onLot) {
-      const r = onLot.getBoundingClientRect();
-      ghost.textContent = `${node.dataset.order} → ${machineLabel(m)}, ${ev.clientX > r.left + r.width / 2 ? "después" : "antes"} de ${onLot.dataset.order}`;
-    } else ghost.textContent = `${node.dataset.order} → ${machineLabel(m)}, desde ${when(snapIso(timeAt(ev.clientX, tr)))}`;
-    tr.append(line!);
-    line!.style.left = `${((timeAt(ev.clientX, tr) - from) / (to - from)) * 100}%`;
+    if (!isOrder) {
+      t.row.classList.toggle("drop-ok", t.ok);
+      t.row.classList.toggle("drop-bad", !t.ok);
+    }
+    float!.classList.toggle("ok", t.ok);
+    float!.classList.toggle("bad", !t.ok);
+    tip!.className = `g-ghost ${t.ok ? "ok" : "bad"}`;
+    tip!.textContent = t.ok ? t.text : `✕ ${t.text}`;
+    if (t.ok && t.w !== undefined) {
+      landing!.style.left = `${t.left}%`;
+      landing!.style.width = `${t.w}%`;
+      t.tr.append(landing!);
+    } else if (t.ok) {
+      landing!.style.left = `${t.left}%`;
+      landing!.style.width = `${(box0.width / track.getBoundingClientRect().width) * 100}%`;
+      t.tr.append(landing!);
+    } else landing!.remove();
   };
-  const up = (ev: PointerEvent) => {
+  const stop = () => {
     removeEventListener("pointermove", move);
     removeEventListener("pointerup", up);
     removeEventListener("pointercancel", cancel);
-    if (!ghost) return;
+    removeEventListener("mouseup", up);
+    removeEventListener("blur", cancel);
+    removeEventListener("keydown", esc);
+  };
+  const up = (ev: PointerEvent | MouseEvent) => {
+    stop();
+    if (!started) return;
     suppressClick = true;
     setTimeout(() => (suppressClick = false), 0);
-    clean();
+    let t: ReturnType<typeof target> = null;
+    try {
+      t = target(ev as PointerEvent);
+    } finally {
+      // Pase lo que pase, la barra flotante nunca se queda en pantalla.
+      clean();
+    }
     lastPointer = { x: ev.clientX, y: ev.clientY };
+    if (!t) return;
     if (isOrder) {
       const delta = timeAt(ev.clientX, track) - timeAt(x0, track);
       if (Math.abs(delta) >= (SNAP_MIN / 2) * 60000) dropOrder(node.dataset.moveOrder!, delta);
       return;
     }
     const under = document.elementFromPoint(ev.clientX, ev.clientY) as HTMLElement | null;
-    const row = under?.closest<HTMLElement>(".g-row.res[data-machine]");
-    if (!row) return;
-    const tr = row.querySelector<HTMLElement>(".g-track")!;
-    dropLot(node.dataset.job!, node.dataset.m!, node.dataset.start!, row.dataset.machine!, timeAt(ev.clientX, tr), under?.closest<HTMLElement>(".g-lot") ?? null);
+    // La hora de caída es la del borde izquierdo de la barra, no la del cursor.
+    dropLot(node.dataset.job!, node.dataset.m!, node.dataset.start!, t.row.dataset.machine!, timeAt(ev.clientX - gx, t.tr), under?.closest<HTMLElement>(".g-lot") ?? null);
   };
   const cancel = () => {
-    removeEventListener("pointermove", move);
-    removeEventListener("pointerup", up);
-    removeEventListener("pointercancel", cancel);
+    stop();
     clean();
   };
+  const esc = (ev: KeyboardEvent) => ev.key === "Escape" && cancel();
   e.preventDefault();
   addEventListener("pointermove", move);
   addEventListener("pointerup", up);
   addEventListener("pointercancel", cancel);
+  addEventListener("mouseup", up);
+  addEventListener("blur", cancel);
+  addEventListener("keydown", esc);
 }
 
 /** Tramos [inicio, fin] en minutos dentro de los turnos entre a y b. */
@@ -787,7 +861,7 @@ let fractalWorker: Worker | null = null;
 let studyN = 0;
 /** Plan sobre el que corrió el estudio: la vigente, o el plan que se veía con órdenes fijadas. */
 let studyBase: ProductionPlan | null = null;
-const SCENARIO_NAMES: Record<string, string> = { adelantar: "ADELANTAR UN PEDIDO", balancear: "BALANCEAR LA OCUPACIÓN", falla: "FALLA EN CURSO", fijadas: "ÓRDENES FIJADAS" };
+const SCENARIO_NAMES: Record<string, string> = { adelantar: "ADELANTAR UN PEDIDO", balancear: "BALANCEAR LA OCUPACIÓN", falla: "FALLA EN CURSO", fijadas: "ÓRDENES FIJADAS", cambios: "MENOS CAMBIOS DE REFERENCIA" };
 
 function runFractal(input: Omit<StudyInput, "portfolio" | "now" | "previous" | "events" | "molds" | "studyId">): void {
   studyError = "";
@@ -839,7 +913,7 @@ function renderFractal(): void {
       .join("");
   };
   el.innerHTML = `
-    <p class="dim small fr-intro">Fractal es la optimización multivariable: además de la secuencia, prueba cambiar la planta (prioridades, montar un molde de repuesto del almacén en una inyectora libre del tamaño correcto, mudar el molde de una máquina parada). Cada combinación la coloca el cosimulador y Fractal recomienda la mejor. Recomienda; el APS decide.</p>
+    <p class="dim small fr-intro">Fractal es la optimización multivariable: además de la secuencia, prueba cambiar la planta (prioridades, montar un molde de repuesto del almacén en una inyectora libre del tamaño correcto, mudar el molde de una máquina parada, dedicar un color a cada máquina para purgar menos). Cada combinación la coloca el cosimulador y Fractal recomienda la mejor. Recomienda; el APS decide.</p>
     <div class="fr-cards">
       <article class="fr-card"><div class="label">1 · ADELANTAR UN PEDIDO</div><p class="dim small">Un cliente pide su pedido antes. ¿Cómo mover todo para cumplirle sin atrasar a los demás?</p>
         <label>Pedido <select id="fr-order">${movable.map((o) => `<option value="${esc(o.id)}">${esc(o.id)} · ${esc(o.product_name)} · ${nf(o.quantity)} · entrega ${day(o.due)}</option>`).join("")}</select></label>
@@ -859,6 +933,8 @@ function renderFractal(): void {
           : `<p class="dim small">Bloquea a mano órdenes en el Gantt con el candado 🔓 (o arrástralas a su día). Fractal organiza el resto sin moverlas.</p>`
       }
         <button id="fr-run-fijadas" class="primary"${pinned.length && !studying ? "" : " disabled"}>◆ ESTUDIAR</button></article>
+      <article class="fr-card"><div class="label">5 · MENOS CAMBIOS DE REFERENCIA</div><p class="dim small">Cada cambio cuesta montaje de molde y purgas de resina y color (tiempos del catálogo). La vigente tiene ${nf(current.kpis.changeovers)} cambios y ${nf(current.kpis.changeover_h ?? 0, 1)} h de cambio. ¿Cómo hacer menos sin atrasar pedidos?</p>
+        <button id="fr-run-cambios" class="primary"${studying ? " disabled" : ""}>◆ ESTUDIAR</button></article>
     </div>
     ${studying ? `<p class="fr-status"><span class="spin">◌</span> ${esc(studying)}</p>` : ""}
     ${studyError ? `<p class="fr-status bad">${esc(studyError)}</p>` : ""}
@@ -869,13 +945,13 @@ function renderFractal(): void {
         <p class="fr-q">${esc(study.question)}</p>
         <p class="fr-rec">◆ ${esc(study.recommendation)}</p>
         <div class="aps-table-wrap"><table class="route-table aps-table fr-table">
-          <thead><tr><th>Opción</th><th>Qué cambia</th><th class="num">A tiempo</th><th class="num">Tarde</th><th class="num">Atraso</th><th class="num">Cambios de color</th><th class="num">Montaje de moldes</th><th class="num">Ocupación planta</th><th>Carga máxima</th><th class="num">Puntaje</th><th></th></tr></thead>
+          <thead><tr><th>Opción</th><th>Qué cambia</th><th class="num">A tiempo</th><th class="num">Tarde</th><th class="num">Atraso</th><th class="num">Cambios de referencia</th><th class="num">Montaje de moldes</th><th class="num">Ocupación planta</th><th>Carga máxima</th><th class="num">Puntaje</th><th></th></tr></thead>
           <tbody>
-            <tr class="past"><td>${studyBase && studyBase !== current ? "ACTUAL" : "VIGENTE"}</td><td>${esc(SOURCE_NAMES[(studyBase ?? current).source])} ${esc(study.baseline.plan_id)}</td><td class="num">${nf(study.baseline.kpis.on_time_pct, 1)} %</td><td class="num">${study.baseline.kpis.late_orders}</td><td class="num">${nf(study.baseline.kpis.tardiness_h, 1)} h</td><td class="num">${study.baseline.kpis.changeovers}</td><td class="num">—</td><td class="num">${pctTxt(occOf(studyBase ?? current, loadIds(studyBase ?? current)).occupancy)}</td><td>${esc(machineLabel(study.baseline.max_load.equipment))} ${nf(study.baseline.max_load.pct, 0)} %</td><td></td><td></td></tr>
+            <tr class="past"><td>${studyBase && studyBase !== current ? "ACTUAL" : "VIGENTE"}</td><td>${esc(SOURCE_NAMES[(studyBase ?? current).source])} ${esc(study.baseline.plan_id)}</td><td class="num">${nf(study.baseline.kpis.on_time_pct, 1)} %</td><td class="num">${study.baseline.kpis.late_orders}</td><td class="num">${nf(study.baseline.kpis.tardiness_h, 1)} h</td><td class="num">${study.baseline.kpis.changeovers} · ${nf(study.baseline.kpis.changeover_h ?? 0, 1)} h</td><td class="num">—</td><td class="num">${pctTxt(occOf(studyBase ?? current, loadIds(studyBase ?? current)).occupancy)}</td><td>${esc(machineLabel(study.baseline.max_load.equipment))} ${nf(study.baseline.max_load.pct, 0)} %</td><td></td><td></td></tr>
             ${study.options
               .map(
                 (o) => `<tr class="${o.id === study!.best ? "best" : ""}"><td><b>${esc(o.id.split("-").at(-1)!)}</b>${o.id === study!.best ? ' <span class="chip done">MEJOR</span>' : ""}</td><td>${esc(o.label)}<br/><small class="dim">${o.levers.map((l) => esc(l.text)).join(" · ")}</small></td>
-                <td class="num">${nf(o.kpis.on_time_pct, 1)} %</td><td class="num">${o.kpis.late_orders}</td><td class="num">${nf(o.kpis.tardiness_h, 1)} h</td><td class="num">${o.kpis.changeovers}</td><td class="num">${o.mold_change_h ? `${nf(o.mold_change_h, 1)} h` : "—"}</td><td class="num">${pctTxt(occOf(o.plan, loadIds(o.plan)).occupancy)}</td><td>${esc(machineLabel(o.max_load.equipment))} ${nf(o.max_load.pct, 0)} %</td><td class="num">${nf(o.score, 1)}</td>
+                <td class="num">${nf(o.kpis.on_time_pct, 1)} %</td><td class="num">${o.kpis.late_orders}</td><td class="num">${nf(o.kpis.tardiness_h, 1)} h</td><td class="num">${o.kpis.changeovers} · ${nf(o.kpis.changeover_h ?? 0, 1)} h</td><td class="num">${o.mold_change_h ? `${nf(o.mold_change_h, 1)} h` : "—"}</td><td class="num">${pctTxt(occOf(o.plan, loadIds(o.plan)).occupancy)}</td><td>${esc(machineLabel(o.max_load.equipment))} ${nf(o.max_load.pct, 0)} %</td><td class="num">${nf(o.score, 1)}</td>
                 <td class="fr-btns"><button class="fr-see" data-id="${esc(o.id)}">VER EN GANTT</button><button class="fr-see fr-pick" data-id="${esc(o.id)}">ADOPTAR</button></td></tr>`,
               )
               .join("")}
@@ -889,6 +965,7 @@ function renderFractal(): void {
   $("fr-run-balancear").onclick = () => runFractal({ scenario: "balancear" });
   $("fr-run-falla").onclick = () => runFractal({ scenario: "falla" });
   $("fr-run-fijadas").onclick = () => runFractal({ scenario: "fijadas" });
+  $("fr-run-cambios").onclick = () => runFractal({ scenario: "cambios" });
   // Cualquier opción se puede adoptar, no solo la recomendada: Fractal recomienda y la persona decide.
   const adoptOption = (id: string) => {
     setVigente(study!.options.find((o) => o.id === id)!.plan);
@@ -930,9 +1007,9 @@ $("aps-manual").onclick = () => {
 onChange((what) => {
   current = vigente();
   if (what === "view") {
-    // El gemelo eligió: "vigente" quita la propuesta; "escenario" muestra el escenario visto.
-    if (viewMode() === "vigente") proposal = null;
-    else if (!proposal) proposal = viewedPlan();
+    // El gemelo eligió: "vigente" muestra la vigente en el APS; "escenario" muestra el escenario visto.
+    viewVigente = viewMode() === "vigente";
+    if (!viewVigente && !proposal) proposal = viewedPlan();
     lastView = proposal?.plan_id ?? "";
   }
   if (what === "events") error = "";

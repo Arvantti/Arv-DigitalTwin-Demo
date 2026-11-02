@@ -30,6 +30,29 @@ function checkPlan(plan: ProductionPlan) {
 }
 
 describe("APS de plásticos", () => {
+  it("los tiempos de cambio salen de los datos: molde, resina y color", () => {
+    // Valores de catalog/changeovers.yaml y tooling.yaml, calculados a mano.
+    const ch = model.changeover;
+    // Mismo molde y color: nada.
+    expect(ch({ tooling: "mold-balde-12l", color: "mb-azul" }, { tooling: "mold-balde-12l", color: "mb-azul" }).min).toBe(0);
+    // Solo color: de claro a oscuro es corto, de oscuro a claro es largo.
+    expect(ch({ tooling: "mold-balde-12l", color: "mb-blanco" }, { tooling: "mold-balde-12l", color: "mb-azul" })).toMatchObject({ min: 30, kind: "color" });
+    expect(ch({ tooling: "mold-balde-12l", color: "mb-azul" }, { tooling: "mold-balde-12l", color: "mb-blanco" })).toMatchObject({ min: 60, kind: "color" });
+    // Cubiertos (PS, blanco) → pedal (PP reciclado, azul): montaje 60 + max(purga de resina 45, purga de color 30) = 105.
+    expect(ch({ tooling: "mold-cubiertos-16c", color: "mb-blanco" }, { tooling: "mold-pedal-palanca-2c", color: "mb-azul" })).toMatchObject({ min: 105, kind: "molde", moldMin: 60, resinMin: 45, colorMin: 30 });
+    // Pedal (PP reciclado, azul) → cubiertos (PS, blanco): montaje 45 + max(75, 60) = 120.
+    expect(ch({ tooling: "mold-pedal-palanca-2c", color: "mb-azul" }, { tooling: "mold-cubiertos-16c", color: "mb-blanco" })).toMatchObject({ min: 120, kind: "molde" });
+    // El ensamble (sin molde) no tiene cambios.
+    expect(ch({ color: "mb-gris" }, { color: "mb-azul" }).min).toBe(0);
+  });
+
+  it("cada cambio del plan dice qué lo causa", async () => {
+    const plan = solve(await highsLoader(), model, portfolio, { planId: "T-CO" });
+    const cos = plan.schedule.filter((r) => r.changeover_min > 0);
+    expect(cos.length).toBe(plan.kpis.changeovers);
+    for (const r of cos) expect(["molde", "resina", "color"]).toContain(r.changeover_kind);
+  });
+
   it("la cartera inventada tiene una semana de ventana como máximo", () => {
     for (const o of portfolio.orders) expect((parseLocal(o.due) - parseLocal(o.created)) / 1440).toBeLessThanOrEqual(8);
   });

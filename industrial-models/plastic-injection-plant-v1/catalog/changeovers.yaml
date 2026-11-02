@@ -1,0 +1,27 @@
+# Tiempos de cambio entre referencias en una inyectora (los lee el cosimulador del APS, docs/aps-plasticos.md).
+#
+# Un cambio de referencia puede tener hasta tres partes, todas salen de los datos y no del código:
+#   - montaje de molde: `change_min` del molde que entra (catalog/tooling.yaml);
+#   - purga de resina: limpieza del husillo cuando la resina del molde nuevo es otra (tabla `resin`, de → a);
+#   - purga de color: cuando cambia el masterbatch (tabla `color`, de → a).
+# La purga de resina ya arrastra el color viejo, así que cuando cambian los dos se toma la más larga.
+# Total = montaje (si cambia el molde) + max(purga de resina, purga de color).
+# De claro a oscuro la purga es corta; de oscuro a claro es larga (hay que sacar todo el pigmento).
+# Un par que no está en la tabla usa `default_min` (y si falta, `color_change_min` de demand.yaml).
+# Todo es supuesto hasta tener los tiempos reales de la planta.
+changeovers:
+  color:
+    default_min: 40
+    pairs:
+      mb-blanco: { mb-gris: 25, mb-azul: 30 }
+      mb-gris:   { mb-azul: 30, mb-blanco: 55 }
+      mb-azul:   { mb-gris: 40, mb-blanco: 60 }
+  resin:
+    default_min: 60
+    pairs:
+      ps:           { hdpe: 45, pp-reciclado: 45 }
+      hdpe:         { pp-reciclado: 30, ps: 60 }
+      pp-reciclado: { hdpe: 40, ps: 75 }
+  # Traslado y desmontaje cuando un molde se muda de una máquina a otra (además del montaje del molde).
+  mold_move_extra_min: 30
+  assumed: true

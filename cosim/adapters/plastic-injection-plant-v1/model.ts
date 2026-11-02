@@ -16,6 +16,35 @@ export interface CatalogData {
   demand: { demand: DemandYaml };
   /** Configuración del APS (aps/aps.yaml): ventana de entrega y tamaño de lote. */
   aps?: { aps: ApsYaml };
+  /** Materias primas (catalog/materials.yaml): de aquí sale la resina de cada molde. */
+  materials?: { materials: { id: string; kind: string }[] };
+  /** Tiempos de cambio entre referencias (catalog/changeovers.yaml). */
+  changeovers?: { changeovers: ChangeoversYaml };
+}
+interface ChangeoverTable {
+  default_min?: number;
+  /** de → a → minutos */
+  pairs?: Record<string, Record<string, number>>;
+}
+export interface ChangeoversYaml {
+  color?: ChangeoverTable;
+  resin?: ChangeoverTable;
+  mold_move_extra_min?: number;
+}
+
+/** Lo que tiene montado una inyectora: molde y color. */
+export interface Mount {
+  tooling?: string;
+  color?: string;
+}
+export type ChangeKind = "molde" | "resina" | "color";
+/** Un cambio de referencia: minutos totales, la parte que manda y el detalle (montaje, purga de resina, purga de color). */
+export interface Change {
+  min: number;
+  kind?: ChangeKind;
+  moldMin: number;
+  resinMin: number;
+  colorMin: number;
 }
 export interface ApsYaml {
   window_days: number;
@@ -40,6 +69,8 @@ interface ToolingYaml {
   product: string;
   /** Copias físicas del molde; cada una se monta en una sola inyectora a la vez. */
   copies?: number;
+  /** Resina (id de catalog/materials.yaml). */
+  material?: string;
   cavities: number;
   cycle_s: number;
   change_min?: number;
@@ -86,6 +117,10 @@ export interface PlasticsModel {
   calendar: Calendar;
   loadPct: number;
   colorChangeMin: number;
+  /** Minutos de cambio entre dos montajes según los datos (molde, resina, color); 0 si no cambia nada. */
+  changeover: (from: Mount, to: Mount) => Change;
+  /** Traslado y desmontaje cuando un molde se muda de máquina (además del montaje). */
+  moldMoveExtraMin: number;
   downtime: DemandYaml["downtime"];
   customers: string[];
   demand: DemandYaml["products"];
@@ -105,6 +140,8 @@ export interface PlasticsModel {
   molds: MoldInfo[];
   /** Molde montado en cada inyectora (setup.yaml). */
   mounted: Record<string, string>;
+  /** Molde montado al inicio en cada máquina. */
+  initialTooling: Record<string, string | undefined>;
 }
 
 export interface MoldInfo {
@@ -114,6 +151,32 @@ export interface MoldInfo {
   /** Copias físicas (si el catálogo no lo dice, las que están montadas). */
   copies: number;
   changeMin: number;
+}
+
+const NO_CHANGE: Change = { min: 0, moldMin: 0, resinMin: 0, colorMin: 0 };
+
+/**
+ * Calculadora de cambios a partir de los datos: montaje = change_min del molde que entra; purga de resina y de color
+ * por par (de → a) en changeovers.yaml. La purga de resina arrastra el color, así que se toma la mayor de las dos.
+ */
+export function changeoverFn(cat: CatalogData, colorDefault: number): (from: Mount, to: Mount) => Change {
+  const co = cat.changeovers?.changeovers ?? {};
+  const tools = new Map(cat.tooling.tooling.map((t) => [t.id, t]));
+  const lookup = (tab: ChangeoverTable | undefined, a: string, b: string, fallback: number) => tab?.pairs?.[a]?.[b] ?? tab?.default_min ?? fallback;
+  return (from, to) => {
+    // Solo las etapas con molde (inyección) cambian de referencia; el ensamble no purga.
+    if (!to.tooling) return NO_CHANGE;
+    const moldMin = from.tooling && from.tooling !== to.tooling ? (tools.get(to.tooling)?.change_min ?? 0) : 0;
+    const ra = from.tooling ? tools.get(from.tooling)?.material : undefined;
+    const rb = tools.get(to.tooling)?.material;
+    const resinMin = ra && rb && ra !== rb ? lookup(co.resin, ra, rb, colorDefault) : 0;
+    const colorMin = from.color && to.color && from.color !== to.color ? lookup(co.color, from.color, to.color, colorDefault) : 0;
+    const purge = Math.max(resinMin, colorMin);
+    const min = moldMin + purge;
+    if (!min) return NO_CHANGE;
+    const kind: ChangeKind = moldMin ? "molde" : resinMin >= colorMin ? "resina" : "color";
+    return { min, kind, moldMin, resinMin, colorMin };
+  };
 }
 
 export function buildModel(cat: CatalogData): PlasticsModel {
@@ -162,13 +225,20 @@ export function buildModel(cat: CatalogData): PlasticsModel {
     return { id: t.id, name: t.name ?? t.id, product: t.product, copies: t.copies ?? inUse, changeMin: t.change_min ?? 0 };
   });
   const initialColor: Record<string, string | undefined> = {};
-  for (const m of machines) initialColor[m] = setup[m]?.color;
+  const initialTooling: Record<string, string | undefined> = {};
+  for (const m of machines) {
+    initialColor[m] = setup[m]?.color;
+    initialTooling[m] = setup[m]?.tooling;
+  }
+  const colorDefault = cat.changeovers?.changeovers.color?.default_min ?? demand.color_change_min ?? 0;
   return {
     plant: PLANT_ID,
     timezone: demand.timezone,
     calendar: new Calendar(demand.workdays, demand.shifts),
     loadPct: demand.load_pct,
-    colorChangeMin: demand.color_change_min ?? 0,
+    colorChangeMin: colorDefault,
+    changeover: changeoverFn(cat, colorDefault),
+    moldMoveExtraMin: cat.changeovers?.changeovers.mold_move_extra_min ?? 30,
     downtime: demand.downtime,
     customers: demand.customers,
     demand: demand.products,
@@ -182,6 +252,7 @@ export function buildModel(cat: CatalogData): PlasticsModel {
     initialColor,
     molds,
     mounted,
+    initialTooling,
   };
 }
 

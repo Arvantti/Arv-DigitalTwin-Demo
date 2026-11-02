@@ -1,0 +1,90 @@
+/* Centro de control de plásticos (control.html): una sola pantalla, sin scroll. A la izquierda los indicadores OEE
+   en gauges; a la derecha una tarjeta por equipo, repartidas para llenar el espacio disponible. */
+html:has(body.cc-page), body.cc-page { height: 100%; min-height: 0; overflow: hidden; }
+body.cc-page { display: flex; flex-direction: column; }
+.cc-page .aps-top { position: static; flex: none; padding: 8px 14px; gap: 14px; flex-wrap: nowrap; white-space: nowrap; }
+.cc-page .aps-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; font-size: 14px; }
+.cc-page .aps-alarm { flex: none; margin: 8px 14px 0; }
+.cc-page .aps-alarm p { margin: 2px 0; }
+.cc-page .aps-alarm a { color: var(--cyan); }
+.cc-filter { display: flex; align-items: center; gap: 6px; }
+.cc-filter select { background: rgba(6, 8, 40, 0.9); color: inherit; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 4px; font: 500 12px "IBM Plex Mono", monospace; padding: 2px 4px; max-width: 260px; }
+
+.cc-body { flex: 1; min-height: 0; display: grid; grid-template-columns: clamp(270px, 19vw, 360px) minmax(0, 1fr); gap: 10px; padding: 10px 14px 12px; }
+
+/* Panel izquierdo: gauges */
+.cc-side { min-height: 0; overflow: hidden; display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; border: 1px solid var(--line); border-radius: var(--radius-surface); background: var(--glass); }
+.cc-side h2 { margin: 0; font: 700 11px Inter, sans-serif; letter-spacing: 0.16em; color: var(--accent); }
+.cc-gauge { display: flex; flex-direction: column; align-items: center; min-height: 0; }
+.cc-gauge svg { display: block; width: 100%; height: 100%; min-height: 0; }
+.cc-gauge .g-track { fill: none; stroke: rgba(255, 255, 255, 0.09); stroke-width: 9; stroke-linecap: round; }
+.cc-gauge .g-val { fill: none; stroke: var(--gc); stroke-width: 9; stroke-linecap: round; filter: drop-shadow(0 0 4px var(--gc)); transition: stroke-dasharray 0.6s; }
+.cc-gauge .g-tick { stroke: rgba(255, 255, 255, 0.55); stroke-width: 1.2; }
+.cc-gauge .g-num { fill: var(--gc); font: 700 21px "IBM Plex Mono", monospace; text-anchor: middle; }
+.cc-gauge .g-sub { fill: var(--dim); font: 600 6.5px Inter, sans-serif; letter-spacing: 0.12em; text-anchor: middle; }
+.cc-gauge.main { flex: 4 1 0; }
+.cc-gauge.main .g-num { font-size: 22px; }
+.cc-gauge small { color: var(--dim); font: 600 10px Inter, sans-serif; letter-spacing: 0.1em; margin-top: -2px; }
+.cc-gauge.ok { --gc: var(--ok); } .cc-gauge.warn { --gc: var(--warn); } .cc-gauge.bad { --gc: var(--bad); } .cc-gauge.neutral { --gc: var(--cyan); }
+.cc-gauges3 { flex: 2.5 1 0; min-height: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+.cc-gauges3 .g-num { font-size: 20px; }
+.cc-stats { flex: 2.2 1 0; min-height: 0; max-height: 280px; display: grid; grid-auto-rows: 1fr; align-items: center; gap: 0; border-top: 1px solid rgba(255, 255, 255, 0.1); }
+.cc-stats > div { min-height: 0; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding: 2px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.06); }
+.cc-stats small { color: var(--dim); font-size: 11px; }
+.cc-stats b { font: 700 14px "IBM Plex Mono", monospace; white-space: nowrap; }
+
+/* Tarjetas de equipo */
+.cc-grid { min-height: 0; min-width: 0; display: grid; gap: 8px; }
+.cc-card { container-type: size; position: relative; min-width: 0; min-height: 0; overflow: hidden; border: 1px solid var(--line); border-top: 3px solid var(--st); border-radius: var(--radius-surface); background: var(--glass); padding: 7px 9px; display: flex; flex-direction: column; gap: 4px; }
+.cc-card.fault { box-shadow: 0 0 0 1px var(--bad), 0 0 18px rgba(255, 59, 59, 0.35); }
+.cc-card.idle, .cc-card.off { opacity: 0.72; }
+.cc-card header { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+.cc-card header b { font: 700 clamp(12px, 5.2cqw, 15px) Orbitron, sans-serif; letter-spacing: 0.04em; white-space: nowrap; }
+.cc-state { font: 700 9px Inter, sans-serif; letter-spacing: 0.06em; color: var(--st); border: 1px solid var(--st); padding: 1px 5px; border-radius: var(--radius-control); white-space: nowrap; }
+.cc-card p { margin: 0; }
+.cc-card .small { font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cc-order { font-size: 11px; line-height: 1.3; min-height: 0; }
+.cc-order > b, .cc-order > span { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cc-order span { color: var(--dim); }
+.cc-order small { display: block; color: var(--dim); font-size: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cc-bar { height: 4px; background: rgba(255, 255, 255, 0.08); border-radius: 3px; overflow: hidden; margin: 3px 0 2px; }
+.cc-bar i { display: block; height: 100%; background: var(--st); }
+.cc-oee { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 2px; font: 500 clamp(11px, 3.4cqh, 14px) "IBM Plex Mono", monospace; align-items: end; padding-top: 4px; border-top: 1px solid rgba(255, 255, 255, 0.08); }
+.cc-oee small { display: block; color: var(--dim); font: 600 9px Inter, sans-serif; }
+.cc-oee b { font-size: clamp(15px, 6.5cqh, 26px); }
+.cc-oee { flex: 1 1 auto; align-content: center; }
+.cc-load { margin-top: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 1px 6px; padding-top: 4px; border-top: 1px solid rgba(255, 255, 255, 0.08); font: 500 11px "IBM Plex Mono", monospace; }
+.cc-load small { display: block; color: var(--dim); font: 600 9px Inter, sans-serif; letter-spacing: 0.04em; }
+.cc-load b { font-size: clamp(13px, 4.5cqh, 20px); }
+.cc-load-bar { grid-column: 1 / -1; position: relative; height: 5px; background: rgba(255, 255, 255, 0.08); border-radius: 3px; overflow: hidden; margin-top: 2px; }
+.cc-load-bar i { position: absolute; left: 0; top: 0; bottom: 0; }
+.cc-load-bar i.av { background: rgba(170, 176, 190, 0.35); }
+.cc-load .cc-strip { grid-column: 1 / -1; }
+.cc-load .shift-strip { gap: 3px; margin: 2px 0 0; }
+.cc-load .shift-strip .ss-cell { height: clamp(18px, 9cqh, 44px); }
+.cc-load .shift-strip .ss-day b { font-size: 9px; margin-top: 1px; }
+.cc-load .shift-strip .ss-day small { display: none; }
+.cc-link { position: absolute; top: 9px; right: 9px; display: none; }
+.cc-card header b a { color: inherit; text-decoration: none; }
+.cc-card header b a:hover { color: var(--cyan); }
+.cc-reserve .cc-chips { display: flex; flex-wrap: wrap; gap: 5px; margin: 0; }
+.cc-chips a { font: 600 11px "IBM Plex Mono", monospace; color: var(--dim); text-decoration: none; border: 1px solid var(--line); padding: 2px 6px; border-radius: var(--radius-control); }
+.cc-chips a:hover { color: var(--text); border-color: var(--cyan); }
+
+/* Pantallas bajas: se afloja todo lo accesorio para que siga cabiendo sin scroll */
+@media (max-height: 820px) {
+  .cc-card { gap: 3px; padding: 6px 8px; }
+  .cc-load .shift-strip .ss-cell { height: clamp(14px, 9cqh, 44px); }
+  .cc-load .shift-strip .ss-day b { display: none; }
+}
+@media (max-width: 1500px) { .cc-page .aps-title .dim { display: none; } }
+
+/* Celular: la pantalla única es para escritorio; en móvil se apila y se desplaza. */
+@media (max-width: 900px) {
+  html:has(body.cc-page), body.cc-page { height: auto; overflow: auto; }
+  .cc-page .aps-top { flex-wrap: wrap; }
+  .cc-body { grid-template-columns: 1fr; }
+  .cc-side { height: 520px; }
+  .cc-grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)) !important; grid-template-rows: none !important; }
+  .cc-card { min-height: 260px; }
+}

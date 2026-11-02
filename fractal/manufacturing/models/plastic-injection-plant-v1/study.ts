@@ -10,6 +10,8 @@
  * - adelantar: un cliente pide su pedido antes; ¿cómo mover todo para cumplirle sin atrasar a los demás?
  * - balancear: repartir la ocupación sin sobrecargas ni cuellos de botella;
  * - falla: una máquina quedó fuera de servicio en el emulador; ¿esperar la reparación o desviar a otra máquina?
+ * - cambios: menos cambios de referencia (montaje de molde, purgas de resina y color, con los tiempos de
+ *   catalog/changeovers.yaml) sin atrasar pedidos: dedicar un color a cada máquina.
  * - fijadas: el planificador bloqueó a mano (🔒) algunas órdenes en el Gantt; ¿cómo organizar el resto sin moverlas?
  *   En todos los escenarios las órdenes fijadas se respetan: ninguna opción mueve sus lotes.
  */
@@ -20,8 +22,6 @@ import { solve, type HighsLike } from "@twin/cosim/adapters/plastic-injection-pl
 import type { FractalStudy, Lever, Scenario, StudyOption } from "../../contracts.ts";
 
 const WINDOW_DAYS = 7;
-/** Traslado y desmontaje de un molde, además del montaje (change_min del molde). */
-const MOVE_EXTRA_MIN = 30;
 /** Máquinas candidatas por molde: suficiente para la demo y mantiene el estudio en pocos segundos. */
 const MAX_TARGETS = 2;
 /** Ocupación objetivo al balancear: por encima de esto una etapa se considera cargada (supuesto de la demo). */
@@ -51,6 +51,8 @@ interface Variant {
   stops?: PlannedStop[];
   portfolio?: CustomerOrders;
   orderChanges?: ProductionPlan["order_changes"];
+  /** Opciones del cosimulador para esta combinación. */
+  solver?: { colors?: boolean; dedicateColors?: boolean };
 }
 
 type Setup = Record<string, { tooling: string; color?: string }>;
@@ -181,6 +183,14 @@ export async function runStudy(newHighs: () => Promise<HighsLike>, cat: CatalogD
     // Los moldes de los dos cuellos de botella con repuesto en el almacén (un molde montado en dos máquinas cuenta una vez).
     const toolings = [...new Set(top.map(([m]) => baseSetup[m].tooling))].filter((t) => sparesLeft(cat, baseSetup, t) > 0);
     for (const t of toolings.slice(0, 2)) variants.push(...mountSpare(t));
+  } else if (input.scenario === "cambios") {
+    const k = input.previous.kpis;
+    // Máquinas que hoy cambian de referencia en la vigente y el color que tiene montado cada una.
+    const busy = [...new Set(input.previous.schedule.filter((r) => r.changeover_min > 0 && parseLocal(r.start) >= now).map((r) => r.equipment))].sort();
+    question = `¿Cómo hacer menos cambios de referencia (montaje de molde y purgas de resina y color) sin atrasar pedidos? La vigente tiene ${k.changeovers} cambios y ${k.changeover_h} h de cambio${busy.length ? `, sobre todo en ${busy.map(label).join(", ")}` : ""}.`;
+    const dedicate = busy.filter((m) => baseModel.initialColor[m]).map((m) => `${label(m)} queda en ${baseModel.initialColor[m]!.replace(/^mb-/, "")}`);
+    variants.push({ label: "Solo recolocar la secuencia", levers: [{ kind: "recalcular", text: "Recolocar con el cosimulador como hoy" }] });
+    variants.push({ label: "Dedicar un color por máquina", levers: [{ kind: "dedicar-color", text: `Cada color solo en las máquinas que ya lo tienen montado${dedicate.length ? `: ${dedicate.join(", ")}` : ""}` }], solver: { dedicateColors: true } });
   } else {
     const ev = events.find((e) => failed.has(e.equipment));
     if (!ev) throw new Error("No hay ninguna máquina fuera de servicio en el emulador.");
@@ -190,7 +200,8 @@ export async function runStudy(newHighs: () => Promise<HighsLike>, cat: CatalogD
     variants.push({ label: "Esperar la reparación y repartir", levers: [{ kind: "recalcular", text: `Recolocar con el cosimulador sin ${label(m)} hasta la reparación` }] });
     if (tooling) {
       for (const target of freeMachinesFor(cat, baseSetup, tooling, failed).slice(0, MAX_TARGETS)) {
-        const min = changeMin(cat, tooling) + MOVE_EXTRA_MIN;
+        // Montaje del molde (change_min) + traslado y desmontaje (changeovers.yaml).
+        const min = changeMin(cat, tooling) + baseModel.moldMoveExtraMin;
         variants.push({
           label: `Mudar el molde a ${label(target)}`,
           levers: [{ kind: "mover-molde", text: `Desmontar ${tooling} de ${label(m)} y montarlo en ${label(target)}: ${min} min desde AHORA`, machine: target, from: m, tooling }],
@@ -207,7 +218,7 @@ export async function runStudy(newHighs: () => Promise<HighsLike>, cat: CatalogD
     const id = `${input.studyId ?? "FRA"}-${String.fromCharCode(65 + i)}`;
     const merged = { ...molds, ...(v.molds ?? {}) };
     const model = modelFor(cat, merged);
-    const plan = solve(await newHighs(), model, v.portfolio ?? portfolio, { now: input.now, previous: input.previous, events, stops: v.stops, planId: id, fixed });
+    const plan = solve(await newHighs(), model, v.portfolio ?? portfolio, { now: input.now, previous: input.previous, events, stops: v.stops, planId: id, fixed, ...(v.solver ?? {}) });
     plan.source = "fractal";
     plan.status = "propuesta";
     plan.notes = [`Fractal · ${v.label}.`, ...v.levers.map((l) => l.text)];
@@ -217,16 +228,25 @@ export async function runStudy(newHighs: () => Promise<HighsLike>, cat: CatalogD
     const max = maxOf(loads);
     const moldH = (v.stops ?? []).reduce((s, x) => s + (parseLocal(x.end) - parseLocal(x.start)) / 60, 0);
     const k = plan.kpis;
-    // Atraso ante todo; luego pedidos tarde, horas de montaje y cambios de color; al balancear pesa la carga máxima
-    // (más aún por encima del objetivo).
+    // Atraso ante todo; luego pedidos tarde, horas de montaje y cambios de referencia; al balancear pesa la carga
+    // máxima (más aún por encima del objetivo) y en "cambios" pesan las horas de cambio.
     const score =
-      k.tardiness_h + 20 * k.late_orders + 2 * moldH + 0.5 * k.changeovers + (input.scenario === "balancear" || input.scenario === "fijadas" ? 1.5 * max.pct + 3 * Math.max(0, max.pct - TARGET_LOAD) : 0);
+      k.tardiness_h +
+      20 * k.late_orders +
+      2 * moldH +
+      0.5 * k.changeovers +
+      (input.scenario === "balancear" || input.scenario === "fijadas" ? 1.5 * max.pct + 3 * Math.max(0, max.pct - TARGET_LOAD) : 0) +
+      (input.scenario === "cambios" ? 2 * k.changeover_h : 0);
     options.push({ id, label: v.label, levers: v.levers, kpis: k, loads, max_load: max, mold_change_h: Math.round(moldH * 10) / 10, score: Math.round(score * 10) / 10, plan });
   }
   const best = options.reduce((a, b) => (b.score < a.score ? b : a));
   const first = options[0];
   const why =
-    best === first
+    input.scenario === "cambios"
+      ? best === first
+        ? "Recolocar ya da los menos cambios sin atrasar pedidos."
+        : `Frente a solo recolocar (${first.kpis.changeovers} cambios, ${first.kpis.changeover_h} h de cambio, ${first.kpis.late_orders} tarde), queda con ${best.kpis.changeovers} cambios, ${best.kpis.changeover_h} h de cambio y ${best.kpis.late_orders} tarde.`
+      : best === first
       ? "No hace falta cambiar moldes: basta con recolocar la secuencia."
       : `Frente a solo recolocar (${first.kpis.late_orders} tarde, ${first.kpis.tardiness_h} h de atraso, máxima carga ${first.max_load.pct} % en ${label(first.max_load.equipment)}), queda con ${best.kpis.late_orders} tarde, ${best.kpis.tardiness_h} h de atraso y máxima carga ${best.max_load.pct} % en ${label(best.max_load.equipment)}.`;
   return {

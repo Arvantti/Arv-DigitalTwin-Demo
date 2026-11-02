@@ -4,7 +4,7 @@
  *
  *   pnpm gallery                                   # en otra terminal: la galería en http://localhost:5173
  *   pnpm add -g playwright@1.63.0 && pnpm dlx playwright@1.63.0 install chromium   # una vez
- *   NODE_PATH="$(pnpm root -g)" node tools/demo-video/grabar.cjs [1|2|3|4|todos] [--video] [--lento]
+ *   NODE_PATH="$(pnpm root -g)" node tools/demo-video/grabar.cjs [1|2|3|4|5|todos] [--video] [--lento]
  *
  * Las capturas quedan en docs/demo-plasticos/<escenario>/capturas/ con los nombres que usa cada guion.md; los videos en
  * docs/demo-plasticos/<escenario>/video/recorrido.webm (no se suben al repo: ver .gitignore). AHORA = día 9, 10:00.
@@ -18,11 +18,11 @@ const BASE = (process.env.GALLERY_URL || "http://localhost:5173").replace(/\/$/,
 const NOW = "?now=2026-11-04T10:00";
 const ROOT = process.env.DEMO_OUT || path.resolve(__dirname, "../../docs/demo-plasticos");
 const args = process.argv.slice(2);
-const which = args.find((a) => /^(1|2|3|4|todos)$/.test(a)) || "todos";
+const which = args.find((a) => /^(1|2|3|4|5|todos)$/.test(a)) || "todos";
 const VIDEO = args.includes("--video");
 // En video, pausas largas para que se alcance a leer; --lento las alarga más.
 const PACE = VIDEO ? (args.includes("--lento") ? 2.5 : 1.5) : 0.4;
-const FOLDERS = { 1: "1-calcular-programacion", 2: "2-cambio-fecha-pedido", 3: "3-contingencia-falla", 4: "4-pedidos-fijados" };
+const FOLDERS = { 1: "1-calcular-programacion", 2: "2-cambio-fecha-pedido", 3: "3-contingencia-falla", 4: "4-pedidos-fijados", 5: "5-menos-cambios" };
 
 const wait = (pg, s) => pg.waitForTimeout(Math.round(s * 1000 * PACE));
 const click = (pg, sel) => pg.$eval(sel, (e) => e.dispatchEvent(new MouseEvent("click", { bubbles: true })));
@@ -201,13 +201,32 @@ const SCENARIOS = {
     await go(`/control.html${NOW}`);
     await shot("06-centro-control.png");
     await wait(2);
+    },
+  // Menos cambios de referencia: parte del plan del cosimulador (el balde alterna azul y blanco en sus dos inyectoras).
+  5: async ({ pg, go, shot }) => {
+    await go(`/aps.html${NOW}`);
+    await click(pg, "[data-tab=gantt]");
+    await pg.$eval('.g-row.res[data-machine="imm-21"]', (e) => e.scrollIntoView({ block: "center" }));
+    await shot("01-gantt-cambios.png");
+    await click(pg, "[data-tab=fractal]");
+    await shot("02-fractal-pregunta.png");
+    await click(pg, "#fr-run-cambios");
+    await pg.waitForSelector(".fr-result", { timeout: 120000 });
+    await shot("03-fractal.png");
+    await click(pg, "#fr-adopt");
+    await pg.$eval('.g-row.res[data-machine="imm-21"]', (e) => e.scrollIntoView({ block: "center" }));
+    await shot("04-gantt-adoptado.png");
+    await go(`/aps.html${NOW}&tab=insumos`);
+    await click(pg, "[data-tab=insumos]");
+    await shot("05-insumos.png", true);
+    await wait(2);
   },
 };
 
 (async () => {
   const browser = await chromium.launch();
   try {
-    for (const n of which === "todos" ? [1, 2, 3, 4] : [Number(which)]) await scenario(browser, n, SCENARIOS[n]);
+    for (const n of which === "todos" ? [1, 2, 3, 4, 5] : [Number(which)]) await scenario(browser, n, SCENARIOS[n]);
   } finally {
     await browser.close();
   }

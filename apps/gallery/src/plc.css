@@ -55,3 +55,13 @@ body.screen-fractal #master,body.screen-comparisons #history { display:none; }
 .embedded-plc .tabs { position:sticky; top:0; z-index:8; padding:8px 0; background:#040421; flex-wrap:wrap; }
 .service-auth { color:var(--cyan); border:1px solid var(--line); border-radius:var(--radius-control); padding:6px 8px; text-decoration:none; white-space:nowrap; font:10px "IBM Plex Mono",monospace; }
 .service-auth:hover { border-color:var(--cyan); }
+.fractal-vrp-charts { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; margin-top:14px; }
+.fractal-vrp-chart { min-width:0; padding:13px; }
+.fractal-vrp-chart svg { display:block; width:100%; height:auto; }
+.fractal-vrp-chart h2 { margin-top:0; }
+.vrp-chart-grid { stroke:#36515b; stroke-width:1; opacity:.7; }
+.vrp-chart-axis-line { stroke:#71889a; stroke-width:1; }
+.vrp-chart-axis { fill:var(--dim); font:10px "IBM Plex Mono",monospace; }
+.vrp-chart-curve { fill:none; stroke:var(--cyan); stroke-width:3; stroke-linejoin:round; stroke-linecap:round; }
+.vrp-chart-point { fill:#f4b56c; stroke:#07132a; stroke-width:1; }
+@media(max-width:900px) { .fractal-vrp-charts { grid-template-columns:1fr; } }

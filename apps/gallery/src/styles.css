@@ -217,6 +217,9 @@ body.shot .boot { display: none; }
   .plc-speed, .plc-read { grid-column: 1 / -1; }
 }
 /* Productos y su ruta (docs/datos-reales.md, fase D) */
+.section-toggle { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 8px; margin: 16px 0 8px; padding: 0; background: none; border: 0; font: 700 12px Inter, sans-serif; letter-spacing: 0.18em; color: var(--accent); cursor: pointer; text-align: left; }
+.section-toggle .chev { font-size: 12px; transition: transform 0.15s; }
+.section-toggle[aria-expanded="false"] .chev { transform: rotate(-90deg); }
 .product-detail { margin-top: 10px; font-size: 12px; }
 .product-card .product-name { font: 700 14px Inter, sans-serif; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .product-card .kv { display: flex; gap: 8px; padding: 3px 0; border-bottom: 1px dashed rgba(120, 180, 230, 0.08); }
@@ -399,3 +402,17 @@ button.pick { padding: 2px 8px; font-size: 11px; }
 .to-row b { font-family: "IBM Plex Mono", monospace; }
 .to-toggle { background: none; border: 0; padding: 0; cursor: pointer; color: var(--dim); text-align: left; }
 .twin-orders.min #to-now, .twin-orders.min #to-now-title { display: none; }
+#view-cube { position:fixed; z-index:16; top:72px; right:336px; width:128px; padding:6px 8px 5px; border:1px solid rgba(180,215,255,.42); border-radius:8px; background:rgba(7,18,38,.82); backdrop-filter:blur(12px); box-shadow:0 8px 24px #0006; text-align:center; }
+#view-cube svg { display:block; width:100%; overflow:visible; }
+#view-cube svg text { fill:#eff7ff; font:600 6px Inter,system-ui,sans-serif; letter-spacing:.04em; pointer-events:none; }
+#view-cube .cube-face { stroke:#d5e6f7; stroke-width:1.4; cursor:pointer; transition:filter .15s,fill .15s; }
+#view-cube .cube-top { fill:#9fc5e6; }
+#view-cube .cube-front { fill:#527fa8; }
+#view-cube .cube-side { fill:#376188; }
+#view-cube .cube-face:hover,#view-cube .cube-face:focus { fill:#54b5ff; filter:brightness(1.15); outline:none; }
+#view-cube .cube-corner { fill:#f2f8ff; stroke:#24527b; stroke-width:1.5; cursor:pointer; }
+#view-cube .cube-corner:hover,#view-cube .cube-corner:focus { fill:#51c6ff; stroke:#fff; outline:none; }
+#view-cube > span { color:#d2e8ff; font:600 8px "IBM Plex Mono",monospace; letter-spacing:.1em; }
+body.shot #view-cube { display:none; }
+@media (max-width:900px) { #view-cube { top:72px; right:274px; width:112px; } }
+@media (max-width:700px) { #view-cube { top:74px; right:12px; width:100px; } }

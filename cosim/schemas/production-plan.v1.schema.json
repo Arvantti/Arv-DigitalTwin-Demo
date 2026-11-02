@@ -50,6 +50,7 @@
           "end": { "type": "string" },
           "quantity": { "type": "number" },
           "changeover_min": { "type": "number" },
+          "changeover_kind": { "enum": ["molde", "resina", "color"], "description": "Qué manda en el cambio de referencia" },
           "color": { "type": "string" },
           "batch": { "type": "array", "items": { "type": "integer" }, "minItems": 2, "maxItems": 2, "description": "[lote, de cuántos]" }
         }
@@ -66,7 +67,8 @@
         "late_orders": { "type": "integer" },
         "tardiness_h": { "type": "number" },
         "changeovers": { "type": "integer" },
-        "changeover_h": { "type": "number" }
+        "changeover_h": { "type": "number" },
+        "mold_changes": { "type": "integer" }
       }
     },
     "solver": { "type": "object" }
