@@ -24,6 +24,7 @@ const plants: PlantCard[] = [
     family: "MANUFACTURA DISCRETA",
     title: "Planta de plásticos",
     text: "Inyectoras, moldes, secado, reciclaje y ensamble: piezas contables que avanzan por celdas y rutas.",
+    extra: { href: "/arquitectura.html", label: "ARQUITECTURA DEL GEMELO" },
   },
   {
     id: "sauce-plant-v1",

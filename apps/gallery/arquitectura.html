@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Arquitectura · Plásticos</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Orbitron:wght@500;600;700&display=swap" />
+  </head>
+  <body class="aps-page ar-page">
+    <header class="aps-top">
+      <a class="aps-back" href="/plant.html?plant=plastic-injection-plant-v1">← GEMELO 3D</a>
+      <a class="aps-back" href="/aps.html">APS</a>
+      <a class="aps-back" href="/control.html">CENTRO DE CONTROL</a>
+      <a class="aps-back" href="/emulador.html">EMULADOR</a>
+      <a class="aps-back" href="/presentaciones.html">PRESENTACIONES</a>
+      <div class="aps-title"><strong>ARQUITECTURA</strong><span class="dim"> · cómo funciona el gemelo de la planta de plásticos</span></div>
+    </header>
+    <main class="ar-main">
+      <p class="ar-lead">Cada bloque es una pantalla real: haga clic para abrirla. Las flechas muestran hacia dónde viajan los datos.</p>
+
+      <svg class="ar-svg" viewBox="0 0 1200 700" role="img" aria-labelledby="ar-t ar-d">
+        <title id="ar-t">Arquitectura del gemelo digital de la planta de plásticos</title>
+        <desc id="ar-d">El emulador 2D representa la planta real y alimenta al PLC; el PLC alimenta al gemelo digital, que muestra el pasado y el presente. El APS entrega la programación, incluida la manual, al gemelo. El cosimulador intercambia datos con el gemelo y con el PLC. Fractal, el optimizador, plantea escenarios futuros sobre el gemelo.</desc>
+        <defs>
+          <marker id="ar-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="ar-head" /></marker>
+        </defs>
+
+        <!-- Planta real (emulada) -->
+        <rect class="ar-zone" x="20" y="25" width="650" height="150" rx="12" />
+        <text class="ar-zone-t" x="36" y="46">PLANTA REAL · EN VIVO</text>
+
+        <!-- Flechas -->
+        <path class="ar-line live" d="M280 100H400" marker-end="url(#ar-arrow)" />
+        <text class="ar-lbl" x="340" y="90" text-anchor="middle">señales</text>
+        <path class="ar-line live" d="M520 150V290" marker-end="url(#ar-arrow)" />
+        <text class="ar-lbl" x="532" y="215">estado de cada máquina</text>
+
+        <path class="ar-line plan" d="M860 110H690V290" marker-end="url(#ar-arrow)" />
+        <text class="ar-lbl" x="775" y="100" text-anchor="middle">programación vigente</text>
+
+        <path class="ar-line calc" d="M280 395H420" marker-start="url(#ar-arrow)" marker-end="url(#ar-arrow)" />
+        <text class="ar-lbl" x="350" y="385" text-anchor="middle">plan ⇄ estado</text>
+        <path class="ar-line calc" d="M280 330H350V130H400" marker-start="url(#ar-arrow)" marker-end="url(#ar-arrow)" />
+        <text class="ar-lbl" x="342" y="230" text-anchor="end">ritmos y</text>
+        <text class="ar-lbl" x="342" y="246" text-anchor="end">señales</text>
+
+        <path class="ar-line fut" d="M570 560V460" marker-end="url(#ar-arrow)" />
+        <text class="ar-lbl" x="582" y="515">escenarios futuros</text>
+
+        <!-- Emulador -->
+        <a href="/emulador.html"><g class="ar-box live">
+          <rect x="40" y="55" width="240" height="100" rx="10" />
+          <text class="ar-n" x="58" y="80">1</text>
+          <text class="ar-h" x="84" y="82">EMULADOR 2D</text>
+          <text class="ar-s" x="58" y="108">Representa la planta real:</text>
+          <text class="ar-s" x="58" y="125">fallas y paros ocurren aquí, ahora.</text>
+          <text class="ar-go" x="58" y="144">ABRIR EMULADOR →</text>
+        </g></a>
+
+        <!-- PLC -->
+        <a href="/control.html"><g class="ar-box live">
+          <rect x="400" y="55" width="240" height="100" rx="10" />
+          <text class="ar-n" x="418" y="80">2</text>
+          <text class="ar-h" x="444" y="82">PLC POR MÁQUINA</text>
+          <text class="ar-s" x="418" y="108">Ciclo, unidades y OEE de cada</text>
+          <text class="ar-s" x="418" y="125">inyectora y celda de ensamble.</text>
+          <text class="ar-go" x="418" y="144">CENTRO DE CONTROL →</text>
+        </g></a>
+
+        <!-- APS -->
+        <a href="/aps.html"><g class="ar-box plan">
+          <rect x="860" y="45" width="300" height="130" rx="10" />
+          <text class="ar-n" x="878" y="72">4</text>
+          <text class="ar-h" x="904" y="74">APS · PROGRAMACIÓN</text>
+          <text class="ar-s" x="878" y="100">Pedidos, Gantt e insumos.</text>
+          <text class="ar-s" x="878" y="117">Programación manual o la que</text>
+          <text class="ar-s" x="878" y="134">calcula el cosimulador.</text>
+          <text class="ar-go" x="878" y="162">ABRIR APS →</text>
+        </g></a>
+
+        <!-- Gemelo -->
+        <a href="/plant.html?plant=plastic-injection-plant-v1"><g class="ar-box twin">
+          <rect x="420" y="290" width="300" height="170" rx="12" />
+          <text class="ar-n" x="440" y="320">3</text>
+          <text class="ar-h big" x="468" y="322">GEMELO DIGITAL 3D</text>
+          <text class="ar-s" x="440" y="348">Reproduce la planta con lo que</text>
+          <text class="ar-s" x="440" y="365">reportan los PLC y el plan.</text>
+          <rect class="ar-chip past" x="440" y="384" width="124" height="26" rx="13" />
+          <text class="ar-chip-t" x="502" y="402" text-anchor="middle">PASADO · play</text>
+          <rect class="ar-chip now" x="576" y="384" width="124" height="26" rx="13" />
+          <text class="ar-chip-t" x="638" y="402" text-anchor="middle">PRESENTE · vivo</text>
+          <text class="ar-go" x="440" y="440">ABRIR GEMELO 3D →</text>
+        </g></a>
+
+        <!-- Cosimulador -->
+        <a href="/aps.html?tab=gantt"><g class="ar-box calc">
+          <rect x="40" y="290" width="240" height="140" rx="10" />
+          <text class="ar-n" x="58" y="318">5</text>
+          <text class="ar-h" x="84" y="320">COSIMULADOR</text>
+          <text class="ar-s" x="58" y="346">Resuelve la secuencia desde los</text>
+          <text class="ar-s" x="58" y="363">pedidos y la contrasta con el</text>
+          <text class="ar-s" x="58" y="380">gemelo y el PLC.</text>
+          <text class="ar-go" x="58" y="414">CALCULAR EN EL APS →</text>
+        </g></a>
+
+        <!-- Fractal -->
+        <a href="/aps.html?tab=fractal"><g class="ar-box fut">
+          <rect x="420" y="560" width="300" height="115" rx="10" />
+          <text class="ar-n" x="440" y="590">6</text>
+          <text class="ar-h" x="466" y="592">FRACTAL · OPTIMIZADOR</text>
+          <text class="ar-s" x="440" y="618">Plantea escenarios futuros sobre el</text>
+          <text class="ar-s" x="440" y="635">gemelo: adelantar un pedido, balancear</text>
+          <text class="ar-s" x="440" y="652">la ocupación, una falla.</text>
+          <text class="ar-go" x="440" y="668">ABRIR FRACTAL →</text>
+        </g></a>
+
+        <!-- Leyenda -->
+        <g class="ar-legend">
+          <rect x="860" y="400" width="300" height="140" rx="10" class="ar-leg-box" />
+          <text class="ar-s" x="878" y="426" font-weight="600">COLORES</text>
+          <circle cx="886" cy="450" r="6" class="ar-dot live" /><text class="ar-s" x="902" y="454">En vivo (tiempo real)</text>
+          <circle cx="886" cy="474" r="6" class="ar-dot plan" /><text class="ar-s" x="902" y="478">Planeación (pedidos y programación)</text>
+          <circle cx="886" cy="498" r="6" class="ar-dot calc" /><text class="ar-s" x="902" y="502">Cálculo (cosimulador)</text>
+          <circle cx="886" cy="522" r="6" class="ar-dot fut" /><text class="ar-s" x="902" y="526">Futuro (escenarios de Fractal)</text>
+        </g>
+      </svg>
+
+      <h2 class="ar-h2">Cómo leerlo</h2>
+      <ol class="ar-steps">
+        <li><b>El emulador 2D representa la planta real.</b> Es lo único que "sucede" en tiempo real: aquí se declara una falla o un paro de emergencia, y se conecta con el PLC.</li>
+        <li><b>El PLC de cada máquina</b> publica ciclo, unidades y OEE. El <a href="/control.html">centro de control</a> los reúne y el gemelo los toma de ahí.</li>
+        <li><b>El gemelo digital</b> muestra el <b>presente</b> y permite reproducir el <b>pasado</b> por días, hasta el día de hoy.</li>
+        <li><b>El APS</b> recibe los pedidos y entrega la programación al gemelo; la programación manual se puede ver y editar en el mismo <a href="/aps.html">APS</a>.</li>
+        <li><b>El cosimulador</b> calcula la secuencia que cumple las entregas y se comunica en ambos sentidos con el gemelo y con el PLC.</li>
+        <li><b>Fractal, el optimizador,</b> parte del gemelo y plantea escenarios futuros (adelantar un pedido, balancear, una falla); el que se adopta pasa a ser la programación vigente.</li>
+      </ol>
+    </main>
+    <script type="module" src="/src/arquitectura.ts"></script>
+  </body>
+</html>
