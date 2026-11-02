@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import type { CustomerOrders, PlantEvent, ProductionPlan } from "../../../core/contracts.ts";
 import { parseLocal } from "../../../core/time.ts";
 import { editedPlan, manualPlan, moveChunk, queuesOf, type ManualEdit, type ManualPlan } from "../manual.ts";
-import { buildModel } from "../model.ts";
+import { buildModel, moldFitProblem } from "../model.ts";
 import { solve } from "../solve.ts";
 import { fsCatalog, MODEL_DIR } from "../scripts/fs-catalog.ts";
 
@@ -167,6 +167,22 @@ describe("un objetivo por corrida", () => {
       expect(sol.orders.filter((o) => o.unscheduled).length, objective).toBe(0);
     }
   }, 180_000);
+});
+
+describe("tamaño de molde y de inyectora", () => {
+  it("un molde que exige más cierre que la inyectora no se monta ahí", () => {
+    const cat = fsCatalog();
+    const heavy = cat.tooling.tooling.find((t) => (t.min_clamp_t ?? 0) > 150)!;
+    const small = "imm-01"; // 100 t de cierre
+    expect(moldFitProblem(cat, small, heavy.id)).toMatch(/necesita/);
+    cat.setup.setup[small] = { tooling: heavy.id };
+    expect(() => buildModel(cat)).toThrow(/Montaje no válido en imm-01/);
+  });
+  it("un molde chico sí cabe en una inyectora grande", () => {
+    const cat = fsCatalog();
+    const light = cat.tooling.tooling.find((t) => (t.min_clamp_t ?? 0) > 0 && (t.min_clamp_t ?? 0) <= 100)!;
+    expect(moldFitProblem(cat, "imm-21", light.id)).toBeUndefined();
+  });
 });
 
 describe("moldes como recursos", () => {

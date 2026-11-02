@@ -2,7 +2,7 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import yaml from "js-yaml";
-import type { CatalogData } from "../model.ts";
+import { machinesOf, type CatalogData, type PlantYaml } from "../model.ts";
 
 export const MODEL_DIR = fileURLToPath(new URL("../../../../industrial-models/plastic-injection-plant-v1/", import.meta.url));
 const read = (name: string) => yaml.load(readFileSync(`${MODEL_DIR}catalog/${name}.yaml`, "utf8"));
@@ -15,4 +15,5 @@ export const fsCatalog = (): CatalogData => ({
   aps: yaml.load(readFileSync(`${MODEL_DIR}aps/aps.yaml`, "utf8")) as CatalogData["aps"],
   materials: read("materials") as CatalogData["materials"],
   changeovers: read("changeovers") as CatalogData["changeovers"],
+  machines: machinesOf(yaml.load(readFileSync(`${MODEL_DIR}plant.yaml`, "utf8")) as PlantYaml),
 });
