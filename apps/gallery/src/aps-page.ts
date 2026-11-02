@@ -62,7 +62,9 @@ let formMsg = "";
 let worker: Worker | null = null;
 let runId = 0;
 
-const shown = () => proposal ?? current;
+/** Qué se muestra en el APS: la vigente, o el escenario visto (la propuesta). El selector del Gantt cambia esto. */
+let viewVigente = false;
+const shown = () => (viewVigente ? current : (proposal ?? current));
 
 useDemoDays();
 
@@ -72,6 +74,7 @@ function syncView(): void {
   const key = proposal?.plan_id ?? "";
   if (key === lastView) return;
   lastView = key;
+  if (proposal) viewVigente = false;
   setViewed(proposal);
   setViewMode(proposal ? "escenario" : "vigente");
 }
@@ -444,7 +447,10 @@ function renderGantt(p: ProductionPlan): void {
   el.innerHTML = `
     <div class="g-toolbar">
       <button id="g-prev" title="Un día atrás">◀</button><button id="g-today">HOY</button><button id="g-next" title="Un día adelante">▶</button>
-      <span class="dim small">${day(isoOf(from))} a ${day(isoOf(to - DAY_MS))} · mostrando ${proposal ? "la PROPUESTA" : "la VIGENTE"} ${esc(p.plan_id)} · ${orders.length} órdenes</span>
+      <span class="dim small">${day(isoOf(from))} a ${day(isoOf(to - DAY_MS))} · mostrando ${p === current ? "la VIGENTE" : "el ESCENARIO"} ${esc(p.plan_id)} · ${orders.length} órdenes</span>
+      <select id="g-view" title="Qué programación muestra el Gantt: la vigente o el escenario visto">
+        <option value="vigente">VIGENTE · ${esc(current.plan_id)}</option>
+        <option value="escenario"${proposal ? "" : " disabled"}>ESCENARIO · ${esc(proposal?.plan_id ?? "ninguno visto")}</option>
       <span class="g-legend">${legend}<span><i class="hatch"></i>cambio (molde, resina o color)</span><span><i class="down"></i>parada</span><span><i class="pin"></i>hora fijada</span><span><i class="fix"></i>orden fijada</span></span>
     </div>
     <div class="g-manual">
@@ -465,6 +471,13 @@ function renderGantt(p: ProductionPlan): void {
   const firstOpen = orders.find((o) => ms(o.completion) > t);
   const row = firstOpen && scroller.querySelector<HTMLElement>(`.g-row[data-order="${firstOpen.id}"]`);
   scroller.scrollTop = keep ?? (row ? row.offsetTop - 4 : 0);
+  const gView = document.getElementById("g-view") as HTMLSelectElement;
+  gView.value = viewVigente || !proposal ? "vigente" : "escenario";
+  gView.onchange = () => {
+    viewVigente = gView.value === "vigente";
+    setViewMode(viewVigente ? "vigente" : "escenario");
+    render();
+  };
   $("g-prev").onclick = () => ((viewFrom -= DAY_MS), render());
   $("g-next").onclick = () => ((viewFrom += DAY_MS), render());
   $("g-today").onclick = () => ((viewFrom = ms(`${now().slice(0, 10)}T00:00`) - 2 * DAY_MS), render());
@@ -968,9 +981,9 @@ $("aps-manual").onclick = () => {
 onChange((what) => {
   current = vigente();
   if (what === "view") {
-    // El gemelo eligió: "vigente" quita la propuesta; "escenario" muestra el escenario visto.
-    if (viewMode() === "vigente") proposal = null;
-    else if (!proposal) proposal = viewedPlan();
+    // El gemelo eligió: "vigente" muestra la vigente en el APS; "escenario" muestra el escenario visto.
+    viewVigente = viewMode() === "vigente";
+    if (!viewVigente && !proposal) proposal = viewedPlan();
     lastView = proposal?.plan_id ?? "";
   }
   if (what === "events") error = "";
