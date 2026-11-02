@@ -294,3 +294,35 @@ export function solve(highs: HighsLike, model: PlasticsModel, portfolio: Custome
     solver: { status: res.Status, seconds: Math.round(seconds * 100) / 100, variables: nVars, constraints: nRows, objective: Math.round(res.ObjectiveValue * 100) / 100 },
   });
 }
+
+/** Un escenario de programación que el usuario puede elegir. */
+export interface Scenario {
+  id: "entregas" | "menos-cambios";
+  label: string;
+  plan: ProductionPlan;
+}
+
+/**
+ * Primero corre entregas. Luego una segunda pasada baja los cambios de molde y color, pero solo se ofrece si no empeora
+ * el atraso ni el cumplimiento, y si deja menos cambios. Si no cumple, solo queda el escenario de entregas.
+ */
+export function solveScenarios(highs: HighsLike, model: PlasticsModel, portfolio: CustomerOrders, opt: SolveOptions = {}): Scenario[] {
+  const base = solve(highs, model, portfolio, { ...opt, objective: "entregas" });
+  const scenarios: Scenario[] = [{ id: "entregas", label: "Cumplir entregas", plan: base }];
+  let alt: ProductionPlan | null = null;
+  try {
+    alt = solve(highs, model, portfolio, { ...opt, objective: "cambios", planId: `${base.plan_id}-CAMBIOS` });
+  } catch {
+    alt = null;
+  }
+  const unscheduled = (p: ProductionPlan) => p.orders.some((o) => o.unscheduled);
+  if (
+    alt &&
+    !unscheduled(alt) &&
+    alt.kpis.changeovers < base.kpis.changeovers &&
+    alt.kpis.tardiness_h <= base.kpis.tardiness_h &&
+    alt.kpis.on_time_pct >= base.kpis.on_time_pct
+  )
+    scenarios.push({ id: "menos-cambios", label: "Menos cambios, mismas entregas", plan: alt });
+  return scenarios;
+}
