@@ -69,7 +69,7 @@ export interface SolveOptions {
 }
 
 /** Arma el modelo LP (formato CPLEX LP que lee HiGHS). Exportado para las pruebas. */
-export function buildLp(ctx: Context, colors = false, objective: Objective = "entregas"): { lp: string; vars: Map<string, { job: Job; machine: string; b: number }>; buckets: Bucket[]; nVars: number; nRows: number } {
+export function buildLp(ctx: Context, colors = false, objective: Objective = "entregas", tardinessCap?: number): { lp: string; vars: Map<string, { job: Job; machine: string; b: number }>; buckets: Bucket[]; late: Map<string, number>; nVars: number; nRows: number } {
   const { model } = ctx;
   const cal = model.calendar;
   const buckets: Bucket[] = cal.shiftsBetween(ctx.start, ctx.horizonEnd).filter((s) => s.end > ctx.now);
@@ -113,6 +113,9 @@ export function buildLp(ctx: Context, colors = false, objective: Objective = "en
   const colorTerms: Map<string, string[]> = new Map();
   /** Minutos de trabajo de cada máquina en todos los turnos (para el objetivo de cuellos). */
   const loadTerms: Map<number, string[]> = new Map();
+  /** Atraso ponderado de cada variable (lo que mide el objetivo de entregas). */
+  const late = new Map<string, number>();
+  const lateTerms: string[] = [];
   /** Parte una expresión larga en renglones cortos (el lector LP de HiGHS en WebAssembly falla con renglones enormes). */
   const wrap = (terms: string[]) => terms.reduce((out, t, i) => out + (i && i % 12 === 0 ? "\n   " : " ") + t, "").trim();
   const term = (c: number, v: string) => `${c >= 0 ? "+" : "-"} ${Math.abs(c).toFixed(9)} ${v}`;
@@ -129,6 +132,11 @@ export function buildLp(ctx: Context, colors = false, objective: Objective = "en
         names.push(v);
         vars.set(v, { job: j, machine: m, b });
         const lateH = j.final ? Math.max(0, bk.end - j.due) / 60 : 0;
+        const lateC = (j.weight * lateH) / j.order.quantity;
+        if (lateC > 0) {
+          late.set(v, lateC);
+          lateTerms.push(term(lateC, v));
+        }
         const c =
           objective === "entregas" ? (j.weight * lateH) / j.order.quantity + (EARLY_NUDGE * b) / (B * q)
           : objective === "capacidad" ? (j.weight * (b / B)) / q
@@ -147,7 +155,7 @@ export function buildLp(ctx: Context, colors = false, objective: Objective = "en
     jobVars.push(names);
     const miss = `s${ji}`;
     obj.push(term((MISSING_PENALTY * j.weight) / q, miss));
-    bounds.push(`0 <= ${miss} <= ${q}`);
+    bounds.push(`0 <= ${miss} <= ${objective === "entregas" ? q : 0}`);
     rows.push(` d${ji}: ${wrap([...names.map((v) => `+ ${v}`), `+ ${miss}`])} = ${q}`);
   });
 
@@ -173,6 +181,8 @@ export function buildLp(ctx: Context, colors = false, objective: Objective = "en
     const big = (capacity[k][b] / Math.min(...vs.map((v) => vars.get(v)!.job.step.unitMin))).toFixed(3);
     rows.push(` k${ck}: ${wrap([...vs.map((v) => `+ ${v}`), `- ${big} ${y}`])} <= 0`);
   }
+  // Entregas como condición: el atraso no supera el del cálculo de entregas (tope), con cualquier otro objetivo.
+  if (tardinessCap !== undefined && lateTerms.length) rows.push(` tope: ${wrap(lateTerms)} <= ${(tardinessCap * 1.0001 + 1e-6).toFixed(9)}`);
   // Balance de cuellos: L es la utilización de la máquina más cargada; todas las máquinas quedan por debajo de L.
   let balance = "";
   if (objective === "cuellos" && loadTerms.size) {
@@ -209,7 +219,7 @@ export function buildLp(ctx: Context, colors = false, objective: Objective = "en
     ...(binaries.length ? ["Binary", ...binaries.map((y) => ` ${y}`)] : []),
     "End",
   ].join("\n");
-  return { lp, vars, buckets, nVars: vars.size + jobs.length + binaries.length + (balance ? 1 : 0), nRows: rows.length };
+  return { lp, vars, buckets, late, nVars: vars.size + jobs.length + binaries.length + (balance ? 1 : 0), nRows: rows.length };
 }
 
 /** Resuelve la cartera y devuelve la programación propuesta por el cosimulador. */
@@ -223,8 +233,18 @@ export function solve(highs: HighsLike, model: PlasticsModel, portfolio: Custome
   const t0 = performance.now();
   const objective = opt.objective ?? "entregas";
   // Cambios: hay que contar las referencias encendidas, así que el modelo lleva binarias de color/molde.
-  const { lp, vars, buckets, nVars, nRows } = buildLp(ctx, opt.colors || objective === "cambios", objective);
-  const res = highs.solve(lp, { time_limit: opt.timeLimitS ?? 20, mip_rel_gap: 0.01, presolve: "on" });
+  const solveOpts = { time_limit: opt.timeLimitS ?? 20, mip_rel_gap: 0.01, presolve: "on" };
+  // Con otro objetivo, las entregas no se negocian: primero se mide el atraso del cálculo de entregas y ese es el tope.
+  let tardinessCap: number | undefined;
+  if (objective !== "entregas") {
+    const base = buildLp(ctx, false, "entregas");
+    const r0 = highs.solve(base.lp, solveOpts);
+    if (!["Optimal", "Time limit reached"].includes(r0.Status)) throw new Error(`El solver no encontró programación: ${r0.Status}`);
+    tardinessCap = 0;
+    for (const [name, col] of Object.entries(r0.Columns)) tardinessCap += ((col as { Primal?: number }).Primal ?? 0) * (base.late.get(name) ?? 0);
+  }
+  const { lp, vars, buckets, nVars, nRows } = buildLp(ctx, opt.colors || objective === "cambios", objective, tardinessCap);
+  const res = highs.solve(lp, solveOpts);
   const seconds = (performance.now() - t0) / 1000;
   if (!["Optimal", "Time limit reached"].includes(res.Status)) throw new Error(`El solver no encontró programación: ${res.Status}`);
 
