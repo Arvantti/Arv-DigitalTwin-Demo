@@ -12,7 +12,7 @@
  * (purgas) + un empujón mínimo a producir temprano. HiGHS (compilado a WebAssembly) lo resuelve en el navegador.
  */
 import type { CustomerOrders, PlannedStop, PlantEvent, ProductionPlan } from "../../core/contracts.ts";
-import { context, dispatch, toPlan, type Chunk, type Context, type Job } from "./plan.ts";
+import { blockedOf, context, dispatch, toPlan, type Chunk, type Context, type Job } from "./plan.ts";
 import type { PlasticsModel } from "./model.ts";
 
 export const COLOR_WEIGHT = 0.5;
@@ -46,6 +46,8 @@ export interface SolveOptions {
   events?: PlantEvent[];
   /** Paradas decididas desde AHORA (montaje de un molde). */
   stops?: PlannedStop[];
+  /** Pedidos fijados por el planificador: sus lotes de `previous` no se mueven y el resto se organiza alrededor. */
+  fixed?: string[];
 }
 
 /** Arma el modelo LP (formato CPLEX LP que lee HiGHS). Exportado para las pruebas. */
@@ -61,7 +63,7 @@ export function buildLp(ctx: Context, colors = false): { lp: string; vars: Map<s
     const a = Math.max(bk.start, ctx.free[m].at);
     if (a >= bk.end) return 0;
     let free = bk.end - a;
-    for (const [s, e] of ctx.down[m]) free -= Math.max(0, Math.min(e, bk.end) - Math.max(s, a));
+    for (const [s, e] of blockedOf(ctx, m)) free -= Math.max(0, Math.min(e, bk.end) - Math.max(s, a));
     return Math.max(0, free);
   };
   const colorsOf = (m: string) => [...new Set(jobs.filter((j) => j.step.machines.includes(m)).map((j) => j.color ?? "-"))];
@@ -164,7 +166,7 @@ export function buildLp(ctx: Context, colors = false): { lp: string; vars: Map<s
 
 /** Resuelve la cartera y devuelve la programación propuesta por el cosimulador. */
 export function solve(highs: HighsLike, model: PlasticsModel, portfolio: CustomerOrders, opt: SolveOptions = {}): ProductionPlan {
-  const ctx = context(model, portfolio, opt.now, opt.previous, opt.events, opt.stops);
+  const ctx = context(model, portfolio, opt.now, opt.previous, opt.events, opt.stops, opt.fixed);
   const t0 = performance.now();
   const { lp, vars, buckets, nVars, nRows } = buildLp(ctx, opt.colors);
   const res = highs.solve(lp, { time_limit: opt.timeLimitS ?? 20, mip_rel_gap: 0.01, presolve: "on" });
@@ -207,6 +209,7 @@ export function solve(highs: HighsLike, model: PlasticsModel, portfolio: Custome
   return toPlan(ctx, portfolio, result, {
     planId: opt.planId ?? "APS-SOL-01",
     source: "solver",
+    ...(ctx.fixed.length ? { notes: [`${ctx.fixed.length} pedido${ctx.fixed.length === 1 ? "" : "s"} fijado${ctx.fixed.length === 1 ? "" : "s"} por el planificador no se movi${ctx.fixed.length === 1 ? "ó" : "eron"}: ${ctx.fixed.join(", ")}. El resto se organizó alrededor.`] } : {}),
     solver: { status: res.Status, seconds: Math.round(seconds * 100) / 100, variables: nVars, constraints: nRows, objective: Math.round(res.ObjectiveValue * 100) / 100 },
   });
 }

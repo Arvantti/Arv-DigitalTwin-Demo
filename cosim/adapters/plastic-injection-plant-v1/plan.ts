@@ -61,7 +61,15 @@ export interface Context {
   free: Record<string, { at: number; color?: string }>;
   /** Unidades ya hechas (o en curso) de cada trabajo. */
   done: Record<string, number>;
+  /** Pedidos fijados: sus lotes del plan anterior quedan donde estaban, aunque sean futuros. */
+  fixed: string[];
+  /** Por máquina: horas ocupadas por lotes fijados después de AHORA; el resto se programa alrededor. */
+  reserved: Record<string, [number, number][]>;
 }
+
+/** Paradas y lotes fijados de una máquina: tiempo en que no se puede programar nada nuevo. */
+export const blockedOf = (ctx: Context, m: string): [number, number][] =>
+  [...(ctx.down[m] ?? []).map(([a, b]) => [a, b] as [number, number]), ...(ctx.reserved[m] ?? [])].sort((x, y) => x[0] - y[0]);
 
 export function makeJobs(model: PlasticsModel, orders: CustomerOrder[], start: number): Job[] {
   const jobs: Job[] = [];
@@ -111,9 +119,9 @@ export function horizonOf(model: PlasticsModel, orders: CustomerOrder[], start: 
 
 /**
  * Prepara el contexto de una corrida: pedidos conocidos, trabajos, paradas y lo congelado de un plan anterior
- * (filas que empezaron antes de `now` se mantienen tal cual).
+ * (filas que empezaron antes de `now` se mantienen tal cual, y también todas las de los pedidos fijados).
  */
-export function context(model: PlasticsModel, portfolio: CustomerOrders, nowIso?: string, previous?: ProductionPlan | null, events: PlantEvent[] = [], stops: PlannedStop[] = []): Context {
+export function context(model: PlasticsModel, portfolio: CustomerOrders, nowIso?: string, previous?: ProductionPlan | null, events: PlantEvent[] = [], stops: PlannedStop[] = [], fixedOrders: string[] = []): Context {
   const start = parseLocal(portfolio.plan_start);
   const now = Math.max(start, nowIso ? parseLocal(nowIso) : start);
   // La cartera es la del cliente: se programa completa; ningún pedido se produce antes de su llegada (`created`).
@@ -132,11 +140,15 @@ export function context(model: PlasticsModel, portfolio: CustomerOrders, nowIso?
   for (const m of model.machines) free[m] = { at: start, color: model.initialColor[m] };
   const done: Record<string, number> = {};
   const frozen: Row[] = [];
-  if (previous && now > start) {
+  const known = new Set(orders.map((o) => o.id));
+  const fixed = previous ? fixedOrders.filter((id) => known.has(id) && previous.schedule.some((r) => r.order === id)) : [];
+  const isFixed = new Set(fixed);
+  const reserved: Context["reserved"] = {};
+  if (previous && (now > start || fixed.length)) {
     const byKey = new Map(jobs.map((j) => [`${j.order.id}|${j.step.product}`, j]));
     for (const r of previous.schedule) {
       const t0 = parseLocal(r.start);
-      if (t0 >= now) continue;
+      if (t0 >= now && !isFixed.has(r.order)) continue;
       const job = byKey.get(`${r.order}|${r.product}`);
       if (!job) continue;
       const row: Row = { job, machine: r.equipment, start: t0, end: parseLocal(r.end), qty: r.quantity, changeoverMin: r.changeover_min, color: r.color, frozenBatch: r.batch ?? [1, 1] };
@@ -149,8 +161,14 @@ export function context(model: PlasticsModel, portfolio: CustomerOrders, nowIso?
         if (row.qty <= 0) continue;
       }
       if (outages.some((e) => e.m === r.equipment && e.a <= row.start && e.b > row.start)) continue;
+      // Un lote fijado que cae dentro de una falla no se puede respetar: se vuelve a programar.
+      if (t0 >= now && outages.some((e) => e.m === r.equipment && e.a < row.end && e.b > row.start)) continue;
       frozen.push(row);
       done[job.key] = (done[job.key] ?? 0) + row.qty;
+      if (t0 >= now) {
+        (reserved[r.equipment] ??= []).push([row.start, row.end]);
+        continue;
+      }
       const f = free[r.equipment];
       if (f && row.end >= f.at) {
         f.at = row.end;
@@ -159,7 +177,8 @@ export function context(model: PlasticsModel, portfolio: CustomerOrders, nowIso?
     }
     for (const m of model.machines) free[m].at = Math.max(free[m].at, now);
   }
-  return { model, orders, jobs, start, now, horizonEnd, down, frozen, free, done };
+  for (const list of Object.values(reserved)) list.sort((a, b) => a[0] - b[0]);
+  return { model, orders, jobs, start, now, horizonEnd, down, frozen, free, done, fixed, reserved };
 }
 
 /** Pone los tramos en el calendario. Primero las máquinas de componentes y productos directos, luego el ensamble. */
@@ -194,7 +213,10 @@ export function dispatch(ctx: Context, queues: Record<string, Chunk[]>): { rows:
   for (const m of order) {
     let cursor = ctx.free[m].at;
     let color = ctx.free[m].color;
-    const blocked = ctx.down[m].map(([a, b]) => [a, b] as [number, number]);
+    const blocked = blockedOf(ctx, m);
+    const fixedSpans = ctx.reserved[m] ?? [];
+    /** Minutos de trabajo libres (sin paradas ni lotes fijados) entre a y b. */
+    const freeWork = (a: number, b: number) => cal.workBetween(a, b) - blocked.reduce((s, [x, y]) => s + (y > a && x < b ? cal.workBetween(Math.max(a, x), Math.min(b, y)) : 0), 0);
     for (const ch of queues[m] ?? []) {
       if (ch.qty <= 0) continue;
       let t = Math.max(cursor, ch.notBefore, ch.job.release);
@@ -213,17 +235,34 @@ export function dispatch(ctx: Context, queues: Record<string, Chunk[]>): { rows:
       t = cal.nextWork(t);
       // Si la máquina está parada en ese instante, el tramo arranca cuando vuelve.
       for (let stop = blocked.find(([a, b]) => t >= a && t < b); stop; stop = blocked.find(([a, b]) => t >= a && t < b)) t = cal.nextWork(stop[1]);
-      let co = 0;
-      if (ch.job.color && color && ch.job.color !== color && multiColor(m) && model.colorChangeMin) co = model.colorChangeMin;
-      const end = Math.max(cal.advance(t, co + ch.qty * ch.job.step.unitMin, blocked), Number.isFinite(lastReady) ? cal.advance(lastReady, ch.job.step.unitMin, blocked) : -Infinity);
-      if (t >= ctx.horizonEnd) {
-        unscheduled[ch.job.key] = (unscheduled[ch.job.key] ?? 0) + ch.qty;
-        continue;
+      let qty = ch.qty;
+      // Antes de un lote fijado solo cabe lo que alcanza a terminar; lo demás sigue después de él.
+      for (let guard = 0; qty > 0 && guard < 200; guard++) {
+        for (let stop = blocked.find(([a, b]) => t >= a && t < b); stop; stop = blocked.find(([a, b]) => t >= a && t < b)) t = cal.nextWork(stop[1]);
+        if (t >= ctx.horizonEnd) break;
+        let co = 0;
+        if (ch.job.color && color && ch.job.color !== color && multiColor(m) && model.colorChangeMin) co = model.colorChangeMin;
+        const fence = fixedSpans.find(([a]) => a > t);
+        let q = qty;
+        let end = Math.max(cal.advance(t, co + q * ch.job.step.unitMin, blocked), Number.isFinite(lastReady) ? cal.advance(lastReady, ch.job.step.unitMin, blocked) : -Infinity);
+        if (fence && end > fence[0]) {
+          q = Math.min(qty, Math.floor((freeWork(t, fence[0]) - co) / ch.job.step.unitMin));
+          while (q > 0 && cal.advance(t, co + q * ch.job.step.unitMin, blocked) > fence[0]) q--;
+          if (ch.job.components.length) q = 0; // el ensamble espera sus piezas: no se parte alrededor de un fijado
+          if (q <= 0) {
+            t = cal.nextWork(fence[1]);
+            continue;
+          }
+          end = cal.advance(t, co + q * ch.job.step.unitMin, blocked);
+        }
+        rows.push({ job: ch.job, machine: m, start: t, end, qty: q, changeoverMin: co, color: ch.job.color });
+        assembled[ch.job.key] = (assembled[ch.job.key] ?? 0) + q;
+        if (ch.job.color) color = ch.job.color;
+        cursor = end;
+        qty -= q;
+        t = end;
       }
-      rows.push({ job: ch.job, machine: m, start: t, end, qty: ch.qty, changeoverMin: co, color: ch.job.color });
-      assembled[ch.job.key] = (assembled[ch.job.key] ?? 0) + ch.qty;
-      if (ch.job.color) color = ch.job.color;
-      cursor = end;
+      if (qty > 0) unscheduled[ch.job.key] = (unscheduled[ch.job.key] ?? 0) + qty;
     }
   }
   return { rows, unscheduled };
@@ -247,7 +286,7 @@ export function toPlan(
   for (const r of rows) {
     const lot = model.lots[r.job.step.product] ?? Math.max(1, r.job.qty);
     const lots = Math.max(1, Math.ceil(r.job.qty / lot));
-    const blocked = (ctx.down[r.machine] ?? []).map(([a, b]) => [a, b] as [number, number]);
+    const blocked = blockedOf(ctx, r.machine);
     let t = r.start;
     let left = Math.round(r.qty);
     let first = true;
@@ -380,5 +419,6 @@ export function toPlan(
     ...(head.solver ? { solver: head.solver } : {}),
     ...(ctx.now > ctx.start ? { frozen_until: iso(ctx.now, tz) } : {}),
     ...(head.notes ? { notes: head.notes } : {}),
+    ...(ctx.fixed.length ? { fixed_orders: [...ctx.fixed] } : {}),
   };
 }

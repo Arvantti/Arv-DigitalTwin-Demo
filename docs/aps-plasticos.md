@@ -41,6 +41,28 @@ El sitio publicado no tiene servidor: pedidos agregados y programación vigente 
 (`apps/gallery/src/aps-store.ts`, localStorage y BroadcastChannel), así el APS y el gemelo abiertos en dos ventanas se
 enteran de los cambios. Cuando exista la API, solo cambia ese módulo.
 
+## Ajuste manual en el Gantt (arrastrar y soltar)
+
+"Manual" no es solo la secuencia de arranque APS-MAN-01: cualquier ajuste que haga el planificador a mano sobre la
+programación que está viendo (vigente, del cosimulador o de Fractal) es una programación manual.
+
+- **Arrastrar un lote** (abajo, en RECURSOS) a otra máquina o a otra hora. Si se suelta **sobre otro lote**, queda antes
+  o después de él según la mitad donde se suelte. Si se suelta **en un espacio libre**, queda fijado para no arrancar
+  antes de esa hora (redondeada a la media hora; fuera de turno, al empezar el siguiente). Solo se aceptan máquinas con
+  el molde de ese producto (la fila se pinta verde o roja mientras se arrastra).
+- **Arrastrar una orden** (arriba, en ÓRDENES) en el tiempo: todos sus tramos que no han empezado se corren lo mismo y
+  quedan con hora fijada.
+- **Fijar una orden** con el candado: sus lotes quedan exactamente donde están. CALCULAR CON EL COSIMULADOR (y la
+  secuencia manual) organiza el resto alrededor sin moverlos: "estos pedidos los entrego sí o sí en estas fechas;
+  organiza los demás". La propuesta lo dice en sus notas.
+- Cada movimiento recalcula desde AHORA con el mismo despacho (turnos, paradas, purgas, espera de componentes) y queda
+  como propuesta `APS-MAN-NN` frente a la vigente, con sus indicadores. **DESHACER** vuelve paso a paso.
+
+Código: `cosim/adapters/plastic-injection-plant-v1/manual.ts` (`queuesOf`, `moveChunk`, `editedPlan`), pedidos fijados en
+`plan.ts` (`context(..., fixed)`: sus lotes futuros se reservan en la máquina y el despacho parte un tramo que no cabe
+antes de uno fijado) y en `solve.ts` (la capacidad de cada turno descuenta lo fijado). El plan guarda `fixed_orders`.
+Capturas en `docs/demo-plasticos/ajuste-manual/`.
+
 ## Emulador y falla de una máquina
 
 `emulador.html` es el plano 2D de la planta en tiempo real: cada inyectora y celda de ensamble con su estado (produciendo,
