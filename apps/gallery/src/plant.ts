@@ -924,6 +924,36 @@ const CAMERA_GROUPS: Record<string, { name: string; zones: string[] }[]> = {
     { name: "EMPAQUE Y BODEGA", zones: ["empaque", "bodega-pt", "patio-despacho"] },
     { name: "SERVICIOS", zones: ["subestacion", "compresores", "chillers", "torre-enfriamiento", "laboratorio-qc", "mantenimiento"] },
   ],
+  "sauce-plant-v1": [
+    { name: "RECEPCIÓN Y MATERIAS PRIMAS", zones: ["patio-recepcion", "tanques-granel", "bodega-tomate", "cuarto-frio", "bodega-alergenos", "bodega-seca", "bodega-empaque"] },
+    { name: "PREPARACIÓN", zones: ["preparacion-pasta", "sala-pesaje", "esclusa-proceso"] },
+    { name: "PROCESO", zones: ["proceso-caliente", "proceso-frio", "cip", "tanques-pulmon"] },
+    { name: "LLENADO Y ENCAJADO", zones: ["esclusa-llenado", "llenado", "encajado"] },
+    { name: "BODEGA Y DESPACHO", zones: ["bodega-pt", "patio-despacho"] },
+    { name: "SERVICIOS", zones: ["caldera", "compresores", "tratamiento-agua", "frio", "subestacion", "ptar"] },
+    { name: "CONTROL Y APOYO", zones: ["sala-control", "laboratorio", "mantenimiento", "vestieres", "oficinas", "cafeteria"] },
+  ],
+  "corrugated-box-plant-v1": [
+    { name: "MATERIA PRIMA", zones: ["recepcion-papel", "bodega-bobinas"] },
+    { name: "CORRUGADO", zones: ["corrugadora", "cocina-almidon", "recorte"] },
+    { name: "TRANSPORTE DE PILAS", zones: ["transporte-pilas"] },
+    { name: "CONVERSIÓN", zones: ["conversion", "almacen-troqueles"] },
+    { name: "PALETIZADO Y DESPACHO", zones: ["paletizado", "bodega-pt", "patio-despacho"] },
+    { name: "SERVICIOS", zones: ["caldera", "compresores", "subestacion", "mantenimiento", "admin", "parqueadero"] },
+  ],
+  "airport-baggage-v1": [
+    { name: "SALIDAS · CHECK-IN", zones: ["hall-checkin"] },
+    { name: "CLASIFICACIÓN E INSPECCIÓN", zones: ["hbs", "sala-bhs", "nivel3-norte", "nivel3-sur"] },
+    { name: "LLEGADAS", zones: ["inyeccion-llegadas", "hall-llegadas"] },
+    { name: "PLATAFORMA", zones: ["plataforma"] },
+    { name: "CONTROL", zones: ["sala-control"] },
+  ],
+  "garment-factory-v1": [
+    { name: "TELA Y CORTE", zones: ["almacen-tela", "corte"] },
+    { name: "CONFECCIÓN", zones: ["modulo-1", "modulo-2", "modulo-3"] },
+    { name: "CALIDAD Y TERMINADO", zones: ["calidad", "almacen-pt"] },
+    { name: "SERVICIOS", zones: ["servicios"] },
+  ],
 };
 const TYPE_NAMES: Record<string, string> = {
   injection_molding_machine: "Inyectoras",
@@ -935,6 +965,37 @@ const TYPE_NAMES: Record<string, string> = {
   packing_station: "Estaciones de empaque",
   dock_leveler: "Muelles",
   mold_rack: "Racks de moldes",
+  checkweigher: "Checkweighers",
+  cooling_tunnel: "Túneles de enfriamiento",
+  holding_tube: "Tubos de retención",
+  jacketed_kettle: "Marmitas con chaqueta",
+  lobe_pump: "Bombas de lóbulos",
+  steam_pressure_station: "Estaciones de vapor",
+  tubular_heat_exchanger: "Intercambiadores tubulares",
+  vffs_sachet: "Envasadoras de sachets",
+  bundle_conveyor: "Bandas de paquetes",
+  bundle_strapper: "Amarradoras",
+  corrugator_bridge: "Puentes de corrugadora",
+  cutoff_knife: "Cuchillas de corte",
+  double_facer: "Double facer",
+  flexo_folder_gluer: "Flexo plegadoras-pegadoras",
+  glue_machine: "Máquinas de pegado",
+  manual_table: "Mesas manuales",
+  mill_roll_stand: "Soportes de bobina",
+  rotary_die_cutter: "Troqueladoras rotativas",
+  sheet_stacker: "Apiladores de lámina",
+  single_facer: "Single facer",
+  slitter_scorer: "Cortadoras-hendedoras",
+  stack_roller_conveyor: "Rodillos de pilas",
+  stack_turntable: "Mesas giratorias",
+  transfer_car: "Carros de transferencia",
+  bag_handling_station: "Estaciones de manejo de maletas",
+  baggage_carousel: "Carruseles",
+  baggage_cart_train: "Trenes de carros",
+  baggage_screening: "Inspección CT",
+  baggage_sorter: "Clasificadores",
+  belt_conveyor: "Bandas",
+  belt_curve: "Curvas motorizadas",
 };
 
 /** Mismo árbol del acueducto (details/summary con las clases assembly-*): grupo > zona > tipo de equipo > equipo. */
@@ -989,7 +1050,7 @@ function buildCameraTree(
     const group = makeAssemblyGroup(g.name, false, "assembly-root");
     box.append(group);
     const gKids = children(group);
-    button(gKids, "⌖ Enfocar conjunto", `grupo-${g.name.toLowerCase().replace(/\W+/g, "-")}`, () => focusRect([x0, y0, x1 - x0, y1 - y0], 6, 0.8, 0, new THREE.Vector3(1.0, 0.8, 1.2)), "assembly-focus");
+    button(gKids, "⌖ Enfocar conjunto", `grupo-${g.name.toLowerCase().replace(/\W+/g, "-")}`, () => focusRect([x0, y0, x1 - x0, y1 - y0], Math.max(6, ...zones.map((z) => z.height)), 0.8, 0, new THREE.Vector3(1.0, 0.8, 1.2)), "assembly-focus");
     for (const z of zones) {
       const eqs = doc.equipment.filter((e) => e.zone === z.id && assets.has(e.id));
       const go = byKey.get(z.id)?.[2] ?? (() => focusRect(z.rect, Math.max(3, z.height), 0.78, z.elevation ?? 0));
