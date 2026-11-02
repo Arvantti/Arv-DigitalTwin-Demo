@@ -475,6 +475,7 @@ function renderGantt(p: ProductionPlan): void {
       <select id="g-view" title="Qué programación muestra el Gantt: la vigente o el escenario visto">
         <option value="vigente">VIGENTE · ${esc(current.plan_id)}</option>
         <option value="escenario"${proposal ? "" : " disabled"}>ESCENARIO · ${esc(proposal?.plan_id ?? "ninguno visto")}</option>
+      </select>
       <span class="g-legend">${legend}<span><i class="hatch"></i>cambio (molde, resina o color)</span><span><i class="down"></i>parada</span><span><i class="pin"></i>hora fijada</span><span><i class="fix"></i>orden fijada</span></span>
     </div>
     <div class="g-manual">
