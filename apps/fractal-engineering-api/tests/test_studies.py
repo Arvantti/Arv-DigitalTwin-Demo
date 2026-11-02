@@ -94,11 +94,35 @@ def test_horizon_baseline_is_forecast_without_operator_acceptance() -> None:
     states = frame["scenarios"][1]["state"]
     first_riser = snapshot["links"]["grid-01:riser_out>valve-between-12:inlet"]["flow_kg_h"] / 1000
     assert abs(first_riser - sum(states["level_flows_m3h"][str(level)] for level in (2, 3, 4))) < 0.0001
+    return_1 = snapshot["links"]["drain-manifold-01:tank_1_out>tank-recirc-01:inlet"]
+    return_2 = snapshot["links"]["drain-manifold-01:tank_2_out>tank-recirc-02:inlet"]
+    assert return_1["flowing"] and return_2["flowing"]
+    assert (return_1["flow_kg_h"] + return_2["flow_kg_h"]) / 1000 == pytest.approx(sum(frame["end_state"]["level_flows_m3h"].values()))
     for level in range(1, 5):
         grid = snapshot["equipment"][f"grid-0{level}"]
         assert grid["animation"]["q_l1"] > 0 and grid["animation"]["q_l2"] > 0
         drain = snapshot["links"][f"grid-0{level}:drain>drain-manifold-01:floor_{level}_in"]
         assert abs(drain["flow_kg_h"] / 1000 - states["level_flows_m3h"][str(level)]) < 0.0001
+
+
+def test_forecast_frames_represent_tank_changes_and_return_flows() -> None:
+    tags = {
+        "PLC.Tank.Supply.LevelPct": 70,
+        "PLC.Tank.Recirc01.LevelPct": 40,
+        "PLC.Tank.Recirc02.LevelPct": 40,
+        "PLC.Pump.RecirculationAutoActive": False,
+    }
+    profile = {"hours": {"0": {"global_consumers_pct": 50}, "1": {"global_consumers_pct": 50}}}
+    frames = mpc.project_24h(tags, profile, horizon_hours=2)
+
+    supply_levels = [frame["snapshot"]["equipment"]["tank-supply-01"]["variables"]["level_pct"] for frame in frames]
+    return_levels = [frame["snapshot"]["equipment"]["tank-recirc-01"]["variables"]["level_pct"] for frame in frames]
+    assert supply_levels[0] != pytest.approx(supply_levels[1])
+    assert return_levels[0] != pytest.approx(return_levels[1])
+    for frame in frames:
+        links = frame["snapshot"]["links"]
+        assert links["drain-manifold-01:tank_1_out>tank-recirc-01:inlet"]["flow_kg_h"] > 0
+        assert links["drain-manifold-01:tank_2_out>tank-recirc-02:inlet"]["flow_kg_h"] > 0
 
 
 def test_horizon_starts_with_partial_interval_to_absolute_plc_hour_boundary() -> None:

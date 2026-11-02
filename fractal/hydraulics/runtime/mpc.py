@@ -176,6 +176,7 @@ def _snapshot(
             }
     links: dict[str, Any] = {}
     level_flows = state["level_flows_m3h"]
+    return_flows = _recirc.split_floor_drains(_MODEL, level_flows)
     for link in _MODEL["simulation"].get("links", []):
         source, target = link["from"].split("."), link["to"].split(".")
         link_key = f"{source[0]}:{source[1]}>{target[0]}:{target[1]}"
@@ -197,6 +198,9 @@ def _snapshot(
         is_recirculation = source[0] in {"tank-recirc-01", "tank-recirc-02", "pumpset-recirc-01"}
         if source[0].startswith("grid-") and source[1] == "drain":
             link_flow = float(level_flows[str(int(source[0][-1]))])
+        elif source[0] == "drain-manifold-01" and target[0].startswith("tank-recirc-"):
+            branch = 0 if source[1] == "tank_1_out" else 1
+            link_flow = float(return_flows[branch])
         elif is_pressure_network and (source[0].startswith("valve-between-") or source[1] == "riser_out"):
             first_level = int(source[0][-1]) + (1 if source[1] == "riser_out" else 0)
             link_flow = sum(float(level_flows[str(level)]) for level in range(first_level, 5))
@@ -223,7 +227,7 @@ def _snapshot(
                 "output_per_h": flow,
             },
             "recirculacion": {
-                "name": "Recirculación (tags PLC)",
+                "name": "Recirculación (proyección Fractal)",
                 "unit": "m³",
                 "output_units": float(tags.get("PLC.Pump.RecirculationFlowM3h") or 0),
                 "output_per_h": float(tags.get("PLC.Pump.RecirculationFlowM3h") or 0),
