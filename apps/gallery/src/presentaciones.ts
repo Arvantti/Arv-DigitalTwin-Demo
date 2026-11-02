@@ -77,7 +77,7 @@ let notes = url.get("notas") !== "0";
 
 function index(): void {
   main.innerHTML = `
-    <p class="pr-intro">Tres escenarios de la planta de inyección de plásticos. Cada presentación sigue el guion de la demo con sus capturas;
+    <p class="pr-intro">Cuatro escenarios de la planta de inyección de plásticos. Cada presentación sigue el guion de la demo con sus capturas;
     en cualquier lámina, <b>ABRIR EN VIVO</b> lleva a la pantalla real. Hoy es el día 9 de la programación.</p>
     <div class="pr-cards">${SCENARIOS.map(
       (s) => `<button class="pr-card" data-esc="${s.n}">

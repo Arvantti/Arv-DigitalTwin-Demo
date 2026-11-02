@@ -16,8 +16,9 @@ Capturas y guiones de narración para la demo del gemelo de la planta de inyecci
 | [1-calcular-programacion](1-calcular-programacion/guion.md) | Programación según las entregas con el mayor uso de la capacidad: pedidos, manual contra cosimulador, ocupación, balanceo con Fractal e insumos | 3 min |
 | [2-cambio-fecha-pedido](2-cambio-fecha-pedido/guion.md) | Un cliente pide su pedido un día antes | 2,5 min |
 | [3-contingencia-falla](3-contingencia-falla/guion.md) | Se quema la resistencia de la IMM-21 y Fractal propone cómo seguir | 3 min |
+| [4-pedidos-fijados](4-pedidos-fijados/guion.md) | El planificador bloquea a mano órdenes en el Gantt y Fractal reorganiza el resto sin moverlas | 3 min |
 
-Cada escenario arranca donde termina el anterior: el 2 parte del plan del cosimulador y el 3 de una falla sobre ese plan.
+Cada escenario arranca donde termina el anterior: el 2 parte del plan del cosimulador, el 3 de una falla sobre ese plan y el 4 del mismo plan del cosimulador con órdenes bloqueadas a mano.
 
 El sitio arma con estos archivos las presentaciones en línea (`presentaciones.html`): una por escenario, con notas del orador y el botón ABRIR EN VIVO en cada lámina. Las cifras del cierre salen del campo `cifras` del frontmatter de cada guion. Si cambias un guion o una captura, la presentación se actualiza en el siguiente despliegue.
 
