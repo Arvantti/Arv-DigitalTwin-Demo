@@ -35,11 +35,11 @@ export function paint(color: string, roughness = 0.42): THREE.MeshPhysicalMateri
     c.setHSL(hsl.h, hsl.s * 0.72, hsl.l > 0.8 ? hsl.l * 0.9 : hsl.l * 0.94);
     const m = new THREE.MeshPhysicalMaterial({
       color: c,
-      roughness: Math.max(0.28, roughness * 0.85),
-      metalness: 0.6,
-      clearcoat: 0.18,
-      clearcoatRoughness: 0.35,
-      envMapIntensity: 1.15,
+      roughness: Math.max(0.24, roughness * 0.7),
+      metalness: 0.8,
+      clearcoat: 0.6,
+      clearcoatRoughness: 0.18,
+      envMapIntensity: 1.9,
     });
     const g = grime(5, 2);
     if (g) m.roughnessMap = g;
