@@ -200,6 +200,19 @@ function cleanSource(src: ProductSource): ProductSource {
   return { ...src, routing };
 }
 
+/** Muestra u oculta el cuerpo de la sección PRODUCTOS de la barra lateral (por defecto, desplegada). */
+function wireCollapse(): void {
+  const toggle = document.getElementById("products-toggle") as HTMLButtonElement | null;
+  const body = document.getElementById("products-body");
+  if (!toggle || !body || toggle.dataset.wired) return;
+  toggle.dataset.wired = "1";
+  toggle.addEventListener("click", () => {
+    const open = toggle.getAttribute("aria-expanded") !== "true";
+    toggle.setAttribute("aria-expanded", String(open));
+    body.hidden = !open;
+  });
+}
+
 export function buildProducts(opts: Options): ProductsApi {
   const { catalog, stage } = opts;
   const list = document.getElementById("products")!;
@@ -221,6 +234,7 @@ export function buildProducts(opts: Options): ProductsApi {
   let checkSeq = 0;
 
   document.getElementById("products-section")!.hidden = false;
+  wireCollapse();
 
   // ------------------------------------------------------------------ 3D
   function clearRoute(): void {
