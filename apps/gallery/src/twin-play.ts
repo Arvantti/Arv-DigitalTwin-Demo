@@ -12,7 +12,7 @@
 import * as THREE from "three";
 import type { PlantEvent, ProductionPlan } from "@twin/cosim/core/contracts.ts";
 import { model, now } from "./aps-store.ts";
-import { dayLoadAt, dayLoads, dayStrip, isoOf, loadAt, loadColor, machineAt, machineLabel, minOf, moldOf, oeeAt, PLC_MACHINES, STATE_COLORS, STATE_NAMES, unitsUntil } from "./plant-state.ts";
+import { type MachineState, dayLoadAt, dayLoads, dayStrip, isoOf, loadAt, loadColor, machineAt, machineLabel, minOf, moldOf, oeeAt, PLC_MACHINES, STATE_COLORS, STATE_NAMES, unitsUntil } from "./plant-state.ts";
 import { COLOR_NAMES, day, dayTag, esc, nf, relativeDays } from "./schedule.ts";
 
 const SPEEDS: [number, string][] = [
@@ -39,6 +39,8 @@ export interface TwinPlay {
   time: () => number;
   /** Segundos de planta por segundo real: 1 en vivo o en pausa; con el play, la velocidad elegida (15 min/s = 900). */
   rate: () => number;
+  /** Estado de una máquina en el instante del gemelo (produciendo, fuera de turno…), para animarla o dejarla quieta. */
+  stateOf: (id: string) => MachineState;
   /** Vuelve a pintar los letreros (cambió la programación o llegó un evento). */
   refresh: () => void;
 }
@@ -291,6 +293,7 @@ export function buildTwinPlay(opts: Opts): TwinPlay {
   return {
     time: () => t,
     rate: () => (playing ? speed * 60 : 1),
+    stateOf: (id) => machineAt(opts.plan(), opts.events(), id, t).state,
     refresh: () => {
       for (const l of labels.values()) l.key = "";
       show();

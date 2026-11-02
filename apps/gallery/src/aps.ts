@@ -11,6 +11,7 @@ import { buildSchedule, esc } from "./schedule.ts";
 import type * as THREE from "three";
 import { activeEvents, events, onChange, SOURCE_NAMES, useDemoDays, vigente } from "./aps-store.ts";
 import { buildTwinPlay, plcCard } from "./twin-play.ts";
+import type { MachineState } from "./plant-state.ts";
 
 interface Options {
   plantId: string;
@@ -26,7 +27,7 @@ interface Options {
   refreshAsset: () => void;
 }
 
-export function buildAps(opts: Options): { time: () => number; rate: () => number; plan: () => ProductionPlan } {
+export function buildAps(opts: Options): { time: () => number; rate: () => number; stateOf: (id: string) => MachineState; plan: () => ProductionPlan } {
   useDemoDays();
   let current = vigente();
   const section = document.createElement("div");
@@ -61,5 +62,5 @@ export function buildAps(opts: Options): { time: () => number; rate: () => numbe
     else schedule.refresh();
     play.refresh();
   });
-  return { time: play.time, rate: play.rate, plan: () => current };
+  return { time: play.time, rate: play.rate, stateOf: play.stateOf, plan: () => current };
 }
