@@ -317,7 +317,7 @@ button.danger:hover { background: rgba(255, 59, 59, 0.4); border-color: #fff; }
 .ar-logo rect { fill: rgba(34, 224, 107, 0.15) !important; stroke: #22e06b !important; }
 .ar-logo path { fill: #22e06b; }
 .ar-logo text { font: 700 12px Orbitron, sans-serif; fill: var(--text); letter-spacing: 0.06em; }
-.ar-frame { fill: none; stroke: rgba(255,255,255,0.5); stroke-width: 1; }
+.ar-box rect.ar-frame, .ar-box:hover rect.ar-frame { fill: none; stroke: rgba(255,255,255,0.5); stroke-width: 1; }
 .ar-chip.fut { stroke: #b57bff; }
 .ar-user circle:first-child { fill: rgba(181, 123, 255, 0.15); stroke: #b57bff; stroke-width: 2; }
 .ar-user circle:nth-child(2) { fill: #b57bff; }
