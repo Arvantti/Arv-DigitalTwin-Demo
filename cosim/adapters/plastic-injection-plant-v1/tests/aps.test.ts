@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import type { CustomerOrders, PlantEvent, ProductionPlan } from "../../../core/contracts.ts";
 import { parseLocal } from "../../../core/time.ts";
 import { editedPlan, manualPlan, moveChunk, queuesOf, type ManualEdit, type ManualPlan } from "../manual.ts";
-import { buildModel } from "../model.ts";
+import { buildModel, moldFitProblem } from "../model.ts";
 import { solve, solveScenarios } from "../solve.ts";
 import { fsCatalog, MODEL_DIR } from "../scripts/fs-catalog.ts";
 
@@ -156,6 +156,21 @@ describe("escenarios: entregas primero, menos cambios si no empeora", () => {
   }, 180_000);
 });
 
+describe("el cambio de molde no se parte entre turnos", () => {
+  it("cada cambio de referencia cabe entero dentro de un turno", async () => {
+    const highs = await highsLoader();
+    const sol = solve(highs, model, portfolio, { timeLimitS: 30 });
+    const cal = model.calendar;
+    const changes = sol.schedule.filter((r) => r.changeover_min > 0);
+    expect(changes.length).toBeGreaterThan(0);
+    for (const r of changes) {
+      const a = parseLocal(r.start);
+      const co = r.changeover_min;
+      expect(cal.workBetween(a, a + co), `${r.equipment} ${r.op}`).toBe(co);
+    }
+  }, 120_000);
+});
+
 describe("un objetivo por corrida", () => {
   it("cada objetivo real programa todo y cumple las reglas", async () => {
     const highs = await highsLoader();
@@ -167,6 +182,22 @@ describe("un objetivo por corrida", () => {
       expect(sol.orders.filter((o) => o.unscheduled).length, objective).toBe(0);
     }
   }, 180_000);
+});
+
+describe("tamaño de molde y de inyectora", () => {
+  it("un molde que exige más cierre que la inyectora no se monta ahí", () => {
+    const cat = fsCatalog();
+    const heavy = cat.tooling.tooling.find((t) => (t.min_clamp_t ?? 0) > 150)!;
+    const small = "imm-01"; // 100 t de cierre
+    expect(moldFitProblem(cat, small, heavy.id)).toMatch(/necesita/);
+    cat.setup.setup[small] = { tooling: heavy.id };
+    expect(() => buildModel(cat)).toThrow(/Montaje no válido en imm-01/);
+  });
+  it("un molde chico sí cabe en una inyectora grande", () => {
+    const cat = fsCatalog();
+    const light = cat.tooling.tooling.find((t) => (t.min_clamp_t ?? 0) > 0 && (t.min_clamp_t ?? 0) <= 100)!;
+    expect(moldFitProblem(cat, "imm-21", light.id)).toBeUndefined();
+  });
 });
 
 describe("moldes como recursos", () => {

@@ -69,7 +69,7 @@ export interface SolveOptions {
 }
 
 /** Arma el modelo LP (formato CPLEX LP que lee HiGHS). Exportado para las pruebas. */
-export function buildLp(ctx: Context, colors = false, objective: Objective = "entregas", tardinessCap?: number): { lp: string; vars: Map<string, { job: Job; machine: string; b: number }>; buckets: Bucket[]; late: Map<string, number>; nVars: number; nRows: number } {
+export function buildLp(ctx: Context, colors = false, objective: Objective = "entregas", tardinessCap?: number): { lp: string; vars: Map<string, { job: Job; machine: string; b: number }>; buckets: Bucket[]; late: Map<string, number>; missVars: Map<string, Job>; nVars: number; nRows: number } {
   const { model } = ctx;
   const cal = model.calendar;
   const buckets: Bucket[] = cal.shiftsBetween(ctx.start, ctx.horizonEnd).filter((s) => s.end > ctx.now);
@@ -105,6 +105,8 @@ export function buildLp(ctx: Context, colors = false, objective: Objective = "en
 
   const vars = new Map<string, { job: Job; machine: string; b: number }>();
   const jobVars: string[][] = [];
+  /** Unidades que el modelo deja faltantes, por variable (el despacho no las ve: hay que reportarlas aparte). */
+  const missVars = new Map<string, Job>();
   const obj: string[] = [];
   const rows: string[] = [];
   const bounds: string[] = [];
@@ -154,6 +156,7 @@ export function buildLp(ctx: Context, colors = false, objective: Objective = "en
     }
     jobVars.push(names);
     const miss = `s${ji}`;
+    missVars.set(miss, j);
     obj.push(term((MISSING_PENALTY * j.weight) / q, miss));
     bounds.push(`0 <= ${miss} <= ${objective === "entregas" ? q : 0}`);
     rows.push(` d${ji}: ${wrap([...names.map((v) => `+ ${v}`), `+ ${miss}`])} = ${q}`);
@@ -219,7 +222,7 @@ export function buildLp(ctx: Context, colors = false, objective: Objective = "en
     ...(binaries.length ? ["Binary", ...binaries.map((y) => ` ${y}`)] : []),
     "End",
   ].join("\n");
-  return { lp, vars, buckets, late, nVars: vars.size + jobs.length + binaries.length + (balance ? 1 : 0), nRows: rows.length };
+  return { lp, vars, buckets, late, missVars, nVars: vars.size + jobs.length + binaries.length + (balance ? 1 : 0), nRows: rows.length };
 }
 
 /** Resuelve la cartera y devuelve la programación propuesta por el cosimulador. */
@@ -243,7 +246,7 @@ export function solve(highs: HighsLike, model: PlasticsModel, portfolio: Custome
     tardinessCap = 0;
     for (const [name, col] of Object.entries(r0.Columns)) tardinessCap += ((col as { Primal?: number }).Primal ?? 0) * (base.late.get(name) ?? 0);
   }
-  const { lp, vars, buckets, nVars, nRows } = buildLp(ctx, opt.colors || objective === "cambios", objective, tardinessCap);
+  const { lp, vars, buckets, missVars, nVars, nRows } = buildLp(ctx, opt.colors || objective === "cambios", objective, tardinessCap);
   const res = highs.solve(lp, solveOpts);
   const seconds = (performance.now() - t0) / 1000;
   if (!["Optimal", "Time limit reached"].includes(res.Status)) throw new Error(`El solver no encontró programación: ${res.Status}`);
@@ -287,6 +290,12 @@ export function solve(highs: HighsLike, model: PlasticsModel, portfolio: Custome
     }
   }
   const result = dispatch(ctx, queues);
+  // Lo que el modelo dejó faltante (solo posible fuera de entregas o con penalización) cuenta como sin programar.
+  for (const [name, col] of Object.entries(res.Columns)) {
+    const j = missVars.get(name);
+    const qty = Math.round((col as { Primal?: number }).Primal ?? 0);
+    if (j && qty > 0) result.unscheduled[j.key] = (result.unscheduled[j.key] ?? 0) + qty;
+  }
   return toPlan(ctx, portfolio, result, {
     planId: opt.planId ?? "APS-SOL-01",
     source: "solver",
