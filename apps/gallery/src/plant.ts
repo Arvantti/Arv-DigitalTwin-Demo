@@ -910,6 +910,145 @@ function focusRect(rect: [number, number, number, number], height = 4, distanceF
   stage.frame(probe, distanceFactor, direction);
 }
 
+// Árbol de cámaras tipo CAD (grupo > zona > tipo de equipo > equipo); los nodos se pliegan y al clic enfocan la cámara.
+const CAMERA_GROUPS: Record<string, { name: string; zones: string[] }[]> = {
+  "plastic-injection-plant-v1": [
+    { name: "MATERIAS PRIMAS", zones: ["silos", "recepcion-mp", "bodega-mp", "central-materiales", "reciclaje"] },
+    { name: "INYECCIÓN", zones: ["nave-inyeccion", "taller-moldes", "almacen-moldes"] },
+    { name: "SEMIELABORADO", zones: ["almacen-semielaborado"] },
+    { name: "ENSAMBLE", zones: ["secundarias"] },
+    { name: "EMPAQUE Y BODEGA", zones: ["empaque", "bodega-pt", "patio-despacho"] },
+    { name: "SERVICIOS", zones: ["subestacion", "compresores", "chillers", "torre-enfriamiento", "laboratorio-qc", "mantenimiento"] },
+  ],
+};
+const TYPE_NAMES: Record<string, string> = {
+  injection_molding_machine: "Inyectoras",
+  pallet_buffer: "Buffers de estiba",
+  silo: "Silos",
+  pallet_rack: "Estanterías",
+  desiccant_dryer: "Secadores",
+  gravimetric_blender: "Dosificadores",
+  packing_station: "Estaciones de empaque",
+  dock_leveler: "Muelles",
+  mold_rack: "Racks de moldes",
+};
+
+interface CameraNode {
+  run: () => void;
+  select: () => void;
+}
+
+function buildCameraTree(
+  box: HTMLElement,
+  entries: [string, string, () => void][],
+  groups: { name: string; zones: string[] }[],
+): Map<string, CameraNode> {
+  const keys = new Map<string, CameraNode>();
+  box.classList.add("cam-tree");
+  box.classList.remove("commands");
+  let activeRow: HTMLElement | null = null;
+  const leaf = (parent: HTMLElement, label: string, key: string, go: () => void): HTMLElement => {
+    const row = document.createElement("div");
+    row.className = "tree-row tree-leaf";
+    row.textContent = label;
+    row.dataset.camera = key;
+    const select = () => {
+      activeRow?.classList.remove("active");
+      row.classList.add("active");
+      activeRow = row;
+    };
+    row.onclick = () => {
+      go();
+      select();
+    };
+    parent.appendChild(row);
+    keys.set(key, { run: go, select });
+    return row;
+  };
+  /** Nodo plegable: la flecha pliega, el nombre enfoca la cámara. */
+  const branch = (parent: HTMLElement, label: string, key: string, go: (() => void) | null, open: boolean): HTMLElement => {
+    const node = document.createElement("div");
+    node.className = "tree-node" + (open ? " open" : "");
+    const row = document.createElement("div");
+    row.className = "tree-row";
+    const arrow = document.createElement("span");
+    arrow.className = "tree-arrow";
+    arrow.onclick = (ev) => {
+      ev.stopPropagation();
+      node.classList.toggle("open");
+    };
+    const text = document.createElement("span");
+    text.textContent = label;
+    row.append(arrow, text);
+    row.dataset.camera = key;
+    const select = () => {
+      activeRow?.classList.remove("active");
+      row.classList.add("active");
+      activeRow = row;
+    };
+    row.onclick = () => {
+      if (go) {
+        go();
+        select();
+      } else node.classList.toggle("open");
+    };
+    if (go) keys.set(key, { run: go, select });
+    const kids = document.createElement("div");
+    kids.className = "tree-children";
+    node.append(row, kids);
+    parent.appendChild(node);
+    return kids;
+  };
+  const byKey = new Map(entries.map((e) => [e[1], e]));
+  const general = byKey.get("general");
+  if (general) leaf(box, general[0], general[1], general[2]);
+  const used = new Set<string>(["general"]);
+  const zoneById = new Map(doc.zones.map((z) => [z.id, z]));
+  const frameAsset = (id: string) => () => {
+    const a = assets.get(id);
+    if (a) {
+      stage.frame(a.root, 1.4, new THREE.Vector3(1.1, 0.7, 1.3));
+      select(id);
+    }
+  };
+  for (const g of groups) {
+    const zones = g.zones.map((id) => zoneById.get(id)).filter((z): z is NonNullable<typeof z> => !!z);
+    if (!zones.length) continue;
+    const x0 = Math.min(...zones.map((z) => z.rect[0]));
+    const y0 = Math.min(...zones.map((z) => z.rect[1]));
+    const x1 = Math.max(...zones.map((z) => z.rect[0] + z.rect[2]));
+    const y1 = Math.max(...zones.map((z) => z.rect[1] + z.rect[3]));
+    const kids = branch(box, g.name, `grupo-${g.name.toLowerCase().replace(/\W+/g, "-")}`, () => focusRect([x0, y0, x1 - x0, y1 - y0], 6, 0.8, 0, new THREE.Vector3(1.0, 0.8, 1.2)), false);
+    for (const z of zones) {
+      const eqs = doc.equipment.filter((e) => e.zone === z.id && assets.has(e.id));
+      const entry = byKey.get(z.id);
+      const go = entry ? entry[2] : () => focusRect(z.rect, Math.max(3, z.height), 0.78, z.elevation ?? 0);
+      used.add(z.id);
+      if (!eqs.length) {
+        leaf(kids, z.name, z.id, go);
+        continue;
+      }
+      const zkids = branch(kids, z.name, z.id, go, false);
+      const types = [...new Set(eqs.map((e) => e.type))];
+      if (eqs.length > 6 && types.length > 1) {
+        for (const t of types) {
+          const list = eqs.filter((e) => e.type === t);
+          const tk = list.length > 1 ? branch(zkids, `${TYPE_NAMES[t] ?? t.replace(/_/g, " ")} (${list.length})`, `${z.id}:${t}`, null, false) : zkids;
+          for (const e of list) leaf(tk, e.id.toUpperCase(), e.id, frameAsset(e.id));
+        }
+      } else for (const e of eqs) leaf(zkids, e.id.toUpperCase(), e.id, frameAsset(e.id));
+    }
+  }
+  // cámaras especiales que no son una zona (p. ej. la línea de ensamble) bajo su grupo lógico
+  const ens = byKey.get("ensamble");
+  if (ens) {
+    const holder = box.querySelector<HTMLElement>('[data-camera="secundarias"]')?.parentElement?.parentElement;
+    leaf(holder ?? box, ens[0], ens[1], ens[2]);
+  }
+  void used;
+  return keys;
+}
+
 function buildCameras(): void {
   const box = $("cameras");
   const building = doc.zones.some((z) => (z.elevation ?? 0) > 0);
@@ -972,6 +1111,15 @@ function buildCameras(): void {
         stage.controls.update();
       },
     ]);
+  }
+  const groups = CAMERA_GROUPS[doc.plant.id];
+  if (groups) {
+    const keys = buildCameraTree(box, entries, groups);
+    const initialKey = url.get("camera") ?? "general";
+    const go = keys.get(initialKey) ?? keys.get("general")!;
+    go.run();
+    go.select();
+    return;
   }
   for (const [label, key, go] of entries) {
     const b = document.createElement("button");

@@ -383,3 +383,19 @@ button.pick { padding: 2px 8px; font-size: 11px; }
 .to-row b { font-family: "IBM Plex Mono", monospace; }
 .to-toggle { background: none; border: 0; padding: 0; cursor: pointer; color: var(--dim); text-align: left; }
 .twin-orders.min #to-now, .twin-orders.min #to-now-title { display: none; }
+
+/* Árbol de cámaras tipo CAD */
+.cam-tree { font-size: 12px; user-select: none; }
+.cam-tree .tree-row { display: flex; align-items: center; gap: 4px; padding: 4px 6px; border-radius: var(--radius-control); cursor: pointer; border: 1px solid transparent; }
+.cam-tree .tree-row:hover { border-color: var(--line); }
+.cam-tree .tree-row.active { border-color: var(--accent); background: rgba(45, 127, 249, 0.12); }
+.cam-tree .tree-arrow { width: 14px; flex: none; text-align: center; color: var(--dim); }
+.cam-tree .tree-arrow::before { content: "▸"; }
+.cam-tree .tree-node.open > .tree-row > .tree-arrow::before { content: "▾"; }
+.cam-tree .tree-children { display: none; margin-left: 11px; padding-left: 5px; border-left: 1px solid var(--line); }
+.cam-tree .tree-node.open > .tree-children { display: block; }
+.cam-tree > .tree-leaf { font-weight: 600; letter-spacing: 0.05em; }
+.cam-tree .tree-leaf { color: var(--text); padding-left: 20px; }
+.cam-tree .tree-leaf::before { content: "◇"; margin-left: -14px; color: var(--dim); font-size: 10px; }
+.cam-tree > .tree-leaf { padding-left: 6px; } .cam-tree > .tree-leaf::before { content: none; }
+.cam-tree > .tree-node > .tree-row { font-weight: 600; letter-spacing: 0.04em; }
