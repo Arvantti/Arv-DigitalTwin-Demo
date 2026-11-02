@@ -1715,6 +1715,12 @@ function waterView(view: "3d" | "plc" | "history"): void {
   $("water-plc-panel").hidden = view !== "plc";
   $("water-history-panel").hidden = view !== "history";
   for (const key of ["3d", "plc", "history"]) $(`view-${key}`).classList.toggle("active", view === key);
+  if (view === "plc" && forecastStudyId) {
+    forecastPlaybackStop?.(); forecastPlaybackStop = null;
+    $("forecast-panel").hidden = true;
+    document.body.classList.remove("forecast-mode");
+    $("clock").textContent = "VISTA PLC / ESCENARIOS";
+  }
   if (view === "3d" && sessionId && doc.plant.id === "water-network-scale-v1") {
     void loadForecast().catch((error) => { $("forecast-values").textContent = `No se pudo actualizar la lista de escenarios: ${String(error)}`; });
   }
@@ -1771,6 +1777,76 @@ interface ForecastStudySummary {
   objective_id?: string;
 }
 
+interface ForecastFrame {
+  hour: number;
+  start_t_s?: number;
+  end_t_s?: number;
+  supply_level_pct: number;
+  robust: boolean;
+  snapshot: SimMessage["snapshot"];
+  scenarios: { demand_factor: number; state: Record<string, unknown>; feasible: boolean }[];
+}
+
+function blendRecord(left: Record<string, unknown>, right: Record<string, unknown>, fraction: number): Record<string, unknown> {
+  const keys = new Set([...Object.keys(left), ...Object.keys(right)]);
+  return Object.fromEntries([...keys].map((key) => {
+    const a = left[key], b = right[key];
+    const value = typeof a === "number" && typeof b === "number"
+      ? a + (b - a) * fraction
+      : fraction < 0.5 ? a ?? b : b ?? a;
+    return [key, value];
+  }));
+}
+
+function blendNumber(a: number | null | undefined, b: number | null | undefined, fraction: number): number | null | undefined {
+  return typeof a === "number" && typeof b === "number" ? a + (b - a) * fraction : fraction < 0.5 ? a ?? b : b ?? a;
+}
+
+function blendForecastSnapshots(left: SimMessage["snapshot"], right: SimMessage["snapshot"], fraction: number): SimMessage["snapshot"] {
+  const leftEquipment = left.equipment as Record<string, EquipmentSnapshot>;
+  const rightEquipment = right.equipment as Record<string, EquipmentSnapshot>;
+  const equipment = Object.fromEntries([...new Set([...Object.keys(leftEquipment), ...Object.keys(rightEquipment)])].map((id) => {
+    const a = leftEquipment[id], b = rightEquipment[id];
+    if (!a || !b) return [id, a ?? b];
+    return [id, {
+      ...a,
+      state: fraction < 0.5 ? a.state : b.state,
+      phase: fraction < 0.5 ? a.phase : b.phase,
+      animation: blendRecord(a.animation, b.animation, fraction) as Record<string, number>,
+      variables: blendRecord(a.variables, b.variables, fraction) as EquipmentSnapshot["variables"],
+      items: fraction < 0.5 ? a.items : b.items,
+      active_faults: fraction < 0.5 ? a.active_faults : b.active_faults,
+    }];
+  })) as SimMessage["snapshot"]["equipment"];
+  const leftLinks = left.links ?? {}, rightLinks = right.links ?? {};
+  const links = Object.fromEntries([...new Set([...Object.keys(leftLinks), ...Object.keys(rightLinks)])].map((id) => {
+    const a = leftLinks[id], b = rightLinks[id];
+    if (!a || !b) return [id, a ?? b];
+    const flow = blendNumber(a.flow_kg_h, b.flow_kg_h, fraction);
+    return [id, {
+      ...a,
+      flow_kg_h: flow,
+      units_per_min: blendNumber(a.units_per_min, b.units_per_min, fraction),
+      velocity_m_s: blendNumber(a.velocity_m_s, b.velocity_m_s, fraction),
+      flowing: typeof flow === "number" ? flow > 0.005 : fraction < 0.5 ? a.flowing : b.flowing,
+    }];
+  })) as Record<string, LinkState>;
+  const leftLines = left.lines as Record<string, { name: string; unit?: string; output_units: number; output_per_h: number | null }>;
+  const rightLines = right.lines as Record<string, { name: string; unit?: string; output_units: number; output_per_h: number | null }>;
+  const lines = Object.fromEntries([...new Set([...Object.keys(leftLines), ...Object.keys(rightLines)])].map((id) => {
+    const a = leftLines[id], b = rightLines[id];
+    if (!a || !b) return [id, a ?? b];
+    return [id, {
+      ...a,
+      name: fraction < 0.5 ? a.name : b.name,
+      unit: fraction < 0.5 ? a.unit : b.unit,
+      output_units: blendNumber(a.output_units, b.output_units, fraction) ?? a.output_units,
+      output_per_h: blendNumber(a.output_per_h, b.output_per_h, fraction) ?? a.output_per_h,
+    }];
+  })) as SimMessage["snapshot"]["lines"];
+  return { equipment, lines, links };
+}
+
 const forecastStudyTypeLabel = (studyType: string): string => ({
   baseline: "BASE PLC",
   alternative: "ALTERNATIVO",
@@ -1816,7 +1892,7 @@ async function loadForecastFrames(study?: ForecastStudySummary): Promise<void> {
   historicalTime = null;
   const response = await apiFetch(`/api/plants/${doc.plant.id}/sessions/${sessionId}/fractal/studies/${encodeURIComponent(forecastStudyId)}/frames`);
   if (!response.ok) throw new Error("No se pudo cargar el estudio Fractal desde PLC");
-  const data = await response.json() as { base_time: number; frames: { hour: number; supply_level_pct: number; robust: boolean; snapshot: SimMessage["snapshot"]; scenarios: { demand_factor: number; state: Record<string, number>; feasible: boolean }[] }[] };
+  const data = await response.json() as { base_time: number; frames: ForecastFrame[] };
   const panel = $("forecast-panel");
   const selector = $<HTMLSelectElement>("forecast-hour");
   const playButton = $<HTMLButtonElement>("forecast-play");
@@ -1825,15 +1901,39 @@ async function loadForecastFrames(study?: ForecastStudySummary): Promise<void> {
   document.body.classList.add("forecast-mode");
   const profile = study?.profile_name ?? study?.profile_id;
   const profileLabel = profile ? ` · ${profile}` : "";
-  $("forecast-study-meta").textContent = `${forecastStudyTypeLabel(study?.study_type ?? "forecast")}${profileLabel} · ${forecastStudyId} · ${data.frames.length} horas · PLC.Actual no se modifica`;
+  $("forecast-study-meta").textContent = `${forecastStudyTypeLabel(study?.study_type ?? "forecast")}${profileLabel} · ${forecastStudyId} · ${data.frames.length} horas`;
   selector.innerHTML = data.frames.map((frame) => `<option value="${frame.hour}">Hora ${String(frame.hour + 1).padStart(2, "0")}</option>`).join("");
-  const showHour = () => {
-    const frame = data.frames[Number(selector.value)];
-    const nominal = frame?.scenarios?.[Math.floor((frame.scenarios.length - 1) / 2)];
-    if (!frame || !nominal) { $("forecast-values").textContent = "El estudio no contiene métricas para esta hora."; return; }
-    applyMessage({ t: data.base_time + (frame.hour + 1) * 3600, speed: 240, snapshot: frame.snapshot, events: [] }, "FUTURO FRACTAL");
-    $("forecast-values").textContent = `Tanque estimado ${frame.supply_level_pct.toFixed(1)} % (nivel sensible a la histéresis de retorno) · presión crítica ${Number(nominal.state.critical_pressure_mca).toFixed(2)} mca · fuga ${Number(nominal.state.leakage_m3h).toFixed(3)} m³/h · ${frame.robust ? "FACTIBLE EN MODELO · NO VALIDADO DINÁMICAMENTE" : "REVISAR RESTRICCIONES"}`;
+  if (!data.frames.length) { $("forecast-values").textContent = "El estudio no contiene horas para reproducir."; return; }
+
+  let playbackPosition = 0;
+  const scenarioState = (frame: ForecastFrame): Record<string, unknown> => {
+    const index = Math.floor((frame.scenarios.length - 1) / 2);
+    return frame.scenarios[index]?.state ?? {};
   };
+  const showPosition = (position: number) => {
+    const leftIndex = Math.min(data.frames.length - 1, Math.floor(position));
+    const rightIndex = Math.min(data.frames.length - 1, leftIndex + 1);
+    const fraction = position - leftIndex;
+    const left = data.frames[leftIndex], right = data.frames[rightIndex];
+    const snapshot = blendForecastSnapshots(left.snapshot, right.snapshot, fraction);
+    const state = blendRecord(scenarioState(left), scenarioState(right), fraction);
+    const supplyLevel = blendNumber(left.supply_level_pct, right.supply_level_pct, fraction) ?? left.supply_level_pct;
+    const leftTime = left.end_t_s ?? data.base_time + (leftIndex + 1) * 3600;
+    const rightTime = right.end_t_s ?? data.base_time + (rightIndex + 1) * 3600;
+    const time = blendNumber(leftTime, rightTime, fraction) ?? leftTime;
+    applyMessage({ t: time, speed: 240, snapshot, events: [] }, "FUTURO FRACTAL");
+    const elapsedMinutes = Math.round(position * 60);
+    const hour = Math.floor(elapsedMinutes / 60) + 1;
+    const minute = elapsedMinutes % 60;
+    const timeLabel = `Hora ${String(hour).padStart(2, "0")}${minute ? `:${String(minute).padStart(2, "0")}` : ""}`;
+    const pressure = state.critical_pressure_mca;
+    const leakage = state.leakage_m3h;
+    const pressureText = typeof pressure === "number" ? `${pressure.toFixed(2)} mca` : "— mca";
+    const leakageText = typeof leakage === "number" ? `${leakage.toFixed(3)} m³/h` : "— m³/h";
+    $("forecast-values").textContent = `${timeLabel} · Tanque de suministro ${supplyLevel.toFixed(1)} % · Presión crítica ${pressureText} · Fuga ${leakageText}`;
+    selector.value = String(Math.round(position));
+  };
+
   let playbackTimer: number | undefined;
   const stopPlayback = () => {
     if (playbackTimer !== undefined) window.clearInterval(playbackTimer);
@@ -1842,21 +1942,32 @@ async function loadForecastFrames(study?: ForecastStudySummary): Promise<void> {
     playButton.setAttribute("aria-label", "Reproducir proyección");
   };
   forecastPlaybackStop = stopPlayback;
-  selector.onchange = () => { stopPlayback(); showHour(); };
+  selector.onchange = () => {
+    stopPlayback();
+    playbackPosition = Number(selector.value);
+    showPosition(playbackPosition);
+  };
   playButton.onclick = () => {
     if (playbackTimer !== undefined) { stopPlayback(); return; }
-    if (!data.frames.length) return;
-    if (Number(selector.value) >= data.frames.length - 1) selector.value = "0";
-    showHour();
+    if (data.frames.length < 2) return;
+    if (playbackPosition >= data.frames.length - 1) playbackPosition = 0;
+    showPosition(playbackPosition);
     playButton.textContent = "❚❚ PAUSAR";
     playButton.setAttribute("aria-label", "Pausar proyección");
-    const frameIntervalMs = 1000 / Number(speedSelector.value);
+    let previousTick = performance.now();
     playbackTimer = window.setInterval(() => {
-      const next = Number(selector.value) + 1;
-      if (next >= data.frames.length) { stopPlayback(); return; }
-      selector.value = String(next);
-      showHour();
-    }, frameIntervalMs);
+      const now = performance.now();
+      const elapsed = Math.min(0.25, (now - previousTick) / 1000);
+      previousTick = now;
+      playbackPosition += elapsed * Number(speedSelector.value);
+      if (playbackPosition >= data.frames.length - 1) {
+        playbackPosition = data.frames.length - 1;
+        showPosition(playbackPosition);
+        stopPlayback();
+        return;
+      }
+      showPosition(playbackPosition);
+    }, 50);
   };
   speedSelector.onchange = () => {
     if (playbackTimer !== undefined) {
@@ -1864,7 +1975,7 @@ async function loadForecastFrames(study?: ForecastStudySummary): Promise<void> {
       playButton.click();
     }
   };
-  showHour();
+  showPosition(playbackPosition);
 }
 
 async function start(): Promise<void> {

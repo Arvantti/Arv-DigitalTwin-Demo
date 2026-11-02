@@ -21,11 +21,11 @@
     </div>
     <canvas id="scene"></canvas>
     <section id="forecast-panel" hidden style="position:fixed;z-index:20;top:78px;left:50%;transform:translateX(-50%);width:min(560px,calc(100vw - 32px));padding:14px 18px;background:rgba(44,24,78,.96);border:2px solid #c084fc;border-radius:8px;color:#fff;box-shadow:0 8px 32px #0009;font:13px Inter, sans-serif">
-      <strong style="color:#e9d5ff">◆ ESCENARIO FRACTAL · FUTURO SIMULADO · NO APLICADO</strong>
+      <strong style="color:#e9d5ff">◆ ESCENARIO FRACTAL · FUTURO NO APLICADO</strong>
       <div id="forecast-study-meta" style="margin:8px 0"></div>
       <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:8px 0"><label>Escenario <select id="forecast-study" aria-label="Escenario futuro guardado"></select></label><button id="forecast-play" type="button" aria-label="Reproducir proyección">▶ REPRODUCIR</button><label>Velocidad <select id="forecast-speed"><option value="1" selected>1 h/s</option><option value="2">2 h/s</option><option value="4">4 h/s</option></select></label><label>Hora futura <select id="forecast-hour"></select></label></div>
       <div id="forecast-values" style="margin-top:8px"></div>
-      <small>Geometría de referencia; las métricas son proyección Fractal, no estado operativo PLC.</small><div><button id="forecast-return">↶ VOLVER AL PLC ACTUAL</button></div>
+      <small>Elija un escenario y pulse REPRODUCIR para recorrer sus 24 horas. «Volver al PLC actual» muestra nuevamente la operación en vivo.</small><div><button id="forecast-return">↶ VOLVER AL PLC ACTUAL</button></div>
     </section>
     <header class="topbar glass">
       <div class="brand"><span class="logo">◆</span> TWIN<span class="dim">/</span>PLANT</div>
