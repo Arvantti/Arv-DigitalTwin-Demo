@@ -9,7 +9,7 @@ import type { PlanDoc } from "./schedule.ts";
 import type { ProductionPlan } from "@twin/cosim/core/contracts.ts";
 import { buildSchedule, esc } from "./schedule.ts";
 import type * as THREE from "three";
-import { activeEvents, events, onChange, SOURCE_NAMES, useDemoDays, vigente } from "./aps-store.ts";
+import { activeEvents, activePlan, events, onChange, SOURCE_NAMES, useDemoDays } from "./aps-store.ts";
 import { buildTwinPlay, plcCard } from "./twin-play.ts";
 import type { MachineState } from "./plant-state.ts";
 
@@ -29,7 +29,7 @@ interface Options {
 
 export function buildAps(opts: Options): { time: () => number; rate: () => number; stateOf: (id: string) => MachineState; plan: () => ProductionPlan } {
   useDemoDays();
-  let current = vigente();
+  let current = activePlan();
   const section = document.createElement("div");
   section.id = "aps-section";
   document.getElementById("schedule-section")!.before(section);
@@ -41,7 +41,18 @@ export function buildAps(opts: Options): { time: () => number; rate: () => numbe
     provider: () => ({ plan: current as unknown as PlanDoc, label: `${SOURCE_NAMES[current.source]} ${current.plan_id}` }),
   });
 
-  const play = buildTwinPlay({ scene: opts.scene, rootOf: opts.rootOf, plan: () => current, events, onTime: () => opts.refreshAsset() });
+  const play = buildTwinPlay({
+    scene: opts.scene,
+    rootOf: opts.rootOf,
+    plan: () => current,
+    events,
+    onTime: () => opts.refreshAsset(),
+    onViewChange: () => {
+      current = activePlan();
+      schedule.refresh();
+      play.refresh();
+    },
+  });
   opts.setAssetExtra((id) => plcCard(current, events(), id, play.time()));
 
   const render = () => {
@@ -57,7 +68,7 @@ export function buildAps(opts: Options): { time: () => number; rate: () => numbe
   };
   render();
   onChange((what) => {
-    current = vigente();
+    current = activePlan();
     if (what === "events") render();
     else schedule.refresh();
     play.refresh();

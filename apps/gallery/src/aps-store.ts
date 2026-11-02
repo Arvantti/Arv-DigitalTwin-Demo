@@ -92,7 +92,35 @@ export function vigente(): ProductionPlan {
   return { ...manualPlan(model, portfolio(), baseManual), status: "vigente" };
 }
 
+/** Escenario que se ve en el gemelo y en el APS (la propuesta del cosimulador o una opción de Fractal). */
+export function viewedPlan(): ProductionPlan | null {
+  return read<ProductionPlan | null>("viewed", null);
+}
+
+export function setViewed(plan: ProductionPlan | null): void {
+  store.set(key("viewed"), plan ? JSON.stringify(plan) : null);
+  channel?.postMessage({ type: "view" });
+}
+
+/** "vigente": el gemelo muestra la programación adoptada; "escenario": muestra el escenario visto. */
+export type ViewMode = "vigente" | "escenario";
+export function viewMode(): ViewMode {
+  return read<ViewMode>("view-mode", "vigente");
+}
+
+export function setViewMode(mode: ViewMode): void {
+  store.set(key("view-mode"), JSON.stringify(mode));
+  channel?.postMessage({ type: "view" });
+}
+
+/** La programación que muestra el gemelo ahora. */
+export function activePlan(): ProductionPlan {
+  return viewMode() === "escenario" ? viewedPlan() ?? vigente() : vigente();
+}
+
 export function setVigente(plan: ProductionPlan): void {
+  store.set(key("view-mode"), JSON.stringify("vigente"));
+  store.set(key("viewed"), null);
   if (plan.molds) store.set(key("molds"), JSON.stringify(plan.molds));
   if (plan.order_changes?.length) {
     const ids = new Set(plan.order_changes.map((c) => c.order));
@@ -160,7 +188,7 @@ export function shownClockText(): string {
   return `${shownNow().slice(11, 16)}:${String(local.getUTCSeconds()).padStart(2, "0")}`;
 }
 
-export type Change = "orders" | "plan" | "events" | "clock";
+export type Change = "orders" | "plan" | "events" | "clock" | "view";
 
 /** Avisa cuando otra ventana cambia pedidos o programación. */
 export function onChange(fn: (what: Change) => void): void {
@@ -170,6 +198,7 @@ export function onChange(fn: (what: Change) => void): void {
     if (e.key === key("vigente")) fn("plan");
     if (e.key === key("events")) fn("events");
     if (e.key === key("clock")) fn("clock");
+    if (e.key === key("viewed") || e.key === key("view-mode")) fn("view");
   });
 }
 
