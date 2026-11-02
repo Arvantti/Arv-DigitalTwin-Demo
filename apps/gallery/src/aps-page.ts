@@ -235,22 +235,79 @@ const dayOptions = (plus: (n: number) => string, from: number, to: number, selec
     .map((n) => `<option value="${plus(n)}"${n === selected ? " selected" : ""}>${esc(day(plus(n)))}${n === 1 ? " (mañana)" : ""}</option>`)
     .join("");
 
+type OrderCol = "id" | "customer" | "product" | "color" | "qty" | "created" | "due" | "imp" | "state";
+const ORDER_COLS: [OrderCol, string, boolean][] = [
+  ["id", "Pedido", false],
+  ["customer", "Cliente", false],
+  ["product", "Producto", false],
+  ["color", "Color", false],
+  ["qty", "Cantidad", true],
+  ["created", "Llegó", false],
+  ["due", "Entrega", false],
+  ["imp", "Importancia", false],
+  ["state", "Estado", false],
+];
+const IMP_RANK: Record<string, number> = { alta: 0, normal: 1, baja: 2 };
+const STATE_RANK: Record<string, number> = { "SIN PROGRAMAR": 0, PROGRAMADO: 1, "EN PRODUCCIÓN": 2, ENTREGADO: 3 };
+/** Orden y filtros de la tabla de pedidos (solo en esta pantalla). */
+let ordSort: { key: OrderCol; dir: 1 | -1 } | null = null;
+const ordFilters = new Map<OrderCol, Set<string>>();
+let ordPop: OrderCol | null = null;
+/** Lo que muestra una celda, la clave por la que se filtra y el valor por el que se ordena. */
+interface OrderCell { shown: string; key: string; sort: string | number }
+
+const cmpSort = (a: string | number, b: string | number) =>
+  typeof a === "number" && typeof b === "number" ? a - b : String(a).localeCompare(String(b), "es", { numeric: true });
+
+function stateLabel(p: ProductionPlan, id: string): string {
+  const row = p.orders.find((x) => x.id === id);
+  if (!row) return "SIN PROGRAMAR";
+  const t = now();
+  return row.completion.slice(0, 16) <= t ? "ENTREGADO" : row.start.slice(0, 16) <= t ? "EN PRODUCCIÓN" : "PROGRAMADO";
+}
+
+function orderCells(o: CustomerOrder, p: ProductionPlan): Record<OrderCol, OrderCell> {
+  const prod = model.products[o.product];
+  const prodName = prod?.name ?? o.product;
+  const color = o.color ? (COLOR_NAMES[o.color] ?? o.color) : "—";
+  const imp = IMPORTANCE.find(([v]) => v === o.importance)?.[1] ?? o.importance;
+  const state = stateLabel(p, o.id);
+  const qty = `${nf(o.quantity)} ${prod?.unit ?? "u"}`;
+  return {
+    id: { shown: o.id, key: o.id, sort: o.id },
+    customer: { shown: o.customer, key: o.customer, sort: o.customer.toLowerCase() },
+    product: { shown: prodName, key: prodName, sort: prodName.toLowerCase() },
+    color: { shown: color, key: color, sort: color.toLowerCase() },
+    qty: { shown: qty, key: qty, sort: o.quantity },
+    created: { shown: when(o.created), key: day(o.created), sort: o.created },
+    due: { shown: `${day(o.due)} ${o.due.slice(11, 16)}`, key: day(o.due), sort: o.due },
+    imp: { shown: imp, key: imp, sort: IMP_RANK[o.importance] ?? 9 },
+    state: { shown: state, key: state, sort: STATE_RANK[state] ?? 9 },
+  };
+}
+
+/** Pedidos en orden de la cartera: primero lo que falta por entregar, lo entregado al final. */
+function ordersList(): CustomerOrder[] {
+  const t = now();
+  const byDue = (a: CustomerOrder, b: CustomerOrder) => (a.due < b.due ? -1 : a.due > b.due ? 1 : a.id.localeCompare(b.id));
+  const isPending = (o: CustomerOrder) => o.due.slice(0, 16) >= t;
+  const pending = portfolio().orders.filter(isPending).sort(byDue);
+  return [...pending, ...portfolio().orders.filter((o) => !isPending(o)).sort(byDue)];
+}
+
 function renderOrders(p: ProductionPlan): void {
   const el = $("tab-orders");
   const t = now();
   const plus = (n: number) => new Date(ms(`${t.slice(0, 10)}T00:00`) + n * DAY_MS).toISOString().slice(0, 10);
-  const byDue = (a: CustomerOrder, b: CustomerOrder) => (a.due < b.due ? -1 : a.due > b.due ? 1 : a.id.localeCompare(b.id));
-  const isPending = (o: CustomerOrder) => o.due.slice(0, 16) >= t;
-  // Primero lo que falta por entregar; lo entregado queda al final.
-  const pending = portfolio().orders.filter(isPending).sort(byDue);
-  const all = [...pending, ...portfolio().orders.filter((o) => !isPending(o)).sort(byDue)];
+  const all = ordersList();
+  const pendingCount = all.filter((o) => o.due.slice(0, 16) >= t).length;
   const products = Object.values(model.products);
   const inPlan = new Set(p.orders.map((o) => o.id));
   const missing = all.filter((o) => !inPlan.has(o.id)).length;
   el.innerHTML = `
     <div class="aps-orders-head">
       <div class="aps-kpi"><b>${all.length}</b><small>pedidos en la cartera</small></div>
-      <div class="aps-kpi"><b>${pending.length}</b><small>por entregar desde hoy</small></div>
+      <div class="aps-kpi"><b>${pendingCount}</b><small>por entregar desde hoy</small></div>
       <div class="aps-kpi"><b>${addedOrders().length}</b><small>agregados en esta pantalla</small></div>
       <div class="aps-kpi"><b class="${missing ? "warn" : ""}">${missing}</b><small>sin programar${missing ? " · pulsa CALCULAR" : ""}</small></div>
       <p class="dim small">Ventana de entrega de ${model.windowDays} días. Clientes, cantidades y fechas inventados. Dos turnos de 8 h, lunes a sábado.</p>
@@ -267,23 +324,7 @@ function renderOrders(p: ProductionPlan): void {
       <button id="f-add" class="primary">＋ AGREGAR</button>
       <span id="f-msg" class="small">${formMsg}</span>
     </div>
-    <div class="aps-table-wrap"><table class="route-table aps-table">
-      <thead><tr><th>Pedido</th><th>Cliente</th><th>Producto</th><th>Color</th><th class="num">Cantidad</th><th>Llegó</th><th>Entrega</th><th>Importancia</th><th>Estado</th><th></th></tr></thead>
-      <tbody>${all
-        .map((o) => {
-          const prod = model.products[o.product];
-          return `<tr class="${o.added ? "added" : ""}${o.due.slice(0, 16) < t ? " past" : ""}">
-            <td><b>${esc(o.id)}</b></td><td>${esc(o.customer)}</td>
-            <td><span class="dot" style="background:${PRODUCT_COLORS[o.product] ?? "#888"}"></span>${esc(prod?.name ?? o.product)}</td>
-            <td>${o.color ? esc(COLOR_NAMES[o.color] ?? o.color) : "—"}</td>
-            <td class="num">${nf(o.quantity)} ${esc(prod?.unit ?? "u")}</td>
-            <td>${when(o.created)}</td><td><b>${day(o.due)}</b> ${o.due.slice(11, 16)}</td>
-            <td><span class="imp imp-${o.importance}">${esc(o.importance.toUpperCase())}</span></td>
-            <td>${stateChips(p, o.id)}</td>
-            <td>${o.added ? `<button class="f-del" data-id="${esc(o.id)}" title="Quitar este pedido">✕</button>` : ""}</td>
-          </tr>`;
-        })
-        .join("")}</tbody></table></div>`;
+    <div id="aps-orders-table"></div>`;
   const sel = $<HTMLSelectElement>("f-product");
   const sync = () => {
     const prod = model.products[sel.value];
@@ -322,6 +363,75 @@ function renderOrders(p: ProductionPlan): void {
     formMsg = `<span class="ok">${esc(order.id)} agregado. Pulsa CALCULAR para programarlo.</span>`;
     render();
   };
+  drawOrdersTable(p);
+}
+
+/** Tabla de pedidos con orden y filtro por columna. Se redibuja sola al ordenar o filtrar, sin tocar el formulario. */
+function drawOrdersTable(p: ProductionPlan): void {
+  const el = $("aps-orders-table");
+  const t = now();
+  const rows = ordersList().map((o) => ({ o, c: orderCells(o, p) }));
+  // Valores distintos de una columna, ordenados como la columna (fechas en orden de día).
+  const valuesOf = (col: OrderCol): string[] => {
+    const best = new Map<string, string | number>();
+    for (const { c } of rows) {
+      const v = c[col];
+      const prev = best.get(v.key);
+      if (prev === undefined || cmpSort(v.sort, prev) < 0) best.set(v.key, v.sort);
+    }
+    return [...best].sort((a, b) => cmpSort(a[1], b[1])).map(([key]) => key);
+  };
+  const visible = rows.filter(({ c }) => [...ordFilters].every(([col, set]) => set.has(c[col].key)));
+  if (ordSort) {
+    const { key, dir } = ordSort;
+    visible.sort((a, b) => dir * cmpSort(a.c[key].sort, b.c[key].sort));
+  }
+  const active = ordSort || ordFilters.size;
+  const th = (col: OrderCol, label: string, num: boolean) => {
+    const on = ordSort?.key === col;
+    const arrow = on ? (ordSort!.dir === 1 ? " ▲" : " ▼") : "";
+    const filtered = ordFilters.has(col);
+    return `<th class="${num ? "num" : ""}"><button class="ord-sort${on ? " on" : ""}" data-ord-sort="${col}">${label}${arrow}</button><button class="ord-filter${filtered ? " on" : ""}" data-ord-pop="${col}" title="Filtrar ${label}" aria-label="Filtrar ${label}">${filtered ? "⧩" : "▾"}</button></th>`;
+  };
+  el.innerHTML = `
+    <div class="ord-status"><span>Mostrando ${visible.length} de ${rows.length} pedidos</span>${active ? `<button data-ord-act="reset">Quitar orden y filtros</button>` : ""}</div>
+    <div class="aps-table-wrap"><table class="route-table aps-table">
+      <thead><tr>${ORDER_COLS.map(([col, label, num]) => th(col, label, num)).join("")}<th></th></tr></thead>
+      <tbody>${visible
+        .map(({ o, c }) => `<tr class="${o.added ? "added" : ""}${o.due.slice(0, 16) < t ? " past" : ""}">
+          <td><b>${esc(c.id.shown)}</b></td><td>${esc(c.customer.shown)}</td>
+          <td><span class="dot" style="background:${PRODUCT_COLORS[o.product] ?? "#888"}"></span>${esc(c.product.shown)}</td>
+          <td>${esc(c.color.shown)}</td>
+          <td class="num">${esc(c.qty.shown)}</td>
+          <td>${esc(c.created.shown)}</td>
+          <td><b>${day(o.due)}</b> ${o.due.slice(11, 16)}</td>
+          <td><span class="imp imp-${o.importance}">${esc(c.imp.shown.toUpperCase())}</span></td>
+          <td>${stateChips(p, o.id)}</td>
+          <td>${o.added ? `<button class="f-del" data-id="${esc(o.id)}" title="Quitar este pedido">✕</button>` : ""}</td>
+        </tr>`)
+        .join("")}</tbody></table></div>`;
+
+  el.querySelectorAll<HTMLButtonElement>("[data-ord-sort]").forEach((b) => {
+    b.onclick = () => {
+      const key = b.dataset.ordSort as OrderCol;
+      ordSort = ordSort?.key === key ? { key, dir: ordSort.dir === 1 ? -1 : 1 } : { key, dir: 1 };
+      drawOrdersTable(p);
+    };
+  });
+  el.querySelectorAll<HTMLButtonElement>("[data-ord-pop]").forEach((b) => {
+    b.onclick = (e) => {
+      e.stopPropagation();
+      const key = b.dataset.ordPop as OrderCol;
+      ordPop = ordPop === key ? null : key;
+      drawOrdersTable(p);
+    };
+  });
+  el.querySelector<HTMLButtonElement>('[data-ord-act="reset"]')?.addEventListener("click", () => {
+    ordSort = null;
+    ordFilters.clear();
+    ordPop = null;
+    drawOrdersTable(p);
+  });
   el.querySelectorAll<HTMLButtonElement>(".f-del").forEach(
     (b) =>
       (b.onclick = () => {
@@ -330,7 +440,60 @@ function renderOrders(p: ProductionPlan): void {
         render();
       }),
   );
+
+  // Menú de filtro tipo Excel: flotante, fuera de la tabla para que no lo recorte el desplazamiento.
+  document.querySelectorAll(".ord-pop").forEach((n) => n.remove());
+  if (!ordPop) return;
+  const col = ordPop;
+  const btn = el.querySelector<HTMLElement>(`[data-ord-pop="${col}"]`);
+  if (!btn) return;
+  const vals = valuesOf(col);
+  const f = ordFilters.get(col);
+  const label = ORDER_COLS.find(([c]) => c === col)![1];
+  const pop = document.createElement("div");
+  pop.className = "ord-pop";
+  pop.setAttribute("role", "dialog");
+  pop.innerHTML = `
+    <button data-act="asc">Ordenar de menor a mayor</button>
+    <button data-act="desc">Ordenar de mayor a menor</button>
+    <div class="ord-pop-list">
+      <label><input type="checkbox" data-act="all"${f ? "" : " checked"} /> (Seleccionar todo)</label>
+      ${vals.map((v, i) => `<label><input type="checkbox" data-idx="${i}"${!f || f.has(v) ? " checked" : ""} /> ${esc(v)}</label>`).join("")}
+    </div>
+    <button data-act="close">Cerrar</button>`;
+  pop.setAttribute("aria-label", `Filtro de ${label}`);
+  const r = btn.getBoundingClientRect();
+  pop.style.left = `${Math.max(8, Math.min(r.left, innerWidth - 260))}px`;
+  pop.style.top = `${r.bottom + 4}px`;
+  pop.addEventListener("click", (e) => e.stopPropagation());
+  pop.querySelector<HTMLButtonElement>('[data-act="asc"]')!.onclick = () => ((ordSort = { key: col, dir: 1 }), drawOrdersTable(p));
+  pop.querySelector<HTMLButtonElement>('[data-act="desc"]')!.onclick = () => ((ordSort = { key: col, dir: -1 }), drawOrdersTable(p));
+  pop.querySelector<HTMLButtonElement>('[data-act="close"]')!.onclick = () => ((ordPop = null), drawOrdersTable(p));
+  pop.querySelector<HTMLInputElement>('[data-act="all"]')!.onchange = (e) => {
+    if ((e.target as HTMLInputElement).checked) ordFilters.delete(col);
+    else ordFilters.set(col, new Set());
+    drawOrdersTable(p);
+  };
+  pop.querySelectorAll<HTMLInputElement>("[data-idx]").forEach((inp) => {
+    inp.onchange = () => {
+      const v = vals[Number(inp.dataset.idx)];
+      const cur = new Set(ordFilters.get(col) ?? vals);
+      if (inp.checked) cur.add(v);
+      else cur.delete(v);
+      if (cur.size === vals.length) ordFilters.delete(col);
+      else ordFilters.set(col, cur);
+      drawOrdersTable(p);
+    };
+  });
+  document.body.append(pop);
 }
+
+// Un clic fuera del menú de filtro lo cierra.
+document.addEventListener("click", () => {
+  if (!ordPop) return;
+  ordPop = null;
+  document.querySelectorAll(".ord-pop").forEach((n) => n.remove());
+});
 
 // ------------------------------------------------------------------ Gantt
 function renderGantt(p: ProductionPlan): void {
