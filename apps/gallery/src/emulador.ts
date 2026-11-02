@@ -2,18 +2,20 @@
  * Emulador de la planta de plásticos (emulador.html): plano 2D en tiempo real con el estado de cada inyectora y celda
  * de ensamble, tomado de la programación vigente del APS.
  *
- * El emulador solo actúa en tiempo real: aquí se declara una falla o un paro de emergencia que ocurre AHORA, con su
- * reparación estimada. No se programan paradas futuras (eso son escenarios del cosimulador y de Fractal). El evento
- * (`plant-event.v1`) va al centro de control, al gemelo 3D y al APS por aps-store.ts.
+ * El emulador muestra el mismo instante que el gemelo 3D: el del play o la barra de tiempo, y AHORA si el gemelo está
+ * EN VIVO (aps-store.ts, `shownNow`). Así el estado de cada máquina y las piezas del lote no dependen de cuándo se abre
+ * la pantalla. Una falla o un paro se declara en el instante mostrado, con su reparación estimada. No se programan
+ * paradas futuras (eso son escenarios del cosimulador y de Fractal). El evento (`plant-event.v1`) va al centro de
+ * control, al gemelo 3D y al APS por aps-store.ts.
  */
 import "./styles.css";
 import "./aps.css";
 import yaml from "js-yaml";
 import plantYaml from "../../../industrial-models/plastic-injection-plant-v1/plant.yaml?raw";
 import type { PlantEvent, PlanScheduleRow } from "@twin/cosim/core/contracts.ts";
-import { activeEvents, events, model, now, onChange, PLASTICS, setEvents, useDemoDays, vigente } from "./aps-store.ts";
-import { COLOR_NAMES, esc, nf, when } from "./schedule.ts";
-import { moldOf } from "./plant-state.ts";
+import { activeEvents, events, model, onChange, onClock, PLASTICS, setEvents, sharedClock, shownClockText, shownNow, useDemoDays, vigente } from "./aps-store.ts";
+import { COLOR_NAMES, day, esc, nf, when } from "./schedule.ts";
+import { minOf, moldOf, unitsUntil } from "./plant-state.ts";
 
 interface Eq {
   id: string;
@@ -46,14 +48,13 @@ const STATE_NAMES: Record<State, string> = { run: "PRODUCIENDO", idle: "SIN ORDE
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 const ms = (iso: string) => Date.parse(`${iso.slice(0, 16)}:00Z`);
 const isoTz = (t: number) => `${new Date(t).toISOString().slice(0, 16)}${model.timezone}`;
-const loadedAt = Date.now();
 let selected: string | null = new URLSearchParams(location.search).get("machine");
 let plan = vigente();
 
 /** Estado de una máquina en este instante. */
 function stateOf(id: string): { state: State; row?: PlanScheduleRow; ev?: PlantEvent; why?: string } {
-  const t = now();
-  const ev = activeEvents().find((e) => e.equipment === id);
+  const t = shownNow();
+  const ev = activeEvents(t).find((e) => e.equipment === id);
   if (ev) return { state: "fault", ev };
   const minute = ms(t) / 60000;
   const day = Math.floor(minute / 1440) * 1440;
@@ -99,11 +100,9 @@ function rect(e: Eq, cls: string): string {
   return `<rect class="${cls}" x="${e.position[0] - w / 2}" y="${SITE_Y - e.position[1] - h / 2}" width="${w}" height="${h}" rx="0.3"/>`;
 }
 
-/** Piezas hechas del lote: lo que va según la programación más lo que la máquina ha ciclado desde que se abrió. */
-function madeOf(r: PlanScheduleRow, cycle: number, cav: number): number {
-  const share = Math.min(1, (ms(now()) - ms(r.start)) / Math.max(1, ms(r.end) - ms(r.start)));
-  const live = cycle ? Math.floor(((Date.now() - loadedAt) / 1000 / cycle) * cav) : 0;
-  return Math.min(r.quantity, Math.floor(r.quantity * share) + live);
+/** Piezas hechas del lote en el instante mostrado: la misma cuenta que el gemelo 3D (horas de turno, sin ciclos reales). */
+function madeOf(r: PlanScheduleRow): number {
+  return unitsUntil(r, minOf(shownNow()));
 }
 
 function renderMachine(): void {
@@ -122,7 +121,7 @@ function renderMachine(): void {
   const cav = Number(p.cavities ?? 1);
   let detail = "";
   if (r) {
-    const made = madeOf(r, cycle, cav);
+    const made = madeOf(r);
     detail = `<table class="route-table emu-tags">
       <tr><td>Orden</td><td><b>${esc(r.order)}</b>${order ? ` · ${esc(order.customer)}` : ""}</td></tr>
       <tr><td>Producto</td><td>${esc(order?.product_name ?? r.product)}${r.product !== order?.product ? ` (${esc(r.product)})` : ""}</td></tr>
@@ -155,7 +154,7 @@ function renderMachine(): void {
     ${actions}`;
   if (s.state === "fault") {
     $("emu-clear").onclick = () => {
-      setEvents(events().map((x) => (x.id === s.ev!.id ? { ...x, cleared: `${now()}${model.timezone}` } : x)));
+      setEvents(events().map((x) => (x.id === s.ev!.id ? { ...x, cleared: `${shownNow()}${model.timezone}` } : x)));
       render();
     };
     return;
@@ -165,7 +164,7 @@ function renderMachine(): void {
   kind.onchange = sync;
   sync();
   $("emu-fail").onclick = () => {
-    const start = ms(now());
+    const start = ms(shownNow());
     const hours = Number($<HTMLSelectElement>("emu-hours").value);
     const list = events();
     const ev: PlantEvent = {
@@ -205,19 +204,31 @@ function render(): void {
 }
 
 function tick(): void {
-  const sec = Math.floor((Date.now() - loadedAt) / 1000);
-  const t = now();
-  const extra = new Date(Date.parse(`${t}:00Z`) + sec * 1000).toISOString().slice(11, 19);
-  $("emu-clock").textContent = `EN VIVO · ${when(t).split(" ")[0]} ${extra}`;
+  const live = !sharedClock();
+  $("emu-clock").textContent = `${live ? "EN VIVO" : "SIGUIENDO EL GEMELO"} · ${day(shownNow())} ${shownClockText()}`;
   const c = document.querySelector(".emu-count");
   const e = MACHINES.find((m) => m.id === selected);
   const r = e && stateOf(e.id).row;
-  if (c && e && r) c.textContent = nf(madeOf(r, Number(e.params?.cycle_s ?? 0), Number(e.params?.cavities ?? 1)));
+  if (c && e && r) c.textContent = nf(madeOf(r));
 }
 
+// Re-dibujar al mover el gemelo: el play cambia el instante varias veces por segundo, así que se agrupan los cambios.
+let pending = false;
+const redraw = () => {
+  if (pending) return;
+  pending = true;
+  setTimeout(() => {
+    pending = false;
+    render();
+  }, 250);
+};
 onChange(() => {
   plan = vigente();
   render();
+});
+onClock(() => {
+  tick();
+  redraw();
 });
 render();
 tick();

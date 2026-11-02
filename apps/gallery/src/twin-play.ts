@@ -11,7 +11,7 @@
  */
 import * as THREE from "three";
 import type { PlantEvent, ProductionPlan } from "@twin/cosim/core/contracts.ts";
-import { model, now } from "./aps-store.ts";
+import { model, now, setSharedClock, setViewMode, vigente, viewedPlan, viewMode, type ViewMode } from "./aps-store.ts";
 import { type MachineState, dayLoadAt, dayLoads, dayStrip, isoOf, loadAt, loadColor, machineAt, machineLabel, minOf, moldOf, oeeAt, PLC_MACHINES, STATE_COLORS, STATE_NAMES, unitsUntil } from "./plant-state.ts";
 import { COLOR_NAMES, day, dayTag, esc, nf, relativeDays } from "./schedule.ts";
 
@@ -32,6 +32,8 @@ interface Opts {
   events: () => PlantEvent[];
   /** Avisa cada vez que cambia el instante del gemelo (para el PLC de la máquina seleccionada). */
   onTime?: (t: number) => void;
+  /** Avisa cuando la persona cambia entre la programación vigente y el escenario visto. */
+  onViewChange?: () => void;
 }
 
 export interface TwinPlay {
@@ -64,6 +66,7 @@ export function buildTwinPlay(opts: Opts): TwinPlay {
       <button id="tt-play" title="Reproducir la programación">▶</button>
       <button id="tt-live" class="active" title="Volver al instante actual">● EN VIVO</button>
       <select id="tt-speed" title="Velocidad de reproducción">${SPEEDS.map(([v, l]) => `<option value="${v}"${v === speed ? " selected" : ""}>${l}</option>`).join("")}</select>
+      <select id="tt-view" title="Qué programación muestra el gemelo: la vigente o el escenario visto en el APS"></select>
     </div>
     <div class="tt-track">
       <div class="tt-days" id="tt-days"></div>
@@ -249,7 +252,29 @@ export function buildTwinPlay(opts: Opts): TwinPlay {
     show();
   }
 
+  // El emulador y el centro de control siguen este instante. Durante el play se publica a medio segundo como máximo.
+  let lastPublish = 0;
+  function publishClock(): void {
+    if (playing && Date.now() - lastPublish < 500) return;
+    lastPublish = Date.now();
+    setSharedClock(following ? null : isoOf(t));
+  }
+
+  // Qué muestra el gemelo: la vigente o el escenario que el APS tiene visto.
+  function syncViewSelect(): void {
+    const sel = $<HTMLSelectElement>("tt-view");
+    const seen = viewedPlan();
+    sel.innerHTML = `<option value="vigente">VIGENTE · ${esc(vigente().plan_id)}</option><option value="escenario"${seen ? "" : " disabled"}>ESCENARIO · ${esc(seen?.plan_id ?? "ninguno visto en el APS")}</option>`;
+    sel.value = viewMode();
+  }
+  $<HTMLSelectElement>("tt-view").onchange = (e) => {
+    setViewMode((e.target as HTMLSelectElement).value as ViewMode);
+    syncViewSelect();
+    opts.onViewChange?.();
+  };
+
   function show(): void {
+    syncViewSelect();
     const n = live();
     range.value = String(t);
     const date = new Date(t * 60000);
@@ -261,6 +286,7 @@ export function buildTwinPlay(opts: Opts): TwinPlay {
     $("tt-play").textContent = playing ? "❚❚" : "▶";
     paint();
     paintOrders();
+    publishClock();
     opts.onTime?.(t);
   }
 

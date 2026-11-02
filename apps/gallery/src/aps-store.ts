@@ -92,7 +92,35 @@ export function vigente(): ProductionPlan {
   return { ...manualPlan(model, portfolio(), baseManual), status: "vigente" };
 }
 
+/** Escenario que se ve en el gemelo y en el APS (la propuesta del cosimulador o una opción de Fractal). */
+export function viewedPlan(): ProductionPlan | null {
+  return read<ProductionPlan | null>("viewed", null);
+}
+
+export function setViewed(plan: ProductionPlan | null): void {
+  store.set(key("viewed"), plan ? JSON.stringify(plan) : null);
+  channel?.postMessage({ type: "view" });
+}
+
+/** "vigente": el gemelo muestra la programación adoptada; "escenario": muestra el escenario visto. */
+export type ViewMode = "vigente" | "escenario";
+export function viewMode(): ViewMode {
+  return read<ViewMode>("view-mode", "vigente");
+}
+
+export function setViewMode(mode: ViewMode): void {
+  store.set(key("view-mode"), JSON.stringify(mode));
+  channel?.postMessage({ type: "view" });
+}
+
+/** La programación que muestra el gemelo ahora. */
+export function activePlan(): ProductionPlan {
+  return viewMode() === "escenario" ? viewedPlan() ?? vigente() : vigente();
+}
+
 export function setVigente(plan: ProductionPlan): void {
+  store.set(key("view-mode"), JSON.stringify("vigente"));
+  store.set(key("viewed"), null);
   if (plan.molds) store.set(key("molds"), JSON.stringify(plan.molds));
   if (plan.order_changes?.length) {
     const ids = new Set(plan.order_changes.map((c) => c.order));
@@ -107,9 +135,9 @@ export function events(): PlantEvent[] {
   return read<PlantEvent[]>("events", []);
 }
 
-/** Los que siguen fuera de servicio AHORA. */
-export function activeEvents(): PlantEvent[] {
-  const t = now();
+/** Los que siguen fuera de servicio en el instante `at` (AHORA por defecto). */
+export function activeEvents(at: string = now()): PlantEvent[] {
+  const t = at;
   return events().filter((e) => !e.cleared && e.start.slice(0, 16) <= t);
 }
 
@@ -125,11 +153,42 @@ export function resetDemo(): void {
   store.set(key("events"), null);
   store.set(key("molds"), null);
   store.set(key("order_changes"), null);
+  store.set(key("clock"), null);
+  channel?.postMessage({ type: "clock" });
   channel?.postMessage({ type: "plan" });
   channel?.postMessage({ type: "events" });
 }
 
-export type Change = "orders" | "plan" | "events";
+/**
+ * Reloj compartido con el gemelo 3D: el instante que muestran el emulador y el centro de control. Es el del play
+ * (o el que se arrastra en la barra de tiempo) y `null` cuando el gemelo está EN VIVO, en cuyo caso se usa AHORA.
+ */
+export function sharedClock(): string | null {
+  return read<string | null>("clock", null);
+}
+
+export function setSharedClock(at: string | null): void {
+  store.set(key("clock"), JSON.stringify(at));
+  channel?.postMessage({ type: "clock" });
+}
+
+/** Instante que muestran emulador y centro de control: el del gemelo si lo hay, si no AHORA. */
+export function shownNow(): string {
+  return sharedClock() ?? now();
+}
+
+/** "HH:MM:SS" del instante mostrado; los segundos solo corren cuando el reloj está EN VIVO. */
+export function shownClockText(): string {
+  const at = sharedClock();
+  const forced = typeof location !== "undefined" && new URLSearchParams(location.search).has("now");
+  if (at || forced) return `${shownNow().slice(11, 16)}:00`;
+  const sign = model.timezone.startsWith("-") ? -1 : 1;
+  const [h, m] = model.timezone.slice(1).split(":").map(Number);
+  const local = new Date(Date.now() + sign * (h * 60 + m) * 60000);
+  return `${shownNow().slice(11, 16)}:${String(local.getUTCSeconds()).padStart(2, "0")}`;
+}
+
+export type Change = "orders" | "plan" | "events" | "clock" | "view";
 
 /** Avisa cuando otra ventana cambia pedidos o programación. */
 export function onChange(fn: (what: Change) => void): void {
@@ -138,7 +197,15 @@ export function onChange(fn: (what: Change) => void): void {
     if (e.key === key("added")) fn("orders");
     if (e.key === key("vigente")) fn("plan");
     if (e.key === key("events")) fn("events");
+    if (e.key === key("clock")) fn("clock");
+    if (e.key === key("viewed") || e.key === key("view-mode")) fn("view");
   });
 }
 
 export { baseManual, manualPlan };
+
+/** Avisa cuando el gemelo cambia el instante (play, barra de tiempo o EN VIVO). */
+export function onClock(fn: () => void): void {
+  channel?.addEventListener("message", (e: MessageEvent<{ type: Change }>) => e.data.type === "clock" && fn());
+  addEventListener("storage", (e) => e.key === key("clock") && fn());
+}

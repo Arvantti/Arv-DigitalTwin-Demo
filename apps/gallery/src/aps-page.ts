@@ -16,7 +16,7 @@
 import "./styles.css";
 import "./aps.css";
 import type { CustomerOrder, Importance, ProductionPlan } from "@twin/cosim/core/contracts.ts";
-import { activeEvents, addedOrders, baseManual, molds, modelNow, manualPlan, model, now, onChange, portfolio, resetDemo, setAdded, setVigente, SOURCE_NAMES, useDemoDays, vigente } from "./aps-store.ts";
+import { activeEvents, addedOrders, baseManual, molds, modelNow, manualPlan, model, now, onChange, portfolio, resetDemo, setAdded, setVigente, setViewed, setViewMode, SOURCE_NAMES, useDemoDays, vigente, viewedPlan, viewMode } from "./aps-store.ts";
 import { editedPlan, moveChunk, queuesOf, type EditChunk, type ManualEdit } from "@twin/cosim/adapters/plastic-injection-plant-v1/manual.ts";
 import { COLOR_NAMES, day, esc, nf, relativeDays, when } from "./schedule.ts";
 import { renderInsumos } from "./insumos.ts";
@@ -63,7 +63,18 @@ const shown = () => proposal ?? current;
 
 useDemoDays();
 
+/** Lo que el APS muestra como propuesta es el escenario que ve el gemelo, hasta que el gemelo vuelva a "vigente". */
+let lastView = "";
+function syncView(): void {
+  const key = proposal?.plan_id ?? "";
+  if (key === lastView) return;
+  lastView = key;
+  setViewed(proposal);
+  setViewMode(proposal ? "escenario" : "vigente");
+}
+
 function render(): void {
+  syncView();
   const p = shown();
   $("aps-clock").textContent = `AHORA · ${when(now())}`;
   const occ = occOf(current, loadIds(current));
@@ -892,6 +903,12 @@ $("aps-manual").onclick = () => {
 };
 onChange((what) => {
   current = vigente();
+  if (what === "view") {
+    // El gemelo eligió: "vigente" quita la propuesta; "escenario" muestra el escenario visto.
+    if (viewMode() === "vigente") proposal = null;
+    else if (!proposal) proposal = viewedPlan();
+    lastView = proposal?.plan_id ?? "";
+  }
   if (what === "events") error = "";
   render();
 });

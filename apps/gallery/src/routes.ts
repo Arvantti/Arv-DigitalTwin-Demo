@@ -180,9 +180,21 @@ export function buildRoutes(aisles: Aisle[], routes: Route[], parent: THREE.Obje
       };
     } else if (r.kind === "cart") {
       const ct = parts.cart(idx % 2 ? "#2f6fb0" : "#3b8f6a");
+      // un carro nunca se mueve solo: lo empuja un operario que camina detrás, agarrado del manubrio (queda en z = -0,58)
+      const pusher = parts.operator(idx % 2 ? "#f2b705" : "#f26b1d", idx % 2 ? "#4a6b3a" : "#2f5f8f", { skin: idx % 2 ? "#8d5a3b" : "#c99a76", hair: "#2a1d16" });
+      pusher.object.position.set(0, 0, -1.08);
+      pusher.object.name = "cart-pusher";
+      ct.object.add(pusher.object);
+      let phase = 0;
       agent = {
         out, back, length, speed: CART_SPEED, offset: idx * 7, object: ct.object, heading: 0, clock: 0, yields: false,
-        step: (forward) => ct.setLoaded(forward),
+        step: (forward, moving, dt) => {
+          ct.setLoaded(forward);
+          if (moving) {
+            phase += dt * CART_SPEED * 5;
+            pusher.setWalk(phase);
+          } else pusher.setWalk(0);
+        },
       };
     } else {
       const looks: parts.OperatorLook[] = [
