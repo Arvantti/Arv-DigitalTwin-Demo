@@ -632,86 +632,130 @@ function startDrag(e: PointerEvent, node: HTMLElement, from: number, to: number)
   const x0 = e.clientX;
   const y0 = e.clientY;
   const isOrder = !!node.dataset.moveOrder;
-  let ghost: HTMLElement | null = null;
-  let line: HTMLElement | null = null;
+  const box0 = node.getBoundingClientRect();
+  // Dónde agarraste la barra: la barra flotante conserva ese punto bajo el cursor.
+  const gx = x0 - box0.left;
+  const gy = y0 - box0.top;
+  let started = false;
+  let float: HTMLElement | null = null;
+  let landing: HTMLElement | null = null;
+  let tip: HTMLElement | null = null;
   let hot: HTMLElement | null = null;
   const track = node.parentElement!;
   const timeAt = (x: number, tr: HTMLElement) => {
     const r = tr.getBoundingClientRect();
     return from + ((x - r.left) / r.width) * (to - from);
   };
+  const pctOf = (t: number) => ((Math.min(Math.max(t, from), to) - from) / (to - from)) * 100;
   const clean = () => {
-    ghost?.remove();
-    line?.remove();
+    float?.remove();
+    landing?.remove();
+    tip?.remove();
     hot?.classList.remove("drop-ok", "drop-bad");
+    node.classList.remove("g-origin");
     document.body.classList.remove("g-dragging");
   };
-  const move = (ev: PointerEvent) => {
-    lastPointer = { x: ev.clientX, y: ev.clientY };
-    if (!ghost && Math.hypot(ev.clientX - x0, ev.clientY - y0) < 5) return;
-    if (!ghost) {
-      ghost = document.createElement("div");
-      ghost.className = "g-ghost";
-      document.body.append(ghost);
-      line = document.createElement("div");
-      line.className = "g-dropline";
-      document.body.classList.add("g-dragging");
-    }
-    ghost.style.left = `${ev.clientX + 14}px`;
-    ghost.style.top = `${ev.clientY + 12}px`;
+  /** Qué pasaría si sueltas ahora: fila destino, si vale, dónde cae y el texto. */
+  const target = (ev: PointerEvent) => {
+    const under = document.elementFromPoint(ev.clientX, ev.clientY) as HTMLElement | null;
     if (isOrder) {
       const delta = timeAt(ev.clientX, track) - timeAt(x0, track);
       const startMs = ms(shown().orders.find((o) => o.id === node.dataset.moveOrder)?.start ?? now());
-      ghost.textContent = `${node.dataset.moveOrder} → desde ${when(snapIso(startMs + delta))}`;
-      track.append(line!);
-      line!.style.left = `${((timeAt(ev.clientX, track) - from) / (to - from)) * 100}%`;
-      return;
+      const at = ms(snapIso(startMs + delta));
+      return { row: track.parentElement as HTMLElement, tr: track, ok: true, left: pctOf(at), text: `${node.dataset.moveOrder} desde ${when(snapIso(startMs + delta))}` };
     }
-    const under = document.elementFromPoint(ev.clientX, ev.clientY) as HTMLElement | null;
     const row = under?.closest<HTMLElement>(".g-row.res[data-machine]") ?? null;
-    if (row !== hot) {
-      hot?.classList.remove("drop-ok", "drop-bad");
-      hot = row;
+    if (!row) return null;
+    const m = row.dataset.machine!;
+    const tr = row.querySelector<HTMLElement>(".g-track")!;
+    const trBox = tr.getBoundingClientRect();
+    const ok = machinesFor(node.dataset.job!.split("/")[1]).includes(m);
+    if (!ok) return { row, tr, ok, left: -1, text: `${machineLabel(m)} no tiene el molde de ${productName(node.dataset.job!.split("/")[1]).toLowerCase()}` };
+    const lot = under?.closest<HTMLElement>(".g-lot") ?? null;
+    const onLot = lot && lot.dataset.job !== node.dataset.job && lot.dataset.m === m ? lot : null;
+    const w = (box0.width / trBox.width) * 100;
+    if (onLot) {
+      const r = onLot.getBoundingClientRect();
+      const after = ev.clientX > r.left + r.width / 2;
+      const edge = after ? r.left : r.left - box0.width;
+      const left = (((after ? r.right : edge) - trBox.left) / trBox.width) * 100;
+      return { row, tr, ok, left, w, text: `${node.dataset.order} → ${machineLabel(m)}, ${after ? "después" : "antes"} de ${onLot.dataset.order}` };
     }
-    if (!row) {
-      ghost.textContent = `${node.dataset.order} · suéltalo sobre una máquina`;
-      line?.remove();
+    const iso = snapIso(timeAt(ev.clientX - gx, tr));
+    return { row, tr, ok, left: pctOf(ms(iso)), w, text: `${node.dataset.order} → ${machineLabel(m)}, desde ${when(iso)}` };
+  };
+  const move = (ev: PointerEvent) => {
+    lastPointer = { x: ev.clientX, y: ev.clientY };
+    if (!started && Math.hypot(ev.clientX - x0, ev.clientY - y0) < 5) return;
+    if (!started) {
+      started = true;
+      float = node.cloneNode(true) as HTMLElement;
+      float.className = `${node.className} g-float`;
+      float.removeAttribute("title");
+      float.style.cssText = `--c:${node.style.getPropertyValue("--c")};--co:${node.style.getPropertyValue("--co") || "0%"};width:${box0.width}px;height:${box0.height}px`;
+      document.body.append(float);
+      landing = document.createElement("div");
+      landing.className = "g-landing";
+      tip = document.createElement("div");
+      tip.className = "g-ghost";
+      document.body.append(tip);
+      node.classList.add("g-origin");
+      document.body.classList.add("g-dragging");
+    }
+    // La barra sigue al cursor sin demora.
+    float!.style.left = `${ev.clientX - gx}px`;
+    float!.style.top = `${ev.clientY - gy}px`;
+    tip!.style.left = `${ev.clientX + 16}px`;
+    tip!.style.top = `${ev.clientY + 18}px`;
+    const t = target(ev);
+    if (t?.row !== hot) {
+      hot?.classList.remove("drop-ok", "drop-bad");
+      hot = isOrder ? null : (t?.row ?? null);
+    }
+    if (!t) {
+      landing!.remove();
+      float!.classList.remove("ok", "bad");
+      tip!.className = "g-ghost";
+      tip!.textContent = `${node.dataset.order} · suéltala sobre una máquina`;
       return;
     }
-    const m = row.dataset.machine!;
-    const ok = machinesFor(node.dataset.job!.split("/")[1]).includes(m);
-    row.classList.toggle("drop-ok", ok);
-    row.classList.toggle("drop-bad", !ok);
-    const tr = row.querySelector<HTMLElement>(".g-track")!;
-    const lot = under?.closest<HTMLElement>(".g-lot") ?? null;
-    const onLot = lot && lot.dataset.job !== node.dataset.job ? lot : null;
-    if (!ok) ghost.textContent = `${machineLabel(m)} no tiene ese molde`;
-    else if (onLot) {
-      const r = onLot.getBoundingClientRect();
-      ghost.textContent = `${node.dataset.order} → ${machineLabel(m)}, ${ev.clientX > r.left + r.width / 2 ? "después" : "antes"} de ${onLot.dataset.order}`;
-    } else ghost.textContent = `${node.dataset.order} → ${machineLabel(m)}, desde ${when(snapIso(timeAt(ev.clientX, tr)))}`;
-    tr.append(line!);
-    line!.style.left = `${((timeAt(ev.clientX, tr) - from) / (to - from)) * 100}%`;
+    if (!isOrder) {
+      t.row.classList.toggle("drop-ok", t.ok);
+      t.row.classList.toggle("drop-bad", !t.ok);
+    }
+    float!.classList.toggle("ok", t.ok);
+    float!.classList.toggle("bad", !t.ok);
+    tip!.className = `g-ghost ${t.ok ? "ok" : "bad"}`;
+    tip!.textContent = t.ok ? t.text : `✕ ${t.text}`;
+    if (t.ok && t.w !== undefined) {
+      landing!.style.left = `${t.left}%`;
+      landing!.style.width = `${t.w}%`;
+      t.tr.append(landing!);
+    } else if (t.ok) {
+      landing!.style.left = `${t.left}%`;
+      landing!.style.width = `${(box0.width / track.getBoundingClientRect().width) * 100}%`;
+      t.tr.append(landing!);
+    } else landing!.remove();
   };
   const up = (ev: PointerEvent) => {
     removeEventListener("pointermove", move);
     removeEventListener("pointerup", up);
     removeEventListener("pointercancel", cancel);
-    if (!ghost) return;
+    if (!started) return;
     suppressClick = true;
     setTimeout(() => (suppressClick = false), 0);
+    const t = target(ev);
     clean();
     lastPointer = { x: ev.clientX, y: ev.clientY };
+    if (!t) return;
     if (isOrder) {
       const delta = timeAt(ev.clientX, track) - timeAt(x0, track);
       if (Math.abs(delta) >= (SNAP_MIN / 2) * 60000) dropOrder(node.dataset.moveOrder!, delta);
       return;
     }
     const under = document.elementFromPoint(ev.clientX, ev.clientY) as HTMLElement | null;
-    const row = under?.closest<HTMLElement>(".g-row.res[data-machine]");
-    if (!row) return;
-    const tr = row.querySelector<HTMLElement>(".g-track")!;
-    dropLot(node.dataset.job!, node.dataset.m!, node.dataset.start!, row.dataset.machine!, timeAt(ev.clientX, tr), under?.closest<HTMLElement>(".g-lot") ?? null);
+    // La hora de caída es la del borde izquierdo de la barra, no la del cursor.
+    dropLot(node.dataset.job!, node.dataset.m!, node.dataset.start!, t.row.dataset.machine!, timeAt(ev.clientX - gx, t.tr), under?.closest<HTMLElement>(".g-lot") ?? null);
   };
   const cancel = () => {
     removeEventListener("pointermove", move);
