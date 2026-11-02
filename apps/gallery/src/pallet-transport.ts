@@ -61,7 +61,11 @@ const REACH = 2.0;
 const LIVE_SPEED = 2.5; // m/s, velocidad real en planta; con el play se multiplica por la escala (motion.ts)
 const DWELL_S = 2.5; // recoger o dejar la estiba, a velocidad real
 const MAX_QUEUE = 8;
-const LANE_OFFSET = 1.0; // m: ida y regreso van por carriles distintos, a la derecha del eje del pasillo
+/** Medio ancho del montacargas (m) y distancia de seguridad mínima entre su costado y una estantería (m). */
+const FORKLIFT_HALF_W = 0.6;
+const RACK_CLEARANCE = 1.0;
+/** m: ida y regreso van por carriles distintos, a la derecha del eje; en un pasillo de 4,5 m entre estanterías deja 1 m libre a cada lado. */
+const LANE_OFFSET = 0.65;
 const GAP = 3.5; // m: distancia mínima con el montacargas de adelante en el mismo sentido
 const MAX_HOLD_S = 4; // s: si sigue detenido más que esto, avanza igual (evita bloqueos en los cruces)
 
@@ -73,10 +77,10 @@ const MAX_HOLD_S = 4; // s: si sigue detenido más que esto, avanza igual (evita
 const LANES: P2[][] = [
   [[36, 49], [124, 49]],
   [[38, 63.4], [122, 63.4]],
-  [[36, 74.25], [134, 74.25]],
+  [[36, 75.35], [134, 75.35]],
   [[46, 89.1], [122, 89.1]],
   [[79, 49], [79, 89.1]],
-  [[134, 74.25], [134, 54.25], [145.1, 54.25], [145.1, 28], [158, 28]],
+  [[134, 75.35], [134, 54.25], [143.75, 54.25], [143.75, 28], [158, 28]],
   [[126, 66.5], [142, 66.5]],
   [[151, 28], [151, 90]],
   [[158, 28], [158, 90]],
@@ -462,6 +466,24 @@ export function buildPalletTransport(opts: Opts): PalletTransport {
   const graph = new LaneGraph(LANES);
   const byId = new Map(opts.equipment.map((e) => [e.id, e]));
   const obstacles = opts.equipment.filter((e) => !e.overhead && e.type !== "forklift_fleet" && (e.position[2] ?? 0) < 1).map((e) => ({ id: e.id, r: rectOf(e) }));
+  // distancia de seguridad: el costado del montacargas (eje del carril + LANE_OFFSET + medio ancho) queda a RACK_CLEARANCE o más de toda estantería
+  for (const e of opts.equipment.filter((q) => q.type === "pallet_rack")) {
+    const [x0, y0, x1, y1] = rectOf(e);
+    for (const lane of LANES) {
+      for (let i = 1; i < lane.length; i++) {
+        const [p, q] = [lane[i - 1], lane[i]];
+        const horizontal = p[1] === q[1];
+        const [from, to] = horizontal ? [Math.min(p[0], q[0]), Math.max(p[0], q[0])] : [Math.min(p[1], q[1]), Math.max(p[1], q[1])];
+        const [lo, hi] = horizontal ? [x0, x1] : [y0, y1];
+        if (hi < from || lo > to) continue; // la estantería no queda a lo largo de este tramo
+        const axis = horizontal ? p[1] : p[0];
+        const [r0, r1] = horizontal ? [y0, y1] : [x0, x1];
+        if (axis > r0 && axis < r1) continue; // el carril entra a la estantería: es un punto de trabajo, no un pasillo
+        const gap = Math.min(Math.abs(axis - r0), Math.abs(axis - r1)) - LANE_OFFSET - FORKLIFT_HALF_W;
+        if (gap < RACK_CLEARANCE - 1e-6) console.warn(`Carril a ${axis} m de ${e.id}: quedan ${gap.toFixed(2)} m libres (mínimo ${RACK_CLEARANCE} m)`);
+      }
+    }
+  }
   const blockedFor = (p: P2, own?: string) => (q: P2) => obstacles.some((o) => o.id !== own && hitsRect(p, q, o.r));
 
   /** Puntos de parada de un equipo, repartidos a lo largo de su lado largo (estanterías, buffers, celdas). */

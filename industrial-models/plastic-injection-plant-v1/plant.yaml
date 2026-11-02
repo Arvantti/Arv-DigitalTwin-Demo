@@ -57,9 +57,9 @@ zones:
   - { id: admin,               name: "Oficinas, vestieres y cafetería", kind: admin,      rect: [124, 5, 44, 20],  height: 7 }
   - { id: nave-inyeccion,      name: Nave de inyección,               kind: production, rect: [34, 25, 90, 42],  height: 14 }
   - { id: almacen-semielaborado, name: Almacén de semielaborado,    kind: storage,    rect: [34, 67, 90, 7],   height: 9 }
-  - { id: empaque,             name: Empaque y paletizado,            kind: production, rect: [124, 25, 20, 30], height: 9 }
-  - { id: secundarias,         name: Operaciones secundarias,         kind: production, rect: [124, 55, 20, 19], height: 9 }
-  - { id: bodega-pt,           name: Bodega de producto terminado,    kind: storage,    rect: [144, 25, 24, 49], height: 12 }
+  - { id: empaque,             name: Empaque y paletizado,            kind: production, rect: [124, 25, 17.25, 30], height: 9 }
+  - { id: secundarias,         name: Operaciones secundarias,         kind: production, rect: [124, 55, 17.25, 19], height: 9 }
+  - { id: bodega-pt,           name: Bodega de producto terminado,    kind: storage,    rect: [141.25, 25, 26.75, 49], height: 12 }
   - { id: patio-despacho,      name: Patio y muelles de despacho,     kind: exterior,   rect: [168, 25, 30, 49], height: 0 }
   - { id: subestacion,         name: Subestación eléctrica,           kind: utility,    rect: [34, 74, 15, 12],  height: 5 }
   - { id: compresores,         name: Cuarto de compresores,           kind: utility,    rect: [49, 74, 15, 12],  height: 5 }
@@ -75,8 +75,8 @@ aisles:
   - { id: aisle-sec-medio,  kind: forklift, rect: [124, 66.2, 20, 3.8] }
   - { id: aisle-sec-v,      kind: forklift, rect: [132.5, 52.5, 3, 17.5] }
   - { id: aisle-pt-enlace,  kind: forklift, rect: [132.5, 52.5, 13.5, 3.5] }
-  - { id: aisle-pt-oeste,   kind: forklift, rect: [144, 28, 2.25, 28] }
-  - { id: aisle-pt-sur,     kind: forklift, rect: [144, 26, 24, 4] }
+  - { id: aisle-pt-oeste,   kind: forklift, rect: [141.25, 28, 5, 28] }
+  - { id: aisle-pt-sur,     kind: forklift, rect: [141.25, 26, 26.75, 4] }
   - { id: aisle-pt-1,       kind: forklift, rect: [148.75, 26, 4.5, 36] }
 
 # Rutas de montacargas y de operarios (supuestos de recorrido, no de ingeniería de detalle). Cada ruta es una polilínea en metros:
@@ -95,14 +95,14 @@ routes:
   - { id: fk-sf-a1, name: "Estantería 1 (pedal y palanca) a la celda de ensamble 1", kind: forklift, from: rack-sf-01, to: assembly-01, load: estibas de pedal y palanca, width: 1.5, trips_per_h: 3, fleet: fleet-01, fleet_route: 6, path: [[50, 68.1], [129, 68.1]] }
   - { id: fk-sf-b1, name: "Estantería 2 (cuerpos de papelera) a la celda de ensamble 1", kind: forklift, from: rack-sf-02, to: assembly-01, load: estibas de cuerpos de papelera, width: 1.5, trips_per_h: 3, fleet: fleet-01, fleet_route: 7, path: [[68, 68.1], [129, 68.1]] }
   # --- Montacargas: de las celdas de ensamble a la bodega de producto terminado ---
-  - { id: fk-ensamble-pt-1, name: "Producto terminado de la celda 1 a la bodega", kind: forklift, from: assembly-01, to: rack-pt-01, load: papeleras armadas en estibas, width: 1.5, trips_per_h: 2, path: [[129, 68.1], [134, 68.1], [134, 54.25], [145.1, 54.25], [145.1, 28], [151, 28], [151, 58]] }
+  - { id: fk-ensamble-pt-1, name: "Producto terminado de la celda 1 a la bodega", kind: forklift, from: assembly-01, to: rack-pt-01, load: papeleras armadas en estibas, width: 1.5, trips_per_h: 2, path: [[129, 68.1], [134, 68.1], [134, 54.25], [143.75, 54.25], [143.75, 28], [151, 28], [151, 58]] }
   # --- Carros de canastillas: de las inyectoras al pasillo de los montacargas (recorrido ilustrativo) ---
   - { id: ca-pequenas-oeste, name: "Carro de canastillas, hilera de inyectoras pequeñas (oeste)", kind: cart, from: nave-inyeccion, to: nave-inyeccion, load: piezas inyectadas en canastillas, width: 0.8, path: [[38, 46.6], [77, 46.6]] }
   - { id: ca-pequenas-este, name: "Carro de canastillas, hilera de inyectoras pequeñas (este)", kind: cart, from: nave-inyeccion, to: nave-inyeccion, load: piezas inyectadas en canastillas, width: 0.8, path: [[100, 46.6], [81, 46.6]] }
   # --- Operarios a pie ---
   - { id: pe-ronda-pequenas, name: "Ronda del operador de inyección, hilera de las inyectoras pequeñas", kind: pedestrian, from: imm-01, to: imm-08, width: 1.0, walkers: 1, path: [[36, 45], [102, 45]] }
   - { id: pe-ronda-medianas, name: "Ronda del operador de inyección, hilera de las medianas", kind: pedestrian, from: imm-20, to: imm-19, width: 1.0, walkers: 1, path: [[38, 61.5], [121, 61.5]] }
-  - { id: pe-vestier-ensamble, name: "Del vestier a las celdas de ensamble", kind: pedestrian, from: admin, to: assembly-01, width: 1.0, walkers: 1, path: [[143, 24.5], [143, 58.6], [127, 58.6]] }
+  - { id: pe-vestier-ensamble, name: "Del vestier a las celdas de ensamble", kind: pedestrian, from: admin, to: assembly-01, width: 1.0, walkers: 1, path: [[140.6, 24.5], [140.6, 58.6], [127, 58.6]] }
   - { id: pe-ensamble-empaque, name: "Operario lleva unidades armadas de la celda 1 al empaque 3", kind: pedestrian, from: assembly-01, to: pack-station-03, width: 1.0, walkers: 1, path: [[131, 59], [131, 53], [136, 53], [136, 33]] }
 
 equipment:
