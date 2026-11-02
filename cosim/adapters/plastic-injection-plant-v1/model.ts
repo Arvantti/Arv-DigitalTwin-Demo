@@ -13,6 +13,8 @@ export interface CatalogData {
   products: { products: CatalogProductYaml[] };
   tooling: { tooling: ToolingYaml[] };
   setup: { setup: Record<string, { tooling: string; color?: string }> };
+  /** Inyectoras (plant.yaml): fuerza de cierre y tiro máximo, para validar el montaje de cada molde. */
+  machines?: Record<string, { clamp_t?: number; max_shot_kg?: number }>;
   demand: { demand: DemandYaml };
   /** Configuración del APS (aps/aps.yaml): ventana de entrega y tamaño de lote. */
   aps?: { aps: ApsYaml };
@@ -74,6 +76,9 @@ interface ToolingYaml {
   cavities: number;
   cycle_s: number;
   change_min?: number;
+  /** Fuerza de cierre mínima que exige el molde (toneladas) y tiro del molde (kg, con colada). */
+  min_clamp_t?: number;
+  shot_kg?: number;
 }
 export interface DemandYaml {
   load_pct: number;
@@ -179,10 +184,32 @@ export function changeoverFn(cat: CatalogData, colorDefault: number): (from: Mou
   };
 }
 
+export interface PlantYaml { equipment?: { id: string; type?: string; params?: { clamp_t?: number; max_shot_kg?: number } }[] }
+/** Parámetros de cierre y tiro de cada inyectora, de plant.yaml. */
+export const machinesOf = (p: PlantYaml) =>
+  Object.fromEntries((p.equipment ?? []).filter((e) => e.type === "injection_molding_machine").map((e) => [e.id, { clamp_t: e.params?.clamp_t, max_shot_kg: e.params?.max_shot_kg }]));
+
+/** Motivo por el que un molde no cabe en una inyectora, o undefined si cabe (o si faltan datos). */
+export function moldFitProblem(cat: CatalogData, machine: string, toolingId: string): string | undefined {
+  const mach = cat.machines?.[machine];
+  const mold = cat.tooling.tooling.find((t) => t.id === toolingId);
+  if (!mach || !mold) return undefined;
+  if (mold.min_clamp_t !== undefined && mach.clamp_t !== undefined && mach.clamp_t < mold.min_clamp_t)
+    return `el molde ${mold.id} necesita ${mold.min_clamp_t} t de cierre y ${machine} tiene ${mach.clamp_t} t`;
+  if (mold.shot_kg !== undefined && mach.max_shot_kg !== undefined && mach.max_shot_kg < mold.shot_kg)
+    return `el molde ${mold.id} tiene un tiro de ${mold.shot_kg} kg y ${machine} inyecta hasta ${mach.max_shot_kg} kg`;
+  return undefined;
+}
+
 export function buildModel(cat: CatalogData): PlasticsModel {
   const demand = cat.demand.demand;
   const tooling = new Map(cat.tooling.tooling.map((t) => [t.id, t]));
   const setup = cat.setup.setup;
+  // Un molde grande no va a una máquina pequeña ni al revés: el montaje se rechaza si no cabe.
+  for (const [m, s] of Object.entries(setup)) {
+    const problem = s.tooling ? moldFitProblem(cat, m, s.tooling) : undefined;
+    if (problem) throw new Error(`Montaje no válido en ${m}: ${problem}`);
+  }
   const byId = new Map(cat.products.products.map((p) => [p.id, p]));
   const machines = new Set<string>();
 
