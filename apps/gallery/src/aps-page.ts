@@ -686,6 +686,7 @@ function startDrag(e: PointerEvent, node: HTMLElement, from: number, to: number)
   };
   const move = (ev: PointerEvent) => {
     lastPointer = { x: ev.clientX, y: ev.clientY };
+    if (ev.buttons === 0) return started ? up(ev) : stop();
     if (!started && Math.hypot(ev.clientX - x0, ev.clientY - y0) < 5) return;
     if (!started) {
       started = true;
@@ -737,15 +738,26 @@ function startDrag(e: PointerEvent, node: HTMLElement, from: number, to: number)
       t.tr.append(landing!);
     } else landing!.remove();
   };
-  const up = (ev: PointerEvent) => {
+  const stop = () => {
     removeEventListener("pointermove", move);
     removeEventListener("pointerup", up);
     removeEventListener("pointercancel", cancel);
+    removeEventListener("mouseup", up);
+    removeEventListener("blur", cancel);
+    removeEventListener("keydown", esc);
+  };
+  const up = (ev: PointerEvent | MouseEvent) => {
+    stop();
     if (!started) return;
     suppressClick = true;
     setTimeout(() => (suppressClick = false), 0);
-    const t = target(ev);
-    clean();
+    let t: ReturnType<typeof target> = null;
+    try {
+      t = target(ev as PointerEvent);
+    } finally {
+      // Pase lo que pase, la barra flotante nunca se queda en pantalla.
+      clean();
+    }
     lastPointer = { x: ev.clientX, y: ev.clientY };
     if (!t) return;
     if (isOrder) {
@@ -758,15 +770,17 @@ function startDrag(e: PointerEvent, node: HTMLElement, from: number, to: number)
     dropLot(node.dataset.job!, node.dataset.m!, node.dataset.start!, t.row.dataset.machine!, timeAt(ev.clientX - gx, t.tr), under?.closest<HTMLElement>(".g-lot") ?? null);
   };
   const cancel = () => {
-    removeEventListener("pointermove", move);
-    removeEventListener("pointerup", up);
-    removeEventListener("pointercancel", cancel);
+    stop();
     clean();
   };
+  const esc = (ev: KeyboardEvent) => ev.key === "Escape" && cancel();
   e.preventDefault();
   addEventListener("pointermove", move);
   addEventListener("pointerup", up);
   addEventListener("pointercancel", cancel);
+  addEventListener("mouseup", up);
+  addEventListener("blur", cancel);
+  addEventListener("keydown", esc);
 }
 
 /** Tramos [inicio, fin] en minutos dentro de los turnos entre a y b. */
