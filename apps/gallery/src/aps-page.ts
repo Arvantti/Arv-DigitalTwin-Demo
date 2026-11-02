@@ -435,7 +435,7 @@ function renderGantt(p: ProductionPlan): void {
       const detail = u ? `${info ? `${info} · ` : ""}${esc(selected!)}: ${u.lots} ${u.lots === 1 ? "lote" : "lotes"} · ${nf(u.h, 1)} h` : `${info ?? esc(machineProducts(m))} · carga ${load} %`;
       return `<div class="g-row res${cls}${rowCls}" data-machine="${esc(m)}"><div class="g-label"><b>${esc(title)}</b><small>${detail}</small></div><div class="g-track">${downs}${bars}</div></div>`;
   };
-  // Por molde: dónde está cada copia en este escenario (lo montado, con los cambios de Fractal) y el resto en el almacén.
+  // Por molde: dónde está cada molde físico (numerados) en este escenario (lo montado, con los cambios de Fractal) y el resto en el almacén.
   const where: Record<string, string> = { ...model.mounted };
   for (const [m, t] of Object.entries(p.molds ?? {})) t ? (where[m] = t) : delete where[m];
   const moldRows = model.molds
@@ -443,12 +443,13 @@ function renderGantt(p: ProductionPlan): void {
       const short = t.name.replace(/^Molde del? /i, "");
       const at = Object.keys(where)
         .filter((m) => where[m] === t.id)
-        .sort((a, b) => Number(usedBy.has(b)) - Number(usedBy.has(a)) || a.localeCompare(b));
+        // Numeración fija: primero las inyectoras del montaje inicial, luego las que Fractal montó.
+        .sort((a, b) => Number(model.mounted[a] !== t.id) - Number(model.mounted[b] !== t.id) || a.localeCompare(b));
       const n = Math.max(t.copies, at.length);
-      const head = `<div class="g-row res g-mold-head"><div class="g-label"><b>${esc(short.toUpperCase())}</b><small>${n} ${n === 1 ? "copia" : "copias"} · ${at.length} montada${at.length === 1 ? "" : "s"} · montaje ${nf(t.changeMin)} min</small></div><div class="g-track"></div></div>`;
+      const head = `<div class="g-row res g-mold-head"><div class="g-label"><b>${esc(short.toUpperCase())}</b><small>${n} ${n === 1 ? "molde" : "moldes"} · ${at.length} montado${at.length === 1 ? "" : "s"} · montaje ${nf(t.changeMin)} min</small></div><div class="g-track"></div></div>`;
       const copies = Array.from({ length: n }, (_, i) => {
         const m = at[i];
-        const title = `Copia ${i + 1} de ${n}`;
+        const title = `Molde ${i + 1}`;
         if (!m) return `<div class="g-row res g-copy g-mold-idle${selected ? " unused" : ""}"><div class="g-label"><b>${esc(title)}</b><small>en el almacén de moldes</small></div><div class="g-track"></div></div>`;
         const moved = p.molds?.[m] === t.id ? " (Fractal)" : "";
         return resourceRow(m, title, `en ${esc(machineLabel(m))}${moved}`, " g-copy");
@@ -477,7 +478,7 @@ function renderGantt(p: ProductionPlan): void {
       <div class="g-section-title">ÓRDENES DE PRODUCCIÓN</div>
       <div class="g-head"><div class="g-label"></div><div class="g-track">${head}</div></div>
       <div class="g-scroll"><div class="g-body g-orders"><div class="g-gridlayer"><div class="g-label"></div><div class="g-track">${grid}${nowLine}</div></div>${orderRows || '<p class="dim small">Sin órdenes en estos días.</p>'}</div></div>
-      <div class="g-section-title g-res-title"><span class="g-resview"><button id="g-by-machine"${resView === "maquina" ? ' class="on"' : ""}>POR MÁQUINA</button><button id="g-by-mold"${resView === "molde" ? ' class="on"' : ""} title="Cada copia de un molde es una fila: una copia solo está en una inyectora a la vez">POR MOLDE</button></span>${selected ? `RECURSOS DE ${esc(selected)} · ${usedBy.size} ${usedBy.size === 1 ? "máquina" : "máquinas"} arriba, resaltadas; el resto atenuado · clic de nuevo en la orden para quitar` : "RECURSOS · lotes de las órdenes de arriba · clic en una orden o en un lote para ver sus máquinas"}</div>
+      <div class="g-section-title g-res-title"><span class="g-resview"><button id="g-by-machine"${resView === "maquina" ? ' class="on"' : ""}>POR MÁQUINA</button><button id="g-by-mold"${resView === "molde" ? ' class="on"' : ""} title="Cada molde físico es una fila, numerado: un molde solo está en una inyectora a la vez">POR MOLDE</button></span>${selected ? `RECURSOS DE ${esc(selected)} · ${usedBy.size} ${usedBy.size === 1 ? "máquina" : "máquinas"} arriba, resaltadas; el resto atenuado · clic de nuevo en la orden para quitar` : "RECURSOS · lotes de las órdenes de arriba · clic en una orden o en un lote para ver sus máquinas"}</div>
       <div class="g-body g-res"><div class="g-gridlayer"><div class="g-label"></div><div class="g-track">${grid}${nowLine}</div></div>${resRows}</div>
     </div>`;
   // La primera vez se abre en la primera orden que aún no termina.

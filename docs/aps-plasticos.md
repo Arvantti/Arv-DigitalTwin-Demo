@@ -71,8 +71,8 @@ no están montadas quedan en el almacén de moldes. El modelo del cosimulador re
 copias. Las copias de repuesto que Fractal puede montar salen de ahí (copias menos montadas), ya no de `aps.yaml`.
 
 En RECURSOS, el selector **POR MÁQUINA / POR MOLDE** cambia las filas: por molde, cada molde tiene un encabezado (copias,
-montadas, minutos de montaje) y una fila por copia con la inyectora donde está, su carga y sus lotes, o "en el almacén
-de moldes". Si una opción de Fractal monta o muda un molde, la copia aparece en su nueva inyectora con "(Fractal)". El
+montados, minutos de montaje) y una fila por molde físico, numerado (Molde 1, Molde 2...), con la inyectora donde está, su carga y sus lotes, o "en el almacén
+de moldes". Si una opción de Fractal monta o muda un molde, el molde aparece en su nueva inyectora con "(Fractal)". El
 arrastrar y soltar funciona igual en las dos vistas. Capturas en `docs/demo-plasticos/moldes-recursos/`.
 
 Hoy el cosimulador no mueve moldes: coloca cada producto en las inyectoras que ya tienen su molde. Que decida qué copia
