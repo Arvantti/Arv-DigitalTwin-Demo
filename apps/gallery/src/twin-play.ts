@@ -11,7 +11,7 @@
  */
 import * as THREE from "three";
 import type { PlantEvent, ProductionPlan } from "@twin/cosim/core/contracts.ts";
-import { model, now } from "./aps-store.ts";
+import { model, now, setSharedClock } from "./aps-store.ts";
 import { type MachineState, dayLoadAt, dayLoads, dayStrip, isoOf, loadAt, loadColor, machineAt, machineLabel, minOf, moldOf, oeeAt, PLC_MACHINES, STATE_COLORS, STATE_NAMES, unitsUntil } from "./plant-state.ts";
 import { COLOR_NAMES, day, dayTag, esc, nf, relativeDays } from "./schedule.ts";
 
@@ -249,6 +249,14 @@ export function buildTwinPlay(opts: Opts): TwinPlay {
     show();
   }
 
+  // El emulador y el centro de control siguen este instante. Durante el play se publica a medio segundo como máximo.
+  let lastPublish = 0;
+  function publishClock(): void {
+    if (playing && Date.now() - lastPublish < 500) return;
+    lastPublish = Date.now();
+    setSharedClock(following ? null : isoOf(t));
+  }
+
   function show(): void {
     const n = live();
     range.value = String(t);
@@ -261,6 +269,7 @@ export function buildTwinPlay(opts: Opts): TwinPlay {
     $("tt-play").textContent = playing ? "❚❚" : "▶";
     paint();
     paintOrders();
+    publishClock();
     opts.onTime?.(t);
   }
 
