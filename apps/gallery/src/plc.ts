@@ -395,6 +395,51 @@ function renderAlarms(): void {
   $("alarms").innerHTML = active.length ? active.map((message) => `<div class="alarm">${message}</div>`).join("") : `<p class="muted">Sin alarmas activas.</p>`;
 }
 
+type VrpChartHour = {
+  hour: number;
+  commands?: { vrp_opening_pct?: number | null };
+  scenarios: { state: { prs_inlet_mca: number; prs_outlet_mca: number } }[];
+};
+
+function renderVrpOptimizationCharts(hours: VrpChartHour[]): string {
+  const points = hours.flatMap((item) => {
+    const state = item.scenarios[1]?.state ?? item.scenarios[0]?.state;
+    const opening = item.commands?.vrp_opening_pct;
+    return state && typeof opening === "number" && Number.isFinite(opening)
+      ? [{ hour: item.hour + 1, opening, inlet: state.prs_inlet_mca, outlet: state.prs_outlet_mca }]
+      : [];
+  });
+  if (!points.length) return `<p class="muted">No hay aperturas VRP válidas en el rango calibrado para graficar.</p>`;
+
+  const width = 760, height = 260, left = 54, right = 18, top = 18, bottom = 36;
+  const meanInlet = points.reduce((total, point) => total + point.inlet, 0) / points.length;
+  const pressureMax = Math.ceil(meanInlet / 10) * 10;
+  const xOpening = (opening: number) => left + (opening - 20) / 80 * (width - left - right);
+  const yPressure = (pressure: number) => top + (pressureMax - pressure) / (pressureMax - 15) * (height - top - bottom);
+  const pressureTicks = [15, 30, 45, 60, 75, pressureMax].filter((tick, index, ticks) => tick <= pressureMax && ticks.indexOf(tick) === index);
+  const pressureGrid = pressureTicks.map((tick) => `<line class="vrp-chart-grid" x1="${left}" x2="${width - right}" y1="${yPressure(tick)}" y2="${yPressure(tick)}"/><text class="vrp-chart-axis" x="${left - 8}" y="${yPressure(tick) + 4}" text-anchor="end">${fmt(tick, 0)}</text>`).join("");
+  const curve = Array.from({ length: 41 }, (_, index) => {
+    const opening = 20 + index * 2;
+    const t = (opening - 20) / 80;
+    const eased = (1 - Math.cos(Math.PI * t)) / 2;
+    const outlet = 15 + eased * (meanInlet - 15);
+    return `${index ? "L" : "M"}${xOpening(opening).toFixed(1)},${yPressure(outlet).toFixed(1)}`;
+  }).join(" ");
+  const operatingPoints = points.map((point) => `<circle class="vrp-chart-point" cx="${xOpening(point.opening).toFixed(1)}" cy="${yPressure(point.outlet).toFixed(1)}" r="3"><title>Hora ${String(point.hour).padStart(2, "0")}: apertura ${fmt(point.opening, 2)} %, salida ${fmt(point.outlet, 2)} mca</title></circle>`).join("");
+  const curveChart = `<article class="fractal-vrp-chart panel"><h2>Curva sinusoidal de la VRP</h2><svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Curva sinusoidal de apertura VRP a presión de salida; entrada media ${fmt(meanInlet, 2)} mca"><g>${pressureGrid}<line class="vrp-chart-axis-line" x1="${left}" x2="${width - right}" y1="${height - bottom}" y2="${height - bottom}"/></g><path class="vrp-chart-curve" d="${curve}"/>${operatingPoints}<text class="vrp-chart-axis" x="${left}" y="${height - 8}" text-anchor="middle">20 %</text><text class="vrp-chart-axis" x="${width - right}" y="${height - 8}" text-anchor="middle">100 %</text><text class="vrp-chart-axis" x="${(left + width - right) / 2}" y="${height - 8}" text-anchor="middle">Apertura VRP</text></svg><p class="muted">Curva teórica a entrada media ${fmt(meanInlet, 2)} mca · puntos: salidas optimizadas por hora · extremo 20 % = 15 mca</p></article>`;
+
+  const openingMin = 20, openingMax = 100;
+  const xHour = (index: number) => left + index * (width - left - right) / Math.max(1, points.length - 1);
+  const yOpening = (opening: number) => top + (openingMax - opening) / (openingMax - openingMin) * (height - top - bottom);
+  const openingTicks = [20, 40, 60, 80, 100];
+  const openingGrid = openingTicks.map((tick) => `<line class="vrp-chart-grid" x1="${left}" x2="${width - right}" y1="${yOpening(tick)}" y2="${yOpening(tick)}"/><text class="vrp-chart-axis" x="${left - 8}" y="${yOpening(tick) + 4}" text-anchor="end">${tick}</text>`).join("");
+  const openingPath = points.map((point, index) => `${index ? "L" : "M"}${xHour(index).toFixed(1)},${yOpening(point.opening).toFixed(1)}`).join(" ");
+  const openingPoints = points.map((point, index) => `<circle class="vrp-chart-point" cx="${xHour(index).toFixed(1)}" cy="${yOpening(point.opening).toFixed(1)}" r="3"><title>Hora ${String(point.hour).padStart(2, "0")}: ${fmt(point.opening, 2)} %</title></circle>`).join("");
+  const hourLabels = points.map((point, index) => index % 4 === 0 || index === points.length - 1 ? `<text class="vrp-chart-axis" x="${xHour(index).toFixed(1)}" y="${height - 8}" text-anchor="middle">${String(point.hour).padStart(2, "0")}</text>` : "").join("");
+  const openingChart = `<article class="fractal-vrp-chart panel"><h2>Perfil optimizado de apertura · tiempo</h2><svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Perfil horario optimizado de apertura de la VRP"><g>${openingGrid}<line class="vrp-chart-axis-line" x1="${left}" x2="${width - right}" y1="${height - bottom}" y2="${height - bottom}"/></g><path class="vrp-chart-curve" d="${openingPath}"/>${openingPoints}${hourLabels}</svg><p class="muted">Apertura por hora (%) · ${points.length} de ${hours.length} horas dentro del rango 20–100 %</p></article>`;
+  return `<div class="fractal-vrp-charts">${curveChart}${openingChart}</div>`;
+}
+
 async function renderFractal(): Promise<void> {
   const box = $("fractal-saved");
   if (!sessionId) { box.innerHTML = `<p class="muted">Inicie una sesión PLC para consultar estudios.</p>`; return; }
@@ -801,27 +846,30 @@ async function start(): Promise<void> {
     if (socket?.readyState === WebSocket.OPEN) socket.send(JSON.stringify({ speed }));
   };
   $("fractal-refresh").onclick = () => { void renderFractal(); };
+  const fractalStudyType = $<HTMLSelectElement>("fractal-study-type");
+  const fractalHorizonButton = $<HTMLButtonElement>("fractal-horizon");
+  const updateFractalButtonLabel = () => { fractalHorizonButton.textContent = fractalStudyType.value === "optimized" ? "◉ OPTIMIZAR VRP · 24 H" : "◫ PROYECTAR 24 H DESDE PLC"; };
+  fractalStudyType.onchange = updateFractalButtonLabel;
   $("fractal-horizon").onclick = async () => {
     if (!sessionId) { window.alert("Inicie una sesión PLC con un perfil guardado antes de proyectar."); return; }
     if (!fractalOrigin) { window.alert("Configure Fractal con ?fractal=https://host-fractal."); return; }
-    const studyType = $<HTMLSelectElement>("fractal-study-type").value;
-    const valveOpening = Number($<HTMLInputElement>("fractal-valve-opening").value);
+    const studyType = fractalStudyType.value;
     const overrides = studyType === "alternative" ? {
       demand_multiplier: Number($<HTMLInputElement>("fractal-demand-multiplier").value),
       leakage_multiplier: Number($<HTMLInputElement>("fractal-leak-multiplier").value),
-      valve_12_pct: valveOpening, valve_23_pct: valveOpening, valve_34_pct: valveOpening,
     } : undefined;
-    const button = $<HTMLButtonElement>("fractal-horizon");
-    button.disabled = true; button.textContent = "… LEYENDO PLC Y PROYECTANDO";
-    let study: { study_id: string; study_type: string; base_time: number; hours: { hour: number; supply_level_pct: number; robust: boolean; profile_commands?: { prs?: { control_mode?: string; critical_control_point?: string; critical_setpoint_mca?: number } }; scenarios: { demand_factor: number; state: Record<string, number> & { prs_inlet_mca: number; prs_outlet_mca: number; critical_pressure_mca: number; control_point_pressure_mca: number; consumer_pressures_mca: Record<string, number> }; feasible: boolean }[] }[]; published?: unknown };
+    const button = fractalHorizonButton;
+    button.disabled = true; button.textContent = studyType === "optimized" ? "… OPTIMIZANDO PRESIÓN POR HORA" : "… LEYENDO PLC Y PROYECTANDO";
+    let study: { study_id: string; study_type: string; base_time: number; hours: { hour: number; supply_level_pct: number; robust: boolean; commands?: { vrp_opening_pct?: number | null; vrp_opening_required_pct?: number | null; opening_curve_status?: string; target_pressure_mca?: number; applied_pressure_target_mca?: number; target_met?: boolean }; profile_commands?: { prs?: { control_mode?: string; critical_control_point?: string; critical_setpoint_mca?: number } }; scenarios: { demand_factor: number; state: Record<string, number> & { prs_inlet_mca: number; prs_outlet_mca: number; critical_pressure_mca: number; control_point_pressure_mca: number; consumer_pressures_mca: Record<string, number> }; feasible: boolean }[] }[]; published?: unknown };
     try {
       const response = await fractalFetch("/studies/horizon/from-plc", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ session_id: sessionId, plant_id: plantId, emulator_api: apiOrigin, overrides, study_type: studyType }) });
       if (!response.ok) { const detail = await response.json().catch(() => ({})) as { detail?: string }; throw Error(detail.detail ?? "Fractal no pudo proyectar el perfil PLC"); }
       study = await response.json();
     } catch (error) { window.alert(String(error)); return; }
-    finally { button.disabled = false; button.textContent = "◫ PROYECTAR 24 H DESDE PLC"; }
+    finally { button.disabled = false; updateFractalButtonLabel(); }
     if (study.published) $<HTMLAnchorElement>("link-plant").href = `/plant.html?plant=${plantId}&session=${encodeURIComponent(sessionId)}&study=${encodeURIComponent(study.study_id)}${query.get("api") ? `&api=${encodeURIComponent(apiOrigin)}` : ""}`;
-    $("fractal-recommendations").innerHTML = `<article class="panel"><p class="eyebrow">◆ FUTURO SIMULADO · NO APLICADO · ${study.study_type.toUpperCase()}</p><p><b>Estudio ${study.study_id}</b> · origen PLC t=${fmt(study.base_time, 0)} s · ${study.published ? "persistido en PLC" : "resultado Fractal (no persistido en PLC)"}</p>${study.hours.map((item) => { const state = item.scenarios[1]?.state; const pressureScenarios = item.scenarios.map((scenario) => ({ factor: scenario.demand_factor, minimum: Math.min(...Object.values(scenario.state.consumer_pressures_mca)) })); const worst = pressureScenarios.reduce((a, b) => b.minimum < a.minimum ? b : a, { factor: Number.NaN, minimum: Number.POSITIVE_INFINITY }); const safe = worst.minimum >= 15; const point = item.profile_commands?.prs?.critical_control_point; const pointText = point ? `Control ${point}: ${fmt(state?.control_point_pressure_mca)} mca / objetivo ${fmt(item.profile_commands?.prs?.critical_setpoint_mca)} mca · ` : ""; const outletLabel = item.profile_commands?.prs?.control_mode === "fixed_outlet" ? "salida fija" : "salida variable"; return `<p>Hora ${String(item.hour + 1).padStart(2, "0")} · tanque ${fmt(item.supply_level_pct)} % · entrada PRS ${fmt(state?.prs_inlet_mca)} / ${outletLabel} ${fmt(state?.prs_outlet_mca)} mca · ${pointText}mínima de las 64 viviendas ${fmt(worst.minimum)} mca (demanda ×${fmt(worst.factor, 2)}) · ${safe ? "TODAS ≥15 mca EN LOS ESCENARIOS · NO VALIDADO DINÁMICAMENTE" : "AL MENOS UNA <15 mca · REVISAR"} · ${item.robust ? "factible en modelo" : "restricciones no factibles"}</p>`; }).join("")}</article>`;
+    $("fractal-recommendations").innerHTML = `<article class="panel"><p class="eyebrow">◆ FUTURO SIMULADO · NO APLICADO · ${study.study_type.toUpperCase()}</p><p><b>Estudio ${study.study_id}</b> · origen PLC t=${fmt(study.base_time, 0)} s · ${study.published ? "persistido en PLC" : "resultado Fractal (no persistido en PLC)"}</p>${study.hours.map((item) => { const state = item.scenarios[1]?.state ?? item.scenarios[0]?.state; const pressureScenarios = item.scenarios.map((scenario) => ({ factor: scenario.demand_factor, minimum: Math.min(...Object.values(scenario.state.consumer_pressures_mca)) })); const worst = pressureScenarios.reduce((a, b) => b.minimum < a.minimum ? b : a, { factor: Number.NaN, minimum: Number.POSITIVE_INFINITY }); const safe = worst.minimum >= 15; const point = item.profile_commands?.prs?.critical_control_point; const pointText = point ? `Control ${point}: ${fmt(state?.control_point_pressure_mca)} mca / objetivo ${fmt(item.profile_commands?.prs?.critical_setpoint_mca)} mca · ` : ""; const outletLabel = item.profile_commands?.prs?.control_mode === "fixed_outlet" ? "salida fija" : "salida variable"; const openingText = item.commands?.opening_curve_status === "outside_calibrated_range" ? ` · apertura requerida ${fmt(item.commands?.vrp_opening_required_pct)} % · fuera del rango (20–100 %)` : ` · VRP estimada ${fmt(item.commands?.vrp_opening_pct)} %`;
+      const targetText = study.study_type === "optimized" ? `${openingText} · objetivo 18 mca ${item.commands?.target_met ? "alcanzado" : `fallback ${fmt(item.commands?.applied_pressure_target_mca)} mca`}` : ""; return `<p>Hora ${String(item.hour + 1).padStart(2, "0")} · entrada PRS ${fmt(state?.prs_inlet_mca)} / ${outletLabel} ${fmt(state?.prs_outlet_mca)} mca · ${pointText}mínima de las 64 viviendas ${fmt(worst.minimum)} mca (demanda ×${fmt(worst.factor, 2)})${targetText} · ${safe ? "todas ≥15 mca en escenarios de comprobación" : "alguna <15 mca · REVISAR"} · ${item.robust ? "factible en modelo" : "restricciones no factibles"}</p>`; }).join("")}${study.study_type === "optimized" ? renderVrpOptimizationCharts(study.hours) : ""}</article>`;
     void renderFractal();
   };
   $("profile-new").onclick = () => {

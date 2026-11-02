@@ -213,7 +213,7 @@ async function proxyFractal(request: Request, env: Env, visitorId: string, token
   }
   const url = new URL(request.url);
   if (url.pathname.includes("/studies/instant")) {
-    return withCors(Response.json({ detail: "Fractal optimizer is disabled in the public demo" }, { status: 409 }), request, env);
+    return withCors(Response.json({ detail: "Instantaneous optimization is not enabled in the public demo" }, { status: 409 }), request, env);
   }
   const plcStudyRoute = /^\/fractal\/studies\/(horizon|profile-preview)\/from-plc$/.test(url.pathname);
   if (!(url.pathname === "/fractal/health" && request.method === "GET") && !(plcStudyRoute && request.method === "POST")) {
@@ -436,7 +436,6 @@ export class FractalContainer extends ManagedPythonContainer {
   protected containerEnvironment(gateway: URL): Record<string, string> {
     return {
       FRACTAL_PLC_API_URL: gateway.origin,
-      FRACTAL_ENABLE_OPTIMIZATION: "0",
       SSL_CERT_FILE: "/etc/cloudflare/certs/cloudflare-containers-ca.crt",
     };
   }

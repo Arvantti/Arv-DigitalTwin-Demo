@@ -120,6 +120,31 @@ describe("public demo gateway", () => {
     expect(offlineFractal.status).toBe(404);
   });
 
+  it("forwards optimized Fractal horizons only for an owned PLC session", async () => {
+    const token = await signDemoToken(secret, "visitor-a", Math.floor(Date.now() / 1000) + 60);
+    const database = {
+      prepare: () => ({
+        bind: () => ({
+          first: async () => ({ session_id: "session-a", visitor_id: "visitor-a", plant_id: "water-network-scale-v1", expires_at: Math.floor(Date.now() / 1000) + 60 }),
+          all: async () => ({ results: [] }),
+          run: async () => ({ success: true }),
+        }),
+      }),
+    };
+    const fetch = vi.fn(async () => Response.json({ study_type: "optimized", applied: false }));
+    const response = await worker.fetch(
+      new Request(`${origin}/fractal/studies/horizon/from-plc`, {
+        method: "POST",
+        headers: { authorization: `Bearer ${token}`, origin, "content-type": "application/json" },
+        body: JSON.stringify({ plant_id: "water-network-scale-v1", session_id: "session-a", study_type: "optimized" }),
+      }),
+      env({ DB: database, FRACTAL_CONTAINER: { getByName: () => ({ fetch }) } }),
+    );
+    expect(response.status).toBe(200);
+    expect(fetch).toHaveBeenCalledOnce();
+    expect(await response.json()).toEqual({ study_type: "optimized", applied: false });
+  });
+
   it("blocks unbounded one-shot simulation endpoints", async () => {
     const token = await signDemoToken(secret, "visitor-a", Math.floor(Date.now() / 1000) + 60);
     const response = await worker.fetch(

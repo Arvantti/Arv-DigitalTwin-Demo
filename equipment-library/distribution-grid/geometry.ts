@@ -112,9 +112,21 @@ export default function build(params: Params): EquipmentModel {
     capDeep.position.set(xe, gy, zDeep - r * 0.3);
     root.add(capDeep);
     for (const z of tapLz) {
-      const tee = new THREE.Mesh(new THREE.SphereGeometry(r * 1.12, 14, 10), pvc);
-      tee.position.set(xe, gy, z);
-      root.add(tee);
+      // Acople Y por piso: manguito del colector y ramal oblicuo que converge en el montante vertical.
+      const saddle = P.cylinderZ(r * 1.18, r * 2.1, pvc, 20, "riser-wye-saddle");
+      saddle.position.set(xe, gy, z);
+      root.add(saddle);
+      const branch = P.pipe(
+        [v3(xe, gy - r * 0.72, z + r * 1.55), v3(xe, gy, z)],
+        r * 0.92,
+        pvc,
+        r * 0.45,
+        "riser-wye-branch",
+      );
+      root.add(branch);
+      const socket = P.cylinder(r * 1.28, r * 1.28, r * 0.34, M.darkSteel(), 20, "riser-wye-socket");
+      socket.position.set(xe, gy + r * 0.15, z);
+      root.add(socket);
     }
   } else {
     const capEnd = P.cylinderX(r * 1.15, r * 0.6, pvc, 24);
@@ -290,6 +302,10 @@ export default function build(params: Params): EquipmentModel {
       wall.position.set(sx * 0.08, 0.03, 0);
       ch_.add(wall);
     }
+    // Fondo ciego al final del ramal; el extremo frontal queda abierto hacia la canaleta principal.
+    const blindEnd = P.box(0.16, 0.06, 0.012, galv, 0.003);
+    blindEnd.position.set(0, 0.03, -len / 2 + 0.006);
+    ch_.add(blindEnd);
     ch_.position.set(x, gutterTop - 0.06, (zNode(5) - s * 0.2 + zHead - s * 0.2) / 2 - s * 0.05);
     ch_.rotation.x = -0.015;
     root.add(ch_);
@@ -314,12 +330,38 @@ export default function build(params: Params): EquipmentModel {
   // colector al frente y bajante
   const colLen = x1 - x0;
   const collector = P.group("collector");
-  const cFloor = P.box(colLen, 0.012, 0.2, galv, 0.003);
-  collector.add(cFloor);
+  // Cuatro paños dejan un hueco cuadrado alrededor del bajante; el tubo no debe atravesar una chapa sólida.
+  const drainX = colLen / 2 - 0.06;
+  const holeHalf = 0.05;
+  const leftWidth = drainX - holeHalf + colLen / 2;
+  const rightWidth = colLen / 2 - drainX - holeHalf;
+  const leftFloor = P.box(leftWidth, 0.012, 0.2, galv, 0.003);
+  leftFloor.position.x = -colLen / 2 + leftWidth / 2;
+  collector.add(leftFloor);
+  const rightFloor = P.box(rightWidth, 0.012, 0.2, galv, 0.003);
+  rightFloor.position.x = drainX + holeHalf + rightWidth / 2;
+  collector.add(rightFloor);
+  const holeSide = holeHalf * 2;
+  const sideStripDepth = (0.2 - holeSide) / 2;
+  for (const sz of [-1, 1]) {
+    const strip = P.box(holeSide, 0.012, sideStripDepth, galv, 0.003);
+    strip.position.set(drainX, 0, sz * (holeHalf + sideStripDepth / 2));
+    collector.add(strip);
+  }
+  const drainRim = new THREE.Mesh(new THREE.TorusGeometry(0.065, 0.005, 8, 24), galv);
+  drainRim.rotation.x = Math.PI / 2;
+  drainRim.position.set(drainX, 0.006, 0);
+  collector.add(drainRim);
   for (const sz of [-1, 1]) {
     const wall = P.box(colLen, 0.08, 0.012, galv, 0.003);
     wall.position.set(0, 0.04, sz * 0.1);
     collector.add(wall);
+  }
+  // La canaleta principal descarga por el bajante inferior; sus dos testeros no deben quedar abiertos.
+  for (const sx of [-1, 1]) {
+    const endWall = P.box(0.012, 0.08, 0.2, galv, 0.003);
+    endWall.position.set(sx * (colLen / 2 - 0.006), 0.04, 0);
+    collector.add(endWall);
   }
   collector.position.set((x0 + x1) / 2, gutterTop - 0.12, zHead + s * 0.05);
   root.add(collector);

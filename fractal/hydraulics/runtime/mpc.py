@@ -245,7 +245,6 @@ def project_24h(
     if not 1 <= horizon_hours <= 24:
         raise ValueError("horizon_hours debe estar entre 1 y 24")
     plan: list[dict[str, Any]] = []
-    optimized_cache: dict[tuple[Any, ...], dict[str, Any]] = {}
     tank_levels = {
         "tank-supply-01": float(tags.get("PLC.Tank.Supply.LevelPct") or 70.0),
         "tank-recirc-01": float(tags.get("PLC.Tank.Recirc01.LevelPct") or 40.0),
@@ -326,27 +325,42 @@ def project_24h(
                 scenario_tags[f"PLC.Grid.L{level}.Leak.{leak_id.upper()}.OpeningPct"] = float(opening_pct)
             scenario_tags[f"PLC.Grid.L{level}.LeakageScale"] = leak_multiplier
         carried_tags.update({k: v for k, v in scenario_tags.items() if k.startswith("PLC.Grid.") and k.endswith(".OpeningPct")})
-        factors = tuple(demand_multiplier * factor for factor in (0.9, 1.0, 1.1))
+        factors = (
+            (demand_multiplier,)
+            if study_type == "optimized"
+            else tuple(demand_multiplier * factor for factor in (0.9, 1.0, 1.1))
+        )
         scenarios: list[dict[str, Any]] = []
         optimized_controls: dict[str, Any] | None = None
+        optimized_fixed_flows: dict[str, float] | None = None
+        optimized_feasible = True
         if study_type == "optimized":
-            # La distribución estacionaria no cambia por la altura del tanque
-            # mientras el bombeo pueda regular. Reutilizamos mandos candidatos
-            # para horas con el mismo patrón; cada hora se comprueba de nuevo.
-            key = (
-                demand_multiplier,
-                objective_id,
-                tuple(sorted((name, value) for name, value in scenario_tags.items() if name.startswith("PLC.Grid."))),
+            # Cada hora y escenario conserva las aperturas PLC y el caudal de
+            # referencia; solo se busca la presión de salida requerida en PRS.
+            search = optimize(
+                scenario_tags,
+                demand_factor=demand_multiplier,
+                objective_id=objective_id,
+                vertical_openings_pct=scenario_openings,
+                critical_consumer_id=critical_consumer_id,
+                reference_prs_mca=prs_setpoint,
             )
-            if key not in optimized_cache:
-                optimized_cache[key] = optimize(scenario_tags, demand_factor=demand_multiplier, objective_id=objective_id)["optimized"]
-            optimized_controls = optimized_cache[key]
+            optimized_controls = search["optimized"]
+            optimized_fixed_flows = search["fixed_flows_m3h"]
+            optimized_feasible = bool(search.get("constraints_satisfied", True))
         for factor in factors:
             if optimized_controls is not None:
                 candidate_prs = float(optimized_controls["prs_mca"])
-                candidate_openings = tuple(float(optimized_controls[f"valve_{key}_pct"]) for key in ("12", "23", "34"))
+                fixed_flow_scale = factor / demand_multiplier if demand_multiplier > 0 else 1.0
+                scenario_fixed_flows = {
+                    key: value * fixed_flow_scale for key, value in (optimized_fixed_flows or {}).items()
+                }
                 state = _solver.evaluate(
-                    scenario_tags, prs_mca=candidate_prs, vertical_openings_pct=candidate_openings, demand_factor=factor
+                    scenario_tags,
+                    prs_mca=candidate_prs,
+                    vertical_openings_pct=scenario_openings,
+                    demand_factor=1.0,
+                    fixed_flows_m3h=scenario_fixed_flows,
                 )
             else:
                 state = _solver.evaluate(
@@ -360,7 +374,7 @@ def project_24h(
                 )
             feasible = bool(state["feasible"])
             scenarios.append({"demand_factor": round(factor, 3), "state": state, "feasible": feasible})
-        nominal_state = scenarios[1]["state"]
+        nominal_state = scenarios[len(scenarios) // 2]["state"]
         # Una hora con control por nivel e histéresis; cada minuto usa la curva
         # de recirculación, la cabeza de los tres tanques y el caudal por piso.
         flow_out = float(nominal_state["flow_m3h"])
@@ -382,20 +396,26 @@ def project_24h(
             "PLC.Tank.Recirc02.LevelPct": tank_levels["tank-recirc-02"],
         })
         end_prs = float(optimized_controls["prs_mca"]) if optimized_controls is not None else prs_setpoint
-        end_openings = (
-            tuple(float(optimized_controls[f"valve_{key}_pct"]) for key in ("12", "23", "34"))
-            if optimized_controls is not None else scenario_openings
-        )
+        end_openings = scenario_openings
         end_state = _solver.evaluate(
-            end_tags, prs_mca=end_prs, vertical_openings_pct=end_openings,
-            demand_factor=demand_multiplier, prs_auto=prs_auto and optimized_controls is None,
+            end_tags,
+            prs_mca=end_prs,
+            vertical_openings_pct=end_openings,
+            demand_factor=1.0 if optimized_controls is not None else demand_multiplier,
+            prs_auto=prs_auto and optimized_controls is None,
             critical_target_mca=critical_target,
             critical_consumer_id=critical_consumer_id,
+            fixed_flows_m3h=optimized_fixed_flows,
         )
         flow_out = float(end_state["flow_m3h"])
         recirc_end_flow, recirc_a, recirc_b = _recirc.pump_flow(_MODEL, tank_levels) if recirc_on else (0.0, 0.0, 0.0)
         levels_in_bounds = not overflow and all(0 <= value <= 100 for value in tank_levels.values())
-        robust = all(item["feasible"] for item in scenarios) and levels_in_bounds and 20 <= supply_level <= 95
+        robust = (
+            all(item["feasible"] for item in scenarios)
+            and optimized_feasible
+            and levels_in_bounds
+            and 20 <= supply_level <= 95
+        )
         nominal_state = end_state
         effective_openings = tuple(float(nominal_state[f"valve_{key}_pct"]) for key in ("12", "23", "34"))
         snapshot_entry = {
@@ -488,10 +508,16 @@ def project_24h(
                 "out_of_bounds": not levels_in_bounds,
                 "commands": (
                     {
-                        "prs": {"branch": "manual", "manual_setting_mca": scenarios[1]["state"]["prs_mca"]},
-                        "between_levels": {key: scenarios[1]["state"][f"valve_{key}_pct"] for key in ("12", "23", "34")},
+                        "prs": {"branch": "manual", "manual_setting_mca": optimized_controls["prs_mca"]},
+                        "vrp_opening_pct": optimized_controls["vrp_opening_pct"],
+                        "vrp_opening_required_pct": optimized_controls.get("vrp_opening_required_pct"),
+                        "opening_curve_status": optimized_controls.get("opening_curve_status"),
+                        "target_pressure_mca": optimized_controls["target_pressure_mca"],
+                        "applied_pressure_target_mca": optimized_controls["applied_pressure_target_mca"],
+                        "target_met": optimized_controls["target_met"],
+                        "constraints_satisfied": optimized_feasible,
                     }
-                    if study_type == "optimized"
+                    if optimized_controls is not None
                     else {}
                 ),
             }

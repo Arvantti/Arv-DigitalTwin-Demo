@@ -36,9 +36,18 @@ class Edge:
 
 
 class Network:
-    def __init__(self, model: dict[str, Any], tags: dict[str, Any], prs_mca: float, openings: tuple[float, float, float], demand: float):
+    def __init__(
+        self,
+        model: dict[str, Any],
+        tags: dict[str, Any],
+        prs_mca: float,
+        openings: tuple[float, float, float],
+        demand: float,
+        fixed_flows_m3h: dict[str, float] | None = None,
+    ):
         self.model = model
         self.tags = tags
+        self.fixed_flows_m3h = fixed_flows_m3h or {}
         self.elevation: dict[str, float] = {}
         self.fixed: dict[str, float] = {}
         self.edges: dict[str, Edge] = {}
@@ -119,7 +128,10 @@ class Network:
                 valve = f"PLC.Grid.L{level}.Consumer.C{branch}{position}.OpeningPct"
                 opening = self.tags.get(valve)
                 pct = float(p["consumer_opening_pct"] if opening is None else opening)
-                self.emitter(key, f"{prefix}.n{branch}{slot}", float(p["consumer_kv_m3h"]) * pct / 100 * demand)
+                if key in self.fixed_flows_m3h:
+                    self.fixed_demand(key, f"{prefix}.n{branch}{slot}", self.fixed_flows_m3h[key] * demand)
+                else:
+                    self.emitter(key, f"{prefix}.n{branch}{slot}", float(p["consumer_kv_m3h"]) * pct / 100 * demand)
             if leak_slot is not None:
                 leak = "L1" if branch == 2 else "L2"
                 key = f"{prefix}.{leak}"
@@ -127,7 +139,15 @@ class Network:
                 opening = self.tags.get(valve)
                 pct = float(p["leak_opening_pct"] if opening is None else opening)
                 scale = float(self.tags.get(f"PLC.Grid.L{level}.Leak.{leak}.Scale", self.tags.get(f"PLC.Grid.L{level}.LeakageScale", 1)))
-                self.emitter(key, f"{prefix}.n{branch}{leak_slot}", float(p["leak_kv_m3h"]) * pct / 100 * scale, float(p["leak_exponent"]))
+                if key in self.fixed_flows_m3h:
+                    self.fixed_demand(key, f"{prefix}.n{branch}{leak_slot}", self.fixed_flows_m3h[key] * demand)
+                else:
+                    self.emitter(
+                        key,
+                        f"{prefix}.n{branch}{leak_slot}",
+                        float(p["leak_kv_m3h"]) * pct / 100 * scale,
+                        float(p["leak_exponent"]),
+                    )
         for branch in range(1, 4):
             self.pipe(f"{prefix}.xe{branch}", f"{prefix}.n{branch}5", f"{prefix}.n{branch + 1}5", spacing, diameter, 0.5)
         for branch in (1, 3):
@@ -139,9 +159,18 @@ class Network:
         self.emitters[name] = node
         self.edges[name] = Edge(node, atmosphere, "emitter", kv=kv, exponent=exponent)
 
+    def fixed_demand(self, name: str, node: str, flow_m3h: float) -> None:
+        """Retira un caudal horario fijado; la presión no vuelve a escalar la demanda."""
+        atmosphere = f"{name}@atm"
+        self.add_node(atmosphere, self.elevation[node], self.elevation[node])
+        self.emitters[name] = node
+        self.edges[name] = Edge(node, atmosphere, "fixed_demand", kv=1.0, flow=max(0.0, flow_m3h) / 3600)
+
     @staticmethod
     def _linear(edge: Edge) -> tuple[float, float]:
         q = edge.flow
+        if edge.kind == "fixed_demand":
+            return 0.0, edge.flow
         if edge.kind != "pipe" and (edge.kv <= 0 or (edge.kind == "check" and q <= 0)):
             return CLOSED_P, 0.0
         if edge.kind == "pipe":
@@ -217,5 +246,8 @@ class Network:
                 converged = True
                 break
         pressures = {name: float(heads[name] - z) for name, z in self.elevation.items() if not name.endswith("@atm")}
-        flows = {name: (0.0 if edge.kind != "pipe" and edge.kv <= 0 else max(0.0, edge.flow * 3600)) for name, edge in self.edges.items()}
+        flows = {
+            name: (0.0 if edge.kind != "pipe" and edge.kind != "fixed_demand" and edge.kv <= 0 else max(0.0, edge.flow * 3600))
+            for name, edge in self.edges.items()
+        }
         return pressures, flows, converged

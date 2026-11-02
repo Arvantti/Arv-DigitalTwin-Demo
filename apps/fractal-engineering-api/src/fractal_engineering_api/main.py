@@ -21,6 +21,8 @@ sys.path.insert(0, str(ROOT))
 from fractal.hydraulics.runtime.mpc import project_24h  # noqa: E402
 from fractal.hydraulics.runtime.optimizer import recommend_instant  # noqa: E402
 
+SUPPORTED_OBJECTIVE_ID = "OBJ-LEAK-01"  # Identificador histórico conservado por compatibilidad.
+
 app = FastAPI(title="Fractal Engineering API", version="0.1.0")
 app.add_middleware(
     CORSMiddleware,
@@ -36,7 +38,12 @@ def health() -> dict[str, str]:
 
 
 def optimization_enabled() -> bool:
-    return os.getenv("FRACTAL_ENABLE_OPTIMIZATION", "0") == "1"
+    return os.getenv("FRACTAL_ENABLE_OPTIMIZATION", "1") == "1"
+
+
+def validate_objective(objective_id: str) -> None:
+    if objective_id != SUPPORTED_OBJECTIVE_ID:
+        raise HTTPException(422, f"solo está disponible el objetivo {SUPPORTED_OBJECTIVE_ID}")
 
 
 def plc_gateway(payload: dict[str, Any]) -> str:
@@ -165,9 +172,10 @@ def _horizon_study(payload: dict[str, Any], *, publish: bool, plc_token: str | N
     if study_type not in {"baseline", "alternative", "optimized"}:
         raise HTTPException(422, "study_type debe ser baseline, alternative u optimized")
     if study_type == "optimized" and not optimization_enabled():
-        raise HTTPException(409, "primero se valida la proyección PLC; optimización deshabilitada en esta fase")
+        raise HTTPException(409, "optimización deshabilitada por FRACTAL_ENABLE_OPTIMIZATION=0")
     if not isinstance(session_id, str) or not isinstance(tags, dict) or not isinstance(profile, dict) or not isinstance(objective_id, str):
         raise HTTPException(422, "session_id, plc_tags, profile y objective_id son obligatorios")
+    validate_objective(objective_id)
     overrides = profile.get("overrides", {}) if study_type == "alternative" else {}
     if not isinstance(overrides, dict):
         raise HTTPException(422, "overrides debe ser un objeto")
@@ -184,14 +192,16 @@ def _horizon_study(payload: dict[str, Any], *, publish: bool, plc_token: str | N
         if value is not None and (isinstance(value, bool) or not isinstance(value, (int, float)) or not low <= value <= high):
             raise HTTPException(422, f"{name} debe estar entre {low} y {high}")
     hours = project_24h(tags, profile, study_type, objective_id)
+    draft_feasible = study_type == "optimized" and all(
+        bool(frame.get("commands", {}).get("constraints_satisfied")) for frame in hours
+    )
     draft_hours: dict[str, Any] = {}
-    if study_type == "optimized":
+    if draft_feasible:
         for frame in hours:
             planned = dict(profile.get("hours", {}).get(str(frame["profile_hour"]), {}))
             settings = frame.get("commands") or {}
             if settings:
                 planned["prs"] = {**planned.get("prs", {}), **settings["prs"]}
-                planned["between_levels"] = settings["between_levels"]
             draft_hours[str(frame["profile_hour"])] = planned
     result = {
         "session_id": session_id,
@@ -210,10 +220,20 @@ def _horizon_study(payload: dict[str, Any], *, publish: bool, plc_token: str | N
                 "description": f"Perfil optimizado para {objective_id}; requiere aprobación del operador PLC.",
                 "hours": draft_hours,
             }
+            if draft_feasible
+            else None
+        ),
+        "vrp_opening_profile_pct": (
+            {str(frame["profile_hour"]): frame.get("commands", {}).get("vrp_opening_pct") for frame in hours}
             if study_type == "optimized"
             else None
         ),
-        "requires_operator_acceptance": study_type == "optimized",
+        "vrp_opening_required_profile_pct": (
+            {str(frame["profile_hour"]): frame.get("commands", {}).get("vrp_opening_required_pct") for frame in hours}
+            if study_type == "optimized"
+            else None
+        ),
+        "requires_operator_acceptance": draft_feasible,
     }
     plant_id = payload.get("plant_id")
     if publish and isinstance(plant_id, str):
@@ -233,13 +253,14 @@ def _horizon_study(payload: dict[str, Any], *, publish: bool, plc_token: str | N
 def instant_study_publish(payload: dict[str, Any]) -> dict[str, Any]:
     """Lee tags PLC publicados y deposita una propuesta; nunca aplica mandos."""
     if not optimization_enabled():
-        raise HTTPException(409, "optimización deshabilitada hasta validar la proyección PLC")
+        raise HTTPException(409, "optimización deshabilitada por FRACTAL_ENABLE_OPTIMIZATION=0")
     emulator_api = plc_gateway(payload)
     plant_id = payload.get("plant_id")
     session_id = payload.get("session_id")
     objective_id = payload.get("objective_id")
     if not emulator_api or not all(isinstance(value, str) for value in (plant_id, session_id, objective_id)):
         raise HTTPException(422, "emulator_api, plant_id, session_id y objective_id son obligatorios")
+    validate_objective(objective_id)
     with urlopen(f"{emulator_api}/api/plants/{plant_id}/sessions/{session_id}/plc-tags", timeout=5) as response:  # noqa: S310
         tags = json.load(response)["plc_tags"]
     result = recommend_instant(tags, objective_id)
@@ -258,11 +279,12 @@ def instant_study_publish(payload: dict[str, Any]) -> dict[str, Any]:
 def instant_study(payload: dict[str, Any]) -> dict[str, Any]:
     """Recibe exclusivamente tags PLC ya publicados por el gateway de sesión."""
     if not optimization_enabled():
-        raise HTTPException(409, "optimización deshabilitada hasta validar la proyección PLC")
+        raise HTTPException(409, "optimización deshabilitada por FRACTAL_ENABLE_OPTIMIZATION=0")
     session_id = payload.get("session_id")
     tags = payload.get("plc_tags")
     objective_id = payload.get("objective_id")
     if not isinstance(session_id, str) or not isinstance(tags, dict) or not isinstance(objective_id, str):
         raise HTTPException(422, "session_id, plc_tags y objective_id son obligatorios")
+    validate_objective(objective_id)
     recommendation = recommend_instant(tags, objective_id)
     return {"session_id": session_id, "mode": "instant", "requires_operator_acceptance": True, "recommendation": recommendation}

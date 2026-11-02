@@ -55,13 +55,16 @@ def evaluate(
     prs_auto: bool = False,
     critical_target_mca: float | None = None,
     critical_consumer_id: str | None = None,
+    fixed_flows_m3h: dict[str, float] | None = None,
 ) -> dict[str, Any]:
     """Acopla la red nodal con curva de bomba, disponibilidad PRS y lazo AUTO asentado."""
 
     def solve_at(setting: float) -> tuple[Any, dict[str, float], dict[str, float], bool, dict[str, Any]]:
         estimate = max(0.0, float(tags.get("PLC.Pump.FlowM3h") or 11.53) * max(0.0, demand_factor))
         supply = _supply.pump_and_prs(MODEL, tags, estimate, setting)
-        net = _nodal.Network(MODEL, tags, float(supply["prs_outlet_mca"]), vertical_openings_pct, demand_factor)
+        net = _nodal.Network(
+            MODEL, tags, float(supply["prs_outlet_mca"]), vertical_openings_pct, demand_factor, fixed_flows_m3h
+        )
         pressures, flows, converged = net.solve()
         for _ in range(3):
             measured = sum(
@@ -71,7 +74,9 @@ def evaluate(
             supply = _supply.pump_and_prs(MODEL, tags, measured, setting)
             if abs(float(supply["prs_outlet_mca"]) - net.fixed["prs"] + net.elevation["prs"]) < 1e-5:
                 break
-            net = _nodal.Network(MODEL, tags, float(supply["prs_outlet_mca"]), vertical_openings_pct, demand_factor)
+            net = _nodal.Network(
+                MODEL, tags, float(supply["prs_outlet_mca"]), vertical_openings_pct, demand_factor, fixed_flows_m3h
+            )
             pressures, flows, converged = net.solve()
         return net, pressures, flows, converged, supply
 
