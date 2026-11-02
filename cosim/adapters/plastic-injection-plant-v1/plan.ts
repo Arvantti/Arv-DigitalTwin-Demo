@@ -188,6 +188,12 @@ export function context(model: PlasticsModel, portfolio: CustomerOrders, nowIso?
 export function dispatch(ctx: Context, queues: Record<string, Chunk[]>): { rows: Row[]; unscheduled: Record<string, number> } {
   const { model } = ctx;
   const cal = model.calendar;
+  /** Fin del turno que contiene t (o t si t no está en turno). */
+  const shiftEnd = (t: number): number => {
+    const d = Math.floor(t / DAY_MIN) * DAY_MIN;
+    const span = cal.spans.find(([a, b]) => t >= d + a && t < d + b);
+    return span ? d + span[1] : t;
+  };
   const rows: Row[] = [...ctx.frozen];
   const unscheduled: Record<string, number> = {};
   const isAssembly = (m: string) => ctx.jobs.some((j) => j.components.length && j.step.machines.includes(m));
@@ -246,6 +252,11 @@ export function dispatch(ctx: Context, queues: Record<string, Chunk[]>): { rows:
         // Cambio de referencia según los datos: montaje de molde, purga de resina y de color (changeovers.yaml).
         const change = model.changeover({ tooling, color }, { tooling: ch.job.step.tooling, color: ch.job.color });
         const co = change.min;
+        // El cambio de referencia no se parte: si no cabe entero en el turno que está corriendo, arranca en el siguiente.
+        if (co > 0) {
+          for (let g = 0; g < 5 && cal.advance(t, co, blocked) !== t + co; g++) t = cal.nextWork(shiftEnd(t));
+          if (t >= ctx.horizonEnd) break;
+        }
         const fence = fixedSpans.find(([a]) => a > t);
         let q = qty;
         let end = Math.max(cal.advance(t, co + q * ch.job.step.unitMin, blocked), Number.isFinite(lastReady) ? cal.advance(lastReady, ch.job.step.unitMin, blocked) : -Infinity);
