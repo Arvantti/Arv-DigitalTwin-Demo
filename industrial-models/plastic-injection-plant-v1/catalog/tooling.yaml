@@ -2,9 +2,12 @@
 # y la resina; y lo que exige de la máquina: fuerza de cierre mínima y capacidad de inyección (shot_kg, con colada).
 # El motor copia producto, resina, cavidades, peso y ciclo a la inyectora donde está montado (setup.yaml).
 # Valores iguales a los que ya tenía cada inyectora; todos supuestos hasta tener los moldes reales.
+# copies: cuántas copias físicas hay del molde. Una copia solo puede estar montada en una inyectora a la vez; las que
+# no están montadas (setup.yaml) quedan en el almacén de moldes y Fractal puede montarlas en una inyectora libre.
 tooling:
   - id: mold-cubiertos-16c
     kind: mold
+    copies: 5
     name: Molde de cubiertos, 16 cavidades
     product: cubiertos
     material: ps
@@ -17,6 +20,7 @@ tooling:
     assumed: true
   - id: mold-balde-12l
     kind: mold
+    copies: 3
     name: Molde de balde de 12 L
     product: balde-12l
     material: hdpe
@@ -29,6 +33,7 @@ tooling:
     assumed: true
   - id: mold-cuerpo-papelera-20l
     kind: mold
+    copies: 3
     name: Molde del cuerpo de papelera de 20 L
     product: cuerpo-papelera-20l
     material: pp-reciclado
@@ -41,6 +46,7 @@ tooling:
     assumed: true
   - id: mold-pedal-palanca-2c
     kind: mold
+    copies: 2
     name: Molde de pedal y palanca de papelera, 2 cavidades
     product: pedal-palanca-papelera
     material: pp-reciclado

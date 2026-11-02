@@ -63,6 +63,21 @@ Código: `cosim/adapters/plastic-injection-plant-v1/manual.ts` (`queuesOf`, `mov
 antes de uno fijado) y en `solve.ts` (la capacidad de cada turno descuenta lo fijado). El plan guarda `fixed_orders`.
 Capturas en `docs/demo-plasticos/ajuste-manual/`.
 
+## Moldes como recursos
+
+Los recursos del Gantt son las inyectoras y también los moldes. Cada molde declara sus copias físicas en
+`catalog/tooling.yaml` (`copies`); una copia solo puede estar montada en una inyectora a la vez (`setup.yaml`) y las que
+no están montadas quedan en el almacén de moldes. El modelo del cosimulador rechaza un montaje con más inyectoras que
+copias. Las copias de repuesto que Fractal puede montar salen de ahí (copias menos montadas), ya no de `aps.yaml`.
+
+En RECURSOS, el selector **POR MÁQUINA / POR MOLDE** cambia las filas: por molde, cada molde tiene un encabezado (copias,
+montados, minutos de montaje) y una fila por molde físico, numerado (Molde 1, Molde 2...), con la inyectora donde está, su carga y sus lotes, o "en el almacén
+de moldes". Si una opción de Fractal monta o muda un molde, el molde aparece en su nueva inyectora con "(Fractal)". El
+arrastrar y soltar funciona igual en las dos vistas. Capturas en `docs/demo-plasticos/moldes-recursos/`.
+
+Hoy el cosimulador no mueve moldes: coloca cada producto en las inyectoras que ya tienen su molde. Que decida qué copia
+va en qué inyectora compatible (límite de copias por turno y tiempo de montaje en el MILP) es el paso siguiente.
+
 ## Emulador y falla de una máquina
 
 `emulador.html` es el plano 2D de la planta en tiempo real: cada inyectora y celda de ensamble con su estado (produciendo,

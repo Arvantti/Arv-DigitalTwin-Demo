@@ -74,10 +74,11 @@ function freeMachinesFor(cat: CatalogData, setup: Setup, tooling: string, out: S
   return (route?.equipment ?? []).filter((m) => !setup[m] && !out.has(m));
 }
 
-/** Copias de repuesto que quedan en el almacén de moldes. */
+/** Copias de repuesto que quedan en el almacén de moldes (copias del catálogo menos las montadas al inicio). */
 function sparesLeft(cat: CatalogData, setup: Setup, tooling: string): number {
-  const stock = cat.aps?.aps.molds_in_storage?.[tooling] ?? 0;
   const original = Object.values(cat.setup.setup).filter((s) => s.tooling === tooling).length;
+  const copies = cat.tooling.tooling.find((t) => t.id === tooling)?.copies;
+  const stock = copies !== undefined ? copies - original : cat.aps?.aps.molds_in_storage?.[tooling] ?? 0;
   const now = Object.values(setup).filter((s) => s.tooling === tooling).length;
   return Math.max(0, stock - Math.max(0, now - original));
 }
