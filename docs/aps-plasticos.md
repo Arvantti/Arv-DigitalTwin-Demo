@@ -174,6 +174,12 @@ puede VER EN GANTT y ADOPTAR, no solo la recomendada; la adoptada queda vigente 
    otra máquina del mismo tamaño o montar el repuesto. Con IMM-21 parada 72 h (lo que propone el emulador) y la cartera inicial, solo recolocar
    deja 9 pedidos tarde (208,9 h) y montar el molde de balde de repuesto en IMM-20 deja 7 (181,8 h).
 
+4. **Órdenes fijadas a mano**: el planificador bloquea órdenes en el Gantt (candado 🔓/🔒 o arrastrándolas a su fecha) y
+   Fractal organiza el resto sin moverlas: prueba solo reorganizar y montar el molde de repuesto en una inyectora libre
+   (puntaje como al balancear). Todas las opciones conservan máquina y hora de los lotes fijados (`fixed_orders` del plan).
+   Los demás escenarios también respetan las órdenes fijadas si las hay. Guion y capturas en
+   `docs/demo-plasticos/4-pedidos-fijados/`.
+
 Moldes de repuesto de la demo (`aps/aps.yaml`): uno de balde de 12 L y uno de cuerpo de papelera.
 
 ## Demo grabada

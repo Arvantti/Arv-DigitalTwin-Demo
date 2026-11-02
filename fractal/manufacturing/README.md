@@ -8,7 +8,7 @@ cosimulador que coloque cada combinación; compara y recomienda. El APS decide s
 fractal/manufacturing/
   contracts.ts                          fractal-study.v1 (estudio, opciones, recomendación)
   models/plastic-injection-plant-v1/
-    study.ts                            escenarios adelantar, balancear y falla
+    study.ts                            escenarios adelantar, balancear, falla y fijadas
     tests/                              pruebas con la cartera de la demo
 ```
 

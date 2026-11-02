@@ -4,7 +4,7 @@
  *
  *   pnpm gallery                                   # en otra terminal: la galería en http://localhost:5173
  *   pnpm add -g playwright@1.63.0 && pnpm dlx playwright@1.63.0 install chromium   # una vez
- *   NODE_PATH="$(pnpm root -g)" node tools/demo-video/grabar.cjs [1|2|3|todos] [--video] [--lento]
+ *   NODE_PATH="$(pnpm root -g)" node tools/demo-video/grabar.cjs [1|2|3|4|todos] [--video] [--lento]
  *
  * Las capturas quedan en docs/demo-plasticos/<escenario>/capturas/ con los nombres que usa cada guion.md; los videos en
  * docs/demo-plasticos/<escenario>/video/recorrido.webm (no se suben al repo: ver .gitignore). AHORA = día 9, 10:00.
@@ -18,11 +18,11 @@ const BASE = (process.env.GALLERY_URL || "http://localhost:5173").replace(/\/$/,
 const NOW = "?now=2026-11-04T10:00";
 const ROOT = process.env.DEMO_OUT || path.resolve(__dirname, "../../docs/demo-plasticos");
 const args = process.argv.slice(2);
-const which = args.find((a) => /^(1|2|3|todos)$/.test(a)) || "todos";
+const which = args.find((a) => /^(1|2|3|4|todos)$/.test(a)) || "todos";
 const VIDEO = args.includes("--video");
 // En video, pausas largas para que se alcance a leer; --lento las alarga más.
 const PACE = VIDEO ? (args.includes("--lento") ? 2.5 : 1.5) : 0.4;
-const FOLDERS = { 1: "1-calcular-programacion", 2: "2-cambio-fecha-pedido", 3: "3-contingencia-falla" };
+const FOLDERS = { 1: "1-calcular-programacion", 2: "2-cambio-fecha-pedido", 3: "3-contingencia-falla", 4: "4-pedidos-fijados" };
 
 const wait = (pg, s) => pg.waitForTimeout(Math.round(s * 1000 * PACE));
 const click = (pg, sel) => pg.$eval(sel, (e) => e.dispatchEvent(new MouseEvent("click", { bubbles: true })));
@@ -46,7 +46,7 @@ async function scenario(browser, n, steps) {
     await pg.goto(BASE + url, { waitUntil: "networkidle", timeout: 240000 });
     await wait(pg, 1);
   };
-  // Punto de partida común: cartera inicial; los escenarios 2 y 3 parten del plan del cosimulador.
+  // Punto de partida común: cartera inicial; los escenarios 2, 3 y 4 parten del plan del cosimulador.
   await go(`/aps.html${NOW}&reset=1`);
   if (n !== 1) {
     await click(pg, "#aps-calc");
@@ -169,12 +169,45 @@ const SCENARIOS = {
     await shot("11-gemelo-3d-despues.png");
     await wait(2);
   },
+  4: async ({ pg, go, shot, wait }) => {
+    await click(pg, "[data-tab=gantt]");
+    await shot("01-gantt-vigente.png");
+    // Un compromiso firmado: la papelera PED-D12-07 se corre un día a mano (arrastrando su barra).
+    const bar = await (await pg.$('.g-bar.drag[data-move-order="PED-D12-07"]')).boundingBox();
+    await pg.mouse.move(bar.x + 100, bar.y + 12);
+    await pg.mouse.down();
+    await pg.mouse.move(bar.x + 160, bar.y + 12, { steps: 5 });
+    await pg.mouse.move(bar.x + 231, bar.y + 12, { steps: 10 });
+    await pg.mouse.up();
+    await wait(2);
+    // Y se bloquean (🔒) tres órdenes que hay que entregar sí o sí donde están.
+    for (const id of ["PED-D11-02", "PED-D12-07", "PED-D14-06"]) {
+      const sel = `.g-lock[data-lock="${id}"]`;
+      if (!(await pg.$(`${sel}.on`))) {
+        await click(pg, sel);
+        await pg.waitForSelector(`${sel}.on`, { timeout: 60000 });
+        await wait(1);
+      }
+    }
+    await shot("02-gantt-fijadas.png");
+    await click(pg, "[data-tab=fractal]");
+    await shot("03-fractal-pregunta.png");
+    await click(pg, "#fr-run-fijadas");
+    await pg.waitForSelector(".fr-result", { timeout: 120000 });
+    await shot("04-fractal.png");
+    await shot("04b-fractal-full.png", true);
+    await click(pg, "#fr-adopt");
+    await shot("05-gantt-adoptado.png");
+    await go(`/control.html${NOW}`);
+    await shot("06-centro-control.png");
+    await wait(2);
+  },
 };
 
 (async () => {
   const browser = await chromium.launch();
   try {
-    for (const n of which === "todos" ? [1, 2, 3] : [Number(which)]) await scenario(browser, n, SCENARIOS[n]);
+    for (const n of which === "todos" ? [1, 2, 3, 4] : [Number(which)]) await scenario(browser, n, SCENARIOS[n]);
   } finally {
     await browser.close();
   }
