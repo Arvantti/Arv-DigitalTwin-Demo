@@ -350,3 +350,15 @@ button.danger:hover { background: rgba(255, 59, 59, 0.4); border-color: #fff; }
 .ord-dialog label { display: grid; gap: 4px; font-size: 12px; }
 .ord-dialog input { background: #040421; color: inherit; border: 1px solid #3b3f8a; border-radius: 4px; padding: 6px; }
 .ord-dialog-actions { display: flex; gap: 8px; justify-content: flex-end; }
+
+/* Elegir el objetivo antes de calcular con el cosimulador */
+.aps-objetivo { max-width: min(560px, calc(100vw - 32px)); border: 1px solid var(--line, #2a3442); border-radius: 10px; padding: 18px 20px; background: var(--panel, #111820); color: inherit; }
+.aps-objetivo::backdrop { background: rgb(0 0 0 / 0.55); }
+.aps-objetivo h2 { margin: 0 0 6px; font-size: 18px; }
+.aps-obj-list { display: grid; gap: 8px; margin: 12px 0; }
+.aps-obj-opt { display: flex; gap: 10px; align-items: flex-start; padding: 8px 10px; border: 1px solid var(--line, #2a3442); border-radius: 8px; cursor: pointer; }
+.aps-obj-opt small { display: block; opacity: 0.75; margin-top: 2px; }
+.aps-obj-opt.pending { opacity: 0.55; cursor: not-allowed; }
+.aps-obj-note { min-height: 2.6em; font-size: 14px; }
+.aps-obj-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
+@media (max-width: 480px) { .aps-objetivo { padding: 14px; } .aps-obj-actions button { flex: 1; } }

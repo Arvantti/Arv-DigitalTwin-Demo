@@ -25,6 +25,13 @@
       <button id="aps-calc" class="primary" title="El cosimulador coloca la producción con restricciones lineales, priorizando las fechas de entrega">⚙ CALCULAR CON EL COSIMULADOR</button>
       <button id="aps-manual" title="Carga la secuencia del planificador (APS-MAN-01), recalculada desde AHORA. Después ajústala a mano arrastrando lotes y órdenes en el Gantt">✎ PROGRAMACIÓN MANUAL</button>
     </nav>
+    <dialog id="aps-objetivo" class="aps-objetivo" aria-labelledby="aps-obj-title">
+      <h2 id="aps-obj-title">¿Qué objetivo calcula el cosimulador?</h2>
+      <p class="dim">Cada corrida optimiza un solo objetivo. Si quieres varios a la vez, eso pasa a Fractal.</p>
+      <div id="aps-obj-list" class="aps-obj-list"></div>
+      <p id="aps-obj-note" class="aps-obj-note" aria-live="polite"></p>
+      <div class="aps-obj-actions"><button id="aps-obj-cancel" type="button">Cancelar</button><button id="aps-obj-go" type="button" class="primary">Calcular</button></div>
+    </dialog>
     <section id="aps-alarm" class="aps-alarm" hidden></section>
     <section id="aps-proposal" class="aps-proposal" hidden></section>
     <main>

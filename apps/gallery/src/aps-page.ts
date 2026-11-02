@@ -16,6 +16,7 @@
 import "./styles.css";
 import "./aps.css";
 import type { CustomerOrder, Importance, ProductionPlan } from "@twin/cosim/core/contracts.ts";
+import type { Objective } from "@twin/cosim/adapters/plastic-injection-plant-v1/solve.ts";
 import { activeEvents, addedOrders, baseManual, molds, modelNow, manualPlan, model, now, onChange, portfolio, resetDemo, setAdded, setVigente, setViewed, setViewMode, SOURCE_NAMES, useDemoDays, vigente, viewedPlan, viewMode } from "./aps-store.ts";
 import { editedPlan, moveChunk, queuesOf, type EditChunk, type ManualEdit } from "@twin/cosim/adapters/plastic-injection-plant-v1/manual.ts";
 import { COLOR_NAMES, day, esc, nf, relativeDays, when } from "./schedule.ts";
@@ -188,11 +189,21 @@ function renderProposal(): void {
   };
 }
 
-function calculate(): void {
+/** Objetivos que el cosimulador puede optimizar, uno por corrida. Energía queda pendiente: no hay datos en el APS. */
+const OBJECTIVE_OPTIONS: { id: Objective | "energia"; label: string; detail: string; pending?: boolean }[] = [
+  { id: "entregas", label: "Cumplir entregas", detail: "Terminar cada pedido a tiempo, primero los de importancia alta (hoy es el cálculo de siempre)." },
+  { id: "cambios", label: "Minimizar cambios de molde y color", detail: "Menos referencias encendidas por turno; cada cambio cuesta montaje y purgas de catalog/changeovers.yaml. En prueba: sin entregas en cuenta, puede dejar pedidos tarde." },
+  { id: "cuellos", label: "Balancear cuellos de botella", detail: "Que ninguna inyectora quede más cargada que las demás. En prueba: sin entregas en cuenta, puede dejar pedidos tarde." },
+  { id: "capacidad", label: "Maximizar capacidad ocupada", detail: "Llenar las máquinas desde el inicio y terminar la cartera antes (con demanda fija, es terminar pronto)." },
+  { id: "energia", label: "Mejorar consumo energético", detail: "Pendiente: falta energía por arranque y por llegar a la temperatura de fusión en el APS. Hoy solo hay potencia nominal por equipo.", pending: true },
+];
+const OBJECTIVE_LABEL = Object.fromEntries(OBJECTIVE_OPTIONS.map((o) => [o.id, o.label])) as Record<string, string>;
+
+function calculate(objective: Objective = "entregas"): void {
   error = "";
   running = fixedOf().length
-    ? `El cosimulador está organizando el resto de la producción sin mover ${fixedOf().length === 1 ? "el pedido fijado" : `los ${fixedOf().length} pedidos fijados`}…`
-    : "El cosimulador está colocando la producción con restricciones lineales…";
+    ? `El cosimulador está organizando el resto de la producción sin mover ${fixedOf().length === 1 ? "el pedido fijado" : `los ${fixedOf().length} pedidos fijados`} · objetivo: ${OBJECTIVE_LABEL[objective]}…`
+    : `El cosimulador está colocando la producción con restricciones lineales · objetivo: ${OBJECTIVE_LABEL[objective]}…`;
   render();
   worker?.terminate();
   worker = new Worker(new URL("./aps-worker.ts", import.meta.url), { type: "module" });
@@ -217,8 +228,57 @@ function calculate(): void {
   };
   // Con pedidos fijados se parte del plan que se está viendo: ahí están sus lotes, que no se mueven.
   const fixed = fixedOf();
-  worker.postMessage({ id, portfolio: portfolio(), now: now(), previous: fixed.length ? shown() : current, planId: `APS-SOL-${String(n).padStart(2, "0")}`, events: activeEvents(), molds: molds(), fixed });
+  worker.postMessage({ id, portfolio: portfolio(), now: now(), previous: fixed.length ? shown() : current, planId: `APS-SOL-${String(n).padStart(2, "0")}`, events: activeEvents(), molds: molds(), fixed, objective });
 }
+
+/** Pregunta el objetivo antes de calcular. Un solo objetivo calcula; varios pasan a Fractal (multiobjetivo). */
+function openObjectivePicker(): void {
+  const dialog = $("aps-objetivo") as HTMLDialogElement;
+  const list = $("aps-obj-list");
+  list.innerHTML = OBJECTIVE_OPTIONS.map((o) => `
+    <label class="aps-obj-opt${o.pending ? " pending" : ""}">
+      <input type="checkbox" value="${o.id}" ${o.id === "entregas" ? "checked" : ""} ${o.pending ? "disabled" : ""}>
+      <span><b>${esc(o.label)}</b>${o.pending ? ' <em class="chip">PENDIENTE</em>' : ""}<small>${esc(o.detail)}</small></span>
+    </label>`).join("");
+  list.querySelectorAll<HTMLInputElement>("input").forEach((i) => (i.onchange = updateObjectiveNote));
+  updateObjectiveNote();
+  dialog.showModal();
+}
+
+function chosenObjectives(): string[] {
+  return [...$("aps-obj-list").querySelectorAll<HTMLInputElement>("input:checked")].map((i) => i.value);
+}
+
+function updateObjectiveNote(): void {
+  const picked = chosenObjectives();
+  const go = $("aps-obj-go") as HTMLButtonElement;
+  const note = $("aps-obj-note");
+  if (picked.length === 0) {
+    note.textContent = "Elige un objetivo para calcular.";
+    go.textContent = "Calcular";
+  } else if (picked.length === 1) {
+    note.textContent = "El cosimulador optimiza un solo objetivo por corrida.";
+    go.textContent = "Calcular";
+  } else {
+    note.textContent = `Elegiste ${picked.length} objetivos a la vez. Eso es multiobjetivo: el cosimulador no lo calcula. Es trabajo de Fractal, que todavía no tiene el optimizador multiobjetivo; ¿lo escalamos ahí?`;
+    go.textContent = "Llevar a Fractal";
+  }
+}
+
+$("aps-obj-cancel").onclick = () => ($("aps-objetivo") as HTMLDialogElement).close();
+$("aps-obj-go").onclick = () => {
+  const picked = chosenObjectives();
+  if (picked.length !== 1) {
+    if (picked.length > 1) {
+      ($("aps-objetivo") as HTMLDialogElement).close();
+      tab = "fractal";
+      render();
+    }
+    return;
+  }
+  ($("aps-objetivo") as HTMLDialogElement).close();
+  calculate(picked[0] as Objective);
+};
 
 // ------------------------------------------------------------------ pedidos
 function stateChips(p: ProductionPlan, id: string): string {
@@ -1043,7 +1103,7 @@ function renderFractal(): void {
 
 // ------------------------------------------------------------------ arranque
 document.querySelectorAll<HTMLButtonElement>(".aps-tabs [data-tab]").forEach((b) => (b.onclick = () => ((tab = b.dataset.tab!), render())));
-$("aps-calc").onclick = () => calculate();
+$("aps-calc").onclick = () => openObjectivePicker();
 $("aps-manual").onclick = () => {
   error = "";
   try {
