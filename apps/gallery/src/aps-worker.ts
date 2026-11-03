@@ -17,14 +17,14 @@ self.onmessage = async (e: MessageEvent<{ id: number; portfolio: CustomerOrders;
     // Una instancia nueva por corrida: highs-js no garantiza poder resolver varias veces con la misma.
     const highs = await highsLoader({ locateFile: () => wasmUrl });
     const m = molds && Object.keys(molds).length ? modelFor(catalogData(), molds) : model;
-    if (objective === "cambios") {
-      // Menos cambios nunca se entrega sin atrasar pedidos: entregas primero y, si hay un escenario que deje menos
-      // cambios sin empeorar entregas, se propone ese; si no, se propone el de entregas con la razón.
+    // Entregas y menos cambios salen juntos: A = cumplir entregas; B = menos cambios sin empeorar entregas (si existe).
+    // Con "cambios" se propone B cuando existe; si no, A con una nota.
+    if (!objective || objective === "entregas" || objective === "cambios") {
       const scenarios = solveScenarios(highs, m, portfolio, { now, previous, planId, events, fixed });
       const alt = scenarios.find((s) => s.id === "menos-cambios");
-      const plan = alt ? alt.plan : scenarios[0].plan;
-      if (!alt) plan.notes = [...(plan.notes ?? []), "Ningún cambio de referencia menos sin atrasar pedidos: se propone solo cumplir entregas."];
-      self.postMessage({ id, ok: true, plan });
+      const chosen = objective === "cambios" && alt ? alt : scenarios[0];
+      if (objective === "cambios" && !alt) chosen.plan.notes = [...(chosen.plan.notes ?? []), "Ningún cambio de referencia menos sin atrasar pedidos: se propone solo cumplir entregas."];
+      self.postMessage({ id, ok: true, plan: chosen.plan, scenarios: scenarios.map((s) => ({ id: s.id, label: s.label, plan: s.plan })) });
       return;
     }
     const plan = solve(highs, m, portfolio, { now, previous, planId, events, fixed, objective });

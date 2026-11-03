@@ -52,6 +52,8 @@ const isoOf = (t: number) => new Date(t).toISOString().slice(0, 16);
 if (new URLSearchParams(location.search).get("reset") === "1") resetDemo();
 
 let proposal: ProductionPlan | null = null;
+/** Escenarios que devolvió CALCULAR (A: cumplir entregas; B: menos cambios sin empeorar entregas), para elegir entre ellos. */
+let alternatives: { id: string; label: string; plan: ProductionPlan }[] = [];
 let current = vigente();
 const TABS = ["orders", "gantt", "insumos", "fractal"];
 let tab = TABS.find((x) => x === new URLSearchParams(location.search).get("tab")) ?? "orders";
@@ -162,9 +164,13 @@ function renderProposal(): void {
   const cell = (a: number, b: number, fmt: (x: number) => string, lowerIsBetter: boolean) =>
     `<span>${fmt(a)}</span><b class="${a === b ? "" : (b < a) === lowerIsBetter ? "ok" : "bad"}">${fmt(b)}</b>`;
   el.hidden = false;
+  // Escenarios de CALCULAR: elegir entre cumplir entregas y menos cambios (mismas entregas).
+  const choices = alternatives.length > 1 && alternatives.some((a) => a.plan.plan_id === proposal!.plan_id)
+    ? `<div class="aps-scen" role="group" aria-label="Escenarios">${alternatives.map((a, i) => `<button data-scen="${esc(a.id)}" class="${a.plan.plan_id === proposal!.plan_id ? "primary" : ""}" aria-pressed="${a.plan.plan_id === proposal!.plan_id}">${String.fromCharCode(65 + i)} · ${esc(a.label)}</button>`).join("")}</div>`
+    : "";
   el.innerHTML = `
     <div class="aps-prop-head">
-      <div><div class="label">PROPUESTA · ${esc(SOURCE_NAMES[proposal.source])} ${esc(proposal.plan_id)}</div>
+      <div><div class="label">PROPUESTA · ${esc(SOURCE_NAMES[proposal.source])} ${esc(proposal.plan_id)}</div>${choices}
       <p class="dim small">${s ? `Colocación lineal con HiGHS: ${s.status === "Optimal" ? "óptima" : esc(s.status)} en ${nf(s.seconds, 1)} s, ${nf(s.variables)} variables y ${nf(s.constraints)} restricciones. ` : ""}${proposal.frozen_until ? `Replaneada desde ${when(proposal.frozen_until)}: lo que ya empezó no cambia.` : ""}${activeEvents().length ? ` Sin ${activeEvents().map((e) => `${machineLabel(e.equipment)} hasta ${when(e.est_end)}`).join(", ")}: el lote en curso se corta y lo que falta se reprograma.` : ""} ${proposal.notes?.map(esc).join(" ") ?? ""}</p></div>
       <div class="aps-prop-kpis">
         <div><small>A tiempo</small>${cell(v.on_time_pct, k.on_time_pct, (x) => `${nf(x, 1)} %`, false)}</div>
@@ -175,15 +181,26 @@ function renderProposal(): void {
       </div>
       <div class="aps-prop-actions"><button id="aps-adopt" class="primary">✓ ADOPTAR COMO VIGENTE</button><button id="aps-discard">✕ DESCARTAR</button></div>
     </div>`;
+  el.querySelectorAll<HTMLButtonElement>("[data-scen]").forEach((b) => {
+    b.onclick = () => {
+      const pick = alternatives.find((a) => a.id === b.dataset.scen);
+      if (!pick) return;
+      proposal = pick.plan;
+      clearEdit();
+      render();
+    };
+  });
   $("aps-adopt").onclick = () => {
     setVigente(proposal!);
     current = vigente();
     proposal = null;
+    alternatives = [];
     clearEdit();
     render();
   };
   $("aps-discard").onclick = () => {
     proposal = null;
+    alternatives = [];
     clearEdit();
     render();
   };
@@ -233,14 +250,18 @@ function calculate(objective: Objective = "entregas"): void {
   worker = new Worker(new URL("./aps-worker.ts", import.meta.url), { type: "module" });
   const id = ++runId;
   const n = Number((current.plan_id.match(/SOL-(\d+)/) ?? [])[1] ?? 0) + 1;
-  worker.onmessage = (e: MessageEvent<{ id: number; ok: boolean; plan?: ProductionPlan; error?: string }>) => {
+  worker.onmessage = (e: MessageEvent<{ id: number; ok: boolean; plan?: ProductionPlan; scenarios?: typeof alternatives; error?: string }>) => {
     if (e.data.id !== id) return;
     running = "";
     stopCalcTimer();
     if (e.data.ok) {
       proposal = e.data.plan!;
+      alternatives = e.data.scenarios ?? [];
       clearEdit();
-    } else error = `El cosimulador no pudo programar: ${e.data.error}`;
+    } else {
+      alternatives = [];
+      error = `El cosimulador no pudo programar: ${e.data.error}`;
+    }
     worker?.terminate();
     worker = null;
     tab = "gantt";
