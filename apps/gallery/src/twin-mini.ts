@@ -17,10 +17,13 @@ function paint(): void {
   if (!panel) return;
   const s = SCREENS[kind];
   const body = panel.querySelector<HTMLElement>(".tm-body")!;
-  body.style.width = `${Math.round(s.w * s.scale)}px`;
-  body.style.height = `${Math.round(s.h * s.scale)}px`;
+  // En celular el panel ocupa toda la pantalla: la miniatura se escala al ancho disponible.
+  const narrow = window.matchMedia("(max-width: 700px)").matches;
+  const scale = narrow ? (window.innerWidth - 18) / s.w : s.scale;
+  if (!narrow) body.style.width = `${Math.round(s.w * scale)}px`;
+  body.style.height = `${Math.round(s.h * scale)}px`;
   const frame = body.querySelector<HTMLIFrameElement>("iframe")!;
-  frame.style.cssText = `width:${s.w}px;height:${s.h}px;transform:scale(${s.scale})`;
+  frame.style.cssText = `width:${s.w}px;height:${s.h}px;transform:scale(${scale})`;
   if (!frame.src.endsWith(s.src)) frame.src = s.src;
   panel.querySelectorAll<HTMLButtonElement>("[data-k]").forEach((b) => b.classList.toggle("on", b.dataset.k === kind));
 }

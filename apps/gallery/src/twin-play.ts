@@ -84,6 +84,11 @@ export function buildTwinPlay(opts: Opts): TwinPlay {
     <div class="label to-sub" id="to-now-title"></div>
     <div id="to-now"></div>`;
   document.body.appendChild(ordersBox);
+  // En celular la lista empieza plegada para no tapar la barra de play.
+  if (window.matchMedia("(max-width: 700px)").matches) {
+    ordersBox.classList.add("min");
+    document.getElementById("to-toggle")!.textContent = "▸ ÓRDENES EN EL GEMELO";
+  }
   const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
   const range = $<HTMLInputElement>("tt-range");
 
