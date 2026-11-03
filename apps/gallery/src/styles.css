@@ -419,7 +419,19 @@ body.shot #view-cube { display:none; }
 
 /* Celular: las órdenes del gemelo quedan dentro de la pantalla, sobre la barra inferior (después de la regla base). */
 @media (max-width: 700px) {
-  .twin-orders { left: 8px; right: 8px; width: auto; bottom: 136px; max-height: 40vh; }
+  /* Barra de play en dos filas sobre el dock; las órdenes encima (plegadas al abrir), el cubo arriba a la derecha. */
+  .twin-time { left: 8px; right: 8px; bottom: 64px; height: auto; grid-template-columns: 1fr auto; gap: 6px 10px; padding: 8px 10px; }
+  .twin-time .tt-controls { grid-column: 1 / -1; flex-wrap: wrap; }
+  .twin-time .tt-track { grid-column: 1; }
+  .twin-time .tt-label { grid-column: 2; text-align: right; }
+  .twin-orders { left: 8px; right: 8px; width: auto; bottom: 214px; max-height: 30vh; }
+  .twin-orders.min .to-filter, .twin-orders.min #to-now-title, .twin-orders.min #to-followed { display: none; }
+  #view-cube { top: 150px; bottom: auto; right: 8px; width: 64px; padding: 4px; }
+  #view-cube > span { display: none; }
+  /* Si hay una hoja del menú abierta (MENÚ, ACTIVO, EVENTOS) las órdenes, el play y el cubo se esconden. */
+  body.has-dock:not([data-panel=""]) .twin-orders,
+  body.has-dock:not([data-panel=""]) .twin-time,
+  body.has-dock:not([data-panel=""]) #view-cube { display: none; }
 }
 
 /* Panel flotante con el emulador y el Gantt en miniatura (twin-mini.ts): abajo a la derecha, junto a la barra de play. */
@@ -432,6 +444,7 @@ body.shot #view-cube { display:none; }
 .tm-body iframe { border: 0; transform-origin: 0 0; background: #040421; display: block; }
 .twin-mini.min .tm-body { display: none; }
 @media (max-width: 700px) {
-  .twin-mini { left: 8px; right: 8px; bottom: auto; top: 64px; max-width: none; }
+  /* A todo el ancho, arriba y encima de las demás hojas; la miniatura se escala al ancho de la pantalla. */
+  .twin-mini { left: 8px; right: 8px; bottom: auto; top: 8px; max-width: none; z-index: 20; }
   .tm-body { width: 100% !important; }
 }
