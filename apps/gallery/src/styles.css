@@ -415,4 +415,9 @@ button.pick { padding: 2px 8px; font-size: 11px; }
 #view-cube > span { color:#d2e8ff; font:600 8px "IBM Plex Mono",monospace; letter-spacing:.1em; }
 body.shot #view-cube { display:none; }
 @media (max-width:900px) { #view-cube { top:72px; right:274px; width:112px; } }
-@media (max-width:700px) { #view-cube { top:74px; right:12px; width:100px; } }
+@media (max-width:700px) { #view-cube { top:auto; bottom:72px; right:8px; width:76px; } }
+
+/* Celular: las órdenes del gemelo quedan dentro de la pantalla, sobre la barra inferior (después de la regla base). */
+@media (max-width: 700px) {
+  .twin-orders { left: 8px; right: 8px; width: auto; bottom: 136px; max-height: 40vh; }
+}
