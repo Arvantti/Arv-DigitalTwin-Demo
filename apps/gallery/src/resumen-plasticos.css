@@ -1,0 +1,308 @@
+/* Resumen gerencial de plásticos: láminas a pantalla completa con animaciones tipo motion graphics. */
+:root {
+  --bg: #050912;
+  --panel: rgba(14, 22, 40, 0.72);
+  --line: rgba(120, 170, 255, 0.18);
+  --ink: #e8f0ff;
+  --dim: #8fa3c4;
+  --c: #4ea7ff;
+  --a: #f5a524;
+  --g: #2fd27a;
+  --v: #a77bff;
+  --r: #ff5a6a;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body.rg-page {
+  background: var(--bg);
+  color: var(--ink);
+  font: 16px/1.5 Inter, system-ui, sans-serif;
+  overflow: hidden;
+}
+.rg-bg { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; }
+.rg-dim { color: var(--dim); }
+
+/* Barra superior */
+.rg-top {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 5;
+  display: flex; align-items: center; gap: 16px; padding: 12px 20px;
+  background: linear-gradient(180deg, rgba(5, 9, 18, 0.9), rgba(5, 9, 18, 0));
+}
+.rg-home { color: var(--dim); text-decoration: none; font: 600 12px/1 "IBM Plex Mono", monospace; letter-spacing: 0.08em; }
+.rg-home:hover { color: var(--ink); }
+.rg-brand { flex: 1; font: 600 13px/1 Orbitron, sans-serif; letter-spacing: 0.12em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rg-brand .rg-dim { font: 500 12px/1 "IBM Plex Mono", monospace; letter-spacing: 0.02em; }
+.rg-logo { color: var(--c); }
+.rg-tools { display: flex; gap: 8px; }
+.rg-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 8px 14px; border-radius: 8px; border: 1px solid var(--line);
+  background: rgba(20, 32, 58, 0.7); color: var(--ink); cursor: pointer; text-decoration: none;
+  font: 600 12px/1 "IBM Plex Mono", monospace; letter-spacing: 0.06em;
+  transition: background 0.2s, border-color 0.2s, transform 0.2s;
+}
+.rg-btn:hover { border-color: var(--c); transform: translateY(-1px); }
+.rg-btn.primary { background: var(--c); color: #04111f; border-color: var(--c); }
+.rg-btn[aria-pressed="true"] { border-color: var(--a); color: var(--a); }
+
+/* Navegación */
+.rg-nav {
+  position: fixed; bottom: 14px; left: 50%; transform: translateX(-50%); z-index: 5;
+  display: flex; align-items: center; gap: 12px; padding: 6px 10px; border-radius: 999px;
+  background: rgba(8, 14, 28, 0.8); border: 1px solid var(--line); backdrop-filter: blur(8px);
+}
+.rg-arrow { width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--line); background: transparent; color: var(--ink); font-size: 22px; line-height: 1; cursor: pointer; }
+.rg-arrow:hover { border-color: var(--c); color: var(--c); }
+.rg-dots { display: flex; gap: 6px; }
+.rg-dot { width: 8px; height: 8px; padding: 0; border-radius: 99px; border: 0; background: rgba(143, 163, 196, 0.4); cursor: pointer; transition: width 0.4s var(--ease), background 0.3s; }
+.rg-dot.on { width: 26px; background: var(--c); }
+.rg-count { font: 600 12px/1 "IBM Plex Mono", monospace; color: var(--dim); min-width: 44px; text-align: center; }
+.rg-progress { position: fixed; top: 0; left: 0; right: 0; height: 2px; z-index: 6; }
+.rg-progress i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--c), var(--v)); transition: width 0.6s var(--ease); }
+body.auto-run .rg-progress::after { content: ""; position: absolute; left: 0; bottom: -2px; height: 2px; background: var(--a); animation: rg-auto 10s linear forwards; }
+@keyframes rg-auto { from { width: 0; } to { width: 100%; } }
+
+/* Láminas */
+.rg-deck { position: fixed; inset: 0; z-index: 1; }
+.rg-slide {
+  position: absolute; inset: 0; overflow-y: auto; overflow-x: hidden;
+  padding: 72px 6vw 84px; display: flex; visibility: hidden; pointer-events: none;
+}
+.rg-slide-in { margin: auto; width: 100%; max-width: 1320px; }
+.rg-slide.on { z-index: 2; visibility: visible; pointer-events: auto; animation: rg-in 0.9s var(--ease) both; }
+.rg-slide.prev { visibility: visible; animation: rg-out 0.6s var(--ease) both; }
+@keyframes rg-in {
+  from { clip-path: circle(0% at calc(50% + var(--dir, 1) * 40%) 50%); }
+  to { clip-path: circle(150% at calc(50% + var(--dir, 1) * 40%) 50%); }
+}
+@keyframes rg-out {
+  from { opacity: 1; transform: none; filter: none; }
+  to { opacity: 0; transform: translateX(calc(var(--dir, 1) * -6%)) scale(0.96); filter: blur(6px); }
+}
+
+/* Motor de entradas: .a con data-a y --d (retardo) */
+.a { opacity: 0; }
+.on .a { animation: var(--anim, rg-up) 0.9s var(--ease) var(--d, 0s) both; }
+.a[data-a="up"] { --anim: rg-up; }
+.a[data-a="left"] { --anim: rg-left; }
+.a[data-a="right"] { --anim: rg-right; }
+.a[data-a="pop"] { --anim: rg-pop; }
+.a[data-a="zoom"] { --anim: rg-zoom; }
+.a[data-a="fade"] { --anim: rg-fade; }
+.a[data-a="flip"] { --anim: rg-flip; }
+@keyframes rg-up { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: none; } }
+@keyframes rg-left { from { opacity: 0; transform: translateX(-40px); } to { opacity: 1; transform: none; } }
+@keyframes rg-right { from { opacity: 0; transform: translateX(60px) rotateY(-12deg); } to { opacity: 1; transform: none; } }
+@keyframes rg-pop { 0% { opacity: 0; transform: scale(0.6); } 60% { opacity: 1; transform: scale(1.06); } 100% { opacity: 1; transform: none; } }
+@keyframes rg-zoom { from { opacity: 0; transform: scale(1.4); filter: blur(10px); } to { opacity: 1; transform: none; filter: none; } }
+@keyframes rg-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes rg-flip { from { opacity: 0; transform: perspective(800px) rotateX(-70deg) translateY(30px); } to { opacity: 1; transform: none; } }
+svg .a { transform-box: fill-box; transform-origin: center; }
+
+/* Tipografía cinética */
+.kin .w { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: 0.08em; }
+.kin .w > span { display: inline-block; transform: translateY(110%); }
+.on .kin .w > span { animation: rg-word 0.8s var(--ease) var(--d) both; }
+@keyframes rg-word { from { transform: translateY(110%) skewY(8deg); } to { transform: none; } }
+
+/* Trazos SVG que se dibujan */
+.draw { fill: none; stroke-dasharray: var(--len); stroke-dashoffset: var(--len); }
+.on .draw { animation: rg-draw 1.2s var(--ease) var(--d, 0s) forwards; }
+@keyframes rg-draw { to { stroke-dashoffset: 0; } }
+
+.rg-kicker { font: 600 12px/1.3 "IBM Plex Mono", monospace; letter-spacing: 0.14em; color: var(--c); margin-bottom: 14px; }
+.rg-h1 { font: 800 clamp(34px, 5.4vw, 76px)/1.04 Inter, sans-serif; letter-spacing: -0.03em; margin: 0 0 18px; }
+.rg-h2 { font: 800 clamp(28px, 3.6vw, 52px)/1.08 Inter, sans-serif; letter-spacing: -0.02em; margin: 0 0 18px; }
+.rg-lead { font-size: clamp(16px, 1.4vw, 20px); color: #c4d2ea; max-width: 760px; margin: 0 0 24px; }
+.rg-small { font-size: 16px; margin: 18px auto 0; text-align: center; }
+.rg-center { text-align: center; }
+.rg-center .rg-h2, .rg-center .rg-h1 { max-width: 1000px; margin-left: auto; margin-right: auto; }
+
+/* Portada */
+.rg-cover .rg-h1 { max-width: 980px; }
+.rg-cover .rg-h1 .w:nth-last-child(-n + 2) > span { color: transparent; background: linear-gradient(90deg, #9cc9ff, #c8a9ff); -webkit-background-clip: text; background-clip: text; }
+.rg-floor { position: relative; display: grid; grid-template-columns: repeat(12, 1fr); gap: 10px; margin: 34px 0 26px; padding-bottom: 26px; }
+.rg-imm { position: relative; height: 92px; opacity: 0; }
+.on .rg-imm { animation: rg-up 0.7s var(--ease) var(--d) both; }
+.rg-imm-hopper { position: absolute; left: 30%; top: 0; width: 40%; height: 24px; background: linear-gradient(180deg, #5d7396, #2c3b56); clip-path: polygon(0 0, 100% 0, 70% 100%, 30% 100%); }
+.rg-imm-body { position: absolute; left: 0; right: 0; bottom: 0; height: 66px; border-radius: 6px; background: linear-gradient(180deg, #1b2a46, #0e1729); border: 1px solid var(--line); display: grid; place-items: center; overflow: hidden; }
+.rg-imm-body::after { content: ""; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 30%, rgba(160, 200, 255, 0.25) 50%, transparent 70%); transform: translateX(-100%); animation: rg-sheen 3.6s ease-in-out infinite; animation-delay: var(--d); }
+.rg-imm-body b { font: 600 clamp(8px, 0.8vw, 11px)/1 "IBM Plex Mono", monospace; color: var(--dim); }
+.rg-imm-led { position: absolute; right: 8px; bottom: 50px; width: 8px; height: 8px; border-radius: 50%; background: var(--g); box-shadow: 0 0 12px var(--g); animation: rg-blink 1.6s ease-in-out infinite; }
+.rg-imm.w .rg-imm-led { background: var(--a); box-shadow: 0 0 12px var(--a); }
+.rg-imm.r .rg-imm-led { background: var(--r); box-shadow: 0 0 14px var(--r); animation-duration: 0.6s; }
+@keyframes rg-blink { 50% { opacity: 0.35; } }
+@keyframes rg-sheen { 0%, 60% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+.rg-belt { position: absolute; left: 0; right: 0; bottom: 0; height: 12px; border-radius: 6px; background: repeating-linear-gradient(90deg, #1a2742 0 14px, #121c31 14px 28px); background-size: 28px 100%; animation: rg-beltmove 0.8s linear infinite; overflow: hidden; }
+.rg-belt i { position: absolute; top: 2px; width: 14px; height: 8px; border-radius: 3px; background: var(--c); box-shadow: 0 0 10px var(--c); animation: rg-ride 7s linear infinite; }
+.rg-belt i:nth-child(2) { animation-delay: -1.2s; background: var(--a); box-shadow: 0 0 10px var(--a); }
+.rg-belt i:nth-child(3) { animation-delay: -2.4s; }
+.rg-belt i:nth-child(4) { animation-delay: -3.5s; background: var(--g); box-shadow: 0 0 10px var(--g); }
+.rg-belt i:nth-child(5) { animation-delay: -4.7s; }
+.rg-belt i:nth-child(6) { animation-delay: -5.9s; background: var(--v); box-shadow: 0 0 10px var(--v); }
+@keyframes rg-beltmove { to { background-position: 28px 0; } }
+@keyframes rg-ride { from { left: -3%; } to { left: 101%; } }
+.rg-cover-tags { display: flex; flex-wrap: wrap; gap: 10px; }
+.rg-cover-tags span { padding: 8px 14px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); font: 600 12px/1 "IBM Plex Mono", monospace; letter-spacing: 0.06em; }
+
+/* Punto de partida */
+.rg-split { display: grid; grid-template-columns: 1.05fr 1fr; gap: 48px; align-items: center; }
+.rg-kpis { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+.rg-kpi { padding: 18px 20px; border-radius: 14px; background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--c); }
+.rg-kpi b { display: block; font: 700 clamp(28px, 3vw, 44px)/1.05 Orbitron, sans-serif; color: var(--c); }
+.rg-kpi span { color: var(--dim); font-size: 14px; }
+.rg-kpi.warn { border-left-color: var(--a); }
+.rg-kpi.warn b { color: var(--a); }
+.rg-kpi.bad { border-left-color: var(--r); }
+.rg-kpi.bad b { color: var(--r); }
+
+/* Línea de tiempo */
+.rg-timeline { position: relative; display: grid; grid-template-columns: repeat(6, 1fr); gap: 14px; margin-top: 40px; text-align: left; }
+.rg-tl-line { position: absolute; left: 0; right: 0; top: 16px; width: 100%; height: 20px; stroke: var(--c); stroke-width: 2; opacity: 0.6; }
+.rg-step { position: relative; padding-top: 52px; }
+.rg-step-n { position: absolute; top: 0; left: 0; width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; background: #0b1428; border: 2px solid var(--c); font: 700 14px/1 Orbitron, sans-serif; color: var(--c); box-shadow: 0 0 22px rgba(78, 167, 255, 0.4); }
+.rg-step b { display: block; margin: 12px 0 6px; font-size: 17px; }
+.rg-step p { margin: 0; color: var(--dim); font-size: 14px; }
+.rg-step:nth-child(6) .rg-step-n, .rg-step:nth-child(7) .rg-step-n { border-color: var(--v); color: var(--v); box-shadow: 0 0 22px rgba(167, 123, 255, 0.45); }
+
+/* Flujo */
+.rg-flow { width: 100%; max-width: 1100px; height: auto; margin-top: 20px; overflow: visible; }
+.flowp { stroke: var(--c); stroke-width: 2.2; color: var(--c); opacity: 0.75; }
+.flowp.f { stroke: var(--v); color: var(--v); }
+.flowp.g { stroke: var(--a); color: var(--a); stroke-dasharray: 6 6; }
+.on .flowp.g { animation: rg-fade 0.8s var(--d) both, rg-dash 1.2s linear infinite; stroke-dashoffset: 0; }
+@keyframes rg-dash { to { stroke-dashoffset: -24; } }
+.rg-node rect { fill: rgba(12, 20, 38, 0.92); stroke: var(--c); stroke-width: 1.5; }
+.rg-node text { fill: var(--ink); font: 700 17px Inter, sans-serif; text-anchor: middle; }
+.rg-node text.s { fill: var(--dim); font: 500 12px "IBM Plex Mono", monospace; }
+.rg-node.na rect { stroke: var(--a); }
+.rg-node.ng rect { stroke: var(--g); }
+.rg-node.nv rect { stroke: var(--v); }
+.rg-pulse { fill: #9fd0ff; filter: drop-shadow(0 0 6px #4ea7ff); }
+.rg-pulse.pv { fill: #d4bfff; filter: drop-shadow(0 0 6px var(--v)); }
+.rg-pulse.pa { fill: #ffd27a; filter: drop-shadow(0 0 6px var(--a)); }
+
+/* Capacidades */
+.rg-cap { display: grid; grid-template-columns: 0.85fr 1.15fr; gap: 44px; align-items: center; }
+.rg-cap-l { grid-template-columns: 1.15fr 0.85fr; }
+.rg-cap-l .rg-cap-txt { order: 2; }
+.rg-list { list-style: none; padding: 0; margin: 0 0 20px; display: grid; gap: 12px; }
+.rg-list li { display: flex; gap: 12px; color: #c9d6ee; font-size: clamp(15px, 1.2vw, 18px); }
+.rg-list li i { flex: none; width: 10px; height: 10px; margin-top: 0.5em; border-radius: 2px; background: var(--c); transform: rotate(45deg); box-shadow: 0 0 10px var(--c); }
+.rg-chip { display: inline-block; padding: 10px 16px; border-radius: 10px; background: linear-gradient(90deg, rgba(78, 167, 255, 0.18), rgba(167, 123, 255, 0.18)); border: 1px solid rgba(160, 190, 255, 0.35); font-weight: 600; }
+.rg-shot { position: relative; margin: 0; border-radius: 14px; overflow: hidden; border: 1px solid var(--line); box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(78, 167, 255, 0.15); perspective: 1000px; background: #0b1220; aspect-ratio: 16 / 10; }
+.rg-shot img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top left; }
+.on .rg-shot img { animation: rg-kenburns 14s ease-out 0.4s both; }
+@keyframes rg-kenburns { from { transform: scale(1.12) translate(2%, 2%); } to { transform: scale(1); } }
+.rg-shot-scan { position: absolute; inset: 0; background: linear-gradient(180deg, transparent, rgba(78, 167, 255, 0.35) 50%, transparent); height: 30%; transform: translateY(-100%); pointer-events: none; }
+.on .rg-shot-scan { animation: rg-scan 1.6s var(--ease) 0.8s both; }
+@keyframes rg-scan { from { transform: translateY(-100%); } to { transform: translateY(400%); } }
+.rg-shot-frame { position: absolute; inset: 10px; pointer-events: none; border: 2px solid transparent; border-image: linear-gradient(90deg, var(--c), transparent 20%, transparent 80%, var(--v)) 1; opacity: 0.6; }
+
+/* Escenarios */
+.rg-scen { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-top: 34px; text-align: left; }
+.rg-scard { position: relative; padding: 20px 18px; border-radius: 14px; background: var(--panel); border: 1px solid var(--line); overflow: hidden; transition: transform 0.3s var(--ease), border-color 0.3s; }
+.rg-scard:hover { border-color: var(--v); box-shadow: 0 0 30px rgba(167, 123, 255, 0.25); }
+.rg-scard::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 3px; background: linear-gradient(90deg, var(--c), var(--v)); }
+.rg-scard-n { font: 800 44px/1 Orbitron, sans-serif; color: rgba(167, 123, 255, 0.35); }
+.rg-scard h3 { margin: 8px 0 12px; font-size: 16px; }
+.rg-scard b { display: block; white-space: nowrap; font: 700 clamp(18px, 1.6vw, 24px)/1.1 Orbitron, sans-serif; color: var(--g); margin-bottom: 8px; }
+.rg-scard p { margin: 0; color: var(--dim); font-size: 13.5px; }
+
+/* Ahorro */
+.rg-save { display: grid; grid-template-columns: 300px 1.2fr 1fr; grid-template-areas: "head head head" "hero brk side"; gap: 22px 28px; align-items: start; }
+.rg-save-head { grid-area: head; }
+.rg-save-head .rg-kicker { color: var(--g); }
+.rg-save-hero { grid-area: hero; justify-self: center; position: relative; min-height: 320px; width: 300px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 30px; }
+.rg-ring { position: absolute; left: 50%; top: 50%; width: 300px; aspect-ratio: 1; translate: -50% -50%; border-radius: 50%; background: conic-gradient(from 0deg, var(--g), var(--c), var(--v), var(--g)); -webkit-mask: radial-gradient(circle closest-side, transparent 90%, #000 91%); mask: radial-gradient(circle closest-side, transparent 90%, #000 91%); animation: rg-spin 8s linear infinite; filter: drop-shadow(0 0 18px rgba(47, 210, 122, 0.5)); }
+@keyframes rg-spin { to { transform: rotate(360deg); } }
+.rg-save-hero b { font: 800 clamp(44px, 4vw, 62px)/1 Orbitron, sans-serif; color: var(--g); text-shadow: 0 0 30px rgba(47, 210, 122, 0.5); }
+.rg-save-hero span { font-weight: 600; max-width: 190px; margin-top: 8px; }
+.rg-save-hero small { margin-top: 8px; color: var(--dim); font: 500 13px "IBM Plex Mono", monospace; }
+.rg-save-hero small em { font-style: normal; color: var(--ink); }
+.rg-save-break { grid-area: brk; display: grid; gap: 14px; }
+.rg-brk { padding: 16px 18px; border-radius: 14px; background: var(--panel); border: 1px solid var(--line); }
+.rg-brk-top { display: flex; align-items: baseline; gap: 14px; margin-bottom: 10px; }
+.rg-brk-top b { font: 700 30px/1 Orbitron, sans-serif; color: var(--c); min-width: 116px; white-space: nowrap; }
+.rg-brk.v .rg-brk-top b { color: var(--v); }
+.rg-brk-top span { color: #c9d6ee; font-size: 14px; }
+.rg-meter { height: 8px; border-radius: 9px; background: rgba(143, 163, 196, 0.15); overflow: hidden; }
+.rg-meter i { display: block; height: 100%; width: 0; border-radius: 9px; background: var(--c); }
+.rg-brk.v .rg-meter i { background: var(--v); }
+.on .rg-meter i { animation: rg-grow 1.4s var(--ease) 1.2s forwards; }
+@keyframes rg-grow { to { width: var(--w); } }
+.rg-occ { padding: 16px 18px; border-radius: 14px; background: var(--panel); border: 1px solid var(--line); }
+.rg-occ-t { font: 600 12px/1 "IBM Plex Mono", monospace; letter-spacing: 0.08em; color: var(--dim); margin-bottom: 12px; text-transform: uppercase; }
+.rg-occ-row { display: grid; grid-template-columns: 130px 1fr 64px; gap: 10px; align-items: center; margin: 8px 0; font-size: 14px; }
+.rg-occ-row b { font: 700 14px "IBM Plex Mono", monospace; text-align: right; }
+.rg-occ-bar { height: 12px; border-radius: 9px; background: rgba(143, 163, 196, 0.12); overflow: hidden; }
+.rg-occ-bar i { display: block; height: 100%; width: 0; border-radius: 9px; }
+.on .rg-occ-bar i { animation: rg-grow 1.3s var(--ease) var(--d) forwards; }
+.rg-occ-row.w .rg-occ-bar i { background: var(--a); }
+.rg-occ-row.g .rg-occ-bar i { background: var(--c); }
+.rg-occ-row.v .rg-occ-bar i { background: linear-gradient(90deg, var(--v), var(--g)); }
+.rg-save-side { grid-area: side; display: grid; gap: 14px; }
+.rg-mini { padding: 14px 18px; border-radius: 14px; background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--g); }
+.rg-mini b { display: block; font: 700 26px/1.1 Orbitron, sans-serif; color: var(--g); }
+.rg-mini span { color: var(--dim); font-size: 13.5px; }
+.rg-calc { padding: 16px 18px; border-radius: 14px; background: linear-gradient(135deg, rgba(47, 210, 122, 0.14), rgba(78, 167, 255, 0.1)); border: 1px solid rgba(47, 210, 122, 0.4); }
+.rg-calc label { display: block; font-weight: 600; font-size: 14px; }
+.rg-calc label small { display: block; color: var(--dim); font-weight: 400; }
+.rg-calc-row { display: flex; align-items: center; gap: 12px; margin: 10px 0; }
+.rg-calc input { flex: 1; accent-color: var(--g); }
+.rg-calc output { font: 600 14px "IBM Plex Mono", monospace; min-width: 90px; text-align: right; }
+.rg-calc-res { font-size: 14px; color: var(--dim); }
+.rg-calc-res b { display: block; font: 700 24px/1.2 Orbitron, sans-serif; color: var(--g); }
+
+/* Resumen */
+.rg-end .rg-h1 { font-size: clamp(30px, 4.4vw, 62px); }
+.rg-sum { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin: 30px 0 26px; text-align: left; }
+.rg-sum-i { padding: 20px; border-radius: 14px; background: var(--panel); border: 1px solid var(--line); }
+.rg-sum-i span { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 10px; background: rgba(78, 167, 255, 0.15); color: var(--c); font-size: 20px; }
+.rg-sum-i b { display: block; margin: 12px 0 6px; font-size: 17px; }
+.rg-sum-i p { margin: 0; color: var(--dim); font-size: 14px; }
+.rg-motto { font: 700 clamp(22px, 2.6vw, 36px)/1.2 Inter, sans-serif; margin: 0 0 14px; }
+.rg-motto em { font-style: normal; background: linear-gradient(90deg, var(--g), var(--c)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.rg-next { color: var(--dim); margin-bottom: 22px; }
+.rg-next b { color: var(--ink); }
+.rg-cta { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+
+/* Pantallas medianas y celular */
+@media (max-width: 1100px) {
+  .rg-timeline { grid-template-columns: repeat(3, 1fr); row-gap: 26px; }
+  .rg-tl-line { display: none; }
+  .rg-scen { grid-template-columns: repeat(3, 1fr); }
+  .rg-save { grid-template-columns: 1fr 1fr; grid-template-areas: "head head" "hero side" "brk brk"; }
+  .rg-sum { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 760px) {
+  .rg-brand { display: none; }
+  .rg-top { justify-content: space-between; }
+  .rg-top { padding: 10px 16px; gap: 10px; }
+  .rg-slide { padding: 64px 16px 84px; }
+  .rg-split, .rg-cap, .rg-cap-l { grid-template-columns: 1fr; gap: 24px; }
+  .rg-cap-l .rg-cap-txt { order: 0; }
+  .rg-floor { grid-template-columns: repeat(6, 1fr); }
+  .rg-timeline { grid-template-columns: 1fr 1fr; }
+  .rg-scen { grid-template-columns: 1fr 1fr; }
+  .rg-save { grid-template-columns: 1fr; grid-template-areas: "head" "hero" "brk" "side"; }
+  .rg-save-hero { margin: 0 auto; }
+  .rg-sum { grid-template-columns: 1fr; }
+  .rg-occ-row { grid-template-columns: 96px 1fr 56px; font-size: 13px; }
+  .rg-dots { display: none; }
+}
+@media (max-width: 420px) {
+  .rg-timeline, .rg-scen { grid-template-columns: 1fr; }
+  .rg-kpis { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .rg-kpi { padding: 14px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .a, .rg-imm, .kin .w > span { opacity: 1 !important; transform: none !important; animation: none !important; }
+  .rg-slide.on, .rg-slide.prev { animation: none; }
+  .rg-slide.prev { visibility: hidden; }
+  .draw { stroke-dashoffset: 0; animation: none !important; }
+  .rg-meter i, .rg-occ-bar i { width: var(--w); animation: none !important; }
+  .rg-ring, .rg-belt, .rg-belt i, .rg-imm-body::after, .on .rg-shot img { animation: none !important; }
+}
