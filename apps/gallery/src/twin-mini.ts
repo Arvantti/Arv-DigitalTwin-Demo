@@ -25,6 +25,8 @@ function paint(): void {
   const frame = body.querySelector<HTMLIFrameElement>("iframe")!;
   frame.style.cssText = `width:${s.w}px;height:${s.h}px;transform:scale(${scale})`;
   if (!frame.src.endsWith(s.src)) frame.src = s.src;
+  // Zoom del Gantt fuera del iframe: en celular la miniatura se reduce y sus botones quedarían diminutos.
+  panel.querySelector<HTMLElement>(".tm-zoom")!.hidden = kind !== "gantt";
   panel.querySelectorAll<HTMLButtonElement>("[data-k]").forEach((b) => b.classList.toggle("on", b.dataset.k === kind));
 }
 
@@ -41,6 +43,7 @@ export function toggleMini(): void {
   panel.innerHTML = `
     <div class="tm-head">
       <button data-k="emu" class="on">${SCREENS.emu.label}</button><button data-k="gantt">${SCREENS.gantt.label}</button>
+      <span class="tm-zoom" hidden><button data-z="out" title="Alejar la línea de tiempo del Gantt">−</button><button data-z="in" title="Acercar la línea de tiempo del Gantt">+</button></span>
       <span class="tm-spacer"></span>
       <button id="tm-max" title="Maximizar en una ventana nueva">⤢</button>
       <button id="tm-min" title="Minimizar">▁</button>
@@ -49,6 +52,9 @@ export function toggleMini(): void {
     <div class="tm-body"><iframe title="Pantalla en miniatura" ></iframe></div>`;
   document.body.appendChild(panel);
   panel.querySelectorAll<HTMLButtonElement>("[data-k]").forEach((b) => (b.onclick = () => ((kind = b.dataset.k as Kind), paint())));
+  panel.querySelectorAll<HTMLButtonElement>("[data-z]").forEach(
+    (b) => (b.onclick = () => panel!.querySelector("iframe")?.contentDocument?.getElementById(`g-zoom-${b.dataset.z}`)?.click()),
+  );
   panel.querySelector<HTMLElement>("#tm-max")!.onclick = () => window.open(SCREENS[kind].full, "_blank", "noopener");
   panel.querySelector<HTMLElement>("#tm-min")!.onclick = () => panel!.classList.toggle("min");
   panel.querySelector<HTMLElement>("#tm-close")!.onclick = closeMini;

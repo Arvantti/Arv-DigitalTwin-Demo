@@ -440,6 +440,9 @@ body.shot #view-cube { display:none; }
 .tm-head button { background: none; border: 1px solid transparent; color: var(--dim); font: 600 10px Inter, sans-serif; letter-spacing: 0.08em; padding: 3px 7px; border-radius: 10px; cursor: pointer; }
 .tm-head button.on { color: var(--text); border-color: var(--cyan); background: rgba(0, 200, 255, 0.12); }
 .tm-spacer { flex: 1; }
+.tm-zoom[hidden] { display: none; }
+.tm-zoom { display: inline-flex; gap: 2px; margin-left: 4px; }
+.tm-head .tm-zoom button { font-size: 14px; padding: 1px 10px; border-color: rgba(255, 255, 255, 0.25); color: var(--text); }
 .tm-body { position: relative; overflow: hidden; }
 .tm-body iframe { border: 0; transform-origin: 0 0; background: #040421; display: block; }
 .twin-mini.min .tm-body { display: none; }
