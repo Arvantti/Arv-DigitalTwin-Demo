@@ -120,8 +120,8 @@ plants.forEach((p, i) => {
       const r = card.getBoundingClientRect();
       const x = (e.clientX - r.left) / r.width;
       const y = (e.clientY - r.top) / r.height;
-      card.style.setProperty("--ry", `${((x - 0.5) * 7).toFixed(2)}deg`);
-      card.style.setProperty("--rx", `${((0.5 - y) * 5).toFixed(2)}deg`);
+      card.style.setProperty("--ry", `${((x - 0.5) * 14).toFixed(2)}deg`);
+      card.style.setProperty("--rx", `${((0.5 - y) * 10).toFixed(2)}deg`);
       card.style.setProperty("--mx", `${(x * 100).toFixed(1)}%`);
       card.style.setProperty("--my", `${(y * 100).toFixed(1)}%`);
     });

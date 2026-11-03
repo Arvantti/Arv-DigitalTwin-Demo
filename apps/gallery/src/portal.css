@@ -14,9 +14,24 @@
 .portal-wrap { max-width: 1180px; }
 .portal-q { font: 700 28px Orbitron, sans-serif; letter-spacing: 0.04em; margin: 0 0 4px; }
 .portal-cards { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; }
-.gcard { --c: #4ea7ff; --rx: 0deg; --ry: 0deg; --mx: 50%; --my: 0%; position: relative; filter: drop-shadow(0 0 0 transparent); transform: perspective(1000px) rotateX(var(--rx)) rotateY(var(--ry)); transition: transform 0.25s ease, filter 0.3s ease; }
+.gcard { --c: #4ea7ff; --rx: 0deg; --ry: 0deg; --mx: 50%; --my: 0%; position: relative; filter: drop-shadow(0 0 0 transparent); transform: perspective(900px) rotateX(var(--rx)) rotateY(var(--ry)) scale(var(--s, 1)); transition: transform 0.2s ease-out, filter 0.3s ease, opacity 0.3s ease; will-change: transform; }
 .gcard.wide { grid-column: span 2; }
-.gcard:hover { filter: drop-shadow(0 8px 22px color-mix(in srgb, var(--c) 35%, transparent)); }
+.gcard:hover { --s: 1.035; z-index: 2; filter: drop-shadow(0 14px 30px color-mix(in srgb, var(--c) 45%, transparent)); }
+/* El resto de tarjetas retrocede mientras se resalta una. */
+.portal-cards:has(.gcard:hover) .gcard:not(:hover) { --s: 0.97; opacity: 0.5; filter: saturate(0.5); }
+/* Borde con haz de luz que gira alrededor de la tarjeta resaltada. */
+@property --ang { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+.gcard:hover .gcard-in { background: conic-gradient(from var(--ang), var(--c), rgba(255, 255, 255, 0.05) 25%, var(--c) 50%, rgba(255, 255, 255, 0.05) 75%, var(--c)); animation: gcard-spin 3.2s linear infinite; }
+@keyframes gcard-spin { to { --ang: 360deg; } }
+/* Capas con profundidad falsa: cada una se desplaza distinto según la inclinación. */
+.gcard-media img { transform: translate(calc(var(--ry) * -1.6), calc(var(--rx) * 1.6)) scale(1.08); }
+.gcard:hover .gcard-media img { transform: translate(calc(var(--ry) * -1.6), calc(var(--rx) * 1.6)) scale(1.14); }
+.gcard-body h3 { transition: transform 0.25s ease, color 0.25s; }
+.gcard:hover .gcard-body h3 { transform: translateX(6px); color: var(--c); }
+.gcard-hex { transition: transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1), filter 0.3s; }
+.gcard:hover .gcard-hex { transform: translateY(-50%) rotateY(360deg) scale(1.18); filter: drop-shadow(0 0 8px var(--c)); }
+.gcard-body .btn { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+.gcard:hover .btn.primary { transform: translateY(-2px); box-shadow: 0 6px 16px color-mix(in srgb, var(--c) 40%, transparent); }
 /* Marco biselado: el degradado de fondo asoma 1px como borde. */
 .gcard-in { --cut: 26px; position: relative; height: 100%; display: flex; flex-direction: column; padding: 1px; background: linear-gradient(135deg, var(--c), rgba(255, 255, 255, 0.06) 38%, rgba(255, 255, 255, 0.06) 62%, var(--c));
   clip-path: polygon(0 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% 100%, var(--cut) 100%, 0 calc(100% - var(--cut))); }
@@ -40,4 +55,4 @@
 .gcard-body p { color: var(--dim); margin: 4px 0 12px; flex: 1; line-height: 1.5; }
 @media (max-width: 980px) { .portal-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } .gcard.wide { grid-column: span 2; } }
 @media (max-width: 640px) { .portal-cards { grid-template-columns: minmax(0, 1fr); } .gcard.wide { grid-column: auto; } .gcard.wide .gcard-media { aspect-ratio: 16 / 9; } }
-@media (prefers-reduced-motion: reduce) { .gcard, .gcard-media img { transition: none; } .gcard:hover .gcard-scan { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .gcard, .gcard-media img, .gcard-hex, .gcard-body h3 { transition: none; } .gcard:hover .gcard-scan, .gcard:hover .gcard-in { animation: none; } .gcard:hover .gcard-hex { transform: translateY(-50%); } .gcard { --s: 1 !important; } }
