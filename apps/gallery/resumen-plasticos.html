@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Resumen gerencial · Plásticos</title>
+    <meta name="description" content="Resumen gerencial de la planta de plásticos: historia, capacidades del gemelo digital y el ahorro que encuentra la optimización." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=Orbitron:wght@500;600;700;800&display=swap" />
+  </head>
+  <body class="rg-page">
+    <canvas id="rg-bg" class="rg-bg" aria-hidden="true"></canvas>
+    <header class="rg-top">
+      <a class="rg-home" href="/#plantas">← INICIO</a>
+      <div class="rg-brand"><span class="rg-logo">◆</span> TWIN<span class="rg-dim">/</span>ARVANTTI <span class="rg-dim">· resumen gerencial · plásticos</span></div>
+      <div class="rg-tools">
+        <button id="rg-auto" class="rg-btn" type="button" aria-pressed="false" title="Avanzar solo (A)">▶ AUTO</button>
+        <button id="rg-full" class="rg-btn" type="button" title="Pantalla completa (F)">⛶</button>
+      </div>
+    </header>
+    <main id="rg-deck" class="rg-deck" aria-live="polite"></main>
+    <nav class="rg-nav" aria-label="Navegación de la presentación">
+      <button id="rg-prev" class="rg-arrow" type="button" aria-label="Anterior">‹</button>
+      <div id="rg-dots" class="rg-dots"></div>
+      <span id="rg-count" class="rg-count">1 / 1</span>
+      <button id="rg-next" class="rg-arrow" type="button" aria-label="Siguiente">›</button>
+    </nav>
+    <div class="rg-progress" aria-hidden="true"><i id="rg-bar"></i></div>
+    <script type="module" src="/src/resumen-plasticos.ts"></script>
+  </body>
+</html>
