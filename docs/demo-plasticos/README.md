@@ -1,7 +1,7 @@
 ---
 title: Demo de la planta de plásticos · capturas y guiones
 tags: [demo, plasticos, guion, video]
-fecha: 2026-11-01
+fecha: 2026-11-03
 ---
 
 # Demo de la planta de plásticos
@@ -44,7 +44,8 @@ Cada segmento del guion tiene esta forma:
 - Sin fechas de calendario: todo se muestra como "día N". El día 0 es el arranque de la cartera y AHORA es siempre el día 9 (en las capturas, a las 10:00). Los pedidos se llaman `PED-D<día de entrega>-NN`.
 - Cartera: 93 pedidos inventados con entrega entre el día 1 y el día 19, carga objetivo 85 % de la capacidad.
 - 12 inyectoras con molde montado (cubiertos IMM-01, 02, 04, 05 y 08; pedal IMM-06 y 07; cuerpo de papelera IMM-18 y 19; balde IMM-21 y 23) y la línea de ensamble ENSAMBLE-01.
-- Programación manual: 90,3 % a tiempo (9 tarde, 229,4 h de atraso), ocupación de planta 69,3 % (794 de 1.146 h en 7 días). Cosimulador: 92,5 % a tiempo (7 tarde, 182,3 h), ocupación 61,3 % (703 h): la misma producción con 91 h de máquina menos. Balanceado con Fractal: 60,7 % de 1.240 h. Los cambios de referencia cobran montaje de molde y purgas de resina y color según `catalog/changeovers.yaml`; el escenario 4 de Fractal (menos cambios) dedica un color a cada inyectora del balde.
+- Programación manual: 90,3 % a tiempo (9 tarde, 229,4 h de atraso), ocupación de planta 69,2 % (793 de 1.146 h en 7 días). Cosimulador: 92,5 % a tiempo (7 tarde, 182,3 h), ocupación 61,3 % (703 h): la misma producción con 90 h de máquina menos. Balanceado con Fractal: 60,7 % de 1.240 h. Los cambios de referencia cobran montaje de molde y purgas de resina y color según `catalog/changeovers.yaml`; el escenario 4 de Fractal (menos cambios) dedica un color a cada inyectora del balde.
+- **Ahorro potencial** (el campo `ahorro` del frontmatter de cada guion alimenta la tabla de `presentaciones.html` y el cierre del video; son cifras de las corridas, no estimaciones): falla de IMM-21, 10 → 7 pedidos tarde y 295,5 → 182,3 h de atraso (113,2 h menos); menos cambios, 30 → 12 cambios y 22,5 → 9 h de máquina por semana; pedidos fijados, 185,8 → 182,3 h y 65,9 → 61,6 % de ocupación. Para llevarlo a dinero se multiplica por el costo de la hora de máquina de la planta, dato que la demo no inventa.
 - Todos los datos son supuestos; ninguna marca ni cliente es real.
 
 Para producir el video (voz con ElevenLabs y montaje con HyperFrames) siga [VIDEO.md](VIDEO.md): trae el guion de apertura y cierre, el prompt para el agente y cómo volver a tomar las capturas o grabar los recorridos con `tools/demo-video/grabar.cjs`.

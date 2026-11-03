@@ -7,6 +7,11 @@ cifras:
   - ["día 12 → día 11", "nueva fecha de entrega del pedido"]
   - ["0,6 s", "para estudiar las opciones"]
   - ["92,5 %", "de pedidos a tiempo: el resto no se atrasa"]
+ahorro:
+  - ["Pedidos nuevos atrasados", "—", "0", "ninguno"]
+  - ["Moldes que cambiar", "—", "0", "ninguno"]
+  - ["Atraso total", "182,3 h", "182,3 h", "sin aumento"]
+  - ["Tiempo de respuesta", "—", "0,6 s", "en lugar de rehacer el plan a mano"]
 ---
 
 # Escenario 2 · Cambio de fecha de un pedido
@@ -68,3 +73,10 @@ Mensaje central: un cliente pide su pedido antes. El sistema dice en segundos si
 - en pantalla: el contador de unidades terminadas y las estrellas sobre las inyectoras uno y dos
 
 > Con el play avanzamos un día. Al día diez a las diez de la mañana la orden va en cincuenta y un mil unidades, en proceso en las inyectoras uno y dos, que llevan una estrella en su letrero. Así se ve, hora a hora, cómo avanza cada pedido en la planta.
+
+### S09 · El ahorro potencial
+- imagen: capturas/03-fractal.png
+- duración: 20 s
+- en pantalla: las filas VIGENTE y A MEJOR: pedidos tarde y atraso iguales
+
+> Aquí el ahorro es de tiempo y de riesgo. Fractal responde en seis décimas de segundo, no hace falta cambiar ningún molde y ningún otro pedido se atrasa: siguen siendo siete tarde y ciento ochenta y dos horas de atraso, igual que antes del cambio. El comercial confirma la fecha con datos, sin rehacer el plan a mano.
