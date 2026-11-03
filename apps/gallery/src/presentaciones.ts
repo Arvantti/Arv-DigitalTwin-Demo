@@ -8,6 +8,7 @@
  */
 import "./styles.css";
 import "./aps.css";
+import "./movil.css";
 import yaml from "js-yaml";
 import { esc } from "./schedule.ts";
 

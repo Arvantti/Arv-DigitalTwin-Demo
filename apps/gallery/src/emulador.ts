@@ -10,6 +10,7 @@
  */
 import "./styles.css";
 import "./aps.css";
+import "./movil.css";
 import yaml from "js-yaml";
 import plantYaml from "../../../industrial-models/plastic-injection-plant-v1/plant.yaml?raw";
 import type { PlantEvent, PlanScheduleRow } from "@twin/cosim/core/contracts.ts";

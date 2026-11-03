@@ -1,0 +1,57 @@
+/* Celular (≤ 700 px) para las pantallas de la familia APS: APS, centro de control, emulador, arquitectura y
+   presentaciones. Encabezado de dos líneas (enlaces y título), pestañas que se deslizan en horizontal y textos
+   secundarios ocultos. En escritorio no cambia nada. */
+@media (max-width: 700px) {
+  /* El centro de control es una sola pantalla en escritorio (sin scroll); en celular la lista de máquinas sí
+     tiene que poder bajar. */
+  html:has(body.cc-page),
+  body.cc-page {
+    height: auto;
+    min-height: 100%;
+    overflow: visible;
+  }
+  .aps-top,
+  .cc-page .aps-top {
+    position: sticky;
+    flex: none;
+    flex-wrap: wrap;
+    white-space: normal;
+    gap: 4px 10px;
+    padding: 8px 12px;
+    overflow: visible;
+  }
+  .aps-top .aps-back {
+    font-size: 11px;
+    padding: 4px 2px;
+    letter-spacing: 0.02em;
+  }
+  .aps-top .aps-title {
+    flex: 1 1 100%;
+    min-width: 0;
+    font-size: 15px;
+    line-height: 1.25;
+  }
+  .aps-top .aps-title .dim { display: none; }
+  .aps-top .aps-chip,
+  .aps-top .aps-clock {
+    font-size: 11px;
+    padding: 4px 8px;
+  }
+  .aps-top .aps-chip { flex: 1 1 auto; }
+  .aps-top .aps-clock { flex: 0 0 auto; }
+
+  .aps-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
+    padding: 8px 12px;
+    gap: 6px;
+  }
+  .aps-tabs > * {
+    flex: 0 0 auto;
+    scroll-snap-align: start;
+    white-space: nowrap;
+  }
+  .aps-tabs .aps-spacer { display: none; }
+}
