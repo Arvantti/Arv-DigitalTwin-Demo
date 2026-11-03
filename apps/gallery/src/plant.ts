@@ -2078,7 +2078,9 @@ async function start(): Promise<void> {
     o.title = sc.description;
     sel.appendChild(o);
   }
-  $("btn-connect").onclick = connect;
+  // En plásticos el gemelo es la barra inferior (programación del APS): no hay simulación de planta aparte.
+  if (plantId === "plastic-injection-plant-v1") $("sim-panel").hidden = true;
+  else $("btn-connect").onclick = connect;
   $("btn-tour").onclick = startTour;
   $("btn-pause").onclick = () => {
     paused = !paused;
@@ -2125,7 +2127,7 @@ async function start(): Promise<void> {
     stage.controls.update();
   }
   if (url.get("tour") === "1") startTour();
-  if (url.get("autosim") === "1" && simulated) {
+  if (url.get("autosim") === "1" && simulated && plantId !== "plastic-injection-plant-v1") {
     if (url.get("scenario")) sel.value = url.get("scenario")!;
     if (url.get("speed")) {
       $<HTMLInputElement>("speed").value = String(Math.log10(Number(url.get("speed"))));
