@@ -88,3 +88,18 @@
     padding-right: 6px;
   }
 }
+
+/* Emulador (plano 2D): en celular el plano conserva su tamaño y se desliza a lo ancho, para que las etiquetas
+   de las zonas no se corten. Así se ve completo con el dedo, sin acercar la imagen. */
+@media (max-width: 700px) {
+  .emu-floor { overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 4px; }
+  #emu-svg { min-width: 640px; }
+  .emu-main { padding: 8px 12px 20px; gap: 10px; }
+}
+
+/* Centro de control en celular: los tres indicadores de disponibilidad, rendimiento y calidad caben en una fila. */
+@media (max-width: 700px) {
+  .cc-gauges3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .cc-gauges3 .g-num { font-size: 16px; }
+}
+
