@@ -12,7 +12,7 @@
       <a class="aps-back" href="/plant.html?plant=plastic-injection-plant-v1">← GEMELO 3D</a>
       <a class="aps-back" href="/aps.html">APS</a>
       <a class="aps-back" href="/control.html">CENTRO DE CONTROL</a>
-      <a class="aps-back" href="/emulador.html">EMULADOR</a>
+      <a class="aps-back" href="/emulador.html">PLANTA (EMULADA)</a>
       <a class="aps-back" href="/presentaciones.html">PRESENTACIONES</a>
       <div class="aps-title"><strong>ARQUITECTURA</strong><span class="dim"> · cómo funciona el gemelo de la planta de plásticos</span></div>
     </header>
@@ -22,7 +22,7 @@
       <p class="ar-hint">↔ Desliza el diagrama para verlo completo</p>
       <div class="ar-scroll"><svg class="ar-svg" viewBox="0 0 1200 850" role="img" aria-labelledby="ar-t ar-d">
         <title id="ar-t">Arquitectura del gemelo digital de la planta de plásticos</title>
-        <desc id="ar-d">El emulador 2D representa la planta real y contiene muchos PLC; todas sus señales llegan al centro de control. El centro de control alimenta al gemelo digital, que muestra pasado, presente y futuro. El APS entrega la programación al gemelo. El cosimulador intercambia datos con el gemelo y con el centro de control. Fractal, el optimizador, lee el gemelo, el cosimulador y el centro de control, genera escenarios y un usuario decide cuál aplicar en el gemelo y en el centro de control.</desc>
+        <desc id="ar-d">La planta (emulada en 2D) contiene muchos PLC; todas sus señales llegan al centro de control. El APS entrega la programación al centro de control, que la envía a la planta. El centro de control alimenta al gemelo digital, que muestra pasado, presente y futuro. El APS entrega la programación al gemelo. El cosimulador intercambia datos con el gemelo y con el centro de control. Fractal, el optimizador, lee el gemelo, el cosimulador y el centro de control, genera escenarios y un usuario decide cuál aplicar en el gemelo y en el centro de control.</desc>
         <defs>
           <marker id="ar-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="ar-head" /></marker>
           <clipPath id="ar-clip"><rect x="398" y="352" width="190" height="104" rx="8" /></clipPath>
@@ -31,6 +31,10 @@
         <!-- Flechas -->
         <path class="ar-line live" d="M504 142H650" marker-end="url(#ar-arrow)" />
         <text class="ar-lbl" x="620" y="132" text-anchor="middle">señales</text>
+        <path class="ar-line plan" d="M650 190H598" marker-end="url(#ar-arrow)" />
+        <text class="ar-lbl" x="624" y="208" text-anchor="middle">órdenes</text>
+        <path class="ar-line plan" d="M1050 330V210H932" marker-end="url(#ar-arrow)" />
+        <text class="ar-lbl" x="1060" y="280">programación</text>
         <path class="ar-line live" d="M700 230V310" marker-end="url(#ar-arrow)" />
         <text class="ar-lbl" x="692" y="274" text-anchor="end">estado de la planta</text>
         <path class="ar-line fut" d="M790 310V230" marker-end="url(#ar-arrow)" />
@@ -63,8 +67,8 @@
         <a href="/emulador.html"><g class="ar-box live">
           <rect x="30" y="40" width="560" height="200" rx="10" />
           <text class="ar-n" x="48" y="68">1</text>
-          <text class="ar-h" x="74" y="70">EMULADOR 2D</text>
-          <text class="ar-s" x="236" y="70">representa la planta real</text>
+          <text class="ar-h" x="74" y="70">PLANTA</text>
+          <text class="ar-s" x="160" y="70">(emulada en 2D)</text>
           <rect class="ar-code-bg" x="48" y="86" width="270" height="110" rx="6" />
           <text class="ar-code" x="58" y="108">[ Σ tᵢⱼ·xᵢⱼ ≤ Cₘ  ∀ máquina m ]</text>
           <text class="ar-code" x="58" y="128">[ xᵢⱼ ∈ {0,1}, Σⱼ xᵢⱼ = 1 ]</text>
@@ -81,7 +85,7 @@
             <g transform="translate(460 166)"><rect width="44" height="28" rx="3" /><path d="M10 0v8h24v-8M16 8v6M22 8v6M28 8v6" /></g>
           </g>
           <text class="ar-s" x="340" y="214">PLC de cada máquina</text>
-          <text class="ar-go" x="48" y="226">ABRIR EMULADOR →</text>
+          <text class="ar-go" x="48" y="226">ABRIR PLANTA EMULADA →</text>
         </g></a>
 
         <!-- Centro de control -->
@@ -171,10 +175,10 @@
 
       <h2 class="ar-h2">Cómo leerlo</h2>
       <ol class="ar-steps">
-        <li class="live"><span class="ar-num">1</span><div><b>El emulador 2D representa la planta real.</b> Resuelve con matemáticas las restricciones de la planta y contiene un PLC por máquina. Aquí se declara una falla o un paro, en tiempo real. <a href="/emulador.html">Abrir emulador →</a></div></li>
-        <li class="live"><span class="ar-num">2</span><div><b>El centro de control</b> recibe las señales de todos los PLC (ciclo, unidades, OEE) y las entrega al gemelo. <a href="/control.html">Abrir centro de control →</a></div></li>
+        <li class="live"><span class="ar-num">1</span><div><b>La planta (emulada en 2D)</b> hace de planta real. Resuelve con matemáticas las restricciones de la planta y contiene un PLC por máquina. Aquí se declara una falla o un paro, en tiempo real. Recibe las órdenes del centro de control. <a href="/emulador.html">Abrir planta emulada →</a></div></li>
+        <li class="live"><span class="ar-num">2</span><div><b>El centro de control</b> recibe las señales de todos los PLC (ciclo, unidades, OEE) y las entrega al gemelo. También recibe del APS la programación y la envía a la planta. <a href="/control.html">Abrir centro de control →</a></div></li>
         <li class="twin"><span class="ar-num">3</span><div><b>El gemelo digital</b> muestra el pasado (play por días), el presente en vivo y el futuro con los escenarios. <a href="/plant.html?plant=plastic-injection-plant-v1">Abrir gemelo 3D →</a></div></li>
-        <li class="plan"><span class="ar-num">4</span><div><b>El APS</b> entrega la programación al gemelo; la manual se ve y se edita en el mismo APS. <a href="/aps.html">Abrir APS →</a></div></li>
+        <li class="plan"><span class="ar-num">4</span><div><b>El APS</b> entrega la programación al gemelo y al centro de control, que la envía a la planta; la manual se ve y se edita en el mismo APS. <a href="/aps.html">Abrir APS →</a></div></li>
         <li class="calc"><span class="ar-num">5</span><div><b>El cosimulador</b> calcula la secuencia que cumple las entregas, la entrega al APS y se comunica con el gemelo y con el centro de control de PLC. <a href="/aps.html?tab=gantt">Calcular en el APS →</a></div></li>
         <li class="fut"><span class="ar-num">6</span><div><b>Fractal, el optimizador,</b> lee el gemelo, el cosimulador y el centro de control, y genera escenarios. El usuario decide cuál aplicar: se aplica en el gemelo y de ahí en el centro de control. <a href="/aps.html?tab=fractal">Abrir Fractal →</a></div></li>
       </ol>
