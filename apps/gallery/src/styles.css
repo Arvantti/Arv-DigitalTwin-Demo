@@ -421,3 +421,17 @@ body.shot #view-cube { display:none; }
 @media (max-width: 700px) {
   .twin-orders { left: 8px; right: 8px; width: auto; bottom: 136px; max-height: 40vh; }
 }
+
+/* Panel flotante con el emulador y el Gantt en miniatura (twin-mini.ts): abajo a la derecha, junto a la barra de play. */
+.twin-mini { right: 350px; bottom: 86px; z-index: 5; padding: 0; overflow: hidden; display: flex; flex-direction: column; max-width: calc(100vw - 300px); }
+.tm-head { display: flex; align-items: center; gap: 4px; padding: 4px 6px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+.tm-head button { background: none; border: 1px solid transparent; color: var(--dim); font: 600 10px Inter, sans-serif; letter-spacing: 0.08em; padding: 3px 7px; border-radius: 10px; cursor: pointer; }
+.tm-head button.on { color: var(--text); border-color: var(--cyan); background: rgba(0, 200, 255, 0.12); }
+.tm-spacer { flex: 1; }
+.tm-body { position: relative; overflow: hidden; }
+.tm-body iframe { border: 0; transform-origin: 0 0; background: #040421; display: block; }
+.twin-mini.min .tm-body { display: none; }
+@media (max-width: 700px) {
+  .twin-mini { left: 8px; right: 8px; bottom: auto; top: 64px; max-width: none; }
+  .tm-body { width: 100% !important; }
+}

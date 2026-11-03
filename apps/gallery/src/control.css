@@ -1,6 +1,8 @@
 /* Centro de control de plásticos (control.html): una sola pantalla, sin scroll. A la izquierda los indicadores OEE
    en gauges; a la derecha una tarjeta por equipo, repartidas para llenar el espacio disponible. */
-html:has(body.cc-page), body.cc-page { height: 100%; min-height: 0; overflow: hidden; }
+/* Más específico que la regla de aps.css para body.aps-page: el orden de los CSS cambia al empaquetar y sin esto la
+   pantalla se aplasta en una franja de 60 px. */
+html:has(body.aps-page.cc-page), body.aps-page.cc-page { height: 100%; min-height: 0; overflow: hidden; }
 body.cc-page { display: flex; flex-direction: column; }
 .cc-page .aps-top { position: static; flex: none; padding: 8px 14px; gap: 14px; flex-wrap: nowrap; white-space: nowrap; }
 .cc-page .aps-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; font-size: 14px; }

@@ -50,6 +50,7 @@ const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as 
 const ms = (iso: string) => Date.parse(`${iso.slice(0, 16)}:00Z`);
 const isoOf = (t: number) => new Date(t).toISOString().slice(0, 16);
 
+if (new URLSearchParams(location.search).has("embed")) document.body.classList.add("embed");
 if (new URLSearchParams(location.search).get("reset") === "1") resetDemo();
 
 let proposal: ProductionPlan | null = null;

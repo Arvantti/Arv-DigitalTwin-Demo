@@ -391,3 +391,8 @@ button.danger:hover { background: rgba(255, 59, 59, 0.4); border-color: #fff; }
 .pr-saving-all { max-width: 1000px; margin: 28px 0 8px; }
 .pr-saving-all h2 { font: 600 14px "IBM Plex Mono", monospace; letter-spacing: 0.1em; color: #9d8ff8; }
 .pr-saving-all h3 { font-size: 14px; margin: 14px 0 0; }
+
+/* Pantallas dentro del panel flotante del gemelo 3D (?embed=1): sin encabezado, pestañas ni barras de acción. */
+body.embed .aps-top, body.embed .aps-tabs, body.embed .emu-side, body.embed .emu-legend { display: none; }
+body.embed .emu-main { grid-template-columns: 1fr; padding: 4px; }
+body.embed #emu-svg { aspect-ratio: 118 / 62; }

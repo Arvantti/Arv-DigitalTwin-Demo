@@ -28,6 +28,7 @@ const plants: PlantCard[] = [
     family: "MANUFACTURA DISCRETA",
     title: "Planta de plásticos",
     text: "Inyectoras, moldes, secado, reciclaje y ensamble: piezas contables que avanzan por celdas y rutas.",
+    extra: { href: "/resumen-plasticos.html", label: "RESUMEN GERENCIAL" },
   },
   {
     id: "sauce-plant-v1",
