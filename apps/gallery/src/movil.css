@@ -70,12 +70,13 @@
   .aps-add > summary.label::-webkit-details-marker { display: none; }
   .aps-add > summary.label::after { content: "▾"; color: var(--dim); }
   .aps-add:not([open]) > summary.label::after { content: "▸"; }
-  .aps-add label { flex: 1 1 calc(50% - 10px); min-width: 0; }
+  .aps-add-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+  .aps-add-grid .f-wide { grid-column: 1 / -1; }
+  .aps-add label { min-width: 0; }
   .aps-add input,
   .aps-add select { width: 100%; box-sizing: border-box; }
   .aps-add input[type="number"] { width: 100%; }
-  .aps-add button { flex: 1 1 100%; }
-  .aps-add #f-msg { flex: 1 1 100%; }
+  .aps-add button { grid-column: 1 / -1; }
 
   /* Gantt: la etiqueta de cada orden o recurso se queda a la izquierda al deslizar la línea de tiempo. */
   .g-scroll .g-label {
