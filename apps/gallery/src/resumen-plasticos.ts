@@ -24,10 +24,10 @@ const K = {
   cosimATiempo: 92.5,
   manualTarde: 9,
   manualAtraso: 229,
-  ocManual: 69.3,
-  ocCosim: 61,
+  ocManual: 69.2,
+  ocCosim: 61.3,
   ocFractal: 60.7,
-  horasCosim: 91,
+  horasCosim: 90,
   cambiosAntes: 30,
   cambiosDespues: 12,
   hCambiosAntes: 22.5,
@@ -234,7 +234,7 @@ const slides: Slide[] = [
       <h2 class="rg-h2 kin">Cinco preguntas, cinco respuestas</h2>
       <div class="rg-scen">
         ${[
-          ["1", "Calcular según entregas", "90,3 → 92,5 %", "pedidos a tiempo, con 91 h de máquina menos en la semana"],
+          ["1", "Calcular según entregas", "90,3 → 92,5 %", "pedidos a tiempo, con 90 h de máquina menos en la semana"],
           ["2", "Un cliente adelanta su pedido", "0,6 s", "para saber que se cumple sin atrasar a los demás"],
           ["3", "Falla una inyectora", "10 → 7", "pedidos tarde montando el molde de repuesto en 90 min"],
           ["4", "Pedidos fijados a mano", "65,9 → 61,6 %", "de ocupación sin mover las órdenes bloqueadas"],
@@ -280,7 +280,7 @@ const slides: Slide[] = [
       </div>
       <div class="rg-save-side">
         <div class="rg-mini a" data-a="pop" style="--d:1.7s"><b data-count="${K.atrasoFallaAntes - K.atrasoFallaDespues}" data-dec="1" data-suf=" h">0</b><span>menos de atraso ante una falla (−38 %), 3 pedidos rescatados</span></div>
-        <div class="rg-mini a" data-a="pop" style="--d:1.85s"><b>70 → 62 %</b><span>la máquina más cargada, con el molde de repuesto</span></div>
+        <div class="rg-mini a" data-a="pop" style="--d:1.85s"><b>71 → 62 %</b><span>la máquina más cargada, con el molde de repuesto</span></div>
         <div class="rg-calc a" data-a="up" style="--d:2s">
           <label for="rg-rate">Valor de una hora de máquina <small>(supuesto, ajústelo a su costo)</small></label>
           <div class="rg-calc-row"><input id="rg-rate" type="range" min="50000" max="400000" step="10000" value="150000" /><output id="rg-rate-out">$ 150.000</output></div>
