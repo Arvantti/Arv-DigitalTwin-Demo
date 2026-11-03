@@ -312,15 +312,19 @@ export interface Scenario {
 }
 
 /**
- * Primero corre entregas. Luego una segunda pasada baja los cambios de molde y color, pero solo se ofrece si no empeora
- * el atraso ni el cumplimiento, y si deja menos cambios. Si no cumple, solo queda el escenario de entregas.
+ * Primero corre entregas (el MILP de siempre). Luego busca menos cambios de referencia sin atrasar pedidos: dedicar un
+ * color a cada máquina (cada color solo en las inyectoras que ya lo tienen montado) con el mismo objetivo de entregas.
+ * Es rápido (fracciones de segundo) y termina dentro del tiempo del navegador; el objetivo "cambios" del MILP pasa de
+ * 30 s en la cartera de la demo y, al despachar, atrasa pedidos, así que no se usa como escenario.
+ * El escenario de menos cambios solo se ofrece si no empeora entregas ni cumplimiento y deja menos cambios; si no,
+ * queda solo el de entregas.
  */
 export function solveScenarios(highs: HighsLike, model: PlasticsModel, portfolio: CustomerOrders, opt: SolveOptions = {}): Scenario[] {
   const base = solve(highs, model, portfolio, { ...opt, objective: "entregas" });
   const scenarios: Scenario[] = [{ id: "entregas", label: "Cumplir entregas", plan: base }];
   let alt: ProductionPlan | null = null;
   try {
-    alt = solve(highs, model, portfolio, { ...opt, objective: "cambios", planId: `${base.plan_id}-CAMBIOS` });
+    alt = solve(highs, model, portfolio, { ...opt, objective: "entregas", dedicateColors: true, planId: `${base.plan_id}-CAMBIOS` });
   } catch {
     alt = null;
   }
