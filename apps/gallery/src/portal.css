@@ -56,3 +56,15 @@
 @media (max-width: 980px) { .portal-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } .gcard.wide { grid-column: span 2; } }
 @media (max-width: 640px) { .portal-cards { grid-template-columns: minmax(0, 1fr); } .gcard.wide { grid-column: auto; } .gcard.wide .gcard-media { aspect-ratio: 16 / 9; } }
 @media (prefers-reduced-motion: reduce) { .gcard, .gcard-media img, .gcard-hex, .gcard-body h3 { transition: none; } .gcard:hover .gcard-scan, .gcard:hover .gcard-in { animation: none; } .gcard:hover .gcard-hex { transform: translateY(-50%); } .gcard { --s: 1 !important; } }
+
+/* Gemelos en construcción: grises y con cinta de obra, pero con acceso. */
+.gcard.wip .gcard-media img { filter: grayscale(1) brightness(0.62) contrast(1.05); }
+.gcard.wip:hover .gcard-media img { filter: grayscale(1) brightness(0.8); }
+.gcard.wip .gcard-body h3 { color: #b6bdcc; }
+.gcard.wip:hover .gcard-body h3 { color: #d3d8e3; }
+.gcard.wip .gcard-body p { color: #7c8496; }
+.gcard.wip .gcard-body .label { color: #8892a6; }
+.gcard.wip .btn.primary { filter: grayscale(1); opacity: 0.85; }
+.gcard.wip:hover { filter: drop-shadow(0 12px 24px rgba(136, 146, 166, 0.25)); }
+.gcard-wip { position: absolute; z-index: 2; left: -4%; right: -4%; top: 50%; transform: translateY(-50%) rotate(-3deg); padding: 6px 0; text-align: center; font: 700 12px Orbitron, sans-serif; letter-spacing: 0.22em; color: #f2c200; background: rgba(10, 10, 10, 0.88);
+  border-block: 6px solid; border-image: repeating-linear-gradient(-45deg, #f2c200 0 9px, #1c1c1c 9px 18px) 6; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5); }

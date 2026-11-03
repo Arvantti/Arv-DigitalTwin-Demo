@@ -14,6 +14,8 @@ interface PlantCard {
   extra?: { href: string; label: string };
   /** Sin tipos de librería simulados todavía: no se ofrece la librería filtrada. */
   noLibrary?: boolean;
+  /** Gemelo todavía en construcción: se puede entrar, pero se muestra en gris y marcado. */
+  wip?: boolean;
   /** Color de acento de la tarjeta (por familia de manufactura). */
   accent?: string;
   /** Página propia en lugar de la escena 3D (gemelos sin vista 3D todavía). */
@@ -30,14 +32,6 @@ const plants: PlantCard[] = [
     text: "Inyectoras, moldes, secado, reciclaje y ensamble: piezas contables que avanzan por celdas y rutas.",
   },
   {
-    id: "sauce-plant-v1",
-    image: "/portal/salsas.jpg",
-    alt: "Escena 3D de la planta de salsas con tanques, llenado y empaque",
-    family: "MANUFACTURA DE PROCESOS",
-    title: "Planta de salsas",
-    text: "Cocción, emulsión, pasteurización, llenado, empaque y bodega: flujo continuo y por lotes con servicios de planta.",
-  },
-  {
     id: "water-network-scale-v1",
     image: "/portal/acueducto.jpg",
     alt: "Escena 3D del acueducto a escala con bombeo y rejilla por pisos",
@@ -47,7 +41,17 @@ const plants: PlantCard[] = [
     extra: { href: "/plant.html?plant=water-network-scale-v1&workspace=plc", label: "PLC MASTER EN 3D" },
   },
   {
+    id: "sauce-plant-v1",
+    wip: true,
+    image: "/portal/salsas.jpg",
+    alt: "Escena 3D de la planta de salsas con tanques, llenado y empaque",
+    family: "MANUFACTURA DE PROCESOS",
+    title: "Planta de salsas",
+    text: "Cocción, emulsión, pasteurización, llenado, empaque y bodega: flujo continuo y por lotes con servicios de planta.",
+  },
+  {
     id: "airport-baggage-v1",
+    wip: true,
     image: "/portal/aeropuerto.jpg",
     alt: "Escena 3D del sistema de equipaje del aeropuerto con bandas y clasificador",
     family: "LOGÍSTICA",
@@ -56,6 +60,7 @@ const plants: PlantCard[] = [
   },
   {
     id: "corrugated-box-plant-v1",
+    wip: true,
     image: "/portal/cajas.jpg",
     alt: "Escena 3D de la fábrica de cajas con corrugadora y transporte de pilas",
     family: "MANEJO DE MATERIALES",
@@ -64,6 +69,7 @@ const plants: PlantCard[] = [
   },
   {
     id: "garment-factory-v1",
+    wip: true,
     image: "/portal/confecciones.jpg",
     alt: "Captura de la escena 3D de la fábrica de confecciones",
     family: "MANUFACTURA DISCRETA",
@@ -72,6 +78,7 @@ const plants: PlantCard[] = [
   },
   {
     id: "centro-medellin-v1",
+    wip: true,
     image: "/portal/ciudad.jpg",
     alt: "Plano de la red vial del centro de Medellín con carreras, calles y semáforos",
     family: "MOVILIDAD URBANA",
@@ -91,16 +98,18 @@ const FAMILY: Record<string, { color: string; glyph: string }> = {
   "MOVILIDAD URBANA": { color: "#22d3ee", glyph: "M12 21s-6-6-6-11a6 6 0 0 1 12 0c0 5-6 11-6 11zM10 10a2 2 0 1 0 4 0a2 2 0 1 0-4 0" },
 };
 
+const WIP_FAMILY = { color: "#8892a6", glyph: "M12 3l7 17H5zM8.5 14h7M10 9h4" };
+
 const root = document.getElementById("cards") as HTMLElement;
 plants.forEach((p, i) => {
   const main = p.main ?? { href: `/plant.html?plant=${p.id}`, label: "VER LA PLANTA EN 3D" };
-  const fam = FAMILY[p.family] ?? { color: "#4ea7ff", glyph: "M12 3l8 4.5v9L12 21l-8-4.5v-9z" };
+  const fam = p.wip ? WIP_FAMILY : (FAMILY[p.family] ?? { color: "#4ea7ff", glyph: "M12 3l8 4.5v9L12 21l-8-4.5v-9z" });
   const card = document.createElement("article");
-  card.className = `gcard${i === 0 || i === plants.length - 1 ? " wide" : ""}`;
+  card.className = `gcard${i === 0 || i === plants.length - 1 ? " wide" : ""}${p.wip ? " wip" : ""}`;
   card.style.setProperty("--c", fam.color);
   card.innerHTML = `
     <div class="gcard-in">
-      <a class="gcard-media" href="${main.href}" tabindex="-1"><img src="${p.image}" alt="${p.alt}" loading="lazy" width="960" height="540" /><span class="gcard-scan"></span></a>
+      <a class="gcard-media" href="${main.href}" tabindex="-1"><img src="${p.image}" alt="${p.alt}" loading="lazy" width="960" height="540" /><span class="gcard-scan"></span>${p.wip ? '<span class="gcard-wip">EN CONSTRUCCIÓN</span>' : ""}</a>
       <div class="gcard-body">
         <span class="gcard-hex" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="${fam.glyph}"/></svg></span>
         <div class="label">${p.family}</div>
