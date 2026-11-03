@@ -10,6 +10,7 @@ import type { ProductionPlan } from "@twin/cosim/core/contracts.ts";
 import { buildSchedule, esc } from "./schedule.ts";
 import type * as THREE from "three";
 import { activeEvents, activePlan, events, onChange, SOURCE_NAMES, useDemoDays } from "./aps-store.ts";
+import { toggleMini } from "./twin-mini.ts";
 import { buildTwinPlay, plcCard } from "./twin-play.ts";
 import type { MachineState } from "./plant-state.ts";
 
@@ -62,10 +63,11 @@ export function buildAps(opts: Options): { time: () => number; rate: () => numbe
       <h3>APS <span class="dim">· pedidos y programación</span></h3>
       ${down.map((e) => `<p class="aps-down" title="${esc(e.reason)}">⚠ ${e.equipment.toUpperCase()} fuera de servicio · ${e.kind === "falla" ? "falla" : "paro de emergencia"}</p>`).join("")}
       <div class="sim-controls"><a class="btn-link" href="/aps.html" target="_blank" rel="noopener">▦ ABRIR APS · PEDIDOS Y GANTT</a></div>
-      <div class="sim-controls"><a class="btn-link alt" href="/emulador.html" target="_blank" rel="noopener">◫ EMULADOR DE PLANTA · 2D</a></div>
+      <div class="sim-controls"><button class="btn-link alt" id="open-mini" type="button" title="Emulador 2D y Gantt del APS en miniatura sobre el 3D">◫ EMULADOR DE PLANTA · 2D</button></div>
       <div class="sim-controls"><a class="btn-link" href="/control.html" target="_blank" rel="noopener">◉ CENTRO DE CONTROL</a></div>
       <div class="sim-controls"><a class="btn-link alt" href="/presentaciones.html" target="_blank" rel="noopener">▶ PRESENTACIONES · RESULTADOS</a></div>`;
   };
+  section.addEventListener("click", (e) => (e.target as HTMLElement).closest("#open-mini") && toggleMini());
   render();
   onChange((what) => {
     current = activePlan();
