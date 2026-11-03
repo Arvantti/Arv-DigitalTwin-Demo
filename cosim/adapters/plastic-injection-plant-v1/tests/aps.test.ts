@@ -147,11 +147,12 @@ describe("escenarios: entregas primero, menos cambios si no empeora", () => {
     const sc = solveScenarios(highs, model, portfolio, { timeLimitS: 20 });
     expect(sc[0].id).toBe("entregas");
     for (const s of sc) checkPlan(s.plan);
+    // Con la cartera de la demo el escenario de menos cambios tiene que aparecer: mismas entregas, menos cambios.
     const alt = sc.find((s) => s.id === "menos-cambios");
-    if (alt) {
-      expect(alt.plan.kpis.changeovers).toBeLessThan(sc[0].plan.kpis.changeovers);
-      expect(alt.plan.kpis.tardiness_h).toBeLessThanOrEqual(sc[0].plan.kpis.tardiness_h);
-    }
+    expect(alt, "la cartera de la demo debe ofrecer menos cambios").toBeDefined();
+    expect(alt!.plan.kpis.changeovers).toBeLessThan(sc[0].plan.kpis.changeovers);
+    expect(alt!.plan.kpis.tardiness_h).toBeLessThanOrEqual(sc[0].plan.kpis.tardiness_h);
+    expect(alt!.plan.kpis.on_time_pct).toBeGreaterThanOrEqual(sc[0].plan.kpis.on_time_pct);
     console.log("escenarios", sc.map((s) => `${s.id}:${s.plan.kpis.changeovers}/${s.plan.kpis.tardiness_h}`).join(" "));
   }, 180_000);
 });
