@@ -46,6 +46,7 @@ const STOPS = ["Paro de emergencia por seguridad", "Atrapamiento de operario (si
 const REPAIR_H = [2, 4, 8, 16, 24, 48, 72];
 const STATE_NAMES: Record<State, string> = { run: "PRODUCIENDO", idle: "SIN ORDEN", plan: "PARADA PROGRAMADA", fault: "FUERA DE SERVICIO", off: "FUERA DE TURNO" };
 
+if (new URLSearchParams(location.search).has("embed")) document.body.classList.add("embed");
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 const ms = (iso: string) => Date.parse(`${iso.slice(0, 16)}:00Z`);
 const isoTz = (t: number) => `${new Date(t).toISOString().slice(0, 16)}${model.timezone}`;
