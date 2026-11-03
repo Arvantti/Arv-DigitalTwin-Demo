@@ -1,15 +1,15 @@
 ---
 title: Video tutorial de la demo de plásticos
 tags: [demo, plasticos, video, guion, elevenlabs, hyperframes]
-fecha: 2026-11-01
+fecha: 2026-11-03
 ---
 
 # Video tutorial de la demo de plásticos
 
 Instrucciones para producir el video en el computador que tiene ElevenLabs y HyperFrames configurados. El video resume
-las cuatro presentaciones y muestra la planta: emulador, centro de control, gemelo 3D, APS con el cosimulador y Fractal.
+las cinco presentaciones y muestra la planta: emulador, centro de control, gemelo 3D, APS con el cosimulador y Fractal.
 
-## 1. Estructura del video (unos 12 minutos)
+## 1. Estructura del video (unos 16 minutos)
 
 | Capítulo | Contenido | Guion | Material |
 |---|---|---|---|
@@ -18,7 +18,8 @@ las cuatro presentaciones y muestra la planta: emulador, centro de control, geme
 | 2 · Cambio de fecha de un pedido | Un cliente adelanta su pedido un día | [guion](2-cambio-fecha-pedido/guion.md) | `2-cambio-fecha-pedido/` |
 | 3 · Contingencia | Falla de una inyectora y plan de reemplazo | [guion](3-contingencia-falla/guion.md) | `3-contingencia-falla/` |
 | 4 · Pedidos fijados | El planificador bloquea órdenes a mano y Fractal reorganiza el resto | [guion](4-pedidos-fijados/guion.md) | `4-pedidos-fijados/` |
-| 5 · Cierre | Lo que gana la planta | sección 4 de este documento | tarjeta con cifras |
+| 5 · Menos cambios de referencia | Fractal dedica un color a cada inyectora: de 30 a 12 cambios | [guion](5-menos-cambios/guion.md) | `5-menos-cambios/` |
+| 6 · Cierre | El ahorro potencial de Fractal | sección 4 de este documento | tarjeta con cifras |
 
 Reglas del contenido: sin fechas de calendario (todo es "día N"; hoy es el día 9), sin marcas reales, clientes y
 pedidos inventados, cifras tal como salen en las capturas.
@@ -32,7 +33,8 @@ pnpm install
 pnpm gallery                       # deja la galería en http://localhost:5173 (otra terminal)
 pnpm add -g playwright@1.63.0
 pnpm dlx playwright@1.63.0 install chromium
-NODE_PATH="$(pnpm root -g)" node tools/demo-video/grabar.cjs todos --video   # o 1, 2, 3, 4; --lento para pausas más largas
+NODE_PATH="$(pnpm root -g)" node tools/demo-video/grabar.cjs todos --video   # o 1, 2, 3, 4, 5; --lento para pausas más largas
+# el gemelo 3D necesita también el emulador: uv sync && uv run uvicorn twin_emulator_api.main:app --port 8000
 ```
 
 - Capturas: `docs/demo-plasticos/<escenario>/capturas/*.png`, con los mismos nombres que usan los guiones.
@@ -66,13 +68,23 @@ NODE_PATH="$(pnpm root -g)" node tools/demo-video/grabar.cjs todos --video   # o
 - imagen: 1-calcular-programacion/capturas/01-pedidos.png
 - duración: 12 s
 
-> Todo se cuenta en días desde el arranque de la programación, el día cero. Hoy es el día nueve. Veamos cuatro escenarios.
+> Todo se cuenta en días desde el arranque de la programación, el día cero. Hoy es el día nueve. Veamos cinco escenarios.
 
-### 5-S01 · Lo que gana la planta
-- imagen: tarjeta con tres cifras (fondo oscuro): "90,3 % → 92,5 % a tiempo", "69 % → 59 % de ocupación con la misma producción", "9 → 7 pedidos tarde ante una falla", "3 pedidos fijados a mano que no se mueven"
-- duración: 20 s
+### 6-S01 · El ahorro potencial de Fractal
+- imagen: tarjeta con las cifras de abajo (fondo oscuro, una fila por escenario)
+- duración: 40 s
 
-> En resumen: el cosimulador cumple más entregas con menos horas de máquina, Fractal prueba cambios en la planta y recomienda el mejor, y ante una falla la planta tiene un plan nuevo en menos de un minuto. Fractal recomienda; la persona decide.
+Cifras de la tarjeta, todas de las corridas de la demo:
+
+| Escenario | Antes | Con el plan optimizado | Ahorro |
+|---|---|---|---|
+| 1 · Calcular (cosimulador y Fractal) | 90,3 % a tiempo, 793 h de máquina | 92,5 % a tiempo, 703 h | 2 pedidos tarde menos, 47 h de atraso menos, 90 h de máquina libres; carga máxima 71 % → 62 % |
+| 2 · Cambio de fecha | rehacer el plan a mano | plan en 0,6 s | ningún pedido más atrasado, ningún molde que cambiar |
+| 3 · Falla | 10 tarde, 295,5 h de atraso | 7 tarde, 182,3 h | 3 pedidos salvados, 113,2 h de atraso menos (90 min de montaje) |
+| 4 · Pedidos fijados | 185,8 h, 65,9 % de ocupación | 182,3 h, 61,6 % | 3,5 h menos y 4,3 puntos de ocupación, con tres órdenes sin mover |
+| 5 · Menos cambios | 30 cambios, 22,5 h | 12 cambios, 9 h | 18 cambios y 13,5 h de máquina por semana (60 %) |
+
+> En resumen, esto es lo que ahorra optimizar con Fractal. El cosimulador cumple más entregas y libera noventa horas de máquina en la semana. Ante una falla, Fractal salva tres pedidos y quita ciento trece horas de atraso. Con compromisos firmados, organiza el resto sin moverlos. Y dedicando un color a cada máquina, recupera trece horas y media de producción cada semana. Multiplicadas por lo que cuesta una hora de máquina en la planta, esas horas son el ahorro en dinero. Fractal recomienda; la persona decide.
 
 ## 5. Montaje con HyperFrames
 
@@ -89,9 +101,9 @@ NODE_PATH="$(pnpm root -g)" node tools/demo-video/grabar.cjs todos --video   # o
 Copia este texto en el agente que tiene HyperFrames y ElevenLabs:
 
 ```text
-En el repo clonado, lee docs/demo-plasticos/VIDEO.md y los cuatro guion.md de docs/demo-plasticos/.
-Produce un video tutorial en español de unos 12 minutos, 1920x1080, con seis capítulos:
-0 apertura, 1 calcular la programación, 2 cambio de fecha de un pedido, 3 contingencia, 4 pedidos fijados, 5 cierre.
+En el repo clonado, lee docs/demo-plasticos/VIDEO.md y los cinco guion.md de docs/demo-plasticos/.
+Produce un video tutorial en español de unos 16 minutos, 1920x1080, con siete capítulos:
+0 apertura, 1 calcular la programación, 2 cambio de fecha de un pedido, 3 contingencia, 4 pedidos fijados, 5 menos cambios, 6 cierre con el ahorro potencial de Fractal.
 
 1. Si faltan capturas o quieres recorridos en video, levanta la galería con `pnpm gallery` y corre
    `NODE_PATH="$(pnpm root -g)" node tools/demo-video/grabar.cjs todos --video`.

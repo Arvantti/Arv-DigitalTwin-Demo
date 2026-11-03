@@ -2,11 +2,15 @@
 title: Guion · Contingencia por falla de máquina
 escenario: 3-contingencia-falla
 tags: [demo, plasticos, guion, fractal]
-duracion_aprox: 3 min
+duracion_aprox: 4 min
 cifras:
   - ["10 → 7", "pedidos tarde con la recomendación de Fractal"]
   - ["295,5 → 182,3 h", "de atraso total"]
   - ["90 min", "para montar el molde de repuesto en la IMM-20"]
+ahorro:
+  - ["Pedidos tarde", "10", "7", "3 pedidos salvados"]
+  - ["Atraso total", "295,5 h", "182,3 h", "113,2 h menos"]
+  - ["Costo de la recomendación", "—", "90 min", "de montaje del molde de repuesto"]
 ---
 
 # Escenario 3 · Contingencia: falla de máquina
@@ -96,3 +100,24 @@ Mensaje central: cuando una máquina falla, el gemelo avisa, el cosimulador repl
 - en pantalla: etiqueta de la IMM-20 con la orden de baldes
 
 > Y con el plan adoptado, la inyectora veinte aparece produciendo baldes. Del aviso de falla a un plan nuevo en la planta, en menos de un minuto.
+
+### S13 · El montaje del molde en el gemelo 3D
+- imagen: capturas/12-gemelo-montaje-grua.jpg
+- duración: 18 s
+- en pantalla: la grúa, el molde de balde y el letrero morado de montaje
+
+> Y la opción adoptada no se queda en una tabla: con el play, el gemelo 3D muestra el cambio de molde. El puente grúa baja el molde de la inyectora veintiuno al carro y un operario lo lleva por el pasillo, a la otra máquina o al almacén de moldes.
+
+### S14 · El montaje en la inyectora veinte
+- imagen: capturas/13-gemelo-montaje-imm20.jpg
+- duración: 16 s
+- en pantalla: la inyectora veinte con el letrero de montaje y el carro vacío
+
+> El molde llega a la inyectora veinte, mudado desde la veintiuno o el de repuesto del almacén, según la opción que se vea. Con el repuesto son noventa minutos de montaje, que nunca se parten, y el letrero dice qué molde entra y en qué fase va.
+
+### S15 · El ahorro potencial
+- imagen: capturas/06-fractal.png
+- duración: 24 s
+- en pantalla: las filas A y C MEJOR: columnas TARDE y ATRASO
+
+> Este es el ahorro de la contingencia. Si solo se espera la reparación, quedan diez pedidos tarde y doscientas noventa y cinco horas y media de atraso. Con la recomendación de Fractal quedan siete tarde y ciento ochenta y dos coma tres horas: tres pedidos salvados y ciento trece horas de atraso menos. El costo es noventa minutos de montaje del molde de repuesto.

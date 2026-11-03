@@ -5,8 +5,12 @@ tags: [demo, plasticos, guion, fractal, aps]
 duracion_aprox: 3 min
 cifras:
   - ["3", "órdenes fijadas a mano que Fractal no mueve"]
-  - ["185,3 → 181,8 h", "de atraso al organizar el resto"]
+  - ["185,8 → 182,3 h", "de atraso al organizar el resto"]
   - ["65,9 → 61,6 %", "de ocupación de la planta con la opción recomendada"]
+ahorro:
+  - ["Atraso total", "185,8 h", "182,3 h", "3,5 h menos"]
+  - ["Ocupación de la planta", "65,9 %", "61,6 %", "4,3 puntos menos"]
+  - ["Órdenes fijadas movidas", "—", "0", "ni un minuto"]
 ---
 
 # Escenario 4 · Pedidos fijados a mano
@@ -39,7 +43,7 @@ Mensaje central: el planificador tiene pedidos que se entregan sí o sí en su f
 - duración: 28 s
 - en pantalla: las filas A y B de la tabla; resaltar la fila B "MEJOR" y la columna de atraso
 
-> En menos de un segundo Fractal prueba dos combinaciones. La primera solo reorganiza el resto con el cosimulador: el atraso baja de ciento ochenta y cinco a ciento ochenta y dos horas. La segunda, además, monta el molde de repuesto del balde en la inyectora veinte, con noventa minutos de montaje, y deja la ocupación de la planta en sesenta y uno coma seis por ciento. En las dos, las tres órdenes fijadas quedan exactamente en la misma máquina y a la misma hora.
+> En menos de un segundo Fractal prueba dos combinaciones. La primera solo reorganiza el resto con el cosimulador: el atraso baja de ciento ochenta y cinco coma ocho a ciento ochenta y dos coma tres horas. La segunda, además, monta el molde de repuesto del balde en la inyectora veinte, con noventa minutos de montaje, y deja la ocupación de la planta en sesenta y uno coma seis por ciento. En las dos, las tres órdenes fijadas quedan exactamente en la misma máquina y a la misma hora.
 
 ### S05 · Comparar antes de decidir
 - imagen: capturas/04b-fractal-full.png
@@ -61,3 +65,10 @@ Mensaje central: el planificador tiene pedidos que se entregan sí o sí en su f
 - en pantalla: la franja de programación vigente arriba y el molde montado en la inyectora veinte
 
 > El centro de control ya muestra la nueva programación de Fractal y la inyectora veinte con el montaje del molde de repuesto. El planificador conserva el control de lo importante y deja el resto al optimizador.
+
+### S08 · El ahorro potencial
+- imagen: capturas/04-fractal.png
+- duración: 22 s
+- en pantalla: la fila ACTUAL contra la fila B MEJOR: atraso y ocupación
+
+> Con tres órdenes fijadas a mano, Fractal organiza el resto y baja el atraso de ciento ochenta y cinco coma ocho a ciento ochenta y dos coma tres horas, y la ocupación de la planta de sesenta y cinco coma nueve a sesenta y uno coma seis por ciento. Y las tres órdenes firmadas no se movieron ni un minuto.

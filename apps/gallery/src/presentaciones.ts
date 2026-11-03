@@ -27,16 +27,18 @@ interface Scenario {
   message: string;
   duration: string;
   numbers: [string, string][];
+  /** Ahorro potencial: [qué, antes, con Fractal o el cosimulador, ahorro]. Sale de las corridas, no de estimaciones. */
+  saving: [string, string, string, string][];
   segments: Segment[];
 }
 
 const guiones = import.meta.glob("../../../docs/demo-plasticos/*/guion.md", { query: "?raw", import: "default", eager: true }) as Record<string, string>;
-const images = import.meta.glob("../../../docs/demo-plasticos/*/capturas/*.png", { query: "?url", import: "default", eager: true }) as Record<string, string>;
+const images = import.meta.glob("../../../docs/demo-plasticos/*/capturas/*.{png,jpg}", { query: "?url", import: "default", eager: true }) as Record<string, string>;
 
 function parse(path: string, text: string): Scenario {
   const key = path.split("/").at(-2)!;
   const fm = text.match(/^---\n([\s\S]*?)\n---/);
-  const meta = (fm ? yaml.load(fm[1]) : {}) as { title?: string; duracion_aprox?: string; cifras?: [string, string][] };
+  const meta = (fm ? yaml.load(fm[1]) : {}) as { title?: string; duracion_aprox?: string; cifras?: [string, string][]; ahorro?: [string, string, string, string][] };
   const segments: Segment[] = [];
   const re = /### S(\d+) · (.+)\n- imagen: capturas\/(.+?)\n- duración: (.+)\n- en pantalla: (.+)\n\n((?:> .*\n?)+)/g;
   for (const m of text.matchAll(re)) {
@@ -50,6 +52,7 @@ function parse(path: string, text: string): Scenario {
     message: (text.match(/^Mensaje central: (.+)$/m)?.[1] ?? "").replace(/^./, (c) => c.toUpperCase()),
     duration: meta.duracion_aprox ?? "",
     numbers: meta.cifras ?? [],
+    saving: meta.ahorro ?? [],
     segments,
   };
 }
@@ -70,6 +73,13 @@ function liveUrl(img: string): { href: string; label: string } {
   return { href: "/aps.html?tab=gantt", label: "APS · GANTT" };
 }
 
+/** Tabla ANTES → CON FRACTAL → AHORRO de un escenario. */
+function savingTable(rows: Scenario["saving"]): string {
+  return `<table class="pr-saving"><thead><tr><th>Qué se mide</th><th>Antes</th><th>Con el plan optimizado</th><th>Ahorro potencial</th></tr></thead><tbody>${rows
+    .map(([a, b, c, d]) => `<tr><td>${esc(a)}</td><td>${esc(b)}</td><td>${esc(c)}</td><td class="ok">${esc(d)}</td></tr>`)
+    .join("")}</tbody></table>`;
+}
+
 const main = document.getElementById("pr-main")!;
 const url = new URLSearchParams(location.search);
 let current: Scenario | null = SCENARIOS.find((s) => s.n === Number(url.get("esc"))) ?? null;
@@ -78,7 +88,7 @@ let notes = url.get("notas") !== "0";
 
 function index(): void {
   main.innerHTML = `
-    <p class="pr-intro">Cuatro escenarios de la planta de inyección de plásticos. Cada presentación sigue el guion de la demo con sus capturas;
+    <p class="pr-intro">${["Cero", "Un", "Dos", "Tres", "Cuatro", "Cinco", "Seis"][SCENARIOS.length] ?? SCENARIOS.length} escenarios de la planta de inyección de plásticos. Cada presentación sigue el guion de la demo con sus capturas;
     en cualquier lámina, <b>ABRIR EN VIVO</b> lleva a la pantalla real. Hoy es el día 9 de la programación.</p>
     <div class="pr-cards">${SCENARIOS.map(
       (s) => `<button class="pr-card" data-esc="${s.n}">
@@ -89,6 +99,9 @@ function index(): void {
         <span class="pr-meta">${s.segments.length + 2} láminas · ${esc(s.duration)}</span>
       </button>`,
     ).join("")}</div>
+    <section class="pr-saving-all"><h2>AHORRO POTENCIAL · lo que sale de las corridas</h2>
+      <p class="dim">Cifras del cosimulador y de Fractal en cada escenario, calculadas sobre la cartera de demostración (datos inventados). Multiplicadas por el costo de la hora de máquina de la planta, son el ahorro en dinero.</p>
+      ${SCENARIOS.filter((s) => s.saving.length).map((s) => `<h3>Escenario ${s.n} · ${esc(s.title)}</h3>${savingTable(s.saving)}`).join("")}</section>
     <p class="dim pr-keys">Teclas: ← → o espacio para avanzar · N notas del orador · F pantalla completa · Esc volver.</p>`;
   main.querySelectorAll<HTMLButtonElement>(".pr-card").forEach((b) => (b.onclick = () => open(SCENARIOS.find((s) => s.n === Number(b.dataset.esc))!, 0)));
 }
@@ -120,6 +133,7 @@ function render(): void {
   } else if (slide === total - 1) {
     body = `<div class="pr-cover pr-close"><span class="pr-n">ESCENARIO ${s.n} · RESULTADO</span><h1>${esc(s.title)}</h1>
       <div class="pr-nums">${s.numbers.map(([a, b]) => `<div><b>${esc(a)}</b><span>${esc(b)}</span></div>`).join("")}</div>
+      ${s.saving.length ? `<h3 class="pr-saving-title">AHORRO POTENCIAL</h3>${savingTable(s.saving)}` : ""}
       <p class="dim">Fractal recomienda; la persona decide.</p></div>`;
   } else {
     const g = s.segments[slide - 1];

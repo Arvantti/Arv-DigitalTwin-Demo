@@ -382,6 +382,16 @@ button.danger:hover { background: rgba(255, 59, 59, 0.4); border-color: #fff; }
 @keyframes aps-slide { from { transform: translateX(-100%); } to { transform: translateX(340%); } }
 @media (prefers-reduced-motion: reduce) { .aps-bar i { animation: none; width: 100%; opacity: 0.5; } }
 
+.pr-saving { width: 100%; border-collapse: collapse; margin: 6px 0 14px; font-size: 14px; }
+.pr-saving th { text-align: left; font: 600 11px "IBM Plex Mono", monospace; letter-spacing: 0.08em; color: var(--dim); padding: 6px 10px; border-bottom: 1px solid rgba(157, 143, 248, 0.4); }
+.pr-saving td { padding: 8px 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); font-family: "IBM Plex Mono", monospace; }
+.pr-saving td:first-child { font-family: inherit; color: #cfd5ea; }
+.pr-saving td.ok { color: #3ddc84; font-weight: 600; }
+.pr-saving-title { font: 600 12px "IBM Plex Mono", monospace; letter-spacing: 0.1em; color: #9d8ff8; margin: 14px 0 0; }
+.pr-saving-all { max-width: 1000px; margin: 28px 0 8px; }
+.pr-saving-all h2 { font: 600 14px "IBM Plex Mono", monospace; letter-spacing: 0.1em; color: #9d8ff8; }
+.pr-saving-all h3 { font-size: 14px; margin: 14px 0 0; }
+
 /* Pantallas dentro del panel flotante del gemelo 3D (?embed=1): sin encabezado, pestañas ni barras de acción. */
 body.embed .aps-top, body.embed .aps-tabs, body.embed .emu-side, body.embed .emu-legend { display: none; }
 body.embed .emu-main { grid-template-columns: 1fr; padding: 4px; }

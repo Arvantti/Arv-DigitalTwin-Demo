@@ -7,6 +7,10 @@ cifras:
   - ["30 → 12", "cambios de referencia en la programación"]
   - ["22,5 → 9 h", "de máquina en purgas y montajes"]
   - ["0,7 s", "para estudiar las opciones, sin atrasar más pedidos"]
+ahorro:
+  - ["Cambios de referencia", "30", "12", "18 menos (60 %)"]
+  - ["Horas de máquina en purgas y montajes", "22,5 h", "9 h", "13,5 h por semana"]
+  - ["Pedidos tarde", "7", "7", "ninguno más"]
 ---
 
 # Escenario 5 · Menos cambios de referencia
@@ -47,3 +51,10 @@ Mensaje central: cada cambio de referencia cuesta tiempo de máquina: montaje de
 - en pantalla: la columna CAMBIOS DE REFERENCIA de la tabla de horas de máquina
 
 > En insumos, la columna de cambios de referencia muestra las horas de cambio por máquina en la semana: con el plan adoptado, esta semana no queda ninguna. Menos purgas también significa menos resina y menos colorante botados en cada limpieza.
+
+### S06 · El ahorro potencial
+- imagen: capturas/03-fractal.png
+- duración: 26 s
+- en pantalla: las filas VIGENTE y B MEJOR: columna CAMBIOS DE REFERENCIA
+
+> Este es el ahorro más directo. Dedicar un color a cada máquina baja los cambios de referencia de treinta a doce, un sesenta por ciento menos, y las horas de máquina en purgas y montajes, de veintidós y media a nueve: trece horas y media por semana que vuelven a producción, sin atrasar ningún pedido. Menos purgas también es menos resina y colorante desechados.

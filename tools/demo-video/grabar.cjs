@@ -49,8 +49,7 @@ async function scenario(browser, n, steps) {
   // Punto de partida común: cartera inicial; los escenarios 2, 3 y 4 parten del plan del cosimulador.
   await go(`/aps.html${NOW}&reset=1`);
   if (n !== 1) {
-    await click(pg, "#aps-calc");
-    await pg.waitForSelector("#aps-adopt", { timeout: 120000 });
+    await calcular(pg);
     await click(pg, "#aps-adopt");
   }
   await steps({ pg, go, shot, wait: (s) => wait(pg, s) });
@@ -61,6 +60,16 @@ async function scenario(browser, n, steps) {
     fs.renameSync(await video.path(), out);
     console.log(`[${n}] video: ${out}`);
   }
+}
+
+/** Pulsa CALCULAR, elige el objetivo (por defecto "Cumplir entregas") y espera la propuesta. */
+async function calcular(pg, objetivo = "entregas", shot = null) {
+  await click(pg, "#aps-calc");
+  await pg.waitForSelector("#aps-objetivo[open]", { timeout: 30000 });
+  if (shot) await shot();
+  await pg.$$eval("#aps-obj-list input", (xs, v) => xs.forEach((i) => i.checked !== (i.value === v) && i.click()), objetivo);
+  await click(pg, "#aps-obj-go");
+  await pg.waitForSelector("#aps-adopt", { timeout: 120000 });
 }
 
 async function fractal(pg, run) {
@@ -86,8 +95,7 @@ const SCENARIOS = {
     await shot("03-centro-control-manual.png");
     await go(`/aps.html${NOW}`);
     await click(pg, "[data-tab=gantt]");
-    await click(pg, "#aps-calc");
-    await pg.waitForSelector("#aps-adopt", { timeout: 120000 });
+    await calcular(pg, "entregas", () => shot("03b-objetivo.png"));
     await shot("04-calcular.png");
     await click(pg, "#aps-adopt");
     await shot("05-gantt-cosimulador.png");
@@ -203,7 +211,7 @@ const SCENARIOS = {
     await wait(2);
     },
   // Menos cambios de referencia: parte del plan del cosimulador (el balde alterna azul y blanco en sus dos inyectoras).
-  5: async ({ pg, go, shot }) => {
+  5: async ({ pg, go, shot, wait }) => {
     await go(`/aps.html${NOW}`);
     await click(pg, "[data-tab=gantt]");
     await pg.$eval('.g-row.res[data-machine="imm-21"]', (e) => e.scrollIntoView({ block: "center" }));
