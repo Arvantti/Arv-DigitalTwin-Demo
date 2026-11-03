@@ -420,8 +420,8 @@ function renderOrders(p: ProductionPlan): void {
       <div class="aps-kpi"><b class="${missing ? "warn" : ""}">${missing}</b><small>sin programar${missing ? " · pulsa CALCULAR" : ""}</small></div>
       <p class="dim small">Ventana de entrega de ${model.windowDays} días. Clientes, cantidades y fechas inventados. Dos turnos de 8 h, lunes a sábado.</p>
     </div>
-    <div class="aps-add">
-      <div class="label">AGREGAR PEDIDO</div>
+    <details class="aps-add"${window.matchMedia("(min-width: 701px)").matches ? " open" : ""}>
+      <summary class="label">AGREGAR PEDIDO</summary>
       <label>Cliente <input id="f-customer" list="f-customers" placeholder="Nombre del cliente" /></label>
       <datalist id="f-customers">${model.customers.map((c) => `<option value="${esc(c)}"></option>`).join("")}</datalist>
       <label>Producto <select id="f-product">${products.map((x) => `<option value="${esc(x.id)}">${esc(x.name)}</option>`).join("")}</select></label>
@@ -431,7 +431,7 @@ function renderOrders(p: ProductionPlan): void {
       <label>Importancia <select id="f-imp">${IMPORTANCE.map(([v, l]) => `<option value="${v}"${v === "normal" ? " selected" : ""}>${l}</option>`).join("")}</select></label>
       <button id="f-add" class="primary">＋ AGREGAR</button>
       <span id="f-msg" class="small">${formMsg}</span>
-    </div>
+    </details>
     <div id="aps-orders-table"></div>`;
   const sel = $<HTMLSelectElement>("f-product");
   const sync = () => {
