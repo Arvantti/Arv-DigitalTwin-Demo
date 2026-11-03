@@ -22,7 +22,7 @@
       <p class="ar-hint">↔ Desliza el diagrama para verlo completo</p>
       <div class="ar-scroll"><svg class="ar-svg" viewBox="0 0 1200 850" role="img" aria-labelledby="ar-t ar-d">
         <title id="ar-t">Arquitectura del gemelo digital de la planta de plásticos</title>
-        <desc id="ar-d">La planta (emulada en 2D) contiene muchos PLC; todas sus señales llegan al centro de control. El APS entrega la programación al centro de control, que la envía a la planta. El centro de control alimenta al gemelo digital, que muestra pasado, presente y futuro. El APS entrega la programación al gemelo. El cosimulador intercambia datos con el gemelo y con los PLC. Fractal, el optimizador, lee el gemelo, el cosimulador y el centro de control, genera escenarios y un usuario decide cuál aplicar en el gemelo y en el centro de control.</desc>
+        <desc id="ar-d">La planta (emulada en 2D) contiene muchos PLC; todas sus señales llegan al centro de control. El APS entrega la programación al centro de control, que la envía a la planta. El centro de control alimenta al gemelo digital, que muestra pasado, presente y futuro. El APS entrega la programación al gemelo. El cosimulador intercambia datos con el gemelo y con el centro de control. Fractal, el optimizador, lee el gemelo, el cosimulador y el centro de control, genera escenarios y un usuario decide cuál aplicar en el gemelo y en el centro de control.</desc>
         <defs>
           <marker id="ar-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="ar-head" /></marker>
           <clipPath id="ar-clip"><rect x="398" y="352" width="190" height="104" rx="8" /></clipPath>
@@ -44,8 +44,8 @@
         <text class="ar-lbl" x="866" y="390" text-anchor="middle">programación</text>
 
         <path class="ar-line calc" d="M300 420H380" marker-start="url(#ar-arrow)" marker-end="url(#ar-arrow)" />
-        <path class="ar-line calc" d="M165 330V240" marker-start="url(#ar-arrow)" marker-end="url(#ar-arrow)" />
-        <text class="ar-lbl" x="177" y="290">ritmos y señales de los PLC</text>
+        <path class="ar-line calc" d="M300 346H340V254H670V232" marker-start="url(#ar-arrow)" marker-end="url(#ar-arrow)" />
+        <text class="ar-lbl" x="350" y="272">señales y ritmos del centro de control</text>
 
         <path class="ar-line fut" d="M500 540V660" marker-end="url(#ar-arrow)" />
         <text class="ar-lbl" x="492" y="605" text-anchor="end">estado actual</text>
@@ -179,7 +179,7 @@
         <li class="live"><span class="ar-num">2</span><div><b>El centro de control</b> recibe las señales de todos los PLC (ciclo, unidades, OEE) y las entrega al gemelo. También recibe del APS la programación y la envía a la planta. <a href="/control.html">Abrir centro de control →</a></div></li>
         <li class="twin"><span class="ar-num">3</span><div><b>El gemelo digital</b> muestra el pasado (play por días), el presente en vivo y el futuro con los escenarios. <a href="/plant.html?plant=plastic-injection-plant-v1">Abrir gemelo 3D →</a></div></li>
         <li class="plan"><span class="ar-num">4</span><div><b>El APS</b> entrega la programación al gemelo y al centro de control, que la envía a la planta; la manual se ve y se edita en el mismo APS. <a href="/aps.html">Abrir APS →</a></div></li>
-        <li class="calc"><span class="ar-num">5</span><div><b>El cosimulador</b> calcula la secuencia que cumple las entregas, la entrega al APS y se comunica con el gemelo y con los PLC. <a href="/aps.html?tab=gantt">Calcular en el APS →</a></div></li>
+        <li class="calc"><span class="ar-num">5</span><div><b>El cosimulador</b> calcula la secuencia que cumple las entregas, la entrega al APS y se comunica con el gemelo y con el centro de control de PLC. <a href="/aps.html?tab=gantt">Calcular en el APS →</a></div></li>
         <li class="fut"><span class="ar-num">6</span><div><b>Fractal, el optimizador,</b> lee el gemelo, el cosimulador y el centro de control, y genera escenarios. El usuario decide cuál aplicar: se aplica en el gemelo y de ahí en el centro de control. <a href="/aps.html?tab=fractal">Abrir Fractal →</a></div></li>
       </ol>
     </main>
