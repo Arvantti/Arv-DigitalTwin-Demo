@@ -31,6 +31,7 @@ import { type CatalogDoc, type ProductsApi, buildProducts } from "./products.ts"
 import { buildSchedule } from "./schedule.ts";
 import { buildAps } from "./aps.ts";
 import { buildPalletTransport, type PalletTransport } from "./pallet-transport.ts";
+import { buildMoldChangeView, type MoldChangeView } from "./mold-change.ts";
 import { buildTrails, visualScale, type Trails } from "./motion.ts";
 import type { MachineState } from "./plant-state.ts";
 import "./styles.css";
@@ -282,24 +283,35 @@ function placeholder(eq: PlantEquipment): THREE.Object3D {
       rail.position.set(0, 0, s * (dy / 2));
       g.add(rail);
     }
+    // Grupos con nombre para que el cambio de molde (mold-change.ts) mueva el puente, el carro y el gancho.
+    const span = new THREE.Group();
+    span.name = "crane-bridge";
+    g.add(span);
     const bridge = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.8, dy), RAIL);
-    g.add(bridge);
+    span.add(bridge);
+    const carriage = new THREE.Group();
+    carriage.name = "crane-trolley";
+    span.add(carriage);
     const trolley = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.6, 1.4), RAIL);
     trolley.position.y = -0.7;
-    g.add(trolley);
+    carriage.add(trolley);
     // Polipasto con su tambor, cable y gancho.
     const drum = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 1.0, 20).rotateZ(Math.PI / 2), SUPPORT);
     drum.position.y = -1.2;
-    g.add(drum);
+    carriage.add(drum);
     const cable = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 2.2, 8), SUPPORT);
+    cable.name = "crane-cable";
     cable.position.y = -2.5;
-    g.add(cable);
+    carriage.add(cable);
+    const hookGroup = new THREE.Group();
+    hookGroup.name = "crane-hook";
+    carriage.add(hookGroup);
     const block = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.45, 0.25), RAIL);
     block.position.y = -3.7;
-    g.add(block);
+    hookGroup.add(block);
     const hook = new THREE.Mesh(new THREE.TorusGeometry(0.16, 0.05, 8, 16, Math.PI * 1.5), SUPPORT);
     hook.position.y = -4.1;
-    g.add(hook);
+    hookGroup.add(hook);
     g.traverse((o) => (o.castShadow = true));
     return g;
   }
@@ -2116,6 +2128,16 @@ async function start(): Promise<void> {
         if (a) a.frame = { ...a.frame, channels: { ...a.frame.channels, ...channels }, state: "running" };
       },
     });
+    // Cambios de molde de la programación: grúa, carro de moldes y operario entre la máquina y el almacén.
+    if (url.get("molds") !== "0") moldView = buildMoldChangeView({
+      equipment: doc.equipment,
+      plan: aps.plan,
+      time: aps.time,
+      parent: stage.content,
+      toScene,
+      crane: doc.equipment.find((e) => e.type === "overhead_crane") ? assets.get(doc.equipment.find((e) => e.type === "overhead_crane")!.id)?.root : undefined,
+      active: () => messages === 0,
+    });
   } else if (doc.catalog?.schedule) buildSchedule({ plantId, select, apiUrl: plantApiAvailable ? apiUrl : undefined, showProduct: (id) => productsApi?.show(id) });
   if (url.get("select")) select(url.get("select"));
   const focusAsset = url.get("focus") ? assets.get(url.get("focus")!) : undefined;
@@ -2216,6 +2238,7 @@ let sceneTime: number | null = null;
 let updateProducts: ((time: number) => void) | null = null;
 let productsApi: ProductsApi | null = null;
 let transport: PalletTransport | null = null;
+let moldView: MoldChangeView | null = null;
 function loop(): void {
   const dt = stage.render();
   // con el play, la escena corre `scale` veces más rápido: agentes, montacargas, ciclos de las máquinas y productos
@@ -2224,6 +2247,7 @@ function loop(): void {
   sceneTime = sceneTime === null ? stage.time : sceneTime + simDt;
   updateRoutes?.(sceneTime, dt, simDt);
   transport?.update(dt, scale);
+  moldView?.update();
   for (const a of assets.values()) {
     if (a.model && messages === 0 && a.eq.sim?.type === "injection-molding-machine") {
       const st = machineState?.(a.eq.id) ?? "run";
@@ -2244,4 +2268,4 @@ function loop(): void {
 }
 
 void start();
-Object.assign(window, { stage, THREE, transportStats: () => transport?.stats(), playScale: () => visualScale(playRate?.() ?? 1), assetFrame: (id: string) => assets.get(id)?.frame });
+Object.assign(window, { stage, THREE, transportStats: () => transport?.stats(), moldStats: () => moldView?.stats(), playScale: () => visualScale(playRate?.() ?? 1), assetFrame: (id: string) => assets.get(id)?.frame });
