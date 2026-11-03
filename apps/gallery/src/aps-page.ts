@@ -15,6 +15,7 @@
  */
 import "./styles.css";
 import "./aps.css";
+import "./movil.css";
 import type { CustomerOrder, Importance, ProductionPlan } from "@twin/cosim/core/contracts.ts";
 import type { Objective } from "@twin/cosim/adapters/plastic-injection-plant-v1/solve.ts";
 import { activeEvents, addedOrders, baseManual, molds, modelNow, manualPlan, model, now, onChange, portfolio, resetDemo, setAdded, setVigente, setViewed, setViewMode, SOURCE_NAMES, useDemoDays, vigente, viewedPlan, viewMode } from "./aps-store.ts";
