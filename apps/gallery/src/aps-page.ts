@@ -66,6 +66,17 @@ let resView: "maquina" | "molde" = "maquina";
 let flashOrder: string | null = null;
 /** Al mover una orden, el Gantt la centra una vez. */
 let scrollToFlash = false;
+/** Zoom del Gantt: cuántos días caben en pantalla (menos días = más acercado). */
+const ZOOMS = [3, 5, 7, 10, 14, 21, 30];
+const ZOOM_DEFAULT = 10;
+let zoomDays = ZOOM_DEFAULT;
+/** Cambia el zoom manteniendo el centro de la ventana donde estaba. */
+function setZoom(next: number): void {
+  const centre = viewFrom + (zoomDays * DAY_MS) / 2;
+  zoomDays = next;
+  viewFrom = Math.round((centre - (zoomDays * DAY_MS) / 2) / DAY_MS) * DAY_MS;
+  render();
+}
 let viewFrom = ms(`${now().slice(0, 10)}T00:00`) - 2 * DAY_MS;
 let running = "";
 let error = "";
@@ -608,7 +619,7 @@ document.addEventListener("click", () => {
 function renderGantt(p: ProductionPlan): void {
   const el = $("tab-gantt");
   const keep = el.querySelector(".g-scroll")?.scrollTop ?? null;
-  const days = 10;
+  const days = zoomDays;
   const from = viewFrom;
   const to = from + days * DAY_MS;
   const t = ms(now());
@@ -747,6 +758,7 @@ function renderGantt(p: ProductionPlan): void {
   el.innerHTML = `
     <div class="g-toolbar">
       <button id="g-prev" title="Un día atrás">◀</button><button id="g-today">HOY</button><button id="g-next" title="Un día adelante">▶</button>
+      <span class="g-zoom"><button id="g-zoom-out" title="Alejar: ver más días"${zoomDays >= ZOOMS[ZOOMS.length - 1] ? " disabled" : ""}>−</button><button id="g-zoom-reset" title="Restablecer el zoom">${zoomDays} d</button><button id="g-zoom-in" title="Acercar: ver menos días"${zoomDays <= ZOOMS[0] ? " disabled" : ""}>+</button></span>
       <span class="dim small">${day(isoOf(from))} a ${day(isoOf(to - DAY_MS))} · mostrando ${p === current ? "la VIGENTE" : "el ESCENARIO"} ${esc(p.plan_id)} · ${orders.length} órdenes</span>
       <select id="g-view" title="Qué programación muestra el Gantt: la vigente o el escenario visto">
         <option value="vigente">VIGENTE · ${esc(current.plan_id)}</option>
@@ -781,6 +793,9 @@ function renderGantt(p: ProductionPlan): void {
   };
   $("g-prev").onclick = () => ((viewFrom -= DAY_MS), render());
   $("g-next").onclick = () => ((viewFrom += DAY_MS), render());
+  $("g-zoom-in").onclick = () => setZoom([...ZOOMS].reverse().find((z) => z < zoomDays) ?? ZOOMS[0]);
+  $("g-zoom-out").onclick = () => setZoom(ZOOMS.find((z) => z > zoomDays) ?? ZOOMS[ZOOMS.length - 1]);
+  $("g-zoom-reset").onclick = () => setZoom(ZOOM_DEFAULT);
   $("g-today").onclick = () => ((viewFrom = ms(`${now().slice(0, 10)}T00:00`) - 2 * DAY_MS), render());
   el.querySelectorAll<HTMLElement>("[data-order]").forEach(
     (n) =>

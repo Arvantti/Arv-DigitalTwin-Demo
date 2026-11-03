@@ -68,6 +68,10 @@ body.aps-page { font: 400 13px Inter, sans-serif; background: radial-gradient(ci
 
 /* Gantt */
 .g-toolbar { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
+.g-zoom { display: inline-flex; gap: 2px; margin-left: 6px; }
+.g-zoom button { min-width: 32px; }
+.g-zoom button:disabled { opacity: 0.4; cursor: default; }
+.g-day { overflow: hidden; white-space: nowrap; text-overflow: clip; }
 .g-toolbar .dim { margin: 0 10px; }
 .g-legend { display: flex; gap: 12px; flex-wrap: wrap; margin-left: auto; font-size: 11px; color: var(--dim); }
 .g-legend i { display: inline-block; width: 12px; height: 10px; margin-right: 4px; vertical-align: middle; border-radius: 2px; }
