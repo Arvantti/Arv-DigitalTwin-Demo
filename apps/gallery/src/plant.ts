@@ -1710,9 +1710,87 @@ function buildLighting(): void {
   }
 }
 
+// ------------------------------------------------------------------ escritorio PLC/3D: tamaño recordado y contexto de estudio futuro
+const WATER_PLC_SIZE_KEY = "arvantti.water-plc-panel-size.v1";
+let waterPlcResizeInitialized = false;
+function setupWaterPlcResize(): void {
+  const panel = $("water-plc-panel");
+  const widthHandle = $<HTMLButtonElement>("water-plc-resize-width");
+  const heightHandle = $<HTMLButtonElement>("water-plc-resize-height");
+  const cornerHandle = $<HTMLButtonElement>("water-plc-resize-corner");
+  const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+  const applySize = (width: number, height: number, persist = true) => {
+    const maxWidth = Math.max(240, window.innerWidth - 24);
+    const maxHeight = Math.max(240, window.innerHeight - 90);
+    const nextWidth = Math.round(clamp(width, Math.min(620, maxWidth), maxWidth));
+    const nextHeight = Math.round(clamp(height, Math.min(460, maxHeight), maxHeight));
+    panel.style.setProperty("--water-plc-width", `${nextWidth}px`);
+    panel.style.setProperty("--water-plc-height", `${nextHeight}px`);
+    widthHandle.setAttribute("aria-valuemin", String(Math.min(620, maxWidth)));
+    widthHandle.setAttribute("aria-valuemax", String(maxWidth));
+    widthHandle.setAttribute("aria-valuenow", String(nextWidth));
+    heightHandle.setAttribute("aria-valuemin", String(Math.min(460, maxHeight)));
+    heightHandle.setAttribute("aria-valuemax", String(maxHeight));
+    heightHandle.setAttribute("aria-valuenow", String(nextHeight));
+    cornerHandle.setAttribute("aria-valuetext", `${nextWidth} píxeles de ancho por ${nextHeight} píxeles de alto`);
+    if (persist) try { localStorage.setItem(WATER_PLC_SIZE_KEY, JSON.stringify({ width: nextWidth, height: nextHeight })); } catch { /* almacenamiento opcional */ }
+  };
+  let restored = false;
+  try {
+    const saved = JSON.parse(localStorage.getItem(WATER_PLC_SIZE_KEY) ?? "null") as { width?: unknown; height?: unknown } | null;
+    if (typeof saved?.width === "number" && typeof saved.height === "number" && Number.isFinite(saved.width) && Number.isFinite(saved.height)) { applySize(saved.width, saved.height, false); restored = true; }
+  } catch { /* usa tamaño predeterminado si el almacenamiento está bloqueado */ }
+  if (!restored) { const rect = panel.getBoundingClientRect(); if (rect.width && rect.height) applySize(rect.width, rect.height, false); }
+  let drag: { pointerId: number; x: number; y: number; width: number; height: number; widthAxis: boolean; heightAxis: boolean } | null = null;
+  const begin = (event: PointerEvent, widthAxis: boolean, heightAxis: boolean) => {
+    if (event.button !== 0) return;
+    event.preventDefault();
+    try { (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId); } catch { /* drag sigue con eventos globales */ }
+    const rect = panel.getBoundingClientRect();
+    drag = { pointerId: event.pointerId, x: event.clientX, y: event.clientY, width: rect.width, height: rect.height, widthAxis, heightAxis };
+  };
+  widthHandle.onpointerdown = (event) => begin(event, true, false);
+  heightHandle.onpointerdown = (event) => begin(event, false, true);
+  cornerHandle.onpointerdown = (event) => begin(event, true, true);
+  window.addEventListener("pointermove", (event) => {
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    applySize(drag.widthAxis ? drag.width + drag.x - event.clientX : drag.width, drag.heightAxis ? drag.height + event.clientY - drag.y : drag.height);
+  });
+  window.addEventListener("pointerup", (event) => { if (drag?.pointerId === event.pointerId) drag = null; });
+  const keyboardResize = (event: KeyboardEvent, widthAxis: boolean, heightAxis: boolean) => {
+    if (!["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(event.key)) return;
+    event.preventDefault();
+    const rect = panel.getBoundingClientRect();
+    const step = event.shiftKey ? 48 : 16;
+    const widthDelta = event.key === "ArrowLeft" ? step : event.key === "ArrowRight" ? -step : 0;
+    const heightDelta = event.key === "ArrowDown" ? step : event.key === "ArrowUp" ? -step : 0;
+    if (widthAxis && widthDelta) applySize(rect.width + widthDelta, rect.height);
+    if (heightAxis && heightDelta) applySize(rect.width, rect.height + heightDelta);
+  };
+  widthHandle.onkeydown = (event) => keyboardResize(event, true, false);
+  heightHandle.onkeydown = (event) => keyboardResize(event, false, true);
+  cornerHandle.onkeydown = (event) => keyboardResize(event, true, true);
+  window.addEventListener("resize", () => {
+    if (panel.hidden) return;
+    const rect = panel.getBoundingClientRect();
+    if (panel.style.getPropertyValue("--water-plc-width")) applySize(rect.width, rect.height);
+  });
+}
+
+function syncPlcStudySelection(study?: ForecastStudySummary): void {
+  const frame = $<HTMLIFrameElement>("water-plc-frame");
+  frame.contentWindow?.postMessage({
+    type: "plc-study-selected", plantId: doc.plant.id,
+    studyId: study?.study_id ?? forecastStudyId ?? null,
+    studyType: study ? forecastStudyTypeLabel(study.study_type) : undefined,
+    profileName: study?.profile_name ?? study?.profile_id,
+  }, location.origin);
+}
+
 // ------------------------------------------------------------------ un solo escritorio: 3D + HMI y pasado de solo lectura
 function waterView(view: "3d" | "plc" | "history"): void {
   $("water-plc-panel").hidden = view !== "plc";
+  if (view === "plc" && !waterPlcResizeInitialized) { setupWaterPlcResize(); waterPlcResizeInitialized = true; }
   $("water-history-panel").hidden = view !== "history";
   for (const key of ["3d", "plc", "history"]) $(`view-${key}`).classList.toggle("active", view === key);
   if (view === "plc" && forecastStudyId) {
@@ -1729,11 +1807,13 @@ function waterView(view: "3d" | "plc" | "history"): void {
     if (!frame.src) {
       const params = new URLSearchParams({ plant: doc.plant.id, embedded: "1" });
       if (sessionId) params.set("session", sessionId);
+      if (forecastStudyId) params.set("study", forecastStudyId);
       if (url.get("screen")) params.set("screen", url.get("screen")!);
       if (url.get("api")) params.set("api", apiOrigin);
       if (url.get("fractal")) params.set("fractal", url.get("fractal")!);
+      frame.addEventListener("load", () => syncPlcStudySelection(), { once: true });
       frame.src = `/plc.html?${params}`;
-    }
+    } else syncPlcStudySelection();
   }
   if (view === "history") {
     // Pasado y futuro nunca se superponen: el estudio sigue guardado, pero la vista
@@ -1863,7 +1943,7 @@ async function loadForecast(): Promise<void> {
     url.set("study", forecastStudyId);
     history.replaceState(null, "", `${location.pathname}?${url}`);
   }
-  if (!forecastStudyId) return;
+  if (!forecastStudyId) { syncPlcStudySelection(); return; }
   const options = studies.some((study) => study.study_id === forecastStudyId)
     ? studies
     : [{ study_id: forecastStudyId, study_type: "forecast", base_time: 0 }, ...studies];
@@ -1875,11 +1955,13 @@ async function loadForecast(): Promise<void> {
     return option;
   }));
   studySelector.value = forecastStudyId;
+  syncPlcStudySelection(studies.find((study) => study.study_id === forecastStudyId));
   studySelector.onchange = () => {
     if (!studySelector.value) return;
     forecastStudyId = studySelector.value;
     url.set("study", forecastStudyId);
     history.replaceState(null, "", `${location.pathname}?${url}`);
+    syncPlcStudySelection(studies.find((study) => study.study_id === forecastStudyId));
     void loadForecastFrames(studies.find((study) => study.study_id === forecastStudyId))
       .catch((error) => { $("forecast-values").textContent = `No se pudo cargar el escenario: ${String(error)}`; });
   };

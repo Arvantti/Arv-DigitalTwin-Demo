@@ -65,6 +65,9 @@ let activeProfileId: string | null = null;
 let profileHour = 0;
 let sessionId = query.get("session");
 let activeSessionProfileId: string | null = null;
+let pendingSessionProfileId: string | null = null;
+let selectedStudyContext: { studyId: string; studyType?: string; profileName?: string } | null = query.get("study") ? { studyId: query.get("study")! } : null;
+let stopRequested = false;
 let plcRunning = false;
 let profilePressure: (number | null)[] = [];
 let profilePressureMessage = "La presión requiere un estado hidráulico de una sesión en play; no se inventa desde la consigna crítica.";
@@ -79,6 +82,25 @@ const fmt = (value: Value | undefined, digits = 1) => {
 const eq = (id: string) => latest[id];
 const value = (id: string, key: string) => eq(id)?.variables[key];
 const send = (equipment: string, command: string, args: Record<string, unknown> = {}) => socket?.readyState === WebSocket.OPEN && socket.send(JSON.stringify({ equipment, command, args }));
+
+function renderWorkspaceContext(): void {
+  const profileNode = $("plc-profile-context");
+  const studyNode = $("fractal-study-context");
+  const activeProfile = profiles.find((profile) => profile.id === activeSessionProfileId);
+  profileNode.textContent = activeSessionProfileId
+    ? `ESCENARIO ACTIVO EN PLC · ${activeProfile?.name ?? activeSessionProfileId}${pendingSessionProfileId ? ` · PRÓXIMO: ${profiles.find((profile) => profile.id === pendingSessionProfileId)?.name ?? pendingSessionProfileId}` : ""}`
+    : sessionId ? "SESIÓN PLC · SIN ESCENARIO ACTIVO IDENTIFICADO" : "";
+  studyNode.hidden = !selectedStudyContext;
+  studyNode.textContent = selectedStudyContext
+    ? `ESTUDIO FUTURO EN REVISIÓN EN 3D · ${selectedStudyContext.studyType ?? "ESTUDIO"} · ${selectedStudyContext.profileName ?? "perfil"} · ${selectedStudyContext.studyId} · NO APLICADO AL PLC`
+    : "";
+  $("workspace-context").hidden = !profileNode.textContent && studyNode.hidden;
+}
+
+function renderProfileActions(): void {
+  const stop = $<HTMLButtonElement>("profile-stop");
+  stop.disabled = !sessionId || (!plcRunning && socket?.readyState !== WebSocket.OPEN && socket?.readyState !== WebSocket.CONNECTING);
+}
 
 function selectScreen(id: string): void {
   const primary = id === "fractal" ? "master" : id === "comparisons" ? "history" : id;
@@ -468,7 +490,11 @@ function renderVisibleScreen(): void {
 function render(message: Message): void {  latest = message.snapshot.equipment;
   simTime = message.t;
   plcRunning = message.running ?? true;
-  activeSessionProfileId = message.plc_tags?.["PLC.Profile.ActiveId"] as string | null ?? null;
+  renderProfileActions();
+  activeSessionProfileId = message.plc_tags?.["PLC.Profile.ActiveId"] as string | null ?? activeSessionProfileId;
+  pendingSessionProfileId = message.plc_tags?.["PLC.Profile.PendingId"] as string | null ?? pendingSessionProfileId;
+  if (activeSessionProfileId && activeSessionProfileId === pendingSessionProfileId) pendingSessionProfileId = null;
+  renderWorkspaceContext();
   if (sessionId && activeProfileId && !profilePressure.length && simTime >= 30 &&
     Number(message.plc_tags?.["PLC.PRS.OutletPressureMca"] ?? 0) >= 5 && Date.now() >= nextPressureAttempt) {
     nextPressureAttempt = Date.now() + 60000;
@@ -491,12 +517,28 @@ function render(message: Message): void {  latest = message.snapshot.equipment;
   if (message.t >= DAY_SECONDS) { saveCurrentRun(); socket?.close(); }
 }
 
+async function stopSession(): Promise<void> {
+  if (!sessionId) return;
+  const response = await apiFetch(`/api/plants/${plantId}/sessions/${sessionId}/stop`, { method: "POST" });
+  if (!response.ok) throw Error(`No se pudo detener la sesión PLC (${response.status}).`);
+  stopRequested = true;
+  plcRunning = false;
+  if (socket && (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING)) {
+    socket.close();
+  } else {
+    stopRequested = false;
+    saveCurrentRun();
+    $("connection").textContent = "● SESIÓN DETENIDA";
+    $("connection").classList.remove("on");
+    $("connect").textContent = "▶ INICIAR SESIÓN PLANTA REAL · 24 H";
+    renderProfileActions();
+  }
+}
+
 async function connect(): Promise<void> {
   if (!sessionId && !activeProfileId) { window.alert("Seleccione y guarde un escenario antes de iniciar el PLC."); return; }
   if (socket?.readyState === WebSocket.OPEN) {
-    if (sessionId) await apiFetch(`/api/plants/${plantId}/sessions/${sessionId}/stop`, { method: "POST" });
-    plcRunning = false;
-    socket.close();
+    try { await stopSession(); } catch (error) { $("connection").textContent = `● ERROR · ${String(error)}`; }
     return;
   }
   // Evita dobles clics mientras el proxy WebSocket termina el handshake.
@@ -522,7 +564,10 @@ async function connect(): Promise<void> {
     }
     // El propio WebSocket de rol PLC inicia la simulación; si no conecta, no queda un ciclo anónimo huérfano consumiendo CPU.
     plcRunning = true;
+    renderProfileActions();
   } catch (error) {
+    plcRunning = false;
+    renderProfileActions();
     $("connection").textContent = `● ERROR · ${String(error)}`;
     $("connect").textContent = "▶ INICIAR OPERACIÓN PLC";
     return;
@@ -531,11 +576,12 @@ async function connect(): Promise<void> {
     socket = await demoWebSocket(apiOrigin, `/api/plants/${plantId}/sessions/${sessionId}?role=plc`);
   } catch (error) {
     plcRunning = false;
+    renderProfileActions();
     $("connection").textContent = `● ERROR · ${String(error)}`;
     $("connect").textContent = "▶ INICIAR SESIÓN PLANTA REAL · 24 H";
     return;
   }
-  socket.onopen = () => { $("connection").textContent = "● PLANTA REAL CONECTADA · ×240 SOLICITADO"; $("connection").classList.add("on"); $("connect").textContent = "■ DETENER Y GUARDAR"; };
+  socket.onopen = () => { $("connection").textContent = "● PLANTA REAL CONECTADA · ×240 SOLICITADO"; $("connection").classList.add("on"); $("connect").textContent = "■ DETENER Y GUARDAR"; renderProfileActions(); };
   socket.onmessage = (event) => {
     const message = JSON.parse(event.data) as Message & { error?: string };
     if (message.error) {
@@ -545,7 +591,14 @@ async function connect(): Promise<void> {
     render(message);
   };
   socket.onerror = () => { $("connection").textContent = "● ERROR DE CONEXIÓN CON PLANTA REAL"; };
-  socket.onclose = () => { saveCurrentRun(); socket = null; plcRunning = false; $("connection").textContent = "● DESCONECTADO"; $("connection").classList.remove("on"); $("connect").textContent = "▶ INICIAR SESIÓN PLANTA REAL · 24 H"; };
+  socket.onclose = () => {
+    saveCurrentRun(); socket = null; plcRunning = false;
+    const stopped = stopRequested; stopRequested = false;
+    $("connection").textContent = stopped ? "● SESIÓN DETENIDA" : "● DESCONECTADO";
+    $("connection").classList.remove("on");
+    $("connect").textContent = "▶ INICIAR SESIÓN PLANTA REAL · 24 H";
+    renderProfileActions();
+  };
 }
 
 function currentProfileHour(): ProfileHour {
@@ -677,7 +730,13 @@ function renderProfileEditor(): void {
   $("profile-prs-manual-output").textContent = `${Number(manual.value).toFixed(2)} mca`;
   const draftContext = $("profile-draft-context");
   draftContext.hidden = false;
-  const updateDraftContext = () => { draftContext.textContent = `BORRADOR · NO APLICADO · ${$<HTMLInputElement>("profile-name").value.trim() || activeProfile.name || "Perfil sin guardar"} · HORA ${String(profileHour + 1).padStart(2, "0")}`; };
+  const updateDraftContext = () => {
+    const selectedName = $<HTMLInputElement>("profile-name").value.trim() || activeProfile.name || "Perfil sin guardar";
+    const activeName = profiles.find((profile) => profile.id === activeSessionProfileId)?.name ?? activeSessionProfileId;
+    draftContext.textContent = activeName
+      ? `PLC ACTUAL: ${activeName} · BORRADOR NO APLICADO: ${selectedName} · HORA ${String(profileHour + 1).padStart(2, "0")}`
+      : `BORRADOR · NO APLICADO · ${selectedName} · HORA ${String(profileHour + 1).padStart(2, "0")}`;
+  };
   updateDraftContext();
   $<HTMLInputElement>("profile-name").oninput = updateDraftContext;
   const individualCount = Object.values(hour.dwellings ?? {}).reduce((total, valves) => total + Object.keys(valves).length, 0);
@@ -912,18 +971,27 @@ async function start(): Promise<void> {
     activeProfile = { name: "", description: "", hours: {} }; activeProfileId = null; profileHour = 0;
     await loadProfiles();
   };
+  $("profile-stop").onclick = () => {
+    void stopSession().catch((error) => { $("connection").textContent = `● ERROR · ${String(error)}`; });
+  };
   $("profile-run").onclick = async () => {
     if (!activeProfileId) { window.alert("Guarde el escenario antes de ejecutarlo."); return; }
     if (socket?.readyState === WebSocket.OPEN && sessionId) {
       if (activeSessionProfileId === activeProfileId) { window.alert("Este escenario ya está activo en el PLC."); return; }
       const response = await apiFetch(`/api/plants/${plantId}/sessions/${sessionId}/schedule-profile`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ profile_id: activeProfileId }) });
       const result = await response.json() as { starts_at_hour?: number; detail?: string };
+      if (response.ok) { pendingSessionProfileId = activeProfileId; renderWorkspaceContext(); }
       window.alert(response.ok ? `Escenario programado en el PLC para la hora ${String((result.starts_at_hour ?? 0) + 1).padStart(2, "0")}; no aplicado ahora.` : result.detail ?? "No se pudo programar");
       return;
     }
     if (sessionId) { sessionId = null; query.delete("session"); window.history.replaceState(null, "", `${location.pathname}?${query}`); }
     await connect();
   };
+  if (embedded) window.addEventListener("message", (event: MessageEvent<{ type?: string; plantId?: string; studyId?: string | null; studyType?: string; profileName?: string }>) => {
+    if (event.origin !== location.origin || event.source !== window.parent || event.data.plantId !== plantId || event.data.type !== "plc-study-selected") return;
+    selectedStudyContext = event.data.studyId ? { studyId: event.data.studyId, studyType: event.data.studyType, profileName: event.data.profileName } : null;
+    renderWorkspaceContext();
+  });
   if (embedded) document.addEventListener("click", (event) => {
     const anchor = (event.target as HTMLElement).closest<HTMLAnchorElement>('a[href^="/plant.html"]');
     if (!anchor) return;
@@ -932,10 +1000,23 @@ async function start(): Promise<void> {
     notify3d("plc-show-3d", selected ? { studyId: selected } : {});
   });
   renderDay(); renderSavedRuns(); await loadProfiles();
+  renderWorkspaceContext();
   if (sessionId) {
-    const state = await getJson<{ running: boolean }>(`/api/plants/${plantId}/sessions/${sessionId}`).catch(() => null);
-    if (state?.running) void connect();
-    else $("connection").textContent = "● SESIÓN DETENIDA · PULSE PLAY PARA REANUDAR";
+    const state = await getJson<{ running: boolean; profile_id?: string | null; pending_profile_id?: string | null; t?: number }>(`/api/plants/${plantId}/sessions/${sessionId}`).catch(() => null);
+    if (state) {
+      activeSessionProfileId = state.profile_id ?? null;
+      pendingSessionProfileId = state.pending_profile_id ?? null;
+      const sessionProfile = profiles.find((profile) => profile.id === activeSessionProfileId);
+      if (sessionProfile) {
+        activeProfile = structuredClone(sessionProfile);
+        activeProfileId = sessionProfile.id ?? null;
+        profileHour = Math.max(0, Math.min(23, Math.floor((state.t ?? 0) / 3600)));
+        renderProfileEditor();
+      }
+      renderWorkspaceContext();
+      if (state.running) void connect();
+      else $("connection").textContent = "● SESIÓN DETENIDA · PULSE PLAY PARA REANUDAR";
+    }
   }
 }
 

@@ -18,6 +18,7 @@
       <div class="clock" id="clock">PLANTA REAL · —</div>
     </header>
     <div class="warning">PLANTA REAL · SESIÓN OPERATIVA VIRTUAL · SIN CONEXIÓN A INFRAESTRUCTURA FÍSICA</div>
+    <div id="workspace-context" class="workspace-context" hidden aria-live="polite"><strong id="plc-profile-context"></strong><span id="fractal-study-context" hidden></span></div>
     <main>
       <aside class="asset-tree panel">
         <h2>ÁRBOL DE ACTIVOS</h2>
@@ -63,7 +64,7 @@
           <div id="saved-runs" class="cards"></div>
         </section>
         <section id="profiles" class="screen">
-          <div class="section-head"><div><p class="eyebrow">PLC VIRTUAL · ADMINISTRACIÓN DE ESCENARIOS</p><h1>Escenarios de operación</h1><p class="muted">Plantillas de operación para demanda y regulación PRS. Cree, nombre, edite y elimine escenarios sin cambiar la operación hasta que los programe desde el PLC.</p></div><div class="controls"><button id="profile-new">+ NUEVO PERSONALIZADO</button><button id="profile-save" class="primary">GUARDAR CAMBIOS</button><button id="profile-delete" hidden>ELIMINAR PERSONALIZADO</button><button id="profile-run">▶ EJECUTAR</button></div></div>
+          <div class="section-head"><div><p class="eyebrow">PLC VIRTUAL · ADMINISTRACIÓN DE ESCENARIOS</p><h1>Escenarios de operación</h1><p class="muted">Plantillas de operación para demanda y regulación PRS. Cree, nombre, edite y elimine escenarios sin cambiar la operación hasta que los programe desde el PLC.</p></div><div class="controls"><button id="profile-new">+ NUEVO PERSONALIZADO</button><button id="profile-save" class="primary">GUARDAR CAMBIOS</button><button id="profile-delete" hidden>ELIMINAR PERSONALIZADO</button><button id="profile-run">▶ EJECUTAR</button><button id="profile-stop" class="profile-stop" type="button" disabled>■ DETENER</button></div></div>
           <section class="panel profile-editor">
             <label>Perfil <select id="profile-select"><option value="">Nuevo perfil</option></select></label>
             <label>Nombre <input id="profile-name" maxlength="80" placeholder="Ej.: demanda diurna" /></label>
