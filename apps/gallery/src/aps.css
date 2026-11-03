@@ -27,6 +27,7 @@ body.aps-page { font: 400 13px Inter, sans-serif; background: radial-gradient(ci
 .aps-prop-kpis span { color: var(--dim); text-decoration: line-through; font: 500 12px "IBM Plex Mono", monospace; }
 .aps-prop-kpis b { font: 700 18px "IBM Plex Mono", monospace; }
 .aps-prop-actions { display: flex; flex-direction: column; gap: 6px; }
+.aps-scen { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 8px; }
 @media (max-width: 900px) { .aps-prop-head { grid-template-columns: 1fr; } .aps-prop-kpis { grid-template-columns: repeat(2, 1fr); } .aps-prop-actions { flex-direction: row; } }
 
 /* Pedidos */
