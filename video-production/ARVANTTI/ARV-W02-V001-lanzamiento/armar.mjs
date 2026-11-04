@@ -30,7 +30,7 @@ const ESCENAS = [
   { id: "asistente", dir: "07-asistente", lead: 0.3, tail: 0.9 },
   { id: "conecta", dir: "08-conecta", lead: 0.3, tail: 0.9 },
   { id: "planes", dir: "09-planes", lead: 0.3, tail: 1.2 },
-  { id: "cierre", dir: "10-cierre", lead: 1.0, tail: 3.0 },
+  { id: "cierre", dir: "10-cierre", lead: 1.0, tail: 5.9 },
 ];
 
 const texto = (e) => fs.readFileSync(T(`escenas/${e.dir}/script.md`), "utf8").trim();
@@ -113,6 +113,27 @@ function preparar() {
   const expr = `(${pad})*(0.75+0.25*sin(2*PI*t/8))+0.06*sin(2*PI*55*t)*exp(-mod(t,2)*3)`;
   sh("ffmpeg", ["-y", "-v", "error", "-f", "lavfi", "-i", `aevalsrc='${expr}|${expr}':s=48000:d=${d}`, "-af", `lowpass=f=1800,aecho=0.8:0.7:400|700:0.25|0.18,afade=t=in:d=3,afade=t=out:st=${d - 4}:d=4,volume=0.9`, "-c:a", "libmp3lame", "-q:a", "2", path.join(clips, "musica.mp3")]);
   console.log("listo: assets/clips/");
+}
+
+/**
+ * Música épica (ElevenLabs Music, assets/clips/musica-epica.mp3): baja sola cuando habla la voz (sidechain) y se ajusta
+ * a la duración del video. Deja assets/clips/musica-mezcla.mp3.
+ */
+function mezclaMusica(escenas, total) {
+  const src = T("assets/clips/musica-epica.mp3");
+  if (!fs.existsSync(src)) return null;
+  const voces = escenas.filter((x) => x.real);
+  const args = ["-y", "-v", "error", "-i", src];
+  voces.forEach((x) => args.push("-i", vozDe(x)));
+  const del = voces.map((x, i) => `[${i + 1}:a]adelay=${Math.round(x.voiceAt * 1000)}:all=1,aformat=sample_rates=48000:channel_layouts=stereo[v${i}]`).join(";");
+  // Si la música dura casi lo mismo que el video, termina sola (con su golpe final); si no, se funde al final.
+  const fade = duracion(src) > total + 0.5 ? Math.max(0, total - 3) : total + 10;
+  const f = `${del};${voces.map((_, i) => `[v${i}]`).join("")}amix=inputs=${voces.length}:normalize=0,apad=whole_dur=${total.toFixed(2)}[vz];` +
+    `[0:a]aformat=sample_rates=48000:channel_layouts=stereo,apad,atrim=0:${total.toFixed(2)},afade=t=out:st=${fade.toFixed(2)}:d=3[m];` +
+    `[m][vz]sidechaincompress=threshold=0.03:ratio=8:attack=40:release=600:makeup=1[out]`;
+  args.push("-filter_complex", f, "-map", "[out]", "-c:a", "libmp3lame", "-q:a", "2", T("assets/clips/musica-mezcla.mp3"));
+  execFileSync("ffmpeg", args, { stdio: "inherit" });
+  return "assets/clips/musica-mezcla.mp3";
 }
 
 // ---------------------------------------------------------------- composición
@@ -202,7 +223,7 @@ function componer() {
     ];
     clip("e-planifica", "scene", s, d, `
       <div class="col">${kicker("01", "PLANIFICA")}<h2 class="big">${words("Todo empieza con el plan.")}</h2>
-      <div class="chips">${["Moldes", "Turnos", "Colores", "Entregas"].map((c) => `<span class="chip">${c}</span>`).join("")}</div>
+      <div class="chips">${["Recursos", "Turnos", "Cambios", "Entregas"].map((c) => `<span class="chip">${c}</span>`).join("")}</div>
       <ul class="verbs"><li>Arrastra una orden.</li><li>Fija un pedido.</li><li>Elige un objetivo.</li><li>Calcula.</li></ul></div>
       <div class="right">${device("pl", shots)}</div>`, 3);
     enter("e-planifica", s);
@@ -213,7 +234,7 @@ function componer() {
     at("#pl-s0 img", { scale: 1.05, y: 0 }, { scale: 1.15, y: -40, duration: tG - s + 0.8, ease: "sine.inOut" }, s);
     swap("pl", 1, tG);
     at("#pl-s1 img", { scale: 1.0 }, { scale: 1.12, duration: tA - tG, ease: "sine.inOut" }, tG);
-    at("#e-planifica .chip", { opacity: 0, y: 20, scale: 0.9 }, { opacity: 1, y: 0, scale: 1, duration: 0.5, stagger: 0.32, ease: "back.out(2)" }, enPalabra(x, "moldes"));
+    at("#e-planifica .chip", { opacity: 0, y: 20, scale: 0.9 }, { opacity: 1, y: 0, scale: 1, duration: 0.5, stagger: 0.32, ease: "back.out(2)" }, enPalabra(x, "recursos"));
     swap("pl", 2, tA - 0.2);
     swap("pl", 3, tE - 0.1);
     at("#pl-s3 img", { scale: 1, x: 0, y: 0 }, { scale: 1.8, x: 0, y: 60, duration: tC - tE + 0.4, ease: "power2.inOut" }, tE);
@@ -234,17 +255,18 @@ function componer() {
   // 4. Gemelo 3D: el play del futuro.
   {
     const x = S.gemelo; const [s, d] = span(x);
-    const tI = enPalabra(x, "inyectoras"), tM = enPalabra(x, "montacargas"), tO = enPalabra(x, "operarios"), tV = enPalabra(x, "inventarios"), tP = enPalabra(x, "Dale play");
+    const tI = enPalabra(x, "máquinas"), tM = enPalabra(x, "líneas"), tO = enPalabra(x, "personas"), tV = enPalabra(x, "inventarios"), tP = enPalabra(x, "Dale play");
     html.push(`<video id="lapso" class="clip bleedv" src="assets/clips/lapso.mp4" muted playsinline data-start="${s.toFixed(2)}" data-duration="${(tI - s + 0.4).toFixed(2)}" data-track-index="4"></video>`);
     clip("e-gemelo", "scene", s, d, `
       <div class="bleed b1"><img src="assets/tomas/3d-inyectoras-2.png" alt=""></div>
-      <div class="bleed b2"><img src="assets/tomas/3d-medio.png" alt=""></div>
-      <div class="bleed b3"><img src="assets/tomas/3d-silos.png" alt=""></div>
+      <div class="bleed b2"><img src="assets/tomas/3d-salsas.png" alt=""></div>
+      <div class="bleed b5"><img src="assets/tomas/3d-confecciones.png" alt=""></div>
+      <div class="bleed b3"><img src="assets/tomas/3d-cajas.png" alt=""></div>
       <div class="bleed b4"><img src="assets/tomas/3d-ui.png" alt=""></div>
       <div class="vignette"></div>
       <div class="hud"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i><div class="scan"></div><p class="live">● PROYECCIÓN · HORA POR HORA</p><div class="scrub"><i></i></div></div>
       <div class="lowerleft">${kicker("02", "GEMELO 3D")}<h2 class="big">${words("Míralo vivir.")}</h2></div>
-      <p class="label" id="lb-0">Inyectoras</p><p class="label" id="lb-1">Montacargas · Operarios</p><p class="label" id="lb-2">Inventarios</p>
+      <p class="label" id="lb-0">Máquinas</p><p class="label" id="lb-1">Líneas</p><p class="label" id="lb-2">Personas</p><p class="label" id="lb-3">Inventarios</p>
       <div class="play"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="46"/><path d="M40 30 L72 50 L40 70 Z"/></svg></div>`, 5);
     at("#lapso", { opacity: 0, scale: 1.15 }, { opacity: 1, scale: 1.04, duration: tI - s, ease: "power1.out" }, s);
     at("#e-gemelo .hud", { opacity: 0 }, { opacity: 1, duration: 0.6 }, s + 0.3);
@@ -255,11 +277,11 @@ function componer() {
     at("#e-gemelo .lowerleft .w", { opacity: 0, y: 60, filter: "blur(12px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.7, stagger: 0.12, ease: "power3.out" }, x.voiceAt + 0.3);
     to("#e-gemelo .lowerleft", { opacity: 0, y: 30, duration: 0.5 }, tI - 0.4);
     // Primeros planos con empuje de cámara, uno por palabra.
-    const cuts = [["b1", tI, tM], ["b2", tM, tV], ["b3", tV, tP], ["b4", tP, s + d]];
+    const cuts = [["b1", tI, tM], ["b2", tM, tO], ["b5", tO, tV], ["b3", tV, tP], ["b4", tP, s + d]];
     cuts.forEach(([b, a, z], i) => {
       at(`#e-gemelo .${b}`, { opacity: 0, clipPath: "circle(0% at 50% 50%)" }, { opacity: 1, clipPath: "circle(80% at 50% 50%)", duration: 0.7, ease: "power3.inOut" }, a - 0.15);
       at(`#e-gemelo .${b} img`, { scale: 1.25, x: i % 2 ? 60 : -60 }, { scale: 1.05, x: 0, duration: z - a + 0.7, ease: "power1.out" }, a - 0.15);
-      if (i < 3) {
+      if (i < 4) {
         at(`#lb-${i}`, { opacity: 0, x: -50, filter: "blur(8px)" }, { opacity: 1, x: 0, filter: "blur(0px)", duration: 0.5, ease: "power3.out" }, a + 0.1);
         to(`#lb-${i}`, { opacity: 0, x: 40, duration: 0.3 }, z - 0.15);
       }
@@ -303,7 +325,7 @@ function componer() {
       <h2 class="center q2">${words("¿Y si hay más de una buena respuesta?")}</h2>
       <div class="topl">${kicker("04", "FRACTAL")}</div>
       <div class="fan">${cards.map((c, i) => `<div class="card c${i}"><img src="assets/tomas/${c}" alt=""><div class="score"><i style="width:${scores[i]}%"></i><b>${scores[i]}</b></div></div>`).join("")}</div>
-      <div class="tags">${["Entregas", "Cambios de molde", "Ocupación", "Energía"].map((c) => `<span class="chip">${c}</span>`).join("")}</div>
+      <div class="tags">${["Entregas", "Cambios", "Ocupación", "Energía"].map((c) => `<span class="chip">${c}</span>`).join("")}</div>
       <div class="bleed b4"><img src="assets/tomas/3d-ui.png" alt=""></div>
       <div class="decide"><p>${words("Tú decides.")}</p><button>ENVIAR A PLANTA</button></div>`, 3);
     enter("e-fractal", s);
@@ -337,8 +359,8 @@ function componer() {
   // 7. Asistente IA: chat de consulta con voz.
   {
     const x = S.asistente; const [s, d] = span(x);
-    const q = "¿Qué máquina va más cargada esta semana?";
-    const a = "La IMM-21, con 71,4 % de ocupación. Fractal puede repartir su carga sin mover ninguna entrega.";
+    const q = "¿Qué recurso va más cargado esta semana?";
+    const a = "La línea 2, con 71 % de ocupación. Fractal puede repartir su carga sin mover ninguna entrega.";
     clip("e-asistente", "scene", s, d, `
       <div class="topl">${kicker("05", "ASISTENTE IA")}</div>
       <div class="chat"><div class="bar"><span class="dot"></span> Asistente IA <span class="badge">Solo consulta · según tu rol</span></div>
@@ -360,7 +382,7 @@ function componer() {
   {
     const x = S.conecta; const [s, d] = span(x);
     const tM = enPalabra(x, "con tus máquinas"), tE = enPalabra(x, "E R P");
-    const left = ["IMM-01", "IMM-04", "IMM-21", "Ensamble"].map((n, i) => ({ n, x: 240, y: 260 + i * 170 }));
+    const left = ["Línea 1", "Línea 2", "Máquina 7", "Celda 3"].map((n, i) => ({ n, x: 240, y: 260 + i * 170 }));
     const core = { x: 960, y: 515 }, erp = { x: 1680, y: 515 };
     const lines = left.map((p, i) => `<line id="ln${i}" x1="${p.x + 110}" y1="${p.y}" x2="${core.x - 150}" y2="${core.y}" pathLength="1"/>`).join("") + `<line id="lnE" x1="${core.x + 150}" y1="${core.y}" x2="${erp.x - 120}" y2="${erp.y}" pathLength="1"/>`;
     const dots = left.map((p, i) => `<circle class="pk" id="pk${i}" r="7" cx="${p.x + 110}" cy="${p.y}"/>`).join("") + `<circle class="pk" id="pkE" r="7" cx="${erp.x - 120}" cy="${erp.y}"/>`;
@@ -439,7 +461,9 @@ function componer() {
 
   // Voz por escena y música.
   escenas.forEach((x) => { if (x.real) audio(`voz-${x.id}`, `escenas/${x.dir}/assets/audio/voiceover.mp3`, x.voiceAt, x.voz, 1); });
-  if (fs.existsSync(T("assets/clips/musica.mp3"))) audio("musica", "assets/clips/musica.mp3", 0, total, 0.22);
+  const epica = mezclaMusica(escenas, total);
+  if (epica) audio("musica", epica, 0, total, 0.55);
+  else if (fs.existsSync(T("assets/clips/musica.mp3"))) audio("musica", "assets/clips/musica.mp3", 0, total, 0.22);
   if (temporal) html.push(`<div id="temp" class="clip" data-start="0" data-duration="${total.toFixed(2)}" data-track-index="50">SIN VOZ · TIEMPOS ESTIMADOS</div>`);
 
   const out = fs.readFileSync(T("plantilla.html"), "utf8")
