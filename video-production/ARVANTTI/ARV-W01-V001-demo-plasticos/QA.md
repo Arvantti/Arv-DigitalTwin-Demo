@@ -7,6 +7,8 @@
   tamaño del archivo; no afectan el render.
 - Revisión de cuadros (`hyperframes snapshot`): intro con logo, tarjeta de capítulo, tramo del recorrido del
   cosimulador calculando, captura con zoom, captura de página completa recorrida de arriba abajo y tabla de ahorro.
+- Render: `out/demo-plasticos-v001.mp4`, 978,3 s, H.264 1920×1080 a 25 fps con AAC; unos 37 min de render en 4 CPU.
+  Voz con media de −23,6 dB y pico de −3 dB (tramo de 60 a 180 s).
 - Audio: voz local de prueba (Kokoro `em_alex`), marcada `TEMP_AUDIO` en pantalla. **No es entrega final.**
 - Pendiente: voz de ElevenLabs por capítulo, `alinear`, `componer` y render v002; revisar cortes por segmento.
 - Tipografía: Inter instalada en el sistema; Orbit e IBM Plex Mono no están en el kit local, caen a la genérica.
