@@ -131,6 +131,18 @@ body.aps-page { font: 400 13px Inter, sans-serif; background: radial-gradient(ci
 #tab-gantt { overflow-x: auto; }
 .g-scroll { max-height: 48vh; overflow-y: auto; border-bottom: 1px solid var(--line); }
 .g-head { top: 0; }
+/* Escritorio: la página hace el scroll. La lista de órdenes ya no tiene su propio
+   scroll (si lo tuviera, la rueda se quedaba ahí y no llegaba a los recursos), y
+   #tab-gantt usa overflow-x: clip para que el encabezado de días quede pegado bajo
+   la barra superior al bajar. En celular se mantiene el comportamiento anterior. */
+@media (min-width: 901px) {
+  /* body con overflow: auto se vuelve un contenedor de scroll que nunca se mueve, así
+     que el encabezado pegado (sticky) no se queda visible al bajar: el scroll es de la ventana. */
+  body.aps-page { overflow: visible; }
+  #tab-gantt { overflow-x: clip; }
+  .g-scroll { max-height: none; overflow: visible; }
+  .g-head { top: 63px; }
+}
 .aps-alarm { margin: 0 16px 12px; padding: 10px 16px; border: 1px solid var(--bad); background: rgba(255, 59, 59, 0.12); border-radius: var(--radius-surface); }
 .aps-alarm p { margin: 3px 0; }
 .aps-alarm b { color: #ff8080; letter-spacing: 0.04em; }
