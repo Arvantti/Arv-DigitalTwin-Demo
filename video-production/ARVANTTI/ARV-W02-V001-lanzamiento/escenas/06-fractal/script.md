@@ -1,0 +1,1 @@
+¿Y si hay más de una buena respuesta? Fractal genera escenarios, los califica con varios objetivos a la vez y te entrega los mejores. Los comparas en el gemelo. Eliges. Y solo entonces, el plan va a la planta.

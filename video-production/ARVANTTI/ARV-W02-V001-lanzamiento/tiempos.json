@@ -1,0 +1,82 @@
+[
+ {
+  "id": "pregunta",
+  "start": 0,
+  "voiceAt": 1.6,
+  "voz": 4.21,
+  "dur": 6.81,
+  "real": true
+ },
+ {
+  "id": "titulo",
+  "start": 6.81,
+  "voiceAt": 7.21,
+  "voz": 4.83,
+  "dur": 6.83,
+  "real": true
+ },
+ {
+  "id": "planifica",
+  "start": 13.64,
+  "voiceAt": 14.14,
+  "voz": 15.07,
+  "dur": 16.37,
+  "real": true
+ },
+ {
+  "id": "gemelo",
+  "start": 30.01,
+  "voiceAt": 30.41,
+  "voz": 10.19,
+  "dur": 11.49,
+  "real": true
+ },
+ {
+  "id": "control",
+  "start": 41.5,
+  "voiceAt": 41.8,
+  "voz": 6.61,
+  "dur": 7.81,
+  "real": true
+ },
+ {
+  "id": "fractal",
+  "start": 49.31,
+  "voiceAt": 49.61,
+  "voz": 13.09,
+  "dur": 14.39,
+  "real": true
+ },
+ {
+  "id": "asistente",
+  "start": 63.7,
+  "voiceAt": 64,
+  "voz": 7.89,
+  "dur": 9.09,
+  "real": true
+ },
+ {
+  "id": "conecta",
+  "start": 72.78,
+  "voiceAt": 73.08,
+  "voz": 5.64,
+  "dur": 6.84,
+  "real": true
+ },
+ {
+  "id": "planes",
+  "start": 79.63,
+  "voiceAt": 79.93,
+  "voz": 7.97,
+  "dur": 9.47,
+  "real": true
+ },
+ {
+  "id": "cierre",
+  "start": 89.09,
+  "voiceAt": 90.09,
+  "voz": 3.97,
+  "dur": 7.97,
+  "real": true
+ }
+]
