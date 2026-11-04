@@ -66,9 +66,35 @@ NODE_PATH="$(pnpm root -g)" node tools/demo-video/grabar.cjs todos --video   # o
 
 ### 0-S03 · Sin fechas de calendario
 - imagen: 1-calcular-programacion/capturas/01-pedidos.png
-- duración: 12 s
+- duración: 8 s
+- foco: Hoy es el día nueve => día 9 => Hoy: día 9
 
-> Todo se cuenta en días desde el arranque de la programación, el día cero. Hoy es el día nueve. Veamos cinco escenarios.
+> Todo se cuenta en días desde el arranque de la programación, el día cero. Hoy es el día nueve.
+
+### 0-S04 · Cinco escenarios
+- tarjeta: escenarios
+- duración: 16 s
+- foco: Uno, => 1
+- foco: Dos, => 2
+- foco: Tres, => 3
+- foco: Cuatro, => 4
+- foco: Y cinco, => 5
+
+> Veamos cinco escenarios. Uno, calcular la programación según las entregas. Dos, un cliente adelanta su pedido. Tres, contingencia: falla una inyectora. Cuatro, pedidos fijados a mano. Y cinco, menos cambios de referencia.
+
+### 0-S05 · Arvantti Digital Twin y sus módulos
+- tarjeta: modulos
+- duración: 30 s
+- foco: Arvantti Digital Twin => centro
+- foco: Dendro => dendro
+- foco: El centro de control => control
+- foco: El integrador => integrador
+- foco: La cosimulación => cosimulacion
+- foco: Fractal, => fractal
+- foco: El asistente de IA => ia
+- foco: Y el APS => aps
+
+> Todo esto corre sobre Arvantti Digital Twin. El gemelo digital va en el centro y a su alrededor se suman siete módulos. Dendro, el hardware propio para leer las máquinas. El centro de control, con las señales de toda la planta en vivo. El integrador, que conecta el ERP, el CRM o el SCADA. La cosimulación, que se entrena con las reglas de cada empresa. Fractal, que compara escenarios con varios objetivos a la vez y cambios en la planta. El asistente de IA, privado y en lenguaje natural. Y el APS, que programa pedidos y recursos. Empecemos por el primer escenario.
 
 ### 6-S01 · El ahorro potencial de Fractal
 - imagen: tarjeta con las cifras de abajo (fondo oscuro, una fila por escenario)

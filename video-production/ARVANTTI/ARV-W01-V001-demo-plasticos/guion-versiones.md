@@ -12,6 +12,7 @@ Capturas: `assets/grabacion/versiones/capturas/` (escenario 6 de tools/demo-vide
 ### S01 · El Gantt de la semana
 - imagen: versiones/capturas/01-gantt-10d.png
 - en pantalla: los botones − y + de la barra del Gantt
+- foco: con los botones más y menos => − + 10 d + + => Zoom: − y +
 
 > Antes de cerrar, dos herramientas del APS. La primera es el zoom del Gantt: con los botones más y menos cambia la ventana de tiempo, de tres a treinta días.
 
@@ -30,17 +31,20 @@ Capturas: `assets/grabacion/versiones/capturas/` (escenario 6 de tools/demo-vide
 ### S04 · Guardar lo que calculó el cosimulador
 - imagen: versiones/capturas/04-guardar-cosimulador.png
 - en pantalla: el botón GUARDAR VERSIÓN en la barra de la propuesta
+- foco: se guarda con un clic => ✓ GUARDADA => Guardada como versión
 
 > La segunda son las versiones. Cada programación se guarda con un clic y con nombre: lo que calculó el cosimulador, un escenario de Fractal o un ajuste hecho a mano en el Gantt.
 
 ### S05 · Guardar el escenario de Fractal
 - imagen: versiones/capturas/05-guardar-fractal.png
 - en pantalla: la propuesta de Fractal guardada
+- foco: guardamos también => ✓ GUARDADA => Escenario de Fractal guardado
 
 > Aquí guardamos también el escenario balanceado de Fractal, para compararlo con calma.
 
 ### S06 · Comparar con la vigente
 - imagen: versiones/capturas/06-versiones-comparar.png
 - en pantalla: la tabla COMPARAR CON LA VIGENTE
+- foco: entregas a tiempo => VIGENTE => Comparar con la vigente
 
 > En la pestaña versiones se comparan con la programación vigente: entregas a tiempo, pedidos tarde, atraso, cambios de referencia y ocupación. Cada versión se puede ver en el Gantt y en el gemelo 3D antes de decidir. Adoptarla, es decir, enviarla a la planta, es un paso aparte.
