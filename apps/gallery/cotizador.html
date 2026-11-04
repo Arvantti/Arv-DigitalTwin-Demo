@@ -134,14 +134,17 @@ footer{color:var(--muted);font-size:12.5px;max-width:80ch}
       </section>
 
       <section class="card">
-        <h2>Módulos de conexión</h2>
-        <label class="switch"><input type="checkbox" id="conecta"> Conecta: OEE en tiempo real (USD 21 por máquina al mes)</label>
+        <h2>Extensiones y módulos de conexión</h2>
+        <label class="switch"><input type="checkbox" id="conecta"> Extensión OEE en tiempo real, opcional y fuera de los planes (USD 21 por máquina al mes)</label>
         <div class="sub-opts" id="conectaOpts" hidden>
           <div class="row"><label for="oeeMachines">Máquinas con OEE en vivo</label>
             <span class="num"><button type="button" data-step="-1" data-for="oeeMachines" aria-label="Quitar">−</button><input id="oeeMachines" type="number" min="1" max="500" value="12"><button type="button" data-step="1" data-for="oeeMachines" aria-label="Agregar">+</button></span></div>
-          <div class="row"><label for="hwMachines">Máquinas sin PLC accesible (hardware)</label>
+          <div class="row"><label for="oeeSource">Fuente de los datos de planta</label>
+            <select id="oeeSource"><option value="scada">Su SCADA, control de piso u OEE actual</option><option value="dev">No tiene: desarrollamos el control de piso</option></select>
+            <span class="note">Si el cliente ya tiene su propio OEE, no tiene que cambiarlo: leemos sus datos.</span></div>
+          <div class="row"><label for="hwMachines">Máquinas sin PLC: Arvantti Dendro</label>
             <span class="num"><button type="button" data-step="-1" data-for="hwMachines" aria-label="Quitar">−</button><input id="hwMachines" type="number" min="0" max="500" value="0"><button type="button" data-step="1" data-for="hwMachines" aria-label="Agregar">+</button></span>
-            <span class="note">Sensores o gateway al costo; estimado USD 550 por máquina, a validar con proveedor.</span></div>
+            <span class="note">Arvantti Dendro es nuestro hardware con IA física para conectar cualquier máquina, tenga PLC o no. Es un producto aparte y se cotiza por proyecto.</span></div>
         </div>
         <label class="switch"><input type="checkbox" id="erp"> Integración con ERP (USD 150 por ERP al mes)</label>
         <div class="sub-opts" id="erpOpts" hidden>
@@ -201,7 +204,7 @@ footer{color:var(--muted);font-size:12.5px;max-width:80ch}
     </aside>
   </div>
 
-  <footer>Precios propuestos en USD, sin IVA, pendientes de aprobación. El nivel Fractal está en desarrollo. Los valores de hardware son estimados.</footer>
+  <footer>Precios propuestos en USD, sin IVA, pendientes de aprobación. El nivel Fractal está en desarrollo. La extensión OEE no va incluida en ningún plan. El hardware Arvantti Dendro se cotiza aparte.</footer>
 </div>
 
 <script>
@@ -211,7 +214,7 @@ footer{color:var(--muted);font-size:12.5px;max-width:80ch}
     gemelo:{base:1140, extra:42, name:'Gemelo', users:6},
     fractal:{base:1920, extra:60, name:'Fractal', users:10}
   };
-  const AI = 150, BASE_MACHINES = 15, OEE = 21, ERP = 150, HW = 550, EQUIP = 1925;
+  const AI = 150, BASE_MACHINES = 15, OEE = 21, ERP = 150, EQUIP = 1925;
   const IMPL = {none:null, std:{name:'Estándar', lo:10500, hi:17500}, int:{name:'Integrada', lo:21000, hi:35000}};
   const PILOT = {price:12000, months:3, machines:6, products:20, orders:150, extra:1000};
   const $ = id => document.getElementById(id);
@@ -260,7 +263,7 @@ footer{color:var(--muted);font-size:12.5px;max-width:80ch}
     if (prepaidY) lines.push(['neg', `Pago anticipado de ${prepaidY} ${prepaidY === 1 ? 'año' : 'años'}`, `${Math.round(prepayRate*100)} % sobre la licencia de esos ${prepaidY === 1 ? 'año' : 'años'}, en el contrato`, -prepayDisc]);
     if (pion) lines.push(['neg', 'Plan pionero', '25 % en la licencia del primer año', -pionLic]);
     if (usersX) lines.push(['', `${usersX} usuarios adicionales`, `${uC} visualización, ${uA} TI, ${uP} programación, al año`, usersMonthly * 12]);
-    if (conecta) lines.push(['', 'Conecta: OEE en tiempo real', `${oeeM} máquinas × ${fmt(OEE)} al mes × 12`, oeeM * OEE * 12]);
+    if (conecta) lines.push(['', 'Extensión OEE en tiempo real', `${oeeM} máquinas × ${fmt(OEE)} al mes × 12`, oeeM * OEE * 12]);
     if (erp) lines.push(['', `Integración ERP (${$('erpName').value === 'otro' ? 'otro ERP' : $('erpName').value})`, `${fmt(ERP)} al mes × 12`, ERP * 12]);
     if (aiOn) lines.push(['', 'Asistente IA', `${fmt(AI)} al mes × 12`, AI * 12]);
     if (tierNow === 'fractal') lines.push(['', 'Asistente IA', 'Incluido en Fractal', 0]);
@@ -279,7 +282,8 @@ footer{color:var(--muted);font-size:12.5px;max-width:80ch}
     }
     const eq = int('newEquip', 0);
     if (eq){ implTotal += eq * EQUIP; lines.push(['', `${eq} equipos nuevos en 3D`, `${fmt(EQUIP)} promedio c/u`, eq * EQUIP]); }
-    if (conecta && hwM){ implTotal += hwM * HW; lines.push(['', 'Hardware de conexión (al costo)', `${hwM} máquinas × ${fmt(HW)} estimado`, hwM * HW]); }
+    if (conecta && $('oeeSource').value === 'dev') lines.push(['', 'Desarrollo del control de piso', 'Se cotiza por proyecto', null]);
+    if (conecta && hwM) lines.push(['', `Arvantti Dendro para ${hwM} ${hwM === 1 ? 'máquina' : 'máquinas'} sin PLC`, 'Hardware, se cotiza aparte', null]);
     if (erpOther) lines.push(['', 'Conector para otro ERP', 'Se cotiza por proyecto', null]);
     if (pion && implTotal > 0){ const d = Math.round(implTotal * 0.20); implTotal -= d; lines.push(['neg', 'Plan pionero', '20 % en la implementación', -d]); }
     if ($('pilotCredit').checked && implTotal > 0){
@@ -318,8 +322,9 @@ footer{color:var(--muted);font-size:12.5px;max-width:80ch}
     if (extraM) lines.push(['', `${extraM} máquinas adicionales`, `${fmt(PILOT.extra)} c/u`, extraM * PILOT.extra]);
     let total = PILOT.price + extraM * PILOT.extra;
     const oeeM = Math.min(int('oeeMachines', 1), m), hwM = Math.min(int('hwMachines', 0), m);
-    if ($('conecta').checked){ const v = oeeM * OEE * PILOT.months; total += v; lines.push(['', 'Conecta: OEE en tiempo real', `${oeeM} máquinas × ${fmt(OEE)} × 3 meses`, v]);
-      if (hwM){ total += hwM * HW; lines.push(['', 'Hardware de conexión (al costo)', `${hwM} máquinas × ${fmt(HW)} estimado`, hwM * HW]); } }
+    if ($('conecta').checked){ const v = oeeM * OEE * PILOT.months; total += v; lines.push(['', 'Extensión OEE en tiempo real', `${oeeM} máquinas × ${fmt(OEE)} × 3 meses`, v]);
+      if ($('oeeSource').value === 'dev') lines.push(['', 'Desarrollo del control de piso', 'Se cotiza por proyecto', null]);
+      if (hwM) lines.push(['', `Arvantti Dendro para ${hwM} ${hwM === 1 ? 'máquina' : 'máquinas'} sin PLC`, 'Hardware, se cotiza aparte', null]); }
     const pc = int('extraUsers', 0), pa = int('extraAdmin', 0), pp = int('extraPlan', 0), pu = pc + pa + pp; if (pu){ const v = (pc * 10 + pa * 20 + pp * 35) * PILOT.months; total += v; lines.push(['', `${pu} usuarios adicionales`, `${pc} visualización, ${pa} TI, ${pp} programación × 3 meses`, v]); }
     if ($('erp').checked){ const v = ERP * PILOT.months; total += v; lines.push(['', `Integración ERP (${$('erpName').value === 'otro' ? 'otro ERP' : $('erpName').value})`, `${fmt(ERP)} × 3 meses`, v]); }
     if ($('ai').checked){ const v = AI * PILOT.months; total += v; lines.push(['', 'Asistente IA', `${fmt(AI)} × 3 meses`, v]); }
@@ -393,7 +398,7 @@ footer{color:var(--muted);font-size:12.5px;max-width:80ch}
     } catch(e){ $('quoteText').hidden = false; $('quoteText').select(); $('toast').textContent = 'Selecciona y copia el texto de abajo.'; }
   });
   $('resetBtn').addEventListener('click', () => {
-    $('tierGemelo').checked = true; $('early').checked = false; $('machines').value = 12; $('oeeMachines').value = 12; $('hwMachines').value = 0; oeeTouched = false;
+    $('tierGemelo').checked = true; $('early').checked = false; $('machines').value = 12; $('oeeMachines').value = 12; $('hwMachines').value = 0; $('oeeSource').value = 'scada'; oeeTouched = false;
     $('years').value = '3'; $('conecta').checked = false; $('erp').checked = false; $('ai').checked = false; $('impl').value = 'std'; $('implSize').value = 50;
     $('newEquip').value = 0; $('extraUsers').value = 0; $('extraAdmin').value = 0; $('extraPlan').value = 0; $('pilotCredit').checked = false; $('prepay').value = '1'; $('secondPlant').checked = false; $('perpetual').checked = false; $('pionero').checked = false; $('trm').value = 4000;
     render();
