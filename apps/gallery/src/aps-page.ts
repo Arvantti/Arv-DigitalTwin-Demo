@@ -1331,61 +1331,93 @@ function renderFractal(): void {
   const pinned = fixedOf();
   const loadsRow = (s: FractalStudy) => {
     const best = s.options.find((o) => o.id === s.best)!;
-    const ids = Object.keys({ ...s.baseline.loads, ...best.loads }).filter((m) => (s.baseline.loads[m] ?? 0) > 0 || (best.loads[m] ?? 0) > 0).sort();
+    const ids = Object.keys({ ...s.baseline.loads, ...best.loads })
+      .filter((m) => (s.baseline.loads[m] ?? 0) > 0 || (best.loads[m] ?? 0) > 0)
+      .sort((x, y) => Math.max(best.loads[y] ?? 0, s.baseline.loads[y] ?? 0) - Math.max(best.loads[x] ?? 0, s.baseline.loads[x] ?? 0));
     return ids
       .map((m) => {
         const a = s.baseline.loads[m] ?? 0;
         const b = best.loads[m] ?? 0;
-        return `<div class="fr-load"><span>${esc(machineLabel(m))}</span><div class="fr-bars"><i class="was" style="width:${Math.min(100, a)}%"></i><i class="${b > 85 ? "hot" : ""}" style="width:${Math.min(100, b)}%"></i></div><b>${nf(a, 0)} → ${nf(b, 0)} %</b></div>`;
+        const ch = Math.round(a) !== Math.round(b);
+        return `<div class="fr-load${ch ? " changed" : ""}"><span>${esc(machineLabel(m))}</span><div class="fr-bars"><i class="was" style="width:${Math.min(100, a)}%"></i><i class="${b > 85 ? "hot" : ""}" style="width:${Math.min(100, b)}%"></i><em style="left:70%"></em></div><b>${ch ? `${nf(a, 0)} → ${nf(b, 0)} %` : `${nf(b, 0)} %`}</b></div>`;
       })
       .join("");
   };
+  // Comparación vigente → opción: el valor, la diferencia y si mejora (verde) o empeora (rojo).
+  type Kpi = { label: string; a: number; b: number; fmt: (x: number) => string; menos: boolean; pts?: boolean };
+  const delta = (k: Kpi) => {
+    const d = k.b - k.a;
+    if (Math.abs(d) < 1e-9) return `<span class="fr-d same">igual</span>`;
+    const good = k.menos ? d < 0 : d > 0;
+    return `<span class="fr-d ${good ? "good" : "bad"}">${d > 0 ? "▲" : "▼"} ${k.pts ? `${nf(Math.abs(d), 1)} pts` : k.fmt(Math.abs(d))}</span>`;
+  };
+  const kpisOf = (s: FractalStudy, id: string): Kpi[] => {
+    const o = s.options.find((x) => x.id === id)!;
+    const base = studyBase ?? current;
+    const occA = occOf(base, loadIds(base)).occupancy * 100, occB = occOf(o.plan, loadIds(o.plan)).occupancy * 100;
+    return [
+      { label: "A tiempo", a: s.baseline.kpis.on_time_pct, b: o.kpis.on_time_pct, fmt: (x) => `${nf(x, 1)} %`, menos: false, pts: true },
+      { label: "Pedidos tarde", a: s.baseline.kpis.late_orders, b: o.kpis.late_orders, fmt: (x) => nf(x, 0), menos: true },
+      { label: "Atraso total", a: s.baseline.kpis.tardiness_h, b: o.kpis.tardiness_h, fmt: (x) => `${nf(x, 1)} h`, menos: true },
+      { label: "Cambios de referencia", a: s.baseline.kpis.changeovers, b: o.kpis.changeovers, fmt: (x) => nf(x, 0), menos: true },
+      { label: "Ocupación planta", a: occA, b: occB, fmt: (x) => `${nf(x, 1)} %`, menos: true, pts: true },
+      { label: `Carga máxima`, a: s.baseline.max_load.pct, b: o.max_load.pct, fmt: (x) => `${nf(x, 0)} %`, menos: true, pts: true },
+    ];
+  };
+  const scenarioCard = (key: string, n: number, body: string, button: string, extra = "") =>
+    `<article class="fr-card${study?.scenario === key ? " active" : ""}${extra}"><div class="fr-card-h"><span class="fr-n">${n}</span><span>${SCENARIO_NAMES[key]}</span></div><div class="fr-card-b">${body}</div>${button}</article>`;
+  const best = study ? study.options.find((o) => o.id === study!.best)! : null;
   el.innerHTML = `
-    <p class="dim small fr-intro">Fractal es la optimización multivariable: además de la secuencia, prueba cambiar la planta (prioridades, montar un molde de repuesto del almacén en una inyectora libre del tamaño correcto, mudar el molde de una máquina parada, dedicar un color a cada máquina para purgar menos). Cada combinación la coloca el cosimulador y Fractal recomienda la mejor. Recomienda; el APS decide.</p>
-    <div class="fr-cards">
-      <article class="fr-card"><div class="label">1 · ADELANTAR UN PEDIDO</div><p class="dim small">Un cliente pide su pedido antes. ¿Cómo mover todo para cumplirle sin atrasar a los demás?</p>
+    <div class="fr-head"><div><h2 class="fr-title">◆ Fractal · escenarios</h2><p class="fr-intro">Prueba cambios en la secuencia y en la planta (prioridades, moldes de repuesto, mudar moldes, un color por máquina), el cosimulador coloca cada combinación y Fractal recomienda la mejor. <b>Fractal recomienda; la persona decide.</b></p></div></div>
+    <div class="fr-cards${study ? " compact" : ""}">
+      ${scenarioCard("adelantar", 1, `<p class="fr-desc">Un cliente pide su pedido antes. ¿Cómo cumplirle sin atrasar a los demás?</p>
         <label>Pedido <select id="fr-order">${movable.map((o) => `<option value="${esc(o.id)}">${esc(o.id)} · ${esc(o.product_name)} · ${nf(o.quantity)} · entrega ${day(o.due)}</option>`).join("")}</select></label>
-        <label>Nueva entrega <select id="fr-due">${dayOptions(plus, 1, model.windowDays, 2)}</select></label>
-        <button id="fr-run-adelantar" class="primary"${movable.length && !studying ? "" : " disabled"}>◆ ESTUDIAR</button></article>
-      <article class="fr-card"><div class="label">2 · BALANCEAR LA OCUPACIÓN</div><p class="dim small">Repartir la carga de la próxima semana sin sobrecargas ni cuellos de botella (objetivo 70 % por etapa).</p>
-        <button id="fr-run-balancear" class="primary"${studying ? " disabled" : ""}>◆ ESTUDIAR</button></article>
-      <article class="fr-card${ev ? " alarm" : ""}"><div class="label">3 · FALLA EN CURSO</div>${
-        ev
-          ? `<p class="small"><b class="bad">⚠ ${esc(machineLabel(ev.equipment))}</b> fuera de servicio desde ${when(ev.start)} · ${esc(ev.reason)} · reparación estimada ${when(ev.est_end)}.</p><p class="dim small">¿Esperar la reparación o desviar su trabajo a otra máquina del mismo tamaño?</p>`
-          : `<p class="dim small">No hay máquinas fuera de servicio. Detén una en el <a href="/emulador.html" target="_blank" rel="noopener">emulador</a> y vuelve aquí.</p>`
-      }
-        <button id="fr-run-falla" class="primary"${ev && !studying ? "" : " disabled"}>◆ ESTUDIAR</button></article>
-      <article class="fr-card"><div class="label">4 · ÓRDENES FIJADAS A MANO</div>${
-        pinned.length
-          ? `<p class="small">🔒 <b>${pinned.map(esc).join(", ")}</b> ${pinned.length === 1 ? "está fijada" : "están fijadas"} donde ${pinned.length === 1 ? "está" : "están"}.</p><p class="dim small">Fractal organiza el resto de la producción sin moverlas${pinned.length === 1 ? "" : "s"} y prueba si un molde de repuesto ayuda.</p>`
-          : `<p class="dim small">Bloquea a mano órdenes en el Gantt con el candado 🔓 (o arrástralas a su día). Fractal organiza el resto sin moverlas.</p>`
-      }
-        <button id="fr-run-fijadas" class="primary"${pinned.length && !studying ? "" : " disabled"}>◆ ESTUDIAR</button></article>
-      <article class="fr-card"><div class="label">5 · MENOS CAMBIOS DE REFERENCIA</div><p class="dim small">Cada cambio cuesta montaje de molde y purgas de resina y color (tiempos del catálogo). La vigente tiene ${nf(current.kpis.changeovers)} cambios y ${nf(current.kpis.changeover_h ?? 0, 1)} h de cambio. ¿Cómo hacer menos sin atrasar pedidos?</p>
-        <button id="fr-run-cambios" class="primary"${studying ? " disabled" : ""}>◆ ESTUDIAR</button></article>
+        <label>Nueva entrega <select id="fr-due">${dayOptions(plus, 1, model.windowDays, 2)}</select></label>`,
+        `<button id="fr-run-adelantar" class="primary"${movable.length && !studying ? "" : " disabled"}>◆ ESTUDIAR</button>`)}
+      ${scenarioCard("balancear", 2, `<p class="fr-desc">Repartir la carga de la semana sin cuellos de botella (objetivo 70 % por etapa).</p>`,
+        `<button id="fr-run-balancear" class="primary"${studying ? " disabled" : ""}>◆ ESTUDIAR</button>`)}
+      ${scenarioCard("falla", 3, ev
+          ? `<p class="fr-desc"><b class="bad">⚠ ${esc(machineLabel(ev.equipment))}</b> fuera de servicio desde ${when(ev.start)} · ${esc(ev.reason)} · reparación estimada ${when(ev.est_end)}. ¿Esperar o desviar su trabajo?</p>`
+          : `<p class="fr-desc">No hay máquinas fuera de servicio. Detén una en el <a href="/emulador.html" target="_blank" rel="noopener">emulador</a> y vuelve aquí.</p>`,
+        `<button id="fr-run-falla" class="primary"${ev && !studying ? "" : " disabled"}>◆ ESTUDIAR</button>`, ev ? " alarm" : "")}
+      ${scenarioCard("fijadas", 4, pinned.length
+          ? `<p class="fr-desc">🔒 <b>${pinned.map(esc).join(", ")}</b> ${pinned.length === 1 ? "está fijada" : "están fijadas"}. Fractal organiza el resto sin mover${pinned.length === 1 ? "la" : "las"}.</p>`
+          : `<p class="fr-desc">Bloquea órdenes en el Gantt con el candado 🔓 (o arrástralas a su día). Fractal organiza el resto.</p>`,
+        `<button id="fr-run-fijadas" class="primary"${pinned.length && !studying ? "" : " disabled"}>◆ ESTUDIAR</button>`)}
+      ${scenarioCard("cambios", 5, `<p class="fr-desc">La vigente tiene <b>${nf(current.kpis.changeovers)} cambios</b> y <b>${nf(current.kpis.changeover_h ?? 0, 1)} h</b> de montaje y purga. ¿Cómo hacer menos sin atrasar pedidos?</p>`,
+        `<button id="fr-run-cambios" class="primary"${studying ? " disabled" : ""}>◆ ESTUDIAR</button>`)}
     </div>
     ${studying ? `<p class="fr-status"><span class="spin">◌</span> ${esc(studying)}</p>` : ""}
     ${studyError ? `<p class="fr-status bad">${esc(studyError)}</p>` : ""}
     ${
-      study
+      study && best
         ? `<section class="fr-result">
-        <div class="label">ESTUDIO ${esc(study.study_id)} · ${SCENARIO_NAMES[study.scenario]} · ${study.options.length} combinaciones en ${nf(study.seconds, 1)} s</div>
+        <div class="fr-result-h"><span class="fr-tag">ESTUDIO ${esc(study.study_id)} · ${SCENARIO_NAMES[study.scenario]}</span><span class="fr-tag dim">${study.options.length} combinaciones en ${nf(study.seconds, 1)} s</span></div>
         <p class="fr-q">${esc(study.question)}</p>
-        <p class="fr-rec">◆ ${esc(study.recommendation)}</p>
+        <div class="fr-reco">
+          <div class="fr-reco-t"><div class="fr-k">RECOMENDACIÓN · OPCIÓN ${esc(best.id.split("-").at(-1)!)}</div><p class="fr-rec">${esc(best.label)}</p><p class="fr-why">${esc(study.recommendation.replace(/^Recomendación:\s*/i, ""))}</p>
+            <button id="fr-adopt" class="primary">✓ ADOPTAR LA RECOMENDACIÓN</button><p class="fr-note">Pasa a ser la programación vigente; los cambios de moldes y fechas quedan en la planta y el gemelo los muestra.</p></div>
+          <div class="fr-kpis">${kpisOf(study, best.id)
+            .map((k) => `<div class="fr-kpi"><div class="fr-k">${esc(k.label)}</div><div class="fr-v"><s>${k.fmt(k.a)}</s><span>→</span><b>${k.fmt(k.b)}</b></div>${delta(k)}</div>`)
+            .join("")}</div>
+        </div>
+        <div class="fr-k fr-sub">TODAS LAS OPCIONES · cualquiera se puede ver en el Gantt o adoptar</div>
         <div class="aps-table-wrap"><table class="route-table aps-table fr-table">
-          <thead><tr><th>Opción</th><th>Qué cambia</th><th class="num">A tiempo</th><th class="num">Tarde</th><th class="num">Atraso</th><th class="num">Cambios de referencia</th><th class="num">Montaje de moldes</th><th class="num">Ocupación planta</th><th>Carga máxima</th><th class="num">Puntaje</th><th></th></tr></thead>
+          <thead><tr><th>Opción</th><th>Qué cambia</th><th class="num">A tiempo</th><th class="num">Tarde</th><th class="num">Atraso</th><th class="num">Cambios</th><th class="num">Montaje de moldes</th><th class="num">Ocupación planta</th><th>Carga máxima</th><th class="num">Puntaje</th><th></th></tr></thead>
           <tbody>
             <tr class="past"><td>${studyBase && studyBase !== current ? "ACTUAL" : "VIGENTE"}</td><td>${esc(SOURCE_NAMES[(studyBase ?? current).source])} ${esc(study.baseline.plan_id)}</td><td class="num">${nf(study.baseline.kpis.on_time_pct, 1)} %</td><td class="num">${study.baseline.kpis.late_orders}</td><td class="num">${nf(study.baseline.kpis.tardiness_h, 1)} h</td><td class="num">${study.baseline.kpis.changeovers} · ${nf(study.baseline.kpis.changeover_h ?? 0, 1)} h</td><td class="num">—</td><td class="num">${pctTxt(occOf(studyBase ?? current, loadIds(studyBase ?? current)).occupancy)}</td><td>${esc(machineLabel(study.baseline.max_load.equipment))} ${nf(study.baseline.max_load.pct, 0)} %</td><td></td><td></td></tr>
             ${study.options
-              .map(
-                (o) => `<tr class="${o.id === study!.best ? "best" : ""}"><td><b>${esc(o.id.split("-").at(-1)!)}</b>${o.id === study!.best ? ' <span class="chip done">MEJOR</span>' : ""}</td><td>${esc(o.label)}<br/><small class="dim">${o.levers.map((l) => esc(l.text)).join(" · ")}</small></td>
-                <td class="num">${nf(o.kpis.on_time_pct, 1)} %</td><td class="num">${o.kpis.late_orders}</td><td class="num">${nf(o.kpis.tardiness_h, 1)} h</td><td class="num">${o.kpis.changeovers} · ${nf(o.kpis.changeover_h ?? 0, 1)} h</td><td class="num">${o.mold_change_h ? `${nf(o.mold_change_h, 1)} h` : "—"}</td><td class="num">${pctTxt(occOf(o.plan, loadIds(o.plan)).occupancy)}</td><td>${esc(machineLabel(o.max_load.equipment))} ${nf(o.max_load.pct, 0)} %</td><td class="num">${nf(o.score, 1)}</td>
-                <td class="fr-btns"><button class="fr-see" data-id="${esc(o.id)}">VER EN GANTT</button><button class="fr-see fr-pick" data-id="${esc(o.id)}">ADOPTAR</button></td></tr>`,
-              )
+              .map((o) => {
+                const ks = kpisOf(study!, o.id);
+                const cell = (k: Kpi, txt: string) => `<td class="num">${txt}<br/>${delta(k)}</td>`;
+                return `<tr class="${o.id === study!.best ? "best" : ""}"><td><b class="fr-opt">${esc(o.id.split("-").at(-1)!)}</b>${o.id === study!.best ? ' <span class="chip done">MEJOR</span>' : ""}</td><td><b>${esc(o.label)}</b><br/><small>${o.levers.map((l) => esc(l.text)).join(" · ")}</small></td>
+                ${cell(ks[0], `${nf(o.kpis.on_time_pct, 1)} %`)}${cell(ks[1], String(o.kpis.late_orders))}${cell(ks[2], `${nf(o.kpis.tardiness_h, 1)} h`)}${cell(ks[3], `${o.kpis.changeovers} · ${nf(o.kpis.changeover_h ?? 0, 1)} h`)}<td class="num">${o.mold_change_h ? `${nf(o.mold_change_h, 1)} h` : "—"}</td>${cell(ks[4], pctTxt(occOf(o.plan, loadIds(o.plan)).occupancy))}<td>${esc(machineLabel(o.max_load.equipment))} ${nf(o.max_load.pct, 0)} %<br/>${delta(ks[5])}</td><td class="num">${nf(o.score, 1)}</td>
+                <td class="fr-btns"><button class="fr-see" data-id="${esc(o.id)}">VER EN GANTT</button><button class="fr-see fr-pick" data-id="${esc(o.id)}">ADOPTAR</button></td></tr>`;
+              })
               .join("")}
           </tbody></table></div>
-        <div class="fr-foot"><div><div class="label">OCUPACIÓN POR MÁQUINA · VIGENTE → MEJOR OPCIÓN · próximos 7 días</div><div class="fr-loads">${loadsRow(study)}</div></div>
-        <div class="fr-actions"><button id="fr-adopt" class="primary">✓ ADOPTAR LA RECOMENDACIÓN</button><p class="dim small">Pasa a ser la programación vigente; los cambios de moldes y de fechas quedan en la planta y el gemelo los muestra.</p></div></div>
+        <div class="fr-k fr-sub">OCUPACIÓN POR MÁQUINA · próximos 7 días · <span class="fr-leg was">vigente</span> <span class="fr-leg now">opción ${esc(best.id.split("-").at(-1)!)}</span></div>
+        <div class="fr-loads">${loadsRow(study)}</div>
       </section>`
         : ""
     }`;
