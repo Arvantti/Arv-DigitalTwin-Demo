@@ -3,7 +3,7 @@
  * a lo largo de X (rama A automática al frente, +Z; rama B manual atrás, −Z), cada una con válvula de corte de
  * compuerta con volante, PRV de cuerpo de globo con bonete de diafragma y otra válvula de corte, y otra te las une
  * hacia la salida en +X. La PRV automática lleva un actuador de consigna y un tablero con pantalla (presión del
- * punto crítico) y baliza; la manual, el piloto de resorte con su tubería de control. Manómetros a la entrada, a la
+ * apertura fija AUTO y lectura hidráulica) y baliza; la manual, el piloto de resorte con su tubería de control. Manómetros a la entrada, a la
  * salida y aguas abajo de cada PRV; soportes al piso. Proporciones de catálogo para 4": separación de ramas ≈ 7
  * diámetros, eje del tubo a 0,55 m del piso.
  */
@@ -129,6 +129,7 @@ function prvBody(r: number, color: string): { object: THREE.Group; topY: number;
 export default function build(params: Params): EquipmentModel {
   const dn = num(params, "diameter_in", 4);
   const setpoint = num(params, "critical_setpoint_mca", 20);
+  const autoOpeningPct = num(params, "auto_opening_pct", 38);
   const manualSetting = num(params, "manual_setting_mca", 26.66);
   const inletMca = num(params, "bench_inlet_mca", 79);
 
@@ -249,7 +250,7 @@ export default function build(params: Params): EquipmentModel {
   const light = P.stackLight(0.22);
   light.object.position.set(panelX + 0.15, panelH, panelZ);
   root.add(light.object);
-  const plate = P.nameplate(["ESTACIÓN REGULADORA", `${dn}" · PUNTO CRÍTICO ${setpoint} MCA`], 0.42, 0.1);
+  const plate = P.nameplate(["ESTACIÓN REGULADORA", `${dn}" · REF. CRÍTICA ${setpoint} MCA`], 0.42, 0.1);
   plate.position.set(panelX, panelH * 0.86, panelZ + 0.126);
   root.add(plate);
   root.add(P.pipe([v3(panelX + 0.2, panelH * 0.3, panelZ - 0.1), v3(xPrv + r * 2.4, panelH * 0.3, panelZ - 0.1), v3(xPrv + r * 2.4, axisY + r * 2.0, dz + r * 2.2)], 0.008, M.rubber()));
@@ -285,7 +286,9 @@ export default function build(params: Params): EquipmentModel {
         w.wheel.position.y = r * 3.4 + open * r * 0.8;
         w.stem.position.y = r * 2.7 + open * r * 0.8;
       }
-      const lift = clamp(ch(frame, tag === "a" ? "flow_a_norm" : "flow_b_norm") * 1.5, 0, 1);
+      const lift = tag === "a"
+        ? clamp((ch(frame, "auto_opening_pct") - 20) / 80, 0, 1)
+        : clamp(ch(frame, "flow_b_norm") * 1.5, 0, 1);
       indicators[tag].position.y = r * 2.75 + lift * r * 0.25 - r * 0.1;
       branchGauges[tag].set(open > 0.02 ? ch(frame, "outlet_pressure_mca") / lowScale : 0);
     }
@@ -295,15 +298,16 @@ export default function build(params: Params): EquipmentModel {
     const crit = ch(frame, "critical_pressure_mca");
     const sp = ch(frame, "auto_setpoint_mca");
     const auto = ch(frame, "valve_a_open") >= ch(frame, "valve_b_open");
-    const key = `${frame.state}|${crit.toFixed(1)}|${sp.toFixed(1)}|${auto}`;
+    const opening = ch(frame, "auto_opening_pct");
+    const key = `${frame.state}|${crit.toFixed(1)}|${sp.toFixed(1)}|${opening.toFixed(0)}|${auto}`;
     if (key !== lastKey) {
       lastKey = key;
       hmi.draw(
         frame.label ?? "ESTACIÓN",
         [
           ["Pto. crítico", `${crit.toFixed(1)} mca`],
-          ["Consigna", `${setpoint.toFixed(1)} mca`],
-          ["Salida PRV A", `${sp.toFixed(1)} mca`],
+          ["Apertura AUTO", `${opening.toFixed(0)} %`],
+          ["Salida calculada", `${sp.toFixed(1)} mca`],
           ["Rama", auto ? "A automática" : "B manual"],
         ],
         frame.state.toUpperCase(),
@@ -312,7 +316,7 @@ export default function build(params: Params): EquipmentModel {
     }
   }
   update({
-    channels: { valve_a_open: 1, valve_b_open: 0, flow_a_norm: 0.22, flow_b_norm: 0, inlet_pressure_mca: inletMca, outlet_pressure_mca: manualSetting, critical_pressure_mca: setpoint, auto_setpoint_mca: manualSetting, stack_light: 1 },
+    channels: { valve_a_open: 1, valve_b_open: 0, flow_a_norm: 0.22, flow_b_norm: 0, inlet_pressure_mca: inletMca, outlet_pressure_mca: manualSetting, critical_pressure_mca: setpoint, auto_setpoint_mca: manualSetting, auto_opening_pct: autoOpeningPct, stack_light: 1 },
     state: "running",
   });
 

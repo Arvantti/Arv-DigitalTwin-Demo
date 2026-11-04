@@ -26,6 +26,7 @@ Protocolo del WebSocket de planta
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import json
 import math
 import os
@@ -518,6 +519,82 @@ def get_session_historian(plant_id: str, session_id: str) -> dict[str, Any]:
     if session_manager.get(plant_id, session_id) is None:
         raise HTTPException(404, "sesión desconocida")
     return {"session_id": session_id, **historian.read(session_id)}
+
+
+def _profile_fingerprint(profile: dict[str, Any]) -> str:
+    canonical = json.dumps(profile, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False)
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
+@app.post("/api/plants/{plant_id}/sessions/{session_id}/comparisons/{comparison_id}/runs", status_code=201)
+def publish_model_run(
+    plant_id: str,
+    session_id: str,
+    comparison_id: str,
+    request: Request,
+    payload: Annotated[dict[str, Any], Body()],
+) -> dict[str, Any]:
+    """Guarda una trayectoria calculada aparte de la historia/tag operativos del emulador."""
+    if session_manager.get(plant_id, session_id) is None:
+        raise HTTPException(404, "sesión desconocida")
+    if not comparison_id or "/" in comparison_id or ".." in comparison_id:
+        raise HTTPException(422, "comparison_id inválido")
+    source, run_id, profile_id, profile_hash, model_id, frames = (
+        payload.get("source"), payload.get("run_id"), payload.get("profile_id"),
+        payload.get("profile_hash"), payload.get("model_id"), payload.get("frames"),
+    )
+    if source not in {"cosimulation", "optimization"}:
+        raise HTTPException(422, "source debe ser cosimulation u optimization")
+    if not all(isinstance(value, str) and value for value in (run_id, profile_id, profile_hash, model_id)):
+        raise HTTPException(422, "run_id, profile_id, profile_hash y model_id son obligatorios")
+    profile = ProfileStore(plant_id, request.headers.get("x-twin-demo-id")).get(profile_id)
+    if profile is None or _profile_fingerprint(profile) != profile_hash:
+        raise HTTPException(409, "el resultado no corresponde a la versión guardada del perfil")
+    if payload.get("applied_to_plc") is not False:
+        raise HTTPException(422, "los resultados calculados deben declarar applied_to_plc=false")
+    if not isinstance(frames, list) or not frames:
+        raise HTTPException(422, "frames debe ser una lista no vacía")
+    previous = -1.0
+    for index, frame in enumerate(frames):
+        if not isinstance(frame, dict):
+            raise HTTPException(422, f"frames[{index}] debe ser un objeto")
+        at, context, state = frame.get("simulation_time_s"), frame.get("temporal_context"), frame.get("state")
+        if isinstance(at, bool) or not isinstance(at, (int, float)) or at < 0 or at <= previous:
+            raise HTTPException(422, "frames debe tener tiempos crecientes y sin duplicados")
+        if context not in {"history", "present", "forecast"} or not isinstance(state, dict):
+            raise HTTPException(422, f"frames[{index}] debe incluir temporal_context y state")
+        previous = float(at)
+    stored = {
+        **payload,
+        "run_id": run_id,
+        "source": source,
+        "profile_id": profile_id,
+        "profile_hash": profile_hash,
+        "model_id": model_id,
+        "frames": frames,
+    }
+    try:
+        return historian.store_model_run(session_id, comparison_id, stored)
+    except ValueError as exc:
+        raise HTTPException(409, str(exc)) from exc
+
+
+@app.get("/api/plants/{plant_id}/sessions/{session_id}/comparisons")
+def list_model_comparisons(plant_id: str, session_id: str) -> list[dict[str, Any]]:
+    if session_manager.get(plant_id, session_id) is None:
+        raise HTTPException(404, "sesión desconocida")
+    return historian.list_model_comparisons(session_id)
+
+
+@app.get("/api/plants/{plant_id}/sessions/{session_id}/comparisons/{comparison_id}/triads")
+def get_comparison_triads(plant_id: str, session_id: str, comparison_id: str) -> dict[str, Any]:
+    if session_manager.get(plant_id, session_id) is None:
+        raise HTTPException(404, "sesión desconocida")
+    comparisons = {item["comparison_id"]: item for item in historian.list_model_comparisons(session_id)}
+    comparison = comparisons.get(comparison_id)
+    if comparison is None:
+        raise HTTPException(404, "comparación desconocida")
+    return {**comparison, "triads": historian.comparison_triads(session_id, comparison_id)}
 
 
 @app.get("/api/plants/{plant_id}/sessions/{session_id}/historian/frame")

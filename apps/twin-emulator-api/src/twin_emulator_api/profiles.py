@@ -117,6 +117,8 @@ def normalize_profile(payload: Mapping[str, Any]) -> dict[str, Any]:
                 checked["control_mode"] = mode
             if "auto_outlet_mca" in prs:
                 checked["auto_outlet_mca"] = _number(prs["auto_outlet_mca"], f"hours.{hour}.prs.auto_outlet_mca", 15, 40)
+            if "auto_opening_pct" in prs:
+                checked["auto_opening_pct"] = _number(prs["auto_opening_pct"], f"hours.{hour}.prs.auto_opening_pct", 20, 100)
             if "inlet_pressure_mca" in prs:
                 checked["inlet_pressure_mca"] = _number(prs["inlet_pressure_mca"], f"hours.{hour}.prs.inlet_pressure_mca", 15, 100)
             if "critical_control_point" in prs:
@@ -183,19 +185,13 @@ def commands_for_hour(
         commands.append({"equipment": "prs-01", "command": "set_critical_setpoint", "args": {"mca": prs["critical_setpoint_mca"]}})
     if "manual_setting_mca" in prs:
         commands.append({"equipment": "prs-01", "command": "set_manual_setting", "args": {"mca": prs["manual_setting_mca"]}})
-    if prs.get("control_mode") == "fixed_outlet":
-        commands.append({
-            "equipment": "prs-01", "command": "set_auto_control",
-            "args": {"mode": "fixed_outlet", "mca": prs["auto_outlet_mca"]},
-        })
-    elif prs.get("control_mode") in {"critical_pressure", "critical_point"}:
-        commands.append({
-            "equipment": "prs-01", "command": "set_auto_control",
-            "args": {
-                "mode": prs["control_mode"],
-                "mca": prs.get("critical_setpoint_mca", prs.get("auto_outlet_mca", 20.94)),
-            },
-        })
+    # El PLC fija la apertura AUTO incluso si está activa la rama manual, para que
+    # quede preparada al volver a AUTO. Los modos/consignas críticos son metadatos
+    # Fractal/alarmas y nunca generan mandos PID al emulador.
+    commands.append({
+        "equipment": "prs-01", "command": "set_auto_opening",
+        "args": {"pct": prs.get("auto_opening_pct", 38.0)},
+    })
     return commands
 
 
@@ -236,10 +232,14 @@ class ProfileStore:
     def _seed_model_profiles(self) -> None:
         """Instala plantillas versionadas; retira las sustituidas sin borrar perfiles del operador."""
         if self.plant_id == "water-network-scale-v1":
-            retired = tuple(f"builtin-{self.plant_id}-{name}" for name in ("pfl-noc-01", "pfl-noc-02", "pfl-res-01"))
+            retired = tuple(f"builtin-{self.plant_id}-{name}" for name in (
+                "pfl-noc-01", "pfl-noc-02", "pfl-res-01",
+                "pdd-prs-fijo-01", "pdd-prs-punto-critico-18-01",
+            ))
             with self._connect() as conn:
+                placeholders = ", ".join("?" for _ in retired)
                 conn.execute(
-                    "DELETE FROM operation_profiles WHERE plant_id = ? AND id IN (?, ?, ?)",
+                    f"DELETE FROM operation_profiles WHERE plant_id = ? AND id IN ({placeholders})",
                     (self.plant_id, *retired),
                 )
         folder = _models_root() / self.plant_id / "operation-profiles"

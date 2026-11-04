@@ -6,7 +6,7 @@ manufacturing: utility
 category: utilities.water.pressure_control
 description: >
   Estación reguladora de presión de una red de agua: la línea de entrada se bifurca en dos ramas con
-  válvulas de corte manuales; la rama A tiene una válvula reductora (PRV) automática cuya consigna de salida puede regularse por PID sobre el punto crítico o fijarse como presión de salida; la rama B
+  válvulas de corte manuales; la rama A tiene una PRV automática que, para el acueducto virtual, recibe apertura fija porcentual desde el PLC y deriva una consigna hidráulica mediante una curva S asumida; la rama B
   tiene una PRV de piloto con salida fija ajustada a mano. Las ramas se unen y siguen hacia la red. El
   cambio de rama abre primero la que entra y después cierra la que sale, para no cortar el suministro.
 aliases: [estación reguladora, PRV, válvula reductora de presión, VRP, estación de control de presión, by-pass de PRV]
@@ -18,7 +18,9 @@ params:
   isolation_kv_m3h:     { type: number, unit: m3/h, min: 1, max: 20000, default: 400, description: Kv de cada válvula de corte abierta, affects: [behavior] }
   outlet_check_kv_m3h:  { type: number, unit: m3/h, min: 0, max: 20000, default: 0, description: "Antirretorno común después de la estación antes del piso 1; 0 = no instalado, Kv positivo = pérdida asumida/medida", affects: [behavior, geometry] }
   branch:               { type: enum, values: [auto, manual], default: auto, description: "Rama en servicio al arrancar (A automática o B manual)", affects: [behavior] }
-  critical_setpoint_mca: { type: number, unit: mca, min: 5, max: 100, default: 20, description: Consigna del lazo de presión AUTO (mínimo global o punto fijo seleccionado), affects: [behavior] }
+  auto_control_mode:    { type: enum, values: [critical_pressure, critical_point, fixed_outlet, fixed_opening], default: critical_pressure, description: "Modo inicial de laboratorio; el modelo conectado del acueducto usa fixed_opening", affects: [behavior] }
+  critical_setpoint_mca: { type: number, unit: mca, min: 5, max: 100, default: 20, description: Consigna heredada del lazo PID de presión (no usada por el mando fijo de apertura del acueducto), affects: [behavior] }
+  auto_opening_pct: { type: number, unit: "%", min: 20, max: 100, default: 38, description: Apertura inicial assumed de la PRV AUTO; el PLC puede cambiarla durante la marcha, affects: [behavior, geometry] }
   manual_setting_mca:   { type: number, unit: mca, min: 5, max: 150, default: 26.66, description: Salida fija de la PRV de piloto (rama manual), affects: [behavior] }
   auto_min_outlet_mca:  { type: number, unit: mca, min: 0, max: 150, default: 15, description: Límite inferior de la consigna de salida de la PRV automática, affects: [behavior] }
   auto_max_outlet_mca:  { type: number, unit: mca, min: 0, max: 200, default: 40, description: Límite superior de la consigna de salida de la PRV automática, affects: [behavior] }
@@ -44,13 +46,14 @@ states:
 variables:
   - { id: inlet_pressure_mca, unit: mca, kind: measured, range: [0, 300], noise_sd: 0.05, resolution: 0.01, description: Presión de llegada }
   - { id: outlet_pressure_mca, unit: mca, kind: measured, range: [0, 300], noise_sd: 0.03, resolution: 0.01, description: Presión de salida (después de la unión) }
-  - { id: critical_pressure_mca, unit: mca, kind: measured, range: [0, 300], noise_sd: 0.03, resolution: 0.01, description: Presión mínima global de las viviendas (telemetría) }
+  - { id: critical_pressure_mca, unit: mca, kind: measured, range: [0, 300], noise_sd: 0.03, resolution: 0.01, description: Presión mínima global de las viviendas (medición y alarmas; no regula la apertura PLC) }
   - { id: control_point_pressure_mca, unit: mca, kind: measured, range: [0, 300], noise_sd: 0.03, resolution: 0.01, description: Presión medida en el punto fijo de control del escenario }
   - { id: flow_m3h, unit: m3/h, kind: measured, range: [0, 5000], noise_sd: 0.02, resolution: 0.01, description: Caudal total }
   - { id: flow_auto_m3h, unit: m3/h, kind: measured, range: [0, 5000], noise_sd: 0.02, resolution: 0.01, description: Caudal por la rama A (automática) }
   - { id: flow_manual_m3h, unit: m3/h, kind: measured, range: [0, 5000], noise_sd: 0.02, resolution: 0.01, description: Caudal por la rama B (manual) }
   - { id: auto_outlet_setpoint_mca, unit: mca, kind: setpoint, description: Consigna actual de salida de la PRV automática }
   - { id: auto_fixed_outlet_mca, unit: mca, kind: setpoint, description: Consigna de salida fija seleccionada para la rama automática }
+  - { id: auto_opening_pct, unit: "%", kind: setpoint, range: [20, 100], description: Apertura fija de la PRV automática mandada por el PLC }
   - { id: auto_fixed_mode, unit: "", kind: status, description: "1 si la rama automática mantiene salida fija; 0 si usa un lazo de presión" }
   - { id: auto_control_mode, unit: "", kind: status, description: "Modo AUTO: presión crítica global, punto fijo o salida fija" }
   - { id: critical_setpoint_mca, unit: mca, kind: setpoint, description: Consigna en el punto crítico }
@@ -68,7 +71,7 @@ events:
   - { id: telemetry_lost, description: Se perdió la señal del punto crítico; la PRV automática queda en su última consigna }
 
 faults:
-  - { id: telemetry_loss, description: Se pierde la telemetría del punto crítico, mtbf_h: 3000, mttr_min: 45, severity: medium, stops_equipment: false, effect: "El PID se congela y la PRV automática se queda con su última consigna de salida" }
+  - { id: telemetry_loss, description: Se pierde la telemetría del punto crítico, mtbf_h: 3000, mttr_min: 45, severity: medium, stops_equipment: false, effect: "El modo PID se congela con su última consigna; la apertura fija AUTO no depende de esta telemetría" }
   - { id: pilot_drift, description: Resorte del piloto de la PRV manual desajustado, mtbf_h: 6000, mttr_min: 60, severity: low, stops_equipment: false, effect: "La salida de la PRV manual sube 15 %" }
   - { id: diaphragm_failure, description: Diafragma roto en la PRV automática, mtbf_h: 15000, mttr_min: 180, severity: high, stops_equipment: false, effect: "La PRV automática queda abierta del todo y deja pasar la presión de llegada" }
 
@@ -76,6 +79,7 @@ commands:
   - { id: select_branch, description: "Cambia la rama en servicio (abre la que entra y luego cierra la que sale)", args: { branch: string } }
   - { id: set_critical_setpoint, description: Cambia la consigna del punto crítico, args: { mca: number } }
   - { id: set_manual_setting, description: Ajusta la salida fija de la PRV manual, args: { mca: number } }
+  - { id: set_auto_opening, description: "Fija la apertura de la PRV automática (curva S asumida de apertura a consigna de salida)", args: { pct: number } }
   - { id: set_auto_control, description: "Selecciona regulación automática por presión mínima global, punto fijo o salida fija", args: { mode: string, mca: number } }
   - { id: inject_fault, description: Inyecta una falla declarada, args: { fault: string, duration_s: number } }
   - { id: clear_fault, description: Repara una falla activa, args: { fault: string } }
@@ -94,7 +98,8 @@ animation_channels:
   - { id: inlet_pressure_mca, unit: mca, range: [0, 300], description: Manómetro de entrada }
   - { id: outlet_pressure_mca, unit: mca, range: [0, 300], description: Manómetro de salida }
   - { id: critical_pressure_mca, unit: mca, range: [0, 300], description: Presión que usa el lazo de la pantalla (mínimo global o punto fijo seleccionado) }
-  - { id: auto_setpoint_mca, unit: mca, range: [0, 300], description: Consigna de salida de la PRV automática }
+  - { id: auto_setpoint_mca, unit: mca, range: [0, 300], description: Consigna hidráulica calculada a partir de la apertura fija AUTO }
+  - { id: auto_opening_pct, unit: "%", range: [20, 100], description: Apertura fija mandada a la PRV automática }
   - { id: stack_light, range: [0, 3], description: "Baliza: 0 apagada, 1 verde, 2 ámbar (alarma de presión crítica), 3 roja (falla)" }
 
 geometry:
@@ -102,6 +107,7 @@ geometry:
 
 assumptions:
   - "Cada PRV sigue los estados de EPANET: activa (fija su salida), abierta (no le alcanza la entrada) o cerrada (aguas abajo hay más que su consigna)."
-  - "Por defecto, PID de la rama automática sobre la presión mínima global del paso anterior, con salida limitada a [auto_min_outlet_mca, auto_max_outlet_mca]; un escenario también puede seleccionar un punto de control fijo con su señal explícita o sustituir el PID por una salida fija."
+  - "La apertura fija AUTO se convierte a consigna hidráulica con una curva S asumida: 20 %→15 mca y 100 %→presión de entrada; el solver calcula las presiones y caudales de la red desde esa consigna. No es todavía una característica física Kv-apertura validada."
+  - "Los comandos legacy de PID por presión mínima, punto fijo y salida fija se conservan para escenarios aislados; el perfil PLC del acueducto manda la apertura fija y no regula sobre presión crítica."
   - "Fuera de una planta, la red aguas abajo es un Kv equivalente hasta el punto crítico (bench_network_kv_m3h) y un consumo como descarga a la atmósfera (bench_load_kv_m3h); la entrada load_factor escala ese consumo."
   - "La presión mínima global la mide la propia red del banco; en planta llega por critical_pressure_mca. El modo critical_point usa además la señal separada control_point_pressure_mca; alarmas y variable global conservan su referencia."

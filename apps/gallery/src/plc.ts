@@ -1,5 +1,4 @@
 import "./plc.css";
-import { mountComparisons } from "./plc-comparisons";
 import { demoFetch, demoWebSocket } from "./demo-client";
 
 type Value = number | string | null;
@@ -9,13 +8,16 @@ type Asset = { id: string; name: string; group: string; level?: number };
 type Schema = { name: string; assets: Asset[]; service_constraint: { critical_pressure_min_mca: number; automatic_target_mca: number } };
 type Sample = { t: number; main: number; recirculation: number; consumption: number; leakage: number; critical: number; supplyLevel: number; pumpDischarge: number; stationIn: number; stationOut: number; grid1In: number; grid1Out: number; grid2Out: number; grid3Out: number; criticalFlow: number };
 type SavedRun = { id: string; startedAt: string; durationS: number; samples: Sample[] };
+type TrajectoryPoint = { t: number; flow: number; pressure: number };
+type Comparison = { comparison_id: string; profile_id: string; profile_hash: string; runs: Record<string, { run_id: string; model_id: string } | undefined> };
+type TriadFrame = { simulation_time_s: number; profile_id: string; profile_hash: string; aligned: boolean; sources: Record<string, { simulation_time_s: number; temporal_context?: string; state: Record<string, unknown> } | null> };
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 const query = new URLSearchParams(location.search);
 const plantId = query.get("plant") ?? "water-network-scale-v1";
 const embedded = query.get("embedded") === "1";
 if (embedded) document.body.classList.add("embedded-plc");
-function notify3d(type: "plc-session-created" | "plc-show-3d", data: { sessionId?: string; studyId?: string } = {}): void {
+function notify3d(type: "plc-session-created" | "plc-show-3d", data: { sessionId?: string; studyId?: string; comparisonId?: string; triadFrame?: { simulation_time_s: number; source: string; snapshot: Record<string, unknown> } } = {}): void {
   if (embedded && window.parent !== window) window.parent.postMessage({ type, plantId, ...data }, location.origin);
 }
 // En desarrollo usa el proxy local. Una HMI publicada puede apuntar a un host FastAPI explícito:
@@ -47,6 +49,11 @@ const DAY_SECONDS = 24 * 3600;
 const SAMPLE_INTERVAL_S = 60;
 const RUNS_KEY = "arvantti.water-plc.runs.v1";
 let history: Sample[] = [];
+let optimizedTrajectory: TrajectoryPoint[] = [];
+let cosimulationTrajectory: TrajectoryPoint[] = [];
+let comparisons: Comparison[] = [];
+let triadFrames: TriadFrame[] = [];
+let triadPlaybackTimer: number | null = null;
 let runStartedAt = "";
 let runSaved = false;
 
@@ -56,23 +63,21 @@ type ProfileHour = {
   dwellings?: Record<string, Record<string, number>>;
   leaks?: Record<string, Record<string, number>>;
   between_levels?: Record<string, number>;
-  prs?: { branch?: "auto" | "manual"; control_mode?: "critical_pressure" | "critical_point" | "fixed_outlet"; critical_control_point?: "L4.C44"; inlet_pressure_mca?: number; auto_outlet_mca?: number; critical_setpoint_mca?: number; manual_setting_mca?: number };
+  prs?: { branch?: "auto" | "manual"; control_mode?: "critical_pressure" | "critical_point" | "fixed_outlet"; critical_control_point?: "L4.C44"; inlet_pressure_mca?: number; auto_outlet_mca?: number; auto_opening_pct?: number; critical_setpoint_mca?: number; manual_setting_mca?: number };
 };
 type OperationProfile = { id?: string; name: string; description: string; hours: Record<string, ProfileHour> };
 let profiles: OperationProfile[] = [];
-let activeProfile: OperationProfile = { name: "", description: "", hours: {} };
+let activeProfile: OperationProfile = { name: "Nuevo escenario", description: "", hours: {} };
 let activeProfileId: string | null = null;
 let profileHour = 0;
+type ProfileParameter = "global" | `level-${number}` | `between-${string}` | "prs";
+let profileParameter: ProfileParameter = "global";
 let sessionId = query.get("session");
 let activeSessionProfileId: string | null = null;
 let pendingSessionProfileId: string | null = null;
 let selectedStudyContext: { studyId: string; studyType?: string; profileName?: string } | null = query.get("study") ? { studyId: query.get("study")! } : null;
 let stopRequested = false;
 let plcRunning = false;
-let profilePressure: (number | null)[] = [];
-let profilePressureMessage = "La presión requiere un estado hidráulico de una sesión en play; no se inventa desde la consigna crítica.";
-let pressureRequest = 0;
-let nextPressureAttempt = 0;
 
 const n = (value: Value | undefined): number | null => typeof value === "number" && Number.isFinite(value) ? value : null;
 const fmt = (value: Value | undefined, digits = 1) => {
@@ -97,23 +102,96 @@ function renderWorkspaceContext(): void {
   $("workspace-context").hidden = !profileNode.textContent && studyNode.hidden;
 }
 
-function renderProfileActions(): void {
-  const stop = $<HTMLButtonElement>("profile-stop");
-  stop.disabled = !sessionId || (!plcRunning && socket?.readyState !== WebSocket.OPEN && socket?.readyState !== WebSocket.CONNECTING);
+function renderSessionControls(): void {
+  const start = $<HTMLButtonElement>("connect");
+  const pause = $<HTMLButtonElement>("pause");
+  const connected = socket?.readyState === WebSocket.OPEN;
+  const active = connected && plcRunning;
+  const connecting = socket?.readyState === WebSocket.CONNECTING || (plcRunning && !connected);
+  const newScenario = Boolean(activeProfileId && activeSessionProfileId && activeProfileId !== activeSessionProfileId);
+  const schedule = $<HTMLButtonElement>("schedule-profile");
+  if (schedule) schedule.hidden = !connected || !activeProfileId || !newScenario || pendingSessionProfileId === activeProfileId;
+  const project = $<HTMLButtonElement>("fractal-horizon");
+  const selectedFractalProfileId = $<HTMLSelectElement>("fractal-profile-select")?.value;
+  const profileMatchesSession = Boolean(selectedFractalProfileId && selectedFractalProfileId === activeSessionProfileId);
+  const canProject = Boolean(active && !paused && sessionId && profileMatchesSession);
+  if (project) project.disabled = !canProject;
+  const fractalNote = $("fractal-source-note");
+  if (fractalNote) fractalNote.textContent = !sessionId
+    ? "Primero inicie la emulación PLC con un escenario guardado."
+    : !profileMatchesSession
+      ? `Para alinear el estudio con el historial, seleccione el perfil activo del PLC (${profiles.find((profile) => profile.id === activeSessionProfileId)?.name ?? "sin perfil"}) o inicie una sesión nueva con el perfil deseado.`
+      : !active
+        ? "La sesión PLC está detenida. Reanúdela para habilitar el cálculo Fractal; una sesión detenida no entrega tags en play."
+        : paused
+          ? "La sesión PLC está en pausa. Reanúdela para calcular el estudio Fractal."
+          : `El estudio usará ${profiles.find((profile) => profile.id === $<HTMLSelectElement>("fractal-profile-select").value)?.name ?? "el perfil horario seleccionado"} para demanda por vivienda y fugas, sin modificar el perfil activo del PLC. El resultado no se aplica.`;
+  const stop = $<HTMLButtonElement>("stop-session");
+  if (stop) stop.disabled = !active || stopRequested;
+  start.disabled = connected || connecting || stopRequested || (!sessionId && !activeProfileId);
+  start.textContent = stopRequested ? "… DETENIENDO EMULACIÓN" : active ? "● EMULACIÓN EN MARCHA" : connecting ? "… INICIANDO EMULACIÓN" : !sessionId && !activeProfileId ? "SELECCIONE ESCENARIO" : sessionId && newScenario ? "▶ NUEVA SESIÓN CON ESTE ESCENARIO" : sessionId ? "▶ REANUDAR EMULACIÓN" : "▶ INICIAR EMULACIÓN";
+  pause.disabled = !active || stopRequested;
+  pause.textContent = paused ? "▶ REANUDAR" : "❚❚ PAUSAR";
+  const guidance = $("session-guidance");
+  if (guidance) guidance.textContent = active ? paused ? "En pausa · sesión abierta · el tiempo hidráulico no avanza." : "En marcha · el PLC actualiza señales y la escena 3D." : stopRequested ? "Deteniendo la sesión…" : sessionId ? "Detenida · la vista 3D conserva el último estado; reanude para continuar." : "Sin sesión · elija un escenario e inicie la emulación.";
+}
+
+function renderFractalProfileSelector(): void {
+  const select = $<HTMLSelectElement>("fractal-profile-select");
+  if (!select) return;
+  select.replaceChildren(new Option("Seleccione un perfil guardado…", ""));
+  for (const [label, items] of [["PLANTILLAS", profiles.filter((profile) => profile.id?.startsWith("builtin-"))], ["ARCHIVO", profiles.filter((profile) => !profile.id?.startsWith("builtin-"))]] as const) {
+    if (!items.length) continue;
+    const group = document.createElement("optgroup"); group.label = label;
+    for (const profile of items) group.append(new Option(profile.name, profile.id ?? ""));
+    select.add(group);
+  }
+  select.value = activeSessionProfileId ?? activeProfileId ?? "";
+  select.disabled = true;
+}
+
+function renderRunProfileSelector(): void {
+  const select = $<HTMLSelectElement>("run-profile-select");
+  if (!select) return;
+  renderFractalProfileSelector();
+  select.replaceChildren(new Option("Seleccione un escenario guardado…", ""));
+  const templates = profiles.filter((profile) => profile.id?.startsWith("builtin-"));
+  const customs = profiles.filter((profile) => !profile.id?.startsWith("builtin-"));
+  for (const [label, items] of [["PLANTILLAS", templates], ["ARCHIVO", customs]] as const) {
+    if (!items.length) continue;
+    const group = document.createElement("optgroup"); group.label = label;
+    for (const profile of items) group.append(new Option(profile.name, profile.id ?? ""));
+    select.add(group);
+  }
+  select.value = activeProfileId ?? "";
+  const runningProfile = profiles.find((profile) => profile.id === activeSessionProfileId)?.name ?? activeSessionProfileId;
+  $("scenario-selection-note").textContent = !activeProfileId
+    ? "Seleccione un escenario guardado. Los borradores sin guardar no se pueden ejecutar."
+    : plcRunning && activeProfileId === activeSessionProfileId
+      ? `En marcha con ${runningProfile}. Para cambiarlo, seleccione otro escenario y prográmelo para la próxima hora.`
+      : plcRunning
+        ? `PLC sigue con ${runningProfile}. El escenario elegido no se aplica hasta programarlo para la próxima hora.`
+        : sessionId && activeProfileId !== activeSessionProfileId
+          ? `La sesión detenida conserva ${runningProfile}. Iniciar creará una nueva sesión con ${activeProfile.name}.`
+          : `Listo para iniciar · ${activeProfile.name}. La selección no modifica ninguna sesión hasta iniciarla.`;
 }
 
 function selectScreen(id: string): void {
-  const primary = id === "fractal" ? "master" : id === "comparisons" ? "history" : id;
+  const primary = id === "fractal" ? "master" : id;
   document.querySelectorAll<HTMLElement>(".screen").forEach((node) => node.classList.toggle("active", node.id === id || node.id === primary));
   document.querySelectorAll<HTMLButtonElement>(".tabs button").forEach((node) => node.classList.toggle("active", node.dataset.screen === primary));
-  document.body.classList.toggle("screen-fractal", id === "fractal");
-  document.body.classList.toggle("screen-comparisons", id === "comparisons");
+  if (primary === "profiles") renderProfileEditor();
+  document.body.classList.toggle("screen-fractal", false);
   document.body.classList.toggle("screen-history", primary === "history");
   document.body.classList.toggle("screen-grid", id === "grid");
   document.body.classList.toggle("screen-day", id === "day");
   document.body.classList.toggle("screen-pumping", id === "pumping");
   if (Object.keys(latest).length) renderVisibleScreen();
-  if (id === "fractal") void renderFractal();
+  else if (primary === "pumping") renderSupplyComparison();
+  if (id === "fractal") {
+    document.getElementById("fractal")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    void renderFractal();
+  }
 }
 
 function buildAssets(): void {
@@ -162,21 +240,53 @@ function renderPumping(): void {
   const prs = eq("prs-01");
   const branch = String(prs?.variables.branch_auto ?? "") === "1" ? "AUTO" : "MANUAL";
   $("branch-state").textContent = `RAMA · ${branch}`;
-  const criticalInput = $<HTMLInputElement>("critical-setpoint");
+  const openingInput = $<HTMLInputElement>("auto-opening");
   const manualInput = $<HTMLInputElement>("manual-setpoint");
-  if (document.activeElement !== criticalInput) criticalInput.value = String(n(value("prs-01", "critical_setpoint_mca")) ?? schema.service_constraint.automatic_target_mca);
+  if (document.activeElement !== openingInput) openingInput.value = String(n(value("prs-01", "auto_opening_pct")) ?? 38);
   if (document.activeElement !== manualInput) manualInput.value = String(n(value("prs-01", "manual_setting_mca")) ?? 20.94);
-  $("critical-output").textContent = `${Number(criticalInput.value).toFixed(2)} mca`;
+  $("auto-opening-output").textContent = `${Number(openingInput.value).toFixed(0)} %`;
   $("manual-output").textContent = `${Number(manualInput.value).toFixed(2)} mca`;
   const autoOpening = 100 * (prs?.animation.valve_a_open ?? 0);
   const manualOpening = 100 * (prs?.animation.valve_b_open ?? 0);
   $("prs-values").innerHTML = [
     ["Presión antes (entrada)", `${fmt(value("prs-01", "inlet_pressure_mca"))} mca`], ["Presión después (salida)", `${fmt(value("prs-01", "outlet_pressure_mca"))} mca`],
     ["Caudal total", `${fmt(value("prs-01", "flow_m3h"))} m³/h`], ["Caudal AUTO", `${fmt(value("prs-01", "flow_auto_m3h"))} m³/h`], ["Caudal MANUAL", `${fmt(value("prs-01", "flow_manual_m3h"))} m³/h`],
-    ["Apertura PRV AUTO", `${fmt(autoOpening)} %`], ["Apertura PRV MANUAL", `${fmt(manualOpening)} %`], ["Casa crítica", `${fmt(value("prs-01", "critical_pressure_mca"))} mca`],
-    ["SP crítica", `${fmt(value("prs-01", "critical_setpoint_mca"))} mca`], ["SP auto", `${fmt(value("prs-01", "auto_outlet_setpoint_mca"))} mca`], ["Ajuste manual", `${fmt(value("prs-01", "manual_setting_mca"))} mca`],
+    ["Apertura de la rama AUTO", `${fmt(autoOpening)} %`], ["Mando de apertura PRV AUTO", `${fmt(value("prs-01", "auto_opening_pct"))} %`], ["Apertura de la rama MANUAL", `${fmt(manualOpening)} %`], ["Casa crítica (medición)", `${fmt(value("prs-01", "critical_pressure_mca"))} mca`],
+    ["Referencia de alarma crítica", `${fmt(value("prs-01", "critical_setpoint_mca"))} mca`], ["Consigna hidráulica AUTO", `${fmt(value("prs-01", "auto_outlet_setpoint_mca"))} mca`], ["Ajuste manual", `${fmt(value("prs-01", "manual_setting_mca"))} mca`],
   ].map(([label, reading]) => `<span>${label} <b>${reading}</b></span>`).join("");
   document.querySelectorAll<HTMLButtonElement>("[data-pump-command]").forEach((button) => button.onclick = () => send(button.dataset.pump!, button.dataset.pumpCommand!));
+  renderSupplyComparison();
+}
+
+function renderSupplyComparison(): void {
+  const real = history.map((sample) => ({ t: sample.t, flow: sample.main, pressure: sample.pumpDischarge }));
+  const series = [
+    { name: "Emulador · Planta Real", color: "#4EA7FF", points: real },
+    { name: "Cosimulador · trayectoria no disponible", color: "#55d58c", points: cosimulationTrajectory },
+    { name: "Optimizador · proyección guardada", color: "#f4b56c", points: optimizedTrajectory },
+  ];
+  const width = 900, height = 250, left = 54, right = 18, top = 20, bottom = 34;
+  const x = (seconds: number) => left + Math.max(0, Math.min(24, seconds / 3600)) * (width - left - right) / 24;
+  const makeChart = (metric: "pressure" | "flow", title: string, unit: string) => {
+    const readings = series.flatMap((item) => item.points.map((point) => point[metric])).filter(Number.isFinite);
+    const minimum = readings.length ? Math.min(...readings) : 0;
+    const maximum = readings.length ? Math.max(...readings) : 1;
+    const padding = Math.max((maximum - minimum) * .1, .1);
+    const low = Math.max(0, minimum - padding), high = maximum + padding;
+    const y = (value: number) => top + (height - top - bottom) * (1 - (value - low) / Math.max(.01, high - low));
+    const ticks = [0, .25, .5, .75, 1].map((fraction) => {
+      const value = high - fraction * (high - low);
+      return `<line class="scenario-grid" x1="${left}" x2="${width - right}" y1="${y(value)}" y2="${y(value)}"/><text class="scenario-axis" x="${left - 7}" y="${y(value) + 4}" text-anchor="end">${fmt(value, 1)}</text>`;
+    }).join("");
+    const timeLabels = [0, 6, 12, 18, 24].map((hour) => `<text class="scenario-axis" x="${x(hour * 3600)}" y="${height - 8}" text-anchor="middle">${String(hour).padStart(2, "0")}:00</text>`).join("");
+    const lines = series.map((item) => {
+      const points = item.points.map((point) => `${x(point.t)},${y(point[metric])}`).join(" ");
+      return points ? `<polyline fill="none" stroke="${item.color}" stroke-width="2.5" points="${points}"/>` : "";
+    }).join("");
+    const legend = series.map((item) => `<span><i style="background:${item.color}"></i>${item.name}</span>`).join("");
+    return `<article class="trend panel"><h3>${title} <span>${unit}</span></h3><div class="scenario-chart-scroll"><svg class="day-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="${title} en salida de bombeo">${ticks}${timeLabels}${lines}</svg></div><div class="legend">${legend}</div></article>`;
+  };
+  $("supply-comparison-chart").innerHTML = `${makeChart("pressure", "Presión a la salida del bombeo", "mca")}${makeChart("flow", "Caudal a la salida del bombeo", "m³/h")}<p class="muted comparison-status">La línea real usa señales registradas. La proyección del optimizador aparece al cargar un estudio guardado y no se aplica al PLC. La del cosimulador se habilitará cuando estén conectados y validados sus adaptadores; no se dibujan datos supuestos. Ninguna trayectoria futura manda equipos.</p>`;
 }
 
 function renderGrid(): void {
@@ -386,7 +496,7 @@ function integrate(reading: (sample: Sample) => number): number {
 function renderDay(): void {
   if (history.length < 2) {
     $("day-kpis").innerHTML = "";
-    $("day-charts").innerHTML = `<p class="muted">Conecta la sesión de Planta Real para registrar señales operativas. Esta pantalla no usa datos precalculados.</p>`;
+    $("day-charts").innerHTML = "";
     return;
   }
   const peak = history.reduce((best, sample) => sample.consumption > best.consumption ? sample : best, history[0]);
@@ -413,7 +523,7 @@ function renderAlarms(): void {
   const active: string[] = [];
   for (const [id, snapshot] of Object.entries(latest)) if (snapshot.state === "fault" || snapshot.active_faults.length) active.push(`${id}: ${snapshot.active_faults.join(", ") || "falla"}`);
   const critical = n(value("prs-01", "critical_pressure_mca"));
-  if (critical !== null && critical < schema.service_constraint.critical_pressure_min_mca) active.unshift(`Presión crítica ${fmt(critical)} mca bajo 15 mca`);
+  if (critical !== null && critical < schema.service_constraint.critical_pressure_min_mca) active.unshift(`Presión crítica ${fmt(critical)} mca bajo el mínimo de servicio (${fmt(schema.service_constraint.critical_pressure_min_mca)} mca)`);
   $("alarms").innerHTML = active.length ? active.map((message) => `<div class="alarm">${message}</div>`).join("") : `<p class="muted">Sin alarmas activas.</p>`;
 }
 
@@ -462,6 +572,19 @@ function renderVrpOptimizationCharts(hours: VrpChartHour[]): string {
   return `<div class="fractal-vrp-charts">${curveChart}${openingChart}</div>`;
 }
 
+function trajectoryFromFrames(frames: unknown[]): TrajectoryPoint[] {
+  return frames.flatMap((raw, index) => {
+    if (!raw || typeof raw !== "object") return [];
+    const frame = raw as Record<string, unknown>;
+    const tags = (frame.plc_tags && typeof frame.plc_tags === "object" ? frame.plc_tags : {}) as Record<string, unknown>;
+    const flow = Number(tags["PLC.Pump.FlowM3h"]);
+    const pressure = Number(tags["PLC.Pump.DischargePressureMca"]);
+    const absoluteTime = Number(frame.start_t_s ?? frame.end_t_s ?? (Number(frame.hour ?? index) * 3600));
+    if (!Number.isFinite(flow) || !Number.isFinite(pressure) || !Number.isFinite(absoluteTime)) return [];
+    return [{ t: Math.max(0, absoluteTime), flow, pressure }];
+  });
+}
+
 async function renderFractal(): Promise<void> {
   const box = $("fractal-saved");
   if (!sessionId) { box.innerHTML = `<p class="muted">Inicie una sesión PLC para consultar estudios.</p>`; return; }
@@ -470,6 +593,15 @@ async function renderFractal(): Promise<void> {
   const studies = await response.json() as { study_id: string; study_type: string; base_time: number; profile_id?: string; profile_name?: string }[];
   const labels: Record<string, string> = { baseline: "Proyección base", alternative: "Escenario alternativo", optimized: "Optimización horaria" };
   const visibleStudies = studies.filter((study) => study.study_type in labels);
+  const optimizedStudy = visibleStudies.find((study) => study.study_type === "optimized");
+  if (optimizedStudy) {
+    const framesResponse = await apiFetch(`/api/plants/${plantId}/sessions/${sessionId}/fractal/studies/${encodeURIComponent(optimizedStudy.study_id)}/frames`);
+    if (framesResponse.ok) {
+      const data = await framesResponse.json() as { base_time?: number; frames?: unknown[] };
+      optimizedTrajectory = trajectoryFromFrames(data.frames ?? []);
+    }
+  } else optimizedTrajectory = [];
+  renderSupplyComparison();
   const safe = (value: string) => value.replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]!);
   box.innerHTML = visibleStudies.length ? `<article class="panel"><p class="eyebrow">ESCENARIOS GUARDADOS · FUTURO NO APLICADO</p>${visibleStudies.map((study) => {
     const profile = study.profile_name ?? study.profile_id ?? "perfil";
@@ -490,16 +622,12 @@ function renderVisibleScreen(): void {
 function render(message: Message): void {  latest = message.snapshot.equipment;
   simTime = message.t;
   plcRunning = message.running ?? true;
-  renderProfileActions();
+  paused = message.paused;
   activeSessionProfileId = message.plc_tags?.["PLC.Profile.ActiveId"] as string | null ?? activeSessionProfileId;
   pendingSessionProfileId = message.plc_tags?.["PLC.Profile.PendingId"] as string | null ?? pendingSessionProfileId;
   if (activeSessionProfileId && activeSessionProfileId === pendingSessionProfileId) pendingSessionProfileId = null;
   renderWorkspaceContext();
-  if (sessionId && activeProfileId && !profilePressure.length && simTime >= 30 &&
-    Number(message.plc_tags?.["PLC.PRS.OutletPressureMca"] ?? 0) >= 5 && Date.now() >= nextPressureAttempt) {
-    nextPressureAttempt = Date.now() + 60000;
-    void loadProfilePressure();
-  }
+  renderSessionControls();
   latestTags = message.plc_tags ?? latestTags;
   for (const asset of schema.assets) {
     const node = document.querySelector<HTMLElement>(`[data-asset="${asset.id}"]`);
@@ -519,85 +647,81 @@ function render(message: Message): void {  latest = message.snapshot.equipment;
 
 async function stopSession(): Promise<void> {
   if (!sessionId) return;
-  const response = await apiFetch(`/api/plants/${plantId}/sessions/${sessionId}/stop`, { method: "POST" });
-  if (!response.ok) throw Error(`No se pudo detener la sesión PLC (${response.status}).`);
   stopRequested = true;
-  plcRunning = false;
+  renderSessionControls();
+  const response = await apiFetch(`/api/plants/${plantId}/sessions/${sessionId}/stop`, { method: "POST" });
+  if (!response.ok) { stopRequested = false; renderSessionControls(); throw Error(`No se pudo detener la sesión PLC (${response.status}).`); }
+  plcRunning = false; paused = false;
+  renderSessionControls(); renderRunProfileSelector();
   if (socket && (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING)) {
     socket.close();
   } else {
     stopRequested = false;
     saveCurrentRun();
-    $("connection").textContent = "● SESIÓN DETENIDA";
+    $("connection").textContent = "● EMULACIÓN DETENIDA · ÚLTIMO ESTADO CONSERVADO";
     $("connection").classList.remove("on");
-    $("connect").textContent = "▶ INICIAR SESIÓN PLANTA REAL · 24 H";
-    renderProfileActions();
+    renderSessionControls();
   }
 }
 
 async function connect(): Promise<void> {
-  if (!sessionId && !activeProfileId) { window.alert("Seleccione y guarde un escenario antes de iniciar el PLC."); return; }
-  if (socket?.readyState === WebSocket.OPEN) {
-    try { await stopSession(); } catch (error) { $("connection").textContent = `● ERROR · ${String(error)}`; }
-    return;
-  }
+  if (socket?.readyState === WebSocket.OPEN) return;
   // Evita dobles clics mientras el proxy WebSocket termina el handshake.
   if (socket?.readyState === WebSocket.CONNECTING) return;
+  if (!sessionId && !activeProfileId) { window.alert("Seleccione un escenario guardado antes de iniciar la emulación."); return; }
+  if (sessionId && activeProfileId && activeSessionProfileId && activeProfileId !== activeSessionProfileId) {
+    sessionId = null; activeSessionProfileId = null; pendingSessionProfileId = null;
+    query.delete("session");
+    window.history.replaceState(null, "", `${location.pathname}?${query}`);
+  }
   saveCurrentRun();
   history = [];
   runStartedAt = new Date().toISOString();
   runSaved = false;
   renderDay();
-  // ×240 es velocidad solicitada; el rendimiento efectivo puede ser menor.
-
-  $("connection").textContent = "● CREANDO SESIÓN PLC…";
-  $("connect").textContent = "… CONECTANDO";
+  $("connection").textContent = "● INICIANDO EMULACIÓN PLC…";
+  plcRunning = true;
+  renderSessionControls();
   try {
     if (!sessionId) {
       const created = await apiFetch(`/api/plants/${plantId}/sessions`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ profile_id: activeProfileId }) });
       if (!created.ok) throw Error("no se pudo crear la sesión");
       sessionId = (await created.json() as { id: string }).id;
+      activeSessionProfileId = activeProfileId;
+      pendingSessionProfileId = null;
+      renderWorkspaceContext();
+      renderRunProfileSelector();
       notify3d("plc-session-created", { sessionId });
       query.set("session", sessionId);
       window.history.replaceState(null, "", `${location.pathname}?${query}`);
-      $<HTMLAnchorElement>("link-plant").href = `/plant.html?plant=${plantId}&session=${encodeURIComponent(sessionId)}${query.get("api") ? `&api=${encodeURIComponent(apiOrigin)}` : ""}`;
+      $<HTMLAnchorElement>("link-plant").href = `/plant.html?plant=${plantId}${query.get("api") ? `&api=${encodeURIComponent(apiOrigin)}` : ""}`;
     }
-    // El propio WebSocket de rol PLC inicia la simulación; si no conecta, no queda un ciclo anónimo huérfano consumiendo CPU.
-    plcRunning = true;
-    renderProfileActions();
-  } catch (error) {
-    plcRunning = false;
-    renderProfileActions();
-    $("connection").textContent = `● ERROR · ${String(error)}`;
-    $("connect").textContent = "▶ INICIAR OPERACIÓN PLC";
-    return;
-  }
-  try {
+    // La conexión PLC inicia o reanuda la sesión guardada; sin conexión no queda un ciclo huérfano.
     socket = await demoWebSocket(apiOrigin, `/api/plants/${plantId}/sessions/${sessionId}?role=plc`);
   } catch (error) {
     plcRunning = false;
-    renderProfileActions();
     $("connection").textContent = `● ERROR · ${String(error)}`;
-    $("connect").textContent = "▶ INICIAR SESIÓN PLANTA REAL · 24 H";
+    renderSessionControls();
     return;
   }
-  socket.onopen = () => { $("connection").textContent = "● PLANTA REAL CONECTADA · ×240 SOLICITADO"; $("connection").classList.add("on"); $("connect").textContent = "■ DETENER Y GUARDAR"; renderProfileActions(); };
+  socket.onopen = () => {
+    $("connection").textContent = "● EMULACIÓN EN MARCHA · PLC VIRTUAL";
+    $("connection").classList.add("on");
+    renderSessionControls(); renderRunProfileSelector();
+    void renderFractal();
+  };
   socket.onmessage = (event) => {
     const message = JSON.parse(event.data) as Message & { error?: string };
-    if (message.error) {
-      $("connection").textContent = `● ERROR · ${message.error}`;
-      return;
-    }
+    if (message.error) { $("connection").textContent = `● ERROR · ${message.error}`; return; }
     render(message);
   };
   socket.onerror = () => { $("connection").textContent = "● ERROR DE CONEXIÓN CON PLANTA REAL"; };
   socket.onclose = () => {
-    saveCurrentRun(); socket = null; plcRunning = false;
+    saveCurrentRun(); socket = null; plcRunning = false; paused = false;
     const stopped = stopRequested; stopRequested = false;
-    $("connection").textContent = stopped ? "● SESIÓN DETENIDA" : "● DESCONECTADO";
+    $("connection").textContent = stopped ? "● EMULACIÓN DETENIDA · ÚLTIMO ESTADO CONSERVADO" : "● SESIÓN DESCONECTADA";
     $("connection").classList.remove("on");
-    $("connect").textContent = "▶ INICIAR SESIÓN PLANTA REAL · 24 H";
-    renderProfileActions();
+    renderSessionControls(); renderRunProfileSelector();
   };
 }
 
@@ -618,6 +742,7 @@ function updateProfileHourFromForm(): void {
     ...hour.prs,
     branch: mode === "fixed_outlet" || mode === "critical_point" ? "auto" : $<HTMLSelectElement>("profile-prs-branch").value as "auto" | "manual",
     control_mode: mode,
+    auto_opening_pct: Number($<HTMLInputElement>("profile-prs-opening").value),
     critical_setpoint_mca: Number($<HTMLInputElement>("profile-prs-critical").value),
     manual_setting_mca: Number($<HTMLInputElement>("profile-prs-manual").value),
   };
@@ -653,28 +778,102 @@ function effectiveOpenings(upToHour: number): { consumers: Record<string, number
   return { consumers, leaks };
 }
 
-function renderProfileChart(pressure: (number | null)[] = profilePressure): void {
+function profilePointValue(): number {
+  const hour = currentProfileHour();
+  if (profileParameter === "global") return hour.global_consumers_pct ?? 100;
+  if (profileParameter.startsWith("level-")) {
+    const level = profileParameter.slice(6);
+    return hour.levels?.[level] ?? hour.global_consumers_pct ?? 100;
+  }
+  if (profileParameter.startsWith("between-")) return hour.between_levels?.[profileParameter.slice(8)] ?? 100;
+  return hour.prs?.auto_opening_pct ?? 38;
+}
+
+function setProfilePointValue(value: number): void {
+  const hour = currentProfileHour();
+  if (profileParameter === "global") hour.global_consumers_pct = value;
+  else if (profileParameter.startsWith("level-")) (hour.levels ??= {})[profileParameter.slice(6)] = value;
+  else if (profileParameter.startsWith("between-")) (hour.between_levels ??= {})[profileParameter.slice(8)] = value;
+  else hour.prs = { ...hour.prs, auto_opening_pct: value };
+}
+
+function renderProfileChart(): void {
   const values = Array.from({ length: 24 }, (_, hour) => {
     const openings = effectiveOpenings(hour);
-    const mean = (record: Record<string, number>) => Object.values(record).reduce((a, b) => a + b, 0) / Object.keys(record).length;
-    return { houses: mean(openings.consumers), leaks: mean(openings.leaks), pressure: pressure[hour] ?? null };
+    const means = [1, 2, 3, 4].map((level) => {
+      const entries = Object.entries(openings.consumers).filter(([key]) => key.startsWith(`grid-0${level}.`));
+      return entries.reduce((sum, [, value]) => sum + value, 0) / Math.max(1, entries.length);
+    });
+    return { levels: means };
   });
-  const width = 960, height = 260, left = 58, right = 65, top = 22, bottom = 38;
+  const width = 1100, height = 280, left = 48, right = 16, top = 18, bottom = 36;
   const x = (hour: number) => left + hour * (width - left - right) / 23;
-  const extent = (data: number[], minBound = -Infinity, maxBound = Infinity): [number, number] => {
-    const low = Math.min(...data), high = Math.max(...data);
-    const pad = Math.max((high - low) * .1, low === high ? Math.max(1, Math.abs(low) * .05) : .01);
-    return [Math.max(minBound, low - pad), Math.min(maxBound, high + pad)];
+  const y = (value: number, max: number) => top + (height - top - bottom) * (1 - value / max);
+  const hourLabels = values.map((_, hour) => `<text x="${x(hour)}" y="${height - 10}" text-anchor="middle">${String(hour + 1).padStart(2, "0")}</text>`).join("");
+  const chart = (title: string, max: number, series: { label: string; color: string; value: (point: typeof values[number]) => number; parameter: ProfileParameter }[]) => {
+    const grid = [0, .25, .5, .75, 1].map((fraction) => {
+      const reading = max * (1 - fraction);
+      return `<line class="scenario-grid" x1="${left}" x2="${width - right}" y1="${y(reading, max)}" y2="${y(reading, max)}"/><text class="scenario-axis" x="${left - 7}" y="${y(reading, max) + 4}" text-anchor="end">${Math.round(reading)}%</text>`;
+    }).join("");
+    const lines = series.map((item) => {
+      const points = values.map((point, hour) => `${x(hour)},${y(item.value(point), max)}`).join(" ");
+      const markers = values.map((point, hour) => `<circle class="scenario-point ${hour === profileHour ? "selected" : ""}" style="color:${item.color}" data-profile-hour="${hour}" data-profile-parameter="${item.parameter}" cx="${x(hour)}" cy="${y(item.value(point), max)}" r="${hour === profileHour ? 6 : 4}"><title>Hora ${String(hour + 1).padStart(2, "0")} · ${item.label}: ${item.value(point).toFixed(1)} %</title></circle>`).join("");
+      return `<polyline fill="none" stroke="${item.color}" stroke-width="2.5" points="${points}"/>${markers}`;
+    }).join("");
+    const legend = series.map((item) => `<span><i style="background:${item.color}"></i>${item.label}</span>`).join("");
+    return `<article class="scenario-chart-card"><h3>${title}</h3><div class="scenario-chart-scroll"><svg class="scenario-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="${title}; seleccione una hora para editar">${grid}${lines}${hourLabels}</svg></div><div class="legend">${legend}</div></article>`;
   };
-  const [oMin, oMax] = extent(values.flatMap((point) => [point.houses, point.leaks]), 0, 100);
-  const pressures = values.map((point) => point.pressure).filter((p): p is number => p !== null && Number.isFinite(p));
-  const [pMin, pMax] = pressures.length ? extent(pressures) : [0, 1];
-  const y = (val: number, min: number, max: number) => top + (height - top - bottom) * (max - val) / Math.max(.001, max - min);
-  const line = (get: (point: typeof values[number]) => number) => values.map((point, hour) => `${x(hour).toFixed(1)},${y(get(point), oMin, oMax).toFixed(1)}`).join(" ");
-  const pressureLine = values.flatMap((point, hour) => point.pressure === null ? [] : [`${x(hour).toFixed(1)},${y(point.pressure, pMin, pMax).toFixed(1)}`]).join(" ");
-  const ticks = [0, .25, .5, .75, 1].map((fraction) => `<line x1="${left}" y1="${top + fraction * (height - top - bottom)}" x2="${width - right}" y2="${top + fraction * (height - top - bottom)}" stroke="#36515b"/><text x="${left - 8}" y="${top + fraction * (height - top - bottom) + 4}" text-anchor="end" fill="#4EA7FF">${(oMax - fraction * (oMax - oMin)).toFixed(0)}%</text>${pressures.length ? `<text x="${width - right + 8}" y="${top + fraction * (height - top - bottom) + 4}" fill="#f4b56c">${(pMax - fraction * (pMax - pMin)).toFixed(1)}</text>` : ""}`).join("");
-  const hours = [0, 5, 11, 17, 23].map((hour) => `<text x="${x(hour)}" y="${height - 10}" text-anchor="middle" fill="#aac0d5">${String(hour + 1).padStart(2, "0")}</text>`).join("");
-  $("profile-preview-chart").innerHTML = `<svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Apertura media de viviendas y fugas, presión de salida de la PRS vs hora">${ticks}${hours}<polyline fill="none" stroke="#4EA7FF" stroke-width="3" points="${line((point) => point.houses)}"/><polyline fill="none" stroke="#ec8090" stroke-width="2" stroke-dasharray="5 4" points="${line((point) => point.leaks)}"/>${pressures.length ? `<polyline fill="none" stroke="#f4b56c" stroke-width="3" points="${pressureLine}"/>` : ""}</svg><p class="muted">Azul: apertura media de viviendas (%) · Rojo: apertura media de fugas (%) · Naranja: salida PRS (mca). Ejes autoescalados. ${profilePressureMessage}</p>`;
+  const parameterOptions = [
+    ["global", "Viviendas · base de toda la red"], ["level-1", "Viviendas · nivel 1"], ["level-2", "Viviendas · nivel 2"],
+    ["level-3", "Viviendas · nivel 3"], ["level-4", "Viviendas · nivel 4"], ["between-12", "Interred · nivel 1 → 2"],
+    ["between-23", "Interred · nivel 2 → 3"], ["between-34", "Interred · nivel 3 → 4"], ["prs", "PRS · apertura AUTO"],
+  ] as const;
+  const selectedValue = profilePointValue();
+  const isPrs = profileParameter === "prs";
+  const selectedLabel = parameterOptions.find(([value]) => value === profileParameter)?.[1] ?? "Viviendas · base de toda la red";
+  const escapedName = activeProfile.name.replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]!);
+  const levelSeries = [1, 2, 3, 4].map((level) => ({ label: `Nivel ${level}`, color: ["#4EA7FF", "#55d58c", "#b99aff", "#f4b56c"][level - 1], value: (point: typeof values[number]) => point.levels[level - 1], parameter: `level-${level}` as ProfileParameter }));
+  $("profile-preview-chart").innerHTML = `<p class="scenario-chart-name">${escapedName || "Escenario sin nombre"} · HORA ${String(profileHour + 1).padStart(2, "0")}</p>${chart("Apertura promedio de viviendas por nivel · 24 horas", 100, levelSeries)}<section class="profile-point-editor"><label>Parámetro<select id="profile-point-parameter">${parameterOptions.map(([value, label]) => `<option value="${value}" ${value === profileParameter ? "selected" : ""}>${label}</option>`).join("")}</select></label><label>Hora ${String(profileHour + 1).padStart(2, "0")} · ${selectedLabel}<input id="profile-point-range" type="range" min="${isPrs ? 20 : 0}" max="100" step="1" value="${selectedValue}"/><output id="profile-point-output">${selectedValue} %</output></label><p class="muted">Seleccione un punto para elegir la hora; en la gráfica también se selecciona el nivel que editará.</p></section>`;
+  document.querySelectorAll<SVGCircleElement>(".scenario-point[data-profile-hour]").forEach((point) => point.onclick = () => {
+    updateProfileHourFromForm();
+    profileHour = Number(point.dataset.profileHour);
+    if (point.dataset.profileParameter) profileParameter = point.dataset.profileParameter as ProfileParameter;
+    renderProfileEditor();
+  });
+  const parameterSelect = $<HTMLSelectElement>("profile-point-parameter");
+  parameterSelect.onchange = () => { profileParameter = parameterSelect.value as ProfileParameter; renderProfileChart(); };
+  const range = $<HTMLInputElement>("profile-point-range");
+  const readOnly = Boolean(activeProfileId?.startsWith("builtin-"));
+  document.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLButtonElement>("#profiles input, #profiles select, #profiles button").forEach((control) => {
+    if (["profile-select", "profile-new", "profile-save-as"].includes(control.id)) return;
+    control.disabled = readOnly;
+  });
+  range.oninput = () => {
+    setProfilePointValue(Number(range.value));
+    $("profile-point-output").textContent = `${range.value} %`;
+  };
+  range.onchange = () => renderProfileEditor();
+}
+
+function updateProfilePrsControls(mode: HTMLSelectElement, branch: HTMLSelectElement): void {
+  const autoOnlyMode = mode.value === "fixed_outlet" || mode.value === "critical_point";
+  if (autoOnlyMode) branch.value = "auto";
+  branch.disabled = autoOnlyMode;
+  const manualBranch = branch.value === "manual";
+  mode.disabled = manualBranch;
+  $<HTMLLabelElement>("profile-prs-fixed-outlet-control").hidden = mode.value !== "fixed_outlet" || manualBranch;
+  const criticalControl = $<HTMLLabelElement>("profile-prs-critical-control");
+  criticalControl.hidden = mode.value === "fixed_outlet" || manualBranch;
+  const targetLabel = mode.value === "critical_point" ? "Consigna de presión C44 (mca)" : "Presión mínima global objetivo (mca)";
+  const labelText = [...criticalControl.childNodes].find((node) => node.nodeType === Node.TEXT_NODE);
+  if (labelText) labelText.textContent = `${targetLabel} `;
+  $("profile-prs-mode-description").textContent = manualBranch
+    ? "La rama MANUAL gobierna el emulador. Este modo solo describe el estudio Fractal independiente."
+    : mode.value === "critical_point"
+      ? "Metadato del estudio Fractal: control en C44; no es el lazo de la emulación PLC."
+      : mode.value === "fixed_outlet"
+        ? "Metadato del estudio Fractal: salida fija; no cambia la apertura fija mandada al emulador PLC."
+        : "Metadato del estudio Fractal: control de presión crítica. El PLC opera por apertura fija, no por esta consigna.";
 }
 
 function renderProfileEditor(): void {
@@ -682,10 +881,19 @@ function renderProfileEditor(): void {
   const templates = profiles.filter((profile) => profile.id?.startsWith("builtin-"));
   const customs = profiles.filter((profile) => !profile.id?.startsWith("builtin-"));
   const options = (items: OperationProfile[]) => items.map((profile) => `<option value="${profile.id}">${profile.name.replace(/[&<>"']/g, "")}</option>`).join("");
-  profileSelect.innerHTML = `<option value="">Nuevo personalizado sin guardar</option><optgroup label="PLANTILLAS DE OPERACIÓN">${options(templates)}</optgroup>${customs.length ? `<optgroup label="ESCENARIOS PERSONALIZADOS GUARDADOS">${options(customs)}</optgroup>` : ""}`;
-  $<HTMLButtonElement>("profile-delete").hidden = !activeProfileId || activeProfileId.startsWith("builtin-");
-  $<HTMLButtonElement>("profile-save").disabled = Boolean(activeProfileId?.startsWith("builtin-"));
+  profileSelect.innerHTML = `<option value="">Nuevo escenario sin guardar</option><optgroup label="PLANTILLAS">${options(templates)}</optgroup>${customs.length ? `<optgroup label="ARCHIVO">${options(customs)}</optgroup>` : ""}`;
+  const isBuiltin = Boolean(activeProfileId?.startsWith("builtin-"));
+  const isArchived = Boolean(activeProfileId && !isBuiltin);
+  $<HTMLButtonElement>("profile-delete").hidden = !isArchived;
+  $<HTMLButtonElement>("profile-rename").hidden = !isArchived;
+  $<HTMLButtonElement>("profile-save-as").hidden = !isBuiltin;
+  $<HTMLButtonElement>("profile-save").hidden = isBuiltin;
+  $<HTMLButtonElement>("profile-save").disabled = isBuiltin;
+  $<HTMLElement>("profile-readonly-note").hidden = !isBuiltin;
+  $<HTMLButtonElement>("profile-new").textContent = isBuiltin ? "+ NUEVO DESDE PLANTILLA" : "+ NUEVO ESCENARIO";
   profileSelect.value = activeProfileId ?? "";
+  renderRunProfileSelector();
+  renderSessionControls();
   $<HTMLInputElement>("profile-name").value = activeProfile.name;
   $<HTMLInputElement>("profile-description").value = activeProfile.description;
   const hourSelect = $<HTMLSelectElement>("profile-hour");
@@ -705,19 +913,14 @@ function renderProfileEditor(): void {
   $("profile-global-output").textContent = `${global.value} %`;
   $("profile-level-controls").innerHTML = [1, 2, 3, 4].map((level) => `<label>Nivel ${level}<input data-profile-level="${level}" type="range" min="0" max="100" value="${hour.levels?.[level] ?? hour.global_consumers_pct ?? 100}" /><output>${hour.levels?.[level] ?? hour.global_consumers_pct ?? 100} %</output></label>`).join("");
   $("profile-between-controls").innerHTML = [["12", "Nivel 1 → 2"], ["23", "Nivel 2 → 3"], ["34", "Nivel 3 → 4"]].map(([valve, label]) => `<label>${label}<input data-profile-between="${valve}" type="range" min="0" max="100" value="${hour.between_levels?.[valve] ?? 100}" /><output>${hour.between_levels?.[valve] ?? 100} %</output></label>`).join("");
+  const opening = $<HTMLInputElement>("profile-prs-opening");
+  opening.value = String(hour.prs?.auto_opening_pct ?? 38);
+  $("profile-prs-opening-output").textContent = `${opening.value} %`;
   const mode = $<HTMLSelectElement>("profile-prs-mode");
   mode.value = hour.prs?.control_mode ?? "critical_pressure";
   const branch = $<HTMLSelectElement>("profile-prs-branch");
   branch.value = hour.prs?.branch ?? "auto";
-  const fixedAutoMode = mode.value === "fixed_outlet" || mode.value === "critical_point";
-  branch.disabled = fixedAutoMode;
-  $<HTMLLabelElement>("profile-prs-fixed-outlet-control").hidden = mode.value !== "fixed_outlet";
-  $<HTMLLabelElement>("profile-prs-critical-control").hidden = mode.value === "fixed_outlet";
-  $("profile-prs-mode-description").textContent = mode.value === "critical_point"
-    ? "AUTO usa la señal independiente de C44 del piso 4; es un punto de control provisional y se contrasta con toda la red."
-    : mode.value === "fixed_outlet"
-      ? "AUTO sostiene la salida indicada, sin usar el PID de presión crítica."
-      : "AUTO regula sobre la presión mínima global medida en las viviendas.";
+  updateProfilePrsControls(mode, branch);
   const inlet = $<HTMLInputElement>("profile-prs-inlet");
   inlet.value = hour.prs?.inlet_pressure_mca === undefined ? "" : String(hour.prs.inlet_pressure_mca);
   const autoOutlet = $<HTMLInputElement>("profile-prs-auto-outlet");
@@ -729,7 +932,7 @@ function renderProfileEditor(): void {
   manual.value = String(hour.prs?.manual_setting_mca ?? 20.94);
   $("profile-prs-manual-output").textContent = `${Number(manual.value).toFixed(2)} mca`;
   const draftContext = $("profile-draft-context");
-  draftContext.hidden = false;
+  draftContext.hidden = !$<HTMLElement>("profiles").classList.contains("active") || (!activeProfileId && !activeProfile.name.trim());
   const updateDraftContext = () => {
     const selectedName = $<HTMLInputElement>("profile-name").value.trim() || activeProfile.name || "Perfil sin guardar";
     const activeName = profiles.find((profile) => profile.id === activeSessionProfileId)?.name ?? activeSessionProfileId;
@@ -738,25 +941,23 @@ function renderProfileEditor(): void {
       : `BORRADOR · NO APLICADO · ${selectedName} · HORA ${String(profileHour + 1).padStart(2, "0")}`;
   };
   updateDraftContext();
-  $<HTMLInputElement>("profile-name").oninput = updateDraftContext;
+  $<HTMLInputElement>("profile-name").oninput = () => {
+    updateDraftContext();
+    const title = document.querySelector<HTMLElement>(".scenario-chart-name");
+    if (title) title.textContent = `${$<HTMLInputElement>("profile-name").value.trim() || "Escenario sin nombre"} · HORA ${String(profileHour + 1).padStart(2, "0")}`;
+  };
   const individualCount = Object.values(hour.dwellings ?? {}).reduce((total, valves) => total + Object.keys(valves).length, 0);
   const leakCount = Object.values(hour.leaks ?? {}).reduce((total, valves) => total + Object.keys(valves).length, 0);
   $("profile-capture-summary").textContent = individualCount || leakCount ? `${individualCount} viviendas y ${leakCount} válvulas de fuga capturadas para esta hora.` : "Sin mandos individuales capturados.";
-  const inletControls = [mode, inlet, autoOutlet];
-  inletControls.forEach((control) => control.onchange = () => {
-    if (mode.value === "fixed_outlet" || mode.value === "critical_point") branch.value = "auto";
-    branch.disabled = mode.value === "fixed_outlet" || mode.value === "critical_point";
-    $<HTMLLabelElement>("profile-prs-fixed-outlet-control").hidden = mode.value !== "fixed_outlet";
-    $<HTMLLabelElement>("profile-prs-critical-control").hidden = mode.value === "fixed_outlet";
-    $("profile-prs-mode-description").textContent = mode.value === "critical_point"
-      ? "AUTO usa la señal independiente de C44 del piso 4; es un punto de control provisional y se contrasta con toda la red."
-      : mode.value === "fixed_outlet"
-        ? "AUTO sostiene la salida indicada, sin usar el PID de presión crítica."
-        : "AUTO regula sobre la presión mínima global medida en las viviendas.";
+  const inletControls = [mode, branch, inlet, autoOutlet];
+  opening.oninput = () => {
+    $("profile-prs-opening-output").textContent = `${opening.value} %`;
     updateProfileHourFromForm();
-    pressureRequest++;
-    profilePressure = [];
-    profilePressureMessage = "Cambios sin recalcular: guarde el perfil para actualizar la presión.";
+    renderProfileChart();
+  };
+  inletControls.forEach((control) => control.onchange = () => {
+    updateProfilePrsControls(mode, branch);
+    updateProfileHourFromForm();
     renderProfileChart();
   });
   const ranges = [global, ...document.querySelectorAll<HTMLInputElement>("[data-profile-level], [data-profile-between]"), critical, manual];
@@ -764,9 +965,6 @@ function renderProfileEditor(): void {
     const output = input.parentElement?.querySelector("output");
     if (output) output.textContent = input === critical || input === manual ? `${Number(input.value).toFixed(2)} mca` : `${input.value} %`;
     updateProfileHourFromForm();
-    pressureRequest++;
-    profilePressure = [];
-    profilePressureMessage = "Cambios sin recalcular: guarde el perfil para actualizar la presión.";
     renderProfileChart();
   });
   document.querySelectorAll<HTMLInputElement>("[data-profile-grid]").forEach((input) => input.oninput = () => {
@@ -775,48 +973,93 @@ function renderProfileEditor(): void {
     const destination = valve.startsWith("l") ? (entry.leaks ??= {}) : (entry.dwellings ??= {});
     (destination[grid] ??= {})[valve] = Number(input.value);
     input.parentElement!.querySelector("output")!.textContent = `${input.value}%`;
-    pressureRequest++;
-    profilePressure = [];
-    profilePressureMessage = "Cambios sin recalcular: guarde el perfil para actualizar la presión.";
     renderProfileChart();
   });
-  renderProfileChart();
-}
-
-async function loadProfilePressure(): Promise<void> {
-  const request = ++pressureRequest;
-  nextPressureAttempt = Date.now() + 60000;
-  profilePressure = [];
-  if (!sessionId || !activeProfileId || !fractalOrigin || !plcRunning) {
-    profilePressureMessage = "Presión pendiente: inicie el PLC y habilite Fractal para proyectar el perfil guardado. Planta Real opera de forma independiente de Fractal.";
-    renderProfileChart();
-    return;
-  }
-  profilePressureMessage = "Calculando presión de salida desde tags PLC; futuro no aplicado…";
-  renderProfileChart();
-  try {
-    const response = await fractalFetch("/studies/profile-preview/from-plc", {
-      method: "POST", headers: { "content-type": "application/json" },
-      body: JSON.stringify({ plant_id: plantId, session_id: sessionId, profile_id: activeProfileId, emulator_api: apiOrigin }),
-    });
-    if (!response.ok) throw Error(`La vista previa no está disponible (${response.status}).`);
-    const data = await response.json() as { pressure_outlet_mca: { profile_hour: number; pressure_mca: number }[] };
-    if (request !== pressureRequest) return;
-    profilePressure = Array(24).fill(null) as (number | null)[];
-    for (const point of data.pressure_outlet_mca) if (point.profile_hour >= 0 && point.profile_hour < 24) profilePressure[point.profile_hour] = point.pressure_mca;
-    profilePressureMessage = "Presión Fractal: proyección desde tags PLC, NO APLICADA. No valida todavía la dinámica de tanques.";
-  } catch {
-    if (request !== pressureRequest) return;
-    profilePressure = [];
-    profilePressureMessage = "Presión pendiente: requiere PLC en play, bomba presurizada y servicio Fractal disponible bajo demanda.";
-  }
   renderProfileChart();
 }
 
 async function loadProfiles(): Promise<void> {
   profiles = await getJson<OperationProfile[]>(`/api/plants/${plantId}/operation-profiles`);
   renderProfileEditor();
-  void loadProfilePressure();
+  renderRunProfileSelector();
+}
+
+async function loadComparisons(preferredId?: string): Promise<void> {
+  if (!sessionId) return;
+  if (triadPlaybackTimer !== null) window.clearInterval(triadPlaybackTimer);
+  triadPlaybackTimer = null;
+  $<HTMLButtonElement>("triad-pause").disabled = true;
+  comparisons = await getJson<Comparison[]>(`/api/plants/${plantId}/sessions/${sessionId}/comparisons`);
+  const select = $<HTMLSelectElement>("comparison-select");
+  const previous = preferredId ?? select.value;
+  select.replaceChildren(new Option(comparisons.length ? "Seleccione comparación guardada…" : "Sin ejecuciones comparables", ""));
+  for (const comparison of comparisons) {
+    const sources = Object.entries(comparison.runs).filter(([, run]) => run).map(([source]) => source).join(" + ");
+    select.add(new Option(`${comparison.comparison_id} · ${comparison.profile_id} · ${sources}`, comparison.comparison_id));
+  }
+  const selectedId = comparisons.some((item) => item.comparison_id === previous)
+    ? previous
+    : comparisons.at(-1)?.comparison_id ?? "";
+  select.value = selectedId;
+  $<HTMLInputElement>("triad-slider").disabled = true;
+  $<HTMLButtonElement>("triad-play").disabled = true;
+  triadFrames = [];
+  renderTriadFrame();
+  if (selectedId) await loadTriadFrames();
+}
+
+async function loadTriadFrames(): Promise<void> {
+  if (!sessionId || !$<HTMLSelectElement>("comparison-select").value) return;
+  const comparisonId = $<HTMLSelectElement>("comparison-select").value;
+  const response = await getJson<{ triads: TriadFrame[] }>(`/api/plants/${plantId}/sessions/${sessionId}/comparisons/${encodeURIComponent(comparisonId)}/triads`);
+  triadFrames = response.triads;
+  const slider = $<HTMLInputElement>("triad-slider");
+  slider.min = "0"; slider.max = String(Math.max(0, triadFrames.length - 1)); slider.value = "0"; slider.disabled = triadFrames.length === 0;
+  $<HTMLButtonElement>("triad-play").disabled = triadFrames.length < 2;
+  renderTriadFrame();
+}
+
+function renderTriadFrame(): void {
+  const output = $("triad-frames");
+  const slider = $<HTMLInputElement>("triad-slider");
+  const index = Number(slider?.value ?? 0);
+  const frame = triadFrames[index];
+  output.replaceChildren();
+  if (!frame) {
+    $("triad-position").textContent = "La reproducción y la escena 3D recorren únicamente frames guardados; no vuelven a simular ni interpolan.";
+    return;
+  }
+  $("triad-position").textContent = `Frame ${index + 1} de ${triadFrames.length} · t=${fmt(frame.simulation_time_s, 0)} s · ${frame.aligned ? "tiempos alineados" : "faltan frames o tiempos desalineados"} · perfil ${frame.profile_id} · hash ${frame.profile_hash.slice(0, 12)}…`;
+  for (const source of ["emulator", "cosimulation", "optimization"]) {
+    const saved = frame.sources[source];
+    const card = document.createElement("article"); card.className = "panel";
+    const title = document.createElement("h3"); title.textContent = source === "emulator" ? "EMULADOR" : source === "cosimulation" ? "COSIMULADOR" : "OPTIMIZADOR"; card.append(title);
+    if (!saved) {
+      const missing = document.createElement("p"); missing.textContent = "Sin frame guardado para este instante."; card.append(missing);
+    } else {
+      const meta = document.createElement("p"); meta.textContent = `t=${fmt(saved.simulation_time_s, 0)} s · ${saved.temporal_context ?? "historia"}`; card.append(meta);
+      const details = document.createElement("details");
+      const summary = document.createElement("summary"); summary.textContent = "Ver datos persistidos";
+      const pre = document.createElement("pre"); pre.textContent = JSON.stringify(saved.state, null, 2);
+      details.append(summary, pre); card.append(details);
+    }
+    output.append(card);
+  }
+  if (sessionId) {
+    for (const source of ["optimization", "cosimulation", "emulator"]) {
+      const saved = frame.sources[source];
+      if (!saved) continue;
+      const candidate = source === "emulator" ? saved.state : saved.state.snapshot ?? saved.state;
+      if (candidate && typeof candidate === "object" && "equipment" in candidate && "lines" in candidate) {
+        notify3d("plc-show-3d", {
+          sessionId,
+          comparisonId: $<HTMLSelectElement>("comparison-select").value,
+          triadFrame: { simulation_time_s: frame.simulation_time_s, source, snapshot: candidate as Record<string, unknown> },
+        });
+        break;
+      }
+    }
+  }
 }
 
 async function saveProfile(): Promise<void> {
@@ -836,7 +1079,7 @@ async function saveProfile(): Promise<void> {
 }
 
 function captureCurrentCommands(): void {
-  if (!Object.keys(latest).length) { window.alert("Inicie una sesión de Planta Real y ajuste la Rejilla antes de capturar los mandos actuales."); return; }
+  if (!Object.keys(latest).length) { window.alert("Inicie la operación en tiempo real antes de capturar los mandos actuales."); return; }
   updateProfileHourFromForm();
   const hour = currentProfileHour();
   hour.dwellings = {};
@@ -852,17 +1095,16 @@ function captureCurrentCommands(): void {
     for (const valve of ["l1", "l2"]) hour.leaks[grid][valve] = Math.round((eq(grid)?.animation[`open_${valve}`] ?? 0) * 100);
   }
   hour.between_levels = Object.fromEntries([["12", "valve-between-12"], ["23", "valve-between-23"], ["34", "valve-between-34"]].map(([key, id]) => [key, Math.round(n(value(id, "opening_target_pct")) ?? 100)]));
-  const controlMode = String(value("prs-01", "auto_control_mode") ?? "critical_pressure") as "critical_pressure" | "critical_point" | "fixed_outlet";
   hour.prs = {
-    branch: controlMode === "fixed_outlet" || controlMode === "critical_point" || String(value("prs-01", "branch_auto")) === "1" ? "auto" : "manual",
-    control_mode: controlMode,
+    branch: String(value("prs-01", "branch_auto")) === "1" ? "auto" : "manual",
+    control_mode: hour.prs?.control_mode ?? "critical_pressure",
+    auto_opening_pct: n(value("prs-01", "auto_opening_pct")) ?? 38,
     inlet_pressure_mca: n(value("prs-01", "inlet_pressure_mca")) ?? 70,
     critical_setpoint_mca: n(value("prs-01", "critical_setpoint_mca")) ?? schema.service_constraint.automatic_target_mca,
     manual_setting_mca: n(value("prs-01", "manual_setting_mca")) ?? 20.94,
   };
-  if (controlMode === "critical_point") hour.prs.critical_control_point = "L4.C44";
-  if (controlMode === "fixed_outlet") hour.prs.auto_outlet_mca = n(value("prs-01", "auto_fixed_outlet_mca")) ?? 40;
-  pressureRequest++; profilePressure = [];
+  if (hour.prs.control_mode === "critical_point") hour.prs.critical_control_point = "L4.C44";
+  if (hour.prs.control_mode === "fixed_outlet") hour.prs.auto_outlet_mca = n(value("prs-01", "auto_fixed_outlet_mca")) ?? 40;
   renderProfileEditor();
 }
 
@@ -875,16 +1117,41 @@ function randomize(): void {
 async function start(): Promise<void> {
   schema = await getJson<Schema>(`/api/plants/${plantId}/plc-schema`);
   $("plant-name").textContent = ` · ${schema.name.toUpperCase()}`;
-  $<HTMLAnchorElement>("link-plant").href = `/plant.html?plant=${plantId}${sessionId ? `&session=${encodeURIComponent(sessionId)}` : ""}${query.get("api") ? `&api=${encodeURIComponent(apiOrigin)}` : ""}`;
+  $<HTMLAnchorElement>("link-plant").href = `/plant.html?plant=${plantId}${query.get("api") ? `&api=${encodeURIComponent(apiOrigin)}` : ""}`;
   buildAssets();
   const initialScreen = query.get("screen");
-  if (["master", "day", "pumping", "grid", "profiles", "trends", "fractal", "history", "comparisons"].includes(initialScreen ?? "")) selectScreen(initialScreen!);
+  if (["master", "day", "pumping", "grid", "profiles", "trends", "fractal", "history"].includes(initialScreen ?? "")) selectScreen(initialScreen!);
   $("connect").onclick = () => { void connect(); };
-  $("pause").onclick = () => { paused = !paused; socket?.send(JSON.stringify({ pause: paused })); $("pause").textContent = paused ? "▶ REANUDAR" : "❚❚ PAUSA"; };
+  $("stop-session").onclick = () => { void stopSession().catch((error) => { $("connection").textContent = `● ERROR · ${String(error)}`; }); };
+  $("pause").onclick = () => {
+    if (socket?.readyState !== WebSocket.OPEN || !plcRunning) return;
+    paused = !paused;
+    socket.send(JSON.stringify({ pause: paused }));
+    renderSessionControls();
+  };
+  $<HTMLSelectElement>("run-profile-select").onchange = (event) => {
+    const id = (event.target as HTMLSelectElement).value;
+    const profile = profiles.find((item) => item.id === id);
+    if (!profile) { activeProfileId = null; activeProfile = { name: "", description: "", hours: {} }; }
+    else { activeProfile = structuredClone(profile); activeProfileId = profile.id ?? null; profileHour = 0; }
+    renderProfileEditor();
+    renderSessionControls();
+  };
+  $("schedule-profile").onclick = async () => {
+    if (!sessionId || socket?.readyState !== WebSocket.OPEN || !activeProfileId) return;
+    const response = await apiFetch(`/api/plants/${plantId}/sessions/${sessionId}/schedule-profile`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ profile_id: activeProfileId }) });
+    const result = await response.json().catch(() => ({})) as { starts_at_hour?: number; detail?: string };
+    if (!response.ok) { $("scenario-selection-note").textContent = result.detail ?? "No se pudo programar el escenario."; return; }
+    pendingSessionProfileId = activeProfileId;
+    renderWorkspaceContext();
+    $("scenario-selection-note").textContent = `Programado para la hora ${String((result.starts_at_hour ?? 0) + 1).padStart(2, "0")}. El PLC mantiene el perfil actual hasta entonces.`;
+    renderSessionControls();
+  };
+  renderSessionControls();
   document.querySelectorAll<HTMLButtonElement>("[data-command]").forEach((button) => button.onclick = () => send("prs-01", "select_branch", { branch: button.dataset.command }));
-  const critical = $<HTMLInputElement>("critical-setpoint");
-  critical.oninput = () => $("critical-output").textContent = `${Number(critical.value).toFixed(2)} mca`;
-  critical.onchange = () => send("prs-01", "set_critical_setpoint", { mca: Number(critical.value) });
+  const opening = $<HTMLInputElement>("auto-opening");
+  opening.oninput = () => $("auto-opening-output").textContent = `${Number(opening.value).toFixed(0)} %`;
+  opening.onchange = () => send("prs-01", "set_auto_opening", { pct: Number(opening.value) });
   const manual = $<HTMLInputElement>("manual-setpoint");
   manual.oninput = () => $("manual-output").textContent = `${Number(manual.value).toFixed(2)} mca`;
   manual.onchange = () => send("prs-01", "set_manual_setting", { mca: Number(manual.value) });
@@ -905,48 +1172,97 @@ async function start(): Promise<void> {
     input.onchange = () => send(`grid-0${level}`, "set_opening", { valve: "consumers", pct: Number(input.value) });
   });
   $("random").onclick = randomize;
+  $("live-save-as-profile").onclick = () => {
+    if (!Object.keys(latest).length) { window.alert("Inicie la operación en tiempo real antes de capturar mandos."); return; }
+    const timestamp = new Date().toLocaleString("es-CO", { dateStyle: "short", timeStyle: "short" });
+    activeProfile = { name: `Tiempo real · ${timestamp}`, description: "Estado capturado desde la operación en vivo; revisar y guardar antes de ejecutarlo como escenario.", hours: {} };
+    activeProfileId = null;
+    profileHour = Math.max(0, Math.min(23, Math.floor((simTime % DAY_SECONDS) / 3600)));
+    captureCurrentCommands();
+    selectScreen("profiles");
+    $<HTMLInputElement>("profile-name").focus();
+  };
   $("chart-modal-close").onclick = () => $<HTMLDialogElement>("chart-modal").close();
   $<HTMLSelectElement>("session-speed").onchange = (event) => {
     const speed = Number((event.target as HTMLSelectElement).value);
     if (socket?.readyState === WebSocket.OPEN) socket.send(JSON.stringify({ speed }));
   };
-  $("fractal-refresh").onclick = () => { void renderFractal(); };
+  $("fractal-refresh").onclick = () => { void renderFractal(); void loadComparisons().catch((error) => { $("triad-position").textContent = `No se pudieron leer las comparaciones guardadas: ${String(error)}`; }); };
+  $("comparison-load").onclick = () => { void loadTriadFrames().catch((error) => { $("triad-position").textContent = `No se pudieron cargar los frames: ${String(error)}`; }); };
+  $<HTMLSelectElement>("comparison-select").onchange = () => { void loadTriadFrames(); };
+  $<HTMLInputElement>("triad-slider").oninput = renderTriadFrame;
+  $("triad-play").onclick = () => {
+    if (triadPlaybackTimer !== null || triadFrames.length < 2) return;
+    $<HTMLButtonElement>("triad-play").disabled = true;
+    $<HTMLButtonElement>("triad-pause").disabled = false;
+    triadPlaybackTimer = window.setInterval(() => {
+      const slider = $<HTMLInputElement>("triad-slider");
+      if (Number(slider.value) >= triadFrames.length - 1) {
+        window.clearInterval(triadPlaybackTimer!); triadPlaybackTimer = null;
+        $<HTMLButtonElement>("triad-play").disabled = false;
+        $<HTMLButtonElement>("triad-pause").disabled = true;
+        return;
+      }
+      slider.value = String(Number(slider.value) + 1); renderTriadFrame();
+    }, 700);
+  };
+  $("triad-pause").onclick = () => {
+    if (triadPlaybackTimer !== null) window.clearInterval(triadPlaybackTimer);
+    triadPlaybackTimer = null;
+    $<HTMLButtonElement>("triad-play").disabled = triadFrames.length < 2;
+    $<HTMLButtonElement>("triad-pause").disabled = true;
+  };
   const fractalStudyType = $<HTMLSelectElement>("fractal-study-type");
   const fractalHorizonButton = $<HTMLButtonElement>("fractal-horizon");
-  const updateFractalButtonLabel = () => { fractalHorizonButton.textContent = fractalStudyType.value === "optimized" ? "◉ OPTIMIZAR VRP · 24 H" : "◫ PROYECTAR 24 H DESDE PLC"; };
+  const fractalTarget = $<HTMLInputElement>("fractal-target-pressure");
+  const fractalTargetControl = $("fractal-target-control");
+  const updateFractalButtonLabel = () => {
+    const optimized = fractalStudyType.value === "optimized";
+    fractalTargetControl.hidden = !optimized;
+    fractalHorizonButton.textContent = optimized ? "OPTIMIZAR PERFIL · 24 H" : "CALCULAR PROYECCIÓN · 24 H";
+  };
   fractalStudyType.onchange = updateFractalButtonLabel;
+  fractalTarget.oninput = () => { $("fractal-target-value").textContent = Number.isFinite(fractalTarget.valueAsNumber) ? `${fractalTarget.valueAsNumber.toFixed(1)} mca` : "Seleccione un objetivo"; };
   $("fractal-horizon").onclick = async () => {
     if (!sessionId) { window.alert("Inicie una sesión PLC con un perfil guardado antes de proyectar."); return; }
     if (!fractalOrigin) { window.alert("Configure Fractal con ?fractal=https://host-fractal."); return; }
     const studyType = fractalStudyType.value;
-    const overrides = studyType === "alternative" ? {
-      demand_multiplier: Number($<HTMLInputElement>("fractal-demand-multiplier").value),
-      leakage_multiplier: Number($<HTMLInputElement>("fractal-leak-multiplier").value),
-    } : undefined;
+    const profileId = $<HTMLSelectElement>("fractal-profile-select").value;
+    if (!profileId) { window.alert("Seleccione un perfil guardado para este estudio."); return; }
+    if (profileId !== activeSessionProfileId) { window.alert("Para alinear el historial, el estudio debe usar el perfil activo del PLC. Inicie una sesión nueva para cambiar el perfil."); return; }
+    if (studyType === "optimized" && (!Number.isFinite(fractalTarget.valueAsNumber) || fractalTarget.valueAsNumber < 10 || fractalTarget.valueAsNumber > 45)) { window.alert("Elija explícitamente una presión mínima objetivo entre 10 y 45 mca."); return; }
     const button = fractalHorizonButton;
     button.disabled = true; button.textContent = studyType === "optimized" ? "… OPTIMIZANDO PRESIÓN POR HORA" : "… LEYENDO PLC Y PROYECTANDO";
-    let study: { study_id: string; study_type: string; base_time: number; hours: { hour: number; supply_level_pct: number; robust: boolean; commands?: { vrp_opening_pct?: number | null; vrp_opening_required_pct?: number | null; opening_curve_status?: string; target_pressure_mca?: number; applied_pressure_target_mca?: number; target_met?: boolean }; profile_commands?: { prs?: { control_mode?: string; critical_control_point?: string; critical_setpoint_mca?: number } }; scenarios: { demand_factor: number; state: Record<string, number> & { prs_inlet_mca: number; prs_outlet_mca: number; critical_pressure_mca: number; control_point_pressure_mca: number; consumer_pressures_mca: Record<string, number> }; feasible: boolean }[] }[]; published?: unknown };
+    let study: { study_id: string; study_type: string; base_time: number; target_pressure_mca?: number; profile_id?: string; profile_hash?: string; comparison_id?: string; comparison_run_published?: { frame_count?: number }; comparison_persistence_error?: string; hours: { hour: number; supply_level_pct: number; robust: boolean; commands?: { vrp_opening_pct?: number | null; vrp_opening_required_pct?: number | null; opening_curve_status?: string; target_pressure_mca?: number; applied_pressure_target_mca?: number; target_met?: boolean }; profile_commands?: { prs?: { control_mode?: string; critical_control_point?: string; critical_setpoint_mca?: number } }; scenarios: { demand_factor: number; state: Record<string, number> & { prs_inlet_mca: number; prs_outlet_mca: number; critical_pressure_mca: number; control_point_pressure_mca: number; consumer_pressures_mca: Record<string, number> }; feasible: boolean }[] }[]; published?: unknown };
     try {
-      const response = await fractalFetch("/studies/horizon/from-plc", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ session_id: sessionId, plant_id: plantId, emulator_api: apiOrigin, overrides, study_type: studyType }) });
+      const response = await fractalFetch("/studies/horizon/from-plc", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ session_id: sessionId, plant_id: plantId, emulator_api: apiOrigin, profile_id: profileId, objective_id: "OBJ-PRESSURE-MIN", target_pressure_mca: studyType === "optimized" ? fractalTarget.valueAsNumber : undefined, study_type: studyType }) });
       if (!response.ok) { const detail = await response.json().catch(() => ({})) as { detail?: string }; throw Error(detail.detail ?? "Fractal no pudo proyectar el perfil PLC"); }
       study = await response.json();
-    } catch (error) { window.alert(String(error)); return; }
-    finally { button.disabled = false; updateFractalButtonLabel(); }
+      if (study.study_type === "optimized") {
+        optimizedTrajectory = trajectoryFromFrames(study.hours as unknown[]);
+        renderSupplyComparison();
+        await loadComparisons(study.comparison_id).catch((error) => { $("triad-position").textContent = `Estudio guardado, pero no se pudo cargar la tríada: ${String(error)}`; });
+      }
+    } catch (error) {
+      const message = document.createElement("p"); message.className = "muted"; message.textContent = `No se pudo calcular el estudio: ${String(error)}`;
+      $("fractal-recommendations").replaceChildren(message);
+      return;
+    }
+    finally { button.disabled = !sessionId; updateFractalButtonLabel(); }
     if (study.published) $<HTMLAnchorElement>("link-plant").href = `/plant.html?plant=${plantId}&session=${encodeURIComponent(sessionId)}&study=${encodeURIComponent(study.study_id)}${query.get("api") ? `&api=${encodeURIComponent(apiOrigin)}` : ""}`;
-    $("fractal-recommendations").innerHTML = `<article class="panel"><p class="eyebrow">◆ FUTURO SIMULADO · NO APLICADO · ${study.study_type.toUpperCase()}</p><p><b>Estudio ${study.study_id}</b> · origen PLC t=${fmt(study.base_time, 0)} s · ${study.published ? "persistido en PLC" : "resultado Fractal (no persistido en PLC)"}</p>${study.hours.map((item) => { const state = item.scenarios[1]?.state ?? item.scenarios[0]?.state; const pressureScenarios = item.scenarios.map((scenario) => ({ factor: scenario.demand_factor, minimum: Math.min(...Object.values(scenario.state.consumer_pressures_mca)) })); const worst = pressureScenarios.reduce((a, b) => b.minimum < a.minimum ? b : a, { factor: Number.NaN, minimum: Number.POSITIVE_INFINITY }); const safe = worst.minimum >= 15; const point = item.profile_commands?.prs?.critical_control_point; const pointText = point ? `Control ${point}: ${fmt(state?.control_point_pressure_mca)} mca / objetivo ${fmt(item.profile_commands?.prs?.critical_setpoint_mca)} mca · ` : ""; const outletLabel = item.profile_commands?.prs?.control_mode === "fixed_outlet" ? "salida fija" : "salida variable"; const openingText = item.commands?.opening_curve_status === "outside_calibrated_range" ? ` · apertura requerida ${fmt(item.commands?.vrp_opening_required_pct)} % · fuera del rango (20–100 %)` : ` · VRP estimada ${fmt(item.commands?.vrp_opening_pct)} %`;
-      const targetText = study.study_type === "optimized" ? `${openingText} · objetivo 18 mca ${item.commands?.target_met ? "alcanzado" : `fallback ${fmt(item.commands?.applied_pressure_target_mca)} mca`}` : ""; return `<p>Hora ${String(item.hour + 1).padStart(2, "0")} · entrada PRS ${fmt(state?.prs_inlet_mca)} / ${outletLabel} ${fmt(state?.prs_outlet_mca)} mca · ${pointText}mínima de las 64 viviendas ${fmt(worst.minimum)} mca (demanda ×${fmt(worst.factor, 2)})${targetText} · ${safe ? "todas ≥15 mca en escenarios de comprobación" : "alguna <15 mca · REVISAR"} · ${item.robust ? "factible en modelo" : "restricciones no factibles"}</p>`; }).join("")}${study.study_type === "optimized" ? renderVrpOptimizationCharts(study.hours) : ""}</article>`;
+    $("fractal-recommendations").innerHTML = `<article class="panel"><p class="eyebrow">◆ FUTURO SIMULADO · NO APLICADO · ${study.study_type.toUpperCase()}</p><p><b>Estudio ${study.study_id}</b> · origen PLC t=${fmt(study.base_time, 0)} s · ${study.published ? study.comparison_run_published ? `estudio y ${study.comparison_run_published.frame_count ?? 0} frames del optimizador guardados` : study.comparison_persistence_error ? "estudio guardado; ejecución no guardada en el historiador" : "persistido en PLC" : "resultado Fractal (no persistido en PLC)"}</p>${study.hours.map((item) => { const state = item.scenarios[1]?.state ?? item.scenarios[0]?.state; const pressureScenarios = item.scenarios.map((scenario) => ({ factor: scenario.demand_factor, minimum: Math.min(...Object.values(scenario.state.consumer_pressures_mca)) })); const worst = pressureScenarios.reduce((a, b) => b.minimum < a.minimum ? b : a, { factor: Number.NaN, minimum: Number.POSITIVE_INFINITY }); const targetMet = study.study_type === "optimized" ? Boolean(item.commands?.target_met) : true; const safe = item.robust && targetMet; const point = item.profile_commands?.prs?.critical_control_point; const pointText = point ? `Control ${point}: ${fmt(state?.control_point_pressure_mca)} mca / objetivo ${fmt(item.profile_commands?.prs?.critical_setpoint_mca)} mca · ` : ""; const outletLabel = item.profile_commands?.prs?.control_mode === "fixed_outlet" ? "salida fija" : "salida variable"; const openingText = item.commands?.opening_curve_status === "outside_assumed_range" ? ` · apertura requerida ${fmt(item.commands?.vrp_opening_required_pct)} % · fuera del rango (20–100 %)` : ` · VRP estimada ${fmt(item.commands?.vrp_opening_pct)} %`;
+      const targetText = study.study_type === "optimized" ? `${openingText} · objetivo C44 ≥${fmt(study.target_pressure_mca)} mca ${item.commands?.target_met ? "alcanzado" : "no alcanzado"}` : ""; return `<p>Hora ${String(item.hour + 1).padStart(2, "0")} · entrada PRS ${fmt(state?.prs_inlet_mca)} / ${outletLabel} ${fmt(state?.prs_outlet_mca)} mca · ${pointText}mínima de las viviendas ${fmt(worst.minimum)} mca${targetText} · ${safe ? "objetivo/estado factible" : "objetivo no alcanzado o restricciones no factibles · REVISAR"}</p>`; }).join("")}${study.study_type === "optimized" ? renderVrpOptimizationCharts(study.hours) : ""}</article>`;
     void renderFractal();
   };
   $("profile-new").onclick = () => {
     const selected = profiles.find((profile) => profile.id === activeProfileId);
-    const template = selected?.id?.startsWith("builtin-") ? selected : profiles.find((profile) => profile.id?.endsWith("pfl-personalizado-01"));
+    const template = selected ?? profiles.find((profile) => profile.id?.endsWith("pfl-personalizado-01"));
     activeProfile = template ? structuredClone(template) : { name: "", description: "", hours: {} };
     delete activeProfile.id;
-    activeProfile.name = "Mi escenario personalizado";
-    activeProfile.description = "Aperturas de viviendas y fugas definidas por el operador.";
+    activeProfile.name = template ? `Copia de ${template.name}` : "Nuevo escenario";
+    activeProfile.description = template?.description ?? "Escenario de operación creado por el operador.";
     activeProfileId = null;
     profileHour = 0;
-    pressureRequest++; profilePressure = [];
     renderProfileEditor();
     $<HTMLInputElement>("profile-name").focus();
   };
@@ -955,14 +1271,33 @@ async function start(): Promise<void> {
     const profile = profiles.find((item) => item.id === id);
     if (profile) { activeProfile = structuredClone(profile); activeProfileId = profile.id ?? null; profileHour = 0; }
     else { activeProfile = { name: "", description: "", hours: {} }; activeProfileId = null; }
-    pressureRequest++; profilePressure = [];
     renderProfileEditor();
-    void loadProfilePressure();
   };
   $<HTMLSelectElement>("profile-hour").onchange = (event) => { updateProfileHourFromForm(); profileHour = Number((event.target as HTMLSelectElement).value); renderProfileEditor(); };
-  $("profile-clone").onclick = () => { updateProfileHourFromForm(); const target = Math.min(23, profileHour + 1); activeProfile.hours[String(target)] = structuredClone(currentProfileHour()); profileHour = target; pressureRequest++; profilePressure = []; renderProfileEditor(); };
+  $("profile-clone").onclick = () => { updateProfileHourFromForm(); const target = Math.min(23, profileHour + 1); activeProfile.hours[String(target)] = structuredClone(currentProfileHour()); profileHour = target; renderProfileEditor(); };
   $("profile-capture").onclick = captureCurrentCommands;
   $("profile-save").onclick = () => { void saveProfile(); };
+  $("profile-save-as").onclick = async () => {
+    if (!activeProfileId?.startsWith("builtin-")) return;
+    const name = window.prompt("Nombre del nuevo archivo basado en esta plantilla", `Copia de ${activeProfile.name}`)?.trim();
+    if (!name) return;
+    activeProfile = structuredClone(activeProfile);
+    delete activeProfile.id;
+    activeProfile.name = name;
+    $<HTMLInputElement>("profile-name").value = name;
+    activeProfileId = null;
+    await saveProfile();
+  };
+  $("profile-rename").onclick = async () => {
+    if (!activeProfileId || activeProfileId.startsWith("builtin-")) return;
+    const name = window.prompt("Nuevo nombre del archivo", activeProfile.name)?.trim();
+    if (!name || name === activeProfile.name) return;
+    const renamed = { ...activeProfile, name };
+    const response = await apiFetch(`/api/plants/${plantId}/operation-profiles/${activeProfileId}`, { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify(renamed) });
+    if (!response.ok) { const error = await response.json().catch(() => ({})) as { detail?: string }; window.alert(error.detail ?? "No se pudo renombrar el archivo."); return; }
+    activeProfile = await response.json() as OperationProfile;
+    await loadProfiles();
+  };
   $("profile-delete").onclick = async () => {
     if (!activeProfileId || activeProfileId.startsWith("builtin-")) return;
     if (!window.confirm(`¿Eliminar definitivamente «${activeProfile.name}»? El PLC no se modifica.`)) return;
@@ -970,22 +1305,6 @@ async function start(): Promise<void> {
     if (!response.ok) { const error = await response.json().catch(() => ({})) as { detail?: string }; window.alert(error.detail ?? "No se pudo eliminar el escenario"); return; }
     activeProfile = { name: "", description: "", hours: {} }; activeProfileId = null; profileHour = 0;
     await loadProfiles();
-  };
-  $("profile-stop").onclick = () => {
-    void stopSession().catch((error) => { $("connection").textContent = `● ERROR · ${String(error)}`; });
-  };
-  $("profile-run").onclick = async () => {
-    if (!activeProfileId) { window.alert("Guarde el escenario antes de ejecutarlo."); return; }
-    if (socket?.readyState === WebSocket.OPEN && sessionId) {
-      if (activeSessionProfileId === activeProfileId) { window.alert("Este escenario ya está activo en el PLC."); return; }
-      const response = await apiFetch(`/api/plants/${plantId}/sessions/${sessionId}/schedule-profile`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ profile_id: activeProfileId }) });
-      const result = await response.json() as { starts_at_hour?: number; detail?: string };
-      if (response.ok) { pendingSessionProfileId = activeProfileId; renderWorkspaceContext(); }
-      window.alert(response.ok ? `Escenario programado en el PLC para la hora ${String((result.starts_at_hour ?? 0) + 1).padStart(2, "0")}; no aplicado ahora.` : result.detail ?? "No se pudo programar");
-      return;
-    }
-    if (sessionId) { sessionId = null; query.delete("session"); window.history.replaceState(null, "", `${location.pathname}?${query}`); }
-    await connect();
   };
   if (embedded) window.addEventListener("message", (event: MessageEvent<{ type?: string; plantId?: string; studyId?: string | null; studyType?: string; profileName?: string }>) => {
     if (event.origin !== location.origin || event.source !== window.parent || event.data.plantId !== plantId || event.data.type !== "plc-study-selected") return;
@@ -1002,7 +1321,7 @@ async function start(): Promise<void> {
   renderDay(); renderSavedRuns(); await loadProfiles();
   renderWorkspaceContext();
   if (sessionId) {
-    const state = await getJson<{ running: boolean; profile_id?: string | null; pending_profile_id?: string | null; t?: number }>(`/api/plants/${plantId}/sessions/${sessionId}`).catch(() => null);
+    const state = await getJson<{ running: boolean; paused?: boolean; profile_id?: string | null; pending_profile_id?: string | null; t?: number }>(`/api/plants/${plantId}/sessions/${sessionId}`).catch(() => null);
     if (state) {
       activeSessionProfileId = state.profile_id ?? null;
       pendingSessionProfileId = state.pending_profile_id ?? null;
@@ -1013,14 +1332,19 @@ async function start(): Promise<void> {
         profileHour = Math.max(0, Math.min(23, Math.floor((state.t ?? 0) / 3600)));
         renderProfileEditor();
       }
+      plcRunning = state.running;
+      paused = state.paused ?? false;
       renderWorkspaceContext();
+      renderSessionControls(); renderRunProfileSelector();
       if (state.running) void connect();
-      else $("connection").textContent = "● SESIÓN DETENIDA · PULSE PLAY PARA REANUDAR";
+      else $("connection").textContent = "● EMULACIÓN DETENIDA · ÚLTIMO ESTADO CONSERVADO";
+      if (sessionId) {
+        void renderFractal();
+        void loadComparisons().catch((error) => { $("triad-position").textContent = `No se pudieron leer las comparaciones guardadas: ${String(error)}`; });
+      }
     }
   }
 }
 
-mountComparisons();
 document.querySelectorAll<HTMLButtonElement>("[data-screen]").forEach((button) => button.onclick = () => selectScreen(button.dataset.screen!));
-if (query.get("screen") === "comparisons") selectScreen("comparisons");
 start().catch((error: unknown) => { $("plant-name").textContent = ` · ERROR: ${String(error)}`; });

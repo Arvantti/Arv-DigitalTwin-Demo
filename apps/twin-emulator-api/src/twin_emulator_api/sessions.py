@@ -19,6 +19,25 @@ from .session_checkpoints import checkpoints
 TICK_S = 0.1
 MAX_STEPS_PER_TICK = 4000
 CHECKPOINT_INTERVAL_S = 3600.0
+DEFAULT_PRS_OPENING_PCT = 38.0
+
+
+def _activate_fixed_prs_opening(plant: Any, profile: dict[str, Any] | None = None) -> None:
+    """Fuerza AUTO a apertura fija, incluso al recuperar checkpoints del controlador anterior."""
+    station = plant.equipment.get("prs-01")
+    if station is None:
+        return
+    if getattr(station, "auto_control_mode", None) == "fixed_opening":
+        return
+    opening = getattr(station, "auto_opening_pct", DEFAULT_PRS_OPENING_PCT)
+    if profile is not None:
+        hour = str(int(plant.t // 3600))
+        profile_opening = profile.get("hours", {}).get(hour, {}).get("prs", {}).get("auto_opening_pct")
+        if profile_opening is not None:
+            opening = profile_opening
+    if isinstance(opening, bool) or not isinstance(opening, (int, float)) or not 20 <= opening <= 100:
+        opening = DEFAULT_PRS_OPENING_PCT
+    station.command("set_auto_opening", {"pct": float(opening)})
 
 
 def clean(value: Any) -> Any:
@@ -141,6 +160,8 @@ class SessionManager:
         demo_expires_at: float | None = None,
     ) -> PlantSession:
         plant = model.create(seed=1, random_faults=False, horizon_s=86400.0)
+        if plant_id == "water-network-scale-v1":
+            _activate_fixed_prs_opening(plant, profile)
         session = PlantSession(str(uuid4()), plant_id, plant, profile_id, profile, demo_client_id, demo_expires_at)
         self.sessions[session.id] = session
         checkpoints.save(session)
@@ -181,6 +202,8 @@ class SessionManager:
             last_checkpoint_t=float(state.get("last_checkpoint_t", plant.t)),
             recommendations=state.get("recommendations", []),
         )
+        if plant_id == "water-network-scale-v1":
+            _activate_fixed_prs_opening(session.plant, session.profile)
         self.sessions[session_id] = session
         return session
 

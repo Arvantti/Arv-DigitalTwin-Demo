@@ -1,8 +1,8 @@
 schema_version: 1
 objectives:
-  - id: OBJ-LEAK-01 # Clave histórica conservada por compatibilidad de estudios.
-    name: Minimizar la consigna de salida PRS manteniendo presión crítica
+  - id: OBJ-PRESSURE-MIN
+    name: Minimizar la consigna PRS para la presión mínima elegida por el usuario en C44
     modes: [instant, horizon]
     primary: { metric: prs_outlet_mca, direction: minimize }
-    constraints: [critical_pressure_target, critical_pressure_hard_min]
+    constraints: [critical_pressure_target]
     decisions: [prs-01.manual_setting_mca]

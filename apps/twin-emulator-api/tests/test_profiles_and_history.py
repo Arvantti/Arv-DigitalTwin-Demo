@@ -11,7 +11,46 @@ PLANT = "water-network-scale-v1"
 BASE = f"/api/plants/{PLANT}"
 
 
-def test_fixed_outlet_profile_keeps_auto_branch_and_maps_inlet_to_pump_setpoint() -> None:
+def test_water_emulator_defaults_to_fixed_opening_without_a_profile(monkeypatch) -> None:
+    from twin_emulator_api import sessions as session_module
+
+    class NoopStore:
+        def save(self, _session) -> None:
+            pass
+
+        def record(self, *_args, **_kwargs) -> None:
+            pass
+
+    monkeypatch.setattr(session_module, "checkpoints", NoopStore())
+    monkeypatch.setattr(session_module, "audit", NoopStore())
+    local_manager = session_module.SessionManager()
+    session = local_manager.create(PLANT, _plant_model(PLANT))
+    try:
+        station = session.plant.equipment["prs-01"]
+        assert station.auto_control_mode == "fixed_opening"
+        assert station.auto_opening_pct == 38
+        for _ in range(3):
+            session.plant.step()
+        assert station.auto_control_mode == "fixed_opening"
+    finally:
+        session.running = False
+        local_manager.sessions.pop(session.id, None)
+
+
+def test_restored_legacy_prs_session_migrates_to_opening_command() -> None:
+    from twin_emulator_api.sessions import _activate_fixed_prs_opening
+
+    plant = _plant_model(PLANT).create(seed=1, random_faults=False)
+    station = plant.equipment["prs-01"]
+    station.auto_control_mode = "critical_pressure"
+    del station.auto_opening_pct  # estado persistido antes de este cambio
+    profile = {"hours": {"0": {"prs": {"auto_opening_pct": 64}}}}
+    _activate_fixed_prs_opening(plant, profile)
+    assert station.auto_control_mode == "fixed_opening"
+    assert station.auto_opening_pct == 64
+
+
+def test_auto_profile_fixes_prs_opening_and_keeps_inlet_to_pump_mapping() -> None:
     profile = normalize_profile(
         {
             "name": "Entrada 70 salida 40",
@@ -24,9 +63,10 @@ def test_fixed_outlet_profile_keeps_auto_branch_and_maps_inlet_to_pump_setpoint(
     assert {item["equipment"] for item in commands if item["command"] == "set_setpoint"} == {"pumpset-main-01"}
     assert next(item["args"]["mca"] for item in commands if item["command"] == "set_setpoint") == 71.25
     assert any(
-        item["equipment"] == "prs-01" and item["command"] == "set_auto_control" and item["args"] == {"mode": "fixed_outlet", "mca": 40.0}
+        item["equipment"] == "prs-01" and item["command"] == "set_auto_opening" and item["args"] == {"pct": 38.0}
         for item in commands
     )
+    assert not any(item["equipment"] == "prs-01" and item["command"] == "set_auto_control" for item in commands)
     assert not any(
         item["equipment"] == "prs-01" and item["command"] == "select_branch" and item["args"]["branch"] == "manual" for item in commands
     )
@@ -35,11 +75,11 @@ def test_fixed_outlet_profile_keeps_auto_branch_and_maps_inlet_to_pump_setpoint(
     session.apply_profile_hour(0)
     station = plant.equipment["prs-01"]
     assert station.branch == "auto" and station.open_b.value == 0
-    assert station.auto_control_mode == "fixed_outlet" and station.auto_fixed_outlet_mca == 40
+    assert station.auto_control_mode == "fixed_opening" and station.auto_opening_pct == 38
     assert plant.equipment["pumpset-main-01"].setpoint == 70
     for _ in range(3):
         plant.step()
-    assert station.true_values()["auto_outlet_setpoint_mca"] == 40
+    assert station.true_values()["auto_outlet_setpoint_mca"] >= 15
     assert station.true_values()["flow_manual_m3h"] <= 1e-5
     with pytest.raises(ValueError, match="requiere la rama auto"):
         normalize_profile(
@@ -47,7 +87,39 @@ def test_fixed_outlet_profile_keeps_auto_branch_and_maps_inlet_to_pump_setpoint(
         )
 
 
-def test_critical_point_profile_drives_l4_c44_with_a_separate_global_minimum_signal() -> None:
+def test_hourly_profile_preloads_auto_opening_while_manual_branch_is_active() -> None:
+    profile = normalize_profile(
+        {"name": "Manual con AUTO preparado", "hours": {"0": {"prs": {"branch": "manual", "auto_opening_pct": 62}}}}
+    )
+    commands = commands_for_hour(profile, 0)
+    assert any(item["command"] == "set_auto_opening" and item["args"]["pct"] == 62 for item in commands)
+    plant = _plant_model(PLANT).create(seed=1, random_faults=False, horizon_s=60)
+    session = PlantSession("manual-prs-opening-test", PLANT, plant, "profile", profile)
+    session.apply_profile_hour(0)
+    station = plant.equipment["prs-01"]
+    assert station.branch == "manual" and station.auto_control_mode == "fixed_opening"
+    assert station.auto_opening_pct == 62
+
+
+def test_changing_fixed_prs_opening_changes_hydraulic_outlet_pressure() -> None:
+    outlets = []
+    for opening in (20, 100):
+        profile = normalize_profile({"name": f"Apertura {opening}", "hours": {"0": {"prs": {"auto_opening_pct": opening}}}})
+        plant = _plant_model(PLANT).create(seed=1, random_faults=False, horizon_s=60)
+        session = PlantSession(f"opening-{opening}", PLANT, plant, "profile", profile)
+        session.apply_profile_hour(0)
+        for _ in range(10):
+            plant.step()
+        station = plant.equipment["prs-01"]
+        assert station.auto_control_mode == "fixed_opening"
+        assert station.auto_opening_pct == opening
+        outlets.append(station.p_out)
+    assert outlets[1] > outlets[0] + 1
+    with pytest.raises(ValueError, match="auto_opening_pct debe ser un número entre 20 y 100"):
+        normalize_profile({"name": "Fuera de rango", "hours": {"0": {"prs": {"auto_opening_pct": 101}}}})
+
+
+def test_critical_point_profile_metadata_does_not_drive_the_emulator_prs() -> None:
     profile = normalize_profile(
         {
             "name": "C44 provisional",
@@ -65,7 +137,8 @@ def test_critical_point_profile_drives_l4_c44_with_a_separate_global_minimum_sig
     )
     commands = commands_for_hour(profile, 0)
     assert any(item["command"] == "set_critical_setpoint" and item["args"]["mca"] == 18 for item in commands)
-    assert any(item["command"] == "set_auto_control" and item["args"]["mode"] == "critical_point" for item in commands)
+    assert any(item["command"] == "set_auto_opening" and item["args"]["pct"] == 38 for item in commands)
+    assert not any(item["command"] == "set_auto_control" for item in commands)
     assert not any(item["command"] == "select_branch" and item["args"]["branch"] == "manual" for item in commands)
     plant = _plant_model(PLANT).create(seed=1, random_faults=False, horizon_s=60)
     session = PlantSession("fixed-point-test", PLANT, plant, "profile", profile)
@@ -74,10 +147,11 @@ def test_critical_point_profile_drives_l4_c44_with_a_separate_global_minimum_sig
         plant.step()
     station = plant.equipment["prs-01"]
     values = station.true_values()
-    assert station.branch == "auto" and station.auto_control_mode == "critical_point"
+    assert station.branch == "auto" and station.auto_control_mode == "fixed_opening"
     assert values["control_point_pressure_mca"] == pytest.approx(station.inputs["control_point_pressure_mca"])
     assert values["critical_pressure_mca"] == pytest.approx(station.inputs["critical_pressure_mca"])
     assert station.animation()["critical_pressure_mca"] == pytest.approx(max(0, values["control_point_pressure_mca"]))
+    assert values["auto_opening_pct"] == 38
     assert values["auto_outlet_setpoint_mca"] != pytest.approx(18)
     with pytest.raises(ValueError, match="requiere control_mode critical_point"):
         normalize_profile({"name": "Invalid", "hours": {"0": {"prs": {"critical_control_point": "L4.C44"}}}})
@@ -114,17 +188,116 @@ def test_critical_point_profile_drives_l4_c44_with_a_separate_global_minimum_sig
         )
 
 
-def test_retired_nocturnal_templates_are_removed_from_existing_local_store(tmp_path, monkeypatch) -> None:
+def test_historian_keeps_emulator_history_append_only_and_materializes_exact_triad_refs(tmp_path, monkeypatch) -> None:
+    from twin_emulator_api.historian import SessionHistorian
+
+    monkeypatch.setenv("TWIN_DATA", str(tmp_path))
+    historian = SessionHistorian()
+    historian.frame("session-x", 10, {"origin": "emulator", "value": 1})
+    historian.frame("session-x", 10, {"origin": "emulator", "value": 999})
+    assert historian.nearest_frame("session-x", 10)["snapshot"]["value"] == 1
+
+    shared = {"profile_id": "profile-x", "profile_hash": "a" * 64, "applied_to_plc": False}
+    historian.store_model_run("session-x", "comparison-x", {
+        **shared,
+        "run_id": "COSIM-x",
+        "source": "cosimulation",
+        "model_id": "hydraulic-model-v1",
+        "frames": [
+            {"simulation_time_s": 10, "temporal_context": "present", "state": {"origin": "cosimulation", "value": 2}},
+            {"simulation_time_s": 20, "temporal_context": "forecast", "state": {"origin": "cosimulation", "value": 3}},
+        ],
+    })
+    historian.store_model_run("session-x", "comparison-x", {
+        **shared,
+        "run_id": "OPT-x",
+        "source": "optimization",
+        "model_id": "optimizer-v1",
+        "frames": [
+            {"simulation_time_s": 10, "temporal_context": "present", "state": {"origin": "optimization", "value": 4}},
+            {"simulation_time_s": 20, "temporal_context": "forecast", "state": {"origin": "optimization", "value": 5}},
+        ],
+    })
+    triads = historian.comparison_triads("session-x", "comparison-x")
+    at_present = next(item for item in triads if item["simulation_time_s"] == 10)
+    assert at_present["sources"]["emulator"]["state"]["value"] == 1
+    assert at_present["sources"]["cosimulation"]["state"]["value"] == 2
+    assert at_present["sources"]["optimization"]["state"]["value"] == 4
+    assert at_present["aligned"] is True
+    future = next(item for item in triads if item["simulation_time_s"] == 20)
+    assert future["aligned"] is False
+    assert future["missing_sources"] == ["emulator"]
+    assert historian.nearest_frame("session-x", 10)["snapshot"]["value"] == 1
+
+
+def test_session_api_stores_and_replays_model_results_as_separate_triad_sources(tmp_path, monkeypatch) -> None:
+    from twin_emulator_api import main as main_module
+    from twin_emulator_api.historian import SessionHistorian
+
+    monkeypatch.setenv("TWIN_DATA", str(tmp_path))
+    local_historian = SessionHistorian()
+    monkeypatch.setattr(main_module, "historian", local_historian)
+    profile = ProfileStore(PLANT).create({"name": "Tríada", "hours": {"0": {"global_consumers_pct": 80, "leaks": {"grid-01": {"l1": 35}}}}})
+    session = client.post(f"{BASE}/sessions", json={"profile_id": profile["id"]}).json()
+    session_id = session["id"]
+    local_historian.frame(session_id, 0, {"source": "emulator", "unchanged": True})
+    body = {
+        "run_id": "COSIM-API-test",
+        "source": "cosimulation",
+        "profile_id": profile["id"],
+        "profile_hash": main_module._profile_fingerprint(ProfileStore(PLANT).get(profile["id"])),
+        "model_id": "hydraulic-model-v1",
+        "applied_to_plc": False,
+        "frames": [
+            {"simulation_time_s": 0, "temporal_context": "present", "state": {"source": "cosimulation"}},
+            {"simulation_time_s": 10, "temporal_context": "forecast", "state": {"source": "cosimulation"}},
+        ],
+    }
+    path = f"{BASE}/sessions/{session_id}/comparisons/comparison-api/runs"
+    try:
+        saved = client.post(path, json=body)
+        assert saved.status_code == 201, saved.text
+        assert saved.json()["frame_count"] == 2
+        triads = client.get(f"{BASE}/sessions/{session_id}/comparisons/comparison-api/triads").json()["triads"]
+        at_present = next(item for item in triads if item["simulation_time_s"] == 0)
+        assert at_present["sources"]["emulator"]["state"]["unchanged"] is True
+        assert at_present["sources"]["cosimulation"]["state"]["source"] == "cosimulation"
+        assert at_present["sources"]["optimization"] is None
+        assert local_historian.nearest_frame(session_id, 0)["snapshot"]["unchanged"] is True
+        changed = {**body, "frames": [*body["frames"][:-1], {**body["frames"][-1], "state": {"tampered": True}}]}
+        assert client.post(path, json=changed).status_code == 409
+    finally:
+        manager.sessions.pop(session_id, None)
+
+
+def test_historian_rejects_overwriting_a_calculated_run(tmp_path, monkeypatch) -> None:
+    from twin_emulator_api.historian import SessionHistorian
+
+    monkeypatch.setenv("TWIN_DATA", str(tmp_path))
+    historian = SessionHistorian()
+    payload = {
+        "run_id": "COSIM-x", "source": "cosimulation", "profile_id": "profile-x", "profile_hash": "a" * 64,
+        "model_id": "model-v1", "frames": [{"simulation_time_s": 1, "temporal_context": "forecast", "state": {"value": 1}}],
+    }
+    historian.store_model_run("session-x", "comparison-x", payload)
+    payload["frames"][0]["state"]["value"] = 2
+    with pytest.raises(ValueError, match="frame distinto"):
+        historian.store_model_run("session-x", "comparison-x", payload)
+
+
+def test_retired_scenario_templates_are_removed_from_existing_local_store(tmp_path, monkeypatch) -> None:
     monkeypatch.setenv("TWIN_DATA", str(tmp_path))
     store = ProfileStore(PLANT)
+    retired = ("pfl-noc-01", "pdd-prs-fijo-01", "pdd-prs-punto-critico-18-01")
     with store._connect() as conn:
-        conn.execute(
+        conn.executemany(
             "INSERT INTO operation_profiles (id, plant_id, name, description, data, created_at, updated_at) "
             "VALUES (?, ?, ?, ?, ?, ?, ?)",
-            (f"builtin-{PLANT}-pfl-noc-01", PLANT, "Retirado", "", "{}", "old", "old"),
+            [(f"builtin-{PLANT}-{item}", PLANT, "Retirado", "", "{}", "old", "old") for item in retired],
         )
-    assert len([p for p in ProfileStore(PLANT).list() if p["id"].startswith("builtin-")]) == 5
-    assert ProfileStore(PLANT).get(f"builtin-{PLANT}-pfl-noc-01") is None
+    refreshed = ProfileStore(PLANT)
+    assert len([p for p in refreshed.list() if p["id"].startswith("builtin-")]) == 3
+    assert all(refreshed.get(f"builtin-{PLANT}-{item}") is None for item in retired)
 
 
 def test_demo_custom_profiles_are_isolated_per_anonymous_visitor(tmp_path, monkeypatch) -> None:

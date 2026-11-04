@@ -16,6 +16,18 @@ BAND_FRACTION = 0.05
 ALARM_S = 30.0
 PILOT_DRIFT = 1.15
 WIDE_OPEN_MCA = 1.0e4  # consigna imposible de alcanzar: la PRV queda abierta
+OPENING_MIN_PCT = 20.0
+OPENING_MAX_PCT = 100.0
+
+
+def outlet_target_from_opening(opening_pct: float, inlet_pressure_mca: float) -> float:
+    """Convierte apertura a consigna hidráulica con la curva S asumida (no es un Kv físico)."""
+    import math
+
+    opening = min(OPENING_MAX_PCT, max(OPENING_MIN_PCT, float(opening_pct)))
+    fraction = (opening - OPENING_MIN_PCT) / (OPENING_MAX_PCT - OPENING_MIN_PCT)
+    pressure_span = max(0.0, float(inlet_pressure_mca) - 15.0)
+    return 15.0 + pressure_span * (0.5 - 0.5 * math.cos(math.pi * fraction))
 
 
 def add_pressure_reducing_station(net: HydraulicNetwork, prefix: str, inlet: str, outlet: str,
@@ -76,7 +88,8 @@ class PressureReducingStation(EquipmentBehavior):
         self.pid = PID(kp=p["pid_kp"], ki=p["pid_ki"], out_min=p["auto_min_outlet_mca"], out_max=p["auto_max_outlet_mca"])
         self.pid.integral = self.pid.output = self.manual_setting  # arranca desde la salida de diseño
         self.auto_setting = self.manual_setting
-        self.auto_control_mode = "critical_pressure"
+        self.auto_control_mode = p["auto_control_mode"]
+        self.auto_opening_pct = p["auto_opening_pct"]  # assumed; el PLC puede sobrescribirlo en vivo
         self.auto_fixed_outlet_mca = self.auto_setting
         self.p_in = p["bench_inlet_mca"]
         self.p_out = 0.0
@@ -114,10 +127,16 @@ class PressureReducingStation(EquipmentBehavior):
             self.critical_sp = float(args["mca"])
         elif name == "set_manual_setting":
             self.manual_setting = float(args["mca"])
+        elif name == "set_auto_opening":
+            opening = float(args["pct"])
+            if not OPENING_MIN_PCT <= opening <= OPENING_MAX_PCT:
+                raise ValueError("pct debe estar entre 20 y 100")
+            self.auto_opening_pct = opening
+            self.auto_control_mode = "fixed_opening"
         elif name == "set_auto_control":
             mode = str(args["mode"])
-            if mode not in {"critical_pressure", "critical_point", "fixed_outlet"}:
-                raise ValueError("mode debe ser critical_pressure, critical_point o fixed_outlet")
+            if mode not in {"critical_pressure", "critical_point", "fixed_outlet", "fixed_opening"}:
+                raise ValueError("mode debe ser critical_pressure, critical_point, fixed_outlet o fixed_opening")
             if mode == "fixed_outlet":
                 outlet = float(args["mca"])
                 if not self.p["auto_min_outlet_mca"] <= outlet <= self.p["auto_max_outlet_mca"]:
@@ -158,7 +177,9 @@ class PressureReducingStation(EquipmentBehavior):
                     self.emit("branch_changed", branch=self.branch)
         # PRV automática: el PID mueve su consigna de salida con la presión crítica del paso anterior
         auto_in_service = self.open_a.value > 0
-        if auto_in_service and self.auto_control_mode == "fixed_outlet":
+        if auto_in_service and self.auto_control_mode == "fixed_opening":
+            self.auto_setting = outlet_target_from_opening(self.auto_opening_pct, self.p_in)
+        elif auto_in_service and self.auto_control_mode == "fixed_outlet":
             self.auto_setting = self.auto_fixed_outlet_mca
         elif auto_in_service and not self.failures.is_active("telemetry_loss"):
             if self.auto_control_mode == "critical_point":
@@ -226,7 +247,8 @@ class PressureReducingStation(EquipmentBehavior):
             "flow_manual_m3h": self.flow_b,
             "auto_outlet_setpoint_mca": self.auto_setting,
             "auto_fixed_outlet_mca": self.auto_fixed_outlet_mca,
-            "auto_fixed_mode": 1 if self.auto_control_mode == "fixed_outlet" else 0,
+            "auto_opening_pct": self.auto_opening_pct,
+            "auto_fixed_mode": 1 if self.auto_control_mode in {"fixed_outlet", "fixed_opening"} else 0,
             "auto_control_mode": self.auto_control_mode,
             "critical_setpoint_mca": self.critical_sp,
             "manual_setting_mca": self.manual_setting,
@@ -264,5 +286,6 @@ class PressureReducingStation(EquipmentBehavior):
             "outlet_pressure_mca": max(0.0, self.p_out),
             "critical_pressure_mca": max(0.0, controller_pressure),
             "auto_setpoint_mca": self.auto_setting,
+            "auto_opening_pct": self.auto_opening_pct,
             "stack_light": light,
         }

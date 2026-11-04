@@ -1,6 +1,8 @@
-# Escenario PRS: entrada objetivo 70 mca y salida fija AUTO 40 mca
+# Escenario histórico PRS: entrada objetivo 70 mca y salida fija AUTO 40 mca
 
-## Configuración
+> **Estado: retirado del catálogo operativo.** Se conserva solo como registro histórico y evidencia de una hipótesis anterior al mando PLC por apertura fija. El perfil de validación está en `validation/fixtures/operation-profiles/pdd-prs-fijo-01.json`. La emulación operativa ignora `control_mode`/`auto_outlet_mca` para la PRS AUTO y usa `auto_opening_pct` (ver [prs-fixed-opening-emulator.md](prs-fixed-opening-emulator.md)); el script no reproduce la trayectoria histórica con la lógica PLC actual.
+
+## Configuración histórica
 
 Plantilla `pdd-prs-fijo-01` conserva la demanda diurna PDD-RCA-01 y, en cada hora, selecciona la rama automática A, modo `fixed_outlet`, entrada objetivo 70 mca y salida AUTO fija 40 mca. La rama manual B se conserva cerrada. El operador puede seleccionar la plantilla y crear una copia editable para cambiar por hora ambos valores.
 

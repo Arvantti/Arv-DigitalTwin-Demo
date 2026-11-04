@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arvantti.example/contracts/cosimulation/v1/participant-frame.schema.json",
+  "title": "Cosimulation participant frame v1",
+  "type": "object",
+  "required": ["contract_version", "tick_index", "simulation_time_s", "state"],
+  "properties": {
+    "contract_version": { "const": "cosimulation-participant-frame.v1" },
+    "tick_index": { "type": "integer", "minimum": 1 },
+    "simulation_time_s": { "type": "number", "minimum": 0 },
+    "state": { "type": "object" },
+    "signals": { "type": "object" }
+  },
+  "additionalProperties": false
+}

@@ -6,11 +6,9 @@ El acueducto se abre en `plant.html?plant=water-network-scale-v1&workspace=plc`.
 
 La navegación aprobada conserva siete pantallas principales, en este orden: **MASTER**, **DÍA 24 H**, **BOMBEO Y TANQUES**, **REJILLA Y CONSUMO**, **PERFILES**, **TENDENCIAS EN VIVO** e **HISTORIAL**. Fractal se abre como vista secundaria desde MASTER; las comparativas precalculadas viven como subvista de HISTORIAL. Sus datos y acciones siguen siendo los mismos contratos anteriores; no son pestañas principales adicionales.
 
-## Comparativas de escenarios
+## Comparativas históricas de escenarios (retiradas)
 
-La subvista **COMPARATIVAS PRECALCULADAS** de HISTORIAL permite elegir C44 a 18 mca o salida AUTO fija a 40 mca. Las evidencias JSON de `docs/architecture/validation/` se empaquetan con Vite, sin depender de que el servidor publique `/docs`. Son resultados precalculados, no datos de la sesión actual; cambiar el selector no escribe mandos ni cambia el perfil activo.
-
-Se muestran presiones, siete caudales (incluida recirculación) y niveles donde fueron registrados. Cada panel incluye diferencia relativa `100*(Fractal−PLC)/PLC`, con cortes explícitos cuando PLC=0. Los niveles del escenario fijo no están registrados y se muestran como pendientes. No se infieren ni extrapolan. Las marcas corresponden a las mismas 24 fronteras horarias; las líneas son guías visuales, no evidencia de los transitorios entre muestras. Acceso directo integrado: `plant.html?plant=water-network-scale-v1&workspace=plc&screen=comparisons`.
+La subvista **COMPARATIVAS PRECALCULADAS** de HISTORIAL fue retirada. Sus JSON en `docs/architecture/validation/` se conservan únicamente como evidencia histórica y ya no se empaquetan ni se muestran en Gallery. Las comparaciones actuales se basan en ejecuciones persistidas, con perfil/hash comunes y frames disponibles; faltantes se declaran sin interpolar.
 
 ## Tres tipos de escenario
 
@@ -30,4 +28,4 @@ El historian guarda un fotograma 3D operativo cada ≥60 segundos simulados en S
 
 ## Relojes y límites
 
-Una corrida continua poscorrección de 24 h tardó **2596,71 s reales** de cómputo offline a paso físico de 1 s. Se reprodujo después a razón de **15 s reales por hora** (24 muestras en 360,004 s, desvío máximo de marca <0,01 s); esto **no** acredita el rendimiento de la sesión PLC en vivo a ×240. Informe: `validation/pdd-rca-01-continuous-post-cache.json`; marcas: `validation/pdd-rca-01-replay-240x.json`. La diferencia máxima de suministro siguió siendo **34,268 puntos porcentuales** en la hora 18, sin desacuerdos con la presión crítica mínima de 15 mca. El horizonte de niveles sigue **no validado dinámicamente**; esa limitación de inventario no deshabilita el cálculo horario de presión crítica (18 mca objetivo / 15 mca mínimo duro). Antes del despliegue público deben existir un proxy HTTPS/WSS para ambas APIs, autorización por sesión, retención de frames y pruebas de rendimiento; Gallery estática sola no los proporciona.
+Una corrida continua poscorrección de 24 h tardó **2596,71 s reales** de cómputo offline a paso físico de 1 s. Se reprodujo después a razón de **15 s reales por hora** (24 muestras en 360,004 s, desvío máximo de marca <0,01 s); esto **no** acredita el rendimiento de la sesión PLC en vivo a ×240. Informe: `validation/pdd-rca-01-continuous-post-cache.json`; marcas: `validation/pdd-rca-01-replay-240x.json`. La diferencia máxima de suministro siguió siendo **34,268 puntos porcentuales** en la hora 18; esa evidencia histórica usó el umbral 15 mca. El horizonte de niveles sigue **no validado dinámicamente**. Los objetivos de Fractal actuales son seleccionados por el usuario entre 10 y 45 mca en C44 y no usan fallback fijo. Antes del despliegue público deben existir un proxy HTTPS/WSS para ambas APIs, autorización por sesión, retención de frames y pruebas de rendimiento; Gallery estática sola no los proporciona.

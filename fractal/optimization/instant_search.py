@@ -1,4 +1,4 @@
-"""Búsqueda por presión de salida de PRS, con las demandas PLC fijas."""
+"""Búsqueda de la consigna PRS para una presión mínima definida por el usuario."""
 
 from __future__ import annotations
 
@@ -7,19 +7,19 @@ from math import acos, cos, pi
 from pathlib import Path
 from typing import Any
 
-MODEL = Path(__file__).resolve().parents[1] / "models" / "water-network-scale-v1" / "model.py"
+MODEL = Path(__file__).resolve().parents[1] / "hydraulics" / "models" / "water-network-scale-v1" / "model.py"
 spec = importlib.util.spec_from_file_location("fractal_water_model", MODEL)
 module = importlib.util.module_from_spec(spec)
 assert spec and spec.loader
 spec.loader.exec_module(module)
 
-TARGET_PRESSURE_MCA = 18.0
-HARD_MIN_PRESSURE_MCA = 15.0
 SETTING_TOLERANCE_MCA = 0.005
 NUMERICAL_PRESSURE_MARGIN_MCA = 0.05
 MAX_INTERPOLATIONS = 16
+TARGET_PRESSURE_MIN_MCA = 10.0
+TARGET_PRESSURE_MAX_MCA = 45.0
 
-# Curva cosenoidal S: presión y derivada suaves en apertura/cierre.
+# Hipótesis de conversión presión-apertura; no representa una curva física Kv-apertura validada.
 OPENING_MIN_PCT = 20.0
 OPENING_HIGH_PCT = 100.0
 OUTLET_AT_MIN_OPENING_MCA = 15.0
@@ -45,26 +45,28 @@ def _opening_for_outlet(outlet_mca: float, inlet_mca: float) -> float | None:
         return None
     eased = (outlet_mca - OUTLET_AT_MIN_OPENING_MCA) / pressure_span
     t = acos(1.0 - 2.0 * eased) / pi
-    opening = OPENING_MIN_PCT + t * (OPENING_HIGH_PCT - OPENING_MIN_PCT)
-    return round(opening, 2)
+    return round(OPENING_MIN_PCT + t * (OPENING_HIGH_PCT - OPENING_MIN_PCT), 2)
 
 
 def optimize(
     tags: dict[str, Any],
-    demand_factor: float = 1.0,
-    objective_id: str = "OBJ-LEAK-01",
+    target_pressure_mca: float,
     *,
     vertical_openings_pct: tuple[float, float, float] | None = None,
     critical_consumer_id: str | None = None,
     reference_prs_mca: float | None = None,
 ) -> dict[str, Any]:
-    """Encuentra la menor consigna PRS que mantiene 18 mca; 15 mca es el piso duro.
+    """Minimiza la consigna de salida que satisface la presión mínima solicitada.
 
-    Las aperturas de viviendas, fugas y válvulas entre pisos vienen del escenario
-    PLC y se mantienen fijas. Una interpolación lineal acotada va estimando la
-    consigna requerida y cada estimación se vuelve a resolver hidráulicamente.
+    Las aperturas horarias del perfil (viviendas, fugas y válvulas entre pisos)
+    permanecen fijas. El solver calcula los caudales resultantes para cada candidato;
+    no se congelan caudales históricos como si fueran mandos.
     """
-    del objective_id  # El objetivo aquí es mantener presión, no mover otras válvulas.
+    if isinstance(target_pressure_mca, bool) or not isinstance(target_pressure_mca, (int, float)):
+        raise ValueError("target_pressure_mca debe estar entre 10 y 45 mca")
+    target = float(target_pressure_mca)
+    if not TARGET_PRESSURE_MIN_MCA <= target <= TARGET_PRESSURE_MAX_MCA:
+        raise ValueError("target_pressure_mca debe estar entre 10 y 45 mca")
     if vertical_openings_pct is None:
         vertical_openings_pct = tuple(
             float(tags.get(f"PLC.Valve.Vertical{connection}OpeningPct", 100.0))
@@ -79,49 +81,31 @@ def optimize(
         tags,
         prs_mca=current,
         vertical_openings_pct=openings,
-        demand_factor=demand_factor,
         critical_consumer_id=critical_consumer_id,
     )
-    fixed_flows_m3h = {
-        **{
-            f"L{level}.C{branch}{position}": float(base["consumer_flows_l_min"][f"L{level}.C{branch}{position}"]) * 0.06
-            for level in range(1, 5)
-            for branch in range(1, 5)
-            for position in range(1, 5)
-        },
-        **{
-            f"L{level}.{leak}": float(base["leak_flows_l_min"][f"L{level}.{leak}"]) * 0.06
-            for level in range(1, 5)
-            for leak in ("L1", "L2")
-        },
-    }
 
     def evaluate(setting: float) -> dict[str, Any]:
         return module.evaluate(
             tags,
             prs_mca=setting,
             vertical_openings_pct=openings,
-            demand_factor=1.0,
             critical_consumer_id=critical_consumer_id,
-            fixed_flows_m3h=fixed_flows_m3h,
+            required_min_pressure_mca=target,
         )
 
     low_state, high_state = evaluate(low), evaluate(high)
     high_pressure = _critical_value(high_state)
-    target = TARGET_PRESSURE_MCA if high_pressure >= TARGET_PRESSURE_MCA else HARD_MIN_PRESSURE_MCA
-    # Pequeño margen numérico para que el estado re-evaluado de fin de hora
-    # conserve el mínimo operativo aunque cambien las condiciones hidráulicas.
+    target_met = high_pressure >= target
     search_target = target + NUMERICAL_PRESSURE_MARGIN_MCA
-    target_met = high_pressure >= TARGET_PRESSURE_MCA
-
-    # Si ni a máxima salida se conserva 15 mca, devolver el mejor caso posible,
-    # marcado inviable para que no se publique como una recomendación factible.
-    if high_pressure < HARD_MIN_PRESSURE_MCA:
+    if not target_met:
         setting, state = high, high_state
-        status = "below_hard_minimum"
+        status = "target_unreachable"
     elif _critical_value(low_state) >= search_target:
         setting, state = low, low_state
-        status = "target_18_met" if target_met else "fallback_15_used"
+        status = "target_met_at_minimum_setting"
+    elif high_pressure < search_target:
+        setting, state = high, high_state
+        status = "target_met_at_upper_setting"
     else:
         left, right = low, high
         left_state, right_state = low_state, high_state
@@ -133,7 +117,6 @@ def optimize(
                 break
             if right_pressure > left_pressure + 1e-9:
                 candidate = left + (search_target - left_pressure) * width / (right_pressure - left_pressure)
-                # Evita estancarse si la curva local no es perfectamente lineal.
                 candidate = min(right - width * 0.1, max(left + width * 0.1, candidate))
             else:
                 candidate = (left + right) / 2
@@ -143,13 +126,12 @@ def optimize(
             else:
                 left, left_state = candidate, candidate_state
         setting, state = right, right_state
-        status = "target_18_met" if target_met else "fallback_15_used"
+        status = "target_met"
 
     inlet = float(state["prs_inlet_mca"])
     outlet = float(state["prs_outlet_mca"])
     required_opening = _opening_for_outlet(outlet, inlet)
     opening_in_range = required_opening is not None and OPENING_MIN_PCT <= required_opening <= OPENING_HIGH_PCT
-    opening_status = "within_calibrated_range" if opening_in_range else "outside_calibrated_range"
     state = state | {
         "prs_mca": round(setting, 3),
         "valve_12_pct": openings[0],
@@ -157,27 +139,27 @@ def optimize(
         "valve_34_pct": openings[2],
         "vrp_opening_pct": required_opening if opening_in_range else None,
         "vrp_opening_required_pct": required_opening,
-        "opening_curve_status": opening_status,
-        "target_pressure_mca": TARGET_PRESSURE_MCA,
-        "applied_pressure_target_mca": target,
-        "numerical_pressure_margin_mca": NUMERICAL_PRESSURE_MARGIN_MCA,
+        "opening_curve_status": "within_assumed_range" if opening_in_range else "outside_assumed_range",
+        "target_pressure_mca": target,
         "target_met": target_met,
         "optimization_status": status,
         "opening_curve_assumption": {
             "kind": "cosine_ease_in_out",
             "endpoint_slope": "zero",
-            "source": "user_defined_calibration_scenario",
+            "source": "assumed_user_defined_curve_not_physically_validated",
             "opening_min_pct": OPENING_MIN_PCT,
             "outlet_at_min_opening_mca": OUTLET_AT_MIN_OPENING_MCA,
             "opening_high_pct": OPENING_HIGH_PCT,
             "outlet_at_high_opening_mca": round(inlet, 3),
         },
     }
-    hard_feasible = bool(state["feasible"]) and _critical_value(state) >= HARD_MIN_PRESSURE_MCA and opening_in_range
+    feasible = bool(state["feasible"]) and target_met and opening_in_range
     return {
         "base": base,
         "optimized": state,
-        "fixed_flows_m3h": fixed_flows_m3h,
-        "constraints_satisfied": hard_feasible,
+        "constraints_satisfied": feasible,
         "target_met": target_met,
+        "target_pressure_mca": target,
+        "flow_result_m3h": state["flow_m3h"],
+        "leakage_result_m3h": state["leakage_m3h"],
     }

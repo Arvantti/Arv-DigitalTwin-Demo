@@ -132,6 +132,7 @@ let forecastStudyId = url.get("study");
 let plantApiAvailable = false;
 let latestLiveMessage: SimMessage | null = null;
 let historicalTime: number | null = null;
+let triadViewActive = false;
 let historyRequest = 0;
 let forecastPlaybackStop: (() => void) | null = null;
 const shotMode = url.get("shot") === "1";
@@ -1440,6 +1441,7 @@ type SimMessage = {
   t: number;
   speed?: number;
   running?: boolean;
+  paused?: boolean;
   snapshot: { equipment: Record<string, EquipmentSnapshot>; lines: Parameters<typeof renderLines>[0]; links?: Record<string, LinkState> };
   events: Parameters<typeof appendEvents>[0];
 };
@@ -1466,7 +1468,16 @@ function applyMessage(msg: SimMessage, label: string): void {
   const hh = String(Math.floor(t / 3600)).padStart(2, "0");
   const mm = String(Math.floor((t % 3600) / 60)).padStart(2, "0");
   const ss = String(Math.floor(t % 60)).padStart(2, "0");
-  $("clock").textContent = `${label} ${hh}:${mm}:${ss}${label === "FUTURO FRACTAL" ? "" : ` · ×${msg.speed ?? speedFromSlider()}`}`;
+  const stopped = label === "PLC.DETENIDO";
+  const paused = label === "PLC.EN PAUSA";
+  $("clock").textContent = label.startsWith("TRÍADA")
+    ? `${label} · ${hh}:${mm}:${ss}`
+    : stopped
+      ? `PLC.DETENIDO · SEÑALES FIJAS ${hh}:${mm}:${ss}`
+      : paused
+        ? `PLC.PAUSADO · SEÑALES FIJAS ${hh}:${mm}:${ss}`
+        : `${label} ${hh}:${mm}:${ss}${label === "FUTURO FRACTAL" ? "" : ` · ×${msg.speed ?? speedFromSlider()}`}`;
+  if (sessionId && !forecastStudyId && !triadViewActive) $("btn-connect").textContent = stopped ? "■ PLC DETENIDO · REANUDE EN LA HMI" : paused ? "❚❚ PLC EN PAUSA · REANUDE EN LA HMI" : "● SIGUIENDO PLC ACTUAL";
 }
 
 async function connect(): Promise<void> {
@@ -1499,7 +1510,7 @@ async function connect(): Promise<void> {
     latestLiveMessage = msg as SimMessage;
     const slider = $<HTMLInputElement>("history-time");
     slider.max = String(Math.floor(msg.t / 60) * 60);
-    if (historicalTime === null && !forecastStudyId) applyMessage(msg, msg.running === false ? "PLC.DETENIDO" : "PLC.ACTUAL");
+    if (historicalTime === null && !forecastStudyId && !triadViewActive) applyMessage(msg, msg.running === false ? "PLC.DETENIDO" : msg.paused ? "PLC.EN PAUSA" : "PLC.ACTUAL");
   };
   // sin API (sitio publicado): se reproduce la grabación de la operación normal
   ws.onclose = () => {
@@ -1789,6 +1800,8 @@ function syncPlcStudySelection(study?: ForecastStudySummary): void {
 
 // ------------------------------------------------------------------ un solo escritorio: 3D + HMI y pasado de solo lectura
 function waterView(view: "3d" | "plc" | "history"): void {
+  if (view === "plc" || view === "history") triadViewActive = false;
+  if (view === "plc" && sessionId) $("btn-connect").textContent = "● SIGUIENDO PLC ACTUAL";
   $("water-plc-panel").hidden = view !== "plc";
   if (view === "plc" && !waterPlcResizeInitialized) { setupWaterPlcResize(); waterPlcResizeInitialized = true; }
   $("water-history-panel").hidden = view !== "history";
@@ -1799,7 +1812,7 @@ function waterView(view: "3d" | "plc" | "history"): void {
     document.body.classList.remove("forecast-mode");
     $("clock").textContent = "VISTA PLC / ESCENARIOS";
   }
-  if (view === "3d" && sessionId && doc.plant.id === "water-network-scale-v1") {
+  if (view === "3d" && !triadViewActive && sessionId && doc.plant.id === "water-network-scale-v1") {
     void loadForecast().catch((error) => { $("forecast-values").textContent = `No se pudo actualizar la lista de escenarios: ${String(error)}`; });
   }
   if (view === "plc") {
@@ -1826,7 +1839,7 @@ function waterView(view: "3d" | "plc" | "history"): void {
     equipmentHistory.clear();
     if (sessionId) void showHistory(Number($<HTMLInputElement>("history-time").value));
     else $("history-caption").textContent = "Inicie una sesión PLC para generar historia.";
-  } else if (historicalTime !== null) {
+  } else if (historicalTime !== null && !triadViewActive) {
     historicalTime = null;
     equipmentHistory.clear();
     if (!forecastStudyId && latestLiveMessage) applyMessage(latestLiveMessage, "PLC.ACTUAL");
@@ -2085,7 +2098,6 @@ async function start(): Promise<void> {
   // y se conservan intactas todas las cotas hidráulicas, equipos y rutas.
   stage.setGroundElevation(Math.min(...doc.zones.map((zone) => zone.elevation ?? 0)));
   $<HTMLAnchorElement>("link-equipos").href = `/equipos.html?plant=${plantId}`;
-  const plcLink = $<HTMLAnchorElement>("link-plc");
   $("forecast-return").onclick = () => {
     forecastPlaybackStop?.(); forecastPlaybackStop = null;
     forecastStudyId = null; url.delete("study"); history.replaceState(null, "", `${location.pathname}?${url}`);
@@ -2098,16 +2110,14 @@ async function start(): Promise<void> {
     : null;
   if (plcSchema?.ok) {
     document.body.classList.add("plc-viewer-mode");
-    plcLink.href = "#plc";
-    plcLink.hidden = false;
     $("water-workspace-nav").hidden = false;
-    plcLink.onclick = (event) => { event.preventDefault(); waterView("plc"); };
     $("view-3d").onclick = () => waterView("3d");
     $("view-plc").onclick = () => waterView("plc");
+    $("water-plc-close").onclick = () => waterView("3d");
     $("view-history").onclick = () => waterView("history");
     $<HTMLInputElement>("history-time").oninput = (event) => { void showHistory(Number((event.target as HTMLInputElement).value)); };
     $("history-return").onclick = () => { historyRequest++; historicalTime = null; waterView("3d"); if (latestLiveMessage) applyMessage(latestLiveMessage, "PLC.ACTUAL"); };
-    window.addEventListener("message", (event: MessageEvent<{ type?: string; sessionId?: string; studyId?: string; plantId?: string }>) => {
+    window.addEventListener("message", (event: MessageEvent<{ type?: string; sessionId?: string; studyId?: string; plantId?: string; triadFrame?: { simulation_time_s: number; source: string; snapshot: Record<string, unknown> } }>) => {
       const frame = $<HTMLIFrameElement>("water-plc-frame");
       if (event.origin !== location.origin || event.source !== frame.contentWindow || event.data.plantId !== doc.plant.id) return;
       if (event.data.type === "plc-session-created" && event.data.sessionId && /^[\w-]+$/.test(event.data.sessionId)) {
@@ -2117,10 +2127,22 @@ async function start(): Promise<void> {
         }
       }
       if (event.data.type === "plc-show-3d") {
-        waterView("3d");
-        if (event.data.studyId && /^[\w-]+$/.test(event.data.studyId)) {
-          forecastStudyId = event.data.studyId; url.set("study", forecastStudyId); history.replaceState(null, "", `${location.pathname}?${url}`);
-          void loadForecast();
+        const triad = event.data.triadFrame;
+        const snapshot = triad?.snapshot as Partial<SimMessage["snapshot"]> | undefined;
+        if (triad && snapshot && typeof snapshot.equipment === "object" && typeof snapshot.lines === "object") {
+          triadViewActive = true;
+          forecastPlaybackStop?.(); forecastPlaybackStop = null;
+          $("forecast-panel").hidden = true; document.body.classList.remove("forecast-mode");
+          const sourceLabel = triad.source === "optimization" ? "OPTIMIZADOR" : triad.source === "cosimulation" ? "COSIMULADOR" : "EMULADOR";
+          applyMessage({ t: triad.simulation_time_s, snapshot: snapshot as SimMessage["snapshot"], events: [] }, `TRÍADA · ${sourceLabel} · NO APLICADA`);
+          $("btn-connect").textContent = "◆ TRÍADA EN 3D · NO APLICADA";
+        } else {
+          triadViewActive = false;
+          waterView("3d");
+          if (event.data.studyId && /^[\w-]+$/.test(event.data.studyId)) {
+            forecastStudyId = event.data.studyId; url.set("study", forecastStudyId); history.replaceState(null, "", `${location.pathname}?${url}`);
+            void loadForecast();
+          } else if (latestLiveMessage && !forecastStudyId) applyMessage(latestLiveMessage, "PLC.ACTUAL");
         }
       }
     });
@@ -2311,7 +2333,8 @@ function loop(): void {
     }
     a.model?.update(a.frame, Math.min(simDt, dt * 4));
   }
-  animatePipes(sceneTime);
+  const frozenLiveHydraulics = !forecastStudyId && latestLiveMessage && (latestLiveMessage.running === false || latestLiveMessage.paused);
+  if (!frozenLiveHydraulics) animatePipes(sceneTime);
   updateProducts?.(sceneTime);
   if (playRate) (trails ??= buildTrails(stage.content, stage.scene)).update(scale, stage.time);
   for (const piece of controlPieces) piece.redraw?.();

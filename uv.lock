@@ -8,7 +8,9 @@ resolution-markers = [
 
 [manifest]
 members = [
+    "cosimulation-engine-api",
     "fractal-engineering-api",
+    "fractal-optimization-api",
     "industrial-twin",
     "twin-emulator-api",
     "twin-runtime",
@@ -82,6 +84,21 @@ wheels = [
 ]
 
 [[package]]
+name = "cosimulation-engine-api"
+version = "0.1.0"
+source = { editable = "apps/cosimulation-engine-api" }
+dependencies = [
+    { name = "fastapi" },
+    { name = "uvicorn", extra = ["standard"] },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "fastapi", specifier = ">=0.110" },
+    { name = "uvicorn", extras = ["standard"], specifier = ">=0.29" },
+]
+
+[[package]]
 name = "eclipse-sumo"
 version = "1.28.0"
 source = { registry = "https://pypi.org/simple" }
@@ -129,6 +146,29 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "fastapi", specifier = ">=0.110" },
+    { name = "pyyaml", specifier = ">=6" },
+    { name = "scipy", specifier = ">=1.14" },
+    { name = "uvicorn", extras = ["standard"], specifier = ">=0.29" },
+]
+
+[[package]]
+name = "fractal-optimization-api"
+version = "0.1.0"
+source = { editable = "apps/fractal-optimization-api" }
+dependencies = [
+    { name = "fastapi" },
+    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
+    { name = "numpy", version = "2.5.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
+    { name = "pyyaml" },
+    { name = "scipy", version = "1.17.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
+    { name = "scipy", version = "1.18.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
+    { name = "uvicorn", extra = ["standard"] },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "fastapi", specifier = ">=0.110" },
+    { name = "numpy", specifier = ">=2" },
     { name = "pyyaml", specifier = ">=6" },
     { name = "scipy", specifier = ">=1.14" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.29" },

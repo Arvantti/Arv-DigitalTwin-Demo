@@ -22,7 +22,7 @@ from twin_emulator_api.sessions import PlantSession
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 PLANT_ID = "water-network-scale-v1"
-PROFILE_PATH = ROOT / "industrial-models" / PLANT_ID / "operation-profiles" / "pdd-prs-fijo-01.json"
+PROFILE_PATH = ROOT / "docs" / "architecture" / "validation" / "fixtures" / "operation-profiles" / "pdd-prs-fijo-01.json"
 FLOW_KEYS = ("pump_supply_outlet", "prs_outlet", *(f"floor_{level}_local" for level in range(1, 5)), "supply_tank_inlet")
 
 

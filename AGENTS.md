@@ -7,6 +7,8 @@ Este repositorio construye una plataforma de gemelos digitales industriales. Las
 - `packages/twin-runtime/`: runtime de Python. Clase base `EquipmentBehavior`, primitivas (PID, retardos, sensores, fallas, OEE, vapor), simulador y CLI `twin-lib`.
 - `packages/twin-3d/`: piezas 3D, materiales PBR y escenario de render (three.js).
 - `apps/twin-emulator-api/`: host FastAPI/WebSocket para sesiones de emulación; no contiene reglas exclusivas de una planta.
+- `apps/fractal-optimization-api/` + `fractal/optimization/`: proceso separado para optimización desde instantánea/perfil; devuelve recomendaciones sin mandos PLC.
+- `apps/cosimulation-engine-api/` + `cosimulation/`: proceso separado que solicita una trayectoria a un único modelo cosimulado por contrato versionado; recibe el perfil PLC inmutable y persiste trabajos/resultados sin tocar tags operativos. Reproducción en PLC/HMI/3D mediante tríadas en desarrollo (`docs/architecture/plan-reconstruccion-triada-temporal-acueducto.md`).
 - `apps/gallery/`: galería web para ver, parametrizar y simular cada equipo, y escena de planta en 3D (`plant.html`, `docs/plant-scene.md`).
 - `apps/gallery/plc.html`: PLC Master/HMI simulado del acueducto. Se abre desde la escena 3D y desde el portal; consume el contrato `/api/plants/{id}/plc-schema`, simulación WebSocket y `public/data/acueducto-dia.json` para la curva diaria de referencia, generada por `tools/hydraulics/dia_acueducto.py`.
 - `industrial-models/corrugated-box-plant-v1/`: fábrica de cajas de cartón corrugado centrada en el transporte de pilas (`docs/box-plant.md`), simulada con los tipos `corrugator`, `transfer-car`, `box-converter`, `palletizer`, `inline-station` (mesas giratorias, amarradoras y mesas manuales con fotoceldas y atascos) y `belt-conveyor`; las piezas de escena de los equipos no simulados están en `apps/gallery/src/box-plant-pieces.ts`.
@@ -24,7 +26,7 @@ Siga **`docs/equipment-authoring.md`** paso a paso. Reglas no negociables:
 
 ## Comandos
 ```bash
-uv sync && pnpm install
+uv sync --all-packages && pnpm install
 uv run twin-lib validate          # librería completa
 uv run twin-lib plant validate    # plantas conectadas: enlaces y escenarios
 uv run twin-lib plant run sauce-plant-v1 --scenario boiler-trip

@@ -115,6 +115,7 @@ def test_water_plc_schema_exposes_simulated_hmi_contract() -> None:
     assert {asset["id"] for asset in plc["assets"]} >= {"pumpset-main-01", "pumpset-recirc-01", "prs-01", "grid-04"}
     commands = {(item["equipment"], item["command"]) for item in plc["write_commands"]}
     assert ("prs-01", "select_branch") in commands
+    assert ("prs-01", "set_auto_opening") in commands
     assert ("grid-01", "set_opening") in commands
     assert not any(item["command"] == "set_param" for item in plc["write_commands"])
     opcua = client.get("/api/plants/water-network-scale-v1/opcua-schema").json()
@@ -122,7 +123,7 @@ def test_water_plc_schema_exposes_simulated_hmi_contract() -> None:
     tag_ids = {node["id"] for node in opcua["nodes"]}
     assert "PLC.Grid.L4.Consumer.C44.FlowLMin" in tag_ids
     assert "PLC.Grid.L2.Leak.L1.OpeningPct" in tag_ids
-    assert {node["id"] for node in opcua["nodes"]} >= {"PLC.PRS.OutletPressureMca", "PLC.Profile.CurrentHour"}
+    assert {node["id"] for node in opcua["nodes"]} >= {"PLC.PRS.OutletPressureMca", "PLC.PRS.AutoOpeningPct", "PLC.Profile.CurrentHour"}
     assert client.get("/api/plants/sauce-plant-v1/plc-schema").status_code == 404
 
 
@@ -231,8 +232,6 @@ def test_operation_profiles_persist_and_drive_the_plc_virtual(tmp_path, monkeypa
         ("pdd", "rca", "01"),
         ("pfl", "base", "01"),
         ("pfl", "personalizado", "01"),
-        ("prs", "fijo", "01"),
-        ("critico", "18", "01"),
     }
     custom = next(item for item in builtins if item["id"].endswith("pfl-personalizado-01"))
     assert custom["hours"]["0"]["leaks"]["grid-01"] == {"l1": 0, "l2": 0}
@@ -310,7 +309,7 @@ def test_shared_session_can_be_created_and_inspected() -> None:
     assert tags.json()["read_only"] is True
     objectives = client.get("/api/plants/water-network-scale-v1/fractal/objectives")
     assert objectives.status_code == 200
-    assert objectives.json()["objectives"][0]["id"] == "OBJ-LEAK-01"
+    assert objectives.json()["objectives"][0]["id"] == "OBJ-PRESSURE-MIN"
     recommendation_url = f"/api/plants/water-network-scale-v1/sessions/{session_id}/fractal/recommendations"
     published = client.post(recommendation_url, json={"proposal": []})
     assert published.status_code == 201
@@ -362,6 +361,7 @@ def test_water_plant_websocket_applies_hmi_valve_and_regulation_commands() -> No
     with client.websocket_connect("/api/plants/water-network-scale-v1/simulate?speed=60") as ws:
         ws.receive_json()  # estado inicial
         ws.send_json({"equipment": "grid-01", "command": "set_opening", "args": {"valve": "c11", "pct": 37}})
+        ws.send_json({"equipment": "prs-01", "command": "set_auto_opening", "args": {"pct": 63}})
         ws.send_json({"equipment": "prs-01", "command": "select_branch", "args": {"branch": "manual"}})
         for _ in range(3):
             msg = ws.receive_json()
@@ -369,6 +369,8 @@ def test_water_plant_websocket_applies_hmi_valve_and_regulation_commands() -> No
         prs = msg["snapshot"]["equipment"]["prs-01"]
         assert grid["animation"]["open_c11"] == 0.37
         assert prs["variables"]["branch_auto"] == 0
+        assert prs["variables"]["auto_opening_pct"] == 63
+        assert msg["plc_tags"]["PLC.PRS.AutoOpeningPct"] == 63
 
 
 def test_plant_websocket_rejects_unknown_plant_and_scenario() -> None:
