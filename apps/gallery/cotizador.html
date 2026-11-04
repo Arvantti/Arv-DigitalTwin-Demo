@@ -23,6 +23,7 @@
   --bg:#0E1626; --panel:#172238; --ink:#E8ECF3; --muted:#9AA7BF; --line:#2A3752;
   --accent:#F0924E; --accent-soft:#3A2717; --navy:#0A1120; --on-navy:#E8ECF3; --navy-muted:#9AA7BF; color-scheme:dark}
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5;
   padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:24px 48px}
 .wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:24px}
@@ -39,15 +40,14 @@ h1{font-family:var(--f-display);font-weight:800;font-size:clamp(28px,4vw,40px);l
 .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px;display:flex;flex-direction:column;gap:14px;min-width:0}
 .card h2{font-family:var(--f-display);font-size:18px;font-weight:700;margin:0;display:flex;justify-content:space-between;align-items:center;gap:8px}
 .hint{color:var(--muted);font-size:13px;margin:0}
-.tiers{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
-@media (max-width:560px){.tiers{grid-template-columns:minmax(0,1fr)}}
-.tier{position:relative;border:1.5px solid var(--line);border-radius:10px;padding:14px;cursor:pointer;display:flex;flex-direction:column;gap:4px;background:var(--panel)}
-.tier input{position:absolute;opacity:0;pointer-events:none}
-.tier:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
-.tier:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:2px}
-.tier b{font-family:var(--f-display);font-size:17px}
-.tier .p{font-family:var(--f-num);font-size:15px;color:var(--accent)}
-.tier small{color:var(--muted);font-size:12.5px;line-height:1.35}
+.mods{display:flex;flex-direction:column;gap:2px}
+.mod{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 16px;padding:10px 12px;border-radius:10px;border:1.5px solid transparent}
+.mod:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+.mod .switch b{font-family:var(--f-display);font-size:15.5px}
+.mod .p{font-family:var(--f-num);font-size:13.5px;color:var(--accent);text-align:right}
+.mod small{color:var(--muted);font-size:12.5px;line-height:1.35;flex-basis:100%;padding-left:50px}
+.mod.core{background:var(--accent-soft);border-color:var(--accent)}
+.mod .sub-opts{flex-basis:100%;margin-left:50px}
 .row{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px}
 .row label{font-weight:500}
 .row .note{color:var(--muted);font-size:13px;flex-basis:100%}
@@ -92,8 +92,8 @@ footer{color:var(--muted);font-size:12.5px;max-width:80ch}
   <header>
     <div>
       <div class="eyebrow">Arvantti Digital Twin</div>
-      <h1>Cotizador de licencias, piloto y servicios</h1>
-      <p class="sub">Elige el nivel, agrega o quita módulos y servicios, y el resumen se recalcula al instante. Valores de ejemplo para una planta de 12 inyectoras.</p>
+      <h1>Cotizador de licencias, implementación y piloto</h1>
+      <p class="sub">El núcleo DigitalTwin es obligatorio; los siete módulos son opcionales. Elige los módulos y el resumen se recalcula al instante. Todos los valores son anuales.</p>
     </div>
     <div class="mode" role="group" aria-label="Tipo de cotización">
       <button type="button" id="modeProyecto" aria-pressed="true">Proyecto</button>
@@ -103,66 +103,43 @@ footer{color:var(--muted);font-size:12.5px;max-width:80ch}
 
   <div class="grid">
     <div class="col">
-      <!-- PROYECTO -->
-      <section class="card" id="cardNivel">
-        <h2>Nivel de licencia</h2>
-        <p class="note" style="margin:0 0 12px;color:var(--muted);font-size:13px">Los precios se muestran por mes como referencia; el pago es siempre anual.</p>
-        <div class="tiers" role="radiogroup" aria-label="Nivel">
-          <label class="tier"><input type="radio" name="tier" id="tierPlanifica" value="planifica"><b>Planifica</b><span class="p">USD 540/mes</span><small>APS con tabla y Gantt, versiones, cosimulador de un objetivo. +USD 24 por máquina extra al mes.</small></label>
-          <label class="tier"><input type="radio" name="tier" id="tierGemelo" value="gemelo" checked><b>Gemelo</b><span class="p">USD 1.140/mes</span><small>Planifica + gemelo 3D + centro de control y emulador. +USD 42 por máquina extra al mes.</small></label>
-          <label class="tier"><input type="radio" name="tier" id="tierFractal" value="fractal"><b>Fractal</b><span class="p">USD 1.920/mes</span><small>Gemelo + escenarios multiobjetivo + Asistente IA incluido. +USD 60 por máquina extra al mes.</small></label>
+      <section class="card" id="cardMods">
+        <h2>Módulos</h2>
+        <p class="hint" id="modsHint">Licencia anual por planta, pago anual anticipado. La implementación es un pago único por módulo.</p>
+        <div class="mods">
+          <div class="mod core"><label class="switch"><input type="checkbox" id="mod_core" checked disabled> <b>DigitalTwin (núcleo)</b></label><span class="p">USD 2.400/año · impl. 10.000 a 15.000</span><small>Gemelo digital 3D de la planta. Obligatorio para que todo funcione.</small></div>
+          <div class="mod"><label class="switch"><input type="checkbox" id="mod_integrator"> <b>1 · Integrator</b></label><span class="p">Según medida</span><small>Integración con ERP, CRM, sistemas SCADA y otros.</small>
+            <div class="sub-opts" id="integratorOpts" hidden><div class="row"><label for="intSystems">Sistemas a integrar</label>
+              <span class="num"><button type="button" data-step="-1" data-for="intSystems" aria-label="Quitar sistema">−</button><input id="intSystems" type="number" min="1" max="20" value="1"><button type="button" data-step="1" data-for="intSystems" aria-label="Agregar sistema">+</button></span></div></div></div>
+          <div class="mod"><label class="switch"><input type="checkbox" id="mod_aps" checked> <b>2 · APS</b></label><span class="p">USD 1.800/año · impl. 8.000 a 14.000</span><small>Programación y planificación de órdenes y recursos.</small></div>
+          <div class="mod"><label class="switch"><input type="checkbox" id="mod_cosim"> <b>3 · CoSimulation</b></label><span class="p">USD 1.440/año · impl. 8.000 a 14.000</span><small>Cosimulador matemático entrenable con las reglas de la empresa.</small></div>
+          <div class="mod"><label class="switch"><input type="checkbox" id="mod_fractal"> <b>4 · Fractal</b></label><span class="p">USD 3.780/año · impl. 8.000 a 14.000</span><small>Simulación robusta por escenarios y multiobjetivo.</small></div>
+          <div class="mod"><label class="switch"><input type="checkbox" id="mod_control"> <b>5 · Control Center</b></label><span class="p">USD 1.200/año · impl. 2.000 a 3.500</span><small>Monitoreo y control conectado a su SCADA o control de piso.</small></div>
+          <div class="mod"><label class="switch"><input type="checkbox" id="mod_dendro"> <b>6 · DendroScada</b></label><span class="p">Según la máquina</span><small>Hardware SCADA propio que conecta cualquier máquina o proceso.</small>
+            <div class="sub-opts" id="dendroOpts" hidden><div class="row"><label for="dendroMachines">Máquinas a conectar</label>
+              <span class="num"><button type="button" data-step="-1" data-for="dendroMachines" aria-label="Quitar máquina">−</button><input id="dendroMachines" type="number" min="1" max="500" value="1"><button type="button" data-step="1" data-for="dendroMachines" aria-label="Agregar máquina">+</button></span></div></div></div>
+          <div class="mod"><label class="switch"><input type="checkbox" id="mod_ai"> <b>7 · AI Assistant</b></label><span class="p">USD 900/año + créditos · impl. 2.500 a 5.000</span><small>Cerebro Empresarial IA: IA privada en lenguaje natural. Los créditos se cobran según la IA que se seleccione y van por cuenta del cliente.</small></div>
         </div>
-        <label class="switch" id="earlyWrap"><input type="checkbox" id="early"> Fractal en acceso anticipado (Gemelo + USD 360/mes)</label>
       </section>
 
       <section class="card">
         <h2>Planta</h2>
-        <div class="row"><label for="machines">Máquinas o recursos</label>
-          <span class="num"><button type="button" data-step="-1" data-for="machines" aria-label="Quitar máquina">−</button><input id="machines" type="number" min="1" max="500" value="12" inputmode="numeric"><button type="button" data-step="1" data-for="machines" aria-label="Agregar máquina">+</button></span>
-          <span class="note" id="machinesNote">Cada fila del Gantt cuenta como una máquina o recurso. El precio base cubre hasta 15.</span>
+        <div class="row" id="rowMachines"><label for="machines">Máquinas o recursos del piloto</label>
+          <span class="num"><button type="button" data-step="-1" data-for="machines" aria-label="Quitar máquina">−</button><input id="machines" type="number" min="1" max="500" value="6" inputmode="numeric"><button type="button" data-step="1" data-for="machines" aria-label="Agregar máquina">+</button></span>
+          <span class="note" id="machinesNote"></span>
         </div>
-        <div class="row"><label for="extraUsers">Usuarios adicionales de visualización, planta o gerencial (USD 10/mes)</label>
-          <span class="num"><button type="button" data-step="-1" data-for="extraUsers" aria-label="Quitar usuario">−</button><input id="extraUsers" type="number" min="0" max="500" value="0"><button type="button" data-step="1" data-for="extraUsers" aria-label="Agregar usuario">+</button></span></div>
-        <div class="row"><label for="extraAdmin">Usuarios adicionales de TI (USD 20/mes)</label>
-          <span class="num"><button type="button" data-step="-1" data-for="extraAdmin" aria-label="Quitar usuario">−</button><input id="extraAdmin" type="number" min="0" max="500" value="0"><button type="button" data-step="1" data-for="extraAdmin" aria-label="Agregar usuario">+</button></span></div>
-        <div class="row"><label for="extraPlan">Usuarios adicionales de programación avanzada o dirección (USD 35/mes)</label>
-          <span class="num"><button type="button" data-step="-1" data-for="extraPlan" aria-label="Quitar usuario">−</button><input id="extraPlan" type="number" min="0" max="500" value="0"><button type="button" data-step="1" data-for="extraPlan" aria-label="Agregar usuario">+</button></span>
-          <span class="note">Cada plan incluye 10 usuarios (3 programación, 1 dirección, 2 visualización de planta, 3 gerencial y 1 TI). Desde el usuario 11 se paga por persona según su rol; el rol no agrega módulos: solo ve lo que el plan de la planta incluye.</span></div>
         <div class="row" id="rowYears"><label for="years">Horizonte del contrato</label>
           <select id="years"><option value="1">1 año</option><option value="2">2 años</option><option value="3" selected>3 años</option><option value="4">4 años</option><option value="5">5 años</option></select>
         </div>
-      </section>
-
-      <section class="card">
-        <h2>Extensiones y módulos de conexión</h2>
-        <label class="switch"><input type="checkbox" id="conecta"> Extensión OEE en tiempo real, opcional y fuera de los planes (USD 21 por máquina al mes)</label>
-        <div class="sub-opts" id="conectaOpts" hidden>
-          <div class="row"><label for="oeeMachines">Máquinas con OEE en vivo</label>
-            <span class="num"><button type="button" data-step="-1" data-for="oeeMachines" aria-label="Quitar">−</button><input id="oeeMachines" type="number" min="1" max="500" value="12"><button type="button" data-step="1" data-for="oeeMachines" aria-label="Agregar">+</button></span></div>
-          <div class="row"><label for="oeeSource">Fuente de los datos de planta</label>
-            <select id="oeeSource"><option value="scada">Su SCADA, control de piso u OEE actual</option><option value="dev">No tiene: desarrollamos el control de piso</option></select>
-            <span class="note">Si el cliente ya tiene su propio OEE, no tiene que cambiarlo: leemos sus datos.</span></div>
-          <div class="row"><label for="hwMachines">Máquinas sin PLC: Arvantti Dendro</label>
-            <span class="num"><button type="button" data-step="-1" data-for="hwMachines" aria-label="Quitar">−</button><input id="hwMachines" type="number" min="0" max="500" value="0"><button type="button" data-step="1" data-for="hwMachines" aria-label="Agregar">+</button></span>
-            <span class="note">Arvantti Dendro es nuestro hardware con IA física para conectar cualquier máquina, tenga PLC o no. Es un producto aparte y se cotiza por proyecto.</span></div>
-        </div>
-        <label class="switch"><input type="checkbox" id="erp"> Integración con ERP (USD 150 por ERP al mes)</label>
-        <div class="sub-opts" id="erpOpts" hidden>
-          <div class="row"><label for="erpName">ERP del cliente</label>
-            <select id="erpName"><option>SAP</option><option>Oracle</option><option>Epicor</option><option>Odoo</option><option>Siigo</option><option value="otro">Otro (World Office, propio)</option></select>
-            <span class="note" id="erpNote">Conector estándar incluido.</span></div>
-        </div>
-        <label class="switch"><input type="checkbox" id="ai"> Asistente IA de consulta, voz y texto (USD 150 por planta al mes; incluido en Fractal)</label>
+        <p class="hint">Usuarios ilimitados y sin costo. Tres roles: Admin, Programador y Visualizador; el cliente los asigna y cambia cuando quiera.</p>
       </section>
 
       <section class="card" id="cardImpl">
         <h2>Implementación y servicios</h2>
-        <div class="row"><label for="impl">Paquete de implementación</label>
-          <select id="impl"><option value="none">Sin implementación</option><option value="std" selected>Estándar (6 a 8 semanas)</option><option value="int">Integrada (10 a 14 semanas)</option></select>
-        </div>
+        <label class="switch"><input type="checkbox" id="implOn" checked> Incluir la implementación de los módulos elegidos</label>
         <div class="row" id="implSizeRow"><label for="implSize">Tamaño del proyecto</label>
           <input type="range" id="implSize" min="0" max="100" step="5" value="50">
-          <span class="note" id="implSizeNote"></span>
+          <span class="note">Izquierda: planta pequeña con equipos de la biblioteca. Derecha: planta grande o compleja.</span>
         </div>
         <div class="row"><label for="newEquip">Equipos nuevos para la biblioteca 3D</label>
           <span class="num"><button type="button" data-step="-1" data-for="newEquip" aria-label="Quitar">−</button><input id="newEquip" type="number" min="0" max="100" value="0"><button type="button" data-step="1" data-for="newEquip" aria-label="Agregar">+</button></span>
@@ -176,7 +153,7 @@ footer{color:var(--muted);font-size:12.5px;max-width:80ch}
         <div class="row"><label for="prepay">Años de licencia pagados por anticipado (10 % por cada año adicional al primero, máximo 30 %)</label>
           <select id="prepay"><option value="1" selected>1 año, pago anual normal</option><option value="2">2 años: 10 %</option><option value="3">3 años: 20 %</option><option value="4">4 años: 30 %</option><option value="5">5 años: 30 %</option></select></div>
         <label class="switch"><input type="checkbox" id="secondPlant"> Segunda planta de la misma empresa (20 % en licencia)</label>
-        <label class="switch"><input type="checkbox" id="perpetual"> Licencia perpetua en servidores del cliente (30 meses + 20 % anual)</label>
+        <label class="switch"><input type="checkbox" id="perpetual"> Licencia perpetua en servidores del cliente (2,5 años de los módulos + 20 % anual)</label>
       </section>
 
       <section class="card">
@@ -204,137 +181,116 @@ footer{color:var(--muted);font-size:12.5px;max-width:80ch}
     </aside>
   </div>
 
-  <footer>Precios propuestos en USD, sin IVA, pendientes de aprobación. El nivel Fractal está en desarrollo. La extensión OEE no va incluida en ningún plan. El hardware Arvantti Dendro se cotiza aparte.</footer>
+  <footer>Precios propuestos en USD, sin IVA, pendientes de aprobación. Integrator se cotiza según los sistemas a integrar y DendroScada según cada máquina. Los créditos de IA del AI Assistant van por cuenta del cliente.</footer>
 </div>
 
 <script>
 (function(){
-  const PRICE = {
-    planifica:{base:540, extra:24, name:'Planifica', users:4},
-    gemelo:{base:1140, extra:42, name:'Gemelo', users:6},
-    fractal:{base:1920, extra:60, name:'Fractal', users:10}
-  };
-  const AI = 150, BASE_MACHINES = 15, OEE = 21, ERP = 150, EQUIP = 1925;
-  const IMPL = {none:null, std:{name:'Estándar', lo:10500, hi:17500}, int:{name:'Integrada', lo:21000, hi:35000}};
-  const PILOT = {price:12000, months:3, machines:6, products:20, orders:150, extra:1000};
+  // Núcleo + 7 módulos en el orden del heptágono. lic: licencia anual; impl: rango de implementación (null = se cotiza)
+  const MODS = [
+    {id:'core', name:'DigitalTwin (núcleo)', lic:2400, impl:[10000,15000]},
+    {id:'integrator', name:'Integrator', lic:null, impl:null, quote:'Según medida'},
+    {id:'aps', name:'APS', lic:1800, impl:[8000,14000]},
+    {id:'cosim', name:'CoSimulation', lic:1440, impl:[8000,14000]},
+    {id:'fractal', name:'Fractal', lic:3780, impl:[8000,14000]},
+    {id:'control', name:'Control Center', lic:1200, impl:[2000,3500]},
+    {id:'dendro', name:'DendroScada', lic:null, impl:null, quote:'Según la máquina'},
+    {id:'ai', name:'AI Assistant', lic:900, impl:[2500,5000]}
+  ];
+  const EQUIP = 1925;
+  // Piloto: 2 meses (8 semanas) con DigitalTwin, APS, CoSimulation y Fractal; sin cargos por máquina adicional
+  const PILOT = {price:12000, months:2, weeks:8, machines:6, products:20, orders:60, includes:['core','aps','cosim','fractal']};
   const $ = id => document.getElementById(id);
   let mode = 'proyecto';
   const fmt = n => 'USD ' + Math.round(n).toLocaleString('es-CO');
   const fmtCop = n => 'COP ' + Math.round(n).toLocaleString('es-CO');
   const int = (id, min) => { const v = parseInt($(id).value, 10); return isNaN(v) ? min : Math.max(min, v); };
-
-  function licenseMonthly(m){
-    const tier = document.querySelector('input[name=tier]:checked').value;
-    let t = PRICE[tier], base = t.base, label = t.name;
-    if (tier === 'fractal' && $('early').checked){ base = PRICE.gemelo.base + 360; label = 'Fractal (acceso anticipado)'; }
-    const extraM = Math.max(0, m - BASE_MACHINES);
-    return {label, base, extraM, extraP: t.extra, total: base + extraM * t.extra};
-  }
+  const on = m => $('mod_' + m.id).checked;
+  const detail = m => m.id === 'integrator' ? `${int('intSystems',1)} ${int('intSystems',1) === 1 ? 'sistema' : 'sistemas'}` : m.id === 'dendro' ? `${int('dendroMachines',1)} ${int('dendroMachines',1) === 1 ? 'máquina' : 'máquinas'}` : '';
+  const implValue = (m, f) => Math.round((m.impl[0] + (m.impl[1] - m.impl[0]) * f) / 500) * 500;
 
   function calcProyecto(){
-    const m = int('machines', 1), years = parseInt($('years').value, 10);
-    const lic = licenseMonthly(m);
+    const years = parseInt($('years').value, 10);
+    const sel = MODS.filter(on);
     const lines = [];
-    let monthly = lic.total;
-    const conecta = $('conecta').checked, erp = $('erp').checked;
-    const oeeM = Math.min(int('oeeMachines', 1), m), hwM = Math.min(int('hwMachines', 0), m);
-    const uC = int('extraUsers', 0), uA = int('extraAdmin', 0), uP = int('extraPlan', 0), usersX = uC + uA + uP, usersMonthly = uC * 10 + uA * 20 + uP * 35;
-    const tierNow = document.querySelector('input[name=tier]:checked').value;
-    const aiOn = $('ai').checked && tierNow !== 'fractal';
-    const oeeMonthly = (conecta ? oeeM * OEE : 0) + usersMonthly, erpMonthly = (erp ? ERP : 0) + (aiOn ? AI : 0);
-    monthly += oeeMonthly + erpMonthly;
-    let discount = 0;
-    if ($('secondPlant').checked) discount += 0.20;
-    // Pago anticipado: 10 % por cada año pagado por adelantado, sobre la licencia de esos años
-    // El pago anual es lo normal: el descuento cuenta desde el 2.º año anticipado, con tope de 30 %
+    const licAnnualGross = sel.reduce((a, m) => a + (m.lic || 0), 0);
+    const discount = $('secondPlant').checked ? 0.20 : 0;
+    // Pago anticipado: el pago anual es lo normal; el descuento cuenta desde el 2.º año anticipado, 10 % por año, tope 30 %
     const prepaidRaw = Math.min(parseInt($('prepay').value, 10) || 1, years), prepayRate = Math.min(Math.max(prepaidRaw - 1, 0), 3) * 0.10, prepaidY = prepayRate > 0 ? prepaidRaw : 0;
-    const licAnnualGross = lic.total * 12;
     const licDisc = licAnnualGross * discount;
     const licAnnualNet = licAnnualGross - licDisc;
     const prepayDisc = Math.round(licAnnualGross * prepayRate * prepaidY);
-    const recurringAnnual = licAnnualNet + (oeeMonthly + erpMonthly) * 12;
     const pion = $('pionero').checked && !$('perpetual').checked;
     const pionLic = pion ? Math.round((licAnnualNet - (prepaidY ? licAnnualGross * prepayRate : 0)) * 0.25) : 0;
 
-    lines.push(['sec','Licencia']);
-    lines.push(['', `${lic.label}`, `Base hasta ${BASE_MACHINES} máquinas, pago anual`, lic.base * 12]);
-    if (lic.extraM) lines.push(['', `${lic.extraM} máquinas adicionales`, `${fmt(lic.extraP)} c/u al mes × 12`, lic.extraM * lic.extraP * 12]);
-    if (discount) lines.push(['neg', `Descuento ${Math.round(discount*100)} %`, 'Sobre la licencia', -licDisc]);
-    if (prepaidY) lines.push(['neg', `Pago anticipado de ${prepaidY} ${prepaidY === 1 ? 'año' : 'años'}`, `${Math.round(prepayRate*100)} % sobre la licencia de esos ${prepaidY === 1 ? 'año' : 'años'}, en el contrato`, -prepayDisc]);
+    lines.push(['sec','Licencias (anuales)']);
+    sel.forEach(m => {
+      const d = detail(m);
+      if (m.lic === null) lines.push(['', m.name, `${m.quote}${d ? ', ' + d : ''}`, null]);
+      else lines.push(['', m.name, m.id === 'core' ? 'Obligatorio, por planta' : 'Por planta', m.lic]);
+    });
+    if ($('mod_ai').checked) lines.push(['', 'Créditos de IA', 'Según la IA seleccionada, por cuenta del cliente', 'por consumo']);
+    lines.push(['', 'Usuarios', 'Ilimitados, roles Admin, Programador y Visualizador', 0]);
+    if (discount) lines.push(['neg', `Descuento ${Math.round(discount*100)} %`, 'Segunda planta, sobre la licencia', -licDisc]);
+    if (prepaidY) lines.push(['neg', `Pago anticipado de ${prepaidY} años`, `${Math.round(prepayRate*100)} % sobre la licencia de esos años, en el contrato`, -prepayDisc]);
     if (pion) lines.push(['neg', 'Plan pionero', '25 % en la licencia del primer año', -pionLic]);
-    if (usersX) lines.push(['', `${usersX} usuarios adicionales`, `${uC} visualización, ${uA} TI, ${uP} programación, al año`, usersMonthly * 12]);
-    if (conecta) lines.push(['', 'Extensión OEE en tiempo real', `${oeeM} máquinas × ${fmt(OEE)} al mes × 12`, oeeM * OEE * 12]);
-    if (erp) lines.push(['', `Integración ERP (${$('erpName').value === 'otro' ? 'otro ERP' : $('erpName').value})`, `${fmt(ERP)} al mes × 12`, ERP * 12]);
-    if (aiOn) lines.push(['', 'Asistente IA', `${fmt(AI)} al mes × 12`, AI * 12]);
-    if (tierNow === 'fractal') lines.push(['', 'Asistente IA', 'Incluido en Fractal', 0]);
 
-    // implementación
     let implTotal = 0;
-    const implSel = $('impl').value;
-    const erpOther = erp && $('erpName').value === 'otro';
-    const needInt = erp || conecta;
     lines.push(['sec','Implementación y servicios (pago único)']);
-    if (IMPL[implSel]){
-      const p = IMPL[implSel], f = int('implSize', 0) / 100;
-      const v = Math.round((p.lo + (p.hi - p.lo) * f) / 500) * 500;
-      implTotal += v;
-      lines.push(['', `Implementación ${p.name}`, `Rango ${fmt(p.lo)} a ${fmt(p.hi)}`, v]);
+    if ($('implOn').checked){
+      const f = int('implSize', 0) / 100;
+      sel.forEach(m => {
+        if (!m.impl) { lines.push(['', `Implementación ${m.name}`, `${m.quote}${detail(m) ? ', ' + detail(m) : ''}`, null]); return; }
+        const v = implValue(m, f); implTotal += v;
+        lines.push(['', `Implementación ${m.name}`, `Rango ${fmt(m.impl[0])} a ${fmt(m.impl[1])}`, v]);
+      });
     }
     const eq = int('newEquip', 0);
     if (eq){ implTotal += eq * EQUIP; lines.push(['', `${eq} equipos nuevos en 3D`, `${fmt(EQUIP)} promedio c/u`, eq * EQUIP]); }
-    if (conecta && $('oeeSource').value === 'dev') lines.push(['', 'Desarrollo del control de piso', 'Se cotiza por proyecto', null]);
-    if (conecta && hwM) lines.push(['', `Arvantti Dendro para ${hwM} ${hwM === 1 ? 'máquina' : 'máquinas'} sin PLC`, 'Hardware, se cotiza aparte', null]);
-    if (erpOther) lines.push(['', 'Conector para otro ERP', 'Se cotiza por proyecto', null]);
     if (pion && implTotal > 0){ const d = Math.round(implTotal * 0.20); implTotal -= d; lines.push(['neg', 'Plan pionero', '20 % en la implementación', -d]); }
-    if ($('pilotCredit').checked && implTotal > 0){
-      const c = Math.min(PILOT.price, implTotal);
-      implTotal -= c; lines.push(['neg', 'Abono del piloto', 'Piloto ya pagado', -c]);
-    }
+    if ($('pilotCredit').checked && implTotal > 0){ const c = Math.min(PILOT.price, implTotal); implTotal -= c; lines.push(['neg', 'Abono del piloto', 'Piloto ya pagado', -c]); }
 
-    let total, year1, label, big, kpis;
+    let total, year1, kpis;
     if ($('perpetual').checked){
-      const perp = lic.total * 30, maint = perp * 0.20;
-      const conn = (oeeMonthly + erpMonthly) * 12;
-      lines.splice(0, lines.length, ...lines.filter(l => !(l[1] === lic.label || /adicionales|Descuento/.test(l[1]||''))));
-      lines.splice(1, 0, ['', `${lic.label}, licencia perpetua`, '30 meses de suscripción', perp], ['', 'Mantenimiento anual', `20 % de la licencia × ${years - 1 > 0 ? years - 1 : 0} años`, maint * Math.max(0, years - 1)]);
-      year1 = perp + implTotal + conn;
-      total = perp + implTotal + conn * years + maint * Math.max(0, years - 1);
+      const perp = licAnnualGross * 2.5, maint = perp * 0.20;
+      const keep = lines.filter(l => l[0] === 'sec' || l[1] === 'Usuarios' || l[1] === 'Créditos de IA' || l[3] === null || /Implementación|equipos|Abono/.test(l[1]));
+      lines.splice(0, lines.length, ...keep);
+      lines.splice(1, 0, ['', 'Licencia perpetua de los módulos', '2,5 años de licencia', perp], ['', 'Mantenimiento anual', `20 % de la licencia × ${Math.max(0, years - 1)} años`, maint * Math.max(0, years - 1)]);
+      year1 = perp + implTotal;
+      total = perp + implTotal + maint * Math.max(0, years - 1);
       kpis = [['Licencia perpetua', fmt(perp)], ['Mantenimiento / año', fmt(maint)], ['Implementación', fmt(implTotal)], ['Año 1', fmt(year1)]];
     } else {
       const prepaidLic = prepaidY ? Math.round((licAnnualNet - licAnnualGross * prepayRate) * prepaidY) : 0;
-      // Año 1 = lo que se paga el primer año: la licencia anticipada completa, más servicios del año e implementación
-      year1 = (prepaidY ? prepaidLic : licAnnualNet) + (oeeMonthly + erpMonthly) * 12 - pionLic + implTotal;
-      total = recurringAnnual * years - prepayDisc - pionLic + implTotal;
+      // Año 1 = lo que se paga el primer año: la licencia (o la anticipada completa) más la implementación
+      year1 = (prepaidY ? prepaidLic : licAnnualNet) - pionLic + implTotal;
+      total = licAnnualNet * years - prepayDisc - pionLic + implTotal;
       kpis = prepaidY
-        ? [['Pago anual', fmt(recurringAnnual)], [`Licencia anticipada ${prepaidY} ${prepaidY === 1 ? 'año' : 'años'}`, fmt(prepaidLic - (prepaidY ? pionLic : 0))], ['Implementación', fmt(implTotal)], ['Pago año 1', fmt(year1)]]
-        : [['Pago anual', fmt(recurringAnnual)], ['Equivale al mes', fmt(recurringAnnual / 12)], ['Implementación', fmt(implTotal)], ['Pago año 1', fmt(year1)]];
+        ? [['Licencia anual', fmt(licAnnualNet)], [`Licencia anticipada ${prepaidY} años`, fmt(prepaidLic - pionLic)], ['Implementación', fmt(implTotal)], ['Pago año 1', fmt(year1)]]
+        : [['Licencia anual', fmt(licAnnualNet)], ['Módulos', `${sel.length - 1} + núcleo`], ['Implementación', fmt(implTotal)], ['Pago año 1', fmt(year1)]];
     }
-    label = `Total ${years} ${years === 1 ? 'año' : 'años'}`;
-    const warn = (needInt && implSel === 'std') ? 'La conexión a ERP o PLC requiere el paquete Integrada.' : '';
-    return {label, big: total, kpis, lines, warn, m, years};
+    const pending = sel.some(m => m.lic === null) ? 'Integrator y DendroScada se suman cuando se coticen.' : '';
+    return {label:`Total ${years} ${years === 1 ? 'año' : 'años'}`, big: total, kpis, lines, warn: pending};
   }
 
   function calcPiloto(){
     const m = int('machines', 1);
-    const extraM = Math.max(0, m - PILOT.machines);
-    const lines = [['sec','Piloto de 3 meses, nivel Gemelo']];
+    const lines = [['sec', `Piloto de ${PILOT.months} meses (${PILOT.weeks} semanas)`]];
     lines.push(['', 'Piloto', `Hasta ${PILOT.machines} máquinas, ${PILOT.products} productos y ${PILOT.orders} órdenes`, PILOT.price]);
-    if (extraM) lines.push(['', `${extraM} máquinas adicionales`, `${fmt(PILOT.extra)} c/u`, extraM * PILOT.extra]);
-    let total = PILOT.price + extraM * PILOT.extra;
-    const oeeM = Math.min(int('oeeMachines', 1), m), hwM = Math.min(int('hwMachines', 0), m);
-    if ($('conecta').checked){ const v = oeeM * OEE * PILOT.months; total += v; lines.push(['', 'Extensión OEE en tiempo real', `${oeeM} máquinas × ${fmt(OEE)} × 3 meses`, v]);
-      if ($('oeeSource').value === 'dev') lines.push(['', 'Desarrollo del control de piso', 'Se cotiza por proyecto', null]);
-      if (hwM) lines.push(['', `Arvantti Dendro para ${hwM} ${hwM === 1 ? 'máquina' : 'máquinas'} sin PLC`, 'Hardware, se cotiza aparte', null]); }
-    const pc = int('extraUsers', 0), pa = int('extraAdmin', 0), pp = int('extraPlan', 0), pu = pc + pa + pp; if (pu){ const v = (pc * 10 + pa * 20 + pp * 35) * PILOT.months; total += v; lines.push(['', `${pu} usuarios adicionales`, `${pc} visualización, ${pa} TI, ${pp} programación × 3 meses`, v]); }
-    if ($('erp').checked){ const v = ERP * PILOT.months; total += v; lines.push(['', `Integración ERP (${$('erpName').value === 'otro' ? 'otro ERP' : $('erpName').value})`, `${fmt(ERP)} × 3 meses`, v]); }
-    if ($('ai').checked){ const v = AI * PILOT.months; total += v; lines.push(['', 'Asistente IA', `${fmt(AI)} × 3 meses`, v]); }
+    let total = PILOT.price;
+    MODS.filter(x => !PILOT.includes.includes(x.id) && on(x)).forEach(x => {
+      const d = detail(x);
+      if (x.lic === null){ lines.push(['', x.name, `${x.quote}${d ? ', ' + d : ''}`, null]); return; }
+      const v = Math.round(x.lic * PILOT.months / 12); total += v;
+      lines.push(['', x.name, `Licencia de ${PILOT.months} meses`, v]);
+      if (x.id === 'ai') lines.push(['', 'Créditos de IA', 'Según la IA seleccionada, por cuenta del cliente', 'por consumo']);
+    });
     const eq = int('newEquip', 0);
     if (eq){ total += eq * EQUIP; lines.push(['', `${eq} equipos nuevos en 3D`, `${fmt(EQUIP)} promedio c/u`, eq * EQUIP]); }
     lines.push(['sec','Incluido']);
-    lines.push(['', 'APS, cosimulador, gemelo 3D, centro de control', 'Datos desde Excel, hasta 10 usuarios, capacitación', 0]);
-    const credit = PILOT.price + extraM * PILOT.extra;
-    const kpis = [['Duración', '12 semanas'], ['Máquinas', `${m}`], ['Abonable a implementación', fmt(credit)], ['Productos y órdenes', `${PILOT.products} y ${PILOT.orders}`]];
-    return {label:'Total del piloto', big: total, kpis, lines, warn: m > 40 ? 'Para más de 40 máquinas conviene un piloto por línea.' : '', m};
+    lines.push(['', 'DigitalTwin, APS, CoSimulation y Fractal', 'Datos desde Excel, usuarios ilimitados, capacitación y soporte', 0]);
+    const kpis = [['Duración', `${PILOT.weeks} semanas`], ['Máquinas', `${Math.min(m, PILOT.machines)} de ${PILOT.machines}`], ['Abonable a implementación', fmt(PILOT.price)], ['Productos y órdenes', `${PILOT.products} y ${PILOT.orders}`]];
+    const warn = m > PILOT.machines ? `El piloto cubre hasta ${PILOT.machines} máquinas; para más conviene un piloto por línea.` : '';
+    return {label:'Total del piloto', big: total, kpis, lines, warn};
   }
 
   function render(){
@@ -342,53 +298,54 @@ footer{color:var(--muted);font-size:12.5px;max-width:80ch}
     const yrs = parseInt($('years').value, 10);
     [...$('prepay').options].forEach(o => o.disabled = parseInt(o.value, 10) > yrs);
     if (parseInt($('prepay').value, 10) > yrs) $('prepay').value = String(yrs);
-    const r = mode === 'piloto' ? calcPiloto() : calcProyecto();
+    const isP = mode === 'piloto';
+    // En el piloto, los cuatro módulos incluidos quedan marcados y fijos
+    PILOT.includes.forEach(id => { const el = $('mod_' + id); if (id !== 'core'){ el.disabled = isP; if (isP) el.checked = true; } });
+    const r = isP ? calcPiloto() : calcProyecto();
     $('sumLabel').textContent = r.label;
-    $('sumBig').innerHTML = fmt(r.big);
+    $('sumBig').textContent = fmt(r.big);
     const trm = parseFloat($('trm').value) || 0;
     $('sumCop').textContent = trm ? `≈ ${fmtCop(r.big * trm)} a TRM ${trm.toLocaleString('es-CO')}, sin IVA` : '';
     $('kpis').innerHTML = r.kpis.map(([k,v]) => `<div class="kpi"><div class="label">${k}</div><div class="v">${v}</div></div>`).join('');
+    const amtText = a => a === null ? 'por cotizar' : typeof a === 'string' ? a : a === 0 ? 'incluido' : fmt(a);
     $('lines').innerHTML = r.lines.map(l => {
       if (l[0] === 'sec') return `<tr class="sec"><td colspan="2">${l[1]}</td></tr>`;
-      const amt = l[3] === null ? 'por cotizar' : (l[3] === 0 ? 'incluido' : fmt(l[3]));
-      return `<tr class="${l[0]}"><td>${l[1]}<span class="d">${l[2]}</span></td><td class="amt">${amt}</td></tr>`;
+      return `<tr class="${l[0]}"><td>${l[1]}<span class="d">${l[2]}</span></td><td class="amt">${amtText(l[3])}</td></tr>`;
     }).join('') + (r.warn ? `<tr><td colspan="2" style="color:#F0A46E;border:0">${r.warn}</td></tr>` : '');
     // texto copiable
-    const txt = [`Arvantti Digital Twin · ${mode === 'piloto' ? 'Cotización de piloto' : 'Cotización de proyecto'}`, ''];
-    r.lines.forEach(l => { if (l[0] === 'sec') txt.push('', l[1].toUpperCase()); else txt.push(`- ${l[1]} (${l[2]}): ${l[3] === null ? 'por cotizar' : l[3] === 0 ? 'incluido' : fmt(l[3])}`); });
+    const txt = [`Arvantti Digital Twin · ${isP ? 'Cotización de piloto' : 'Cotización de proyecto'}`, ''];
+    r.lines.forEach(l => { if (l[0] === 'sec') txt.push('', l[1].toUpperCase()); else txt.push(`- ${l[1]} (${l[2]}): ${amtText(l[3])}`); });
     txt.push('', ...r.kpis.map(([k,v]) => `${k}: ${v}`), `${r.label}: ${fmt(r.big)}`, 'Valores en USD sin IVA.');
     $('quoteText').value = txt.join('\n');
     // visibilidad
-    $('conectaOpts').hidden = !$('conecta').checked;
-    $('erpOpts').hidden = !$('erp').checked;
-    $('erpNote').textContent = $('erpName').value === 'otro' ? 'Conector a otro ERP: se cotiza por proyecto.' : 'Conector estándar incluido.';
-    const isP = mode === 'piloto';
-    ['cardNivel','cardImpl','cardDesc','rowYears'].forEach(id => $(id).hidden = isP);
-    $('earlyWrap').hidden = document.querySelector('input[name=tier]:checked').value !== 'fractal';
-    $('implSizeRow').hidden = $('impl').value === 'none';
-    const p = IMPL[$('impl').value];
-    if (p){ const f = int('implSize',0)/100; $('implSizeNote').textContent = `${fmt(Math.round((p.lo + (p.hi-p.lo)*f)/500)*500)} · izquierda planta pequeña con equipos de la biblioteca, derecha planta grande o compleja`; }
-    $('machinesNote').textContent = isP ? `El piloto cubre hasta ${PILOT.machines}; cada máquina adicional suma ${fmt(PILOT.extra)}.` : `Cada fila del Gantt cuenta como una máquina o recurso. El precio base cubre hasta ${BASE_MACHINES}.`;
+    $('integratorOpts').hidden = !$('mod_integrator').checked;
+    $('dendroOpts').hidden = !$('mod_dendro').checked;
+    ['cardImpl','cardDesc','rowYears'].forEach(id => $(id).hidden = isP);
+    $('rowMachines').hidden = !isP;
+    $('implSizeRow').hidden = !$('implOn').checked;
+    $('modsHint').textContent = isP
+      ? 'El piloto incluye DigitalTwin, APS, CoSimulation y Fractal. Los demás módulos se suman al precio de su licencia durante el piloto.'
+      : 'Licencia anual por planta, pago anual anticipado. La implementación es un pago único por módulo.';
+    $('machinesNote').textContent = `El piloto cubre hasta ${PILOT.machines} máquinas o recursos, sin cargos adicionales.`;
   }
 
-  function setMode(m){ mode = m; $('modeProyecto').setAttribute('aria-pressed', m === 'proyecto'); $('modePiloto').setAttribute('aria-pressed', m === 'piloto'); render(); }
+  // Al entrar al piloto se guardan los módulos elegidos del proyecto y se restauran al volver
+  let saved = null;
+  function setMode(m){
+    if (m === 'piloto' && mode !== 'piloto') saved = PILOT.includes.map(id => [id, $('mod_' + id).checked]);
+    if (m === 'proyecto' && mode === 'piloto' && saved){ saved.forEach(([id, c]) => { $('mod_' + id).checked = c; }); saved = null; }
+    mode = m; $('modeProyecto').setAttribute('aria-pressed', m === 'proyecto'); $('modePiloto').setAttribute('aria-pressed', m === 'piloto'); render(); }
   $('modeProyecto').addEventListener('click', () => setMode('proyecto'));
   $('modePiloto').addEventListener('click', () => setMode('piloto'));
   document.querySelectorAll('[data-step]').forEach(b => b.addEventListener('click', () => {
     const inp = $(b.dataset.for); const v = (parseInt(inp.value,10)||0) + parseInt(b.dataset.step,10);
     inp.value = Math.max(parseInt(inp.min,10), Math.min(parseInt(inp.max,10), v));
-    if (b.dataset.for === 'machines' && !oeeTouched) $('oeeMachines').value = inp.value;
     render();
   }));
-  let oeeTouched = false;
-  $('oeeMachines').addEventListener('input', () => oeeTouched = true);
-  $('machines').addEventListener('input', () => { if (!oeeTouched) $('oeeMachines').value = $('machines').value; });
   document.querySelectorAll('input, select').forEach(el => { el.addEventListener('input', render); el.addEventListener('change', render); });
   $('perpetual').addEventListener('change', () => { if ($('perpetual').checked){ $('prepay').value = '1'; $('secondPlant').checked = false; } render(); });
   $('prepay').addEventListener('change', () => { if ($('prepay').value !== '1') $('perpetual').checked = false; render(); });
   $('secondPlant').addEventListener('change', () => { if ($('secondPlant').checked) $('perpetual').checked = false; render(); });
-  $('erp').addEventListener('change', () => { if ($('erp').checked && $('impl').value === 'std') $('impl').value = 'int'; render(); });
-  $('conecta').addEventListener('change', () => { if ($('conecta').checked && $('impl').value === 'std') $('impl').value = 'int'; render(); });
 
   $('copyBtn').addEventListener('click', () => {
     const t = $('quoteText').value;
@@ -398,10 +355,11 @@ footer{color:var(--muted);font-size:12.5px;max-width:80ch}
     } catch(e){ $('quoteText').hidden = false; $('quoteText').select(); $('toast').textContent = 'Selecciona y copia el texto de abajo.'; }
   });
   $('resetBtn').addEventListener('click', () => {
-    $('tierGemelo').checked = true; $('early').checked = false; $('machines').value = 12; $('oeeMachines').value = 12; $('hwMachines').value = 0; $('oeeSource').value = 'scada'; oeeTouched = false;
-    $('years').value = '3'; $('conecta').checked = false; $('erp').checked = false; $('ai').checked = false; $('impl').value = 'std'; $('implSize').value = 50;
-    $('newEquip').value = 0; $('extraUsers').value = 0; $('extraAdmin').value = 0; $('extraPlan').value = 0; $('pilotCredit').checked = false; $('prepay').value = '1'; $('secondPlant').checked = false; $('perpetual').checked = false; $('pionero').checked = false; $('trm').value = 4000;
-    render();
+    MODS.forEach(m => { if (m.id !== 'core'){ $('mod_' + m.id).checked = m.id === 'aps'; } });
+    $('intSystems').value = 1; $('dendroMachines').value = 1; $('machines').value = 6;
+    $('years').value = '3'; $('implOn').checked = true; $('implSize').value = 50;
+    $('newEquip').value = 0; $('pilotCredit').checked = false; $('prepay').value = '1'; $('secondPlant').checked = false; $('perpetual').checked = false; $('pionero').checked = false; $('trm').value = 4000;
+    setMode('proyecto');
   });
   render();
 })();
