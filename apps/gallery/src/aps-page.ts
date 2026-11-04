@@ -177,9 +177,10 @@ function renderProposal(): void {
   }
   const v = current.kpis;
   const k = proposal.kpis;
-  const ids = loadIds(current, proposal);
-  const ov = occOf(current, ids);
-  const op = occOf(proposal, ids);
+  // Cada programación se mide con sus propias máquinas, igual que la barra superior (si no, una máquina que solo
+  // usa una de las dos cambia el denominador y la VIGENTE mostraría otro porcentaje).
+  const ov = occOf(current, loadIds(current));
+  const op = occOf(proposal, loadIds(proposal));
   const s = proposal.solver;
   const cell = (a: number, b: number, fmt: (x: number) => string, lowerIsBetter: boolean) =>
     `<span>${fmt(a)}</span><b class="${a === b ? "" : (b < a) === lowerIsBetter ? "ok" : "bad"}">${fmt(b)}</b>`;
@@ -1402,14 +1403,14 @@ function download(name: string, text: string): void {
 /** Indicadores para comparar versiones (los mismos de la propuesta frente a la vigente). */
 /** `neutral`: se muestra para comparar, pero ni más ni menos es mejor por sí solo. */
 interface VersionKpi { label: string; get: (p: ProductionPlan) => number; fmt: (x: number) => string; lowerIsBetter: boolean; neutral?: boolean; title?: string }
-function versionKpis(ids: string[]): VersionKpi[] {
+function versionKpis(): VersionKpi[] {
   return [
     { label: "A tiempo", get: (p) => p.kpis.on_time_pct, fmt: (x) => `${nf(x, 1)} %`, lowerIsBetter: false },
     { label: "Pedidos tarde", get: (p) => p.kpis.late_orders, fmt: (x) => nf(x), lowerIsBetter: true },
     { label: "Atraso total", get: (p) => p.kpis.tardiness_h, fmt: (x) => `${nf(x, 1)} h`, lowerIsBetter: true },
     { label: "Cambios de referencia", get: (p) => p.kpis.changeovers, fmt: (x) => nf(x), lowerIsBetter: true, title: "Montaje de molde, purga de resina o purga de color" },
     { label: "Horas de cambio", get: (p) => p.kpis.changeover_h ?? 0, fmt: (x) => `${nf(x, 1)} h`, lowerIsBetter: true },
-    { label: "Ocupación planta · 7 días", get: (p) => occOf(p, ids).occupancy, fmt: pctTxt, lowerIsBetter: true, neutral: true, title: "Horas programadas / disponibles en los 7 días desde AHORA" },
+    { label: "Ocupación planta · 7 días", get: (p) => occOf(p, loadIds(p)).occupancy, fmt: pctTxt, lowerIsBetter: true, neutral: true, title: "Horas programadas / disponibles en los 7 días desde AHORA" },
     { label: "Pedidos que terminan distinto a la vigente", get: (p) => changedOrders(p), fmt: (x) => nf(x), lowerIsBetter: true, neutral: true, title: "Pedidos cuya hora de fin cambia más de 30 min frente a la vigente" },
   ];
 }
@@ -1459,7 +1460,7 @@ function renderVersions(): void {
   const marked = list.filter((v) => compareIds.has(v.id));
   const loaded = marked.map((v) => cachedVersion(v.id)).filter((v): v is SavedVersion => !!v);
   for (const v of marked) if (!cachedVersion(v.id)) void loadVersionData(v.id).then(() => tab === "versions" && render());
-  const k = versionKpis(loadIds(current, ...loaded.map((v) => v.plan)));
+  const k = versionKpis();
   const cols = [{ name: `VIGENTE · ${current.plan_id}`, plan: current }, ...loaded.map((v) => ({ name: v.name, plan: v.plan }))];
   const compare = !marked.length
     ? '<p class="dim small">Marca una o varias versiones (☑) para compararlas con la vigente.</p>'
