@@ -93,7 +93,7 @@ body.aps-page { font: 400 13px Inter, sans-serif; background: radial-gradient(ci
 .g-row.res.g-copy .g-label b { font-weight: 500; }
 .g-row.res.g-mold-idle .g-track { background: repeating-linear-gradient(135deg, transparent 0 8px, rgba(120, 180, 230, 0.05) 8px 9px); }
 .g-head, .g-row, .g-gridlayer { display: grid; grid-template-columns: var(--label) 1fr; }
-.g-head { position: sticky; top: 52px; z-index: 3; background: rgba(8, 10, 45, 0.96); border-bottom: 1px solid var(--line); }
+.g-head { background: rgba(8, 10, 45, 0.96); border-bottom: 1px solid var(--line); }
 .g-head .g-track { height: 24px; }
 .g-day { position: absolute; top: 0; bottom: 0; display: flex; align-items: center; justify-content: center; font: 600 11px "IBM Plex Mono", monospace; color: var(--text); border-left: 1px solid var(--line); overflow: hidden; white-space: nowrap; }
 .g-day.off { color: var(--dim); }
@@ -129,20 +129,26 @@ body.aps-page { font: 400 13px Inter, sans-serif; background: radial-gradient(ci
 .g-uses { color: #6fb1ff; }
 .g-down { position: absolute; top: 2px; bottom: 2px; background: repeating-linear-gradient(45deg, var(--bad) 0 3px, rgba(255, 59, 59, 0.25) 3px 6px); opacity: 0.8; z-index: 1; }
 #tab-gantt { overflow-x: auto; }
-.g-scroll { max-height: 48vh; overflow-y: auto; border-bottom: 1px solid var(--line); }
-.g-head { top: 0; }
-/* Escritorio: la página hace el scroll. La lista de órdenes ya no tiene su propio
-   scroll (si lo tuviera, la rueda se quedaba ahí y no llegaba a los recursos), y
-   #tab-gantt usa overflow-x: clip para que el encabezado de días quede pegado bajo
-   la barra superior al bajar. En celular se mantiene el comportamiento anterior. */
-@media (min-width: 901px) {
-  /* body con overflow: auto se vuelve un contenedor de scroll que nunca se mueve, así
-     que el encabezado pegado (sticky) no se queda visible al bajar: el scroll es de la ventana. */
-  body.aps-page { overflow: visible; }
-  #tab-gantt { overflow-x: clip; }
-  .g-scroll { max-height: none; overflow: visible; }
-  .g-head { top: 63px; }
-}
+/* Dos listas con su propio scroll vertical (órdenes arriba, recursos abajo); la página no hace scroll por ellas.
+   El encabezado de días va dentro de cada lista y queda pegado arriba. */
+.g-scroll { overflow-y: auto; overscroll-behavior: contain; border-bottom: 1px solid var(--line); scrollbar-gutter: stable; }
+.g-ord-scroll { max-height: min(440px, 46vh); }
+.g-res-scroll { max-height: min(440px, 46vh); }
+.g-head { position: sticky; top: 0; z-index: 3; }
+.g-chk { margin: 0 6px 0 0; vertical-align: middle; accent-color: var(--accent); cursor: pointer; }
+.g-filter { position: relative; }
+.g-filter > summary { list-style: none; cursor: pointer; padding: 6px 12px; border: 1px solid var(--line); border-radius: 6px; font: 600 11px Inter, sans-serif; letter-spacing: 0.08em; user-select: none; }
+.g-filter > summary::-webkit-details-marker { display: none; }
+.g-filter[open] > summary { background: var(--accent); color: #04121f; border-color: var(--accent); }
+.g-fpanel { position: absolute; z-index: 8; top: calc(100% + 4px); left: 0; width: min(760px, calc(100vw - 32px)); max-height: 70vh; overflow-y: auto; padding: 10px 12px; background: rgba(8, 10, 45, 0.98); border: 1px solid var(--line); border-radius: var(--radius-surface); box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5); }
+.g-fbtns { display: flex; gap: 6px; margin-bottom: 8px; }
+.g-fcols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.g-fcols h4 { margin: 6px 0 4px; font: 700 10px Inter, sans-serif; letter-spacing: 0.14em; color: var(--accent); }
+.g-fopt { display: flex; align-items: center; gap: 6px; padding: 2px 0; font-size: 12px; cursor: pointer; }
+.g-fopt span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.g-fopt small { color: var(--dim); font-size: 10.5px; }
+.g-flist { max-height: 300px; overflow-y: auto; }
+@media (max-width: 700px) { .g-fcols { grid-template-columns: 1fr; } .g-fpanel { position: fixed; left: 16px; right: 16px; top: 120px; width: auto; } }
 .aps-alarm { margin: 0 16px 12px; padding: 10px 16px; border: 1px solid var(--bad); background: rgba(255, 59, 59, 0.12); border-radius: var(--radius-surface); }
 .aps-alarm p { margin: 3px 0; }
 .aps-alarm b { color: #ff8080; letter-spacing: 0.04em; }
