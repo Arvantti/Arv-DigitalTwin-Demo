@@ -402,3 +402,33 @@ button.danger:hover { background: rgba(255, 59, 59, 0.4); border-color: #fff; }
 body.embed .aps-top, body.embed .aps-tabs, body.embed .emu-side, body.embed .emu-legend { display: none; }
 body.embed .emu-main { grid-template-columns: 1fr; padding: 4px; }
 body.embed #emu-svg { aspect-ratio: 118 / 62; }
+
+/* Versiones guardadas de la programación */
+.ver-head { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius-surface); background: var(--glass); margin-bottom: 8px; }
+.ver-save { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; flex: 1 1 420px; }
+.ver-save label { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; flex: 1; }
+.ver-save input, .ver-rename input { flex: 1; min-width: 200px; background: rgba(20, 28, 80, 0.7); color: var(--text); border: 1px solid var(--line); border-radius: var(--radius-control); padding: 6px 8px; font: 500 13px Inter, sans-serif; }
+.ver-head .btn-file { display: inline-flex; align-items: center; padding: 6px 12px; border: 1px solid var(--line); border-radius: var(--radius-control); cursor: pointer; font: 600 12px Inter, sans-serif; letter-spacing: 0.06em; }
+.ver-head .btn-file:hover { border-color: var(--cyan); }
+.ver-list td.ver-name { white-space: normal; min-width: 240px; }
+.ver-list td.ver-name small { display: block; margin-top: 2px; }
+.ver-list tr.seen td { background: rgba(45, 127, 249, 0.12); }
+.ver-actions { display: flex; gap: 4px; justify-content: flex-end; }
+.ver-actions button { padding: 4px 8px; }
+.ver-rename { display: flex; gap: 6px; }
+.ver-empty { padding: 18px; border: 1px dashed var(--line); border-radius: var(--radius-surface); color: var(--dim); text-align: center; }
+.ver-cmp-title { margin: 18px 0 6px; font: 600 13px Orbitron, sans-serif; letter-spacing: 0.08em; }
+.ver-cmp th:first-child { text-align: left; }
+.ver-cmp thead th { white-space: normal; min-width: 120px; vertical-align: bottom; }
+.ver-cmp td.ok { font-weight: 700; }
+.aps-save-msg { grid-column: 1 / -1; }
+@media (max-width: 700px) {
+  .ver-save, .ver-save label { flex-direction: column; align-items: stretch; flex-basis: 100%; }
+  .ver-save input { min-width: 0; width: 100%; box-sizing: border-box; }
+  .ver-list td.ver-name { min-width: 200px; }
+  .ver-cmp tbody th { white-space: normal; min-width: 110px; max-width: 130px; }
+  .ver-cmp thead th { min-width: 96px; }
+}
+.ver-list th, .ver-cmp th { padding: 6px 10px; font: 600 11px Inter, sans-serif; letter-spacing: 0.04em; color: var(--dim); }
+.ver-cmp tbody th { color: var(--text); font-size: 12px; letter-spacing: 0; }
+.ver-list td, .ver-cmp td { padding: 6px 10px; }

@@ -19,6 +19,7 @@ import "./movil.css";
 import type { CustomerOrder, Importance, ProductionPlan } from "@twin/cosim/core/contracts.ts";
 import type { Objective } from "@twin/cosim/adapters/plastic-injection-plant-v1/solve.ts";
 import { activeEvents, addedOrders, baseManual, molds, modelNow, manualPlan, model, now, onChange, portfolio, resetDemo, setAdded, setVigente, setViewed, setViewMode, SOURCE_NAMES, useDemoDays, vigente, viewedPlan, viewMode } from "./aps-store.ts";
+import { cachedVersion, deleteVersion, exportVersions, importVersions, loadVersion as loadVersionData, renameVersion, saveVersion, setViewedVersionId, versions, viewedVersionId, type SavedVersion } from "./aps-store.ts";
 import { editedPlan, moveChunk, queuesOf, type EditChunk, type ManualEdit } from "@twin/cosim/adapters/plastic-injection-plant-v1/manual.ts";
 import { COLOR_NAMES, day, esc, nf, relativeDays, when } from "./schedule.ts";
 import { renderInsumos } from "./insumos.ts";
@@ -57,7 +58,7 @@ let proposal: ProductionPlan | null = null;
 /** Escenarios que devolvió CALCULAR (A: cumplir entregas; B: menos cambios sin empeorar entregas), para elegir entre ellos. */
 let alternatives: { id: string; label: string; plan: ProductionPlan }[] = [];
 let current = vigente();
-const TABS = ["orders", "gantt", "insumos", "fractal"];
+const TABS = ["orders", "gantt", "versions", "insumos", "fractal"];
 let tab = TABS.find((x) => x === new URLSearchParams(location.search).get("tab")) ?? "orders";
 let selected: string | null = null;
 /** Recursos del Gantt: por máquina o por molde (cada copia del molde es una fila). */
@@ -90,13 +91,17 @@ const shown = () => (viewVigente ? current : (proposal ?? current));
 
 useDemoDays();
 
+/** Versión guardada que se cargó como propuesta (mientras no se vuelva a mover nada). */
+let loadedVersion: { id: string; plan: ProductionPlan } | null = null;
+const proposalVersionId = () => (proposal && loadedVersion?.plan === proposal ? loadedVersion.id : null);
+
 /** Lo que el APS muestra como propuesta es el escenario que ve el gemelo, hasta que el gemelo vuelva a "vigente". */
-let lastView = "";
+let lastView: ProductionPlan | null = null;
 function syncView(): void {
-  const key = proposal?.plan_id ?? "";
-  if (key === lastView) return;
-  lastView = key;
+  if (proposal === lastView) return;
+  lastView = proposal;
   if (proposal) viewVigente = false;
+  setViewedVersionId(proposalVersionId());
   setViewed(proposal);
   setViewMode(proposal ? "escenario" : "vigente");
 }
@@ -112,12 +117,14 @@ function render(): void {
   $("tab-gantt").hidden = tab !== "gantt";
   $("tab-fractal").hidden = tab !== "fractal";
   $("tab-insumos").hidden = tab !== "insumos";
+  $("tab-versions").hidden = tab !== "versions";
   $("aps-calc").toggleAttribute("disabled", !!running);
   renderAlarm();
   renderProposal();
   if (tab === "orders") renderOrders(p);
   else if (tab === "gantt") renderGantt(p);
   else if (tab === "insumos") renderInsumos($("tab-insumos"), p);
+  else if (tab === "versions") renderVersions();
   else renderFractal();
 }
 
@@ -192,8 +199,10 @@ function renderProposal(): void {
         <div title="Cambios de referencia: montaje de molde, purga de resina o purga de color (tiempos de catalog/changeovers.yaml)"><small>Cambios de referencia</small>${cell(v.changeovers, k.changeovers, (x) => nf(x), true)}<small>${nf(v.changeover_h ?? 0, 1)} → ${nf(k.changeover_h ?? 0, 1)} h</small></div>
         <div title="Horas programadas / horas disponibles de la planta en los 7 días desde AHORA"><small>Ocupación planta · 7 días</small>${cell(ov.occupancy, op.occupancy, pctTxt, true)}<small>${nf(ov.busyH, 0)} → ${nf(op.busyH, 0)} h de ${nf(op.availH, 0)} h</small></div>
       </div>
-      <div class="aps-prop-actions"><button id="aps-adopt" class="primary">✓ ADOPTAR COMO VIGENTE</button><button id="aps-discard">✕ DESCARTAR</button></div>
+      <div class="aps-prop-actions"><button id="aps-adopt" class="primary">✓ ADOPTAR COMO VIGENTE</button><button id="aps-save" title="Guarda esta programación con nombre para verla, compararla o adoptarla después (pestaña VERSIONES)"${proposalVersionId() ? " disabled" : ""}>${proposalVersionId() ? "✓ GUARDADA" : "💾 GUARDAR VERSIÓN"}</button><button id="aps-discard">✕ DESCARTAR</button></div>
+      ${saveMsg ? `<p class="small ${saveMsg.ok ? "ok" : "bad"} aps-save-msg">${esc(saveMsg.text)}</p>` : ""}
     </div>`;
+  $("aps-save").onclick = () => void saveShown(proposal!);
   el.querySelectorAll<HTMLButtonElement>("[data-scen]").forEach((b) => {
     b.onclick = () => {
       const pick = alternatives.find((a) => a.id === b.dataset.scen);
@@ -212,6 +221,7 @@ function renderProposal(): void {
     render();
   };
   $("aps-discard").onclick = () => {
+    saveMsg = null;
     proposal = null;
     alternatives = [];
     clearEdit();
@@ -270,6 +280,8 @@ function calculate(objective: Objective = "entregas"): void {
     if (e.data.ok) {
       proposal = e.data.plan!;
       alternatives = e.data.scenarios ?? [];
+      for (const a of alternatives) purposeOf.set(a.plan, a.label);
+      purposeOf.set(proposal, OBJECTIVE_LABEL[objective]);
       clearEdit();
     } else {
       alternatives = [];
@@ -1330,6 +1342,218 @@ function renderFractal(): void {
     adopt.onclick = () => adoptOption(study!.best);
 }
 
+// ------------------------------------------------------------------ versiones guardadas
+let saveMsg: { ok: boolean; text: string } | null = null;
+/** Versiones marcadas para comparar (solo en esta pantalla). */
+const compareIds = new Set<string>();
+let renaming: string | null = null;
+let versionMsg: { ok: boolean; text: string } | null = null;
+let saving = false;
+
+/** Con qué objetivo o escenario salió cada propuesta de CALCULAR, para el nombre por defecto. */
+const purposeOf = new WeakMap<ProductionPlan, string>();
+/** Nombre que se propone al guardar: origen, número, objetivo y, si los hubo, cuántos ajustes a mano. */
+function defaultName(plan: ProductionPlan): string {
+  const moves = plan === proposal && edit ? edit.moves.length : 0;
+  const obj = purposeOf.get(plan);
+  return `${SOURCE_NAMES[plan.source] ?? plan.source} ${plan.plan_id}${obj ? ` · ${obj.toLowerCase()}` : ""}${moves ? ` · ${moves} ajuste${moves === 1 ? "" : "s"} a mano` : ""} · ${when(now())}`;
+}
+
+/** Guarda la programación con nombre (por defecto uno descriptivo); se renombra en VERSIONES. */
+async function saveShown(plan: ProductionPlan, name = defaultName(plan)): Promise<void> {
+  if (saving) return;
+  saving = true;
+  const withEdit = plan === proposal ? edit : null;
+  try {
+    const v = await saveVersion(name, plan, withEdit);
+    if (plan === proposal) {
+      loadedVersion = { id: v.id, plan };
+      setViewedVersionId(v.id);
+    }
+    saveMsg = versionMsg = { ok: true, text: `Guardada como «${v.name}». Cámbiale el nombre, compárala o vuelve a verla en VERSIONES.` };
+  } catch (err) {
+    saveMsg = versionMsg = { ok: false, text: (err as Error).message };
+  }
+  saving = false;
+  render();
+}
+
+/** Carga una versión como propuesta: se ve en el Gantt y en el gemelo, se sigue ajustando a mano o se adopta. */
+function showVersion(v: SavedVersion, goTo: string | null = "gantt"): void {
+  proposal = v.plan;
+  alternatives = [];
+  clearEdit();
+  edit = v.edit ?? null;
+  loadedVersion = { id: v.id, plan: v.plan };
+  saveMsg = null;
+  error = "";
+  if (goTo) tab = goTo;
+}
+
+function download(name: string, text: string): void {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([text], { type: "application/json" }));
+  a.download = name;
+  document.body.append(a);
+  a.click();
+  setTimeout(() => (URL.revokeObjectURL(a.href), a.remove()), 1000);
+}
+
+/** Indicadores para comparar versiones (los mismos de la propuesta frente a la vigente). */
+/** `neutral`: se muestra para comparar, pero ni más ni menos es mejor por sí solo. */
+interface VersionKpi { label: string; get: (p: ProductionPlan) => number; fmt: (x: number) => string; lowerIsBetter: boolean; neutral?: boolean; title?: string }
+function versionKpis(ids: string[]): VersionKpi[] {
+  return [
+    { label: "A tiempo", get: (p) => p.kpis.on_time_pct, fmt: (x) => `${nf(x, 1)} %`, lowerIsBetter: false },
+    { label: "Pedidos tarde", get: (p) => p.kpis.late_orders, fmt: (x) => nf(x), lowerIsBetter: true },
+    { label: "Atraso total", get: (p) => p.kpis.tardiness_h, fmt: (x) => `${nf(x, 1)} h`, lowerIsBetter: true },
+    { label: "Cambios de referencia", get: (p) => p.kpis.changeovers, fmt: (x) => nf(x), lowerIsBetter: true, title: "Montaje de molde, purga de resina o purga de color" },
+    { label: "Horas de cambio", get: (p) => p.kpis.changeover_h ?? 0, fmt: (x) => `${nf(x, 1)} h`, lowerIsBetter: true },
+    { label: "Ocupación planta · 7 días", get: (p) => occOf(p, ids).occupancy, fmt: pctTxt, lowerIsBetter: true, neutral: true, title: "Horas programadas / disponibles en los 7 días desde AHORA" },
+    { label: "Pedidos que terminan distinto a la vigente", get: (p) => changedOrders(p), fmt: (x) => nf(x), lowerIsBetter: true, neutral: true, title: "Pedidos cuya hora de fin cambia más de 30 min frente a la vigente" },
+  ];
+}
+
+function changedOrders(p: ProductionPlan): number {
+  const base = new Map(current.orders.map((o) => [o.id, ms(o.completion)]));
+  return p.orders.filter((o) => {
+    const b = base.get(o.id);
+    return b === undefined || Math.abs(ms(o.completion) - b) > 30 * 60000;
+  }).length;
+}
+
+const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+
+function renderVersions(): void {
+  const el = $("tab-versions");
+  const list = versions();
+  for (const id of [...compareIds]) if (!list.some((v) => v.id === id)) compareIds.delete(id);
+  const seenId = proposalVersionId();
+  const p = shown();
+  const canSave = !saving && !(p === proposal && seenId);
+  const listKpis: [string, (k: ProductionPlan["kpis"]) => string][] = [
+    ["A tiempo", (k) => `${nf(k.on_time_pct, 1)} %`],
+    ["Pedidos tarde", (k) => nf(k.late_orders)],
+    ["Atraso total", (k) => `${nf(k.tardiness_h, 1)} h`],
+    ["Cambios de referencia", (k) => nf(k.changeovers)],
+  ];
+  const rows = list
+    .map((v) => {
+      const name = renaming === v.id
+        ? `<form class="ver-rename" data-rename="${esc(v.id)}"><input name="n" value="${esc(v.name)}" maxlength="80" aria-label="Nombre de la versión"><button class="primary">OK</button></form>`
+        : `<b>${esc(v.name)}</b>${v.id === seenId ? ' <span class="chip now">VIENDO</span>' : ""}${v.plan_id === current.plan_id ? ' <span class="chip done">= VIGENTE</span>' : ""}`;
+      return `<tr class="${v.id === seenId ? "seen" : ""}">
+        <td><input type="checkbox" data-cmp="${esc(v.id)}" ${compareIds.has(v.id) ? "checked" : ""} aria-label="Comparar ${esc(v.name)}"></td>
+        <td class="ver-name">${name}<small class="dim">${esc(SOURCE_NAMES[v.source] ?? v.source)} ${esc(v.plan_id)}${v.moves ? ` · ${plural(v.moves, "ajuste", "ajustes")} a mano` : ""}${v.fixed ? ` · ${plural(v.fixed, "orden fijada", "órdenes fijadas")}` : ""} · guardada ${esc(when(v.saved_at))}</small></td>
+        ${listKpis.map(([, f]) => `<td class="num">${f(v.kpis)}</td>`).join("")}
+        <td><div class="ver-actions">
+          <button class="primary" data-see="${esc(v.id)}" title="Verla en el Gantt y en el gemelo 3D como escenario">👁 VER</button>
+          <button data-ren="${esc(v.id)}" title="Cambiar el nombre" aria-label="Cambiar el nombre">✎</button>
+          <button data-exp="${esc(v.id)}" title="Exportar esta versión en JSON" aria-label="Exportar">⤓</button>
+          <button data-del="${esc(v.id)}" title="Borrar esta versión" aria-label="Borrar">🗑</button>
+        </div></td></tr>`;
+    })
+    .join("");
+
+  // Comparación: la vigente y las marcadas. Las que no están en memoria se descomprimen y se vuelve a dibujar.
+  const marked = list.filter((v) => compareIds.has(v.id));
+  const loaded = marked.map((v) => cachedVersion(v.id)).filter((v): v is SavedVersion => !!v);
+  for (const v of marked) if (!cachedVersion(v.id)) void loadVersionData(v.id).then(() => tab === "versions" && render());
+  const k = versionKpis(loadIds(current, ...loaded.map((v) => v.plan)));
+  const cols = [{ name: `VIGENTE · ${current.plan_id}`, plan: current }, ...loaded.map((v) => ({ name: v.name, plan: v.plan }))];
+  const compare = !marked.length
+    ? '<p class="dim small">Marca una o varias versiones (☑) para compararlas con la vigente.</p>'
+    : loaded.length < marked.length
+      ? '<p class="dim small"><span class="spin">◌</span> Abriendo las versiones…</p>'
+      : `<div class="aps-table-wrap"><table class="aps-table ver-cmp"><thead><tr><th>Indicador</th>${cols.map((c) => `<th class="num">${esc(c.name)}</th>`).join("")}</tr></thead><tbody>${k
+          .map((x) => {
+            const vals = cols.map((c) => x.get(c.plan));
+            const best = x.lowerIsBetter ? Math.min(...vals) : Math.max(...vals);
+            const same = x.neutral || vals.every((y) => y === vals[0]);
+            return `<tr><th${x.title ? ` title="${esc(x.title)}"` : ""}>${esc(x.label)}</th>${vals
+              .map((y, i) => `<td class="num${!same && y === best ? " ok" : ""}">${x.fmt(y)}${i > 0 && y !== vals[0] ? ` <small class="${x.neutral ? "dim" : (y < vals[0]) === x.lowerIsBetter ? "ok" : "bad"}">${y > vals[0] ? "▲" : "▼"}</small>` : ""}</td>`)
+              .join("")}</tr>`;
+          })
+          .join("")}</tbody></table></div><p class="dim small">En verde, la mejor de cada fila (la ocupación y los pedidos que cambian solo informan); las flechas comparan con la VIGENTE. Para mandar una a la planta: 👁 VER y luego ✓ ADOPTAR COMO VIGENTE.</p>`;
+
+  el.innerHTML = `
+    <div class="ver-head">
+      <form id="ver-save" class="ver-save">
+        <label>Guardar <b>${p === current ? "la VIGENTE" : "el ESCENARIO"} ${esc(p.plan_id)}</b> como
+          <input name="n" placeholder="${esc(defaultName(p))}" maxlength="80"${canSave ? "" : " disabled"}></label>
+        <button class="primary"${canSave ? "" : " disabled"}>${saving ? "GUARDANDO…" : "💾 GUARDAR VERSIÓN"}</button>
+        ${canSave || saving ? "" : '<span class="dim small">Lo que se ve ya está guardado.</span>'}
+      </form>
+      <span class="aps-spacer"></span>
+      <button id="ver-export"${list.length ? "" : " disabled"} title="Descarga todas las versiones en un archivo JSON">⤓ EXPORTAR TODAS</button>
+      <label class="btn-file" title="Agrega versiones desde un archivo JSON exportado">⤒ IMPORTAR<input id="ver-import" type="file" accept="application/json,.json" hidden></label>
+    </div>
+    ${versionMsg ? `<p class="small ${versionMsg.ok ? "ok" : "bad"}">${esc(versionMsg.text)}</p>` : ""}
+    <p class="dim small">Cada versión es una programación guardada con nombre: lo que calculó el cosimulador, un escenario de Fractal o lo que se ajustó a mano en el Gantt. 👁 VER la muestra como escenario en el Gantt y en el gemelo 3D; desde ahí se sigue ajustando, se compara o se adopta. Se guardan en este navegador; para llevarlas a otro equipo, exporta e importa el JSON.</p>
+    ${list.length ? `<div class="aps-table-wrap"><table class="aps-table ver-list"><thead><tr><th title="Comparar">☑</th><th>Versión · ${list.length}</th>${listKpis.map(([l]) => `<th class="num">${esc(l)}</th>`).join("")}<th></th></tr></thead><tbody>${rows}</tbody></table></div>` : '<p class="ver-empty">Todavía no hay versiones guardadas. Calcula, ajusta en el Gantt o elige un escenario de Fractal y pulsa 💾 GUARDAR VERSIÓN.</p>'}
+    <h3 class="ver-cmp-title">COMPARAR CON LA VIGENTE</h3>
+    ${compare}`;
+
+  ($("ver-save") as HTMLFormElement).onsubmit = (e) => {
+    e.preventDefault();
+    const input = (e.target as HTMLFormElement).elements.namedItem("n") as HTMLInputElement;
+    void saveShown(p, input.value.trim() || defaultName(p));
+  };
+  $("ver-export").onclick = async () => download(`versiones-aps-plasticos-${day(now()).replace(/\s+/g, "-")}.json`, await exportVersions());
+  ($("ver-import") as HTMLInputElement).onchange = async (e) => {
+    const file = (e.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    try {
+      const n = await importVersions(await file.text());
+      versionMsg = { ok: true, text: n ? `Se ${n === 1 ? "importó 1 versión" : `importaron ${n} versiones`}.` : "Esas versiones ya estaban." };
+    } catch (err) {
+      versionMsg = { ok: false, text: err instanceof SyntaxError ? "El archivo no es un JSON válido." : (err as Error).message };
+    }
+    render();
+  };
+  el.querySelectorAll<HTMLInputElement>("[data-cmp]").forEach((c) => (c.onchange = () => (c.checked ? compareIds.add(c.dataset.cmp!) : compareIds.delete(c.dataset.cmp!), render())));
+  el.querySelectorAll<HTMLButtonElement>("[data-see]").forEach(
+    (b) =>
+      (b.onclick = async () => {
+        const v = await loadVersionData(b.dataset.see!);
+        if (!v) {
+          versionMsg = { ok: false, text: "No se pudo abrir esa versión en este navegador." };
+          return render();
+        }
+        showVersion(v);
+        render();
+      }),
+  );
+  el.querySelectorAll<HTMLButtonElement>("[data-ren]").forEach((b) => (b.onclick = () => ((renaming = b.dataset.ren!), render(), el.querySelector<HTMLInputElement>(".ver-rename input")?.select())));
+  el.querySelectorAll<HTMLFormElement>("[data-rename]").forEach(
+    (f) =>
+      (f.onsubmit = (e) => {
+        e.preventDefault();
+        renameVersion(f.dataset.rename!, (f.elements.namedItem("n") as HTMLInputElement).value);
+        renaming = null;
+        render();
+      }),
+  );
+  el.querySelectorAll<HTMLButtonElement>("[data-exp]").forEach(
+    (b) =>
+      (b.onclick = async () => {
+        const v = list.find((x) => x.id === b.dataset.exp);
+        if (v) download(`version-${v.plan_id}-${v.id}.json`, await exportVersions([v.id]));
+      }),
+  );
+  el.querySelectorAll<HTMLButtonElement>("[data-del]").forEach(
+    (b) =>
+      (b.onclick = () => {
+        const v = list.find((x) => x.id === b.dataset.del);
+        if (!v || !confirm(`¿Borrar la versión «${v.name}»? Si no la exportaste, no se puede recuperar.`)) return;
+        deleteVersion(v.id);
+        if (loadedVersion?.id === v.id) loadedVersion = null;
+        versionMsg = { ok: true, text: `Se borró «${v.name}».` };
+        render();
+      }),
+  );
+}
+
 // ------------------------------------------------------------------ arranque
 document.querySelectorAll<HTMLButtonElement>(".aps-tabs [data-tab]").forEach((b) => (b.onclick = () => ((tab = b.dataset.tab!), render())));
 $("aps-calc").onclick = () => openObjectivePicker();
@@ -1350,12 +1574,35 @@ onChange((what) => {
   if (what === "view") {
     // El gemelo eligió: "vigente" muestra la vigente en el APS; "escenario" muestra el escenario visto.
     viewVigente = viewMode() === "vigente";
-    if (!viewVigente && !proposal) proposal = viewedPlan();
-    lastView = proposal?.plan_id ?? "";
+    const seen = viewedPlan();
+    // El gemelo puede elegir otra versión guardada: el APS la carga como propuesta.
+    const vid = viewedVersionId();
+    if (!viewVigente && seen && vid && vid !== proposalVersionId()) {
+      void loadVersionData(vid).then((v) => {
+        if (!v) return;
+        showVersion(v, null);
+        lastView = proposal;
+        render();
+      });
+    } else if (!viewVigente && !proposal) proposal = seen;
+    lastView = proposal;
   }
   if (what === "events") error = "";
   render();
 });
 addEventListener("resize", () => render());
+// Al volver a abrir el APS se recupera el escenario que se estaba viendo (también un ajuste a mano sin guardar).
+if (viewMode() === "escenario" && viewedPlan()) {
+  proposal = viewedPlan();
+  lastView = proposal;
+  const vid = viewedVersionId();
+  if (vid)
+    void loadVersionData(vid).then((v) => {
+      if (!v || proposal !== lastView) return;
+      showVersion(v, null);
+      lastView = proposal;
+      render();
+    });
+}
 setInterval(() => ($("aps-clock").textContent = `AHORA · ${when(now())}`), 30000);
 render();

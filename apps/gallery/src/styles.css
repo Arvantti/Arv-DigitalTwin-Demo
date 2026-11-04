@@ -352,6 +352,7 @@ button.pick { padding: 2px 8px; font-size: 11px; }
 .twin-time { left: 274px; right: 344px; bottom: 12px; height: 66px; display: grid; grid-template-columns: auto 1fr 150px; gap: 12px; align-items: center; padding: 0 14px; z-index: 4; }
 .tt-controls { display: flex; gap: 6px; }
 .tt-controls select { padding: 6px 4px; }
+#tt-view { max-width: 260px; text-overflow: ellipsis; }
 .tt-track { position: relative; height: 44px; }
 .tt-days { position: absolute; left: 0; right: 0; top: 0; height: 18px; }
 .tt-days span { position: absolute; top: 0; font: 600 10px "IBM Plex Mono", monospace; color: var(--text); border-left: 1px solid var(--line); padding-left: 3px; white-space: nowrap; overflow: hidden; }

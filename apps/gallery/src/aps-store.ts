@@ -9,7 +9,7 @@
 import type { CustomerOrder, CustomerOrders, PlantEvent, ProductionPlan } from "@twin/cosim/core/contracts.ts";
 import { basePortfolio, baseManual, catalogData, plasticsModel } from "@twin/cosim/adapters/plastic-injection-plant-v1/catalog.ts";
 import { modelFor } from "@twin/fractal-manufacturing/models/plastic-injection-plant-v1/study.ts";
-import { manualPlan } from "@twin/cosim/adapters/plastic-injection-plant-v1/manual.ts";
+import { manualPlan, type ManualEdit } from "@twin/cosim/adapters/plastic-injection-plant-v1/manual.ts";
 import { plantNow, setDayZero, store } from "./schedule.ts";
 
 export const PLASTICS = "plastic-injection-plant-v1";
@@ -188,7 +188,185 @@ export function shownClockText(): string {
   return `${shownNow().slice(11, 16)}:${String(local.getUTCSeconds()).padStart(2, "0")}`;
 }
 
-export type Change = "orders" | "plan" | "events" | "clock" | "view";
+// ------------------------------------------------------------------ versiones guardadas de la programación
+/**
+ * Versión guardada de la programación: una foto con nombre de lo que se calculó o se ajustó a mano, para volver a
+ * verla en el APS y en el gemelo, compararla con otras y adoptarla después. Mientras no haya servidor viven en este
+ * navegador (localStorage) y se pasan a otro equipo exportándolas en JSON.
+ *
+ * Una programación pesa unos 350 kB en JSON, así que se guarda un índice liviano (nombre e indicadores) y cada
+ * programación aparte, comprimida con gzip (unas 15 veces menos): caben decenas sin llenar el navegador.
+ */
+export interface VersionMeta {
+  contract: "plan-version.v1";
+  id: string;
+  name: string;
+  /** Instante de la planta en que se guardó. */
+  saved_at: string;
+  plan_id: string;
+  source: ProductionPlan["source"];
+  kpis: ProductionPlan["kpis"];
+  fixed: number;
+  /** Ajustes a mano con que se hizo. */
+  moves: number;
+}
+
+export interface VersionData {
+  plan: ProductionPlan;
+  /** Ajuste manual con el que se hizo (colas y movimientos), si lo hubo: permite seguir ajustándola. */
+  edit?: ManualEdit | null;
+}
+
+export type SavedVersion = VersionMeta & VersionData;
+
+const VERSION_FILE = "plan-versions.v1";
+const cache = new Map<string, VersionData>();
+
+export function versions(): VersionMeta[] {
+  return read<VersionMeta[]>("versions", []);
+}
+
+function writeIndex(list: VersionMeta[]): void {
+  localStorage.setItem(key("versions"), JSON.stringify(list));
+  channel?.postMessage({ type: "versions" });
+}
+
+async function pipe(text: string | Uint8Array, stream: CompressionStream | DecompressionStream): Promise<Uint8Array> {
+  const body = typeof text === "string" ? new TextEncoder().encode(text) : text;
+  return new Uint8Array(await new Response(new Blob([body as BlobPart]).stream().pipeThrough(stream)).arrayBuffer());
+}
+
+/** JSON → "gz:" + base64 de gzip (o "j:" + JSON si el navegador no comprime). */
+async function pack(data: VersionData): Promise<string> {
+  const json = JSON.stringify(data);
+  if (typeof CompressionStream === "undefined") return `j:${json}`;
+  const bytes = await pipe(json, new CompressionStream("gzip"));
+  let bin = "";
+  for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  return `gz:${btoa(bin)}`;
+}
+
+async function unpack(raw: string): Promise<VersionData> {
+  if (raw.startsWith("j:")) return JSON.parse(raw.slice(2)) as VersionData;
+  const bin = atob(raw.slice(3));
+  const bytes = Uint8Array.from(bin, (c) => c.charCodeAt(0));
+  return JSON.parse(new TextDecoder().decode(await pipe(bytes, new DecompressionStream("gzip")))) as VersionData;
+}
+
+/** La programación de una versión (se descomprime una vez y queda en memoria). */
+export async function loadVersion(id: string): Promise<SavedVersion | null> {
+  const meta = versions().find((v) => v.id === id);
+  if (!meta) return null;
+  let data = cache.get(id);
+  if (!data) {
+    const raw = store.get(key(`version.${id}`));
+    if (!raw) return null;
+    data = await unpack(raw);
+    cache.set(id, data);
+  }
+  return { ...meta, ...data };
+}
+
+/** La versión si ya está en memoria (para dibujar sin esperar). */
+export function cachedVersion(id: string): SavedVersion | null {
+  const meta = versions().find((v) => v.id === id);
+  const data = cache.get(id);
+  return meta && data ? { ...meta, ...data } : null;
+}
+
+const metaOf = (id: string, name: string, saved_at: string, d: VersionData): VersionMeta => ({
+  contract: "plan-version.v1",
+  id,
+  name,
+  saved_at,
+  plan_id: d.plan.plan_id,
+  source: d.plan.source,
+  kpis: d.plan.kpis,
+  fixed: d.plan.fixed_orders?.length ?? 0,
+  moves: d.edit?.moves.length ?? 0,
+});
+
+async function store1(meta: VersionMeta, data: VersionData): Promise<void> {
+  localStorage.setItem(key(`version.${meta.id}`), await pack(data));
+  cache.set(meta.id, data);
+}
+
+/** Guarda una versión. Falla si el navegador no tiene espacio. */
+export async function saveVersion(name: string, plan: ProductionPlan, edit: ManualEdit | null = null): Promise<VersionMeta> {
+  const data: VersionData = { plan, edit };
+  const meta = metaOf(`v${Date.now().toString(36)}`, name.trim() || plan.plan_id, now(), data);
+  try {
+    await store1(meta, data);
+    writeIndex([meta, ...versions()]);
+  } catch {
+    store.set(key(`version.${meta.id}`), null);
+    throw new Error("El navegador no tiene espacio para más versiones: exporta y borra algunas en VERSIONES.");
+  }
+  return meta;
+}
+
+export function renameVersion(id: string, name: string): void {
+  writeIndex(versions().map((v) => (v.id === id ? { ...v, name: name.trim() || v.name } : v)));
+}
+
+export function deleteVersion(id: string): void {
+  store.set(key(`version.${id}`), null);
+  cache.delete(id);
+  writeIndex(versions().filter((v) => v.id !== id));
+}
+
+/** Archivo JSON con las versiones elegidas (todas si no se dice cuáles), con su programación completa. */
+export async function exportVersions(ids?: string[]): Promise<string> {
+  const list = (await Promise.all(versions().filter((v) => !ids || ids.includes(v.id)).map((v) => loadVersion(v.id)))).filter((v): v is SavedVersion => !!v);
+  return JSON.stringify({ contract: VERSION_FILE, plant: PLASTICS, portfolio_id: basePortfolio.portfolio_id, versions: list });
+}
+
+/** Agrega las versiones de un archivo exportado; las que ya están (mismo id) no se duplican. Devuelve cuántas entraron. */
+export async function importVersions(text: string): Promise<number> {
+  const data = JSON.parse(text) as { contract?: string; plant?: string; versions?: SavedVersion[] };
+  if (data.contract !== VERSION_FILE || data.plant !== PLASTICS || !Array.isArray(data.versions)) throw new Error("El archivo no es una exportación de versiones del APS de plásticos.");
+  const have = new Set(versions().map((v) => v.id));
+  const fresh = data.versions.filter((v) => v?.contract === "plan-version.v1" && v.plan?.contract === "production-plan.v1" && v.plan.portfolio_id === basePortfolio.portfolio_id && !have.has(v.id));
+  const added: VersionMeta[] = [];
+  try {
+    for (const v of fresh) {
+      const d: VersionData = { plan: v.plan, edit: v.edit ?? null };
+      const meta = metaOf(String(v.id), String(v.name ?? v.plan.plan_id), String(v.saved_at ?? now()), d);
+      await store1(meta, d);
+      added.push(meta);
+    }
+  } finally {
+    if (added.length) writeIndex([...added, ...versions()]);
+  }
+  if (added.length < fresh.length) throw new Error(`El navegador se llenó: entraron ${added.length} de ${fresh.length}. Borra algunas versiones y vuelve a importar.`);
+  return added.length;
+}
+
+/** Muestra una versión guardada como escenario en el gemelo y en el APS. */
+export async function viewVersion(id: string): Promise<boolean> {
+  const v = await loadVersion(id);
+  if (!v) return false;
+  // Primero la versión y luego el plan: otra ventana lee las dos al recibir el aviso del plan.
+  store.set(key("viewed-version"), JSON.stringify(v.id));
+  store.set(key("viewed"), JSON.stringify(v.plan));
+  store.set(key("view-mode"), JSON.stringify("escenario"));
+  channel?.postMessage({ type: "view" });
+  return true;
+}
+
+/** Versión guardada que se está viendo como escenario (si el escenario visto salió de una). */
+export function viewedVersionId(): string | null {
+  const id = read<string | null>("viewed-version", null);
+  const seen = viewedPlan();
+  const v = id ? versions().find((x) => x.id === id) : null;
+  return v && seen && v.plan_id === seen.plan_id ? v.id : null;
+}
+
+export function setViewedVersionId(id: string | null): void {
+  store.set(key("viewed-version"), id ? JSON.stringify(id) : null);
+}
+
+export type Change = "orders" | "plan" | "events" | "clock" | "view" | "versions";
 
 /** Avisa cuando otra ventana cambia pedidos o programación. */
 export function onChange(fn: (what: Change) => void): void {
@@ -198,7 +376,8 @@ export function onChange(fn: (what: Change) => void): void {
     if (e.key === key("vigente")) fn("plan");
     if (e.key === key("events")) fn("events");
     if (e.key === key("clock")) fn("clock");
-    if (e.key === key("viewed") || e.key === key("view-mode")) fn("view");
+    if (e.key === key("viewed") || e.key === key("view-mode") || e.key === key("viewed-version")) fn("view");
+    if (e.key === key("versions")) fn("versions");
   });
 }
 
