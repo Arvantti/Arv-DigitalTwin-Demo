@@ -23,6 +23,9 @@ const SPEEDS: [number, string][] = [
 ];
 const BACK_DAYS = 3;
 const AHEAD_DAYS = 7;
+/** Distancia de cámara (m) más allá de la cual los letreros se encogen con el zoom, y menos de la cual también. */
+const LABEL_FAR = 70;
+const LABEL_NEAR = 12;
 const WEEKDAYS = ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"];
 
 interface Opts {
@@ -117,6 +120,18 @@ export function buildTwinPlay(opts: Opts): TwinPlay {
     sprite.position.set((box.min.x + box.max.x) / 2, box.max.y + 3, (box.min.z + box.max.z) / 2);
     sprite.scale.set(9, (9 * 196) / 512, 1);
     sprite.renderOrder = 10;
+    // Tamaño en pantalla constante (legible) entre LABEL_NEAR y LABEL_FAR; más lejos se encoge con el zoom y más cerca también, para no tapar.
+    sprite.onBeforeRender = (renderer, _scene, camera) => {
+      const cam = camera as THREE.PerspectiveCamera;
+      const dist = cam.position.distanceTo(sprite.position);
+      const viewH = renderer.getSize(new THREE.Vector2()).y || 1;
+      const px = Math.min(110, Math.max(60, viewH * 0.085));
+      const eff = Math.min(LABEL_FAR, Math.max(dist, 0.001));
+      const near = dist < LABEL_NEAR ? dist / LABEL_NEAR : 1;
+      const h = ((px * near * 2 * eff * Math.tan((cam.fov * Math.PI) / 360)) / viewH) * 1;
+      sprite.scale.set((h * 512) / 196, h, 1);
+      sprite.updateMatrixWorld();
+    };
     opts.scene.add(sprite);
     labels.set(id, { sprite, canvas, key: "" });
   }
