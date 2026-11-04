@@ -1,0 +1,14 @@
+{
+  "total_s": 1015.44,
+  "audio": "ElevenLabs",
+  "capitulos": [
+    "0-apertura: 45.49 s",
+    "1-calcular-programacion: 268.18 s",
+    "2-cambio-fecha-pedido: 143.89 s",
+    "3-contingencia-falla: 201.68 s",
+    "4-pedidos-fijados: 133.43 s",
+    "5-menos-cambios: 116.4 s",
+    "6-versiones: 61.03 s",
+    "7-cierre: 34.34 s"
+  ]
+}

@@ -4,11 +4,13 @@
  *
  *   pnpm gallery                                   # en otra terminal: la galería en http://localhost:5173
  *   pnpm add -g playwright@1.63.0 && pnpm dlx playwright@1.63.0 install chromium   # una vez
- *   NODE_PATH="$(pnpm root -g)" node tools/demo-video/grabar.cjs [1|2|3|4|5|todos] [--video] [--lento]
+ *   NODE_PATH="$(pnpm root -g)" node tools/demo-video/grabar.cjs [1|2|3|4|5|6|todos] [--video] [--lento] [--hd]
  *
  * Las capturas quedan en docs/demo-plasticos/<escenario>/capturas/ con los nombres que usa cada guion.md; los videos en
  * docs/demo-plasticos/<escenario>/video/recorrido.webm (no se suben al repo: ver .gitignore). AHORA = día 9, 10:00.
  * GALLERY_URL cambia la dirección de la galería (p. ej. el sitio publicado).
+ * --hd graba a 1920×1080 (para el video horizontal); con --video deja además video/marcas.json con el segundo del
+ * recorrido en que se tomó cada captura, para cortar el tramo de video que lleva a ella.
  */
 const path = require("node:path");
 const fs = require("node:fs");
@@ -18,11 +20,12 @@ const BASE = (process.env.GALLERY_URL || "http://localhost:5173").replace(/\/$/,
 const NOW = "?now=2026-11-04T10:00";
 const ROOT = process.env.DEMO_OUT || path.resolve(__dirname, "../../docs/demo-plasticos");
 const args = process.argv.slice(2);
-const which = args.find((a) => /^(1|2|3|4|5|todos)$/.test(a)) || "todos";
+const which = args.find((a) => /^(1|2|3|4|5|6|todos)$/.test(a)) || "todos";
 const VIDEO = args.includes("--video");
 // En video, pausas largas para que se alcance a leer; --lento las alarga más.
 const PACE = VIDEO ? (args.includes("--lento") ? 2.5 : 1.5) : 0.4;
-const FOLDERS = { 1: "1-calcular-programacion", 2: "2-cambio-fecha-pedido", 3: "3-contingencia-falla", 4: "4-pedidos-fijados", 5: "5-menos-cambios" };
+const SIZE = args.includes("--hd") ? { width: 1920, height: 1080 } : { width: 1600, height: 900 };
+const FOLDERS = { 1: "1-calcular-programacion", 2: "2-cambio-fecha-pedido", 3: "3-contingencia-falla", 4: "4-pedidos-fijados", 5: "5-menos-cambios", 6: "versiones" };
 
 const wait = (pg, s) => pg.waitForTimeout(Math.round(s * 1000 * PACE));
 const click = (pg, sel) => pg.$eval(sel, (e) => e.dispatchEvent(new MouseEvent("click", { bubbles: true })));
@@ -32,13 +35,16 @@ async function scenario(browser, n, steps) {
   fs.mkdirSync(path.join(dir, "capturas"), { recursive: true });
   const videoDir = path.join(dir, "video");
   const ctx = await browser.newContext({
-    viewport: { width: 1600, height: 900 },
-    ...(VIDEO ? { recordVideo: { dir: videoDir, size: { width: 1600, height: 900 } } } : {}),
+    viewport: SIZE,
+    ...(VIDEO ? { recordVideo: { dir: videoDir, size: SIZE } } : {}),
   });
   const pg = await ctx.newPage();
+  const t0 = Date.now();
+  const marcas = [];
   pg.on("pageerror", (e) => console.error(`[${n}] error de la página: ${e.message}`));
   const shot = async (name, full = false) => {
     await wait(pg, 1.5);
+    if (!full) marcas.push({ captura: name, t: (Date.now() - t0) / 1000 });
     await pg.screenshot({ path: path.join(dir, "capturas", name), fullPage: full });
     console.log(`[${n}] ${name}`);
   };
@@ -48,7 +54,7 @@ async function scenario(browser, n, steps) {
   };
   // Punto de partida común: cartera inicial; los escenarios 2, 3 y 4 parten del plan del cosimulador.
   await go(`/aps.html${NOW}&reset=1`);
-  if (n !== 1) {
+  if (n !== 1 && n !== 6) {
     await calcular(pg);
     await click(pg, "#aps-adopt");
   }
@@ -58,6 +64,7 @@ async function scenario(browser, n, steps) {
   if (video) {
     const out = path.join(videoDir, "recorrido.webm");
     fs.renameSync(await video.path(), out);
+    fs.writeFileSync(path.join(videoDir, "marcas.json"), `${JSON.stringify(marcas, null, 2)}\n`);
     console.log(`[${n}] video: ${out}`);
   }
 }
@@ -229,12 +236,39 @@ const SCENARIOS = {
     await shot("05-insumos.png", true);
     await wait(2);
   },
+  // Zoom del Gantt y versiones guardadas de la programación (parte de la VIGENTE manual).
+  6: async ({ pg, shot, wait }) => {
+    await click(pg, "[data-tab=gantt]");
+    await shot("01-gantt-10d.png");
+    for (let i = 0; i < 3; i++) await click(pg, "#g-zoom-out"), await wait(0.8);
+    await shot("02-gantt-30d.png");
+    for (let i = 0; i < 5; i++) await click(pg, "#g-zoom-in"), await wait(0.8);
+    await shot("03-gantt-5d.png");
+    await click(pg, "#g-zoom-reset");
+    await calcular(pg);
+    await click(pg, "#aps-save");
+    await shot("04-guardar-cosimulador.png");
+    // La mejor opción de Fractal se abre en el Gantt y se guarda también.
+    await fractal(pg, "#fr-run-balancear");
+    await pg.$$eval(".fr-see:not(.fr-pick)", (bs) => bs.at(-1)?.dispatchEvent(new MouseEvent("click", { bubbles: true })));
+    await pg.waitForSelector("#aps-save:not([disabled])", { timeout: 60000 });
+    await wait(1);
+    await click(pg, "#aps-save");
+    await shot("05-guardar-fractal.png");
+    await click(pg, "[data-tab=versions]");
+    await wait(1);
+    // Marca cada versión para compararla (la tabla se vuelve a dibujar con cada clic).
+    const n = (await pg.$$("[data-cmp]")).length;
+    for (let i = 0; i < n; i++) await pg.locator("[data-cmp]").nth(i).check(), await wait(0.8);
+    await shot("06-versiones-comparar.png");
+    await wait(2);
+  },
 };
 
 (async () => {
   const browser = await chromium.launch();
   try {
-    for (const n of which === "todos" ? [1, 2, 3, 4, 5] : [Number(which)]) await scenario(browser, n, SCENARIOS[n]);
+    for (const n of which === "todos" ? [1, 2, 3, 4, 5, 6] : [Number(which)]) await scenario(browser, n, SCENARIOS[n]);
   } finally {
     await browser.close();
   }

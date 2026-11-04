@@ -1,0 +1,9 @@
+# Material pesado o regenerable: no va al repo (ver README.md).
+assets/grabacion/
+assets/audio/
+assets/clips/
+capitulos/*/assets/
+out/
+previews/**/*.mp4
+previews/**/*.png
+.hyperframes/

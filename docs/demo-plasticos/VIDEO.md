@@ -88,6 +88,12 @@ Cifras de la tarjeta, todas de las corridas de la demo:
 
 ## 5. Montaje con HyperFrames
 
+El montaje ya está armado en
+[`video-production/ARVANTTI/ARV-W01-V001-demo-plasticos/`](../../video-production/ARVANTTI/ARV-W01-V001-demo-plasticos/README.md):
+graba la demo a 1920×1080 (`grabar.cjs todos --video --hd`), genera la voz por capítulo con `pnpm video:voice`, la corta
+en segmentos y renderiza con HyperFrames. Suma un capítulo de zoom del Gantt y versiones del APS. Lo de abajo describe
+el criterio del montaje.
+
 - Lienzo de 1920×1080. Las capturas son de 1600×900: escálalas al ancho completo o ponlas sobre un fondo oscuro
   (#0e1430, el mismo de las presentaciones).
 - Un cuadro por segmento, con la imagen de `imagen` y la duración del audio más medio segundo. La línea `en pantalla`

@@ -1,0 +1,33 @@
+{
+  "project": "Demo de plásticos · gemelo digital",
+  "topic": "Recorrido por la demo de la planta de inyección de plásticos: emulador, centro de control, gemelo 3D, APS con cosimulador y Fractal en cinco escenarios",
+  "channel": "Presentación a clientes y archivo del proyecto (no se publica desde aquí)",
+  "audience": "Gerencia y planeación de producción de plantas de manufactura",
+  "voiceover": "sí",
+  "claimsSource": "docs/demo-plasticos/*/guion.md y docs/demo-plasticos/VIDEO.md",
+  "engine": "hyperframes",
+  "brand": "arvantti",
+  "sharedComponents": "assets/shared/core",
+  "format": "horizontal",
+  "width": 1920,
+  "height": 1080,
+  "fps": 25,
+  "durationSeconds": 1020,
+  "safeArea": { "left": 154, "right": 1766, "top": 108, "bottom": 972 },
+  "audio": {
+    "voiceover": "capitulos/<capitulo>/assets/audio/voiceover.mp3",
+    "segmentos": "assets/audio/segmentos/<segmento>.mp3",
+    "subtitles": "en la composición (texto de la voz)",
+    "sfxDirectory": "assets/shared/core/sfx"
+  },
+  "branding": {
+    "sharedAssets": "assets/shared",
+    "logo": "assets/shared/arvantti/branding/ArvanttiLabsLogo.png"
+  },
+  "qa": {
+    "requireFullTimelineCoverage": true,
+    "requireSafeArea": true,
+    "requireAudioCheck": true,
+    "requireKeyframes": true
+  }
+}
