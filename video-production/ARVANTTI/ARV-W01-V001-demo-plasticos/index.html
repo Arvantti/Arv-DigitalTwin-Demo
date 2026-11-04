@@ -1,0 +1,726 @@
+<!doctype html>
+<html lang="es" data-resolution="landscape">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1920, height=1080">
+<title>Demo de plásticos · gemelo digital</title>
+<script src="assets/vendor/gsap.min.js"></script>
+<link rel="stylesheet" href="assets/shared/core/brand.css">
+<style>
+@font-face{font-family:"Inter";src:local("Inter")}
+@font-face{font-family:"Inter Display";src:local("Inter Display")}
+@font-face{font-family:"IBM Plex Mono";src:local("IBM Plex Mono")}
+html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:#0b0f18;font-family:Inter,"Inter Display",Arial,sans-serif;color:#f8fafc}
+#root{position:relative;width:1920px;height:1080px;background:radial-gradient(1200px 700px at 50% 40%,#111a2c 0%,#0b0f18 70%)}
+#root>.grid0{position:absolute;inset:0;opacity:.07;background-image:linear-gradient(#fff 1px,transparent 1px),linear-gradient(90deg,#fff 1px,transparent 1px);background-size:80px 80px}
+.full{position:absolute;inset:0;background:#0b0f18;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:20}
+.full .logo{width:1300px;height:auto}
+.full .sign{position:absolute;bottom:120px;font:500 30px Inter,sans-serif;letter-spacing:6px;color:#d8dadf;text-transform:uppercase}
+.card{background:#0b0f18}
+.card .grid,.ahorro .grid{position:absolute;inset:0;opacity:.08;background-image:linear-gradient(#4ea7ff 1px,transparent 1px),linear-gradient(90deg,#4ea7ff 1px,transparent 1px);background-size:80px 80px}
+.card .in{position:relative;text-align:center;max-width:1500px}
+.card .eyebrow{font:700 30px "IBM Plex Mono",monospace;letter-spacing:8px;color:#4ea7ff;margin:0 0 24px}
+.card h1{font:800 84px/1.08 "Inter Display",Inter,sans-serif;margin:0;color:#f8fafc;letter-spacing:-1px}
+.card .rule{height:6px;width:520px;margin:40px auto 0;background:linear-gradient(90deg,#2d7ff9,#4ea7ff);transform-origin:left}
+.bar{position:absolute;left:160px;top:18px;width:1600px;height:44px;display:flex;align-items:center;gap:22px;z-index:5;font:600 26px Inter,sans-serif}
+.bar .eb{font:700 22px "IBM Plex Mono",monospace;letter-spacing:4px;color:#4ea7ff;padding:6px 14px;border:2px solid #2d7ff9}
+.bar .tt{color:#f8fafc}
+.bar .brand{margin-left:auto;font:600 20px Inter,sans-serif;letter-spacing:5px;color:#7a7e86}
+.screen{position:absolute;left:160px;top:74px;width:1600px;height:900px;overflow:hidden;background:#0e1430;box-shadow:0 0 0 2px #2d7ff955,0 24px 60px #000a;z-index:3}
+video.screen{object-fit:cover;z-index:4}
+.screen img{position:absolute;left:0;top:0;width:1600px;transform-origin:50% 30%}
+.cc{position:absolute;left:160px;width:1600px;top:984px;height:86px;display:flex;align-items:center;justify-content:center;text-align:center;z-index:6}
+.cc span{font:600 31px/1.25 Inter,sans-serif;color:#f8fafc;text-shadow:0 2px 8px #000}
+.ahorro{background:#0b0f18;padding:44px 56px}
+.ahorro h2{position:relative;font:800 52px "Inter Display",Inter,sans-serif;margin:0 0 30px;color:#f8fafc}
+.ahorro table{position:relative;width:100%;border-collapse:collapse;font:500 23px/1.3 Inter,sans-serif}
+.ahorro th,.ahorro td{text-align:left;padding:16px 14px;border-bottom:1px solid #2d7ff944;vertical-align:top}
+.ahorro thead th{font:700 18px "IBM Plex Mono",monospace;letter-spacing:3px;color:#4ea7ff;text-transform:uppercase}
+.ahorro tbody th{color:#f8fafc;width:21%}
+.ahorro td{color:#d8dadf}
+.ahorro td.new{color:#4ea7ff}
+.ahorro td.save{color:#37e38b;font-weight:700}
+.ahorro .foot{position:absolute;bottom:34px;left:56px;font:500 24px Inter,sans-serif;color:#d8dadf}
+#progress{position:absolute;left:0;bottom:0;height:6px;width:1920px;background:#2d7ff9;transform-origin:left;z-index:30}
+#temp{position:absolute;right:20px;bottom:16px;font:700 15px "IBM Plex Mono",monospace;color:#ff6b35;letter-spacing:2px;z-index:40}
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="978.25" data-width="1920" data-height="1080" data-fps="25">
+<div class="grid0"></div>
+<div id="intro" class="clip full" data-start="0" data-duration="5"><img class="logo" src="assets/shared/arvantti/branding/ArvanttiLabsLogo.png" alt=""></div>
+<audio id="sfx-1" src="assets/shared/core/sfx/whoosh.wav" data-start="0.2" data-duration="1.2" data-volume="0.3"></audio>
+<div id="cap-0-apertura" class="clip full card" data-start="5" data-duration="3.4"><div class="grid"></div><div class="in"><p class="eyebrow">GEMELO DIGITAL · PLÁSTICOS</p><h1>Una planta de inyección y su gemelo digital</h1><div class="rule"></div></div></div>
+<audio id="sfx-3" src="assets/shared/core/sfx/whoosh-short.mp3" data-start="5.1" data-duration="1.2" data-volume="0.3"></audio>
+<audio id="voz-0-S01" src="assets/audio/segmentos/0-S01.wav" data-start="8.7" data-duration="13.27" data-volume="1"></audio>
+<div id="bar-0-S01" class="clip bar" data-start="8.4" data-duration="14.17"><span class="eb">GEMELO DIGITAL · PLÁSTICOS</span><span class="tt">La planta y su gemelo</span><span class="brand">ARVANTTI LABS</span></div>
+<div id="s-0-S01" class="clip screen" data-start="8.4" data-duration="14.17"><img src="assets/grabacion/3-contingencia-falla/capturas/10-gemelo-3d.png" alt="" style="height:900px"></div>
+<div id="cc-0-S01-0" class="clip cc" data-start="8.7" data-duration="3.78"><span>Esta es una planta de inyección de plásticos y su gemelo digital.</span></div>
+<div id="cc-0-S01-1" class="clip cc" data-start="12.48" data-duration="4.07"><span>Tiene doce inyectoras, una celda de ensamble, almacenes y montacargas,</span></div>
+<div id="cc-0-S01-2" class="clip cc" data-start="16.55" data-duration="1.57"><span>y fabrica cuatro productos:</span></div>
+<div id="cc-0-S01-3" class="clip cc" data-start="18.12" data-duration="4.34"><span>cubiertos desechables, baldes de doce litros y papeleras de pedal.</span></div>
+<audio id="voz-0-S02" src="assets/audio/segmentos/0-S02.wav" data-start="22.87" data-duration="16.45" data-volume="1"></audio>
+<div id="bar-0-S02" class="clip bar" data-start="22.57" data-duration="17.35"><span class="eb">GEMELO DIGITAL · PLÁSTICOS</span><span class="tt">Cómo se conecta todo</span><span class="brand">ARVANTTI LABS</span></div>
+<div id="s-0-S02" class="clip screen" data-start="22.57" data-duration="17.35"><img src="assets/grabacion/3-contingencia-falla/capturas/01-emulador.png" alt="" style="height:900px"></div>
+<div id="cc-0-S02-0" class="clip cc" data-start="22.87" data-duration="1.86"><span>El emulador hace de planta real:</span></div>
+<div id="cc-0-S02-1" class="clip cc" data-start="24.73" data-duration="3.78"><span>cada máquina produce en tiempo real y aquí se simulan las fallas.</span></div>
+<div id="cc-0-S02-2" class="clip cc" data-start="28.51" data-duration="3.6"><span>El centro de control recibe las señales de todas las máquinas.</span></div>
+<div id="cc-0-S02-3" class="clip cc" data-start="32.11" data-duration="4.65"><span>El gemelo 3D muestra la planta en el pasado, el presente y el futuro programado.</span></div>
+<div id="cc-0-S02-4" class="clip cc" data-start="36.76" data-duration="3.06"><span>Y el APS es donde se programa la producción.</span></div>
+<audio id="voz-0-S03" src="assets/audio/segmentos/0-S03.wav" data-start="40.22" data-duration="6.55" data-volume="1"></audio>
+<div id="bar-0-S03" class="clip bar" data-start="39.92" data-duration="7.45"><span class="eb">GEMELO DIGITAL · PLÁSTICOS</span><span class="tt">Sin fechas de calendario</span><span class="brand">ARVANTTI LABS</span></div>
+<div id="s-0-S03" class="clip screen" data-start="39.92" data-duration="7.45"><img src="assets/grabacion/1-calcular-programacion/capturas/01-pedidos.png" alt="" style="height:900px"></div>
+<div id="cc-0-S03-0" class="clip cc" data-start="40.22" data-duration="5.22"><span>Todo se cuenta en días desde el arranque de la programación, el día cero. Hoy es el día nueve.</span></div>
+<div id="cc-0-S03-1" class="clip cc" data-start="45.44" data-duration="1.83"><span>Veamos cinco escenarios.</span></div>
+<div id="cap-1-calcular-programacion" class="clip full card" data-start="47.37" data-duration="3.4"><div class="grid"></div><div class="in"><p class="eyebrow">ESCENARIO 1</p><h1>Calcular la programación según las entregas</h1><div class="rule"></div></div></div>
+<audio id="sfx-25" src="assets/shared/core/sfx/whoosh-short.mp3" data-start="47.47" data-duration="1.2" data-volume="0.3"></audio>
+<audio id="voz-1-S01" src="assets/audio/segmentos/1-S01.wav" data-start="51.07" data-duration="17.05" data-volume="1"></audio>
+<div id="bar-1-S01" class="clip bar" data-start="50.77" data-duration="17.95"><span class="eb">ESCENARIO 1</span><span class="tt">La cartera de pedidos</span><span class="brand">ARVANTTI LABS</span></div>
+<div id="s-1-S01" class="clip screen" data-start="50.77" data-duration="17.95"><img src="assets/grabacion/1-calcular-programacion/capturas/01-pedidos.png" alt="" style="height:900px"></div>
+<div id="cc-1-S01-0" class="clip cc" data-start="51.07" data-duration="1.69"><span>Todo empieza con los pedidos.</span></div>
+<div id="cc-1-S01-1" class="clip cc" data-start="52.76" data-duration="3.43"><span>La planta tiene noventa y tres pedidos de cuatro productos:</span></div>
+<div id="cc-1-S01-2" class="clip cc" data-start="56.19" data-duration="5.29"><span>cubiertos desechables, baldes de doce litros y papeleras de pedal con su cuerpo y su pedal.</span></div>
+<div id="cc-1-S01-3" class="clip cc" data-start="61.48" data-duration="4.36"><span>Cada pedido tiene cliente, cantidad, color, fecha de entrega e importancia.</span></div>
+<div id="cc-1-S01-4" class="clip cc" data-start="65.84" data-duration="2.77"><span>Aquí también se agregan pedidos nuevos.</span></div>
+<audio id="voz-1-S02" src="assets/audio/segmentos/1-S02.wav" data-start="69.02" data-duration="22.78" data-volume="1"></audio>
+<div id="bar-1-S02" class="clip bar" data-start="68.72" data-duration="23.68"><span class="eb">ESCENARIO 1</span><span class="tt">La programación manual</span><span class="brand">ARVANTTI LABS</span></div>
+<video id="v-1-S02" class="clip screen" src="assets/clips/1-S02.mp4" muted data-start="68.72" data-duration="2.72"></video>
+<div id="s-1-S02" class="clip screen" data-start="71.44" data-duration="20.96"><img src="assets/grabacion/1-calcular-programacion/capturas/02-gantt-manual.png" alt="" style="height:900px"></div>
+<div id="cc-1-S02-0" class="clip cc" data-start="69.02" data-duration="2.84"><span>Así está hoy, día nueve, la programación hecha a mano:</span></div>
+<div id="cc-1-S02-1" class="clip cc" data-start="71.86" data-duration="3.05"><span>cada barra es una orden y cada rombo, su fecha de entrega.</span></div>
+<div id="cc-1-S02-2" class="clip cc" data-start="74.91" data-duration="4.21"><span>Las fechas se cuentan en días desde el arranque de la programación, el día cero.</span></div>
+<div id="cc-1-S02-3" class="clip cc" data-start="79.12" data-duration="4"><span>Con este plan, el noventa coma tres por ciento de los pedidos sale a tiempo:</span></div>
+<div id="cc-1-S02-4" class="clip cc" data-start="83.12" data-duration="3.74"><span>nueve pedidos llegan tarde, con doscientas veintinueve horas de atraso.</span></div>
+<div id="cc-1-S02-5" class="clip cc" data-start="86.86" data-duration="5.45"><span>Y la planta queda ocupada al sesenta y nueve por ciento de sus horas disponibles en la semana.</span></div>
+<audio id="voz-1-S03" src="assets/audio/segmentos/1-S03.wav" data-start="92.7" data-duration="9.73" data-volume="1"></audio>
+<div id="bar-1-S03" class="clip bar" data-start="92.4" data-duration="10.63"><span class="eb">ESCENARIO 1</span><span class="tt">La planta con el plan manual</span><span class="brand">ARVANTTI LABS</span></div>
+<video id="v-1-S03" class="clip screen" src="assets/clips/1-S03.mp4" muted data-start="92.4" data-duration="4.6"></video>
+<div id="s-1-S03" class="clip screen" data-start="97" data-duration="6.03"><img src="assets/grabacion/1-calcular-programacion/capturas/03-centro-control-manual.png" alt="" style="height:900px"></div>
+<div id="cc-1-S03-0" class="clip cc" data-start="92.7" data-duration="5.78"><span>En el centro de control vemos cada máquina con su ocupación contra su disponibilidad, día por día.</span></div>
+<div id="cc-1-S03-1" class="clip cc" data-start="98.48" data-duration="4.45"><span>Rojo es una máquina saturada, ámbar casi llena y verde con holgura.</span></div>
+<audio id="voz-1-S04" src="assets/audio/segmentos/1-S04.wav" data-start="103.33" data-duration="19.67" data-volume="1"></audio>
+<div id="bar-1-S04" class="clip bar" data-start="103.03" data-duration="20.57"><span class="eb">ESCENARIO 1</span><span class="tt">¿Qué objetivo calcula?</span><span class="brand">ARVANTTI LABS</span></div>
+<video id="v-1-S04" class="clip screen" src="assets/clips/1-S04.mp4" muted data-start="103.03" data-duration="4.64"></video>
+<div id="s-1-S04" class="clip screen" data-start="107.67" data-duration="15.93"><img src="assets/grabacion/1-calcular-programacion/capturas/03b-objetivo.png" alt="" style="height:900px"></div>
+<div id="cc-1-S04-0" class="clip cc" data-start="103.33" data-duration="3.39"><span>Antes de calcular, el sistema pregunta qué objetivo buscar:</span></div>
+<div id="cc-1-S04-1" class="clip cc" data-start="106.72" data-duration="2.82"><span>cumplir entregas, menos cambios de molde y color,</span></div>
+<div id="cc-1-S04-2" class="clip cc" data-start="109.54" data-duration="3.57"><span>balancear cuellos de botella o maximizar la capacidad ocupada.</span></div>
+<div id="cc-1-S04-3" class="clip cc" data-start="113.11" data-duration="3.05"><span>El cosimulador optimiza un solo objetivo por corrida;</span></div>
+<div id="cc-1-S04-4" class="clip cc" data-start="116.16" data-duration="3.22"><span>si se eligen varios a la vez, eso es trabajo de Fractal.</span></div>
+<div id="cc-1-S04-5" class="clip cc" data-start="119.38" data-duration="1.9"><span>Las entregas siempre se respetan.</span></div>
+<div id="cc-1-S04-6" class="clip cc" data-start="121.28" data-duration="2.23"><span>Hoy elegimos cumplir entregas.</span></div>
+<audio id="voz-1-S05" src="assets/audio/segmentos/1-S05.wav" data-start="123.9" data-duration="47.43" data-volume="1"></audio>
+<div id="bar-1-S05" class="clip bar" data-start="123.6" data-duration="48.33"><span class="eb">ESCENARIO 1</span><span class="tt">Calcular con el cosimulador</span><span class="brand">ARVANTTI LABS</span></div>
+<video id="v-1-S05" class="clip screen" src="assets/clips/1-S05.mp4" muted data-start="123.6" data-duration="5"></video>
+<div id="s-1-S05" class="clip screen" data-start="128.6" data-duration="43.33"><img src="assets/grabacion/1-calcular-programacion/capturas/04-calcular.png" alt="" style="height:900px"></div>
+<div id="cc-1-S05-0" class="clip cc" data-start="123.9" data-duration="1.05"><span>Pulsamos calcular.</span></div>
+<div id="cc-1-S05-1" class="clip cc" data-start="124.95" data-duration="6.95"><span>El cosimulador arma un modelo de programación lineal con casi cinco mil variables y lo resuelve en menos de un segundo.</span></div>
+<div id="cc-1-S05-2" class="clip cc" data-start="131.9" data-duration="2.16"><span>Respeta lo que ya empezó, los turnos,</span></div>
+<div id="cc-1-S05-3" class="clip cc" data-start="134.06" data-duration="4.32"><span>los moldes montados en cada máquina y las fechas de entrega. El resultado:</span></div>
+<div id="cc-1-S05-4" class="clip cc" data-start="138.38" data-duration="2.63"><span>noventa y dos coma cinco por ciento a tiempo,</span></div>
+<div id="cc-1-S05-5" class="clip cc" data-start="141.01" data-duration="3.8"><span>dos pedidos tarde menos y cuarenta y siete horas menos de atraso.</span></div>
+<div id="cc-1-S05-6" class="clip cc" data-start="144.81" data-duration="4.73"><span>Y la ocupación de la planta baja del sesenta y nueve al sesenta y uno por ciento:</span></div>
+<div id="cc-1-S05-7" class="clip cc" data-start="149.54" data-duration="3.97"><span>la misma producción con noventa horas de máquina menos en la semana.</span></div>
+<div id="cc-1-S05-8" class="clip cc" data-start="153.51" data-duration="2.45"><span>Esas horas quedan libres para más pedidos.</span></div>
+<div id="cc-1-S05-9" class="clip cc" data-start="155.96" data-duration="2.86"><span>El cosimulador deja dos escenarios para comparar:</span></div>
+<div id="cc-1-S05-10" class="clip cc" data-start="158.82" data-duration="3.74"><span>A, cumplir entregas, y B, menos cambios con las mismas entregas.</span></div>
+<div id="cc-1-S05-11" class="clip cc" data-start="162.56" data-duration="2.69"><span>A cambio, el A hace más cambios de referencia,</span></div>
+<div id="cc-1-S05-12" class="clip cc" data-start="165.25" data-duration="2.8"><span>y cada uno se cobra con su tiempo real de purga:</span></div>
+<div id="cc-1-S05-13" class="clip cc" data-start="168.05" data-duration="3.77"><span>de claro a oscuro es corto y de oscuro a claro es largo.</span></div>
+<audio id="voz-1-S06" src="assets/audio/segmentos/1-S06.wav" data-start="172.23" data-duration="7.23" data-volume="1"></audio>
+<div id="bar-1-S06" class="clip bar" data-start="171.93" data-duration="8.13"><span class="eb">ESCENARIO 1</span><span class="tt">El Gantt del cosimulador</span><span class="brand">ARVANTTI LABS</span></div>
+<video id="v-1-S06" class="clip screen" src="assets/clips/1-S06.mp4" muted data-start="171.93" data-duration="2.52"></video>
+<div id="s-1-S06" class="clip screen" data-start="174.45" data-duration="5.61"><img src="assets/grabacion/1-calcular-programacion/capturas/05-gantt-cosimulador.png" alt="" style="height:900px"></div>
+<div id="cc-1-S06-0" class="clip cc" data-start="172.23" data-duration="3.74"><span>Adoptamos la propuesta y pasa a ser la programación vigente.</span></div>
+<div id="cc-1-S06-1" class="clip cc" data-start="175.97" data-duration="3.99"><span>Las órdenes se reacomodan para llegar antes de su fecha.</span></div>
+<audio id="voz-1-S07" src="assets/audio/segmentos/1-S07.wav" data-start="180.36" data-duration="13.91" data-volume="1"></audio>
+<div id="bar-1-S07" class="clip bar" data-start="180.06" data-duration="14.81"><span class="eb">ESCENARIO 1</span><span class="tt">Qué máquinas hacen cada orden</span><span class="brand">ARVANTTI LABS</span></div>
+<video id="v-1-S07" class="clip screen" src="assets/clips/1-S07.mp4" muted data-start="180.06" data-duration="2.48"></video>
+<div id="s-1-S07" class="clip screen" data-start="182.54" data-duration="12.33"><img src="assets/grabacion/1-calcular-programacion/capturas/05b-gantt-orden.png" alt="" style="height:900px"></div>
+<div id="cc-1-S07-0" class="clip cc" data-start="180.36" data-duration="5.02"><span>Al hacer clic en una orden, sus máquinas suben y se resaltan, con sus lotes y sus horas,</span></div>
+<div id="cc-1-S07-1" class="clip cc" data-start="185.38" data-duration="1.48"><span>y el resto queda atenuado.</span></div>
+<div id="cc-1-S07-2" class="clip cc" data-start="186.86" data-duration="2.11"><span>Esta papelera pasa por tres recursos:</span></div>
+<div id="cc-1-S07-3" class="clip cc" data-start="188.97" data-duration="2.22"><span>la inyectora diecinueve hace el cuerpo,</span></div>
+<div id="cc-1-S07-4" class="clip cc" data-start="191.19" data-duration="3.58"><span>la siete hace el pedal y la línea de ensamble la arma.</span></div>
+<audio id="voz-1-S08" src="assets/audio/segmentos/1-S08.wav" data-start="195.17" data-duration="14.93" data-volume="1"></audio>
+<div id="bar-1-S08" class="clip bar" data-start="194.87" data-duration="15.83"><span class="eb">ESCENARIO 1</span><span class="tt">La planta con el plan nuevo</span><span class="brand">ARVANTTI LABS</span></div>
+<video id="v-1-S08" class="clip screen" src="assets/clips/1-S08.mp4" muted data-start="194.87" data-duration="4.6"></video>
+<div id="s-1-S08" class="clip screen" data-start="199.47" data-duration="11.23"><img src="assets/grabacion/1-calcular-programacion/capturas/06-centro-control.png" alt="" style="height:900px"></div>
+<div id="cc-1-S08-0" class="clip cc" data-start="195.17" data-duration="1.6"><span>Con el plan del cosimulador,</span></div>
+<div id="cc-1-S08-1" class="clip cc" data-start="196.77" data-duration="3.7"><span>la planta queda ocupada al sesenta y uno por ciento en la semana.</span></div>
+<div id="cc-1-S08-2" class="clip cc" data-start="200.47" data-duration="2.05"><span>Pero si miramos máquina por máquina,</span></div>
+<div id="cc-1-S08-3" class="clip cc" data-start="202.52" data-duration="3.99"><span>las dos inyectoras del balde y la línea de ensamble están casi llenas,</span></div>
+<div id="cc-1-S08-4" class="clip cc" data-start="206.51" data-duration="1.99"><span>mientras otras tienen tiempo libre.</span></div>
+<div id="cc-1-S08-5" class="clip cc" data-start="208.5" data-duration="2.1"><span>Ese es el cuello de botella.</span></div>
+<audio id="voz-1-S09" src="assets/audio/segmentos/1-S09.wav" data-start="211" data-duration="27.43" data-volume="1"></audio>
+<div id="bar-1-S09" class="clip bar" data-start="210.7" data-duration="28.33"><span class="eb">ESCENARIO 1</span><span class="tt">Fractal balancea la ocupación</span><span class="brand">ARVANTTI LABS</span></div>
+<video id="v-1-S09" class="clip screen" src="assets/clips/1-S09.mp4" muted data-start="210.7" data-duration="7.44"></video>
+<div id="s-1-S09" class="clip screen" data-start="218.14" data-duration="20.89"><img src="assets/grabacion/1-calcular-programacion/capturas/07-fractal-balancear.png" alt="" style="height:900px"></div>
+<div id="cc-1-S09-0" class="clip cc" data-start="211" data-duration="1.1"><span>Aquí entra Fractal.</span></div>
+<div id="cc-1-S09-1" class="clip cc" data-start="212.1" data-duration="4.05"><span>Además de la secuencia, prueba cambios en la planta. Su recomendación:</span></div>
+<div id="cc-1-S09-2" class="clip cc" data-start="216.15" data-duration="5.9"><span>montar el molde de repuesto del balde, que está en el almacén, en la inyectora veinte, que está libre.</span></div>
+<div id="cc-1-S09-3" class="clip cc" data-start="222.05" data-duration="1.79"><span>Con noventa minutos de montaje,</span></div>
+<div id="cc-1-S09-4" class="clip cc" data-start="223.84" data-duration="4.28"><span>la máquina más cargada baja del setenta y uno al sesenta y dos por ciento,</span></div>
+<div id="cc-1-S09-5" class="clip cc" data-start="228.12" data-duration="1.5"><span>sin atrasar ningún pedido,</span></div>
+<div id="cc-1-S09-6" class="clip cc" data-start="229.62" data-duration="3.82"><span>y la ocupación de la planta baja al sesenta coma siete por ciento.</span></div>
+<div id="cc-1-S09-7" class="clip cc" data-start="233.44" data-duration="2.72"><span>Cada opción se puede ver en el Gantt y adoptar;</span></div>
+<div id="cc-1-S09-8" class="clip cc" data-start="236.16" data-duration="2.76"><span>Fractal recomienda y la persona decide.</span></div>
+<audio id="voz-1-S10" src="assets/audio/segmentos/1-S10.wav" data-start="239.33" data-duration="4.1" data-volume="1"></audio>
+<div id="bar-1-S10" class="clip bar" data-start="239.03" data-duration="5"><span class="eb">ESCENARIO 1</span><span class="tt">El Gantt balanceado</span><span class="brand">ARVANTTI LABS</span></div>
+<video id="v-1-S10" class="clip screen" src="assets/clips/1-S10.mp4" muted data-start="239.03" data-duration="1.5"></video>
+<div id="s-1-S10" class="clip screen" data-start="240.53" data-duration="3.5"><img src="assets/grabacion/1-calcular-programacion/capturas/08-gantt-balanceado.png" alt="" style="height:900px"></div>
+<div id="cc-1-S10-0" class="clip cc" data-start="239.33" data-duration="4.6"><span>Adoptamos y el trabajo del balde queda repartido entre dos máquinas.</span></div>
+<audio id="voz-1-S11" src="assets/audio/segmentos/1-S11.wav" data-start="244.33" data-duration="11.5" data-volume="1"></audio>
+<div id="bar-1-S11" class="clip bar" data-start="244.03" data-duration="12.4"><span class="eb">ESCENARIO 1</span><span class="tt">Más capacidad disponible</span><span class="brand">ARVANTTI LABS</span></div>
+<video id="v-1-S11" class="clip screen" src="assets/clips/1-S11.mp4" muted data-start="244.03" data-duration="4.56"></video>
+<div id="s-1-S11" class="clip screen" data-start="248.59" data-duration="7.84"><img src="assets/grabacion/1-calcular-programacion/capturas/09-centro-control-balanceado.png" alt="" style="height:900px"></div>
+<div id="cc-1-S11-0" class="clip cc" data-start="244.33" data-duration="1.74"><span>Con una máquina más en juego,</span></div>
+<div id="cc-1-S11-1" class="clip cc" data-start="246.07" data-duration="7.43"><span>la planta tiene mil doscientas cuarenta horas disponibles en la semana y la ocupación baja al sesenta coma siete por ciento.</span></div>
+<div id="cc-1-S11-2" class="clip cc" data-start="253.5" data-duration="2.84"><span>Queda espacio para recibir más pedidos.</span></div>
+<audio id="voz-1-S12" src="assets/audio/segmentos/1-S12.wav" data-start="256.73" data-duration="19.37" data-volume="1"></audio>
+<div id="bar-1-S12" class="clip bar" data-start="256.43" data-duration="20.27"><span class="eb">ESCENARIO 1</span><span class="tt">Los insumos del plan</span><span class="brand">ARVANTTI LABS</span></div>
+<video id="v-1-S12" class="clip screen" src="assets/clips/1-S12.mp4" muted data-start="256.43" data-duration="4.63"></video>
+<div id="s-1-S12" class="clip screen" data-start="261.06" data-duration="15.64"><img src="assets/grabacion/1-calcular-programacion/capturas/10-insumos.png" alt="" style="height:900px"></div>
+<div id="cc-1-S12-0" class="clip cc" data-start="256.73" data-duration="3.95"><span>Por último, la vista de insumos traduce el plan en lo que hay que tener:</span></div>
+<div id="cc-1-S12-1" class="clip cc" data-start="260.68" data-duration="5.49"><span>veintisiete toneladas y media de resina y quinientos veinticuatro kilos de masterbatch en la semana,</span></div>
+<div id="cc-1-S12-2" class="clip cc" data-start="266.17" data-duration="2.41"><span>setecientas treinta y tres horas de máquina,</span></div>
+<div id="cc-1-S12-3" class="clip cc" data-start="268.58" data-duration="4.28"><span>noventa y dos turnos-máquina y doscientas cincuenta y cinco horas de operario.</span></div>
+<div id="cc-1-S12-4" class="clip cc" data-start="272.86" data-duration="3.74"><span>Compras, almacén y producción trabajan con el mismo número.</span></div>
+<audio id="voz-1-S13" src="assets/audio/segmentos/1-S13.wav" data-start="277" data-duration="21.99" data-volume="1"></audio>
+<div id="bar-1-S13" class="clip bar" data-start="276.7" data-duration="22.89"><span class="eb">ESCENARIO 1</span><span class="tt">El ahorro potencial</span><span class="brand">ARVANTTI LABS</span></div>
+<div id="s-1-S13" class="clip screen" data-start="276.7" data-duration="22.89"><img src="assets/grabacion/1-calcular-programacion/capturas/07-fractal-balancear.png" alt="" style="height:900px"></div>
+<div id="cc-1-S13-0" class="clip cc" data-start="277" data-duration="3.69"><span>El ahorro de este escenario sale de la corrida, no de una estimación.</span></div>
+<div id="cc-1-S13-1" class="clip cc" data-start="280.69" data-duration="1.18"><span>Frente al plan manual,</span></div>
+<div id="cc-1-S13-2" class="clip cc" data-start="281.87" data-duration="4.71"><span>el cosimulador cumple dos pedidos más a tiempo y quita cuarenta y siete horas de atraso.</span></div>
+<div id="cc-1-S13-3" class="clip cc" data-start="286.58" data-duration="3.69"><span>Con la misma producción libera noventa horas de máquina en la semana.</span></div>
+<div id="cc-1-S13-4" class="clip cc" data-start="290.27" data-duration="5.14"><span>Y Fractal baja la carga de la máquina más cargada del setenta y uno al sesenta y dos por ciento,</span></div>
+<div id="cc-1-S13-5" class="clip cc" data-start="295.41" data-duration="1.39"><span>sin atrasar ningún pedido.</span></div>
+<div id="cc-1-S13-6" class="clip cc" data-start="296.8" data-duration="2.69"><span>Cada hora libre es capacidad para vender.</span></div>
+<div id="cap-2-cambio-fecha-pedido" class="clip full card" data-start="299.59" data-duration="3.4"><div class="grid"></div><div class="in"><p class="eyebrow">ESCENARIO 2</p><h1>Un cliente adelanta su pedido</h1><div class="rule"></div></div></div>
+<audio id="sfx-149" src="assets/shared/core/sfx/whoosh-short.mp3" data-start="299.69" data-duration="1.2" data-volume="0.3"></audio>
+<audio id="voz-2-S01" src="assets/audio/segmentos/2-S01.wav" data-start="303.29" data-duration="15.91" data-volume="1"></audio>
+<div id="bar-2-S01" class="clip bar" data-start="302.99" data-duration="16.81"><span class="eb">ESCENARIO 2</span><span class="tt">La cartera de pedidos</span><span class="brand">ARVANTTI LABS</span></div>
+<video id="v-2-S01" class="clip screen" src="assets/clips/2-S01.mp4" muted data-start="302.99" data-duration="7.23"></video>
+<div id="s-2-S01" class="clip screen" data-start="310.22" data-duration="9.58"><img src="assets/grabacion/2-cambio-fecha-pedido/capturas/01-pedidos.png" alt="" style="height:900px"></div>
+<div id="cc-2-S01-0" class="clip cc" data-start="303.29" data-duration="1.72"><span>Esta es la cartera de pedidos:</span></div>
+<div id="cc-2-S01-1" class="clip cc" data-start="305.01" data-duration="3.89"><span>noventa y tres pedidos con su producto, cantidad y fecha de entrega.</span></div>
+<div id="cc-2-S01-2" class="clip cc" data-start="308.9" data-duration="5.9"><span>Supermercados La Esquina tiene un pedido de doscientos once mil cubiertos desechables para el día doce.</span></div>
+<div id="cc-2-S01-3" class="clip cc" data-start="314.8" data-duration="1.14"><span>Hoy es el día nueve.</span></div>
+<div id="cc-2-S01-4" class="clip cc" data-start="315.94" data-duration="3.76"><span>El cliente llama y lo necesita un día antes, el día once.</span></div>
+<audio id="voz-2-S02" src="assets/audio/segmentos/2-S02.wav" data-start="320.1" data-duration="9.17" data-volume="1"></audio>
+<div id="bar-2-S02" class="clip bar" data-start="319.8" data-duration="10.07"><span class="eb">ESCENARIO 2</span><span class="tt">La pregunta a Fractal</span><span class="brand">ARVANTTI LABS</span></div>
+<video id="v-2-S02" class="clip screen" src="assets/clips/2-S02.mp4" muted data-start="319.8" data-duration="2.48"></video>
+<div id="s-2-S02" class="clip screen" data-start="322.28" data-duration="7.59"><img src="assets/grabacion/2-cambio-fecha-pedido/capturas/02-fractal-pregunta.png" alt="" style="height:900px"></div>
+<div id="cc-2-S02-0" class="clip cc" data-start="320.1" data-duration="5.74"><span>En Fractal elegimos el pedido y la nueva fecha, el día once, y pulsamos estudiar. La pregunta es:</span></div>
+<div id="cc-2-S02-1" class="clip cc" data-start="325.84" data-duration="3.93"><span>¿cómo movemos todo para cumplirle sin atrasar a los demás?</span></div>
+<audio id="voz-2-S03" src="assets/audio/segmentos/2-S03.wav" data-start="330.17" data-duration="23.19" data-volume="1"></audio>
+<div id="bar-2-S03" class="clip bar" data-start="329.87" data-duration="24.09"><span class="eb">ESCENARIO 2</span><span class="tt">La respuesta</span><span class="brand">ARVANTTI LABS</span></div>
+<video id="v-2-S03" class="clip screen" src="assets/clips/2-S03.mp4" muted data-start="329.87" data-duration="4.24"></video>
+<div id="s-2-S03" class="clip screen" data-start="334.11" data-duration="19.85"><img src="assets/grabacion/2-cambio-fecha-pedido/capturas/03-fractal.png" alt="" style="height:900px"></div>
+<div id="cc-2-S03-0" class="clip cc" data-start="330.17" data-duration="4.06"><span>Con el plan vigente el pedido terminaría el día doce a las siete de la mañana:</span></div>
+<div id="cc-2-S03-1" class="clip cc" data-start="334.23" data-duration="1.35"><span>tarde para la nueva fecha.</span></div>
+<div id="cc-2-S03-2" class="clip cc" data-start="335.58" data-duration="2.91"><span>Fractal prueba dos combinaciones en menos de un segundo.</span></div>
+<div id="cc-2-S03-3" class="clip cc" data-start="338.49" data-duration="2.6"><span>La recomendación es recalcular con la nueva fecha.</span></div>
+<div id="cc-2-S03-4" class="clip cc" data-start="341.09" data-duration="1.51"><span>No hace falta cambiar moldes;</span></div>
+<div id="cc-2-S03-5" class="clip cc" data-start="342.6" data-duration="3.69"><span>basta con recolocar la secuencia, y el resto de la cartera sigue igual:</span></div>
+<div id="cc-2-S03-6" class="clip cc" data-start="346.29" data-duration="2.34"><span>noventa y dos coma cinco por ciento a tiempo,</span></div>
+<div id="cc-2-S03-7" class="clip cc" data-start="348.63" data-duration="5.23"><span>y la ocupación de la planta incluso baja un punto, del sesenta y uno al sesenta por ciento.</span></div>
+<audio id="voz-2-S04" src="assets/audio/segmentos/2-S04.wav" data-start="354.26" data-duration="6.59" data-volume="1"></audio>
+<div id="bar-2-S04" class="clip bar" data-start="353.96" data-duration="7.49"><span class="eb">ESCENARIO 2</span><span class="tt">Ocupación por máquina</span><span class="brand">ARVANTTI LABS</span></div>
+<div id="s-2-S04" class="clip screen" data-start="353.96" data-duration="7.49"><img src="assets/grabacion/2-cambio-fecha-pedido/capturas/03b-fractal-full.png" alt="" style="height:900px"></div>
+<div id="cc-2-S04-0" class="clip cc" data-start="354.26" data-duration="3.61"><span>Las barras muestran que la carga de las máquinas casi no cambia.</span></div>
+<div id="cc-2-S04-1" class="clip cc" data-start="357.87" data-duration="3.49"><span>Las cinco inyectoras de cubiertos absorben el cambio.</span></div>
+<audio id="voz-2-S05" src="assets/audio/segmentos/2-S05.wav" data-start="361.75" data-duration="7.81" data-volume="1"></audio>
+<div id="bar-2-S05" class="clip bar" data-start="361.45" data-duration="8.71"><span class="eb">ESCENARIO 2</span><span class="tt">El Gantt adoptado</span><span class="brand">ARVANTTI LABS</span></div>
+<video id="v-2-S05" class="clip screen" src="assets/clips/2-S05.mp4" muted data-start="361.45" data-duration="4.95"></video>
+<div id="s-2-S05" class="clip screen" data-start="366.4" data-duration="3.76"><img src="assets/grabacion/2-cambio-fecha-pedido/capturas/04-gantt-adoptado.png" alt="" style="height:900px"></div>
+<div id="cc-2-S05-0" class="clip cc" data-start="361.75" data-duration="3.85"><span>Adoptamos la recomendación, aunque cualquier opción se puede adoptar,</span></div>
+<div id="cc-2-S05-1" class="clip cc" data-start="365.6" data-duration="4.46"><span>y el Gantt muestra el pedido adelantado en las inyectoras de cubiertos.</span></div>
+<audio id="voz-2-S06" src="assets/audio/segmentos/2-S06.wav" data-start="370.46" data-duration="16.21" data-volume="1"></audio>
+<div id="bar-2-S06" class="clip bar" data-start="370.16" data-duration="17.11"><span class="eb">ESCENARIO 2</span><span class="tt">Seguir la orden en planta</span><span class="brand">ARVANTTI LABS</span></div>
+<video id="v-2-S06" class="clip screen" src="assets/clips/2-S06.mp4" muted data-start="370.16" data-duration="4.55"></video>
+<div id="s-2-S06" class="clip screen" data-start="374.71" data-duration="12.56"><img src="assets/grabacion/2-cambio-fecha-pedido/capturas/05-centro-control-orden.png" alt="" style="height:900px"></div>
+<div id="cc-2-S06-0" class="clip cc" data-start="370.46" data-duration="3.06"><span>En el centro de control podemos filtrar por esa orden:</span></div>
+<div id="cc-2-S06-1" class="clip cc" data-start="373.52" data-duration="3.74"><span>vemos solo las máquinas que la fabrican y cuánto de su tiempo usa.</span></div>
+<div id="cc-2-S06-2" class="clip cc" data-start="377.26" data-duration="5.73"><span>El pedido ocupa treinta y tres de las trescientas setenta y ocho horas de esas máquinas en la semana.</span></div>
+<div id="cc-2-S06-3" class="clip cc" data-start="382.99" data-duration="4.18"><span>El comercial puede confirmar la nueva fecha al cliente con datos.</span></div>
+<audio id="voz-2-S07" src="assets/audio/segmentos/2-S07.wav" data-start="387.57" data-duration="16.34" data-volume="1"></audio>
+<div id="bar-2-S07" class="clip bar" data-start="387.27" data-duration="17.24"><span class="eb">ESCENARIO 2</span><span class="tt">La orden en el gemelo 3D</span><span class="brand">ARVANTTI LABS</span></div>
+<video id="v-2-S07" class="clip screen" src="assets/clips/2-S07.mp4" muted data-start="387.27" data-duration="13.74"></video>
+<div id="s-2-S07" class="clip screen" data-start="401.01" data-duration="3.5"><img src="assets/grabacion/2-cambio-fecha-pedido/capturas/06-gemelo-orden.png" alt="" style="height:900px"></div>
+<div id="cc-2-S07-0" class="clip cc" data-start="387.57" data-duration="2.3"><span>En el gemelo 3D seguimos la misma orden.</span></div>
+<div id="cc-2-S07-1" class="clip cc" data-start="389.87" data-duration="4.66"><span>El panel dice qué órdenes se están procesando en este instante y en qué máquinas.</span></div>
+<div id="cc-2-S07-2" class="clip cc" data-start="394.53" data-duration="2.47"><span>La orden adelantada todavía está pendiente:</span></div>
+<div id="cc-2-S07-3" class="clip cc" data-start="397" data-duration="2.13"><span>cero de doscientas once mil unidades,</span></div>
+<div id="cc-2-S07-4" class="clip cc" data-start="399.13" data-duration="5.28"><span>y termina programada el día once a las diez de la noche, antes de la nueva entrega.</span></div>
+<audio id="voz-2-S08" src="assets/audio/segmentos/2-S08.wav" data-start="404.81" data-duration="13.65" data-volume="1"></audio>
+<div id="bar-2-S08" class="clip bar" data-start="404.51" data-duration="14.55"><span class="eb">ESCENARIO 2</span><span class="tt">Lo producido con el play</span><span class="brand">ARVANTTI LABS</span></div>
+<video id="v-2-S08" class="clip screen" src="assets/clips/2-S08.mp4" muted data-start="404.51" data-duration="11.04"></video>
+<div id="s-2-S08" class="clip screen" data-start="415.55" data-duration="3.51"><img src="assets/grabacion/2-cambio-fecha-pedido/capturas/07-gemelo-orden-play.png" alt="" style="height:900px"></div>
+<div id="cc-2-S08-0" class="clip cc" data-start="404.81" data-duration="1.6"><span>Con el play avanzamos un día.</span></div>
+<div id="cc-2-S08-1" class="clip cc" data-start="406.41" data-duration="4.37"><span>Al día diez a las diez de la mañana la orden va en cincuenta y un mil unidades,</span></div>
+<div id="cc-2-S08-2" class="clip cc" data-start="410.78" data-duration="4.31"><span>en proceso en las inyectoras uno y dos, que llevan una estrella en su letrero.</span></div>
+<div id="cc-2-S08-3" class="clip cc" data-start="415.09" data-duration="3.87"><span>Así se ve, hora a hora, cómo avanza cada pedido en la planta.</span></div>
+<audio id="voz-2-S09" src="assets/audio/segmentos/2-S09.wav" data-start="419.36" data-duration="17.47" data-volume="1"></audio>
+<div id="bar-2-S09" class="clip bar" data-start="419.06" data-duration="18.37"><span class="eb">ESCENARIO 2</span><span class="tt">El ahorro potencial</span><span class="brand">ARVANTTI LABS</span></div>
+<div id="s-2-S09" class="clip screen" data-start="419.06" data-duration="18.37"><img src="assets/grabacion/2-cambio-fecha-pedido/capturas/03-fractal.png" alt="" style="height:900px"></div>
+<div id="cc-2-S09-0" class="clip cc" data-start="419.36" data-duration="2.25"><span>Aquí el ahorro es de tiempo y de riesgo.</span></div>
+<div id="cc-2-S09-1" class="clip cc" data-start="421.61" data-duration="2.47"><span>Fractal responde en seis décimas de segundo,</span></div>
+<div id="cc-2-S09-2" class="clip cc" data-start="424.08" data-duration="3.71"><span>no hace falta cambiar ningún molde y ningún otro pedido se atrasa:</span></div>
+<div id="cc-2-S09-3" class="clip cc" data-start="427.79" data-duration="3.65"><span>siguen siendo siete tarde y ciento ochenta y dos horas de atraso,</span></div>
+<div id="cc-2-S09-4" class="clip cc" data-start="431.44" data-duration="1.52"><span>igual que antes del cambio.</span></div>
+<div id="cc-2-S09-5" class="clip cc" data-start="432.96" data-duration="4.38"><span>El comercial confirma la fecha con datos, sin rehacer el plan a mano.</span></div>
+<div id="cap-3-contingencia-falla" class="clip full card" data-start="437.43" data-duration="3.4"><div class="grid"></div><div class="in"><p class="eyebrow">ESCENARIO 3</p><h1>Contingencia: falla una inyectora</h1><div class="rule"></div></div></div>
+<audio id="sfx-223" src="assets/shared/core/sfx/whoosh-short.mp3" data-start="437.53" data-duration="1.2" data-volume="0.3"></audio>
+<audio id="voz-3-S01" src="assets/audio/segmentos/3-S01.wav" data-start="441.13" data-duration="13.03" data-volume="1"></audio>
+<div id="bar-3-S01" class="clip bar" data-start="440.83" data-duration="13.93"><span class="eb">ESCENARIO 3</span><span class="tt">La planta en vivo</span><span class="brand">ARVANTTI LABS</span></div>
+<div id="s-3-S01" class="clip screen" data-start="440.83" data-duration="13.93"><img src="assets/grabacion/3-contingencia-falla/capturas/01-emulador.png" alt="" style="height:900px"></div>
+<div id="cc-3-S01-0" class="clip cc" data-start="441.13" data-duration="3.33"><span>Este es el emulador de la planta de inyección de plásticos.</span></div>
+<div id="cc-3-S01-1" class="clip cc" data-start="444.46" data-duration="3.22"><span>Cada rectángulo es una máquina trabajando en tiempo real:</span></div>
+<div id="cc-3-S01-2" class="clip cc" data-start="447.68" data-duration="3.16"><span>inyectoras, buffers, montacargas y la línea de ensamble.</span></div>
+<div id="cc-3-S01-3" class="clip cc" data-start="450.84" data-duration="3.83"><span>Son las diez de la mañana del día nueve de la programación.</span></div>
+<audio id="voz-3-S02" src="assets/audio/segmentos/3-S02.wav" data-start="455.06" data-duration="11.48" data-volume="1"></audio>
+<div id="bar-3-S02" class="clip bar" data-start="454.76" data-duration="12.38"><span class="eb">ESCENARIO 3</span><span class="tt">El PLC de la inyectora veintiuno</span><span class="brand">ARVANTTI LABS</span></div>
+<video id="v-3-S02" class="clip screen" src="assets/clips/3-S02.mp4" muted data-start="454.76" data-duration="2.38"></video>
+<div id="s-3-S02" class="clip screen" data-start="457.14" data-duration="10"><img src="assets/grabacion/3-contingencia-falla/capturas/02-plc-imm21.png" alt="" style="height:900px"></div>
+<div id="cc-3-S02-0" class="clip cc" data-start="455.06" data-duration="2.47"><span>Al hacer clic en una máquina vemos su PLC:</span></div>
+<div id="cc-3-S02-1" class="clip cc" data-start="457.53" data-duration="4"><span>la orden que está haciendo, el tiempo de ciclo, las unidades buenas,</span></div>
+<div id="cc-3-S02-2" class="clip cc" data-start="461.53" data-duration="1.88"><span>los rechazos y el OEE del turno.</span></div>
+<div id="cc-3-S02-3" class="clip cc" data-start="463.41" data-duration="3.62"><span>La inyectora veintiuno fabrica baldes de doce litros.</span></div>
+<audio id="voz-3-S03" src="assets/audio/segmentos/3-S03.wav" data-start="467.44" data-duration="8.81" data-volume="1"></audio>
+<div id="bar-3-S03" class="clip bar" data-start="467.14" data-duration="9.71"><span class="eb">ESCENARIO 3</span><span class="tt">Llega la falla</span><span class="brand">ARVANTTI LABS</span></div>
+<video id="v-3-S03" class="clip screen" src="assets/clips/3-S03.mp4" muted data-start="467.14" data-duration="2.32"></video>
+<div id="s-3-S03" class="clip screen" data-start="469.46" data-duration="7.39"><img src="assets/grabacion/3-contingencia-falla/capturas/03-falla.png" alt="" style="height:900px"></div>
+<div id="cc-3-S03-0" class="clip cc" data-start="467.44" data-duration="3.93"><span>De pronto se quema la resistencia del cañón de la inyectora veintiuno.</span></div>
+<div id="cc-3-S03-1" class="clip cc" data-start="471.37" data-duration="2.53"><span>Mantenimiento estima tres días de reparación:</span></div>
+<div id="cc-3-S03-2" class="clip cc" data-start="473.9" data-duration="2.86"><span>hasta el día doce a las diez de la mañana.</span></div>
+<audio id="voz-3-S04" src="assets/audio/segmentos/3-S04.wav" data-start="477.15" data-duration="8.98" data-volume="1"></audio>
+<div id="bar-3-S04" class="clip bar" data-start="476.85" data-duration="9.88"><span class="eb">ESCENARIO 3</span><span class="tt">El centro de control lo ve</span><span class="brand">ARVANTTI LABS</span></div>
+<video id="v-3-S04" class="clip screen" src="assets/clips/3-S04.mp4" muted data-start="476.85" data-duration="4.4"></video>
+<div id="s-3-S04" class="clip screen" data-start="481.25" data-duration="5.48"><img src="assets/grabacion/3-contingencia-falla/capturas/04-centro-control.png" alt="" style="height:900px"></div>
+<div id="cc-3-S04-0" class="clip cc" data-start="477.15" data-duration="2.95"><span>El centro de control recibe la alarma al instante.</span></div>
+<div id="cc-3-S04-1" class="clip cc" data-start="480.1" data-duration="2.07"><span>La máquina queda fuera de servicio,</span></div>
+<div id="cc-3-S04-2" class="clip cc" data-start="482.17" data-duration="4.46"><span>su disponibilidad cae y la planta sabe qué órdenes estaban en ella.</span></div>
+<audio id="voz-3-S05" src="assets/audio/segmentos/3-S05.wav" data-start="487.03" data-duration="10.3" data-volume="1"></audio>
+<div id="bar-3-S05" class="clip bar" data-start="486.73" data-duration="11.2"><span class="eb">ESCENARIO 3</span><span class="tt">El APS avisa qué pedidos se afectan</span><span class="brand">ARVANTTI LABS</span></div>
+<video id="v-3-S05" class="clip screen" src="assets/clips/3-S05.mp4" muted data-start="486.73" data-duration="4.71"></video>
+<div id="s-3-S05" class="clip screen" data-start="491.44" data-duration="6.49"><img src="assets/grabacion/3-contingencia-falla/capturas/05-aps-alerta.png" alt="" style="height:900px"></div>
+<div id="cc-3-S05-0" class="clip cc" data-start="487.03" data-duration="2.92"><span>En la programación de producción aparece la alerta:</span></div>
+<div id="cc-3-S05-1" class="clip cc" data-start="489.95" data-duration="3.89"><span>la falla afecta ocho órdenes del plan vigente. Ahora la pregunta es:</span></div>
+<div id="cc-3-S05-2" class="clip cc" data-start="493.84" data-duration="3.99"><span>¿esperamos la reparación o movemos el trabajo a otra máquina?</span></div>
+<audio id="voz-3-S06" src="assets/audio/segmentos/3-S06.wav" data-start="498.23" data-duration="36.62" data-volume="1"></audio>
+<div id="bar-3-S06" class="clip bar" data-start="497.93" data-duration="37.52"><span class="eb">ESCENARIO 3</span><span class="tt">Fractal estudia las opciones</span><span class="brand">ARVANTTI LABS</span></div>
+<video id="v-3-S06" class="clip screen" src="assets/clips/3-S06.mp4" muted data-start="497.93" data-duration="5.76"></video>
+<div id="s-3-S06" class="clip screen" data-start="503.69" data-duration="31.76"><img src="assets/grabacion/3-contingencia-falla/capturas/06-fractal.png" alt="" style="height:900px"></div>
+<div id="cc-3-S06-0" class="clip cc" data-start="498.23" data-duration="1.09"><span>Aquí entra Fractal.</span></div>
+<div id="cc-3-S06-1" class="clip cc" data-start="499.32" data-duration="2.82"><span>En menos de un segundo prueba tres combinaciones.</span></div>
+<div id="cc-3-S06-2" class="clip cc" data-start="502.14" data-duration="1.73"><span>No solo reordena la secuencia:</span></div>
+<div id="cc-3-S06-3" class="clip cc" data-start="503.87" data-duration="2.07"><span>también prueba cambios en la planta,</span></div>
+<div id="cc-3-S06-4" class="clip cc" data-start="505.94" data-duration="5.07"><span>como mudar el molde a otra máquina o montar el molde de repuesto que está en el almacén.</span></div>
+<div id="cc-3-S06-5" class="clip cc" data-start="511.01" data-duration="3.34"><span>Si solo esperamos y repartimos, quedan diez pedidos tarde,</span></div>
+<div id="cc-3-S06-6" class="clip cc" data-start="514.35" data-duration="2.71"><span>con doscientas noventa y cinco horas de atraso.</span></div>
+<div id="cc-3-S06-7" class="clip cc" data-start="517.06" data-duration="4.66"><span>La recomendación es montar el molde de repuesto del balde en la inyectora veinte,</span></div>
+<div id="cc-3-S06-8" class="clip cc" data-start="521.72" data-duration="1.79"><span>con noventa minutos de montaje.</span></div>
+<div id="cc-3-S06-9" class="clip cc" data-start="523.51" data-duration="4.43"><span>Así quedan siete pedidos tarde y el atraso baja a ciento ochenta y dos horas.</span></div>
+<div id="cc-3-S06-10" class="clip cc" data-start="527.94" data-duration="3.86"><span>La tabla también muestra la ocupación de la planta con cada opción:</span></div>
+<div id="cc-3-S06-11" class="clip cc" data-start="531.8" data-duration="3.55"><span>con la recomendada queda en sesenta y uno por ciento.</span></div>
+<audio id="voz-3-S07" src="assets/audio/segmentos/3-S07.wav" data-start="535.75" data-duration="12.61" data-volume="1"></audio>
+<div id="bar-3-S07" class="clip bar" data-start="535.45" data-duration="13.51"><span class="eb">ESCENARIO 3</span><span class="tt">Comparar antes de decidir</span><span class="brand">ARVANTTI LABS</span></div>
+<div id="s-3-S07" class="clip screen" data-start="535.45" data-duration="13.51"><img src="assets/grabacion/3-contingencia-falla/capturas/06b-fractal-full.png" alt="" style="height:900px"></div>
+<div id="cc-3-S07-0" class="clip cc" data-start="535.75" data-duration="4.28"><span>Abajo se ve cómo cambia la ocupación de cada máquina con la recomendación:</span></div>
+<div id="cc-3-S07-1" class="clip cc" data-start="540.03" data-duration="4.11"><span>la inyectora veinte, que estaba libre, toma el trabajo de la veintiuno.</span></div>
+<div id="cc-3-S07-2" class="clip cc" data-start="544.14" data-duration="4.72"><span>Cada opción se puede abrir en el Gantt y adoptar, no solo la recomendada.</span></div>
+<audio id="voz-3-S08" src="assets/audio/segmentos/3-S08.wav" data-start="549.26" data-duration="10.18" data-volume="1"></audio>
+<div id="bar-3-S08" class="clip bar" data-start="548.96" data-duration="11.08"><span class="eb">ESCENARIO 3</span><span class="tt">Adoptar</span><span class="brand">ARVANTTI LABS</span></div>
+<video id="v-3-S08" class="clip screen" src="assets/clips/3-S08.mp4" muted data-start="548.96" data-duration="7.56"></video>
+<div id="s-3-S08" class="clip screen" data-start="556.52" data-duration="3.52"><img src="assets/grabacion/3-contingencia-falla/capturas/07-gantt-adoptado.png" alt="" style="height:900px"></div>
+<div id="cc-3-S08-0" class="clip cc" data-start="549.26" data-duration="2.29"><span>Con un clic adoptamos la recomendación.</span></div>
+<div id="cc-3-S08-1" class="clip cc" data-start="551.55" data-duration="2.06"><span>Pasa a ser la programación vigente,</span></div>
+<div id="cc-3-S08-2" class="clip cc" data-start="553.61" data-duration="6.32"><span>con noventa y dos coma cinco por ciento de pedidos a tiempo. Fractal recomienda; la persona decide.</span></div>
+<audio id="voz-3-S09" src="assets/audio/segmentos/3-S09.wav" data-start="560.34" data-duration="6.51" data-volume="1"></audio>
+<div id="bar-3-S09" class="clip bar" data-start="560.04" data-duration="7.41"><span class="eb">ESCENARIO 3</span><span class="tt">El centro de control después</span><span class="brand">ARVANTTI LABS</span></div>
+<video id="v-3-S09" class="clip screen" src="assets/clips/3-S09.mp4" muted data-start="560.04" data-duration="3.88"></video>
+<div id="s-3-S09" class="clip screen" data-start="563.92" data-duration="3.53"><img src="assets/grabacion/3-contingencia-falla/capturas/08-centro-control-despues.png" alt="" style="height:900px"></div>
+<div id="cc-3-S09-0" class="clip cc" data-start="560.34" data-duration="4.13"><span>El centro de control ya muestra a la inyectora veinte con su nueva orden,</span></div>
+<div id="cc-3-S09-1" class="clip cc" data-start="564.47" data-duration="2.88"><span>mientras la veintiuno sigue en reparación.</span></div>
+<audio id="voz-3-S10" src="assets/audio/segmentos/3-S10.wav" data-start="567.75" data-duration="3.48" data-volume="1"></audio>
+<div id="bar-3-S10" class="clip bar" data-start="567.45" data-duration="4.38"><span class="eb">ESCENARIO 3</span><span class="tt">El emulador después</span><span class="brand">ARVANTTI LABS</span></div>
+<div id="s-3-S10" class="clip screen" data-start="567.45" data-duration="4.38"><img src="assets/grabacion/3-contingencia-falla/capturas/09-emulador-despues.png" alt="" style="height:900px"></div>
+<div id="cc-3-S10-0" class="clip cc" data-start="567.75" data-duration="3.98"><span>Y en el emulador la planta sigue trabajando con el nuevo plan.</span></div>
+<audio id="voz-3-S11" src="assets/audio/segmentos/3-S11.wav" data-start="572.13" data-duration="7.85" data-volume="1"></audio>
+<div id="bar-3-S11" class="clip bar" data-start="571.83" data-duration="8.75"><span class="eb">ESCENARIO 3</span><span class="tt">El gemelo 3D</span><span class="brand">ARVANTTI LABS</span></div>
+<div id="s-3-S11" class="clip screen" data-start="571.83" data-duration="8.75"><img src="assets/grabacion/3-contingencia-falla/capturas/10-gemelo-3d.png" alt="" style="height:900px"></div>
+<div id="cc-3-S11-0" class="clip cc" data-start="572.13" data-duration="1.92"><span>En el gemelo 3D vemos lo mismo:</span></div>
+<div id="cc-3-S11-1" class="clip cc" data-start="574.05" data-duration="3.03"><span>la inyectora veintiuno marcada fuera de servicio,</span></div>
+<div id="cc-3-S11-2" class="clip cc" data-start="577.08" data-duration="3.41"><span>con su ocupación contra disponibilidad por día.</span></div>
+<audio id="voz-3-S12" src="assets/audio/segmentos/3-S12.wav" data-start="580.88" data-duration="8.09" data-volume="1"></audio>
+<div id="bar-3-S12" class="clip bar" data-start="580.58" data-duration="8.99"><span class="eb">ESCENARIO 3</span><span class="tt">El 3D con el plan nuevo</span><span class="brand">ARVANTTI LABS</span></div>
+<video id="v-3-S12" class="clip screen" src="assets/clips/3-S12.mp4" muted data-start="580.58" data-duration="5.48"></video>
+<div id="s-3-S12" class="clip screen" data-start="586.06" data-duration="3.51"><img src="assets/grabacion/3-contingencia-falla/capturas/11-gemelo-3d-despues.png" alt="" style="height:900px"></div>
+<div id="cc-3-S12-0" class="clip cc" data-start="580.88" data-duration="4.04"><span>Y con el plan adoptado, la inyectora veinte aparece produciendo baldes.</span></div>
+<div id="cc-3-S12-1" class="clip cc" data-start="584.92" data-duration="4.54"><span>Del aviso de falla a un plan nuevo en la planta, en menos de un minuto.</span></div>
+<audio id="voz-3-S13" src="assets/audio/segmentos/3-S13.wav" data-start="589.87" data-duration="13.57" data-volume="1"></audio>
+<div id="bar-3-S13" class="clip bar" data-start="589.57" data-duration="14.47"><span class="eb">ESCENARIO 3</span><span class="tt">El montaje del molde en el gemelo 3D</span><span class="brand">ARVANTTI LABS</span></div>
+<div id="s-3-S13" class="clip screen" data-start="589.57" data-duration="14.47"><img src="assets/grabacion/3-contingencia-falla/capturas/12-gemelo-montaje-grua.jpg" alt="" style="height:900px"></div>
+<div id="cc-3-S13-0" class="clip cc" data-start="589.87" data-duration="2.58"><span>Y la opción adoptada no se queda en una tabla:</span></div>
+<div id="cc-3-S13-1" class="clip cc" data-start="592.45" data-duration="2.97"><span>con el play, el gemelo 3D muestra el cambio de molde.</span></div>
+<div id="cc-3-S13-2" class="clip cc" data-start="595.42" data-duration="5.72"><span>El puente grúa baja el molde de la inyectora veintiuno al carro y un operario lo lleva por el pasillo,</span></div>
+<div id="cc-3-S13-3" class="clip cc" data-start="601.14" data-duration="2.8"><span>a la otra máquina o al almacén de moldes.</span></div>
+<audio id="voz-3-S14" src="assets/audio/segmentos/3-S14.wav" data-start="604.34" data-duration="13.48" data-volume="1"></audio>
+<div id="bar-3-S14" class="clip bar" data-start="604.04" data-duration="14.38"><span class="eb">ESCENARIO 3</span><span class="tt">El montaje en la inyectora veinte</span><span class="brand">ARVANTTI LABS</span></div>
+<div id="s-3-S14" class="clip screen" data-start="604.04" data-duration="14.38"><img src="assets/grabacion/3-contingencia-falla/capturas/13-gemelo-montaje-imm20.jpg" alt="" style="height:900px"></div>
+<div id="cc-3-S14-0" class="clip cc" data-start="604.34" data-duration="2.09"><span>El molde llega a la inyectora veinte,</span></div>
+<div id="cc-3-S14-1" class="clip cc" data-start="606.43" data-duration="4.68"><span>mudado desde la veintiuno o el de repuesto del almacén, según la opción que se vea.</span></div>
+<div id="cc-3-S14-2" class="clip cc" data-start="611.11" data-duration="3.84"><span>Con el repuesto son noventa minutos de montaje, que nunca se parten,</span></div>
+<div id="cc-3-S14-3" class="clip cc" data-start="614.95" data-duration="3.38"><span>y el letrero dice qué molde entra y en qué fase va.</span></div>
+<audio id="voz-3-S15" src="assets/audio/segmentos/3-S15.wav" data-start="618.72" data-duration="19.71" data-volume="1"></audio>
+<div id="bar-3-S15" class="clip bar" data-start="618.42" data-duration="20.61"><span class="eb">ESCENARIO 3</span><span class="tt">El ahorro potencial</span><span class="brand">ARVANTTI LABS</span></div>
+<div id="s-3-S15" class="clip screen" data-start="618.42" data-duration="20.61"><img src="assets/grabacion/3-contingencia-falla/capturas/06-fractal.png" alt="" style="height:900px"></div>
+<div id="cc-3-S15-0" class="clip cc" data-start="618.72" data-duration="2.04"><span>Este es el ahorro de la contingencia.</span></div>
+<div id="cc-3-S15-1" class="clip cc" data-start="620.76" data-duration="1.76"><span>Si solo se espera la reparación,</span></div>
+<div id="cc-3-S15-2" class="clip cc" data-start="622.52" data-duration="4.35"><span>quedan diez pedidos tarde y doscientas noventa y cinco horas y media de atraso.</span></div>
+<div id="cc-3-S15-3" class="clip cc" data-start="626.87" data-duration="4.96"><span>Con la recomendación de Fractal quedan siete tarde y ciento ochenta y dos coma tres horas:</span></div>
+<div id="cc-3-S15-4" class="clip cc" data-start="631.83" data-duration="3.25"><span>tres pedidos salvados y ciento trece horas de atraso menos.</span></div>
+<div id="cc-3-S15-5" class="clip cc" data-start="635.08" data-duration="3.86"><span>El costo es noventa minutos de montaje del molde de repuesto.</span></div>
+<div id="cap-4-pedidos-fijados" class="clip full card" data-start="639.03" data-duration="3.4"><div class="grid"></div><div class="in"><p class="eyebrow">ESCENARIO 4</p><h1>Pedidos fijados a mano</h1><div class="rule"></div></div></div>
+<audio id="sfx-335" src="assets/shared/core/sfx/whoosh-short.mp3" data-start="639.13" data-duration="1.2" data-volume="0.3"></audio>
+<audio id="voz-4-S01" src="assets/audio/segmentos/4-S01.wav" data-start="642.73" data-duration="13.27" data-volume="1"></audio>
+<div id="bar-4-S01" class="clip bar" data-start="642.43" data-duration="14.17"><span class="eb">ESCENARIO 4</span><span class="tt">El plan de partida</span><span class="brand">ARVANTTI LABS</span></div>
+<video id="v-4-S01" class="clip screen" src="assets/clips/4-S01.mp4" muted data-start="642.43" data-duration="7.02"></video>
+<div id="s-4-S01" class="clip screen" data-start="649.45" data-duration="7.15"><img src="assets/grabacion/4-pedidos-fijados/capturas/01-gantt-vigente.png" alt="" style="height:900px"></div>
+<div id="cc-4-S01-0" class="clip cc" data-start="642.73" data-duration="2.61"><span>Partimos del plan que calculó el cosimulador,</span></div>
+<div id="cc-4-S01-1" class="clip cc" data-start="645.34" data-duration="3.48"><span>con noventa y dos coma cinco por ciento de pedidos a tiempo.</span></div>
+<div id="cc-4-S01-2" class="clip cc" data-start="648.82" data-duration="3.19"><span>Pero un planificador sabe cosas que el sistema no sabe:</span></div>
+<div id="cc-4-S01-3" class="clip cc" data-start="652.01" data-duration="4.5"><span>hay pedidos que se prometieron con fecha firmada y no pueden moverse.</span></div>
+<audio id="voz-4-S02" src="assets/audio/segmentos/4-S02.wav" data-start="656.9" data-duration="19.63" data-volume="1"></audio>
+<div id="bar-4-S02" class="clip bar" data-start="656.6" data-duration="20.53"><span class="eb">ESCENARIO 4</span><span class="tt">Bloquear a mano</span><span class="brand">ARVANTTI LABS</span></div>
+<video id="v-4-S02" class="clip screen" src="assets/clips/4-S02.mp4" muted data-start="656.6" data-duration="11.24"></video>
+<div id="s-4-S02" class="clip screen" data-start="667.84" data-duration="9.29"><img src="assets/grabacion/4-pedidos-fijados/capturas/02-gantt-fijadas.png" alt="" style="height:900px"></div>
+<div id="cc-4-S02-0" class="clip cc" data-start="656.9" data-duration="3.52"><span>Arrastramos la papelera de pedal del día doce un día más tarde,</span></div>
+<div id="cc-4-S02-1" class="clip cc" data-start="660.42" data-duration="1.9"><span>a la fecha que pactó el comercial.</span></div>
+<div id="cc-4-S02-2" class="clip cc" data-start="662.32" data-duration="2.8"><span>Y con el candado fijamos tres órdenes donde están:</span></div>
+<div id="cc-4-S02-3" class="clip cc" data-start="665.12" data-duration="4.25"><span>los cubiertos del día once, esa papelera y la otra papelera del día catorce.</span></div>
+<div id="cc-4-S02-4" class="clip cc" data-start="669.37" data-duration="2.35"><span>Las barras rayadas ya no se pueden correr.</span></div>
+<div id="cc-4-S02-5" class="clip cc" data-start="671.72" data-duration="5.31"><span>El plan manual queda con siete pedidos tarde y ciento ochenta y cinco horas de atraso.</span></div>
+<audio id="voz-4-S03" src="assets/audio/segmentos/4-S03.wav" data-start="677.43" data-duration="11.26" data-volume="1"></audio>
+<div id="bar-4-S03" class="clip bar" data-start="677.13" data-duration="12.16"><span class="eb">ESCENARIO 4</span><span class="tt">Fractal recibe lo fijado</span><span class="brand">ARVANTTI LABS</span></div>
+<video id="v-4-S03" class="clip screen" src="assets/clips/4-S03.mp4" muted data-start="677.13" data-duration="2.48"></video>
+<div id="s-4-S03" class="clip screen" data-start="679.61" data-duration="9.68"><img src="assets/grabacion/4-pedidos-fijados/capturas/03-fractal-pregunta.png" alt="" style="height:900px"></div>
+<div id="cc-4-S03-0" class="clip cc" data-start="677.43" data-duration="3.06"><span>En la pestaña de Fractal aparece el cuarto escenario:</span></div>
+<div id="cc-4-S03-1" class="clip cc" data-start="680.49" data-duration="1.33"><span>órdenes fijadas a mano.</span></div>
+<div id="cc-4-S03-2" class="clip cc" data-start="681.82" data-duration="4.04"><span>Muestra cuáles son las tres órdenes bloqueadas y la pregunta es clara:</span></div>
+<div id="cc-4-S03-3" class="clip cc" data-start="685.86" data-duration="3.33"><span>organizar el resto de la producción sin moverlas.</span></div>
+<audio id="voz-4-S04" src="assets/audio/segmentos/4-S04.wav" data-start="689.59" data-duration="27.54" data-volume="1"></audio>
+<div id="bar-4-S04" class="clip bar" data-start="689.29" data-duration="28.44"><span class="eb">ESCENARIO 4</span><span class="tt">Fractal reorganiza el resto</span><span class="brand">ARVANTTI LABS</span></div>
+<video id="v-4-S04" class="clip screen" src="assets/clips/4-S04.mp4" muted data-start="689.29" data-duration="4.98"></video>
+<div id="s-4-S04" class="clip screen" data-start="694.27" data-duration="23.46"><img src="assets/grabacion/4-pedidos-fijados/capturas/04-fractal.png" alt="" style="height:900px"></div>
+<div id="cc-4-S04-0" class="clip cc" data-start="689.59" data-duration="3.23"><span>En menos de un segundo Fractal prueba dos combinaciones.</span></div>
+<div id="cc-4-S04-1" class="clip cc" data-start="692.82" data-duration="3.17"><span>La primera solo reorganiza el resto con el cosimulador:</span></div>
+<div id="cc-4-S04-2" class="clip cc" data-start="695.99" data-duration="5.2"><span>el atraso baja de ciento ochenta y cinco coma ocho a ciento ochenta y dos coma tres horas.</span></div>
+<div id="cc-4-S04-3" class="clip cc" data-start="701.19" data-duration="4.62"><span>La segunda, además, monta el molde de repuesto del balde en la inyectora veinte,</span></div>
+<div id="cc-4-S04-4" class="clip cc" data-start="705.81" data-duration="1.79"><span>con noventa minutos de montaje,</span></div>
+<div id="cc-4-S04-5" class="clip cc" data-start="707.6" data-duration="4.79"><span>y deja la ocupación de la planta en sesenta y uno coma seis por ciento. En las dos,</span></div>
+<div id="cc-4-S04-6" class="clip cc" data-start="712.39" data-duration="5.23"><span>las tres órdenes fijadas quedan exactamente en la misma máquina y a la misma hora.</span></div>
+<audio id="voz-4-S05" src="assets/audio/segmentos/4-S05.wav" data-start="718.03" data-duration="8.19" data-volume="1"></audio>
+<div id="bar-4-S05" class="clip bar" data-start="717.73" data-duration="9.09"><span class="eb">ESCENARIO 4</span><span class="tt">Comparar antes de decidir</span><span class="brand">ARVANTTI LABS</span></div>
+<div id="s-4-S05" class="clip screen" data-start="717.73" data-duration="9.09"><img src="assets/grabacion/4-pedidos-fijados/capturas/04b-fractal-full.png" alt="" style="height:900px"></div>
+<div id="cc-4-S05-0" class="clip cc" data-start="718.03" data-duration="2.93"><span>Abajo se ve cómo cambia la carga de cada máquina.</span></div>
+<div id="cc-4-S05-1" class="clip cc" data-start="720.96" data-duration="2.93"><span>Cada opción se puede abrir en el Gantt y adoptar;</span></div>
+<div id="cc-4-S05-2" class="clip cc" data-start="723.89" data-duration="2.83"><span>Fractal recomienda y la persona decide.</span></div>
+<audio id="voz-4-S06" src="assets/audio/segmentos/4-S06.wav" data-start="727.12" data-duration="14.08" data-volume="1"></audio>
+<div id="bar-4-S06" class="clip bar" data-start="726.82" data-duration="14.98"><span class="eb">ESCENARIO 4</span><span class="tt">Adoptar y ver que lo fijado no se movió</span><span class="brand">ARVANTTI LABS</span></div>
+<video id="v-4-S06" class="clip screen" src="assets/clips/4-S06.mp4" muted data-start="726.82" data-duration="5.04"></video>
+<div id="s-4-S06" class="clip screen" data-start="731.86" data-duration="9.94"><img src="assets/grabacion/4-pedidos-fijados/capturas/05-gantt-adoptado.png" alt="" style="height:900px"></div>
+<div id="cc-4-S06-0" class="clip cc" data-start="727.12" data-duration="1.56"><span>Adoptamos la recomendación.</span></div>
+<div id="cc-4-S06-1" class="clip cc" data-start="728.68" data-duration="5.04"><span>Es la programación vigente y las tres órdenes siguen con su candado, en la misma fecha.</span></div>
+<div id="cc-4-S06-2" class="clip cc" data-start="733.72" data-duration="2.14"><span>Lo demás se reacomodó a su alrededor.</span></div>
+<div id="cc-4-S06-3" class="clip cc" data-start="735.86" data-duration="5.83"><span>Si mañana cambia algo, se vuelve a pedir un estudio y los compromisos firmados se mantienen.</span></div>
+<audio id="voz-4-S07" src="assets/audio/segmentos/4-S07.wav" data-start="742.1" data-duration="11.84" data-volume="1"></audio>
+<div id="bar-4-S07" class="clip bar" data-start="741.8" data-duration="12.74"><span class="eb">ESCENARIO 4</span><span class="tt">La planta lo ejecuta</span><span class="brand">ARVANTTI LABS</span></div>
+<video id="v-4-S07" class="clip screen" src="assets/clips/4-S07.mp4" muted data-start="741.8" data-duration="4"></video>
+<div id="s-4-S07" class="clip screen" data-start="745.8" data-duration="8.74"><img src="assets/grabacion/4-pedidos-fijados/capturas/06-centro-control.png" alt="" style="height:900px"></div>
+<div id="cc-4-S07-0" class="clip cc" data-start="742.1" data-duration="7.06"><span>El centro de control ya muestra la nueva programación de Fractal y la inyectora veinte con el montaje del molde de repuesto.</span></div>
+<div id="cc-4-S07-1" class="clip cc" data-start="749.16" data-duration="5.28"><span>El planificador conserva el control de lo importante y deja el resto al optimizador.</span></div>
+<audio id="voz-4-S08" src="assets/audio/segmentos/4-S08.wav" data-start="754.84" data-duration="17.41" data-volume="1"></audio>
+<div id="bar-4-S08" class="clip bar" data-start="754.54" data-duration="18.31"><span class="eb">ESCENARIO 4</span><span class="tt">El ahorro potencial</span><span class="brand">ARVANTTI LABS</span></div>
+<div id="s-4-S08" class="clip screen" data-start="754.54" data-duration="18.31"><img src="assets/grabacion/4-pedidos-fijados/capturas/04-fractal.png" alt="" style="height:900px"></div>
+<div id="cc-4-S08-0" class="clip cc" data-start="754.84" data-duration="1.85"><span>Con tres órdenes fijadas a mano,</span></div>
+<div id="cc-4-S08-1" class="clip cc" data-start="756.69" data-duration="6.82"><span>Fractal organiza el resto y baja el atraso de ciento ochenta y cinco coma ocho a ciento ochenta y dos coma tres horas,</span></div>
+<div id="cc-4-S08-2" class="clip cc" data-start="763.51" data-duration="5.49"><span>y la ocupación de la planta de sesenta y cinco coma nueve a sesenta y uno coma seis por ciento.</span></div>
+<div id="cc-4-S08-3" class="clip cc" data-start="769" data-duration="3.74"><span>Y las tres órdenes firmadas no se movieron ni un minuto.</span></div>
+<div id="cap-5-menos-cambios" class="clip full card" data-start="772.85" data-duration="3.4"><div class="grid"></div><div class="in"><p class="eyebrow">ESCENARIO 5</p><h1>Menos cambios de referencia</h1><div class="rule"></div></div></div>
+<audio id="sfx-401" src="assets/shared/core/sfx/whoosh-short.mp3" data-start="772.95" data-duration="1.2" data-volume="0.3"></audio>
+<audio id="voz-5-S01" src="assets/audio/segmentos/5-S01.wav" data-start="776.55" data-duration="29.88" data-volume="1"></audio>
+<div id="bar-5-S01" class="clip bar" data-start="776.25" data-duration="30.78"><span class="eb">ESCENARIO 5</span><span class="tt">Los cambios en la programación</span><span class="brand">ARVANTTI LABS</span></div>
+<video id="v-5-S01" class="clip screen" src="assets/clips/5-S01.mp4" muted data-start="776.25" data-duration="11.4"></video>
+<div id="s-5-S01" class="clip screen" data-start="787.65" data-duration="19.38"><img src="assets/grabacion/5-menos-cambios/capturas/01-gantt-cambios.png" alt="" style="height:900px"></div>
+<div id="cc-5-S01-0" class="clip cc" data-start="776.55" data-duration="2.91"><span>Esta es la programación que calculó el cosimulador.</span></div>
+<div id="cc-5-S01-1" class="clip cc" data-start="779.46" data-duration="3.82"><span>Miremos las dos inyectoras del balde, la veintiuno y la veintitrés.</span></div>
+<div id="cc-5-S01-2" class="clip cc" data-start="783.28" data-duration="2.51"><span>Cada raya blanca es un cambio de referencia:</span></div>
+<div id="cc-5-S01-3" class="clip cc" data-start="785.79" data-duration="2.85"><span>la máquina deja de producir para limpiar el color.</span></div>
+<div id="cc-5-S01-4" class="clip cc" data-start="788.64" data-duration="4.62"><span>Pasar de blanco a azul toma treinta minutos, pero de azul a blanco toma una hora,</span></div>
+<div id="cc-5-S01-5" class="clip cc" data-start="793.26" data-duration="2.17"><span>porque hay que sacar todo el pigmento.</span></div>
+<div id="cc-5-S01-6" class="clip cc" data-start="795.43" data-duration="4.85"><span>Si cambia el molde, se suma el montaje, y si cambia la resina, la purga es más larga.</span></div>
+<div id="cc-5-S01-7" class="clip cc" data-start="800.28" data-duration="2.79"><span>Ninguno de esos tiempos está fijo en el programa:</span></div>
+<div id="cc-5-S01-8" class="clip cc" data-start="803.07" data-duration="3.86"><span>salen de los datos de cada molde, cada resina y cada color.</span></div>
+<audio id="voz-5-S02" src="assets/audio/segmentos/5-S02.wav" data-start="807.33" data-duration="9.24" data-volume="1"></audio>
+<div id="bar-5-S02" class="clip bar" data-start="807.03" data-duration="10.14"><span class="eb">ESCENARIO 5</span><span class="tt">La pregunta a Fractal</span><span class="brand">ARVANTTI LABS</span></div>
+<video id="v-5-S02" class="clip screen" src="assets/clips/5-S02.mp4" muted data-start="807.03" data-duration="2.4"></video>
+<div id="s-5-S02" class="clip screen" data-start="809.43" data-duration="7.74"><img src="assets/grabacion/5-menos-cambios/capturas/02-fractal-pregunta.png" alt="" style="height:900px"></div>
+<div id="cc-5-S02-0" class="clip cc" data-start="807.33" data-duration="4.93"><span>El plan vigente tiene treinta cambios y veintidós horas y media de máquina en cambios.</span></div>
+<div id="cc-5-S02-1" class="clip cc" data-start="812.26" data-duration="1.43"><span>Le preguntamos a Fractal:</span></div>
+<div id="cc-5-S02-2" class="clip cc" data-start="813.69" data-duration="3.37"><span>¿cómo hacer menos cambios sin atrasar los pedidos?</span></div>
+<audio id="voz-5-S03" src="assets/audio/segmentos/5-S03.wav" data-start="817.47" data-duration="17.11" data-volume="1"></audio>
+<div id="bar-5-S03" class="clip bar" data-start="817.17" data-duration="18.01"><span class="eb">ESCENARIO 5</span><span class="tt">La recomendación</span><span class="brand">ARVANTTI LABS</span></div>
+<video id="v-5-S03" class="clip screen" src="assets/clips/5-S03.mp4" muted data-start="817.17" data-duration="4.8"></video>
+<div id="s-5-S03" class="clip screen" data-start="821.97" data-duration="13.21"><img src="assets/grabacion/5-menos-cambios/capturas/03-fractal.png" alt="" style="height:900px"></div>
+<div id="cc-5-S03-0" class="clip cc" data-start="817.47" data-duration="3.54"><span>En menos de un segundo compara las opciones. Su recomendación:</span></div>
+<div id="cc-5-S03-1" class="clip cc" data-start="821.01" data-duration="1.82"><span>dedicar un color a cada máquina.</span></div>
+<div id="cc-5-S03-2" class="clip cc" data-start="822.83" data-duration="3.19"><span>La veintiuno se queda en azul y la veintitrés en blanco.</span></div>
+<div id="cc-5-S03-3" class="clip cc" data-start="826.02" data-duration="5.08"><span>Los cambios bajan de treinta a doce, y las horas de cambio, de veintidós y media a nueve.</span></div>
+<div id="cc-5-S03-4" class="clip cc" data-start="831.1" data-duration="2.05"><span>Los pedidos a tiempo son los mismos:</span></div>
+<div id="cc-5-S03-5" class="clip cc" data-start="833.15" data-duration="1.93"><span>no se atrasa ninguno más.</span></div>
+<audio id="voz-5-S04" src="assets/audio/segmentos/5-S04.wav" data-start="835.48" data-duration="9.6" data-volume="1"></audio>
+<div id="bar-5-S04" class="clip bar" data-start="835.18" data-duration="10.5"><span class="eb">ESCENARIO 5</span><span class="tt">El plan adoptado</span><span class="brand">ARVANTTI LABS</span></div>
+<video id="v-5-S04" class="clip screen" src="assets/clips/5-S04.mp4" muted data-start="835.18" data-duration="2.64"></video>
+<div id="s-5-S04" class="clip screen" data-start="837.82" data-duration="7.86"><img src="assets/grabacion/5-menos-cambios/capturas/04-gantt-adoptado.png" alt="" style="height:900px"></div>
+<div id="cc-5-S04-0" class="clip cc" data-start="835.48" data-duration="1.6"><span>Adoptamos la recomendación.</span></div>
+<div id="cc-5-S04-1" class="clip cc" data-start="837.08" data-duration="3.32"><span>Desde ahora, las barras del balde corren casi sin rayas.</span></div>
+<div id="cc-5-S04-2" class="clip cc" data-start="840.4" data-duration="5.18"><span>Son trece horas y media de máquina que vuelven a producción en lugar de purgar.</span></div>
+<audio id="voz-5-S05" src="assets/audio/segmentos/5-S05.wav" data-start="845.98" data-duration="14.12" data-volume="1"></audio>
+<div id="bar-5-S05" class="clip bar" data-start="845.68" data-duration="15.02"><span class="eb">ESCENARIO 5</span><span class="tt">Los insumos</span><span class="brand">ARVANTTI LABS</span></div>
+<div id="s-5-S05" class="clip screen" data-start="845.68" data-duration="15.02"><img src="assets/grabacion/5-menos-cambios/capturas/05-insumos.png" alt="" style="height:953px"></div>
+<div id="cc-5-S05-0" class="clip cc" data-start="845.98" data-duration="0.65"><span>En insumos,</span></div>
+<div id="cc-5-S05-1" class="clip cc" data-start="846.63" data-duration="5.28"><span>la columna de cambios de referencia muestra las horas de cambio por máquina en la semana:</span></div>
+<div id="cc-5-S05-2" class="clip cc" data-start="851.91" data-duration="3.03"><span>con el plan adoptado, esta semana no queda ninguna.</span></div>
+<div id="cc-5-S05-3" class="clip cc" data-start="854.94" data-duration="5.66"><span>Menos purgas también significa menos resina y menos colorante botados en cada limpieza.</span></div>
+<audio id="voz-5-S06" src="assets/audio/segmentos/5-S06.wav" data-start="861" data-duration="19.52" data-volume="1"></audio>
+<div id="bar-5-S06" class="clip bar" data-start="860.7" data-duration="20.42"><span class="eb">ESCENARIO 5</span><span class="tt">El ahorro potencial</span><span class="brand">ARVANTTI LABS</span></div>
+<div id="s-5-S06" class="clip screen" data-start="860.7" data-duration="20.42"><img src="assets/grabacion/5-menos-cambios/capturas/03-fractal.png" alt="" style="height:900px"></div>
+<div id="cc-5-S06-0" class="clip cc" data-start="861" data-duration="1.64"><span>Este es el ahorro más directo.</span></div>
+<div id="cc-5-S06-1" class="clip cc" data-start="862.64" data-duration="4.44"><span>Dedicar un color a cada máquina baja los cambios de referencia de treinta a doce,</span></div>
+<div id="cc-5-S06-2" class="clip cc" data-start="867.08" data-duration="4"><span>un sesenta por ciento menos, y las horas de máquina en purgas y montajes,</span></div>
+<div id="cc-5-S06-3" class="clip cc" data-start="871.08" data-duration="1.59"><span>de veintidós y media a nueve:</span></div>
+<div id="cc-5-S06-4" class="clip cc" data-start="872.67" data-duration="4.55"><span>trece horas y media por semana que vuelven a producción, sin atrasar ningún pedido.</span></div>
+<div id="cc-5-S06-5" class="clip cc" data-start="877.22" data-duration="3.79"><span>Menos purgas también es menos resina y colorante desechados.</span></div>
+<div id="cap-6-versiones" class="clip full card" data-start="881.12" data-duration="3.4"><div class="grid"></div><div class="in"><p class="eyebrow">APS</p><h1>Zoom del Gantt y versiones de la programación</h1><div class="rule"></div></div></div>
+<audio id="sfx-456" src="assets/shared/core/sfx/whoosh-short.mp3" data-start="881.22" data-duration="1.2" data-volume="0.3"></audio>
+<audio id="voz-6-S01" src="assets/audio/segmentos/6-S01.wav" data-start="884.82" data-duration="9.24" data-volume="1"></audio>
+<div id="bar-6-S01" class="clip bar" data-start="884.52" data-duration="10.14"><span class="eb">APS</span><span class="tt">El Gantt de la semana</span><span class="brand">ARVANTTI LABS</span></div>
+<video id="v-6-S01" class="clip screen" src="assets/clips/6-S01.mp4" muted data-start="884.52" data-duration="5.4"></video>
+<div id="s-6-S01" class="clip screen" data-start="889.92" data-duration="4.74"><img src="assets/grabacion/versiones/capturas/01-gantt-10d.png" alt="" style="height:900px"></div>
+<div id="cc-6-S01-0" class="clip cc" data-start="884.82" data-duration="2.52"><span>Antes de cerrar, dos herramientas del APS.</span></div>
+<div id="cc-6-S01-1" class="clip cc" data-start="887.34" data-duration="1.92"><span>La primera es el zoom del Gantt:</span></div>
+<div id="cc-6-S01-2" class="clip cc" data-start="889.26" data-duration="5.3"><span>con los botones más y menos cambia la ventana de tiempo, de tres a treinta días.</span></div>
+<audio id="voz-6-S02" src="assets/audio/segmentos/6-S02.wav" data-start="894.96" data-duration="3.86" data-volume="1"></audio>
+<div id="bar-6-S02" class="clip bar" data-start="894.66" data-duration="4.76"><span class="eb">APS</span><span class="tt">Treinta días</span><span class="brand">ARVANTTI LABS</span></div>
+<div id="s-6-S02" class="clip screen" data-start="894.66" data-duration="4.76"><img src="assets/grabacion/versiones/capturas/02-gantt-30d.png" alt="" style="height:900px"></div>
+<div id="cc-6-S02-0" class="clip cc" data-start="894.96" data-duration="4.36"><span>Alejándose se ve toda la cartera de una vez, con sus fechas de entrega.</span></div>
+<audio id="voz-6-S03" src="assets/audio/segmentos/6-S03.wav" data-start="899.72" data-duration="4.8" data-volume="1"></audio>
+<div id="bar-6-S03" class="clip bar" data-start="899.42" data-duration="5.7"><span class="eb">APS</span><span class="tt">Cinco días</span><span class="brand">ARVANTTI LABS</span></div>
+<video id="v-6-S03" class="clip screen" src="assets/clips/6-S03.mp4" muted data-start="899.42" data-duration="2.2"></video>
+<div id="s-6-S03" class="clip screen" data-start="901.62" data-duration="3.5"><img src="assets/grabacion/versiones/capturas/03-gantt-5d.png" alt="" style="height:900px"></div>
+<div id="cc-6-S03-0" class="clip cc" data-start="899.72" data-duration="5.3"><span>Acercándose se ven los lotes de cada turno y los montajes de molde, orden por orden.</span></div>
+<audio id="voz-6-S04" src="assets/audio/segmentos/6-S04.wav" data-start="905.42" data-duration="10.05" data-volume="1"></audio>
+<div id="bar-6-S04" class="clip bar" data-start="905.12" data-duration="10.95"><span class="eb">APS</span><span class="tt">Guardar lo que calculó el cosimulador</span><span class="brand">ARVANTTI LABS</span></div>
+<video id="v-6-S04" class="clip screen" src="assets/clips/6-S04.mp4" muted data-start="905.12" data-duration="5.84"></video>
+<div id="s-6-S04" class="clip screen" data-start="910.96" data-duration="5.11"><img src="assets/grabacion/versiones/capturas/04-guardar-cosimulador.png" alt="" style="height:900px"></div>
+<div id="cc-6-S04-0" class="clip cc" data-start="905.42" data-duration="1.67"><span>La segunda son las versiones.</span></div>
+<div id="cc-6-S04-1" class="clip cc" data-start="907.09" data-duration="3.06"><span>Cada programación se guarda con un clic y con nombre:</span></div>
+<div id="cc-6-S04-2" class="clip cc" data-start="910.15" data-duration="5.81"><span>lo que calculó el cosimulador, un escenario de Fractal o un ajuste hecho a mano en el Gantt.</span></div>
+<audio id="voz-6-S05" src="assets/audio/segmentos/6-S05.wav" data-start="916.37" data-duration="4.69" data-volume="1"></audio>
+<div id="bar-6-S05" class="clip bar" data-start="916.07" data-duration="5.59"><span class="eb">APS</span><span class="tt">Guardar el escenario de Fractal</span><span class="brand">ARVANTTI LABS</span></div>
+<video id="v-6-S05" class="clip screen" src="assets/clips/6-S05.mp4" muted data-start="916.07" data-duration="2.08"></video>
+<div id="s-6-S05" class="clip screen" data-start="918.15" data-duration="3.51"><img src="assets/grabacion/versiones/capturas/05-guardar-fractal.png" alt="" style="height:900px"></div>
+<div id="cc-6-S05-0" class="clip cc" data-start="916.37" data-duration="5.19"><span>Aquí guardamos también el escenario balanceado de Fractal, para compararlo con calma.</span></div>
+<audio id="voz-6-S06" src="assets/audio/segmentos/6-S06.wav" data-start="921.96" data-duration="16.17" data-volume="1"></audio>
+<div id="bar-6-S06" class="clip bar" data-start="921.66" data-duration="17.07"><span class="eb">APS</span><span class="tt">Comparar con la vigente</span><span class="brand">ARVANTTI LABS</span></div>
+<video id="v-6-S06" class="clip screen" src="assets/clips/6-S06.mp4" muted data-start="921.66" data-duration="6.58"></video>
+<div id="s-6-S06" class="clip screen" data-start="928.24" data-duration="10.49"><img src="assets/grabacion/versiones/capturas/06-versiones-comparar.png" alt="" style="height:900px"></div>
+<div id="cc-6-S06-0" class="clip cc" data-start="921.96" data-duration="3.78"><span>En la pestaña versiones se comparan con la programación vigente:</span></div>
+<div id="cc-6-S06-1" class="clip cc" data-start="925.74" data-duration="4.49"><span>entregas a tiempo, pedidos tarde, atraso, cambios de referencia y ocupación.</span></div>
+<div id="cc-6-S06-2" class="clip cc" data-start="930.23" data-duration="4.31"><span>Cada versión se puede ver en el Gantt y en el gemelo 3D antes de decidir.</span></div>
+<div id="cc-6-S06-3" class="clip cc" data-start="934.54" data-duration="4.1"><span>Adoptarla, es decir, enviarla a la planta, es un paso aparte.</span></div>
+<div id="cap-7-cierre" class="clip full card" data-start="938.73" data-duration="3.4"><div class="grid"></div><div class="in"><p class="eyebrow">CIERRE</p><h1>El ahorro potencial de Fractal</h1><div class="rule"></div></div></div>
+<audio id="sfx-494" src="assets/shared/core/sfx/whoosh-short.mp3" data-start="938.83" data-duration="1.2" data-volume="0.3"></audio>
+<audio id="voz-7-S01" src="assets/audio/segmentos/7-S01.wav" data-start="942.43" data-duration="29.22" data-volume="1"></audio>
+<div id="bar-7-S01" class="clip bar" data-start="942.13" data-duration="30.12"><span class="eb">CIERRE</span><span class="tt">El ahorro potencial de Fractal</span><span class="brand">ARVANTTI LABS</span></div>
+<div id="s-7-S01" class="clip screen ahorro" data-start="942.13" data-duration="30.12"><div class="grid"></div><h2>El ahorro potencial de Fractal</h2><table><thead><tr><th>Escenario</th><th>Antes</th><th>Con el plan optimizado</th><th>Ahorro</th></tr></thead><tbody><tr id="s-7-S01-r0"><th>1 · Calcular (cosimulador y Fractal)</th><td>90,3 % a tiempo, 793 h de máquina</td><td class="new">92,5 % a tiempo, 703 h</td><td class="save">2 pedidos tarde menos, 47 h de atraso menos, 90 h de máquina libres; carga máxima 71 % → 62 %</td></tr><tr id="s-7-S01-r1"><th>2 · Cambio de fecha</th><td>rehacer el plan a mano</td><td class="new">plan en 0,6 s</td><td class="save">ningún pedido más atrasado, ningún molde que cambiar</td></tr><tr id="s-7-S01-r2"><th>3 · Falla</th><td>10 tarde, 295,5 h de atraso</td><td class="new">7 tarde, 182,3 h</td><td class="save">3 pedidos salvados, 113,2 h de atraso menos (90 min de montaje)</td></tr><tr id="s-7-S01-r3"><th>4 · Pedidos fijados</th><td>185,8 h, 65,9 % de ocupación</td><td class="new">182,3 h, 61,6 %</td><td class="save">3,5 h menos y 4,3 puntos de ocupación, con tres órdenes sin mover</td></tr><tr id="s-7-S01-r4"><th>5 · Menos cambios</th><td>30 cambios, 22,5 h</td><td class="new">12 cambios, 9 h</td><td class="save">18 cambios y 13,5 h de máquina por semana (60 %)</td></tr></tbody></table><p class="foot">Cifras de las corridas de la demo. Fractal recomienda; la persona decide.</p></div>
+<div id="cc-7-S01-0" class="clip cc" data-start="942.43" data-duration="3.23"><span>En resumen, esto es lo que ahorra optimizar con Fractal.</span></div>
+<div id="cc-7-S01-1" class="clip cc" data-start="945.66" data-duration="4.74"><span>El cosimulador cumple más entregas y libera noventa horas de máquina en la semana.</span></div>
+<div id="cc-7-S01-2" class="clip cc" data-start="950.4" data-duration="4.62"><span>Ante una falla, Fractal salva tres pedidos y quita ciento trece horas de atraso.</span></div>
+<div id="cc-7-S01-3" class="clip cc" data-start="955.02" data-duration="3.29"><span>Con compromisos firmados, organiza el resto sin moverlos.</span></div>
+<div id="cc-7-S01-4" class="clip cc" data-start="958.31" data-duration="5.31"><span>Y dedicando un color a cada máquina, recupera trece horas y media de producción cada semana.</span></div>
+<div id="cc-7-S01-5" class="clip cc" data-start="963.62" data-duration="3.75"><span>Multiplicadas por lo que cuesta una hora de máquina en la planta,</span></div>
+<div id="cc-7-S01-6" class="clip cc" data-start="967.37" data-duration="4.77"><span>esas horas son el ahorro en dinero. Fractal recomienda; la persona decide.</span></div>
+<div id="outro" class="clip full" data-start="972.25" data-duration="6"><img class="logo" src="assets/shared/arvantti/branding/ArvanttiLabsLogo.png" alt=""><p class="sign">Gemelo digital · Planta de inyección de plásticos</p></div>
+<audio id="sfx-506" src="assets/shared/core/sfx/whoosh.wav" data-start="972.35" data-duration="1.2" data-volume="0.3"></audio>
+<div id="temp" class="clip" data-start="0" data-duration="978.25">TEMP_AUDIO · voz local de prueba</div>
+<div id="progress"></div>
+</div>
+<script>
+window.__timelines = window.__timelines || {};
+const tl = gsap.timeline({ paused: true });
+tl.fromTo("#intro .logo",{opacity:0,scale:1.08},{opacity:1,scale:1,duration:1.2,ease:"power2.out"},0);tl.to("#intro .logo",{opacity:0,duration:.6},4.4);
+tl.fromTo("#cap-0-apertura .eyebrow",{opacity:0,y:30},{opacity:1,y:0,duration:.5,ease:"power3.out"},5.2);tl.fromTo("#cap-0-apertura h1",{opacity:0,y:40},{opacity:1,y:0,duration:.8,ease:"back.out(1.4)"},5.4);tl.fromTo("#cap-0-apertura .rule",{scaleX:0},{scaleX:1,duration:.9,ease:"power2.inOut"},5.6);tl.to("#cap-0-apertura .in",{opacity:0,y:-20,duration:.4},8);
+tl.fromTo("#bar-0-S01 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},8.5);
+tl.fromTo("#s-0-S01 img",{scale:1},{scale:1.07,duration:14.17,ease:"sine.inOut"},8.4);
+tl.fromTo("#s-0-S01",{opacity:0},{opacity:1,duration:.35},8.4);
+tl.fromTo("#bar-0-S02 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},22.67);
+tl.fromTo("#s-0-S02 img",{scale:1.07},{scale:1,duration:17.35,ease:"sine.inOut"},22.57);
+tl.fromTo("#s-0-S02",{opacity:0},{opacity:1,duration:.35},22.57);
+tl.fromTo("#bar-0-S03 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},40.02);
+tl.fromTo("#s-0-S03 img",{scale:1},{scale:1.07,duration:7.45,ease:"sine.inOut"},39.92);
+tl.fromTo("#s-0-S03",{opacity:0},{opacity:1,duration:.35},39.92);
+tl.fromTo("#cap-1-calcular-programacion .eyebrow",{opacity:0,y:30},{opacity:1,y:0,duration:.5,ease:"power3.out"},47.57);tl.fromTo("#cap-1-calcular-programacion h1",{opacity:0,y:40},{opacity:1,y:0,duration:.8,ease:"back.out(1.4)"},47.77);tl.fromTo("#cap-1-calcular-programacion .rule",{scaleX:0},{scaleX:1,duration:.9,ease:"power2.inOut"},47.97);tl.to("#cap-1-calcular-programacion .in",{opacity:0,y:-20,duration:.4},50.37);
+tl.fromTo("#bar-1-S01 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},50.87);
+tl.fromTo("#s-1-S01 img",{scale:1},{scale:1.07,duration:17.95,ease:"sine.inOut"},50.77);
+tl.fromTo("#s-1-S01",{opacity:0},{opacity:1,duration:.35},50.77);
+tl.fromTo("#bar-1-S02 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},68.82);
+tl.fromTo("#s-1-S02 img",{scale:1.07},{scale:1,duration:20.96,ease:"sine.inOut"},71.44);
+tl.fromTo("#bar-1-S03 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},92.5);
+tl.fromTo("#s-1-S03 img",{scale:1},{scale:1.07,duration:6.03,ease:"sine.inOut"},97);
+tl.fromTo("#bar-1-S04 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},103.13);
+tl.fromTo("#s-1-S04 img",{scale:1.07},{scale:1,duration:15.93,ease:"sine.inOut"},107.67);
+tl.fromTo("#bar-1-S05 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},123.7);
+tl.fromTo("#s-1-S05 img",{scale:1},{scale:1.07,duration:43.33,ease:"sine.inOut"},128.6);
+tl.fromTo("#bar-1-S06 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},172.03);
+tl.fromTo("#s-1-S06 img",{scale:1.07},{scale:1,duration:5.61,ease:"sine.inOut"},174.45);
+tl.fromTo("#bar-1-S07 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},180.16);
+tl.fromTo("#s-1-S07 img",{scale:1},{scale:1.07,duration:12.33,ease:"sine.inOut"},182.54);
+tl.fromTo("#bar-1-S08 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},194.97);
+tl.fromTo("#s-1-S08 img",{scale:1.07},{scale:1,duration:11.23,ease:"sine.inOut"},199.47);
+tl.fromTo("#bar-1-S09 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},210.8);
+tl.fromTo("#s-1-S09 img",{scale:1},{scale:1.07,duration:20.89,ease:"sine.inOut"},218.14);
+tl.fromTo("#bar-1-S10 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},239.13);
+tl.fromTo("#s-1-S10 img",{scale:1.07},{scale:1,duration:3.5,ease:"sine.inOut"},240.53);
+tl.fromTo("#bar-1-S11 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},244.13);
+tl.fromTo("#s-1-S11 img",{scale:1},{scale:1.07,duration:7.84,ease:"sine.inOut"},248.59);
+tl.fromTo("#bar-1-S12 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},256.53);
+tl.fromTo("#s-1-S12 img",{scale:1.07},{scale:1,duration:15.64,ease:"sine.inOut"},261.06);
+tl.fromTo("#bar-1-S13 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},276.8);
+tl.fromTo("#s-1-S13 img",{scale:1},{scale:1.07,duration:22.89,ease:"sine.inOut"},276.7);
+tl.fromTo("#s-1-S13",{opacity:0},{opacity:1,duration:.35},276.7);
+tl.fromTo("#cap-2-cambio-fecha-pedido .eyebrow",{opacity:0,y:30},{opacity:1,y:0,duration:.5,ease:"power3.out"},299.79);tl.fromTo("#cap-2-cambio-fecha-pedido h1",{opacity:0,y:40},{opacity:1,y:0,duration:.8,ease:"back.out(1.4)"},299.99);tl.fromTo("#cap-2-cambio-fecha-pedido .rule",{scaleX:0},{scaleX:1,duration:.9,ease:"power2.inOut"},300.19);tl.to("#cap-2-cambio-fecha-pedido .in",{opacity:0,y:-20,duration:.4},302.59);
+tl.fromTo("#bar-2-S01 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},303.09);
+tl.fromTo("#s-2-S01 img",{scale:1},{scale:1.07,duration:9.58,ease:"sine.inOut"},310.22);
+tl.fromTo("#bar-2-S02 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},319.9);
+tl.fromTo("#s-2-S02 img",{scale:1.07},{scale:1,duration:7.59,ease:"sine.inOut"},322.28);
+tl.fromTo("#bar-2-S03 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},329.97);
+tl.fromTo("#s-2-S03 img",{scale:1},{scale:1.07,duration:19.85,ease:"sine.inOut"},334.11);
+tl.fromTo("#bar-2-S04 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},354.06);
+tl.fromTo("#s-2-S04 img",{scale:1.07},{scale:1,duration:7.49,ease:"sine.inOut"},353.96);
+tl.fromTo("#s-2-S04",{opacity:0},{opacity:1,duration:.35},353.96);
+tl.fromTo("#bar-2-S05 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},361.55);
+tl.fromTo("#s-2-S05 img",{scale:1},{scale:1.07,duration:3.76,ease:"sine.inOut"},366.4);
+tl.fromTo("#bar-2-S06 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},370.26);
+tl.fromTo("#s-2-S06 img",{scale:1.07},{scale:1,duration:12.56,ease:"sine.inOut"},374.71);
+tl.fromTo("#bar-2-S07 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},387.37);
+tl.fromTo("#s-2-S07 img",{scale:1},{scale:1.07,duration:3.5,ease:"sine.inOut"},401.01);
+tl.fromTo("#bar-2-S08 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},404.61);
+tl.fromTo("#s-2-S08 img",{scale:1.07},{scale:1,duration:3.51,ease:"sine.inOut"},415.55);
+tl.fromTo("#bar-2-S09 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},419.16);
+tl.fromTo("#s-2-S09 img",{scale:1},{scale:1.07,duration:18.37,ease:"sine.inOut"},419.06);
+tl.fromTo("#s-2-S09",{opacity:0},{opacity:1,duration:.35},419.06);
+tl.fromTo("#cap-3-contingencia-falla .eyebrow",{opacity:0,y:30},{opacity:1,y:0,duration:.5,ease:"power3.out"},437.63);tl.fromTo("#cap-3-contingencia-falla h1",{opacity:0,y:40},{opacity:1,y:0,duration:.8,ease:"back.out(1.4)"},437.83);tl.fromTo("#cap-3-contingencia-falla .rule",{scaleX:0},{scaleX:1,duration:.9,ease:"power2.inOut"},438.03);tl.to("#cap-3-contingencia-falla .in",{opacity:0,y:-20,duration:.4},440.43);
+tl.fromTo("#bar-3-S01 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},440.93);
+tl.fromTo("#s-3-S01 img",{scale:1},{scale:1.07,duration:13.93,ease:"sine.inOut"},440.83);
+tl.fromTo("#s-3-S01",{opacity:0},{opacity:1,duration:.35},440.83);
+tl.fromTo("#bar-3-S02 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},454.86);
+tl.fromTo("#s-3-S02 img",{scale:1.07},{scale:1,duration:10,ease:"sine.inOut"},457.14);
+tl.fromTo("#bar-3-S03 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},467.24);
+tl.fromTo("#s-3-S03 img",{scale:1},{scale:1.07,duration:7.39,ease:"sine.inOut"},469.46);
+tl.fromTo("#bar-3-S04 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},476.95);
+tl.fromTo("#s-3-S04 img",{scale:1.07},{scale:1,duration:5.48,ease:"sine.inOut"},481.25);
+tl.fromTo("#bar-3-S05 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},486.83);
+tl.fromTo("#s-3-S05 img",{scale:1},{scale:1.07,duration:6.49,ease:"sine.inOut"},491.44);
+tl.fromTo("#bar-3-S06 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},498.03);
+tl.fromTo("#s-3-S06 img",{scale:1.07},{scale:1,duration:31.76,ease:"sine.inOut"},503.69);
+tl.fromTo("#bar-3-S07 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},535.55);
+tl.fromTo("#s-3-S07 img",{scale:1},{scale:1.07,duration:13.51,ease:"sine.inOut"},535.45);
+tl.fromTo("#s-3-S07",{opacity:0},{opacity:1,duration:.35},535.45);
+tl.fromTo("#bar-3-S08 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},549.06);
+tl.fromTo("#s-3-S08 img",{scale:1.07},{scale:1,duration:3.52,ease:"sine.inOut"},556.52);
+tl.fromTo("#bar-3-S09 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},560.14);
+tl.fromTo("#s-3-S09 img",{scale:1},{scale:1.07,duration:3.53,ease:"sine.inOut"},563.92);
+tl.fromTo("#bar-3-S10 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},567.55);
+tl.fromTo("#s-3-S10 img",{scale:1.07},{scale:1,duration:4.38,ease:"sine.inOut"},567.45);
+tl.fromTo("#s-3-S10",{opacity:0},{opacity:1,duration:.35},567.45);
+tl.fromTo("#bar-3-S11 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},571.93);
+tl.fromTo("#s-3-S11 img",{scale:1},{scale:1.07,duration:8.75,ease:"sine.inOut"},571.83);
+tl.fromTo("#s-3-S11",{opacity:0},{opacity:1,duration:.35},571.83);
+tl.fromTo("#bar-3-S12 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},580.68);
+tl.fromTo("#s-3-S12 img",{scale:1.07},{scale:1,duration:3.51,ease:"sine.inOut"},586.06);
+tl.fromTo("#bar-3-S13 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},589.67);
+tl.fromTo("#s-3-S13 img",{scale:1},{scale:1.07,duration:14.47,ease:"sine.inOut"},589.57);
+tl.fromTo("#s-3-S13",{opacity:0},{opacity:1,duration:.35},589.57);
+tl.fromTo("#bar-3-S14 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},604.14);
+tl.fromTo("#s-3-S14 img",{scale:1.07},{scale:1,duration:14.38,ease:"sine.inOut"},604.04);
+tl.fromTo("#s-3-S14",{opacity:0},{opacity:1,duration:.35},604.04);
+tl.fromTo("#bar-3-S15 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},618.52);
+tl.fromTo("#s-3-S15 img",{scale:1},{scale:1.07,duration:20.61,ease:"sine.inOut"},618.42);
+tl.fromTo("#s-3-S15",{opacity:0},{opacity:1,duration:.35},618.42);
+tl.fromTo("#cap-4-pedidos-fijados .eyebrow",{opacity:0,y:30},{opacity:1,y:0,duration:.5,ease:"power3.out"},639.23);tl.fromTo("#cap-4-pedidos-fijados h1",{opacity:0,y:40},{opacity:1,y:0,duration:.8,ease:"back.out(1.4)"},639.43);tl.fromTo("#cap-4-pedidos-fijados .rule",{scaleX:0},{scaleX:1,duration:.9,ease:"power2.inOut"},639.63);tl.to("#cap-4-pedidos-fijados .in",{opacity:0,y:-20,duration:.4},642.03);
+tl.fromTo("#bar-4-S01 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},642.53);
+tl.fromTo("#s-4-S01 img",{scale:1},{scale:1.07,duration:7.15,ease:"sine.inOut"},649.45);
+tl.fromTo("#bar-4-S02 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},656.7);
+tl.fromTo("#s-4-S02 img",{scale:1.07},{scale:1,duration:9.29,ease:"sine.inOut"},667.84);
+tl.fromTo("#bar-4-S03 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},677.23);
+tl.fromTo("#s-4-S03 img",{scale:1},{scale:1.07,duration:9.68,ease:"sine.inOut"},679.61);
+tl.fromTo("#bar-4-S04 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},689.39);
+tl.fromTo("#s-4-S04 img",{scale:1.07},{scale:1,duration:23.46,ease:"sine.inOut"},694.27);
+tl.fromTo("#bar-4-S05 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},717.83);
+tl.fromTo("#s-4-S05 img",{scale:1},{scale:1.07,duration:9.09,ease:"sine.inOut"},717.73);
+tl.fromTo("#s-4-S05",{opacity:0},{opacity:1,duration:.35},717.73);
+tl.fromTo("#bar-4-S06 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},726.92);
+tl.fromTo("#s-4-S06 img",{scale:1.07},{scale:1,duration:9.94,ease:"sine.inOut"},731.86);
+tl.fromTo("#bar-4-S07 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},741.9);
+tl.fromTo("#s-4-S07 img",{scale:1},{scale:1.07,duration:8.74,ease:"sine.inOut"},745.8);
+tl.fromTo("#bar-4-S08 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},754.64);
+tl.fromTo("#s-4-S08 img",{scale:1.07},{scale:1,duration:18.31,ease:"sine.inOut"},754.54);
+tl.fromTo("#s-4-S08",{opacity:0},{opacity:1,duration:.35},754.54);
+tl.fromTo("#cap-5-menos-cambios .eyebrow",{opacity:0,y:30},{opacity:1,y:0,duration:.5,ease:"power3.out"},773.05);tl.fromTo("#cap-5-menos-cambios h1",{opacity:0,y:40},{opacity:1,y:0,duration:.8,ease:"back.out(1.4)"},773.25);tl.fromTo("#cap-5-menos-cambios .rule",{scaleX:0},{scaleX:1,duration:.9,ease:"power2.inOut"},773.45);tl.to("#cap-5-menos-cambios .in",{opacity:0,y:-20,duration:.4},775.85);
+tl.fromTo("#bar-5-S01 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},776.35);
+tl.fromTo("#s-5-S01 img",{scale:1},{scale:1.07,duration:19.38,ease:"sine.inOut"},787.65);
+tl.fromTo("#bar-5-S02 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},807.13);
+tl.fromTo("#s-5-S02 img",{scale:1.07},{scale:1,duration:7.74,ease:"sine.inOut"},809.43);
+tl.fromTo("#bar-5-S03 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},817.27);
+tl.fromTo("#s-5-S03 img",{scale:1},{scale:1.07,duration:13.21,ease:"sine.inOut"},821.97);
+tl.fromTo("#bar-5-S04 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},835.28);
+tl.fromTo("#s-5-S04 img",{scale:1.07},{scale:1,duration:7.86,ease:"sine.inOut"},837.82);
+tl.fromTo("#bar-5-S05 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},845.78);
+tl.fromTo("#s-5-S05 img",{y:0},{y:-53,duration:12.52,ease:"sine.inOut"},846.88);
+tl.fromTo("#s-5-S05",{opacity:0},{opacity:1,duration:.35},845.68);
+tl.fromTo("#bar-5-S06 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},860.8);
+tl.fromTo("#s-5-S06 img",{scale:1.07},{scale:1,duration:20.42,ease:"sine.inOut"},860.7);
+tl.fromTo("#s-5-S06",{opacity:0},{opacity:1,duration:.35},860.7);
+tl.fromTo("#cap-6-versiones .eyebrow",{opacity:0,y:30},{opacity:1,y:0,duration:.5,ease:"power3.out"},881.32);tl.fromTo("#cap-6-versiones h1",{opacity:0,y:40},{opacity:1,y:0,duration:.8,ease:"back.out(1.4)"},881.52);tl.fromTo("#cap-6-versiones .rule",{scaleX:0},{scaleX:1,duration:.9,ease:"power2.inOut"},881.72);tl.to("#cap-6-versiones .in",{opacity:0,y:-20,duration:.4},884.12);
+tl.fromTo("#bar-6-S01 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},884.62);
+tl.fromTo("#s-6-S01 img",{scale:1},{scale:1.07,duration:4.74,ease:"sine.inOut"},889.92);
+tl.fromTo("#bar-6-S02 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},894.76);
+tl.fromTo("#s-6-S02 img",{scale:1.07},{scale:1,duration:4.76,ease:"sine.inOut"},894.66);
+tl.fromTo("#s-6-S02",{opacity:0},{opacity:1,duration:.35},894.66);
+tl.fromTo("#bar-6-S03 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},899.52);
+tl.fromTo("#s-6-S03 img",{scale:1},{scale:1.07,duration:3.5,ease:"sine.inOut"},901.62);
+tl.fromTo("#bar-6-S04 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},905.22);
+tl.fromTo("#s-6-S04 img",{scale:1.07},{scale:1,duration:5.11,ease:"sine.inOut"},910.96);
+tl.fromTo("#bar-6-S05 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},916.17);
+tl.fromTo("#s-6-S05 img",{scale:1},{scale:1.07,duration:3.51,ease:"sine.inOut"},918.15);
+tl.fromTo("#bar-6-S06 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},921.76);
+tl.fromTo("#s-6-S06 img",{scale:1.07},{scale:1,duration:10.49,ease:"sine.inOut"},928.24);
+tl.fromTo("#cap-7-cierre .eyebrow",{opacity:0,y:30},{opacity:1,y:0,duration:.5,ease:"power3.out"},938.93);tl.fromTo("#cap-7-cierre h1",{opacity:0,y:40},{opacity:1,y:0,duration:.8,ease:"back.out(1.4)"},939.13);tl.fromTo("#cap-7-cierre .rule",{scaleX:0},{scaleX:1,duration:.9,ease:"power2.inOut"},939.33);tl.to("#cap-7-cierre .in",{opacity:0,y:-20,duration:.4},941.73);
+tl.fromTo("#bar-7-S01 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},942.23);
+tl.fromTo("#s-7-S01 h2",{opacity:0,y:30},{opacity:1,y:0,duration:.6,ease:"power3.out"},942.33);
+tl.fromTo("#s-7-S01-r0",{opacity:0,x:-40},{opacity:1,x:0,duration:.5,ease:"back.out(1.3)"},943.13);
+tl.fromTo("#s-7-S01-r1",{opacity:0,x:-40},{opacity:1,x:0,duration:.5,ease:"back.out(1.3)"},947.95);
+tl.fromTo("#s-7-S01-r2",{opacity:0,x:-40},{opacity:1,x:0,duration:.5,ease:"back.out(1.3)"},952.78);
+tl.fromTo("#s-7-S01-r3",{opacity:0,x:-40},{opacity:1,x:0,duration:.5,ease:"back.out(1.3)"},957.6);
+tl.fromTo("#s-7-S01-r4",{opacity:0,x:-40},{opacity:1,x:0,duration:.5,ease:"back.out(1.3)"},962.43);
+tl.fromTo("#s-7-S01 .foot",{opacity:0},{opacity:1,duration:.6},967.25);
+tl.fromTo("#outro .logo",{opacity:0,scale:.96},{opacity:1,scale:1,duration:1.2,ease:"power2.out"},972.45);tl.fromTo("#outro .sign",{opacity:0,y:20},{opacity:1,y:0,duration:.8},973.45);
+tl.fromTo("#progress",{scaleX:0},{scaleX:1,duration:978.25,ease:"none"},0);
+window.__timelines["main"] = tl;
+tl.seek(0);
+</script>
+</body>
+</html>

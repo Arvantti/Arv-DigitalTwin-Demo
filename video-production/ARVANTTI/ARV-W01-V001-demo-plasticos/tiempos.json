@@ -1,0 +1,14 @@
+{
+  "total_s": 978.25,
+  "audio": "TEMP_AUDIO",
+  "capitulos": [
+    "0-apertura: 42.37 s",
+    "1-calcular-programacion: 252.22 s",
+    "2-cambio-fecha-pedido: 137.84 s",
+    "3-contingencia-falla: 201.6 s",
+    "4-pedidos-fijados: 133.82 s",
+    "5-menos-cambios: 108.27 s",
+    "6-versiones: 57.61 s",
+    "7-cierre: 33.52 s"
+  ]
+}
