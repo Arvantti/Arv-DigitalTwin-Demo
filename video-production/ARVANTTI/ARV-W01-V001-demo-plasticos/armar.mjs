@@ -46,13 +46,13 @@ const CAPITULOS = [
 
 // Módulos de Arvantti Digital Twin (tarjeta "modulos"): el gemelo en el centro y siete módulos alrededor.
 const MODULOS = [
-  ["dendro", "Dendro", "hardware propio para leer las máquinas"],
-  ["control", "Centro de control", "señales de toda la planta en vivo"],
   ["integrador", "Integrador", "ERP, CRM y SCADA"],
+  ["aps", "APS", "programa pedidos y recursos"],
   ["cosimulacion", "Cosimulación", "se entrena con las reglas de la empresa"],
   ["fractal", "Fractal", "escenarios con varios objetivos"],
+  ["control", "Centro de control", "señales de toda la planta en vivo"],
+  ["dendro", "DendroScada", "hardware propio para leer las máquinas"],
   ["ia", "Asistente de IA", "privado, en lenguaje natural"],
-  ["aps", "APS", "programa pedidos y recursos"],
 ];
 // De dónde sale la programación (tarjeta "fuentes").
 const FUENTES = [
@@ -357,7 +357,7 @@ function componer() {
   const avisos = [];
   const sfx = (at, file, vol = 0.35) => el.push(`<audio id="sfx-${el.length}" src="assets/shared/core/sfx/${file}" data-start="${r2(at)}" data-duration="1.2" data-volume="${vol}"></audio>`);
   const cam = (sel, a, b, at, d = 0.7, ease = "power2.inOut") =>
-    anim.push(`tl.fromTo("${sel}",{x:${a.x},y:${a.y},scale:${a.z}},{x:${b.x},y:${b.y},scale:${b.z},duration:${r2(d)},ease:"${ease}"},${r2(at)});`);
+    anim.push(`tl.fromTo("${sel}",{x:${a.x},y:${a.y},scale:${a.z}},{x:${b.x},y:${b.y},scale:${b.z},duration:${r2(d)},ease:"${ease}",immediateRender:false},${r2(at)});`);
   const UNO = { x: 0, y: 0, z: 1 };
 
   // Intro con el logo.
@@ -424,9 +424,18 @@ function componer() {
           const src = join(GRAB, folder, "video/recorrido.webm");
           sh("ffmpeg", ["-y", "-v", "error", "-ss", String(r2(ini)), "-i", src, "-t", String(lead), "-an", "-vf", `fps=${FPS},scale=${W}:${H}:flags=lanczos`, "-c:v", "libx264", "-preset", "veryfast", "-crf", "18", "-pix_fmt", "yuv420p", clip]);
           lead = r2(Math.min(lead, dur(clip)));
+          // La grabación puede adelantar unas décimas la página siguiente (pantalla en blanco al navegar): se corta
+          // el clip antes del primer cuadro claro del final.
+          const blanco = primerBlanco(clip);
+          if (blanco !== null && blanco < lead) lead = r2(Math.max(0, blanco - 0.08));
+          if (lead < 1.2) lead = 0;
+        }
+        if (lead >= 1.2) {
+          const clip = join(CLIPS, `${s.id}.mp4`);
           const vid = `v-${s.id}`;
           el.push(`<div id="vb-${s.id}" class="clip screen" data-start="${r2(s0)}" data-duration="${lead}"><video id="${vid}" class="clip vcam" src="${relative(HERE, clip)}" muted data-start="${r2(s0)}" data-duration="${lead}"></video></div>`);
           const kx = SW / W;
+          anim.push(`tl.set("#${vid}",{x:0,y:0,scale:1},${r2(s0)});`);
           const clics = ms.filter((m) => m.tipo === "clic" && m.t > ini && m.t < fin);
           let estado = UNO, libre = s0;
           for (const [n, m] of clics.entries()) {
@@ -474,6 +483,7 @@ function componer() {
         const alto = (ih / iw) * SW;
         el.push(`<div id="${sid}" class="clip screen" data-start="${still0}" data-duration="${stillD}"><div class="cam" id="cam-${s.id}"><img src="${relative(HERE, img)}" alt="" style="height:${Math.round(alto)}px"></div></div>`);
         if (!lead) anim.push(`tl.fromTo("#${sid}",{opacity:0},{opacity:1,duration:.35},${r2(s0)});`);
+        anim.push(`tl.set("#cam-${s.id}",{x:0,y:0,scale:1},${still0});`);
         if (alto > SH + 40) {
           // Captura de página completa: se recorre de arriba abajo.
           anim.push(`tl.fromTo("#${sid} img",{y:0},{y:${-Math.round(alto - SH)},duration:${r2(Math.max(1, stillD - 2.5))},ease:"sine.inOut"},${r2(still0 + 1.2)});`);
@@ -668,6 +678,14 @@ tl.seek(0);
   writeFileSync(join(HERE, "tiempos.json"), `${JSON.stringify({ total_s: TOTAL, audio: estadoAudio, musica: mus ? "ElevenLabs Music" : "sin música", capitulos: resumen }, null, 2)}\n`);
   for (const a of avisos) console.warn(`aviso: ${a}`);
   console.log(`index.html: ${TOTAL} s (${(TOTAL / 60).toFixed(1)} min), audio ${estadoAudio}, ${mus ? "con" : "sin"} música\n${resumen.join("\n")}`);
+}
+
+/** Segundo del primer cuadro casi blanco (página cargando) en el clip, o null. */
+function primerBlanco(clip) {
+  const r = spawnSync("ffmpeg", ["-hide_banner", "-i", clip, "-vf", "signalstats,metadata=print:key=lavfi.signalstats.YAVG", "-f", "null", "-"], { encoding: "utf8" });
+  const ys = [...(r.stderr || "").matchAll(/pts_time:([\d.]+)[\s\S]*?YAVG=([\d.]+)/g)].map((m) => [Number(m[1]), Number(m[2])]);
+  const hit = ys.find(([, y]) => y > 150);
+  return hit ? hit[0] : null;
 }
 
 /** Textos de una captura tomada en otro escenario (p. ej. la apertura usa capturas de los escenarios). */

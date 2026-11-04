@@ -6,7 +6,7 @@ duracion_aprox: 4 min
 cifras:
   - ["90,3 % → 92,5 %", "pedidos a tiempo: manual contra cosimulador"]
   - ["69,2 % → 60,7 %", "ocupación de planta en la semana, con la misma producción"]
-  - ["27,5 t", "de resina para la semana, calculadas del plan"]
+  - ["28,5 t", "de resina para la semana, calculadas del plan"]
 ahorro:
   - ["Pedidos a tiempo", "90,3 %", "92,5 %", "2 pedidos tarde menos"]
   - ["Atraso total", "229,4 h", "182,3 h", "47,1 h menos"]
@@ -170,13 +170,13 @@ Mensaje central: a partir de los pedidos y sus fechas de entrega, el cosimulador
 - imagen: capturas/10-insumos.png
 - duración: 24 s
 - en pantalla: los indicadores de arriba y la tabla de materia prima
-- foco: veintisiete toneladas => 28.539 kg + resina · semana => Resina de la semana
-- foco: quinientos veinticuatro kilos => 544 kg + masterbatch · semana => Masterbatch
-- foco: setecientas treinta y tres horas => 752 h + máquina · 13 recursos => Horas de máquina
-- foco: noventa y dos turnos => 94 + turnos-máquina de 8 h => Turnos-máquina
-- foco: doscientas cincuenta y cinco horas => 259 h + operario · 32 turnos-persona => Horas de operario
+- foco: veintiocho toneladas => 28.539 kg + resina · semana => 28,5 t de resina
+- foco: quinientos cuarenta y cuatro kilos => 544 kg + masterbatch · semana => 544 kg de masterbatch
+- foco: setecientas cincuenta y dos horas => 752 h + máquina · 13 recursos => 752 h de máquina
+- foco: noventa y cuatro turnos => 94 + turnos-máquina de 8 h => 94 turnos-máquina
+- foco: doscientas cincuenta y nueve horas => 259 h + operario · 32 turnos-persona => 259 h de operario
 
-> Por último, la vista de insumos traduce el plan en lo que hay que tener: veintisiete toneladas y media de resina y quinientos veinticuatro kilos de masterbatch en la semana, setecientas treinta y tres horas de máquina, noventa y dos turnos-máquina y doscientas cincuenta y cinco horas de operario. Compras, almacén y producción trabajan con el mismo número.
+> Por último, la vista de insumos traduce el plan en lo que hay que tener: veintiocho toneladas y media de resina y quinientos cuarenta y cuatro kilos de masterbatch en la semana, setecientas cincuenta y dos horas de máquina, noventa y cuatro turnos-máquina y doscientas cincuenta y nueve horas de operario. Compras, almacén y producción trabajan con el mismo número.
 
 ### S13 · El ahorro potencial
 - imagen: capturas/07-fractal-balancear.png

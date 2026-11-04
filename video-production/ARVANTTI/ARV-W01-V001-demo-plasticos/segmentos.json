@@ -21,9 +21,9 @@
     ],
     [
       "4 · Pedidos fijados",
-      "185,8 h, 65,9 % de ocupación",
-      "182,3 h, 61,6 %",
-      "3,5 h menos y 4,3 puntos de ocupación, con tres órdenes sin mover"
+      "185,8 h, 66,1 % de ocupación",
+      "182,3 h, 60,4 %",
+      "3,5 h menos y 5,7 puntos de ocupación, con tres órdenes sin mover"
     ],
     [
       "5 · Menos cambios",
@@ -98,7 +98,7 @@
         {
           "id": "0-S05",
           "titulo": "Arvantti Digital Twin y sus módulos",
-          "texto": "Todo esto corre sobre Arvantti Digital Twin. El gemelo digital va en el centro y a su alrededor se suman siete módulos. Dendro, el hardware propio para leer las máquinas. El centro de control, con las señales de toda la planta en vivo. El integrador, que conecta el ERP, el CRM o el SCADA. La cosimulación, que se entrena con las reglas de cada empresa. Fractal, que compara escenarios con varios objetivos a la vez y cambios en la planta. El asistente de IA, privado y en lenguaje natural. Y el APS, que programa pedidos y recursos. Empecemos por el primer escenario.",
+          "texto": "Todo esto corre sobre Arvantti Digital Twin. El gemelo digital va en el centro y a su alrededor se suman siete módulos. El integrador, que conecta el ERP, el CRM o el SCADA. El APS, que programa pedidos y recursos. La cosimulación, que se entrena con las reglas de cada empresa. Fractal, que compara escenarios con varios objetivos a la vez y cambios en la planta. El centro de control, con las señales de toda la planta en vivo. DendroScada, el hardware propio para leer las máquinas. Y el asistente de IA, privado y en lenguaje natural. Empecemos por el primer escenario.",
           "enPantalla": null,
           "tarjeta": "modulos",
           "focos": [
@@ -107,16 +107,12 @@
               "objetivo": "centro"
             },
             {
-              "frase": "Dendro",
-              "objetivo": "dendro"
-            },
-            {
-              "frase": "El centro de control",
-              "objetivo": "control"
-            },
-            {
               "frase": "El integrador",
               "objetivo": "integrador"
+            },
+            {
+              "frase": "El APS",
+              "objetivo": "aps"
             },
             {
               "frase": "La cosimulación",
@@ -127,12 +123,16 @@
               "objetivo": "fractal"
             },
             {
-              "frase": "El asistente de IA",
-              "objetivo": "ia"
+              "frase": "El centro de control",
+              "objetivo": "control"
             },
             {
-              "frase": "Y el APS",
-              "objetivo": "aps"
+              "frase": "DendroScada",
+              "objetivo": "dendro"
+            },
+            {
+              "frase": "Y el asistente de IA",
+              "objetivo": "ia"
             }
           ]
         }
@@ -518,34 +518,34 @@
         {
           "id": "1-S12",
           "titulo": "Los insumos del plan",
-          "texto": "Por último, la vista de insumos traduce el plan en lo que hay que tener: veintisiete toneladas y media de resina y quinientos veinticuatro kilos de masterbatch en la semana, setecientas treinta y tres horas de máquina, noventa y dos turnos-máquina y doscientas cincuenta y cinco horas de operario. Compras, almacén y producción trabajan con el mismo número.",
+          "texto": "Por último, la vista de insumos traduce el plan en lo que hay que tener: veintiocho toneladas y media de resina y quinientos cuarenta y cuatro kilos de masterbatch en la semana, setecientas cincuenta y dos horas de máquina, noventa y cuatro turnos-máquina y doscientas cincuenta y nueve horas de operario. Compras, almacén y producción trabajan con el mismo número.",
           "imagen": "1-calcular-programacion/capturas/10-insumos.png",
           "enPantalla": "los indicadores de arriba y la tabla de materia prima",
           "focos": [
             {
-              "frase": "veintisiete toneladas",
+              "frase": "veintiocho toneladas",
               "objetivo": "28.539 kg + resina · semana",
-              "rotulo": "Resina de la semana"
+              "rotulo": "28,5 t de resina"
             },
             {
-              "frase": "quinientos veinticuatro kilos",
+              "frase": "quinientos cuarenta y cuatro kilos",
               "objetivo": "544 kg + masterbatch · semana",
-              "rotulo": "Masterbatch"
+              "rotulo": "544 kg de masterbatch"
             },
             {
-              "frase": "setecientas treinta y tres horas",
+              "frase": "setecientas cincuenta y dos horas",
               "objetivo": "752 h + máquina · 13 recursos",
-              "rotulo": "Horas de máquina"
+              "rotulo": "752 h de máquina"
             },
             {
-              "frase": "noventa y dos turnos",
+              "frase": "noventa y cuatro turnos",
               "objetivo": "94 + turnos-máquina de 8 h",
-              "rotulo": "Turnos-máquina"
+              "rotulo": "94 turnos-máquina"
             },
             {
-              "frase": "doscientas cincuenta y cinco horas",
+              "frase": "doscientas cincuenta y nueve horas",
               "objetivo": "259 h + operario · 32 turnos-persona",
-              "rotulo": "Horas de operario"
+              "rotulo": "259 h de operario"
             }
           ]
         },
@@ -1076,7 +1076,7 @@
         {
           "id": "4-S04",
           "titulo": "Fractal reorganiza el resto",
-          "texto": "En menos de un segundo Fractal prueba dos combinaciones. La primera solo reorganiza el resto con el cosimulador: el atraso baja de ciento ochenta y cinco coma ocho a ciento ochenta y dos coma tres horas. La segunda, además, monta el molde de repuesto del balde en la inyectora veinte, con noventa minutos de montaje, y deja la ocupación de la planta en sesenta y uno coma seis por ciento. En las dos, las tres órdenes fijadas quedan exactamente en la misma máquina y a la misma hora.",
+          "texto": "En menos de un segundo Fractal prueba dos combinaciones. La primera solo reorganiza el resto con el cosimulador: el atraso baja de ciento ochenta y cinco coma ocho a ciento ochenta y dos coma tres horas. La segunda, además, monta el molde de repuesto del balde en la inyectora veinte, con noventa minutos de montaje, y deja la ocupación de la planta en sesenta coma cuatro por ciento. En las dos, las tres órdenes fijadas quedan exactamente en la misma máquina y a la misma hora.",
           "imagen": "4-pedidos-fijados/capturas/04-fractal.png",
           "enPantalla": "las filas A y B de la tabla; resaltar la fila B \"MEJOR\" y la columna de atraso",
           "focos": [
@@ -1096,9 +1096,9 @@
               "rotulo": "Molde de repuesto en IMM-20"
             },
             {
-              "frase": "sesenta y uno coma seis",
+              "frase": "sesenta coma cuatro",
               "objetivo": "Ocupación planta + 60,4 %",
-              "rotulo": "Ocupación de la planta"
+              "rotulo": "Ocupación 66,1 % → 60,4 %"
             }
           ]
         },
@@ -1140,7 +1140,7 @@
         {
           "id": "4-S08",
           "titulo": "El ahorro potencial",
-          "texto": "Con tres órdenes fijadas a mano, Fractal organiza el resto y baja el atraso de ciento ochenta y cinco coma ocho a ciento ochenta y dos coma tres horas, y la ocupación de la planta de sesenta y cinco coma nueve a sesenta y uno coma seis por ciento. Y las tres órdenes firmadas no se movieron ni un minuto.",
+          "texto": "Con tres órdenes fijadas a mano, Fractal organiza el resto y baja el atraso de ciento ochenta y cinco coma ocho a ciento ochenta y dos coma tres horas, y la ocupación de la planta de sesenta y seis coma uno a sesenta coma cuatro por ciento. Y las tres órdenes firmadas no se movieron ni un minuto.",
           "imagen": "4-pedidos-fijados/capturas/04-fractal.png",
           "enPantalla": "la fila ACTUAL contra la fila B MEJOR: atraso y ocupación",
           "focos": [
@@ -1150,9 +1150,9 @@
               "rotulo": "185,8 h → 182,3 h"
             },
             {
-              "frase": "sesenta y cinco coma nueve",
+              "frase": "sesenta y seis coma uno",
               "objetivo": "Ocupación planta + 60,4 %",
-              "rotulo": "Ocupación de la planta"
+              "rotulo": "Ocupación 66,1 % → 60,4 %"
             }
           ]
         }

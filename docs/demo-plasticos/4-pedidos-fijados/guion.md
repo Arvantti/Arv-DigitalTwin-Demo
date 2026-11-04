@@ -51,9 +51,9 @@ Mensaje central: el planificador tiene pedidos que se entregan sí o sí en su f
 - foco: prueba dos combinaciones => combinaciones en => 2 combinaciones
 - foco: de ciento ochenta y cinco coma ocho => Atraso total + 182,3 h => 185,8 h → 182,3 h
 - foco: monta el molde de repuesto => Montaje de moldes => Molde de repuesto en IMM-20
-- foco: sesenta y uno coma seis => Ocupación planta + 60,4 % => Ocupación de la planta
+- foco: sesenta coma cuatro => Ocupación planta + 60,4 % => Ocupación 66,1 % → 60,4 %
 
-> En menos de un segundo Fractal prueba dos combinaciones. La primera solo reorganiza el resto con el cosimulador: el atraso baja de ciento ochenta y cinco coma ocho a ciento ochenta y dos coma tres horas. La segunda, además, monta el molde de repuesto del balde en la inyectora veinte, con noventa minutos de montaje, y deja la ocupación de la planta en sesenta y uno coma seis por ciento. En las dos, las tres órdenes fijadas quedan exactamente en la misma máquina y a la misma hora.
+> En menos de un segundo Fractal prueba dos combinaciones. La primera solo reorganiza el resto con el cosimulador: el atraso baja de ciento ochenta y cinco coma ocho a ciento ochenta y dos coma tres horas. La segunda, además, monta el molde de repuesto del balde en la inyectora veinte, con noventa minutos de montaje, y deja la ocupación de la planta en sesenta coma cuatro por ciento. En las dos, las tres órdenes fijadas quedan exactamente en la misma máquina y a la misma hora.
 
 ### S05 · Comparar antes de decidir
 - imagen: capturas/04b-fractal-full.png
@@ -83,6 +83,6 @@ Mensaje central: el planificador tiene pedidos que se entregan sí o sí en su f
 - duración: 22 s
 - en pantalla: la fila ACTUAL contra la fila B MEJOR: atraso y ocupación
 - foco: de ciento ochenta y cinco coma ocho => Atraso total + 182,3 h => 185,8 h → 182,3 h
-- foco: sesenta y cinco coma nueve => Ocupación planta + 60,4 % => Ocupación de la planta
+- foco: sesenta y seis coma uno => Ocupación planta + 60,4 % => Ocupación 66,1 % → 60,4 %
 
-> Con tres órdenes fijadas a mano, Fractal organiza el resto y baja el atraso de ciento ochenta y cinco coma ocho a ciento ochenta y dos coma tres horas, y la ocupación de la planta de sesenta y cinco coma nueve a sesenta y uno coma seis por ciento. Y las tres órdenes firmadas no se movieron ni un minuto.
+> Con tres órdenes fijadas a mano, Fractal organiza el resto y baja el atraso de ciento ochenta y cinco coma ocho a ciento ochenta y dos coma tres horas, y la ocupación de la planta de sesenta y seis coma uno a sesenta coma cuatro por ciento. Y las tres órdenes firmadas no se movieron ni un minuto.
