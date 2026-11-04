@@ -8,6 +8,9 @@
     "gallery": "pnpm --filter @twin/gallery dev",
     "gallery:build": "pnpm --filter @twin/gallery build",
     "typecheck": "pnpm -r typecheck",
-    "test": "pnpm -r test"
+    "test": "pnpm -r test",
+    "video:configure": "node video-production/video-pipeline.mjs",
+    "video:voice": "node video-production/voiceover.mjs",
+    "video:voice:test": "node --test video-production/voiceover.test.mjs"
   }
 }
