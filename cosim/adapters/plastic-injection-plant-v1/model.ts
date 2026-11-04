@@ -59,6 +59,7 @@ export interface ApsYaml {
 export interface CatalogProductYaml {
   id: string;
   name: string;
+  family?: string;
   kind: "finished" | "semi";
   unit?: string;
   colors?: string[];
@@ -107,6 +108,8 @@ export interface Step {
 export interface ProductInfo {
   id: string;
   name: string;
+  /** Grupo de producto del catálogo (familia). */
+  family?: string;
   unit: string;
   kind: "finished" | "semi";
   colors: string[];
@@ -238,6 +241,7 @@ export function buildModel(cat: CatalogData): PlasticsModel {
     products[p.id] = {
       id: p.id,
       name: p.name,
+      family: p.family,
       unit: p.unit ?? "u",
       kind: p.kind,
       colors: p.colors ?? [],

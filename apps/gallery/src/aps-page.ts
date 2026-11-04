@@ -61,6 +61,10 @@ let current = vigente();
 const TABS = ["orders", "gantt", "versions", "insumos", "fractal"];
 let tab = TABS.find((x) => x === new URLSearchParams(location.search).get("tab")) ?? "orders";
 let selected: string | null = null;
+/** Órdenes que la persona desmarcó en el Gantt (no se dibujan arriba y sus lotes se atenúan abajo). Vacío = todas. */
+const gHidden = new Set<string>();
+let gFilterOpen = false;
+let gFilterScroll = 0;
 /** Recursos del Gantt: por máquina o por molde (cada copia del molde es una fila). */
 let resView: "maquina" | "molde" = "maquina";
 /** Orden que se acaba de mover: parpadea en el Gantt hasta que la persona le da clic. */
@@ -633,7 +637,9 @@ document.addEventListener("click", () => {
 // ------------------------------------------------------------------ Gantt
 function renderGantt(p: ProductionPlan): void {
   const el = $("tab-gantt");
-  const keep = el.querySelector(".g-scroll")?.scrollTop ?? null;
+  const keep = el.querySelector(".g-ord-scroll")?.scrollTop ?? null;
+  const keepRes = el.querySelector(".g-res-scroll")?.scrollTop ?? null;
+  gFilterScroll = el.querySelector("#g-flist")?.scrollTop ?? gFilterScroll;
   const days = zoomDays;
   const from = viewFrom;
   const to = from + days * DAY_MS;
@@ -678,9 +684,10 @@ function renderGantt(p: ProductionPlan): void {
   const pins = new Set(Object.entries(edit?.queues ?? {}).flatMap(([m, q]) => q.filter((c) => c.notBefore).map((c) => `${m}|${c.job}`)));
 
   // Arriba: una fila por pedido con actividad en la ventana.
-  const orders = p.orders
+  const inWindow = p.orders
     .filter((o) => inView(ms(o.start), Math.max(ms(o.completion), ms(o.due))))
     .sort((a, b) => (a.start < b.start ? -1 : a.start > b.start ? 1 : a.id.localeCompare(b.id)));
+  const orders = inWindow.filter((o) => !gHidden.has(o.id));
   const orderRows = orders
     .map((o) => {
       const a = ms(o.start);
@@ -692,7 +699,7 @@ function renderGantt(p: ProductionPlan): void {
       const isFixed = fixed.has(o.id);
       const movable = !isFixed && movableOrders.has(o.id);
       return `<div class="g-row${o.id === selected ? " sel" : ""}${isFixed ? " fixed" : ""}" data-order="${esc(o.id)}" title="Clic: ver sus máquinas y lotes abajo">
-        <div class="g-label"><b>${isFixed || movableOrders.has(o.id) ? `<button class="g-lock${isFixed ? " on" : ""}" data-lock="${esc(o.id)}" title="${isFixed ? "Fijada: no se mueve al replanear. Clic para soltarla" : "Fijar esta orden donde está: CALCULAR organiza el resto sin moverla"}">${isFixed ? "🔒" : "🔓"}</button>` : '<span class="g-lock-gap"></span>'}${esc(o.id)}</b><small>${esc(o.product_name)} · ${nf(o.quantity)} ${esc(o.unit)} · ${esc(o.customer)}</small>${res ? `<small class="g-uses">▸ ${esc(res)}</small>` : ""}</div>
+        <div class="g-label"><b><input type="checkbox" class="g-chk" data-chk="${esc(o.id)}" checked title="Quitar esta orden de la vista" aria-label="Mostrar ${esc(o.id)}" />${isFixed || movableOrders.has(o.id) ? `<button class="g-lock${isFixed ? " on" : ""}" data-lock="${esc(o.id)}" title="${isFixed ? "Fijada: no se mueve al replanear. Clic para soltarla" : "Fijar esta orden donde está: CALCULAR organiza el resto sin moverla"}">${isFixed ? "🔒" : "🔓"}</button>` : '<span class="g-lock-gap"></span>'}${esc(o.id)}</b><small>${esc(o.product_name)} · ${nf(o.quantity)} ${esc(o.unit)} · ${esc(o.customer)}</small>${res ? `<small class="g-uses">▸ ${esc(res)}</small>` : ""}</div>
         <div class="g-track">
           <div class="g-bar${late ? " late" : ""}${b <= t ? " done" : ""}${movable ? " drag" : ""}${isFixed ? " fixed" : ""}${flashOrder === o.id ? " flash" : ""}" data-move-order="${esc(o.id)}" style="${span(a, b)};--c:${color}" title="${esc(o.id)}: ${when(o.start)} → ${when(o.completion)}${late ? ` · ${nf(o.late_h, 1)} h tarde` : ""}${isFixed ? " · FIJADA" : movable ? " · arrástrala para moverla en el tiempo" : ""}">
             <span>${when(o.start)} → ${when(o.completion)}</span></div>
@@ -770,8 +777,44 @@ function renderGantt(p: ProductionPlan): void {
   const legend = Object.entries(PRODUCT_COLORS)
     .map(([id, c]) => `<span><i style="background:${c}"></i>${esc(productName(id))}</span>`)
     .join("");
+  // Filtro de órdenes: por cliente, por grupo de producto o una por una (todas / ninguna / algunas).
+  const groupBox = (kind: string, key: string, label: string, ids: string[]) => {
+    const on = ids.filter((id) => !gHidden.has(id)).length;
+    return `<label class="g-fopt"><input type="checkbox" data-fgrp="${kind}" data-fval="${esc(key)}"${on === ids.length ? " checked" : ""}${on > 0 && on < ids.length ? ' data-partial="1"' : ""} /><span>${esc(label)}</span><small>${on}/${ids.length}</small></label>`;
+  };
+  const groupsBy = (keyOf: (o: CustomerOrder) => string, labelOf: (k: string) => string) => {
+    const m = new Map<string, string[]>();
+    for (const o of inWindow) (m.get(keyOf(o)) ?? m.set(keyOf(o), []).get(keyOf(o))!).push(o.id);
+    return [...m].sort((a, b) => labelOf(a[0]).localeCompare(labelOf(b[0]), "es")).map(([k, ids]) => ({ k, ids }));
+  };
+  const orderById = new Map(p.orders.map((o) => [o.id, o]));
+  const byCustomer = groupsBy((o) => o.customer, (k) => k)
+    .map((g) => groupBox("cliente", g.k, g.k, g.ids))
+    .join("");
+  const byFamily = groupsBy((o) => model.products[o.product]?.family ?? "otros", (k) => k)
+    .map((g) => groupBox("grupo", g.k, g.k, g.ids))
+    .join("");
+  const byProduct = groupsBy((o) => o.product, (k) => productName(k))
+    .map((g) => groupBox("producto", g.k, productName(g.k), g.ids))
+    .join("");
+  const byOrder = inWindow
+    .map((o) => `<label class="g-fopt"><input type="checkbox" data-ford="${esc(o.id)}"${gHidden.has(o.id) ? "" : " checked"} /><span>${esc(o.id)}</span><small>${esc(orderById.get(o.id)?.customer ?? "")}</small></label>`)
+    .join("");
+  const filterPanel = `<details class="g-filter" id="g-filter"${gFilterOpen ? " open" : ""}>
+      <summary title="Elige qué órdenes ver: por cliente, grupo de producto o una por una">⧩ FILTRAR ÓRDENES · ${inWindow.length - orders.length ? `${orders.length} de ${inWindow.length}` : `todas (${inWindow.length})`}</summary>
+      <div class="g-fpanel">
+        <div class="g-fbtns"><button id="g-f-all" type="button">TODAS</button><button id="g-f-none" type="button">NINGUNA</button></div>
+        <div class="g-fcols">
+          <div><h4>Cliente</h4>${byCustomer}</div>
+          <div><h4>Grupo de producto</h4>${byFamily}<h4>Producto</h4>${byProduct}</div>
+          <div><h4>Orden</h4><div class="g-flist" id="g-flist">${byOrder}</div></div>
+        </div>
+      </div>
+    </details>`;
+
   el.innerHTML = `
     <div class="g-toolbar">
+      ${filterPanel}
       <button id="g-prev" title="Un día atrás">◀</button><button id="g-today">HOY</button><button id="g-next" title="Un día adelante">▶</button>
       <span class="g-zoom"><button id="g-zoom-out" title="Alejar: ver más días"${zoomDays >= ZOOMS[ZOOMS.length - 1] ? " disabled" : ""}>−</button><button id="g-zoom-reset" title="Restablecer el zoom">${zoomDays} d</button><button id="g-zoom-in" title="Acercar: ver menos días"${zoomDays <= ZOOMS[0] ? " disabled" : ""}>+</button></span>
       <span class="dim small">${day(isoOf(from))} a ${day(isoOf(to - DAY_MS))} · mostrando ${p === current ? "la VIGENTE" : "el ESCENARIO"} ${esc(p.plan_id)} · ${orders.length} órdenes</span>
@@ -789,16 +832,25 @@ function renderGantt(p: ProductionPlan): void {
     </div>
     <div class="g-wrap">
       <div class="g-section-title">ÓRDENES DE PRODUCCIÓN</div>
-      <div class="g-head"><div class="g-label"></div><div class="g-track">${head}</div></div>
-      <div class="g-scroll"><div class="g-body g-orders"><div class="g-gridlayer"><div class="g-label"></div><div class="g-track">${grid}${nowLine}</div></div>${orderRows || '<p class="dim small">Sin órdenes en estos días.</p>'}</div></div>
+      <div class="g-scroll g-ord-scroll">
+        <div class="g-head"><div class="g-label"></div><div class="g-track">${head}</div></div>
+        <div class="g-body g-orders"><div class="g-gridlayer"><div class="g-label"></div><div class="g-track">${grid}${nowLine}</div></div>${orderRows || `<p class="dim small">${inWindow.length ? "Ninguna orden marcada: abre FILTRAR ÓRDENES." : "Sin órdenes en estos días."}</p>`}</div>
+      </div>
       <div class="g-section-title g-res-title"><span class="g-resview"><button id="g-by-machine"${resView === "maquina" ? ' class="on"' : ""}>POR MÁQUINA</button><button id="g-by-mold"${resView === "molde" ? ' class="on"' : ""} title="Cada molde físico es una fila, numerado: un molde solo está en una inyectora a la vez">POR MOLDE</button></span>${selected ? `RECURSOS DE ${esc(selected)} · ${usedBy.size} ${usedBy.size === 1 ? "máquina" : "máquinas"} arriba, resaltadas; el resto atenuado · clic de nuevo en la orden para quitar` : "RECURSOS · lotes de las órdenes de arriba · clic en una orden o en un lote para ver sus máquinas"}</div>
-      <div class="g-body g-res"><div class="g-gridlayer"><div class="g-label"></div><div class="g-track">${grid}${nowLine}</div></div>${resRows}</div>
+      <div class="g-scroll g-res-scroll">
+        <div class="g-head"><div class="g-label"></div><div class="g-track">${head}</div></div>
+        <div class="g-body g-res"><div class="g-gridlayer"><div class="g-label"></div><div class="g-track">${grid}${nowLine}</div></div>${resRows}</div>
+      </div>
     </div>`;
   // La primera vez se abre en la primera orden que aún no termina.
-  const scroller = el.querySelector<HTMLElement>(".g-scroll")!;
+  const scroller = el.querySelector<HTMLElement>(".g-ord-scroll")!;
+  const resScroller = el.querySelector<HTMLElement>(".g-res-scroll")!;
+  if (keepRes !== null) resScroller.scrollTop = keepRes;
   const firstOpen = orders.find((o) => ms(o.completion) > t);
   const row = firstOpen && scroller.querySelector<HTMLElement>(`.g-row[data-order="${firstOpen.id}"]`);
-  scroller.scrollTop = keep ?? (row ? row.offsetTop - 4 : 0);
+  scroller.scrollTop = keep ?? (row ? Math.max(0, row.offsetTop - 30) : 0);
+  const flist = el.querySelector<HTMLElement>("#g-flist");
+  if (flist) flist.scrollTop = gFilterScroll;
   const gView = document.getElementById("g-view") as HTMLSelectElement;
   gView.value = viewVigente || !proposal ? "vigente" : "escenario";
   gView.onchange = () => {
@@ -840,6 +892,28 @@ function renderGantt(p: ProductionPlan): void {
     scrollToFlash = false;
     el.querySelector<HTMLElement>(".g-bar.flash")?.scrollIntoView({ block: "center", inline: "center", behavior: "smooth" });
   }
+  // Filtro de órdenes.
+  const fdet = $("g-filter") as HTMLDetailsElement;
+  fdet.ontoggle = () => (gFilterOpen = fdet.open);
+  el.querySelectorAll<HTMLInputElement>("input[data-partial]").forEach((c) => (c.indeterminate = true));
+  const setShown = (ids: string[], show: boolean) => ids.forEach((id) => (show ? gHidden.delete(id) : gHidden.add(id)));
+  $("g-f-all").onclick = () => (setShown(inWindow.map((o) => o.id), true), render());
+  $("g-f-none").onclick = () => (setShown(inWindow.map((o) => o.id), false), render());
+  el.querySelectorAll<HTMLInputElement>("[data-fgrp]").forEach(
+    (c) =>
+      (c.onchange = () => {
+        const kind = c.dataset.fgrp;
+        const val = c.dataset.fval!;
+        const pick = (o: CustomerOrder) => (kind === "cliente" ? o.customer : kind === "grupo" ? (model.products[o.product]?.family ?? "otros") : o.product) === val;
+        setShown(inWindow.filter(pick).map((o) => o.id), c.checked);
+        render();
+      }),
+  );
+  el.querySelectorAll<HTMLInputElement>("[data-ford]").forEach((c) => (c.onchange = () => (setShown([c.dataset.ford!], c.checked), render())));
+  el.querySelectorAll<HTMLInputElement>("[data-chk]").forEach((c) => {
+    c.onclick = (e) => e.stopPropagation();
+    c.onchange = () => (setShown([c.dataset.chk!], c.checked), render());
+  });
   $("g-undo").onclick = () => undo();
   $("g-by-machine").onclick = () => ((resView = "maquina"), render());
   $("g-by-mold").onclick = () => ((resView = "molde"), render());
