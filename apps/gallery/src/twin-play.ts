@@ -11,7 +11,7 @@
  */
 import * as THREE from "three";
 import type { PlantEvent, ProductionPlan } from "@twin/cosim/core/contracts.ts";
-import { model, now, setSharedClock, setViewMode, vigente, viewedPlan, viewMode, type ViewMode } from "./aps-store.ts";
+import { model, now, setSharedClock, setViewMode, versions, vigente, viewedPlan, viewedVersionId, viewMode, viewVersion, type ViewMode } from "./aps-store.ts";
 import { type MachineState, dayLoadAt, dayLoads, dayStrip, isoOf, loadAt, loadColor, machineAt, machineLabel, minOf, moldOf, oeeAt, PLC_MACHINES, STATE_COLORS, STATE_NAMES, unitsUntil } from "./plant-state.ts";
 import { COLOR_NAMES, day, dayTag, esc, nf, relativeDays } from "./schedule.ts";
 
@@ -66,7 +66,7 @@ export function buildTwinPlay(opts: Opts): TwinPlay {
       <button id="tt-play" title="Reproducir la programación">▶</button>
       <button id="tt-live" class="active" title="Volver al instante actual">● EN VIVO</button>
       <select id="tt-speed" title="Velocidad de reproducción">${SPEEDS.map(([v, l]) => `<option value="${v}"${v === speed ? " selected" : ""}>${l}</option>`).join("")}</select>
-      <select id="tt-view" title="Qué programación muestra el gemelo: la vigente o el escenario visto en el APS"></select>
+      <select id="tt-view" title="Qué programación muestra el gemelo: la vigente, el escenario visto en el APS o una versión guardada"></select>
     </div>
     <div class="tt-track">
       <div class="tt-days" id="tt-days"></div>
@@ -265,15 +265,21 @@ export function buildTwinPlay(opts: Opts): TwinPlay {
     setSharedClock(following ? null : isoOf(t));
   }
 
-  // Qué muestra el gemelo: la vigente o el escenario que el APS tiene visto.
+  // Qué muestra el gemelo: la vigente, el escenario que el APS tiene visto o una versión guardada de la programación.
   function syncViewSelect(): void {
     const sel = $<HTMLSelectElement>("tt-view");
     const seen = viewedPlan();
-    sel.innerHTML = `<option value="vigente">VIGENTE · ${esc(vigente().plan_id)}</option><option value="escenario"${seen ? "" : " disabled"}>ESCENARIO · ${esc(seen?.plan_id ?? "ninguno visto en el APS")}</option>`;
-    sel.value = viewMode();
+    const vid = viewMode() === "escenario" ? viewedVersionId() : null;
+    const saved = versions();
+    sel.innerHTML = `<option value="vigente">VIGENTE · ${esc(vigente().plan_id)}</option><option value="escenario"${seen ? "" : " disabled"}>ESCENARIO · ${esc(seen?.plan_id ?? "ninguno visto en el APS")}</option>${
+      saved.length ? `<optgroup label="VERSIONES GUARDADAS">${saved.map((v) => `<option value="v:${esc(v.id)}">${esc(v.name)}</option>`).join("")}</optgroup>` : ""
+    }`;
+    sel.value = vid ? `v:${vid}` : viewMode();
   }
-  $<HTMLSelectElement>("tt-view").onchange = (e) => {
-    setViewMode((e.target as HTMLSelectElement).value as ViewMode);
+  $<HTMLSelectElement>("tt-view").onchange = async (e) => {
+    const value = (e.target as HTMLSelectElement).value;
+    if (value.startsWith("v:")) await viewVersion(value.slice(2));
+    else setViewMode(value as ViewMode);
     syncViewSelect();
     opts.onViewChange?.();
   };
