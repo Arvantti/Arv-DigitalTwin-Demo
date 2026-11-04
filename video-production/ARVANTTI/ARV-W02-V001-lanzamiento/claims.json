@@ -1,0 +1,13 @@
+{
+  "fuente": "Propuesta de precios y planes del hilo 'Definir precio del producto para clientes' (2026-11-04) y la demo de plásticos",
+  "claims": [
+    { "texto": "APS con Gantt que entiende de moldes, turnos, colores y entregas", "estado": "construido", "evidencia": "aps.html (demo de plásticos)" },
+    { "texto": "El cosimulador calcula la programación sin romper entregas", "estado": "construido", "evidencia": "objetivo al calcular; entregas como restricción" },
+    { "texto": "Gemelo 3D proyecta la planta hora por hora", "estado": "construido", "evidencia": "plant.html con play" },
+    { "texto": "Centro de control con OEE, ocupación y cuellos de botella", "estado": "construido", "evidencia": "control.html" },
+    { "texto": "Fractal genera escenarios y los califica con varios objetivos", "estado": "parcial: escenarios grabados en la demo; multiobjetivo en desarrollo", "evidencia": "pestaña Fractal del APS" },
+    { "texto": "Asistente IA de consulta por voz o texto según el rol", "estado": "plan de producto (no hay pantalla en la demo; se muestra maqueta)" },
+    { "texto": "Conexión con máquinas (OEE en tiempo real) y ERP", "estado": "plan de producto (conectores no construidos; se muestra diagrama)" },
+    { "texto": "Tres planes, cada uno incluye al anterior, 10 usuarios incluidos", "estado": "propuesta comercial aprobada por Andy el 2026-11-04" }
+  ]
+}
