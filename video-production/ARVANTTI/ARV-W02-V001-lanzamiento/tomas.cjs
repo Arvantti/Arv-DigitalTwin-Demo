@@ -36,7 +36,18 @@ async function abrir3d(pg, extra = "") {
 }
 const foto = (pg, name) => pg.screenshot({ path: path.join(OUT, name), timeout: 240000 }).then(() => console.log(name));
 
+// Otras plantas, para mostrar que el gemelo sirve en cualquier industria.
+const OTRAS = [["sauce-plant-v1", "3d-salsas"], ["corrugated-box-plant-v1", "3d-cajas"], ["garment-factory-v1", "3d-confecciones"], ["airport-baggage-v1", "3d-aeropuerto"]];
+
 async function tomas3d(browser) {
+  for (const [id, name] of OTRAS) {
+    const pg = await browser.newPage({ viewport: { width: W, height: H } });
+    await pg.goto(`${BASE}/plant.html?plant=${id}&shot=1&lighting=night`, { waitUntil: "networkidle", timeout: 300000 });
+    await pg.waitForFunction(() => !document.body.classList.contains("loading"), null, { timeout: 300000 });
+    await pg.waitForTimeout(6000);
+    await foto(pg, `${name}.png`);
+    await pg.close();
+  }
   for (const [name, v] of Object.entries(VISTAS)) {
     const pg = await browser.newPage({ viewport: { width: W, height: H } });
     await abrir3d(pg, `&shot=1&look=${v.join(",")}`);

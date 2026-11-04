@@ -19,7 +19,9 @@ P=video-production/ARVANTTI/ARV-W02-V001-lanzamiento
 pnpm gallery                                                    # terminal 1
 uv run uvicorn twin_emulator_api.main:app --port 8000           # terminal 2
 node $P/tomas.cjs todo                                          # ~40 min en la nube (el lapso es lo más lento)
-node $P/armar.mjs preparar                                      # lapso.mp4, clip del Gantt, marca, música
+node $P/armar.mjs preparar                                      # lapso.mp4, clip del Gantt, marca, música de respaldo
+# Música épica con ElevenLabs Music (texto en musica-prompt.txt; también pide confirmación ENVIAR a Andy):
+#   POST https://api.elevenlabs.io/v1/music  {prompt, music_length_ms: 100000}  -> assets/clips/musica-epica.mp3
 
 # Voz con ElevenLabs: un envío por escena (cada uno pide escribir ENVIAR). Claves solo en el entorno.
 for c in $P/escenas/*/; do pnpm video:voice --project "$c"; done
@@ -32,8 +34,11 @@ Sin voz, `componer` estima los tiempos (2,5 palabras por segundo) y marca el vid
 
 ## Notas
 
-- La música de fondo se sintetiza con ffmpeg (sin licencias de terceros); los efectos de sonido son los de
+- Música: pista épica original generada con ElevenLabs Music (`musica-prompt.txt`); `componer` la baja sola cuando
+  habla la voz (sidechain). Sin ella usa una música sintetizada con ffmpeg. Efectos de sonido de
   `assets/shared/core/sfx` (créditos en esa carpeta).
+- El video es genérico para cualquier planta (pedido de Andy, 2026-11-04): el texto no habla de moldes ni inyectoras y
+  el gemelo muestra plásticos, salsas, confecciones y cajas.
 - El Asistente IA y los conectores todavía no tienen pantalla en la demo: se muestran como maqueta animada y diagrama.
 - No se muestran precios (decisión de Andy, 2026-11-04).
 - Grabaciones, audios y renders no van al repo (`.gitignore`).

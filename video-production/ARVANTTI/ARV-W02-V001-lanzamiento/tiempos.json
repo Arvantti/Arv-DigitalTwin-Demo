@@ -19,64 +19,64 @@
   "id": "planifica",
   "start": 13.64,
   "voiceAt": 14.14,
-  "voz": 15.07,
-  "dur": 16.37,
+  "voz": 15.23,
+  "dur": 16.53,
   "real": true
  },
  {
   "id": "gemelo",
-  "start": 30.01,
-  "voiceAt": 30.41,
-  "voz": 10.19,
-  "dur": 11.49,
+  "start": 30.17,
+  "voiceAt": 30.57,
+  "voz": 10.11,
+  "dur": 11.41,
   "real": true
  },
  {
   "id": "control",
-  "start": 41.5,
-  "voiceAt": 41.8,
+  "start": 41.58,
+  "voiceAt": 41.88,
   "voz": 6.61,
   "dur": 7.81,
   "real": true
  },
  {
   "id": "fractal",
-  "start": 49.31,
-  "voiceAt": 49.61,
+  "start": 49.39,
+  "voiceAt": 49.69,
   "voz": 13.09,
   "dur": 14.39,
   "real": true
  },
  {
   "id": "asistente",
-  "start": 63.7,
-  "voiceAt": 64,
+  "start": 63.77,
+  "voiceAt": 64.07,
   "voz": 7.89,
   "dur": 9.09,
   "real": true
  },
  {
   "id": "conecta",
-  "start": 72.78,
-  "voiceAt": 73.08,
+  "start": 72.86,
+  "voiceAt": 73.16,
   "voz": 5.64,
   "dur": 6.84,
   "real": true
  },
  {
   "id": "planes",
-  "start": 79.63,
-  "voiceAt": 79.93,
+  "start": 79.7,
+  "voiceAt": 80,
   "voz": 7.97,
   "dur": 9.47,
   "real": true
  },
  {
   "id": "cierre",
-  "start": 89.09,
-  "voiceAt": 90.09,
+  "start": 89.17,
+  "voiceAt": 90.17,
   "voz": 3.97,
-  "dur": 7.97,
+  "dur": 10.87,
   "real": true
  }
 ]
