@@ -106,10 +106,11 @@ footer{color:var(--muted);font-size:12.5px;max-width:80ch}
       <!-- PROYECTO -->
       <section class="card" id="cardNivel">
         <h2>Nivel de licencia</h2>
+        <p class="note" style="margin:0 0 12px;color:var(--muted);font-size:13px">Los precios se muestran por mes como referencia; el pago es siempre anual.</p>
         <div class="tiers" role="radiogroup" aria-label="Nivel">
-          <label class="tier"><input type="radio" name="tier" id="tierPlanifica" value="planifica"><b>Planifica</b><span class="p">USD 540/mes</span><small>APS con tabla y Gantt, versiones, cosimulador de un objetivo. +USD 24 por máquina extra.</small></label>
-          <label class="tier"><input type="radio" name="tier" id="tierGemelo" value="gemelo" checked><b>Gemelo</b><span class="p">USD 1.140/mes</span><small>Planifica + gemelo 3D + centro de control y emulador. +USD 42 por máquina extra.</small></label>
-          <label class="tier"><input type="radio" name="tier" id="tierFractal" value="fractal"><b>Fractal</b><span class="p">USD 1.920/mes</span><small>Gemelo + escenarios multiobjetivo + Asistente IA incluido. +USD 60 por máquina extra.</small></label>
+          <label class="tier"><input type="radio" name="tier" id="tierPlanifica" value="planifica"><b>Planifica</b><span class="p">USD 540/mes</span><small>APS con tabla y Gantt, versiones, cosimulador de un objetivo. +USD 24 por máquina extra al mes.</small></label>
+          <label class="tier"><input type="radio" name="tier" id="tierGemelo" value="gemelo" checked><b>Gemelo</b><span class="p">USD 1.140/mes</span><small>Planifica + gemelo 3D + centro de control y emulador. +USD 42 por máquina extra al mes.</small></label>
+          <label class="tier"><input type="radio" name="tier" id="tierFractal" value="fractal"><b>Fractal</b><span class="p">USD 1.920/mes</span><small>Gemelo + escenarios multiobjetivo + Asistente IA incluido. +USD 60 por máquina extra al mes.</small></label>
         </div>
         <label class="switch" id="earlyWrap"><input type="checkbox" id="early"> Fractal en acceso anticipado (Gemelo + USD 360/mes)</label>
       </section>
@@ -169,8 +170,8 @@ footer{color:var(--muted);font-size:12.5px;max-width:80ch}
       <section class="card" id="cardDesc">
         <h2>Condiciones</h2>
         <label class="switch"><input type="checkbox" id="pionero"> Plan pionero, primeros clientes: 25 % en la licencia del primer año y 20 % en la implementación, a cambio de caso de éxito y referencia</label>
-        <div class="row"><label for="prepay">Años de licencia pagados por anticipado (10 % de descuento por cada año)</label>
-          <select id="prepay"><option value="0" selected>Ninguno</option><option value="1">1 año: 10 %</option><option value="2">2 años: 20 %</option><option value="3">3 años: 30 %</option><option value="4">4 años: 40 %</option><option value="5">5 años: 50 %</option></select></div>
+        <div class="row"><label for="prepay">Años de licencia pagados por anticipado (10 % por cada año, máximo 30 %)</label>
+          <select id="prepay"><option value="0" selected>Ninguno</option><option value="1">1 año: 10 %</option><option value="2">2 años: 20 %</option><option value="3">3 años: 30 %</option><option value="4">4 años: 30 %</option><option value="5">5 años: 30 %</option></select></div>
         <label class="switch"><input type="checkbox" id="secondPlant"> Segunda planta de la misma empresa (20 % en licencia)</label>
         <label class="switch"><input type="checkbox" id="perpetual"> Licencia perpetua en servidores del cliente (30 meses + 20 % anual)</label>
       </section>
@@ -242,7 +243,7 @@ footer{color:var(--muted);font-size:12.5px;max-width:80ch}
     let discount = 0;
     if ($('secondPlant').checked) discount += 0.20;
     // Pago anticipado: 10 % por cada año pagado por adelantado, sobre la licencia de esos años
-    const prepaidY = Math.min(parseInt($('prepay').value, 10) || 0, years), prepayRate = prepaidY * 0.10;
+    const prepaidY = Math.min(parseInt($('prepay').value, 10) || 0, years), prepayRate = Math.min(prepaidY, 3) * 0.10; // tope de 30 %
     const licAnnualGross = lic.total * 12;
     const licDisc = licAnnualGross * discount;
     const licAnnualNet = licAnnualGross - licDisc;
@@ -252,15 +253,15 @@ footer{color:var(--muted);font-size:12.5px;max-width:80ch}
     const pionLic = pion ? Math.round((licAnnualNet - (prepaidY ? licAnnualGross * prepayRate : 0)) * 0.25) : 0;
 
     lines.push(['sec','Licencia']);
-    lines.push(['', `${lic.label}`, `Base hasta ${BASE_MACHINES} máquinas × 12 meses`, lic.base * 12]);
+    lines.push(['', `${lic.label}`, `Base hasta ${BASE_MACHINES} máquinas, pago anual`, lic.base * 12]);
     if (lic.extraM) lines.push(['', `${lic.extraM} máquinas adicionales`, `${fmt(lic.extraP)} c/u al mes × 12`, lic.extraM * lic.extraP * 12]);
     if (discount) lines.push(['neg', `Descuento ${Math.round(discount*100)} %`, 'Sobre la licencia', -licDisc]);
     if (prepaidY) lines.push(['neg', `Pago anticipado de ${prepaidY} ${prepaidY === 1 ? 'año' : 'años'}`, `${Math.round(prepayRate*100)} % sobre la licencia de esos ${prepaidY === 1 ? 'año' : 'años'}, en el contrato`, -prepayDisc]);
     if (pion) lines.push(['neg', 'Plan pionero', '25 % en la licencia del primer año', -pionLic]);
-    if (usersX) lines.push(['', `${usersX} usuarios adicionales`, `${uC} visualización, ${uA} TI, ${uP} programación × 12 meses`, usersMonthly * 12]);
-    if (conecta) lines.push(['', 'Conecta: OEE en tiempo real', `${oeeM} máquinas × ${fmt(OEE)} × 12`, oeeM * OEE * 12]);
-    if (erp) lines.push(['', `Integración ERP (${$('erpName').value === 'otro' ? 'otro ERP' : $('erpName').value})`, `${fmt(ERP)} × 12`, ERP * 12]);
-    if (aiOn) lines.push(['', 'Asistente IA', `${fmt(AI)} × 12`, AI * 12]);
+    if (usersX) lines.push(['', `${usersX} usuarios adicionales`, `${uC} visualización, ${uA} TI, ${uP} programación, al año`, usersMonthly * 12]);
+    if (conecta) lines.push(['', 'Conecta: OEE en tiempo real', `${oeeM} máquinas × ${fmt(OEE)} al mes × 12`, oeeM * OEE * 12]);
+    if (erp) lines.push(['', `Integración ERP (${$('erpName').value === 'otro' ? 'otro ERP' : $('erpName').value})`, `${fmt(ERP)} al mes × 12`, ERP * 12]);
+    if (aiOn) lines.push(['', 'Asistente IA', `${fmt(AI)} al mes × 12`, AI * 12]);
     if (tierNow === 'fractal') lines.push(['', 'Asistente IA', 'Incluido en Fractal', 0]);
 
     // implementación
@@ -300,8 +301,8 @@ footer{color:var(--muted);font-size:12.5px;max-width:80ch}
       year1 = (prepaidY ? prepaidLic : licAnnualNet) + (oeeMonthly + erpMonthly) * 12 - pionLic + implTotal;
       total = recurringAnnual * years - prepayDisc - pionLic + implTotal;
       kpis = prepaidY
-        ? [['Mensualidad', fmt(recurringAnnual / 12)], [`Licencia anticipada ${prepaidY} ${prepaidY === 1 ? 'año' : 'años'}`, fmt(prepaidLic - (prepaidY ? pionLic : 0))], ['Implementación', fmt(implTotal)], ['Pago año 1', fmt(year1)]]
-        : [['Mensualidad', fmt(recurringAnnual / 12)], ['Anual recurrente', fmt(recurringAnnual)], ['Implementación', fmt(implTotal)], ['Año 1', fmt(year1)]];
+        ? [['Pago anual', fmt(recurringAnnual)], [`Licencia anticipada ${prepaidY} ${prepaidY === 1 ? 'año' : 'años'}`, fmt(prepaidLic - (prepaidY ? pionLic : 0))], ['Implementación', fmt(implTotal)], ['Pago año 1', fmt(year1)]]
+        : [['Pago anual', fmt(recurringAnnual)], ['Equivale al mes', fmt(recurringAnnual / 12)], ['Implementación', fmt(implTotal)], ['Pago año 1', fmt(year1)]];
     }
     label = `Total ${years} ${years === 1 ? 'año' : 'años'}`;
     const warn = (needInt && implSel === 'std') ? 'La conexión a ERP o PLC requiere el paquete Integrada.' : '';
@@ -326,7 +327,7 @@ footer{color:var(--muted);font-size:12.5px;max-width:80ch}
     lines.push(['sec','Incluido']);
     lines.push(['', 'APS, cosimulador, gemelo 3D, centro de control', 'Datos desde Excel, hasta 10 usuarios, capacitación', 0]);
     const credit = PILOT.price + extraM * PILOT.extra;
-    const kpis = [['Duración', '12 semanas'], ['Máquinas', `${m}`], ['Abonable a implementación', fmt(credit)], ['Mensual equivalente', fmt(total / 3)]];
+    const kpis = [['Duración', '12 semanas'], ['Máquinas', `${m}`], ['Abonable a implementación', fmt(credit)], ['Productos y órdenes', `${PILOT.products} y ${PILOT.orders}`]];
     return {label:'Total del piloto', big: total, kpis, lines, warn: m > 40 ? 'Para más de 40 máquinas conviene un piloto por línea.' : '', m};
   }
 
