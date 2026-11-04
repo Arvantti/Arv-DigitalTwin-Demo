@@ -170,8 +170,8 @@ footer{color:var(--muted);font-size:12.5px;max-width:80ch}
       <section class="card" id="cardDesc">
         <h2>Condiciones</h2>
         <label class="switch"><input type="checkbox" id="pionero"> Plan pionero, primeros clientes: 25 % en la licencia del primer año y 20 % en la implementación, a cambio de caso de éxito y referencia</label>
-        <div class="row"><label for="prepay">Años de licencia pagados por anticipado (10 % por cada año, máximo 30 %)</label>
-          <select id="prepay"><option value="0" selected>Ninguno</option><option value="1">1 año: 10 %</option><option value="2">2 años: 20 %</option><option value="3">3 años: 30 %</option><option value="4">4 años: 30 %</option><option value="5">5 años: 30 %</option></select></div>
+        <div class="row"><label for="prepay">Años de licencia pagados por anticipado (10 % por cada año adicional al primero, máximo 30 %)</label>
+          <select id="prepay"><option value="1" selected>1 año, pago anual normal</option><option value="2">2 años: 10 %</option><option value="3">3 años: 20 %</option><option value="4">4 años: 30 %</option><option value="5">5 años: 30 %</option></select></div>
         <label class="switch"><input type="checkbox" id="secondPlant"> Segunda planta de la misma empresa (20 % en licencia)</label>
         <label class="switch"><input type="checkbox" id="perpetual"> Licencia perpetua en servidores del cliente (30 meses + 20 % anual)</label>
       </section>
@@ -243,7 +243,8 @@ footer{color:var(--muted);font-size:12.5px;max-width:80ch}
     let discount = 0;
     if ($('secondPlant').checked) discount += 0.20;
     // Pago anticipado: 10 % por cada año pagado por adelantado, sobre la licencia de esos años
-    const prepaidY = Math.min(parseInt($('prepay').value, 10) || 0, years), prepayRate = Math.min(prepaidY, 3) * 0.10; // tope de 30 %
+    // El pago anual es lo normal: el descuento cuenta desde el 2.º año anticipado, con tope de 30 %
+    const prepaidRaw = Math.min(parseInt($('prepay').value, 10) || 1, years), prepayRate = Math.min(Math.max(prepaidRaw - 1, 0), 3) * 0.10, prepaidY = prepayRate > 0 ? prepaidRaw : 0;
     const licAnnualGross = lic.total * 12;
     const licDisc = licAnnualGross * discount;
     const licAnnualNet = licAnnualGross - licDisc;
@@ -378,8 +379,8 @@ footer{color:var(--muted);font-size:12.5px;max-width:80ch}
   $('oeeMachines').addEventListener('input', () => oeeTouched = true);
   $('machines').addEventListener('input', () => { if (!oeeTouched) $('oeeMachines').value = $('machines').value; });
   document.querySelectorAll('input, select').forEach(el => { el.addEventListener('input', render); el.addEventListener('change', render); });
-  $('perpetual').addEventListener('change', () => { if ($('perpetual').checked){ $('prepay').value = '0'; $('secondPlant').checked = false; } render(); });
-  $('prepay').addEventListener('change', () => { if ($('prepay').value !== '0') $('perpetual').checked = false; render(); });
+  $('perpetual').addEventListener('change', () => { if ($('perpetual').checked){ $('prepay').value = '1'; $('secondPlant').checked = false; } render(); });
+  $('prepay').addEventListener('change', () => { if ($('prepay').value !== '1') $('perpetual').checked = false; render(); });
   $('secondPlant').addEventListener('change', () => { if ($('secondPlant').checked) $('perpetual').checked = false; render(); });
   $('erp').addEventListener('change', () => { if ($('erp').checked && $('impl').value === 'std') $('impl').value = 'int'; render(); });
   $('conecta').addEventListener('change', () => { if ($('conecta').checked && $('impl').value === 'std') $('impl').value = 'int'; render(); });
@@ -394,7 +395,7 @@ footer{color:var(--muted);font-size:12.5px;max-width:80ch}
   $('resetBtn').addEventListener('click', () => {
     $('tierGemelo').checked = true; $('early').checked = false; $('machines').value = 12; $('oeeMachines').value = 12; $('hwMachines').value = 0; oeeTouched = false;
     $('years').value = '3'; $('conecta').checked = false; $('erp').checked = false; $('ai').checked = false; $('impl').value = 'std'; $('implSize').value = 50;
-    $('newEquip').value = 0; $('extraUsers').value = 0; $('extraAdmin').value = 0; $('extraPlan').value = 0; $('pilotCredit').checked = false; $('prepay').value = '0'; $('secondPlant').checked = false; $('perpetual').checked = false; $('pionero').checked = false; $('trm').value = 4000;
+    $('newEquip').value = 0; $('extraUsers').value = 0; $('extraAdmin').value = 0; $('extraPlan').value = 0; $('pilotCredit').checked = false; $('prepay').value = '1'; $('secondPlant').checked = false; $('perpetual').checked = false; $('pionero').checked = false; $('trm').value = 4000;
     render();
   });
   render();
