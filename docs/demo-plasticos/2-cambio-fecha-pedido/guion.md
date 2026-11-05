@@ -73,6 +73,7 @@ Mensaje central: un cliente pide su pedido antes. El sistema dice en segundos si
 
 ### S07 · La orden en el gemelo 3D
 - imagen: capturas/06-gemelo-orden.png
+- orbita: orbitas/06-imm01
 - duración: 16 s
 - en pantalla: el panel ÓRDENES EN EL GEMELO con PED-D12-01 seguida y la lista EN PROCESO AHORA
 - foco: qué órdenes se están procesando => EN PROCESO AHORA EN EL GEMELO · 9 => En proceso ahora

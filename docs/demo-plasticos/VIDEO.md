@@ -54,6 +54,7 @@ NODE_PATH="$(pnpm root -g)" node tools/demo-video/grabar.cjs todos --video   # o
 
 ### 0-S01 · La planta y su gemelo
 - imagen: 3-contingencia-falla/capturas/10-gemelo-3d.png
+- orbita: 3-contingencia-falla/orbitas/00-planta
 - duración: 16 s
 
 > Esta es una planta de inyección de plásticos y su gemelo digital. Tiene doce inyectoras, una celda de ensamble, almacenes y montacargas, y fabrica cuatro productos: cubiertos desechables, baldes de doce litros y papeleras de pedal.

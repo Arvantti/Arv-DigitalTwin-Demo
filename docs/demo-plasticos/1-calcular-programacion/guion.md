@@ -120,8 +120,8 @@ Mensaje central: a partir de los pedidos y sus fechas de entrega, el cosimulador
 - imagen: capturas/05b-gantt-orden.png
 - duración: 16 s
 - en pantalla: la orden seleccionada arriba y sus tres máquinas resaltadas abajo
-- foco: la inyectora diecinueve => IMM-19 => IMM-19: cuerpo
-- foco: la siete hace el pedal => IMM-07 => IMM-07: pedal
+- foco: la inyectora diecinueve => @27,836,136,28 => IMM-19: cuerpo
+- foco: la siete hace el pedal => @27,796,125,28 => IMM-07: pedal
 - foco: la línea de ensamble => ENSAMBLE-01 => Ensamble
 
 > Al hacer clic en una orden, sus máquinas suben y se resaltan, con sus lotes y sus horas, y el resto queda atenuado. Esta papelera pasa por tres recursos: la inyectora diecinueve hace el cuerpo, la siete hace el pedal y la línea de ensamble la arma.
@@ -161,10 +161,10 @@ Mensaje central: a partir de los pedidos y sus fechas de entrega, el cosimulador
 - imagen: capturas/09-centro-control-balanceado.png
 - duración: 14 s
 - en pantalla: el indicador de ocupación semanal
-- foco: mil doscientas cuarenta horas => IMM-20 => IMM-20 entra en juego
+- foco: la inyectora veinte => IMM-20 + Montaje de mold-balde-12l => IMM-20 monta el molde de balde
 - foco: sesenta coma siete => Ocupación · semana + 60,7 % => Ocupación 60,7 %
 
-> Con una máquina más en juego, la planta tiene mil doscientas cuarenta horas disponibles en la semana y la ocupación baja al sesenta coma siete por ciento. Queda espacio para recibir más pedidos.
+> Ahora la inyectora veinte también hace baldes: monta su molde y entra en juego. Con una máquina más, la ocupación de la planta baja al sesenta coma siete por ciento. Queda espacio para recibir más pedidos.
 
 ### S12 · Los insumos del plan
 - imagen: capturas/10-insumos.png

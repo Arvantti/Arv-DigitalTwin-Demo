@@ -25,6 +25,9 @@ const VIDEO = args.includes("--video");
 // En video, pausas largas para que se alcance a leer; --lento las alarga más.
 const PACE = VIDEO ? (args.includes("--lento") ? 2.5 : 1.5) : 0.4;
 const SIZE = args.includes("--hd") ? { width: 1920, height: 1080 } : { width: 1600, height: 900 };
+// --orbitas: además de las capturas, vuelos de cámara del gemelo 3D cuadro a cuadro (JPG en <escenario>/orbitas/<nombre>/),
+// que el montaje convierte en video; así el 3D se ve en movimiento aunque el navegador sin GPU dibuje lento.
+const ORBITAS = args.includes("--orbitas");
 const FOLDERS = { 1: "1-calcular-programacion", 2: "2-cambio-fecha-pedido", 3: "3-contingencia-falla", 4: "4-pedidos-fijados", 5: "5-menos-cambios", 6: "versiones" };
 
 const wait = (pg, s) => pg.waitForTimeout(Math.round(s * 1000 * PACE));
@@ -177,6 +180,69 @@ async function open3d(pg, go, select, extra = "") {
   await pg.waitForTimeout(8000);
 }
 
+/**
+ * Vuelo de cámara: n cuadros entre dos encuadres { t: [x, y, z] objetivo, r: distancia, h: altura, a: azimut en grados
+ * (0 = desde el sur) }, con aceleración suave. minutos > 0 avanza además la línea de tiempo del gemelo (la grúa se mueve).
+ * Sin GPU el 3D dibuja ~1 cuadro por segundo: se toma cada cuadro que pinta el navegador (screencast) y recién entonces se
+ * mueve la cámara al punto siguiente. Sin la interfaz (paneles ocultos), salvo { ui: true }.
+ */
+async function orbita(pg, n, nombre, de, a, cuadros = 240, minutos = 0, { ui = false } = {}) {
+  if (!ORBITAS) return;
+  cuadros = Number(process.env.ORBITA_CUADROS) || cuadros; // vista previa rápida del encuadre
+  const dir = path.join(ROOT, FOLDERS[n], "orbitas", nombre);
+  fs.rmSync(dir, { recursive: true, force: true });
+  fs.mkdirSync(dir, { recursive: true });
+  if (!ui) await pg.evaluate(() => document.body.classList.add("shot"));
+  const t0 = minutos ? await pg.$eval("#tt-range", (el) => Number(el.value)) : 0;
+  const lerp = (x, y, k) => x + (y - x) * k;
+  const pose = async (i) => {
+    const k0 = i / (cuadros - 1), k = k0 * k0 * (3 - 2 * k0);
+    const t = de.t.map((v, j) => lerp(v, a.t[j], k));
+    const r = lerp(de.r, a.r, k), h = lerp(de.h, a.h, k), az = (lerp(de.a, a.a, k) * Math.PI) / 180;
+    if (minutos) {
+      await pg.$eval("#tt-range", (el, v) => {
+        el.value = String(v);
+        el.dispatchEvent(new Event("input"));
+      }, Math.round(t0 + minutos * k0));
+    }
+    await pg.evaluate((l) => window.__look(l), [t[0] + r * Math.sin(az), t[1] - r * Math.cos(az), h, ...t]);
+  };
+  await pose(0);
+  await pg.waitForTimeout(6000);
+  const inicio = Date.now();
+  const cdp = await pg.context().newCDPSession(pg);
+  let i = 0, previo = null;
+  await new Promise((ok, mal) => {
+    cdp.on("Page.screencastFrame", async (f) => {
+      try {
+        await cdp.send("Page.screencastFrameAck", { sessionId: f.sessionId });
+        if (i >= cuadros) return;
+        const buf = Buffer.from(f.data, "base64");
+        if (previo && buf.equals(previo)) return; // el navegador aún no pintó la cámara nueva
+        previo = buf;
+        fs.writeFileSync(path.join(dir, `${String(i + 1).padStart(4, "0")}.jpg`), buf);
+        i++;
+        if (i < cuadros) await pose(i);
+        else ok();
+      } catch (e) {
+        mal(e);
+      }
+    });
+    cdp.send("Page.startScreencast", { format: "jpeg", quality: 92, maxWidth: SIZE.width, maxHeight: SIZE.height, everyNthFrame: 1 }).catch(mal);
+  });
+  await cdp.send("Page.stopScreencast");
+  await cdp.detach();
+  if (!ui) await pg.evaluate(() => document.body.classList.remove("shot"));
+  console.log(`[${n}] órbita ${nombre}: ${cuadros} cuadros en ${Math.round((Date.now() - inicio) / 1000)} s`);
+}
+
+async function moverReloj(pg, min) {
+  await pg.$eval("#tt-range", (el, m) => {
+    el.value = String(Number(el.value) + m);
+    el.dispatchEvent(new Event("input"));
+  }, min);
+}
+
 const SCENARIOS = {
   1: async ({ pg, go, shot, wait }) => {
     await shot("01-pedidos.png");
@@ -224,10 +290,8 @@ const SCENARIOS = {
     // Gemelo 3D siguiendo la orden: lo producido avanza con el play y sus máquinas llevan una estrella.
     await open3d(pg, go, "imm-01", `&order=${order}`);
     await shot("06-gemelo-orden.png");
-    await pg.$eval("#tt-range", (el) => {
-      el.value = String(Number(el.value) + 24 * 60);
-      el.dispatchEvent(new Event("input"));
-    });
+    await orbita(pg, 2, "06-imm01", { t: [60, 45, 0], r: 80, h: 50, a: -15 }, { t: [38.5, 42, 1], r: 18, h: 9, a: 25 }, 80);
+    await moverReloj(pg, 24 * 60);
     await shot("07-gemelo-orden-play.png");
     await wait(2);
   },
@@ -248,6 +312,8 @@ const SCENARIOS = {
     await shot("06b-fractal-full.png", true);
     await open3d(pg, go, "imm-21");
     await shot("10-gemelo-3d.png");
+    await orbita(pg, 3, "00-planta", { t: [100, 44, 0], r: 150, h: 90, a: -30 }, { t: [95, 46, 0], r: 120, h: 60, a: 20 }, 200);
+    await orbita(pg, 3, "10-imm21", { t: [75, 48, 0], r: 95, h: 60, a: -20 }, { t: [52.5, 57, 1.5], r: 22, h: 11, a: 20 }, 170);
     await go(`/aps.html${NOW}&tab=fractal`);
     await fractal(pg, "#fr-run-falla");
     await click(pg, "#fr-adopt");
@@ -262,6 +328,14 @@ const SCENARIOS = {
       el.dispatchEvent(new Event("input"));
     });
     await shot("11-gemelo-3d-despues.png");
+    await orbita(pg, 3, "11-imm20", { t: [50, 52, 0], r: 60, h: 35, a: -30 }, { t: [40.5, 57, 1.5], r: 20, h: 10, a: 15 }, 170);
+    if (ORBITAS) {
+      // El cambio de molde con el play, desde las 10:00: la grúa saca el molde de IMM-20, el carro va al almacén y
+      // vuelve con el de repuesto, y la grúa lo monta.
+      await moverReloj(pg, -4 * 60);
+      await orbita(pg, 3, "12-montaje-ida", { t: [52, 50, 0], r: 60, h: 40, a: -25 }, { t: [62, 38, 0], r: 75, h: 50, a: 10 }, 220, 45);
+      await orbita(pg, 3, "13-montaje-vuelta", { t: [62, 38, 0], r: 75, h: 50, a: 10 }, { t: [40.5, 57, 2], r: 22, h: 12, a: 25 }, 220, 50);
+    }
     await wait(2);
   },
   4: async ({ pg, go, shot, wait }) => {

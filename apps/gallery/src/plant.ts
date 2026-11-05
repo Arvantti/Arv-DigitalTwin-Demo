@@ -2142,12 +2142,15 @@ async function start(): Promise<void> {
   if (url.get("select")) select(url.get("select"));
   const focusAsset = url.get("focus") ? assets.get(url.get("focus")!) : undefined;
   if (focusAsset) stage.frame(focusAsset.root, 1.1);
-  const look = url.get("look")?.split(",").map(Number);
-  if (look?.length === 6 && look.every(Number.isFinite)) {
+  const lookAt = (look: number[]) => {
     stage.camera.position.copy(toScene(look[0], look[1], look[2]));
     stage.controls.target.copy(toScene(look[3], look[4], look[5]));
     stage.controls.update();
-  }
+  };
+  const look = url.get("look")?.split(",").map(Number);
+  if (look?.length === 6 && look.every(Number.isFinite)) lookAt(look);
+  // Para videos automáticos: mover la cámara cuadro a cuadro con los mismos números de &look.
+  (window as unknown as { __look?: (l: number[]) => void }).__look = lookAt;
   if (url.get("tour") === "1") startTour();
   if (url.get("autosim") === "1" && simulated && plantId !== "plastic-injection-plant-v1") {
     if (url.get("scenario")) sel.value = url.get("scenario")!;

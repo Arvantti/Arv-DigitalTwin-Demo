@@ -24,6 +24,11 @@ pnpm gallery
 uv sync && uv run uvicorn twin_emulator_api.main:app --port 8000
 pnpm add -g playwright@1.63.0 && pnpm dlx playwright@1.63.0 install chromium   # una vez
 DEMO_OUT="$PWD/$P/assets/grabacion" NODE_PATH="$(pnpm root -g)" node tools/demo-video/grabar.cjs todos --video --hd
+# Vuelos de cámara del gemelo 3D (escenarios 2 y 3): cuadro a cuadro, ~1 cuadro/s sin GPU, unos 40 min.
+# Se graban aparte y se copian solo las carpetas orbitas/ (las capturas de esta corrida no se usan).
+DEMO_OUT=/tmp/orb NODE_PATH="$(pnpm root -g)" node tools/demo-video/grabar.cjs 3 --hd --orbitas
+DEMO_OUT=/tmp/orb NODE_PATH="$(pnpm root -g)" node tools/demo-video/grabar.cjs 2 --hd --orbitas
+for n in 2-cambio-fecha-pedido 3-contingencia-falla; do cp -r /tmp/orb/$n/orbitas "$P/assets/grabacion/$n/"; done
 
 # 2. Voz y música con ElevenLabs (las claves solo en el entorno, nunca en archivos)
 export ELEVENLABS_API_KEY='…'
@@ -49,6 +54,15 @@ Cómo se arma cada segmento:
   guion llevan la cámara al texto en la captura (búscalo con `node armar.mjs textos <carpeta>/capturas/<png> [filtro]`),
   lo enmarcan y muestran el rótulo, en el segundo exacto en que la voz dice la frase. `a + b` une dos textos; `@x,y,w,h`
   es un recuadro a mano; `—` muestra solo el rótulo (dato que no está en esa pantalla).
+- **Recuadros que no tachan texto.** El recuadro va en la misma capa que la captura (se mueve con la cámara y con la
+  deriva lenta de la imagen), mide 3 px en pantalla y su margen se achica hasta no pisar ningún otro texto; si pisa una
+  unidad o un ícono pegado al dato, lo incluye, y un dato de dos partes separadas lleva un recuadro por parte. Lo que no
+  logra resolver sale como `aviso:` al componer; `assets/qa-recuadros.json` tiene cada recuadro con su cámara para
+  revisarlo sobre la captura.
+- **El gemelo 3D en movimiento.** `- orbita: orbitas/<nombre>` (cuadros de `grabar.cjs --orbitas`) pone un vuelo de cámara
+  del 3D desde el inicio del segmento hasta el primer foco, o el segmento completo si no hay focos.
+- **Pronunciación.** `PRONUNCIA` en `armar.mjs` cambia cómo se le escribe un nombre a la voz (Integrator → Íntegreitor);
+  el subtítulo y los tiempos siguen el texto original.
 - **Tarjetas animadas.** `- tarjeta: escenarios | modulos | fuentes | cosimulador | …` con focos cuyo objetivo es la
   clave de cada elemento (se enciende cuando la voz lo nombra).
 - **Música.** Las pistas se encadenan con fundidos y bajan solas cuando habla la voz.

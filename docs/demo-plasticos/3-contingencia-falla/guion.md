@@ -110,6 +110,7 @@ Mensaje central: cuando una máquina falla, el gemelo avisa, el cosimulador repl
 
 ### S11 · El gemelo 3D
 - imagen: capturas/10-gemelo-3d.png
+- orbita: orbitas/10-imm21
 - duración: 14 s
 - en pantalla: la IMM-21 en rojo y su PLC a la derecha
 
@@ -117,6 +118,7 @@ Mensaje central: cuando una máquina falla, el gemelo avisa, el cosimulador repl
 
 ### S12 · El 3D con el plan nuevo
 - imagen: capturas/11-gemelo-3d-despues.png
+- orbita: orbitas/11-imm20
 - duración: 14 s
 - en pantalla: etiqueta de la IMM-20 con la orden de baldes
 
@@ -124,6 +126,7 @@ Mensaje central: cuando una máquina falla, el gemelo avisa, el cosimulador repl
 
 ### S13 · El montaje del molde en el gemelo 3D
 - imagen: capturas/12-gemelo-montaje-grua.jpg
+- orbita: orbitas/12-montaje-ida
 - duración: 18 s
 - en pantalla: la grúa, el molde de balde y el letrero morado de montaje
 
@@ -131,6 +134,7 @@ Mensaje central: cuando una máquina falla, el gemelo avisa, el cosimulador repl
 
 ### S14 · El montaje en la inyectora veinte
 - imagen: capturas/13-gemelo-montaje-imm20.jpg
+- orbita: orbitas/13-montaje-vuelta
 - duración: 16 s
 - en pantalla: la inyectora veinte con el letrero de montaje y el carro vacío
 

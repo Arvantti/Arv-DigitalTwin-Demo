@@ -24,7 +24,7 @@ Aquí entra Fractal, el módulo que compara escenarios con varios objetivos. Pul
 
 Pulsamos adoptar la recomendación. Adoptamos y el trabajo del balde queda repartido entre dos máquinas.
 
-Con una máquina más en juego, la planta tiene mil doscientas cuarenta horas disponibles en la semana y la ocupación baja al sesenta coma siete por ciento. Queda espacio para recibir más pedidos.
+Ahora la inyectora veinte también hace baldes: monta su molde y entra en juego. Con una máquina más, la ocupación de la planta baja al sesenta coma siete por ciento. Queda espacio para recibir más pedidos.
 
 Por último, la vista de insumos traduce el plan en lo que hay que tener: veintiocho toneladas y media de resina y quinientos cuarenta y cuatro kilos de masterbatch en la semana, setecientas cincuenta y dos horas de máquina, noventa y cuatro turnos-máquina y doscientas cincuenta y nueve horas de operario. Compras, almacén y producción trabajan con el mismo número.
 
