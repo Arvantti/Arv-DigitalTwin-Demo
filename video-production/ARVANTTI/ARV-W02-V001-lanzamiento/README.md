@@ -30,6 +30,10 @@ node $P/armar.mjs voz --enviar
 
 node $P/armar.mjs componer                                      # mide la voz y escribe index.html
 node $P/armar.mjs render v001                                   # deja $P/out/lanzamiento-v001.mp4
+
+# Versión vertical 9:16 (1080x1920) para redes: misma voz y música, escenas reacomodadas con vertical.css
+FORMATO=vertical node $P/armar.mjs componer
+FORMATO=vertical node $P/armar.mjs render v001                  # deja $P/out/lanzamiento-vertical-v001.mp4
 ```
 
 Sin voz, `componer` estima los tiempos (2,5 palabras por segundo) y marca el video "SIN VOZ · TIEMPOS ESTIMADOS".
