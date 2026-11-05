@@ -1,20 +1,19 @@
 """Programación de producción de la demo (fase E): generador de pedidos y secuenciador de referencia."""
 
 from datetime import date, datetime, timedelta
-from pathlib import Path
 
 import pytest
 import yaml
 from twin_runtime import planning as P
 from twin_runtime.catalog import Catalog
+from twin_runtime.roots import plant_folder
 
-MODELS = Path(__file__).resolve().parents[3] / "industrial-models"
 PLANTS = ["sauce-plant-v1", "plastic-injection-plant-v1"]
 FIRST, LAST = date(2026, 10, 1), date(2026, 11, 19)
 
 
 def _inputs(plant: str):
-    folder = MODELS / plant
+    folder = plant_folder(plant)
     return Catalog.load(folder), yaml.safe_load((folder / "plant.yaml").read_text(encoding="utf-8"))
 
 

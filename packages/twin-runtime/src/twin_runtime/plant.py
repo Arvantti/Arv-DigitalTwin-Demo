@@ -1,6 +1,6 @@
 """Motor de planta: instancia equipos de un plant.yaml con la librería y los conecta por puertos.
 
-La configuración vive junto al layout, en industrial-models/<planta>/simulation.yaml:
+La configuración vive junto al layout, en industrial-models/<planta>/simulation.yaml (o plants/<planta>/):
 
   equipment  qué equipos del plant.yaml se simulan, con su tipo de librería, preset y parámetros.
   links      conexiones puerto a puerto. Cada enlace debe existir en los flows del plant.yaml,
@@ -16,7 +16,6 @@ simulan los equipos no cambia el resultado.
 
 from __future__ import annotations
 
-import os
 from collections import defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -24,13 +23,13 @@ from typing import Any
 
 from .behavior import EquipmentBehavior, Event
 from .catalog import KIND_NAMES, MOLD_PARAMS, Catalog
-from .library import Expectation, Library, find_library_root
+from .library import Expectation, Library
 from .links import BACKWARD, FORWARD, ITEM_ATTRIBUTES, port_links
 from .plant_hydraulics import HydraulicDomain
+from .roots import MODELS_DIR_NAME, find_models_root, find_plants_root, plant_folder, plant_folders  # noqa: F401 - API pública
 from .sim import Simulator, resolve_path
 from .spec import SpecError, load_yaml
 
-MODELS_DIR_NAME = "industrial-models"
 SIM_FILE = "simulation.yaml"
 # Una salida que entrega unidades o caudal no se puede repartir sin una regla de reparto.
 SPLIT_QUANTITIES = ("units", "flow_kg_h")
@@ -42,14 +41,6 @@ MIN_SERVICE_BAR = 0.05
 def link_id(lk: Link) -> str:
     """Id estable de un enlace en el snapshot; usa ':' para que las rutas de expectativa ('links.<id>.flow_kg_h') no se corten."""
     return f"{lk.src.equipment}:{lk.src.port}>{lk.dst.equipment}:{lk.dst.port}"
-
-
-def find_models_root(library_root: Path | None = None) -> Path:
-    """Carpeta de plantas: $TWIN_MODELS, o industrial-models junto a la librería."""
-    env = os.environ.get("TWIN_MODELS")
-    if env:
-        return Path(env).resolve()
-    return (library_root or find_library_root()).parent / MODELS_DIR_NAME
 
 
 @dataclass(frozen=True)

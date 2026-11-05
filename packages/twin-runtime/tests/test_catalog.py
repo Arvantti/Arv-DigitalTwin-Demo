@@ -9,12 +9,13 @@ import yaml
 from twin_runtime.catalog import Catalog
 from twin_runtime.library import Library
 from twin_runtime.plant import PlantModel
+from twin_runtime.roots import plant_folder
 from twin_runtime.spec import SpecError
 
 ROOT = Path(__file__).resolve().parents[3]
 MODELS = ROOT / "industrial-models"
 PLANT = MODELS / "plastic-injection-plant-v1"
-SAUCE = MODELS / "sauce-plant-v1"
+SAUCE = plant_folder("sauce-plant-v1")
 BOX = MODELS / "corrugated-box-plant-v1"
 
 

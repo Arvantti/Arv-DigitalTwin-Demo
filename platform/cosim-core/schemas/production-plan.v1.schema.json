@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "platform/cosim-core/production-plan.v1",
+  "title": "Programación de producción",
+  "description": "Lo que el APS entrega al gemelo: órdenes con inicio y fin, filas por máquina y lote, paradas e indicadores. Es el mismo formato que /api/schedules/{planta} más la cabecera del plan.",
+  "type": "object",
+  "required": ["contract", "plan_id", "source", "status", "plant", "portfolio_id", "from", "to", "timezone", "orders", "schedule", "kpis"],
+  "properties": {
+    "contract": { "const": "production-plan.v1" },
+    "plan_id": { "type": "string" },
+    "source": { "enum": ["manual", "solver", "reference", "fractal"] },
+    "status": { "enum": ["vigente", "propuesta", "borrador"] },
+    "plant": { "type": "string" },
+    "portfolio_id": { "type": "string" },
+    "from": { "type": "string" },
+    "to": { "type": "string" },
+    "timezone": { "type": "string" },
+    "frozen_until": { "type": "string", "description": "Replaneado desde este instante; lo anterior no cambia." },
+    "orders": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "product", "quantity", "customer", "due", "start", "completion", "late_h"],
+        "properties": {
+          "id": { "type": "string" },
+          "product": { "type": "string" },
+          "quantity": { "type": "number" },
+          "customer": { "type": "string" },
+          "importance": { "enum": ["alta", "normal", "baja"] },
+          "due": { "type": "string" },
+          "start": { "type": "string" },
+          "completion": { "type": "string" },
+          "late_h": { "type": "number" },
+          "unscheduled": { "type": "number" }
+        }
+      }
+    },
+    "schedule": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["op", "order", "product", "stage", "equipment", "start", "end", "quantity"],
+        "properties": {
+          "op": { "type": "string" },
+          "order": { "type": "string" },
+          "product": { "type": "string" },
+          "stage": { "type": "string" },
+          "equipment": { "type": "string" },
+          "start": { "type": "string" },
+          "end": { "type": "string" },
+          "quantity": { "type": "number" },
+          "changeover_min": { "type": "number" },
+          "changeover_kind": { "enum": ["molde", "resina", "color", "receta", "formato", "cip", "alergeno"], "description": "Qué manda en el cambio de referencia: molde, resina o color (inyección); receta, formato, CIP o alérgeno (alimentos)" },
+          "color": { "type": "string" },
+          "batch": { "type": "array", "items": { "type": "integer" }, "minItems": 2, "maxItems": 2, "description": "[lote, de cuántos]" },
+          "batch_kg": { "type": "number", "description": "Tamaño del lote de proceso que alimenta esta fila (una marmita de receta compartida por varios pedidos)" },
+          "batch_id": { "type": "string", "description": "Lote de proceso compartido: las filas de varios pedidos con el mismo batch_id salen de la misma tanda" }
+        }
+      }
+    },
+    "downtime": { "type": "array" },
+    "equipment": { "type": "object" },
+    "kpis": {
+      "type": "object",
+      "required": ["orders", "on_time_pct", "late_orders", "tardiness_h", "changeovers"],
+      "properties": {
+        "orders": { "type": "integer" },
+        "on_time_pct": { "type": "number" },
+        "late_orders": { "type": "integer" },
+        "tardiness_h": { "type": "number" },
+        "changeovers": { "type": "integer" },
+        "changeover_h": { "type": "number" },
+        "mold_changes": { "type": "integer" },
+        "cip_h": { "type": "number", "description": "Horas de limpieza CIP programadas" },
+        "waste_kg": { "type": "number", "description": "Merma: producto que se pierde por cambios, purgas o tiempo de espera vencido" }
+      }
+    },
+    "solver": { "type": "object" }
+  }
+}

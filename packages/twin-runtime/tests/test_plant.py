@@ -9,12 +9,12 @@ import pytest
 import yaml
 from twin_runtime import Library, SpecError, find_library_root
 from twin_runtime.links import check_port_links
-from twin_runtime.plant import SIM_FILE, PlantModel, check_plant_expectations, find_models_root, run_plant_scenario
+from twin_runtime.plant import SIM_FILE, PlantModel, check_plant_expectations, plant_folder, plant_folders, run_plant_scenario
 
 LIB_ROOT = find_library_root(Path(__file__))
-MODELS = find_models_root(LIB_ROOT)
-PLANTS = sorted(p.parent.name for p in MODELS.glob(f"*/{SIM_FILE}"))
-SAUCE = MODELS / "sauce-plant-v1"
+FOLDERS = plant_folders(LIB_ROOT, SIM_FILE)
+PLANTS = list(FOLDERS)
+SAUCE = plant_folder("sauce-plant-v1", LIB_ROOT)
 
 
 @pytest.fixture(scope="module")
@@ -30,14 +30,14 @@ def sauce(lib: Library) -> PlantModel:
 def _scenarios() -> list[tuple[str, str]]:
     out = []
     for name in PLANTS:
-        raw = yaml.safe_load((MODELS / name / SIM_FILE).read_text(encoding="utf-8"))
+        raw = yaml.safe_load((FOLDERS[name] / SIM_FILE).read_text(encoding="utf-8"))
         out += [(name, sc["id"]) for sc in raw.get("scenarios", [])]
     return out
 
 
 @pytest.mark.parametrize(("plant", "scenario"), _scenarios())
 def test_plant_scenarios_meet_expectations(lib: Library, plant: str, scenario: str) -> None:
-    model = PlantModel(MODELS / plant, lib)
+    model = PlantModel(FOLDERS[plant], lib)
     sc = model.scenarios[scenario]
     sim, _ = run_plant_scenario(model, sc)
     assert check_plant_expectations(sim.snapshot(), sc.expect, sim.events) == []
@@ -95,7 +95,7 @@ def test_kettles_share_the_pump_so_only_one_discharges_at_a_time(sauce: PlantMod
 
 
 def test_parts_of_the_injection_machine_reach_its_buffer_without_loss(lib: Library) -> None:
-    model = PlantModel(MODELS / "plastic-injection-plant-v1", lib)
+    model = PlantModel(FOLDERS["plastic-injection-plant-v1"], lib)
     sim, _ = run_plant_scenario(model, model.scenarios["nominal"])
     imm, buf = sim.equipment["imm-06"].true_values(), sim.equipment["buf-06"].true_values()
     # En la hora no se llena la estiba de 7.200: cada pieza buena está suelta en el buffer (una entrega de atraso).

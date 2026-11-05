@@ -37,7 +37,7 @@ from fastapi import Body, FastAPI, HTTPException, Query, Request, WebSocket, Web
 from fastapi.middleware.cors import CORSMiddleware
 from twin_runtime import Library, Simulator, planning
 from twin_runtime.catalog import Catalog
-from twin_runtime.plant import SIM_FILE, PlantModel, find_models_root
+from twin_runtime.plant import SIM_FILE, PlantModel, plant_folders
 from twin_runtime.spec import SpecError, load_yaml
 
 from .audit import audit
@@ -200,15 +200,8 @@ async def simulate(ws: WebSocket, type_id: str) -> None:
 
 # ------------------------------------------------------------------ plantas
 def _plant_folders() -> dict[str, Any]:
-    root = find_models_root(library.root)
-    if not root.exists():
-        return {}
     allowed = {item.strip() for item in os.environ.get("TWIN_ALLOWED_PLANTS", "").split(",") if item.strip()}
-    return {
-        folder.name: folder
-        for folder in sorted(root.iterdir())
-        if (folder / "plant.yaml").exists() and (not allowed or folder.name in allowed)
-    }
+    return {name: folder for name, folder in plant_folders(library.root).items() if not allowed or name in allowed}
 
 
 def _plant_model(plant_id: str) -> PlantModel:

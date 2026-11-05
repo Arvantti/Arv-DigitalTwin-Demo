@@ -19,7 +19,7 @@ jobs:
       - run: uv run pytest -q
       - name: Validar layouts de planta
         run: |
-          for p in industrial-models/*/plant.yaml; do uv run python tools/layout/render_layout.py "$p"; done
+          for p in industrial-models/*/plant.yaml plants/*/plant.yaml; do [ -f "$p" ] || continue; uv run python tools/layout/render_layout.py "$p"; done
 
   web:
     runs-on: ubuntu-latest
