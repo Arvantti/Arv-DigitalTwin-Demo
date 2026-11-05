@@ -509,7 +509,7 @@ function componer() {
     const MOD = [
       ["Integrator", "ERP · CRM · SCADA"],
       ["APS", "Órdenes y recursos"],
-      ["CoSimulation", "Con las reglas de tu planta"],
+      ["CoSimulation", "Reglas de tu planta"],
       ["Fractal", "Escenarios multiobjetivo"],
       ["Control Center", "Monitoreo en vivo"],
       ["DendroScada", "Hardware SCADA propio"],
@@ -549,7 +549,8 @@ function componer() {
         tl.push(`tl.to("#md${i}",{borderColor:"#4ea7ff",background:"#12305a",boxShadow:"0 0 0 2px #4ea7ff, 0 0 60px #2d7ff988",duration:.4},${(tX + 0.3 + elegidos.indexOf(i) * 0.25).toFixed(2)});`);
         to(`#hx-r${i}`, { stroke: "#4ea7ff", strokeWidth: 5, duration: 0.4 }, tX + 0.3 + elegidos.indexOf(i) * 0.25);
       } else {
-        to(`#md${i}`, { opacity: 0.38, duration: 0.5 }, tX + 0.2);
+        to(`#md${i} > *`, { opacity: 0.35, duration: 0.5 }, tX + 0.2);
+        tl.push(`tl.to("#md${i}",{borderColor:"#4ea7ff22",duration:.5},${(tX + 0.2).toFixed(2)});`);
         to(`#hx-r${i}`, { opacity: 0.15, duration: 0.5 }, tX + 0.2);
       }
     });
