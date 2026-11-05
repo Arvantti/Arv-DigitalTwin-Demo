@@ -19,64 +19,64 @@
   "id": "planifica",
   "start": 13.64,
   "voiceAt": 14.14,
-  "voz": 15.23,
-  "dur": 16.53,
+  "voz": 15.31,
+  "dur": 16.61,
   "real": true
  },
  {
   "id": "gemelo",
-  "start": 30.17,
-  "voiceAt": 30.57,
-  "voz": 10.11,
-  "dur": 11.41,
+  "start": 30.25,
+  "voiceAt": 30.65,
+  "voz": 10.03,
+  "dur": 11.33,
   "real": true
  },
  {
   "id": "control",
   "start": 41.58,
   "voiceAt": 41.88,
-  "voz": 6.61,
-  "dur": 7.81,
+  "voz": 6.69,
+  "dur": 7.89,
   "real": true
  },
  {
   "id": "fractal",
-  "start": 49.39,
-  "voiceAt": 49.69,
-  "voz": 13.09,
-  "dur": 14.39,
+  "start": 49.46,
+  "voiceAt": 49.76,
+  "voz": 12.75,
+  "dur": 14.05,
   "real": true
  },
  {
   "id": "asistente",
-  "start": 63.77,
-  "voiceAt": 64.07,
-  "voz": 7.89,
-  "dur": 9.09,
+  "start": 63.51,
+  "voiceAt": 63.81,
+  "voz": 7.81,
+  "dur": 9.01,
   "real": true
  },
  {
   "id": "conecta",
-  "start": 72.86,
-  "voiceAt": 73.16,
-  "voz": 5.64,
-  "dur": 6.84,
+  "start": 72.52,
+  "voiceAt": 72.82,
+  "voz": 5.88,
+  "dur": 7.08,
   "real": true
  },
  {
-  "id": "planes",
-  "start": 79.7,
-  "voiceAt": 80,
-  "voz": 7.97,
-  "dur": 9.47,
+  "id": "modulos",
+  "start": 79.6,
+  "voiceAt": 79.9,
+  "voz": 18.6,
+  "dur": 20.5,
   "real": true
  },
  {
   "id": "cierre",
-  "start": 89.17,
-  "voiceAt": 90.17,
-  "voz": 3.97,
-  "dur": 10.87,
+  "start": 100.1,
+  "voiceAt": 101.1,
+  "voz": 3.87,
+  "dur": 10.77,
   "real": true
  }
 ]

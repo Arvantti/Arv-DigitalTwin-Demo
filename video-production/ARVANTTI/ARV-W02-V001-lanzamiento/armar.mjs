@@ -7,9 +7,11 @@
  *   node armar.mjs componer        mide la voz de cada escena (o la estima) y escribe index.html
  *   node armar.mjs render [vNNN]   renderiza out/lanzamiento-<vNNN>.mp4
  *
- * La voz: un `pnpm video:voice --project <este proyecto>/escenas/<escena>` por escena (pide ENVIAR).
+ *   node armar.mjs voz [--enviar]  voz de las escenas nuevas o cambiadas (ElevenLabs con tiempos por carácter)
+ *   node armar.mjs musica [--enviar]  música épica (ElevenLabs Music) en assets/clips/musica-epica.mp3
  */
 import { execFileSync, spawnSync } from "node:child_process";
+import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -29,12 +31,96 @@ const ESCENAS = [
   { id: "fractal", dir: "06-fractal", lead: 0.3, tail: 1.0 },
   { id: "asistente", dir: "07-asistente", lead: 0.3, tail: 0.9 },
   { id: "conecta", dir: "08-conecta", lead: 0.3, tail: 0.9 },
-  { id: "planes", dir: "09-planes", lead: 0.3, tail: 1.2 },
+  { id: "modulos", dir: "09-modulos", lead: 0.3, tail: 1.6 },
   { id: "cierre", dir: "10-cierre", lead: 1.0, tail: 5.9 },
 ];
 
 const texto = (e) => fs.readFileSync(T(`escenas/${e.dir}/script.md`), "utf8").trim();
 const vozDe = (e) => T(`escenas/${e.dir}/assets/audio/voiceover.mp3`);
+const alineacionDe = (e) => T(`escenas/${e.dir}/assets/audio/alignment.json`);
+
+// Nombres en inglés que la voz en español lee mal: se envían escritos como se pronuncian.
+const PRONUNCIA = [["Integrator", "Íntegreitor"]];
+/** Texto que se envía a la voz y, para cada carácter del original, su posición en ese texto. */
+function paraVoz(texto) {
+  let out = "", idx = [];
+  for (let i = 0; i < texto.length; ) {
+    const p = PRONUNCIA.find(([a]) => texto.startsWith(a, i) && !/\p{L}/u.test(texto[i - 1] || "") && !/\p{L}/u.test(texto[i + a.length] || ""));
+    if (p) {
+      for (let k = 0; k < p[0].length; k++) idx.push(out.length + Math.floor((k * p[1].length) / p[0].length));
+      out += p[1];
+      i += p[0].length;
+    } else idx.push(out.length), (out += texto[i++]);
+  }
+  return { texto: out, idx };
+}
+const VOICE_SETTINGS = { stability: 0.5, similarity_boost: 0.85, style: 0, speed: 1, use_speaker_boost: true };
+const modelo = () => process.env.ELEVENLABS_MODEL_ID || "eleven_v4";
+const hash = (s) => crypto.createHash("sha256").update(s).digest("hex").slice(0, 16);
+function credenciales() {
+  const apiKey = process.env.ELEVENLABS_API_KEY, voiceId = process.env.ELEVENLABS_VOICE_ID;
+  if (!apiKey?.trim() || !voiceId?.trim()) throw new Error("Faltan ELEVENLABS_API_KEY o ELEVENLABS_VOICE_ID en el entorno.");
+  return { apiKey, voiceId };
+}
+
+/**
+ * Voz de cada escena con /with-timestamps: deja voiceover.mp3 y alignment.json (inicio de cada carácter) en
+ * escenas/<escena>/assets/audio/. Solo envía las escenas cuyo texto cambió. Sin --enviar, solo muestra qué enviaría.
+ */
+async function voz() {
+  const enviar = process.argv.includes("--enviar");
+  const pend = ESCENAS.filter((e) => {
+    const a = alineacionDe(e);
+    return !(fs.existsSync(vozDe(e)) && fs.existsSync(a) && JSON.parse(fs.readFileSync(a, "utf8")).hash === hash(`${modelo()}|${paraVoz(texto(e)).texto}`));
+  });
+  console.log(`Voz: ${pend.length} escenas nuevas o cambiadas, ${pend.reduce((n, e) => n + texto(e).length, 0)} caracteres (modelo ${modelo()}).`);
+  if (!pend.length) return;
+  if (!enviar) {
+    pend.forEach((e) => console.log(`- ${e.dir}: ${texto(e)}`));
+    console.log("ElevenLabs recibirá estos textos. Para enviarlos: node armar.mjs voz --enviar");
+    return;
+  }
+  const { apiKey, voiceId } = credenciales();
+  for (const e of pend) {
+    const txt = texto(e), pv = paraVoz(txt);
+    if (txt.includes(apiKey)) throw new Error("El guion parece contener una credencial; no se envía.");
+    const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(voiceId)}/with-timestamps?output_format=mp3_44100_128`, {
+      method: "POST",
+      headers: { "xi-api-key": apiKey, "content-type": "application/json" },
+      body: JSON.stringify({ text: pv.texto, model_id: modelo(), voice_settings: VOICE_SETTINGS }),
+    });
+    if (!res.ok) throw new Error(`${e.dir}: ElevenLabs respondió HTTP ${res.status}; respuesta omitida por seguridad.`);
+    const j = await res.json();
+    const audio = Buffer.from(j.audio_base64, "base64");
+    if (!audio.length) throw new Error(`${e.dir}: audio vacío.`);
+    fs.mkdirSync(path.dirname(vozDe(e)), { recursive: true });
+    fs.writeFileSync(vozDe(e), audio);
+    let a = j.alignment || j.normalized_alignment;
+    // Si se cambió la escritura de algún nombre, la alineación se lleva de vuelta al texto original.
+    if (a && pv.texto !== txt && a.characters?.length === pv.texto.length) a = { characters: [...txt], character_start_times_seconds: pv.idx.map((k) => a.character_start_times_seconds[k]) };
+    fs.writeFileSync(alineacionDe(e), `${JSON.stringify({ hash: hash(`${modelo()}|${pv.texto}`), modelo: modelo(), texto: txt, alignment: a })}\n`);
+    console.log(`${e.dir}: ${duracion(vozDe(e)).toFixed(1)} s`);
+  }
+}
+
+/** Música épica con ElevenLabs Music (texto en musica-prompt.txt), un poco más larga que el video. */
+async function musica() {
+  const out = T("assets/clips/musica-epica.mp3");
+  if (fs.existsSync(out)) return console.log("Ya existe assets/clips/musica-epica.mp3.");
+  const prompt = fs.readFileSync(T("musica-prompt.txt"), "utf8").trim();
+  const ms = Math.round((Math.ceil(tiempos().total) + 1) * 1000);
+  if (!process.argv.includes("--enviar")) return console.log(`ElevenLabs Music recibirá (${ms} ms):\n${prompt}\nPara enviarlo: node armar.mjs musica --enviar`);
+  const { apiKey } = credenciales();
+  const res = await fetch("https://api.elevenlabs.io/v1/music?output_format=mp3_44100_128", {
+    method: "POST",
+    headers: { "xi-api-key": apiKey, "content-type": "application/json" },
+    body: JSON.stringify({ prompt, music_length_ms: ms, model_id: "music_v1" }),
+  });
+  if (!res.ok) throw new Error(`Música: ElevenLabs respondió HTTP ${res.status}; respuesta omitida por seguridad.`);
+  fs.mkdirSync(path.dirname(out), { recursive: true });
+  fs.writeFileSync(out, Buffer.from(await res.arrayBuffer()));
+  console.log(`musica-epica.mp3: ${duracion(out).toFixed(1)} s`);
+}
 function duracion(f) {
   const r = spawnSync("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", f], { encoding: "utf8" });
   return Number(r.stdout.trim());
@@ -69,6 +155,12 @@ function pausas(f) {
 function enPalabra(x, frag) {
   const i = x.txt.indexOf(frag);
   if (i < 0) throw new Error(`"${frag}" no está en ${x.id}`);
+  // Con la alineación de ElevenLabs, el segundo exacto en que empieza la palabra.
+  if (x.real && fs.existsSync(alineacionDe(x))) {
+    const j = JSON.parse(fs.readFileSync(alineacionDe(x), "utf8"));
+    const a = j.alignment;
+    if (j.texto === x.txt && a?.character_start_times_seconds?.length === x.txt.length) return +(x.voiceAt + a.character_start_times_seconds[i]).toFixed(2);
+  }
   const cortes = [0];
   for (const m of x.txt.matchAll(/[.?!:]\s+/g)) cortes.push(m.index + m[0].length);
   if (x.real) {
@@ -222,7 +314,7 @@ function componer() {
       { src: "assets/tomas/ui-aps-propuesta.png" },
     ];
     clip("e-planifica", "scene", s, d, `
-      <div class="col">${kicker("01", "PLANIFICA")}<h2 class="big">${words("Todo empieza con el plan.")}</h2>
+      <div class="col">${kicker("01", "APS · COSIMULATION")}<h2 class="big">${words("Todo empieza con el plan.")}</h2>
       <div class="chips">${["Recursos", "Turnos", "Cambios", "Entregas"].map((c) => `<span class="chip">${c}</span>`).join("")}</div>
       <ul class="verbs"><li>Arrastra una orden.</li><li>Fija un pedido.</li><li>Elige un objetivo.</li><li>Calcula.</li></ul></div>
       <div class="right">${device("pl", shots)}</div>`, 3);
@@ -265,7 +357,7 @@ function componer() {
       <div class="bleed b4"><img src="assets/tomas/3d-ui.png" alt=""></div>
       <div class="vignette"></div>
       <div class="hud"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i><div class="scan"></div><p class="live">● PROYECCIÓN · HORA POR HORA</p><div class="scrub"><i></i></div></div>
-      <div class="lowerleft">${kicker("02", "GEMELO 3D")}<h2 class="big">${words("Míralo vivir.")}</h2></div>
+      <div class="lowerleft">${kicker("02", "DIGITAL TWIN 3D")}<h2 class="big">${words("Míralo vivir.")}</h2></div>
       <p class="label" id="lb-0">Máquinas</p><p class="label" id="lb-1">Líneas</p><p class="label" id="lb-2">Personas</p><p class="label" id="lb-3">Inventarios</p>
       <div class="play"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="46"/><path d="M40 30 L72 50 L40 70 Z"/></svg></div>`, 5);
     at("#lapso", { opacity: 0, scale: 1.15 }, { opacity: 1, scale: 1.04, duration: tI - s, ease: "power1.out" }, s);
@@ -298,7 +390,7 @@ function componer() {
     const x = S.control; const [s, d] = span(x);
     const tO = enPalabra(x, "O E E"), tU = enPalabra(x, "ocupación"), tB = enPalabra(x, "cuellos");
     clip("e-control", "scene", s, d, `
-      <div class="top">${kicker("03", "CENTRO DE CONTROL")}<h2 class="mid">${words("Cada indicador, en su lugar.")}</h2></div>
+      <div class="top">${kicker("03", "CONTROL CENTER")}<h2 class="mid">${words("Cada indicador, en su lugar.")}</h2></div>
       <div class="wide">${device("cc", [{ src: "assets/tomas/ui-control.png" }])}</div>
       <div class="chips right3">${["OEE", "Ocupación", "Cuellos de botella"].map((c) => `<span class="chip lg">${c}</span>`).join("")}</div>`, 3);
     enter("e-control", s);
@@ -362,8 +454,8 @@ function componer() {
     const q = "¿Qué recurso va más cargado esta semana?";
     const a = "La línea 2, con 71 % de ocupación. Fractal puede repartir su carga sin mover ninguna entrega.";
     clip("e-asistente", "scene", s, d, `
-      <div class="topl">${kicker("05", "ASISTENTE IA")}</div>
-      <div class="chat"><div class="bar"><span class="dot"></span> Asistente IA <span class="badge">Solo consulta · según tu rol</span></div>
+      <div class="topl">${kicker("05", "AI ASSISTANT")}</div>
+      <div class="chat"><div class="bar"><span class="dot"></span> AI Assistant <span class="badge">Solo consulta · según tu rol</span></div>
       <div class="msg me">${q.split("").map((c) => `<span class="ch">${c}</span>`).join("")}</div>
       <div class="msg ai">${words(a, "aw")}</div>
       <div class="wave">${Array.from({ length: 28 }, (_, i) => `<i style="--h:${(0.3 + 0.7 * Math.abs(Math.sin(i * 1.7))).toFixed(2)}"></i>`).join("")}</div></div>`, 3);
@@ -388,7 +480,7 @@ function componer() {
     const dots = left.map((p, i) => `<circle class="pk" id="pk${i}" r="7" cx="${p.x + 110}" cy="${p.y}"/>`).join("") + `<circle class="pk" id="pkE" r="7" cx="${erp.x - 120}" cy="${erp.y}"/>`;
     clip("e-conecta", "scene", s, d, `
       <div class="bleed dim"><img src="assets/tomas/ui-arquitectura.png" alt=""></div>
-      <div class="topl">${kicker("06", "CONECTA")}</div>
+      <div class="topl">${kicker("06", "INTEGRATOR · DENDROSCADA")}</div>
       <svg class="net" viewBox="0 0 1920 1080">${lines}${dots}</svg>
       ${left.map((p, i) => `<div class="node m" id="nd${i}" style="left:${p.x - 110}px;top:${p.y - 42}px">${p.n}<small>PLC</small></div>`).join("")}
       <div class="proto" style="left:560px;top:${core.y - 160}px">OPC UA · MQTT</div>
@@ -411,32 +503,59 @@ function componer() {
     leave("e-conecta", s + d);
   }
 
-  // 9. Planes.
+  // 9. Módulos: el heptágono. Núcleo Arvantti Digital Twin y siete módulos alrededor, que se encienden al nombrarlos.
   {
-    const x = S.planes; const [s, d] = span(x);
-    const tP = enPalabra(x, "Planifica"), tG = enPalabra(x, "Gemelo"), tF = enPalabra(x, "Fractal"), tI = enPalabra(x, "Cada uno"), tU = enPalabra(x, "diez usuarios");
-    const planes = [
-      ["Planifica", ["APS con tabla y Gantt", "Versiones de la programación", "Cosimulador"]],
-      ["Gemelo", ["Todo Planifica, más:", "Gemelo 3D de la planta", "Centro de control", "Emulador"]],
-      ["Fractal", ["Todo Gemelo, más:", "Escenarios multiobjetivo", "Asistente IA"]],
+    const x = S.modulos; const [s, d] = span(x);
+    const MOD = [
+      ["Integrator", "ERP · CRM · SCADA"],
+      ["APS", "Órdenes y recursos"],
+      ["CoSimulation", "Reglas de tu planta"],
+      ["Fractal", "Escenarios multiobjetivo"],
+      ["Control Center", "Monitoreo en vivo"],
+      ["DendroScada", "Hardware SCADA propio"],
+      ["AI Assistant", "IA privada"],
     ];
-    clip("e-planes", "scene", s, d, `
-      <h2 class="center tp">${words("Tres planes.")}</h2>
-      <div class="plans">${planes.map(([n, l], i) => `<div class="plan p${i}"><p class="pn">${n}</p><ul>${l.map((t) => `<li>${t}</li>`).join("")}</ul></div>`).join("")}</div>
-      <div class="incl"><i></i></div>
-      <p class="users"><b>10</b> usuarios incluidos en cada plan</p>`, 3);
-    enter("e-planes", s);
-    at("#e-planes .tp .w", { opacity: 0, y: 40, filter: "blur(10px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.6, stagger: 0.1, ease: "power3.out" }, x.voiceAt - 0.1);
-    to("#e-planes .tp", { y: -330, scale: 0.6, duration: 0.7, ease: "power3.inOut" }, tP - 0.5);
-    [tP, tG, tF].forEach((t, i) => {
-      at(`#e-planes .p${i}`, { opacity: 0, y: 140, rotateX: -25 }, { opacity: 1, y: 0, rotateX: 0, duration: 0.8, ease: "power3.out" }, t - 0.15);
-      at(`#e-planes .p${i} li`, { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 0.35, stagger: 0.08 }, t + 0.25);
+    const C = { x: 960, y: 590 }, RX = 540, RY = 330;
+    const V = MOD.map((_, i) => { const a = -Math.PI / 2 + (i * 2 * Math.PI) / 7; return { x: Math.round(C.x + RX * Math.cos(a)), y: Math.round(C.y + RY * Math.sin(a)) }; });
+    const tN = enPalabra(x, "Todo corre"), tA = enPalabra(x, "Arvantti"), tS = enPalabra(x, "siete módulos"), tX = enPalabra(x, "Activas");
+    const tM = MOD.map(([n]) => enPalabra(x, n));
+    const elegidos = [1, 2, 3]; // ejemplo de selección: APS, CoSimulation y Fractal sobre el núcleo
+    clip("e-modulos", "scene", s, d, `
+      <h2 class="center hx">${words("Un núcleo. Siete módulos.")}</h2>
+      <h2 class="center hx2">${words("Elige tus módulos.")} <span class="sinu">Sin cobro por usuario.</span></h2>
+      <svg class="hepta" viewBox="0 0 1920 1080">
+        <polygon id="hx-borde" points="${V.map((v) => `${v.x},${v.y}`).join(" ")}" pathLength="1"/>
+        ${V.map((v, i) => `<line id="hx-r${i}" x1="${C.x}" y1="${C.y}" x2="${v.x}" y2="${v.y}" pathLength="1"/>`).join("")}
+      </svg>
+      <div class="hcore" style="left:${C.x - 150}px;top:${C.y - 150}px"><img src="assets/clips/marca.png" alt=""><b>Arvantti</b><span>Digital Twin</span><small>Gemelo 3D · núcleo</small></div>
+      ${MOD.map(([n, sub], i) => `<div class="mod" id="md${i}" style="left:${V[i].x - 170}px;top:${V[i].y - 52}px"><i>${i + 1}</i><p>${n}</p><small>${sub}</small></div>`).join("")}`, 3);
+    enter("e-modulos", s);
+    at("#e-modulos .hx .w", { opacity: 0, y: 30, filter: "blur(10px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.6, stagger: 0.1, ease: "power3.out" }, x.voiceAt - 0.1);
+    at("#e-modulos .hcore", { opacity: 0, scale: 0.4 }, { opacity: 1, scale: 1, duration: 0.9, ease: "back.out(1.7)" }, tA - 0.3);
+    tl.push(`tl.to("#e-modulos .hcore",{boxShadow:"0 0 0 3px #4ea7ff, 0 0 120px #2d7ff9aa",duration:.6,yoyo:true,repeat:1},${(tA + 0.6).toFixed(2)});`);
+    at("#hx-borde", { strokeDashoffset: 1, opacity: 1 }, { strokeDashoffset: 0, opacity: 1, duration: Math.max(0.8, tM[0] - tS), ease: "power2.inOut" }, tS - 0.1);
+    MOD.forEach((_, i) => {
+      at(`#md${i}`, { opacity: 0, scale: 0.6, y: 20 }, { opacity: 1, scale: 1, y: 0, duration: 0.5, ease: "back.out(2)" }, tM[i] - 0.12);
+      at(`#hx-r${i}`, { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.45, ease: "power2.out" }, tM[i] - 0.12);
+      tl.push(`tl.to("#md${i}",{boxShadow:"0 0 0 2px #4ea7ff, 0 0 50px #2d7ff9aa",duration:.25,yoyo:true,repeat:1},${tM[i].toFixed(2)});`);
+      sfx(`9${i}`, "pop.mp3", tM[i], 0.18);
     });
-    at("#e-planes .incl i", { scaleX: 0 }, { scaleX: 1, duration: 1.2, ease: "power2.inOut" }, tI);
-    at("#e-planes .users", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6, ease: "back.out(1.6)" }, tU - 0.1);
-    at("#e-planes .users b", { scale: 0.4 }, { scale: 1, duration: 0.6, ease: "back.out(2.4)" }, tU);
-    [tP, tG, tF].forEach((t, i) => sfx(`9${i}`, "pop.mp3", t, 0.25));
-    leave("e-planes", s + d);
+    // "Activas solo los que necesitas": se encienden unos módulos de ejemplo y los demás quedan en espera.
+    to("#e-modulos .hx", { opacity: 0, y: -20, duration: 0.4 }, tX - 0.3);
+    at("#e-modulos .hx2 .w", { opacity: 0, y: 30, filter: "blur(10px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.5, stagger: 0.1, ease: "power3.out" }, tX);
+    at("#e-modulos .sinu", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.6, ease: "back.out(1.6)" }, enPalabra(x, "sin cobro"));
+    MOD.forEach((_, i) => {
+      if (elegidos.includes(i)) {
+        tl.push(`tl.to("#md${i}",{borderColor:"#4ea7ff",background:"#12305a",boxShadow:"0 0 0 2px #4ea7ff, 0 0 60px #2d7ff988",duration:.4},${(tX + 0.3 + elegidos.indexOf(i) * 0.25).toFixed(2)});`);
+        to(`#hx-r${i}`, { stroke: "#4ea7ff", strokeWidth: 5, duration: 0.4 }, tX + 0.3 + elegidos.indexOf(i) * 0.25);
+      } else {
+        to(`#md${i} > *`, { opacity: 0.35, duration: 0.5 }, tX + 0.2);
+        tl.push(`tl.to("#md${i}",{borderColor:"#4ea7ff22",duration:.5},${(tX + 0.2).toFixed(2)});`);
+        to(`#hx-r${i}`, { opacity: 0.15, duration: 0.5 }, tX + 0.2);
+      }
+    });
+    sfx(9, "whoosh-short.mp3", s, 0.3);
+    leave("e-modulos", s + d);
   }
 
   // 10. Cierre.
@@ -457,7 +576,7 @@ function componer() {
     sfx(10, "hit.wav", x.voiceAt, 0.3);
   }
 
-  [S.titulo, S.planifica, S.gemelo, S.fractal, S.planes, S.cierre].forEach((x) => sweep(x.start));
+  [S.titulo, S.planifica, S.gemelo, S.fractal, S.modulos, S.cierre].forEach((x) => sweep(x.start));
 
   // Voz por escena y música.
   escenas.forEach((x) => { if (x.real) audio(`voz-${x.id}`, `escenas/${x.dir}/assets/audio/voiceover.mp3`, x.voiceAt, x.voz, 1); });
@@ -483,9 +602,9 @@ function render(v = "v001") {
 }
 
 const [cmd, arg] = process.argv.slice(2);
-const cmds = { preparar, componer, render: () => render(arg), tiempos: () => console.log(tiempos()) };
+const cmds = { preparar, voz, musica, componer, render: () => render(arg), tiempos: () => console.log(tiempos()) };
 if (!cmds[cmd]) {
-  console.log("Uso: node armar.mjs preparar | componer | render [vNNN] | tiempos");
+  console.log("Uso: node armar.mjs preparar | voz [--enviar] | musica [--enviar] | componer | render [vNNN] | tiempos");
   process.exit(1);
 }
-cmds[cmd]();
+await cmds[cmd]();

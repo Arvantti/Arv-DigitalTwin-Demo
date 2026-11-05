@@ -31,7 +31,7 @@ Mensaje central: cuando una máquina falla, el gemelo avisa, el cosimulador repl
 - duración: 14 s
 - en pantalla: zoom al panel PLC de la IMM-21
 - foco: vemos su PLC => IMM-21 => PLC de IMM-21
-- foco: la orden que está haciendo => Orden + PED-D10-03 => Orden en curso
+- foco: la orden que está haciendo => Orden + PED-D10-03 + · Plásticos del Caribe => Orden en curso
 - foco: baldes de doce litros => Balde de 12 L => Balde de 12 L
 
 > Al hacer clic en una máquina vemos su PLC: la orden que está haciendo, el tiempo de ciclo, las unidades buenas, los rechazos y el OEE del turno. La inyectora veintiuno fabrica baldes de doce litros.
@@ -40,7 +40,7 @@ Mensaje central: cuando una máquina falla, el gemelo avisa, el cosimulador repl
 - imagen: capturas/03-falla.png
 - duración: 14 s
 - en pantalla: resaltar la alarma roja de la IMM-21
-- foco: se quema la resistencia => 1 fuera de servicio => IMM-21 fuera de servicio
+- foco: se quema la resistencia => 9 produciendo · 3 sin orden · + 1 fuera de servicio + · programación APS-SOL-01 => IMM-21 fuera de servicio
 - foco: hasta el día doce => — => Reparación hasta el día 12, 10:00
 
 > De pronto se quema la resistencia del cañón de la inyectora veintiuno. Mantenimiento estima tres días de reparación: hasta el día doce a las diez de la mañana.
@@ -104,12 +104,13 @@ Mensaje central: cuando una máquina falla, el gemelo avisa, el cosimulador repl
 - imagen: capturas/09-emulador-despues.png
 - duración: 10 s
 - en pantalla: la IMM-20 produciendo
-- foco: el nuevo plan => programación => Emulador con el plan nuevo
+- foco: el nuevo plan => 9 produciendo · 2 sin orden · + 1 fuera de servicio + · programación FRA-01-C => Emulador con el plan nuevo
 
 > Y en el emulador la planta sigue trabajando con el nuevo plan.
 
 ### S11 · El gemelo 3D
 - imagen: capturas/10-gemelo-3d.png
+- orbita: orbitas/10-imm21
 - duración: 14 s
 - en pantalla: la IMM-21 en rojo y su PLC a la derecha
 
@@ -117,6 +118,7 @@ Mensaje central: cuando una máquina falla, el gemelo avisa, el cosimulador repl
 
 ### S12 · El 3D con el plan nuevo
 - imagen: capturas/11-gemelo-3d-despues.png
+- orbita: orbitas/11-imm20
 - duración: 14 s
 - en pantalla: etiqueta de la IMM-20 con la orden de baldes
 
@@ -124,17 +126,19 @@ Mensaje central: cuando una máquina falla, el gemelo avisa, el cosimulador repl
 
 ### S13 · El montaje del molde en el gemelo 3D
 - imagen: capturas/12-gemelo-montaje-grua.jpg
+- orbita: orbitas/12-montaje-ida
 - duración: 18 s
-- en pantalla: la grúa, el molde de balde y el letrero morado de montaje
+- en pantalla: IMM-20, el carro de moldes y el letrero morado del cambio de molde
 
-> Y la opción adoptada no se queda en una tabla: con el play, el gemelo 3D muestra el cambio de molde. El puente grúa baja el molde de la inyectora veintiuno al carro y un operario lo lleva por el pasillo, a la otra máquina o al almacén de moldes.
+> Y la opción adoptada no se queda en una tabla: con el play, el gemelo 3D muestra el cambio de molde en la inyectora veinte. El puente grúa saca su molde y lo baja al carro, y un operario lo lleva al almacén de moldes.
 
 ### S14 · El montaje en la inyectora veinte
 - imagen: capturas/13-gemelo-montaje-imm20.jpg
+- orbita: orbitas/13-montaje-vuelta
 - duración: 16 s
-- en pantalla: la inyectora veinte con el letrero de montaje y el carro vacío
+- en pantalla: el carro que vuelve del almacén, el montaje y IMM-20 produciendo baldes
 
-> El molde llega a la inyectora veinte, mudado desde la veintiuno o el de repuesto del almacén, según la opción que se vea. Con el repuesto son noventa minutos de montaje, que nunca se parten, y el letrero dice qué molde entra y en qué fase va.
+> Regresa con el molde de balde de repuesto, la grúa lo monta y la inyectora veinte queda produciendo baldes. Son noventa minutos de montaje, que nunca se parten, y el letrero dice qué molde entra y en qué fase va.
 
 ### S15 · El ahorro potencial
 - imagen: capturas/06-fractal.png

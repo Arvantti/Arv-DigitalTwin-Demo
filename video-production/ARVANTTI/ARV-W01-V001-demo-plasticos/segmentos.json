@@ -43,7 +43,8 @@
           "titulo": "La planta y su gemelo",
           "texto": "Esta es una planta de inyección de plásticos y su gemelo digital. Tiene doce inyectoras, una celda de ensamble, almacenes y montacargas, y fabrica cuatro productos: cubiertos desechables, baldes de doce litros y papeleras de pedal.",
           "imagen": "3-contingencia-falla/capturas/10-gemelo-3d.png",
-          "enPantalla": null
+          "enPantalla": null,
+          "orbita": "3-contingencia-falla/orbitas/00-planta"
         },
         {
           "id": "0-S02",
@@ -404,12 +405,12 @@
           "focos": [
             {
               "frase": "la inyectora diecinueve",
-              "objetivo": "IMM-19",
+              "objetivo": "@27,836,136,28",
               "rotulo": "IMM-19: cuerpo"
             },
             {
               "frase": "la siete hace el pedal",
-              "objetivo": "IMM-07",
+              "objetivo": "@27,796,125,28",
               "rotulo": "IMM-07: pedal"
             },
             {
@@ -499,14 +500,14 @@
         {
           "id": "1-S11",
           "titulo": "Más capacidad disponible",
-          "texto": "Con una máquina más en juego, la planta tiene mil doscientas cuarenta horas disponibles en la semana y la ocupación baja al sesenta coma siete por ciento. Queda espacio para recibir más pedidos.",
+          "texto": "Ahora la inyectora veinte también hace baldes: monta su molde y entra en juego. Con una máquina más, la ocupación de la planta baja al sesenta coma siete por ciento. Queda espacio para recibir más pedidos.",
           "imagen": "1-calcular-programacion/capturas/09-centro-control-balanceado.png",
           "enPantalla": "el indicador de ocupación semanal",
           "focos": [
             {
-              "frase": "mil doscientas cuarenta horas",
-              "objetivo": "IMM-20",
-              "rotulo": "IMM-20 entra en juego"
+              "frase": "la inyectora veinte",
+              "objetivo": "IMM-20 + Montaje de mold-balde-12l",
+              "rotulo": "IMM-20 monta el molde de balde"
             },
             {
               "frase": "sesenta coma siete",
@@ -691,6 +692,7 @@
           "texto": "En el gemelo 3D seguimos la misma orden. El panel dice qué órdenes se están procesando en este instante y en qué máquinas. La orden adelantada todavía está pendiente: cero de doscientas once mil unidades, y termina programada el día once a las diez de la noche, antes de la nueva entrega.",
           "imagen": "2-cambio-fecha-pedido/capturas/06-gemelo-orden.png",
           "enPantalla": "el panel ÓRDENES EN EL GEMELO con PED-D12-01 seguida y la lista EN PROCESO AHORA",
+          "orbita": "2-cambio-fecha-pedido/orbitas/06-imm01",
           "focos": [
             {
               "frase": "qué órdenes se están procesando",
@@ -792,7 +794,7 @@
             },
             {
               "frase": "la orden que está haciendo",
-              "objetivo": "Orden + PED-D10-03",
+              "objetivo": "Orden + PED-D10-03 + · Plásticos del Caribe",
               "rotulo": "Orden en curso"
             },
             {
@@ -811,7 +813,7 @@
           "focos": [
             {
               "frase": "se quema la resistencia",
-              "objetivo": "1 fuera de servicio",
+              "objetivo": "9 produciendo · 3 sin orden · + 1 fuera de servicio + · programación APS-SOL-01",
               "rotulo": "IMM-21 fuera de servicio"
             },
             {
@@ -947,7 +949,7 @@
           "focos": [
             {
               "frase": "el nuevo plan",
-              "objetivo": "programación",
+              "objetivo": "9 produciendo · 2 sin orden · + 1 fuera de servicio + · programación FRA-01-C",
               "rotulo": "Emulador con el plan nuevo"
             }
           ]
@@ -957,28 +959,32 @@
           "titulo": "El gemelo 3D",
           "texto": "En el gemelo 3D vemos lo mismo: la inyectora veintiuno marcada fuera de servicio, con su ocupación contra disponibilidad por día.",
           "imagen": "3-contingencia-falla/capturas/10-gemelo-3d.png",
-          "enPantalla": "la IMM-21 en rojo y su PLC a la derecha"
+          "enPantalla": "la IMM-21 en rojo y su PLC a la derecha",
+          "orbita": "3-contingencia-falla/orbitas/10-imm21"
         },
         {
           "id": "3-S12",
           "titulo": "El 3D con el plan nuevo",
           "texto": "Y con el plan adoptado, la inyectora veinte aparece produciendo baldes. Del aviso de falla a un plan nuevo en la planta, en menos de un minuto.",
           "imagen": "3-contingencia-falla/capturas/11-gemelo-3d-despues.png",
-          "enPantalla": "etiqueta de la IMM-20 con la orden de baldes"
+          "enPantalla": "etiqueta de la IMM-20 con la orden de baldes",
+          "orbita": "3-contingencia-falla/orbitas/11-imm20"
         },
         {
           "id": "3-S13",
           "titulo": "El montaje del molde en el gemelo 3D",
-          "texto": "Y la opción adoptada no se queda en una tabla: con el play, el gemelo 3D muestra el cambio de molde. El puente grúa baja el molde de la inyectora veintiuno al carro y un operario lo lleva por el pasillo, a la otra máquina o al almacén de moldes.",
+          "texto": "Y la opción adoptada no se queda en una tabla: con el play, el gemelo 3D muestra el cambio de molde en la inyectora veinte. El puente grúa saca su molde y lo baja al carro, y un operario lo lleva al almacén de moldes.",
           "imagen": "3-contingencia-falla/capturas/12-gemelo-montaje-grua.jpg",
-          "enPantalla": "la grúa, el molde de balde y el letrero morado de montaje"
+          "enPantalla": "IMM-20, el carro de moldes y el letrero morado del cambio de molde",
+          "orbita": "3-contingencia-falla/orbitas/12-montaje-ida"
         },
         {
           "id": "3-S14",
           "titulo": "El montaje en la inyectora veinte",
-          "texto": "El molde llega a la inyectora veinte, mudado desde la veintiuno o el de repuesto del almacén, según la opción que se vea. Con el repuesto son noventa minutos de montaje, que nunca se parten, y el letrero dice qué molde entra y en qué fase va.",
+          "texto": "Regresa con el molde de balde de repuesto, la grúa lo monta y la inyectora veinte queda produciendo baldes. Son noventa minutos de montaje, que nunca se parten, y el letrero dice qué molde entra y en qué fase va.",
           "imagen": "3-contingencia-falla/capturas/13-gemelo-montaje-imm20.jpg",
-          "enPantalla": "la inyectora veinte con el letrero de montaje y el carro vacío"
+          "enPantalla": "el carro que vuelve del almacén, el montaje y IMM-20 produciendo baldes",
+          "orbita": "3-contingencia-falla/orbitas/13-montaje-vuelta"
         },
         {
           "id": "3-S15",
@@ -1172,7 +1178,7 @@
           "focos": [
             {
               "frase": "la veintiuno y la veintitrés",
-              "objetivo": "IMM-21 + IMM-23",
+              "objetivo": "@27,968,134,72",
               "rotulo": "IMM-21 e IMM-23"
             },
             {
@@ -1234,7 +1240,7 @@
           "focos": [
             {
               "frase": "las barras del balde",
-              "objetivo": "IMM-21 + IMM-23",
+              "objetivo": "@27,966,1880,76",
               "rotulo": "Casi sin rayas"
             }
           ]

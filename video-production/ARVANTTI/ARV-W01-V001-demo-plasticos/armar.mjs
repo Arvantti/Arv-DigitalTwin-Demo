@@ -16,7 +16,7 @@
  */
 import { createHash } from "node:crypto";
 import { execFileSync, spawnSync } from "node:child_process";
-import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { basename, dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -77,7 +77,7 @@ const hash = (s) => createHash("sha256").update(s).digest("hex").slice(0, 16);
 // ---------- preparar ----------
 
 /**
- * Lee los bloques "### Snn · título" de un guion: "- imagen:", "- en pantalla:", "- tarjeta:", las líneas
+ * Lee los bloques "### Snn · título" de un guion: "- imagen:", "- en pantalla:", "- tarjeta:", "- orbita:" (vuelo 3D), las líneas
  * "- foco: <frase de la voz> => <texto en pantalla o clave de la tarjeta> [=> rótulo]" y las citas ">" (la voz).
  */
 function parseGuion(md, cap, folder) {
@@ -93,6 +93,7 @@ function parseGuion(md, cap, folder) {
     if (imagen && imagen.startsWith("capturas/")) imagen = `${folder}/${imagen}`;
     if (imagen && !/\.(png|jpe?g)$/i.test(imagen)) imagen = null;
     const tarjeta = field("tarjeta");
+    const orbita = field("orbita");
     const focos = [...block.matchAll(/^- foco:\s*(.+)$/gm)].map(([, l]) => {
       const [frase, objetivo, rotulo] = l.split("=>").map((x) => x.trim());
       return { frase, objetivo, ...(rotulo ? { rotulo } : {}) };
@@ -104,6 +105,7 @@ function parseGuion(md, cap, folder) {
       imagen,
       enPantalla: field("en pantalla"),
       ...(tarjeta ? { tarjeta } : {}),
+      ...(orbita ? { orbita: orbita.startsWith("orbitas/") ? `${folder}/${orbita}` : orbita } : {}),
       ...(focos.length ? { focos } : {}),
     });
   }
@@ -140,6 +142,22 @@ const load = () => JSON.parse(readFileSync(join(HERE, "segmentos.json"), "utf8")
 
 // ---------- ElevenLabs ----------
 
+// Nombres en inglés que la voz en español leería mal: se envían escritos como se pronuncian; el subtítulo no cambia.
+const PRONUNCIA = [["Integrator", "Íntegreitor"]];
+/** Texto que se envía a la voz y, para cada carácter del original, su posición en ese texto. */
+function paraVoz(texto) {
+  let out = "", idx = [];
+  for (let i = 0; i < texto.length; ) {
+    const p = PRONUNCIA.find(([a]) => texto.startsWith(a, i) && !/\p{L}/u.test(texto[i - 1] || "") && !/\p{L}/u.test(texto[i + a.length] || ""));
+    if (p) {
+      for (let k = 0; k < p[0].length; k++) idx.push(out.length + Math.floor((k * p[1].length) / p[0].length));
+      out += p[1];
+      i += p[0].length;
+    } else idx.push(out.length), (out += texto[i++]);
+  }
+  return { texto: out, idx };
+}
+
 const VOICE_SETTINGS = { stability: 0.5, similarity_boost: 0.85, style: 0, speed: 1, use_speaker_boost: true };
 const modelo = () => process.env.ELEVENLABS_MODEL_ID || "eleven_v4";
 
@@ -156,7 +174,7 @@ async function voz() {
   const pend = [];
   for (const c of load().capitulos)
     c.segmentos.forEach((s, i) => {
-      const h = hash(`${modelo()}|${s.texto}`);
+      const h = hash(`${modelo()}|${paraVoz(s.texto).texto}`);
       const meta = join(VOZ, `${s.id}.json`);
       if (existsSync(meta) && existsSync(join(VOZ, `${s.id}.mp3`)) && JSON.parse(readFileSync(meta, "utf8")).hash === h) return;
       pend.push({ s, h, prev: c.segmentos[i - 1]?.texto, next: c.segmentos[i + 1]?.texto });
@@ -178,7 +196,7 @@ async function voz() {
         method: "POST",
         headers: { "xi-api-key": apiKey, "content-type": "application/json" },
         body: JSON.stringify({
-          text: p.s.texto,
+          text: paraVoz(p.s.texto).texto,
           model_id: modelo(),
           voice_settings: VOICE_SETTINGS,
           ...(contexto ? { ...(p.prev ? { previous_text: p.prev } : {}), ...(p.next ? { next_text: p.next } : {}) } : {}),
@@ -191,7 +209,11 @@ async function voz() {
     const audio = Buffer.from(j.audio_base64, "base64");
     if (!audio.length) throw new Error(`${p.s.id}: audio vacío.`);
     writeFileSync(join(VOZ, `${p.s.id}.mp3`), audio);
-    const a = j.alignment || j.normalized_alignment;
+    let a = j.alignment || j.normalized_alignment;
+    // Si se cambió la escritura de algún nombre, la alineación se lleva de vuelta al texto original.
+    const pv = paraVoz(p.s.texto);
+    if (a && pv.texto !== p.s.texto && a.characters?.length === pv.texto.length)
+      a = { characters: [...p.s.texto], character_start_times_seconds: pv.idx.map((k) => a.character_start_times_seconds[k]), character_end_times_seconds: pv.idx.map((k) => a.character_end_times_seconds[k]) };
     writeFileSync(join(VOZ, `${p.s.id}.json`), `${JSON.stringify({ hash: p.h, modelo: modelo(), texto: p.s.texto, alignment: a })}\n`);
     console.log(`${p.s.id}: ${dur(join(VOZ, `${p.s.id}.mp3`)).toFixed(1)} s`);
   }
@@ -240,9 +262,12 @@ function vozTemporal() {
 
 // ---------- componer ----------
 
+/** Ancho y alto de una captura (PNG o JPG). */
 function pngSize(f) {
   const b = readFileSync(f);
-  return [b.readUInt32BE(16), b.readUInt32BE(20)];
+  if (b.readUInt32BE(0) === 0x89504e47) return [b.readUInt32BE(16), b.readUInt32BE(20)];
+  const [w, h] = sh("ffprobe", ["-v", "error", "-select_streams", "v:0", "-show_entries", "stream=width,height", "-of", "csv=p=0", f]).trim().split(",").map(Number);
+  return [w, h];
 }
 
 function imagen(rel) {
@@ -315,7 +340,8 @@ function buscarTexto(textos, objetivo, cerca = null) {
   if (!cands.length) cands = textos.filter((x) => normal(x.s).includes(t)).sort((a, b) => a.s.length - b.s.length);
   if (!cands.length) return null;
   if (cerca) {
-    const d = (r) => Math.hypot(r.x + r.w / 2 - cerca.x - cerca.w / 2, r.y + r.h / 2 - cerca.y - cerca.h / 2);
+    // En las tarjetas el dato va debajo o a la derecha de su título: lo que queda arriba o a la izquierda pesa menos.
+    const d = (r) => Math.hypot(r.x + r.w / 2 - cerca.x - cerca.w / 2, r.y + r.h / 2 - cerca.y - cerca.h / 2) * (r.y < cerca.y - 5 ? 1.8 : 1) * (r.x < cerca.x - 5 ? 1.8 : 1);
     cands = [...cands].sort((a, b) => d(a) - d(b));
   }
   return cands[0];
@@ -323,17 +349,22 @@ function buscarTexto(textos, objetivo, cerca = null) {
 
 function rectFoco(objetivo, textos) {
   const lit = objetivo.match(/^@(\d+),(\d+),(\d+),(\d+)$/);
-  if (lit) return { x: +lit[1], y: +lit[2], w: +lit[3], h: +lit[4] };
+  if (lit) {
+    const r = { x: +lit[1], y: +lit[2], w: +lit[3], h: +lit[4] };
+    return { ...r, partes: [r] };
+  }
   // "texto + texto" une los recuadros (cada uno el más cercano al primero).
   const partes = objetivo.split(" + ").map((x) => x.trim());
   let base = null, u = null;
+  const rs = [];
   for (const p of partes) {
     const r = buscarTexto(textos, p, base);
     if (!r) return null;
+    rs.push(r);
     if (!base) base = r;
     u = u ? { x: Math.min(u.x, r.x), y: Math.min(u.y, r.y), w: Math.max(u.x + u.w, r.x + r.w) - Math.min(u.x, r.x), h: Math.max(u.y + u.h, r.y + r.h) - Math.min(u.y, r.y) } : { ...r };
   }
-  return u;
+  return { ...u, partes: rs };
 }
 
 /** Cámara que encuadra un recuadro (px de pantalla 1600×900): escala y desplazamiento, sin salirse de la captura. */
@@ -355,6 +386,7 @@ function componer() {
   let audioTemp = false, audioFalta = false;
   const usadas = new Set();
   const avisos = [];
+  const qa = []; // recuadros con su cámara, para revisarlos sobre la captura (assets/qa-recuadros.json)
   const sfx = (at, file, vol = 0.35) => el.push(`<audio id="sfx-${el.length}" src="assets/shared/core/sfx/${file}" data-start="${r2(at)}" data-duration="1.2" data-volume="${vol}"></audio>`);
   const cam = (sel, a, b, at, d = 0.7, ease = "power2.inOut") =>
     anim.push(`tl.fromTo("${sel}",{x:${a.x},y:${a.y},scale:${a.z}},{x:${b.x},y:${b.y},scale:${b.z},duration:${r2(d)},ease:"${ease}",immediateRender:false},${r2(at)});`);
@@ -403,12 +435,27 @@ function componer() {
       // Tramo de video que lleva a la captura: desde que la página quedó cargada (sin pantallas en blanco ni pestañas
       // por defecto) hasta la captura, con la cámara acercándose a cada botón que se pulsa.
       let lead = 0;
+      // Vuelo de cámara del gemelo 3D (cuadros JPG de grabar.cjs --orbitas): ocupa el segmento hasta el primer foco.
+      const orb = s.orbita ? join(GRAB, s.orbita) : null;
+      if (orb) {
+        if (!existsSync(orb)) throw new Error(`${s.id}: no encuentro la órbita ${s.orbita}`);
+        const nf = readdirSync(orb).filter((x) => x.endsWith(".jpg")).length;
+        const cues = (s.focos || []).map((f) => cue(f.frase));
+        let largo = cues.length ? Math.min(...cues) - 0.45 - s0 : d;
+        if (d - largo < 2.5) largo = d;
+        lead = r2(Math.max(1.5, largo));
+        const clip = join(CLIPS, `${s.id}-orbita.mp4`);
+        sh("ffmpeg", ["-y", "-v", "error", "-framerate", String(r2(nf / lead)), "-i", join(orb, "%04d.jpg"), "-vf", `fps=${FPS},scale=${W}:${H}:flags=lanczos`, "-c:v", "libx264", "-preset", "veryfast", "-crf", "18", "-pix_fmt", "yuv420p", clip]);
+        const vid = `v-${s.id}`;
+        el.push(`<div id="vb-${s.id}" class="clip screen" data-start="${r2(s0)}" data-duration="${lead}"><video id="${vid}" class="clip vcam" src="${relative(HERE, clip)}" muted data-start="${r2(s0)}" data-duration="${lead}"></video></div>`);
+        anim.push(`tl.fromTo("#vb-${s.id}",{opacity:0},{opacity:1,duration:.35},${r2(s0)});`);
+      }
       const img = imagen(s.imagen);
       if (s.imagen && !img) throw new Error(`${s.id}: no encuentro la imagen ${s.imagen}`);
       const cap = s.imagen ? basename(s.imagen) : null;
       const ms = marcas(folder);
       const k = cap && s.imagen.startsWith(folder) ? ms.findIndex((m) => m.captura === cap) : -1;
-      if (k >= 0 && !usadas.has(s.imagen) && img.startsWith(GRAB)) {
+      if (!orb && k >= 0 && !usadas.has(s.imagen) && img.startsWith(GRAB)) {
         let p = k - 1;
         while (p >= 0 && !ms[p].captura) p--;
         let ini = p >= 0 ? ms[p].t : 0;
@@ -480,11 +527,17 @@ function componer() {
         anim.push(`tl.fromTo("#${sid} .foot",{opacity:0},{opacity:1,duration:.6},${r2(s0 + d - 5)});`);
       } else if (s.tarjeta) {
         tarjeta(s, sid, still0, stillD, cue, el, anim, sfx);
+      } else if (stillD < 0.3) {
+        // La órbita cubre todo el segmento.
       } else {
         const [iw, ih] = pngSize(img);
         const kx = SW / iw;
         const alto = (ih / iw) * SW;
-        el.push(`<div id="${sid}" class="clip screen" data-start="${still0}" data-duration="${stillD}"><div class="cam" id="cam-${s.id}"><img src="${relative(HERE, img)}" alt="" style="height:${Math.round(alto)}px"></div></div>`);
+        // La captura y sus recuadros van en la misma capa (.drift): se mueven juntos con la cámara y con la deriva.
+        const pos = el.length, rings = [];
+        el.push("");
+        const pintar = () => (el[pos] = `<div id="${sid}" class="clip screen" data-start="${still0}" data-duration="${stillD}"><div class="cam" id="cam-${s.id}"><div class="drift" style="height:${Math.round(alto)}px"><img src="${relative(HERE, img)}" alt="" style="height:${Math.round(alto)}px">${rings.join("")}</div></div></div>`);
+        pintar();
         if (!lead) anim.push(`tl.fromTo("#${sid}",{opacity:0},{opacity:1,duration:.35},${r2(s0)});`);
         anim.push(`tl.set("#cam-${s.id}",{x:0,y:0,scale:1},${still0});`);
         if (alto > SH + 40) {
@@ -494,8 +547,9 @@ function componer() {
         } else {
           // Nunca una pantalla quieta: deriva suave y, con cada dato que dice la voz, la cámara va a donde se ve.
           const zin = i % 2 === 0;
-          anim.push(`tl.fromTo("#${sid} img",{scale:${zin ? 1 : 1.04}},{scale:${zin ? 1.04 : 1},duration:${stillD},ease:"sine.inOut"},${still0});`);
+          anim.push(`tl.fromTo("#${sid} .drift",{scale:${zin ? 1 : 1.04}},{scale:${zin ? 1.04 : 1},duration:${stillD},ease:"sine.inOut"},${still0});`);
           const textos = ms.find((m) => m.captura === cap)?.textos || (marcasDeCualquiera(s.imagen)?.textos ?? []);
+          const otros = textos.map((x) => ({ s: x.s, x: x.x * kx, y: x.y * kx, w: x.w * kx, h: x.h * kx }));
           const fs = [];
           for (const f of focos) {
             // "—": el dato no está en esta pantalla; solo el rótulo, con la cámara abierta.
@@ -508,7 +562,8 @@ function componer() {
               avisos.push(`${s.id}: no encuentro "${f.objetivo}" en ${cap}`);
               continue;
             }
-            fs.push({ ...f, r: { x: r.x * kx, y: r.y * kx, w: r.w * kx, h: r.h * kx }, tc: cue(f.frase) });
+            const k1 = (q) => ({ x: q.x * kx, y: q.y * kx, w: q.w * kx, h: q.h * kx });
+            fs.push({ ...f, r: k1(r), partes: r.partes.map(k1), tc: cue(f.frase) });
           }
           fs.sort((a, b) => a.tc - b.tc);
           let estado = UNO;
@@ -520,14 +575,95 @@ function componer() {
             const hasta = Math.min(sig - 0.05, f.tc + 3.4, fin - 0.8);
             if (hasta - tin < 0.6) return;
             cam(`#cam-${s.id}`, estado, e, tin, 0.6);
-            // Recuadro en la captura (se mueve con la cámara) y rótulo con el dato.
-            const pad = 8;
+            // Recuadro en la captura (se mueve con la cámara) y rótulo con el dato. El borde mide 3 px en pantalla; el
+            // margen se achica hasta que el borde no pise otro texto, y un dato de varias partes ("a + b") lleva un
+            // recuadro por parte si el recuadro común pisaría algo entre ellas.
             const rid = `${sid}-f${j}`;
-            if (!f.solo) el.push(`<div id="${rid}" class="clip ring" data-start="${r2(tin)}" data-duration="${r2(hasta - tin)}" style="left:${Math.round(SX + e.x + e.z * (f.r.x - pad))}px;top:${Math.round(SY + e.y + e.z * (f.r.y - pad))}px;width:${Math.round(e.z * (f.r.w + 2 * pad))}px;height:${Math.round(e.z * (f.r.h + 2 * pad))}px"></div>`);
-            if (!f.solo) anim.push(`tl.fromTo("#${rid}",{opacity:0,scale:1.25},{opacity:1,scale:1,duration:.35,ease:"back.out(2)"},${r2(tin + 0.5)});`);
+            let ring = null;
+            if (!f.solo) {
+              const bw = 3 / e.z;
+              const une = (a, o) => ({ x: Math.min(a.x, o.x), y: Math.min(a.y, o.y), w: Math.max(a.x + a.w, o.x + o.w) - Math.min(a.x, o.x), h: Math.max(a.y + a.h, o.y + o.h) - Math.min(a.y, o.y) });
+              const anillo = (r0) => {
+                let r = r0;
+                const caja = (m) => ({ x: r.x - m, y: r.y - m, w: r.w + 2 * m, h: r.h + 2 * m });
+                const corta = (pad) => {
+                  const fuera = caja(pad + bw), dentro = caja(pad);
+                  return otros.filter((o) => {
+                    const toca = o.x < fuera.x + fuera.w && o.x + o.w > fuera.x && o.y < fuera.y + fuera.h && o.y + o.h > fuera.y;
+                    const adentro = o.x >= dentro.x - 0.5 && o.y >= dentro.y - 0.5 && o.x + o.w <= dentro.x + dentro.w + 0.5 && o.y + o.h <= dentro.y + dentro.h + 0.5;
+                    return toca && !adentro;
+                  });
+                };
+                const pads = [10, 8, 6, 5, 4, 3, 2, 1].map((x) => x / Math.sqrt(e.z));
+                let pad = pads.find((x) => !corta(x).length);
+                // Si el borde pisa un texto pequeño pegado al dato (un ícono, una unidad, su etiqueta), el recuadro lo
+                // incluye, pero solo si así pisa menos textos (no se come la fila vecina de una lista).
+                for (let vuelta = 0; pad === undefined && vuelta < 3; vuelta++) {
+                  const antes = corta(pads.at(-1));
+                  let mejor = null;
+                  for (const o of antes.filter((x) => x.w * x.h <= 1.5 * Math.max(r0.w * r0.h, 600))) {
+                    const guarda = r;
+                    r = une(r, o);
+                    const n = corta(pads.at(-1)).length;
+                    if (n < antes.length && (!mejor || n < mejor.n)) mejor = { n, r };
+                    r = guarda;
+                  }
+                  if (!mejor) break;
+                  r = mejor.r;
+                  pad = pads.find((x) => !corta(x).length);
+                }
+                if (pad !== undefined) return { box: caja(pad + bw), toca: [] };
+                // Sin margen libre: el borde pasa por la mitad del espacio entre el dato y cada texto vecino.
+                const p = pads.at(-1), c = caja(p + bw);
+                let L = c.x, T = c.y, R = c.x + c.w, B = c.y + c.h;
+                for (const o of corta(p)) {
+                  // Solo contra textos de una línea que quedan claramente a un lado (las cajas de línea se pisan unos px).
+                  if (o.h > 1.6 * Math.min(r.h, 40)) continue;
+                  if (o.y + o.h <= r.y + r.h * 0.35) T = Math.max(T, (o.y + o.h + r.y) / 2 - bw / 2);
+                  else if (o.y >= r.y + r.h * 0.65) B = Math.min(B, (o.y + r.y + r.h) / 2 + bw / 2);
+                  else if (o.x + o.w <= r.x + 2) L = Math.max(L, (o.x + o.w + r.x) / 2 - bw / 2);
+                  else if (o.x >= r.x + r.w - 2) R = Math.min(R, (o.x + r.x + r.w) / 2 + bw / 2);
+                }
+                const box = { x: L, y: T, w: R - L, h: B - T };
+                const dentro = { x: L + bw, y: T + bw, w: R - L - 2 * bw, h: B - T - 2 * bw };
+                const propio = (o) => Math.max(0, Math.min(o.x + o.w, r.x + r.w) - Math.max(o.x, r.x)) * Math.max(0, Math.min(o.y + o.h, r.y + r.h) - Math.max(o.y, r.y)) > 0.5 * o.w * o.h;
+                const toca = otros.filter((o) => {
+                  if (propio(o)) return false;
+                  const t = o.x < box.x + box.w - 0.5 && o.x + o.w > box.x + 0.5 && o.y < box.y + box.h - 0.5 && o.y + o.h > box.y + 0.5;
+                  const a = o.x >= dentro.x - 0.5 && o.y >= dentro.y - 0.5 && o.x + o.w <= dentro.x + dentro.w + 0.5 && o.y + o.h <= dentro.y + dentro.h + 0.5;
+                  return t && !a;
+                });
+                return { box, toca };
+              };
+              let anillos = [anillo(f.r)];
+              // Partes separadas (p. ej. dos máquinas): un recuadro por parte, no uno grande que cruce lo de en medio.
+              const area = (q) => (q.w + 8) * (q.h + 8);
+              if (f.partes.length > 1 && area(f.r) > 2.2 * f.partes.reduce((n, q) => n + area(q), 0)) anillos = f.partes.map(anillo);
+              else if (anillos[0].toca.length && f.partes.length > 1) {
+                const sep = f.partes.map(anillo);
+                if (sep.reduce((n, x) => n + x.toca.length, 0) < anillos[0].toca.length) anillos = sep;
+              }
+              const toca = anillos.flatMap((x) => x.toca);
+              if (toca.length) avisos.push(`${s.id}: el recuadro de "${f.objetivo}" toca ${toca.map((o) => `"${o.s.slice(0, 30)}"`).join(", ")}`);
+              anillos.forEach((x, n) => {
+                const o = x.box, id = `${rid}-${n}`;
+                qa.push({ seg: s.id, objetivo: f.objetivo, img: relative(HERE, img), ring: o, bw, cam: e });
+                rings.push(`<div id="${id}" class="clip ring" data-start="${r2(tin)}" data-duration="${r2(hasta - tin)}" style="left:${r2(o.x)}px;top:${r2(o.y)}px;width:${r2(o.w)}px;height:${r2(o.h)}px;border-width:${r2(bw)}px;border-radius:${r2(8 / e.z)}px;box-shadow:0 0 ${r2(12 / e.z)}px #ffb020aa"></div>`);
+                anim.push(`tl.fromTo("#${id}",{opacity:0,scale:1.25},{opacity:1,scale:1,duration:.35,ease:"back.out(2)"},${r2(tin + 0.5)});`);
+              });
+              pintar();
+              const o = anillos.map((x) => x.box).reduce(une);
+              ring = { x: SX + e.x + e.z * o.x, y: SY + e.y + e.z * o.y, w: e.z * o.w, h: e.z * o.h };
+            }
             if (f.rotulo) {
-              const cy = SY + e.y + e.z * (f.r.y + f.r.h / 2);
-              const arriba = !f.solo && cy > SY + SH * 0.55;
+              // El rótulo va abajo o arriba, donde no tape el recuadro.
+              const lineas = Math.ceil((f.rotulo.length * 25) / 1340);
+              const alto = 28 + lineas * 51;
+              const zona = (arr) => (arr ? [SY + 40, SY + 40 + alto] : [SY + SH - 130, SY + SH - 130 + alto]);
+              const pisa = (arr) => ring && ring.y < zona(arr)[1] + 12 && ring.y + ring.h > zona(arr)[0] - 12;
+              let arriba = !f.solo && ring.y + ring.h / 2 > SY + SH * 0.55;
+              if (pisa(arriba) && !pisa(!arriba)) arriba = !arriba;
+              if (pisa(arriba)) avisos.push(`${s.id}: el rótulo "${f.rotulo}" queda sobre el recuadro`);
               el.push(`<div id="${rid}-r" class="clip rotulo ${arriba ? "arriba" : "abajo"}" data-start="${r2(tin)}" data-duration="${r2(hasta - tin)}"><span>${esc(f.rotulo)}</span></div>`);
               anim.push(`tl.fromTo("#${rid}-r span",{opacity:0,y:${arriba ? -20 : 20}},{opacity:1,y:0,duration:.4,ease:"power3.out"},${r2(tin + 0.55)});`);
             }
@@ -603,8 +739,9 @@ html,body{width:${W}px;height:${H}px;margin:0;overflow:hidden;background:#0b0f18
 .screen{position:absolute;left:${SX}px;top:${SY}px;width:${SW}px;height:${SH}px;overflow:hidden;background:#0e1430;box-shadow:0 0 0 2px #2d7ff955,0 24px 60px #000a;z-index:3}
 .screen .vcam{position:absolute;left:0;top:0;width:${SW}px;height:${SH}px;object-fit:cover;transform-origin:0 0}
 .screen .cam{position:absolute;left:0;top:0;width:${SW}px;height:${SH}px;transform-origin:0 0}
+.screen .drift{position:absolute;left:0;top:0;width:${SW}px;transform-origin:50% 40%}
 .screen img{position:absolute;left:0;top:0;width:${SW}px;transform-origin:50% 40%}
-.ring{position:absolute;z-index:7;border:4px solid #ffb020;border-radius:10px;box-shadow:0 0 0 4px #ffb02033,0 0 28px #ffb020aa;pointer-events:none}
+.ring{position:absolute;z-index:7;box-sizing:border-box;border:3px solid #ffb020;pointer-events:none}
 .rotulo{position:absolute;left:${SX}px;width:${SW}px;z-index:8;display:flex;justify-content:center}
 .rotulo.abajo{top:${SY + SH - 130}px}
 .rotulo.arriba{top:${SY + 40}px}
@@ -680,6 +817,7 @@ tl.seek(0);
   writeFileSync(join(HERE, "index.html"), html);
   const estadoAudio = audioFalta ? "falta (duración estimada)" : audioTemp ? "TEMP_AUDIO" : "ElevenLabs";
   writeFileSync(join(HERE, "tiempos.json"), `${JSON.stringify({ total_s: TOTAL, audio: estadoAudio, musica: mus ? "ElevenLabs Music" : "sin música", capitulos: resumen }, null, 2)}\n`);
+  writeFileSync(join(HERE, "assets/qa-recuadros.json"), `${JSON.stringify(qa)}\n`);
   for (const a of avisos) console.warn(`aviso: ${a}`);
   console.log(`index.html: ${TOTAL} s (${(TOTAL / 60).toFixed(1)} min), audio ${estadoAudio}, ${mus ? "con" : "sin"} música\n${resumen.join("\n")}`);
 }
