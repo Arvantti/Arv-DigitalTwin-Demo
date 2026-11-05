@@ -21,6 +21,8 @@ Mensaje central: cada cambio de referencia cuesta tiempo de máquina: montaje de
 - imagen: capturas/01-gantt-cambios.png
 - duración: 22 s
 - en pantalla: las rayas blancas en las barras de IMM-21 e IMM-23
+- foco: la veintiuno y la veintitrés => IMM-21 + IMM-23 => IMM-21 e IMM-23
+- foco: Cada raya blanca => cambio (molde, resina o color) => Raya = cambio de referencia
 
 > Esta es la programación que calculó el cosimulador. Miremos las dos inyectoras del balde, la veintiuno y la veintitrés. Cada raya blanca es un cambio de referencia: la máquina deja de producir para limpiar el color. Pasar de blanco a azul toma treinta minutos, pero de azul a blanco toma una hora, porque hay que sacar todo el pigmento. Si cambia el molde, se suma el montaje, y si cambia la resina, la purga es más larga. Ninguno de esos tiempos está fijo en el programa: salen de los datos de cada molde, cada resina y cada color.
 
@@ -28,6 +30,8 @@ Mensaje central: cada cambio de referencia cuesta tiempo de máquina: montaje de
 - imagen: capturas/02-fractal-pregunta.png
 - duración: 14 s
 - en pantalla: la tarjeta 4 · MENOS CAMBIOS DE REFERENCIA
+- foco: treinta cambios => 30 cambios + 22,5 h => 30 cambios · 22,5 h
+- foco: Le preguntamos a Fractal => MENOS CAMBIOS DE REFERENCIA => 5 · Menos cambios
 
 > El plan vigente tiene treinta cambios y veintidós horas y media de máquina en cambios. Le preguntamos a Fractal: ¿cómo hacer menos cambios sin atrasar los pedidos?
 
@@ -35,6 +39,9 @@ Mensaje central: cada cambio de referencia cuesta tiempo de máquina: montaje de
 - imagen: capturas/03-fractal.png
 - duración: 24 s
 - en pantalla: la fila B · MEJOR y la columna CAMBIOS DE REFERENCIA
+- foco: Su recomendación => RECOMENDACIÓN => Un color por máquina
+- foco: Los cambios bajan de treinta a doce => Cambios de referencia + 12 => 30 → 12 cambios
+- foco: Los pedidos a tiempo son los mismos => A tiempo + 92,5 % => A tiempo: igual
 
 > En menos de un segundo compara las opciones. Su recomendación: dedicar un color a cada máquina. La veintiuno se queda en azul y la veintitrés en blanco. Los cambios bajan de treinta a doce, y las horas de cambio, de veintidós y media a nueve. Los pedidos a tiempo son los mismos: no se atrasa ninguno más.
 
@@ -42,6 +49,7 @@ Mensaje central: cada cambio de referencia cuesta tiempo de máquina: montaje de
 - imagen: capturas/04-gantt-adoptado.png
 - duración: 16 s
 - en pantalla: las barras de IMM-21 e IMM-23 después de AHORA
+- foco: las barras del balde => IMM-21 + IMM-23 => Casi sin rayas
 
 > Adoptamos la recomendación. Desde ahora, las barras del balde corren casi sin rayas. Son trece horas y media de máquina que vuelven a producción en lugar de purgar.
 
@@ -49,6 +57,7 @@ Mensaje central: cada cambio de referencia cuesta tiempo de máquina: montaje de
 - imagen: capturas/05-insumos.png
 - duración: 14 s
 - en pantalla: la columna CAMBIOS DE REFERENCIA de la tabla de horas de máquina
+- foco: la columna de cambios => CAMBIOS => Horas de cambio por máquina
 
 > En insumos, la columna de cambios de referencia muestra las horas de cambio por máquina en la semana: con el plan adoptado, esta semana no queda ninguna. Menos purgas también significa menos resina y menos colorante botados en cada limpieza.
 
@@ -56,5 +65,7 @@ Mensaje central: cada cambio de referencia cuesta tiempo de máquina: montaje de
 - imagen: capturas/03-fractal.png
 - duración: 26 s
 - en pantalla: las filas VIGENTE y B MEJOR: columna CAMBIOS DE REFERENCIA
+- foco: de treinta a doce => Cambios de referencia + 12 => 30 → 12 cambios (−60 %)
+- foco: de veintidós y media a nueve => — => 22,5 h → 9 h: 13,5 h por semana
 
 > Este es el ahorro más directo. Dedicar un color a cada máquina baja los cambios de referencia de treinta a doce, un sesenta por ciento menos, y las horas de máquina en purgas y montajes, de veintidós y media a nueve: trece horas y media por semana que vuelven a producción, sin atrasar ningún pedido. Menos purgas también es menos resina y colorante desechados.

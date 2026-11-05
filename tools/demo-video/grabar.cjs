@@ -28,7 +28,81 @@ const SIZE = args.includes("--hd") ? { width: 1920, height: 1080 } : { width: 16
 const FOLDERS = { 1: "1-calcular-programacion", 2: "2-cambio-fecha-pedido", 3: "3-contingencia-falla", 4: "4-pedidos-fijados", 5: "5-menos-cambios", 6: "versiones" };
 
 const wait = (pg, s) => pg.waitForTimeout(Math.round(s * 1000 * PACE));
-const click = (pg, sel) => pg.$eval(sel, (e) => e.dispatchEvent(new MouseEvent("click", { bubbles: true })));
+// Grabación en curso: inicio, marcas (capturas, clics, navegación) y página; la usan click() y go().
+const REC = { t0: 0, marcas: [] };
+const ahora = () => Math.round((Date.now() - REC.t0)) / 1000;
+
+/**
+ * En video el clic se ve: un cursor dibujado en la página va hasta el elemento, hace un pulso y luego se dispara el
+ * clic. Cada clic queda en marcas.json ({tipo: "clic", t, x, y, w, h}) para que el montaje acerque la cámara al botón.
+ */
+async function click(pg, sel) {
+  if (VIDEO) {
+    const el = await pg.$(sel);
+    const r = el && (await el.boundingBox());
+    if (r && r.width > 0 && r.y >= 0 && r.y + r.height <= SIZE.height) {
+      const x = r.x + r.width / 2, y = r.y + r.height / 2;
+      await pg.mouse.move(x, y, { steps: 28 });
+      await pg.waitForTimeout(Math.round(450 * PACE));
+      REC.marcas.push({ tipo: "clic", t: ahora(), x: Math.round(r.x), y: Math.round(r.y), w: Math.round(r.width), h: Math.round(r.height), sel });
+      await pg.evaluate(() => window.__curClick?.());
+      await pg.waitForTimeout(220);
+    }
+  }
+  await pg.$eval(sel, (e) => e.dispatchEvent(new MouseEvent("click", { bubbles: true })));
+}
+
+/** Cursor visible para el video: sigue al mouse de Playwright y hace un pulso en cada clic (no sale en las capturas). */
+const CURSOR = () => {
+  const pos = JSON.parse(sessionStorage.getItem("__cur") || "[960,620]");
+  const add = () => {
+    if (document.getElementById("__cur")) return;
+    const c = document.createElement("div");
+    c.id = "__cur";
+    c.innerHTML = '<svg width="34" height="34" viewBox="0 0 24 24"><path d="M3 2l7.5 19 2.6-7.6L21 11z" fill="#fff" stroke="#0b0f18" stroke-width="1.6" stroke-linejoin="round"/></svg><i></i>';
+    c.style.cssText = `position:fixed;left:${pos[0]}px;top:${pos[1]}px;z-index:2147483647;pointer-events:none;filter:drop-shadow(0 3px 6px #000a)`;
+    const st = document.createElement("style");
+    st.textContent = "#__cur svg{position:absolute;left:-4px;top:-3px}#__cur i{position:absolute;left:-26px;top:-26px;width:52px;height:52px;border-radius:50%;border:4px solid #4ea7ff;opacity:0;transform:scale(.3)}#__cur i.on{animation:__p .6s ease-out}@keyframes __p{0%{opacity:1;transform:scale(.3)}100%{opacity:0;transform:scale(1.4)}}";
+    document.documentElement.append(st, c);
+  };
+  document.addEventListener("DOMContentLoaded", add);
+  addEventListener("mousemove", (e) => {
+    const c = document.getElementById("__cur");
+    if (!c) return;
+    c.style.left = `${e.clientX}px`;
+    c.style.top = `${e.clientY}px`;
+    sessionStorage.setItem("__cur", JSON.stringify([e.clientX, e.clientY]));
+  }, true);
+  window.__curClick = () => {
+    const i = document.querySelector("#__cur i");
+    if (!i) return;
+    i.classList.remove("on");
+    void i.offsetWidth;
+    i.classList.add("on");
+  };
+  window.__curHide = (v) => {
+    const c = document.getElementById("__cur");
+    if (c) c.style.opacity = v ? "0" : "1";
+  };
+};
+
+/** Textos visibles con su recuadro (coordenadas de la ventana): el montaje los usa para acercar la cámara a un dato. */
+const TEXTOS = () => {
+  const out = [];
+  const W = innerWidth, H = innerHeight;
+  const tw = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+  for (let n; (n = tw.nextNode()); ) {
+    const s = n.textContent.replace(/\s+/g, " ").trim();
+    if (!s || !n.parentElement || n.parentElement.closest("#__cur,script,style")) continue;
+    if (!n.parentElement.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true })) continue;
+    const rg = document.createRange();
+    rg.selectNodeContents(n);
+    const r = rg.getBoundingClientRect();
+    if (r.width < 2 || r.height < 2 || r.bottom < 0 || r.top > H || r.right < 0 || r.left > W) continue;
+    out.push({ s, x: Math.round(r.x), y: Math.round(r.y), w: Math.round(r.width), h: Math.round(r.height) });
+  }
+  return out;
+};
 
 async function scenario(browser, n, steps) {
   const dir = path.join(ROOT, FOLDERS[n]);
@@ -38,19 +112,29 @@ async function scenario(browser, n, steps) {
     viewport: SIZE,
     ...(VIDEO ? { recordVideo: { dir: videoDir, size: SIZE } } : {}),
   });
+  if (VIDEO) await ctx.addInitScript(CURSOR);
   const pg = await ctx.newPage();
-  const t0 = Date.now();
-  const marcas = [];
+  REC.t0 = Date.now();
+  REC.marcas = [];
+  const marcas = REC.marcas;
   pg.on("pageerror", (e) => console.error(`[${n}] error de la página: ${e.message}`));
   const shot = async (name, full = false) => {
     await wait(pg, 1.5);
-    if (!full) marcas.push({ captura: name, t: (Date.now() - t0) / 1000 });
+    if (!full) {
+      const textos = VIDEO ? await pg.evaluate(TEXTOS) : undefined;
+      marcas.push({ captura: name, t: ahora(), ...(textos ? { textos } : {}) });
+    }
+    if (VIDEO) await pg.evaluate(() => window.__curHide?.(true));
     await pg.screenshot({ path: path.join(dir, "capturas", name), fullPage: full });
+    if (VIDEO) await pg.evaluate(() => window.__curHide?.(false));
     console.log(`[${n}] ${name}`);
   };
+  // La carga de una página (pantalla en blanco, pestaña por defecto) queda marcada para que el montaje no la muestre.
   const go = async (url) => {
+    marcas.push({ tipo: "nav", t: ahora(), url });
     await pg.goto(BASE + url, { waitUntil: "networkidle", timeout: 240000 });
     await wait(pg, 1);
+    marcas.push({ tipo: "listo", t: ahora() });
   };
   // Punto de partida común: cartera inicial; los escenarios 2, 3 y 4 parten del plan del cosimulador.
   await go(`/aps.html${NOW}&reset=1`);
@@ -100,29 +184,26 @@ const SCENARIOS = {
     await shot("02-gantt-manual.png");
     await go(`/control.html${NOW}`);
     await shot("03-centro-control-manual.png");
-    await go(`/aps.html${NOW}`);
-    await click(pg, "[data-tab=gantt]");
+    await go(`/aps.html${NOW}&tab=gantt`);
     await calcular(pg, "entregas", () => shot("03b-objetivo.png"));
     await shot("04-calcular.png");
     await click(pg, "#aps-adopt");
     await shot("05-gantt-cosimulador.png");
     // Clic en una orden de papelera (cuerpo, pedal y ensamble): sus máquinas suben y se resaltan.
-    await pg.$$eval(".g-orders .g-row[data-order]", (rows) => {
-      const r = rows.find((x) => x.innerText.includes("Papelera de pedal") && !x.querySelector(".g-bar.done"));
-      if (r) r.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    });
+    const papelera = await pg.$$eval(".g-orders .g-row[data-order]", (rows) =>
+      rows.find((x) => x.innerText.includes("Papelera de pedal") && !x.querySelector(".g-bar.done"))?.dataset.order);
+    if (papelera) await click(pg, `.g-orders .g-row[data-order="${papelera}"]`);
     await shot("05b-gantt-orden.png");
     await go(`/control.html${NOW}`);
     await shot("06-centro-control.png");
-    await go(`/aps.html${NOW}`);
+    await go(`/aps.html${NOW}&tab=fractal`);
     await fractal(pg, "#fr-run-balancear");
     await shot("07-fractal-balancear.png");
     await click(pg, "#fr-adopt");
     await shot("08-gantt-balanceado.png");
     await go(`/control.html${NOW}`);
     await shot("09-centro-control-balanceado.png");
-    await go(`/aps.html${NOW}`);
-    await click(pg, "[data-tab=insumos]");
+    await go(`/aps.html${NOW}&tab=insumos`);
     await shot("10-insumos.png");
     await wait(2);
   },
@@ -160,15 +241,14 @@ const SCENARIOS = {
     await shot("03-falla.png");
     await go(`/control.html${NOW}`);
     await shot("04-centro-control.png");
-    await go(`/aps.html${NOW}`);
-    await click(pg, "[data-tab=gantt]");
+    await go(`/aps.html${NOW}&tab=gantt`);
     await shot("05-aps-alerta.png");
     await fractal(pg, "#fr-run-falla");
     await shot("06-fractal.png");
     await shot("06b-fractal-full.png", true);
     await open3d(pg, go, "imm-21");
     await shot("10-gemelo-3d.png");
-    await go(`/aps.html${NOW}`);
+    await go(`/aps.html${NOW}&tab=fractal`);
     await fractal(pg, "#fr-run-falla");
     await click(pg, "#fr-adopt");
     await shot("07-gantt-adoptado.png");
@@ -219,8 +299,7 @@ const SCENARIOS = {
     },
   // Menos cambios de referencia: parte del plan del cosimulador (el balde alterna azul y blanco en sus dos inyectoras).
   5: async ({ pg, go, shot, wait }) => {
-    await go(`/aps.html${NOW}`);
-    await click(pg, "[data-tab=gantt]");
+    await go(`/aps.html${NOW}&tab=gantt`);
     await pg.$eval('.g-row.res[data-machine="imm-21"]', (e) => e.scrollIntoView({ block: "center" }));
     await shot("01-gantt-cambios.png");
     await click(pg, "[data-tab=fractal]");
@@ -250,7 +329,8 @@ const SCENARIOS = {
     await shot("04-guardar-cosimulador.png");
     // La mejor opción de Fractal se abre en el Gantt y se guarda también.
     await fractal(pg, "#fr-run-balancear");
-    await pg.$$eval(".fr-see:not(.fr-pick)", (bs) => bs.at(-1)?.dispatchEvent(new MouseEvent("click", { bubbles: true })));
+    const nSee = (await pg.$$(".fr-see:not(.fr-pick)")).length;
+    if (nSee) await click(pg, `.fr-see:not(.fr-pick) >> nth=${nSee - 1}`);
     await pg.waitForSelector("#aps-save:not([disabled])", { timeout: 60000 });
     await wait(1);
     await click(pg, "#aps-save");

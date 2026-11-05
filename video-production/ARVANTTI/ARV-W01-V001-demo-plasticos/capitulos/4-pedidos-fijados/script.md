@@ -4,7 +4,7 @@ Arrastramos la papelera de pedal del día doce un día más tarde, a la fecha qu
 
 En la pestaña de Fractal aparece el cuarto escenario: órdenes fijadas a mano. Muestra cuáles son las tres órdenes bloqueadas y la pregunta es clara: organizar el resto de la producción sin moverlas.
 
-En menos de un segundo Fractal prueba dos combinaciones. La primera solo reorganiza el resto con el cosimulador: el atraso baja de ciento ochenta y cinco coma ocho a ciento ochenta y dos coma tres horas. La segunda, además, monta el molde de repuesto del balde en la inyectora veinte, con noventa minutos de montaje, y deja la ocupación de la planta en sesenta y uno coma seis por ciento. En las dos, las tres órdenes fijadas quedan exactamente en la misma máquina y a la misma hora.
+En menos de un segundo Fractal prueba dos combinaciones. La primera solo reorganiza el resto con el cosimulador: el atraso baja de ciento ochenta y cinco coma ocho a ciento ochenta y dos coma tres horas. La segunda, además, monta el molde de repuesto del balde en la inyectora veinte, con noventa minutos de montaje, y deja la ocupación de la planta en sesenta coma cuatro por ciento. En las dos, las tres órdenes fijadas quedan exactamente en la misma máquina y a la misma hora.
 
 Abajo se ve cómo cambia la carga de cada máquina. Cada opción se puede abrir en el Gantt y adoptar; Fractal recomienda y la persona decide.
 
@@ -12,4 +12,4 @@ Adoptamos la recomendación. Es la programación vigente y las tres órdenes sig
 
 El centro de control ya muestra la nueva programación de Fractal y la inyectora veinte con el montaje del molde de repuesto. El planificador conserva el control de lo importante y deja el resto al optimizador.
 
-Con tres órdenes fijadas a mano, Fractal organiza el resto y baja el atraso de ciento ochenta y cinco coma ocho a ciento ochenta y dos coma tres horas, y la ocupación de la planta de sesenta y cinco coma nueve a sesenta y uno coma seis por ciento. Y las tres órdenes firmadas no se movieron ni un minuto.
+Con tres órdenes fijadas a mano, Fractal organiza el resto y baja el atraso de ciento ochenta y cinco coma ocho a ciento ochenta y dos coma tres horas, y la ocupación de la planta de sesenta y seis coma uno a sesenta coma cuatro por ciento. Y las tres órdenes firmadas no se movieron ni un minuto.

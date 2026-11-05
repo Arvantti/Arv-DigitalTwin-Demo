@@ -25,24 +25,36 @@ uv sync && uv run uvicorn twin_emulator_api.main:app --port 8000
 pnpm add -g playwright@1.63.0 && pnpm dlx playwright@1.63.0 install chromium   # una vez
 DEMO_OUT="$PWD/$P/assets/grabacion" NODE_PATH="$(pnpm root -g)" node tools/demo-video/grabar.cjs todos --video --hd
 
-# 2. Voz con ElevenLabs: un audio por capítulo (8 envíos, cada uno pide escribir ENVIAR)
-export ELEVENLABS_API_KEY='…'   # solo en tu shell o gestor de secretos, nunca en archivos
+# 2. Voz y música con ElevenLabs (las claves solo en el entorno, nunca en archivos)
+export ELEVENLABS_API_KEY='…'
 export ELEVENLABS_VOICE_ID='…'
-for c in $P/capitulos/*/; do pnpm video:voice --project "$c"; done
+node $P/armar.mjs preparar          # guiones -> segmentos.json
+node $P/armar.mjs voz               # muestra qué segmentos cambiaron y cuántos caracteres se enviarían
+node $P/armar.mjs voz --enviar      # voz por segmento con el tiempo de cada letra (solo lo que cambió)
+node $P/armar.mjs musica --enviar   # música épica, una pista por párrafo de musica-prompt.txt
 
-# 3. Cortar cada capítulo en segmentos, componer y renderizar
-node $P/armar.mjs alinear
-node $P/armar.mjs componer
-node $P/armar.mjs render v002        # deja $P/out/demo-plasticos-v002.mp4
+# 3. Componer y renderizar
+node $P/armar.mjs componer          # CAPITULOS=0,1 arma solo esos capítulos (vista previa)
+node $P/armar.mjs render v003       # deja $P/out/demo-plasticos-v003.mp4
 ```
 
-`alinear` corta cada `capitulos/<capítulo>/assets/audio/voiceover.mp3` en los silencios entre párrafos (un párrafo por
-segmento) y guarda los cortes en `capitulos/<capítulo>/cortes-detectados.json`. Si un corte cae mal, copia ese archivo
-como `cortes.json` en la misma carpeta, corrige los segundos y vuelve a correr `alinear` y `componer`.
+Cómo se arma cada segmento:
 
-Sin ElevenLabs, `node $P/armar.mjs voz-temporal` genera una voz local de prueba (Kokoro, con `hyperframes tts`; necesita
-`pip install kokoro-onnx soundfile` o `HYPERFRAMES_PYTHON` apuntando a un entorno que los tenga). El video sale marcado
-`TEMP_AUDIO` y no es entrega final. Si existen los dos, `componer` usa el audio de ElevenLabs.
+- **Tramo grabado sin cargas de página.** `grabar.cjs` deja en `marcas.json` cada captura, cada clic (con el recuadro del
+  botón), cada carga de página y los textos visibles de cada captura con su recuadro. El tramo de video que lleva a una
+  captura empieza cuando la página terminó de cargar, así no aparecen pantallas en blanco ni otras pestañas de paso.
+- **Cursor y zoom en cada clic.** En la grabación se ve el cursor ir al botón y un pulso al hacer clic; el montaje acerca
+  la cámara al botón justo antes del clic.
+- **Cada dato que dice la voz se ve.** Las líneas `- foco: <frase de la voz> => <texto en pantalla> [=> rótulo]` del
+  guion llevan la cámara al texto en la captura (búscalo con `node armar.mjs textos <carpeta>/capturas/<png> [filtro]`),
+  lo enmarcan y muestran el rótulo, en el segundo exacto en que la voz dice la frase. `a + b` une dos textos; `@x,y,w,h`
+  es un recuadro a mano; `—` muestra solo el rótulo (dato que no está en esa pantalla).
+- **Tarjetas animadas.** `- tarjeta: escenarios | modulos | fuentes | cosimulador | …` con focos cuyo objetivo es la
+  clave de cada elemento (se enciende cuando la voz lo nombra).
+- **Música.** Las pistas se encadenan con fundidos y bajan solas cuando habla la voz.
+
+Sin ElevenLabs, `node $P/armar.mjs voz-temporal` genera una voz local de prueba (Kokoro); el video sale marcado
+`TEMP_AUDIO` y no es entrega final.
 
 ## Qué no va al repo
 

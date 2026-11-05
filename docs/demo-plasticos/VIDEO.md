@@ -66,9 +66,35 @@ NODE_PATH="$(pnpm root -g)" node tools/demo-video/grabar.cjs todos --video   # o
 
 ### 0-S03 · Sin fechas de calendario
 - imagen: 1-calcular-programacion/capturas/01-pedidos.png
-- duración: 12 s
+- duración: 8 s
+- foco: Hoy es el día nueve => día 9 => Hoy: día 9
 
-> Todo se cuenta en días desde el arranque de la programación, el día cero. Hoy es el día nueve. Veamos cinco escenarios.
+> Todo se cuenta en días desde el arranque de la programación, el día cero. Hoy es el día nueve.
+
+### 0-S04 · Cinco escenarios
+- tarjeta: escenarios
+- duración: 16 s
+- foco: Uno, => 1
+- foco: Dos, => 2
+- foco: Tres, => 3
+- foco: Cuatro, => 4
+- foco: Y cinco, => 5
+
+> Veamos cinco escenarios. Uno, calcular la programación según las entregas. Dos, un cliente adelanta su pedido. Tres, contingencia: falla una inyectora. Cuatro, pedidos fijados a mano. Y cinco, menos cambios de referencia.
+
+### 0-S05 · Arvantti DigitalTwin: un núcleo y siete módulos
+- tarjeta: modulos
+- duración: 45 s
+- foco: Arvantti DigitalTwin => centro
+- foco: Uno, Integrator => integrador
+- foco: Dos, APS => aps
+- foco: Tres, CoSimulation => cosimulacion
+- foco: Cuatro, Fractal => fractal
+- foco: Cinco, Control Center => control
+- foco: Seis, DendroScada => dendro
+- foco: Y siete, AI Assistant => ia
+
+> Todo esto corre sobre Arvantti DigitalTwin, el núcleo: el gemelo digital 3D sobre el que funciona todo. A su alrededor se suman siete módulos. Uno, Integrator: integración con ERP, CRM, sistemas SCADA y otros. Dos, APS: programación y planificación de órdenes y recursos. Tres, CoSimulation: el cosimulador matemático, entrenable con las reglas de la empresa. Cuatro, Fractal: simulación robusta por escenarios y multiobjetivo. Cinco, Control Center: monitoreo y control conectado a su SCADA o al control de piso. Seis, DendroScada: hardware SCADA propio que conecta cualquier máquina o proceso y envía sus datos al Control Center. Y siete, AI Assistant, el cerebro empresarial: IA privada para conversar con el sistema en lenguaje natural. Empecemos por el primer escenario.
 
 ### 6-S01 · El ahorro potencial de Fractal
 - imagen: tarjeta con las cifras de abajo (fondo oscuro, una fila por escenario)
@@ -81,7 +107,7 @@ Cifras de la tarjeta, todas de las corridas de la demo:
 | 1 · Calcular (cosimulador y Fractal) | 90,3 % a tiempo, 793 h de máquina | 92,5 % a tiempo, 703 h | 2 pedidos tarde menos, 47 h de atraso menos, 90 h de máquina libres; carga máxima 71 % → 62 % |
 | 2 · Cambio de fecha | rehacer el plan a mano | plan en 0,6 s | ningún pedido más atrasado, ningún molde que cambiar |
 | 3 · Falla | 10 tarde, 295,5 h de atraso | 7 tarde, 182,3 h | 3 pedidos salvados, 113,2 h de atraso menos (90 min de montaje) |
-| 4 · Pedidos fijados | 185,8 h, 65,9 % de ocupación | 182,3 h, 61,6 % | 3,5 h menos y 4,3 puntos de ocupación, con tres órdenes sin mover |
+| 4 · Pedidos fijados | 185,8 h, 66,1 % de ocupación | 182,3 h, 60,4 % | 3,5 h menos y 5,7 puntos de ocupación, con tres órdenes sin mover |
 | 5 · Menos cambios | 30 cambios, 22,5 h | 12 cambios, 9 h | 18 cambios y 13,5 h de máquina por semana (60 %) |
 
 > En resumen, esto es lo que ahorra optimizar con Fractal. El cosimulador cumple más entregas y libera noventa horas de máquina en la semana. Ante una falla, Fractal salva tres pedidos y quita ciento trece horas de atraso. Con compromisos firmados, organiza el resto sin moverlos. Y dedicando un color a cada máquina, recupera trece horas y media de producción cada semana. Multiplicadas por lo que cuesta una hora de máquina en la planta, esas horas son el ahorro en dinero. Fractal recomienda; la persona decide.

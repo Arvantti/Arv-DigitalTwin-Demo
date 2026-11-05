@@ -21,9 +21,9 @@
     ],
     [
       "4 · Pedidos fijados",
-      "185,8 h, 65,9 % de ocupación",
-      "182,3 h, 61,6 %",
-      "3,5 h menos y 4,3 puntos de ocupación, con tres órdenes sin mover"
+      "185,8 h, 66,1 % de ocupación",
+      "182,3 h, 60,4 %",
+      "3,5 h menos y 5,7 puntos de ocupación, con tres órdenes sin mover"
     ],
     [
       "5 · Menos cambios",
@@ -55,9 +55,86 @@
         {
           "id": "0-S03",
           "titulo": "Sin fechas de calendario",
-          "texto": "Todo se cuenta en días desde el arranque de la programación, el día cero. Hoy es el día nueve. Veamos cinco escenarios.",
+          "texto": "Todo se cuenta en días desde el arranque de la programación, el día cero. Hoy es el día nueve.",
           "imagen": "1-calcular-programacion/capturas/01-pedidos.png",
-          "enPantalla": null
+          "enPantalla": null,
+          "focos": [
+            {
+              "frase": "Hoy es el día nueve",
+              "objetivo": "día 9",
+              "rotulo": "Hoy: día 9"
+            }
+          ]
+        },
+        {
+          "id": "0-S04",
+          "titulo": "Cinco escenarios",
+          "texto": "Veamos cinco escenarios. Uno, calcular la programación según las entregas. Dos, un cliente adelanta su pedido. Tres, contingencia: falla una inyectora. Cuatro, pedidos fijados a mano. Y cinco, menos cambios de referencia.",
+          "enPantalla": null,
+          "tarjeta": "escenarios",
+          "focos": [
+            {
+              "frase": "Uno,",
+              "objetivo": "1"
+            },
+            {
+              "frase": "Dos,",
+              "objetivo": "2"
+            },
+            {
+              "frase": "Tres,",
+              "objetivo": "3"
+            },
+            {
+              "frase": "Cuatro,",
+              "objetivo": "4"
+            },
+            {
+              "frase": "Y cinco,",
+              "objetivo": "5"
+            }
+          ]
+        },
+        {
+          "id": "0-S05",
+          "titulo": "Arvantti DigitalTwin: un núcleo y siete módulos",
+          "texto": "Todo esto corre sobre Arvantti DigitalTwin, el núcleo: el gemelo digital 3D sobre el que funciona todo. A su alrededor se suman siete módulos. Uno, Integrator: integración con ERP, CRM, sistemas SCADA y otros. Dos, APS: programación y planificación de órdenes y recursos. Tres, CoSimulation: el cosimulador matemático, entrenable con las reglas de la empresa. Cuatro, Fractal: simulación robusta por escenarios y multiobjetivo. Cinco, Control Center: monitoreo y control conectado a su SCADA o al control de piso. Seis, DendroScada: hardware SCADA propio que conecta cualquier máquina o proceso y envía sus datos al Control Center. Y siete, AI Assistant, el cerebro empresarial: IA privada para conversar con el sistema en lenguaje natural. Empecemos por el primer escenario.",
+          "enPantalla": null,
+          "tarjeta": "modulos",
+          "focos": [
+            {
+              "frase": "Arvantti DigitalTwin",
+              "objetivo": "centro"
+            },
+            {
+              "frase": "Uno, Integrator",
+              "objetivo": "integrador"
+            },
+            {
+              "frase": "Dos, APS",
+              "objetivo": "aps"
+            },
+            {
+              "frase": "Tres, CoSimulation",
+              "objetivo": "cosimulacion"
+            },
+            {
+              "frase": "Cuatro, Fractal",
+              "objetivo": "fractal"
+            },
+            {
+              "frase": "Cinco, Control Center",
+              "objetivo": "control"
+            },
+            {
+              "frase": "Seis, DendroScada",
+              "objetivo": "dendro"
+            },
+            {
+              "frase": "Y siete, AI Assistant",
+              "objetivo": "ia"
+            }
+          ]
         }
       ]
     },
@@ -71,91 +148,430 @@
           "titulo": "La cartera de pedidos",
           "texto": "Todo empieza con los pedidos. La planta tiene noventa y tres pedidos de cuatro productos: cubiertos desechables, baldes de doce litros y papeleras de pedal con su cuerpo y su pedal. Cada pedido tiene cliente, cantidad, color, fecha de entrega e importancia. Aquí también se agregan pedidos nuevos.",
           "imagen": "1-calcular-programacion/capturas/01-pedidos.png",
-          "enPantalla": "los indicadores de arriba y la columna ENTREGA"
+          "enPantalla": "los indicadores de arriba y la columna ENTREGA",
+          "focos": [
+            {
+              "frase": "noventa y tres pedidos",
+              "objetivo": "93 + pedidos en la cartera",
+              "rotulo": "93 pedidos"
+            },
+            {
+              "frase": "Aquí también se agregan",
+              "objetivo": "AGREGAR PEDIDO"
+            }
+          ]
+        },
+        {
+          "id": "1-S02a",
+          "titulo": "De dónde sale la programación",
+          "texto": "La programación vigente de hoy la hizo el programador a mano, con las herramientas de Arvantti. También se puede importar desde Excel, o integrarse con el ERP u otro sistema por API; en ese caso, el asistente de IA, entrenado para eso, normaliza los datos antes de programar.",
+          "imagen": null,
+          "enPantalla": null,
+          "tarjeta": "fuentes",
+          "focos": [
+            {
+              "frase": "hizo el programador a mano",
+              "objetivo": "manual"
+            },
+            {
+              "frase": "importar desde Excel",
+              "objetivo": "excel"
+            },
+            {
+              "frase": "integrarse con el ERP",
+              "objetivo": "erp"
+            },
+            {
+              "frase": "el asistente de IA",
+              "objetivo": "ia"
+            },
+            {
+              "frase": "antes de programar",
+              "objetivo": "aps"
+            }
+          ]
         },
         {
           "id": "1-S02",
           "titulo": "La programación manual",
-          "texto": "Así está hoy, día nueve, la programación hecha a mano: cada barra es una orden y cada rombo, su fecha de entrega. Las fechas se cuentan en días desde el arranque de la programación, el día cero. Con este plan, el noventa coma tres por ciento de los pedidos sale a tiempo: nueve pedidos llegan tarde, con doscientas veintinueve horas de atraso. Y la planta queda ocupada al sesenta y nueve por ciento de sus horas disponibles en la semana.",
+          "texto": "Así queda en el Gantt esa programación manual: cada barra es una orden y cada rombo, su fecha de entrega. Las fechas se cuentan en días desde el arranque de la programación, el día cero. Con este plan, el noventa coma tres por ciento de los pedidos sale a tiempo: nueve pedidos llegan tarde, con doscientas veintinueve horas de atraso. Y la planta queda ocupada al sesenta y nueve por ciento de sus horas disponibles en la semana.",
           "imagen": "1-calcular-programacion/capturas/02-gantt-manual.png",
-          "enPantalla": "la etiqueta VIGENTE · MANUAL arriba (a tiempo y ocupación) y los rombos de entrega"
+          "enPantalla": "la etiqueta VIGENTE · MANUAL arriba (a tiempo y ocupación) y los rombos de entrega",
+          "focos": [
+            {
+              "frase": "cada barra es una orden",
+              "objetivo": "PED-D11-02 + día 5 06:00 → día 9 15:21",
+              "rotulo": "Una barra = una orden"
+            },
+            {
+              "frase": "cada rombo",
+              "objetivo": "@1048,300,16,40",
+              "rotulo": "Rombo = fecha de entrega"
+            },
+            {
+              "frase": "el noventa coma tres",
+              "objetivo": "VIGENTE · + · 90,3 % a tiempo · ocupación 69,2 %",
+              "rotulo": "90,3 % a tiempo"
+            },
+            {
+              "frase": "nueve pedidos llegan tarde",
+              "objetivo": "—",
+              "rotulo": "9 pedidos tarde · 229 h de atraso"
+            },
+            {
+              "frase": "sesenta y nueve por ciento",
+              "objetivo": "VIGENTE · + · 90,3 % a tiempo · ocupación 69,2 %",
+              "rotulo": "Ocupación 69,2 %"
+            }
+          ]
         },
         {
           "id": "1-S03",
           "titulo": "La planta con el plan manual",
           "texto": "En el centro de control vemos cada máquina con su ocupación contra su disponibilidad, día por día. Rojo es una máquina saturada, ámbar casi llena y verde con holgura.",
           "imagen": "1-calcular-programacion/capturas/03-centro-control-manual.png",
-          "enPantalla": "los indicadores de ocupación y disponibilidad de la semana"
+          "enPantalla": "los indicadores de ocupación y disponibilidad de la semana",
+          "focos": [
+            {
+              "frase": "cada máquina con su ocupación",
+              "objetivo": "IMM-21 + OCUPACIÓN · SEM",
+              "rotulo": "Ocupación de la semana por máquina"
+            },
+            {
+              "frase": "Rojo es una máquina saturada",
+              "objetivo": "ENSAMBLE-01",
+              "rotulo": "Rojo: saturada"
+            },
+            {
+              "frase": "verde con holgura",
+              "objetivo": "IMM-19",
+              "rotulo": "Verde: con holgura"
+            }
+          ]
         },
         {
           "id": "1-S04",
           "titulo": "¿Qué objetivo calcula?",
-          "texto": "Antes de calcular, el sistema pregunta qué objetivo buscar: cumplir entregas, menos cambios de molde y color, balancear cuellos de botella o maximizar la capacidad ocupada. El cosimulador optimiza un solo objetivo por corrida; si se eligen varios a la vez, eso es trabajo de Fractal. Las entregas siempre se respetan. Hoy elegimos cumplir entregas.",
+          "texto": "Pulsamos calcular con el cosimulador y el sistema pregunta primero qué objetivo buscar: cumplir entregas, menos cambios de molde y color, balancear cuellos de botella o maximizar la capacidad ocupada. El cosimulador optimiza un solo objetivo por corrida. Para buscar varios a la vez está Fractal, el módulo de escenarios que presentamos al inicio: lo veremos en acción en unos minutos. Las entregas siempre se respetan. Hoy elegimos cumplir entregas.",
           "imagen": "1-calcular-programacion/capturas/03b-objetivo.png",
-          "enPantalla": "la lista de objetivos y la casilla Cumplir entregas marcada"
+          "enPantalla": "la lista de objetivos y la casilla Cumplir entregas marcada",
+          "focos": [
+            {
+              "frase": "qué objetivo buscar",
+              "objetivo": "¿Qué objetivo calcula el cosimulador?"
+            },
+            {
+              "frase": "menos cambios de molde",
+              "objetivo": "Minimizar cambios de molde y color"
+            },
+            {
+              "frase": "balancear cuellos",
+              "objetivo": "Balancear cuellos de botella"
+            },
+            {
+              "frase": "maximizar la capacidad",
+              "objetivo": "Maximizar capacidad ocupada"
+            },
+            {
+              "frase": "un solo objetivo por corrida",
+              "objetivo": "El cosimulador optimiza un solo objetivo por corrida.",
+              "rotulo": "Un objetivo por corrida"
+            },
+            {
+              "frase": "Hoy elegimos cumplir entregas",
+              "objetivo": "Cumplir entregas",
+              "rotulo": "Cumplir entregas"
+            }
+          ]
         },
         {
           "id": "1-S05",
           "titulo": "Calcular con el cosimulador",
-          "texto": "Pulsamos calcular. El cosimulador arma un modelo de programación lineal con casi cinco mil variables y lo resuelve en menos de un segundo. Respeta lo que ya empezó, los turnos, los moldes montados en cada máquina y las fechas de entrega. El resultado: noventa y dos coma cinco por ciento a tiempo, dos pedidos tarde menos y cuarenta y siete horas menos de atraso. Y la ocupación de la planta baja del sesenta y nueve al sesenta y uno por ciento: la misma producción con noventa horas de máquina menos en la semana. Esas horas quedan libres para más pedidos. El cosimulador deja dos escenarios para comparar: A, cumplir entregas, y B, menos cambios con las mismas entregas. A cambio, el A hace más cambios de referencia, y cada uno se cobra con su tiempo real de purga: de claro a oscuro es corto y de oscuro a claro es largo.",
+          "texto": "Pulsamos calcular. El cosimulador arma un modelo de programación lineal con casi cinco mil variables y lo resuelve en menos de un segundo. Respeta lo que ya empezó, los turnos, los moldes montados en cada máquina y las fechas de entrega.",
           "imagen": "1-calcular-programacion/capturas/04-calcular.png",
-          "enPantalla": "el recuadro de PROPUESTA con los cinco indicadores; resaltar \"Ocupación planta\""
+          "enPantalla": null,
+          "tarjeta": "cosimulador | 4.877 variables | 1.301 restricciones | 0,8 s",
+          "focos": [
+            {
+              "frase": "arma un modelo",
+              "objetivo": "armar"
+            },
+            {
+              "frase": "lo resuelve",
+              "objetivo": "resolver"
+            },
+            {
+              "frase": "lo que ya empezó",
+              "objetivo": "empezo"
+            },
+            {
+              "frase": "los turnos",
+              "objetivo": "turnos"
+            },
+            {
+              "frase": "los moldes",
+              "objetivo": "moldes"
+            },
+            {
+              "frase": "las fechas de entrega",
+              "objetivo": "entregas"
+            }
+          ]
+        },
+        {
+          "id": "1-S05b",
+          "titulo": "El resultado",
+          "texto": "El resultado: noventa y dos coma cinco por ciento a tiempo, dos pedidos tarde menos y cuarenta y siete horas menos de atraso. Y la ocupación de la planta baja del sesenta y nueve al sesenta y uno por ciento: la misma producción con noventa horas de máquina menos en la semana. Esas horas quedan libres para más pedidos.",
+          "imagen": "1-calcular-programacion/capturas/04-calcular.png",
+          "enPantalla": "el recuadro de PROPUESTA con los cinco indicadores; resaltar \"Ocupación planta\"",
+          "focos": [
+            {
+              "frase": "noventa y dos coma cinco",
+              "objetivo": "A tiempo + 92,5 %",
+              "rotulo": "90,3 % → 92,5 % a tiempo"
+            },
+            {
+              "frase": "dos pedidos tarde menos",
+              "objetivo": "Pedidos tarde + 7",
+              "rotulo": "9 → 7 pedidos tarde"
+            },
+            {
+              "frase": "cuarenta y siete horas menos",
+              "objetivo": "Atraso total + 182,3 h",
+              "rotulo": "229,4 h → 182,3 h de atraso"
+            },
+            {
+              "frase": "del sesenta y nueve al sesenta y uno",
+              "objetivo": "Ocupación planta · 7 días + 61,3 %",
+              "rotulo": "Ocupación 69,2 % → 61,3 %"
+            },
+            {
+              "frase": "noventa horas de máquina menos",
+              "objetivo": "Ocupación planta · 7 días + 793 → 703 h de 1.146 h",
+              "rotulo": "793 h → 703 h: 90 h libres"
+            }
+          ]
+        },
+        {
+          "id": "1-S05c",
+          "titulo": "Dos escenarios para comparar",
+          "texto": "El cosimulador deja dos escenarios para comparar: A, cumplir entregas, y B, menos cambios con las mismas entregas. A cambio, el A hace más cambios de referencia, y cada uno se cobra con su tiempo real de purga: de claro a oscuro es corto y de oscuro a claro es largo.",
+          "imagen": "1-calcular-programacion/capturas/04-calcular.png",
+          "enPantalla": null,
+          "focos": [
+            {
+              "frase": "A, cumplir entregas",
+              "objetivo": "A · Cumplir entregas",
+              "rotulo": "A: cumplir entregas"
+            },
+            {
+              "frase": "B, menos cambios",
+              "objetivo": "B · Menos cambios, mismas entregas",
+              "rotulo": "B: menos cambios, mismas entregas"
+            },
+            {
+              "frase": "más cambios de referencia",
+              "objetivo": "Cambios de referencia + 30",
+              "rotulo": "23 → 30 cambios de referencia"
+            }
+          ]
         },
         {
           "id": "1-S06",
           "titulo": "El Gantt del cosimulador",
-          "texto": "Adoptamos la propuesta y pasa a ser la programación vigente. Las órdenes se reacomodan para llegar antes de su fecha.",
+          "texto": "Pulsamos adoptar como vigente y la propuesta pasa a ser la programación vigente: arriba, la etiqueta cambia de manual, con noventa coma tres por ciento a tiempo, a cosimulador, con noventa y dos coma cinco. Las órdenes se reacomodan para llegar antes de su fecha.",
           "imagen": "1-calcular-programacion/capturas/05-gantt-cosimulador.png",
-          "enPantalla": "las barras que terminan antes de su rombo"
+          "enPantalla": "las barras que terminan antes de su rombo",
+          "focos": [
+            {
+              "frase": "pasa a ser la programación vigente",
+              "objetivo": "VIGENTE · + COSIMULADOR APS-SOL-01",
+              "rotulo": "Antes: manual 90,3 % · 69,2 %  →  Ahora: cosimulador 92,5 % · 61,3 %"
+            },
+            {
+              "frase": "Las órdenes se reacomodan",
+              "objetivo": "ÓRDENES DE PRODUCCIÓN + PED-D11-02",
+              "rotulo": "Las órdenes terminan antes de su rombo"
+            }
+          ]
         },
         {
           "id": "1-S07",
           "titulo": "Qué máquinas hacen cada orden",
           "texto": "Al hacer clic en una orden, sus máquinas suben y se resaltan, con sus lotes y sus horas, y el resto queda atenuado. Esta papelera pasa por tres recursos: la inyectora diecinueve hace el cuerpo, la siete hace el pedal y la línea de ensamble la arma.",
           "imagen": "1-calcular-programacion/capturas/05b-gantt-orden.png",
-          "enPantalla": "la orden seleccionada arriba y sus tres máquinas resaltadas abajo"
+          "enPantalla": "la orden seleccionada arriba y sus tres máquinas resaltadas abajo",
+          "focos": [
+            {
+              "frase": "la inyectora diecinueve",
+              "objetivo": "IMM-19",
+              "rotulo": "IMM-19: cuerpo"
+            },
+            {
+              "frase": "la siete hace el pedal",
+              "objetivo": "IMM-07",
+              "rotulo": "IMM-07: pedal"
+            },
+            {
+              "frase": "la línea de ensamble",
+              "objetivo": "ENSAMBLE-01",
+              "rotulo": "Ensamble"
+            }
+          ]
         },
         {
           "id": "1-S08",
           "titulo": "La planta con el plan nuevo",
           "texto": "Con el plan del cosimulador, la planta queda ocupada al sesenta y uno por ciento en la semana. Pero si miramos máquina por máquina, las dos inyectoras del balde y la línea de ensamble están casi llenas, mientras otras tienen tiempo libre. Ese es el cuello de botella.",
           "imagen": "1-calcular-programacion/capturas/06-centro-control.png",
-          "enPantalla": "las tarjetas de IMM-21 e IMM-23 en ámbar y rojo"
+          "enPantalla": "las tarjetas de IMM-21 e IMM-23 en ámbar y rojo",
+          "focos": [
+            {
+              "frase": "sesenta y uno por ciento",
+              "objetivo": "Ocupación · semana + 61,3 %",
+              "rotulo": "Ocupación de la planta: 61,3 %"
+            },
+            {
+              "frase": "las dos inyectoras del balde",
+              "objetivo": "IMM-21 + IMM-23",
+              "rotulo": "IMM-21 e IMM-23: casi llenas"
+            },
+            {
+              "frase": "y la línea de ensamble",
+              "objetivo": "ENSAMBLE-01 + 99 %",
+              "rotulo": "Ensamble al 99 %"
+            },
+            {
+              "frase": "otras tienen tiempo libre",
+              "objetivo": "IMM-18 + 27,2 %",
+              "rotulo": "Tiempo libre"
+            }
+          ]
         },
         {
           "id": "1-S09",
           "titulo": "Fractal balancea la ocupación",
-          "texto": "Aquí entra Fractal. Además de la secuencia, prueba cambios en la planta. Su recomendación: montar el molde de repuesto del balde, que está en el almacén, en la inyectora veinte, que está libre. Con noventa minutos de montaje, la máquina más cargada baja del setenta y uno al sesenta y dos por ciento, sin atrasar ningún pedido, y la ocupación de la planta baja al sesenta coma siete por ciento. Cada opción se puede ver en el Gantt y adoptar; Fractal recomienda y la persona decide.",
+          "texto": "Aquí entra Fractal, el módulo que compara escenarios con varios objetivos. Pulsamos estudiar en balancear la ocupación. Además de la secuencia, prueba cambios en la planta. Su recomendación: montar el molde de repuesto del balde, que está en el almacén, en la inyectora veinte, que está libre. Con noventa minutos de montaje, la máquina más cargada baja del setenta y uno al sesenta y dos por ciento, sin atrasar ningún pedido, y la ocupación de la planta baja al sesenta coma siete por ciento. Cada opción se puede ver en el Gantt y adoptar; Fractal recomienda y la persona decide.",
           "imagen": "1-calcular-programacion/capturas/07-fractal-balancear.png",
-          "enPantalla": "la recomendación, la fila B \"MEJOR\" y la columna OCUPACIÓN PLANTA"
+          "enPantalla": "la recomendación, la fila B \"MEJOR\" y la columna OCUPACIÓN PLANTA",
+          "focos": [
+            {
+              "frase": "Aquí entra Fractal",
+              "objetivo": "◆ ESTUDIAR + 2 + BALANCEAR LA OCUPACIÓN",
+              "rotulo": "Fractal · balancear la ocupación"
+            },
+            {
+              "frase": "Su recomendación",
+              "objetivo": "Montar el molde de repuesto en IMM-20",
+              "rotulo": "Molde de repuesto en IMM-20"
+            },
+            {
+              "frase": "del setenta y uno al sesenta y dos",
+              "objetivo": "CARGA MÁXIMA + 62 %",
+              "rotulo": "Carga máxima 71 % → 62 %"
+            },
+            {
+              "frase": "sesenta coma siete por ciento",
+              "objetivo": "OCUPACIÓN PLANTA + 60,7 %",
+              "rotulo": "Ocupación 61,3 % → 60,7 %"
+            },
+            {
+              "frase": "Cada opción se puede ver",
+              "objetivo": "VER EN GANTT + ADOPTAR",
+              "rotulo": "Ver en Gantt o adoptar"
+            }
+          ]
         },
         {
           "id": "1-S10",
           "titulo": "El Gantt balanceado",
-          "texto": "Adoptamos y el trabajo del balde queda repartido entre dos máquinas.",
+          "texto": "Pulsamos adoptar la recomendación. Adoptamos y el trabajo del balde queda repartido entre dos máquinas.",
           "imagen": "1-calcular-programacion/capturas/08-gantt-balanceado.png",
-          "enPantalla": "las filas IMM-20 e IMM-21 en la parte de recursos"
+          "enPantalla": "las filas IMM-20 e IMM-21 en la parte de recursos",
+          "focos": [
+            {
+              "frase": "repartido entre dos máquinas",
+              "objetivo": "VIGENTE · + FRACTAL FRA-01-B",
+              "rotulo": "Vigente: Fractal · balde en IMM-20 e IMM-21"
+            }
+          ]
         },
         {
           "id": "1-S11",
           "titulo": "Más capacidad disponible",
           "texto": "Con una máquina más en juego, la planta tiene mil doscientas cuarenta horas disponibles en la semana y la ocupación baja al sesenta coma siete por ciento. Queda espacio para recibir más pedidos.",
           "imagen": "1-calcular-programacion/capturas/09-centro-control-balanceado.png",
-          "enPantalla": "el indicador de ocupación semanal"
+          "enPantalla": "el indicador de ocupación semanal",
+          "focos": [
+            {
+              "frase": "mil doscientas cuarenta horas",
+              "objetivo": "IMM-20",
+              "rotulo": "IMM-20 entra en juego"
+            },
+            {
+              "frase": "sesenta coma siete",
+              "objetivo": "Ocupación · semana + 60,7 %",
+              "rotulo": "Ocupación 60,7 %"
+            }
+          ]
         },
         {
           "id": "1-S12",
           "titulo": "Los insumos del plan",
-          "texto": "Por último, la vista de insumos traduce el plan en lo que hay que tener: veintisiete toneladas y media de resina y quinientos veinticuatro kilos de masterbatch en la semana, setecientas treinta y tres horas de máquina, noventa y dos turnos-máquina y doscientas cincuenta y cinco horas de operario. Compras, almacén y producción trabajan con el mismo número.",
+          "texto": "Por último, la vista de insumos traduce el plan en lo que hay que tener: veintiocho toneladas y media de resina y quinientos cuarenta y cuatro kilos de masterbatch en la semana, setecientas cincuenta y dos horas de máquina, noventa y cuatro turnos-máquina y doscientas cincuenta y nueve horas de operario. Compras, almacén y producción trabajan con el mismo número.",
           "imagen": "1-calcular-programacion/capturas/10-insumos.png",
-          "enPantalla": "los indicadores de arriba y la tabla de materia prima"
+          "enPantalla": "los indicadores de arriba y la tabla de materia prima",
+          "focos": [
+            {
+              "frase": "veintiocho toneladas",
+              "objetivo": "28.539 kg + resina · semana",
+              "rotulo": "28,5 t de resina"
+            },
+            {
+              "frase": "quinientos cuarenta y cuatro kilos",
+              "objetivo": "544 kg + masterbatch · semana",
+              "rotulo": "544 kg de masterbatch"
+            },
+            {
+              "frase": "setecientas cincuenta y dos horas",
+              "objetivo": "752 h + máquina · 13 recursos",
+              "rotulo": "752 h de máquina"
+            },
+            {
+              "frase": "noventa y cuatro turnos",
+              "objetivo": "94 + turnos-máquina de 8 h",
+              "rotulo": "94 turnos-máquina"
+            },
+            {
+              "frase": "doscientas cincuenta y nueve horas",
+              "objetivo": "259 h + operario · 32 turnos-persona",
+              "rotulo": "259 h de operario"
+            }
+          ]
         },
         {
           "id": "1-S13",
           "titulo": "El ahorro potencial",
           "texto": "El ahorro de este escenario sale de la corrida, no de una estimación. Frente al plan manual, el cosimulador cumple dos pedidos más a tiempo y quita cuarenta y siete horas de atraso. Con la misma producción libera noventa horas de máquina en la semana. Y Fractal baja la carga de la máquina más cargada del setenta y uno al sesenta y dos por ciento, sin atrasar ningún pedido. Cada hora libre es capacidad para vender.",
           "imagen": "1-calcular-programacion/capturas/07-fractal-balancear.png",
-          "enPantalla": "los indicadores de la propuesta y la columna CARGA MÁXIMA de la tabla de Fractal"
+          "enPantalla": "los indicadores de la propuesta y la columna CARGA MÁXIMA de la tabla de Fractal",
+          "focos": [
+            {
+              "frase": "cumple dos pedidos más",
+              "objetivo": "—",
+              "rotulo": "+2 pedidos a tiempo · −47 h de atraso"
+            },
+            {
+              "frase": "libera noventa horas",
+              "objetivo": "—",
+              "rotulo": "90 h de máquina libres por semana"
+            },
+            {
+              "frase": "del setenta y uno al sesenta y dos",
+              "objetivo": "CARGA MÁXIMA + 62 %",
+              "rotulo": "Carga máxima 71 % → 62 %"
+            }
+          ]
         }
       ]
     },
@@ -169,21 +585,72 @@
           "titulo": "La cartera de pedidos",
           "texto": "Esta es la cartera de pedidos: noventa y tres pedidos con su producto, cantidad y fecha de entrega. Supermercados La Esquina tiene un pedido de doscientos once mil cubiertos desechables para el día doce. Hoy es el día nueve. El cliente llama y lo necesita un día antes, el día once.",
           "imagen": "2-cambio-fecha-pedido/capturas/01-pedidos.png",
-          "enPantalla": "la fila PED-D12-01"
+          "enPantalla": "la fila PED-D12-01",
+          "focos": [
+            {
+              "frase": "noventa y tres pedidos",
+              "objetivo": "93 + pedidos en la cartera",
+              "rotulo": "93 pedidos"
+            },
+            {
+              "frase": "Supermercados La Esquina tiene",
+              "objetivo": "PED-D12-01",
+              "rotulo": "PED-D12-01 · 211.000 cubiertos · día 12"
+            },
+            {
+              "frase": "lo necesita un día antes",
+              "objetivo": "—",
+              "rotulo": "Nueva fecha: día 11"
+            }
+          ]
         },
         {
           "id": "2-S02",
           "titulo": "La pregunta a Fractal",
           "texto": "En Fractal elegimos el pedido y la nueva fecha, el día once, y pulsamos estudiar. La pregunta es: ¿cómo movemos todo para cumplirle sin atrasar a los demás?",
           "imagen": "2-cambio-fecha-pedido/capturas/02-fractal-pregunta.png",
-          "enPantalla": "tarjeta \"Adelantar un pedido\" con el pedido y la nueva fecha"
+          "enPantalla": "tarjeta \"Adelantar un pedido\" con el pedido y la nueva fecha",
+          "focos": [
+            {
+              "frase": "elegimos el pedido",
+              "objetivo": "Pedido + Nueva entrega",
+              "rotulo": "Pedido y nueva fecha"
+            },
+            {
+              "frase": "pulsamos estudiar",
+              "objetivo": "◆ ESTUDIAR",
+              "rotulo": "Estudiar"
+            }
+          ]
         },
         {
           "id": "2-S03",
           "titulo": "La respuesta",
           "texto": "Con el plan vigente el pedido terminaría el día doce a las siete de la mañana: tarde para la nueva fecha. Fractal prueba dos combinaciones en menos de un segundo. La recomendación es recalcular con la nueva fecha. No hace falta cambiar moldes; basta con recolocar la secuencia, y el resto de la cartera sigue igual: noventa y dos coma cinco por ciento a tiempo, y la ocupación de la planta incluso baja un punto, del sesenta y uno al sesenta por ciento.",
           "imagen": "2-cambio-fecha-pedido/capturas/03-fractal.png",
-          "enPantalla": "la frase de recomendación, la fila A \"MEJOR\" y la columna OCUPACIÓN PLANTA"
+          "enPantalla": "la frase de recomendación, la fila A \"MEJOR\" y la columna OCUPACIÓN PLANTA",
+          "focos": [
+            {
+              "frase": "Fractal prueba dos combinaciones",
+              "objetivo": "2 combinaciones en 1,3 s",
+              "rotulo": "2 combinaciones en 1 s"
+            },
+            {
+              "frase": "La recomendación es recalcular",
+              "objetivo": "Recalcular con la nueva fecha",
+              "rotulo": "Recalcular con la nueva fecha"
+            },
+            {
+              "frase": "noventa y dos coma cinco",
+              "objetivo": "A tiempo + 92,5 %",
+              "rotulo": "92,5 % a tiempo"
+            },
+            {
+              "frase": "del sesenta y uno al sesenta",
+              "objetivo": "Ocupación planta + 60,3 %",
+              "rotulo": "Ocupación 61,3 % → 60,3 %"
+            }
+          ]
         },
         {
           "id": "2-S04",
@@ -204,28 +671,86 @@
           "titulo": "Seguir la orden en planta",
           "texto": "En el centro de control podemos filtrar por esa orden: vemos solo las máquinas que la fabrican y cuánto de su tiempo usa. El pedido ocupa treinta y tres de las trescientas setenta y ocho horas de esas máquinas en la semana. El comercial puede confirmar la nueva fecha al cliente con datos.",
           "imagen": "2-cambio-fecha-pedido/capturas/05-centro-control-orden.png",
-          "enPantalla": "el filtro de orden arriba y las máquinas filtradas"
+          "enPantalla": "el filtro de orden arriba y las máquinas filtradas",
+          "focos": [
+            {
+              "frase": "filtrar por esa orden",
+              "objetivo": "ORDEN",
+              "rotulo": "Filtro: PED-D12-01"
+            },
+            {
+              "frase": "treinta y tres de las trescientas",
+              "objetivo": "Ocupación de PED-D12-01 · semana + 8,7 %",
+              "rotulo": "33 h de 378 h = 8,7 %"
+            }
+          ]
         },
         {
           "id": "2-S07",
           "titulo": "La orden en el gemelo 3D",
           "texto": "En el gemelo 3D seguimos la misma orden. El panel dice qué órdenes se están procesando en este instante y en qué máquinas. La orden adelantada todavía está pendiente: cero de doscientas once mil unidades, y termina programada el día once a las diez de la noche, antes de la nueva entrega.",
           "imagen": "2-cambio-fecha-pedido/capturas/06-gemelo-orden.png",
-          "enPantalla": "el panel ÓRDENES EN EL GEMELO con PED-D12-01 seguida y la lista EN PROCESO AHORA"
+          "enPantalla": "el panel ÓRDENES EN EL GEMELO con PED-D12-01 seguida y la lista EN PROCESO AHORA",
+          "focos": [
+            {
+              "frase": "qué órdenes se están procesando",
+              "objetivo": "EN PROCESO AHORA EN EL GEMELO · 9",
+              "rotulo": "En proceso ahora"
+            },
+            {
+              "frase": "cero de doscientas once mil",
+              "objetivo": "0 / 211.000",
+              "rotulo": "0 de 211.000 u"
+            },
+            {
+              "frase": "el día once a las diez de la noche",
+              "objetivo": "Supermercados La Esquina · entrega día 11 22:00 · fin programado día 11 21:55",
+              "rotulo": "Fin programado: día 11, 21:55"
+            }
+          ]
         },
         {
           "id": "2-S08",
           "titulo": "Lo producido con el play",
           "texto": "Con el play avanzamos un día. Al día diez a las diez de la mañana la orden va en cincuenta y un mil unidades, en proceso en las inyectoras uno y dos, que llevan una estrella en su letrero. Así se ve, hora a hora, cómo avanza cada pedido en la planta.",
           "imagen": "2-cambio-fecha-pedido/capturas/07-gemelo-orden-play.png",
-          "enPantalla": "el contador de unidades terminadas y las estrellas sobre las inyectoras uno y dos"
+          "enPantalla": "el contador de unidades terminadas y las estrellas sobre las inyectoras uno y dos",
+          "focos": [
+            {
+              "frase": "avanzamos un día",
+              "objetivo": "· 10:00 del día 10",
+              "rotulo": "Día 10, 10:00"
+            },
+            {
+              "frase": "cincuenta y un mil unidades",
+              "objetivo": "51.149",
+              "rotulo": "51.149 de 211.000 u"
+            }
+          ]
         },
         {
           "id": "2-S09",
           "titulo": "El ahorro potencial",
           "texto": "Aquí el ahorro es de tiempo y de riesgo. Fractal responde en seis décimas de segundo, no hace falta cambiar ningún molde y ningún otro pedido se atrasa: siguen siendo siete tarde y ciento ochenta y dos horas de atraso, igual que antes del cambio. El comercial confirma la fecha con datos, sin rehacer el plan a mano.",
           "imagen": "2-cambio-fecha-pedido/capturas/03-fractal.png",
-          "enPantalla": "las filas VIGENTE y A MEJOR: pedidos tarde y atraso iguales"
+          "enPantalla": "las filas VIGENTE y A MEJOR: pedidos tarde y atraso iguales",
+          "focos": [
+            {
+              "frase": "seis décimas de segundo",
+              "objetivo": "2 combinaciones en 1,3 s",
+              "rotulo": "Respuesta en segundos"
+            },
+            {
+              "frase": "siete tarde",
+              "objetivo": "Pedidos tarde + 7",
+              "rotulo": "7 tarde, igual que antes"
+            },
+            {
+              "frase": "ciento ochenta y dos horas",
+              "objetivo": "Atraso total + 182,3 h",
+              "rotulo": "182,3 h de atraso, igual"
+            }
+          ]
         }
       ]
     },
@@ -239,42 +764,134 @@
           "titulo": "La planta en vivo",
           "texto": "Este es el emulador de la planta de inyección de plásticos. Cada rectángulo es una máquina trabajando en tiempo real: inyectoras, buffers, montacargas y la línea de ensamble. Son las diez de la mañana del día nueve de la programación.",
           "imagen": "3-contingencia-falla/capturas/01-emulador.png",
-          "enPantalla": "vista general del emulador 2D"
+          "enPantalla": "vista general del emulador 2D",
+          "focos": [
+            {
+              "frase": "Cada rectángulo es una máquina",
+              "objetivo": "21",
+              "rotulo": "Cada rectángulo, una máquina"
+            },
+            {
+              "frase": "las diez de la mañana del día nueve",
+              "objetivo": "EN VIVO · día 9 10:00:00",
+              "rotulo": "Día 9, 10:00"
+            }
+          ]
         },
         {
           "id": "3-S02",
           "titulo": "El PLC de la inyectora veintiuno",
           "texto": "Al hacer clic en una máquina vemos su PLC: la orden que está haciendo, el tiempo de ciclo, las unidades buenas, los rechazos y el OEE del turno. La inyectora veintiuno fabrica baldes de doce litros.",
           "imagen": "3-contingencia-falla/capturas/02-plc-imm21.png",
-          "enPantalla": "zoom al panel PLC de la IMM-21"
+          "enPantalla": "zoom al panel PLC de la IMM-21",
+          "focos": [
+            {
+              "frase": "vemos su PLC",
+              "objetivo": "IMM-21",
+              "rotulo": "PLC de IMM-21"
+            },
+            {
+              "frase": "la orden que está haciendo",
+              "objetivo": "Orden + PED-D10-03",
+              "rotulo": "Orden en curso"
+            },
+            {
+              "frase": "baldes de doce litros",
+              "objetivo": "Balde de 12 L",
+              "rotulo": "Balde de 12 L"
+            }
+          ]
         },
         {
           "id": "3-S03",
           "titulo": "Llega la falla",
           "texto": "De pronto se quema la resistencia del cañón de la inyectora veintiuno. Mantenimiento estima tres días de reparación: hasta el día doce a las diez de la mañana.",
           "imagen": "3-contingencia-falla/capturas/03-falla.png",
-          "enPantalla": "resaltar la alarma roja de la IMM-21"
+          "enPantalla": "resaltar la alarma roja de la IMM-21",
+          "focos": [
+            {
+              "frase": "se quema la resistencia",
+              "objetivo": "1 fuera de servicio",
+              "rotulo": "IMM-21 fuera de servicio"
+            },
+            {
+              "frase": "hasta el día doce",
+              "objetivo": "—",
+              "rotulo": "Reparación hasta el día 12, 10:00"
+            }
+          ]
         },
         {
           "id": "3-S04",
           "titulo": "El centro de control lo ve",
           "texto": "El centro de control recibe la alarma al instante. La máquina queda fuera de servicio, su disponibilidad cae y la planta sabe qué órdenes estaban en ella.",
           "imagen": "3-contingencia-falla/capturas/04-centro-control.png",
-          "enPantalla": "tarjeta de la IMM-21 en rojo y los indicadores de planta"
+          "enPantalla": "tarjeta de la IMM-21 en rojo y los indicadores de planta",
+          "focos": [
+            {
+              "frase": "recibe la alarma",
+              "objetivo": "IMM-21",
+              "rotulo": "Alarma de IMM-21"
+            },
+            {
+              "frase": "su disponibilidad cae",
+              "objetivo": "Disponibilidad · semana",
+              "rotulo": "Disponibilidad de la semana"
+            }
+          ]
         },
         {
           "id": "3-S05",
           "titulo": "El APS avisa qué pedidos se afectan",
           "texto": "En la programación de producción aparece la alerta: la falla afecta ocho órdenes del plan vigente. Ahora la pregunta es: ¿esperamos la reparación o movemos el trabajo a otra máquina?",
           "imagen": "3-contingencia-falla/capturas/05-aps-alerta.png",
-          "enPantalla": "banda roja de alerta arriba"
+          "enPantalla": "banda roja de alerta arriba",
+          "focos": [
+            {
+              "frase": "la falla afecta ocho órdenes",
+              "objetivo": "IMM-21",
+              "rotulo": "8 órdenes afectadas"
+            }
+          ]
         },
         {
           "id": "3-S06",
           "titulo": "Fractal estudia las opciones",
           "texto": "Aquí entra Fractal. En menos de un segundo prueba tres combinaciones. No solo reordena la secuencia: también prueba cambios en la planta, como mudar el molde a otra máquina o montar el molde de repuesto que está en el almacén. Si solo esperamos y repartimos, quedan diez pedidos tarde, con doscientas noventa y cinco horas de atraso. La recomendación es montar el molde de repuesto del balde en la inyectora veinte, con noventa minutos de montaje. Así quedan siete pedidos tarde y el atraso baja a ciento ochenta y dos horas. La tabla también muestra la ocupación de la planta con cada opción: con la recomendada queda en sesenta y uno por ciento.",
           "imagen": "3-contingencia-falla/capturas/06-fractal.png",
-          "enPantalla": "tabla de opciones A a E; resaltar la fila D \"MEJOR\" y la columna OCUPACIÓN PLANTA"
+          "enPantalla": "tabla de opciones A a E; resaltar la fila D \"MEJOR\" y la columna OCUPACIÓN PLANTA",
+          "focos": [
+            {
+              "frase": "prueba tres combinaciones",
+              "objetivo": "combinaciones en",
+              "rotulo": "3 combinaciones"
+            },
+            {
+              "frase": "quedan diez pedidos tarde",
+              "objetivo": "Pedidos tarde + 10",
+              "rotulo": "Solo esperar: 10 tarde · 295 h"
+            },
+            {
+              "frase": "La recomendación es montar",
+              "objetivo": "RECOMENDACIÓN",
+              "rotulo": "Molde de repuesto en IMM-20"
+            },
+            {
+              "frase": "siete pedidos tarde",
+              "objetivo": "Pedidos tarde + 7",
+              "rotulo": "10 → 7 pedidos tarde"
+            },
+            {
+              "frase": "ciento ochenta y dos horas",
+              "objetivo": "Atraso total + 182,3 h",
+              "rotulo": "295,5 h → 182,3 h"
+            },
+            {
+              "frase": "sesenta y uno por ciento",
+              "objetivo": "Ocupación planta + 61 %",
+              "rotulo": "Ocupación planta 61 %"
+            }
+          ]
         },
         {
           "id": "3-S07",
@@ -288,21 +905,52 @@
           "titulo": "Adoptar",
           "texto": "Con un clic adoptamos la recomendación. Pasa a ser la programación vigente, con noventa y dos coma cinco por ciento de pedidos a tiempo. Fractal recomienda; la persona decide.",
           "imagen": "3-contingencia-falla/capturas/07-gantt-adoptado.png",
-          "enPantalla": "el Gantt con la IMM-20 trabajando y el plan vigente arriba"
+          "enPantalla": "el Gantt con la IMM-20 trabajando y el plan vigente arriba",
+          "focos": [
+            {
+              "frase": "Con un clic adoptamos",
+              "objetivo": "VIGENTE · + FRACTAL",
+              "rotulo": "Ahora vigente: Fractal"
+            },
+            {
+              "frase": "noventa y dos coma cinco",
+              "objetivo": "VIGENTE · + FRACTAL",
+              "rotulo": "92,5 % a tiempo"
+            }
+          ]
         },
         {
           "id": "3-S09",
           "titulo": "El centro de control después",
           "texto": "El centro de control ya muestra a la inyectora veinte con su nueva orden, mientras la veintiuno sigue en reparación.",
           "imagen": "3-contingencia-falla/capturas/08-centro-control-despues.png",
-          "enPantalla": "la IMM-20 ahora con orden"
+          "enPantalla": "la IMM-20 ahora con orden",
+          "focos": [
+            {
+              "frase": "la inyectora veinte con su nueva orden",
+              "objetivo": "IMM-20",
+              "rotulo": "IMM-20 con su nueva orden"
+            },
+            {
+              "frase": "la veintiuno sigue en reparación",
+              "objetivo": "IMM-21",
+              "rotulo": "IMM-21 en reparación"
+            }
+          ]
         },
         {
           "id": "3-S10",
           "titulo": "El emulador después",
           "texto": "Y en el emulador la planta sigue trabajando con el nuevo plan.",
           "imagen": "3-contingencia-falla/capturas/09-emulador-despues.png",
-          "enPantalla": "la IMM-20 produciendo"
+          "enPantalla": "la IMM-20 produciendo",
+          "focos": [
+            {
+              "frase": "el nuevo plan",
+              "objetivo": "programación",
+              "rotulo": "Emulador con el plan nuevo"
+            }
+          ]
         },
         {
           "id": "3-S11",
@@ -337,7 +985,29 @@
           "titulo": "El ahorro potencial",
           "texto": "Este es el ahorro de la contingencia. Si solo se espera la reparación, quedan diez pedidos tarde y doscientas noventa y cinco horas y media de atraso. Con la recomendación de Fractal quedan siete tarde y ciento ochenta y dos coma tres horas: tres pedidos salvados y ciento trece horas de atraso menos. El costo es noventa minutos de montaje del molde de repuesto.",
           "imagen": "3-contingencia-falla/capturas/06-fractal.png",
-          "enPantalla": "las filas A y C MEJOR: columnas TARDE y ATRASO"
+          "enPantalla": "las filas A y C MEJOR: columnas TARDE y ATRASO",
+          "focos": [
+            {
+              "frase": "quedan diez pedidos tarde",
+              "objetivo": "Pedidos tarde + 10",
+              "rotulo": "Esperar: 10 tarde · 295,5 h"
+            },
+            {
+              "frase": "quedan siete tarde",
+              "objetivo": "Pedidos tarde + 7",
+              "rotulo": "Fractal: 7 tarde · 182,3 h"
+            },
+            {
+              "frase": "tres pedidos salvados",
+              "objetivo": "—",
+              "rotulo": "3 pedidos salvados · 113 h menos de atraso"
+            },
+            {
+              "frase": "noventa minutos de montaje",
+              "objetivo": "Montaje de moldes",
+              "rotulo": "Costo: 90 min de montaje"
+            }
+          ]
         }
       ]
     },
@@ -351,28 +1021,86 @@
           "titulo": "El plan de partida",
           "texto": "Partimos del plan que calculó el cosimulador, con noventa y dos coma cinco por ciento de pedidos a tiempo. Pero un planificador sabe cosas que el sistema no sabe: hay pedidos que se prometieron con fecha firmada y no pueden moverse.",
           "imagen": "4-pedidos-fijados/capturas/01-gantt-vigente.png",
-          "enPantalla": "el Gantt con las órdenes de producción arriba y las máquinas abajo"
+          "enPantalla": "el Gantt con las órdenes de producción arriba y las máquinas abajo",
+          "focos": [
+            {
+              "frase": "noventa y dos coma cinco",
+              "objetivo": "VIGENTE · + · 92,5 %",
+              "rotulo": "92,5 % a tiempo"
+            }
+          ]
         },
         {
           "id": "4-S02",
           "titulo": "Bloquear a mano",
           "texto": "Arrastramos la papelera de pedal del día doce un día más tarde, a la fecha que pactó el comercial. Y con el candado fijamos tres órdenes donde están: los cubiertos del día once, esa papelera y la otra papelera del día catorce. Las barras rayadas ya no se pueden correr. El plan manual queda con siete pedidos tarde y ciento ochenta y cinco horas de atraso.",
           "imagen": "4-pedidos-fijados/capturas/02-gantt-fijadas.png",
-          "enPantalla": "los tres candados cerrados y las barras rayadas; la franja de la propuesta arriba"
+          "enPantalla": "los tres candados cerrados y las barras rayadas; la franja de la propuesta arriba",
+          "focos": [
+            {
+              "frase": "Arrastramos la papelera",
+              "objetivo": "PED-D12-07",
+              "rotulo": "Arrastrada un día"
+            },
+            {
+              "frase": "con el candado fijamos",
+              "objetivo": "orden fijada",
+              "rotulo": "🔒 Tres órdenes fijadas"
+            },
+            {
+              "frase": "siete pedidos tarde",
+              "objetivo": "—",
+              "rotulo": "7 tarde · 185 h de atraso"
+            }
+          ]
         },
         {
           "id": "4-S03",
           "titulo": "Fractal recibe lo fijado",
           "texto": "En la pestaña de Fractal aparece el cuarto escenario: órdenes fijadas a mano. Muestra cuáles son las tres órdenes bloqueadas y la pregunta es clara: organizar el resto de la producción sin moverlas.",
           "imagen": "4-pedidos-fijados/capturas/03-fractal-pregunta.png",
-          "enPantalla": "la tarjeta 4, órdenes fijadas a mano"
+          "enPantalla": "la tarjeta 4, órdenes fijadas a mano",
+          "focos": [
+            {
+              "frase": "el cuarto escenario",
+              "objetivo": "ÓRDENES FIJADAS",
+              "rotulo": "4 · Órdenes fijadas"
+            },
+            {
+              "frase": "las tres órdenes bloqueadas",
+              "objetivo": "están fijadas",
+              "rotulo": "3 órdenes bloqueadas"
+            }
+          ]
         },
         {
           "id": "4-S04",
           "titulo": "Fractal reorganiza el resto",
-          "texto": "En menos de un segundo Fractal prueba dos combinaciones. La primera solo reorganiza el resto con el cosimulador: el atraso baja de ciento ochenta y cinco coma ocho a ciento ochenta y dos coma tres horas. La segunda, además, monta el molde de repuesto del balde en la inyectora veinte, con noventa minutos de montaje, y deja la ocupación de la planta en sesenta y uno coma seis por ciento. En las dos, las tres órdenes fijadas quedan exactamente en la misma máquina y a la misma hora.",
+          "texto": "En menos de un segundo Fractal prueba dos combinaciones. La primera solo reorganiza el resto con el cosimulador: el atraso baja de ciento ochenta y cinco coma ocho a ciento ochenta y dos coma tres horas. La segunda, además, monta el molde de repuesto del balde en la inyectora veinte, con noventa minutos de montaje, y deja la ocupación de la planta en sesenta coma cuatro por ciento. En las dos, las tres órdenes fijadas quedan exactamente en la misma máquina y a la misma hora.",
           "imagen": "4-pedidos-fijados/capturas/04-fractal.png",
-          "enPantalla": "las filas A y B de la tabla; resaltar la fila B \"MEJOR\" y la columna de atraso"
+          "enPantalla": "las filas A y B de la tabla; resaltar la fila B \"MEJOR\" y la columna de atraso",
+          "focos": [
+            {
+              "frase": "prueba dos combinaciones",
+              "objetivo": "combinaciones en",
+              "rotulo": "2 combinaciones"
+            },
+            {
+              "frase": "de ciento ochenta y cinco coma ocho",
+              "objetivo": "Atraso total + 182,3 h",
+              "rotulo": "185,8 h → 182,3 h"
+            },
+            {
+              "frase": "monta el molde de repuesto",
+              "objetivo": "Montaje de moldes",
+              "rotulo": "Molde de repuesto en IMM-20"
+            },
+            {
+              "frase": "sesenta coma cuatro",
+              "objetivo": "Ocupación planta + 60,4 %",
+              "rotulo": "Ocupación 66,1 % → 60,4 %"
+            }
+          ]
         },
         {
           "id": "4-S05",
@@ -386,21 +1114,47 @@
           "titulo": "Adoptar y ver que lo fijado no se movió",
           "texto": "Adoptamos la recomendación. Es la programación vigente y las tres órdenes siguen con su candado, en la misma fecha. Lo demás se reacomodó a su alrededor. Si mañana cambia algo, se vuelve a pedir un estudio y los compromisos firmados se mantienen.",
           "imagen": "4-pedidos-fijados/capturas/05-gantt-adoptado.png",
-          "enPantalla": "los tres candados y sus barras en la misma posición que antes"
+          "enPantalla": "los tres candados y sus barras en la misma posición que antes",
+          "focos": [
+            {
+              "frase": "siguen con su candado",
+              "objetivo": "orden fijada",
+              "rotulo": "Las 3 siguen fijadas"
+            }
+          ]
         },
         {
           "id": "4-S07",
           "titulo": "La planta lo ejecuta",
           "texto": "El centro de control ya muestra la nueva programación de Fractal y la inyectora veinte con el montaje del molde de repuesto. El planificador conserva el control de lo importante y deja el resto al optimizador.",
           "imagen": "4-pedidos-fijados/capturas/06-centro-control.png",
-          "enPantalla": "la franja de programación vigente arriba y el molde montado en la inyectora veinte"
+          "enPantalla": "la franja de programación vigente arriba y el molde montado en la inyectora veinte",
+          "focos": [
+            {
+              "frase": "la inyectora veinte",
+              "objetivo": "IMM-20",
+              "rotulo": "IMM-20: montaje del repuesto"
+            }
+          ]
         },
         {
           "id": "4-S08",
           "titulo": "El ahorro potencial",
-          "texto": "Con tres órdenes fijadas a mano, Fractal organiza el resto y baja el atraso de ciento ochenta y cinco coma ocho a ciento ochenta y dos coma tres horas, y la ocupación de la planta de sesenta y cinco coma nueve a sesenta y uno coma seis por ciento. Y las tres órdenes firmadas no se movieron ni un minuto.",
+          "texto": "Con tres órdenes fijadas a mano, Fractal organiza el resto y baja el atraso de ciento ochenta y cinco coma ocho a ciento ochenta y dos coma tres horas, y la ocupación de la planta de sesenta y seis coma uno a sesenta coma cuatro por ciento. Y las tres órdenes firmadas no se movieron ni un minuto.",
           "imagen": "4-pedidos-fijados/capturas/04-fractal.png",
-          "enPantalla": "la fila ACTUAL contra la fila B MEJOR: atraso y ocupación"
+          "enPantalla": "la fila ACTUAL contra la fila B MEJOR: atraso y ocupación",
+          "focos": [
+            {
+              "frase": "de ciento ochenta y cinco coma ocho",
+              "objetivo": "Atraso total + 182,3 h",
+              "rotulo": "185,8 h → 182,3 h"
+            },
+            {
+              "frase": "sesenta y seis coma uno",
+              "objetivo": "Ocupación planta + 60,4 %",
+              "rotulo": "Ocupación 66,1 % → 60,4 %"
+            }
+          ]
         }
       ]
     },
@@ -414,42 +1168,109 @@
           "titulo": "Los cambios en la programación",
           "texto": "Esta es la programación que calculó el cosimulador. Miremos las dos inyectoras del balde, la veintiuno y la veintitrés. Cada raya blanca es un cambio de referencia: la máquina deja de producir para limpiar el color. Pasar de blanco a azul toma treinta minutos, pero de azul a blanco toma una hora, porque hay que sacar todo el pigmento. Si cambia el molde, se suma el montaje, y si cambia la resina, la purga es más larga. Ninguno de esos tiempos está fijo en el programa: salen de los datos de cada molde, cada resina y cada color.",
           "imagen": "5-menos-cambios/capturas/01-gantt-cambios.png",
-          "enPantalla": "las rayas blancas en las barras de IMM-21 e IMM-23"
+          "enPantalla": "las rayas blancas en las barras de IMM-21 e IMM-23",
+          "focos": [
+            {
+              "frase": "la veintiuno y la veintitrés",
+              "objetivo": "IMM-21 + IMM-23",
+              "rotulo": "IMM-21 e IMM-23"
+            },
+            {
+              "frase": "Cada raya blanca",
+              "objetivo": "cambio (molde, resina o color)",
+              "rotulo": "Raya = cambio de referencia"
+            }
+          ]
         },
         {
           "id": "5-S02",
           "titulo": "La pregunta a Fractal",
           "texto": "El plan vigente tiene treinta cambios y veintidós horas y media de máquina en cambios. Le preguntamos a Fractal: ¿cómo hacer menos cambios sin atrasar los pedidos?",
           "imagen": "5-menos-cambios/capturas/02-fractal-pregunta.png",
-          "enPantalla": "la tarjeta 4 · MENOS CAMBIOS DE REFERENCIA"
+          "enPantalla": "la tarjeta 4 · MENOS CAMBIOS DE REFERENCIA",
+          "focos": [
+            {
+              "frase": "treinta cambios",
+              "objetivo": "30 cambios + 22,5 h",
+              "rotulo": "30 cambios · 22,5 h"
+            },
+            {
+              "frase": "Le preguntamos a Fractal",
+              "objetivo": "MENOS CAMBIOS DE REFERENCIA",
+              "rotulo": "5 · Menos cambios"
+            }
+          ]
         },
         {
           "id": "5-S03",
           "titulo": "La recomendación",
           "texto": "En menos de un segundo compara las opciones. Su recomendación: dedicar un color a cada máquina. La veintiuno se queda en azul y la veintitrés en blanco. Los cambios bajan de treinta a doce, y las horas de cambio, de veintidós y media a nueve. Los pedidos a tiempo son los mismos: no se atrasa ninguno más.",
           "imagen": "5-menos-cambios/capturas/03-fractal.png",
-          "enPantalla": "la fila B · MEJOR y la columna CAMBIOS DE REFERENCIA"
+          "enPantalla": "la fila B · MEJOR y la columna CAMBIOS DE REFERENCIA",
+          "focos": [
+            {
+              "frase": "Su recomendación",
+              "objetivo": "RECOMENDACIÓN",
+              "rotulo": "Un color por máquina"
+            },
+            {
+              "frase": "Los cambios bajan de treinta a doce",
+              "objetivo": "Cambios de referencia + 12",
+              "rotulo": "30 → 12 cambios"
+            },
+            {
+              "frase": "Los pedidos a tiempo son los mismos",
+              "objetivo": "A tiempo + 92,5 %",
+              "rotulo": "A tiempo: igual"
+            }
+          ]
         },
         {
           "id": "5-S04",
           "titulo": "El plan adoptado",
           "texto": "Adoptamos la recomendación. Desde ahora, las barras del balde corren casi sin rayas. Son trece horas y media de máquina que vuelven a producción en lugar de purgar.",
           "imagen": "5-menos-cambios/capturas/04-gantt-adoptado.png",
-          "enPantalla": "las barras de IMM-21 e IMM-23 después de AHORA"
+          "enPantalla": "las barras de IMM-21 e IMM-23 después de AHORA",
+          "focos": [
+            {
+              "frase": "las barras del balde",
+              "objetivo": "IMM-21 + IMM-23",
+              "rotulo": "Casi sin rayas"
+            }
+          ]
         },
         {
           "id": "5-S05",
           "titulo": "Los insumos",
           "texto": "En insumos, la columna de cambios de referencia muestra las horas de cambio por máquina en la semana: con el plan adoptado, esta semana no queda ninguna. Menos purgas también significa menos resina y menos colorante botados en cada limpieza.",
           "imagen": "5-menos-cambios/capturas/05-insumos.png",
-          "enPantalla": "la columna CAMBIOS DE REFERENCIA de la tabla de horas de máquina"
+          "enPantalla": "la columna CAMBIOS DE REFERENCIA de la tabla de horas de máquina",
+          "focos": [
+            {
+              "frase": "la columna de cambios",
+              "objetivo": "CAMBIOS",
+              "rotulo": "Horas de cambio por máquina"
+            }
+          ]
         },
         {
           "id": "5-S06",
           "titulo": "El ahorro potencial",
           "texto": "Este es el ahorro más directo. Dedicar un color a cada máquina baja los cambios de referencia de treinta a doce, un sesenta por ciento menos, y las horas de máquina en purgas y montajes, de veintidós y media a nueve: trece horas y media por semana que vuelven a producción, sin atrasar ningún pedido. Menos purgas también es menos resina y colorante desechados.",
           "imagen": "5-menos-cambios/capturas/03-fractal.png",
-          "enPantalla": "las filas VIGENTE y B MEJOR: columna CAMBIOS DE REFERENCIA"
+          "enPantalla": "las filas VIGENTE y B MEJOR: columna CAMBIOS DE REFERENCIA",
+          "focos": [
+            {
+              "frase": "de treinta a doce",
+              "objetivo": "Cambios de referencia + 12",
+              "rotulo": "30 → 12 cambios (−60 %)"
+            },
+            {
+              "frase": "de veintidós y media a nueve",
+              "objetivo": "—",
+              "rotulo": "22,5 h → 9 h: 13,5 h por semana"
+            }
+          ]
         }
       ]
     },
@@ -463,7 +1284,14 @@
           "titulo": "El Gantt de la semana",
           "texto": "Antes de cerrar, dos herramientas del APS. La primera es el zoom del Gantt: con los botones más y menos cambia la ventana de tiempo, de tres a treinta días.",
           "imagen": "versiones/capturas/01-gantt-10d.png",
-          "enPantalla": "los botones − y + de la barra del Gantt"
+          "enPantalla": "los botones − y + de la barra del Gantt",
+          "focos": [
+            {
+              "frase": "con los botones más y menos",
+              "objetivo": "− + 10 d + +",
+              "rotulo": "Zoom: − y +"
+            }
+          ]
         },
         {
           "id": "6-S02",
@@ -484,21 +1312,42 @@
           "titulo": "Guardar lo que calculó el cosimulador",
           "texto": "La segunda son las versiones. Cada programación se guarda con un clic y con nombre: lo que calculó el cosimulador, un escenario de Fractal o un ajuste hecho a mano en el Gantt.",
           "imagen": "versiones/capturas/04-guardar-cosimulador.png",
-          "enPantalla": "el botón GUARDAR VERSIÓN en la barra de la propuesta"
+          "enPantalla": "el botón GUARDAR VERSIÓN en la barra de la propuesta",
+          "focos": [
+            {
+              "frase": "se guarda con un clic",
+              "objetivo": "✓ GUARDADA",
+              "rotulo": "Guardada como versión"
+            }
+          ]
         },
         {
           "id": "6-S05",
           "titulo": "Guardar el escenario de Fractal",
           "texto": "Aquí guardamos también el escenario balanceado de Fractal, para compararlo con calma.",
           "imagen": "versiones/capturas/05-guardar-fractal.png",
-          "enPantalla": "la propuesta de Fractal guardada"
+          "enPantalla": "la propuesta de Fractal guardada",
+          "focos": [
+            {
+              "frase": "guardamos también",
+              "objetivo": "✓ GUARDADA",
+              "rotulo": "Escenario de Fractal guardado"
+            }
+          ]
         },
         {
           "id": "6-S06",
           "titulo": "Comparar con la vigente",
           "texto": "En la pestaña versiones se comparan con la programación vigente: entregas a tiempo, pedidos tarde, atraso, cambios de referencia y ocupación. Cada versión se puede ver en el Gantt y en el gemelo 3D antes de decidir. Adoptarla, es decir, enviarla a la planta, es un paso aparte.",
           "imagen": "versiones/capturas/06-versiones-comparar.png",
-          "enPantalla": "la tabla COMPARAR CON LA VIGENTE"
+          "enPantalla": "la tabla COMPARAR CON LA VIGENTE",
+          "focos": [
+            {
+              "frase": "entregas a tiempo",
+              "objetivo": "VIGENTE",
+              "rotulo": "Comparar con la vigente"
+            }
+          ]
         }
       ]
     },
