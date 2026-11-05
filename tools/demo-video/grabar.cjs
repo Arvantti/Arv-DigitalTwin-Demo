@@ -188,6 +188,8 @@ async function open3d(pg, go, select, extra = "") {
  */
 async function orbita(pg, n, nombre, de, a, cuadros = 240, minutos = 0, { ui = false } = {}) {
   if (!ORBITAS) return;
+  // ORBITAS_SOLO=a,b graba solo esas (las demás ya están).
+  if (process.env.ORBITAS_SOLO && !process.env.ORBITAS_SOLO.split(",").includes(nombre)) return;
   cuadros = Number(process.env.ORBITA_CUADROS) || cuadros; // vista previa rápida del encuadre
   const dir = path.join(ROOT, FOLDERS[n], "orbitas", nombre);
   fs.rmSync(dir, { recursive: true, force: true });
@@ -330,11 +332,11 @@ const SCENARIOS = {
     await shot("11-gemelo-3d-despues.png");
     await orbita(pg, 3, "11-imm20", { t: [50, 52, 0], r: 60, h: 35, a: -30 }, { t: [40.5, 57, 1.5], r: 20, h: 10, a: 15 }, 170);
     if (ORBITAS) {
-      // El cambio de molde con el play, desde las 10:00: la grúa saca el molde de IMM-20, el carro va al almacén y
-      // vuelve con el de repuesto, y la grúa lo monta.
+      // El cambio de molde con el play, desde las 10:00, de cerca en IMM-20: la grúa saca su molde al carro, el carro
+      // va al almacén y vuelve con el de repuesto, y la grúa lo monta.
       await moverReloj(pg, -4 * 60);
-      await orbita(pg, 3, "12-montaje-ida", { t: [52, 50, 0], r: 60, h: 40, a: -25 }, { t: [62, 38, 0], r: 75, h: 50, a: 10 }, 220, 45);
-      await orbita(pg, 3, "13-montaje-vuelta", { t: [62, 38, 0], r: 75, h: 50, a: 10 }, { t: [40.5, 57, 2], r: 22, h: 12, a: 25 }, 220, 50);
+      await orbita(pg, 3, "12-montaje-ida", { t: [40.5, 57, 2], r: 28, h: 15, a: -45 }, { t: [42, 55, 1.5], r: 24, h: 13, a: -5 }, 220, 45);
+      await orbita(pg, 3, "13-montaje-vuelta", { t: [42, 55, 1.5], r: 24, h: 13, a: -5 }, { t: [40.5, 57, 2], r: 20, h: 11, a: 35 }, 220, 50);
     }
     await wait(2);
   },

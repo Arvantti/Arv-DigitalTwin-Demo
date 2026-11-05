@@ -717,7 +717,6 @@
           "texto": "Con el play avanzamos un día. Al día diez a las diez de la mañana la orden va en cincuenta y un mil unidades, en proceso en las inyectoras uno y dos, que llevan una estrella en su letrero. Así se ve, hora a hora, cómo avanza cada pedido en la planta.",
           "imagen": "2-cambio-fecha-pedido/capturas/07-gemelo-orden-play.png",
           "enPantalla": "el contador de unidades terminadas y las estrellas sobre las inyectoras uno y dos",
-          "orbita": "2-cambio-fecha-pedido/orbitas/07-imm01-play",
           "focos": [
             {
               "frase": "avanzamos un día",
@@ -795,7 +794,7 @@
             },
             {
               "frase": "la orden que está haciendo",
-              "objetivo": "Orden + PED-D10-03",
+              "objetivo": "Orden + PED-D10-03 + · Plásticos del Caribe",
               "rotulo": "Orden en curso"
             },
             {
@@ -814,7 +813,7 @@
           "focos": [
             {
               "frase": "se quema la resistencia",
-              "objetivo": "1 fuera de servicio",
+              "objetivo": "9 produciendo · 3 sin orden · + 1 fuera de servicio + · programación APS-SOL-01",
               "rotulo": "IMM-21 fuera de servicio"
             },
             {
@@ -950,7 +949,7 @@
           "focos": [
             {
               "frase": "el nuevo plan",
-              "objetivo": "programación",
+              "objetivo": "9 produciendo · 2 sin orden · + 1 fuera de servicio + · programación FRA-01-C",
               "rotulo": "Emulador con el plan nuevo"
             }
           ]
@@ -974,18 +973,18 @@
         {
           "id": "3-S13",
           "titulo": "El montaje del molde en el gemelo 3D",
-          "texto": "Y la opción adoptada no se queda en una tabla: con el play, el gemelo 3D muestra el cambio de molde. El puente grúa baja el molde de la inyectora veintiuno al carro y un operario lo lleva por el pasillo, a la otra máquina o al almacén de moldes.",
+          "texto": "Y la opción adoptada no se queda en una tabla: con el play, el gemelo 3D muestra el cambio de molde en la inyectora veinte. El puente grúa saca su molde y lo baja al carro, y un operario lo lleva al almacén de moldes.",
           "imagen": "3-contingencia-falla/capturas/12-gemelo-montaje-grua.jpg",
-          "enPantalla": "la grúa, el molde de balde y el letrero morado de montaje",
-          "orbita": "3-contingencia-falla/orbitas/12-montaje-imm21"
+          "enPantalla": "IMM-20, el carro de moldes y el letrero morado del cambio de molde",
+          "orbita": "3-contingencia-falla/orbitas/12-montaje-ida"
         },
         {
           "id": "3-S14",
           "titulo": "El montaje en la inyectora veinte",
-          "texto": "El molde llega a la inyectora veinte, mudado desde la veintiuno o el de repuesto del almacén, según la opción que se vea. Con el repuesto son noventa minutos de montaje, que nunca se parten, y el letrero dice qué molde entra y en qué fase va.",
+          "texto": "Regresa con el molde de balde de repuesto, la grúa lo monta y la inyectora veinte queda produciendo baldes. Son noventa minutos de montaje, que nunca se parten, y el letrero dice qué molde entra y en qué fase va.",
           "imagen": "3-contingencia-falla/capturas/13-gemelo-montaje-imm20.jpg",
-          "enPantalla": "la inyectora veinte con el letrero de montaje y el carro vacío",
-          "orbita": "3-contingencia-falla/orbitas/13-montaje-imm20"
+          "enPantalla": "el carro que vuelve del almacén, el montaje y IMM-20 produciendo baldes",
+          "orbita": "3-contingencia-falla/orbitas/13-montaje-vuelta"
         },
         {
           "id": "3-S15",

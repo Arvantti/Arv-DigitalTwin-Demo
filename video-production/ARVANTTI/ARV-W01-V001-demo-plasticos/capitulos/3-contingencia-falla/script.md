@@ -22,8 +22,8 @@ En el gemelo 3D vemos lo mismo: la inyectora veintiuno marcada fuera de servicio
 
 Y con el plan adoptado, la inyectora veinte aparece produciendo baldes. Del aviso de falla a un plan nuevo en la planta, en menos de un minuto.
 
-Y la opción adoptada no se queda en una tabla: con el play, el gemelo 3D muestra el cambio de molde. El puente grúa baja el molde de la inyectora veintiuno al carro y un operario lo lleva por el pasillo, a la otra máquina o al almacén de moldes.
+Y la opción adoptada no se queda en una tabla: con el play, el gemelo 3D muestra el cambio de molde en la inyectora veinte. El puente grúa saca su molde y lo baja al carro, y un operario lo lleva al almacén de moldes.
 
-El molde llega a la inyectora veinte, mudado desde la veintiuno o el de repuesto del almacén, según la opción que se vea. Con el repuesto son noventa minutos de montaje, que nunca se parten, y el letrero dice qué molde entra y en qué fase va.
+Regresa con el molde de balde de repuesto, la grúa lo monta y la inyectora veinte queda produciendo baldes. Son noventa minutos de montaje, que nunca se parten, y el letrero dice qué molde entra y en qué fase va.
 
 Este es el ahorro de la contingencia. Si solo se espera la reparación, quedan diez pedidos tarde y doscientas noventa y cinco horas y media de atraso. Con la recomendación de Fractal quedan siete tarde y ciento ochenta y dos coma tres horas: tres pedidos salvados y ciento trece horas de atraso menos. El costo es noventa minutos de montaje del molde de repuesto.

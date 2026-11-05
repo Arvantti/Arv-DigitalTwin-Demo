@@ -1,12 +1,12 @@
 {
-  "total_s": 1184.45,
+  "total_s": 1184.36,
   "audio": "ElevenLabs",
   "musica": "ElevenLabs Music",
   "capitulos": [
-    "0-apertura: 118.24 s",
-    "1-calcular-programacion: 324.51 s",
+    "0-apertura: 119.99 s",
+    "1-calcular-programacion: 325.3 s",
     "2-cambio-fecha-pedido: 153.77 s",
-    "3-contingencia-falla: 217.29 s",
+    "3-contingencia-falla: 214.66 s",
     "4-pedidos-fijados: 142.76 s",
     "5-menos-cambios: 119.43 s",
     "6-versiones: 63.27 s",

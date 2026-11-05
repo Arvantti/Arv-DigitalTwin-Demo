@@ -7,3 +7,4 @@ out/
 previews/**/*.mp4
 previews/**/*.png
 .hyperframes/
+assets/qa-recuadros.json
