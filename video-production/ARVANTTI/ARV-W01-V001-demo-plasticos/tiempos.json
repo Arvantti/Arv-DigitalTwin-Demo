@@ -1,14 +1,15 @@
 {
-  "total_s": 1015.44,
+  "total_s": 1170.29,
   "audio": "ElevenLabs",
+  "musica": "ElevenLabs Music",
   "capitulos": [
-    "0-apertura: 45.49 s",
-    "1-calcular-programacion: 268.18 s",
-    "2-cambio-fecha-pedido: 143.89 s",
-    "3-contingencia-falla: 201.68 s",
-    "4-pedidos-fijados: 133.43 s",
-    "5-menos-cambios: 116.4 s",
-    "6-versiones: 61.03 s",
-    "7-cierre: 34.34 s"
+    "0-apertura: 104.08 s",
+    "1-calcular-programacion: 324.51 s",
+    "2-cambio-fecha-pedido: 153.77 s",
+    "3-contingencia-falla: 217.29 s",
+    "4-pedidos-fijados: 142.76 s",
+    "5-menos-cambios: 119.43 s",
+    "6-versiones: 63.27 s",
+    "7-cierre: 34.18 s"
   ]
 }
