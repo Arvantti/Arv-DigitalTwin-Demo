@@ -1,0 +1,1 @@
+Todo corre sobre un núcleo: Arvantti Digital Twin, el gemelo tres D. A su alrededor, siete módulos. Integrator. APS. CoSimulation. Fractal. Control Center. DendroScada. Y AI Assistant. Activas solo los que necesitas, sin cobro por usuario.
