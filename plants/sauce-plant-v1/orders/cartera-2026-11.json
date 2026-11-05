@@ -1,0 +1,1049 @@
+{
+ "contract": "customer-orders.v1",
+ "plant": "sauce-plant-v1",
+ "portfolio_id": "CART-2026-11",
+ "timezone": "-05:00",
+ "plan_start": "2026-10-26T06:00-05:00",
+ "orders": [
+  {
+   "id": "PED-D01-01",
+   "customer": "Casino Institucional Andino",
+   "product": "tomate-1000",
+   "quantity": 3200,
+   "unit": "u",
+   "due": "2026-10-27T22:00-05:00",
+   "created": "2026-10-23T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D01-02",
+   "customer": "Comidas Rápidas El Parque",
+   "product": "tomate-250",
+   "quantity": 6304,
+   "unit": "u",
+   "due": "2026-10-27T22:00-05:00",
+   "created": "2026-10-25T06:00-05:00",
+   "importance": "alta"
+  },
+  {
+   "id": "PED-D01-03",
+   "customer": "Tiendas Barrio Unido",
+   "product": "mayonesa-1000",
+   "quantity": 3972,
+   "unit": "u",
+   "due": "2026-10-27T22:00-05:00",
+   "created": "2026-10-26T06:00-05:00",
+   "importance": "alta"
+  },
+  {
+   "id": "PED-D01-04",
+   "customer": "Distribuidora Norte",
+   "product": "mayonesa-500",
+   "quantity": 5992,
+   "unit": "u",
+   "due": "2026-10-27T22:00-05:00",
+   "created": "2026-10-25T06:00-05:00",
+   "importance": "alta"
+  },
+  {
+   "id": "PED-D01-05",
+   "customer": "Cadena Surtidora del Valle",
+   "product": "mayonesa-250",
+   "quantity": 8800,
+   "unit": "u",
+   "due": "2026-10-27T22:00-05:00",
+   "created": "2026-10-24T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D01-06",
+   "customer": "Tiendas Barrio Unido",
+   "product": "mostaza-250",
+   "quantity": 5856,
+   "unit": "u",
+   "due": "2026-10-27T22:00-05:00",
+   "created": "2026-10-20T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D02-01",
+   "customer": "Tiendas Barrio Unido",
+   "product": "tomate-1000",
+   "quantity": 4604,
+   "unit": "u",
+   "due": "2026-10-28T22:00-05:00",
+   "created": "2026-10-24T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D02-02",
+   "customer": "Autoservicio La Montaña",
+   "product": "tomate-250",
+   "quantity": 7120,
+   "unit": "u",
+   "due": "2026-10-28T22:00-05:00",
+   "created": "2026-10-22T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D02-03",
+   "customer": "Casino Institucional Andino",
+   "product": "mayonesa-1000",
+   "quantity": 5348,
+   "unit": "u",
+   "due": "2026-10-28T22:00-05:00",
+   "created": "2026-10-25T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D02-04",
+   "customer": "Distribuidora Norte",
+   "product": "mayonesa-500",
+   "quantity": 4824,
+   "unit": "u",
+   "due": "2026-10-28T22:00-05:00",
+   "created": "2026-10-21T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D02-05",
+   "customer": "Distribuidora Norte",
+   "product": "mayonesa-250",
+   "quantity": 5408,
+   "unit": "u",
+   "due": "2026-10-28T22:00-05:00",
+   "created": "2026-10-23T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D02-06",
+   "customer": "Comidas Rápidas El Parque",
+   "product": "mostaza-250",
+   "quantity": 13744,
+   "unit": "u",
+   "due": "2026-10-28T22:00-05:00",
+   "created": "2026-10-21T06:00-05:00",
+   "importance": "baja"
+  },
+  {
+   "id": "PED-D03-01",
+   "customer": "Exportadora Pacífico",
+   "product": "tomate-1000",
+   "quantity": 5860,
+   "unit": "u",
+   "due": "2026-10-29T22:00-05:00",
+   "created": "2026-10-24T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D03-02",
+   "customer": "Tiendas Barrio Unido",
+   "product": "tomate-250",
+   "quantity": 10720,
+   "unit": "u",
+   "due": "2026-10-29T22:00-05:00",
+   "created": "2026-10-27T06:00-05:00",
+   "importance": "alta"
+  },
+  {
+   "id": "PED-D03-03",
+   "customer": "Cadena Surtidora del Valle",
+   "product": "mayonesa-1000",
+   "quantity": 4252,
+   "unit": "u",
+   "due": "2026-10-29T22:00-05:00",
+   "created": "2026-10-26T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D03-04",
+   "customer": "Autoservicio La Montaña",
+   "product": "mayonesa-500",
+   "quantity": 8648,
+   "unit": "u",
+   "due": "2026-10-29T22:00-05:00",
+   "created": "2026-10-24T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D03-05",
+   "customer": "Comidas Rápidas El Parque",
+   "product": "mayonesa-250",
+   "quantity": 4192,
+   "unit": "u",
+   "due": "2026-10-29T22:00-05:00",
+   "created": "2026-10-26T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D03-06",
+   "customer": "Autoservicio La Montaña",
+   "product": "mostaza-250",
+   "quantity": 5312,
+   "unit": "u",
+   "due": "2026-10-29T22:00-05:00",
+   "created": "2026-10-25T06:00-05:00",
+   "importance": "baja"
+  },
+  {
+   "id": "PED-D04-01",
+   "customer": "Exportadora Pacífico",
+   "product": "tomate-1000",
+   "quantity": 4900,
+   "unit": "u",
+   "due": "2026-10-30T22:00-05:00",
+   "created": "2026-10-23T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D04-02",
+   "customer": "Casino Institucional Andino",
+   "product": "tomate-250",
+   "quantity": 14912,
+   "unit": "u",
+   "due": "2026-10-30T22:00-05:00",
+   "created": "2026-10-27T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D04-03",
+   "customer": "Cadena Surtidora del Valle",
+   "product": "mayonesa-1000",
+   "quantity": 2316,
+   "unit": "u",
+   "due": "2026-10-30T22:00-05:00",
+   "created": "2026-10-23T06:00-05:00",
+   "importance": "baja"
+  },
+  {
+   "id": "PED-D04-04",
+   "customer": "Comidas Rápidas El Parque",
+   "product": "mayonesa-500",
+   "quantity": 7656,
+   "unit": "u",
+   "due": "2026-10-30T22:00-05:00",
+   "created": "2026-10-24T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D04-05",
+   "customer": "Tiendas Barrio Unido",
+   "product": "mayonesa-250",
+   "quantity": 12304,
+   "unit": "u",
+   "due": "2026-10-30T22:00-05:00",
+   "created": "2026-10-23T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D04-06",
+   "customer": "Tiendas Barrio Unido",
+   "product": "mostaza-250",
+   "quantity": 8256,
+   "unit": "u",
+   "due": "2026-10-30T22:00-05:00",
+   "created": "2026-10-23T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D05-01",
+   "customer": "Autoservicio La Montaña",
+   "product": "tomate-1000",
+   "quantity": 3068,
+   "unit": "u",
+   "due": "2026-10-31T22:00-05:00",
+   "created": "2026-10-25T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D05-02",
+   "customer": "Distribuidora Norte",
+   "product": "tomate-250",
+   "quantity": 14336,
+   "unit": "u",
+   "due": "2026-10-31T22:00-05:00",
+   "created": "2026-10-30T06:00-05:00",
+   "importance": "alta"
+  },
+  {
+   "id": "PED-D05-03",
+   "customer": "Distribuidora Norte",
+   "product": "mayonesa-1000",
+   "quantity": 1712,
+   "unit": "u",
+   "due": "2026-10-31T22:00-05:00",
+   "created": "2026-10-27T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D05-04",
+   "customer": "Autoservicio La Montaña",
+   "product": "mayonesa-1000",
+   "quantity": 2480,
+   "unit": "u",
+   "due": "2026-10-31T22:00-05:00",
+   "created": "2026-10-27T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D05-05",
+   "customer": "Distribuidora Norte",
+   "product": "mayonesa-500",
+   "quantity": 8312,
+   "unit": "u",
+   "due": "2026-10-31T22:00-05:00",
+   "created": "2026-10-30T06:00-05:00",
+   "importance": "alta"
+  },
+  {
+   "id": "PED-D05-06",
+   "customer": "Cadena Surtidora del Valle",
+   "product": "mayonesa-250",
+   "quantity": 10800,
+   "unit": "u",
+   "due": "2026-10-31T22:00-05:00",
+   "created": "2026-10-24T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D05-07",
+   "customer": "Distribuidora Norte",
+   "product": "mostaza-250",
+   "quantity": 8432,
+   "unit": "u",
+   "due": "2026-10-31T22:00-05:00",
+   "created": "2026-10-24T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D07-01",
+   "customer": "Cadena Surtidora del Valle",
+   "product": "tomate-1000",
+   "quantity": 2672,
+   "unit": "u",
+   "due": "2026-11-02T22:00-05:00",
+   "created": "2026-10-30T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D07-02",
+   "customer": "Comidas Rápidas El Parque",
+   "product": "tomate-250",
+   "quantity": 4496,
+   "unit": "u",
+   "due": "2026-11-02T22:00-05:00",
+   "created": "2026-10-29T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D07-03",
+   "customer": "Autoservicio La Montaña",
+   "product": "mayonesa-1000",
+   "quantity": 4932,
+   "unit": "u",
+   "due": "2026-11-02T22:00-05:00",
+   "created": "2026-10-31T06:00-05:00",
+   "importance": "alta"
+  },
+  {
+   "id": "PED-D07-04",
+   "customer": "Comidas Rápidas El Parque",
+   "product": "mayonesa-500",
+   "quantity": 8016,
+   "unit": "u",
+   "due": "2026-11-02T22:00-05:00",
+   "created": "2026-10-27T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D07-05",
+   "customer": "Distribuidora Norte",
+   "product": "mayonesa-250",
+   "quantity": 10624,
+   "unit": "u",
+   "due": "2026-11-02T22:00-05:00",
+   "created": "2026-10-26T06:00-05:00",
+   "importance": "baja"
+  },
+  {
+   "id": "PED-D07-06",
+   "customer": "Comidas Rápidas El Parque",
+   "product": "mostaza-250",
+   "quantity": 10160,
+   "unit": "u",
+   "due": "2026-11-02T22:00-05:00",
+   "created": "2026-10-26T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D08-01",
+   "customer": "Casino Institucional Andino",
+   "product": "tomate-1000",
+   "quantity": 3580,
+   "unit": "u",
+   "due": "2026-11-03T22:00-05:00",
+   "created": "2026-10-28T06:00-05:00",
+   "importance": "baja"
+  },
+  {
+   "id": "PED-D08-02",
+   "customer": "Comidas Rápidas El Parque",
+   "product": "tomate-250",
+   "quantity": 5344,
+   "unit": "u",
+   "due": "2026-11-03T22:00-05:00",
+   "created": "2026-11-01T06:00-05:00",
+   "importance": "alta"
+  },
+  {
+   "id": "PED-D08-03",
+   "customer": "Exportadora Pacífico",
+   "product": "mayonesa-1000",
+   "quantity": 3928,
+   "unit": "u",
+   "due": "2026-11-03T22:00-05:00",
+   "created": "2026-10-28T06:00-05:00",
+   "importance": "baja"
+  },
+  {
+   "id": "PED-D08-04",
+   "customer": "Comidas Rápidas El Parque",
+   "product": "mayonesa-500",
+   "quantity": 2672,
+   "unit": "u",
+   "due": "2026-11-03T22:00-05:00",
+   "created": "2026-10-28T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D08-05",
+   "customer": "Tiendas Barrio Unido",
+   "product": "mayonesa-250",
+   "quantity": 7968,
+   "unit": "u",
+   "due": "2026-11-03T22:00-05:00",
+   "created": "2026-10-29T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D08-06",
+   "customer": "Distribuidora Norte",
+   "product": "mostaza-250",
+   "quantity": 11264,
+   "unit": "u",
+   "due": "2026-11-03T22:00-05:00",
+   "created": "2026-10-31T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D09-01",
+   "customer": "Cadena Surtidora del Valle",
+   "product": "tomate-1000",
+   "quantity": 3132,
+   "unit": "u",
+   "due": "2026-11-04T22:00-05:00",
+   "created": "2026-11-01T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D09-02",
+   "customer": "Cadena Surtidora del Valle",
+   "product": "tomate-250",
+   "quantity": 7216,
+   "unit": "u",
+   "due": "2026-11-04T22:00-05:00",
+   "created": "2026-10-30T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D09-03",
+   "customer": "Cadena Surtidora del Valle",
+   "product": "mayonesa-1000",
+   "quantity": 2320,
+   "unit": "u",
+   "due": "2026-11-04T22:00-05:00",
+   "created": "2026-10-31T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D09-04",
+   "customer": "Casino Institucional Andino",
+   "product": "mayonesa-500",
+   "quantity": 3856,
+   "unit": "u",
+   "due": "2026-11-04T22:00-05:00",
+   "created": "2026-10-29T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D09-05",
+   "customer": "Exportadora Pacífico",
+   "product": "mayonesa-250",
+   "quantity": 5440,
+   "unit": "u",
+   "due": "2026-11-04T22:00-05:00",
+   "created": "2026-11-01T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D09-06",
+   "customer": "Tiendas Barrio Unido",
+   "product": "mostaza-250",
+   "quantity": 15952,
+   "unit": "u",
+   "due": "2026-11-04T22:00-05:00",
+   "created": "2026-10-31T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D10-01",
+   "customer": "Tiendas Barrio Unido",
+   "product": "tomate-1000",
+   "quantity": 1604,
+   "unit": "u",
+   "due": "2026-11-05T22:00-05:00",
+   "created": "2026-10-31T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D10-02",
+   "customer": "Casino Institucional Andino",
+   "product": "tomate-250",
+   "quantity": 10832,
+   "unit": "u",
+   "due": "2026-11-05T22:00-05:00",
+   "created": "2026-10-30T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D10-03",
+   "customer": "Exportadora Pacífico",
+   "product": "mayonesa-1000",
+   "quantity": 3200,
+   "unit": "u",
+   "due": "2026-11-05T22:00-05:00",
+   "created": "2026-11-04T06:00-05:00",
+   "importance": "alta"
+  },
+  {
+   "id": "PED-D10-04",
+   "customer": "Autoservicio La Montaña",
+   "product": "mayonesa-500",
+   "quantity": 5248,
+   "unit": "u",
+   "due": "2026-11-05T22:00-05:00",
+   "created": "2026-10-31T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D10-05",
+   "customer": "Distribuidora Norte",
+   "product": "mayonesa-250",
+   "quantity": 8096,
+   "unit": "u",
+   "due": "2026-11-05T22:00-05:00",
+   "created": "2026-10-29T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D10-06",
+   "customer": "Exportadora Pacífico",
+   "product": "mostaza-250",
+   "quantity": 14480,
+   "unit": "u",
+   "due": "2026-11-05T22:00-05:00",
+   "created": "2026-11-01T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D11-01",
+   "customer": "Casino Institucional Andino",
+   "product": "tomate-1000",
+   "quantity": 4256,
+   "unit": "u",
+   "due": "2026-11-06T22:00-05:00",
+   "created": "2026-10-31T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D11-02",
+   "customer": "Casino Institucional Andino",
+   "product": "tomate-250",
+   "quantity": 4384,
+   "unit": "u",
+   "due": "2026-11-06T22:00-05:00",
+   "created": "2026-10-31T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D11-03",
+   "customer": "Tiendas Barrio Unido",
+   "product": "mayonesa-1000",
+   "quantity": 2808,
+   "unit": "u",
+   "due": "2026-11-06T22:00-05:00",
+   "created": "2026-11-02T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D11-04",
+   "customer": "Autoservicio La Montaña",
+   "product": "mayonesa-500",
+   "quantity": 4840,
+   "unit": "u",
+   "due": "2026-11-06T22:00-05:00",
+   "created": "2026-11-01T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D11-05",
+   "customer": "Casino Institucional Andino",
+   "product": "mayonesa-250",
+   "quantity": 6512,
+   "unit": "u",
+   "due": "2026-11-06T22:00-05:00",
+   "created": "2026-11-01T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D11-06",
+   "customer": "Casino Institucional Andino",
+   "product": "mostaza-250",
+   "quantity": 12592,
+   "unit": "u",
+   "due": "2026-11-06T22:00-05:00",
+   "created": "2026-10-31T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D12-01",
+   "customer": "Comidas Rápidas El Parque",
+   "product": "tomate-1000",
+   "quantity": 2752,
+   "unit": "u",
+   "due": "2026-11-07T22:00-05:00",
+   "created": "2026-11-01T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D12-02",
+   "customer": "Casino Institucional Andino",
+   "product": "tomate-250",
+   "quantity": 8624,
+   "unit": "u",
+   "due": "2026-11-07T22:00-05:00",
+   "created": "2026-11-02T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D12-03",
+   "customer": "Tiendas Barrio Unido",
+   "product": "mayonesa-1000",
+   "quantity": 4832,
+   "unit": "u",
+   "due": "2026-11-07T22:00-05:00",
+   "created": "2026-11-03T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D12-04",
+   "customer": "Autoservicio La Montaña",
+   "product": "mayonesa-500",
+   "quantity": 5184,
+   "unit": "u",
+   "due": "2026-11-07T22:00-05:00",
+   "created": "2026-11-02T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D12-05",
+   "customer": "Exportadora Pacífico",
+   "product": "mayonesa-250",
+   "quantity": 7248,
+   "unit": "u",
+   "due": "2026-11-07T22:00-05:00",
+   "created": "2026-11-04T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D12-06",
+   "customer": "Autoservicio La Montaña",
+   "product": "mostaza-250",
+   "quantity": 15328,
+   "unit": "u",
+   "due": "2026-11-07T22:00-05:00",
+   "created": "2026-11-03T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D14-01",
+   "customer": "Autoservicio La Montaña",
+   "product": "tomate-1000",
+   "quantity": 5512,
+   "unit": "u",
+   "due": "2026-11-09T22:00-05:00",
+   "created": "2026-11-02T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D14-02",
+   "customer": "Autoservicio La Montaña",
+   "product": "tomate-250",
+   "quantity": 8384,
+   "unit": "u",
+   "due": "2026-11-09T22:00-05:00",
+   "created": "2026-11-04T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D14-03",
+   "customer": "Autoservicio La Montaña",
+   "product": "mayonesa-1000",
+   "quantity": 4480,
+   "unit": "u",
+   "due": "2026-11-09T22:00-05:00",
+   "created": "2026-11-06T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D14-04",
+   "customer": "Autoservicio La Montaña",
+   "product": "mayonesa-500",
+   "quantity": 6600,
+   "unit": "u",
+   "due": "2026-11-09T22:00-05:00",
+   "created": "2026-11-05T06:00-05:00",
+   "importance": "baja"
+  },
+  {
+   "id": "PED-D14-05",
+   "customer": "Tiendas Barrio Unido",
+   "product": "mayonesa-250",
+   "quantity": 11888,
+   "unit": "u",
+   "due": "2026-11-09T22:00-05:00",
+   "created": "2026-11-05T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D14-06",
+   "customer": "Comidas Rápidas El Parque",
+   "product": "mostaza-250",
+   "quantity": 7376,
+   "unit": "u",
+   "due": "2026-11-09T22:00-05:00",
+   "created": "2026-11-08T06:00-05:00",
+   "importance": "alta"
+  },
+  {
+   "id": "PED-D15-01",
+   "customer": "Tiendas Barrio Unido",
+   "product": "tomate-1000",
+   "quantity": 3904,
+   "unit": "u",
+   "due": "2026-11-10T22:00-05:00",
+   "created": "2026-11-03T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D15-02",
+   "customer": "Distribuidora Norte",
+   "product": "tomate-250",
+   "quantity": 5536,
+   "unit": "u",
+   "due": "2026-11-10T22:00-05:00",
+   "created": "2026-11-07T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D15-03",
+   "customer": "Distribuidora Norte",
+   "product": "mayonesa-1000",
+   "quantity": 2616,
+   "unit": "u",
+   "due": "2026-11-10T22:00-05:00",
+   "created": "2026-11-05T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D15-04",
+   "customer": "Comidas Rápidas El Parque",
+   "product": "mayonesa-500",
+   "quantity": 5272,
+   "unit": "u",
+   "due": "2026-11-10T22:00-05:00",
+   "created": "2026-11-03T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D15-05",
+   "customer": "Casino Institucional Andino",
+   "product": "mayonesa-250",
+   "quantity": 5824,
+   "unit": "u",
+   "due": "2026-11-10T22:00-05:00",
+   "created": "2026-11-07T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D15-06",
+   "customer": "Cadena Surtidora del Valle",
+   "product": "mostaza-250",
+   "quantity": 9504,
+   "unit": "u",
+   "due": "2026-11-10T22:00-05:00",
+   "created": "2026-11-06T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D16-01",
+   "customer": "Autoservicio La Montaña",
+   "product": "tomate-1000",
+   "quantity": 5460,
+   "unit": "u",
+   "due": "2026-11-11T22:00-05:00",
+   "created": "2026-11-08T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D16-02",
+   "customer": "Exportadora Pacífico",
+   "product": "tomate-250",
+   "quantity": 11184,
+   "unit": "u",
+   "due": "2026-11-11T22:00-05:00",
+   "created": "2026-11-09T06:00-05:00",
+   "importance": "alta"
+  },
+  {
+   "id": "PED-D16-03",
+   "customer": "Cadena Surtidora del Valle",
+   "product": "mayonesa-1000",
+   "quantity": 4660,
+   "unit": "u",
+   "due": "2026-11-11T22:00-05:00",
+   "created": "2026-11-04T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D16-04",
+   "customer": "Exportadora Pacífico",
+   "product": "mayonesa-500",
+   "quantity": 3688,
+   "unit": "u",
+   "due": "2026-11-11T22:00-05:00",
+   "created": "2026-11-08T06:00-05:00",
+   "importance": "baja"
+  },
+  {
+   "id": "PED-D16-05",
+   "customer": "Casino Institucional Andino",
+   "product": "mayonesa-250",
+   "quantity": 8144,
+   "unit": "u",
+   "due": "2026-11-11T22:00-05:00",
+   "created": "2026-11-08T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D16-06",
+   "customer": "Distribuidora Norte",
+   "product": "mostaza-250",
+   "quantity": 9808,
+   "unit": "u",
+   "due": "2026-11-11T22:00-05:00",
+   "created": "2026-11-05T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D17-01",
+   "customer": "Casino Institucional Andino",
+   "product": "tomate-1000",
+   "quantity": 3552,
+   "unit": "u",
+   "due": "2026-11-12T22:00-05:00",
+   "created": "2026-11-08T06:00-05:00",
+   "importance": "baja"
+  },
+  {
+   "id": "PED-D17-02",
+   "customer": "Comidas Rápidas El Parque",
+   "product": "tomate-250",
+   "quantity": 7264,
+   "unit": "u",
+   "due": "2026-11-12T22:00-05:00",
+   "created": "2026-11-06T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D17-03",
+   "customer": "Cadena Surtidora del Valle",
+   "product": "mayonesa-1000",
+   "quantity": 5052,
+   "unit": "u",
+   "due": "2026-11-12T22:00-05:00",
+   "created": "2026-11-05T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D17-04",
+   "customer": "Exportadora Pacífico",
+   "product": "mayonesa-500",
+   "quantity": 6840,
+   "unit": "u",
+   "due": "2026-11-12T22:00-05:00",
+   "created": "2026-11-09T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D17-05",
+   "customer": "Exportadora Pacífico",
+   "product": "mayonesa-250",
+   "quantity": 6656,
+   "unit": "u",
+   "due": "2026-11-12T22:00-05:00",
+   "created": "2026-11-06T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D17-06",
+   "customer": "Exportadora Pacífico",
+   "product": "mostaza-250",
+   "quantity": 15296,
+   "unit": "u",
+   "due": "2026-11-12T22:00-05:00",
+   "created": "2026-11-05T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D18-01",
+   "customer": "Exportadora Pacífico",
+   "product": "tomate-1000",
+   "quantity": 2180,
+   "unit": "u",
+   "due": "2026-11-13T22:00-05:00",
+   "created": "2026-11-11T06:00-05:00",
+   "importance": "alta"
+  },
+  {
+   "id": "PED-D18-02",
+   "customer": "Casino Institucional Andino",
+   "product": "tomate-1000",
+   "quantity": 3456,
+   "unit": "u",
+   "due": "2026-11-13T22:00-05:00",
+   "created": "2026-11-08T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D18-03",
+   "customer": "Distribuidora Norte",
+   "product": "tomate-250",
+   "quantity": 10640,
+   "unit": "u",
+   "due": "2026-11-13T22:00-05:00",
+   "created": "2026-11-06T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D18-04",
+   "customer": "Distribuidora Norte",
+   "product": "mayonesa-1000",
+   "quantity": 4080,
+   "unit": "u",
+   "due": "2026-11-13T22:00-05:00",
+   "created": "2026-11-09T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D18-05",
+   "customer": "Cadena Surtidora del Valle",
+   "product": "mayonesa-500",
+   "quantity": 4904,
+   "unit": "u",
+   "due": "2026-11-13T22:00-05:00",
+   "created": "2026-11-07T06:00-05:00",
+   "importance": "baja"
+  },
+  {
+   "id": "PED-D18-06",
+   "customer": "Comidas Rápidas El Parque",
+   "product": "mayonesa-250",
+   "quantity": 9776,
+   "unit": "u",
+   "due": "2026-11-13T22:00-05:00",
+   "created": "2026-11-07T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D18-07",
+   "customer": "Tiendas Barrio Unido",
+   "product": "mostaza-250",
+   "quantity": 15280,
+   "unit": "u",
+   "due": "2026-11-13T22:00-05:00",
+   "created": "2026-11-07T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D19-01",
+   "customer": "Distribuidora Norte",
+   "product": "tomate-1000",
+   "quantity": 5156,
+   "unit": "u",
+   "due": "2026-11-14T22:00-05:00",
+   "created": "2026-11-08T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D19-02",
+   "customer": "Comidas Rápidas El Parque",
+   "product": "tomate-250",
+   "quantity": 12384,
+   "unit": "u",
+   "due": "2026-11-14T22:00-05:00",
+   "created": "2026-11-07T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D19-03",
+   "customer": "Autoservicio La Montaña",
+   "product": "mayonesa-1000",
+   "quantity": 4164,
+   "unit": "u",
+   "due": "2026-11-14T22:00-05:00",
+   "created": "2026-11-07T06:00-05:00",
+   "importance": "baja"
+  },
+  {
+   "id": "PED-D19-04",
+   "customer": "Cadena Surtidora del Valle",
+   "product": "mayonesa-500",
+   "quantity": 8840,
+   "unit": "u",
+   "due": "2026-11-14T22:00-05:00",
+   "created": "2026-11-08T06:00-05:00",
+   "importance": "baja"
+  },
+  {
+   "id": "PED-D19-05",
+   "customer": "Casino Institucional Andino",
+   "product": "mayonesa-250",
+   "quantity": 5760,
+   "unit": "u",
+   "due": "2026-11-14T22:00-05:00",
+   "created": "2026-11-08T06:00-05:00",
+   "importance": "normal"
+  },
+  {
+   "id": "PED-D19-06",
+   "customer": "Cadena Surtidora del Valle",
+   "product": "mostaza-250",
+   "quantity": 14688,
+   "unit": "u",
+   "due": "2026-11-14T22:00-05:00",
+   "created": "2026-11-07T06:00-05:00",
+   "importance": "baja"
+  }
+ ]
+}

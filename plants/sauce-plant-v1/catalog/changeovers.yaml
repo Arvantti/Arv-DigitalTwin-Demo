@@ -1,0 +1,26 @@
+# Tiempos de cambio entre referencias en la planta de salsas (los leerá el cosimulador de plants/sauce-plant-v1/cosim).
+# Todo es supuesto de la demo, inventado para que sea realista y coherente; no son tiempos de una planta real.
+#
+# CIP (limpieza en sitio): el equipo húmedo (marmita, pulmón, tubería, llenadora) se lava sin desarmarlo haciendo
+# circular agua, soda y ácido. Un cambio de referencia en un equipo húmedo tiene hasta tres partes:
+#   - cambio de receta en el equipo de proceso: `change_min` de la receta que entra (catalog/tooling.yaml, 45–60 min);
+#   - cambio de formato en la llenadora (250/500/1.000 ml): `change_min` del formato (30 min); es mecánico y se hace
+#     mientras corre el CIP, así que con los dos manda el más largo;
+#   - limpieza entre productos distintos, por grupo de alérgenos del granel (tabla `allergen`, de → a).
+# El mismo producto en el lote siguiente no limpia (0 min). Entre productos distintos del mismo grupo basta el CIP
+# corto. Si el producto que sale tiene un alérgeno que el que entra no declara, hace falta CIP completo con
+# verificación con hisopo: la mayonesa lleva huevo y mostaza; la mostaza solo mostaza; la salsa de tomate ninguno.
+# Así, mostaza → mayonesa es CIP corto (la mayonesa ya declara mostaza) y mayonesa → mostaza es CIP completo (huevo).
+changeovers:
+  allergen:
+    default_min: 35
+    pairs:
+      sin-alergenos: { sin-alergenos: 35, mostaza: 35, huevo-mostaza: 35 }
+      mostaza:       { sin-alergenos: 90, mostaza: 35, huevo-mostaza: 35 }
+      huevo-mostaza: { sin-alergenos: 90, mostaza: 90, huevo-mostaza: 35 }
+  cip:
+    short_min: 35      # enjuague, soda caliente, enjuague
+    full_min: 90       # enjuague, soda, ácido, sanitizante y hisopo
+    max_run_h: 20      # tras 20 h de producción continua, CIP de rutina
+    daily_min: 75      # CIP de rutina al cierre del día o al llegar a max_run_h: soda, ácido y sanitizante, sin hisopo
+  assumed: true

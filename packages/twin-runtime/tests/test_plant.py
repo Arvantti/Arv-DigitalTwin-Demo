@@ -10,6 +10,7 @@ import yaml
 from twin_runtime import Library, SpecError, find_library_root
 from twin_runtime.links import check_port_links
 from twin_runtime.plant import SIM_FILE, PlantModel, check_plant_expectations, plant_folder, plant_folders, run_plant_scenario
+from twin_runtime.roots import find_models_root
 
 LIB_ROOT = find_library_root(Path(__file__))
 FOLDERS = plant_folders(LIB_ROOT, SIM_FILE)
@@ -160,7 +161,7 @@ def test_pipes_map_to_the_links_that_cross_them(sauce: PlantModel) -> None:
 def _copy_plant(tmp_path: Path, edit) -> Path:
     folder = tmp_path / "sauce-plant-v1"
     shutil.copytree(SAUCE, folder)
-    shutil.copytree(SAUCE.parent / "_schema", tmp_path / "_schema")  # la planta tiene catálogo
+    shutil.copytree(find_models_root(LIB_ROOT) / "_schema", tmp_path / "_schema")  # la planta tiene catálogo
     raw = yaml.safe_load((folder / SIM_FILE).read_text(encoding="utf-8"))
     edit(raw)
     (folder / SIM_FILE).write_text(yaml.safe_dump(raw, allow_unicode=True, sort_keys=False), encoding="utf-8")

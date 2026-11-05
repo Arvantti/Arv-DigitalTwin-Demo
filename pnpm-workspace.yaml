@@ -7,3 +7,4 @@ packages:
   - fractal/manufacturing
   - platform/cosim-core
   - platform/fractal-core
+  - plants/*/cosim

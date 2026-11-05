@@ -52,5 +52,6 @@ da el bucle y el contrato, y cada planta pone sus palancas y su puntaje.
 ## Fases
 
 1. Plataforma mínima: `platform/cosim-core`, `platform/fractal-core`, runtime y API leen `plants/`.
-2. `plants/sauce-plant-v1`: modelo de salsas con CIP, alérgenos, pulmón, lotes, cartera fija y plan manual.
+2. `plants/sauce-plant-v1`: modelo de salsas con CIP, alérgenos, pulmón, lotes, cartera fija y plan manual
+   (`plants/sauce-plant-v1/docs/README.md`).
 3. en adelante: cosimulador, Fractal, pantallas y 3D de salsas (ver el documento de arquitectura de la réplica).

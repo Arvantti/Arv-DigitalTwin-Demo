@@ -180,9 +180,9 @@ equipment:
   - { id: handwash-02,      type: handwash_station, zone: esclusa-llenado, position: [68, 28, 0], footprint: [2, 1, 1.2], params: { boot_wash: true } }
   # Sachets de 250 ml (2 pistas), 500 ml y 1.000 ml (1 pista). Tomate y BBQ se llenan en caliente (≥ 85 °C).
   # Las máquinas de 1 pista cambian entre 500 y 1.000 ml cambiando el tubo formador (≈ 30 min).
-  - { id: filler-sachet-01, type: vffs_sachet, zone: llenado, position: [62.5, 56, 0], footprint: [1.6, 1.6, 3],   params: { format: 250 ml, unit_ml: 250, lanes: 2, units_min: 100, product: mayonesa y salsa rosada }, tags: [speed, units_count, reject_count, seal_temperature] }
+  - { id: filler-sachet-01, type: vffs_sachet, zone: llenado, position: [62.5, 56, 0], footprint: [1.6, 1.6, 3],   params: { format: 250 ml, unit_ml: 250, lanes: 2, units_min: 100, product: mayonesa y salsa rosada, note: multipropósito mayonesa o mostaza }, tags: [speed, units_count, reject_count, seal_temperature] }
   - { id: filler-sachet-02, type: vffs_sachet, zone: llenado, position: [65.5, 56, 0], footprint: [1.6, 1.6, 3],   params: { format: 250 ml, unit_ml: 250, lanes: 2, units_min: 80, product: salsa de tomate y BBQ, hot_fill_min_c: 85 }, tags: [speed, units_count, reject_count, seal_temperature, product_temperature] }
-  - { id: filler-sachet-03, type: vffs_sachet, zone: llenado, position: [68.5, 56, 0], footprint: [1.6, 1.6, 3],   params: { format: 250 ml, unit_ml: 250, lanes: 1, units_min: 60, product: mostaza, note: dedicada por alérgeno }, tags: [speed, units_count, reject_count, seal_temperature] }
+  - { id: filler-sachet-03, type: vffs_sachet, zone: llenado, position: [68.5, 56, 0], footprint: [1.6, 1.6, 3],   params: { format: 250 ml, unit_ml: 250, lanes: 1, units_min: 60, product: mostaza, note: multipropósito mostaza o mayonesa (CIP por alérgeno) }, tags: [speed, units_count, reject_count, seal_temperature] }
   - { id: filler-pouch-01,  type: vffs_sachet, zone: llenado, position: [72.5, 56, 0], footprint: [1.8, 1.6, 3.2], params: { format: 1000 ml, unit_ml: 1000, formats_ml: [500, 1000], lanes: 1, units_min: 30, product: salsa de tomate y BBQ, hot_fill_min_c: 85 }, tags: [speed, units_count, reject_count, seal_temperature, product_temperature] }
   - { id: filler-pouch-02,  type: vffs_sachet, zone: llenado, position: [63, 48, 0],   footprint: [1.8, 1.6, 3.2], params: { format: 1000 ml, unit_ml: 1000, formats_ml: [500, 1000], lanes: 1, units_min: 30, product: mayonesa y salsa rosada }, tags: [speed, units_count, reject_count, seal_temperature] }
   - { id: filler-pouch-03,  type: vffs_sachet, zone: llenado, position: [63, 40, 0],   footprint: [1.8, 1.6, 3.2], params: { format: 500 ml, unit_ml: 500, formats_ml: [500, 1000], lanes: 1, units_min: 45, product: mayonesa y salsa rosada }, tags: [speed, units_count, reject_count, seal_temperature] }
@@ -370,6 +370,12 @@ flows:
   - { from: buffer-cold-01,   to: filler-pouch-03,   medium: mayonesa,          rate: 1256,  unit: kg/h, piped: true }
   - { from: filler-pouch-03,  to: checkweigher-04,   medium: sachets 500 ml,    rate: 45,    unit: u/min }
   - { from: filler-sachet-03, to: checkweigher-06,   medium: sachets 250 ml,    rate: 60,    unit: u/min }
+  # Llenadoras multipropósito (fase 2 de la réplica de plásticos, datos supuestos): las dos de 250 ml en frío comparten
+  # mayonesa y mostaza por un colector con válvulas de tres vías. Al pasar de mayonesa (huevo) a mostaza hace falta CIP
+  # completo con hisopo (90 min, catalog/changeovers.yaml); de mostaza a mayonesa basta el CIP corto (35 min).
+  # Mostaza en la 1: 100 u/min × 0,2625 kg × 60 = 1.575 kg/h. Mayonesa en la 3: 60 u/min × 0,2325 kg × 60 = 837 kg/h.
+  - { from: buffer-mustard-01, to: filler-sachet-01, medium: mostaza,           rate: 1575,  unit: kg/h, piped: true }
+  - { from: buffer-cold-01,   to: filler-sachet-03,  medium: mayonesa,          rate: 837,   unit: kg/h, piped: true }
   - { from: checkweigher-01,  to: pack-sauce-1000,   medium: sachets 1000 ml,   rate: 30,    unit: u/min, show: true }
   - { from: checkweigher-04,  to: pack-sauce-500,    medium: sachets 500 ml,     rate: 45,    unit: u/min, show: true }
   - { from: checkweigher-05,  to: pack-sauce-1000,   medium: sachets 1000 ml,   rate: 30,    unit: u/min, show: true }

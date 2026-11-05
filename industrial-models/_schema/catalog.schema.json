@@ -99,6 +99,7 @@
         "id": { "$ref": "#/$defs/id" },
         "name": { "type": "string" },
         "family": { "type": "string" },
+        "allergen_group": { "$ref": "#/$defs/id", "description": "Grupo de alérgenos del producto; lo usa la tabla changeovers.allergen" },
         "kind": { "enum": ["finished", "semi"] },
         "unit": { "enum": ["u", "kg", "l"] },
         "size": { "type": "string", "description": "Presentación o tamaño (250 ml, grande…)" },
@@ -162,11 +163,23 @@
     "changeovers": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Tiempos de cambio entre referencias: purga de color y de resina por par de materiales (de → a)",
+      "description": "Tiempos de cambio entre referencias: purga de color y de resina por par de materiales (inyección); limpieza por grupo de alérgenos y CIP (alimentos). Tablas de → a",
       "properties": {
         "color": { "$ref": "#/$defs/changeoverTable" },
         "resin": { "$ref": "#/$defs/changeoverTable" },
         "mold_move_extra_min": { "type": "number", "minimum": 0 },
+        "allergen": { "$ref": "#/$defs/changeoverTable", "description": "Limpieza entre dos productos distintos en un equipo húmedo compartido, por grupo de alérgenos (allergen_group del producto, de → a)" },
+        "cip": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Limpieza en sitio (CIP) de los equipos húmedos",
+          "properties": {
+            "short_min": { "type": "number", "minimum": 0, "description": "CIP corto: enjuague, soda y enjuague" },
+            "full_min": { "type": "number", "minimum": 0, "description": "CIP completo: soda, ácido, sanitizante y verificación con hisopo" },
+            "max_run_h": { "type": "number", "exclusiveMinimum": 0, "description": "Horas de producción continua tras las que el equipo exige CIP completo de rutina" },
+            "daily_min": { "type": "number", "minimum": 0, "description": "Duración del CIP de rutina (fin del día o max_run_h)" }
+          }
+        },
         "assumed": { "type": "boolean" }
       }
     },

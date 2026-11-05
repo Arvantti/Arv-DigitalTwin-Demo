@@ -4,3 +4,7 @@ Cada carpeta es una planta con su propio proyecto: modelo en la raíz (`plant.ya
 `manifest.yaml`, `catalog/`, `aps/`, `orders/`) y sus piezas de app (`cosim/`, `fractal/`, `app/`, `docs/`). Solo
 importa `platform/` y el runtime; nunca otra planta. El runtime, la API y los validadores las encuentran igual que a
 las de `industrial-models/`. Ver `docs/architecture/plataforma-y-plantas.md`.
+
+| Planta | Qué es |
+|---|---|
+| `sauce-plant-v1/` | salsas de tomate, mayonesa y mostaza (`sauce-plant-v1/docs/README.md`) |
