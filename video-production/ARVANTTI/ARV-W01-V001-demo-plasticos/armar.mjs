@@ -46,13 +46,13 @@ const CAPITULOS = [
 
 // Módulos de Arvantti Digital Twin (tarjeta "modulos"): el gemelo en el centro y siete módulos alrededor.
 const MODULOS = [
-  ["integrador", "Integrador", "ERP, CRM y SCADA"],
-  ["aps", "APS", "programa pedidos y recursos"],
-  ["cosimulacion", "Cosimulación", "se entrena con las reglas de la empresa"],
-  ["fractal", "Fractal", "escenarios con varios objetivos"],
-  ["control", "Centro de control", "señales de toda la planta en vivo"],
-  ["dendro", "DendroScada", "hardware propio para leer las máquinas"],
-  ["ia", "Asistente de IA", "privado, en lenguaje natural"],
+  ["integrador", "1 · Integrator", "ERP, CRM, sistemas SCADA y otros"],
+  ["aps", "2 · APS", "programación y planificación de órdenes y recursos"],
+  ["cosimulacion", "3 · CoSimulation", "cosimulador matemático entrenable con las reglas de la empresa"],
+  ["fractal", "4 · Fractal", "simulación robusta por escenarios y multiobjetivo"],
+  ["control", "5 · Control Center", "monitoreo y control conectado a su SCADA o control de piso"],
+  ["dendro", "6 · DendroScada", "hardware SCADA propio: conecta cualquier máquina o proceso"],
+  ["ia", "7 · AI Assistant", "Cerebro Empresarial IA: IA privada en lenguaje natural"],
 ];
 // De dónde sale la programación (tarjeta "fuentes").
 const FUENTES = [
@@ -619,8 +619,9 @@ html,body{width:${W}px;height:${H}px;margin:0;overflow:hidden;background:#0b0f18
 .mods svg{position:absolute;left:0;top:0}
 .mods .centro{position:absolute;left:${SW / 2 - 170}px;top:${SH / 2 - 120}px;width:340px;height:340px;border-radius:50%;background:radial-gradient(circle at 50% 40%,#2d7ff9,#123a7a 70%);box-shadow:0 0 80px #2d7ff988;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
 .mods .centro b{font:700 22px "IBM Plex Mono",monospace;letter-spacing:5px;color:#cfe3ff}
+.mods .centro .nucleo{font:600 18px Inter,sans-serif;font-style:normal;color:#cfe3ff;margin-top:10px}
 .mods .centro strong{font:800 50px/1.05 "Inter Display",Inter,sans-serif;color:#fff;margin-top:8px}
-.mods .m{position:absolute;width:300px;margin-left:-150px;margin-top:-62px;height:124px;border-radius:16px;background:#111a2c;border:2px solid #4ea7ff;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;opacity:.25}
+.mods .m{position:absolute;width:330px;margin-left:-165px;margin-top:-66px;height:132px;border-radius:16px;background:#111a2c;border:2px solid #4ea7ff;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;opacity:.25}
 .mods .m b{font:800 30px Inter,sans-serif;color:#f8fafc}
 .mods .m i{font:500 19px/1.25 Inter,sans-serif;font-style:normal;color:#a9c9f5;margin-top:6px;padding:0 12px}
 .flujo{position:relative;display:grid;grid-template-columns:520px 120px 420px 120px 300px;align-items:center;margin-top:30px}
@@ -721,7 +722,7 @@ function tarjeta(s, sid, t0, d, cue, el, anim, sfx) {
       return [Math.round(cx + rx * Math.cos(a)), Math.round(cy + ry * Math.sin(a))];
     });
     const lines = pos.map(([x, y], k) => `<line id="${sid}-l${k}" x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#4ea7ff" stroke-width="3" opacity=".15"/>`).join("");
-    body = `<div class="mods"><svg width="${SW}" height="${SH}">${lines}</svg><div class="centro" id="${sid}-centro" style="top:${cy - 170}px"><b>ARVANTTI</b><strong>Digital<br>Twin</strong></div>${MODULOS.map(([k, n, x], j) => `<div class="m" id="${sid}-m-${k}" style="left:${pos[j][0]}px;top:${pos[j][1]}px"><b>${esc(n)}</b><i>${esc(x)}</i></div>`).join("")}</div>`;
+    body = `<div class="mods"><svg width="${SW}" height="${SH}">${lines}</svg><div class="centro" id="${sid}-centro" style="top:${cy - 170}px"><b>ARVANTTI</b><strong>Digital<br>Twin</strong><i class="nucleo">núcleo · gemelo 3D</i></div>${MODULOS.map(([k, n, x], j) => `<div class="m" id="${sid}-m-${k}" style="left:${pos[j][0]}px;top:${pos[j][1]}px"><b>${esc(n)}</b><i>${esc(x)}</i></div>`).join("")}</div>`;
     const tc = at("centro");
     anim.push(`tl.fromTo("#${sid}-centro",{opacity:0,scale:.6},{opacity:1,scale:1,duration:.8,ease:"back.out(1.6)"},${r2(tc ?? t0 + 0.3)});`);
     MODULOS.forEach(([k], j) => {

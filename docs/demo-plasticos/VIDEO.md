@@ -82,19 +82,19 @@ NODE_PATH="$(pnpm root -g)" node tools/demo-video/grabar.cjs todos --video   # o
 
 > Veamos cinco escenarios. Uno, calcular la programación según las entregas. Dos, un cliente adelanta su pedido. Tres, contingencia: falla una inyectora. Cuatro, pedidos fijados a mano. Y cinco, menos cambios de referencia.
 
-### 0-S05 · Arvantti Digital Twin y sus módulos
+### 0-S05 · Arvantti DigitalTwin: un núcleo y siete módulos
 - tarjeta: modulos
-- duración: 30 s
-- foco: Arvantti Digital Twin => centro
-- foco: El integrador => integrador
-- foco: El APS => aps
-- foco: La cosimulación => cosimulacion
-- foco: Fractal, => fractal
-- foco: El centro de control => control
-- foco: DendroScada => dendro
-- foco: Y el asistente de IA => ia
+- duración: 45 s
+- foco: Arvantti DigitalTwin => centro
+- foco: Uno, Integrator => integrador
+- foco: Dos, APS => aps
+- foco: Tres, CoSimulation => cosimulacion
+- foco: Cuatro, Fractal => fractal
+- foco: Cinco, Control Center => control
+- foco: Seis, DendroScada => dendro
+- foco: Y siete, AI Assistant => ia
 
-> Todo esto corre sobre Arvantti Digital Twin. El gemelo digital va en el centro y a su alrededor se suman siete módulos. El integrador, que conecta el ERP, el CRM o el SCADA. El APS, que programa pedidos y recursos. La cosimulación, que se entrena con las reglas de cada empresa. Fractal, que compara escenarios con varios objetivos a la vez y cambios en la planta. El centro de control, con las señales de toda la planta en vivo. DendroScada, el hardware propio para leer las máquinas. Y el asistente de IA, privado y en lenguaje natural. Empecemos por el primer escenario.
+> Todo esto corre sobre Arvantti DigitalTwin, el núcleo: el gemelo digital 3D sobre el que funciona todo. A su alrededor se suman siete módulos. Uno, Integrator: integración con ERP, CRM, sistemas SCADA y otros. Dos, APS: programación y planificación de órdenes y recursos. Tres, CoSimulation: el cosimulador matemático, entrenable con las reglas de la empresa. Cuatro, Fractal: simulación robusta por escenarios y multiobjetivo. Cinco, Control Center: monitoreo y control conectado a su SCADA o al control de piso. Seis, DendroScada: hardware SCADA propio que conecta cualquier máquina o proceso y envía sus datos al Control Center. Y siete, AI Assistant, el cerebro empresarial: IA privada para conversar con el sistema en lenguaje natural. Empecemos por el primer escenario.
 
 ### 6-S01 · El ahorro potencial de Fractal
 - imagen: tarjeta con las cifras de abajo (fondo oscuro, una fila por escenario)
