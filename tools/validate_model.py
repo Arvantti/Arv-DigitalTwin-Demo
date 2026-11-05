@@ -7,10 +7,12 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
+from twin_runtime.roots import plant_folder
 from twin_runtime.spec import load_yaml
 
 ROOT = Path(__file__).resolve().parents[1]
-MODELS = ROOT / "industrial-models"
+# Paquetes portables: plantas de demostración y plantas empaquetadas como proyecto propio (docs/architecture/plataforma-y-plantas.md).
+ROOTS = (ROOT / "industrial-models", ROOT / "plants")
 EQUIPMENT = ROOT / "equipment-library"
 
 
@@ -40,7 +42,8 @@ def validate(folder: Path) -> list[str]:
 
 def main() -> int:
     selected = sys.argv[1:]
-    folders = [MODELS / item for item in selected] if selected else sorted(MODELS.glob("*-v1"))
+    found = sorted((f for root in ROOTS for f in root.glob("*-v1")), key=lambda f: f.name)
+    folders = [plant_folder(item) for item in selected] if selected else found
     errors = [error for folder in folders for error in validate(folder)]
     if errors:
         print("\n".join(f"ERROR: {error}" for error in errors))

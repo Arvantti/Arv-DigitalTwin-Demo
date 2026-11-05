@@ -19,7 +19,7 @@ import sys
 
 from .catalog import Catalog
 from .library import Library, check_behavior_contract
-from .plant import SIM_FILE, PlantModel, check_plant_expectations, find_models_root, run_plant_scenario
+from .plant import SIM_FILE, PlantModel, check_plant_expectations, plant_folder, plant_folders, run_plant_scenario
 from .sim import check_expectations, run_scenario
 from .spec import SpecError, load_yaml
 
@@ -85,8 +85,7 @@ def cmd_run(lib: Library, args: argparse.Namespace) -> int:
 
 
 def _plants(lib: Library, names: list[str] | None = None) -> list[PlantModel]:
-    root = find_models_root(lib.root)
-    folders = [root / n for n in names] if names else sorted(p.parent for p in root.glob(f"*/{SIM_FILE}"))
+    folders = [plant_folder(n, lib.root) for n in names] if names else list(plant_folders(lib.root, SIM_FILE).values())
     return [PlantModel(f, lib) for f in folders]
 
 
@@ -97,11 +96,10 @@ def cmd_plant(lib: Library, args: argparse.Namespace) -> int:
         return 0
     if args.action == "validate":
         failed = 0
-        root = find_models_root(lib.root)
-        names = args.names or sorted(p.parent.name for p in root.glob(f"*/{SIM_FILE}"))
+        names = args.names or list(plant_folders(lib.root, SIM_FILE))
         for name in names:
             try:
-                model = PlantModel(root / name, lib)
+                model = PlantModel(plant_folder(name, lib.root), lib)
                 errors = []
                 for sc in model.scenarios.values():
                     plant, _ = run_plant_scenario(model, sc)
@@ -146,12 +144,11 @@ def cmd_plant(lib: Library, args: argparse.Namespace) -> int:
 
 
 def cmd_catalog(lib: Library, args: argparse.Namespace) -> int:
-    root = find_models_root(lib.root)
     if args.action == "route":
         if len(args.names) != 2:
             print("uso: twin-lib catalog route <planta> <producto>", file=sys.stderr)
             return 2
-        cat = Catalog.load(root / args.names[0])
+        cat = Catalog.load(plant_folder(args.names[0], lib.root))
         if cat is None or args.names[1] not in cat.products:
             print(f"{args.names[0]}: sin catálogo o producto desconocido {args.names[1]!r}", file=sys.stderr)
             return 1
@@ -160,15 +157,16 @@ def cmd_catalog(lib: Library, args: argparse.Namespace) -> int:
             print(f"{st['product']:<24} {st['stage']:<22} {', '.join(st['active'])}{extra}")
         return 0
     failed = 0
-    names = args.names or sorted(p.parent.name for p in root.glob("*/catalog"))
+    names = args.names or list(plant_folders(lib.root, "catalog"))
     for name in names:
         try:
-            cat = Catalog.load(root / name)
+            folder = plant_folder(name, lib.root)
+            cat = Catalog.load(folder)
             if cat is None:
                 errors = ["no tiene catálogo (carpeta catalog/)"]
             else:
-                errors = cat.validate(load_yaml(root / name / "plant.yaml"), lib)
-        except SpecError as exc:
+                errors = cat.validate(load_yaml(folder / "plant.yaml"), lib)
+        except (SpecError, FileNotFoundError) as exc:
             errors = [str(exc)]
         summary = ""
         if not errors and cat:
@@ -185,7 +183,7 @@ def cmd_plan(lib: Library, args: argparse.Namespace) -> int:
 
     from . import planning
 
-    folder = find_models_root(lib.root) / args.plant
+    folder = plant_folder(args.plant, lib.root)
     cat = Catalog.load(folder)
     if cat is None or not cat.data.get("demand"):
         print(f"{args.plant}: sin catálogo o sin demanda (catalog/demand.yaml)", file=sys.stderr)
@@ -220,7 +218,7 @@ def main(argv: list[str] | None = None) -> int:
     r.add_argument("--json", action="store_true")
     pl = sub.add_parser("plant", help="motor de planta")
     pl.add_argument("action", choices=["list", "validate", "run"])
-    pl.add_argument("names", nargs="*", help="carpetas de industrial-models/")
+    pl.add_argument("names", nargs="*", help="carpetas de industrial-models/ o plants/")
     pl.add_argument("--scenario")
     pl.add_argument("--every", type=float, default=600.0, help="segundos virtuales entre muestras")
     pl.add_argument("--json", action="store_true")

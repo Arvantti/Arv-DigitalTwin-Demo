@@ -17,6 +17,7 @@ from typing import Any
 
 import jsonschema
 
+from .roots import catalog_schema
 from .spec import SpecError, load_yaml
 
 CATALOG_DIR = "catalog"
@@ -55,7 +56,7 @@ class Catalog:
     @classmethod
     def from_data(cls, folder: Path, data: dict[str, Any]) -> Catalog:
         """Catálogo a partir de datos ya unidos (folder es <planta>/catalog). Valida el esquema y los ids repetidos."""
-        schema = json.loads((folder.parent.parent / SCHEMA_PATH).read_text(encoding="utf-8"))
+        schema = json.loads(catalog_schema(folder.parent, SCHEMA_PATH).read_text(encoding="utf-8"))
         errors = sorted(jsonschema.Draft202012Validator(schema).iter_errors(data), key=lambda e: list(e.path))
         if errors:
             raise SpecError("\n".join(f"{folder}: {'/'.join(map(str, e.path)) or '(raíz)'}: {e.message}" for e in errors))

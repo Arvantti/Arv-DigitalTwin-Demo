@@ -5,3 +5,5 @@ packages:
   - apps/cloudflare-emulator-worker
   - cosim
   - fractal/manufacturing
+  - platform/cosim-core
+  - platform/fractal-core
