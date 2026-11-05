@@ -32,6 +32,19 @@ Correcciones pedidas por Andy sobre la v002:
 - Música: dos pistas épicas de ElevenLabs Music, encadenadas y con sidechain bajo la voz (unos 16 dB por debajo).
 - Duración: 1170 s (19,5 min).
 
+## v006 (2026-11-05)
+
+Correcciones pedidas por Andy sobre v005:
+- 1:29: "Integrator" se envía a la voz como "Íntegreitor" (`PRONUNCIA`); los subtítulos siguen diciendo Integrator.
+- 3:11 y 4:40: el recuadro ámbar se movía separado de la captura (la captura tenía un leve zoom y el recuadro no).
+  Ahora ambos van en la misma capa. Se revisaron a mano los 105 recuadros del video: ninguno tacha texto.
+- 6:34: la escena ya no habla de 1.240 h (ese dato no estaba en pantalla); dice que con la inyectora veinte la
+  ocupación baja al 60,7 % y señala IMM-20 montando el molde de balde.
+- 3D: las tomas del gemelo son recorridos de cámara que acercan y rotan (vista de planta al inicio, IMM-01 en el
+  escenario 2, IMM-21, IMM-20 y el cambio de molde completo en el escenario 3, con grúa, carro y operario).
+- 12:51–13:17: las franjas de colores venían de una captura JPG leída como PNG; corregido.
+- Sin cuadros blancos ni destellos (revisión de brillo a 2 cuadros por segundo). Duración: 1184 s.
+
 ## Aprobación humana
 
 ```text
