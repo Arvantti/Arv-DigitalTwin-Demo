@@ -27,6 +27,11 @@
       <div id="forecast-values" style="margin-top:8px"></div>
       <small>Elija un escenario y pulse REPRODUCIR para recorrer sus 24 horas. «Volver al PLC actual» muestra nuevamente la operación en vivo.</small><div><button id="forecast-return">↶ VOLVER AL PLC ACTUAL</button></div>
     </section>
+    <section id="triad-overlay" hidden aria-label="Indicadores comparativos de fuentes guardadas" style="position:fixed;z-index:30;top:82px;right:14px;width:min(500px,calc(100vw - 28px));max-height:72vh;overflow:auto;padding:12px;background:rgba(5,10,32,.94);border:1px solid #4ea7ff;border-radius:8px;color:#f8fafc;box-shadow:0 8px 30px #0009;font:12px Inter,sans-serif">
+      <strong>TRÍADA · SOLO FRAMES GUARDADOS · NO APLICADA</strong>
+      <p id="triad-overlay-time" style="margin:6px 0;color:#b8c7dc"></p>
+      <div id="triad-overlay-values"></div>
+    </section>
     <header class="topbar glass">
       <div class="brand"><span class="logo">◆</span> TWIN<span class="dim">/</span>PLANT</div>
       <div class="title"><span id="plant-name">—</span><span class="dim" id="plant-meta"></span></div>

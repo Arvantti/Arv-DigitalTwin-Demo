@@ -130,7 +130,7 @@ async function d1Request(request: Request, env: Env): Promise<Response> {
 
 async function pruneExpiredDemoData(env: Env, now: number): Promise<void> {
   const expiredSessions = "SELECT session_id FROM demo_session_owners WHERE expires_at <= ? LIMIT 100";
-  for (const table of ["samples", "commands", "scene_frames", "recommendations", "fractal_studies", "session_checkpoints", "audit_events"]) {
+  for (const table of ["samples", "commands", "scene_frames", "recommendations", "fractal_studies", "session_checkpoints", "audit_events", "comparison_source_events"]) {
     await env.DB.prepare(`DELETE FROM ${table} WHERE session_id IN (${expiredSessions})`).bind(now).run();
   }
   await env.DB.prepare(
@@ -215,7 +215,7 @@ async function proxyFractal(request: Request, env: Env, visitorId: string, token
   if (url.pathname.includes("/studies/instant")) {
     return withCors(Response.json({ detail: "Instantaneous optimization is not enabled in the public demo" }, { status: 409 }), request, env);
   }
-  const plcStudyRoute = /^\/fractal\/studies\/(horizon|profile-preview)\/from-plc$/.test(url.pathname);
+  const plcStudyRoute = /^\/fractal\/studies\/(horizon|profile-preview|cosimulation)\/from-plc$/.test(url.pathname);
   if (!(url.pathname === "/fractal/health" && request.method === "GET") && !(plcStudyRoute && request.method === "POST")) {
     return withCors(Response.json({ detail: "Fractal route is not enabled in the public demo" }, { status: 404 }), request, env);
   }

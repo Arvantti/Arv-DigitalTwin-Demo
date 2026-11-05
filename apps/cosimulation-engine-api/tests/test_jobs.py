@@ -14,6 +14,7 @@ PAYLOAD = {
     "profile_hash": main.profile_fingerprint(PROFILE),
     "time_step_s": 1,
     "horizon_s": 2,
+    "forecast_times_s": [1, 2],
 }
 
 

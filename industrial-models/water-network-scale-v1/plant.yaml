@@ -20,7 +20,7 @@ plant:
   site: { width_x: 14, length_y: 10 }
   context:
     location: Banco de pruebas en un edificio (laboratorio)
-    purpose: "Gestión de presión de un acueducto: bombear a ≥ 70 mca y que la estación reguladora deje la casa más crítica en 15,45 mca"
+    purpose: "Banco de pruebas del acueducto: bombear a ≥ 70 mca y observar la red con apertura AUTO de PRS configurable; 15,45 mca es referencia/alarma crítica, no lazo de control de la apertura"
     assumptions:
       - Pisos cada 2,5 m; el nivel 1 de la rejilla está a ras del piso 1 y los demás cada 1,20 m (confirmado por el autor).
       - Tubería PVC; 4" hasta el nivel 1 y 2" en la columna de la rejilla (pedido del autor).

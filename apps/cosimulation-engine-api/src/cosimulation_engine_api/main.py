@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import math
 import os
 import sqlite3
 import sys
@@ -107,6 +108,15 @@ def _validate(payload: dict[str, Any]) -> None:
     ticks = payload["horizon_s"] / payload["time_step_s"]
     if ticks < 1 or ticks > 10_000 or abs(round(ticks) - ticks) > 1e-8:
         raise HTTPException(422, "horizon_s debe ser múltiplo de time_step_s y generar entre 1 y 10000 ticks")
+    forecast_times = payload.get("forecast_times_s")
+    if not isinstance(forecast_times, list) or len(forecast_times) != round(ticks):
+        raise HTTPException(422, "forecast_times_s debe contener un instante por cada tick solicitado")
+    end = float(now) + float(payload["horizon_s"])
+    previous_forecast = float(now)
+    for at in forecast_times:
+        if isinstance(at, bool) or not isinstance(at, (int, float)) or not math.isfinite(at) or not previous_forecast < at <= end:
+            raise HTTPException(422, "forecast_times_s debe estar ordenada dentro del horizonte")
+        previous_forecast = float(at)
 
 
 @app.get("/health")

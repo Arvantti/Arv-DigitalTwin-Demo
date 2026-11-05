@@ -32,6 +32,236 @@ def test_from_plc_rejects_a_profile_different_from_the_session_history(monkeypat
     assert "perfil activo del PLC" in response.json()["detail"]
 
 
+def test_cosimulation_from_plc_uses_only_stored_history_and_publishes_separate_run(monkeypatch) -> None:
+    monkeypatch.setenv("FRACTAL_PLC_API_URL", "https://plc.example")
+    profile = {"id": "active-profile", "hours": {"0": {"global_consumers_pct": 100}}}
+    seen = {}
+
+    history_samples = [
+        {
+            "t": 5, "profile": {"id": "active-profile"},
+            "plc_tags": {"PLC.Profile.ActiveId": "active-profile", "pressure": 3},
+        },
+        {
+            "t": 10, "profile": {"id": "active-profile"},
+            "plc_tags": {"PLC.Profile.ActiveId": "active-profile", "pressure": 4},
+        },
+    ]
+    context = {
+        "plant_id": "water-network-scale-v1", "session_id": "session-1",
+        "profile_id": "active-profile", "profile_hash": fractal_api.profile_fingerprint(profile),
+        "profile": profile, "snapshot_id": "session-1:12", "base_time_s": 12,
+        "time_step_s": 3600, "horizon_s": 7200, "forecast_times_s": [3600, 7200],
+        "snapshot": {
+            "snapshot_id": "session-1:12", "simulation_time_s": 12,
+            "plc_tags": {"PLC.Profile.ActiveId": "active-profile", "PLC.Session.SimulatedTime": 12},
+        },
+        "history_hash": fractal_api.canonical_fingerprint([
+            {"simulation_time_s": item["t"], "plc_tags": item["plc_tags"]} for item in history_samples
+        ]),
+        "input_hash": "manifest-input-hash", "history_sample_count": 2,
+    }
+
+    def fake_gateway(url, _token=None):
+        if url.endswith("/historian"):
+            return {"samples": history_samples}
+        raise AssertionError(f"unexpected gateway URL: {url}")
+
+    def fake_manifest(url, body, _token=None):
+        seen["manifest_url"] = url
+        seen["manifest_request"] = body
+        return context
+
+    def fake_submit(job):
+        seen["job"] = job
+        return {
+            "job_id": "COSIM-test", "model_id": "model-approved", "model_quality": "fixture_not_validation", "snapshot_id": "session-1:12",
+            "time_origin_s": 12, "time_step_s": 3600, "horizon_s": 7200,
+            "forecast_times_s": [3600, 7200],
+            "frames": [{"simulation_time_s": 12, "temporal_context": "present", "state": {"pressure": 4}},
+                       {"simulation_time_s": 3600, "temporal_context": "forecast", "state": {"pressure": 4.5}}],
+        }
+
+    def fake_publish(origin, plant_id, session_id, comparison_id, source_profile, comparison_context, result, token):
+        seen["publication"] = (
+            origin, plant_id, session_id, comparison_id, source_profile, comparison_context, result, token
+        )
+        return {"comparison_id": comparison_id, "run_id": result["job_id"], "frame_count": len(result["frames"])}
+
+    monkeypatch.setattr(fractal_api, "gateway_json", fake_gateway)
+    monkeypatch.setattr(fractal_api, "gateway_post_json", fake_manifest)
+    source_statuses = []
+    monkeypatch.setattr(fractal_api, "record_comparison_status", lambda *args: source_statuses.append(args[5]))
+    monkeypatch.setattr(fractal_api, "submit_cosimulation_job", fake_submit)
+    monkeypatch.setattr(fractal_api, "publish_cosimulation_run", fake_publish)
+    response = client.post(
+        "/studies/cosimulation/from-plc",
+        headers={"x-twin-demo-token": "demo-test"},
+        json={
+            "plant_id": "water-network-scale-v1",
+            "session_id": "session-1",
+            "comparison_id": "CMP-shared",
+            "time_step_s": 3600,
+            "horizon_s": 7200,
+        },
+    )
+
+    assert response.status_code == 200, response.text
+    body = response.json()
+    assert body["comparison_id"] == "CMP-shared"
+    assert body["applied_to_plc"] is False
+    assert body["frame_count"] == 2
+    request = seen["job"]
+    assert request["profile"] == profile
+    assert request["initial_snapshot"] == context["snapshot"]
+    assert request["profile_hash"] == fractal_api.profile_fingerprint(profile)
+    assert request["history_frames"] == [
+        {"simulation_time_s": 5, "plc_tags": {"PLC.Profile.ActiveId": "active-profile", "pressure": 3}},
+        {"simulation_time_s": 10, "plc_tags": {"PLC.Profile.ActiveId": "active-profile", "pressure": 4}},
+    ]
+    assert seen["publication"][5] == context
+    assert seen["publication"][-1] == "demo-test"
+    assert source_statuses == ["in_progress"]
+
+
+def test_cosimulation_refuses_history_from_a_different_profile(monkeypatch) -> None:
+    monkeypatch.setenv("FRACTAL_PLC_API_URL", "https://plc.example")
+    profile = {"id": "active-profile", "hours": {"0": {"global_consumers_pct": 100}}}
+
+    context = {
+        "plant_id": "water-network-scale-v1", "session_id": "session-1",
+        "profile_id": "active-profile", "profile_hash": fractal_api.profile_fingerprint(profile),
+        "profile": profile, "snapshot_id": "session-1:12", "base_time_s": 12,
+        "time_step_s": 3600, "horizon_s": 3600, "forecast_times_s": [3600],
+        "snapshot": {
+            "snapshot_id": "session-1:12", "simulation_time_s": 12,
+            "plc_tags": {"PLC.Profile.ActiveId": "active-profile", "PLC.Session.SimulatedTime": 12},
+        },
+        "history_hash": "unused-mixed-history", "input_hash": "manifest-input-hash",
+    }
+
+    def fake_gateway(url, _token=None):
+        if url.endswith("/historian"):
+            return {
+                "samples": [{
+                    "t": 5, "profile": {"id": "previous-profile"},
+                    "plc_tags": {"PLC.Profile.ActiveId": "previous-profile"},
+                }]
+            }
+        raise AssertionError(f"unexpected gateway URL: {url}")
+
+    monkeypatch.setattr(fractal_api, "gateway_json", fake_gateway)
+    monkeypatch.setattr(fractal_api, "gateway_post_json", lambda *_args: context)
+    monkeypatch.setattr(fractal_api, "record_comparison_status", lambda *_args: None)
+    monkeypatch.setattr(
+        fractal_api, "submit_cosimulation_job",
+        lambda _job: pytest.fail("no debe ejecutarse un historial con perfil mixto"),
+    )
+    response = client.post(
+        "/studies/cosimulation/from-plc",
+        json={"plant_id": "water-network-scale-v1", "session_id": "session-1", "time_step_s": 3600, "horizon_s": 3600},
+    )
+    assert response.status_code == 409
+    assert "historial contiene otro perfil" in response.json()["detail"]
+
+
+def test_submit_cosimulation_job_polls_engine_and_returns_model_result(monkeypatch) -> None:
+    monkeypatch.setenv("COSIMULATION_ENGINE_API_URL", "https://cosim.example")
+    seen = []
+
+    def fake_urlopen(request, timeout):
+        url = request.full_url if hasattr(request, "full_url") else request
+        seen.append(url)
+        if url.endswith("/v2/jobs"):
+            return io.BytesIO(b'{"status":"queued","job_id":"COSIM-1"}')
+        result = {
+            "status": "succeeded",
+            "result": {
+                "job_id": "COSIM-1",
+                "model_id": "model-v1",
+                "frames": [{"simulation_time_s": 5, "temporal_context": "forecast", "state": {}}],
+            },
+        }
+        return io.BytesIO(json.dumps(result).encode())
+
+    monkeypatch.setattr(fractal_api, "urlopen", fake_urlopen)
+    result = fractal_api.submit_cosimulation_job({"contract_version": "cosimulation-job.v2"})
+    assert result["job_id"] == "COSIM-1"
+    assert result["model_id"] == "model-v1"
+    assert len(result["frames"]) == 1
+    assert seen == ["https://cosim.example/v2/jobs", "https://cosim.example/v2/jobs/COSIM-1"]
+
+
+def test_submit_cosimulation_job_stays_blocked_without_model_frames(monkeypatch) -> None:
+    monkeypatch.setenv("COSIMULATION_ENGINE_API_URL", "https://cosim.example")
+
+    def fake_urlopen(request, timeout):
+        url = request.full_url if hasattr(request, "full_url") else request
+        if url.endswith("/v2/jobs"):
+            return io.BytesIO(b'{"status":"queued","job_id":"COSIM-blocked"}')
+        return io.BytesIO(b'{"status":"blocked","error":"falta COSIMULATION_MODEL_URL"}')
+
+    monkeypatch.setattr(fractal_api, "urlopen", fake_urlopen)
+    with pytest.raises(fractal_api.HTTPException) as error:
+        fractal_api.submit_cosimulation_job({"contract_version": "cosimulation-job.v2"})
+    assert error.value.status_code == 409
+    assert "blocked" in error.value.detail
+
+
+@pytest.mark.parametrize(
+    ("step", "horizon"),
+    [(7, 10), (60, 3600), (3600, 169 * 3600), (25 * 3600, 25 * 3600)],
+)
+def test_cosimulation_from_plc_rejects_invalid_time_grid_before_reading_plc(step, horizon) -> None:
+    response = client.post(
+        "/studies/cosimulation/from-plc",
+        json={
+            "plant_id": "water-network-scale-v1",
+            "session_id": "session-1",
+            "time_step_s": step,
+            "horizon_s": horizon,
+        },
+    )
+    assert response.status_code == 422
+
+
+def test_publish_cosimulation_run_sends_read_only_frames(monkeypatch) -> None:
+    seen = {}
+    profile = {"id": "PFL-cosim", "hours": {"0": {"global_consumers_pct": 100}}}
+    context = {
+        "input_hash": "context-hash", "snapshot_id": "session-1:12", "base_time_s": 12,
+        "time_step_s": 3600, "horizon_s": 7200, "forecast_times_s": [3612, 7212],
+    }
+    result = {
+        "job_id": "COSIM-test", "model_id": "hydraulic-model-v1", "model_quality": "fixture_not_validation", "snapshot_id": "session-1:12",
+        "time_origin_s": 12, "time_step_s": 3600, "horizon_s": 7200,
+        "frames": [{"simulation_time_s": 12, "temporal_context": "present", "state": {"pressure": 4}},
+                   {"simulation_time_s": 3612, "temporal_context": "forecast", "state": {"pressure": 4.5}}],
+    }
+
+    def fake_urlopen(request, timeout):
+        seen["url"] = request.full_url
+        seen["payload"] = json.loads(request.data)
+        seen["authorization"] = request.get_header("Authorization")
+        seen["timeout"] = timeout
+        return io.BytesIO(b'{"run_id":"COSIM-test"}')
+
+    monkeypatch.setattr(fractal_api, "urlopen", fake_urlopen)
+    response = fractal_api.publish_cosimulation_run(
+        "https://plc.example", "water-network-scale-v1", "session-1", "CMP-shared",
+        profile, context, result, "demo-token"
+    )
+    assert response == {"run_id": "COSIM-test"}
+    assert seen["url"].endswith("/comparisons/CMP-shared/runs")
+    assert seen["authorization"] == "Bearer demo-token"
+    assert seen["payload"]["source"] == "cosimulation"
+    assert seen["payload"]["profile_hash"] == fractal_api.profile_fingerprint(profile)
+    assert seen["payload"]["comparison_input_hash"] == context["input_hash"]
+    assert seen["payload"]["snapshot_id"] == context["snapshot_id"]
+    assert seen["payload"]["frames"] == result["frames"]
+    assert seen["payload"]["applied_to_plc"] is False
+
+
 def test_out_of_calibration_range_does_not_produce_an_acceptable_profile(monkeypatch) -> None:
     monkeypatch.setattr(
         fractal_api,
@@ -100,8 +330,14 @@ def test_publish_optimization_run_sends_immutable_forecast_frames(monkeypatch) -
         return io.BytesIO(b'{"run_id":"OPT-run"}')
 
     monkeypatch.setattr(fractal_api, "urlopen", fake_urlopen)
+    context = {
+        "input_hash": "context-hash", "snapshot_id": "session-1:900", "base_time_s": 900,
+        "time_step_s": 3600, "horizon_s": 86400,
+        "forecast_times_s": [3600, *range(7200, 86401, 3600)],
+    }
     response = fractal_api.publish_optimization_run(
-        "http://plc.local", "water-network-scale-v1", "session-1", "CMP-1", profile, study, "demo-token"
+        "http://plc.local", "water-network-scale-v1", "session-1", "CMP-1",
+        profile, study, context, "demo-token"
     )
     assert response["run_id"] == "OPT-run"
     assert seen["url"].endswith("/comparisons/CMP-1/runs")
@@ -109,6 +345,9 @@ def test_publish_optimization_run_sends_immutable_forecast_frames(monkeypatch) -
     assert seen["payload"]["study_id"] == "EST-run"
     assert seen["payload"]["target_pressure_mca"] == 20
     assert seen["payload"]["profile_hash"] == fractal_api.profile_fingerprint(profile)
+    assert seen["payload"]["comparison_input_hash"] == context["input_hash"]
+    assert seen["payload"]["snapshot_id"] == context["snapshot_id"]
+    assert seen["payload"]["time_origin_s"] == context["base_time_s"]
     assert seen["payload"]["frames"][0]["simulation_time_s"] == 3600
     assert seen["payload"]["frames"][0]["temporal_context"] == "forecast"
     assert seen["payload"]["frames"][0]["state"]["snapshot"] == study["hours"][0]["snapshot"]
@@ -593,6 +832,65 @@ def test_forecast_reads_active_profile_and_tags_from_plc_not_browser(monkeypatch
     )
     stopped = client.post("/studies/horizon/from-plc", json={"session_id": "s1", "plant_id": "water-network-scale-v1"})
     assert stopped.status_code == 409 and "play" in stopped.json()["detail"]
+
+
+def test_optimization_uses_the_selected_comparison_snapshot_not_live_plc_state(monkeypatch) -> None:
+    monkeypatch.setenv("FRACTAL_PLC_API_URL", "https://plc.example")
+    profile = {"id": "profile-frozen", "hours": {"0": {"global_consumers_pct": 55}}}
+    tags = {
+        "PLC.Profile.ActiveId": "profile-frozen",
+        "PLC.Session.SimulatedTime": 1800,
+        "PLC.Pump.RunningCount": 2,
+        "PLC.PRS.OutletPressureMca": 20,
+    }
+    manifest = {
+        "plant_id": "water-network-scale-v1", "session_id": "session-old",
+        "profile_id": "profile-frozen", "profile_hash": fractal_api.profile_fingerprint(profile),
+        "profile": profile, "snapshot_id": "session-old:900", "base_time_s": 900,
+        "time_step_s": 3600, "horizon_s": 86400, "input_hash": "frozen-input-hash",
+        "forecast_times_s": list(range(3600, 86401, 3600)),
+        "snapshot": {"snapshot_id": "session-old:900", "simulation_time_s": 900, "plc_tags": tags},
+    }
+    manifest_request = {}
+    source_statuses = []
+
+    def post_manifest(url, body, token):
+        manifest_request.update(url=url, body=body, token=token)
+        return manifest
+
+    captured = []
+    monkeypatch.setattr(fractal_api, "gateway_post_json", post_manifest)
+    monkeypatch.setattr(fractal_api, "record_comparison_status", lambda *args: source_statuses.append(args[5]))
+    monkeypatch.setattr(
+        fractal_api, "gateway_json",
+        lambda *_args, **_kwargs: pytest.fail("la optimización tardía no debe releer el PLC actual"),
+    )
+    monkeypatch.setattr(
+        fractal_api, "_horizon_study",
+        lambda payload, publish, **kwargs: captured.append((payload, publish, kwargs)) or {"study_type": "optimized"},
+    )
+    response = client.post(
+        "/studies/horizon/from-plc",
+        headers={"x-twin-demo-token": "demo-capability"},
+        json={
+            "session_id": "session-old", "plant_id": "water-network-scale-v1",
+            "profile_id": "profile-frozen", "comparison_id": "CMP-frozen",
+            "study_type": "optimized", "target_pressure_mca": 20,
+        },
+    )
+    assert response.status_code == 200, response.text
+    assert manifest_request["body"] == {
+        "profile_id": "profile-frozen", "time_step_s": 3600, "horizon_s": 86400,
+    }
+    assert source_statuses == ["in_progress", "failed"]
+    assert manifest_request["token"] == "demo-capability"
+    payload, publish, options = captured[0]
+    assert publish is True
+    assert options["plc_token"] == "demo-capability"
+    assert payload["plc_tags"] == tags
+    assert payload["snapshot_id"] == "session-old:900"
+    assert payload["comparison_context"]["input_hash"] == "frozen-input-hash"
+    assert payload["comparison_id"] == "CMP-frozen"
 
 
 def test_forecast_refuses_mismatched_session_profile(monkeypatch) -> None:

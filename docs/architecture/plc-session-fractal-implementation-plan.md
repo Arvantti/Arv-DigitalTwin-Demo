@@ -169,7 +169,7 @@ Los escenarios de prueba se retiran del flujo operativo del visor.
 Perfiles operativos PLC versionados:
 
 ```text
-PFL-BASE-01 · Operación diurna automática · demanda residencial 100 %
+PFL-BASE-01 · 100 % aperturas de viviendas · PRS editable en PLC
 PFL-NOC-01 · Operación nocturna automática · demanda residencial 30 %
 PFL-NOC-02 · Operación nocturna en PRS manual · consigna fija 20,94 mca
 PFL-RES-01 · Restricción vertical N2→N3 · válvula al 50 %

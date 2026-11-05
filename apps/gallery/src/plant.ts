@@ -132,7 +132,15 @@ let forecastStudyId = url.get("study");
 let plantApiAvailable = false;
 let latestLiveMessage: SimMessage | null = null;
 let historicalTime: number | null = null;
+type TriadSourceFrame = { simulation_time_s: number; temporal_context?: string; model_quality?: string; state: Record<string, unknown> } | null;
+type TriadViewFrame = {
+  simulation_time_s: number;
+  source: string;
+  snapshot?: Record<string, unknown>;
+  sources: Record<string, TriadSourceFrame>;
+};
 let triadViewActive = false;
+let currentTriadFrame: TriadViewFrame | null = null;
 let historyRequest = 0;
 let forecastPlaybackStop: (() => void) | null = null;
 const shotMode = url.get("shot") === "1";
@@ -1798,9 +1806,115 @@ function syncPlcStudySelection(study?: ForecastStudySummary): void {
   }, location.origin);
 }
 
+// ------------------------------------------------------------------ comparación persistida: una rejilla, tres fuentes, sin extrapolar.
+const TRIAD_SOURCES = ["emulator", "cosimulation", "optimization"] as const;
+const TRIAD_SOURCE_LABELS: Record<(typeof TRIAD_SOURCES)[number], string> = {
+  emulator: "EMULADOR", cosimulation: "COSIMULADOR", optimization: "OPTIMIZACIÓN",
+};
+const TRIAD_PRESSURE_METRICS = [
+  { label: "Descarga de bombeo / entrada VRP", observable: "pump_discharge_pressure_mca", tag: "PLC.Pump.DischargePressureMca", equipment: "pumpset-main-01", variable: "discharge_pressure_mca" },
+  { label: "Salida VRP", observable: "prs_outlet_pressure_mca", tag: "PLC.PRS.OutletPressureMca", equipment: "prs-01", variable: "outlet_pressure_mca" },
+  { label: "Piso 1 · salida tras válvula 1–2", observable: "floor1_outlet_pressure_mca", tag: "PLC.Grid.L2.InletPressureMca", equipment: "grid-02", variable: "inlet_pressure_mca" },
+  { label: "Piso 2 · salida tras válvula 2–3", observable: "floor2_outlet_pressure_mca", tag: "PLC.Grid.L3.InletPressureMca", equipment: "grid-03", variable: "inlet_pressure_mca" },
+  { label: "Piso 3 · salida tras válvula 3–4", observable: "floor3_outlet_pressure_mca", tag: "PLC.Grid.L4.InletPressureMca", equipment: "grid-04", variable: "inlet_pressure_mca" },
+  { label: "Vivienda crítica C44", observable: "c44_pressure_mca", tag: "PLC.Grid.L4.Consumer.C44.PressureMca", equipment: "grid-04", variable: "p_c44" },
+  { label: "Apertura VRP", observable: "prs_opening_pct", tag: "PLC.PRS.AutoOpeningPct", equipment: "prs-01", variable: "auto_opening_pct", unit: "%" },
+];
+const TRIAD_FLOW_METRICS = [
+  { label: "Caudal de bombeo", observable: "pump_flow_m3h", tag: "PLC.Pump.FlowM3h", equipment: "pumpset-main-01", variable: "flow_m3h" },
+  { label: "Caudal VRP", observable: "prs_flow_m3h", tag: "PLC.PRS.FlowM3h", equipment: "prs-01", variable: "flow_m3h" },
+];
+function recordOf(value: unknown): Record<string, unknown> | null {
+  return value !== null && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : null;
+}
+function frameSnapshot(state: Record<string, unknown>): Record<string, unknown> | null {
+  const direct = recordOf(state.snapshot);
+  const candidate = direct ?? state;
+  return recordOf(candidate.equipment) && recordOf(candidate.lines) ? candidate : null;
+}
+function triadMetric(frame: TriadSourceFrame, metric: (typeof TRIAD_PRESSURE_METRICS)[number] | (typeof TRIAD_FLOW_METRICS)[number]): number | null {
+  if (!frame) return null;
+  const state = frame.state;
+  const observables = recordOf(state.observables);
+  const tags = recordOf(state.plc_tags) ?? recordOf(recordOf(state.snapshot)?.plc_tags) ?? recordOf(state.tags);
+  const direct = observables?.[metric.observable] ?? state[metric.observable] ?? tags?.[metric.tag];
+  if (typeof direct === "number" && Number.isFinite(direct)) return direct;
+  const snapshot = frameSnapshot(state);
+  const equipment = recordOf(snapshot?.equipment);
+  const item = recordOf(equipment?.[metric.equipment]);
+  const variables = recordOf(item?.variables);
+  const value = variables?.[metric.variable];
+  return typeof value === "number" && Number.isFinite(value) ? value : null;
+}
+function renderTriadOverlay(frame: TriadViewFrame | null): void {
+  const panel = $<HTMLElement>("triad-overlay");
+  panel.hidden = !frame || doc.plant.id !== "water-network-scale-v1";
+  if (!frame || panel.hidden) return;
+  const qualities = TRIAD_SOURCES.map((source) => {
+    const saved = frame.sources[source];
+    const quality = saved?.model_quality ?? (typeof saved?.state.quality === "string" ? saved.state.quality : undefined);
+    return quality ? `${TRIAD_SOURCE_LABELS[source]}: ${quality}` : undefined;
+  }).filter((quality): quality is string => Boolean(quality));
+  $("triad-overlay-time").textContent = `t=${frame.simulation_time_s.toFixed(0)} s · SOLO coincidencias exactas; los faltantes aparecen como —.${qualities.length ? ` Calidad declarada: ${qualities.join(" · ")}` : ""}`;
+  const root = $<HTMLElement>("triad-overlay-values");
+  root.replaceChildren();
+  const table = document.createElement("table");
+  table.style.cssText = "width:100%;border-collapse:collapse;margin:6px 0 12px";
+  const header = document.createElement("tr");
+  for (const text of ["Señal", ...TRIAD_SOURCES.map((source) => TRIAD_SOURCE_LABELS[source])]) {
+    const cell = document.createElement("th"); cell.textContent = text;
+    cell.style.cssText = "text-align:left;padding:5px;border-bottom:1px solid #52627a;color:#dbeafe"; header.append(cell);
+  }
+  table.append(header);
+  const sections = [
+    ["PRESIONES · MCA / APERTURA · %", TRIAD_PRESSURE_METRICS],
+    ["CAUDALES · M³/H", TRIAD_FLOW_METRICS],
+  ] as const;
+  for (const [title, metrics] of sections) {
+    const sectionRow = document.createElement("tr"); const sectionCell = document.createElement("th");
+    sectionCell.colSpan = 4; sectionCell.textContent = title; sectionCell.style.cssText = "text-align:left;padding:8px 5px 4px;color:#93c5fd";
+    sectionRow.append(sectionCell); table.append(sectionRow);
+    for (const metric of metrics) {
+      const row = document.createElement("tr"); const label = document.createElement("td");
+      label.textContent = metric.label; label.style.cssText = "padding:4px 5px;border-bottom:1px solid #26344a"; row.append(label);
+      for (const source of TRIAD_SOURCES) {
+        const cell = document.createElement("td");
+        const value = triadMetric(frame.sources[source], metric);
+        cell.textContent = value === null ? "—" : `${value.toFixed(1)}${"unit" in metric && metric.unit === "%" ? "%" : ""}`;
+        cell.title = frame.sources[source] ? `${TRIAD_SOURCE_LABELS[source]} · ${frame.sources[source]!.temporal_context ?? "frame guardado"} · t=${frame.sources[source]!.simulation_time_s}s` : "Sin frame de esta fuente en este instante";
+        cell.style.cssText = `padding:4px 5px;border-bottom:1px solid #26344a;color:${value === null ? "#94a3b8" : source === "emulator" ? "#67e8f9" : source === "cosimulation" ? "#fbbf24" : "#c4b5fd"};font-family:'IBM Plex Mono',monospace`;
+        row.append(cell);
+      }
+      table.append(row);
+    }
+  }
+  root.append(table);
+}
+
 // ------------------------------------------------------------------ un solo escritorio: 3D + HMI y pasado de solo lectura
+function showTriadFrame(frame: TriadViewFrame): void {
+  currentTriadFrame = frame;
+  triadViewActive = true;
+  renderTriadOverlay(frame);
+  forecastPlaybackStop?.(); forecastPlaybackStop = null;
+  $("forecast-panel").hidden = true; document.body.classList.remove("forecast-mode");
+  const snapshot = frame.snapshot;
+  if (snapshot && recordOf(snapshot.equipment) && recordOf(snapshot.lines)) {
+    applyMessage({ t: frame.simulation_time_s, snapshot: snapshot as SimMessage["snapshot"], events: [] }, "TRÍADA · NO APLICADA");
+  } else {
+    const equipment = Object.fromEntries([...assets.keys()].map((id) => [id, {
+      state: "unavailable", phase: null, animation: {}, variables: {}, active_faults: [],
+    }])) as SimMessage["snapshot"]["equipment"];
+    applyMessage({ t: frame.simulation_time_s, snapshot: { equipment, lines: {}, links: {} }, events: [] }, "TRÍADA · SIN SNAPSHOT · NO APLICADA");
+  }
+  $("btn-connect").textContent = "◆ TRÍADA EN 3D · NO APLICADA";
+}
+
 function waterView(view: "3d" | "plc" | "history"): void {
-  if (view === "plc" || view === "history") triadViewActive = false;
+  if (view === "plc" || view === "history") {
+    triadViewActive = false;
+    $("triad-overlay").hidden = true;
+  } else if (currentTriadFrame) showTriadFrame(currentTriadFrame);
   if (view === "plc" && sessionId) $("btn-connect").textContent = "● SIGUIENDO PLC ACTUAL";
   $("water-plc-panel").hidden = view !== "plc";
   if (view === "plc" && !waterPlcResizeInitialized) { setupWaterPlcResize(); waterPlcResizeInitialized = true; }
@@ -2116,8 +2230,12 @@ async function start(): Promise<void> {
     $("water-plc-close").onclick = () => waterView("3d");
     $("view-history").onclick = () => waterView("history");
     $<HTMLInputElement>("history-time").oninput = (event) => { void showHistory(Number((event.target as HTMLInputElement).value)); };
-    $("history-return").onclick = () => { historyRequest++; historicalTime = null; waterView("3d"); if (latestLiveMessage) applyMessage(latestLiveMessage, "PLC.ACTUAL"); };
-    window.addEventListener("message", (event: MessageEvent<{ type?: string; sessionId?: string; studyId?: string; plantId?: string; triadFrame?: { simulation_time_s: number; source: string; snapshot: Record<string, unknown> } }>) => {
+    $("history-return").onclick = () => {
+      historyRequest++; historicalTime = null; currentTriadFrame = null; triadViewActive = false;
+      $("triad-overlay").hidden = true; waterView("3d");
+      if (latestLiveMessage) applyMessage(latestLiveMessage, "PLC.ACTUAL");
+    };
+    window.addEventListener("message", (event: MessageEvent<{ type?: string; sessionId?: string; studyId?: string; plantId?: string; triadFrame?: TriadViewFrame }>) => {
       const frame = $<HTMLIFrameElement>("water-plc-frame");
       if (event.origin !== location.origin || event.source !== frame.contentWindow || event.data.plantId !== doc.plant.id) return;
       if (event.data.type === "plc-session-created" && event.data.sessionId && /^[\w-]+$/.test(event.data.sessionId)) {
@@ -2128,16 +2246,13 @@ async function start(): Promise<void> {
       }
       if (event.data.type === "plc-show-3d") {
         const triad = event.data.triadFrame;
-        const snapshot = triad?.snapshot as Partial<SimMessage["snapshot"]> | undefined;
-        if (triad && snapshot && typeof snapshot.equipment === "object" && typeof snapshot.lines === "object") {
-          triadViewActive = true;
-          forecastPlaybackStop?.(); forecastPlaybackStop = null;
-          $("forecast-panel").hidden = true; document.body.classList.remove("forecast-mode");
-          const sourceLabel = triad.source === "optimization" ? "OPTIMIZADOR" : triad.source === "cosimulation" ? "COSIMULADOR" : "EMULADOR";
-          applyMessage({ t: triad.simulation_time_s, snapshot: snapshot as SimMessage["snapshot"], events: [] }, `TRÍADA · ${sourceLabel} · NO APLICADA`);
-          $("btn-connect").textContent = "◆ TRÍADA EN 3D · NO APLICADA";
+        if (triad && Number.isFinite(triad.simulation_time_s) && triad.sources) {
+          waterView("3d");
+          showTriadFrame(triad);
         } else {
+          currentTriadFrame = null;
           triadViewActive = false;
+          $("triad-overlay").hidden = true;
           waterView("3d");
           if (event.data.studyId && /^[\w-]+$/.test(event.data.studyId)) {
             forecastStudyId = event.data.studyId; url.set("study", forecastStudyId); history.replaceState(null, "", `${location.pathname}?${url}`);

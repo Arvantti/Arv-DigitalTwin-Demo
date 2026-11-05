@@ -20,7 +20,7 @@ params:
   branch:               { type: enum, values: [auto, manual], default: auto, description: "Rama en servicio al arrancar (A automática o B manual)", affects: [behavior] }
   auto_control_mode:    { type: enum, values: [critical_pressure, critical_point, fixed_outlet, fixed_opening], default: critical_pressure, description: "Modo inicial de laboratorio; el modelo conectado del acueducto usa fixed_opening", affects: [behavior] }
   critical_setpoint_mca: { type: number, unit: mca, min: 5, max: 100, default: 20, description: Consigna heredada del lazo PID de presión (no usada por el mando fijo de apertura del acueducto), affects: [behavior] }
-  auto_opening_pct: { type: number, unit: "%", min: 20, max: 100, default: 38, description: Apertura inicial assumed de la PRV AUTO; el PLC puede cambiarla durante la marcha, affects: [behavior, geometry] }
+  auto_opening_pct: { type: number, unit: "%", min: 20, max: 100, default: 38, description: Estado inicial assumed de la PRV AUTO; el PLC virtual publica este valor y el operador puede cambiarlo en vivo. No es un mando horario de perfil, affects: [behavior, geometry] }
   manual_setting_mca:   { type: number, unit: mca, min: 5, max: 150, default: 26.66, description: Salida fija de la PRV de piloto (rama manual), affects: [behavior] }
   auto_min_outlet_mca:  { type: number, unit: mca, min: 0, max: 150, default: 15, description: Límite inferior de la consigna de salida de la PRV automática, affects: [behavior] }
   auto_max_outlet_mca:  { type: number, unit: mca, min: 0, max: 200, default: 40, description: Límite superior de la consigna de salida de la PRV automática, affects: [behavior] }

@@ -39,6 +39,9 @@ button,select,input:not([type="range"]),.mode { border-radius:var(--radius-contr
 .session-guidance { flex:1 1 230px; color:var(--dim); font-size:11px; line-height:1.4; }
 .fractal-workspace .controls { align-items:end; }
 .fractal-workspace .controls label { display:grid; gap:5px; min-width:140px; }
+.cosimulation-controls { margin-top:14px; padding-top:12px; border-top:1px solid #284650; }
+.cosimulation-controls .eyebrow { margin:0 0 8px; }
+.cosimulation-controls .controls label { display:grid; gap:5px; min-width:120px; }
 .fractal-workspace .cards { margin-top:12px; }
 .fractal-workspace h1 { font-size:18px; }
 .draft-context { flex:1 0 100%; padding:7px 10px; border:1px solid #b9a4ff77; border-radius:var(--radius-control); background:#b9a4ff12; color:#d1c2ff; font:600 10px Inter,system-ui,sans-serif; letter-spacing:.03em; }

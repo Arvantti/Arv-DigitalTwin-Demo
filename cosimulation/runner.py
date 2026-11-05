@@ -35,6 +35,8 @@ def _project(endpoint: str, payload: dict[str, Any]) -> dict[str, Any]:
         raise ValueError("modelo cosimulado devolvió un perfil distinto al recibido")
     if not isinstance(result.get("model_id"), str) or not result["model_id"].strip():
         raise ValueError("el resultado debe identificar el modelo cosimulado")
+    if not isinstance(result.get("quality"), str) or not result["quality"].strip():
+        raise ValueError("el modelo debe declarar la calidad y límites de su resultado")
     frames = result.get("frames")
     if not isinstance(frames, list) or not frames:
         raise ValueError("el modelo cosimulado debe devolver frames")
@@ -44,8 +46,8 @@ def _project(endpoint: str, payload: dict[str, Any]) -> dict[str, Any]:
 def _validate_model_frames(model_result: dict[str, Any], request: dict[str, Any]) -> list[dict[str, Any]]:
     snapshot = request["initial_snapshot"]
     now = float(snapshot["simulation_time_s"])
-    step = float(request["time_step_s"])
     end = now + float(request["horizon_s"])
+    forecast_times = [float(at) for at in request["forecast_times_s"]]
     frames = model_result["frames"]
     normalized: list[dict[str, Any]] = []
     previous = -1.0
@@ -78,8 +80,8 @@ def _validate_model_frames(model_result: dict[str, Any], request: dict[str, Any]
         else:
             if at <= now or at > end:
                 raise ValueError("un frame forecast debe estar después del presente y dentro del horizonte")
-            if abs((at - now) / step - round((at - now) / step)) > 1e-6:
-                raise ValueError("los frames forecast deben coincidir con el paso temporal solicitado")
+            if not any(abs(at - expected) <= 1e-6 for expected in forecast_times):
+                raise ValueError("el frame forecast no pertenece a la rejilla temporal del manifiesto")
             has_forecast = True
         normalized.append({"simulation_time_s": at, "temporal_context": context, "state": state})
         previous = at
@@ -110,6 +112,7 @@ def run_trajectory(job_id: str, request: dict[str, Any], model_endpoint: str) ->
         "history_frames": request["history_frames"],
         "time_step_s": request["time_step_s"],
         "horizon_s": request["horizon_s"],
+        "forecast_times_s": request["forecast_times_s"],
     }
     model_result = _project(model_endpoint, model_request)
     if model_result.get("profile_hash") != expected_hash:
@@ -123,9 +126,11 @@ def run_trajectory(job_id: str, request: dict[str, Any], model_endpoint: str) ->
         "profile_id": profile.get("id"),
         "profile_hash": expected_hash,
         "model_id": model_result["model_id"],
+        "model_quality": model_result["quality"],
         "time_origin_s": float(request["initial_snapshot"]["simulation_time_s"]),
         "time_step_s": float(request["time_step_s"]),
         "horizon_s": float(request["horizon_s"]),
+        "forecast_times_s": request["forecast_times_s"],
         "source": "cosimulation",
         "applied_to_plc": False,
         "frames": frames,

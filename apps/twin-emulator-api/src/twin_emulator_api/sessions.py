@@ -19,24 +19,23 @@ from .session_checkpoints import checkpoints
 TICK_S = 0.1
 MAX_STEPS_PER_TICK = 4000
 CHECKPOINT_INTERVAL_S = 3600.0
-DEFAULT_PRS_OPENING_PCT = 38.0
-
-
 def _activate_fixed_prs_opening(plant: Any, profile: dict[str, Any] | None = None) -> None:
-    """Fuerza AUTO a apertura fija, incluso al recuperar checkpoints del controlador anterior."""
+    """Fuerza AUTO a apertura fija desde el estado del equipo o un mando perfilado explícito."""
     station = plant.equipment.get("prs-01")
     if station is None:
         return
-    if getattr(station, "auto_control_mode", None) == "fixed_opening":
-        return
-    opening = getattr(station, "auto_opening_pct", DEFAULT_PRS_OPENING_PCT)
+    opening = getattr(station, "auto_opening_pct", None)
     if profile is not None:
-        hour = str(int(plant.t // 3600))
-        profile_opening = profile.get("hours", {}).get(hour, {}).get("prs", {}).get("auto_opening_pct")
-        if profile_opening is not None:
-            opening = profile_opening
+        current_hour = int(plant.t // 3600)
+        for hour_index in range(current_hour, -1, -1):
+            profile_opening = profile.get("hours", {}).get(str(hour_index), {}).get("prs", {}).get("auto_opening_pct")
+            if profile_opening is not None:
+                opening = profile_opening
+                break
     if isinstance(opening, bool) or not isinstance(opening, (int, float)) or not 20 <= opening <= 100:
-        opening = DEFAULT_PRS_OPENING_PCT
+        raise ValueError("La PRS requiere una apertura inicial válida en el equipo o explícita en el perfil.")
+    if getattr(station, "auto_control_mode", None) == "fixed_opening" and station.auto_opening_pct == float(opening):
+        return
     station.command("set_auto_opening", {"pct": float(opening)})
 
 

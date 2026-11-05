@@ -3,7 +3,7 @@
   "$id": "https://arvantti.example/contracts/cosimulation/v2/job-request.schema.json",
   "title": "Cosimulation job request v2 — single model",
   "type": "object",
-  "required": ["contract_version", "plant_id", "session_id", "initial_snapshot", "history_frames", "profile", "profile_hash", "time_step_s", "horizon_s"],
+  "required": ["contract_version", "plant_id", "session_id", "initial_snapshot", "history_frames", "profile", "profile_hash", "time_step_s", "horizon_s", "forecast_times_s"],
   "properties": {
     "contract_version": { "const": "cosimulation-job.v2" },
     "plant_id": { "type": "string", "minLength": 1 },
@@ -38,7 +38,8 @@
     },
     "profile_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
     "time_step_s": { "type": "number", "exclusiveMinimum": 0 },
-    "horizon_s": { "type": "number", "exclusiveMinimum": 0 }
+    "horizon_s": { "type": "number", "exclusiveMinimum": 0 },
+    "forecast_times_s": { "type": "array", "minItems": 1, "maxItems": 10000, "uniqueItems": true, "items": { "type": "number", "minimum": 0 } }
   },
   "additionalProperties": false
 }

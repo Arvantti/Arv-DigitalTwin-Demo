@@ -145,6 +145,49 @@ describe("public demo gateway", () => {
     expect(await response.json()).toEqual({ study_type: "optimized", applied: false });
   });
 
+  it("forwards PLC-backed cosimulation only for an owned session", async () => {
+    const expiresAt = Math.floor(Date.now() / 1000) + 60;
+    const token = await signDemoToken(secret, "visitor-a", expiresAt);
+    const foreignToken = await signDemoToken(secret, "visitor-b", expiresAt);
+    const database = {
+      prepare: () => ({
+        bind: (...values: string[]) => ({
+          first: async () => values[1] === "visitor-a" ? ({
+            session_id: "session-a", visitor_id: "visitor-a", plant_id: "water-network-scale-v1", expires_at: expiresAt,
+          }) : null,
+          all: async () => ({ results: [] }),
+          run: async () => ({ success: true }),
+        }),
+      }),
+    };
+    const fetch = vi.fn(async () => Response.json({ comparison_id: "CMP-1", frame_count: 0, applied_to_plc: false }));
+    const request = () => new Request(`${origin}/fractal/studies/cosimulation/from-plc`, {
+      method: "POST",
+      headers: { authorization: `Bearer ${token}`, origin, "content-type": "application/json" },
+      body: JSON.stringify({
+        plant_id: "water-network-scale-v1", session_id: "session-a", time_step_s: 3600, horizon_s: 86400,
+      }),
+    });
+    const workerEnv = env({ DB: database, FRACTAL_CONTAINER: { getByName: () => ({ fetch }) } });
+    const response = await worker.fetch(request(), workerEnv);
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ comparison_id: "CMP-1", frame_count: 0, applied_to_plc: false });
+    expect(fetch).toHaveBeenCalledOnce();
+
+    const foreignResponse = await worker.fetch(
+      new Request(`${origin}/fractal/studies/cosimulation/from-plc`, {
+        method: "POST",
+        headers: { authorization: `Bearer ${foreignToken}`, origin, "content-type": "application/json" },
+        body: JSON.stringify({
+          plant_id: "water-network-scale-v1", session_id: "session-a", time_step_s: 3600, horizon_s: 86400,
+        }),
+      }),
+      workerEnv,
+    );
+    expect(foreignResponse.status).toBe(404);
+    expect(fetch).toHaveBeenCalledOnce();
+  });
+
   it("blocks unbounded one-shot simulation endpoints", async () => {
     const token = await signDemoToken(secret, "visitor-a", Math.floor(Date.now() / 1000) + 60);
     const response = await worker.fetch(

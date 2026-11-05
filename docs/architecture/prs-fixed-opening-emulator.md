@@ -2,9 +2,9 @@
 
 ## Alcance
 
-Cada sesión creada o recuperada desde checkpoint por la API del acueducto inicia/restaura `prs-01` en modo `fixed_opening` al 38 % assumed (equivalencia aproximada del punto nominal previo). Una apertura explícita del perfil de la hora actual prevalece al recuperar sesiones antiguas. La emulación operativa manda una **apertura fija porcentual** a la PRS AUTO; el operador puede cambiarla en vivo desde la pantalla de bombeo o definirla por hora en un perfil. Las pruebas declarativas de `twin-lib plant` conservan el modo heredado de laboratorio. El PLC sigue siendo autoridad operativa; Fractal no escribe mandos.
+Cada sesión creada o recuperada desde checkpoint por la API del acueducto inicia `prs-01` en modo `fixed_opening`, tomando la apertura que ya publica el equipo. Si un perfil incluye `auto_opening_pct` explícito para una hora, ese mando prevalece; si lo omite, el PLC conserva la apertura vigente. La emulación operativa manda una **apertura fija porcentual** a la PRS AUTO; el operador puede cambiarla en vivo desde la pantalla de bombeo o programarla por hora en un perfil clonado. Las pruebas declarativas de `twin-lib plant` conservan el modo heredado de laboratorio. El PLC sigue siendo autoridad operativa; Fractal no escribe mandos.
 
-La presión crítica queda disponible como señal de medición y para alarmas. El 38 % inicial es una equivalencia matemática aproximada del punto nominal anterior (salida ≈21,45 mca con entrada ≈71,1 mca), no un ajuste validado físicamente. `critical_setpoint_mca` y los modos PID heredados se conservan en los perfiles como metadatos de estudios Fractal/laboratorio, pero `commands_for_hour` no los envía como lazo de control al emulador. Si un perfil AUTO antiguo no trae `auto_opening_pct`, se aplica 38 % (valor inicial assumed).
+La presión crítica queda disponible como señal de medición y para alarmas. El contrato de equipo conserva una apertura inicial assumed (actualmente 38 %), no validada físicamente; no es una consigna horaria ni un fallback del PLC. El HMI lee el valor vigente del tag y permite cambiarlo en vivo. `critical_setpoint_mca` se conserva como referencia/umbral de alarma y los modos PID heredados como metadatos de estudios Fractal/laboratorio; no gobiernan la apertura AUTO del emulador. `commands_for_hour` solo envía `set_auto_opening` cuando esa hora define explícitamente el campo.
 
 ## Conversión asumida
 
@@ -25,9 +25,9 @@ Fractal conserva por ahora sus modos y lógica de proyección existentes; un mis
 ## Interfaz
 
 - Pantalla de bombeo: mando en vivo `Apertura fija PRS AUTO` (20–100 %), separado de la medición de presión crítica.
-- Perfil horario: `auto_opening_pct` por hora; el valor no especificado usa 38 %.
+- Perfil horario: `auto_opening_pct` es opcional. Una hora sin apertura no altera el mando del operador en el PLC virtual.
 - Editor conserva parámetros de Fractal en un bloque aparte y los rotula como no aplicados al PLC.
-- Al cambiar perfil activo, la aplicación horaria del PLC vuelve a mandar la apertura programada para esa hora.
+- Al cambiar perfil activo, la aplicación horaria manda solo las aperturas declaradas; las demás propiedades conservan su valor hasta el siguiente mando.
 
 ## Validación
 

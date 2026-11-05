@@ -235,7 +235,7 @@ def test_operation_profiles_persist_and_drive_the_plc_virtual(tmp_path, monkeypa
     }
     custom = next(item for item in builtins if item["id"].endswith("pfl-personalizado-01"))
     assert custom["hours"]["0"]["leaks"]["grid-01"] == {"l1": 0, "l2": 0}
-    assert custom["hours"]["0"]["prs"]["branch"] == "auto"
+    assert "prs" not in custom["hours"]["0"]
     assert template["hours"]["11"]["global_consumers_pct"] == 100
     assert template["hours"]["23"]["global_consumers_pct"] == 30
     assert client.put(f"{url}/{profile['id']}", json=payload).status_code == 200
