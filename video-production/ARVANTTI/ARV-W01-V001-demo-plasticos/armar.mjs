@@ -428,6 +428,9 @@ function componer() {
           // el clip antes del primer cuadro claro del final.
           const blanco = primerBlanco(clip);
           if (blanco !== null && blanco < lead) lead = r2(Math.max(0, blanco - 0.08));
+          // Y si al final ya se ve la pantalla siguiente (otra pestaña), se corta en el último cuadro igual a la captura.
+          const igual = ultimoIgual(clip, img, lead);
+          if (igual !== null && igual < lead - 0.05) lead = r2(igual + 0.04);
           if (lead < 1.2) lead = 0;
         }
         if (lead >= 1.2) {
@@ -687,6 +690,22 @@ function primerBlanco(clip) {
   const ys = [...(r.stderr || "").matchAll(/pts_time:([\d.]+)[\s\S]*?YAVG=([\d.]+)/g)].map((m) => [Number(m[1]), Number(m[2])]);
   const hit = ys.find(([, y]) => y > 150);
   return hit ? hit[0] : null;
+}
+
+/** Segundo del último cuadro del clip (hasta `hasta`) que se parece a la captura, o null si ninguno se parece. */
+function ultimoIgual(clip, png, hasta) {
+  const gray = (args) => execFileSync("ffmpeg", ["-v", "error", ...args, "-vf", "fps=25,scale=80:45,format=gray", "-f", "rawvideo", "-"], { maxBuffer: 1 << 28 });
+  const n = 80 * 45;
+  const ref = gray(["-i", png]);
+  const v = gray(["-t", String(hasta), "-i", clip]);
+  const frames = Math.floor(v.length / n);
+  const diff = (k) => {
+    let d = 0;
+    for (let i = 0; i < n; i++) d += Math.abs(v[k * n + i] - ref[i]);
+    return d / n;
+  };
+  for (let k = frames - 1; k >= 0; k--) if (diff(k) < 14) return k / 25;
+  return null;
 }
 
 /** Textos de una captura tomada en otro escenario (p. ej. la apertura usa capturas de los escenarios). */
