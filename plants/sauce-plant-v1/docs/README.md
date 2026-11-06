@@ -12,7 +12,7 @@ catalog/        materiales, productos (con grupo de alérgenos), recetas y forma
                 recetas, lavado del pulmón y boquillas)
 aps/aps.yaml    ventana de entrega, tandas, lotes, llenadoras multipropósito, tiempos de espera y puntaje de Fractal
 aps/plans/      APS-MAN-01.json: secuencia del planificador de turno (manual-sequence.v1)
-orders/         cartera-2026-11.json: 110 pedidos inventados (customer-orders.v1)
+orders/         cartera-2026-11.json: 119 pedidos inventados (customer-orders.v1)
 cosim/          @plants/sauce-plant-v1-cosim: modelo, cartera, plan manual, despacho y programa lineal (HiGHS)
 docs/           esta nota
 ```
@@ -71,7 +71,7 @@ alternativa la usa el APS.
 
 ## Cartera y plan manual de la demo
 
-Mismas fechas que plásticos: día 0 = lunes 2026-10-26, entregas del día 1 al 19, AHORA = día 9. 110 pedidos de los
+Mismas fechas que plásticos: día 0 = lunes 2026-10-26, entregas del día 1 al 19, AHORA = día 9. 119 pedidos de los
 diez SKU, con carga cercana al 65 % de la capacidad diaria de cada SKU (`catalog/demand.yaml`, `load_pct`; con siete
 recetas, los cambios se comen buena parte del turno).
 El plan manual APS-MAN-01 sigue el orden de llegada y alterna las llenadoras de 1.000 ml y las multipropósito, sin
@@ -104,11 +104,11 @@ Una tanda ocupa la línea 213,8 / 143,3 / 286,5 min y no pasa de un día a otro.
   línea. Después, el mismo despacho.
 - `manual.ts`: el plan del planificador (APS-MAN-01) en el tiempo, por orden de llegada.
 
-Con la cartera de la demo, el plan manual deja 16 pedidos tarde (711 h de atraso), 52 h de CIP (8 por alérgeno) y
-6.419 kg de merma. Replaneando en AHORA (día 9, miércoles 4 de noviembre a las 10:00), el solver baja a 13 tarde,
-652 h, 50 h de CIP (5 por alérgeno) y 5.066 kg; desde el día 0, 13 tarde, 613 h, 44 h de CIP (1 por alérgeno) y
-4.697 kg (`pnpm --filter @plants/sauce-plant-v1-cosim test`). La mejora es moderada: el solver reparte kilos por
-turno pero no arma campañas de recetas; eso lo hace Fractal (fase 5).
+Con la cartera de la demo, el plan manual deja 11 pedidos tarde (568 h de atraso), 52 h de CIP (10 cambios por
+alérgeno) y 8.645 kg de merma. Replaneando en AHORA (día 9, miércoles 4 de noviembre a las 10:00), el solver baja a
+10 tarde, 498 h, 51 h de CIP (7 por alérgeno) y 3.936 kg (`pnpm --filter @plants/sauce-plant-v1-cosim test`). La
+mejora es moderada, y desde el día 0 el solver no siempre le gana al manual: reparte kilos por turno pero no arma
+campañas de recetas; eso lo hace Fractal (fase 5).
 
 ## Pantalla del APS
 
@@ -116,7 +116,7 @@ turno pero no arma campañas de recetas; eso lo hace Fractal (fase 5).
 (`APS · PEDIDOS Y GANTT`). Arranca con el plan manual (APS-MAN-01) vigente y AHORA en el día 9 (miércoles 4 de
 noviembre, 10:00; `?now=` lo cambia).
 
-- PEDIDOS: los 110 pedidos con cliente, producto, entrega, cuándo termina, atraso y si están hechos, en curso o por
+- PEDIDOS: los 119 pedidos con cliente, producto, entrega, cuándo termina, atraso y si están hechos, en curso o por
   hacer en AHORA; arriba, los indicadores del plan. Clic en un pedido lo sigue en el Gantt.
 - PROGRAMACIÓN · GANTT: una fila por equipo de proceso (tandas T/BBQ/PI, LI/MY/RO y MS con su número; las
   parciales lo dicen al pasar el mouse) y una por llenadora; el cambio va rayado al comienzo de cada barra: rojo el

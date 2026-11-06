@@ -9,8 +9,8 @@ const model = buildModel(sauceData());
 const order = (id: string, product: string, quantity: number, created: string): CustomerOrder => ({ id, customer: "Cliente de prueba", product, quantity, unit: "u", created: `${created}-05:00`, due: "2026-10-28T22:00-05:00", importance: "normal" });
 
 describe("APS de salsas: lo que se muestra", () => {
-  it("los datos del navegador son los mismos del cosimulador: 110 pedidos y la secuencia de seis llenadoras", () => {
-    expect(demoPortfolio().orders).toHaveLength(110);
+  it("los datos del navegador son los mismos del cosimulador: 119 pedidos y la secuencia de seis llenadoras", () => {
+    expect(demoPortfolio().orders).toHaveLength(119);
     expect(Object.keys(demoManual().sequence)).toEqual(model.fillers.slice().sort());
   });
 

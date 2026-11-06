@@ -25,7 +25,7 @@ demand:
   products:
     # Caliente 40 % (tomate 18 + 10, BBQ 7, picante 5); frío 45 % (mayonesa 15 + 12 + 10, rosada 4, light 4); mostaza 15 %.
     - { product: tomate-1000,   daily: 3536,  order_qty: [1600, 6000],  round: 4 }    # 22.000 × 18 % ÷ 1,12
-    - { product: tomate-250,    daily: 7857,  order_qty: [4000, 14000], round: 16 }   # 22.000 × 10 % ÷ 0,28
+    - { product: tomate-250,    daily: 7857,  order_qty: [2000, 8000],  round: 16 }   # 22.000 × 10 % ÷ 0,28
     - { product: bbq-1000,      daily: 1339,  order_qty: [800, 3000],   round: 4 }    # 22.000 × 7 % ÷ 1,15
     - { product: picante-250,   daily: 4074,  order_qty: [2000, 8000],  round: 16 }   # 22.000 × 5 % ÷ 0,27
     - { product: mayonesa-1000, daily: 3548,  order_qty: [1600, 6000],  round: 4 }    # 22.000 × 15 % ÷ 0,93
