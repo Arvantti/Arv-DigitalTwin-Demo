@@ -30,6 +30,7 @@ import { bootDone, bootError, bootStage } from "./boot.ts";
 import { type CatalogDoc, type ProductsApi, buildProducts } from "./products.ts";
 import { buildSchedule } from "./schedule.ts";
 import { buildAps } from "./aps.ts";
+import { buildSaucePlay } from "./sauce-play.ts";
 import { buildPalletTransport, type PalletTransport } from "./pallet-transport.ts";
 import { buildMoldChangeView, type MoldChangeView } from "./mold-change.ts";
 import { buildTrails, visualScale, type Trails } from "./motion.ts";
@@ -2406,6 +2407,11 @@ async function start(): Promise<void> {
       crane: doc.equipment.find((e) => e.type === "overhead_crane") ? assets.get(doc.equipment.find((e) => e.type === "overhead_crane")!.id)?.root : undefined,
       active: () => messages === 0,
     });
+  } else if (plantId === "sauce-plant-v1") {
+    // Salsas: el play recorre la programación del APS de salsas y anima cada equipo según su estado (sauce-play.ts).
+    const play = buildSaucePlay({ scene: stage.scene, rootOf: (id) => assets.get(id)?.root, select, markDown, setAssetExtra: (fn) => (assetExtra = fn), refreshAsset: renderAsset });
+    playRate = play.rate;
+    planFrame = play.frameOf;
   } else if (doc.catalog?.schedule) buildSchedule({ plantId, select, apiUrl: plantApiAvailable ? apiUrl : undefined, showProduct: (id) => productsApi?.show(id) });
   if (url.get("select")) select(url.get("select"));
   const focusAsset = url.get("focus") ? assets.get(url.get("focus")!) : undefined;
@@ -2509,6 +2515,8 @@ let playRate: (() => number) | null = null;
 let trails: Trails | null = null;
 /** Estado de cada máquina según la programación en el instante del play: solo cicla la que está produciendo. */
 let machineState: ((id: string) => MachineState) | null = null;
+/** Salsas: cuadro de cada equipo con PLC según la programación en el instante del play (sin simulación conectada). */
+let planFrame: ((id: string, time: number) => AnimationFrame | null) | null = null;
 let sceneTime: number | null = null;
 let updateProducts: ((time: number) => void) | null = null;
 let productsApi: ProductsApi | null = null;
@@ -2527,6 +2535,9 @@ function loop(): void {
     if (a.model && messages === 0 && a.eq.sim?.type === "injection-molding-machine") {
       const st = machineState?.(a.eq.id) ?? "run";
       a.frame = st === "run" ? ambientInjectionFrame(a.eq.id, a.eq.sim.params, sceneTime) : stoppedInjectionFrame(a.eq.id, st);
+    } else if (a.model && messages === 0 && planFrame) {
+      const f = planFrame(a.eq.id, sceneTime);
+      if (f) a.frame = f;
     }
     a.model?.update(a.frame, Math.min(simDt, dt * 4));
   }

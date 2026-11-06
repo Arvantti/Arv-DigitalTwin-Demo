@@ -194,6 +194,22 @@ Los valores de proceso, el rendimiento del OEE y las causas de falla son supuest
 hay señales reales. Las pruebas de `tests/plant-state.test.ts` cubren el estado, la caldera que detiene la línea
 caliente, el CIP por alérgeno en curso, el OEE y la ocupación.
 
+## Gemelo 3D con play
+
+`plant.html?plant=sauce-plant-v1` (desde el portal) reproduce en el 3D la programación vigente del APS
+(`apps/gallery/src/sauce-play.ts`, que usa `app/plant-state.ts` y `app/store.ts`).
+
+- Barra de tiempo: play, velocidades de 15 min a 12 h por segundo, botón AHORA y marcas de día; va de 3 días antes a
+  7 días después de AHORA (día 9, 10:00). El instante del play se comparte con el emulador y el centro de control,
+  que pasan a "siguiendo el gemelo".
+- Cada equipo con PLC lleva una etiqueta con su estado, la tanda o el pedido que corre y el cambio o el avance; las
+  marmitas suben de nivel y calientan, la caldera enciende la llama, el pasteurizador mueve el flujo y las
+  llenadoras sellan y sueltan sachets solo cuando la programación lo dice.
+- Panel de pedidos: se sigue un pedido con sus tandas y llenados, y la lista de lo que corre en el gemelo.
+- Las fallas declaradas en el emulador marcan el equipo en rojo, y los equipos que detiene (la caldera detiene
+  marmitas y pasteurizadores) quedan en DETENIDO con la causa. La ficha de cada equipo muestra sus señales, OEE y
+  ocupación del día y la semana, con el enlace al emulador.
+
 ## Puntaje de Fractal
 
 Menor es mejor: horas de atraso + 20 × pedidos tarde + 2 × horas de CIP + 1 × horas de cambio de formato + 0,05 × kg
