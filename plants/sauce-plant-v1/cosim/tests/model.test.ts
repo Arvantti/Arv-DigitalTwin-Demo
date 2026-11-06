@@ -64,14 +64,14 @@ describe("cartera y plan manual de la demo", () => {
     expect(saved("aps/plans/APS-MAN-01.json")).toBe(json(manualSequence(model, portfolio)));
   });
 
-  it("carga cerca de load_pct de la capacidad diaria en los 17 días hábiles", () => {
+  it("cada producto pide exactamente load_pct de su capacidad diaria en los 17 días hábiles", () => {
     const days = new Set(portfolio.orders.map((o) => o.due.slice(0, 10))).size;
     expect(days).toBe(17);
-    const cap = model.demand.reduce((s, d) => s + d.daily * days, 0);
-    const qty = portfolio.orders.reduce((s, o) => s + o.quantity, 0);
-    // Los pedidos se sortean: en 17 días la carga queda entre load_pct y 12 puntos más.
-    expect(qty / cap).toBeGreaterThan(model.loadPct / 100);
-    expect(qty / cap).toBeLessThan(model.loadPct / 100 + 0.12);
+    // Las cantidades se escalan al final para que el azar no cargue de más una línea; solo queda el redondeo a cajas.
+    for (const d of model.demand) {
+      const qty = portfolio.orders.filter((o) => o.product === d.product).reduce((s, o) => s + o.quantity, 0);
+      expect(Math.abs(qty / (d.daily * days) - model.loadPct / 100), d.product).toBeLessThan(0.005);
+    }
   });
 
   it("cada pedido llega antes de su entrega, dentro de la ventana de aps.yaml", () => {

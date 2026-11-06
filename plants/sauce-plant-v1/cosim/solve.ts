@@ -20,7 +20,12 @@ import type { SauceModel } from "./model.ts";
 import { context, dispatch, toPlan, type Chunk, type ContextOptions, type Job } from "./plan.ts";
 
 const MISSING_PENALTY = 1000;
-const EARLY_NUDGE = 1e-3;
+/**
+ * Empujoncito hacia el último turno que todavía llega a tiempo: deja libres los primeros turnos para los pedidos urgentes
+ * que lleguen y no cocina antes de tiempo (el granel tiene tiempo de espera). Al empujar hacia el comienzo, la línea se
+ * llenaba con pedidos de la semana siguiente y los urgentes de recetas pequeñas salían tarde.
+ */
+const LATE_NUDGE = 1e-3;
 const SLACK = 0.97;
 /** Holgura de una línea con varias recetas: además del pulmón, los cambios de receta (unos 45 min por turno). */
 const MULTI_SLACK = 0.9;
@@ -79,7 +84,7 @@ export function solve(highs: HighsLike, model: SauceModel, portfolio: CustomerOr
       names.push(v);
       vars.set(v, { job: j, b });
       const lateH = Math.max(0, bk.end - j.due) / 60;
-      const c = (j.weight * lateH) / kg + (EARLY_NUDGE * b) / (B * kg);
+      const c = (j.weight * lateH) / kg + (LATE_NUDGE * (B - b)) / (B * kg);
       if (c > 1e-12) obj.push(term(c, v));
       bounds.push(`0 <= ${v} <= ${cap[j.line][b].toFixed(3)}`);
       const key = `${j.line}|${b}`;
