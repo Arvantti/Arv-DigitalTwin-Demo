@@ -295,6 +295,16 @@ class Catalog:
                     mat = self.materials.get(mid)
                     if mat is None or mat.get("kind") != kind:
                         errors.append(f"cambios {table}: {mid!r} no es un material {kind} del catálogo")
+        # Limpieza por alérgenos: cada grupo de la tabla es el de algún producto, y todo semielaborado tiene grupo.
+        if allergen := changeovers.get("allergen"):
+            groups = {p["allergen_group"] for p in self.products.values() if p.get("allergen_group")}
+            for src, row in (allergen.get("pairs") or {}).items():
+                for gid in (src, *row):
+                    if gid not in groups:
+                        errors.append(f"cambios allergen: {gid!r} no es el grupo de alérgenos de ningún producto")
+            for product in self.products.values():
+                if product["kind"] == "semi" and not product.get("allergen_group"):
+                    errors.append(f"producto {product['id']}: falta allergen_group (el catálogo tiene tabla de alérgenos)")
 
         for tool in self.tooling.values():
             label = f"herramental {tool['id']}"

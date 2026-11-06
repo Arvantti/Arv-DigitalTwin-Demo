@@ -180,6 +180,17 @@ def test_recipe_formula_must_use_catalog_materials(tmp_path, lib):
     assert "herramental rcp-mustard: la fórmula suma 101 %, no 100 %" in errors
 
 
+def test_allergen_table_names_product_groups(tmp_path, lib):
+    """La tabla de CIP por alérgeno solo nombra grupos de productos, y todo granel tiene grupo."""
+    folder = _copy(tmp_path, SAUCE)
+    _edit(folder, "changeovers.yaml", lambda d: d["changeovers"]["allergen"]["pairs"]["mostaza"].update(mani=90))
+    _edit(folder, "products.yaml", lambda d: d["products"][0].pop("allergen_group"))
+    errors = Catalog.load(folder).validate(_layout(folder), lib)
+    assert "cambios allergen: 'mani' no es el grupo de alérgenos de ningún producto" in errors
+    assert "cambios allergen: 'sin-alergenos' no es el grupo de alérgenos de ningún producto" in errors
+    assert "producto salsa-tomate: falta allergen_group (el catálogo tiene tabla de alérgenos)" in errors
+
+
 # ---------------------------------------------------------------- tiempos de la hoja de ruta (editor de rutas)
 
 

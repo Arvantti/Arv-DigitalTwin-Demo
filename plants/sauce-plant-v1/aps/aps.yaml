@@ -1,0 +1,55 @@
+# Configuración del APS de la planta de salsas. La leen el cosimulador (plants/sauce-plant-v1/cosim) y las pantallas.
+# Equivalente a la de plásticos para que la demo cuente la misma historia ("día N", AHORA = día 9). Todo es supuesto.
+aps:
+  # Ventana de entrega: un pedido llega entre 3 y 7 días antes de su entrega (importancia alta: 1 a 2 días).
+  # demand.yaml usa [4, 15] para el secuenciador de referencia (twin-lib plan); el APS usa la ventana corta de la demo.
+  window_days: 7
+  lead_days: [3, 7]
+  rush_lead_days: [1, 2]
+
+  # Lote de proceso: una tanda de la receta (catalog/tooling.yaml, batch_kg × rendimiento). Varios pedidos del mismo
+  # granel comparten tanda; lo que sobra queda en el pulmón hasta su tiempo de espera (hold).
+  batches:
+    salsa-tomate:   { batch_kg: 2000, yield_pct: 98.0, out_kg: 1960 }     # 2.000 × 0,98
+    mayonesa:       { batch_kg: 1500, yield_pct: 98.5, out_kg: 1477.5 }   # 1.500 × 0,985
+    mostaza-granel: { batch_kg: 1000, yield_pct: 98.5, out_kg: 985 }      # 1.000 × 0,985
+
+  # Lote de llenado (unidades): lo que sale de una tanda, redondeado hacia abajo a cajas completas (round de demand.yaml).
+  #   tomate-1000:    1.960 / 1,12   = 1.750,0 → 1.748 (cajas de 4)
+  #   tomate-250:     1.960 / 0,28   = 7.000,0 → 6.992 (cajas de 16)
+  #   mayonesa-1000:  1.477,5 / 0,93  = 1.588,7 → 1.588 (cajas de 4)
+  #   mayonesa-500:   1.477,5 / 0,465 = 3.177,4 → 3.176 (cajas de 8)
+  #   mayonesa-250:   1.477,5 / 0,2325 = 6.354,8 → 6.352 (cajas de 16)
+  #   mostaza-250:    985 / 0,2625    = 3.752,4 → 3.744 (cajas de 16)
+  lots:
+    tomate-1000: 1748
+    tomate-250: 6992
+    mayonesa-1000: 1588
+    mayonesa-500: 3176
+    mayonesa-250: 6352
+    mostaza-250: 3744
+
+  # Llenadoras multipropósito: además de su producto habitual (ruta del catálogo), el APS puede mandar a estas
+  # llenadoras estos productos, con el CIP por alérgeno de catalog/changeovers.yaml. La tubería está en plant.yaml
+  # (colector con válvulas de tres vías desde el pulmón frío y el de mostaza). La salsa caliente no se cruza: se llena
+  # en caliente y necesita el túnel de enfriamiento de su línea.
+  multipurpose:
+    filler-sachet-01: [mostaza-250]     # habitual: mayonesa-250
+    filler-sachet-03: [mayonesa-250]    # habitual: mostaza-250
+
+  # Tiempo de espera en el pulmón: después de terminar la tanda, el granel solo se puede llenar durante max_h horas
+  # en su condición; lo que se vence es merma. La salsa caliente se llena en caliente para que el sachet salga
+  # pasteurizado; la mayonesa se mantiene fría; la mostaza es estable a temperatura ambiente.
+  hold:
+    salsa-tomate:   { max_h: 4,  condition: "≥ 85 °C en el pulmón caliente" }
+    mayonesa:       { max_h: 24, condition: "≤ 18 °C en el pulmón frío" }
+    mostaza-granel: { max_h: 48, condition: "ambiente, tanque cerrado" }
+
+  # Puntaje de Fractal (platform/fractal-core): menor es mejor. Atraso ante todo; luego pedidos tarde, horas de CIP,
+  # horas de cambio de formato y kilos de merma (granel vencido en el pulmón y producto de arranque tras un CIP).
+  score:
+    tardiness_h: 1
+    late_orders: 20
+    cip_h: 2
+    format_change_h: 1
+    waste_kg: 0.05

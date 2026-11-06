@@ -2,11 +2,15 @@
 # (uno por familia, con su receta) y seis SKU en sachet, los que corren hoy en los escenarios de simulation.yaml.
 # Cada SKU usa su granel en kg por sachet (presentación × densidad de la llenadora), laminado y 1/n de caja.
 # Las llenadoras que admiten otro formato (500 y 1.000 ml) aparecen como alternativas; la activa es la que tiene
-# el formato montado (setup.yaml). Salsa BBQ y salsa rosada quedan para cuando tengan receta. Datos supuestos.
+# el formato montado (setup.yaml). El grupo de alérgenos va en el granel (allergen_group) y el SKU lo hereda por su
+# lista de materiales. La ruta es la habitual de cada SKU; que las llenadoras de 250 ml en frío (01 y 03) también
+# llenen el otro producto con CIP por alérgeno lo decide el APS (aps/aps.yaml, multipurpose), no el secuenciador de
+# referencia. Salsa BBQ y salsa rosada quedan para cuando tengan receta. Datos supuestos.
 products:
 - id: salsa-tomate
   name: Salsa de tomate pasteurizada
   family: caliente
+  allergen_group: sin-alergenos
   kind: semi
   unit: kg
   color: '#c62828'
@@ -24,6 +28,7 @@ products:
 - id: mayonesa
   name: Mayonesa a granel
   family: frío
+  allergen_group: huevo-mostaza
   kind: semi
   unit: kg
   color: '#f4c430'
@@ -41,6 +46,7 @@ products:
 - id: mostaza-granel
   name: Mostaza a granel
   family: mostaza
+  allergen_group: mostaza
   kind: semi
   unit: kg
   color: '#e0a800'
