@@ -1,6 +1,6 @@
 const TOKEN_PREFIX = "arvantti-demo-token:";
 
-type DemoToken = { token: string; exp: number };
+type DemoToken = { token: string; study_key?: string; expires_at: number };
 
 function expiry(token: string): number {
   try {
@@ -15,21 +15,53 @@ function storageKey(apiOrigin: string): string {
   return `${TOKEN_PREFIX}${new URL(apiOrigin, location.origin).origin}`;
 }
 
+function recoveryKey(tokenKey: string): string {
+  return `${tokenKey}:study-recovery-key`;
+}
+
+async function requestStudyKey(apiOrigin: string, token: string, tokenKey: string): Promise<void> {
+  const stored = localStorage.getItem(recoveryKey(tokenKey));
+  if (stored && /^[a-f0-9]{64}$/.test(stored)) return;
+  const response = await fetch(`${apiOrigin.replace(/\/$/, "")}/api/demo/study-key`, {
+    method: "POST",
+    headers: { authorization: `Bearer ${token}` },
+    cache: "no-store",
+  });
+  if (!response.ok) throw new Error(`No se pudo preparar la recuperación de estudios (${response.status}).`);
+  const result = await response.json() as { study_key?: unknown };
+  if (typeof result.study_key !== "string" || !/^[a-f0-9]{64}$/.test(result.study_key)) {
+    throw new Error("El gateway devolvió una clave de recuperación inválida.");
+  }
+  localStorage.setItem(recoveryKey(tokenKey), result.study_key);
+}
+
 async function demoToken(apiOrigin: string): Promise<string> {
   const key = storageKey(apiOrigin);
   const existing = localStorage.getItem(key);
-  if (existing && expiry(existing) > Math.floor(Date.now() / 1000) + 60) return existing;
+  if (existing && expiry(existing) > Math.floor(Date.now() / 1000) + 60) {
+    await requestStudyKey(apiOrigin, existing, key);
+    return existing;
+  }
 
-  const response = await fetch(`${apiOrigin.replace(/\/$/, "")}/api/demo/session`, {
+  const storedRecoveryKey = localStorage.getItem(recoveryKey(key));
+  const requestSession = (studyKey?: string) => fetch(`${apiOrigin.replace(/\/$/, "")}/api/demo/session`, {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: "{}",
+    body: JSON.stringify(studyKey ? { study_key: studyKey } : {}),
     cache: "no-store",
   });
+  let response = await requestSession(storedRecoveryKey ?? undefined);
+  if (response.status === 401 && storedRecoveryKey) {
+    localStorage.removeItem(recoveryKey(key));
+    response = await requestSession();
+  }
   if (!response.ok) throw new Error(`No se pudo iniciar la sesión anónima de demostración (${response.status}).`);
   const result = await response.json() as DemoToken;
   if (typeof result.token !== "string" || expiry(result.token) <= Date.now() / 1000) {
     throw new Error("El gateway devolvió una sesión de demostración no válida.");
+  }
+  if (typeof result.study_key === "string" && /^[a-f0-9]{64}$/.test(result.study_key)) {
+    localStorage.setItem(recoveryKey(key), result.study_key);
   }
   localStorage.setItem(key, result.token);
   return result.token;

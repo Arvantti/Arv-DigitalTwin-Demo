@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 vi.mock("cloudflare:workers", () => ({ DurableObject: class {}, WorkerEntrypoint: class {} }));
 import worker from "./index";
-import { signDemoToken } from "./demo-auth";
+import { signDemoToken, verifyDemoToken } from "./demo-auth";
 
 const origin = "https://digitaltwin.arvantti.online";
 const secret = "test-secret-for-cloudflare-demo-only-32-bytes";
@@ -55,6 +55,45 @@ describe("public demo gateway", () => {
     expect(allowed.status).toBe(200);
     expect(body.authenticated_user).toBe(false);
     expect(body.token).toBeTruthy();
+  });
+
+  it("recovers the same anonymous owner after token expiry with the browser recovery key", async () => {
+    const keys = new Map<string, string>();
+    const database = {
+      prepare: (sql: string) => ({
+        bind: (...values: unknown[]) => ({
+          first: async () => {
+            if (sql.startsWith("SELECT visitor_id FROM demo_study_owner_keys")) {
+              const visitorId = keys.get(String(values[0]));
+              return visitorId ? { visitor_id: visitorId } : null;
+            }
+            return null;
+          },
+          all: async () => ({ results: [] }),
+          run: async () => {
+            if (sql.startsWith("INSERT INTO demo_study_owner_keys")) keys.set(String(values[1]), String(values[0]));
+            return { success: true };
+          },
+        }),
+      }),
+    };
+    const workerEnv = env({ DB: database });
+    const first = await worker.fetch(new Request(`${origin}/api/demo/session`, { method: "POST", headers: { origin } }), workerEnv);
+    const firstBody = await first.json() as { token: string; study_key: string };
+    const firstClaims = await verifyDemoToken(secret, firstBody.token);
+    expect(first.status).toBe(200);
+    expect(firstBody.study_key).toMatch(/^[a-f0-9]{64}$/);
+    expect(firstClaims?.sub).toBeTruthy();
+
+    const renewed = await worker.fetch(new Request(`${origin}/api/demo/session`, {
+      method: "POST", headers: { origin, "content-type": "application/json" },
+      body: JSON.stringify({ study_key: firstBody.study_key }),
+    }), workerEnv);
+    const renewedBody = await renewed.json() as { token: string; study_key: string };
+    const renewedClaims = await verifyDemoToken(secret, renewedBody.token);
+    expect(renewed.status).toBe(200);
+    expect(renewedClaims?.sub).toBe(firstClaims?.sub);
+    expect(renewedBody.study_key).toBe(firstBody.study_key);
   });
 
   it("binds created sessions to the issuing visitor capability", async () => {
@@ -143,6 +182,27 @@ describe("public demo gateway", () => {
     expect(response.status).toBe(200);
     expect(fetch).toHaveBeenCalledOnce();
     expect(await response.json()).toEqual({ study_type: "optimized", applied: false });
+  });
+
+  it("allows an owner-scoped rerun request for an archived Fractal study without requiring a live session", async () => {
+    const token = await signDemoToken(secret, "visitor-a", Math.floor(Date.now() / 1000) + 60);
+    const fetch = vi.fn(async (request: Request) => {
+      expect(new URL(request.url).pathname).toBe("/studies/saved/rerun");
+      expect(request.headers.get("x-twin-demo-id")).toBe("visitor-a");
+      expect(request.headers.get("x-twin-demo-token")).toBe(token);
+      return Response.json({ id: "SAVED-1", latest_version: 2 });
+    });
+    const response = await worker.fetch(
+      new Request(`${origin}/fractal/studies/saved/rerun`, {
+        method: "POST",
+        headers: { authorization: `Bearer ${token}`, origin, "content-type": "application/json" },
+        body: JSON.stringify({ plant_id: "water-network-scale-v1", saved_study_id: "SAVED-1", version: 1 }),
+      }),
+      env({ FRACTAL_CONTAINER: { getByName: () => ({ fetch }) } }),
+    );
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ id: "SAVED-1", latest_version: 2 });
+    expect(fetch).toHaveBeenCalledOnce();
   });
 
   it("forwards PLC-backed cosimulation only for an owned session", async () => {

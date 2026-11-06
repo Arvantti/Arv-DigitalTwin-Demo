@@ -46,6 +46,7 @@ from .audit import audit
 from .historian import historian
 from .plc_tags import opcua_schema, plc_tags
 from .profiles import ProfileStore, commands_for_hour, current_prs_inlet_offset_mca
+from .saved_studies import saved_studies
 from .sessions import manager as session_manager
 from .studies import studies
 
@@ -358,6 +359,145 @@ def schedule_saved_profile(
         {"source": "operator_plc", "event": "profile_scheduled", "profile_id": profile_id, "starts_at_hour": starts_at_hour},
     )
     return {"session_id": session_id, "profile_id": profile_id, "starts_at_hour": starts_at_hour, "applied_now": False}
+
+
+def _saved_study_owner(request: Request) -> str:
+    owner_id = request.headers.get("x-twin-demo-id")
+    if not owner_id and os.environ.get("TWIN_DATA_BACKEND", "sqlite").lower() == "sqlite":
+        return "local-development"
+    if not owner_id:
+        raise HTTPException(401, "Se requiere una identidad anónima de demostración")
+    return owner_id
+
+
+def _owned_study_session(plant_id: str, session_id: str, owner_id: str):
+    session = session_manager.get(plant_id, session_id)
+    if session is None or (session.demo_client_id and session.demo_client_id != owner_id):
+        raise HTTPException(404, "sesión desconocida o no propia")
+    return session
+
+
+@app.get("/api/plants/{plant_id}/saved-studies")
+def list_saved_studies(plant_id: str, request: Request) -> list[dict[str, Any]]:
+    if plant_id not in _plant_folders():
+        raise HTTPException(404, f"planta desconocida: {plant_id}")
+    return saved_studies.list(_saved_study_owner(request), plant_id)
+
+
+@app.post("/api/plants/{plant_id}/saved-studies", status_code=201)
+def save_study(plant_id: str, request: Request, payload: Annotated[dict[str, Any], Body()]) -> dict[str, Any]:
+    owner_id = _saved_study_owner(request)
+    name = payload.get("name")
+    session_id = payload.get("source_session_id")
+    source_study_id = payload.get("source_study_id")
+    if not isinstance(name, str) or not name.strip() or len(name.strip()) > 120:
+        raise HTTPException(422, "name debe tener entre 1 y 120 caracteres")
+    if not isinstance(session_id, str) or not isinstance(source_study_id, str):
+        raise HTTPException(422, "source_session_id y source_study_id son obligatorios")
+    _owned_study_session(plant_id, session_id, owner_id)
+    result = studies.get(session_id, source_study_id)
+    if result is None or result.get("temporal_context") != "forecast" or result.get("applied") is not False:
+        raise HTTPException(404, "estudio futuro no aplicado desconocido")
+    try:
+        size = len(json.dumps(result, ensure_ascii=False, allow_nan=False).encode())
+    except (TypeError, ValueError) as exc:
+        raise HTTPException(422, "el resultado debe ser JSON finito") from exc
+    if size > 950_000:
+        raise HTTPException(413, "el resultado excede el límite de almacenamiento")
+    try:
+        return saved_studies.create(owner_id, plant_id, name.strip(), session_id, source_study_id, result)
+    except ValueError as exc:
+        raise HTTPException(429, str(exc)) from exc
+
+
+@app.get("/api/plants/{plant_id}/saved-studies/{study_id}")
+def get_saved_study(plant_id: str, study_id: str, request: Request) -> dict[str, Any]:
+    result = saved_studies.get(_saved_study_owner(request), plant_id, study_id)
+    if result is None:
+        raise HTTPException(404, "estudio guardado desconocido")
+    return result
+
+
+@app.get("/api/plants/{plant_id}/saved-studies/{study_id}/versions/{version}")
+def get_saved_study_version(plant_id: str, study_id: str, version: int, request: Request) -> dict[str, Any]:
+    if version < 1:
+        raise HTTPException(422, "version debe ser un entero positivo")
+    result = saved_studies.get_version(_saved_study_owner(request), plant_id, study_id, version)
+    if result is None:
+        raise HTTPException(404, "versión de estudio desconocida")
+    return result
+
+
+@app.post("/api/plants/{plant_id}/saved-studies/{study_id}/versions", status_code=201)
+def add_saved_study_version(
+    plant_id: str, study_id: str, request: Request, payload: Annotated[dict[str, Any], Body()]
+) -> dict[str, Any]:
+    owner_id = _saved_study_owner(request)
+    session_id, source_study_id = payload.get("source_session_id"), payload.get("source_study_id")
+    if not isinstance(session_id, str) or not isinstance(source_study_id, str):
+        raise HTTPException(422, "source_session_id y source_study_id son obligatorios")
+    _owned_study_session(plant_id, session_id, owner_id)
+    result = studies.get(session_id, source_study_id)
+    if result is None or result.get("temporal_context") != "forecast" or result.get("applied") is not False:
+        raise HTTPException(404, "estudio futuro no aplicado desconocido")
+    try:
+        size = len(json.dumps(result, ensure_ascii=False, allow_nan=False).encode())
+    except (TypeError, ValueError) as exc:
+        raise HTTPException(422, "el resultado debe ser JSON finito") from exc
+    if size > 950_000:
+        raise HTTPException(413, "el resultado excede el límite de almacenamiento")
+    try:
+        updated = saved_studies.add_version(owner_id, plant_id, study_id, session_id, source_study_id, result)
+    except ValueError as exc:
+        raise HTTPException(409, str(exc)) from exc
+    if updated is None:
+        raise HTTPException(404, "estudio guardado desconocido")
+    return updated
+
+
+@app.post("/api/plants/{plant_id}/saved-studies/{study_id}/versions/from-result", status_code=201)
+def append_recalculated_saved_study(
+    plant_id: str, study_id: str, request: Request, payload: Annotated[dict[str, Any], Body()]
+) -> dict[str, Any]:
+    owner_id = _saved_study_owner(request)
+    result = payload.get("result")
+    if not isinstance(result, dict) or result.get("temporal_context") != "forecast" or result.get("applied") is not False:
+        raise HTTPException(422, "result debe ser un futuro simulado no aplicado")
+    if result.get("source_saved_study_id") != study_id or not isinstance(result.get("source_version"), int):
+        raise HTTPException(422, "el resultado no identifica la versión de origen")
+    try:
+        if len(json.dumps(result, ensure_ascii=False, allow_nan=False).encode()) > 950_000:
+            raise HTTPException(413, "el resultado excede el límite de almacenamiento")
+    except (TypeError, ValueError) as exc:
+        raise HTTPException(422, "result debe ser JSON finito") from exc
+    source_session_id = str(result.get("session_id") or "saved-study-rerun")
+    source_study_id = str(result.get("study_id") or "saved-study-rerun")
+    try:
+        updated = saved_studies.add_version(owner_id, plant_id, study_id, source_session_id, source_study_id, result)
+    except ValueError as exc:
+        raise HTTPException(409, str(exc)) from exc
+    if updated is None:
+        raise HTTPException(404, "estudio guardado desconocido")
+    return updated
+
+
+@app.put("/api/plants/{plant_id}/saved-studies/{study_id}")
+def rename_saved_study(
+    plant_id: str, study_id: str, request: Request, payload: Annotated[dict[str, Any], Body()]
+) -> dict[str, Any]:
+    name = payload.get("name")
+    if not isinstance(name, str) or not name.strip() or len(name.strip()) > 120:
+        raise HTTPException(422, "name debe tener entre 1 y 120 caracteres")
+    updated = saved_studies.rename(_saved_study_owner(request), plant_id, study_id, name.strip())
+    if updated is None:
+        raise HTTPException(404, "estudio guardado desconocido")
+    return updated
+
+
+@app.delete("/api/plants/{plant_id}/saved-studies/{study_id}", status_code=204)
+def delete_saved_study(plant_id: str, study_id: str, request: Request) -> None:
+    if not saved_studies.delete(_saved_study_owner(request), plant_id, study_id):
+        raise HTTPException(404, "estudio guardado desconocido")
 
 
 @app.get("/api/plants/{plant_id}/sessions/{session_id}/fractal/studies")

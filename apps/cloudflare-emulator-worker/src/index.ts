@@ -128,22 +128,35 @@ async function d1Request(request: Request, env: Env): Promise<Response> {
   }
 }
 
+async function studyKeyHash(key: string): Promise<string> {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(key));
+  return Array.from(new Uint8Array(digest), (value) => value.toString(16).padStart(2, "0")).join("");
+}
+
+function newStudyKey(): string {
+  return Array.from(crypto.getRandomValues(new Uint8Array(32)), (value) => value.toString(16).padStart(2, "0")).join("");
+}
+
 async function pruneExpiredDemoData(env: Env, now: number): Promise<void> {
   const expiredSessions = "SELECT session_id FROM demo_session_owners WHERE expires_at <= ? LIMIT 100";
   for (const table of ["samples", "commands", "scene_frames", "recommendations", "fractal_studies", "session_checkpoints", "audit_events", "comparison_source_events"]) {
     await env.DB.prepare(`DELETE FROM ${table} WHERE session_id IN (${expiredSessions})`).bind(now).run();
   }
+  const expiredUnarchived = "SELECT visitor_id FROM demo_visitors WHERE expires_at <= ? AND visitor_id NOT IN (SELECT owner_id FROM saved_studies) LIMIT 100";
   await env.DB.prepare(
-    "DELETE FROM operation_profiles WHERE owner_id IN (SELECT visitor_id FROM demo_visitors WHERE expires_at <= ? LIMIT 100)",
+    `DELETE FROM operation_profiles WHERE owner_id IN (${expiredUnarchived})`,
   ).bind(now).run();
   await env.DB.prepare(
-    "DELETE FROM audit_events WHERE actor_id IN (SELECT visitor_id FROM demo_visitors WHERE expires_at <= ? LIMIT 100)",
+    `DELETE FROM audit_events WHERE actor_id IN (${expiredUnarchived})`,
   ).bind(now).run();
   await env.DB.prepare(
     "DELETE FROM demo_session_owners WHERE expires_at <= ? OR visitor_id IN (SELECT visitor_id FROM demo_visitors WHERE expires_at <= ? LIMIT 100)",
   ).bind(now, now).run();
   await env.DB.prepare(
-    "DELETE FROM demo_visitors WHERE visitor_id IN (SELECT visitor_id FROM demo_visitors WHERE expires_at <= ? LIMIT 100)",
+    `DELETE FROM demo_study_owner_keys WHERE visitor_id IN (${expiredUnarchived})`,
+  ).bind(now).run();
+  await env.DB.prepare(
+    `DELETE FROM demo_visitors WHERE visitor_id IN (${expiredUnarchived})`,
   ).bind(now).run();
 }
 
@@ -155,16 +168,49 @@ async function createDemoSession(request: Request, env: Env): Promise<Response> 
   if (!env.DEMO_TOKEN_SECRET || env.DEMO_TOKEN_SECRET.length < 32) {
     return Response.json({ detail: "Public demo session service is not configured" }, { status: 503 });
   }
+  let body: { study_key?: unknown } = {};
+  try {
+    const rawBody = await request.text();
+    if (rawBody.trim()) body = JSON.parse(rawBody) as { study_key?: unknown };
+  } catch { return Response.json({ detail: "Invalid JSON" }, { status: 400 }); }
+  if (body.study_key !== undefined && (typeof body.study_key !== "string" || !/^[a-f0-9]{64}$/.test(body.study_key))) {
+    return Response.json({ detail: "Invalid study recovery key" }, { status: 422 });
+  }
   const now = Math.floor(Date.now() / 1000);
   await pruneExpiredDemoData(env, now);
-  const visitorId = crypto.randomUUID();
+  let visitorId: string;
+  let studyKey: string;
+  if (typeof body.study_key === "string") {
+    const owner = await env.DB.prepare("SELECT visitor_id FROM demo_study_owner_keys WHERE key_hash = ?")
+      .bind(await studyKeyHash(body.study_key)).first<{ visitor_id: string }>();
+    if (!owner) return Response.json({ detail: "Study recovery key is invalid" }, { status: 401 });
+    visitorId = owner.visitor_id;
+    studyKey = body.study_key;
+  } else {
+    visitorId = crypto.randomUUID();
+    studyKey = newStudyKey();
+    await env.DB.prepare("INSERT INTO demo_study_owner_keys (visitor_id, key_hash, created_at) VALUES (?, ?, ?)")
+      .bind(visitorId, await studyKeyHash(studyKey), now).run();
+  }
   const expiresAt = now + DEMO_TOKEN_LIFETIME_S;
-  await env.DB.prepare("INSERT INTO demo_visitors (visitor_id, expires_at) VALUES (?, ?)").bind(visitorId, expiresAt).run();
+  await env.DB.prepare("INSERT INTO demo_visitors (visitor_id, expires_at) VALUES (?, ?) ON CONFLICT(visitor_id) DO UPDATE SET expires_at = excluded.expires_at")
+    .bind(visitorId, expiresAt).run();
   const token = await signDemoToken(env.DEMO_TOKEN_SECRET, visitorId, expiresAt);
   return Response.json(
-    { token, expires_at: expiresAt, mode: "anonymous-demo", authenticated_user: false },
+    { token, study_key: studyKey, expires_at: expiresAt, mode: "anonymous-demo", authenticated_user: false },
     { headers: { ...Object.fromEntries(corsHeaders(request, env)), "cache-control": "no-store" } },
   );
+}
+
+async function createOrRotateStudyKey(request: Request, env: Env, visitorId: string): Promise<Response> {
+  if (!originAllowed(request, env)) return Response.json({ detail: "Origin not allowed" }, { status: 403 });
+  const now = Math.floor(Date.now() / 1000);
+  const key = newStudyKey();
+  await env.DB.prepare(
+    "INSERT INTO demo_study_owner_keys (visitor_id, key_hash, created_at) VALUES (?, ?, ?) " +
+    "ON CONFLICT(visitor_id) DO UPDATE SET key_hash = excluded.key_hash, created_at = excluded.created_at",
+  ).bind(visitorId, await studyKeyHash(key), now).run();
+  return Response.json({ study_key: key }, { headers: { ...Object.fromEntries(corsHeaders(request, env)), "cache-control": "no-store" } });
 }
 
 async function ownsSession(env: Env, visitorId: string, plantId: string, sessionId: string): Promise<DemoSessionRow | null> {
@@ -215,16 +261,24 @@ async function proxyFractal(request: Request, env: Env, visitorId: string, token
   if (url.pathname.includes("/studies/instant")) {
     return withCors(Response.json({ detail: "Instantaneous optimization is not enabled in the public demo" }, { status: 409 }), request, env);
   }
+  const savedStudyRerun = url.pathname === "/fractal/studies/saved/rerun";
   const plcStudyRoute = /^\/fractal\/studies\/(horizon|profile-preview|cosimulation)\/from-plc$/.test(url.pathname);
-  if (!(url.pathname === "/fractal/health" && request.method === "GET") && !(plcStudyRoute && request.method === "POST")) {
+  if (!(url.pathname === "/fractal/health" && request.method === "GET") && !((plcStudyRoute || savedStudyRerun) && request.method === "POST")) {
     return withCors(Response.json({ detail: "Fractal route is not enabled in the public demo" }, { status: 404 }), request, env);
   }
-  if (plcStudyRoute) {
-    let payload: { plant_id?: unknown; session_id?: unknown };
-    try { payload = await request.clone().json() as { plant_id?: unknown; session_id?: unknown }; } catch {
+  if (plcStudyRoute || savedStudyRerun) {
+    let payload: { plant_id?: unknown; session_id?: unknown; saved_study_id?: unknown };
+    try { payload = await request.clone().json() as { plant_id?: unknown; session_id?: unknown; saved_study_id?: unknown }; } catch {
       return withCors(Response.json({ detail: "Invalid Fractal request" }, { status: 400 }), request, env);
     }
-    if (typeof payload.plant_id !== "string" || typeof payload.session_id !== "string" ||
+    if (typeof payload.plant_id !== "string") {
+      return withCors(Response.json({ detail: "Invalid Fractal request" }, { status: 422 }), request, env);
+    }
+    if (savedStudyRerun) {
+      if (typeof payload.saved_study_id !== "string" || !payload.saved_study_id) {
+        return withCors(Response.json({ detail: "Saved study id is required" }, { status: 422 }), request, env);
+      }
+    } else if (typeof payload.session_id !== "string" ||
         !(await ownsSession(env, visitorId, payload.plant_id, payload.session_id))) {
       return withCors(Response.json({ detail: "Demo session not found or not owned by this browser" }, { status: 404 }), request, env);
     }
@@ -477,6 +531,9 @@ export default {
     if (!claims) return withCors(Response.json({ detail: "Anonymous demo session expired or invalid" }, { status: 401 }), request, env);
     if (await limited(env.DEMO_API_LIMITER, ipKey(request)) || await limited(env.DEMO_API_LIMITER, claims.sub)) {
       return withCors(Response.json({ detail: "Demo rate limit exceeded" }, { status: 429 }), request, env);
+    }
+    if (url.pathname === "/api/demo/study-key" && request.method === "POST") {
+      return withCors(await createOrRotateStudyKey(request, env, claims.sub), request, env);
     }
     if (fractalPath) return proxyFractal(request, env, claims.sub, token);
     return proxyApi(request, env, claims.sub);

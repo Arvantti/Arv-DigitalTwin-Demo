@@ -432,6 +432,63 @@ def cosimulation_from_plc(payload: dict[str, Any], request: Request) -> dict[str
     }
 
 
+@app.post("/studies/saved/rerun")
+def rerun_saved_study(payload: dict[str, Any], request: Request) -> dict[str, Any]:
+    """Recalcula desde los inputs congelados del estudio y agrega una versión, sin leer ni accionar PLC."""
+    plant_id = payload.get("plant_id")
+    saved_id = payload.get("saved_study_id")
+    version_number = payload.get("version")
+    if not isinstance(plant_id, str) or not plant_id or not isinstance(saved_id, str) or not saved_id:
+        raise HTTPException(422, "plant_id y saved_study_id son obligatorios")
+    if isinstance(version_number, bool) or not isinstance(version_number, int) or version_number < 1:
+        raise HTTPException(422, "version debe ser un entero positivo")
+    token = request.headers.get("x-twin-demo-token")
+    origin = plc_gateway(payload)
+    saved_base = f"{origin}/api/plants/{quote(plant_id, safe='')}/saved-studies/{quote(saved_id, safe='')}"
+    saved = _gateway_read(saved_base, token)
+    if not any(item.get("version") == version_number for item in saved.get("versions", [])):
+        raise HTTPException(404, "versión de estudio desconocida")
+    source = _gateway_read(f"{saved_base}/versions/{version_number}", token)
+    source_result = source.get("result")
+    inputs = source_result.get("study_input") if isinstance(source_result, dict) else None
+    if not isinstance(inputs, dict) or not isinstance(inputs.get("plc_tags"), dict) or not isinstance(inputs.get("profile"), dict):
+        raise HTTPException(409, "esta versión no contiene los inputs congelados necesarios para recalcular")
+    profile = payload.get("profile", inputs["profile"])
+    if not isinstance(profile, dict) or not isinstance(profile.get("id"), str):
+        raise HTTPException(422, "profile debe ser un escenario guardado completo")
+    study_type = inputs.get("study_type")
+    if study_type not in {"baseline", "optimized"}:
+        raise HTTPException(409, "tipo de estudio no soportado para recálculo")
+    target = payload.get("target_pressure_mca", inputs.get("target_pressure_mca"))
+    objective = inputs.get("objective_id", SUPPORTED_OBJECTIVE_ID)
+    result = _horizon_study({
+        "session_id": inputs["session_id"],
+        "plant_id": plant_id,
+        "emulator_api": origin,
+        "plc_tags": inputs["plc_tags"],
+        "profile": profile,
+        "profile_id": profile["id"],
+        "snapshot_id": inputs.get("snapshot_id"),
+        "objective_id": objective,
+        "target_pressure_mca": target,
+        "study_type": study_type,
+    }, publish=False)
+    result["source_saved_study_id"] = saved_id
+    result["source_version"] = version_number
+    result["study_input"] = {
+        **inputs,
+        "profile": profile,
+        "objective_id": objective,
+        "target_pressure_mca": target,
+        "study_type": study_type,
+    }
+    appended = gateway_post_json(
+        f"{origin}/api/plants/{quote(plant_id, safe='')}/saved-studies/{quote(saved_id, safe='')}/versions/from-result",
+        {"result": result}, token,
+    )
+    return appended
+
+
 @app.post("/studies/horizon/from-plc")
 def horizon_from_plc(payload: dict[str, Any], request: Request) -> dict[str, Any]:
     """Lee estado y perfil persistido de la misma sesión; ignora copias de navegador."""
@@ -652,6 +709,15 @@ def _horizon_study(payload: dict[str, Any], *, publish: bool, plc_token: str | N
         "vrp_opening_profile_pct": optimization.get("vrp_opening_profile_pct") if optimization else None,
         "vrp_opening_required_profile_pct": optimization.get("vrp_opening_required_profile_pct") if optimization else None,
         "requires_operator_acceptance": draft_feasible,
+        "study_input": {
+            "session_id": session_id,
+            "plc_tags": tags,
+            "profile": profile,
+            "snapshot_id": payload.get("snapshot_id") or f"{session_id}:{float(tags.get('PLC.Session.SimulatedTime', 0) or 0):g}",
+            "study_type": study_type,
+            "objective_id": objective_id,
+            "target_pressure_mca": target_pressure,
+        },
     }
     plant_id = payload.get("plant_id")
     if publish and isinstance(plant_id, str):

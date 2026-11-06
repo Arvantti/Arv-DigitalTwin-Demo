@@ -6,6 +6,10 @@
 > Separación de procesos: [cosimulación y optimización](cosimulation-optimization-processes.md) documenta sus APIs, contratos y el estado de los adaptadores temporales.
 > Topología D79: los diagnósticos de retorno que aparecen abajo son anteriores a la bajante común con bifurcación en Y y no la validan. La corrida continua posterior está en `docs/architecture/validation/pdd-rca-01-d79-common-drain-y-24h.json`: no hubo desacuerdos de presión crítica ≥15 mca en 24 muestras, pero el tanque de suministro difirió hasta 33,852 pp y la recirculación acumulada 1,75046 m³. El trazado de ciclos D79 registró 92 eventos Fractal vs. 91 del emulador y hasta 383,819 s de desfase (`docs/architecture/validation/pdd-rca-01-d79-common-drain-y-cycles-24h.json`). D80–D81 cambiaron solo el trazado 3D: montante exterior, colector por el costado sur, caída vertical al centro de la T entre tanques enfrentados; sus entradas superiores conectan a los extremos de la T y sus salidas inferiores llegan a las bombas por fuera. La lógica y los reportes D79 no cambian. Niveles futuros no validados; esa incertidumbre de tanques es independiente de la optimización horaria de la presión crítica.
 
+## Biblioteca durable
+
+Los estudios Fractal pueden archivarse en una biblioteca D1 independiente de la sesión PLC, recuperarse con una clave anónima del mismo navegador y recalcularse como nuevas versiones desde sus inputs congelados. La política de identidad, retención y eliminación está en [`durable-study-library.md`](durable-study-library.md). El archivo PLC-backed de cada sesión sigue siendo temporal; guardar en biblioteca es una acción explícita.
+
 ## 1. Propósito
 
 Fractal no es solamente un optimizador. Es un motor independiente de **estudios futuros** que toma el estado y el plan publicados por PLC, calcula una rama temporal y devuelve resultados al PLC para visualización y, cuando aplique, decisión humana.
