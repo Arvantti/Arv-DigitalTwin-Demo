@@ -1,0 +1,1000 @@
+<!doctype html>
+<html lang="es" data-resolution="landscape">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1920, height=1080">
+<title>Demo de salsas · gemelo digital</title>
+<script src="assets/vendor/gsap.min.js"></script>
+<link rel="stylesheet" href="assets/shared/core/brand.css">
+<style>
+@font-face{font-family:"Inter";src:local("Inter")}
+@font-face{font-family:"Inter Display";src:local("Inter Display")}
+@font-face{font-family:"IBM Plex Mono";src:local("IBM Plex Mono")}
+html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:#0b0f18;font-family:Inter,"Inter Display",Arial,sans-serif;color:#f8fafc}
+#root{position:relative;width:1920px;height:1080px;background:radial-gradient(1200px 700px at 50% 40%,#111a2c 0%,#0b0f18 70%)}
+#root>.grid0{position:absolute;inset:0;opacity:.07;background-image:linear-gradient(#fff 1px,transparent 1px),linear-gradient(90deg,#fff 1px,transparent 1px);background-size:80px 80px}
+.full{position:absolute;inset:0;background:#0b0f18;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:20}
+.full .logo{width:1300px;height:auto}
+.full .sign{position:absolute;bottom:120px;font:500 30px Inter,sans-serif;letter-spacing:6px;color:#d8dadf;text-transform:uppercase}
+.card{background:#0b0f18}
+.card .grid,.tj .grid{position:absolute;inset:0;opacity:.08;background-image:linear-gradient(#4ea7ff 1px,transparent 1px),linear-gradient(90deg,#4ea7ff 1px,transparent 1px);background-size:80px 80px}
+.card .in{position:relative;text-align:center;max-width:1500px}
+.card .eyebrow{font:700 30px "IBM Plex Mono",monospace;letter-spacing:8px;color:#4ea7ff;margin:0 0 24px}
+.card h1{font:800 84px/1.08 "Inter Display",Inter,sans-serif;margin:0;color:#f8fafc;letter-spacing:-1px}
+.card .rule{height:6px;width:520px;margin:40px auto 0;background:linear-gradient(90deg,#2d7ff9,#4ea7ff);transform-origin:left}
+.bar{position:absolute;left:160px;top:18px;width:1600px;height:44px;display:flex;align-items:center;gap:22px;z-index:5;font:600 26px Inter,sans-serif}
+.bar .eb{font:700 22px "IBM Plex Mono",monospace;letter-spacing:4px;color:#4ea7ff;padding:6px 14px;border:2px solid #2d7ff9}
+.bar .tt{color:#f8fafc}
+.bar .brand{margin-left:auto;font:600 20px Inter,sans-serif;letter-spacing:5px;color:#7a7e86}
+.screen{position:absolute;left:160px;top:74px;width:1600px;height:900px;overflow:hidden;background:#0e1430;box-shadow:0 0 0 2px #2d7ff955,0 24px 60px #000a;z-index:3}
+.screen .vcam{position:absolute;left:0;top:0;width:1600px;height:900px;object-fit:cover;transform-origin:0 0}
+.screen .cam{position:absolute;left:0;top:0;width:1600px;height:900px;transform-origin:0 0}
+.screen .drift{position:absolute;left:0;top:0;width:1600px;transform-origin:50% 40%}
+.screen img{position:absolute;left:0;top:0;width:1600px;transform-origin:50% 40%}
+.ring{position:absolute;z-index:7;box-sizing:border-box;border:3px solid #ffb020;pointer-events:none}
+.rotulo{position:absolute;left:160px;width:1600px;z-index:8;display:flex;justify-content:center}
+.rotulo.abajo{top:844px}
+.rotulo.arriba{top:114px}
+.rotulo span{font:800 44px/1.15 "Inter Display",Inter,sans-serif;color:#0b0f18;background:#ffb020;padding:14px 30px;border-radius:12px;box-shadow:0 12px 40px #000c;max-width:1400px;text-align:center}
+.cc{position:absolute;left:160px;width:1600px;top:984px;height:86px;display:flex;align-items:center;justify-content:center;text-align:center;z-index:6}
+.cc span{font:600 31px/1.25 Inter,sans-serif;color:#f8fafc;text-shadow:0 2px 8px #000}
+.tj{background:#0b0f18;padding:48px 64px;box-sizing:border-box}
+.tj h2{position:relative;font:800 54px "Inter Display",Inter,sans-serif;margin:0 0 34px;color:#f8fafc}
+.tj .eyebrow{position:relative;font:700 22px "IBM Plex Mono",monospace;letter-spacing:6px;color:#4ea7ff;margin:0 0 12px}
+.esc{position:relative;display:flex;flex-direction:column;gap:18px}
+.esc .it{display:flex;align-items:center;gap:30px;padding:18px 26px;border:2px solid #2d7ff944;border-radius:14px;background:#111a2c;opacity:.28}
+.esc .n{font:800 56px "Inter Display",Inter,sans-serif;color:#4ea7ff;width:70px;text-align:center}
+.esc .tx{font:700 40px Inter,sans-serif;color:#f8fafc}
+.prods{position:relative;display:grid;grid-template-columns:1fr 1.2fr .8fr;gap:26px}
+.prods .fam{display:flex;flex-direction:column;gap:12px;opacity:.3}
+.prods .fh{font:700 20px "IBM Plex Mono",monospace;letter-spacing:4px;color:#4ea7ff;text-transform:uppercase;margin-bottom:4px}
+.prods .p{padding:14px 20px;border:2px solid #2d7ff944;border-radius:12px;background:#111a2c;opacity:.35}
+.prods .p b{display:block;font:700 30px Inter,sans-serif;color:#f8fafc}
+.prods .p i{font:500 22px "IBM Plex Mono",monospace;font-style:normal;color:#d8dadf}
+.reglas{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.reglas .rg{padding:26px 30px;border:2px solid #2d7ff944;border-radius:14px;background:#111a2c;opacity:.25}
+.reglas .n{font:800 44px "Inter Display",Inter,sans-serif;color:#4ea7ff;margin-right:16px}
+.reglas b{font:800 40px Inter,sans-serif;color:#f8fafc}
+.reglas i{display:block;margin-top:12px;font:500 27px/1.35 Inter,sans-serif;font-style:normal;color:#d8dadf}
+.puntaje{position:relative;display:flex;flex-wrap:wrap;align-items:center;gap:20px;margin-top:40px}
+.puntaje .pt{padding:24px 26px;border:2px solid #2d7ff966;border-radius:14px;background:#111a2c;font:700 34px "IBM Plex Mono",monospace;color:#f8fafc;opacity:.25}
+.puntaje .mas{font:800 48px Inter,sans-serif;color:#4ea7ff}
+.partes{position:relative;display:grid;grid-template-columns:repeat(4,1fr);gap:22px}
+.partes .pa{opacity:.25;border:2px solid #2d7ff944;border-radius:14px;background:#111a2c;padding:14px;display:flex;flex-direction:column;gap:8px}
+.partes img{width:100%;border-radius:8px;border:1px solid #2d7ff933}
+.partes b{font:800 32px Inter,sans-serif;color:#f8fafc}
+.partes i{font:500 23px Inter,sans-serif;font-style:normal;color:#d8dadf}
+.parada{position:absolute;left:40px;bottom:46px;display:flex;align-items:center;gap:16px;padding:14px 26px 14px 16px;background:#0b0f18e6;border:2px solid #4ea7ff;border-radius:12px;opacity:0}
+.parada i{font:800 28px "IBM Plex Mono",monospace;font-style:normal;color:#0b0f18;background:#4ea7ff;border-radius:50%;width:46px;height:46px;display:flex;align-items:center;justify-content:center}
+.parada b{font:800 36px Inter,sans-serif;color:#f8fafc}
+.mods{position:absolute;left:0;top:0;width:1600px;height:900px}
+.mods svg{position:absolute;left:0;top:0}
+.mods .centro{position:absolute;left:630px;top:330px;width:340px;height:340px;border-radius:50%;background:radial-gradient(circle at 50% 40%,#2d7ff9,#123a7a 70%);box-shadow:0 0 80px #2d7ff988;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.mods .centro b{font:700 22px "IBM Plex Mono",monospace;letter-spacing:5px;color:#cfe3ff}
+.mods .centro .nucleo{font:600 18px Inter,sans-serif;font-style:normal;color:#cfe3ff;margin-top:10px}
+.mods .centro strong{font:800 50px/1.05 "Inter Display",Inter,sans-serif;color:#fff;margin-top:8px}
+.mods .m{position:absolute;width:330px;margin-left:-165px;margin-top:-66px;height:132px;border-radius:16px;background:#111a2c;border:2px solid #4ea7ff;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;opacity:.25}
+.mods .m b{font:800 30px Inter,sans-serif;color:#f8fafc}
+.mods .m i{font:500 19px/1.25 Inter,sans-serif;font-style:normal;color:#a9c9f5;margin-top:6px;padding:0 12px}
+.flujo{position:relative;display:grid;grid-template-columns:520px 120px 420px 120px 300px;align-items:center;margin-top:30px}
+.flujo .col{display:flex;flex-direction:column;gap:22px}
+.flujo .f{padding:22px 26px;border-radius:14px;border:2px solid #4ea7ff;background:#111a2c;opacity:.25}
+.flujo .f b{display:block;font:800 34px Inter,sans-serif;color:#f8fafc}
+.flujo .f i{display:block;font:500 22px Inter,sans-serif;font-style:normal;color:#a9c9f5;margin-top:6px}
+.flujo .flecha{font:800 70px Inter,sans-serif;color:#4ea7ff;text-align:center;opacity:.25}
+.flujo .ia{border-color:#37e38b}
+.flujo .ia b{color:#37e38b}
+.flujo .aps{border-color:#ffb020;text-align:center}
+.cosim{position:relative;display:grid;grid-template-columns:900px 1fr;gap:48px}
+.cosim .cells{display:grid;grid-template-columns:repeat(48,1fr);gap:3px;width:900px;align-content:start}
+.cosim .cells i{display:block;height:14px;border-radius:2px;background:#2d7ff9;opacity:.08}
+.cosim .lado{display:flex;flex-direction:column;gap:18px}
+.cosim .num{font:800 64px "Inter Display",Inter,sans-serif;color:#f8fafc;line-height:1}
+.cosim .lbl{font:600 20px "IBM Plex Mono",monospace;letter-spacing:3px;color:#4ea7ff;text-transform:uppercase}
+.cosim .ok{font:800 40px "IBM Plex Mono",monospace;letter-spacing:6px;color:#37e38b;opacity:0}
+.cosim .rs{display:flex;flex-direction:column;gap:12px;margin-top:8px}
+.cosim .r{font:600 26px Inter,sans-serif;color:#f8fafc;opacity:.25}
+.cosim .r:before{content:"✓ ";color:#37e38b}
+.ahorro{background:#0b0f18;padding:44px 56px}
+.ahorro h2{position:relative;font:800 52px "Inter Display",Inter,sans-serif;margin:0 0 30px;color:#f8fafc}
+.ahorro table{position:relative;width:100%;border-collapse:collapse;font:500 23px/1.3 Inter,sans-serif}
+.ahorro th,.ahorro td{text-align:left;padding:16px 14px;border-bottom:1px solid #2d7ff944;vertical-align:top}
+.ahorro thead th{font:700 18px "IBM Plex Mono",monospace;letter-spacing:3px;color:#4ea7ff;text-transform:uppercase}
+.ahorro tbody th{color:#f8fafc;width:21%}
+.ahorro td{color:#d8dadf}
+.ahorro td.new{color:#4ea7ff}
+.ahorro td.save{color:#37e38b;font-weight:700}
+.ahorro .grid{position:absolute;inset:0;opacity:.08;background-image:linear-gradient(#4ea7ff 1px,transparent 1px),linear-gradient(90deg,#4ea7ff 1px,transparent 1px);background-size:80px 80px}
+.ahorro .foot{position:absolute;bottom:34px;left:56px;font:500 24px Inter,sans-serif;color:#d8dadf}
+#progress{position:absolute;left:0;bottom:0;height:6px;width:1920px;background:#2d7ff9;transform-origin:left;z-index:30}
+#temp{position:absolute;right:20px;bottom:16px;font:700 15px "IBM Plex Mono",monospace;color:#ff6b35;letter-spacing:2px;z-index:40}
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="765.19" data-width="1920" data-height="1080" data-fps="25">
+<div class="grid0"></div>
+<div id="intro" class="clip full" data-start="0" data-duration="5"><img class="logo" src="assets/shared/arvantti/branding/ArvanttiLabsLogo.png" alt=""></div>
+<audio id="sfx-1" src="assets/shared/core/sfx/whoosh.wav" data-start="0.2" data-duration="1.2" data-volume="0.3"></audio>
+<div id="cap-0-apertura" class="clip full card" data-start="5" data-duration="3.4"><div class="grid"></div><div class="in"><p class="eyebrow">GEMELO DIGITAL · SALSAS</p><h1>Una planta de salsas y su gemelo digital</h1><div class="rule"></div></div></div>
+<audio id="sfx-3" src="assets/shared/core/sfx/whoosh-short.mp3" data-start="5.1" data-duration="1.2" data-volume="0.3"></audio>
+<div id="bar-0-S01" class="clip bar" data-start="8.4" data-duration="18.04"><span class="eb">GEMELO DIGITAL · SALSAS</span><span class="tt">La planta y su gemelo</span><span class="brand">ARVANTTI LABS</span></div>
+<div id="vb-0-S01" class="clip screen" data-start="8.4" data-duration="18.04"><video id="v-0-S01" class="clip vcam" src="assets/clips/0-S01-orbita.mp4" muted data-start="8.4" data-duration="18.04"></video></div>
+<div id="cc-0-S01-0" class="clip cc" data-start="8.7" data-duration="4.99"><span>Esta es una planta de salsas y aderezos, y este es su gemelo digital.</span></div>
+<div id="cc-0-S01-1" class="clip cc" data-start="13.69" data-duration="4.99"><span>Cocina salsa de tomate, mayonesa y mostaza en tres líneas de proceso,</span></div>
+<div id="cc-0-S01-2" class="clip cc" data-start="18.68" data-duration="2.31"><span>y las empaca en seis llenadoras.</span></div>
+<div id="cc-0-S01-3" class="clip cc" data-start="21" data-duration="5.35"><span>Todo lo que se ve aquí se mueve según la programación de la planta.</span></div>
+<div id="bar-0-S02" class="clip bar" data-start="26.44" data-duration="25.19"><span class="eb">GEMELO DIGITAL · SALSAS</span><span class="tt">Estos son los productos</span><span class="brand">ARVANTTI LABS</span></div>
+<audio id="sfx-11" src="assets/shared/core/sfx/pop.mp3" data-start="34.73" data-duration="1.2" data-volume="0.2"></audio>
+<audio id="sfx-12" src="assets/shared/core/sfx/pop.mp3" data-start="41.66" data-duration="1.2" data-volume="0.2"></audio>
+<audio id="sfx-13" src="assets/shared/core/sfx/pop.mp3" data-start="45.73" data-duration="1.2" data-volume="0.2"></audio>
+<div id="s-0-S02" class="clip screen tj" data-start="26.44" data-duration="25.19"><div class="grid"></div><p class="eyebrow">DIEZ PRODUCTOS · TRES FAMILIAS</p><h2>Estos son los productos</h2><div class="prods"><div class="fam" id="s-0-S02-k-caliente"><div class="fh">Línea caliente</div><div class="p" id="s-0-S02-p-tomate-1000"><b>Salsa de tomate</b><i>doypack 1.000 ml</i></div><div class="p" id="s-0-S02-p-tomate-250"><b>Salsa de tomate</b><i>sachet 250 ml</i></div><div class="p" id="s-0-S02-p-bbq-1000"><b>Salsa BBQ</b><i>doypack 1.000 ml</i></div><div class="p" id="s-0-S02-p-picante-250"><b>Salsa picante</b><i>sachet 250 ml</i></div></div><div class="fam" id="s-0-S02-k-fria"><div class="fh">Línea fría</div><div class="p" id="s-0-S02-p-mayonesa-1000"><b>Mayonesa</b><i>doypack 1.000 ml</i></div><div class="p" id="s-0-S02-p-mayonesa-500"><b>Mayonesa</b><i>doypack 500 ml</i></div><div class="p" id="s-0-S02-p-mayonesa-250"><b>Mayonesa</b><i>sachet 250 ml</i></div><div class="p" id="s-0-S02-p-light-1000"><b>Mayonesa light</b><i>doypack 1.000 ml</i></div><div class="p" id="s-0-S02-p-rosada-500"><b>Salsa rosada</b><i>doypack 500 ml</i></div></div><div class="fam" id="s-0-S02-k-mostaza"><div class="fh">Mostaza</div><div class="p" id="s-0-S02-p-mostaza-250"><b>Mostaza</b><i>sachet 250 ml</i></div></div></div></div>
+<div id="cc-0-S02-0" class="clip cc" data-start="26.74" data-duration="2.4"><span>La planta fabrica diez productos.</span></div>
+<div id="cc-0-S02-1" class="clip cc" data-start="29.14" data-duration="2.76"><span>En la industria cada uno se llama SKU:</span></div>
+<div id="cc-0-S02-2" class="clip cc" data-start="31.9" data-duration="2.91"><span>cada presentación distinta que se vende.</span></div>
+<div id="cc-0-S02-3" class="clip cc" data-start="34.81" data-duration="6.98"><span>Salsa de tomate en doypack de mil mililitros y en sachet de doscientos cincuenta, BBQ y picante.</span></div>
+<div id="cc-0-S02-4" class="clip cc" data-start="41.79" data-duration="4.87"><span>Mayonesa en tres tamaños, mayonesa light y salsa rosada. Y mostaza.</span></div>
+<div id="cc-0-S02-5" class="clip cc" data-start="46.66" data-duration="2.33"><span>El doypack es la bolsa con pico;</span></div>
+<div id="cc-0-S02-6" class="clip cc" data-start="48.99" data-duration="2.54"><span>el sachet, el sobre pequeño.</span></div>
+<div id="bar-0-S03" class="clip bar" data-start="51.63" data-duration="38.26"><span class="eb">GEMELO DIGITAL · SALSAS</span><span class="tt">El recorrido de la salsa de tomate</span><span class="brand">ARVANTTI LABS</span></div>
+<div id="vb-0-S03" class="clip screen" data-start="51.63" data-duration="38.26"><video id="v-0-S03" class="clip vcam" src="assets/clips/0-S03-ruta.mp4" muted data-start="51.63" data-duration="38.26"></video><div class="parada" id="s-0-S03-p0"><i>1</i><b>Marmita</b></div><div class="parada" id="s-0-S03-p1"><i>2</i><b>Caldera</b></div><div class="parada" id="s-0-S03-p2"><i>3</i><b>Pasteurizador</b></div><div class="parada" id="s-0-S03-p3"><i>4</i><b>Pulmón caliente</b></div><div class="parada" id="s-0-S03-p4"><i>5</i><b>Llenadora de doypack 1</b></div><div class="parada" id="s-0-S03-p5"><i>6</i><b>Túnel de enfriamiento</b></div><div class="parada" id="s-0-S03-p6"><i>7</i><b>Encajado</b></div><div class="parada" id="s-0-S03-p7"><i>8</i><b>Bodega de producto terminado</b></div></div>
+<audio id="sfx-24" src="assets/shared/core/sfx/pop.mp3" data-start="51.88" data-duration="1.2" data-volume="0.15"></audio>
+<audio id="sfx-25" src="assets/shared/core/sfx/pop.mp3" data-start="65.33" data-duration="1.2" data-volume="0.15"></audio>
+<audio id="sfx-26" src="assets/shared/core/sfx/pop.mp3" data-start="67.19" data-duration="1.2" data-volume="0.15"></audio>
+<audio id="sfx-27" src="assets/shared/core/sfx/pop.mp3" data-start="73.26" data-duration="1.2" data-volume="0.15"></audio>
+<audio id="sfx-28" src="assets/shared/core/sfx/pop.mp3" data-start="79.33" data-duration="1.2" data-volume="0.15"></audio>
+<audio id="sfx-29" src="assets/shared/core/sfx/pop.mp3" data-start="82.12" data-duration="1.2" data-volume="0.15"></audio>
+<audio id="sfx-30" src="assets/shared/core/sfx/pop.mp3" data-start="87.33" data-duration="1.2" data-volume="0.15"></audio>
+<audio id="sfx-31" src="assets/shared/core/sfx/pop.mp3" data-start="88.33" data-duration="1.2" data-volume="0.15"></audio>
+<div id="cc-0-S03-0" class="clip cc" data-start="51.93" data-duration="2.62"><span>Sigamos tres de ellos por la planta.</span></div>
+<div id="cc-0-S03-1" class="clip cc" data-start="54.55" data-duration="5.6"><span>La salsa de tomate de mil mililitros se cocina en una de estas tres marmitas,</span></div>
+<div id="cc-0-S03-2" class="clip cc" data-start="60.14" data-duration="4.65"><span>ollas grandes con chaqueta de vapor, en tandas de dos mil kilos.</span></div>
+<div id="cc-0-S03-3" class="clip cc" data-start="64.79" data-duration="1.89"><span>El vapor lo da la caldera.</span></div>
+<div id="cc-0-S03-4" class="clip cc" data-start="66.68" data-duration="6.54"><span>Después pasa por el pasteurizador, que la calienta a noventa y cinco grados para que dure,</span></div>
+<div id="cc-0-S03-5" class="clip cc" data-start="73.23" data-duration="2.25"><span>y espera caliente en el pulmón:</span></div>
+<div id="cc-0-S03-6" class="clip cc" data-start="75.48" data-duration="3.92"><span>el tanque donde la salsa lista aguarda a la llenadora.</span></div>
+<div id="cc-0-S03-7" class="clip cc" data-start="79.4" data-duration="2.76"><span>La llenadora de doypack uno la empaca,</span></div>
+<div id="cc-0-S03-8" class="clip cc" data-start="82.16" data-duration="4.29"><span>el túnel de enfriamiento baja la temperatura de las bolsas,</span></div>
+<div id="cc-0-S03-9" class="clip cc" data-start="86.45" data-duration="3.33"><span>y de ahí van a las cajas y a la bodega.</span></div>
+<div id="bar-0-S04" class="clip bar" data-start="89.89" data-duration="24.83"><span class="eb">GEMELO DIGITAL · SALSAS</span><span class="tt">El recorrido de la mayonesa</span><span class="brand">ARVANTTI LABS</span></div>
+<div id="vb-0-S04" class="clip screen" data-start="89.89" data-duration="24.83"><video id="v-0-S04" class="clip vcam" src="assets/clips/0-S04-ruta.mp4" muted data-start="89.89" data-duration="24.83"></video><div class="parada" id="s-0-S04-p0"><i>1</i><b>Tanque de fase acuosa</b></div><div class="parada" id="s-0-S04-p1"><i>2</i><b>Emulsificador</b></div><div class="parada" id="s-0-S04-p2"><i>3</i><b>Molino coloidal</b></div><div class="parada" id="s-0-S04-p3"><i>4</i><b>Pulmón frío</b></div><div class="parada" id="s-0-S04-p4"><i>5</i><b>Llenadora de sachet 1</b></div></div>
+<audio id="sfx-44" src="assets/shared/core/sfx/pop.mp3" data-start="90.14" data-duration="1.2" data-volume="0.15"></audio>
+<audio id="sfx-45" src="assets/shared/core/sfx/pop.mp3" data-start="97.59" data-duration="1.2" data-volume="0.15"></audio>
+<audio id="sfx-46" src="assets/shared/core/sfx/pop.mp3" data-start="103.8" data-duration="1.2" data-volume="0.15"></audio>
+<audio id="sfx-47" src="assets/shared/core/sfx/pop.mp3" data-start="106.16" data-duration="1.2" data-volume="0.15"></audio>
+<audio id="sfx-48" src="assets/shared/core/sfx/pop.mp3" data-start="108.16" data-duration="1.2" data-volume="0.15"></audio>
+<div id="cc-0-S04-0" class="clip cc" data-start="90.19" data-duration="2.39"><span>La mayonesa va por la línea fría.</span></div>
+<div id="cc-0-S04-1" class="clip cc" data-start="92.58" data-duration="5.08"><span>En el tanque de fase acuosa se mezclan el huevo, el agua y el vinagre.</span></div>
+<div id="cc-0-S04-2" class="clip cc" data-start="97.66" data-duration="6.09"><span>El emulsificador le incorpora el aceite al vacío, en tandas de mil quinientos kilos,</span></div>
+<div id="cc-0-S04-3" class="clip cc" data-start="103.75" data-duration="2.47"><span>y el molino coloidal la deja fina.</span></div>
+<div id="cc-0-S04-4" class="clip cc" data-start="106.21" data-duration="1.81"><span>Espera fría en su pulmón,</span></div>
+<div id="cc-0-S04-5" class="clip cc" data-start="108.03" data-duration="6.59"><span>y la llenadora de sachet uno la empaca en sobres de doscientos cincuenta mililitros.</span></div>
+<div id="bar-0-S05" class="clip bar" data-start="114.72" data-duration="22.33"><span class="eb">GEMELO DIGITAL · SALSAS</span><span class="tt">El recorrido de la mostaza</span><span class="brand">ARVANTTI LABS</span></div>
+<div id="vb-0-S05" class="clip screen" data-start="114.72" data-duration="22.33"><video id="v-0-S05" class="clip vcam" src="assets/clips/0-S05-ruta.mp4" muted data-start="114.72" data-duration="22.33"></video><div class="parada" id="s-0-S05-p0"><i>1</i><b>Tanque de mostaza</b></div><div class="parada" id="s-0-S05-p1"><i>2</i><b>Molino de piedra</b></div><div class="parada" id="s-0-S05-p2"><i>3</i><b>buffer-mustard-01</b></div><div class="parada" id="s-0-S05-p3"><i>4</i><b>Llenadora de sachet 3</b></div><div class="parada" id="s-0-S05-p4"><i>5</i><b>Llenadoras multipropósito</b></div></div>
+<audio id="sfx-57" src="assets/shared/core/sfx/pop.mp3" data-start="114.97" data-duration="1.2" data-volume="0.15"></audio>
+<audio id="sfx-58" src="assets/shared/core/sfx/pop.mp3" data-start="117.49" data-duration="1.2" data-volume="0.15"></audio>
+<audio id="sfx-59" src="assets/shared/core/sfx/pop.mp3" data-start="118.6" data-duration="1.2" data-volume="0.15"></audio>
+<audio id="sfx-60" src="assets/shared/core/sfx/pop.mp3" data-start="119.71" data-duration="1.2" data-volume="0.15"></audio>
+<audio id="sfx-61" src="assets/shared/core/sfx/pop.mp3" data-start="123.49" data-duration="1.2" data-volume="0.15"></audio>
+<div id="cc-0-S05-0" class="clip cc" data-start="115.02" data-duration="2.53"><span>La mostaza se hidrata en su tanque,</span></div>
+<div id="cc-0-S05-1" class="clip cc" data-start="117.55" data-duration="5"><span>el molino de piedra la muele y la llenadora de sachet tres la empaca.</span></div>
+<div id="cc-0-S05-2" class="clip cc" data-start="122.55" data-duration="3.62"><span>Esa llenadora y la de mayonesa son multipropósito:</span></div>
+<div id="cc-0-S05-3" class="clip cc" data-start="126.17" data-duration="3.91"><span>cualquiera de las dos puede llenar mayonesa o mostaza.</span></div>
+<div id="cc-0-S05-4" class="clip cc" data-start="130.08" data-duration="6.87"><span>Pero entre una y otra hay que lavar, porque la mayonesa lleva huevo, que es un alérgeno.</span></div>
+<div id="bar-0-S06" class="clip bar" data-start="137.05" data-duration="50.69"><span class="eb">GEMELO DIGITAL · SALSAS</span><span class="tt">Cuatro reglas propias de los alimentos</span><span class="brand">ARVANTTI LABS</span></div>
+<audio id="sfx-68" src="assets/shared/core/sfx/pop.mp3" data-start="142.77" data-duration="1.2" data-volume="0.2"></audio>
+<audio id="sfx-69" src="assets/shared/core/sfx/pop.mp3" data-start="162.2" data-duration="1.2" data-volume="0.2"></audio>
+<audio id="sfx-70" src="assets/shared/core/sfx/pop.mp3" data-start="171.27" data-duration="1.2" data-volume="0.2"></audio>
+<audio id="sfx-71" src="assets/shared/core/sfx/pop.mp3" data-start="181.7" data-duration="1.2" data-volume="0.2"></audio>
+<div id="s-0-S06" class="clip screen tj" data-start="137.05" data-duration="50.69"><div class="grid"></div><p class="eyebrow">LO QUE HACE DISTINTA ESTA PLANTA</p><h2>Cuatro reglas de los alimentos</h2><div class="reglas"><div class="rg" id="s-0-S06-k-recetas"><span class="n">1</span><b>Orden de recetas</b><i>de suave a fuerte; devolverse = CIP completo de 90 min</i></div><div class="rg" id="s-0-S06-k-alergenos"><span class="n">2</span><b>Alérgenos</b><i>de mayonesa (huevo) a mostaza = CIP completo con verificación</i></div><div class="rg" id="s-0-S06-k-espera"><span class="n">3</span><b>Tiempo de espera</b><i>tomate caliente: 4 h en el pulmón; lo vencido es merma</i></div><div class="rg" id="s-0-S06-k-tandas"><span class="n">4</span><b>Tandas</b><i>una marmita no se deja a medias de un día para otro</i></div></div></div>
+<div id="cc-0-S06-0" class="clip cc" data-start="137.35" data-duration="5.6"><span>Programar esta planta tiene cuatro reglas que no existen en otras industrias.</span></div>
+<div id="cc-0-S06-1" class="clip cc" data-start="142.95" data-duration="2.11"><span>Primero, el orden de recetas:</span></div>
+<div id="cc-0-S06-2" class="clip cc" data-start="145.05" data-duration="4.8"><span>cada línea va de lo suave a lo fuerte, como tomate, BBQ y picante.</span></div>
+<div id="cc-0-S06-3" class="clip cc" data-start="149.85" data-duration="2.25"><span>Avanzar cuesta un cambio corto;</span></div>
+<div id="cc-0-S06-4" class="clip cc" data-start="152.1" data-duration="3.78"><span>devolverse exige un CIP completo de noventa minutos.</span></div>
+<div id="cc-0-S06-5" class="clip cc" data-start="155.88" data-duration="2.54"><span>CIP quiere decir limpieza en sitio:</span></div>
+<div id="cc-0-S06-6" class="clip cc" data-start="158.43" data-duration="3.85"><span>lavar tanques, tuberías y llenadoras sin desarmarlos.</span></div>
+<div id="cc-0-S06-7" class="clip cc" data-start="162.28" data-duration="1.67"><span>Segundo, los alérgenos:</span></div>
+<div id="cc-0-S06-8" class="clip cc" data-start="163.95" data-duration="7.41"><span>pasar de mayonesa a mostaza en la misma llenadora también exige ese lavado completo, con verificación.</span></div>
+<div id="cc-0-S06-9" class="clip cc" data-start="171.36" data-duration="2.11"><span>Tercero, el tiempo de espera:</span></div>
+<div id="cc-0-S06-10" class="clip cc" data-start="173.47" data-duration="4.51"><span>la salsa de tomate caliente aguanta cuatro horas en el pulmón;</span></div>
+<div id="cc-0-S06-11" class="clip cc" data-start="177.98" data-duration="5.38"><span>si nadie la llena a tiempo, se bota, y eso es merma. Y cuarto, las tandas:</span></div>
+<div id="cc-0-S06-12" class="clip cc" data-start="183.36" data-duration="4.28"><span>una marmita no se deja a medias de un día para otro.</span></div>
+<div id="bar-0-S07" class="clip bar" data-start="187.74" data-duration="28.47"><span class="eb">GEMELO DIGITAL · SALSAS</span><span class="tt">Cómo se conecta todo</span><span class="brand">ARVANTTI LABS</span></div>
+<audio id="sfx-87" src="assets/shared/core/sfx/pop.mp3" data-start="190.89" data-duration="1.2" data-volume="0.2"></audio>
+<audio id="sfx-88" src="assets/shared/core/sfx/pop.mp3" data-start="197.96" data-duration="1.2" data-volume="0.2"></audio>
+<audio id="sfx-89" src="assets/shared/core/sfx/pop.mp3" data-start="202.39" data-duration="1.2" data-volume="0.2"></audio>
+<audio id="sfx-90" src="assets/shared/core/sfx/pop.mp3" data-start="208.18" data-duration="1.2" data-volume="0.2"></audio>
+<div id="s-0-S07" class="clip screen tj" data-start="187.74" data-duration="28.47"><div class="grid"></div><p class="eyebrow">CUATRO PARTES CONECTADAS</p><h2>Cómo se conecta todo</h2><div class="partes"><div class="pa" id="s-0-S07-k-emulador"><img src="assets/grabacion/0-apertura/capturas/07a-emulador.png" alt=""><b>Emulador</b><i>hace de planta real</i></div><div class="pa" id="s-0-S07-k-control"><img src="assets/grabacion/0-apertura/capturas/07b-centro-control.png" alt=""><b>Centro de control</b><i>recibe las señales</i></div><div class="pa" id="s-0-S07-k-gemelo"><img src="assets/grabacion/0-apertura/capturas/01-gemelo-3d.png" alt=""><b>Gemelo 3D</b><i>pasado, presente y futuro</i></div><div class="pa" id="s-0-S07-k-aps"><img src="assets/grabacion/0-apertura/capturas/07c-aps-gantt.png" alt=""><b>APS</b><i>programa la producción</i></div></div></div>
+<div id="cc-0-S07-0" class="clip cc" data-start="188.04" data-duration="2.97"><span>El gemelo tiene cuatro partes conectadas.</span></div>
+<div id="cc-0-S07-1" class="clip cc" data-start="191.01" data-duration="2.32"><span>El emulador hace de planta real:</span></div>
+<div id="cc-0-S07-2" class="clip cc" data-start="193.34" data-duration="4.72"><span>cada equipo produce en tiempo real, y aquí se simulan las fallas.</span></div>
+<div id="cc-0-S07-3" class="clip cc" data-start="198.05" data-duration="4.43"><span>El centro de control recibe las señales de todos los equipos.</span></div>
+<div id="cc-0-S07-4" class="clip cc" data-start="202.48" data-duration="5.8"><span>El gemelo 3D muestra la planta en el pasado, el presente y el futuro programado.</span></div>
+<div id="cc-0-S07-5" class="clip cc" data-start="208.28" data-duration="5.37"><span>Y el APS, el sistema de programación de la producción, decide qué se hace,</span></div>
+<div id="cc-0-S07-6" class="clip cc" data-start="213.65" data-duration="2.46"><span>en qué equipo y a qué hora.</span></div>
+<div id="bar-0-S08" class="clip bar" data-start="216.21" data-duration="24.9"><span class="eb">GEMELO DIGITAL · SALSAS</span><span class="tt">La cartera de pedidos</span><span class="brand">ARVANTTI LABS</span></div>
+<div id="vb-0-S08" class="clip screen" data-start="216.21" data-duration="3.92"><video id="v-0-S08" class="clip vcam" src="assets/clips/0-S08.mp4" muted data-start="216.21" data-duration="3.92"></video></div>
+<audio id="sfx-101" src="assets/shared/core/sfx/click-soft.mp3" data-start="217.62" data-duration="1.2" data-volume="0.4"></audio>
+<div id="s-0-S08" class="clip screen" data-start="220.13" data-duration="20.98"><div class="cam" id="cam-0-S08"><div class="drift" style="height:900px"><img src="assets/grabacion/0-apertura/capturas/08-pedidos.png" alt="" style="height:900px"><div id="s-0-S08-f0-0" class="clip ring" data-start="220.23" data-duration="3.25" style="left:818.96px;top:87.3px;width:107.08px;height:51.24px;border-width:1.25px;border-radius:3.33px;box-shadow:0 0 5px #ffb020aa"></div><div id="s-0-S08-f1-0" class="clip ring" data-start="226.77" data-duration="3.85" style="left:1037.3px;top:155.63px;width:59.58px;height:25.41px;border-width:1.25px;border-radius:3.33px;box-shadow:0 0 5px #ffb020aa"></div><div id="s-0-S08-f2-0" class="clip ring" data-start="234.35" data-duration="3.85" style="left:1364.8px;top:6.46px;width:229.58px;height:29.58px;border-width:1.25px;border-radius:3.33px;box-shadow:0 0 5px #ffb020aa"></div></div></div></div>
+<div id="s-0-S08-f0-r" class="clip rotulo abajo" data-start="220.23" data-duration="3.25"><span>128 pedidos</span></div>
+<audio id="sfx-104" src="assets/shared/core/sfx/pop.mp3" data-start="220.73" data-duration="1.2" data-volume="0.18"></audio>
+<div id="s-0-S08-f1-r" class="clip rotulo abajo" data-start="226.77" data-duration="3.85"><span>Fecha de entrega</span></div>
+<audio id="sfx-106" src="assets/shared/core/sfx/pop.mp3" data-start="227.27" data-duration="1.2" data-volume="0.18"></audio>
+<div id="s-0-S08-f2-r" class="clip rotulo abajo" data-start="234.35" data-duration="3.85"><span>Hoy: día 9, 10:00</span></div>
+<audio id="sfx-108" src="assets/shared/core/sfx/pop.mp3" data-start="234.85" data-duration="1.2" data-volume="0.18"></audio>
+<div id="cc-0-S08-0" class="clip cc" data-start="216.51" data-duration="3.55"><span>Todo empieza con los pedidos. Esta es la cartera:</span></div>
+<div id="cc-0-S08-1" class="clip cc" data-start="220.06" data-duration="5.29"><span>ciento veintiocho pedidos de clientes inventados para los diez productos,</span></div>
+<div id="cc-0-S08-2" class="clip cc" data-start="225.36" data-duration="4.57"><span>cada uno con su cantidad, su fecha de entrega y su importancia.</span></div>
+<div id="cc-0-S08-3" class="clip cc" data-start="229.92" data-duration="4.86"><span>Las fechas se cuentan en días desde el arranque de la programación.</span></div>
+<div id="cc-0-S08-4" class="clip cc" data-start="234.78" data-duration="3.26"><span>Hoy es el día nueve, a las diez de la mañana:</span></div>
+<div id="cc-0-S08-5" class="clip cc" data-start="238.04" data-duration="2.97"><span>lo anterior ya pasó y no se mueve.</span></div>
+<div id="bar-0b-S01" class="clip bar" data-start="241.11" data-duration="20.19"><span class="eb">GEMELO DIGITAL · SALSAS</span><span class="tt">Los datos se pueden cargar a mano</span><span class="brand">ARVANTTI LABS</span></div>
+<div id="vb-0b-S01" class="clip screen" data-start="241.11" data-duration="3.92"><video id="v-0b-S01" class="clip vcam" src="assets/clips/0b-S01.mp4" muted data-start="241.11" data-duration="3.92"></video></div>
+<audio id="sfx-117" src="assets/shared/core/sfx/click-soft.mp3" data-start="242.41" data-duration="1.2" data-volume="0.4"></audio>
+<div id="s-0b-S01" class="clip screen" data-start="245.03" data-duration="16.27"><div class="cam" id="cam-0b-S01"><div class="drift" style="height:900px"><img src="assets/grabacion/0b-configurar-datos/capturas/01-configuracion.png" alt="" style="height:900px"><div id="s-0b-S01-f0-0" class="clip ring" data-start="245.6" data-duration="2.81" style="left:425.63px;top:50.63px;width:123.74px;height:27.91px;border-width:1.25px;border-radius:3.33px;box-shadow:0 0 5px #ffb020aa"></div><div id="s-0b-S01-f1-0" class="clip ring" data-start="248.46" data-duration="3.85" style="left:917.19px;top:91.36px;width:211.45px;height:20.62px;border-width:1.25px;border-radius:3.33px;box-shadow:0 0 5px #ffb020aa"></div></div></div></div>
+<div id="s-0b-S01-f0-r" class="clip rotulo abajo" data-start="245.6" data-duration="2.81"><span>Configuración</span></div>
+<audio id="sfx-120" src="assets/shared/core/sfx/pop.mp3" data-start="246.1" data-duration="1.2" data-volume="0.18"></audio>
+<div id="s-0b-S01-f1-r" class="clip rotulo abajo" data-start="248.46" data-duration="3.85"><span>El plan con este borrador</span></div>
+<audio id="sfx-122" src="assets/shared/core/sfx/pop.mp3" data-start="248.96" data-duration="1.2" data-volume="0.18"></audio>
+<div id="cc-0b-S01-0" class="clip cc" data-start="241.41" data-duration="4.64"><span>Esta cartera venía ya cargada, pero todo se puede cargar a mano,</span></div>
+<div id="cc-0b-S01-1" class="clip cc" data-start="246.05" data-duration="2.83"><span>en la pestaña de configuración del APS.</span></div>
+<div id="cc-0b-S01-2" class="clip cc" data-start="248.88" data-duration="2.1"><span>Se trabaja sobre un borrador:</span></div>
+<div id="cc-0b-S01-3" class="clip cc" data-start="250.98" data-duration="5.29"><span>arriba, el sistema recalcula al instante cuántos pedidos quedarían tarde,</span></div>
+<div id="cc-0b-S01-4" class="clip cc" data-start="256.27" data-duration="4.92"><span>cuántas horas de lavado y cuánta merma habría con esos datos.</span></div>
+<div id="bar-0b-S02" class="clip bar" data-start="261.3" data-duration="17.61"><span class="eb">GEMELO DIGITAL · SALSAS</span><span class="tt">Los pedidos</span><span class="brand">ARVANTTI LABS</span></div>
+<div id="vb-0b-S02" class="clip screen" data-start="261.3" data-duration="13.8"><video id="v-0b-S02" class="clip vcam" src="assets/clips/0b-S02.mp4" muted data-start="261.3" data-duration="13.8"></video></div>
+<audio id="sfx-130" src="assets/shared/core/sfx/click-soft.mp3" data-start="263.31" data-duration="1.2" data-volume="0.4"></audio>
+<audio id="sfx-131" src="assets/shared/core/sfx/click-soft.mp3" data-start="267.03" data-duration="1.2" data-volume="0.4"></audio>
+<audio id="sfx-132" src="assets/shared/core/sfx/click-soft.mp3" data-start="268.84" data-duration="1.2" data-volume="0.4"></audio>
+<audio id="sfx-133" src="assets/shared/core/sfx/click-soft.mp3" data-start="272.47" data-duration="1.2" data-volume="0.4"></audio>
+<div id="s-0b-S02" class="clip screen" data-start="275.1" data-duration="3.81"><div class="cam" id="cam-0b-S02"><div class="drift" style="height:900px"><img src="assets/grabacion/0b-configurar-datos/capturas/02-pedido-nuevo.png" alt="" style="height:900px"><div id="s-0b-S02-f1-0" class="clip ring" data-start="276.94" data-duration="1.17" style="left:1403.96px;top:389.8px;width:83.74px;height:27.91px;border-width:1.25px;border-radius:3.33px;box-shadow:0 0 5px #ffb020aa"></div></div></div></div>
+<div id="s-0b-S02-f1-r" class="clip rotulo abajo" data-start="276.94" data-duration="1.17"><span>Eliminar</span></div>
+<audio id="sfx-136" src="assets/shared/core/sfx/pop.mp3" data-start="277.44" data-duration="1.2" data-volume="0.18"></audio>
+<div id="cc-0b-S02-0" class="clip cc" data-start="261.6" data-duration="2.6"><span>Primero, los pedidos. Agregamos uno:</span></div>
+<div id="cc-0b-S02-1" class="clip cc" data-start="264.2" data-duration="6.08"><span>un restaurante pide mil quinientas unidades de salsa BBQ de un litro para el sábado.</span></div>
+<div id="cc-0b-S02-2" class="clip cc" data-start="270.28" data-duration="2.89"><span>En la misma tabla se cambia la cantidad,</span></div>
+<div id="cc-0b-S02-3" class="clip cc" data-start="273.18" data-duration="5.64"><span>la fecha de entrega o la importancia de cualquier pedido, o se elimina.</span></div>
+<div id="bar-0b-S03" class="clip bar" data-start="278.91" data-duration="8.47"><span class="eb">GEMELO DIGITAL · SALSAS</span><span class="tt">Qué llenadora hace cada producto</span><span class="brand">ARVANTTI LABS</span></div>
+<div id="vb-0b-S03" class="clip screen" data-start="278.91" data-duration="4.68"><video id="v-0b-S03" class="clip vcam" src="assets/clips/0b-S03.mp4" muted data-start="278.91" data-duration="4.68"></video></div>
+<audio id="sfx-143" src="assets/shared/core/sfx/click-soft.mp3" data-start="281.27" data-duration="1.2" data-volume="0.4"></audio>
+<div id="s-0b-S03" class="clip screen" data-start="283.59" data-duration="3.79"><div class="cam" id="cam-0b-S03"><div class="drift" style="height:900px"><img src="assets/grabacion/0b-configurar-datos/capturas/04-llenadora-asignada.png" alt="" style="height:900px"><div id="s-0b-S03-f0-0" class="clip ring" data-start="285.26" data-duration="1.32" style="left:913.96px;top:178.96px;width:237.91px;height:27.91px;border-width:1.25px;border-radius:3.33px;box-shadow:0 0 5px #ffb020aa"></div></div></div></div>
+<div id="s-0b-S03-f0-r" class="clip rotulo abajo" data-start="285.26" data-duration="1.32"><span>Llenadora asignada</span></div>
+<audio id="sfx-146" src="assets/shared/core/sfx/pop.mp3" data-start="285.76" data-duration="1.2" data-volume="0.18"></audio>
+<div id="cc-0b-S03-0" class="clip cc" data-start="279.21" data-duration="3.03"><span>Segundo, qué llenadora hace cada producto.</span></div>
+<div id="cc-0b-S03-1" class="clip cc" data-start="282.24" data-duration="5.04"><span>Basta arrastrar una llenadora sobre el producto para asignarla.</span></div>
+<div id="bar-0b-S03b" class="clip bar" data-start="287.38" data-duration="16.97"><span class="eb">GEMELO DIGITAL · SALSAS</span><span class="tt">Lo que no se puede</span><span class="brand">ARVANTTI LABS</span></div>
+<div id="vb-0b-S03b" class="clip screen" data-start="287.38" data-duration="4.8"><video id="v-0b-S03b" class="clip vcam" src="assets/clips/0b-S03b.mp4" muted data-start="287.38" data-duration="4.8"></video></div>
+<audio id="sfx-151" src="assets/shared/core/sfx/click-soft.mp3" data-start="289.89" data-duration="1.2" data-volume="0.4"></audio>
+<div id="s-0b-S03b" class="clip screen" data-start="292.18" data-duration="12.17"><div class="cam" id="cam-0b-S03b"><div class="drift" style="height:900px"><img src="assets/grabacion/0b-configurar-datos/capturas/05-rechazada.png" alt="" style="height:900px"><div id="s-0b-S03b-f0-0" class="clip ring" data-start="292.28" data-duration="1.23" style="left:913.73px;top:178.73px;width:402.54px;height:28.38px;border-width:1.32px;border-radius:3.51px;box-shadow:0 0 5.26px #ffb020aa"></div><div id="s-0b-S03b-f1-0" class="clip ring" data-start="301.23" data-duration="2.32" style="left:25.63px;top:448.13px;width:83.74px;height:27.91px;border-width:1.25px;border-radius:3.33px;box-shadow:0 0 5px #ffb020aa"></div></div></div></div>
+<div id="s-0b-S03b-f0-r" class="clip rotulo abajo" data-start="292.28" data-duration="1.23"><span>Rechazada: otro formato</span></div>
+<audio id="sfx-154" src="assets/shared/core/sfx/pop.mp3" data-start="292.78" data-duration="1.2" data-volume="0.18"></audio>
+<div id="s-0b-S03b-f1-r" class="clip rotulo abajo" data-start="301.23" data-duration="2.32"><span>Duplicar</span></div>
+<audio id="sfx-156" src="assets/shared/core/sfx/pop.mp3" data-start="301.73" data-duration="1.2" data-volume="0.18"></audio>
+<div id="cc-0b-S03b-0" class="clip cc" data-start="287.68" data-duration="4.04"><span>Si no tiene ese tamaño de envase, el sistema la rechaza:</span></div>
+<div id="cc-0b-S03b-1" class="clip cc" data-start="291.72" data-duration="7.13"><span>una llenadora de sachets de doscientos cincuenta mililitros no puede llenar un doypack de un litro.</span></div>
+<div id="cc-0b-S03b-2" class="clip cc" data-start="298.85" data-duration="5.4"><span>Aquí también se crea un producto nuevo duplicando uno que ya existe.</span></div>
+<div id="bar-0b-S04" class="clip bar" data-start="304.35" data-duration="18.11"><span class="eb">GEMELO DIGITAL · SALSAS</span><span class="tt">La secuencia del planificador</span><span class="brand">ARVANTTI LABS</span></div>
+<div id="vb-0b-S04" class="clip screen" data-start="304.35" data-duration="4.66"><video id="v-0b-S04" class="clip vcam" src="assets/clips/0b-S04.mp4" muted data-start="304.35" data-duration="4.66"></video></div>
+<audio id="sfx-162" src="assets/shared/core/sfx/click-soft.mp3" data-start="306.69" data-duration="1.2" data-volume="0.4"></audio>
+<div id="s-0b-S04" class="clip screen" data-start="309.01" data-duration="13.45"><div class="cam" id="cam-0b-S04"><div class="drift" style="height:900px"><img src="assets/grabacion/0b-configurar-datos/capturas/07-secuencia-movida.png" alt="" style="height:900px"><div id="s-0b-S04-f0-0" class="clip ring" data-start="314.2" data-duration="3.85" style="left:254.77px;top:393.1px;width:59.62px;height:15.02px;border-width:1.25px;border-radius:3.33px;box-shadow:0 0 5px #ffb020aa"></div><div id="s-0b-S04-f1-0" class="clip ring" data-start="318.7" data-duration="2.96" style="left:917.19px;top:92.19px;width:211.45px;height:20.62px;border-width:1.25px;border-radius:3.33px;box-shadow:0 0 5px #ffb020aa"></div></div></div></div>
+<div id="s-0b-S04-f0-r" class="clip rotulo abajo" data-start="314.2" data-duration="3.85"><span>En su llenadora</span></div>
+<audio id="sfx-165" src="assets/shared/core/sfx/pop.mp3" data-start="314.7" data-duration="1.2" data-volume="0.18"></audio>
+<div id="s-0b-S04-f1-r" class="clip rotulo abajo" data-start="318.7" data-duration="2.96"><span>Recalculado</span></div>
+<audio id="sfx-167" src="assets/shared/core/sfx/pop.mp3" data-start="319.2" data-duration="1.2" data-volume="0.18"></audio>
+<div id="cc-0b-S04-0" class="clip cc" data-start="304.65" data-duration="1.6"><span>Tercero, la secuencia:</span></div>
+<div id="cc-0b-S04-1" class="clip cc" data-start="306.25" data-duration="5.96"><span>en qué llenadora va cada pedido y en qué orden, como lo decidiría el planificador.</span></div>
+<div id="cc-0b-S04-2" class="clip cc" data-start="312.2" data-duration="2.4"><span>El pedido nuevo está sin asignar:</span></div>
+<div id="cc-0b-S04-3" class="clip cc" data-start="314.6" data-duration="3.92"><span>lo arrastramos a su llenadora y lo subimos en la fila.</span></div>
+<div id="cc-0b-S04-4" class="clip cc" data-start="318.52" data-duration="3.84"><span>Arriba, los indicadores cambian en el momento.</span></div>
+<div id="bar-0b-S05" class="clip bar" data-start="322.46" data-duration="5.83"><span class="eb">GEMELO DIGITAL · SALSAS</span><span class="tt">Guardar la versión</span><span class="brand">ARVANTTI LABS</span></div>
+<div id="vb-0b-S05" class="clip screen" data-start="322.46" data-duration="2.32"><video id="v-0b-S05" class="clip vcam" src="assets/clips/0b-S05.mp4" muted data-start="322.46" data-duration="2.32"></video></div>
+<div id="s-0b-S05" class="clip screen" data-start="324.78" data-duration="3.51"><div class="cam" id="cam-0b-S05"><div class="drift" style="height:900px"><img src="assets/grabacion/0b-configurar-datos/capturas/08-guardada.png" alt="" style="height:900px"><div id="s-0b-S05-f0-0" class="clip ring" data-start="325.24" data-duration="2.25" style="left:913.96px;top:178.96px;width:233.74px;height:27.91px;border-width:1.25px;border-radius:3.33px;box-shadow:0 0 5px #ffb020aa"></div></div></div></div>
+<div id="s-0b-S05-f0-r" class="clip rotulo abajo" data-start="325.24" data-duration="2.25"><span>Versión guardada</span></div>
+<audio id="sfx-177" src="assets/shared/core/sfx/pop.mp3" data-start="325.74" data-duration="1.2" data-volume="0.18"></audio>
+<div id="cc-0b-S05-0" class="clip cc" data-start="322.76" data-duration="5.43"><span>Por último, guardamos esta configuración como una versión con nombre.</span></div>
+<div id="bar-0b-S05b" class="clip bar" data-start="328.29" data-duration="9.76"><span class="eb">GEMELO DIGITAL · SALSAS</span><span class="tt">Las versiones</span><span class="brand">ARVANTTI LABS</span></div>
+<div id="vb-0b-S05b" class="clip screen" data-start="328.29" data-duration="4.39"><video id="v-0b-S05b" class="clip vcam" src="assets/clips/0b-S05b.mp4" muted data-start="328.29" data-duration="4.39"></video></div>
+<audio id="sfx-181" src="assets/shared/core/sfx/click-soft.mp3" data-start="330.08" data-duration="1.2" data-volume="0.4"></audio>
+<div id="s-0b-S05b" class="clip screen" data-start="332.68" data-duration="5.37"><div class="cam" id="cam-0b-S05b"><div class="drift" style="height:900px"><img src="assets/grabacion/0b-configurar-datos/capturas/09-versiones.png" alt="" style="height:900px"><div id="s-0b-S05b-f0-0" class="clip ring" data-start="333.78" data-duration="3.47" style="left:943.96px;top:302.3px;width:48.74px;height:27.91px;border-width:1.25px;border-radius:3.33px;box-shadow:0 0 5px #ffb020aa"></div></div></div></div>
+<div id="s-0b-S05b-f0-r" class="clip rotulo abajo" data-start="333.78" data-duration="3.47"><span>Abrir, usar o eliminar</span></div>
+<audio id="sfx-184" src="assets/shared/core/sfx/pop.mp3" data-start="334.28" data-duration="1.2" data-volume="0.18"></audio>
+<div id="cc-0b-S05b-0" class="clip cc" data-start="328.59" data-duration="5.47"><span>Cada versión es una foto completa de los datos, sin el historial de cambios,</span></div>
+<div id="cc-0b-S05b-1" class="clip cc" data-start="334.06" data-duration="3.88"><span>y se puede abrir, usar en la planta o eliminar.</span></div>
+<div id="bar-0b-S05c" class="clip bar" data-start="338.05" data-duration="11.4"><span class="eb">GEMELO DIGITAL · SALSAS</span><span class="tt">Usarla en la planta</span><span class="brand">ARVANTTI LABS</span></div>
+<div id="vb-0b-S05c" class="clip screen" data-start="338.05" data-duration="2.08"><video id="v-0b-S05c" class="clip vcam" src="assets/clips/0b-S05c.mp4" muted data-start="338.05" data-duration="2.08"></video></div>
+<div id="s-0b-S05c" class="clip screen" data-start="340.13" data-duration="9.32"><div class="cam" id="cam-0b-S05c"><div class="drift" style="height:900px"><img src="assets/grabacion/0b-configurar-datos/capturas/10-en-la-planta.png" alt="" style="height:900px"><div id="s-0b-S05c-f0-0" class="clip ring" data-start="342.76" data-duration="3.85" style="left:1160.63px;top:7.3px;width:195.41px;height:27.91px;border-width:1.25px;border-radius:3.33px;box-shadow:0 0 5px #ffb020aa"></div></div></div></div>
+<div id="s-0b-S05c-f0-r" class="clip rotulo abajo" data-start="342.76" data-duration="3.85"><span>Datos en uso</span></div>
+<audio id="sfx-191" src="assets/shared/core/sfx/pop.mp3" data-start="343.26" data-duration="1.2" data-volume="0.18"></audio>
+<div id="cc-0b-S05c-0" class="clip cc" data-start="338.35" data-duration="2.24"><span>Al usarla, el APS, el emulador,</span></div>
+<div id="cc-0b-S05c-1" class="clip cc" data-start="340.59" data-duration="4.42"><span>el centro de control y el gemelo 3D trabajan con estos datos.</span></div>
+<div id="cc-0b-S05c-2" class="clip cc" data-start="345.01" data-duration="4.34"><span>Para los escenarios volvemos a la cartera precargada.</span></div>
+<div id="bar-0-S09" class="clip bar" data-start="349.45" data-duration="15.61"><span class="eb">GEMELO DIGITAL · SALSAS</span><span class="tt">Cinco escenarios</span><span class="brand">ARVANTTI LABS</span></div>
+<audio id="sfx-196" src="assets/shared/core/sfx/pop.mp3" data-start="351.39" data-duration="1.2" data-volume="0.2"></audio>
+<audio id="sfx-197" src="assets/shared/core/sfx/pop.mp3" data-start="353.6" data-duration="1.2" data-volume="0.2"></audio>
+<audio id="sfx-198" src="assets/shared/core/sfx/pop.mp3" data-start="356.17" data-duration="1.2" data-volume="0.2"></audio>
+<audio id="sfx-199" src="assets/shared/core/sfx/pop.mp3" data-start="358.89" data-duration="1.2" data-volume="0.2"></audio>
+<audio id="sfx-200" src="assets/shared/core/sfx/pop.mp3" data-start="361.24" data-duration="1.2" data-volume="0.2"></audio>
+<div id="s-0-S09" class="clip screen tj" data-start="349.45" data-duration="15.61"><div class="grid"></div><p class="eyebrow">DEMO DE SALSAS</p><h2>Cinco escenarios</h2><div class="esc"><div class="it" id="s-0-S09-k1"><span class="n">1</span><span class="tx">Calcular la programación</span></div><div class="it" id="s-0-S09-k2"><span class="n">2</span><span class="tx">Un cliente adelanta su pedido</span></div><div class="it" id="s-0-S09-k3"><span class="n">3</span><span class="tx">Se cae la llenadora de mostaza</span></div><div class="it" id="s-0-S09-k4"><span class="n">4</span><span class="tx">Lavar menos con Fractal</span></div><div class="it" id="s-0-S09-k5"><span class="n">5</span><span class="tx">Cuánta merma vale la pena ahorrar</span></div></div></div>
+<div id="cc-0-S09-0" class="clip cc" data-start="349.75" data-duration="1.76"><span>Veamos cinco escenarios.</span></div>
+<div id="cc-0-S09-1" class="clip cc" data-start="351.51" data-duration="2.2"><span>Uno, calcular la programación.</span></div>
+<div id="cc-0-S09-2" class="clip cc" data-start="353.7" data-duration="2.56"><span>Dos, un cliente adelanta su pedido.</span></div>
+<div id="cc-0-S09-3" class="clip cc" data-start="356.27" data-duration="2.71"><span>Tres, se cae la llenadora de mostaza.</span></div>
+<div id="cc-0-S09-4" class="clip cc" data-start="358.97" data-duration="2.34"><span>Cuatro, lavar menos con Fractal.</span></div>
+<div id="cc-0-S09-5" class="clip cc" data-start="361.32" data-duration="3.65"><span>Y cinco, cuánta merma vale la pena ahorrar.</span></div>
+<div id="bar-0-S10" class="clip bar" data-start="365.06" data-duration="15.83"><span class="eb">GEMELO DIGITAL · SALSAS</span><span class="tt">Arvantti DigitalTwin</span><span class="brand">ARVANTTI LABS</span></div>
+<audio id="sfx-209" src="assets/shared/core/sfx/pop.mp3" data-start="370.57" data-duration="1.2" data-volume="0.2"></audio>
+<audio id="sfx-210" src="assets/shared/core/sfx/pop.mp3" data-start="372.21" data-duration="1.2" data-volume="0.2"></audio>
+<audio id="sfx-211" src="assets/shared/core/sfx/pop.mp3" data-start="375.35" data-duration="1.2" data-volume="0.2"></audio>
+<audio id="sfx-212" src="assets/shared/core/sfx/pop.mp3" data-start="377.71" data-duration="1.2" data-volume="0.2"></audio>
+<div id="s-0-S10" class="clip screen tj" data-start="365.06" data-duration="15.83"><div class="grid"></div><div class="mods"><svg width="1600" height="900"><line id="s-0-S10-l0" x1="800" y1="500" x2="800" y2="170" stroke="#4ea7ff" stroke-width="3" opacity=".15"/><line id="s-0-S10-l1" x1="800" y1="500" x2="1269" y2="294" stroke="#4ea7ff" stroke-width="3" opacity=".15"/><line id="s-0-S10-l2" x1="800" y1="500" x2="1385" y2="573" stroke="#4ea7ff" stroke-width="3" opacity=".15"/><line id="s-0-S10-l3" x1="800" y1="500" x2="1060" y2="797" stroke="#4ea7ff" stroke-width="3" opacity=".15"/><line id="s-0-S10-l4" x1="800" y1="500" x2="540" y2="797" stroke="#4ea7ff" stroke-width="3" opacity=".15"/><line id="s-0-S10-l5" x1="800" y1="500" x2="215" y2="573" stroke="#4ea7ff" stroke-width="3" opacity=".15"/><line id="s-0-S10-l6" x1="800" y1="500" x2="331" y2="294" stroke="#4ea7ff" stroke-width="3" opacity=".15"/></svg><div class="centro" id="s-0-S10-centro" style="top:330px"><b>ARVANTTI</b><strong>Digital<br>Twin</strong><i class="nucleo">núcleo · gemelo 3D</i></div><div class="m" id="s-0-S10-m-integrador" style="left:800px;top:170px"><b>1 · Integrator</b><i>ERP, CRM, sistemas SCADA y otros</i></div><div class="m" id="s-0-S10-m-aps" style="left:1269px;top:294px"><b>2 · APS</b><i>programación y planificación de órdenes y recursos</i></div><div class="m" id="s-0-S10-m-cosimulacion" style="left:1385px;top:573px"><b>3 · CoSimulation</b><i>cosimulador matemático entrenable con las reglas de la empresa</i></div><div class="m" id="s-0-S10-m-fractal" style="left:1060px;top:797px"><b>4 · Fractal</b><i>simulación robusta por escenarios y multiobjetivo</i></div><div class="m" id="s-0-S10-m-control" style="left:540px;top:797px"><b>5 · Control Center</b><i>monitoreo y control conectado a su SCADA o control de piso</i></div><div class="m" id="s-0-S10-m-dendro" style="left:215px;top:573px"><b>6 · DendroScada</b><i>hardware SCADA propio: conecta cualquier máquina o proceso</i></div><div class="m" id="s-0-S10-m-ia" style="left:331px;top:294px"><b>7 · AI Assistant</b><i>Cerebro Empresarial IA: IA privada en lenguaje natural</i></div></div></div>
+<div id="cc-0-S10-0" class="clip cc" data-start="365.36" data-duration="5.34"><span>Todo esto corre sobre Arvantti DigitalTwin, el gemelo 3D, con sus módulos:</span></div>
+<div id="cc-0-S10-1" class="clip cc" data-start="370.7" data-duration="4.76"><span>el APS para programar, el cosimulador que calcula la programación,</span></div>
+<div id="cc-0-S10-2" class="clip cc" data-start="375.46" data-duration="5.33"><span>Fractal para comparar escenarios y el centro de control. Empecemos.</span></div>
+<div id="cap-1-calcular-programacion" class="clip full card" data-start="380.89" data-duration="3.4"><div class="grid"></div><div class="in"><p class="eyebrow">ESCENARIO 1</p><h1>Calcular la programación</h1><div class="rule"></div></div></div>
+<audio id="sfx-218" src="assets/shared/core/sfx/whoosh-short.mp3" data-start="380.99" data-duration="1.2" data-volume="0.3"></audio>
+<div id="bar-1-S01" class="clip bar" data-start="384.29" data-duration="24.26"><span class="eb">ESCENARIO 1</span><span class="tt">El plan manual en el Gantt</span><span class="brand">ARVANTTI LABS</span></div>
+<div id="vb-1-S01" class="clip screen" data-start="384.29" data-duration="4.04"><video id="v-1-S01" class="clip vcam" src="assets/clips/1-S01.mp4" muted data-start="384.29" data-duration="4.04"></video></div>
+<audio id="sfx-221" src="assets/shared/core/sfx/click-soft.mp3" data-start="385.76" data-duration="1.2" data-volume="0.4"></audio>
+<div id="s-1-S01" class="clip screen" data-start="388.33" data-duration="20.22"><div class="cam" id="cam-1-S01"><div class="drift" style="height:900px"><img src="assets/grabacion/1-calcular-programacion/capturas/01-gantt-manual.png" alt="" style="height:900px"><div id="s-1-S01-f0-0" class="clip ring" data-start="395.5" data-duration="3.85" style="left:496.46px;top:195.63px;width:35.41px;height:26.24px;border-width:1.25px;border-radius:3.33px;box-shadow:0 0 5px #ffb020aa"></div><div id="s-1-S01-f1-0" class="clip ring" data-start="401.57" data-duration="2.02" style="left:1188.96px;top:86.46px;width:87.91px;height:27.08px;border-width:1.25px;border-radius:3.33px;box-shadow:0 0 5px #ffb020aa"></div><div id="s-1-S01-f2-0" class="clip ring" data-start="403.64" data-duration="1.81" style="left:1284.8px;top:86.46px;width:30.41px;height:27.08px;border-width:1.25px;border-radius:3.33px;box-shadow:0 0 5px #ffb020aa"></div><div id="s-1-S01-f3-0" class="clip ring" data-start="405.5" data-duration="2.25" style="left:1323.13px;top:86.46px;width:42.91px;height:27.08px;border-width:1.25px;border-radius:3.33px;box-shadow:0 0 5px #ffb020aa"></div></div></div></div>
+<div id="s-1-S01-f0-r" class="clip rotulo abajo" data-start="395.5" data-duration="3.85"><span>Una barra = una tanda</span></div>
+<audio id="sfx-224" src="assets/shared/core/sfx/pop.mp3" data-start="396" data-duration="1.2" data-volume="0.18"></audio>
+<div id="s-1-S01-f1-r" class="clip rotulo abajo" data-start="401.57" data-duration="2.02"><span>Rojo: CIP por alérgeno</span></div>
+<audio id="sfx-226" src="assets/shared/core/sfx/pop.mp3" data-start="402.07" data-duration="1.2" data-volume="0.18"></audio>
+<div id="s-1-S01-f2-r" class="clip rotulo abajo" data-start="403.64" data-duration="1.81"><span>Celeste: CIP</span></div>
+<audio id="sfx-228" src="assets/shared/core/sfx/pop.mp3" data-start="404.14" data-duration="1.2" data-volume="0.18"></audio>
+<div id="s-1-S01-f3-r" class="clip rotulo abajo" data-start="405.5" data-duration="2.25"><span>Violeta: cambio de receta</span></div>
+<audio id="sfx-230" src="assets/shared/core/sfx/pop.mp3" data-start="406" data-duration="1.2" data-volume="0.18"></audio>
+<div id="cc-1-S01-0" class="clip cc" data-start="384.59" data-duration="5.57"><span>La programación vigente la hizo el planificador a mano, por orden de llegada.</span></div>
+<div id="cc-1-S01-1" class="clip cc" data-start="390.16" data-duration="4.19"><span>Así se ve en el Gantt, el diagrama de barras en el tiempo:</span></div>
+<div id="cc-1-S01-2" class="clip cc" data-start="394.35" data-duration="4.05"><span>una fila por equipo y una barra por tanda o por llenado.</span></div>
+<div id="cc-1-S01-3" class="clip cc" data-start="398.4" data-duration="3.54"><span>El rayado al comienzo de cada barra es el cambio:</span></div>
+<div id="cc-1-S01-4" class="clip cc" data-start="401.95" data-duration="6.5"><span>rojo es un CIP por alérgeno, celeste un CIP de rutina, violeta un cambio de receta.</span></div>
+<div id="bar-1-S02" class="clip bar" data-start="408.55" data-duration="17.61"><span class="eb">ESCENARIO 1</span><span class="tt">Lo que cuesta el plan manual</span><span class="brand">ARVANTTI LABS</span></div>
+<div id="vb-1-S02" class="clip screen" data-start="408.55" data-duration="2.04"><video id="v-1-S02" class="clip vcam" src="assets/clips/1-S02.mp4" muted data-start="408.55" data-duration="2.04"></video></div>
+<div id="s-1-S02" class="clip screen" data-start="410.59" data-duration="15.57"><div class="cam" id="cam-1-S02"><div class="drift" style="height:900px"><img src="assets/grabacion/1-calcular-programacion/capturas/00-pedidos-manual.png" alt="" style="height:900px"></div></div></div>
+<div id="s-1-S02-f0-r" class="clip rotulo abajo" data-start="410.69" data-duration="1.02"><span>9 pedidos tarde</span></div>
+<audio id="sfx-240" src="assets/shared/core/sfx/pop.mp3" data-start="411.19" data-duration="1.2" data-volume="0.18"></audio>
+<div id="s-1-S02-f1-r" class="clip rotulo abajo" data-start="411.76" data-duration="3.85"><span>244 h de atraso</span></div>
+<audio id="sfx-242" src="assets/shared/core/sfx/pop.mp3" data-start="412.26" data-duration="1.2" data-volume="0.18"></audio>
+<div id="s-1-S02-f2-r" class="clip rotulo abajo" data-start="415.76" data-duration="3.85"><span>87 h de CIP</span></div>
+<audio id="sfx-244" src="assets/shared/core/sfx/pop.mp3" data-start="416.26" data-duration="1.2" data-volume="0.18"></audio>
+<div id="s-1-S02-f3-r" class="clip rotulo abajo" data-start="420.76" data-duration="3.85"><span>8.874 kg de merma</span></div>
+<audio id="sfx-246" src="assets/shared/core/sfx/pop.mp3" data-start="421.26" data-duration="1.2" data-volume="0.18"></audio>
+<div id="cc-1-S02-0" class="clip cc" data-start="408.85" data-duration="6.63"><span>Con este plan, nueve pedidos llegan tarde, con doscientas cuarenta y cuatro horas de atraso.</span></div>
+<div id="cc-1-S02-1" class="clip cc" data-start="415.48" data-duration="5.19"><span>La planta lava ochenta y siete horas, diez de esos lavados por alérgeno,</span></div>
+<div id="cc-1-S02-2" class="clip cc" data-start="420.67" data-duration="5.4"><span>y bota ocho mil ochocientos setenta y cuatro kilos de salsa vencida.</span></div>
+<div id="bar-1-S03" class="clip bar" data-start="426.16" data-duration="17.69"><span class="eb">ESCENARIO 1</span><span class="tt">Calcular con el cosimulador</span><span class="brand">ARVANTTI LABS</span></div>
+<div id="vb-1-S03" class="clip screen" data-start="426.16" data-duration="4.36"><video id="v-1-S03" class="clip vcam" src="assets/clips/1-S03.mp4" muted data-start="426.16" data-duration="4.36"></video></div>
+<audio id="sfx-252" src="assets/shared/core/sfx/click-soft.mp3" data-start="427.48" data-duration="1.2" data-volume="0.4"></audio>
+<div id="s-1-S03" class="clip screen" data-start="430.52" data-duration="13.33"><div class="cam" id="cam-1-S03"><div class="drift" style="height:900px"><img src="assets/grabacion/1-calcular-programacion/capturas/03-propuesta.png" alt="" style="height:900px"><div id="s-1-S03-f0-0" class="clip ring" data-start="440.94" data-duration="2.11" style="left:25.58px;top:116.41px;width:375.06px;height:16.34px;border-width:1.27px;border-radius:3.39px;box-shadow:0 0 5.08px #ffb020aa"></div></div></div></div>
+<div id="s-1-S03-f0-r" class="clip rotulo abajo" data-start="440.94" data-duration="2.11"><span>Menos de un segundo</span></div>
+<audio id="sfx-255" src="assets/shared/core/sfx/pop.mp3" data-start="441.44" data-duration="1.2" data-volume="0.18"></audio>
+<div id="cc-1-S03-0" class="clip cc" data-start="426.46" data-duration="1.74"><span>Ahora pulsamos calcular.</span></div>
+<div id="cc-1-S03-1" class="clip cc" data-start="428.2" data-duration="3.56"><span>El cosimulador es el gemelo que simula la planta:</span></div>
+<div id="cc-1-S03-2" class="clip cc" data-start="431.76" data-duration="5.96"><span>replanea desde ahora, sin mover lo que ya se hizo, respetando el orden de recetas,</span></div>
+<div id="cc-1-S03-3" class="clip cc" data-start="437.72" data-duration="3.63"><span>los alérgenos y el tiempo de espera de cada salsa.</span></div>
+<div id="cc-1-S03-4" class="clip cc" data-start="441.36" data-duration="2.39"><span>Tarda menos de un segundo.</span></div>
+<div id="bar-1-S04" class="clip bar" data-start="443.85" data-duration="23.83"><span class="eb">ESCENARIO 1</span><span class="tt">La propuesta</span><span class="brand">ARVANTTI LABS</span></div>
+<div id="s-1-S04" class="clip screen" data-start="443.85" data-duration="23.83"><div class="cam" id="cam-1-S04"><div class="drift" style="height:900px"><img src="assets/grabacion/1-calcular-programacion/capturas/03-propuesta.png" alt="" style="height:900px"><div id="s-1-S04-f0-0" class="clip ring" data-start="446.34" data-duration="3.85" style="left:599.8px;top:100.63px;width:75.41px;height:62.08px;border-width:1.25px;border-radius:3.33px;box-shadow:0 0 5px #ffb020aa"></div><div id="s-1-S04-f1-0" class="clip ring" data-start="450.99" data-duration="3.85" style="left:773.13px;top:100.63px;width:69.58px;height:62.08px;border-width:1.25px;border-radius:3.33px;box-shadow:0 0 5px #ffb020aa"></div><div id="s-1-S04-f2-0" class="clip ring" data-start="459.13" data-duration="3.85" style="left:1293.96px;top:100.63px;width:88.74px;height:62.08px;border-width:1.25px;border-radius:3.33px;box-shadow:0 0 5px #ffb020aa"></div></div></div></div>
+<div id="s-1-S04-f0-r" class="clip rotulo abajo" data-start="446.34" data-duration="3.85"><span>9 → 3 pedidos tarde</span></div>
+<audio id="sfx-264" src="assets/shared/core/sfx/pop.mp3" data-start="446.84" data-duration="1.2" data-volume="0.18"></audio>
+<div id="s-1-S04-f1-r" class="clip rotulo abajo" data-start="450.99" data-duration="3.85"><span>244 → 84 h de atraso</span></div>
+<audio id="sfx-266" src="assets/shared/core/sfx/pop.mp3" data-start="451.49" data-duration="1.2" data-volume="0.18"></audio>
+<div id="s-1-S04-f2-r" class="clip rotulo abajo" data-start="459.13" data-duration="3.85"><span>8.874 → 5.722 kg</span></div>
+<audio id="sfx-268" src="assets/shared/core/sfx/pop.mp3" data-start="459.63" data-duration="1.2" data-volume="0.18"></audio>
+<div id="cc-1-S04-0" class="clip cc" data-start="444.15" data-duration="0.94"><span>El resultado:</span></div>
+<div id="cc-1-S04-1" class="clip cc" data-start="445.09" data-duration="6.31"><span>de nueve pedidos tarde pasamos a tres, y esos tres ya habían salido tarde antes de hoy.</span></div>
+<div id="cc-1-S04-2" class="clip cc" data-start="451.41" data-duration="5.22"><span>El atraso baja de doscientas cuarenta y cuatro a ochenta y cuatro horas.</span></div>
+<div id="cc-1-S04-3" class="clip cc" data-start="456.63" data-duration="2.76"><span>Hay cuatro lavados por alérgeno menos,</span></div>
+<div id="cc-1-S04-4" class="clip cc" data-start="459.39" data-duration="4.06"><span>y la merma baja a cinco mil setecientos veintidós kilos:</span></div>
+<div id="cc-1-S04-5" class="clip cc" data-start="463.45" data-duration="4.13"><span>más de tres toneladas de salsa que ya no se botan.</span></div>
+<div id="bar-1-S05" class="clip bar" data-start="467.68" data-duration="20.04"><span class="eb">ESCENARIO 1</span><span class="tt">Adoptarla y verla en la planta</span><span class="brand">ARVANTTI LABS</span></div>
+<div id="vb-1-S05" class="clip screen" data-start="467.68" data-duration="10.21"><video id="v-1-S05" class="clip vcam" src="assets/clips/1-S05-orbita.mp4" muted data-start="467.68" data-duration="10.21"></video></div>
+<div id="s-1-S05" class="clip screen" data-start="477.89" data-duration="9.83"><div class="cam" id="cam-1-S05"><div class="drift" style="height:900px"><img src="assets/grabacion/1-calcular-programacion/capturas/05c-centro-control.png" alt="" style="height:900px"><div id="s-1-S05-f0-0" class="clip ring" data-start="477.99" data-duration="3.75" style="left:140.6px;top:276.44px;width:46.29px;height:25.46px;border-width:1.25px;border-radius:3.33px;box-shadow:0 0 5px #ffb020aa"></div></div></div></div>
+<div id="s-1-S05-f0-r" class="clip rotulo abajo" data-start="477.99" data-duration="3.75"><span>OEE = disponibilidad × rendimiento × calidad</span></div>
+<audio id="sfx-279" src="assets/shared/core/sfx/pop.mp3" data-start="478.49" data-duration="1.2" data-volume="0.18"></audio>
+<div id="cc-1-S05-0" class="clip cc" data-start="467.98" data-duration="5.06"><span>Al aprobarla, pasa a ser la programación vigente y la planta la sigue:</span></div>
+<div id="cc-1-S05-1" class="clip cc" data-start="473.04" data-duration="5.13"><span>el gemelo 3D muestra en cada equipo qué tanda corre o qué está lavando,</span></div>
+<div id="cc-1-S05-2" class="clip cc" data-start="478.17" data-duration="5.85"><span>y el centro de control mide el OEE de cada uno, la eficiencia general del equipo:</span></div>
+<div id="cc-1-S05-3" class="clip cc" data-start="484.02" data-duration="3.61"><span>disponibilidad por rendimiento por calidad.</span></div>
+<div id="cap-2-adelantar-pedido" class="clip full card" data-start="487.72" data-duration="3.4"><div class="grid"></div><div class="in"><p class="eyebrow">ESCENARIO 2</p><h1>Un cliente adelanta su pedido</h1><div class="rule"></div></div></div>
+<audio id="sfx-285" src="assets/shared/core/sfx/whoosh-short.mp3" data-start="487.82" data-duration="1.2" data-volume="0.3"></audio>
+<div id="bar-2-S01" class="clip bar" data-start="491.12" data-duration="12.69"><span class="eb">ESCENARIO 2</span><span class="tt">El cliente llama</span><span class="brand">ARVANTTI LABS</span></div>
+<div id="vb-2-S01" class="clip screen" data-start="491.12" data-duration="2.04"><video id="v-2-S01" class="clip vcam" src="assets/clips/2-S01.mp4" muted data-start="491.12" data-duration="2.04"></video></div>
+<div id="s-2-S01" class="clip screen" data-start="493.16" data-duration="10.65"><div class="cam" id="cam-2-S01"><div class="drift" style="height:900px"><img src="assets/grabacion/2-adelantar-pedido/capturas/01-pedido-gantt.png" alt="" style="height:900px"><div id="s-2-S01-f0-0" class="clip ring" data-start="497.54" data-duration="3.85" style="left:20.6px;top:123.1px;width:65.85px;height:17.12px;border-width:1.25px;border-radius:3.33px;box-shadow:0 0 5px #ffb020aa"></div></div></div></div>
+<div id="s-2-S01-f0-r" class="clip rotulo abajo" data-start="497.54" data-duration="3.85"><span>PED-D11-04 · mayonesa 1.000 ml</span></div>
+<audio id="sfx-290" src="assets/shared/core/sfx/pop.mp3" data-start="498.04" data-duration="1.2" data-volume="0.18"></audio>
+<div id="cc-2-S01-0" class="clip cc" data-start="491.42" data-duration="1.24"><span>Un cliente llama:</span></div>
+<div id="cc-2-S01-1" class="clip cc" data-start="492.66" data-duration="5.31"><span>necesita un día antes su pedido de mayonesa en doypack de mil mililitros,</span></div>
+<div id="cc-2-S01-2" class="clip cc" data-start="497.97" data-duration="2.69"><span>tres mil quinientas sesenta unidades.</span></div>
+<div id="cc-2-S01-3" class="clip cc" data-start="500.66" data-duration="3.05"><span>Su fecha de entrega es el día once.</span></div>
+<div id="bar-2-S02" class="clip bar" data-start="503.81" data-duration="26.83"><span class="eb">ESCENARIO 2</span><span class="tt">Fractal prueba tres respuestas</span><span class="brand">ARVANTTI LABS</span></div>
+<div id="vb-2-S02" class="clip screen" data-start="503.81" data-duration="4"><video id="v-2-S02" class="clip vcam" src="assets/clips/2-S02.mp4" muted data-start="503.81" data-duration="4"></video></div>
+<audio id="sfx-297" src="assets/shared/core/sfx/click-soft.mp3" data-start="505.25" data-duration="1.2" data-volume="0.4"></audio>
+<div id="s-2-S02" class="clip screen" data-start="507.81" data-duration="22.83"><div class="cam" id="cam-2-S02"><div class="drift" style="height:900px"><img src="assets/grabacion/2-adelantar-pedido/capturas/02-fractal-pregunta.png" alt="" style="height:900px"><div id="s-2-S02-f0-0" class="clip ring" data-start="508.45" data-duration="1.3" style="left:21.09px;top:236.92px;width:46.16px;height:25.33px;border-width:1.25px;border-radius:3.33px;box-shadow:0 0 5px #ffb020aa"></div><div id="s-2-S02-f1-0" class="clip ring" data-start="509.8" data-duration="3.85" style="left:19.8px;top:288.13px;width:204.58px;height:27.91px;border-width:1.25px;border-radius:3.33px;box-shadow:0 0 5px #ffb020aa"></div></div></div></div>
+<div id="s-2-S02-f0-r" class="clip rotulo abajo" data-start="508.45" data-duration="1.3"><span>El pedido: PED-D11-04</span></div>
+<audio id="sfx-300" src="assets/shared/core/sfx/pop.mp3" data-start="508.95" data-duration="1.2" data-volume="0.18"></audio>
+<div id="s-2-S02-f1-r" class="clip rotulo abajo" data-start="509.8" data-duration="3.85"><span>Nueva entrega: día 10</span></div>
+<audio id="sfx-302" src="assets/shared/core/sfx/pop.mp3" data-start="510.3" data-duration="1.2" data-volume="0.18"></audio>
+<div id="cc-2-S02-0" class="clip cc" data-start="504.11" data-duration="4.78"><span>Para responderle usamos Fractal, el módulo que compara escenarios.</span></div>
+<div id="cc-2-S02-1" class="clip cc" data-start="508.89" data-duration="5.07"><span>Elegimos el pedido y la nueva fecha, y Fractal prueba tres respuestas,</span></div>
+<div id="cc-2-S02-2" class="clip cc" data-start="513.96" data-duration="3.62"><span>cada una calculada por el cosimulador desde ahora:</span></div>
+<div id="cc-2-S02-3" class="clip cc" data-start="517.58" data-duration="4.2"><span>solo cambiar la fecha, cambiarla y darle importancia alta,</span></div>
+<div id="cc-2-S02-4" class="clip cc" data-start="521.78" data-duration="3.55"><span>o además organizar la planta en campañas por día,</span></div>
+<div id="cc-2-S02-5" class="clip cc" data-start="525.33" data-duration="5.21"><span>donde cada línea recorre su orden de recetas una sola vez al día.</span></div>
+<div id="bar-2-S03" class="clip bar" data-start="530.64" data-duration="17.9"><span class="eb">ESCENARIO 2</span><span class="tt">La recomendación</span><span class="brand">ARVANTTI LABS</span></div>
+<div id="vb-2-S03" class="clip screen" data-start="530.64" data-duration="4.72"><video id="v-2-S03" class="clip vcam" src="assets/clips/2-S03.mp4" muted data-start="530.64" data-duration="4.72"></video></div>
+<audio id="sfx-311" src="assets/shared/core/sfx/click-soft.mp3" data-start="531.92" data-duration="1.2" data-volume="0.4"></audio>
+<div id="s-2-S03" class="clip screen" data-start="535.36" data-duration="13.18"><div class="cam" id="cam-2-S03"><div class="drift" style="height:900px"><img src="assets/grabacion/2-adelantar-pedido/capturas/03-fractal.png" alt="" style="height:900px"><div id="s-2-S03-f1-0" class="clip ring" data-start="538.49" data-duration="2.66" style="left:1328.48px;top:516.81px;width:78.04px;height:33.04px;border-width:1.25px;border-radius:3.33px;box-shadow:0 0 5px #ffb020aa"></div><div id="s-2-S03-f2-0" class="clip ring" data-start="541.2" data-duration="3.85" style="left:1033.48px;top:600.98px;width:102.21px;height:33.04px;border-width:1.25px;border-radius:3.33px;box-shadow:0 0 5px #ffb020aa"></div></div></div></div>
+<div id="s-2-S03-f1-r" class="clip rotulo abajo" data-start="538.49" data-duration="2.66"><span>CIP 77,3 h</span></div>
+<audio id="sfx-314" src="assets/shared/core/sfx/pop.mp3" data-start="538.99" data-duration="1.2" data-volume="0.18"></audio>
+<div id="s-2-S03-f2-r" class="clip rotulo abajo" data-start="541.2" data-duration="3.85"><span>Merma 3.508 kg</span></div>
+<audio id="sfx-316" src="assets/shared/core/sfx/pop.mp3" data-start="541.7" data-duration="1.2" data-volume="0.18"></audio>
+<div id="cc-2-S03-0" class="clip cc" data-start="530.94" data-duration="3.76"><span>Recomienda la importancia alta con campañas por día:</span></div>
+<div id="cc-2-S03-1" class="clip cc" data-start="534.7" data-duration="3.47"><span>el pedido llega a tiempo, ningún otro se atrasa,</span></div>
+<div id="cc-2-S03-2" class="clip cc" data-start="538.17" data-duration="6.15"><span>y de paso el CIP baja a setenta y siete horas y la merma a tres mil quinientos kilos.</span></div>
+<div id="cc-2-S03-3" class="clip cc" data-start="544.32" data-duration="4.12"><span>Hacerlo a mano habría sido rehacer el plan entero.</span></div>
+<div id="cap-3-falla-llenadora-mostaza" class="clip full card" data-start="548.54" data-duration="3.4"><div class="grid"></div><div class="in"><p class="eyebrow">ESCENARIO 3</p><h1>Se cae la llenadora de mostaza</h1><div class="rule"></div></div></div>
+<audio id="sfx-322" src="assets/shared/core/sfx/whoosh-short.mp3" data-start="548.64" data-duration="1.2" data-volume="0.3"></audio>
+<div id="bar-3-S01" class="clip bar" data-start="551.94" data-duration="11.69"><span class="eb">ESCENARIO 3</span><span class="tt">La falla en el emulador</span><span class="brand">ARVANTTI LABS</span></div>
+<div id="vb-3-S01" class="clip screen" data-start="551.94" data-duration="3.68"><video id="v-3-S01" class="clip vcam" src="assets/clips/3-S01.mp4" muted data-start="551.94" data-duration="3.68"></video></div>
+<audio id="sfx-325" src="assets/shared/core/sfx/click-soft.mp3" data-start="553.24" data-duration="1.2" data-volume="0.4"></audio>
+<div id="s-3-S01" class="clip screen" data-start="555.62" data-duration="8.01"><div class="cam" id="cam-3-S01"><div class="drift" style="height:900px"><img src="assets/grabacion/3-falla-llenadora-mostaza/capturas/03-falla.png" alt="" style="height:900px"><div id="s-3-S01-f0-0" class="clip ring" data-start="555.72" data-duration="2.85" style="left:1294.69px;top:68.02px;width:135.62px;height:50.62px;border-width:1.25px;border-radius:3.33px;box-shadow:0 0 5px #ffb020aa"></div><div id="s-3-S01-f1-0" class="clip ring" data-start="560.08" data-duration="2.75" style="left:1297.27px;top:172.27px;width:227.96px;height:17.12px;border-width:1.25px;border-radius:3.33px;box-shadow:0 0 5px #ffb020aa"></div></div></div></div>
+<div id="s-3-S01-f0-r" class="clip rotulo abajo" data-start="555.72" data-duration="2.85"><span>Llenadora de sachet 3 (mostaza)</span></div>
+<audio id="sfx-328" src="assets/shared/core/sfx/pop.mp3" data-start="556.22" data-duration="1.2" data-volume="0.18"></audio>
+<div id="s-3-S01-f1-r" class="clip rotulo abajo" data-start="560.08" data-duration="2.75"><span>Reparación: día 11, 22:00</span></div>
+<audio id="sfx-330" src="assets/shared/core/sfx/pop.mp3" data-start="560.58" data-duration="1.2" data-volume="0.18"></audio>
+<div id="cc-3-S01-0" class="clip cc" data-start="552.24" data-duration="1.74"><span>Ahora, una contingencia.</span></div>
+<div id="cc-3-S01-1" class="clip cc" data-start="553.98" data-duration="3.47"><span>En el emulador, la llenadora de mostaza se daña,</span></div>
+<div id="cc-3-S01-2" class="clip cc" data-start="557.45" data-duration="6.07"><span>y mantenimiento estima la reparación para el día once a las diez de la noche.</span></div>
+<div id="bar-3-S02" class="clip bar" data-start="563.63" data-duration="13.26"><span class="eb">ESCENARIO 3</span><span class="tt">Todo el gemelo se entera</span><span class="brand">ARVANTTI LABS</span></div>
+<div id="vb-3-S02" class="clip screen" data-start="563.63" data-duration="2.08"><video id="v-3-S02" class="clip vcam" src="assets/clips/3-S02.mp4" muted data-start="563.63" data-duration="2.08"></video></div>
+<div id="s-3-S02" class="clip screen" data-start="565.71" data-duration="11.18"><div class="cam" id="cam-3-S02"><div class="drift" style="height:900px"><img src="assets/grabacion/3-falla-llenadora-mostaza/capturas/06-aps-alerta.png" alt="" style="height:900px"><div id="s-3-S02-f0-0" class="clip ring" data-start="571.84" data-duration="3.85" style="left:25.6px;top:101.44px;width:307.52px;height:17.12px;border-width:1.25px;border-radius:3.33px;box-shadow:0 0 5px #ffb020aa"></div></div></div></div>
+<div id="s-3-S02-f0-r" class="clip rotulo abajo" data-start="571.84" data-duration="3.85"><span>Alarma en el APS</span></div>
+<audio id="sfx-338" src="assets/shared/core/sfx/pop.mp3" data-start="572.34" data-duration="1.2" data-volume="0.18"></audio>
+<div id="cc-3-S02-0" class="clip cc" data-start="563.93" data-duration="2.67"><span>Todo el gemelo se entera al instante:</span></div>
+<div id="cc-3-S02-1" class="clip cc" data-start="566.6" data-duration="5.49"><span>en el 3D la llenadora queda en rojo, el centro de control muestra la alarma,</span></div>
+<div id="cc-3-S02-2" class="clip cc" data-start="572.1" data-duration="4.69"><span>y el APS avisa que el plan vigente ya no se puede cumplir.</span></div>
+<div id="bar-3-S03" class="clip bar" data-start="576.89" data-duration="25.47"><span class="eb">ESCENARIO 3</span><span class="tt">Seguir como estaba contra replanear</span><span class="brand">ARVANTTI LABS</span></div>
+<div id="vb-3-S03" class="clip screen" data-start="576.89" data-duration="4.36"><video id="v-3-S03" class="clip vcam" src="assets/clips/3-S03.mp4" muted data-start="576.89" data-duration="4.36"></video></div>
+<audio id="sfx-344" src="assets/shared/core/sfx/click-soft.mp3" data-start="578.27" data-duration="1.2" data-volume="0.4"></audio>
+<div id="s-3-S03" class="clip screen" data-start="581.25" data-duration="21.11"><div class="cam" id="cam-3-S03"><div class="drift" style="height:900px"><img src="assets/grabacion/3-falla-llenadora-mostaza/capturas/07-propuesta.png" alt="" style="height:900px"><div id="s-3-S03-f1-0" class="clip ring" data-start="594.31" data-duration="3.85" style="left:599.8px;top:157.3px;width:75.41px;height:62.08px;border-width:1.25px;border-radius:3.33px;box-shadow:0 0 5px #ffb020aa"></div><div id="s-3-S03-f2-0" class="clip ring" data-start="598.67" data-duration="2.89" style="left:1120.63px;top:157.3px;width:72.08px;height:62.08px;border-width:1.25px;border-radius:3.33px;box-shadow:0 0 5px #ffb020aa"></div></div></div></div>
+<div id="s-3-S03-f0-r" class="clip rotulo abajo" data-start="582.74" data-duration="3.85"><span>Sin replanear: 14 tarde, 498 h de atraso</span></div>
+<audio id="sfx-347" src="assets/shared/core/sfx/pop.mp3" data-start="583.24" data-duration="1.2" data-volume="0.18"></audio>
+<div id="s-3-S03-f1-r" class="clip rotulo abajo" data-start="594.31" data-duration="3.85"><span>3 pedidos tarde</span></div>
+<audio id="sfx-349" src="assets/shared/core/sfx/pop.mp3" data-start="594.81" data-duration="1.2" data-volume="0.18"></audio>
+<div id="s-3-S03-f2-r" class="clip rotulo abajo" data-start="598.67" data-duration="2.89"><span>CIP 85,9 h</span></div>
+<audio id="sfx-351" src="assets/shared/core/sfx/pop.mp3" data-start="599.17" data-duration="1.2" data-volume="0.18"></audio>
+<div id="cc-3-S03-0" class="clip cc" data-start="577.19" data-duration="6"><span>Si el planificador sigue su secuencia, la mostaza se queda esperando la reparación:</span></div>
+<div id="cc-3-S03-1" class="clip cc" data-start="583.19" data-duration="4.05"><span>catorce pedidos tarde y casi quinientas horas de atraso.</span></div>
+<div id="cc-3-S03-2" class="clip cc" data-start="587.24" data-duration="5.28"><span>El cosimulador pasa la mostaza a la llenadora multipropósito de mayonesa,</span></div>
+<div id="cc-3-S03-3" class="clip cc" data-start="592.51" data-duration="5.56"><span>con cuarenta y dos llenados, y quedan los mismos tres pedidos tarde de antes.</span></div>
+<div id="cc-3-S03-4" class="clip cc" data-start="598.08" data-duration="4.19"><span>El precio son dos horas más de lavado por alérgeno.</span></div>
+<div id="bar-3-S04" class="clip bar" data-start="602.36" data-duration="16.83"><span class="eb">ESCENARIO 3</span><span class="tt">Lo que dice Fractal</span><span class="brand">ARVANTTI LABS</span></div>
+<div id="vb-3-S04" class="clip screen" data-start="602.36" data-duration="7.48"><video id="v-3-S04" class="clip vcam" src="assets/clips/3-S04.mp4" muted data-start="602.36" data-duration="7.48"></video></div>
+<audio id="sfx-359" src="assets/shared/core/sfx/click-soft.mp3" data-start="603.67" data-duration="1.2" data-volume="0.4"></audio>
+<audio id="sfx-360" src="assets/shared/core/sfx/click-soft.mp3" data-start="606.62" data-duration="1.2" data-volume="0.4"></audio>
+<div id="s-3-S04" class="clip screen" data-start="609.84" data-duration="9.35"><div class="cam" id="cam-3-S04"><div class="drift" style="height:900px"><img src="assets/grabacion/3-falla-llenadora-mostaza/capturas/09-fractal.png" alt="" style="height:900px"><div id="s-3-S04-f1-0" class="clip ring" data-start="612.64" data-duration="3.85" style="left:36.92px;top:544.42px;width:174.49px;height:34.49px;border-width:1.25px;border-radius:3.33px;box-shadow:0 0 5px #ffb020aa"></div></div></div></div>
+<div id="s-3-S04-f0-r" class="clip rotulo abajo" data-start="611.07" data-duration="1.52"><span>No cruzar llenadoras: 11 tarde</span></div>
+<audio id="sfx-363" src="assets/shared/core/sfx/pop.mp3" data-start="611.57" data-duration="1.2" data-volume="0.18"></audio>
+<div id="s-3-S04-f1-r" class="clip rotulo abajo" data-start="612.64" data-duration="3.85"><span>Recomendación: campañas por día</span></div>
+<audio id="sfx-365" src="assets/shared/core/sfx/pop.mp3" data-start="613.14" data-duration="1.2" data-volume="0.18"></audio>
+<div id="cc-3-S04-0" class="clip cc" data-start="602.66" data-duration="4.27"><span>Fractal también prueba tres formas de responder a la falla:</span></div>
+<div id="cc-3-S04-1" class="clip cc" data-start="606.93" data-duration="6.15"><span>esperar la reparación y repartir, organizar campañas por día, o no cruzar llenadoras.</span></div>
+<div id="cc-3-S04-2" class="clip cc" data-start="613.09" data-duration="2.03"><span>Recomienda campañas por día.</span></div>
+<div id="cc-3-S04-3" class="clip cc" data-start="615.11" data-duration="3.98"><span>No cruzar llenadoras dejaría once pedidos tarde.</span></div>
+<div id="cap-4-menos-cip" class="clip full card" data-start="619.19" data-duration="3.4"><div class="grid"></div><div class="in"><p class="eyebrow">ESCENARIO 4</p><h1>Lavar menos con Fractal</h1><div class="rule"></div></div></div>
+<audio id="sfx-371" src="assets/shared/core/sfx/whoosh-short.mp3" data-start="619.29" data-duration="1.2" data-volume="0.3"></audio>
+<div id="bar-4-S01" class="clip bar" data-start="622.59" data-duration="14.47"><span class="eb">ESCENARIO 4</span><span class="tt">El puntaje</span><span class="brand">ARVANTTI LABS</span></div>
+<audio id="sfx-373" src="assets/shared/core/sfx/pop.mp3" data-start="626.24" data-duration="1.2" data-volume="0.2"></audio>
+<audio id="sfx-374" src="assets/shared/core/sfx/pop.mp3" data-start="627.74" data-duration="1.2" data-volume="0.2"></audio>
+<audio id="sfx-375" src="assets/shared/core/sfx/pop.mp3" data-start="630.38" data-duration="1.2" data-volume="0.2"></audio>
+<audio id="sfx-376" src="assets/shared/core/sfx/pop.mp3" data-start="632.24" data-duration="1.2" data-volume="0.2"></audio>
+<audio id="sfx-377" src="assets/shared/core/sfx/pop.mp3" data-start="634.38" data-duration="1.2" data-volume="0.2"></audio>
+<div id="s-4-S01" class="clip screen tj" data-start="622.59" data-duration="14.47"><div class="grid"></div><p class="eyebrow">FRACTAL · UN SOLO PUNTAJE</p><h2>Menos es mejor</h2><div class="puntaje"><div class="pt" id="s-4-S01-k-atraso">1 × horas de atraso</div><span class="mas">+</span><div class="pt" id="s-4-S01-k-tarde">20 × pedidos tarde</div><span class="mas">+</span><div class="pt" id="s-4-S01-k-cip">2 × horas de CIP</div><span class="mas">+</span><div class="pt" id="s-4-S01-k-envase">1 × horas de cambio de envase</div><span class="mas">+</span><div class="pt" id="s-4-S01-k-merma">0,05 × kg de merma</div></div></div>
+<div id="cc-4-S01-0" class="clip cc" data-start="622.89" data-duration="3.47"><span>Fractal compara cada opción con un solo puntaje:</span></div>
+<div id="cc-4-S01-1" class="clip cc" data-start="626.36" data-duration="5.99"><span>las horas de atraso, veinte puntos por cada pedido tarde, dos por cada hora de CIP,</span></div>
+<div id="cc-4-S01-2" class="clip cc" data-start="632.35" data-duration="4.61"><span>las horas de cambio de envase y la merma. Menos es mejor.</span></div>
+<div id="bar-4-S02" class="clip bar" data-start="637.06" data-duration="22.83"><span class="eb">ESCENARIO 4</span><span class="tt">Las opciones</span><span class="brand">ARVANTTI LABS</span></div>
+<div id="vb-4-S02" class="clip screen" data-start="637.06" data-duration="3.86"><video id="v-4-S02" class="clip vcam" src="assets/clips/4-S02.mp4" muted data-start="637.06" data-duration="3.86"></video></div>
+<audio id="sfx-384" src="assets/shared/core/sfx/click-soft.mp3" data-start="638.41" data-duration="1.2" data-volume="0.4"></audio>
+<div id="s-4-S02" class="clip screen" data-start="640.92" data-duration="18.97"><div class="cam" id="cam-4-S02"><div class="drift" style="height:900px"><img src="assets/grabacion/4-menos-cip/capturas/02-fractal-pregunta.png" alt="" style="height:900px"><div id="s-4-S02-f0-0" class="clip ring" data-start="641.02" data-duration="0.81" style="left:577.3px;top:187.3px;width:146.24px;height:28.74px;border-width:1.25px;border-radius:3.33px;box-shadow:0 0 5px #ffb020aa"></div></div></div></div>
+<div id="s-4-S02-f0-r" class="clip rotulo abajo" data-start="641.02" data-duration="0.81"><span>Menos CIP y merma</span></div>
+<audio id="sfx-387" src="assets/shared/core/sfx/pop.mp3" data-start="641.52" data-duration="1.2" data-volume="0.18"></audio>
+<div id="cc-4-S02-0" class="clip cc" data-start="637.36" data-duration="4.79"><span>La pregunta es cómo lavar menos y botar menos sin atrasar pedidos.</span></div>
+<div id="cc-4-S02-1" class="clip cc" data-start="642.15" data-duration="2.03"><span>Fractal arma cinco opciones:</span></div>
+<div id="cc-4-S02-2" class="clip cc" data-start="644.19" data-duration="2.47"><span>solo recolocar con el cosimulador;</span></div>
+<div id="cc-4-S02-3" class="clip cc" data-start="646.65" data-duration="6.03"><span>campañas por día, donde cada línea recorre su orden de recetas una sola vez al día;</span></div>
+<div id="cc-4-S02-4" class="clip cc" data-start="652.68" data-duration="3.99"><span>campañas más las recetas pequeñas cada dos o tres días;</span></div>
+<div id="cc-4-S02-5" class="clip cc" data-start="656.67" data-duration="3.11"><span>y campañas con llenadoras dedicadas.</span></div>
+<div id="bar-4-S03" class="clip bar" data-start="659.89" data-duration="20.19"><span class="eb">ESCENARIO 4</span><span class="tt">La recomendación</span><span class="brand">ARVANTTI LABS</span></div>
+<div id="vb-4-S03" class="clip screen" data-start="659.89" data-duration="5.18"><video id="v-4-S03" class="clip vcam" src="assets/clips/4-S03.mp4" muted data-start="659.89" data-duration="5.18"></video></div>
+<audio id="sfx-396" src="assets/shared/core/sfx/click-soft.mp3" data-start="661.24" data-duration="1.2" data-volume="0.4"></audio>
+<div id="s-4-S03" class="clip screen" data-start="665.07" data-duration="15.01"><div class="cam" id="cam-4-S03"><div class="drift" style="height:900px"><img src="assets/grabacion/4-menos-cip/capturas/03-fractal.png" alt="" style="height:900px"><div id="s-4-S03-f2-0" class="clip ring" data-start="665.81" data-duration="3.85" style="left:1033.48px;top:600.98px;width:102.21px;height:33.04px;border-width:1.25px;border-radius:3.33px;box-shadow:0 0 5px #ffb020aa"></div><div id="s-4-S03-f3-0" class="clip ring" data-start="670.81" data-duration="3.85" style="left:642.65px;top:501.81px;width:93.87px;height:18.04px;border-width:1.25px;border-radius:3.33px;box-shadow:0 0 5px #ffb020aa"></div></div></div></div>
+<div id="s-4-S03-f2-r" class="clip rotulo abajo" data-start="665.81" data-duration="3.85"><span>Merma 5.722 → 4.395 kg</span></div>
+<audio id="sfx-399" src="assets/shared/core/sfx/pop.mp3" data-start="666.31" data-duration="1.2" data-volume="0.18"></audio>
+<div id="s-4-S03-f3-r" class="clip rotulo abajo" data-start="670.81" data-duration="3.85"><span>Mismos 3 pedidos tarde</span></div>
+<audio id="sfx-401" src="assets/shared/core/sfx/pop.mp3" data-start="671.31" data-duration="1.2" data-volume="0.18"></audio>
+<div id="cc-4-S03-0" class="clip cc" data-start="660.19" data-duration="2.03"><span>Recomienda campañas por día.</span></div>
+<div id="cc-4-S03-1" class="clip cc" data-start="662.22" data-duration="3.99"><span>El CIP baja de ochenta y cuatro a setenta y ocho horas,</span></div>
+<div id="cc-4-S03-2" class="clip cc" data-start="666.21" data-duration="4.86"><span>la merma de cinco mil setecientos a cuatro mil cuatrocientos kilos,</span></div>
+<div id="cc-4-S03-3" class="clip cc" data-start="671.07" data-duration="3.63"><span>y los pedidos tarde siguen siendo los mismos tres.</span></div>
+<div id="cc-4-S03-4" class="clip cc" data-start="674.69" data-duration="5.29"><span>El puntaje baja de seiscientos veinticinco a quinientos cincuenta.</span></div>
+<div id="bar-4-S04" class="clip bar" data-start="680.08" data-duration="7.26"><span class="eb">ESCENARIO 4</span><span class="tt">Las campañas en el Gantt</span><span class="brand">ARVANTTI LABS</span></div>
+<div id="vb-4-S04" class="clip screen" data-start="680.08" data-duration="3.72"><video id="v-4-S04" class="clip vcam" src="assets/clips/4-S04.mp4" muted data-start="680.08" data-duration="3.72"></video></div>
+<audio id="sfx-409" src="assets/shared/core/sfx/click-soft.mp3" data-start="681.28" data-duration="1.2" data-volume="0.4"></audio>
+<div id="s-4-S04" class="clip screen" data-start="683.8" data-duration="3.54"><div class="cam" id="cam-4-S04"><div class="drift" style="height:900px"><img src="assets/grabacion/4-menos-cip/capturas/04-gantt-campanas.png" alt="" style="height:900px"></div></div></div>
+<div id="cc-4-S04-0" class="clip cc" data-start="680.38" data-duration="2.96"><span>En el Gantt se ven las recetas agrupadas:</span></div>
+<div id="cc-4-S04-1" class="clip cc" data-start="683.34" data-duration="3.9"><span>cada línea va de suave a fuerte una vez al día.</span></div>
+<div id="cap-5-merma-entregas" class="clip full card" data-start="687.34" data-duration="3.4"><div class="grid"></div><div class="in"><p class="eyebrow">ESCENARIO 5</p><h1>Cuánta merma vale la pena ahorrar</h1><div class="rule"></div></div></div>
+<audio id="sfx-414" src="assets/shared/core/sfx/whoosh-short.mp3" data-start="687.44" data-duration="1.2" data-volume="0.3"></audio>
+<div id="bar-5-S01" class="clip bar" data-start="690.74" data-duration="20.83"><span class="eb">ESCENARIO 5</span><span class="tt">Agrupar más</span><span class="brand">ARVANTTI LABS</span></div>
+<div id="vb-5-S01" class="clip screen" data-start="690.74" data-duration="7.83"><video id="v-5-S01" class="clip vcam" src="assets/clips/5-S01.mp4" muted data-start="690.74" data-duration="7.83"></video></div>
+<audio id="sfx-417" src="assets/shared/core/sfx/click-soft.mp3" data-start="691.78" data-duration="1.2" data-volume="0.4"></audio>
+<audio id="sfx-418" src="assets/shared/core/sfx/click-soft.mp3" data-start="694.73" data-duration="1.2" data-volume="0.4"></audio>
+<div id="s-5-S01" class="clip screen" data-start="698.57" data-duration="13"><div class="cam" id="cam-5-S01"><div class="drift" style="height:900px"><img src="assets/grabacion/5-merma-entregas/capturas/01-opciones.png" alt="" style="height:900px"><div id="s-5-S01-f2-0" class="clip ring" data-start="699.02" data-duration="3.85" style="left:1182.3px;top:628.96px;width:75.41px;height:42.91px;border-width:1.25px;border-radius:3.33px;box-shadow:0 0 5px #ffb020aa"></div><div id="s-5-S01-f3-0" class="clip ring" data-start="705.02" data-duration="3.85" style="left:1371.46px;top:628.96px;width:47.91px;height:29.58px;border-width:1.25px;border-radius:3.33px;box-shadow:0 0 5px #ffb020aa"></div></div></div></div>
+<div id="s-5-S01-f2-r" class="clip rotulo abajo" data-start="699.02" data-duration="3.85"><span>Merma 3.861 kg</span></div>
+<audio id="sfx-421" src="assets/shared/core/sfx/pop.mp3" data-start="699.52" data-duration="1.2" data-volume="0.18"></audio>
+<div id="s-5-S01-f3-r" class="clip rotulo abajo" data-start="705.02" data-duration="3.85"><span>Puntaje 569 contra 550</span></div>
+<audio id="sfx-423" src="assets/shared/core/sfx/pop.mp3" data-start="705.52" data-duration="1.2" data-volume="0.18"></audio>
+<div id="cc-5-S01-0" class="clip cc" data-start="691.04" data-duration="2.03"><span>¿Y si agrupamos todavía más?</span></div>
+<div id="cc-5-S01-1" class="clip cc" data-start="693.07" data-duration="3.62"><span>Haciendo las recetas pequeñas solo cada tres días,</span></div>
+<div id="cc-5-S01-2" class="clip cc" data-start="696.69" data-duration="6.09"><span>el CIP baja a sesenta y nueve horas y la merma a tres mil ochocientos sesenta kilos.</span></div>
+<div id="cc-5-S01-3" class="clip cc" data-start="702.78" data-duration="5.51"><span>Pero dos pedidos más llegan tarde, y su puntaje, quinientos sesenta y nueve,</span></div>
+<div id="cc-5-S01-4" class="clip cc" data-start="708.29" data-duration="3.18"><span>pierde frente a las campañas por día.</span></div>
+<div id="bar-5-S02" class="clip bar" data-start="711.57" data-duration="15.61"><span class="eb">ESCENARIO 5</span><span class="tt">La persona decide</span><span class="brand">ARVANTTI LABS</span></div>
+<div id="s-5-S02" class="clip screen" data-start="711.57" data-duration="15.61"><div class="cam" id="cam-5-S02"><div class="drift" style="height:900px"><img src="assets/grabacion/5-merma-entregas/capturas/01-opciones.png" alt="" style="height:900px"><div id="s-5-S02-f0-0" class="clip ring" data-start="723.42" data-duration="2.96" style="left:1428.13px;top:475.63px;width:64.58px;height:27.08px;border-width:1.25px;border-radius:3.33px;box-shadow:0 0 5px #ffb020aa"></div></div></div></div>
+<div id="s-5-S02-f0-r" class="clip rotulo abajo" data-start="723.42" data-duration="2.96"><span>La persona decide</span></div>
+<audio id="sfx-432" src="assets/shared/core/sfx/pop.mp3" data-start="723.92" data-duration="1.2" data-volume="0.18"></audio>
+<div id="cc-5-S02-0" class="clip cc" data-start="711.87" data-duration="4.33"><span>Fractal muestra el precio de cada kilo ahorrado en entregas.</span></div>
+<div id="cc-5-S02-1" class="clip cc" data-start="716.2" data-duration="5.99"><span>Si la planta prefiere botar menos aunque se atrasen dos pedidos, adopta esa opción;</span></div>
+<div id="cc-5-S02-2" class="clip cc" data-start="722.18" data-duration="4.9"><span>si no, la recomendada. Fractal recomienda; la persona decide.</span></div>
+<div id="cap-6-cierre" class="clip full card" data-start="727.18" data-duration="3.4"><div class="grid"></div><div class="in"><p class="eyebrow">CIERRE</p><h1>Lo que ahorra optimizar</h1><div class="rule"></div></div></div>
+<audio id="sfx-437" src="assets/shared/core/sfx/whoosh-short.mp3" data-start="727.28" data-duration="1.2" data-volume="0.3"></audio>
+<div id="bar-6-S01" class="clip bar" data-start="730.58" data-duration="28.61"><span class="eb">CIERRE</span><span class="tt">Lo que ahorra optimizar</span><span class="brand">ARVANTTI LABS</span></div>
+<div id="s-6-S01" class="clip screen ahorro" data-start="730.58" data-duration="28.61"><div class="grid"></div><h2>Lo que ahorra optimizar</h2><table><thead><tr><th>Escenario</th><th>Antes</th><th>Con el gemelo</th><th>Ahorro</th></tr></thead><tbody><tr id="s-6-S01-r0"><th>1 · Calcular</th><td>9 tarde, 244 h de atraso, 87 h de CIP, 8.874 kg de merma</td><td class="new">3 tarde, 84 h, 84 h de CIP, 5.722 kg</td><td class="save">6 pedidos salvados, 160 h de atraso y 3,2 t de merma menos</td></tr><tr id="s-6-S01-r1"><th>2 · Adelantar un pedido</th><td>rehacer el plan a mano</td><td class="new">Fractal en menos de un segundo</td><td class="save">a tiempo, sin atrasar a nadie</td></tr><tr id="s-6-S01-r2"><th>3 · Falla de la llenadora de mostaza</th><td>14 tarde, 498 h</td><td class="new">3 tarde, 84 h</td><td class="save">11 pedidos salvados, 414 h de atraso menos</td></tr><tr id="s-6-S01-r3"><th>4 · Lavar menos</th><td>83,8 h de CIP, 5.722 kg</td><td class="new">78,2 h, 4.395 kg</td><td class="save">5,6 h de CIP y 1,3 t de merma menos, mismas entregas</td></tr><tr id="s-6-S01-r4"><th>5 · Merma contra entregas</th><td>dos opciones</td><td class="new">la persona decide</td><td class="save">el precio de cada kilo ahorrado, a la vista</td></tr></tbody></table><p class="foot">Cifras de las corridas de la demo. Fractal recomienda; la persona decide.</p></div>
+<div id="cc-6-S01-0" class="clip cc" data-start="730.88" data-duration="0.8"><span>En resumen.</span></div>
+<div id="cc-6-S01-1" class="clip cc" data-start="731.68" data-duration="5.88"><span>El cosimulador salva seis pedidos y deja de botar más de tres toneladas de salsa.</span></div>
+<div id="cc-6-S01-2" class="clip cc" data-start="737.55" data-duration="4.93"><span>Ante un pedido urgente o una falla, replanea en menos de un segundo;</span></div>
+<div id="cc-6-S01-3" class="clip cc" data-start="742.49" data-duration="3.92"><span>con la llenadora de mostaza caída, salva once pedidos.</span></div>
+<div id="cc-6-S01-4" class="clip cc" data-start="746.41" data-duration="3.85"><span>Y Fractal, organizando la planta en campañas por día,</span></div>
+<div id="cc-6-S01-5" class="clip cc" data-start="750.25" data-duration="7.04"><span>quita casi seis horas de lavado y otra tonelada de merma sin atrasar a nadie. Fractal recomienda;</span></div>
+<div id="cc-6-S01-6" class="clip cc" data-start="757.29" data-duration="1.81"><span>la persona decide.</span></div>
+<div id="outro" class="clip full" data-start="759.19" data-duration="6"><img class="logo" src="assets/shared/arvantti/branding/ArvanttiLabsLogo.png" alt=""><p class="sign">Gemelo digital · Planta de salsas y aderezos</p></div>
+<audio id="sfx-448" src="assets/shared/core/sfx/whoosh.wav" data-start="759.29" data-duration="1.2" data-volume="0.3"></audio>
+<div id="progress"></div>
+</div>
+<script>
+window.__timelines = window.__timelines || {};
+const tl = gsap.timeline({ paused: true });
+tl.fromTo("#intro .logo",{opacity:0,scale:1.08},{opacity:1,scale:1,duration:1.2,ease:"power2.out"},0);tl.to("#intro .logo",{opacity:0,duration:.6},4.4);
+tl.fromTo("#cap-0-apertura .eyebrow",{opacity:0,y:30},{opacity:1,y:0,duration:.5,ease:"power3.out"},5.2);tl.fromTo("#cap-0-apertura h1",{opacity:0,y:40},{opacity:1,y:0,duration:.8,ease:"back.out(1.4)"},5.4);tl.fromTo("#cap-0-apertura .rule",{scaleX:0},{scaleX:1,duration:.9,ease:"power2.inOut"},5.6);tl.to("#cap-0-apertura .in",{opacity:0,y:-20,duration:.4},8);
+tl.fromTo("#bar-0-S01 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},8.5);
+tl.fromTo("#vb-0-S01",{opacity:0},{opacity:1,duration:.35},8.4);
+tl.fromTo("#bar-0-S02 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},26.54);
+tl.fromTo("#s-0-S02-k-caliente",{opacity:0.25,scale:0.96},{opacity:1,scale:1,duration:.45,ease:"back.out(1.8)"},34.73);
+tl.set("#s-0-S02-p-tomate-1000",{opacity:1},27.04);
+tl.set("#s-0-S02-p-tomate-250",{opacity:1},27.04);
+tl.set("#s-0-S02-p-bbq-1000",{opacity:1},27.04);
+tl.set("#s-0-S02-p-picante-250",{opacity:1},27.04);
+tl.fromTo("#s-0-S02-k-fria",{opacity:0.25,scale:0.96},{opacity:1,scale:1,duration:.45,ease:"back.out(1.8)"},41.66);
+tl.set("#s-0-S02-p-mayonesa-1000",{opacity:1},27.04);
+tl.set("#s-0-S02-p-mayonesa-500",{opacity:1},27.04);
+tl.set("#s-0-S02-p-mayonesa-250",{opacity:1},27.04);
+tl.set("#s-0-S02-p-light-1000",{opacity:1},27.04);
+tl.set("#s-0-S02-p-rosada-500",{opacity:1},27.04);
+tl.fromTo("#s-0-S02-k-mostaza",{opacity:0.25,scale:0.96},{opacity:1,scale:1,duration:.45,ease:"back.out(1.8)"},45.73);
+tl.set("#s-0-S02-p-mostaza-250",{opacity:1},27.04);
+tl.fromTo("#s-0-S02",{opacity:0},{opacity:1,duration:.4},26.44);
+tl.fromTo("#s-0-S02 h2, #s-0-S02 .eyebrow",{opacity:0,y:24},{opacity:1,y:0,duration:.5,ease:"power3.out"},26.59);
+tl.fromTo("#bar-0-S03 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},51.73);
+tl.fromTo("#vb-0-S03",{opacity:0},{opacity:1,duration:.35},51.63);
+tl.fromTo("#s-0-S03-p0",{opacity:0,x:-30},{opacity:1,x:0,duration:.4,ease:"power3.out"},51.88);tl.to("#s-0-S03-p0",{opacity:0,duration:.25},64.83);
+tl.fromTo("#s-0-S03-p1",{opacity:0,x:-30},{opacity:1,x:0,duration:.4,ease:"power3.out"},65.33);tl.to("#s-0-S03-p1",{opacity:0,duration:.25},66.69);
+tl.fromTo("#s-0-S03-p2",{opacity:0,x:-30},{opacity:1,x:0,duration:.4,ease:"power3.out"},67.19);tl.to("#s-0-S03-p2",{opacity:0,duration:.25},72.76);
+tl.fromTo("#s-0-S03-p3",{opacity:0,x:-30},{opacity:1,x:0,duration:.4,ease:"power3.out"},73.26);tl.to("#s-0-S03-p3",{opacity:0,duration:.25},78.83);
+tl.fromTo("#s-0-S03-p4",{opacity:0,x:-30},{opacity:1,x:0,duration:.4,ease:"power3.out"},79.33);tl.to("#s-0-S03-p4",{opacity:0,duration:.25},81.62);
+tl.fromTo("#s-0-S03-p5",{opacity:0,x:-30},{opacity:1,x:0,duration:.4,ease:"power3.out"},82.12);tl.to("#s-0-S03-p5",{opacity:0,duration:.25},86.83);
+tl.fromTo("#s-0-S03-p6",{opacity:0,x:-30},{opacity:1,x:0,duration:.4,ease:"power3.out"},87.33);tl.to("#s-0-S03-p6",{opacity:0,duration:.25},87.83);
+tl.fromTo("#s-0-S03-p7",{opacity:0,x:-30},{opacity:1,x:0,duration:.4,ease:"power3.out"},88.33);tl.to("#s-0-S03-p7",{opacity:0,duration:.25},89.24);
+tl.fromTo("#bar-0-S04 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},89.99);
+tl.fromTo("#vb-0-S04",{opacity:0},{opacity:1,duration:.35},89.89);
+tl.fromTo("#s-0-S04-p0",{opacity:0,x:-30},{opacity:1,x:0,duration:.4,ease:"power3.out"},90.14);tl.to("#s-0-S04-p0",{opacity:0,duration:.25},97.09);
+tl.fromTo("#s-0-S04-p1",{opacity:0,x:-30},{opacity:1,x:0,duration:.4,ease:"power3.out"},97.59);tl.to("#s-0-S04-p1",{opacity:0,duration:.25},103.3);
+tl.fromTo("#s-0-S04-p2",{opacity:0,x:-30},{opacity:1,x:0,duration:.4,ease:"power3.out"},103.8);tl.to("#s-0-S04-p2",{opacity:0,duration:.25},105.66);
+tl.fromTo("#s-0-S04-p3",{opacity:0,x:-30},{opacity:1,x:0,duration:.4,ease:"power3.out"},106.16);tl.to("#s-0-S04-p3",{opacity:0,duration:.25},107.66);
+tl.fromTo("#s-0-S04-p4",{opacity:0,x:-30},{opacity:1,x:0,duration:.4,ease:"power3.out"},108.16);tl.to("#s-0-S04-p4",{opacity:0,duration:.25},114.07);
+tl.fromTo("#bar-0-S05 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},114.82);
+tl.fromTo("#vb-0-S05",{opacity:0},{opacity:1,duration:.35},114.72);
+tl.fromTo("#s-0-S05-p0",{opacity:0,x:-30},{opacity:1,x:0,duration:.4,ease:"power3.out"},114.97);tl.to("#s-0-S05-p0",{opacity:0,duration:.25},116.99);
+tl.fromTo("#s-0-S05-p1",{opacity:0,x:-30},{opacity:1,x:0,duration:.4,ease:"power3.out"},117.49);tl.to("#s-0-S05-p1",{opacity:0,duration:.25},118.1);
+tl.fromTo("#s-0-S05-p2",{opacity:0,x:-30},{opacity:1,x:0,duration:.4,ease:"power3.out"},118.6);tl.to("#s-0-S05-p2",{opacity:0,duration:.25},119.21);
+tl.fromTo("#s-0-S05-p3",{opacity:0,x:-30},{opacity:1,x:0,duration:.4,ease:"power3.out"},119.71);tl.to("#s-0-S05-p3",{opacity:0,duration:.25},122.99);
+tl.fromTo("#s-0-S05-p4",{opacity:0,x:-30},{opacity:1,x:0,duration:.4,ease:"power3.out"},123.49);tl.to("#s-0-S05-p4",{opacity:0,duration:.25},136.4);
+tl.fromTo("#bar-0-S06 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},137.15);
+tl.fromTo("#s-0-S06-k-recetas",{opacity:0.25,scale:0.96},{opacity:1,scale:1,duration:.45,ease:"back.out(1.8)"},142.77);
+tl.fromTo("#s-0-S06-k-alergenos",{opacity:0.25,scale:0.96},{opacity:1,scale:1,duration:.45,ease:"back.out(1.8)"},162.2);
+tl.fromTo("#s-0-S06-k-espera",{opacity:0.25,scale:0.96},{opacity:1,scale:1,duration:.45,ease:"back.out(1.8)"},171.27);
+tl.fromTo("#s-0-S06-k-tandas",{opacity:0.25,scale:0.96},{opacity:1,scale:1,duration:.45,ease:"back.out(1.8)"},181.7);
+tl.fromTo("#s-0-S06",{opacity:0},{opacity:1,duration:.4},137.05);
+tl.fromTo("#s-0-S06 h2, #s-0-S06 .eyebrow",{opacity:0,y:24},{opacity:1,y:0,duration:.5,ease:"power3.out"},137.2);
+tl.fromTo("#bar-0-S07 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},187.84);
+tl.fromTo("#s-0-S07-k-emulador",{opacity:0.25,scale:0.96},{opacity:1,scale:1,duration:.45,ease:"back.out(1.8)"},190.89);
+tl.fromTo("#s-0-S07-k-control",{opacity:0.25,scale:0.96},{opacity:1,scale:1,duration:.45,ease:"back.out(1.8)"},197.96);
+tl.fromTo("#s-0-S07-k-gemelo",{opacity:0.25,scale:0.96},{opacity:1,scale:1,duration:.45,ease:"back.out(1.8)"},202.39);
+tl.fromTo("#s-0-S07-k-aps",{opacity:0.25,scale:0.96},{opacity:1,scale:1,duration:.45,ease:"back.out(1.8)"},208.18);
+tl.fromTo("#s-0-S07",{opacity:0},{opacity:1,duration:.4},187.74);
+tl.fromTo("#s-0-S07 h2, #s-0-S07 .eyebrow",{opacity:0,y:24},{opacity:1,y:0,duration:.5,ease:"power3.out"},187.89);
+tl.fromTo("#bar-0-S08 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},216.31);
+tl.set("#v-0-S08",{x:0,y:0,scale:1},216.21);
+tl.fromTo("#v-0-S08",{x:0,y:0,scale:1},{x:0,y:0,scale:1.9,duration:0.8,ease:"power2.inOut",immediateRender:false},216.52);
+tl.fromTo("#v-0-S08",{x:0,y:0,scale:1.9},{x:0,y:0,scale:1,duration:0.7,ease:"power2.inOut",immediateRender:false},218.22);
+tl.set("#cam-0-S08",{x:0,y:0,scale:1},220.13);
+tl.fromTo("#s-0-S08 .drift",{scale:1.04},{scale:1,duration:20.98,ease:"sine.inOut"},220.13);
+tl.fromTo("#cam-0-S08",{x:0,y:0,scale:1},{x:-1294,y:0,scale:2.4,duration:0.6,ease:"power2.inOut",immediateRender:false},220.23);
+tl.fromTo("#s-0-S08-f0-0",{opacity:0,scale:1.25},{opacity:1,scale:1,duration:.35,ease:"back.out(2)"},220.73);
+tl.fromTo("#s-0-S08-f0-r span",{opacity:0,y:20},{opacity:1,y:0,duration:.4,ease:"power3.out"},220.78);
+tl.fromTo("#cam-0-S08",{x:-1294,y:0,scale:2.4},{x:0,y:0,scale:1,duration:0.8,ease:"power2.inOut",immediateRender:false},223.48);
+tl.fromTo("#cam-0-S08",{x:0,y:0,scale:1},{x:-1761,y:0,scale:2.4,duration:0.6,ease:"power2.inOut",immediateRender:false},226.77);
+tl.fromTo("#s-0-S08-f1-0",{opacity:0,scale:1.25},{opacity:1,scale:1,duration:.35,ease:"back.out(2)"},227.27);
+tl.fromTo("#s-0-S08-f1-r span",{opacity:0,y:20},{opacity:1,y:0,duration:.4,ease:"power3.out"},227.32);
+tl.fromTo("#cam-0-S08",{x:-1761,y:0,scale:2.4},{x:0,y:0,scale:1,duration:0.8,ease:"power2.inOut",immediateRender:false},230.62);
+tl.fromTo("#cam-0-S08",{x:0,y:0,scale:1},{x:-2240,y:0,scale:2.4,duration:0.6,ease:"power2.inOut",immediateRender:false},234.35);
+tl.fromTo("#s-0-S08-f2-0",{opacity:0,scale:1.25},{opacity:1,scale:1,duration:.35,ease:"back.out(2)"},234.85);
+tl.fromTo("#s-0-S08-f2-r span",{opacity:0,y:20},{opacity:1,y:0,duration:.4,ease:"power3.out"},234.9);
+tl.fromTo("#cam-0-S08",{x:-2240,y:0,scale:2.4},{x:0,y:0,scale:1,duration:0.8,ease:"power2.inOut",immediateRender:false},238.2);
+tl.fromTo("#bar-0b-S01 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},241.21);
+tl.set("#v-0b-S01",{x:0,y:0,scale:1},241.11);
+tl.fromTo("#v-0b-S01",{x:0,y:0,scale:1},{x:-126,y:0,scale:1.9,duration:0.8,ease:"power2.inOut",immediateRender:false},241.31);
+tl.fromTo("#v-0b-S01",{x:-126,y:0,scale:1.9},{x:0,y:0,scale:1,duration:0.7,ease:"power2.inOut",immediateRender:false},243.01);
+tl.set("#cam-0b-S01",{x:0,y:0,scale:1},245.03);
+tl.fromTo("#s-0b-S01 .drift",{scale:1},{scale:1.04,duration:16.27,ease:"sine.inOut"},245.03);
+tl.fromTo("#cam-0b-S01",{x:0,y:0,scale:1},{x:-370,y:0,scale:2.4,duration:0.6,ease:"power2.inOut",immediateRender:false},245.6);
+tl.fromTo("#s-0b-S01-f0-0",{opacity:0,scale:1.25},{opacity:1,scale:1,duration:.35,ease:"back.out(2)"},246.1);
+tl.fromTo("#s-0b-S01-f0-r span",{opacity:0,y:20},{opacity:1,y:0,duration:.4,ease:"power3.out"},246.15);
+tl.fromTo("#cam-0b-S01",{x:-370,y:0,scale:2.4},{x:-1655,y:0,scale:2.4,duration:0.6,ease:"power2.inOut",immediateRender:false},248.46);
+tl.fromTo("#s-0b-S01-f1-0",{opacity:0,scale:1.25},{opacity:1,scale:1,duration:.35,ease:"back.out(2)"},248.96);
+tl.fromTo("#s-0b-S01-f1-r span",{opacity:0,y:20},{opacity:1,y:0,duration:.4,ease:"power3.out"},249.01);
+tl.fromTo("#cam-0b-S01",{x:-1655,y:0,scale:2.4},{x:0,y:0,scale:1,duration:0.8,ease:"power2.inOut",immediateRender:false},252.31);
+tl.fromTo("#bar-0b-S02 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},261.4);
+tl.set("#v-0b-S02",{x:0,y:0,scale:1},261.3);
+tl.fromTo("#v-0b-S02",{x:0,y:0,scale:1},{x:0,y:-123,scale:1.9,duration:0.8,ease:"power2.inOut",immediateRender:false},262.21);
+tl.fromTo("#v-0b-S02",{x:0,y:-123,scale:1.9},{x:0,y:0,scale:1,duration:0.7,ease:"power2.inOut",immediateRender:false},263.91);
+tl.fromTo("#v-0b-S02",{x:0,y:0,scale:1},{x:-241,y:-122,scale:1.9,duration:0.8,ease:"power2.inOut",immediateRender:false},265.93);
+tl.fromTo("#v-0b-S02",{x:-241,y:-122,scale:1.9},{x:-786,y:-123,scale:1.9,duration:0.8,ease:"power2.inOut",immediateRender:false},267.74);
+tl.fromTo("#v-0b-S02",{x:-786,y:-123,scale:1.9},{x:0,y:0,scale:1,duration:0.7,ease:"power2.inOut",immediateRender:false},269.44);
+tl.fromTo("#v-0b-S02",{x:0,y:0,scale:1},{x:-1440,y:-122,scale:1.9,duration:0.8,ease:"power2.inOut",immediateRender:false},271.37);
+tl.fromTo("#v-0b-S02",{x:-1440,y:-122,scale:1.9},{x:0,y:0,scale:1,duration:0.7,ease:"power2.inOut",immediateRender:false},273.07);
+tl.set("#cam-0b-S02",{x:0,y:0,scale:1},275.1);
+tl.fromTo("#s-0b-S02 .drift",{scale:1.04},{scale:1,duration:3.81,ease:"sine.inOut"},275.1);
+tl.fromTo("#cam-0b-S02",{x:0,y:0,scale:1},{x:-2240,y:-519,scale:2.4,duration:0.6,ease:"power2.inOut",immediateRender:false},276.94);
+tl.fromTo("#s-0b-S02-f1-0",{opacity:0,scale:1.25},{opacity:1,scale:1,duration:.35,ease:"back.out(2)"},277.44);
+tl.fromTo("#s-0b-S02-f1-r span",{opacity:0,y:20},{opacity:1,y:0,duration:.4,ease:"power3.out"},277.49);
+tl.fromTo("#cam-0b-S02",{x:-2240,y:-519,scale:2.4},{x:0,y:0,scale:1,duration:0.75,ease:"power2.inOut",immediateRender:false},278.11);
+tl.fromTo("#bar-0b-S03 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},279.01);
+tl.set("#v-0b-S03",{x:0,y:0,scale:1},278.91);
+tl.fromTo("#v-0b-S03",{x:0,y:0,scale:1},{x:0,y:-636,scale:1.9,duration:0.8,ease:"power2.inOut",immediateRender:false},280.17);
+tl.fromTo("#v-0b-S03",{x:0,y:-636,scale:1.9},{x:0,y:0,scale:1,duration:0.7,ease:"power2.inOut",immediateRender:false},281.87);
+tl.set("#cam-0b-S03",{x:0,y:0,scale:1},283.59);
+tl.fromTo("#s-0b-S03 .drift",{scale:1},{scale:1.04,duration:3.79,ease:"sine.inOut"},283.59);
+tl.fromTo("#cam-0b-S03",{x:0,y:0,scale:1},{x:-1679,y:-13,scale:2.4,duration:0.6,ease:"power2.inOut",immediateRender:false},285.26);
+tl.fromTo("#s-0b-S03-f0-0",{opacity:0,scale:1.25},{opacity:1,scale:1,duration:.35,ease:"back.out(2)"},285.76);
+tl.fromTo("#s-0b-S03-f0-r span",{opacity:0,y:20},{opacity:1,y:0,duration:.4,ease:"power3.out"},285.81);
+tl.fromTo("#cam-0b-S03",{x:-1679,y:-13,scale:2.4},{x:0,y:0,scale:1,duration:0.75,ease:"power2.inOut",immediateRender:false},286.58);
+tl.fromTo("#bar-0b-S03b .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},287.48);
+tl.set("#v-0b-S03b",{x:0,y:0,scale:1},287.38);
+tl.fromTo("#v-0b-S03b",{x:0,y:0,scale:1},{x:0,y:-641,scale:1.9,duration:0.8,ease:"power2.inOut",immediateRender:false},288.78);
+tl.fromTo("#v-0b-S03b",{x:0,y:-641,scale:1.9},{x:0,y:0,scale:1,duration:0.7,ease:"power2.inOut",immediateRender:false},290.49);
+tl.set("#cam-0b-S03b",{x:0,y:0,scale:1},292.18);
+tl.fromTo("#s-0b-S03b .drift",{scale:1.04},{scale:1,duration:12.17,ease:"sine.inOut"},292.18);
+tl.fromTo("#cam-0b-S03b",{x:0,y:0,scale:1},{x:-1738,y:0,scale:2.28,duration:0.6,ease:"power2.inOut",immediateRender:false},292.28);
+tl.fromTo("#s-0b-S03b-f0-0",{opacity:0,scale:1.25},{opacity:1,scale:1,duration:.35,ease:"back.out(2)"},292.78);
+tl.fromTo("#s-0b-S03b-f0-r span",{opacity:0,y:20},{opacity:1,y:0,duration:.4,ease:"power3.out"},292.83);
+tl.fromTo("#cam-0b-S03b",{x:-1738,y:0,scale:2.28},{x:0,y:0,scale:1,duration:0.8,ease:"power2.inOut",immediateRender:false},293.51);
+tl.fromTo("#cam-0b-S03b",{x:0,y:0,scale:1},{x:0,y:-659,scale:2.4,duration:0.6,ease:"power2.inOut",immediateRender:false},301.23);
+tl.fromTo("#s-0b-S03b-f1-0",{opacity:0,scale:1.25},{opacity:1,scale:1,duration:.35,ease:"back.out(2)"},301.73);
+tl.fromTo("#s-0b-S03b-f1-r span",{opacity:0,y:20},{opacity:1,y:0,duration:.4,ease:"power3.out"},301.78);
+tl.fromTo("#cam-0b-S03b",{x:0,y:-659,scale:2.4},{x:0,y:0,scale:1,duration:0.75,ease:"power2.inOut",immediateRender:false},303.55);
+tl.fromTo("#bar-0b-S04 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},304.45);
+tl.set("#v-0b-S04",{x:0,y:0,scale:1},304.35);
+tl.fromTo("#v-0b-S04",{x:0,y:0,scale:1},{x:0,y:-329,scale:1.9,duration:0.8,ease:"power2.inOut",immediateRender:false},305.59);
+tl.fromTo("#v-0b-S04",{x:0,y:-329,scale:1.9},{x:0,y:0,scale:1,duration:0.7,ease:"power2.inOut",immediateRender:false},307.29);
+tl.set("#cam-0b-S04",{x:0,y:0,scale:1},309.01);
+tl.fromTo("#s-0b-S04 .drift",{scale:1},{scale:1.04,duration:13.45,ease:"sine.inOut"},309.01);
+tl.fromTo("#cam-0b-S04",{x:0,y:0,scale:1},{x:0,y:-513,scale:2.4,duration:0.6,ease:"power2.inOut",immediateRender:false},314.2);
+tl.fromTo("#s-0b-S04-f0-0",{opacity:0,scale:1.25},{opacity:1,scale:1,duration:.35,ease:"back.out(2)"},314.7);
+tl.fromTo("#s-0b-S04-f0-r span",{opacity:0,y:20},{opacity:1,y:0,duration:.4,ease:"power3.out"},314.75);
+tl.fromTo("#cam-0b-S04",{x:0,y:-513,scale:2.4},{x:-1655,y:0,scale:2.4,duration:0.6,ease:"power2.inOut",immediateRender:false},318.7);
+tl.fromTo("#s-0b-S04-f1-0",{opacity:0,scale:1.25},{opacity:1,scale:1,duration:.35,ease:"back.out(2)"},319.2);
+tl.fromTo("#s-0b-S04-f1-r span",{opacity:0,y:20},{opacity:1,y:0,duration:.4,ease:"power3.out"},319.25);
+tl.fromTo("#cam-0b-S04",{x:-1655,y:0,scale:2.4},{x:0,y:0,scale:1,duration:0.75,ease:"power2.inOut",immediateRender:false},321.66);
+tl.fromTo("#bar-0b-S05 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},322.56);
+tl.set("#v-0b-S05",{x:0,y:0,scale:1},322.46);
+tl.set("#cam-0b-S05",{x:0,y:0,scale:1},324.78);
+tl.fromTo("#s-0b-S05 .drift",{scale:1.04},{scale:1,duration:3.51,ease:"sine.inOut"},324.78);
+tl.fromTo("#cam-0b-S05",{x:0,y:0,scale:1},{x:-1674,y:-13,scale:2.4,duration:0.6,ease:"power2.inOut",immediateRender:false},325.24);
+tl.fromTo("#s-0b-S05-f0-0",{opacity:0,scale:1.25},{opacity:1,scale:1,duration:.35,ease:"back.out(2)"},325.74);
+tl.fromTo("#s-0b-S05-f0-r span",{opacity:0,y:20},{opacity:1,y:0,duration:.4,ease:"power3.out"},325.79);
+tl.fromTo("#cam-0b-S05",{x:-1674,y:-13,scale:2.4},{x:0,y:0,scale:1,duration:0.75,ease:"power2.inOut",immediateRender:false},327.49);
+tl.fromTo("#bar-0b-S05b .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},328.39);
+tl.set("#v-0b-S05b",{x:0,y:0,scale:1},328.29);
+tl.fromTo("#v-0b-S05b",{x:0,y:0,scale:1},{x:-356,y:0,scale:1.9,duration:0.8,ease:"power2.inOut",immediateRender:false},328.98);
+tl.fromTo("#v-0b-S05b",{x:-356,y:0,scale:1.9},{x:0,y:0,scale:1,duration:0.7,ease:"power2.inOut",immediateRender:false},330.68);
+tl.set("#cam-0b-S05b",{x:0,y:0,scale:1},332.68);
+tl.fromTo("#s-0b-S05b .drift",{scale:1},{scale:1.04,duration:5.37,ease:"sine.inOut"},332.68);
+tl.fromTo("#cam-0b-S05b",{x:0,y:0,scale:1},{x:-1524,y:-309,scale:2.4,duration:0.6,ease:"power2.inOut",immediateRender:false},333.78);
+tl.fromTo("#s-0b-S05b-f0-0",{opacity:0,scale:1.25},{opacity:1,scale:1,duration:.35,ease:"back.out(2)"},334.28);
+tl.fromTo("#s-0b-S05b-f0-r span",{opacity:0,y:20},{opacity:1,y:0,duration:.4,ease:"power3.out"},334.33);
+tl.fromTo("#cam-0b-S05b",{x:-1524,y:-309,scale:2.4},{x:0,y:0,scale:1,duration:0.75,ease:"power2.inOut",immediateRender:false},337.25);
+tl.fromTo("#bar-0b-S05c .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},338.15);
+tl.set("#v-0b-S05c",{x:0,y:0,scale:1},338.05);
+tl.set("#cam-0b-S05c",{x:0,y:0,scale:1},340.13);
+tl.fromTo("#s-0b-S05c .drift",{scale:1.04},{scale:1,duration:9.32,ease:"sine.inOut"},340.13);
+tl.fromTo("#cam-0b-S05c",{x:0,y:0,scale:1},{x:-2220,y:0,scale:2.4,duration:0.6,ease:"power2.inOut",immediateRender:false},342.76);
+tl.fromTo("#s-0b-S05c-f0-0",{opacity:0,scale:1.25},{opacity:1,scale:1,duration:.35,ease:"back.out(2)"},343.26);
+tl.fromTo("#s-0b-S05c-f0-r span",{opacity:0,y:20},{opacity:1,y:0,duration:.4,ease:"power3.out"},343.31);
+tl.fromTo("#cam-0b-S05c",{x:-2220,y:0,scale:2.4},{x:0,y:0,scale:1,duration:0.8,ease:"power2.inOut",immediateRender:false},346.61);
+tl.fromTo("#bar-0-S09 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},349.55);
+tl.fromTo("#s-0-S09-k1",{opacity:0.28,scale:0.97},{opacity:1,scale:1,duration:.45,ease:"back.out(1.8)"},351.39);
+tl.fromTo("#s-0-S09-k2",{opacity:0.28,scale:0.97},{opacity:1,scale:1,duration:.45,ease:"back.out(1.8)"},353.6);
+tl.fromTo("#s-0-S09-k3",{opacity:0.28,scale:0.97},{opacity:1,scale:1,duration:.45,ease:"back.out(1.8)"},356.17);
+tl.fromTo("#s-0-S09-k4",{opacity:0.28,scale:0.97},{opacity:1,scale:1,duration:.45,ease:"back.out(1.8)"},358.89);
+tl.fromTo("#s-0-S09-k5",{opacity:0.28,scale:0.97},{opacity:1,scale:1,duration:.45,ease:"back.out(1.8)"},361.24);
+tl.fromTo("#s-0-S09",{opacity:0},{opacity:1,duration:.4},349.45);
+tl.fromTo("#s-0-S09 h2, #s-0-S09 .eyebrow",{opacity:0,y:24},{opacity:1,y:0,duration:.5,ease:"power3.out"},349.6);
+tl.fromTo("#bar-0-S10 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},365.16);
+tl.fromTo("#s-0-S10-centro",{opacity:0,scale:.6},{opacity:1,scale:1,duration:.8,ease:"back.out(1.6)"},366.93);
+tl.set("#s-0-S10-m-integrador",{opacity:1},365.66);
+tl.fromTo("#s-0-S10-m-aps",{opacity:0.25,scale:0.96},{opacity:1,scale:1,duration:.45,ease:"back.out(1.8)"},370.57);
+tl.fromTo("#s-0-S10-l1",{opacity:.15},{opacity:.9,duration:.4},370.57);
+tl.fromTo("#s-0-S10-m-cosimulacion",{opacity:0.25,scale:0.96},{opacity:1,scale:1,duration:.45,ease:"back.out(1.8)"},372.21);
+tl.fromTo("#s-0-S10-l2",{opacity:.15},{opacity:.9,duration:.4},372.21);
+tl.fromTo("#s-0-S10-m-fractal",{opacity:0.25,scale:0.96},{opacity:1,scale:1,duration:.45,ease:"back.out(1.8)"},375.35);
+tl.fromTo("#s-0-S10-l3",{opacity:.15},{opacity:.9,duration:.4},375.35);
+tl.fromTo("#s-0-S10-m-control",{opacity:0.25,scale:0.96},{opacity:1,scale:1,duration:.45,ease:"back.out(1.8)"},377.71);
+tl.fromTo("#s-0-S10-l4",{opacity:.15},{opacity:.9,duration:.4},377.71);
+tl.set("#s-0-S10-m-dendro",{opacity:1},365.66);
+tl.set("#s-0-S10-m-ia",{opacity:1},365.66);
+tl.fromTo("#s-0-S10",{opacity:0},{opacity:1,duration:.4},365.06);
+tl.fromTo("#s-0-S10 h2, #s-0-S10 .eyebrow",{opacity:0,y:24},{opacity:1,y:0,duration:.5,ease:"power3.out"},365.21);
+tl.fromTo("#cap-1-calcular-programacion .eyebrow",{opacity:0,y:30},{opacity:1,y:0,duration:.5,ease:"power3.out"},381.09);tl.fromTo("#cap-1-calcular-programacion h1",{opacity:0,y:40},{opacity:1,y:0,duration:.8,ease:"back.out(1.4)"},381.29);tl.fromTo("#cap-1-calcular-programacion .rule",{scaleX:0},{scaleX:1,duration:.9,ease:"power2.inOut"},381.49);tl.to("#cap-1-calcular-programacion .in",{opacity:0,y:-20,duration:.4},383.89);
+tl.fromTo("#bar-1-S01 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},384.39);
+tl.set("#v-1-S01",{x:0,y:0,scale:1},384.29);
+tl.fromTo("#v-1-S01",{x:0,y:0,scale:1},{x:0,y:0,scale:1.9,duration:0.8,ease:"power2.inOut",immediateRender:false},384.66);
+tl.fromTo("#v-1-S01",{x:0,y:0,scale:1.9},{x:0,y:0,scale:1,duration:0.7,ease:"power2.inOut",immediateRender:false},386.36);
+tl.set("#cam-1-S01",{x:0,y:0,scale:1},388.33);
+tl.fromTo("#s-1-S01 .drift",{scale:1},{scale:1.04,duration:20.22,ease:"sine.inOut"},388.33);
+tl.fromTo("#cam-1-S01",{x:0,y:0,scale:1},{x:-434,y:-51,scale:2.4,duration:0.6,ease:"power2.inOut",immediateRender:false},395.5);
+tl.fromTo("#s-1-S01-f0-0",{opacity:0,scale:1.25},{opacity:1,scale:1,duration:.35,ease:"back.out(2)"},396);
+tl.fromTo("#s-1-S01-f0-r span",{opacity:0,y:20},{opacity:1,y:0,duration:.4,ease:"power3.out"},396.05);
+tl.fromTo("#cam-1-S01",{x:-434,y:-51,scale:2.4},{x:0,y:0,scale:1,duration:0.8,ease:"power2.inOut",immediateRender:false},399.35);
+tl.fromTo("#cam-1-S01",{x:0,y:0,scale:1},{x:-2159,y:0,scale:2.4,duration:0.6,ease:"power2.inOut",immediateRender:false},401.57);
+tl.fromTo("#s-1-S01-f1-0",{opacity:0,scale:1.25},{opacity:1,scale:1,duration:.35,ease:"back.out(2)"},402.07);
+tl.fromTo("#s-1-S01-f1-r span",{opacity:0,y:20},{opacity:1,y:0,duration:.4,ease:"power3.out"},402.12);
+tl.fromTo("#cam-1-S01",{x:-2159,y:0,scale:2.4},{x:-2240,y:0,scale:2.4,duration:0.6,ease:"power2.inOut",immediateRender:false},403.64);
+tl.fromTo("#s-1-S01-f2-0",{opacity:0,scale:1.25},{opacity:1,scale:1,duration:.35,ease:"back.out(2)"},404.14);
+tl.fromTo("#s-1-S01-f2-r span",{opacity:0,y:20},{opacity:1,y:0,duration:.4,ease:"power3.out"},404.19);
+tl.fromTo("#cam-1-S01",{x:-2240,y:0,scale:2.4},{x:-2240,y:0,scale:2.4,duration:0.6,ease:"power2.inOut",immediateRender:false},405.5);
+tl.fromTo("#s-1-S01-f3-0",{opacity:0,scale:1.25},{opacity:1,scale:1,duration:.35,ease:"back.out(2)"},406);
+tl.fromTo("#s-1-S01-f3-r span",{opacity:0,y:20},{opacity:1,y:0,duration:.4,ease:"power3.out"},406.05);
+tl.fromTo("#cam-1-S01",{x:-2240,y:0,scale:2.4},{x:0,y:0,scale:1,duration:0.75,ease:"power2.inOut",immediateRender:false},407.75);
+tl.fromTo("#bar-1-S02 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},408.65);
+tl.set("#v-1-S02",{x:0,y:0,scale:1},408.55);
+tl.set("#cam-1-S02",{x:0,y:0,scale:1},410.59);
+tl.fromTo("#s-1-S02 .drift",{scale:1.04},{scale:1,duration:15.57,ease:"sine.inOut"},410.59);
+tl.fromTo("#cam-1-S02",{x:0,y:0,scale:1},{x:0,y:0,scale:1,duration:0.6,ease:"power2.inOut",immediateRender:false},410.69);
+tl.fromTo("#s-1-S02-f0-r span",{opacity:0,y:20},{opacity:1,y:0,duration:.4,ease:"power3.out"},411.24);
+tl.fromTo("#cam-1-S02",{x:0,y:0,scale:1},{x:0,y:0,scale:1,duration:0.6,ease:"power2.inOut",immediateRender:false},411.76);
+tl.fromTo("#s-1-S02-f1-r span",{opacity:0,y:20},{opacity:1,y:0,duration:.4,ease:"power3.out"},412.31);
+tl.fromTo("#cam-1-S02",{x:0,y:0,scale:1},{x:0,y:0,scale:1,duration:0.6,ease:"power2.inOut",immediateRender:false},415.76);
+tl.fromTo("#s-1-S02-f2-r span",{opacity:0,y:20},{opacity:1,y:0,duration:.4,ease:"power3.out"},416.31);
+tl.fromTo("#cam-1-S02",{x:0,y:0,scale:1},{x:0,y:0,scale:1,duration:0.8,ease:"power2.inOut",immediateRender:false},419.61);
+tl.fromTo("#cam-1-S02",{x:0,y:0,scale:1},{x:0,y:0,scale:1,duration:0.6,ease:"power2.inOut",immediateRender:false},420.76);
+tl.fromTo("#s-1-S02-f3-r span",{opacity:0,y:20},{opacity:1,y:0,duration:.4,ease:"power3.out"},421.31);
+tl.fromTo("#cam-1-S02",{x:0,y:0,scale:1},{x:0,y:0,scale:1,duration:0.8,ease:"power2.inOut",immediateRender:false},424.61);
+tl.fromTo("#bar-1-S03 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},426.26);
+tl.set("#v-1-S03",{x:0,y:0,scale:1},426.16);
+tl.fromTo("#v-1-S03",{x:0,y:0,scale:1},{x:-1440,y:0,scale:1.9,duration:0.8,ease:"power2.inOut",immediateRender:false},426.38);
+tl.fromTo("#v-1-S03",{x:-1440,y:0,scale:1.9},{x:0,y:0,scale:1,duration:0.7,ease:"power2.inOut",immediateRender:false},428.08);
+tl.set("#cam-1-S03",{x:0,y:0,scale:1},430.52);
+tl.fromTo("#s-1-S03 .drift",{scale:1},{scale:1.04,duration:13.33,ease:"sine.inOut"},430.52);
+tl.fromTo("#cam-1-S03",{x:0,y:0,scale:1},{x:0,y:0,scale:2.36,duration:0.6,ease:"power2.inOut",immediateRender:false},440.94);
+tl.fromTo("#s-1-S03-f0-0",{opacity:0,scale:1.25},{opacity:1,scale:1,duration:.35,ease:"back.out(2)"},441.44);
+tl.fromTo("#s-1-S03-f0-r span",{opacity:0,y:20},{opacity:1,y:0,duration:.4,ease:"power3.out"},441.49);
+tl.fromTo("#cam-1-S03",{x:0,y:0,scale:2.36},{x:0,y:0,scale:1,duration:0.75,ease:"power2.inOut",immediateRender:false},443.05);
+tl.fromTo("#bar-1-S04 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},443.95);
+tl.fromTo("#s-1-S04",{opacity:0},{opacity:1,duration:.35},443.85);
+tl.set("#cam-1-S04",{x:0,y:0,scale:1},443.85);
+tl.fromTo("#s-1-S04 .drift",{scale:1.04},{scale:1,duration:23.83,ease:"sine.inOut"},443.85);
+tl.fromTo("#cam-1-S04",{x:0,y:0,scale:1},{x:-730,y:0,scale:2.4,duration:0.6,ease:"power2.inOut",immediateRender:false},446.34);
+tl.fromTo("#s-1-S04-f0-0",{opacity:0,scale:1.25},{opacity:1,scale:1,duration:.35,ease:"back.out(2)"},446.84);
+tl.fromTo("#s-1-S04-f0-r span",{opacity:0,y:20},{opacity:1,y:0,duration:.4,ease:"power3.out"},446.89);
+tl.fromTo("#cam-1-S04",{x:-730,y:0,scale:2.4},{x:-1139,y:0,scale:2.4,duration:0.6,ease:"power2.inOut",immediateRender:false},450.99);
+tl.fromTo("#s-1-S04-f1-0",{opacity:0,scale:1.25},{opacity:1,scale:1,duration:.35,ease:"back.out(2)"},451.49);
+tl.fromTo("#s-1-S04-f1-r span",{opacity:0,y:20},{opacity:1,y:0,duration:.4,ease:"power3.out"},451.54);
+tl.fromTo("#cam-1-S04",{x:-1139,y:0,scale:2.4},{x:0,y:0,scale:1,duration:0.8,ease:"power2.inOut",immediateRender:false},454.84);
+tl.fromTo("#cam-1-S04",{x:0,y:0,scale:1},{x:-2240,y:0,scale:2.4,duration:0.6,ease:"power2.inOut",immediateRender:false},459.13);
+tl.fromTo("#s-1-S04-f2-0",{opacity:0,scale:1.25},{opacity:1,scale:1,duration:.35,ease:"back.out(2)"},459.63);
+tl.fromTo("#s-1-S04-f2-r span",{opacity:0,y:20},{opacity:1,y:0,duration:.4,ease:"power3.out"},459.68);
+tl.fromTo("#cam-1-S04",{x:-2240,y:0,scale:2.4},{x:0,y:0,scale:1,duration:0.8,ease:"power2.inOut",immediateRender:false},462.98);
+tl.fromTo("#bar-1-S05 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},467.78);
+tl.fromTo("#vb-1-S05",{opacity:0},{opacity:1,duration:.35},467.68);
+tl.set("#cam-1-S05",{x:0,y:0,scale:1},477.89);
+tl.fromTo("#s-1-S05 .drift",{scale:1},{scale:1.04,duration:9.83,ease:"sine.inOut"},477.89);
+tl.fromTo("#cam-1-S05",{x:0,y:0,scale:1},{x:0,y:-244,scale:2.4,duration:0.6,ease:"power2.inOut",immediateRender:false},477.99);
+tl.fromTo("#s-1-S05-f0-0",{opacity:0,scale:1.25},{opacity:1,scale:1,duration:.35,ease:"back.out(2)"},478.49);
+tl.fromTo("#s-1-S05-f0-r span",{opacity:0,y:20},{opacity:1,y:0,duration:.4,ease:"power3.out"},478.54);
+tl.fromTo("#cam-1-S05",{x:0,y:-244,scale:2.4},{x:0,y:0,scale:1,duration:0.8,ease:"power2.inOut",immediateRender:false},481.74);
+tl.fromTo("#cap-2-adelantar-pedido .eyebrow",{opacity:0,y:30},{opacity:1,y:0,duration:.5,ease:"power3.out"},487.92);tl.fromTo("#cap-2-adelantar-pedido h1",{opacity:0,y:40},{opacity:1,y:0,duration:.8,ease:"back.out(1.4)"},488.12);tl.fromTo("#cap-2-adelantar-pedido .rule",{scaleX:0},{scaleX:1,duration:.9,ease:"power2.inOut"},488.32);tl.to("#cap-2-adelantar-pedido .in",{opacity:0,y:-20,duration:.4},490.72);
+tl.fromTo("#bar-2-S01 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},491.22);
+tl.set("#v-2-S01",{x:0,y:0,scale:1},491.12);
+tl.set("#cam-2-S01",{x:0,y:0,scale:1},493.16);
+tl.fromTo("#s-2-S01 .drift",{scale:1},{scale:1.04,duration:10.65,ease:"sine.inOut"},493.16);
+tl.fromTo("#cam-2-S01",{x:0,y:0,scale:1},{x:0,y:0,scale:2.4,duration:0.6,ease:"power2.inOut",immediateRender:false},497.54);
+tl.fromTo("#s-2-S01-f0-0",{opacity:0,scale:1.25},{opacity:1,scale:1,duration:.35,ease:"back.out(2)"},498.04);
+tl.fromTo("#s-2-S01-f0-r span",{opacity:0,y:20},{opacity:1,y:0,duration:.4,ease:"power3.out"},498.09);
+tl.fromTo("#cam-2-S01",{x:0,y:0,scale:2.4},{x:0,y:0,scale:1,duration:0.8,ease:"power2.inOut",immediateRender:false},501.39);
+tl.fromTo("#bar-2-S02 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},503.91);
+tl.set("#v-2-S02",{x:0,y:0,scale:1},503.81);
+tl.fromTo("#v-2-S02",{x:0,y:0,scale:1},{x:0,y:0,scale:1.9,duration:0.8,ease:"power2.inOut",immediateRender:false},504.15);
+tl.fromTo("#v-2-S02",{x:0,y:0,scale:1.9},{x:0,y:0,scale:1,duration:0.7,ease:"power2.inOut",immediateRender:false},505.85);
+tl.set("#cam-2-S02",{x:0,y:0,scale:1},507.81);
+tl.fromTo("#s-2-S02 .drift",{scale:1.04},{scale:1,duration:22.83,ease:"sine.inOut"},507.81);
+tl.fromTo("#cam-2-S02",{x:0,y:0,scale:1},{x:0,y:-149,scale:2.4,duration:0.6,ease:"power2.inOut",immediateRender:false},508.45);
+tl.fromTo("#s-2-S02-f0-0",{opacity:0,scale:1.25},{opacity:1,scale:1,duration:.35,ease:"back.out(2)"},508.95);
+tl.fromTo("#s-2-S02-f0-r span",{opacity:0,y:20},{opacity:1,y:0,duration:.4,ease:"power3.out"},509);
+tl.fromTo("#cam-2-S02",{x:0,y:-149,scale:2.4},{x:0,y:-275,scale:2.4,duration:0.6,ease:"power2.inOut",immediateRender:false},509.8);
+tl.fromTo("#s-2-S02-f1-0",{opacity:0,scale:1.25},{opacity:1,scale:1,duration:.35,ease:"back.out(2)"},510.3);
+tl.fromTo("#s-2-S02-f1-r span",{opacity:0,y:20},{opacity:1,y:0,duration:.4,ease:"power3.out"},510.35);
+tl.fromTo("#cam-2-S02",{x:0,y:-275,scale:2.4},{x:0,y:0,scale:1,duration:0.8,ease:"power2.inOut",immediateRender:false},513.65);
+tl.fromTo("#bar-2-S03 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},530.74);
+tl.set("#v-2-S03",{x:0,y:0,scale:1},530.64);
+tl.fromTo("#v-2-S03",{x:0,y:0,scale:1},{x:0,y:-237,scale:1.8,duration:0.8,ease:"power2.inOut",immediateRender:false},530.81);
+tl.fromTo("#v-2-S03",{x:0,y:-237,scale:1.8},{x:0,y:0,scale:1,duration:0.7,ease:"power2.inOut",immediateRender:false},532.52);
+tl.set("#cam-2-S03",{x:0,y:0,scale:1},535.36);
+tl.fromTo("#s-2-S03 .drift",{scale:1},{scale:1.04,duration:13.18,ease:"sine.inOut"},535.36);
+tl.fromTo("#cam-2-S03",{x:0,y:0,scale:1},{x:-2240,y:-830,scale:2.4,duration:0.6,ease:"power2.inOut",immediateRender:false},538.49);
+tl.fromTo("#s-2-S03-f1-0",{opacity:0,scale:1.25},{opacity:1,scale:1,duration:.35,ease:"back.out(2)"},538.99);
+tl.fromTo("#s-2-S03-f1-r span",{opacity:0,y:20},{opacity:1,y:0,duration:.4,ease:"power3.out"},539.04);
+tl.fromTo("#cam-2-S03",{x:-2240,y:-830,scale:2.4},{x:-1803,y:-1032,scale:2.4,duration:0.6,ease:"power2.inOut",immediateRender:false},541.2);
+tl.fromTo("#s-2-S03-f2-0",{opacity:0,scale:1.25},{opacity:1,scale:1,duration:.35,ease:"back.out(2)"},541.7);
+tl.fromTo("#s-2-S03-f2-r span",{opacity:0,y:20},{opacity:1,y:0,duration:.4,ease:"power3.out"},541.75);
+tl.fromTo("#cam-2-S03",{x:-1803,y:-1032,scale:2.4},{x:0,y:0,scale:1,duration:0.8,ease:"power2.inOut",immediateRender:false},545.05);
+tl.fromTo("#cap-3-falla-llenadora-mostaza .eyebrow",{opacity:0,y:30},{opacity:1,y:0,duration:.5,ease:"power3.out"},548.74);tl.fromTo("#cap-3-falla-llenadora-mostaza h1",{opacity:0,y:40},{opacity:1,y:0,duration:.8,ease:"back.out(1.4)"},548.94);tl.fromTo("#cap-3-falla-llenadora-mostaza .rule",{scaleX:0},{scaleX:1,duration:.9,ease:"power2.inOut"},549.14);tl.to("#cap-3-falla-llenadora-mostaza .in",{opacity:0,y:-20,duration:.4},551.54);
+tl.fromTo("#bar-3-S01 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},552.04);
+tl.set("#v-3-S01",{x:0,y:0,scale:1},551.94);
+tl.fromTo("#v-3-S01",{x:0,y:0,scale:1},{x:-1440,y:-274,scale:1.9,duration:0.8,ease:"power2.inOut",immediateRender:false},552.14);
+tl.fromTo("#v-3-S01",{x:-1440,y:-274,scale:1.9},{x:0,y:0,scale:1,duration:0.7,ease:"power2.inOut",immediateRender:false},553.84);
+tl.set("#cam-3-S01",{x:0,y:0,scale:1},555.62);
+tl.fromTo("#s-3-S01 .drift",{scale:1},{scale:1.04,duration:8.01,ease:"sine.inOut"},555.62);
+tl.fromTo("#cam-3-S01",{x:0,y:0,scale:1},{x:-2240,y:0,scale:2.4,duration:0.6,ease:"power2.inOut",immediateRender:false},555.72);
+tl.fromTo("#s-3-S01-f0-0",{opacity:0,scale:1.25},{opacity:1,scale:1,duration:.35,ease:"back.out(2)"},556.22);
+tl.fromTo("#s-3-S01-f0-r span",{opacity:0,y:20},{opacity:1,y:0,duration:.4,ease:"power3.out"},556.27);
+tl.fromTo("#cam-3-S01",{x:-2240,y:0,scale:2.4},{x:0,y:0,scale:1,duration:0.8,ease:"power2.inOut",immediateRender:false},558.57);
+tl.fromTo("#cam-3-S01",{x:0,y:0,scale:1},{x:-2240,y:0,scale:2.4,duration:0.6,ease:"power2.inOut",immediateRender:false},560.08);
+tl.fromTo("#s-3-S01-f1-0",{opacity:0,scale:1.25},{opacity:1,scale:1,duration:.35,ease:"back.out(2)"},560.58);
+tl.fromTo("#s-3-S01-f1-r span",{opacity:0,y:20},{opacity:1,y:0,duration:.4,ease:"power3.out"},560.63);
+tl.fromTo("#cam-3-S01",{x:-2240,y:0,scale:2.4},{x:0,y:0,scale:1,duration:0.75,ease:"power2.inOut",immediateRender:false},562.83);
+tl.fromTo("#bar-3-S02 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},563.73);
+tl.set("#v-3-S02",{x:0,y:0,scale:1},563.63);
+tl.set("#cam-3-S02",{x:0,y:0,scale:1},565.71);
+tl.fromTo("#s-3-S02 .drift",{scale:1.04},{scale:1,duration:11.18,ease:"sine.inOut"},565.71);
+tl.fromTo("#cam-3-S02",{x:0,y:0,scale:1},{x:0,y:0,scale:2.4,duration:0.6,ease:"power2.inOut",immediateRender:false},571.84);
+tl.fromTo("#s-3-S02-f0-0",{opacity:0,scale:1.25},{opacity:1,scale:1,duration:.35,ease:"back.out(2)"},572.34);
+tl.fromTo("#s-3-S02-f0-r span",{opacity:0,y:20},{opacity:1,y:0,duration:.4,ease:"power3.out"},572.39);
+tl.fromTo("#cam-3-S02",{x:0,y:0,scale:2.4},{x:0,y:0,scale:1,duration:0.8,ease:"power2.inOut",immediateRender:false},575.69);
+tl.fromTo("#bar-3-S03 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},576.99);
+tl.set("#v-3-S03",{x:0,y:0,scale:1},576.89);
+tl.fromTo("#v-3-S03",{x:0,y:0,scale:1},{x:-1440,y:0,scale:1.9,duration:0.8,ease:"power2.inOut",immediateRender:false},577.17);
+tl.fromTo("#v-3-S03",{x:-1440,y:0,scale:1.9},{x:0,y:0,scale:1,duration:0.7,ease:"power2.inOut",immediateRender:false},578.87);
+tl.set("#cam-3-S03",{x:0,y:0,scale:1},581.25);
+tl.fromTo("#s-3-S03 .drift",{scale:1},{scale:1.04,duration:21.11,ease:"sine.inOut"},581.25);
+tl.fromTo("#cam-3-S03",{x:0,y:0,scale:1},{x:0,y:0,scale:1,duration:0.6,ease:"power2.inOut",immediateRender:false},582.74);
+tl.fromTo("#s-3-S03-f0-r span",{opacity:0,y:20},{opacity:1,y:0,duration:.4,ease:"power3.out"},583.29);
+tl.fromTo("#cam-3-S03",{x:0,y:0,scale:1},{x:0,y:0,scale:1,duration:0.8,ease:"power2.inOut",immediateRender:false},586.59);
+tl.fromTo("#cam-3-S03",{x:0,y:0,scale:1},{x:-730,y:-2,scale:2.4,duration:0.6,ease:"power2.inOut",immediateRender:false},594.31);
+tl.fromTo("#s-3-S03-f1-0",{opacity:0,scale:1.25},{opacity:1,scale:1,duration:.35,ease:"back.out(2)"},594.81);
+tl.fromTo("#s-3-S03-f1-r span",{opacity:0,y:20},{opacity:1,y:0,duration:.4,ease:"power3.out"},594.86);
+tl.fromTo("#cam-3-S03",{x:-730,y:-2,scale:2.4},{x:-1976,y:-2,scale:2.4,duration:0.6,ease:"power2.inOut",immediateRender:false},598.67);
+tl.fromTo("#s-3-S03-f2-0",{opacity:0,scale:1.25},{opacity:1,scale:1,duration:.35,ease:"back.out(2)"},599.17);
+tl.fromTo("#s-3-S03-f2-r span",{opacity:0,y:20},{opacity:1,y:0,duration:.4,ease:"power3.out"},599.22);
+tl.fromTo("#cam-3-S03",{x:-1976,y:-2,scale:2.4},{x:0,y:0,scale:1,duration:0.75,ease:"power2.inOut",immediateRender:false},601.56);
+tl.fromTo("#bar-3-S04 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},602.46);
+tl.set("#v-3-S04",{x:0,y:0,scale:1},602.36);
+tl.fromTo("#v-3-S04",{x:0,y:0,scale:1},{x:0,y:0,scale:1.9,duration:0.8,ease:"power2.inOut",immediateRender:false},602.57);
+tl.fromTo("#v-3-S04",{x:0,y:0,scale:1.9},{x:0,y:0,scale:1,duration:0.7,ease:"power2.inOut",immediateRender:false},604.27);
+tl.fromTo("#v-3-S04",{x:0,y:0,scale:1},{x:-1278,y:-303,scale:1.8,duration:0.8,ease:"power2.inOut",immediateRender:false},605.52);
+tl.fromTo("#v-3-S04",{x:-1278,y:-303,scale:1.8},{x:0,y:0,scale:1,duration:0.7,ease:"power2.inOut",immediateRender:false},607.22);
+tl.set("#cam-3-S04",{x:0,y:0,scale:1},609.84);
+tl.fromTo("#s-3-S04 .drift",{scale:1.04},{scale:1,duration:9.35,ease:"sine.inOut"},609.84);
+tl.fromTo("#cam-3-S04",{x:0,y:0,scale:1},{x:0,y:0,scale:1,duration:0.6,ease:"power2.inOut",immediateRender:false},611.07);
+tl.fromTo("#s-3-S04-f0-r span",{opacity:0,y:20},{opacity:1,y:0,duration:.4,ease:"power3.out"},611.62);
+tl.fromTo("#cam-3-S04",{x:0,y:0,scale:1},{x:0,y:-898,scale:2.4,duration:0.6,ease:"power2.inOut",immediateRender:false},612.64);
+tl.fromTo("#s-3-S04-f1-0",{opacity:0,scale:1.25},{opacity:1,scale:1,duration:.35,ease:"back.out(2)"},613.14);
+tl.fromTo("#s-3-S04-f1-r span",{opacity:0,y:20},{opacity:1,y:0,duration:.4,ease:"power3.out"},613.19);
+tl.fromTo("#cam-3-S04",{x:0,y:-898,scale:2.4},{x:0,y:0,scale:1,duration:0.8,ease:"power2.inOut",immediateRender:false},616.49);
+tl.fromTo("#cap-4-menos-cip .eyebrow",{opacity:0,y:30},{opacity:1,y:0,duration:.5,ease:"power3.out"},619.39);tl.fromTo("#cap-4-menos-cip h1",{opacity:0,y:40},{opacity:1,y:0,duration:.8,ease:"back.out(1.4)"},619.59);tl.fromTo("#cap-4-menos-cip .rule",{scaleX:0},{scaleX:1,duration:.9,ease:"power2.inOut"},619.79);tl.to("#cap-4-menos-cip .in",{opacity:0,y:-20,duration:.4},622.19);
+tl.fromTo("#bar-4-S01 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},622.69);
+tl.fromTo("#s-4-S01-k-atraso",{opacity:0.25,scale:0.96},{opacity:1,scale:1,duration:.45,ease:"back.out(1.8)"},626.24);
+tl.fromTo("#s-4-S01-k-tarde",{opacity:0.25,scale:0.96},{opacity:1,scale:1,duration:.45,ease:"back.out(1.8)"},627.74);
+tl.fromTo("#s-4-S01-k-cip",{opacity:0.25,scale:0.96},{opacity:1,scale:1,duration:.45,ease:"back.out(1.8)"},630.38);
+tl.fromTo("#s-4-S01-k-envase",{opacity:0.25,scale:0.96},{opacity:1,scale:1,duration:.45,ease:"back.out(1.8)"},632.24);
+tl.fromTo("#s-4-S01-k-merma",{opacity:0.25,scale:0.96},{opacity:1,scale:1,duration:.45,ease:"back.out(1.8)"},634.38);
+tl.fromTo("#s-4-S01",{opacity:0},{opacity:1,duration:.4},622.59);
+tl.fromTo("#s-4-S01 h2, #s-4-S01 .eyebrow",{opacity:0,y:24},{opacity:1,y:0,duration:.5,ease:"power3.out"},622.74);
+tl.fromTo("#bar-4-S02 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},637.16);
+tl.set("#v-4-S02",{x:0,y:0,scale:1},637.06);
+tl.fromTo("#v-4-S02",{x:0,y:0,scale:1},{x:0,y:0,scale:1.9,duration:0.8,ease:"power2.inOut",immediateRender:false},637.31);
+tl.fromTo("#v-4-S02",{x:0,y:0,scale:1.9},{x:0,y:0,scale:1,duration:0.7,ease:"power2.inOut",immediateRender:false},639.01);
+tl.set("#cam-4-S02",{x:0,y:0,scale:1},640.92);
+tl.fromTo("#s-4-S02 .drift",{scale:1.04},{scale:1,duration:18.97,ease:"sine.inOut"},640.92);
+tl.fromTo("#cam-4-S02",{x:0,y:0,scale:1},{x:-761,y:-34,scale:2.4,duration:0.6,ease:"power2.inOut",immediateRender:false},641.02);
+tl.fromTo("#s-4-S02-f0-0",{opacity:0,scale:1.25},{opacity:1,scale:1,duration:.35,ease:"back.out(2)"},641.52);
+tl.fromTo("#s-4-S02-f0-r span",{opacity:0,y:20},{opacity:1,y:0,duration:.4,ease:"power3.out"},641.57);
+tl.fromTo("#cam-4-S02",{x:-761,y:-34,scale:2.4},{x:0,y:0,scale:1,duration:0.8,ease:"power2.inOut",immediateRender:false},641.83);
+tl.fromTo("#bar-4-S03 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},659.99);
+tl.set("#v-4-S03",{x:0,y:0,scale:1},659.89);
+tl.fromTo("#v-4-S03",{x:0,y:0,scale:1},{x:-638,y:-237,scale:1.8,duration:0.8,ease:"power2.inOut",immediateRender:false},660.14);
+tl.fromTo("#v-4-S03",{x:-638,y:-237,scale:1.8},{x:0,y:0,scale:1,duration:0.7,ease:"power2.inOut",immediateRender:false},661.84);
+tl.set("#cam-4-S03",{x:0,y:0,scale:1},665.07);
+tl.fromTo("#s-4-S03 .drift",{scale:1},{scale:1.04,duration:15.01,ease:"sine.inOut"},665.07);
+tl.fromTo("#cam-4-S03",{x:0,y:0,scale:1},{x:-1803,y:-1032,scale:2.4,duration:0.6,ease:"power2.inOut",immediateRender:false},665.81);
+tl.fromTo("#s-4-S03-f2-0",{opacity:0,scale:1.25},{opacity:1,scale:1,duration:.35,ease:"back.out(2)"},666.31);
+tl.fromTo("#s-4-S03-f2-r span",{opacity:0,y:20},{opacity:1,y:0,duration:.4,ease:"power3.out"},666.36);
+tl.fromTo("#cam-4-S03",{x:-1803,y:-1032,scale:2.4},{x:0,y:0,scale:1,duration:0.8,ease:"power2.inOut",immediateRender:false},669.66);
+tl.fromTo("#cam-4-S03",{x:0,y:0,scale:1},{x:-855,y:-776,scale:2.4,duration:0.6,ease:"power2.inOut",immediateRender:false},670.81);
+tl.fromTo("#s-4-S03-f3-0",{opacity:0,scale:1.25},{opacity:1,scale:1,duration:.35,ease:"back.out(2)"},671.31);
+tl.fromTo("#s-4-S03-f3-r span",{opacity:0,y:20},{opacity:1,y:0,duration:.4,ease:"power3.out"},671.36);
+tl.fromTo("#cam-4-S03",{x:-855,y:-776,scale:2.4},{x:0,y:0,scale:1,duration:0.8,ease:"power2.inOut",immediateRender:false},674.66);
+tl.fromTo("#bar-4-S04 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},680.18);
+tl.set("#v-4-S04",{x:0,y:0,scale:1},680.08);
+tl.fromTo("#v-4-S04",{x:0,y:0,scale:1},{x:0,y:-692,scale:1.9,duration:0.8,ease:"power2.inOut",immediateRender:false},680.18);
+tl.fromTo("#v-4-S04",{x:0,y:-692,scale:1.9},{x:0,y:0,scale:1,duration:0.7,ease:"power2.inOut",immediateRender:false},681.88);
+tl.set("#cam-4-S04",{x:0,y:0,scale:1},683.8);
+tl.fromTo("#s-4-S04 .drift",{scale:1.04},{scale:1,duration:3.54,ease:"sine.inOut"},683.8);
+tl.fromTo("#cap-5-merma-entregas .eyebrow",{opacity:0,y:30},{opacity:1,y:0,duration:.5,ease:"power3.out"},687.54);tl.fromTo("#cap-5-merma-entregas h1",{opacity:0,y:40},{opacity:1,y:0,duration:.8,ease:"back.out(1.4)"},687.74);tl.fromTo("#cap-5-merma-entregas .rule",{scaleX:0},{scaleX:1,duration:.9,ease:"power2.inOut"},687.94);tl.to("#cap-5-merma-entregas .in",{opacity:0,y:-20,duration:.4},690.34);
+tl.fromTo("#bar-5-S01 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},690.84);
+tl.set("#v-5-S01",{x:0,y:0,scale:1},690.74);
+tl.fromTo("#v-5-S01",{x:0,y:0,scale:1},{x:0,y:0,scale:1.9,duration:0.8,ease:"power2.inOut",immediateRender:false},690.74);
+tl.fromTo("#v-5-S01",{x:0,y:0,scale:1.9},{x:0,y:0,scale:1,duration:0.7,ease:"power2.inOut",immediateRender:false},692.38);
+tl.fromTo("#v-5-S01",{x:0,y:0,scale:1},{x:-638,y:-237,scale:1.8,duration:0.8,ease:"power2.inOut",immediateRender:false},693.63);
+tl.fromTo("#v-5-S01",{x:-638,y:-237,scale:1.8},{x:0,y:0,scale:1,duration:0.7,ease:"power2.inOut",immediateRender:false},695.33);
+tl.set("#cam-5-S01",{x:0,y:0,scale:1},698.57);
+tl.fromTo("#s-5-S01 .drift",{scale:1},{scale:1.04,duration:13,ease:"sine.inOut"},698.57);
+tl.fromTo("#cam-5-S01",{x:0,y:0,scale:1},{x:-2136,y:-1095,scale:2.4,duration:0.6,ease:"power2.inOut",immediateRender:false},699.02);
+tl.fromTo("#s-5-S01-f2-0",{opacity:0,scale:1.25},{opacity:1,scale:1,duration:.35,ease:"back.out(2)"},699.52);
+tl.fromTo("#s-5-S01-f2-r span",{opacity:0,y:20},{opacity:1,y:0,duration:.4,ease:"power3.out"},699.57);
+tl.fromTo("#cam-5-S01",{x:-2136,y:-1095,scale:2.4},{x:0,y:0,scale:1,duration:0.8,ease:"power2.inOut",immediateRender:false},702.87);
+tl.fromTo("#cam-5-S01",{x:0,y:0,scale:1},{x:-2240,y:-1095,scale:2.4,duration:0.6,ease:"power2.inOut",immediateRender:false},705.02);
+tl.fromTo("#s-5-S01-f3-0",{opacity:0,scale:1.25},{opacity:1,scale:1,duration:.35,ease:"back.out(2)"},705.52);
+tl.fromTo("#s-5-S01-f3-r span",{opacity:0,y:20},{opacity:1,y:0,duration:.4,ease:"power3.out"},705.57);
+tl.fromTo("#cam-5-S01",{x:-2240,y:-1095,scale:2.4},{x:0,y:0,scale:1,duration:0.8,ease:"power2.inOut",immediateRender:false},708.87);
+tl.fromTo("#bar-5-S02 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},711.67);
+tl.fromTo("#s-5-S02",{opacity:0},{opacity:1,duration:.35},711.57);
+tl.set("#cam-5-S02",{x:0,y:0,scale:1},711.57);
+tl.fromTo("#s-5-S02 .drift",{scale:1.04},{scale:1,duration:15.61,ease:"sine.inOut"},711.57);
+tl.fromTo("#cam-5-S02",{x:0,y:0,scale:1},{x:-2240,y:-724,scale:2.4,duration:0.6,ease:"power2.inOut",immediateRender:false},723.42);
+tl.fromTo("#s-5-S02-f0-0",{opacity:0,scale:1.25},{opacity:1,scale:1,duration:.35,ease:"back.out(2)"},723.92);
+tl.fromTo("#s-5-S02-f0-r span",{opacity:0,y:20},{opacity:1,y:0,duration:.4,ease:"power3.out"},723.97);
+tl.fromTo("#cam-5-S02",{x:-2240,y:-724,scale:2.4},{x:0,y:0,scale:1,duration:0.75,ease:"power2.inOut",immediateRender:false},726.38);
+tl.fromTo("#cap-6-cierre .eyebrow",{opacity:0,y:30},{opacity:1,y:0,duration:.5,ease:"power3.out"},727.38);tl.fromTo("#cap-6-cierre h1",{opacity:0,y:40},{opacity:1,y:0,duration:.8,ease:"back.out(1.4)"},727.58);tl.fromTo("#cap-6-cierre .rule",{scaleX:0},{scaleX:1,duration:.9,ease:"power2.inOut"},727.78);tl.to("#cap-6-cierre .in",{opacity:0,y:-20,duration:.4},730.18);
+tl.fromTo("#bar-6-S01 .tt",{opacity:0,x:-24},{opacity:1,x:0,duration:.4,ease:"power2.out"},730.68);
+tl.fromTo("#s-6-S01 h2",{opacity:0,y:30},{opacity:1,y:0,duration:.6,ease:"power3.out"},730.78);
+tl.fromTo("#s-6-S01-r0",{opacity:0,x:-40},{opacity:1,x:0,duration:.5,ease:"back.out(1.3)"},731.54);
+tl.fromTo("#s-6-S01-r0",{backgroundColor:"rgba(45,127,249,0)"},{backgroundColor:"rgba(45,127,249,.22)",duration:.4,yoyo:true,repeat:1},732.04);
+tl.fromTo("#s-6-S01-r1",{opacity:0,x:-40},{opacity:1,x:0,duration:.5,ease:"back.out(1.3)"},737.39);
+tl.fromTo("#s-6-S01-r1",{backgroundColor:"rgba(45,127,249,0)"},{backgroundColor:"rgba(45,127,249,.22)",duration:.4,yoyo:true,repeat:1},737.89);
+tl.fromTo("#s-6-S01-r2",{opacity:0,x:-40},{opacity:1,x:0,duration:.5,ease:"back.out(1.3)"},742.32);
+tl.fromTo("#s-6-S01-r2",{backgroundColor:"rgba(45,127,249,0)"},{backgroundColor:"rgba(45,127,249,.22)",duration:.4,yoyo:true,repeat:1},742.82);
+tl.fromTo("#s-6-S01-r3",{opacity:0,x:-40},{opacity:1,x:0,duration:.5,ease:"back.out(1.3)"},746.25);
+tl.fromTo("#s-6-S01-r3",{backgroundColor:"rgba(45,127,249,0)"},{backgroundColor:"rgba(45,127,249,.22)",duration:.4,yoyo:true,repeat:1},746.75);
+tl.fromTo("#s-6-S01-r4",{opacity:0,x:-40},{opacity:1,x:0,duration:.5,ease:"back.out(1.3)"},755.68);
+tl.fromTo("#s-6-S01-r4",{backgroundColor:"rgba(45,127,249,0)"},{backgroundColor:"rgba(45,127,249,.22)",duration:.4,yoyo:true,repeat:1},756.18);
+tl.fromTo("#s-6-S01 .foot",{opacity:0},{opacity:1,duration:.6},754.19);
+tl.fromTo("#outro .logo",{opacity:0,scale:.96},{opacity:1,scale:1,duration:1.2,ease:"power2.out"},759.39);tl.fromTo("#outro .sign",{opacity:0,y:20},{opacity:1,y:0,duration:.8},760.39);
+tl.fromTo("#progress",{scaleX:0},{scaleX:1,duration:765.19,ease:"none"},0);
+window.__timelines["main"] = tl;
+tl.seek(0);
+</script>
+</body>
+</html>

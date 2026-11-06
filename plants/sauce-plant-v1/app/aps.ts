@@ -227,7 +227,7 @@ export function mountSauceAps(root: HTMLElement): void {
       .join("");
     $("#sa-orders").innerHTML = `
       <div class="aps-orders-head">
-        <p class="dim">${esc(plan.plan_id)} · ${plan.source === "manual" ? "secuencia del planificador por orden de llegada" : plan.source === "fractal" ? "escenario de Fractal" : "cosimulador (HiGHS)"} · ${counts.hecho} hechos, ${counts["en curso"]} en curso y ${counts["por hacer"]} por hacer en AHORA. Clic en un pedido para verlo en el Gantt.</p>
+        <p class="dim">${esc(plan.plan_id)} · ${plan.source === "manual" ? (cfg ? "secuencia del planificador (configuración manual)" : "secuencia del planificador por orden de llegada") : plan.source === "fractal" ? "escenario de Fractal" : "cosimulador (HiGHS)"} · ${counts.hecho} hechos, ${counts["en curso"]} en curso y ${counts["por hacer"]} por hacer en AHORA. Clic en un pedido para verlo en el Gantt.</p>
         ${cards}
       </div>
       <div class="aps-table-wrap">
