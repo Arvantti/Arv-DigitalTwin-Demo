@@ -37,6 +37,7 @@ const plants: PlantCard[] = [
     family: "MANUFACTURA DE PROCESOS",
     title: "Planta de salsas",
     text: "Cocción, emulsión, pasteurización, llenado, empaque y bodega: flujo continuo y por lotes con servicios de planta.",
+    extra: { href: "/aps-salsas.html", label: "APS · PEDIDOS Y GANTT" },
   },
   {
     id: "water-network-scale-v1",

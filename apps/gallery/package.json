@@ -15,6 +15,7 @@
     "@twin/equipment-library": "workspace:*",
     "@twin/cosim": "workspace:*",
     "@twin/fractal-manufacturing": "workspace:*",
+    "@plants/sauce-plant-v1-app": "workspace:*",
     "highs": "1.15.3",
     "three": "0.186.1",
     "lil-gui": "0.21.0",

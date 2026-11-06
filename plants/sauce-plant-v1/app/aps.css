@@ -1,0 +1,19 @@
+/* APS de salsas: lo propio sobre los estilos comunes del APS (aps.css de la galería). */
+.sa-gantt { --label: 250px; }
+.sa-gantt .g-row.res { min-height: 34px; }
+.sa-bar { --stripe: rgba(255, 255, 255, 0.85); background: linear-gradient(90deg, transparent 0 var(--co, 0%), var(--c) var(--co, 0%)), repeating-linear-gradient(135deg, var(--stripe) 0 2px, transparent 2px 5px); cursor: pointer; }
+.sa-bar.co-alergeno { --stripe: var(--bad); }
+.sa-bar.co-cip { --stripe: var(--cyan); }
+.sa-bar.co-formato { --stripe: #ffffff; }
+.sa-bar.dim { opacity: 0.18; }
+.sa-bar.sel { outline: 2px solid #ffffff; outline-offset: -1px; opacity: 1; z-index: 2; }
+.g-legend i.sa-key { background: repeating-linear-gradient(135deg, var(--stripe) 0 2px, transparent 2px 5px); border: 1px solid var(--line); }
+.g-legend i.sa-key.co-alergeno { --stripe: var(--bad); }
+.g-legend i.sa-key.co-cip { --stripe: var(--cyan); }
+.g-legend i.sa-key.co-formato { --stripe: #ffffff; }
+.sa-orders tbody tr { cursor: pointer; }
+.sa-orders tbody tr:hover td { background: rgba(255, 255, 255, 0.03); }
+.sa-orders tbody tr.sel td { background: rgba(45, 127, 249, 0.14); }
+.sa-sel { margin: 0 0 8px; padding: 6px 10px; border: 1px solid var(--accent); border-radius: var(--radius-control); background: rgba(45, 127, 249, 0.1); }
+.sa-sel button { padding: 1px 7px; margin-left: 6px; }
+.aps-page .aps-orders-head .aps-kpi { min-width: 104px; }

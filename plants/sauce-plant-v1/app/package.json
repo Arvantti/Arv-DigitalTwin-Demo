@@ -1,0 +1,27 @@
+{
+  "name": "@plants/sauce-plant-v1-app",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Pantallas de la planta de salsas: APS con pedidos, Gantt por línea y llenadora, plan manual contra solver",
+  "exports": {
+    "./*": "./*"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@plants/sauce-plant-v1-cosim": "workspace:*",
+    "@twin/cosim-core": "workspace:*",
+    "highs": "1.15.3",
+    "js-yaml": "4.3.2"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "4.0.9",
+    "@types/node": "22.19.1",
+    "typescript": "5.9.3",
+    "vite": "8.3.1",
+    "vitest": "5.0.3"
+  }
+}
