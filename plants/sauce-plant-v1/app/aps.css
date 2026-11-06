@@ -5,12 +5,18 @@
 .sa-bar.co-alergeno { --stripe: var(--bad); }
 .sa-bar.co-cip { --stripe: var(--cyan); }
 .sa-bar.co-formato { --stripe: #ffffff; }
+.sa-bar.co-receta { --stripe: #b388ff; }
+.sa-bar.co-boquillas { --stripe: #22e06b; }
+.sa-bar.co-tanque { --stripe: #ffb000; }
 .sa-bar.dim { opacity: 0.18; }
 .sa-bar.sel { outline: 2px solid #ffffff; outline-offset: -1px; opacity: 1; z-index: 2; }
 .g-legend i.sa-key { background: repeating-linear-gradient(135deg, var(--stripe) 0 2px, transparent 2px 5px); border: 1px solid var(--line); }
 .g-legend i.sa-key.co-alergeno { --stripe: var(--bad); }
 .g-legend i.sa-key.co-cip { --stripe: var(--cyan); }
 .g-legend i.sa-key.co-formato { --stripe: #ffffff; }
+.g-legend i.sa-key.co-receta { --stripe: #b388ff; }
+.g-legend i.sa-key.co-boquillas { --stripe: #22e06b; }
+.g-legend i.sa-key.co-tanque { --stripe: #ffb000; }
 .sa-orders tbody tr { cursor: pointer; }
 .sa-orders tbody tr:hover td { background: rgba(255, 255, 255, 0.03); }
 .sa-orders tbody tr.sel td { background: rgba(45, 127, 249, 0.14); }

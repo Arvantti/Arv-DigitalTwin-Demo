@@ -23,4 +23,21 @@ changeovers:
     full_min: 90       # enjuague, soda, ácido, sanitizante y hisopo
     max_run_h: 20      # tras 20 h de producción acumulada sin limpiar, CIP de rutina dentro del turno
     routine_min: 75    # CIP de rutina: soda, ácido y sanitizante, sin hisopo
+  # Orden de recetas en cada línea de proceso (de claro a oscuro, de suave a picante, de menos a más grasa y color).
+  # Avanzar en el orden es un cambio de receta: en la marmita o el emulsificador, change_min de la receta que entra
+  # (catalog/tooling.yaml: vaciar, enjuagar y cargar, 45 a 60 min); en la llenadora, CIP corto. Devolverse (picante →
+  # tomate, BBQ → tomate, rosada → mayonesa) arrastra color, sabor o ají: CIP completo en la línea y en la llenadora.
+  # La mostaza tiene una sola receta en su línea.
+  sequence:
+    linea-caliente: [salsa-tomate, salsa-bbq, salsa-picante]
+    linea-fria:     [mayonesa-light, mayonesa, salsa-rosada]
+  # Pulmón: si cuando llega la tanda nueva queda granel de otra receta (vencido o sobrante), se bota y el tanque se
+  # lava (CIP corto) antes de recibirla.
+  tank:
+    dump_cip_min: 35
+  # Boquillas de la llenadora: limpieza intermedia (desarmar, lavar y sanitizar la boquilla y la mordaza) cada
+  # every_h horas de llenado sin limpiar; un CIP o cualquier cambio de 15 min o más también las limpia.
+  nozzle:
+    every_h: 4
+    min: 15
   assumed: true

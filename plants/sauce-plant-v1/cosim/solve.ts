@@ -22,6 +22,8 @@ import { context, dispatch, toPlan, type Chunk, type ContextOptions, type Job } 
 const MISSING_PENALTY = 1000;
 const EARLY_NUDGE = 1e-3;
 const SLACK = 0.97;
+/** Holgura de una línea con varias recetas: además del pulmón, los cambios de receta (unos 45 min por turno). */
+const MULTI_SLACK = 0.9;
 
 /** Lo mínimo que usamos de highs-js. */
 export interface HighsLike {
@@ -47,18 +49,18 @@ export function solve(highs: HighsLike, model: SauceModel, portfolio: CustomerOr
   const remaining = (j: Job) => Math.max(0, j.qty - (ctx.done[j.order.id] ?? 0));
   const jobs = [...ctx.jobs.values()].filter((j) => remaining(j) > 0);
 
-  /** Kilos que puede hacer una línea en un turno. */
-  const capKg = (bulk: string, bk: Bucket) => {
-    const a = Math.max(bk.start, ctx.lineFree[bulk]);
+  /** Kilos que puede hacer una línea en un turno (de cualquiera de sus recetas: todas tienen la misma tanda). */
+  const capKg = (lid: string, bk: Bucket) => {
+    const a = Math.max(bk.start, ctx.lineFree[lid]);
     if (a >= bk.end) return 0;
     let free = bk.end - a;
-    for (const [s, e] of ctx.down[bulk] ?? []) free -= Math.max(0, Math.min(e, bk.end) - Math.max(s, a));
+    for (const [s, e] of ctx.down[lid] ?? []) free -= Math.max(0, Math.min(e, bk.end) - Math.max(s, a));
     // Las tandas son enteras y no pasan de un día a otro: en el día caben floor(minutos del día ÷ minutos de tanda)
-    // tandas, y cada turno se lleva su parte.
-    const line = model.lines[bulk];
+    // tandas, y cada turno se lleva su parte. Una línea con varias recetas guarda tiempo para los cambios.
+    const line = model.lines[lid];
     const dayMin = cal.workBetween(Math.floor(bk.start / 1440) * 1440, Math.floor(bk.start / 1440) * 1440 + 1440);
     const perMin = dayMin > 0 ? (Math.floor(dayMin / line.batchMin) * line.outKg) / dayMin : 0;
-    return Math.max(0, SLACK * free * perMin);
+    return Math.max(0, (line.bulks.length > 1 ? MULTI_SLACK : SLACK) * free * perMin);
   };
   const cap = Object.fromEntries(Object.keys(model.lines).map((k) => [k, buckets.map((bk) => capKg(k, bk))]));
   const wrap = (terms: string[]) => terms.reduce((out, t, i) => out + (i && i % 12 === 0 ? "\n   " : " ") + t, "").trim();
@@ -72,15 +74,15 @@ export function solve(highs: HighsLike, model: SauceModel, portfolio: CustomerOr
     const kg = remaining(j) * j.bulkKg;
     const names: string[] = [];
     buckets.forEach((bk, b) => {
-      if (bk.end <= j.release || cap[j.bulk][b] <= 0) return;
+      if (bk.end <= j.release || cap[j.line][b] <= 0) return;
       const v = `x${ji}_${b}`;
       names.push(v);
       vars.set(v, { job: j, b });
       const lateH = Math.max(0, bk.end - j.due) / 60;
       const c = (j.weight * lateH) / kg + (EARLY_NUDGE * b) / (B * kg);
       if (c > 1e-12) obj.push(term(c, v));
-      bounds.push(`0 <= ${v} <= ${cap[j.bulk][b].toFixed(3)}`);
-      const key = `${j.bulk}|${b}`;
+      bounds.push(`0 <= ${v} <= ${cap[j.line][b].toFixed(3)}`);
+      const key = `${j.line}|${b}`;
       (lineTerms.get(key) ?? lineTerms.set(key, []).get(key)!).push(`+ ${v}`);
     });
     const miss = `s${ji}`;
@@ -90,8 +92,8 @@ export function solve(highs: HighsLike, model: SauceModel, portfolio: CustomerOr
   });
   let n = 0;
   for (const [key, ts] of lineTerms) {
-    const [bulk, b] = key.split("|");
-    rows.push(` c${n++}: ${wrap(ts)} <= ${cap[bulk][Number(b)].toFixed(3)}`);
+    const [lid, b] = key.split("|");
+    rows.push(` c${n++}: ${wrap(ts)} <= ${cap[lid][Number(b)].toFixed(3)}`);
   }
   const lp = ["Minimize", ` obj: ${wrap(obj) || "0 s0"}`, "Subject To", ...rows, "Bounds", ...bounds, "End"].join("\n");
   const res = highs.solve(lp, { time_limit: opt.timeLimitS ?? 20, presolve: "on" });
@@ -114,8 +116,21 @@ export function solve(highs: HighsLike, model: SauceModel, portfolio: CustomerOr
   }
 
   const queues: Record<string, Chunk[]> = Object.fromEntries(Object.keys(model.lines).map((k) => [k, []]));
-  const ordered = amounts.filter((a) => a.qty > 0).sort((x, y) => x.b - y.b || x.job.order.product.localeCompare(y.job.order.product) || x.job.due - y.job.due || x.job.order.id.localeCompare(y.job.order.id));
-  for (const a of ordered) queues[a.job.bulk].push({ job: a.job, qty: a.qty, notBefore: ctx.now });
+  // Dentro de cada turno, las recetas de la línea en su orden (de claro a oscuro, de suave a picante) siguiendo desde
+  // la última que corrió: así la línea avanza y solo se devuelve (CIP completo) cuando da la vuelta.
+  const cur: Record<string, string | undefined> = Object.fromEntries(Object.entries(ctx.lineState).map(([k, v]) => [k, v.bulk]));
+  const byBucket = new Map<string, typeof amounts>();
+  for (const a of amounts.filter((x) => x.qty > 0)) (byBucket.get(`${a.job.line}|${a.b}`) ?? byBucket.set(`${a.job.line}|${a.b}`, []).get(`${a.job.line}|${a.b}`)!).push(a);
+  for (const lid of Object.keys(model.lines))
+    for (let b = 0; b < B; b++) {
+      const list = byBucket.get(`${lid}|${b}`);
+      if (!list) continue;
+      const from = cur[lid] ? model.bulks[cur[lid]!].order : 0;
+      const rank = (bulk: string) => (model.bulks[bulk].order - from + model.lines[lid].bulks.length) % model.lines[lid].bulks.length;
+      list.sort((x, y) => rank(x.job.bulk) - rank(y.job.bulk) || x.job.order.product.localeCompare(y.job.order.product) || x.job.due - y.job.due || x.job.order.id.localeCompare(y.job.order.id));
+      for (const a of list) queues[lid].push({ job: a.job, qty: a.qty, notBefore: ctx.now });
+      cur[lid] = list[list.length - 1].job.bulk;
+    }
   const result = dispatch(ctx, queues);
   for (const j of jobs) {
     const planned = (byJob.get(j.order.id) ?? []).reduce((s, a) => s + Math.max(0, a.qty), 0);

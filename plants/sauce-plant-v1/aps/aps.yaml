@@ -8,39 +8,59 @@ aps:
   rush_lead_days: [1, 2]
 
   # Lote de proceso: una tanda de la receta (catalog/tooling.yaml, batch_kg × rendimiento). Varios pedidos del mismo
-  # granel comparten tanda; lo que sobra queda en el pulmón hasta su tiempo de espera (hold).
+  # granel comparten tanda; lo que sobra queda en el pulmón hasta su tiempo de espera (hold). Las recetas de una misma
+  # línea tienen la misma tanda, así que una tanda ocupa la línea lo mismo cualquiera sea la receta.
   batches:
     salsa-tomate:   { batch_kg: 2000, yield_pct: 98.0, out_kg: 1960 }     # 2.000 × 0,98
+    salsa-bbq:      { batch_kg: 2000, yield_pct: 98.0, out_kg: 1960 }
+    salsa-picante:  { batch_kg: 2000, yield_pct: 98.0, out_kg: 1960 }
     mayonesa:       { batch_kg: 1500, yield_pct: 98.5, out_kg: 1477.5 }   # 1.500 × 0,985
+    mayonesa-light: { batch_kg: 1500, yield_pct: 98.5, out_kg: 1477.5 }
+    salsa-rosada:   { batch_kg: 1500, yield_pct: 98.5, out_kg: 1477.5 }
     mostaza-granel: { batch_kg: 1000, yield_pct: 98.5, out_kg: 985 }      # 1.000 × 0,985
 
-  # Líneas de proceso: cada granel sale de su línea, una tanda tras otra. El ritmo es la capacidad aprobada de la planta
-  # (demand.yaml: 22.000 kg/día en 2 turnos de 8 h, 40 % caliente, 45 % frío, 15 % mostaza) e incluye cocción,
-  # muestreo y liberación por laboratorio; las llenadoras van mucho más rápido, así que el cuello de botella es el
-  # proceso. Una tanda ocupa la línea out_kg ÷ ritmo:
-  #   salsa-tomate:   22.000 × 0,40 ÷ 16 h = 550 kg/h     → 1.960 ÷ 550 × 60    = 213,8 min
-  #   mayonesa:       22.000 × 0,45 ÷ 16 h = 618,75 kg/h  → 1.477,5 ÷ 618,75 × 60 = 143,3 min
-  #   mostaza-granel: 22.000 × 0,15 ÷ 16 h = 206,25 kg/h  → 985 ÷ 206,25 × 60   = 286,5 min
+  # Tanda parcial: la marmita o el emulsificador necesitan al menos la mitad de su carga para cubrir el agitador y las
+  # paredes calientes. Si lo que se alcanza a llenar antes de que el granel se venza es menos que una tanda completa,
+  # se cocina solo eso (en pasos de 10 %, mínimo 50 %); la tanda dura lo mismo. Así las recetas de poco volumen (BBQ,
+  # picante, rosada, light) no botan media tanda cada vez.
+  partial_batch: { min_pct: 50, step_pct: 10 }
+
+  # Líneas de proceso: hacen una tanda tras otra de sus recetas (`recipes`, en el orden de catalog/changeovers.yaml).
+  # El ritmo es la capacidad aprobada de la planta (demand.yaml: 22.000 kg/día en 2 turnos de 8 h, 40 % caliente,
+  # 45 % frío, 15 % mostaza) e incluye cocción, muestreo y liberación por laboratorio; las llenadoras van mucho más
+  # rápido, así que el cuello de botella es el proceso. Una tanda ocupa la línea out_kg ÷ ritmo:
+  #   linea-caliente: 22.000 × 0,40 ÷ 16 h = 550 kg/h     → 1.960 ÷ 550 × 60    = 213,8 min
+  #   linea-fria:     22.000 × 0,45 ÷ 16 h = 618,75 kg/h  → 1.477,5 ÷ 618,75 × 60 = 143,3 min
+  #   linea-mostaza:  22.000 × 0,15 ÷ 16 h = 206,25 kg/h  → 985 ÷ 206,25 × 60   = 286,5 min
+  # Cambiar de receta en la línea quita tiempo de tanda (catalog/changeovers.yaml, sequence).
   # `equipment`: equipos donde se muestra la tanda (se turnan). `down_with`: si alguno falla, la línea para (la
-  # caldera da vapor a marmitas y pasteurizadores).
+  # caldera da vapor a marmitas y pasteurizadores). Supuesto: cada receta en curso tiene su pulmón.
   lines:
-    salsa-tomate:   { rate_kg_h: 550,    stage: cocción y pasteurización, equipment: [kettle-01, kettle-02, kettle-03], down_with: [boiler-01, pasteurizer-01, pasteurizer-02] }
-    mayonesa:       { rate_kg_h: 618.75, stage: emulsión,                 equipment: [emulsifier-01],                  down_with: [tank-aqueous-01, colloid-mill-01] }
-    mostaza-granel: { rate_kg_h: 206.25, stage: hidratación y molienda,   equipment: [tank-mustard-01],                down_with: [mustard-mill-01] }
+    linea-caliente: { recipes: [salsa-tomate, salsa-bbq, salsa-picante], rate_kg_h: 550,    stage: cocción y pasteurización, equipment: [kettle-01, kettle-02, kettle-03], down_with: [boiler-01, pasteurizer-01, pasteurizer-02] }
+    linea-fria:     { recipes: [mayonesa-light, mayonesa, salsa-rosada], rate_kg_h: 618.75, stage: emulsión,                 equipment: [emulsifier-01],                  down_with: [tank-aqueous-01, colloid-mill-01] }
+    linea-mostaza:  { recipes: [mostaza-granel],                         rate_kg_h: 206.25, stage: hidratación y molienda,   equipment: [tank-mustard-01],                down_with: [mustard-mill-01] }
 
   # Lote de llenado (unidades): lo que sale de una tanda, redondeado hacia abajo a cajas completas (round de demand.yaml).
   #   tomate-1000:    1.960 / 1,12   = 1.750,0 → 1.748 (cajas de 4)
   #   tomate-250:     1.960 / 0,28   = 7.000,0 → 6.992 (cajas de 16)
+  #   bbq-1000:       1.960 / 1,15   = 1.704,3 → 1.704 (cajas de 4)
+  #   picante-250:    1.960 / 0,27   = 7.259,3 → 7.248 (cajas de 16)
   #   mayonesa-1000:  1.477,5 / 0,93  = 1.588,7 → 1.588 (cajas de 4)
   #   mayonesa-500:   1.477,5 / 0,465 = 3.177,4 → 3.176 (cajas de 8)
   #   mayonesa-250:   1.477,5 / 0,2325 = 6.354,8 → 6.352 (cajas de 16)
+  #   rosada-500:     1.477,5 / 0,48  = 3.078,1 → 3.072 (cajas de 8)
+  #   light-1000:     1.477,5 / 0,96  = 1.539,1 → 1.536 (cajas de 4)
   #   mostaza-250:    985 / 0,2625    = 3.752,4 → 3.744 (cajas de 16)
   lots:
     tomate-1000: 1748
     tomate-250: 6992
+    bbq-1000: 1704
+    picante-250: 7248
     mayonesa-1000: 1588
     mayonesa-500: 3176
     mayonesa-250: 6352
+    rosada-500: 3072
+    light-1000: 1536
     mostaza-250: 3744
 
   # Llenadoras multipropósito: además de su producto habitual (ruta del catálogo), el APS puede mandar a estas
@@ -56,7 +76,11 @@ aps:
   # pasteurizado; la mayonesa se mantiene fría; la mostaza es estable a temperatura ambiente.
   hold:
     salsa-tomate:   { max_h: 4,  condition: "≥ 85 °C en el pulmón caliente" }
+    salsa-bbq:      { max_h: 4,  condition: "≥ 85 °C en el pulmón caliente" }
+    salsa-picante:  { max_h: 4,  condition: "≥ 85 °C en el pulmón caliente" }
     mayonesa:       { max_h: 24, condition: "≤ 18 °C en el pulmón frío" }
+    mayonesa-light: { max_h: 12, condition: "≤ 18 °C en el pulmón frío (menos aceite, menos estable)" }
+    salsa-rosada:   { max_h: 24, condition: "≤ 18 °C en el pulmón frío" }
     mostaza-granel: { max_h: 48, condition: "ambiente, tanque cerrado" }
 
   # Puntaje de Fractal (platform/fractal-core): menor es mejor. Atraso ante todo; luego pedidos tarde, horas de CIP,

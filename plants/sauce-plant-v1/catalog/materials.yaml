@@ -16,6 +16,9 @@ materials:
   - { id: estabilizantes-conservantes, name: Estabilizantes y conservantes, kind: ingredient, unit: kg, assumed: true }
   - { id: harina-mostaza, name: Harina de mostaza (alérgeno), kind: ingredient, unit: kg, assumed: true }
   - { id: curcuma, name: Cúrcuma, kind: ingredient, unit: kg, assumed: true }
+  - { id: aji, name: Ají picante molido, kind: ingredient, unit: kg, assumed: true }
+  - { id: humo-liquido, name: Humo líquido, kind: ingredient, unit: kg, assumed: true }
+  - { id: melaza, name: Melaza, kind: ingredient, unit: kg, density_kg_l: 1.4, assumed: true }
   # Empaque
   - { id: laminado, name: Laminado para sachet, kind: packaging, unit: m2, assumed: true }
   - { id: caja-corrugada, name: Caja corrugada de despacho, kind: packaging, unit: u, assumed: true }

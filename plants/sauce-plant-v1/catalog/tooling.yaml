@@ -32,6 +32,49 @@ tooling:
     yield_pct: 98.5
     change_min: 60
     assumed: true
+  # Recetas que comparten línea con las de arriba (catalog/changeovers.yaml, sequence): misma tanda y rendimiento que
+  # la receta base de su línea, para que la tanda ocupe lo mismo. Cambiar de receta en la marmita o el emulsificador
+  # (vaciar, enjuagar, cargar la fórmula nueva) toma change_min de la receta que entra.
+  - id: rcp-bbq
+    kind: recipe
+    name: Salsa BBQ
+    product: salsa-bbq
+    layout_types: [jacketed_kettle]
+    batch_kg: 2000
+    formula_pct: { pasta-tomate-30brix: 30.0, agua: 33.0, azucar: 14.0, melaza: 10.0, vinagre: 8.0, sal: 2.0, almidon-modificado: 1.5, especias: 0.8, humo-liquido: 0.6, conservante: 0.1 }
+    yield_pct: 98.0
+    change_min: 45
+    assumed: true
+  - id: rcp-hot-sauce
+    kind: recipe
+    name: Salsa picante
+    product: salsa-picante
+    layout_types: [jacketed_kettle]
+    batch_kg: 2000
+    formula_pct: { pasta-tomate-30brix: 20.0, aji: 18.0, agua: 40.0, vinagre: 15.0, sal: 3.0, azucar: 2.5, almidon-modificado: 1.0, especias: 0.4, conservante: 0.1 }
+    yield_pct: 98.0
+    change_min: 45
+    assumed: true
+  - id: rcp-mayo-light
+    kind: recipe
+    name: Mayonesa light
+    product: mayonesa-light
+    layout_types: [vacuum_emulsifier]
+    batch_kg: 1500
+    formula_pct: { aceite: 40.0, agua: 42.0, huevo-liquido: 6.0, almidon-modificado: 4.0, vinagre: 4.5, azucar: 1.5, sal: 1.0, mostaza: 0.5, estabilizantes-conservantes: 0.5 }
+    yield_pct: 98.5
+    change_min: 60
+    assumed: true
+  - id: rcp-pink-sauce
+    kind: recipe
+    name: Salsa rosada
+    product: salsa-rosada
+    layout_types: [vacuum_emulsifier]
+    batch_kg: 1500
+    formula_pct: { aceite: 60.0, pasta-tomate-30brix: 12.0, agua: 10.0, huevo-liquido: 6.0, azucar: 5.0, vinagre: 4.5, sal: 1.2, mostaza: 0.5, almidon-modificado: 0.5, estabilizantes-conservantes: 0.3 }
+    yield_pct: 98.5
+    change_min: 60
+    assumed: true
   # Formatos de sachet: sirven a varios productos (la ruta de cada uno dice en qué llenadoras).
   - { id: fmt-sachet-250, kind: format, name: Sachet de 250 ml, size: 250 ml, layout_types: [vffs_sachet], params: { unit_ml: 250 }, change_min: 30, assumed: true }
   - { id: fmt-sachet-500, kind: format, name: Sachet de 500 ml, size: 500 ml, layout_types: [vffs_sachet], params: { unit_ml: 500 }, change_min: 30, assumed: true }

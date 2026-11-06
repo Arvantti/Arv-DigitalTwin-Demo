@@ -51,6 +51,6 @@ export function manualPlan(model: SauceModel, portfolio: CustomerOrders, manual:
     const [tb, ib] = arrival(b.order.id);
     return ta - tb || ia.localeCompare(ib);
   });
-  for (const j of [...listed, ...rest]) queues[j.bulk].push({ job: j, qty: j.qty - (ctx.done[j.order.id] ?? 0), filler: fillerOf.get(j.order.id), notBefore: ctx.now });
+  for (const j of [...listed, ...rest]) queues[j.line].push({ job: j, qty: j.qty - (ctx.done[j.order.id] ?? 0), filler: fillerOf.get(j.order.id), notBefore: ctx.now });
   return toPlan(ctx, portfolio, dispatch(ctx, queues), { planId: manual.plan_id, source: "manual", notes: [manual.note ?? "Secuencia del planificador."] });
 }

@@ -305,6 +305,15 @@ class Catalog:
             for product in self.products.values():
                 if product["kind"] == "semi" and not product.get("allergen_group"):
                     errors.append(f"producto {product['id']}: falta allergen_group (el catálogo tiene tabla de alérgenos)")
+        # Orden de recetas por línea: cada receta es un semielaborado y no se repite en dos líneas.
+        seen: dict[str, str] = {}
+        for line, order in (changeovers.get("sequence") or {}).items():
+            for pid in order:
+                if self.products.get(pid, {}).get("kind") != "semi":
+                    errors.append(f"cambios sequence {line}: {pid!r} no es un granel (semielaborado) del catálogo")
+                elif pid in seen:
+                    errors.append(f"cambios sequence: {pid!r} está en {seen[pid]} y en {line}")
+                seen[pid] = line
 
         for tool in self.tooling.values():
             label = f"herramental {tool['id']}"

@@ -1,11 +1,12 @@
 # Productos de la planta de salsas (docs/datos-reales.md): SKU = receta × presentación. Tres semielaborados a granel
 # (uno por familia, con su receta) y seis SKU en sachet, los que corren hoy en los escenarios de simulation.yaml.
-# Cada SKU usa su granel en kg por sachet (presentación × densidad de la llenadora), laminado y 1/n de caja.
+# Las líneas caliente y fría hacen varias recetas (BBQ y picante; light y rosada) con reglas de orden en
+# catalog/changeovers.yaml (sequence). Cada SKU usa su granel en kg por sachet (presentación × densidad de la llenadora), laminado y 1/n de caja.
 # Las llenadoras que admiten otro formato (500 y 1.000 ml) aparecen como alternativas; la activa es la que tiene
 # el formato montado (setup.yaml). El grupo de alérgenos va en el granel (allergen_group) y el SKU lo hereda por su
 # lista de materiales. La ruta es la habitual de cada SKU; que las llenadoras de 250 ml en frío (01 y 03) también
 # llenen el otro producto con CIP por alérgeno lo decide el APS (aps/aps.yaml, multipurpose), no el secuenciador de
-# referencia. Salsa BBQ y salsa rosada quedan para cuando tengan receta. Datos supuestos.
+# referencia. Datos supuestos.
 products:
 - id: salsa-tomate
   name: Salsa de tomate pasteurizada
@@ -60,6 +61,78 @@ products:
     equipment: [mustard-mill-01]
   - stage: pulmón
     equipment: [buffer-mustard-01]
+  assumed: true
+- id: salsa-bbq
+  name: Salsa BBQ pasteurizada
+  family: caliente
+  allergen_group: sin-alergenos
+  kind: semi
+  unit: kg
+  color: '#6d2e1a'
+  routing:
+  - stage: pesaje
+    equipment: [scale-01]
+  - stage: cocción
+    equipment: [kettle-01, kettle-02, kettle-03]
+    tooling: rcp-bbq
+  - stage: pasteurización
+    equipment: [pasteurizer-01, pasteurizer-02]
+  - stage: pulmón caliente
+    equipment: [buffer-hot-01, buffer-hot-02]
+  assumed: true
+- id: salsa-picante
+  name: Salsa picante pasteurizada
+  family: caliente
+  allergen_group: sin-alergenos
+  kind: semi
+  unit: kg
+  color: '#e64a19'
+  routing:
+  - stage: pesaje
+    equipment: [scale-01]
+  - stage: cocción
+    equipment: [kettle-01, kettle-02, kettle-03]
+    tooling: rcp-hot-sauce
+  - stage: pasteurización
+    equipment: [pasteurizer-01, pasteurizer-02]
+  - stage: pulmón caliente
+    equipment: [buffer-hot-01, buffer-hot-02]
+  assumed: true
+- id: mayonesa-light
+  name: Mayonesa light a granel
+  family: frío
+  allergen_group: huevo-mostaza
+  kind: semi
+  unit: kg
+  color: '#f6e7a6'
+  routing:
+  - stage: fase acuosa
+    equipment: [tank-aqueous-01]
+  - stage: emulsión
+    equipment: [emulsifier-01]
+    tooling: rcp-mayo-light
+  - stage: molienda
+    equipment: [colloid-mill-01]
+  - stage: pulmón frío
+    equipment: [buffer-cold-01]
+  assumed: true
+- id: salsa-rosada
+  name: Salsa rosada a granel
+  family: frío
+  allergen_group: huevo-mostaza
+  kind: semi
+  unit: kg
+  color: '#f08aa0'
+  routing:
+  - stage: fase acuosa
+    equipment: [tank-aqueous-01]
+  - stage: emulsión
+    equipment: [emulsifier-01]
+    tooling: rcp-pink-sauce
+  - stage: molienda
+    equipment: [colloid-mill-01]
+  - stage: pulmón frío
+    equipment: [buffer-cold-01]
   assumed: true
 - id: tomate-1000
   name: Salsa de tomate 1.000 ml
@@ -228,6 +301,122 @@ products:
     equipment: [checkweigher-06]
   - stage: empaque
     equipment: [pack-sauce-250]
+  - stage: estibado
+    equipment: [wrapper-01]
+  - stage: bodega
+    equipment: [rack-pt-02]
+  assumed: true
+- id: bbq-1000
+  name: Salsa BBQ 1.000 ml
+  family: caliente
+  kind: finished
+  unit: u
+  size: 1.000 ml
+  color: '#6d2e1a'
+  tolerance_pct: 4
+  bom:
+  - item: salsa-bbq
+    qty: 1.15
+  - item: laminado
+    qty: 0.07
+  - item: caja-corrugada
+    qty: 0.25
+  routing:
+  - stage: llenado
+    equipment: [filler-pouch-01]
+    tooling: fmt-sachet-1000
+  - stage: enfriamiento
+    equipment: [cooling-tunnel-01]
+  - stage: control de peso
+    equipment: [checkweigher-01]
+  - stage: empaque
+    equipment: [pack-sauce-1000]
+  - stage: estibado
+    equipment: [wrapper-01]
+  - stage: bodega
+    equipment: [rack-pt-02]
+  assumed: true
+- id: picante-250
+  name: Salsa picante 250 ml
+  family: caliente
+  kind: finished
+  unit: u
+  size: 250 ml
+  color: '#e64a19'
+  tolerance_pct: 4
+  bom:
+  - item: salsa-picante
+    qty: 0.27
+  - item: laminado
+    qty: 0.03
+  - item: caja-corrugada
+    qty: 0.0625
+  routing:
+  - stage: llenado
+    equipment: [filler-sachet-02]
+    tooling: fmt-sachet-250
+  - stage: enfriamiento
+    equipment: [cooling-tunnel-02]
+  - stage: control de peso
+    equipment: [checkweigher-02]
+  - stage: empaque
+    equipment: [pack-sauce-250]
+  - stage: estibado
+    equipment: [wrapper-01]
+  - stage: bodega
+    equipment: [rack-pt-02]
+  assumed: true
+- id: light-1000
+  name: Mayonesa light 1.000 ml
+  family: frío
+  kind: finished
+  unit: u
+  size: 1.000 ml
+  color: '#f6e7a6'
+  tolerance_pct: 4
+  bom:
+  - item: mayonesa-light
+    qty: 0.96
+  - item: laminado
+    qty: 0.07
+  - item: caja-corrugada
+    qty: 0.25
+  routing:
+  - stage: llenado
+    equipment: [filler-pouch-02, filler-pouch-03]
+    tooling: fmt-sachet-1000
+  - stage: control de peso
+    equipment: [checkweigher-05]
+  - stage: empaque
+    equipment: [pack-sauce-1000]
+  - stage: estibado
+    equipment: [wrapper-01]
+  - stage: bodega
+    equipment: [rack-pt-02]
+  assumed: true
+- id: rosada-500
+  name: Salsa rosada 500 ml
+  family: frío
+  kind: finished
+  unit: u
+  size: 500 ml
+  color: '#f08aa0'
+  tolerance_pct: 4
+  bom:
+  - item: salsa-rosada
+    qty: 0.48
+  - item: laminado
+    qty: 0.045
+  - item: caja-corrugada
+    qty: 0.125
+  routing:
+  - stage: llenado
+    equipment: [filler-pouch-03, filler-pouch-02]
+    tooling: fmt-sachet-500
+  - stage: control de peso
+    equipment: [checkweigher-04]
+  - stage: empaque
+    equipment: [pack-sauce-500]
   - stage: estibado
     equipment: [wrapper-01]
   - stage: bodega

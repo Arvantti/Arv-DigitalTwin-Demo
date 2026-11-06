@@ -42,7 +42,7 @@ describe("calendario", () => {
 describe("esquemas", () => {
   it("production-plan.v1 acepta los cambios de alimentos y los lotes de proceso", () => {
     const row = schema("production-plan.v1").properties.schedule.items.properties;
-    expect(row.changeover_kind.enum).toEqual(["molde", "resina", "color", "receta", "formato", "cip", "alergeno"]);
+    expect(row.changeover_kind.enum).toEqual(["molde", "resina", "color", "receta", "formato", "cip", "alergeno", "tanque", "boquillas"]);
     expect(row.batch_kg.type).toBe("number");
   });
 });

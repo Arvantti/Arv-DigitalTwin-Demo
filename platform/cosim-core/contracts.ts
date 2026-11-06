@@ -61,10 +61,10 @@ export interface PlanOrderRow {
 /**
  * Qué manda en un cambio de referencia.
  * Inyección: montaje de molde, purga de resina o purga de color.
- * Alimentos: cambio de receta, cambio de formato en la llenadora, limpieza CIP o limpieza por alérgeno (CIP completo
- * con verificación).
+ * Alimentos: cambio de receta, cambio de formato en la llenadora, limpieza CIP, limpieza por alérgeno (CIP completo
+ * con verificación), lavado del tanque pulmón y limpieza intermedia de boquillas.
  */
-export type ChangeoverKind = "molde" | "resina" | "color" | "receta" | "formato" | "cip" | "alergeno";
+export type ChangeoverKind = "molde" | "resina" | "color" | "receta" | "formato" | "cip" | "alergeno" | "tanque" | "boquillas";
 
 export interface PlanScheduleRow {
   op: string;

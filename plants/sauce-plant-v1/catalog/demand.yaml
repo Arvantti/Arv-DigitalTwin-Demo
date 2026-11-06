@@ -5,10 +5,10 @@
 # Capacidad: 22 t/día en 2 turnos de 8 h, de lunes a sábado (plant.yaml), con el reparto aprobado por el autor:
 # 40 % caliente, 45 % frío y 15 % mostaza. `daily` es la capacidad diaria de cada SKU en sachets:
 # 22.000 kg × participación ÷ kg de granel por sachet (lista de materiales de products.yaml). Por ejemplo,
-# tomate 1.000 ml: 22.000 × 25 % ÷ 1,12 = 4.911 sachets/día. Los pedidos llenan load_pct de esa capacidad.
+# tomate 1.000 ml: 22.000 × 18 % ÷ 1,12 = 3.536 sachets/día. Los pedidos llenan load_pct de esa capacidad.
 # Todo es supuesto: clientes ficticios, tamaños de pedido y tiempos de entrega.
 demand:
-  load_pct: 85
+  load_pct: 65
   timezone: "-05:00"            # hora de Colombia
   workdays: [1, 2, 3, 4, 5, 6]  # ISO: lunes = 1 … sábado = 6; el domingo la planta para
   shifts:
@@ -23,9 +23,14 @@ demand:
   color_change_min: 0
   customers: [Distribuidora Norte, Autoservicio La Montaña, Cadena Surtidora del Valle, Comidas Rápidas El Parque, Casino Institucional Andino, Tiendas Barrio Unido, Exportadora Pacífico]
   products:
-    - { product: tomate-1000,   daily: 4911,  order_qty: [1600, 6000],  round: 4 }
-    - { product: tomate-250,    daily: 11786, order_qty: [4000, 16000], round: 16 }
-    - { product: mayonesa-1000, daily: 4731,  order_qty: [1600, 6000],  round: 4 }
-    - { product: mayonesa-500,  daily: 7097,  order_qty: [2400, 9600],  round: 8 }
-    - { product: mayonesa-250,  daily: 9462,  order_qty: [3200, 12800], round: 16 }
-    - { product: mostaza-250,   daily: 12571, order_qty: [4000, 16000], round: 16 }
+    # Caliente 40 % (tomate 18 + 10, BBQ 7, picante 5); frío 45 % (mayonesa 15 + 12 + 10, rosada 4, light 4); mostaza 15 %.
+    - { product: tomate-1000,   daily: 3536,  order_qty: [1600, 6000],  round: 4 }    # 22.000 × 18 % ÷ 1,12
+    - { product: tomate-250,    daily: 7857,  order_qty: [4000, 14000], round: 16 }   # 22.000 × 10 % ÷ 0,28
+    - { product: bbq-1000,      daily: 1339,  order_qty: [800, 3000],   round: 4 }    # 22.000 × 7 % ÷ 1,15
+    - { product: picante-250,   daily: 4074,  order_qty: [2000, 8000],  round: 16 }   # 22.000 × 5 % ÷ 0,27
+    - { product: mayonesa-1000, daily: 3548,  order_qty: [1600, 6000],  round: 4 }    # 22.000 × 15 % ÷ 0,93
+    - { product: mayonesa-500,  daily: 5677,  order_qty: [2400, 9600],  round: 8 }    # 22.000 × 12 % ÷ 0,465
+    - { product: mayonesa-250,  daily: 9462,  order_qty: [3200, 12800], round: 16 }   # 22.000 × 10 % ÷ 0,2325
+    - { product: rosada-500,    daily: 1833,  order_qty: [800, 3200],   round: 8 }    # 22.000 × 4 % ÷ 0,48
+    - { product: light-1000,    daily: 917,   order_qty: [400, 1600],   round: 4 }    # 22.000 × 4 % ÷ 0,96
+    - { product: mostaza-250,   daily: 12571, order_qty: [4000, 16000], round: 16 }   # 22.000 × 15 % ÷ 0,2625
