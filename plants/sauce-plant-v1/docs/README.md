@@ -71,15 +71,37 @@ Una tanda ocupa la línea 213,8 / 143,3 / 286,5 min y no pasa de un día a otro.
 
 - `plan.ts`: el despacho. Avanza siempre por la línea que puede arrancar antes; toma el granel del pulmón o hace una
   tanda nueva; llena en la llenadora del tramo o en la que pueda empezar antes (la habitual primero); suma el CIP por
-  alérgeno, el cambio de formato y el CIP de rutina; cuenta como merma lo que se vence o sobra. Replanea desde AHORA
+  alérgeno, el cambio de formato y el CIP de rutina; cuenta como merma lo que se vence o sobra. Lo que quedó en el
+  pulmón se aprovecha antes de que se venza (si el tramo siguiente no alcanza, pasa adelante uno de los 8 siguientes
+  que sí) y no se cocina una tanda que ninguna llenadora alcanza a tomar a tiempo: se corre. Replanea desde AHORA
   con lo anterior congelado, con fallas del emulador: una falla de la caldera, el pasteurizador o un equipo de la
   línea para la línea; una falla de una llenadora, solo esa llenadora.
 - `solve.ts`: programa lineal por turnos (HiGHS): kilos de cada pedido por línea y turno, con la capacidad en tandas
   enteras por día, minimizando el atraso ponderado por importancia. Después, el mismo despacho.
 - `manual.ts`: el plan del planificador (APS-MAN-01) en el tiempo, por orden de llegada.
 
-Con la cartera de la demo, el plan manual deja 13 pedidos tarde (385 h de atraso), 56 cambios y 37 h de CIP; el del
-solver, ninguno tarde, 18 cambios y 12 h de CIP (`pnpm --filter @plants/sauce-plant-v1-cosim test`).
+Con la cartera de la demo, el plan manual deja 13 pedidos tarde (382 h de atraso), 56 cambios, 37 h de CIP y
+1.763 kg de merma; el del solver, ninguno tarde, 18 cambios, 12 h de CIP y 3.723 kg de merma (una tanda de tomate
+más: reparte los pedidos por turnos y el tomate solo aguanta 4 h en el pulmón). Replaneando el manual en AHORA
+(día 9, miércoles 4 de noviembre a las 10:00), el solver baja a 9 pedidos tarde, 221 h de atraso, 34 cambios y 24 h
+de CIP (`pnpm --filter @plants/sauce-plant-v1-cosim test`).
+
+## Pantalla del APS
+
+`app/` es la pantalla del APS de salsas; la galería la publica en `aps-salsas.html` y el portal la enlaza
+(`APS · PEDIDOS Y GANTT`). Arranca con el plan manual (APS-MAN-01) vigente y AHORA en el día 9 (miércoles 4 de
+noviembre, 10:00; `?now=` lo cambia).
+
+- PEDIDOS: los 104 pedidos con cliente, producto, entrega, cuándo termina, atraso y si están hechos, en curso o por
+  hacer en AHORA; arriba, los indicadores del plan. Clic en un pedido lo sigue en el Gantt.
+- PROGRAMACIÓN · GANTT: una fila por equipo de proceso (tandas T/MY/MS con su número) y una por llenadora (llenados
+  con el cambio rayado al comienzo: rojo el CIP por alérgeno, celeste el CIP, blanco el cambio de formato), paradas,
+  fuera de turno y la línea de AHORA; ventana de 3 días, 7 días o todo el horizonte.
+- CALCULAR CON EL COSIMULADOR: HiGHS en el navegador desde AHORA con lo anterior congelado. La propuesta muestra
+  pedidos tarde, atraso, cambios, CIP y merma contra el plan vigente, y el puntaje de abajo; se aprueba o se descarta.
+  PLAN MANUAL vuelve a APS-MAN-01.
+
+`view.ts` arma lo que se pinta (sin DOM) y lo cubren las pruebas (`pnpm --filter @plants/sauce-plant-v1-app test`).
 
 ## Puntaje de Fractal
 

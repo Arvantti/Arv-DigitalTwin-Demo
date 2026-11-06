@@ -106,6 +106,34 @@ describe("cosimulador de salsas: casos calculados a mano", () => {
   });
 });
 
+describe("despacho: no se bota granel que se puede aprovechar", () => {
+  it("lo que quedó en el pulmón pasa al pedido que alcanza a llenarlo; la tanda de una llenadora parada se corre", () => {
+    // sachet-02 (la única de tomate 250) está parada de 08:00 a 18:00. Secuencia por llegada: A (pouch-01), B (sachet-02),
+    // C (pouch-01).
+    const pf = small([
+      order("PED-A", "tomate-1000", 800, "2026-10-26T06:00", "2026-10-28T22:00"),
+      order("PED-B", "tomate-250", 1000, "2026-10-26T06:10", "2026-10-28T22:00"),
+      order("PED-C", "tomate-1000", 800, "2026-10-26T06:20", "2026-10-28T22:00"),
+    ]);
+    const seq: ManualSequence = { contract: "manual-sequence.v1", plan_id: "PRUEBA", plant: model.plant, portfolio_id: "PRUEBA", author: "prueba", sequence: { "filler-pouch-01": ["PED-A", "PED-C"], "filler-sachet-02": ["PED-B"] } };
+    const stop: PlantEvent = { contract: "plant-event.v1", id: "EV-T", plant: model.plant, equipment: "filler-sachet-02", kind: "falla", reason: "prueba", start: "2026-10-26T08:00-05:00", est_end: "2026-10-26T18:00-05:00" };
+    const plan = manualPlan(model, pf, seq, { randomDowntime: false, events: [stop] });
+    // Tanda 1: 06:00 a 09:33,8. A llena 800 ÷ 30 = 26,7 min (09:34 a 10:00) y sobran 1.960 − 896 = 1.064 kg hasta las
+    // 13:33,8. B no alcanza (sachet-02 vuelve a las 18:00): C pasa adelante y los usa (10:00 a 10:27); quedan 168 kg.
+    expect(fills(plan).map((r) => [r.order, r.equipment, hm(r.start), hm(r.end)])).toEqual([
+      ["PED-A", "filler-pouch-01", "10-26T09:34", "10-26T10:00"],
+      ["PED-C", "filler-pouch-01", "10-26T10:00", "10-26T10:27"],
+      ["PED-B", "filler-sachet-02", "10-26T18:00", "10-26T18:13"],
+    ]);
+    // La tanda de B no se cocina a las 09:34 para botarla a las 13:34: se corre para terminar a las 18:00
+    // (18:00 − 213,8 min = 14:26,2). B llena 1.000 ÷ 80 = 12,5 min.
+    expect(batches(plan).map((r) => [hm(r.start), hm(r.end)])).toEqual([["10-26T06:00", "10-26T09:34"], ["10-26T14:26", "10-26T18:00"]]);
+    // Merma: los 168 kg que se vencen + lo que sobra de la tanda 2 (1.960 − 280 = 1.680).
+    expect(plan.kpis.waste_kg).toBe(1848);
+    checkPlan(plan);
+  });
+});
+
 describe("cosimulador de salsas: cartera de la demo", () => {
   const highs = highsLoader();
 

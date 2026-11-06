@@ -34,6 +34,8 @@ export const WEIGHT: Record<Importance, number> = { alta: 3, normal: 1, baja: 0.
 const PRIORITY: Record<Importance, number> = { alta: 2, normal: 1, baja: 0 };
 /** Días de trabajo que el horizonte se extiende después de la última entrega. */
 export const TAIL_DAYS = 7;
+/** Cuántos tramos adelante mira el despacho para aprovechar el granel que quedó en el pulmón. */
+const LOOKAHEAD = 8;
 const r1 = (x: number) => Math.round(x * 10) / 10;
 
 /** Lo que pide un pedido: unidades de un SKU, kilos de su granel. */
@@ -281,12 +283,30 @@ export function dispatch(ctx: Context, queues: Record<string, Chunk[]>): Dispatc
     return end;
   };
 
-  const makeBatch = (line: Line, job: Job, notBefore: number): Stock | null => {
+  /** Cuándo correría una tanda que arranca desde `notBefore`. */
+  const slot = (line: Line, notBefore: number): { t: number; end: number } | null => {
     let t = ready(line.bulk, Math.max(lineFree[line.bulk], notBefore));
     // Una tanda no se deja a medias de un día para otro: si no alcanza a terminar antes del cierre, arranca al otro día.
     for (let g = 0; g < 10 && t < ctx.horizonEnd && cal.advance(t, line.batchMin) !== t + line.batchMin; g++) t = ready(line.bulk, runEnd(t));
     if (t >= ctx.horizonEnd) return null;
-    const end = cal.advance(t, line.batchMin, blocked(line.bulk));
+    return { t, end: cal.advance(t, line.batchMin, blocked(line.bulk)) };
+  };
+
+  /**
+   * Tanda nueva para el tramo. No se cocina para botar: si ninguna llenadora alcanza a tomar el granel antes de que se
+   * venza en el pulmón, la tanda se corre para que termine cuando la llenadora quede libre (al otro día, si toca).
+   */
+  const makeBatch = (line: Line, job: Job, notBefore: number, choices: string[]): Stock | null => {
+    let s = slot(line, notBefore);
+    for (let g = 0; s && g < 4; g++) {
+      const fillAt = Math.min(...choices.map((x) => plan(x, job, s!.end).t));
+      if (fillAt <= s.end + line.holdMin) break;
+      const later = slot(line, fillAt - line.batchMin);
+      if (!later || later.t <= s.t) break;
+      s = later;
+    }
+    if (!s) return null;
+    const { t, end } = s;
     const n = (count[line.bulk] = (count[line.bulk] ?? 0) + 1);
     const equipment = line.equipment[(rot[line.bulk] = ((rot[line.bulk] ?? -1) + 1) % line.equipment.length)];
     const id = `TND-${line.bulk.replace(/-granel$/, "").toUpperCase()}-${String(n).padStart(3, "0")}`;
@@ -309,7 +329,25 @@ export function dispatch(ctx: Context, queues: Record<string, Chunk[]>): Dispatc
       }
     }
     if (pick === null) break;
-    const ch = queues[pick][pos[pick]++];
+    // Lo que quedó en el pulmón se aprovecha antes de que se venza: si el tramo que sigue no alcanza a llenarlo a
+    // tiempo, pasa adelante el próximo tramo de la cola que sí (como haría el supervisor de llenado).
+    const q = queues[pick];
+    const left0 = stock[pick][0];
+    if (left0) {
+      const fits = (c: Chunk) => {
+        const at = Math.max(left0.ready, c.notBefore, c.job.release);
+        const opts = c.filler ? [c.filler] : model.products[c.job.order.product].fillers;
+        return Math.min(...opts.map((x) => plan(x, c.job, at).t)) <= left0.ready + model.lines[pick!].holdMin;
+      };
+      if (!fits(q[pos[pick]])) {
+        const k = q.slice(pos[pick] + 1, pos[pick] + 1 + LOOKAHEAD).findIndex(fits);
+        if (k >= 0) {
+          const [c] = q.splice(pos[pick] + 1 + k, 1);
+          q.splice(pos[pick], 0, c);
+        }
+      }
+    }
+    const ch = q[pos[pick]++];
     const line = model.lines[pick];
     const job = ch.job;
     const p = model.products[job.order.product];
@@ -321,7 +359,7 @@ export function dispatch(ctx: Context, queues: Record<string, Chunk[]>): Dispatc
       let head = stock[pick][0];
       const notBefore = Math.max(ch.notBefore, job.release);
       if (!head) {
-        const made = makeBatch(line, job, notBefore);
+        const made = makeBatch(line, job, notBefore, choices);
         if (!made) break;
         stock[pick].push(made);
         head = made;
