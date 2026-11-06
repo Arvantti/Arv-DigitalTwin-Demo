@@ -177,7 +177,7 @@
             "short_min": { "type": "number", "minimum": 0, "description": "CIP corto: enjuague, soda y enjuague" },
             "full_min": { "type": "number", "minimum": 0, "description": "CIP completo: soda, ácido, sanitizante y verificación con hisopo" },
             "max_run_h": { "type": "number", "exclusiveMinimum": 0, "description": "Horas de producción continua tras las que el equipo exige CIP completo de rutina" },
-            "daily_min": { "type": "number", "minimum": 0, "description": "Duración del CIP de rutina (fin del día o max_run_h)" }
+            "routine_min": { "type": "number", "minimum": 0, "description": "Duración del CIP de rutina, al acumular max_run_h de producción" }
           }
         },
         "assumed": { "type": "boolean" }

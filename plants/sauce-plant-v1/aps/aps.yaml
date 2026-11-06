@@ -14,6 +14,20 @@ aps:
     mayonesa:       { batch_kg: 1500, yield_pct: 98.5, out_kg: 1477.5 }   # 1.500 × 0,985
     mostaza-granel: { batch_kg: 1000, yield_pct: 98.5, out_kg: 985 }      # 1.000 × 0,985
 
+  # Líneas de proceso: cada granel sale de su línea, una tanda tras otra. El ritmo es la capacidad aprobada de la planta
+  # (demand.yaml: 22.000 kg/día en 2 turnos de 8 h, 40 % caliente, 45 % frío, 15 % mostaza) e incluye cocción,
+  # muestreo y liberación por laboratorio; las llenadoras van mucho más rápido, así que el cuello de botella es el
+  # proceso. Una tanda ocupa la línea out_kg ÷ ritmo:
+  #   salsa-tomate:   22.000 × 0,40 ÷ 16 h = 550 kg/h     → 1.960 ÷ 550 × 60    = 213,8 min
+  #   mayonesa:       22.000 × 0,45 ÷ 16 h = 618,75 kg/h  → 1.477,5 ÷ 618,75 × 60 = 143,3 min
+  #   mostaza-granel: 22.000 × 0,15 ÷ 16 h = 206,25 kg/h  → 985 ÷ 206,25 × 60   = 286,5 min
+  # `equipment`: equipos donde se muestra la tanda (se turnan). `down_with`: si alguno falla, la línea para (la
+  # caldera da vapor a marmitas y pasteurizadores).
+  lines:
+    salsa-tomate:   { rate_kg_h: 550,    stage: cocción y pasteurización, equipment: [kettle-01, kettle-02, kettle-03], down_with: [boiler-01, pasteurizer-01, pasteurizer-02] }
+    mayonesa:       { rate_kg_h: 618.75, stage: emulsión,                 equipment: [emulsifier-01],                  down_with: [tank-aqueous-01, colloid-mill-01] }
+    mostaza-granel: { rate_kg_h: 206.25, stage: hidratación y molienda,   equipment: [tank-mustard-01],                down_with: [mustard-mill-01] }
+
   # Lote de llenado (unidades): lo que sale de una tanda, redondeado hacia abajo a cajas completas (round de demand.yaml).
   #   tomate-1000:    1.960 / 1,12   = 1.750,0 → 1.748 (cajas de 4)
   #   tomate-250:     1.960 / 0,28   = 7.000,0 → 6.992 (cajas de 16)

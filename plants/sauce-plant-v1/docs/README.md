@@ -11,7 +11,7 @@ catalog/        materiales, productos (con grupo de alérgenos), recetas y forma
 aps/aps.yaml    ventana de entrega, tandas, lotes, llenadoras multipropósito, tiempos de espera y puntaje de Fractal
 aps/plans/      APS-MAN-01.json: secuencia del planificador de turno (manual-sequence.v1)
 orders/         cartera-2026-11.json: 104 pedidos inventados (customer-orders.v1)
-cosim/          @plants/sauce-plant-v1-cosim: modelo, cartera y plan manual; el programa lineal llega en la fase 3
+cosim/          @plants/sauce-plant-v1-cosim: modelo, cartera, plan manual, despacho y programa lineal (HiGHS)
 docs/           esta nota
 ```
 
@@ -27,8 +27,8 @@ formato (30 min, en la llenadora, se hace mientras corre el CIP) y la limpieza e
 | mostaza | CIP completo 90 | CIP corto 35 | CIP corto 35 |
 | huevo y mostaza | CIP completo 90 | CIP completo 90 | CIP corto 35 |
 
-El mismo producto en el lote siguiente no limpia. Además, CIP de rutina de 75 min al cierre del día o tras 20 h de
-producción continua.
+El mismo granel en el lote siguiente no limpia, aunque cambie la presentación (solo cambia el formato). Además, CIP de
+rutina de 75 min dentro del turno al acumular 20 h de producción sin limpiar.
 
 ## Tandas, lotes y tiempo de espera
 
@@ -61,6 +61,25 @@ pnpm --filter @plants/sauce-plant-v1-cosim make-portfolio   # regenera cartera y
 pnpm --filter @plants/sauce-plant-v1-cosim test
 uv run twin-lib catalog validate sauce-plant-v1
 ```
+
+## Cosimulador
+
+El cuello de botella es el proceso, no el llenado: cada granel sale de su línea en tandas enteras al ritmo de la
+capacidad aprobada (22 t/día: tomate 550 kg/h, mayonesa 618,75 kg/h, mostaza 206,25 kg/h; `aps/aps.yaml`, `lines`).
+Una tanda ocupa la línea 213,8 / 143,3 / 286,5 min y no pasa de un día a otro. Las llenadoras van a su ritmo del plano
+(30 a 100 sachets/min) y toman el granel cuando la tanda está lista y antes de que se venza.
+
+- `plan.ts`: el despacho. Avanza siempre por la línea que puede arrancar antes; toma el granel del pulmón o hace una
+  tanda nueva; llena en la llenadora del tramo o en la que pueda empezar antes (la habitual primero); suma el CIP por
+  alérgeno, el cambio de formato y el CIP de rutina; cuenta como merma lo que se vence o sobra. Replanea desde AHORA
+  con lo anterior congelado, con fallas del emulador: una falla de la caldera, el pasteurizador o un equipo de la
+  línea para la línea; una falla de una llenadora, solo esa llenadora.
+- `solve.ts`: programa lineal por turnos (HiGHS): kilos de cada pedido por línea y turno, con la capacidad en tandas
+  enteras por día, minimizando el atraso ponderado por importancia. Después, el mismo despacho.
+- `manual.ts`: el plan del planificador (APS-MAN-01) en el tiempo, por orden de llegada.
+
+Con la cartera de la demo, el plan manual deja 13 pedidos tarde (385 h de atraso), 56 cambios y 37 h de CIP; el del
+solver, ninguno tarde, 18 cambios y 12 h de CIP (`pnpm --filter @plants/sauce-plant-v1-cosim test`).
 
 ## Puntaje de Fractal
 
