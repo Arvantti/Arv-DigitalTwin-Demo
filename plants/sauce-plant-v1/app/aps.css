@@ -24,3 +24,13 @@
 .sa-sel button { padding: 1px 7px; margin-left: 6px; }
 .aps-page .aps-orders-head .aps-kpi { min-width: 104px; }
 .sa-fr-table td.num { white-space: nowrap; }
+/* Emulador y centro de control de salsas: la pantalla se arma dentro de #app, que no debe romper el diseño de la página. */
+body.cc-page > #app, body.emu-page > #app { display: contents; }
+#emu-svg.sa-emu-svg { aspect-ratio: 62 / 64; max-height: calc(100vh - 150px); }
+.sa-emu-svg .emu-zone text { font-size: 1.1px; }
+.sa-emu-svg .emu-m text { font-size: 0.9px; }
+.emu-m.change .body { fill: #b48cff; stroke: #e0d0ff; }
+.emu-m.blocked .body { fill: #ff8a3b; stroke: #ffd0b0; }
+.emu-legend .change { background: #b48cff; } .emu-legend .blocked { background: #ff8a3b; }
+.emu-state.change { color: #b48cff; } .emu-state.blocked { color: #ff8a3b; background: rgba(255, 138, 59, 0.12); }
+.cc-chips a { border: 1px solid; }
