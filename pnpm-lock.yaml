@@ -35,12 +35,18 @@ importers:
       '@plants/sauce-plant-v1-app':
         specifier: workspace:*
         version: link:../../plants/sauce-plant-v1/app
+      '@plants/sauce-plant-v1-cosim':
+        specifier: workspace:*
+        version: link:../../plants/sauce-plant-v1/cosim
       '@twin/3d':
         specifier: workspace:*
         version: link:../../packages/twin-3d
       '@twin/cosim':
         specifier: workspace:*
         version: link:../../cosim
+      '@twin/cosim-core':
+        specifier: workspace:*
+        version: link:../../platform/cosim-core
       '@twin/equipment-library':
         specifier: workspace:*
         version: link:../../equipment-library
