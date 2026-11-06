@@ -7,8 +7,8 @@
 #   - cambio de formato en la llenadora (250/500/1.000 ml): `change_min` del formato (30 min); es mecánico y se hace
 #     mientras corre el CIP, así que con los dos manda el más largo;
 #   - limpieza entre productos distintos, por grupo de alérgenos del granel (tabla `allergen`, de → a).
-# El mismo producto en el lote siguiente no limpia (0 min). Entre productos distintos del mismo grupo basta el CIP
-# corto. Si el producto que sale tiene un alérgeno que el que entra no declara, hace falta CIP completo con
+# El mismo granel en el lote siguiente no limpia (0 min), aunque cambie la presentación: mayonesa de 1.000 ml a
+# mayonesa de 500 ml solo cambia el formato. Entre graneles distintos del mismo grupo basta el CIP corto. Si el producto que sale tiene un alérgeno que el que entra no declara, hace falta CIP completo con
 # verificación con hisopo: la mayonesa lleva huevo y mostaza; la mostaza solo mostaza; la salsa de tomate ninguno.
 # Así, mostaza → mayonesa es CIP corto (la mayonesa ya declara mostaza) y mayonesa → mostaza es CIP completo (huevo).
 changeovers:
@@ -21,6 +21,6 @@ changeovers:
   cip:
     short_min: 35      # enjuague, soda caliente, enjuague
     full_min: 90       # enjuague, soda, ácido, sanitizante y hisopo
-    max_run_h: 20      # tras 20 h de producción continua, CIP de rutina
-    daily_min: 75      # CIP de rutina al cierre del día o al llegar a max_run_h: soda, ácido y sanitizante, sin hisopo
+    max_run_h: 20      # tras 20 h de producción acumulada sin limpiar, CIP de rutina dentro del turno
+    routine_min: 75    # CIP de rutina: soda, ácido y sanitizante, sin hisopo
   assumed: true

@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Cosimulador de la planta de salsas: modelo, cartera inventada y plan manual (fase 2); programa lineal en la fase 3",
+  "description": "Cosimulador de la planta de salsas: modelo, cartera inventada, plan manual y programa lineal (HiGHS)",
   "exports": {
     "./*": "./*"
   },
@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@twin/cosim-core": "workspace:*",
+    "highs": "1.15.3",
     "js-yaml": "4.3.2"
   },
   "devDependencies": {

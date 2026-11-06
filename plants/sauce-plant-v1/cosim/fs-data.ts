@@ -15,6 +15,8 @@ export const fsData = (): SauceData => ({
   demand: read("catalog/demand.yaml") as SauceData["demand"],
   changeovers: read("catalog/changeovers.yaml") as SauceData["changeovers"],
   aps: read("aps/aps.yaml") as SauceData["aps"],
+  setup: read("catalog/setup.yaml") as SauceData["setup"],
+  layout: read("plant.yaml") as SauceData["layout"],
 });
 
 export const json = (x: unknown) => `${JSON.stringify(x, null, 1)}\n`;

@@ -171,6 +171,9 @@ importers:
       '@twin/cosim-core':
         specifier: workspace:*
         version: link:../../../platform/cosim-core
+      highs:
+        specifier: 1.15.3
+        version: 1.15.3
       js-yaml:
         specifier: 4.3.2
         version: 4.3.2

@@ -1,0 +1,131 @@
+/**
+ * Cosimulador de salsas en modo solver: programa lineal por turnos (HiGHS) sobre las líneas de proceso.
+ *
+ * El cuello de botella es el proceso, así que el modelo reparte los kilos de granel de cada pedido entre los turnos de
+ * su línea. Variables: kilos de cada pedido en cada turno (continuas) y lo que queda sin programar (muy penalizado).
+ * Restricciones:
+ *   1. cada pedido se hace completo (o queda como faltante);
+ *   2. capacidad de cada línea en cada turno: las tandas enteras que caben en el día (no pasan de un día a otro),
+ *      repartidas por minutos de turno sin paradas, con 3 % de holgura para lo que se vence en el pulmón;
+ *   3. nada se produce antes de que llegue el pedido.
+ * Objetivo: atraso ponderado por importancia (alta 3, normal 1, baja 0,5) + un empujón mínimo a producir temprano.
+ *
+ * Después, cada línea toma sus pedidos en el orden de los turnos (sin esperar el inicio del turno: si la línea queda
+ * libre antes, sigue); dentro del turno, agrupados por SKU (menos cambios de formato y
+ * de granel en las llenadoras compartidas) y por entrega. El despacho elige la llenadora que pueda empezar antes, con
+ * preferencia por la habitual: así la multipropósito solo se usa cuando ayuda (por ejemplo, si la otra falla).
+ */
+import type { CustomerOrders, ProductionPlan } from "@twin/cosim-core";
+import type { SauceModel } from "./model.ts";
+import { context, dispatch, toPlan, type Chunk, type ContextOptions, type Job } from "./plan.ts";
+
+const MISSING_PENALTY = 1000;
+const EARLY_NUDGE = 1e-3;
+const SLACK = 0.97;
+
+/** Lo mínimo que usamos de highs-js. */
+export interface HighsLike {
+  solve(problem: string, options?: Record<string, unknown>): { Status: string; ObjectiveValue: number; Columns: Record<string, object> };
+}
+
+export interface SolveOptions extends ContextOptions {
+  planId?: string;
+  timeLimitS?: number;
+}
+
+interface Bucket {
+  start: number;
+  end: number;
+}
+
+export function solve(highs: HighsLike, model: SauceModel, portfolio: CustomerOrders, opt: SolveOptions = {}): ProductionPlan {
+  const t0 = performance.now();
+  const ctx = context(model, portfolio, opt);
+  const cal = model.calendar;
+  const buckets: Bucket[] = cal.shiftsBetween(ctx.start, ctx.horizonEnd).filter((s) => s.end > ctx.now);
+  const B = buckets.length;
+  const remaining = (j: Job) => Math.max(0, j.qty - (ctx.done[j.order.id] ?? 0));
+  const jobs = [...ctx.jobs.values()].filter((j) => remaining(j) > 0);
+
+  /** Kilos que puede hacer una línea en un turno. */
+  const capKg = (bulk: string, bk: Bucket) => {
+    const a = Math.max(bk.start, ctx.lineFree[bulk]);
+    if (a >= bk.end) return 0;
+    let free = bk.end - a;
+    for (const [s, e] of ctx.down[bulk] ?? []) free -= Math.max(0, Math.min(e, bk.end) - Math.max(s, a));
+    // Las tandas son enteras y no pasan de un día a otro: en el día caben floor(minutos del día ÷ minutos de tanda)
+    // tandas, y cada turno se lleva su parte.
+    const line = model.lines[bulk];
+    const dayMin = cal.workBetween(Math.floor(bk.start / 1440) * 1440, Math.floor(bk.start / 1440) * 1440 + 1440);
+    const perMin = dayMin > 0 ? (Math.floor(dayMin / line.batchMin) * line.outKg) / dayMin : 0;
+    return Math.max(0, SLACK * free * perMin);
+  };
+  const cap = Object.fromEntries(Object.keys(model.lines).map((k) => [k, buckets.map((bk) => capKg(k, bk))]));
+  const wrap = (terms: string[]) => terms.reduce((out, t, i) => out + (i && i % 12 === 0 ? "\n   " : " ") + t, "").trim();
+  const term = (c: number, v: string) => `${c >= 0 ? "+" : "-"} ${Math.abs(c).toFixed(9)} ${v}`;
+  const vars = new Map<string, { job: Job; b: number }>();
+  const obj: string[] = [];
+  const rows: string[] = [];
+  const bounds: string[] = [];
+  const lineTerms = new Map<string, string[]>();
+  jobs.forEach((j, ji) => {
+    const kg = remaining(j) * j.bulkKg;
+    const names: string[] = [];
+    buckets.forEach((bk, b) => {
+      if (bk.end <= j.release || cap[j.bulk][b] <= 0) return;
+      const v = `x${ji}_${b}`;
+      names.push(v);
+      vars.set(v, { job: j, b });
+      const lateH = Math.max(0, bk.end - j.due) / 60;
+      const c = (j.weight * lateH) / kg + (EARLY_NUDGE * b) / (B * kg);
+      if (c > 1e-12) obj.push(term(c, v));
+      bounds.push(`0 <= ${v} <= ${cap[j.bulk][b].toFixed(3)}`);
+      const key = `${j.bulk}|${b}`;
+      (lineTerms.get(key) ?? lineTerms.set(key, []).get(key)!).push(`+ ${v}`);
+    });
+    const miss = `s${ji}`;
+    obj.push(term((MISSING_PENALTY * j.weight) / kg, miss));
+    bounds.push(`0 <= ${miss} <= ${kg.toFixed(3)}`);
+    rows.push(` d${ji}: ${wrap([...names.map((v) => `+ ${v}`), `+ ${miss}`])} = ${kg.toFixed(3)}`);
+  });
+  let n = 0;
+  for (const [key, ts] of lineTerms) {
+    const [bulk, b] = key.split("|");
+    rows.push(` c${n++}: ${wrap(ts)} <= ${cap[bulk][Number(b)].toFixed(3)}`);
+  }
+  const lp = ["Minimize", ` obj: ${wrap(obj) || "0 s0"}`, "Subject To", ...rows, "Bounds", ...bounds, "End"].join("\n");
+  const res = highs.solve(lp, { time_limit: opt.timeLimitS ?? 20, presolve: "on" });
+  if (!["Optimal", "Time limit reached"].includes(res.Status)) throw new Error(`El solver no encontró programación: ${res.Status}`);
+
+  // Kilos por pedido y turno → unidades enteras sin perder el total del pedido.
+  const amounts: { job: Job; b: number; qty: number }[] = [];
+  for (const [name, col] of Object.entries(res.Columns)) {
+    const v = vars.get(name);
+    const primal = (col as { Primal?: number }).Primal ?? 0;
+    if (v && primal > 1e-6) amounts.push({ ...v, qty: primal / v.job.bulkKg });
+  }
+  const byJob = new Map<string, typeof amounts>();
+  for (const a of amounts) (byJob.get(a.job.order.id) ?? byJob.set(a.job.order.id, []).get(a.job.order.id)!).push(a);
+  for (const list of byJob.values()) {
+    const exact = list.reduce((s, a) => s + a.qty, 0);
+    list.forEach((a) => (a.qty = Math.floor(a.qty)));
+    const diff = Math.round(exact) - list.reduce((s, a) => s + a.qty, 0);
+    list.sort((a, b) => a.b - b.b)[list.length - 1].qty += diff;
+  }
+
+  const queues: Record<string, Chunk[]> = Object.fromEntries(Object.keys(model.lines).map((k) => [k, []]));
+  const ordered = amounts.filter((a) => a.qty > 0).sort((x, y) => x.b - y.b || x.job.order.product.localeCompare(y.job.order.product) || x.job.due - y.job.due || x.job.order.id.localeCompare(y.job.order.id));
+  for (const a of ordered) queues[a.job.bulk].push({ job: a.job, qty: a.qty, notBefore: ctx.now });
+  const result = dispatch(ctx, queues);
+  for (const j of jobs) {
+    const planned = (byJob.get(j.order.id) ?? []).reduce((s, a) => s + Math.max(0, a.qty), 0);
+    const missing = remaining(j) - planned;
+    if (missing > 0) result.unscheduled[j.order.id] = (result.unscheduled[j.order.id] ?? 0) + missing;
+  }
+  const seconds = (performance.now() - t0) / 1000;
+  return toPlan(ctx, portfolio, result, {
+    planId: opt.planId ?? "APS-SOL-01",
+    source: "solver",
+    solver: { status: res.Status, seconds: Math.round(seconds * 100) / 100, variables: vars.size + jobs.length, constraints: rows.length, objective: Math.round(res.ObjectiveValue * 100) / 100 },
+  });
+}
