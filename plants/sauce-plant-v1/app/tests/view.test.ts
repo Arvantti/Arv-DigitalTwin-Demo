@@ -3,7 +3,7 @@ import { parseLocal, type CustomerOrder, type ManualSequence, type PlantEvent } 
 import { buildModel } from "@plants/sauce-plant-v1-cosim/model.ts";
 import { manualPlan } from "@plants/sauce-plant-v1-cosim/manual.ts";
 import { demoManual, demoPortfolio, sauceData } from "../data.ts";
-import { compareKpis, DEMO_NOW, dayLabel, ganttSections, orderState, score, when } from "../view.ts";
+import { compareKpis, DEMO_NOW, dayLabel, failureCandidates, ganttSections, movableOrders, orderState, score, studyKpis, when } from "../view.ts";
 
 const model = buildModel(sauceData());
 const order = (id: string, product: string, quantity: number, created: string): CustomerOrder => ({ id, customer: "Cliente de prueba", product, quantity, unit: "u", created: `${created}-05:00`, due: "2026-10-28T22:00-05:00", importance: "normal" });
@@ -48,5 +48,28 @@ describe("APS de salsas: lo que se muestra", () => {
     // Puntaje: atraso + 20 × tarde + 2 × CIP + 1 × formato + 0,05 × merma, con los mismos indicadores del plan.
     const k = man.kpis;
     expect(score(model, man)).toBeCloseTo(k.tardiness_h + 20 * k.late_orders + 2 * k.cip_h! + (k.changeover_h - k.cip_h!) + 0.05 * k.waste_kg!, 0);
+  });
+
+  it("Fractal: pedidos que se pueden adelantar, equipos que se pueden poner en falla y la comparación de indicadores", () => {
+    const plan = manualPlan(model, demoPortfolio(), demoManual());
+    const now = parseLocal(DEMO_NOW);
+    const movable = movableOrders(plan, now);
+    expect(movable.length).toBeGreaterThan(10);
+    for (const o of movable) {
+      expect(parseLocal(o.start)).toBeGreaterThan(now);
+      expect(parseLocal(o.due)).toBeGreaterThanOrEqual(now + 2 * 1440);
+    }
+    expect(movable.map((o) => o.due)).toEqual([...movable.map((o) => o.due)].sort());
+    const ids = failureCandidates(model).map((f) => f.id);
+    expect(ids).toEqual(["boiler-01", "kettle-01", "emulsifier-01", "tank-mustard-01", ...model.fillers]);
+    const k = { ...plan.kpis, late_orders: 4, tardiness_h: 10, changeover_h: 12, cip_h: 8, waste_kg: 500 };
+    const d = studyKpis(k, { ...k, late_orders: 3, changeover_h: 13, cip_h: 8 });
+    expect(d.map((x) => [x.key, x.before, x.after, x.better, x.worse])).toEqual([
+      ["late_orders", 4, 3, true, false],
+      ["tardiness_h", 10, 10, false, false],
+      ["cip_h", 8, 8, false, false],
+      ["format_h", 4, 5, false, true],
+      ["waste_kg", 500, 500, false, false],
+    ]);
   });
 });

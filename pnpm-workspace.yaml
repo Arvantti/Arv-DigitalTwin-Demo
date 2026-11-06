@@ -8,4 +8,5 @@ packages:
   - platform/cosim-core
   - platform/fractal-core
   - plants/*/cosim
+  - plants/*/fractal
   - plants/*/app
