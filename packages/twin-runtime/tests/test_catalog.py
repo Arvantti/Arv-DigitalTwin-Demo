@@ -197,7 +197,8 @@ def test_allergen_table_names_product_groups(tmp_path, lib):
 def test_recipe_sequence_names_bulks_once(tmp_path, lib):
     """El orden de recetas de cada línea solo nombra graneles, y cada granel está en una sola línea."""
     folder = _copy(tmp_path, SAUCE)
-    _edit(folder, "changeovers.yaml", lambda d: d["changeovers"]["sequence"].update(linea_mostaza=["mostaza-granel", "salsa-bbq", "tomate-1000"]))
+    bad = ["mostaza-granel", "salsa-bbq", "tomate-1000"]
+    _edit(folder, "changeovers.yaml", lambda d: d["changeovers"]["sequence"].update(linea_mostaza=bad))
     errors = Catalog.load(folder).validate(_layout(folder), lib)
     assert "cambios sequence: 'salsa-bbq' está en linea-caliente y en linea_mostaza" in errors
     assert "cambios sequence linea_mostaza: 'tomate-1000' no es un granel (semielaborado) del catálogo" in errors
