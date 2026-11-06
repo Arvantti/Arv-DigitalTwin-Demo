@@ -14,7 +14,7 @@ import { buildModel } from "@plants/sauce-plant-v1-cosim/model.ts";
 import { manualPlan } from "@plants/sauce-plant-v1-cosim/manual.ts";
 import { demoManual, demoPortfolio, layoutEquipment, sauceData } from "./data.ts";
 import { CHANGE_NAMES, doneOf, equipmentAt, plcEquipment, signals, STATE_NAMES, type EqState, type PlcEquipment } from "./plant-state.ts";
-import { events, onChange, savedVigente, setEvents, sharedClock, shownNow } from "./store.ts";
+import { activeConfig, events, onChange, savedVigente, setEvents, sharedClock, shownNow } from "./store.ts";
 import { dayLabel, when } from "./view.ts";
 import yaml from "js-yaml";
 import plantYaml from "../plant.yaml?raw";
@@ -281,7 +281,10 @@ export function mountSauceEmulator(root: HTMLElement): void {
       render();
     }
   });
+  // Otra configuración de datos activada en el APS: la pantalla se vuelve a armar con ella.
+  const cfgId = activeConfig()?.id ?? null;
   onChange((what) => {
+    if (what === "config" && (activeConfig()?.id ?? null) !== cfgId) return location.reload();
     if (what === "plan") plan = savedVigente(portfolio.portfolio_id) ?? manual;
     if (what === "events") list = events();
     render();

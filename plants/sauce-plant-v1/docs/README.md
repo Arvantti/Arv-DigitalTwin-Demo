@@ -137,6 +137,28 @@ noviembre, 10:00; `?now=` lo cambia).
 
 `view.ts` arma lo que se pinta (sin DOM) y lo cubren las pruebas (`pnpm --filter @plants/sauce-plant-v1-app test`).
 
+## Configuración manual de los datos
+
+La pestaña ⚙ CONFIGURACIÓN del APS (`app/config.ts`) muestra cómo se cargan a mano los datos que la demo trae
+precargados. Se edita un borrador y arriba se ve, con cada cambio, el plan manual que daría (pedidos tarde, atraso,
+CIP y merma).
+
+1. PEDIDOS: agregar un pedido (cliente, producto, cantidad, entrega, importancia) y editar o eliminar los que faltan
+   por entregar. Los entregados quedan como están.
+2. PRODUCTOS Y LLENADORAS: arrastrar una llenadora sobre un producto (SKU) la asigna, solo si tiene ese formato
+   (250, 500 o 1.000 ml); ✕ la quita y sus pedidos en ella quedan sin asignar. ⧉ DUPLICAR crea un SKU con la misma
+   receta, formato y lote; QUITAR saca del catálogo un SKU sin pedidos. Las llenadoras asignadas reemplazan la ruta
+   y las multipropósito de `aps/aps.yaml` para ese SKU.
+3. SECUENCIA DEL PLANIFICADOR: tableros por llenadora con los pedidos por entregar; arrastrar una tarjeta la pasa a
+   otra llenadora que pueda llenarla o la sube o baja en la suya. ASIGNAR POR ORDEN DE LLEGADA reparte de nuevo como
+   el planificador de la demo. Al reordenar, el plan respeta ese orden (`keep_order`: cada llenadora conserva sus
+   turnos de llegada en el orden puesto; sin reordenar da lo mismo que por llegada).
+
+VERSIONES: GUARDAR COMO VERSIÓN NUEVA guarda una foto completa (pedidos, SKU, llenadoras y secuencia; sin historial
+de cambios) en el navegador; se abre, se usa en la planta o se elimina. La precargada siempre está. USAR EN LA
+PLANTA activa la versión para el APS, el emulador, el centro de control y el 3D (`store.ts`; `data.ts` aplica la
+versión activa) y vuelve a su plan manual (APS-MAN-CFG-nn); `?reset=1` vuelve a la precargada.
+
 ## Fractal
 
 `fractal/study.ts` arma estudios de escenario con el bucle de `platform/fractal-core`: cada combinación de palancas la

@@ -9,7 +9,10 @@
  * La programación vigente y las fallas del emulador se comparten con el emulador y el centro de control (store.ts): lo
  * que se adopta aquí es lo que corre en la planta, y una falla declarada en el emulador aparece aquí como alarma.
  *
- * Parámetros de la URL: tab=orders|gantt|fractal, now=2026-11-04T10:00 (AHORA; por defecto el día 9 de la demo),
+ * La pestaña CONFIGURACIÓN (config.ts) carga a mano los pedidos, las llenadoras de cada producto y la secuencia del
+ * planificador, y guarda versiones; la que se usa en la planta reemplaza a la precargada en todas las pantallas.
+ *
+ * Parámetros de la URL: tab=orders|gantt|fractal|config, now=2026-11-04T10:00 (AHORA; por defecto el día 9 de la demo),
  * solve=1 (calcula al abrir), order=PED-… (resalta un pedido), reset=1 (vuelve al plan manual y sin fallas).
  */
 import "./aps.css";
@@ -20,7 +23,8 @@ import { buildModel, type SauceModel } from "@plants/sauce-plant-v1-cosim/model.
 import { manualPlan } from "@plants/sauce-plant-v1-cosim/manual.ts";
 import type { HighsLike } from "@plants/sauce-plant-v1-cosim/solve.ts";
 import { demoManual, demoPortfolio, layoutEquipment, sauceData } from "./data.ts";
-import { activeEvents, events as storedEvents, onChange, resetDemo, savedVigente, setEvents, setVigente } from "./store.ts";
+import { activeConfig, activeEvents, events as storedEvents, onChange, resetDemo, savedVigente, setEvents, setVigente } from "./store.ts";
+import { mountConfig } from "./config.ts";
 import { BULK_COLOR, compareKpis, DEMO_NOW, dayLabel, dayNumber, failureCandidates, ganttSections, movableOrders, orderState, score, studyKpis, when, type Bar, type Lane } from "./view.ts";
 
 const esc = (s: unknown) => String(s).replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
@@ -38,7 +42,7 @@ interface State {
   vigente: ProductionPlan;
   propuesta: ProductionPlan | null;
   showing: "vigente" | "propuesta";
-  tab: "orders" | "gantt" | "fractal";
+  tab: "orders" | "gantt" | "fractal" | "config";
   windowDays: 3 | 7 | 0;
   selected: string | null;
   busy: boolean;
@@ -52,11 +56,13 @@ interface State {
 
 export function mountSauceAps(root: HTMLElement): void {
   const url = new URLSearchParams(location.search);
+  // reset=1 antes de leer los datos: vuelve también a la configuración precargada.
+  if (url.get("reset") === "1") resetDemo();
   const model = buildModel(sauceData());
   const portfolio = demoPortfolio();
   const nowText = url.get("now") ? `${url.get("now")!.slice(0, 16)}${model.timezone}` : DEMO_NOW;
   const manual = { ...manualPlan(model, portfolio, demoManual()), status: "vigente" as const };
-  if (url.get("reset") === "1") resetDemo();
+  const cfg = activeConfig();
   const params = Object.fromEntries(layoutEquipment().map((e) => [e.id, e.params]));
   const st: State = {
     model,
@@ -67,7 +73,7 @@ export function mountSauceAps(root: HTMLElement): void {
     vigente: savedVigente(portfolio.portfolio_id) ?? manual,
     propuesta: null,
     showing: "vigente",
-    tab: url.get("tab") === "gantt" ? "gantt" : url.get("tab") === "fractal" ? "fractal" : "orders",
+    tab: (["gantt", "fractal", "config"] as const).find((t) => t === url.get("tab")) ?? "orders",
     windowDays: 7,
     selected: url.get("order"),
     busy: false,
@@ -84,13 +90,14 @@ export function mountSauceAps(root: HTMLElement): void {
       <a class="aps-back" href="/plant.html?plant=sauce-plant-v1">← GEMELO 3D</a>
       <a class="aps-back" href="/">PORTAL</a>
       <div class="aps-title"><strong>APS</strong><span class="dim"> · programación detallada · planta de salsas</span></div>
-      <div id="sa-vigente" class="aps-chip"></div>
+      <div id="sa-vigente" class="aps-chip"></div>${cfg ? `<div class="aps-chip cf-chip-top" title="Configuración de datos activa">DATOS · ${esc(cfg.name)}</div>` : ""}
       <div class="aps-clock">AHORA · ${esc(dayLabel(st.now, st.start))} · ${esc(nowText.slice(11, 16))}</div>
     </header>
     <nav class="aps-tabs" aria-label="Pantallas del APS">
       <button data-tab="orders">PEDIDOS</button>
       <button data-tab="gantt">PROGRAMACIÓN · GANTT</button>
       <button data-tab="fractal">◆ FRACTAL · ESCENARIOS</button>
+      <button data-tab="config">⚙ CONFIGURACIÓN</button>
       <span class="aps-spacer"></span>
       <button id="sa-calc" class="primary" title="Programa lineal por turnos (HiGHS) sobre las líneas de proceso, desde AHORA; lo anterior queda congelado">⚙ CALCULAR CON EL COSIMULADOR</button>
       <button id="sa-manual" title="Vuelve a la secuencia del planificador (APS-MAN-01): por orden de llegada, llenadoras alternas">✎ PLAN MANUAL</button>
@@ -101,14 +108,27 @@ export function mountSauceAps(root: HTMLElement): void {
       <section id="sa-orders" class="aps-panel"></section>
       <section id="sa-gantt" class="aps-panel" hidden></section>
       <section id="sa-fractal" class="aps-panel" hidden></section>
+      <section id="sa-config" class="aps-panel" hidden></section>
     </main>`;
   const $ = <T extends HTMLElement>(sel: string) => root.querySelector(sel) as T;
+  const config = mountConfig($("#sa-config"), {
+    now: st.now,
+    start: st.start,
+    activated: () => {
+      // Se rearma con los datos de la versión activada, en su plan manual.
+      const u = new URL(location.href);
+      u.searchParams.set("tab", "orders");
+      u.searchParams.delete("reset");
+      location.href = u.toString();
+    },
+  });
 
   function render() {
     root.querySelectorAll<HTMLButtonElement>(".aps-tabs [data-tab]").forEach((b) => b.classList.toggle("active", b.dataset.tab === st.tab));
     $("#sa-orders").hidden = st.tab !== "orders";
     $("#sa-gantt").hidden = st.tab !== "gantt";
     $("#sa-fractal").hidden = st.tab !== "fractal";
+    $("#sa-config").hidden = st.tab !== "config";
     const calc = $<HTMLButtonElement>("#sa-calc");
     calc.disabled = st.busy;
     calc.textContent = st.busy ? "⚙ CALCULANDO…" : "⚙ CALCULAR CON EL COSIMULADOR";
@@ -117,6 +137,7 @@ export function mountSauceAps(root: HTMLElement): void {
     renderProposal();
     if (st.tab === "orders") renderOrders();
     else if (st.tab === "gantt") renderGantt();
+    else if (st.tab === "config") config.render();
     else renderFractal();
   }
 
@@ -405,7 +426,7 @@ export function mountSauceAps(root: HTMLElement): void {
   root.addEventListener("click", (e) => {
     const el = e.target as HTMLElement;
     const tab = el.closest<HTMLElement>("[data-tab]")?.dataset.tab;
-    if (tab === "orders" || tab === "gantt" || tab === "fractal") {
+    if (tab === "orders" || tab === "gantt" || tab === "fractal" || tab === "config") {
       st.tab = tab;
       return render();
     }
@@ -485,8 +506,10 @@ export function mountSauceAps(root: HTMLElement): void {
     }
   });
 
-  // Otra pantalla adoptó una programación o el emulador declaró o restableció una falla.
+  // Otra pantalla adoptó una programación o el emulador declaró o restableció una falla; otra ventana activó otra
+  // configuración de datos (la pantalla se vuelve a armar con ella).
   onChange((what) => {
+    if (what === "config" && (activeConfig()?.id ?? null) !== (cfg?.id ?? null)) return location.reload();
     if (what === "plan") st.vigente = savedVigente(portfolio.portfolio_id) ?? st.manual;
     if (what === "events") st.events = storedEvents();
     if (what !== "clock") render();

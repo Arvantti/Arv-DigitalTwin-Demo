@@ -18,7 +18,7 @@ import { buildModel } from "@plants/sauce-plant-v1-cosim/model.ts";
 import { manualPlan } from "@plants/sauce-plant-v1-cosim/manual.ts";
 import { demoManual, demoPortfolio, layoutEquipment, sauceData } from "@plants/sauce-plant-v1-app/data.ts";
 import { CHANGE_NAMES, dayLoads, doneOf, equipmentAt, eventsAt, loadColor, oeeAt, plcEquipment, progressOf, signals, STATE_COLORS, STATE_NAMES, weekLoad, type EqNow } from "@plants/sauce-plant-v1-app/plant-state.ts";
-import { demoNow, events, onChange, savedVigente, setSharedClock } from "@plants/sauce-plant-v1-app/store.ts";
+import { activeConfig, demoNow, events, onChange, savedVigente, setSharedClock } from "@plants/sauce-plant-v1-app/store.ts";
 import { dayLabel, when } from "@plants/sauce-plant-v1-app/view.ts";
 
 const SPEEDS: [number, string][] = [
@@ -361,7 +361,10 @@ export function buildSaucePlay(opts: Opts): SaucePlay {
     </div>`;
   });
 
+  // Otra configuración de datos activada en el APS: la pantalla se vuelve a armar con ella.
+  const cfgId = activeConfig()?.id ?? null;
   onChange((what) => {
+    if (what === "config" && (activeConfig()?.id ?? null) !== cfgId) return location.reload();
     if (what === "plan") plan = savedVigente(portfolio.portfolio_id) ?? manual;
     if (what === "events") list = events();
     if (what === "clock") return;
