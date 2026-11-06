@@ -130,6 +130,8 @@ const apiUrl = (path: string) => `${apiOrigin}${path}`;
 const apiFetch = (path: string, init: RequestInit = {}) => demoFetch(apiOrigin, path, init);
 let sessionId = url.get("session");
 let forecastStudyId = url.get("study");
+let archivedStudyId = url.get("savedStudy");
+let archivedStudyVersion = Number(url.get("savedVersion") ?? 0);
 let plantApiAvailable = false;
 let latestLiveMessage: SimMessage | null = null;
 let historicalTime: number | null = null;
@@ -2073,10 +2075,42 @@ const forecastStudyTypeLabel = (studyType: string): string => ({
 }[studyType] ?? studyType.toUpperCase());
 
 async function loadForecast(): Promise<void> {
+  const studySelector = $<HTMLSelectElement>("forecast-study");
+  if (archivedStudyId) {
+    const libraryResponse = await apiFetch(`/api/plants/${encodeURIComponent(doc.plant.id)}/saved-studies/${encodeURIComponent(archivedStudyId)}`);
+    if (!libraryResponse.ok) throw new Error("No se encontró el estudio archivado o no pertenece a este navegador");
+    const library = await libraryResponse.json() as { versions: { version: number }[] };
+    const version = archivedStudyVersion > 0 ? archivedStudyVersion : library.versions.at(-1)?.version;
+    if (!version || !library.versions.some((item) => item.version === version)) throw new Error("La versión archivada solicitada no existe");
+    archivedStudyVersion = version;
+    url.set("savedVersion", String(version));
+    const versionResponse = await apiFetch(`/api/plants/${encodeURIComponent(doc.plant.id)}/saved-studies/${encodeURIComponent(archivedStudyId)}/versions/${version}`);
+    if (!versionResponse.ok) throw new Error("No se pudo recuperar la versión archivada");
+    const savedVersion = await versionResponse.json() as { result: Record<string, unknown> };
+    const result = savedVersion.result;
+    if (result.temporal_context !== "forecast" || result.applied !== false || !Array.isArray(result.hours)) {
+      throw new Error("El archivo no contiene un futuro simulado reproducible");
+    }
+    forecastStudyId = String(result.study_id ?? archivedStudyId);
+    const summary: ForecastStudySummary = {
+      study_id: forecastStudyId,
+      study_type: String(result.study_type ?? "forecast"),
+      base_time: Number(result.base_time ?? 0),
+      profile_id: typeof result.profile_id === "string" ? result.profile_id : undefined,
+      profile_name: typeof result.profile_name === "string" ? result.profile_name : undefined,
+      objective_id: typeof result.objective_id === "string" ? result.objective_id : undefined,
+    };
+    studySelector.replaceChildren(new Option(`${forecastStudyTypeLabel(summary.study_type)} · ${summary.profile_name ?? summary.profile_id ?? "perfil"} · v${version}`, summary.study_id));
+    studySelector.value = summary.study_id;
+    studySelector.disabled = true;
+    syncPlcStudySelection(summary);
+    $("forecast-return").textContent = "↶ CERRAR ESTUDIO ARCHIVADO";
+    await loadForecastFrames(summary, result);
+    return;
+  }
   if (!sessionId) return;
   const studiesResponse = await apiFetch(`/api/plants/${doc.plant.id}/sessions/${sessionId}/fractal/studies`);
   const studies = studiesResponse.ok ? await studiesResponse.json() as ForecastStudySummary[] : [];
-  const studySelector = $<HTMLSelectElement>("forecast-study");
   if (!forecastStudyId && studies.length) {
     forecastStudyId = studies[0].study_id;
     url.set("study", forecastStudyId);
@@ -2093,6 +2127,7 @@ async function loadForecast(): Promise<void> {
     option.textContent = `${forecastStudyTypeLabel(study.study_type)} · ${profile} · ${study.study_id}`;
     return option;
   }));
+  studySelector.disabled = false;
   studySelector.value = forecastStudyId;
   syncPlcStudySelection(studies.find((study) => study.study_id === forecastStudyId));
   studySelector.onchange = () => {
@@ -2104,16 +2139,28 @@ async function loadForecast(): Promise<void> {
     void loadForecastFrames(studies.find((study) => study.study_id === forecastStudyId))
       .catch((error) => { $("forecast-values").textContent = `No se pudo cargar el escenario: ${String(error)}`; });
   };
+  $("forecast-return").textContent = "↶ VOLVER AL PLC ACTUAL";
   await loadForecastFrames(studies.find((study) => study.study_id === forecastStudyId));
 }
 
-async function loadForecastFrames(study?: ForecastStudySummary): Promise<void> {
-  if (!sessionId || !forecastStudyId) return;
+async function loadForecastFrames(study?: ForecastStudySummary, archivedResult?: Record<string, unknown>): Promise<void> {
+  if ((!sessionId && !archivedStudyId) || !forecastStudyId) return;
   forecastPlaybackStop?.(); forecastPlaybackStop = null;
   historicalTime = null;
-  const response = await apiFetch(`/api/plants/${doc.plant.id}/sessions/${sessionId}/fractal/studies/${encodeURIComponent(forecastStudyId)}/frames`);
-  if (!response.ok) throw new Error("No se pudo cargar el estudio Fractal desde PLC");
-  const data = await response.json() as { base_time: number; frames: ForecastFrame[] };
+  let data: { base_time: number; frames: ForecastFrame[] };
+  if (archivedStudyId) {
+    let result = archivedResult;
+    if (!result) {
+      const response = await apiFetch(`/api/plants/${encodeURIComponent(doc.plant.id)}/saved-studies/${encodeURIComponent(archivedStudyId)}/versions/${archivedStudyVersion}`);
+      if (!response.ok) throw new Error("No se pudo recuperar la versión archivada");
+      result = (await response.json() as { result: Record<string, unknown> }).result;
+    }
+    data = { base_time: Number(result.base_time ?? 0), frames: result.hours as ForecastFrame[] };
+  } else {
+    const response = await apiFetch(`/api/plants/${doc.plant.id}/sessions/${sessionId}/fractal/studies/${encodeURIComponent(forecastStudyId)}/frames`);
+    if (!response.ok) throw new Error("No se pudo cargar el estudio Fractal desde PLC");
+    data = await response.json() as { base_time: number; frames: ForecastFrame[] };
+  }
   const panel = $("forecast-panel");
   const selector = $<HTMLSelectElement>("forecast-hour");
   const playButton = $<HTMLButtonElement>("forecast-play");
@@ -2226,7 +2273,9 @@ async function start(): Promise<void> {
   $<HTMLAnchorElement>("link-equipos").href = `/equipos.html?plant=${plantId}`;
   $("forecast-return").onclick = () => {
     forecastPlaybackStop?.(); forecastPlaybackStop = null;
-    forecastStudyId = null; url.delete("study"); history.replaceState(null, "", `${location.pathname}?${url}`);
+    forecastStudyId = null; url.delete("study");
+    if (archivedStudyId) { archivedStudyId = null; archivedStudyVersion = 0; url.delete("savedStudy"); url.delete("savedVersion"); }
+    history.replaceState(null, "", `${location.pathname}?${url}`);
     $("forecast-panel").hidden = true; document.body.classList.remove("forecast-mode");
     if (latestLiveMessage) applyMessage(latestLiveMessage, "PLC.ACTUAL");
     else if (sessionId && !socket) connect();
@@ -2386,10 +2435,14 @@ async function start(): Promise<void> {
   };
   $("asset-chart-close").onclick = () => $<HTMLDialogElement>("asset-chart-modal").close();
   $<HTMLSelectElement>("asset-chart-variable").onchange = renderAssetChart;
-  if (sessionId && doc.plant.id === "water-network-scale-v1") {
+  if ((sessionId || archivedStudyId) && doc.plant.id === "water-network-scale-v1") {
     try { await loadForecast(); } catch (error) { bootError(String(error)); }
   }
-  if (forecastStudyId) {
+  if (archivedStudyId) {
+    $("btn-connect").textContent = "◆ REPRODUCCIÓN ARCHIVADA · SOLO LECTURA";
+    $<HTMLButtonElement>("btn-connect").disabled = true;
+    $<HTMLSelectElement>("scenario").disabled = true;
+  } else if (forecastStudyId) {
     $("btn-connect").textContent = "◆ VISTA DE ESCENARIO FRACTAL";
     $<HTMLButtonElement>("btn-connect").disabled = true;
     $<HTMLSelectElement>("scenario").disabled = true;

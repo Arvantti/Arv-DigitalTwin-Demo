@@ -64,6 +64,8 @@ let triadPlaybackTimer: number | null = null;
 let cosimulationRunning = false;
 let runStartedAt = "";
 let runSaved = false;
+let latestFractalStudy: Record<string, unknown> | null = null;
+let selectedSavedStudyId: string | null = null;
 
 type ProfileHour = {
   global_consumers_pct?: number;
@@ -598,9 +600,133 @@ function trajectoryFromFrames(frames: unknown[]): TrajectoryPoint[] {
   });
 }
 
+type SavedStudySummary = { id: string; name: string; version_count: number; latest_version: number; updated_at: string };
+
+async function renderSavedStudyLibrary(): Promise<void> {
+  const box = $("saved-study-library");
+  if (!box) return;
+  const response = await apiFetch(`/api/plants/${encodeURIComponent(plantId)}/saved-studies`);
+  if (!response.ok) { box.innerHTML = `<p class="muted">No se pudo cargar la biblioteca durable.</p>`; return; }
+  const items = await response.json() as SavedStudySummary[];
+  box.innerHTML = items.length ? items.map((item) => `<article class="panel saved-study-item"><p class="eyebrow">${item.version_count} VERSIONES · ACTUALIZADO ${safeHtml(item.updated_at)}</p><h3>${safeHtml(item.name)}</h3><p class="muted">${safeHtml(item.id)} · versión ${item.latest_version}</p><div class="controls"><a href="/plant.html?plant=${encodeURIComponent(plantId)}&savedStudy=${encodeURIComponent(item.id)}&savedVersion=${item.latest_version}${query.get("api") ? `&api=${encodeURIComponent(apiOrigin)}` : ""}">REPRODUCIR EN GEMELO 3D</a><button data-open-saved-study="${safeHtml(item.id)}">ABRIR RESULTADO</button><button data-rerun-saved-study="${safeHtml(item.id)}">RECALCULAR COMO VERSIÓN</button><button data-version-target="${safeHtml(item.id)}">USAR PRÓXIMO CÁLCULO</button><button data-rename-saved-study="${safeHtml(item.id)}">RENOMBRAR</button><button data-delete-saved-study="${safeHtml(item.id)}">ELIMINAR</button></div><div data-saved-study-result="${safeHtml(item.id)}"></div></article>`).join("") : `<p class="muted">Aún no hay estudios en esta biblioteca. Guarde una proyección desde una sesión PLC.</p>`;
+  if (selectedSavedStudyId) box.querySelector(`[data-version-target="${CSS.escape(selectedSavedStudyId)}"]`)?.classList.add("primary");
+}
+
+function safeHtml(value: string): string {
+  return value.replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]!);
+}
+
+async function saveLatestFractalStudy(): Promise<void> {
+  if (!latestFractalStudy || !sessionId || typeof latestFractalStudy.study_id !== "string") return;
+  const note = $("saved-study-action-note");
+  try {
+    let response: Response;
+    if (selectedSavedStudyId) {
+      response = await apiFetch(`/api/plants/${encodeURIComponent(plantId)}/saved-studies/${encodeURIComponent(selectedSavedStudyId)}/versions`, {
+        method: "POST", headers: { "content-type": "application/json" },
+        body: JSON.stringify({ source_session_id: sessionId, source_study_id: latestFractalStudy.study_id }),
+      });
+    } else {
+      const name = window.prompt("Nombre para guardar este estudio:", `${String(latestFractalStudy.study_type ?? "Fractal")} · ${new Date().toLocaleDateString("es-CO")}`)?.trim();
+      if (!name) return;
+      response = await apiFetch(`/api/plants/${encodeURIComponent(plantId)}/saved-studies`, {
+        method: "POST", headers: { "content-type": "application/json" },
+        body: JSON.stringify({ name, source_session_id: sessionId, source_study_id: latestFractalStudy.study_id }),
+      });
+    }
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const saved = await response.json() as { id: string; latest_version: number };
+    selectedSavedStudyId = null;
+    note.textContent = `Guardado en la biblioteca · ${saved.id} · versión ${saved.latest_version}.`;
+    await renderSavedStudyLibrary();
+  } catch (error) {
+    note.textContent = `No se pudo guardar el estudio: ${String(error)}`;
+  }
+}
+
+async function handleSavedStudyLibraryClick(event: Event): Promise<void> {
+  const button = (event.target as HTMLElement).closest<HTMLButtonElement>("button");
+  if (!button) return;
+  const openId = button.dataset.openSavedStudy;
+  const versionId = button.dataset.versionTarget;
+  const rerunId = button.dataset.rerunSavedStudy;
+  const deleteId = button.dataset.deleteSavedStudy;
+  const renameId = button.dataset.renameSavedStudy;
+  if (openId) {
+    const response = await apiFetch(`/api/plants/${encodeURIComponent(plantId)}/saved-studies/${encodeURIComponent(openId)}`);
+    if (!response.ok) return;
+    const saved = await response.json() as { versions: { version: number }[] };
+    const latestSummary = saved.versions.at(-1);
+    if (!latestSummary) return;
+    const versionResponse = await apiFetch(`/api/plants/${encodeURIComponent(plantId)}/saved-studies/${encodeURIComponent(openId)}/versions/${latestSummary.version}`);
+    if (!versionResponse.ok) return;
+    const latest = await versionResponse.json() as { version: number; created_at: string; source_study_id: string; result: Record<string, unknown> };
+    const target = document.querySelector<HTMLElement>(`[data-saved-study-result="${CSS.escape(openId)}"]`);
+    if (target) {
+      const pre = document.createElement("pre");
+      pre.className = "saved-study-json";
+      pre.textContent = JSON.stringify({ version: latest.version, created_at: latest.created_at, source_study_id: latest.source_study_id, result: latest.result }, null, 2);
+      target.replaceChildren(pre);
+    }
+  } else if (rerunId) {
+    const response = await apiFetch(`/api/plants/${encodeURIComponent(plantId)}/saved-studies/${encodeURIComponent(rerunId)}`);
+    if (!response.ok) return;
+    const archived = await response.json() as { versions: { version: number }[] };
+    const latestSummary = archived.versions.at(-1);
+    if (!latestSummary) return;
+    const versionResponse = await apiFetch(`/api/plants/${encodeURIComponent(plantId)}/saved-studies/${encodeURIComponent(rerunId)}/versions/${latestSummary.version}`);
+    if (!versionResponse.ok) return;
+    const latestVersion = await versionResponse.json() as { version: number; result: Record<string, unknown> };
+    const sourceInput = latestVersion.result.study_input as Record<string, unknown> | undefined;
+    const originalProfile = sourceInput?.profile as OperationProfile | undefined;
+    const profileWasEdited = Boolean(activeProfileId && JSON.stringify(activeProfile) !== JSON.stringify(originalProfile));
+    const useEditedProfile = Boolean(profileWasEdited && window.confirm(`¿Recalcular con el escenario actualmente seleccionado «${activeProfile.name}»? Cancelar conserva exactamente el escenario archivado.`));
+    const body: Record<string, unknown> = {
+      plant_id: plantId, saved_study_id: rerunId, version: latestVersion.version, emulator_api: apiOrigin,
+      ...(useEditedProfile ? { profile: activeProfile } : {}),
+    };
+    if (latestVersion.result.study_type === "optimized") {
+      const priorTarget = Number(latestVersion.result.target_pressure_mca ?? sourceInput?.target_pressure_mca ?? 18);
+      const entered = window.prompt("Presión objetivo C44 para la nueva versión (10–45 mca):", String(priorTarget));
+      if (entered === null) return;
+      const target = Number(entered);
+      if (!Number.isFinite(target) || target < 10 || target > 45) { window.alert("El objetivo debe estar entre 10 y 45 mca."); return; }
+      body.target_pressure_mca = target;
+    }
+    $("saved-study-action-note").textContent = "Recalculando desde la instantánea y el perfil archivados; no se leerá ni accionará el PLC…";
+    const rerun = await fractalFetch("/studies/saved/rerun", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
+    if (!rerun.ok) {
+      const detail = await rerun.json().catch(() => ({})) as { detail?: string };
+      $("saved-study-action-note").textContent = detail.detail ?? `No se pudo recalcular (HTTP ${rerun.status}).`;
+      return;
+    }
+    const updated = await rerun.json() as { id: string; latest_version: number };
+    $("saved-study-action-note").textContent = `Nueva versión calculada desde inputs congelados · ${updated.id} · v${updated.latest_version}. No aplicada al PLC.`;
+    await renderSavedStudyLibrary();
+  } else if (versionId) {
+    selectedSavedStudyId = versionId;
+    $("saved-study-action-note").textContent = `El próximo cálculo Fractal se guardará como nueva versión de ${versionId}; el resultado previo no se sobrescribe.`;
+    await renderSavedStudyLibrary();
+  } else if (renameId) {
+    const name = window.prompt("Nuevo nombre del estudio:")?.trim();
+    if (!name) return;
+    const response = await apiFetch(`/api/plants/${encodeURIComponent(plantId)}/saved-studies/${encodeURIComponent(renameId)}`, {
+      method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify({ name }),
+    });
+    if (response.ok) await renderSavedStudyLibrary();
+  } else if (deleteId && window.confirm("¿Eliminar definitivamente este estudio y todas sus versiones? Esta acción no se puede deshacer.")) {
+    const response = await apiFetch(`/api/plants/${encodeURIComponent(plantId)}/saved-studies/${encodeURIComponent(deleteId)}`, { method: "DELETE" });
+    if (response.ok) {
+      if (selectedSavedStudyId === deleteId) selectedSavedStudyId = null;
+      await renderSavedStudyLibrary();
+    }
+  }
+}
+
 async function renderFractal(): Promise<void> {
+  void renderSavedStudyLibrary();
   const box = $("fractal-saved");
-  if (!sessionId) { box.innerHTML = `<p class="muted">Inicie una sesión PLC para consultar estudios.</p>`; return; }
+  if (!sessionId) { box.innerHTML = `<p class="muted">Inicie una sesión PLC para consultar estudios de esta sesión.</p>`; return; }
   const response = await apiFetch(`/api/plants/${plantId}/sessions/${sessionId}/fractal/studies`);
   if (!response.ok) { box.innerHTML = `<p class="muted">No se pudo consultar estudios de esta sesión.</p>`; return; }
   const studies = await response.json() as { study_id: string; study_type: string; base_time: number; profile_id?: string; profile_name?: string }[];
@@ -1253,7 +1379,10 @@ async function start(): Promise<void> {
     const speed = Number((event.target as HTMLSelectElement).value);
     if (socket?.readyState === WebSocket.OPEN) socket.send(JSON.stringify({ speed }));
   };
-  $("fractal-refresh").onclick = () => { void renderFractal(); void loadComparisons().catch((error) => { $("triad-position").textContent = `No se pudieron leer las comparaciones guardadas: ${String(error)}`; }); };
+  $("fractal-refresh").onclick = () => { void renderFractal(); void renderSavedStudyLibrary(); void loadComparisons().catch((error) => { $("triad-position").textContent = `No se pudieron leer las comparaciones guardadas: ${String(error)}`; }); };
+  $("save-fractal-study").onclick = () => { void saveLatestFractalStudy(); };
+  $("saved-study-library").addEventListener("click", (event) => { void handleSavedStudyLibraryClick(event); });
+  void renderSavedStudyLibrary();
   $("comparison-load").onclick = () => { void loadTriadFrames().catch((error) => { $("triad-position").textContent = `No se pudieron cargar los frames: ${String(error)}`; }); };
   $<HTMLSelectElement>("comparison-select").onchange = () => { void loadTriadFrames(); };
   $<HTMLInputElement>("triad-slider").oninput = renderTriadFrame;
@@ -1350,6 +1479,8 @@ async function start(): Promise<void> {
       const response = await fractalFetch("/studies/horizon/from-plc", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ session_id: sessionId, plant_id: plantId, emulator_api: apiOrigin, profile_id: profileId, comparison_id: comparisonId, objective_id: "OBJ-PRESSURE-MIN", target_pressure_mca: studyType === "optimized" ? fractalTarget.valueAsNumber : undefined, study_type: studyType }) });
       if (!response.ok) { const detail = await response.json().catch(() => ({})) as { detail?: string }; throw Error(detail.detail ?? "Fractal no pudo proyectar el perfil PLC"); }
       study = await response.json();
+      latestFractalStudy = study as unknown as Record<string, unknown>;
+      $<HTMLButtonElement>("save-fractal-study").disabled = false;
       if (study.study_type === "optimized") {
         optimizedTrajectory = trajectoryFromFrames(study.hours as unknown[]);
         renderSupplyComparison();
@@ -1364,6 +1495,7 @@ async function start(): Promise<void> {
     if (study.published) $<HTMLAnchorElement>("link-plant").href = `/plant.html?plant=${plantId}&session=${encodeURIComponent(sessionId)}&study=${encodeURIComponent(study.study_id)}${query.get("api") ? `&api=${encodeURIComponent(apiOrigin)}` : ""}`;
     $("fractal-recommendations").innerHTML = `<article class="panel"><p class="eyebrow">◆ FUTURO SIMULADO · NO APLICADO · ${study.study_type.toUpperCase()}</p><p><b>Estudio ${study.study_id}</b> · origen PLC t=${fmt(study.base_time, 0)} s · ${study.published ? study.comparison_run_published ? `estudio y ${study.comparison_run_published.frame_count ?? 0} frames del optimizador guardados` : study.comparison_persistence_error ? "estudio guardado; ejecución no guardada en el historiador" : "persistido en PLC" : "resultado Fractal (no persistido en PLC)"}</p>${study.hours.map((item) => { const state = item.scenarios[1]?.state ?? item.scenarios[0]?.state; const pressureScenarios = item.scenarios.map((scenario) => ({ factor: scenario.demand_factor, minimum: Math.min(...Object.values(scenario.state.consumer_pressures_mca)) })); const worst = pressureScenarios.reduce((a, b) => b.minimum < a.minimum ? b : a, { factor: Number.NaN, minimum: Number.POSITIVE_INFINITY }); const targetMet = study.study_type === "optimized" ? Boolean(item.commands?.target_met) : true; const safe = item.robust && targetMet; const point = item.profile_commands?.prs?.critical_control_point; const pointText = point ? `Control ${point}: ${fmt(state?.control_point_pressure_mca)} mca / objetivo ${fmt(item.profile_commands?.prs?.critical_setpoint_mca)} mca · ` : ""; const outletLabel = item.profile_commands?.prs?.control_mode === "fixed_outlet" ? "salida fija" : "salida variable"; const openingText = item.commands?.opening_curve_status === "outside_assumed_range" ? ` · apertura requerida ${fmt(item.commands?.vrp_opening_required_pct)} % · fuera del rango (20–100 %)` : ` · VRP estimada ${fmt(item.commands?.vrp_opening_pct)} %`;
       const targetText = study.study_type === "optimized" ? `${openingText} · objetivo C44 ≥${fmt(study.target_pressure_mca)} mca ${item.commands?.target_met ? "alcanzado" : "no alcanzado"}` : ""; return `<p>Hora ${String(item.hour + 1).padStart(2, "0")} · entrada PRS ${fmt(state?.prs_inlet_mca)} / ${outletLabel} ${fmt(state?.prs_outlet_mca)} mca · ${pointText}mínima de las viviendas ${fmt(worst.minimum)} mca${targetText} · ${safe ? "objetivo/estado factible" : "objetivo no alcanzado o restricciones no factibles · REVISAR"}</p>`; }).join("")}${study.study_type === "optimized" ? renderVrpOptimizationCharts(study.hours) : ""}</article>`;
+    if (selectedSavedStudyId) await saveLatestFractalStudy();
     void renderFractal();
   };
   $("profile-new").onclick = () => {
