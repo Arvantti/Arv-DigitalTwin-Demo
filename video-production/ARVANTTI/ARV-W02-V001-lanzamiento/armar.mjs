@@ -19,6 +19,9 @@ import { fileURLToPath } from "node:url";
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const T = (p) => path.join(HERE, p);
 const FPS = 25;
+// FORMATO=vertical arma la versión 9:16 (1080x1920) para redes, con la misma voz y música.
+const VERT = process.env.FORMATO === "vertical";
+const W = VERT ? 1080 : 1920, H = VERT ? 1920 : 1080;
 const sh = (cmd, args) => execFileSync(cmd, args, { stdio: "inherit" });
 
 // Escenas en orden: id, carpeta de la voz y colas (segundos antes y después de la voz).
@@ -263,7 +266,7 @@ function componer() {
   {
     const x = S.pregunta; const [s, d] = span(x);
     clip("e-pregunta", "scene", s, d, `
-      <svg class="estela" viewBox="0 0 1920 1080"><defs><linearGradient id="gEst" x1="0" x2="1"><stop offset="0" stop-color="#2d7ff9" stop-opacity="0"/><stop offset=".7" stop-color="#4ea7ff"/><stop offset="1" stop-color="#ffffff"/></linearGradient></defs>
+      <svg class="estela" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="gEst" x1="0" x2="1"><stop offset="0" stop-color="#2d7ff9" stop-opacity="0"/><stop offset=".7" stop-color="#4ea7ff"/><stop offset="1" stop-color="#ffffff"/></linearGradient></defs>
       <path id="p1" d="M-60 640 C 380 640 560 430 960 520 S 1520 690 1980 470" pathLength="1"/></svg>
       <h1 class="q">${words("¿Qué pasa si...?")}</h1>`, 3);
     at("#p1", { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 2.2, ease: "power2.inOut" }, s + 0.2);
@@ -426,7 +429,7 @@ function componer() {
     at("#e-fractal .topl", { opacity: 0 }, { opacity: 1, duration: 0.5 }, tG - 0.2);
     cards.forEach((_, i) => {
       const k = i - 2;
-      at(`#e-fractal .c${i}`, { opacity: 0, z: -1600, rotateY: 0, x: 0 }, { opacity: 1, z: -Math.abs(k) * 220, rotateY: -k * 16, x: k * 330, duration: 1.1, ease: "power3.out" }, tG + i * 0.12);
+      at(`#e-fractal .c${i}`, { opacity: 0, z: -1600, rotateY: 0, x: 0 }, { opacity: 1, z: -Math.abs(k) * 220, rotateY: -k * 16, x: k * (VERT ? 200 : 330), duration: 1.1, ease: "power3.out" }, tG + i * 0.12);
     });
     at("#e-fractal .score i", { scaleX: 0 }, { scaleX: 1, duration: 1.0, stagger: 0.1, ease: "power2.out" }, tK);
     at("#e-fractal .score b", { opacity: 0 }, { opacity: 1, duration: 0.4, stagger: 0.1 }, tK + 0.4);
@@ -474,16 +477,21 @@ function componer() {
   {
     const x = S.conecta; const [s, d] = span(x);
     const tM = enPalabra(x, "con tus máquinas"), tE = enPalabra(x, "E R P");
-    const left = ["Línea 1", "Línea 2", "Máquina 7", "Celda 3"].map((n, i) => ({ n, x: 240, y: 260 + i * 170 }));
-    const core = { x: 960, y: 515 }, erp = { x: 1680, y: 515 };
-    const lines = left.map((p, i) => `<line id="ln${i}" x1="${p.x + 110}" y1="${p.y}" x2="${core.x - 150}" y2="${core.y}" pathLength="1"/>`).join("") + `<line id="lnE" x1="${core.x + 150}" y1="${core.y}" x2="${erp.x - 120}" y2="${erp.y}" pathLength="1"/>`;
-    const dots = left.map((p, i) => `<circle class="pk" id="pk${i}" r="7" cx="${p.x + 110}" cy="${p.y}"/>`).join("") + `<circle class="pk" id="pkE" r="7" cx="${erp.x - 120}" cy="${erp.y}"/>`;
+    // Horizontal: máquinas en columna a la izquierda, núcleo al centro, ERP a la derecha. Vertical: máquinas arriba, ERP abajo.
+    const left = ["Línea 1", "Línea 2", "Máquina 7", "Celda 3"].map((n, i) => (VERT ? { n, x: 150 + i * 260, y: 560 } : { n, x: 240, y: 260 + i * 170 }));
+    const core = VERT ? { x: 540, y: 1000 } : { x: 960, y: 515 }, erp = VERT ? { x: 540, y: 1480 } : { x: 1680, y: 515 };
+    left.forEach((p) => { p.a = VERT ? { x: p.x, y: p.y + 42 } : { x: p.x + 110, y: p.y }; });
+    const coreIn = VERT ? { x: core.x, y: core.y - 150 } : { x: core.x - 150, y: core.y };
+    const coreOut = VERT ? { x: core.x, y: core.y + 150 } : { x: core.x + 150, y: core.y };
+    const erpIn = VERT ? { x: erp.x, y: erp.y - 60 } : { x: erp.x - 120, y: erp.y };
+    const lines = left.map((p, i) => `<line id="ln${i}" x1="${p.a.x}" y1="${p.a.y}" x2="${coreIn.x}" y2="${coreIn.y}" pathLength="1"/>`).join("") + `<line id="lnE" x1="${coreOut.x}" y1="${coreOut.y}" x2="${erpIn.x}" y2="${erpIn.y}" pathLength="1"/>`;
+    const dots = left.map((p, i) => `<circle class="pk" id="pk${i}" r="7" cx="${p.a.x}" cy="${p.a.y}"/>`).join("") + `<circle class="pk" id="pkE" r="7" cx="${erpIn.x}" cy="${erpIn.y}"/>`;
     clip("e-conecta", "scene", s, d, `
       <div class="bleed dim"><img src="assets/tomas/ui-arquitectura.png" alt=""></div>
       <div class="topl">${kicker("06", "INTEGRATOR · DENDROSCADA")}</div>
-      <svg class="net" viewBox="0 0 1920 1080">${lines}${dots}</svg>
+      <svg class="net" viewBox="0 0 ${W} ${H}">${lines}${dots}</svg>
       ${left.map((p, i) => `<div class="node m" id="nd${i}" style="left:${p.x - 110}px;top:${p.y - 42}px">${p.n}<small>PLC</small></div>`).join("")}
-      <div class="proto" style="left:560px;top:${core.y - 160}px">OPC UA · MQTT</div>
+      <div class="proto" style="left:${VERT ? 580 : 560}px;top:${core.y - (VERT ? 250 : 160)}px">OPC UA · MQTT</div>
       <div class="core" style="left:${core.x - 150}px;top:${core.y - 150}px"><img src="assets/clips/marca.png" alt=""><span>Digital Twin</span></div>
       <div class="node erp" style="left:${erp.x - 120}px;top:${erp.y - 60}px">ERP<small>pedidos · inventario</small></div>
       <h2 class="bottomc">${words("Conectado.")}</h2>`, 3);
@@ -492,12 +500,12 @@ function componer() {
     at("#e-conecta .node.m", { opacity: 0, x: -60 }, { opacity: 1, x: 0, duration: 0.5, stagger: 0.1, ease: "power3.out" }, tM - 0.3);
     left.forEach((p, i) => {
       at(`#ln${i}`, { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.6, ease: "power2.out" }, tM + i * 0.1);
-      at(`#pk${i}`, { attr: { cx: p.x + 110, cy: p.y }, opacity: 1 }, { attr: { cx: core.x - 150, cy: core.y }, opacity: 1, duration: 0.9, ease: "power1.in", repeat: 3, repeatDelay: 0.2 + i * 0.05 }, tM + 0.4 + i * 0.12);
+      at(`#pk${i}`, { attr: { cx: p.a.x, cy: p.a.y }, opacity: 1 }, { attr: { cx: coreIn.x, cy: coreIn.y }, opacity: 1, duration: 0.9, ease: "power1.in", repeat: 3, repeatDelay: 0.2 + i * 0.05 }, tM + 0.4 + i * 0.12);
     });
     at("#e-conecta .proto", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5 }, tM + 0.5);
     at("#e-conecta .erp", { opacity: 0, x: 60 }, { opacity: 1, x: 0, duration: 0.5, ease: "back.out(1.7)" }, tE - 0.3);
     at("#lnE", { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.5 }, tE - 0.1);
-    at("#pkE", { attr: { cx: erp.x - 120, cy: erp.y }, opacity: 1 }, { attr: { cx: core.x + 150, cy: core.y }, opacity: 1, duration: 0.8, ease: "power1.in", repeat: 2, repeatDelay: 0.2 }, tE + 0.3);
+    at("#pkE", { attr: { cx: erpIn.x, cy: erpIn.y }, opacity: 1 }, { attr: { cx: coreOut.x, cy: coreOut.y }, opacity: 1, duration: 0.8, ease: "power1.in", repeat: 2, repeatDelay: 0.2 }, tE + 0.3);
     at("#e-conecta .bottomc .w", { opacity: 0, y: 30, filter: "blur(10px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.6 }, tE + 0.5);
     sfx(8, "spark.wav", tM, 0.25);
     leave("e-conecta", s + d);
@@ -515,7 +523,7 @@ function componer() {
       ["DendroScada", "Hardware SCADA propio"],
       ["AI Assistant", "IA privada"],
     ];
-    const C = { x: 960, y: 590 }, RX = 540, RY = 330;
+    const C = VERT ? { x: 540, y: 1000 } : { x: 960, y: 590 }, RX = VERT ? 370 : 540, RY = VERT ? 560 : 330, MW = VERT ? 310 : 340;
     const V = MOD.map((_, i) => { const a = -Math.PI / 2 + (i * 2 * Math.PI) / 7; return { x: Math.round(C.x + RX * Math.cos(a)), y: Math.round(C.y + RY * Math.sin(a)) }; });
     const tN = enPalabra(x, "Todo corre"), tA = enPalabra(x, "Arvantti"), tS = enPalabra(x, "siete módulos"), tX = enPalabra(x, "Activas");
     const tM = MOD.map(([n]) => enPalabra(x, n));
@@ -523,12 +531,12 @@ function componer() {
     clip("e-modulos", "scene", s, d, `
       <h2 class="center hx">${words("Un núcleo. Siete módulos.")}</h2>
       <h2 class="center hx2">${words("Elige tus módulos.")} <span class="sinu">Sin cobro por usuario.</span></h2>
-      <svg class="hepta" viewBox="0 0 1920 1080">
+      <svg class="hepta" viewBox="0 0 ${W} ${H}">
         <polygon id="hx-borde" points="${V.map((v) => `${v.x},${v.y}`).join(" ")}" pathLength="1"/>
         ${V.map((v, i) => `<line id="hx-r${i}" x1="${C.x}" y1="${C.y}" x2="${v.x}" y2="${v.y}" pathLength="1"/>`).join("")}
       </svg>
       <div class="hcore" style="left:${C.x - 150}px;top:${C.y - 150}px"><img src="assets/clips/marca.png" alt=""><b>Arvantti</b><span>Digital Twin</span><small>Gemelo 3D · núcleo</small></div>
-      ${MOD.map(([n, sub], i) => `<div class="mod" id="md${i}" style="left:${V[i].x - 170}px;top:${V[i].y - 52}px"><i>${i + 1}</i><p>${n}</p><small>${sub}</small></div>`).join("")}`, 3);
+      ${MOD.map(([n, sub], i) => `<div class="mod" id="md${i}" style="left:${V[i].x - MW / 2}px;top:${V[i].y - 52}px"><i>${i + 1}</i><p>${n}</p><small>${sub}</small></div>`).join("")}`, 3);
     enter("e-modulos", s);
     at("#e-modulos .hx .w", { opacity: 0, y: 30, filter: "blur(10px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.6, stagger: 0.1, ease: "power3.out" }, x.voiceAt - 0.1);
     at("#e-modulos .hcore", { opacity: 0, scale: 0.4 }, { opacity: 1, scale: 1, duration: 0.9, ease: "back.out(1.7)" }, tA - 0.3);
@@ -563,7 +571,7 @@ function componer() {
     const x = S.cierre; const [s, d] = span(x);
     const tD = enPalabra(x, "Decide");
     clip("e-cierre", "scene", s, d, `
-      <svg class="estela" viewBox="0 0 1920 1080"><path id="p2" d="M-60 470 C 380 470 560 690 960 560 S 1520 430 1980 640" pathLength="1"/></svg>
+      <svg class="estela" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice"><path id="p2" d="M-60 470 C 380 470 560 690 960 560 S 1520 430 1980 640" pathLength="1"/></svg>
       <div class="fin"><img class="marca" src="assets/clips/marca.png" alt=""><h1>Arvantti <span>Digital Twin</span></h1><p class="firma">Decide antes de que pase.</p><p class="url">digitaltwin.arvantti.online</p></div>`, 3);
     enter("e-cierre", s);
     at("#p2", { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 1.8, ease: "power2.inOut" }, s);
@@ -585,7 +593,14 @@ function componer() {
   else if (fs.existsSync(T("assets/clips/musica.mp3"))) audio("musica", "assets/clips/musica.mp3", 0, total, 0.22);
   if (temporal) html.push(`<div id="temp" class="clip" data-start="0" data-duration="${total.toFixed(2)}" data-track-index="50">SIN VOZ · TIEMPOS ESTIMADOS</div>`);
 
-  const out = fs.readFileSync(T("plantilla.html"), "utf8")
+  let plantilla = fs.readFileSync(T("plantilla.html"), "utf8");
+  if (VERT) plantilla = plantilla
+    .replaceAll("width:1920px;height:1080px", "width:1080px;height:1920px")
+    .replace('content="width=1920, height=1080"', 'content="width=1080, height=1920"')
+    .replace('data-resolution="landscape"', 'data-resolution="portrait"')
+    .replace('data-width="1920" data-height="1080"', 'data-width="1080" data-height="1920"')
+    .replace("</style>", `${fs.readFileSync(T("vertical.css"), "utf8")}\n</style>`);
+  const out = plantilla
     .replaceAll("{{TOTAL}}", total.toFixed(2))
     .replace("{{CLIPS}}", html.join("\n"))
     .replace("{{TIMELINE}}", tl.join("\n"));
@@ -596,7 +611,7 @@ function componer() {
 
 function render(v = "v001") {
   fs.mkdirSync(T("out"), { recursive: true });
-  const out = T(`out/lanzamiento-${v}.mp4`);
+  const out = T(`out/lanzamiento-${VERT ? "vertical-" : ""}${v}.mp4`);
   execFileSync("pnpm", ["dlx", "hyperframes@0.9.9", "render", "-o", out, "--fps", String(FPS), "--quality", process.env.QUALITY || "standard", "--video-frame-format", "png", ...(process.env.HF_ARGS ? process.env.HF_ARGS.split(" ") : [])], { cwd: HERE, stdio: "inherit" });
   console.log(out);
 }

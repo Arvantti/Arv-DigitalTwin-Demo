@@ -1,0 +1,68 @@
+/* Versión vertical 9:16 (1080x1920) para redes: se agrega al final de los estilos de plantilla.html (FORMATO=vertical). */
+.fondo .glow{background:radial-gradient(700px 900px at 50% 45%,#12305e55 0%,#05070c00 70%),radial-gradient(500px 600px at 80% 90%,#2d7ff922 0%,#05070c00 70%)}
+.fondo .floor{height:40%}
+.q{top:820px;font-size:118px;letter-spacing:-2px}
+
+/* Título */
+.titulo{top:640px}
+.titulo .marca{width:200px}
+.titulo h1{font-size:132px;line-height:1.02}
+.titulo .t1,.titulo .t2{display:block}
+
+/* Planifica: texto arriba, pantalla abajo */
+.col{left:80px;top:150px;width:920px}
+.big{font-size:96px}
+.col .chips{margin-top:34px}
+.verbs{margin-top:26px;font-size:44px}
+.right{left:70px;top:1100px;width:1180px;height:780px;transform:scale(.8);transform-origin:0 0}
+.stage3d{perspective-origin:50% 40%}
+
+/* Gemelo */
+.hud{inset:40px 30px}
+.hud .live{right:20px;font-size:17px;letter-spacing:3px}
+.hud .scrub{left:60px;right:60px;bottom:40px}
+.lowerleft{left:80px;bottom:260px}
+.lowerleft .big{font-size:130px}
+.label{left:80px;bottom:260px;font-size:100px}
+.play{left:440px;top:860px}
+
+/* Control */
+.top{left:80px;top:150px;width:920px}
+.mid{font-size:84px}
+.wide{left:70px;top:560px;transform:scale(.8);transform-origin:0 0}
+.right3{left:80px;top:1180px;width:920px}
+.right3 .chip{font-size:44px;padding:18px 36px;margin-bottom:22px}
+
+/* Fractal */
+.topl{left:80px;top:150px}
+.center{top:640px;padding:0 60px;font-size:96px}
+.card{left:240px;top:760px}
+.tags{top:1240px;padding:0 60px}
+.decide{padding:200px 40px 260px}
+.decide p{font-size:96px}
+
+/* Asistente */
+.chat{left:50px;top:520px;width:980px;height:860px}
+.chat .bar{font-size:30px}
+.chat .badge{font-size:18px;padding:6px 14px}
+.msg{max-width:800px;font-size:42px}
+.wave{bottom:44px}
+
+/* Conecta */
+.node{width:220px}
+.bottomc{bottom:250px;font-size:110px}
+
+/* Módulos */
+.hx,.hx2{top:190px;padding:0 50px;font-size:84px;line-height:1.05}
+.hx2 .sinu{margin-top:18px;font-size:48px}
+.mod{width:310px;padding-left:66px}
+.mod i{left:12px;width:44px;height:44px;font-size:24px;line-height:40px}
+.mod p{font-size:30px}
+.mod small{font-size:18px}
+
+/* Cierre */
+.fin{top:620px}
+.fin h1{font-size:120px;line-height:1.05}
+.fin h1 span{display:block}
+.fin .firma{font-size:58px}
+.fin .url{font-size:30px;letter-spacing:4px}
