@@ -14,6 +14,8 @@ aps/aps.yaml    ventana de entrega, tandas, lotes, llenadoras multipropósito, t
 aps/plans/      APS-MAN-01.json: secuencia del planificador de turno (manual-sequence.v1)
 orders/         cartera-2026-11.json: 128 pedidos inventados (customer-orders.v1)
 cosim/          @plants/sauce-plant-v1-cosim: modelo, cartera, plan manual, despacho y programa lineal (HiGHS)
+fractal/        @plants/sauce-plant-v1-fractal: escenarios y palancas de Fractal sobre el cosimulador
+app/            @plants/sauce-plant-v1-app: la pantalla del APS (pedidos, Gantt, Fractal)
 docs/           esta nota
 ```
 
@@ -134,6 +136,35 @@ noviembre, 10:00; `?now=` lo cambia).
   PLAN MANUAL vuelve a APS-MAN-01.
 
 `view.ts` arma lo que se pinta (sin DOM) y lo cubren las pruebas (`pnpm --filter @plants/sauce-plant-v1-app test`).
+
+## Fractal
+
+`fractal/study.ts` arma estudios de escenario con el bucle de `platform/fractal-core`: cada combinación de palancas la
+coloca el cosimulador desde AHORA y Fractal recomienda la de menor puntaje. La pestaña FRACTAL · ESCENARIOS del APS los
+corre en el navegador (menos de un segundo) y deja ver o adoptar cualquier opción.
+
+Palancas (opciones de `solve.ts` o del modelo):
+
+- campañas por día (`campaign: "dia"`): cada línea recorre su orden de recetas una vez al día, no una vez por turno;
+- recetas pequeñas cada 2 o 3 días (`minorEvery`): BBQ, picante, light y rosada solo uno de cada N días, todas juntas
+  (la receta principal de cada línea, la de más kilos en la demanda, va todos los días);
+- llenadoras dedicadas (`dedicated`): cada producto solo en su llenadora habitual; las multipropósito no se cruzan;
+- prioridad alta para el pedido que se adelanta.
+
+Escenarios y resultados con la cartera de la demo, desde el plan manual en AHORA (`pnpm --filter
+@plants/sauce-plant-v1-fractal test`):
+
+| Escenario | Opciones | Recomienda |
+|---|---|---|
+| Adelantar un pedido | nueva fecha; + prioridad alta; + campañas por día | prioridad + campañas por día |
+| Menos CIP y merma | recolocar; campañas por día; + pequeñas cada 2 días; + cada 3 días; + llenadoras dedicadas | campañas por día: CIP 83,8 → 78,2 h, merma 5.722 → 4.395 kg, mismos 3 tarde |
+| Falla de un equipo | esperar y repartir; campañas por día; + llenadoras dedicadas (si es una llenadora) o + pequeñas cada 3 días | campañas por día |
+
+Las recetas pequeñas cada 3 días dan el menor CIP (68,6 h) y la menor merma (3.861 kg), pero 2 pedidos tarde más:
+el puntaje prefiere no atrasar. Con la llenadora de mostaza caída, no cruzar llenadoras deja 11 pedidos tarde.
+
+Mientras llega el emulador de salsas (fase 6), la falla se simula en la tarjeta del escenario: equipo y horas hasta
+la reparación. La falla queda en la pantalla y CALCULAR también la tiene en cuenta.
 
 ## Puntaje de Fractal
 

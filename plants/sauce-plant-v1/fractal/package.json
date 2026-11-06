@@ -1,0 +1,26 @@
+{
+  "name": "@plants/sauce-plant-v1-fractal",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Fractal de la planta de salsas: escenarios y palancas (campañas de recetas, llenadoras dedicadas) sobre el cosimulador",
+  "exports": {
+    "./*": "./*"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@plants/sauce-plant-v1-cosim": "workspace:*",
+    "@twin/cosim-core": "workspace:*",
+    "@twin/fractal-core": "workspace:*",
+    "highs": "1.15.3"
+  },
+  "devDependencies": {
+    "@types/node": "22.19.1",
+    "typescript": "5.9.3",
+    "vite": "8.3.1",
+    "vitest": "5.0.3"
+  }
+}

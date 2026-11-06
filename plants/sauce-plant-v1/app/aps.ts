@@ -3,20 +3,26 @@
  * manual del planificador (APS-MAN-01) y el que calcula el cosimulador con HiGHS desde AHORA.
  *
  * La página arma todo dentro de `root`; la galería solo pone los estilos comunes (styles.css y aps.css) y la llama.
- * Parámetros de la URL: tab=orders|gantt, now=2026-11-04T10:00 (AHORA; por defecto el día 9 de la demo),
+ * La pestaña FRACTAL prueba escenarios (adelantar un pedido, menos CIP y merma, falla de un equipo): cada combinación de
+ * palancas la coloca el cosimulador y Fractal recomienda la de menor puntaje; la persona decide si la adopta.
+ *
+ * Parámetros de la URL: tab=orders|gantt|fractal, now=2026-11-04T10:00 (AHORA; por defecto el día 9 de la demo),
  * solve=1 (calcula al abrir), order=PED-… (resalta un pedido).
  */
 import "./aps.css";
-import { parseLocal, type ProductionPlan } from "@twin/cosim-core";
+import { iso, parseLocal, type PlantEvent, type ProductionPlan } from "@twin/cosim-core";
+import type { FractalStudy } from "@twin/fractal-core";
+import { SCENARIO_NAMES, type SauceScenario, type StudyInput } from "@plants/sauce-plant-v1-fractal/study.ts";
 import { buildModel, type SauceModel } from "@plants/sauce-plant-v1-cosim/model.ts";
 import { manualPlan } from "@plants/sauce-plant-v1-cosim/manual.ts";
 import type { HighsLike } from "@plants/sauce-plant-v1-cosim/solve.ts";
 import { demoManual, demoPortfolio, layoutEquipment, sauceData } from "./data.ts";
-import { BULK_COLOR, compareKpis, DEMO_NOW, dayLabel, dayNumber, ganttSections, orderState, score, when, type Bar, type Lane } from "./view.ts";
+import { BULK_COLOR, compareKpis, DEMO_NOW, dayLabel, dayNumber, failureCandidates, ganttSections, movableOrders, orderState, score, studyKpis, when, type Bar, type Lane } from "./view.ts";
 
 const esc = (s: unknown) => String(s).replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 const num = (x: number, d = 0) => x.toLocaleString("es-CO", { maximumFractionDigits: d, minimumFractionDigits: d });
 const DAY = 1440;
+const sourceName = (p: ProductionPlan) => (p.source === "manual" ? "manual" : p.source === "fractal" ? "Fractal" : "cosimulador");
 const BULK_NAME: Record<string, string> = { "salsa-tomate": "tomate", "salsa-bbq": "BBQ", "salsa-picante": "picante", "mayonesa-light": "light", mayonesa: "mayonesa", "salsa-rosada": "rosada", "mostaza-granel": "mostaza" };
 
 interface State {
@@ -28,11 +34,16 @@ interface State {
   vigente: ProductionPlan;
   propuesta: ProductionPlan | null;
   showing: "vigente" | "propuesta";
-  tab: "orders" | "gantt";
+  tab: "orders" | "gantt" | "fractal";
   windowDays: 3 | 7 | 0;
   selected: string | null;
   busy: boolean;
   error: string | null;
+  /** Falla simulada en la pestaña de Fractal (hasta que el emulador de salsas la mande): la usan Fractal y CALCULAR. */
+  events: PlantEvent[];
+  study: FractalStudy | null;
+  studying: SauceScenario | null;
+  studyError: string | null;
 }
 
 export function mountSauceAps(root: HTMLElement): void {
@@ -51,11 +62,15 @@ export function mountSauceAps(root: HTMLElement): void {
     vigente: manual,
     propuesta: null,
     showing: "vigente",
-    tab: url.get("tab") === "gantt" ? "gantt" : "orders",
+    tab: url.get("tab") === "gantt" ? "gantt" : url.get("tab") === "fractal" ? "fractal" : "orders",
     windowDays: 7,
     selected: url.get("order"),
     busy: false,
     error: null,
+    events: [],
+    study: null,
+    studying: null,
+    studyError: null,
   };
   const shown = () => (st.showing === "propuesta" && st.propuesta ? st.propuesta : st.vigente);
 
@@ -70,6 +85,7 @@ export function mountSauceAps(root: HTMLElement): void {
     <nav class="aps-tabs" aria-label="Pantallas del APS">
       <button data-tab="orders">PEDIDOS</button>
       <button data-tab="gantt">PROGRAMACIÓN · GANTT</button>
+      <button data-tab="fractal">◆ FRACTAL · ESCENARIOS</button>
       <span class="aps-spacer"></span>
       <button id="sa-calc" class="primary" title="Programa lineal por turnos (HiGHS) sobre las líneas de proceso, desde AHORA; lo anterior queda congelado">⚙ CALCULAR CON EL COSIMULADOR</button>
       <button id="sa-manual" title="Vuelve a la secuencia del planificador (APS-MAN-01): por orden de llegada, llenadoras alternas">✎ PLAN MANUAL</button>
@@ -78,6 +94,7 @@ export function mountSauceAps(root: HTMLElement): void {
     <main>
       <section id="sa-orders" class="aps-panel"></section>
       <section id="sa-gantt" class="aps-panel" hidden></section>
+      <section id="sa-fractal" class="aps-panel" hidden></section>
     </main>`;
   const $ = <T extends HTMLElement>(sel: string) => root.querySelector(sel) as T;
 
@@ -85,13 +102,15 @@ export function mountSauceAps(root: HTMLElement): void {
     root.querySelectorAll<HTMLButtonElement>(".aps-tabs [data-tab]").forEach((b) => b.classList.toggle("active", b.dataset.tab === st.tab));
     $("#sa-orders").hidden = st.tab !== "orders";
     $("#sa-gantt").hidden = st.tab !== "gantt";
+    $("#sa-fractal").hidden = st.tab !== "fractal";
     const calc = $<HTMLButtonElement>("#sa-calc");
     calc.disabled = st.busy;
     calc.textContent = st.busy ? "⚙ CALCULANDO…" : "⚙ CALCULAR CON EL COSIMULADOR";
-    $("#sa-vigente").textContent = `VIGENTE · ${st.vigente.plan_id} · ${st.vigente.source === "manual" ? "manual" : "cosimulador"}`;
+    $("#sa-vigente").textContent = `VIGENTE · ${st.vigente.plan_id} · ${sourceName(st.vigente)}`;
     renderProposal();
     if (st.tab === "orders") renderOrders();
-    else renderGantt();
+    else if (st.tab === "gantt") renderGantt();
+    else renderFractal();
   }
 
   function renderProposal() {
@@ -117,7 +136,7 @@ export function mountSauceAps(root: HTMLElement): void {
     box.innerHTML = `
       <div class="aps-prop-head">
         <div>
-          <p><b>PROPUESTA ${esc(p.plan_id)}</b> · cosimulador desde AHORA (${esc(when(st.nowText))}); lo anterior queda como estaba.</p>
+          <p><b>PROPUESTA ${esc(p.plan_id)}</b> · ${p.source === "fractal" ? `Fractal · ${esc((p.notes?.[0] ?? "").replace(/^Fractal · /, "").replace(/\.$/, ""))}` : "cosimulador"} desde AHORA (${esc(when(st.nowText))}); lo anterior queda como estaba.</p>
           <p class="dim small">${sv ? `HiGHS ${esc(sv.status)} · ${num(sv.variables)} variables · ${num(sv.constraints)} restricciones · ${num(sv.seconds, 2)} s` : ""} · puntaje ${num(s0, 1)} → <b class="${s1 < s0 ? "ok" : "bad"}">${num(s1, 1)}</b> (menor es mejor)</p>
           <div class="aps-scen">
             <button data-show="vigente" class="${st.showing === "vigente" ? "active" : ""}">VER VIGENTE</button>
@@ -170,7 +189,7 @@ export function mountSauceAps(root: HTMLElement): void {
       .join("");
     $("#sa-orders").innerHTML = `
       <div class="aps-orders-head">
-        <p class="dim">${esc(plan.plan_id)} · ${plan.source === "manual" ? "secuencia del planificador por orden de llegada" : "cosimulador (HiGHS)"} · ${counts.hecho} hechos, ${counts["en curso"]} en curso y ${counts["por hacer"]} por hacer en AHORA. Clic en un pedido para verlo en el Gantt.</p>
+        <p class="dim">${esc(plan.plan_id)} · ${plan.source === "manual" ? "secuencia del planificador por orden de llegada" : plan.source === "fractal" ? "escenario de Fractal" : "cosimulador (HiGHS)"} · ${counts.hecho} hechos, ${counts["en curso"]} en curso y ${counts["por hacer"]} por hacer en AHORA. Clic en un pedido para verlo en el Gantt.</p>
         ${cards}
       </div>
       <div class="aps-table-wrap">
@@ -235,7 +254,7 @@ export function mountSauceAps(root: HTMLElement): void {
       <span><i class="down"></i>parada</span>`;
     $("#sa-gantt").innerHTML = `
       <div class="g-toolbar">
-        <span class="dim">${esc(plan.plan_id)} · ${plan.source === "manual" ? "plan manual" : "cosimulador"}</span>
+        <span class="dim">${esc(plan.plan_id)} · ${sourceName(plan)}</span>
         <span class="g-zoom">
           <button data-win="3" class="${st.windowDays === 3 ? "active" : ""}">3 DÍAS</button>
           <button data-win="7" class="${st.windowDays === 7 ? "active" : ""}">7 DÍAS</button>
@@ -264,7 +283,7 @@ export function mountSauceAps(root: HTMLElement): void {
       // Una instancia nueva por corrida: highs-js no garantiza resolver varias veces con la misma.
       const highs = (await highsLoader({ locateFile: () => wasmUrl })) as unknown as HighsLike;
       const n = Number(st.propuesta?.plan_id.match(/(\d+)$/)?.[1] ?? 0) + 1;
-      st.propuesta = { ...solve(highs, st.model, portfolio, { now: st.nowText, previous: st.vigente, planId: `APS-SOL-${String(n).padStart(2, "0")}` }), status: "propuesta" };
+      st.propuesta = { ...solve(highs, st.model, portfolio, { now: st.nowText, previous: st.vigente, events: st.events, planId: `APS-SOL-${String(n).padStart(2, "0")}` }), status: "propuesta" };
       st.showing = "propuesta";
     } catch (err) {
       st.error = (err as Error).message ?? String(err);
@@ -274,16 +293,134 @@ export function mountSauceAps(root: HTMLElement): void {
     }
   }
 
+  // ---------------------------------------------------------------- Fractal
+  const newHighs = async () => {
+    const [{ default: highsLoader }, { default: wasmUrl }] = await Promise.all([import("highs"), import("highs/runtime?url")]);
+    return (await highsLoader({ locateFile: () => wasmUrl })) as unknown as HighsLike;
+  };
+  let studies = 0;
+
+  async function study(input: Omit<StudyInput, "portfolio" | "now" | "previous" | "events" | "studyId">) {
+    if (st.studying) return;
+    st.studying = input.scenario;
+    st.studyError = null;
+    render();
+    try {
+      const { runStudy } = await import("@plants/sauce-plant-v1-fractal/study.ts");
+      studies += 1;
+      st.study = await runStudy(newHighs, st.model, { ...input, portfolio, now: st.nowText, previous: st.vigente, events: st.events, studyId: `FRA-${String(studies).padStart(2, "0")}` });
+    } catch (err) {
+      st.studyError = (err as Error).message ?? String(err);
+    } finally {
+      st.studying = null;
+      render();
+    }
+  }
+
+  function renderFractal() {
+    const v = st.vigente;
+    const movable = movableOrders(v, st.now);
+    const ev = st.events[0];
+    const fail = failureCandidates(st.model);
+    const d0 = Math.floor(st.now / DAY) * DAY;
+    const dueClose = st.model.calendar.shifts.map((x) => x.end).sort().at(-1) ?? "22:00";
+    const dayOpts = [1, 2, 3, 4, 5].map((n) => {
+      const t = d0 + n * DAY;
+      return `<option value="${iso(t, st.model.timezone).slice(0, 10)}">${esc(dayLabel(t, st.start))}</option>`;
+    });
+    const busy = st.studying !== null;
+    const card = (key: SauceScenario, n: number, body: string, button: string, extra = "") =>
+      `<article class="fr-card${st.study?.scenario === key ? " active" : ""}${extra}"><div class="fr-card-h"><span class="fr-n">${n}</span><span>${esc(SCENARIO_NAMES[key].toUpperCase())}</span></div><div class="fr-card-b">${body}</div>${button}</article>`;
+    const run = (key: SauceScenario, ok = true) => `<button data-study="${key}" class="primary"${ok && !busy ? "" : " disabled"}>${st.studying === key ? "◌ ESTUDIANDO…" : "◆ ESTUDIAR"}</button>`;
+    const s = st.study;
+    const best = s ? s.options.find((o) => o.id === s.best)! : null;
+    const fmt = (x: number, unit: string) => `${num(x, unit === "kg" ? 0 : unit ? 1 : 0)}${unit ? ` ${unit}` : ""}`;
+    const deltaTxt = (d: { before: number; after: number; unit: string; better: boolean; worse: boolean }) =>
+      d.better || d.worse ? `<span class="fr-d ${d.better ? "good" : "bad"}">${d.after > d.before ? "▲" : "▼"} ${fmt(Math.abs(d.after - d.before), d.unit)}</span>` : `<span class="fr-d same">igual</span>`;
+    const loads = (st2: FractalStudy) => {
+      const b = st2.options.find((o) => o.id === st2.best)!;
+      return Object.keys(b.loads)
+        .sort((x, y) => (b.loads[y] ?? 0) - (b.loads[x] ?? 0))
+        .map((m) => {
+          const a = st2.baseline.loads[m] ?? 0;
+          const c = b.loads[m] ?? 0;
+          const ch = Math.round(a) !== Math.round(c);
+          return `<div class="fr-load${ch ? " changed" : ""}"><span>${esc(m)}</span><div class="fr-bars"><i class="was" style="width:${Math.min(100, a)}%"></i><i class="${c > 85 ? "hot" : ""}" style="width:${Math.min(100, c)}%"></i></div><b>${ch ? `${num(a)} → ${num(c)} %` : `${num(c)} %`}</b></div>`;
+        })
+        .join("");
+    };
+    $("#sa-fractal").innerHTML = `
+      <div class="fr-head"><div><h2 class="fr-title">◆ Fractal · escenarios</h2><p class="fr-intro">Fractal prueba cambios en cómo se organiza la planta (campañas de recetas por día, recetas pequeñas cada 2 o 3 días, llenadoras multipropósito dedicadas, prioridad de un pedido). El cosimulador coloca cada combinación y Fractal la califica con el puntaje de la planta: atraso, pedidos tarde, horas de CIP, otros cambios y merma. <b>Fractal recomienda; la persona decide.</b></p></div></div>
+      <div class="fr-cards">
+        ${card("adelantar", 1, `<p class="fr-desc">Un cliente pide su pedido antes. ¿Cómo cumplirle sin atrasar a los demás?</p>
+          <label>Pedido <select id="fr-order">${movable.map((o) => `<option value="${esc(o.id)}">${esc(o.id)} · ${esc(o.product_name)} · ${num(o.quantity)} u · entrega ${esc(dayLabel(parseLocal(o.due), st.start))}</option>`).join("")}</select></label>
+          <label>Nueva entrega (cierre del turno, ${esc(dueClose)}) <select id="fr-due">${dayOpts.join("")}</select></label>`, run("adelantar", movable.length > 0))}
+        ${card("limpiezas", 2, `<p class="fr-desc">La vigente tiene <b>${num(v.kpis.cip_h ?? 0, 1)} h de CIP</b> y <b>${num(v.kpis.waste_kg ?? 0)} kg de merma</b>. ¿Cómo lavar menos y botar menos salsa sin atrasar pedidos?</p>`, run("limpiezas"))}
+        ${card("falla", 3, ev
+          ? `<p class="fr-desc"><b class="bad">⚠ ${esc(ev.equipment)}</b> fuera de servicio desde ${esc(when(ev.start))} · ${esc(ev.reason)} · reparación estimada ${esc(when(ev.est_end))}. ¿Qué conviene mientras lo reparan? <button id="fr-clear" class="fr-see">✕ QUITAR LA FALLA</button></p>`
+          : `<p class="fr-desc">Simula que un equipo se cae en AHORA (el emulador de salsas lo hará solo en la fase 6). La falla queda en la pantalla: también la tiene en cuenta CALCULAR.</p>
+          <label>Equipo <select id="fr-eq">${fail.map((f) => `<option value="${esc(f.id)}">${esc(f.label)}</option>`).join("")}</select></label>
+          <label>Reparación estimada <select id="fr-hours">${[6, 12, 24, 48, 60].map((h) => `<option value="${h}"${h === 60 ? " selected" : ""}>en ${h} h de calendario</option>`).join("")}</select></label>`,
+          run("falla"), ev ? " alarm" : "")}
+      </div>
+      ${st.studying ? `<p class="fr-status"><span class="spin">◌</span> Fractal está probando combinaciones para «${esc(SCENARIO_NAMES[st.studying].toLowerCase())}»: cada una la coloca el cosimulador…</p>` : ""}
+      ${st.studyError ? `<p class="fr-status bad">${esc(st.studyError)}</p>` : ""}
+      ${s && best ? `<section class="fr-result">
+        <div class="fr-result-h"><span class="fr-tag">ESTUDIO ${esc(s.study_id)} · ${esc(SCENARIO_NAMES[s.scenario as SauceScenario].toUpperCase())}</span><span class="fr-tag dim">${s.options.length} combinaciones en ${num(s.seconds, 1)} s</span></div>
+        <p class="fr-q">${esc(s.question)}</p>
+        <div class="fr-reco">
+          <div class="fr-reco-t"><div class="fr-k">RECOMENDACIÓN · OPCIÓN ${esc(best.id.split("-").at(-1)!)}</div><p class="fr-rec">${esc(best.label)}</p><p class="fr-why">${esc(s.recommendation.replace(/^Recomendación:[^.]*\.\s*/i, ""))}</p>
+            <button id="fr-adopt" class="primary" data-pick="${esc(best.id)}">✓ ADOPTAR LA RECOMENDACIÓN</button><p class="fr-note">Pasa a ser la programación vigente. Puntaje ${num(score(st.model, v), 1)} → ${num(best.score, 1)} (menor es mejor).</p></div>
+          <div class="fr-kpis">${studyKpis(s.baseline.kpis, best.kpis).map((d) => `<div class="fr-kpi"><div class="fr-k">${esc(d.label)}</div><div class="fr-v"><s>${fmt(d.before, d.unit)}</s><span>→</span><b>${fmt(d.after, d.unit)}</b></div>${deltaTxt(d)}</div>`).join("")}</div>
+        </div>
+        <div class="fr-k fr-sub">TODAS LAS OPCIONES · cualquiera se puede ver en el Gantt o adoptar</div>
+        <div class="aps-table-wrap"><table class="route-table aps-table fr-table sa-fr-table">
+          <thead><tr><th>Opción</th><th>Qué cambia</th><th class="num">Tarde</th><th class="num">Atraso</th><th class="num">CIP</th><th class="num">Otros cambios</th><th class="num">Merma</th><th>Carga máxima</th><th class="num">Puntaje</th><th></th></tr></thead>
+          <tbody>
+            <tr class="past"><td>VIGENTE</td><td>${esc(sourceName(v))} ${esc(s.baseline.plan_id)}</td>${studyKpis(s.baseline.kpis, s.baseline.kpis).map((d) => `<td class="num">${fmt(d.before, d.unit)}</td>`).join("")}<td>${esc(s.baseline.max_load.equipment)} ${num(s.baseline.max_load.pct)} %</td><td class="num">${num(score(st.model, v), 1)}</td><td></td></tr>
+            ${s.options.map((o) => `<tr class="${o.id === s.best ? "best" : ""}"><td><b class="fr-opt">${esc(o.id.split("-").at(-1)!)}</b>${o.id === s.best ? ' <span class="chip done">MEJOR</span>' : ""}</td><td><b>${esc(o.label)}</b><br/><small>${o.levers.map((l) => esc(l.text)).join(" · ")}</small></td>${studyKpis(s.baseline.kpis, o.kpis).map((d) => `<td class="num">${fmt(d.after, d.unit)}<br/>${deltaTxt(d)}</td>`).join("")}<td>${esc(o.max_load.equipment)} ${num(o.max_load.pct)} %</td><td class="num">${num(o.score, 1)}</td><td class="fr-btns"><button class="fr-see" data-see="${esc(o.id)}">VER EN GANTT</button><button class="fr-see fr-pick" data-pick="${esc(o.id)}">ADOPTAR</button></td></tr>`).join("")}
+          </tbody></table></div>
+        <div class="fr-k fr-sub">OCUPACIÓN · próximos 7 días · <span class="fr-leg was">vigente</span> <span class="fr-leg now">opción ${esc(best.id.split("-").at(-1)!)}</span> · las líneas de proceso cuentan sus marmitas como una</div>
+        <div class="fr-loads">${loads(s)}</div>
+      </section>` : ""}`;
+  }
+
   root.addEventListener("click", (e) => {
     const el = e.target as HTMLElement;
     const tab = el.closest<HTMLElement>("[data-tab]")?.dataset.tab;
-    if (tab === "orders" || tab === "gantt") {
+    if (tab === "orders" || tab === "gantt" || tab === "fractal") {
       st.tab = tab;
       return render();
     }
     if (el.closest("#sa-calc")) return void calculate();
+    const scenario = el.closest<HTMLElement>("[data-study]")?.dataset.study as SauceScenario | undefined;
+    if (scenario === "adelantar") return void study({ scenario, order: { id: $<HTMLSelectElement>("#fr-order").value, due: `${$<HTMLSelectElement>("#fr-due").value}T${st.model.calendar.shifts.map((x) => x.end).sort().at(-1)}` } });
+    if (scenario === "limpiezas") return void study({ scenario });
+    if (scenario === "falla") {
+      if (!st.events.length) {
+        const eq = $<HTMLSelectElement>("#fr-eq").value;
+        const hours = Number($<HTMLSelectElement>("#fr-hours").value);
+        st.events = [{ contract: "plant-event.v1", id: "EV-SA-01", plant: st.model.plant, equipment: eq, kind: "falla", reason: "Falla simulada en el APS", start: st.nowText, est_end: iso(st.now + hours * 60, st.model.timezone) }];
+      }
+      return void study({ scenario });
+    }
+    if (el.closest("#fr-clear")) {
+      Object.assign(st, { events: [], study: st.study?.scenario === "falla" ? null : st.study });
+      return render();
+    }
+    const see = el.closest<HTMLElement>("[data-see]")?.dataset.see;
+    if (see && st.study) {
+      Object.assign(st, { propuesta: { ...st.study.options.find((o) => o.id === see)!.plan }, showing: "propuesta", tab: "gantt" });
+      return render();
+    }
+    const pick = el.closest<HTMLElement>("[data-pick]")?.dataset.pick;
+    if (pick && st.study) {
+      // Cualquier opción se puede adoptar, no solo la recomendada: Fractal recomienda y la persona decide.
+      Object.assign(st, { vigente: { ...st.study.options.find((o) => o.id === pick)!.plan, status: "vigente" }, propuesta: null, showing: "vigente", study: null, tab: "gantt" });
+      return render();
+    }
     if (el.closest("#sa-manual")) {
-      Object.assign(st, { vigente: st.manual, propuesta: null, showing: "vigente", error: null });
+      Object.assign(st, { vigente: st.manual, propuesta: null, showing: "vigente", error: null, study: null });
       return render();
     }
     if (el.closest("#sa-approve") && st.propuesta) {
