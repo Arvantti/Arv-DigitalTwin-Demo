@@ -21,7 +21,7 @@ from twin_emulator_api.sessions import PlantSession
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 PLANT_ID = "water-network-scale-v1"
-PROFILE_PATH = ROOT / "industrial-models" / PLANT_ID / "operation-profiles" / "pdd-prs-punto-critico-18-01.json"
+PROFILE_PATH = ROOT / "docs" / "architecture" / "validation" / "fixtures" / "operation-profiles" / "pdd-prs-punto-critico-18-01.json"
 
 
 def _house_pressures(plant: Any) -> dict[str, float]:

@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arvantti.example/contracts/cosimulation/v1/participant-tick.schema.json",
+  "title": "Cosimulation participant tick v1",
+  "type": "object",
+  "required": ["contract_version", "job_id", "participant", "tick_index", "simulation_time_s", "time_step_s", "initial_snapshot", "profile", "previous_state", "coupling_state"],
+  "properties": {
+    "contract_version": { "const": "cosimulation-tick.v1" },
+    "job_id": { "type": "string" },
+    "participant": { "enum": ["emulator", "fractal"] },
+    "tick_index": { "type": "integer", "minimum": 1 },
+    "simulation_time_s": { "type": "number", "minimum": 0 },
+    "time_step_s": { "type": "number", "exclusiveMinimum": 0 },
+    "initial_snapshot": { "type": "object" },
+    "profile": { "type": "object" },
+    "previous_state": { "type": "object" },
+    "coupling_state": { "type": "object" }
+  },
+  "additionalProperties": false
+}

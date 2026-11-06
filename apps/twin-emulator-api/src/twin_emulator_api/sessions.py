@@ -19,6 +19,24 @@ from .session_checkpoints import checkpoints
 TICK_S = 0.1
 MAX_STEPS_PER_TICK = 4000
 CHECKPOINT_INTERVAL_S = 3600.0
+def _activate_fixed_prs_opening(plant: Any, profile: dict[str, Any] | None = None) -> None:
+    """Fuerza AUTO a apertura fija desde el estado del equipo o un mando perfilado explícito."""
+    station = plant.equipment.get("prs-01")
+    if station is None:
+        return
+    opening = getattr(station, "auto_opening_pct", None)
+    if profile is not None:
+        current_hour = int(plant.t // 3600)
+        for hour_index in range(current_hour, -1, -1):
+            profile_opening = profile.get("hours", {}).get(str(hour_index), {}).get("prs", {}).get("auto_opening_pct")
+            if profile_opening is not None:
+                opening = profile_opening
+                break
+    if isinstance(opening, bool) or not isinstance(opening, (int, float)) or not 20 <= opening <= 100:
+        raise ValueError("La PRS requiere una apertura inicial válida en el equipo o explícita en el perfil.")
+    if getattr(station, "auto_control_mode", None) == "fixed_opening" and station.auto_opening_pct == float(opening):
+        return
+    station.command("set_auto_opening", {"pct": float(opening)})
 
 
 def clean(value: Any) -> Any:
@@ -141,6 +159,8 @@ class SessionManager:
         demo_expires_at: float | None = None,
     ) -> PlantSession:
         plant = model.create(seed=1, random_faults=False, horizon_s=86400.0)
+        if plant_id == "water-network-scale-v1":
+            _activate_fixed_prs_opening(plant, profile)
         session = PlantSession(str(uuid4()), plant_id, plant, profile_id, profile, demo_client_id, demo_expires_at)
         self.sessions[session.id] = session
         checkpoints.save(session)
@@ -181,6 +201,8 @@ class SessionManager:
             last_checkpoint_t=float(state.get("last_checkpoint_t", plant.t)),
             recommendations=state.get("recommendations", []),
         )
+        if plant_id == "water-network-scale-v1":
+            _activate_fixed_prs_opening(session.plant, session.profile)
         self.sessions[session_id] = session
         return session
 

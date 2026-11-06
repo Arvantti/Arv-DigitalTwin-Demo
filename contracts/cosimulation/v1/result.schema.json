@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arvantti.example/contracts/cosimulation/v1/result.schema.json",
+  "title": "Cosimulation result v1",
+  "type": "object",
+  "required": ["contract_version", "job_id", "snapshot_id", "time_origin_s", "time_step_s", "horizon_s", "aligned", "applied_to_plc", "frames"],
+  "properties": {
+    "contract_version": { "const": "cosimulation-result.v1" },
+    "job_id": { "type": "string" },
+    "snapshot_id": { "type": "string" },
+    "profile_id": { "type": ["string", "null"] },
+    "time_origin_s": { "type": "number" },
+    "time_step_s": { "type": "number", "exclusiveMinimum": 0 },
+    "horizon_s": { "type": "number", "exclusiveMinimum": 0 },
+    "aligned": { "const": true },
+    "applied_to_plc": { "const": false },
+    "frames": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["tick_index", "simulation_time_s", "aligned", "participants"],
+        "properties": {
+          "tick_index": { "type": "integer", "minimum": 1 },
+          "simulation_time_s": { "type": "number" },
+          "aligned": { "const": true },
+          "participants": { "type": "object", "required": ["emulator", "fractal"], "properties": { "emulator": { "type": "object" }, "fractal": { "type": "object" } } }
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}

@@ -6,7 +6,7 @@
 # conversando con Claude conectado al simulador (MCP / OPC UA), no se fijan aquí.
 
 schema_version: 0.1.0
-description: "Acueducto a escala: recirculación, bombeo a ≥ 70 mca, estación reguladora por punto crítico y rejilla de 4 niveles"
+description: "Acueducto a escala: recirculación, bombeo a ≥ 70 mca, PRS AUTO a apertura fija asumida y rejilla de 4 niveles"
 dt: 1.0
 
 equipment:
@@ -22,8 +22,9 @@ equipment:
   # Las dos bombas trabajan siempre (D26, sin reserva). Consigna 72,1 mca en el sensor de descarga = 70 mca + 3 %
   # (supuesto: el PLC de las bombas es cerrado, D29).
   pumpset-main-01:   { type: booster-pump-set, preset: multistage-2x13m3h-80m, params: { setpoint_mca: 72.1, min_running: 2 } }
-  # Rama automática por punto crítico: casa más crítica en 15,45 mca (15 mca + 3 %, D29). La rama manual queda en la
-  # salida que da lo mismo de día con la columna en serie (20,94 mca, banco network.py).
+  # La apertura inicial assumed viene del contrato del equipo; el operador la modifica desde el mando vivo del PLC.
+  # La presión crítica se mide y alimenta alarmas/pruebas, pero no cierra el lazo de apertura AUTO. La rama manual
+  # queda en 20,94 mca (banco network.py).
   # D78: antirretorno a la salida de PRS antes de piso 1; Kv de referencia DN100 = 158 m³/h.
   prs-01:            { type: pressure-reducing-station, preset: station-4in-auto, params: { critical_setpoint_mca: 15.45, manual_setting_mca: 20.94, outlet_check_kv_m3h: 158 } }
   grid-01:           { type: distribution-grid, preset: level-1, params: { riser_out_lz: 0.6 } }

@@ -332,8 +332,23 @@ button.pick { padding: 2px 8px; font-size: 11px; }
 .water-workspace-nav button { white-space:nowrap; padding:7px 9px; border:1px solid #456080; background:#09142b; color:#c8d8ed; font:600 10px Orbitron,Inter,sans-serif; }
 .water-workspace-nav button.active { color:#4ea7ff; border-color:#4ea7ff; }
 .topbar:has(.water-workspace-nav:not([hidden])) .clock { min-width:150px; }
-.water-plc-panel { position:fixed; z-index:36; top:76px; right:12px; width:min(1050px,76vw); height:calc(100vh - 90px); overflow:hidden; background:#040421; border:1px solid #4ea7ff; box-shadow:0 14px 45px #000a; }
-.water-plc-panel iframe { width:100%; height:100%; border:0; background:#040421; }
+.water-plc-panel { position:fixed; z-index:36; top:76px; right:12px; width:var(--water-plc-width,min(900px,calc(100vw - 24px))); height:var(--water-plc-height,min(88vh,calc(100vh - 90px))); min-width:min(620px,calc(100vw - 24px)); min-height:min(460px,calc(100vh - 90px)); max-width:calc(100vw - 24px); max-height:calc(100vh - 90px); overflow:hidden; background:#040421; border:1px solid #4ea7ff; box-shadow:0 14px 45px #000a; }
+.water-plc-panel-head { height:38px; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:0 12px 0 16px; background:#0b1026; border-bottom:1px solid #263e65; color:#b9d5f5; }
+.water-plc-panel-head strong { font:600 10px Orbitron,Inter,sans-serif; letter-spacing:.1em; }
+.water-plc-panel-head button { padding:5px 9px; border:1px solid #a84d69; background:#351528; color:#ffdce6; font:600 10px Inter,sans-serif; letter-spacing:.06em; cursor:pointer; }
+.water-plc-panel-head button:hover,.water-plc-panel-head button:focus-visible { background:#572039; border-color:#ff829e; }
+.water-plc-panel iframe { display:block; width:100%; height:calc(100% - 38px); border:0; background:#040421; }
+.water-plc-resize { position:absolute; z-index:2; padding:0; border:0; border-radius:0; background:transparent; touch-action:none; }
+.water-plc-resize::after { content:""; position:absolute; display:block; border-radius:2px; background:#4ea7ff66; pointer-events:none; }
+.water-plc-resize:hover::after,.water-plc-resize:focus-visible::after { background:#4ea7ff; }
+.water-plc-resize:focus-visible { outline:2px solid #dbeafe; outline-offset:1px; }
+.water-plc-resize-width { left:0; top:0; bottom:12px; width:9px; cursor:ew-resize; }
+.water-plc-resize-width::after { top:0; bottom:0; left:3.5px; width:2px; }
+.water-plc-resize-height { left:9px; right:0; bottom:0; height:9px; cursor:ns-resize; }
+.water-plc-resize-height::after { top:3.5px; left:0; right:0; height:2px; }
+.water-plc-resize-corner { left:0; bottom:0; width:18px; height:18px; cursor:nesw-resize; clip-path:none; }
+.water-plc-resize-corner::after { left:5px; bottom:5px; width:8px; height:8px; clip-path:polygon(0 100%,100% 100%,0 0); }
+@media(max-width:700px) { .water-plc-panel { min-width:0; width:var(--water-plc-width,calc(100vw - 20px)); right:10px; max-width:calc(100vw - 20px); } }
 .water-history-panel { position:fixed; z-index:37; top:76px; right:12px; width:min(520px,55vw); padding:18px; }
 .water-history-panel label { display:grid; gap:8px; margin:16px 0; }
 .water-history-panel input { width:100%; }

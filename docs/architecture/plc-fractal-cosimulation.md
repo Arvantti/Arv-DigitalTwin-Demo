@@ -3,6 +3,7 @@
 > Estado: diseño aprobado para implementación incremental.  
 > Plan ejecutable: [sesión PLC compartida y optimización Fractal](plc-session-fractal-implementation-plan.md).
 > Política temporal y tipos de estudio: [estudios Fractal y visualización temporal](fractal-studies-and-temporal-views.md).
+> Separación real de procesos/contratos: [cosimulación y optimización](cosimulation-optimization-processes.md).
 > Alcance: `water-network-scale-v1`.  
 > Seguridad: todo componente es **simulado**; no hay conexión ni escritura a PLC, OPC UA, sensores o infraestructura física.
 

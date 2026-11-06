@@ -117,6 +117,8 @@ def normalize_profile(payload: Mapping[str, Any]) -> dict[str, Any]:
                 checked["control_mode"] = mode
             if "auto_outlet_mca" in prs:
                 checked["auto_outlet_mca"] = _number(prs["auto_outlet_mca"], f"hours.{hour}.prs.auto_outlet_mca", 15, 40)
+            if "auto_opening_pct" in prs:
+                checked["auto_opening_pct"] = _number(prs["auto_opening_pct"], f"hours.{hour}.prs.auto_opening_pct", 20, 100)
             if "inlet_pressure_mca" in prs:
                 checked["inlet_pressure_mca"] = _number(prs["inlet_pressure_mca"], f"hours.{hour}.prs.inlet_pressure_mca", 15, 100)
             if "critical_control_point" in prs:
@@ -183,18 +185,13 @@ def commands_for_hour(
         commands.append({"equipment": "prs-01", "command": "set_critical_setpoint", "args": {"mca": prs["critical_setpoint_mca"]}})
     if "manual_setting_mca" in prs:
         commands.append({"equipment": "prs-01", "command": "set_manual_setting", "args": {"mca": prs["manual_setting_mca"]}})
-    if prs.get("control_mode") == "fixed_outlet":
+    # La apertura es un mando explícito por hora. Si el perfil omite este campo,
+    # no se emite ningún mando y se conserva el valor que el operador haya dejado
+    # en el PLC virtual.
+    if "auto_opening_pct" in prs:
         commands.append({
-            "equipment": "prs-01", "command": "set_auto_control",
-            "args": {"mode": "fixed_outlet", "mca": prs["auto_outlet_mca"]},
-        })
-    elif prs.get("control_mode") in {"critical_pressure", "critical_point"}:
-        commands.append({
-            "equipment": "prs-01", "command": "set_auto_control",
-            "args": {
-                "mode": prs["control_mode"],
-                "mca": prs.get("critical_setpoint_mca", prs.get("auto_outlet_mca", 20.94)),
-            },
+            "equipment": "prs-01", "command": "set_auto_opening",
+            "args": {"pct": prs["auto_opening_pct"]},
         })
     return commands
 
@@ -236,10 +233,14 @@ class ProfileStore:
     def _seed_model_profiles(self) -> None:
         """Instala plantillas versionadas; retira las sustituidas sin borrar perfiles del operador."""
         if self.plant_id == "water-network-scale-v1":
-            retired = tuple(f"builtin-{self.plant_id}-{name}" for name in ("pfl-noc-01", "pfl-noc-02", "pfl-res-01"))
+            retired = tuple(f"builtin-{self.plant_id}-{name}" for name in (
+                "pfl-noc-01", "pfl-noc-02", "pfl-res-01",
+                "pdd-prs-fijo-01", "pdd-prs-punto-critico-18-01",
+            ))
             with self._connect() as conn:
+                placeholders = ", ".join("?" for _ in retired)
                 conn.execute(
-                    "DELETE FROM operation_profiles WHERE plant_id = ? AND id IN (?, ?, ?)",
+                    f"DELETE FROM operation_profiles WHERE plant_id = ? AND id IN ({placeholders})",
                     (self.plant_id, *retired),
                 )
         folder = _models_root() / self.plant_id / "operation-profiles"
@@ -256,8 +257,13 @@ class ProfileStore:
             profile_id = f"builtin-{self.plant_id}-{template_id}"
             with self._connect() as conn:
                 conn.execute(
-                    "INSERT OR IGNORE INTO operation_profiles "
-                    "(id, plant_id, name, description, data, created_at, updated_at, owner_id) VALUES (?, ?, ?, ?, ?, ?, ?, NULL)",
+                    "INSERT INTO operation_profiles "
+                    "(id, plant_id, name, description, data, created_at, updated_at, owner_id) "
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, NULL) "
+                    "ON CONFLICT(id) DO UPDATE SET name = excluded.name, description = excluded.description, "
+                    "data = excluded.data, updated_at = excluded.updated_at "
+                    "WHERE operation_profiles.owner_id IS NULL AND (operation_profiles.name <> excluded.name "
+                    "OR operation_profiles.description <> excluded.description OR operation_profiles.data <> excluded.data)",
                     (profile_id, self.plant_id, profile["name"], profile["description"], json.dumps(profile), now, now),
                 )
 

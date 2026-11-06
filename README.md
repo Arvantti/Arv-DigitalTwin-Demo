@@ -26,7 +26,7 @@ tools/                    validación de layouts y capturas de vista previa
 ## Inicio rápido
 
 ```bash
-uv sync && pnpm install
+uv sync --all-packages && pnpm install
 uv run twin-lib list                               # tipos de equipo
 uv run twin-lib run jacketed-kettle --scenario tomato-sauce-batch --every 600
 uv run uvicorn twin_emulator_api.main:app --port 8000 &     # API de simulación

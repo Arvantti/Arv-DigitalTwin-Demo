@@ -7,8 +7,6 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
-from .instant_search import optimize
-
 MODEL_DIR = Path(__file__).resolve().parents[1] / "models" / "water-network-scale-v1"
 PARAMETERS = MODEL_DIR / "parameters.py"
 _spec = importlib.util.spec_from_file_location("fractal_water_parameters", PARAMETERS)
@@ -240,14 +238,22 @@ def project_24h(
     tags: dict[str, Any],
     profile: dict[str, Any],
     study_type: str = "baseline",
-    objective_id: str = "OBJ-LEAK-01",
+    objective_id: str = "OBJ-PRESSURE-MIN",
     *,
+    target_pressure_mca: float | None = None,
     horizon_hours: int = 24,
     on_recirculation_transition: Callable[[dict[str, Any]], None] | None = None,
 ) -> list[dict[str, Any]]:
-    """Genera una rama horaria. Baseline y alternative nunca optimizan ni proponen mandos."""
+    """Genera un horizonte con el perfil guardado; optimized propone sin modificar entradas operativas."""
     if not 1 <= horizon_hours <= 24:
         raise ValueError("horizon_hours debe estar entre 1 y 24")
+    if study_type == "optimized":
+        if (
+            isinstance(target_pressure_mca, bool)
+            or not isinstance(target_pressure_mca, (int, float))
+            or not 10 <= target_pressure_mca <= 45
+        ):
+            raise ValueError("la presión objetivo debe definirse entre 10 y 45 mca")
     plan: list[dict[str, Any]] = []
     tank_levels = {
         "tank-supply-01": float(tags.get("PLC.Tank.Supply.LevelPct") or 70.0),
@@ -274,7 +280,6 @@ def project_24h(
         segment_start_s = initial_time_s + elapsed_s
         profile_hour = (base_hour + hour) % 24
         entry = profile.get("hours", {}).get(str(profile_hour), {})
-        overrides = profile.get("overrides", {}) if study_type == "alternative" else {}
         global_pct = entry.get("global_consumers_pct")
         dwellings_by_grid = entry.get("dwellings", {})
         scenario_tags = dict(carried_tags)
@@ -298,9 +303,7 @@ def project_24h(
                     scenario_tags[tag_key] = float(target_opening)
                     openings_for_level.append(float(target_opening))
             level_demands.append(sum(openings_for_level) / len(openings_for_level))
-        profile_demand = sum(level_demands) / (100 * len(level_demands))
-        demand_multiplier = float(overrides.get("demand_multiplier", 1.0))
-        demand = max(0.0, profile_demand * demand_multiplier)
+        demand = max(0.0, sum(level_demands) / (100 * len(level_demands)))
         prs_entry = entry.get("prs", {})
         current_prs = float(prs_entry.get("manual_setting_mca", current_prs))
         prs_branch = prs_entry.get("branch", prs_branch)
@@ -311,60 +314,50 @@ def project_24h(
             current_inlet = float(carried_tags.get("PLC.PRS.InletPressureMca") or 0.0)
             scenario_tags["PLC.Pump.SetpointMca"] = float(prs_entry["inlet_pressure_mca"]) + current_discharge - current_inlet
         prs_control_mode = prs_entry.get("control_mode", "critical_pressure")
-        prs_branch_auto = prs_branch == "auto" and "prs_mca" not in overrides
+        prs_branch_auto = prs_branch == "auto" and study_type != "optimized"
         prs_auto = prs_branch_auto and prs_control_mode in {"critical_pressure", "critical_point"}
         critical_consumer_id = prs_entry.get("critical_control_point") if prs_control_mode == "critical_point" else None
-        prs_setpoint = float(overrides.get("prs_mca", prs_entry.get("auto_outlet_mca", current_prs)))
+        prs_setpoint = float(prs_entry.get("auto_outlet_mca", current_prs))
         critical_target = critical_setpoint
         between = entry.get("between_levels", {})
         openings = tuple(float(between.get(str(n), opening)) for n, opening in zip((12, 23, 34), openings, strict=True))
-        scenario_openings = tuple(
-            float(overrides.get(f"valve_{n}_pct", opening)) for n, opening in zip((12, 23, 34), openings, strict=True)
-        )
+        scenario_openings = tuple(float(opening) for opening in openings)
         leak_overrides = entry.get("leaks", {})
-        leak_multiplier = float(overrides.get("leakage_multiplier", 1.0)) if study_type == "alternative" else 1.0
         for level in range(1, 5):
             valve_map = leak_overrides.get(f"grid-0{level}", {})
             for leak_id, opening_pct in valve_map.items():
                 scenario_tags[f"PLC.Grid.L{level}.Leak.{leak_id.upper()}.OpeningPct"] = float(opening_pct)
-            scenario_tags[f"PLC.Grid.L{level}.LeakageScale"] = leak_multiplier
+            scenario_tags[f"PLC.Grid.L{level}.LeakageScale"] = 1.0
         carried_tags.update({k: v for k, v in scenario_tags.items() if k.startswith("PLC.Grid.") and k.endswith(".OpeningPct")})
-        factors = (
-            (demand_multiplier,)
-            if study_type == "optimized"
-            else tuple(demand_multiplier * factor for factor in (0.9, 1.0, 1.1))
-        )
+        factors = (1.0,)
         scenarios: list[dict[str, Any]] = []
         optimized_controls: dict[str, Any] | None = None
-        optimized_fixed_flows: dict[str, float] | None = None
         optimized_feasible = True
         if study_type == "optimized":
-            # Cada hora y escenario conserva las aperturas PLC y el caudal de
-            # referencia; solo se busca la presión de salida requerida en PRS.
+            # La optimización vive en un paquete/proceso separado; se importa de forma perezosa
+            # para que el motor de proyección base no cargue lógica del optimizador.
+            from fractal.optimization.instant_search import optimize
+
+            # Cada hora conserva exactamente las aperturas del perfil; solo se busca
+            # la presión de salida PRS que satisface el objetivo elegido.
             search = optimize(
                 scenario_tags,
-                demand_factor=demand_multiplier,
-                objective_id=objective_id,
+                target_pressure_mca=float(target_pressure_mca),
                 vertical_openings_pct=scenario_openings,
                 critical_consumer_id=critical_consumer_id,
                 reference_prs_mca=prs_setpoint,
             )
             optimized_controls = search["optimized"]
-            optimized_fixed_flows = search["fixed_flows_m3h"]
             optimized_feasible = bool(search.get("constraints_satisfied", True))
         for factor in factors:
             if optimized_controls is not None:
                 candidate_prs = float(optimized_controls["prs_mca"])
-                fixed_flow_scale = factor / demand_multiplier if demand_multiplier > 0 else 1.0
-                scenario_fixed_flows = {
-                    key: value * fixed_flow_scale for key, value in (optimized_fixed_flows or {}).items()
-                }
                 state = _solver.evaluate(
                     scenario_tags,
                     prs_mca=candidate_prs,
                     vertical_openings_pct=scenario_openings,
                     demand_factor=1.0,
-                    fixed_flows_m3h=scenario_fixed_flows,
+                    required_min_pressure_mca=float(target_pressure_mca),
                 )
             else:
                 state = _solver.evaluate(
@@ -405,11 +398,11 @@ def project_24h(
             end_tags,
             prs_mca=end_prs,
             vertical_openings_pct=end_openings,
-            demand_factor=1.0 if optimized_controls is not None else demand_multiplier,
+            demand_factor=1.0,
             prs_auto=prs_auto and optimized_controls is None,
             critical_target_mca=critical_target,
             critical_consumer_id=critical_consumer_id,
-            fixed_flows_m3h=optimized_fixed_flows,
+            required_min_pressure_mca=float(target_pressure_mca) if optimized_controls is not None else None,
         )
         flow_out = float(end_state["flow_m3h"])
         recirc_end_flow, recirc_a, recirc_b = _recirc.pump_flow(_MODEL, tank_levels) if recirc_on else (0.0, 0.0, 0.0)
@@ -517,7 +510,6 @@ def project_24h(
                         "vrp_opening_required_pct": optimized_controls.get("vrp_opening_required_pct"),
                         "opening_curve_status": optimized_controls.get("opening_curve_status"),
                         "target_pressure_mca": optimized_controls["target_pressure_mca"],
-                        "applied_pressure_target_mca": optimized_controls["applied_pressure_target_mca"],
                         "target_met": optimized_controls["target_met"],
                         "constraints_satisfied": optimized_feasible,
                     }

@@ -26,7 +26,7 @@
    validar las 24 horas frente a operación del emulador: demandas por vivienda, fugas, PRS,
    bomba, recirculación y tanques, incluso límites de hora y transitorios.
 2. E2E PLC → estudio base/alternativo → persistencia PLC → frame 3D futuro NO APLICADO.
-3. Optimización horaria: dos perfiles de consumo (PLC y personalizado); por hora ajustar solo salida PRS para 18 mca objetivo y 15 mca límite duro. La API no aplica mandos; la HMI ofrece la optimización como proyección pendiente de aceptación humana.
+3. Optimización horaria: usa el perfil guardado seleccionado sin alterar viviendas ni fugas. El objetivo mínimo de presión en C44 es seleccionado por el usuario (10–45 mca); si no se alcanza, se reporta sin fallback fijo. La API no aplica mandos; la HMI ofrece una proyección pendiente de aceptación humana.
 4. Reconexión/expiración de sesiones, autorización/retención y despliegue de las dos APIs más proxy HTTPS/WSS.
 ```
 
@@ -169,7 +169,7 @@ Los escenarios de prueba se retiran del flujo operativo del visor.
 Perfiles operativos PLC versionados:
 
 ```text
-PFL-BASE-01 · Operación diurna automática · demanda residencial 100 %
+PFL-BASE-01 · 100 % aperturas de viviendas · PRS editable en PLC
 PFL-NOC-01 · Operación nocturna automática · demanda residencial 30 %
 PFL-NOC-02 · Operación nocturna en PRS manual · consigna fija 20,94 mca
 PFL-RES-01 · Restricción vertical N2→N3 · válvula al 50 %
@@ -248,15 +248,15 @@ El operador elige objetivos autorizados desde la pantalla **FRACTAL · OPTIMIZAC
 Objetivos iniciales:
 
 ```text
-OBJ-LEAK-01 · Minimizar fugas manteniendo servicio
-OBJ-ENERGY-01 · Minimizar energía manteniendo servicio
-OBJ-MARGIN-01 · Maximizar margen de presión crítica
+OBJ-PRESSURE-MIN · Minimizar la consigna PRS para el objetivo mínimo de presión elegido por el usuario en C44
+
+Actualmente es el único objetivo habilitado. Optimización energética y de margen siguen fuera de alcance.
 ```
 
 Restricciones mínimas:
 
 ```text
-presión crítica ≥ 15 mca
+presión crítica C44 ≥ target_pressure_mca (10–45 mca, entrada obligatoria por trabajo)
 nivel de tanque de bombeo entre límites operativos
 presión de descarga de bombas ≥ 70 mca
 rangos permitidos de PRS y válvulas

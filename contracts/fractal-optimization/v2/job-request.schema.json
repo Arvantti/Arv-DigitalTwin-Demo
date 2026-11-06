@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arvantti.example/contracts/fractal-optimization/v2/job-request.schema.json",
+  "title": "Fractal optimization job request v2 — configurable pressure objective",
+  "type": "object",
+  "required": ["contract_version", "kind", "snapshot", "objective_id", "target_pressure_mca"],
+  "properties": {
+    "contract_version": { "const": "fractal-optimization-job.v2" },
+    "kind": { "enum": ["instant", "profile-horizon"] },
+    "objective_id": { "const": "OBJ-PRESSURE-MIN" },
+    "target_pressure_mca": { "type": "number", "minimum": 10, "maximum": 45 },
+    "profile_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "snapshot": {
+      "type": "object",
+      "required": ["snapshot_id", "simulation_time_s", "plc_tags"],
+      "properties": {
+        "snapshot_id": { "type": "string", "minLength": 1 },
+        "simulation_time_s": { "type": "number", "minimum": 0 },
+        "plc_tags": { "type": "object" }
+      },
+      "additionalProperties": false
+    },
+    "profile": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "hours": { "type": "object" }
+      },
+      "additionalProperties": true
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "kind": { "const": "profile-horizon" } } },
+      "then": { "required": ["profile", "profile_hash"] }
+    }
+  ],
+  "additionalProperties": false
+}

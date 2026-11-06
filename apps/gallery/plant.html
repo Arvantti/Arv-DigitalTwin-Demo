@@ -27,6 +27,11 @@
       <div id="forecast-values" style="margin-top:8px"></div>
       <small>Elija un escenario y pulse REPRODUCIR para recorrer sus 24 horas. «Volver al PLC actual» muestra nuevamente la operación en vivo.</small><div><button id="forecast-return">↶ VOLVER AL PLC ACTUAL</button></div>
     </section>
+    <section id="triad-overlay" hidden aria-label="Indicadores comparativos de fuentes guardadas" style="position:fixed;z-index:30;top:82px;right:14px;width:min(500px,calc(100vw - 28px));max-height:72vh;overflow:auto;padding:12px;background:rgba(5,10,32,.94);border:1px solid #4ea7ff;border-radius:8px;color:#f8fafc;box-shadow:0 8px 30px #0009;font:12px Inter,sans-serif">
+      <strong>TRÍADA · SOLO FRAMES GUARDADOS · NO APLICADA</strong>
+      <p id="triad-overlay-time" style="margin:6px 0;color:#b8c7dc"></p>
+      <div id="triad-overlay-values"></div>
+    </section>
     <header class="topbar glass">
       <div class="brand"><span class="logo">◆</span> TWIN<span class="dim">/</span>PLANT</div>
       <div class="title"><span id="plant-name">—</span><span class="dim" id="plant-meta"></span></div>
@@ -37,7 +42,6 @@
     <aside class="sidebar glass" id="sidebar">
       <a class="nav-link" href="/">◀ INICIO</a>
       <a class="nav-link" id="link-equipos" href="/equipos.html">▤ EQUIPOS DE ESTA PLANTA</a>
-      <a class="nav-link" id="link-plc" href="#plc" hidden>▣ PLC MASTER / HMI</a>
       <div id="schedule-section" hidden></div>
       <div id="products-section" hidden>
         <button id="products-toggle" class="section-toggle" type="button" aria-expanded="true" aria-controls="products-body" title="Mostrar u ocultar la lista de productos"><span>PRODUCTOS</span><span class="chev" aria-hidden="true">▾</span></button>
@@ -67,7 +71,7 @@
       <h3>LÍNEAS</h3>
       <div id="lines" class="lines"></div>
     </aside>
-    <section id="water-plc-panel" class="water-plc-panel" hidden aria-label="PLC sobre la misma escena 3D"><iframe id="water-plc-frame" title="PLC Master y administración de escenarios" loading="lazy"></iframe></section>
+    <section id="water-plc-panel" class="water-plc-panel" hidden aria-label="PLC sobre la misma escena 3D"><div class="water-plc-panel-head"><strong>PLC MASTER · ACUEDUCTO</strong><button id="water-plc-close" type="button" aria-label="Cerrar PLC Master; la emulación continúa en segundo plano" title="Cerrar esta vista. La emulación PLC continúa.">× CERRAR PLC</button></div><iframe id="water-plc-frame" title="PLC Master y administración de escenarios" loading="lazy"></iframe><button id="water-plc-resize-width" class="water-plc-resize water-plc-resize-width" type="button" role="separator" aria-orientation="vertical" aria-label="Arrastrar para ajustar el ancho del PLC" title="Arrastrar para ajustar el ancho"></button><button id="water-plc-resize-height" class="water-plc-resize water-plc-resize-height" type="button" role="separator" aria-orientation="horizontal" aria-label="Arrastrar para ajustar la altura del PLC" title="Arrastrar para ajustar la altura"></button><button id="water-plc-resize-corner" class="water-plc-resize water-plc-resize-corner" type="button" aria-label="Arrastrar para ajustar ancho y altura del PLC" title="Ajustar tamaño"></button></section>
     <section id="water-history-panel" class="water-history-panel glass" hidden aria-label="Histórico del 3D"><h2>◷ HISTÓRICO PLC · SOLO LECTURA</h2><p>La operación continúa en vivo mientras se inspecciona un instante anterior. Esto no rebobina ni modifica el PLC.</p><label>Instante simulado <input id="history-time" type="range" min="0" max="0" value="0" step="60" /></label><strong id="history-caption">Sin grabación aún.</strong><button id="history-return">VOLVER AL PRESENTE</button></section>
     <section class="plc glass hidden" id="belt-plc" aria-label="Tablero del PLC de las bandas"></section>
     <section class="hud glass" id="hud">

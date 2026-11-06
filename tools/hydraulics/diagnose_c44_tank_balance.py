@@ -25,7 +25,7 @@ TAGS = {
 
 
 def run(output: Path) -> dict[str, Any]:
-    profile_path = ROOT / "industrial-models" / PLANT / "operation-profiles/pdd-prs-punto-critico-18-01.json"
+    profile_path = ROOT / "docs" / "architecture" / "validation" / "fixtures" / "operation-profiles" / "pdd-prs-punto-critico-18-01.json"
     profile = normalize_profile(json.loads(profile_path.read_text()))
     plant = _plant_model(PLANT).create(seed=1, random_faults=False, horizon_s=1800)
     session = PlantSession("c44-balance", PLANT, plant, "c44-balance", profile)

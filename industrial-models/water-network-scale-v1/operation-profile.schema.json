@@ -42,7 +42,8 @@
             "control_mode": { "enum": ["critical_pressure", "critical_point", "fixed_outlet"] },
             "critical_control_point": { "enum": ["L4.C44"] },
             "inlet_pressure_mca": { "type": "number", "minimum": 15, "maximum": 100 },
-            "auto_outlet_mca": { "type": "number", "minimum": 15, "maximum": 40 }
+            "auto_outlet_mca": { "type": "number", "minimum": 15, "maximum": 40 },
+            "auto_opening_pct": { "type": "number", "minimum": 20, "maximum": 100 }
           },
           "allOf": [
             {

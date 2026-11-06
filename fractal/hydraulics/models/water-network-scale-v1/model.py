@@ -26,7 +26,6 @@ _config = _load("fractal_water_model_parameters", "parameters.py")
 _nodal = _load("fractal_water_nodal", "nodal.py")
 _supply = _load("fractal_water_supply", "supply.py")
 MODEL = _config.load()
-MIN_PRESSURE_MCA = float(MODEL["constraints"]["critical_pressure_min_mca"])
 PUMP_MIN_MCA = float(MODEL["constraints"]["pump_discharge_min_mca"])
 
 
@@ -56,6 +55,7 @@ def evaluate(
     critical_target_mca: float | None = None,
     critical_consumer_id: str | None = None,
     fixed_flows_m3h: dict[str, float] | None = None,
+    required_min_pressure_mca: float | None = None,
 ) -> dict[str, Any]:
     """Acopla la red nodal con curva de bomba, disponibilidad PRS y lazo AUTO asentado."""
 
@@ -135,7 +135,7 @@ def evaluate(
     tank_level = float(tags.get("PLC.Tank.Supply.LevelPct") or 0)
     constraints = {
         "hydraulic_convergence": converged,
-        "critical_pressure": critical >= MIN_PRESSURE_MCA,
+        "critical_pressure": required_min_pressure_mca is None or critical >= required_min_pressure_mca,
         "pump_discharge": discharge >= PUMP_MIN_MCA,
         "pump_capacity": total_flow <= pump_flow_limit and bool(supply["pump_control_feasible"]),
         "prs_available": bool(supply["prs_regulating"]),

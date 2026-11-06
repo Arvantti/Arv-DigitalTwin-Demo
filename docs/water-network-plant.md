@@ -4,6 +4,8 @@ Estado: diseño fusionado (PR #13, supuestos S1–S7 aceptados por defecto al fu
 
 Pedido original: Carlos Andrés Quiceño, 2026-10-17 00:20 UTC (hilo «Acueducto a escala», ver `docs/registro/historico/proyecto/hilo-acueducto-a-escala.md`).
 
+> **Diferencia entre diseño y emulador actual:** este documento conserva el objetivo hidráulico de diseño de 15,45 mca en el punto crítico. La emulación PLC actual no cierra un lazo automático sobre esa presión: la rama AUTO usa una apertura fija configurable por hora, transformada mediante una curva S asumida. 15,45 mca queda como referencia de lectura/alarma; véase `docs/architecture/prs-fixed-opening-emulator.md`.
+
 ## 1. Qué representa
 
 Un banco de pruebas a escala, montado en un edificio, que reproduce el acueducto de una ciudad:

@@ -26,9 +26,11 @@ Protocolo del WebSocket de planta
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import json
 import math
 import os
+import re
 import time
 from datetime import date
 from typing import Annotated, Any
@@ -511,6 +513,268 @@ def get_session_historian(plant_id: str, session_id: str) -> dict[str, Any]:
     if session_manager.get(plant_id, session_id) is None:
         raise HTTPException(404, "sesión desconocida")
     return {"session_id": session_id, **historian.read(session_id)}
+
+
+def _canonical_fingerprint(value: Any) -> str:
+    canonical = json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False)
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+
+
+def _profile_fingerprint(profile: dict[str, Any]) -> str:
+    return _canonical_fingerprint(profile)
+
+
+def _validate_comparison_grid(time_step_s: Any, horizon_s: Any) -> tuple[float, float]:
+    if any(
+        isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value)
+        for value in (time_step_s, horizon_s)
+    ):
+        raise HTTPException(422, "time_step_s y horizon_s deben ser números finitos")
+    step, horizon = float(time_step_s), float(horizon_s)
+    ticks = horizon / step if step > 0 else 0
+    hour_grid = all(math.isclose(value / 3600, round(value / 3600), abs_tol=1e-8) for value in (step, horizon))
+    if (
+        not hour_grid or step < 3600 or step > 24 * 3600 or horizon < 3600 or horizon > 168 * 3600
+        or ticks < 1 or ticks > 168 or not math.isclose(ticks, round(ticks), abs_tol=1e-8)
+    ):
+        raise HTTPException(422, "Use paso de 1–24 h y horizonte de 1–168 h, en horas enteras y múltiplos exactos")
+    return step, horizon
+
+
+@app.post("/api/plants/{plant_id}/sessions/{session_id}/comparisons/{comparison_id}/manifest")
+def create_comparison_manifest(
+    plant_id: str,
+    session_id: str,
+    comparison_id: str,
+    request: Request,
+    payload: Annotated[dict[str, Any], Body()],
+) -> dict[str, Any]:
+    """Fija un contexto PLC/profile/horizonte para asociar corridas independientes."""
+    if not re.fullmatch(r"[A-Za-z0-9_-]{1,96}", comparison_id):
+        raise HTTPException(422, "comparison_id inválido")
+    session = session_manager.get(plant_id, session_id)
+    if session is None or (session.demo_client_id and session.demo_client_id != request.headers.get("x-twin-demo-id")):
+        raise HTTPException(404, "sesión desconocida")
+    step, horizon = _validate_comparison_grid(payload.get("time_step_s"), payload.get("horizon_s"))
+    requested_profile_id = payload.get("profile_id")
+    existing = historian.get_comparison_manifest(session_id, comparison_id)
+    if existing is not None:
+        if (
+            requested_profile_id not in (None, existing["profile_id"])
+            or step != existing["time_step_s"]
+            or horizon != existing["horizon_s"]
+        ):
+            raise HTTPException(409, "comparison_id ya está fijado a otro perfil o rejilla temporal")
+        return existing
+    if not session.running or session.paused:
+        raise HTTPException(409, "inicie o reanude el PLC para fijar un snapshot de comparación")
+    profile_id = requested_profile_id or session.profile_id
+    if not isinstance(profile_id, str) or profile_id != session.profile_id:
+        raise HTTPException(409, "el manifiesto debe usar el perfil activo de la sesión PLC")
+    owner_id = request.headers.get("x-twin-demo-id")
+    profile = ProfileStore(plant_id, owner_id).get(profile_id)
+    if profile is None:
+        raise HTTPException(404, "perfil guardado desconocido")
+    base_time = float(session.plant.t)
+    profile_hour = int(base_time // 3600)
+    tags = plc_tags(
+        session.snapshot(), profile_id=profile_id, profile_hour=profile_hour, simulated_time=base_time
+    )
+    if tags.get("PLC.Profile.ActiveId") != profile_id:
+        raise HTTPException(409, "el snapshot PLC no corresponde al perfil activo")
+    if int(tags.get("PLC.Pump.RunningCount") or 0) == 0 or float(tags.get("PLC.PRS.OutletPressureMca") or 0) < 5:
+        raise HTTPException(409, "espere a que arranquen las bombas y se presurice la VRP antes de fijar la comparación")
+    history_frames: list[dict[str, Any]] = []
+    for sample in historian.read(session_id)["samples"]:
+        if sample["t"] >= base_time:
+            continue
+        stored_profile, sample_tags = sample.get("profile"), sample.get("plc_tags")
+        if not isinstance(stored_profile, dict) or stored_profile.get("id") != profile_id:
+            raise HTTPException(409, "el historial contiene otro perfil; inicie una sesión con perfil único")
+        if not isinstance(sample_tags, dict) or sample_tags.get("PLC.Profile.ActiveId") != profile_id:
+            raise HTTPException(409, "el historial PLC no permite verificar el perfil activo")
+        history_frames.append({"simulation_time_s": sample["t"], "plc_tags": sample_tags})
+    snapshot_id = f"{session_id}:{base_time:g}"
+    profile_hash = _profile_fingerprint(profile)
+    history_hash = _canonical_fingerprint(history_frames)
+    first_forecast = (math.floor(base_time / step) + 1) * step if step != 3600 else (math.floor(base_time / 3600) + 1) * 3600
+    forecast_times: list[float] = []
+    at = first_forecast
+    end_time = base_time + horizon
+    while at <= end_time + 1e-8 and len(forecast_times) < 168:
+        forecast_times.append(float(at))
+        at += step
+    identity = {
+        "version": "comparison-context.v1",
+        "plant_id": plant_id,
+        "session_id": session_id,
+        "profile_id": profile_id,
+        "profile_hash": profile_hash,
+        "snapshot_id": snapshot_id,
+        "base_time_s": base_time,
+        "time_step_s": step,
+        "horizon_s": horizon,
+        "forecast_times_s": forecast_times,
+        "history_times_s": [frame["simulation_time_s"] for frame in history_frames],
+        "history_hash": history_hash,
+    }
+    manifest = {
+        **identity,
+        "input_hash": _canonical_fingerprint(identity),
+        "profile": profile,
+        "snapshot": {"snapshot_id": snapshot_id, "simulation_time_s": base_time, "plc_tags": tags},
+        "history_sample_count": len(history_frames),
+    }
+    try:
+        return historian.create_comparison_manifest(session_id, comparison_id, manifest)
+    except ValueError as exc:
+        raise HTTPException(409, str(exc)) from exc
+
+
+@app.get("/api/plants/{plant_id}/sessions/{session_id}/comparisons/{comparison_id}/manifest")
+def get_comparison_manifest(
+    plant_id: str, session_id: str, comparison_id: str, request: Request
+) -> dict[str, Any]:
+    session = session_manager.get(plant_id, session_id)
+    if session is None or (session.demo_client_id and session.demo_client_id != request.headers.get("x-twin-demo-id")):
+        raise HTTPException(404, "sesión desconocida")
+    manifest = historian.get_comparison_manifest(session_id, comparison_id)
+    if manifest is None or manifest.get("plant_id") != plant_id:
+        raise HTTPException(404, "manifiesto de comparación desconocido")
+    return manifest
+
+
+@app.post("/api/plants/{plant_id}/sessions/{session_id}/comparisons/{comparison_id}/runs", status_code=201)
+def publish_model_run(
+    plant_id: str,
+    session_id: str,
+    comparison_id: str,
+    request: Request,
+    payload: Annotated[dict[str, Any], Body()],
+) -> dict[str, Any]:
+    """Guarda una trayectoria calculada aparte de la historia/tag operativos del emulador."""
+    session = session_manager.get(plant_id, session_id)
+    if session is None or (session.demo_client_id and session.demo_client_id != request.headers.get("x-twin-demo-id")):
+        raise HTTPException(404, "sesión desconocida")
+    if not re.fullmatch(r"[A-Za-z0-9_-]{1,96}", comparison_id):
+        raise HTTPException(422, "comparison_id inválido")
+    source, run_id, profile_id, profile_hash, model_id, frames = (
+        payload.get("source"), payload.get("run_id"), payload.get("profile_id"),
+        payload.get("profile_hash"), payload.get("model_id"), payload.get("frames"),
+    )
+    if source not in {"cosimulation", "optimization"}:
+        raise HTTPException(422, "source debe ser cosimulation u optimization")
+    if not all(isinstance(value, str) and value for value in (run_id, profile_id, profile_hash, model_id)):
+        raise HTTPException(422, "run_id, profile_id, profile_hash y model_id son obligatorios")
+    if not isinstance(payload.get("model_quality"), str) or not payload["model_quality"].strip():
+        raise HTTPException(422, "model_quality debe declarar evidencia y límites del modelo")
+    comparison_input_hash, snapshot_id = payload.get("comparison_input_hash"), payload.get("snapshot_id")
+    time_origin_s = payload.get("time_origin_s")
+    if not isinstance(comparison_input_hash, str) or not isinstance(snapshot_id, str) or not snapshot_id:
+        raise HTTPException(422, "comparison_input_hash y snapshot_id del manifiesto son obligatorios")
+    if isinstance(time_origin_s, bool) or not isinstance(time_origin_s, (int, float)) or not math.isfinite(time_origin_s):
+        raise HTTPException(422, "time_origin_s debe ser numérico y finito")
+    _validate_comparison_grid(payload.get("time_step_s"), payload.get("horizon_s"))
+    forecast_times = payload.get("forecast_times_s")
+    if not isinstance(forecast_times, list) or any(
+        isinstance(at, bool) or not isinstance(at, (int, float)) or not math.isfinite(at)
+        for at in forecast_times
+    ):
+        raise HTTPException(422, "forecast_times_s debe ser una lista finita del manifiesto")
+    manifest = historian.get_comparison_manifest(session_id, comparison_id)
+    if manifest is None:
+        raise HTTPException(409, "la comparación requiere un manifiesto antes de publicar ejecuciones")
+    if profile_id != manifest.get("profile_id") or profile_hash != manifest.get("profile_hash"):
+        raise HTTPException(409, "el resultado no corresponde al perfil inmutable del manifiesto")
+    if (
+        comparison_input_hash != manifest.get("input_hash")
+        or snapshot_id != manifest.get("snapshot_id")
+        or float(time_origin_s) != manifest.get("base_time_s")
+        or payload.get("time_step_s") != manifest.get("time_step_s")
+        or payload.get("horizon_s") != manifest.get("horizon_s")
+        or forecast_times != manifest.get("forecast_times_s")
+    ):
+        raise HTTPException(409, "la ejecución no coincide con el contexto temporal inmutable del manifiesto")
+    if payload.get("applied_to_plc") is not False:
+        raise HTTPException(422, "los resultados calculados deben declarar applied_to_plc=false")
+    if not isinstance(frames, list) or not frames:
+        raise HTTPException(422, "frames debe ser una lista no vacía")
+    previous = -1.0
+    for index, frame in enumerate(frames):
+        if not isinstance(frame, dict):
+            raise HTTPException(422, f"frames[{index}] debe ser un objeto")
+        at, context, state = frame.get("simulation_time_s"), frame.get("temporal_context"), frame.get("state")
+        if isinstance(at, bool) or not isinstance(at, (int, float)) or at < 0 or at <= previous:
+            raise HTTPException(422, "frames debe tener tiempos crecientes y sin duplicados")
+        if context not in {"history", "present", "forecast"} or not isinstance(state, dict):
+            raise HTTPException(422, f"frames[{index}] debe incluir temporal_context y state")
+        if context == "present" and not math.isclose(float(at), float(manifest["base_time_s"]), abs_tol=1e-6):
+            raise HTTPException(422, f"frames[{index}] present debe coincidir con el snapshot del manifiesto")
+        if context == "forecast" and not any(
+            math.isclose(float(at), float(expected), abs_tol=1e-6)
+            for expected in manifest["forecast_times_s"]
+        ):
+            raise HTTPException(422, f"frames[{index}] forecast no pertenece a la rejilla del manifiesto")
+        if context == "history" and not any(
+            math.isclose(float(at), float(expected), abs_tol=1e-6)
+            for expected in manifest["history_times_s"]
+        ):
+            raise HTTPException(422, f"frames[{index}] history no corresponde a una muestra PLC persistida")
+        previous = float(at)
+    stored = {
+        **payload,
+        "run_id": run_id,
+        "source": source,
+        "profile_id": profile_id,
+        "profile_hash": profile_hash,
+        "model_id": model_id,
+        "frames": frames,
+    }
+    try:
+        return historian.store_model_run(session_id, comparison_id, stored)
+    except ValueError as exc:
+        raise HTTPException(409, str(exc)) from exc
+
+
+@app.get("/api/plants/{plant_id}/sessions/{session_id}/comparisons")
+def list_model_comparisons(plant_id: str, session_id: str, request: Request) -> list[dict[str, Any]]:
+    session = session_manager.get(plant_id, session_id)
+    if session is None or (session.demo_client_id and session.demo_client_id != request.headers.get("x-twin-demo-id")):
+        raise HTTPException(404, "sesión desconocida")
+    return historian.list_model_comparisons(session_id)
+
+
+@app.post("/api/plants/{plant_id}/sessions/{session_id}/comparisons/{comparison_id}/sources/{source}/status")
+def record_comparison_source_status(
+    plant_id: str, session_id: str, comparison_id: str, source: str, request: Request,
+    payload: Annotated[dict[str, Any], Body()],
+) -> dict[str, Any]:
+    session = session_manager.get(plant_id, session_id)
+    if session is None or (session.demo_client_id and session.demo_client_id != request.headers.get("x-twin-demo-id")):
+        raise HTTPException(404, "sesión desconocida")
+    status, detail = payload.get("status"), payload.get("detail")
+    if status not in {"in_progress", "ready", "blocked", "failed"}:
+        raise HTTPException(422, "status de fuente inválido")
+    if detail is not None and not isinstance(detail, str):
+        raise HTTPException(422, "detail debe ser texto")
+    manifest = historian.get_comparison_manifest(session_id, comparison_id)
+    if manifest is None or manifest.get("plant_id") != plant_id:
+        raise HTTPException(404, "manifiesto de comparación desconocido")
+    try:
+        return historian.record_comparison_source_status(session_id, comparison_id, source, status, detail[:200] if detail else None)
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
+
+
+@app.get("/api/plants/{plant_id}/sessions/{session_id}/comparisons/{comparison_id}/triads")
+def get_comparison_triads(plant_id: str, session_id: str, comparison_id: str) -> dict[str, Any]:
+    if session_manager.get(plant_id, session_id) is None:
+        raise HTTPException(404, "sesión desconocida")
+    comparisons = {item["comparison_id"]: item for item in historian.list_model_comparisons(session_id)}
+    comparison = comparisons.get(comparison_id)
+    if comparison is None:
+        raise HTTPException(404, "comparación desconocida")
+    return {**comparison, "triads": historian.comparison_triads(session_id, comparison_id)}
 
 
 @app.get("/api/plants/{plant_id}/sessions/{session_id}/historian/frame")

@@ -43,7 +43,7 @@ Recibe lecturas del PLC virtual, ejecuta una **calculadora hidráulica propia e 
 ## Restricción de servicio
 
 - La vivienda con menor presión de toda la red no puede bajar de **15 mca**.
-- Objetivo inicial de control automático: **15,45 mca** (margen de 3 %).
+- Referencia inicial de presión crítica: **15,45 mca** (margen de alarma/lectura). La PRS AUTO del emulador opera por apertura fija configurable, no por un lazo que regule la presión crítica.
 - La HMI debe distinguir objetivo, advertencia, alarma y violación de restricción.
 
 ## Demanda y escenarios

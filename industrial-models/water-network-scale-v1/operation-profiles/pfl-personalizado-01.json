@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "id": "pfl-personalizado-01",
-  "name": "PFL-PERSONALIZADO-01 · Aperturas de viviendas y fugas editables",
-  "description": "Borrador editable del operador: configure anticipadamente por hora las 64 viviendas y las ocho válvulas de fuga antes de ejecutar. Valores iniciales: viviendas 100 %, fugas cerradas y PRS automática a 15,45 mca.",
+  "name": "PFL-PERSONALIZADO-01 · Aperturas horarias editables",
+  "description": "Plantilla para clonar y editar las 24 horas: demanda, niveles, interconexiones, apertura AUTO de PRS, 64 viviendas y ocho fugas. Los mandos no definidos conservan el último valor aplicado. La rama y apertura de PRS pueden cambiarse en vivo desde el PLC o programarse por hora en una copia.",
   "hours": {
     "0": {
       "global_consumers_pct": 100,
@@ -11,8 +11,7 @@
         "grid-02": {"l1": 0, "l2": 0},
         "grid-03": {"l1": 0, "l2": 0},
         "grid-04": {"l1": 0, "l2": 0}
-      },
-      "prs": {"branch": "auto", "critical_setpoint_mca": 15.45}
+      }
     }
   }
 }
