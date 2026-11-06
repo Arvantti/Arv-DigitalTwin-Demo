@@ -2,6 +2,7 @@
 title: Guion · Cambio de fecha de un pedido
 escenario: 2-cambio-fecha-pedido
 tags: [demo, plasticos, guion, fractal]
+modulos: [DigitalTwin, APS, Fractal, Control Center]
 duracion_aprox: 2,5 min
 cifras:
   - ["día 12 → día 11", "nueva fecha de entrega del pedido"]

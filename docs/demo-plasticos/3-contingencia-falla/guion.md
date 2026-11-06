@@ -2,6 +2,7 @@
 title: Guion · Contingencia por falla de máquina
 escenario: 3-contingencia-falla
 tags: [demo, plasticos, guion, fractal]
+modulos: [DigitalTwin, APS, CoSimulation, Fractal, Control Center]
 duracion_aprox: 4 min
 cifras:
   - ["10 → 7", "pedidos tarde con la recomendación de Fractal"]
@@ -45,7 +46,7 @@ Mensaje central: cuando una máquina falla, el gemelo avisa, el cosimulador repl
 
 > De pronto se quema la resistencia del cañón de la inyectora veintiuno. Mantenimiento estima tres días de reparación: hasta el día doce a las diez de la mañana.
 
-### S04 · El centro de control lo ve
+### S04 · El Control Center lo ve
 - imagen: capturas/04-centro-control.png
 - duración: 14 s
 - en pantalla: tarjeta de la IMM-21 en rojo y los indicadores de planta
@@ -91,7 +92,7 @@ Mensaje central: cuando una máquina falla, el gemelo avisa, el cosimulador repl
 
 > Con un clic adoptamos la recomendación. Pasa a ser la programación vigente, con noventa y dos coma cinco por ciento de pedidos a tiempo. Fractal recomienda; la persona decide.
 
-### S09 · El centro de control después
+### S09 · El Control Center después
 - imagen: capturas/08-centro-control-despues.png
 - duración: 12 s
 - en pantalla: la IMM-20 ahora con orden
