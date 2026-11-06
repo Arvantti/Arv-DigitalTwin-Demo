@@ -50,7 +50,7 @@
           "end": { "type": "string" },
           "quantity": { "type": "number" },
           "changeover_min": { "type": "number" },
-          "changeover_kind": { "enum": ["molde", "resina", "color", "receta", "formato", "cip", "alergeno"], "description": "Qué manda en el cambio de referencia: molde, resina o color (inyección); receta, formato, CIP o alérgeno (alimentos)" },
+          "changeover_kind": { "enum": ["molde", "resina", "color", "receta", "formato", "cip", "alergeno", "tanque", "boquillas"], "description": "Qué manda en el cambio de referencia: molde, resina o color (inyección); receta, formato, CIP, alérgeno, lavado del tanque o limpieza de boquillas (alimentos)" },
           "color": { "type": "string" },
           "batch": { "type": "array", "items": { "type": "integer" }, "minItems": 2, "maxItems": 2, "description": "[lote, de cuántos]" },
           "batch_kg": { "type": "number", "description": "Tamaño del lote de proceso que alimenta esta fila (una marmita de receta compartida por varios pedidos)" },

@@ -17,6 +17,7 @@ import { BULK_COLOR, compareKpis, DEMO_NOW, dayLabel, dayNumber, ganttSections, 
 const esc = (s: unknown) => String(s).replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
 const num = (x: number, d = 0) => x.toLocaleString("es-CO", { maximumFractionDigits: d, minimumFractionDigits: d });
 const DAY = 1440;
+const BULK_NAME: Record<string, string> = { "salsa-tomate": "tomate", "salsa-bbq": "BBQ", "salsa-picante": "picante", "mayonesa-light": "light", mayonesa: "mayonesa", "salsa-rosada": "rosada", "mostaza-granel": "mostaza" };
 
 interface State {
   model: SauceModel;
@@ -224,12 +225,13 @@ export function mountSauceAps(root: HTMLElement): void {
       ? `<p class="sa-sel"><b>${esc(sel.id)}</b> · ${esc(sel.customer ?? "")} · ${num(sel.quantity)} u de ${esc(sel.product_name)} · entrega ${esc(when(sel.due))} · termina ${esc(when(sel.completion))}${sel.late_h > 0 ? ` · <span class="bad">${num(sel.late_h, 1)} h tarde</span>` : ` · <span class="ok">a tiempo</span>`} <button id="sa-unsel">✕</button></p>`
       : "";
     const legend = `
-      <span><i style="background:${BULK_COLOR["salsa-tomate"]}"></i>tomate</span>
-      <span><i style="background:${BULK_COLOR.mayonesa}"></i>mayonesa</span>
-      <span><i style="background:${BULK_COLOR["mostaza-granel"]}"></i>mostaza</span>
+      ${Object.entries(BULK_NAME).map(([b, n]) => `<span><i style="background:${BULK_COLOR[b]}"></i>${n}</span>`).join("")}
       <span><i class="sa-key co-alergeno"></i>CIP por alérgeno</span>
       <span><i class="sa-key co-cip"></i>CIP</span>
-      <span><i class="sa-key co-formato"></i>cambio de formato</span>
+      <span><i class="sa-key co-receta"></i>receta</span>
+      <span><i class="sa-key co-formato"></i>formato</span>
+      <span><i class="sa-key co-boquillas"></i>boquillas</span>
+      <span><i class="sa-key co-tanque"></i>pulmón</span>
       <span><i class="down"></i>parada</span>`;
     $("#sa-gantt").innerHTML = `
       <div class="g-toolbar">
@@ -249,7 +251,7 @@ export function mountSauceAps(root: HTMLElement): void {
           ${sections}
         </div>
       </div>
-      <p class="dim small">Cada barra de llenadora empieza con su cambio (rayado): CIP por alérgeno al pasar de un granel a otro con alérgeno distinto, CIP corto, CIP de rutina cada ${num(st.model.cip.max_run_h)} h de producción y cambio de formato. Pasa el cursor por una barra para ver el detalle; clic para seguir el pedido.</p>`;
+      <p class="dim small">Cada barra empieza con su cambio (rayado). En las líneas: cambio de receta al avanzar en el orden (de claro a oscuro, de suave a picante), CIP completo al devolverse y lavado del pulmón si se botó granel vencido. En las llenadoras: CIP por alérgeno, CIP corto o completo según el orden de las recetas, CIP de rutina cada ${num(st.model.cip.max_run_h)} h, cambio de formato y limpieza de boquillas cada ${num(st.model.nozzle.every_h)} h. Pasa el cursor por una barra para ver el detalle; clic para seguir el pedido.</p>`;
   }
 
   async function calculate() {

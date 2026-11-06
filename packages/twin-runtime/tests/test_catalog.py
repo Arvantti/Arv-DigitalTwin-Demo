@@ -126,7 +126,8 @@ def test_sauce_and_box_catalogs_are_valid(lib):
     assert sauce.validate(_layout(SAUCE), lib) == []
     assert box.validate(_layout(BOX), lib) == []
     assert {p for p, d in sauce.products.items() if d["kind"] == "finished"} == {
-        "tomate-1000", "tomate-250", "mayonesa-1000", "mayonesa-500", "mayonesa-250", "mostaza-250",
+        "tomate-1000", "tomate-250", "bbq-1000", "picante-250",
+        "mayonesa-1000", "mayonesa-500", "mayonesa-250", "rosada-500", "light-1000", "mostaza-250",
     }
     assert set(box.products) == {"caja-grande", "caja-mediana", "caja-pequena"}
 
@@ -184,11 +185,23 @@ def test_allergen_table_names_product_groups(tmp_path, lib):
     """La tabla de CIP por alérgeno solo nombra grupos de productos, y todo granel tiene grupo."""
     folder = _copy(tmp_path, SAUCE)
     _edit(folder, "changeovers.yaml", lambda d: d["changeovers"]["allergen"]["pairs"]["mostaza"].update(mani=90))
-    _edit(folder, "products.yaml", lambda d: d["products"][0].pop("allergen_group"))
+    # Tomate, BBQ y picante son los graneles sin alérgenos: sin su grupo, la tabla nombra uno que no existe.
+    hot = {"salsa-tomate", "salsa-bbq", "salsa-picante"}
+    _edit(folder, "products.yaml", lambda d: [p.pop("allergen_group") for p in d["products"] if p["id"] in hot])
     errors = Catalog.load(folder).validate(_layout(folder), lib)
     assert "cambios allergen: 'mani' no es el grupo de alérgenos de ningún producto" in errors
     assert "cambios allergen: 'sin-alergenos' no es el grupo de alérgenos de ningún producto" in errors
     assert "producto salsa-tomate: falta allergen_group (el catálogo tiene tabla de alérgenos)" in errors
+
+
+def test_recipe_sequence_names_bulks_once(tmp_path, lib):
+    """El orden de recetas de cada línea solo nombra graneles, y cada granel está en una sola línea."""
+    folder = _copy(tmp_path, SAUCE)
+    bad = ["mostaza-granel", "salsa-bbq", "tomate-1000"]
+    _edit(folder, "changeovers.yaml", lambda d: d["changeovers"]["sequence"].update(linea_mostaza=bad))
+    errors = Catalog.load(folder).validate(_layout(folder), lib)
+    assert "cambios sequence: 'salsa-bbq' está en linea-caliente y en linea_mostaza" in errors
+    assert "cambios sequence linea_mostaza: 'tomate-1000' no es un granel (semielaborado) del catálogo" in errors
 
 
 # ---------------------------------------------------------------- tiempos de la hoja de ruta (editor de rutas)

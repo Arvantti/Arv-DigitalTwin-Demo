@@ -168,6 +168,9 @@
         "color": { "$ref": "#/$defs/changeoverTable" },
         "resin": { "$ref": "#/$defs/changeoverTable" },
         "mold_move_extra_min": { "type": "number", "minimum": 0 },
+        "sequence": { "type": "object", "description": "Orden de recetas por línea de proceso (alimentos): avanzar en el orden es cambio de receta; devolverse exige CIP completo", "additionalProperties": { "type": "array", "items": { "type": "string" }, "minItems": 1 } },
+        "tank": { "type": "object", "additionalProperties": false, "description": "Pulmón: lavado del tanque cuando el granel se vence y se bota", "properties": { "dump_cip_min": { "type": "number", "minimum": 0, "description": "CIP del pulmón antes de recibir la tanda siguiente" } } },
+        "nozzle": { "type": "object", "additionalProperties": false, "description": "Limpieza intermedia de boquillas de la llenadora", "properties": { "every_h": { "type": "number", "exclusiveMinimum": 0, "description": "Horas de llenado sin limpiar tras las que se limpian las boquillas" }, "min": { "type": "number", "minimum": 0, "description": "Duración de la limpieza de boquillas" } } },
         "allergen": { "$ref": "#/$defs/changeoverTable", "description": "Limpieza entre dos productos distintos en un equipo húmedo compartido, por grupo de alérgenos (allergen_group del producto, de → a)" },
         "cip": {
           "type": "object",

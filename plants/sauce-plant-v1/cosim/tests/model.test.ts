@@ -11,8 +11,9 @@ const model = buildModel(fsData());
 const saved = (path: string) => readFileSync(`${PLANT_DIR}${path}`, "utf8");
 
 describe("modelo de salsas", () => {
-  it("seis SKU con su granel, su grupo de alérgenos y sus llenadoras", () => {
-    expect(Object.keys(model.products).sort()).toEqual(["mayonesa-1000", "mayonesa-250", "mayonesa-500", "mostaza-250", "tomate-1000", "tomate-250"]);
+  it("diez SKU con su granel, su grupo de alérgenos y sus llenadoras", () => {
+    expect(Object.keys(model.products).sort()).toEqual(["bbq-1000", "light-1000", "mayonesa-1000", "mayonesa-250", "mayonesa-500", "mostaza-250", "picante-250", "rosada-500", "tomate-1000", "tomate-250"]);
+    expect(model.products["bbq-1000"]).toMatchObject({ bulk: "salsa-bbq", bulkKg: 1.15, fillers: ["filler-pouch-01"], lot: 1704 });
     expect(model.products["mostaza-250"]).toMatchObject({ bulk: "mostaza-granel", bulkKg: 0.2625, allergenGroup: "mostaza", fillers: ["filler-sachet-03", "filler-sachet-01"] });
     expect(model.products["mayonesa-250"].fillers).toEqual(["filler-sachet-01", "filler-sachet-03"]);
     expect(model.products["tomate-1000"]).toMatchObject({ allergenGroup: "sin-alergenos", fillers: ["filler-pouch-01"], lot: 1748 });
@@ -23,6 +24,25 @@ describe("modelo de salsas", () => {
     expect(pairMin(model.allergen, "huevo-mostaza", "mostaza")).toBe(90);
     expect(pairMin(model.allergen, "huevo-mostaza", "sin-alergenos")).toBe(90);
     expect(pairMin(model.allergen, "sin-alergenos", "huevo-mostaza")).toBe(35);
+  });
+
+  it("recetas por línea en su orden: avanzar es cambio de receta, devolverse es CIP completo", () => {
+    expect(model.lines["linea-caliente"].bulks).toEqual(["salsa-tomate", "salsa-bbq", "salsa-picante"]);
+    expect(model.lines["linea-fria"].bulks).toEqual(["mayonesa-light", "mayonesa", "salsa-rosada"]);
+    const line = model.lineChangeover;
+    // En la marmita: tomate → BBQ, 45 min de cambio de receta (tooling.yaml); picante → tomate, CIP completo (90).
+    expect(line({ bulk: "salsa-tomate" }, "salsa-bbq")).toEqual({ min: 45, kind: "receta" });
+    expect(line({ bulk: "salsa-picante" }, "salsa-tomate")).toEqual({ min: 90, kind: "cip" });
+    expect(line({ bulk: "mayonesa-light" }, "mayonesa")).toEqual({ min: 60, kind: "receta" });
+    expect(line({ bulk: "salsa-tomate" }, "salsa-tomate")).toEqual({ min: 0 });
+    // Pulmón sucio por granel botado: lavado de 35 min, cubierto por el cambio de receta si lo hay.
+    expect(line({ bulk: "salsa-tomate", dirty: true }, "salsa-tomate")).toEqual({ min: 35, kind: "tanque" });
+    expect(line({ bulk: "salsa-tomate", dirty: true }, "salsa-bbq")).toEqual({ min: 45, kind: "receta" });
+    // En la llenadora: BBQ → tomate se devuelve (CIP completo); tomate → BBQ avanza (CIP corto).
+    const fill = model.changeover;
+    expect(fill({ bulk: "salsa-bbq", format: "fmt-sachet-1000" }, { bulk: "salsa-tomate", format: "fmt-sachet-1000" })).toEqual({ min: 90, kind: "cip" });
+    expect(fill({ bulk: "salsa-tomate", format: "fmt-sachet-1000" }, { bulk: "salsa-bbq", format: "fmt-sachet-1000" })).toEqual({ min: 35, kind: "cip" });
+    expect(model.nozzle).toEqual({ every_h: 4, min: 15 });
   });
 
   it("cada lote de llenado sale de una tanda: cabe en ella y no deja una caja completa sin llenar", () => {
@@ -44,13 +64,14 @@ describe("cartera y plan manual de la demo", () => {
     expect(saved("aps/plans/APS-MAN-01.json")).toBe(json(manualSequence(model, portfolio)));
   });
 
-  it("carga cerca del 85 % de la capacidad diaria en los 17 días hábiles", () => {
+  it("carga cerca de load_pct de la capacidad diaria en los 17 días hábiles", () => {
     const days = new Set(portfolio.orders.map((o) => o.due.slice(0, 10))).size;
     expect(days).toBe(17);
     const cap = model.demand.reduce((s, d) => s + d.daily * days, 0);
     const qty = portfolio.orders.reduce((s, o) => s + o.quantity, 0);
-    expect(qty / cap).toBeGreaterThan(0.78);
-    expect(qty / cap).toBeLessThan(0.9);
+    // Los pedidos se sortean: en 17 días la carga queda entre load_pct y 12 puntos más.
+    expect(qty / cap).toBeGreaterThan(model.loadPct / 100);
+    expect(qty / cap).toBeLessThan(model.loadPct / 100 + 0.12);
   });
 
   it("cada pedido llega antes de su entrega, dentro de la ventana de aps.yaml", () => {

@@ -9,7 +9,15 @@ import type { SauceModel } from "@plants/sauce-plant-v1-cosim/model.ts";
 export const DEMO_NOW = "2026-11-04T10:00-05:00";
 
 /** Color de cada granel (la barra de la tanda y la de sus llenados). */
-export const BULK_COLOR: Record<string, string> = { "salsa-tomate": "#ff6b57", mayonesa: "#f2dc8c", "mostaza-granel": "#e0a526" };
+export const BULK_COLOR: Record<string, string> = {
+  "salsa-tomate": "#ff6b57",
+  "salsa-bbq": "#a0522d",
+  "salsa-picante": "#ff9f1c",
+  "mayonesa-light": "#fff6cf",
+  mayonesa: "#f2dc8c",
+  "salsa-rosada": "#f59ab0",
+  "mostaza-granel": "#e0a526",
+};
 
 const WEEKDAY = ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"];
 const MONTH = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
@@ -65,13 +73,13 @@ export interface Section {
   lanes: Lane[];
 }
 
-/** "TND-SALSA-TOMATE-061" → "T061" (cabe en la barra de una tanda). */
+/** "TND-SALSA-TOMATE-061" → "T061", "TND-SALSA-BBQ-004" → "BBQ004" (cabe en la barra de una tanda). */
 export const shortBatch = (id?: string) => {
   const m = id?.match(/^TND-(.+)-(\d+)$/);
-  return m ? `${{ "SALSA-TOMATE": "T", MAYONESA: "MY", MOSTAZA: "MS" }[m[1]] ?? m[1]}${m[2]}` : id;
+  return m ? `${{ "SALSA-TOMATE": "T", "SALSA-BBQ": "BBQ", "SALSA-PICANTE": "PI", "MAYONESA-LIGHT": "LI", MAYONESA: "MY", "SALSA-ROSADA": "RO", MOSTAZA: "MS" }[m[1]] ?? m[1]}${m[2]}` : id;
 };
 
-const kindLabel: Record<string, string> = { cip: "CIP", alergeno: "CIP por alérgeno", formato: "cambio de formato" };
+const kindLabel: Record<string, string> = { cip: "CIP", alergeno: "CIP por alérgeno", formato: "cambio de formato", receta: "cambio de receta", tanque: "lavado del pulmón", boquillas: "limpieza de boquillas" };
 
 /** Filas del Gantt: una por equipo de proceso (tandas) y una por llenadora (llenados con su cambio al comienzo). */
 export function ganttSections(model: SauceModel, plan: ProductionPlan, params: Record<string, Record<string, unknown> | undefined> = {}): Section[] {
@@ -82,17 +90,21 @@ export function ganttSections(model: SauceModel, plan: ProductionPlan, params: R
     line.equipment.map((eq, i) => ({
       id: eq,
       label: eq,
-      sub: `${line.bulk.replace(/-granel$/, "")} · ${line.stage} · tanda ${Math.round(line.batchMin)} min`,
-      bars: rows(eq).map((r) => ({
-        start: parseLocal(r.start),
-        end: parseLocal(r.end),
-        changeoverMin: 0,
-        color: BULK_COLOR[line.bulk] ?? "#9ab",
-        text: shortBatch(r.batch_id) ?? r.order,
-        title: `${r.batch_id} · ${r.quantity} kg de ${line.bulk} · ${when(r.start)} a ${when(r.end)} · abre con ${r.order}`,
-        order: r.order,
-        late: false,
-      })),
+      sub: `${line.id} · ${line.stage} · tanda ${Math.round(line.batchMin)} min`,
+      bars: rows(eq).map((r) => {
+        const co = r.changeover_min ? ` · ${r.changeover_min} min de ${kindLabel[r.changeover_kind ?? ""] ?? "cambio"} al comienzo` : "";
+        return {
+          start: parseLocal(r.start),
+          end: parseLocal(r.end),
+          changeoverMin: r.changeover_min,
+          ...(r.changeover_kind ? { changeoverKind: r.changeover_kind } : {}),
+          color: BULK_COLOR[r.product] ?? "#9ab",
+          text: shortBatch(r.batch_id) ?? r.order,
+          title: `${r.batch_id} · ${r.quantity.toLocaleString("es-CO")} kg de ${r.product}${r.quantity < line.outKg ? " (tanda parcial)" : ""} · ${when(r.start)} a ${when(r.end)}${co} · abre con ${r.order}`,
+          order: r.order,
+          late: false,
+        };
+      }),
       // Las paradas de la línea se publican en su primer equipo; se muestran en todos porque la línea entera se detiene.
       down: i === 0 ? downOf(eq) : downOf(line.equipment[0]),
     })),

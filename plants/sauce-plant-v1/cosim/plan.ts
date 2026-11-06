@@ -2,9 +2,11 @@
  * Del pedido a la programación de la planta de salsas: tandas en las líneas de proceso, pulmón con tiempo de espera,
  * llenado con CIP por alérgeno y cambio de formato, y el documento `production-plan.v1`.
  *
- * El cuello de botella es el proceso (aps.yaml, lines): cada granel sale de su línea en tandas completas. Una tanda
+ * El cuello de botella es el proceso (aps.yaml, lines): cada línea hace tandas completas de sus recetas, con cambio de
+ * receta (o CIP completo si se devuelve en el orden de catalog/changeovers.yaml) entre recetas distintas. Una tanda
  * sirve a varios pedidos seguidos del mismo granel; lo que sobra queda en el pulmón hasta su tiempo de espera y, si
- * nadie lo usa antes, es merma. Las llenadoras toman el granel cuando la tanda está lista.
+ * nadie lo usa antes, se bota y el pulmón se lava. Las llenadoras toman el granel cuando la tanda está lista y limpian
+ * sus boquillas cada tanto.
  *
  * El despacho es común a las dos entradas del APS: el plan manual (pedidos por orden de llegada en la llenadora que
  * escribió el planificador) y el del solver (kilos de cada pedido por línea y turno). Las dos se convierten en tramos
@@ -28,7 +30,7 @@ import {
   type PlantEvent,
   type ProductionPlan,
 } from "@twin/cosim-core";
-import type { Line, SauceModel } from "./model.ts";
+import type { Line, LineState, SauceModel } from "./model.ts";
 
 export const WEIGHT: Record<Importance, number> = { alta: 3, normal: 1, baja: 0.5 };
 const PRIORITY: Record<Importance, number> = { alta: 2, normal: 1, baja: 0 };
@@ -42,6 +44,8 @@ const r1 = (x: number) => Math.round(x * 10) / 10;
 export interface Job {
   order: CustomerOrder;
   bulk: string;
+  /** Línea de proceso del granel. */
+  line: string;
   bulkKg: number;
   qty: number;
   release: number;
@@ -61,9 +65,15 @@ export interface Chunk {
 export interface Batch {
   id: string;
   bulk: string;
+  line: string;
   equipment: string;
+  /** Desde el comienzo del cambio (si lo hay) hasta el fin de la tanda. */
   start: number;
   end: number;
+  changeoverMin: number;
+  changeoverKind?: ChangeoverKind;
+  /** Kilos que salen de la tanda (completa o parcial). */
+  kg: number;
   /** El pedido que la pidió (el primero que la usa). */
   order: string;
   frozen?: boolean;
@@ -92,7 +102,7 @@ export interface Context {
   /** Desde aquí se replanea; lo anterior queda congelado. */
   now: number;
   horizonEnd: number;
-  /** Paradas por equipo (llenadora o línea, con la línea por el id de su granel). */
+  /** Paradas por equipo (llenadora, o línea por su id). */
   down: Record<string, [number, number, string][]>;
   /** Lo congelado del plan anterior. */
   frozenBatches: Batch[];
@@ -102,7 +112,18 @@ export interface Context {
   /** Granel en el pulmón al replanear: lo que quedó de tandas congeladas, por granel. */
   stock: Record<string, Stock[]>;
   lineFree: Record<string, number>;
-  fillerFree: Record<string, { at: number; bulk?: string; format?: string; runMin: number }>;
+  /** Última receta de cada línea y si su pulmón quedó sucio. */
+  lineState: Record<string, LineState>;
+  fillerFree: Record<string, FillerFree>;
+}
+
+/** Cómo queda una llenadora: cuándo se libera, qué granel y formato tiene, y minutos de llenado sin CIP y sin limpiar boquillas. */
+export interface FillerFree {
+  at: number;
+  bulk?: string;
+  format?: string;
+  runMin: number;
+  nozzleMin: number;
 }
 
 interface Stock {
@@ -116,7 +137,7 @@ export function makeJobs(model: SauceModel, orders: CustomerOrder[], start: numb
   for (const o of orders) {
     const p = model.products[o.product];
     if (!p) throw new Error(`El pedido ${o.id} pide un producto que no está en la demanda: ${o.product}`);
-    jobs.set(o.id, { order: o, bulk: p.bulk, bulkKg: p.bulkKg, qty: o.quantity, release: Math.max(start, parseLocal(o.created)), due: parseLocal(o.due), weight: WEIGHT[o.importance] ?? 1 });
+    jobs.set(o.id, { order: o, bulk: p.bulk, line: model.bulks[p.bulk].line, bulkKg: p.bulkKg, qty: o.quantity, release: Math.max(start, parseLocal(o.created)), due: parseLocal(o.due), weight: WEIGHT[o.importance] ?? 1 });
   }
   return jobs;
 }
@@ -153,7 +174,7 @@ export function horizonOf(model: SauceModel, orders: CustomerOrder[], start: num
 /** La línea que para cuando falla un equipo (el suyo o uno de `down_with`), o el equipo mismo si es una llenadora. */
 const downKeys = (model: SauceModel, equipment: string): string[] => {
   const lines = Object.values(model.lines).filter((l) => l.equipment.includes(equipment) || l.downWith.includes(equipment));
-  return lines.length ? lines.map((l) => l.bulk) : model.fillers.includes(equipment) ? [equipment] : [];
+  return lines.length ? lines.map((l) => l.id) : model.fillers.includes(equipment) ? [equipment] : [];
 };
 
 export interface ContextOptions {
@@ -181,7 +202,8 @@ export function context(model: SauceModel, portfolio: CustomerOrders, opt: Conte
     for (const k of downKeys(model, e.eq)) down[k] = [...down[k].filter(([a, b]) => b <= e.a || a >= e.b), [e.a, e.b, e.why] as [number, number, string]].sort((x, y) => x[0] - y[0]);
 
   const lineFree = Object.fromEntries(Object.keys(model.lines).map((k) => [k, start]));
-  const fillerFree: Context["fillerFree"] = Object.fromEntries(model.fillers.map((m) => [m, { at: start, format: model.initialFormat[m], runMin: 0 }]));
+  const lineState: Context["lineState"] = Object.fromEntries(Object.keys(model.lines).map((k) => [k, { bulk: model.lines[k].bulks.length === 1 ? model.lines[k].bulks[0] : undefined }]));
+  const fillerFree: Context["fillerFree"] = Object.fromEntries(model.fillers.map((m) => [m, { at: start, format: model.initialFormat[m], runMin: 0, nozzleMin: 0 }]));
   const frozenBatches: Batch[] = [];
   const frozenFills: Fill[] = [];
   const done: Record<string, number> = {};
@@ -189,6 +211,7 @@ export function context(model: SauceModel, portfolio: CustomerOrders, opt: Conte
   const prev = opt.previous;
   if (prev && now > start) {
     const lineOf = (equipment: string) => Object.values(model.lines).find((l) => l.equipment.includes(equipment));
+    const lastBatch: Record<string, number> = {};
     const used: Record<string, number> = {};
     for (const r of prev.schedule) {
       const t0 = parseLocal(r.start);
@@ -197,8 +220,12 @@ export function context(model: SauceModel, portfolio: CustomerOrders, opt: Conte
       const line = lineOf(r.equipment);
       if (line && r.batch_id) {
         // Una tanda que ya arrancó termina (el granel no se puede dejar a medias).
-        frozenBatches.push({ id: r.batch_id, bulk: line.bulk, equipment: r.equipment, start: t0, end: t1, order: r.order, frozen: true });
-        lineFree[line.bulk] = Math.max(lineFree[line.bulk], t1);
+        frozenBatches.push({ id: r.batch_id, bulk: r.product, line: line.id, equipment: r.equipment, start: t0, end: t1, kg: r.quantity, order: r.order, changeoverMin: r.changeover_min, ...(r.changeover_kind ? { changeoverKind: r.changeover_kind } : {}), frozen: true });
+        lineFree[line.id] = Math.max(lineFree[line.id], t1);
+        if (t1 >= (lastBatch[line.id] ?? -Infinity)) {
+          lastBatch[line.id] = t1;
+          lineState[line.id] = { bulk: r.product };
+        }
         continue;
       }
       const job = jobs.get(r.order);
@@ -215,19 +242,20 @@ export function context(model: SauceModel, portfolio: CustomerOrders, opt: Conte
       const f = fillerFree[r.equipment];
       if (end >= f.at) {
         const cleaned = r.changeover_kind === "cip" || r.changeover_kind === "alergeno";
-        Object.assign(f, { at: end, bulk: job.bulk, format: model.products[job.order.product].format, runMin: (cleaned ? 0 : f.runMin) + (end - t0 - r.changeover_min) });
+        const nozzle = cleaned || r.changeover_kind === "boquillas";
+        const run = end - t0 - r.changeover_min;
+        Object.assign(f, { at: end, bulk: job.bulk, format: model.products[job.order.product].format, runMin: (cleaned ? 0 : f.runMin) + run, nozzleMin: (nozzle ? 0 : f.nozzleMin) + run });
       }
     }
     // Lo que quedó de cada tanda congelada sigue en el pulmón, si todavía no se vence.
     for (const b of frozenBatches) {
-      const line = model.lines[b.bulk];
-      const kg = line.outKg - (used[b.id] ?? 0);
-      if (kg >= 1 && b.end + line.holdMin > now) (stock[b.bulk] ??= []).push({ batch: b.id, ready: b.end, kg });
+      const kg = b.kg - (used[b.id] ?? 0);
+      if (kg >= 1 && b.end + model.bulks[b.bulk].holdMin > now) (stock[b.bulk] ??= []).push({ batch: b.id, ready: b.end, kg });
     }
     for (const k of Object.keys(lineFree)) lineFree[k] = Math.max(lineFree[k], now);
     for (const f of Object.values(fillerFree)) f.at = Math.max(f.at, now);
   }
-  return { model, orders, jobs, start, now, horizonEnd, down, frozenBatches, frozenFills, done, stock, lineFree, fillerFree };
+  return { model, orders, jobs, start, now, horizonEnd, down, frozenBatches, frozenFills, done, stock, lineFree, lineState, fillerFree };
 }
 
 export interface DispatchResult {
@@ -257,22 +285,26 @@ export function dispatch(ctx: Context, queues: Record<string, Chunk[]>): Dispatc
   const fills: Fill[] = [...ctx.frozenFills];
   const unscheduled: Record<string, number> = {};
   const waste: Record<string, number> = {};
-  const stock: Record<string, Stock[]> = Object.fromEntries(Object.keys(model.lines).map((k) => [k, [...(ctx.stock[k] ?? [])]]));
+  const stock: Record<string, Stock[]> = Object.fromEntries(Object.keys(model.bulks).map((k) => [k, [...(ctx.stock[k] ?? [])]]));
   const lineFree = { ...ctx.lineFree };
+  const lineState = Object.fromEntries(Object.entries(ctx.lineState).map(([k, v]) => [k, { ...v }]));
+  /** Pulmones que quedaron sucios porque se botó granel vencido (se lavan antes de la tanda siguiente de esa receta). */
+  const dirty: Record<string, boolean> = {};
   const filler = Object.fromEntries(Object.entries(ctx.fillerFree).map(([m, f]) => [m, { ...f }]));
   const count: Record<string, number> = {};
   for (const b of ctx.frozenBatches) count[b.bulk] = Math.max(count[b.bulk] ?? 0, Number(b.id.split("-").pop()) || 0);
   const rot: Record<string, number> = {};
   const pos: Record<string, number> = Object.fromEntries(Object.keys(queues).map((k) => [k, 0]));
   const lost = (bulk: string, kg: number) => (waste[bulk] = (waste[bulk] ?? 0) + kg);
+  const nozzleMax = model.nozzle.every_h * 60;
 
   /** Dónde y cuándo arrancaría el llenado de un tramo que tiene granel desde `at`. */
   const plan = (m: string, job: Job, at: number) => {
     const f = filler[m];
     const to = { bulk: job.bulk, format: model.products[job.order.product].format };
     const ch = model.changeover(f, to);
-    const runMin = ch.min && (ch.kind === "cip" || ch.kind === "alergeno") ? 0 : f.runMin;
-    return { t: ready(m, Math.max(f.at, at)), ch, runMin };
+    const cleaned = ch.min > 0 && (ch.kind === "cip" || ch.kind === "alergeno");
+    return { t: ready(m, Math.max(f.at, at)), ch, runMin: cleaned ? 0 : f.runMin, nozzleMin: ch.min >= model.nozzle.min ? 0 : f.nozzleMin };
   };
 
   /** Fin del tramo de trabajo seguido que contiene t (los turnos pegados cuentan como uno). */
@@ -283,85 +315,103 @@ export function dispatch(ctx: Context, queues: Record<string, Chunk[]>): Dispatc
     return end;
   };
 
-  /** Cuándo correría una tanda que arranca desde `notBefore`. */
-  const slot = (line: Line, notBefore: number): { t: number; end: number } | null => {
-    let t = ready(line.bulk, Math.max(lineFree[line.bulk], notBefore));
-    // Una tanda no se deja a medias de un día para otro: si no alcanza a terminar antes del cierre, arranca al otro día.
-    for (let g = 0; g < 10 && t < ctx.horizonEnd && cal.advance(t, line.batchMin) !== t + line.batchMin; g++) t = ready(line.bulk, runEnd(t));
+  /** Cuándo correría una tanda (con `need` minutos de cambio más tanda) que arranca desde `notBefore`. */
+  const slot = (line: Line, need: number, notBefore: number): { t: number; end: number } | null => {
+    let t = ready(line.id, Math.max(lineFree[line.id], notBefore));
+    // Una tanda (con su cambio) no se deja a medias de un día para otro: si no alcanza antes del cierre, arranca al otro día.
+    for (let g = 0; g < 10 && t < ctx.horizonEnd && cal.advance(t, need) !== t + need; g++) t = ready(line.id, runEnd(t));
     if (t >= ctx.horizonEnd) return null;
-    return { t, end: cal.advance(t, line.batchMin, blocked(line.bulk)) };
+    return { t, end: cal.advance(t, need, blocked(line.id)) };
   };
 
   /**
-   * Tanda nueva para el tramo. No se cocina para botar: si ninguna llenadora alcanza a tomar el granel antes de que se
-   * venza en el pulmón, la tanda se corre para que termine cuando la llenadora quede libre (al otro día, si toca).
+   * Tanda nueva de la receta del tramo, con el cambio de la línea delante (receta, CIP o lavado del pulmón). No se
+   * cocina para botar: si ninguna llenadora alcanza a tomar el granel antes de que se venza, la tanda se corre para que
+   * termine cuando la llenadora quede libre (al otro día, si toca).
    */
-  const makeBatch = (line: Line, job: Job, notBefore: number, choices: string[]): Stock | null => {
-    let s = slot(line, notBefore);
+  const makeBatch = (line: Line, job: Job, notBefore: number, choices: string[], wantKg: number): Stock | null => {
+    const ch = model.lineChangeover({ bulk: lineState[line.id]?.bulk, dirty: dirty[job.bulk] }, job.bulk);
+    const need = ch.min + line.batchMin;
+    const holdMin = model.bulks[job.bulk].holdMin;
+    let s = slot(line, need, notBefore);
     for (let g = 0; s && g < 4; g++) {
       const fillAt = Math.min(...choices.map((x) => plan(x, job, s!.end).t));
-      if (fillAt <= s.end + line.holdMin) break;
-      const later = slot(line, fillAt - line.batchMin);
+      if (fillAt <= s.end + holdMin) break;
+      const later = slot(line, need, fillAt - need);
       if (!later || later.t <= s.t) break;
       s = later;
     }
     if (!s) return null;
     const { t, end } = s;
-    const n = (count[line.bulk] = (count[line.bulk] ?? 0) + 1);
-    const equipment = line.equipment[(rot[line.bulk] = ((rot[line.bulk] ?? -1) + 1) % line.equipment.length)];
-    const id = `TND-${line.bulk.replace(/-granel$/, "").toUpperCase()}-${String(n).padStart(3, "0")}`;
-    batches.push({ id, bulk: line.bulk, equipment, start: t, end, order: job.order.id });
-    lineFree[line.bulk] = end;
-    return { batch: id, ready: end, kg: line.outKg };
+    const n = (count[job.bulk] = (count[job.bulk] ?? 0) + 1);
+    const equipment = line.equipment[(rot[line.id] = ((rot[line.id] ?? -1) + 1) % line.equipment.length)];
+    const id = `TND-${job.bulk.replace(/-granel$/, "").toUpperCase()}-${String(n).padStart(3, "0")}`;
+    // Tanda completa, o parcial si lo que se alcanza a llenar antes de que se venza es menos (aps.yaml, partial_batch):
+    // dura lo mismo, pero no deja granel para botar.
+    const { min, step } = model.partialBatch;
+    const kg = Math.min(line.outKg, Math.max(min * line.outKg, Math.ceil(wantKg / (step * line.outKg) - 1e-9) * step * line.outKg));
+    batches.push({ id, bulk: job.bulk, line: line.id, equipment, start: t, end, kg, order: job.order.id, changeoverMin: Math.round(ch.min), ...(ch.min > 0 && ch.kind ? { changeoverKind: ch.kind } : {}) });
+    lineFree[line.id] = end;
+    lineState[line.id] = { bulk: job.bulk };
+    dirty[job.bulk] = false;
+    return { batch: id, ready: end, kg };
   };
 
   for (;;) {
     // La línea que puede arrancar antes con su próximo tramo.
     let pick: string | null = null;
     let best = Infinity;
-    for (const [bulk, q] of Object.entries(queues)) {
-      const ch = q[pos[bulk]];
+    for (const [lid, q] of Object.entries(queues)) {
+      const ch = q[pos[lid]];
       if (!ch) continue;
-      const at = Math.max(ch.notBefore, ch.job.release, stock[bulk]?.length ? stock[bulk][0].ready : lineFree[bulk]);
-      if (at < best || (at === best && pick !== null && bulk < pick)) {
+      const pile = stock[ch.job.bulk];
+      const at = Math.max(ch.notBefore, ch.job.release, pile.length ? pile[0].ready : lineFree[lid]);
+      if (at < best || (at === best && pick !== null && lid < pick)) {
         best = at;
-        pick = bulk;
+        pick = lid;
       }
     }
     if (pick === null) break;
-    // Lo que quedó en el pulmón se aprovecha antes de que se venza: si el tramo que sigue no alcanza a llenarlo a
-    // tiempo, pasa adelante el próximo tramo de la cola que sí (como haría el supervisor de llenado).
+    // Lo que quedó en el pulmón se aprovecha antes de que se venza (como haría el supervisor de llenado): si hay granel
+    // de alguna receta de la línea y el tramo que sigue no lo usa a tiempo, pasa adelante el próximo tramo de esa receta
+    // que sí alcanza a llenarlo, antes de cambiar de receta o de hacer otra tanda.
     const q = queues[pick];
-    const left0 = stock[pick][0];
-    if (left0) {
-      const fits = (c: Chunk) => {
-        const at = Math.max(left0.ready, c.notBefore, c.job.release);
-        const opts = c.filler ? [c.filler] : model.products[c.job.order.product].fillers;
-        return Math.min(...opts.map((x) => plan(x, c.job, at).t)) <= left0.ready + model.lines[pick!].holdMin;
-      };
-      if (!fits(q[pos[pick]])) {
-        const k = q.slice(pos[pick] + 1, pos[pick] + 1 + LOOKAHEAD).findIndex(fits);
-        if (k >= 0) {
-          const [c] = q.splice(pos[pick] + 1 + k, 1);
-          q.splice(pos[pick], 0, c);
-        }
+    const fits = (c: Chunk, left: Stock) => {
+      const at = Math.max(left.ready, c.notBefore, c.job.release);
+      const opts = c.filler ? [c.filler] : model.products[c.job.order.product].fillers;
+      return Math.min(...opts.map((x) => plan(x, c.job, at).t)) <= left.ready + model.bulks[c.job.bulk].holdMin;
+    };
+    const next = q[pos[pick]];
+    const piles = model.lines[pick].bulks.map((b) => [b, stock[b][0]] as const).filter(([, left]) => left);
+    if (piles.length && !piles.some(([b, left]) => b === next.job.bulk && fits(next, left))) {
+      const ahead = q.slice(pos[pick] + 1, pos[pick] + 1 + LOOKAHEAD);
+      const k = ahead.findIndex((c) => piles.some(([b, left]) => b === c.job.bulk && fits(c, left)));
+      if (k >= 0) {
+        const [c] = q.splice(pos[pick] + 1 + k, 1);
+        q.splice(pos[pick], 0, c);
       }
     }
     const ch = q[pos[pick]++];
     const line = model.lines[pick];
     const job = ch.job;
+    const bulk = job.bulk;
+    const holdMin = model.bulks[bulk].holdMin;
     const p = model.products[job.order.product];
     const choices = ch.filler ? [ch.filler] : p.fillers;
     let left = ch.qty;
     let m = choices[0];
     for (let guard = 0; left > 0 && guard < 500; guard++) {
       // Granel disponible: el del pulmón si no se venció; si no, una tanda nueva.
-      let head = stock[pick][0];
+      let head = stock[bulk][0];
       const notBefore = Math.max(ch.notBefore, job.release);
       if (!head) {
-        const made = makeBatch(line, job, notBefore, choices);
+        // Lo que pedirá esta tanda: lo que falta del tramo y los tramos de la misma receta que siguen en la cola y ya
+        // habrán llegado antes de que se venza.
+        const until = Math.max(lineFree[line.id], notBefore) + line.batchMin + holdMin;
+        const wantKg = left * job.bulkKg + q.slice(pos[pick]).filter((c) => c.job.bulk === bulk && Math.max(c.notBefore, c.job.release) <= until).reduce((s, c) => s + c.qty * c.job.bulkKg, 0);
+        const made = makeBatch(line, job, notBefore, choices, wantKg);
         if (!made) break;
-        stock[pick].push(made);
+        stock[bulk].push(made);
         head = made;
       }
       // La llenadora: la del tramo, o la que arranque antes (empate: la habitual, que va primero en la lista).
@@ -370,41 +420,49 @@ export function dispatch(ctx: Context, queues: Record<string, Chunk[]>): Dispatc
       const o = options.reduce((a, b) => (b.t + b.ch.min < a.t + a.ch.min ? b : a));
       m = o.m;
       let t = o.t;
-      if (t > head.ready + line.holdMin) {
-        // Se venció en el pulmón antes de poder llenarlo: es merma.
-        lost(pick, head.kg);
-        stock[pick].shift();
+      if (t > head.ready + holdMin) {
+        // Se venció en el pulmón antes de poder llenarlo: se bota (merma) y el pulmón se lava.
+        lost(bulk, head.kg);
+        stock[bulk].shift();
+        dirty[bulk] = true;
         continue;
       }
       const rate = model.fillerRate[m];
       const units = Math.min(left, Math.floor(head.kg / job.bulkKg + 1e-9));
       if (units <= 0) {
-        lost(pick, head.kg);
-        stock[pick].shift();
+        lost(bulk, head.kg);
+        stock[bulk].shift();
         continue;
       }
-      // CIP de rutina: al acumular max_run_h de producción sin limpiar (dentro del turno).
+      // CIP de rutina al acumular max_run_h de producción sin limpiar; limpieza de boquillas cada every_h de llenado.
       let co = o.ch.min;
       let kind = o.ch.kind;
       let routine = false;
-      if (o.runMin + units / rate > model.cip.max_run_h * 60 && co < model.cip.routine_min) {
+      let runMin = o.runMin;
+      let nozzleMin = o.nozzleMin;
+      if (runMin + units / rate > model.cip.max_run_h * 60 && co < model.cip.routine_min) {
         co = model.cip.routine_min;
         kind = "cip";
         routine = true;
+        runMin = 0;
+        nozzleMin = 0;
+      }
+      if (nozzleMin + units / rate > nozzleMax && co < model.nozzle.min) {
+        co = model.nozzle.min;
+        kind = "boquillas";
+        nozzleMin = 0;
       }
       if (t >= ctx.horizonEnd) break;
       const end = cal.advance(t, co + units / rate, blocked(m));
       fills.push({ job, filler: m, start: t, end, qty: units, batch: head.batch, changeoverMin: Math.round(co), ...(co > 0 && kind ? { changeoverKind: kind } : {}), ...(routine ? { routine } : {}) });
-      const f = filler[m];
-      Object.assign(f, { at: end, bulk: job.bulk, format: p.format, runMin: (co > 0 && (kind === "cip" || kind === "alergeno") ? 0 : o.runMin) + units / rate });
+      Object.assign(filler[m], { at: end, bulk, format: p.format, runMin: runMin + units / rate, nozzleMin: nozzleMin + units / rate });
       t = end;
       head.kg -= units * job.bulkKg;
       left -= units;
       if (head.kg < job.bulkKg - 1e-9 && left > 0) {
-        // Lo que queda no alcanza para un sachet de este pedido: se junta con la tanda siguiente si es del mismo turno;
-        // para no complicar, el resto menor a un sachet se cuenta como merma.
-        lost(pick, head.kg);
-        stock[pick].shift();
+        // Lo que queda no alcanza para un sachet de este pedido: el resto menor a un sachet se cuenta como merma.
+        lost(bulk, head.kg);
+        stock[bulk].shift();
       }
     }
     if (left > 0) unscheduled[job.order.id] = (unscheduled[job.order.id] ?? 0) + left;
@@ -430,11 +488,15 @@ export function toPlan(
   type Item = { t: number; m: string; row: () => PlanScheduleRow };
   const items: Item[] = [];
   for (const b of result.batches) {
-    const line = model.lines[b.bulk];
+    const line = model.lines[b.line];
     items.push({
       t: b.start,
       m: b.equipment,
-      row: () => ({ op: op(b.order), order: b.order, product: b.bulk, stage: line.stage, equipment: b.equipment, start: iso(b.start, tz), end: iso(b.end, tz), quantity: line.outKg, unit: "kg", changeover_min: 0, batch_kg: line.batchKg, batch_id: b.id }),
+      row: () => {
+        const row: PlanScheduleRow = { op: op(b.order), order: b.order, product: b.bulk, stage: line.stage, equipment: b.equipment, start: iso(b.start, tz), end: iso(b.end, tz), quantity: r1(b.kg), unit: "kg", changeover_min: b.changeoverMin, batch_kg: r1((line.batchKg * b.kg) / line.outKg), batch_id: b.id };
+        if (b.changeoverMin && b.changeoverKind) row.changeover_kind = b.changeoverKind;
+        return row;
+      },
     });
   }
   // Las filas de llenado de un pedido se numeran como lotes [k, de n].
@@ -496,7 +558,7 @@ export function toPlan(
   for (const line of Object.values(model.lines))
     for (const eq of line.equipment) {
       const busy = busyOf(result.batches.filter((b) => b.equipment === eq));
-      const lost = eq === line.equipment[0] ? (ctx.down[line.bulk] ?? []).reduce((s, [a, b]) => s + cal.workBetween(a, b), 0) : 0;
+      const lost = eq === line.equipment[0] ? (ctx.down[line.id] ?? []).reduce((s, [a, b]) => s + cal.workBetween(a, b), 0) : 0;
       equipment[eq] = { busy_pct: work ? r1((100 * busy) / work) : 0, down_h: r1(lost / 60) };
     }
   for (const m of model.fillers) {
@@ -506,10 +568,11 @@ export function toPlan(
   downtime.sort((a, b) => (a.start < b.start ? -1 : a.start > b.start ? 1 : a.equipment.localeCompare(b.equipment)));
 
   // La ocupación de una línea es la de todos sus equipos juntos (una tanda a la vez).
-  const lineBusy = Object.values(model.lines).map((l) => ({ equipment: l.equipment[0], busy_pct: work ? r1((100 * busyOf(result.batches.filter((b) => b.bulk === l.bulk))) / work) : 0 }));
+  const lineBusy = Object.values(model.lines).map((l) => ({ equipment: l.equipment[0], busy_pct: work ? r1((100 * busyOf(result.batches.filter((b) => b.line === l.id))) / work) : 0 }));
   const late = orders.filter((o) => o.late_h > 0);
-  const co = result.fills.filter((f) => f.changeoverMin > 0);
-  const cip = co.filter((f) => f.changeoverKind === "cip" || f.changeoverKind === "alergeno");
+  // Cambios en llenadoras y en líneas de proceso (receta, CIP completo al devolverse, lavado del pulmón).
+  const co = [...result.fills, ...result.batches].filter((f) => f.changeoverMin > 0);
+  const cip = co.filter((f) => f.changeoverKind === "cip" || f.changeoverKind === "alergeno" || f.changeoverKind === "tanque");
   const busiest = [...lineBusy, ...model.fillers.map((m) => ({ equipment: m, busy_pct: equipment[m].busy_pct }))].sort((a, b) => b.busy_pct - a.busy_pct)[0];
   return {
     contract: "production-plan.v1",
