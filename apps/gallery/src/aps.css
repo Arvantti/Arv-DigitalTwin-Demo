@@ -290,6 +290,9 @@ button.danger:hover { background: rgba(255, 59, 59, 0.4); border-color: #fff; }
 .pr-card img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 8px; border: 1px solid var(--line); }
 .pr-n { font: 700 11px Inter, sans-serif; letter-spacing: 0.16em; color: var(--cyan); }
 .pr-meta { font: 600 11px "IBM Plex Mono", monospace; color: var(--dim); }
+.pr-card-text { max-width: 900px; margin: 40px auto; font-size: 24px; line-height: 1.5; color: #cfd5ea; }
+.pr-mods { display: flex; flex-wrap: wrap; gap: 6px; }
+.pr-mods i { font: 600 11px "IBM Plex Mono", monospace; font-style: normal; letter-spacing: 0.04em; padding: 3px 8px; border-radius: 999px; color: var(--cyan); border: 1px solid var(--line); background: rgba(20, 28, 80, 0.4); }
 .pr-keys { margin-top: 18px; }
 .pr-stage { display: flex; flex-direction: column; gap: 10px; min-height: calc(100vh - 110px); }
 .pr-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }

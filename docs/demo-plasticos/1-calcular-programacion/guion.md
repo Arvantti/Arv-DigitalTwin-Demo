@@ -2,9 +2,10 @@
 title: Guion · Calcular la programación
 escenario: 1-calcular-programacion
 tags: [demo, plasticos, guion, aps, cosimulador, fractal]
+modulos: [DigitalTwin, APS, CoSimulation, Fractal, Control Center]
 duracion_aprox: 4 min
 cifras:
-  - ["90,3 % → 92,5 %", "pedidos a tiempo: manual contra cosimulador"]
+  - ["90,3 % → 92,5 %", "pedidos a tiempo: manual contra CoSimulation"]
   - ["69,2 % → 60,7 %", "ocupación de planta en la semana, con la misma producción"]
   - ["28,5 t", "de resina para la semana, calculadas del plan"]
 ahorro:
@@ -73,7 +74,7 @@ Mensaje central: a partir de los pedidos y sus fechas de entrega, el cosimulador
 
 > Pulsamos calcular con el cosimulador y el sistema pregunta primero qué objetivo buscar: cumplir entregas, menos cambios de molde y color, balancear cuellos de botella o maximizar la capacidad ocupada. El cosimulador optimiza un solo objetivo por corrida. Para buscar varios a la vez está Fractal, el módulo de escenarios que presentamos al inicio: lo veremos en acción en unos minutos. Las entregas siempre se respetan. Hoy elegimos cumplir entregas.
 
-### S05 · Calcular con el cosimulador
+### S05 · Calcular con CoSimulation
 - imagen: capturas/04-calcular.png
 - tarjeta: cosimulador | 4.877 variables | 1.301 restricciones | 0,8 s
 - duración: 14 s
@@ -107,7 +108,7 @@ Mensaje central: a partir de los pedidos y sus fechas de entrega, el cosimulador
 
 > El cosimulador deja dos escenarios para comparar: A, cumplir entregas, y B, menos cambios con las mismas entregas. A cambio, el A hace más cambios de referencia, y cada uno se cobra con su tiempo real de purga: de claro a oscuro es corto y de oscuro a claro es largo.
 
-### S06 · El Gantt del cosimulador
+### S06 · El Gantt de CoSimulation
 - imagen: capturas/05-gantt-cosimulador.png
 - duración: 14 s
 - en pantalla: las barras que terminan antes de su rombo

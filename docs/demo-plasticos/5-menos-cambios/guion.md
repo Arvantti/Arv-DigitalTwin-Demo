@@ -2,6 +2,7 @@
 title: Guion · Menos cambios de referencia
 escenario: 5-menos-cambios
 tags: [demo, plasticos, guion, fractal, cambios]
+modulos: [DigitalTwin, APS, CoSimulation, Fractal]
 duracion_aprox: 2 min
 cifras:
   - ["30 → 12", "cambios de referencia en la programación"]

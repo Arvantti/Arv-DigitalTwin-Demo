@@ -26,8 +26,10 @@ interface Scenario {
   title: string;
   message: string;
   duration: string;
+  /** Módulos de la plataforma que usa el escenario (frontmatter `modulos`), en el orden del heptágono. */
+  modules: string[];
   numbers: [string, string][];
-  /** Ahorro potencial: [qué, antes, con Fractal o el cosimulador, ahorro]. Sale de las corridas, no de estimaciones. */
+  /** Ahorro potencial: [qué, antes, con Fractal o CoSimulation, ahorro]. Sale de las corridas, no de estimaciones. */
   saving: [string, string, string, string][];
   segments: Segment[];
 }
@@ -38,12 +40,24 @@ const images = import.meta.glob("../../../docs/demo-plasticos/*/capturas/*.{png,
 function parse(path: string, text: string): Scenario {
   const key = path.split("/").at(-2)!;
   const fm = text.match(/^---\n([\s\S]*?)\n---/);
-  const meta = (fm ? yaml.load(fm[1]) : {}) as { title?: string; duracion_aprox?: string; cifras?: [string, string][]; ahorro?: [string, string, string, string][] };
+  const meta = (fm ? yaml.load(fm[1]) : {}) as { title?: string; duracion_aprox?: string; modulos?: string[]; cifras?: [string, string][]; ahorro?: [string, string, string, string][] };
+  // Bloques "### Snn · título" con sus líneas "- campo: valor" (en cualquier orden; el video agrega "- foco:",
+  // "- tarjeta:" y "- orbita:") y las citas ">" (la voz). Un bloque sin imagen (una tarjeta del video) es una lámina de texto.
   const segments: Segment[] = [];
-  const re = /### S(\d+) · (.+)\n- imagen: capturas\/(.+?)\n- duración: (.+)\n- en pantalla: (.+)\n\n((?:> .*\n?)+)/g;
-  for (const m of text.matchAll(re)) {
-    const img = images[`../../../docs/demo-plasticos/${key}/capturas/${m[3]}`];
-    segments.push({ id: m[1], title: m[2], img: img ?? "", duration: m[4], screen: m[5], text: m[6].replace(/^> /gm, "").replace(/\n/g, " ").trim() });
+  for (const block of text.split(/^### /m).slice(1)) {
+    const head = block.split("\n")[0].match(/^S(\d+[a-z]?)\s*·\s*(.+)$/);
+    if (!head) continue;
+    const field = (k: string) => block.match(new RegExp(`^- ${k}:\\s*(.+)$`, "m"))?.[1]?.trim() ?? "";
+    const voice = block
+      .split("\n")
+      .filter((l) => l.startsWith(">"))
+      .map((l) => l.replace(/^>\s?/, "").trim())
+      .join(" ")
+      .trim();
+    if (!voice) continue;
+    const file = field("imagen").replace(/^capturas\//, "");
+    const img = file ? images[`../../../docs/demo-plasticos/${key}/capturas/${file}`] : undefined;
+    segments.push({ id: head[1], title: head[2].trim(), img: img ?? "", duration: field("duración"), screen: field("en pantalla"), text: voice });
   }
   return {
     key,
@@ -51,6 +65,7 @@ function parse(path: string, text: string): Scenario {
     title: (text.match(/^# Escenario \d+ · (.+)$/m)?.[1] ?? meta.title ?? key).trim(),
     message: (text.match(/^Mensaje central: (.+)$/m)?.[1] ?? "").replace(/^./, (c) => c.toUpperCase()),
     duration: meta.duracion_aprox ?? "",
+    modules: meta.modulos ?? [],
     numbers: meta.cifras ?? [],
     saving: meta.ahorro ?? [],
     segments,
@@ -73,6 +88,11 @@ function liveUrl(img: string): { href: string; label: string } {
   return { href: "/aps.html?tab=gantt", label: "APS · GANTT" };
 }
 
+/** Fila de módulos de la plataforma que usa un escenario. */
+function moduleChips(mods: string[]): string {
+  return mods.length ? `<span class="pr-mods">${mods.map((m) => `<i>${esc(m)}</i>`).join("")}</span>` : "";
+}
+
 /** Tabla ANTES → CON FRACTAL → AHORRO de un escenario. */
 function savingTable(rows: Scenario["saving"]): string {
   return `<table class="pr-saving"><thead><tr><th>Qué se mide</th><th>Antes</th><th>Con el plan optimizado</th><th>Ahorro potencial</th></tr></thead><tbody>${rows
@@ -90,17 +110,19 @@ function index(): void {
   main.innerHTML = `
     <p class="pr-intro">${["Cero", "Un", "Dos", "Tres", "Cuatro", "Cinco", "Seis"][SCENARIOS.length] ?? SCENARIOS.length} escenarios de la planta de inyección de plásticos. Cada presentación sigue el guion de la demo con sus capturas;
     en cualquier lámina, <b>ABRIR EN VIVO</b> lleva a la pantalla real. Hoy es el día 9 de la programación.</p>
+    <p class="dim pr-intro">La plataforma es un núcleo, <b>Arvantti DigitalTwin</b>, y siete módulos opcionales: Integrator, APS, CoSimulation, Fractal, Control Center, DendroScada y AI Assistant. Cada escenario indica los módulos que usa.</p>
     <div class="pr-cards">${SCENARIOS.map(
       (s) => `<button class="pr-card" data-esc="${s.n}">
         <span class="pr-n">ESCENARIO ${s.n}</span>
         <b>${esc(s.title)}</b>
         <span class="dim">${esc(s.message)}</span>
+        ${moduleChips(s.modules)}
         ${s.segments[0]?.img ? `<img src="${s.segments[0].img}" alt="" loading="lazy" />` : ""}
         <span class="pr-meta">${s.segments.length + 2} láminas · ${esc(s.duration)}</span>
       </button>`,
     ).join("")}</div>
     <section class="pr-saving-all"><h2>AHORRO POTENCIAL · lo que sale de las corridas</h2>
-      <p class="dim">Cifras del cosimulador y de Fractal en cada escenario, calculadas sobre la cartera de demostración (datos inventados). Multiplicadas por el costo de la hora de máquina de la planta, son el ahorro en dinero.</p>
+      <p class="dim">Cifras de CoSimulation y de Fractal en cada escenario, calculadas sobre la cartera de demostración (datos inventados). Multiplicadas por el costo de la hora de máquina de la planta, son el ahorro en dinero.</p>
       ${SCENARIOS.filter((s) => s.saving.length).map((s) => `<h3>Escenario ${s.n} · ${esc(s.title)}</h3>${savingTable(s.saving)}`).join("")}</section>
     <p class="dim pr-keys">Teclas: ← → o espacio para avanzar · N notas del orador · F pantalla completa · Esc volver.</p>`;
   main.querySelectorAll<HTMLButtonElement>(".pr-card").forEach((b) => (b.onclick = () => open(SCENARIOS.find((s) => s.n === Number(b.dataset.esc))!, 0)));
@@ -128,6 +150,7 @@ function render(): void {
   let live: { href: string; label: string } | null = null;
   if (slide === 0) {
     body = `<div class="pr-cover"><span class="pr-n">ESCENARIO ${s.n} · PLANTA DE PLÁSTICOS</span><h1>${esc(s.title)}</h1><p>${esc(s.message)}</p>
+      ${moduleChips(s.modules)}
       <ol>${s.segments.map((g) => `<li>${esc(g.title)}</li>`).join("")}</ol></div>`;
     note = s.message;
   } else if (slide === total - 1) {
@@ -137,10 +160,10 @@ function render(): void {
       <p class="dim">Fractal recomienda; la persona decide.</p></div>`;
   } else {
     const g = s.segments[slide - 1];
-    live = liveUrl(g.img);
+    live = g.img ? liveUrl(g.img) : null;
     body = `<div class="pr-seg"><div class="pr-seg-head"><span class="pr-n">S${esc(g.id)}</span><h2>${esc(g.title)}</h2></div>
-      <img src="${g.img}" alt="${esc(g.title)}" />
-      <p class="pr-screen">▸ ${esc(g.screen)}</p></div>`;
+      ${g.img ? `<img src="${g.img}" alt="${esc(g.title)}" />` : `<p class="pr-card-text">${esc(g.text)}</p>`}
+      ${g.screen ? `<p class="pr-screen">▸ ${esc(g.screen)}</p>` : ""}</div>`;
     note = g.text;
   }
   main.innerHTML = `

@@ -2,6 +2,7 @@
 title: Guion · Pedidos fijados a mano
 escenario: 4-pedidos-fijados
 tags: [demo, plasticos, guion, fractal, aps]
+modulos: [DigitalTwin, APS, CoSimulation, Fractal, Control Center]
 duracion_aprox: 3 min
 cifras:
   - ["3", "órdenes fijadas a mano que Fractal no mueve"]
