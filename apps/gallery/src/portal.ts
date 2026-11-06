@@ -12,6 +12,8 @@ interface PlantCard {
   alt: string;
   text: string;
   extra?: { href: string; label: string };
+  /** Más pantallas de la planta (emulador, centro de control). */
+  more?: { href: string; label: string }[];
   /** Sin tipos de librería simulados todavía: no se ofrece la librería filtrada. */
   noLibrary?: boolean;
   /** Color de acento de la tarjeta (por familia de manufactura). */
@@ -38,6 +40,10 @@ const plants: PlantCard[] = [
     title: "Planta de salsas",
     text: "Cocción, emulsión, pasteurización, llenado, empaque y bodega: flujo continuo y por lotes con servicios de planta.",
     extra: { href: "/aps-salsas.html", label: "APS · PEDIDOS Y GANTT" },
+    more: [
+      { href: "/emulador-salsas.html", label: "EMULADOR" },
+      { href: "/control-salsas.html", label: "CENTRO DE CONTROL" },
+    ],
   },
   {
     id: "water-network-scale-v1",
@@ -112,6 +118,7 @@ plants.forEach((p, i) => {
           <a class="btn primary" href="${main.href}">${main.label}</a>
           ${p.noLibrary ? "" : `<a class="btn" href="/equipos.html?plant=${p.id}">EQUIPOS</a>`}
           ${p.extra ? `<a class="btn" href="${p.extra.href}">${p.extra.label}</a>` : ""}
+          ${(p.more ?? []).map((m) => `<a class="btn" href="${m.href}">${m.label}</a>`).join("")}
         </div>
       </div>
     </div>`;

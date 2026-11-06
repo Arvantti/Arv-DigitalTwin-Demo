@@ -15,7 +15,7 @@ aps/plans/      APS-MAN-01.json: secuencia del planificador de turno (manual-seq
 orders/         cartera-2026-11.json: 128 pedidos inventados (customer-orders.v1)
 cosim/          @plants/sauce-plant-v1-cosim: modelo, cartera, plan manual, despacho y programa lineal (HiGHS)
 fractal/        @plants/sauce-plant-v1-fractal: escenarios y palancas de Fractal sobre el cosimulador
-app/            @plants/sauce-plant-v1-app: la pantalla del APS (pedidos, Gantt, Fractal)
+app/            @plants/sauce-plant-v1-app: APS (pedidos, Gantt, Fractal), emulador y centro de control
 docs/           esta nota
 ```
 
@@ -163,8 +163,36 @@ Escenarios y resultados con la cartera de la demo, desde el plan manual en AHORA
 Las recetas pequeñas cada 3 días dan el menor CIP (68,6 h) y la menor merma (3.861 kg), pero 2 pedidos tarde más:
 el puntaje prefiere no atrasar. Con la llenadora de mostaza caída, no cruzar llenadoras deja 11 pedidos tarde.
 
-Mientras llega el emulador de salsas (fase 6), la falla se simula en la tarjeta del escenario: equipo y horas hasta
-la reparación. La falla queda en la pantalla y CALCULAR también la tiene en cuenta.
+La falla llega del emulador (abajo) o se simula en la tarjeta del escenario (equipo y horas hasta la reparación).
+Cualquiera de las dos queda en el estado compartido: la ven el centro de control y CALCULAR.
+
+## Emulador y centro de control
+
+El emulador (`emulador-salsas.html`) hace de planta real y el centro de control (`control-salsas.html`) recibe sus
+señales; el portal los enlaza. Las dos pantallas viven en `app/` y muestran la programación vigente del APS en el
+instante mostrado: AHORA (día 9, 10:00) o, desde la fase 7, el del play del gemelo 3D.
+
+- Equipos con PLC (`plant-state.ts`, `plcEquipment`): cada línea con sus equipos de proceso (marmitas,
+  emulsificador, tanque de mostaza) y los que la detienen si fallan (`aps.yaml`, `down_with`: caldera,
+  pasteurizadores, tanque de fase acuosa, molino coloidal, molino de mostaza), y las seis llenadoras.
+- Estado: produciendo, cambio o limpieza (CIP, CIP por alérgeno, receta, formato, boquillas, lavado del pulmón, con
+  su hora de fin), sin orden, parada programada, fuera de servicio, detenido (por la falla de otro equipo de su
+  línea: la caldera caída detiene marmitas y pasteurizadores) y fuera de turno.
+- Emulador: plano de la caldera, proceso, CIP, pulmones, llenado y encajado; clic en un equipo muestra su tanda o su
+  llenado con el avance y sus valores de proceso (temperatura de cocción, vacío y rotor del emulsificador, presión
+  de vapor, velocidad y mordaza de la llenadora). Ahí se declara una falla o un paro de emergencia en el instante
+  mostrado con su reparación estimada (`plant-event.v1`), y se restablece.
+- Centro de control: OEE de la planta y de cada equipo en el turno (disponibilidad × rendimiento × calidad; calidad
+  supuesta de 99 %), kilos cocinados y sachets buenos del turno, equipos en limpieza CIP, tanda o llenado en curso,
+  ocupación de la semana contra la disponibilidad y por día, y las alarmas con el enlace para replanear en el APS.
+- Estado compartido (`store.ts`): la programación adoptada en el APS, los eventos del emulador y el reloj del gemelo
+  se guardan en el navegador (localStorage) y se avisan por BroadcastChannel, así las pantallas abiertas se enteran al
+  instante. El APS muestra la alarma de la falla, la usa en Fractal y en CALCULAR; `?reset=1` en el APS vuelve al
+  plan manual sin fallas.
+
+Los valores de proceso, el rendimiento del OEE y las causas de falla son supuestos coherentes con `plant.yaml`; no
+hay señales reales. Las pruebas de `tests/plant-state.test.ts` cubren el estado, la caldera que detiene la línea
+caliente, el CIP por alérgeno en curso, el OEE y la ocupación.
 
 ## Puntaje de Fractal
 

@@ -6,8 +6,11 @@
  * La pestaña FRACTAL prueba escenarios (adelantar un pedido, menos CIP y merma, falla de un equipo): cada combinación de
  * palancas la coloca el cosimulador y Fractal recomienda la de menor puntaje; la persona decide si la adopta.
  *
+ * La programación vigente y las fallas del emulador se comparten con el emulador y el centro de control (store.ts): lo
+ * que se adopta aquí es lo que corre en la planta, y una falla declarada en el emulador aparece aquí como alarma.
+ *
  * Parámetros de la URL: tab=orders|gantt|fractal, now=2026-11-04T10:00 (AHORA; por defecto el día 9 de la demo),
- * solve=1 (calcula al abrir), order=PED-… (resalta un pedido).
+ * solve=1 (calcula al abrir), order=PED-… (resalta un pedido), reset=1 (vuelve al plan manual y sin fallas).
  */
 import "./aps.css";
 import { iso, parseLocal, type PlantEvent, type ProductionPlan } from "@twin/cosim-core";
@@ -17,6 +20,7 @@ import { buildModel, type SauceModel } from "@plants/sauce-plant-v1-cosim/model.
 import { manualPlan } from "@plants/sauce-plant-v1-cosim/manual.ts";
 import type { HighsLike } from "@plants/sauce-plant-v1-cosim/solve.ts";
 import { demoManual, demoPortfolio, layoutEquipment, sauceData } from "./data.ts";
+import { activeEvents, events as storedEvents, onChange, resetDemo, savedVigente, setEvents, setVigente } from "./store.ts";
 import { BULK_COLOR, compareKpis, DEMO_NOW, dayLabel, dayNumber, failureCandidates, ganttSections, movableOrders, orderState, score, studyKpis, when, type Bar, type Lane } from "./view.ts";
 
 const esc = (s: unknown) => String(s).replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
@@ -39,7 +43,7 @@ interface State {
   selected: string | null;
   busy: boolean;
   error: string | null;
-  /** Falla simulada en la pestaña de Fractal (hasta que el emulador de salsas la mande): la usan Fractal y CALCULAR. */
+  /** Fallas y paros del emulador (o simulados en la pestaña de Fractal): los usan Fractal y CALCULAR. */
   events: PlantEvent[];
   study: FractalStudy | null;
   studying: SauceScenario | null;
@@ -52,6 +56,7 @@ export function mountSauceAps(root: HTMLElement): void {
   const portfolio = demoPortfolio();
   const nowText = url.get("now") ? `${url.get("now")!.slice(0, 16)}${model.timezone}` : DEMO_NOW;
   const manual = { ...manualPlan(model, portfolio, demoManual()), status: "vigente" as const };
+  if (url.get("reset") === "1") resetDemo();
   const params = Object.fromEntries(layoutEquipment().map((e) => [e.id, e.params]));
   const st: State = {
     model,
@@ -59,7 +64,7 @@ export function mountSauceAps(root: HTMLElement): void {
     nowText,
     start: parseLocal(portfolio.plan_start),
     manual,
-    vigente: manual,
+    vigente: savedVigente(portfolio.portfolio_id) ?? manual,
     propuesta: null,
     showing: "vigente",
     tab: url.get("tab") === "gantt" ? "gantt" : url.get("tab") === "fractal" ? "fractal" : "orders",
@@ -67,7 +72,7 @@ export function mountSauceAps(root: HTMLElement): void {
     selected: url.get("order"),
     busy: false,
     error: null,
-    events: [],
+    events: storedEvents(),
     study: null,
     studying: null,
     studyError: null,
@@ -90,6 +95,7 @@ export function mountSauceAps(root: HTMLElement): void {
       <button id="sa-calc" class="primary" title="Programa lineal por turnos (HiGHS) sobre las líneas de proceso, desde AHORA; lo anterior queda congelado">⚙ CALCULAR CON EL COSIMULADOR</button>
       <button id="sa-manual" title="Vuelve a la secuencia del planificador (APS-MAN-01): por orden de llegada, llenadoras alternas">✎ PLAN MANUAL</button>
     </nav>
+    <section id="sa-alarm" class="aps-alarm" hidden></section>
     <section id="sa-proposal" class="aps-proposal" hidden></section>
     <main>
       <section id="sa-orders" class="aps-panel"></section>
@@ -107,10 +113,21 @@ export function mountSauceAps(root: HTMLElement): void {
     calc.disabled = st.busy;
     calc.textContent = st.busy ? "⚙ CALCULANDO…" : "⚙ CALCULAR CON EL COSIMULADOR";
     $("#sa-vigente").textContent = `VIGENTE · ${st.vigente.plan_id} · ${sourceName(st.vigente)}`;
+    renderAlarm();
     renderProposal();
     if (st.tab === "orders") renderOrders();
     else if (st.tab === "gantt") renderGantt();
     else renderFractal();
+  }
+
+  /** Fallas del emulador vigentes en AHORA: la planta cambió y la programación vigente ya no se puede cumplir igual. */
+  function renderAlarm() {
+    const box = $("#sa-alarm");
+    const list = activeEvents(st.now, st.events);
+    box.hidden = !list.length;
+    box.innerHTML = list
+      .map((e) => `<p><b>⚠ ALARMA DEL EMULADOR · ${esc(e.equipment)} · ${e.kind === "falla" ? "FALLA" : "PARO DE EMERGENCIA"}</b> desde ${esc(when(e.start))} · ${esc(e.reason)} · reparación estimada ${esc(when(e.est_end))}. La vigente no la tiene en cuenta: <button data-tab="fractal" class="fr-see">◆ ESTUDIAR EN FRACTAL</button> o calcula con el cosimulador.</p>`)
+      .join("");
   }
 
   function renderProposal() {
@@ -320,7 +337,7 @@ export function mountSauceAps(root: HTMLElement): void {
   function renderFractal() {
     const v = st.vigente;
     const movable = movableOrders(v, st.now);
-    const ev = st.events[0];
+    const ev = activeEvents(st.now, st.events)[0];
     const fail = failureCandidates(st.model);
     const d0 = Math.floor(st.now / DAY) * DAY;
     const dueClose = st.model.calendar.shifts.map((x) => x.end).sort().at(-1) ?? "22:00";
@@ -358,7 +375,7 @@ export function mountSauceAps(root: HTMLElement): void {
         ${card("limpiezas", 2, `<p class="fr-desc">La vigente tiene <b>${num(v.kpis.cip_h ?? 0, 1)} h de CIP</b> y <b>${num(v.kpis.waste_kg ?? 0)} kg de merma</b>. ¿Cómo lavar menos y botar menos salsa sin atrasar pedidos?</p>`, run("limpiezas"))}
         ${card("falla", 3, ev
           ? `<p class="fr-desc"><b class="bad">⚠ ${esc(ev.equipment)}</b> fuera de servicio desde ${esc(when(ev.start))} · ${esc(ev.reason)} · reparación estimada ${esc(when(ev.est_end))}. ¿Qué conviene mientras lo reparan? <button id="fr-clear" class="fr-see">✕ QUITAR LA FALLA</button></p>`
-          : `<p class="fr-desc">Simula que un equipo se cae en AHORA (el emulador de salsas lo hará solo en la fase 6). La falla queda en la pantalla: también la tiene en cuenta CALCULAR.</p>
+          : `<p class="fr-desc">Declara la falla en el <a href="/emulador-salsas.html">emulador</a> o simúlala aquí en AHORA. La falla llega también al centro de control y la tiene en cuenta CALCULAR.</p>
           <label>Equipo <select id="fr-eq">${fail.map((f) => `<option value="${esc(f.id)}">${esc(f.label)}</option>`).join("")}</select></label>
           <label>Reparación estimada <select id="fr-hours">${[6, 12, 24, 48, 60].map((h) => `<option value="${h}"${h === 60 ? " selected" : ""}>en ${h} h de calendario</option>`).join("")}</select></label>`,
           run("falla"), ev ? " alarm" : "")}
@@ -397,15 +414,21 @@ export function mountSauceAps(root: HTMLElement): void {
     if (scenario === "adelantar") return void study({ scenario, order: { id: $<HTMLSelectElement>("#fr-order").value, due: `${$<HTMLSelectElement>("#fr-due").value}T${st.model.calendar.shifts.map((x) => x.end).sort().at(-1)}` } });
     if (scenario === "limpiezas") return void study({ scenario });
     if (scenario === "falla") {
-      if (!st.events.length) {
+      if (!activeEvents(st.now, st.events).length) {
         const eq = $<HTMLSelectElement>("#fr-eq").value;
         const hours = Number($<HTMLSelectElement>("#fr-hours").value);
-        st.events = [{ contract: "plant-event.v1", id: "EV-SA-01", plant: st.model.plant, equipment: eq, kind: "falla", reason: "Falla simulada en el APS", start: st.nowText, est_end: iso(st.now + hours * 60, st.model.timezone) }];
+        const ev: PlantEvent = { contract: "plant-event.v1", id: `EV-${String(st.events.length + 1).padStart(3, "0")}`, plant: st.model.plant, equipment: eq, kind: "falla", reason: "Falla simulada en el APS", start: st.nowText, est_end: iso(st.now + hours * 60, st.model.timezone) };
+        st.events = [ev, ...st.events];
+        setEvents(st.events);
       }
       return void study({ scenario });
     }
     if (el.closest("#fr-clear")) {
-      Object.assign(st, { events: [], study: st.study?.scenario === "falla" ? null : st.study });
+      // La falla vuelve a servicio en AHORA (como RESTABLECER en el emulador).
+      const live = new Set(activeEvents(st.now, st.events).map((e) => e.id));
+      st.events = st.events.map((e) => (live.has(e.id) ? { ...e, cleared: st.nowText } : e));
+      setEvents(st.events);
+      st.study = st.study?.scenario === "falla" ? null : st.study;
       return render();
     }
     const see = el.closest<HTMLElement>("[data-see]")?.dataset.see;
@@ -417,14 +440,17 @@ export function mountSauceAps(root: HTMLElement): void {
     if (pick && st.study) {
       // Cualquier opción se puede adoptar, no solo la recomendada: Fractal recomienda y la persona decide.
       Object.assign(st, { vigente: { ...st.study.options.find((o) => o.id === pick)!.plan, status: "vigente" }, propuesta: null, showing: "vigente", study: null, tab: "gantt" });
+      setVigente(st.vigente);
       return render();
     }
     if (el.closest("#sa-manual")) {
       Object.assign(st, { vigente: st.manual, propuesta: null, showing: "vigente", error: null, study: null });
+      setVigente(null);
       return render();
     }
     if (el.closest("#sa-approve") && st.propuesta) {
       Object.assign(st, { vigente: { ...st.propuesta, status: "vigente" }, propuesta: null, showing: "vigente" });
+      setVigente(st.vigente);
       return render();
     }
     if (el.closest("#sa-discard")) {
@@ -457,6 +483,13 @@ export function mountSauceAps(root: HTMLElement): void {
       }
       render();
     }
+  });
+
+  // Otra pantalla adoptó una programación o el emulador declaró o restableció una falla.
+  onChange((what) => {
+    if (what === "plan") st.vigente = savedVigente(portfolio.portfolio_id) ?? st.manual;
+    if (what === "events") st.events = storedEvents();
+    if (what !== "clock") render();
   });
 
   render();
