@@ -12,7 +12,7 @@ catalog/        materiales, productos (con grupo de alérgenos), recetas y forma
                 recetas, lavado del pulmón y boquillas)
 aps/aps.yaml    ventana de entrega, tandas, lotes, llenadoras multipropósito, tiempos de espera y puntaje de Fractal
 aps/plans/      APS-MAN-01.json: secuencia del planificador de turno (manual-sequence.v1)
-orders/         cartera-2026-11.json: 119 pedidos inventados (customer-orders.v1)
+orders/         cartera-2026-11.json: 128 pedidos inventados (customer-orders.v1)
 cosim/          @plants/sauce-plant-v1-cosim: modelo, cartera, plan manual, despacho y programa lineal (HiGHS)
 docs/           esta nota
 ```
@@ -71,9 +71,11 @@ alternativa la usa el APS.
 
 ## Cartera y plan manual de la demo
 
-Mismas fechas que plásticos: día 0 = lunes 2026-10-26, entregas del día 1 al 19, AHORA = día 9. 119 pedidos de los
-diez SKU, con carga cercana al 65 % de la capacidad diaria de cada SKU (`catalog/demand.yaml`, `load_pct`; con siete
-recetas, los cambios se comen buena parte del turno).
+Mismas fechas que plásticos: día 0 = lunes 2026-10-26, entregas del día 1 al 19, AHORA = día 9. 128 pedidos de los
+diez SKU, con carga del 70 % de la capacidad diaria de cada SKU (`catalog/demand.yaml`, `load_pct`). Los pedidos se
+sortean día por día y al final las cantidades de cada SKU se escalan para que el total sea exactamente esa carga (con
+pocos pedidos al día, el azar dejaba la línea fría al 85 %). Con los cambios de receta y las limpiezas, las líneas de
+proceso quedan ocupadas entre 72 y 86 %.
 El plan manual APS-MAN-01 sigue el orden de llegada y alterna las llenadoras de 1.000 ml y las multipropósito, sin
 agrupar recetas, mirar la secuencia ni los alérgenos: hace CIP de más, que es lo que el cosimulador y Fractal van a mejorar.
 
@@ -95,20 +97,24 @@ Una tanda ocupa la línea 213,8 / 143,3 / 286,5 min y no pasa de un día a otro.
   llenadora del tramo o en la que pueda empezar antes (la habitual primero); suma el CIP por alérgeno o secuencia,
   el cambio de formato, las boquillas y el CIP de rutina; cuenta como merma lo que se vence o sobra. Lo que quedó en el
   pulmón se aprovecha antes de que se venza (si el tramo siguiente no alcanza, pasa adelante uno de los 8 siguientes
-  de la misma línea que sí) y no se cocina una tanda que ninguna llenadora alcanza a tomar a tiempo: se corre. Replanea desde AHORA
+  de la misma línea que sí, siempre que no entregue más de un día después del que espera: si no, la receta que corre
+  se come la línea y las recetas pequeñas no entran nunca) y no se cocina una tanda que ninguna llenadora alcanza a tomar a tiempo: se corre. Replanea desde AHORA
   con lo anterior congelado, con fallas del emulador: una falla de la caldera, el pasteurizador o un equipo de la
   línea para la línea; una falla de una llenadora, solo esa llenadora.
 - `solve.ts`: programa lineal por turnos (HiGHS): kilos de cada pedido por línea y turno, con la capacidad en tandas
   enteras por día (90 % en las líneas de varias recetas, para dejar lugar a los cambios), minimizando el atraso
-  ponderado por importancia. Dentro de cada turno ordena por la secuencia de recetas empezando por la que tiene la
+  ponderado por importancia, con un empujoncito hacia el último turno que llega a tiempo (deja los primeros turnos
+  para los urgentes y no cocina antes de tiempo). Dentro de cada turno ordena por la secuencia de recetas empezando por la que tiene la
   línea. Después, el mismo despacho.
 - `manual.ts`: el plan del planificador (APS-MAN-01) en el tiempo, por orden de llegada.
 
-Con la cartera de la demo, el plan manual deja 11 pedidos tarde (568 h de atraso), 52 h de CIP (10 cambios por
-alérgeno) y 8.645 kg de merma. Replaneando en AHORA (día 9, miércoles 4 de noviembre a las 10:00), el solver baja a
-10 tarde, 498 h, 51 h de CIP (7 por alérgeno) y 3.936 kg (`pnpm --filter @plants/sauce-plant-v1-cosim test`). La
-mejora es moderada, y desde el día 0 el solver no siempre le gana al manual: reparte kilos por turno pero no arma
-campañas de recetas; eso lo hace Fractal (fase 5).
+Con la cartera de la demo, el plan manual deja 9 pedidos tarde (244 h de atraso), 87 h de CIP (10 cambios por
+alérgeno) y 8.874 kg de merma. Replaneando en AHORA (día 9, miércoles 4 de noviembre a las 10:00), el solver baja a
+3 tarde (los que ya habían salido tarde antes de AHORA), 84 h de atraso, 84 h de CIP (6 por alérgeno) y 5.722 kg.
+Con la caldera parada de 10:00 a 16:00, seguir la secuencia del planificador deja 5 tarde y 130 h; el solver, 3 y 84 h.
+Con la llenadora de mostaza caída hasta el día 11, 14 tarde y 498 h contra 3 y 84 h
+(`pnpm --filter @plants/sauce-plant-v1-cosim test`). Las llenadoras quedan ocupadas 11 a 23 %: van 2 a 4 veces más
+rápido que el proceso y esperan la tanda.
 
 ## Pantalla del APS
 
@@ -116,7 +122,7 @@ campañas de recetas; eso lo hace Fractal (fase 5).
 (`APS · PEDIDOS Y GANTT`). Arranca con el plan manual (APS-MAN-01) vigente y AHORA en el día 9 (miércoles 4 de
 noviembre, 10:00; `?now=` lo cambia).
 
-- PEDIDOS: los 119 pedidos con cliente, producto, entrega, cuándo termina, atraso y si están hechos, en curso o por
+- PEDIDOS: los 128 pedidos con cliente, producto, entrega, cuándo termina, atraso y si están hechos, en curso o por
   hacer en AHORA; arriba, los indicadores del plan. Clic en un pedido lo sigue en el Gantt.
 - PROGRAMACIÓN · GANTT: una fila por equipo de proceso (tandas T/BBQ/PI, LI/MY/RO y MS con su número; las
   parciales lo dicen al pasar el mouse) y una por llenadora; el cambio va rayado al comienzo de cada barra: rojo el

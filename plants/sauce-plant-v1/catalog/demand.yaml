@@ -8,7 +8,7 @@
 # tomate 1.000 ml: 22.000 × 18 % ÷ 1,12 = 3.536 sachets/día. Los pedidos llenan load_pct de esa capacidad.
 # Todo es supuesto: clientes ficticios, tamaños de pedido y tiempos de entrega.
 demand:
-  load_pct: 65
+  load_pct: 70
   timezone: "-05:00"            # hora de Colombia
   workdays: [1, 2, 3, 4, 5, 6]  # ISO: lunes = 1 … sábado = 6; el domingo la planta para
   shifts:

@@ -385,7 +385,9 @@ export function dispatch(ctx: Context, queues: Record<string, Chunk[]>): Dispatc
     const piles = model.lines[pick].bulks.map((b) => [b, stock[b][0]] as const).filter(([, left]) => left);
     if (piles.length && !piles.some(([b, left]) => b === next.job.bulk && fits(next, left))) {
       const ahead = q.slice(pos[pick] + 1, pos[pick] + 1 + LOOKAHEAD);
-      const k = ahead.findIndex((c) => piles.some(([b, left]) => b === c.job.bulk && fits(c, left)));
+      // Solo pasa adelante un pedido que entrega a más tardar un día después del que espera: si no, la receta que está
+      // corriendo se come la línea (siempre deja granel en el pulmón) y las otras recetas no entran nunca.
+      const k = ahead.findIndex((c) => c.job.due <= next.job.due + DAY_MIN && piles.some(([b, left]) => b === c.job.bulk && fits(c, left)));
       if (k >= 0) {
         const [c] = q.splice(pos[pick] + 1 + k, 1);
         q.splice(pos[pick], 0, c);
