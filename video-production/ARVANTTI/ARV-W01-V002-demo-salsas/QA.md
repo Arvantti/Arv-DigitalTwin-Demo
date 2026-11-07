@@ -18,3 +18,10 @@
 [ ] El audio es aceptable.
 [ ] La versión está lista para el canal indicado.
 ```
+
+## v001 (2026-11-07)
+- Duración 701,2 s, 1920×1080 h264 + aac.
+- Hoja de contactos cada 20 s: todos los capítulos en orden (0, 0b, 1–5, cierre), sin cuadros vacíos.
+- Sin tramos negros (blackdetect) ni destellos blancos (0 cuadros con luminancia media > 180).
+- Audio: volumen medio −18,5 dB, pico −2,6 dB.
+- Pendiente: visto bueno humano antes del render final.
