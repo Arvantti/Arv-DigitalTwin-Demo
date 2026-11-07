@@ -6,6 +6,16 @@ Así queda en el Gantt esa programación manual: cada barra es una orden y cada 
 
 En el centro de control vemos cada máquina con su ocupación contra su disponibilidad, día por día. Rojo es una máquina saturada, ámbar casi llena y verde con holgura.
 
+Esta cartera y este plan venían ya cargados, pero todos los datos se pueden cargar a mano, en la pestaña de configuración del APS. Se trabaja sobre un borrador: arriba, el sistema recalcula al instante el plan manual con esos datos, con los pedidos a tiempo, los pedidos tarde, el atraso y los cambios de referencia.
+
+Primero, los pedidos. Agregamos uno: una ferretería pide mil quinientos baldes de doce litros, en azul, para el día catorce. Arriba se ve el efecto: con las inyectoras de balde tan llenas, ahora hay diez pedidos tarde. En la misma tabla se cambia el color, la cantidad, la fecha de entrega o la importancia de cualquier pedido, o se elimina.
+
+Segundo, qué molde lleva cada inyectora. Basta arrastrar una inyectora sobre una pieza para montarle su molde: la inyectora veinte, que estaba libre, ahora también hace baldes, y el plan vuelve a nueve pedidos tarde. Si el molde no le cabe, el sistema la rechaza: la inyectora ocho, de ochenta toneladas, no puede cerrar un molde de balde que necesita quinientas. Y nunca monta un molde en más máquinas que las copias que existen.
+
+Tercero, la secuencia: en qué máquina va cada pedido y en qué orden, como lo decidiría el planificador. El pedido nuevo está sin asignar: lo arrastramos a la inyectora veinte, y en la veintiuno subimos otro pedido al primer lugar. Solo se aceptan las máquinas que tienen el molde de esa pieza. Arriba, los indicadores se recalculan con cada movimiento.
+
+Por último, guardamos esta configuración como una versión con nombre. Cada versión es una foto completa de los datos, sin el historial de cambios, y se puede abrir, usar en la planta o eliminar. Al usarla, el APS, el emulador, el centro de control y el gemelo 3D trabajan con estos datos. Para los escenarios volvemos a la cartera precargada.
+
 Pulsamos calcular con el cosimulador y el sistema pregunta primero qué objetivo buscar: cumplir entregas, menos cambios de molde y color, balancear cuellos de botella o maximizar la capacidad ocupada. El cosimulador optimiza un solo objetivo por corrida. Para buscar varios a la vez está Fractal, el módulo de escenarios que presentamos al inicio: lo veremos en acción en unos minutos. Las entregas siempre se respetan. Hoy elegimos cumplir entregas.
 
 Pulsamos calcular. El cosimulador arma un modelo de programación lineal con casi cinco mil variables y lo resuelve en menos de un segundo. Respeta lo que ya empezó, los turnos, los moldes montados en cada máquina y las fechas de entrega.

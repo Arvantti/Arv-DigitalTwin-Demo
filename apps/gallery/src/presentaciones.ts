@@ -55,8 +55,10 @@ function parse(path: string, text: string): Scenario {
       .join(" ")
       .trim();
     if (!voice) continue;
-    const file = field("imagen").replace(/^capturas\//, "");
-    const img = file ? images[`../../../docs/demo-plasticos/${key}/capturas/${file}`] : undefined;
+    // "capturas/x.png" es de la carpeta del escenario; "<carpeta>/capturas/x.png", de otra (p. ej. configuracion/).
+    const file = field("imagen");
+    const rel = file.startsWith("capturas/") ? `${key}/${file}` : file;
+    const img = rel ? images[`../../../docs/demo-plasticos/${rel}`] : undefined;
     segments.push({ id: head[1], title: head[2].trim(), img: img ?? "", duration: field("duración"), screen: field("en pantalla"), text: voice });
   }
   return {
@@ -79,6 +81,7 @@ const SCENARIOS = Object.entries(guiones)
 /** La pantalla real que muestra una captura, por su nombre. */
 function liveUrl(img: string): { href: string; label: string } {
   const name = img.split("/").at(-1) ?? "";
+  if (/configuracion|pedido-nuevo|molde-montado|molde-rechazado|secuencia/.test(name)) return { href: "/aps.html?tab=config", label: "APS · CONFIGURACIÓN" };
   if (/gemelo/.test(name)) return { href: "/plant.html?plant=plastic-injection-plant-v1", label: "GEMELO 3D" };
   if (/centro-control/.test(name)) return { href: "/control.html", label: "CENTRO DE CONTROL" };
   if (/emulador|falla|plc/.test(name)) return { href: "/emulador.html", label: "EMULADOR" };

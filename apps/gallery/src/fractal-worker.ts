@@ -5,12 +5,13 @@
 import highsLoader from "highs";
 import wasmUrl from "highs/runtime?url";
 import { catalogData } from "@twin/cosim/adapters/plastic-injection-plant-v1/catalog.ts";
+import { applyConfig, type PlasticsConfig } from "@twin/cosim/adapters/plastic-injection-plant-v1/config.ts";
 import { runStudy, type StudyInput } from "@twin/fractal-manufacturing/models/plastic-injection-plant-v1/study.ts";
 
-self.onmessage = async (e: MessageEvent<{ id: number; input: StudyInput }>) => {
-  const { id, input } = e.data;
+self.onmessage = async (e: MessageEvent<{ id: number; input: StudyInput; config?: PlasticsConfig | null }>) => {
+  const { id, input, config } = e.data;
   try {
-    const study = await runStudy(() => highsLoader({ locateFile: () => wasmUrl }), catalogData(), input);
+    const study = await runStudy(() => highsLoader({ locateFile: () => wasmUrl }), applyConfig(catalogData(), config), input);
     self.postMessage({ id, ok: true, study });
   } catch (err) {
     self.postMessage({ id, ok: false, error: (err as Error).message ?? String(err) });
