@@ -13,7 +13,7 @@ Capturas y guiones de narración para la demo del gemelo de la planta de inyecci
 
 | Carpeta | Escenario | Duración aprox. |
 |---|---|---|
-| [1-calcular-programacion](1-calcular-programacion/guion.md) | Programación según las entregas con el mayor uso de la capacidad: pedidos, manual contra cosimulador, ocupación, balanceo con Fractal e insumos | 3 min |
+| [1-calcular-programacion](1-calcular-programacion/guion.md) | Programación según las entregas con el mayor uso de la capacidad: pedidos, carga manual de los datos (capturas en `configuracion/`), manual contra cosimulador, ocupación, balanceo con Fractal e insumos | 5 min |
 | [2-cambio-fecha-pedido](2-cambio-fecha-pedido/guion.md) | Un cliente pide su pedido un día antes | 2,5 min |
 | [3-contingencia-falla](3-contingencia-falla/guion.md) | Se quema la resistencia de la IMM-21 y Fractal propone cómo seguir | 3 min |
 | [4-pedidos-fijados](4-pedidos-fijados/guion.md) | El planificador bloquea a mano órdenes en el Gantt y Fractal reorganiza el resto sin moverlas | 3 min |

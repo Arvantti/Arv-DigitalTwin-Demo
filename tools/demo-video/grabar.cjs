@@ -20,7 +20,7 @@ const BASE = (process.env.GALLERY_URL || "http://localhost:5173").replace(/\/$/,
 const NOW = "?now=2026-11-04T10:00";
 const ROOT = process.env.DEMO_OUT || path.resolve(__dirname, "../../docs/demo-plasticos");
 const args = process.argv.slice(2);
-const which = args.find((a) => /^(1|2|3|4|5|6|todos)$/.test(a)) || "todos";
+const which = args.find((a) => /^(1|2|3|4|5|6|7|todos)$/.test(a)) || "todos";
 const VIDEO = args.includes("--video");
 // En video, pausas largas para que se alcance a leer; --lento las alarga más.
 const PACE = VIDEO ? (args.includes("--lento") ? 2.5 : 1.5) : 0.4;
@@ -28,7 +28,7 @@ const SIZE = args.includes("--hd") ? { width: 1920, height: 1080 } : { width: 16
 // --orbitas: además de las capturas, vuelos de cámara del gemelo 3D cuadro a cuadro (JPG en <escenario>/orbitas/<nombre>/),
 // que el montaje convierte en video; así el 3D se ve en movimiento aunque el navegador sin GPU dibuje lento.
 const ORBITAS = args.includes("--orbitas");
-const FOLDERS = { 1: "1-calcular-programacion", 2: "2-cambio-fecha-pedido", 3: "3-contingencia-falla", 4: "4-pedidos-fijados", 5: "5-menos-cambios", 6: "versiones" };
+const FOLDERS = { 1: "1-calcular-programacion", 2: "2-cambio-fecha-pedido", 3: "3-contingencia-falla", 4: "4-pedidos-fijados", 5: "5-menos-cambios", 6: "versiones", 7: "configuracion" };
 
 const wait = (pg, s) => pg.waitForTimeout(Math.round(s * 1000 * PACE));
 // Grabación en curso: inicio, marcas (capturas, clics, navegación) y página; la usan click() y go().
@@ -53,6 +53,28 @@ async function click(pg, sel) {
     }
   }
   await pg.$eval(sel, (e) => e.dispatchEvent(new MouseEvent("click", { bubbles: true })));
+}
+
+/**
+ * Arrastra y suelta con el mouse (arrastre HTML5 de verdad): en video el cursor se ve ir al elemento, tomarlo y llevarlo.
+ * `to` es un selector o un punto {x, y}; `at` elige el punto dentro del destino (fracción del ancho y del alto).
+ */
+async function drag(pg, from, to, at = { x: 0.5, y: 0.5 }) {
+  const a = await (await pg.$(from)).boundingBox();
+  const b = typeof to === "string" ? await (await pg.$(to)).boundingBox() : { x: to.x, y: to.y, width: 0, height: 0 };
+  const x0 = a.x + a.width / 2, y0 = a.y + a.height / 2;
+  const x1 = b.x + b.width * at.x, y1 = b.y + b.height * at.y;
+  await pg.mouse.move(x0, y0, { steps: VIDEO ? 28 : 4 });
+  if (VIDEO) {
+    await pg.waitForTimeout(Math.round(350 * PACE));
+    REC.marcas.push({ tipo: "clic", t: ahora(), x: Math.round(a.x), y: Math.round(a.y), w: Math.round(a.width), h: Math.round(a.height), sel: from });
+    await pg.evaluate(() => window.__curClick?.());
+  }
+  await pg.mouse.down();
+  await pg.mouse.move(x0 + 8, y0 + 8, { steps: 3 });
+  await pg.mouse.move(x1, y1, { steps: VIDEO ? 40 : 6 });
+  await pg.waitForTimeout(VIDEO ? Math.round(300 * PACE) : 80);
+  await pg.mouse.up();
 }
 
 /** Cursor visible para el video: sigue al mouse de Playwright y hace un pulso en cada clic (no sale en las capturas). */
@@ -141,7 +163,7 @@ async function scenario(browser, n, steps) {
   };
   // Punto de partida común: cartera inicial; los escenarios 2, 3 y 4 parten del plan del cosimulador.
   await go(`/aps.html${NOW}&reset=1`);
-  if (n !== 1 && n !== 6) {
+  if (n !== 1 && n !== 6 && n !== 7) {
     await calcular(pg);
     await click(pg, "#aps-adopt");
   }
@@ -419,12 +441,49 @@ const SCENARIOS = {
     await shot("06-versiones-comparar.png");
     await wait(2);
   },
+  // Cargar los datos a mano: pestaña ⚙ CONFIGURACIÓN (pedidos, moldes en las inyectoras, secuencia y versiones).
+  7: async ({ pg, shot, wait }) => {
+    await click(pg, "[data-tab=config]");
+    await shot("01-configuracion.png");
+    await pg.fill("#cf-customer", "Ferretería El Tornillo");
+    await wait(0.6);
+    await pg.selectOption("#cf-product", "balde-12l");
+    await pg.selectOption("#cf-color", "mb-azul");
+    await pg.fill("#cf-qty", "1500");
+    await wait(0.8);
+    await click(pg, "#cf-add");
+    await shot("02-pedido-nuevo.png");
+    await click(pg, '[data-cf="molds"]');
+    await wait(1.5);
+    await drag(pg, '[data-machine="imm-20"]', '[data-drop-tool="mold-balde-12l"]');
+    await shot("03-molde-montado.png");
+    await drag(pg, '[data-machine="imm-08"]', '[data-drop-tool="mold-balde-12l"]');
+    await shot("04-molde-rechazado.png");
+    await click(pg, '[data-cf="sequence"]');
+    await wait(1.5);
+    await drag(pg, '[data-col=""] [data-card]', '[data-col="imm-20"] .cf-col-b', { x: 0.5, y: 0.15 });
+    await wait(1);
+    // Sube el cuarto pedido de la inyectora 21 al primer lugar.
+    await drag(pg, '[data-col="imm-21"] [data-card] >> nth=3', '[data-col="imm-21"] [data-card] >> nth=0', { x: 0.5, y: 0.1 });
+    await shot("05-secuencia.png");
+    await click(pg, "#cf-save-as");
+    await wait(0.6);
+    await pg.fill("#cf-name", "Balde también en la inyectora 20");
+    await wait(0.8);
+    await click(pg, "#cf-save-new");
+    await click(pg, '[data-cf="versions"]');
+    await shot("06-versiones.png");
+    await Promise.all([pg.waitForNavigation({ waitUntil: "networkidle" }), click(pg, "#cf-use")]);
+    await wait(2);
+    await shot("07-en-la-planta.png");
+    await wait(2);
+  },
 };
 
 (async () => {
   const browser = await chromium.launch();
   try {
-    for (const n of which === "todos" ? [1, 2, 3, 4, 5, 6] : [Number(which)]) await scenario(browser, n, SCENARIOS[n]);
+    for (const n of which === "todos" ? [1, 2, 3, 4, 5, 6, 7] : [Number(which)]) await scenario(browser, n, SCENARIOS[n]);
   } finally {
     await browser.close();
   }

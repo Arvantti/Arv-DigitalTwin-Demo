@@ -3,7 +3,7 @@ title: Guion · Calcular la programación
 escenario: 1-calcular-programacion
 tags: [demo, plasticos, guion, aps, cosimulador, fractal]
 modulos: [DigitalTwin, APS, CoSimulation, Fractal, Control Center]
-duracion_aprox: 4 min
+duracion_aprox: 6 min
 cifras:
   - ["90,3 % → 92,5 %", "pedidos a tiempo: manual contra CoSimulation"]
   - ["69,2 % → 60,7 %", "ocupación de planta en la semana, con la misma producción"]
@@ -60,6 +60,52 @@ Mensaje central: a partir de los pedidos y sus fechas de entrega, el cosimulador
 - foco: verde con holgura => IMM-19 => Verde: con holgura
 
 > En el centro de control vemos cada máquina con su ocupación contra su disponibilidad, día por día. Rojo es una máquina saturada, ámbar casi llena y verde con holgura.
+
+### S03b · Los datos también se cargan a mano
+- imagen: configuracion/capturas/01-configuracion.png
+- duración: 20 s
+- en pantalla: la pestaña ⚙ CONFIGURACIÓN y el recuadro PLAN MANUAL CON ESTE BORRADOR
+- foco: en la pestaña de configuración => ⚙ CONFIGURACIÓN => Configuración del APS
+- foco: recalcula al instante => PLAN MANUAL CON ESTE BORRADOR => El plan del borrador, al instante
+
+> Esta cartera y este plan venían ya cargados, pero todos los datos se pueden cargar a mano, en la pestaña de configuración del APS. Se trabaja sobre un borrador: arriba, el sistema recalcula al instante el plan manual con esos datos, con los pedidos a tiempo, los pedidos tarde, el atraso y los cambios de referencia.
+
+### S03c · Los pedidos
+- imagen: configuracion/capturas/02-pedido-nuevo.png
+- duración: 18 s
+- en pantalla: el formulario AGREGAR PEDIDO y el pedido nuevo en la tabla
+- foco: Agregamos uno => AGREGAR PEDIDO => Agregar pedido
+- foco: ahora hay diez pedidos tarde => pedidos tarde => 10 pedidos tarde
+- foco: En la misma tabla => ELIMINAR => Editar o eliminar
+
+> Primero, los pedidos. Agregamos uno: una ferretería pide mil quinientos baldes de doce litros, en azul, para el día catorce. Arriba se ve el efecto: con las inyectoras de balde tan llenas, ahora hay diez pedidos tarde. En la misma tabla se cambia el color, la cantidad, la fecha de entrega o la importancia de cualquier pedido, o se elimina.
+
+### S03d · Qué molde lleva cada inyectora
+- imagen: configuracion/capturas/04-molde-rechazado.png
+- duración: 24 s
+- en pantalla: la inyectora 20 en el balde y el aviso en rojo al intentar con la 8
+- foco: la inyectora veinte => IMM-20 + Balde de 12 L => Inyectora 20: ahora hace baldes
+- foco: el sistema la rechaza => No se puede => Rechazada: no le cabe el molde
+
+> Segundo, qué molde lleva cada inyectora. Basta arrastrar una inyectora sobre una pieza para montarle su molde: la inyectora veinte, que estaba libre, ahora también hace baldes, y el plan vuelve a nueve pedidos tarde. Si el molde no le cabe, el sistema la rechaza: la inyectora ocho, de ochenta toneladas, no puede cerrar un molde de balde que necesita quinientas. Y nunca monta un molde en más máquinas que las copias que existen.
+
+### S03e · La secuencia del planificador
+- imagen: configuracion/capturas/05-secuencia.png
+- duración: 22 s
+- en pantalla: el tablero por máquina; el pedido nuevo en la inyectora 20
+- foco: está sin asignar => SIN ASIGNAR => Sin asignar
+- foco: lo arrastramos a la inyectora veinte => PED-D14-07 => El pedido nuevo, en la inyectora 20
+- foco: los indicadores se recalculan => PLAN MANUAL CON ESTE BORRADOR => Se recalcula con cada movimiento
+
+> Tercero, la secuencia: en qué máquina va cada pedido y en qué orden, como lo decidiría el planificador. El pedido nuevo está sin asignar: lo arrastramos a la inyectora veinte, y en la veintiuno subimos otro pedido al primer lugar. Solo se aceptan las máquinas que tienen el molde de esa pieza. Arriba, los indicadores se recalculan con cada movimiento.
+
+### S03f · Guardar la versión y usarla
+- imagen: configuracion/capturas/07-en-la-planta.png
+- duración: 22 s
+- en pantalla: la versión guardada y, al usarla, el Gantt con VIGENTE · MANUAL APS-MAN-CFG-01
+- foco: Al usarla => APS-MAN-CFG-01 => En la planta
+
+> Por último, guardamos esta configuración como una versión con nombre. Cada versión es una foto completa de los datos, sin el historial de cambios, y se puede abrir, usar en la planta o eliminar. Al usarla, el APS, el emulador, el centro de control y el gemelo 3D trabajan con estos datos. Para los escenarios volvemos a la cartera precargada.
 
 ### S04 · ¿Qué objetivo calcula?
 - imagen: capturas/03b-objetivo.png

@@ -18,11 +18,12 @@ import "./aps.css";
 import "./movil.css";
 import type { CustomerOrder, Importance, ProductionPlan } from "@twin/cosim/core/contracts.ts";
 import type { Objective } from "@twin/cosim/adapters/plastic-injection-plant-v1/solve.ts";
-import { activeEvents, addedOrders, baseManual, molds, modelNow, manualPlan, model, now, onChange, portfolio, resetDemo, setAdded, setVigente, setViewed, setViewMode, SOURCE_NAMES, useDemoDays, vigente, viewedPlan, viewMode } from "./aps-store.ts";
+import { activeConfig, activeEvents, addedOrders, currentManual, molds, modelNow, manualPlan, model, now, onChange, portfolio, resetDemo, setAdded, setVigente, setViewed, setViewMode, SOURCE_NAMES, useDemoDays, vigente, viewedPlan, viewMode } from "./aps-store.ts";
 import { cachedVersion, deleteVersion, exportVersions, importVersions, loadVersion as loadVersionData, renameVersion, saveVersion, setViewedVersionId, versions, viewedVersionId, type SavedVersion } from "./aps-store.ts";
 import { editedPlan, moveChunk, queuesOf, type EditChunk, type ManualEdit } from "@twin/cosim/adapters/plastic-injection-plant-v1/manual.ts";
 import { COLOR_NAMES, day, esc, nf, relativeDays, when } from "./schedule.ts";
 import { renderInsumos } from "./insumos.ts";
+import { mountConfig } from "./aps-config.ts";
 import { plantLoadAt } from "./plant-state.ts";
 import type { FractalStudy } from "@twin/fractal-manufacturing/contracts.ts";
 import type { StudyInput } from "@twin/fractal-manufacturing/models/plastic-injection-plant-v1/study.ts";
@@ -58,7 +59,7 @@ let proposal: ProductionPlan | null = null;
 /** Escenarios que devolvió CALCULAR (A: cumplir entregas; B: menos cambios sin empeorar entregas), para elegir entre ellos. */
 let alternatives: { id: string; label: string; plan: ProductionPlan }[] = [];
 let current = vigente();
-const TABS = ["orders", "gantt", "versions", "insumos", "fractal"];
+const TABS = ["orders", "gantt", "versions", "insumos", "fractal", "config"];
 let tab = TABS.find((x) => x === new URLSearchParams(location.search).get("tab")) ?? "orders";
 let selected: string | null = null;
 /** Órdenes que la persona desmarcó en el Gantt (no se dibujan arriba y sus lotes se atenúan abajo). Vacío = todas. */
@@ -122,6 +123,7 @@ function render(): void {
   $("tab-fractal").hidden = tab !== "fractal";
   $("tab-insumos").hidden = tab !== "insumos";
   $("tab-versions").hidden = tab !== "versions";
+  $("tab-config").hidden = tab !== "config";
   $("aps-calc").toggleAttribute("disabled", !!running);
   renderAlarm();
   renderProposal();
@@ -129,7 +131,26 @@ function render(): void {
   else if (tab === "gantt") renderGantt(p);
   else if (tab === "insumos") renderInsumos($("tab-insumos"), p);
   else if (tab === "versions") renderVersions();
+  else if (tab === "config") renderConfig();
   else renderFractal();
+  configShown = tab === "config";
+}
+
+// ------------------------------------------------------------------ configuración cargada a mano
+let config: { render(): void } | null = null;
+let configShown = false;
+/** La pestaña ⚙ CONFIGURACIÓN se dibuja al entrar; después ella misma se redibuja (no se pierde lo que se escribe). */
+function renderConfig(): void {
+  config ??= mountConfig($("tab-config"), {
+    activated: () => {
+      const q = new URLSearchParams(location.search);
+      q.delete("reset");
+      q.delete("cfg");
+      q.set("tab", "gantt");
+      location.search = q.toString();
+    },
+  });
+  if (!configShown) config.render();
 }
 
 // ------------------------------------------------------------------ fallas del emulador
@@ -305,7 +326,7 @@ function calculate(objective: Objective = "entregas"): void {
   };
   // Con pedidos fijados se parte del plan que se está viendo: ahí están sus lotes, que no se mueven.
   const fixed = fixedOf();
-  worker.postMessage({ id, portfolio: portfolio(), now: now(), previous: fixed.length ? shown() : current, planId: `APS-SOL-${String(n).padStart(2, "0")}`, events: activeEvents(), molds: molds(), fixed, objective });
+  worker.postMessage({ id, portfolio: portfolio(), now: now(), previous: fixed.length ? shown() : current, planId: `APS-SOL-${String(n).padStart(2, "0")}`, events: activeEvents(), molds: molds(), fixed, objective, config: activeConfig() });
 }
 
 /** Pregunta el objetivo antes de calcular. Un solo objetivo calcula; varios pasan a Fractal (multiobjetivo). */
@@ -1316,7 +1337,7 @@ function runFractal(input: Omit<StudyInput, "portfolio" | "now" | "previous" | "
   // Con órdenes fijadas se parte del plan que se está viendo (ahí están sus lotes) y ninguna opción las mueve.
   const fixed = fixedOf();
   studyBase = fixed.length ? shown() : current;
-  fractalWorker.postMessage({ id, input: { ...input, fixed, portfolio: portfolio(), now: now(), previous: fixed.length ? shown() : current, events: activeEvents(), molds: molds(), studyId: `FRA-${String(id).padStart(2, "0")}` } });
+  fractalWorker.postMessage({ id, input: { ...input, fixed, portfolio: portfolio(), now: now(), previous: fixed.length ? shown() : current, events: activeEvents(), molds: molds(), studyId: `FRA-${String(id).padStart(2, "0")}` }, config: activeConfig() });
 }
 
 function renderFractal(): void {
@@ -1668,7 +1689,7 @@ $("aps-manual").onclick = () => {
   error = "";
   try {
     const fixed = fixedOf();
-    proposal = manualPlan(modelNow(), portfolio(), baseManual, { now: now(), previous: fixed.length ? shown() : current, events: activeEvents(), fixed });
+    proposal = manualPlan(modelNow(), portfolio(), currentManual(), { now: now(), previous: fixed.length ? shown() : current, events: activeEvents(), fixed });
     clearEdit();
     tab = "gantt";
   } catch (err) {
