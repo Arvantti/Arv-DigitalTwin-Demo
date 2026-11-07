@@ -1,0 +1,1 @@
+Uno: controla. Todo está negado hasta que alguien lo permite. Cada permiso dice quién, sobre qué archivo y para qué. Los hooks, puntos de revisión, se disparan antes y después de cada acción. Y subir código o publicar siempre pide el sí de una persona.

@@ -1,0 +1,15 @@
+{
+  "fuente": "Presentación de Arvantti Harness en arvantti.tech, repo Arvantti/Arv-Harness y confirmaciones de Andy (2026-11-07)",
+  "nota": "Video para junta directiva: Andy pidió nombrar todas las capacidades, estén construidas o en camino.",
+  "claims": [
+    { "texto": "Un arnés de arneses que envuelve a Claude Code, Codex, Gemini, Copilot, OpenCode y modelos locales", "estado": "presentación (ADR-0001)" },
+    { "texto": "Permisos negados por defecto, hooks y aprobación humana", "estado": "presentación (ADR-0004) + Andy" },
+    { "texto": "Agentes guardianes que bloquean y tapan claves y datos sensibles", "estado": "presentación + Andy" },
+    { "texto": "Recibos de quién hizo qué, con qué y cuándo", "estado": "código (task-receipt, pull-receipt)" },
+    { "texto": "Tarea, mini SDD y SDD completo; gestión y asignación de tareas con su consola", "estado": "código (work-intake, terminal-binding) + Andy" },
+    { "texto": "Flujos agénticos y subagénticos; más de cien habilidades", "estado": "código (flow-contract, catálogo de 120 habilidades en borrador) + Andy" },
+    { "texto": "RAG y GraphRAG construidos por agentes", "estado": "Andy" },
+    { "texto": "Panel de dirección con conversación", "estado": "Andy" },
+    { "texto": "Escritorio para Linux (Fedora 44, Ubuntu, Arch), macOS y Windows, con versión en la nube", "estado": "Andy (hoy solo Fedora 44 validado según el README de Arv-Harness)" }
+  ]
+}

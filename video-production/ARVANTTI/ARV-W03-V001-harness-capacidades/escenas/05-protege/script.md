@@ -1,0 +1,1 @@
+Dos: protege. Los agentes guardianes vigilan a los demás: no dejan que un agente lea una clave o un dato sensible, y si aparece, no se muestra en el chat. Tu memoria vive en tu equipo o en tu nube privada.

@@ -1,0 +1,567 @@
+<!doctype html>
+<html lang="es" data-resolution="portrait">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1080, height=1920">
+<title>Arvantti Harness · capacidades</title>
+<script src="assets/vendor/gsap.min.js"></script>
+<style>
+:root{--blue:#2d7ff9;--electric:#4ea7ff;--ti:#d8dadf;--dti:#7a7e86;--black:#05070c;--white:#f8fafc;--red:#ff4d5e;--green:#37e38b;--panel:#0d1a30}
+*{box-sizing:border-box}
+html,body{width:1080px;height:1920px;margin:0;overflow:hidden;background:var(--black);font-family:Inter,"Inter Display",Arial,sans-serif;color:var(--white)}
+#root{position:relative;width:1080px;height:1920px;overflow:hidden;background:var(--black)}
+.clip{position:absolute;inset:0}
+.scene{overflow:hidden}
+.w{display:inline-block;white-space:pre}
+.mono{font-family:"JetBrains Mono","IBM Plex Mono",monospace}
+
+/* Fondo */
+.fondo .glow{position:absolute;inset:-20%;background:radial-gradient(700px 900px at 50% 45%,#12305e55 0%,#05070c00 70%),radial-gradient(500px 600px at 80% 90%,#2d7ff922 0%,#05070c00 70%)}
+.fondo .floor{position:absolute;left:-60%;right:-60%;bottom:-6%;height:34%;perspective:900px;opacity:.45;-webkit-mask-image:linear-gradient(#0000,#000 55%);mask-image:linear-gradient(#0000,#000 55%)}
+.fondo .floorgrid{position:absolute;inset:0;transform:rotateX(68deg);transform-origin:50% 100%;background-image:linear-gradient(#4ea7ff33 2px,transparent 2px),linear-gradient(90deg,#4ea7ff33 2px,transparent 2px);background-size:120px 120px}
+
+/* Encabezado de idea */
+.head{position:absolute;left:80px;right:80px;top:170px}
+.kicker{margin:0 0 22px;font:600 28px "JetBrains Mono",monospace;letter-spacing:7px;color:var(--electric)}
+.kicker b{display:inline-block;padding:4px 14px;margin-right:14px;border:2px solid var(--blue);color:#fff;font-weight:700;letter-spacing:2px}
+.idea{margin:0;font:800 150px/1 "Inter Display",Inter,sans-serif;letter-spacing:-4px;background:linear-gradient(100deg,#d8dadf 0%,#d8dadf 40%,#ffffff 50%,#d8dadf 60%,#d8dadf 100%);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{margin:22px 0 0;font:600 44px/1.2 Inter,sans-serif;color:#c9d6ea}
+.big{margin:0;font:800 104px/1.03 "Inter Display",Inter,sans-serif;letter-spacing:-2px}
+.mid{margin:0;font:800 76px/1.08 "Inter Display",Inter,sans-serif;letter-spacing:-1.5px}
+.chips{position:absolute;left:80px;right:80px;bottom:200px}
+.chip{display:inline-block;padding:14px 30px;margin:0 16px 18px 0;border:2px solid #4ea7ff66;border-radius:999px;background:#0d1a30cc;font:600 36px Inter,sans-serif;color:#e6eefc;box-shadow:0 0 24px #2d7ff933;opacity:0}
+.card{position:absolute;border-radius:6px;background:linear-gradient(160deg,#101c33f0,#0a1222f0);box-shadow:0 0 0 1.5px #4ea7ff55,0 30px 90px #000b,0 0 80px #2d7ff922}
+.tag{display:inline-block;padding:10px 20px;border:2px solid #4ea7ff88;border-radius:4px;background:#0d1a30;font:600 30px "JetBrains Mono",monospace;color:#cfe4ff}
+
+/* 1 Gancho */
+.code{left:80px;right:80px;top:640px;height:640px;padding:46px 50px;font:500 34px/1.75 "JetBrains Mono",monospace;color:#7f93b3;overflow:hidden}
+.code .ln{white-space:pre;opacity:0}
+.code .k{color:#4ea7ff}.code .s{color:#8be0b4}
+.agent{position:absolute;opacity:0}
+.agent .cur{display:inline-block;width:5px;height:40px;margin-left:8px;vertical-align:middle;background:#fff;box-shadow:0 0 12px #4ea7ff}
+.q{position:absolute;left:60px;right:60px;top:1400px;text-align:center;margin:0;font:800 104px/1.05 "Inter Display",Inter,sans-serif;letter-spacing:-2px}
+
+/* 2 Dolor */
+.alerta{position:absolute;left:110px;width:860px;height:230px;display:flex;align-items:center;gap:44px;padding:0 50px;border:2px solid #ff4d5e88;border-radius:6px;background:#2a0d14cc;box-shadow:0 0 60px #ff4d5e33;opacity:0}
+.alerta svg{width:120px;height:120px;flex:none}
+.alerta svg *{fill:none;stroke:#ff6b78;stroke-width:6;stroke-linecap:round;stroke-linejoin:round}
+.alerta p{margin:0;font:800 62px/1.05 "Inter Display",Inter,sans-serif}
+
+/* 3 Qué es */
+.net{position:absolute;inset:0;width:1080px;height:1920px}
+.net line,.net path{fill:none;stroke:#4ea7ff;stroke-width:3;stroke-dasharray:1;stroke-dashoffset:1;filter:drop-shadow(0 0 6px #4ea7ff)}
+.net .pk{fill:#fff;stroke:none;filter:drop-shadow(0 0 8px #4ea7ff);opacity:0}
+.node{position:absolute;display:flex;align-items:center;justify-content:center;text-align:center;border:2px solid #4ea7ff88;border-radius:6px;background:var(--panel);font:700 30px Inter,sans-serif;box-shadow:0 0 30px #2d7ff933;opacity:0}
+.node small{display:block;font:500 20px "JetBrains Mono",monospace;letter-spacing:2px;color:#9fd0ff}
+.core{position:absolute;border-radius:50%;background:radial-gradient(#13284d,#0a1222);border:3px solid var(--electric);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;box-shadow:0 0 90px #2d7ff966,inset 0 0 60px #2d7ff944;opacity:0}
+.core img{width:120px;height:auto}
+.core b{font:800 40px "Inter Display",Inter,sans-serif}
+.core span{font:600 24px "JetBrains Mono",monospace;letter-spacing:3px;color:var(--electric)}
+.titulo{position:absolute;left:60px;right:60px;top:200px;text-align:center}
+.titulo h1{margin:0;font:800 120px/1.02 "Inter Display",Inter,sans-serif;letter-spacing:-3px}
+.titulo h1 span{display:block;color:var(--electric)}
+.titulo p{margin:26px 0 0;font:700 54px Inter,sans-serif;color:#d8e6fa}
+.pilares{position:absolute;left:80px;right:80px;bottom:90px;text-align:center}
+
+/* 4 Controla */
+.permiso{left:110px;width:860px;top:700px;height:330px;padding:40px 46px}
+.permiso .lock{position:absolute;right:46px;top:40px;width:110px;height:130px}
+.permiso .lock *{fill:none;stroke:#4ea7ff;stroke-width:7;stroke-linecap:round}
+.permiso .row{display:flex;gap:18px;margin-top:20px}
+.permiso h3{margin:0;font:700 34px "JetBrains Mono",monospace;letter-spacing:4px;color:#9fd0ff}
+.pasos{position:absolute;left:110px;width:860px;top:1100px;height:170px}
+.paso{position:absolute;top:40px;width:200px;height:96px;border:2px solid #4ea7ff66;border-radius:6px;background:var(--panel);display:flex;align-items:center;justify-content:center;font:700 30px Inter,sans-serif;opacity:0}
+.hook{position:absolute;top:0;width:44px;height:44px;border-radius:50%;border:3px solid #ffd166;background:#2b2410;opacity:0;box-shadow:0 0 18px #ffd16688}
+.aprobar{position:absolute;left:290px;top:1340px;width:500px;height:120px;border-radius:999px;background:var(--blue);display:flex;align-items:center;justify-content:center;font:700 40px "JetBrains Mono",monospace;letter-spacing:6px;opacity:0;box-shadow:0 0 50px #2d7ff988}
+.mano{position:absolute;left:610px;top:1400px;width:110px;height:110px;opacity:0}
+
+/* 5 Protege */
+.escudo{position:absolute;left:390px;top:620px;width:300px;height:340px;opacity:0}
+.escudo path{fill:#0d1a30;stroke:#37e38b;stroke-width:8;filter:drop-shadow(0 0 20px #37e38b88)}
+.escudo .chk{fill:none;stroke:#37e38b;stroke-width:12;stroke-linecap:round;stroke-linejoin:round}
+.chat{left:90px;width:900px;top:1040px;height:330px;padding:30px 40px}
+.chat .bar{display:flex;align-items:center;gap:14px;font:700 28px Inter,sans-serif;color:#cfe4ff;padding-bottom:18px;border-bottom:1px solid #4ea7ff33}
+.chat .dot{width:14px;height:14px;border-radius:50%;background:var(--green);box-shadow:0 0 12px var(--green)}
+.chat .msg{margin-top:28px;font:500 36px/1.4 "JetBrains Mono",monospace;color:#e6eefc}
+.chat .key{position:relative;display:inline-block;color:#ff6b78}
+.chat .red{position:absolute;left:-6px;right:-6px;top:0;bottom:0;display:flex;align-items:center;justify-content:center;padding:0 10px;background:#05070c;color:#37e38b;border:2px solid #37e38b;border-radius:4px;opacity:0;white-space:nowrap}
+.local{position:absolute;left:0;right:0;top:1440px;text-align:center;font:700 40px Inter,sans-serif;color:#cfe4ff;opacity:0}
+
+/* 6 Gobierna */
+.recibo{left:150px;width:780px;height:236px;padding:24px 40px;font:500 30px/1.5 "JetBrains Mono",monospace;opacity:0}
+.recibo .f{display:flex;gap:20px}
+.recibo .f b{width:200px;color:#9fd0ff;font-weight:600}
+.recibo .f span{color:#fff}
+.recibo .id{position:absolute;right:30px;top:24px;font-size:22px;color:#7a9cc6}
+
+/* 7 Planea */
+.plan{position:absolute;left:90px;width:900px;padding:26px 36px;border:2px solid #4ea7ff66;border-radius:6px;background:var(--panel);opacity:0}
+.plan b{display:block;font:800 52px "Inter Display",Inter,sans-serif}
+.plan small{display:block;margin-top:6px;font:500 28px Inter,sans-serif;color:#9fb3cf}
+.plan .fases{margin-top:14px;display:flex;gap:8px}
+.plan .fases i{flex:1;height:14px;border-radius:3px;background:#2d7ff9}
+.tablero{position:absolute;left:70px;right:70px;top:640px;height:900px;opacity:0}
+.tarea{position:absolute;left:0;width:480px;height:120px;padding:16px 22px;border:2px solid #4ea7ff66;border-radius:6px;background:var(--panel);opacity:0}
+.tarea b{display:block;font:700 28px Inter,sans-serif}
+.tarea small{display:block;margin-top:6px;font:500 22px "JetBrains Mono",monospace;color:#9fd0ff}
+.tarea .st{position:absolute;right:16px;top:16px;font:700 20px "JetBrains Mono",monospace;padding:4px 10px;border-radius:3px;background:#12305a;color:#9fd0ff}
+.term{position:absolute;right:0;width:320px;height:120px;border:2px solid #4ea7ff44;border-radius:6px;background:#060b14;padding:14px 18px;font:500 22px/1.5 "JetBrains Mono",monospace;color:#8be0b4;opacity:0}
+.term b{display:block;color:#9fd0ff;font-weight:600}
+
+/* 8 Crea */
+.flujo{position:absolute;inset:0}
+.fn{position:absolute;left:330px;width:420px;height:84px;border:2px solid #4ea7ff88;border-radius:6px;background:var(--panel);display:flex;align-items:center;justify-content:center;font:700 34px Inter,sans-serif;opacity:0}
+.fn.gate{border-color:#ffd166;color:#ffd166}
+.fn.rec{border-color:#37e38b;color:#37e38b}
+.sa{position:absolute;width:250px;height:72px;border:2px dashed #4ea7ff88;border-radius:6px;background:#0a1426;display:flex;align-items:center;justify-content:center;font:600 26px "JetBrains Mono",monospace;color:#9fd0ff;opacity:0}
+.cons{position:absolute;top:1100px;width:290px;height:300px;border:2px solid #4ea7ff55;border-radius:6px;background:#060b14;padding:16px;opacity:0}
+.cons b{display:block;font:700 26px "JetBrains Mono",monospace;color:#cfe4ff;margin-bottom:14px}
+.cons .ctx{position:absolute;left:16px;right:16px;bottom:18px;height:16px;border-radius:8px;background:#ffffff14;overflow:hidden}
+.cons .ctx i{position:absolute;left:0;top:0;bottom:0;width:100%;background:linear-gradient(90deg,#37e38b,#4ea7ff);transform-origin:left;transform:scaleX(.18)}
+.cons .ctxl{position:absolute;left:16px;bottom:40px;font:500 18px "JetBrains Mono",monospace;color:#7a9cc6}
+.skill{position:absolute;width:250px;height:58px;border-radius:4px;background:#12305a;border:2px solid #4ea7ff;display:flex;align-items:center;justify-content:center;font:600 22px "JetBrains Mono",monospace;color:#fff;opacity:0}
+.cien{position:absolute;left:0;right:0;top:1460px;text-align:center;font:800 64px "Inter Display",Inter,sans-serif;opacity:0}
+.cien span{color:var(--electric)}
+
+/* 9 Conoce */
+.doc{position:absolute;width:120px;height:150px;border:2px solid #9fb3cf;border-radius:4px;background:#0d1a30;opacity:0}
+.doc i{position:absolute;left:18px;right:18px;height:6px;border-radius:3px;background:#9fb3cf66}
+.gn{position:absolute;width:250px;height:250px;margin:-125px 0 0 -125px;border-radius:50%;border:3px solid var(--electric);background:radial-gradient(#13284d,#0a1222);display:flex;align-items:center;justify-content:center;text-align:center;font:800 38px "Inter Display",Inter,sans-serif;box-shadow:0 0 60px #2d7ff955;opacity:0}
+.gs{position:absolute;width:26px;height:26px;margin:-13px 0 0 -13px;border-radius:50%;background:#4ea7ff;box-shadow:0 0 16px #4ea7ff;opacity:0}
+.resp{left:90px;width:900px;top:1380px;height:240px;padding:28px 36px;opacity:0}
+.resp p{margin:0;font:500 34px/1.4 Inter,sans-serif;color:#e6eefc}
+.resp small{display:block;margin-top:16px;font:600 24px "JetBrains Mono",monospace;color:#37e38b}
+.siglas{position:absolute;left:80px;right:80px;top:640px;font:600 40px/1.35 Inter,sans-serif;color:#c9d6ea;opacity:0}
+.siglas b{color:#fff}
+
+/* 10 Dirige */
+.panel{left:70px;width:940px;top:620px;height:760px;padding:30px 36px}
+.panel .bar{display:flex;align-items:center;gap:14px;font:700 30px Inter,sans-serif;padding-bottom:20px;border-bottom:1px solid #4ea7ff33}
+.panel .bar .dot{width:14px;height:14px;border-radius:50%;background:var(--green);box-shadow:0 0 12px var(--green)}
+.bub{margin-top:24px;max-width:760px;padding:20px 26px;border-radius:18px;font:500 34px/1.35 Inter,sans-serif;opacity:0}
+.bub.me{margin-left:auto;background:var(--blue);border-bottom-right-radius:4px;width:fit-content}
+.bub.ai{background:#16243f;border-bottom-left-radius:4px}
+.minis{position:absolute;left:36px;right:36px;bottom:30px;display:flex;gap:14px}
+.mini{flex:1;height:120px;border:2px solid #4ea7ff44;border-radius:4px;background:#060b14;padding:10px;font:500 17px/1.5 "JetBrains Mono",monospace;color:#8be0b4;opacity:0}
+.mini.g{border-color:#37e38b88;color:#37e38b}
+.anillos{position:absolute;left:0;right:0;top:1440px;height:260px}
+.anillo{position:absolute;top:0;width:230px;height:230px;opacity:0}
+.anillo svg{width:230px;height:230px}
+.anillo circle{fill:none;stroke-width:8;stroke-dasharray:520 200;stroke-linecap:round}
+.anillo p{position:absolute;left:0;right:0;top:92px;margin:0;text-align:center;font:700 30px Inter,sans-serif}
+
+/* 11 Equipo */
+.plataformas{position:absolute;left:80px;right:80px;top:640px}
+.plat{display:flex;align-items:center;gap:26px;margin-bottom:26px;padding:22px 30px;border:2px solid #4ea7ff55;border-radius:6px;background:var(--panel);opacity:0}
+.plat b{font:800 50px "Inter Display",Inter,sans-serif;width:260px}
+.plat span{font:500 30px "JetBrains Mono",monospace;color:#9fd0ff}
+.nube{position:absolute;left:0;right:0;top:1180px;height:520px}
+.persona{position:absolute;width:110px;height:110px;margin:-55px 0 0 -55px;border-radius:50%;border:3px solid #9fb3cf;background:#0d1a30;opacity:0}
+.persona i{position:absolute;left:35px;top:18px;width:40px;height:40px;border-radius:50%;background:#9fb3cf}
+.persona u{position:absolute;left:20px;top:64px;width:70px;height:34px;border-radius:35px 35px 6px 6px;background:#9fb3cf}
+
+/* 12 Cierre */
+.estela{position:absolute;inset:0;width:1080px;height:1920px}
+.estela path{fill:none;stroke:#4ea7ff;stroke-width:5;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1;filter:drop-shadow(0 0 10px #4ea7ff) drop-shadow(0 0 30px #2d7ff9)}
+.fin{position:absolute;left:0;right:0;top:520px;text-align:center}
+.fin .marca{display:block;margin:0 auto 26px;width:240px;height:auto;filter:drop-shadow(0 0 40px #2d7ff9aa)}
+.fin h1{margin:0;font:800 120px/1.02 "Inter Display",Inter,sans-serif;letter-spacing:-3px;background:linear-gradient(100deg,#d8dadf 0%,#d8dadf 40%,#ffffff 50%,#d8dadf 60%,#d8dadf 100%);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent}
+.fin h1 span{display:block}
+.fin .firma{margin:46px 60px 0;font:600 54px/1.25 Inter,sans-serif;color:#fff}
+.fin .cta{margin:60px 80px 0;padding:26px 30px;border:2px solid #4ea7ff88;border-radius:6px;font:600 38px/1.3 Inter,sans-serif;color:#cfe4ff}
+.fin .url{margin:46px 0 0;font:500 34px "JetBrains Mono",monospace;letter-spacing:6px;color:#7a9cc6}
+.fin .pie{margin:18px 0 0;font:500 24px Inter,sans-serif;color:#5c6b80}
+
+.sweep{background:linear-gradient(100deg,#0000 35%,#4ea7ff18 45%,#ffffff40 50%,#4ea7ff18 55%,#0000 65%);mix-blend-mode:screen;pointer-events:none}
+.contador{position:absolute;right:80px;top:180px;font:600 26px "JetBrains Mono",monospace;letter-spacing:4px;color:#5c6b80}
+#temp{left:auto;top:auto;right:20px;bottom:16px;font:700 15px "JetBrains Mono",monospace;color:#ff6b35;letter-spacing:2px}
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="197.05" data-width="1080" data-height="1920" data-fps="25">
+<div id="fondo" class="clip fondo" data-start="0.00" data-duration="197.05" data-track-index="0"><div class="glow"></div><div class="floor"><div class="floorgrid"></div></div></div>
+<div id="e-gancho" class="clip scene" data-start="0.00" data-duration="9.64" data-track-index="3">
+      <div class="card code"><div class="ln"><span class="k">export async function</span> facturar(pedido) {</div><div class="ln">  const cliente = await crm.buscar(pedido.id)</div><div class="ln">  <span class="k">if</span> (!cliente) <span class="k">throw</span> error(<span class="s">"sin cliente"</span>)</div><div class="ln">  const total = calcular(pedido.items)</div><div class="ln">  await erp.registrar(cliente, total)</div><div class="ln">  <span class="k">return</span> enviar(cliente.email, total)</div><div class="ln">}</div></div>
+      <div class="agent" id="ag0" style="left:700px;top:690px"><span class="tag">Claude Code</span><span class="cur"></span></div><div class="agent" id="ag1" style="left:460px;top:840px"><span class="tag">Codex</span><span class="cur"></span></div><div class="agent" id="ag2" style="left:640px;top:1010px"><span class="tag">Gemini</span><span class="cur"></span></div><div class="agent" id="ag3" style="left:380px;top:1170px"><span class="tag">OpenCode</span><span class="cur"></span></div>
+      <h2 class="q"><span class="w">¿Quién</span> <span class="w">los</span> <span class="w">vigila?</span></h2></div>
+<audio id="sfx-1" src="assets/shared/core/sfx/typing.mp3" data-start="4.36" data-duration="1.40" data-volume="0.18" data-track-index="22"></audio>
+<audio id="sfx-1q" src="assets/shared/core/sfx/hit.wav" data-start="7.56" data-duration="1.40" data-volume="0.25" data-track-index="23"></audio>
+<div id="e-dolor" class="clip scene" data-start="9.14" data-duration="8.94" data-track-index="3">
+      <div class="head"><h2 class="big"><span class="w">Cada</span> <span class="w">uno</span> <span class="w">trae</span> <span class="w">sus</span> <span class="w">reglas.</span></h2></div>
+      <div class="alerta" id="al0" style="top:700px"><svg viewBox="0 0 120 120"><circle cx="38" cy="60" r="22"/><path d="M60 60 H108 M92 60 V78 M104 60 V74"/></svg><p>Lee contraseñas</p></div><div class="alerta" id="al1" style="top:990px"><svg viewBox="0 0 120 120"><path d="M20 20 L58 58 M100 20 L62 58 M60 66 L60 104 M40 84 L80 84"/></svg><p>Se pisan el trabajo</p></div><div class="alerta" id="al2" style="top:1280px"><svg viewBox="0 0 120 120"><path d="M40 42 C40 18 82 18 82 42 C82 60 60 60 60 76"/><circle cx="60" cy="98" r="3"/></svg><p>Nadie sabe quién cambió qué</p></div></div>
+<audio id="sfx-20" src="assets/shared/core/sfx/click.wav" data-start="11.63" data-duration="1.40" data-volume="0.25" data-track-index="25"></audio>
+<audio id="sfx-21" src="assets/shared/core/sfx/click.wav" data-start="13.15" data-duration="1.40" data-volume="0.25" data-track-index="26"></audio>
+<audio id="sfx-22" src="assets/shared/core/sfx/click.wav" data-start="15.15" data-duration="1.40" data-volume="0.25" data-track-index="27"></audio>
+<div id="e-quees" class="clip scene" data-start="17.58" data-duration="14.36" data-track-index="3">
+      <div class="titulo"><h1>Arvantti <span>Harness®</span></h1><p><span class="w">Un</span> <span class="w">arnés</span> <span class="w">de</span> <span class="w">arneses</span></p></div>
+      <svg class="net" viewBox="0 0 1080 1920"><line id="q-l0" x1="190" y1="800" x2="540" y2="1060" pathLength="1"/><line id="q-l1" x1="540" y1="800" x2="540" y2="1060" pathLength="1"/><line id="q-l2" x1="890" y1="800" x2="540" y2="1060" pathLength="1"/><line id="q-l3" x1="190" y1="920" x2="540" y2="1060" pathLength="1"/><line id="q-l4" x1="540" y1="920" x2="540" y2="1060" pathLength="1"/><line id="q-l5" x1="890" y1="920" x2="540" y2="1060" pathLength="1"/><line id="q-e0" x1="540" y1="1360" x2="210" y2="1545" pathLength="1"/><line id="q-e1" x1="540" y1="1360" x2="540" y2="1545" pathLength="1"/><line id="q-e2" x1="540" y1="1360" x2="870" y2="1545" pathLength="1"/></svg>
+      <div class="node ag" id="q-a0" style="left:30px;top:720px;width:320px;height:80px">Claude Code</div><div class="node ag" id="q-a1" style="left:380px;top:720px;width:320px;height:80px">Codex</div><div class="node ag" id="q-a2" style="left:730px;top:720px;width:320px;height:80px">Gemini</div><div class="node ag" id="q-a3" style="left:30px;top:840px;width:320px;height:80px">Copilot</div><div class="node ag" id="q-a4" style="left:380px;top:840px;width:320px;height:80px">OpenCode</div><div class="node ag" id="q-a5" style="left:730px;top:840px;width:320px;height:80px">Modelos locales</div>
+      <div class="core" style="left:390px;top:1060px;width:300px;height:300px"><img src="assets/clips/marca.png" alt=""><b>Harness</b><span>UNA SOLA CAPA</span></div>
+      <div class="node emp" id="q-m0" style="left:60px;top:1545px;width:300px;height:90px">Código</div><div class="node emp" id="q-m1" style="left:390px;top:1545px;width:300px;height:90px">Consolas</div><div class="node emp" id="q-m2" style="left:720px;top:1545px;width:300px;height:90px">Documentos</div>
+      <div class="pilares"><span class="chip">Reglas</span><span class="chip">Planes</span><span class="chip">Memoria</span><span class="chip">Evidencia</span></div></div>
+<audio id="sfx-3" src="assets/shared/core/sfx/whoosh.wav" data-start="17.58" data-duration="1.40" data-volume="0.3" data-track-index="29"></audio>
+<audio id="sfx-3c" src="assets/shared/core/sfx/hit.wav" data-start="21.29" data-duration="1.40" data-volume="0.3" data-track-index="30"></audio>
+<div id="e-controla" class="clip scene" data-start="31.43" data-duration="19.10" data-track-index="3">
+      <div class="head"><p class="kicker"><b>1 de 8</b>ARVANTTI HARNESS</p><h1 class="idea">Controla</h1><p class="sub">Nada sin permiso.</p></div>
+      <div class="card permiso"><h3>PERMISO</h3>
+        <svg class="lock" viewBox="0 0 110 130"><rect x="10" y="56" width="90" height="66" rx="6"/><path class="arco" d="M28 56 V36 C28 6 82 6 82 36 V56"/></svg>
+        <div class="row"><span class="tag" id="pq">quién: agente-3</span></div>
+        <div class="row"><span class="tag" id="pa">archivo: src/pagos.ts</span></div>
+        <div class="row"><span class="tag" id="pp">para qué: editar</span></div></div>
+      <div class="pasos"><div class="paso" style="left:0px">Leer</div><i class="hook h0a" style="left:-22px;top:62px"></i><i class="hook h0b" style="left:178px;top:62px"></i><div class="paso" style="left:220px">Editar</div><i class="hook h1a" style="left:198px;top:62px"></i><i class="hook h1b" style="left:398px;top:62px"></i><div class="paso" style="left:440px">Probar</div><i class="hook h2a" style="left:418px;top:62px"></i><i class="hook h2b" style="left:618px;top:62px"></i><div class="paso" style="left:660px">Subir</div><i class="hook h3a" style="left:638px;top:62px"></i><i class="hook h3b" style="left:838px;top:62px"></i></div>
+      <div class="aprobar">APROBAR</div>
+      <svg class="mano" viewBox="0 0 110 110"><circle cx="55" cy="55" r="40" fill="#ffffff22" stroke="#fff" stroke-width="5"/></svg></div>
+<audio id="sfx-4" src="assets/shared/core/sfx/whoosh-short.mp3" data-start="31.43" data-duration="1.40" data-volume="0.3" data-track-index="32"></audio>
+<audio id="sfx-4h" src="assets/shared/core/sfx/click-soft.mp3" data-start="43.20" data-duration="1.40" data-volume="0.25" data-track-index="33"></audio>
+<audio id="sfx-4y" src="assets/shared/core/sfx/click.wav" data-start="47.92" data-duration="1.40" data-volume="0.35" data-track-index="34"></audio>
+<div id="e-protege" class="clip scene" data-start="50.03" data-duration="15.26" data-track-index="3">
+      <div class="head"><p class="kicker"><b>2 de 8</b>ARVANTTI HARNESS</p><h1 class="idea">Protege</h1><p class="sub">Agentes guardianes.</p></div>
+      <svg class="escudo" viewBox="0 0 300 340"><path d="M150 14 L276 60 V160 C276 250 214 304 150 328 C86 304 24 250 24 160 V60 Z"/><path class="chk" d="M96 172 L136 212 L210 130"/></svg>
+      <div class="card chat"><div class="bar"><span class="dot"></span>Sesión · agente-2</div>
+        <div class="msg">API_KEY = <span class="key">sk_live_8f3a91c27e<span class="red">[REDACTED]</span></span></div></div>
+      <p class="local">Tu equipo · tu nube privada · tus datos no salen</p></div>
+<audio id="sfx-5" src="assets/shared/core/sfx/whoosh-short.mp3" data-start="50.03" data-duration="1.40" data-volume="0.3" data-track-index="36"></audio>
+<audio id="sfx-5r" src="assets/shared/core/sfx/spark.wav" data-start="59.72" data-duration="1.40" data-volume="0.3" data-track-index="37"></audio>
+<div id="e-gobierna" class="clip scene" data-start="64.79" data-duration="11.28" data-track-index="3">
+      <div class="head"><p class="kicker"><b>3 de 8</b>ARVANTTI HARNESS</p><h1 class="idea">Gobierna</h1><p class="sub">Cada acción tiene responsable.</p></div>
+      <div class="card recibo" id="rc0" style="top:620px;z-index:1"><span class="id">RECIBO #4810</span>
+        <div class="f f0"><b>Quién</b><span>agente-2</span></div><div class="f f1"><b>Qué</b><span>editó src/pagos.ts</span></div><div class="f f2"><b>Con qué</b><span>Codex · permiso: editar</span></div><div class="f f3"><b>Cuándo</b><span>10:42:07</span></div></div><div class="card recibo" id="rc1" style="top:640px;z-index:2"><span class="id">RECIBO #4811</span>
+        <div class="f f0"><b>Quién</b><span>Ana López</span></div><div class="f f1"><b>Qué</b><span>aprobó la subida</span></div><div class="f f2"><b>Con qué</b><span>panel · permiso: publicar</span></div><div class="f f3"><b>Cuándo</b><span>10:44:31</span></div></div><div class="card recibo" id="rc2" style="top:660px;z-index:3"><span class="id">RECIBO #4812</span>
+        <div class="f f0"><b>Quién</b><span>agente-5</span></div><div class="f f1"><b>Qué</b><span>corrió las pruebas</span></div><div class="f f2"><b>Con qué</b><span>Claude · permiso: ejecutar</span></div><div class="f f3"><b>Cuándo</b><span>10:46:12</span></div></div>
+      <div class="chips"><span class="chip">Quién</span><span class="chip">Qué</span><span class="chip">Con qué</span><span class="chip">Cuándo</span></div></div>
+<audio id="sfx-6" src="assets/shared/core/sfx/whoosh-short.mp3" data-start="64.79" data-duration="1.40" data-volume="0.3" data-track-index="39"></audio>
+<audio id="sfx-60" src="assets/shared/core/sfx/pop.mp3" data-start="67.76" data-duration="1.40" data-volume="0.2" data-track-index="40"></audio>
+<audio id="sfx-61" src="assets/shared/core/sfx/pop.mp3" data-start="68.21" data-duration="1.40" data-volume="0.2" data-track-index="41"></audio>
+<audio id="sfx-62" src="assets/shared/core/sfx/pop.mp3" data-start="68.66" data-duration="1.40" data-volume="0.2" data-track-index="42"></audio>
+<div id="e-planea" class="clip scene" data-start="75.57" data-duration="28.14" data-track-index="3">
+      <div class="head"><p class="kicker"><b>4 de 8</b>ARVANTTI HARNESS</p><h1 class="idea">Planea</h1><p class="sub">Lo justo, ni más ni menos.</p></div>
+      <div class="plan" id="pn0" style="top:650px"><b>Tarea</b><small>Cambio pequeño</small><div class="fases"><i></i></div></div><div class="plan" id="pn1" style="top:860px"><b>Mini SDD</b><small>Qué se construye y cómo se comprueba</small><div class="fases"><i></i><i></i><i></i></div></div><div class="plan" id="pn2" style="top:1110px"><b>SDD completo</b><small>De la idea al cierre · 7 fases</small><div class="fases"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+      <div class="tablero"><div class="tarea" id="ta0" style="top:0px"><b>Migrar pagos</b><small>Ana López</small><span class="st">EN CURSO</span></div><div class="term" id="tc0" style="top:0px"><b>consola 1</b>Codex $ _</div><div class="tarea" id="ta1" style="top:200px"><b>Pruebas facturas</b><small>agente-5</small><span class="st">EN CURSO</span></div><div class="term" id="tc1" style="top:200px"><b>consola 2</b>Claude Code $ _</div><div class="tarea" id="ta2" style="top:400px"><b>Revisar seguridad</b><small>guardián-1</small><span class="st">LISTA</span></div><div class="term" id="tc2" style="top:400px"><b>consola 3</b>OpenCode $ _</div><div class="tarea" id="ta3" style="top:600px"><b>Documentar API</b><small>agente-2</small><span class="st">ASIGNADA</span></div><div class="term" id="tc3" style="top:600px"><b>consola 4</b>Gemini $ _</div>
+        <svg class="net" viewBox="0 0 940 900" style="width:940px;height:900px"><line id="tl0" x1="480" y1="60" x2="620" y2="60" pathLength="1"/><line id="tl1" x1="480" y1="260" x2="620" y2="260" pathLength="1"/><line id="tl2" x1="480" y1="460" x2="620" y2="460" pathLength="1"/><line id="tl3" x1="480" y1="660" x2="620" y2="660" pathLength="1"/></svg></div>
+      <div class="chips"><span class="chip">Qué se hizo</span><span class="chip">Cuándo</span><span class="chip">Quién</span></div></div>
+<audio id="sfx-70" src="assets/shared/core/sfx/click-soft.mp3" data-start="82.62" data-duration="1.40" data-volume="0.22" data-track-index="44"></audio>
+<audio id="sfx-71" src="assets/shared/core/sfx/click-soft.mp3" data-start="84.54" data-duration="1.40" data-volume="0.22" data-track-index="45"></audio>
+<audio id="sfx-72" src="assets/shared/core/sfx/click-soft.mp3" data-start="91.10" data-duration="1.40" data-volume="0.22" data-track-index="46"></audio>
+<audio id="sfx-7" src="assets/shared/core/sfx/whoosh-short.mp3" data-start="75.57" data-duration="1.40" data-volume="0.3" data-track-index="47"></audio>
+<div id="e-crea" class="clip scene" data-start="103.21" data-duration="32.96" data-track-index="3">
+      <div class="head"><p class="kicker"><b>5 de 8</b>ARVANTTI HARNESS</p><h1 class="idea">Crea</h1><p class="sub">Flujos, habilidades y agentes.</p></div>
+      <div class="flujo">
+        <svg class="net" viewBox="0 0 1080 1920"><line id="fl0" x1="540" y1="724" x2="540" y2="760" pathLength="1"/><line id="fl1" x1="540" y1="844" x2="540" y2="880" pathLength="1"/><line id="fl2" x1="540" y1="964" x2="540" y2="1000" pathLength="1"/><line id="fl3" x1="540" y1="1084" x2="540" y2="1120" pathLength="1"/><line id="fl4" x1="540" y1="1204" x2="540" y2="1240" pathLength="1"/>
+          <path id="fs0" d="M750 922 C 860 922 880 840 900 820" pathLength="1"/>
+          <path id="fs1" d="M750 922 C 860 922 880 1000 900 1020" pathLength="1"/></svg>
+        <div class="fn " id="fn0" style="top:640px">Observar</div><div class="fn " id="fn1" style="top:760px">Planear</div><div class="fn " id="fn2" style="top:880px">Ejecutar</div><div class="fn " id="fn3" style="top:1000px">Verificar</div><div class="fn gate" id="fn4" style="top:1120px">Aprobación</div><div class="fn rec" id="fn5" style="top:1240px">Recibo</div>
+        <div class="sa" id="sa0" style="left:790px;top:770px">subagente A</div>
+        <div class="sa" id="sa1" style="left:790px;top:990px">subagente B</div>
+      </div>
+      <div class="cons" id="cs0" style="left:60px"><b>Claude Code</b><span class="ctxl">contexto</span><div class="ctx"><i></i></div></div><div class="cons" id="cs1" style="left:395px"><b>Codex</b><span class="ctxl">contexto</span><div class="ctx"><i></i></div></div><div class="cons" id="cs2" style="left:730px"><b>OpenCode</b><span class="ctxl">contexto</span><div class="ctx"><i></i></div></div>
+      <div class="skill" id="sk0" style="left:80px;top:1150px">revisar-código</div><div class="skill" id="sk1" style="left:415px;top:1150px">pruebas</div><div class="skill" id="sk2" style="left:750px;top:1150px">seguridad</div>
+      <p class="cien"><span>+100</span> habilidades incluidas</p></div>
+<audio id="sfx-8f0" src="assets/shared/core/sfx/click-soft.mp3" data-start="106.22" data-duration="1.40" data-volume="0.15" data-track-index="49"></audio>
+<audio id="sfx-8f1" src="assets/shared/core/sfx/click-soft.mp3" data-start="110.38" data-duration="1.40" data-volume="0.15" data-track-index="50"></audio>
+<audio id="sfx-8f2" src="assets/shared/core/sfx/click-soft.mp3" data-start="111.06" data-duration="1.40" data-volume="0.15" data-track-index="51"></audio>
+<audio id="sfx-8f3" src="assets/shared/core/sfx/click-soft.mp3" data-start="112.02" data-duration="1.40" data-volume="0.15" data-track-index="52"></audio>
+<audio id="sfx-8f4" src="assets/shared/core/sfx/click-soft.mp3" data-start="112.90" data-duration="1.40" data-volume="0.15" data-track-index="53"></audio>
+<audio id="sfx-8f5" src="assets/shared/core/sfx/click-soft.mp3" data-start="114.02" data-duration="1.40" data-volume="0.15" data-track-index="54"></audio>
+<audio id="sfx-8k0" src="assets/shared/core/sfx/pop.mp3" data-start="126.34" data-duration="1.40" data-volume="0.2" data-track-index="55"></audio>
+<audio id="sfx-8k1" src="assets/shared/core/sfx/pop.mp3" data-start="127.10" data-duration="1.40" data-volume="0.2" data-track-index="56"></audio>
+<audio id="sfx-8k2" src="assets/shared/core/sfx/pop.mp3" data-start="127.78" data-duration="1.40" data-volume="0.2" data-track-index="57"></audio>
+<audio id="sfx-8" src="assets/shared/core/sfx/whoosh-short.mp3" data-start="103.21" data-duration="1.40" data-volume="0.3" data-track-index="58"></audio>
+<div id="e-conoce" class="clip scene" data-start="135.67" data-duration="23.12" data-track-index="3">
+      <div class="head"><p class="kicker"><b>6 de 8</b>ARVANTTI HARNESS</p><h1 class="idea">Conoce</h1><p class="sub">RAG y GraphRAG de tu empresa.</p></div>
+      <p class="siglas"><b>RAG:</b> busca en tus documentos y cita la fuente.<br><b>GraphRAG:</b> sigue el mapa de relaciones.</p>
+      <div class="doc" id="dc0" style="left:150px;top:900px"><i style="top:30px"></i><i style="top:52px"></i><i style="top:74px"></i><i style="top:96px"></i></div><div class="doc" id="dc1" style="left:480px;top:900px"><i style="top:30px"></i><i style="top:52px"></i><i style="top:74px"></i><i style="top:96px"></i></div><div class="doc" id="dc2" style="left:810px;top:900px"><i style="top:30px"></i><i style="top:52px"></i><i style="top:74px"></i><i style="top:96px"></i></div><div class="doc" id="dc3" style="left:150px;top:1120px"><i style="top:30px"></i><i style="top:52px"></i><i style="top:74px"></i><i style="top:96px"></i></div><div class="doc" id="dc4" style="left:480px;top:1120px"><i style="top:30px"></i><i style="top:52px"></i><i style="top:74px"></i><i style="top:96px"></i></div><div class="doc" id="dc5" style="left:810px;top:1120px"><i style="top:30px"></i><i style="top:52px"></i><i style="top:74px"></i><i style="top:96px"></i></div>
+      <svg class="net" viewBox="0 0 1080 1920"><line id="gk0" x1="300" y1="900" x2="780" y2="900" pathLength="1"/><line id="gk1" x1="780" y1="900" x2="540" y2="1230" pathLength="1"/><line id="gk2" x1="540" y1="1230" x2="300" y2="900" pathLength="1"/>
+        <line class="sl" id="sl0" x1="300" y1="900" x2="490" y2="900" pathLength="1" style="stroke-width:1.5;opacity:.6"/><line class="sl" id="sl1" x1="780" y1="900" x2="684" y2="1047" pathLength="1" style="stroke-width:1.5;opacity:.6"/><line class="sl" id="sl2" x1="540" y1="1230" x2="447" y2="1082" pathLength="1" style="stroke-width:1.5;opacity:.6"/><line class="sl" id="sl3" x1="300" y1="900" x2="490" y2="903" pathLength="1" style="stroke-width:1.5;opacity:.6"/><line class="sl" id="sl4" x1="780" y1="900" x2="681" y2="1045" pathLength="1" style="stroke-width:1.5;opacity:.6"/><line class="sl" id="sl5" x1="540" y1="1230" x2="450" y2="1080" pathLength="1" style="stroke-width:1.5;opacity:.6"/><line class="sl" id="sl6" x1="300" y1="900" x2="490" y2="906" pathLength="1" style="stroke-width:1.5;opacity:.6"/><line class="sl" id="sl7" x1="780" y1="900" x2="679" y2="1044" pathLength="1" style="stroke-width:1.5;opacity:.6"/><line class="sl" id="sl8" x1="540" y1="1230" x2="452" y2="1079" pathLength="1" style="stroke-width:1.5;opacity:.6"/><line class="sl" id="sl9" x1="300" y1="900" x2="490" y2="909" pathLength="1" style="stroke-width:1.5;opacity:.6"/><line class="sl" id="sl10" x1="780" y1="900" x2="676" y2="1042" pathLength="1" style="stroke-width:1.5;opacity:.6"/><line class="sl" id="sl11" x1="540" y1="1230" x2="455" y2="1078" pathLength="1" style="stroke-width:1.5;opacity:.6"/></svg>
+      <i class="gs" id="gs0" style="left:490px;top:900px"></i><i class="gs" id="gs1" style="left:684px;top:1047px"></i><i class="gs" id="gs2" style="left:447px;top:1082px"></i><i class="gs" id="gs3" style="left:490px;top:903px"></i><i class="gs" id="gs4" style="left:681px;top:1045px"></i><i class="gs" id="gs5" style="left:450px;top:1080px"></i><i class="gs" id="gs6" style="left:490px;top:906px"></i><i class="gs" id="gs7" style="left:679px;top:1044px"></i><i class="gs" id="gs8" style="left:452px;top:1079px"></i><i class="gs" id="gs9" style="left:490px;top:909px"></i><i class="gs" id="gs10" style="left:676px;top:1042px"></i><i class="gs" id="gs11" style="left:455px;top:1078px"></i>
+      <div class="gn" id="gn0" style="left:300px;top:900px">Proyecto</div><div class="gn" id="gn1" style="left:780px;top:900px">Decisiones</div><div class="gn" id="gn2" style="left:540px;top:1230px">Código</div>
+      <div class="card resp"><p>"El cambio de pagos lo decidió Ana el 3 de noviembre, por la auditoría de octubre."</p><small>FUENTE · decisiones/2026-11-03.md</small></div></div>
+<audio id="sfx-90" src="assets/shared/core/sfx/pop.mp3" data-start="151.84" data-duration="1.40" data-volume="0.2" data-track-index="60"></audio>
+<audio id="sfx-91" src="assets/shared/core/sfx/pop.mp3" data-start="152.67" data-duration="1.40" data-volume="0.2" data-track-index="61"></audio>
+<audio id="sfx-92" src="assets/shared/core/sfx/pop.mp3" data-start="153.60" data-duration="1.40" data-volume="0.2" data-track-index="62"></audio>
+<audio id="sfx-9" src="assets/shared/core/sfx/whoosh-short.mp3" data-start="135.67" data-duration="1.40" data-volume="0.3" data-track-index="63"></audio>
+<div id="e-dirige" class="clip scene" data-start="158.29" data-duration="13.92" data-track-index="3">
+      <div class="head"><p class="kicker"><b>7 de 8</b>ARVANTTI HARNESS</p><h1 class="idea">Dirige</h1><p class="sub">Conversa con tu operación de IA.</p></div>
+      <div class="card panel"><div class="bar"><span class="dot"></span>Panel de dirección</div>
+        <div class="bub me" id="b1">¿Qué avanzó esta semana?</div>
+        <div class="bub me" id="b2">¿Qué está bloqueado hoy?</div>
+        <div class="bub ai" id="b3">Una tarea: "Migrar pagos" espera tu aprobación para subir. Lo demás avanza.</div>
+        <div class="minis"><div class="mini">agente-2 $ npm test ✓</div><div class="mini">agente-5 $ git diff</div><div class="mini g">guardián-1 vigilando</div><div class="mini">agente-3 $ build</div></div></div>
+      <div class="anillos"><div class="anillo" id="an0" style="left:220px"><svg viewBox="0 0 230 230"><circle cx="115" cy="115" r="100" style="stroke:#4ea7ff"/></svg><p>construyen</p></div>
+        <div class="anillo" id="an1" style="left:630px"><svg viewBox="0 0 230 230"><circle cx="115" cy="115" r="100" style="stroke:#37e38b"/></svg><p>vigilan</p></div></div></div>
+<audio id="sfx-10" src="assets/shared/core/sfx/whoosh-short.mp3" data-start="158.29" data-duration="1.40" data-volume="0.3" data-track-index="65"></audio>
+<audio id="sfx-10t" src="assets/shared/core/sfx/typing.mp3" data-start="167.36" data-duration="1.40" data-volume="0.15" data-track-index="66"></audio>
+<div id="e-equipo" class="clip scene" data-start="171.71" data-duration="12.66" data-track-index="3">
+      <div class="head"><p class="kicker"><b>8 de 8</b>ARVANTTI HARNESS</p><h1 class="idea">En equipo</h1><p class="sub">Escritorio y nube.</p></div>
+      <div class="plataformas"><div class="plat" id="pl0"><b>Linux</b><span>Fedora 44 · Ubuntu · Arch</span></div><div class="plat" id="pl1"><b>macOS</b><span>escritorio</span></div><div class="plat" id="pl2"><b>Windows</b><span>escritorio</span></div></div>
+      <svg class="net" viewBox="0 0 1080 1920"><line id="pe0" x1="140" y1="1580" x2="540" y2="1460" pathLength="1"/><line id="pe1" x1="216" y1="1445" x2="540" y2="1460" pathLength="1"/><line id="pe2" x1="416" y1="1361" x2="540" y2="1460" pathLength="1"/><line id="pe3" x1="664" y1="1361" x2="540" y2="1460" pathLength="1"/><line id="pe4" x1="864" y1="1445" x2="540" y2="1460" pathLength="1"/><line id="pe5" x1="940" y1="1580" x2="540" y2="1460" pathLength="1"/></svg>
+      <div class="persona" id="ps0" style="left:140px;top:1580px"><i></i><u></u></div><div class="persona" id="ps1" style="left:216px;top:1445px"><i></i><u></u></div><div class="persona" id="ps2" style="left:416px;top:1361px"><i></i><u></u></div><div class="persona" id="ps3" style="left:664px;top:1361px"><i></i><u></u></div><div class="persona" id="ps4" style="left:864px;top:1445px"><i></i><u></u></div><div class="persona" id="ps5" style="left:940px;top:1580px"><i></i><u></u></div>
+      <div class="core" id="cer" style="left:400px;top:1320px;width:280px;height:280px"><img src="assets/clips/marca.png" alt=""><b>Un cerebro</b><span>EMPRESARIAL</span></div></div>
+<audio id="sfx-11" src="assets/shared/core/sfx/whoosh-short.mp3" data-start="171.71" data-duration="1.40" data-volume="0.3" data-track-index="68"></audio>
+<audio id="sfx-11c" src="assets/shared/core/sfx/hit.wav" data-start="178.84" data-duration="1.40" data-volume="0.25" data-track-index="69"></audio>
+<div id="e-cierre" class="clip scene" data-start="183.87" data-duration="13.43" data-track-index="3">
+      <svg class="estela" viewBox="0 0 1080 1920" preserveAspectRatio="xMidYMid slice"><path id="p2" d="M-60 420 C 260 420 380 300 540 360 S 860 470 1140 330" pathLength="1"/></svg>
+      <div class="fin"><img class="marca" src="assets/clips/marca.png" alt=""><h1>Arvantti <span>Harness®</span></h1>
+        <p class="firma"><span class="w">Tú</span> <span class="w">decides</span> <span class="w">qué</span> <span class="w">puede</span> <span class="w">tocar.</span></p>
+        <p class="cta">¿Qué agentes quieres poner bajo control primero?</p>
+        <p class="url">arvantti.tech</p><p class="pie">Arvantti Labs · una marca de Sequoia Space</p></div></div>
+<audio id="sfx-12" src="assets/shared/core/sfx/hit.wav" data-start="184.92" data-duration="1.40" data-volume="0.3" data-track-index="71"></audio>
+<div id="sweep-0" class="clip sweep" data-start="9.04" data-duration="0.90" data-track-index="40"></div>
+<div id="sweep-1" class="clip sweep" data-start="17.48" data-duration="0.90" data-track-index="40"></div>
+<div id="sweep-2" class="clip sweep" data-start="31.33" data-duration="0.90" data-track-index="40"></div>
+<div id="sweep-3" class="clip sweep" data-start="49.93" data-duration="0.90" data-track-index="40"></div>
+<div id="sweep-4" class="clip sweep" data-start="64.69" data-duration="0.90" data-track-index="40"></div>
+<div id="sweep-5" class="clip sweep" data-start="75.47" data-duration="0.90" data-track-index="40"></div>
+<div id="sweep-6" class="clip sweep" data-start="103.11" data-duration="0.90" data-track-index="40"></div>
+<div id="sweep-7" class="clip sweep" data-start="135.57" data-duration="0.90" data-track-index="40"></div>
+<div id="sweep-8" class="clip sweep" data-start="158.19" data-duration="0.90" data-track-index="40"></div>
+<div id="sweep-9" class="clip sweep" data-start="171.61" data-duration="0.90" data-track-index="40"></div>
+<div id="sweep-10" class="clip sweep" data-start="183.77" data-duration="0.90" data-track-index="40"></div>
+<audio id="voz-gancho" src="escenas/01-gancho/assets/audio/voiceover.mp3" data-start="1.20" data-duration="7.39" data-volume="1" data-track-index="83"></audio>
+<audio id="voz-dolor" src="escenas/02-dolor/assets/audio/voiceover.mp3" data-start="9.79" data-duration="7.24" data-volume="1" data-track-index="84"></audio>
+<audio id="voz-quees" src="escenas/03-que-es/assets/audio/voiceover.mp3" data-start="18.33" data-duration="12.36" data-volume="1" data-track-index="85"></audio>
+<audio id="voz-controla" src="escenas/04-controla/assets/audio/voiceover.mp3" data-start="32.08" data-duration="17.40" data-volume="1" data-track-index="86"></audio>
+<audio id="voz-protege" src="escenas/05-protege/assets/audio/voiceover.mp3" data-start="50.68" data-duration="13.56" data-volume="1" data-track-index="87"></audio>
+<audio id="voz-gobierna" src="escenas/06-gobierna/assets/audio/voiceover.mp3" data-start="65.44" data-duration="9.48" data-volume="1" data-track-index="88"></audio>
+<audio id="voz-planea" src="escenas/07-planea/assets/audio/voiceover.mp3" data-start="76.22" data-duration="26.44" data-volume="1" data-track-index="89"></audio>
+<audio id="voz-crea" src="escenas/08-crea/assets/audio/voiceover.mp3" data-start="103.86" data-duration="31.16" data-volume="1" data-track-index="90"></audio>
+<audio id="voz-conoce" src="escenas/09-conoce/assets/audio/voiceover.mp3" data-start="136.32" data-duration="21.32" data-volume="1" data-track-index="91"></audio>
+<audio id="voz-dirige" src="escenas/10-dirige/assets/audio/voiceover.mp3" data-start="158.94" data-duration="12.12" data-volume="1" data-track-index="92"></audio>
+<audio id="voz-equipo" src="escenas/11-equipo/assets/audio/voiceover.mp3" data-start="172.36" data-duration="10.76" data-volume="1" data-track-index="93"></audio>
+<audio id="voz-cierre" src="escenas/12-cierre/assets/audio/voiceover.mp3" data-start="184.92" data-duration="7.63" data-volume="1" data-track-index="94"></audio>
+<audio id="musica" src="assets/clips/musica-mezcla.mp3" data-start="0.00" data-duration="197.05" data-volume="0.5" data-track-index="95"></audio>
+</div>
+<script>
+window.__timelines = window.__timelines || {};
+const tl = gsap.timeline({ paused: true });
+tl.fromTo("#fondo .floorgrid",{"backgroundPositionY":"0px"},{"backgroundPositionY":"7882px","duration":197.048978,"ease":"none"},0.00);
+tl.fromTo("#fondo .glow",{"opacity":0.5},{"opacity":1,"duration":6,"ease":"sine.inOut","yoyo":true,"repeat":32},0.00);
+tl.fromTo("#e-gancho .code",{"opacity":0,"y":80,"rotateX":20},{"opacity":1,"y":0,"rotateX":0,"duration":0.9,"ease":"power3.out"},0.10);
+tl.fromTo("#e-gancho .ln",{"opacity":0,"x":-20},{"opacity":1,"x":0,"duration":0.3,"stagger":0.18},0.40);
+tl.fromTo("#ag0",{"opacity":0,"scale":0.6},{"opacity":1,"scale":1,"duration":0.4,"ease":"back.out(2)"},4.36);
+tl.fromTo("#ag0",{"x":0},{"x":60,"duration":0.8,"ease":"sine.inOut","yoyo":true,"repeat":5},4.76);
+tl.fromTo("#ag1",{"opacity":0,"scale":0.6},{"opacity":1,"scale":1,"duration":0.4,"ease":"back.out(2)"},4.61);
+tl.fromTo("#ag1",{"x":0},{"x":-60,"duration":0.8,"ease":"sine.inOut","yoyo":true,"repeat":5},5.01);
+tl.fromTo("#ag2",{"opacity":0,"scale":0.6},{"opacity":1,"scale":1,"duration":0.4,"ease":"back.out(2)"},4.86);
+tl.fromTo("#ag2",{"x":0},{"x":60,"duration":0.8,"ease":"sine.inOut","yoyo":true,"repeat":5},5.26);
+tl.fromTo("#ag3",{"opacity":0,"scale":0.6},{"opacity":1,"scale":1,"duration":0.4,"ease":"back.out(2)"},5.11);
+tl.fromTo("#ag3",{"x":0},{"x":-60,"duration":0.8,"ease":"sine.inOut","yoyo":true,"repeat":5},5.51);
+tl.fromTo("#e-gancho .cur",{"opacity":1},{"opacity":0.1,"duration":0.25,"yoyo":true,"repeat":20},0.00);
+tl.fromTo("#e-gancho .q .w",{"opacity":0,"y":40,"filter":"blur(14px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.6,"stagger":0.14,"ease":"power3.out"},7.56);
+tl.to("#e-gancho",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},9.39);
+tl.fromTo("#e-dolor",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},9.14);
+tl.fromTo("#e-dolor .big .w",{"opacity":0,"y":40,"filter":"blur(10px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.5,"stagger":0.08,"ease":"power3.out"},9.79);
+tl.fromTo("#al0",{"opacity":0,"x":120},{"opacity":1,"x":0,"duration":0.5,"ease":"back.out(1.6)"},11.53);
+tl.to("#al0",{"x":10,"duration":0.06,"yoyo":true,"repeat":5},12.08);
+tl.fromTo("#al1",{"opacity":0,"x":120},{"opacity":1,"x":0,"duration":0.5,"ease":"back.out(1.6)"},13.05);
+tl.to("#al1",{"x":10,"duration":0.06,"yoyo":true,"repeat":5},13.60);
+tl.fromTo("#al2",{"opacity":0,"x":120},{"opacity":1,"x":0,"duration":0.5,"ease":"back.out(1.6)"},15.05);
+tl.to("#al2",{"x":10,"duration":0.06,"yoyo":true,"repeat":5},15.60);
+tl.to("#e-dolor",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},17.83);
+tl.fromTo("#e-quees",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},17.58);
+tl.fromTo("#e-quees .titulo h1",{"opacity":0,"letterSpacing":"30px","filter":"blur(12px)"},{"opacity":1,"letterSpacing":"-3px","filter":"blur(0px)","duration":1.1,"ease":"power3.out"},18.23);
+tl.fromTo("#e-quees .titulo .w",{"opacity":0,"y":20},{"opacity":1,"y":0,"duration":0.4,"stagger":0.1},19.57);
+tl.fromTo("#e-quees .core",{"opacity":0,"scale":0.4},{"opacity":1,"scale":1,"duration":0.8,"ease":"back.out(1.7)"},21.09);
+tl.to("#e-quees .core",{boxShadow:"0 0 0 4px #4ea7ff, 0 0 140px #2d7ff9cc",duration:.6,yoyo:true,repeat:1},21.89);
+tl.fromTo("#e-quees .ag",{"opacity":0,"y":-30},{"opacity":1,"y":0,"duration":0.4,"stagger":0.12,"ease":"power3.out"},22.69);
+tl.fromTo("#q-l0",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"power2.out"},23.19);
+tl.fromTo("#q-l1",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"power2.out"},23.29);
+tl.fromTo("#q-l2",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"power2.out"},23.39);
+tl.fromTo("#q-l3",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"power2.out"},23.49);
+tl.fromTo("#q-l4",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"power2.out"},23.59);
+tl.fromTo("#q-l5",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"power2.out"},23.69);
+tl.fromTo("#e-quees .emp",{"opacity":0,"y":30},{"opacity":1,"y":0,"duration":0.4,"stagger":0.12},25.97);
+tl.fromTo("#q-e0",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.5},26.17);
+tl.fromTo("#q-e1",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.5},26.27);
+tl.fromTo("#q-e2",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.5},26.37);
+tl.fromTo("#e-quees .pilares .chip:nth-child(1)",{"opacity":0,"y":40,"scale":0.92},{"opacity":1,"y":0,"scale":1,"duration":0.55,"ease":"back.out(1.8)"},27.85);
+tl.fromTo("#e-quees .pilares .chip:nth-child(2)",{"opacity":0,"y":40,"scale":0.92},{"opacity":1,"y":0,"scale":1,"duration":0.55,"ease":"back.out(1.8)"},28.73);
+tl.fromTo("#e-quees .pilares .chip:nth-child(3)",{"opacity":0,"y":40,"scale":0.92},{"opacity":1,"y":0,"scale":1,"duration":0.55,"ease":"back.out(1.8)"},29.25);
+tl.fromTo("#e-quees .pilares .chip:nth-child(4)",{"opacity":0,"y":40,"scale":0.92},{"opacity":1,"y":0,"scale":1,"duration":0.55,"ease":"back.out(1.8)"},29.89);
+tl.to("#e-quees",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},31.68);
+tl.fromTo("#e-controla",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},31.43);
+tl.fromTo("#e-controla .kicker",{"opacity":0,"x":-30},{"opacity":1,"x":0,"duration":0.5,"ease":"power3.out"},31.78);
+tl.fromTo("#e-controla .idea",{"opacity":0,"letterSpacing":"30px","filter":"blur(12px)"},{"opacity":1,"letterSpacing":"-4px","filter":"blur(0px)","duration":0.9,"ease":"power3.out"},32.70);
+tl.fromTo("#e-controla .idea",{"backgroundPosition":"-200% 0"},{"backgroundPosition":"200% 0","duration":1.8,"ease":"power1.inOut"},33.40);
+tl.fromTo("#e-controla .sub",{"opacity":0,"y":20},{"opacity":1,"y":0,"duration":0.6,"ease":"power3.out"},33.30);
+tl.fromTo("#e-controla .permiso",{"opacity":0,"y":60},{"opacity":1,"y":0,"duration":0.6,"ease":"power3.out"},33.82);
+tl.to("#e-controla .lock .arco",{"y":-14,"duration":0.4,"ease":"back.out(2)"},36.84);
+tl.fromTo("#pq",{"opacity":0,"y":40,"scale":0.92},{"opacity":1,"y":0,"scale":1,"duration":0.55,"ease":"back.out(1.8)"},37.76);
+tl.fromTo("#pa",{"opacity":0,"y":40,"scale":0.92},{"opacity":1,"y":0,"scale":1,"duration":0.55,"ease":"back.out(1.8)"},38.36);
+tl.fromTo("#pp",{"opacity":0,"y":40,"scale":0.92},{"opacity":1,"y":0,"scale":1,"duration":0.55,"ease":"back.out(1.8)"},39.44);
+tl.fromTo("#e-controla .paso",{"opacity":0,"y":30},{"opacity":1,"y":0,"duration":0.4,"stagger":0.1},40.18);
+tl.fromTo("#e-controla .hook",{"opacity":0,"scale":0},{"opacity":1,"scale":1,"duration":0.3,"stagger":0.12,"ease":"back.out(3)"},43.20);
+tl.fromTo("#e-controla .aprobar",{"opacity":0,"scale":0.7},{"opacity":1,"scale":1,"duration":0.5,"ease":"back.out(2)"},45.60);
+tl.fromTo("#e-controla .mano",{"opacity":0,"x":120,"y":120},{"opacity":1,"x":0,"y":0,"duration":0.5,"ease":"power3.out"},47.42);
+tl.to("#e-controla .aprobar",{"scale":0.92,"background":"#37e38b","duration":0.15,"yoyo":true,"repeat":1},47.92);
+tl.to("#e-controla .aprobar",{background:"#1f9d5c",boxShadow:"0 0 90px #37e38b",duration:.4},48.22);
+tl.to("#e-controla",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},50.28);
+tl.fromTo("#e-protege",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},50.03);
+tl.fromTo("#e-protege .kicker",{"opacity":0,"x":-30},{"opacity":1,"x":0,"duration":0.5,"ease":"power3.out"},50.38);
+tl.fromTo("#e-protege .idea",{"opacity":0,"letterSpacing":"30px","filter":"blur(12px)"},{"opacity":1,"letterSpacing":"-4px","filter":"blur(0px)","duration":0.9,"ease":"power3.out"},51.38);
+tl.fromTo("#e-protege .idea",{"backgroundPosition":"-200% 0"},{"backgroundPosition":"200% 0","duration":1.8,"ease":"power1.inOut"},52.08);
+tl.fromTo("#e-protege .sub",{"opacity":0,"y":20},{"opacity":1,"y":0,"duration":0.6,"ease":"power3.out"},51.98);
+tl.fromTo("#e-protege .escudo",{"opacity":0,"scale":0.5},{"opacity":1,"scale":1,"duration":0.7,"ease":"back.out(1.7)"},52.60);
+tl.fromTo("#e-protege .escudo .chk",{"opacity":0},{"opacity":1,"duration":0.4},53.20);
+tl.fromTo("#e-protege .chat",{"opacity":0,"y":60},{"opacity":1,"y":0,"duration":0.6,"ease":"power3.out"},56.26);
+tl.fromTo("#e-protege .red",{"opacity":0,"scaleX":0},{"opacity":1,"scaleX":1,"duration":0.4,"ease":"power3.out","transformOrigin":"left center"},59.72);
+tl.to("#e-protege .escudo path:first-child",{filter:"drop-shadow(0 0 50px #37e38b)",duration:.4,yoyo:true,repeat:1},59.72);
+tl.fromTo("#e-protege .local",{"opacity":0,"y":20},{"opacity":1,"y":0,"duration":0.6},61.40);
+tl.to("#e-protege",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},65.04);
+tl.fromTo("#e-gobierna",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},64.79);
+tl.fromTo("#e-gobierna .kicker",{"opacity":0,"x":-30},{"opacity":1,"x":0,"duration":0.5,"ease":"power3.out"},65.14);
+tl.fromTo("#e-gobierna .idea",{"opacity":0,"letterSpacing":"30px","filter":"blur(12px)"},{"opacity":1,"letterSpacing":"-4px","filter":"blur(0px)","duration":0.9,"ease":"power3.out"},66.18);
+tl.fromTo("#e-gobierna .idea",{"backgroundPosition":"-200% 0"},{"backgroundPosition":"200% 0","duration":1.8,"ease":"power1.inOut"},66.88);
+tl.fromTo("#e-gobierna .sub",{"opacity":0,"y":20},{"opacity":1,"y":0,"duration":0.6,"ease":"power3.out"},66.78);
+tl.fromTo("#rc0",{"opacity":0,"y":-400,"rotate":-6},{"opacity":1,"y":0,"rotate":-2,"duration":0.7,"ease":"bounce.out"},67.36);
+tl.fromTo("#rc1",{"opacity":0,"y":-400,"rotate":-1},{"opacity":1,"y":240,"rotate":0,"duration":0.7,"ease":"bounce.out"},67.81);
+tl.fromTo("#rc2",{"opacity":0,"y":-400,"rotate":4},{"opacity":1,"y":480,"rotate":2,"duration":0.7,"ease":"bounce.out"},68.26);
+tl.fromTo("#e-gobierna .chips .chip:nth-child(1)",{"opacity":0,"y":40,"scale":0.92},{"opacity":1,"y":0,"scale":1,"duration":0.55,"ease":"back.out(1.8)"},68.40);
+tl.to("#e-gobierna .recibo .f0 b",{color:"#ffffff",textShadow:"0 0 18px #4ea7ff",duration:.3,yoyo:true,repeat:1},68.40);
+tl.fromTo("#e-gobierna .chips .chip:nth-child(2)",{"opacity":0,"y":40,"scale":0.92},{"opacity":1,"y":0,"scale":1,"duration":0.55,"ease":"back.out(1.8)"},68.96);
+tl.to("#e-gobierna .recibo .f1 b",{color:"#ffffff",textShadow:"0 0 18px #4ea7ff",duration:.3,yoyo:true,repeat:1},68.96);
+tl.fromTo("#e-gobierna .chips .chip:nth-child(3)",{"opacity":0,"y":40,"scale":0.92},{"opacity":1,"y":0,"scale":1,"duration":0.55,"ease":"back.out(1.8)"},69.44);
+tl.to("#e-gobierna .recibo .f2 b",{color:"#ffffff",textShadow:"0 0 18px #4ea7ff",duration:.3,yoyo:true,repeat:1},69.44);
+tl.fromTo("#e-gobierna .chips .chip:nth-child(4)",{"opacity":0,"y":40,"scale":0.92},{"opacity":1,"y":0,"scale":1,"duration":0.55,"ease":"back.out(1.8)"},71.44);
+tl.to("#e-gobierna .recibo .f3 b",{color:"#ffffff",textShadow:"0 0 18px #4ea7ff",duration:.3,yoyo:true,repeat:1},71.44);
+tl.to("#e-gobierna .recibo",{boxShadow:"0 0 0 2px #37e38b, 0 0 60px #37e38b55",duration:.5},74.08);
+tl.to("#e-gobierna",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},75.82);
+tl.fromTo("#e-planea",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},75.57);
+tl.fromTo("#e-planea .kicker",{"opacity":0,"x":-30},{"opacity":1,"x":0,"duration":0.5,"ease":"power3.out"},75.92);
+tl.fromTo("#e-planea .idea",{"opacity":0,"letterSpacing":"30px","filter":"blur(12px)"},{"opacity":1,"letterSpacing":"-4px","filter":"blur(0px)","duration":0.9,"ease":"power3.out"},76.84);
+tl.fromTo("#e-planea .idea",{"backgroundPosition":"-200% 0"},{"backgroundPosition":"200% 0","duration":1.8,"ease":"power1.inOut"},77.54);
+tl.fromTo("#e-planea .sub",{"opacity":0,"y":20},{"opacity":1,"y":0,"duration":0.6,"ease":"power3.out"},77.44);
+tl.fromTo("#pn0",{"opacity":0,"x":-80},{"opacity":1,"x":0,"duration":0.5,"ease":"power3.out"},82.52);
+tl.fromTo("#pn0 .fases i",{"scaleX":0},{"scaleX":1,"duration":0.3,"stagger":0.08,"transformOrigin":"left center"},82.82);
+tl.fromTo("#pn1",{"opacity":0,"x":-80},{"opacity":1,"x":0,"duration":0.5,"ease":"power3.out"},84.44);
+tl.fromTo("#pn1 .fases i",{"scaleX":0},{"scaleX":1,"duration":0.3,"stagger":0.08,"transformOrigin":"left center"},84.74);
+tl.fromTo("#pn2",{"opacity":0,"x":-80},{"opacity":1,"x":0,"duration":0.5,"ease":"power3.out"},91.00);
+tl.fromTo("#pn2 .fases i",{"scaleX":0},{"scaleX":1,"duration":0.3,"stagger":0.08,"transformOrigin":"left center"},91.30);
+tl.to("#e-planea .plan",{"opacity":0,"y":-40,"duration":0.4,"stagger":0.05},94.04);
+tl.fromTo("#e-planea .tablero",{"opacity":0},{"opacity":1,"duration":0.3},94.34);
+tl.fromTo("#e-planea .tarea",{"opacity":0,"x":-60},{"opacity":1,"x":0,"duration":0.4,"stagger":0.12,"ease":"power3.out"},94.54);
+tl.fromTo("#e-planea .term",{"opacity":0,"x":60},{"opacity":1,"x":0,"duration":0.4,"stagger":0.12,"ease":"power3.out"},97.40);
+tl.fromTo("#tl0",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.4},97.60);
+tl.fromTo("#tl1",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.4},97.72);
+tl.fromTo("#tl2",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.4},97.84);
+tl.fromTo("#tl3",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.4},97.96);
+tl.fromTo("#e-planea .chips .chip:nth-child(1)",{"opacity":0,"y":40,"scale":0.92},{"opacity":1,"y":0,"scale":1,"duration":0.55,"ease":"back.out(1.8)"},100.54);
+tl.fromTo("#e-planea .chips .chip:nth-child(2)",{"opacity":0,"y":40,"scale":0.92},{"opacity":1,"y":0,"scale":1,"duration":0.55,"ease":"back.out(1.8)"},101.50);
+tl.fromTo("#e-planea .chips .chip:nth-child(3)",{"opacity":0,"y":40,"scale":0.92},{"opacity":1,"y":0,"scale":1,"duration":0.55,"ease":"back.out(1.8)"},102.14);
+tl.to("#ta2 .st",{background:"#1f9d5c",color:"#fff",duration:.3},99.46);
+tl.to("#e-planea",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},103.46);
+tl.fromTo("#e-crea",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},103.21);
+tl.fromTo("#e-crea .kicker",{"opacity":0,"x":-30},{"opacity":1,"x":0,"duration":0.5,"ease":"power3.out"},103.56);
+tl.fromTo("#e-crea .idea",{"opacity":0,"letterSpacing":"30px","filter":"blur(12px)"},{"opacity":1,"letterSpacing":"-4px","filter":"blur(0px)","duration":0.9,"ease":"power3.out"},104.56);
+tl.fromTo("#e-crea .idea",{"backgroundPosition":"-200% 0"},{"backgroundPosition":"200% 0","duration":1.8,"ease":"power1.inOut"},105.26);
+tl.fromTo("#e-crea .sub",{"opacity":0,"y":20},{"opacity":1,"y":0,"duration":0.6,"ease":"power3.out"},105.16);
+tl.fromTo("#fn0",{"opacity":0,"scale":0.7},{"opacity":1,"scale":1,"duration":0.35,"ease":"back.out(2)"},106.12);
+tl.fromTo("#fn1",{"opacity":0,"scale":0.7},{"opacity":1,"scale":1,"duration":0.35,"ease":"back.out(2)"},110.28);
+tl.fromTo("#fl0",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.3},110.18);
+tl.fromTo("#fn2",{"opacity":0,"scale":0.7},{"opacity":1,"scale":1,"duration":0.35,"ease":"back.out(2)"},110.96);
+tl.fromTo("#fl1",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.3},110.86);
+tl.fromTo("#fn3",{"opacity":0,"scale":0.7},{"opacity":1,"scale":1,"duration":0.35,"ease":"back.out(2)"},111.92);
+tl.fromTo("#fl2",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.3},111.82);
+tl.fromTo("#fn4",{"opacity":0,"scale":0.7},{"opacity":1,"scale":1,"duration":0.35,"ease":"back.out(2)"},112.80);
+tl.fromTo("#fl3",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.3},112.70);
+tl.fromTo("#fn5",{"opacity":0,"scale":0.7},{"opacity":1,"scale":1,"duration":0.35,"ease":"back.out(2)"},113.92);
+tl.fromTo("#fl4",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.3},113.82);
+tl.fromTo("#fs0",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.4},116.64);
+tl.fromTo("#sa0",{"opacity":0,"x":-30},{"opacity":1,"x":0,"duration":0.4,"ease":"power3.out"},116.94);
+tl.fromTo("#fs1",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.4},116.79);
+tl.fromTo("#sa1",{"opacity":0,"x":-30},{"opacity":1,"x":0,"duration":0.4,"ease":"power3.out"},117.09);
+tl.to("#e-crea .flujo",{"opacity":0,"y":-60,"scale":0.9,"duration":0.5},120.02);
+tl.fromTo("#e-crea .cons",{"opacity":0,"y":60},{"opacity":1,"y":0,"duration":0.5,"stagger":0.12,"ease":"power3.out"},120.42);
+tl.fromTo("#e-crea .cien",{"opacity":0,"scale":0.8},{"opacity":1,"scale":1,"duration":0.6,"ease":"back.out(1.7)"},123.14);
+tl.fromTo("#sk0",{"opacity":0,"y":-420,"scale":1.2},{"opacity":1,"y":70,"scale":1,"duration":0.6,"ease":"power3.in"},125.74);
+tl.to("#cs0 .ctx i",{"scaleX":0.3,"duration":0.3},126.34);
+tl.fromTo("#sk1",{"opacity":0,"y":-420,"scale":1.2},{"opacity":1,"y":70,"scale":1,"duration":0.6,"ease":"power3.in"},126.50);
+tl.to("#cs1 .ctx i",{"scaleX":0.3,"duration":0.3},127.10);
+tl.fromTo("#sk2",{"opacity":0,"y":-420,"scale":1.2},{"opacity":1,"y":70,"scale":1,"duration":0.6,"ease":"power3.in"},127.18);
+tl.to("#cs2 .ctx i",{"scaleX":0.3,"duration":0.3},127.78);
+tl.to("#e-crea .cons .ctx i",{"scaleX":0.22,"duration":0.5},133.70);
+tl.to("#e-crea .cons",{borderColor:"#37e38b",boxShadow:"0 0 50px #37e38b44",duration:.4},133.90);
+tl.to("#e-crea .cien",{"opacity":0,"duration":0.4},124.56);
+tl.to("#e-crea",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},135.92);
+tl.fromTo("#e-conoce",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},135.67);
+tl.fromTo("#e-conoce .kicker",{"opacity":0,"x":-30},{"opacity":1,"x":0,"duration":0.5,"ease":"power3.out"},136.02);
+tl.fromTo("#e-conoce .idea",{"opacity":0,"letterSpacing":"30px","filter":"blur(12px)"},{"opacity":1,"letterSpacing":"-4px","filter":"blur(0px)","duration":0.9,"ease":"power3.out"},137.10);
+tl.fromTo("#e-conoce .idea",{"backgroundPosition":"-200% 0"},{"backgroundPosition":"200% 0","duration":1.8,"ease":"power1.inOut"},137.80);
+tl.fromTo("#e-conoce .sub",{"opacity":0,"y":20},{"opacity":1,"y":0,"duration":0.6,"ease":"power3.out"},137.70);
+tl.fromTo("#e-conoce .doc",{"opacity":0,"y":40},{"opacity":1,"y":0,"duration":0.4,"stagger":0.08},138.96);
+tl.fromTo("#e-conoce .siglas",{"opacity":0,"y":20},{"opacity":1,"y":0,"duration":0.5},142.64);
+tl.to("#e-conoce .doc",{"scale":0.2,"opacity":0,"duration":0.6,"stagger":0.05,"ease":"power2.in"},148.86);
+tl.fromTo("#e-conoce .gs",{"opacity":0,"scale":0},{"opacity":1,"scale":1,"duration":0.3,"stagger":0.04},149.46);
+tl.fromTo("#e-conoce .sl",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.4,"stagger":0.03},149.76);
+tl.fromTo("#gn0",{"opacity":0,"scale":0.4},{"opacity":1,"scale":1,"duration":0.5,"ease":"back.out(1.8)"},151.74);
+tl.fromTo("#gk0",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.5},152.04);
+tl.fromTo("#gn1",{"opacity":0,"scale":0.4},{"opacity":1,"scale":1,"duration":0.5,"ease":"back.out(1.8)"},152.57);
+tl.fromTo("#gk1",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.5},152.87);
+tl.fromTo("#gn2",{"opacity":0,"scale":0.4},{"opacity":1,"scale":1,"duration":0.5,"ease":"back.out(1.8)"},153.50);
+tl.fromTo("#gk2",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.5},153.80);
+tl.to("#e-conoce .siglas",{"opacity":0,"duration":0.4},149.36);
+tl.fromTo("#e-conoce .resp",{"opacity":0,"y":60},{"opacity":1,"y":0,"duration":0.6,"ease":"power3.out"},154.60);
+tl.to("#e-conoce",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},158.54);
+tl.fromTo("#e-dirige",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},158.29);
+tl.fromTo("#e-dirige .kicker",{"opacity":0,"x":-30},{"opacity":1,"x":0,"duration":0.5,"ease":"power3.out"},158.64);
+tl.fromTo("#e-dirige .idea",{"opacity":0,"letterSpacing":"30px","filter":"blur(12px)"},{"opacity":1,"letterSpacing":"-4px","filter":"blur(0px)","duration":0.9,"ease":"power3.out"},159.72);
+tl.fromTo("#e-dirige .idea",{"backgroundPosition":"-200% 0"},{"backgroundPosition":"200% 0","duration":1.8,"ease":"power1.inOut"},160.42);
+tl.fromTo("#e-dirige .sub",{"opacity":0,"y":20},{"opacity":1,"y":0,"duration":0.6,"ease":"power3.out"},160.32);
+tl.fromTo("#e-dirige .panel",{"opacity":0,"y":80,"rotateX":18},{"opacity":1,"y":0,"rotateX":0,"duration":0.8,"ease":"power3.out"},160.66);
+tl.fromTo("#b1",{"opacity":0,"y":40,"scale":0.92},{"opacity":1,"y":0,"scale":1,"duration":0.55,"ease":"back.out(1.8)"},164.30);
+tl.fromTo("#b2",{"opacity":0,"y":40,"scale":0.92},{"opacity":1,"y":0,"scale":1,"duration":0.55,"ease":"back.out(1.8)"},166.46);
+tl.fromTo("#b3",{"opacity":0,"filter":"blur(8px)"},{"opacity":1,"filter":"blur(0px)","duration":0.6},167.46);
+tl.to("#b1",{"opacity":0.4,"duration":0.3},166.46);
+tl.fromTo("#e-dirige .mini",{"opacity":0,"y":20},{"opacity":1,"y":0,"duration":0.3,"stagger":0.1},167.62);
+tl.fromTo("#an0",{"opacity":0,"scale":0.6},{"opacity":1,"scale":1,"duration":0.5,"ease":"back.out(2)"},168.78);
+tl.fromTo("#an1",{"opacity":0,"scale":0.6},{"opacity":1,"scale":1,"duration":0.5,"ease":"back.out(2)"},170.38);
+tl.fromTo("#e-dirige .anillo svg",{"rotate":0},{"rotate":360,"duration":3,"ease":"none","repeat":2},167.82);
+tl.to("#e-dirige",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},171.96);
+tl.fromTo("#e-equipo",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},171.71);
+tl.fromTo("#e-equipo .kicker",{"opacity":0,"x":-30},{"opacity":1,"x":0,"duration":0.5,"ease":"power3.out"},172.06);
+tl.fromTo("#e-equipo .idea",{"opacity":0,"letterSpacing":"30px","filter":"blur(12px)"},{"opacity":1,"letterSpacing":"-4px","filter":"blur(0px)","duration":0.9,"ease":"power3.out"},173.06);
+tl.fromTo("#e-equipo .idea",{"backgroundPosition":"-200% 0"},{"backgroundPosition":"200% 0","duration":1.8,"ease":"power1.inOut"},173.76);
+tl.fromTo("#e-equipo .sub",{"opacity":0,"y":20},{"opacity":1,"y":0,"duration":0.6,"ease":"power3.out"},173.66);
+tl.fromTo("#pl0",{"opacity":0,"x":-80},{"opacity":1,"x":0,"duration":0.45,"ease":"power3.out"},176.66);
+tl.fromTo("#pl1",{"opacity":0,"x":-80},{"opacity":1,"x":0,"duration":0.45,"ease":"power3.out"},177.30);
+tl.fromTo("#pl2",{"opacity":0,"x":-80},{"opacity":1,"x":0,"duration":0.45,"ease":"power3.out"},177.86);
+tl.fromTo("#cer",{"opacity":0,"scale":0.5},{"opacity":1,"scale":1,"duration":0.7,"ease":"back.out(1.7)"},178.84);
+tl.fromTo("#ps0",{"opacity":0,"scale":0.4},{"opacity":1,"scale":1,"duration":0.4,"ease":"back.out(2)"},180.04);
+tl.fromTo("#pe0",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.4},180.24);
+tl.fromTo("#ps1",{"opacity":0,"scale":0.4},{"opacity":1,"scale":1,"duration":0.4,"ease":"back.out(2)"},180.14);
+tl.fromTo("#pe1",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.4},180.34);
+tl.fromTo("#ps2",{"opacity":0,"scale":0.4},{"opacity":1,"scale":1,"duration":0.4,"ease":"back.out(2)"},180.24);
+tl.fromTo("#pe2",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.4},180.44);
+tl.fromTo("#ps3",{"opacity":0,"scale":0.4},{"opacity":1,"scale":1,"duration":0.4,"ease":"back.out(2)"},180.34);
+tl.fromTo("#pe3",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.4},180.54);
+tl.fromTo("#ps4",{"opacity":0,"scale":0.4},{"opacity":1,"scale":1,"duration":0.4,"ease":"back.out(2)"},180.44);
+tl.fromTo("#pe4",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.4},180.64);
+tl.fromTo("#ps5",{"opacity":0,"scale":0.4},{"opacity":1,"scale":1,"duration":0.4,"ease":"back.out(2)"},180.54);
+tl.fromTo("#pe5",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.4},180.74);
+tl.to("#cer",{boxShadow:"0 0 0 4px #4ea7ff, 0 0 140px #2d7ff9cc",duration:.6,yoyo:true,repeat:1},181.48);
+tl.to("#e-equipo",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},184.12);
+tl.fromTo("#e-cierre",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},183.87);
+tl.fromTo("#p2",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":1.8,"ease":"power2.inOut"},183.87);
+tl.to("#p2",{"opacity":0.25,"duration":1},185.67);
+tl.fromTo("#e-cierre .marca",{"opacity":0,"scale":0.5,"rotate":-8},{"opacity":1,"scale":1,"rotate":0,"duration":1,"ease":"back.out(1.6)"},184.62);
+tl.fromTo("#e-cierre h1",{"opacity":0,"letterSpacing":"30px","filter":"blur(10px)"},{"opacity":1,"letterSpacing":"-3px","filter":"blur(0px)","duration":1.2,"ease":"power3.out"},184.92);
+tl.fromTo("#e-cierre h1",{"backgroundPosition":"-200% 0"},{"backgroundPosition":"200% 0","duration":2.2,"ease":"power1.inOut"},186.12);
+tl.fromTo("#e-cierre .firma .w",{"opacity":0,"y":20},{"opacity":1,"y":0,"duration":0.5,"stagger":0.08,"ease":"power3.out"},189.16);
+tl.fromTo("#e-cierre .cta",{"opacity":0,"y":30},{"opacity":1,"y":0,"duration":0.7,"ease":"power3.out"},192.75);
+tl.fromTo("#e-cierre .url,#e-cierre .pie",{"opacity":0},{"opacity":1,"duration":0.8,"stagger":0.3},193.45);
+tl.to("#e-cierre .fin",{"opacity":0,"duration":1},196.30);
+tl.fromTo("#sweep-0",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},9.04);
+tl.fromTo("#sweep-1",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},17.48);
+tl.fromTo("#sweep-2",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},31.33);
+tl.fromTo("#sweep-3",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},49.93);
+tl.fromTo("#sweep-4",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},64.69);
+tl.fromTo("#sweep-5",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},75.47);
+tl.fromTo("#sweep-6",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},103.11);
+tl.fromTo("#sweep-7",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},135.57);
+tl.fromTo("#sweep-8",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},158.19);
+tl.fromTo("#sweep-9",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},171.61);
+tl.fromTo("#sweep-10",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},183.77);
+window.__timelines["main"] = tl;
+tl.seek(0);
+</script>
+</body>
+</html>

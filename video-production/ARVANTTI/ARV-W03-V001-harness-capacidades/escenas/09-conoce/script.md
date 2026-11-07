@@ -1,0 +1,1 @@
+Seis: conoce. Los agentes de Harness construyen el RAG de tu empresa y de cada proyecto. RAG es búsqueda con respaldo: la IA busca en tus documentos antes de responder y cita de dónde lo sacó. Y con GraphRAG sigue un mapa que une tu proyecto, tus decisiones y tu código: quién decidió qué, cuándo y con qué evidencia.
