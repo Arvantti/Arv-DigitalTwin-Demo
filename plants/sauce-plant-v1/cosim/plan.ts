@@ -104,6 +104,8 @@ export interface Context {
   horizonEnd: number;
   /** Paradas por equipo (llenadora, o línea por su id). */
   down: Record<string, [number, number, string][]>;
+  /** Ratos de pedidos fijados por equipo: nada nuevo se cruza con ellos (una tanda o un llenado no los atraviesa). */
+  hard: Record<string, [number, number][]>;
   /** Lo congelado del plan anterior. */
   frozenBatches: Batch[];
   frozenFills: Fill[];
@@ -184,6 +186,11 @@ export interface ContextOptions {
   stops?: PlannedStop[];
   /** Paradas aleatorias de demand.yaml (sí por defecto; las pruebas a mano las apagan). */
   randomDowntime?: boolean;
+  /**
+   * Pedidos fijados en el Gantt: sus tandas y llenados del plan anterior se quedan donde están (también los futuros) y
+   * se replanea el resto alrededor, como si esos ratos fueran paradas de su línea y su llenadora.
+   */
+  fixed?: string[];
 }
 
 export function context(model: SauceModel, portfolio: CustomerOrders, opt: ContextOptions = {}): Context {
@@ -206,6 +213,7 @@ export function context(model: SauceModel, portfolio: CustomerOrders, opt: Conte
   const fillerFree: Context["fillerFree"] = Object.fromEntries(model.fillers.map((m) => [m, { at: start, format: model.initialFormat[m], runMin: 0, nozzleMin: 0 }]));
   const frozenBatches: Batch[] = [];
   const frozenFills: Fill[] = [];
+  const hard: Context["hard"] = {};
   const done: Record<string, number> = {};
   const stock: Context["stock"] = {};
   const prev = opt.previous;
@@ -213,10 +221,31 @@ export function context(model: SauceModel, portfolio: CustomerOrders, opt: Conte
     const lineOf = (equipment: string) => Object.values(model.lines).find((l) => l.equipment.includes(equipment));
     const lastBatch: Record<string, number> = {};
     const used: Record<string, number> = {};
+    // Pedidos fijados: sus llenados y las tandas que los alimentan no se mueven aunque sean después de AHORA.
+    const fixed = new Set(opt.fixed ?? []);
+    const fixedBatches = new Set(prev.schedule.filter((r) => fixed.has(r.order) && model.fillers.includes(r.equipment) && r.batch_id).map((r) => r.batch_id!));
+    const hold = (k: string, a: number, b: number, why: string) => {
+      down[k] = [...(down[k] ?? []), [a, b, why] as [number, number, string]].sort((x, y) => x[0] - y[0]);
+      (hard[k] ??= []).push([a, b]);
+    };
     for (const r of prev.schedule) {
       const t0 = parseLocal(r.start);
       const t1 = parseLocal(r.end);
-      if (t0 >= now) continue;
+      if (t0 >= now) {
+        const line = lineOf(r.equipment);
+        if (line && r.batch_id && fixedBatches.has(r.batch_id)) {
+          frozenBatches.push({ id: r.batch_id, bulk: r.product, line: line.id, equipment: r.equipment, start: t0, end: t1, kg: r.quantity, order: r.order, changeoverMin: r.changeover_min, ...(r.changeover_kind ? { changeoverKind: r.changeover_kind } : {}), frozen: true });
+          hold(line.id, t0, t1, `Tanda fijada (${r.order})`);
+        } else if (!r.batch_id || !line) {
+          const job = jobs.get(r.order);
+          if (job && fixed.has(r.order) && model.fillers.includes(r.equipment)) {
+            frozenFills.push({ job, filler: r.equipment, start: t0, end: t1, qty: r.quantity, batch: r.batch_id ?? "", changeoverMin: r.changeover_min, ...(r.changeover_kind ? { changeoverKind: r.changeover_kind } : {}), frozen: true });
+            done[r.order] = (done[r.order] ?? 0) + r.quantity;
+            hold(r.equipment, t0, t1, `Pedido fijado ${r.order}`);
+          }
+        }
+        continue;
+      }
       const line = lineOf(r.equipment);
       if (line && r.batch_id) {
         // Una tanda que ya arrancó termina (el granel no se puede dejar a medias).
@@ -255,7 +284,7 @@ export function context(model: SauceModel, portfolio: CustomerOrders, opt: Conte
     for (const k of Object.keys(lineFree)) lineFree[k] = Math.max(lineFree[k], now);
     for (const f of Object.values(fillerFree)) f.at = Math.max(f.at, now);
   }
-  return { model, orders, jobs, start, now, horizonEnd, down, frozenBatches, frozenFills, done, stock, lineFree, lineState, fillerFree };
+  return { model, orders, jobs, start, now, horizonEnd, down, hard, frozenBatches, frozenFills, done, stock, lineFree, lineState, fillerFree };
 }
 
 export interface DispatchResult {
@@ -319,9 +348,16 @@ export function dispatch(ctx: Context, queues: Record<string, Chunk[]>): Dispatc
   const slot = (line: Line, need: number, notBefore: number): { t: number; end: number } | null => {
     let t = ready(line.id, Math.max(lineFree[line.id], notBefore));
     // Una tanda (con su cambio) no se deja a medias de un día para otro: si no alcanza antes del cierre, arranca al otro día.
-    for (let g = 0; g < 10 && t < ctx.horizonEnd && cal.advance(t, need) !== t + need; g++) t = ready(line.id, runEnd(t));
-    if (t >= ctx.horizonEnd) return null;
-    return { t, end: cal.advance(t, need, blocked(line.id)) };
+    for (let k = 0; k < 20; k++) {
+      for (let g = 0; g < 10 && t < ctx.horizonEnd && cal.advance(t, need) !== t + need; g++) t = ready(line.id, runEnd(t));
+      if (t >= ctx.horizonEnd) return null;
+      const end = cal.advance(t, need, blocked(line.id));
+      // Una tanda no atraviesa la de un pedido fijado: arranca después.
+      const hit = (ctx.hard[line.id] ?? []).find(([a, b]) => a < end && b > t);
+      if (!hit) return { t, end };
+      t = ready(line.id, hit[1]);
+    }
+    return null;
   };
 
   /**
@@ -330,16 +366,38 @@ export function dispatch(ctx: Context, queues: Record<string, Chunk[]>): Dispatc
    * termine cuando la llenadora quede libre (al otro día, si toca).
    */
   const makeBatch = (line: Line, job: Job, notBefore: number, choices: string[], wantKg: number): Stock | null => {
-    const ch = model.lineChangeover({ bulk: lineState[line.id]?.bulk, dirty: dirty[job.bulk] }, job.bulk);
-    const need = ch.min + line.batchMin;
     const holdMin = model.bulks[job.bulk].holdMin;
-    let s = slot(line, need, notBefore);
-    for (let g = 0; s && g < 4; g++) {
-      const fillAt = Math.min(...choices.map((x) => plan(x, job, s!.end).t));
-      if (fillAt <= s.end + holdMin) break;
-      const later = slot(line, need, fillAt - need);
-      if (!later || later.t <= s.t) break;
-      s = later;
+    // Tandas de pedidos fijados en esta línea (después de AHORA): la tanda nueva cuenta su cambio desde la que tenga
+    // antes, y solo va justo antes de una fijada si el cambio que esa fijada ya trae alcanza para pasar de esta receta.
+    const fixedHere = ctx.frozenBatches.filter((b) => b.line === line.id && b.start >= ctx.now);
+    let ch = model.lineChangeover({ bulk: lineState[line.id]?.bulk, dirty: dirty[job.bulk] }, job.bulk);
+    let need = ch.min + line.batchMin;
+    let s: { t: number; end: number } | null = null;
+    let from = notBefore;
+    for (let k = 0; k < 12; k++) {
+      s = slot(line, need, from);
+      for (let g = 0; s && g < 4; g++) {
+        const fillAt = Math.min(...choices.map((x) => plan(x, job, s!.end).t));
+        if (fillAt <= s.end + holdMin) break;
+        const later = slot(line, need, fillAt - need);
+        if (!later || later.t <= s.t) break;
+        s = later;
+      }
+      if (!s || !fixedHere.length) break;
+      const before = fixedHere.filter((b) => b.end <= s!.t && b.end > lineFree[line.id]).sort((a, b) => b.end - a.end)[0];
+      const ch2 = before ? model.lineChangeover({ bulk: before.bulk }, job.bulk) : ch;
+      if (ch2.min !== ch.min) {
+        ch = ch2;
+        need = ch.min + line.batchMin;
+        from = s.t;
+        continue;
+      }
+      const after = fixedHere.filter((b) => b.start >= s!.end).sort((a, b) => a.start - b.start)[0];
+      if (after && after.bulk !== job.bulk && model.lineChangeover({ bulk: job.bulk }, after.bulk).min > after.changeoverMin) {
+        from = after.end;
+        continue;
+      }
+      break;
     }
     if (!s) return null;
     const { t, end } = s;
@@ -455,7 +513,13 @@ export function dispatch(ctx: Context, queues: Record<string, Chunk[]>): Dispatc
         nozzleMin = 0;
       }
       if (t >= ctx.horizonEnd) break;
-      const end = cal.advance(t, co + units / rate, blocked(m));
+      let end = cal.advance(t, co + units / rate, blocked(m));
+      // Un llenado no atraviesa el de un pedido fijado: arranca después.
+      for (let hit = (ctx.hard[m] ?? []).find(([a, b]) => a < end && b > t), k = 0; hit && k < 20; hit = (ctx.hard[m] ?? []).find(([a, b]) => a < end && b > t), k++) {
+        t = ready(m, hit[1]);
+        end = cal.advance(t, co + units / rate, blocked(m));
+      }
+      if (t >= ctx.horizonEnd) break;
       fills.push({ job, filler: m, start: t, end, qty: units, batch: head.batch, changeoverMin: Math.round(co), ...(co > 0 && kind ? { changeoverKind: kind } : {}), ...(routine ? { routine } : {}) });
       Object.assign(filler[m], { at: end, bulk, format: p.format, runMin: runMin + units / rate, nozzleMin: nozzleMin + units / rate });
       t = end;

@@ -51,6 +51,15 @@ export function setVigente(plan: ProductionPlan | null): void {
   write("vigente", plan ? { ...plan, status: "vigente" } : null, "plan");
 }
 
+/** Pedidos fijados en el Gantt: CALCULAR y Fractal los dejan donde están en la vigente. */
+export function fixedOrders(): string[] {
+  return read<string[]>("fixed", []);
+}
+
+export function setFixedOrders(list: string[]): void {
+  write("fixed", list.length ? list : null, "plan");
+}
+
 /** Eventos del emulador (fallas y paros), del más reciente al más viejo. */
 export function events(): PlantEvent[] {
   return read<PlantEvent[]>("events", []);
@@ -83,6 +92,7 @@ export const shownNow = (tz = "-05:00") => sharedClock() ?? demoNow(tz);
 /** Vuelve a la planta inicial de la demo: plan manual, sin fallas, reloj en AHORA. */
 export function resetDemo(): void {
   write("vigente", null, "plan");
+  write("fixed", null, "plan");
   write("events", null, "events");
   write("clock", null, "clock");
   write("config", null, "config");
@@ -149,5 +159,6 @@ export function activeConfig(): SauceConfig | null {
 /** Activa una versión (null = la precargada) y vuelve al plan manual de esa configuración. */
 export function setActiveConfig(id: string | null): void {
   write("vigente", null, "plan");
+  write("fixed", null, "plan");
   write("config", id, "config");
 }

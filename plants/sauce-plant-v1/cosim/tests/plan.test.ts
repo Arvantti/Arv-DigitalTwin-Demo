@@ -165,6 +165,21 @@ describe("cosimulador de salsas: cartera de la demo", () => {
     expect(fills(man).some((r) => r.changeover_kind === "alergeno")).toBe(true);
   });
 
+  it("un pedido fijado en el Gantt no se mueve al calcular: sus llenados y sus tandas quedan donde estaban", async () => {
+    const man = manualPlan(model, portfolio, manual);
+    const later = man.orders.filter((o) => parseLocal(o.start) > parseLocal(NOW) + 1440).sort((a, b) => a.id.localeCompare(b.id));
+    const pick = later[3].id;
+    const rows = (p: ProductionPlan) => {
+      const mine = p.schedule.filter((r) => r.order === pick && r.stage === "llenado");
+      const ids = new Set(mine.map((r) => r.batch_id));
+      return p.schedule.filter((r) => mine.includes(r) || (r.unit === "kg" && ids.has(r.batch_id))).map((r) => `${r.equipment}|${r.start}|${r.end}|${r.quantity}`).sort();
+    };
+    const sol = solve(await highs, model, portfolio, { now: NOW, previous: man, fixed: [pick] });
+    checkPlan(sol);
+    expect(rows(sol)).toEqual(rows(man));
+    expect(sol.orders.find((o) => o.id === pick)!.completion).toBe(man.orders.find((o) => o.id === pick)!.completion);
+  });
+
   it("replanea desde AHORA: lo de antes queda igual y una falla de la caldera para la línea caliente", async () => {
     const h = await highs;
     const base = solve(h, model, portfolio);

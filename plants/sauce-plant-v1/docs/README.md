@@ -134,6 +134,10 @@ noviembre, 10:00; `?now=` lo cambia).
 - CALCULAR CON EL COSIMULADOR: HiGHS en el navegador desde AHORA con lo anterior congelado. La propuesta muestra
   pedidos tarde, atraso, cambios, CIP y merma contra el plan vigente, y el puntaje de abajo; se aprueba o se descarta.
   PLAN MANUAL vuelve a APS-MAN-01.
+- 🔒 FIJAR EN EL GANTT (en la barra del pedido elegido): el pedido se queda donde está en la vigente. CALCULAR y
+  Fractal congelan sus llenados y las tandas que los alimentan aunque sean después de AHORA (`fixed` en
+  `cosim/plan.ts`) y programan el resto alrededor: nada se cruza con ellos y una tanda solo va justo antes de una
+  fijada si el cambio que esa fijada trae alcanza. SOLTAR o SOLTAR TODOS los libera; `?reset=1` también.
 
 `view.ts` arma lo que se pinta (sin DOM) y lo cubren las pruebas (`pnpm --filter @plants/sauce-plant-v1-app test`).
 
