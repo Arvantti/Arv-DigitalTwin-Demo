@@ -8,3 +8,5 @@ previews/**/*.mp4
 previews/**/*.png
 .hyperframes/
 assets/qa-recuadros.json
+vertical/assets/
+vertical/out/
