@@ -40,6 +40,8 @@ export interface StudyInput {
   previous: ProductionPlan;
   /** Fallas del emulador (o simuladas en la pantalla). */
   events?: PlantEvent[];
+  /** Pedidos fijados en el Gantt: ninguna opción los mueve. */
+  fixed?: string[];
   /** adelantar: el pedido y su nueva entrega. */
   order?: { id: string; due: string };
   studyId?: string;
@@ -163,7 +165,7 @@ export async function runStudy(newHighs: () => Promise<HighsLike>, model: SauceM
     async evaluate(variant, id) {
       const s = (variant.data ?? {}) as Setup;
       const m = s.dedicate ? dedicated(model) : model;
-      const plan = solve(await newHighs(), m, s.portfolio ?? input.portfolio, { now: input.now, previous: input.previous, events, planId: id, ...(s.solver ?? {}) });
+      const plan = solve(await newHighs(), m, s.portfolio ?? input.portfolio, { now: input.now, previous: input.previous, events, fixed: input.fixed, planId: id, ...(s.solver ?? {}) });
       if (s.orderChanges) plan.order_changes = s.orderChanges;
       return { plan, loads: loadsOf(m, plan, now, winEnd) };
     },

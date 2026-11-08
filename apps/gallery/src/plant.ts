@@ -2425,6 +2425,8 @@ async function start(): Promise<void> {
   if (look?.length === 6 && look.every(Number.isFinite)) lookAt(look);
   // Para videos automáticos: mover la cámara cuadro a cuadro con los mismos números de &look.
   (window as unknown as { __look?: (l: number[]) => void }).__look = lookAt;
+  // Y resaltar un equipo (recorridos de producto del video de salsas).
+  (window as unknown as { __select?: (id: string | null) => void }).__select = select;
   if (url.get("tour") === "1") startTour();
   if (url.get("autosim") === "1" && simulated && plantId !== "plastic-injection-plant-v1") {
     if (url.get("scenario")) sel.value = url.get("scenario")!;

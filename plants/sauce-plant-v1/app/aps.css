@@ -84,3 +84,12 @@ button.cf-del { color: #ffb3b3; }
 .cf-versions tr.sel td { background: rgba(45, 127, 249, 0.1); }
 .aps-chip.cf-chip-top { border-color: var(--warn); color: var(--warn); }
 @media (max-width: 1100px) { .cf-head { grid-template-columns: 1fr; } .cf-board { grid-template-columns: repeat(7, 170px); } }
+
+/* Pedidos fijados en el Gantt */
+.sa-bar.fixed { outline: 2px dashed var(--warn); outline-offset: -1px; }
+.sa-bar.fixed span::before { content: "🔒 "; }
+button.sa-lock { margin-left: 8px; padding: 2px 9px; border-color: var(--warn); color: var(--warn); }
+button.sa-lock.on { background: rgba(255, 176, 0, 0.16); }
+.sa-fixed-note { margin: 0 0 8px; padding: 6px 10px; border: 1px solid var(--warn); border-radius: var(--radius-control); background: rgba(255, 176, 0, 0.08); color: var(--text); }
+.sa-fixed-note button { padding: 1px 8px; margin-left: 6px; }
+.aps-page .chip.sa-fix { border-color: var(--warn); }

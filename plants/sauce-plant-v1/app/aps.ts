@@ -23,7 +23,7 @@ import { buildModel, type SauceModel } from "@plants/sauce-plant-v1-cosim/model.
 import { manualPlan } from "@plants/sauce-plant-v1-cosim/manual.ts";
 import type { HighsLike } from "@plants/sauce-plant-v1-cosim/solve.ts";
 import { demoManual, demoPortfolio, layoutEquipment, sauceData } from "./data.ts";
-import { activeConfig, activeEvents, events as storedEvents, onChange, resetDemo, savedVigente, setEvents, setVigente } from "./store.ts";
+import { activeConfig, activeEvents, events as storedEvents, fixedOrders, onChange, resetDemo, savedVigente, setEvents, setFixedOrders, setVigente } from "./store.ts";
 import { mountConfig } from "./config.ts";
 import { BULK_COLOR, compareKpis, DEMO_NOW, dayLabel, dayNumber, failureCandidates, ganttSections, movableOrders, orderState, score, studyKpis, when, type Bar, type Lane } from "./view.ts";
 
@@ -52,6 +52,8 @@ interface State {
   study: FractalStudy | null;
   studying: SauceScenario | null;
   studyError: string | null;
+  /** Pedidos fijados en el Gantt (🔒): CALCULAR y Fractal los dejan donde están. */
+  fixed: string[];
 }
 
 export function mountSauceAps(root: HTMLElement): void {
@@ -82,6 +84,7 @@ export function mountSauceAps(root: HTMLElement): void {
     study: null,
     studying: null,
     studyError: null,
+    fixed: fixedOrders(),
   };
   const shown = () => (st.showing === "propuesta" && st.propuesta ? st.propuesta : st.vigente);
 
@@ -174,7 +177,7 @@ export function mountSauceAps(root: HTMLElement): void {
     box.innerHTML = `
       <div class="aps-prop-head">
         <div>
-          <p><b>PROPUESTA ${esc(p.plan_id)}</b> · ${p.source === "fractal" ? `Fractal · ${esc((p.notes?.[0] ?? "").replace(/^Fractal · /, "").replace(/\.$/, ""))}` : "cosimulador"} desde AHORA (${esc(when(st.nowText))}); lo anterior queda como estaba.</p>
+          <p><b>PROPUESTA ${esc(p.plan_id)}</b> · ${p.source === "fractal" ? `Fractal · ${esc((p.notes?.[0] ?? "").replace(/^Fractal · /, "").replace(/\.$/, ""))}` : "cosimulador"} desde AHORA (${esc(when(st.nowText))}); lo anterior queda como estaba${st.fixed.length ? ` y ${st.fixed.length === 1 ? "el pedido fijado no se mueve" : `los ${st.fixed.length} pedidos fijados no se mueven`}` : ""}.</p>
           <p class="dim small">${sv ? `HiGHS ${esc(sv.status)} · ${num(sv.variables)} variables · ${num(sv.constraints)} restricciones · ${num(sv.seconds, 2)} s` : ""} · puntaje ${num(s0, 1)} → <b class="${s1 < s0 ? "ok" : "bad"}">${num(s1, 1)}</b> (menor es mejor)</p>
           <div class="aps-scen">
             <button data-show="vigente" class="${st.showing === "vigente" ? "active" : ""}">VER VIGENTE</button>
@@ -212,7 +215,7 @@ export function mountSauceAps(root: HTMLElement): void {
         const imp = o.importance === "alta" ? `<span class="chip late">ALTA</span>` : o.importance === "baja" ? `<span class="chip">baja</span>` : "";
         const sku = st.model.products[o.product];
         return `<tr class="${state === "hecho" ? "past" : ""}${o.id === st.selected ? " sel" : ""}" data-order="${esc(o.id)}">
-          <td><b>${esc(o.id)}</b></td>
+          <td><b>${esc(o.id)}</b>${st.fixed.includes(o.id) ? ' <span class="chip sa-fix" title="Fijado en el Gantt">🔒</span>' : ""}</td>
           <td>${esc(o.customer ?? "")}</td>
           <td><i class="dot" style="background:${BULK_COLOR[sku?.bulk ?? ""] ?? "#9ab"}"></i>${esc(o.product_name)}</td>
           <td class="num">${num(o.quantity)}</td>
@@ -227,7 +230,7 @@ export function mountSauceAps(root: HTMLElement): void {
       .join("");
     $("#sa-orders").innerHTML = `
       <div class="aps-orders-head">
-        <p class="dim">${esc(plan.plan_id)} · ${plan.source === "manual" ? "secuencia del planificador por orden de llegada" : plan.source === "fractal" ? "escenario de Fractal" : "cosimulador (HiGHS)"} · ${counts.hecho} hechos, ${counts["en curso"]} en curso y ${counts["por hacer"]} por hacer en AHORA. Clic en un pedido para verlo en el Gantt.</p>
+        <p class="dim">${esc(plan.plan_id)} · ${plan.source === "manual" ? (cfg ? "secuencia del planificador (configuración manual)" : "secuencia del planificador por orden de llegada") : plan.source === "fractal" ? "escenario de Fractal" : "cosimulador (HiGHS)"} · ${counts.hecho} hechos, ${counts["en curso"]} en curso y ${counts["por hacer"]} por hacer en AHORA. Clic en un pedido para verlo en el Gantt.</p>
         ${cards}
       </div>
       <div class="aps-table-wrap">
@@ -266,7 +269,7 @@ export function mountSauceAps(root: HTMLElement): void {
     const bar = (x: Bar) => {
       if (x.end <= a || x.start >= b) return "";
       const coPct = x.end > x.start ? Math.min(100, (100 * Math.min(x.changeoverMin, x.end - x.start)) / (x.end - x.start)) : 0;
-      const cls = ["g-bar", "sa-bar", x.end <= st.now ? "done" : "", x.late ? "late" : "", st.selected && x.order !== st.selected ? "dim" : "", x.order === st.selected ? "sel" : "", x.changeoverKind ? `co-${x.changeoverKind}` : ""].filter(Boolean).join(" ");
+      const cls = ["g-bar", "sa-bar", x.end <= st.now ? "done" : "", x.late ? "late" : "", st.selected && x.order !== st.selected ? "dim" : "", x.order === st.selected ? "sel" : "", x.changeoverKind ? `co-${x.changeoverKind}` : "", st.fixed.includes(x.order) ? "fixed" : ""].filter(Boolean).join(" ");
       return `<div class="${cls}" data-order="${esc(x.order)}" title="${esc(x.title)}" style="left:${pct(x.start)};width:${width(x.start, x.end)};--c:${x.color};--co:${coPct.toFixed(2)}%"><span>${esc(x.text)}</span></div>`;
     };
     const lane = (l: Lane) => {
@@ -277,9 +280,16 @@ export function mountSauceAps(root: HTMLElement): void {
     const sections = ganttSections(st.model, plan, params)
       .map((s) => `<div class="g-section-title">${esc(s.title)}</div>${s.lanes.map(lane).join("")}`)
       .join("");
+    // 🔒 fija el pedido donde está en la vigente (lo que ya terminó no hace falta fijarlo).
+    const lockBtn = (o: { id: string; completion: string }) =>
+      st.showing === "vigente" && parseLocal(o.completion) > st.now
+        ? st.fixed.includes(o.id)
+          ? ` <button id="sa-lock" class="sa-lock on" title="Fijado: CALCULAR y Fractal no lo mueven. Clic para soltarlo">🔒 FIJADO · SOLTAR</button>`
+          : ` <button id="sa-lock" class="sa-lock" title="Fijar este pedido donde está: CALCULAR y Fractal organizan el resto sin moverlo">🔓 FIJAR EN EL GANTT</button>`
+        : "";
     const sel = st.selected ? plan.orders.find((o) => o.id === st.selected) : null;
     const selText = sel
-      ? `<p class="sa-sel"><b>${esc(sel.id)}</b> · ${esc(sel.customer ?? "")} · ${num(sel.quantity)} u de ${esc(sel.product_name)} · entrega ${esc(when(sel.due))} · termina ${esc(when(sel.completion))}${sel.late_h > 0 ? ` · <span class="bad">${num(sel.late_h, 1)} h tarde</span>` : ` · <span class="ok">a tiempo</span>`} <button id="sa-unsel">✕</button></p>`
+      ? `<p class="sa-sel"><b>${esc(sel.id)}</b> · ${esc(sel.customer ?? "")} · ${num(sel.quantity)} u de ${esc(sel.product_name)} · entrega ${esc(when(sel.due))} · termina ${esc(when(sel.completion))}${sel.late_h > 0 ? ` · <span class="bad">${num(sel.late_h, 1)} h tarde</span>` : ` · <span class="ok">a tiempo</span>`}${lockBtn(sel)} <button id="sa-unsel">✕</button></p>`
       : "";
     const legend = `
       ${Object.entries(BULK_NAME).map(([b, n]) => `<span><i style="background:${BULK_COLOR[b]}"></i>${n}</span>`).join("")}
@@ -300,6 +310,7 @@ export function mountSauceAps(root: HTMLElement): void {
         </span>
         <div class="g-legend">${legend}</div>
       </div>
+      ${st.fixed.length ? `<p class="sa-fixed-note">🔒 ${st.fixed.length === 1 ? "1 pedido fijado" : `${st.fixed.length} pedidos fijados`} (${st.fixed.map(esc).join(", ")}): CALCULAR y Fractal organizan el resto sin moverlos. <button id="sa-unlock-all">SOLTAR TODOS</button></p>` : ""}
       ${selText}
       <div class="g-wrap sa-gantt">
         <div class="g-head"><div></div><div class="g-track">${days}</div></div>
@@ -321,7 +332,7 @@ export function mountSauceAps(root: HTMLElement): void {
       // Una instancia nueva por corrida: highs-js no garantiza resolver varias veces con la misma.
       const highs = (await highsLoader({ locateFile: () => wasmUrl })) as unknown as HighsLike;
       const n = Number(st.propuesta?.plan_id.match(/(\d+)$/)?.[1] ?? 0) + 1;
-      st.propuesta = { ...solve(highs, st.model, portfolio, { now: st.nowText, previous: st.vigente, events: st.events, planId: `APS-SOL-${String(n).padStart(2, "0")}` }), status: "propuesta" };
+      st.propuesta = { ...solve(highs, st.model, portfolio, { now: st.nowText, previous: st.vigente, events: st.events, fixed: st.fixed, planId: `APS-SOL-${String(n).padStart(2, "0")}` }), status: "propuesta" };
       st.showing = "propuesta";
     } catch (err) {
       st.error = (err as Error).message ?? String(err);
@@ -338,7 +349,7 @@ export function mountSauceAps(root: HTMLElement): void {
   };
   let studies = 0;
 
-  async function study(input: Omit<StudyInput, "portfolio" | "now" | "previous" | "events" | "studyId">) {
+  async function study(input: Omit<StudyInput, "portfolio" | "now" | "previous" | "events" | "fixed" | "studyId">) {
     if (st.studying) return;
     st.studying = input.scenario;
     st.studyError = null;
@@ -346,7 +357,7 @@ export function mountSauceAps(root: HTMLElement): void {
     try {
       const { runStudy } = await import("@plants/sauce-plant-v1-fractal/study.ts");
       studies += 1;
-      st.study = await runStudy(newHighs, st.model, { ...input, portfolio, now: st.nowText, previous: st.vigente, events: st.events, studyId: `FRA-${String(studies).padStart(2, "0")}` });
+      st.study = await runStudy(newHighs, st.model, { ...input, portfolio, now: st.nowText, previous: st.vigente, events: st.events, fixed: st.fixed, studyId: `FRA-${String(studies).padStart(2, "0")}` });
     } catch (err) {
       st.studyError = (err as Error).message ?? String(err);
     } finally {
@@ -388,7 +399,7 @@ export function mountSauceAps(root: HTMLElement): void {
         .join("");
     };
     $("#sa-fractal").innerHTML = `
-      <div class="fr-head"><div><h2 class="fr-title">◆ Fractal · escenarios</h2><p class="fr-intro">Fractal prueba cambios en cómo se organiza la planta (campañas de recetas por día, recetas pequeñas cada 2 o 3 días, llenadoras multipropósito dedicadas, prioridad de un pedido). El cosimulador coloca cada combinación y Fractal la califica con el puntaje de la planta: atraso, pedidos tarde, horas de CIP, otros cambios y merma. <b>Fractal recomienda; la persona decide.</b></p></div></div>
+      <div class="fr-head"><div><h2 class="fr-title">◆ Fractal · escenarios</h2><p class="fr-intro">Fractal prueba cambios en cómo se organiza la planta (campañas de recetas por día, recetas pequeñas cada 2 o 3 días, llenadoras multipropósito dedicadas, prioridad de un pedido). El cosimulador coloca cada combinación y Fractal la califica con el puntaje de la planta: atraso, pedidos tarde, horas de CIP, otros cambios y merma. <b>Fractal recomienda; la persona decide.</b></p>${st.fixed.length ? `<p class="sa-fixed-note">🔒 ${st.fixed.length === 1 ? "1 pedido fijado" : `${st.fixed.length} pedidos fijados`} en el Gantt (${st.fixed.map(esc).join(", ")}): ninguna opción ${st.fixed.length === 1 ? "lo" : "los"} mueve.</p>` : ""}</div></div>
       <div class="fr-cards">
         ${card("adelantar", 1, `<p class="fr-desc">Un cliente pide su pedido antes. ¿Cómo cumplirle sin atrasar a los demás?</p>
           <label>Pedido <select id="fr-order">${movable.map((o) => `<option value="${esc(o.id)}">${esc(o.id)} · ${esc(o.product_name)} · ${num(o.quantity)} u · entrega ${esc(dayLabel(parseLocal(o.due), st.start))}</option>`).join("")}</select></label>
@@ -488,6 +499,17 @@ export function mountSauceAps(root: HTMLElement): void {
       st.windowDays = Number(win) as State["windowDays"];
       return render();
     }
+    if (el.closest("#sa-lock") && st.selected) {
+      const id = st.selected;
+      st.fixed = st.fixed.includes(id) ? st.fixed.filter((x) => x !== id) : [...st.fixed, id];
+      setFixedOrders(st.fixed);
+      return render();
+    }
+    if (el.closest("#sa-unlock-all")) {
+      st.fixed = [];
+      setFixedOrders([]);
+      return render();
+    }
     if (el.closest("#sa-unsel")) {
       st.selected = null;
       return render();
@@ -510,7 +532,10 @@ export function mountSauceAps(root: HTMLElement): void {
   // configuración de datos (la pantalla se vuelve a armar con ella).
   onChange((what) => {
     if (what === "config" && (activeConfig()?.id ?? null) !== (cfg?.id ?? null)) return location.reload();
-    if (what === "plan") st.vigente = savedVigente(portfolio.portfolio_id) ?? st.manual;
+    if (what === "plan") {
+      st.vigente = savedVigente(portfolio.portfolio_id) ?? st.manual;
+      st.fixed = fixedOrders();
+    }
     if (what === "events") st.events = storedEvents();
     if (what !== "clock") render();
   });

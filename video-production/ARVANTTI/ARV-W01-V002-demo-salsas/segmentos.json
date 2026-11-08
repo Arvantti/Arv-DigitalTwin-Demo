@@ -1,0 +1,894 @@
+{
+  "fuente": "docs/demo-salsas (guion.md de cada escenario y VIDEO.md §4)",
+  "cierre": [
+    [
+      "1 · Calcular",
+      "9 tarde, 244 h de atraso, 87 h de CIP, 8.874 kg de merma",
+      "3 tarde, 84 h, 84 h de CIP, 5.722 kg",
+      "6 pedidos salvados, 160 h de atraso y 3,2 t de merma menos"
+    ],
+    [
+      "2 · Adelantar un pedido",
+      "rehacer el plan a mano",
+      "Fractal en menos de un segundo",
+      "a tiempo, sin atrasar a nadie"
+    ],
+    [
+      "3 · Falla de la llenadora de mostaza",
+      "14 tarde, 498 h",
+      "3 tarde, 84 h",
+      "11 pedidos salvados, 414 h de atraso menos"
+    ],
+    [
+      "4 · Lavar menos",
+      "83,8 h de CIP, 5.722 kg",
+      "78,2 h, 4.395 kg",
+      "5,6 h de CIP y 1,3 t de merma menos, mismas entregas"
+    ],
+    [
+      "5 · Merma contra entregas",
+      "dos opciones",
+      "la persona decide",
+      "el precio de cada kilo ahorrado, a la vista"
+    ]
+  ],
+  "capitulos": [
+    {
+      "id": "0-apertura",
+      "eyebrow": "GEMELO DIGITAL · SALSAS",
+      "titulo": "Una planta de salsas y su gemelo digital",
+      "segmentos": [
+        {
+          "id": "0-S01",
+          "titulo": "La planta y su gemelo",
+          "texto": "Esta es una planta de salsas y aderezos, y este es su gemelo digital. Cocina salsa de tomate, mayonesa y mostaza en tres líneas de proceso, y las empaca en seis llenadoras. Todo lo que se ve aquí se mueve según la programación de la planta.",
+          "enPantalla": null,
+          "orbita": "0-apertura/orbitas/01-planta"
+        },
+        {
+          "id": "0-S02",
+          "titulo": "Estos son los productos",
+          "texto": "La planta fabrica diez productos. En la industria cada uno se llama SKU: cada presentación distinta que se vende. Salsa de tomate en doypack de mil mililitros y en sachet de doscientos cincuenta, BBQ y picante. Mayonesa en tres tamaños, mayonesa light y salsa rosada. Y mostaza. El doypack es la bolsa con pico; el sachet, el sobre pequeño.",
+          "enPantalla": null,
+          "tarjeta": "productos",
+          "focos": [
+            {
+              "frase": "Salsa de tomate en doypack",
+              "objetivo": "caliente"
+            },
+            {
+              "frase": "Mayonesa en tres tamaños",
+              "objetivo": "fria"
+            },
+            {
+              "frase": "Y mostaza",
+              "objetivo": "mostaza"
+            }
+          ]
+        },
+        {
+          "id": "0-S03",
+          "titulo": "El recorrido de la salsa de tomate",
+          "texto": "Sigamos tres de ellos por la planta. La salsa de tomate de mil mililitros se cocina en una de estas tres marmitas, ollas grandes con chaqueta de vapor, en tandas de dos mil kilos. El vapor lo da la caldera. Después pasa por el pasteurizador, que la calienta a noventa y cinco grados para que dure, y espera caliente en el pulmón: el tanque donde la salsa lista aguarda a la llenadora. La llenadora de doypack uno la empaca, el túnel de enfriamiento baja la temperatura de las bolsas, y de ahí van a las cajas y a la bodega.",
+          "enPantalla": null,
+          "ruta": "0-apertura/orbitas/03-tomate",
+          "paradas": [
+            {
+              "frase": "estas tres marmitas",
+              "equipo": "kettle-02",
+              "rotulo": "Marmita"
+            },
+            {
+              "frase": "lo da la caldera",
+              "equipo": "boiler-01",
+              "rotulo": "Caldera"
+            },
+            {
+              "frase": "pasa por el pasteurizador",
+              "equipo": "pasteurizer-01",
+              "rotulo": "Pasteurizador"
+            },
+            {
+              "frase": "espera caliente en el pulmón",
+              "equipo": "buffer-hot-01",
+              "rotulo": "Pulmón caliente"
+            },
+            {
+              "frase": "La llenadora de doypack uno",
+              "equipo": "filler-pouch-01",
+              "rotulo": "Llenadora de doypack 1"
+            },
+            {
+              "frase": "el túnel de enfriamiento",
+              "equipo": "cooling-tunnel-01",
+              "rotulo": "Túnel de enfriamiento"
+            },
+            {
+              "frase": "a las cajas",
+              "equipo": "pack-sauce-1000",
+              "rotulo": "Encajado"
+            },
+            {
+              "frase": "a la bodega",
+              "equipo": "rack-pt-02",
+              "rotulo": "Bodega de producto terminado"
+            }
+          ]
+        },
+        {
+          "id": "0-S04",
+          "titulo": "El recorrido de la mayonesa",
+          "texto": "La mayonesa va por la línea fría. En el tanque de fase acuosa se mezclan el huevo, el agua y el vinagre. El emulsificador le incorpora el aceite al vacío, en tandas de mil quinientos kilos, y el molino coloidal la deja fina. Espera fría en su pulmón, y la llenadora de sachet uno la empaca en sobres de doscientos cincuenta mililitros.",
+          "enPantalla": null,
+          "ruta": "0-apertura/orbitas/04-mayonesa",
+          "paradas": [
+            {
+              "frase": "el tanque de fase acuosa",
+              "equipo": "tank-aqueous-01",
+              "rotulo": "Tanque de fase acuosa"
+            },
+            {
+              "frase": "El emulsificador",
+              "equipo": "emulsifier-01",
+              "rotulo": "Emulsificador"
+            },
+            {
+              "frase": "el molino coloidal",
+              "equipo": "colloid-mill-01",
+              "rotulo": "Molino coloidal"
+            },
+            {
+              "frase": "Espera fría en su pulmón",
+              "equipo": "buffer-cold-01",
+              "rotulo": "Pulmón frío"
+            },
+            {
+              "frase": "la llenadora de sachet uno",
+              "equipo": "filler-sachet-01",
+              "rotulo": "Llenadora de sachet 1"
+            }
+          ]
+        },
+        {
+          "id": "0-S05",
+          "titulo": "El recorrido de la mostaza",
+          "texto": "La mostaza se hidrata en su tanque, el molino de piedra la muele y la llenadora de sachet tres la empaca. Esa llenadora y la de mayonesa son multipropósito: cualquiera de las dos puede llenar mayonesa o mostaza. Pero entre una y otra hay que lavar, porque la mayonesa lleva huevo, que es un alérgeno.",
+          "enPantalla": null,
+          "ruta": "0-apertura/orbitas/05-mostaza",
+          "paradas": [
+            {
+              "frase": "se hidrata en su tanque",
+              "equipo": "tank-mustard-01",
+              "rotulo": "Tanque de mostaza"
+            },
+            {
+              "frase": "el molino de piedra",
+              "equipo": "mustard-mill-01",
+              "rotulo": "Molino de piedra"
+            },
+            {
+              "frase": "la llenadora de sachet tres",
+              "equipo": "filler-sachet-03",
+              "rotulo": "Llenadora de sachet 3"
+            },
+            {
+              "frase": "y la de mayonesa son multipropósito",
+              "equipo": "filler-sachet-01",
+              "rotulo": "Llenadoras multipropósito"
+            }
+          ]
+        },
+        {
+          "id": "0-S06",
+          "titulo": "Cuatro reglas propias de los alimentos",
+          "texto": "Programar esta planta tiene cuatro reglas que no existen en otras industrias. Primero, el orden de recetas: cada línea va de lo suave a lo fuerte, como tomate, BBQ y picante. Avanzar cuesta un cambio corto; devolverse exige un CIP completo de noventa minutos. CIP quiere decir limpieza en sitio: lavar tanques, tuberías y llenadoras sin desarmarlos. Segundo, los alérgenos: pasar de mayonesa a mostaza en la misma llenadora también exige ese lavado completo, con verificación. Tercero, el tiempo de espera: la salsa de tomate caliente aguanta cuatro horas en el pulmón; si nadie la llena a tiempo, se bota, y eso es merma. Y cuarto, las tandas: una marmita no se deja a medias de un día para otro.",
+          "enPantalla": null,
+          "tarjeta": "reglas",
+          "focos": [
+            {
+              "frase": "Primero, el orden de recetas",
+              "objetivo": "recetas"
+            },
+            {
+              "frase": "Segundo, los alérgenos",
+              "objetivo": "alergenos"
+            },
+            {
+              "frase": "Tercero, el tiempo de espera",
+              "objetivo": "espera"
+            },
+            {
+              "frase": "Y cuarto, las tandas",
+              "objetivo": "tandas"
+            }
+          ]
+        },
+        {
+          "id": "0-S07",
+          "titulo": "Cómo se conecta todo",
+          "texto": "El gemelo tiene cuatro partes conectadas. El emulador hace de planta real: cada equipo produce en tiempo real, y aquí se simulan las fallas. El centro de control recibe las señales de todos los equipos. El gemelo 3D muestra la planta en el pasado, el presente y el futuro programado. Y el APS, el sistema de programación de la producción, decide qué se hace, en qué equipo y a qué hora.",
+          "enPantalla": null,
+          "tarjeta": "partes",
+          "focos": [
+            {
+              "frase": "El emulador hace de planta real",
+              "objetivo": "emulador"
+            },
+            {
+              "frase": "El centro de control",
+              "objetivo": "control"
+            },
+            {
+              "frase": "El gemelo 3D",
+              "objetivo": "gemelo"
+            },
+            {
+              "frase": "Y el APS",
+              "objetivo": "aps"
+            }
+          ]
+        },
+        {
+          "id": "0-S08",
+          "titulo": "La cartera de pedidos",
+          "texto": "Todo empieza con los pedidos. Esta es la cartera: ciento veintiocho pedidos de clientes inventados para los diez productos, cada uno con su cantidad, su fecha de entrega y su importancia. Las fechas se cuentan en días desde el arranque de la programación. Hoy es el día nueve, a las diez de la mañana: lo anterior ya pasó y no se mueve.",
+          "imagen": "0-apertura/capturas/08-pedidos.png",
+          "enPantalla": null,
+          "focos": [
+            {
+              "frase": "ciento veintiocho pedidos",
+              "objetivo": "pedidos en la cartera",
+              "rotulo": "128 pedidos"
+            },
+            {
+              "frase": "su fecha de entrega",
+              "objetivo": "ENTREGA",
+              "rotulo": "Fecha de entrega"
+            },
+            {
+              "frase": "Hoy es el día nueve",
+              "objetivo": "AHORA · día 9 · mié 4 nov · 10:00",
+              "rotulo": "Hoy: día 9, 10:00"
+            }
+          ]
+        },
+        {
+          "id": "0b-S01",
+          "titulo": "Los datos se pueden cargar a mano",
+          "texto": "Esta cartera venía ya cargada, pero todo se puede cargar a mano, en la pestaña de configuración del APS. Se trabaja sobre un borrador: arriba, el sistema recalcula al instante cuántos pedidos quedarían tarde, cuántas horas de lavado y cuánta merma habría con esos datos.",
+          "imagen": "0b-configurar-datos/capturas/01-configuracion.png",
+          "enPantalla": null,
+          "focos": [
+            {
+              "frase": "en la pestaña de configuración del APS",
+              "objetivo": "⚙ CONFIGURACIÓN",
+              "rotulo": "Configuración"
+            },
+            {
+              "frase": "Se trabaja sobre un borrador",
+              "objetivo": "PLAN MANUAL CON ESTE BORRADOR",
+              "rotulo": "El plan con este borrador"
+            }
+          ]
+        },
+        {
+          "id": "0b-S02",
+          "titulo": "Los pedidos",
+          "texto": "Primero, los pedidos. Agregamos uno: un restaurante pide mil quinientas unidades de salsa BBQ de un litro para el sábado. En la misma tabla se cambia la cantidad, la fecha de entrega o la importancia de cualquier pedido, o se elimina.",
+          "imagen": "0b-configurar-datos/capturas/02-pedido-nuevo.png",
+          "enPantalla": null,
+          "focos": [
+            {
+              "frase": "Agregamos uno",
+              "objetivo": "PED-D12-11 agregado. Ubícalo en una llenadora en el paso 3 o déjalo sin asignar.",
+              "rotulo": "Pedido nuevo"
+            },
+            {
+              "frase": "o se elimina",
+              "objetivo": "🗑 ELIMINAR",
+              "rotulo": "Eliminar"
+            }
+          ]
+        },
+        {
+          "id": "0b-S03",
+          "titulo": "Qué llenadora hace cada producto",
+          "texto": "Segundo, qué llenadora hace cada producto. Basta arrastrar una llenadora sobre el producto para asignarla.",
+          "imagen": "0b-configurar-datos/capturas/04-llenadora-asignada.png",
+          "enPantalla": null,
+          "focos": [
+            {
+              "frase": "para asignarla",
+              "objetivo": "filler-pouch-02 asignada a Salsa BBQ 1.000 ml.",
+              "rotulo": "Llenadora asignada"
+            }
+          ]
+        },
+        {
+          "id": "0b-S03b",
+          "titulo": "Lo que no se puede",
+          "texto": "Si no tiene ese tamaño de envase, el sistema la rechaza: una llenadora de sachets de doscientos cincuenta mililitros no puede llenar un doypack de un litro. Aquí también se crea un producto nuevo duplicando uno que ya existe.",
+          "imagen": "0b-configurar-datos/capturas/05-rechazada.png",
+          "enPantalla": null,
+          "focos": [
+            {
+              "frase": "el sistema la rechaza",
+              "objetivo": "filler-sachet-02 no tiene formato de 1.000 ml: no puede llenar Salsa BBQ 1.000 ml.",
+              "rotulo": "Rechazada: otro formato"
+            },
+            {
+              "frase": "duplicando uno que ya existe",
+              "objetivo": "⧉ DUPLICAR",
+              "rotulo": "Duplicar"
+            }
+          ]
+        },
+        {
+          "id": "0b-S04",
+          "titulo": "La secuencia del planificador",
+          "texto": "Tercero, la secuencia: en qué llenadora va cada pedido y en qué orden, como lo decidiría el planificador. El pedido nuevo está sin asignar: lo arrastramos a su llenadora y lo subimos en la fila. Arriba, los indicadores cambian en el momento.",
+          "imagen": "0b-configurar-datos/capturas/07-secuencia-movida.png",
+          "enPantalla": null,
+          "focos": [
+            {
+              "frase": "lo arrastramos a su llenadora",
+              "objetivo": "PED-D12-11",
+              "rotulo": "En su llenadora"
+            },
+            {
+              "frase": "los indicadores cambian",
+              "objetivo": "PLAN MANUAL CON ESTE BORRADOR",
+              "rotulo": "Recalculado"
+            }
+          ]
+        },
+        {
+          "id": "0b-S05",
+          "titulo": "Guardar la versión",
+          "texto": "Por último, guardamos esta configuración como una versión con nombre.",
+          "imagen": "0b-configurar-datos/capturas/08-guardada.png",
+          "enPantalla": null,
+          "focos": [
+            {
+              "frase": "como una versión con nombre",
+              "objetivo": "Versión «Semana 45 · pedido BBQ» guardada.",
+              "rotulo": "Versión guardada"
+            }
+          ]
+        },
+        {
+          "id": "0b-S05b",
+          "titulo": "Las versiones",
+          "texto": "Cada versión es una foto completa de los datos, sin el historial de cambios, y se puede abrir, usar en la planta o eliminar.",
+          "imagen": "0b-configurar-datos/capturas/09-versiones.png",
+          "enPantalla": null,
+          "focos": [
+            {
+              "frase": "se puede abrir",
+              "objetivo": "ABRIR",
+              "rotulo": "Abrir, usar o eliminar"
+            }
+          ]
+        },
+        {
+          "id": "0b-S05c",
+          "titulo": "Usarla en la planta",
+          "texto": "Al usarla, el APS, el emulador, el centro de control y el gemelo 3D trabajan con estos datos. Para los escenarios volvemos a la cartera precargada.",
+          "imagen": "0b-configurar-datos/capturas/10-en-la-planta.png",
+          "enPantalla": null,
+          "focos": [
+            {
+              "frase": "trabajan con estos datos",
+              "objetivo": "DATOS · Semana 45 · pedido BBQ",
+              "rotulo": "Datos en uso"
+            }
+          ]
+        },
+        {
+          "id": "0-S09",
+          "titulo": "Cinco escenarios",
+          "texto": "Veamos cinco escenarios. Uno, calcular la programación. Dos, un cliente adelanta su pedido. Tres, se cae la llenadora de mostaza. Cuatro, lavar menos con Fractal. Y cinco, cuánta merma vale la pena ahorrar.",
+          "enPantalla": null,
+          "tarjeta": "escenarios",
+          "focos": [
+            {
+              "frase": "Uno,",
+              "objetivo": "1"
+            },
+            {
+              "frase": "Dos,",
+              "objetivo": "2"
+            },
+            {
+              "frase": "Tres,",
+              "objetivo": "3"
+            },
+            {
+              "frase": "Cuatro,",
+              "objetivo": "4"
+            },
+            {
+              "frase": "Y cinco,",
+              "objetivo": "5"
+            }
+          ]
+        },
+        {
+          "id": "0-S10",
+          "titulo": "Arvantti DigitalTwin",
+          "texto": "Todo esto corre sobre Arvantti DigitalTwin, el gemelo 3D, con sus módulos: el APS para programar, el cosimulador que calcula la programación, Fractal para comparar escenarios y el centro de control. Empecemos.",
+          "enPantalla": null,
+          "tarjeta": "modulos",
+          "focos": [
+            {
+              "frase": "Arvantti DigitalTwin",
+              "objetivo": "centro"
+            },
+            {
+              "frase": "el APS para programar",
+              "objetivo": "aps"
+            },
+            {
+              "frase": "el cosimulador",
+              "objetivo": "cosimulacion"
+            },
+            {
+              "frase": "Fractal para comparar",
+              "objetivo": "fractal"
+            },
+            {
+              "frase": "y el centro de control",
+              "objetivo": "control"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "1-calcular-programacion",
+      "eyebrow": "ESCENARIO 1",
+      "titulo": "Calcular la programación",
+      "segmentos": [
+        {
+          "id": "1-S01",
+          "titulo": "El plan manual en el Gantt",
+          "texto": "La programación vigente la hizo el planificador a mano, por orden de llegada. Así se ve en el Gantt, el diagrama de barras en el tiempo: una fila por equipo y una barra por tanda o por llenado. El rayado al comienzo de cada barra es el cambio: rojo es un CIP por alérgeno, celeste un CIP de rutina, violeta un cambio de receta.",
+          "imagen": "1-calcular-programacion/capturas/01-gantt-manual.png",
+          "enPantalla": null,
+          "focos": [
+            {
+              "frase": "una barra por tanda",
+              "objetivo": "T021",
+              "rotulo": "Una barra = una tanda"
+            },
+            {
+              "frase": "rojo es un CIP por alérgeno",
+              "objetivo": "CIP por alérgeno",
+              "rotulo": "Rojo: CIP por alérgeno"
+            },
+            {
+              "frase": "celeste un CIP de rutina",
+              "objetivo": "CIP",
+              "rotulo": "Celeste: CIP"
+            },
+            {
+              "frase": "violeta un cambio de receta",
+              "objetivo": "receta",
+              "rotulo": "Violeta: cambio de receta"
+            }
+          ]
+        },
+        {
+          "id": "1-S02",
+          "titulo": "Lo que cuesta el plan manual",
+          "texto": "Con este plan, nueve pedidos llegan tarde, con doscientas cuarenta y cuatro horas de atraso. La planta lava ochenta y siete horas, diez de esos lavados por alérgeno, y bota ocho mil ochocientos setenta y cuatro kilos de salsa vencida.",
+          "imagen": "1-calcular-programacion/capturas/00-pedidos-manual.png",
+          "enPantalla": null,
+          "focos": [
+            {
+              "frase": "nueve pedidos llegan tarde",
+              "objetivo": "—",
+              "rotulo": "9 pedidos tarde"
+            },
+            {
+              "frase": "doscientas cuarenta y cuatro horas",
+              "objetivo": "—",
+              "rotulo": "244 h de atraso"
+            },
+            {
+              "frase": "lava ochenta y siete horas",
+              "objetivo": "—",
+              "rotulo": "87 h de CIP"
+            },
+            {
+              "frase": "ocho mil ochocientos setenta y cuatro kilos",
+              "objetivo": "—",
+              "rotulo": "8.874 kg de merma"
+            }
+          ]
+        },
+        {
+          "id": "1-S03",
+          "titulo": "Calcular con el cosimulador",
+          "texto": "Ahora pulsamos calcular. El cosimulador es el gemelo que simula la planta: replanea desde ahora, sin mover lo que ya se hizo, respetando el orden de recetas, los alérgenos y el tiempo de espera de cada salsa. Tarda menos de un segundo.",
+          "imagen": "1-calcular-programacion/capturas/03-propuesta.png",
+          "enPantalla": null,
+          "focos": [
+            {
+              "frase": "Tarda menos de un segundo",
+              "objetivo": "HiGHS Optimal",
+              "rotulo": "Menos de un segundo"
+            }
+          ]
+        },
+        {
+          "id": "1-S04",
+          "titulo": "La propuesta",
+          "texto": "El resultado: de nueve pedidos tarde pasamos a tres, y esos tres ya habían salido tarde antes de hoy. El atraso baja de doscientas cuarenta y cuatro a ochenta y cuatro horas. Hay cuatro lavados por alérgeno menos, y la merma baja a cinco mil setecientos veintidós kilos: más de tres toneladas de salsa que ya no se botan.",
+          "imagen": "1-calcular-programacion/capturas/03-propuesta.png",
+          "enPantalla": null,
+          "focos": [
+            {
+              "frase": "pasamos a tres",
+              "objetivo": "Pedidos tarde + 3",
+              "rotulo": "9 → 3 pedidos tarde"
+            },
+            {
+              "frase": "El atraso baja",
+              "objetivo": "Atraso total + 83,9 h",
+              "rotulo": "244 → 84 h de atraso"
+            },
+            {
+              "frase": "la merma baja",
+              "objetivo": "Merma de granel + 5.722 kg",
+              "rotulo": "8.874 → 5.722 kg"
+            }
+          ]
+        },
+        {
+          "id": "1-S05",
+          "titulo": "Adoptarla y verla en la planta",
+          "texto": "Al aprobarla, pasa a ser la programación vigente y la planta la sigue: el gemelo 3D muestra en cada equipo qué tanda corre o qué está lavando, y el centro de control mide el OEE de cada uno, la eficiencia general del equipo: disponibilidad por rendimiento por calidad.",
+          "imagen": "1-calcular-programacion/capturas/05c-centro-control.png",
+          "enPantalla": null,
+          "orbita": "1-calcular-programacion/orbitas/05-play",
+          "focos": [
+            {
+              "frase": "el centro de control mide el OEE",
+              "objetivo": "OEE",
+              "rotulo": "OEE = disponibilidad × rendimiento × calidad"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "2-adelantar-pedido",
+      "eyebrow": "ESCENARIO 2",
+      "titulo": "Un cliente adelanta su pedido",
+      "segmentos": [
+        {
+          "id": "2-S01",
+          "titulo": "El cliente llama",
+          "texto": "Un cliente llama: necesita un día antes su pedido de mayonesa en doypack de mil mililitros, tres mil quinientas sesenta unidades. Su fecha de entrega es el día once.",
+          "imagen": "2-adelantar-pedido/capturas/01-pedido-gantt.png",
+          "enPantalla": null,
+          "focos": [
+            {
+              "frase": "tres mil quinientas sesenta unidades",
+              "objetivo": "PED-D11-04",
+              "rotulo": "PED-D11-04 · mayonesa 1.000 ml"
+            }
+          ]
+        },
+        {
+          "id": "2-S02",
+          "titulo": "Fractal prueba tres respuestas",
+          "texto": "Para responderle usamos Fractal, el módulo que compara escenarios. Elegimos el pedido y la nueva fecha, y Fractal prueba tres respuestas, cada una calculada por el cosimulador desde ahora: solo cambiar la fecha, cambiarla y darle importancia alta, o además organizar la planta en campañas por día, donde cada línea recorre su orden de recetas una sola vez al día.",
+          "imagen": "2-adelantar-pedido/capturas/02-fractal-pregunta.png",
+          "enPantalla": null,
+          "focos": [
+            {
+              "frase": "Elegimos el pedido",
+              "objetivo": "Pedido",
+              "rotulo": "El pedido: PED-D11-04"
+            },
+            {
+              "frase": "y la nueva fecha",
+              "objetivo": "Nueva entrega (cierre del turno, 22:00)",
+              "rotulo": "Nueva entrega: día 10"
+            }
+          ]
+        },
+        {
+          "id": "2-S03",
+          "titulo": "La recomendación",
+          "texto": "Recomienda la importancia alta con campañas por día: el pedido llega a tiempo, ningún otro se atrasa, y de paso el CIP baja a setenta y siete horas y la merma a tres mil quinientos kilos. Hacerlo a mano habría sido rehacer el plan entero.",
+          "imagen": "2-adelantar-pedido/capturas/03-fractal.png",
+          "enPantalla": null,
+          "focos": [
+            {
+              "frase": "Recomienda la importancia alta con campañas por día",
+              "objetivo": "Prioridad alta + campañas por día",
+              "rotulo": "Recomendación"
+            },
+            {
+              "frase": "el CIP baja a setenta y siete horas",
+              "objetivo": "77,3 h",
+              "rotulo": "CIP 77,3 h"
+            },
+            {
+              "frase": "la merma a tres mil quinientos kilos",
+              "objetivo": "3.508 kg",
+              "rotulo": "Merma 3.508 kg"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "3-falla-llenadora-mostaza",
+      "eyebrow": "ESCENARIO 3",
+      "titulo": "Se cae la llenadora de mostaza",
+      "segmentos": [
+        {
+          "id": "3-S01",
+          "titulo": "La falla en el emulador",
+          "texto": "Ahora, una contingencia. En el emulador, la llenadora de mostaza se daña, y mantenimiento estima la reparación para el día once a las diez de la noche.",
+          "imagen": "3-falla-llenadora-mostaza/capturas/03-falla.png",
+          "enPantalla": null,
+          "focos": [
+            {
+              "frase": "la llenadora de mostaza se daña",
+              "objetivo": "FILLER-SACHET-03",
+              "rotulo": "Llenadora de sachet 3 (mostaza)"
+            },
+            {
+              "frase": "el día once a las diez de la noche",
+              "objetivo": "Reparación estimada hasta vie 6 nov 22:00.",
+              "rotulo": "Reparación: día 11, 22:00"
+            }
+          ]
+        },
+        {
+          "id": "3-S02",
+          "titulo": "Todo el gemelo se entera",
+          "texto": "Todo el gemelo se entera al instante: en el 3D la llenadora queda en rojo, el centro de control muestra la alarma, y el APS avisa que el plan vigente ya no se puede cumplir.",
+          "imagen": "3-falla-llenadora-mostaza/capturas/06-aps-alerta.png",
+          "enPantalla": null,
+          "focos": [
+            {
+              "frase": "el APS avisa",
+              "objetivo": "ALARMA DEL EMULADOR",
+              "rotulo": "Alarma en el APS"
+            }
+          ]
+        },
+        {
+          "id": "3-S03",
+          "titulo": "Seguir como estaba contra replanear",
+          "texto": "Si el planificador sigue su secuencia, la mostaza se queda esperando la reparación: catorce pedidos tarde y casi quinientas horas de atraso. El cosimulador pasa la mostaza a la llenadora multipropósito de mayonesa, con cuarenta y dos llenados, y quedan los mismos tres pedidos tarde de antes. El precio son dos horas más de lavado por alérgeno.",
+          "imagen": "3-falla-llenadora-mostaza/capturas/07-propuesta.png",
+          "enPantalla": null,
+          "focos": [
+            {
+              "frase": "catorce pedidos tarde",
+              "objetivo": "—",
+              "rotulo": "Sin replanear: 14 tarde, 498 h de atraso"
+            },
+            {
+              "frase": "quedan los mismos tres pedidos tarde",
+              "objetivo": "Pedidos tarde + 3",
+              "rotulo": "3 pedidos tarde"
+            },
+            {
+              "frase": "dos horas más de lavado",
+              "objetivo": "Horas de CIP + 85,9 h",
+              "rotulo": "CIP 85,9 h"
+            }
+          ]
+        },
+        {
+          "id": "3-S04",
+          "titulo": "Lo que dice Fractal",
+          "texto": "Fractal también prueba tres formas de responder a la falla: esperar la reparación y repartir, organizar campañas por día, o no cruzar llenadoras. Recomienda campañas por día. No cruzar llenadoras dejaría once pedidos tarde.",
+          "imagen": "3-falla-llenadora-mostaza/capturas/09-fractal.png",
+          "enPantalla": null,
+          "focos": [
+            {
+              "frase": "Recomienda campañas por día",
+              "objetivo": "Campañas por día",
+              "rotulo": "Recomendación: campañas por día"
+            },
+            {
+              "frase": "No cruzar llenadoras",
+              "objetivo": "—",
+              "rotulo": "No cruzar llenadoras: 11 tarde"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "4-menos-cip",
+      "eyebrow": "ESCENARIO 4",
+      "titulo": "Lavar menos con Fractal",
+      "segmentos": [
+        {
+          "id": "4-S01",
+          "titulo": "El puntaje",
+          "texto": "Fractal compara cada opción con un solo puntaje: las horas de atraso, veinte puntos por cada pedido tarde, dos por cada hora de CIP, las horas de cambio de envase y la merma. Menos es mejor.",
+          "imagen": null,
+          "enPantalla": null,
+          "tarjeta": "puntaje",
+          "focos": [
+            {
+              "frase": "las horas de atraso",
+              "objetivo": "atraso"
+            },
+            {
+              "frase": "veinte puntos por cada pedido tarde",
+              "objetivo": "tarde"
+            },
+            {
+              "frase": "dos por cada hora de CIP",
+              "objetivo": "cip"
+            },
+            {
+              "frase": "las horas de cambio de envase",
+              "objetivo": "envase"
+            },
+            {
+              "frase": "y la merma",
+              "objetivo": "merma"
+            }
+          ]
+        },
+        {
+          "id": "4-S02",
+          "titulo": "Las opciones",
+          "texto": "La pregunta es cómo lavar menos y botar menos sin atrasar pedidos. Fractal arma cinco opciones: solo recolocar con el cosimulador; campañas por día, donde cada línea recorre su orden de recetas una sola vez al día; campañas más las recetas pequeñas cada dos o tres días; y campañas con llenadoras dedicadas.",
+          "imagen": "4-menos-cip/capturas/02-fractal-pregunta.png",
+          "enPantalla": null,
+          "focos": [
+            {
+              "frase": "cómo lavar menos",
+              "objetivo": "MENOS CIP Y MERMA",
+              "rotulo": "Menos CIP y merma"
+            }
+          ]
+        },
+        {
+          "id": "4-S03",
+          "titulo": "La recomendación",
+          "texto": "Recomienda campañas por día. El CIP baja de ochenta y cuatro a setenta y ocho horas, la merma de cinco mil setecientos a cuatro mil cuatrocientos kilos, y los pedidos tarde siguen siendo los mismos tres. El puntaje baja de seiscientos veinticinco a quinientos cincuenta.",
+          "imagen": "4-menos-cip/capturas/03-fractal.png",
+          "enPantalla": null,
+          "focos": [
+            {
+              "frase": "Recomienda campañas por día",
+              "objetivo": "Campañas por día",
+              "rotulo": "Recomendación: opción B"
+            },
+            {
+              "frase": "El CIP baja de ochenta y cuatro a setenta y ocho horas",
+              "objetivo": "78,2 h",
+              "rotulo": "CIP 83,8 → 78,2 h"
+            },
+            {
+              "frase": "la merma de cinco mil setecientos",
+              "objetivo": "4.395 kg",
+              "rotulo": "Merma 5.722 → 4.395 kg"
+            },
+            {
+              "frase": "los pedidos tarde siguen siendo los mismos tres",
+              "objetivo": "PEDIDOS TARDE",
+              "rotulo": "Mismos 3 pedidos tarde"
+            }
+          ]
+        },
+        {
+          "id": "4-S04",
+          "titulo": "Las campañas en el Gantt",
+          "texto": "En el Gantt se ven las recetas agrupadas: cada línea va de suave a fuerte una vez al día.",
+          "imagen": "4-menos-cip/capturas/04-gantt-campanas.png",
+          "enPantalla": null,
+          "focos": [
+            {
+              "frase": "En el Gantt se ven las recetas agrupadas",
+              "objetivo": "emulsifier-01",
+              "rotulo": "Recetas agrupadas por día"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "5-merma-entregas",
+      "eyebrow": "ESCENARIO 5",
+      "titulo": "Cuánta merma vale la pena ahorrar",
+      "segmentos": [
+        {
+          "id": "5-S01",
+          "titulo": "Agrupar más",
+          "texto": "¿Y si agrupamos todavía más? Haciendo las recetas pequeñas solo cada tres días, el CIP baja a sesenta y nueve horas y la merma a tres mil ochocientos sesenta kilos. Pero dos pedidos más llegan tarde, y su puntaje, quinientos sesenta y nueve, pierde frente a las campañas por día.",
+          "imagen": "5-merma-entregas/capturas/01-opciones.png",
+          "enPantalla": null,
+          "focos": [
+            {
+              "frase": "solo cada tres días",
+              "objetivo": "Campañas por día + recetas pequeñas cada 3 días",
+              "rotulo": "Opción D"
+            },
+            {
+              "frase": "el CIP baja a sesenta y nueve horas",
+              "objetivo": "68,6 h",
+              "rotulo": "CIP 68,6 h"
+            },
+            {
+              "frase": "la merma a tres mil ochocientos sesenta kilos",
+              "objetivo": "3.861 kg",
+              "rotulo": "Merma 3.861 kg"
+            },
+            {
+              "frase": "su puntaje, quinientos sesenta y nueve",
+              "objetivo": "569,1",
+              "rotulo": "Puntaje 569 contra 550"
+            }
+          ]
+        },
+        {
+          "id": "5-S02",
+          "titulo": "La persona decide",
+          "texto": "Fractal muestra el precio de cada kilo ahorrado en entregas. Si la planta prefiere botar menos aunque se atrasen dos pedidos, adopta esa opción; si no, la recomendada. Fractal recomienda; la persona decide.",
+          "imagen": "5-merma-entregas/capturas/01-opciones.png",
+          "enPantalla": null,
+          "focos": [
+            {
+              "frase": "Fractal recomienda; la persona decide",
+              "objetivo": "ADOPTAR",
+              "rotulo": "La persona decide"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "6-cierre",
+      "eyebrow": "CIERRE",
+      "titulo": "Lo que ahorra optimizar",
+      "segmentos": [
+        {
+          "id": "6-S01",
+          "titulo": "Lo que ahorra optimizar",
+          "texto": "En resumen. El cosimulador salva seis pedidos y deja de botar más de tres toneladas de salsa. Ante un pedido urgente o una falla, replanea en menos de un segundo; con la llenadora de mostaza caída, salva once pedidos. Y Fractal, organizando la planta en campañas por día, quita casi seis horas de lavado y otra tonelada de merma sin atrasar a nadie. Fractal recomienda; la persona decide.",
+          "imagen": null,
+          "enPantalla": null,
+          "focos": [
+            {
+              "frase": "El cosimulador salva seis pedidos",
+              "objetivo": "r0"
+            },
+            {
+              "frase": "Ante un pedido urgente",
+              "objetivo": "r1"
+            },
+            {
+              "frase": "con la llenadora de mostaza caída",
+              "objetivo": "r2"
+            },
+            {
+              "frase": "Y Fractal, organizando la planta",
+              "objetivo": "r3"
+            },
+            {
+              "frase": "Fractal recomienda",
+              "objetivo": "r4"
+            }
+          ],
+          "tarjeta": "ahorro"
+        }
+      ]
+    }
+  ]
+}
