@@ -1,0 +1,58 @@
+{
+  "id": "01-nucleo",
+  "salida": "serie-01-nucleo",
+  "modulo": 0,
+  "kicker": "NÚCLEO · DIGITAL TWIN 3D",
+  "escenas": {
+    "gancho": {
+      "voz": "¿Y si pudieras ver tu planta de mañana, hoy? En su gemelo digital 3D.",
+      "titulo": "¿Y si pudieras ver tu planta de mañana, hoy?"
+    },
+    "dolor": {
+      "voz": "En tu planta todos hacen la misma pregunta: ¿qué pasa si…? ¿Si entra un pedido urgente? ¿Si se para una máquina? ¿Si falta material? Hoy esa pregunta se responde con experiencia y con suerte.",
+      "cortes": [
+        "¿qué pasa",
+        "¿Si entra",
+        "¿Si se para",
+        "¿Si falta"
+      ],
+      "items": [
+        [
+          "Manufactura",
+          "Prometimos el pedido para el viernes y nadie sabía si la inyectora iba a dar abasto.",
+          "p-inyectoras"
+        ],
+        [
+          "Logística",
+          "La bodega se llenó el lunes y nadie lo vio venir.",
+          "logistica"
+        ],
+        [
+          "Procesos",
+          "El tanque quedó esperando la limpieza y se perdió media tanda de producción.",
+          "salsas"
+        ],
+        [
+          "Servicios con procesos",
+          "Si el consumo sube el fin de semana, nadie sabe si la red y las bombas van a aguantar.",
+          "red"
+        ]
+      ],
+      "remate": {
+        "en": "Hoy esa",
+        "texto": "Experiencia + suerte"
+      }
+    },
+    "solucion": {
+      "tipo": "gemelo",
+      "voz": "Arvantti DigitalTwin es un gemelo digital: una copia en 3D de tu planta que se mueve igual que la real. Máquinas, líneas, personas e inventarios, hora por hora. Le das play y ves cómo se comporta tu operación la próxima semana, antes de que pase. Sirve igual para una fábrica de plásticos, una bodega, una planta de salsas o una red de servicios con bombas y tuberías."
+    },
+    "modulos": {
+      "voz": "Es el núcleo de Arvantti, y a su alrededor conectas siete módulos, solo los que necesites."
+    },
+    "cierre": {
+      "voz": "Escríbeme GEMELO y te muestro tu planta en 3D. Arvantti DigitalTwin. Decide antes de que pase.",
+      "cta": "Escríbeme <b>GEMELO</b> y te muestro tu planta en 3D"
+    }
+  }
+}
