@@ -1,0 +1,74 @@
+[
+ {
+  "id": "pregunta",
+  "start": 0,
+  "voiceAt": 1.6,
+  "voz": 4.13,
+  "dur": 6.73,
+  "real": true
+ },
+ {
+  "id": "titulo",
+  "start": 6.73,
+  "voiceAt": 7.13,
+  "voz": 4.83,
+  "dur": 6.63,
+  "real": true
+ },
+ {
+  "id": "ia",
+  "start": 13.36,
+  "voiceAt": 13.76,
+  "voz": 15.65,
+  "dur": 16.95,
+  "real": true
+ },
+ {
+  "id": "agentes",
+  "start": 30.31,
+  "voiceAt": 30.61,
+  "voz": 10.61,
+  "dur": 11.81,
+  "real": true
+ },
+ {
+  "id": "voz",
+  "start": 42.11,
+  "voiceAt": 42.51,
+  "voz": 16.04,
+  "dur": 17.44,
+  "real": true
+ },
+ {
+  "id": "seguridad",
+  "start": 59.55,
+  "voiceAt": 59.85,
+  "voz": 12.28,
+  "dur": 13.48,
+  "real": true
+ },
+ {
+  "id": "cerebro",
+  "start": 73.03,
+  "voiceAt": 73.33,
+  "voz": 11,
+  "dur": 12.2,
+  "real": true
+ },
+ {
+  "id": "auditoria",
+  "start": 85.23,
+  "voiceAt": 85.53,
+  "voz": 9.4,
+  "dur": 10.9,
+  "real": true
+ },
+ {
+  "id": "cierre",
+  "start": 96.13,
+  "voiceAt": 97.13,
+  "voz": 3.63,
+  "dur": 10.13,
+  "real": true
+ }
+]

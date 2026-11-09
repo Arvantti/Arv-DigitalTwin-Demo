@@ -1,0 +1,1 @@
+Funciona con cualquier IA. Claude, ChatGPT, Gemini, Copilot, o sus propios modelos privados. Un arnés de arneses: las mismas reglas, los mismos guardianes, la misma memoria y la misma auditoría para todas. Usted elige.
