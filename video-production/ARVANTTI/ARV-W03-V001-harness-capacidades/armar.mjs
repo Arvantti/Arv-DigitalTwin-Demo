@@ -23,16 +23,16 @@ const sh = (cmd, args) => execFileSync(cmd, args, { stdio: "inherit" });
 const ESCENAS = [
   { id: "gancho", dir: "01-gancho", lead: 1.2, tail: 0.8 },
   { id: "dolor", dir: "02-dolor", lead: 0.4, tail: 0.8 },
-  { id: "quees", dir: "03-que-es", lead: 0.5, tail: 1.0 },
+  { id: "quees", dir: "03-que-es", lead: 0.5, tail: 1.0, harness: "Harness" },
   { id: "controla", dir: "04-controla", lead: 0.4, tail: 0.8 },
   { id: "protege", dir: "05-protege", lead: 0.4, tail: 0.8 },
   { id: "gobierna", dir: "06-gobierna", lead: 0.4, tail: 0.9 },
   { id: "planea", dir: "07-planea", lead: 0.4, tail: 0.8 },
   { id: "crea", dir: "08-crea", lead: 0.4, tail: 0.9 },
-  { id: "conoce", dir: "09-conoce", lead: 0.4, tail: 0.9 },
+  { id: "conoce", dir: "09-conoce", lead: 0.4, tail: 0.9, harness: "Harness" },
   { id: "dirige", dir: "10-dirige", lead: 0.4, tail: 0.9 },
-  { id: "equipo", dir: "11-equipo", lead: 0.4, tail: 1.0 },
-  { id: "cierre", dir: "12-cierre", lead: 0.8, tail: 4.5 },
+  { id: "equipo", dir: "11-equipo", lead: 0.4, tail: 1.0, harness: "Harness" },
+  { id: "cierre", dir: "12-cierre", lead: 0.8, tail: 4.5, harness: "Harness" },
 ];
 
 const texto = (e) => fs.readFileSync(T(`escenas/${e.dir}/script.md`), "utf8").trim();
@@ -40,6 +40,8 @@ const vozDe = (e) => T(`escenas/${e.dir}/assets/audio/voiceover.mp3`);
 const alineacionDe = (e) => T(`escenas/${e.dir}/assets/audio/alignment.json`);
 
 // Palabras que la voz en español lee mal: se envían escritas como se pronuncian.
+// "Járnes" a veces sale como "yarnes"; las escenas con `harness` usan esa grafía para la marca
+// (se eligió midiendo el ataque fricativo de la palabra en el audio; ver README).
 const PRONUNCIA = [
   ["Harness", "Járnes"],
   ["GraphRAG", "Graf Rag"],
@@ -51,10 +53,11 @@ const PRONUNCIA = [
   ["Codex", "Códex"],
 ];
 /** Texto que se envía a la voz y, para cada carácter del original, su posición en ese texto. */
-function paraVoz(texto) {
+function paraVoz(texto, e = {}) {
+  const tabla = PRONUNCIA.map(([a, b]) => (a === "Harness" && e.harness ? [a, e.harness] : [a, b]));
   let out = "", idx = [];
   for (let i = 0; i < texto.length; ) {
-    const p = PRONUNCIA.find(([a]) => texto.startsWith(a, i) && !/\p{L}/u.test(texto[i - 1] || "") && !/\p{L}/u.test(texto[i + a.length] || ""));
+    const p = tabla.find(([a]) => texto.startsWith(a, i) && !/\p{L}/u.test(texto[i - 1] || "") && !/\p{L}/u.test(texto[i + a.length] || ""));
     if (p) {
       for (let k = 0; k < p[0].length; k++) idx.push(out.length + Math.floor((k * p[1].length) / p[0].length));
       out += p[1];
@@ -77,18 +80,18 @@ async function voz() {
   const enviar = process.argv.includes("--enviar");
   const pend = ESCENAS.filter((e) => {
     const a = alineacionDe(e);
-    return !(fs.existsSync(vozDe(e)) && fs.existsSync(a) && JSON.parse(fs.readFileSync(a, "utf8")).hash === hash(`${modelo()}|${paraVoz(texto(e)).texto}`));
+    return !(fs.existsSync(vozDe(e)) && fs.existsSync(a) && JSON.parse(fs.readFileSync(a, "utf8")).hash === hash(`${modelo()}|${paraVoz(texto(e), e).texto}`));
   });
-  console.log(`Voz: ${pend.length} escenas nuevas o cambiadas, ${pend.reduce((n, e) => n + paraVoz(texto(e)).texto.length, 0)} caracteres (modelo ${modelo()}).`);
+  console.log(`Voz: ${pend.length} escenas nuevas o cambiadas, ${pend.reduce((n, e) => n + paraVoz(texto(e), e).texto.length, 0)} caracteres (modelo ${modelo()}).`);
   if (!pend.length) return;
   if (!enviar) {
-    pend.forEach((e) => console.log(`- ${e.dir}: ${paraVoz(texto(e)).texto}`));
+    pend.forEach((e) => console.log(`- ${e.dir}: ${paraVoz(texto(e), e).texto}`));
     console.log("ElevenLabs recibirá estos textos. Para enviarlos: node armar.mjs voz --enviar");
     return;
   }
   const { apiKey, voiceId } = credenciales();
   for (const e of pend) {
-    const txt = texto(e), pv = paraVoz(txt);
+    const txt = texto(e), pv = paraVoz(txt, e);
     if (txt.includes(apiKey)) throw new Error("El guion parece contener una credencial; no se envía.");
     const res = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(voiceId)}/with-timestamps?output_format=mp3_44100_128`, {
       method: "POST",
@@ -253,9 +256,12 @@ function componer() {
     ];
     const ags = [["Claude Code", 700, 690], ["Codex", 460, 840], ["Gemini", 640, 1010], ["OpenCode", 380, 1170]];
     clip("e-gancho", "scene", s, d, `
+      <h2 class="gt"><span class="kicker">ARVANTTI HARNESS</span>${words("Tu equipo ya programa con IA")}</h2>
       <div class="card code">${lineas.map((l) => `<div class="ln">${l}</div>`).join("")}</div>
       ${ags.map(([n, lx, ty], i) => `<div class="agent" id="ag${i}" style="left:${lx}px;top:${ty}px"><span class="tag">${n}</span><span class="cur"></span></div>`).join("")}
       <h2 class="q">${words("¿Quién los vigila?")}</h2>`, 3);
+    at("#e-gancho .gt .kicker", { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.5, ease: "power3.out" }, s + 0.05);
+    at("#e-gancho .gt .w", { opacity: 0, y: 30, filter: "blur(10px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.5, stagger: 0.08, ease: "power3.out" }, Math.max(s + 0.2, x.voiceAt - 0.2));
     at("#e-gancho .code", { opacity: 0, y: 80, rotateX: 20 }, { opacity: 1, y: 0, rotateX: 0, duration: 0.9, ease: "power3.out" }, s + 0.1);
     at("#e-gancho .ln", { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 0.3, stagger: 0.18 }, s + 0.4);
     const tV = enPalabra(x, "Varios");
@@ -577,15 +583,16 @@ function componer() {
     leave("e-equipo", s + d);
   }
 
-  // 12. Cierre.
+  // 12. Cierre: firma, licencia gratuita y llamada a la acción.
   {
     const x = S.cierre; const [s, d] = span(x);
-    const tR = enPalabra(x, "La inteligencia"), tD = enPalabra(x, "Tú decides");
+    const tR = enPalabra(x, "La inteligencia"), tD = enPalabra(x, "Tú decides"), tL = enPalabra(x, "La licencia"), tA = enPalabra(x, "Agenda");
     clip("e-cierre", "scene", s, d, `
       <svg class="estela" viewBox="0 0 1080 1920" preserveAspectRatio="xMidYMid slice"><path id="p2" d="M-60 420 C 260 420 380 300 540 360 S 860 470 1140 330" pathLength="1"/></svg>
       <div class="fin"><img class="marca" src="assets/clips/marca.png" alt=""><h1>Arvantti <span>Harness®</span></h1>
         <p class="firma">${words("Tú decides qué puede tocar.")}</p>
-        <p class="cta">¿Qué agentes quieres poner bajo control primero?</p>
+        <p class="lic"><b>Licencia gratuita</b> · te acompañamos a implementarla</p>
+        <div class="boton">Agenda tu sesión <span class="flecha">→</span></div>
         <p class="url">arvantti.tech</p><p class="pie">Arvantti Labs · una marca de Sequoia Space</p></div>`, 3);
     enter("e-cierre", s);
     at("#p2", { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 1.8, ease: "power2.inOut" }, s);
@@ -593,11 +600,16 @@ function componer() {
     at("#e-cierre .marca", { opacity: 0, scale: 0.5, rotate: -8 }, { opacity: 1, scale: 1, rotate: 0, duration: 1, ease: "back.out(1.6)" }, x.voiceAt - 0.3);
     at("#e-cierre h1", { opacity: 0, letterSpacing: "30px", filter: "blur(10px)" }, { opacity: 1, letterSpacing: "-3px", filter: "blur(0px)", duration: 1.2, ease: "power3.out" }, x.voiceAt);
     at("#e-cierre h1", { backgroundPosition: "-200% 0" }, { backgroundPosition: "200% 0", duration: 2.2, ease: "power1.inOut" }, x.voiceAt + 1.2);
-    at("#e-cierre .firma .w", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5, stagger: 0.08, ease: "power3.out" }, tD);
-    at("#e-cierre .cta", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" }, Math.max(tR, x.voiceAt + x.voz + 0.2));
-    at("#e-cierre .url,#e-cierre .pie", { opacity: 0 }, { opacity: 1, duration: 0.8, stagger: 0.3 }, x.voiceAt + x.voz + 0.9);
+    at("#e-cierre .firma .w", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5, stagger: 0.08, ease: "power3.out" }, Math.max(tD, tR));
+    at("#e-cierre .lic", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, tL - 0.1);
+    at("#e-cierre .boton", { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.6, ease: "back.out(2)" }, tA - 0.1);
+    at("#e-cierre .boton", { boxShadow: "0 0 0 0 #2d7ff900" }, { boxShadow: "0 0 0 22px #2d7ff900, 0 0 80px #2d7ff9cc", duration: 0.9, ease: "sine.out", repeat: Math.floor((s + d - tA - 1.5) / 0.9) }, tA + 0.5);
+    at("#e-cierre .flecha", { x: 0 }, { x: 14, duration: 0.45, ease: "sine.inOut", yoyo: true, repeat: Math.floor((s + d - tA - 1.5) / 0.45) }, tA + 0.5);
+    at("#e-cierre .url", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.6 }, enPalabra(x, "arvantti punto") - 0.1);
+    at("#e-cierre .pie", { opacity: 0 }, { opacity: 1, duration: 0.8 }, x.voiceAt + x.voz + 0.4);
     to("#e-cierre .fin", { opacity: 0, duration: 1.0 }, s + d - 1.0);
     sfx(12, "hit.wav", x.voiceAt, 0.3);
+    sfx("12a", "hit.wav", tA, 0.22);
   }
 
   [S.dolor, S.quees, S.controla, S.protege, S.gobierna, S.planea, S.crea, S.conoce, S.dirige, S.equipo, S.cierre].forEach((x) => sweep(x.start));

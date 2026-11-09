@@ -19,80 +19,80 @@
   "id": "quees",
   "start": 17.83,
   "voiceAt": 18.33,
-  "voz": 12.36,
-  "dur": 13.86,
+  "voz": 12.59,
+  "dur": 14.09,
   "real": true
  },
  {
   "id": "controla",
-  "start": 31.68,
-  "voiceAt": 32.08,
+  "start": 31.92,
+  "voiceAt": 32.32,
   "voz": 17.4,
   "dur": 18.6,
   "real": true
  },
  {
   "id": "protege",
-  "start": 50.28,
-  "voiceAt": 50.68,
+  "start": 50.52,
+  "voiceAt": 50.92,
   "voz": 13.56,
   "dur": 14.76,
   "real": true
  },
  {
   "id": "gobierna",
-  "start": 65.04,
-  "voiceAt": 65.44,
+  "start": 65.27,
+  "voiceAt": 65.67,
   "voz": 9.48,
   "dur": 10.78,
   "real": true
  },
  {
   "id": "planea",
-  "start": 75.82,
-  "voiceAt": 76.22,
+  "start": 76.06,
+  "voiceAt": 76.46,
   "voz": 26.44,
   "dur": 27.64,
   "real": true
  },
  {
   "id": "crea",
-  "start": 103.46,
-  "voiceAt": 103.86,
+  "start": 103.69,
+  "voiceAt": 104.09,
   "voz": 31.16,
   "dur": 32.46,
   "real": true
  },
  {
   "id": "conoce",
-  "start": 135.92,
-  "voiceAt": 136.32,
-  "voz": 21.32,
-  "dur": 22.62,
+  "start": 136.16,
+  "voiceAt": 136.56,
+  "voz": 21.47,
+  "dur": 22.77,
   "real": true
  },
  {
   "id": "dirige",
-  "start": 158.54,
-  "voiceAt": 158.94,
+  "start": 158.93,
+  "voiceAt": 159.33,
   "voz": 12.12,
   "dur": 13.42,
   "real": true
  },
  {
   "id": "equipo",
-  "start": 171.96,
-  "voiceAt": 172.36,
-  "voz": 10.76,
-  "dur": 12.16,
+  "start": 172.35,
+  "voiceAt": 172.75,
+  "voz": 10.68,
+  "dur": 12.08,
   "real": true
  },
  {
   "id": "cierre",
-  "start": 184.12,
-  "voiceAt": 184.92,
-  "voz": 7.63,
-  "dur": 12.93,
+  "start": 184.43,
+  "voiceAt": 185.23,
+  "voz": 15.57,
+  "dur": 20.87,
   "real": true
  }
 ]

@@ -1,1 +1,1 @@
-Arvantti Harness. La inteligencia artificial trabaja rápido. Tú decides qué puede tocar, y sabes quién hizo qué.
+Arvantti Harness. La inteligencia artificial trabaja rápido. Tú decides qué puede tocar, y sabes quién hizo qué. La licencia es gratuita, y te acompañamos a implementarla. Agenda hoy tu sesión en arvantti punto tech y pon a tus agentes bajo control.
