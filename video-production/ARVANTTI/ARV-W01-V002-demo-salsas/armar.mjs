@@ -39,7 +39,7 @@ const CAPITULOS = [
   { id: "1-calcular-programacion", eyebrow: "ESCENARIO 1", titulo: "Calcular la programación" },
   { id: "2-adelantar-pedido", eyebrow: "ESCENARIO 2", titulo: "Un cliente adelanta su pedido" },
   { id: "3-falla-llenadora-mostaza", eyebrow: "ESCENARIO 3", titulo: "Se cae la llenadora de mostaza" },
-  { id: "4-menos-cip", eyebrow: "ESCENARIO 4", titulo: "Lavar menos con Fractal" },
+  { id: "4-menos-cip", eyebrow: "ESCENARIO 4", titulo: "Optimizar la secuencia con Fractal" },
   { id: "5-merma-entregas", eyebrow: "ESCENARIO 5", titulo: "Cuánta merma vale la pena ahorrar" },
   { id: "6-cierre", eyebrow: "CIERRE", titulo: "Lo que ahorra optimizar" },
 ];
@@ -183,7 +183,7 @@ const load = () => JSON.parse(readFileSync(join(HERE, "segmentos.json"), "utf8")
 // ---------- ElevenLabs ----------
 
 // Nombres en inglés que la voz en español leería mal: se envían escritos como se pronuncian; el subtítulo no cambia.
-const PRONUNCIA = [["Integrator", "Íntegreitor"], ["BBQ", "barbikiú"], ["SKU", "eskiú"], ["CIP", "cip"], ["APS", "a pe ese"], ["OEE", "o e e"], ["Gantt", "Gant"], ["doypack", "doipak"], ["sachet", "sashé"]];
+const PRONUNCIA = [["Integrator", "Íntegreitor"], ["BBQ", "barbikiú"], ["SKU", "ese, ka, u"], ["CIP", "cip"], ["APS", "a pe ese"], ["OEE", "o e e"], ["Gantt", "Gant"], ["doypack", "doipak"], ["sachet", "sashé"]];
 /** Texto que se envía a la voz y, para cada carácter del original, su posición en ese texto. */
 function paraVoz(texto) {
   let out = "", idx = [];
@@ -864,6 +864,11 @@ html,body{width:${W}px;height:${H}px;margin:0;overflow:hidden;background:#0b0f18
 .puntaje{position:relative;display:flex;flex-wrap:wrap;align-items:center;gap:20px;margin-top:40px}
 .puntaje .pt{padding:24px 26px;border:2px solid #2d7ff966;border-radius:14px;background:#111a2c;font:700 34px "IBM Plex Mono",monospace;color:#f8fafc;opacity:.25}
 .puntaje .mas{font:800 48px Inter,sans-serif;color:#4ea7ff}
+.nota{position:relative;margin-top:48px;display:inline-block;padding:20px 34px;border-radius:14px;background:#f5a524;color:#0b0f1a;font:800 34px Inter,sans-serif;box-shadow:0 0 40px #f5a52466}
+.destacado{position:relative;margin-top:36px}
+.destacado .banda{display:inline-block;padding:22px 40px;border-radius:16px;background:#f5a524;color:#0b0f1a;font:800 46px "Inter Display",Inter,sans-serif;box-shadow:0 0 48px #f5a52466}
+.destacado .chips{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:40px}
+.destacado .ch{padding:24px 30px;border:2px solid #2d7ff966;border-radius:14px;background:#111a2c;font:700 36px Inter,sans-serif;color:#f8fafc;opacity:.25}
 .partes{position:relative;display:grid;grid-template-columns:repeat(4,1fr);gap:22px}
 .partes .pa{opacity:.25;border:2px solid #2d7ff944;border-radius:14px;background:#111a2c;padding:14px;display:flex;flex-direction:column;gap:8px}
 .partes img{width:100%;border-radius:8px;border:1px solid #2d7ff933}
@@ -1000,6 +1005,8 @@ function tarjeta(s, sid, t0, d, cue, el, anim, sfx) {
     const tc = at("centro");
     anim.push(`tl.fromTo("#${sid}-centro",{opacity:0,scale:.6},{opacity:1,scale:1,duration:.8,ease:"back.out(1.6)"},${r2(tc ?? t0 + 0.3)});`);
     MODULOS.forEach(([k], j) => {
+      // Un módulo que la voz no nombra se queda apagado (no se usa en esta demo).
+      if (at(k) === null) return anim.push(`tl.set("#${sid}-m-${k}",{opacity:.22,filter:"grayscale(1)"},${r2(t0)});`);
       encender(`#${sid}-m-${k}`, k);
       const tk = at(k);
       if (tk !== null) anim.push(`tl.fromTo("#${sid}-l${j}",{opacity:.15},{opacity:.9,duration:.4},${r2(tk - 0.15)});`);
@@ -1039,8 +1046,16 @@ function tarjeta(s, sid, t0, d, cue, el, anim, sfx) {
     body = `<p class="eyebrow">LO QUE HACE DISTINTA ESTA PLANTA</p><h2>Cuatro reglas de los alimentos</h2><div class="reglas">${REGLAS.map(([k, n, x], j) => `<div class="rg" id="${sid}-k-${k}"><span class="n">${j + 1}</span><b>${esc(n)}</b><i>${esc(x)}</i></div>`).join("")}</div>`;
     for (const [k] of REGLAS) encender(`#${sid}-k-${k}`, k, { opacity: 0.25, scale: 0.96 });
   } else if (tipo === "puntaje") {
-    body = `<p class="eyebrow">FRACTAL · UN SOLO PUNTAJE</p><h2>Menos es mejor</h2><div class="puntaje">${PUNTAJE.map(([k, x], j) => `${j ? '<span class="mas">+</span>' : ""}<div class="pt" id="${sid}-k-${k}">${esc(x)}</div>`).join("")}</div>`;
+    body = `<p class="eyebrow">FRACTAL · UN SOLO PUNTAJE</p><h2>Menos es mejor</h2><div class="puntaje">${PUNTAJE.map(([k, x], j) => `${j ? '<span class="mas">+</span>' : ""}<div class="pt" id="${sid}-k-${k}">${esc(x)}</div>`).join("")}</div>${at("nota") !== null ? `<div class="nota" id="${sid}-k-nota">Puntaje de ejemplo · cada empresa lo configura según sus prioridades</div>` : ""}`;
     for (const [k] of PUNTAJE) encender(`#${sid}-k-${k}`, k);
+    if (at("nota") !== null) encender(`#${sid}-k-nota`, "nota", { opacity: 0, scale: 0.9 });
+  } else if (tipo === "destacado") {
+    // destacado | EYEBROW | título | chip1; chip2; ...  (los focos usan c1, c2... para encender cada chip)
+    const [eyebrow = "", titulo = "", chips = ""] = args;
+    const cs = chips.split(";").map((x) => x.trim()).filter(Boolean);
+    body = `<p class="eyebrow">${esc(eyebrow)}</p><h2>${esc(titulo)}</h2><div class="destacado"><div class="banda" id="${sid}-k-banda">${esc(eyebrow)}</div><div class="chips">${cs.map((c, j) => `<div class="ch" id="${sid}-k-c${j + 1}">${esc(c)}</div>`).join("")}</div></div>`;
+    encender(`#${sid}-k-banda`, "banda", { opacity: 0, scale: 0.9 });
+    cs.forEach((_, j) => encender(`#${sid}-k-c${j + 1}`, `c${j + 1}`, { opacity: 0.25, scale: 0.96 }));
   } else if (tipo === "partes") {
     body = `<p class="eyebrow">CUATRO PARTES CONECTADAS</p><h2>Cómo se conecta todo</h2><div class="partes">${PARTES.map(([k, n, x, img]) => `<div class="pa" id="${sid}-k-${k}"><img src="${relative(HERE, join(GRAB, img))}" alt=""><b>${esc(n)}</b><i>${esc(x)}</i></div>`).join("")}</div>`;
     for (const [k] of PARTES) encender(`#${sid}-k-${k}`, k);

@@ -204,6 +204,35 @@
           ]
         },
         {
+          "id": "0-S06b",
+          "titulo": "Cada empresa, sus reglas",
+          "texto": "Estas cuatro reglas son las de esta planta de ejemplo. Cada empresa tiene sus propias reglas, y antes de calcular u optimizar se le enseñan al modelo: el cosimulador y el emulador se configuran con ellas, tiempos de lavado, alérgenos, tandas o cualquier particularidad de su operación.",
+          "enPantalla": null,
+          "tarjeta": "destacado | CADA EMPRESA, SUS REGLAS | Se le enseñan al modelo antes de calcular | Tiempos de lavado; Alérgenos; Tandas; Cualquier particularidad",
+          "focos": [
+            {
+              "frase": "Cada empresa tiene sus propias reglas",
+              "objetivo": "banda"
+            },
+            {
+              "frase": "tiempos de lavado",
+              "objetivo": "c1"
+            },
+            {
+              "frase": "alérgenos, tandas",
+              "objetivo": "c2"
+            },
+            {
+              "frase": "tandas o cualquier",
+              "objetivo": "c3"
+            },
+            {
+              "frase": "cualquier particularidad",
+              "objetivo": "c4"
+            }
+          ]
+        },
+        {
           "id": "0-S07",
           "titulo": "Cómo se conecta todo",
           "texto": "El gemelo tiene cuatro partes conectadas. El emulador hace de planta real: cada equipo produce en tiempo real, y aquí se simulan las fallas. El centro de control recibe las señales de todos los equipos. El gemelo 3D muestra la planta en el pasado, el presente y el futuro programado. Y el APS, el sistema de programación de la producción, decide qué se hace, en qué equipo y a qué hora.",
@@ -387,7 +416,7 @@
         {
           "id": "0-S09",
           "titulo": "Cinco escenarios",
-          "texto": "Veamos cinco escenarios. Uno, calcular la programación. Dos, un cliente adelanta su pedido. Tres, se cae la llenadora de mostaza. Cuatro, lavar menos con Fractal. Y cinco, cuánta merma vale la pena ahorrar.",
+          "texto": "Veamos cinco escenarios. Uno, calcular la programación. Dos, un cliente adelanta su pedido. Tres, se cae la llenadora de mostaza. Cuatro, optimizar la secuencia de llenado para lavar menos, con Fractal, nuestro simulador de escenarios. Y cinco, cuánta merma vale la pena ahorrar.",
           "enPantalla": null,
           "tarjeta": "escenarios",
           "focos": [
@@ -416,7 +445,7 @@
         {
           "id": "0-S10",
           "titulo": "Arvantti DigitalTwin",
-          "texto": "Todo esto corre sobre Arvantti DigitalTwin, el gemelo 3D, con sus módulos: el APS para programar, el cosimulador que calcula la programación, Fractal para comparar escenarios y el centro de control. Empecemos.",
+          "texto": "Todo esto corre sobre Arvantti DigitalTwin, el gemelo 3D, con sus módulos: el APS para programar, el cosimulador que calcula la programación, Fractal para comparar escenarios y el centro de control. El Integrator, DendroScada y el asistente de IA no se usan en este video, porque la demostración se centra en la optimización. Los veremos en otro video, con el hardware físico. Empecemos.",
           "enPantalla": null,
           "tarjeta": "modulos",
           "focos": [
@@ -712,12 +741,12 @@
     {
       "id": "4-menos-cip",
       "eyebrow": "ESCENARIO 4",
-      "titulo": "Lavar menos con Fractal",
+      "titulo": "Optimizar la secuencia con Fractal",
       "segmentos": [
         {
           "id": "4-S01",
           "titulo": "El puntaje",
-          "texto": "Fractal compara cada opción con un solo puntaje: las horas de atraso, veinte puntos por cada pedido tarde, dos por cada hora de CIP, las horas de cambio de envase y la merma. Menos es mejor.",
+          "texto": "Fractal compara cada opción con un solo puntaje: las horas de atraso, veinte puntos por cada pedido tarde, dos por cada hora de CIP, las horas de cambio de envase y la merma. Menos es mejor. Estos puntajes son solo un ejemplo: cada empresa los configura según sus prioridades, y se le enseña al sistema a operar como a ella le gusta, con su historia de reacción ya comprobada.",
           "imagen": null,
           "enPantalla": null,
           "tarjeta": "puntaje",
@@ -741,6 +770,10 @@
             {
               "frase": "y la merma",
               "objetivo": "merma"
+            },
+            {
+              "frase": "Estos puntajes son solo un ejemplo",
+              "objetivo": "nota"
             }
           ]
         },

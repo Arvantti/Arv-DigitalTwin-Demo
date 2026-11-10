@@ -1,4 +1,4 @@
-Fractal compara cada opción con un solo puntaje: las horas de atraso, veinte puntos por cada pedido tarde, dos por cada hora de CIP, las horas de cambio de envase y la merma. Menos es mejor.
+Fractal compara cada opción con un solo puntaje: las horas de atraso, veinte puntos por cada pedido tarde, dos por cada hora de CIP, las horas de cambio de envase y la merma. Menos es mejor. Estos puntajes son solo un ejemplo: cada empresa los configura según sus prioridades, y se le enseña al sistema a operar como a ella le gusta, con su historia de reacción ya comprobada.
 
 La pregunta es cómo lavar menos y botar menos sin atrasar pedidos. Fractal arma cinco opciones: solo recolocar con el cosimulador; campañas por día, donde cada línea recorre su orden de recetas una sola vez al día; campañas más las recetas pequeñas cada dos o tres días; y campañas con llenadoras dedicadas.
 
