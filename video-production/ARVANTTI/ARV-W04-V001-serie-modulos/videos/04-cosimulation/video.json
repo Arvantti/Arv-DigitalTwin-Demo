@@ -1,0 +1,147 @@
+{
+  "id": "04-cosimulation",
+  "salida": "serie-04-cosimulation",
+  "modulo": 3,
+  "parte": 4,
+  "kicker": "MÓDULO 3 · COSIMULATION",
+  "escenas": {
+    "gancho": {
+      "voz": "Tu mejor programador se va de vacaciones. ¿Quién sabe sus reglas? Enséñaselas al gemelo 3D.",
+      "titulo": "Tu mejor programador se va de vacaciones.",
+      "tarjeta": {
+        "titulo": "Respuesta automática",
+        "cuerpo": "Estoy de vacaciones hasta el 30.<br><b>No sé quién hará la programación.</b>",
+        "color": "#2d5fa8",
+        "rompeEn": "Enséñaselas"
+      }
+    },
+    "dolor": {
+      "voz": "Toda planta tiene reglas que no están en ningún sistema. Viven en la cabeza de una o dos personas. Pasa en la fábrica, en la bodega, en la planta de procesos y en la red de servicios.",
+      "cortes": [
+        "Toda planta",
+        "en la fábrica",
+        "en la bodega",
+        "en la planta de procesos",
+        "en la red"
+      ],
+      "saltarPrimero": true,
+      "intro": [
+        "Reglas.",
+        "Sin escribir.",
+        "En una cabeza."
+      ],
+      "items": [
+        [
+          "Manufactura",
+          "Solo el jefe de turno sabe que después del negro hay que purgar dos veces antes de sacar blanco.",
+          "p-inyectoras"
+        ],
+        [
+          "Logística",
+          "El cliente A siempre se despacha primero, pero eso no está escrito en ningún lado.",
+          "logistica"
+        ],
+        [
+          "Procesos",
+          "Después de la salsa picante va la de tomate, nunca la de ajo. Lo sabe la supervisora de la noche.",
+          "salsas"
+        ],
+        [
+          "Servicios con procesos",
+          "Solo el operador antiguo sabe qué válvula cerrar primero cuando hay un daño en la red.",
+          "red"
+        ]
+      ]
+    },
+    "solucion": {
+      "tipo": "aps",
+      "fuente": "/mnt/project-files/video-plasticos/demo-plasticos-v007-liviano.mp4",
+      "titulo": {
+        "grande": "CoSimulation",
+        "nombre": "Un cosimulador",
+        "def": "El simulador que entrenas con las reglas de tu empresa.",
+        "size": 150
+      },
+      "siglaEn": "es un cosimulador",
+      "definicionEn": "y que tú entrenas",
+      "gemeloEn": "Y antes de que",
+      "voz": "CoSimulation es un cosimulador: un simulador que trabaja junto al programador automático y que tú entrenas con las reglas de tu empresa. Antes de calcular nada, le enseñas las reglas de negocio y de producción: qué molde va en cada máquina, los turnos, lo que ya empezó y no se mueve, y cuánto cuesta cada purga de color. Se las enseñas una vez y las respeta siempre. Solo entonces eliges un objetivo, como cumplir las entregas, y calcula: casi cinco mil variables en menos de un segundo. En la planta de plásticos, las entregas a tiempo suben de noventa coma tres a noventa y dos coma cinco por ciento, y quedan noventa horas de máquina libres en la semana. Y antes de que se rompa en la planta, el gemelo te muestra la semana con ese plan. El conocimiento de tu gente se queda en la empresa.",
+      "clips": [
+        {
+          "desde": "Antes de calcular nada",
+          "ss": 257,
+          "crop": [
+            460,
+            72,
+            1000,
+            830
+          ],
+          "label": "Antes de calcular, <b>le enseñas tus reglas</b>"
+        },
+        {
+          "desde": "Se las enseñas una vez",
+          "ss": 399,
+          "crop": [
+            700,
+            72,
+            1000,
+            830
+          ],
+          "label": "Cada purga, con su <b>tiempo real</b>"
+        },
+        {
+          "desde": "Solo entonces eliges",
+          "ss": 330,
+          "crop": [
+            460,
+            72,
+            1000,
+            830
+          ],
+          "label": "Solo entonces, <b>un objetivo</b>"
+        },
+        {
+          "desde": "y calcula:",
+          "ss": 359,
+          "crop": [
+            560,
+            72,
+            1000,
+            830
+          ],
+          "label": "<b>4.877 variables</b>, menos de un segundo"
+        },
+        {
+          "desde": "En la planta de plásticos",
+          "ss": 371,
+          "crop": [
+            460,
+            72,
+            1000,
+            830
+          ],
+          "label": "De <b>90,3 %</b> a <b>92,5 %</b> a tiempo"
+        },
+        {
+          "desde": "y quedan noventa",
+          "ss": 382,
+          "crop": [
+            700,
+            72,
+            1000,
+            830
+          ],
+          "label": "<b>90 horas</b> de máquina libres"
+        }
+      ]
+    },
+    "modulos": {
+      "voz": "Módulo tres de siete: el que aprende las reglas de tu planta."
+    },
+    "cierre": {
+      "voz": "Este es el cuarto de ocho videos. En el próximo, Fractal: compara escenarios, con tus reglas ya enseñadas, antes de decidir. Arvantti DigitalTwin. Decide antes de que pase.",
+      "cta": "Parte 4 de 8 · <b>sigue la serie</b>: en la parte 5, Fractal compara escenarios",
+      "sigue": "Continúa en la parte 5 →"
+    }
+  }
+}

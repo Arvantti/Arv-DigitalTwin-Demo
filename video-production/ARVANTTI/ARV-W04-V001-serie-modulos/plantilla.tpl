@@ -127,6 +127,9 @@ html,body{width:1080px;height:1920px;margin:0;overflow:hidden;background:var(--b
 .win.xl .grid{grid-template-columns:repeat(8,1fr);gap:4px}
 .win.xl .grid span{height:34px;background:#dfe6f1}
 .win.xl .grid span.r{background:#f4b6b0}.win.xl .grid span.g{background:#c8e6c9}.win.xl .grid span.y{background:#fde9a6}.win.xl .grid span.b{background:#b9d3f5}
+.win.xl.tj{height:auto}
+.win.xl.tj .wc{padding:26px 30px;font:600 40px/1.35 Inter,sans-serif}
+.win.xl.tj .wc b{color:#c4473b}
 .apsT{position:absolute;left:70px;right:70px;top:560px;text-align:center}
 .apsT h2{margin:0;font:800 260px/1 "Inter Display",Inter,sans-serif;letter-spacing:-6px;color:var(--electric);text-shadow:0 0 80px #2d7ff988}
 .apsT p{margin:20px 0 0;font:800 70px/1.1 "Inter Display",Inter,sans-serif;letter-spacing:-1px;color:#fff}

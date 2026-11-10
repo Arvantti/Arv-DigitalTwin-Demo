@@ -285,6 +285,13 @@ function componer() {
       to("#e-gancho .flash", { opacity: 0, duration: 0.5 }, tJ + 1.1);
       sfx("gj", "whoosh-short.mp3", tJ, 0.3);
     }
+    if (g.tarjeta) {
+      const c = g.tarjeta, tR = enPalabra(x, c.rompeEn);
+      html.push(`<div id="g-tj" class="clip" data-start="0.00" data-duration="${(tR + 1.2).toFixed(2)}" data-track-index="5"><div class="win xl tj" id="tjw"><div class="wb" style="background:${c.color || "#2d5fa8"}"><i></i>${c.titulo}</div><div class="wc">${c.cuerpo}</div></div></div>`);
+      at("#tjw", { opacity: 0, scale: 0.7, rotate: -4 }, { opacity: 1, scale: 1, rotate: -3, duration: 0.5, ease: "back.out(1.8)" }, 0.6);
+      to("#tjw", { opacity: 0, y: 260, rotate: 12, scale: 0.8, duration: 0.6, ease: "power2.in" }, tR);
+      sfx("gt", "whoosh-short.mp3", tR, 0.3);
+    }
     if (g.excel) {
       const tR = enPalabra(x, g.excel.rompeEn);
       html.push(`<div id="g-xl" class="clip" data-start="0.00" data-duration="${(tR + 1.4).toFixed(2)}" data-track-index="5"><div class="win xl" id="xlw"><div class="wb" style="background:#1f7a43"><i></i>Plan_semana_v7_FINAL.xlsx</div><div class="wc"><div class="grid">${Array.from({ length: 40 }, (_, i) => `<span class="${["", "r", "g", "y", "", "b"][i % 6]}"></span>`).join("")}</div></div></div></div>`);
@@ -432,7 +439,7 @@ function componer() {
     clip("e-sol", "scene", s, d, `
       <div class="bleed dim"><img src="assets/tomas/p-heroe.png" alt=""></div>
       <div class="top">${kick("", V.kicker)}</div>
-      <div class="apsT"><h2>${words("APS")}</h2><p>${words("Planificación y programación avanzada")}</p><small>${words("Qué orden va en qué máquina, y a qué hora.")}</small></div>`, 3);
+      <div class="apsT"><h2${so.titulo?.size ? ` style="font-size:${so.titulo.size}px;letter-spacing:-3px"` : ""}>${words(so.titulo?.grande || "APS")}</h2><p>${words(so.titulo?.nombre || "Planificación y programación avanzada")}</p><small>${words(so.titulo?.def || "Qué orden va en qué máquina, y a qué hora.")}</small></div>`, 3);
     enter("e-sol", s);
     at("#e-sol .top", { opacity: 0 }, { opacity: 1, duration: 0.5 }, s + 0.2);
     at("#e-sol .apsT h2", { opacity: 0, scale: 1.6, filter: "blur(14px)" }, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.6, ease: "power3.out" }, x.voiceAt - 0.1);

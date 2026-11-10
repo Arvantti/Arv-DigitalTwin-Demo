@@ -1,0 +1,42 @@
+[
+ {
+  "id": "gancho",
+  "start": 0,
+  "voiceAt": 0.35,
+  "voz": 5.8,
+  "dur": 6.65,
+  "real": true
+ },
+ {
+  "id": "dolor",
+  "start": 6.65,
+  "voiceAt": 6.95,
+  "voz": 11.39,
+  "dur": 12.39,
+  "real": true
+ },
+ {
+  "id": "solucion",
+  "start": 19.04,
+  "voiceAt": 19.34,
+  "voz": 46.68,
+  "dur": 47.58,
+  "real": true
+ },
+ {
+  "id": "modulos",
+  "start": 66.62,
+  "voiceAt": 66.92,
+  "voz": 4.05,
+  "dur": 5.35,
+  "real": true
+ },
+ {
+  "id": "cierre",
+  "start": 71.97,
+  "voiceAt": 72.37,
+  "voz": 12.04,
+  "dur": 15.04,
+  "real": true
+ }
+]
