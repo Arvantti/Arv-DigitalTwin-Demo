@@ -27,48 +27,64 @@
   "id": "agentes",
   "start": 30.31,
   "voiceAt": 30.61,
-  "voz": 10.61,
-  "dur": 11.81,
+  "voz": 13.87,
+  "dur": 15.07,
   "real": true
  },
  {
   "id": "voz",
-  "start": 42.11,
-  "voiceAt": 42.51,
-  "voz": 16.04,
-  "dur": 17.44,
+  "start": 45.38,
+  "voiceAt": 45.78,
+  "voz": 18.05,
+  "dur": 19.45,
   "real": true
  },
  {
   "id": "seguridad",
-  "start": 59.55,
-  "voiceAt": 59.85,
+  "start": 64.83,
+  "voiceAt": 65.13,
   "voz": 12.28,
   "dur": 13.48,
   "real": true
  },
  {
+  "id": "equipos",
+  "start": 78.31,
+  "voiceAt": 78.61,
+  "voz": 6.53,
+  "dur": 7.83,
+  "real": true
+ },
+ {
   "id": "cerebro",
-  "start": 73.03,
-  "voiceAt": 73.33,
-  "voz": 11,
-  "dur": 12.2,
+  "start": 86.14,
+  "voiceAt": 86.44,
+  "voz": 16.43,
+  "dur": 17.63,
+  "real": true
+ },
+ {
+  "id": "software",
+  "start": 103.77,
+  "voiceAt": 104.07,
+  "voz": 12.83,
+  "dur": 14.13,
   "real": true
  },
  {
   "id": "auditoria",
-  "start": 85.23,
-  "voiceAt": 85.53,
+  "start": 117.89,
+  "voiceAt": 118.19,
   "voz": 9.4,
   "dur": 10.9,
   "real": true
  },
  {
   "id": "cierre",
-  "start": 96.13,
-  "voiceAt": 97.13,
-  "voz": 3.63,
-  "dur": 10.13,
+  "start": 128.8,
+  "voiceAt": 129.8,
+  "voz": 3.79,
+  "dur": 10.29,
   "real": true
  }
 ]

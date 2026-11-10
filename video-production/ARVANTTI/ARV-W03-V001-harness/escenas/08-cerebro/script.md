@@ -1,0 +1,1 @@
+Y todo con la memoria de su empresa. Un cerebro que se construye solo: un graph RAG que conecta decisiones, clientes, pedidos, personas y documentos, y crece con cada día de trabajo. La IA responde con fuente, y sus datos se quedan en su infraestructura.

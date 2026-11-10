@@ -5,3 +5,5 @@ escenas/*/assets/
 out/
 .hyperframes/
 renders/
+vertical/assets
+vertical/escenas

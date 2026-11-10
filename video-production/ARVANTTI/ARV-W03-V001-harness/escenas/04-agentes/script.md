@@ -1,1 +1,1 @@
-Crear un agente es describir un proceso. Lo dibuja en el diseñador, elige entre más de ciento veinte habilidades listas, y le asigna un cargo, un alcance y un responsable.
+Crear un agente es describir un proceso. Lo dibuja en el diseñador, parte de más de ciento veinte habilidades listas, y crea las suyas, a la medida de su empresa. Cada agente tiene un cargo, un alcance y un responsable.
