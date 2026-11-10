@@ -285,6 +285,18 @@ function componer() {
       to("#e-gancho .flash", { opacity: 0, duration: 0.5 }, tJ + 1.1);
       sfx("gj", "whoosh-short.mp3", tJ, 0.3);
     }
+    if (g.excel) {
+      const tR = enPalabra(x, g.excel.rompeEn);
+      html.push(`<div id="g-xl" class="clip" data-start="0.00" data-duration="${(tR + 1.4).toFixed(2)}" data-track-index="5"><div class="win xl" id="xlw"><div class="wb" style="background:#1f7a43"><i></i>Plan_semana_v7_FINAL.xlsx</div><div class="wc"><div class="grid">${Array.from({ length: 40 }, (_, i) => `<span class="${["", "r", "g", "y", "", "b"][i % 6]}"></span>`).join("")}</div></div></div></div>`);
+      at("#xlw", { opacity: 0, scale: 0.7, rotate: -4 }, { opacity: 1, scale: 1, rotate: -3, duration: 0.5, ease: "back.out(1.8)" }, 0.5);
+      for (let i = 0; i < 40; i++) {
+        const ang = (i * 137.5 * Math.PI) / 180, r = 500 + (i % 7) * 90;
+        to(`#xlw .grid span:nth-child(${i + 1})`, { x: Math.round(Math.cos(ang) * r), y: Math.round(Math.sin(ang) * r + 300), rotate: (i % 2 ? 1 : -1) * (90 + i * 7), opacity: 0, duration: 0.9, ease: "power2.in" }, tR + (i % 10) * 0.02);
+      }
+      to("#xlw", { opacity: 0, duration: 0.5 }, tR + 0.5);
+      sfx("gx", "whoosh-short.mp3", tR, 0.3);
+    }
+    if (V.parte) { html.push(`<div id="g-parte" class="clip" data-start="0.00" data-duration="${d.toFixed(2)}" data-track-index="6"><div class="parte">PARTE ${V.parte} DE 8</div></div>`); at("#g-parte .parte", { opacity: 0, y: -20 }, { opacity: 1, y: 0, duration: 0.4 }, 0.3); }
     sfx("g0", "hit.wav", 0.05, 0.25);
     leave("e-gancho", s + d);
   }
@@ -297,7 +309,7 @@ function componer() {
     const fin = s + d;
     const inicio = dl.saltarPrimero ? cortes[0] : s;
     if (dl.saltarPrimero) {
-      clip("d-intro", "scene", s, tarjetas[0] - s + 0.2, `<div class="bleed dim"><img src="assets/tomas/p-heroe.png" alt=""></div><div class="repetir"><p>Copiar.</p><p>Pegar.</p><p>Repetir.</p></div>`, 3);
+      clip("d-intro", "scene", s, tarjetas[0] - s + 0.2, `<div class="bleed dim"><img src="assets/tomas/p-heroe.png" alt=""></div><div class="repetir">${(dl.intro || ["Copiar.", "Pegar.", "Repetir."]).map((t) => `<p>${t}</p>`).join("")}</div>`, 3);
       enter("d-intro", s);
       const span0 = tarjetas[0] - x.voiceAt;
       [0, 1, 2].forEach((k) => at(`#d-intro .repetir p:nth-child(${k + 1})`, { opacity: 0, x: -60 }, { opacity: 1, x: 0, duration: 0.4, ease: "power3.out" }, x.voiceAt + 0.2 + (k * span0) / 3.2));
@@ -409,6 +421,53 @@ function componer() {
     at("#st1", { opacity: 0, scale: 1.4 }, { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(2)" }, tVer);
     sfx("s0", "whoosh.wav", s, 0.25);
     leave("e-sol", s + d);
+  }
+
+  if (so.tipo === "aps") {
+    const x = sol; const [s, d] = span(x);
+    const tiempos_ = so.clips.map((c) => enPalabra(x, c.desde));
+    const tG = enPalabra(x, so.gemeloEn);
+    const fin = s + d;
+    const fuente = so.fuente;
+    clip("e-sol", "scene", s, d, `
+      <div class="bleed dim"><img src="assets/tomas/p-heroe.png" alt=""></div>
+      <div class="top">${kick("", V.kicker)}</div>
+      <div class="apsT"><h2>${words("APS")}</h2><p>${words("Planificación y programación avanzada")}</p><small>${words("Qué orden va en qué máquina, y a qué hora.")}</small></div>`, 3);
+    enter("e-sol", s);
+    at("#e-sol .top", { opacity: 0 }, { opacity: 1, duration: 0.5 }, s + 0.2);
+    at("#e-sol .apsT h2", { opacity: 0, scale: 1.6, filter: "blur(14px)" }, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.6, ease: "power3.out" }, x.voiceAt - 0.1);
+    at("#e-sol .apsT p .w", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.4, stagger: 0.1, ease: "power3.out" }, enPalabra(x, so.siglaEn));
+    at("#e-sol .apsT small .w", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.35, stagger: 0.07, ease: "power3.out" }, enPalabra(x, so.definicionEn));
+    to("#e-sol .apsT", { opacity: 0, y: -40, duration: 0.4 }, tiempos_[0] - 0.4);
+    so.clips.forEach((c, i) => {
+      const a = tiempos_[i] - 0.25, b = (i + 1 < tiempos_.length ? tiempos_[i + 1] : tG) + 0.15;
+      const dur = b - a;
+      const rel = `assets/clips/${VIDEO}-c${i}.mp4`;
+      const [cx, cy, cw, ch] = c.crop || [158, 72, 1604, 904];
+      const h = Math.round((1000 * ch) / cw / 2) * 2;
+      if (!fs.existsSync(T(rel)) || JSON.parse(fs.readFileSync(T(rel + ".json"), "utf8") || "{}").k !== `${fuente}|${c.ss}|${dur.toFixed(2)}|${cx},${cy},${cw},${ch}`) {
+        sh("ffmpeg", ["-y", "-v", "error", "-ss", String(c.ss), "-t", (dur + 0.2).toFixed(2), "-i", fuente, "-vf", `crop=${cw}:${ch}:${cx}:${cy},scale=1000:${h}:flags=lanczos,fps=${FPS},format=yuv420p`, "-an", "-c:v", "libx264", "-crf", "14", "-preset", "slow", T(rel)]);
+        fs.writeFileSync(T(rel + ".json"), JSON.stringify({ k: `${fuente}|${c.ss}|${dur.toFixed(2)}|${cx},${cy},${cw},${ch}` }));
+      }
+      const top = h > 700 ? 430 : 560;
+      clip(`pc${i}`, "scene", a, dur, `<div class="pframe" style="top:${top}px;height:${h}px"></div><p class="clab" style="top:${top + h + 40}px">${c.label}</p>`, 6 + i * 2);
+      video(`pv${i}`, "pvid", rel, a, dur, 7 + i * 2);
+      html.push(`<style>#pv${i}{left:40px;top:${top}px;width:1000px;height:${h}px}</style>`);
+      at(`#pc${i} .pframe`, { opacity: 0, scale: 0.92 }, { opacity: 1, scale: 1, duration: 0.35, ease: "power3.out" }, a);
+      at(`#pv${i}`, { opacity: 0, clipPath: "inset(0% 0% 0% 100% round 18px)" }, { opacity: 1, clipPath: "inset(0% 0% 0% 0% round 18px)", duration: 0.45, ease: "power3.inOut" }, a);
+      at(`#pc${i} .clab`, { opacity: 0, x: -40 }, { opacity: 1, x: 0, duration: 0.4, ease: "power3.out" }, a + 0.2);
+      if (i + 1 < so.clips.length) to(`#pc${i} .clab`, { opacity: 0, duration: 0.2 }, b - 0.4);
+      if (c.zoom) at(`#pv${i}`, { scale: 1 }, { scale: c.zoom, transformOrigin: c.origen || "50% 50%", duration: dur, ease: "sine.inOut" }, a);
+      sfx(`pc${i}`, "click-soft.mp3", a, 0.2);
+    });
+    // Y el gemelo muestra la planta con ese plan.
+    video("s-lapso", "bleedv", "assets/clips/lapso.mp4", tG - 0.3, fin - tG + 0.3, 30);
+    html.push(`<style>#s-lapso{width:1080px;height:1920px;object-fit:cover}</style>`);
+    clip("s-g3d", "scene", tG - 0.3, fin - tG + 0.3, `<div class="tag3d" style="top:300px"><i></i>GEMELO DIGITAL 3D · CON TU PLAN</div>`, 31);
+    at("#s-lapso", { opacity: 0, scale: 1.15 }, { opacity: 1, scale: 1.02, duration: 0.8, ease: "power2.out" }, tG - 0.3);
+    at("#s-g3d .tag3d", { opacity: 0, x: -40 }, { opacity: 1, x: 0, duration: 0.5, ease: "back.out(2)" }, tG);
+    sfx("s0", "whoosh.wav", s, 0.25); sfx("sg", "whoosh-short.mp3", tG - 0.3, 0.25);
+    leave("e-sol", fin);
   }
 
   // 4. Heptágono: el núcleo y los siete módulos, con el del video encendido.

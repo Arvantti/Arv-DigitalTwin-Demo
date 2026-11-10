@@ -1,0 +1,149 @@
+{
+  "id": "03-aps",
+  "salida": "serie-03-aps",
+  "modulo": 2,
+  "parte": 3,
+  "kicker": "MÓDULO 2 · APS",
+  "escenas": {
+    "gancho": {
+      "voz": "El plan de producción duró hasta las 10 de la mañana. Mira cómo se rehace en el gemelo 3D.",
+      "titulo": "El plan de producción duró hasta las 10 de la mañana.",
+      "excel": {
+        "rompeEn": "Mira"
+      }
+    },
+    "dolor": {
+      "voz": "En muchas plantas el plan de la semana se arma en Excel, y se rompe con la primera llamada del cliente. Pasa en la fábrica, en la bodega, en la planta de procesos y en la red de servicios.",
+      "cortes": [
+        "En muchas",
+        "en la fábrica",
+        "en la bodega",
+        "en la planta de procesos",
+        "en la red"
+      ],
+      "saltarPrimero": true,
+      "intro": [
+        "Plan en Excel.",
+        "Llama el cliente.",
+        "Rehacer todo."
+      ],
+      "items": [
+        [
+          "Manufactura",
+          "Entró un pedido urgente y hubo que rehacer la semana entera a mano.",
+          "p-inyectoras"
+        ],
+        [
+          "Logística",
+          "Los despachos se programan por orden de llegada, no por fecha de entrega.",
+          "logistica"
+        ],
+        [
+          "Procesos",
+          "Cada cambio de sabor obliga a limpiar el tanque, y nadie ordena los lotes para limpiar menos.",
+          "salsas"
+        ],
+        [
+          "Servicios con procesos",
+          "Los mantenimientos de bombas se programan en papel y chocan con las horas de mayor consumo.",
+          "red"
+        ]
+      ]
+    },
+    "solucion": {
+      "tipo": "aps",
+      "fuente": "/mnt/project-files/video-plasticos/demo-plasticos-v007-liviano.mp4",
+      "siglaEn": "planificación y programación",
+      "definicionEn": "un programador",
+      "gemeloEn": "Y el gemelo",
+      "voz": "APS significa planificación y programación avanzada: un programador automático que decide qué orden va en qué máquina y a qué hora. Lo ves en un Gantt, un calendario de barras donde cada barra es una orden. Los pedidos los creas a mano en el mismo APS, o llegan de tu sistema. Tú decides el orden: los arrastras en el Gantt de una máquina a otra, y con cada movimiento ves al instante cuántos pedidos quedan tarde. Si una máquina no puede hacer esa pieza, el sistema no te deja ponerla ahí. Guardas esa versión de tu plan y toda la planta trabaja con ella. O fijas los pedidos que no se pueden mover, eliges un objetivo, como entregar a tiempo o cambiar menos de producto, y el APS reorganiza el resto en segundos, respetando turnos, materiales y limpiezas. Y el gemelo te muestra cómo se vería la planta con ese plan.",
+      "clips": [
+        {
+          "desde": "Lo ves en un Gantt",
+          "ss": 302,
+          "label": "Gantt: <b>cada barra es una orden</b>",
+          "crop": [
+            300,
+            72,
+            1000,
+            830
+          ]
+        },
+        {
+          "desde": "Los pedidos los creas",
+          "ss": 239,
+          "label": "Creas el pedido <b>a mano</b>",
+          "crop": [
+            460,
+            72,
+            1000,
+            830
+          ]
+        },
+        {
+          "desde": "Tú decides el orden",
+          "ss": 953,
+          "label": "Lo <b>arrastras</b> en el Gantt",
+          "crop": [
+            300,
+            72,
+            1000,
+            830
+          ]
+        },
+        {
+          "desde": "y con cada movimiento",
+          "ss": 295,
+          "label": "Pedidos tarde, <b>al instante</b>",
+          "crop": [
+            460,
+            72,
+            1000,
+            830
+          ]
+        },
+        {
+          "desde": "Si una máquina",
+          "ss": 265,
+          "label": "Si no puede, <b>no te deja</b>",
+          "crop": [
+            460,
+            146,
+            1000,
+            830
+          ]
+        },
+        {
+          "desde": "Guardas esa versión",
+          "ss": 309,
+          "label": "Una versión para <b>toda la planta</b>",
+          "crop": [
+            300,
+            72,
+            1000,
+            830
+          ]
+        },
+        {
+          "desde": "O fijas los pedidos",
+          "ss": 959,
+          "label": "Fijas lo que no se mueve, <b>el APS ordena el resto</b>",
+          "crop": [
+            158,
+            72,
+            1000,
+            830
+          ]
+        }
+      ]
+    },
+    "modulos": {
+      "voz": "Módulo dos de siete: el que programa tu producción."
+    },
+    "cierre": {
+      "voz": "Este es el tercero de ocho videos. En el próximo, el simulador al que le enseñas las reglas de tu empresa antes de que calcule. Arvantti DigitalTwin. Decide antes de que pase.",
+      "cta": "Parte 3 de 8 · <b>sigue la serie</b>: en la parte 4, el simulador que aprende tus reglas",
+      "sigue": "Continúa en la parte 4 →"
+    }
+  }
+}

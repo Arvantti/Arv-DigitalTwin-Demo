@@ -122,6 +122,19 @@ html,body{width:1080px;height:1920px;margin:0;overflow:hidden;background:var(--b
 .fin .sigue{margin:44px auto 0;display:inline-block;padding:14px 30px;border:2px solid var(--electric);border-radius:40px;font:600 36px Inter,sans-serif;color:#fff;background:#0b1a33cc;opacity:0}
 
 /* Subtítulos quemados: zona segura (250 px libres arriba y 350 abajo) */
+.parte{position:absolute;right:60px;top:200px;padding:10px 22px;border:2px solid var(--electric);border-radius:40px;background:#0b1a33cc;font:700 28px "JetBrains Mono",monospace;letter-spacing:4px;color:#fff;opacity:0}
+.win.xl{left:190px;top:930px;width:700px;height:400px;transform-origin:50% 50%}
+.win.xl .grid{grid-template-columns:repeat(8,1fr);gap:4px}
+.win.xl .grid span{height:34px;background:#dfe6f1}
+.win.xl .grid span.r{background:#f4b6b0}.win.xl .grid span.g{background:#c8e6c9}.win.xl .grid span.y{background:#fde9a6}.win.xl .grid span.b{background:#b9d3f5}
+.apsT{position:absolute;left:70px;right:70px;top:560px;text-align:center}
+.apsT h2{margin:0;font:800 260px/1 "Inter Display",Inter,sans-serif;letter-spacing:-6px;color:var(--electric);text-shadow:0 0 80px #2d7ff988}
+.apsT p{margin:20px 0 0;font:800 70px/1.1 "Inter Display",Inter,sans-serif;letter-spacing:-1px;color:#fff}
+.apsT small{display:block;margin-top:34px;font:600 44px/1.25 Inter,sans-serif;color:#b9c7dd}
+.pframe{position:absolute;left:40px;width:1000px;border-radius:18px;background:#0b1224;box-shadow:0 0 0 1.5px #4ea7ff88,0 40px 120px #000c,0 0 90px #2d7ff944;opacity:0}
+.pvid{position:absolute;border-radius:18px;object-fit:cover}
+.clab{position:absolute;left:60px;right:60px;margin:0;text-align:center;font:800 56px/1.12 "Inter Display",Inter,sans-serif;letter-spacing:-1px;color:#fff;text-shadow:0 4px 30px #000;opacity:0}
+.clab b{color:var(--electric)}
 .sub{position:absolute;left:60px;right:60px;top:1395px;height:180px;display:flex;align-items:center;justify-content:center;text-align:center}
 .sub p{margin:0;padding:14px 26px;border-radius:14px;background:#05070cb0;font:800 58px/1.18 Inter,sans-serif;letter-spacing:-.5px;color:#fff;text-shadow:0 2px 10px #000}
 .sub .w{color:#fff}
