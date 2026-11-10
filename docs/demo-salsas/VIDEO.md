@@ -19,7 +19,7 @@ Lo nuevo es la apertura: un recorrido por el gemelo 3D que muestra los productos
 | 1 · Calcular la programación | Del plan manual al del cosimulador | [guion](1-calcular-programacion/guion.md) |
 | 2 · Un cliente adelanta su pedido | Fractal prueba tres respuestas | [guion](2-adelantar-pedido/guion.md) |
 | 3 · Se cae la llenadora de mostaza | Falla en el emulador, replaneo y Fractal | [guion](3-falla-llenadora-mostaza/guion.md) |
-| 4 · Lavar menos con Fractal | Campañas por día: menos CIP y merma | [guion](4-menos-cip/guion.md) |
+| 4 · Optimizar la secuencia con Fractal | Campañas por día: menos CIP y merma | [guion](4-menos-cip/guion.md) |
 | 5 · Cuánta merma vale la pena ahorrar | Agrupar más contra entregar a tiempo | [guion](5-merma-entregas/guion.md) |
 | 6 · Cierre | Lo que ahorra optimizar | sección 4 de este documento |
 
@@ -98,6 +98,16 @@ Un audio por segmento con el texto de cada cita (`>`): los números van en palab
 
 > Programar esta planta tiene cuatro reglas que no existen en otras industrias. Primero, el orden de recetas: cada línea va de lo suave a lo fuerte, como tomate, BBQ y picante. Avanzar cuesta un cambio corto; devolverse exige un CIP completo de noventa minutos. CIP quiere decir limpieza en sitio: lavar tanques, tuberías y llenadoras sin desarmarlos. Segundo, los alérgenos: pasar de mayonesa a mostaza en la misma llenadora también exige ese lavado completo, con verificación. Tercero, el tiempo de espera: la salsa de tomate caliente aguanta cuatro horas en el pulmón; si nadie la llena a tiempo, se bota, y eso es merma. Y cuarto, las tandas: una marmita no se deja a medias de un día para otro.
 
+### 0-S06b · Cada empresa, sus reglas
+- tarjeta: destacado | CADA EMPRESA, SUS REGLAS | Se le enseñan al modelo antes de calcular | Tiempos de lavado; Alérgenos; Tandas; Cualquier particularidad
+- foco: Cada empresa tiene sus propias reglas => banda
+- foco: tiempos de lavado => c1
+- foco: alérgenos, tandas => c2
+- foco: tandas o cualquier => c3
+- foco: cualquier particularidad => c4
+
+> Estas cuatro reglas son las de esta planta de ejemplo. Cada empresa tiene sus propias reglas, y antes de calcular u optimizar se le enseñan al modelo: el cosimulador y el emulador se configuran con ellas, tiempos de lavado, alérgenos, tandas o cualquier particularidad de su operación.
+
 ### 0-S07 · Cómo se conecta todo
 - tarjeta: partes
 - foco: El emulador hace de planta real => emulador
@@ -123,7 +133,7 @@ Un audio por segmento con el texto de cada cita (`>`): los números van en palab
 - foco: Cuatro, => 4
 - foco: Y cinco, => 5
 
-> Veamos cinco escenarios. Uno, calcular la programación. Dos, un cliente adelanta su pedido. Tres, se cae la llenadora de mostaza. Cuatro, lavar menos con Fractal. Y cinco, cuánta merma vale la pena ahorrar.
+> Veamos cinco escenarios. Uno, calcular la programación. Dos, un cliente adelanta su pedido. Tres, se cae la llenadora de mostaza. Cuatro, optimizar la secuencia de llenado para lavar menos, con Fractal, nuestro simulador de escenarios. Y cinco, cuánta merma vale la pena ahorrar.
 
 ### 0-S10 · Arvantti DigitalTwin
 - tarjeta: modulos
@@ -133,7 +143,7 @@ Un audio por segmento con el texto de cada cita (`>`): los números van en palab
 - foco: Fractal para comparar => fractal
 - foco: y el centro de control => control
 
-> Todo esto corre sobre Arvantti DigitalTwin, el gemelo 3D, con sus módulos: el APS para programar, el cosimulador que calcula la programación, Fractal para comparar escenarios y el centro de control. Empecemos.
+> Todo esto corre sobre Arvantti DigitalTwin, el gemelo 3D, con sus módulos: el APS para programar, el cosimulador que calcula la programación, Fractal para comparar escenarios y el centro de control. El Integrator, DendroScada y el asistente de IA no se usan en este video, porque la demostración se centra en la optimización. Los veremos en otro video, con el hardware físico. Empecemos.
 
 ### 6-S01 · Lo que ahorra optimizar
 - foco: El cosimulador salva seis pedidos => r0

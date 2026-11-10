@@ -25,3 +25,14 @@
 - Sin tramos negros (blackdetect) ni destellos blancos (0 cuadros con luminancia media > 180).
 - Audio: volumen medio −18,5 dB, pico −2,6 dB.
 - Pendiente: visto bueno humano antes del render final.
+
+## v002 (2026-11-10) · observaciones de Andy
+- 0:29 SKU se pronuncia letra por letra ("ese, ka, u"); comprobado con transcripción Scribe: "S, K, U".
+- 2:55 nuevo segmento 0-S06b con tarjeta destacada "Cada empresa, sus reglas": se le enseñan al modelo antes de calcular.
+- 5:42 escenario 4 renombrado "Optimizar la secuencia con Fractal" y Fractal presentado como simulador de escenarios.
+- 6:02 tarjeta de módulos: Integrator, DendroScada y AI Assistant quedan apagados; la voz aclara que se verán en otro video con hardware físico.
+- 10:05 puntaje de Fractal: rótulo "Puntaje de ejemplo · cada empresa lo configura según sus prioridades" y frase en la voz.
+- Solo se regrabaron 5 segmentos (1.667 caracteres). Duración 12:26. Audio medio −18,5 dB, pico −2,7 dB.
+
+## v003 (2026-11-10)
+- SKU de corrido ("esecaú"), sin pausas entre letras (0,4 s). Solo se regrabó 0-S02 (340 caracteres). Duración 12:25.

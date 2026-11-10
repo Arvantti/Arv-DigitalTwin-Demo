@@ -10,6 +10,8 @@ La mostaza se hidrata en su tanque, el molino de piedra la muele y la llenadora 
 
 Programar esta planta tiene cuatro reglas que no existen en otras industrias. Primero, el orden de recetas: cada línea va de lo suave a lo fuerte, como tomate, BBQ y picante. Avanzar cuesta un cambio corto; devolverse exige un CIP completo de noventa minutos. CIP quiere decir limpieza en sitio: lavar tanques, tuberías y llenadoras sin desarmarlos. Segundo, los alérgenos: pasar de mayonesa a mostaza en la misma llenadora también exige ese lavado completo, con verificación. Tercero, el tiempo de espera: la salsa de tomate caliente aguanta cuatro horas en el pulmón; si nadie la llena a tiempo, se bota, y eso es merma. Y cuarto, las tandas: una marmita no se deja a medias de un día para otro.
 
+Estas cuatro reglas son las de esta planta de ejemplo. Cada empresa tiene sus propias reglas, y antes de calcular u optimizar se le enseñan al modelo: el cosimulador y el emulador se configuran con ellas, tiempos de lavado, alérgenos, tandas o cualquier particularidad de su operación.
+
 El gemelo tiene cuatro partes conectadas. El emulador hace de planta real: cada equipo produce en tiempo real, y aquí se simulan las fallas. El centro de control recibe las señales de todos los equipos. El gemelo 3D muestra la planta en el pasado, el presente y el futuro programado. Y el APS, el sistema de programación de la producción, decide qué se hace, en qué equipo y a qué hora.
 
 Todo empieza con los pedidos. Esta es la cartera: ciento veintiocho pedidos de clientes inventados para los diez productos, cada uno con su cantidad, su fecha de entrega y su importancia. Las fechas se cuentan en días desde el arranque de la programación. Hoy es el día nueve, a las diez de la mañana: lo anterior ya pasó y no se mueve.
@@ -30,6 +32,6 @@ Cada versión es una foto completa de los datos, sin el historial de cambios, y 
 
 Al usarla, el APS, el emulador, el centro de control y el gemelo 3D trabajan con estos datos. Para los escenarios volvemos a la cartera precargada.
 
-Veamos cinco escenarios. Uno, calcular la programación. Dos, un cliente adelanta su pedido. Tres, se cae la llenadora de mostaza. Cuatro, lavar menos con Fractal. Y cinco, cuánta merma vale la pena ahorrar.
+Veamos cinco escenarios. Uno, calcular la programación. Dos, un cliente adelanta su pedido. Tres, se cae la llenadora de mostaza. Cuatro, optimizar la secuencia de llenado para lavar menos, con Fractal, nuestro simulador de escenarios. Y cinco, cuánta merma vale la pena ahorrar.
 
-Todo esto corre sobre Arvantti DigitalTwin, el gemelo 3D, con sus módulos: el APS para programar, el cosimulador que calcula la programación, Fractal para comparar escenarios y el centro de control. Empecemos.
+Todo esto corre sobre Arvantti DigitalTwin, el gemelo 3D, con sus módulos: el APS para programar, el cosimulador que calcula la programación, Fractal para comparar escenarios y el centro de control. El Integrator, DendroScada y el asistente de IA no se usan en este video, porque la demostración se centra en la optimización. Los veremos en otro video, con el hardware físico. Empecemos.

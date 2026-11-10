@@ -1,11 +1,11 @@
 ---
-title: Guion · Lavar menos con Fractal
+title: Guion · Optimizar la secuencia con Fractal
 escenario: 4-menos-cip
 tags: [demo, salsas, guion, fractal, cip]
 duracion_aprox: 2,5 min
 ---
 
-# Escenario 4 · Lavar menos con Fractal
+# Escenario 4 · Optimizar la secuencia con Fractal
 
 Mensaje central: organizando la planta en campañas por día, cada línea recorre su orden de recetas una sola vez al día:
 menos CIP y menos merma con las mismas entregas.
@@ -17,8 +17,9 @@ menos CIP y menos merma con las mismas entregas.
 - foco: dos por cada hora de CIP => cip
 - foco: las horas de cambio de envase => envase
 - foco: y la merma => merma
+- foco: Estos puntajes son solo un ejemplo => nota
 
-> Fractal compara cada opción con un solo puntaje: las horas de atraso, veinte puntos por cada pedido tarde, dos por cada hora de CIP, las horas de cambio de envase y la merma. Menos es mejor.
+> Fractal compara cada opción con un solo puntaje: las horas de atraso, veinte puntos por cada pedido tarde, dos por cada hora de CIP, las horas de cambio de envase y la merma. Menos es mejor. Estos puntajes son solo un ejemplo: cada empresa los configura según sus prioridades, y se le enseña al sistema a operar como a ella le gusta, con su historia de reacción ya comprobada.
 
 ### S02 · Las opciones
 - imagen: capturas/02-fractal-pregunta.png
