@@ -119,6 +119,7 @@ html,body{width:1080px;height:1920px;margin:0;overflow:hidden;background:var(--b
 .fin h1 span{display:block}
 .fin .firma{margin:28px 0 0;font:600 56px Inter,sans-serif;color:#fff}
 .fin .url{margin:36px 0 0;font:500 30px "JetBrains Mono",monospace;letter-spacing:4px;color:#7a9cc6}
+.fin .sigue{margin:44px auto 0;display:inline-block;padding:14px 30px;border:2px solid var(--electric);border-radius:40px;font:600 36px Inter,sans-serif;color:#fff;background:#0b1a33cc;opacity:0}
 
 /* Subtítulos quemados: zona segura (250 px libres arriba y 350 abajo) */
 .sub{position:absolute;left:60px;right:60px;top:1395px;height:180px;display:flex;align-items:center;justify-content:center;text-align:center}

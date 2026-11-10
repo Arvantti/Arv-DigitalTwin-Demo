@@ -51,8 +51,9 @@
       "voz": "Es el núcleo de Arvantti, y a su alrededor conectas siete módulos, solo los que necesites."
     },
     "cierre": {
-      "voz": "Escríbeme GEMELO y te muestro tu planta en 3D. Arvantti DigitalTwin. Decide antes de que pase.",
-      "cta": "Escríbeme <b>GEMELO</b> y te muestro tu planta en 3D"
+      "voz": "Este es el primero de ocho videos sobre el mismo gemelo. Sigue la serie y míralo crecer módulo por módulo. Arvantti DigitalTwin. Decide antes de que pase.",
+      "cta": "Parte 1 de 8 · <b>sigue la serie</b> y mira crecer el gemelo módulo por módulo",
+      "sigue": "Continúa en la parte 2 →"
     }
   }
 }

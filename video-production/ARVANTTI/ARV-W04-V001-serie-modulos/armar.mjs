@@ -457,15 +457,20 @@ function componer() {
     const x = S.cierre, c = E.cierre; const [s, d] = span(x);
     const tA = enPalabra(x, "Arvantti"), tD = enPalabra(x, "Decide");
     clip("e-cierre", "scene", s, d, `
+      <div class="bleed" id="c-bg"><img src="assets/tomas/p-heroe.png" alt=""></div>
       <div class="cta">${c.cta}</div>
-      <div class="fin"><img class="marca" src="assets/clips/marca.png" alt=""><h1>Arvantti <span>Digital Twin</span></h1><p class="firma">Decide antes de que pase.</p><p class="url">digitaltwin.arvantti.online</p></div>`, 3);
+      <div class="fin"><img class="marca" src="assets/clips/marca.png" alt=""><h1>Arvantti <span>Digital Twin</span></h1><p class="firma">Decide antes de que pase.</p><p class="url">digitaltwin.arvantti.online</p>${c.sigue ? `<div><p class="sigue">${c.sigue}</p></div>` : ""}</div>`, 3);
     enter("e-cierre", s);
+    at("#c-bg", { opacity: 0, scale: 1.0 }, { opacity: 0.9, scale: 1.08, duration: 1.0, ease: "power2.out" }, s);
+    to("#c-bg", { scale: 1.16, duration: Math.max(1, tA - s - 1), ease: "none" }, s + 1);
+    to("#c-bg", { opacity: 0.12, duration: 0.8, ease: "power2.inOut" }, tA - 0.6);
     at("#e-cierre .cta", { opacity: 0, y: 40, scale: 0.95 }, { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "back.out(1.6)" }, x.voiceAt);
     at("#e-cierre .marca", { opacity: 0, scale: 0.5, rotate: -8 }, { opacity: 1, scale: 1, rotate: 0, duration: 0.8, ease: "back.out(1.6)" }, tA - 0.3);
     at("#e-cierre h1", { opacity: 0, scale: 1.25, filter: "blur(10px)" }, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 1.0, ease: "power3.out" }, tA);
     at("#e-cierre h1", { backgroundPosition: "-200% 0" }, { backgroundPosition: "200% 0", duration: 2, ease: "power1.inOut" }, tA + 1);
     at("#e-cierre .firma", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, tD);
     at("#e-cierre .url", { opacity: 0 }, { opacity: 1, duration: 0.6 }, tD + 0.8);
+    if (c.sigue) at("#e-cierre .sigue", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, tD + 1.4);
     to("#e-cierre .fin, #e-cierre .cta", { opacity: 0, duration: 0.8 }, s + d - 0.8);
     sfx("c0", "hit.wav", tA, 0.25);
   }
