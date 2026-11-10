@@ -9,6 +9,7 @@ import setup from "../../../industrial-models/plastic-injection-plant-v1/catalog
 import demand from "../../../industrial-models/plastic-injection-plant-v1/catalog/demand.yaml?raw";
 import materials from "../../../industrial-models/plastic-injection-plant-v1/catalog/materials.yaml?raw";
 import changeovers from "../../../industrial-models/plastic-injection-plant-v1/catalog/changeovers.yaml?raw";
+import energy from "../../../industrial-models/plastic-injection-plant-v1/catalog/energy.yaml?raw";
 import plant from "../../../industrial-models/plastic-injection-plant-v1/plant.yaml?raw";
 import aps from "../../../industrial-models/plastic-injection-plant-v1/aps/aps.yaml?raw";
 import portfolio from "../../../industrial-models/plastic-injection-plant-v1/orders/cartera-2026-11.json";
@@ -25,6 +26,7 @@ export const catalogData = (): CatalogData => ({
   aps: yaml.load(aps) as CatalogData["aps"],
   materials: yaml.load(materials) as CatalogData["materials"],
   changeovers: yaml.load(changeovers) as CatalogData["changeovers"],
+  energy: yaml.load(energy) as CatalogData["energy"],
   machines: machinesOf(yaml.load(plant) as PlantYaml),
 });
 

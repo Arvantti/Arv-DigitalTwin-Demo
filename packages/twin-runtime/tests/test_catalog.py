@@ -194,6 +194,35 @@ def test_allergen_table_names_product_groups(tmp_path, lib):
     assert "producto salsa-tomate: falta allergen_group (el catálogo tiene tabla de alérgenos)" in errors
 
 
+def test_energy_profiles_name_machines_molds_and_active_services(tmp_path, lib):
+    """La energía es de inyectoras del plano con moldes que les caben; los servicios de respaldo no suman."""
+    folder = _copy(tmp_path)
+
+    def bad(d):
+        inj, svc = d["energy"]["injection"], d["energy"]["services"]
+        inj["imm-01"]["mold-balde-12l"] = dict(inj["imm-21"]["mold-balde-12l"])
+        inj["imm-99"] = {}
+        svc["chiller-02"] = {"nominal_kw": 80, "idle_fraction": 0.1}
+        svc["dryer-03"]["feeds"] = ["mb-azul"]
+
+    _edit(folder, "energy.yaml", bad)
+    errors = Catalog.load(folder).validate(_layout(folder), lib)
+    assert "energía imm-01: el molde mold-balde-12l no le cabe (fuerza de cierre)" in errors
+    assert "energía: 'imm-99' no es una inyectora del plano" in errors
+    assert "energía: chiller-02 es de respaldo y no debe sumar" in errors
+    assert "energía dryer-03: 'mb-azul' no es una resina del catálogo" in errors
+
+
+def test_energy_yaml_comes_from_the_library_models():
+    """catalog/energy.yaml es lo que dan los modelos físicos de hoy (si cambia la librería, hay que regenerarlo)."""
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location("perfil", ROOT / "tools" / "energy" / "perfil_energia_plasticos.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    assert mod.dump(mod.build()) == (PLANT / "catalog" / "energy.yaml").read_text(encoding="utf-8")
+
+
 def test_recipe_sequence_names_bulks_once(tmp_path, lib):
     """El orden de recetas de cada línea solo nombra graneles, y cada granel está en una sola línea."""
     folder = _copy(tmp_path, SAUCE)

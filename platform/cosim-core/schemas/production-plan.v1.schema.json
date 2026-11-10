@@ -71,10 +71,14 @@
         "changeovers": { "type": "integer" },
         "changeover_h": { "type": "number" },
         "mold_changes": { "type": "integer" },
+        "energy_kwh": { "type": "number", "description": "Energía eléctrica del plan en kWh (sin precio)" },
+        "kwh_per_kg": { "type": "number", "description": "kWh por kg de producto" },
+        "peak_kw": { "type": "number", "description": "Mayor potencia media de 15 minutos" },
         "cip_h": { "type": "number", "description": "Horas de limpieza CIP programadas" },
         "waste_kg": { "type": "number", "description": "Merma: producto que se pierde por cambios, purgas o tiempo de espera vencido" }
       }
     },
+    "energy": { "type": "object", "description": "Desglose de la energía del plan (kWh: produciendo, espera caliente, calentamientos, servicios; pico de 15 min)" },
     "solver": { "type": "object" }
   }
 }

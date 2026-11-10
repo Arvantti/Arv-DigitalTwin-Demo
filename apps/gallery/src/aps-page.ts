@@ -21,6 +21,7 @@ import type { Objective } from "@twin/cosim/adapters/plastic-injection-plant-v1/
 import { activeConfig, activeEvents, addedOrders, currentManual, molds, modelNow, manualPlan, model, now, onChange, portfolio, resetDemo, setAdded, setVigente, setViewed, setViewMode, SOURCE_NAMES, useDemoDays, vigente, viewedPlan, viewMode } from "./aps-store.ts";
 import { cachedVersion, deleteVersion, exportVersions, importVersions, loadVersion as loadVersionData, renameVersion, saveVersion, setViewedVersionId, versions, viewedVersionId, type SavedVersion } from "./aps-store.ts";
 import { editedPlan, moveChunk, queuesOf, type EditChunk, type ManualEdit } from "@twin/cosim/adapters/plastic-injection-plant-v1/manual.ts";
+import { planEnergy } from "@twin/cosim/adapters/plastic-injection-plant-v1/energy.ts";
 import { COLOR_NAMES, day, esc, nf, relativeDays, when } from "./schedule.ts";
 import { renderInsumos } from "./insumos.ts";
 import { mountConfig } from "./aps-config.ts";
@@ -223,6 +224,7 @@ function renderProposal(): void {
         <div><small>Pedidos tarde</small>${cell(v.late_orders, k.late_orders, (x) => nf(x), true)}</div>
         <div><small>Atraso total</small>${cell(v.tardiness_h, k.tardiness_h, (x) => `${nf(x, 1)} h`, true)}</div>
         <div title="Cambios de referencia: montaje de molde, purga de resina o purga de color (tiempos de catalog/changeovers.yaml)"><small>Cambios de referencia</small>${cell(v.changeovers, k.changeovers, (x) => nf(x), true)}<small>${nf(v.changeover_h ?? 0, 1)} → ${nf(k.changeover_h ?? 0, 1)} h</small></div>
+        <div title="Energía eléctrica de toda la programación: inyectoras produciendo, en espera caliente y calentando al arrancar el día, más enfriador, secadores, aire y transporte de resina (catalog/energy.yaml, solo kWh)"><small>Energía · kWh</small>${cell(energyOf(current).kwh, energyOf(proposal).kwh, (x) => nf(x, 0), true)}<small>${nf(energyOf(current).kwh_per_kg, 2)} → ${nf(energyOf(proposal).kwh_per_kg, 2)} kWh/kg</small></div>
         <div title="Horas programadas / horas disponibles de la planta en los 7 días desde AHORA"><small>Ocupación planta · 7 días</small>${cell(ov.occupancy, op.occupancy, pctTxt, true)}<small>${nf(ov.busyH, 0)} → ${nf(op.busyH, 0)} h de ${nf(op.availH, 0)} h</small></div>
       </div>
       <div class="aps-prop-actions"><button id="aps-adopt" class="primary">✓ ADOPTAR COMO VIGENTE</button><button id="aps-save" title="Guarda esta programación con nombre para verla, compararla o adoptarla después (pestaña VERSIONES)"${proposalVersionId() ? " disabled" : ""}>${proposalVersionId() ? "✓ GUARDADA" : "💾 GUARDAR VERSIÓN"}</button><button id="aps-discard">✕ DESCARTAR</button></div>
@@ -1527,6 +1529,18 @@ function download(name: string, text: string): void {
   setTimeout(() => (URL.revokeObjectURL(a.href), a.remove()), 1000);
 }
 
+/** Energía de una programación; las guardadas antes de tener datos de energía se calculan al vuelo. */
+const energyMemo = new WeakMap<ProductionPlan, { kwh: number; kwh_per_kg: number; peak_kw: number }>();
+function energyOf(p: ProductionPlan): { kwh: number; kwh_per_kg: number; peak_kw: number } {
+  if (p.energy) return p.energy;
+  let e = energyMemo.get(p);
+  if (!e) {
+    e = planEnergy(model, p) ?? { kwh: 0, kwh_per_kg: 0, peak_kw: 0 };
+    energyMemo.set(p, e);
+  }
+  return e;
+}
+
 /** Indicadores para comparar versiones (los mismos de la propuesta frente a la vigente). */
 /** `neutral`: se muestra para comparar, pero ni más ni menos es mejor por sí solo. */
 interface VersionKpi { label: string; get: (p: ProductionPlan) => number; fmt: (x: number) => string; lowerIsBetter: boolean; neutral?: boolean; title?: string }
@@ -1537,6 +1551,9 @@ function versionKpis(): VersionKpi[] {
     { label: "Atraso total", get: (p) => p.kpis.tardiness_h, fmt: (x) => `${nf(x, 1)} h`, lowerIsBetter: true },
     { label: "Cambios de referencia", get: (p) => p.kpis.changeovers, fmt: (x) => nf(x), lowerIsBetter: true, title: "Montaje de molde, purga de resina o purga de color" },
     { label: "Horas de cambio", get: (p) => p.kpis.changeover_h ?? 0, fmt: (x) => `${nf(x, 1)} h`, lowerIsBetter: true },
+    { label: "Energía", get: (p) => energyOf(p).kwh, fmt: (x) => `${nf(x, 0)} kWh`, lowerIsBetter: true, title: "kWh de toda la programación: inyectoras y servicios (catalog/energy.yaml)" },
+    { label: "kWh por kg", get: (p) => energyOf(p).kwh_per_kg, fmt: (x) => nf(x, 2), lowerIsBetter: true },
+    { label: "Demanda pico", get: (p) => energyOf(p).peak_kw, fmt: (x) => `${nf(x, 0)} kW`, lowerIsBetter: true, title: "Mayor potencia media de 15 minutos" },
     { label: "Ocupación planta · 7 días", get: (p) => occOf(p, loadIds(p)).occupancy, fmt: pctTxt, lowerIsBetter: true, neutral: true, title: "Horas programadas / disponibles en los 7 días desde AHORA" },
     { label: "Pedidos que terminan distinto a la vigente", get: (p) => changedOrders(p), fmt: (x) => nf(x), lowerIsBetter: true, neutral: true, title: "Pedidos cuya hora de fin cambia más de 30 min frente a la vigente" },
   ];
