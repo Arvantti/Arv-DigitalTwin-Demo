@@ -313,7 +313,7 @@ const slides: Slide[] = [
         <a class="rg-btn primary" href="/plant.html?plant=plastic-injection-plant-v1">VER EL GEMELO 3D</a>
         <a class="rg-btn" href="/aps.html">APS</a>
         <a class="rg-btn" href="/control.html">CENTRO DE CONTROL</a>
-        <a class="rg-btn" href="/presentaciones.html">ESCENARIO POR ESCENARIO</a>
+        <a class="rg-btn" href="https://www.arvantti.tech/presentaciones" target="_blank" rel="noopener">ESCENARIO POR ESCENARIO</a>
       </div>
     </div>`,
   },

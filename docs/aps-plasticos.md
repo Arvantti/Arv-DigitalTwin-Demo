@@ -229,11 +229,10 @@ Moldes de repuesto de la demo (`aps/aps.yaml`): uno de balde de 12 L y uno de cu
 
 Capturas y guiones de narración por escenario en [`docs/demo-plasticos/`](demo-plasticos/README.md).
 
-**Presentaciones en el sitio** (`presentaciones.html`, enlazada desde el APS y el panel del gemelo 3D): una por escenario,
-armada al compilar con los `guion.md` y las capturas de `docs/demo-plasticos/`: portada, una lámina por segmento con su
-captura, lo que se señala y las notas del orador, y un cierre con las cifras del frontmatter (`cifras`). Cada lámina
-tiene **ABRIR EN VIVO**, que abre la pantalla real que muestra la captura. Teclas: ← → o espacio, N notas, F pantalla
-completa, Esc volver; `?esc=2&s=4` abre una lámina.
+**Presentaciones en arvantti.tech** (https://www.arvantti.tech/presentaciones, enlazadas desde el APS y el panel del gemelo 3D; se generan desde los guiones de este repo): una por escenario, con portada, una lámina por segmento con su captura, lo que
+se señala y las notas del orador, y un cierre con las cifras del frontmatter (`cifras` y `ahorro`). Cada lámina tiene
+**VER EN VIVO**, que abre aquí la pantalla real que muestra la captura. Si cambia un guion o una captura, hay que
+regenerarlas en el repo andresquiceno/arvantti-labs-site.
 
 ## Siguiente
 
