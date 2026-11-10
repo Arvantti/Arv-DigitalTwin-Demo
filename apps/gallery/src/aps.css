@@ -279,50 +279,6 @@ button.danger:hover { background: rgba(255, 59, 59, 0.4); border-color: #fff; }
 .aps-h3 { font: 700 12px Inter, sans-serif; letter-spacing: 0.1em; color: var(--cyan); margin: 18px 0 6px; }
 #tab-insumos .swatch { margin-right: 6px; vertical-align: -1px; border-radius: 2px; }
 
-/* Presentaciones de la demo (presentaciones.ts) */
-.pr-main { padding: 16px 20px 24px; }
-.pr-intro { max-width: 900px; color: var(--dim); font-size: 14px; line-height: 1.5; margin: 4px 0 16px; }
-.pr-intro b { color: var(--text); }
-.pr-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
-.pr-card { display: flex; flex-direction: column; gap: 8px; text-align: left; padding: 16px; border-radius: 12px; background: rgba(20, 28, 80, 0.55); border: 1px solid var(--line); color: var(--text); cursor: pointer; font: 400 13px Inter, sans-serif; }
-.pr-card:hover { border-color: var(--accent); }
-.pr-card b { font: 700 20px Inter, sans-serif; }
-.pr-card img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 8px; border: 1px solid var(--line); }
-.pr-n { font: 700 11px Inter, sans-serif; letter-spacing: 0.16em; color: var(--cyan); }
-.pr-meta { font: 600 11px "IBM Plex Mono", monospace; color: var(--dim); }
-.pr-card-text { max-width: 900px; margin: 40px auto; font-size: 24px; line-height: 1.5; color: #cfd5ea; }
-.pr-mods { display: flex; flex-wrap: wrap; gap: 6px; }
-.pr-mods i { font: 600 11px "IBM Plex Mono", monospace; font-style: normal; letter-spacing: 0.04em; padding: 3px 8px; border-radius: 999px; color: var(--cyan); border: 1px solid var(--line); background: rgba(20, 28, 80, 0.4); }
-.pr-keys { margin-top: 18px; }
-.pr-stage { display: flex; flex-direction: column; gap: 10px; min-height: calc(100vh - 110px); }
-.pr-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.pr-where { flex: 1; font: 600 12px Inter, sans-serif; letter-spacing: 0.08em; color: var(--dim); }
-.pr-live { flex: 0 0 auto; border-color: var(--ok) !important; color: var(--ok) !important; }
-.pr-slide { flex: 1; display: flex; align-items: center; justify-content: center; border: 1px solid var(--line); border-radius: 14px; background: #0e1430; padding: 18px; min-height: 0; }
-.pr-seg { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 1400px; }
-.pr-seg-head { display: flex; align-items: baseline; gap: 12px; }
-.pr-seg h2 { margin: 0; font: 700 26px Inter, sans-serif; }
-.pr-seg img { width: 100%; max-height: calc(100vh - 330px); object-fit: contain; border-radius: 10px; border: 2px solid #2c3566; background: #070a1a; }
-.pr-screen { margin: 0; color: #f2a541; font-size: 14px; }
-.pr-cover { max-width: 1100px; width: 100%; display: flex; flex-direction: column; gap: 14px; padding: 30px; }
-.pr-cover h1 { margin: 0; font: 700 44px Inter, sans-serif; }
-.pr-cover p { margin: 0; font-size: 19px; line-height: 1.5; color: #cfd5ea; }
-.pr-cover ol { margin: 6px 0 0; padding-left: 22px; columns: 2; color: var(--dim); font-size: 14px; line-height: 1.7; }
-.pr-nums { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin: 10px 0; }
-.pr-nums div { display: flex; flex-direction: column; gap: 6px; padding: 18px; border-radius: 12px; background: rgba(157, 143, 248, 0.1); border: 1px solid rgba(157, 143, 248, 0.4); }
-.pr-nums b { font: 700 28px "IBM Plex Mono", monospace; color: #9d8ff8; }
-.pr-nums span { color: #cfd5ea; font-size: 15px; }
-.pr-notes { border-left: 3px solid var(--accent); padding: 4px 14px; background: rgba(45, 127, 249, 0.08); border-radius: 6px; }
-.pr-notes .label { margin: 4px 0; }
-.pr-notes p { margin: 0 0 6px; font-size: 15px; line-height: 1.5; }
-.pr-nav { display: flex; align-items: center; gap: 12px; justify-content: center; }
-.pr-dots { display: flex; gap: 6px; flex-wrap: wrap; }
-.pr-dots i { width: 10px; height: 10px; border-radius: 50%; background: rgba(255, 255, 255, 0.2); cursor: pointer; }
-.pr-dots i.on { background: var(--accent); }
-.pr-count { font: 600 12px "IBM Plex Mono", monospace; color: var(--dim); min-width: 56px; text-align: center; }
-:fullscreen .aps-top { display: none; }
-@media (max-width: 700px) { .pr-cover h1 { font-size: 30px; } .pr-cover ol { columns: 1; } .pr-seg h2 { font-size: 19px; } }
-
 /* Arquitectura (arquitectura.html): diagrama SVG estático con bloques enlazados a las pantallas reales. */
 .ar-main { max-width: 1240px; margin: 0 auto; }
 .ar-lead { color: var(--dim); margin: 14px 0 6px; }
