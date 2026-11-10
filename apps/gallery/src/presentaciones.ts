@@ -113,7 +113,7 @@ function index(): void {
   main.innerHTML = `
     <p class="pr-intro">${["Cero", "Un", "Dos", "Tres", "Cuatro", "Cinco", "Seis"][SCENARIOS.length] ?? SCENARIOS.length} escenarios de la planta de inyección de plásticos. Cada presentación sigue el guion de la demo con sus capturas;
     en cualquier lámina, <b>ABRIR EN VIVO</b> lleva a la pantalla real. Hoy es el día 9 de la programación.</p>
-    <p class="dim pr-intro">La plataforma es un núcleo, <b>Arvantti DigitalTwin</b>, y siete módulos opcionales: Integrator, APS, CoSimulation, Fractal, Control Center, DendroScada y AI Assistant. Cada escenario indica los módulos que usa.</p>
+    <p class="dim pr-intro">La plataforma es un núcleo, <b>Arvantti DigitalTwin</b>, y siete módulos opcionales: Integrator, APS, CoSimulation, Fractal, Control Center, Dendro Scada Physical AI y AI Embedded Assistant. Cada escenario indica los módulos que usa.</p>
     <div class="pr-cards">${SCENARIOS.map(
       (s) => `<button class="pr-card" data-esc="${s.n}">
         <span class="pr-n">ESCENARIO ${s.n}</span>
