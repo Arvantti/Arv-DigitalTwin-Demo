@@ -18,7 +18,9 @@ import { fileURLToPath } from "node:url";
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const T = (p) => path.join(HERE, p);
 const FPS = 25;
-const W = 1920, H = 1080;
+// FORMATO=vertical arma la versión 9:16 (1080x1920) en vertical/, con la misma voz y música.
+const VERT = process.env.FORMATO === "vertical";
+const W = VERT ? 1080 : 1920, H = VERT ? 1920 : 1080;
 const sh = (cmd, args) => execFileSync(cmd, args, { stdio: "inherit" });
 
 // Escenas en orden: id, carpeta de la voz y colas (segundos antes y después de la voz).
@@ -29,9 +31,11 @@ const ESCENAS = [
   { id: "agentes", dir: "04-agentes", lead: 0.3, tail: 0.9 },
   { id: "voz", dir: "05-voz", lead: 0.4, tail: 1.0 },
   { id: "seguridad", dir: "06-seguridad", lead: 0.3, tail: 0.9 },
-  { id: "cerebro", dir: "07-cerebro", lead: 0.3, tail: 0.9 },
-  { id: "auditoria", dir: "08-auditoria", lead: 0.3, tail: 1.2 },
-  { id: "cierre", dir: "09-cierre", lead: 1.0, tail: 5.5 },
+  { id: "equipos", dir: "07-equipos", lead: 0.3, tail: 1.0 },
+  { id: "cerebro", dir: "08-cerebro", lead: 0.3, tail: 0.9 },
+  { id: "software", dir: "09-software", lead: 0.3, tail: 1.0 },
+  { id: "auditoria", dir: "10-auditoria", lead: 0.3, tail: 1.2 },
+  { id: "cierre", dir: "11-cierre", lead: 1.0, tail: 5.5 },
 ];
 
 const texto = (e) => fs.readFileSync(T(`escenas/${e.dir}/script.md`), "utf8").trim();
@@ -39,7 +43,7 @@ const vozDe = (e) => T(`escenas/${e.dir}/assets/audio/voiceover.mp3`);
 const alineacionDe = (e) => T(`escenas/${e.dir}/assets/audio/alignment.json`);
 
 // Nombres en inglés que la voz en español lee mal: se envían escritos como se pronuncian.
-const PRONUNCIA = [["Harness", "Jarnes"], ["hooks", "juks"], ["ISO 42001", "ISO cuarenta y dos mil uno"]];
+const PRONUNCIA = [["hooks", "juks"], ["ISO 42001", "ISO cuarenta y dos mil uno"], ["SDD", "ese de de"]];
 /** Texto que se envía a la voz y, para cada carácter del original, su posición en ese texto. */
 function paraVoz(texto) {
   let out = "", idx = [];
@@ -187,6 +191,8 @@ out.save(sys.argv[2])`;
 function mezclaMusica(escenas, total) {
   const src = T("assets/clips/musica-epica.mp3");
   if (!fs.existsSync(src)) return null;
+  // La vertical reutiliza la mezcla de la horizontal (misma voz y música).
+  if (VERT && fs.existsSync(T("assets/clips/musica-mezcla.mp3"))) return "assets/clips/musica-mezcla.mp3";
   const voces = escenas.filter((x) => x.real);
   const args = ["-y", "-v", "error", "-i", src];
   voces.forEach((x) => args.push("-i", vozDe(x)));
@@ -292,19 +298,19 @@ function componer() {
   // 3. Cualquier IA: las herramientas llegan al arnés y quedan bajo las mismas reglas.
   {
     const x = S.ia; const [s, d] = span(x);
-    const C = { x: 960, y: 450 };
+    const C = VERT ? { x: 540, y: 860 } : { x: 960, y: 450 };
     const IA = [
       ["Claude", P(x, "Claude"), 0], ["ChatGPT", P(x, "ChatGPT"), 1], ["Gemini", P(x, "Gemini"), 2], ["Copilot", P(x, "Copilot"), 3],
       ["Modelos privados", P(x, "modelos privados"), 4], ["Codex", P(x, "modelos privados") + 0.3, 5], ["OpenCode", P(x, "modelos privados") + 0.4, 6],
       ["OpenRouter", P(x, "modelos privados") + 0.5, 7], ["Kimi", P(x, "modelos privados") + 0.6, 8], ["Antigravity", P(x, "modelos privados") + 0.7, 9],
     ];
-    const pos = IA.map((_, i) => { const a = Math.PI + (i * 2 * Math.PI) / IA.length; return { x: Math.round(C.x + 640 * Math.cos(a)), y: Math.round(C.y + 270 * Math.sin(a)) }; });
+    const pos = IA.map((_, i) => { const a = Math.PI + (i * 2 * Math.PI) / IA.length; return { x: Math.round(C.x + (VERT ? 330 : 640) * Math.cos(a)), y: Math.round(C.y + (VERT ? 480 : 270) * Math.sin(a)) }; });
     const BAD = [["reglas", "Mismas reglas"], ["guardianes", "Mismos guardianes"], ["memoria", "Misma memoria"], ["auditoría", "Misma auditoría"]];
     const tA = P(x, "Un arnés"), tU = P(x, "Usted elige");
     clip("e-ia", "scene", s, d, `
       <div class="topl">${kicker("01", "UN ARNÉS DE ARNESES")}</div>
       <h2 class="center ia-t">${words("Funciona con cualquier IA.")}</h2>
-      <svg class="net" viewBox="0 0 1920 1080">${pos.map((p, i) => `<line id="ia-l${i}" x1="${p.x}" y1="${p.y}" x2="${C.x}" y2="${C.y}" pathLength="1"/>`).join("")}</svg>
+      <svg class="net" viewBox="0 0 ${W} ${H}">${pos.map((p, i) => `<line id="ia-l${i}" x1="${p.x}" y1="${p.y}" x2="${C.x}" y2="${C.y}" pathLength="1"/>`).join("")}</svg>
       ${IA.map(([n], i) => `<div class="aichip${i > 4 ? " sm" : ""}${i === 4 ? " priv" : ""}" id="ia-c${i}" style="left:${pos[i].x}px;top:${pos[i].y}px">${n}</div>`).join("")}
       <div class="core" id="ia-core" style="left:${C.x - 150}px;top:${C.y - 150}px"><img src="assets/clips/marca.png" alt=""><span>Arvantti</span><small>Harness®</small></div>
       <div class="badges">${BAD.map(([, b]) => `<span class="chip">${b}</span>`).join("")}</div>
@@ -330,15 +336,16 @@ function componer() {
   // 4. Crear agentes: diseñador, catálogo de habilidades y ficha del agente.
   {
     const x = S.agentes; const [s, d] = span(x);
-    const tD = P(x, "Lo dibuja"), tH = P(x, "elige"), tC = P(x, "y le asigna");
+    const tD = P(x, "Lo dibuja"), tH = P(x, "parte de"), tN = P(x, "y crea las suyas"), tC = P(x, "Cada agente");
     const flujo = `<div class="flow"><p class="ftit">Diseñador de agentes · Revisión de pedidos</p>
       ${["Recibe pedidos", "Revisa atrasos", "Consulta al cerebro", "Pide aprobación", "Entrega informe"].map((n, i) => `<div class="fn" id="fn${i}" style="left:${70 + (i % 3) * 360}px;top:${120 + Math.floor(i / 3) * 230}px"><i>${i + 1}</i>${n}</div>`).join("")}
       <svg class="fl" viewBox="0 0 1180 664"><path id="fpath" d="M330 165 H430 M690 165 H790 M920 210 V260 C920 300 860 330 760 340 H330 M330 395 H430" pathLength="1"/></svg></div>`;
     clip("e-agentes", "scene", s, d, `
       <div class="col">${kicker("02", "CREACIÓN DE AGENTES")}<h2 class="big">${words("Un agente, un proceso.")}</h2>
-      <ul class="verbs"><li>Lo dibuja.</li><li>Elige habilidades.</li><li>Le asigna un dueño.</li></ul>
-      <p class="contador"><b id="cnt">0</b> habilidades listas</p></div>
+      <ul class="verbs"><li>Lo dibuja.</li><li>Parte del catálogo.</li><li>Crea las suyas.</li><li>Le asigna un dueño.</li></ul>
+      <p class="contador"><b id="cnt">0</b> habilidades listas <span class="mas">+ las suyas</span></p></div>
       <div class="right">${device("ag", [{ html: flujo }, { src: "assets/tomas/v3-paquetes.png" }, { src: "assets/tomas/v3-red-agentes.png" }])}
+      <div class="skill"><p class="fh">NUEVA HABILIDAD · DE SU EMPRESA</p><p class="sk-n">${"Política de descuentos comerciales".split("").map((c) => `<span class="sc">${c}</span>`).join("")}</p><div class="sk-t">${["Sus reglas", "Sus documentos", "Sus aprobaciones"].map((c) => `<span class="chip">${c}</span>`).join("")}</div></div>
       <div class="ficha"><p class="fh">AGENTE · Analista de pedidos</p><dl><dt>Cargo</dt><dd>Analista</dd><dt>Alcance</dt><dd>Ventas · solo lectura</dd><dt>Responsable</dt><dd>Dir. de Operaciones</dd></dl></div></div>`, 3);
     enter("e-agentes", s);
     at("#e-agentes .kicker", { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.6 }, s + 0.2);
@@ -352,11 +359,17 @@ function componer() {
     at("#e-agentes .contador", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5 }, tH);
     at("#cnt", { innerText: 0 }, { innerText: 120, duration: 1.4, snap: { innerText: 1 }, ease: "power2.out" }, tH + 0.1);
     tl.push(`tl.call(()=>{const e=document.getElementById("cnt");if(e)e.textContent="+"+e.textContent.replace("+","")},null,${(tH + 1.55).toFixed(2)});`);
+    at("#e-agentes .skill", { opacity: 0, y: 60, scale: 0.9 }, { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: "back.out(1.6)" }, tN - 0.1);
+    at("#e-agentes .sc", { opacity: 0 }, { opacity: 1, duration: 0.01, stagger: 0.035 }, tN + 0.3);
+    at("#e-agentes .sk-t .chip", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.4, stagger: 0.25, ease: "back.out(2)" }, tN + 1.4);
+    at("#e-agentes .mas", { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 0.5, ease: "back.out(2)" }, tN);
+    to("#e-agentes .skill", { opacity: 0, y: 40, duration: 0.4 }, tC - 0.3);
+    sfx("4t", "typing.mp3", tN + 0.3, 0.15);
     swap("ag", 2, tC - 0.1);
     at("#ag-s2 img", { scale: 1.05 }, { scale: 1.2, duration: s + d - tC, ease: "sine.inOut" }, tC);
     at("#e-agentes .ficha", { opacity: 0, x: 80, rotateY: -20 }, { opacity: 1, x: 0, rotateY: 0, duration: 0.7, ease: "power3.out" }, tC + 0.1);
     ["Cargo", "Alcance", "Responsable"].forEach((w, i) => at(`#e-agentes .ficha dd:nth-of-type(${i + 1})`, { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 0.35 }, P(x, w === "Cargo" ? "cargo" : w === "Alcance" ? "alcance" : "responsable")));
-    [tD, tH, tC].forEach((t, i) => {
+    [tD, tH, tN, tC].forEach((t, i) => {
       at(`#e-agentes .verbs li:nth-child(${i + 1})`, { opacity: 0, x: -40 }, { opacity: 1, x: 0, color: "#ffffff", duration: 0.5, ease: "power3.out" }, t);
       if (i) to(`#e-agentes .verbs li:nth-child(${i})`, { color: "#5c6b80", duration: 0.4 }, t);
       sfx(`4c${i}`, "click-soft.mp3", t, 0.25);
@@ -369,30 +382,32 @@ function componer() {
   // 5. Voz: usted habla, los coordinadores reparten y siguen el trabajo, y le responden.
   {
     const x = S.voz; const [s, d] = span(x);
-    const tPi = P(x, "Usted le pide"), tA = P(x, "El coordinador de agentes"), tH = P(x, "El coordinador de hilos"), tR = P(x, "Y le responde"), tD = P(x, "Desde el carro");
+    const tPi = P(x, "basta con hablar") + 0.3, tA = P(x, "El coordinador de agentes"), tH = P(x, "el coordinador de hilos"), tT = P(x, "Y si lo prefiere"), tR = P(x, "Le responden"), tD = P(x, "Desde el carro");
     const pedido = "“Revisa los pedidos atrasados y prepárame un resumen para la junta del lunes.”";
     const AG = ["Analista de datos", "Revisor", "Redactor"];
     const HI = [["Pedidos atrasados", 1], ["Causas por cliente", 0.85], ["Resumen para la junta", 0.7]];
     clip("e-voz", "scene", s, d, `
-      <div class="topl">${kicker("03", "CONVERSACIÓN POR VOZ")}</div>
+      <div class="topl">${kicker("03", "VOZ Y TERMINAL")}</div>
       <h2 class="center vz-t">${words("Basta con hablar.")}</h2>
       <div class="orb"><div class="ring r1"></div><div class="ring r2"></div><div class="mic"><svg viewBox="0 0 24 24"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3zm-7 9h2a5 5 0 0 0 10 0h2a7 7 0 0 1-6 6.9V21h-2v-2.1A7 7 0 0 1 5 12z"/></svg></div>
         <div class="wave">${Array.from({ length: 22 }, (_, i) => `<i style="--h:${(0.3 + 0.7 * Math.abs(Math.sin(i * 1.3))).toFixed(2)}"></i>`).join("")}</div></div>
       <p class="pedido">${pedido.split("").map((c) => `<span class="ch">${c}</span>`).join("")}</p>
-      <svg class="net" viewBox="0 0 1920 1080"><line id="vz-l0" x1="480" y1="600" x2="660" y2="600" pathLength="1"/><path id="vz-l1" d="M980 560 C 1060 560 1060 420 1140 420" pathLength="1"/><path id="vz-l2" d="M980 640 C 1060 640 1060 780 1140 780" pathLength="1"/></svg>
+      <svg class="net" viewBox="0 0 ${W} ${H}">${VERT ? `<line id="vz-l0" x1="400" y1="710" x2="560" y2="710" pathLength="1"/><path id="vz-l1" d="M620 810 V 1000" pathLength="1"/><path id="vz-l2" d="M880 810 C 880 900 1040 900 1040 1000 V 1300 H 1000" pathLength="1"/>` : `<line id="vz-l0" x1="480" y1="600" x2="660" y2="600" pathLength="1"/><path id="vz-l1" d="M980 560 C 1060 560 1060 420 1140 420" pathLength="1"/><path id="vz-l2" d="M980 640 C 1060 640 1060 780 1140 780" pathLength="1"/>`}</svg>
       <div class="coord"><b>Coordinador</b><small>Arvantti</small></div>
       <div class="grupo g1"><p class="gt">Coordinador de agentes</p>${AG.map((a, i) => `<span class="ag" id="vz-a${i}"><i></i>${a}</span>`).join("")}</div>
       <div class="grupo g2"><p class="gt">Coordinador de hilos</p>${HI.map(([h], i) => `<div class="hilo" id="vz-h${i}"><span>${h}</span><div class="bar"><i></i></div></div>`).join("")}</div>
+      <div class="term"><div class="tbar"><i></i><i></i><i></i><span>Terminal · agente Analista de datos</span></div>
+        <pre>${[["p", "$ arvantti agente analista"], ["u", "› Cruza los atrasos con la capacidad de planta"], ["a", "● Consultando el cerebro empresarial…"], ["a", "● 3 causas encontradas · informe en el hilo"], ["g", "✓ Guardianes: sin datos sensibles"]].map(([k, l], i) => `<span class="tl ${k}" id="tl${i}">${l}</span>`).join("\n")}</pre></div>
       <div class="resp"><div class="dot"></div><p>Resumen listo para la junta.<br><b>1 aprobación pendiente.</b></p><div class="wave sm">${Array.from({ length: 14 }, (_, i) => `<i style="--h:${(0.3 + 0.7 * Math.abs(Math.sin(i * 1.9))).toFixed(2)}"></i>`).join("")}</div></div>
       <p class="lugares">${["Carro", "Celular", "Sala de juntas"].map((l) => `<span>${l}</span>`).join("")}</p>`, 3);
     enter("e-voz", s);
     at("#e-voz .topl", { opacity: 0 }, { opacity: 1, duration: 0.5 }, s + 0.2);
     titleIn("#e-voz .vz-t", x.voiceAt);
-    to("#e-voz .vz-t", { opacity: 0, y: -60, duration: 0.5, ease: "power2.in" }, tPi - 0.4);
-    at("#e-voz .orb", { opacity: 0, scale: 0.5 }, { opacity: 1, scale: 1, duration: 0.7, ease: "back.out(1.8)" }, tPi - 0.4);
-    at("#e-voz .orb .ring", { scale: 1, opacity: 0.8 }, { scale: 1.8, opacity: 0, duration: 1.4, stagger: 0.7, repeat: Math.ceil((tA - tPi) / 1.4) + 1, ease: "power1.out" }, tPi - 0.2);
+    to("#e-voz .vz-t", { opacity: 0, y: -60, duration: 0.4, ease: "power2.in" }, tPi - 0.2);
+    at("#e-voz .orb", { opacity: 0, scale: 0.5 }, { opacity: 1, scale: 1, duration: 0.7, ease: "back.out(1.8)" }, x.voiceAt + 0.2);
+    at("#e-voz .orb .ring", { scale: 1, opacity: 0.8 }, { scale: 1.8, opacity: 0, duration: 1.4, stagger: 0.7, repeat: Math.ceil((tA - tPi) / 1.4) + 2, ease: "power1.out" }, tPi - 0.2);
     at("#e-voz .orb .wave i", { scaleY: 0.15 }, { scaleY: 1, duration: 0.22, stagger: { each: 0.03, from: "center", yoyo: true, repeat: Math.ceil((tA - tPi) / 0.44) }, ease: "sine.inOut" }, tPi);
-    at("#e-voz .ch", { opacity: 0 }, { opacity: 1, duration: 0.01, stagger: Math.min(0.03, (tA - tPi - 0.4) / pedido.length) }, tPi + 0.1);
+    at("#e-voz .ch", { opacity: 0 }, { opacity: 1, duration: 0.01, stagger: Math.min(0.025, Math.max(0.008, (tA - tPi - 0.3) / pedido.length)) }, tPi);
     at("#vz-l0", { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.5 }, tA - 0.6);
     at("#e-voz .coord", { opacity: 0, scale: 0.5 }, { opacity: 1, scale: 1, duration: 0.6, ease: "back.out(1.8)" }, tA - 0.4);
     at("#vz-l1", { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.5 }, tA);
@@ -402,12 +417,15 @@ function componer() {
     at("#e-voz .g2", { opacity: 0, x: 60 }, { opacity: 1, x: 0, duration: 0.5, ease: "power3.out" }, tH + 0.1);
     HI.forEach(([, f], i) => {
       at(`#vz-h${i}`, { opacity: 0, x: 30 }, { opacity: 1, x: 0, duration: 0.4 }, tH + 0.4 + i * 0.25);
-      at(`#vz-h${i} .bar i`, { scaleX: 0 }, { scaleX: f, duration: tR - tH - 0.2, ease: "power1.inOut" }, tH + 0.5 + i * 0.25);
+      at(`#vz-h${i} .bar i`, { scaleX: 0 }, { scaleX: f, duration: Math.max(0.6, tT - tH - 0.6), ease: "power1.inOut" }, tH + 0.5 + i * 0.25);
     });
+    to("#e-voz .g1, #e-voz .g2, #vz-l1, #vz-l2", { opacity: 0.12, duration: 0.4 }, tT - 0.2);
+    at("#e-voz .term", { opacity: 0, x: 120, rotateY: -15 }, { opacity: 1, x: 0, rotateY: 0, duration: 0.6, ease: "power3.out" }, tT);
+    for (let i = 0; i < 5; i++) at(`#tl${i}`, { opacity: 0 }, { opacity: 1, duration: 0.15 }, tT + 0.4 + i * Math.max(0.3, (tR - tT - 0.6) / 5));
+    sfx("5k", "typing.mp3", tT + 0.4, 0.15);
     at("#e-voz .resp", { opacity: 0, y: 40, scale: 0.9 }, { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: "back.out(1.7)" }, tR);
     at("#e-voz .resp .wave i", { scaleY: 0.15 }, { scaleY: 1, duration: 0.22, stagger: { each: 0.03, from: "center", yoyo: true, repeat: 6 }, ease: "sine.inOut" }, tR + 0.2);
-    HI.forEach((_, i) => to(`#vz-h${i} .bar i`, { scaleX: 1, duration: 0.5 }, tR));
-    at("#e-voz .lugares span", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.45, stagger: 0.35, ease: "back.out(2)" }, tD);
+        at("#e-voz .lugares span", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.45, stagger: 0.35, ease: "back.out(2)" }, tD);
     sfx(5, "whoosh-short.mp3", s + 0.1, 0.3); sfx("5t", "typing.mp3", tPi + 0.1, 0.15); sfx("5r", "pop.mp3", tR, 0.3);
     leave("e-voz", s + d);
   }
@@ -422,7 +440,7 @@ function componer() {
       <h2 class="topt">${words("Nada pasa sin permiso.")}</h2>
       <div class="gate"><div class="beam"></div><div class="shield"><svg viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5 3.4 9.7 8 11 4.6-1.3 8-6 8-11V5l-8-3z"/></svg></div><p>Guardián</p></div>
       <div class="hooks">${[0, 1, 2].map((i) => `<span class="hk" id="hk${i}">hook</span>`).join("")}</div>
-      ${ACC.map(([a, r, k], i) => `<div class="acc" id="acc${i}" style="top:${330 + i * 190}px">${a}</div><div class="res ${k}" id="res${i}" style="top:${330 + i * 190}px">${r}</div>`).join("")}
+      ${ACC.map(([a, r, k], i) => `<div class="acc" id="acc${i}" style="top:${VERT ? 600 + i * 250 : 330 + i * 190}px">${a}</div><div class="res ${k}" id="res${i}" style="top:${VERT ? 600 + i * 250 : 330 + i * 190}px">${r}</div>`).join("")}
       <div class="humano"><span class="av">DO</span><p>Aprobar publicación</p><button>Aprobar</button></div>`, 3);
     enter("e-seguridad", s);
     at("#e-seguridad .topl", { opacity: 0 }, { opacity: 1, duration: 0.5 }, s + 0.2);
@@ -445,46 +463,123 @@ function componer() {
     leave("e-seguridad", s + d);
   }
 
-  // 7. Cerebro empresarial: grafo de conocimiento y respuesta con fuente.
+  // 7. Equipos: roles y permisos por persona.
+  {
+    const x = S.equipos; const [s, d] = span(x);
+    const tV = P(x, "ve"), tPd = P(x, "pide"), tAp = P(x, "aprueba");
+    const ROL = [["Gerencia", "Dirección", ["si", "si", "si"]], ["Planeación", "Operaciones", ["si", "si", "no"]], ["Analista", "Ventas", ["si", "no", "no"]], ["TI", "Administración", ["si", "si", "si"]]];
+    const COL = ["Ve", "Pide", "Aprueba"];
+    clip("e-equipos", "scene", s, d, `
+      <div class="topl">${kicker("05", "EQUIPOS")}</div>
+      <h2 class="topt">${words("Roles y permisos para cada persona.")}</h2>
+      <div class="matriz"><div class="mh"><span></span>${COL.map((c, j) => `<b id="mc${j}">${c}</b>`).join("")}</div>
+      ${ROL.map(([n, r, v], i) => `<div class="mr" id="mr${i}"><span><i>${n.slice(0, 2).toUpperCase()}</i>${n}<small>${r}</small></span>${v.map((k, j) => `<em class="${k}" id="m${i}${j}">${k === "si" ? "✓" : "—"}</em>`).join("")}</div>`).join("")}</div>`, 3);
+    enter("e-equipos", s);
+    at("#e-equipos .topl", { opacity: 0 }, { opacity: 1, duration: 0.5 }, s + 0.2);
+    titleIn("#e-equipos .topt", x.voiceAt);
+    at("#e-equipos .mr", { opacity: 0, x: -60 }, { opacity: 1, x: 0, duration: 0.5, stagger: 0.15, ease: "power3.out" }, x.voiceAt + 0.4);
+    at("#e-equipos .mh b", { opacity: 0, y: -20 }, { opacity: 0.4, y: 0, duration: 0.4, stagger: 0.1 }, x.voiceAt + 0.6);
+    [tV, tPd, tAp].forEach((t, j) => {
+      to(`#mc${j}`, { opacity: 1, color: "#4ea7ff", duration: 0.3 }, t);
+      ROL.forEach((_, i) => at(`#m${i}${j}`, { opacity: 0, scale: 0.4 }, { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(2.4)" }, t + i * 0.08));
+      sfx(`7c${j}`, "click-soft.mp3", t, 0.22);
+    });
+    sfx(7, "whoosh-short.mp3", s + 0.1, 0.3);
+    leave("e-equipos", s + d);
+  }
+
+  // 8. Cerebro empresarial: un graph RAG que se arma solo y crece; respuesta con fuente.
   {
     const x = S.cerebro; const [s, d] = span(x);
-    const C = { x: 700, y: 600 };
-    const N = [["Decisiones", "decisiones", { x: 700, y: 330 }], ["Clientes", "clientes", { x: 1010, y: 470 }], ["Pedidos", "pedidos", { x: 980, y: 790 }], ["Personas", "personas", { x: 400, y: 760 }], ["Documentos", "personas", { x: 390, y: 450 }]];
-    const tR = P(x, "La IA responde"), tI = P(x, "sus datos");
+    const tB = P(x, "se construye solo"), tG = P(x, "crece"), tR = P(x, "La IA responde"), tI = P(x, "sus datos");
+    // Grafo denso con semilla fija: nodos en el área izquierda, cada uno unido a sus vecinos más cercanos.
+    let seed = 7; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+    const NN = 90, nodes = [];
+    while (nodes.length < NN) {
+      const p = VERT ? { x: 90 + rnd() * 900, y: 470 + rnd() * 680 } : { x: 140 + rnd() * 940, y: 270 + rnd() * 720 };
+      if (nodes.every((q) => Math.hypot(p.x - q.x, p.y - q.y) > 52)) nodes.push(p);
+    }
+    const edges = [];
+    nodes.forEach((p, i) => nodes.map((q, j) => [j, Math.hypot(p.x - q.x, p.y - q.y)]).filter(([j]) => j > i).sort((a, b) => a[1] - b[1]).slice(0, 2).forEach(([j]) => edges.push([i, j])));
+    const kinds = ["#4ea7ff", "#b07cff", "#37e38b", "#f5b942"];
+    // Etiquetas en el nodo más cercano a puntos repartidos por el área del grafo.
+    const box = VERT ? [90, 470, 900, 680] : [140, 270, 940, 720];
+    const cerca = (fx, fy) => { const px = box[0] + fx * box[2], py = box[1] + fy * box[3]; return nodes.map((q, i) => [i, Math.hypot(q.x - px, q.y - py)]).sort((a, b) => a[1] - b[1])[0][0]; };
+    const LAB = [["Decisiones", "decisiones", cerca(0.5, 0.15)], ["Clientes", "clientes", cerca(0.85, 0.4)], ["Pedidos", "pedidos", cerca(0.75, 0.85)], ["Personas", "personas", cerca(0.2, 0.8)], ["Documentos", "documentos", cerca(0.15, 0.35)]];
+    const tBuild = tG - tB + 1.5;
     clip("e-cerebro", "scene", s, d, `
-      <div class="topl">${kicker("05", "CEREBRO EMPRESARIAL")}</div>
-      <h2 class="topt">${words("La memoria de su empresa.")}</h2>
-      <svg class="net" viewBox="0 0 1920 1080">${N.map(([, , p], i) => `<line id="cb-l${i}" x1="${C.x}" y1="${C.y}" x2="${p.x}" y2="${p.y}" pathLength="1"/>`).join("")}<line id="cb-x0" class="dash" x1="1010" y1="470" x2="980" y2="790" pathLength="1"/><line id="cb-x1" class="dash" x1="390" y1="450" x2="700" y2="330" pathLength="1"/></svg>
-      <div class="kcore" style="left:${C.x - 110}px;top:${C.y - 110}px"><img src="assets/clips/marca.png" alt=""><b>Cerebro</b></div>
-      ${N.map(([n, , p], i) => `<div class="kn" id="cb-n${i}" style="left:${p.x}px;top:${p.y}px">${n}</div>`).join("")}
+      <div class="topl">${kicker("06", "CEREBRO EMPRESARIAL · GRAPH RAG")}</div>
+      <h2 class="topt">${words("Un cerebro que se construye solo.")}</h2>
+      <svg class="graph" viewBox="0 0 ${W} ${H}">
+        ${edges.map(([i, j], k) => `<line class="ge" id="ge${k}" x1="${nodes[i].x.toFixed(0)}" y1="${nodes[i].y.toFixed(0)}" x2="${nodes[j].x.toFixed(0)}" y2="${nodes[j].y.toFixed(0)}" pathLength="1"/>`).join("")}
+        ${nodes.map((p, i) => `<circle class="gn" id="gn${i}" cx="${p.x.toFixed(0)}" cy="${p.y.toFixed(0)}" r="${(5 + rnd() * 9).toFixed(1)}" fill="${kinds[i % 4]}"/>`).join("")}
+      </svg>
+      ${LAB.map(([n, , k], i) => `<div class="kn sm" id="cb-n${i}" style="left:${nodes[k].x.toFixed(0)}px;top:${(nodes[k].y - 34).toFixed(0)}px">${n}</div>`).join("")}
+      <p class="gcount"><b id="gc">0</b> relaciones</p>
       <div class="qa"><p class="qq">¿Por qué se aprobó el descuento a este cliente?</p><p class="qr">${words("Lo aprobó la Dirección Comercial en el comité, por volumen anual.", "aw")}</p><p class="src">FUENTE · Acta del comité comercial · Pedido 4471</p></div>
       <div class="infra"><svg viewBox="0 0 24 24"><path d="M6 10V7a6 6 0 1 1 12 0v3h1v12H5V10h1zm2 0h8V7a4 4 0 1 0-8 0v3z"/></svg><p>Sus datos, en su infraestructura</p></div>`, 3);
     enter("e-cerebro", s);
     at("#e-cerebro .topl", { opacity: 0 }, { opacity: 1, duration: 0.5 }, s + 0.2);
     titleIn("#e-cerebro .topt", x.voiceAt);
-    at("#e-cerebro .kcore", { opacity: 0, scale: 0.4 }, { opacity: 1, scale: 1, duration: 0.7, ease: "back.out(1.8)" }, P(x, "Un cerebro") - 0.2);
-    N.forEach(([, w], i) => {
-      const t = P(x, w) + (i === 4 ? 0.4 : 0);
-      at(`#cb-l${i}`, { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.5, ease: "power2.out" }, t - 0.1);
-      at(`#cb-n${i}`, { opacity: 0, scale: 0.5, xPercent: -50, yPercent: -50 }, { opacity: 1, scale: 1, xPercent: -50, yPercent: -50, duration: 0.45, ease: "back.out(2)" }, t);
-      sfx(`7${i}`, "pop.mp3", t, 0.14);
+    // Se arma desde el centro hacia afuera.
+    const order = nodes.map((p, i) => [i, Math.hypot(p.x - (VERT ? 540 : 610), p.y - (VERT ? 770 : 630))]).sort((a, b) => a[1] - b[1]).map(([i]) => i);
+    const when = {}; order.forEach((i, k) => { when[i] = tB - 0.4 + (k / NN) * tBuild; });
+    nodes.forEach((_, i) => at(`#gn${i}`, { opacity: 0, scale: 0, transformOrigin: "50% 50%" }, { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(2.5)" }, when[i]));
+    edges.forEach(([i, j], k) => at(`#ge${k}`, { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.4 }, Math.max(when[i], when[j]) + 0.1));
+    at("#e-cerebro .gcount", { opacity: 0 }, { opacity: 1, duration: 0.4 }, tB);
+    at("#gc", { innerText: 0 }, { innerText: 12480, duration: tBuild + 2, snap: { innerText: 10 }, ease: "power1.in" }, tB);
+    LAB.forEach(([, w, k], i) => {
+      const t = Math.max(P(x, w), when[k] + 0.2);
+      at(`#cb-n${i}`, { opacity: 0, scale: 0.5, xPercent: -50, yPercent: -100 }, { opacity: 1, scale: 1, xPercent: -50, yPercent: -100, duration: 0.4, ease: "back.out(2)" }, t);
+      sfx(`8n${i}`, "pop.mp3", t, 0.12);
     });
-    at("#cb-x0, #cb-x1", { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.6 }, P(x, "personas") + 0.6);
+    tl.push(`tl.to("#e-cerebro .gn",{opacity:.55,duration:1.2,stagger:{each:.01,from:"random",yoyo:true,repeat:1}},${(tG + 0.4).toFixed(2)});`);
     at("#e-cerebro .qa", { opacity: 0, x: 80 }, { opacity: 1, x: 0, duration: 0.6, ease: "power3.out" }, tR - 0.4);
     at("#e-cerebro .aw", { opacity: 0, filter: "blur(6px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.25, stagger: 0.08 }, tR);
     at("#e-cerebro .src", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.4 }, P(x, "con fuente"));
     tl.push(`tl.to("#e-cerebro .src",{boxShadow:"0 0 0 2px #4ea7ff, 0 0 40px #2d7ff988",duration:.3,yoyo:true,repeat:1},${(P(x, "con fuente") + 0.4).toFixed(2)});`);
     at("#e-cerebro .infra", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.5, ease: "back.out(1.8)" }, tI);
-    sfx(7, "whoosh-short.mp3", s + 0.1, 0.3);
+    sfx(8, "whoosh-short.mp3", s + 0.1, 0.3); sfx("8b", "spark.wav", tB, 0.2);
     leave("e-cerebro", s + d);
   }
 
-  // 8. Auditoría: el registro real del Shell, un comprobante y la norma.
+  // 9. Edición para desarrollo de software: cerebro de agentes, cerebro de código, tareas y SDD a la medida.
+  {
+    const x = S.software; const [s, d] = span(x);
+    const tAg = P(x, "cerebro de agentes"), tCo = P(x, "cerebro de código"), tTa = P(x, "seguimiento"), tMi = P(x, "mini SDD"), tFu = P(x, "SDD completo");
+    const mini = ["Pedido", "Diseño corto", "Cambio", "Revisión"], full = ["Requisitos", "Diseño", "Plan", "Tareas", "Implementación", "Verificación"];
+    clip("e-software", "scene", s, d, `
+      <div class="topl">${kicker("07", "EDICIÓN DESARROLLO DE SOFTWARE")}</div>
+      <h2 class="topt">${words("Para equipos de desarrollo.")}</h2>
+      <div class="brains">
+        <div class="brain" id="br0"><p class="bt">Cerebro de agentes</p><small>agentes · habilidades · flujos · hooks</small><svg viewBox="0 0 400 150">${Array.from({ length: 14 }, (_, i) => `<circle cx="${30 + (i * 97) % 340}" cy="${25 + (i * 53) % 110}" r="${6 + (i % 3) * 3}" fill="${i % 3 ? "#4ea7ff" : "#b07cff"}"/>`).join("")}</svg></div>
+        <div class="brain" id="br1"><p class="bt">Cerebro de código</p><small>módulos · dependencias · decisiones</small><pre>src/\n├─ core/  identity.ts\n├─ flows/ flow-sdd.json\n└─ brain/ decisions.db</pre></div>
+        <div class="brain" id="br2"><p class="bt">Seguimiento de tareas</p><small>especializado para software</small>${[["ARV-T-128", "Revisión", "#f5b942"], ["ARV-T-119", "En curso", "#4ea7ff"], ["ARV-T-101", "Hecha", "#37e38b"]].map(([k, e, c]) => `<div class="tk"><b>${k}</b><span style="color:${c};border-color:${c}">${e}</span></div>`).join("")}</div>
+      </div>
+      <div class="sdd mini" id="sdd0"><p>Cambio pequeño → <b>mini SDD</b></p>${mini.map((m) => `<span>${m}</span>`).join("<i>›</i>")}</div>
+      <div class="sdd full" id="sdd1"><p>Cambio grande → <b>SDD completo</b></p>${full.map((m) => `<span>${m}</span>`).join("<i>›</i>")}</div>`, 3);
+    enter("e-software", s);
+    at("#e-software .topl", { opacity: 0 }, { opacity: 1, duration: 0.5 }, s + 0.2);
+    titleIn("#e-software .topt", x.voiceAt);
+    [tAg, tCo, tTa].forEach((t, i) => {
+      at(`#br${i}`, { opacity: 0, y: 60, scale: 0.9 }, { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: "back.out(1.6)" }, t - 0.1);
+      sfx(`9b${i}`, "pop.mp3", t, 0.18);
+    });
+    at("#br0 circle", { scale: 0, transformOrigin: "50% 50%" }, { scale: 1, duration: 0.3, stagger: 0.04, ease: "back.out(3)" }, tAg + 0.2);
+    at("#sdd0", { opacity: 0, x: -60 }, { opacity: 1, x: 0, duration: 0.5, ease: "power3.out" }, tMi - 0.1);
+    at("#sdd0 span", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.25, stagger: 0.12 }, tMi + 0.1);
+    at("#sdd1", { opacity: 0, x: -60 }, { opacity: 1, x: 0, duration: 0.5, ease: "power3.out" }, tFu - 0.1);
+    at("#sdd1 span", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.25, stagger: 0.1 }, tFu + 0.1);
+    sfx(9, "whoosh-short.mp3", s + 0.1, 0.3);
+    leave("e-software", s + d);
+  }
+
+  // 10. Auditoría: el registro real del Shell, un comprobante y la norma.
   {
     const x = S.auditoria; const [s, d] = span(x);
     const tQ = ["quién", "qué,", "con qué", "cuándo"].map((w) => P(x, w)), tE = P(x, "Evidencia");
     clip("e-auditoria", "scene", s, d, `
-      <div class="top">${kicker("06", "LOG DE AUDITORÍA")}<h2 class="mid">${words("Cada acción deja un comprobante.")}</h2></div>
+      <div class="top">${kicker("08", "LOG DE AUDITORÍA")}<h2 class="mid">${words("Cada acción deja un comprobante.")}</h2></div>
       <div class="wide">${device("au", [{ src: "assets/tomas/v3-auditoria.png" }])}</div>
       <div class="recibo"><p class="rh">COMPROBANTE · AUD-0008</p>
         <div class="rr" id="rr0"><span>Quién</span><b>Arvantti Architect</b></div>
@@ -511,7 +606,7 @@ function componer() {
     leave("e-auditoria", s + d);
   }
 
-  // 9. Cierre.
+  // 11. Cierre.
   {
     const x = S.cierre; const [s, d] = span(x);
     const tD = P(x, "La IA");
@@ -529,26 +624,39 @@ function componer() {
     sfx(9, "hit.wav", x.voiceAt, 0.3);
   }
 
-  [S.titulo, S.ia, S.voz, S.seguridad, S.auditoria, S.cierre].forEach((x) => sweep(x.start));
+  [S.titulo, S.ia, S.voz, S.seguridad, S.cerebro, S.software, S.auditoria, S.cierre].forEach((x) => sweep(x.start));
 
   escenas.forEach((x) => { if (x.real) audio(`voz-${x.id}`, `escenas/${x.dir}/assets/audio/voiceover.mp3`, x.voiceAt, x.voz, 1); });
   const epica = mezclaMusica(escenas, total);
   if (epica) audio("musica", epica, 0, total, 0.55);
   if (temporal) html.push(`<div id="temp" class="clip" data-start="0" data-duration="${total.toFixed(2)}" data-track-index="50">SIN VOZ · TIEMPOS ESTIMADOS</div>`);
 
-  const out = fs.readFileSync(T("plantilla.html"), "utf8")
+  let plantilla = fs.readFileSync(T("plantilla.html"), "utf8");
+  if (VERT) plantilla = plantilla
+    .replaceAll("width:1920px;height:1080px", "width:1080px;height:1920px")
+    .replace('content="width=1920, height=1080"', 'content="width=1080, height=1920"')
+    .replace('data-resolution="landscape"', 'data-resolution="portrait"')
+    .replace('data-width="1920" data-height="1080"', 'data-width="1080" data-height="1920"')
+    .replace("</style>", `${fs.readFileSync(T("vertical.css"), "utf8")}\n</style>`);
+  const out = plantilla
     .replaceAll("{{TOTAL}}", total.toFixed(2))
     .replace("{{CLIPS}}", html.join("\n"))
     .replace("{{TIMELINE}}", tl.join("\n"));
-  fs.writeFileSync(T("index.html"), out);
-  fs.writeFileSync(T("tiempos.json"), JSON.stringify(escenas.map(({ id, start, voiceAt, voz, dur, real }) => ({ id, start: +start.toFixed(2), voiceAt: +voiceAt.toFixed(2), voz: +voz.toFixed(2), dur: +dur.toFixed(2), real })), null, 1));
-  console.log(`index.html: ${total.toFixed(1)} s${temporal ? " (tiempos estimados, falta voz)" : ""}`);
+  // La versión vertical vive en vertical/, con enlaces a assets/ y escenas/ para no pisar index.html.
+  const dir = VERT ? T("vertical") : HERE;
+  if (VERT) {
+    fs.mkdirSync(dir, { recursive: true });
+    for (const n of ["assets", "escenas"]) if (!fs.existsSync(path.join(dir, n))) fs.symlinkSync(`../${n}`, path.join(dir, n));
+  }
+  fs.writeFileSync(path.join(dir, "index.html"), out);
+  if (!VERT) fs.writeFileSync(T("tiempos.json"), JSON.stringify(escenas.map(({ id, start, voiceAt, voz, dur, real }) => ({ id, start: +start.toFixed(2), voiceAt: +voiceAt.toFixed(2), voz: +voz.toFixed(2), dur: +dur.toFixed(2), real })), null, 1));
+  console.log(`${VERT ? "vertical/" : ""}index.html: ${total.toFixed(1)} s${temporal ? " (tiempos estimados, falta voz)" : ""}`);
 }
 
 function render(v = "v001") {
   fs.mkdirSync(T("out"), { recursive: true });
-  const out = T(`out/harness-${v}.mp4`);
-  execFileSync("pnpm", ["dlx", "hyperframes@0.9.9", "render", "-o", out, "--fps", String(FPS), "--quality", process.env.QUALITY || "standard", "--video-frame-format", "png", ...(process.env.HF_ARGS ? process.env.HF_ARGS.split(" ") : [])], { cwd: HERE, stdio: "inherit" });
+  const out = T(`out/harness-${VERT ? "vertical-" : ""}${v}.mp4`);
+  execFileSync("pnpm", ["dlx", "hyperframes@0.9.9", "render", "-o", out, "--fps", String(FPS), "--quality", process.env.QUALITY || "standard", "--video-frame-format", "png", ...(process.env.HF_ARGS ? process.env.HF_ARGS.split(" ") : [])], { cwd: VERT ? T("vertical") : HERE, stdio: "inherit" });
   console.log(out);
 }
 

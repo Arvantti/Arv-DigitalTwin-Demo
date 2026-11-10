@@ -1,0 +1,90 @@
+/* Versión vertical 9:16 (1080x1920): se agrega al final de los estilos de plantilla.html (FORMATO=vertical). */
+.fondo .glow{background:radial-gradient(700px 900px at 50% 45%,#12305e55 0%,#05070c00 70%),radial-gradient(500px 600px at 80% 90%,#2d7ff922 0%,#05070c00 70%)}
+.fondo .floor{height:40%}
+.topl{left:80px;top:150px}
+.topt{left:80px;right:80px;top:220px;font-size:76px;line-height:1.05}
+.kicker{font-size:24px;letter-spacing:5px}
+
+/* Pregunta y título */
+.pre{top:720px;padding:0 60px;font-size:50px}
+.q{top:840px;padding:0 50px;font-size:120px;line-height:1.05}
+.titulo{top:600px;padding:0 50px}
+.titulo .marca{width:200px}
+.titulo h1{font-size:128px;line-height:1.02}
+.titulo .sub{font-size:46px;padding:0 30px}
+
+/* Cualquier IA */
+.ia-t{top:780px;padding:0 60px;font-size:96px}
+.aichip{font-size:30px;padding:12px 24px}
+.aichip.sm{font-size:24px}
+.badges{top:1480px;padding:0 70px}
+.badges .chip{font-size:34px}
+.elige{top:780px;font-size:120px}
+
+/* Agentes */
+.col{left:80px;top:150px;width:920px}
+.big{font-size:96px}
+.verbs{margin-top:26px;font-size:44px;line-height:1.45}
+.contador{margin-top:26px}
+.right{left:70px;top:1110px;width:1180px;height:780px;transform:scale(.8);transform-origin:0 0}
+.stage3d{perspective-origin:50% 40%}
+.skill{left:60px;top:-60px;width:900px}
+
+/* Voz y terminal */
+.vz-t{top:780px;font-size:120px}
+.pedido{left:80px;right:80px;top:250px;font-size:48px}
+.orb{left:100px;top:560px}
+.coord{left:560px;top:610px}
+.grupo{left:80px;width:920px}
+.g1{top:1000px}.g2{top:1300px}
+.term{left:60px;top:1000px;width:960px}
+.resp{left:80px;top:1560px;width:920px}
+.lugares{left:0;width:1080px;top:1760px}
+
+/* Seguridad */
+.gate{left:560px;top:520px;height:820px}
+.gate .beam{height:820px}
+.shield{top:350px}
+.gate p{top:830px}
+.hooks{left:650px;top:500px}
+.acc{left:60px;width:460px;font-size:28px;padding:22px 24px}
+.res{left:700px;font-size:24px;padding:18px 18px;max-width:340px}
+.humano{left:180px;top:1440px}
+
+/* Equipos */
+.matriz{left:50px;top:420px;width:980px}
+.mh,.mr{grid-template-columns:430px 1fr 1fr 1fr}
+.mh b{font-size:34px}
+.mr{margin-bottom:22px;padding:24px 20px}
+.mr span{font-size:32px;gap:14px;flex-wrap:wrap}
+.mr small{width:100%;padding-left:74px;margin-top:-10px}
+.mr em{width:60px;height:60px;line-height:60px}
+
+/* Cerebro */
+.gcount{left:80px;top:1170px;bottom:auto}
+.qa{left:80px;top:1260px;width:920px}
+.infra{left:80px;top:1720px}
+
+/* Desarrollo de software */
+.brains{left:80px;right:80px;top:400px;grid-template-columns:1fr;gap:24px}
+.brain{height:auto;padding:24px 28px}
+.brain svg{height:120px}
+.brain pre{font-size:24px}
+.tk{margin-bottom:10px}
+.sdd{left:80px;right:80px;flex-wrap:wrap;row-gap:12px}
+.sdd p{width:100%;margin:0 0 6px}
+.sdd.mini{top:1440px}.sdd.full{top:1600px}
+.sdd span{font-size:24px;padding:10px 16px}
+
+/* Auditoría */
+.top{left:80px;top:150px;width:920px}
+.mid{font-size:80px}
+.wide{left:70px;top:520px;transform:scale(.8);transform-origin:0 0}
+.recibo{left:80px;top:1100px;width:920px}
+.iso{left:80px;top:1580px;width:920px}
+
+/* Cierre */
+.fin{top:600px;padding:0 50px}
+.fin h1{font-size:124px;line-height:1.05}
+.fin .firma{font-size:58px}
+.fin .url{font-size:30px;letter-spacing:4px}

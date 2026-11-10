@@ -1,4 +1,4 @@
-# ARV-W03-V001 · Video de Arvantti Harness (1920×1080, ~1:46)
+# ARV-W03-V001 · Video de Arvantti Harness (1920×1080 y 1080×1920, ~2:19)
 
 Video comercial horizontal, estilo keynote como el lanzamiento (ARV-W02-V001), basado en la presentación para
 directivos de Arvantti Harness®. Recorre: la pregunta (¿quién controla la IA?), arnés de arneses (cualquier IA),
@@ -22,7 +22,11 @@ node armar.mjs voz                  # muestra qué se enviaría a ElevenLabs
 node armar.mjs voz --enviar         # solo escenas nuevas o cambiadas; claves solo en el entorno
 node armar.mjs musica --enviar      # música épica (musica-prompt.txt) con ElevenLabs Music
 node armar.mjs componer             # mide la voz y escribe index.html
-node armar.mjs render v001          # deja out/harness-v001.mp4
+node armar.mjs render v002          # deja out/harness-v002.mp4
+
+# Versión vertical 9:16 (1080x1920): misma voz y música, escenas reacomodadas con vertical.css, en vertical/
+FORMATO=vertical node armar.mjs componer
+FORMATO=vertical node armar.mjs render v002   # deja out/harness-vertical-v002.mp4
 ```
 
 ## Notas
@@ -32,4 +36,9 @@ node armar.mjs render v001          # deja out/harness-v001.mp4
   organismo certificador; no se dice "certificado").
 - Sin rótulos de "en desarrollo" ni cifras de ahorro (pedido de Andy, 2026-11-09). Los zooms de las capturas evitan
   las etiquetas de estado del mockup.
+- v002 (2026-11-10, pedido de Andy): "Harness" se envía tal cual (la escritura "Jarnes" sonaba "yarnes"); 11 escenas.
+  Se agregan: habilidades propias además del catálogo, trabajo directo con agentes desde la terminal, roles y permisos
+  para equipos, un cerebro empresarial que se arma solo (graph RAG denso) y la edición para equipos de desarrollo de
+  software (cerebro de agentes, cerebro de código, seguimiento de tareas, mini SDD o SDD completo). "SDD" se lee
+  "ese de de". La música v001 quedó como `assets/clips/musica-epica-v001.mp3`.
 - Voz, música, capturas y renders no van al repo (`.gitignore`).
