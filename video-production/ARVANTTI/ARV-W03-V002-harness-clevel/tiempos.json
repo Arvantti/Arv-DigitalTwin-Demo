@@ -1,0 +1,74 @@
+[
+ {
+  "id": "gancho",
+  "start": 0,
+  "voiceAt": 1,
+  "voz": 5.33,
+  "dur": 7.13,
+  "real": true
+ },
+ {
+  "id": "riesgo",
+  "start": 7.13,
+  "voiceAt": 7.53,
+  "voz": 9.87,
+  "dur": 11.07,
+  "real": true
+ },
+ {
+  "id": "quees",
+  "start": 18.2,
+  "voiceAt": 18.6,
+  "voz": 7.81,
+  "dur": 9.11,
+  "real": true
+ },
+ {
+  "id": "control",
+  "start": 27.31,
+  "voiceAt": 27.71,
+  "voz": 6.92,
+  "dur": 8.12,
+  "real": true
+ },
+ {
+  "id": "seguridad",
+  "start": 35.44,
+  "voiceAt": 35.84,
+  "voz": 9.4,
+  "dur": 10.7,
+  "real": true
+ },
+ {
+  "id": "eficiencia",
+  "start": 46.14,
+  "voiceAt": 46.54,
+  "voz": 13.95,
+  "dur": 15.25,
+  "real": true
+ },
+ {
+  "id": "conocimiento",
+  "start": 61.39,
+  "voiceAt": 61.79,
+  "voz": 9.72,
+  "dur": 11.02,
+  "real": true
+ },
+ {
+  "id": "direccion",
+  "start": 72.41,
+  "voiceAt": 72.81,
+  "voz": 7.31,
+  "dur": 8.71,
+  "real": true
+ },
+ {
+  "id": "cierre",
+  "start": 81.12,
+  "voiceAt": 81.72,
+  "voz": 12.67,
+  "dur": 17.27,
+  "real": true
+ }
+]

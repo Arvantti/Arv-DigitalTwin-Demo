@@ -1,0 +1,1 @@
+Eficiencia. La inteligencia artificial solo usa lo que necesita, el equipo reutiliza lo que ya funciona, y cada proyecto se planea, se asigna y se sigue hasta cerrarlo. Menos gasto, entregas más predecibles.
