@@ -13,7 +13,7 @@
  * La celda de ensamble no tiene datos de energía y no suma.
  */
 import type { PlanEnergy, ProductionPlan } from "../../core/contracts.ts";
-import { DAY_MIN, iso, parseLocal } from "../../core/time.ts";
+import { DAY_MIN, iso, parseLocal, rng } from "../../core/time.ts";
 import type { PlasticsModel } from "./model.ts";
 
 export interface EnergyProfile {
@@ -23,6 +23,17 @@ export interface EnergyProfile {
   heatup_min: number;
   heatup_kwh: number;
   kwh_per_kg?: number | null;
+  /** Pico de la inyección y variación de la media de cada minuto produciendo (% de run_kw). */
+  run_peak_kw?: number;
+  run_sd_pct?: number;
+  /** Potencia al encender en frío. */
+  heatup_peak_kw?: number;
+}
+export interface EnergyTransformer {
+  id: string;
+  rating_kva?: number;
+  power_factor?: number;
+  limit_kw: number;
 }
 export interface EnergyService {
   name?: string;
@@ -34,11 +45,13 @@ export interface EnergyYaml {
   policy?: { off_outside_shifts?: boolean; preheat?: string };
   injection: Record<string, Record<string, EnergyProfile>>;
   services?: Record<string, EnergyService>;
+  transformer?: EnergyTransformer;
 }
 /** Lo que el modelo de la planta guarda para calcular la energía. */
 export interface EnergyData {
   injection: EnergyYaml["injection"];
   services: Record<string, EnergyService>;
+  transformer?: EnergyTransformer;
   overnight: "apagar" | "caliente";
   /** Kilos de una pieza de cada molde y resina del molde. */
   partKg: Record<string, number>;
@@ -50,7 +63,7 @@ const BUCKET = 15;
 const round1 = (x: number) => Math.round(x * 10) / 10;
 
 /** Intervalo de una máquina: estado, molde y kW. */
-interface Span {
+export interface Span {
   a: number;
   b: number;
   kind: "run" | "standby" | "heatup";
@@ -100,7 +113,18 @@ export function energyByDay(model: PlasticsModel, plan: PlanLike, days: number[]
 }
 
 /** Energía y curvas de kWh cada 15 minutos por equipo (desde h0). */
-export function energyCurves(model: PlasticsModel, plan: PlanLike, overnight?: Overnight): { energy: PlanEnergy; h0: number; bucketMin: number; curves: Record<string, Float64Array> } | undefined {
+export interface EnergyCurves {
+  energy: PlanEnergy;
+  h0: number;
+  bucketMin: number;
+  curves: Record<string, Float64Array>;
+  /** Estados de cada inyectora en el tiempo (producción, espera caliente, calentamiento); fuera de ellos, apagada. */
+  spans: Record<string, Span[]>;
+  /** Molde con el que arranca cada inyectora (para los servicios que atienden una resina). */
+  moldAt: Record<string, string>;
+}
+
+export function energyCurves(model: PlasticsModel, plan: PlanLike, overnight?: Overnight): EnergyCurves | undefined {
   const data = model.energy;
   if (!data) return undefined;
   const mode = overnight ?? data.overnight;
@@ -110,6 +134,7 @@ export function energyCurves(model: PlasticsModel, plan: PlanLike, overnight?: O
   const total = new Float64Array(n);
   const byEq: Record<string, number> = {};
   const curves: Record<string, Float64Array> = {};
+  const spansOut: Record<string, Span[]> = {};
   const add = (arr: Float64Array, a: number, b: number, kw: number) => {
     for (let t = Math.max(a, h0); t < Math.min(b, h1); ) {
       const i = Math.floor((t - h0) / BUCKET);
@@ -169,6 +194,7 @@ export function energyCurves(model: PlasticsModel, plan: PlanLike, overnight?: O
       }
       prevEnd = cur;
     }
+    spansOut[m] = full;
     const kwArr = new Float64Array(n);
     const run = (runShare[m] = new Float64Array(n));
     const on = (onShare[m] = new Float64Array(n));
@@ -243,5 +269,89 @@ export function energyCurves(model: PlasticsModel, plan: PlanLike, overnight?: O
     overnight: mode,
     by_equipment: byEq,
   };
-  return { energy, h0, bucketMin: BUCKET, curves };
+  return { energy, h0, bucketMin: BUCKET, curves, spans: spansOut, moldAt };
+}
+
+// ------------------------------------------------------------------ potencia en vivo, con variación
+
+export type PowerState = "run" | "standby" | "heatup" | "off";
+export interface PowerNow {
+  kw: number;
+  state: PowerState;
+}
+export interface PlantPower {
+  kw: number;
+  machinesKw: number;
+  servicesKw: number;
+  byEq: Record<string, PowerNow>;
+  limitKw?: number;
+}
+
+const memo = new WeakMap<object, EnergyCurves | null>();
+function curvesOf(model: PlasticsModel, plan: PlanLike): EnergyCurves | undefined {
+  if (!memo.has(plan)) memo.set(plan, energyCurves(model, plan) ?? null);
+  return memo.get(plan) ?? undefined;
+}
+
+/** Ruido reproducible alrededor de 0 (suma de tres uniformes ≈ normal, desviación 1), por equipo y minuto. */
+function noise(key: string): number {
+  const r = rng(key);
+  return (r() + r() + r() - 1.5) * 2;
+}
+
+/**
+ * Potencia de una inyectora en el instante t (minutos locales): la del estado que trae la programación, con la
+ * variación que midió el modelo físico (run_sd_pct de la media de cada minuto produciendo). `stopped`: la máquina está
+ * fuera de servicio por una falla del emulador y se cuenta apagada.
+ */
+export function powerAt(model: PlasticsModel, plan: PlanLike, id: string, t: number, stopped = false): PowerNow {
+  const c = curvesOf(model, plan);
+  const profiles = model.energy?.injection[id];
+  if (!c || !profiles) return { kw: 0, state: "off" };
+  const minute = Math.floor(t);
+  const span = stopped ? undefined : c.spans[id]?.find((s) => s.a <= t && t < s.b);
+  const p = profiles[span?.mold ?? c.moldAt[id]] ?? Object.values(profiles)[0];
+  if (!span) return { kw: p.off_kw, state: "off" };
+  const z = noise(`${id}:${minute}`);
+  if (span.kind === "run") return { kw: Math.max(0, p.run_kw * (1 + (z * (p.run_sd_pct ?? 0)) / 100)), state: "run" };
+  if (span.kind === "standby") return { kw: Math.max(0, p.standby_kw * (1 + z * 0.01)), state: "standby" };
+  // Calentamiento: arranca con las resistencias a tope y baja hacia la espera caliente al acercarse a la temperatura,
+  // con la misma energía total del modelo (heatup_kwh).
+  const f = (t - span.a) / Math.max(1, span.b - span.a);
+  const avg = (p.heatup_kwh * 60) / Math.max(1, p.heatup_min);
+  const peak = Math.max(avg, p.heatup_peak_kw ?? avg);
+  const end = Math.max(0, 2 * avg - peak);
+  return { kw: peak + (end - peak) * f, state: "heatup" };
+}
+
+/** Potencia de la planta en t: inyectoras y servicios, que siguen la producción del momento. */
+export function plantPowerAt(model: PlasticsModel, plan: PlanLike, t: number, stopped: Set<string> = new Set()): PlantPower {
+  const data = model.energy;
+  const c = curvesOf(model, plan);
+  const byEq: Record<string, PowerNow> = {};
+  if (!data || !c) return { kw: 0, machinesKw: 0, servicesKw: 0, byEq };
+  let machinesKw = 0;
+  for (const m of Object.keys(data.injection)) {
+    byEq[m] = powerAt(model, plan, m, t, stopped.has(m));
+    machinesKw += byEq[m].kw;
+  }
+  let servicesKw = 0;
+  for (const [sid, svc] of Object.entries(data.services)) {
+    const fed = Object.keys(data.injection).filter((m) => !svc.feeds?.length || svc.feeds.includes(data.resin[c.moldAt[m]] ?? ""));
+    if (!fed.length) continue;
+    const cap = fed.reduce((s, m) => s + Math.max(...Object.values(data.injection[m]).map((p) => p.run_kw)), 0);
+    const on = fed.some((m) => byEq[m].state !== "off");
+    const prod = fed.reduce((s, m) => s + (byEq[m].state === "run" ? byEq[m].kw : 0), 0) / Math.max(1, cap);
+    const kw = on ? svc.nominal_kw * (svc.idle_fraction + (1 - svc.idle_fraction) * Math.min(1, prod)) * (1 + noise(`${sid}:${Math.floor(t)}`) * 0.02) : 0;
+    byEq[sid] = { kw: Math.max(0, kw), state: kw > 0 ? "run" : "off" };
+    servicesKw += byEq[sid].kw;
+  }
+  return { kw: machinesKw + servicesKw, machinesKw, servicesKw, byEq, limitKw: data.transformer?.limit_kw };
+}
+
+/** Curva de potencia de la planta entre a y b (minutos), un punto cada `step` minutos. */
+export function plantCurve(model: PlasticsModel, plan: PlanLike, a: number, b: number, step = 5, stoppedAt?: (t: number) => Set<string>): { t: number; kw: number }[] {
+  const out: { t: number; kw: number }[] = [];
+  for (let t = a; t <= b; t += step) out.push({ t, kw: plantPowerAt(model, plan, t, stoppedAt?.(t)).kw });
+  return out;
 }

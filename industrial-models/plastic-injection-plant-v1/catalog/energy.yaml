@@ -6,7 +6,10 @@
 #   standby_kw  encendida y a temperatura sin ciclar (espera caliente: resistencias y bomba en recirculación);
 #   off_kw      apagada (solo el control);
 #   heatup_min / heatup_kwh  encendido en frío hasta que el cilindro llega a la temperatura de la resina;
-#   kwh_per_kg  energía específica produciendo.
+#   kwh_per_kg  energía específica produciendo;
+#   run_peak_kw / run_sd_pct  pico de la inyección y variación de la media de cada minuto produciendo (% de run_kw);
+#   heatup_peak_kw  potencia al encender en frío (resistencias a tope).
+# transformer: límite de la acometida en kW (placa en kVA × factor de potencia supuesto).
 # policy: fuera de turno (22:00-06:00 y domingo) las inyectoras se apagan; el calentamiento se hace antes del primer
 #   lote del día para que la producción empiece a la hora programada. Entre lotes del mismo día quedan en espera
 #   caliente. Durante un cambio de molde o una purga se cuentan en espera caliente.
@@ -20,50 +23,51 @@ energy:
   policy: {off_outside_shifts: true, preheat: before_first_lot}
   injection:
     imm-01:
-      mold-cubiertos-16c: {run_kw: 12.9, standby_kw: 4.6, off_kw: 0.05, heatup_min: 45, heatup_kwh: 6.1, kwh_per_kg: 0.524}
+      mold-cubiertos-16c: {run_kw: 12.9, standby_kw: 4.6, off_kw: 0.05, heatup_min: 45, heatup_kwh: 6.1, kwh_per_kg: 0.524, run_peak_kw: 25.2, run_sd_pct: 3.7, heatup_peak_kw: 10.3}
     imm-02:
-      mold-cubiertos-16c: {run_kw: 12.9, standby_kw: 4.6, off_kw: 0.05, heatup_min: 45, heatup_kwh: 6.1, kwh_per_kg: 0.524}
+      mold-cubiertos-16c: {run_kw: 12.9, standby_kw: 4.6, off_kw: 0.05, heatup_min: 45, heatup_kwh: 6.1, kwh_per_kg: 0.524, run_peak_kw: 25.2, run_sd_pct: 3.7, heatup_peak_kw: 10.3}
     imm-04:
-      mold-cubiertos-16c: {run_kw: 14.3, standby_kw: 5.0, off_kw: 0.05, heatup_min: 45, heatup_kwh: 6.8, kwh_per_kg: 0.579}
-      mold-pedal-palanca-2c: {run_kw: 14.0, standby_kw: 5.0, off_kw: 0.05, heatup_min: 46, heatup_kwh: 7.0, kwh_per_kg: 0.737}
+      mold-cubiertos-16c: {run_kw: 14.3, standby_kw: 5.0, off_kw: 0.05, heatup_min: 45, heatup_kwh: 6.8, kwh_per_kg: 0.579, run_peak_kw: 27.9, run_sd_pct: 3.7, heatup_peak_kw: 11.3}
+      mold-pedal-palanca-2c: {run_kw: 14.0, standby_kw: 5.0, off_kw: 0.05, heatup_min: 46, heatup_kwh: 7.0, kwh_per_kg: 0.737, run_peak_kw: 27.9, run_sd_pct: 2.9, heatup_peak_kw: 11.3}
     imm-05:
-      mold-cubiertos-16c: {run_kw: 16.3, standby_kw: 5.7, off_kw: 0.05, heatup_min: 46, heatup_kwh: 7.9, kwh_per_kg: 0.661}
-      mold-pedal-palanca-2c: {run_kw: 16.0, standby_kw: 5.7, off_kw: 0.05, heatup_min: 47, heatup_kwh: 8.1, kwh_per_kg: 0.842}
+      mold-cubiertos-16c: {run_kw: 16.3, standby_kw: 5.7, off_kw: 0.05, heatup_min: 46, heatup_kwh: 7.9, kwh_per_kg: 0.661, run_peak_kw: 31.9, run_sd_pct: 3.7, heatup_peak_kw: 12.8}
+      mold-pedal-palanca-2c: {run_kw: 16.0, standby_kw: 5.7, off_kw: 0.05, heatup_min: 47, heatup_kwh: 8.1, kwh_per_kg: 0.842, run_peak_kw: 31.9, run_sd_pct: 2.9, heatup_peak_kw: 12.8}
     imm-06:
-      mold-cubiertos-16c: {run_kw: 16.3, standby_kw: 5.7, off_kw: 0.05, heatup_min: 46, heatup_kwh: 7.9, kwh_per_kg: 0.661}
-      mold-pedal-palanca-2c: {run_kw: 16.0, standby_kw: 5.7, off_kw: 0.05, heatup_min: 47, heatup_kwh: 8.1, kwh_per_kg: 0.842}
+      mold-cubiertos-16c: {run_kw: 16.3, standby_kw: 5.7, off_kw: 0.05, heatup_min: 46, heatup_kwh: 7.9, kwh_per_kg: 0.661, run_peak_kw: 31.9, run_sd_pct: 3.7, heatup_peak_kw: 12.8}
+      mold-pedal-palanca-2c: {run_kw: 16.0, standby_kw: 5.7, off_kw: 0.05, heatup_min: 47, heatup_kwh: 8.1, kwh_per_kg: 0.842, run_peak_kw: 31.9, run_sd_pct: 2.9, heatup_peak_kw: 12.8}
     imm-07:
-      mold-cubiertos-16c: {run_kw: 16.3, standby_kw: 5.7, off_kw: 0.05, heatup_min: 46, heatup_kwh: 7.9, kwh_per_kg: 0.661}
-      mold-pedal-palanca-2c: {run_kw: 16.0, standby_kw: 5.7, off_kw: 0.05, heatup_min: 47, heatup_kwh: 8.1, kwh_per_kg: 0.842}
+      mold-cubiertos-16c: {run_kw: 16.3, standby_kw: 5.7, off_kw: 0.05, heatup_min: 46, heatup_kwh: 7.9, kwh_per_kg: 0.661, run_peak_kw: 31.9, run_sd_pct: 3.7, heatup_peak_kw: 12.8}
+      mold-pedal-palanca-2c: {run_kw: 16.0, standby_kw: 5.7, off_kw: 0.05, heatup_min: 47, heatup_kwh: 8.1, kwh_per_kg: 0.842, run_peak_kw: 31.9, run_sd_pct: 2.9, heatup_peak_kw: 12.8}
     imm-08:
-      mold-cubiertos-16c: {run_kw: 11.6, standby_kw: 4.1, off_kw: 0.05, heatup_min: 44, heatup_kwh: 5.4, kwh_per_kg: 0.469}
+      mold-cubiertos-16c: {run_kw: 11.6, standby_kw: 4.1, off_kw: 0.05, heatup_min: 44, heatup_kwh: 5.4, kwh_per_kg: 0.469, run_peak_kw: 22.5, run_sd_pct: 3.6, heatup_peak_kw: 9.3}
     imm-18:
-      mold-cubiertos-16c: {run_kw: 29.9, standby_kw: 10.1, off_kw: 0.05, heatup_min: 53, heatup_kwh: 16.1, kwh_per_kg: 1.212}
-      mold-cuerpo-papelera-20l: {run_kw: 29.4, standby_kw: 10.1, off_kw: 0.05, heatup_min: 54, heatup_kwh: 16.4, kwh_per_kg: 0.4}
-      mold-pedal-palanca-2c: {run_kw: 29.3, standby_kw: 10.1, off_kw: 0.05, heatup_min: 54, heatup_kwh: 16.4, kwh_per_kg: 1.543}
+      mold-cubiertos-16c: {run_kw: 29.9, standby_kw: 10.1, off_kw: 0.05, heatup_min: 53, heatup_kwh: 16.1, kwh_per_kg: 1.212, run_peak_kw: 59.0, run_sd_pct: 3.7, heatup_peak_kw: 22.8}
+      mold-cuerpo-papelera-20l: {run_kw: 29.4, standby_kw: 10.1, off_kw: 0.05, heatup_min: 54, heatup_kwh: 16.4, kwh_per_kg: 0.4, run_peak_kw: 59.0, run_sd_pct: 3.7, heatup_peak_kw: 22.8}
+      mold-pedal-palanca-2c: {run_kw: 29.3, standby_kw: 10.1, off_kw: 0.05, heatup_min: 54, heatup_kwh: 16.4, kwh_per_kg: 1.543, run_peak_kw: 59.0, run_sd_pct: 3.0, heatup_peak_kw: 22.8}
     imm-19:
-      mold-cubiertos-16c: {run_kw: 29.9, standby_kw: 10.1, off_kw: 0.05, heatup_min: 53, heatup_kwh: 16.1, kwh_per_kg: 1.212}
-      mold-cuerpo-papelera-20l: {run_kw: 29.4, standby_kw: 10.1, off_kw: 0.05, heatup_min: 54, heatup_kwh: 16.4, kwh_per_kg: 0.4}
-      mold-pedal-palanca-2c: {run_kw: 29.3, standby_kw: 10.1, off_kw: 0.05, heatup_min: 54, heatup_kwh: 16.4, kwh_per_kg: 1.543}
+      mold-cubiertos-16c: {run_kw: 29.9, standby_kw: 10.1, off_kw: 0.05, heatup_min: 53, heatup_kwh: 16.1, kwh_per_kg: 1.212, run_peak_kw: 59.0, run_sd_pct: 3.7, heatup_peak_kw: 22.8}
+      mold-cuerpo-papelera-20l: {run_kw: 29.4, standby_kw: 10.1, off_kw: 0.05, heatup_min: 54, heatup_kwh: 16.4, kwh_per_kg: 0.4, run_peak_kw: 59.0, run_sd_pct: 3.7, heatup_peak_kw: 22.8}
+      mold-pedal-palanca-2c: {run_kw: 29.3, standby_kw: 10.1, off_kw: 0.05, heatup_min: 54, heatup_kwh: 16.4, kwh_per_kg: 1.543, run_peak_kw: 59.0, run_sd_pct: 3.0, heatup_peak_kw: 22.8}
     imm-20:
-      mold-cubiertos-16c: {run_kw: 50.3, standby_kw: 16.7, off_kw: 0.05, heatup_min: 64, heatup_kwh: 31.7, kwh_per_kg: 2.042}
-      mold-balde-12l: {run_kw: 49.5, standby_kw: 16.7, off_kw: 0.05, heatup_min: 65, heatup_kwh: 32.7, kwh_per_kg: 0.77}
-      mold-cuerpo-papelera-20l: {run_kw: 49.5, standby_kw: 16.7, off_kw: 0.05, heatup_min: 65, heatup_kwh: 32.5, kwh_per_kg: 0.673}
-      mold-pedal-palanca-2c: {run_kw: 49.4, standby_kw: 16.7, off_kw: 0.05, heatup_min: 65, heatup_kwh: 32.5, kwh_per_kg: 2.599}
+      mold-cubiertos-16c: {run_kw: 50.3, standby_kw: 16.7, off_kw: 0.05, heatup_min: 64, heatup_kwh: 31.7, kwh_per_kg: 2.042, run_peak_kw: 99.6, run_sd_pct: 3.8, heatup_peak_kw: 37.8}
+      mold-balde-12l: {run_kw: 49.5, standby_kw: 16.7, off_kw: 0.05, heatup_min: 65, heatup_kwh: 32.7, kwh_per_kg: 0.77, run_peak_kw: 99.6, run_sd_pct: 1.1, heatup_peak_kw: 37.8}
+      mold-cuerpo-papelera-20l: {run_kw: 49.5, standby_kw: 16.7, off_kw: 0.05, heatup_min: 65, heatup_kwh: 32.5, kwh_per_kg: 0.673, run_peak_kw: 99.6, run_sd_pct: 3.7, heatup_peak_kw: 37.8}
+      mold-pedal-palanca-2c: {run_kw: 49.4, standby_kw: 16.7, off_kw: 0.05, heatup_min: 65, heatup_kwh: 32.5, kwh_per_kg: 2.599, run_peak_kw: 99.6, run_sd_pct: 3.0, heatup_peak_kw: 37.8}
     imm-21:
-      mold-cubiertos-16c: {run_kw: 50.3, standby_kw: 16.7, off_kw: 0.05, heatup_min: 64, heatup_kwh: 31.7, kwh_per_kg: 2.042}
-      mold-balde-12l: {run_kw: 49.5, standby_kw: 16.7, off_kw: 0.05, heatup_min: 65, heatup_kwh: 32.7, kwh_per_kg: 0.77}
-      mold-cuerpo-papelera-20l: {run_kw: 49.5, standby_kw: 16.7, off_kw: 0.05, heatup_min: 65, heatup_kwh: 32.5, kwh_per_kg: 0.673}
-      mold-pedal-palanca-2c: {run_kw: 49.4, standby_kw: 16.7, off_kw: 0.05, heatup_min: 65, heatup_kwh: 32.5, kwh_per_kg: 2.599}
+      mold-cubiertos-16c: {run_kw: 50.3, standby_kw: 16.7, off_kw: 0.05, heatup_min: 64, heatup_kwh: 31.7, kwh_per_kg: 2.042, run_peak_kw: 99.6, run_sd_pct: 3.8, heatup_peak_kw: 37.8}
+      mold-balde-12l: {run_kw: 49.5, standby_kw: 16.7, off_kw: 0.05, heatup_min: 65, heatup_kwh: 32.7, kwh_per_kg: 0.77, run_peak_kw: 99.6, run_sd_pct: 1.1, heatup_peak_kw: 37.8}
+      mold-cuerpo-papelera-20l: {run_kw: 49.5, standby_kw: 16.7, off_kw: 0.05, heatup_min: 65, heatup_kwh: 32.5, kwh_per_kg: 0.673, run_peak_kw: 99.6, run_sd_pct: 3.7, heatup_peak_kw: 37.8}
+      mold-pedal-palanca-2c: {run_kw: 49.4, standby_kw: 16.7, off_kw: 0.05, heatup_min: 65, heatup_kwh: 32.5, kwh_per_kg: 2.599, run_peak_kw: 99.6, run_sd_pct: 3.0, heatup_peak_kw: 37.8}
     imm-23:
-      mold-cubiertos-16c: {run_kw: 50.3, standby_kw: 16.7, off_kw: 0.05, heatup_min: 64, heatup_kwh: 31.7, kwh_per_kg: 2.042}
-      mold-balde-12l: {run_kw: 49.5, standby_kw: 16.7, off_kw: 0.05, heatup_min: 65, heatup_kwh: 32.7, kwh_per_kg: 0.77}
-      mold-cuerpo-papelera-20l: {run_kw: 49.5, standby_kw: 16.7, off_kw: 0.05, heatup_min: 65, heatup_kwh: 32.5, kwh_per_kg: 0.673}
-      mold-pedal-palanca-2c: {run_kw: 49.4, standby_kw: 16.7, off_kw: 0.05, heatup_min: 65, heatup_kwh: 32.5, kwh_per_kg: 2.599}
+      mold-cubiertos-16c: {run_kw: 50.3, standby_kw: 16.7, off_kw: 0.05, heatup_min: 64, heatup_kwh: 31.7, kwh_per_kg: 2.042, run_peak_kw: 99.6, run_sd_pct: 3.8, heatup_peak_kw: 37.8}
+      mold-balde-12l: {run_kw: 49.5, standby_kw: 16.7, off_kw: 0.05, heatup_min: 65, heatup_kwh: 32.7, kwh_per_kg: 0.77, run_peak_kw: 99.6, run_sd_pct: 1.1, heatup_peak_kw: 37.8}
+      mold-cuerpo-papelera-20l: {run_kw: 49.5, standby_kw: 16.7, off_kw: 0.05, heatup_min: 65, heatup_kwh: 32.5, kwh_per_kg: 0.673, run_peak_kw: 99.6, run_sd_pct: 3.7, heatup_peak_kw: 37.8}
+      mold-pedal-palanca-2c: {run_kw: 49.4, standby_kw: 16.7, off_kw: 0.05, heatup_min: 65, heatup_kwh: 32.5, kwh_per_kg: 2.599, run_peak_kw: 99.6, run_sd_pct: 3.0, heatup_peak_kw: 37.8}
   services:
     chiller-01: {name: Enfriador del agua de moldes, nominal_kw: 12.4, idle_fraction: 0.0, source: 'librería chiller (600kw-mold-water) con 52.4 kW de calor: 437 kg/h × 0.12 kWh/kg'}
     dryer-03: {name: Secador de PS, nominal_kw: 8.5, idle_fraction: 0.0, feeds: [ps], source: 'librería desiccant-dryer, preset recycled-ps-250'}
     dryer-04: {name: Secador de PP reciclado, nominal_kw: 13.6, idle_fraction: 0.0, feeds: [pp-reciclado], source: 'librería desiccant-dryer, preset recycled-pp-400'}
     compressor-01: {name: Compresor de aire, nominal_kw: 27.5, idle_fraction: 0.0, source: placa 75 kW × 4.4 de 12 m³/min (11 inyectoras × 0.4)}
     vacuum-central-01: {name: Central de transporte de resina, nominal_kw: 8.5, idle_fraction: 0.0, source: placa 22.5 kW × 11 de 29 líneas}
+  transformer: {id: transformer-01, rating_kva: 3000.0, power_factor: 0.9, limit_kw: 2700}
   assumed: true

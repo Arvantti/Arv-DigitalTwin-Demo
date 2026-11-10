@@ -10,6 +10,7 @@ import "./aps.css";
 import "./control.css";
 import "./movil.css";
 import { events, model, onChange, onClock, sharedClock, shownClockText, shownNow, SOURCE_NAMES, useDemoDays, vigente } from "./aps-store.ts";
+import { kwhBetween, plantPower, powerOf, powerSpark } from "./plant-state.ts";
 import { eventsAt, dayLoads, dayStrip, loadAt, loadColor, machineAt, machineLabel, minOf, moldOf, oeeAt, PLC_MACHINES, plantOee, STATE_COLORS, STATE_NAMES, unitsUntil, type MachineState } from "./plant-state.ts";
 import { COLOR_NAMES, day, esc, nf, when } from "./schedule.ts";
 
@@ -94,7 +95,8 @@ function render(): void {
       ${stat("Órdenes en curso", String(running.length))}
       ${stat(`${order ? `Ocupación de ${esc(order)}` : "Ocupación"} · semana`, availH ? pct(busyH / availH) : "—")}
       ${stat("Disponibilidad · semana", shiftH ? pct(availH / shiftH) : "—")}
-    </div>`;
+    </div>
+    ${energyBlock(t)}`;
 
   // Primero las que tienen algo que decir: fallas, produciendo, paradas; las que no tienen molde ni orden al final.
   const rank: Record<MachineState, number> = { fault: 0, run: 1, change: 1, plan: 2, idle: 3, off: 4 };
@@ -111,7 +113,7 @@ function render(): void {
       const link = `/plant.html?plant=${model.plant}&select=${esc(e.id)}&focus=${esc(e.id)}`;
       return `<article class="cc-card ${s.state}" style="--st:${STATE_COLORS[s.state]}">
         <header><b><a href="${link}" title="Ver la máquina en el gemelo 3D">${esc(machineLabel(e.id))}</a></b><span class="cc-state">${STATE_NAMES[s.state]}</span></header>
-        <p class="dim small">${e.params?.clamp_t ? `${nf(Number(e.params.clamp_t))} t · ` : ""}${moldOf(e.id) ? esc(moldOf(e.id)!) : e.type === "assembly_cell" ? "celda de ensamble" : "sin molde montado"}</p>
+        <p class="dim small">${kwTag(e.id, t)}${e.params?.clamp_t ? `${nf(Number(e.params.clamp_t))} t · ` : ""}${moldOf(e.id) ? esc(moldOf(e.id)!) : e.type === "assembly_cell" ? "celda de ensamble" : "sin molde montado"}</p>
         ${
           r
             ? `<div class="cc-order"><b>${esc(r.order)}${ord ? ` · ${esc(ord.customer)}` : ""}</b><span>${esc(r.product)}${r.color ? ` · ${esc(COLOR_NAMES[r.color] ?? r.color)}` : ""} · lote ${r.batch ? `${r.batch[0]}/${r.batch[1]}` : "—"}</span>
@@ -140,6 +142,30 @@ function render(): void {
           .join("")}</p></article>`
       : "");
   layoutGrid();
+}
+
+/** Potencia de la planta ahora, contra el límite del transformador, kWh del día y la curva del día. */
+function energyBlock(t: number): string {
+  if (!model.energy) return "";
+  const evs = events();
+  const now = plantPower(plan, evs, t);
+  const day0 = Math.floor(t / 1440) * 1440;
+  const kwh = kwhBetween(plan, evs, day0, t);
+  const lim = now.limitKw;
+  const use = lim ? now.kw / lim : 0;
+  return `<div class="cc-energy" title="Potencia de las inyectoras (con la variación del modelo físico) y de los servicios que siguen la producción. Solo kWh, sin precio. Fuera de turno las inyectoras se apagan y calientan antes del primer lote.">
+    <h2>ENERGÍA · AHORA</h2>
+    <div class="cc-kw"><b>${nf(now.kw, 0)}<small> kW</small></b><span>${lim ? `${pct(use)} de ${nf(lim, 0)} kW del transformador` : ""}</span></div>
+    <div class="cc-kw-split"><span>Inyectoras <b>${nf(now.machinesKw, 0)} kW</b></span><span>Servicios <b>${nf(now.servicesKw, 0)} kW</b></span><span>Hoy <b>${nf(kwh, 0)} kWh</b></span></div>
+    ${powerSpark(plan, evs, t)}
+  </div>`;
+}
+
+const PW_NAMES = { run: "produciendo", standby: "espera caliente", heatup: "calentando", off: "apagada" } as const;
+/** Potencia de una máquina en su tarjeta. */
+function kwTag(id: string, t: number): string {
+  const p = powerOf(plan, events(), id, t);
+  return p ? `<b class="cc-kwtag ${p.state}" title="Potencia ahora · ${PW_NAMES[p.state]}">⚡ ${nf(p.kw, 1)} kW</b> · ` : "";
 }
 
 /** Reparte las tarjetas en filas y columnas iguales que llenan el área, sin scroll: elige las columnas con las que cada tarjeta queda más holgada. */

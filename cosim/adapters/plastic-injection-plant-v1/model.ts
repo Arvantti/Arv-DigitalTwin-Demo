@@ -300,6 +300,7 @@ function energyOf(cat: CatalogData): EnergyData | undefined {
   return {
     injection: e.injection,
     services: e.services ?? {},
+    transformer: e.transformer,
     overnight: e.policy?.off_outside_shifts === false ? "caliente" : "apagar",
     partKg: Object.fromEntries(cat.tooling.tooling.map((t) => [t.id, (t.part_g ?? 0) / 1000])),
     resin: Object.fromEntries(cat.tooling.tooling.map((t) => [t.id, t.material])),

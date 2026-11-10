@@ -32,6 +32,7 @@ IDLE_FRACTION = {"chiller": 0.0, "desiccant_dryer": 0.0, "air_compressor": 0.0, 
 # por su placa (los servicios se dimensionaron para una nave más grande). Supuestos hasta medir en la planta:
 MOLD_HEAT_KWH_PER_KG = 0.12  # calor que el agua de moldes le quita a la pieza (de masa fundida a expulsión)
 AIR_M3_MIN_PER_IMM = 0.4  # aire comprimido de una inyectora con robot y soplado
+POWER_FACTOR = 0.9  # factor de potencia de la planta, para pasar los kVA del transformador a kW
 
 
 def _load(name: str) -> dict:
@@ -64,17 +65,30 @@ def injection_profile(machine: dict, mold: dict, resin: str) -> dict:
     sim = Simulator([eq], dt=1.0)
     # 1) Encendido en frío hasta que el cilindro llega a temperatura.
     sim.schedule(0, eq.id, "power_on")
+    sim.step()
+    peak_heat = eq.power_kw
     while not any(e.type == "heat_up_completed" for e in sim.step()):
         if sim.t > 4 * 3600:
             raise SystemExit(f"{eq.id}: no llegó a temperatura en 4 h")
     heat_min = sim.t / 60.0
     heat_kwh = eq.energy_kwh
-    # 2) Una hora produciendo.
+    # 2) Una hora produciendo, con la potencia de cada segundo: el pico de la inyección y la variación minuto a minuto.
     sim.schedule(sim.t, eq.id, "start")
     sim.run(600)  # el ciclo se estabiliza
     kg0 = eq.resin_kg
-    run_kwh = _energy_after(sim, eq, 3600)
+    e0 = eq.energy_kwh
+    peak_run = 0.0
+    minutes: list[float] = []
+    for _ in range(60):
+        m0 = eq.energy_kwh
+        for _ in range(60):
+            sim.step()
+            peak_run = max(peak_run, eq.power_kw)
+        minutes.append((eq.energy_kwh - m0) * 60)
+    run_kwh = eq.energy_kwh - e0
     kg_h = eq.resin_kg - kg0
+    mean = sum(minutes) / len(minutes)
+    sd = (sum((x - mean) ** 2 for x in minutes) / len(minutes)) ** 0.5
     # 3) Espera caliente: encendida y a temperatura, sin ciclar.
     sim.schedule(sim.t, eq.id, "stop")
     sim.run(900)
@@ -90,6 +104,9 @@ def injection_profile(machine: dict, mold: dict, resin: str) -> dict:
         "heatup_min": round(heat_min),
         "heatup_kwh": round(heat_kwh, 1),
         "kwh_per_kg": round(run_kwh / kg_h, 3) if kg_h else None,
+        "run_peak_kw": round(peak_run, 1),
+        "run_sd_pct": round(100 * sd / mean, 1),
+        "heatup_peak_kw": round(peak_heat, 1),
     }
 
 
@@ -165,6 +182,13 @@ def services(plant: dict, injection: dict, setup: dict) -> dict:
     return out
 
 
+def transformer(plant: dict) -> dict:
+    """Límite de la acometida: la placa del transformador en kVA por el factor de potencia supuesto."""
+    tr = next(e for e in plant["equipment"] if e["type"] == "transformer")
+    kva = float(tr["params"]["rating_kva"])
+    return {"id": tr["id"], "rating_kva": kva, "power_factor": POWER_FACTOR, "limit_kw": round(kva * POWER_FACTOR)}
+
+
 def build() -> dict:
     plant = _load("plant.yaml")
     molds = _load("catalog/tooling.yaml")["tooling"]
@@ -181,6 +205,7 @@ def build() -> dict:
             },
             "injection": injection,
             "services": services(plant, injection, _load("catalog/setup.yaml")["setup"]),
+            "transformer": transformer(plant),
             "assumed": True,
         }
     }
@@ -195,7 +220,10 @@ HEADER = """\
 #   standby_kw  encendida y a temperatura sin ciclar (espera caliente: resistencias y bomba en recirculación);
 #   off_kw      apagada (solo el control);
 #   heatup_min / heatup_kwh  encendido en frío hasta que el cilindro llega a la temperatura de la resina;
-#   kwh_per_kg  energía específica produciendo.
+#   kwh_per_kg  energía específica produciendo;
+#   run_peak_kw / run_sd_pct  pico de la inyección y variación de la media de cada minuto produciendo (% de run_kw);
+#   heatup_peak_kw  potencia al encender en frío (resistencias a tope).
+# transformer: límite de la acometida en kW (placa en kVA × factor de potencia supuesto).
 # policy: fuera de turno (22:00-06:00 y domingo) las inyectoras se apagan; el calentamiento se hace antes del primer
 #   lote del día para que la producción empiece a la hora programada. Entre lotes del mismo día quedan en espera
 #   caliente. Durante un cambio de molde o una purga se cuentan en espera caliente.
@@ -221,6 +249,7 @@ def dump(data: dict) -> str:
         lines += [f"      {mold}: {_flow(v)}" for mold, v in molds.items()]
     lines.append("  services:")
     lines += [f"    {sid}: {_flow(v)}" for sid, v in e["services"].items()]
+    lines.append(f"  transformer: {_flow(e['transformer'])}")
     lines.append(f"  assumed: {str(e['assumed']).lower()}")
     text = HEADER + "\n".join(lines) + "\n"
     assert yaml.safe_load(text) == data

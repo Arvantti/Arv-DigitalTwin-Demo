@@ -164,7 +164,10 @@
         "off_kw": { "type": "number", "minimum": 0, "description": "Apagada (solo el control)" },
         "heatup_min": { "type": "number", "minimum": 0, "description": "Minutos de calentamiento en frío hasta la temperatura de la resina" },
         "heatup_kwh": { "type": "number", "minimum": 0, "description": "Energía del calentamiento en frío" },
-        "kwh_per_kg": { "type": ["number", "null"], "minimum": 0, "description": "Energía específica produciendo" }
+        "kwh_per_kg": { "type": ["number", "null"], "minimum": 0, "description": "Energía específica produciendo" },
+        "run_peak_kw": { "type": "number", "minimum": 0, "description": "Pico de potencia de la inyección (máximo de cada segundo produciendo)" },
+        "run_sd_pct": { "type": "number", "minimum": 0, "description": "Variación de la potencia media de cada minuto produciendo (desviación, % de run_kw)" },
+        "heatup_peak_kw": { "type": "number", "minimum": 0, "description": "Potencia al encender en frío (resistencias a tope)" }
       }
     },
     "energy": {
@@ -195,6 +198,18 @@
               "feeds": { "type": "array", "items": { "$ref": "#/$defs/id" }, "description": "Resinas que atiende (sin feeds, todas las inyectoras)" },
               "source": { "type": "string" }
             }
+          }
+        },
+        "transformer": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["id", "limit_kw"],
+          "description": "Límite de la acometida: placa del transformador × factor de potencia",
+          "properties": {
+            "id": { "type": "string" },
+            "rating_kva": { "type": "number", "minimum": 0 },
+            "power_factor": { "type": "number", "exclusiveMinimum": 0, "maximum": 1 },
+            "limit_kw": { "type": "number", "minimum": 0 }
           }
         },
         "assumed": { "type": "boolean" }

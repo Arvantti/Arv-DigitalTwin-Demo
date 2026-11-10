@@ -16,7 +16,7 @@ import plantYaml from "../../../industrial-models/plastic-injection-plant-v1/pla
 import type { PlantEvent, PlanScheduleRow } from "@twin/cosim/core/contracts.ts";
 import { activeEvents, events, model, onChange, onClock, PLASTICS, setEvents, sharedClock, shownClockText, shownNow, useDemoDays, vigente } from "./aps-store.ts";
 import { COLOR_NAMES, day, esc, nf, when } from "./schedule.ts";
-import { minOf, moldOf, unitsUntil } from "./plant-state.ts";
+import { minOf, moldOf, plantPower, powerOf, unitsUntil } from "./plant-state.ts";
 
 interface Eq {
   id: string;
@@ -69,6 +69,7 @@ function stateOf(id: string): { state: State; row?: PlanScheduleRow; ev?: PlantE
 }
 
 const label = (id: string) => id.toUpperCase();
+const PW_NAMES = { run: "produciendo", standby: "espera caliente", heatup: "calentando", off: "apagada" } as const;
 
 useDemoDays();
 
@@ -121,6 +122,8 @@ function renderMachine(): void {
   const order = r ? plan.orders.find((o) => o.id === r.order) : undefined;
   const cycle = Number(p.cycle_s ?? 0);
   const cav = Number(p.cavities ?? 1);
+  const pw = powerOf(plan, events(), e.id, minOf(shownNow()));
+  const pwRow = pw ? `<tr><td>Potencia</td><td><b>${nf(pw.kw, 1)} kW</b> · ${PW_NAMES[pw.state]}</td></tr>` : "";
   let detail = "";
   if (r) {
     const made = madeOf(r);
@@ -132,12 +135,14 @@ function renderMachine(): void {
       <tr><td>Piezas del lote</td><td><b class="emu-count">${nf(made)}</b> / ${nf(r.quantity)}</td></tr>
       <tr><td>Fin del lote</td><td>${when(r.end)}</td></tr>
       ${cycle ? `<tr><td>Ciclo</td><td>${nf(cycle, 1)} s · ${nf(cav)} cavidades</td></tr>` : ""}
+      ${pwRow}
     </table>`;
   } else if (s.state === "fault" && s.ev) {
     detail = `<p class="bad"><b>${s.ev.kind === "falla" ? "FALLA" : "PARO DE EMERGENCIA"}</b> desde ${when(s.ev.start)}: ${esc(s.ev.reason)}.<br/>Reparación estimada hasta ${when(s.ev.est_end)}.</p>`;
   } else if (s.state === "plan") detail = `<p class="dim">Parada en la programación: ${esc(s.why ?? "")}.</p>`;
   else if (s.state === "off") detail = `<p class="dim">Fuera de turno. Turnos de 06:00 a 22:00, lunes a sábado.</p>`;
   else detail = `<p class="dim">${mold ? "Sin orden en este momento." : "Sin molde montado ni órdenes en la programación vigente."}</p>`;
+  if (!r && pwRow) detail += `<table class="route-table emu-tags">${pwRow}</table>`;
 
   const actions =
     s.state === "fault"
@@ -199,7 +204,8 @@ function renderEvents(): void {
 function render(): void {
   const counts: Record<State, number> = { run: 0, idle: 0, plan: 0, fault: 0, off: 0 };
   for (const m of MACHINES) counts[stateOf(m.id).state]++;
-  $("emu-summary").innerHTML = `${counts.run} produciendo · ${counts.idle} sin orden${counts.fault ? ` · <b class="bad">${counts.fault} fuera de servicio</b>` : ""} · programación ${esc(plan.plan_id)}`;
+  const pw = model.energy ? plantPower(plan, events(), minOf(shownNow())) : undefined;
+  $("emu-summary").innerHTML = `${counts.run} produciendo · ${counts.idle} sin orden${counts.fault ? ` · <b class="bad">${counts.fault} fuera de servicio</b>` : ""}${pw ? ` · <b title="Inyectoras ${nf(pw.machinesKw, 0)} kW + servicios ${nf(pw.servicesKw, 0)} kW${pw.limitKw ? ` · transformador ${nf(pw.limitKw, 0)} kW` : ""}">⚡ ${nf(pw.kw, 0)} kW</b>` : ""} · programación ${esc(plan.plan_id)}`;
   renderFloor();
   renderMachine();
   renderEvents();
