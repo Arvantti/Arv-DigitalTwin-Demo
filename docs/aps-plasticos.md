@@ -131,6 +131,20 @@ repuesto de Fractal. Las máquinas conservan sus ids. La demanda diaria de `cata
 (unidades / cavidades × peso de inyección con colada), los kg de masterbatch por color, las unidades por producto, las
 horas de máquina, los turnos-máquina, los cambios de color y las horas de operario (`apps/gallery/src/insumos.ts`).
 
+**Energía** (`catalog/energy.yaml`, decisiones de Andy del 2026-11-10; solo kWh, sin precio ni franjas): el archivo lo
+genera `uv run python tools/energy/perfil_energia_plasticos.py --write` corriendo el modelo físico de la inyectora de la
+librería con cada molde que le cabe a cada máquina: kW produciendo, en espera caliente y apagada, y minutos y kWh del
+calentamiento en frío (una prueba avisa si la librería cambia y el archivo queda viejo). El cosimulador
+(`cosim/adapters/plastic-injection-plant-v1/energy.ts`) cuenta, para cada plan: producción a `run_kw`; cambios, purgas
+y huecos entre lotes del mismo día en espera caliente; un calentamiento antes del primer lote de cada día, porque fuera
+de turno (22:00-06:00 y domingo) las inyectoras se apagan. Los servicios (enfriador de moldes, secadores de PS y de PP
+reciclado, compresor y transporte de resina) piden lo que necesitan las 11 inyectoras con molde produciendo, por la
+fracción de producción de cada momento; los equipos de respaldo no suman. Cada plan trae `energy` y los KPI
+`energy_kwh`, `kwh_per_kg` y `peak_kw` (mayor media de 15 min). El APS los muestra en la propuesta, en la comparación de
+versiones y en la tabla ENERGÍA de INSUMOS (kWh por equipo y día). Con la cartera de la demo el plan del cosimulador
+gasta unos 57.500 kWh en el horizonte (0,81 kWh/kg); dejar las inyectoras calientes de noche subiría bastante esa cifra,
+y esa comparación será el escenario 6 de Fractal.
+
 ## Centro de control, PLC por máquina y play
 
 - `control.html` (centro de control): recibe las señales de los PLC de todas las máquinas. OEE de la planta y de cada

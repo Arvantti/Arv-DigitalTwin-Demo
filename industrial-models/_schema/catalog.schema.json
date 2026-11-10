@@ -14,7 +14,8 @@
     "orders": { "type": "array", "items": { "$ref": "#/$defs/order" } },
     "schedule": { "type": "array", "items": { "$ref": "#/$defs/assignment" } },
     "demand": { "$ref": "#/$defs/demand" },
-    "changeovers": { "$ref": "#/$defs/changeovers" }
+    "changeovers": { "$ref": "#/$defs/changeovers" },
+    "energy": { "$ref": "#/$defs/energy" }
   },
   "$defs": {
     "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
@@ -150,6 +151,53 @@
             }
           }
         }
+      }
+    },
+    "energyProfile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["run_kw", "standby_kw", "off_kw", "heatup_min", "heatup_kwh"],
+      "description": "Lo que mide el modelo físico de la inyectora con un molde montado",
+      "properties": {
+        "run_kw": { "type": "number", "minimum": 0, "description": "Potencia media produciendo" },
+        "standby_kw": { "type": "number", "minimum": 0, "description": "Encendida y a temperatura, sin ciclar (espera caliente)" },
+        "off_kw": { "type": "number", "minimum": 0, "description": "Apagada (solo el control)" },
+        "heatup_min": { "type": "number", "minimum": 0, "description": "Minutos de calentamiento en frío hasta la temperatura de la resina" },
+        "heatup_kwh": { "type": "number", "minimum": 0, "description": "Energía del calentamiento en frío" },
+        "kwh_per_kg": { "type": ["number", "null"], "minimum": 0, "description": "Energía específica produciendo" }
+      }
+    },
+    "energy": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Energía de la planta en kWh (sin precio): perfiles por inyectora y molde, y servicios. Lo genera tools/energy/",
+      "properties": {
+        "policy": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "off_outside_shifts": { "type": "boolean", "description": "Las inyectoras se apagan fuera de turno y los días sin turno" },
+            "preheat": { "enum": ["before_first_lot"], "description": "El calentamiento termina cuando empieza el primer lote del día" }
+          }
+        },
+        "injection": { "type": "object", "description": "inyectora → molde → perfil", "additionalProperties": { "type": "object", "additionalProperties": { "$ref": "#/$defs/energyProfile" } } },
+        "services": {
+          "type": "object",
+          "description": "Servicios que trabajan para las inyectoras; los de respaldo no van",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["nominal_kw", "idle_fraction"],
+            "properties": {
+              "name": { "type": "string" },
+              "nominal_kw": { "type": "number", "minimum": 0, "description": "Potencia con toda la producción andando" },
+              "idle_fraction": { "type": "number", "minimum": 0, "maximum": 1, "description": "Parte de nominal_kw con las inyectoras encendidas sin producir" },
+              "feeds": { "type": "array", "items": { "$ref": "#/$defs/id" }, "description": "Resinas que atiende (sin feeds, todas las inyectoras)" },
+              "source": { "type": "string" }
+            }
+          }
+        },
+        "assumed": { "type": "boolean" }
       }
     },
     "changeoverTable": {

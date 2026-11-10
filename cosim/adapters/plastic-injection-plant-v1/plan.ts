@@ -8,6 +8,7 @@
 import type { CustomerOrder, CustomerOrders, PlannedStop, PlantEvent, Importance, PlanOrderRow, PlanScheduleRow, PlanSource, ProductionPlan } from "../../core/contracts.ts";
 import { DAY_MIN, dateOf, iso, parseLocal, rng } from "../../core/time.ts";
 import type { ChangeKind, PlasticsModel, Step } from "./model.ts";
+import { planEnergy } from "./energy.ts";
 
 export const WEIGHT: Record<Importance, number> = { alta: 3, normal: 1, baja: 0.5 };
 const PRIORITY: Record<Importance, number> = { alta: 2, normal: 1, baja: 0 };
@@ -408,7 +409,7 @@ export function toPlan(
   const co = rows.filter((r) => r.changeoverMin > 0);
   const [busiestId, busiestUse] = Object.entries(equipment).sort((a, b) => b[1].busy_pct - a[1].busy_pct)[0] ?? ["", { busy_pct: 0 }];
   const demand = model;
-  return {
+  const plan: ProductionPlan = {
     contract: "production-plan.v1",
     plan_id: head.planId,
     source: head.source,
@@ -440,4 +441,13 @@ export function toPlan(
     ...(head.notes ? { notes: head.notes } : {}),
     ...(ctx.fixed.length ? { fixed_orders: [...ctx.fixed] } : {}),
   };
+  // Energía del plan (kWh, sin precio): sale de cuánto tiempo pasa cada máquina produciendo, en espera o calentando.
+  const energy = planEnergy(model, plan);
+  if (energy) {
+    plan.energy = energy;
+    plan.kpis.energy_kwh = energy.kwh;
+    plan.kpis.kwh_per_kg = energy.kwh_per_kg;
+    plan.kpis.peak_kw = energy.peak_kw;
+  }
+  return plan;
 }

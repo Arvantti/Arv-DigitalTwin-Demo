@@ -6,6 +6,7 @@
  * planta ni el secuenciador de referencia (twin_runtime.planning): es una calculadora aparte.
  */
 import { Calendar, type Shift } from "../../core/time.ts";
+import type { EnergyData, EnergyYaml } from "./energy.ts";
 
 export const PLANT_ID = "plastic-injection-plant-v1";
 
@@ -22,6 +23,8 @@ export interface CatalogData {
   materials?: { materials: { id: string; kind: string }[] };
   /** Tiempos de cambio entre referencias (catalog/changeovers.yaml). */
   changeovers?: { changeovers: ChangeoversYaml };
+  /** Energía por inyectora y molde, y servicios (catalog/energy.yaml, generado con los modelos de la librería). */
+  energy?: { energy: EnergyYaml };
 }
 interface ChangeoverTable {
   default_min?: number;
@@ -75,6 +78,7 @@ interface ToolingYaml {
   /** Resina (id de catalog/materials.yaml). */
   material?: string;
   cavities: number;
+  part_g?: number;
   cycle_s: number;
   change_min?: number;
   /** Fuerza de cierre mínima que exige el molde (toneladas) y tiro del molde (kg, con colada). */
@@ -150,6 +154,8 @@ export interface PlasticsModel {
   mounted: Record<string, string>;
   /** Molde montado al inicio en cada máquina. */
   initialTooling: Record<string, string | undefined>;
+  /** Datos de energía (catalog/energy.yaml); sin ellos el plan no lleva energía. */
+  energy?: EnergyData;
 }
 
 export interface MoldInfo {
@@ -284,6 +290,19 @@ export function buildModel(cat: CatalogData): PlasticsModel {
     molds,
     mounted,
     initialTooling,
+    energy: energyOf(cat),
+  };
+}
+
+function energyOf(cat: CatalogData): EnergyData | undefined {
+  const e = cat.energy?.energy;
+  if (!e) return undefined;
+  return {
+    injection: e.injection,
+    services: e.services ?? {},
+    overnight: e.policy?.off_outside_shifts === false ? "caliente" : "apagar",
+    partKg: Object.fromEntries(cat.tooling.tooling.map((t) => [t.id, (t.part_g ?? 0) / 1000])),
+    resin: Object.fromEntries(cat.tooling.tooling.map((t) => [t.id, t.material])),
   };
 }
 

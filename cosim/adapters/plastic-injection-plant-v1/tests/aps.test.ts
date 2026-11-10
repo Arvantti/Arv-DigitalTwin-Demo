@@ -215,3 +215,52 @@ describe("moldes como recursos", () => {
     expect(() => buildModel({ ...cat, tooling: { tooling } })).toThrow(/solo tiene 1 copias/);
   });
 });
+
+describe("Energía del plan (catalog/energy.yaml, solo kWh)", () => {
+  // Plan de juguete: imm-21 con dos lotes el mismo día y uno al día siguiente.
+  const row = (start: string, end: string, quantity: number, changeover_min = 0) =>
+    ({ op: start, order: "P", product: "balde-12l", stage: "inyeccion", equipment: "imm-21", start, end, quantity, unit: "u", changeover_min, tooling: "mold-balde-12l" }) as ProductionPlan["schedule"][number];
+  const toy = {
+    from: "2026-11-02",
+    to: "2026-11-03",
+    timezone: "-05:00",
+    schedule: [row("2026-11-02T06:00", "2026-11-02T10:00", 480), row("2026-11-02T12:00", "2026-11-02T14:00", 200, 60), row("2026-11-03T06:00", "2026-11-03T07:00", 120)],
+  };
+  const p = model.energy!.injection["imm-21"]["mold-balde-12l"];
+
+  it("cuenta producción, espera caliente y un calentamiento por día, con los kW del modelo físico", async () => {
+    const { planEnergy } = await import("../energy.ts");
+    const e = planEnergy(model, toy)!;
+    expect(e.overnight).toBe("apagar");
+    expect(e.heatups).toBe(2);
+    expect(e.heatup_kwh).toBeCloseTo(2 * p.heatup_kwh, 0);
+    // Produciendo: 4 h + 1 h (después de la purga de 60 min) + 1 h.
+    expect(e.run_kwh).toBeCloseTo(6 * p.run_kw, 0);
+    // Espera caliente: el hueco de 10:00 a 12:00 y la purga de 12:00 a 13:00.
+    expect(e.standby_kwh).toBeCloseTo(3 * p.standby_kw, 0);
+    expect(e.kg).toBe(Math.round(800 * 0.52));
+    expect(e.services_kwh).toBeGreaterThan(0);
+    expect(Math.abs(e.kwh - (e.run_kwh + e.standby_kwh + e.heatup_kwh + e.off_kwh + e.services_kwh))).toBeLessThanOrEqual(2);
+  });
+
+  it("dejarlas calientes de noche ahorra calentamientos pero gasta más", async () => {
+    const { planEnergy } = await import("../energy.ts");
+    const off = planEnergy(model, toy)!;
+    const hot = planEnergy(model, toy, "caliente")!;
+    expect(hot.heatups).toBe(1);
+    // 16 h de espera caliente (14:00 a 06:00) gastan más que un calentamiento.
+    expect(hot.kwh).toBeGreaterThan(off.kwh);
+  });
+
+  it("todo plan del APS trae su energía en los indicadores", async () => {
+    const plan = solve(await highsLoader(), model, portfolio, { planId: "T-EN" });
+    expect(plan.energy).toBeDefined();
+    expect(plan.kpis.energy_kwh).toBe(plan.energy!.kwh);
+    expect(plan.kpis.kwh_per_kg).toBeGreaterThan(0.3);
+    expect(plan.kpis.kwh_per_kg).toBeLessThan(3);
+    // La demanda pico no pasa del transformador de 3.000 kVA.
+    expect(plan.kpis.peak_kw).toBeLessThan(3000);
+    // Las inyectoras se apagan fuera de turno: un calentamiento por máquina y día con trabajo.
+    expect(plan.energy!.heatups).toBeGreaterThan(model.machines.length);
+  });
+});
