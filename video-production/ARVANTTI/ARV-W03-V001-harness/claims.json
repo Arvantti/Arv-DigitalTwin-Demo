@@ -1,0 +1,11 @@
+{
+  "fuente": "Presentación para directivos de Arvantti Harness (artefacto del proyecto, 2026-11-09) y Shell V3",
+  "claims": [
+    { "texto": "Funciona con cualquier IA (Claude, ChatGPT, Gemini, Copilot, modelos privados) bajo las mismas reglas", "evidencia": "diapositiva 4 del deck" },
+    { "texto": "Agentes con diseñador visual, más de 120 habilidades, cargo, alcance y responsable", "evidencia": "diapositiva 5; catálogo de habilidades del repo de Harness" },
+    { "texto": "Conversación por voz con el coordinador de agentes y el coordinador de hilos", "evidencia": "diapositiva 8 (voz)" },
+    { "texto": "Guardianes, hooks y aprobación humana para lo sensible", "evidencia": "diapositiva 9" },
+    { "texto": "Cerebro empresarial con respuestas con fuente y datos en la infraestructura del cliente", "evidencia": "diapositiva 10" },
+    { "texto": "Log de auditoría solo de agregar; evidencia lista para ISO/IEC 42001", "evidencia": "diapositivas 14 y 16; la certificación la otorga un organismo certificador" }
+  ]
+}
