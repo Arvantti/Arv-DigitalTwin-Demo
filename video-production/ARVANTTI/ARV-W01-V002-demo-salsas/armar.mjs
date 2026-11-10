@@ -183,7 +183,7 @@ const load = () => JSON.parse(readFileSync(join(HERE, "segmentos.json"), "utf8")
 // ---------- ElevenLabs ----------
 
 // Nombres en inglés que la voz en español leería mal: se envían escritos como se pronuncian; el subtítulo no cambia.
-const PRONUNCIA = [["Integrator", "Íntegreitor"], ["BBQ", "barbikiú"], ["SKU", "ese, ka, u"], ["CIP", "cip"], ["APS", "a pe ese"], ["OEE", "o e e"], ["Gantt", "Gant"], ["doypack", "doipak"], ["sachet", "sashé"]];
+const PRONUNCIA = [["Integrator", "Íntegreitor"], ["BBQ", "barbikiú"], ["SKU", "esecaú"], ["CIP", "cip"], ["APS", "a pe ese"], ["OEE", "o e e"], ["Gantt", "Gant"], ["doypack", "doipak"], ["sachet", "sashé"]];
 /** Texto que se envía a la voz y, para cada carácter del original, su posición en ese texto. */
 function paraVoz(texto) {
   let out = "", idx = [];
