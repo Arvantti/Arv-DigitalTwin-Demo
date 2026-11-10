@@ -1,0 +1,52 @@
+/* Versión horizontal (1920x1080): se agrega al final de plantilla.tpl cuando ORIENT=h. */
+.fondo .glow{background:radial-gradient(1100px 700px at 50% 45%,#12305e55 0%,#05070c00 70%),radial-gradient(700px 500px at 85% 90%,#2d7ff922 0%,#05070c00 70%)}
+.fondo .floor{height:45%}
+.shade{background:linear-gradient(90deg,#05070cdd 0%,#05070c66 38%,#05070c00 60%),linear-gradient(#05070c00 70%,#05070ccc 100%)}
+.shade.fuerte{background:linear-gradient(90deg,#05070cee 0%,#05070caa 50%,#05070c55 100%),linear-gradient(#05070c00 70%,#05070cdd 100%)}
+
+.top{left:80px;right:80px;top:50px}
+.hook{left:80px;right:auto;width:1000px;top:110px;font-size:92px}
+.tag3d{left:80px;top:560px}
+.hud{inset:28px 28px}
+.parte{right:80px;top:56px}
+.flash{left:960px;top:540px}
+.win.xl{left:1080px;top:300px;width:700px}
+
+.ind .lab{left:80px;top:70px}
+.ind blockquote{left:80px;right:auto;width:1100px;top:250px;font-size:50px}
+.remate{left:80px;right:auto;width:1100px;top:660px;text-align:left}
+.repetir{top:200px}
+.repetir p{font-size:110px}
+
+.label{left:80px;top:640px;font-size:90px}
+.titular{left:80px;right:auto;width:1100px;top:110px;font-size:88px}
+.play{left:860px;top:400px}
+.scrub{left:120px;right:120px;top:880px}
+
+.net{width:1920px;height:1080px}
+.core{left:810px;top:540px;width:300px;height:300px}
+.stage3d{left:360px;top:110px;width:1200px;height:675px}
+.device .shot img{width:1200px;height:675px}
+.stamp{top:420px}
+
+.apsT{left:80px;right:80px;top:200px}
+.apsT h2{font-size:220px}
+.apsT p{font-size:64px}
+.apsT small{font-size:40px}
+.clab{left:80px;right:auto;width:740px;text-align:left;font-size:60px;line-height:1.15}
+
+.hx{top:24px;font-size:60px}
+.hx2{top:100px;font-size:36px}
+.hepta{width:1920px;height:1080px}
+
+.cta{left:300px;right:300px;top:50px;padding:24px 36px;font-size:42px}
+.fin{top:230px}
+.fin .marca{width:170px}
+.fin h1{font-size:100px}
+.fin h1 span{display:inline}
+.fin .firma{margin-top:18px;font-size:50px}
+.fin .url{margin-top:22px}
+.fin .sigue{margin-top:28px}
+
+.sub{left:160px;right:160px;top:918px;height:130px}
+.sub p{font-size:48px;padding:10px 24px}

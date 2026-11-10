@@ -19,7 +19,7 @@
       "items": [
         [
           "Manufactura",
-          "Prometimos el pedido para el viernes y nadie sabía si la inyectora iba a dar abasto.",
+          "Prometimos el pedido para el viernes y nadie sabía si la línea iba a dar abasto.",
           "p-inyectoras"
         ],
         [
@@ -45,7 +45,7 @@
     },
     "solucion": {
       "tipo": "gemelo",
-      "voz": "Arvantti DigitalTwin es un gemelo digital: una copia en 3D de tu planta que se mueve igual que la real. Máquinas, líneas, personas e inventarios, hora por hora. Le das play y ves cómo se comporta tu operación la próxima semana, antes de que pase. Sirve igual para una fábrica de plásticos, una bodega, una planta de salsas o una red de servicios con bombas y tuberías."
+      "voz": "Arvantti DigitalTwin es un gemelo digital: una copia en 3D de tu planta que se mueve igual que la real. Máquinas, líneas, personas e inventarios, hora por hora. Le das play y ves cómo se comporta tu operación la próxima semana, antes de que pase. Sirve igual para una fábrica, una bodega, una planta de procesos o una red de servicios con bombas y tuberías."
     },
     "modulos": {
       "voz": "Es el núcleo de Arvantti, y a su alrededor conectas siete módulos, solo los que necesites."

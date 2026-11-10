@@ -20,7 +20,11 @@ import { fileURLToPath } from "node:url";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const T = (p) => path.join(HERE, p);
-const FPS = 25, W = 1080, H = 1920;
+const HORIZ = process.env.ORIENT === "h";
+const FPS = 25, W = HORIZ ? 1920 : 1080, H = HORIZ ? 1080 : 1920;
+// Tomas del 3D según la orientación (las pantallas de la interfaz, ui-*, son horizontales y sirven para ambas).
+const tm = (n) => `assets/${HORIZ && !n.startsWith("ui-") ? "tomas-h" : "tomas"}/${n}.png`;
+const clipH = (n) => (HORIZ ? n.replace(".mp4", "-h.mp4") : n);
 const sh = (cmd, args) => execFileSync(cmd, args, { stdio: "inherit" });
 
 const VIDEO = process.env.VIDEO || "01-nucleo";
@@ -160,14 +164,14 @@ out.putdata([(r, g, b, max(0, min(255, int((max(r, g, b) - 40) * 255 / 70)))) fo
 out.save(sys.argv[2])`;
 
 function preparar() {
-  const tomas = T("assets/tomas"), clips = T("assets/clips");
+  const tomas = T(HORIZ ? "assets/tomas-h" : "assets/tomas"), clips = T("assets/clips");
   fs.mkdirSync(clips, { recursive: true });
   // Vuelo de cámara: un cuadro por cuadro del video.
-  sh("ffmpeg", ["-y", "-v", "error", "-framerate", String(FPS), "-i", path.join(tomas, "vuelo/f%03d.png"), "-vf", "format=yuv420p", "-c:v", "libx264", "-crf", "16", "-preset", "slow", path.join(clips, "vuelo.mp4")]);
+  sh("ffmpeg", ["-y", "-v", "error", "-framerate", String(FPS), "-i", path.join(tomas, "vuelo/f%03d.png"), "-vf", "format=yuv420p", "-c:v", "libx264", "-crf", "16", "-preset", "slow", path.join(clips, clipH("vuelo.mp4"))]);
   // Lapso del play: una foto cada 15 min de planta, con fundido entre fotos.
   const n = fs.readdirSync(path.join(tomas, "lapso")).filter((f) => f.endsWith(".png")).length;
   const fl = (n / 12).toFixed(2); // unos 12 s de lapso
-  sh("ffmpeg", ["-y", "-v", "error", "-framerate", fl, "-i", path.join(tomas, "lapso/f%03d.png"), "-vf", `fps=${FPS},tmix=frames=3:weights='1 2 1',format=yuv420p`, "-c:v", "libx264", "-crf", "16", "-preset", "slow", path.join(clips, "lapso.mp4")]);
+  sh("ffmpeg", ["-y", "-v", "error", "-framerate", fl, "-i", path.join(tomas, "lapso/f%03d.png"), "-vf", `fps=${FPS},tmix=frames=3:weights='1 2 1',format=yuv420p`, "-c:v", "libx264", "-crf", "16", "-preset", "slow", path.join(clips, clipH("lapso.mp4"))]);
   sh("python3", ["-I", "-c", MARCA, T("assets/shared/arvantti/branding/ArvanttiLabsLogo.png"), path.join(clips, "marca.png")]);
   // Música de respaldo sintetizada (sin licencia de terceros), por si no hay pista de ElevenLabs.
   const d = 100;
@@ -257,12 +261,12 @@ function componer() {
   // 1. Gancho: el gemelo 3D en movimiento desde el primer cuadro y la frase grande encima.
   {
     const x = S.gancho, g = E.gancho; const [s, d] = span(x);
-    video("g-vuelo", "bleedv", "assets/clips/vuelo.mp4", 0, d, 1);
-    html.push(`<style>#g-vuelo{width:1080px;height:1920px;object-fit:cover}</style>`);
+    video("g-vuelo", "bleedv", clipH("assets/clips/vuelo.mp4"), 0, d, 1);
+    html.push(`<style>#g-vuelo{width:${W}px;height:${H}px;object-fit:cover}</style>`);
     const ventanas = (g.ventanas || []).map((n, i) => {
       const colores = { Excel: "#1f7a43", ERP: "#2d5fa8", Correo: "#c4473b", WhatsApp: "#1f9e55", Cuaderno: "#8a6d3b" };
-      const cuerpo = n === "Excel" ? `<div class="grid">${"<span></span>".repeat(20)}</div>` : n === "WhatsApp" ? "Línea 2 parada desde las 6<br>¿Quién avisó a mantenimiento?" : n === "Correo" ? "RE: RE: pedido urgente<br>Adjunto versión final (3)" : n === "ERP" ? "PED-1184 · 2.400 und<br>Entrega: viernes" : "Turno noche:<br>molde 7 cambiado";
-      const pos = [[60, 700], [610, 770], [90, 1000], [580, 1080], [320, 1250]][i];
+      const cuerpo = n === "Excel" ? `<div class="grid">${"<span></span>".repeat(20)}</div>` : n === "WhatsApp" ? "Línea 2 parada desde las 6<br>¿Quién avisó a mantenimiento?" : n === "Correo" ? "RE: RE: pedido urgente<br>Adjunto versión final (3)" : n === "ERP" ? "PED-1184 · 2.400 und<br>Entrega: viernes" : "Turno noche:<br>línea 3 en ajuste";
+      const pos = (HORIZ ? [[1000, 120], [1460, 200], [1040, 420], [1470, 500], [1230, 700]] : [[60, 700], [610, 770], [90, 1000], [580, 1080], [320, 1250]])[i];
       return `<div class="win" id="win${i}" style="left:${pos[0]}px;top:${pos[1]}px"><div class="wb" style="background:${colores[n]}"><i></i>${n}</div><div class="wc">${cuerpo}</div></div>`;
     }).join("");
     clip("e-gancho", "scene", s, d, `
@@ -280,7 +284,7 @@ function componer() {
       const tE = enPalabra(x, "Están");
       g.ventanas.forEach((_, i) => at(`#win${i}`, { opacity: 0, scale: 0.6, rotate: (i % 2 ? 6 : -6) }, { opacity: 1, scale: 1, rotate: (i % 2 ? 3 : -3), duration: 0.45, ease: "back.out(1.8)" }, tE + i * 0.16));
       const tJ = enPalabra(x, "Júntalos");
-      g.ventanas.forEach((_, i) => to(`#win${i}`, { left: 340, top: 775, scale: 0.05, opacity: 0, rotate: 0, duration: 0.7, ease: "power3.in" }, tJ + i * 0.05));
+      g.ventanas.forEach((_, i) => to(`#win${i}`, { left: HORIZ ? 760 : 340, top: HORIZ ? 415 : 775, scale: 0.05, opacity: 0, rotate: 0, duration: 0.7, ease: "power3.in" }, tJ + i * 0.05));
       at("#e-gancho .flash", { opacity: 0, scale: 0.2 }, { opacity: 1, scale: 6, duration: 0.35, ease: "power2.out" }, tJ + 0.75);
       to("#e-gancho .flash", { opacity: 0, duration: 0.5 }, tJ + 1.1);
       sfx("gj", "whoosh-short.mp3", tJ, 0.3);
@@ -316,7 +320,7 @@ function componer() {
     const fin = s + d;
     const inicio = dl.saltarPrimero ? cortes[0] : s;
     if (dl.saltarPrimero) {
-      clip("d-intro", "scene", s, tarjetas[0] - s + 0.2, `<div class="bleed dim"><img src="assets/tomas/p-heroe.png" alt=""></div><div class="repetir">${(dl.intro || ["Copiar.", "Pegar.", "Repetir."]).map((t) => `<p>${t}</p>`).join("")}</div>`, 3);
+      clip("d-intro", "scene", s, tarjetas[0] - s + 0.2, `<div class="bleed dim"><img src="${tm("p-heroe")}" alt=""></div><div class="repetir">${(dl.intro || ["Copiar.", "Pegar.", "Repetir."]).map((t) => `<p>${t}</p>`).join("")}</div>`, 3);
       enter("d-intro", s);
       const span0 = tarjetas[0] - x.voiceAt;
       [0, 1, 2].forEach((k) => at(`#d-intro .repetir p:nth-child(${k + 1})`, { opacity: 0, x: -60 }, { opacity: 1, x: 0, duration: 0.4, ease: "power3.out" }, x.voiceAt + 0.2 + (k * span0) / 3.2));
@@ -326,7 +330,7 @@ function componer() {
       const a = k === 0 && !dl.saltarPrimero ? s : tarjetas[k] - 0.15;
       const b = k + 1 < tarjetas.length ? tarjetas[k + 1] + 0.15 : fin;
       const id = `ind${k}`;
-      clip(id, "scene ind", a, b - a, `<div class="bleed"><img src="assets/tomas/${img}.png" alt=""></div><div class="shade fuerte"></div>
+      clip(id, "scene ind", a, b - a, `<div class="bleed"><img src="${tm(img)}" alt=""></div><div class="shade fuerte"></div>
         <div class="lab"><span class="n">${String(k + 1).padStart(2, "0")} / 04</span><h3>${ind}</h3></div>
         <blockquote>“${frase}”</blockquote>${k === 3 && dl.remate ? `<div class="remate">${dl.remate.texto}</div>` : ""}`, 4 + k);
       at(`#${id}`, { opacity: 0, clipPath: "inset(0% 0% 0% 100%)" }, { opacity: 1, clipPath: "inset(0% 0% 0% 0%)", duration: 0.45, ease: "power3.inOut" }, a);
@@ -345,13 +349,13 @@ function componer() {
   if (so.tipo === "gemelo") {
     const x = sol; const [s, d] = span(x);
     const tG = enPalabra(x, "gemelo digital:"), tM = enPalabra(x, "Máquinas"), tL = enPalabra(x, "líneas"), tP = enPalabra(x, "personas"), tI = enPalabra(x, "inventarios"), tY = enPalabra(x, "Le das play"), tS = enPalabra(x, "Sirve igual");
-    const tPl = enPalabra(x, "plásticos"), tB = enPalabra(x, "bodega"), tSa = enPalabra(x, "salsas"), tR = enPalabra(x, "red de servicios");
-    video("s-lapso", "bleedv", "assets/clips/lapso.mp4", s, tPl - s + 0.6, 3);
-    html.push(`<style>#s-lapso{width:1080px;height:1920px;object-fit:cover}</style>`);
+    const tPl = enPalabra(x, "una fábrica,"), tB = enPalabra(x, "bodega"), tSa = enPalabra(x, "planta de procesos"), tR = enPalabra(x, "red de servicios");
+    video("s-lapso", "bleedv", clipH("assets/clips/lapso.mp4"), s, tPl - s + 0.6, 3);
+    html.push(`<style>#s-lapso{width:${W}px;height:${H}px;object-fit:cover}</style>`);
     const cuts = [["c-m", "p-inyectoras-2", tM, tL, "Máquinas"], ["c-l", "p-medio", tL, tP, "Líneas"], ["c-p", "p-personas", tP, tI, "Personas"], ["c-i", "p-silos", tI, tY, "Inventarios"],
-      ["c-pl", "p-heroe", tPl, tB, "Plásticos"], ["c-b", "logistica", tB, tSa, "Bodega"], ["c-sa", "salsas", tSa, tR, "Salsas"], ["c-r", "red", tR, s + d, "Red de servicios"]];
+      ["c-pl", "p-heroe", tPl, tB, "Fábrica"], ["c-b", "logistica", tB, tSa, "Bodega"], ["c-sa", "salsas", tSa, tR, "Procesos"], ["c-r", "red", tR, s + d, "Red de servicios"]];
     clip("e-sol", "scene", s, d, `
-      ${cuts.map(([id, img]) => `<div class="bleed cut" id="${id}"><img src="assets/tomas/${img}.png" alt=""></div>`).join("")}
+      ${cuts.map(([id, img]) => `<div class="bleed cut" id="${id}"><img src="${tm(img)}" alt=""></div>`).join("")}
       <div class="shade"></div>
       <div class="hud"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i><p class="live">● PROYECCIÓN · HORA POR HORA</p></div>
       <div class="top">${kick("", V.kicker)}</div>
@@ -384,19 +388,19 @@ function componer() {
   } else if (so.tipo === "integrator") {
     const x = sol; const [s, d] = span(x);
     const tE = enPalabra(x, "ERP"), tC = enPalabra(x, "CRM"), tS = enPalabra(x, "SCADA"), tN = enPalabra(x, "Ninguno"), tI = enPalabra(x, "Integrator"), tP = enPalabra(x, "Los pedidos entran"), tV = enPalabra(x, "el inventario"), tMq = enPalabra(x, "lo que pasa"), tSin = enPalabra(x, "Sin copiar"), tVer = enPalabra(x, "Sin versiones");
-    const SYS = [["ERP", "Ventas, compras e inventario", 70, 380], ["CRM", "Clientes y ventas", 590, 560], ["SCADA", "Vigila y controla las máquinas", 70, 740]];
+    const SYS = HORIZ ? [["ERP", "Ventas, compras e inventario", 120, 170], ["CRM", "Clientes y ventas", 1380, 170], ["SCADA", "Vigila y controla las máquinas", 750, 120]] : [["ERP", "Ventas, compras e inventario", 70, 380], ["CRM", "Clientes y ventas", 590, 560], ["SCADA", "Vigila y controla las máquinas", 70, 740]];
     const ancla = (i) => [SYS[i][2] + 210, SYS[i][3] + 150];
-    const core = [540, 1160];
+    const core = HORIZ ? [960, 690] : [540, 1160];
     const lin = SYS.map((_, i) => { const [ax, ay] = ancla(i); return `<line class="ok" id="ok${i}" x1="${ax}" y1="${ay}" x2="${core[0]}" y2="${core[1] - 150}" pathLength="1"/><circle class="pk" id="pk${i}" r="9" cx="${ax}" cy="${ay}"/>`; }).join("");
     const rotas = `<line id="rt0" x1="${ancla(0)[0] + 60}" y1="${ancla(0)[1] - 40}" x2="${ancla(1)[0] - 120}" y2="${ancla(1)[1] - 90}"/><line id="rt1" x1="${ancla(1)[0] - 120}" y1="${ancla(1)[1] + 40}" x2="${ancla(2)[0] + 60}" y2="${ancla(2)[1] - 60}"/><line id="rt2" x1="${ancla(0)[0] - 60}" y1="${ancla(0)[1]}" x2="${ancla(2)[0] - 60}" y2="${ancla(2)[1] - 140}"/>`;
     clip("e-sol", "scene", s, d, `
-      <div class="bleed dim"><img src="assets/tomas/p-heroe.png" alt=""></div>
+      <div class="bleed dim"><img src="${tm("p-heroe")}" alt=""></div>
       <div class="top">${kick("", V.kicker)}</div>
       <svg class="net" viewBox="0 0 ${W} ${H}">${rotas}${lin}</svg>
       ${SYS.map(([n, sub, l, t], i) => `<div class="sys" id="sy${i}" style="left:${l}px;top:${t}px"><b>${n}</b><small>${sub}</small></div>`).join("")}
-      <div class="cross" style="left:470px;top:470px" id="x0">✕</div><div class="cross" style="left:500px;top:780px" id="x1">✕</div>
+      <div class="cross" style="left:${HORIZ ? 590 : 470}px;top:${HORIZ ? 250 : 470}px" id="x0">✕</div><div class="cross" style="left:${HORIZ ? 1240 : 500}px;top:${HORIZ ? 250 : 780}px" id="x1">✕</div>
       <div class="core"><img src="assets/clips/marca.png" alt=""><span>Digital Twin</span></div>
-      <div class="stage3d"><div class="device" id="dv"><div class="shot" id="dv-s0"><img src="assets/tomas/ui-aps-pedidos.png" alt=""></div><div class="shot" id="dv-s1"><img src="assets/tomas/ui-aps-gantt.png" alt=""></div><div class="shot" id="dv-s2"><img src="assets/tomas/p-inyectoras-2.png" alt="" style="width:1000px;height:1778px;object-position:50% 40%;top:-500px"></div><div class="edge" id="dv-edge"></div></div></div>
+      <div class="stage3d"><div class="device" id="dv"><div class="shot" id="dv-s0"><img src="assets/tomas/ui-aps-pedidos.png" alt=""></div><div class="shot" id="dv-s1"><img src="assets/tomas/ui-aps-gantt.png" alt=""></div><div class="shot" id="dv-s2"><img src="${tm("p-inyectoras-2")}" alt="" style="${HORIZ ? "" : "width:1000px;height:1778px;object-position:50% 40%;top:-500px"}"></div><div class="edge" id="dv-edge"></div></div></div>
       <div class="stamp" id="st0">Sin copiar y pegar.</div><div class="stamp" id="st1" style="color:#4ea7ff">Una sola verdad.</div>`, 4);
     enter("e-sol", s);
     at("#e-sol .top", { opacity: 0 }, { opacity: 1, duration: 0.5 }, s + 0.2);
@@ -437,7 +441,7 @@ function componer() {
     const fin = s + d;
     const fuente = so.fuente;
     clip("e-sol", "scene", s, d, `
-      <div class="bleed dim"><img src="assets/tomas/p-heroe.png" alt=""></div>
+      <div class="bleed dim"><img src="${tm("p-heroe")}" alt=""></div>
       <div class="top">${kick("", V.kicker)}</div>
       <div class="apsT"><h2${so.titulo?.size ? ` style="font-size:${so.titulo.size}px;letter-spacing:-3px"` : ""}>${words(so.titulo?.grande || "APS")}</h2><p>${words(so.titulo?.nombre || "Planificación y programación avanzada")}</p><small>${words(so.titulo?.def || "Qué orden va en qué máquina, y a qué hora.")}</small></div>`, 3);
     enter("e-sol", s);
@@ -449,17 +453,23 @@ function componer() {
     so.clips.forEach((c, i) => {
       const a = tiempos_[i] - 0.25, b = (i + 1 < tiempos_.length ? tiempos_[i + 1] : tG) + 0.15;
       const dur = b - a;
-      const rel = `assets/clips/${VIDEO}-c${i}.mp4`;
+      const rel = `assets/clips/${VIDEO}-c${i}${HORIZ ? "-h" : ""}.mp4`;
       const [cx, cy, cw, ch] = c.crop || [158, 72, 1604, 904];
-      const h = Math.round((1000 * ch) / cw / 2) * 2;
-      if (!fs.existsSync(T(rel)) || JSON.parse(fs.readFileSync(T(rel + ".json"), "utf8") || "{}").k !== `${fuente}|${c.ss}|${dur.toFixed(2)}|${cx},${cy},${cw},${ch}`) {
-        sh("ffmpeg", ["-y", "-v", "error", "-ss", String(c.ss), "-t", (dur + 0.2).toFixed(2), "-i", fuente, "-vf", `crop=${cw}:${ch}:${cx}:${cy},scale=1000:${h}:flags=lanczos,fps=${FPS},format=yuv420p`, "-an", "-c:v", "libx264", "-crf", "14", "-preset", "slow", T(rel)]);
-        fs.writeFileSync(T(rel + ".json"), JSON.stringify({ k: `${fuente}|${c.ss}|${dur.toFixed(2)}|${cx},${cy},${cw},${ch}` }));
+      const PW = HORIZ ? 960 : 1000, PX = HORIZ ? 880 : 40;
+      const h = Math.round((PW * ch) / cw / 2) * 2;
+      if (!fs.existsSync(T(rel)) || JSON.parse(fs.readFileSync(T(rel + ".json"), "utf8") || "{}").k !== `${fuente}|${c.ss}|${dur.toFixed(2)}|${cx},${cy},${cw},${ch}|${PW}`) {
+        sh("ffmpeg", ["-y", "-v", "error", "-ss", String(c.ss), "-t", (dur + 0.2).toFixed(2), "-i", fuente, "-vf", `crop=${cw}:${ch}:${cx}:${cy},scale=${PW}:${h}:flags=lanczos,fps=${FPS},format=yuv420p`, "-an", "-c:v", "libx264", "-crf", "14", "-preset", "slow", T(rel)]);
+        fs.writeFileSync(T(rel + ".json"), JSON.stringify({ k: `${fuente}|${c.ss}|${dur.toFixed(2)}|${cx},${cy},${cw},${ch}|${PW}` }));
       }
-      const top = h > 700 ? 430 : 560;
-      clip(`pc${i}`, "scene", a, dur, `<div class="pframe" style="top:${top}px;height:${h}px"></div><p class="clab" style="top:${top + h + 40}px">${c.label}</p>`, 6 + i * 2);
+      const top = HORIZ ? Math.max(90, Math.round((880 - h) / 2)) : h > 700 ? 430 : 560;
+      clip(`pc${i}`, "scene", a, dur, `<div class="pframe" style="left:${PX}px;width:${PW}px;top:${top}px;height:${h}px"></div><p class="clab" style="top:${HORIZ ? 380 : top + h + 40}px">${c.label}</p>`, 6 + i * 2);
       video(`pv${i}`, "pvid", rel, a, dur, 7 + i * 2);
-      html.push(`<style>#pv${i}{left:40px;top:${top}px;width:1000px;height:${h}px}</style>`);
+      html.push(`<style>#pv${i}{left:${PX}px;top:${top}px;width:${PW}px;height:${h}px}</style>`);
+      if (c.tapar || c.marca) {
+        const k = PW / cw;
+        clip(`pt${i}`, "scene", a, dur, `${(c.tapar || []).map((t) => `<div class="tapa ${t.cls || ""}" style="left:${PX + Math.round(t.x * k)}px;top:${top + Math.round(t.y * k)}px;width:${Math.round(t.w * k)}px;height:${Math.round(t.h * k)}px">${t.html || ""}</div>`).join("")}${c.marca ? `<div class="marcaN" style="top:${top - 90}px;${HORIZ ? `left:${PX}px;width:${PW}px;right:auto;text-align:center` : ""}">${c.marca}</div>` : ""}`, 41 + i);
+        at(`#pt${i} .marcaN`, { opacity: 0, scale: 1.3 }, { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(2)" }, a + 0.8);
+      }
       at(`#pc${i} .pframe`, { opacity: 0, scale: 0.92 }, { opacity: 1, scale: 1, duration: 0.35, ease: "power3.out" }, a);
       at(`#pv${i}`, { opacity: 0, clipPath: "inset(0% 0% 0% 100% round 18px)" }, { opacity: 1, clipPath: "inset(0% 0% 0% 0% round 18px)", duration: 0.45, ease: "power3.inOut" }, a);
       at(`#pc${i} .clab`, { opacity: 0, x: -40 }, { opacity: 1, x: 0, duration: 0.4, ease: "power3.out" }, a + 0.2);
@@ -468,9 +478,9 @@ function componer() {
       sfx(`pc${i}`, "click-soft.mp3", a, 0.2);
     });
     // Y el gemelo muestra la planta con ese plan.
-    video("s-lapso", "bleedv", "assets/clips/lapso.mp4", tG - 0.3, fin - tG + 0.3, 30);
-    html.push(`<style>#s-lapso{width:1080px;height:1920px;object-fit:cover}</style>`);
-    clip("s-g3d", "scene", tG - 0.3, fin - tG + 0.3, `<div class="tag3d" style="top:300px"><i></i>GEMELO DIGITAL 3D · CON TU PLAN</div>`, 31);
+    video("s-lapso", "bleedv", clipH("assets/clips/lapso.mp4"), tG - 0.3, fin - tG + 0.3, 30);
+    html.push(`<style>#s-lapso{width:${W}px;height:${H}px;object-fit:cover}</style>`);
+    clip("s-g3d", "scene", tG - 0.3, fin - tG + 0.3, `<div class="tag3d" style="top:${HORIZ ? 80 : 300}px"><i></i>GEMELO DIGITAL 3D · CON TU PLAN</div>`, 31);
     at("#s-lapso", { opacity: 0, scale: 1.15 }, { opacity: 1, scale: 1.02, duration: 0.8, ease: "power2.out" }, tG - 0.3);
     at("#s-g3d .tag3d", { opacity: 0, x: -40 }, { opacity: 1, x: 0, duration: 0.5, ease: "back.out(2)" }, tG);
     sfx("s0", "whoosh.wav", s, 0.25); sfx("sg", "whoosh-short.mp3", tG - 0.3, 0.25);
@@ -481,7 +491,7 @@ function componer() {
   {
     const x = S.modulos; const [s, d] = span(x);
     const n = V.modulo;
-    const C = { x: 540, y: 930 }, RX = 365, RY = 470, MW = 310;
+    const C = HORIZ ? { x: 960, y: 560 } : { x: 540, y: 930 }, RX = HORIZ ? 620 : 365, RY = HORIZ ? 310 : 470, MW = 310;
     const P = MOD.map((_, i) => { const a = -Math.PI / 2 + (i * 2 * Math.PI) / 7; return { x: Math.round(C.x + RX * Math.cos(a)), y: Math.round(C.y + RY * Math.sin(a)) }; });
     const titulo = n === 0 ? "Un núcleo. Siete módulos." : `Módulo ${n} de 7`;
     clip("e-mod", "scene", s, d, `
@@ -523,7 +533,7 @@ function componer() {
     const x = S.cierre, c = E.cierre; const [s, d] = span(x);
     const tA = enPalabra(x, "Arvantti"), tD = enPalabra(x, "Decide");
     clip("e-cierre", "scene", s, d, `
-      <div class="bleed" id="c-bg"><img src="assets/tomas/p-heroe.png" alt=""></div>
+      <div class="bleed" id="c-bg"><img src="${tm("p-heroe")}" alt=""></div>
       <div class="cta">${c.cta}</div>
       <div class="fin"><img class="marca" src="assets/clips/marca.png" alt=""><h1>Arvantti <span>Digital Twin</span></h1><p class="firma">Decide antes de que pase.</p><p class="url">digitaltwin.arvantti.online</p>${c.sigue ? `<div><p class="sigue">${c.sigue}</p></div>` : ""}</div>`, 3);
     enter("e-cierre", s);
@@ -563,7 +573,9 @@ function componer() {
   if (mez) audio("musica", mez, 0, total, fs.existsSync(T("assets/clips/musica-serie.mp3")) ? 0.5 : 0.22);
   if (temporal) html.push(`<div id="temp" class="clip" data-start="0" data-duration="${total.toFixed(2)}" data-track-index="90">SIN VOZ · TIEMPOS ESTIMADOS</div>`);
 
-  const out = fs.readFileSync(T("plantilla.tpl"), "utf8")
+  let base = fs.readFileSync(T("plantilla.tpl"), "utf8");
+  if (HORIZ) base = base.replaceAll("width:1080px;height:1920px", "width:1920px;height:1080px").replace('data-width="1080" data-height="1920"', 'data-width="1920" data-height="1080"').replace('data-resolution="portrait"', 'data-resolution="landscape"').replace("width=1080, height=1920", "width=1920, height=1080").replace("</style>", `${fs.readFileSync(T("plantilla-h.css"), "utf8")}\n</style>`);
+  const out = base
     .replaceAll("{{TOTAL}}", total.toFixed(2))
     .replace("{{CLIPS}}", html.join("\n"))
     .replace("{{TIMELINE}}", tl.join("\n"));
@@ -574,7 +586,7 @@ function componer() {
 
 function render(v = "v001") {
   fs.mkdirSync(T("out"), { recursive: true });
-  const out = T(`out/${cfg().salida}-${v}.mp4`);
+  const out = T(`out/${cfg().salida}${HORIZ ? "-h" : ""}-${v}.mp4`);
   execFileSync("pnpm", ["dlx", "hyperframes@0.9.9", "render", "-o", out, "--fps", String(FPS), "--quality", process.env.QUALITY || "high", "--video-frame-format", "png", ...(process.env.HF_ARGS ? process.env.HF_ARGS.split(" ") : [])], { cwd: HERE, stdio: "inherit" });
   console.log(out);
 }

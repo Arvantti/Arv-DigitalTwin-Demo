@@ -12,8 +12,9 @@ const { chromium } = require("playwright");
 
 const BASE = (process.env.GALLERY_URL || "http://localhost:5173").replace(/\/$/, "");
 const NOW = "now=2026-11-04T10:00";
-const OUT = path.join(__dirname, "assets/tomas");
-const VW = 1080, VH = 1920;
+const HORIZ = process.env.ORIENT === "h";
+const OUT = path.join(__dirname, HORIZ ? "assets/tomas-h" : "assets/tomas");
+const VW = HORIZ ? 1920 : 1080, VH = HORIZ ? 1080 : 1920;
 const which = process.argv[2] || "todo";
 fs.mkdirSync(OUT, { recursive: true });
 const click = (pg, sel) => pg.$eval(sel, (e) => e.dispatchEvent(new MouseEvent("click", { bubbles: true })));

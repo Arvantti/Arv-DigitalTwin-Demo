@@ -19,22 +19,22 @@
   "id": "solucion",
   "start": 19.04,
   "voiceAt": 19.34,
-  "voz": 46.68,
-  "dur": 47.58,
+  "voz": 41.95,
+  "dur": 42.85,
   "real": true
  },
  {
   "id": "modulos",
-  "start": 66.62,
-  "voiceAt": 66.92,
+  "start": 61.89,
+  "voiceAt": 62.19,
   "voz": 4.05,
   "dur": 5.35,
   "real": true
  },
  {
   "id": "cierre",
-  "start": 71.97,
-  "voiceAt": 72.37,
+  "start": 67.24,
+  "voiceAt": 67.64,
   "voz": 12.04,
   "dur": 15.04,
   "real": true

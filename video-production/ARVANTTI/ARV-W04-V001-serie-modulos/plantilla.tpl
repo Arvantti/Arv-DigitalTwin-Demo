@@ -136,6 +136,9 @@ html,body{width:1080px;height:1920px;margin:0;overflow:hidden;background:var(--b
 .apsT small{display:block;margin-top:34px;font:600 44px/1.25 Inter,sans-serif;color:#b9c7dd}
 .pframe{position:absolute;left:40px;width:1000px;border-radius:18px;background:#0b1224;box-shadow:0 0 0 1.5px #4ea7ff88,0 40px 120px #000c,0 0 90px #2d7ff944;opacity:0}
 .pvid{position:absolute;border-radius:18px;object-fit:cover}
+.tapa{position:absolute;background:#0b1430;display:flex;align-items:center;padding:0 16px;font:600 25px Inter,sans-serif;color:#cfd8ea;border-radius:6px}
+.tapa.t-err{border:2px solid #f0a020;color:#ff6b5b;background:#0d1530}
+.marcaN{position:absolute;left:0;right:0;margin:0 auto;width:max-content;padding:10px 26px;border-radius:10px;background:#f5a623;color:#111;font:800 40px Inter,sans-serif;opacity:0}
 .clab{position:absolute;left:60px;right:60px;margin:0;text-align:center;font:800 56px/1.12 "Inter Display",Inter,sans-serif;letter-spacing:-1px;color:#fff;text-shadow:0 4px 30px #000;opacity:0}
 .clab b{color:var(--electric)}
 .sub{position:absolute;left:60px;right:60px;top:1395px;height:180px;display:flex;align-items:center;justify-content:center;text-align:center}

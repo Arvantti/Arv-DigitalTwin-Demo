@@ -33,7 +33,7 @@
       "items": [
         [
           "Manufactura",
-          "Solo el jefe de turno sabe que después del negro hay que purgar dos veces antes de sacar blanco.",
+          "Solo el jefe de turno sabe que después de un producto oscuro hay que limpiar dos veces antes de uno claro.",
           "p-inyectoras"
         ],
         [
@@ -65,16 +65,16 @@
       "siglaEn": "es un cosimulador",
       "definicionEn": "y que tú entrenas",
       "gemeloEn": "Y antes de que",
-      "voz": "CoSimulation es un cosimulador: un simulador que trabaja junto al programador automático y que tú entrenas con las reglas de tu empresa. Antes de calcular nada, le enseñas las reglas de negocio y de producción: qué molde va en cada máquina, los turnos, lo que ya empezó y no se mueve, y cuánto cuesta cada purga de color. Se las enseñas una vez y las respeta siempre. Solo entonces eliges un objetivo, como cumplir las entregas, y calcula: casi cinco mil variables en menos de un segundo. En la planta de plásticos, las entregas a tiempo suben de noventa coma tres a noventa y dos coma cinco por ciento, y quedan noventa horas de máquina libres en la semana. Y antes de que se rompa en la planta, el gemelo te muestra la semana con ese plan. El conocimiento de tu gente se queda en la empresa.",
+      "voz": "CoSimulation es un cosimulador: un simulador que trabaja junto al programador automático y que tú entrenas con las reglas de tu empresa. Antes de calcular nada, le enseñas las reglas de negocio y de producción: qué equipo puede hacer cada producto, los turnos, lo que ya empezó y no se mueve, y cuánto tarda cada cambio o limpieza. Se las enseñas una vez y las respeta siempre. Solo entonces eliges un objetivo, como cumplir las entregas, y calcula: miles de variables en menos de un segundo. Así cumple más entregas a tiempo y libera horas de máquina en la semana. Y antes de que se rompa en la planta, el gemelo te muestra la semana con ese plan. El conocimiento de tu gente se queda en la empresa.",
       "clips": [
         {
           "desde": "Antes de calcular nada",
-          "ss": 257,
+          "ss": 207,
           "crop": [
-            460,
+            300,
             72,
             1000,
-            830
+            764
           ],
           "label": "Antes de calcular, <b>le enseñas tus reglas</b>"
         },
@@ -85,9 +85,9 @@
             700,
             72,
             1000,
-            830
+            764
           ],
-          "label": "Cada purga, con su <b>tiempo real</b>"
+          "label": "Cada cambio, con su <b>tiempo real</b>"
         },
         {
           "desde": "Solo entonces eliges",
@@ -96,7 +96,7 @@
             460,
             72,
             1000,
-            830
+            764
           ],
           "label": "Solo entonces, <b>un objetivo</b>"
         },
@@ -107,31 +107,31 @@
             560,
             72,
             1000,
-            830
+            764
           ],
-          "label": "<b>4.877 variables</b>, menos de un segundo"
+          "label": "<b>Miles de variables</b> en menos de un segundo"
         },
         {
-          "desde": "En la planta de plásticos",
+          "desde": "Así cumple",
           "ss": 371,
           "crop": [
             460,
             72,
             1000,
-            830
+            764
           ],
-          "label": "De <b>90,3 %</b> a <b>92,5 %</b> a tiempo"
+          "label": "<b>Más entregas</b> a tiempo"
         },
         {
-          "desde": "y quedan noventa",
+          "desde": "y libera horas",
           "ss": 382,
           "crop": [
             700,
             72,
             1000,
-            830
+            764
           ],
-          "label": "<b>90 horas</b> de máquina libres"
+          "label": "<b>Horas de máquina</b> libres"
         }
       ]
     },
