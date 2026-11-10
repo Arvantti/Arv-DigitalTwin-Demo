@@ -583,15 +583,15 @@ function componer() {
     leave("e-equipo", s + d);
   }
 
-  // 12. Cierre: firma, licencia gratuita y llamada a la acción.
+  // 12. Cierre: firma, acompañamiento y llamada a la acción.
   {
     const x = S.cierre; const [s, d] = span(x);
-    const tR = enPalabra(x, "La inteligencia"), tD = enPalabra(x, "Tú decides"), tL = enPalabra(x, "La licencia"), tA = enPalabra(x, "Agenda");
+    const tR = enPalabra(x, "La inteligencia"), tD = enPalabra(x, "Tú decides"), tL = enPalabra(x, "Te acompañamos"), tA = enPalabra(x, "Agenda");
     clip("e-cierre", "scene", s, d, `
       <svg class="estela" viewBox="0 0 1080 1920" preserveAspectRatio="xMidYMid slice"><path id="p2" d="M-60 420 C 260 420 380 300 540 360 S 860 470 1140 330" pathLength="1"/></svg>
       <div class="fin"><img class="marca" src="assets/clips/marca.png" alt=""><h1>Arvantti <span>Harness®</span></h1>
         <p class="firma">${words("Tú decides qué puede tocar.")}</p>
-        <p class="lic"><b>Licencia gratuita</b> · te acompañamos a implementarla</p>
+        <p class="lic">Te acompañamos a <b>implementarlo</b></p>
         <div class="boton">Agenda tu sesión <span class="flecha">→</span></div>
         <p class="url">arvantti.tech</p><p class="pie">Arvantti Labs · una marca de Sequoia Space</p></div>`, 3);
     enter("e-cierre", s);
