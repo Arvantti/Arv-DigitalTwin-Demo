@@ -12,13 +12,17 @@
  * - falla: una máquina quedó fuera de servicio en el emulador; ¿esperar la reparación o desviar a otra máquina?
  * - cambios: menos cambios de referencia (montaje de molde, purgas de resina y color, con los tiempos de
  *   catalog/changeovers.yaml) sin atrasar pedidos: dedicar un color a cada máquina.
+ * - energia: menos kWh (catalog/energy.yaml, solo kWh): dejar las inyectoras calientes de noche frente a apagarlas
+ *   fuera de turno (calientan antes del primer lote), y apagar y agrupar la producción en menos días-máquina con las
+ *   máquinas que gastan menos por pieza (objetivo "energia" del cosimulador), sin atrasar pedidos.
  * - fijadas: el planificador bloqueó a mano (🔒) algunas órdenes en el Gantt; ¿cómo organizar el resto sin moverlas?
  *   En todos los escenarios las órdenes fijadas se respetan: ninguna opción mueve sus lotes.
  */
 import type { CustomerOrders, PlannedStop, PlantEvent, ProductionPlan } from "@twin/cosim/core/contracts.ts";
 import { iso, parseLocal } from "@twin/cosim/core/time.ts";
 import { buildModel, type CatalogData, type PlasticsModel } from "@twin/cosim/adapters/plastic-injection-plant-v1/model.ts";
-import { solve, type HighsLike } from "@twin/cosim/adapters/plastic-injection-plant-v1/solve.ts";
+import { solve, type HighsLike, type Objective } from "@twin/cosim/adapters/plastic-injection-plant-v1/solve.ts";
+import { energyFrom, planEnergy } from "@twin/cosim/adapters/plastic-injection-plant-v1/energy.ts";
 import type { FractalStudy, Lever, Scenario, StudyOption } from "../../contracts.ts";
 
 const WINDOW_DAYS = 7;
@@ -52,7 +56,9 @@ interface Variant {
   portfolio?: CustomerOrders;
   orderChanges?: ProductionPlan["order_changes"];
   /** Opciones del cosimulador para esta combinación. */
-  solver?: { colors?: boolean; dedicateColors?: boolean };
+  solver?: { colors?: boolean; dedicateColors?: boolean; objective?: Objective };
+  /** Qué hacen las inyectoras fuera de turno en esta opción (energía). */
+  overnight?: "apagar" | "caliente";
 }
 
 type Setup = Record<string, { tooling: string; color?: string }>;
@@ -119,6 +125,7 @@ const maxOf = (loads: Record<string, number>) =>
 let day0 = 0;
 const hm = (iso: string) => `día ${Math.round((Date.parse(`${iso.slice(0, 10)}T00:00:00Z`) - day0) / 864e5)} ${iso.slice(11, 16)}`;
 const label = (m: string) => m.replace("assembly-", "ensamble-").toUpperCase();
+const fmtK = (x: number) => Math.round(x).toLocaleString("es-CO");
 
 export async function runStudy(newHighs: () => Promise<HighsLike>, cat: CatalogData, input: StudyInput): Promise<FractalStudy> {
   const t0 = Date.now();
@@ -191,6 +198,13 @@ export async function runStudy(newHighs: () => Promise<HighsLike>, cat: CatalogD
     const dedicate = busy.filter((m) => baseModel.initialColor[m]).map((m) => `${label(m)} queda en ${baseModel.initialColor[m]!.replace(/^mb-/, "")}`);
     variants.push({ label: "Solo recolocar la secuencia", levers: [{ kind: "recalcular", text: "Recolocar con el cosimulador como hoy" }] });
     variants.push({ label: "Dedicar un color por máquina", levers: [{ kind: "dedicar-color", text: `Cada color solo en las máquinas que ya lo tienen montado${dedicate.length ? `: ${dedicate.join(", ")}` : ""}` }], solver: { dedicateColors: true } });
+  } else if (input.scenario === "energia") {
+    if (!baseModel.energy) throw new Error("La planta no tiene datos de energía (catalog/energy.yaml).");
+    const e = energyFrom(baseModel, input.previous, now)!;
+    question = `¿Cómo gastar menos energía sin atrasar pedidos? Desde ahora la vigente gasta ${fmtK(e.kwh)} kWh con ${e.heatups} calentamientos en frío (las inyectoras se apagan fuera de turno y calientan antes del primer lote del día).`;
+    variants.push({ label: "Dejarlas calientes de noche", levers: [{ kind: "espera-caliente", text: "Recolocar como hoy, pero sin apagar las inyectoras entre turnos: espera caliente de 22:00 a 06:00 y el domingo, sin calentamientos" }], overnight: "caliente" });
+    variants.push({ label: "Apagarlas fuera de turno", levers: [{ kind: "apagar", text: "Recolocar como hoy: apagadas de 22:00 a 06:00 y el domingo, con calentamiento antes del primer lote del día" }] });
+    variants.push({ label: "Apagar y agrupar la producción", levers: [{ kind: "apagar", text: "Apagadas fuera de turno" }, { kind: "agrupar", text: "El cosimulador con objetivo energía: menos días-máquina encendidos y cada pieza en la máquina que gasta menos" }], solver: { objective: "energia" } });
   } else {
     const ev = events.find((e) => failed.has(e.equipment));
     if (!ev) throw new Error("No hay ninguna máquina fuera de servicio en el emulador.");
@@ -219,6 +233,11 @@ export async function runStudy(newHighs: () => Promise<HighsLike>, cat: CatalogD
     const merged = { ...molds, ...(v.molds ?? {}) };
     const model = modelFor(cat, merged);
     const plan = solve(await newHighs(), model, v.portfolio ?? portfolio, { now: input.now, previous: input.previous, events, stops: v.stops, planId: id, fixed, ...(v.solver ?? {}) });
+    if (v.overnight && plan.energy && v.overnight !== plan.energy.overnight) {
+      const e = planEnergy(model, plan, v.overnight)!;
+      plan.energy = e;
+      Object.assign(plan.kpis, { energy_kwh: e.kwh, kwh_per_kg: e.kwh_per_kg, peak_kw: e.peak_kw });
+    }
     plan.source = "fractal";
     plan.status = "propuesta";
     plan.notes = [`Fractal · ${v.label}.`, ...v.levers.map((l) => l.text)];
@@ -230,19 +249,24 @@ export async function runStudy(newHighs: () => Promise<HighsLike>, cat: CatalogD
     const k = plan.kpis;
     // Atraso ante todo; luego pedidos tarde, horas de montaje y cambios de referencia; al balancear pesa la carga
     // máxima (más aún por encima del objetivo) y en "cambios" pesan las horas de cambio.
+    const en = input.scenario === "energia" ? energyFrom(model, plan, now) : undefined;
     const score =
+      (en ? en.kwh / 100 : 0) +
       k.tardiness_h +
       20 * k.late_orders +
       2 * moldH +
       0.5 * k.changeovers +
       (input.scenario === "balancear" || input.scenario === "fijadas" ? 1.5 * max.pct + 3 * Math.max(0, max.pct - TARGET_LOAD) : 0) +
       (input.scenario === "cambios" ? 2 * k.changeover_h : 0);
-    options.push({ id, label: v.label, levers: v.levers, kpis: k, loads, max_load: max, mold_change_h: Math.round(moldH * 10) / 10, score: Math.round(score * 10) / 10, plan });
+    options.push({ id, label: v.label, levers: v.levers, kpis: k, loads, max_load: max, mold_change_h: Math.round(moldH * 10) / 10, ...(en ? { energy: en } : {}), score: Math.round(score * 10) / 10, plan });
   }
   const best = options.reduce((a, b) => (b.score < a.score ? b : a));
   const first = options[0];
+  const hot = options.find((o) => o.energy?.overnight === "caliente");
   const why =
-    input.scenario === "cambios"
+    input.scenario === "energia" && best.energy
+      ? `Desde ahora gasta ${fmtK(best.energy.kwh)} kWh con ${best.energy.heatups} calentamientos${hot?.energy && hot !== best ? `, ${fmtK(hot.energy.kwh - best.energy.kwh)} kWh menos que dejarlas calientes de noche (${Math.round((100 * (hot.energy.kwh - best.energy.kwh)) / hot.energy.kwh)} %)` : ""}. Pedidos tarde: ${best.kpis.late_orders}${best.kpis.late_orders <= input.previous.kpis.late_orders ? ", ninguno más que la vigente" : ""}.`
+      : input.scenario === "cambios"
       ? best === first
         ? "Recolocar ya da los menos cambios sin atrasar pedidos."
         : `Frente a solo recolocar (${first.kpis.changeovers} cambios, ${first.kpis.changeover_h} h de cambio, ${first.kpis.late_orders} tarde), queda con ${best.kpis.changeovers} cambios, ${best.kpis.changeover_h} h de cambio y ${best.kpis.late_orders} tarde.`
@@ -256,7 +280,7 @@ export async function runStudy(newHighs: () => Promise<HighsLike>, cat: CatalogD
     scenario: input.scenario,
     question,
     now: nowIso,
-    baseline: { plan_id: input.previous.plan_id, kpis: input.previous.kpis, loads: baseLoads, max_load: maxOf(baseLoads) },
+    baseline: { plan_id: input.previous.plan_id, kpis: input.previous.kpis, loads: baseLoads, max_load: maxOf(baseLoads), ...(input.scenario === "energia" && baseModel.energy ? { energy: energyFrom(baseModel, input.previous, now) } : {}) },
     options,
     best: best.id,
     recommendation: `Recomendación: ${best.label.charAt(0).toLowerCase()}${best.label.slice(1)}. ${why}`,

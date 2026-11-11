@@ -258,12 +258,12 @@ function renderProposal(): void {
 }
 
 /** Objetivos que el cosimulador puede optimizar, uno por corrida. Energía queda pendiente: no hay datos en el APS. */
-const OBJECTIVE_OPTIONS: { id: Objective | "energia"; label: string; detail: string; pending?: boolean }[] = [
+const OBJECTIVE_OPTIONS: { id: Objective; label: string; detail: string; pending?: boolean }[] = [
   { id: "entregas", label: "Cumplir entregas", detail: "Terminar cada pedido a tiempo, primero los de importancia alta (hoy es el cálculo de siempre)." },
   { id: "cambios", label: "Minimizar cambios de molde y color", detail: "Menos referencias encendidas por turno; cada cambio cuesta montaje y purgas de catalog/changeovers.yaml. En prueba: sin entregas en cuenta, puede dejar pedidos tarde." },
   { id: "cuellos", label: "Balancear cuellos de botella", detail: "Que ninguna inyectora quede más cargada que las demás. En prueba: sin entregas en cuenta, puede dejar pedidos tarde." },
   { id: "capacidad", label: "Maximizar capacidad ocupada", detail: "Llenar las máquinas desde el inicio y terminar la cartera antes (con demanda fija, es terminar pronto)." },
-  { id: "energia", label: "Mejorar consumo energético", detail: "Pendiente: falta energía por arranque y por llegar a la temperatura de fusión en el APS. Hoy solo hay potencia nominal por equipo.", pending: true },
+  { id: "energia", label: "Mejorar consumo energético", detail: "Menos kWh sin atrasar pedidos: cada pieza en la inyectora que gasta menos y menos días-máquina encendidos (cada día cuesta un calentamiento en frío). Los kW salen del modelo físico (catalog/energy.yaml)." },
 ];
 const OBJECTIVE_LABEL = Object.fromEntries(OBJECTIVE_OPTIONS.map((o) => [o.id, o.label])) as Record<string, string>;
 
@@ -1312,7 +1312,7 @@ let fractalWorker: Worker | null = null;
 let studyN = 0;
 /** Plan sobre el que corrió el estudio: la vigente, o el plan que se veía con órdenes fijadas. */
 let studyBase: ProductionPlan | null = null;
-const SCENARIO_NAMES: Record<string, string> = { adelantar: "ADELANTAR UN PEDIDO", balancear: "BALANCEAR LA OCUPACIÓN", falla: "FALLA EN CURSO", fijadas: "ÓRDENES FIJADAS", cambios: "MENOS CAMBIOS DE REFERENCIA" };
+const SCENARIO_NAMES: Record<string, string> = { adelantar: "ADELANTAR UN PEDIDO", balancear: "BALANCEAR LA OCUPACIÓN", falla: "FALLA EN CURSO", fijadas: "ÓRDENES FIJADAS", cambios: "MENOS CAMBIOS DE REFERENCIA", energia: "MENOS ENERGÍA" };
 
 function runFractal(input: Omit<StudyInput, "portfolio" | "now" | "previous" | "events" | "molds" | "studyId">): void {
   studyError = "";
@@ -1385,6 +1385,12 @@ function renderFractal(): void {
       { label: "Cambios de referencia", a: s.baseline.kpis.changeovers, b: o.kpis.changeovers, fmt: (x) => nf(x, 0), menos: true },
       { label: "Ocupación planta", a: occA, b: occB, fmt: (x) => `${nf(x, 1)} %`, menos: true, pts: true },
       { label: `Carga máxima`, a: s.baseline.max_load.pct, b: o.max_load.pct, fmt: (x) => `${nf(x, 0)} %`, menos: true, pts: true },
+      ...(s.baseline.energy && o.energy
+        ? [
+            { label: "Energía desde ahora", a: s.baseline.energy.kwh, b: o.energy.kwh, fmt: (x: number) => `${nf(x, 0)} kWh`, menos: true },
+            { label: "Calentamientos en frío", a: s.baseline.energy.heatups, b: o.energy.heatups, fmt: (x: number) => nf(x, 0), menos: true },
+          ]
+        : []),
     ];
   };
   const scenarioCard = (key: string, n: number, body: string, button: string, extra = "") =>
@@ -1409,6 +1415,8 @@ function renderFractal(): void {
         `<button id="fr-run-fijadas" class="primary"${pinned.length && !studying ? "" : " disabled"}>◆ ESTUDIAR</button>`)}
       ${scenarioCard("cambios", 5, `<p class="fr-desc">La vigente tiene <b>${nf(current.kpis.changeovers)} cambios</b> y <b>${nf(current.kpis.changeover_h ?? 0, 1)} h</b> de montaje y purga. ¿Cómo hacer menos sin atrasar pedidos?</p>`,
         `<button id="fr-run-cambios" class="primary"${studying ? " disabled" : ""}>◆ ESTUDIAR</button>`)}
+      ${scenarioCard("energia", 6, `<p class="fr-desc">La vigente gasta <b>${nf(energyOf(current).kwh, 0)} kWh</b> (${nf(energyOf(current).kwh_per_kg, 2)} kWh/kg). ¿Apagar o dejar calientes las inyectoras de noche, y cómo agrupar la producción para gastar menos sin atrasar pedidos?</p>`,
+        `<button id="fr-run-energia" class="primary"${studying || !model.energy ? " disabled" : ""}>◆ ESTUDIAR</button>`)}
     </div>
     ${studying ? `<p class="fr-status"><span class="spin">◌</span> ${esc(studying)}</p>` : ""}
     ${studyError ? `<p class="fr-status bad">${esc(studyError)}</p>` : ""}
@@ -1426,15 +1434,15 @@ function renderFractal(): void {
         </div>
         <div class="fr-k fr-sub">TODAS LAS OPCIONES · cualquiera se puede ver en el Gantt o adoptar</div>
         <div class="aps-table-wrap"><table class="route-table aps-table fr-table">
-          <thead><tr><th>Opción</th><th>Qué cambia</th><th class="num">A tiempo</th><th class="num">Tarde</th><th class="num">Atraso</th><th class="num">Cambios</th><th class="num">Montaje de moldes</th><th class="num">Ocupación planta</th><th>Carga máxima</th><th class="num">Puntaje</th><th></th></tr></thead>
+          <thead><tr><th>Opción</th><th>Qué cambia</th><th class="num">A tiempo</th><th class="num">Tarde</th><th class="num">Atraso</th><th class="num">Cambios</th><th class="num">Montaje de moldes</th><th class="num">Ocupación planta</th><th>Carga máxima</th>${study.baseline.energy ? '<th class="num">Energía desde ahora</th>' : ""}<th class="num">Puntaje</th><th></th></tr></thead>
           <tbody>
-            <tr class="past"><td>${studyBase && studyBase !== current ? "ACTUAL" : "VIGENTE"}</td><td>${esc(SOURCE_NAMES[(studyBase ?? current).source])} ${esc(study.baseline.plan_id)}</td><td class="num">${nf(study.baseline.kpis.on_time_pct, 1)} %</td><td class="num">${study.baseline.kpis.late_orders}</td><td class="num">${nf(study.baseline.kpis.tardiness_h, 1)} h</td><td class="num">${study.baseline.kpis.changeovers} · ${nf(study.baseline.kpis.changeover_h ?? 0, 1)} h</td><td class="num">—</td><td class="num">${pctTxt(occOf(studyBase ?? current, loadIds(studyBase ?? current)).occupancy)}</td><td>${esc(machineLabel(study.baseline.max_load.equipment))} ${nf(study.baseline.max_load.pct, 0)} %</td><td></td><td></td></tr>
+            <tr class="past"><td>${studyBase && studyBase !== current ? "ACTUAL" : "VIGENTE"}</td><td>${esc(SOURCE_NAMES[(studyBase ?? current).source])} ${esc(study.baseline.plan_id)}</td><td class="num">${nf(study.baseline.kpis.on_time_pct, 1)} %</td><td class="num">${study.baseline.kpis.late_orders}</td><td class="num">${nf(study.baseline.kpis.tardiness_h, 1)} h</td><td class="num">${study.baseline.kpis.changeovers} · ${nf(study.baseline.kpis.changeover_h ?? 0, 1)} h</td><td class="num">—</td><td class="num">${pctTxt(occOf(studyBase ?? current, loadIds(studyBase ?? current)).occupancy)}</td><td>${esc(machineLabel(study.baseline.max_load.equipment))} ${nf(study.baseline.max_load.pct, 0)} %</td>${study.baseline.energy ? `<td class="num">${nf(study.baseline.energy.kwh, 0)} kWh<br/><small>${study.baseline.energy.heatups} calentamientos</small></td>` : ""}<td></td><td></td></tr>
             ${study.options
               .map((o) => {
                 const ks = kpisOf(study!, o.id);
                 const cell = (k: Kpi, txt: string) => `<td class="num">${txt}<br/>${delta(k)}</td>`;
                 return `<tr class="${o.id === study!.best ? "best" : ""}"><td><b class="fr-opt">${esc(o.id.split("-").at(-1)!)}</b>${o.id === study!.best ? ' <span class="chip done">MEJOR</span>' : ""}</td><td><b>${esc(o.label)}</b><br/><small>${o.levers.map((l) => esc(l.text)).join(" · ")}</small></td>
-                ${cell(ks[0], `${nf(o.kpis.on_time_pct, 1)} %`)}${cell(ks[1], String(o.kpis.late_orders))}${cell(ks[2], `${nf(o.kpis.tardiness_h, 1)} h`)}${cell(ks[3], `${o.kpis.changeovers} · ${nf(o.kpis.changeover_h ?? 0, 1)} h`)}<td class="num">${o.mold_change_h ? `${nf(o.mold_change_h, 1)} h` : "—"}</td>${cell(ks[4], pctTxt(occOf(o.plan, loadIds(o.plan)).occupancy))}<td>${esc(machineLabel(o.max_load.equipment))} ${nf(o.max_load.pct, 0)} %<br/>${delta(ks[5])}</td><td class="num">${nf(o.score, 1)}</td>
+                ${cell(ks[0], `${nf(o.kpis.on_time_pct, 1)} %`)}${cell(ks[1], String(o.kpis.late_orders))}${cell(ks[2], `${nf(o.kpis.tardiness_h, 1)} h`)}${cell(ks[3], `${o.kpis.changeovers} · ${nf(o.kpis.changeover_h ?? 0, 1)} h`)}<td class="num">${o.mold_change_h ? `${nf(o.mold_change_h, 1)} h` : "—"}</td>${cell(ks[4], pctTxt(occOf(o.plan, loadIds(o.plan)).occupancy))}<td>${esc(machineLabel(o.max_load.equipment))} ${nf(o.max_load.pct, 0)} %<br/>${delta(ks[5])}</td>${o.energy && ks[6] ? `${cell(ks[6], `${nf(o.energy.kwh, 0)} kWh · ${o.energy.heatups} calent.${o.energy.overnight === "caliente" ? " · caliente de noche" : ""}`)}` : study!.baseline.energy ? "<td></td>" : ""}<td class="num">${nf(o.score, 1)}</td>
                 <td class="fr-btns"><button class="fr-see" data-id="${esc(o.id)}">VER EN GANTT</button><button class="fr-see fr-pick" data-id="${esc(o.id)}">ADOPTAR</button></td></tr>`;
               })
               .join("")}
@@ -1449,6 +1457,7 @@ function renderFractal(): void {
   $("fr-run-falla").onclick = () => runFractal({ scenario: "falla" });
   $("fr-run-fijadas").onclick = () => runFractal({ scenario: "fijadas" });
   $("fr-run-cambios").onclick = () => runFractal({ scenario: "cambios" });
+  $("fr-run-energia").onclick = () => runFractal({ scenario: "energia" });
   // Cualquier opción se puede adoptar, no solo la recomendada: Fractal recomienda y la persona decide.
   const adoptOption = (id: string) => {
     setVigente(study!.options.find((o) => o.id === id)!.plan);

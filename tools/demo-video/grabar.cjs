@@ -4,7 +4,7 @@
  *
  *   pnpm gallery                                   # en otra terminal: la galería en http://localhost:5173
  *   pnpm add -g playwright@1.63.0 && pnpm dlx playwright@1.63.0 install chromium   # una vez
- *   NODE_PATH="$(pnpm root -g)" node tools/demo-video/grabar.cjs [1|2|3|4|5|6|todos] [--video] [--lento] [--hd]
+ *   NODE_PATH="$(pnpm root -g)" node tools/demo-video/grabar.cjs [1|2|3|4|5|6|7|8|todos] [--video] [--lento] [--hd]
  *
  * Las capturas quedan en docs/demo-plasticos/<escenario>/capturas/ con los nombres que usa cada guion.md; los videos en
  * docs/demo-plasticos/<escenario>/video/recorrido.webm (no se suben al repo: ver .gitignore). AHORA = día 9, 10:00.
@@ -20,7 +20,7 @@ const BASE = (process.env.GALLERY_URL || "http://localhost:5173").replace(/\/$/,
 const NOW = "?now=2026-11-04T10:00";
 const ROOT = process.env.DEMO_OUT || path.resolve(__dirname, "../../docs/demo-plasticos");
 const args = process.argv.slice(2);
-const which = args.find((a) => /^(1|2|3|4|5|6|7|todos)$/.test(a)) || "todos";
+const which = args.find((a) => /^(1|2|3|4|5|6|7|8|todos)$/.test(a)) || "todos";
 const VIDEO = args.includes("--video");
 // En video, pausas largas para que se alcance a leer; --lento las alarga más.
 const PACE = VIDEO ? (args.includes("--lento") ? 2.5 : 1.5) : 0.4;
@@ -28,7 +28,7 @@ const SIZE = args.includes("--hd") ? { width: 1920, height: 1080 } : { width: 16
 // --orbitas: además de las capturas, vuelos de cámara del gemelo 3D cuadro a cuadro (JPG en <escenario>/orbitas/<nombre>/),
 // que el montaje convierte en video; así el 3D se ve en movimiento aunque el navegador sin GPU dibuje lento.
 const ORBITAS = args.includes("--orbitas");
-const FOLDERS = { 1: "1-calcular-programacion", 2: "2-cambio-fecha-pedido", 3: "3-contingencia-falla", 4: "4-pedidos-fijados", 5: "5-menos-cambios", 6: "versiones", 7: "configuracion" };
+const FOLDERS = { 1: "1-calcular-programacion", 2: "2-cambio-fecha-pedido", 3: "3-contingencia-falla", 4: "4-pedidos-fijados", 5: "5-menos-cambios", 6: "versiones", 7: "configuracion", 8: "6-energia" };
 
 const wait = (pg, s) => pg.waitForTimeout(Math.round(s * 1000 * PACE));
 // Grabación en curso: inicio, marcas (capturas, clics, navegación) y página; la usan click() y go().
@@ -478,12 +478,27 @@ const SCENARIOS = {
     await shot("07-en-la-planta.png");
     await wait(2);
   },
+  // Menos energía (escenario 6 del guion): parte del plan del cosimulador; las capturas 01 a 05 son de la energía del
+  // plan y de los tableros en vivo, estas siguen con el objetivo «energía» y la pregunta a Fractal.
+  8: async ({ pg, go, shot, wait }) => {
+    await calcular(pg, "energia", () => shot("06-objetivo-energia.png"));
+    await shot("07-propuesta-energia.png");
+    await click(pg, "[data-tab=fractal]");
+    await shot("08-fractal-pregunta.png");
+    await click(pg, "#fr-run-energia");
+    await pg.waitForSelector(".fr-result", { timeout: 120000 });
+    await shot("09-fractal.png");
+    await click(pg, "#fr-adopt");
+    await go(`/control.html${NOW}`);
+    await shot("10-control-adoptado.png");
+    await wait(2);
+  },
 };
 
 (async () => {
   const browser = await chromium.launch();
   try {
-    for (const n of which === "todos" ? [1, 2, 3, 4, 5, 6, 7] : [Number(which)]) await scenario(browser, n, SCENARIOS[n]);
+    for (const n of which === "todos" ? [1, 2, 3, 4, 5, 6, 7, 8] : [Number(which)]) await scenario(browser, n, SCENARIOS[n]);
   } finally {
     await browser.close();
   }

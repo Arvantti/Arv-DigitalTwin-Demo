@@ -157,6 +157,19 @@ describe("escenarios: entregas primero, menos cambios si no empeora", () => {
   }, 180_000);
 });
 
+describe("objetivo energía", () => {
+  it("gasta menos kWh y enciende menos días sin atrasar más pedidos que cumplir entregas", async () => {
+    const base = solve(await highsLoader(), model, portfolio, { planId: "T-ENT" });
+    const en = solve(await highsLoader(), model, portfolio, { planId: "T-EN", objective: "energia" });
+    checkPlan(en);
+    expect(en.energy && base.energy).toBeTruthy();
+    expect(en.energy!.kwh).toBeLessThanOrEqual(base.energy!.kwh);
+    expect(en.energy!.heatups).toBeLessThanOrEqual(base.energy!.heatups);
+    expect(en.kpis.late_orders).toBeLessThanOrEqual(base.kpis.late_orders);
+    expect(en.kpis.tardiness_h).toBeLessThanOrEqual(base.kpis.tardiness_h + 0.05);
+  }, 180_000);
+});
+
 describe("el cambio de molde no se parte entre turnos", () => {
   it("cada cambio de referencia cabe entero dentro de un turno", async () => {
     const highs = await highsLoader();

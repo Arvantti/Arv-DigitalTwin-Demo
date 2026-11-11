@@ -5,10 +5,10 @@
  */
 import type { PlanKpis, ProductionPlan } from "@twin/cosim/core/contracts.ts";
 
-export type Scenario = "adelantar" | "balancear" | "falla" | "fijadas" | "cambios";
+export type Scenario = "adelantar" | "balancear" | "falla" | "fijadas" | "cambios" | "energia";
 
 export interface Lever {
-  kind: "recalcular" | "prioridad" | "montar-molde" | "mover-molde" | "agrupar" | "dedicar-color";
+  kind: "recalcular" | "prioridad" | "montar-molde" | "mover-molde" | "agrupar" | "dedicar-color" | "espera-caliente" | "apagar";
   text: string;
   machine?: string;
   from?: string;
@@ -25,6 +25,8 @@ export interface StudyOption {
   max_load: { equipment: string; pct: number };
   /** Horas de máquina paradas por montajes de molde. */
   mold_change_h: number;
+  /** Energía desde AHORA hasta el fin del plan (kWh) y calentamientos en frío en ese tramo (escenario de energía). */
+  energy?: { kwh: number; heatups: number; peak_kw: number; overnight: "apagar" | "caliente" };
   score: number;
   plan: ProductionPlan;
 }
@@ -36,7 +38,7 @@ export interface FractalStudy {
   scenario: Scenario;
   question: string;
   now: string;
-  baseline: { plan_id: string; kpis: PlanKpis; loads: Record<string, number>; max_load: { equipment: string; pct: number } };
+  baseline: { plan_id: string; kpis: PlanKpis; loads: Record<string, number>; max_load: { equipment: string; pct: number }; energy?: StudyOption["energy"] };
   options: StudyOption[];
   best: string;
   recommendation: string;

@@ -84,7 +84,7 @@ function workSpans(model: PlasticsModel, a: number, b: number): [number, number]
   return out;
 }
 
-type PlanLike = Pick<ProductionPlan, "from" | "to" | "schedule" | "timezone">;
+type PlanLike = Pick<ProductionPlan, "from" | "to" | "schedule" | "timezone"> & { energy?: Pick<PlanEnergy, "overnight"> };
 
 /**
  * Energía de un plan. `overnight` decide qué hacen las inyectoras fuera de turno; por defecto, lo que dice
@@ -112,6 +112,24 @@ export function energyByDay(model: PlasticsModel, plan: PlanLike, days: number[]
   return out;
 }
 
+/** kWh, calentamientos y pico de 15 min de un plan desde el instante `from` (minutos) hasta su fin. */
+export function energyFrom(model: PlasticsModel, plan: PlanLike, from: number, overnight?: Overnight): { kwh: number; heatups: number; peak_kw: number; overnight: Overnight } | undefined {
+  const c = energyCurves(model, plan, overnight);
+  if (!c) return undefined;
+  const i0 = Math.max(0, Math.floor((from - c.h0) / c.bucketMin));
+  const n = Object.values(c.curves)[0]?.length ?? 0;
+  let kwh = 0;
+  let peak = 0;
+  for (let i = i0; i < n; i++) {
+    let tot = 0;
+    for (const arr of Object.values(c.curves)) tot += arr[i];
+    kwh += tot;
+    peak = Math.max(peak, (tot * 60) / c.bucketMin);
+  }
+  const heatups = Object.values(c.spans).reduce((s, sp) => s + sp.filter((x) => x.kind === "heatup" && x.b > from).length, 0);
+  return { kwh: Math.round(kwh), heatups, peak_kw: round1(peak), overnight: c.energy.overnight };
+}
+
 /** Energía y curvas de kWh cada 15 minutos por equipo (desde h0). */
 export interface EnergyCurves {
   energy: PlanEnergy;
@@ -127,7 +145,8 @@ export interface EnergyCurves {
 export function energyCurves(model: PlasticsModel, plan: PlanLike, overnight?: Overnight): EnergyCurves | undefined {
   const data = model.energy;
   if (!data) return undefined;
-  const mode = overnight ?? data.overnight;
+  // Lo que dice el plan (un escenario de Fractal puede dejarlas calientes de noche) o la política de energy.yaml.
+  const mode = overnight ?? plan.energy?.overnight ?? data.overnight;
   const h0 = parseLocal(plan.from);
   const h1 = parseLocal(plan.to) + DAY_MIN;
   const n = Math.ceil((h1 - h0) / BUCKET);
