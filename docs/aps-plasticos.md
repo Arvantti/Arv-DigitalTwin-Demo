@@ -145,6 +145,16 @@ versiones y en la tabla ENERGÍA de INSUMOS (kWh por equipo y día). Con la cart
 gasta unos 57.500 kWh en el horizonte (0,81 kWh/kg); dejar las inyectoras calientes de noche subiría bastante esa cifra,
 y esa comparación será el escenario 6 de Fractal.
 
+**Potencia en vivo con variación**: el mismo generador mide en el modelo físico el pico de la inyección (`run_peak_kw`),
+la variación de la potencia media de cada minuto produciendo (`run_sd_pct`) y la potencia al encender en frío
+(`heatup_peak_kw`), y toma el límite de la acometida de la placa del transformador (3.000 kVA × factor de potencia
+0,9 = 2.700 kW). `powerAt` y `plantPowerAt` (`energy.ts`) dan los kW de cada máquina y de la planta en cualquier
+instante, con ruido reproducible por máquina y minuto; el calentamiento arranca con las resistencias a tope y baja
+hacia la espera caliente con la misma energía del modelo; una máquina en falla del emulador cuenta apagada. El centro
+de control muestra los kW de la planta contra el transformador, inyectoras y servicios, los kWh del día y la curva del
+día; cada tarjeta, el emulador 2D y el PLC del gemelo 3D muestran los kW de la máquina (y en el PLC, los kWh del día).
+Todo sigue el instante del play del gemelo.
+
 ## Centro de control, PLC por máquina y play
 
 - `control.html` (centro de control): recibe las señales de los PLC de todas las máquinas. OEE de la planta y de cada

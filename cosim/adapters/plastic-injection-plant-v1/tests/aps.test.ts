@@ -264,3 +264,48 @@ describe("Energía del plan (catalog/energy.yaml, solo kWh)", () => {
     expect(plan.energy!.heatups).toBeGreaterThan(model.machines.length);
   });
 });
+
+describe("Potencia en vivo con variación (energy.yaml)", () => {
+  const row = (start: string, end: string, quantity: number) =>
+    ({ op: start, order: "P", product: "balde-12l", stage: "inyeccion", equipment: "imm-21", start, end, quantity, unit: "u", changeover_min: 0, tooling: "mold-balde-12l" }) as ProductionPlan["schedule"][number];
+  const toy = { from: "2026-11-02", to: "2026-11-02", timezone: "-05:00", schedule: [row("2026-11-02T06:00", "2026-11-02T10:00", 480)] };
+  const p = model.energy!.injection["imm-21"]["mold-balde-12l"];
+  const T = (hhmm: string) => parseLocal(`2026-11-02T${hhmm}`);
+
+  it("produciendo varía minuto a minuto alrededor de run_kw, con la variación del modelo físico", async () => {
+    const { powerAt } = await import("../energy.ts");
+    const kws = Array.from({ length: 120 }, (_, i) => powerAt(model, toy, "imm-21", T("07:00") + i).kw);
+    const mean = kws.reduce((s, x) => s + x, 0) / kws.length;
+    const sd = Math.sqrt(kws.reduce((s, x) => s + (x - mean) ** 2, 0) / kws.length);
+    expect(new Set(kws.map((x) => x.toFixed(2))).size).toBeGreaterThan(50);
+    expect(mean).toBeCloseTo(p.run_kw, 0);
+    expect(sd / p.run_kw).toBeLessThan((3 * (p.run_sd_pct ?? 1)) / 100);
+    // Reproducible: el mismo minuto da siempre lo mismo.
+    expect(powerAt(model, toy, "imm-21", T("07:30")).kw).toBe(kws[30]);
+  });
+
+  it("el calentamiento arranca con las resistencias a tope y suma la energía del modelo", async () => {
+    const { powerAt } = await import("../energy.ts");
+    const start = T("06:00") - p.heatup_min;
+    expect(powerAt(model, toy, "imm-21", start).state).toBe("heatup");
+    expect(powerAt(model, toy, "imm-21", start).kw).toBeCloseTo(p.heatup_peak_kw!, 1);
+    let kwh = 0;
+    for (let t = start; t < T("06:00"); t++) kwh += powerAt(model, toy, "imm-21", t + 0.5).kw / 60;
+    expect(kwh).toBeCloseTo(p.heatup_kwh, 0);
+    expect(powerAt(model, toy, "imm-21", T("23:00")).state).toBe("off");
+  });
+
+  it("la planta no pasa del transformador y una máquina en falla se cuenta apagada", async () => {
+    const { plantPowerAt } = await import("../energy.ts");
+    const plan = solve(await highsLoader(), model, portfolio, { planId: "T-PW" });
+    const t = parseLocal("2026-11-04T10:00");
+    const now = plantPowerAt(model, plan, t);
+    expect(now.limitKw).toBe(2700);
+    expect(now.kw).toBeGreaterThan(0);
+    expect(now.kw).toBeLessThan(now.limitKw!);
+    expect(now.servicesKw).toBeGreaterThan(0);
+    const down = plantPowerAt(model, plan, t, new Set(["imm-21"]));
+    expect(down.byEq["imm-21"].state).toBe("off");
+    expect(down.kw).toBeLessThan(now.kw);
+  });
+});
