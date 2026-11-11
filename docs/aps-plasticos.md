@@ -142,8 +142,15 @@ reciclado, compresor y transporte de resina) piden lo que necesitan las 11 inyec
 fracción de producción de cada momento; los equipos de respaldo no suman. Cada plan trae `energy` y los KPI
 `energy_kwh`, `kwh_per_kg` y `peak_kw` (mayor media de 15 min). El APS los muestra en la propuesta, en la comparación de
 versiones y en la tabla ENERGÍA de INSUMOS (kWh por equipo y día). Con la cartera de la demo el plan del cosimulador
-gasta unos 57.500 kWh en el horizonte (0,81 kWh/kg); dejar las inyectoras calientes de noche subiría bastante esa cifra,
-y esa comparación será el escenario 6 de Fractal.
+gasta unos 57.500 kWh en el horizonte (0,81 kWh/kg); dejar las inyectoras calientes de noche subiría bastante esa cifra
+(escenario 6 de Fractal, abajo).
+
+**Objetivo «energía» al calcular** (`solve.ts`, `objective: "energia"`): cada pieza cuesta los kWh de producirla en esa
+inyectora (`run_kw` × minutos) y cada día-máquina encendido cuesta su calentamiento en frío más dos horas de espera
+caliente, así el cosimulador prefiere la máquina que gasta menos y agrupa la producción en menos días. Las entregas
+siguen como tope: el atraso del modelo no pasa el de cumplir entregas, y si al colocar los lotes atrasa más pedidos,
+baja el peso de la energía o, como último recurso, propone el plan de entregas. Con la cartera de la demo baja poco (≈ 57.100 frente a
+57.968 kWh) porque el plan ya apaga fuera de turno; el ahorro grande es apagar frente a dejar calientes.
 
 **Potencia en vivo con variación**: el mismo generador mide en el modelo físico el pico de la inyección (`run_peak_kw`),
 la variación de la potencia media de cada minuto produciendo (`run_sd_pct`) y la potencia al encender en frío
@@ -226,6 +233,11 @@ puede VER EN GANTT y ADOPTAR, no solo la recomendada; la adoptada queda vigente 
 4. **Menos cambios de referencia**: compara recolocar con dedicar cada color a las máquinas que ya lo tienen montado
    (`dedicateColors` del cosimulador). Con la cartera de la demo, IMM-21 queda en azul e IMM-23 en blanco: de 30 a 12
    cambios y de 22,5 a 9 h de cambio, sin pedidos tarde de más. Guion y capturas en `docs/demo-plasticos/5-menos-cambios/`.
+5. **Menos energía** (solo kWh, `catalog/energy.yaml`): desde AHORA compara dejar las inyectoras calientes de noche
+   (espera caliente de 22:00 a 06:00 y el domingo, sin calentamientos), apagarlas fuera de turno (como la vigente) y
+   apagar y agrupar la producción (cosimulador con el objetivo «energía»). Suma kWh/100 al puntaje. Con la cartera de la
+   demo: calientes 33.741 kWh, apagar y agrupar 23.876 kWh con 49 calentamientos (vigente 24.729 y 65): 29 % menos que
+   calientes, sin pedidos tarde de más. Guion y capturas en `docs/demo-plasticos/6-energia/`.
 
 4. **Órdenes fijadas a mano**: el planificador bloquea órdenes en el Gantt (candado 🔓/🔒 o arrastrándolas a su fecha) y
    Fractal organiza el resto sin moverlas: prueba solo reorganizar y montar el molde de repuesto en una inyectora libre

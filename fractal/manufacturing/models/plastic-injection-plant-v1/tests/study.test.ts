@@ -51,6 +51,21 @@ describe("Fractal de plásticos", async () => {
     expect(best.kpis.late_orders).toBeLessThanOrEqual(s.options[0].kpis.late_orders);
     });
 
+  it("energía: apagar fuera de turno y agrupar gasta menos que dejarlas calientes, sin atrasar más pedidos", async () => {
+    const s = await runStudy(highs, cat, { scenario: "energia", portfolio, now: NOW, previous: vigente, studyId: "FRA-T6" });
+    console.log("energia", s.options.map((o) => `${o.label}: ${o.energy?.kwh} kWh ${o.energy?.heatups} calent. ${o.kpis.late_orders} tarde score ${o.score}`).join(" | "), "→", s.recommendation, `${s.seconds} s`);
+    const [hot, off, grouped] = s.options;
+    expect(hot.energy!.overnight).toBe("caliente");
+    expect(off.energy!.overnight).toBe("apagar");
+    expect(off.energy!.kwh).toBeLessThan(hot.energy!.kwh);
+    expect(grouped.energy!.kwh).toBeLessThanOrEqual(off.energy!.kwh);
+    expect(grouped.energy!.heatups).toBeLessThanOrEqual(off.energy!.heatups);
+    const best = s.options.find((o) => o.id === s.best)!;
+    expect(best.energy!.overnight).toBe("apagar");
+    expect(best.kpis.late_orders).toBeLessThanOrEqual(s.baseline.kpis.late_orders);
+    expect(s.baseline.energy!.kwh).toBeGreaterThan(0);
+  });
+
   it("fijadas: ninguna opción mueve las órdenes bloqueadas a mano y el resto se reorganiza", async () => {
     const later = vigente.orders.filter((o) => o.start.slice(0, 16) > NOW).slice(0, 3).map((o) => o.id);
     expect(later.length).toBe(3);
