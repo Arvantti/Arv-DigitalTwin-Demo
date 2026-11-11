@@ -94,6 +94,8 @@ export interface GeneticResult<G> {
   finalists: Individual<G>[];
   /** Primer frente de la última población. */
   front: Individual<G>[];
+  /** Última población completa, ordenada (mejor frente primero), para que la planta elija con sus propias reglas. */
+  population: Individual<G>[];
   generations: number;
   evaluations: number;
   seed: number;
@@ -303,6 +305,7 @@ export async function evolve<G>(cfg: GeneticConfig<G>): Promise<GeneticResult<G>
   return {
     finalists: diverse(ranked, objectives, Math.min(5, Math.max(1, cfg.finalists ?? 5))),
     front: ranked.filter((p) => p.rank === 0),
+    population: ranked,
     generations: done,
     evaluations,
     seed,

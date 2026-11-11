@@ -27,7 +27,7 @@ import type { FractalStudy, Lever, Scenario, StudyOption } from "../../contracts
 
 const WINDOW_DAYS = 7;
 /** Máquinas candidatas por molde: suficiente para la demo y mantiene el estudio en pocos segundos. */
-const MAX_TARGETS = 2;
+export const MAX_TARGETS = 2;
 /** Ocupación objetivo al balancear: por encima de esto una etapa se considera cargada (supuesto de la demo). */
 const TARGET_LOAD = 70;
 
@@ -48,7 +48,7 @@ export interface StudyInput {
   studyId?: string;
 }
 
-interface Variant {
+export interface Variant {
   label: string;
   levers: Lever[];
   molds?: Record<string, string | null>;
@@ -61,7 +61,7 @@ interface Variant {
   overnight?: "apagar" | "caliente";
 }
 
-type Setup = Record<string, { tooling: string; color?: string }>;
+export type Setup = Record<string, { tooling: string; color?: string }>;
 
 export function setupWith(cat: CatalogData, molds: Record<string, string | null>): Setup {
   const out: Setup = { ...cat.setup.setup };
@@ -75,13 +75,13 @@ export function setupWith(cat: CatalogData, molds: Record<string, string | null>
 export const modelFor = (cat: CatalogData, molds: Record<string, string | null>): PlasticsModel => buildModel({ ...cat, setup: { setup: setupWith(cat, molds) } });
 
 /** Inyectoras que pueden llevar el molde (lista del producto en el catálogo), sin molde montado y en servicio. */
-function freeMachinesFor(cat: CatalogData, setup: Setup, tooling: string, out: Set<string>): string[] {
+export function freeMachinesFor(cat: CatalogData, setup: Setup, tooling: string, out: Set<string>): string[] {
   const route = cat.products.products.flatMap((p) => p.routing).find((r) => r.tooling === tooling);
   return (route?.equipment ?? []).filter((m) => !setup[m] && !out.has(m));
 }
 
 /** Copias de repuesto que quedan en el almacén de moldes (copias del catálogo menos las montadas al inicio). */
-function sparesLeft(cat: CatalogData, setup: Setup, tooling: string): number {
+export function sparesLeft(cat: CatalogData, setup: Setup, tooling: string): number {
   const original = Object.values(cat.setup.setup).filter((s) => s.tooling === tooling).length;
   const copies = cat.tooling.tooling.find((t) => t.id === tooling)?.copies;
   const stock = copies !== undefined ? copies - original : cat.aps?.aps.molds_in_storage?.[tooling] ?? 0;
@@ -89,7 +89,7 @@ function sparesLeft(cat: CatalogData, setup: Setup, tooling: string): number {
   return Math.max(0, stock - Math.max(0, now - original));
 }
 
-const changeMin = (cat: CatalogData, tooling: string) => cat.tooling.tooling.find((t) => t.id === tooling)?.change_min ?? 90;
+export const changeMin = (cat: CatalogData, tooling: string) => cat.tooling.tooling.find((t) => t.id === tooling)?.change_min ?? 90;
 
 /**
  * Ocupación de cada máquina en la ventana [a, b]: el trabajo que falta de los pedidos que vencen en la ventana,
@@ -118,17 +118,39 @@ export function loadsOf(model: PlasticsModel, plan: ProductionPlan, a: number, b
   return out;
 }
 
-const maxOf = (loads: Record<string, number>) =>
+export const maxOf = (loads: Record<string, number>) =>
   Object.entries(loads).reduce((best, [equipment, pct]) => (pct > best.pct ? { equipment, pct } : best), { equipment: "", pct: 0 });
 
 /** "día N HH:MM", con el día 0 en el arranque de la cartera (sin fechas de calendario en los textos). */
 let day0 = 0;
 const hm = (iso: string) => `día ${Math.round((Date.parse(`${iso.slice(0, 10)}T00:00:00Z`) - day0) / 864e5)} ${iso.slice(11, 16)}`;
-const label = (m: string) => m.replace("assembly-", "ensamble-").toUpperCase();
+export const label = (m: string) => m.replace("assembly-", "ensamble-").toUpperCase();
 const fmtK = (x: number) => Math.round(x).toLocaleString("es-CO");
 
-export async function runStudy(newHighs: () => Promise<HighsLike>, cat: CatalogData, input: StudyInput): Promise<FractalStudy> {
-  const t0 = Date.now();
+/** Lo que un estudio necesita saber de la planta y del escenario antes de colocar opciones (sin cosimulador). */
+export interface Frame {
+  input: StudyInput;
+  question: string;
+  /** Variantes escritas a mano para el escenario; la primera es la base ("solo recalcular"). */
+  variants: Variant[];
+  molds: Record<string, string | null>;
+  baseModel: PlasticsModel;
+  baseSetup: Setup;
+  now: number;
+  nowIso: string;
+  tz: string;
+  winEnd: number;
+  events: PlantEvent[];
+  failed: Set<string>;
+  baseLoads: Record<string, number>;
+  fixed: string[];
+  /** Cartera del escenario (adelantar: con la nueva fecha). */
+  portfolio: CustomerOrders;
+  orderChanges: ProductionPlan["order_changes"];
+}
+
+/** Arma la pregunta y las variantes del escenario. */
+export function frameStudy(cat: CatalogData, input: StudyInput): Frame {
   day0 = Date.parse(`${input.portfolio.plan_start.slice(0, 10)}T00:00:00Z`);
   const molds = input.molds ?? {};
   const baseModel = modelFor(cat, molds);
@@ -167,7 +189,7 @@ export async function runStudy(newHighs: () => Promise<HighsLike>, cat: CatalogD
     orderChanges = [{ order: o.id, due }];
     portfolio = { ...input.portfolio, orders: input.portfolio.orders.map((x) => (x.id === o.id ? { ...x, due } : x)) };
     const rush = { ...portfolio, orders: portfolio.orders.map((x) => (x.id === o.id ? { ...x, importance: "alta" as const } : x)) };
-    const prio: Lever = { kind: "prioridad", text: `Subir ${o.id} a importancia alta` };
+    const prio: Lever = { kind: "prioridad", text: `Subir ${o.id} a importancia alta`, order: o.id };
     variants.push({ label: "Recalcular con la nueva fecha", levers: [{ kind: "recalcular", text: "Recolocar con el cosimulador con la nueva fecha" }], portfolio, orderChanges });
     variants.push({ label: "Nueva fecha + prioridad alta", levers: [prio], portfolio: rush, orderChanges: [{ order: o.id, due, importance: "alta" }] });
     const product = baseModel.products[o.product];
@@ -227,9 +249,13 @@ export async function runStudy(newHighs: () => Promise<HighsLike>, cat: CatalogD
     }
   }
 
-  const options: StudyOption[] = [];
-  for (const [i, v] of variants.entries()) {
-    const id = `${input.studyId ?? "FRA"}-${String.fromCharCode(65 + i)}`;
+  return { input, question, variants, molds, baseModel, baseSetup, now, nowIso, tz, winEnd, events, failed, baseLoads, fixed, portfolio, orderChanges };
+}
+
+/** Coloca una variante con el cosimulador y le pone el puntaje del escenario (menor es mejor). */
+export async function placeOption(newHighs: () => Promise<HighsLike>, cat: CatalogData, f: Frame, v: Variant, id: string): Promise<StudyOption> {
+  const { input, molds, events, fixed, portfolio, orderChanges, now, winEnd } = f;
+  {
     const merged = { ...molds, ...(v.molds ?? {}) };
     const model = modelFor(cat, merged);
     const plan = solve(await newHighs(), model, v.portfolio ?? portfolio, { now: input.now, previous: input.previous, events, stops: v.stops, planId: id, fixed, ...(v.solver ?? {}) });
@@ -258,12 +284,15 @@ export async function runStudy(newHighs: () => Promise<HighsLike>, cat: CatalogD
       0.5 * k.changeovers +
       (input.scenario === "balancear" || input.scenario === "fijadas" ? 1.5 * max.pct + 3 * Math.max(0, max.pct - TARGET_LOAD) : 0) +
       (input.scenario === "cambios" ? 2 * k.changeover_h : 0);
-    options.push({ id, label: v.label, levers: v.levers, kpis: k, loads, max_load: max, mold_change_h: Math.round(moldH * 10) / 10, ...(en ? { energy: en } : {}), score: Math.round(score * 10) / 10, plan });
+    return { id, label: v.label, levers: v.levers, kpis: k, loads, max_load: max, mold_change_h: Math.round(moldH * 10) / 10, ...(en ? { energy: en } : {}), score: Math.round(score * 10) / 10, plan };
   }
-  const best = options.reduce((a, b) => (b.score < a.score ? b : a));
-  const first = options[0];
+}
+
+/** Texto de por qué gana la mejor frente a la base ("solo recalcular"). */
+export function explain(f: Frame, best: StudyOption, first: StudyOption, options: StudyOption[]): string {
+  const { input } = f;
   const hot = options.find((o) => o.energy?.overnight === "caliente");
-  const why =
+  return (
     input.scenario === "energia" && best.energy
       ? `Desde ahora gasta ${fmtK(best.energy.kwh)} kWh con ${best.energy.heatups} calentamientos${hot?.energy && hot !== best ? `, ${fmtK(hot.energy.kwh - best.energy.kwh)} kWh menos que dejarlas calientes de noche (${Math.round((100 * (hot.energy.kwh - best.energy.kwh)) / hot.energy.kwh)} %)` : ""}. Pedidos tarde: ${best.kpis.late_orders}${best.kpis.late_orders <= input.previous.kpis.late_orders ? ", ninguno más que la vigente" : ""}.`
       : input.scenario === "cambios"
@@ -272,7 +301,19 @@ export async function runStudy(newHighs: () => Promise<HighsLike>, cat: CatalogD
         : `Frente a solo recolocar (${first.kpis.changeovers} cambios, ${first.kpis.changeover_h} h de cambio, ${first.kpis.late_orders} tarde), queda con ${best.kpis.changeovers} cambios, ${best.kpis.changeover_h} h de cambio y ${best.kpis.late_orders} tarde.`
       : best === first
       ? "No hace falta cambiar moldes: basta con recolocar la secuencia."
-      : `Frente a solo recolocar (${first.kpis.late_orders} tarde, ${first.kpis.tardiness_h} h de atraso, máxima carga ${first.max_load.pct} % en ${label(first.max_load.equipment)}), queda con ${best.kpis.late_orders} tarde, ${best.kpis.tardiness_h} h de atraso y máxima carga ${best.max_load.pct} % en ${label(best.max_load.equipment)}.`;
+      : `Frente a solo recolocar (${first.kpis.late_orders} tarde, ${first.kpis.tardiness_h} h de atraso, máxima carga ${first.max_load.pct} % en ${label(first.max_load.equipment)}), queda con ${best.kpis.late_orders} tarde, ${best.kpis.tardiness_h} h de atraso y máxima carga ${best.max_load.pct} % en ${label(best.max_load.equipment)}.`
+  );
+}
+
+/** Estudio con las variantes escritas a mano: cada una la coloca el cosimulador y gana la de menor puntaje. */
+export async function runStudy(newHighs: () => Promise<HighsLike>, cat: CatalogData, input: StudyInput): Promise<FractalStudy> {
+  const t0 = Date.now();
+  const f = frameStudy(cat, input);
+  const options: StudyOption[] = [];
+  for (const [i, v] of f.variants.entries()) options.push(await placeOption(newHighs, cat, f, v, `${input.studyId ?? "FRA"}-${String.fromCharCode(65 + i)}`));
+  const best = options.reduce((a, b) => (b.score < a.score ? b : a));
+  const why = explain(f, best, options[0], options);
+  const { question, baseModel, baseLoads, nowIso, now } = f;
   return {
     contract: "fractal-study.v1",
     study_id: input.studyId ?? "FRA",

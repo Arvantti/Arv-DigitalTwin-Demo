@@ -13,6 +13,8 @@ export interface Lever {
   machine?: string;
   from?: string;
   tooling?: string;
+  /** prioridad: el pedido que sube a importancia alta. */
+  order?: string;
 }
 
 export interface StudyOption {
@@ -29,6 +31,10 @@ export interface StudyOption {
   energy?: { kwh: number; heatups: number; peak_kw: number; overnight: "apagar" | "caliente" };
   score: number;
   plan: ProductionPlan;
+  /** Generador genético: frente de Pareto de la opción (0 = nadie la supera en todo). */
+  pareto_rank?: number;
+  /** Generador genético: evaluadores que la puntuaron, en orden ("cosim", "reglas", "jev"). */
+  evaluated_by?: string[];
 }
 
 export interface FractalStudy {
@@ -43,4 +49,6 @@ export interface FractalStudy {
   best: string;
   recommendation: string;
   seconds: number;
+  /** Presente si las opciones salieron del generador genético (para repetir el estudio y para la auditoría). */
+  generator?: { method: "genetico"; seed: number; population: number; generations: number; evaluations: number; seeds: number; objectives: string[] };
 }
