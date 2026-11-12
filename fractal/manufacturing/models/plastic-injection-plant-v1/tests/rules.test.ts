@@ -47,6 +47,14 @@ describe("evaluador rápido de plásticos (reglas, sin cosimulador)", () => {
     expect(all.every((e) => e.kind === "falla" && model.downtime!.reasons.includes(e.reason))).toBe(true);
   });
 
+  it("sin imprevistos la ejecución tranquila es estable; con ellos las paradas previstas se cambian, no se suman", () => {
+    const opt = { now: "2026-11-04T10:00", previous: plan };
+    expect(replayWithNoise(model, portfolio, plan, opt)).toEqual(replayWithNoise(model, portfolio, plan, opt));
+    // Con un azar que nunca dispara fallas y no cambia el ciclo, solo se quitan las paradas previstas: no queda peor.
+    const none = replayWithNoise(model, portfolio, plan, opt, () => 0.5);
+    expect(none.tardiness_h).toBeLessThanOrEqual(replayWithNoise(model, portfolio, plan, opt).tardiness_h + 1e-6);
+  });
+
   it("la misma semilla repite la ejecución con imprevistos", () => {
     const opt = { now: "2026-11-04T10:00", previous: plan };
     const a = replayWithNoise(model, portfolio, plan, opt, seededRng(5));

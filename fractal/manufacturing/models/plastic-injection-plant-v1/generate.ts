@@ -382,9 +382,9 @@ export async function generateStudy(newHighs: () => Promise<HighsLike>, cat: Cat
       const v = variantFor(ind.genome);
       const model = modelFor(cat, { ...f.molds, ...(v.molds ?? {}) });
       const replayOpt = { now: input.now, previous: input.previous, events: f.events, stops: v.stops, fixed: f.fixed };
-      // La ejecución tranquila (sin imprevistos) es la referencia: el despacho por turnos no repite al minuto los
-      // tiempos del cosimulador, así que se compara la ejecución con imprevistos contra la misma ejecución sin ellos.
-      const calm = replayWithNoise(model, v.portfolio ?? f.portfolio, o.plan, replayOpt, () => 0.5);
+      // La ejecución tranquila (con las paradas previstas) es la referencia: el despacho por turnos no repite al minuto
+      // los tiempos del cosimulador, así que se compara la ejecución con imprevistos contra la misma sin ellos.
+      const calm = replayWithNoise(model, v.portfolio ?? f.portfolio, o.plan, replayOpt);
       const pr = await chance(
         o.plan,
         async (plan, rng) => {

@@ -71,7 +71,8 @@ export function noisyModel(model: PlasticsModel, rng: Rng): PlasticsModel {
 
 /**
  * Fallas imprevistas al azar con los datos de la planta (demand.yaml, downtime): cada inyectora, cada día, tiene
- * `per_day_pct` % de probabilidad de una parada de `hours` horas, en algún momento del turno.
+ * `per_day_pct` % de probabilidad de una parada de `hours` horas, en algún momento del turno. Reemplazan a las paradas
+ * que el plan ya prevé con esa misma tasa (no se suman): solo cambia cuándo y dónde caen.
  */
 export function randomFailures(model: PlasticsModel, rng: Rng, now: number): PlantEvent[] {
   const d = model.downtime;
@@ -89,13 +90,15 @@ export function randomFailures(model: PlasticsModel, rng: Rng, now: number): Pla
 }
 
 /**
- * Ejecuta las colas de un plan (el orden y la máquina de cada lote desde AHORA) con imprevistos y devuelve los
- * pedidos tarde que quedarían. El plan no se recalcula: se ve qué le pasa si la planta lo sigue tal cual.
+ * Ejecuta las colas de un plan (el orden y la máquina de cada lote desde AHORA) y devuelve los pedidos tarde que
+ * quedarían. El plan no se recalcula: se ve qué le pasa si la planta lo sigue tal cual.
+ * - sin `rng`: ejecución tranquila, con las paradas previstas del plan (la referencia);
+ * - con `rng`: imprevistos: el ciclo varía y las paradas previstas se cambian por fallas al azar con la misma tasa.
  */
-export function replayWithNoise(model: PlasticsModel, portfolio: CustomerOrders, plan: ProductionPlan, opt: RulesOptions, rng: Rng): { late: number; tardiness_h: number } {
+export function replayWithNoise(model: PlasticsModel, portfolio: CustomerOrders, plan: ProductionPlan, opt: RulesOptions, rng?: Rng): { late: number; tardiness_h: number } {
   const now = opt.now ?? portfolio.plan_start;
-  const noisy = noisyModel(model, rng);
-  const events = [...(opt.events ?? []), ...randomFailures(model, rng, parseLocal(now))];
+  const noisy = rng ? { ...noisyModel(model, rng), downtime: undefined } : model;
+  const events = [...(opt.events ?? []), ...(rng ? randomFailures(model, rng, parseLocal(now)) : [])];
   const p = editedPlan(noisy, portfolio, { contract: "manual-edit.v1", plan_id: plan.plan_id, author: "Fractal (Monte Carlo)", queues: queuesOf(plan, now), moves: [] }, { ...opt, events });
   return { late: p.kpis.late_orders, tardiness_h: p.kpis.tardiness_h };
 }

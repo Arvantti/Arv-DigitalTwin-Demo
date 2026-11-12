@@ -36,8 +36,8 @@ export interface StudyOption {
   /** Generador genético: evaluadores que la puntuaron, en orden ("cosim", "reglas", "jev"). */
   evaluated_by?: string[];
   /** Probabilidad de cumplir: en cuántas de `runs` ejecuciones del plan tal cual (mismo orden y mismas máquinas) con
-   * imprevistos (fallas al azar con los datos de la planta, ciclo ±5 %) no aparece ningún pedido tarde de más frente a
-   * la misma ejecución sin imprevistos. */
+   * imprevistos no aparece ningún pedido tarde de más frente a la misma ejecución sin ellos. Imprevistos: ciclo ±5 % y
+   * las paradas previstas cambiadas por fallas al azar con la misma tasa de la planta (no se suman). */
   probability?: { p: number; hits: number; runs: number };
 }
 
