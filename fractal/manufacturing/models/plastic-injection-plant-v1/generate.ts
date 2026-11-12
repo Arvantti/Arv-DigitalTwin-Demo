@@ -61,6 +61,14 @@ export interface GenerateOptions {
   /** Ejecuciones con imprevistos que entrega el emulador, para la probabilidad de cumplir. Sin ellas, no hay
    * probabilidad: Fractal no genera fallas, solo calcula con las del emulador. */
   imprevistos?: Imprevistos[];
+  /** Avance para mostrar en pantalla: etapa, cuánto va y de cuánto. */
+  onProgress?: (p: Progress) => void;
+}
+
+export interface Progress {
+  phase: "reglas" | "cosim" | "probabilidad";
+  done: number;
+  total: number;
 }
 
 /** Holgura en horas: un pedido que termina a menos de esto de su fecha es candidato a prioridad alta. */
@@ -365,7 +373,18 @@ export async function generateStudy(newHighs: (() => Promise<HighsLike>) | null,
   const allCosim = withCosim && !twoStage;
   const first = stage(allCosim ? "cosim" : "reglas");
   const population = opts.population ?? (allCosim ? 12 : 24);
-  const r = await evolve({ space, evaluator: first.evaluator, objectives, seeds, population, generations: opts.generations ?? (allCosim ? 4 : 8), seed, maxEvaluations: opts.maxEvaluations ?? (allCosim ? 48 : 200) });
+  const generations = opts.generations ?? (allCosim ? 4 : 8);
+  const r = await evolve({
+    space,
+    evaluator: first.evaluator,
+    objectives,
+    seeds,
+    population,
+    generations,
+    seed,
+    maxEvaluations: opts.maxEvaluations ?? (allCosim ? 48 : 200),
+    onGeneration: (g) => opts.onProgress?.({ phase: allCosim ? "cosim" : "reglas", done: g.generation, total: generations }),
+  });
 
   // Etapa 2 (solo con CoSimulation): Fractal genera los escenarios y el cosimulador calcula cada uno de los 5 mejores
   // (más "recalcular", que es la referencia de entregas y no cuenta como opción si no está entre ellos).
@@ -373,7 +392,10 @@ export async function generateStudy(newHighs: (() => Promise<HighsLike>) | null,
   if (twoStage) {
     // Las reglas no saben agrupar por energía: el objetivo del cosimulador se conserva aparte para que llegue a la etapa 2.
     const best = pickDiverse(first.archive, Math.min(5, opts.finalists ?? 5), true).map((x) => x.genome);
-    for (const g of best) await final.evaluator.evaluate(g);
+    for (const [i, g] of best.entries()) {
+      opts.onProgress?.({ phase: "cosim", done: i, total: best.length });
+      await final.evaluator.evaluate(g);
+    }
   }
   const finalists = pickDiverse(final.archive, Math.min(5, opts.finalists ?? 5), false);
 
@@ -386,6 +408,7 @@ export async function generateStudy(newHighs: (() => Promise<HighsLike>) | null,
     o.plan.plan_id = id;
     let probability: StudyOption["probability"];
     if (runs > 0) {
+      opts.onProgress?.({ phase: "probabilidad", done: i, total: finalists.length });
       const v = variantFor(ind.genome);
       const model = modelFor(cat, { ...f.molds, ...(v.molds ?? {}) });
       const replayOpt = { now: input.now, previous: input.previous, events: f.events, stops: v.stops, fixed: f.fixed };

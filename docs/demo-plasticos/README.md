@@ -19,6 +19,7 @@ Capturas y guiones de narración para la demo del gemelo de la planta de inyecci
 | [4-pedidos-fijados](4-pedidos-fijados/guion.md) | El planificador bloquea a mano órdenes en el Gantt y Fractal reorganiza el resto sin moverlas | 3 min |
 | [5-menos-cambios](5-menos-cambios/guion.md) | Fractal dedica un color a cada inyectora del balde: de 30 a 12 cambios de referencia sin atrasar pedidos | 2 min |
 | [6-energia](6-energia/guion.md) | Energía del plan y en vivo (solo kWh) y Fractal compara dejar las inyectoras calientes de noche con apagarlas y agrupar la producción: 29 % menos | 2,5 min |
+| [7-generador-fractal](7-generador-fractal/guion.md) | Fractal con generador genético: 128 planes por reglas, el cosimulador calcula los mejores y cada opción trae su probabilidad de cumplir con las fallas del emulador | 2,5 min |
 
 Cada escenario arranca donde termina el anterior: el 2 parte del plan del cosimulador, el 3 de una falla sobre ese plan y el 4 del mismo plan del cosimulador con órdenes bloqueadas a mano.
 
