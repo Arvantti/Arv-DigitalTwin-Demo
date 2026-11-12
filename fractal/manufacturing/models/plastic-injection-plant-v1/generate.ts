@@ -11,10 +11,10 @@
  *
  * Restricciones fuera del genoma: las entregas (ninguna opción atrasa más que solo recalcular), las órdenes fijadas
  * (el cosimulador no las mueve) y las reglas físicas (copias de molde, tamaño de inyectora).
- * Las variantes escritas a mano son las semillas: la mejor opción nunca es peor que la del estudio manual.
+ * Las variantes escritas a mano son las semillas de la población.
  *
- * Dos etapas: el generador recorre la población con el evaluador rápido (reglas de despacho, rules.ts, sin HiGHS) y
- * el cosimulador coloca solo las mejores y las variantes de siempre. Al final cada opción trae su probabilidad de
+ * Dos etapas: Fractal genera los escenarios y los recorre con el evaluador rápido (reglas de despacho, rules.ts, sin
+ * HiGHS); el cosimulador calcula cada uno de los 5 mejores. Al final cada opción trae su probabilidad de
  * cumplir: el plan se ejecuta tal cual con cada ejecución de imprevistos que entrega el emulador (Fractal no las genera).
  */
 import { diverse, evolve, paretoFronts, pick, type Evaluation, type Evaluator, type GenomeSpace, type Individual, type Objective as GaObjective, type Rng } from "@twin/fractal-core";
@@ -57,8 +57,6 @@ export interface GenerateOptions {
   finalists?: number;
   /** Dos etapas (por defecto): reglas para toda la población, cosimulador para las mejores. false = todo con el cosimulador. */
   twoStage?: boolean;
-  /** Cuántas de las mejores por reglas pasan al cosimulador (además de las variantes de siempre). */
-  toCosim?: number;
   /** Ejecuciones con imprevistos que entrega el emulador, para la probabilidad de cumplir. Sin ellas, no hay
    * probabilidad: Fractal no genera fallas, solo calcula con las del emulador. */
   imprevistos?: Imprevistos[];
@@ -362,13 +360,13 @@ export async function generateStudy(newHighs: () => Promise<HighsLike>, cat: Cat
   const population = opts.population ?? (twoStage ? 24 : 12);
   const r = await evolve({ space, evaluator: first.evaluator, objectives, seeds, population, generations: opts.generations ?? (twoStage ? 8 : 4), seed, maxEvaluations: opts.maxEvaluations ?? (twoStage ? 200 : 48) });
 
-  // Etapa 2: el cosimulador coloca las mejores de las reglas y las variantes de siempre (así nunca sale peor).
+  // Etapa 2: Fractal genera los escenarios y el cosimulador calcula cada uno de los 5 mejores (más "recalcular", que
+  // es la referencia de entregas y no cuenta como opción si no está entre ellos).
   const final = twoStage ? stage("cosim") : first;
   if (twoStage) {
     // Las reglas no saben agrupar por energía: el objetivo del cosimulador se conserva aparte para que llegue a la etapa 2.
-    const short = pickDiverse(first.archive, opts.toCosim ?? 6, true).map((x) => x.genome);
-    const todo = [...new Map([...seeds, ...short].map((g) => [genomeKey(g), g])).values()];
-    for (const g of todo) await final.evaluator.evaluate(g);
+    const best = pickDiverse(first.archive, Math.min(5, opts.finalists ?? 5), true).map((x) => x.genome);
+    for (const g of best) await final.evaluator.evaluate(g);
   }
   const finalists = pickDiverse(final.archive, Math.min(5, opts.finalists ?? 5), false);
 

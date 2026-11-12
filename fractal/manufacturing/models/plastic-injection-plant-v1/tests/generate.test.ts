@@ -60,8 +60,8 @@ describe("Fractal de plásticos con generador genético", async () => {
         expect(o.probability!.p).toBeGreaterThanOrEqual(0);
         expect(o.probability!.p).toBeLessThanOrEqual(1);
       }
-      // El cosimulador solo coloca las variantes de siempre y las mejores por reglas (6), no toda la población.
-      expect(gen.generator!.evaluations).toBeLessThanOrEqual(manual.options.length + 6 + 1);
+      // Fractal genera; el cosimulador calcula solo las 5 mejores (más "recalcular", la referencia de entregas).
+      expect(gen.generator!.evaluations).toBeLessThanOrEqual(6);
       expect(gen.generator!.rule_evaluations!).toBeGreaterThan(gen.generator!.evaluations);
       expect(gen.question).toBe(manual.question);
       if (name === "fijadas") {
