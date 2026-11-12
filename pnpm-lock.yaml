@@ -137,6 +137,9 @@ importers:
       '@twin/cosim':
         specifier: workspace:*
         version: link:../../cosim
+      '@twin/fractal-core':
+        specifier: workspace:*
+        version: link:../../platform/fractal-core
       highs:
         specifier: 1.15.3
         version: 1.15.3
