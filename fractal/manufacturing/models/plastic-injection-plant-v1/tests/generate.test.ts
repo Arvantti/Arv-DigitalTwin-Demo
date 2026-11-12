@@ -13,7 +13,7 @@ const model = buildModel(cat);
 const portfolio = JSON.parse(readFileSync(`${MODEL_DIR}orders/cartera-2026-11.json`, "utf8")) as CustomerOrders;
 const NOW = "2026-11-04T10:00";
 const highs = () => highsLoader();
-const OPTS = { population: 10, generations: 3, maxEvaluations: 30, seed: 1 };
+const OPTS = { seed: 1, runs: 20 };
 
 describe("Fractal de plásticos con generador genético", async () => {
   const vigente: ProductionPlan = solve(await highsLoader(), model, portfolio);
@@ -40,8 +40,8 @@ describe("Fractal de plásticos con generador genético", async () => {
         name,
         `manual ${mBest.label} score ${mBest.score}`,
         "| generado",
-        gen.options.map((o) => `${o.label}: score ${o.score}, ${o.kpis.late_orders} tarde, rango ${o.pareto_rank}`).join(" · "),
-        `| ${gen.generator!.evaluations} corridas, ${gen.seconds} s`,
+        gen.options.map((o) => `${o.label}: score ${o.score}, ${o.kpis.late_orders} tarde, rango ${o.pareto_rank}, p ${o.probability?.p}`).join(" · "),
+        `| ${gen.generator!.rule_evaluations} por reglas, ${gen.generator!.evaluations} con cosimulador, ${gen.seconds} s`,
       );
       expect(gBest.score).toBeLessThanOrEqual(mBest.score);
       expect(gBest.kpis.late_orders).toBeLessThanOrEqual(manual.options[0].kpis.late_orders);
@@ -51,9 +51,14 @@ describe("Fractal de plásticos con generador genético", async () => {
       for (const o of gen.options) {
         expect(o.plan.plan_id).toBe(o.id);
         expect(o.plan.source).toBe("fractal");
-        expect(o.evaluated_by).toEqual(["cosim"]);
+        expect(o.evaluated_by).toEqual(["reglas", "cosim"]);
+        expect(o.probability!.runs).toBe(OPTS.runs);
+        expect(o.probability!.p).toBeGreaterThanOrEqual(0);
+        expect(o.probability!.p).toBeLessThanOrEqual(1);
       }
-      expect(gen.generator!.evaluations).toBeLessThanOrEqual(OPTS.maxEvaluations + 1);
+      // El cosimulador solo coloca las variantes de siempre y las mejores por reglas (6), no toda la población.
+      expect(gen.generator!.evaluations).toBeLessThanOrEqual(manual.options.length + 6 + 1);
+      expect(gen.generator!.rule_evaluations!).toBeGreaterThan(gen.generator!.evaluations);
       expect(gen.question).toBe(manual.question);
       if (name === "fijadas") {
         const rowsOf = (p: ProductionPlan) => p.schedule.filter((r) => later.includes(r.order)).map((r) => `${r.order}|${r.equipment}|${r.start}|${r.end}`).sort();

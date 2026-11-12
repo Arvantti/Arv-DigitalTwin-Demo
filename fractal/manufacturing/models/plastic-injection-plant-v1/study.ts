@@ -24,6 +24,7 @@ import { buildModel, type CatalogData, type PlasticsModel } from "@twin/cosim/ad
 import { solve, type HighsLike, type Objective } from "@twin/cosim/adapters/plastic-injection-plant-v1/solve.ts";
 import { energyFrom, planEnergy } from "@twin/cosim/adapters/plastic-injection-plant-v1/energy.ts";
 import type { FractalStudy, Lever, Scenario, StudyOption } from "../../contracts.ts";
+import { rulesPlan } from "./rules.ts";
 
 const WINDOW_DAYS = 7;
 /** Máquinas candidatas por molde: suficiente para la demo y mantiene el estudio en pocos segundos. */
@@ -252,13 +253,19 @@ export function frameStudy(cat: CatalogData, input: StudyInput): Frame {
   return { input, question, variants, molds, baseModel, baseSetup, now, nowIso, tz, winEnd, events, failed, baseLoads, fixed, portfolio, orderChanges };
 }
 
-/** Coloca una variante con el cosimulador y le pone el puntaje del escenario (menor es mejor). */
-export async function placeOption(newHighs: () => Promise<HighsLike>, cat: CatalogData, f: Frame, v: Variant, id: string): Promise<StudyOption> {
+/**
+ * Coloca una variante y le pone el puntaje del escenario (menor es mejor). `engine` elige quién la coloca: el
+ * cosimulador (MILP con HiGHS) o las reglas de despacho de la empresa (rápido, sin cosimulador).
+ */
+export async function placeOption(newHighs: () => Promise<HighsLike>, cat: CatalogData, f: Frame, v: Variant, id: string, engine: "cosim" | "reglas" = "cosim"): Promise<StudyOption> {
   const { input, molds, events, fixed, portfolio, orderChanges, now, winEnd } = f;
   {
     const merged = { ...molds, ...(v.molds ?? {}) };
     const model = modelFor(cat, merged);
-    const plan = solve(await newHighs(), model, v.portfolio ?? portfolio, { now: input.now, previous: input.previous, events, stops: v.stops, planId: id, fixed, ...(v.solver ?? {}) });
+    const plan =
+      engine === "reglas"
+        ? rulesPlan(model, v.portfolio ?? portfolio, { now: input.now, previous: input.previous, events, stops: v.stops, planId: id, fixed, dedicateColors: v.solver?.dedicateColors })
+        : solve(await newHighs(), model, v.portfolio ?? portfolio, { now: input.now, previous: input.previous, events, stops: v.stops, planId: id, fixed, ...(v.solver ?? {}) });
     if (v.overnight && plan.energy && v.overnight !== plan.energy.overnight) {
       const e = planEnergy(model, plan, v.overnight)!;
       plan.energy = e;

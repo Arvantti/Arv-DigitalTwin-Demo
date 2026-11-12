@@ -35,6 +35,10 @@ export interface StudyOption {
   pareto_rank?: number;
   /** Generador genético: evaluadores que la puntuaron, en orden ("cosim", "reglas", "jev"). */
   evaluated_by?: string[];
+  /** Probabilidad de cumplir: en cuántas de `runs` ejecuciones del plan tal cual (mismo orden y mismas máquinas) con
+   * imprevistos (fallas al azar con los datos de la planta, ciclo ±5 %) no aparece ningún pedido tarde de más frente a
+   * la misma ejecución sin imprevistos. */
+  probability?: { p: number; hits: number; runs: number };
 }
 
 export interface FractalStudy {
@@ -50,5 +54,18 @@ export interface FractalStudy {
   recommendation: string;
   seconds: number;
   /** Presente si las opciones salieron del generador genético (para repetir el estudio y para la auditoría). */
-  generator?: { method: "genetico"; seed: number; population: number; generations: number; evaluations: number; seeds: number; objectives: string[] };
+  generator?: {
+    method: "genetico";
+    seed: number;
+    population: number;
+    generations: number;
+    /** Corridas del cosimulador. */
+    evaluations: number;
+    /** Planes armados con las reglas de despacho (primera etapa). */
+    rule_evaluations?: number;
+    seeds: number;
+    objectives: string[];
+    /** Ejecuciones con imprevistos por opción para la probabilidad. */
+    runs?: number;
+  };
 }
