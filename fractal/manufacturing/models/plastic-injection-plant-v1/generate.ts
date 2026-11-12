@@ -55,7 +55,8 @@ export interface GenerateOptions {
   maxEvaluations?: number;
   /** Cuántas opciones devolver (3 a 5). */
   finalists?: number;
-  /** Dos etapas (por defecto): reglas para toda la población, cosimulador para las mejores. false = todo con el cosimulador. */
+  /** Con CoSimulation: dos etapas (por defecto), reglas para toda la población y cosimulador para las 5 mejores;
+   * false = todo con el cosimulador. Sin CoSimulation no aplica: todo va con las reglas. */
   twoStage?: boolean;
   /** Ejecuciones con imprevistos que entrega el emulador, para la probabilidad de cumplir. Sin ellas, no hay
    * probabilidad: Fractal no genera fallas, solo calcula con las del emulador. */
@@ -281,16 +282,21 @@ const metricsOf = (o: StudyOption): Record<string, number> => ({
  * Estudio con el generador genético. Devuelve el mismo `fractal-study.v1` que el estudio manual (el APS y el 3D lo
  * leen igual), con 3 a 5 opciones distintas entre sí, su frente de Pareto y los datos del generador.
  */
-export async function generateStudy(newHighs: () => Promise<HighsLike>, cat: CatalogData, input: StudyInput, opts: GenerateOptions = {}): Promise<FractalStudy> {
+export async function generateStudy(newHighs: (() => Promise<HighsLike>) | null, cat: CatalogData, input: StudyInput, opts: GenerateOptions = {}): Promise<FractalStudy> {
   const t0 = Date.now();
   const f = frameStudy(cat, input);
   const studyId = input.studyId ?? "FRA";
-  const twoStage = opts.twoStage ?? true;
+  // CoSimulation es un módulo aparte: sin él (newHighs = null) Fractal entrega los 5 mejores calculados con las reglas.
+  const withCosim = newHighs !== null;
+  const twoStage = withCosim && (opts.twoStage ?? true);
+  const highs = newHighs ?? (() => Promise.reject(new Error("Fractal sin CoSimulation: solo reglas")));
   const imprevistos = opts.imprevistos ?? [];
   const runs = imprevistos.length;
   const seed = opts.seed ?? 1;
   const choices = choicesFor(cat, f);
-  const space = plasticsSpace(cat, f, choices);
+  const fullSpace = plasticsSpace(cat, f, choices);
+  // El objetivo del solver (energía) solo lo entiende el cosimulador: sin él no es una palanca.
+  const space: GenomeSpace<PlasticsGenome> = withCosim ? fullSpace : { ...fullSpace, repair: (g) => fullSpace.repair!({ ...g, objective: null }) };
   const seeds = f.variants.map((v) => space.repair!(genomeOf(v, choices.energy))!);
   const seedLabel = new Map(seeds.map((g, i) => [genomeKey(g), f.variants[i].label]));
   const variants = new Map<string, Variant>();
@@ -314,7 +320,7 @@ export async function generateStudy(newHighs: () => Promise<HighsLike>, cat: Cat
       const key = genomeKey(g);
       let o = placed.get(key);
       if (!o) {
-        o = await placeOption(newHighs, cat, f, variantFor(g), `${studyId}-E${++n}`, engine);
+        o = await placeOption(highs, cat, f, variantFor(g), `${studyId}-E${++n}`, engine);
         placed.set(key, o);
       }
       return o;
@@ -356,12 +362,13 @@ export async function generateStudy(newHighs: () => Promise<HighsLike>, cat: Cat
   };
 
   // Etapa 1: el generador recorre la población con el evaluador rápido (reglas) o, si se pide, con el cosimulador.
-  const first = stage(twoStage ? "reglas" : "cosim");
-  const population = opts.population ?? (twoStage ? 24 : 12);
-  const r = await evolve({ space, evaluator: first.evaluator, objectives, seeds, population, generations: opts.generations ?? (twoStage ? 8 : 4), seed, maxEvaluations: opts.maxEvaluations ?? (twoStage ? 200 : 48) });
+  const allCosim = withCosim && !twoStage;
+  const first = stage(allCosim ? "cosim" : "reglas");
+  const population = opts.population ?? (allCosim ? 12 : 24);
+  const r = await evolve({ space, evaluator: first.evaluator, objectives, seeds, population, generations: opts.generations ?? (allCosim ? 4 : 8), seed, maxEvaluations: opts.maxEvaluations ?? (allCosim ? 48 : 200) });
 
-  // Etapa 2: Fractal genera los escenarios y el cosimulador calcula cada uno de los 5 mejores (más "recalcular", que
-  // es la referencia de entregas y no cuenta como opción si no está entre ellos).
+  // Etapa 2 (solo con CoSimulation): Fractal genera los escenarios y el cosimulador calcula cada uno de los 5 mejores
+  // (más "recalcular", que es la referencia de entregas y no cuenta como opción si no está entre ellos).
   const final = twoStage ? stage("cosim") : first;
   if (twoStage) {
     // Las reglas no saben agrupar por energía: el objetivo del cosimulador se conserva aparte para que llegue a la etapa 2.
@@ -370,8 +377,8 @@ export async function generateStudy(newHighs: () => Promise<HighsLike>, cat: Cat
   }
   const finalists = pickDiverse(final.archive, Math.min(5, opts.finalists ?? 5), false);
 
-  // Probabilidad de cumplir: cada opción se ejecuta tal cual (mismo orden y mismas máquinas) con imprevistos al azar
-  // (Monte Carlo, con semilla) y cuenta cuántas veces los imprevistos no agregan pedidos tarde.
+  // Probabilidad de cumplir: cada opción se ejecuta tal cual (mismo orden y mismas máquinas) con cada ejecución de
+  // imprevistos del emulador y se cuenta cuántas veces no agregan pedidos tarde.
   const options: StudyOption[] = [];
   for (const [i, ind] of finalists.entries()) {
     const o = final.placed.get(ind.key)!;
@@ -389,7 +396,7 @@ export async function generateStudy(newHighs: () => Promise<HighsLike>, cat: Cat
       const pr = { hits, runs, p: hits / runs };
       probability = { p: Math.round(pr.p * 100) / 100, hits: pr.hits, runs: pr.runs };
     }
-    options.push({ ...o, id, pareto_rank: ind.rank, evaluated_by: twoStage ? ["reglas", "cosim"] : ["cosim"], ...(probability ? { probability } : {}) });
+    options.push({ ...o, id, pareto_rank: ind.rank, evaluated_by: twoStage ? ["reglas", "cosim"] : allCosim ? ["cosim"] : ["reglas"], ...(probability ? { probability } : {}) });
   }
   const base = final.placed.get(genomeKey(seeds[0]))!;
   const best = options[0];
@@ -413,8 +420,8 @@ export async function generateStudy(newHighs: () => Promise<HighsLike>, cat: Cat
       seed: r.seed,
       population,
       generations: r.generations,
-      evaluations: twoStage ? final.placed.size : first.placed.size,
-      ...(twoStage ? { rule_evaluations: first.placed.size } : {}),
+      evaluations: twoStage ? final.placed.size : allCosim ? first.placed.size : 0,
+      ...(allCosim ? {} : { rule_evaluations: first.placed.size }),
       seeds: seeds.length,
       objectives: objectives.map((o) => o.metric),
       ...(runs > 0 ? { runs } : {}),

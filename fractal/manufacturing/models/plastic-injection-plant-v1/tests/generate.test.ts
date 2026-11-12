@@ -71,6 +71,21 @@ describe("Fractal de plásticos con generador genético", async () => {
       if (name === "falla") for (const o of gen.options) expect(o.plan.schedule.some((r) => r.equipment === "imm-21" && r.start.slice(0, 16) >= NOW && r.start.slice(0, 16) < "2026-11-05T22:00")).toBe(false);
     }, 120_000);
 
+  it("sin CoSimulation (módulo aparte) Fractal entrega las 5 mejores por reglas, sin HiGHS", async () => {
+    const input = { portfolio, now: NOW, previous: vigente, studyId: "FRA-R", scenario: "cambios" } as StudyInput;
+    const gen = await generateStudy(null, cat, input, OPTS);
+    console.log("sin cosim", gen.options.map((o) => `${o.label}: score ${o.score}, ${o.kpis.late_orders} tarde, p ${o.probability?.p}`).join(" · "), `| ${gen.seconds} s`);
+    expect(gen.generator!.evaluations).toBe(0);
+    expect(gen.generator!.rule_evaluations!).toBeGreaterThan(0);
+    expect(gen.options.length).toBeGreaterThanOrEqual(1);
+    expect(gen.options.length).toBeLessThanOrEqual(5);
+    for (const o of gen.options) {
+      expect(o.evaluated_by).toEqual(["reglas"]);
+      expect(o.plan.source).toBe("fractal");
+      expect(o.probability!.runs).toBe(RUNS);
+    }
+  }, 120_000);
+
   it("misma semilla, mismo resultado", async () => {
     const input = { portfolio, now: NOW, previous: vigente, studyId: "FRA-G", scenario: "cambios" } as StudyInput;
     const a = await generateStudy(highs, cat, input, OPTS);
