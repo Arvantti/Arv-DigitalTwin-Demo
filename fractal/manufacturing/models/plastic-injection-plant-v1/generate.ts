@@ -15,13 +15,13 @@
  *
  * Dos etapas: el generador recorre la población con el evaluador rápido (reglas de despacho, rules.ts, sin HiGHS) y
  * el cosimulador coloca solo las mejores y las variantes de siempre. Al final cada opción trae su probabilidad de
- * cumplir: el plan se ejecuta tal cual con imprevistos al azar (Monte Carlo con semilla).
+ * cumplir: el plan se ejecuta tal cual con cada ejecución de imprevistos que entrega el emulador (Fractal no las genera).
  */
-import { diverse, evolve, paretoFronts, pick, probability as chance, type Evaluation, type Evaluator, type GenomeSpace, type Individual, type Objective as GaObjective, type Rng } from "@twin/fractal-core";
+import { diverse, evolve, paretoFronts, pick, type Evaluation, type Evaluator, type GenomeSpace, type Individual, type Objective as GaObjective, type Rng } from "@twin/fractal-core";
 import type { CatalogData } from "@twin/cosim/adapters/plastic-injection-plant-v1/model.ts";
 import type { HighsLike, Objective } from "@twin/cosim/adapters/plastic-injection-plant-v1/solve.ts";
 import { iso, parseLocal } from "@twin/cosim/core/time.ts";
-import type { FractalStudy, Lever, StudyOption } from "../../contracts.ts";
+import type { FractalStudy, Imprevistos, Lever, StudyOption } from "../../contracts.ts";
 import { changeMin, explain, frameStudy, freeMachinesFor, label, MAX_TARGETS, maxOf, modelFor, placeOption, sparesLeft, type Frame, type StudyInput, type Variant } from "./study.ts";
 import { energyFrom } from "@twin/cosim/adapters/plastic-injection-plant-v1/energy.ts";
 import { replayWithNoise } from "./rules.ts";
@@ -59,8 +59,9 @@ export interface GenerateOptions {
   twoStage?: boolean;
   /** Cuántas de las mejores por reglas pasan al cosimulador (además de las variantes de siempre). */
   toCosim?: number;
-  /** Ejecuciones con imprevistos por opción para la probabilidad de cumplir; 0 = sin probabilidad. */
-  runs?: number;
+  /** Ejecuciones con imprevistos que entrega el emulador, para la probabilidad de cumplir. Sin ellas, no hay
+   * probabilidad: Fractal no genera fallas, solo calcula con las del emulador. */
+  imprevistos?: Imprevistos[];
 }
 
 /** Holgura en horas: un pedido que termina a menos de esto de su fecha es candidato a prioridad alta. */
@@ -287,7 +288,8 @@ export async function generateStudy(newHighs: () => Promise<HighsLike>, cat: Cat
   const f = frameStudy(cat, input);
   const studyId = input.studyId ?? "FRA";
   const twoStage = opts.twoStage ?? true;
-  const runs = opts.runs ?? 30;
+  const imprevistos = opts.imprevistos ?? [];
+  const runs = imprevistos.length;
   const seed = opts.seed ?? 1;
   const choices = choicesFor(cat, f);
   const space = plasticsSpace(cat, f, choices);
@@ -382,18 +384,11 @@ export async function generateStudy(newHighs: () => Promise<HighsLike>, cat: Cat
       const v = variantFor(ind.genome);
       const model = modelFor(cat, { ...f.molds, ...(v.molds ?? {}) });
       const replayOpt = { now: input.now, previous: input.previous, events: f.events, stops: v.stops, fixed: f.fixed };
-      // La ejecución tranquila (con las paradas previstas) es la referencia: el despacho por turnos no repite al minuto
-      // los tiempos del cosimulador, así que se compara la ejecución con imprevistos contra la misma sin ellos.
+      // La ejecución tranquila (sin imprevistos) es la referencia: el despacho por turnos no repite al minuto los
+      // tiempos del cosimulador, así que se compara cada ejecución del emulador contra la misma sin imprevistos.
       const calm = replayWithNoise(model, v.portfolio ?? f.portfolio, o.plan, replayOpt);
-      const pr = await chance(
-        o.plan,
-        async (plan, rng) => {
-          const run = replayWithNoise(model, v.portfolio ?? f.portfolio, plan, replayOpt, rng);
-          return { feasible: run.late <= calm.late, metrics: { tarde: run.late, atraso_h: run.tardiness_h } };
-        },
-        runs,
-        seed + i,
-      );
+      const hits = imprevistos.filter((x) => replayWithNoise(model, v.portfolio ?? f.portfolio, o.plan, replayOpt, x).late <= calm.late).length;
+      const pr = { hits, runs, p: hits / runs };
       probability = { p: Math.round(pr.p * 100) / 100, hits: pr.hits, runs: pr.runs };
     }
     options.push({ ...o, id, pareto_rank: ind.rank, evaluated_by: twoStage ? ["reglas", "cosim"] : ["cosim"], ...(probability ? { probability } : {}) });
@@ -401,7 +396,7 @@ export async function generateStudy(newHighs: () => Promise<HighsLike>, cat: Cat
   const base = final.placed.get(genomeKey(seeds[0]))!;
   const best = options[0];
   const why = explain(f, best, best.label === base.label ? best : base, [base, ...options]);
-  const odds = best.probability ? ` Cumple las entregas en ${best.probability.hits} de ${best.probability.runs} ejecuciones con imprevistos (${Math.round(best.probability.p * 100)} %).` : "";
+  const odds = best.probability ? ` Cumple las entregas en ${best.probability.hits} de ${best.probability.runs} ejecuciones con imprevistos del emulador (${Math.round(best.probability.p * 100)} %).` : "";
   const { question, baseModel, baseLoads, nowIso, now } = f;
   return {
     contract: "fractal-study.v1",

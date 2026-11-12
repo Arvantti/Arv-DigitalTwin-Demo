@@ -4,8 +4,9 @@ import type { CustomerOrders } from "@twin/cosim/core/contracts.ts";
 import { parseLocal } from "@twin/cosim/core/time.ts";
 import { buildModel } from "@twin/cosim/adapters/plastic-injection-plant-v1/model.ts";
 import { fsCatalog, MODEL_DIR } from "@twin/cosim/adapters/plastic-injection-plant-v1/scripts/fs-catalog.ts";
-import { seededRng } from "@twin/fractal-core";
-import { CYCLE_SPREAD, noisyModel, randomFailures, replayWithNoise, rulesPlan } from "../rules.ts";
+// Los imprevistos los genera el emulador (galería); Fractal solo calcula con ellos.
+import { CYCLE_SPREAD, imprevistos, randomFailures } from "../../../../../apps/gallery/src/imprevistos.ts";
+import { replayWithNoise, rulesPlan, withCycle } from "../rules.ts";
 
 const model = buildModel(fsCatalog());
 const portfolio = JSON.parse(readFileSync(`${MODEL_DIR}orders/cartera-2026-11.json`, "utf8")) as CustomerOrders;
@@ -31,34 +32,39 @@ describe("evaluador rápido de plásticos (reglas, sin cosimulador)", () => {
     expect(parseLocal(after.completion)).toBeLessThanOrEqual(parseLocal(target.completion));
   });
 
-  it("imprevistos: el ciclo varía dentro de ±5 % y las fallas salen de los datos de la planta", () => {
-    const calm = noisyModel(model, () => 0.5);
+  it("imprevistos del emulador: ciclo dentro de ±5 % y fallas con los datos de la planta", () => {
     const p = Object.values(model.products)[0];
-    expect(calm.products[p.id].final.unitMin).toBeCloseTo(p.final.unitMin);
-    const noisy = noisyModel(model, seededRng(3));
+    expect(withCycle(model, {}).products[p.id].final.unitMin).toBeCloseTo(p.final.unitMin);
+    const now = parseLocal("2026-11-04T10:00");
+    const [run] = imprevistos(model, now, 1, 3);
+    const noisy = withCycle(model, run.cycle);
     for (const [id, q] of Object.entries(noisy.products)) {
       const ratio = q.final.unitMin / model.products[id].final.unitMin;
       expect(Math.abs(ratio - 1)).toBeLessThanOrEqual(CYCLE_SPREAD + 1e-9);
     }
-    const now = parseLocal("2026-11-04T10:00");
     expect(randomFailures(model, () => 0.99, now)).toHaveLength(0);
     const all = randomFailures(model, () => 0, now);
     expect(all).toHaveLength(model.machines.length * 7);
     expect(all.every((e) => e.kind === "falla" && model.downtime!.reasons.includes(e.reason))).toBe(true);
   });
 
-  it("sin imprevistos la ejecución tranquila es estable; con ellos las paradas previstas se cambian, no se suman", () => {
-    const opt = { now: "2026-11-04T10:00", previous: plan };
-    expect(replayWithNoise(model, portfolio, plan, opt)).toEqual(replayWithNoise(model, portfolio, plan, opt));
-    // Con un azar que nunca dispara fallas y no cambia el ciclo, solo se quitan las paradas previstas: no queda peor.
-    const none = replayWithNoise(model, portfolio, plan, opt, () => 0.5);
-    expect(none.tardiness_h).toBeLessThanOrEqual(replayWithNoise(model, portfolio, plan, opt).tardiness_h + 1e-6);
+  it("el plan no trae paradas inventadas: sin eventos ni paros previstos no hay tiempo perdido", () => {
+    expect(plan.downtime).toEqual([]);
   });
 
-  it("la misma semilla repite la ejecución con imprevistos", () => {
+  it("Fractal calcula con los imprevistos que recibe: la ejecución tranquila es estable y las fallas no la mejoran", () => {
     const opt = { now: "2026-11-04T10:00", previous: plan };
-    const a = replayWithNoise(model, portfolio, plan, opt, seededRng(5));
-    const b = replayWithNoise(model, portfolio, plan, opt, seededRng(5));
-    expect(a).toEqual(b);
+    const calm = replayWithNoise(model, portfolio, plan, opt);
+    expect(replayWithNoise(model, portfolio, plan, opt)).toEqual(calm);
+    expect(replayWithNoise(model, portfolio, plan, opt, { events: [] })).toEqual(calm);
+    const all = randomFailures(model, () => 0, parseLocal(opt.now));
+    expect(replayWithNoise(model, portfolio, plan, opt, { events: all }).tardiness_h).toBeGreaterThanOrEqual(calm.tardiness_h);
+  });
+
+  it("los mismos imprevistos dan la misma ejecución", () => {
+    const opt = { now: "2026-11-04T10:00", previous: plan };
+    const [a] = imprevistos(model, parseLocal(opt.now), 1, 5);
+    const [b] = imprevistos(model, parseLocal(opt.now), 1, 5);
+    expect(replayWithNoise(model, portfolio, plan, opt, a)).toEqual(replayWithNoise(model, portfolio, plan, opt, b));
   });
 });

@@ -6,7 +6,7 @@
  * pone en el calendario respetando turnos, paradas, cambios de color y que el ensamble espere sus componentes.
  */
 import type { CustomerOrder, CustomerOrders, PlannedStop, PlantEvent, Importance, PlanOrderRow, PlanScheduleRow, PlanSource, ProductionPlan } from "../../core/contracts.ts";
-import { DAY_MIN, dateOf, iso, parseLocal, rng } from "../../core/time.ts";
+import { DAY_MIN, dateOf, iso, parseLocal } from "../../core/time.ts";
 import type { ChangeKind, PlasticsModel, Step } from "./model.ts";
 import { planEnergy } from "./energy.ts";
 
@@ -91,24 +91,6 @@ export function makeJobs(model: PlasticsModel, orders: CustomerOrder[], start: n
   return jobs;
 }
 
-/** Paradas aleatorias de cada máquina (demand.yaml): una semilla por máquina y día. */
-export function downtime(model: PlasticsModel, machine: string, a: number, b: number): [number, number, string][] {
-  const cfg = model.downtime;
-  if (!cfg?.per_day_pct) return [];
-  const out: [number, number, string][] = [];
-  const s = Math.min(...model.calendar.spans.map(([x]) => x));
-  const e = Math.max(...model.calendar.spans.map(([, y]) => y));
-  for (let d = Math.floor(a / DAY_MIN) * DAY_MIN; d <= b; d += DAY_MIN) {
-    if (!model.calendar.isWorkday(d)) continue;
-    const r = rng(`${model.plant}:paradas:${machine}:${dateOf(d)}`);
-    if (r() * 100 >= cfg.per_day_pct) continue;
-    const hours = cfg.hours[0] + r() * (cfg.hours[1] - cfg.hours[0]);
-    const t0 = d + s + r() * Math.max(0, e - s - hours * 60);
-    out.push([Math.round(t0), Math.round(t0 + hours * 60), cfg.reasons[Math.floor(r() * cfg.reasons.length)]]);
-  }
-  return out;
-}
-
 /** Último día de entrega + la cola del horizonte, al cierre del último turno. */
 export function horizonOf(model: PlasticsModel, orders: CustomerOrder[], start: number): number {
   const last = Math.max(start, ...orders.map((o) => parseLocal(o.due)));
@@ -131,8 +113,10 @@ export function context(model: PlasticsModel, portfolio: CustomerOrders, nowIso?
   const orders = portfolio.orders;
   const jobs = makeJobs(model, orders, start);
   const horizonEnd = horizonOf(model, orders, start);
+  // El plan no inventa paradas: las fallas al azar las genera el emulador (llegan como eventos) y los paros previstos
+  // los programa alguien en el APS (`stops`). El cosimulador solo calcula con ellos.
   const down: Context["down"] = {};
-  for (const m of model.machines) down[m] = downtime(model, m, start, horizonEnd);
+  for (const m of model.machines) down[m] = [];
   // Fallas y paros del emulador: la máquina queda fuera de servicio hasta la reparación estimada (o hasta que volvió).
   const outages = events
     .map((e) => ({ m: e.equipment, a: parseLocal(e.start), b: parseLocal(e.cleared ?? e.est_end), why: `${e.kind === "falla" ? "Falla" : "Paro de emergencia"}: ${e.reason}` }))
