@@ -12,14 +12,19 @@
  * Restricciones fuera del genoma: las entregas (ninguna opción atrasa más que solo recalcular), las órdenes fijadas
  * (el cosimulador no las mueve) y las reglas físicas (copias de molde, tamaño de inyectora).
  * Las variantes escritas a mano son las semillas: la mejor opción nunca es peor que la del estudio manual.
+ *
+ * Dos etapas: el generador recorre la población con el evaluador rápido (reglas de despacho, rules.ts, sin HiGHS) y
+ * el cosimulador coloca solo las mejores y las variantes de siempre. Al final cada opción trae su probabilidad de
+ * cumplir: el plan se ejecuta tal cual con imprevistos al azar (Monte Carlo con semilla).
  */
-import { diverse, evolve, paretoFronts, pick, type Evaluation, type Evaluator, type GenomeSpace, type Individual, type Objective as GaObjective, type Rng } from "@twin/fractal-core";
+import { diverse, evolve, paretoFronts, pick, probability as chance, type Evaluation, type Evaluator, type GenomeSpace, type Individual, type Objective as GaObjective, type Rng } from "@twin/fractal-core";
 import type { CatalogData } from "@twin/cosim/adapters/plastic-injection-plant-v1/model.ts";
 import type { HighsLike, Objective } from "@twin/cosim/adapters/plastic-injection-plant-v1/solve.ts";
 import { iso, parseLocal } from "@twin/cosim/core/time.ts";
 import type { FractalStudy, Lever, StudyOption } from "../../contracts.ts";
-import { changeMin, explain, frameStudy, freeMachinesFor, label, MAX_TARGETS, maxOf, placeOption, sparesLeft, type Frame, type StudyInput, type Variant } from "./study.ts";
+import { changeMin, explain, frameStudy, freeMachinesFor, label, MAX_TARGETS, maxOf, modelFor, placeOption, sparesLeft, type Frame, type StudyInput, type Variant } from "./study.ts";
 import { energyFrom } from "@twin/cosim/adapters/plastic-injection-plant-v1/energy.ts";
+import { replayWithNoise } from "./rules.ts";
 
 export interface PlasticsGenome {
   /** Pedidos con importancia alta (ordenados). */
@@ -50,6 +55,12 @@ export interface GenerateOptions {
   maxEvaluations?: number;
   /** Cuántas opciones devolver (3 a 5). */
   finalists?: number;
+  /** Dos etapas (por defecto): reglas para toda la población, cosimulador para las mejores. false = todo con el cosimulador. */
+  twoStage?: boolean;
+  /** Cuántas de las mejores por reglas pasan al cosimulador (además de las variantes de siempre). */
+  toCosim?: number;
+  /** Ejecuciones con imprevistos por opción para la probabilidad de cumplir; 0 = sin probabilidad. */
+  runs?: number;
 }
 
 /** Holgura en horas: un pedido que termina a menos de esto de su fecha es candidato a prioridad alta. */
@@ -275,64 +286,122 @@ export async function generateStudy(newHighs: () => Promise<HighsLike>, cat: Cat
   const t0 = Date.now();
   const f = frameStudy(cat, input);
   const studyId = input.studyId ?? "FRA";
+  const twoStage = opts.twoStage ?? true;
+  const runs = opts.runs ?? 30;
+  const seed = opts.seed ?? 1;
   const choices = choicesFor(cat, f);
   const space = plasticsSpace(cat, f, choices);
   const seeds = f.variants.map((v) => space.repair!(genomeOf(v, choices.energy))!);
   const seedLabel = new Map(seeds.map((g, i) => [genomeKey(g), f.variants[i].label]));
-  const placed = new Map<string, StudyOption>();
-  let n = 0;
-  const place = async (g: PlasticsGenome): Promise<StudyOption> => {
+  const variants = new Map<string, Variant>();
+  const variantFor = (g: PlasticsGenome): Variant => {
     const key = genomeKey(g);
-    let o = placed.get(key);
-    if (!o) {
-      const v = variantOf(cat, f, g);
+    let v = variants.get(key);
+    if (!v) {
+      v = variantOf(cat, f, g);
       v.label = seedLabel.get(key) ?? v.label;
-      o = await placeOption(newHighs, cat, f, v, `${studyId}-E${++n}`);
-      placed.set(key, o);
+      variants.set(key, v);
     }
-    return o;
+    return v;
   };
-  // Referencia de entregas: solo recalcular (la primera variante). Ninguna opción puede atrasar más que eso.
-  const base = await place(seeds[0]);
-  const ref = { late: base.kpis.late_orders, tard: base.kpis.tardiness_h };
-  /** Todo lo evaluado: las finalistas salen de aquí, no solo de la última población. */
-  const archive = new Map<string, Individual<PlasticsGenome>>();
-  const cosim: Evaluator<PlasticsGenome> = {
-    id: "cosim",
-    stage: "precisa",
-    evaluate: async (g): Promise<Evaluation> => {
-      const o = await place(g);
-      const over = Math.max(0, o.kpis.tardiness_h - ref.tard - 0.5) + 20 * Math.max(0, o.kpis.late_orders - ref.late);
-      const evaluation = { feasible: over === 0, violation: over, metrics: metricsOf(o) };
-      archive.set(genomeKey(g), { genome: g, key: genomeKey(g), evaluation, rank: 0, crowding: 0 });
-      return evaluation;
-    },
+  let n = 0;
+  /** Coloca genomas con un motor (reglas o cosimulador), sin repetir, y los juzga contra la referencia de entregas. */
+  const stage = (engine: "reglas" | "cosim") => {
+    const placed = new Map<string, StudyOption>();
+    const archive = new Map<string, Individual<PlasticsGenome>>();
+    let ref: { late: number; tard: number } | null = null;
+    const place = async (g: PlasticsGenome) => {
+      const key = genomeKey(g);
+      let o = placed.get(key);
+      if (!o) {
+        o = await placeOption(newHighs, cat, f, variantFor(g), `${studyId}-E${++n}`, engine);
+        placed.set(key, o);
+      }
+      return o;
+    };
+    const evaluator: Evaluator<PlasticsGenome> = {
+      id: engine,
+      stage: engine === "reglas" ? "rapida" : "precisa",
+      evaluate: async (g) => {
+        // Referencia de entregas: solo recalcular (la primera semilla). Ninguna opción puede atrasar más que eso.
+        if (!ref) {
+          const b = await place(seeds[0]);
+          ref = { late: b.kpis.late_orders, tard: b.kpis.tardiness_h };
+        }
+        const o = await place(g);
+        const over = Math.max(0, o.kpis.tardiness_h - ref.tard - 0.5) + 20 * Math.max(0, o.kpis.late_orders - ref.late);
+        const evaluation: Evaluation = { feasible: over === 0, violation: over, metrics: metricsOf(o) };
+        archive.set(genomeKey(g), { genome: g, key: genomeKey(g), evaluation, rank: 0, crowding: 0 });
+        return evaluation;
+      },
+    };
+    return { placed, archive, evaluator };
   };
   const objectives = objectivesFor(input.scenario);
-  const population = opts.population ?? 12;
-  const r = await evolve({ space, evaluator: cosim, objectives, seeds, population, generations: opts.generations ?? 4, seed: opts.seed ?? 1, maxEvaluations: opts.maxEvaluations ?? 48, finalists: opts.finalists ?? 5 });
-
-  // Dos genomas con los mismos resultados son la misma opción para quien decide: queda el de menos palancas
-  // (una prioridad alta que no cambia nada sobra). Luego se eligen de 3 a 5 distintas del mejor frente.
-  const simplest = new Map<string, Individual<PlasticsGenome>>();
   const leversOf = (g: PlasticsGenome) => g.rush.length + g.spares.length + (g.move ? 1 : 0) + (g.dedicateColors ? 1 : 0) + (g.objective ? 1 : 0);
-  for (const ind of archive.values()) {
-    const sig = [...objectives.map((o) => ind.evaluation.metrics[o.metric]), ind.evaluation.metrics.tarde].join("|");
-    const had = simplest.get(sig);
-    if (!had || leversOf(ind.genome) < leversOf(had.genome)) simplest.set(sig, ind);
-  }
-  const pool = [...simplest.values()];
-  paretoFronts(pool.map((p) => p.evaluation), objectives).forEach((idx, rank) => idx.forEach((i) => (pool[i].rank = rank)));
-  const finalists = diverse(pool, objectives, Math.min(5, opts.finalists ?? 5));
+  /**
+   * Dos genomas con los mismos resultados son la misma opción para quien decide: queda el de menos palancas (una
+   * prioridad alta que no cambia nada sobra). Luego se eligen las más distintas del mejor frente.
+   */
+  const pickDiverse = (archive: Map<string, Individual<PlasticsGenome>>, k: number, keepObjective: boolean) => {
+    const simplest = new Map<string, Individual<PlasticsGenome>>();
+    for (const ind of archive.values()) {
+      const sig = [...objectives.map((o) => ind.evaluation.metrics[o.metric]), ind.evaluation.metrics.tarde, keepObjective ? ind.genome.objective : ""].join("|");
+      const had = simplest.get(sig);
+      if (!had || leversOf(ind.genome) < leversOf(had.genome)) simplest.set(sig, ind);
+    }
+    const pool = [...simplest.values()];
+    paretoFronts(pool.map((p) => p.evaluation), objectives).forEach((idx, rank) => idx.forEach((i) => (pool[i].rank = rank)));
+    return diverse(pool, objectives, k);
+  };
 
-  const options = finalists.map((ind, i) => {
-    const o = placed.get(ind.key)!;
+  // Etapa 1: el generador recorre la población con el evaluador rápido (reglas) o, si se pide, con el cosimulador.
+  const first = stage(twoStage ? "reglas" : "cosim");
+  const population = opts.population ?? (twoStage ? 24 : 12);
+  const r = await evolve({ space, evaluator: first.evaluator, objectives, seeds, population, generations: opts.generations ?? (twoStage ? 8 : 4), seed, maxEvaluations: opts.maxEvaluations ?? (twoStage ? 200 : 48) });
+
+  // Etapa 2: el cosimulador coloca las mejores de las reglas y las variantes de siempre (así nunca sale peor).
+  const final = twoStage ? stage("cosim") : first;
+  if (twoStage) {
+    // Las reglas no saben agrupar por energía: el objetivo del cosimulador se conserva aparte para que llegue a la etapa 2.
+    const short = pickDiverse(first.archive, opts.toCosim ?? 6, true).map((x) => x.genome);
+    const todo = [...new Map([...seeds, ...short].map((g) => [genomeKey(g), g])).values()];
+    for (const g of todo) await final.evaluator.evaluate(g);
+  }
+  const finalists = pickDiverse(final.archive, Math.min(5, opts.finalists ?? 5), false);
+
+  // Probabilidad de cumplir: cada opción se ejecuta tal cual (mismo orden y mismas máquinas) con imprevistos al azar
+  // (Monte Carlo, con semilla) y cuenta cuántas veces los imprevistos no agregan pedidos tarde.
+  const options: StudyOption[] = [];
+  for (const [i, ind] of finalists.entries()) {
+    const o = final.placed.get(ind.key)!;
     const id = `${studyId}-${String.fromCharCode(65 + i)}`;
     o.plan.plan_id = id;
-    return { ...o, id, pareto_rank: ind.rank, evaluated_by: ["cosim"] };
-  });
+    let probability: StudyOption["probability"];
+    if (runs > 0) {
+      const v = variantFor(ind.genome);
+      const model = modelFor(cat, { ...f.molds, ...(v.molds ?? {}) });
+      const replayOpt = { now: input.now, previous: input.previous, events: f.events, stops: v.stops, fixed: f.fixed };
+      // La ejecución tranquila (sin imprevistos) es la referencia: el despacho por turnos no repite al minuto los
+      // tiempos del cosimulador, así que se compara la ejecución con imprevistos contra la misma ejecución sin ellos.
+      const calm = replayWithNoise(model, v.portfolio ?? f.portfolio, o.plan, replayOpt, () => 0.5);
+      const pr = await chance(
+        o.plan,
+        async (plan, rng) => {
+          const run = replayWithNoise(model, v.portfolio ?? f.portfolio, plan, replayOpt, rng);
+          return { feasible: run.late <= calm.late, metrics: { tarde: run.late, atraso_h: run.tardiness_h } };
+        },
+        runs,
+        seed + i,
+      );
+      probability = { p: Math.round(pr.p * 100) / 100, hits: pr.hits, runs: pr.runs };
+    }
+    options.push({ ...o, id, pareto_rank: ind.rank, evaluated_by: twoStage ? ["reglas", "cosim"] : ["cosim"], ...(probability ? { probability } : {}) });
+  }
+  const base = final.placed.get(genomeKey(seeds[0]))!;
   const best = options[0];
   const why = explain(f, best, best.label === base.label ? best : base, [base, ...options]);
+  const odds = best.probability ? ` Cumple las entregas en ${best.probability.hits} de ${best.probability.runs} ejecuciones con imprevistos (${Math.round(best.probability.p * 100)} %).` : "";
   const { question, baseModel, baseLoads, nowIso, now } = f;
   return {
     contract: "fractal-study.v1",
@@ -344,8 +413,18 @@ export async function generateStudy(newHighs: () => Promise<HighsLike>, cat: Cat
     baseline: { plan_id: input.previous.plan_id, kpis: input.previous.kpis, loads: baseLoads, max_load: maxOf(baseLoads), ...(input.scenario === "energia" && baseModel.energy ? { energy: energyFrom(baseModel, input.previous, now) } : {}) },
     options,
     best: best.id,
-    recommendation: `Recomendación: ${best.label.charAt(0).toLowerCase()}${best.label.slice(1)}. ${why}`,
+    recommendation: `Recomendación: ${best.label.charAt(0).toLowerCase()}${best.label.slice(1)}. ${why}${odds}`,
     seconds: Math.round((Date.now() - t0) / 100) / 10,
-    generator: { method: "genetico", seed: r.seed, population, generations: r.generations, evaluations: placed.size, seeds: seeds.length, objectives: objectives.map((o) => o.metric) },
+    generator: {
+      method: "genetico",
+      seed: r.seed,
+      population,
+      generations: r.generations,
+      evaluations: twoStage ? final.placed.size : first.placed.size,
+      ...(twoStage ? { rule_evaluations: first.placed.size } : {}),
+      seeds: seeds.length,
+      objectives: objectives.map((o) => o.metric),
+      ...(runs > 0 ? { runs } : {}),
+    },
   };
 }
