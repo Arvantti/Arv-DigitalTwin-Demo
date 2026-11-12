@@ -209,6 +209,9 @@ button.danger:hover { background: rgba(255, 59, 59, 0.4); border-color: #fff; }
 .fr-title { margin: 0 0 4px; font: 800 22px Inter, sans-serif; color: #e6d8ff; letter-spacing: 0.01em; }
 .fr-intro { margin: 0; max-width: 1150px; font: 400 14px/1.45 Inter, sans-serif; color: #c9cfdc; }
 .fr-intro b { color: #e6d8ff; }
+.fr-gen { display: flex; align-items: center; gap: 8px; margin-top: 10px; font: 600 13px Inter, sans-serif; color: #e6d8ff; cursor: pointer; flex-wrap: wrap; }
+.fr-gen input { accent-color: #a77bff; width: 16px; height: 16px; }
+.fr-gen small { font-weight: 400; color: var(--dim); }
 .fr-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; }
 .fr-card { border: 1px solid rgba(160, 110, 255, 0.35); border-radius: 12px; background: rgba(22, 18, 64, 0.85); padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; transition: border-color 0.15s, background 0.15s; }
 .fr-card:hover { border-color: #a06eff; }
@@ -244,6 +247,7 @@ button.danger:hover { background: rgba(255, 59, 59, 0.4); border-color: #fff; }
 .fr-note { margin: 0; font: 400 12px/1.4 Inter, sans-serif; color: #aab0be; }
 #fr-adopt { align-self: flex-start; padding: 11px 18px; font-size: 14px; }
 .fr-kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+@media (max-width: 640px) { .fr-reco { grid-template-columns: minmax(0, 1fr); padding: 12px; } .fr-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } .fr-v { flex-wrap: wrap; gap: 4px; font-size: 13px; } .fr-v b { font-size: 19px; } }
 .fr-kpi { border-radius: 10px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.12); padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; }
 .fr-v { display: flex; align-items: baseline; gap: 8px; font: 600 15px "IBM Plex Mono", monospace; }
 .fr-v s { color: #8e94a6; }
