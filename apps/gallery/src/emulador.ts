@@ -5,8 +5,12 @@
  * El emulador muestra el mismo instante que el gemelo 3D: el del play o la barra de tiempo, y AHORA si el gemelo está
  * EN VIVO (aps-store.ts, `shownNow`). Así el estado de cada máquina y las piezas del lote no dependen de cuándo se abre
  * la pantalla. Una falla o un paro se declara en el instante mostrado, con su reparación estimada. No se programan
- * paradas futuras (eso son escenarios del cosimulador y de Fractal). El evento (`plant-event.v1`) va al centro de
- * control, al gemelo 3D y al APS por aps-store.ts.
+ * paradas futuras (los paros previstos los programa el APS). El evento (`plant-event.v1`) va al centro de control, al
+ * gemelo 3D y al APS por aps-store.ts.
+ *
+ * Fallas al azar: el emulador es quien las genera (imprevistos.ts, con la tasa de la planta). Con la casilla activa,
+ * cada falla se declara cuando el reloj mostrado (en vivo o el play) pasa por su inicio. Son repetibles: la semilla es
+ * el día, así que el mismo play da las mismas fallas. El cosimulador y Fractal solo calculan con ellas.
  */
 import "./styles.css";
 import "./aps.css";
@@ -17,6 +21,8 @@ import type { PlantEvent, PlanScheduleRow } from "@twin/cosim/core/contracts.ts"
 import { activeEvents, events, model, onChange, onClock, PLASTICS, setEvents, sharedClock, shownClockText, shownNow, useDemoDays, vigente } from "./aps-store.ts";
 import { COLOR_NAMES, day, esc, nf, when } from "./schedule.ts";
 import { minOf, moldOf, plantPower, powerOf, unitsUntil } from "./plant-state.ts";
+import { parseLocal } from "@twin/cosim/core/time.ts";
+import { randomFailures, seeded } from "./imprevistos.ts";
 
 interface Eq {
   id: string;
@@ -194,7 +200,7 @@ function renderEvents(): void {
   $("emu-events").innerHTML = list.length
     ? list
         .map(
-          (e) => `<div class="emu-ev${e.cleared ? " cleared" : ""}"><b>${esc(e.id)} · ${esc(label(e.equipment))}</b> ${e.kind === "falla" ? "falla" : "paro de emergencia"} · ${esc(e.reason)}<br/>
+          (e) => `<div class="emu-ev${e.cleared ? " cleared" : ""}"><b>${esc(e.id)} · ${esc(label(e.equipment))}</b> ${e.kind === "falla" ? (e.id.startsWith("AZ-") ? "falla al azar" : "falla") : "paro de emergencia"} · ${esc(e.reason)}<br/>
             <small>${when(e.start)} · ${e.cleared ? `restablecida ${when(e.cleared)}` : `reparación estimada ${when(e.est_end)}`} · enviada al centro de control, al gemelo y al APS</small></div>`,
         )
         .join("")
@@ -210,6 +216,56 @@ function render(): void {
   renderMachine();
   renderEvents();
 }
+
+// ---- Fallas al azar ----
+const RANDOM_KEY = "emulador-fallas-azar";
+const DAY = 1440;
+let randomOn = false;
+try {
+  randomOn = localStorage.getItem(RANDOM_KEY) === "1";
+} catch {
+  /* sin almacenamiento: queda apagado */
+}
+/** Último instante revisado (minutos): solo se declaran las fallas que el reloj cruza hacia adelante. */
+let lastSeen: number | null = null;
+const seedOf = (text: string) => [...text].reduce((h, c) => (Math.imul(h, 31) + c.charCodeAt(0)) >>> 0, 7);
+/** Fallas al azar que caen en un día (00:00 en minutos), siempre las mismas para ese día. */
+const failuresOf = (day: number) => randomFailures(model, seeded(seedOf(`${PLASTICS}:azar:${day}`)), day, 1);
+
+function emitRandom(): void {
+  const now = parseLocal(shownNow());
+  const prev = lastSeen;
+  lastSeen = now;
+  // Un salto largo de la barra de tiempo no declara días enteros de fallas de golpe.
+  if (!randomOn || prev === null || now <= prev || now - prev > DAY) return;
+  const list = events();
+  const known = new Set(list.map((e) => `${e.equipment}|${e.start.slice(0, 16)}`));
+  const fresh: PlantEvent[] = [];
+  for (let d = Math.floor(prev / DAY) * DAY - DAY; d <= now; d += DAY)
+    for (const f of failuresOf(d)) {
+      const t = parseLocal(f.start);
+      if (t <= prev || t > now || known.has(`${f.equipment}|${f.start.slice(0, 16)}`)) continue;
+      known.add(`${f.equipment}|${f.start.slice(0, 16)}`);
+      fresh.push(f);
+    }
+  if (!fresh.length) return;
+  const n = list.filter((e) => e.id.startsWith("AZ-")).length;
+  const named = fresh.sort((a, b) => (a.start < b.start ? -1 : 1)).map((f, i) => ({ ...f, id: `AZ-${String(n + i + 1).padStart(3, "0")}` }));
+  setEvents([...named.reverse(), ...list]);
+  render();
+}
+
+const randomBox = $<HTMLInputElement>("emu-random");
+randomBox.checked = randomOn;
+randomBox.onchange = () => {
+  randomOn = randomBox.checked;
+  lastSeen = null;
+  try {
+    localStorage.setItem(RANDOM_KEY, randomOn ? "1" : "0");
+  } catch {
+    /* sin almacenamiento */
+  }
+};
 
 function tick(): void {
   const live = !sharedClock();
@@ -235,10 +291,14 @@ onChange(() => {
   render();
 });
 onClock(() => {
+  emitRandom();
   tick();
   redraw();
 });
 render();
 tick();
-setInterval(tick, 1000);
+setInterval(() => {
+  emitRandom();
+  tick();
+}, 1000);
 setInterval(render, 30000);
