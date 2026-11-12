@@ -7,13 +7,17 @@ import { solve } from "@twin/cosim/adapters/plastic-injection-plant-v1/solve.ts"
 import { fsCatalog, MODEL_DIR } from "@twin/cosim/adapters/plastic-injection-plant-v1/scripts/fs-catalog.ts";
 import { runStudy, type StudyInput } from "../study.ts";
 import { generateStudy } from "../generate.ts";
+// Los imprevistos los entrega el emulador; Fractal solo calcula con ellos.
+import { imprevistos } from "../../../../../apps/gallery/src/imprevistos.ts";
+import { parseLocal } from "@twin/cosim/core/time.ts";
 
 const cat = fsCatalog();
 const model = buildModel(cat);
 const portfolio = JSON.parse(readFileSync(`${MODEL_DIR}orders/cartera-2026-11.json`, "utf8")) as CustomerOrders;
 const NOW = "2026-11-04T10:00";
 const highs = () => highsLoader();
-const OPTS = { seed: 1, runs: 20 };
+const RUNS = 20;
+const OPTS = { seed: 1, imprevistos: imprevistos(model, parseLocal(NOW), RUNS, 1) };
 
 describe("Fractal de plásticos con generador genético", async () => {
   const vigente: ProductionPlan = solve(await highsLoader(), model, portfolio);
@@ -52,12 +56,12 @@ describe("Fractal de plásticos con generador genético", async () => {
         expect(o.plan.plan_id).toBe(o.id);
         expect(o.plan.source).toBe("fractal");
         expect(o.evaluated_by).toEqual(["reglas", "cosim"]);
-        expect(o.probability!.runs).toBe(OPTS.runs);
+        expect(o.probability!.runs).toBe(RUNS);
         expect(o.probability!.p).toBeGreaterThanOrEqual(0);
         expect(o.probability!.p).toBeLessThanOrEqual(1);
       }
-      // El cosimulador solo coloca las variantes de siempre y las mejores por reglas (6), no toda la población.
-      expect(gen.generator!.evaluations).toBeLessThanOrEqual(manual.options.length + 6 + 1);
+      // Fractal genera; el cosimulador calcula solo las 5 mejores (más "recalcular", la referencia de entregas).
+      expect(gen.generator!.evaluations).toBeLessThanOrEqual(6);
       expect(gen.generator!.rule_evaluations!).toBeGreaterThan(gen.generator!.evaluations);
       expect(gen.question).toBe(manual.question);
       if (name === "fijadas") {

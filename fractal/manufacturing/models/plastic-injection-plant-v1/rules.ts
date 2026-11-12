@@ -8,21 +8,17 @@
  * - los tiempos (turnos, paradas, montajes, purgas, espera de componentes) los pone el mismo despacho del
  *   cosimulador (plan.ts), así el plan se ve en el Gantt y en el 3D igual que cualquier otro.
  *
- * También simula la ejecución de un plan con imprevistos (Monte Carlo) para estimar la probabilidad de cumplir.
+ * También ejecuta un plan con los imprevistos que entrega el emulador (fallas y variación del ciclo) para estimar la
+ * probabilidad de cumplir. Fractal no genera los imprevistos: solo calcula con ellos.
  */
 import type { CustomerOrders, PlannedStop, PlantEvent, ProductionPlan } from "@twin/cosim/core/contracts.ts";
-import { iso, parseLocal } from "@twin/cosim/core/time.ts";
 import type { PlasticsModel, ProductInfo, Step } from "@twin/cosim/adapters/plastic-injection-plant-v1/model.ts";
 import { context, dispatch, toPlan, WEIGHT, type Chunk, type Job } from "@twin/cosim/adapters/plastic-injection-plant-v1/plan.ts";
 import { editedPlan, queuesOf } from "@twin/cosim/adapters/plastic-injection-plant-v1/manual.ts";
-import type { Rng } from "@twin/fractal-core";
+import type { Imprevistos } from "../../contracts.ts";
 
 /** Cuánto se adelanta en la cola un pedido de importancia alta (minutos). */
 const RUSH_AHEAD_MIN = 2 * 1440;
-/** Variación del tiempo de ciclo en la simulación de imprevistos: ±5 % por etapa (supuesto de la demo). */
-export const CYCLE_SPREAD = 0.05;
-/** Días hacia adelante en los que pueden caer fallas imprevistas. */
-const FAILURE_DAYS = 7;
 
 export interface RulesOptions {
   now?: string;
@@ -56,46 +52,24 @@ export function rulesPlan(model: PlasticsModel, portfolio: CustomerOrders, opt: 
   return toPlan(ctx, portfolio, dispatch(ctx, queues), { planId: opt.planId ?? "REGLAS", source: "fractal", notes: ["Programación por reglas de despacho (entrega, importancia, máquina menos cargada)."] });
 }
 
-/** El mismo modelo con el tiempo de ciclo de cada etapa variado al azar (±CYCLE_SPREAD). */
-export function noisyModel(model: PlasticsModel, rng: Rng): PlasticsModel {
-  const factor = new Map<string, number>();
-  const step = (s: Step): Step => {
-    const k = `${s.product}|${s.stage}`;
-    if (!factor.has(k)) factor.set(k, 1 + CYCLE_SPREAD * (2 * rng() - 1));
-    return { ...s, unitMin: s.unitMin * factor.get(k)! };
-  };
+/** El mismo modelo con el tiempo de ciclo de cada etapa multiplicado por el factor que midió el emulador. */
+export function withCycle(model: PlasticsModel, cycle: Imprevistos["cycle"] = {}): PlasticsModel {
+  const step = (s: Step): Step => ({ ...s, unitMin: s.unitMin * (cycle[`${s.product}|${s.stage}`] ?? 1) });
   const products: Record<string, ProductInfo> = {};
   for (const [id, p] of Object.entries(model.products)) products[id] = { ...p, final: step(p.final), components: p.components.map((c) => ({ ...c, step: step(c.step) })) };
   return { ...model, products };
 }
 
 /**
- * Fallas imprevistas al azar con los datos de la planta (demand.yaml, downtime): cada inyectora, cada día, tiene
- * `per_day_pct` % de probabilidad de una parada de `hours` horas, en algún momento del turno.
+ * Ejecuta las colas de un plan (el orden y la máquina de cada lote desde AHORA) y devuelve los pedidos tarde que
+ * quedarían. El plan no se recalcula: se ve qué le pasa si la planta lo sigue tal cual.
+ * - sin `imprevistos`: ejecución tranquila, solo con los eventos y paros previstos conocidos (la referencia);
+ * - con `imprevistos` (del emulador): además sus fallas y su tiempo de ciclo.
  */
-export function randomFailures(model: PlasticsModel, rng: Rng, now: number): PlantEvent[] {
-  const d = model.downtime;
-  if (!d) return [];
-  const out: PlantEvent[] = [];
-  const [h0, h1] = d.hours;
-  for (const m of model.machines)
-    for (let day = 0; day < FAILURE_DAYS; day++) {
-      if (rng() >= d.per_day_pct / 100) continue;
-      const start = model.calendar.nextWork(now + day * 1440 + Math.floor(rng() * 1440));
-      const hours = h0 + (h1 - h0) * rng();
-      out.push({ contract: "plant-event.v1", id: `MC-${m}-${day}`, plant: model.plant, equipment: m, kind: "falla", reason: d.reasons[Math.floor(rng() * d.reasons.length)] ?? "falla", start: iso(start, model.timezone), est_end: iso(start + hours * 60, model.timezone) });
-    }
-  return out;
-}
-
-/**
- * Ejecuta las colas de un plan (el orden y la máquina de cada lote desde AHORA) con imprevistos y devuelve los
- * pedidos tarde que quedarían. El plan no se recalcula: se ve qué le pasa si la planta lo sigue tal cual.
- */
-export function replayWithNoise(model: PlasticsModel, portfolio: CustomerOrders, plan: ProductionPlan, opt: RulesOptions, rng: Rng): { late: number; tardiness_h: number } {
+export function replayWithNoise(model: PlasticsModel, portfolio: CustomerOrders, plan: ProductionPlan, opt: RulesOptions, imprevistos?: Imprevistos): { late: number; tardiness_h: number } {
   const now = opt.now ?? portfolio.plan_start;
-  const noisy = noisyModel(model, rng);
-  const events = [...(opt.events ?? []), ...randomFailures(model, rng, parseLocal(now))];
-  const p = editedPlan(noisy, portfolio, { contract: "manual-edit.v1", plan_id: plan.plan_id, author: "Fractal (Monte Carlo)", queues: queuesOf(plan, now), moves: [] }, { ...opt, events });
+  const m = imprevistos ? withCycle(model, imprevistos.cycle) : model;
+  const events = [...(opt.events ?? []), ...(imprevistos?.events ?? [])];
+  const p = editedPlan(m, portfolio, { contract: "manual-edit.v1", plan_id: plan.plan_id, author: "Fractal (imprevistos del emulador)", queues: queuesOf(plan, now), moves: [] }, { ...opt, events });
   return { late: p.kpis.late_orders, tardiness_h: p.kpis.tardiness_h };
 }

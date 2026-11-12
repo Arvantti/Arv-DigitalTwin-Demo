@@ -3,7 +3,7 @@
  * Fractal prueba combinaciones (prioridades, moldes de repuesto, mudanza de moldes), cada una la coloca el
  * cosimulador, y recomienda la mejor. Recomienda, no ejecuta: el APS decide si la adopta.
  */
-import type { PlanKpis, ProductionPlan } from "@twin/cosim/core/contracts.ts";
+import type { PlanKpis, PlantEvent, ProductionPlan } from "@twin/cosim/core/contracts.ts";
 
 export type Scenario = "adelantar" | "balancear" | "falla" | "fijadas" | "cambios" | "energia";
 
@@ -35,10 +35,20 @@ export interface StudyOption {
   pareto_rank?: number;
   /** Generador genético: evaluadores que la puntuaron, en orden ("cosim", "reglas", "jev"). */
   evaluated_by?: string[];
-  /** Probabilidad de cumplir: en cuántas de `runs` ejecuciones del plan tal cual (mismo orden y mismas máquinas) con
-   * imprevistos (fallas al azar con los datos de la planta, ciclo ±5 %) no aparece ningún pedido tarde de más frente a
-   * la misma ejecución sin imprevistos. */
+  /** Probabilidad de cumplir: en cuántas de `runs` ejecuciones del plan tal cual (mismo orden y mismas máquinas) con los
+   * imprevistos que entrega el emulador no aparece ningún pedido tarde de más frente a la misma ejecución sin ellos. */
   probability?: { p: number; hits: number; runs: number };
+}
+
+/**
+ * Una ejecución con imprevistos, tal como la entrega el EMULADOR. El emulador genera las fallas al azar y la variación
+ * del ciclo; el APS solo lleva los paros previstos; Fractal y el cosimulador no generan fallas, solo calculan con ellas.
+ */
+export interface Imprevistos {
+  /** Fallas al azar (plant-event.v1). */
+  events: PlantEvent[];
+  /** Factor del tiempo de ciclo por etapa, "producto|etapa" → p. ej. 1,03 (sin clave = 1). */
+  cycle?: Record<string, number>;
 }
 
 export interface FractalStudy {
@@ -65,7 +75,7 @@ export interface FractalStudy {
     rule_evaluations?: number;
     seeds: number;
     objectives: string[];
-    /** Ejecuciones con imprevistos por opción para la probabilidad. */
+    /** Ejecuciones con imprevistos del emulador por opción para la probabilidad. */
     runs?: number;
   };
 }
