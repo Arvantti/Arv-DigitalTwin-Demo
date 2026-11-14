@@ -139,6 +139,31 @@ html,body{width:1080px;height:1920px;margin:0;overflow:hidden;background:var(--b
 .tapa{position:absolute;background:#0b1430;display:flex;align-items:center;padding:0 16px;font:600 25px Inter,sans-serif;color:#cfd8ea;border-radius:6px}
 .tapa.t-err{border:2px solid #f0a020;color:#ff6b5b;background:#0d1530}
 .marcaN{position:absolute;left:0;right:0;margin:0 auto;width:max-content;padding:10px 26px;border-radius:10px;background:#f5a623;color:#111;font:800 40px Inter,sans-serif;opacity:0}
+.uni{opacity:0;overflow:hidden}
+.uni svg{position:absolute;left:0;top:0}
+.uniT{position:absolute;left:0;right:0;top:26px;text-align:center;font:700 40px "JetBrains Mono",monospace;color:#9fc6ff;letter-spacing:2px}
+.uniT span{position:absolute;left:0;right:0;opacity:0}
+.uni .eje{stroke:#4ea7ff66;stroke-width:2}
+.uni .ejeT{fill:#b9c8e6;font:600 30px Inter,sans-serif}
+.uni .pl{fill:#4ea7ff}
+.uni .cruce{stroke:#ffd166;stroke-width:2.5;opacity:0}
+.uni .fr{fill:none;stroke:#6dff9c;stroke-width:5;opacity:0;stroke-dasharray:1;stroke-dashoffset:1}
+.uni .best circle{fill:#6dff9c;stroke:#fff;stroke-width:4}
+.uni .best text{fill:#fff;font:800 40px "Inter Display",Inter,sans-serif}
+.uni .best{opacity:0}
+.esc3{position:absolute;display:flex;flex-direction:column;gap:24px}
+.esc3.h{flex-direction:row}
+.escC{position:relative;flex:1;display:flex;gap:22px;padding:18px;border-radius:18px;background:#0b1224ee;box-shadow:0 0 0 1.5px #4ea7ff55,0 30px 90px #000a;opacity:0}
+.esc3.h .escC{flex-direction:column}
+.escI{position:relative;flex:0 0 46%;border-radius:12px;overflow:hidden}
+.esc3.h .escI{flex:0 0 46%}
+.escI img{width:100%;height:100%;object-fit:cover;display:block}
+.escI b{position:absolute;left:12px;top:10px;font:800 30px "Inter Display",Inter,sans-serif;color:#fff;text-shadow:0 2px 12px #000}
+.escB{flex:1;display:flex;flex-direction:column;justify-content:center;gap:14px}
+.escB p{margin:0;font:600 26px Inter,sans-serif;color:#cfd8ea}
+.escB i{display:block;height:14px;margin-top:6px;border-radius:7px;background:#ffffff14}
+.escB em{display:block;height:100%;border-radius:7px;background:linear-gradient(90deg,#2d7ff9,#6dff9c)}
+.escY{position:absolute;right:16px;top:-22px;padding:8px 18px;border-radius:999px;background:#4ea7ff;color:#05070c;font:800 28px Inter,sans-serif;opacity:0}
 .clab{position:absolute;left:60px;right:60px;margin:0;text-align:center;font:800 56px/1.12 "Inter Display",Inter,sans-serif;letter-spacing:-1px;color:#fff;text-shadow:0 4px 30px #000;opacity:0}
 .clab b{color:var(--electric)}
 .sub{position:absolute;left:60px;right:60px;top:1395px;height:180px;display:flex;align-items:center;justify-content:center;text-align:center}

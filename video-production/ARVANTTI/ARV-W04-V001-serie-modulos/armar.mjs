@@ -450,16 +450,89 @@ function componer() {
     at("#e-sol .apsT p .w", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.4, stagger: 0.1, ease: "power3.out" }, enPalabra(x, so.siglaEn));
     at("#e-sol .apsT small .w", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.35, stagger: 0.07, ease: "power3.out" }, enPalabra(x, so.definicionEn));
     to("#e-sol .apsT", { opacity: 0, y: -40, duration: 0.4 }, tiempos_[0] - 0.4);
+    // Gráficos propios (sin tomas de la demo): el universo de planes y los escenarios lado a lado.
+    const grafico = (c, i, a, b, dur) => {
+      const PX = HORIZ ? 880 : 40, PW = HORIZ ? 960 : 1000, PH = HORIZ ? 700 : 900, top = HORIZ ? 90 : 400;
+      const fases = (c.fases || []).map((f) => enPalabra(x, f));
+      const lab = `<p class="clab" style="top:${HORIZ ? 380 : top + PH + 40}px">${c.label}</p>`;
+      if (c.grafico === "universo") {
+        // Puntos = planes posibles. Cada generación se acercan al frente de mejores equilibrios.
+        let sem = 7; const rnd = () => ((sem = (sem * 16807) % 2147483647) / 2147483647);
+        const N = 110, M = 70, w = PW - 2 * M, h = PH - 2 * M - 40, X0 = M, Y0 = PH - M;
+        const frente = (u) => [0.18 + 0.78 * Math.cos(u), 0.18 + 0.78 * Math.sin(u)]; // cuarto de círculo arriba a la derecha
+        const gen = Array.from({ length: N }, () => {
+          const u = rnd() * Math.PI / 2, p0 = [0.05 + 0.6 * rnd(), 0.05 + 0.6 * rnd()], f = frente(u);
+          return [0, 0.45, 0.8, 0.97].map((k, g) => { const j = (1 - k) * 0.08 * (rnd() - 0.5); return [p0[0] + (f[0] - p0[0]) * k + j, p0[1] + (f[1] - p0[1]) * k + j]; });
+        });
+        const P = ([u, v]) => [Math.round(X0 + u * w), Math.round(Y0 - v * h)];
+        const ruta = Array.from({ length: 21 }, (_, k) => P(frente((k / 20) * Math.PI / 2))).map(([px, py], k) => `${k ? "L" : "M"}${px},${py}`).join("");
+        const top3 = [0.25, 0.78, 1.32].map((u) => P(frente(u)));
+        const gens = ["Generación 1", "Generación 20", "Generación 80", "Generación 300"];
+        clip(`pg${i}`, "scene", a, dur, `<div class="pframe uni" style="left:${PX}px;width:${PW}px;top:${top}px;height:${PH}px">
+          <div class="uniT">${gens.map((g, k) => `<span class="g${k}">${g}</span>`).join("")}</div>
+          <svg viewBox="0 0 ${PW} ${PH}" width="${PW}" height="${PH}">
+            <line class="eje" x1="${X0}" y1="${Y0}" x2="${X0 + w}" y2="${Y0}"/><line class="eje" x1="${X0}" y1="${Y0}" x2="${X0}" y2="${Y0 - h}"/>
+            <text class="ejeT" x="${X0 + w}" y="${Y0 + 44}" text-anchor="end">Cumple a tiempo →</text>
+            <text class="ejeT" transform="translate(${X0 - 24},${Y0 - h}) rotate(-90)" text-anchor="end">Menos energía →</text>
+            ${Array.from({ length: 8 }, (_, k) => `<line class="cruce" id="cx${i}-${k}" x1="0" y1="0" x2="0" y2="0"/>`).join("")}
+            <path class="fr" d="${ruta}" pathLength="1"/>
+            ${gen.map((g, k) => { const [px, py] = P(g[0]); return `<circle class="pl" id="d${i}-${k}" cx="${px}" cy="${py}" r="9"/>`; }).join("")}
+            ${top3.map(([px, py], k) => `<g class="best" id="b${i}-${k}"><circle cx="${px}" cy="${py}" r="20"/><text x="${px}" y="${py - 34}" text-anchor="middle">${"ABC"[k]}</text></g>`).join("")}
+          </svg></div>${lab}`, 6 + i * 2);
+        const [t1, t2, t3, tF] = [0, 1, 2, 3].map((k) => fases[k] ?? a + ((k + 1) * dur) / 5);
+        at(`#pg${i} .pframe`, { opacity: 0, scale: 0.92 }, { opacity: 1, scale: 1, duration: 0.35, ease: "power3.out" }, a);
+        at(`#pg${i} .pl`, { opacity: 0, scale: 0, transformOrigin: "50% 50%" }, { opacity: 0.85, scale: 1, duration: 0.25, stagger: 0.012, ease: "back.out(2)" }, a + 0.2);
+        at(`#pg${i} .g0`, { opacity: 0 }, { opacity: 1, duration: 0.3 }, a + 0.3);
+        [t1, t2, t3].forEach((t, g) => {
+          to(`#pg${i} .g${g}`, { opacity: 0, duration: 0.2 }, t - 0.2);
+          at(`#pg${i} .g${g + 1}`, { opacity: 0 }, { opacity: 1, duration: 0.25 }, t);
+          for (let k = 0; k < 8; k++) {
+            const d1 = gen[(k * 13 + g * 7) % N][g], d2 = gen[(k * 29 + g * 11 + 5) % N][g];
+            const [x1, y1] = P(d1), [x2, y2] = P(d2);
+            at(`#cx${i}-${k}`, { attr: { x1, y1, x2, y2 }, opacity: 0 }, { attr: { x1, y1, x2, y2 }, opacity: 0.9, duration: 0.15 }, t - 0.45 + k * 0.03);
+            to(`#cx${i}-${k}`, { opacity: 0, duration: 0.25 }, t + 0.1);
+          }
+          gen.forEach((p, k) => { const [px, py] = P(p[g + 1]); to(`#d${i}-${k}`, { attr: { cx: px, cy: py }, duration: 0.9, ease: "power2.inOut" }, t); });
+        });
+        at(`#pg${i} .fr`, { strokeDashoffset: 1, strokeDasharray: 1, opacity: 1 }, { strokeDashoffset: 0, strokeDasharray: 1, opacity: 1, duration: 0.8, ease: "power2.out" }, tF);
+        to(`#pg${i} .pl`, { opacity: 0.25, duration: 0.4 }, tF);
+        at(`#pg${i} .best`, { opacity: 0, scale: 0, transformOrigin: "50% 50%" }, { opacity: 1, scale: 1, duration: 0.35, stagger: 0.15, ease: "back.out(2.5)" }, tF + 0.3);
+      } else if (c.grafico === "escenarios") {
+        const fotos = ["p-heroe", "p-medio", "p-inyectoras-2"];
+        const barras = [[0.92, 0.6, 0.45], [0.8, 0.85, 0.75], [0.55, 0.7, 0.95]];
+        const metas = c.metas || ["A tiempo", "Ocupación", "Ahorro de energía"];
+        const elegido = c.elegido ?? 1;
+        clip(`pg${i}`, "scene", a, dur, `<div class="esc3 ${HORIZ ? "h" : ""}" style="left:${PX}px;width:${PW}px;top:${top}px;height:${PH}px">${fotos.map((f, k) => `
+          <div class="escC" id="ec${i}-${k}"><div class="escI"><img src="${tm(f)}" alt=""><b>Escenario ${"ABC"[k]}</b></div>
+            <div class="escB">${metas.map((m, j) => `<p><span>${m}</span><i><em style="width:${Math.round(barras[k][j] * 100)}%"></em></i></p>`).join("")}</div>
+            ${k === elegido ? `<div class="escY">Tú eliges</div>` : ""}</div>`).join("")}</div>${lab}`, 6 + i * 2);
+        at(`#pg${i} .escC`, { opacity: 0, y: 60 }, { opacity: 1, y: 0, duration: 0.45, stagger: 0.18, ease: "power3.out" }, a);
+        at(`#pg${i} .escB em`, { scaleX: 0, transformOrigin: "0% 50%" }, { scaleX: 1, duration: 0.6, stagger: 0.05, ease: "power2.out" }, a + 0.5);
+        const tY = fases[0] ?? a + dur * 0.55;
+        to(`#pg${i} .escC:not(#ec${i}-${elegido})`, { opacity: 0.35, duration: 0.4 }, tY);
+        at(`#ec${i}-${elegido}`, { boxShadow: "0 0 0 0px #4ea7ff" }, { boxShadow: "0 0 0 4px #4ea7ff", scale: 1.03, duration: 0.35, ease: "back.out(2)" }, tY);
+        at(`#ec${i}-${elegido} .escY`, { opacity: 0, scale: 1.4 }, { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(2)" }, tY + 0.1);
+      }
+      at(`#pg${i} .clab`, { opacity: 0, x: -40 }, { opacity: 1, x: 0, duration: 0.4, ease: "power3.out" }, a + 0.2);
+      if (i + 1 < so.clips.length) to(`#pg${i} .clab`, { opacity: 0, duration: 0.2 }, b - 0.4);
+      to(`#pg${i} > div`, { opacity: 0, duration: 0.3 }, b - 0.3);
+      sfx(`pg${i}`, "click-soft.mp3", a, 0.2);
+    };
     so.clips.forEach((c, i) => {
       const a = tiempos_[i] - 0.25, b = (i + 1 < tiempos_.length ? tiempos_[i + 1] : tG) + 0.15;
       const dur = b - a;
+      if (c.grafico) return grafico(c, i, a, b, dur);
       const rel = `assets/clips/${VIDEO}-c${i}${HORIZ ? "-h" : ""}.mp4`;
       const [cx, cy, cw, ch] = c.crop || [158, 72, 1604, 904];
       const PW = HORIZ ? 960 : 1000, PX = HORIZ ? 880 : 40;
       const h = Math.round((PW * ch) / cw / 2) * 2;
-      if (!fs.existsSync(T(rel)) || JSON.parse(fs.readFileSync(T(rel + ".json"), "utf8") || "{}").k !== `${fuente}|${c.ss}|${dur.toFixed(2)}|${cx},${cy},${cw},${ch}|${PW}`) {
-        sh("ffmpeg", ["-y", "-v", "error", "-ss", String(c.ss), "-t", (dur + 0.2).toFixed(2), "-i", fuente, "-vf", `crop=${cw}:${ch}:${cx}:${cy},scale=${PW}:${h}:flags=lanczos,fps=${FPS},format=yuv420p`, "-an", "-c:v", "libx264", "-crf", "14", "-preset", "slow", T(rel)]);
-        fs.writeFileSync(T(rel + ".json"), JSON.stringify({ k: `${fuente}|${c.ss}|${dur.toFixed(2)}|${cx},${cy},${cw},${ch}|${PW}` }));
+      // Las tomas salen de la demo de plásticos: ocultar.py difumina sus palabras propias (molde, inyectora…).
+      const ocultar = so.ocultar !== false && c.ocultar !== false;
+      const clave = `${fuente}|${c.ss}|${dur.toFixed(2)}|${cx},${cy},${cw},${ch}|${PW}${ocultar ? "|ocultar1" : ""}`;
+      if (!fs.existsSync(T(rel)) || JSON.parse(fs.readFileSync(T(rel + ".json"), "utf8") || "{}").k !== clave) {
+        if (ocultar) sh("python3", [T("ocultar.py"), fuente, String(c.ss), (dur + 0.2).toFixed(2), `${cx},${cy},${cw},${ch}`, String(PW), T(rel)]);
+        else sh("ffmpeg", ["-y", "-v", "error", "-ss", String(c.ss), "-t", (dur + 0.2).toFixed(2), "-i", fuente, "-vf", `crop=${cw}:${ch}:${cx}:${cy},scale=${PW}:${h}:flags=lanczos,fps=${FPS},format=yuv420p`, "-an", "-c:v", "libx264", "-crf", "14", "-preset", "slow", T(rel)]);
+        fs.writeFileSync(T(rel + ".json"), JSON.stringify({ k: clave }));
       }
       const top = HORIZ ? Math.max(90, Math.round((880 - h) / 2)) : h > 700 ? 430 : 560;
       clip(`pc${i}`, "scene", a, dur, `<div class="pframe" style="left:${PX}px;width:${PW}px;top:${top}px;height:${h}px"></div><p class="clab" style="top:${HORIZ ? 380 : top + h + 40}px">${c.label}</p>`, 6 + i * 2);

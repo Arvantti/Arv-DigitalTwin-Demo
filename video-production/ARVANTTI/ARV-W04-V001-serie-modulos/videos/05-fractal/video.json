@@ -1,0 +1,80 @@
+{
+  "id": "05-fractal",
+  "salida": "serie-05-fractal",
+  "modulo": 4,
+  "parte": 5,
+  "kicker": "MÓDULO 4 · FRACTAL",
+  "escenas": {
+    "gancho": {
+      "voz": "Entregar a tiempo o gastar menos. ¿Y si no tuvieras que elegir a ciegas? Compáralo antes en el gemelo 3D.",
+      "titulo": "Entregar a tiempo o gastar menos.",
+      "tarjeta": {
+        "titulo": "Reunión de planeación",
+        "cuerpo": "¿Horas extra para cumplir…<br><b>o cuidamos el presupuesto?</b>",
+        "color": "#7a4dd8",
+        "rompeEn": "Compáralo"
+      }
+    },
+    "dolor": {
+      "voz": "Casi nunca hay una sola respuesta correcta. Mejorar una cosa empeora otra. Pasa en la fábrica, en la bodega, en la planta de procesos y en la red de servicios.",
+      "cortes": ["Casi nunca", "en la fábrica", "en la bodega", "en la planta de procesos", "en la red"],
+      "saltarPrimero": true,
+      "intro": ["Metas.", "Que chocan.", "Siempre."],
+      "items": [
+        ["Manufactura", "Si lleno las máquinas al máximo, se dispara la factura de energía.", "p-inyectoras"],
+        ["Logística", "Despachar todo hoy llena los camiones a medias; esperar a mañana retrasa a dos clientes.", "logistica"],
+        ["Procesos", "Producir en lotes grandes ahorra limpiezas, pero llena la bodega de producto que vence.", "salsas"],
+        ["Servicios con procesos", "Bajar la presión ahorra energía, pero si bajas de más una zona se queda sin servicio.", "red"]
+      ]
+    },
+    "solucion": {
+      "tipo": "aps",
+      "fuente": "/mnt/project-files/video-plasticos/demo-plasticos-v007-liviano.mp4",
+      "titulo": {
+        "grande": "Fractal",
+        "nombre": "Compara escenarios",
+        "def": "Con varios objetivos a la vez.",
+        "size": 200
+      },
+      "siglaEn": "compara escenarios",
+      "definicionEn": "con varios objetivos",
+      "gemeloEn": "Solo entonces el plan",
+      "voz": "Fractal compara escenarios con varios objetivos a la vez. Antes de optimizar, aprende las reglas de negocio y de producción de tu empresa, las mismas que ya le enseñaste al cosimulador, así que ningún escenario rompe una regla. Solo entonces genera un universo de planes posibles para tu semana. Para encontrar los mejores usa algoritmos genéticos, que funcionan como la evolución: cruzan los mejores planes entre sí, generación tras generación, y se quedan con los que mejor equilibran todas tus metas: cumplir a tiempo, máxima ocupación, menos energía, menos cambios. Eso se llama optimización multiobjetivo, con los objetivos que tú le digas que debe incluir: no gana el mejor en una sola cosa, gana el mejor equilibrio. Ves los mejores en el gemelo, uno al lado del otro, y eliges tú con números en la mano. Solo entonces el plan va a la planta.",
+      "clips": [
+        {
+          "desde": "Antes de optimizar",
+          "ss": 207,
+          "crop": [300, 72, 1000, 764],
+          "label": "Primero, <b>tus reglas</b>"
+        },
+        {
+          "desde": "genera un universo",
+          "grafico": "universo",
+          "fases": ["algoritmos genéticos", "cruzan los mejores", "generación tras", "se quedan con"],
+          "label": "Un universo de planes que <b>evoluciona</b>"
+        },
+        {
+          "desde": "Eso se llama",
+          "ss": 463.5,
+          "crop": [640, 240, 1120, 600],
+          "label": "Tú decides <b>qué metas cuentan</b>"
+        },
+        {
+          "desde": "Ves los mejores",
+          "grafico": "escenarios",
+          "fases": ["y eliges tú"],
+          "metas": ["A tiempo", "Ocupación", "Ahorro de energía"],
+          "label": "Los mejores, <b>lado a lado</b>"
+        }
+      ]
+    },
+    "modulos": {
+      "voz": "Módulo cuatro de siete: el que compara escenarios antes de decidir."
+    },
+    "cierre": {
+      "voz": "Este es el quinto de ocho videos. En el próximo, Control Center: tu planta en vivo, en una sola pantalla. Arvantti DigitalTwin. Decide antes de que pase.",
+      "cta": "Parte 5 de 8 · <b>sigue la serie</b>: en la parte 6, Control Center en vivo",
+      "sigue": "Continúa en la parte 6 →"
+    }
+  }
+}
