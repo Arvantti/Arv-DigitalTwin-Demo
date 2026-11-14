@@ -452,7 +452,7 @@ function componer() {
     to("#e-sol .apsT", { opacity: 0, y: -40, duration: 0.4 }, tiempos_[0] - 0.4);
     // Gráficos propios (sin tomas de la demo): el universo de planes y los escenarios lado a lado.
     const grafico = (c, i, a, b, dur) => {
-      const PX = HORIZ ? 880 : 40, PW = HORIZ ? 960 : 1000, PH = HORIZ ? 700 : 900, top = HORIZ ? 90 : 400;
+      const PX = HORIZ ? 880 : 40, PW = HORIZ ? 960 : 1000, PH = HORIZ ? 700 : 840, top = HORIZ ? 90 : 400;
       const fases = (c.fases || []).map((f) => enPalabra(x, f));
       const lab = `<p class="clab" style="top:${HORIZ ? 380 : top + PH + 40}px">${c.label}</p>`;
       if (c.grafico === "universo") {
@@ -528,9 +528,9 @@ function componer() {
       const h = Math.round((PW * ch) / cw / 2) * 2;
       // Las tomas salen de la demo de plásticos: ocultar.py difumina sus palabras propias (molde, inyectora…).
       const ocultar = so.ocultar !== false && c.ocultar !== false;
-      const clave = `${fuente}|${c.ss}|${dur.toFixed(2)}|${cx},${cy},${cw},${ch}|${PW}${ocultar ? "|ocultar1" : ""}`;
+      const clave = `${fuente}|${c.ss}|${dur.toFixed(2)}|${cx},${cy},${cw},${ch}|${PW}${ocultar ? "|ocultar1" : ""}${c.congelar ? "|congelar" : ""}`;
       if (!fs.existsSync(T(rel)) || JSON.parse(fs.readFileSync(T(rel + ".json"), "utf8") || "{}").k !== clave) {
-        if (ocultar) sh("python3", [T("ocultar.py"), fuente, String(c.ss), (dur + 0.2).toFixed(2), `${cx},${cy},${cw},${ch}`, String(PW), T(rel)]);
+        if (ocultar) sh("python3", [T("ocultar.py"), fuente, String(c.ss), (dur + 0.2).toFixed(2), `${cx},${cy},${cw},${ch}`, String(PW), T(rel), ...(c.congelar ? ["congelar"] : [])]);
         else sh("ffmpeg", ["-y", "-v", "error", "-ss", String(c.ss), "-t", (dur + 0.2).toFixed(2), "-i", fuente, "-vf", `crop=${cw}:${ch}:${cx}:${cy},scale=${PW}:${h}:flags=lanczos,fps=${FPS},format=yuv420p`, "-an", "-c:v", "libx264", "-crf", "14", "-preset", "slow", T(rel)]);
         fs.writeFileSync(T(rel + ".json"), JSON.stringify({ k: clave }));
       }

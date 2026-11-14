@@ -17,14 +17,40 @@
     },
     "dolor": {
       "voz": "Casi nunca hay una sola respuesta correcta. Mejorar una cosa empeora otra. Pasa en la fábrica, en la bodega, en la planta de procesos y en la red de servicios.",
-      "cortes": ["Casi nunca", "en la fábrica", "en la bodega", "en la planta de procesos", "en la red"],
+      "cortes": [
+        "Casi nunca",
+        "en la fábrica",
+        "en la bodega",
+        "en la planta de procesos",
+        "en la red"
+      ],
       "saltarPrimero": true,
-      "intro": ["Metas.", "Que chocan.", "Siempre."],
+      "intro": [
+        "Metas.",
+        "Que chocan.",
+        "Siempre."
+      ],
       "items": [
-        ["Manufactura", "Si lleno las máquinas al máximo, se dispara la factura de energía.", "p-inyectoras"],
-        ["Logística", "Despachar todo hoy llena los camiones a medias; esperar a mañana retrasa a dos clientes.", "logistica"],
-        ["Procesos", "Producir en lotes grandes ahorra limpiezas, pero llena la bodega de producto que vence.", "salsas"],
-        ["Servicios con procesos", "Bajar la presión ahorra energía, pero si bajas de más una zona se queda sin servicio.", "red"]
+        [
+          "Manufactura",
+          "Si lleno las máquinas al máximo, se dispara la factura de energía.",
+          "p-inyectoras"
+        ],
+        [
+          "Logística",
+          "Despachar todo hoy llena los camiones a medias; esperar a mañana retrasa a dos clientes.",
+          "logistica"
+        ],
+        [
+          "Procesos",
+          "Producir en lotes grandes ahorra limpiezas, pero llena la bodega de producto que vence.",
+          "salsas"
+        ],
+        [
+          "Servicios con procesos",
+          "Bajar la presión ahorra energía, pero si bajas de más una zona se queda sin servicio.",
+          "red"
+        ]
       ]
     },
     "solucion": {
@@ -44,26 +70,48 @@
         {
           "desde": "Antes de optimizar",
           "ss": 207,
-          "crop": [300, 72, 1000, 764],
+          "crop": [
+            300,
+            72,
+            1000,
+            764
+          ],
           "label": "Primero, <b>tus reglas</b>"
         },
         {
           "desde": "genera un universo",
           "grafico": "universo",
-          "fases": ["algoritmos genéticos", "cruzan los mejores", "generación tras", "se quedan con"],
-          "label": "Un universo de planes que <b>evoluciona</b>"
+          "fases": [
+            "algoritmos genéticos",
+            "cruzan los mejores",
+            "generación tras",
+            "se quedan con"
+          ],
+          "label": "Planes que <b>evolucionan</b>"
         },
         {
           "desde": "Eso se llama",
-          "ss": 463.5,
-          "crop": [640, 240, 1120, 600],
-          "label": "Tú decides <b>qué metas cuentan</b>"
+          "ss": 463.2,
+          "crop": [
+            640,
+            150,
+            1120,
+            690
+          ],
+          "label": "Tú decides <b>qué metas cuentan</b>",
+          "congelar": true
         },
         {
           "desde": "Ves los mejores",
           "grafico": "escenarios",
-          "fases": ["y eliges tú"],
-          "metas": ["A tiempo", "Ocupación", "Ahorro de energía"],
+          "fases": [
+            "y eliges tú"
+          ],
+          "metas": [
+            "A tiempo",
+            "Ocupación",
+            "Ahorro de energía"
+          ],
           "label": "Los mejores, <b>lado a lado</b>"
         }
       ]

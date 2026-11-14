@@ -46,16 +46,17 @@ def ocr(png):
 
 def main():
     fuente, ss, dur, crop, ancho, salida = sys.argv[1:7]
+    congelar = "congelar" in sys.argv[7:]  # un solo cuadro fijo durante todo el tramo
     x0, y0, w0, h0 = map(int, crop.split(","))
     # Se lee un margen extra alrededor del recorte para reconocer también las líneas cortadas por el borde.
     M = 48
     x, y = max(0, x0 - M), max(0, y0 - M)
     w, h = min(1920, x0 + w0 + M) - x, min(1080, y0 + h0 + M) - y
     tmp = tempfile.mkdtemp(prefix="ocultar-")
-    subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", ss, "-t", dur, "-i", fuente, "-vf", f"crop={w}:{h}:{x}:{y},fps={FPS}", os.path.join(tmp, "f%04d.png")], check=True)
+    subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", ss, "-t", dur, "-i", fuente, "-vf", f"crop={w}:{h}:{x}:{y},fps={FPS}", *(["-frames:v", "1"] if congelar else []), os.path.join(tmp, "f%04d.png")], check=True)
     cuadros = sorted(f for f in os.listdir(tmp) if f.endswith(".png") and "-x2" not in f)
     # El OCR se guarda por fuente+tramo+recorte, así la versión vertical y la horizontal lo comparten.
-    cache = os.path.join(os.path.dirname(os.path.abspath(salida)), "ocr-" + hashlib.md5(f"{fuente}|{ss}|{dur}|{crop}|{PATRON.pattern}|x2|psm311|m48".encode()).hexdigest()[:12] + ".json")
+    cache = os.path.join(os.path.dirname(os.path.abspath(salida)), "ocr-" + hashlib.md5(f"{fuente}|{ss}|{dur}|{crop}|{PATRON.pattern}|x2|psm311|m48|{congelar}".encode()).hexdigest()[:12] + ".json")
     if os.path.exists(cache):
         cajas = json.load(open(cache))
     else:
@@ -76,7 +77,8 @@ def main():
             im.paste(im.crop(b).filter(ImageFilter.GaussianBlur(9)), b[:2])
         im.save(p)
     hh = round(h0 * int(ancho) / w0 / 2) * 2
-    subprocess.run(["ffmpeg", "-v", "error", "-y", "-framerate", str(FPS), "-i", os.path.join(tmp, "f%04d.png"), "-vf", f"crop={w0}:{h0}:{x0 - x}:{y0 - y},scale={ancho}:{hh}:flags=lanczos,format=yuv420p", "-c:v", "libx264", "-crf", "14", "-preset", "slow", salida], check=True)
+    entrada = ["-loop", "1", "-t", dur, "-i", os.path.join(tmp, "f0001.png")] if congelar else ["-i", os.path.join(tmp, "f%04d.png")]
+    subprocess.run(["ffmpeg", "-v", "error", "-y", "-framerate", str(FPS), *entrada, "-vf", f"crop={w0}:{h0}:{x0 - x}:{y0 - y},scale={ancho}:{hh}:flags=lanczos,format=yuv420p", "-c:v", "libx264", "-crf", "14", "-preset", "slow", salida], check=True)
     marcados = sum(1 for c in cajas if c)
     print(f"ocultar: {marcados}/{n} cuadros con palabras difuminadas -> {salida}")
     subprocess.run(["rm", "-rf", tmp])

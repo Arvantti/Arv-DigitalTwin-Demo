@@ -153,11 +153,11 @@ html,body{width:1080px;height:1920px;margin:0;overflow:hidden;background:var(--b
 .uni .best{opacity:0}
 .esc3{position:absolute;display:flex;flex-direction:column;gap:24px}
 .esc3.h{flex-direction:row}
-.escC{position:relative;flex:1;display:flex;gap:22px;padding:18px;border-radius:18px;background:#0b1224ee;box-shadow:0 0 0 1.5px #4ea7ff55,0 30px 90px #000a;opacity:0}
+.escC{position:relative;flex:1 1 0;min-height:0;min-width:0;display:flex;gap:22px;padding:18px;border-radius:18px;background:#0b1224ee;box-shadow:0 0 0 1.5px #4ea7ff55,0 30px 90px #000a;opacity:0}
 .esc3.h .escC{flex-direction:column}
-.escI{position:relative;flex:0 0 46%;border-radius:12px;overflow:hidden}
+.escI{position:relative;flex:0 0 46%;min-height:0;border-radius:12px;overflow:hidden}
 .esc3.h .escI{flex:0 0 46%}
-.escI img{width:100%;height:100%;object-fit:cover;display:block}
+.escI img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
 .escI b{position:absolute;left:12px;top:10px;font:800 30px "Inter Display",Inter,sans-serif;color:#fff;text-shadow:0 2px 12px #000}
 .escB{flex:1;display:flex;flex-direction:column;justify-content:center;gap:14px}
 .escB p{margin:0;font:600 26px Inter,sans-serif;color:#cfd8ea}
