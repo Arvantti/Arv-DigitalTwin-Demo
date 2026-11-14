@@ -1,6 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "digitaltwin-access-control",
+  "account_id": "5350d152845fada6fdc6f51f4bf613ca",
   "main": "apps/access-control-api/src/index.ts",
   "compatibility_date": "2026-10-26",
   "compatibility_flags": ["nodejs_compat"],
