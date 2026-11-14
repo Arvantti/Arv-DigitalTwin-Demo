@@ -34,8 +34,8 @@ def test_saved_study_rerun_uses_frozen_inputs_and_appends_without_live_plc(monke
     archived_version = {"version": 1, "result": archived_result}
     calls = {}
 
-    def read_archived(url, token):
-        calls.setdefault("reads", []).append((url, token))
+    def read_archived(url, token, **kwargs):
+        calls.setdefault("reads", []).append((url, token, kwargs))
         return archived_version if url.endswith("/versions/1") else saved
 
     monkeypatch.setattr(main, "_gateway_read", read_archived)
@@ -50,14 +50,18 @@ def test_saved_study_rerun_uses_frozen_inputs_and_appends_without_live_plc(monke
 
     monkeypatch.setattr(main, "_horizon_study", calculate)
 
-    def append(url, payload, token):
-        calls["append"] = (url, payload, token)
+    def append(url, payload, token, **kwargs):
+        calls["append"] = (url, payload, token, kwargs)
         return {"id": "SAVED-1", "latest_version": 2}
 
     monkeypatch.setattr(main, "gateway_post_json", append)
     response = client.post(
         "/studies/saved/rerun",
-        headers={"x-twin-demo-token": "demo-capability"},
+        headers={
+            "x-twin-demo-token": "demo-capability",
+            "x-twin-shared-studies-read": "1",
+            "x-twin-shared-studies-edit": "1",
+        },
         json={"plant_id": "water-network-scale-v1", "saved_study_id": "SAVED-1", "version": 1},
     )
     assert response.status_code == 200, response.text
@@ -68,12 +72,14 @@ def test_saved_study_rerun_uses_frozen_inputs_and_appends_without_live_plc(monke
     assert calls["append"][1]["result"]["source_saved_study_id"] == "SAVED-1"
     assert calls["append"][1]["result"]["source_version"] == 1
     assert calls["append"][2] == "demo-capability"
+    assert calls["reads"][0][2] == {"shared_studies_read": True}
+    assert calls["append"][3] == {"shared_studies_edit": True}
     assert response.json()["latest_version"] == 2
 
 
 def test_saved_study_rerun_refuses_legacy_version_without_snapshot_inputs(monkeypatch) -> None:
     monkeypatch.setenv("FRACTAL_PLC_API_URL", "https://plc.example")
-    def read_legacy(url, *_args):
+    def read_legacy(url, *_args, **_kwargs):
         if "/versions/" not in url:
             return {"versions": [{"version": 1}]}
         return {"version": 1, "result": {"study_type": "baseline"}}

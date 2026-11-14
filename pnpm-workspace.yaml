@@ -3,9 +3,11 @@ packages:
   - equipment-library
   - apps/gallery
   - apps/cloudflare-emulator-worker
+  - apps/access-control-api
   - cosim
   - fractal/manufacturing
   - platform/cosim-core
   - platform/fractal-core
+  - platform/access-core
   - plants/*/cosim
   - plants/*/app

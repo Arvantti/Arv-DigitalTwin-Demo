@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Administración de accesos · DigitalTwin</title>
+  </head>
+  <body class="access-admin">
+    <main class="access-admin-shell">
+      <header class="access-admin-header">
+        <a href="/" aria-label="Volver a la galería">← Galería</a>
+        <div><p class="eyebrow">DIGITALTWIN · CONTROL DE ACCESO</p><h1>Administrar usuarios</h1></div>
+      </header>
+      <p id="access-status" class="access-status" role="status" aria-live="polite">Verificando sesión…</p>
+      <section id="invite-panel" class="access-panel" hidden>
+        <h2>Invitar visualizador</h2>
+        <form id="invite-form">
+          <label>Correo electrónico <input name="email" type="email" autocomplete="email" required /></label>
+          <label>Tipo de cuenta
+            <select name="account_type"><option value="reseller">Reseller</option><option value="client">Cliente</option></select>
+          </label>
+          <button type="submit">Enviar invitación</button>
+        </form>
+        <p class="access-hint">La persona recibirá correos para verificar su cuenta y establecer su contraseña. No se comparte una clave.</p>
+      </section>
+      <section id="users-panel" class="access-panel" hidden>
+        <div class="access-section-heading"><div><h2>Usuarios</h2><p>Permisos por persona y gemelo. Los cambios se aplican en el servidor.</p></div><button id="refresh-users" type="button" class="secondary">Actualizar</button></div>
+        <div id="users-list" class="access-users"></div>
+      </section>
+      <noscript>Esta consola requiere JavaScript.</noscript>
+    </main>
+    <script type="module" src="/src/access-admin.ts"></script>
+  </body>
+</html>
