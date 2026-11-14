@@ -15,7 +15,7 @@ La rama `feat/google-oauth-study-library` parte del merge `f27b397`. Incluye cam
 - No se modificaron las otras aplicaciones de Cloudflare Access. Acueducto es el único gemelo conectado al control de acceso en el código.
 - No mostrar tokens, secretos, códigos ni contraseñas por chat o capturas. El usuario los introduce directamente en los paneles; no leerlos, copiarlos ni registrarlos.
 
-Decisión pendiente: confirmar si el login de Gallery conservará Google además de email/contraseña o si se limitará a cuentas invitadas de `DigitalTwin-Users`. La cuenta administradora existente de Andrés está asociada a Google; para conservar su identidad debe autenticarse con **Continue with Google**.
+Decisión confirmada por el usuario el 2026-11-14: conservar Google además de email/contraseña en el login de Access. Las cuentas de clientes/resellers seguirán creándose por invitación en `DigitalTwin-Users`, sin auto-registro ni permisos implícitos; la identidad administradora actual de Andrés se conserva con **Continue with Google**.
 
 Decisión vigente del usuario: el login se presenta **una sola vez al inicio** y la misma sesión da acceso a todos los escenarios y proyectos del sitio, no solo al PLC. No habrá un login por planta/proyecto. Las aplicaciones Access que protegen Gallery (incluida la portada), el host de API y sus aliases deben usar el mismo IdP y la misma allowlist global; SSO evita pedir credenciales de nuevo. Las variantes `pages.dev` y `workers.dev` no deben servir como bypass. Las páginas/modelos individuales no requieren cambios de autenticación propios.
 
@@ -74,4 +74,4 @@ Cloudflare Access solo no satisface el requisito de cuentas individuales. Auth0 
 ## Decisiones pendientes antes de crear cuentas
 
 - La política está definida: Andrés es el único administrador; los usuarios no administradores reciben únicamente los permisos que él asigne por usuario/gemelo. Para resellers, la lectura de escenarios inicia habilitada; crear/editar escenarios requiere asignación expresa. No crear usuarios de prueba hasta desplegar y verificar API, consola y configuración de runtime.
-- Queda pendiente confirmar la asociación activa de la Action de verificación al trigger Post Login y la decisión sobre Google junto con la conexión de usuarios invitados.
+- La opción Google + email/contraseña quedó confirmada el 2026-11-14; no se debe deshabilitar Google para el cliente de Cloudflare Access. Siguen pendientes confirmar la asociación activa de la Action de verificación al trigger Post Login y completar el despliegue/pruebas de la API de control antes de crear cuentas de prueba.
