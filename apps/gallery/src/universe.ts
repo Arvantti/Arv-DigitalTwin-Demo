@@ -1,45 +1,41 @@
 /**
- * Universo del gemelo: seis plataformas ovales en las esquinas de un hexágono, el gemelo 3D al centro,
- * unidas por tuberías con fluido y sobre un universo de grafos. Al tocar una plataforma se abre un
- * holograma con su ilustración, su contenido y el enlace a su pantalla real. Se dibuja en un canvas 2D con
- * proyección 3D propia (sin librerías). Port del prototipo aprobado por Andy; el tipado fino queda pendiente.
+ * Universo del producto: siete módulos alrededor del núcleo Arvantti-DigitalTwin. Al tocar un módulo
+ * se abre un holograma con su descripción y, cuando existe, el enlace a su pantalla.
+ * Se dibuja en un canvas 2D con proyección 3D propia (sin librerías).
  */
 // @ts-nocheck
 export function mountUniverse(cv: HTMLCanvasElement): void {
 
 var ctx=cv.getContext('2d') as CanvasRenderingContext2D;
 var reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
-var C={live:'#4aa3ff',plan:'#f5a524',calc:'#2fd27a',fut:'#a77bff',twin:'#dce8ff',user:'#ff7ab8'};
+var C={live:'#4aa3ff',plan:'#f5a524',calc:'#2fd27a',fut:'#a77bff',twin:'#dce8ff',user:'#ff7ab8',integrator:'#35c9c2',ai:'#ff7ab8'};
 var P=[
- {id:'planta',n:'Planta',s:'emulada en 2D',x:-500,y:70,z:40,r:112,c:'live',d:'Contiene un PLC por máquina. Envía todas sus señales al centro de control y recibe de él las órdenes.'},
- {id:'centro',n:'Centro de control',s:'señales de todos los PLC',x:-170,y:180,z:-70,r:122,c:'live',d:'Recibe ciclo, unidades y OEE de cada PLC. Alimenta al gemelo y envía la programación a la planta.'},
- {id:'gemelo',n:'Gemelo 3D',s:'pasado · presente · futuro',x:140,y:-5,z:70,r:158,c:'twin',d:'La planta en 3D con lo que reportan los PLC y el plan. Se mueve por el tiempo: atrás, ahora y adelante.'},
- {id:'aps',n:'APS',s:'pedidos y programación',x:500,y:140,z:-40,r:112,c:'plan',d:'Pedidos y programación, incluida la manual. Entrega la programación al gemelo y al centro de control.'},
- {id:'cosim',n:'Cosimulador',s:'cálculo',x:-330,y:-180,z:170,r:118,c:'calc',d:'Calcula la secuencia que cumple las entregas. Se comunica con el gemelo y con el centro de control.'},
- {id:'fractal',n:'Fractal',s:'optimizador',x:60,y:-290,z:-130,r:122,c:'fut',d:'Lee el gemelo, el cosimulador y el centro de control, y genera escenarios para que el usuario elija.'},
- {id:'usuario',n:'Usuario',s:'elige el escenario',x:0,y:0,z:0,r:84,c:'user',d:'Compara los escenarios que genera Fractal y decide cuál aplicar en el gemelo y en el centro de control.'}
+ {id:'integrator',n:'Integrator',s:'integración · propuesto',x:0,y:0,z:0,r:106,c:'integrator',d:'Módulo de integración entre sistemas y servicios del proyecto.'},
+ {id:'aps',n:'APS',s:'programación de pedidos',x:0,y:0,z:0,r:106,c:'plan',d:'Módulo de programación y gestión de pedidos.'},
+ {id:'cosimulation',n:'CoSimulation',s:'reglas de tu empresa',x:0,y:0,z:0,r:106,c:'calc',d:'Módulo de cosimulación configurable con las reglas del proyecto.'},
+ {id:'fractal',n:'Fractal',s:'escenarios multiobjetivo',x:0,y:0,z:0,r:106,c:'fut',d:'Módulo para explorar y comparar escenarios de optimización.'},
+ {id:'control-center',n:'Control Center',s:'planta y pedidos en vivo',x:0,y:0,z:0,r:106,c:'live',d:'Centro de control para visualizar el estado de la planta y los pedidos.'},
+ {id:'dendro-scada',n:'Dendro Scada',s:'physical AI · propuesto',x:0,y:0,z:0,r:106,c:'live',d:'Módulo propuesto de Physical AI en la máquina; aún no está implementado en esta web.'},
+ {id:'ai-assistant',n:'AI Embedded Assistant',s:'cerebro IA · propuesto',x:0,y:0,z:0,r:106,c:'ai',d:'Módulo propuesto de asistente IA; aún no está implementado en esta web.'},
+ {id:'nucleus',n:'Núcleo',s:'Arvantti-DigitalTwin',x:0,y:0,z:0,r:116,c:'twin',d:'Núcleo de la plataforma que conecta los siete módulos del proyecto.'}
 ];
 var byId={};P.forEach(function(p){byId[p.id]=p});
 var INFO={
- planta:{h:'/emulador.html',i:['PLC de cada máquina (12 inyectoras)','Buffers y montacargas','Almacén de semielaborados','Ensamble y almacén de terminado','Lógica de restricciones']},
- centro:{h:'/control.html',i:['Ciclo por máquina','Unidades producidas','OEE por máquina','Señales de todos los PLC']},
- gemelo:{h:'/plant.html?plant=plastic-injection-plant-v1',i:['Pasado · play','Presente · vivo','Futuro · escenarios','Panel de órdenes']},
- aps:{h:'/aps.html',i:['Pedidos','Tabla y Gantt','Programación manual','Objetivo al calcular']},
- cosim:{h:'/aps.html?tab=gantt',i:['Optimización con un solo objetivo','Siempre respeta las entregas','Ejecuta la secuencia del APS']},
- fractal:{h:'/aps.html?tab=fractal',i:['Genera escenarios','Lee gemelo, cosimulador y centro de control','Multiobjetivo (futuro)']},
- usuario:{h:null,i:['Compara los escenarios','Decide cuál aplicar']}
+ integrator:{h:null,i:['Integración entre módulos','Propuesto; sin pantalla implementada']},
+ aps:{h:'/aps.html',i:['Programación de pedidos','Tabla y Gantt']},
+ cosimulation:{h:'/aps.html?tab=gantt',i:['Cosimulación de la programación','Disponible desde el APS']},
+ fractal:{h:'/aps.html?tab=fractal',i:['Exploración de escenarios','Disponible desde el APS']},
+ 'control-center':{h:'/control.html',i:['Estado de planta y pedidos','Abrir centro de control']},
+ 'dendro-scada':{h:null,i:['Physical AI en la máquina','Propuesto; sin pantalla implementada']},
+ 'ai-assistant':{h:null,i:['Asistente IA empresarial','Propuesto; sin pantalla implementada']},
+ nucleus:{h:null,i:['Arvantti-DigitalTwin','Núcleo que conecta los módulos']}
 };
 
-// hexágono: esquinas = 6 plataformas, gemelo al centro
-var HEX=['planta','centro','aps','usuario','fractal','cosim'],HR=480;
-HEX.forEach(function(id,i){var a=(i*60-120)*Math.PI/180,p=byId[id];p.x=Math.cos(a)*HR;p.z=Math.sin(a)*HR;p.y=0;p.r=112});
-byId.gemelo.x=0;byId.gemelo.y=0;byId.gemelo.z=0;byId.gemelo.r=112;
-var E=[
- ['planta','centro','live','señales'],['centro','planta','plan','órdenes'],['centro','gemelo','live','estado de la planta'],
- ['aps','centro','plan','programación'],['aps','gemelo','plan','programación'],
- ['cosim','gemelo','calc',''],['gemelo','cosim','calc','',1],['cosim','centro','calc','señales y ritmos'],['centro','cosim','calc','',1],
- ['gemelo','fractal','fut','estado actual'],['fractal','usuario','fut','escenarios'],['usuario','gemelo','fut','elige y aplica'],['cosim','fractal','fut','lee el cálculo'],['centro','fractal','fut','lee las señales']
-];
+// Siete módulos alrededor del núcleo central.
+var HEX=['integrator','aps','cosimulation','fractal','control-center','dendro-scada','ai-assistant'],HR=500;
+HEX.forEach(function(id,i){var a=(i*2*Math.PI/HEX.length-Math.PI/2),p=byId[id];p.x=Math.cos(a)*HR;p.z=Math.sin(a)*HR;p.y=0;p.r=106});
+byId.nucleus.x=0;byId.nucleus.y=0;byId.nucleus.z=0;byId.nucleus.r=116;
+var E=HEX.map(function(id){return [id,'nucleus',byId[id].c,'']});
 // grafo de fondo
 var rnd=(function(s){return function(){s=(s*16807)%2147483647;return (s-1)/2147483646}})(7);
 var N=[],L=[],i,j;
