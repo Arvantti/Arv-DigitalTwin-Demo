@@ -1,7 +1,23 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("cloudflare:workers", () => ({ DurableObject: class {}, WorkerEntrypoint: class {} }));
+vi.mock("jose", () => ({
+  createRemoteJWKSet: vi.fn(() => ({})),
+  jwtVerify: vi.fn(async (assertion: string) => {
+    if (assertion.startsWith("valid:")) return { payload: { sub: assertion.slice("valid:".length) } };
+    throw new Error("invalid assertion");
+  }),
+}));
 import worker from "./index";
 import { signDemoToken, verifyDemoToken } from "./demo-auth";
+
+beforeEach(() => {
+  vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = new URL(String(input));
+    const headers = new Headers(init?.headers);
+    const allowed = url.searchParams.get("permission") !== "admin.action" || headers.get("cf-access-jwt-assertion") === "valid:admin";
+    return Response.json({ allowed });
+  }));
+});
 
 const origin = "https://digitaltwin.arvantti.online";
 const secret = "test-secret-for-cloudflare-demo-only-32-bytes";
@@ -15,6 +31,7 @@ function env(overrides: Record<string, unknown> = {}) {
     D1_GATEWAY_ORIGIN: "https://demo.workers.dev",
     ALLOWED_PLANT_IDS: "water-network-scale-v1",
     CORS_ORIGINS: origin,
+    ACCESS_CONTROL_API_URL: "https://access-control.example",
     DEMO_TOKEN_SECRET: secret,
     DEMO_API_LIMITER: { limit: async () => ({ success: true }) },
     DEMO_BOOTSTRAP_LIMITER: { limit: async () => ({ success: true }) },
@@ -27,6 +44,225 @@ describe("public demo gateway", () => {
   it("does not allow API use without an anonymous session capability", async () => {
     const response = await worker.fetch(new Request(`${origin}/api/plants/water-network-scale-v1`), env());
     expect(response.status).toBe(401);
+  });
+
+  it("requires a verified Access identity for bootstrap and API requests when Access is configured", async () => {
+    const protectedEnv = env({ ACCESS_TEAM_DOMAIN: "team.example.cloudflareaccess.com", ACCESS_AUD: "water-app-audience" });
+    const bootstrap = await worker.fetch(new Request(`${origin}/api/demo/session`, {
+      method: "POST", headers: { origin },
+    }), protectedEnv);
+    expect(bootstrap.status).toBe(401);
+
+    const token = await signDemoToken(secret, "visitor-a", Math.floor(Date.now() / 1000) + 60);
+    const api = await worker.fetch(new Request(`${origin}/api/plants/water-network-scale-v1`, {
+      headers: { authorization: `Bearer ${token}`, origin },
+    }), protectedEnv);
+    expect(api.status).toBe(401);
+  });
+
+  it("keeps Access-authenticated viewers from starting live simulation without an admin grant", async () => {
+    const response = await worker.fetch(new Request(`${origin}/api/plants/water-network-scale-v1/sessions`, {
+      method: "POST", headers: { origin, "cf-access-jwt-assertion": "valid:auth0|viewer" }, body: "{}",
+    }), env({ ACCESS_TEAM_DOMAIN: "team.example.cloudflareaccess.com", ACCESS_AUD: "water-app-audience" }));
+    expect(response.status).toBe(403);
+  });
+
+  it("binds authenticated sessions to a stable hashed Access subject without issuing a browser capability", async () => {
+    const owners: string[] = [];
+    const database = {
+      prepare: (sql: string) => ({
+        bind: (...values: unknown[]) => ({
+          first: async () => null,
+          all: async () => ({ results: [] }),
+          run: async () => {
+            if (sql.startsWith("INSERT INTO demo_visitors")) owners.push(String(values[0]));
+            return { success: true };
+          },
+        }),
+      }),
+    };
+    const protectedEnv = env({ ACCESS_TEAM_DOMAIN: "team.example.cloudflareaccess.com", ACCESS_AUD: "water-app-audience", DB: database });
+    const bootstrap = () => worker.fetch(new Request(`${origin}/api/demo/session`, {
+      method: "POST", headers: { origin, "cf-access-jwt-assertion": "valid:auth0|user-a" },
+    }), protectedEnv);
+    const first = await bootstrap();
+    const firstBody = await first.json() as { token?: string; study_key?: string; authenticated_user: boolean };
+    const second = await bootstrap();
+    const secondBody = await second.json() as { token?: string; study_key?: string; authenticated_user: boolean };
+
+    expect(first.status).toBe(200);
+    expect(firstBody.authenticated_user).toBe(true);
+    expect(firstBody.token).toBeUndefined();
+    expect(firstBody.study_key).toBeUndefined();
+    expect(owners[0]).toMatch(/^user:[a-f0-9]{64}$/);
+    expect(owners[1]).toBe(owners[0]);
+    expect(secondBody.authenticated_user).toBe(true);
+  });
+
+  it("rejects cross-site or originless authenticated mutations before authorization or proxying", async () => {
+    const response = await worker.fetch(new Request(`${origin}/api/plants/water-network-scale-v1/saved-studies`, {
+      method: "POST", headers: { "content-type": "application/json", "cf-access-jwt-assertion": "valid:auth0|viewer" }, body: "{}",
+    }), env({ ACCESS_TEAM_DOMAIN: "team.example.cloudflareaccess.com", ACCESS_AUD: "water-app-audience" }));
+    expect(response.status).toBe(403);
+  });
+
+  it("adds shared saved-study read scope only after the Access permission check", async () => {
+    const container = { getByName: () => ({ fetch: async (request: Request) => {
+      expect(request.headers.get("cf-access-jwt-assertion")).toBeNull();
+      expect(request.headers.get("x-twin-shared-studies-read")).toBe("1");
+      return Response.json([]);
+    } }) };
+    const response = await worker.fetch(new Request(`${origin}/api/plants/water-network-scale-v1/saved-studies`, {
+      headers: { origin, "cf-access-jwt-assertion": "valid:auth0|viewer" },
+    }), env({
+      ACCESS_TEAM_DOMAIN: "team.example.cloudflareaccess.com", ACCESS_AUD: "water-app-audience",
+      DB: { prepare: () => ({ bind: () => ({ first: async () => null, all: async () => ({ results: [] }), run: async () => ({ success: true }) }) }) },
+      ACUEDUCTO_CONTAINER: container,
+    }));
+    expect(response.status).toBe(200);
+  });
+
+  it("adds shared scenario edit scope only after the per-twin edit permission check", async () => {
+    const container = { getByName: () => ({ fetch: async (request: Request) => {
+      expect(request.headers.get("x-twin-shared-studies-edit")).toBe("1");
+      expect(request.headers.get("cf-access-jwt-assertion")).toBeNull();
+      return Response.json({ id: "SAVED-1", name: "Updated" });
+    } }) };
+    const response = await worker.fetch(new Request(`${origin}/api/plants/water-network-scale-v1/saved-studies/SAVED-1`, {
+      method: "PUT", headers: { origin, "cf-access-jwt-assertion": "valid:auth0|editor", "content-type": "application/json" },
+      body: JSON.stringify({ name: "Updated" }),
+    }), env({
+      ACCESS_TEAM_DOMAIN: "team.example.cloudflareaccess.com", ACCESS_AUD: "water-app-audience",
+      ACUEDUCTO_CONTAINER: container,
+    }));
+    expect(response.status).toBe(200);
+  });
+
+  it("passes scoped shared-study capabilities to Fractal only after edit authorization", async () => {
+    const container = { getByName: () => ({ fetch: async (request: Request) => {
+      expect(new URL(request.url).pathname).toBe("/studies/saved/rerun");
+      expect(request.headers.get("x-twin-shared-studies-read")).toBe("1");
+      expect(request.headers.get("x-twin-shared-studies-edit")).toBe("1");
+      expect(request.headers.get("cf-access-jwt-assertion")).toBeNull();
+      expect(request.headers.get("authorization")).toBeNull();
+      return Response.json({ id: "SAVED-1", latest_version: 2 });
+    } }) };
+    const response = await worker.fetch(new Request(`${origin}/fractal/studies/saved/rerun`, {
+      method: "POST", headers: {
+        origin, "cf-access-jwt-assertion": "valid:auth0|editor", "content-type": "application/json",
+        "x-twin-shared-studies-read": "forged", "x-twin-shared-studies-edit": "forged",
+      },
+      body: JSON.stringify({ plant_id: "water-network-scale-v1", saved_study_id: "SAVED-1", version: 1 }),
+    }), env({
+      ACCESS_TEAM_DOMAIN: "team.example.cloudflareaccess.com", ACCESS_AUD: "water-app-audience",
+      FRACTAL_CONTAINER: container,
+    }));
+    expect(response.status).toBe(200);
+  });
+
+  it("proxies Access-authenticated PLC requests without browser bearers or Access credentials", async () => {
+    const owners = new Map<string, { session_id: string; visitor_id: string; plant_id: string; expires_at: number }>();
+    const database = {
+      prepare: (sql: string) => ({
+        bind: (...values: unknown[]) => ({
+          first: async () => ({ total: 0 }),
+          all: async () => ({ results: [] }),
+          run: async () => {
+            if (sql.startsWith("INSERT INTO demo_session_owners")) {
+              const [session_id, visitor_id, plant_id, , expires_at] = values as [string, string, string, number, number];
+              owners.set(session_id, { session_id, visitor_id, plant_id, expires_at });
+            }
+            return { success: true };
+          },
+        }),
+      }),
+    };
+    const container = { getByName: () => ({ fetch: async (request: Request) => {
+      expect(request.headers.get("authorization")).toBeNull();
+      expect(request.headers.get("cookie")).toBeNull();
+      expect(request.headers.get("cf-access-jwt-assertion")).toBeNull();
+      expect(request.headers.get("x-twin-shared-studies-read")).toBeNull();
+      expect(request.headers.get("x-twin-shared-studies-edit")).toBeNull();
+      expect(request.headers.get("x-twin-demo-id")).toMatch(/^user:[a-f0-9]{64}$/);
+      return Response.json({ id: "session-a", plant_id: "water-network-scale-v1" }, { status: 201 });
+    } }) };
+    const response = await worker.fetch(new Request(`${origin}/api/plants/water-network-scale-v1/sessions`, {
+      method: "POST", headers: { origin, "cf-access-jwt-assertion": "valid:admin", cookie: "access-session", authorization: "Bearer stale-browser-token", "x-twin-shared-studies-read": "1", "x-twin-shared-studies-edit": "1" },
+      body: "{}",
+    }), env({
+      ACCESS_TEAM_DOMAIN: "team.example.cloudflareaccess.com", ACCESS_AUD: "water-app-audience",
+      DB: database, ACUEDUCTO_CONTAINER: container,
+    }));
+    expect(response.status).toBe(201);
+    expect(owners.get("session-a")?.visitor_id).toMatch(/^user:[a-f0-9]{64}$/);
+  });
+
+  it("keeps Access credentials at the gateway and gives Fractal only a short-lived internal capability", async () => {
+    const fetch = vi.fn(async (request: Request) => {
+      expect(request.headers.get("cookie")).toBeNull();
+      expect(request.headers.get("cf-access-jwt-assertion")).toBeNull();
+      expect(request.headers.get("authorization")).toBeNull();
+      expect(request.headers.get("x-twin-demo-id")).toMatch(/^user:[a-f0-9]{64}$/);
+      const relay = request.headers.get("x-twin-demo-token");
+      expect(relay).toBeTruthy();
+      expect((await verifyDemoToken(secret, relay!, Math.floor(Date.now() / 1000), "acueducto-internal"))?.sub)
+        .toBe(request.headers.get("x-twin-demo-id"));
+      return Response.json({ status: "ok" });
+    });
+    const response = await worker.fetch(new Request(`${origin}/fractal/health`, {
+      headers: {
+        "cf-access-jwt-assertion": "valid:auth0|user-a",
+        cookie: "access-session-cookie",
+        origin,
+      },
+    }), env({
+      ACCESS_TEAM_DOMAIN: "team.example.cloudflareaccess.com", ACCESS_AUD: "water-app-audience",
+      FRACTAL_CONTAINER: { getByName: () => ({ fetch }) },
+    }));
+    expect(response.status).toBe(200);
+    expect(fetch).toHaveBeenCalledOnce();
+  });
+
+  it("honors shared-study scopes only from signed internal relay capabilities", async () => {
+    const token = await signDemoToken(secret, "user:editor", Math.floor(Date.now() / 1000) + 60,
+      "acueducto-internal", ["saved_studies.read", "saved_studies.edit"]);
+    const container = { getByName: () => ({ fetch: async (request: Request) => {
+      expect(request.headers.get("x-twin-shared-studies-read")).toBe("1");
+      expect(request.headers.get("x-twin-shared-studies-edit")).toBeNull();
+      expect(request.headers.get("x-twin-demo-id")).toBe("user:editor");
+      return Response.json([]);
+    } }) };
+    const response = await worker.fetch(new Request(`${origin}/api/plants/water-network-scale-v1/saved-studies`, {
+      headers: { origin, authorization: `Bearer ${token}`, "x-twin-shared-studies-read": "forged" },
+    }), env({
+      ACCESS_TEAM_DOMAIN: "team.example.cloudflareaccess.com", ACCESS_AUD: "water-app-audience",
+      ACUEDUCTO_CONTAINER: container,
+    }));
+    expect(response.status).toBe(200);
+  });
+
+  it("accepts only a server-minted internal relay capability when an Access assertion is absent", async () => {
+    const protectedEnv = env({ ACCESS_TEAM_DOMAIN: "team.example.cloudflareaccess.com", ACCESS_AUD: "water-app-audience" });
+    const internal = await signDemoToken(secret, "user:fractal-owner", Math.floor(Date.now() / 1000) + 60, "acueducto-internal");
+    const accepted = await worker.fetch(new Request(`${origin}/api/plants/water-network-scale-v1/sessions/session-a`, {
+      headers: { authorization: `Bearer ${internal}`, origin },
+    }), protectedEnv);
+    expect(accepted.status).toBe(404);
+
+    const browser = await signDemoToken(secret, "user:fractal-owner", Math.floor(Date.now() / 1000) + 60);
+    const rejected = await worker.fetch(new Request(`${origin}/api/plants/water-network-scale-v1/sessions/session-a`, {
+      headers: { authorization: `Bearer ${browser}`, origin },
+    }), protectedEnv);
+    expect(rejected.status).toBe(401);
+  });
+
+  it("does not let a bearer capability override the verified Access identity", async () => {
+    const protectedEnv = env({ ACCESS_TEAM_DOMAIN: "team.example.cloudflareaccess.com", ACCESS_AUD: "water-app-audience" });
+    const token = await signDemoToken(secret, "user:owner-a", Math.floor(Date.now() / 1000) + 60);
+    const response = await worker.fetch(new Request(`${origin}/api/plants/water-network-scale-v1/sessions/session-a`, {
+      headers: { authorization: `Bearer ${token}`, origin, "cf-access-jwt-assertion": "valid:auth0|user-b" },
+    }), protectedEnv);
+    expect(response.status).toBe(404);
   });
 
   it("prevents a valid visitor token from reading another visitor's session", async () => {

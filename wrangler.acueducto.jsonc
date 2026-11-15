@@ -94,6 +94,7 @@
 	"vars": {
 		"ALLOWED_PLANT_IDS": "water-network-scale-v1",
 		"D1_GATEWAY_ORIGIN": "https://acueducto-emulator-api.andres-quiceno.workers.dev",
-		"CORS_ORIGINS": "https://digitaltwin.arvantti.online,https://digitaltwin-arvantti.pages.dev"
+		"CORS_ORIGINS": "https://digitaltwin.arvantti.online,https://digitaltwin-arvantti.pages.dev",
+		"ACCESS_CONTROL_API_URL": ""
 	}
 }

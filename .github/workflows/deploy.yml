@@ -59,6 +59,8 @@ jobs:
       - if: steps.secrets.outputs.ready == 'true'
         env:
           VITE_EMULATOR_API_URL: ${{ vars.EMULATOR_API_URL }}
+          VITE_EMULATOR_ACCESS_ENABLED: ${{ vars.EMULATOR_ACCESS_ENABLED }}
+          VITE_ACCESS_CONTROL_API_URL: /api/access
         run: pnpm gallery:build
       - name: Desplegar en Cloudflare Pages
         if: steps.secrets.outputs.ready == 'true'

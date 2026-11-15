@@ -361,6 +361,15 @@ def schedule_saved_profile(
     return {"session_id": session_id, "profile_id": profile_id, "starts_at_hour": starts_at_hour, "applied_now": False}
 
 
+def _shared_saved_studies_read(request: Request) -> bool:
+    # Only the authenticated gateway may set this after checking the user's per-twin grant.
+    return request.headers.get("x-twin-shared-studies-read") == "1"
+
+
+def _shared_saved_studies_edit(request: Request) -> bool:
+    return request.headers.get("x-twin-shared-studies-edit") == "1"
+
+
 def _saved_study_owner(request: Request) -> str:
     owner_id = request.headers.get("x-twin-demo-id")
     if not owner_id and os.environ.get("TWIN_DATA_BACKEND", "sqlite").lower() == "sqlite":
@@ -381,6 +390,8 @@ def _owned_study_session(plant_id: str, session_id: str, owner_id: str):
 def list_saved_studies(plant_id: str, request: Request) -> list[dict[str, Any]]:
     if plant_id not in _plant_folders():
         raise HTTPException(404, f"planta desconocida: {plant_id}")
+    if _shared_saved_studies_read(request):
+        return saved_studies.list_shared_accounts(plant_id)
     return saved_studies.list(_saved_study_owner(request), plant_id)
 
 
@@ -412,7 +423,10 @@ def save_study(plant_id: str, request: Request, payload: Annotated[dict[str, Any
 
 @app.get("/api/plants/{plant_id}/saved-studies/{study_id}")
 def get_saved_study(plant_id: str, study_id: str, request: Request) -> dict[str, Any]:
-    result = saved_studies.get(_saved_study_owner(request), plant_id, study_id)
+    if _shared_saved_studies_read(request):
+        result = saved_studies.get_shared_account(plant_id, study_id)
+    else:
+        result = saved_studies.get(_saved_study_owner(request), plant_id, study_id)
     if result is None:
         raise HTTPException(404, "estudio guardado desconocido")
     return result
@@ -422,7 +436,10 @@ def get_saved_study(plant_id: str, study_id: str, request: Request) -> dict[str,
 def get_saved_study_version(plant_id: str, study_id: str, version: int, request: Request) -> dict[str, Any]:
     if version < 1:
         raise HTTPException(422, "version debe ser un entero positivo")
-    result = saved_studies.get_version(_saved_study_owner(request), plant_id, study_id, version)
+    if _shared_saved_studies_read(request):
+        result = saved_studies.get_shared_account_version(plant_id, study_id, version)
+    else:
+        result = saved_studies.get_version(_saved_study_owner(request), plant_id, study_id, version)
     if result is None:
         raise HTTPException(404, "versión de estudio desconocida")
     return result
@@ -447,7 +464,10 @@ def add_saved_study_version(
     if size > 950_000:
         raise HTTPException(413, "el resultado excede el límite de almacenamiento")
     try:
-        updated = saved_studies.add_version(owner_id, plant_id, study_id, session_id, source_study_id, result)
+        updated = saved_studies.add_version(
+            owner_id, plant_id, study_id, session_id, source_study_id, result,
+            shared_accounts_edit=_shared_saved_studies_edit(request),
+        )
     except ValueError as exc:
         raise HTTPException(409, str(exc)) from exc
     if updated is None:
@@ -473,7 +493,10 @@ def append_recalculated_saved_study(
     source_session_id = str(result.get("session_id") or "saved-study-rerun")
     source_study_id = str(result.get("study_id") or "saved-study-rerun")
     try:
-        updated = saved_studies.add_version(owner_id, plant_id, study_id, source_session_id, source_study_id, result)
+        updated = saved_studies.add_version(
+            owner_id, plant_id, study_id, source_session_id, source_study_id, result,
+            shared_accounts_edit=_shared_saved_studies_edit(request),
+        )
     except ValueError as exc:
         raise HTTPException(409, str(exc)) from exc
     if updated is None:
@@ -488,7 +511,10 @@ def rename_saved_study(
     name = payload.get("name")
     if not isinstance(name, str) or not name.strip() or len(name.strip()) > 120:
         raise HTTPException(422, "name debe tener entre 1 y 120 caracteres")
-    updated = saved_studies.rename(_saved_study_owner(request), plant_id, study_id, name.strip())
+    updated = saved_studies.rename(
+        _saved_study_owner(request), plant_id, study_id, name.strip(),
+        shared_accounts_edit=_shared_saved_studies_edit(request),
+    )
     if updated is None:
         raise HTTPException(404, "estudio guardado desconocido")
     return updated

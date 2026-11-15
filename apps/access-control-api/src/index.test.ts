@@ -1,0 +1,161 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+vi.mock("jose", () => ({
+  createRemoteJWKSet: vi.fn(() => ({})),
+  jwtVerify: vi.fn(async (assertion: string) => {
+    if (assertion === "admin-token") return { payload: { sub: "google-oauth2|andres", email: "admin@example.test", email_verified: true } };
+    if (assertion === "viewer-token") return { payload: { sub: "auth0|viewer", email: "viewer@example.test", email_verified: true } };
+    if (assertion === "unverified-admin-token") return { payload: { sub: "google-oauth2|impostor", email: "admin@example.test", email_verified: true } };
+    throw new Error("invalid assertion");
+  }),
+}));
+import worker from "./index";
+
+const origin = "https://digitaltwin.arvantti.online";
+const catalog = "water-network-scale-v1,sauce-plant-v1";
+
+function env(overrides: Record<string, unknown> = {}) {
+  const db = {
+    prepare: (sql: string) => ({
+      bind: (..._values: unknown[]) => ({
+        first: async () => sql.includes("FROM access_users") ? { account_type: "reseller", status: "active" } : null,
+        all: async () => ({ results: [] }),
+        run: async () => ({ success: true, meta: { changes: 1 } }),
+      }),
+    }),
+    batch: vi.fn(async (_statements: unknown[]) => []),
+  };
+  return {
+    DB: db,
+    ACCESS_TEAM_DOMAIN: "team.example.cloudflareaccess.com",
+    ACCESS_AUD: "access-aud",
+    ACCESS_CONTROL_ADMIN_SUBJECTS: "google-oauth2|andres",
+    GALLERY_ORIGIN: origin,
+    AUTH0_DOMAIN: "arvantti-digitaltwin.us.auth0.com",
+    AUTH0_MANAGEMENT_CLIENT_ID: "management-client-id",
+    AUTH0_MANAGEMENT_CLIENT_SECRET: "management-secret-for-test",
+    AUTH0_CLIENT_ID: "public-client-id",
+    AUTH0_DB_CONNECTION: "DigitalTwin-Users",
+    TWIN_CATALOG: catalog,
+    ...overrides,
+  } as never;
+}
+
+function request(path: string, token = "admin-token", init: RequestInit = {}) {
+  const headers = new Headers(init.headers);
+  headers.set("origin", origin);
+  headers.set("cf-access-jwt-assertion", token);
+  return new Request(`https://access-api.example${path}`, { ...init, headers });
+}
+
+describe("access-control API", () => {
+  beforeEach(() => vi.unstubAllGlobals());
+
+  it("keeps health public but fails closed for unauthenticated management requests", async () => {
+    const health = await worker.fetch(new Request("https://access-api.example/health"), env());
+    expect(health.status).toBe(200);
+    const denied = await worker.fetch(new Request(`https://access-api.example/v1/me`, { headers: { origin } }), env());
+    expect(denied.status).toBe(401);
+  });
+
+  it("rejects unapproved browser origins even with a valid assertion", async () => {
+    const response = await worker.fetch(new Request("https://access-api.example/admin/users", {
+      headers: { origin: "https://evil.example", "cf-access-jwt-assertion": "admin-token" },
+    }), env());
+    expect(response.status).toBe(403);
+  });
+
+  it("checks model permissions from verified identity for server-to-server callers", async () => {
+    const adminRequest = new Request("https://access-api.example/v1/check?twin_id=water-network-scale-v1&permission=view", {
+      headers: { "cf-access-jwt-assertion": "admin-token" },
+    });
+    const viewerRequest = new Request("https://access-api.example/v1/check?twin_id=water-network-scale-v1&permission=view", {
+      headers: { "cf-access-jwt-assertion": "viewer-token" },
+    });
+    const admin = await worker.fetch(adminRequest, env());
+    const viewer = await worker.fetch(viewerRequest, env());
+    expect(admin.status).toBe(200);
+    expect(await admin.json()).toEqual({ allowed: true });
+    expect(viewer.status).toBe(200);
+    expect(await viewer.json()).toEqual({ allowed: false });
+  });
+
+  it("allows only the exact configured administrator subject to enter admin routes", async () => {
+    const regular = await worker.fetch(request("/admin/users", "viewer-token"), env());
+    const unverified = await worker.fetch(request("/admin/users", "unverified-admin-token"), env());
+    expect(regular.status).toBe(403);
+    expect(unverified.status).toBe(403);
+  });
+
+  it("returns only the signed-in user's explicit grants and denies suspended accounts", async () => {
+    const db = {
+      prepare: (sql: string) => ({
+        bind: () => ({
+          first: async () => sql.includes("access_users") ? { account_type: "client", status: "suspended" } : null,
+          all: async () => ({ results: [{ twin_id: "water-network-scale-v1", permission: "view" }] }),
+        }),
+      }),
+    };
+    const response = await worker.fetch(request("/v1/me", "viewer-token"), env({ DB: db }));
+    expect(response.status).toBe(403);
+    expect(await response.json()).toEqual({ detail: "Account suspended" });
+  });
+
+  it("revokes every grant and requests Auth0 session invalidation without deleting the identity", async () => {
+    vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.endsWith("/oauth/token")) return Response.json({ access_token: "mock-management-token" });
+      if (url.includes("/sessions")) return new Response(null, { status: 204 });
+      return new Response(null, { status: 200 });
+    }));
+    const response = await worker.fetch(request("/admin/users/auth0%7Cviewer/access", "admin-token", { method: "DELETE" }), env());
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({ subject: "auth0|viewer", access_revoked: true });
+  });
+
+  it("atomically replaces per-user, per-twin grants and accepts empty list as revoke", async () => {
+    const configuration = env();
+    const db = (configuration as { DB: { batch: ReturnType<typeof vi.fn> } }).DB;
+    const response = await worker.fetch(request("/admin/users/auth0%7Cviewer/twins/water-network-scale-v1", "admin-token", {
+      method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify({ permissions: [] }),
+    }), configuration);
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({ subject: "auth0|viewer", permissions: [] });
+    expect(db.batch).toHaveBeenCalledOnce();
+  });
+
+  it("rejects unknown twins and unsupported permission names", async () => {
+    const unknownTwin = await worker.fetch(request("/admin/users/auth0%7Cviewer/twins/future-twin", "admin-token", {
+      method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify({ permissions: ["view"] }),
+    }), env());
+    const badPermission = await worker.fetch(request("/admin/users/auth0%7Cviewer/twins/water-network-scale-v1", "admin-token", {
+      method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify({ permissions: ["admin"] }),
+    }), env());
+    expect(unknownTwin.status).toBe(404);
+    expect(badPermission.status).toBe(422);
+  });
+
+  it("never sends generated passwords to the browser when creating an invited account", async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, _init?: RequestInit) => {
+      const url = String(input);
+      if (url.endsWith("/oauth/token")) return Response.json({ access_token: "mock-management-token" });
+      if (url.endsWith("/api/v2/users")) return Response.json({ user_id: "auth0|new-user", email: "new@example.test" }, { status: 201 });
+      if (url.endsWith("/api/v2/jobs/verification-email")) return Response.json({ id: "job" }, { status: 201 });
+      if (url.endsWith("/dbconnections/change_password")) return new Response("We've just sent you an email");
+      return new Response("", { status: 200 });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    const response = await worker.fetch(request("/admin/users", "admin-token", {
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ email: "new@example.test", account_type: "reseller" }),
+    }), env());
+    const body = await response.json() as Record<string, unknown>;
+    expect(response.status).toBe(201);
+    expect(body).toMatchObject({ invitation_sent: true });
+    expect(JSON.stringify(body)).not.toMatch(/password|ticket|secret/i);
+    const createCall = fetchMock.mock.calls.find(([input]) => String(input).endsWith("/api/v2/users"));
+    const createRequest = createCall?.[1] as RequestInit;
+    const payload = JSON.parse(String(createRequest.body)) as Record<string, unknown>;
+    expect(payload.password).toBeTruthy();
+    expect(payload.email).toBe("new@example.test");
+  });
+});

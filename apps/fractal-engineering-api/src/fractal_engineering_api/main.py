@@ -245,8 +245,12 @@ def plc_gateway(payload: dict[str, Any]) -> str:
     raise HTTPException(503, "Configure FRACTAL_PLC_API_URL para leer el gateway PLC de sesión")
 
 
-def gateway_json(url: str, demo_token: str | None = None) -> dict[str, Any]:
+def gateway_json(
+    url: str, demo_token: str | None = None, *, shared_studies_read: bool = False
+) -> dict[str, Any]:
     headers = {"authorization": f"Bearer {demo_token}"} if demo_token else {}
+    if shared_studies_read:
+        headers["x-twin-shared-studies-read"] = "1"
     request = UrlRequest(url, headers=headers)
     try:
         with urlopen(request, timeout=10) as response:  # noqa: S310 — host configurado por despliegue
@@ -255,15 +259,27 @@ def gateway_json(url: str, demo_token: str | None = None) -> dict[str, Any]:
         raise HTTPException(502, f"No se pudo leer el gateway PLC: {type(exc).__name__}") from exc
 
 
-def _gateway_read(url: str, demo_token: str | None) -> dict[str, Any]:
-    return gateway_json(url, demo_token) if demo_token else gateway_json(url)
+def _gateway_read(
+    url: str, demo_token: str | None, *, shared_studies_read: bool = False
+) -> dict[str, Any]:
+    if not demo_token:
+        return gateway_json(url)
+    if shared_studies_read:
+        return gateway_json(url, demo_token, shared_studies_read=True)
+    return gateway_json(url, demo_token)
 
 
-def gateway_post_json(url: str, payload: dict[str, Any], demo_token: str | None = None) -> dict[str, Any]:
+def gateway_post_json(
+    url: str, payload: dict[str, Any], demo_token: str | None = None, *, shared_studies_edit: bool = False
+) -> dict[str, Any]:
     request = UrlRequest(
         url,
         data=json.dumps(payload, ensure_ascii=False, allow_nan=False).encode(),
-        headers={"content-type": "application/json", **({"authorization": f"Bearer {demo_token}"} if demo_token else {})},
+        headers={
+            "content-type": "application/json",
+            **({"authorization": f"Bearer {demo_token}"} if demo_token else {}),
+            **({"x-twin-shared-studies-edit": "1"} if shared_studies_edit else {}),
+        },
         method="POST",
     )
     try:
@@ -444,11 +460,13 @@ def rerun_saved_study(payload: dict[str, Any], request: Request) -> dict[str, An
         raise HTTPException(422, "version debe ser un entero positivo")
     token = request.headers.get("x-twin-demo-token")
     origin = plc_gateway(payload)
+    shared_read = request.headers.get("x-twin-shared-studies-read") == "1"
+    shared_edit = request.headers.get("x-twin-shared-studies-edit") == "1"
     saved_base = f"{origin}/api/plants/{quote(plant_id, safe='')}/saved-studies/{quote(saved_id, safe='')}"
-    saved = _gateway_read(saved_base, token)
+    saved = _gateway_read(saved_base, token, shared_studies_read=shared_read)
     if not any(item.get("version") == version_number for item in saved.get("versions", [])):
         raise HTTPException(404, "versión de estudio desconocida")
-    source = _gateway_read(f"{saved_base}/versions/{version_number}", token)
+    source = _gateway_read(f"{saved_base}/versions/{version_number}", token, shared_studies_read=shared_read)
     source_result = source.get("result")
     inputs = source_result.get("study_input") if isinstance(source_result, dict) else None
     if not isinstance(inputs, dict) or not isinstance(inputs.get("plc_tags"), dict) or not isinstance(inputs.get("profile"), dict):
@@ -484,7 +502,7 @@ def rerun_saved_study(payload: dict[str, Any], request: Request) -> dict[str, An
     }
     appended = gateway_post_json(
         f"{origin}/api/plants/{quote(plant_id, safe='')}/saved-studies/{quote(saved_id, safe='')}/versions/from-result",
-        {"result": result}, token,
+        {"result": result}, token, shared_studies_edit=shared_edit,
     )
     return appended
 

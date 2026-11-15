@@ -70,6 +70,49 @@ def test_saved_study_api_is_independent_of_session_and_owner_scoped(monkeypatch)
 
     assert client.get(f"/api/plants/{plant}/saved-studies", headers={"x-twin-demo-id": stranger}).json() == []
     assert client.get(f"/api/plants/{plant}/saved-studies/{saved_id}", headers={"x-twin-demo-id": stranger}).status_code == 404
+
+    account_owner = f"user:{uuid4().hex}"
+    account_study = saved_studies_module.saved_studies.create(
+        account_owner, plant, "Compartido a visualizadores", "session-private", "FRACTAL-PRIVATE", result
+    )
+    shared = client.get(
+        f"/api/plants/{plant}/saved-studies",
+        headers={"x-twin-demo-id": stranger, "x-twin-shared-studies-read": "1"},
+    )
+    assert [item["id"] for item in shared.json()] == [account_study["id"]]
+    shared_detail = client.get(
+        f"/api/plants/{plant}/saved-studies/{account_study['id']}",
+        headers={"x-twin-demo-id": stranger, "x-twin-shared-studies-read": "1"},
+    )
+    assert shared_detail.status_code == 200
+    renamed_shared = client.put(
+        f"/api/plants/{plant}/saved-studies/{account_study['id']}",
+        headers={"x-twin-demo-id": stranger, "x-twin-shared-studies-edit": "1"},
+        json={"name": "Actualizado por editor asignado"},
+    )
+    assert renamed_shared.status_code == 200
+    assert renamed_shared.json()["name"] == "Actualizado por editor asignado"
+    editor_result = {
+        **result, "study_id": "FRACTAL-EDITED", "source_saved_study_id": account_study["id"], "source_version": 1,
+    }
+    appended_shared = client.post(
+        f"/api/plants/{plant}/saved-studies/{account_study['id']}/versions/from-result",
+        headers={"x-twin-demo-id": stranger, "x-twin-shared-studies-edit": "1"},
+        json={"result": editor_result},
+    )
+    assert appended_shared.status_code == 201
+    assert appended_shared.json()["latest_version"] == 2
+    shared_version = client.get(
+        f"/api/plants/{plant}/saved-studies/{account_study['id']}/versions/1",
+        headers={"x-twin-demo-id": stranger, "x-twin-shared-studies-read": "1"},
+    )
+    assert shared_version.status_code == 200
+    assert shared_version.json()["result"] == result
+    # The same header cannot expose anonymous demo archives.
+    assert client.get(
+        f"/api/plants/{plant}/saved-studies/{saved_id}",
+        headers={"x-twin-demo-id": stranger, "x-twin-shared-studies-read": "1"},
+    ).status_code == 404
     reopened = client.get(f"/api/plants/{plant}/saved-studies/{saved_id}", headers={"x-twin-demo-id": owner})
     assert reopened.status_code == 200
     assert version.json()["result"]["study_input"]["session_id"] == session_id

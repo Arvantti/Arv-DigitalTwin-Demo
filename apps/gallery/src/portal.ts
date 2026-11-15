@@ -100,11 +100,33 @@ const FAMILY: Record<string, { color: string; glyph: string }> = {
 };
 
 const root = document.getElementById("cards") as HTMLElement;
-plants.forEach((p, i) => {
+const accessControlApi = import.meta.env.PROD
+  ? "/api/access"
+  : import.meta.env.VITE_ACCESS_CONTROL_API_URL?.trim().replace(/\/$/, "") ?? "";
+const adminLink = document.getElementById("portal-admin-link") as HTMLAnchorElement | null;
+let allowedTwinIds: Set<string> | null = null;
+let accessError = false;
+if (accessControlApi) {
+  try {
+    const response = await fetch(`${accessControlApi}/v1/me`, { credentials: "include", cache: "no-store" });
+    if (!response.ok) throw new Error("Access check failed");
+    const me = await response.json() as { administrator?: boolean; twins?: unknown };
+    if (me.administrator === true && adminLink) adminLink.hidden = false;
+    if (!me.administrator) {
+      if (!Array.isArray(me.twins) || !me.twins.every((id) => typeof id === "string")) throw new Error("Invalid access list");
+      allowedTwinIds = new Set(me.twins as string[]);
+    }
+  } catch {
+    accessError = true;
+    root.textContent = "No se pudo validar tu acceso. Recarga la página o contacta al administrador.";
+  }
+}
+const visiblePlants = allowedTwinIds ? plants.filter((plant) => allowedTwinIds!.has(plant.id)) : plants;
+if (!accessError) visiblePlants.forEach((p, i) => {
   const main = p.main ?? { href: `/plant.html?plant=${p.id}`, label: "VER LA PLANTA EN 3D" };
   const fam = FAMILY[p.family] ?? { color: "#4ea7ff", glyph: "M12 3l8 4.5v9L12 21l-8-4.5v-9z" };
   const card = document.createElement("article");
-  card.className = `gcard${i === 0 || i === plants.length - 1 ? " wide" : ""}`;
+  card.className = `gcard${i === 0 || i === visiblePlants.length - 1 ? " wide" : ""}`;
   card.style.setProperty("--c", fam.color);
   card.innerHTML = `
     <div class="gcard-in">

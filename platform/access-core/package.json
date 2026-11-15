@@ -1,0 +1,21 @@
+{
+  "name": "@twin/access-core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Política común de acceso por usuario, gemelo y acción para Digital Twin",
+  "exports": {
+    ".": "./index.ts",
+    "./*": "./*"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@types/node": "22.19.1",
+    "typescript": "5.9.3",
+    "vite": "8.3.1",
+    "vitest": "5.0.3"
+  }
+}

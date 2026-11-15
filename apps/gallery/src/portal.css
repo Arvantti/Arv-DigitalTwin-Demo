@@ -1,5 +1,6 @@
 /* Portada: universo del gemelo (hero) y tarjetas de plantas con figura facetada. */
-.uni-hero { position: relative; height: clamp(540px, 82vh, 800px); overflow: hidden; border-bottom: 1px solid var(--line); background: radial-gradient(ellipse at 50% 45%, #0d1430 0%, var(--bg) 70%); }
+body.portal { background: radial-gradient(ellipse at 50% 18%, #0d1430 0%, #080b29 43%, var(--bg) 78%) fixed; }
+.uni-hero { position: relative; height: clamp(540px, 82vh, 800px); overflow: hidden; border-bottom: 1px solid var(--line); background: transparent; }
 .uni-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: pan-y; cursor: grab; }
 .uni-canvas.drag { cursor: grabbing; }
 .uni-top { position: absolute; top: 28px; left: max(20px, env(safe-area-inset-left, 0px)); right: 20px; pointer-events: none; max-width: 520px; }
@@ -9,6 +10,10 @@
 .uni-legend i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
 .uni-down { position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%); font: 600 11px Orbitron, sans-serif; letter-spacing: 0.18em; color: var(--dim); text-decoration: none; padding: 8px 14px; border: 1px solid var(--line); border-radius: 999px; background: rgba(4, 4, 33, 0.6); }
 .uni-down:hover { color: var(--text); border-color: var(--cyan); }
+.uni-actions { position: absolute; z-index: 3; top: 82px; right: max(20px, env(safe-area-inset-right, 0px)); display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 8px; max-width: min(420px, calc(100% - 40px)); }
+.uni-action { display: inline-flex; align-items: center; min-height: 38px; box-sizing: border-box; padding: 0 13px; border: 1px solid var(--line); border-radius: 999px; color: var(--text); background: rgba(4, 4, 33, 0.78); backdrop-filter: blur(10px); font-size: 12px; font-weight: 600; text-decoration: none; white-space: nowrap; }
+.uni-action:hover { color: var(--cyan); border-color: var(--cyan); }
+.uni-action[hidden] { display: none; }
 @media (max-width: 700px) { .uni-legend { display: none; } .uni-top p { display: none; } }
 
 .portal-wrap { max-width: 1180px; }

@@ -21,6 +21,7 @@ jobs:
       EMULATOR_API_DOMAIN: ${{ vars.EMULATOR_API_DOMAIN }}
       ACCESS_TEAM_DOMAIN: ${{ vars.ACCESS_TEAM_DOMAIN }}
       ACCESS_AUD: ${{ vars.ACCESS_AUD }}
+      ACCESS_CONTROL_API_URL: ${{ vars.ACCESS_CONTROL_API_URL }}
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -54,7 +55,19 @@ jobs:
             exit 1
           fi
           if [[ -n "$ACCESS_TEAM_DOMAIN" && -z "$ACCESS_AUD" || -z "$ACCESS_TEAM_DOMAIN" && -n "$ACCESS_AUD" ]]; then
-            echo 'Set both ACCESS_TEAM_DOMAIN and ACCESS_AUD to enable the optional Access-protected admin path.' >&2
+            echo 'Set both ACCESS_TEAM_DOMAIN and ACCESS_AUD together.' >&2
+            exit 1
+          fi
+          if [[ -n "$ACCESS_TEAM_DOMAIN" && -z "$EMULATOR_API_DOMAIN" ]]; then
+            echo 'Access enforcement protects all API/WebSocket routes; configure the first-party EMULATOR_API_DOMAIN before enabling it.' >&2
+            exit 1
+          fi
+          if [[ -n "$ACCESS_TEAM_DOMAIN" && -z "$ACCESS_CONTROL_API_URL" ]]; then
+            echo 'Do not enable Access without the deployed Access Control API; configure ACCESS_CONTROL_API_URL first.' >&2
+            exit 1
+          fi
+          if [[ -n "$ACCESS_CONTROL_API_URL" && -z "$ACCESS_TEAM_DOMAIN" ]]; then
+            echo 'Do not connect authorization while Access identity verification is disabled.' >&2
             exit 1
           fi
       - name: Check Cloudflare Containers API access
@@ -100,6 +113,7 @@ jobs:
         shell: bash
         run: |
           args=(--config ../../wrangler.acueducto.jsonc --var "D1_GATEWAY_ORIGIN:$D1_GATEWAY_ORIGIN" --var "CORS_ORIGINS:$CORS_ORIGINS")
+          if [[ -n "$ACCESS_CONTROL_API_URL" ]]; then args+=(--var "ACCESS_CONTROL_API_URL:$ACCESS_CONTROL_API_URL"); fi
           if [[ -n "$ACCESS_TEAM_DOMAIN" ]]; then
             args+=(--var "ACCESS_TEAM_DOMAIN:$ACCESS_TEAM_DOMAIN" --var "ACCESS_AUD:$ACCESS_AUD")
           fi

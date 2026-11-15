@@ -13,4 +13,11 @@ describe("anonymous demo capabilities", () => {
     expect(await verifyDemoToken("test-only-secret-with-enough-entropy", token, 2000)).toBeNull();
     expect(await verifyDemoToken("test-only-secret-with-enough-entropy", `${token}x`, 1000)).toBeNull();
   });
+
+  it("keeps short-lived internal relay capabilities audience-separated from browser demo tokens", async () => {
+    const token = await signDemoToken("test-only-secret-with-enough-entropy", "user:1", 2000, "acueducto-internal");
+    const internalClaims = await verifyDemoToken("test-only-secret-with-enough-entropy", token, 1000, "acueducto-internal");
+    expect(internalClaims?.aud).toBe("acueducto-internal");
+    expect(await verifyDemoToken("test-only-secret-with-enough-entropy", token, 1000)).toBeNull();
+  });
 });

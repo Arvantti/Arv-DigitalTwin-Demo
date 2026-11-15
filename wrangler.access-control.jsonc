@@ -1,0 +1,28 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "digitaltwin-access-control",
+  "account_id": "5350d152845fada6fdc6f51f4bf613ca",
+  "main": "apps/access-control-api/src/index.ts",
+  "compatibility_date": "2026-10-26",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "digitaltwin-access-control",
+      "database_id": "cc1d0340-1bfd-4bc0-82fc-e754da1ae313",
+      "migrations_dir": "apps/access-control-api/migrations"
+    }
+  ],
+  "vars": {
+    "ACCESS_TEAM_DOMAIN": "old-pond-965a.cloudflareaccess.com",
+    "ACCESS_AUD": "80b14b9138d523303962958e6c2e4c0bdc2c4af195ca46198f02d49bceee8a1",
+    "ACCESS_CONTROL_ADMIN_SUBJECTS": "google-oauth2|109753927659224633111",
+    "GALLERY_ORIGIN": "https://digitaltwin.arvantti.online",
+    "AUTH0_DOMAIN": "arvantti-digitaltwin.us.auth0.com",
+    "AUTH0_MANAGEMENT_CLIENT_ID": "Rbf1O45gB6NsJkwUm61nuYH85Jp0eMKc",
+    "AUTH0_CLIENT_ID": "BE8tXX6S55n8Ei5f6Rghod19sgmZ086X",
+    "AUTH0_DB_CONNECTION": "DigitalTwin-Users",
+    "TWIN_CATALOG": "plastic-injection-plant-v1,sauce-plant-v1,water-network-scale-v1,airport-baggage-v1,corrugated-box-plant-v1,garment-factory-v1,centro-medellin-v1"
+  }
+}
