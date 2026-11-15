@@ -27,6 +27,16 @@ function response(detail: string, status: number): Response {
   return Response.json({ detail }, { status, headers: { "cache-control": "no-store" } });
 }
 
+function accessSessionCookie(request: Request): string | null {
+  for (const part of (request.headers.get("cookie") ?? "").split(";")) {
+    const separator = part.indexOf("=");
+    if (separator < 0 || part.slice(0, separator).trim() !== "CF_Authorization") continue;
+    const value = part.slice(separator + 1).trim();
+    return value || null;
+  }
+  return null;
+}
+
 async function boundedBody(request: Request, limit: number): Promise<ArrayBuffer | null> {
   const reader = request.body?.getReader();
   if (!reader) return new ArrayBuffer(0);
@@ -62,7 +72,8 @@ export async function onRequest(context: PagesContext): Promise<Response> {
     const endpoint = url.pathname.slice("/api/access".length);
     if (!(endpoint.startsWith("/v1/") || endpoint.startsWith("/admin/"))) return response("Not found", 404);
     const assertion = request.headers.get("cf-access-jwt-assertion");
-    if (!assertion) return response("Authenticated Cloudflare Access session required", 401);
+    const sessionCookie = accessSessionCookie(request);
+    if (!assertion || !sessionCookie) return response("Authenticated Cloudflare Access session required", 401);
     const origin = request.headers.get("origin");
     if ((origin && origin !== url.origin) || (!origin && !["GET", "HEAD"].includes(request.method))) {
       return response("Origin not allowed", 403);
@@ -70,6 +81,7 @@ export async function onRequest(context: PagesContext): Promise<Response> {
     if (request.method === "OPTIONS") return new Response(null, { status: 204 });
     const headers = new Headers({
       "cf-access-jwt-assertion": assertion,
+      "cf-access-session-cookie": sessionCookie,
       origin: url.origin,
       "cache-control": "no-store",
     });
@@ -105,7 +117,8 @@ export async function onRequest(context: PagesContext): Promise<Response> {
     ?? plantData?.[1] ?? replayData?.[1] ?? scheduleData?.[1];
   if (!route) return context.next();
   const assertion = request.headers.get("cf-access-jwt-assertion");
-  if (!assertion) return response("Authenticated Cloudflare Access session required", 401);
+  const sessionCookie = accessSessionCookie(request);
+  if (!assertion || !sessionCookie) return response("Authenticated Cloudflare Access session required", 401);
 
   const twinId = route === "plant-query" ? (url.searchParams.get("plant") ?? "sauce-plant-v1")
     : route === "plant-query-required" ? url.searchParams.get("plant") : route;
@@ -116,7 +129,11 @@ export async function onRequest(context: PagesContext): Promise<Response> {
     check.searchParams.set("twin_id", route === "admin-console" ? "water-network-scale-v1" : twinId);
     check.searchParams.set("permission", route === "admin-console" ? "admin.action" : "view");
     const result = await fetch(check, {
-      headers: { "cf-access-jwt-assertion": assertion, "cache-control": "no-store" },
+      headers: {
+        "cf-access-jwt-assertion": assertion,
+        "cf-access-session-cookie": sessionCookie,
+        "cache-control": "no-store",
+      },
     });
     if (result.status === 422) return response("Twin is not in the access catalog", 404);
     if (!result.ok) return response("Access authorization service unavailable", 503);

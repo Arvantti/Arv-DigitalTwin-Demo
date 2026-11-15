@@ -88,6 +88,16 @@ function accessAudiences(env: Env): string[] {
   return [...new Set((env.ACCESS_AUD ?? "").split(",").map((audience) => audience.trim()).filter(Boolean))];
 }
 
+function accessSessionCookie(request: Request): string | null {
+  for (const part of (request.headers.get("cookie") ?? "").split(";")) {
+    const separator = part.indexOf("=");
+    if (separator < 0 || part.slice(0, separator).trim() !== "CF_Authorization") continue;
+    const value = part.slice(separator + 1).trim();
+    return value || null;
+  }
+  return null;
+}
+
 /** Returns a verified Access identity. Missing or invalid configuration/assertions fail closed. */
 async function accessIdentity(request: Request, env: Env): Promise<AccessIdentity | null> {
   if (!env.ACCESS_TEAM_DOMAIN || !env.ACCESS_AUD) return null;
@@ -141,13 +151,18 @@ function permissionForApiRequest(request: Request, plantId: string): string | nu
 async function hasAssignedPermission(request: Request, env: Env, plantId: string, permission: string): Promise<boolean> {
   if (!env.ACCESS_CONTROL_API_URL) return false;
   const assertion = request.headers.get("cf-access-jwt-assertion");
-  if (!assertion) return false;
+  const sessionCookie = accessSessionCookie(request);
+  if (!assertion || !sessionCookie) return false;
   try {
     const endpoint = new URL("/v1/check", env.ACCESS_CONTROL_API_URL);
     endpoint.searchParams.set("twin_id", plantId);
     endpoint.searchParams.set("permission", permission);
     const response = await fetch(endpoint, {
-      headers: { "cf-access-jwt-assertion": assertion, "cache-control": "no-store" },
+      headers: {
+        "cf-access-jwt-assertion": assertion,
+        "cf-access-session-cookie": sessionCookie,
+        "cache-control": "no-store",
+      },
     });
     if (!response.ok) return false;
     const result = await response.json() as { allowed?: unknown };

@@ -23,6 +23,7 @@ type Env = {
 };
 
 type Identity = { sub: string; email: string; emailVerified: boolean };
+type CloudflareAccessIdentity = { id?: unknown; user_uuid?: unknown; email?: unknown };
 type AccountType = "client" | "reseller";
 type PermissionRow = { twin_id: string; permission: TwinPermission };
 type Auth0User = { user_id: string; email?: string; name?: string; blocked?: boolean; email_verified?: boolean; app_metadata?: { account_type?: AccountType } };
@@ -71,7 +72,8 @@ async function readJson(request: Request): Promise<Record<string, unknown> | nul
 async function identity(request: Request, env: Env): Promise<Identity | null> {
   if (!env.ACCESS_TEAM_DOMAIN || !env.ACCESS_AUD) return null;
   const assertion = request.headers.get("cf-access-jwt-assertion");
-  if (!assertion) return null;
+  const sessionCookie = request.headers.get("cf-access-session-cookie");
+  if (!assertion || !sessionCookie || /[\r\n;]/.test(sessionCookie)) return null;
   try {
     jwks ??= createRemoteJWKSet(new URL(`https://${env.ACCESS_TEAM_DOMAIN}/cdn-cgi/access/certs`));
     const { payload } = await jwtVerify(assertion, jwks, {
@@ -79,7 +81,19 @@ async function identity(request: Request, env: Env): Promise<Identity | null> {
       audience: accessAudiences(env),
     });
     if (typeof payload.sub !== "string" || typeof payload.email !== "string") return null;
-    return { sub: payload.sub, email: payload.email.toLowerCase(), emailVerified: payload.email_verified === true };
+
+    // Access `sub` is a Cloudflare user UUID, not the upstream Auth0 user_id used by grants.
+    // Resolve the signed assertion to Access's identity endpoint, then bind both identities.
+    const identityResponse = await fetch(`https://${env.ACCESS_TEAM_DOMAIN}/cdn-cgi/access/get-identity`, {
+      headers: { cookie: `CF_Authorization=${sessionCookie}` },
+      redirect: "manual",
+    });
+    if (!identityResponse.ok) return null;
+    const accessIdentity = await identityResponse.json() as CloudflareAccessIdentity;
+    if (typeof accessIdentity.id !== "string" || typeof accessIdentity.user_uuid !== "string"
+      || typeof accessIdentity.email !== "string" || accessIdentity.user_uuid !== payload.sub
+      || accessIdentity.email.toLowerCase() !== payload.email.toLowerCase()) return null;
+    return { sub: accessIdentity.id, email: payload.email.toLowerCase(), emailVerified: payload.email_verified === true };
   } catch {
     return null;
   }

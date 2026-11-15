@@ -2,13 +2,14 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("jose", () => ({
   createRemoteJWKSet: vi.fn(() => ({})),
   jwtVerify: vi.fn(async (assertion: string) => {
-    if (assertion === "admin-token") return { payload: { sub: "google-oauth2|andres", email: "admin@example.test", email_verified: true } };
-    if (assertion === "viewer-token") return { payload: { sub: "auth0|viewer", email: "viewer@example.test", email_verified: true } };
-    if (assertion === "unverified-admin-token") return { payload: { sub: "google-oauth2|impostor", email: "admin@example.test", email_verified: true } };
+    if (assertion === "admin-token") return { payload: { sub: "cf-admin-user", email: "admin@example.test", email_verified: true } };
+    if (assertion === "viewer-token") return { payload: { sub: "cf-viewer-user", email: "viewer@example.test", email_verified: true } };
+    if (assertion === "impostor-token") return { payload: { sub: "cf-impostor-user", email: "admin@example.test", email_verified: true } };
     throw new Error("invalid assertion");
   }),
 }));
 import worker from "./index";
+import { onRequest } from "../../../functions/_middleware";
 
 const origin = "https://digitaltwin.arvantti.online";
 const catalog = "water-network-scale-v1,sauce-plant-v1";
@@ -40,21 +41,84 @@ function env(overrides: Record<string, unknown> = {}) {
   } as never;
 }
 
+function sessionFor(token: string): string {
+  return token === "admin-token" ? "admin-session" : token === "impostor-token" ? "impostor-session" : "viewer-session";
+}
+
+function accessIdentityResponse(input: RequestInfo | URL, init?: RequestInit): Response | undefined {
+  if (!String(input).endsWith("/cdn-cgi/access/get-identity")) return undefined;
+  const cookie = new Headers(init?.headers).get("cookie");
+  const identities: Record<string, object> = {
+    "CF_Authorization=admin-session": { id: "google-oauth2|andres", user_uuid: "cf-admin-user", email: "admin@example.test" },
+    "CF_Authorization=viewer-session": { id: "auth0|viewer", user_uuid: "cf-viewer-user", email: "viewer@example.test" },
+    "CF_Authorization=impostor-session": { id: "google-oauth2|impostor", user_uuid: "cf-impostor-user", email: "admin@example.test" },
+  };
+  const identity = identities[cookie ?? ""];
+  return identity ? Response.json(identity) : new Response(null, { status: 401 });
+}
+
 function request(path: string, token = "admin-token", init: RequestInit = {}) {
   const headers = new Headers(init.headers);
   headers.set("origin", origin);
   headers.set("cf-access-jwt-assertion", token);
+  headers.set("cf-access-session-cookie", sessionFor(token));
   return new Request(`https://access-api.example${path}`, { ...init, headers });
 }
 
 describe("access-control API", () => {
-  beforeEach(() => vi.unstubAllGlobals());
+  beforeEach(() => {
+    vi.unstubAllGlobals();
+    vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL, init?: RequestInit) =>
+      accessIdentityResponse(input, init) ?? new Response(null, { status: 404 })));
+  });
 
   it("keeps health public but fails closed for unauthenticated management requests", async () => {
     const health = await worker.fetch(new Request("https://access-api.example/health"), env());
     expect(health.status).toBe(200);
     const denied = await worker.fetch(new Request(`https://access-api.example/v1/me`, { headers: { origin } }), env());
+    const noSessionCookie = await worker.fetch(new Request(`https://access-api.example/v1/me`, {
+      headers: { origin, "cf-access-jwt-assertion": "admin-token" },
+    }), env());
     expect(denied.status).toBe(401);
+    expect(noSessionCookie.status).toBe(401);
+  });
+
+  it("forwards only the Access cookie extracted from the request to the Pages gate", async () => {
+    const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) => Response.json({ allowed: true }));
+    vi.stubGlobal("fetch", fetchMock);
+    const result = await onRequest({
+      request: new Request("https://digitaltwin.arvantti.online/plant?plant=water-network-scale-v1", {
+        headers: {
+          cookie: "other=value; CF_Authorization=real-session-cookie",
+          "cf-access-jwt-assertion": "signed-assertion",
+          "cf-access-session-cookie": "forged-session-cookie",
+        },
+      }),
+      env: { ACCESS_CONTROL_API_URL: "https://access-api.example" },
+      next: async () => new Response("page"),
+    });
+    const upstreamHeaders = new Headers(fetchMock.mock.calls[0]?.[1]?.headers);
+    expect(result.status).toBe(200);
+    expect(upstreamHeaders.get("cf-access-session-cookie")).toBe("real-session-cookie");
+    expect(upstreamHeaders.get("cf-access-jwt-assertion")).toBe("signed-assertion");
+    expect(upstreamHeaders.has("cookie")).toBe(false);
+  });
+
+  it("rejects a forged internal session header when the browser has no Access cookie", async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    const result = await onRequest({
+      request: new Request("https://digitaltwin.arvantti.online/plant?plant=water-network-scale-v1", {
+        headers: {
+          "cf-access-jwt-assertion": "signed-assertion",
+          "cf-access-session-cookie": "forged-session-cookie",
+        },
+      }),
+      env: { ACCESS_CONTROL_API_URL: "https://access-api.example" },
+      next: async () => new Response("page"),
+    });
+    expect(result.status).toBe(401);
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it("rejects unapproved browser origins even with a valid assertion", async () => {
@@ -66,24 +130,37 @@ describe("access-control API", () => {
 
   it("checks model permissions from verified identity for server-to-server callers", async () => {
     const adminRequest = new Request("https://access-api.example/v1/check?twin_id=water-network-scale-v1&permission=view", {
-      headers: { "cf-access-jwt-assertion": "admin-token" },
+      headers: { "cf-access-jwt-assertion": "admin-token", "cf-access-session-cookie": "admin-session" },
     });
     const viewerRequest = new Request("https://access-api.example/v1/check?twin_id=water-network-scale-v1&permission=view", {
-      headers: { "cf-access-jwt-assertion": "viewer-token" },
+      headers: { "cf-access-jwt-assertion": "viewer-token", "cf-access-session-cookie": "viewer-session" },
+    });
+    const adminActionRequest = new Request("https://access-api.example/v1/check?twin_id=water-network-scale-v1&permission=admin.action", {
+      headers: { "cf-access-jwt-assertion": "admin-token", "cf-access-session-cookie": "admin-session" },
     });
     const admin = await worker.fetch(adminRequest, env());
     const viewer = await worker.fetch(viewerRequest, env());
+    const adminAction = await worker.fetch(adminActionRequest, env());
     expect(admin.status).toBe(200);
     expect(await admin.json()).toEqual({ allowed: true });
     expect(viewer.status).toBe(200);
     expect(await viewer.json()).toEqual({ allowed: false });
+    expect(adminAction.status).toBe(200);
+    expect(await adminAction.json()).toEqual({ allowed: true });
   });
 
-  it("allows only the exact configured administrator subject to enter admin routes", async () => {
+  it("allows only the exact configured upstream subject to enter admin routes", async () => {
     const regular = await worker.fetch(request("/admin/users", "viewer-token"), env());
-    const unverified = await worker.fetch(request("/admin/users", "unverified-admin-token"), env());
+    const impostor = await worker.fetch(request("/admin/users", "impostor-token"), env());
     expect(regular.status).toBe(403);
-    expect(unverified.status).toBe(403);
+    expect(impostor.status).toBe(403);
+  });
+
+  it("binds the upstream identity cookie to the signed Access JWT", async () => {
+    const mismatchedCookie = request("/v1/me", "admin-token");
+    mismatchedCookie.headers.set("cf-access-session-cookie", "viewer-session");
+    const response = await worker.fetch(mismatchedCookie, env());
+    expect(response.status).toBe(401);
   });
 
   it("returns only the signed-in user's explicit grants and denies suspended accounts", async () => {
@@ -101,7 +178,9 @@ describe("access-control API", () => {
   });
 
   it("revokes every grant and requests Auth0 session invalidation without deleting the identity", async () => {
-    vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL) => {
+    vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const accessIdentity = accessIdentityResponse(input, init);
+      if (accessIdentity) return accessIdentity;
       const url = String(input);
       if (url.endsWith("/oauth/token")) return Response.json({ access_token: "mock-management-token" });
       if (url.includes("/sessions")) return new Response(null, { status: 204 });
@@ -135,7 +214,9 @@ describe("access-control API", () => {
   });
 
   it("never sends generated passwords to the browser when creating an invited account", async () => {
-    const fetchMock = vi.fn(async (input: RequestInfo | URL, _init?: RequestInit) => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const accessIdentity = accessIdentityResponse(input, init);
+      if (accessIdentity) return accessIdentity;
       const url = String(input);
       if (url.endsWith("/oauth/token")) return Response.json({ access_token: "mock-management-token" });
       if (url.endsWith("/api/v2/users")) return Response.json({ user_id: "auth0|new-user", email: "new@example.test" }, { status: 201 });

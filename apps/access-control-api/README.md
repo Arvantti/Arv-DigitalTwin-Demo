@@ -1,6 +1,6 @@
 # DigitalTwin access-control API (local implementation)
 
-This Worker is the control plane for Auth0 users and per-user/per-twin grants. It verifies Cloudflare Access JWTs itself; Access headers alone are not trusted. Administration is granted only to the exact, verified JWT `sub` values in `ACCESS_CONTROL_ADMIN_SUBJECTS` (comma-separated). Prefer the stable Auth0 subject over email matching. The frontend cannot set administrator status or subject IDs.
+This Worker is the control plane for Auth0 users and per-user/per-twin grants. It verifies the Cloudflare Access JWT and resolves its Cloudflare `sub` (user UUID) through `/cdn-cgi/access/get-identity`, binding the result to the signed JWT's UUID and email. Authorization and D1 grants use the upstream Auth0 subject (`id` from that verified identity response), not email or Cloudflare's organization-specific UUID. `ACCESS_CONTROL_ADMIN_SUBJECTS` contains exact Auth0 subject IDs. The Pages middleware forwards only the `CF_Authorization` session cookie to this Worker over a private header; neither the cookie nor JWT is logged or returned. The frontend cannot set administrator status or subject IDs.
 
 ## Routes
 
@@ -12,11 +12,11 @@ This Worker is the control plane for Auth0 users and per-user/per-twin grants. I
 - `DELETE /admin/users/{auth0_sub}/access`: revokes every twin grant and requests session invalidation while retaining the identity and audit history.
 - `GET /v1/check?twin_id=...&permission=...`: verifies the caller's own grant; `admin.action` is true only for the configured administrator. Model gateways must call this before serving protected data/actions.
 
-Every non-health route requires a valid Access assertion, same-origin Gallery `Origin`, and `no-store` response. Every `/admin/*` route additionally requires the sole admin identity. New catalog twins have no grants. Resellers receive `view` and `saved_studies.read` defaults in the admin UI only when a twin is assigned; clients get no implicit grant. Additional scenario create/edit grants are explicit. Auth0 secrets and D1 credentials never belong in the Gallery.
+Every non-health route requires a valid Access assertion, the matching `CF_Authorization` session, and (for browser-origin requests) the same-origin Gallery `Origin`; responses are `no-store`. The Worker binds the JWT's Cloudflare `sub` and email to `user_uuid` and email returned by Access, then uses the verified upstream Auth0 `id` as the authorization principal. `/admin/*` additionally requires an exact configured Auth0 subject. New catalog twins have no grants. Resellers receive `view` and `saved_studies.read` defaults in the admin UI only when a twin is assigned; clients get no implicit grant. Additional scenario create/edit grants are explicit. Auth0 secrets, D1 credentials, session cookies, and assertions never belong in the Gallery and must not be logged.
 
-## Not yet production-connected
+## Deployment status
 
-This is implementation scaffolding, not a deployed service. An administration page exists at `/access-admin.html`; the Gallery middleware can check static model routes when `ACCESS_CONTROL_API_URL` is configured at Pages runtime. The acueducto gateway checks API permissions and supports shared saved-study reads/edits only after a gateway-side grant check. Other model APIs are not yet connected, so this is not production-ready. Access applications, D1 resource, Auth0 Management API client, database connection, email templates, and host routing are not configured. Do not expose or deploy it until those integrations, migrations, authorization enforcement, tests, and manual browser flows are complete. `wrangler.access-control.jsonc` intentionally contains placeholders. Do not apply remote migrations or deploy without explicit user authorization.
+The Worker, D1 migration, Auth0 connection, Cloudflare Access application, and Gallery middleware are connected in production. The middleware checks static model routes and proxies `/api/access/*`; the Worker applies per-user/per-twin policy. The Acueducto gateway integration is still incomplete and other model APIs are not connected, so those backends must not be considered protected by this API alone. Follow `wrangler.access-control.jsonc` for non-secret deployment settings; do not apply remote migrations or deploy without explicit user authorization.
 
 ## Required Auth0 Management API scopes
 
