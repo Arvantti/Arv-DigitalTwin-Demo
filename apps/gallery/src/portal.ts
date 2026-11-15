@@ -104,25 +104,28 @@ const accessControlApi = import.meta.env.PROD
   ? "/api/access"
   : import.meta.env.VITE_ACCESS_CONTROL_API_URL?.trim().replace(/\/$/, "") ?? "";
 const adminLink = document.getElementById("portal-admin-link") as HTMLAnchorElement | null;
+const loginLink = document.getElementById("portal-login-link") as HTMLAnchorElement | null;
+const logoutLink = document.getElementById("portal-logout-link") as HTMLAnchorElement | null;
 let allowedTwinIds: Set<string> | null = null;
-let accessError = false;
 if (accessControlApi) {
   try {
     const response = await fetch(`${accessControlApi}/v1/me`, { credentials: "include", cache: "no-store" });
-    if (!response.ok) throw new Error("Access check failed");
-    const me = await response.json() as { administrator?: boolean; twins?: unknown };
-    if (me.administrator === true && adminLink) adminLink.hidden = false;
-    if (!me.administrator) {
-      if (!Array.isArray(me.twins) || !me.twins.every((id) => typeof id === "string")) throw new Error("Invalid access list");
-      allowedTwinIds = new Set(me.twins as string[]);
+    if (response.ok) {
+      const me = await response.json() as { administrator?: boolean; twins?: unknown };
+      const administrator = me.administrator === true;
+      if (administrator || (Array.isArray(me.twins) && me.twins.every((id) => typeof id === "string"))) {
+        if (loginLink) loginLink.hidden = true;
+        if (logoutLink) logoutLink.hidden = false;
+        if (administrator && adminLink) adminLink.hidden = false;
+        if (!administrator) allowedTwinIds = new Set(me.twins as string[]);
+      }
     }
   } catch {
-    accessError = true;
-    root.textContent = "No se pudo validar tu acceso. Recarga la página o contacta al administrador.";
+    // La portada y el catálogo son públicos; las rutas protegidas vuelven a validar permisos en el servidor.
   }
 }
 const visiblePlants = allowedTwinIds ? plants.filter((plant) => allowedTwinIds!.has(plant.id)) : plants;
-if (!accessError) visiblePlants.forEach((p, i) => {
+visiblePlants.forEach((p, i) => {
   const main = p.main ?? { href: `/plant.html?plant=${p.id}`, label: "VER LA PLANTA EN 3D" };
   const fam = FAMILY[p.family] ?? { color: "#4ea7ff", glyph: "M12 3l8 4.5v9L12 21l-8-4.5v-9z" };
   const card = document.createElement("article");

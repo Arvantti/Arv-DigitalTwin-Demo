@@ -2,14 +2,14 @@
 
 ## Estado
 
-La rama `feat/google-oauth-study-library` parte del merge `f27b397`. Incluye la biblioteca durable de estudios y el acceso común: núcleo deny-by-default, API de control de acceso/Auth0, consola `/access-admin.html`, middleware Pages, controles del gateway Acueducto y botones de sesión en la portada. El Worker `digitaltwin-access-control` se desplegó en la cuenta Arvantti el 2026-11-14; su `/health` respondió correctamente y `/v1/me` sin identidad fue denegada con 401. El secreto M2M ya está guardado como Worker Secret y Pages production tiene `ACCESS_CONTROL_API_URL` como valor cifrado. El código/middleware de la PR aún no se desplegó en Pages, así que la galería no consulta todavía la autorización y la consola no está activa. Solo Acueducto tiene integración de autorización en el código. No se desplegó Pages ni el Worker Acueducto ni se aplicaron nuevas migraciones durante esta tarea.
+La PR #206 se integró a `main` el 2026-11-15 y el workflow publicó Gallery en Pages. El Worker `digitaltwin-access-control` está desplegado; `/health` respondió OK y `/v1/me` sin identidad devolvió 401. El secreto M2M está en Worker Secrets y Pages production tiene `ACCESS_CONTROL_API_URL` como valor cifrado. El usuario cambió la experiencia deseada: el portal y catálogo de plantas deben ser públicos; al entrar a una pantalla de gemelo se solicita login y, tras autenticar, la sesión SSO permite moverse entre los proyectos autorizados. Cloudflare Access aún protege todo el host, incluida la portada, por lo que falta cambiar sus destinos a rutas protegidas. En la nueva rama local `feat/public-twin-portal` se oculta Cerrar sesión hasta confirmar una sesión y se extiende la red de nodos a toda la portada. Solo Acueducto tiene integración de autorización en el código.
 
 ### Estado de configuración externa (2026-11-14)
 
 - Auth0 tenant `arvantti-digitaltwin` (región US). La conexión `DigitalTwin-Users` tiene el registro público desactivado; el cliente de Cloudflare Access está federado con Auth0.
 - El cliente M2M `DigitalTwin Access Control API` cuenta con permisos de Management API para leer/crear/actualizar usuarios y revocar sesiones. El secreto se cargó con Wrangler en Cloudflare Worker Secrets el 2026-11-14; su valor no se guarda en Git ni en estas notas.
 - La Action `DigitalTwin require verified email` fue desplegada y exige correo verificado para el cliente de Cloudflare Access. Falta confirmar que esté vinculada al trigger Post Login activo.
-- Cloudflare Access tiene la aplicación `DigitalTwin Gallery` para `digitaltwin.arvantti.online`, con proveedor Auth0 y política `Allow DigitalTwin Auth0 users`. La ruta sin sesión redirige al login de Auth0. Esta protección de borde fue habilitada con autorización del usuario.
+- Cloudflare Access tiene la aplicación `DigitalTwin Gallery` para `digitaltwin.arvantti.online`, con proveedor Auth0 y política `Allow DigitalTwin Auth0 users`. La ruta sin sesión redirige al login de Auth0. El 2026-11-15 el usuario autorizó cambiar la app para dejar público el portal y proteger rutas de gemelos; el cambio externo aún no se ha aplicado.
 - D1 `digitaltwin-access-control` se creó y recibió la migración inicial `0001_access_control.sql` con autorización. La configuración local está en `wrangler.access-control.jsonc`; contiene identificadores no secretos. El M2M secret permanece únicamente en el Worker.
 - El Worker de control de acceso ya se desplegó en `https://digitaltwin-access-control.andres-quiceno.workers.dev`; su `/health` responde `ok` y `/v1/me` deniega peticiones sin JWT. El secreto M2M está guardado y Pages production tiene `ACCESS_CONTROL_API_URL` como valor cifrado. Falta desplegar el middleware/código de la PR en Pages y conectar el gateway Acueducto. No crear cuentas de prueba ni afirmar que la autorización de la galería está activa hasta probar esa cadena.
 - No se modificaron las otras aplicaciones de Cloudflare Access. Acueducto es el único gemelo conectado al control de acceso en el código.
@@ -17,7 +17,7 @@ La rama `feat/google-oauth-study-library` parte del merge `f27b397`. Incluye la 
 
 Decisión confirmada por el usuario el 2026-11-14: conservar Google además de email/contraseña en el login de Access. Las cuentas de clientes/resellers seguirán creándose por invitación en `DigitalTwin-Users`, sin auto-registro ni permisos implícitos; la identidad administradora actual de Andrés se conserva con **Continue with Google**.
 
-Decisión vigente del usuario: el login se presenta **una sola vez al inicio** y la misma sesión da acceso a todos los escenarios y proyectos del sitio, no solo al PLC. No habrá un login por planta/proyecto. Las aplicaciones Access que protegen Gallery (incluida la portada), el host de API y sus aliases deben usar el mismo IdP y la misma allowlist global; SSO evita pedir credenciales de nuevo. Las variantes `pages.dev` y `workers.dev` no deben servir como bypass. Las páginas/modelos individuales no requieren cambios de autenticación propios.
+Decisión vigente del usuario (2026-11-15): el portal/catálogo de plantas se ve sin iniciar sesión; al seleccionar una pantalla de gemelo, Cloudflare Access inicia login. Después, SSO reutiliza la misma sesión en los demás gemelos autorizados, sin pedir credenciales por proyecto. Proteger las rutas de páginas/APIs de gemelos y mantener `/` público; no dejar bypass por `pages.dev` ni `workers.dev`. El enlace Cerrar sesión solo se muestra tras confirmar sesión activa. La aplicación debe conservar Google junto a email/contraseña.
 
 ## Recomendación
 
@@ -27,9 +27,9 @@ Cloudflare Access solo no satisface el requisito de cuentas individuales. Auth0 
 
 ### Experiencia de entrada
 
-- Al entrar al host canónico de Gallery, Cloudflare Access inicia el flujo hospedado de Auth0 si hace falta; no se implementa login/modal distinto por proyecto ni formulario propio en Gallery. La portada ofrece enlaces explícitos para iniciar y cerrar la sesión común de Access.
+- La portada y el catálogo se muestran sin autenticación. El enlace de inicio puede iniciar la sesión voluntariamente; al abrir una ruta protegida de gemelo, Cloudflare Access inicia el flujo hospedado de Auth0 si hace falta. No hay formulario propio por proyecto. Cerrar sesión solo se muestra cuando `/v1/me` confirma sesión.
 - Tras autenticar una vez, la sesión común permite navegar entre todos los gemelos y herramientas cubiertos por la aplicación Access. Las otras aplicaciones Access del mismo equipo deben reutilizar el mismo IdP/SSO para evitar volver a pedir credenciales.
-- Proteger el host completo de Gallery y el host first-party del API. Proteger también o redirigir el alias `pages.dev`; el Worker valida Access por criptografía y rechaza el acceso directo a `workers.dev`.
+- Proteger en el host de Gallery las pantallas de gemelo, consola, API de control y datos que no deban ser públicos; conservar `/` y assets del catálogo públicos. Aplicar controles equivalentes al alias `pages.dev`; el middleware Pages valida por servidor y deniega rutas protegidas sin JWT. El Worker valida Access por criptografía y rechaza el acceso directo a `workers.dev`.
 - El callback de Auth0/Access es parte del proveedor, no una pantalla de login de cada planta. Las URLs profundas deben regresar al recurso solicitado después de autenticarse.
 
 ## Identidades y permisos
@@ -65,7 +65,7 @@ Cloudflare Access solo no satisface el requisito de cuentas individuales. Auth0 
 
 1. **Confirmar capacidades/costos y dominios**: tenant Auth0, método de Andrés, conexión de usuario/contraseña, callback OIDC de Access, hostname API same-site y política de acceso. No aceptar planes pagos/condiciones ni generar secretos sin avisar.
 2. **Configurar identidad y sesión**: Auth0 Universal Login, Andrés como único administrador, auto-registro deshabilitado y login federado con Cloudflare Access para cuentas individuales.
-3. **Cerrar el perímetro web**: aplicaciones Access para el host completo de Pages (incluido el inicio) y el hostname first-party de API; mismas conexiones IdP y allowlist global para SSO en todas las herramientas; proteger o redirigir aliases Pages y rechazar bypass directo a `workers.dev` desde el gateway.
+3. **Cerrar el perímetro web**: portal público; proteger los destinos URL de pantallas de gemelo, administración, APIs y datos sensibles con la misma política/IdP. Configurar destinos equivalentes o denegación en `pages.dev`; verificar que el login profundo vuelve a la ruta solicitada y que `workers.dev` no permite bypass.
 4. **Autorización por rol/modelo**: middleware/Worker verifica identidad y permisos para páginas de modelo y cada API. Mantener guest demo solo si no permite cruzar el perímetro; eliminar bearer y clave de recuperación legibles por JavaScript.
 5. **Consola de administración**: endpoints backend protegidos para invitar, asignar permisos, suspender y enviar restablecimientos; registrar auditoría. M2M Secret solo en Worker Secrets.
 6. **Migración D1**: la base `digitaltwin-access-control` ya recibió `0001_access_control.sql` con autorización. La migración `0005_saved_studies.sql` de la biblioteca sigue sin aplicarse en D1 remoto. Inventariar datos locales antes de cualquier cambio; no borrar bases ni estudios. Definir una migración explícita de propietario anónimo a cuenta o dejar claro que no hay archivo productivo que migrar.
