@@ -179,6 +179,29 @@ html,body{width:1080px;height:1920px;margin:0;overflow:hidden;background:var(--b
 .ivR em{display:block;width:100%;border-radius:8px 8px 0 0;background:#4ea7ff}
 .ivR .falta em{background:#ff6b5b}
 .ivF{display:inline-block;margin-top:14px;padding:8px 18px;border-radius:999px;background:#ff6b5b;color:#05070c;font:800 28px Inter,sans-serif;opacity:0}
+.dz{opacity:0}
+.dz svg{position:absolute;left:0;top:0}
+.dzB rect{fill:#0f1a33;stroke:#4ea7ff88;stroke-width:2.5}
+.dzB text{fill:#e6edf8;font:700 34px Inter,sans-serif}
+.dzT rect{fill:#12305e;stroke:#4ea7ff}
+.dzL{fill:none;stroke:#4ea7ff;stroke-width:4;stroke-dasharray:1;stroke-dashoffset:1}
+.dzL2{stroke:#4ea7ff66;stroke-width:4}
+.dzD rect{fill:#0b1430;stroke:#6dff9c;stroke-width:3}
+.dzD text,.dzN text{fill:#fff;font:800 32px "JetBrains Mono",monospace;letter-spacing:3px}
+.chip{fill:#2d7ff9}
+.dzR rect{fill:#6dff9c22;stroke:#6dff9c;stroke-width:2}
+.dzR text{fill:#cfffe0;font:700 28px Inter,sans-serif}
+.dzP{fill:#6dff9c;opacity:0}
+.dzH{fill:#9fc6ff;font:700 38px Inter,sans-serif}
+.dzS{fill:#6dff9caa;font:600 28px Inter,sans-serif}
+.dzBand{fill:#6dff9c22;stroke:#6dff9c55;stroke-width:2;opacity:0}
+.dzLive{fill:none;stroke:#4ea7ff;stroke-width:6;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1}
+.dzA rect{fill:#ffd166}
+.dzA.a2 rect{fill:#ff6b5b}
+.dzA text{fill:#05070c;font:800 32px Inter,sans-serif}
+.dzA{opacity:0}
+.dzN circle{fill:#0f1a33;stroke:#4ea7ff;stroke-width:4}
+.dzN text{font:700 30px Inter,sans-serif;letter-spacing:0}
 .clab{position:absolute;left:60px;right:60px;margin:0;text-align:center;font:800 56px/1.12 "Inter Display",Inter,sans-serif;letter-spacing:-1px;color:#fff;text-shadow:0 4px 30px #000;opacity:0}
 .clab b{color:var(--electric)}
 .sub{position:absolute;left:60px;right:60px;top:1395px;height:180px;display:flex;align-items:center;justify-content:center;text-align:center}

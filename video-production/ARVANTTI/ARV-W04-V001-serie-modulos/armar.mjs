@@ -517,6 +517,57 @@ function componer() {
         at(`#pg${i} .ivR`, { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, tR - 0.2);
         at(`#pg${i} .ivR em`, { scaleY: 0, transformOrigin: "50% 100%" }, { scaleY: 1, duration: 0.6, stagger: 0.08, ease: "power2.out" }, tR);
         at(`#pg${i} .ivF`, { opacity: 0, scale: 1.3 }, { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(2)" }, tR + 1);
+      } else if (["dendro", "senal", "dosia"].includes(c.grafico)) {
+        // Dibujos en un lienzo fijo de 1000x840 que se escala al panel (vertical u horizontal).
+        const svg = (inner) => `<div class="pframe dz" style="left:${PX}px;width:${PW}px;top:${top}px;height:${PH}px"><svg viewBox="0 0 1000 840" width="${PW}" height="${PH}" preserveAspectRatio="xMidYMid meet">${inner}</svg></div>${lab}`;
+        const caja = (x0, y0, w0, h0, t, cls = "") => `<g class="dzB ${cls}"><rect x="${x0}" y="${y0}" width="${w0}" height="${h0}" rx="18"/><text x="${x0 + w0 / 2}" y="${y0 + h0 / 2 + 12}" text-anchor="middle">${t}</text></g>`;
+        at(`#pg${i} .pframe`, { opacity: 0, scale: 0.92 }, { opacity: 1, scale: 1, duration: 0.35, ease: "power3.out" }, a);
+        if (c.grafico === "dendro") {
+          const lect = c.lecturas || ["Andando", "Producido ▲", "Temperatura normal"];
+          clip(`pg${i}`, "scene", a, dur, svg(`
+            ${caja(250, 40, 500, 110, "Gemelo 3D · Control Center", "dzT")}
+            <path class="dzL" id="dzup${i}" d="M500,330 L500,150" pathLength="1"/>
+            <path class="dzL" d="M500,600 L500,470" pathLength="1"/><path class="dzL" d="M250,690 L390,470" pathLength="1"/><path class="dzL" d="M750,690 L610,470" pathLength="1"/>
+            <g class="dzD"><rect x="380" y="330" width="240" height="140" rx="24"/><rect class="chip" x="465" y="350" width="70" height="60" rx="10"/><text x="500" y="458" text-anchor="middle" font-size="26">DENDRO</text></g>
+            ${caja(390, 600, 220, 100, "Máquina", "dzM")}${caja(150, 690, 200, 90, "PLC")}${caja(650, 690, 200, 90, "Sensores")}
+            ${lect.map((t, k) => `<g class="dzR" id="dr${i}-${k}"><rect x="${40 + k * 320}" y="200" width="290" height="70" rx="35"/><text x="${185 + k * 320}" y="245" text-anchor="middle">${t}</text></g>`).join("")}
+            ${[0, 1, 2, 3, 4, 5].map((k) => `<circle class="dzP" id="dp${i}-${k}" cx="500" cy="330" r="10"/>`).join("")}`));
+          at(`#pg${i} .dzM, #pg${i} .dzB:not(.dzT):not(.dzM)`, { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.4, stagger: 0.12, ease: "power3.out" }, a + 0.2);
+          at(`#pg${i} .dzL`, { strokeDasharray: 1, strokeDashoffset: 1 }, { strokeDasharray: 1, strokeDashoffset: 0, duration: 0.6, stagger: 0.1 }, a + 0.6);
+          at(`#pg${i} .dzD`, { opacity: 0, scale: 0.6, transformOrigin: "500px 400px" }, { opacity: 1, scale: 1, duration: 0.45, ease: "back.out(2)" }, a + 0.5);
+          at(`#pg${i} .dzT`, { opacity: 0, y: -30 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, a + 1);
+          const tL = fases[0] ?? a + 1.5;
+          lect.forEach((_, k) => at(`#dr${i}-${k}`, { opacity: 0, scale: 0.7, transformOrigin: "50% 50%" }, { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(2)" }, tL + k * 0.6));
+          for (let k = 0; k < 6; k++) at(`#dp${i}-${k}`, { attr: { cy: 330 }, opacity: 1 }, { attr: { cy: 150 }, opacity: 0, duration: 0.9, ease: "none" }, a + 1.2 + k * 0.55);
+          at(`#pg${i} .chip`, { fill: "#2d7ff9" }, { fill: "#6dff9c", duration: 0.5, yoyo: true, repeat: Math.max(1, Math.floor(dur / 1)), ease: "sine.inOut" }, a + 0.8);
+        } else if (c.grafico === "senal") {
+          let sem = 3; const rnd = () => ((sem = (sem * 16807) % 2147483647) / 2147483647);
+          const n = 60, X = (k) => 80 + (k * 860) / (n - 1);
+          const ys = Array.from({ length: n }, (_, k) => { const base = 470 + 30 * Math.sin(k / 4) + (rnd() - 0.5) * 30; const sube = k > 34 ? (k - 34) * (k > 46 ? 11 : 6) : 0; return Math.max(240, Math.round(base - sube)); });
+          const banda = `M80,410 ${Array.from({ length: n }, (_, k) => `L${X(k)},${Math.round(410 + 25 * Math.sin(k / 4))}`).join(" ")} L940,560 ${Array.from({ length: n }, (_, k) => `L${X(n - 1 - k)},${Math.round(540 + 25 * Math.sin((n - 1 - k) / 4))}`).join(" ")} Z`;
+          clip(`pg${i}`, "scene", a, dur, svg(`
+            <text class="dzH" x="500" y="110" text-anchor="middle">Lo que aprende la IA del chip</text>
+            <path class="dzBand" d="${banda}"/><text class="dzS" x="90" y="600">Normal para esta máquina</text>
+            <polyline class="dzLive" points="${ys.map((y, k) => `${X(k)},${y}`).join(" ")}" pathLength="1"/>
+            <g class="dzA a1"><rect x="220" y="640" width="560" height="66" rx="33"/><text x="500" y="684" text-anchor="middle">Toca mantenimiento preventivo</text></g>
+            <g class="dzA a2"><rect x="220" y="725" width="560" height="66" rx="33"/><text x="500" y="769" text-anchor="middle">Posible falla: anticípate</text></g>`));
+          at(`#pg${i} .dzBand`, { opacity: 0 }, { opacity: 1, duration: 0.6 }, a + 0.3);
+          const [t1, t2] = [0, 1].map((k) => fases[k] ?? a + ((k + 1) * dur) / 3);
+          at(`#pg${i} .dzLive`, { strokeDasharray: 1, strokeDashoffset: 1 }, { strokeDasharray: 1, strokeDashoffset: 0, duration: Math.max(1, t2 - a), ease: "none" }, a + 0.4);
+          at(`#pg${i} .a1`, { opacity: 0, x: 40 }, { opacity: 1, x: 0, duration: 0.4, ease: "back.out(2)" }, t1);
+          at(`#pg${i} .a2`, { opacity: 0, x: 40 }, { opacity: 1, x: 0, duration: 0.4, ease: "back.out(2)" }, t2);
+        } else {
+          clip(`pg${i}`, "scene", a, dur, svg(`
+            <line class="dzL2" x1="380" y1="420" x2="620" y2="420"/>
+            <g class="dzN n1"><circle cx="230" cy="420" r="150"/><rect class="chip" x="195" y="350" width="70" height="60" rx="10"/><text x="230" y="480" text-anchor="middle">IA en la</text><text x="230" y="515" text-anchor="middle">máquina</text></g>
+            <g class="dzN n2"><circle cx="770" cy="420" r="150"/><text x="770" y="410" text-anchor="middle">IA en el</text><text x="770" y="450" text-anchor="middle">Control Center</text></g>
+            ${[0, 1, 2, 3, 4, 5].map((k) => `<circle class="dzP" id="dq${i}-${k}" cx="380" cy="420" r="10"/>`).join("")}
+            <text class="dzH" x="500" y="700" text-anchor="middle">Juntas, para que te anticipes</text>`));
+          at(`#pg${i} .n1`, { opacity: 0, x: -60 }, { opacity: 1, x: 0, duration: 0.5, ease: "power3.out" }, a + 0.2);
+          at(`#pg${i} .n2`, { opacity: 0, x: 60 }, { opacity: 1, x: 0, duration: 0.5, ease: "power3.out" }, a + 0.5);
+          for (let k = 0; k < 6; k++) { const ida = k % 2 === 0; at(`#dq${i}-${k}`, { attr: { cx: ida ? 380 : 620 }, opacity: 1 }, { attr: { cx: ida ? 620 : 380 }, opacity: 1, duration: 0.8, ease: "none" }, a + 0.9 + k * 0.45); to(`#dq${i}-${k}`, { opacity: 0, duration: 0.1 }, a + 1.7 + k * 0.45); }
+          at(`#pg${i} .dzH`, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.4 }, a + 1.4);
+        }
       } else if (c.grafico === "escenarios") {
         const fotos = ["p-heroe", "p-medio", "p-inyectoras-2"];
         const barras = [[0.92, 0.6, 0.45], [0.8, 0.85, 0.75], [0.55, 0.7, 0.95]];

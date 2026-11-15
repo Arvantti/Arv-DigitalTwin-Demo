@@ -1,0 +1,56 @@
+{
+  "id": "07-dendro-scada",
+  "salida": "serie-07-dendro-scada",
+  "modulo": 6,
+  "parte": 7,
+  "kicker": "MÓDULO 6 · DENDRO SCADA",
+  "escenas": {
+    "gancho": {
+      "voz": "Tu máquina tiene veinte años y no habla con nadie. Ahora va a pensar, y su vida aparece en el gemelo 3D.",
+      "titulo": "Tu máquina tiene 20 años y no habla con nadie.",
+      "tarjeta": {
+        "titulo": "Máquina de 2006",
+        "cuerpo": "Sin pantalla · sin datos<br><b>Se revisa a ojo, una vez por turno.</b>",
+        "color": "#8a6d3b",
+        "rompeEn": "Ahora va"
+      }
+    },
+    "dolor": {
+      "voz": "Muchas máquinas funcionan bien pero no dan ningún dato, y cambiarlas cuesta una fortuna. Pasa en la fábrica, en la bodega, en la planta de procesos y en la red de servicios.",
+      "cortes": ["Muchas máquinas", "en la fábrica", "en la bodega", "en la planta de procesos", "en la red"],
+      "saltarPrimero": true,
+      "intro": ["Máquinas.", "Sin datos.", "A ciegas."],
+      "items": [
+        ["Manufactura", "Las piezas producidas se cuentan a mano al final del turno.", "p-inyectoras"],
+        ["Logística", "La banda transportadora se para y nadie sabe por qué ni cuánto tiempo.", "logistica"],
+        ["Procesos", "La temperatura del tanque se anota en una planilla cada hora, si alguien se acuerda.", "salsas"],
+        ["Servicios con procesos", "Las estaciones de bombeo lejanas se visitan una vez por semana para leer los medidores.", "red"]
+      ]
+    },
+    "solucion": {
+      "tipo": "aps",
+      "fuente": "/mnt/project-files/video-plasticos/control-salsas-rec.mp4",
+      "titulo": {
+        "grande": "Dendro Scada",
+        "nombre": "Conecta tus máquinas",
+        "def": "SCADA: el sistema que vigila y controla las máquinas.",
+        "size": 140
+      },
+      "siglaEn": "es nuestro propio equipo",
+      "definicionEn": "el pequeño computador",
+      "gemeloEn": "Y todo llega",
+      "voz": "Dendro Scada es nuestro propio equipo: se conecta al PLC, el pequeño computador que controla cada máquina, o directo a sus sensores. Desde ahí la máquina reporta sola: si está andando, cuánto lleva producido, a qué temperatura trabaja. Y trae una capa de Physical AI, en proceso de patente: inteligencia artificial dentro del chip, pegada a la máquina, sin depender de internet. Aprende cómo trabaja normalmente tu máquina, te avisa cuándo toca el mantenimiento preventivo y te dice cuándo puede venir una falla, antes de que pase. Es una IA en la máquina y otra en el Control Center, trabajando juntas para que te anticipes. Y todo llega al gemelo 3D en tiempo real.",
+      "clips": [
+        { "desde": "o directo a sus sensores", "grafico": "dendro", "fases": ["si está andando"], "label": "La máquina <b>reporta sola</b>" },
+        { "desde": "Aprende cómo trabaja", "grafico": "senal", "fases": ["te avisa cuándo toca", "cuándo puede venir"], "label": "Physical AI: <b>avisa antes</b>" },
+        { "desde": "Es una IA en la máquina", "grafico": "dosia", "label": "Dos IA, <b>una sola alerta a tiempo</b>" }
+      ]
+    },
+    "modulos": { "voz": "Módulo seis de siete: el que conecta tus máquinas, incluso las viejas." },
+    "cierre": {
+      "voz": "Este es el séptimo de ocho videos. En el próximo y último, AI Embedded Assistant: le preguntas a tu planta y te responde. Arvantti DigitalTwin. Decide antes de que pase.",
+      "cta": "Parte 7 de 8 · <b>sigue la serie</b>: en la parte 8, el asistente de IA",
+      "sigue": "Continúa en la parte 8 →"
+    }
+  }
+}
