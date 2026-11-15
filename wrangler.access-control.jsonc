@@ -16,7 +16,7 @@
   ],
   "vars": {
     "ACCESS_TEAM_DOMAIN": "old-pond-965a.cloudflareaccess.com",
-    "ACCESS_AUD": "80b14b9138d523303962958e6c2e4c0bdc2c4af195ca46198f02d49bceee8a1",
+    "ACCESS_AUD": "80b14b9138d523303962958e6c2e4c0bdc2c4af195ca46198f02d49bceee8a1a",
     "ACCESS_CONTROL_ADMIN_SUBJECTS": "google-oauth2|109753927659224633111",
     "GALLERY_ORIGIN": "https://digitaltwin.arvantti.online",
     "AUTH0_DOMAIN": "arvantti-digitaltwin.us.auth0.com",
