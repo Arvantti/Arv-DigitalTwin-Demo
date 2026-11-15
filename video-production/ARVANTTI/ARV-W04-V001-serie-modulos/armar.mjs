@@ -307,7 +307,8 @@ function componer() {
       to("#xlw", { opacity: 0, duration: 0.5 }, tR + 0.5);
       sfx("gx", "whoosh-short.mp3", tR, 0.3);
     }
-    if (V.parte) { html.push(`<div id="g-parte" class="clip" data-start="0.00" data-duration="${d.toFixed(2)}" data-track-index="6"><div class="parte">PARTE ${V.parte} DE 8</div></div>`); at("#g-parte .parte", { opacity: 0, y: -20 }, { opacity: 1, y: 0, duration: 0.4 }, 0.3); }
+    // SIN_PARTE=1 quita la etiqueta "Parte N de 8" (para el video resumen de la serie).
+    if (V.parte && !process.env.SIN_PARTE) { html.push(`<div id="g-parte" class="clip" data-start="0.00" data-duration="${d.toFixed(2)}" data-track-index="6"><div class="parte">PARTE ${V.parte} DE 8</div></div>`); at("#g-parte .parte", { opacity: 0, y: -20 }, { opacity: 1, y: 0, duration: 0.4 }, 0.3); }
     sfx("g0", "hit.wav", 0.05, 0.25);
     leave("e-gancho", s + d);
   }
