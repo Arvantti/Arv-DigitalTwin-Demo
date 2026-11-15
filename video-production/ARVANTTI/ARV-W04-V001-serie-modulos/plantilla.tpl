@@ -202,6 +202,27 @@ html,body{width:1080px;height:1920px;margin:0;overflow:hidden;background:var(--b
 .dzA{opacity:0}
 .dzN circle{fill:#0f1a33;stroke:#4ea7ff;stroke-width:4}
 .dzN text{font:700 30px Inter,sans-serif;letter-spacing:0}
+.chW{fill:#0b1224;stroke:#4ea7ff55;stroke-width:2}
+.chH{fill:#9fc6ff;font:700 30px "JetBrains Mono",monospace;letter-spacing:1px}
+.chQ rect{fill:#2d7ff9}.chQ text{fill:#fff;font:600 28px Inter,sans-serif}
+.chA rect{fill:#1a2747}.chA text{fill:#e6edf8;font:600 28px Inter,sans-serif}
+.chP rect{fill:#101c38;stroke:#6dff9c88;stroke-width:2}
+.chPT{fill:#6dff9c;font:700 26px "JetBrains Mono",monospace;letter-spacing:2px}
+.chP .chBar{fill:#4ea7ff;stroke:none}
+.chBL{fill:#cfd8ea;font:600 26px Inter,sans-serif}
+.chBtn rect{fill:#6dff9c;stroke:none}.chBtn text{fill:#05070c;font:800 24px Inter,sans-serif}
+.chQ,.chA,.chP{opacity:0}
+.grE{stroke:#4ea7ff;stroke-width:4;stroke-dasharray:1;stroke-dashoffset:1}
+.grX line{stroke:#6dff9c88;stroke-width:2}.grX circle{fill:#6dff9c}
+.grX{opacity:0}
+.grN circle{fill:#0f1a33;stroke:#4ea7ff;stroke-width:4}
+.grN text{fill:#fff;font:700 26px Inter,sans-serif}
+.grT{opacity:0}
+.goF rect{fill:#0f1a33;stroke:#4ea7ff66;stroke-width:2}
+.goT{fill:#fff;font:800 36px "Inter Display",Inter,sans-serif}
+.goD{fill:#9fc6ff;font:600 28px Inter,sans-serif}
+.goK{fill:#6dff9c;font:800 60px Inter,sans-serif}
+.goF{opacity:0}
 .clab{position:absolute;left:60px;right:60px;margin:0;text-align:center;font:800 56px/1.12 "Inter Display",Inter,sans-serif;letter-spacing:-1px;color:#fff;text-shadow:0 4px 30px #000;opacity:0}
 .clab b{color:var(--electric)}
 .sub{position:absolute;left:60px;right:60px;top:1395px;height:180px;display:flex;align-items:center;justify-content:center;text-align:center}

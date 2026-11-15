@@ -1,0 +1,56 @@
+{
+  "id": "08-ai-assistant",
+  "salida": "serie-08-ai-assistant",
+  "modulo": 7,
+  "parte": 8,
+  "kicker": "MÓDULO 7 · AI EMBEDDED ASSISTANT",
+  "escenas": {
+    "gancho": {
+      "voz": "Pregúntale a tu planta. Y que te responda sobre el gemelo 3D.",
+      "titulo": "Pregúntale a tu planta.",
+      "tarjeta": {
+        "titulo": "Asistente de IA",
+        "cuerpo": "¿Qué pedidos van en riesgo esta semana?<br><b>Respondiendo…</b>",
+        "color": "#2d5fa8",
+        "rompeEn": "Y que te"
+      }
+    },
+    "dolor": {
+      "voz": "Hoy esas respuestas tardan horas, o días, y salen de cinco archivos distintos. Pasa en la fábrica, en la bodega, en la planta de procesos y en la red de servicios.",
+      "cortes": ["Hoy esas", "en la fábrica", "en la bodega", "en la planta de procesos", "en la red"],
+      "saltarPrimero": true,
+      "intro": ["Preguntas.", "Reportes.", "Horas."],
+      "items": [
+        ["Manufactura", "Para saber por qué vamos atrasados tengo que pedir tres reportes.", "p-inyectoras"],
+        ["Logística", "¿Qué pedidos salen tarde esta semana? Nadie lo sabe sin abrir cinco archivos.", "logistica"],
+        ["Procesos", "¿Cuánto producto puedo prometer para el viernes? La respuesta tarda un día.", "salsas"],
+        ["Servicios con procesos", "¿Qué zona de la red tuvo más pérdidas este mes? Responderlo toma una semana de informes.", "red"]
+      ]
+    },
+    "solucion": {
+      "tipo": "aps",
+      "fuente": "/mnt/project-files/video-plasticos/control-salsas-rec.mp4",
+      "titulo": {
+        "grande": "AI Assistant",
+        "nombre": "Tu asistente de IA",
+        "def": "IA: inteligencia artificial, un programa que entiende tu pregunta.",
+        "size": 140
+      },
+      "siglaEn": "es tu asistente",
+      "definicionEn": "de inteligencia artificial",
+      "gemeloEn": "Y te muestra",
+      "voz": "AI Embedded Assistant es tu asistente de inteligencia artificial: le preguntas a tu planta, por voz o por texto, y te responde en segundos con tus propios datos. Y no solo responde: arma reportes y gráficos en una pantalla temporal dentro del chat, listos para revisar o compartir. Es una IA privada: tus datos no salen de tu empresa, y cada persona solo ve lo que su rol le permite. Por dentro tiene un cerebro en grafo: un mapa que une equipos, pedidos, clientes y personas, que se actualiza solo y crece a medida que crecen tu empresa y su conocimiento. Y la gobernanza de Arvantti Harness: las reglas que controlan qué puede hacer la IA, quién la usa, y que cada respuesta quede registrada. Y te muestra la respuesta sobre el gemelo 3D.",
+      "clips": [
+        { "desde": "le preguntas a tu planta", "grafico": "chat", "fases": ["arma reportes"], "label": "Pregunta y <b>te arma el reporte</b>" },
+        { "desde": "un cerebro en grafo", "grafico": "grafo", "fases": ["que se actualiza solo"], "label": "Un cerebro en grafo <b>que crece</b>" },
+        { "desde": "Y la gobernanza", "grafico": "gobierno", "fases": ["qué puede hacer", "quién la usa", "cada respuesta"], "label": "IA con <b>reglas y registro</b>" }
+      ]
+    },
+    "modulos": { "voz": "Módulo siete de siete: el que te deja preguntarle a tu planta." },
+    "cierre": {
+      "voz": "Con este cerramos la serie: un núcleo y siete módulos, sobre un mismo gemelo 3D. Arvantti DigitalTwin. Decide antes de que pase.",
+      "cta": "Fin de la serie · <b>un núcleo y siete módulos</b> sobre tu gemelo 3D",
+      "sigue": "Fin de la serie"
+    }
+  }
+}

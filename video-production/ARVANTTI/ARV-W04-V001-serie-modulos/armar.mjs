@@ -517,7 +517,7 @@ function componer() {
         at(`#pg${i} .ivR`, { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, tR - 0.2);
         at(`#pg${i} .ivR em`, { scaleY: 0, transformOrigin: "50% 100%" }, { scaleY: 1, duration: 0.6, stagger: 0.08, ease: "power2.out" }, tR);
         at(`#pg${i} .ivF`, { opacity: 0, scale: 1.3 }, { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(2)" }, tR + 1);
-      } else if (["dendro", "senal", "dosia"].includes(c.grafico)) {
+      } else if (["dendro", "senal", "dosia", "chat", "grafo", "gobierno"].includes(c.grafico)) {
         // Dibujos en un lienzo fijo de 1000x840 que se escala al panel (vertical u horizontal).
         const svg = (inner) => `<div class="pframe dz" style="left:${PX}px;width:${PW}px;top:${top}px;height:${PH}px"><svg viewBox="0 0 1000 840" width="${PW}" height="${PH}" preserveAspectRatio="xMidYMid meet">${inner}</svg></div>${lab}`;
         const caja = (x0, y0, w0, h0, t, cls = "") => `<g class="dzB ${cls}"><rect x="${x0}" y="${y0}" width="${w0}" height="${h0}" rx="18"/><text x="${x0 + w0 / 2}" y="${y0 + h0 / 2 + 12}" text-anchor="middle">${t}</text></g>`;
@@ -556,6 +556,43 @@ function componer() {
           at(`#pg${i} .dzLive`, { strokeDasharray: 1, strokeDashoffset: 1 }, { strokeDasharray: 1, strokeDashoffset: 0, duration: Math.max(1, t2 - a), ease: "none" }, a + 0.4);
           at(`#pg${i} .a1`, { opacity: 0, x: 40 }, { opacity: 1, x: 0, duration: 0.4, ease: "back.out(2)" }, t1);
           at(`#pg${i} .a2`, { opacity: 0, x: 40 }, { opacity: 1, x: 0, duration: 0.4, ease: "back.out(2)" }, t2);
+        } else if (c.grafico === "chat") {
+          const barras = [0.85, 0.6, 0.45, 0.3, 0.2];
+          clip(`pg${i}`, "scene", a, dur, svg(`
+            <rect class="chW" x="30" y="20" width="940" height="800" rx="26"/>
+            <text class="chH" x="70" y="78">Asistente de IA · tu planta</text>
+            <g class="chQ"><rect x="290" y="110" width="650" height="90" rx="30"/><text x="615" y="166" text-anchor="middle">¿Qué pedidos van en riesgo esta semana?</text></g>
+            <g class="chA"><rect x="60" y="225" width="620" height="90" rx="30"/><text x="370" y="281" text-anchor="middle">Cinco pedidos. Te armé el reporte →</text></g>
+            <g class="chP"><rect x="60" y="345" width="880" height="445" rx="22"/><text class="chPT" x="90" y="395">REPORTE · PEDIDOS EN RIESGO</text>
+              ${barras.map((v, k) => `<rect class="chBar" x="${110 + k * 165}" y="${740 - v * 300}" width="110" height="${v * 300}" rx="10"/><text class="chBL" x="${165 + k * 165}" y="775" text-anchor="middle">P${k + 1}</text>`).join("")}
+              <g class="chBtn"><rect x="700" y="365" width="210" height="50" rx="25"/><text x="805" y="398" text-anchor="middle">Compartir</text></g></g>`));
+          const tP = fases[0] ?? a + dur * 0.4;
+          at(`#pg${i} .chQ`, { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.4, ease: "back.out(2)" }, a + 0.3);
+          at(`#pg${i} .chA`, { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.4, ease: "back.out(2)" }, a + 1.6);
+          at(`#pg${i} .chP`, { opacity: 0, y: 60 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, tP);
+          at(`#pg${i} .chBar`, { scaleY: 0, transformOrigin: "50% 100%" }, { scaleY: 1, duration: 0.6, stagger: 0.12, ease: "power2.out" }, tP + 0.3);
+          at(`#pg${i} .chBtn`, { opacity: 0, scale: 0.7, transformOrigin: "805px 390px" }, { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(2)" }, tP + 1.4);
+        } else if (c.grafico === "grafo") {
+          const N = [["Equipos", 500, 230], ["Pedidos", 250, 380], ["Clientes", 750, 380], ["Personas", 330, 620], ["Inventario", 670, 620]];
+          const E = [[0, 1], [0, 2], [1, 2], [1, 3], [2, 4], [3, 4], [0, 3], [0, 4]];
+          let sem = 11; const rnd = () => ((sem = (sem * 16807) % 2147483647) / 2147483647);
+          const extra = Array.from({ length: 14 }, (_, k) => { const p = N[k % 5]; const ang = rnd() * Math.PI * 2, r = 110 + rnd() * 60; return [p[1], p[2], Math.round(p[1] + r * Math.cos(ang)), Math.round(p[2] + r * Math.sin(ang))]; });
+          clip(`pg${i}`, "scene", a, dur, svg(`
+            ${E.map(([u, v]) => `<line class="grE" x1="${N[u][1]}" y1="${N[u][2]}" x2="${N[v][1]}" y2="${N[v][2]}" pathLength="1"/>`).join("")}
+            ${extra.map(([x1, y1, x2, y2]) => `<g class="grX"><line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/><circle cx="${x2}" cy="${y2}" r="12"/></g>`).join("")}
+            ${N.map(([t, x0, y0]) => `<g class="grN"><circle cx="${x0}" cy="${y0}" r="70"/><text x="${x0}" y="${y0 + 10}" text-anchor="middle">${t}</text></g>`).join("")}
+            <text class="dzH grT" x="500" y="790" text-anchor="middle">Crece contigo, se actualiza solo</text>`));
+          at(`#pg${i} .grN`, { opacity: 0, scale: 0.4, transformOrigin: "50% 50%" }, { opacity: 1, scale: 1, duration: 0.4, stagger: 0.15, ease: "back.out(2)" }, a + 0.2);
+          at(`#pg${i} .grE`, { strokeDasharray: 1, strokeDashoffset: 1 }, { strokeDasharray: 1, strokeDashoffset: 0, duration: 0.5, stagger: 0.08 }, a + 0.8);
+          const tX = fases[0] ?? a + dur * 0.5;
+          at(`#pg${i} .grX`, { opacity: 0 }, { opacity: 1, duration: 0.3, stagger: 0.12 }, tX);
+          at(`#pg${i} .grT`, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.4 }, tX + 0.4);
+        } else if (c.grafico === "gobierno") {
+          const filas = [["Qué puede hacer la IA", "Solo lo que tú permites"], ["Quién la usa", "Administrador · Programador · Visualizador"], ["Cada respuesta", "Queda registrada"]];
+          clip(`pg${i}`, "scene", a, dur, svg(`
+            <text class="dzH" x="500" y="90" text-anchor="middle">Gobernanza · Arvantti Harness</text>
+            ${filas.map(([t, d], k) => `<g class="goF" id="gf${i}-${k}"><rect x="60" y="${150 + k * 200}" width="880" height="160" rx="22"/><text class="goT" x="100" y="${215 + k * 200}">${t}</text><text class="goD" x="100" y="${265 + k * 200}">${d}</text><text class="goK" x="890" y="${245 + k * 200}" text-anchor="end">✓</text></g>`).join("")}`));
+          filas.forEach((_, k) => at(`#gf${i}-${k}`, { opacity: 0, x: -50 }, { opacity: 1, x: 0, duration: 0.4, ease: "power3.out" }, (fases[k] ?? a + 0.3 + k * 0.9)));
         } else {
           clip(`pg${i}`, "scene", a, dur, svg(`
             <line class="dzL2" x1="380" y1="420" x2="620" y2="420"/>
