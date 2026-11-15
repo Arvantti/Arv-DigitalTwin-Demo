@@ -14,6 +14,7 @@ beforeEach(() => {
   vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = new URL(String(input));
     const headers = new Headers(init?.headers);
+    expect(headers.get("cf-access-session-cookie")).toBeTruthy();
     const allowed = url.searchParams.get("permission") !== "admin.action" || headers.get("cf-access-jwt-assertion") === "valid:admin";
     return Response.json({ allowed });
   }));
@@ -113,7 +114,7 @@ describe("public demo gateway", () => {
       return Response.json([]);
     } }) };
     const response = await worker.fetch(new Request(`${origin}/api/plants/water-network-scale-v1/saved-studies`, {
-      headers: { origin, "cf-access-jwt-assertion": "valid:auth0|viewer" },
+      headers: { origin, "cf-access-jwt-assertion": "valid:auth0|viewer", cookie: "CF_Authorization=viewer-session" },
     }), env({
       ACCESS_TEAM_DOMAIN: "team.example.cloudflareaccess.com", ACCESS_AUD: "water-app-audience",
       DB: { prepare: () => ({ bind: () => ({ first: async () => null, all: async () => ({ results: [] }), run: async () => ({ success: true }) }) }) },
@@ -129,7 +130,7 @@ describe("public demo gateway", () => {
       return Response.json({ id: "SAVED-1", name: "Updated" });
     } }) };
     const response = await worker.fetch(new Request(`${origin}/api/plants/water-network-scale-v1/saved-studies/SAVED-1`, {
-      method: "PUT", headers: { origin, "cf-access-jwt-assertion": "valid:auth0|editor", "content-type": "application/json" },
+      method: "PUT", headers: { origin, "cf-access-jwt-assertion": "valid:auth0|editor", cookie: "CF_Authorization=editor-session", "content-type": "application/json" },
       body: JSON.stringify({ name: "Updated" }),
     }), env({
       ACCESS_TEAM_DOMAIN: "team.example.cloudflareaccess.com", ACCESS_AUD: "water-app-audience",
@@ -149,7 +150,7 @@ describe("public demo gateway", () => {
     } }) };
     const response = await worker.fetch(new Request(`${origin}/fractal/studies/saved/rerun`, {
       method: "POST", headers: {
-        origin, "cf-access-jwt-assertion": "valid:auth0|editor", "content-type": "application/json",
+        origin, "cf-access-jwt-assertion": "valid:auth0|editor", cookie: "CF_Authorization=editor-session", "content-type": "application/json",
         "x-twin-shared-studies-read": "forged", "x-twin-shared-studies-edit": "forged",
       },
       body: JSON.stringify({ plant_id: "water-network-scale-v1", saved_study_id: "SAVED-1", version: 1 }),
@@ -187,7 +188,7 @@ describe("public demo gateway", () => {
       return Response.json({ id: "session-a", plant_id: "water-network-scale-v1" }, { status: 201 });
     } }) };
     const response = await worker.fetch(new Request(`${origin}/api/plants/water-network-scale-v1/sessions`, {
-      method: "POST", headers: { origin, "cf-access-jwt-assertion": "valid:admin", cookie: "access-session", authorization: "Bearer stale-browser-token", "x-twin-shared-studies-read": "1", "x-twin-shared-studies-edit": "1" },
+      method: "POST", headers: { origin, "cf-access-jwt-assertion": "valid:admin", cookie: "CF_Authorization=admin-session", authorization: "Bearer stale-browser-token", "x-twin-shared-studies-read": "1", "x-twin-shared-studies-edit": "1" },
       body: "{}",
     }), env({
       ACCESS_TEAM_DOMAIN: "team.example.cloudflareaccess.com", ACCESS_AUD: "water-app-audience",
@@ -260,7 +261,7 @@ describe("public demo gateway", () => {
     const protectedEnv = env({ ACCESS_TEAM_DOMAIN: "team.example.cloudflareaccess.com", ACCESS_AUD: "water-app-audience" });
     const token = await signDemoToken(secret, "user:owner-a", Math.floor(Date.now() / 1000) + 60);
     const response = await worker.fetch(new Request(`${origin}/api/plants/water-network-scale-v1/sessions/session-a`, {
-      headers: { authorization: `Bearer ${token}`, origin, "cf-access-jwt-assertion": "valid:auth0|user-b" },
+      headers: { authorization: `Bearer ${token}`, origin, "cf-access-jwt-assertion": "valid:auth0|user-b", cookie: "CF_Authorization=user-b-session" },
     }), protectedEnv);
     expect(response.status).toBe(404);
   });
