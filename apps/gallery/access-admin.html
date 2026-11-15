@@ -25,9 +25,30 @@
         <p class="access-hint">La persona recibirá correos para verificar su cuenta y establecer su contraseña. Después puedes enviarle un enlace de cambio desde su ficha. La contraseña nunca se muestra ni se comparte.</p>
       </section>
       <section id="users-panel" class="access-panel" hidden>
-        <div class="access-section-heading"><div><h2>Usuarios</h2><p>Permisos por persona y gemelo. Los cambios se aplican en el servidor.</p></div><button id="refresh-users" type="button" class="secondary">Actualizar</button></div>
+        <div class="access-section-heading">
+          <div><h2>Usuarios</h2><p id="users-count">Cargando usuarios…</p></div>
+          <div class="access-section-actions">
+            <label class="access-search">Buscar usuario <input id="user-search" type="search" placeholder="Nombre o correo" autocomplete="off" /></label>
+            <button id="refresh-users" type="button" class="secondary">Actualizar</button>
+          </div>
+        </div>
         <div id="users-list" class="access-users"></div>
       </section>
+      <dialog id="permissions-dialog" class="access-dialog" aria-labelledby="permissions-dialog-title">
+        <div class="access-dialog-head">
+          <div>
+            <p class="eyebrow">PERMISOS DEL USUARIO</p>
+            <h2 id="permissions-dialog-title">Usuario</h2>
+            <p id="permissions-dialog-meta" class="access-user-meta"></p>
+          </div>
+          <button id="close-permissions-dialog" type="button" class="secondary">Cerrar</button>
+        </div>
+        <p class="access-modal-hint">Activa o desactiva cada permiso. Los cambios se guardan inmediatamente.</p>
+        <div id="permissions-grid" class="access-twin-grid"></div>
+        <p id="permissions-dialog-status" class="access-status" role="status" aria-live="polite"></p>
+        <div id="permissions-dialog-actions" class="access-dialog-actions"></div>
+        <div class="access-dialog-footer"><button id="done-permissions-dialog" type="button">Listo</button></div>
+      </dialog>
       <noscript>Esta consola requiere JavaScript.</noscript>
     </main>
     <script type="module" src="/src/access-admin.ts"></script>
