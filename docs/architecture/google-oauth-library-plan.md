@@ -2,16 +2,16 @@
 
 ## Estado
 
-La rama `feat/google-oauth-study-library` parte del merge `f27b397`. Incluye la biblioteca durable de estudios y el acceso común: núcleo deny-by-default, API de control de acceso/Auth0, consola `/access-admin.html`, middleware Pages, controles del gateway Acueducto y botones de sesión en la portada. El Worker `digitaltwin-access-control` se desplegó en la cuenta Arvantti el 2026-11-14 y su `/health` respondió correctamente; una petición a `/v1/me` sin identidad fue denegada con 401. Aún falta cargar el secreto M2M y configurar Pages/runtime, por lo que la galería no consulta todavía la autorización y la consola no está activa. Solo Acueducto tiene integración de autorización en el código. No se desplegó Pages ni el Worker Acueducto ni se aplicaron nuevas migraciones durante esta tarea.
+La rama `feat/google-oauth-study-library` parte del merge `f27b397`. Incluye la biblioteca durable de estudios y el acceso común: núcleo deny-by-default, API de control de acceso/Auth0, consola `/access-admin.html`, middleware Pages, controles del gateway Acueducto y botones de sesión en la portada. El Worker `digitaltwin-access-control` se desplegó en la cuenta Arvantti el 2026-11-14; su `/health` respondió correctamente y `/v1/me` sin identidad fue denegada con 401. El secreto M2M ya está guardado como Worker Secret (su valor no se lee ni registra); aún falta configurar Pages/runtime, por lo que la galería no consulta todavía la autorización y la consola no está activa. Solo Acueducto tiene integración de autorización en el código. No se desplegó Pages ni el Worker Acueducto ni se aplicaron nuevas migraciones durante esta tarea.
 
 ### Estado de configuración externa (2026-11-14)
 
 - Auth0 tenant `arvantti-digitaltwin` (región US). La conexión `DigitalTwin-Users` tiene el registro público desactivado; el cliente de Cloudflare Access está federado con Auth0.
-- El cliente M2M `DigitalTwin Access Control API` cuenta con permisos de Management API para leer/crear/actualizar usuarios y revocar sesiones. Su secreto no está en Git ni se ha cargado todavía en Cloudflare.
+- El cliente M2M `DigitalTwin Access Control API` cuenta con permisos de Management API para leer/crear/actualizar usuarios y revocar sesiones. El secreto se cargó con Wrangler en Cloudflare Worker Secrets el 2026-11-14; su valor no se guarda en Git ni en estas notas.
 - La Action `DigitalTwin require verified email` fue desplegada y exige correo verificado para el cliente de Cloudflare Access. Falta confirmar que esté vinculada al trigger Post Login activo.
 - Cloudflare Access tiene la aplicación `DigitalTwin Gallery` para `digitaltwin.arvantti.online`, con proveedor Auth0 y política `Allow DigitalTwin Auth0 users`. La ruta sin sesión redirige al login de Auth0. Esta protección de borde fue habilitada con autorización del usuario.
-- D1 `digitaltwin-access-control` se creó y recibió la migración inicial `0001_access_control.sql` con autorización. La configuración local está en `wrangler.access-control.jsonc`; contiene identificadores no secretos, pero no el secreto M2M.
-- El Worker de control de acceso ya se desplegó en `https://digitaltwin-access-control.andres-quiceno.workers.dev`; su `/health` responde `ok` y `/v1/me` deniega peticiones sin JWT. Falta `AUTH0_MANAGEMENT_CLIENT_SECRET`, configurar `ACCESS_CONTROL_API_URL` en Pages/runtime y conectar el gateway Acueducto. No crear cuentas de prueba ni afirmar que la autorización de la galería está activa hasta probar esa cadena.
+- D1 `digitaltwin-access-control` se creó y recibió la migración inicial `0001_access_control.sql` con autorización. La configuración local está en `wrangler.access-control.jsonc`; contiene identificadores no secretos. El M2M secret permanece únicamente en el Worker.
+- El Worker de control de acceso ya se desplegó en `https://digitaltwin-access-control.andres-quiceno.workers.dev`; su `/health` responde `ok` y `/v1/me` deniega peticiones sin JWT. El secreto M2M está guardado en el Worker; falta configurar `ACCESS_CONTROL_API_URL` en Pages/runtime y conectar el gateway Acueducto. No crear cuentas de prueba ni afirmar que la autorización de la galería está activa hasta probar esa cadena.
 - No se modificaron las otras aplicaciones de Cloudflare Access. Acueducto es el único gemelo conectado al control de acceso en el código.
 - No mostrar tokens, secretos, códigos ni contraseñas por chat o capturas. El usuario los introduce directamente en los paneles; no leerlos, copiarlos ni registrarlos.
 
@@ -23,7 +23,7 @@ Decisión vigente del usuario: el login se presenta **una sola vez al inicio** y
 
 Usar **Auth0 como proveedor y almacén de identidades**, permitir a Andrés autenticarse con su método administrador y habilitar una conexión de base de datos para usuarios/contraseñas individuales de clientes y resellers. Usar **Cloudflare Access como puerta de entrada (edge gate)** para páginas privadas y APIs. Así Auth0 hospeda el formulario de login, Google y las cuentas/contraseñas; Access mantiene la sesión web HttpOnly y protege las rutas antes de llegar a la aplicación. No construir login ni almacenamiento de contraseñas propios.
 
-Cloudflare Access solo no satisface el requisito de cuentas individuales. Auth0 hospeda identidad y credenciales; el Worker de control desplegado valida la aserción de Access y aplica permisos por usuario/gemelo. Falta el secreto M2M para administración de usuarios y la integración de runtime; se verificó salud y denegación sin identidad, no el flujo integral.
+Cloudflare Access solo no satisface el requisito de cuentas individuales. Auth0 hospeda identidad y credenciales; el Worker de control desplegado valida la aserción de Access y aplica permisos por usuario/gemelo. El secreto M2M ya está configurado; falta la integración de runtime. Se verificó salud y denegación sin identidad, no el flujo integral.
 
 ### Experiencia de entrada
 
@@ -74,4 +74,4 @@ Cloudflare Access solo no satisface el requisito de cuentas individuales. Auth0 
 ## Decisiones pendientes antes de crear cuentas
 
 - La política está definida: Andrés es el único administrador; los usuarios no administradores reciben únicamente los permisos que él asigne por usuario/gemelo. Para resellers, la lectura de escenarios inicia habilitada; crear/editar escenarios requiere asignación expresa. No crear usuarios de prueba hasta desplegar y verificar API, consola y configuración de runtime.
-- La opción Google + email/contraseña quedó confirmada el 2026-11-14; no se debe deshabilitar Google para el cliente de Cloudflare Access. Siguen pendientes confirmar la asociación activa de la Action de verificación al trigger Post Login, cargar el secreto M2M, configurar Pages/runtime y probar la integración antes de crear cuentas de prueba.
+- La opción Google + email/contraseña quedó confirmada el 2026-11-14; no se debe deshabilitar Google para el cliente de Cloudflare Access. Siguen pendientes confirmar la asociación activa de la Action de verificación al trigger Post Login, configurar Pages/runtime y probar la integración antes de crear cuentas de prueba.
