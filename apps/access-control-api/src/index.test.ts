@@ -239,4 +239,44 @@ describe("access-control API", () => {
     expect(payload.password).toBeTruthy();
     expect(payload.email).toBe("new@example.test");
   });
+
+  it("lets an administrator send a reset email for an active managed user without revealing credentials", async () => {
+    const auditRun = vi.fn(async () => ({ success: true, meta: { changes: 1 } }));
+    const db = {
+      prepare: (sql: string) => ({
+        bind: (..._values: unknown[]) => ({
+          first: async () => sql.includes("FROM access_users") ? { email: "viewer@example.test", status: "active" } : null,
+          run: auditRun,
+        }),
+      }),
+    };
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const identity = accessIdentityResponse(input, init);
+      if (identity) return identity;
+      if (String(input).endsWith("/dbconnections/change_password")) return new Response("Email sent");
+      return new Response(null, { status: 404 });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    const response = await worker.fetch(request("/admin/users/auth0%7Cviewer/password-reset", "admin-token", { method: "POST" }), env({ DB: db }));
+    const body = await response.json() as Record<string, unknown>;
+    expect(response.status).toBe(200);
+    expect(body).toMatchObject({ subject: "auth0|viewer", password_reset_email_sent: true });
+    expect(JSON.stringify(body)).not.toMatch(/"(?:password|ticket|secret)"\s*:/i);
+    const resetCall = fetchMock.mock.calls.find(([input]) => String(input).endsWith("/dbconnections/change_password"));
+    const resetPayload = JSON.parse(String(resetCall?.[1]?.body)) as Record<string, unknown>;
+    expect(resetPayload).toEqual({ client_id: "public-client-id", email: "viewer@example.test", connection: "DigitalTwin-Users" });
+    expect(auditRun).toHaveBeenCalledOnce();
+  });
+
+  it("does not send password reset email for suspended managed users", async () => {
+    const db = {
+      prepare: () => ({ bind: () => ({ first: async () => ({ email: "viewer@example.test", status: "suspended" }) }) }),
+    };
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) =>
+      accessIdentityResponse(input, init) ?? new Response(null, { status: 404 }));
+    vi.stubGlobal("fetch", fetchMock);
+    const response = await worker.fetch(request("/admin/users/auth0%7Cviewer/password-reset", "admin-token", { method: "POST" }), env({ DB: db }));
+    expect(response.status).toBe(409);
+    expect(fetchMock).not.toHaveBeenCalledWith(expect.stringContaining("/dbconnections/change_password"), expect.anything());
+  });
 });
