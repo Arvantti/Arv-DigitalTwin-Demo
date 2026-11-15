@@ -50,3 +50,11 @@
 
 .sub{left:160px;right:160px;top:918px;height:130px}
 .sub p{font-size:48px;padding:10px 24px}
+.inv{gap:14px;padding:22px 32px}
+.inv h4{font-size:22px;margin-bottom:8px}
+.ivO p{font-size:24px;margin-bottom:6px}
+.ivO i{height:12px;margin-top:4px}
+.ivI i{height:80px}
+.ivR i{height:64px}
+.ivI figcaption,.ivR figcaption{font-size:20px}
+.ivF{font-size:22px;margin-top:8px;padding:6px 14px}

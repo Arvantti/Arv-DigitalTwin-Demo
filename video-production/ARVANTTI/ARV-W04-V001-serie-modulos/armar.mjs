@@ -497,6 +497,26 @@ function componer() {
         at(`#pg${i} .fr`, { strokeDashoffset: 1, strokeDasharray: 1, opacity: 1 }, { strokeDashoffset: 0, strokeDasharray: 1, opacity: 1, duration: 0.8, ease: "power2.out" }, tF);
         to(`#pg${i} .pl`, { opacity: 0.25, duration: 0.4 }, tF);
         at(`#pg${i} .best`, { opacity: 0, scale: 0, transformOrigin: "50% 50%" }, { opacity: 1, scale: 1, duration: 0.35, stagger: 0.15, ease: "back.out(2.5)" }, tF + 0.3);
+      } else if (c.grafico === "inventario") {
+        // Centro de control: avance de órdenes, inventario por etapa y requerimientos de los próximos días.
+        const ords = c.ordenes || [["Orden 101 · Producto A", 0.72], ["Orden 102 · Producto B", 0.4], ["Orden 103 · Producto C", 0.12]];
+        const inv = c.inventario || [["En proceso", 0.55], ["Semielaborado", 0.7], ["Terminado", 0.4]];
+        const req = c.requerimientos || [0.4, 0.55, 0.9, 0.5, 0.7, 0.35, 0.6];
+        const falta = c.falta ?? 2;
+        clip(`pg${i}`, "scene", a, dur, `<div class="pframe inv" style="left:${PX}px;width:${PW}px;top:${top}px;height:${PH}px">
+          <section class="ivO"><h4>Avance de órdenes</h4>${ords.map(([n, v]) => `<p><span>${n}</span><i><em style="width:${Math.round(v * 100)}%"></em></i></p>`).join("")}</section>
+          <section class="ivI"><h4>Inventario</h4><div>${inv.map(([n, v]) => `<figure><i><em style="height:${Math.round(v * 100)}%"></em></i><figcaption>${n}</figcaption></figure>`).join("")}</div></section>
+          <section class="ivR"><h4>Lo que vas a necesitar · próximos días</h4><div>${req.map((v, k) => `<figure class="${k === falta ? "falta" : ""}"><i><em style="height:${Math.round(v * 100)}%"></em></i><figcaption>${"LMMJVSD"[k]}</figcaption></figure>`).join("")}</div><b class="ivF">Falta material el miércoles</b></section>
+        </div>${lab}`, 6 + i * 2);
+        const [tI, tR] = [0, 1].map((k) => fases[k] ?? a + ((k + 1) * dur) / 3);
+        at(`#pg${i} .pframe`, { opacity: 0, scale: 0.92 }, { opacity: 1, scale: 1, duration: 0.35, ease: "power3.out" }, a);
+        at(`#pg${i} .ivO`, { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, a + 0.2);
+        at(`#pg${i} .ivO em`, { scaleX: 0, transformOrigin: "0% 50%" }, { scaleX: 1, duration: 1.2, stagger: 0.2, ease: "power2.out" }, a + 0.4);
+        at(`#pg${i} .ivI`, { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, tI - 0.2);
+        at(`#pg${i} .ivI em`, { scaleY: 0, transformOrigin: "50% 100%" }, { scaleY: 1, duration: 0.8, stagger: 0.25, ease: "power2.out" }, tI);
+        at(`#pg${i} .ivR`, { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, tR - 0.2);
+        at(`#pg${i} .ivR em`, { scaleY: 0, transformOrigin: "50% 100%" }, { scaleY: 1, duration: 0.6, stagger: 0.08, ease: "power2.out" }, tR);
+        at(`#pg${i} .ivF`, { opacity: 0, scale: 1.3 }, { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(2)" }, tR + 1);
       } else if (c.grafico === "escenarios") {
         const fotos = ["p-heroe", "p-medio", "p-inyectoras-2"];
         const barras = [[0.92, 0.6, 0.45], [0.8, 0.85, 0.75], [0.55, 0.7, 0.95]];
@@ -528,6 +548,7 @@ function componer() {
       const h = Math.round((PW * ch) / cw / 2) * 2;
       // Las tomas salen de la demo de plásticos: ocultar.py difumina sus palabras propias (molde, inyectora…).
       const ocultar = so.ocultar !== false && c.ocultar !== false;
+      const fuente = c.fuente || so.fuente;
       const clave = `${fuente}|${c.ss}|${dur.toFixed(2)}|${cx},${cy},${cw},${ch}|${PW}${ocultar ? "|ocultar1" : ""}${c.congelar ? "|congelar" : ""}`;
       if (!fs.existsSync(T(rel)) || JSON.parse(fs.readFileSync(T(rel + ".json"), "utf8") || "{}").k !== clave) {
         if (ocultar) sh("python3", [T("ocultar.py"), fuente, String(c.ss), (dur + 0.2).toFixed(2), `${cx},${cy},${cw},${ch}`, String(PW), T(rel), ...(c.congelar ? ["congelar"] : [])]);

@@ -1,0 +1,139 @@
+{
+  "id": "06-control-center",
+  "salida": "serie-06-control-center",
+  "modulo": 5,
+  "parte": 6,
+  "kicker": "MÓDULO 5 · CONTROL CENTER",
+  "escenas": {
+    "gancho": {
+      "voz": "Te enteraste de la parada por WhatsApp. En el gemelo 3D la habrías visto venir.",
+      "titulo": "Te enteraste de la parada por WhatsApp.",
+      "tarjeta": {
+        "titulo": "Grupo Planta · 40 mensajes",
+        "cuerpo": "¿Alguien sabe por qué paró la línea 2?<br><b>Lleva parada desde las 6.</b>",
+        "color": "#1f8f55",
+        "rompeEn": "En el gemelo"
+      }
+    },
+    "dolor": {
+      "voz": "Si para saber cómo va tu planta tienes que llamar a tres personas, llegas tarde. Pasa en la fábrica, en la bodega, en la planta de procesos y en la red de servicios.",
+      "cortes": [
+        "Si para saber",
+        "en la fábrica",
+        "en la bodega",
+        "en la planta de procesos",
+        "en la red"
+      ],
+      "saltarPrimero": true,
+      "intro": [
+        "Llamadas.",
+        "Reportes.",
+        "Tarde."
+      ],
+      "items": [
+        [
+          "Manufactura",
+          "El reporte de producción llega el lunes, cuando la semana ya se perdió.",
+          "p-inyectoras"
+        ],
+        [
+          "Logística",
+          "No sé cuántos pedidos van tarde hasta que llama el cliente.",
+          "logistica"
+        ],
+        [
+          "Procesos",
+          "Nadie sabe cuál es el cuello de botella hoy: ¿la cocción o el envasado?",
+          "salsas"
+        ],
+        [
+          "Servicios con procesos",
+          "Te enteras de un daño en la red cuando los usuarios empiezan a llamar.",
+          "red"
+        ]
+      ]
+    },
+    "solucion": {
+      "tipo": "aps",
+      "fuente": "/mnt/project-files/video-plasticos/control-salsas-rec.mp4",
+      "titulo": {
+        "grande": "Control Center",
+        "nombre": "El centro de control",
+        "def": "Lo importante de tu planta, en una sola pantalla.",
+        "size": 130
+      },
+      "siglaEn": "es el centro de control",
+      "definicionEn": "una sola pantalla",
+      "gemeloEn": "Y todo lo ves",
+      "voz": "Control Center es el centro de control: una sola pantalla con lo importante, en el momento. Ves el OEE, que es la eficiencia general de cada equipo: cuánto tiempo trabajó, a qué velocidad y cuánto salió bueno. Ves la ocupación de los equipos, los pedidos en riesgo y el cuello de botella, el punto donde se frena todo. Y si algo se sale de lo normal, te avisa antes de que sea un problema. Además sigues cada orden: cuánto lleva, cuánto inventario hay en proceso, de semielaborado y de producto terminado, y qué vas a necesitar en los próximos días según tu programación. Y todo lo ves también sobre el gemelo 3D.",
+      "clips": [
+        {
+          "desde": "Ves el OEE",
+          "ss": 5,
+          "congelar": true,
+          "zoom": 1.06,
+          "crop": [
+            0,
+            44,
+            690,
+            476
+          ],
+          "label": "OEE: <b>la eficiencia</b> de cada equipo"
+        },
+        {
+          "desde": "Ves la ocupación",
+          "ss": 5,
+          "congelar": true,
+          "zoom": 1.05,
+          "crop": [
+            386,
+            44,
+            920,
+            636
+          ],
+          "label": "Ocupación y <b>cuellos de botella</b>"
+        },
+        {
+          "desde": "Y si algo",
+          "ss": 5,
+          "congelar": true,
+          "crop": [
+            996,
+            44,
+            900,
+            374
+          ],
+          "tapar": [
+            {
+              "x": 10,
+              "y": 330,
+              "w": 880,
+              "h": 40,
+              "cls": "t-err",
+              "html": "⚠ Alerta: este equipo va sobrecargado esta semana"
+            }
+          ],
+          "marca": "Te avisa antes",
+          "label": "Te avisa <b>antes del problema</b>"
+        },
+        {
+          "desde": "Además sigues",
+          "grafico": "inventario",
+          "fases": [
+            "cuánto inventario",
+            "qué vas a necesitar"
+          ],
+          "label": "Órdenes, inventario y <b>lo que viene</b>"
+        }
+      ]
+    },
+    "modulos": {
+      "voz": "Módulo cinco de siete: el que te muestra tu planta en vivo."
+    },
+    "cierre": {
+      "voz": "Este es el sexto de ocho videos. En el próximo, Dendro Scada: la máquina que avisa antes de fallar. Arvantti DigitalTwin. Decide antes de que pase.",
+      "cta": "Parte 6 de 8 · <b>sigue la serie</b>: en la parte 7, Dendro Scada",
+      "sigue": "Continúa en la parte 7 →"
+    }
+  }
+}

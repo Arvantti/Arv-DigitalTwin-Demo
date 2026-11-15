@@ -164,6 +164,21 @@ html,body{width:1080px;height:1920px;margin:0;overflow:hidden;background:var(--b
 .escB i{display:block;height:14px;margin-top:6px;border-radius:7px;background:#ffffff14}
 .escB em{display:block;height:100%;border-radius:7px;background:linear-gradient(90deg,#2d7ff9,#6dff9c)}
 .escY{position:absolute;right:16px;top:-22px;padding:8px 18px;border-radius:999px;background:#4ea7ff;color:#05070c;font:800 28px Inter,sans-serif;opacity:0}
+.inv{opacity:0;padding:36px 40px;box-sizing:border-box;display:flex;flex-direction:column;gap:30px}
+.inv section{opacity:0}
+.inv h4{margin:0 0 14px;font:700 28px "JetBrains Mono",monospace;letter-spacing:2px;color:#9fc6ff;text-transform:uppercase}
+.ivO p{margin:0 0 14px;font:600 30px Inter,sans-serif;color:#e6edf8}
+.ivO i{display:block;height:16px;margin-top:8px;border-radius:8px;background:#ffffff14}
+.ivO em{display:block;height:100%;border-radius:8px;background:linear-gradient(90deg,#2d7ff9,#6dff9c)}
+.ivI div,.ivR div{display:flex;gap:24px;align-items:flex-end}
+.ivI figure,.ivR figure{margin:0;flex:1;display:flex;flex-direction:column;align-items:center;gap:10px}
+.ivI i{display:flex;align-items:flex-end;width:100%;height:130px;border-radius:12px;background:#ffffff10;overflow:hidden}
+.ivI em{display:block;width:100%;background:linear-gradient(0deg,#2d7ff9,#4ea7ff)}
+.ivI figcaption,.ivR figcaption{font:600 26px Inter,sans-serif;color:#cfd8ea}
+.ivR i{display:flex;align-items:flex-end;width:100%;height:100px}
+.ivR em{display:block;width:100%;border-radius:8px 8px 0 0;background:#4ea7ff}
+.ivR .falta em{background:#ff6b5b}
+.ivF{display:inline-block;margin-top:14px;padding:8px 18px;border-radius:999px;background:#ff6b5b;color:#05070c;font:800 28px Inter,sans-serif;opacity:0}
 .clab{position:absolute;left:60px;right:60px;margin:0;text-align:center;font:800 56px/1.12 "Inter Display",Inter,sans-serif;letter-spacing:-1px;color:#fff;text-shadow:0 4px 30px #000;opacity:0}
 .clab b{color:var(--electric)}
 .sub{position:absolute;left:60px;right:60px;top:1395px;height:180px;display:flex;align-items:center;justify-content:center;text-align:center}
