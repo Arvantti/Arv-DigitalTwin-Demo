@@ -1,7 +1,7 @@
 /* Portada: universo del gemelo (hero) y tarjetas de plantas con figura facetada. */
-body.portal { background: radial-gradient(ellipse at 50% 18%, #0d1430 0%, #080b29 43%, var(--bg) 78%) fixed; }
-.uni-hero { position: relative; height: clamp(540px, 82vh, 800px); overflow: hidden; border-bottom: 1px solid var(--line); background: transparent; }
-.uni-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: pan-y; cursor: grab; }
+body.portal { position: relative; isolation: isolate; background: radial-gradient(ellipse at 50% 18%, #0d1430 0%, #080b29 43%, var(--bg) 78%) fixed; }
+.uni-hero { position: relative; z-index: 1; height: clamp(540px, 82vh, 800px); overflow: hidden; border-bottom: 1px solid var(--line); background: transparent; }
+.uni-canvas { position: fixed; z-index: 0; inset: 0; width: 100%; height: 100%; display: block; opacity: 0.52; touch-action: pan-y; cursor: grab; }
 .uni-canvas.drag { cursor: grabbing; }
 .uni-top { position: absolute; top: 28px; left: max(20px, env(safe-area-inset-left, 0px)); right: 20px; pointer-events: none; max-width: 520px; }
 .uni-top h1 { font: 700 clamp(24px, 4vw, 38px) Orbitron, sans-serif; letter-spacing: 0.06em; margin: 16px 0 4px; text-transform: uppercase; }
@@ -16,7 +16,7 @@ body.portal { background: radial-gradient(ellipse at 50% 18%, #0d1430 0%, #080b2
 .uni-action[hidden] { display: none; }
 @media (max-width: 700px) { .uni-legend { display: none; } .uni-top p { display: none; } }
 
-.portal-wrap { max-width: 1180px; }
+.portal-wrap { position: relative; z-index: 1; max-width: 1180px; }
 .portal-q { font: 700 28px Orbitron, sans-serif; letter-spacing: 0.04em; margin: 0 0 4px; }
 .portal-cards { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; }
 .gcard { --c: #4ea7ff; --rx: 0deg; --ry: 0deg; --mx: 50%; --my: 0%; position: relative; filter: drop-shadow(0 0 0 transparent); transform: perspective(1000px) rotateX(var(--rx)) rotateY(var(--ry)); transition: transform 0.25s ease, filter 0.3s ease; }
