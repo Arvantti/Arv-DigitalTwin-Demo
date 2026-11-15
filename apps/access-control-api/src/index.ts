@@ -243,6 +243,25 @@ async function handleAdmin(request: Request, env: Env, actor: Identity, path: st
 
   if (parts.length >= 2 && parts[0] === "users") {
     const targetSub = parts[1];
+    if (request.method === "POST" && parts.length === 3 && parts[2] === "password-reset") {
+      if (!env.AUTH0_DOMAIN || !env.AUTH0_CLIENT_ID || !env.AUTH0_DB_CONNECTION) {
+        return json({ detail: "Password reset email is not configured" }, 503);
+      }
+      const target = await env.DB.prepare(
+        "SELECT email, status FROM access_users WHERE auth0_sub = ?",
+      ).bind(targetSub).first<{ email: string; status: string }>();
+      if (!target) return json({ detail: "Managed user not found" }, 404);
+      if (target.status !== "active") return json({ detail: "Reactivate the account before sending a password reset email" }, 409);
+      const response = await fetch(`https://${env.AUTH0_DOMAIN}/dbconnections/change_password`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ client_id: env.AUTH0_CLIENT_ID, email: target.email, connection: env.AUTH0_DB_CONNECTION }),
+      });
+      if (!response.ok) return json({ detail: "Identity provider could not send the password reset email" }, 502);
+      await audit(env, actor.sub, targetSub, "user.password_reset_requested", null, { delivery: "email" });
+      return json({ subject: targetSub, password_reset_email_sent: true });
+    }
+
     if (request.method === "DELETE" && parts.length === 3 && parts[2] === "access") {
       const target = await env.DB.prepare("SELECT auth0_sub FROM access_users WHERE auth0_sub = ?").bind(targetSub)
         .first<{ auth0_sub: string }>();

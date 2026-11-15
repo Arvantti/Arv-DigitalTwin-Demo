@@ -102,7 +102,18 @@ function renderUsers(data: UserList): void {
         revoke.disabled = false;
       }
     }, true);
-    header.append(info, toggle, revoke);
+    const passwordReset = createButton("Enviar enlace para cambiar contraseña", async () => {
+      passwordReset.disabled = true;
+      try {
+        await api(`/admin/users/${encodeURIComponent(user.subject)}/password-reset`, { method: "POST", body: "{}" });
+        status(`Enlace de cambio de contraseña enviado a ${user.email}. La contraseña no se muestra ni se guarda aquí.`, "success");
+      } catch (error) {
+        status(error instanceof Error ? error.message : "No se pudo enviar el enlace de cambio de contraseña.", "error");
+      } finally {
+        passwordReset.disabled = false;
+      }
+    }, true);
+    header.append(info, passwordReset, toggle, revoke);
     card.append(header);
 
     const grid = document.createElement("div");
