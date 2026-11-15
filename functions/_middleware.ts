@@ -11,7 +11,10 @@ const MODEL_ROUTES: Record<string, string> = {
   "/control.html": "plastic-injection-plant-v1",
   "/resumen-plasticos.html": "plastic-injection-plant-v1",
   "/aps-salsas.html": "sauce-plant-v1",
+  "/emulador-salsas.html": "sauce-plant-v1",
+  "/control-salsas.html": "sauce-plant-v1",
   "/ciudad.html": "centro-medellin-v1",
+  "/arquitectura.html": "plastic-injection-plant-v1",
   "/data/acueducto-dia.json": "water-network-scale-v1",
   "/data/ciudad-linea-base.json": "centro-medellin-v1",
   "/data/ciudad-plano.svg": "centro-medellin-v1",
@@ -94,11 +97,12 @@ export async function onRequest(context: PagesContext): Promise<Response> {
 
   // Until external Access and API configuration are deliberately enabled, preserve the existing static demo.
   if (!api) return context.next();
-  let route = MODEL_ROUTES[url.pathname];
+  // Cloudflare Pages clean URLs serve `foo.html` at `/foo`; map both forms so a clean-URL request cannot bypass the twin gate.
   const plantData = url.pathname.match(/^\/api\/plants\/([^/]+)$/);
   const replayData = url.pathname.match(/^\/api\/replays\/([^/.]+)\.json$/);
   const scheduleData = url.pathname.match(/^\/api\/schedules\/([^/.]+)\.json$/);
-  route ??= plantData?.[1] ?? replayData?.[1] ?? scheduleData?.[1];
+  const route = MODEL_ROUTES[url.pathname] ?? MODEL_ROUTES[`${url.pathname}.html`]
+    ?? plantData?.[1] ?? replayData?.[1] ?? scheduleData?.[1];
   if (!route) return context.next();
   const assertion = request.headers.get("cf-access-jwt-assertion");
   if (!assertion) return response("Authenticated Cloudflare Access session required", 401);
