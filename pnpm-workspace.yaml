@@ -10,4 +10,5 @@ packages:
   - platform/fractal-core
   - platform/access-core
   - plants/*/cosim
+  - plants/*/fractal
   - plants/*/app

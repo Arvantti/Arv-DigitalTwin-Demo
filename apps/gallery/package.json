@@ -17,6 +17,8 @@
     "@twin/access-core": "workspace:*",
     "@twin/fractal-manufacturing": "workspace:*",
     "@plants/sauce-plant-v1-app": "workspace:*",
+    "@plants/sauce-plant-v1-cosim": "workspace:*",
+    "@twin/cosim-core": "workspace:*",
     "highs": "1.15.3",
     "three": "0.186.1",
     "lil-gui": "0.21.0",

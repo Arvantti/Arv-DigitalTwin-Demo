@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Pantallas de la planta de salsas: APS con pedidos, Gantt por línea y llenadora, plan manual contra solver",
+  "description": "Pantallas de la planta de salsas: APS con pedidos, Gantt por línea y llenadora, plan manual contra solver y escenarios de Fractal",
   "exports": {
     "./*": "./*"
   },
@@ -13,7 +13,9 @@
   },
   "dependencies": {
     "@plants/sauce-plant-v1-cosim": "workspace:*",
+    "@plants/sauce-plant-v1-fractal": "workspace:*",
     "@twin/cosim-core": "workspace:*",
+    "@twin/fractal-core": "workspace:*",
     "highs": "1.15.3",
     "js-yaml": "4.3.2"
   },

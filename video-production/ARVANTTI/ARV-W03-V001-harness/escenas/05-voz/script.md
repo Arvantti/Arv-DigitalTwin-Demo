@@ -1,0 +1,1 @@
+Y para dirigirlos, basta con hablar. El coordinador de agentes reparte el trabajo y el coordinador de hilos sigue cada frente en paralelo. Y si lo prefiere, trabaja directo con cada agente, también desde la terminal. Le responden, también por voz. Desde el carro, el celular o la sala de juntas.

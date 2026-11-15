@@ -1,8 +1,10 @@
 /**
  * Cartera de pedidos inventada de la planta de salsas (`customer-orders.v1`), con el mismo método que la de plásticos
  * para que la demo sea equivalente: por cada día de entrega, con su propia semilla, tantos pedidos de cada producto
- * como da su capacidad diaria × la carga de la planta (85 %) / el pedido promedio. La ventana sale de aps/aps.yaml.
- * Todo es supuesto; los clientes son ficticios.
+ * como da su capacidad diaria × la carga de la planta (demand.yaml, load_pct) / el pedido promedio. Con pocos pedidos al
+ * día el azar puede pedir de más o de menos (una línea quedaba al 85 % con load_pct 65), así que al final las cantidades
+ * de cada producto se escalan para que el total sea exactamente su capacidad × la carga × los días laborables de la
+ * ventana. La ventana sale de aps/aps.yaml. Todo es supuesto; los clientes son ficticios.
  */
 import { DAY_MIN, dateOf, iso, parseLocal, rng, type CustomerOrder, type CustomerOrders, type Importance } from "@twin/cosim-core";
 import type { SauceModel } from "./model.ts";
@@ -24,8 +26,10 @@ export function inventPortfolio(model: SauceModel, opt: PortfolioOptions): Custo
   const load = model.loadPct / 100;
   const rushShare = model.rushSharePct / 100;
   const orders: CustomerOrder[] = [];
+  let workdays = 0;
   for (let d = parseLocal(opt.firstDue); d <= parseLocal(opt.lastDue); d += DAY_MIN) {
     if (!cal.isWorkday(d)) continue;
+    workdays += 1;
     const r = rng(`${model.plant}:cartera:${dateOf(d)}`);
     const between = ([lo, hi]: [number, number]) => lo + Math.floor(r() * (hi - lo + 1));
     let n = 0;
@@ -54,6 +58,14 @@ export function inventPortfolio(model: SauceModel, opt: PortfolioOptions): Custo
         });
       }
     }
+  }
+  for (const line of model.demand) {
+    const mine = orders.filter((o) => o.product === line.product);
+    const asked = mine.reduce((sum, o) => sum + o.quantity, 0);
+    if (!asked) continue;
+    const step = line.round ?? 1;
+    const f = (line.daily * load * workdays) / asked;
+    for (const o of mine) o.quantity = Math.max(step, Math.round((o.quantity * f) / step) * step);
   }
   return {
     contract: "customer-orders.v1",

@@ -103,7 +103,36 @@ export interface PlanKpis {
   cip_h?: number;
   /** Merma: producto perdido por cambios, purgas o tiempo de espera vencido. */
   waste_kg?: number;
+  /** Energía eléctrica del plan en kWh (equipos de producción y servicios), sin precio. */
+  energy_kwh?: number;
+  /** kWh por kg de producto. */
+  kwh_per_kg?: number;
+  /** Demanda pico: la mayor potencia media de 15 minutos, en kW. */
+  peak_kw?: number;
   busiest: { equipment: string; busy_pct: number };
+}
+
+/** Desglose de la energía del plan (kWh, sin precio). */
+export interface PlanEnergy {
+  kwh: number;
+  /** Produciendo. */
+  run_kwh: number;
+  /** Espera caliente entre lotes, durante cambios y purgas. */
+  standby_kwh: number;
+  /** Calentamientos en frío (al empezar el día después de apagar). */
+  heatup_kwh: number;
+  /** Apagadas (solo el control). */
+  off_kwh: number;
+  /** Servicios: enfriador, secadores, aire comprimido, transporte de resina. */
+  services_kwh: number;
+  heatups: number;
+  kg: number;
+  kwh_per_kg: number;
+  peak_kw: number;
+  peak_at: string;
+  /** Qué hacen las máquinas fuera de turno: apagadas (calientan al arrancar) o en espera caliente. */
+  overnight: "apagar" | "caliente";
+  by_equipment: Record<string, number>;
 }
 
 export interface ProductionPlan {
@@ -124,6 +153,8 @@ export interface ProductionPlan {
   equipment: Record<string, { busy_pct: number; down_h: number }>;
   products: { id: string; name: string; unit: string; colors: string[] }[];
   kpis: PlanKpis;
+  /** Energía del plan (planta con datos de energía). */
+  energy?: PlanEnergy;
   solver?: { status: string; seconds: number; variables: number; constraints: number; objective: number };
   /** Replaneado desde este instante: lo anterior quedó congelado. */
   frozen_until?: string;

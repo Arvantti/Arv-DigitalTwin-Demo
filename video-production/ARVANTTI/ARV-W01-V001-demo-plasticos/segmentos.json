@@ -251,6 +251,106 @@
           ]
         },
         {
+          "id": "1-S03b",
+          "titulo": "Los datos también se cargan a mano",
+          "texto": "Esta cartera y este plan venían ya cargados, pero todos los datos se pueden cargar a mano, en la pestaña de configuración del APS. Se trabaja sobre un borrador: arriba, el sistema recalcula al instante el plan manual con esos datos, con los pedidos a tiempo, los pedidos tarde, el atraso y los cambios de referencia.",
+          "imagen": "configuracion/capturas/01-configuracion.png",
+          "enPantalla": "la pestaña ⚙ CONFIGURACIÓN y el recuadro PLAN MANUAL CON ESTE BORRADOR",
+          "focos": [
+            {
+              "frase": "en la pestaña de configuración",
+              "objetivo": "⚙ CONFIGURACIÓN",
+              "rotulo": "Configuración del APS"
+            },
+            {
+              "frase": "recalcula al instante",
+              "objetivo": "PLAN MANUAL CON ESTE BORRADOR",
+              "rotulo": "El plan del borrador, al instante"
+            }
+          ]
+        },
+        {
+          "id": "1-S03c",
+          "titulo": "Los pedidos",
+          "texto": "Primero, los pedidos. Agregamos uno: una ferretería pide mil quinientos baldes de doce litros, en azul, para el día catorce. Arriba se ve el efecto: con las inyectoras de balde tan llenas, ahora hay diez pedidos tarde. En la misma tabla se cambia el color, la cantidad, la fecha de entrega o la importancia de cualquier pedido, o se elimina.",
+          "imagen": "configuracion/capturas/02-pedido-nuevo.png",
+          "enPantalla": "el formulario AGREGAR PEDIDO y el pedido nuevo en la tabla",
+          "focos": [
+            {
+              "frase": "Agregamos uno",
+              "objetivo": "AGREGAR PEDIDO",
+              "rotulo": "Agregar pedido"
+            },
+            {
+              "frase": "ahora hay diez pedidos tarde",
+              "objetivo": "pedidos tarde",
+              "rotulo": "10 pedidos tarde"
+            },
+            {
+              "frase": "En la misma tabla",
+              "objetivo": "ELIMINAR",
+              "rotulo": "Editar o eliminar"
+            }
+          ]
+        },
+        {
+          "id": "1-S03d",
+          "titulo": "Qué molde lleva cada inyectora",
+          "texto": "Segundo, qué molde lleva cada inyectora. Basta arrastrar una inyectora sobre una pieza para montarle su molde: la inyectora veinte, que estaba libre, ahora también hace baldes, y el plan vuelve a nueve pedidos tarde. Si el molde no le cabe, el sistema la rechaza: la inyectora ocho, de ochenta toneladas, no puede cerrar un molde de balde que necesita quinientas. Y nunca monta un molde en más máquinas que las copias que existen.",
+          "imagen": "configuracion/capturas/04-molde-rechazado.png",
+          "enPantalla": "la inyectora 20 en el balde y el aviso en rojo al intentar con la 8",
+          "focos": [
+            {
+              "frase": "la inyectora veinte",
+              "objetivo": "IMM-20 + Balde de 12 L",
+              "rotulo": "Inyectora 20: ahora hace baldes"
+            },
+            {
+              "frase": "el sistema la rechaza",
+              "objetivo": "No se puede",
+              "rotulo": "Rechazada: no le cabe el molde"
+            }
+          ]
+        },
+        {
+          "id": "1-S03e",
+          "titulo": "La secuencia del planificador",
+          "texto": "Tercero, la secuencia: en qué máquina va cada pedido y en qué orden, como lo decidiría el planificador. El pedido nuevo está sin asignar: lo arrastramos a la inyectora veinte, y en la veintiuno subimos otro pedido al primer lugar. Solo se aceptan las máquinas que tienen el molde de esa pieza. Arriba, los indicadores se recalculan con cada movimiento.",
+          "imagen": "configuracion/capturas/05-secuencia.png",
+          "enPantalla": "el tablero por máquina; el pedido nuevo en la inyectora 20",
+          "focos": [
+            {
+              "frase": "está sin asignar",
+              "objetivo": "SIN ASIGNAR",
+              "rotulo": "Sin asignar"
+            },
+            {
+              "frase": "lo arrastramos a la inyectora veinte",
+              "objetivo": "PED-D14-07",
+              "rotulo": "El pedido nuevo, en la inyectora 20"
+            },
+            {
+              "frase": "los indicadores se recalculan",
+              "objetivo": "PLAN MANUAL CON ESTE BORRADOR",
+              "rotulo": "Se recalcula con cada movimiento"
+            }
+          ]
+        },
+        {
+          "id": "1-S03f",
+          "titulo": "Guardar la versión y usarla",
+          "texto": "Por último, guardamos esta configuración como una versión con nombre. Cada versión es una foto completa de los datos, sin el historial de cambios, y se puede abrir, usar en la planta o eliminar. Al usarla, el APS, el emulador, el centro de control y el gemelo 3D trabajan con estos datos. Para los escenarios volvemos a la cartera precargada.",
+          "imagen": "configuracion/capturas/07-en-la-planta.png",
+          "enPantalla": "la versión guardada y, al usarla, el Gantt con VIGENTE · MANUAL APS-MAN-CFG-01",
+          "focos": [
+            {
+              "frase": "Al usarla",
+              "objetivo": "APS-MAN-CFG-01",
+              "rotulo": "En la planta"
+            }
+          ]
+        },
+        {
           "id": "1-S04",
           "titulo": "¿Qué objetivo calcula?",
           "texto": "Pulsamos calcular con el cosimulador y el sistema pregunta primero qué objetivo buscar: cumplir entregas, menos cambios de molde y color, balancear cuellos de botella o maximizar la capacidad ocupada. El cosimulador optimiza un solo objetivo por corrida. Para buscar varios a la vez está Fractal, el módulo de escenarios que presentamos al inicio: lo veremos en acción en unos minutos. Las entregas siempre se respetan. Hoy elegimos cumplir entregas.",
@@ -287,7 +387,7 @@
         },
         {
           "id": "1-S05",
-          "titulo": "Calcular con el cosimulador",
+          "titulo": "Calcular con CoSimulation",
           "texto": "Pulsamos calcular. El cosimulador arma un modelo de programación lineal con casi cinco mil variables y lo resuelve en menos de un segundo. Respeta lo que ya empezó, los turnos, los moldes montados en cada máquina y las fechas de entrega.",
           "imagen": "1-calcular-programacion/capturas/04-calcular.png",
           "enPantalla": null,
@@ -379,7 +479,7 @@
         },
         {
           "id": "1-S06",
-          "titulo": "El Gantt del cosimulador",
+          "titulo": "El Gantt de CoSimulation",
           "texto": "Pulsamos adoptar como vigente y la propuesta pasa a ser la programación vigente: arriba, la etiqueta cambia de manual, con noventa coma tres por ciento a tiempo, a cosimulador, con noventa y dos coma cinco. Las órdenes se reacomodan para llegar antes de su fecha.",
           "imagen": "1-calcular-programacion/capturas/05-gantt-cosimulador.png",
           "enPantalla": "las barras que terminan antes de su rombo",
@@ -825,7 +925,7 @@
         },
         {
           "id": "3-S04",
-          "titulo": "El centro de control lo ve",
+          "titulo": "El Control Center lo ve",
           "texto": "El centro de control recibe la alarma al instante. La máquina queda fuera de servicio, su disponibilidad cae y la planta sabe qué órdenes estaban en ella.",
           "imagen": "3-contingencia-falla/capturas/04-centro-control.png",
           "enPantalla": "tarjeta de la IMM-21 en rojo y los indicadores de planta",
@@ -923,7 +1023,7 @@
         },
         {
           "id": "3-S09",
-          "titulo": "El centro de control después",
+          "titulo": "El Control Center después",
           "texto": "El centro de control ya muestra a la inyectora veinte con su nueva orden, mientras la veintiuno sigue en reparación.",
           "imagen": "3-contingencia-falla/capturas/08-centro-control-despues.png",
           "enPantalla": "la IMM-20 ahora con orden",

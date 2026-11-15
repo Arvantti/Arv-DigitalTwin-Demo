@@ -90,3 +90,19 @@ body.cc-page { display: flex; flex-direction: column; }
   .cc-grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)) !important; grid-template-rows: none !important; }
   .cc-card { min-height: 260px; }
 }
+
+/* Energía: potencia de la planta, límite del transformador y curva del día. */
+.cc-energy { flex: 0 0 auto; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 6px; display: flex; flex-direction: column; gap: 4px; }
+.cc-kw { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.cc-kw b { font: 700 24px "IBM Plex Mono", monospace; color: #ffd45c; }
+.cc-kw b small { font-size: 12px; color: var(--dim); }
+.cc-kw span { color: var(--dim); font-size: 11px; text-align: right; }
+.cc-kw-split { display: flex; justify-content: space-between; gap: 6px; font-size: 11px; color: var(--dim); }
+.cc-kw-split b { color: var(--text, #e6ecff); font-family: "IBM Plex Mono", monospace; }
+.pw-spark { width: 100%; height: 56px; }
+.pw-spark .pw-line { fill: none; stroke: #ffd45c; stroke-width: 1.2; vector-effect: non-scaling-stroke; }
+.pw-spark .pw-past { fill: rgba(255, 212, 92, 0.18); }
+.pw-spark .pw-now { stroke: #fff; stroke-width: 1; stroke-dasharray: 2 2; vector-effect: non-scaling-stroke; }
+.pw-spark text { fill: var(--dim); font-size: 7px; text-anchor: middle; }
+.cc-kwtag { color: #ffd45c; font-family: "IBM Plex Mono", monospace; font-weight: 600; }
+.cc-kwtag.off { color: var(--dim); }

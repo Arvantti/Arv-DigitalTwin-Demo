@@ -45,6 +45,17 @@ Correcciones pedidas por Andy sobre v005:
 - 12:51–13:17: las franjas de colores venían de una captura JPG leída como PNG; corregido.
 - Sin cuadros blancos ni destellos (revisión de brillo a 2 cuadros por segundo). Duración: 1184 s.
 
+## v007 (2026-11-06)
+
+Capítulo nuevo "Cargar los datos a mano", pedido por Andy: segmentos 1-S03b a 1-S03f del escenario 1, entre el plan
+manual en el centro de control y el cálculo con el cosimulador (3:27 a 5:20). Muestra la pestaña ⚙ CONFIGURACIÓN
+del APS: agregar un pedido, montar el molde de balde en la inyectora 20 (y el rechazo en la 8, de 80 t), mover y
+reordenar tarjetas en la secuencia, guardar la versión y usarla en la planta.
+- Solo esos cinco segmentos fueron a ElevenLabs (1.781 caracteres); el resto de la voz salió del caché sin cambios.
+- Material: `grabar.cjs 7 --video --hd` (assets/grabacion/configuracion/).
+- Cifras como salen en pantalla: 10 pedidos tarde al agregar el pedido, 9 al montar el molde en la inyectora 20.
+- Sin cuadros blancos en el tramo nuevo (brillo máximo 44,7 de 255 a 2 cuadros por segundo). Duración: 1302 s.
+
 ## Aprobación humana
 
 ```text

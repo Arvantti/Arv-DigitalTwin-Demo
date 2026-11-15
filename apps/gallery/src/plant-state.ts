@@ -9,6 +9,7 @@
  */
 import type { PlanScheduleRow, PlantEvent, ProductionPlan } from "@twin/cosim/core/contracts.ts";
 import { rng } from "@twin/cosim/core/time.ts";
+import { plantPowerAt, powerAt, type PlantPower, type PowerNow } from "@twin/cosim/adapters/plastic-injection-plant-v1/energy.ts";
 import yaml from "js-yaml";
 import plantYaml from "../../../industrial-models/plastic-injection-plant-v1/plant.yaml?raw";
 import setupYaml from "../../../industrial-models/plastic-injection-plant-v1/catalog/setup.yaml?raw";
@@ -293,4 +294,41 @@ export function dayStrip(list: Load[], t: number): string {
     return `<div class="ss-day${now}" title="${dayTag(x.from)}: ocupación ${occ} % (${x.busyH.toFixed(1)} de ${x.availH.toFixed(1)} h) · disponibilidad ${av} %"><span class="ss-cell"><i class="av" style="height:${av}%"></i><i class="oc" style="height:${(av * Math.min(1, x.occupancy)).toFixed(0)}%;background:${loadColor(x.occupancy)}"></i></span><b>${occ}</b><small>${dayTag(x.from)}</small></div>`;
   });
   return `<div class="shift-strip">${cells.join("")}</div>`;
+}
+
+// ------------------------------------------------------------------ energía (catalog/energy.yaml, solo kWh)
+
+const stoppedAt = (events: PlantEvent[], t: number) => new Set(eventsAt(events, t).map((e) => e.equipment));
+
+/** Potencia de una máquina en t, con la variación del modelo físico; una falla del emulador la deja apagada. */
+export function powerOf(plan: ProductionPlan, events: PlantEvent[], id: string, t: number): PowerNow | undefined {
+  if (!model.energy?.injection[id]) return undefined;
+  return powerAt(model, plan, id, t, stoppedAt(events, t).has(id));
+}
+
+/** Potencia de la planta en t: inyectoras y servicios, con el límite del transformador. */
+export const plantPower = (plan: ProductionPlan, events: PlantEvent[], t: number): PlantPower => plantPowerAt(model, plan, t, stoppedAt(events, t));
+
+/** kWh de una máquina (o de la planta, sin id) desde a hasta b, sumando la potencia de cada minuto. */
+export function kwhBetween(plan: ProductionPlan, events: PlantEvent[], a: number, b: number, id?: string): number {
+  let kwh = 0;
+  for (let t = a; t < b; t += 5) {
+    const kw = id ? (powerOf(plan, events, id, t + 2.5)?.kw ?? 0) : plantPower(plan, events, t + 2.5).kw;
+    kwh += (kw * Math.min(5, b - t)) / 60;
+  }
+  return kwh;
+}
+
+/** Curva de potencia de la planta en el día de t (cada 10 min) como SVG, con la marca del instante. */
+export function powerSpark(plan: ProductionPlan, events: PlantEvent[], t: number): string {
+  const d = Math.floor(t / 1440) * 1440;
+  const pts = Array.from({ length: 145 }, (_, i) => ({ t: d + i * 10, kw: plantPower(plan, events, d + i * 10).kw }));
+  const max = Math.max(1, ...pts.map((p) => p.kw)) * 1.1;
+  const x = (m: number) => (((m - d) / 1440) * 200).toFixed(1);
+  const y = (kw: number) => (48 - (kw / max) * 44).toFixed(1);
+  const line = pts.map((p, i) => `${i ? "L" : "M"}${x(p.t)} ${y(p.kw)}`).join(" ");
+  const past = pts.filter((p) => p.t <= t);
+  const area = past.length > 1 ? `<path class="pw-past" d="M${x(past[0].t)} 48 ${past.map((p) => `L${x(p.t)} ${y(p.kw)}`).join(" ")} L${x(past[past.length - 1].t)} 48 Z"/>` : "";
+  const ticks = [6, 12, 18, 22].map((h) => `<text x="${x(d + h * 60)}" y="58">${String(h).padStart(2, "0")}</text>`).join("");
+  return `<svg class="pw-spark" viewBox="0 0 200 60" preserveAspectRatio="none" role="img" aria-label="Potencia de la planta en el día">${area}<path class="pw-line" d="${line}"/><line class="pw-now" x1="${x(t)}" x2="${x(t)}" y1="2" y2="48"/>${ticks}</svg>`;
 }

@@ -7,13 +7,14 @@
  * Cloudflare, este módulo es el único que cambia.
  */
 import type { CustomerOrder, CustomerOrders, PlantEvent, ProductionPlan } from "@twin/cosim/core/contracts.ts";
-import { basePortfolio, baseManual, catalogData, plasticsModel } from "@twin/cosim/adapters/plastic-injection-plant-v1/catalog.ts";
+import { basePortfolio, baseManual, catalogData } from "@twin/cosim/adapters/plastic-injection-plant-v1/catalog.ts";
+import { buildModel, type CatalogData } from "@twin/cosim/adapters/plastic-injection-plant-v1/model.ts";
+import { applyConfig, configManual, configPortfolio, PRELOADED, type PlasticsConfig } from "@twin/cosim/adapters/plastic-injection-plant-v1/config.ts";
 import { modelFor } from "@twin/fractal-manufacturing/models/plastic-injection-plant-v1/study.ts";
 import { manualPlan, type ManualEdit } from "@twin/cosim/adapters/plastic-injection-plant-v1/manual.ts";
 import { plantNow, setDayZero, store } from "./schedule.ts";
 
 export const PLASTICS = "plastic-injection-plant-v1";
-export const model = plasticsModel();
 export const SOURCE_NAMES: Record<string, string> = { manual: "MANUAL", solver: "COSIMULADOR", reference: "REFERENCIA", fractal: "FRACTAL" };
 
 const key = (k: string) => `twin.aps.${PLASTICS}.${k}`;
@@ -26,6 +27,75 @@ function read<T>(k: string, fallback: T): T {
   } catch {
     return fallback;
   }
+}
+
+// ------------------------------------------------------------------ configuración cargada a mano
+/**
+ * Versiones de la configuración (pestaña ⚙ CONFIGURACIÓN del APS): cada una es una foto completa de pedidos, montaje
+ * de moldes y secuencia del planificador, sin historial. La activa ("USAR EN LA PLANTA") manda en todas las pantallas
+ * de plásticos; sin activa, la planta usa la precargada de la demo. ?reset=1 vuelve a la precargada antes de leer nada.
+ */
+if (typeof location !== "undefined" && new URLSearchParams(location.search).get("reset") === "1") store.set(key("config-active"), null);
+
+export function configVersions(): PlasticsConfig[] {
+  return read<PlasticsConfig[]>("configs", []).filter((c) => c?.contract === "plastics-config.v1");
+}
+
+/** Guarda (o reemplaza, mismo id) una versión de la configuración. */
+export function saveConfigVersion(cfg: PlasticsConfig): void {
+  const list = configVersions();
+  const i = list.findIndex((c) => c.id === cfg.id);
+  if (i >= 0) list[i] = cfg;
+  else list.push(cfg);
+  store.set(key("configs"), JSON.stringify(list));
+  channel?.postMessage({ type: "config" });
+}
+
+export function deleteConfigVersion(id: string): void {
+  store.set(key("configs"), JSON.stringify(configVersions().filter((c) => c.id !== id)));
+  if (read<string | null>("config-active", null) === id) setActiveConfig(null);
+  else channel?.postMessage({ type: "config" });
+}
+
+/** La configuración que usa la planta, o null si es la precargada. */
+export function activeConfig(): PlasticsConfig | null {
+  const id = read<string | null>("config-active", null);
+  return id ? configVersions().find((c) => c.id === id) ?? null : null;
+}
+
+/**
+ * Pone una versión en la planta (null = la precargada). La programación vuelve a la secuencia manual de esa versión y
+ * se olvidan los pedidos agregados, los moldes y fechas cambiados por Fractal y el escenario visto, que eran de la
+ * configuración anterior. Las pantallas abiertas se recargan al enterarse.
+ */
+export function setActiveConfig(id: string | null): void {
+  store.set(key("config-active"), id && id !== PRELOADED ? JSON.stringify(id) : null);
+  for (const k of ["added", "vigente", "viewed", "view-mode", "viewed-version", "molds", "order_changes"]) store.set(key(k), null);
+  channel?.postMessage({ type: "config" });
+  channel?.postMessage({ type: "plan" });
+}
+
+/** El catálogo de la planta con la configuración activa aplicada (montaje de moldes). */
+export function catalog(): CatalogData {
+  return applyConfig(catalogData(), activeConfig());
+}
+
+function activeModel() {
+  try {
+    return buildModel(catalog());
+  } catch {
+    // Una versión que ya no cuadra con el catálogo no deja la planta sin modelo: vuelve a la precargada.
+    store.set(key("config-active"), null);
+    return buildModel(catalogData());
+  }
+}
+
+/** Modelo de la planta con la configuración activa (se lee al cargar la pantalla; activar otra recarga). */
+export const model = activeModel();
+
+/** La secuencia manual del planificador de la configuración activa (APS-MAN-01 en la precargada). */
+export function currentManual() {
+  return configManual(baseManual, activeConfig(), portfolio().portfolio_id);
 }
 
 /**
@@ -61,12 +131,13 @@ export function orderChanges(): NonNullable<ProductionPlan["order_changes"]> {
 }
 
 export function portfolio(): CustomerOrders {
+  const base = configPortfolio(basePortfolio, activeConfig());
   const changes = new Map(orderChanges().map((c) => [c.order, c]));
-  const orders = [...basePortfolio.orders, ...addedOrders()].map((o) => {
+  const orders = [...base.orders, ...addedOrders()].map((o) => {
     const c = changes.get(o.id);
     return c ? { ...o, ...(c.due ? { due: c.due } : {}), ...(c.importance ? { importance: c.importance } : {}) } : o;
   });
-  return { ...basePortfolio, orders };
+  return { ...base, orders };
 }
 
 /** Moldes cambiados por una recomendación de Fractal adoptada (máquina → molde, null = desmontado). */
@@ -77,7 +148,7 @@ export function molds(): Record<string, string | null> {
 /** Modelo de la planta con los moldes como están montados ahora (para CALCULAR y la secuencia manual). */
 export function modelNow() {
   const m = molds();
-  return Object.keys(m).length ? modelFor(catalogData(), m) : model;
+  return Object.keys(m).length ? modelFor(catalog(), m) : model;
 }
 
 export function setAdded(list: CustomerOrder[]): void {
@@ -88,8 +159,9 @@ export function setAdded(list: CustomerOrder[]): void {
 /** La programación vigente; al arrancar es la secuencia manual del planificador (APS-MAN-01). */
 export function vigente(): ProductionPlan {
   const saved = read<ProductionPlan | null>("vigente", null);
-  if (saved && saved.portfolio_id === basePortfolio.portfolio_id && saved.contract === "production-plan.v1") return saved;
-  return { ...manualPlan(model, portfolio(), baseManual), status: "vigente" };
+  const pf = portfolio();
+  if (saved && saved.portfolio_id === pf.portfolio_id && saved.contract === "production-plan.v1") return saved;
+  return { ...manualPlan(model, pf, currentManual()), status: "vigente" };
 }
 
 /** Escenario que se ve en el gemelo y en el APS (la propuesta del cosimulador o una opción de Fractal). */
@@ -154,6 +226,8 @@ export function resetDemo(): void {
   store.set(key("molds"), null);
   store.set(key("order_changes"), null);
   store.set(key("clock"), null);
+  store.set(key("config-active"), null);
+  channel?.postMessage({ type: "config" });
   channel?.postMessage({ type: "clock" });
   channel?.postMessage({ type: "plan" });
   channel?.postMessage({ type: "events" });
@@ -318,7 +392,7 @@ export function deleteVersion(id: string): void {
 /** Archivo JSON con las versiones elegidas (todas si no se dice cuáles), con su programación completa. */
 export async function exportVersions(ids?: string[]): Promise<string> {
   const list = (await Promise.all(versions().filter((v) => !ids || ids.includes(v.id)).map((v) => loadVersion(v.id)))).filter((v): v is SavedVersion => !!v);
-  return JSON.stringify({ contract: VERSION_FILE, plant: PLASTICS, portfolio_id: basePortfolio.portfolio_id, versions: list });
+  return JSON.stringify({ contract: VERSION_FILE, plant: PLASTICS, portfolio_id: portfolio().portfolio_id, versions: list });
 }
 
 /** Agrega las versiones de un archivo exportado; las que ya están (mismo id) no se duplican. Devuelve cuántas entraron. */
@@ -326,7 +400,7 @@ export async function importVersions(text: string): Promise<number> {
   const data = JSON.parse(text) as { contract?: string; plant?: string; versions?: SavedVersion[] };
   if (data.contract !== VERSION_FILE || data.plant !== PLASTICS || !Array.isArray(data.versions)) throw new Error("El archivo no es una exportación de versiones del APS de plásticos.");
   const have = new Set(versions().map((v) => v.id));
-  const fresh = data.versions.filter((v) => v?.contract === "plan-version.v1" && v.plan?.contract === "production-plan.v1" && v.plan.portfolio_id === basePortfolio.portfolio_id && !have.has(v.id));
+  const fresh = data.versions.filter((v) => v?.contract === "plan-version.v1" && v.plan?.contract === "production-plan.v1" && v.plan.portfolio_id === portfolio().portfolio_id && !have.has(v.id));
   const added: VersionMeta[] = [];
   try {
     for (const v of fresh) {
@@ -366,7 +440,7 @@ export function setViewedVersionId(id: string | null): void {
   store.set(key("viewed-version"), id ? JSON.stringify(id) : null);
 }
 
-export type Change = "orders" | "plan" | "events" | "clock" | "view" | "versions";
+export type Change = "orders" | "plan" | "events" | "clock" | "view" | "versions" | "config";
 
 /** Avisa cuando otra ventana cambia pedidos o programación. */
 export function onChange(fn: (what: Change) => void): void {
@@ -378,10 +452,23 @@ export function onChange(fn: (what: Change) => void): void {
     if (e.key === key("clock")) fn("clock");
     if (e.key === key("viewed") || e.key === key("view-mode") || e.key === key("viewed-version")) fn("view");
     if (e.key === key("versions")) fn("versions");
+    if (e.key === key("configs") || e.key === key("config-active")) fn("config");
   });
 }
 
 export { baseManual, manualPlan };
+
+/**
+ * Cuando otra ventana cambia la configuración activa, la pantalla se recarga: el modelo de la planta se arma una vez al
+ * cargar. Corre al importar este módulo, así toda pantalla de plásticos lo tiene.
+ */
+function reloadOnConfig(): void {
+  const at = read<string | null>("config-active", null);
+  const check = () => read<string | null>("config-active", null) !== at && location.reload();
+  channel?.addEventListener("message", (e: MessageEvent<{ type: Change }>) => e.data.type === "config" && check());
+  addEventListener("storage", (e) => e.key === key("config-active") && check());
+}
+if (typeof window !== "undefined" && typeof location !== "undefined") reloadOnConfig();
 
 /** Avisa cuando el gemelo cambia el instante (play, barra de tiempo o EN VIVO). */
 export function onClock(fn: () => void): void {

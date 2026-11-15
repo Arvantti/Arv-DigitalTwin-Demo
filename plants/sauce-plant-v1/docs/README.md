@@ -12,8 +12,10 @@ catalog/        materiales, productos (con grupo de alérgenos), recetas y forma
                 recetas, lavado del pulmón y boquillas)
 aps/aps.yaml    ventana de entrega, tandas, lotes, llenadoras multipropósito, tiempos de espera y puntaje de Fractal
 aps/plans/      APS-MAN-01.json: secuencia del planificador de turno (manual-sequence.v1)
-orders/         cartera-2026-11.json: 119 pedidos inventados (customer-orders.v1)
+orders/         cartera-2026-11.json: 128 pedidos inventados (customer-orders.v1)
 cosim/          @plants/sauce-plant-v1-cosim: modelo, cartera, plan manual, despacho y programa lineal (HiGHS)
+fractal/        @plants/sauce-plant-v1-fractal: escenarios y palancas de Fractal sobre el cosimulador
+app/            @plants/sauce-plant-v1-app: APS (pedidos, Gantt, Fractal), emulador y centro de control
 docs/           esta nota
 ```
 
@@ -71,9 +73,11 @@ alternativa la usa el APS.
 
 ## Cartera y plan manual de la demo
 
-Mismas fechas que plásticos: día 0 = lunes 2026-10-26, entregas del día 1 al 19, AHORA = día 9. 119 pedidos de los
-diez SKU, con carga cercana al 65 % de la capacidad diaria de cada SKU (`catalog/demand.yaml`, `load_pct`; con siete
-recetas, los cambios se comen buena parte del turno).
+Mismas fechas que plásticos: día 0 = lunes 2026-10-26, entregas del día 1 al 19, AHORA = día 9. 128 pedidos de los
+diez SKU, con carga del 70 % de la capacidad diaria de cada SKU (`catalog/demand.yaml`, `load_pct`). Los pedidos se
+sortean día por día y al final las cantidades de cada SKU se escalan para que el total sea exactamente esa carga (con
+pocos pedidos al día, el azar dejaba la línea fría al 85 %). Con los cambios de receta y las limpiezas, las líneas de
+proceso quedan ocupadas entre 72 y 86 %.
 El plan manual APS-MAN-01 sigue el orden de llegada y alterna las llenadoras de 1.000 ml y las multipropósito, sin
 agrupar recetas, mirar la secuencia ni los alérgenos: hace CIP de más, que es lo que el cosimulador y Fractal van a mejorar.
 
@@ -95,20 +99,24 @@ Una tanda ocupa la línea 213,8 / 143,3 / 286,5 min y no pasa de un día a otro.
   llenadora del tramo o en la que pueda empezar antes (la habitual primero); suma el CIP por alérgeno o secuencia,
   el cambio de formato, las boquillas y el CIP de rutina; cuenta como merma lo que se vence o sobra. Lo que quedó en el
   pulmón se aprovecha antes de que se venza (si el tramo siguiente no alcanza, pasa adelante uno de los 8 siguientes
-  de la misma línea que sí) y no se cocina una tanda que ninguna llenadora alcanza a tomar a tiempo: se corre. Replanea desde AHORA
+  de la misma línea que sí, siempre que no entregue más de un día después del que espera: si no, la receta que corre
+  se come la línea y las recetas pequeñas no entran nunca) y no se cocina una tanda que ninguna llenadora alcanza a tomar a tiempo: se corre. Replanea desde AHORA
   con lo anterior congelado, con fallas del emulador: una falla de la caldera, el pasteurizador o un equipo de la
   línea para la línea; una falla de una llenadora, solo esa llenadora.
 - `solve.ts`: programa lineal por turnos (HiGHS): kilos de cada pedido por línea y turno, con la capacidad en tandas
   enteras por día (90 % en las líneas de varias recetas, para dejar lugar a los cambios), minimizando el atraso
-  ponderado por importancia. Dentro de cada turno ordena por la secuencia de recetas empezando por la que tiene la
+  ponderado por importancia, con un empujoncito hacia el último turno que llega a tiempo (deja los primeros turnos
+  para los urgentes y no cocina antes de tiempo). Dentro de cada turno ordena por la secuencia de recetas empezando por la que tiene la
   línea. Después, el mismo despacho.
 - `manual.ts`: el plan del planificador (APS-MAN-01) en el tiempo, por orden de llegada.
 
-Con la cartera de la demo, el plan manual deja 11 pedidos tarde (568 h de atraso), 52 h de CIP (10 cambios por
-alérgeno) y 8.645 kg de merma. Replaneando en AHORA (día 9, miércoles 4 de noviembre a las 10:00), el solver baja a
-10 tarde, 498 h, 51 h de CIP (7 por alérgeno) y 3.936 kg (`pnpm --filter @plants/sauce-plant-v1-cosim test`). La
-mejora es moderada, y desde el día 0 el solver no siempre le gana al manual: reparte kilos por turno pero no arma
-campañas de recetas; eso lo hace Fractal (fase 5).
+Con la cartera de la demo, el plan manual deja 9 pedidos tarde (244 h de atraso), 87 h de CIP (10 cambios por
+alérgeno) y 8.874 kg de merma. Replaneando en AHORA (día 9, miércoles 4 de noviembre a las 10:00), el solver baja a
+3 tarde (los que ya habían salido tarde antes de AHORA), 84 h de atraso, 84 h de CIP (6 por alérgeno) y 5.722 kg.
+Con la caldera parada de 10:00 a 16:00, seguir la secuencia del planificador deja 5 tarde y 130 h; el solver, 3 y 84 h.
+Con la llenadora de mostaza caída hasta el día 11, 14 tarde y 498 h contra 3 y 84 h
+(`pnpm --filter @plants/sauce-plant-v1-cosim test`). Las llenadoras quedan ocupadas 11 a 23 %: van 2 a 4 veces más
+rápido que el proceso y esperan la tanda.
 
 ## Pantalla del APS
 
@@ -116,7 +124,7 @@ campañas de recetas; eso lo hace Fractal (fase 5).
 (`APS · PEDIDOS Y GANTT`). Arranca con el plan manual (APS-MAN-01) vigente y AHORA en el día 9 (miércoles 4 de
 noviembre, 10:00; `?now=` lo cambia).
 
-- PEDIDOS: los 119 pedidos con cliente, producto, entrega, cuándo termina, atraso y si están hechos, en curso o por
+- PEDIDOS: los 128 pedidos con cliente, producto, entrega, cuándo termina, atraso y si están hechos, en curso o por
   hacer en AHORA; arriba, los indicadores del plan. Clic en un pedido lo sigue en el Gantt.
 - PROGRAMACIÓN · GANTT: una fila por equipo de proceso (tandas T/BBQ/PI, LI/MY/RO y MS con su número; las
   parciales lo dicen al pasar el mouse) y una por llenadora; el cambio va rayado al comienzo de cada barra: rojo el
@@ -126,8 +134,107 @@ noviembre, 10:00; `?now=` lo cambia).
 - CALCULAR CON EL COSIMULADOR: HiGHS en el navegador desde AHORA con lo anterior congelado. La propuesta muestra
   pedidos tarde, atraso, cambios, CIP y merma contra el plan vigente, y el puntaje de abajo; se aprueba o se descarta.
   PLAN MANUAL vuelve a APS-MAN-01.
+- 🔒 FIJAR EN EL GANTT (en la barra del pedido elegido): el pedido se queda donde está en la vigente. CALCULAR y
+  Fractal congelan sus llenados y las tandas que los alimentan aunque sean después de AHORA (`fixed` en
+  `cosim/plan.ts`) y programan el resto alrededor: nada se cruza con ellos y una tanda solo va justo antes de una
+  fijada si el cambio que esa fijada trae alcanza. SOLTAR o SOLTAR TODOS los libera; `?reset=1` también.
 
 `view.ts` arma lo que se pinta (sin DOM) y lo cubren las pruebas (`pnpm --filter @plants/sauce-plant-v1-app test`).
+
+## Configuración manual de los datos
+
+La pestaña ⚙ CONFIGURACIÓN del APS (`app/config.ts`) muestra cómo se cargan a mano los datos que la demo trae
+precargados. Se edita un borrador y arriba se ve, con cada cambio, el plan manual que daría (pedidos tarde, atraso,
+CIP y merma).
+
+1. PEDIDOS: agregar un pedido (cliente, producto, cantidad, entrega, importancia) y editar o eliminar los que faltan
+   por entregar. Los entregados quedan como están.
+2. PRODUCTOS Y LLENADORAS: arrastrar una llenadora sobre un producto (SKU) la asigna, solo si tiene ese formato
+   (250, 500 o 1.000 ml); ✕ la quita y sus pedidos en ella quedan sin asignar. ⧉ DUPLICAR crea un SKU con la misma
+   receta, formato y lote; QUITAR saca del catálogo un SKU sin pedidos. Las llenadoras asignadas reemplazan la ruta
+   y las multipropósito de `aps/aps.yaml` para ese SKU.
+3. SECUENCIA DEL PLANIFICADOR: tableros por llenadora con los pedidos por entregar; arrastrar una tarjeta la pasa a
+   otra llenadora que pueda llenarla o la sube o baja en la suya. ASIGNAR POR ORDEN DE LLEGADA reparte de nuevo como
+   el planificador de la demo. Al reordenar, el plan respeta ese orden (`keep_order`: cada llenadora conserva sus
+   turnos de llegada en el orden puesto; sin reordenar da lo mismo que por llegada).
+
+VERSIONES: GUARDAR COMO VERSIÓN NUEVA guarda una foto completa (pedidos, SKU, llenadoras y secuencia; sin historial
+de cambios) en el navegador; se abre, se usa en la planta o se elimina. La precargada siempre está. USAR EN LA
+PLANTA activa la versión para el APS, el emulador, el centro de control y el 3D (`store.ts`; `data.ts` aplica la
+versión activa) y vuelve a su plan manual (APS-MAN-CFG-nn); `?reset=1` vuelve a la precargada.
+
+## Fractal
+
+`fractal/study.ts` arma estudios de escenario con el bucle de `platform/fractal-core`: cada combinación de palancas la
+coloca el cosimulador desde AHORA y Fractal recomienda la de menor puntaje. La pestaña FRACTAL · ESCENARIOS del APS los
+corre en el navegador (menos de un segundo) y deja ver o adoptar cualquier opción.
+
+Palancas (opciones de `solve.ts` o del modelo):
+
+- campañas por día (`campaign: "dia"`): cada línea recorre su orden de recetas una vez al día, no una vez por turno;
+- recetas pequeñas cada 2 o 3 días (`minorEvery`): BBQ, picante, light y rosada solo uno de cada N días, todas juntas
+  (la receta principal de cada línea, la de más kilos en la demanda, va todos los días);
+- llenadoras dedicadas (`dedicated`): cada producto solo en su llenadora habitual; las multipropósito no se cruzan;
+- prioridad alta para el pedido que se adelanta.
+
+Escenarios y resultados con la cartera de la demo, desde el plan manual en AHORA (`pnpm --filter
+@plants/sauce-plant-v1-fractal test`):
+
+| Escenario | Opciones | Recomienda |
+|---|---|---|
+| Adelantar un pedido | nueva fecha; + prioridad alta; + campañas por día | prioridad + campañas por día |
+| Menos CIP y merma | recolocar; campañas por día; + pequeñas cada 2 días; + cada 3 días; + llenadoras dedicadas | campañas por día: CIP 83,8 → 78,2 h, merma 5.722 → 4.395 kg, mismos 3 tarde |
+| Falla de un equipo | esperar y repartir; campañas por día; + llenadoras dedicadas (si es una llenadora) o + pequeñas cada 3 días | campañas por día |
+
+Las recetas pequeñas cada 3 días dan el menor CIP (68,6 h) y la menor merma (3.861 kg), pero 2 pedidos tarde más:
+el puntaje prefiere no atrasar. Con la llenadora de mostaza caída, no cruzar llenadoras deja 11 pedidos tarde.
+
+La falla llega del emulador (abajo) o se simula en la tarjeta del escenario (equipo y horas hasta la reparación).
+Cualquiera de las dos queda en el estado compartido: la ven el centro de control y CALCULAR.
+
+## Emulador y centro de control
+
+El emulador (`emulador-salsas.html`) hace de planta real y el centro de control (`control-salsas.html`) recibe sus
+señales; el portal los enlaza. Las dos pantallas viven en `app/` y muestran la programación vigente del APS en el
+instante mostrado: AHORA (día 9, 10:00) o, desde la fase 7, el del play del gemelo 3D.
+
+- Equipos con PLC (`plant-state.ts`, `plcEquipment`): cada línea con sus equipos de proceso (marmitas,
+  emulsificador, tanque de mostaza) y los que la detienen si fallan (`aps.yaml`, `down_with`: caldera,
+  pasteurizadores, tanque de fase acuosa, molino coloidal, molino de mostaza), y las seis llenadoras.
+- Estado: produciendo, cambio o limpieza (CIP, CIP por alérgeno, receta, formato, boquillas, lavado del pulmón, con
+  su hora de fin), sin orden, parada programada, fuera de servicio, detenido (por la falla de otro equipo de su
+  línea: la caldera caída detiene marmitas y pasteurizadores) y fuera de turno.
+- Emulador: plano de la caldera, proceso, CIP, pulmones, llenado y encajado; clic en un equipo muestra su tanda o su
+  llenado con el avance y sus valores de proceso (temperatura de cocción, vacío y rotor del emulsificador, presión
+  de vapor, velocidad y mordaza de la llenadora). Ahí se declara una falla o un paro de emergencia en el instante
+  mostrado con su reparación estimada (`plant-event.v1`), y se restablece.
+- Centro de control: OEE de la planta y de cada equipo en el turno (disponibilidad × rendimiento × calidad; calidad
+  supuesta de 99 %), kilos cocinados y sachets buenos del turno, equipos en limpieza CIP, tanda o llenado en curso,
+  ocupación de la semana contra la disponibilidad y por día, y las alarmas con el enlace para replanear en el APS.
+- Estado compartido (`store.ts`): la programación adoptada en el APS, los eventos del emulador y el reloj del gemelo
+  se guardan en el navegador (localStorage) y se avisan por BroadcastChannel, así las pantallas abiertas se enteran al
+  instante. El APS muestra la alarma de la falla, la usa en Fractal y en CALCULAR; `?reset=1` en el APS vuelve al
+  plan manual sin fallas.
+
+Los valores de proceso, el rendimiento del OEE y las causas de falla son supuestos coherentes con `plant.yaml`; no
+hay señales reales. Las pruebas de `tests/plant-state.test.ts` cubren el estado, la caldera que detiene la línea
+caliente, el CIP por alérgeno en curso, el OEE y la ocupación.
+
+## Gemelo 3D con play
+
+`plant.html?plant=sauce-plant-v1` (desde el portal) reproduce en el 3D la programación vigente del APS
+(`apps/gallery/src/sauce-play.ts`, que usa `app/plant-state.ts` y `app/store.ts`).
+
+- Barra de tiempo: play, velocidades de 15 min a 12 h por segundo, botón AHORA y marcas de día; va de 3 días antes a
+  7 días después de AHORA (día 9, 10:00). El instante del play se comparte con el emulador y el centro de control,
+  que pasan a "siguiendo el gemelo".
+- Cada equipo con PLC lleva una etiqueta con su estado, la tanda o el pedido que corre y el cambio o el avance; las
+  marmitas suben de nivel y calientan, la caldera enciende la llama, el pasteurizador mueve el flujo y las
+  llenadoras sellan y sueltan sachets solo cuando la programación lo dice.
+- Panel de pedidos: se sigue un pedido con sus tandas y llenados, y la lista de lo que corre en el gemelo.
+- Las fallas declaradas en el emulador marcan el equipo en rojo, y los equipos que detiene (la caldera detiene
+  marmitas y pasteurizadores) quedan en DETENIDO con la causa. La ficha de cada equipo muestra sus señales, OEE y
+  ocupación del día y la semana, con el enlace al emulador.
 
 ## Puntaje de Fractal
 

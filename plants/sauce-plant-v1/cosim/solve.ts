@@ -20,7 +20,12 @@ import type { SauceModel } from "./model.ts";
 import { context, dispatch, toPlan, type Chunk, type ContextOptions, type Job } from "./plan.ts";
 
 const MISSING_PENALTY = 1000;
-const EARLY_NUDGE = 1e-3;
+/**
+ * Empujoncito hacia el último turno que todavía llega a tiempo: deja libres los primeros turnos para los pedidos urgentes
+ * que lleguen y no cocina antes de tiempo (el granel tiene tiempo de espera). Al empujar hacia el comienzo, la línea se
+ * llenaba con pedidos de la semana siguiente y los urgentes de recetas pequeñas salían tarde.
+ */
+const LATE_NUDGE = 1e-3;
 const SLACK = 0.97;
 /** Holgura de una línea con varias recetas: además del pulmón, los cambios de receta (unos 45 min por turno). */
 const MULTI_SLACK = 0.9;
@@ -33,6 +38,16 @@ export interface HighsLike {
 export interface SolveOptions extends ContextOptions {
   planId?: string;
   timeLimitS?: number;
+  /**
+   * Campañas de recetas (palanca de Fractal): "dia" ordena las recetas de cada línea una sola vez por día en vez de una
+   * vez por turno, así la línea recorre el orden de recetas una vez al día y se devuelve (CIP completo) menos.
+   */
+  campaign?: "turno" | "dia";
+  /**
+   * Campañas de las recetas pequeñas (palanca de Fractal): las recetas que no son la principal de su línea (la de más
+   * kilos en la demanda) solo se programan uno de cada `minorEvery` días, todas juntas.
+   */
+  minorEvery?: number;
 }
 
 interface Bucket {
@@ -70,16 +85,26 @@ export function solve(highs: HighsLike, model: SauceModel, portfolio: CustomerOr
   const rows: string[] = [];
   const bounds: string[] = [];
   const lineTerms = new Map<string, string[]>();
+  // Receta principal de cada línea: la de más kilos al día en la demanda.
+  const kgDay: Record<string, number> = {};
+  for (const d of model.demand) {
+    const p = model.products[d.product];
+    kgDay[p.bulk] = (kgDay[p.bulk] ?? 0) + d.daily * p.bulkKg;
+  }
+  const main = Object.fromEntries(Object.entries(model.lines).map(([k, l]) => [k, [...l.bulks].sort((x, y) => (kgDay[y] ?? 0) - (kgDay[x] ?? 0))[0]]));
+  const every = opt.minorEvery ?? 1;
+  const campaignDay = (bk: Bucket) => Math.floor(bk.start / 1440) % every === 0;
   jobs.forEach((j, ji) => {
     const kg = remaining(j) * j.bulkKg;
     const names: string[] = [];
     buckets.forEach((bk, b) => {
       if (bk.end <= j.release || cap[j.line][b] <= 0) return;
+      if (every > 1 && j.bulk !== main[j.line] && !campaignDay(bk)) return;
       const v = `x${ji}_${b}`;
       names.push(v);
       vars.set(v, { job: j, b });
       const lateH = Math.max(0, bk.end - j.due) / 60;
-      const c = (j.weight * lateH) / kg + (EARLY_NUDGE * b) / (B * kg);
+      const c = (j.weight * lateH) / kg + (LATE_NUDGE * (B - b)) / (B * kg);
       if (c > 1e-12) obj.push(term(c, v));
       bounds.push(`0 <= ${v} <= ${cap[j.line][b].toFixed(3)}`);
       const key = `${j.line}|${b}`;
@@ -120,9 +145,12 @@ export function solve(highs: HighsLike, model: SauceModel, portfolio: CustomerOr
   // la última que corrió: así la línea avanza y solo se devuelve (CIP completo) cuando da la vuelta.
   const cur: Record<string, string | undefined> = Object.fromEntries(Object.entries(ctx.lineState).map(([k, v]) => [k, v.bulk]));
   const byBucket = new Map<string, typeof amounts>();
-  for (const a of amounts.filter((x) => x.qty > 0)) (byBucket.get(`${a.job.line}|${a.b}`) ?? byBucket.set(`${a.job.line}|${a.b}`, []).get(`${a.job.line}|${a.b}`)!).push(a);
+  // Grupo de orden: el turno, o el día entero con campañas por día.
+  const group = (b: number) => (opt.campaign === "dia" ? Math.floor(buckets[b].start / 1440) : b);
+  const groups = [...new Set(buckets.map((_, b) => group(b)))];
+  for (const a of amounts.filter((x) => x.qty > 0)) (byBucket.get(`${a.job.line}|${group(a.b)}`) ?? byBucket.set(`${a.job.line}|${group(a.b)}`, []).get(`${a.job.line}|${group(a.b)}`)!).push(a);
   for (const lid of Object.keys(model.lines))
-    for (let b = 0; b < B; b++) {
+    for (const b of groups) {
       const list = byBucket.get(`${lid}|${b}`);
       if (!list) continue;
       const from = cur[lid] ? model.bulks[cur[lid]!].order : 0;

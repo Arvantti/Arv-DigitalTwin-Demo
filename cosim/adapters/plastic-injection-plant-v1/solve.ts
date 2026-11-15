@@ -27,11 +27,16 @@ const EARLY_NUDGE = 1e-3;
  *  - cambios: minimizar los cambios de referencia (molde + color) encendidos por turno.
  *  - cuellos: balancear la carga: minimizar la utilización de la máquina más cargada.
  *  - capacidad: ocupar la capacidad desde el inicio y terminar la cartera lo antes posible.
+ *  - energia: menos kWh (catalog/energy.yaml): cada unidad en la máquina que la hace con menos energía, y menos
+ *    días-máquina encendidos (cada día con trabajo cuesta un calentamiento en frío y la espera caliente del día). Si al
+ *    colocar atrasa más que cumplir entregas, se propone el plan de entregas.
  */
-export type Objective = "entregas" | "cambios" | "cuellos" | "capacidad";
-export const OBJECTIVES: Objective[] = ["entregas", "cambios", "cuellos", "capacidad"];
+export type Objective = "entregas" | "cambios" | "cuellos" | "capacidad" | "energia";
+export const OBJECTIVES: Objective[] = ["entregas", "cambios", "cuellos", "capacidad", "energia"];
 const CHANGE_WEIGHT = 1;
 const BALANCE_WEIGHT = 10;
+/** Peso de un kWh en el objetivo de energía (las entregas van como tope, así que la escala solo ordena). */
+const ENERGY_WEIGHT = 0.01;
 
 /** Lo mínimo que usamos de highs-js. */
 export interface HighsLike {
@@ -69,7 +74,7 @@ export interface SolveOptions {
 }
 
 /** Arma el modelo LP (formato CPLEX LP que lee HiGHS). Exportado para las pruebas. */
-export function buildLp(ctx: Context, colors = false, objective: Objective = "entregas", tardinessCap?: number): { lp: string; vars: Map<string, { job: Job; machine: string; b: number }>; buckets: Bucket[]; late: Map<string, number>; missVars: Map<string, Job>; nVars: number; nRows: number } {
+export function buildLp(ctx: Context, colors = false, objective: Objective = "entregas", tardinessCap?: number, energyScale = 1): { lp: string; vars: Map<string, { job: Job; machine: string; b: number }>; buckets: Bucket[]; late: Map<string, number>; missVars: Map<string, Job>; nVars: number; nRows: number } {
   const { model } = ctx;
   const cal = model.calendar;
   const buckets: Bucket[] = cal.shiftsBetween(ctx.start, ctx.horizonEnd).filter((s) => s.end > ctx.now);
@@ -103,6 +108,15 @@ export function buildLp(ctx: Context, colors = false, objective: Objective = "en
   const capacity = model.machines.map((m) => buckets.map((bk) => Math.max(0, 0.99 * cap(m, bk) - reserve(m))));
   const mi = new Map(model.machines.map((m, i) => [m, i]));
 
+  // Energía (objetivo "energia"): kWh por unidad en cada máquina con su molde, y lo que cuesta encender una máquina
+  // un día (calentamiento en frío + espera caliente de un turno, del perfil del molde montado).
+  const energy = objective === "energia" ? model.energy : undefined;
+  const profileOf = (m: string, tooling?: string) => {
+    const ps = energy?.injection[m];
+    return ps ? (ps[tooling ?? ""] ?? ps[model.initialTooling[m] ?? ""] ?? Object.values(ps)[0]) : undefined;
+  };
+  const dayOn = new Map<string, string[]>();
+  const dayCap = new Map<string, number>();
   const vars = new Map<string, { job: Job; machine: string; b: number }>();
   const jobVars: string[][] = [];
   /** Unidades que el modelo deja faltantes, por variable (el despacho no las ve: hay que reportarlas aparte). */
@@ -139,10 +153,20 @@ export function buildLp(ctx: Context, colors = false, objective: Objective = "en
           late.set(v, lateC);
           lateTerms.push(term(lateC, v));
         }
+        const prof = energy ? profileOf(m, j.step.tooling) : undefined;
         const c =
           objective === "entregas" ? (j.weight * lateH) / j.order.quantity + (EARLY_NUDGE * b) / (B * q)
           : objective === "capacidad" ? (j.weight * (b / B)) / q
+          : prof ? lateC + (energyScale * ENERGY_WEIGHT * prof.run_kw * j.step.unitMin) / 60 + (EARLY_NUDGE * b) / (B * q)
           : 0;
+        if (prof) {
+          const dk = `${k}_${Math.floor(bk.start / 1440)}`;
+          (dayOn.get(dk) ?? dayOn.set(dk, []).get(dk)!).push(term(j.step.unitMin, v));
+          if (!dayCap.has(`${dk}_${b}`)) {
+            dayCap.set(`${dk}_${b}`, capacity[k][b]);
+            dayCap.set(dk, (dayCap.get(dk) ?? 0) + capacity[k][b]);
+          }
+        }
         if (c > 1e-9) obj.push(term(c, v));
         (loadTerms.get(k) ?? loadTerms.set(k, []).get(k)!).push(term(j.step.unitMin, v));
         bounds.push(`0 <= ${v} <= ${(capacity[k][b] / j.step.unitMin).toFixed(3)}`);
@@ -183,6 +207,17 @@ export function buildLp(ctx: Context, colors = false, objective: Objective = "en
     }
     const big = (capacity[k][b] / Math.min(...vs.map((v) => vars.get(v)!.job.step.unitMin))).toFixed(3);
     rows.push(` k${ck}: ${wrap([...vs.map((v) => `+ ${v}`), `- ${big} ${y}`])} <= 0`);
+  }
+  // Energía: una máquina que trabaja un día queda encendida ese día (binaria z): paga el calentamiento en frío y la
+  // espera caliente de un turno. Así el solver agrupa la producción en menos días-máquina.
+  for (const [dk, ts] of dayOn) {
+    const [k] = dk.split("_").map(Number);
+    const p = profileOf(model.machines[k]);
+    if (!p) continue;
+    const z = `z${dk}`;
+    binaries.push(z);
+    obj.push(term(energyScale * ENERGY_WEIGHT * (p.heatup_kwh + p.standby_kw * 2), z));
+    rows.push(` e${dk}: ${wrap([...ts, `- ${(dayCap.get(dk) ?? 0).toFixed(3)} ${z}`])} <= 0`);
   }
   // Entregas como condición: el atraso no supera el del cálculo de entregas (tope), con cualquier otro objetivo.
   if (tardinessCap !== undefined && lateTerms.length) rows.push(` tope: ${wrap(lateTerms)} <= ${(tardinessCap * 1.0001 + 1e-6).toFixed(9)}`);
@@ -227,6 +262,26 @@ export function buildLp(ctx: Context, colors = false, objective: Objective = "en
 
 /** Resuelve la cartera y devuelve la programación propuesta por el cosimulador. */
 export function solve(highs: HighsLike, model: PlasticsModel, portfolio: CustomerOrders, opt: SolveOptions = {}): ProductionPlan {
+  if (opt.objective !== "energia") return solveOnce(highs, model, portfolio, opt);
+  // Energía: el tope de atraso se mide en el modelo por turnos, pero agrupar puede sumar cambios que al colocar atrasan
+  // algún pedido. Se compara con el plan de entregas ya colocado y, si atrasa más, se baja el peso de la energía frente
+  // al atraso; si nunca cumple (o no gasta menos), se propone el de entregas.
+  const base = solveOnce(highs, model, portfolio, { ...opt, objective: "entregas" });
+  for (const k of [1, 0.3, 0.1]) {
+    let plan: ProductionPlan;
+    try {
+      plan = solveOnce(highs, model, portfolio, opt, k);
+    } catch {
+      continue;
+    }
+    const ok = plan.kpis.late_orders <= base.kpis.late_orders && plan.kpis.tardiness_h <= base.kpis.tardiness_h + 0.05;
+    if (ok && (plan.energy?.kwh ?? Infinity) <= (base.energy?.kwh ?? 0)) return plan;
+  }
+  base.notes = [...(base.notes ?? []), "Agrupar para gastar menos energía atrasaba pedidos: se propone cumplir entregas."];
+  return base;
+}
+
+function solveOnce(highs: HighsLike, model: PlasticsModel, portfolio: CustomerOrders, opt: SolveOptions, energyScale = 1): ProductionPlan {
   const ctx = context(model, portfolio, opt.now, opt.previous, opt.events, opt.stops, opt.fixed);
   if (opt.dedicateColors)
     for (const j of ctx.jobs) {
@@ -246,7 +301,8 @@ export function solve(highs: HighsLike, model: PlasticsModel, portfolio: Custome
     tardinessCap = 0;
     for (const [name, col] of Object.entries(r0.Columns)) tardinessCap += ((col as { Primal?: number }).Primal ?? 0) * (base.late.get(name) ?? 0);
   }
-  const { lp, vars, buckets, missVars, nVars, nRows } = buildLp(ctx, opt.colors || objective === "cambios", objective, tardinessCap);
+  if (objective === "energia" && !model.energy) throw new Error("La planta no tiene datos de energía (catalog/energy.yaml).");
+  const { lp, vars, buckets, missVars, nVars, nRows } = buildLp(ctx, opt.colors || objective === "cambios", objective, tardinessCap, energyScale);
   const res = highs.solve(lp, solveOpts);
   const seconds = (performance.now() - t0) / 1000;
   if (!["Optimal", "Time limit reached"].includes(res.Status)) throw new Error(`El solver no encontró programación: ${res.Status}`);

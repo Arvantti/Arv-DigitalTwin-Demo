@@ -65,7 +65,7 @@ export function buildAps(opts: Options): { time: () => number; rate: () => numbe
       <div class="sim-controls"><a class="btn-link" href="/aps.html" target="_blank" rel="noopener">▦ ABRIR APS · PEDIDOS Y GANTT</a></div>
       <div class="sim-controls"><button class="btn-link alt" id="open-mini" type="button" title="Emulador 2D y Gantt del APS en miniatura sobre el 3D">◫ EMULADOR DE PLANTA · 2D</button></div>
       <div class="sim-controls"><a class="btn-link" href="/control.html" target="_blank" rel="noopener">◉ CENTRO DE CONTROL</a></div>
-      <div class="sim-controls"><a class="btn-link alt" href="/presentaciones.html" target="_blank" rel="noopener">▶ PRESENTACIONES · RESULTADOS</a></div>`;
+      <div class="sim-controls"><a class="btn-link alt" href="https://www.arvantti.tech/presentaciones" target="_blank" rel="noopener">▶ PRESENTACIONES · RESULTADOS</a></div>`;
   };
   section.addEventListener("click", (e) => (e.target as HTMLElement).closest("#open-mini") && toggleMini());
   render();

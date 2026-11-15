@@ -1,0 +1,131 @@
+{
+  "nota": "Versión vertical 9:16 para redes (60–90 s). Reutiliza las tomas del video largo; sólo la voz es nueva.",
+  "tomas": [
+    {
+      "id": "V1",
+      "clips": [
+        "0-S01-orbita"
+      ],
+      "crop": [
+        420,
+        0,
+        1080
+      ],
+      "titulo": [
+        "GEMELO DIGITAL",
+        "Planta de salsas"
+      ],
+      "texto": "Este es el gemelo digital de una planta de salsas: cada máquina, cada tanque y cada pedido, en 3D."
+    },
+    {
+      "id": "V2",
+      "clips": [
+        "0-S03-ruta"
+      ],
+      "crop": [
+        420,
+        0,
+        1080
+      ],
+      "vel": 2.2,
+      "titulo": [
+        "Cada salsa,",
+        "paso a paso"
+      ],
+      "texto": "Sigue cada salsa desde la marmita hasta la llenadora, en el pasado, el presente y el futuro."
+    },
+    {
+      "id": "V3",
+      "clips": [
+        "1-S01"
+      ],
+      "crop": [
+        0,
+        40,
+        1000
+      ],
+      "titulo": [
+        "Cambiar de salsa",
+        "cuesta horas"
+      ],
+      "texto": "Programar esta planta es difícil: entre una salsa y otra hay que lavar la línea, y los alérgenos no se pueden mezclar.",
+      "ss": 1.2
+    },
+    {
+      "id": "V4",
+      "clips": [
+        "0b-S04",
+        "0b-S05"
+      ],
+      "crop": [
+        0,
+        0,
+        1000
+      ],
+      "titulo": [
+        "Tus pedidos,",
+        "a mano"
+      ],
+      "texto": "Aquí cargas los pedidos a mano: los creas, los arrastras a cada llenadora y guardas versiones."
+    },
+    {
+      "id": "V5",
+      "clips": [
+        "1-S03"
+      ],
+      "crop": [
+        0,
+        40,
+        1000
+      ],
+      "titulo": [
+        "El plan completo",
+        "en menos de 1 segundo"
+      ],
+      "texto": "El APS, el programador de la producción, arma el plan de toda la planta en menos de un segundo."
+    },
+    {
+      "id": "V6",
+      "clips": [
+        "3-S02",
+        "3-S03"
+      ],
+      "crop": [
+        0,
+        40,
+        1000
+      ],
+      "titulo": [
+        "Se daña una llenadora:",
+        "11 pedidos salvados"
+      ],
+      "texto": "Si una llenadora se daña, replanea al instante y salva once pedidos."
+    },
+    {
+      "id": "V7",
+      "clips": [
+        "4-S03"
+      ],
+      "crop": [
+        0,
+        80,
+        1000
+      ],
+      "titulo": [
+        "−6 h de lavado",
+        "−1 t de merma"
+      ],
+      "texto": "Y Fractal compara escenarios: organizando la planta en campañas por día, quita casi seis horas de lavado y una tonelada de merma, sin atrasar a nadie."
+    },
+    {
+      "id": "V8",
+      "clips": [],
+      "cierre": true,
+      "titulo": [
+        "Decide antes",
+        "de que pase"
+      ],
+      "texto": "Fractal recomienda; la persona decide. Arvantti: decide antes de que pase."
+    }
+  ]
+}

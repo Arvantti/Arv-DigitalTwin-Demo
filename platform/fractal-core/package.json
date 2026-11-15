@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Plataforma: contrato fractal-study.v1 y bucle de estudio (variantes, cosimulador, puntaje, mejor opción)",
+  "description": "Plataforma: contrato fractal-study.v1, bucle de estudio, generador genético (NSGA-II) y evaluador enchufable",
   "exports": {
     ".": "./index.ts",
     "./*": "./*"

@@ -5,6 +5,7 @@
  * - Masterbatch por color: la dosificación del catálogo sobre la resina del trabajo.
  * - Horas de máquina, turnos-máquina (8 h) y cambios de color por recurso.
  * - Horas de operario: las de la ruta (ensamble) y, en inyección, un operario cada 4 inyectoras con orden (supuesto).
+ * - Energía por día en kWh (sin precio): inyectoras y servicios, con los perfiles de catalog/energy.yaml.
  *
  * Un trabajo que cruza el borde de la ventana o de un día se reparte por su tiempo de trabajo. Todo es supuesto,
  * como el catálogo del que sale.
@@ -14,6 +15,7 @@ import type { PlanScheduleRow, ProductionPlan } from "@twin/cosim/core/contracts
 import toolingYaml from "../../../industrial-models/plastic-injection-plant-v1/catalog/tooling.yaml?raw";
 import materialsYaml from "../../../industrial-models/plastic-injection-plant-v1/catalog/materials.yaml?raw";
 import productsYaml from "../../../industrial-models/plastic-injection-plant-v1/catalog/products.yaml?raw";
+import { energyByDay } from "@twin/cosim/adapters/plastic-injection-plant-v1/energy.ts";
 import { model, now } from "./aps-store.ts";
 import { dayTag, esc, nf } from "./schedule.ts";
 
@@ -120,6 +122,10 @@ export function renderInsumos(el: HTMLElement, plan: ProductionPlan): void {
   const shiftH = model.calendar.spans.reduce((s, [a, b]) => s + (b - a), 0) / 60 / model.calendar.spans.length;
   const machines = [...n.machineH.keys()].sort();
   const label = (m: string) => m.replace("assembly-", "ENSAMBLE-").toUpperCase();
+  const energy = energyByDay(model, plan, days);
+  const kwhWeek = sum([...energy.values()].map(sum));
+  const services = model.energy?.services ?? {};
+  const injKwh = sum([...energy.entries()].filter(([id]) => !services[id]).map(([, v]) => sum(v)));
   const kpi = (v: string, l: string) => `<div class="aps-kpi"><b>${v}</b><small>${l}</small></div>`;
 
   el.innerHTML = `
@@ -129,6 +135,7 @@ export function renderInsumos(el: HTMLElement, plan: ProductionPlan): void {
       ${kpi(`${nf(machH, 0)} h`, `máquina · ${machines.length} recursos`)}
       ${kpi(nf(machH / shiftH, 0), `turnos-máquina de ${nf(shiftH, 0)} h`)}
       ${kpi(`${nf(opH, 0)} h`, `operario · ${nf(opH / shiftH, 0)} turnos-persona`)}
+      ${energy.size ? kpi(`${nf(kwhWeek, 0)} kWh`, `energía · ${resinKg ? nf(kwhWeek / resinKg, 2) : "—"} kWh/kg de resina`) : ""}
     </div>
     <p class="dim small">Lo que pide la programación <b>${esc(plan.plan_id)}</b> en la semana que empieza hoy (${days.length} días con turnos). Resina = unidades / cavidades × peso de la inyección con colada; masterbatch = dosificación del catálogo sobre esa resina; en inyección, un operario cada ${IMM_PER_OPERATOR} inyectoras con orden. Valores supuestos del catálogo.</p>
     <h3 class="aps-h3">MATERIA PRIMA (kg)</h3>
@@ -151,5 +158,16 @@ export function renderInsumos(el: HTMLElement, plan: ProductionPlan): void {
         ${machines.map((m) => row(label(m), n.machineH.get(m)!, (x) => nf(x, 1), `<td class="num">${nf(sum(n.machineH.get(m)!) / shiftH, 1)}</td><td class="num">${n.changeH.get(m) ? `${nf(n.changeH.get(m)!, 1)} h` : "—"}</td>`)).join("")}
         ${row("<b>Operarios (h)</b>", n.operatorH, (x) => nf(x, 1), `<td class="num">${nf(opH / shiftH, 1)}</td><td></td>`)}
       </tbody>
-    </table></div>`;
+    </table></div>
+    ${energy.size ? `<h3 class="aps-h3">ENERGÍA (kWh)</h3>
+    <p class="dim small">Inyectoras: produciendo, en espera caliente entre lotes y durante cambios, y el calentamiento antes del primer lote del día (fuera de turno se apagan). Servicios: su potencia nominal por la fracción de la producción que atienden; los equipos de respaldo no suman. Los kW salen de los modelos físicos de la librería (catalog/energy.yaml); solo kWh, sin precio.</p>
+    <div class="aps-table-wrap"><table class="route-table aps-table">
+      <thead><tr><th>Equipo</th>${head.join("")}<th class="num">Semana</th></tr></thead>
+      <tbody>
+        ${[...energy.entries()].filter(([id]) => !services[id] && sum(energy.get(id)!) >= 0.5).sort(([a], [b]) => a.localeCompare(b)).map(([id, v]) => row(label(id), v, (x) => nf(x, 0))).join("")}
+        ${Object.entries(services).filter(([id]) => energy.has(id)).map(([id, s]) => row(esc(s.name ?? id), energy.get(id)!, (x) => nf(x, 0))).join("")}
+        ${row("<b>Total</b>", days.map((_, i) => sum([...energy.values()].map((v) => v[i]))), (x) => nf(x, 0))}
+      </tbody>
+    </table></div>
+    <p class="dim small">Inyectoras ${nf(injKwh, 0)} kWh · servicios ${nf(kwhWeek - injKwh, 0)} kWh en la semana.</p>` : ""}`;
 }

@@ -1,0 +1,145 @@
+{
+  "nota": "Versión vertical 9:16 para redes (~60 s). Las tomas salen del video largo (horizontal 1920x1080): desde/hasta en segundos y x = recorte cuadrado de 904 px dentro de la pantalla (x 158..1762, y 72..976). Sólo la voz y la música son nuevas.",
+  "tomas": [
+    {
+      "id": "V1",
+      "clips": [
+        {
+          "desde": 9,
+          "hasta": 23,
+          "x": 350
+        }
+      ],
+      "titulo": [
+        "GEMELO DIGITAL",
+        "Planta de plásticos"
+      ],
+      "texto": "Este es el gemelo digital de una planta de inyección de plásticos: doce inyectoras, ensamble y almacenes, en 3D."
+    },
+    {
+      "id": "V2",
+      "clips": [
+        {
+          "desde": 445,
+          "hasta": 458,
+          "x": 0
+        }
+      ],
+      "titulo": [
+        "Cada máquina,",
+        "en vivo"
+      ],
+      "texto": "Cada máquina envía sus datos en tiempo real al centro de control."
+    },
+    {
+      "id": "V3",
+      "clips": [
+        {
+          "desde": 170,
+          "hasta": 181,
+          "x": 350
+        }
+      ],
+      "titulo": [
+        "El plan",
+        "de producción"
+      ],
+      "texto": "En el APS, el programador de producción, cada barra es una orden y cada rombo, su fecha de entrega."
+    },
+    {
+      "id": "V4",
+      "clips": [
+        {
+          "desde": 345,
+          "hasta": 349.5,
+          "x": 330
+        },
+        {
+          "desde": 359.5,
+          "hasta": 366,
+          "x": 0
+        }
+      ],
+      "titulo": [
+        "Primero las reglas,",
+        "luego el cálculo"
+      ],
+      "texto": "Primero se le enseñan al cosimulador las reglas de la planta: moldes, turnos y entregas. Luego calcula el plan en menos de un segundo."
+    },
+    {
+      "id": "V5",
+      "clips": [
+        {
+          "desde": 369,
+          "hasta": 385,
+          "x": 350
+        }
+      ],
+      "titulo": [
+        "Más pedidos",
+        "a tiempo"
+      ],
+      "texto": "Resultado: dos pedidos tarde menos y noventa horas de máquina libres en la semana."
+    },
+    {
+      "id": "V6",
+      "clips": [
+        {
+          "desde": 764.6,
+          "hasta": 765.9,
+          "x": 0
+        },
+        {
+          "desde": 767.3,
+          "hasta": 772,
+          "x": 330
+        }
+      ],
+      "titulo": [
+        "Falla una",
+        "inyectora"
+      ],
+      "texto": "Si una inyectora falla, el centro de control recibe la alarma al instante."
+    },
+    {
+      "id": "V7",
+      "clips": [
+        {
+          "desde": 805,
+          "hasta": 824,
+          "x": 350
+        }
+      ],
+      "vel": 1.3,
+      "titulo": [
+        "Fractal",
+        "recomienda"
+      ],
+      "texto": "Fractal prueba escenarios con esas mismas reglas y recomienda montar un molde de repuesto: de diez a siete pedidos tarde."
+    },
+    {
+      "id": "V8",
+      "clips": [
+        {
+          "desde": 889,
+          "hasta": 910,
+          "x": 350
+        }
+      ],
+      "titulo": [
+        "Y lo ves",
+        "en 3D"
+      ],
+      "texto": "Y con el play, el gemelo 3D muestra el cambio de molde en la planta."
+    },
+    {
+      "id": "V9",
+      "cierre": true,
+      "titulo": [
+        "Arvantti",
+        "DigitalTwin"
+      ],
+      "texto": "Arvantti DigitalTwin: programa tu planta antes de que pase."
+    }
+  ]
+}

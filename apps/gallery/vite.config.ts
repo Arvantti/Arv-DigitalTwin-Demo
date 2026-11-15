@@ -16,6 +16,6 @@ export default defineConfig({
   } },
   build: {
     chunkSizeWarningLimit: 2000,
-    rollupOptions: { input: { index: "index.html", accessAdmin: "access-admin.html", equipos: "equipos.html", plant: "plant.html", plc: "plc.html", plcMockup: "plc-mockup.html", ciudad: "ciudad.html", aps: "aps.html", emulador: "emulador.html", control: "control.html", presentaciones: "presentaciones.html", arquitectura: "arquitectura.html", cotizador: "cotizador.html", resumenPlasticos: "resumen-plasticos.html", apsSalsas: "aps-salsas.html" } },
+    rollupOptions: { input: { index: "index.html", accessAdmin: "access-admin.html", equipos: "equipos.html", plant: "plant.html", plc: "plc.html", plcMockup: "plc-mockup.html", ciudad: "ciudad.html", aps: "aps.html", emulador: "emulador.html", control: "control.html", arquitectura: "arquitectura.html", resumenPlasticos: "resumen-plasticos.html", apsSalsas: "aps-salsas.html", emuladorSalsas: "emulador-salsas.html", controlSalsas: "control-salsas.html" } },
   },
 });

@@ -14,7 +14,7 @@ las cinco presentaciones y muestra la planta: emulador, centro de control, gemel
 | Capítulo | Contenido | Guion | Material |
 |---|---|---|---|
 | 0 · Apertura | Qué es el gemelo y cómo se conectan sus partes | sección 4 de este documento | capturas de los escenarios 1 y 3 |
-| 1 · Calcular la programación | De los pedidos a un plan con más entregas a tiempo y menos horas de máquina | [guion](1-calcular-programacion/guion.md) | `1-calcular-programacion/` |
+| 1 · Calcular la programación | De los pedidos a un plan con más entregas a tiempo y menos horas de máquina; incluye cómo se cargan los datos a mano (pestaña ⚙ CONFIGURACIÓN) | [guion](1-calcular-programacion/guion.md) | `1-calcular-programacion/` y `configuracion/` |
 | 2 · Cambio de fecha de un pedido | Un cliente adelanta su pedido un día | [guion](2-cambio-fecha-pedido/guion.md) | `2-cambio-fecha-pedido/` |
 | 3 · Contingencia | Falla de una inyectora y plan de reemplazo | [guion](3-contingencia-falla/guion.md) | `3-contingencia-falla/` |
 | 4 · Pedidos fijados | El planificador bloquea órdenes a mano y Fractal reorganiza el resto | [guion](4-pedidos-fijados/guion.md) | `4-pedidos-fijados/` |

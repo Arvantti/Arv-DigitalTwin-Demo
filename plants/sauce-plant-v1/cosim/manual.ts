@@ -32,7 +32,8 @@ export function manualSequence(model: SauceModel, portfolio: CustomerOrders, pla
 /**
  * El plan manual en el tiempo: cada línea hace los pedidos de su granel en el orden en que el planificador los puso
  * (por llegada) y los llena en la llenadora que eligió. Los pedidos que no están en la secuencia (llegaron después o se
- * agregaron a mano) van al final de su línea, por entrega, en la llenadora que pueda empezar antes.
+ * agregaron a mano) van al final de su línea, por entrega, en la llenadora que pueda empezar antes. Con keep_order se
+ * respeta el orden que el planificador puso en cada llenadora.
  */
 export function manualPlan(model: SauceModel, portfolio: CustomerOrders, manual: ManualSequence, opt: ContextOptions = {}): ProductionPlan {
   const ctx = context(model, portfolio, opt);
@@ -46,10 +47,23 @@ export function manualPlan(model: SauceModel, portfolio: CustomerOrders, manual:
   const jobs = [...ctx.jobs.values()].filter((j) => j.qty - (ctx.done[j.order.id] ?? 0) > 0);
   const listed = jobs.filter((j) => fillerOf.has(j.order.id) && model.products[j.order.product].fillers.includes(fillerOf.get(j.order.id)!));
   const rest = jobs.filter((j) => !listed.includes(j)).sort((a, b) => a.due - b.due || a.order.id.localeCompare(b.order.id));
+  // keep_order (pantalla CONFIGURACIÓN): el planificador ordenó cada llenadora a mano. Cada llenadora conserva sus
+  // turnos de llegada, pero en el orden que él puso: el pedido en la posición i toma la i-ésima llegada de su llenadora.
+  // Una secuencia sin reordenar da lo mismo que por llegada.
+  const keep = (manual as ManualSequence & { keep_order?: boolean }).keep_order === true;
+  const slot = new Map<string, number>();
+  if (keep) {
+    const live = new Set(listed.map((j) => j.order.id));
+    for (const ids of Object.values(manual.sequence)) {
+      const mine = ids.filter((id) => live.has(id));
+      const times = mine.map((id) => arrival(id)[0]).sort((a, b) => a - b);
+      mine.forEach((id, i) => slot.set(id, times[i]));
+    }
+  }
   listed.sort((a, b) => {
     const [ta, ia] = arrival(a.order.id);
     const [tb, ib] = arrival(b.order.id);
-    return ta - tb || ia.localeCompare(ib);
+    return (keep ? slot.get(a.order.id)! - slot.get(b.order.id)! : 0) || ta - tb || ia.localeCompare(ib);
   });
   for (const j of [...listed, ...rest]) queues[j.line].push({ job: j, qty: j.qty - (ctx.done[j.order.id] ?? 0), filler: fillerOf.get(j.order.id), notBefore: ctx.now });
   return toPlan(ctx, portfolio, dispatch(ctx, queues), { planId: manual.plan_id, source: "manual", notes: [manual.note ?? "Secuencia del planificador."] });

@@ -1,0 +1,38 @@
+{
+  "project": "Arvantti Harness · video horizontal",
+  "topic": "Video comercial de Arvantti Harness para directivos",
+  "channel": "Presentación comercial (no se publica desde aquí)",
+  "audience": "Directivos C-level",
+  "voiceover": "sí",
+  "claimsSource": "claims.json",
+  "engine": "hyperframes",
+  "brand": "arvantti",
+  "sharedComponents": "assets/shared/core",
+  "format": "horizontal",
+  "width": 1920,
+  "height": 1080,
+  "fps": 25,
+  "durationSeconds": 106,
+  "safeArea": {
+    "left": 154,
+    "right": 1766,
+    "top": 108,
+    "bottom": 972
+  },
+  "audio": {
+    "voiceover": "escenas/<escena>/assets/audio/voiceover.mp3",
+    "musica": "assets/clips/musica-epica.mp3 (ElevenLabs Music)",
+    "subtitles": "no",
+    "sfxDirectory": "assets/shared/core/sfx"
+  },
+  "branding": {
+    "sharedAssets": "assets/shared",
+    "logo": "assets/clips/marca.png (símbolo recortado del logo)"
+  },
+  "qa": {
+    "requireFullTimelineCoverage": true,
+    "requireSafeArea": true,
+    "requireAudioCheck": true,
+    "requireKeyframes": true
+  }
+}

@@ -2,7 +2,7 @@
  * Lo que muestra el APS de salsas, sin DOM: estado de cada pedido frente a AHORA, filas del Gantt (líneas de proceso y
  * llenadoras) y la comparación de indicadores entre dos programaciones. Las pruebas lo cubren; aps.ts solo lo pinta.
  */
-import { DAY_MIN, parseLocal, type PlanOrderRow, type ProductionPlan } from "@twin/cosim-core";
+import { DAY_MIN, parseLocal, type PlanKpis, type PlanOrderRow, type ProductionPlan } from "@twin/cosim-core";
 import type { SauceModel } from "@plants/sauce-plant-v1-cosim/model.ts";
 
 /** AHORA de la demo: día 9, miércoles 4 de noviembre de 2026 a las 10:00 (día 0 = lunes 26 de octubre). */
@@ -173,4 +173,27 @@ export function score(model: SauceModel, plan: ProductionPlan): number {
   const formatH = Math.max(0, k.changeover_h - (k.cip_h ?? 0));
   const s = (w.tardiness_h ?? 0) * k.tardiness_h + (w.late_orders ?? 0) * k.late_orders + (w.cip_h ?? 0) * (k.cip_h ?? 0) + (w.format_change_h ?? 0) * formatH + (w.waste_kg ?? 0) * (k.waste_kg ?? 0);
   return Math.round(s * 10) / 10;
+}
+
+/** Pedidos que se pueden adelantar en Fractal: no han empezado en AHORA y entregan de pasado mañana en adelante. */
+export function movableOrders(plan: ProductionPlan, now: number): PlanOrderRow[] {
+  return plan.orders.filter((o) => parseLocal(o.start) > now && parseLocal(o.due) >= now + 2 * DAY_MIN).sort((a, b) => parseLocal(a.due) - parseLocal(b.due) || a.id.localeCompare(b.id));
+}
+
+/** Equipos que se pueden poner en falla desde la pantalla: la caldera, el equipo de cada línea y las llenadoras. */
+export function failureCandidates(model: SauceModel): { id: string; label: string }[] {
+  const lines = Object.values(model.lines).flatMap((l) => [...l.downWith.filter((x) => x.startsWith("boiler")), l.equipment[0]].map((id) => ({ id, label: `${id} · para ${l.id}` })));
+  return [...lines, ...model.fillers.map((id) => ({ id, label: `${id} · solo esa llenadora` }))];
+}
+
+/** Lo que compara Fractal entre la vigente y una opción (menor es mejor en todos). */
+export function studyKpis(baseline: PlanKpis, option: PlanKpis): KpiDelta[] {
+  const pick: [string, string, string, number, number][] = [
+    ["late_orders", "Pedidos tarde", "", baseline.late_orders, option.late_orders],
+    ["tardiness_h", "Atraso total", "h", baseline.tardiness_h, option.tardiness_h],
+    ["cip_h", "Horas de CIP", "h", baseline.cip_h ?? 0, option.cip_h ?? 0],
+    ["format_h", "Otros cambios", "h", Math.max(0, baseline.changeover_h - (baseline.cip_h ?? 0)), Math.max(0, option.changeover_h - (option.cip_h ?? 0))],
+    ["waste_kg", "Merma de granel", "kg", baseline.waste_kg ?? 0, option.waste_kg ?? 0],
+  ];
+  return pick.map(([key, label, unit, before, after]) => ({ key: key as KpiDelta["key"], label, unit, before: Math.round(before * 10) / 10, after: Math.round(after * 10) / 10, better: after < before - 1e-9, worse: after > before + 1e-9 }));
 }

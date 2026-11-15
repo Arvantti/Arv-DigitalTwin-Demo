@@ -131,6 +131,37 @@ repuesto de Fractal. Las máquinas conservan sus ids. La demanda diaria de `cata
 (unidades / cavidades × peso de inyección con colada), los kg de masterbatch por color, las unidades por producto, las
 horas de máquina, los turnos-máquina, los cambios de color y las horas de operario (`apps/gallery/src/insumos.ts`).
 
+**Energía** (`catalog/energy.yaml`, decisiones de Andy del 2026-11-10; solo kWh, sin precio ni franjas): el archivo lo
+genera `uv run python tools/energy/perfil_energia_plasticos.py --write` corriendo el modelo físico de la inyectora de la
+librería con cada molde que le cabe a cada máquina: kW produciendo, en espera caliente y apagada, y minutos y kWh del
+calentamiento en frío (una prueba avisa si la librería cambia y el archivo queda viejo). El cosimulador
+(`cosim/adapters/plastic-injection-plant-v1/energy.ts`) cuenta, para cada plan: producción a `run_kw`; cambios, purgas
+y huecos entre lotes del mismo día en espera caliente; un calentamiento antes del primer lote de cada día, porque fuera
+de turno (22:00-06:00 y domingo) las inyectoras se apagan. Los servicios (enfriador de moldes, secadores de PS y de PP
+reciclado, compresor y transporte de resina) piden lo que necesitan las 11 inyectoras con molde produciendo, por la
+fracción de producción de cada momento; los equipos de respaldo no suman. Cada plan trae `energy` y los KPI
+`energy_kwh`, `kwh_per_kg` y `peak_kw` (mayor media de 15 min). El APS los muestra en la propuesta, en la comparación de
+versiones y en la tabla ENERGÍA de INSUMOS (kWh por equipo y día). Con la cartera de la demo el plan del cosimulador
+gasta unos 57.500 kWh en el horizonte (0,81 kWh/kg); dejar las inyectoras calientes de noche subiría bastante esa cifra
+(escenario 6 de Fractal, abajo).
+
+**Objetivo «energía» al calcular** (`solve.ts`, `objective: "energia"`): cada pieza cuesta los kWh de producirla en esa
+inyectora (`run_kw` × minutos) y cada día-máquina encendido cuesta su calentamiento en frío más dos horas de espera
+caliente, así el cosimulador prefiere la máquina que gasta menos y agrupa la producción en menos días. Las entregas
+siguen como tope: el atraso del modelo no pasa el de cumplir entregas, y si al colocar los lotes atrasa más pedidos,
+baja el peso de la energía o, como último recurso, propone el plan de entregas. Con la cartera de la demo baja poco (≈ 57.100 frente a
+57.968 kWh) porque el plan ya apaga fuera de turno; el ahorro grande es apagar frente a dejar calientes.
+
+**Potencia en vivo con variación**: el mismo generador mide en el modelo físico el pico de la inyección (`run_peak_kw`),
+la variación de la potencia media de cada minuto produciendo (`run_sd_pct`) y la potencia al encender en frío
+(`heatup_peak_kw`), y toma el límite de la acometida de la placa del transformador (3.000 kVA × factor de potencia
+0,9 = 2.700 kW). `powerAt` y `plantPowerAt` (`energy.ts`) dan los kW de cada máquina y de la planta en cualquier
+instante, con ruido reproducible por máquina y minuto; el calentamiento arranca con las resistencias a tope y baja
+hacia la espera caliente con la misma energía del modelo; una máquina en falla del emulador cuenta apagada. El centro
+de control muestra los kW de la planta contra el transformador, inyectoras y servicios, los kWh del día y la curva del
+día; cada tarjeta, el emulador 2D y el PLC del gemelo 3D muestran los kW de la máquina (y en el PLC, los kWh del día).
+Todo sigue el instante del play del gemelo.
+
 ## Centro de control, PLC por máquina y play
 
 - `control.html` (centro de control): recibe las señales de los PLC de todas las máquinas. OEE de la planta y de cada
@@ -202,6 +233,11 @@ puede VER EN GANTT y ADOPTAR, no solo la recomendada; la adoptada queda vigente 
 4. **Menos cambios de referencia**: compara recolocar con dedicar cada color a las máquinas que ya lo tienen montado
    (`dedicateColors` del cosimulador). Con la cartera de la demo, IMM-21 queda en azul e IMM-23 en blanco: de 30 a 12
    cambios y de 22,5 a 9 h de cambio, sin pedidos tarde de más. Guion y capturas en `docs/demo-plasticos/5-menos-cambios/`.
+5. **Menos energía** (solo kWh, `catalog/energy.yaml`): desde AHORA compara dejar las inyectoras calientes de noche
+   (espera caliente de 22:00 a 06:00 y el domingo, sin calentamientos), apagarlas fuera de turno (como la vigente) y
+   apagar y agrupar la producción (cosimulador con el objetivo «energía»). Suma kWh/100 al puntaje. Con la cartera de la
+   demo: calientes 33.741 kWh, apagar y agrupar 23.876 kWh con 49 calentamientos (vigente 24.729 y 65): 29 % menos que
+   calientes, sin pedidos tarde de más. Guion y capturas en `docs/demo-plasticos/6-energia/`.
 
 4. **Órdenes fijadas a mano**: el planificador bloquea órdenes en el Gantt (candado 🔓/🔒 o arrastrándolas a su fecha) y
    Fractal organiza el resto sin moverlas: prueba solo reorganizar y montar el molde de repuesto en una inyectora libre
@@ -215,11 +251,10 @@ Moldes de repuesto de la demo (`aps/aps.yaml`): uno de balde de 12 L y uno de cu
 
 Capturas y guiones de narración por escenario en [`docs/demo-plasticos/`](demo-plasticos/README.md).
 
-**Presentaciones en el sitio** (`presentaciones.html`, enlazada desde el APS y el panel del gemelo 3D): una por escenario,
-armada al compilar con los `guion.md` y las capturas de `docs/demo-plasticos/`: portada, una lámina por segmento con su
-captura, lo que se señala y las notas del orador, y un cierre con las cifras del frontmatter (`cifras`). Cada lámina
-tiene **ABRIR EN VIVO**, que abre la pantalla real que muestra la captura. Teclas: ← → o espacio, N notas, F pantalla
-completa, Esc volver; `?esc=2&s=4` abre una lámina.
+**Presentaciones en arvantti.tech** (https://www.arvantti.tech/presentaciones, enlazadas desde el APS y el panel del gemelo 3D; se generan desde los guiones de este repo): una por escenario, con portada, una lámina por segmento con su captura, lo que
+se señala y las notas del orador, y un cierre con las cifras del frontmatter (`cifras` y `ahorro`). Cada lámina tiene
+**VER EN VIVO**, que abre aquí la pantalla real que muestra la captura. Si cambia un guion o una captura, hay que
+regenerarlas en el repo andresquiceno/arvantti-labs-site.
 
 ## Siguiente
 

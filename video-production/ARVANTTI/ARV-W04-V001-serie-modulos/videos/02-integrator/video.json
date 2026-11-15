@@ -1,0 +1,35 @@
+{
+  "id": "02-integrator",
+  "salida": "serie-02-integrator",
+  "modulo": 1,
+  "kicker": "MÓDULO 1 · INTEGRATOR",
+  "escenas": {
+    "gancho": {
+      "voz": "Tu planta tiene los datos. Están en cinco lugares distintos. Júntalos en el gemelo 3D.",
+      "titulo": "Tu planta tiene los datos. Están en 5 lugares distintos.",
+      "ventanas": ["Excel", "ERP", "Correo", "WhatsApp", "Cuaderno"]
+    },
+    "dolor": {
+      "voz": "¿Cuántas horas a la semana pasa tu equipo copiando datos de un sistema a otro? En la fábrica, en la bodega, en la planta de procesos y en la red de servicios pasa lo mismo.",
+      "cortes": ["¿Cuántas", "En la fábrica", "en la bodega", "en la planta de procesos", "en la red"],
+      "saltarPrimero": true,
+      "items": [
+        ["Manufactura", "El pedido está en el ERP, el avance en un Excel y la parada en un grupo de WhatsApp.", "p-inyectoras"],
+        ["Logística", "El inventario del sistema no coincide con lo que hay en la estantería.", "logistica"],
+        ["Procesos", "Las temperaturas del SCADA nunca llegan al reporte de calidad.", "salsas"],
+        ["Servicios con procesos", "Las lecturas de las bombas están en un sistema y los reclamos de los usuarios en otro.", "red"]
+      ]
+    },
+    "solucion": {
+      "tipo": "integrator",
+      "voz": "Los pedidos viven en el ERP, que es el sistema donde la empresa registra ventas, compras e inventario. Los clientes en el CRM, el sistema de ventas y clientes. Y las máquinas en el SCADA, el sistema que vigila y controla los equipos de la planta. Ninguno habla con el otro. Integrator los conecta con el gemelo digital. Los pedidos entran solos, el inventario se actualiza solo y lo que pasa en las máquinas llega al plan. Sin copiar y pegar. Sin versiones distintas de la verdad."
+    },
+    "modulos": {
+      "voz": "Módulo uno de siete. Lo conectamos a la medida de los sistemas que ya tienes."
+    },
+    "cierre": {
+      "voz": "Cuéntame qué sistemas usas y te digo cómo los conectamos. Arvantti. Decide antes de que pase.",
+      "cta": "Cuéntame qué sistemas usas y te digo <b>cómo los conectamos</b>"
+    }
+  }
+}

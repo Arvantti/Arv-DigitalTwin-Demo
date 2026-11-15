@@ -18,11 +18,13 @@ import "./aps.css";
 import "./movil.css";
 import type { CustomerOrder, Importance, ProductionPlan } from "@twin/cosim/core/contracts.ts";
 import type { Objective } from "@twin/cosim/adapters/plastic-injection-plant-v1/solve.ts";
-import { activeEvents, addedOrders, baseManual, molds, modelNow, manualPlan, model, now, onChange, portfolio, resetDemo, setAdded, setVigente, setViewed, setViewMode, SOURCE_NAMES, useDemoDays, vigente, viewedPlan, viewMode } from "./aps-store.ts";
+import { activeConfig, activeEvents, addedOrders, currentManual, molds, modelNow, manualPlan, model, now, onChange, portfolio, resetDemo, setAdded, setVigente, setViewed, setViewMode, SOURCE_NAMES, useDemoDays, vigente, viewedPlan, viewMode } from "./aps-store.ts";
 import { cachedVersion, deleteVersion, exportVersions, importVersions, loadVersion as loadVersionData, renameVersion, saveVersion, setViewedVersionId, versions, viewedVersionId, type SavedVersion } from "./aps-store.ts";
 import { editedPlan, moveChunk, queuesOf, type EditChunk, type ManualEdit } from "@twin/cosim/adapters/plastic-injection-plant-v1/manual.ts";
+import { planEnergy } from "@twin/cosim/adapters/plastic-injection-plant-v1/energy.ts";
 import { COLOR_NAMES, day, esc, nf, relativeDays, when } from "./schedule.ts";
 import { renderInsumos } from "./insumos.ts";
+import { mountConfig } from "./aps-config.ts";
 import { plantLoadAt } from "./plant-state.ts";
 import type { FractalStudy } from "@twin/fractal-manufacturing/contracts.ts";
 import type { StudyInput } from "@twin/fractal-manufacturing/models/plastic-injection-plant-v1/study.ts";
@@ -58,7 +60,7 @@ let proposal: ProductionPlan | null = null;
 /** Escenarios que devolvió CALCULAR (A: cumplir entregas; B: menos cambios sin empeorar entregas), para elegir entre ellos. */
 let alternatives: { id: string; label: string; plan: ProductionPlan }[] = [];
 let current = vigente();
-const TABS = ["orders", "gantt", "versions", "insumos", "fractal"];
+const TABS = ["orders", "gantt", "versions", "insumos", "fractal", "config"];
 let tab = TABS.find((x) => x === new URLSearchParams(location.search).get("tab")) ?? "orders";
 let selected: string | null = null;
 /** Órdenes que la persona desmarcó en el Gantt (no se dibujan arriba y sus lotes se atenúan abajo). Vacío = todas. */
@@ -122,6 +124,7 @@ function render(): void {
   $("tab-fractal").hidden = tab !== "fractal";
   $("tab-insumos").hidden = tab !== "insumos";
   $("tab-versions").hidden = tab !== "versions";
+  $("tab-config").hidden = tab !== "config";
   $("aps-calc").toggleAttribute("disabled", !!running);
   renderAlarm();
   renderProposal();
@@ -129,7 +132,26 @@ function render(): void {
   else if (tab === "gantt") renderGantt(p);
   else if (tab === "insumos") renderInsumos($("tab-insumos"), p);
   else if (tab === "versions") renderVersions();
+  else if (tab === "config") renderConfig();
   else renderFractal();
+  configShown = tab === "config";
+}
+
+// ------------------------------------------------------------------ configuración cargada a mano
+let config: { render(): void } | null = null;
+let configShown = false;
+/** La pestaña ⚙ CONFIGURACIÓN se dibuja al entrar; después ella misma se redibuja (no se pierde lo que se escribe). */
+function renderConfig(): void {
+  config ??= mountConfig($("tab-config"), {
+    activated: () => {
+      const q = new URLSearchParams(location.search);
+      q.delete("reset");
+      q.delete("cfg");
+      q.set("tab", "gantt");
+      location.search = q.toString();
+    },
+  });
+  if (!configShown) config.render();
 }
 
 // ------------------------------------------------------------------ fallas del emulador
@@ -202,6 +224,7 @@ function renderProposal(): void {
         <div><small>Pedidos tarde</small>${cell(v.late_orders, k.late_orders, (x) => nf(x), true)}</div>
         <div><small>Atraso total</small>${cell(v.tardiness_h, k.tardiness_h, (x) => `${nf(x, 1)} h`, true)}</div>
         <div title="Cambios de referencia: montaje de molde, purga de resina o purga de color (tiempos de catalog/changeovers.yaml)"><small>Cambios de referencia</small>${cell(v.changeovers, k.changeovers, (x) => nf(x), true)}<small>${nf(v.changeover_h ?? 0, 1)} → ${nf(k.changeover_h ?? 0, 1)} h</small></div>
+        <div title="Energía eléctrica de toda la programación: inyectoras produciendo, en espera caliente y calentando al arrancar el día, más enfriador, secadores, aire y transporte de resina (catalog/energy.yaml, solo kWh)"><small>Energía · kWh</small>${cell(energyOf(current).kwh, energyOf(proposal).kwh, (x) => nf(x, 0), true)}<small>${nf(energyOf(current).kwh_per_kg, 2)} → ${nf(energyOf(proposal).kwh_per_kg, 2)} kWh/kg</small></div>
         <div title="Horas programadas / horas disponibles de la planta en los 7 días desde AHORA"><small>Ocupación planta · 7 días</small>${cell(ov.occupancy, op.occupancy, pctTxt, true)}<small>${nf(ov.busyH, 0)} → ${nf(op.busyH, 0)} h de ${nf(op.availH, 0)} h</small></div>
       </div>
       <div class="aps-prop-actions"><button id="aps-adopt" class="primary">✓ ADOPTAR COMO VIGENTE</button><button id="aps-save" title="Guarda esta programación con nombre para verla, compararla o adoptarla después (pestaña VERSIONES)"${proposalVersionId() ? " disabled" : ""}>${proposalVersionId() ? "✓ GUARDADA" : "💾 GUARDAR VERSIÓN"}</button><button id="aps-discard">✕ DESCARTAR</button></div>
@@ -235,12 +258,12 @@ function renderProposal(): void {
 }
 
 /** Objetivos que el cosimulador puede optimizar, uno por corrida. Energía queda pendiente: no hay datos en el APS. */
-const OBJECTIVE_OPTIONS: { id: Objective | "energia"; label: string; detail: string; pending?: boolean }[] = [
+const OBJECTIVE_OPTIONS: { id: Objective; label: string; detail: string; pending?: boolean }[] = [
   { id: "entregas", label: "Cumplir entregas", detail: "Terminar cada pedido a tiempo, primero los de importancia alta (hoy es el cálculo de siempre)." },
   { id: "cambios", label: "Minimizar cambios de molde y color", detail: "Menos referencias encendidas por turno; cada cambio cuesta montaje y purgas de catalog/changeovers.yaml. En prueba: sin entregas en cuenta, puede dejar pedidos tarde." },
   { id: "cuellos", label: "Balancear cuellos de botella", detail: "Que ninguna inyectora quede más cargada que las demás. En prueba: sin entregas en cuenta, puede dejar pedidos tarde." },
   { id: "capacidad", label: "Maximizar capacidad ocupada", detail: "Llenar las máquinas desde el inicio y terminar la cartera antes (con demanda fija, es terminar pronto)." },
-  { id: "energia", label: "Mejorar consumo energético", detail: "Pendiente: falta energía por arranque y por llegar a la temperatura de fusión en el APS. Hoy solo hay potencia nominal por equipo.", pending: true },
+  { id: "energia", label: "Mejorar consumo energético", detail: "Menos kWh sin atrasar pedidos: cada pieza en la inyectora que gasta menos y menos días-máquina encendidos (cada día cuesta un calentamiento en frío). Los kW salen del modelo físico (catalog/energy.yaml)." },
 ];
 const OBJECTIVE_LABEL = Object.fromEntries(OBJECTIVE_OPTIONS.map((o) => [o.id, o.label])) as Record<string, string>;
 
@@ -305,7 +328,7 @@ function calculate(objective: Objective = "entregas"): void {
   };
   // Con pedidos fijados se parte del plan que se está viendo: ahí están sus lotes, que no se mueven.
   const fixed = fixedOf();
-  worker.postMessage({ id, portfolio: portfolio(), now: now(), previous: fixed.length ? shown() : current, planId: `APS-SOL-${String(n).padStart(2, "0")}`, events: activeEvents(), molds: molds(), fixed, objective });
+  worker.postMessage({ id, portfolio: portfolio(), now: now(), previous: fixed.length ? shown() : current, planId: `APS-SOL-${String(n).padStart(2, "0")}`, events: activeEvents(), molds: molds(), fixed, objective, config: activeConfig() });
 }
 
 /** Pregunta el objetivo antes de calcular. Un solo objetivo calcula; varios pasan a Fractal (multiobjetivo). */
@@ -1289,18 +1312,37 @@ let fractalWorker: Worker | null = null;
 let studyN = 0;
 /** Plan sobre el que corrió el estudio: la vigente, o el plan que se veía con órdenes fijadas. */
 let studyBase: ProductionPlan | null = null;
-const SCENARIO_NAMES: Record<string, string> = { adelantar: "ADELANTAR UN PEDIDO", balancear: "BALANCEAR LA OCUPACIÓN", falla: "FALLA EN CURSO", fijadas: "ÓRDENES FIJADAS", cambios: "MENOS CAMBIOS DE REFERENCIA" };
+/** Generador genético: cruza y muta las palancas en vez de probar solo las variantes escritas a mano. */
+let useGenerator = (() => {
+  try {
+    return localStorage.getItem("fractal-generador") !== "no";
+  } catch {
+    return true;
+  }
+})();
+const PHASES: Record<string, string> = { reglas: "el generador cruza y muta planes; las reglas de despacho evalúan la población", cosim: "el cosimulador calcula las 5 mejores", probabilidad: "probabilidad de cumplir: ejecutando cada opción con los imprevistos del emulador" };
+const SCENARIO_NAMES: Record<string, string> = { adelantar: "ADELANTAR UN PEDIDO", balancear: "BALANCEAR LA OCUPACIÓN", falla: "FALLA EN CURSO", fijadas: "ÓRDENES FIJADAS", cambios: "MENOS CAMBIOS DE REFERENCIA", energia: "MENOS ENERGÍA" };
 
 function runFractal(input: Omit<StudyInput, "portfolio" | "now" | "previous" | "events" | "molds" | "studyId">): void {
   studyError = "";
   study = null;
-  studying = `Fractal está probando combinaciones para «${SCENARIO_NAMES[input.scenario].toLowerCase()}»: cada una la coloca el cosimulador…`;
+  studying = useGenerator
+    ? `Fractal está generando opciones para «${SCENARIO_NAMES[input.scenario].toLowerCase()}»…`
+    : `Fractal está probando combinaciones para «${SCENARIO_NAMES[input.scenario].toLowerCase()}»: cada una la coloca el cosimulador…`;
   render();
   fractalWorker?.terminate();
   fractalWorker = new Worker(new URL("./fractal-worker.ts", import.meta.url), { type: "module" });
   const id = ++studyN;
-  fractalWorker.onmessage = (e: MessageEvent<{ id: number; ok: boolean; study?: FractalStudy; error?: string }>) => {
+  fractalWorker.onmessage = (e: MessageEvent<{ id: number; ok?: boolean; study?: FractalStudy; error?: string; progress?: { phase: string; done: number; total: number } }>) => {
     if (e.data.id !== id) return;
+    // Avance del generador: solo cambia la línea de estado, sin volver a pintar la pantalla.
+    if (e.data.progress) {
+      const p = e.data.progress;
+      studying = `Fractal · ${PHASES[p.phase] ?? p.phase} (${Math.min(p.done + 1, p.total)} de ${p.total})…`;
+      const line = document.querySelector("#tab-fractal .fr-status-text");
+      if (line) line.textContent = studying;
+      return;
+    }
     studying = "";
     if (e.data.ok) study = e.data.study!;
     else studyError = `Fractal no pudo terminar el estudio: ${e.data.error}`;
@@ -1316,7 +1358,7 @@ function runFractal(input: Omit<StudyInput, "portfolio" | "now" | "previous" | "
   // Con órdenes fijadas se parte del plan que se está viendo (ahí están sus lotes) y ninguna opción las mueve.
   const fixed = fixedOf();
   studyBase = fixed.length ? shown() : current;
-  fractalWorker.postMessage({ id, input: { ...input, fixed, portfolio: portfolio(), now: now(), previous: fixed.length ? shown() : current, events: activeEvents(), molds: molds(), studyId: `FRA-${String(id).padStart(2, "0")}` } });
+  fractalWorker.postMessage({ id, input: { ...input, fixed, portfolio: portfolio(), now: now(), previous: fixed.length ? shown() : current, events: activeEvents(), molds: molds(), studyId: `FRA-${String(id).padStart(2, "0")}` }, config: activeConfig(), generate: useGenerator });
 }
 
 function renderFractal(): void {
@@ -1362,13 +1404,20 @@ function renderFractal(): void {
       { label: "Cambios de referencia", a: s.baseline.kpis.changeovers, b: o.kpis.changeovers, fmt: (x) => nf(x, 0), menos: true },
       { label: "Ocupación planta", a: occA, b: occB, fmt: (x) => `${nf(x, 1)} %`, menos: true, pts: true },
       { label: `Carga máxima`, a: s.baseline.max_load.pct, b: o.max_load.pct, fmt: (x) => `${nf(x, 0)} %`, menos: true, pts: true },
+      ...(s.baseline.energy && o.energy
+        ? [
+            { label: "Energía desde ahora", a: s.baseline.energy.kwh, b: o.energy.kwh, fmt: (x: number) => `${nf(x, 0)} kWh`, menos: true },
+            { label: "Calentamientos en frío", a: s.baseline.energy.heatups, b: o.energy.heatups, fmt: (x: number) => nf(x, 0), menos: true },
+          ]
+        : []),
     ];
   };
   const scenarioCard = (key: string, n: number, body: string, button: string, extra = "") =>
     `<article class="fr-card${study?.scenario === key ? " active" : ""}${extra}"><div class="fr-card-h"><span class="fr-n">${n}</span><span>${SCENARIO_NAMES[key]}</span></div><div class="fr-card-b">${body}</div>${button}</article>`;
   const best = study ? study.options.find((o) => o.id === study!.best)! : null;
   el.innerHTML = `
-    <div class="fr-head"><div><h2 class="fr-title">◆ Fractal · escenarios</h2><p class="fr-intro">Prueba cambios en la secuencia y en la planta (prioridades, moldes de repuesto, mudar moldes, un color por máquina), el cosimulador coloca cada combinación y Fractal recomienda la mejor. <b>Fractal recomienda; la persona decide.</b></p></div></div>
+    <div class="fr-head"><div><h2 class="fr-title">◆ Fractal · escenarios</h2><p class="fr-intro">Prueba cambios en la secuencia y en la planta (prioridades, moldes de repuesto, mudar moldes, un color por máquina), el cosimulador ${useGenerator ? "calcula las 5 mejores combinaciones" : "coloca cada combinación"} y Fractal recomienda la mejor. <b>Fractal recomienda; la persona decide.</b></p>
+      <label class="fr-gen" title="Con el generador, Fractal cruza y muta las palancas (algoritmo genético), las reglas de despacho evalúan cientos de planes, el cosimulador calcula las 5 mejores y cada opción trae su probabilidad de cumplir con los imprevistos del emulador. Sin él, solo prueba las variantes fijas de cada escenario."><input type="checkbox" id="fr-gen"${useGenerator ? " checked" : ""}${studying ? " disabled" : ""}/> Generador genético <small>${useGenerator ? "cruza y muta las palancas · 3 a 5 opciones con su probabilidad de cumplir" : "apagado: solo las variantes fijas de cada escenario"}</small></label></div></div>
     <div class="fr-cards${study ? " compact" : ""}">
       ${scenarioCard("adelantar", 1, `<p class="fr-desc">Un cliente pide su pedido antes. ¿Cómo cumplirle sin atrasar a los demás?</p>
         <label>Pedido <select id="fr-order">${movable.map((o) => `<option value="${esc(o.id)}">${esc(o.id)} · ${esc(o.product_name)} · ${nf(o.quantity)} · entrega ${day(o.due)}</option>`).join("")}</select></label>
@@ -1386,13 +1435,19 @@ function renderFractal(): void {
         `<button id="fr-run-fijadas" class="primary"${pinned.length && !studying ? "" : " disabled"}>◆ ESTUDIAR</button>`)}
       ${scenarioCard("cambios", 5, `<p class="fr-desc">La vigente tiene <b>${nf(current.kpis.changeovers)} cambios</b> y <b>${nf(current.kpis.changeover_h ?? 0, 1)} h</b> de montaje y purga. ¿Cómo hacer menos sin atrasar pedidos?</p>`,
         `<button id="fr-run-cambios" class="primary"${studying ? " disabled" : ""}>◆ ESTUDIAR</button>`)}
+      ${scenarioCard("energia", 6, `<p class="fr-desc">La vigente gasta <b>${nf(energyOf(current).kwh, 0)} kWh</b> (${nf(energyOf(current).kwh_per_kg, 2)} kWh/kg). ¿Apagar o dejar calientes las inyectoras de noche, y cómo agrupar la producción para gastar menos sin atrasar pedidos?</p>`,
+        `<button id="fr-run-energia" class="primary"${studying || !model.energy ? " disabled" : ""}>◆ ESTUDIAR</button>`)}
     </div>
-    ${studying ? `<p class="fr-status"><span class="spin">◌</span> ${esc(studying)}</p>` : ""}
+    ${studying ? `<p class="fr-status"><span class="spin">◌</span> <span class="fr-status-text">${esc(studying)}</span></p>` : ""}
     ${studyError ? `<p class="fr-status bad">${esc(studyError)}</p>` : ""}
     ${
       study && best
         ? `<section class="fr-result">
-        <div class="fr-result-h"><span class="fr-tag">ESTUDIO ${esc(study.study_id)} · ${SCENARIO_NAMES[study.scenario]}</span><span class="fr-tag dim">${study.options.length} combinaciones en ${nf(study.seconds, 1)} s</span></div>
+        <div class="fr-result-h"><span class="fr-tag">ESTUDIO ${esc(study.study_id)} · ${SCENARIO_NAMES[study.scenario]}</span><span class="fr-tag dim">${
+          study.generator
+            ? `generador genético · ${nf(study.generator.rule_evaluations ?? 0)} planes por reglas · ${nf(study.generator.evaluations)} con el cosimulador · ${study.options.length} opciones en ${nf(study.seconds, 1)} s`
+            : `${study.options.length} combinaciones en ${nf(study.seconds, 1)} s`
+        }</span></div>
         <p class="fr-q">${esc(study.question)}</p>
         <div class="fr-reco">
           <div class="fr-reco-t"><div class="fr-k">RECOMENDACIÓN · OPCIÓN ${esc(best.id.split("-").at(-1)!)}</div><p class="fr-rec">${esc(best.label)}</p><p class="fr-why">${esc(study.recommendation.replace(/^Recomendación:\s*/i, ""))}</p>
@@ -1403,15 +1458,15 @@ function renderFractal(): void {
         </div>
         <div class="fr-k fr-sub">TODAS LAS OPCIONES · cualquiera se puede ver en el Gantt o adoptar</div>
         <div class="aps-table-wrap"><table class="route-table aps-table fr-table">
-          <thead><tr><th>Opción</th><th>Qué cambia</th><th class="num">A tiempo</th><th class="num">Tarde</th><th class="num">Atraso</th><th class="num">Cambios</th><th class="num">Montaje de moldes</th><th class="num">Ocupación planta</th><th>Carga máxima</th><th class="num">Puntaje</th><th></th></tr></thead>
+          <thead><tr><th>Opción</th><th>Qué cambia</th><th class="num">A tiempo</th><th class="num">Tarde</th><th class="num">Atraso</th><th class="num">Cambios</th><th class="num">Montaje de moldes</th><th class="num">Ocupación planta</th><th>Carga máxima</th>${study.baseline.energy ? '<th class="num">Energía desde ahora</th>' : ""}${study.options.some((o) => o.probability) ? '<th class="num" title="Ejecuciones del plan tal cual con los imprevistos del emulador (fallas al azar, ciclo ±5 %) en las que no aparece ningún pedido tarde de más">Prob. de cumplir</th>' : ""}<th class="num">Puntaje</th><th></th></tr></thead>
           <tbody>
-            <tr class="past"><td>${studyBase && studyBase !== current ? "ACTUAL" : "VIGENTE"}</td><td>${esc(SOURCE_NAMES[(studyBase ?? current).source])} ${esc(study.baseline.plan_id)}</td><td class="num">${nf(study.baseline.kpis.on_time_pct, 1)} %</td><td class="num">${study.baseline.kpis.late_orders}</td><td class="num">${nf(study.baseline.kpis.tardiness_h, 1)} h</td><td class="num">${study.baseline.kpis.changeovers} · ${nf(study.baseline.kpis.changeover_h ?? 0, 1)} h</td><td class="num">—</td><td class="num">${pctTxt(occOf(studyBase ?? current, loadIds(studyBase ?? current)).occupancy)}</td><td>${esc(machineLabel(study.baseline.max_load.equipment))} ${nf(study.baseline.max_load.pct, 0)} %</td><td></td><td></td></tr>
+            <tr class="past"><td>${studyBase && studyBase !== current ? "ACTUAL" : "VIGENTE"}</td><td>${esc(SOURCE_NAMES[(studyBase ?? current).source])} ${esc(study.baseline.plan_id)}</td><td class="num">${nf(study.baseline.kpis.on_time_pct, 1)} %</td><td class="num">${study.baseline.kpis.late_orders}</td><td class="num">${nf(study.baseline.kpis.tardiness_h, 1)} h</td><td class="num">${study.baseline.kpis.changeovers} · ${nf(study.baseline.kpis.changeover_h ?? 0, 1)} h</td><td class="num">—</td><td class="num">${pctTxt(occOf(studyBase ?? current, loadIds(studyBase ?? current)).occupancy)}</td><td>${esc(machineLabel(study.baseline.max_load.equipment))} ${nf(study.baseline.max_load.pct, 0)} %</td>${study.baseline.energy ? `<td class="num">${nf(study.baseline.energy.kwh, 0)} kWh<br/><small>${study.baseline.energy.heatups} calentamientos</small></td>` : ""}${study.options.some((o) => o.probability) ? "<td></td>" : ""}<td></td><td></td></tr>
             ${study.options
               .map((o) => {
                 const ks = kpisOf(study!, o.id);
                 const cell = (k: Kpi, txt: string) => `<td class="num">${txt}<br/>${delta(k)}</td>`;
                 return `<tr class="${o.id === study!.best ? "best" : ""}"><td><b class="fr-opt">${esc(o.id.split("-").at(-1)!)}</b>${o.id === study!.best ? ' <span class="chip done">MEJOR</span>' : ""}</td><td><b>${esc(o.label)}</b><br/><small>${o.levers.map((l) => esc(l.text)).join(" · ")}</small></td>
-                ${cell(ks[0], `${nf(o.kpis.on_time_pct, 1)} %`)}${cell(ks[1], String(o.kpis.late_orders))}${cell(ks[2], `${nf(o.kpis.tardiness_h, 1)} h`)}${cell(ks[3], `${o.kpis.changeovers} · ${nf(o.kpis.changeover_h ?? 0, 1)} h`)}<td class="num">${o.mold_change_h ? `${nf(o.mold_change_h, 1)} h` : "—"}</td>${cell(ks[4], pctTxt(occOf(o.plan, loadIds(o.plan)).occupancy))}<td>${esc(machineLabel(o.max_load.equipment))} ${nf(o.max_load.pct, 0)} %<br/>${delta(ks[5])}</td><td class="num">${nf(o.score, 1)}</td>
+                ${cell(ks[0], `${nf(o.kpis.on_time_pct, 1)} %`)}${cell(ks[1], String(o.kpis.late_orders))}${cell(ks[2], `${nf(o.kpis.tardiness_h, 1)} h`)}${cell(ks[3], `${o.kpis.changeovers} · ${nf(o.kpis.changeover_h ?? 0, 1)} h`)}<td class="num">${o.mold_change_h ? `${nf(o.mold_change_h, 1)} h` : "—"}</td>${cell(ks[4], pctTxt(occOf(o.plan, loadIds(o.plan)).occupancy))}<td>${esc(machineLabel(o.max_load.equipment))} ${nf(o.max_load.pct, 0)} %<br/>${delta(ks[5])}</td>${o.energy && ks[6] ? `${cell(ks[6], `${nf(o.energy.kwh, 0)} kWh · ${o.energy.heatups} calent.${o.energy.overnight === "caliente" ? " · caliente de noche" : ""}`)}` : study!.baseline.energy ? "<td></td>" : ""}${o.probability ? `<td class="num"><b>${nf(o.probability.p * 100, 0)} %</b><br/><small>${o.probability.hits} de ${o.probability.runs}</small></td>` : study!.options.some((x) => x.probability) ? "<td></td>" : ""}<td class="num">${nf(o.score, 1)}</td>
                 <td class="fr-btns"><button class="fr-see" data-id="${esc(o.id)}">VER EN GANTT</button><button class="fr-see fr-pick" data-id="${esc(o.id)}">ADOPTAR</button></td></tr>`;
               })
               .join("")}
@@ -1426,6 +1481,16 @@ function renderFractal(): void {
   $("fr-run-falla").onclick = () => runFractal({ scenario: "falla" });
   $("fr-run-fijadas").onclick = () => runFractal({ scenario: "fijadas" });
   $("fr-run-cambios").onclick = () => runFractal({ scenario: "cambios" });
+  $("fr-run-energia").onclick = () => runFractal({ scenario: "energia" });
+  $<HTMLInputElement>("fr-gen").onchange = (e) => {
+    useGenerator = (e.target as HTMLInputElement).checked;
+    try {
+      localStorage.setItem("fractal-generador", useGenerator ? "si" : "no");
+    } catch {
+      /* sin almacenamiento: queda solo en esta pestaña */
+    }
+    render();
+  };
   // Cualquier opción se puede adoptar, no solo la recomendada: Fractal recomienda y la persona decide.
   const adoptOption = (id: string) => {
     setVigente(study!.options.find((o) => o.id === id)!.plan);
@@ -1506,6 +1571,18 @@ function download(name: string, text: string): void {
   setTimeout(() => (URL.revokeObjectURL(a.href), a.remove()), 1000);
 }
 
+/** Energía de una programación; las guardadas antes de tener datos de energía se calculan al vuelo. */
+const energyMemo = new WeakMap<ProductionPlan, { kwh: number; kwh_per_kg: number; peak_kw: number }>();
+function energyOf(p: ProductionPlan): { kwh: number; kwh_per_kg: number; peak_kw: number } {
+  if (p.energy) return p.energy;
+  let e = energyMemo.get(p);
+  if (!e) {
+    e = planEnergy(model, p) ?? { kwh: 0, kwh_per_kg: 0, peak_kw: 0 };
+    energyMemo.set(p, e);
+  }
+  return e;
+}
+
 /** Indicadores para comparar versiones (los mismos de la propuesta frente a la vigente). */
 /** `neutral`: se muestra para comparar, pero ni más ni menos es mejor por sí solo. */
 interface VersionKpi { label: string; get: (p: ProductionPlan) => number; fmt: (x: number) => string; lowerIsBetter: boolean; neutral?: boolean; title?: string }
@@ -1516,6 +1593,9 @@ function versionKpis(): VersionKpi[] {
     { label: "Atraso total", get: (p) => p.kpis.tardiness_h, fmt: (x) => `${nf(x, 1)} h`, lowerIsBetter: true },
     { label: "Cambios de referencia", get: (p) => p.kpis.changeovers, fmt: (x) => nf(x), lowerIsBetter: true, title: "Montaje de molde, purga de resina o purga de color" },
     { label: "Horas de cambio", get: (p) => p.kpis.changeover_h ?? 0, fmt: (x) => `${nf(x, 1)} h`, lowerIsBetter: true },
+    { label: "Energía", get: (p) => energyOf(p).kwh, fmt: (x) => `${nf(x, 0)} kWh`, lowerIsBetter: true, title: "kWh de toda la programación: inyectoras y servicios (catalog/energy.yaml)" },
+    { label: "kWh por kg", get: (p) => energyOf(p).kwh_per_kg, fmt: (x) => nf(x, 2), lowerIsBetter: true },
+    { label: "Demanda pico", get: (p) => energyOf(p).peak_kw, fmt: (x) => `${nf(x, 0)} kW`, lowerIsBetter: true, title: "Mayor potencia media de 15 minutos" },
     { label: "Ocupación planta · 7 días", get: (p) => occOf(p, loadIds(p)).occupancy, fmt: pctTxt, lowerIsBetter: true, neutral: true, title: "Horas programadas / disponibles en los 7 días desde AHORA" },
     { label: "Pedidos que terminan distinto a la vigente", get: (p) => changedOrders(p), fmt: (x) => nf(x), lowerIsBetter: true, neutral: true, title: "Pedidos cuya hora de fin cambia más de 30 min frente a la vigente" },
   ];
@@ -1668,7 +1748,7 @@ $("aps-manual").onclick = () => {
   error = "";
   try {
     const fixed = fixedOf();
-    proposal = manualPlan(modelNow(), portfolio(), baseManual, { now: now(), previous: fixed.length ? shown() : current, events: activeEvents(), fixed });
+    proposal = manualPlan(modelNow(), portfolio(), currentManual(), { now: now(), previous: fixed.length ? shown() : current, events: activeEvents(), fixed });
     clearEdit();
     tab = "gantt";
   } catch (err) {

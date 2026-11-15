@@ -12,6 +12,7 @@
 import * as THREE from "three";
 import type { PlantEvent, ProductionPlan } from "@twin/cosim/core/contracts.ts";
 import { model, now, setSharedClock, setViewMode, versions, vigente, viewedPlan, viewedVersionId, viewMode, viewVersion, type ViewMode } from "./aps-store.ts";
+import { kwhBetween, powerOf } from "./plant-state.ts";
 import { type MachineState, dayLoadAt, dayLoads, dayStrip, isoOf, loadAt, loadColor, machineAt, machineLabel, minOf, moldOf, oeeAt, PLC_MACHINES, STATE_COLORS, STATE_NAMES, unitsUntil } from "./plant-state.ts";
 import { COLOR_NAMES, day, dayTag, esc, nf, relativeDays } from "./schedule.ts";
 
@@ -377,6 +378,8 @@ export function buildTwinPlay(opts: Opts): TwinPlay {
   };
 }
 
+const PW_NAMES = { run: "produciendo", standby: "espera caliente", heatup: "calentando", off: "apagada" } as const;
+
 /** PLC de una máquina en el instante del gemelo: las señales que publica hacia el centro de control. */
 export function plcCard(plan: ProductionPlan, events: PlantEvent[], id: string, t: number): string {
   if (!PLC_MACHINES.some((e) => e.id === id)) return "";
@@ -388,6 +391,7 @@ export function plcCard(plan: ProductionPlan, events: PlantEvent[], id: string, 
   const r = s.row;
   const cycle = Number(eq.params?.cycle_s ?? 0);
   const cav = Number(eq.params?.cavities ?? 0);
+  const pw = powerOf(plan, events, id, t);
   const pct = (x: number) => `${nf(x * 100, 1)} %`;
   const tag = (k: string, v: string) => `<div><span>${k}</span><span>${v}</span></div>`;
   return `<div class="plc-card" style="--st:${STATE_COLORS[s.state]}">
@@ -403,6 +407,8 @@ export function plcCard(plan: ProductionPlan, events: PlantEvent[], id: string, 
       ${tag("unidades del turno", o ? `${nf(o.good)} buenas` : "—")}
       ${tag("OEE del turno", o ? `<b>${pct(o.oee)}</b>` : "—")}
       ${o ? tag("D · R · C", `${pct(o.availability)} · ${pct(o.performance)} · ${pct(o.quality)}`) : ""}
+      ${pw ? tag("potencia", `<b>${nf(pw.kw, 1)} kW</b> · ${PW_NAMES[pw.state]}`) : ""}
+      ${pw ? tag("energía · hoy", `${nf(kwhBetween(plan, events, Math.floor(t / 1440) * 1440, t, id), 1)} kWh`) : ""}
       ${sl ? tag("ocupación · día", `<b style="color:${loadColor(sl.occupancy)}">${pct(sl.occupancy)}</b> · disp. ${pct(sl.availability)}`) : ""}
       ${tag("ocupación · semana", `<b style="color:${loadColor(ld.occupancy)}">${pct(ld.occupancy)}</b> · ${nf(ld.busyH, 1)} de ${nf(ld.availH, 1)} h`)}
       ${tag("disponibilidad · semana", `${pct(ld.availability)} · ${nf(ld.availH, 1)} de ${nf(ld.shiftH, 1)} h de turno`)}

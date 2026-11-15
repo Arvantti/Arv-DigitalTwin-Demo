@@ -295,6 +295,29 @@ class Catalog:
                     mat = self.materials.get(mid)
                     if mat is None or mat.get("kind") != kind:
                         errors.append(f"cambios {table}: {mid!r} no es un material {kind} del catálogo")
+        # Energía: cada perfil es de una inyectora del plano y de un molde del catálogo que le cabe; cada servicio
+        # es un equipo del plano que no es de respaldo, y atiende resinas del catálogo.
+        energy = self.data.get("energy") or {}
+        for machine, profiles in (energy.get("injection") or {}).items():
+            item = items.get(machine)
+            if item is None or "injection" not in str(item.get("type", "")):
+                errors.append(f"energía: {machine!r} no es una inyectora del plano")
+                continue
+            for tid in profiles:
+                tool = self.tooling.get(tid)
+                if tool is None or tool.get("kind") != "mold":
+                    errors.append(f"energía {machine}: {tid!r} no es un molde del catálogo")
+                elif (item.get("params") or {}).get("clamp_t", 1e9) < tool.get("min_clamp_t", 0):
+                    errors.append(f"energía {machine}: el molde {tid} no le cabe (fuerza de cierre)")
+        for sid, svc in (energy.get("services") or {}).items():
+            item = items.get(sid)
+            if item is None:
+                errors.append(f"energía: el servicio {sid!r} no está en el plano")
+            elif (item.get("params") or {}).get("role") == "respaldo":
+                errors.append(f"energía: {sid} es de respaldo y no debe sumar")
+            for mid in svc.get("feeds") or []:
+                if self.materials.get(mid, {}).get("kind") != "resin":
+                    errors.append(f"energía {sid}: {mid!r} no es una resina del catálogo")
         # Limpieza por alérgenos: cada grupo de la tabla es el de algún producto, y todo semielaborado tiene grupo.
         if allergen := changeovers.get("allergen"):
             groups = {p["allergen_group"] for p in self.products.values() if p.get("allergen_group")}

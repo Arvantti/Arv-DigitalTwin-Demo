@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@twin/cosim": "workspace:*",
+    "@twin/fractal-core": "workspace:*",
     "highs": "1.15.3",
     "js-yaml": "4.3.2"
   },
