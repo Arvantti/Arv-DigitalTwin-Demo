@@ -80,7 +80,7 @@ if (typeof window !== "undefined" && typeof document !== "undefined" && !documen
         return;
       }
 
-      const delta = lastFrame ? Math.min((timestamp - lastFrame) / 16.67, 2) : 1;
+      const delta = (lastFrame ? Math.min((timestamp - lastFrame) / 16.67, 2) : 1) * 0.75;
       lastFrame = timestamp;
       context.clearRect(0, 0, width, height);
 
