@@ -1,0 +1,1 @@
+Los programas entran a bancos, nubes y proveedores con claves de acceso: con ellas, cualquiera entra y gasta a su nombre. Una IA puede leerlas, pegarlas en el chat o dejarlas en un registro. Y puede salirse de su carpeta sin que nadie lo note.

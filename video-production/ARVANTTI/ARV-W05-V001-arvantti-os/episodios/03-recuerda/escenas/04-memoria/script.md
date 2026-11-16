@@ -1,0 +1,1 @@
+Arvantti Operating System for AI recuerda por su empresa. Guarda la memoria de cada proyecto: tareas, planes y documentos. Y guarda las decisiones como un mapa de puntos conectados: quién decidió qué, cuándo y con qué evidencia.

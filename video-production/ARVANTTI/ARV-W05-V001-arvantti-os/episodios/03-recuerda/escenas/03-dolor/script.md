@@ -1,0 +1,1 @@
+Las decisiones viven en correos y en la cabeza de las personas. Cada conversación con la IA empieza de cero, o arrastra todo lo anterior y la factura crece sin aviso. Y cuando alguien se va, su conocimiento se va con él.

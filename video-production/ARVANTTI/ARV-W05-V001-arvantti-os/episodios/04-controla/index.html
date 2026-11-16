@@ -1,0 +1,510 @@
+<!doctype html>
+<html lang="es" data-resolution="landscape" class="h">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1920, height=1080">
+<title>Arvantti OS · serie Enterprise</title>
+<script src="assets/vendor/gsap.min.js"></script>
+<style>
+:root{--blue:#2d7ff9;--electric:#4ea7ff;--ti:#d8dadf;--black:#05070c;--white:#f8fafc;
+  --controla:#f87171;--protege:#a78bfa;--organiza:#34d399;--recuerda:#fbbf24;--rinde:#22d3ee;--ent:#4ea7ff}
+*{box-sizing:border-box}
+html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:var(--black);font-family:Inter,"Inter Display",Arial,sans-serif;color:var(--white)}
+#root{position:relative;width:1920px;height:1080px;overflow:hidden;background:var(--black)}
+.clip{position:absolute;inset:0}
+.scene{overflow:hidden}
+.w{display:inline-block;white-space:pre}
+
+/* Fondo */
+.fondo .glow{position:absolute;inset:-20%;background:radial-gradient(900px 520px at 50% 45%,#12305e55 0%,#05070c00 70%),radial-gradient(700px 400px at 80% 90%,#2d7ff922 0%,#05070c00 70%)}
+.v .fondo .glow{background:radial-gradient(700px 900px at 50% 45%,#12305e55 0%,#05070c00 70%),radial-gradient(500px 600px at 80% 90%,#2d7ff922 0%,#05070c00 70%)}
+.fondo .floor{position:absolute;left:-50%;right:-50%;bottom:-10%;height:62%;perspective:900px;opacity:.5;-webkit-mask-image:linear-gradient(#0000,#000 55%);mask-image:linear-gradient(#0000,#000 55%)}
+.v .fondo .floor{height:40%}
+.fondo .floorgrid{position:absolute;inset:0;transform:rotateX(68deg);transform-origin:50% 100%;background-image:linear-gradient(#4ea7ff33 2px,transparent 2px),linear-gradient(90deg,#4ea7ff33 2px,transparent 2px);background-size:120px 120px}
+
+/* Comunes */
+.kicker{position:absolute;left:110px;top:70px;margin:0;font:600 26px "JetBrains Mono",monospace;letter-spacing:8px;color:var(--electric)}
+.kicker b{display:inline-block;padding:4px 12px;margin-right:12px;border:2px solid var(--blue);color:#fff;font-weight:700;letter-spacing:2px}
+.v .kicker{left:70px;top:150px;font-size:24px;letter-spacing:5px}
+.center{position:absolute;left:0;right:0;text-align:center;margin:0}
+.chip{display:inline-block;padding:12px 26px;margin:0 10px 14px;border:2px solid #4ea7ff66;border-radius:999px;background:#0d1a30cc;font:600 30px Inter,sans-serif;color:#e6eefc;box-shadow:0 0 24px #2d7ff933}
+.marca{display:block;margin:0 auto;height:auto;filter:drop-shadow(0 0 30px #2d7ff988)}
+.metal{background:linear-gradient(100deg,#d8dadf 0%,#d8dadf 40%,#ffffff 50%,#d8dadf 60%,#d8dadf 100%);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent}
+.sweep{background:linear-gradient(100deg,#0000 35%,#4ea7ff18 45%,#ffffff40 50%,#4ea7ff18 55%,#0000 65%);mix-blend-mode:screen;pointer-events:none}
+.estela{position:absolute;inset:0;width:100%;height:100%}
+.estela path{fill:none;stroke:#4ea7ff;stroke-width:5;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1;filter:drop-shadow(0 0 10px #4ea7ff) drop-shadow(0 0 30px #2d7ff9)}
+#temp{left:auto;top:auto;right:20px;bottom:16px;font:700 15px "JetBrains Mono",monospace;color:#ff6b35;letter-spacing:2px}
+
+/* Figura de tres capas (sello de la serie) */
+.capas{position:absolute;left:50%;top:50%;width:1500px;transform:translate(-50%,-50%);display:flex;flex-direction:column;gap:22px}
+.v .capas{width:1000px}
+.capa{position:relative;border-radius:22px;padding:22px 30px;border:2px solid #4ea7ff66;background:#0b1428e6;box-shadow:0 20px 80px #000a,0 0 50px #2d7ff922}
+.capa .ct{margin:0 0 14px;font:700 22px "JetBrains Mono",monospace;letter-spacing:4px;color:#9fd0ff;text-align:center}
+.capa.ent{border-color:var(--ent);background:linear-gradient(180deg,#123a6ecc,#0b1428e6);text-align:center}
+.capa.ent h3{margin:0;font:800 54px "Inter Display",Inter,sans-serif;color:#fff}
+.capa.ent p{margin:8px 0 0;font:500 26px Inter,sans-serif;color:#c9d6ea}
+.v .capa.ent h3{font-size:58px}
+.v .capa.ent p{font-size:30px}
+.v .capa .ct{font-size:24px}
+.v .capa{padding:26px 24px}
+.capa.nuc{border-color:#ffffff88}
+.proms{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+.prom{flex:1 1 0;min-width:0;padding:22px 10px;border-radius:14px;text-align:center;font:800 34px Inter,sans-serif;letter-spacing:1px;color:#0b1020;background:var(--c);opacity:.18;filter:saturate(.4)}
+.v .proms{gap:12px}
+.v .prom{flex:0 0 calc(33.3% - 8px);font-size:36px;padding:26px 6px}
+.prom.on{opacity:1;filter:none;box-shadow:0 0 40px var(--c)}
+.capa.base{border-color:var(--blue)}
+.fila{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-top:6px}
+.fila span{padding:10px 22px;border-radius:999px;border:2px solid #4ea7ff66;background:#0d1a30;font:600 26px Inter,sans-serif;color:#e6eefc}
+.fila.sis span{border-color:#9fb3cf55;color:#c9d1e0;font-size:24px}
+.fila span small{display:block;font:500 17px Inter,sans-serif;color:#9fb3cf;text-align:center}
+.v .fila span{font-size:31px;padding:12px 22px}
+.v .fila.sis span{font-size:29px}
+.v .fila span small{font-size:20px}
+/* Estilos comunes de la serie (nacieron en el episodio 1). Las reglas .v ajustan la vertical 9:16. */
+
+/* Gancho */
+.win{position:absolute;width:400px;padding:0 0 22px;border-radius:16px;background:#0d1a30ee;border:2px solid #4ea7ff55;box-shadow:0 20px 60px #000a;opacity:0}
+.win .wb{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid #4ea7ff33;font:600 20px "JetBrains Mono",monospace;color:#9fd0ff}
+.win .wb i{width:12px;height:12px;border-radius:50%;background:#2a3b58}
+.win .wb span{margin-left:8px}
+.win p{margin:16px 20px 12px;font:700 30px Inter,sans-serif}
+.win .ln{height:12px;margin:8px 20px 0;border-radius:6px;background:#1c2c48}
+.win .ln.s{width:55%}
+.v .win{width:380px}
+.pre{top:330px;font:600 56px Inter,sans-serif;color:#c9d1e0}
+.q{top:450px;font:800 140px/1 "Inter Display",Inter,sans-serif;letter-spacing:-3px}
+.v .pre{top:780px;padding:0 60px;font-size:52px}
+.v .q{top:890px;padding:0 40px;font-size:124px;line-height:1.05}
+
+/* Dolor */
+.areas{position:absolute;left:110px;right:110px;top:190px;display:grid;grid-template-columns:repeat(4,1fr);gap:30px}
+.v .areas{left:70px;right:70px;top:300px;grid-template-columns:1fr 1fr;gap:30px}
+.area{position:relative;height:300px;padding:30px;border-radius:20px;background:#0d1a30e6;border:2px solid #4ea7ff55;opacity:0}
+.v .area{height:330px}
+.area .an{margin:0;font:800 40px "Inter Display",Inter,sans-serif}
+.area .ai{margin:14px 0 0;display:inline-block;padding:8px 18px;border-radius:999px;background:#16243f;font:600 28px Inter,sans-serif;color:#9fd0ff}
+.area .rg{position:absolute;left:30px;bottom:30px;margin:0;font:500 26px "JetBrains Mono",monospace;color:#ffb07a}
+.area .qm{position:absolute;right:24px;top:20px;width:76px;height:76px;border-radius:50%;background:#ff6b35;color:#fff;font:800 52px/76px Inter,sans-serif;text-align:center;box-shadow:0 0 40px #ff6b3588}
+.pregs{position:absolute;left:0;right:0;top:600px;text-align:center}
+.pregs span{display:inline-block;margin:0 18px;font:800 54px "Inter Display",Inter,sans-serif;opacity:0}
+.v .pregs{top:1060px}
+.v .pregs span{display:block;margin:0 0 26px;font-size:62px}
+.sello{position:absolute;left:50%;top:790px;width:600px;margin-left:-300px;padding:18px 0;border:6px solid #ff4d4d;border-radius:16px;color:#ff4d4d;text-align:center;font:900 76px "Inter Display",Inter,sans-serif;letter-spacing:8px;background:#05070ccc;box-shadow:0 0 60px #ff4d4d55;opacity:0}
+.v .sello{top:1440px;width:760px;margin-left:-380px;font-size:90px}
+
+/* Título y firma */
+.titulo,.fin{position:absolute;left:0;right:0;top:240px;text-align:center}
+.v .titulo,.v .fin{top:620px;padding:0 40px}
+.titulo .marca,.fin .marca{width:220px;margin-bottom:26px}
+.titulo h1,.fin h1{margin:0;font:800 150px/1.02 "Inter Display",Inter,sans-serif;letter-spacing:-2px}
+.v .titulo h1,.v .fin h1{font-size:140px}
+.full{margin:22px 0 0;font:600 28px "JetBrains Mono",monospace;letter-spacing:8px;color:#9fd0ff}
+.v .full{font-size:26px;letter-spacing:4px}
+.titulo .sub{margin:34px 0 0;font:500 50px Inter,sans-serif;color:#e6eefc}
+.v .titulo .sub{font-size:54px;line-height:1.25}
+.flare{position:absolute;top:-20%;bottom:-20%;left:30%;width:28%;background:linear-gradient(100deg,#0000 0%,#4ea7ff22 40%,#ffffff33 50%,#4ea7ff22 60%,#0000 100%);transform:skewX(-18deg);mix-blend-mode:screen}
+.fin .firma{margin:34px 0 0;font:600 56px Inter,sans-serif;color:#fff}
+.fin .url{margin:40px 0 0;font:500 30px "JetBrains Mono",monospace;letter-spacing:6px;color:#7a9cc6}
+
+/* Analogía */
+.pc{position:absolute;left:50%;top:160px;width:1100px;margin-left:-550px;border-radius:22px;background:#0b1224;border:2px solid #4ea7ff66;box-shadow:0 40px 120px #000c,0 0 90px #2d7ff933;overflow:hidden}
+.v .pc{top:360px;width:940px;margin-left:-470px}
+.pcb{position:relative;display:flex;align-items:center;gap:8px;padding:14px 20px;border-bottom:1px solid #4ea7ff33}
+.pcb i{width:14px;height:14px;border-radius:50%;background:#2a3b58}
+.pcb span{position:absolute;left:110px;font:600 22px "JetBrains Mono",monospace;letter-spacing:3px;color:#9fd0ff}
+.pcb .pct2{opacity:0}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;padding:34px}
+.v .tiles{grid-template-columns:repeat(2,1fr)}
+.tile{position:relative;height:120px;border-radius:16px;background:#16243f;border:2px solid #2a3b58}
+.tile span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:700 32px Inter,sans-serif;text-align:center}
+.tile .tb{opacity:0;color:#fff}
+.osbar{position:relative;height:84px;margin:0 34px 34px;border-radius:14px;background:#1c2c48;font:800 34px "Inter Display",Inter,sans-serif}
+.osbar span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+.osbar .o2{opacity:0;font-size:42px}
+.reglas{position:absolute;left:0;right:0;top:880px;text-align:center}
+.reglas .chip{font-size:36px;padding:14px 32px;opacity:0}
+.v .reglas{top:1290px}
+.v .reglas .chip{display:block;width:fit-content;margin:0 auto 22px;font-size:44px}
+
+/* Figura */
+.figcap{top:70px;font:800 60px "Inter Display",Inter,sans-serif}
+.v .figcap{top:260px;padding:0 50px;font-size:66px;line-height:1.1}
+#e-capas .capas{top:56%}
+.v #e-capas .capas{top:55%}
+#e-sello .capas{top:53%}
+.v #e-sello .capas{top:56%}
+.fila span{opacity:1}
+.fila .pl{border-color:#4ea7ffaa;background:#12305e}
+.sigue{position:absolute;left:0;right:0;bottom:46px;text-align:center;font:600 34px Inter,sans-serif;color:#c9d6ea;opacity:0}
+.sigue span{display:inline-block;margin-right:14px;padding:6px 16px;border:2px solid var(--blue);font:700 26px "JetBrains Mono",monospace;color:#fff}
+.sigue b{color:var(--organiza)}
+.v .sigue{bottom:200px;padding:0 50px;font-size:38px;line-height:1.6}
+
+/* Lunes */
+.reloj{position:absolute;left:150px;top:200px}
+.reloj .dia{display:block;font:700 30px "JetBrains Mono",monospace;letter-spacing:10px;color:#9fd0ff}
+.reloj .hora{display:block;font:800 170px/1 "Inter Display",Inter,sans-serif}
+.pedido{position:absolute;left:150px;top:520px;width:700px;padding:28px 32px;border-radius:20px;background:#0d1a30e6;border:2px solid #4ea7ff55}
+.pedido .pq{margin:0 0 10px;font:700 22px "JetBrains Mono",monospace;letter-spacing:4px;color:#9fd0ff}
+.pedido .pt{margin:0;font:600 40px/1.3 Inter,sans-serif}
+.pedido .ch{opacity:0}
+.caja{position:absolute;left:1000px;top:170px;width:780px;padding:30px;border-radius:26px;background:#0b1428e6;border:3px solid #4ea7ff55}
+.cajat{display:flex;align-items:center;gap:16px;margin-bottom:22px;font:800 46px "Inter Display",Inter,sans-serif}
+.cajat img{width:70px}
+.agn{display:flex;align-items:center;gap:16px;margin-bottom:16px;padding:20px 24px;border-radius:16px;background:#16243f;border:2px solid var(--c)}
+.agn i{width:20px;height:20px;border-radius:50%;background:var(--c);box-shadow:0 0 14px var(--c)}
+.agn b{font:700 34px Inter,sans-serif}
+.agn small{margin-left:auto;font:600 26px "JetBrains Mono",monospace;color:#9fb3cf}
+.rg3{margin-top:12px;text-align:center}
+.rg3 .chip{font-size:26px;padding:10px 20px;margin:8px 6px 0;opacity:0}
+.v .reloj{left:70px;top:260px}
+.v .reloj .hora{font-size:150px}
+.v .pedido{left:70px;right:70px;top:520px;width:auto}
+.v .caja{left:70px;right:70px;top:880px;width:auto}
+.v .rg3 .chip{font-size:30px}
+
+/* Ajustes tras la primera revisión de cuadros */
+.area .an{padding-right:80px;font-size:36px;line-height:1.1}
+.figcap{top:140px}
+#e-capas .capas{top:55%}
+#e-sello .capas{top:56%}
+.v .titulo .sub{padding:0 60px}
+
+/* Piezas compartidas entre episodios (mensajes, tarjeta T-12, reloj del lunes, insignia de promesa) */
+.msg{width:fit-content;max-width:640px;margin:0 0 22px;padding:20px 28px;border-radius:24px 24px 24px 6px;background:#16243f;font:600 36px Inter,sans-serif;opacity:0}
+.msg.r{margin-left:auto;border-radius:24px 24px 6px 24px;background:#1f4f9a}
+.badge-prom{position:absolute;left:50%;top:250px;transform:translateX(-50%);padding:10px 34px;border-radius:12px;background:var(--c);color:#0b1020;font:800 34px Inter,sans-serif;letter-spacing:3px;box-shadow:0 0 50px var(--c)}
+.v .badge-prom{top:470px}
+.tcard .tid,.t12 .tid{margin:0;font:700 24px "JetBrains Mono",monospace;letter-spacing:4px;color:#34d399}
+.reloj.r2{left:110px;top:150px}
+.reloj.r2 .hora{font-size:120px}
+.v .reloj.r2{left:70px;top:240px}
+.t12{position:absolute;left:760px;top:180px;width:760px;padding:24px 30px;border-radius:20px;background:#0b1428f2;border:3px solid #34d399;box-shadow:0 0 60px #34d39944}
+.v .t12{left:70px;right:70px;top:500px;width:auto}
+.t12 h3{margin:6px 0 10px;font:800 46px "Inter Display",Inter,sans-serif}
+.t12 .asg{margin:0;display:flex;align-items:center;gap:12px;font:600 30px Inter,sans-serif;color:#c9d1e0}
+.t12 .asg i{width:16px;height:16px;border-radius:50%;background:#f87171}
+.t12 .tid{margin:0;font:700 24px "JetBrains Mono",monospace;letter-spacing:4px;color:#34d399}
+.tcard .tid{margin:0;font:700 24px "JetBrains Mono",monospace;letter-spacing:4px;color:#34d399}
+.lbl{position:absolute;left:0;right:0;top:780px;margin:0;text-align:center;font:800 74px "Inter Display",Inter,sans-serif;color:#ffb07a}
+.v .lbl{top:1200px;padding:0 60px;font-size:80px}
+.archivo{position:absolute;left:260px;top:300px;width:360px;padding:30px;border-radius:20px;background:#e9eef7;color:#0b1020;text-align:center;box-shadow:0 30px 80px #000c}
+.archivo i{display:block;width:90px;height:110px;margin:0 auto 16px;border-radius:8px;background:linear-gradient(135deg,#1f7a4a 0 70%,#0000 70%),#1f7a4a}
+.archivo b{display:block;font:800 34px Inter,sans-serif}
+.archivo small{font:600 24px Inter,sans-serif;color:#555}
+
+/* Episodio 4 · Controla */
+.q4{top:700px;font-size:96px}
+.v .q4{top:1240px;font-size:96px;padding:0 50px}
+.v .archivo{left:360px;top:900px}
+.nube-ext{position:absolute;left:1300px;top:170px;width:420px;height:260px;border-radius:130px;background:#2a3b58;text-align:center;box-shadow:0 0 60px #000}
+.v .nube-ext{left:330px;top:330px}
+.nube-ext span{display:block;padding-top:30px;font:900 120px/1 Inter,sans-serif;color:#ff6b35}
+.nube-ext p{margin:6px 0 0;font:700 30px Inter,sans-serif}
+.puertas{position:absolute;left:0;right:0;top:220px;display:flex;justify-content:center;gap:40px;perspective:1200px}
+.v .puertas{top:420px;flex-wrap:wrap;gap:30px;padding:0 80px}
+.puerta{width:220px;height:380px;border-radius:12px 12px 0 0;background:#fff8;box-shadow:inset 0 0 60px #ffd58a;position:relative}
+.v .puerta{width:240px;height:340px}
+.hoja{position:absolute;inset:0;border-radius:12px 12px 0 0;background:#16243f;border:4px solid #4ea7ff66;transform-origin:0 50%}
+.lbl.l1,.lbl.l2{top:740px}
+.v .lbl.l1{top:1320px}
+.v .lbl.l2{top:1300px}
+.llavero{position:absolute;left:50%;top:170px;width:500px;height:500px;margin-left:-250px}
+.v .llavero{top:500px}
+.aro{position:absolute;left:150px;top:60px;width:200px;height:200px;border:16px solid #c9a227;border-radius:50%}
+.llave{position:absolute;left:236px;top:240px;width:28px;height:220px;border-radius:14px;background:linear-gradient(#e4c45a,#a07d1c);transform-origin:50% -60px;transform:rotate(var(--r))}
+.agl{position:absolute;left:0;right:0;top:-10px;margin:0;text-align:center;font:700 30px "JetBrains Mono",monospace;letter-spacing:6px;color:#9fd0ff}
+.switch{position:absolute;left:0;right:0;top:400px;text-align:center}
+.v .switch{top:760px}
+.track{position:relative;width:360px;height:180px;margin:0 auto 40px;border-radius:90px;background:#2a3b58}
+.v .track{width:340px;height:170px}
+.knob{position:absolute;left:10px;top:10px;width:160px;height:160px;border-radius:50%;background:#fff;box-shadow:0 8px 30px #000a}
+.v .knob{width:150px;height:150px}
+.sw-l{margin:0;font:900 100px "Inter Display",Inter,sans-serif}
+.sw-s{margin:10px 0 0;font:600 48px Inter,sans-serif;color:#c9d1e0}
+.v .sw-l{font-size:110px}
+.nivel{position:relative;border-radius:26px;padding:30px;border:3px solid}
+.nivel .nt{margin:0 0 24px;font:800 40px "Inter Display",Inter,sans-serif;letter-spacing:3px}
+.nivel .nt span{display:block;margin-top:6px;font:600 28px Inter,sans-serif;letter-spacing:0;color:#c9d1e0}
+.n1{position:absolute;left:50%;top:160px;width:1300px;height:820px;margin-left:-650px;border-color:#4ea7ff;background:#0b1428cc}
+.v .n1{top:300px;width:960px;height:1360px;margin-left:-480px}
+.n2{height:620px;border-color:#f87171;background:#2a121299}
+.v .n2{height:1140px}
+.n3{height:400px;border-color:#fbbf24;background:#3a2f0c99}
+.v .n3{height:900px}
+.escarapela{position:absolute;left:50%;top:170px;width:780px;margin-left:-390px;padding:70px 46px 40px;border-radius:26px;background:#f2f5fa;color:#0b1020;box-shadow:0 40px 120px #000c}
+.v .escarapela{top:600px;width:940px;margin-left:-470px}
+.cinta{position:absolute;left:50%;top:-140px;width:60px;height:180px;margin-left:-30px;background:linear-gradient(90deg,#2d7ff9,#4ea7ff)}
+.vis{position:absolute;left:0;right:0;top:0;margin:0;padding:14px;border-radius:26px 26px 0 0;background:#f87171;color:#fff;text-align:center;font:800 28px "JetBrains Mono",monospace;letter-spacing:6px}
+.escarapela h3{margin:10px 0 24px;font:800 52px "Inter Display",Inter,sans-serif}
+.escarapela dl{margin:0;display:grid;grid-template-columns:220px 1fr;row-gap:18px;font:700 38px Inter,sans-serif}
+.escarapela dt{color:#5c6b80}.escarapela dd{margin:0}
+.dura{display:flex;align-items:center;justify-content:space-between;margin-top:30px;padding-top:24px;border-top:2px dashed #b9c4d6;font:600 30px Inter,sans-serif}
+.dura button{padding:14px 30px;border:0;border-radius:12px;background:#0b1020;color:#fff;font:800 30px Inter,sans-serif}
+.retirado{position:absolute;left:50%;top:44%;width:520px;margin-left:-260px;padding:14px 0;border:7px solid #e11d48;border-radius:14px;color:#e11d48;text-align:center;font:900 70px "Inter Display",Inter,sans-serif;letter-spacing:8px;background:#f2f5facc}
+.acciones{position:absolute;left:0;right:0;top:170px;display:flex;justify-content:center;gap:30px}
+.v .acciones{top:440px;flex-direction:column;align-items:center;gap:22px}
+.acc{display:flex;align-items:center;gap:16px;padding:22px 34px;border-radius:18px;background:#0d1a30;border:2px solid #f87171;font:800 40px Inter,sans-serif}
+.lock{width:32px;height:28px;border-radius:6px;background:#f87171;position:relative;margin-top:10px}
+.lock::before{content:"";position:absolute;left:5px;top:-16px;width:16px;height:16px;border:5px solid #f87171;border-bottom:0;border-radius:12px 12px 0 0}
+.aprob{position:absolute;left:50%;top:360px;width:760px;margin-left:-380px;padding:30px;border-radius:22px;background:#0b1428f2;border:2px solid #4ea7ff66;text-align:center}
+.v .aprob{top:860px;width:940px;margin-left:-470px}
+.aprob .ph,.razon .ph{margin:0 0 12px;font:700 24px "JetBrains Mono",monospace;letter-spacing:4px;color:#9fd0ff}
+.who{margin:0 0 20px;font:800 50px "Inter Display",Inter,sans-serif}
+.btns span{display:inline-block;margin:0 12px;padding:14px 40px;border-radius:14px;font:800 34px Inter,sans-serif}
+.btns .si{background:#34d399;color:#0b1020}.btns .no{background:#2a3b58;color:#fff}
+.razon{position:absolute;left:50%;top:740px;width:1100px;margin-left:-550px;padding:26px 32px;border-radius:18px;background:#16243f;border-left:10px solid #f87171}
+.v .razon{top:1300px;width:940px;margin-left:-470px}
+.razon p:last-child{margin:0;font:600 36px Inter,sans-serif}
+.razon .ph{color:#f87171}
+.reloj .hora{position:relative}
+.reloj .h2{position:absolute;left:0;top:0}
+.salida{position:absolute;left:110px;right:110px;top:470px;height:300px}
+.v .salida{left:70px;right:70px;top:560px;height:900px}
+.salida .box{position:absolute;top:60px;width:330px;padding:34px 20px;border-radius:20px;background:#16243f;border:3px solid #4ea7ff;text-align:center;font:800 40px Inter,sans-serif}
+.salida .ven{left:0}.salida .ext{right:0;border-color:#9fb3cf;color:#c9d1e0;font-size:32px}
+.v .salida .ven{left:50%;margin-left:-165px;top:0}.v .salida .ext{right:auto;left:50%;margin-left:-165px;top:650px}
+.flecha-x{position:absolute;left:350px;right:350px;top:130px;height:14px}
+.v .flecha-x{left:50%;right:auto;top:180px;width:14px;height:440px;margin-left:-7px}
+.flecha-x i{display:block;width:100%;height:100%;border-radius:7px;background:#4ea7ff}
+.v .flecha-x i{transform-origin:50% 0}
+.barrera{position:absolute;left:50%;top:20px;width:24px;height:240px;margin-left:120px;border-radius:12px;background:#f87171;box-shadow:0 0 40px #f87171}
+.v .barrera{left:50%;top:420px;width:400px;height:24px;margin-left:-200px}
+.bloq{position:absolute;left:50%;top:-200px;width:820px;margin-left:-410px;padding:14px 0;border:6px solid #ff4d4d;border-radius:14px;color:#ff4d4d;text-align:center;font:900 64px "Inter Display",Inter,sans-serif;letter-spacing:6px;background:#05070ccc}
+.v .bloq{top:250px;width:900px;margin-left:-450px}
+.bloq small{display:block;font:700 26px Inter,sans-serif;letter-spacing:0;color:#ffb0b0}
+.lectura{position:absolute;left:50%;top:420px;width:900px;margin-left:-450px;text-align:center}
+.v .lectura{top:640px;width:940px;margin-left:-470px}
+.carpeta{position:relative;width:520px;height:300px;margin:0 auto 30px;border-radius:0 20px 20px 20px;background:#fbbf24;color:#0b1020;display:flex;align-items:center;justify-content:center;font:800 42px Inter,sans-serif}
+.carpeta .pest{position:absolute;left:0;top:-40px;width:200px;height:44px;border-radius:14px 14px 0 0;background:#fbbf24}
+.lectura .solo{display:inline-block;padding:12px 30px;border-radius:999px;background:#34d399;color:#0b1020;font:800 34px Inter,sans-serif}
+.timer{width:600px;height:20px;margin:30px auto 0;border-radius:10px;background:#1c2c48;overflow:hidden}
+.timer i{display:block;height:100%;background:#4ea7ff}
+.vence{margin:20px 0 0;font:800 44px "Inter Display",Inter,sans-serif;color:#9fb3cf}
+.v .archivo{left:360px;top:900px}
+
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="113.24" data-width="1920" data-height="1080" data-fps="25">
+<div id="fondo" class="clip fondo" data-start="0.00" data-duration="113.24" data-track-index="0"><div class="glow"></div><div class="floor"><div class="floorgrid"></div></div></div>
+<div id="kick" class="clip " data-start="0.00" data-duration="104.31" data-track-index="30"><p class="kicker"><b>4/7</b> ARVANTTI OS</p></div>
+<div id="e-recap" class="clip scene" data-start="0.00" data-duration="4.98" data-track-index="3"><p class="center figcap"><span class="w">En</span> <span class="w">la</span> <span class="w">parte</span> <span class="w">3,</span> <span class="w">el</span> <span class="w">agente</span> <span class="w">arrancó</span> <span class="w">conociendo</span> <span class="w">la</span> <span class="w">empresa.</span></p><div class="capas" id="fr">
+    <div class="capa ent" id="fr-ent"><h3>Arvantti OS Enterprise</h3><p>Agentes, habilidades, voz y panel de dirección</p></div>
+    <div class="capa nuc" id="fr-nuc"><p class="ct">NÚCLEO · CINCO PROMESAS</p><div class="proms"><div class="prom" id="fr-p0" style="--c:#f87171">Controla</div><div class="prom" id="fr-p1" style="--c:#a78bfa">Protege</div><div class="prom" id="fr-p2" style="--c:#34d399">Organiza</div><div class="prom" id="fr-p3" style="--c:#fbbf24">Recuerda</div><div class="prom" id="fr-p4" style="--c:#22d3ee">Rinde cuentas</div></div></div>
+    <div class="capa base" id="fr-base"><p class="ct">BASE · SE CONECTA CON TODO</p>
+      <div class="fila"><span id="fr-ia0">Claude</span><span id="fr-ia1">ChatGPT</span><span id="fr-ia2">Gemini</span><span id="fr-ia3">Copilot</span><span id="fr-ia4">Modelos privados</span></div>
+      <div class="fila sis"><span id="fr-s0">CRM<small>sistema de clientes</small></span><span id="fr-s1">ERP<small>sistema de gestión</small></span><span id="fr-s2">Nube<small>sus servicios</small></span><span id="fr-s3">Archivos<small>sus documentos</small></span><span class="pl" id="fr-pl0">En el escritorio</span><span class="pl" id="fr-pl1">En la nube</span></div></div>
+  </div></div>
+<div id="e-gancho" class="clip scene" data-start="4.48" data-duration="7.79" data-track-index="3">
+      <div class="archivo" id="arch"><i></i><b>clientes.xlsx</b><small>Base de clientes</small></div>
+      <div class="nube-ext"><span>?</span><p>Servicio externo</p></div>
+      <h1 class="center q q4"><span class="w">…porque</span> <span class="w">le</span> <span class="w">pareció</span> <span class="w">útil.</span></h1></div>
+<audio id="sfx-0" src="assets/shared/core/sfx/whoosh.wav" data-start="8.15" data-duration="1.40" data-volume="0.25" data-track-index="100"></audio>
+<div id="e-dolor" class="clip scene" data-start="11.77" data-duration="13.25" data-track-index="3">
+      <div class="puertas"><div class="puerta" id="pu0"><div class="hoja"></div></div><div class="puerta" id="pu1"><div class="hoja"></div></div><div class="puerta" id="pu2"><div class="hoja"></div></div><div class="puerta" id="pu3"><div class="hoja"></div></div><div class="puerta" id="pu4"><div class="hoja"></div></div></div>
+      <p class="lbl l1"><span class="w">Todo</span> <span class="w">permitido…</span></p>
+      <div class="llavero"><div class="aro"></div><span class="llave" style="--r:-60deg"></span><span class="llave" style="--r:-40deg"></span><span class="llave" style="--r:-20deg"></span><span class="llave" style="--r:0deg"></span><span class="llave" style="--r:20deg"></span><span class="llave" style="--r:40deg"></span><span class="llave" style="--r:60deg"></span><p class="agl">Agente</p></div>
+      <p class="lbl l2"><span class="w">«Para</span> <span class="w">que</span> <span class="w">funcione».</span> <span class="w">Y</span> <span class="w">nadie</span> <span class="w">los</span> <span class="w">quita.</span></p></div>
+<audio id="sfx-1" src="assets/shared/core/sfx/click.wav" data-start="16.08" data-duration="1.40" data-volume="0.12" data-track-index="101"></audio>
+<audio id="sfx-2" src="assets/shared/core/sfx/click.wav" data-start="16.43" data-duration="1.40" data-volume="0.12" data-track-index="102"></audio>
+<audio id="sfx-3" src="assets/shared/core/sfx/click.wav" data-start="16.78" data-duration="1.40" data-volume="0.12" data-track-index="103"></audio>
+<audio id="sfx-4" src="assets/shared/core/sfx/click.wav" data-start="17.13" data-duration="1.40" data-volume="0.12" data-track-index="104"></audio>
+<audio id="sfx-5" src="assets/shared/core/sfx/click.wav" data-start="17.48" data-duration="1.40" data-volume="0.12" data-track-index="105"></audio>
+<audio id="sfx-6" src="assets/shared/core/sfx/hit.wav" data-start="22.56" data-duration="1.40" data-volume="0.2" data-track-index="106"></audio>
+<div id="e-principio" class="clip scene" data-start="24.52" data-duration="9.31" data-track-index="3">
+      <p class="center figcap"><span class="w">Arvantti</span> <span class="w">OS</span> <span class="w">controla.</span></p>
+      <div class="badge-prom" style="--c:#f87171">CONTROLA</div>
+      <div class="switch"><div class="track"><div class="knob"></div></div><p class="sw-l"><span class="w">Todo</span> <span class="w">prohibido</span></p><p class="sw-s"><span class="w">hasta</span> <span class="w">que</span> <span class="w">alguien</span> <span class="w">lo</span> <span class="w">autoriza</span></p></div></div>
+<audio id="sfx-7" src="assets/shared/core/sfx/click.wav" data-start="29.95" data-duration="1.40" data-volume="0.35" data-track-index="107"></audio>
+<div id="e-niveles" class="clip scene" data-start="33.33" data-duration="11.95" data-track-index="3">
+      <div class="nivel n1"><p class="nt">EMPRESA <span>reglas para todos</span></p>
+        <div class="nivel n2"><p class="nt">PROYECTO <span>más estricto, nunca más flojo</span></p>
+          <div class="nivel n3"><p class="nt">PERSONA <span>ve y aprueba lo suyo</span></p></div></div></div></div>
+<audio id="sfx-8" src="assets/shared/core/sfx/click-soft.mp3" data-start="33.78" data-duration="1.40" data-volume="0.22" data-track-index="108"></audio>
+<audio id="sfx-9" src="assets/shared/core/sfx/click-soft.mp3" data-start="36.06" data-duration="1.40" data-volume="0.22" data-track-index="109"></audio>
+<audio id="sfx-10" src="assets/shared/core/sfx/click-soft.mp3" data-start="40.42" data-duration="1.40" data-volume="0.22" data-track-index="110"></audio>
+<div id="e-permiso" class="clip scene" data-start="44.78" data-duration="18.43" data-track-index="3">
+      <div class="escarapela"><div class="cinta"></div><p class="vis">VISITANTE · HOY</p><h3>Permiso puntual</h3>
+        <dl><dt>Quién</dt><dd>Agente de finanzas</dd><dt>Sobre qué</dt><dd>Carpeta de ventas</dd><dt>Para qué</dt><dd>Solo leer</dd></dl>
+        <div class="dura"><span>Dura: lo que dura la tarea</span><button>Retirar</button></div>
+        <div class="retirado">RETIRADO</div></div></div>
+<audio id="sfx-11" src="assets/shared/core/sfx/click-soft.mp3" data-start="52.51" data-duration="1.40" data-volume="0.2" data-track-index="111"></audio>
+<audio id="sfx-12" src="assets/shared/core/sfx/click-soft.mp3" data-start="53.99" data-duration="1.40" data-volume="0.2" data-track-index="112"></audio>
+<audio id="sfx-13" src="assets/shared/core/sfx/click-soft.mp3" data-start="55.47" data-duration="1.40" data-volume="0.2" data-track-index="113"></audio>
+<audio id="sfx-14" src="assets/shared/core/sfx/click.wav" data-start="59.39" data-duration="1.40" data-volume="0.35" data-track-index="114"></audio>
+<div id="e-sensible" class="clip scene" data-start="62.71" data-duration="11.40" data-track-index="3">
+      <div class="acciones"><div class="acc"><span class="lock"></span>Publicar</div><div class="acc"><span class="lock"></span>Borrar</div><div class="acc"><span class="lock"></span>Conectarse afuera</div></div>
+      <div class="aprob"><p class="ph">ESPERA APROBACIÓN</p><p class="who">Una persona decide</p><div class="btns"><span class="si">Aprobar</span><span class="no">Negar</span></div></div>
+      <div class="razon"><p class="ph">NEGADO · RAZÓN ESCRITA</p><p>«Publicar el informe antes de la junta no está autorizado.»</p></div></div>
+<audio id="sfx-15" src="assets/shared/core/sfx/pop.mp3" data-start="64.60" data-duration="1.40" data-volume="0.14" data-track-index="115"></audio>
+<audio id="sfx-16" src="assets/shared/core/sfx/pop.mp3" data-start="65.52" data-duration="1.40" data-volume="0.14" data-track-index="116"></audio>
+<audio id="sfx-17" src="assets/shared/core/sfx/pop.mp3" data-start="66.20" data-duration="1.40" data-volume="0.14" data-track-index="117"></audio>
+<audio id="sfx-18" src="assets/shared/core/sfx/typing.mp3" data-start="70.52" data-duration="1.40" data-volume="0.12" data-track-index="118"></audio>
+<div id="e-lunes" class="clip scene" data-start="73.60" data-duration="20.05" data-track-index="3">
+      <div class="reloj r2"><span class="dia">LUNES</span><span class="hora"><span class="h1">8:14</span><span class="h2">8:15</span></span></div>
+      <div class="salida"><div class="box ven">Ventas</div><div class="flecha-x"><i></i></div><div class="barrera"></div><div class="box ext">Sitio externo de gráficas</div>
+        <div class="bloq">BLOQUEADO<small>Motivo: salida a internet no autorizada</small></div></div>
+      <div class="lectura"><div class="carpeta"><span class="pest"></span><b>ventas/octubre</b></div><span class="solo">Solo lectura · esta tarea</span>
+        <div class="timer"><i></i></div><p class="vence">Permiso vencido</p></div></div>
+<audio id="sfx-19" src="assets/shared/core/sfx/hit.wav" data-start="81.13" data-duration="1.40" data-volume="0.3" data-track-index="119"></audio>
+<audio id="sfx-20" src="assets/shared/core/sfx/click.wav" data-start="91.47" data-duration="1.40" data-volume="0.25" data-track-index="120"></audio>
+<div id="e-sello" class="clip scene" data-start="93.15" data-duration="11.41" data-track-index="3"><p class="center figcap c2"><span class="w">Controla:</span> <span class="w">la</span> <span class="w">tercera</span> <span class="w">promesa</span> <span class="w">de</span> <span class="w">Arvantti</span> <span class="w">OS.</span></p><p class="center figcap c3"><span class="w">Ya</span> <span class="w">puede</span> <span class="w">leer.</span> <span class="w">Pero,</span> <span class="w">¿y</span> <span class="w">si</span> <span class="w">en</span> <span class="w">lo</span> <span class="w">que</span> <span class="w">lee</span> <span class="w">aparece</span> <span class="w">una</span> <span class="w">clave</span> <span class="w">secreta?</span></p><div class="capas" id="fb">
+    <div class="capa ent" id="fb-ent"><h3>Arvantti OS Enterprise</h3><p>Agentes, habilidades, voz y panel de dirección</p></div>
+    <div class="capa nuc" id="fb-nuc"><p class="ct">NÚCLEO · CINCO PROMESAS</p><div class="proms"><div class="prom" id="fb-p0" style="--c:#f87171">Controla</div><div class="prom" id="fb-p1" style="--c:#a78bfa">Protege</div><div class="prom" id="fb-p2" style="--c:#34d399">Organiza</div><div class="prom" id="fb-p3" style="--c:#fbbf24">Recuerda</div><div class="prom" id="fb-p4" style="--c:#22d3ee">Rinde cuentas</div></div></div>
+    <div class="capa base" id="fb-base"><p class="ct">BASE · SE CONECTA CON TODO</p>
+      <div class="fila"><span id="fb-ia0">Claude</span><span id="fb-ia1">ChatGPT</span><span id="fb-ia2">Gemini</span><span id="fb-ia3">Copilot</span><span id="fb-ia4">Modelos privados</span></div>
+      <div class="fila sis"><span id="fb-s0">CRM<small>sistema de clientes</small></span><span id="fb-s1">ERP<small>sistema de gestión</small></span><span id="fb-s2">Nube<small>sus servicios</small></span><span id="fb-s3">Archivos<small>sus documentos</small></span><span class="pl" id="fb-pl0">En el escritorio</span><span class="pl" id="fb-pl1">En la nube</span></div></div>
+  </div>
+    <div class="sigue"><span>Parte 4 de 7</span> Continúa en la parte 5: <b style="color:#a78bfa">Protege</b></div></div>
+<audio id="sfx-21" src="assets/shared/core/sfx/spark.wav" data-start="93.90" data-duration="1.40" data-volume="0.2" data-track-index="121"></audio>
+<div id="e-firma" class="clip scene" data-start="104.06" data-duration="9.43" data-track-index="3">
+    <svg class="estela" viewBox="0 0 1920 1080" preserveAspectRatio="none"><path id="p2" d="M-60 475.2 C 384 475.2 576 691.2 960 561.6 S 1536 432 1980 648" pathLength="1"/></svg>
+    <div class="fin"><img class="marca" src="assets/clips/marca.png" alt=""><h1 class="metal">Arvantti OS</h1><p class="full">ARVANTTI OPERATING SYSTEM FOR AI</p><p class="firma">La IA bajo su gobierno.</p><p class="url">arvantti.tech</p></div></div>
+<audio id="sfx-22" src="assets/shared/core/sfx/hit.wav" data-start="104.91" data-duration="1.40" data-volume="0.3" data-track-index="122"></audio>
+<div id="sweep-0" class="clip sweep" data-start="4.38" data-duration="0.90" data-track-index="40"></div>
+<div id="sweep-1" class="clip sweep" data-start="11.67" data-duration="0.90" data-track-index="40"></div>
+<div id="sweep-2" class="clip sweep" data-start="24.42" data-duration="0.90" data-track-index="40"></div>
+<div id="sweep-3" class="clip sweep" data-start="33.23" data-duration="0.90" data-track-index="40"></div>
+<div id="sweep-4" class="clip sweep" data-start="44.68" data-duration="0.90" data-track-index="40"></div>
+<div id="sweep-5" class="clip sweep" data-start="62.61" data-duration="0.90" data-track-index="40"></div>
+<div id="sweep-6" class="clip sweep" data-start="73.50" data-duration="0.90" data-track-index="40"></div>
+<div id="sweep-7" class="clip sweep" data-start="93.05" data-duration="0.90" data-track-index="40"></div>
+<div id="sweep-8" class="clip sweep" data-start="103.96" data-duration="0.90" data-track-index="40"></div>
+<audio id="voz-recap" src="escenas/01-recap/assets/audio/voiceover.mp3" data-start="0.60" data-duration="3.63" data-volume="1" data-track-index="123"></audio>
+<audio id="voz-gancho" src="escenas/02-gancho/assets/audio/voiceover.mp3" data-start="5.03" data-duration="6.19" data-volume="1" data-track-index="124"></audio>
+<audio id="voz-dolor" src="escenas/03-dolor/assets/audio/voiceover.mp3" data-start="12.32" data-duration="11.65" data-volume="1" data-track-index="125"></audio>
+<audio id="voz-principio" src="escenas/04-principio/assets/audio/voiceover.mp3" data-start="25.07" data-duration="7.71" data-volume="1" data-track-index="126"></audio>
+<audio id="voz-niveles" src="escenas/05-niveles/assets/audio/voiceover.mp3" data-start="33.78" data-duration="10.45" data-volume="1" data-track-index="127"></audio>
+<audio id="voz-permiso" src="escenas/06-permiso/assets/audio/voiceover.mp3" data-start="45.23" data-duration="16.93" data-volume="1" data-track-index="128"></audio>
+<audio id="voz-sensible" src="escenas/07-sensible/assets/audio/voiceover.mp3" data-start="63.16" data-duration="9.80" data-volume="1" data-track-index="129"></audio>
+<audio id="voz-lunes" src="escenas/08-lunes/assets/audio/voiceover.mp3" data-start="74.15" data-duration="18.05" data-volume="1" data-track-index="130"></audio>
+<audio id="voz-figura" src="escenas/09-figura/assets/audio/voiceover.mp3" data-start="93.70" data-duration="3.63" data-volume="1" data-track-index="131"></audio>
+<audio id="voz-siguiente" src="escenas/10-siguiente/assets/audio/voiceover.mp3" data-start="98.03" data-duration="4.68" data-volume="1" data-track-index="132"></audio>
+<audio id="voz-firma" src="escenas/11-firma/assets/audio/voiceover.mp3" data-start="104.91" data-duration="4.83" data-volume="1" data-track-index="133"></audio>
+<audio id="musica" src="audio/musica-mezcla.mp3" data-start="0.00" data-duration="113.24" data-volume="0.5" data-track-index="134"></audio>
+</div>
+<script>
+const tl = gsap.timeline({ paused: true });
+tl.fromTo("#fondo .floorgrid",{"backgroundPositionY":"0px"},{"backgroundPositionY":"4530px","duration":113.24122200000001,"ease":"none"},0.00);
+tl.fromTo("#fondo .glow",{"opacity":0.55},{"opacity":1,"duration":6,"ease":"sine.inOut","yoyo":true,"repeat":18},0.00);
+tl.fromTo("#kick .kicker",{"opacity":0,"x":-30},{"opacity":1,"x":0,"duration":0.6},0.20);
+tl.fromTo("#e-recap .figcap .w",{"opacity":0,"y":36,"filter":"blur(10px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.55,"stagger":0.06,"ease":"power3.out"},0.60);
+tl.to("#fr-p0",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #f87171","duration":0.3},0.10);
+tl.to("#fr-p1",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #a78bfa","duration":0.3},0.22);
+tl.to("#fr-p2",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #34d399","duration":0.3},0.34);
+tl.to("#fr-p3",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #fbbf24","duration":0.3},0.46);
+tl.to("#fr-p4",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #22d3ee","duration":0.3},0.58);
+tl.fromTo("#fr",{"opacity":0},{"opacity":1,"duration":0.8,"ease":"power3.out"},0.00);
+tl.to("#e-recap",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},4.48);
+tl.fromTo("#e-gancho",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},4.48);
+tl.fromTo("#arch",{"opacity":0,"scale":0.7},{"opacity":1,"scale":1,"duration":0.5,"ease":"back.out(2)"},5.03);
+tl.fromTo("#e-gancho .nube-ext",{"opacity":0,"scale":0.7},{"opacity":1,"scale":1,"duration":0.5,"ease":"back.out(2)"},7.85);
+tl.to("#arch",{"x":1000,"y":-120,"scale":0.4,"rotate":12,"opacity":0.2,"duration":1.2,"ease":"power2.in"},8.15);
+tl.to("#e-gancho .nube-ext",{"opacity":0.3,"duration":0.4},9.71);
+tl.fromTo("#e-gancho .q .w",{"opacity":0,"y":40,"filter":"blur(14px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.6,"stagger":0.1,"ease":"power3.out"},9.71);
+tl.to("#e-gancho",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},11.77);
+tl.fromTo("#e-dolor",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},11.77);
+tl.fromTo("#e-dolor .puerta",{"opacity":0,"y":40},{"opacity":1,"y":0,"duration":0.3,"stagger":0.08},12.32);
+tl.to("#pu0 .hoja",{"rotateY":-75,"duration":0.5,"ease":"power2.out"},16.08);
+tl.to("#pu1 .hoja",{"rotateY":-75,"duration":0.5,"ease":"power2.out"},16.43);
+tl.to("#pu2 .hoja",{"rotateY":-75,"duration":0.5,"ease":"power2.out"},16.78);
+tl.to("#pu3 .hoja",{"rotateY":-75,"duration":0.5,"ease":"power2.out"},17.13);
+tl.to("#pu4 .hoja",{"rotateY":-75,"duration":0.5,"ease":"power2.out"},17.48);
+tl.fromTo("#e-dolor .l1 .w",{"opacity":0,"y":36,"filter":"blur(10px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.55,"stagger":0.1,"ease":"power3.out"},16.08);
+tl.to("#e-dolor .puertas, #e-dolor .l1",{"opacity":0,"duration":0.4},18.64);
+tl.fromTo("#e-dolor .llavero",{"opacity":0,"scale":0.6},{"opacity":1,"scale":1,"duration":0.6,"ease":"back.out(1.8)"},19.04);
+tl.fromTo("#e-dolor .llave",{"opacity":0,"scale":0},{"opacity":1,"scale":1,"duration":0.25,"stagger":0.12,"ease":"back.out(3)"},19.34);
+tl.fromTo("#e-dolor .l2 .w",{"opacity":0,"y":36,"filter":"blur(10px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.55,"stagger":0.08,"ease":"power3.out"},21.04);
+tl.to("#e-dolor",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},24.52);
+tl.fromTo("#e-principio",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},24.52);
+tl.fromTo("#e-principio .figcap .w",{"opacity":0,"y":36,"filter":"blur(10px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.55,"stagger":0.06,"ease":"power3.out"},25.07);
+tl.fromTo("#e-principio .badge-prom",{"opacity":0,"scale":0.6},{"opacity":1,"scale":1,"duration":0.5,"ease":"back.out(2)"},27.63);
+tl.fromTo("#e-principio .switch",{"opacity":0,"y":40},{"opacity":1,"y":0,"duration":0.5},28.35);
+tl.to("#e-principio .knob",{"x":170,"duration":0.35,"ease":"back.out(2)"},29.95);
+tl.to("#e-principio .track",{"backgroundColor":"#f87171","boxShadow":"0 0 50px #f87171","duration":0.3},29.95);
+tl.fromTo("#e-principio .sw-l .w",{"opacity":0,"y":36,"filter":"blur(10px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.55,"stagger":0.08,"ease":"power3.out"},29.95);
+tl.fromTo("#e-principio .sw-s .w",{"opacity":0,"y":36,"filter":"blur(10px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.55,"stagger":0.06,"ease":"power3.out"},31.15);
+tl.to("#e-principio",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},33.33);
+tl.fromTo("#e-niveles",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},33.33);
+tl.fromTo("#e-niveles .n1",{"opacity":0,"scale":0.94},{"opacity":1,"scale":1,"duration":0.5},33.78);
+tl.fromTo("#e-niveles .n2",{"opacity":0,"scale":0.9},{"opacity":1,"scale":1,"duration":0.5,"ease":"back.out(1.6)"},36.06);
+tl.fromTo("#e-niveles .n2 > .nt span",{"opacity":0},{"opacity":1,"duration":0.4},38.74);
+tl.fromTo("#e-niveles .n3",{"opacity":0,"scale":0.9},{"opacity":1,"scale":1,"duration":0.5,"ease":"back.out(1.6)"},40.42);
+tl.to("#e-niveles",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},44.78);
+tl.fromTo("#e-permiso",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},44.78);
+tl.fromTo("#e-permiso .escarapela",{"opacity":0,"y":-200,"rotate":-8},{"opacity":1,"y":0,"rotate":0,"duration":0.8,"ease":"back.out(1.4)"},45.53);
+tl.fromTo("#e-permiso dt:nth-of-type(1)",{"opacity":0,"x":-20},{"opacity":1,"x":0,"duration":0.3},49.07);
+tl.fromTo("#e-permiso dd:nth-of-type(1)",{"opacity":0,"x":-20},{"opacity":1,"x":0,"duration":0.3},52.51);
+tl.fromTo("#e-permiso dt:nth-of-type(2)",{"opacity":0,"x":-20},{"opacity":1,"x":0,"duration":0.3},49.67);
+tl.fromTo("#e-permiso dd:nth-of-type(2)",{"opacity":0,"x":-20},{"opacity":1,"x":0,"duration":0.3},53.99);
+tl.fromTo("#e-permiso dt:nth-of-type(3)",{"opacity":0,"x":-20},{"opacity":1,"x":0,"duration":0.3},50.59);
+tl.fromTo("#e-permiso dd:nth-of-type(3)",{"opacity":0,"x":-20},{"opacity":1,"x":0,"duration":0.3},55.47);
+tl.fromTo("#e-permiso .dura",{"opacity":0,"y":20},{"opacity":1,"y":0,"duration":0.4},56.67);
+tl.to("#e-permiso button",{"scale":0.9,"backgroundColor":"#ffffff","color":"#0b1020","duration":0.12,"yoyo":true,"repeat":1},59.39);
+tl.to("#e-permiso dl, #e-permiso h3",{"opacity":0.25,"duration":0.3},59.59);
+tl.fromTo("#e-permiso .retirado",{"opacity":0,"scale":1.8,"rotate":-12},{"opacity":1,"scale":1,"rotate":-8,"duration":0.3,"ease":"power4.in"},59.59);
+tl.to("#e-permiso",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},62.71);
+tl.fromTo("#e-sensible",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},62.71);
+tl.fromTo("#e-sensible .acc:nth-child(1)",{"opacity":0,"y":40},{"opacity":1,"y":0,"duration":0.4,"ease":"back.out(2)"},64.60);
+tl.fromTo("#e-sensible .acc:nth-child(2)",{"opacity":0,"y":40},{"opacity":1,"y":0,"duration":0.4,"ease":"back.out(2)"},65.52);
+tl.fromTo("#e-sensible .acc:nth-child(3)",{"opacity":0,"y":40},{"opacity":1,"y":0,"duration":0.4,"ease":"back.out(2)"},66.20);
+tl.fromTo("#e-sensible .aprob",{"opacity":0,"scale":0.9},{"opacity":1,"scale":1,"duration":0.5,"ease":"power3.out"},67.56);
+tl.to("#e-sensible .no",{"scale":1.1,"backgroundColor":"#f87171","duration":0.2,"yoyo":true,"repeat":1},70.12);
+tl.fromTo("#e-sensible .razon",{"opacity":0,"y":40},{"opacity":1,"y":0,"duration":0.45,"ease":"power3.out"},70.42);
+tl.to("#e-sensible",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},73.60);
+tl.fromTo("#e-lunes",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},73.60);
+tl.fromTo("#e-lunes .reloj",{"opacity":0,"y":-30},{"opacity":1,"y":0,"duration":0.5},73.95);
+tl.fromTo("#e-lunes .h2",{"opacity":0},{"opacity":0,"duration":0.01},73.60);
+tl.fromTo("#e-lunes .salida",{"opacity":0},{"opacity":1,"duration":0.4},76.63);
+tl.fromTo("#e-lunes .flecha-x i",{"scaleX":0},{"scaleX":1,"duration":1.2,"ease":"power1.in","transformOrigin":"0 50%"},76.95);
+tl.fromTo("#e-lunes .barrera",{"opacity":0,"scaleY":0},{"opacity":1,"scaleY":1,"duration":0.25,"ease":"back.out(3)"},80.73);
+tl.to("#e-lunes .flecha-x i",{"scaleX":0.55,"backgroundColor":"#f87171","duration":0.2},80.83);
+tl.fromTo("#e-lunes .bloq",{"opacity":0,"scale":1.8},{"opacity":1,"scale":1,"duration":0.3,"ease":"power4.in"},80.93);
+tl.to("#e-lunes .salida",{"opacity":0,"duration":0.4},83.99);
+tl.to("#e-lunes .h1",{"opacity":0,"duration":0.2},84.39);
+tl.to("#e-lunes .h2",{"opacity":1,"duration":0.2},84.39);
+tl.fromTo("#e-lunes .lectura",{"opacity":0,"y":40},{"opacity":1,"y":0,"duration":0.5,"ease":"power3.out"},84.59);
+tl.fromTo("#e-lunes .solo",{"opacity":0,"scale":0.7},{"opacity":1,"scale":1,"duration":0.35,"ease":"back.out(2)"},86.47);
+tl.fromTo("#e-lunes .timer i",{"scaleX":1},{"scaleX":0,"duration":2.0400000000000005,"ease":"none","transformOrigin":"0 50%"},89.83);
+tl.fromTo("#e-lunes .vence",{"opacity":0,"y":20},{"opacity":1,"y":0,"duration":0.4},91.47);
+tl.to("#e-lunes .solo",{"opacity":0.3,"duration":0.3},91.47);
+tl.to("#e-lunes",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},93.15);
+tl.fromTo("#e-sello",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},93.15);
+tl.fromTo("#e-sello .c2 .w",{"opacity":0,"y":36,"filter":"blur(10px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.55,"stagger":0.07,"ease":"power3.out"},93.70);
+tl.to("#fb-p1",{"opacity":0.35,"duration":0.3},93.45);
+tl.to("#fb-p2",{"opacity":0.35,"duration":0.3},93.45);
+tl.to("#fb-p3",{"opacity":0.35,"duration":0.3},93.45);
+tl.to("#fb-p4",{"opacity":0.35,"duration":0.3},93.45);
+tl.to("#fb-p0",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #f87171","duration":0.3},93.90);
+tl.fromTo("#fb-p0",{"scale":1},{"scale":1.12,"duration":0.5,"ease":"back.out(2)"},93.90);
+tl.to("#e-sello .c2",{"opacity":0,"duration":0.3},97.73);
+tl.fromTo("#e-sello .c3 .w",{"opacity":0,"y":36,"filter":"blur(10px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.55,"stagger":0.06,"ease":"power3.out"},98.03);
+tl.to("#fb-p0",{"scale":1,"duration":0.4},101.51);
+tl.to("#fb-p1",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #a78bfa","duration":0.3},101.71);
+tl.fromTo("#e-sello .sigue",{"opacity":0,"y":30},{"opacity":1,"y":0,"duration":0.5,"ease":"power3.out"},102.11);
+tl.to("#e-sello",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},104.06);
+tl.fromTo("#e-firma",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},104.06);
+tl.fromTo("#p2",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":1.8,"ease":"power2.inOut"},104.06);
+tl.to("#p2",{"opacity":0.2,"duration":1},105.86);
+tl.fromTo("#e-firma .marca",{"opacity":0,"scale":0.5,"rotate":-8},{"opacity":1,"scale":1,"rotate":0,"duration":1,"ease":"back.out(1.6)"},104.61);
+tl.fromTo("#e-firma h1",{"opacity":0,"letterSpacing":"30px","filter":"blur(10px)"},{"opacity":1,"letterSpacing":"0px","filter":"blur(0px)","duration":1.2,"ease":"power3.out"},104.91);
+tl.fromTo("#e-firma .full",{"opacity":0},{"opacity":1,"duration":0.8},105.31);
+tl.fromTo("#e-firma .firma",{"opacity":0,"y":20},{"opacity":1,"y":0,"duration":0.8,"ease":"power3.out"},107.79);
+tl.fromTo("#e-firma .url",{"opacity":0},{"opacity":1,"duration":0.8},108.79);
+tl.to("#e-firma .fin",{"opacity":0,"duration":1},112.49);
+tl.fromTo("#sweep-0",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},4.38);
+tl.fromTo("#sweep-1",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},11.67);
+tl.fromTo("#sweep-2",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},24.42);
+tl.fromTo("#sweep-3",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},33.23);
+tl.fromTo("#sweep-4",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},44.68);
+tl.fromTo("#sweep-5",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},62.61);
+tl.fromTo("#sweep-6",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},73.50);
+tl.fromTo("#sweep-7",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},93.05);
+tl.fromTo("#sweep-8",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},103.96);
+window.__timelines = window.__timelines || {};
+window.__timelines["main"] = tl;
+</script>
+</body>
+</html>

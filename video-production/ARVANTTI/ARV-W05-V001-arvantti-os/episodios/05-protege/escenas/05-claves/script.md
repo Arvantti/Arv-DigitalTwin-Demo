@@ -1,0 +1,1 @@
+Las claves nunca se leen, y si alguna aparece en una respuesta, se tapa antes de llegar al chat o al registro. Cuando un agente usa sus sistemas, como el CRM o el ERP, las credenciales las guarda Arvantti, nunca el agente: usa la conexión, pero jamás ve la clave.

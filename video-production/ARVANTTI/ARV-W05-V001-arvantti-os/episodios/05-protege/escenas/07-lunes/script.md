@@ -1,0 +1,1 @@
+Lunes, 8:21. El agente se topa con el archivo de la clave del banco e intenta abrirlo. El guardián lo bloquea y avisa al responsable de seguridad. En la respuesta, la clave sale tapada. El informe sigue, sin fugas.

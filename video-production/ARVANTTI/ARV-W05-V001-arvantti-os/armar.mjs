@@ -160,7 +160,7 @@ function mezclaMusica(escenas, total) {
   if (VERT && fs.existsSync(out)) return "audio/musica-mezcla.mp3";
   fs.mkdirSync(path.dirname(out), { recursive: true });
   const voces = escenas.filter((x) => x.real);
-  const args = ["-y", "-v", "error", "-i", src];
+  const args = ["-y", "-v", "error", "-stream_loop", "-1", "-i", src];
   voces.forEach((x) => args.push("-i", vozDe(x)));
   const del = voces.map((x, i) => `[${i + 1}:a]adelay=${Math.round(x.voiceAt * 1000)}:all=1,aformat=sample_rates=48000:channel_layouts=stereo[v${i}]`).join(";");
   const f = `${del};${voces.map((_, i) => `[v${i}]`).join("")}amix=inputs=${voces.length}:normalize=0,apad=whole_dur=${total.toFixed(2)}[vz];` +

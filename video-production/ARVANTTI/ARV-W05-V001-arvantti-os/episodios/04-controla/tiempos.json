@@ -1,0 +1,90 @@
+[
+ {
+  "id": "recap",
+  "start": 0,
+  "voiceAt": 0.6,
+  "voz": 3.63,
+  "dur": 4.73,
+  "real": true
+ },
+ {
+  "id": "gancho",
+  "start": 4.73,
+  "voiceAt": 5.03,
+  "voz": 6.19,
+  "dur": 7.29,
+  "real": true
+ },
+ {
+  "id": "dolor",
+  "start": 12.02,
+  "voiceAt": 12.32,
+  "voz": 11.65,
+  "dur": 12.75,
+  "real": true
+ },
+ {
+  "id": "principio",
+  "start": 24.77,
+  "voiceAt": 25.07,
+  "voz": 7.71,
+  "dur": 8.81,
+  "real": true
+ },
+ {
+  "id": "niveles",
+  "start": 33.58,
+  "voiceAt": 33.78,
+  "voz": 10.45,
+  "dur": 11.45,
+  "real": true
+ },
+ {
+  "id": "permiso",
+  "start": 45.03,
+  "voiceAt": 45.23,
+  "voz": 16.93,
+  "dur": 17.93,
+  "real": true
+ },
+ {
+  "id": "sensible",
+  "start": 62.96,
+  "voiceAt": 63.16,
+  "voz": 9.8,
+  "dur": 10.9,
+  "real": true
+ },
+ {
+  "id": "lunes",
+  "start": 73.85,
+  "voiceAt": 74.15,
+  "voz": 18.05,
+  "dur": 19.55,
+  "real": true
+ },
+ {
+  "id": "figura",
+  "start": 93.4,
+  "voiceAt": 93.7,
+  "voz": 3.63,
+  "dur": 4.43,
+  "real": true
+ },
+ {
+  "id": "siguiente",
+  "start": 97.83,
+  "voiceAt": 98.03,
+  "voz": 4.68,
+  "dur": 6.48,
+  "real": true
+ },
+ {
+  "id": "firma",
+  "start": 104.31,
+  "voiceAt": 104.91,
+  "voz": 4.83,
+  "dur": 8.93,
+  "real": true
+ }
+]

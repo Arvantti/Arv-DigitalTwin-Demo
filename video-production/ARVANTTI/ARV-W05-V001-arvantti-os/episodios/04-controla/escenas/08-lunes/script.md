@@ -1,0 +1,1 @@
+Lunes, 8:14. El agente intenta subir las ventas a un sitio externo de gráficas. Arvantti OS lo detiene: salida a internet no autorizada. 8:15: recibe permiso para leer la carpeta de ventas, solo durante esta tarea. Al cerrarla, el permiso se vence solo.

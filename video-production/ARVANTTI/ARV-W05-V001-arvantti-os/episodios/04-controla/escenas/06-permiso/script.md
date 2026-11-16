@@ -1,0 +1,1 @@
+Cuando un agente necesita algo, recibe un permiso puntual: quién, sobre qué y para qué. Por ejemplo: el agente de finanzas, la carpeta de ventas, solo leer. Ese permiso dura lo que dura la tarea y se retira con un clic, como la escarapela de un visitante.

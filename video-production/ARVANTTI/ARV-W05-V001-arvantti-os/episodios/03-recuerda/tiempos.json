@@ -1,0 +1,82 @@
+[
+ {
+  "id": "recap",
+  "start": 0,
+  "voiceAt": 0.6,
+  "voz": 3.63,
+  "dur": 4.73,
+  "real": true
+ },
+ {
+  "id": "gancho",
+  "start": 4.73,
+  "voiceAt": 5.03,
+  "voz": 5.07,
+  "dur": 6.17,
+  "real": true
+ },
+ {
+  "id": "dolor",
+  "start": 10.9,
+  "voiceAt": 11.2,
+  "voz": 13.64,
+  "dur": 14.74,
+  "real": true
+ },
+ {
+  "id": "memoria",
+  "start": 25.63,
+  "voiceAt": 25.93,
+  "voz": 14.92,
+  "dur": 16.02,
+  "real": true
+ },
+ {
+  "id": "fuente",
+  "start": 41.65,
+  "voiceAt": 41.85,
+  "voz": 9.64,
+  "dur": 10.64,
+  "real": true
+ },
+ {
+  "id": "justo",
+  "start": 52.29,
+  "voiceAt": 52.49,
+  "voz": 11.96,
+  "dur": 13.06,
+  "real": true
+ },
+ {
+  "id": "lunes",
+  "start": 65.35,
+  "voiceAt": 65.65,
+  "voz": 12.83,
+  "dur": 14.33,
+  "real": true
+ },
+ {
+  "id": "figura",
+  "start": 79.68,
+  "voiceAt": 79.98,
+  "voz": 3.47,
+  "dur": 4.27,
+  "real": true
+ },
+ {
+  "id": "siguiente",
+  "start": 83.95,
+  "voiceAt": 84.15,
+  "voz": 4.21,
+  "dur": 6.01,
+  "real": true
+ },
+ {
+  "id": "firma",
+  "start": 89.96,
+  "voiceAt": 90.56,
+  "voz": 4.83,
+  "dur": 8.93,
+  "real": true
+ }
+]

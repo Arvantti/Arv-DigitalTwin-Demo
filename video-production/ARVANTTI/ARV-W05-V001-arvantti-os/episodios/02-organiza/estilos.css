@@ -5,8 +5,6 @@
 /* Dolor */
 .chat{position:absolute;left:50%;top:180px;width:900px;margin-left:-450px}
 .v .chat{top:330px;width:920px;margin-left:-460px}
-.msg{width:fit-content;max-width:640px;margin:0 0 22px;padding:20px 28px;border-radius:24px 24px 24px 6px;background:#16243f;font:600 36px Inter,sans-serif;opacity:0}
-.msg.r{margin-left:auto;border-radius:24px 24px 6px 24px;background:#1f4f9a}
 .perdido{position:absolute;left:0;right:0;top:360px;margin:0;text-align:center;font:800 80px "Inter Display",Inter,sans-serif;color:#ffb07a}
 .planes{position:absolute;left:0;right:0;top:220px;display:flex;justify-content:center;gap:60px;opacity:0}
 .v .planes{top:380px;flex-direction:column;align-items:center;gap:40px}
@@ -30,11 +28,8 @@
 .v .flash{top:1320px}
 
 /* Tarea */
-.badge-prom{position:absolute;left:50%;top:250px;transform:translateX(-50%);padding:10px 34px;border-radius:12px;background:var(--c);color:#0b1020;font:800 34px Inter,sans-serif;letter-spacing:3px;box-shadow:0 0 50px var(--c)}
-.v .badge-prom{top:470px}
 .tcard{position:absolute;left:50%;top:370px;width:900px;margin-left:-450px;padding:36px 44px;border-radius:24px;background:#0b1428f2;border:3px solid #34d399;box-shadow:0 30px 90px #000c,0 0 60px #34d39944}
 .v .tcard{top:640px;width:940px;margin-left:-470px}
-.tcard .tid,.t12 .tid{margin:0;font:700 24px "JetBrains Mono",monospace;letter-spacing:4px;color:#34d399}
 .tcard h3{margin:10px 0 26px;font:800 64px "Inter Display",Inter,sans-serif}
 .tcard dl{margin:0;display:grid;grid-template-columns:220px 1fr;row-gap:20px;font:600 40px Inter,sans-serif}
 .tcard dt{color:#9fb3cf}.tcard dd{margin:0}
@@ -78,14 +73,6 @@
 .kc.slot{background:#123a2e;border:2px solid #34d399;font-weight:800}
 #tb2{top:430px}
 .v #tb2{top:800px}
-.reloj.r2{left:110px;top:150px}
-.reloj.r2 .hora{font-size:120px}
-.v .reloj.r2{left:70px;top:240px}
-.t12{position:absolute;left:760px;top:180px;width:760px;padding:24px 30px;border-radius:20px;background:#0b1428f2;border:3px solid #34d399;box-shadow:0 0 60px #34d39944}
-.v .t12{left:70px;right:70px;top:500px;width:auto}
-.t12 h3{margin:6px 0 10px;font:800 46px "Inter Display",Inter,sans-serif}
-.t12 .asg{margin:0;display:flex;align-items:center;gap:12px;font:600 30px Inter,sans-serif;color:#c9d1e0}
-.t12 .asg i{width:16px;height:16px;border-radius:50%;background:#f87171}
 .v .perdido{top:520px}
 .v #e-recap .capas{top:56%}
 #e-recap .capas{top:57%}
