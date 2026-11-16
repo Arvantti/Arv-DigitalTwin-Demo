@@ -330,7 +330,12 @@ export default {
     if (!user) return withCors(json({ detail: "Authenticated Access session required" }, 401), request, env);
 
     let response: Response;
-    if (url.pathname === "/v1/check" && request.method === "GET") {
+    if (url.pathname === "/v1/login-return" && request.method === "GET") {
+      response = new Response(null, {
+        status: 302,
+        headers: { location: `${env.GALLERY_ORIGIN}/`, "cache-control": "no-store" },
+      });
+    } else if (url.pathname === "/v1/check" && request.method === "GET") {
       const twinId = url.searchParams.get("twin_id") ?? "";
       const permission = url.searchParams.get("permission");
       if (!catalog(env).includes(twinId) || (permission !== "admin.action" && !isTwinPermission(permission))) {

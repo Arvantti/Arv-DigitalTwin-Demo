@@ -83,6 +83,13 @@ describe("access-control API", () => {
     expect(noSessionCookie.status).toBe(401);
   });
 
+  it("returns an authenticated user to the public portal after Access login", async () => {
+    const response = await worker.fetch(request("/v1/login-return", "viewer-token"), env());
+    expect(response.status).toBe(302);
+    expect(response.headers.get("location")).toBe(`${origin}/`);
+    expect(response.headers.get("cache-control")).toBe("no-store");
+  });
+
   it("forwards only the Access cookie extracted from the request to the Pages gate", async () => {
     const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) => Response.json({ allowed: true }));
     vi.stubGlobal("fetch", fetchMock);
@@ -102,6 +109,19 @@ describe("access-control API", () => {
     expect(upstreamHeaders.get("cf-access-session-cookie")).toBe("real-session-cookie");
     expect(upstreamHeaders.get("cf-access-jwt-assertion")).toBe("signed-assertion");
     expect(upstreamHeaders.has("cookie")).toBe(false);
+  });
+
+  it("preserves the login-return redirect through the Pages API proxy", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(null, { status: 302, headers: { location: `${origin}/` } })));
+    const result = await onRequest({
+      request: new Request("https://digitaltwin.arvantti.online/api/access/v1/login-return", {
+        headers: { "cf-access-jwt-assertion": "signed-assertion", cookie: "CF_Authorization=real-session-cookie" },
+      }),
+      env: { ACCESS_CONTROL_API_URL: "https://access-api.example" },
+      next: async () => new Response("page"),
+    });
+    expect(result.status).toBe(302);
+    expect(result.headers.get("location")).toBe(`${origin}/`);
   });
 
   it("rejects a forged internal session header when the browser has no Access cookie", async () => {
