@@ -1,0 +1,82 @@
+[
+ {
+  "id": "recap",
+  "start": 0,
+  "voiceAt": 0.6,
+  "voz": 4.28,
+  "dur": 5.38,
+  "real": true
+ },
+ {
+  "id": "gancho",
+  "start": 5.38,
+  "voiceAt": 5.68,
+  "voz": 5.64,
+  "dur": 6.74,
+  "real": true
+ },
+ {
+  "id": "dolor",
+  "start": 12.13,
+  "voiceAt": 12.43,
+  "voz": 13.56,
+  "dur": 14.66,
+  "real": true
+ },
+ {
+  "id": "tarea",
+  "start": 26.78,
+  "voiceAt": 27.08,
+  "voz": 8.12,
+  "dur": 9.22,
+  "real": true
+ },
+ {
+  "id": "escalera",
+  "start": 36.01,
+  "voiceAt": 36.21,
+  "voz": 18.99,
+  "dur": 19.99,
+  "real": true
+ },
+ {
+  "id": "paralelo",
+  "start": 56,
+  "voiceAt": 56.2,
+  "voz": 7.39,
+  "dur": 8.59,
+  "real": true
+ },
+ {
+  "id": "lunes",
+  "start": 64.59,
+  "voiceAt": 64.89,
+  "voz": 12.59,
+  "dur": 14.09,
+  "real": true
+ },
+ {
+  "id": "figura",
+  "start": 78.68,
+  "voiceAt": 78.98,
+  "voz": 4.6,
+  "dur": 5.4,
+  "real": true
+ },
+ {
+  "id": "siguiente",
+  "start": 84.08,
+  "voiceAt": 84.28,
+  "voz": 4.21,
+  "dur": 6.01,
+  "real": true
+ },
+ {
+  "id": "firma",
+  "start": 90.09,
+  "voiceAt": 90.69,
+  "voz": 4.91,
+  "dur": 9.01,
+  "real": true
+ }
+]

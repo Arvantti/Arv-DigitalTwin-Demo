@@ -1,0 +1,1 @@
+Antes de empezar, el sistema mide cuánto planear: si es un paso pequeño, se hace directo; si es trabajo normal, queda como tarea; y si es grande o tiene riesgo, propone primero un plan escrito, corto o completo, que dice qué se va a hacer y cómo se sabrá que quedó bien. La última palabra la tiene una persona.

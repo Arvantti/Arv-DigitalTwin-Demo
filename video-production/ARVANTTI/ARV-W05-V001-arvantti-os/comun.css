@@ -1,4 +1,4 @@
-/* Episodio 1 · Arvantti OS. Las reglas .v ajustan la versión vertical 9:16. */
+/* Estilos comunes de la serie (nacieron en el episodio 1). Las reglas .v ajustan la vertical 9:16. */
 
 /* Gancho */
 .win{position:absolute;width:400px;padding:0 0 22px;border-radius:16px;background:#0d1a30ee;border:2px solid #4ea7ff55;box-shadow:0 20px 60px #000a;opacity:0}
@@ -70,7 +70,7 @@
 #e-capas .capas{top:56%}
 .v #e-capas .capas{top:55%}
 #e-sello .capas{top:53%}
-.v #e-sello .capas{top:53%}
+.v #e-sello .capas{top:56%}
 .fila span{opacity:1}
 .fila .pl{border-color:#4ea7ffaa;background:#12305e}
 .sigue{position:absolute;left:0;right:0;bottom:46px;text-align:center;font:600 34px Inter,sans-serif;color:#c9d6ea;opacity:0}

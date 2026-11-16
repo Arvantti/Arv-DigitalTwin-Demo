@@ -1,0 +1,91 @@
+/* Episodio 2 · Organiza */
+.q2{font-size:120px}
+.v .q2{font-size:116px}
+
+/* Dolor */
+.chat{position:absolute;left:50%;top:180px;width:900px;margin-left:-450px}
+.v .chat{top:330px;width:920px;margin-left:-460px}
+.msg{width:fit-content;max-width:640px;margin:0 0 22px;padding:20px 28px;border-radius:24px 24px 24px 6px;background:#16243f;font:600 36px Inter,sans-serif;opacity:0}
+.msg.r{margin-left:auto;border-radius:24px 24px 6px 24px;background:#1f4f9a}
+.perdido{position:absolute;left:0;right:0;top:360px;margin:0;text-align:center;font:800 80px "Inter Display",Inter,sans-serif;color:#ffb07a}
+.planes{position:absolute;left:0;right:0;top:220px;display:flex;justify-content:center;gap:60px;opacity:0}
+.v .planes{top:380px;flex-direction:column;align-items:center;gap:40px}
+.plan{width:620px;height:560px;padding:32px;border-radius:22px;background:#0d1a30e6;border:2px solid #4ea7ff55;position:relative}
+.v .plan{width:900px;height:520px}
+.plan .ph{margin:0 0 22px;font:700 28px "JetBrains Mono",monospace;letter-spacing:4px;color:#ffb07a}
+.plan .pl{height:22px;margin:0 0 18px;border-radius:8px;background:#2a3b58}
+.plan .pf{position:absolute;left:32px;bottom:26px;margin:0;font:600 30px Inter,sans-serif;color:#c9d1e0}
+.plan .rayo{margin:70px 0 0;text-align:center;font:900 170px "Inter Display",Inter,sans-serif;color:#ff6b35;text-shadow:0 0 60px #ff6b35aa}
+.choque{position:absolute;inset:0;opacity:0}
+.choque .doc{position:absolute;left:50%;top:300px;width:460px;height:400px;margin-left:-230px;padding:30px;border-radius:18px;background:#e9eef7;color:#0b1020}
+.v .choque .doc{top:640px}
+.choque .doc p{margin:0 0 24px;font:800 36px Inter,sans-serif}
+.choque .doc .ln{height:18px;margin:0 0 18px;border-radius:6px;background:#b9c4d6}
+.choque .doc .ln.s{width:60%}
+.agc{position:absolute;top:760px;padding:18px 30px;border-radius:999px;font:700 36px Inter,sans-serif;background:#16243f;border:3px solid #ff6b35}
+.agc.a1{left:calc(50% - 400px)}.agc.a2{left:calc(50% + 120px)}
+.v .agc{top:1120px}
+.v .agc.a1{left:90px}.v .agc.a2{left:auto;right:90px}
+.flash{position:absolute;left:50%;top:160px;width:600px;margin-left:-300px;padding:14px 0;border:6px solid #ff4d4d;border-radius:16px;color:#ff4d4d;text-align:center;font:900 70px "Inter Display",Inter,sans-serif;letter-spacing:6px;background:#05070ccc;box-shadow:0 0 60px #ff4d4d55}
+.v .flash{top:1320px}
+
+/* Tarea */
+.badge-prom{position:absolute;left:50%;top:250px;transform:translateX(-50%);padding:10px 34px;border-radius:12px;background:var(--c);color:#0b1020;font:800 34px Inter,sans-serif;letter-spacing:3px;box-shadow:0 0 50px var(--c)}
+.v .badge-prom{top:470px}
+.tcard{position:absolute;left:50%;top:370px;width:900px;margin-left:-450px;padding:36px 44px;border-radius:24px;background:#0b1428f2;border:3px solid #34d399;box-shadow:0 30px 90px #000c,0 0 60px #34d39944}
+.v .tcard{top:640px;width:940px;margin-left:-470px}
+.tcard .tid,.t12 .tid{margin:0;font:700 24px "JetBrains Mono",monospace;letter-spacing:4px;color:#34d399}
+.tcard h3{margin:10px 0 26px;font:800 64px "Inter Display",Inter,sans-serif}
+.tcard dl{margin:0;display:grid;grid-template-columns:220px 1fr;row-gap:20px;font:600 40px Inter,sans-serif}
+.tcard dt{color:#9fb3cf}.tcard dd{margin:0}
+
+/* Escalera */
+.esc{position:absolute;left:150px;top:300px;width:1000px;height:560px;display:flex;align-items:flex-end;gap:24px}
+.esc-n{flex:1;height:calc(160px + var(--i) * 120px);padding:24px 18px;border-radius:18px 18px 6px 6px;background:#0d1a30;border:3px solid #2a3b58;display:flex;flex-direction:column;justify-content:flex-end}
+.esc-n b{font:800 38px "Inter Display",Inter,sans-serif}
+.esc-n small{margin-top:8px;font:500 22px Inter,sans-serif;color:#9fb3cf}
+.plandoc{position:absolute;left:1220px;top:340px;width:560px;padding:32px;border-radius:22px;background:#0b1428f2;border:2px solid #4ea7ff66}
+.plandoc .ph{margin:0 0 20px;font:700 24px "JetBrains Mono",monospace;letter-spacing:4px;color:#9fd0ff}
+.plandoc .pq{display:flex;align-items:center;gap:16px;margin:0 0 20px;font:600 34px Inter,sans-serif}
+.plandoc .pq i{flex:none;width:44px;height:44px;border-radius:50%;background:var(--blue);font:700 24px/44px "JetBrains Mono",monospace;font-style:normal;text-align:center}
+.plandoc .ok{margin-top:16px;padding:16px 22px;border-radius:14px;background:#34d399;color:#0b1020;font:800 32px Inter,sans-serif;text-align:center}
+.v .esc{left:70px;top:420px;width:940px;height:620px;gap:16px}
+.v .esc-n{height:calc(200px + var(--i) * 130px)}
+.v .esc-n b{font-size:34px}
+.v .plandoc{left:70px;top:1150px;width:940px}
+
+/* Paralelo y tablero */
+.lanes{position:absolute;left:50%;top:300px;width:1200px;margin-left:-600px}
+.v .lanes{top:520px;width:940px;margin-left:-470px}
+.lane{position:relative;margin:0 0 30px;padding:30px 34px;border-radius:20px;background:#0d1a30e6;border:2px solid var(--c);border-left-width:10px}
+.lane .lt{font:700 40px Inter,sans-serif}
+.lane .ls{float:right;font:600 24px "JetBrains Mono",monospace;letter-spacing:3px;color:#9fb3cf}
+.lane .bar{margin-top:20px;height:16px;border-radius:8px;background:#1c2c48;overflow:hidden}
+.lane .bar i{display:block;height:100%;background:var(--c)}
+.tablero{position:absolute;left:50%;top:190px;width:1500px;margin-left:-750px}
+.v .tablero{top:620px;width:960px;margin-left:-480px}
+.tbt{margin:0 0 18px;font:700 26px "JetBrains Mono",monospace;letter-spacing:5px;color:#9fd0ff}
+.tbt .vivo{color:#ff4d4d}
+.cols{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.v .cols{gap:14px}
+.col{min-height:520px;padding:22px;border-radius:20px;background:#0b1428e6;border:2px solid #2a3b58}
+.v .col{min-height:640px;padding:14px}
+.col .cn{margin:0 0 18px;font:800 34px "Inter Display",Inter,sans-serif}
+.v .col .cn{font-size:30px}
+.kc{margin:0 0 14px;padding:20px;border-radius:14px;background:#16243f;font:600 28px Inter,sans-serif}
+.v .kc{font-size:26px;padding:16px}
+#tb1 .slot{display:none}
+.kc.slot{background:#123a2e;border:2px solid #34d399;font-weight:800}
+#tb2{top:430px}
+.v #tb2{top:800px}
+.reloj.r2{left:110px;top:150px}
+.reloj.r2 .hora{font-size:120px}
+.v .reloj.r2{left:70px;top:240px}
+.t12{position:absolute;left:760px;top:180px;width:760px;padding:24px 30px;border-radius:20px;background:#0b1428f2;border:3px solid #34d399;box-shadow:0 0 60px #34d39944}
+.v .t12{left:70px;right:70px;top:500px;width:auto}
+.t12 h3{margin:6px 0 10px;font:800 46px "Inter Display",Inter,sans-serif}
+.t12 .asg{margin:0;display:flex;align-items:center;gap:12px;font:600 30px Inter,sans-serif;color:#c9d1e0}
+.t12 .asg i{width:16px;height:16px;border-radius:50%;background:#f87171}
+.v .perdido{top:520px}
+.v #e-recap .capas{top:56%}
+#e-recap .capas{top:57%}

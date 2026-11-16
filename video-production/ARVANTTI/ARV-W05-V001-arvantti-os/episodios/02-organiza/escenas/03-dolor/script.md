@@ -1,0 +1,1 @@
+Los pedidos llegan por chat, se pierden en una conversación y nadie sabe si se terminaron. Unas veces la IA planea de más; otras, se lanza sin plan. Y cuando dos agentes toman el mismo trabajo, se pisan.

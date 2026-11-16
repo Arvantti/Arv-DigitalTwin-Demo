@@ -30,7 +30,8 @@ const vozDe = (e) => E(`escenas/${e.dir}/assets/audio/voiceover.mp3`);
 const alineacionDe = (e) => E(`escenas/${e.dir}/assets/audio/alignment.json`);
 
 // Palabras que la voz en español lee mal: se envían escritas como se pronuncian (en pantalla quedan igual).
-const PRONUNCIA = [["ISO 42001", "ISO cuarenta y dos mil uno"], ["SDD", "ese de de"], ["T-12", "te doce"]];
+const PRONUNCIA = [["ISO 42001", "ISO cuarenta y dos mil uno"], ["SDD", "ese de de"], ["T-12", "te doce"],
+  ["8:02", "ocho y dos"], ["8:05", "ocho y cinco"], ["8:14", "ocho y catorce"], ["8:15", "ocho y quince"], ["8:21", "ocho y veintiuno"], ["9:10", "nueve y diez"]];
 function paraVoz(texto) {
   let out = "", idx = [];
   for (let i = 0; i < texto.length; ) {
@@ -221,7 +222,7 @@ function componer() {
   if (temporal) html.push(`<div id="temp" class="clip" data-start="0" data-duration="${total.toFixed(2)}" data-track-index="50">SIN VOZ · TIEMPOS ESTIMADOS</div>`);
 
   const css = fs.readFileSync(path.join(HERE, "plantilla.html"), "utf8");
-  const epcss = fs.existsSync(E("estilos.css")) ? fs.readFileSync(E("estilos.css"), "utf8") : "";
+  const epcss = fs.readFileSync(path.join(HERE, "comun.css"), "utf8") + "\n" + (fs.existsSync(E("estilos.css")) ? fs.readFileSync(E("estilos.css"), "utf8") : "");
   const out = css
     .replaceAll("{{W}}", String(W)).replaceAll("{{H}}", String(H))
     .replace("{{RES}}", VERT ? "portrait" : "landscape")
