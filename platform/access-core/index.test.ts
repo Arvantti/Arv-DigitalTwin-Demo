@@ -4,6 +4,7 @@ import { defaultPermissionsForViewer, hasTwinPermission, normalizeAssignment, vi
 const viewer: AccessPrincipal = {
   subject: "auth0|viewer-1",
   administrator: false,
+  globalViewOnly: false,
   assignments: [
     { twinId: "water-network-scale-v1", permissions: ["view", "saved_studies.read"] },
     { twinId: "sauce-plant-v1", permissions: ["view", "saved_studies.create"] },
@@ -31,6 +32,15 @@ describe("per-user, per-twin access policy", () => {
       assignments: [...viewer.assignments, viewer.assignments[0]!],
     };
     expect(visibleTwinIds(duplicate, ["water-network-scale-v1"])).toEqual(["water-network-scale-v1"]);
+  });
+
+  it("gives approved global viewers read-only access to current and future catalog twins", () => {
+    const approved: AccessPrincipal = { subject: "auth0|approved", administrator: false, globalViewOnly: true, assignments: [] };
+    const catalog = ["water-network-scale-v1", "new-future-twin"];
+    expect(hasTwinPermission(approved, "new-future-twin", "view")).toBe(true);
+    expect(hasTwinPermission(approved, "new-future-twin", "saved_studies.read")).toBe(false);
+    expect(hasTwinPermission(approved, "new-future-twin", "saved_studies.create")).toBe(false);
+    expect(visibleTwinIds(approved, catalog)).toEqual(catalog);
   });
 
   it("grants the administrator global access without creating implicit user assignments", () => {

@@ -18,6 +18,8 @@ body.portal { position: relative; isolation: isolate; background: radial-gradien
 
 .portal-wrap { position: relative; z-index: 1; max-width: 1180px; }
 .portal-q { font: 700 28px Orbitron, sans-serif; letter-spacing: 0.04em; margin: 0 0 4px; }
+.portal-access-notice { margin: 18px 0 0; padding: 14px 16px; border: 1px solid #ffb00066; border-radius: 10px; color: #ffe4a4; background: #3b2d1555; }
+.portal-access-notice[hidden] { display: none; }
 .portal-cards { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; }
 .gcard { --c: #4ea7ff; --rx: 0deg; --ry: 0deg; --mx: 50%; --my: 0%; position: relative; filter: drop-shadow(0 0 0 transparent); transform: perspective(1000px) rotateX(var(--rx)) rotateY(var(--ry)); transition: transform 0.25s ease, filter 0.3s ease; }
 .gcard.wide { grid-column: span 2; }

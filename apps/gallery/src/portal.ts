@@ -106,18 +106,32 @@ const accessControlApi = import.meta.env.PROD
 const adminLink = document.getElementById("portal-admin-link") as HTMLAnchorElement | null;
 const loginLink = document.getElementById("portal-login-link") as HTMLAnchorElement | null;
 const logoutLink = document.getElementById("portal-logout-link") as HTMLAnchorElement | null;
+const accessNotice = document.getElementById("portal-access-notice") as HTMLParagraphElement | null;
 let allowedTwinIds: Set<string> | null = null;
 if (accessControlApi) {
   try {
     const response = await fetch(`${accessControlApi}/v1/me`, { credentials: "include", cache: "no-store" });
     if (response.ok) {
-      const me = await response.json() as { administrator?: boolean; twins?: unknown };
+      const me = await response.json() as { administrator?: boolean; twins?: unknown; approval_status?: string };
       const administrator = me.administrator === true;
       if (administrator || (Array.isArray(me.twins) && me.twins.every((id) => typeof id === "string"))) {
         if (loginLink) loginLink.hidden = true;
         if (logoutLink) logoutLink.hidden = false;
         if (administrator && adminLink) adminLink.hidden = false;
         if (!administrator) allowedTwinIds = new Set(me.twins as string[]);
+        const notice = me.approval_status === "pending"
+          ? "Tu solicitud está pendiente de aprobación. Te avisaremos cuando el acceso esté habilitado."
+          : me.approval_status === "rejected"
+            ? "Tu solicitud de acceso no fue aprobada. Contacta al administrador si necesitas más información."
+            : me.approval_status === "email_unverified"
+              ? "Verifica tu correo electrónico antes de solicitar acceso."
+              : !administrator && Array.isArray(me.twins) && me.twins.length === 0
+                ? "Tu cuenta todavía no tiene gemelos asignados. Contacta al administrador."
+                : "";
+        if (notice && accessNotice) {
+          accessNotice.textContent = notice;
+          accessNotice.hidden = false;
+        }
       }
     }
   } catch {
