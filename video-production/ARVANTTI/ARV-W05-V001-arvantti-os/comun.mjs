@@ -1,10 +1,10 @@
 // Piezas comunes de la serie: la figura de tres capas (sello) y los colores de las cinco promesas.
 export const PROMESAS = [
-  { id: "controla", n: "Controla", c: "#f87171" },
-  { id: "protege", n: "Protege", c: "#a78bfa" },
-  { id: "organiza", n: "Organiza", c: "#34d399" },
-  { id: "recuerda", n: "Recuerda", c: "#fbbf24" },
-  { id: "rinde", n: "Rinde cuentas", c: "#22d3ee" },
+  { id: "controla", n: "Controla", c: "#2d7ff9" },
+  { id: "protege", n: "Protege", c: "#c4b5fd" },
+  { id: "organiza", n: "Organiza", c: "#4ea7ff" },
+  { id: "recuerda", n: "Recuerda", c: "#d8dadf" },
+  { id: "rinde", n: "Rinde cuentas", c: "#f8fafc" },
 ];
 
 /** Figura de tres capas: Enterprise arriba, núcleo con las cinco promesas y base que se conecta con todo. */

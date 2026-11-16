@@ -7,7 +7,7 @@
 <script src="assets/vendor/gsap.min.js"></script>
 <style>
 :root{--blue:#2d7ff9;--electric:#4ea7ff;--ti:#d8dadf;--black:#05070c;--white:#f8fafc;
-  --controla:#f87171;--protege:#a78bfa;--organiza:#34d399;--recuerda:#fbbf24;--rinde:#22d3ee;--ent:#4ea7ff}
+  --controla:#2d7ff9;--protege:#c4b5fd;--organiza:#4ea7ff;--recuerda:#d8dadf;--rinde:#f8fafc;--ent:#4ea7ff}
 *{box-sizing:border-box}
 html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:var(--black);font-family:Inter,"Inter Display",Arial,sans-serif;color:var(--white)}
 #root{position:relative;width:1920px;height:1080px;overflow:hidden;background:var(--black)}
@@ -33,7 +33,7 @@ html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:var(--b
 .sweep{background:linear-gradient(100deg,#0000 35%,#4ea7ff18 45%,#ffffff40 50%,#4ea7ff18 55%,#0000 65%);mix-blend-mode:screen;pointer-events:none}
 .estela{position:absolute;inset:0;width:100%;height:100%}
 .estela path{fill:none;stroke:#4ea7ff;stroke-width:5;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1;filter:drop-shadow(0 0 10px #4ea7ff) drop-shadow(0 0 30px #2d7ff9)}
-#temp{left:auto;top:auto;right:20px;bottom:16px;font:700 15px "JetBrains Mono",monospace;color:#ff6b35;letter-spacing:2px}
+#temp{left:auto;top:auto;right:20px;bottom:16px;font:700 15px "JetBrains Mono",monospace;color:#ff4b00;letter-spacing:2px}
 
 /* Figura de tres capas (sello de la serie) */
 .capas{position:absolute;left:50%;top:50%;width:1500px;transform:translate(-50%,-50%);display:flex;flex-direction:column;gap:22px}
@@ -84,13 +84,13 @@ html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:var(--b
 .v .area{height:330px}
 .area .an{margin:0;font:800 40px "Inter Display",Inter,sans-serif}
 .area .ai{margin:14px 0 0;display:inline-block;padding:8px 18px;border-radius:999px;background:#16243f;font:600 28px Inter,sans-serif;color:#9fd0ff}
-.area .rg{position:absolute;left:30px;bottom:30px;margin:0;font:500 26px "JetBrains Mono",monospace;color:#ffb07a}
-.area .qm{position:absolute;right:24px;top:20px;width:76px;height:76px;border-radius:50%;background:#ff6b35;color:#fff;font:800 52px/76px Inter,sans-serif;text-align:center;box-shadow:0 0 40px #ff6b3588}
+.area .rg{position:absolute;left:30px;bottom:30px;margin:0;font:500 26px "JetBrains Mono",monospace;color:#ff4b00}
+.area .qm{position:absolute;right:24px;top:20px;width:76px;height:76px;border-radius:50%;background:#ff4b00;color:#fff;font:800 52px/76px Inter,sans-serif;text-align:center;box-shadow:0 0 40px #ff4b0088}
 .pregs{position:absolute;left:0;right:0;top:600px;text-align:center}
 .pregs span{display:inline-block;margin:0 18px;font:800 54px "Inter Display",Inter,sans-serif;opacity:0}
 .v .pregs{top:1060px}
 .v .pregs span{display:block;margin:0 0 26px;font-size:62px}
-.sello{position:absolute;left:50%;top:790px;width:600px;margin-left:-300px;padding:18px 0;border:6px solid #ff4d4d;border-radius:16px;color:#ff4d4d;text-align:center;font:900 76px "Inter Display",Inter,sans-serif;letter-spacing:8px;background:#05070ccc;box-shadow:0 0 60px #ff4d4d55;opacity:0}
+.sello{position:absolute;left:50%;top:790px;width:600px;margin-left:-300px;padding:18px 0;border:6px solid #ff6b63;border-radius:16px;color:#ff6b63;text-align:center;font:900 76px "Inter Display",Inter,sans-serif;letter-spacing:8px;background:#05070ccc;box-shadow:0 0 60px #ff6b6355;opacity:0}
 .v .sello{top:1440px;width:760px;margin-left:-380px;font-size:90px}
 
 /* Título y firma */
@@ -133,7 +133,7 @@ html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:var(--b
 #e-capas .capas{top:56%}
 .v #e-capas .capas{top:55%}
 #e-sello .capas{top:53%}
-.v #e-sello .capas{top:53%}
+.v #e-sello .capas{top:56%}
 .fila span{opacity:1}
 .fila .pl{border-color:#4ea7ffaa;background:#12305e}
 .sigue{position:absolute;left:0;right:0;bottom:46px;text-align:center;font:600 34px Inter,sans-serif;color:#c9d6ea;opacity:0}
@@ -170,6 +170,29 @@ html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:var(--b
 #e-capas .capas{top:55%}
 #e-sello .capas{top:56%}
 .v .titulo .sub{padding:0 60px}
+
+/* Piezas compartidas entre episodios (mensajes, tarjeta T-12, reloj del lunes, insignia de promesa) */
+.msg{width:fit-content;max-width:640px;margin:0 0 22px;padding:20px 28px;border-radius:24px 24px 24px 6px;background:#16243f;font:600 36px Inter,sans-serif;opacity:0}
+.msg.r{margin-left:auto;border-radius:24px 24px 6px 24px;background:#1f4f9a}
+.badge-prom{position:absolute;left:50%;top:250px;transform:translateX(-50%);padding:10px 34px;border-radius:12px;background:var(--c);color:#0b1020;font:800 34px Inter,sans-serif;letter-spacing:3px;box-shadow:0 0 50px var(--c)}
+.v .badge-prom{top:470px}
+.tcard .tid,.t12 .tid{margin:0;font:700 24px "JetBrains Mono",monospace;letter-spacing:4px;color:#4ea7ff}
+.reloj.r2{left:110px;top:150px}
+.reloj.r2 .hora{font-size:120px}
+.v .reloj.r2{left:70px;top:240px}
+.t12{position:absolute;left:760px;top:180px;width:760px;padding:24px 30px;border-radius:20px;background:#0b1428f2;border:3px solid #4ea7ff;box-shadow:0 0 60px #4ea7ff44}
+.v .t12{left:70px;right:70px;top:500px;width:auto}
+.t12 h3{margin:6px 0 10px;font:800 46px "Inter Display",Inter,sans-serif}
+.t12 .asg{margin:0;display:flex;align-items:center;gap:12px;font:600 30px Inter,sans-serif;color:#c9d1e0}
+.t12 .asg i{width:16px;height:16px;border-radius:50%;background:#2d7ff9}
+.t12 .tid{margin:0;font:700 24px "JetBrains Mono",monospace;letter-spacing:4px;color:#4ea7ff}
+.tcard .tid{margin:0;font:700 24px "JetBrains Mono",monospace;letter-spacing:4px;color:#4ea7ff}
+.lbl{position:absolute;left:0;right:0;top:780px;margin:0;text-align:center;font:800 74px "Inter Display",Inter,sans-serif;color:#ff4b00}
+.v .lbl{top:1200px;padding:0 60px;font-size:80px}
+.archivo{position:absolute;left:260px;top:300px;width:360px;padding:30px;border-radius:20px;background:#e9eef7;color:#0b1020;text-align:center;box-shadow:0 30px 80px #000c}
+.archivo i{display:block;width:90px;height:110px;margin:0 auto 16px;border-radius:8px;background:linear-gradient(135deg,#1f4f9a 0 70%,#0000 70%),#1f4f9a}
+.archivo b{display:block;font:800 34px Inter,sans-serif}
+.archivo small{font:600 24px Inter,sans-serif;color:#555}
 
 
 </style>
@@ -213,7 +236,7 @@ html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:var(--b
 <audio id="sfx-16" src="assets/shared/core/sfx/click-soft.mp3" data-start="37.56" data-duration="1.40" data-volume="0.22" data-track-index="116"></audio>
 <div id="e-capas" class="clip scene" data-start="38.69" data-duration="24.21" data-track-index="3"><p class="center figcap"><span class="w">No</span> <span class="w">los</span> <span class="w">reemplaza:</span> <span class="w">los</span> <span class="w">envuelve.</span></p><div class="capas" id="fa">
     <div class="capa ent" id="fa-ent"><h3>Arvantti OS Enterprise</h3><p>Agentes, habilidades, voz y panel de dirección</p></div>
-    <div class="capa nuc" id="fa-nuc"><p class="ct">NÚCLEO · CINCO PROMESAS</p><div class="proms"><div class="prom" id="fa-p0" style="--c:#f87171">Controla</div><div class="prom" id="fa-p1" style="--c:#a78bfa">Protege</div><div class="prom" id="fa-p2" style="--c:#34d399">Organiza</div><div class="prom" id="fa-p3" style="--c:#fbbf24">Recuerda</div><div class="prom" id="fa-p4" style="--c:#22d3ee">Rinde cuentas</div></div></div>
+    <div class="capa nuc" id="fa-nuc"><p class="ct">NÚCLEO · CINCO PROMESAS</p><div class="proms"><div class="prom" id="fa-p0" style="--c:#2d7ff9">Controla</div><div class="prom" id="fa-p1" style="--c:#c4b5fd">Protege</div><div class="prom" id="fa-p2" style="--c:#4ea7ff">Organiza</div><div class="prom" id="fa-p3" style="--c:#d8dadf">Recuerda</div><div class="prom" id="fa-p4" style="--c:#f8fafc">Rinde cuentas</div></div></div>
     <div class="capa base" id="fa-base"><p class="ct">BASE · SE CONECTA CON TODO</p>
       <div class="fila"><span id="fa-ia0">Claude</span><span id="fa-ia1">ChatGPT</span><span id="fa-ia2">Gemini</span><span id="fa-ia3">Copilot</span><span id="fa-ia4">Modelos privados</span></div>
       <div class="fila sis"><span id="fa-s0">CRM<small>sistema de clientes</small></span><span id="fa-s1">ERP<small>sistema de gestión</small></span><span id="fa-s2">Nube<small>sus servicios</small></span><span id="fa-s3">Archivos<small>sus documentos</small></span><span class="pl" id="fa-pl0">En el escritorio</span><span class="pl" id="fa-pl1">En la nube</span></div></div>
@@ -235,7 +258,7 @@ html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:var(--b
       <div class="reloj"><span class="dia">LUNES</span><span class="hora">8:00</span></div>
       <div class="pedido"><p class="pq">GERENTE</p><p class="pt"><span class="ch">«</span><span class="ch">P</span><span class="ch">r</span><span class="ch">e</span><span class="ch">p</span><span class="ch">á</span><span class="ch">r</span><span class="ch">a</span><span class="ch">m</span><span class="ch">e</span><span class="ch"> </span><span class="ch">e</span><span class="ch">l</span><span class="ch"> </span><span class="ch">i</span><span class="ch">n</span><span class="ch">f</span><span class="ch">o</span><span class="ch">r</span><span class="ch">m</span><span class="ch">e</span><span class="ch"> </span><span class="ch">d</span><span class="ch">e</span><span class="ch"> </span><span class="ch">c</span><span class="ch">i</span><span class="ch">e</span><span class="ch">r</span><span class="ch">r</span><span class="ch">e</span><span class="ch"> </span><span class="ch">d</span><span class="ch">e</span><span class="ch">l</span><span class="ch"> </span><span class="ch">m</span><span class="ch">e</span><span class="ch">s</span><span class="ch"> </span><span class="ch">p</span><span class="ch">a</span><span class="ch">r</span><span class="ch">a</span><span class="ch"> </span><span class="ch">l</span><span class="ch">a</span><span class="ch"> </span><span class="ch">j</span><span class="ch">u</span><span class="ch">n</span><span class="ch">t</span><span class="ch">a</span><span class="ch">.</span><span class="ch">»</span></p></div>
       <div class="caja"><div class="cajat"><img src="assets/clips/marca.png" alt=""><span>Arvantti OS</span></div>
-        <div class="ags"><div class="agn" id="ag0" style="--c:#f87171"><i></i><b>Agente de finanzas</b><small>Claude</small></div><div class="agn" id="ag1" style="--c:#34d399"><i></i><b>Agente de datos</b><small>ChatGPT</small></div><div class="agn" id="ag2" style="--c:#a78bfa"><i></i><b>Agente redactor</b><small>Gemini</small></div></div>
+        <div class="ags"><div class="agn" id="ag0" style="--c:#2d7ff9"><i></i><b>Agente de finanzas</b><small>Claude</small></div><div class="agn" id="ag1" style="--c:#4ea7ff"><i></i><b>Agente de datos</b><small>ChatGPT</small></div><div class="agn" id="ag2" style="--c:#c4b5fd"><i></i><b>Agente redactor</b><small>Gemini</small></div></div>
         <div class="rg3"><span class="chip">Mismas reglas</span><span class="chip">Misma memoria</span><span class="chip">Mismo registro</span></div></div></div>
 <audio id="sfx-30" src="assets/shared/core/sfx/typing.mp3" data-start="65.07" data-duration="1.40" data-volume="0.14" data-track-index="130"></audio>
 <audio id="sfx-31" src="assets/shared/core/sfx/pop.mp3" data-start="69.29" data-duration="1.40" data-volume="0.14" data-track-index="131"></audio>
@@ -244,7 +267,7 @@ html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:var(--b
 <audio id="sfx-34" src="assets/shared/core/sfx/hit.wav" data-start="71.05" data-duration="1.40" data-volume="0.15" data-track-index="134"></audio>
 <div id="e-sello" class="clip scene" data-start="77.75" data-duration="9.10" data-track-index="3"><p class="center figcap c2"><span class="w">Un</span> <span class="w">solo</span> <span class="w">sistema,</span> <span class="w">cinco</span> <span class="w">promesas.</span></p><p class="center figcap c3"><span class="w">La</span> <span class="w">primera:</span> <span class="w">que</span> <span class="w">cada</span> <span class="w">trabajo</span> <span class="w">tenga</span> <span class="w">dueño.</span></p><div class="capas" id="fb">
     <div class="capa ent" id="fb-ent"><h3>Arvantti OS Enterprise</h3><p>Agentes, habilidades, voz y panel de dirección</p></div>
-    <div class="capa nuc" id="fb-nuc"><p class="ct">NÚCLEO · CINCO PROMESAS</p><div class="proms"><div class="prom" id="fb-p0" style="--c:#f87171">Controla</div><div class="prom" id="fb-p1" style="--c:#a78bfa">Protege</div><div class="prom" id="fb-p2" style="--c:#34d399">Organiza</div><div class="prom" id="fb-p3" style="--c:#fbbf24">Recuerda</div><div class="prom" id="fb-p4" style="--c:#22d3ee">Rinde cuentas</div></div></div>
+    <div class="capa nuc" id="fb-nuc"><p class="ct">NÚCLEO · CINCO PROMESAS</p><div class="proms"><div class="prom" id="fb-p0" style="--c:#2d7ff9">Controla</div><div class="prom" id="fb-p1" style="--c:#c4b5fd">Protege</div><div class="prom" id="fb-p2" style="--c:#4ea7ff">Organiza</div><div class="prom" id="fb-p3" style="--c:#d8dadf">Recuerda</div><div class="prom" id="fb-p4" style="--c:#f8fafc">Rinde cuentas</div></div></div>
     <div class="capa base" id="fb-base"><p class="ct">BASE · SE CONECTA CON TODO</p>
       <div class="fila"><span id="fb-ia0">Claude</span><span id="fb-ia1">ChatGPT</span><span id="fb-ia2">Gemini</span><span id="fb-ia3">Copilot</span><span id="fb-ia4">Modelos privados</span></div>
       <div class="fila sis"><span id="fb-s0">CRM<small>sistema de clientes</small></span><span id="fb-s1">ERP<small>sistema de gestión</small></span><span id="fb-s2">Nube<small>sus servicios</small></span><span id="fb-s3">Archivos<small>sus documentos</small></span><span class="pl" id="fb-pl0">En el escritorio</span><span class="pl" id="fb-pl1">En la nube</span></div></div>
@@ -385,15 +408,15 @@ tl.to("#e-capas .figcap",{"opacity":0,"duration":0.3},51.56);
 tl.fromTo("#fa-pl0",{"opacity":0,"scale":0.6},{"opacity":1,"scale":1,"duration":0.4,"ease":"back.out(2)"},52.36);
 tl.fromTo("#fa-pl1",{"opacity":0,"scale":0.6},{"opacity":1,"scale":1,"duration":0.4,"ease":"back.out(2)"},53.16);
 tl.fromTo("#fa-nuc",{"opacity":0,"y":60},{"opacity":1,"y":0,"duration":0.6,"ease":"power3.out"},54.64);
-tl.to("#fa-p0",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #f87171","duration":0.3},56.80);
+tl.to("#fa-p0",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #2d7ff9","duration":0.3},56.80);
 tl.fromTo("#fa-p0",{"scale":0.8},{"scale":1,"duration":0.4,"ease":"back.out(2.5)"},56.80);
-tl.to("#fa-p1",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #a78bfa","duration":0.3},57.48);
+tl.to("#fa-p1",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #c4b5fd","duration":0.3},57.48);
 tl.fromTo("#fa-p1",{"scale":0.8},{"scale":1,"duration":0.4,"ease":"back.out(2.5)"},57.48);
-tl.to("#fa-p2",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #34d399","duration":0.3},58.40);
+tl.to("#fa-p2",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #4ea7ff","duration":0.3},58.40);
 tl.fromTo("#fa-p2",{"scale":0.8},{"scale":1,"duration":0.4,"ease":"back.out(2.5)"},58.40);
-tl.to("#fa-p3",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #fbbf24","duration":0.3},59.32);
+tl.to("#fa-p3",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #d8dadf","duration":0.3},59.32);
 tl.fromTo("#fa-p3",{"scale":0.8},{"scale":1,"duration":0.4,"ease":"back.out(2.5)"},59.32);
-tl.to("#fa-p4",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #22d3ee","duration":0.3},60.16);
+tl.to("#fa-p4",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #f8fafc","duration":0.3},60.16);
 tl.fromTo("#fa-p4",{"scale":0.8},{"scale":1,"duration":0.4,"ease":"back.out(2.5)"},60.16);
 tl.fromTo("#fa-ent",{"opacity":0,"y":-40},{"opacity":1,"y":0,"duration":0.6,"ease":"power3.out"},61.35);
 tl.to("#e-capas",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},62.40);
@@ -412,11 +435,11 @@ tl.fromTo("#e-lunes .rg3 .chip:nth-child(3)",{"opacity":0,"y":24},{"opacity":1,"
 tl.to("#e-lunes",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},77.75);
 tl.fromTo("#e-sello",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},77.75);
 tl.fromTo("#e-sello .c2 .w",{"opacity":0,"y":36,"filter":"blur(10px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.55,"stagger":0.08,"ease":"power3.out"},78.30);
-tl.to("#fb-p0",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #f87171","duration":0.3},78.60);
-tl.to("#fb-p1",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #a78bfa","duration":0.3},78.90);
-tl.to("#fb-p2",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #34d399","duration":0.3},79.20);
-tl.to("#fb-p3",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #fbbf24","duration":0.3},79.50);
-tl.to("#fb-p4",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #22d3ee","duration":0.3},79.80);
+tl.to("#fb-p0",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #2d7ff9","duration":0.3},78.60);
+tl.to("#fb-p1",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #c4b5fd","duration":0.3},78.90);
+tl.to("#fb-p2",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #4ea7ff","duration":0.3},79.20);
+tl.to("#fb-p3",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #d8dadf","duration":0.3},79.50);
+tl.to("#fb-p4",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #f8fafc","duration":0.3},79.80);
 tl.to("#e-sello .c2",{"opacity":0,"duration":0.3},81.39);
 tl.fromTo("#e-sello .c3 .w",{"opacity":0,"y":36,"filter":"blur(10px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.55,"stagger":0.06,"ease":"power3.out"},81.69);
 tl.to("#fb-p0",{"opacity":0.2,"filter":"saturate(.4)","duration":0.4},81.89);

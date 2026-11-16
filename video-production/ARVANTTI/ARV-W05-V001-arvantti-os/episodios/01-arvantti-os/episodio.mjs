@@ -166,7 +166,7 @@ export function componer(c) {
   // 7. El lunes: tres IA distintas, un solo sistema.
   {
     const x = S.lunes; const [s, d] = span(x);
-    const AG = [["Agente de finanzas", "Claude", "#f87171"], ["Agente de datos", "ChatGPT", "#34d399"], ["Agente redactor", "Gemini", "#a78bfa"]];
+    const AG = [["Agente de finanzas", "Claude", "#2d7ff9"], ["Agente de datos", "ChatGPT", "#4ea7ff"], ["Agente redactor", "Gemini", "#c4b5fd"]];
     const R = [["Mismas reglas", "las mismas reglas"], ["Misma memoria", "la misma memoria"], ["Mismo registro", "el mismo registro"]];
     const pedido = "«Prepárame el informe de cierre del mes para la junta.»";
     clip("e-lunes", "scene", s, d, `

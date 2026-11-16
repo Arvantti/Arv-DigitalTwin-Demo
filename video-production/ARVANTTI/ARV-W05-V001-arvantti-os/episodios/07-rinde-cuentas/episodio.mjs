@@ -14,7 +14,7 @@ export const ESCENAS = [
   { id: "firma", dir: "09-firma", lead: 0.6, tail: 6.0 },
 ];
 
-const CIAN = "#22d3ee";
+const CIAN = "#f8fafc";
 const PC = Object.fromEntries(PROMESAS.map((p) => [p.id, p.c]));
 
 export function componer(c) {
@@ -38,7 +38,7 @@ export function componer(c) {
       <h1 class="center q q7">${words("Nadie sabe responder.")}</h1>`);
     enter("e-gancho", s);
     at("#e-gancho .informe", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.5 }, x.voiceAt);
-    to("#e-gancho .cifra", { backgroundColor: "#3a2f0c", boxShadow: "0 0 0 4px #fbbf24", duration: 0.4 }, P(x, "esta cifra"));
+    to("#e-gancho .cifra", { backgroundColor: "#1c2c48", boxShadow: "0 0 0 4px #d8dadf", duration: 0.4 }, P(x, "esta cifra"));
     at("#e-gancho .cifra i", { opacity: 0, scale: 0.3 }, { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(3)" }, P(x, "esta cifra") + 0.2);
     const tN = P(x, "Y nadie");
     to("#e-gancho .informe", { opacity: 0.3, duration: 0.4 }, tN);
@@ -109,7 +109,7 @@ export function componer(c) {
     });
     at("#e-hoja .volver", { opacity: 0, scale: 0.7 }, { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(2)" }, P(x, "volver"));
     at("#e-hoja .apagar", { opacity: 0, scale: 0.7 }, { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(2)" }, P(x, "apagarlo"));
-    to("#e-hoja .apagar", { backgroundColor: "#ff4d4d", duration: 0.2, yoyo: true, repeat: 1 }, P(x, "de inmediato"));
+    to("#e-hoja .apagar", { backgroundColor: "#ff6b63", duration: 0.2, yoyo: true, repeat: 1 }, P(x, "de inmediato"));
     sfx("click.wav", P(x, "apagarlo"), 0.25);
     leave("e-hoja", s + d);
   }

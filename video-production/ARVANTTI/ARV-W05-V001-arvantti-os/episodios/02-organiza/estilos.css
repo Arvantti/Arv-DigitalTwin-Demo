@@ -5,30 +5,30 @@
 /* Dolor */
 .chat{position:absolute;left:50%;top:180px;width:900px;margin-left:-450px}
 .v .chat{top:330px;width:920px;margin-left:-460px}
-.perdido{position:absolute;left:0;right:0;top:360px;margin:0;text-align:center;font:800 80px "Inter Display",Inter,sans-serif;color:#ffb07a}
+.perdido{position:absolute;left:0;right:0;top:360px;margin:0;text-align:center;font:800 80px "Inter Display",Inter,sans-serif;color:#ff4b00}
 .planes{position:absolute;left:0;right:0;top:220px;display:flex;justify-content:center;gap:60px;opacity:0}
 .v .planes{top:380px;flex-direction:column;align-items:center;gap:40px}
 .plan{width:620px;height:560px;padding:32px;border-radius:22px;background:#0d1a30e6;border:2px solid #4ea7ff55;position:relative}
 .v .plan{width:900px;height:520px}
-.plan .ph{margin:0 0 22px;font:700 28px "JetBrains Mono",monospace;letter-spacing:4px;color:#ffb07a}
+.plan .ph{margin:0 0 22px;font:700 28px "JetBrains Mono",monospace;letter-spacing:4px;color:#ff4b00}
 .plan .pl{height:22px;margin:0 0 18px;border-radius:8px;background:#2a3b58}
 .plan .pf{position:absolute;left:32px;bottom:26px;margin:0;font:600 30px Inter,sans-serif;color:#c9d1e0}
-.plan .rayo{margin:70px 0 0;text-align:center;font:900 170px "Inter Display",Inter,sans-serif;color:#ff6b35;text-shadow:0 0 60px #ff6b35aa}
+.plan .rayo{margin:70px 0 0;text-align:center;font:900 170px "Inter Display",Inter,sans-serif;color:#ff4b00;text-shadow:0 0 60px #ff4b00aa}
 .choque{position:absolute;inset:0;opacity:0}
 .choque .doc{position:absolute;left:50%;top:300px;width:460px;height:400px;margin-left:-230px;padding:30px;border-radius:18px;background:#e9eef7;color:#0b1020}
 .v .choque .doc{top:640px}
 .choque .doc p{margin:0 0 24px;font:800 36px Inter,sans-serif}
 .choque .doc .ln{height:18px;margin:0 0 18px;border-radius:6px;background:#b9c4d6}
 .choque .doc .ln.s{width:60%}
-.agc{position:absolute;top:760px;padding:18px 30px;border-radius:999px;font:700 36px Inter,sans-serif;background:#16243f;border:3px solid #ff6b35}
+.agc{position:absolute;top:760px;padding:18px 30px;border-radius:999px;font:700 36px Inter,sans-serif;background:#16243f;border:3px solid #ff4b00}
 .agc.a1{left:calc(50% - 400px)}.agc.a2{left:calc(50% + 120px)}
 .v .agc{top:1120px}
 .v .agc.a1{left:90px}.v .agc.a2{left:auto;right:90px}
-.flash{position:absolute;left:50%;top:160px;width:600px;margin-left:-300px;padding:14px 0;border:6px solid #ff4d4d;border-radius:16px;color:#ff4d4d;text-align:center;font:900 70px "Inter Display",Inter,sans-serif;letter-spacing:6px;background:#05070ccc;box-shadow:0 0 60px #ff4d4d55}
+.flash{position:absolute;left:50%;top:160px;width:600px;margin-left:-300px;padding:14px 0;border:6px solid #ff6b63;border-radius:16px;color:#ff6b63;text-align:center;font:900 70px "Inter Display",Inter,sans-serif;letter-spacing:6px;background:#05070ccc;box-shadow:0 0 60px #ff6b6355}
 .v .flash{top:1320px}
 
 /* Tarea */
-.tcard{position:absolute;left:50%;top:370px;width:900px;margin-left:-450px;padding:36px 44px;border-radius:24px;background:#0b1428f2;border:3px solid #34d399;box-shadow:0 30px 90px #000c,0 0 60px #34d39944}
+.tcard{position:absolute;left:50%;top:370px;width:900px;margin-left:-450px;padding:36px 44px;border-radius:24px;background:#0b1428f2;border:3px solid #4ea7ff;box-shadow:0 30px 90px #000c,0 0 60px #4ea7ff44}
 .v .tcard{top:640px;width:940px;margin-left:-470px}
 .tcard h3{margin:10px 0 26px;font:800 64px "Inter Display",Inter,sans-serif}
 .tcard dl{margin:0;display:grid;grid-template-columns:220px 1fr;row-gap:20px;font:600 40px Inter,sans-serif}
@@ -43,7 +43,7 @@
 .plandoc .ph{margin:0 0 20px;font:700 24px "JetBrains Mono",monospace;letter-spacing:4px;color:#9fd0ff}
 .plandoc .pq{display:flex;align-items:center;gap:16px;margin:0 0 20px;font:600 34px Inter,sans-serif}
 .plandoc .pq i{flex:none;width:44px;height:44px;border-radius:50%;background:var(--blue);font:700 24px/44px "JetBrains Mono",monospace;font-style:normal;text-align:center}
-.plandoc .ok{margin-top:16px;padding:16px 22px;border-radius:14px;background:#34d399;color:#0b1020;font:800 32px Inter,sans-serif;text-align:center}
+.plandoc .ok{margin-top:16px;padding:16px 22px;border-radius:14px;background:#4ea7ff;color:#0b1020;font:800 32px Inter,sans-serif;text-align:center}
 .v .esc{left:70px;top:420px;width:940px;height:620px;gap:16px}
 .v .esc-n{height:calc(200px + var(--i) * 130px)}
 .v .esc-n b{font-size:34px}
@@ -60,7 +60,7 @@
 .tablero{position:absolute;left:50%;top:190px;width:1500px;margin-left:-750px}
 .v .tablero{top:620px;width:960px;margin-left:-480px}
 .tbt{margin:0 0 18px;font:700 26px "JetBrains Mono",monospace;letter-spacing:5px;color:#9fd0ff}
-.tbt .vivo{color:#ff4d4d}
+.tbt .vivo{color:#ff6b63}
 .cols{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
 .v .cols{gap:14px}
 .col{min-height:520px;padding:22px;border-radius:20px;background:#0b1428e6;border:2px solid #2a3b58}
@@ -70,7 +70,7 @@
 .kc{margin:0 0 14px;padding:20px;border-radius:14px;background:#16243f;font:600 28px Inter,sans-serif}
 .v .kc{font-size:26px;padding:16px}
 #tb1 .slot{display:none}
-.kc.slot{background:#123a2e;border:2px solid #34d399;font-weight:800}
+.kc.slot{background:#12305e;border:2px solid #4ea7ff;font-weight:800}
 #tb2{top:430px}
 .v #tb2{top:800px}
 .v .perdido{top:520px}

@@ -15,7 +15,7 @@ export const ESCENAS = [
   { id: "firma", dir: "10-firma", lead: 0.6, tail: 3.5 },
 ];
 
-const MOR = "#a78bfa";
+const MOR = "#c4b5fd";
 const CLAVE = "sk-live-7Hq2x9Kp4Lm8";
 
 export function componer(c) {

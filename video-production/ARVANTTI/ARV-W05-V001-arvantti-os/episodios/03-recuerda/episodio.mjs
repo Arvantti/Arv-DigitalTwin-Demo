@@ -15,7 +15,7 @@ export const ESCENAS = [
   { id: "firma", dir: "10-firma", lead: 0.6, tail: 3.5 },
 ];
 
-const AMB = "#fbbf24";
+const AMB = "#d8dadf";
 
 // Grafo de decisiones: nodos (x, y en un lienzo de 760x520) y enlaces.
 const NODOS = [
@@ -69,7 +69,7 @@ export function componer(c) {
     at("#e-dolor .cero", { opacity: 0, x: -60 }, { opacity: 1, x: 0, duration: 0.5, ease: "power3.out" }, tC);
     at("#e-dolor .todo", { opacity: 0, x: 60 }, { opacity: 1, x: 0, duration: 0.5, ease: "power3.out" }, P(x, "o arrastra"));
     at("#cst", { innerText: 0 }, { innerText: 4870, duration: 2.2, snap: { innerText: 1 }, ease: "power2.in" }, tF - 0.4);
-    to("#e-dolor .cost", { color: "#ff4d4d", duration: 0.8 }, tF + 0.6);
+    to("#e-dolor .cost", { color: "#ff6b63", duration: 0.8 }, tF + 0.6);
     sfx("typing.mp3", tF - 0.3, 0.12);
     to("#e-dolor .b2", { opacity: 0, duration: 0.4 }, tY - 0.4);
     at("#e-dolor .b3", { opacity: 0 }, { opacity: 1, duration: 0.3 }, tY - 0.1);
@@ -194,7 +194,7 @@ export function componer(c) {
 
 /** Grafo de decisiones en un lienzo de 760x520 (se escala por CSS). */
 function grafo(id, extra = false) {
-  const N = extra ? [...NODOS, ["Precio 2027", "Decisión", 660, 470, "extra"], ["Proveedor nuevo", "Cliente", 300, 60, "extra"], ["Lista de precios 2025", "Evidencia", 40, 260, "old"]] : NODOS;
+  const N = extra ? [...NODOS, ["Precio 2027", "Decisión", 660, 470, "extra"], ["Proveedor nuevo", "Cliente", 300, 60, "extra"], ["Lista de precios 2025", "Evidencia", 115, 268, "old"]] : NODOS;
   const L = extra ? [...ENL, [2, 6, "extra"], [3, 7, "extra"]] : ENL;
   return `<div class="grafo" id="${id}"><svg viewBox="0 0 760 520">${L.map(([a, b, k]) => `<line class="l ${k || ""}" x1="${N[a][2]}" y1="${N[a][3]}" x2="${N[b][2]}" y2="${N[b][3]}" pathLength="1"/>`).join("")}</svg>
     ${N.map(([n, t, x, y, k]) => `<div class="n ${k || ""} t-${t.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase()}" style="left:${x}px;top:${y}px"><small>${t}</small>${n}</div>`).join("")}</div>`;

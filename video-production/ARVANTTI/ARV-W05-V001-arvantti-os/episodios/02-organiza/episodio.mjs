@@ -14,7 +14,7 @@ export const ESCENAS = [
   { id: "firma", dir: "10-firma", lead: 0.6, tail: 3.5 },
 ];
 
-const VERDE = "#34d399";
+const VERDE = "#4ea7ff";
 
 export function componer(c) {
   const { S, VERT, at, to, set, clip, sfx, span, enter, leave, words, wordsIn, sweep, P } = c;
@@ -133,7 +133,7 @@ export function componer(c) {
   // 6. En paralelo, cada uno en su espacio; tablero en vivo.
   {
     const x = S.paralelo; const [s, d] = span(x);
-    const L = [["Agente de finanzas", "#f87171", 0.92], ["Agente de datos", "#34d399", 0.7], ["Agente redactor", "#a78bfa", 0.5]];
+    const L = [["Agente de finanzas", "#2d7ff9", 0.92], ["Agente de datos", "#4ea7ff", 0.7], ["Agente redactor", "#c4b5fd", 0.5]];
     const tT = P(x, "Y usted");
     clip("e-paralelo", "scene", s, d, `
       <p class="center figcap">${words("En paralelo, sin pisarse.")}</p>

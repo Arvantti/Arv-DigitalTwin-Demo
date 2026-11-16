@@ -7,7 +7,7 @@
 <script src="assets/vendor/gsap.min.js"></script>
 <style>
 :root{--blue:#2d7ff9;--electric:#4ea7ff;--ti:#d8dadf;--black:#05070c;--white:#f8fafc;
-  --controla:#f87171;--protege:#a78bfa;--organiza:#34d399;--recuerda:#fbbf24;--rinde:#22d3ee;--ent:#4ea7ff}
+  --controla:#2d7ff9;--protege:#c4b5fd;--organiza:#4ea7ff;--recuerda:#d8dadf;--rinde:#f8fafc;--ent:#4ea7ff}
 *{box-sizing:border-box}
 html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:var(--black);font-family:Inter,"Inter Display",Arial,sans-serif;color:var(--white)}
 #root{position:relative;width:1920px;height:1080px;overflow:hidden;background:var(--black)}
@@ -33,7 +33,7 @@ html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:var(--b
 .sweep{background:linear-gradient(100deg,#0000 35%,#4ea7ff18 45%,#ffffff40 50%,#4ea7ff18 55%,#0000 65%);mix-blend-mode:screen;pointer-events:none}
 .estela{position:absolute;inset:0;width:100%;height:100%}
 .estela path{fill:none;stroke:#4ea7ff;stroke-width:5;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1;filter:drop-shadow(0 0 10px #4ea7ff) drop-shadow(0 0 30px #2d7ff9)}
-#temp{left:auto;top:auto;right:20px;bottom:16px;font:700 15px "JetBrains Mono",monospace;color:#ff6b35;letter-spacing:2px}
+#temp{left:auto;top:auto;right:20px;bottom:16px;font:700 15px "JetBrains Mono",monospace;color:#ff4b00;letter-spacing:2px}
 
 /* Figura de tres capas (sello de la serie) */
 .capas{position:absolute;left:50%;top:50%;width:1500px;transform:translate(-50%,-50%);display:flex;flex-direction:column;gap:22px}
@@ -84,13 +84,13 @@ html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:var(--b
 .v .area{height:330px}
 .area .an{margin:0;font:800 40px "Inter Display",Inter,sans-serif}
 .area .ai{margin:14px 0 0;display:inline-block;padding:8px 18px;border-radius:999px;background:#16243f;font:600 28px Inter,sans-serif;color:#9fd0ff}
-.area .rg{position:absolute;left:30px;bottom:30px;margin:0;font:500 26px "JetBrains Mono",monospace;color:#ffb07a}
-.area .qm{position:absolute;right:24px;top:20px;width:76px;height:76px;border-radius:50%;background:#ff6b35;color:#fff;font:800 52px/76px Inter,sans-serif;text-align:center;box-shadow:0 0 40px #ff6b3588}
+.area .rg{position:absolute;left:30px;bottom:30px;margin:0;font:500 26px "JetBrains Mono",monospace;color:#ff4b00}
+.area .qm{position:absolute;right:24px;top:20px;width:76px;height:76px;border-radius:50%;background:#ff4b00;color:#fff;font:800 52px/76px Inter,sans-serif;text-align:center;box-shadow:0 0 40px #ff4b0088}
 .pregs{position:absolute;left:0;right:0;top:600px;text-align:center}
 .pregs span{display:inline-block;margin:0 18px;font:800 54px "Inter Display",Inter,sans-serif;opacity:0}
 .v .pregs{top:1060px}
 .v .pregs span{display:block;margin:0 0 26px;font-size:62px}
-.sello{position:absolute;left:50%;top:790px;width:600px;margin-left:-300px;padding:18px 0;border:6px solid #ff4d4d;border-radius:16px;color:#ff4d4d;text-align:center;font:900 76px "Inter Display",Inter,sans-serif;letter-spacing:8px;background:#05070ccc;box-shadow:0 0 60px #ff4d4d55;opacity:0}
+.sello{position:absolute;left:50%;top:790px;width:600px;margin-left:-300px;padding:18px 0;border:6px solid #ff6b63;border-radius:16px;color:#ff6b63;text-align:center;font:900 76px "Inter Display",Inter,sans-serif;letter-spacing:8px;background:#05070ccc;box-shadow:0 0 60px #ff6b6355;opacity:0}
 .v .sello{top:1440px;width:760px;margin-left:-380px;font-size:90px}
 
 /* Título y firma */
@@ -171,6 +171,29 @@ html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:var(--b
 #e-sello .capas{top:56%}
 .v .titulo .sub{padding:0 60px}
 
+/* Piezas compartidas entre episodios (mensajes, tarjeta T-12, reloj del lunes, insignia de promesa) */
+.msg{width:fit-content;max-width:640px;margin:0 0 22px;padding:20px 28px;border-radius:24px 24px 24px 6px;background:#16243f;font:600 36px Inter,sans-serif;opacity:0}
+.msg.r{margin-left:auto;border-radius:24px 24px 6px 24px;background:#1f4f9a}
+.badge-prom{position:absolute;left:50%;top:250px;transform:translateX(-50%);padding:10px 34px;border-radius:12px;background:var(--c);color:#0b1020;font:800 34px Inter,sans-serif;letter-spacing:3px;box-shadow:0 0 50px var(--c)}
+.v .badge-prom{top:470px}
+.tcard .tid,.t12 .tid{margin:0;font:700 24px "JetBrains Mono",monospace;letter-spacing:4px;color:#4ea7ff}
+.reloj.r2{left:110px;top:150px}
+.reloj.r2 .hora{font-size:120px}
+.v .reloj.r2{left:70px;top:240px}
+.t12{position:absolute;left:760px;top:180px;width:760px;padding:24px 30px;border-radius:20px;background:#0b1428f2;border:3px solid #4ea7ff;box-shadow:0 0 60px #4ea7ff44}
+.v .t12{left:70px;right:70px;top:500px;width:auto}
+.t12 h3{margin:6px 0 10px;font:800 46px "Inter Display",Inter,sans-serif}
+.t12 .asg{margin:0;display:flex;align-items:center;gap:12px;font:600 30px Inter,sans-serif;color:#c9d1e0}
+.t12 .asg i{width:16px;height:16px;border-radius:50%;background:#2d7ff9}
+.t12 .tid{margin:0;font:700 24px "JetBrains Mono",monospace;letter-spacing:4px;color:#4ea7ff}
+.tcard .tid{margin:0;font:700 24px "JetBrains Mono",monospace;letter-spacing:4px;color:#4ea7ff}
+.lbl{position:absolute;left:0;right:0;top:780px;margin:0;text-align:center;font:800 74px "Inter Display",Inter,sans-serif;color:#ff4b00}
+.v .lbl{top:1200px;padding:0 60px;font-size:80px}
+.archivo{position:absolute;left:260px;top:300px;width:360px;padding:30px;border-radius:20px;background:#e9eef7;color:#0b1020;text-align:center;box-shadow:0 30px 80px #000c}
+.archivo i{display:block;width:90px;height:110px;margin:0 auto 16px;border-radius:8px;background:linear-gradient(135deg,#1f4f9a 0 70%,#0000 70%),#1f4f9a}
+.archivo b{display:block;font:800 34px Inter,sans-serif}
+.archivo small{font:600 24px Inter,sans-serif;color:#555}
+
 /* Episodio 2 · Organiza */
 .q2{font-size:120px}
 .v .q2{font-size:116px}
@@ -178,36 +201,31 @@ html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:var(--b
 /* Dolor */
 .chat{position:absolute;left:50%;top:180px;width:900px;margin-left:-450px}
 .v .chat{top:330px;width:920px;margin-left:-460px}
-.msg{width:fit-content;max-width:640px;margin:0 0 22px;padding:20px 28px;border-radius:24px 24px 24px 6px;background:#16243f;font:600 36px Inter,sans-serif;opacity:0}
-.msg.r{margin-left:auto;border-radius:24px 24px 6px 24px;background:#1f4f9a}
-.perdido{position:absolute;left:0;right:0;top:360px;margin:0;text-align:center;font:800 80px "Inter Display",Inter,sans-serif;color:#ffb07a}
+.perdido{position:absolute;left:0;right:0;top:360px;margin:0;text-align:center;font:800 80px "Inter Display",Inter,sans-serif;color:#ff4b00}
 .planes{position:absolute;left:0;right:0;top:220px;display:flex;justify-content:center;gap:60px;opacity:0}
 .v .planes{top:380px;flex-direction:column;align-items:center;gap:40px}
 .plan{width:620px;height:560px;padding:32px;border-radius:22px;background:#0d1a30e6;border:2px solid #4ea7ff55;position:relative}
 .v .plan{width:900px;height:520px}
-.plan .ph{margin:0 0 22px;font:700 28px "JetBrains Mono",monospace;letter-spacing:4px;color:#ffb07a}
+.plan .ph{margin:0 0 22px;font:700 28px "JetBrains Mono",monospace;letter-spacing:4px;color:#ff4b00}
 .plan .pl{height:22px;margin:0 0 18px;border-radius:8px;background:#2a3b58}
 .plan .pf{position:absolute;left:32px;bottom:26px;margin:0;font:600 30px Inter,sans-serif;color:#c9d1e0}
-.plan .rayo{margin:70px 0 0;text-align:center;font:900 170px "Inter Display",Inter,sans-serif;color:#ff6b35;text-shadow:0 0 60px #ff6b35aa}
+.plan .rayo{margin:70px 0 0;text-align:center;font:900 170px "Inter Display",Inter,sans-serif;color:#ff4b00;text-shadow:0 0 60px #ff4b00aa}
 .choque{position:absolute;inset:0;opacity:0}
 .choque .doc{position:absolute;left:50%;top:300px;width:460px;height:400px;margin-left:-230px;padding:30px;border-radius:18px;background:#e9eef7;color:#0b1020}
 .v .choque .doc{top:640px}
 .choque .doc p{margin:0 0 24px;font:800 36px Inter,sans-serif}
 .choque .doc .ln{height:18px;margin:0 0 18px;border-radius:6px;background:#b9c4d6}
 .choque .doc .ln.s{width:60%}
-.agc{position:absolute;top:760px;padding:18px 30px;border-radius:999px;font:700 36px Inter,sans-serif;background:#16243f;border:3px solid #ff6b35}
+.agc{position:absolute;top:760px;padding:18px 30px;border-radius:999px;font:700 36px Inter,sans-serif;background:#16243f;border:3px solid #ff4b00}
 .agc.a1{left:calc(50% - 400px)}.agc.a2{left:calc(50% + 120px)}
 .v .agc{top:1120px}
 .v .agc.a1{left:90px}.v .agc.a2{left:auto;right:90px}
-.flash{position:absolute;left:50%;top:160px;width:600px;margin-left:-300px;padding:14px 0;border:6px solid #ff4d4d;border-radius:16px;color:#ff4d4d;text-align:center;font:900 70px "Inter Display",Inter,sans-serif;letter-spacing:6px;background:#05070ccc;box-shadow:0 0 60px #ff4d4d55}
+.flash{position:absolute;left:50%;top:160px;width:600px;margin-left:-300px;padding:14px 0;border:6px solid #ff6b63;border-radius:16px;color:#ff6b63;text-align:center;font:900 70px "Inter Display",Inter,sans-serif;letter-spacing:6px;background:#05070ccc;box-shadow:0 0 60px #ff6b6355}
 .v .flash{top:1320px}
 
 /* Tarea */
-.badge-prom{position:absolute;left:50%;top:250px;transform:translateX(-50%);padding:10px 34px;border-radius:12px;background:var(--c);color:#0b1020;font:800 34px Inter,sans-serif;letter-spacing:3px;box-shadow:0 0 50px var(--c)}
-.v .badge-prom{top:470px}
-.tcard{position:absolute;left:50%;top:370px;width:900px;margin-left:-450px;padding:36px 44px;border-radius:24px;background:#0b1428f2;border:3px solid #34d399;box-shadow:0 30px 90px #000c,0 0 60px #34d39944}
+.tcard{position:absolute;left:50%;top:370px;width:900px;margin-left:-450px;padding:36px 44px;border-radius:24px;background:#0b1428f2;border:3px solid #4ea7ff;box-shadow:0 30px 90px #000c,0 0 60px #4ea7ff44}
 .v .tcard{top:640px;width:940px;margin-left:-470px}
-.tcard .tid,.t12 .tid{margin:0;font:700 24px "JetBrains Mono",monospace;letter-spacing:4px;color:#34d399}
 .tcard h3{margin:10px 0 26px;font:800 64px "Inter Display",Inter,sans-serif}
 .tcard dl{margin:0;display:grid;grid-template-columns:220px 1fr;row-gap:20px;font:600 40px Inter,sans-serif}
 .tcard dt{color:#9fb3cf}.tcard dd{margin:0}
@@ -221,7 +239,7 @@ html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:var(--b
 .plandoc .ph{margin:0 0 20px;font:700 24px "JetBrains Mono",monospace;letter-spacing:4px;color:#9fd0ff}
 .plandoc .pq{display:flex;align-items:center;gap:16px;margin:0 0 20px;font:600 34px Inter,sans-serif}
 .plandoc .pq i{flex:none;width:44px;height:44px;border-radius:50%;background:var(--blue);font:700 24px/44px "JetBrains Mono",monospace;font-style:normal;text-align:center}
-.plandoc .ok{margin-top:16px;padding:16px 22px;border-radius:14px;background:#34d399;color:#0b1020;font:800 32px Inter,sans-serif;text-align:center}
+.plandoc .ok{margin-top:16px;padding:16px 22px;border-radius:14px;background:#4ea7ff;color:#0b1020;font:800 32px Inter,sans-serif;text-align:center}
 .v .esc{left:70px;top:420px;width:940px;height:620px;gap:16px}
 .v .esc-n{height:calc(200px + var(--i) * 130px)}
 .v .esc-n b{font-size:34px}
@@ -238,7 +256,7 @@ html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:var(--b
 .tablero{position:absolute;left:50%;top:190px;width:1500px;margin-left:-750px}
 .v .tablero{top:620px;width:960px;margin-left:-480px}
 .tbt{margin:0 0 18px;font:700 26px "JetBrains Mono",monospace;letter-spacing:5px;color:#9fd0ff}
-.tbt .vivo{color:#ff4d4d}
+.tbt .vivo{color:#ff6b63}
 .cols{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
 .v .cols{gap:14px}
 .col{min-height:520px;padding:22px;border-radius:20px;background:#0b1428e6;border:2px solid #2a3b58}
@@ -248,17 +266,9 @@ html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:var(--b
 .kc{margin:0 0 14px;padding:20px;border-radius:14px;background:#16243f;font:600 28px Inter,sans-serif}
 .v .kc{font-size:26px;padding:16px}
 #tb1 .slot{display:none}
-.kc.slot{background:#123a2e;border:2px solid #34d399;font-weight:800}
+.kc.slot{background:#12305e;border:2px solid #4ea7ff;font-weight:800}
 #tb2{top:430px}
 .v #tb2{top:800px}
-.reloj.r2{left:110px;top:150px}
-.reloj.r2 .hora{font-size:120px}
-.v .reloj.r2{left:70px;top:240px}
-.t12{position:absolute;left:760px;top:180px;width:760px;padding:24px 30px;border-radius:20px;background:#0b1428f2;border:3px solid #34d399;box-shadow:0 0 60px #34d39944}
-.v .t12{left:70px;right:70px;top:500px;width:auto}
-.t12 h3{margin:6px 0 10px;font:800 46px "Inter Display",Inter,sans-serif}
-.t12 .asg{margin:0;display:flex;align-items:center;gap:12px;font:600 30px Inter,sans-serif;color:#c9d1e0}
-.t12 .asg i{width:16px;height:16px;border-radius:50%;background:#f87171}
 .v .perdido{top:520px}
 .v #e-recap .capas{top:56%}
 #e-recap .capas{top:57%}
@@ -271,7 +281,7 @@ html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:var(--b
 <div id="kick" class="clip " data-start="0.00" data-duration="90.09" data-track-index="30"><p class="kicker"><b>2/7</b> ARVANTTI OS</p></div>
 <div id="e-recap" class="clip scene" data-start="0.00" data-duration="5.63" data-track-index="3"><p class="center figcap"><span class="w">En</span> <span class="w">la</span> <span class="w">parte</span> <span class="w">1,</span> <span class="w">todas</span> <span class="w">sus</span> <span class="w">IA</span> <span class="w">quedaron</span> <span class="w">bajo</span> <span class="w">un</span> <span class="w">mismo</span> <span class="w">sistema.</span></p><div class="capas" id="fr">
     <div class="capa ent" id="fr-ent"><h3>Arvantti OS Enterprise</h3><p>Agentes, habilidades, voz y panel de dirección</p></div>
-    <div class="capa nuc" id="fr-nuc"><p class="ct">NÚCLEO · CINCO PROMESAS</p><div class="proms"><div class="prom" id="fr-p0" style="--c:#f87171">Controla</div><div class="prom" id="fr-p1" style="--c:#a78bfa">Protege</div><div class="prom" id="fr-p2" style="--c:#34d399">Organiza</div><div class="prom" id="fr-p3" style="--c:#fbbf24">Recuerda</div><div class="prom" id="fr-p4" style="--c:#22d3ee">Rinde cuentas</div></div></div>
+    <div class="capa nuc" id="fr-nuc"><p class="ct">NÚCLEO · CINCO PROMESAS</p><div class="proms"><div class="prom" id="fr-p0" style="--c:#2d7ff9">Controla</div><div class="prom" id="fr-p1" style="--c:#c4b5fd">Protege</div><div class="prom" id="fr-p2" style="--c:#4ea7ff">Organiza</div><div class="prom" id="fr-p3" style="--c:#d8dadf">Recuerda</div><div class="prom" id="fr-p4" style="--c:#f8fafc">Rinde cuentas</div></div></div>
     <div class="capa base" id="fr-base"><p class="ct">BASE · SE CONECTA CON TODO</p>
       <div class="fila"><span id="fr-ia0">Claude</span><span id="fr-ia1">ChatGPT</span><span id="fr-ia2">Gemini</span><span id="fr-ia3">Copilot</span><span id="fr-ia4">Modelos privados</span></div>
       <div class="fila sis"><span id="fr-s0">CRM<small>sistema de clientes</small></span><span id="fr-s1">ERP<small>sistema de gestión</small></span><span id="fr-s2">Nube<small>sus servicios</small></span><span id="fr-s3">Archivos<small>sus documentos</small></span><span class="pl" id="fr-pl0">En el escritorio</span><span class="pl" id="fr-pl1">En la nube</span></div></div>
@@ -301,7 +311,7 @@ html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:var(--b
 <audio id="sfx-12" src="assets/shared/core/sfx/hit.wav" data-start="25.43" data-duration="1.40" data-volume="0.3" data-track-index="112"></audio>
 <div id="e-tarea" class="clip scene" data-start="26.53" data-duration="9.72" data-track-index="3">
       <p class="center figcap"><span class="w">Arvantti</span> <span class="w">OS</span> <span class="w">organiza</span> <span class="w">el</span> <span class="w">trabajo.</span></p>
-      <div class="badge-prom" style="--c:#34d399">ORGANIZA</div>
+      <div class="badge-prom" style="--c:#4ea7ff">ORGANIZA</div>
       <div class="tcard"><p class="tid">TAREA</p><h3><span class="w">Pedido</span> <span class="w">→</span> <span class="w">tarea</span></h3><dl><dt>Dueño</dt><dd>Agente de finanzas</dd><dt>Estado</dt><dd>Por hacer</dd><dt>Fecha</dt><dd>Lunes, 11:00</dd></dl></div></div>
 <audio id="sfx-13" src="assets/shared/core/sfx/spark.wav" data-start="29.64" data-duration="1.40" data-volume="0.2" data-track-index="113"></audio>
 <audio id="sfx-14" src="assets/shared/core/sfx/click-soft.mp3" data-start="33.24" data-duration="1.40" data-volume="0.22" data-track-index="114"></audio>
@@ -318,7 +328,7 @@ html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:var(--b
 <audio id="sfx-21" src="assets/shared/core/sfx/spark.wav" data-start="53.15" data-duration="1.40" data-volume="0.25" data-track-index="121"></audio>
 <div id="e-paralelo" class="clip scene" data-start="55.75" data-duration="9.09" data-track-index="3">
       <p class="center figcap"><span class="w">En</span> <span class="w">paralelo,</span> <span class="w">sin</span> <span class="w">pisarse.</span></p>
-      <div class="lanes"><div class="lane" id="ln0" style="--c:#f87171"><span class="lt">Agente de finanzas</span><span class="ls">su espacio</span><div class="bar"><i></i></div></div><div class="lane" id="ln1" style="--c:#34d399"><span class="lt">Agente de datos</span><span class="ls">su espacio</span><div class="bar"><i></i></div></div><div class="lane" id="ln2" style="--c:#a78bfa"><span class="lt">Agente redactor</span><span class="ls">su espacio</span><div class="bar"><i></i></div></div></div>
+      <div class="lanes"><div class="lane" id="ln0" style="--c:#2d7ff9"><span class="lt">Agente de finanzas</span><span class="ls">su espacio</span><div class="bar"><i></i></div></div><div class="lane" id="ln1" style="--c:#4ea7ff"><span class="lt">Agente de datos</span><span class="ls">su espacio</span><div class="bar"><i></i></div></div><div class="lane" id="ln2" style="--c:#c4b5fd"><span class="lt">Agente redactor</span><span class="ls">su espacio</span><div class="bar"><i></i></div></div></div>
       <div class="tablero" id="tb1"><p class="tbt">TABLERO EN VIVO <span class="vivo">●</span></p><div class="cols"><div class="col"><p class="cn">Por hacer</p><div class="kc">Conciliar bancos</div><div class="kc slot">T-12 · Informe de cierre</div></div><div class="col"><p class="cn">En curso</p><div class="kc">Informe de cierre</div><div class="kc">Ventas por producto</div><div class="kc slot">T-12 · Informe de cierre</div></div><div class="col"><p class="cn">Terminada</p><div class="kc">Cartera vencida</div><div class="kc slot">T-12 · Informe de cierre</div></div></div></div></div>
 <audio id="sfx-22" src="assets/shared/core/sfx/whoosh-short.mp3" data-start="60.96" data-duration="1.40" data-volume="0.25" data-track-index="122"></audio>
 <div id="e-lunes" class="clip scene" data-start="64.34" data-duration="14.59" data-track-index="3">
@@ -331,12 +341,12 @@ html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:var(--b
 <audio id="sfx-26" src="assets/shared/core/sfx/click.wav" data-start="76.81" data-duration="1.40" data-volume="0.2" data-track-index="126"></audio>
 <div id="e-sello" class="clip scene" data-start="78.43" data-duration="11.90" data-track-index="3"><p class="center figcap c2"><span class="w">Organiza:</span> <span class="w">la</span> <span class="w">primera</span> <span class="w">de</span> <span class="w">las</span> <span class="w">cinco</span> <span class="w">promesas</span> <span class="w">de</span> <span class="w">Arvantti</span> <span class="w">OS.</span></p><p class="center figcap c3"><span class="w">El</span> <span class="w">agente</span> <span class="w">ya</span> <span class="w">tiene</span> <span class="w">su</span> <span class="w">tarea.</span> <span class="w">Pero,</span> <span class="w">¿sabe</span> <span class="w">en</span> <span class="w">qué</span> <span class="w">empresa</span> <span class="w">está?</span></p><div class="capas" id="fb">
     <div class="capa ent" id="fb-ent"><h3>Arvantti OS Enterprise</h3><p>Agentes, habilidades, voz y panel de dirección</p></div>
-    <div class="capa nuc" id="fb-nuc"><p class="ct">NÚCLEO · CINCO PROMESAS</p><div class="proms"><div class="prom" id="fb-p0" style="--c:#f87171">Controla</div><div class="prom" id="fb-p1" style="--c:#a78bfa">Protege</div><div class="prom" id="fb-p2" style="--c:#34d399">Organiza</div><div class="prom" id="fb-p3" style="--c:#fbbf24">Recuerda</div><div class="prom" id="fb-p4" style="--c:#22d3ee">Rinde cuentas</div></div></div>
+    <div class="capa nuc" id="fb-nuc"><p class="ct">NÚCLEO · CINCO PROMESAS</p><div class="proms"><div class="prom" id="fb-p0" style="--c:#2d7ff9">Controla</div><div class="prom" id="fb-p1" style="--c:#c4b5fd">Protege</div><div class="prom" id="fb-p2" style="--c:#4ea7ff">Organiza</div><div class="prom" id="fb-p3" style="--c:#d8dadf">Recuerda</div><div class="prom" id="fb-p4" style="--c:#f8fafc">Rinde cuentas</div></div></div>
     <div class="capa base" id="fb-base"><p class="ct">BASE · SE CONECTA CON TODO</p>
       <div class="fila"><span id="fb-ia0">Claude</span><span id="fb-ia1">ChatGPT</span><span id="fb-ia2">Gemini</span><span id="fb-ia3">Copilot</span><span id="fb-ia4">Modelos privados</span></div>
       <div class="fila sis"><span id="fb-s0">CRM<small>sistema de clientes</small></span><span id="fb-s1">ERP<small>sistema de gestión</small></span><span id="fb-s2">Nube<small>sus servicios</small></span><span id="fb-s3">Archivos<small>sus documentos</small></span><span class="pl" id="fb-pl0">En el escritorio</span><span class="pl" id="fb-pl1">En la nube</span></div></div>
   </div>
-    <div class="sigue"><span>Parte 2 de 7</span> Continúa en la parte 3: <b style="color:#fbbf24">Recuerda</b></div></div>
+    <div class="sigue"><span>Parte 2 de 7</span> Continúa en la parte 3: <b style="color:#d8dadf">Recuerda</b></div></div>
 <audio id="sfx-27" src="assets/shared/core/sfx/spark.wav" data-start="79.18" data-duration="1.40" data-volume="0.2" data-track-index="127"></audio>
 <div id="e-firma" class="clip scene" data-start="89.84" data-duration="9.51" data-track-index="3">
     <svg class="estela" viewBox="0 0 1920 1080" preserveAspectRatio="none"><path id="p2" d="M-60 475.2 C 384 475.2 576 691.2 960 561.6 S 1536 432 1980 648" pathLength="1"/></svg>
@@ -368,11 +378,11 @@ tl.fromTo("#fondo .floorgrid",{"backgroundPositionY":"0px"},{"backgroundPosition
 tl.fromTo("#fondo .glow",{"opacity":0.55},{"opacity":1,"duration":6,"ease":"sine.inOut","yoyo":true,"repeat":16},0.00);
 tl.fromTo("#kick .kicker",{"opacity":0,"x":-30},{"opacity":1,"x":0,"duration":0.6},0.20);
 tl.fromTo("#e-recap .figcap .w",{"opacity":0,"y":36,"filter":"blur(10px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.55,"stagger":0.06,"ease":"power3.out"},0.60);
-tl.to("#fr-p0",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #f87171","duration":0.3},0.10);
-tl.to("#fr-p1",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #a78bfa","duration":0.3},0.22);
-tl.to("#fr-p2",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #34d399","duration":0.3},0.34);
-tl.to("#fr-p3",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #fbbf24","duration":0.3},0.46);
-tl.to("#fr-p4",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #22d3ee","duration":0.3},0.58);
+tl.to("#fr-p0",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #2d7ff9","duration":0.3},0.10);
+tl.to("#fr-p1",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #c4b5fd","duration":0.3},0.22);
+tl.to("#fr-p2",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #4ea7ff","duration":0.3},0.34);
+tl.to("#fr-p3",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #d8dadf","duration":0.3},0.46);
+tl.to("#fr-p4",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #f8fafc","duration":0.3},0.58);
 tl.fromTo("#fr",{"opacity":0},{"opacity":1,"duration":0.8,"ease":"power3.out"},0.00);
 tl.to("#e-recap",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},5.13);
 tl.fromTo("#e-gancho",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},5.13);
@@ -427,12 +437,12 @@ tl.to("#e-tarea",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power
 tl.fromTo("#e-escalera",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},35.76);
 tl.fromTo("#e-escalera .figcap .w",{"opacity":0,"y":36,"filter":"blur(10px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.55,"stagger":0.08,"ease":"power3.out"},36.21);
 tl.fromTo("#e-escalera .esc-n",{"opacity":0,"y":40},{"opacity":0.3,"y":0,"duration":0.4,"stagger":0.1},36.81);
-tl.to("#es0",{"opacity":1,"borderColor":"#34d399","boxShadow":"0 0 50px #34d39988","duration":0.3},39.86);
-tl.to("#es1",{"opacity":1,"borderColor":"#34d399","boxShadow":"0 0 50px #34d39988","duration":0.3},42.17);
+tl.to("#es0",{"opacity":1,"borderColor":"#4ea7ff","boxShadow":"0 0 50px #4ea7ff88","duration":0.3},39.86);
+tl.to("#es1",{"opacity":1,"borderColor":"#4ea7ff","boxShadow":"0 0 50px #4ea7ff88","duration":0.3},42.17);
 tl.to("#es0",{"boxShadow":"0 0 0px #0000","duration":0.3},42.17);
-tl.to("#es2",{"opacity":1,"borderColor":"#34d399","boxShadow":"0 0 50px #34d39988","duration":0.3},47.93);
+tl.to("#es2",{"opacity":1,"borderColor":"#4ea7ff","boxShadow":"0 0 50px #4ea7ff88","duration":0.3},47.93);
 tl.to("#es1",{"boxShadow":"0 0 0px #0000","duration":0.3},47.93);
-tl.to("#es3",{"opacity":1,"borderColor":"#34d399","boxShadow":"0 0 50px #34d39988","duration":0.3},48.53);
+tl.to("#es3",{"opacity":1,"borderColor":"#4ea7ff","boxShadow":"0 0 50px #4ea7ff88","duration":0.3},48.53);
 tl.to("#es2",{"boxShadow":"0 0 0px #0000","duration":0.3},48.53);
 tl.fromTo("#e-escalera .plandoc",{"opacity":0,"y":40},{"opacity":1,"y":0,"duration":0.5,"ease":"power3.out"},49.03);
 tl.fromTo("#e-escalera .pq:nth-of-type(2)",{"opacity":0,"x":-30},{"opacity":1,"x":0,"duration":0.4},49.81);
@@ -460,16 +470,16 @@ tl.fromTo("#e-lunes .asg",{"opacity":0,"x":-30},{"opacity":1,"x":0,"duration":0.
 tl.fromTo("#tb2",{"opacity":0,"y":50},{"opacity":1,"y":0,"duration":0.5},72.93);
 tl.to("#e-lunes .t12",{"opacity":0,"duration":0.2},74.81);
 tl.fromTo("#tb2 .col:nth-child(1) .slot",{"opacity":0,"y":-30},{"opacity":1,"y":0,"duration":0.35,"ease":"back.out(2)"},75.01);
-tl.to("#tb2 .col:nth-child(1)",{"borderColor":"#34d399","duration":0.3},75.01);
+tl.to("#tb2 .col:nth-child(1)",{"borderColor":"#4ea7ff","duration":0.3},75.01);
 tl.to("#e-lunes .t12",{"opacity":0,"duration":0.2},75.57);
 tl.fromTo("#tb2 .col:nth-child(2) .slot",{"opacity":0,"y":-30},{"opacity":1,"y":0,"duration":0.35,"ease":"back.out(2)"},75.77);
 tl.to("#tb2 .col:nth-child(1) .slot",{"opacity":0,"duration":0.25},75.77);
-tl.to("#tb2 .col:nth-child(2)",{"borderColor":"#34d399","duration":0.3},75.77);
+tl.to("#tb2 .col:nth-child(2)",{"borderColor":"#4ea7ff","duration":0.3},75.77);
 tl.to("#e-lunes .t12",{"opacity":0,"duration":0.2},76.61);
 tl.fromTo("#tb2 .col:nth-child(3) .slot",{"opacity":0,"y":-30},{"opacity":1,"y":0,"duration":0.35,"ease":"back.out(2)"},76.81);
 tl.to("#tb2 .col:nth-child(2) .slot",{"opacity":0,"duration":0.25},76.81);
-tl.to("#tb2 .col:nth-child(3)",{"borderColor":"#34d399","duration":0.3},76.81);
-tl.fromTo("#tb2 .col:nth-child(3) .slot",{"boxShadow":"0 0 0 #0000"},{"boxShadow":"0 0 50px #34d399","duration":0.5,"yoyo":true,"repeat":1},77.11);
+tl.to("#tb2 .col:nth-child(3)",{"borderColor":"#4ea7ff","duration":0.3},76.81);
+tl.fromTo("#tb2 .col:nth-child(3) .slot",{"boxShadow":"0 0 0 #0000"},{"boxShadow":"0 0 50px #4ea7ff","duration":0.5,"yoyo":true,"repeat":1},77.11);
 tl.to("#e-lunes",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},78.43);
 tl.fromTo("#e-sello",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},78.43);
 tl.fromTo("#e-sello .c2 .w",{"opacity":0,"y":36,"filter":"blur(10px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.55,"stagger":0.07,"ease":"power3.out"},78.98);
@@ -477,12 +487,12 @@ tl.to("#fb-p0",{"opacity":0.35,"duration":0.3},78.73);
 tl.to("#fb-p1",{"opacity":0.35,"duration":0.3},78.73);
 tl.to("#fb-p3",{"opacity":0.35,"duration":0.3},78.73);
 tl.to("#fb-p4",{"opacity":0.35,"duration":0.3},78.73);
-tl.to("#fb-p2",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #34d399","duration":0.3},79.18);
+tl.to("#fb-p2",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #4ea7ff","duration":0.3},79.18);
 tl.fromTo("#fb-p2",{"scale":1},{"scale":1.12,"duration":0.5,"ease":"back.out(2)"},79.18);
 tl.to("#e-sello .c2",{"opacity":0,"duration":0.3},83.98);
 tl.fromTo("#e-sello .c3 .w",{"opacity":0,"y":36,"filter":"blur(10px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.55,"stagger":0.06,"ease":"power3.out"},84.28);
 tl.to("#fb-p2",{"scale":1,"duration":0.4},87.56);
-tl.to("#fb-p3",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #fbbf24","duration":0.3},87.76);
+tl.to("#fb-p3",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #d8dadf","duration":0.3},87.76);
 tl.fromTo("#e-sello .sigue",{"opacity":0,"y":30},{"opacity":1,"y":0,"duration":0.5,"ease":"power3.out"},87.89);
 tl.to("#e-sello",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},89.84);
 tl.fromTo("#e-firma",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},89.84);

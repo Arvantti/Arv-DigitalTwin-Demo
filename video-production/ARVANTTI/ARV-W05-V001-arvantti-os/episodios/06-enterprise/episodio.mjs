@@ -40,7 +40,7 @@ export function componer(c) {
     const x = S.gancho; const [s, d] = span(x);
     const N = 48, cols = VERT ? 6 : 12;
     clip("e-gancho", "scene", s, d, `
-      <div class="enjambre">${Array.from({ length: N }, (_, i) => `<span class="ag-d" style="--h:${(i * 47) % 360}"></span>`).join("")}</div>
+      <div class="enjambre">${Array.from({ length: N }, (_, i) => `<span class="ag-d" style="--h:${205 + (i * 7) % 22}"></span>`).join("")}</div>
       <h1 class="center q q6">${words("¿Y quién responde por cada uno?")}</h1>`);
     enter("e-gancho", s);
     at("#e-gancho .ag-d", { opacity: 0, scale: 0 }, { opacity: 1, scale: 1, duration: 0.25, stagger: { each: 2.4 / N, from: "center", grid: [N / cols, cols] }, ease: "back.out(2)" }, x.voiceAt);
@@ -167,7 +167,7 @@ export function componer(c) {
     at("#e-lunes .yo", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.35 }, P(x, "¿Cómo"));
     at("#e-lunes .co", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.35 }, tC);
     at("#e-lunes .aprobar", { opacity: 0, scale: 0.7 }, { opacity: 1, scale: 1, duration: 0.3 }, tA - 0.4);
-    to("#e-lunes .aprobar", { backgroundColor: "#34d399", scale: 1.08, duration: 0.2, yoyo: true, repeat: 1 }, tA + 0.2);
+    to("#e-lunes .aprobar", { backgroundColor: "#4ea7ff", scale: 1.08, duration: 0.2, yoyo: true, repeat: 1 }, tA + 0.2);
     to("#e-lunes .a1", { opacity: 0, duration: 0.1 }, tA + 0.3);
     at("#e-lunes .a2", { opacity: 0 }, { opacity: 1, duration: 0.1 }, tA + 0.3);
     sfx("spark.wav", tA + 0.2, 0.25);

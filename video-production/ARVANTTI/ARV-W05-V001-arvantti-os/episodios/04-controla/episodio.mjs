@@ -16,7 +16,7 @@ export const ESCENAS = [
   { id: "firma", dir: "11-firma", lead: 0.6, tail: 3.5 },
 ];
 
-const ROJO = "#f87171";
+const ROJO = "#2d7ff9";
 
 export function componer(c) {
   const { S, VERT, at, to, clip, sfx, span, enter, leave, words, wordsIn, sweep, P } = c;

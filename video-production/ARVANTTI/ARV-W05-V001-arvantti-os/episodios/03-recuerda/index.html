@@ -7,7 +7,7 @@
 <script src="assets/vendor/gsap.min.js"></script>
 <style>
 :root{--blue:#2d7ff9;--electric:#4ea7ff;--ti:#d8dadf;--black:#05070c;--white:#f8fafc;
-  --controla:#f87171;--protege:#a78bfa;--organiza:#34d399;--recuerda:#fbbf24;--rinde:#22d3ee;--ent:#4ea7ff}
+  --controla:#2d7ff9;--protege:#c4b5fd;--organiza:#4ea7ff;--recuerda:#d8dadf;--rinde:#f8fafc;--ent:#4ea7ff}
 *{box-sizing:border-box}
 html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:var(--black);font-family:Inter,"Inter Display",Arial,sans-serif;color:var(--white)}
 #root{position:relative;width:1920px;height:1080px;overflow:hidden;background:var(--black)}
@@ -33,7 +33,7 @@ html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:var(--b
 .sweep{background:linear-gradient(100deg,#0000 35%,#4ea7ff18 45%,#ffffff40 50%,#4ea7ff18 55%,#0000 65%);mix-blend-mode:screen;pointer-events:none}
 .estela{position:absolute;inset:0;width:100%;height:100%}
 .estela path{fill:none;stroke:#4ea7ff;stroke-width:5;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1;filter:drop-shadow(0 0 10px #4ea7ff) drop-shadow(0 0 30px #2d7ff9)}
-#temp{left:auto;top:auto;right:20px;bottom:16px;font:700 15px "JetBrains Mono",monospace;color:#ff6b35;letter-spacing:2px}
+#temp{left:auto;top:auto;right:20px;bottom:16px;font:700 15px "JetBrains Mono",monospace;color:#ff4b00;letter-spacing:2px}
 
 /* Figura de tres capas (sello de la serie) */
 .capas{position:absolute;left:50%;top:50%;width:1500px;transform:translate(-50%,-50%);display:flex;flex-direction:column;gap:22px}
@@ -84,13 +84,13 @@ html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:var(--b
 .v .area{height:330px}
 .area .an{margin:0;font:800 40px "Inter Display",Inter,sans-serif}
 .area .ai{margin:14px 0 0;display:inline-block;padding:8px 18px;border-radius:999px;background:#16243f;font:600 28px Inter,sans-serif;color:#9fd0ff}
-.area .rg{position:absolute;left:30px;bottom:30px;margin:0;font:500 26px "JetBrains Mono",monospace;color:#ffb07a}
-.area .qm{position:absolute;right:24px;top:20px;width:76px;height:76px;border-radius:50%;background:#ff6b35;color:#fff;font:800 52px/76px Inter,sans-serif;text-align:center;box-shadow:0 0 40px #ff6b3588}
+.area .rg{position:absolute;left:30px;bottom:30px;margin:0;font:500 26px "JetBrains Mono",monospace;color:#ff4b00}
+.area .qm{position:absolute;right:24px;top:20px;width:76px;height:76px;border-radius:50%;background:#ff4b00;color:#fff;font:800 52px/76px Inter,sans-serif;text-align:center;box-shadow:0 0 40px #ff4b0088}
 .pregs{position:absolute;left:0;right:0;top:600px;text-align:center}
 .pregs span{display:inline-block;margin:0 18px;font:800 54px "Inter Display",Inter,sans-serif;opacity:0}
 .v .pregs{top:1060px}
 .v .pregs span{display:block;margin:0 0 26px;font-size:62px}
-.sello{position:absolute;left:50%;top:790px;width:600px;margin-left:-300px;padding:18px 0;border:6px solid #ff4d4d;border-radius:16px;color:#ff4d4d;text-align:center;font:900 76px "Inter Display",Inter,sans-serif;letter-spacing:8px;background:#05070ccc;box-shadow:0 0 60px #ff4d4d55;opacity:0}
+.sello{position:absolute;left:50%;top:790px;width:600px;margin-left:-300px;padding:18px 0;border:6px solid #ff6b63;border-radius:16px;color:#ff6b63;text-align:center;font:900 76px "Inter Display",Inter,sans-serif;letter-spacing:8px;background:#05070ccc;box-shadow:0 0 60px #ff6b6355;opacity:0}
 .v .sello{top:1440px;width:760px;margin-left:-380px;font-size:90px}
 
 /* Título y firma */
@@ -176,21 +176,21 @@ html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:var(--b
 .msg.r{margin-left:auto;border-radius:24px 24px 6px 24px;background:#1f4f9a}
 .badge-prom{position:absolute;left:50%;top:250px;transform:translateX(-50%);padding:10px 34px;border-radius:12px;background:var(--c);color:#0b1020;font:800 34px Inter,sans-serif;letter-spacing:3px;box-shadow:0 0 50px var(--c)}
 .v .badge-prom{top:470px}
-.tcard .tid,.t12 .tid{margin:0;font:700 24px "JetBrains Mono",monospace;letter-spacing:4px;color:#34d399}
+.tcard .tid,.t12 .tid{margin:0;font:700 24px "JetBrains Mono",monospace;letter-spacing:4px;color:#4ea7ff}
 .reloj.r2{left:110px;top:150px}
 .reloj.r2 .hora{font-size:120px}
 .v .reloj.r2{left:70px;top:240px}
-.t12{position:absolute;left:760px;top:180px;width:760px;padding:24px 30px;border-radius:20px;background:#0b1428f2;border:3px solid #34d399;box-shadow:0 0 60px #34d39944}
+.t12{position:absolute;left:760px;top:180px;width:760px;padding:24px 30px;border-radius:20px;background:#0b1428f2;border:3px solid #4ea7ff;box-shadow:0 0 60px #4ea7ff44}
 .v .t12{left:70px;right:70px;top:500px;width:auto}
 .t12 h3{margin:6px 0 10px;font:800 46px "Inter Display",Inter,sans-serif}
 .t12 .asg{margin:0;display:flex;align-items:center;gap:12px;font:600 30px Inter,sans-serif;color:#c9d1e0}
-.t12 .asg i{width:16px;height:16px;border-radius:50%;background:#f87171}
-.t12 .tid{margin:0;font:700 24px "JetBrains Mono",monospace;letter-spacing:4px;color:#34d399}
-.tcard .tid{margin:0;font:700 24px "JetBrains Mono",monospace;letter-spacing:4px;color:#34d399}
-.lbl{position:absolute;left:0;right:0;top:780px;margin:0;text-align:center;font:800 74px "Inter Display",Inter,sans-serif;color:#ffb07a}
+.t12 .asg i{width:16px;height:16px;border-radius:50%;background:#2d7ff9}
+.t12 .tid{margin:0;font:700 24px "JetBrains Mono",monospace;letter-spacing:4px;color:#4ea7ff}
+.tcard .tid{margin:0;font:700 24px "JetBrains Mono",monospace;letter-spacing:4px;color:#4ea7ff}
+.lbl{position:absolute;left:0;right:0;top:780px;margin:0;text-align:center;font:800 74px "Inter Display",Inter,sans-serif;color:#ff4b00}
 .v .lbl{top:1200px;padding:0 60px;font-size:80px}
 .archivo{position:absolute;left:260px;top:300px;width:360px;padding:30px;border-radius:20px;background:#e9eef7;color:#0b1020;text-align:center;box-shadow:0 30px 80px #000c}
-.archivo i{display:block;width:90px;height:110px;margin:0 auto 16px;border-radius:8px;background:linear-gradient(135deg,#1f7a4a 0 70%,#0000 70%),#1f7a4a}
+.archivo i{display:block;width:90px;height:110px;margin:0 auto 16px;border-radius:8px;background:linear-gradient(135deg,#1f4f9a 0 70%,#0000 70%),#1f4f9a}
 .archivo b{display:block;font:800 34px Inter,sans-serif}
 .archivo small{font:600 24px Inter,sans-serif;color:#555}
 
@@ -209,13 +209,13 @@ html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:var(--b
 .mail{position:absolute;width:320px;padding:22px 24px;border-radius:14px;background:#e9eef7;color:#0b1020;font:700 28px Inter,sans-serif;box-shadow:0 20px 50px #000a;opacity:0}
 .v .mail{width:290px;font-size:26px}
 .mail i{display:block;width:44px;height:28px;margin-bottom:10px;border:3px solid #2d7ff9;border-radius:4px;background:linear-gradient(155deg,#0000 46%,#2d7ff9 48%,#0000 52%),linear-gradient(25deg,#0000 46%,#2d7ff9 48%,#0000 52%)}
-.lbl{position:absolute;left:0;right:0;top:780px;margin:0;text-align:center;font:800 74px "Inter Display",Inter,sans-serif;color:#ffb07a}
+.lbl{position:absolute;left:0;right:0;top:780px;margin:0;text-align:center;font:800 74px "Inter Display",Inter,sans-serif;color:#ff4b00}
 .v .lbl{top:1200px;padding:0 60px;font-size:80px}
 .b2{display:flex;justify-content:center;align-items:center;gap:60px;opacity:0}
 .v .b2{flex-direction:column;gap:40px}
 .b2>div{position:relative;width:620px;height:520px;padding:32px;border-radius:22px;background:#0d1a30e6;border:2px solid #4ea7ff55;text-align:center}
 .v .b2>div{width:900px;height:480px}
-.b2 .ph{margin:0;font:700 28px "JetBrains Mono",monospace;letter-spacing:4px;color:#ffb07a}
+.b2 .ph{margin:0;font:700 28px "JetBrains Mono",monospace;letter-spacing:4px;color:#ff4b00}
 .big0{margin:30px 0 0;font:900 220px/1 "Inter Display",Inter,sans-serif;color:#2a3b58}
 .cost{margin:60px 0 0;font:900 150px/1 "Inter Display",Inter,sans-serif;color:#fff}
 .b2 .pf{position:absolute;left:0;right:0;bottom:30px;margin:0;font:600 32px Inter,sans-serif;color:#c9d1e0}
@@ -229,8 +229,8 @@ html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:var(--b
 /* Memoria */
 .cerebros{position:absolute;left:110px;right:110px;top:330px;display:grid;grid-template-columns:520px 1fr;gap:30px}
 .v .cerebros{left:70px;right:70px;top:540px;grid-template-columns:1fr;gap:26px}
-.cb{padding:28px;border-radius:22px;background:#0b1428e6;border:2px solid #fbbf2488}
-.cb .ph{margin:0 0 30px;font:700 24px "JetBrains Mono",monospace;letter-spacing:4px;color:#fbbf24}
+.cb{padding:28px;border-radius:22px;background:#0b1428e6;border:2px solid #d8dadf88}
+.cb .ph{margin:0 0 30px;font:700 24px "JetBrains Mono",monospace;letter-spacing:4px;color:#d8dadf}
 .its{display:flex;flex-direction:column;gap:18px}
 .v .its{flex-direction:row;flex-wrap:wrap}
 .it{padding:22px 26px;border-radius:14px;background:#16243f;font:700 38px Inter,sans-serif}
@@ -241,59 +241,60 @@ html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:var(--b
 .cb.dec .grafo{transform:scale(1.1);margin-left:20px}
 .v .cb.dec .grafo{transform:scale(1.12);margin-left:10px}
 .grafo svg{position:absolute;inset:0;width:760px;height:520px;overflow:visible}
-.grafo .l{stroke:#fbbf24;stroke-width:3;stroke-dasharray:1;stroke-dashoffset:1;opacity:.8}
+.grafo .l{stroke:#d8dadf;stroke-width:3;stroke-dasharray:1;stroke-dashoffset:1;opacity:.8}
 .grafo .n{position:absolute;padding:10px 16px;border-radius:12px;background:#16243f;border:2px solid #4ea7ff88;font:700 22px Inter,sans-serif;white-space:nowrap;text-align:center}
 .grafo .n small{display:block;font:600 15px "JetBrains Mono",monospace;letter-spacing:2px;color:#9fb3cf}
-.grafo .t-decision{border-color:#fbbf24;background:#3a2f0c}
-.grafo .t-evidencia{border-color:#22d3ee}
-.grafo .t-persona{border-color:#f87171}
+.grafo .t-decision{border-color:#d8dadf;background:#1c2c48}
+.grafo .t-evidencia{border-color:#f8fafc}
+.grafo .t-persona{border-color:#2d7ff9}
 .qs{position:absolute;right:28px;top:20px;display:flex;gap:12px;flex-wrap:wrap}
-.qs span{padding:8px 18px;border-radius:999px;background:#fbbf24;color:#0b1020;font:800 26px Inter,sans-serif}
+.qs span{padding:8px 18px;border-radius:999px;background:#d8dadf;color:#0b1020;font:800 26px Inter,sans-serif}
 
 /* Fuente */
 .gwrap{position:absolute;left:110px;top:200px;width:760px;height:520px;transform:scale(1.15);transform-origin:0 0}
 .v .gwrap{left:90px;top:300px;transform:scale(1.18)}
-.viejo{position:absolute;left:-10px;top:180px;padding:8px 16px;border:5px solid #ff4d4d;border-radius:10px;color:#ff4d4d;font:900 30px Inter,sans-serif;letter-spacing:3px;background:#05070ccc}
+.viejo{position:absolute;left:10px;top:262px;padding:8px 16px;border:5px solid #ff6b63;border-radius:10px;color:#ff6b63;font:900 22px Inter,sans-serif;letter-spacing:3px;background:#05070ccc}
 .resp{position:absolute;left:1020px;top:300px;width:800px}
 .v .resp{left:70px;top:1020px;width:940px}
 .resp .msg{max-width:none}
-.src{display:block;width:fit-content;margin-top:14px;padding:6px 14px;border-radius:999px;background:#3a2f0c;border:2px solid #fbbf24;color:#fbbf24;font:700 22px "JetBrains Mono",monospace}
-.msg.sin{border-color:#ffb07a}
+.src{display:block;width:fit-content;margin-top:14px;padding:6px 14px;border-radius:999px;background:#1c2c48;border:2px solid #d8dadf;color:#d8dadf;font:700 22px "JetBrains Mono",monospace}
+.msg.sin{border-color:#ff4b00}
 
 /* Justo */
 .embudo{position:absolute;left:50%;top:280px;width:1500px;margin-left:-750px;display:flex;align-items:center;gap:40px}
 .v .embudo{top:500px;width:940px;margin-left:-470px;flex-direction:column}
 .todo-mem{display:grid;grid-template-columns:repeat(6,80px);gap:16px}
 .mem{width:80px;height:80px;border-radius:14px;background:#2a3b58}
-.flecha{width:240px;height:10px;border-radius:5px;background:linear-gradient(90deg,#fbbf24,#fbbf2400)}
-.v .flecha{width:10px;height:120px;background:linear-gradient(#fbbf24,#fbbf2400)}
-.agente{flex:1;padding:28px;border-radius:22px;background:#0b1428e6;border:2px solid #fbbf24}
+.flecha{width:240px;height:10px;border-radius:5px;background:linear-gradient(90deg,#d8dadf,#d8dadf00)}
+.v .flecha{width:10px;height:120px;background:linear-gradient(#d8dadf,#d8dadf00)}
+.agente{flex:1;padding:28px;border-radius:22px;background:#0b1428e6;border:2px solid #d8dadf}
 .v .agente{width:100%}
 .agente p{margin:0 0 16px;font:800 40px "Inter Display",Inter,sans-serif}
 .tres{display:flex;flex-direction:column;gap:12px}
-.tres span{padding:14px 20px;border-radius:12px;background:#3a2f0c;font:700 30px Inter,sans-serif}
+.tres span{padding:14px 20px;border-radius:12px;background:#1c2c48;font:700 30px Inter,sans-serif}
 .medidas{position:absolute;left:0;right:0;top:820px;display:flex;justify-content:center;gap:40px}
 .v .medidas{top:1520px;flex-direction:column;align-items:center;gap:24px}
-.medidas span{padding:16px 34px;border-radius:999px;background:#0d1a30;border:2px solid #34d399;font:800 40px Inter,sans-serif}
-.medidas b{color:#34d399}
+.medidas span{padding:16px 34px;border-radius:999px;background:#0d1a30;border:2px solid #4ea7ff;font:800 40px Inter,sans-serif}
+.medidas b{color:#4ea7ff}
 .infra{position:absolute;left:0;right:0;top:220px;text-align:center}
 .v .infra{top:560px;padding:0 60px}
 .cand{position:relative;width:160px;height:200px;margin:0 auto 30px}
-.cand .arco{position:absolute;left:30px;top:0;width:100px;height:110px;border:16px solid #fbbf24;border-bottom:0;border-radius:60px 60px 0 0}
-.cand .cuerpo{position:absolute;left:0;top:90px;width:160px;height:110px;border-radius:18px;background:#fbbf24;box-shadow:0 0 50px #fbbf2488}
+.cand .arco{position:absolute;left:30px;top:0;width:100px;height:110px;border:16px solid #d8dadf;border-bottom:0;border-radius:60px 60px 0 0}
+.cand .cuerpo{position:absolute;left:0;top:90px;width:160px;height:110px;border-radius:18px;background:#d8dadf;box-shadow:0 0 50px #d8dadf88}
 .infra p{margin:0 0 30px;font:800 64px "Inter Display",Inter,sans-serif}
 .dos span{display:inline-block;margin:0 14px;padding:16px 34px;border-radius:999px;background:#16243f;border:2px solid #4ea7ff;font:700 38px Inter,sans-serif}
 .v .dos span{display:block;width:fit-content;margin:0 auto 20px}
 
 /* Lunes */
-.t12.abre{border-color:#fbbf24;box-shadow:0 0 60px #fbbf2444}
-.t12.abre .tid{color:#fbbf24}
+.t12.abre{border-color:#d8dadf;box-shadow:0 0 60px #d8dadf44}
+.t12.abre .tid{color:#d8dadf}
 .sabe{position:absolute;left:760px;right:110px;top:440px}
 .v .sabe{left:70px;right:70px;top:820px}
 .fact{margin:0 0 20px;padding:22px 26px;border-radius:18px;background:#0d1a30e6;border:2px solid #4ea7ff55}
 .fact p{margin:0;font:700 34px Inter,sans-serif}
-.confuente{position:absolute;left:110px;top:520px;padding:14px 26px;border:5px solid #fbbf24;border-radius:14px;color:#fbbf24;font:900 48px "Inter Display",Inter,sans-serif;letter-spacing:4px;transform:rotate(-6deg)}
+.confuente{position:absolute;left:110px;top:520px;padding:14px 26px;border:5px solid #d8dadf;border-radius:14px;color:#d8dadf;font:900 48px "Inter Display",Inter,sans-serif;letter-spacing:4px;transform:rotate(-6deg)}
 .v .confuente{left:auto;right:90px;top:1600px}
+.grafo .n.old{white-space:normal;width:170px;line-height:1.15}
 
 </style>
 </head>
@@ -303,7 +304,7 @@ html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:var(--b
 <div id="kick" class="clip " data-start="0.00" data-duration="89.96" data-track-index="30"><p class="kicker"><b>3/7</b> ARVANTTI OS</p></div>
 <div id="e-recap" class="clip scene" data-start="0.00" data-duration="4.98" data-track-index="3"><p class="center figcap"><span class="w">En</span> <span class="w">la</span> <span class="w">parte</span> <span class="w">2,</span> <span class="w">el</span> <span class="w">pedido</span> <span class="w">se</span> <span class="w">volvió</span> <span class="w">una</span> <span class="w">tarea</span> <span class="w">con</span> <span class="w">dueño.</span></p><div class="capas" id="fr">
     <div class="capa ent" id="fr-ent"><h3>Arvantti OS Enterprise</h3><p>Agentes, habilidades, voz y panel de dirección</p></div>
-    <div class="capa nuc" id="fr-nuc"><p class="ct">NÚCLEO · CINCO PROMESAS</p><div class="proms"><div class="prom" id="fr-p0" style="--c:#f87171">Controla</div><div class="prom" id="fr-p1" style="--c:#a78bfa">Protege</div><div class="prom" id="fr-p2" style="--c:#34d399">Organiza</div><div class="prom" id="fr-p3" style="--c:#fbbf24">Recuerda</div><div class="prom" id="fr-p4" style="--c:#22d3ee">Rinde cuentas</div></div></div>
+    <div class="capa nuc" id="fr-nuc"><p class="ct">NÚCLEO · CINCO PROMESAS</p><div class="proms"><div class="prom" id="fr-p0" style="--c:#2d7ff9">Controla</div><div class="prom" id="fr-p1" style="--c:#c4b5fd">Protege</div><div class="prom" id="fr-p2" style="--c:#4ea7ff">Organiza</div><div class="prom" id="fr-p3" style="--c:#d8dadf">Recuerda</div><div class="prom" id="fr-p4" style="--c:#f8fafc">Rinde cuentas</div></div></div>
     <div class="capa base" id="fr-base"><p class="ct">BASE · SE CONECTA CON TODO</p>
       <div class="fila"><span id="fr-ia0">Claude</span><span id="fr-ia1">ChatGPT</span><span id="fr-ia2">Gemini</span><span id="fr-ia3">Copilot</span><span id="fr-ia4">Modelos privados</span></div>
       <div class="fila sis"><span id="fr-s0">CRM<small>sistema de clientes</small></span><span id="fr-s1">ERP<small>sistema de gestión</small></span><span id="fr-s2">Nube<small>sus servicios</small></span><span id="fr-s3">Archivos<small>sus documentos</small></span><span class="pl" id="fr-pl0">En el escritorio</span><span class="pl" id="fr-pl1">En la nube</span></div></div>
@@ -325,7 +326,7 @@ html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:var(--b
 <audio id="sfx-4" src="assets/shared/core/sfx/whoosh.wav" data-start="22.48" data-duration="1.40" data-volume="0.2" data-track-index="104"></audio>
 <div id="e-memoria" class="clip scene" data-start="25.38" data-duration="16.52" data-track-index="3">
       <p class="center figcap"><span class="w">Arvantti</span> <span class="w">OS</span> <span class="w">recuerda</span> <span class="w">por</span> <span class="w">su</span> <span class="w">empresa.</span></p>
-      <div class="badge-prom" style="--c:#fbbf24">RECUERDA</div>
+      <div class="badge-prom" style="--c:#d8dadf">RECUERDA</div>
       <div class="cerebros"><div class="cb proy"><p class="ph">MEMORIA DEL PROYECTO</p><div class="its"><span class="it">Tareas</span><span class="it">Planes</span><span class="it">Documentos</span></div></div>
         <div class="cb dec"><p class="ph">MAPA DE DECISIONES</p><div class="grafo" id="gm"><svg viewBox="0 0 760 520"><line class="l " x1="120" y1="110" x2="380" y2="260" pathLength="1"/><line class="l " x1="380" y1="260" x2="150" y2="420" pathLength="1"/><line class="l " x1="380" y1="260" x2="420" y2="470" pathLength="1"/><line class="l " x1="620" y1="90" x2="640" y2="330" pathLength="1"/><line class="l " x1="640" y1="330" x2="380" y2="260" pathLength="1"/><line class="l " x1="120" y1="110" x2="420" y2="470" pathLength="1"/></svg>
     <div class="n  t-persona" style="left:120px;top:110px"><small>Persona</small>Gerente</div><div class="n  t-cliente" style="left:620px;top:90px"><small>Cliente</small>Cliente Andes</div><div class="n  t-pedido" style="left:640px;top:330px"><small>Pedido</small>Pedido 4471</div><div class="n  t-decision" style="left:380px;top:260px"><small>Decisión</small>Margen por producto</div><div class="n  t-evidencia" style="left:150px;top:420px"><small>Evidencia</small>Acta de junta</div><div class="n  t-evidencia" style="left:420px;top:470px"><small>Evidencia</small>Correo 3 oct</div></div><div class="qs"><span>Quién</span><span>Qué</span><span>Cuándo</span><span>Evidencia</span></div></div></div></div>
@@ -335,7 +336,7 @@ html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:var(--b
 <audio id="sfx-8" src="assets/shared/core/sfx/click-soft.mp3" data-start="33.57" data-duration="1.40" data-volume="0.2" data-track-index="108"></audio>
 <div id="e-fuente" class="clip scene" data-start="41.40" data-duration="11.14" data-track-index="3">
       <div class="gwrap"><div class="grafo" id="gf"><svg viewBox="0 0 760 520"><line class="l " x1="120" y1="110" x2="380" y2="260" pathLength="1"/><line class="l " x1="380" y1="260" x2="150" y2="420" pathLength="1"/><line class="l " x1="380" y1="260" x2="420" y2="470" pathLength="1"/><line class="l " x1="620" y1="90" x2="640" y2="330" pathLength="1"/><line class="l " x1="640" y1="330" x2="380" y2="260" pathLength="1"/><line class="l " x1="120" y1="110" x2="420" y2="470" pathLength="1"/><line class="l extra" x1="640" y1="330" x2="660" y2="470" pathLength="1"/><line class="l extra" x1="380" y1="260" x2="300" y2="60" pathLength="1"/></svg>
-    <div class="n  t-persona" style="left:120px;top:110px"><small>Persona</small>Gerente</div><div class="n  t-cliente" style="left:620px;top:90px"><small>Cliente</small>Cliente Andes</div><div class="n  t-pedido" style="left:640px;top:330px"><small>Pedido</small>Pedido 4471</div><div class="n  t-decision" style="left:380px;top:260px"><small>Decisión</small>Margen por producto</div><div class="n  t-evidencia" style="left:150px;top:420px"><small>Evidencia</small>Acta de junta</div><div class="n  t-evidencia" style="left:420px;top:470px"><small>Evidencia</small>Correo 3 oct</div><div class="n extra t-decision" style="left:660px;top:470px"><small>Decisión</small>Precio 2027</div><div class="n extra t-cliente" style="left:300px;top:60px"><small>Cliente</small>Proveedor nuevo</div><div class="n old t-evidencia" style="left:40px;top:260px"><small>Evidencia</small>Lista de precios 2025</div></div><div class="viejo">YA NO APLICA</div></div>
+    <div class="n  t-persona" style="left:120px;top:110px"><small>Persona</small>Gerente</div><div class="n  t-cliente" style="left:620px;top:90px"><small>Cliente</small>Cliente Andes</div><div class="n  t-pedido" style="left:640px;top:330px"><small>Pedido</small>Pedido 4471</div><div class="n  t-decision" style="left:380px;top:260px"><small>Decisión</small>Margen por producto</div><div class="n  t-evidencia" style="left:150px;top:420px"><small>Evidencia</small>Acta de junta</div><div class="n  t-evidencia" style="left:420px;top:470px"><small>Evidencia</small>Correo 3 oct</div><div class="n extra t-decision" style="left:660px;top:470px"><small>Decisión</small>Precio 2027</div><div class="n extra t-cliente" style="left:300px;top:60px"><small>Cliente</small>Proveedor nuevo</div><div class="n old t-evidencia" style="left:115px;top:268px"><small>Evidencia</small>Lista de precios 2025</div></div><div class="viejo">YA NO APLICA</div></div>
       <div class="resp"><div class="msg ia"><b>IA</b> La junta pidió ver el margen por producto.<span class="src">Fuente · Acta de junta, 28 sep</span></div>
         <div class="msg ia sin"><b>IA</b> No encuentro evidencia de eso. Prefiero no inventarlo.</div></div></div>
 <audio id="sfx-9" src="assets/shared/core/sfx/pop.mp3" data-start="42.15" data-duration="1.40" data-volume="0.12" data-track-index="109"></audio>
@@ -362,12 +363,12 @@ html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:var(--b
 <audio id="sfx-19" src="assets/shared/core/sfx/spark.wav" data-start="77.77" data-duration="1.40" data-volume="0.25" data-track-index="119"></audio>
 <div id="e-sello" class="clip scene" data-start="79.43" data-duration="10.78" data-track-index="3"><p class="center figcap c2"><span class="w">Recuerda:</span> <span class="w">la</span> <span class="w">segunda</span> <span class="w">promesa</span> <span class="w">de</span> <span class="w">Arvantti</span> <span class="w">OS.</span></p><p class="center figcap c3"><span class="w">Ahora</span> <span class="w">el</span> <span class="w">agente</span> <span class="w">sabe</span> <span class="w">mucho.</span> <span class="w">Pero,</span> <span class="w">¿qué</span> <span class="w">tiene</span> <span class="w">permitido</span> <span class="w">hacer?</span></p><div class="capas" id="fb">
     <div class="capa ent" id="fb-ent"><h3>Arvantti OS Enterprise</h3><p>Agentes, habilidades, voz y panel de dirección</p></div>
-    <div class="capa nuc" id="fb-nuc"><p class="ct">NÚCLEO · CINCO PROMESAS</p><div class="proms"><div class="prom" id="fb-p0" style="--c:#f87171">Controla</div><div class="prom" id="fb-p1" style="--c:#a78bfa">Protege</div><div class="prom" id="fb-p2" style="--c:#34d399">Organiza</div><div class="prom" id="fb-p3" style="--c:#fbbf24">Recuerda</div><div class="prom" id="fb-p4" style="--c:#22d3ee">Rinde cuentas</div></div></div>
+    <div class="capa nuc" id="fb-nuc"><p class="ct">NÚCLEO · CINCO PROMESAS</p><div class="proms"><div class="prom" id="fb-p0" style="--c:#2d7ff9">Controla</div><div class="prom" id="fb-p1" style="--c:#c4b5fd">Protege</div><div class="prom" id="fb-p2" style="--c:#4ea7ff">Organiza</div><div class="prom" id="fb-p3" style="--c:#d8dadf">Recuerda</div><div class="prom" id="fb-p4" style="--c:#f8fafc">Rinde cuentas</div></div></div>
     <div class="capa base" id="fb-base"><p class="ct">BASE · SE CONECTA CON TODO</p>
       <div class="fila"><span id="fb-ia0">Claude</span><span id="fb-ia1">ChatGPT</span><span id="fb-ia2">Gemini</span><span id="fb-ia3">Copilot</span><span id="fb-ia4">Modelos privados</span></div>
       <div class="fila sis"><span id="fb-s0">CRM<small>sistema de clientes</small></span><span id="fb-s1">ERP<small>sistema de gestión</small></span><span id="fb-s2">Nube<small>sus servicios</small></span><span id="fb-s3">Archivos<small>sus documentos</small></span><span class="pl" id="fb-pl0">En el escritorio</span><span class="pl" id="fb-pl1">En la nube</span></div></div>
   </div>
-    <div class="sigue"><span>Parte 3 de 7</span> Continúa en la parte 4: <b style="color:#f87171">Controla</b></div></div>
+    <div class="sigue"><span>Parte 3 de 7</span> Continúa en la parte 4: <b style="color:#2d7ff9">Controla</b></div></div>
 <audio id="sfx-20" src="assets/shared/core/sfx/spark.wav" data-start="80.18" data-duration="1.40" data-volume="0.2" data-track-index="120"></audio>
 <div id="e-firma" class="clip scene" data-start="89.71" data-duration="9.43" data-track-index="3">
     <svg class="estela" viewBox="0 0 1920 1080" preserveAspectRatio="none"><path id="p2" d="M-60 475.2 C 384 475.2 576 691.2 960 561.6 S 1536 432 1980 648" pathLength="1"/></svg>
@@ -399,11 +400,11 @@ tl.fromTo("#fondo .floorgrid",{"backgroundPositionY":"0px"},{"backgroundPosition
 tl.fromTo("#fondo .glow",{"opacity":0.55},{"opacity":1,"duration":6,"ease":"sine.inOut","yoyo":true,"repeat":16},0.00);
 tl.fromTo("#kick .kicker",{"opacity":0,"x":-30},{"opacity":1,"x":0,"duration":0.6},0.20);
 tl.fromTo("#e-recap .figcap .w",{"opacity":0,"y":36,"filter":"blur(10px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.55,"stagger":0.06,"ease":"power3.out"},0.60);
-tl.to("#fr-p0",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #f87171","duration":0.3},0.10);
-tl.to("#fr-p1",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #a78bfa","duration":0.3},0.22);
-tl.to("#fr-p2",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #34d399","duration":0.3},0.34);
-tl.to("#fr-p3",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #fbbf24","duration":0.3},0.46);
-tl.to("#fr-p4",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #22d3ee","duration":0.3},0.58);
+tl.to("#fr-p0",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #2d7ff9","duration":0.3},0.10);
+tl.to("#fr-p1",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #c4b5fd","duration":0.3},0.22);
+tl.to("#fr-p2",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #4ea7ff","duration":0.3},0.34);
+tl.to("#fr-p3",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #d8dadf","duration":0.3},0.46);
+tl.to("#fr-p4",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #f8fafc","duration":0.3},0.58);
 tl.fromTo("#fr",{"opacity":0},{"opacity":1,"duration":0.8,"ease":"power3.out"},0.00);
 tl.to("#e-recap",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},4.48);
 tl.fromTo("#e-gancho",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},4.48);
@@ -425,7 +426,7 @@ tl.fromTo("#e-dolor .b2",{"opacity":0},{"opacity":1,"duration":0.3},15.02);
 tl.fromTo("#e-dolor .cero",{"opacity":0,"x":-60},{"opacity":1,"x":0,"duration":0.5,"ease":"power3.out"},15.12);
 tl.fromTo("#e-dolor .todo",{"opacity":0,"x":60},{"opacity":1,"x":0,"duration":0.5,"ease":"power3.out"},18.00);
 tl.fromTo("#cst",{"innerText":0},{"innerText":4870,"duration":2.2,"snap":{"innerText":1},"ease":"power2.in"},19.44);
-tl.to("#e-dolor .cost",{"color":"#ff4d4d","duration":0.8},20.44);
+tl.to("#e-dolor .cost",{"color":"#ff6b63","duration":0.8},20.44);
 tl.to("#e-dolor .b2",{"opacity":0,"duration":0.4},21.36);
 tl.fromTo("#e-dolor .b3",{"opacity":0},{"opacity":1,"duration":0.3},21.66);
 tl.to("#e-dolor .persona",{"opacity":0,"y":-80,"filter":"blur(10px)","duration":1.2,"ease":"power2.in"},22.48);
@@ -455,13 +456,13 @@ tl.to("#gf .n.old",{"opacity":0.35,"filter":"grayscale(1)","duration":0.4},44.57
 tl.fromTo("#e-fuente .viejo",{"opacity":0,"scale":1.8,"rotate":-10},{"opacity":1,"scale":1,"rotate":-6,"duration":0.3,"ease":"power4.in"},44.77);
 tl.fromTo("#e-fuente .resp .msg:nth-child(1)",{"opacity":0,"y":40},{"opacity":1,"y":0,"duration":0.4,"ease":"back.out(1.6)"},46.61);
 tl.fromTo("#e-fuente .src",{"opacity":0,"x":-20},{"opacity":1,"x":0,"duration":0.4},47.21);
-tl.to("#gf .n:nth-child(5), #gf .n:nth-child(6)",{"boxShadow":"0 0 0 3px #fbbf24, 0 0 40px #fbbf24","duration":0.4},47.21);
+tl.to("#gf .n:nth-child(5), #gf .n:nth-child(6)",{"boxShadow":"0 0 0 3px #d8dadf, 0 0 40px #d8dadf","duration":0.4},47.21);
 tl.fromTo("#e-fuente .resp .sin",{"opacity":0,"y":40},{"opacity":1,"y":0,"duration":0.4,"ease":"back.out(1.6)"},48.73);
 tl.to("#e-fuente",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},52.04);
 tl.fromTo("#e-justo",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},52.04);
 tl.fromTo("#e-justo .mem",{"opacity":0,"scale":0.5},{"opacity":1,"scale":1,"duration":0.25,"stagger":0.03},52.49);
 tl.to("#e-justo .mem:not(.sel)",{"opacity":0.15,"duration":0.4},54.65);
-tl.to("#e-justo .mem.sel",{"backgroundColor":"#fbbf24","boxShadow":"0 0 20px #fbbf24","duration":0.4},54.65);
+tl.to("#e-justo .mem.sel",{"backgroundColor":"#d8dadf","boxShadow":"0 0 20px #d8dadf","duration":0.4},54.65);
 tl.fromTo("#e-justo .flecha",{"scaleX":0},{"scaleX":1,"duration":0.5,"transformOrigin":"0 50%"},54.85);
 tl.fromTo("#e-justo .agente",{"opacity":0,"x":40},{"opacity":1,"x":0,"duration":0.5},55.05);
 tl.fromTo("#e-justo .tres span",{"opacity":0,"y":20},{"opacity":1,"y":0,"duration":0.3,"stagger":0.15},55.25);
@@ -484,7 +485,7 @@ tl.fromTo("#e-lunes .fact:nth-child(2)",{"opacity":0,"x":60},{"opacity":1,"x":0,
 tl.fromTo("#e-lunes .fact:nth-child(2) .src",{"opacity":0},{"opacity":1,"duration":0.3},73.07);
 tl.fromTo("#e-lunes .fact:nth-child(3)",{"opacity":0,"x":60},{"opacity":1,"x":0,"duration":0.45,"ease":"power3.out"},75.29);
 tl.fromTo("#e-lunes .fact:nth-child(3) .src",{"opacity":0},{"opacity":1,"duration":0.3},75.79);
-tl.to("#e-lunes .src",{"backgroundColor":"#fbbf24","color":"#0b1020","duration":0.3,"stagger":0.12},77.77);
+tl.to("#e-lunes .src",{"backgroundColor":"#d8dadf","color":"#0b1020","duration":0.3,"stagger":0.12},77.77);
 tl.fromTo("#e-lunes .confuente",{"opacity":0,"scale":1.6},{"opacity":1,"scale":1,"duration":0.35,"ease":"power4.in"},77.77);
 tl.to("#e-lunes",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},79.43);
 tl.fromTo("#e-sello",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},79.43);
@@ -493,12 +494,12 @@ tl.to("#fb-p0",{"opacity":0.35,"duration":0.3},79.73);
 tl.to("#fb-p1",{"opacity":0.35,"duration":0.3},79.73);
 tl.to("#fb-p2",{"opacity":0.35,"duration":0.3},79.73);
 tl.to("#fb-p4",{"opacity":0.35,"duration":0.3},79.73);
-tl.to("#fb-p3",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #fbbf24","duration":0.3},80.18);
+tl.to("#fb-p3",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #d8dadf","duration":0.3},80.18);
 tl.fromTo("#fb-p3",{"scale":1},{"scale":1.12,"duration":0.5,"ease":"back.out(2)"},80.18);
 tl.to("#e-sello .c2",{"opacity":0,"duration":0.3},83.85);
 tl.fromTo("#e-sello .c3 .w",{"opacity":0,"y":36,"filter":"blur(10px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.55,"stagger":0.06,"ease":"power3.out"},84.15);
 tl.to("#fb-p3",{"scale":1,"duration":0.4},87.23);
-tl.to("#fb-p0",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #f87171","duration":0.3},87.43);
+tl.to("#fb-p0",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #2d7ff9","duration":0.3},87.43);
 tl.fromTo("#e-sello .sigue",{"opacity":0,"y":30},{"opacity":1,"y":0,"duration":0.5,"ease":"power3.out"},87.76);
 tl.to("#e-sello",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},89.71);
 tl.fromTo("#e-firma",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},89.71);
