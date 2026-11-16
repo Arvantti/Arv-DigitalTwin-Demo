@@ -64,7 +64,6 @@ function curve(a,b){var m={x:(a.x+b.x)/2,y:(a.y+b.y)/2+60,z:(a.z+b.z)/2};return 
 function bez(a,b,u){var m=curve(a,b),v=1-u;return [v*v*a.x+2*v*u*m.x+u*u*b.x,v*v*a.y+2*v*u*m.y+u*u*b.y,v*v*a.z+2*v*u*m.z+u*u*b.z]}
 function draw(){
   ctx.clearRect(0,0,W,H);
-  var g=ctx.createRadialGradient(W/2,H*.45,0,W/2,H*.45,Math.max(W,H)*.7);g.addColorStop(0,'#0d1430');g.addColorStop(1,'#05070f');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
   var q=N.map(function(n){return pr(n.x,n.y,n.z)});
   ctx.lineWidth=1;
   L.forEach(function(l){var a=q[l[0]],b=q[l[1]],al=Math.max(0,Math.min(.22,.2-(a.z+b.z)/9000));ctx.strokeStyle='rgba(120,150,255,'+al+')';ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke()});

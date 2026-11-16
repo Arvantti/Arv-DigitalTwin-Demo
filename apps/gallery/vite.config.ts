@@ -1,6 +1,13 @@
 import { defineConfig } from "vite";
 
 export default defineConfig({
+  plugins: [{
+    name: "gallery-ambient-network",
+    transformIndexHtml: {
+      order: "pre",
+      handler: () => [{ tag: "script", attrs: { type: "module", src: "/src/ambient-network.ts" }, injectTo: "body" }],
+    },
+  }],
   server: {
     port: 5173,
     host: true,
