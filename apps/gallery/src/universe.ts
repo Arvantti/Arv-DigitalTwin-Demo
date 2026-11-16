@@ -1,6 +1,6 @@
 /**
- * Universo del gemelo: seis plataformas ovales en las esquinas de un hexágono, el gemelo 3D al centro,
- * unidas por tuberías con fluido y sobre un universo de grafos. Al tocar una plataforma se abre un
+ * Universo del gemelo: siete capacidades orbitan el núcleo Arvantti-DigitalTwin y se conectan
+ * por tuberías sobre un universo de grafos. Al tocar una plataforma se abre un
  * holograma con su ilustración, su contenido y el enlace a su pantalla real. Se dibuja en un canvas 2D con
  * proyección 3D propia (sin librerías). Port del prototipo aprobado por Andy; el tipado fino queda pendiente.
  */
@@ -9,36 +9,38 @@ export function mountUniverse(cv: HTMLCanvasElement): void {
 
 var ctx=cv.getContext('2d') as CanvasRenderingContext2D;
 var reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
-var C={live:'#4aa3ff',plan:'#f5a524',calc:'#2fd27a',fut:'#a77bff',twin:'#dce8ff',user:'#ff7ab8'};
+var C={live:'#4aa3ff',plan:'#f5a524',calc:'#2fd27a',fut:'#a77bff',twin:'#dce8ff',scada:'#22d3ee',ai:'#ff7ab8'};
 var P=[
- {id:'planta',n:'Planta',s:'emulada en 2D',x:-500,y:70,z:40,r:112,c:'live',d:'Contiene un PLC por máquina. Envía todas sus señales al centro de control y recibe de él las órdenes.'},
- {id:'centro',n:'Centro de control',s:'señales de todos los PLC',x:-170,y:180,z:-70,r:122,c:'live',d:'Recibe ciclo, unidades y OEE de cada PLC. Alimenta al gemelo y envía la programación a la planta.'},
- {id:'gemelo',n:'Gemelo 3D',s:'pasado · presente · futuro',x:140,y:-5,z:70,r:158,c:'twin',d:'La planta en 3D con lo que reportan los PLC y el plan. Se mueve por el tiempo: atrás, ahora y adelante.'},
- {id:'aps',n:'APS',s:'pedidos y programación',x:500,y:140,z:-40,r:112,c:'plan',d:'Pedidos y programación, incluida la manual. Entrega la programación al gemelo y al centro de control.'},
- {id:'cosim',n:'Cosimulador',s:'cálculo',x:-330,y:-180,z:170,r:118,c:'calc',d:'Calcula la secuencia que cumple las entregas. Se comunica con el gemelo y con el centro de control.'},
- {id:'fractal',n:'Fractal',s:'optimizador',x:60,y:-290,z:-130,r:122,c:'fut',d:'Lee el gemelo, el cosimulador y el centro de control, y genera escenarios para que el usuario elija.'},
- {id:'usuario',n:'Usuario',s:'elige el escenario',x:0,y:0,z:0,r:84,c:'user',d:'Compara los escenarios que genera Fractal y decide cuál aplicar en el gemelo y en el centro de control.'}
+ {id:'integrator',n:'Integrator',s:'ERP · CRM · SCADA',x:0,y:0,z:0,r:112,c:'live',d:'Conecta los sistemas empresariales y de planta —ERP, CRM y SCADA— con Arvantti-DigitalTwin.'},
+ {id:'aps',n:'APS',s:'programación de pedidos',x:0,y:0,z:0,r:112,c:'plan',d:'Programa pedidos y secuencias de producción, y comparte el plan con la simulación y la operación.'},
+ {id:'cosim',n:'CoSimulation',s:'con las reglas de tu empresa',x:0,y:0,z:0,r:112,c:'calc',d:'Simula la operación aplicando las reglas, restricciones y capacidades propias de cada empresa.'},
+ {id:'fractal',n:'Fractal',s:'escenarios multiobjetivo',x:0,y:0,z:0,r:112,c:'fut',d:'Explora escenarios multiobjetivo para comparar alternativas y apoyar decisiones de operación.'},
+ {id:'control',n:'Control Center',s:'planta y pedidos en vivo',x:0,y:0,z:0,r:112,c:'live',d:'Reúne en vivo la planta, sus señales, indicadores y pedidos para supervisar la operación.'},
+ {id:'dendro',n:'Dendro SCADA',s:'Physical AI en la máquina',x:0,y:0,z:0,r:112,c:'scada',d:'Acerca Physical AI al equipo y a las señales de máquina, conectando la inteligencia con la operación física.'},
+ {id:'assistant',n:'AI Embedded Assistant',s:'cerebro empresarial IA',x:0,y:0,z:0,r:112,c:'ai',d:'Asistente de IA integrado al contexto empresarial para consultar información y apoyar decisiones.'},
+ {id:'core',n:'Núcleo',s:'Arvantti-DigitalTwin',x:0,y:0,z:0,r:112,c:'twin',d:'Núcleo digital que conecta sistemas empresariales, planeación, simulación, optimización y operación.'}
 ];
 var byId={};P.forEach(function(p){byId[p.id]=p});
 var INFO={
- planta:{h:'/emulador.html',i:['PLC de cada máquina (12 inyectoras)','Buffers y montacargas','Almacén de semielaborados','Ensamble y almacén de terminado','Lógica de restricciones']},
- centro:{h:'/control.html',i:['Ciclo por máquina','Unidades producidas','OEE por máquina','Señales de todos los PLC']},
- gemelo:{h:'/plant.html?plant=plastic-injection-plant-v1',i:['Pasado · play','Presente · vivo','Futuro · escenarios','Panel de órdenes']},
- aps:{h:'/aps.html',i:['Pedidos','Tabla y Gantt','Programación manual','Objetivo al calcular']},
- cosim:{h:'/aps.html?tab=gantt',i:['Optimización con un solo objetivo','Siempre respeta las entregas','Ejecuta la secuencia del APS']},
- fractal:{h:'/aps.html?tab=fractal',i:['Genera escenarios','Lee gemelo, cosimulador y centro de control','Multiobjetivo (futuro)']},
- usuario:{h:null,i:['Compara los escenarios','Decide cuál aplicar']}
+ integrator:{h:null,i:['ERP','CRM','SCADA','Integración de datos y procesos']},
+ aps:{h:'/aps.html',i:['Pedidos','Programación de pedidos','Tabla y Gantt','Secuencias de producción']},
+ cosim:{h:'/aps.html?tab=gantt',i:['Reglas de negocio','Restricciones y capacidades','Simulación de secuencias']},
+ fractal:{h:'/aps.html?tab=fractal',i:['Escenarios alternativos','Evaluación multiobjetivo','Comparación de resultados']},
+ control:{h:'/control.html',i:['Estado de la planta','Pedidos en vivo','Señales e indicadores']},
+ dendro:{h:null,i:['Physical AI junto a la máquina','Lectura de señales de equipo','Interacción con la operación física']},
+ assistant:{h:null,i:['Asistencia con contexto empresarial','Consulta de información','Apoyo a decisiones']},
+ core:{h:null,i:['Conecta las capacidades del ecosistema','Comparte contexto entre operación y planeación','Núcleo: Arvantti-DigitalTwin']}
 };
 
-// hexágono: esquinas = 6 plataformas, gemelo al centro
-var HEX=['planta','centro','aps','usuario','fractal','cosim'],HR=480;
-HEX.forEach(function(id,i){var a=(i*60-120)*Math.PI/180,p=byId[id];p.x=Math.cos(a)*HR;p.z=Math.sin(a)*HR;p.y=0;p.r=112});
-byId.gemelo.x=0;byId.gemelo.y=0;byId.gemelo.z=0;byId.gemelo.r=112;
+// siete capacidades alrededor del núcleo Arvantti-DigitalTwin
+var RING=['integrator','aps','cosim','fractal','control','dendro','assistant'],HR=480;
+RING.forEach(function(id,i){var a=(i*360/7-90)*Math.PI/180,p=byId[id];p.x=Math.cos(a)*HR;p.z=Math.sin(a)*HR;p.y=0;p.r=112});
+byId.core.x=0;byId.core.y=0;byId.core.z=0;byId.core.r=112;
 var E=[
- ['planta','centro','live','señales'],['centro','planta','plan','órdenes'],['centro','gemelo','live','estado de la planta'],
- ['aps','centro','plan','programación'],['aps','gemelo','plan','programación'],
- ['cosim','gemelo','calc',''],['gemelo','cosim','calc','',1],['cosim','centro','calc','señales y ritmos'],['centro','cosim','calc','',1],
- ['gemelo','fractal','fut','estado actual'],['fractal','usuario','fut','escenarios'],['usuario','gemelo','fut','elige y aplica'],['cosim','fractal','fut','lee el cálculo'],['centro','fractal','fut','lee las señales']
+ ['integrator','aps','live','ERP · CRM · SCADA'],['aps','cosim','plan','pedidos y programación'],['cosim','fractal','calc','reglas de empresa'],
+ ['fractal','control','fut','escenarios'],['control','dendro','live','operación y señales'],['dendro','assistant','scada','datos de máquina'],['assistant','integrator','ai','contexto empresarial'],
+ ['core','integrator','twin',''],['core','aps','twin',''],['core','cosim','twin',''],['core','fractal','twin',''],
+ ['core','control','twin',''],['core','dendro','twin',''],['core','assistant','twin','']
 ];
 // grafo de fondo
 var rnd=(function(s){return function(){s=(s*16807)%2147483647;return (s-1)/2147483646}})(7);
@@ -67,8 +69,8 @@ function draw(){
   ctx.lineWidth=1;
   L.forEach(function(l){var a=q[l[0]],b=q[l[1]],al=Math.max(0,Math.min(.22,.2-(a.z+b.z)/9000));ctx.strokeStyle='rgba(120,150,255,'+al+')';ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke()});
   N.forEach(function(n,i){var a=q[i],al=Math.max(.05,Math.min(.9,.8-a.z/2200));ctx.fillStyle=rgba(n.h>.7?'#a77bff':n.h>.4?'#4aa3ff':'#8fb4ff',al);ctx.beginPath();ctx.arc(a.x,a.y,Math.max(.8,a.k*3.2),0,6.283);ctx.fill()});
-  // piso hexagonal
-  (function(){var h=HEX.map(function(id){var p=byId[id];return pr(p.x,-34,p.z)});ctx.beginPath();h.forEach(function(q,i){i?ctx.lineTo(q.x,q.y):ctx.moveTo(q.x,q.y)});ctx.closePath();ctx.strokeStyle='rgba(120,150,255,.4)';ctx.lineWidth=1.4;ctx.stroke();ctx.fillStyle='rgba(120,150,255,.025)';ctx.fill();
+  // piso heptagonal
+  (function(){var h=RING.map(function(id){var p=byId[id];return pr(p.x,-34,p.z)});ctx.beginPath();h.forEach(function(q,i){i?ctx.lineTo(q.x,q.y):ctx.moveTo(q.x,q.y)});ctx.closePath();ctx.strokeStyle='rgba(120,150,255,.4)';ctx.lineWidth=1.4;ctx.stroke();ctx.fillStyle='rgba(120,150,255,.025)';ctx.fill();
     var c=pr(0,-34,0);h.forEach(function(q){ctx.beginPath();ctx.moveTo(c.x,c.y);ctx.lineTo(q.x,q.y);ctx.strokeStyle='rgba(120,150,255,.08)';ctx.stroke()})})();
   // tuberías
   E.forEach(function(e,ei){
@@ -166,11 +168,11 @@ function mbox(cx,cy,cz,sx,sy,sz,col,al,tt){var h=[sx/2,sy/2,sz/2],vs=[],i;for(i=
   var F=[[0,1,3,2],[4,5,7,6],[0,1,5,4],[2,3,7,6],[0,2,6,4],[1,3,7,5]].map(function(f){return {f:f,d:(vs[f[0]].d+vs[f[1]].d+vs[f[2]].d+vs[f[3]].d)/4}}).sort(function(a,b){return b.d-a.d});
   F.forEach(function(o,k){ctx.beginPath();o.f.forEach(function(v,j){j?ctx.lineTo(vs[v].x,vs[v].y):ctx.moveTo(vs[v].x,vs[v].y)});ctx.closePath();ctx.fillStyle=rgba(col,al*(.55+.12*k));ctx.fill();ctx.strokeStyle=rgba(col,.55);ctx.lineWidth=.8;ctx.stroke()})}
 var ILL={
- gemelo:function(c,tt){ILS=1.0;mbox(0,4,0,118,8,40,c,.5,tt);mbox(-50,22,0,18,22,22,c,.7,tt);mbox(-22,24,0,44,9,9,c,.8,tt);mbox(-34,36,0,12,12,12,c,.6,tt);
-   [28,44,60].forEach(function(x){mbox(x,24,0,6,32,30,c,.7,tt)});mbox(44,10,0,40,5,5,c,.4,tt);},
- planta:function(c,tt){ILS=.85;mbox(0,1,0,230,2,100,c,.25,tt);mbox(0,13,0,230,22,100,c,.06,tt);
+ core:function(c,tt){var cx=IW/2,cy=IH/2;ctx.strokeStyle=rgba(c,.35);ctx.lineWidth=1;for(var k=0;k<7;k++){var a=k*6.2832/7-1.5708,x=cx+Math.cos(a)*88,y=cy+Math.sin(a)*38;ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(x,y);ctx.stroke();ctx.fillStyle=rgba(c,.9);ctx.beginPath();ctx.arc(x,y,4,0,6.283);ctx.fill()}ctx.fillStyle='rgba(4,8,20,.95)';ctx.strokeStyle=rgba(c,.8);ctx.fillRect(cx-48,cy-20,96,40);ctx.strokeRect(cx-48,cy-20,96,40);ctx.fillStyle='#eef3ff';ctx.font='600 11px Inter,sans-serif';ctx.textAlign='center';ctx.fillText('ARVANTTI',cx,cy-1);ctx.fillText('DIGITALTWIN',cx,cy+13);},
+ integrator:function(c,tt){var names=['ERP','CRM','SCADA'];names.forEach(function(name,i){var x=8+i*96,y=30;ctx.fillStyle='rgba(4,8,20,.9)';ctx.strokeStyle=rgba(c,.7);ctx.fillRect(x,y,78,46);ctx.strokeRect(x,y,78,46);ctx.fillStyle=rgba(c,1);ctx.font='600 12px Inter,sans-serif';ctx.textAlign='center';ctx.fillText(name,x+39,y+27);if(i<2){ctx.strokeStyle=rgba(c,.65);ctx.beginPath();ctx.moveTo(x+78,y+23);ctx.lineTo(x+96,y+23);ctx.stroke()}});},
+ dendro:function(c,tt){ILS=.85;mbox(0,1,0,230,2,100,c,.25,tt);mbox(0,13,0,230,22,100,c,.06,tt);
    [-80,0,80].forEach(function(x){[-26,26].forEach(function(z){mbox(x,8,z,52,14,22,c,.7,tt)})});mbox(0,4,0,200,2,6,c,.5,tt);},
- centro:function(c,tt){[0,1,2].forEach(function(i){var x=10+i*94,y=14;ctx.fillStyle='rgba(4,8,20,.9)';ctx.strokeStyle=rgba(c,.6);ctx.lineWidth=1;ctx.fillRect(x,y,84,70);ctx.strokeRect(x,y,84,70);
+ control:function(c,tt){[0,1,2].forEach(function(i){var x=10+i*94,y=14;ctx.fillStyle='rgba(4,8,20,.9)';ctx.strokeStyle=rgba(c,.6);ctx.lineWidth=1;ctx.fillRect(x,y,84,70);ctx.strokeRect(x,y,84,70);
      for(var b=0;b<6;b++){var hh=10+Math.abs(Math.sin(tt*.0013+b*.9+i*1.7))*38;ctx.fillStyle=rgba(c,.75);ctx.fillRect(x+8+b*12,y+62-hh,8,hh)}
      ctx.fillStyle=rgba(c,.5);ctx.fillRect(x+30,y+84,24,4);ctx.fillRect(x+20,y+88,44,3)});},
  aps:function(c,tt){var rows=[[0,.35,.2,.4],[.3,.3,.45,.2],[.1,.5,.2,.5],[.55,.25,.4,.35]],cols=[C.live,C.plan,C.calc,C.fut];
@@ -185,7 +187,7 @@ var ILL={
      ctx.bezierCurveTo(90,IH/2,120,IH/2+ang*120,IW-40,IH/2+ang*150);ctx.stroke();ctx.fillStyle=rgba(c,on?1:.5);ctx.beginPath();ctx.arc(IW-40,IH/2+ang*150,on?5:3,0,6.283);ctx.fill();
      for(var b=0;b<2;b++){var q=.45+b*.2;var bx=14+(IW-54)*q,by=IH/2+ang*150*q*q;ctx.strokeStyle=rgba(c,.2);ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(bx,by);ctx.lineTo(bx+26,by+ang*24*(b?1:-1));ctx.stroke()}}
    ctx.fillStyle=rgba(c,1);ctx.beginPath();ctx.arc(14,IH/2,4,0,6.283);ctx.fill()},
- usuario:function(c,tt){var sw=reduce?0:Math.sin(tt*.001)*4;ctx.fillStyle=rgba(c,.8);ctx.beginPath();ctx.arc(IW/2,86,9,0,6.283);ctx.fill();
+ assistant:function(c,tt){var sw=reduce?0:Math.sin(tt*.001)*4;ctx.fillStyle=rgba(c,.8);ctx.beginPath();ctx.arc(IW/2,86,9,0,6.283);ctx.fill();
    ctx.beginPath();ctx.moveTo(IW/2-26,IH);ctx.quadraticCurveTo(IW/2-26,98,IW/2,98);ctx.quadraticCurveTo(IW/2+26,98,IW/2+26,IH);ctx.closePath();ctx.fillStyle=rgba(c,.5);ctx.fill();
    [[-96,8,-.18],[-30,2,0],[36,8,.18]].forEach(function(p,i){var x=IW/2+p[0]+sw*(i-1),y=p[1];ctx.save();ctx.translate(x+30,y+30);ctx.transform(1,p[2],0,1,0,0);ctx.fillStyle='rgba(4,8,20,.9)';ctx.strokeStyle=rgba(c,.7);ctx.lineWidth=1;ctx.fillRect(-30,-30,60,54);ctx.strokeRect(-30,-30,60,54);
      for(var b=0;b<4;b++){var hh=8+Math.abs(Math.sin(tt*.0012+b+i*2))*26;ctx.fillStyle=rgba(i===1?C.live:C.fut,.8);ctx.fillRect(-22+b*12,18-hh,8,hh)}ctx.restore()})}
