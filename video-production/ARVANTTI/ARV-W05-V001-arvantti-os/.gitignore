@@ -1,0 +1,8 @@
+# Material pesado o regenerable: no va al repo (ver README.md).
+assets/clips/
+episodios/*/escenas/*/assets/
+episodios/*/audio/
+episodios/*/vertical/
+episodios/*/assets
+out/
+.hyperframes/

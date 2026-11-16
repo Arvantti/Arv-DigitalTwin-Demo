@@ -1,0 +1,82 @@
+[
+ {
+  "id": "gancho",
+  "start": 0,
+  "voiceAt": 1.2,
+  "voz": 3.97,
+  "dur": 6.17,
+  "real": true
+ },
+ {
+  "id": "dolor",
+  "start": 6.17,
+  "voiceAt": 6.57,
+  "voz": 10.76,
+  "dur": 12.16,
+  "real": true
+ },
+ {
+  "id": "titulo",
+  "start": 18.33,
+  "voiceAt": 18.93,
+  "voz": 5.41,
+  "dur": 7.21,
+  "real": true
+ },
+ {
+  "id": "analogia",
+  "start": 25.54,
+  "voiceAt": 25.84,
+  "voz": 12.2,
+  "dur": 13.4,
+  "real": true
+ },
+ {
+  "id": "base",
+  "start": 38.94,
+  "voiceAt": 39.24,
+  "voz": 14.6,
+  "dur": 15.5,
+  "real": true
+ },
+ {
+  "id": "promesas",
+  "start": 54.44,
+  "voiceAt": 54.64,
+  "voz": 6.61,
+  "dur": 8.21,
+  "real": true
+ },
+ {
+  "id": "lunes",
+  "start": 62.65,
+  "voiceAt": 63.05,
+  "voz": 13.95,
+  "dur": 15.35,
+  "real": true
+ },
+ {
+  "id": "figura",
+  "start": 78,
+  "voiceAt": 78.3,
+  "voz": 2.59,
+  "dur": 3.49,
+  "real": true
+ },
+ {
+  "id": "siguiente",
+  "start": 81.49,
+  "voiceAt": 81.69,
+  "voz": 3.32,
+  "dur": 5.12,
+  "real": true
+ },
+ {
+  "id": "firma",
+  "start": 86.6,
+  "voiceAt": 87.2,
+  "voz": 4.83,
+  "dur": 8.93,
+  "real": true
+ }
+]

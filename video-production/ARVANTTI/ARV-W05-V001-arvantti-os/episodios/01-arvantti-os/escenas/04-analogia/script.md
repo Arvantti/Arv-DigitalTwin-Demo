@@ -1,0 +1,1 @@
+Así como el sistema operativo de su computador hace que todos los programas funcionen bajo las mismas reglas, Arvantti OS pone a todas sus IA bajo un mismo control, una misma memoria y un mismo registro.

@@ -1,0 +1,1 @@
+Lunes, 8 de la mañana. La gerente pide el informe de cierre para la junta. En el trabajo van a participar tres IA distintas. Las tres trabajan bajo Arvantti OS: las mismas reglas, la misma memoria, el mismo registro.

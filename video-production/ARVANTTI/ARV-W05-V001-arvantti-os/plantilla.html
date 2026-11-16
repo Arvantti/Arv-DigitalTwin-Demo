@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="es" data-resolution="{{RES}}" class="{{FMT}}">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width={{W}}, height={{H}}">
+<title>Arvantti OS · serie Enterprise</title>
+<script src="assets/vendor/gsap.min.js"></script>
+<style>
+:root{--blue:#2d7ff9;--electric:#4ea7ff;--ti:#d8dadf;--black:#05070c;--white:#f8fafc;
+  --controla:#f87171;--protege:#a78bfa;--organiza:#34d399;--recuerda:#fbbf24;--rinde:#22d3ee;--ent:#4ea7ff}
+*{box-sizing:border-box}
+html,body{width:{{W}}px;height:{{H}}px;margin:0;overflow:hidden;background:var(--black);font-family:Inter,"Inter Display",Arial,sans-serif;color:var(--white)}
+#root{position:relative;width:{{W}}px;height:{{H}}px;overflow:hidden;background:var(--black)}
+.clip{position:absolute;inset:0}
+.scene{overflow:hidden}
+.w{display:inline-block;white-space:pre}
+
+/* Fondo */
+.fondo .glow{position:absolute;inset:-20%;background:radial-gradient(900px 520px at 50% 45%,#12305e55 0%,#05070c00 70%),radial-gradient(700px 400px at 80% 90%,#2d7ff922 0%,#05070c00 70%)}
+.v .fondo .glow{background:radial-gradient(700px 900px at 50% 45%,#12305e55 0%,#05070c00 70%),radial-gradient(500px 600px at 80% 90%,#2d7ff922 0%,#05070c00 70%)}
+.fondo .floor{position:absolute;left:-50%;right:-50%;bottom:-10%;height:62%;perspective:900px;opacity:.5;-webkit-mask-image:linear-gradient(#0000,#000 55%);mask-image:linear-gradient(#0000,#000 55%)}
+.v .fondo .floor{height:40%}
+.fondo .floorgrid{position:absolute;inset:0;transform:rotateX(68deg);transform-origin:50% 100%;background-image:linear-gradient(#4ea7ff33 2px,transparent 2px),linear-gradient(90deg,#4ea7ff33 2px,transparent 2px);background-size:120px 120px}
+
+/* Comunes */
+.kicker{position:absolute;left:110px;top:70px;margin:0;font:600 26px "JetBrains Mono",monospace;letter-spacing:8px;color:var(--electric)}
+.kicker b{display:inline-block;padding:4px 12px;margin-right:12px;border:2px solid var(--blue);color:#fff;font-weight:700;letter-spacing:2px}
+.v .kicker{left:70px;top:150px;font-size:24px;letter-spacing:5px}
+.center{position:absolute;left:0;right:0;text-align:center;margin:0}
+.chip{display:inline-block;padding:12px 26px;margin:0 10px 14px;border:2px solid #4ea7ff66;border-radius:999px;background:#0d1a30cc;font:600 30px Inter,sans-serif;color:#e6eefc;box-shadow:0 0 24px #2d7ff933}
+.marca{display:block;margin:0 auto;height:auto;filter:drop-shadow(0 0 30px #2d7ff988)}
+.metal{background:linear-gradient(100deg,#d8dadf 0%,#d8dadf 40%,#ffffff 50%,#d8dadf 60%,#d8dadf 100%);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent}
+.sweep{background:linear-gradient(100deg,#0000 35%,#4ea7ff18 45%,#ffffff40 50%,#4ea7ff18 55%,#0000 65%);mix-blend-mode:screen;pointer-events:none}
+.estela{position:absolute;inset:0;width:100%;height:100%}
+.estela path{fill:none;stroke:#4ea7ff;stroke-width:5;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1;filter:drop-shadow(0 0 10px #4ea7ff) drop-shadow(0 0 30px #2d7ff9)}
+#temp{left:auto;top:auto;right:20px;bottom:16px;font:700 15px "JetBrains Mono",monospace;color:#ff6b35;letter-spacing:2px}
+
+/* Figura de tres capas (sello de la serie) */
+.capas{position:absolute;left:50%;top:50%;width:1500px;transform:translate(-50%,-50%);display:flex;flex-direction:column;gap:22px}
+.v .capas{width:1000px}
+.capa{position:relative;border-radius:22px;padding:22px 30px;border:2px solid #4ea7ff66;background:#0b1428e6;box-shadow:0 20px 80px #000a,0 0 50px #2d7ff922}
+.capa .ct{margin:0 0 14px;font:700 22px "JetBrains Mono",monospace;letter-spacing:4px;color:#9fd0ff;text-align:center}
+.capa.ent{border-color:var(--ent);background:linear-gradient(180deg,#123a6ecc,#0b1428e6);text-align:center}
+.capa.ent h3{margin:0;font:800 54px "Inter Display",Inter,sans-serif;color:#fff}
+.capa.ent p{margin:8px 0 0;font:500 26px Inter,sans-serif;color:#c9d6ea}
+.v .capa.ent h3{font-size:58px}
+.v .capa.ent p{font-size:30px}
+.v .capa .ct{font-size:24px}
+.v .capa{padding:26px 24px}
+.capa.nuc{border-color:#ffffff88}
+.proms{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+.prom{flex:1 1 0;min-width:0;padding:22px 10px;border-radius:14px;text-align:center;font:800 34px Inter,sans-serif;letter-spacing:1px;color:#0b1020;background:var(--c);opacity:.18;filter:saturate(.4)}
+.v .proms{gap:12px}
+.v .prom{flex:0 0 calc(33.3% - 8px);font-size:36px;padding:26px 6px}
+.prom.on{opacity:1;filter:none;box-shadow:0 0 40px var(--c)}
+.capa.base{border-color:var(--blue)}
+.fila{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-top:6px}
+.fila span{padding:10px 22px;border-radius:999px;border:2px solid #4ea7ff66;background:#0d1a30;font:600 26px Inter,sans-serif;color:#e6eefc}
+.fila.sis span{border-color:#9fb3cf55;color:#c9d1e0;font-size:24px}
+.fila span small{display:block;font:500 17px Inter,sans-serif;color:#9fb3cf;text-align:center}
+.v .fila span{font-size:31px;padding:12px 22px}
+.v .fila.sis span{font-size:29px}
+.v .fila span small{font-size:20px}
+{{EPCSS}}
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="{{TOTAL}}" data-width="{{W}}" data-height="{{H}}" data-fps="25">
+{{CLIPS}}
+</div>
+<script>
+const tl = gsap.timeline({ paused: true });
+{{TIMELINE}}
+window.__timelines = window.__timelines || {};
+window.__timelines["main"] = tl;
+</script>
+</body>
+</html>

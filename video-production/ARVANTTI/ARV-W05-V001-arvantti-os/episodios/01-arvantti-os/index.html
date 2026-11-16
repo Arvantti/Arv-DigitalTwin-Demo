@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="es" data-resolution="landscape" class="h">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1920, height=1080">
+<title>Arvantti OS · serie Enterprise</title>
+<script src="assets/vendor/gsap.min.js"></script>
+<style>
+:root{--blue:#2d7ff9;--electric:#4ea7ff;--ti:#d8dadf;--black:#05070c;--white:#f8fafc;
+  --controla:#f87171;--protege:#a78bfa;--organiza:#34d399;--recuerda:#fbbf24;--rinde:#22d3ee;--ent:#4ea7ff}
+*{box-sizing:border-box}
+html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:var(--black);font-family:Inter,"Inter Display",Arial,sans-serif;color:var(--white)}
+#root{position:relative;width:1920px;height:1080px;overflow:hidden;background:var(--black)}
+.clip{position:absolute;inset:0}
+.scene{overflow:hidden}
+.w{display:inline-block;white-space:pre}
+
+/* Fondo */
+.fondo .glow{position:absolute;inset:-20%;background:radial-gradient(900px 520px at 50% 45%,#12305e55 0%,#05070c00 70%),radial-gradient(700px 400px at 80% 90%,#2d7ff922 0%,#05070c00 70%)}
+.v .fondo .glow{background:radial-gradient(700px 900px at 50% 45%,#12305e55 0%,#05070c00 70%),radial-gradient(500px 600px at 80% 90%,#2d7ff922 0%,#05070c00 70%)}
+.fondo .floor{position:absolute;left:-50%;right:-50%;bottom:-10%;height:62%;perspective:900px;opacity:.5;-webkit-mask-image:linear-gradient(#0000,#000 55%);mask-image:linear-gradient(#0000,#000 55%)}
+.v .fondo .floor{height:40%}
+.fondo .floorgrid{position:absolute;inset:0;transform:rotateX(68deg);transform-origin:50% 100%;background-image:linear-gradient(#4ea7ff33 2px,transparent 2px),linear-gradient(90deg,#4ea7ff33 2px,transparent 2px);background-size:120px 120px}
+
+/* Comunes */
+.kicker{position:absolute;left:110px;top:70px;margin:0;font:600 26px "JetBrains Mono",monospace;letter-spacing:8px;color:var(--electric)}
+.kicker b{display:inline-block;padding:4px 12px;margin-right:12px;border:2px solid var(--blue);color:#fff;font-weight:700;letter-spacing:2px}
+.v .kicker{left:70px;top:150px;font-size:24px;letter-spacing:5px}
+.center{position:absolute;left:0;right:0;text-align:center;margin:0}
+.chip{display:inline-block;padding:12px 26px;margin:0 10px 14px;border:2px solid #4ea7ff66;border-radius:999px;background:#0d1a30cc;font:600 30px Inter,sans-serif;color:#e6eefc;box-shadow:0 0 24px #2d7ff933}
+.marca{display:block;margin:0 auto;height:auto;filter:drop-shadow(0 0 30px #2d7ff988)}
+.metal{background:linear-gradient(100deg,#d8dadf 0%,#d8dadf 40%,#ffffff 50%,#d8dadf 60%,#d8dadf 100%);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent}
+.sweep{background:linear-gradient(100deg,#0000 35%,#4ea7ff18 45%,#ffffff40 50%,#4ea7ff18 55%,#0000 65%);mix-blend-mode:screen;pointer-events:none}
+.estela{position:absolute;inset:0;width:100%;height:100%}
+.estela path{fill:none;stroke:#4ea7ff;stroke-width:5;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1;filter:drop-shadow(0 0 10px #4ea7ff) drop-shadow(0 0 30px #2d7ff9)}
+#temp{left:auto;top:auto;right:20px;bottom:16px;font:700 15px "JetBrains Mono",monospace;color:#ff6b35;letter-spacing:2px}
+
+/* Figura de tres capas (sello de la serie) */
+.capas{position:absolute;left:50%;top:50%;width:1500px;transform:translate(-50%,-50%);display:flex;flex-direction:column;gap:22px}
+.v .capas{width:1000px}
+.capa{position:relative;border-radius:22px;padding:22px 30px;border:2px solid #4ea7ff66;background:#0b1428e6;box-shadow:0 20px 80px #000a,0 0 50px #2d7ff922}
+.capa .ct{margin:0 0 14px;font:700 22px "JetBrains Mono",monospace;letter-spacing:4px;color:#9fd0ff;text-align:center}
+.capa.ent{border-color:var(--ent);background:linear-gradient(180deg,#123a6ecc,#0b1428e6);text-align:center}
+.capa.ent h3{margin:0;font:800 54px "Inter Display",Inter,sans-serif;color:#fff}
+.capa.ent p{margin:8px 0 0;font:500 26px Inter,sans-serif;color:#c9d6ea}
+.v .capa.ent h3{font-size:58px}
+.v .capa.ent p{font-size:30px}
+.v .capa .ct{font-size:24px}
+.v .capa{padding:26px 24px}
+.capa.nuc{border-color:#ffffff88}
+.proms{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+.prom{flex:1 1 0;min-width:0;padding:22px 10px;border-radius:14px;text-align:center;font:800 34px Inter,sans-serif;letter-spacing:1px;color:#0b1020;background:var(--c);opacity:.18;filter:saturate(.4)}
+.v .proms{gap:12px}
+.v .prom{flex:0 0 calc(33.3% - 8px);font-size:36px;padding:26px 6px}
+.prom.on{opacity:1;filter:none;box-shadow:0 0 40px var(--c)}
+.capa.base{border-color:var(--blue)}
+.fila{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-top:6px}
+.fila span{padding:10px 22px;border-radius:999px;border:2px solid #4ea7ff66;background:#0d1a30;font:600 26px Inter,sans-serif;color:#e6eefc}
+.fila.sis span{border-color:#9fb3cf55;color:#c9d1e0;font-size:24px}
+.fila span small{display:block;font:500 17px Inter,sans-serif;color:#9fb3cf;text-align:center}
+.v .fila span{font-size:31px;padding:12px 22px}
+.v .fila.sis span{font-size:29px}
+.v .fila span small{font-size:20px}
+/* Episodio 1 · Arvantti OS. Las reglas .v ajustan la versión vertical 9:16. */
+
+/* Gancho */
+.win{position:absolute;width:400px;padding:0 0 22px;border-radius:16px;background:#0d1a30ee;border:2px solid #4ea7ff55;box-shadow:0 20px 60px #000a;opacity:0}
+.win .wb{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid #4ea7ff33;font:600 20px "JetBrains Mono",monospace;color:#9fd0ff}
+.win .wb i{width:12px;height:12px;border-radius:50%;background:#2a3b58}
+.win .wb span{margin-left:8px}
+.win p{margin:16px 20px 12px;font:700 30px Inter,sans-serif}
+.win .ln{height:12px;margin:8px 20px 0;border-radius:6px;background:#1c2c48}
+.win .ln.s{width:55%}
+.v .win{width:380px}
+.pre{top:330px;font:600 56px Inter,sans-serif;color:#c9d1e0}
+.q{top:450px;font:800 140px/1 "Inter Display",Inter,sans-serif;letter-spacing:-3px}
+.v .pre{top:780px;padding:0 60px;font-size:52px}
+.v .q{top:890px;padding:0 40px;font-size:124px;line-height:1.05}
+
+/* Dolor */
+.areas{position:absolute;left:110px;right:110px;top:190px;display:grid;grid-template-columns:repeat(4,1fr);gap:30px}
+.v .areas{left:70px;right:70px;top:300px;grid-template-columns:1fr 1fr;gap:30px}
+.area{position:relative;height:300px;padding:30px;border-radius:20px;background:#0d1a30e6;border:2px solid #4ea7ff55;opacity:0}
+.v .area{height:330px}
+.area .an{margin:0;font:800 40px "Inter Display",Inter,sans-serif}
+.area .ai{margin:14px 0 0;display:inline-block;padding:8px 18px;border-radius:999px;background:#16243f;font:600 28px Inter,sans-serif;color:#9fd0ff}
+.area .rg{position:absolute;left:30px;bottom:30px;margin:0;font:500 26px "JetBrains Mono",monospace;color:#ffb07a}
+.area .qm{position:absolute;right:24px;top:20px;width:76px;height:76px;border-radius:50%;background:#ff6b35;color:#fff;font:800 52px/76px Inter,sans-serif;text-align:center;box-shadow:0 0 40px #ff6b3588}
+.pregs{position:absolute;left:0;right:0;top:600px;text-align:center}
+.pregs span{display:inline-block;margin:0 18px;font:800 54px "Inter Display",Inter,sans-serif;opacity:0}
+.v .pregs{top:1060px}
+.v .pregs span{display:block;margin:0 0 26px;font-size:62px}
+.sello{position:absolute;left:50%;top:790px;width:600px;margin-left:-300px;padding:18px 0;border:6px solid #ff4d4d;border-radius:16px;color:#ff4d4d;text-align:center;font:900 76px "Inter Display",Inter,sans-serif;letter-spacing:8px;background:#05070ccc;box-shadow:0 0 60px #ff4d4d55;opacity:0}
+.v .sello{top:1440px;width:760px;margin-left:-380px;font-size:90px}
+
+/* Título y firma */
+.titulo,.fin{position:absolute;left:0;right:0;top:240px;text-align:center}
+.v .titulo,.v .fin{top:620px;padding:0 40px}
+.titulo .marca,.fin .marca{width:220px;margin-bottom:26px}
+.titulo h1,.fin h1{margin:0;font:800 150px/1.02 "Inter Display",Inter,sans-serif;letter-spacing:-2px}
+.v .titulo h1,.v .fin h1{font-size:140px}
+.full{margin:22px 0 0;font:600 28px "JetBrains Mono",monospace;letter-spacing:8px;color:#9fd0ff}
+.v .full{font-size:26px;letter-spacing:4px}
+.titulo .sub{margin:34px 0 0;font:500 50px Inter,sans-serif;color:#e6eefc}
+.v .titulo .sub{font-size:54px;line-height:1.25}
+.flare{position:absolute;top:-20%;bottom:-20%;left:30%;width:28%;background:linear-gradient(100deg,#0000 0%,#4ea7ff22 40%,#ffffff33 50%,#4ea7ff22 60%,#0000 100%);transform:skewX(-18deg);mix-blend-mode:screen}
+.fin .firma{margin:34px 0 0;font:600 56px Inter,sans-serif;color:#fff}
+.fin .url{margin:40px 0 0;font:500 30px "JetBrains Mono",monospace;letter-spacing:6px;color:#7a9cc6}
+
+/* Analogía */
+.pc{position:absolute;left:50%;top:160px;width:1100px;margin-left:-550px;border-radius:22px;background:#0b1224;border:2px solid #4ea7ff66;box-shadow:0 40px 120px #000c,0 0 90px #2d7ff933;overflow:hidden}
+.v .pc{top:360px;width:940px;margin-left:-470px}
+.pcb{position:relative;display:flex;align-items:center;gap:8px;padding:14px 20px;border-bottom:1px solid #4ea7ff33}
+.pcb i{width:14px;height:14px;border-radius:50%;background:#2a3b58}
+.pcb span{position:absolute;left:110px;font:600 22px "JetBrains Mono",monospace;letter-spacing:3px;color:#9fd0ff}
+.pcb .pct2{opacity:0}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;padding:34px}
+.v .tiles{grid-template-columns:repeat(2,1fr)}
+.tile{position:relative;height:120px;border-radius:16px;background:#16243f;border:2px solid #2a3b58}
+.tile span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:700 32px Inter,sans-serif;text-align:center}
+.tile .tb{opacity:0;color:#fff}
+.osbar{position:relative;height:84px;margin:0 34px 34px;border-radius:14px;background:#1c2c48;font:800 34px "Inter Display",Inter,sans-serif}
+.osbar span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+.osbar .o2{opacity:0;font-size:42px}
+.reglas{position:absolute;left:0;right:0;top:880px;text-align:center}
+.reglas .chip{font-size:36px;padding:14px 32px;opacity:0}
+.v .reglas{top:1290px}
+.v .reglas .chip{display:block;width:fit-content;margin:0 auto 22px;font-size:44px}
+
+/* Figura */
+.figcap{top:70px;font:800 60px "Inter Display",Inter,sans-serif}
+.v .figcap{top:260px;padding:0 50px;font-size:66px;line-height:1.1}
+#e-capas .capas{top:56%}
+.v #e-capas .capas{top:55%}
+#e-sello .capas{top:53%}
+.v #e-sello .capas{top:53%}
+.fila span{opacity:1}
+.fila .pl{border-color:#4ea7ffaa;background:#12305e}
+.sigue{position:absolute;left:0;right:0;bottom:46px;text-align:center;font:600 34px Inter,sans-serif;color:#c9d6ea;opacity:0}
+.sigue span{display:inline-block;margin-right:14px;padding:6px 16px;border:2px solid var(--blue);font:700 26px "JetBrains Mono",monospace;color:#fff}
+.sigue b{color:var(--organiza)}
+.v .sigue{bottom:200px;padding:0 50px;font-size:38px;line-height:1.6}
+
+/* Lunes */
+.reloj{position:absolute;left:150px;top:200px}
+.reloj .dia{display:block;font:700 30px "JetBrains Mono",monospace;letter-spacing:10px;color:#9fd0ff}
+.reloj .hora{display:block;font:800 170px/1 "Inter Display",Inter,sans-serif}
+.pedido{position:absolute;left:150px;top:520px;width:700px;padding:28px 32px;border-radius:20px;background:#0d1a30e6;border:2px solid #4ea7ff55}
+.pedido .pq{margin:0 0 10px;font:700 22px "JetBrains Mono",monospace;letter-spacing:4px;color:#9fd0ff}
+.pedido .pt{margin:0;font:600 40px/1.3 Inter,sans-serif}
+.pedido .ch{opacity:0}
+.caja{position:absolute;left:1000px;top:170px;width:780px;padding:30px;border-radius:26px;background:#0b1428e6;border:3px solid #4ea7ff55}
+.cajat{display:flex;align-items:center;gap:16px;margin-bottom:22px;font:800 46px "Inter Display",Inter,sans-serif}
+.cajat img{width:70px}
+.agn{display:flex;align-items:center;gap:16px;margin-bottom:16px;padding:20px 24px;border-radius:16px;background:#16243f;border:2px solid var(--c)}
+.agn i{width:20px;height:20px;border-radius:50%;background:var(--c);box-shadow:0 0 14px var(--c)}
+.agn b{font:700 34px Inter,sans-serif}
+.agn small{margin-left:auto;font:600 26px "JetBrains Mono",monospace;color:#9fb3cf}
+.rg3{margin-top:12px;text-align:center}
+.rg3 .chip{font-size:26px;padding:10px 20px;margin:8px 6px 0;opacity:0}
+.v .reloj{left:70px;top:260px}
+.v .reloj .hora{font-size:150px}
+.v .pedido{left:70px;right:70px;top:520px;width:auto}
+.v .caja{left:70px;right:70px;top:880px;width:auto}
+.v .rg3 .chip{font-size:30px}
+
+/* Ajustes tras la primera revisión de cuadros */
+.area .an{padding-right:80px;font-size:36px;line-height:1.1}
+.figcap{top:140px}
+#e-capas .capas{top:55%}
+#e-sello .capas{top:56%}
+.v .titulo .sub{padding:0 60px}
+
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="95.54" data-width="1920" data-height="1080" data-fps="25">
+<div id="fondo" class="clip fondo" data-start="0.00" data-duration="95.54" data-track-index="0"><div class="glow"></div><div class="floor"><div class="floorgrid"></div></div></div>
+<div id="kick" class="clip " data-start="6.17" data-duration="80.43" data-track-index="30"><p class="kicker"><b>1/7</b> ARVANTTI OS</p></div>
+<div id="e-gancho" class="clip scene" data-start="0.00" data-duration="6.42" data-track-index="3">
+      <div class="win" id="win0" style="left:90px;top:120px"><div class="wb"><i></i><i></i><i></i><span>Chat de IA</span></div><p>Ventas</p><div class="ln"></div><div class="ln s"></div></div><div class="win" id="win1" style="left:1420px;top:110px"><div class="wb"><i></i><i></i><i></i><span>Asistente</span></div><p>Finanzas</p><div class="ln"></div><div class="ln s"></div></div><div class="win" id="win2" style="left:120px;top:760px"><div class="wb"><i></i><i></i><i></i><span>Copiloto</span></div><p>Operaciones</p><div class="ln"></div><div class="ln s"></div></div><div class="win" id="win3" style="left:1450px;top:740px"><div class="wb"><i></i><i></i><i></i><span>Agente</span></div><p>Compras</p><div class="ln"></div><div class="ln s"></div></div><div class="win" id="win4" style="left:700px;top:60px"><div class="wb"><i></i><i></i><i></i><span>Chat de IA</span></div><p>Talento humano</p><div class="ln"></div><div class="ln s"></div></div><div class="win" id="win5" style="left:760px;top:880px"><div class="wb"><i></i><i></i><i></i><span>Bot</span></div><p>Servicio al cliente</p><div class="ln"></div><div class="ln s"></div></div>
+      <p class="center pre"><span class="w">La</span> <span class="w">IA</span> <span class="w">ya</span> <span class="w">está</span> <span class="w">en</span> <span class="w">su</span> <span class="w">empresa.</span></p>
+      <h1 class="center q"><span class="w">¿Quién</span> <span class="w">la</span> <span class="w">controla?</span></h1></div>
+<audio id="sfx-0" src="assets/shared/core/sfx/pop.mp3" data-start="0.15" data-duration="1.40" data-volume="0.12" data-track-index="100"></audio>
+<audio id="sfx-1" src="assets/shared/core/sfx/pop.mp3" data-start="0.47" data-duration="1.40" data-volume="0.12" data-track-index="101"></audio>
+<audio id="sfx-2" src="assets/shared/core/sfx/pop.mp3" data-start="0.79" data-duration="1.40" data-volume="0.12" data-track-index="102"></audio>
+<audio id="sfx-3" src="assets/shared/core/sfx/pop.mp3" data-start="1.11" data-duration="1.40" data-volume="0.12" data-track-index="103"></audio>
+<audio id="sfx-4" src="assets/shared/core/sfx/pop.mp3" data-start="1.43" data-duration="1.40" data-volume="0.12" data-track-index="104"></audio>
+<audio id="sfx-5" src="assets/shared/core/sfx/pop.mp3" data-start="1.75" data-duration="1.40" data-volume="0.12" data-track-index="105"></audio>
+<audio id="sfx-6" src="assets/shared/core/sfx/whoosh.wav" data-start="0.10" data-duration="1.40" data-volume="0.2" data-track-index="106"></audio>
+<div id="e-dolor" class="clip scene" data-start="5.92" data-duration="12.66" data-track-index="3">
+      <div class="areas"><div class="area" id="ar0"><p class="an">Ventas</p><p class="ai">ChatGPT</p><p class="rg">Reglas propias</p><b class="qm">?</b></div><div class="area" id="ar1"><p class="an">Finanzas</p><p class="ai">Claude</p><p class="rg">Reglas propias</p><b class="qm">?</b></div><div class="area" id="ar2"><p class="an">Operaciones</p><p class="ai">Gemini</p><p class="rg">Reglas propias</p><b class="qm">?</b></div><div class="area" id="ar3"><p class="an">Talento humano</p><p class="ai">Copilot</p><p class="rg">Reglas propias</p><b class="qm">?</b></div></div>
+      <div class="pregs"><span>¿Qué datos ve?</span><span>¿Qué puede cambiar?</span><span>¿Cuánto cuesta?</span></div>
+      <div class="sello">SIN RASTRO</div></div>
+<audio id="sfx-7" src="assets/shared/core/sfx/whoosh-short.mp3" data-start="6.57" data-duration="1.40" data-volume="0.25" data-track-index="107"></audio>
+<audio id="sfx-8" src="assets/shared/core/sfx/click-soft.mp3" data-start="10.97" data-duration="1.40" data-volume="0.22" data-track-index="108"></audio>
+<audio id="sfx-9" src="assets/shared/core/sfx/click-soft.mp3" data-start="12.01" data-duration="1.40" data-volume="0.22" data-track-index="109"></audio>
+<audio id="sfx-10" src="assets/shared/core/sfx/click-soft.mp3" data-start="13.13" data-duration="1.40" data-volume="0.22" data-track-index="110"></audio>
+<audio id="sfx-11" src="assets/shared/core/sfx/hit.wav" data-start="15.91" data-duration="1.40" data-volume="0.3" data-track-index="111"></audio>
+<div id="e-titulo" class="clip scene" data-start="18.08" data-duration="7.71" data-track-index="3">
+      <div class="titulo"><img class="marca" src="assets/clips/marca.png" alt=""><h1 class="metal">Arvantti OS</h1><p class="full">ARVANTTI OPERATING SYSTEM FOR AI</p><p class="sub"><span class="w">El</span> <span class="w">sistema</span> <span class="w">operativo</span> <span class="w">empresarial</span> <span class="w">para</span> <span class="w">la</span> <span class="w">IA</span></p></div>
+      <div class="flare"></div></div>
+<audio id="sfx-12" src="assets/shared/core/sfx/hit.wav" data-start="18.93" data-duration="1.40" data-volume="0.3" data-track-index="112"></audio>
+<div id="e-analogia" class="clip scene" data-start="25.29" data-duration="13.90" data-track-index="3">
+      <div class="pc"><div class="pcb"><i></i><i></i><i></i><span class="pct">Su computador</span><span class="pct2">Sus IA</span></div>
+        <div class="tiles"><div class="tile" id="tl0"><span class="ta">Correo</span><span class="tb">Claude</span></div><div class="tile" id="tl1"><span class="ta">Hojas de cálculo</span><span class="tb">ChatGPT</span></div><div class="tile" id="tl2"><span class="ta">Navegador</span><span class="tb">Gemini</span></div><div class="tile" id="tl3"><span class="ta">Documentos</span><span class="tb">Copilot</span></div><div class="tile" id="tl4"><span class="ta">Calendario</span><span class="tb">Modelo privado</span></div><div class="tile" id="tl5"><span class="ta">Mensajes</span><span class="tb">Agente propio</span></div></div>
+        <div class="osbar"><span class="o1">Sistema operativo · mismas reglas</span><span class="o2">Arvantti OS</span></div></div>
+      <div class="reglas"><span class="chip">Mismo control</span><span class="chip">Misma memoria</span><span class="chip">Mismo registro</span></div></div>
+<audio id="sfx-13" src="assets/shared/core/sfx/whoosh-short.mp3" data-start="31.76" data-duration="1.40" data-volume="0.3" data-track-index="113"></audio>
+<audio id="sfx-14" src="assets/shared/core/sfx/click-soft.mp3" data-start="34.80" data-duration="1.40" data-volume="0.22" data-track-index="114"></audio>
+<audio id="sfx-15" src="assets/shared/core/sfx/click-soft.mp3" data-start="36.16" data-duration="1.40" data-volume="0.22" data-track-index="115"></audio>
+<audio id="sfx-16" src="assets/shared/core/sfx/click-soft.mp3" data-start="37.56" data-duration="1.40" data-volume="0.22" data-track-index="116"></audio>
+<div id="e-capas" class="clip scene" data-start="38.69" data-duration="24.21" data-track-index="3"><p class="center figcap"><span class="w">No</span> <span class="w">los</span> <span class="w">reemplaza:</span> <span class="w">los</span> <span class="w">envuelve.</span></p><div class="capas" id="fa">
+    <div class="capa ent" id="fa-ent"><h3>Arvantti OS Enterprise</h3><p>Agentes, habilidades, voz y panel de dirección</p></div>
+    <div class="capa nuc" id="fa-nuc"><p class="ct">NÚCLEO · CINCO PROMESAS</p><div class="proms"><div class="prom" id="fa-p0" style="--c:#f87171">Controla</div><div class="prom" id="fa-p1" style="--c:#a78bfa">Protege</div><div class="prom" id="fa-p2" style="--c:#34d399">Organiza</div><div class="prom" id="fa-p3" style="--c:#fbbf24">Recuerda</div><div class="prom" id="fa-p4" style="--c:#22d3ee">Rinde cuentas</div></div></div>
+    <div class="capa base" id="fa-base"><p class="ct">BASE · SE CONECTA CON TODO</p>
+      <div class="fila"><span id="fa-ia0">Claude</span><span id="fa-ia1">ChatGPT</span><span id="fa-ia2">Gemini</span><span id="fa-ia3">Copilot</span><span id="fa-ia4">Modelos privados</span></div>
+      <div class="fila sis"><span id="fa-s0">CRM<small>sistema de clientes</small></span><span id="fa-s1">ERP<small>sistema de gestión</small></span><span id="fa-s2">Nube<small>sus servicios</small></span><span id="fa-s3">Archivos<small>sus documentos</small></span><span class="pl" id="fa-pl0">En el escritorio</span><span class="pl" id="fa-pl1">En la nube</span></div></div>
+  </div></div>
+<audio id="sfx-17" src="assets/shared/core/sfx/pop.mp3" data-start="39.24" data-duration="1.40" data-volume="0.12" data-track-index="117"></audio>
+<audio id="sfx-18" src="assets/shared/core/sfx/pop.mp3" data-start="39.96" data-duration="1.40" data-volume="0.12" data-track-index="118"></audio>
+<audio id="sfx-19" src="assets/shared/core/sfx/pop.mp3" data-start="41.00" data-duration="1.40" data-volume="0.12" data-track-index="119"></audio>
+<audio id="sfx-20" src="assets/shared/core/sfx/pop.mp3" data-start="41.64" data-duration="1.40" data-volume="0.12" data-track-index="120"></audio>
+<audio id="sfx-21" src="assets/shared/core/sfx/pop.mp3" data-start="43.16" data-duration="1.40" data-volume="0.12" data-track-index="121"></audio>
+<audio id="sfx-22" src="assets/shared/core/sfx/hit.wav" data-start="45.92" data-duration="1.40" data-volume="0.22" data-track-index="122"></audio>
+<audio id="sfx-23" src="assets/shared/core/sfx/whoosh-short.mp3" data-start="54.64" data-duration="1.40" data-volume="0.25" data-track-index="123"></audio>
+<audio id="sfx-24" src="assets/shared/core/sfx/click.wav" data-start="56.80" data-duration="1.40" data-volume="0.2" data-track-index="124"></audio>
+<audio id="sfx-25" src="assets/shared/core/sfx/click.wav" data-start="57.48" data-duration="1.40" data-volume="0.2" data-track-index="125"></audio>
+<audio id="sfx-26" src="assets/shared/core/sfx/click.wav" data-start="58.40" data-duration="1.40" data-volume="0.2" data-track-index="126"></audio>
+<audio id="sfx-27" src="assets/shared/core/sfx/click.wav" data-start="59.32" data-duration="1.40" data-volume="0.2" data-track-index="127"></audio>
+<audio id="sfx-28" src="assets/shared/core/sfx/click.wav" data-start="60.16" data-duration="1.40" data-volume="0.2" data-track-index="128"></audio>
+<audio id="sfx-29" src="assets/shared/core/sfx/spark.wav" data-start="61.35" data-duration="1.40" data-volume="0.22" data-track-index="129"></audio>
+<div id="e-lunes" class="clip scene" data-start="62.40" data-duration="15.85" data-track-index="3">
+      <div class="reloj"><span class="dia">LUNES</span><span class="hora">8:00</span></div>
+      <div class="pedido"><p class="pq">GERENTE</p><p class="pt"><span class="ch">«</span><span class="ch">P</span><span class="ch">r</span><span class="ch">e</span><span class="ch">p</span><span class="ch">á</span><span class="ch">r</span><span class="ch">a</span><span class="ch">m</span><span class="ch">e</span><span class="ch"> </span><span class="ch">e</span><span class="ch">l</span><span class="ch"> </span><span class="ch">i</span><span class="ch">n</span><span class="ch">f</span><span class="ch">o</span><span class="ch">r</span><span class="ch">m</span><span class="ch">e</span><span class="ch"> </span><span class="ch">d</span><span class="ch">e</span><span class="ch"> </span><span class="ch">c</span><span class="ch">i</span><span class="ch">e</span><span class="ch">r</span><span class="ch">r</span><span class="ch">e</span><span class="ch"> </span><span class="ch">d</span><span class="ch">e</span><span class="ch">l</span><span class="ch"> </span><span class="ch">m</span><span class="ch">e</span><span class="ch">s</span><span class="ch"> </span><span class="ch">p</span><span class="ch">a</span><span class="ch">r</span><span class="ch">a</span><span class="ch"> </span><span class="ch">l</span><span class="ch">a</span><span class="ch"> </span><span class="ch">j</span><span class="ch">u</span><span class="ch">n</span><span class="ch">t</span><span class="ch">a</span><span class="ch">.</span><span class="ch">»</span></p></div>
+      <div class="caja"><div class="cajat"><img src="assets/clips/marca.png" alt=""><span>Arvantti OS</span></div>
+        <div class="ags"><div class="agn" id="ag0" style="--c:#f87171"><i></i><b>Agente de finanzas</b><small>Claude</small></div><div class="agn" id="ag1" style="--c:#34d399"><i></i><b>Agente de datos</b><small>ChatGPT</small></div><div class="agn" id="ag2" style="--c:#a78bfa"><i></i><b>Agente redactor</b><small>Gemini</small></div></div>
+        <div class="rg3"><span class="chip">Mismas reglas</span><span class="chip">Misma memoria</span><span class="chip">Mismo registro</span></div></div></div>
+<audio id="sfx-30" src="assets/shared/core/sfx/typing.mp3" data-start="65.07" data-duration="1.40" data-volume="0.14" data-track-index="130"></audio>
+<audio id="sfx-31" src="assets/shared/core/sfx/pop.mp3" data-start="69.29" data-duration="1.40" data-volume="0.14" data-track-index="131"></audio>
+<audio id="sfx-32" src="assets/shared/core/sfx/pop.mp3" data-start="69.59" data-duration="1.40" data-volume="0.14" data-track-index="132"></audio>
+<audio id="sfx-33" src="assets/shared/core/sfx/pop.mp3" data-start="69.89" data-duration="1.40" data-volume="0.14" data-track-index="133"></audio>
+<audio id="sfx-34" src="assets/shared/core/sfx/hit.wav" data-start="71.05" data-duration="1.40" data-volume="0.15" data-track-index="134"></audio>
+<div id="e-sello" class="clip scene" data-start="77.75" data-duration="9.10" data-track-index="3"><p class="center figcap c2"><span class="w">Un</span> <span class="w">solo</span> <span class="w">sistema,</span> <span class="w">cinco</span> <span class="w">promesas.</span></p><p class="center figcap c3"><span class="w">La</span> <span class="w">primera:</span> <span class="w">que</span> <span class="w">cada</span> <span class="w">trabajo</span> <span class="w">tenga</span> <span class="w">dueño.</span></p><div class="capas" id="fb">
+    <div class="capa ent" id="fb-ent"><h3>Arvantti OS Enterprise</h3><p>Agentes, habilidades, voz y panel de dirección</p></div>
+    <div class="capa nuc" id="fb-nuc"><p class="ct">NÚCLEO · CINCO PROMESAS</p><div class="proms"><div class="prom" id="fb-p0" style="--c:#f87171">Controla</div><div class="prom" id="fb-p1" style="--c:#a78bfa">Protege</div><div class="prom" id="fb-p2" style="--c:#34d399">Organiza</div><div class="prom" id="fb-p3" style="--c:#fbbf24">Recuerda</div><div class="prom" id="fb-p4" style="--c:#22d3ee">Rinde cuentas</div></div></div>
+    <div class="capa base" id="fb-base"><p class="ct">BASE · SE CONECTA CON TODO</p>
+      <div class="fila"><span id="fb-ia0">Claude</span><span id="fb-ia1">ChatGPT</span><span id="fb-ia2">Gemini</span><span id="fb-ia3">Copilot</span><span id="fb-ia4">Modelos privados</span></div>
+      <div class="fila sis"><span id="fb-s0">CRM<small>sistema de clientes</small></span><span id="fb-s1">ERP<small>sistema de gestión</small></span><span id="fb-s2">Nube<small>sus servicios</small></span><span id="fb-s3">Archivos<small>sus documentos</small></span><span class="pl" id="fb-pl0">En el escritorio</span><span class="pl" id="fb-pl1">En la nube</span></div></div>
+  </div>
+      <div class="sigue"><span>Parte 1 de 7</span> Continúa en la parte 2: <b>Organiza</b></div></div>
+<audio id="sfx-35" src="assets/shared/core/sfx/click.wav" data-start="78.60" data-duration="1.40" data-volume="0.16" data-track-index="135"></audio>
+<audio id="sfx-36" src="assets/shared/core/sfx/click.wav" data-start="78.90" data-duration="1.40" data-volume="0.16" data-track-index="136"></audio>
+<audio id="sfx-37" src="assets/shared/core/sfx/click.wav" data-start="79.20" data-duration="1.40" data-volume="0.16" data-track-index="137"></audio>
+<audio id="sfx-38" src="assets/shared/core/sfx/click.wav" data-start="79.50" data-duration="1.40" data-volume="0.16" data-track-index="138"></audio>
+<audio id="sfx-39" src="assets/shared/core/sfx/click.wav" data-start="79.80" data-duration="1.40" data-volume="0.16" data-track-index="139"></audio>
+<audio id="sfx-40" src="assets/shared/core/sfx/spark.wav" data-start="81.89" data-duration="1.40" data-volume="0.2" data-track-index="140"></audio>
+<div id="e-firma" class="clip scene" data-start="86.35" data-duration="9.43" data-track-index="3">
+      <svg class="estela" viewBox="0 0 1920 1080" preserveAspectRatio="none"><path id="p2" d="M-60 475.2 C 384 475.2 576 691.2 960 561.6 S 1536 432 1980 648" pathLength="1"/></svg>
+      <div class="fin"><img class="marca" src="assets/clips/marca.png" alt=""><h1 class="metal">Arvantti OS</h1><p class="full">ARVANTTI OPERATING SYSTEM FOR AI</p><p class="firma">La IA bajo su gobierno.</p><p class="url">arvantti.tech</p></div></div>
+<audio id="sfx-41" src="assets/shared/core/sfx/hit.wav" data-start="87.20" data-duration="1.40" data-volume="0.3" data-track-index="141"></audio>
+<div id="sweep-0" class="clip sweep" data-start="5.82" data-duration="0.90" data-track-index="40"></div>
+<div id="sweep-1" class="clip sweep" data-start="17.98" data-duration="0.90" data-track-index="40"></div>
+<div id="sweep-2" class="clip sweep" data-start="25.19" data-duration="0.90" data-track-index="40"></div>
+<div id="sweep-3" class="clip sweep" data-start="38.59" data-duration="0.90" data-track-index="40"></div>
+<div id="sweep-4" class="clip sweep" data-start="62.30" data-duration="0.90" data-track-index="40"></div>
+<div id="sweep-5" class="clip sweep" data-start="77.65" data-duration="0.90" data-track-index="40"></div>
+<div id="sweep-6" class="clip sweep" data-start="86.25" data-duration="0.90" data-track-index="40"></div>
+<audio id="voz-gancho" src="escenas/01-gancho/assets/audio/voiceover.mp3" data-start="1.20" data-duration="3.97" data-volume="1" data-track-index="142"></audio>
+<audio id="voz-dolor" src="escenas/02-dolor/assets/audio/voiceover.mp3" data-start="6.57" data-duration="10.76" data-volume="1" data-track-index="143"></audio>
+<audio id="voz-titulo" src="escenas/03-titulo/assets/audio/voiceover.mp3" data-start="18.93" data-duration="5.41" data-volume="1" data-track-index="144"></audio>
+<audio id="voz-analogia" src="escenas/04-analogia/assets/audio/voiceover.mp3" data-start="25.84" data-duration="12.20" data-volume="1" data-track-index="145"></audio>
+<audio id="voz-base" src="escenas/05-base/assets/audio/voiceover.mp3" data-start="39.24" data-duration="14.60" data-volume="1" data-track-index="146"></audio>
+<audio id="voz-promesas" src="escenas/06-promesas/assets/audio/voiceover.mp3" data-start="54.64" data-duration="6.61" data-volume="1" data-track-index="147"></audio>
+<audio id="voz-lunes" src="escenas/07-lunes/assets/audio/voiceover.mp3" data-start="63.05" data-duration="13.95" data-volume="1" data-track-index="148"></audio>
+<audio id="voz-figura" src="escenas/08-figura/assets/audio/voiceover.mp3" data-start="78.30" data-duration="2.59" data-volume="1" data-track-index="149"></audio>
+<audio id="voz-siguiente" src="escenas/09-siguiente/assets/audio/voiceover.mp3" data-start="81.69" data-duration="3.32" data-volume="1" data-track-index="150"></audio>
+<audio id="voz-firma" src="escenas/10-firma/assets/audio/voiceover.mp3" data-start="87.20" data-duration="4.83" data-volume="1" data-track-index="151"></audio>
+<audio id="musica" src="audio/musica-mezcla.mp3" data-start="0.00" data-duration="95.54" data-volume="0.5" data-track-index="152"></audio>
+</div>
+<script>
+const tl = gsap.timeline({ paused: true });
+tl.fromTo("#fondo .floorgrid",{"backgroundPositionY":"0px"},{"backgroundPositionY":"3821px","duration":95.53673500000001,"ease":"none"},0.00);
+tl.fromTo("#fondo .glow",{"opacity":0.55},{"opacity":1,"duration":6,"ease":"sine.inOut","yoyo":true,"repeat":15},0.00);
+tl.fromTo("#kick .kicker",{"opacity":0,"x":-30},{"opacity":1,"x":0,"duration":0.6},6.37);
+tl.set("#kick .kicker",{"opacity":0},18.03);
+tl.fromTo("#kick .kicker",{"opacity":0},{"opacity":1,"duration":0.5},25.74);
+tl.fromTo("#win0",{"opacity":0,"scale":0.6,"y":40},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},0.15);
+tl.fromTo("#win0",{"rotate":0},{"rotate":-2,"y":18,"duration":6.420612,"ease":"sine.inOut"},0.70);
+tl.fromTo("#win1",{"opacity":0,"scale":0.6,"y":40},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},0.47);
+tl.fromTo("#win1",{"rotate":0},{"rotate":2,"y":-18,"duration":6.420612,"ease":"sine.inOut"},1.02);
+tl.fromTo("#win2",{"opacity":0,"scale":0.6,"y":40},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},0.79);
+tl.fromTo("#win2",{"rotate":0},{"rotate":-2,"y":18,"duration":6.420612,"ease":"sine.inOut"},1.34);
+tl.fromTo("#win3",{"opacity":0,"scale":0.6,"y":40},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},1.11);
+tl.fromTo("#win3",{"rotate":0},{"rotate":2,"y":-18,"duration":6.420612,"ease":"sine.inOut"},1.66);
+tl.fromTo("#win4",{"opacity":0,"scale":0.6,"y":40},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},1.43);
+tl.fromTo("#win4",{"rotate":0},{"rotate":-2,"y":18,"duration":6.420612,"ease":"sine.inOut"},1.98);
+tl.fromTo("#win5",{"opacity":0,"scale":0.6,"y":40},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},1.75);
+tl.fromTo("#win5",{"rotate":0},{"rotate":2,"y":-18,"duration":6.420612,"ease":"sine.inOut"},2.30);
+tl.fromTo("#e-gancho .pre .w",{"opacity":0,"y":36,"filter":"blur(10px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.55,"stagger":0.08,"ease":"power3.out"},1.20);
+tl.to("#e-gancho .win",{"opacity":0.25,"filter":"blur(3px)","duration":0.6},3.52);
+tl.to("#e-gancho .pre",{"opacity":0.45,"duration":0.6},3.52);
+tl.fromTo("#e-gancho .q .w",{"opacity":0,"y":40,"filter":"blur(16px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.7,"stagger":0.16,"ease":"power3.out"},3.98);
+tl.to("#e-gancho .q",{"scale":1.4,"opacity":0,"filter":"blur(20px)","duration":0.7,"ease":"power2.in"},5.72);
+tl.to("#e-gancho .pre, #e-gancho .win",{"opacity":0,"duration":0.5},5.72);
+tl.fromTo("#e-dolor",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},5.92);
+tl.fromTo("#ar0",{"opacity":0,"y":60},{"opacity":1,"y":0,"duration":0.5,"ease":"power3.out"},6.57);
+tl.fromTo("#ar0 .rg",{"opacity":0},{"opacity":1,"duration":0.4},8.81);
+tl.fromTo("#ar0 .qm",{"opacity":0,"scale":0.3},{"opacity":1,"scale":1,"duration":0.45,"ease":"back.out(2.4)"},10.37);
+tl.fromTo("#ar1",{"opacity":0,"y":60},{"opacity":1,"y":0,"duration":0.5,"ease":"power3.out"},6.79);
+tl.fromTo("#ar1 .rg",{"opacity":0},{"opacity":1,"duration":0.4},8.93);
+tl.fromTo("#ar1 .qm",{"opacity":0,"scale":0.3},{"opacity":1,"scale":1,"duration":0.45,"ease":"back.out(2.4)"},10.49);
+tl.fromTo("#ar2",{"opacity":0,"y":60},{"opacity":1,"y":0,"duration":0.5,"ease":"power3.out"},7.01);
+tl.fromTo("#ar2 .rg",{"opacity":0},{"opacity":1,"duration":0.4},9.05);
+tl.fromTo("#ar2 .qm",{"opacity":0,"scale":0.3},{"opacity":1,"scale":1,"duration":0.45,"ease":"back.out(2.4)"},10.61);
+tl.fromTo("#ar3",{"opacity":0,"y":60},{"opacity":1,"y":0,"duration":0.5,"ease":"power3.out"},7.23);
+tl.fromTo("#ar3 .rg",{"opacity":0},{"opacity":1,"duration":0.4},9.17);
+tl.fromTo("#ar3 .qm",{"opacity":0,"scale":0.3},{"opacity":1,"scale":1,"duration":0.45,"ease":"back.out(2.4)"},10.73);
+tl.fromTo("#e-dolor .pregs span:nth-child(1)",{"opacity":0,"y":30},{"opacity":1,"y":0,"duration":0.45,"ease":"back.out(2)"},10.92);
+tl.fromTo("#e-dolor .pregs span:nth-child(2)",{"opacity":0,"y":30},{"opacity":1,"y":0,"duration":0.45,"ease":"back.out(2)"},11.96);
+tl.fromTo("#e-dolor .pregs span:nth-child(3)",{"opacity":0,"y":30},{"opacity":1,"y":0,"duration":0.45,"ease":"back.out(2)"},13.08);
+tl.to("#e-dolor .area, #e-dolor .pregs",{"opacity":0.35,"duration":0.5},15.41);
+tl.fromTo("#e-dolor .sello",{"opacity":0,"scale":2.2,"rotate":-14},{"opacity":1,"scale":1,"rotate":-6,"duration":0.35,"ease":"power4.in"},15.61);
+tl.to("#e-dolor",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},18.08);
+tl.fromTo("#e-titulo",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},18.08);
+tl.fromTo("#e-titulo .marca",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":1,"ease":"back.out(1.6)"},18.43);
+tl.fromTo("#e-titulo h1",{"opacity":0,"letterSpacing":"40px","filter":"blur(14px)"},{"opacity":1,"letterSpacing":"0px","filter":"blur(0px)","duration":1.3,"ease":"power3.out"},18.83);
+tl.fromTo("#e-titulo h1",{"backgroundPosition":"-200% 0"},{"backgroundPosition":"200% 0","duration":2.2,"ease":"power1.inOut"},20.13);
+tl.fromTo("#e-titulo .full",{"opacity":0,"letterSpacing":"20px"},{"opacity":1,"letterSpacing":"8px","duration":1,"ease":"power3.out"},19.23);
+tl.fromTo("#e-titulo .sub .w",{"opacity":0,"y":36,"filter":"blur(10px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.55,"stagger":0.06,"ease":"power3.out"},21.49);
+tl.fromTo("#e-titulo .flare",{"xPercent":-150,"opacity":0},{"xPercent":150,"opacity":1,"duration":1.6,"ease":"power2.inOut"},19.23);
+tl.to("#e-titulo",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},25.29);
+tl.fromTo("#e-analogia",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},25.29);
+tl.fromTo("#e-analogia .pc",{"opacity":0,"y":60,"scale":0.92},{"opacity":1,"y":0,"scale":1,"duration":0.8,"ease":"power3.out"},25.39);
+tl.fromTo("#tl0",{"opacity":0,"scale":0.6},{"opacity":1,"scale":1,"duration":0.4,"ease":"back.out(2)"},28.72);
+tl.fromTo("#tl1",{"opacity":0,"scale":0.6},{"opacity":1,"scale":1,"duration":0.4,"ease":"back.out(2)"},28.82);
+tl.fromTo("#tl2",{"opacity":0,"scale":0.6},{"opacity":1,"scale":1,"duration":0.4,"ease":"back.out(2)"},28.92);
+tl.fromTo("#tl3",{"opacity":0,"scale":0.6},{"opacity":1,"scale":1,"duration":0.4,"ease":"back.out(2)"},29.02);
+tl.fromTo("#tl4",{"opacity":0,"scale":0.6},{"opacity":1,"scale":1,"duration":0.4,"ease":"back.out(2)"},29.12);
+tl.fromTo("#tl5",{"opacity":0,"scale":0.6},{"opacity":1,"scale":1,"duration":0.4,"ease":"back.out(2)"},29.22);
+tl.fromTo("#e-analogia .osbar",{"opacity":0,"y":30},{"opacity":1,"y":0,"duration":0.5},30.04);
+tl.to("#tl0 .ta",{"opacity":0,"y":-20,"duration":0.3},31.76);
+tl.fromTo("#tl0 .tb",{"opacity":0,"y":20},{"opacity":1,"y":0,"duration":0.35},31.91);
+tl.to("#tl0",{"borderColor":"#4ea7ff","backgroundColor":"#12305e","duration":0.35},31.91);
+tl.to("#tl1 .ta",{"opacity":0,"y":-20,"duration":0.3},31.84);
+tl.fromTo("#tl1 .tb",{"opacity":0,"y":20},{"opacity":1,"y":0,"duration":0.35},31.99);
+tl.to("#tl1",{"borderColor":"#4ea7ff","backgroundColor":"#12305e","duration":0.35},31.99);
+tl.to("#tl2 .ta",{"opacity":0,"y":-20,"duration":0.3},31.92);
+tl.fromTo("#tl2 .tb",{"opacity":0,"y":20},{"opacity":1,"y":0,"duration":0.35},32.07);
+tl.to("#tl2",{"borderColor":"#4ea7ff","backgroundColor":"#12305e","duration":0.35},32.07);
+tl.to("#tl3 .ta",{"opacity":0,"y":-20,"duration":0.3},32.00);
+tl.fromTo("#tl3 .tb",{"opacity":0,"y":20},{"opacity":1,"y":0,"duration":0.35},32.15);
+tl.to("#tl3",{"borderColor":"#4ea7ff","backgroundColor":"#12305e","duration":0.35},32.15);
+tl.to("#tl4 .ta",{"opacity":0,"y":-20,"duration":0.3},32.08);
+tl.fromTo("#tl4 .tb",{"opacity":0,"y":20},{"opacity":1,"y":0,"duration":0.35},32.23);
+tl.to("#tl4",{"borderColor":"#4ea7ff","backgroundColor":"#12305e","duration":0.35},32.23);
+tl.to("#tl5 .ta",{"opacity":0,"y":-20,"duration":0.3},32.16);
+tl.fromTo("#tl5 .tb",{"opacity":0,"y":20},{"opacity":1,"y":0,"duration":0.35},32.31);
+tl.to("#tl5",{"borderColor":"#4ea7ff","backgroundColor":"#12305e","duration":0.35},32.31);
+tl.to("#e-analogia .pct",{"opacity":0,"duration":0.3},31.76);
+tl.fromTo("#e-analogia .pct2",{"opacity":0},{"opacity":1,"duration":0.3},31.96);
+tl.to("#e-analogia .o1",{"opacity":0,"duration":0.3},31.76);
+tl.fromTo("#e-analogia .o2",{"opacity":0,"scale":0.8},{"opacity":1,"scale":1,"duration":0.5,"ease":"back.out(2)"},31.96);
+tl.to("#e-analogia .osbar",{"backgroundColor":"#2d7ff9","boxShadow":"0 0 60px #2d7ff9","duration":0.5},31.96);
+tl.fromTo("#e-analogia .reglas .chip:nth-child(1)",{"opacity":0,"y":30},{"opacity":1,"y":0,"duration":0.45,"ease":"back.out(2)"},34.70);
+tl.fromTo("#e-analogia .reglas .chip:nth-child(2)",{"opacity":0,"y":30},{"opacity":1,"y":0,"duration":0.45,"ease":"back.out(2)"},36.06);
+tl.fromTo("#e-analogia .reglas .chip:nth-child(3)",{"opacity":0,"y":30},{"opacity":1,"y":0,"duration":0.45,"ease":"back.out(2)"},37.46);
+tl.to("#e-analogia",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},38.69);
+tl.fromTo("#e-capas",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},38.69);
+tl.set("#fa-ent, #fa-nuc",{"opacity":0},38.69);
+tl.fromTo("#fa-base",{"opacity":0,"y":60},{"opacity":1,"y":0,"duration":0.6,"ease":"power3.out"},38.79);
+tl.fromTo("#fa-ia0",{"opacity":0,"scale":0.5},{"opacity":1,"scale":1,"duration":0.4,"ease":"back.out(2.2)"},39.19);
+tl.fromTo("#fa-ia1",{"opacity":0,"scale":0.5},{"opacity":1,"scale":1,"duration":0.4,"ease":"back.out(2.2)"},39.91);
+tl.fromTo("#fa-ia2",{"opacity":0,"scale":0.5},{"opacity":1,"scale":1,"duration":0.4,"ease":"back.out(2.2)"},40.95);
+tl.fromTo("#fa-ia3",{"opacity":0,"scale":0.5},{"opacity":1,"scale":1,"duration":0.4,"ease":"back.out(2.2)"},41.59);
+tl.fromTo("#fa-ia4",{"opacity":0,"scale":0.5},{"opacity":1,"scale":1,"duration":0.4,"ease":"back.out(2.2)"},43.11);
+tl.fromTo("#e-capas .figcap .w",{"opacity":0,"y":36,"filter":"blur(10px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.55,"stagger":0.06,"ease":"power3.out"},44.52);
+tl.to("#fa-base",{boxShadow:"0 0 0 4px #4ea7ff, 0 0 120px #2d7ff9cc",duration:.45,yoyo:true,repeat:1},45.92);
+tl.fromTo("#fa-s0",{"opacity":0,"y":20},{"opacity":1,"y":0,"duration":0.4,"ease":"back.out(2)"},48.92);
+tl.fromTo("#fa-s1",{"opacity":0,"y":20},{"opacity":1,"y":0,"duration":0.4,"ease":"back.out(2)"},50.04);
+tl.fromTo("#fa-s2",{"opacity":0,"y":20},{"opacity":1,"y":0,"duration":0.4,"ease":"back.out(2)"},50.84);
+tl.fromTo("#fa-s3",{"opacity":0,"y":20},{"opacity":1,"y":0,"duration":0.4,"ease":"back.out(2)"},51.14);
+tl.to("#e-capas .figcap",{"opacity":0,"duration":0.3},51.56);
+tl.fromTo("#fa-pl0",{"opacity":0,"scale":0.6},{"opacity":1,"scale":1,"duration":0.4,"ease":"back.out(2)"},52.36);
+tl.fromTo("#fa-pl1",{"opacity":0,"scale":0.6},{"opacity":1,"scale":1,"duration":0.4,"ease":"back.out(2)"},53.16);
+tl.fromTo("#fa-nuc",{"opacity":0,"y":60},{"opacity":1,"y":0,"duration":0.6,"ease":"power3.out"},54.64);
+tl.to("#fa-p0",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #f87171","duration":0.3},56.80);
+tl.fromTo("#fa-p0",{"scale":0.8},{"scale":1,"duration":0.4,"ease":"back.out(2.5)"},56.80);
+tl.to("#fa-p1",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #a78bfa","duration":0.3},57.48);
+tl.fromTo("#fa-p1",{"scale":0.8},{"scale":1,"duration":0.4,"ease":"back.out(2.5)"},57.48);
+tl.to("#fa-p2",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #34d399","duration":0.3},58.40);
+tl.fromTo("#fa-p2",{"scale":0.8},{"scale":1,"duration":0.4,"ease":"back.out(2.5)"},58.40);
+tl.to("#fa-p3",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #fbbf24","duration":0.3},59.32);
+tl.fromTo("#fa-p3",{"scale":0.8},{"scale":1,"duration":0.4,"ease":"back.out(2.5)"},59.32);
+tl.to("#fa-p4",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #22d3ee","duration":0.3},60.16);
+tl.fromTo("#fa-p4",{"scale":0.8},{"scale":1,"duration":0.4,"ease":"back.out(2.5)"},60.16);
+tl.fromTo("#fa-ent",{"opacity":0,"y":-40},{"opacity":1,"y":0,"duration":0.6,"ease":"power3.out"},61.35);
+tl.to("#e-capas",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},62.40);
+tl.fromTo("#e-lunes",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},62.40);
+tl.fromTo("#e-lunes .reloj",{"opacity":0,"y":-30},{"opacity":1,"y":0,"duration":0.6,"ease":"power3.out"},62.85);
+tl.fromTo("#e-lunes .pedido",{"opacity":0,"y":30},{"opacity":1,"y":0,"duration":0.5},64.77);
+tl.fromTo("#e-lunes .pt .ch",{"opacity":0},{"opacity":1,"duration":0.01,"stagger":0.035},65.07);
+tl.fromTo("#e-lunes .caja",{"opacity":0,"scale":0.9},{"opacity":1,"scale":1,"duration":0.6,"ease":"power3.out"},68.69);
+tl.fromTo("#ag0",{"opacity":0,"x":200,"y":0},{"opacity":1,"x":0,"y":0,"duration":0.55,"ease":"back.out(1.6)"},69.29);
+tl.fromTo("#ag1",{"opacity":0,"x":200,"y":0},{"opacity":1,"x":0,"y":0,"duration":0.55,"ease":"back.out(1.6)"},69.59);
+tl.fromTo("#ag2",{"opacity":0,"x":200,"y":0},{"opacity":1,"x":0,"y":0,"duration":0.55,"ease":"back.out(1.6)"},69.89);
+tl.to("#e-lunes .caja",{"borderColor":"#4ea7ff","boxShadow":"0 0 0 3px #4ea7ff, 0 0 120px #2d7ff988","duration":0.5},72.01);
+tl.fromTo("#e-lunes .rg3 .chip:nth-child(1)",{"opacity":0,"y":24},{"opacity":1,"y":0,"duration":0.4,"ease":"back.out(2)"},73.53);
+tl.fromTo("#e-lunes .rg3 .chip:nth-child(2)",{"opacity":0,"y":24},{"opacity":1,"y":0,"duration":0.4,"ease":"back.out(2)"},74.61);
+tl.fromTo("#e-lunes .rg3 .chip:nth-child(3)",{"opacity":0,"y":24},{"opacity":1,"y":0,"duration":0.4,"ease":"back.out(2)"},75.85);
+tl.to("#e-lunes",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},77.75);
+tl.fromTo("#e-sello",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},77.75);
+tl.fromTo("#e-sello .c2 .w",{"opacity":0,"y":36,"filter":"blur(10px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.55,"stagger":0.08,"ease":"power3.out"},78.30);
+tl.to("#fb-p0",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #f87171","duration":0.3},78.60);
+tl.to("#fb-p1",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #a78bfa","duration":0.3},78.90);
+tl.to("#fb-p2",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #34d399","duration":0.3},79.20);
+tl.to("#fb-p3",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #fbbf24","duration":0.3},79.50);
+tl.to("#fb-p4",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #22d3ee","duration":0.3},79.80);
+tl.to("#e-sello .c2",{"opacity":0,"duration":0.3},81.39);
+tl.fromTo("#e-sello .c3 .w",{"opacity":0,"y":36,"filter":"blur(10px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.55,"stagger":0.06,"ease":"power3.out"},81.69);
+tl.to("#fb-p0",{"opacity":0.2,"filter":"saturate(.4)","duration":0.4},81.89);
+tl.to("#fb-p1",{"opacity":0.2,"filter":"saturate(.4)","duration":0.4},81.89);
+tl.to("#fb-p3",{"opacity":0.2,"filter":"saturate(.4)","duration":0.4},81.89);
+tl.to("#fb-p4",{"opacity":0.2,"filter":"saturate(.4)","duration":0.4},81.89);
+tl.to("#fb-p2",{"scale":1.12,"duration":0.5,"ease":"back.out(2)"},81.89);
+tl.fromTo("#e-sello .sigue",{"opacity":0,"y":30},{"opacity":1,"y":0,"duration":0.5,"ease":"power3.out"},84.45);
+tl.to("#e-sello",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},86.35);
+tl.fromTo("#e-firma",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},86.35);
+tl.fromTo("#p2",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":1.8,"ease":"power2.inOut"},86.35);
+tl.to("#p2",{"opacity":0.2,"duration":1},88.15);
+tl.fromTo("#e-firma .marca",{"opacity":0,"scale":0.5,"rotate":-8},{"opacity":1,"scale":1,"rotate":0,"duration":1,"ease":"back.out(1.6)"},86.90);
+tl.fromTo("#e-firma h1",{"opacity":0,"letterSpacing":"30px","filter":"blur(10px)"},{"opacity":1,"letterSpacing":"0px","filter":"blur(0px)","duration":1.2,"ease":"power3.out"},87.20);
+tl.fromTo("#e-firma .full",{"opacity":0},{"opacity":1,"duration":0.8},87.60);
+tl.fromTo("#e-firma .firma",{"opacity":0,"y":20},{"opacity":1,"y":0,"duration":0.8,"ease":"power3.out"},90.08);
+tl.fromTo("#e-firma .url",{"opacity":0},{"opacity":1,"duration":0.8},91.08);
+tl.to("#e-firma .fin",{"opacity":0,"duration":1},94.79);
+tl.fromTo("#sweep-0",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},5.82);
+tl.fromTo("#sweep-1",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},17.98);
+tl.fromTo("#sweep-2",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},25.19);
+tl.fromTo("#sweep-3",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},38.59);
+tl.fromTo("#sweep-4",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},62.30);
+tl.fromTo("#sweep-5",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},77.65);
+tl.fromTo("#sweep-6",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},86.25);
+window.__timelines = window.__timelines || {};
+window.__timelines["main"] = tl;
+</script>
+</body>
+</html>

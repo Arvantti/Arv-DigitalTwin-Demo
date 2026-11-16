@@ -1,0 +1,109 @@
+/* Episodio 1 · Arvantti OS. Las reglas .v ajustan la versión vertical 9:16. */
+
+/* Gancho */
+.win{position:absolute;width:400px;padding:0 0 22px;border-radius:16px;background:#0d1a30ee;border:2px solid #4ea7ff55;box-shadow:0 20px 60px #000a;opacity:0}
+.win .wb{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid #4ea7ff33;font:600 20px "JetBrains Mono",monospace;color:#9fd0ff}
+.win .wb i{width:12px;height:12px;border-radius:50%;background:#2a3b58}
+.win .wb span{margin-left:8px}
+.win p{margin:16px 20px 12px;font:700 30px Inter,sans-serif}
+.win .ln{height:12px;margin:8px 20px 0;border-radius:6px;background:#1c2c48}
+.win .ln.s{width:55%}
+.v .win{width:380px}
+.pre{top:330px;font:600 56px Inter,sans-serif;color:#c9d1e0}
+.q{top:450px;font:800 140px/1 "Inter Display",Inter,sans-serif;letter-spacing:-3px}
+.v .pre{top:780px;padding:0 60px;font-size:52px}
+.v .q{top:890px;padding:0 40px;font-size:124px;line-height:1.05}
+
+/* Dolor */
+.areas{position:absolute;left:110px;right:110px;top:190px;display:grid;grid-template-columns:repeat(4,1fr);gap:30px}
+.v .areas{left:70px;right:70px;top:300px;grid-template-columns:1fr 1fr;gap:30px}
+.area{position:relative;height:300px;padding:30px;border-radius:20px;background:#0d1a30e6;border:2px solid #4ea7ff55;opacity:0}
+.v .area{height:330px}
+.area .an{margin:0;font:800 40px "Inter Display",Inter,sans-serif}
+.area .ai{margin:14px 0 0;display:inline-block;padding:8px 18px;border-radius:999px;background:#16243f;font:600 28px Inter,sans-serif;color:#9fd0ff}
+.area .rg{position:absolute;left:30px;bottom:30px;margin:0;font:500 26px "JetBrains Mono",monospace;color:#ffb07a}
+.area .qm{position:absolute;right:24px;top:20px;width:76px;height:76px;border-radius:50%;background:#ff6b35;color:#fff;font:800 52px/76px Inter,sans-serif;text-align:center;box-shadow:0 0 40px #ff6b3588}
+.pregs{position:absolute;left:0;right:0;top:600px;text-align:center}
+.pregs span{display:inline-block;margin:0 18px;font:800 54px "Inter Display",Inter,sans-serif;opacity:0}
+.v .pregs{top:1060px}
+.v .pregs span{display:block;margin:0 0 26px;font-size:62px}
+.sello{position:absolute;left:50%;top:790px;width:600px;margin-left:-300px;padding:18px 0;border:6px solid #ff4d4d;border-radius:16px;color:#ff4d4d;text-align:center;font:900 76px "Inter Display",Inter,sans-serif;letter-spacing:8px;background:#05070ccc;box-shadow:0 0 60px #ff4d4d55;opacity:0}
+.v .sello{top:1440px;width:760px;margin-left:-380px;font-size:90px}
+
+/* Título y firma */
+.titulo,.fin{position:absolute;left:0;right:0;top:240px;text-align:center}
+.v .titulo,.v .fin{top:620px;padding:0 40px}
+.titulo .marca,.fin .marca{width:220px;margin-bottom:26px}
+.titulo h1,.fin h1{margin:0;font:800 150px/1.02 "Inter Display",Inter,sans-serif;letter-spacing:-2px}
+.v .titulo h1,.v .fin h1{font-size:140px}
+.full{margin:22px 0 0;font:600 28px "JetBrains Mono",monospace;letter-spacing:8px;color:#9fd0ff}
+.v .full{font-size:26px;letter-spacing:4px}
+.titulo .sub{margin:34px 0 0;font:500 50px Inter,sans-serif;color:#e6eefc}
+.v .titulo .sub{font-size:54px;line-height:1.25}
+.flare{position:absolute;top:-20%;bottom:-20%;left:30%;width:28%;background:linear-gradient(100deg,#0000 0%,#4ea7ff22 40%,#ffffff33 50%,#4ea7ff22 60%,#0000 100%);transform:skewX(-18deg);mix-blend-mode:screen}
+.fin .firma{margin:34px 0 0;font:600 56px Inter,sans-serif;color:#fff}
+.fin .url{margin:40px 0 0;font:500 30px "JetBrains Mono",monospace;letter-spacing:6px;color:#7a9cc6}
+
+/* Analogía */
+.pc{position:absolute;left:50%;top:160px;width:1100px;margin-left:-550px;border-radius:22px;background:#0b1224;border:2px solid #4ea7ff66;box-shadow:0 40px 120px #000c,0 0 90px #2d7ff933;overflow:hidden}
+.v .pc{top:360px;width:940px;margin-left:-470px}
+.pcb{position:relative;display:flex;align-items:center;gap:8px;padding:14px 20px;border-bottom:1px solid #4ea7ff33}
+.pcb i{width:14px;height:14px;border-radius:50%;background:#2a3b58}
+.pcb span{position:absolute;left:110px;font:600 22px "JetBrains Mono",monospace;letter-spacing:3px;color:#9fd0ff}
+.pcb .pct2{opacity:0}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;padding:34px}
+.v .tiles{grid-template-columns:repeat(2,1fr)}
+.tile{position:relative;height:120px;border-radius:16px;background:#16243f;border:2px solid #2a3b58}
+.tile span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:700 32px Inter,sans-serif;text-align:center}
+.tile .tb{opacity:0;color:#fff}
+.osbar{position:relative;height:84px;margin:0 34px 34px;border-radius:14px;background:#1c2c48;font:800 34px "Inter Display",Inter,sans-serif}
+.osbar span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+.osbar .o2{opacity:0;font-size:42px}
+.reglas{position:absolute;left:0;right:0;top:880px;text-align:center}
+.reglas .chip{font-size:36px;padding:14px 32px;opacity:0}
+.v .reglas{top:1290px}
+.v .reglas .chip{display:block;width:fit-content;margin:0 auto 22px;font-size:44px}
+
+/* Figura */
+.figcap{top:70px;font:800 60px "Inter Display",Inter,sans-serif}
+.v .figcap{top:260px;padding:0 50px;font-size:66px;line-height:1.1}
+#e-capas .capas{top:56%}
+.v #e-capas .capas{top:55%}
+#e-sello .capas{top:53%}
+.v #e-sello .capas{top:53%}
+.fila span{opacity:1}
+.fila .pl{border-color:#4ea7ffaa;background:#12305e}
+.sigue{position:absolute;left:0;right:0;bottom:46px;text-align:center;font:600 34px Inter,sans-serif;color:#c9d6ea;opacity:0}
+.sigue span{display:inline-block;margin-right:14px;padding:6px 16px;border:2px solid var(--blue);font:700 26px "JetBrains Mono",monospace;color:#fff}
+.sigue b{color:var(--organiza)}
+.v .sigue{bottom:200px;padding:0 50px;font-size:38px;line-height:1.6}
+
+/* Lunes */
+.reloj{position:absolute;left:150px;top:200px}
+.reloj .dia{display:block;font:700 30px "JetBrains Mono",monospace;letter-spacing:10px;color:#9fd0ff}
+.reloj .hora{display:block;font:800 170px/1 "Inter Display",Inter,sans-serif}
+.pedido{position:absolute;left:150px;top:520px;width:700px;padding:28px 32px;border-radius:20px;background:#0d1a30e6;border:2px solid #4ea7ff55}
+.pedido .pq{margin:0 0 10px;font:700 22px "JetBrains Mono",monospace;letter-spacing:4px;color:#9fd0ff}
+.pedido .pt{margin:0;font:600 40px/1.3 Inter,sans-serif}
+.pedido .ch{opacity:0}
+.caja{position:absolute;left:1000px;top:170px;width:780px;padding:30px;border-radius:26px;background:#0b1428e6;border:3px solid #4ea7ff55}
+.cajat{display:flex;align-items:center;gap:16px;margin-bottom:22px;font:800 46px "Inter Display",Inter,sans-serif}
+.cajat img{width:70px}
+.agn{display:flex;align-items:center;gap:16px;margin-bottom:16px;padding:20px 24px;border-radius:16px;background:#16243f;border:2px solid var(--c)}
+.agn i{width:20px;height:20px;border-radius:50%;background:var(--c);box-shadow:0 0 14px var(--c)}
+.agn b{font:700 34px Inter,sans-serif}
+.agn small{margin-left:auto;font:600 26px "JetBrains Mono",monospace;color:#9fb3cf}
+.rg3{margin-top:12px;text-align:center}
+.rg3 .chip{font-size:26px;padding:10px 20px;margin:8px 6px 0;opacity:0}
+.v .reloj{left:70px;top:260px}
+.v .reloj .hora{font-size:150px}
+.v .pedido{left:70px;right:70px;top:520px;width:auto}
+.v .caja{left:70px;right:70px;top:880px;width:auto}
+.v .rg3 .chip{font-size:30px}
+
+/* Ajustes tras la primera revisión de cuadros */
+.area .an{padding-right:80px;font-size:36px;line-height:1.1}
+.figcap{top:140px}
+#e-capas .capas{top:55%}
+#e-sello .capas{top:56%}
+.v .titulo .sub{padding:0 60px}
