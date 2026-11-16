@@ -1,0 +1,82 @@
+[
+ {
+  "id": "recap",
+  "start": 0,
+  "voiceAt": 0.6,
+  "voz": 3.08,
+  "dur": 4.18,
+  "real": true
+ },
+ {
+  "id": "gancho",
+  "start": 4.18,
+  "voiceAt": 4.48,
+  "voz": 4.91,
+  "dur": 6.01,
+  "real": true
+ },
+ {
+  "id": "dolor",
+  "start": 10.19,
+  "voiceAt": 10.49,
+  "voz": 7.63,
+  "dur": 8.73,
+  "real": true
+ },
+ {
+  "id": "edicion",
+  "start": 18.92,
+  "voiceAt": 19.22,
+  "voz": 16.35,
+  "dur": 17.45,
+  "real": true
+ },
+ {
+  "id": "organigrama",
+  "start": 36.37,
+  "voiceAt": 36.57,
+  "voz": 13.24,
+  "dur": 14.24,
+  "real": true
+ },
+ {
+  "id": "panel",
+  "start": 50.62,
+  "voiceAt": 50.82,
+  "voz": 14.45,
+  "dur": 15.55,
+  "real": true
+ },
+ {
+  "id": "lunes",
+  "start": 66.16,
+  "voiceAt": 66.46,
+  "voz": 18.44,
+  "dur": 19.94,
+  "real": true
+ },
+ {
+  "id": "figura",
+  "start": 86.11,
+  "voiceAt": 86.41,
+  "voz": 4.21,
+  "dur": 5.01,
+  "real": true
+ },
+ {
+  "id": "siguiente",
+  "start": 91.11,
+  "voiceAt": 91.31,
+  "voz": 4.6,
+  "dur": 6.4,
+  "real": true
+ },
+ {
+  "id": "firma",
+  "start": 97.51,
+  "voiceAt": 98.11,
+  "voz": 4.91,
+  "dur": 9.01,
+  "real": true
+ }
+]

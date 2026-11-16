@@ -1,0 +1,1 @@
+Lunes, 9:10. La gerente pregunta por voz, desde el carro: «¿Cómo va el informe de la junta?». El coordinador le responde: «Listo en un 80 %, falta su aprobación del margen por producto». Ella aprueba ahí mismo. Y desde el próximo mes, el informe queda programado: el primer borrador se arma solo.

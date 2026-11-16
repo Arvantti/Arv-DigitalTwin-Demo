@@ -1,0 +1,498 @@
+<!doctype html>
+<html lang="es" data-resolution="landscape" class="h">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1920, height=1080">
+<title>Arvantti OS · serie Enterprise</title>
+<script src="assets/vendor/gsap.min.js"></script>
+<style>
+:root{--blue:#2d7ff9;--electric:#4ea7ff;--ti:#d8dadf;--black:#05070c;--white:#f8fafc;
+  --controla:#f87171;--protege:#a78bfa;--organiza:#34d399;--recuerda:#fbbf24;--rinde:#22d3ee;--ent:#4ea7ff}
+*{box-sizing:border-box}
+html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:var(--black);font-family:Inter,"Inter Display",Arial,sans-serif;color:var(--white)}
+#root{position:relative;width:1920px;height:1080px;overflow:hidden;background:var(--black)}
+.clip{position:absolute;inset:0}
+.scene{overflow:hidden}
+.w{display:inline-block;white-space:pre}
+
+/* Fondo */
+.fondo .glow{position:absolute;inset:-20%;background:radial-gradient(900px 520px at 50% 45%,#12305e55 0%,#05070c00 70%),radial-gradient(700px 400px at 80% 90%,#2d7ff922 0%,#05070c00 70%)}
+.v .fondo .glow{background:radial-gradient(700px 900px at 50% 45%,#12305e55 0%,#05070c00 70%),radial-gradient(500px 600px at 80% 90%,#2d7ff922 0%,#05070c00 70%)}
+.fondo .floor{position:absolute;left:-50%;right:-50%;bottom:-10%;height:62%;perspective:900px;opacity:.5;-webkit-mask-image:linear-gradient(#0000,#000 55%);mask-image:linear-gradient(#0000,#000 55%)}
+.v .fondo .floor{height:40%}
+.fondo .floorgrid{position:absolute;inset:0;transform:rotateX(68deg);transform-origin:50% 100%;background-image:linear-gradient(#4ea7ff33 2px,transparent 2px),linear-gradient(90deg,#4ea7ff33 2px,transparent 2px);background-size:120px 120px}
+
+/* Comunes */
+.kicker{position:absolute;left:110px;top:70px;margin:0;font:600 26px "JetBrains Mono",monospace;letter-spacing:8px;color:var(--electric)}
+.kicker b{display:inline-block;padding:4px 12px;margin-right:12px;border:2px solid var(--blue);color:#fff;font-weight:700;letter-spacing:2px}
+.v .kicker{left:70px;top:150px;font-size:24px;letter-spacing:5px}
+.center{position:absolute;left:0;right:0;text-align:center;margin:0}
+.chip{display:inline-block;padding:12px 26px;margin:0 10px 14px;border:2px solid #4ea7ff66;border-radius:999px;background:#0d1a30cc;font:600 30px Inter,sans-serif;color:#e6eefc;box-shadow:0 0 24px #2d7ff933}
+.marca{display:block;margin:0 auto;height:auto;filter:drop-shadow(0 0 30px #2d7ff988)}
+.metal{background:linear-gradient(100deg,#d8dadf 0%,#d8dadf 40%,#ffffff 50%,#d8dadf 60%,#d8dadf 100%);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent}
+.sweep{background:linear-gradient(100deg,#0000 35%,#4ea7ff18 45%,#ffffff40 50%,#4ea7ff18 55%,#0000 65%);mix-blend-mode:screen;pointer-events:none}
+.estela{position:absolute;inset:0;width:100%;height:100%}
+.estela path{fill:none;stroke:#4ea7ff;stroke-width:5;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1;filter:drop-shadow(0 0 10px #4ea7ff) drop-shadow(0 0 30px #2d7ff9)}
+#temp{left:auto;top:auto;right:20px;bottom:16px;font:700 15px "JetBrains Mono",monospace;color:#ff6b35;letter-spacing:2px}
+
+/* Figura de tres capas (sello de la serie) */
+.capas{position:absolute;left:50%;top:50%;width:1500px;transform:translate(-50%,-50%);display:flex;flex-direction:column;gap:22px}
+.v .capas{width:1000px}
+.capa{position:relative;border-radius:22px;padding:22px 30px;border:2px solid #4ea7ff66;background:#0b1428e6;box-shadow:0 20px 80px #000a,0 0 50px #2d7ff922}
+.capa .ct{margin:0 0 14px;font:700 22px "JetBrains Mono",monospace;letter-spacing:4px;color:#9fd0ff;text-align:center}
+.capa.ent{border-color:var(--ent);background:linear-gradient(180deg,#123a6ecc,#0b1428e6);text-align:center}
+.capa.ent h3{margin:0;font:800 54px "Inter Display",Inter,sans-serif;color:#fff}
+.capa.ent p{margin:8px 0 0;font:500 26px Inter,sans-serif;color:#c9d6ea}
+.v .capa.ent h3{font-size:58px}
+.v .capa.ent p{font-size:30px}
+.v .capa .ct{font-size:24px}
+.v .capa{padding:26px 24px}
+.capa.nuc{border-color:#ffffff88}
+.proms{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+.prom{flex:1 1 0;min-width:0;padding:22px 10px;border-radius:14px;text-align:center;font:800 34px Inter,sans-serif;letter-spacing:1px;color:#0b1020;background:var(--c);opacity:.18;filter:saturate(.4)}
+.v .proms{gap:12px}
+.v .prom{flex:0 0 calc(33.3% - 8px);font-size:36px;padding:26px 6px}
+.prom.on{opacity:1;filter:none;box-shadow:0 0 40px var(--c)}
+.capa.base{border-color:var(--blue)}
+.fila{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-top:6px}
+.fila span{padding:10px 22px;border-radius:999px;border:2px solid #4ea7ff66;background:#0d1a30;font:600 26px Inter,sans-serif;color:#e6eefc}
+.fila.sis span{border-color:#9fb3cf55;color:#c9d1e0;font-size:24px}
+.fila span small{display:block;font:500 17px Inter,sans-serif;color:#9fb3cf;text-align:center}
+.v .fila span{font-size:31px;padding:12px 22px}
+.v .fila.sis span{font-size:29px}
+.v .fila span small{font-size:20px}
+/* Estilos comunes de la serie (nacieron en el episodio 1). Las reglas .v ajustan la vertical 9:16. */
+
+/* Gancho */
+.win{position:absolute;width:400px;padding:0 0 22px;border-radius:16px;background:#0d1a30ee;border:2px solid #4ea7ff55;box-shadow:0 20px 60px #000a;opacity:0}
+.win .wb{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid #4ea7ff33;font:600 20px "JetBrains Mono",monospace;color:#9fd0ff}
+.win .wb i{width:12px;height:12px;border-radius:50%;background:#2a3b58}
+.win .wb span{margin-left:8px}
+.win p{margin:16px 20px 12px;font:700 30px Inter,sans-serif}
+.win .ln{height:12px;margin:8px 20px 0;border-radius:6px;background:#1c2c48}
+.win .ln.s{width:55%}
+.v .win{width:380px}
+.pre{top:330px;font:600 56px Inter,sans-serif;color:#c9d1e0}
+.q{top:450px;font:800 140px/1 "Inter Display",Inter,sans-serif;letter-spacing:-3px}
+.v .pre{top:780px;padding:0 60px;font-size:52px}
+.v .q{top:890px;padding:0 40px;font-size:124px;line-height:1.05}
+
+/* Dolor */
+.areas{position:absolute;left:110px;right:110px;top:190px;display:grid;grid-template-columns:repeat(4,1fr);gap:30px}
+.v .areas{left:70px;right:70px;top:300px;grid-template-columns:1fr 1fr;gap:30px}
+.area{position:relative;height:300px;padding:30px;border-radius:20px;background:#0d1a30e6;border:2px solid #4ea7ff55;opacity:0}
+.v .area{height:330px}
+.area .an{margin:0;font:800 40px "Inter Display",Inter,sans-serif}
+.area .ai{margin:14px 0 0;display:inline-block;padding:8px 18px;border-radius:999px;background:#16243f;font:600 28px Inter,sans-serif;color:#9fd0ff}
+.area .rg{position:absolute;left:30px;bottom:30px;margin:0;font:500 26px "JetBrains Mono",monospace;color:#ffb07a}
+.area .qm{position:absolute;right:24px;top:20px;width:76px;height:76px;border-radius:50%;background:#ff6b35;color:#fff;font:800 52px/76px Inter,sans-serif;text-align:center;box-shadow:0 0 40px #ff6b3588}
+.pregs{position:absolute;left:0;right:0;top:600px;text-align:center}
+.pregs span{display:inline-block;margin:0 18px;font:800 54px "Inter Display",Inter,sans-serif;opacity:0}
+.v .pregs{top:1060px}
+.v .pregs span{display:block;margin:0 0 26px;font-size:62px}
+.sello{position:absolute;left:50%;top:790px;width:600px;margin-left:-300px;padding:18px 0;border:6px solid #ff4d4d;border-radius:16px;color:#ff4d4d;text-align:center;font:900 76px "Inter Display",Inter,sans-serif;letter-spacing:8px;background:#05070ccc;box-shadow:0 0 60px #ff4d4d55;opacity:0}
+.v .sello{top:1440px;width:760px;margin-left:-380px;font-size:90px}
+
+/* Título y firma */
+.titulo,.fin{position:absolute;left:0;right:0;top:240px;text-align:center}
+.v .titulo,.v .fin{top:620px;padding:0 40px}
+.titulo .marca,.fin .marca{width:220px;margin-bottom:26px}
+.titulo h1,.fin h1{margin:0;font:800 150px/1.02 "Inter Display",Inter,sans-serif;letter-spacing:-2px}
+.v .titulo h1,.v .fin h1{font-size:140px}
+.full{margin:22px 0 0;font:600 28px "JetBrains Mono",monospace;letter-spacing:8px;color:#9fd0ff}
+.v .full{font-size:26px;letter-spacing:4px}
+.titulo .sub{margin:34px 0 0;font:500 50px Inter,sans-serif;color:#e6eefc}
+.v .titulo .sub{font-size:54px;line-height:1.25}
+.flare{position:absolute;top:-20%;bottom:-20%;left:30%;width:28%;background:linear-gradient(100deg,#0000 0%,#4ea7ff22 40%,#ffffff33 50%,#4ea7ff22 60%,#0000 100%);transform:skewX(-18deg);mix-blend-mode:screen}
+.fin .firma{margin:34px 0 0;font:600 56px Inter,sans-serif;color:#fff}
+.fin .url{margin:40px 0 0;font:500 30px "JetBrains Mono",monospace;letter-spacing:6px;color:#7a9cc6}
+
+/* Analogía */
+.pc{position:absolute;left:50%;top:160px;width:1100px;margin-left:-550px;border-radius:22px;background:#0b1224;border:2px solid #4ea7ff66;box-shadow:0 40px 120px #000c,0 0 90px #2d7ff933;overflow:hidden}
+.v .pc{top:360px;width:940px;margin-left:-470px}
+.pcb{position:relative;display:flex;align-items:center;gap:8px;padding:14px 20px;border-bottom:1px solid #4ea7ff33}
+.pcb i{width:14px;height:14px;border-radius:50%;background:#2a3b58}
+.pcb span{position:absolute;left:110px;font:600 22px "JetBrains Mono",monospace;letter-spacing:3px;color:#9fd0ff}
+.pcb .pct2{opacity:0}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;padding:34px}
+.v .tiles{grid-template-columns:repeat(2,1fr)}
+.tile{position:relative;height:120px;border-radius:16px;background:#16243f;border:2px solid #2a3b58}
+.tile span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:700 32px Inter,sans-serif;text-align:center}
+.tile .tb{opacity:0;color:#fff}
+.osbar{position:relative;height:84px;margin:0 34px 34px;border-radius:14px;background:#1c2c48;font:800 34px "Inter Display",Inter,sans-serif}
+.osbar span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+.osbar .o2{opacity:0;font-size:42px}
+.reglas{position:absolute;left:0;right:0;top:880px;text-align:center}
+.reglas .chip{font-size:36px;padding:14px 32px;opacity:0}
+.v .reglas{top:1290px}
+.v .reglas .chip{display:block;width:fit-content;margin:0 auto 22px;font-size:44px}
+
+/* Figura */
+.figcap{top:70px;font:800 60px "Inter Display",Inter,sans-serif}
+.v .figcap{top:260px;padding:0 50px;font-size:66px;line-height:1.1}
+#e-capas .capas{top:56%}
+.v #e-capas .capas{top:55%}
+#e-sello .capas{top:53%}
+.v #e-sello .capas{top:56%}
+.fila span{opacity:1}
+.fila .pl{border-color:#4ea7ffaa;background:#12305e}
+.sigue{position:absolute;left:0;right:0;bottom:46px;text-align:center;font:600 34px Inter,sans-serif;color:#c9d6ea;opacity:0}
+.sigue span{display:inline-block;margin-right:14px;padding:6px 16px;border:2px solid var(--blue);font:700 26px "JetBrains Mono",monospace;color:#fff}
+.sigue b{color:var(--organiza)}
+.v .sigue{bottom:200px;padding:0 50px;font-size:38px;line-height:1.6}
+
+/* Lunes */
+.reloj{position:absolute;left:150px;top:200px}
+.reloj .dia{display:block;font:700 30px "JetBrains Mono",monospace;letter-spacing:10px;color:#9fd0ff}
+.reloj .hora{display:block;font:800 170px/1 "Inter Display",Inter,sans-serif}
+.pedido{position:absolute;left:150px;top:520px;width:700px;padding:28px 32px;border-radius:20px;background:#0d1a30e6;border:2px solid #4ea7ff55}
+.pedido .pq{margin:0 0 10px;font:700 22px "JetBrains Mono",monospace;letter-spacing:4px;color:#9fd0ff}
+.pedido .pt{margin:0;font:600 40px/1.3 Inter,sans-serif}
+.pedido .ch{opacity:0}
+.caja{position:absolute;left:1000px;top:170px;width:780px;padding:30px;border-radius:26px;background:#0b1428e6;border:3px solid #4ea7ff55}
+.cajat{display:flex;align-items:center;gap:16px;margin-bottom:22px;font:800 46px "Inter Display",Inter,sans-serif}
+.cajat img{width:70px}
+.agn{display:flex;align-items:center;gap:16px;margin-bottom:16px;padding:20px 24px;border-radius:16px;background:#16243f;border:2px solid var(--c)}
+.agn i{width:20px;height:20px;border-radius:50%;background:var(--c);box-shadow:0 0 14px var(--c)}
+.agn b{font:700 34px Inter,sans-serif}
+.agn small{margin-left:auto;font:600 26px "JetBrains Mono",monospace;color:#9fb3cf}
+.rg3{margin-top:12px;text-align:center}
+.rg3 .chip{font-size:26px;padding:10px 20px;margin:8px 6px 0;opacity:0}
+.v .reloj{left:70px;top:260px}
+.v .reloj .hora{font-size:150px}
+.v .pedido{left:70px;right:70px;top:520px;width:auto}
+.v .caja{left:70px;right:70px;top:880px;width:auto}
+.v .rg3 .chip{font-size:30px}
+
+/* Ajustes tras la primera revisión de cuadros */
+.area .an{padding-right:80px;font-size:36px;line-height:1.1}
+.figcap{top:140px}
+#e-capas .capas{top:55%}
+#e-sello .capas{top:56%}
+.v .titulo .sub{padding:0 60px}
+
+/* Piezas compartidas entre episodios (mensajes, tarjeta T-12, reloj del lunes, insignia de promesa) */
+.msg{width:fit-content;max-width:640px;margin:0 0 22px;padding:20px 28px;border-radius:24px 24px 24px 6px;background:#16243f;font:600 36px Inter,sans-serif;opacity:0}
+.msg.r{margin-left:auto;border-radius:24px 24px 6px 24px;background:#1f4f9a}
+.badge-prom{position:absolute;left:50%;top:250px;transform:translateX(-50%);padding:10px 34px;border-radius:12px;background:var(--c);color:#0b1020;font:800 34px Inter,sans-serif;letter-spacing:3px;box-shadow:0 0 50px var(--c)}
+.v .badge-prom{top:470px}
+.tcard .tid,.t12 .tid{margin:0;font:700 24px "JetBrains Mono",monospace;letter-spacing:4px;color:#34d399}
+.reloj.r2{left:110px;top:150px}
+.reloj.r2 .hora{font-size:120px}
+.v .reloj.r2{left:70px;top:240px}
+.t12{position:absolute;left:760px;top:180px;width:760px;padding:24px 30px;border-radius:20px;background:#0b1428f2;border:3px solid #34d399;box-shadow:0 0 60px #34d39944}
+.v .t12{left:70px;right:70px;top:500px;width:auto}
+.t12 h3{margin:6px 0 10px;font:800 46px "Inter Display",Inter,sans-serif}
+.t12 .asg{margin:0;display:flex;align-items:center;gap:12px;font:600 30px Inter,sans-serif;color:#c9d1e0}
+.t12 .asg i{width:16px;height:16px;border-radius:50%;background:#f87171}
+.t12 .tid{margin:0;font:700 24px "JetBrains Mono",monospace;letter-spacing:4px;color:#34d399}
+.tcard .tid{margin:0;font:700 24px "JetBrains Mono",monospace;letter-spacing:4px;color:#34d399}
+.lbl{position:absolute;left:0;right:0;top:780px;margin:0;text-align:center;font:800 74px "Inter Display",Inter,sans-serif;color:#ffb07a}
+.v .lbl{top:1200px;padding:0 60px;font-size:80px}
+.archivo{position:absolute;left:260px;top:300px;width:360px;padding:30px;border-radius:20px;background:#e9eef7;color:#0b1020;text-align:center;box-shadow:0 30px 80px #000c}
+.archivo i{display:block;width:90px;height:110px;margin:0 auto 16px;border-radius:8px;background:linear-gradient(135deg,#1f7a4a 0 70%,#0000 70%),#1f7a4a}
+.archivo b{display:block;font:800 34px Inter,sans-serif}
+.archivo small{font:600 24px Inter,sans-serif;color:#555}
+
+/* Episodio 6 · Arvantti OS Enterprise */
+code{font-family:"JetBrains Mono",monospace}
+.rc{position:absolute;left:50%;top:440px;transform:translateX(-50%);width:fit-content;max-width:none;font-size:44px}
+.v .rc{top:860px;font-size:40px}
+.enjambre{position:absolute;left:110px;right:110px;top:160px;display:grid;grid-template-columns:repeat(12,1fr);gap:26px}
+.v .enjambre{left:70px;right:70px;top:300px;grid-template-columns:repeat(6,1fr);gap:40px}
+.ag-d{display:block;width:100%;aspect-ratio:1;border-radius:50%;background:hsl(var(--h) 70% 62%);box-shadow:0 0 20px hsl(var(--h) 70% 50% / .5)}
+.q6{top:430px;font-size:96px;padding:0 80px}
+.v .q6{top:820px;font-size:100px}
+.codigo{position:absolute;inset:0}
+.codigo pre{position:absolute;left:50%;top:180px;width:900px;margin:0 0 0 -450px;padding:40px;border-radius:20px;background:#0b1224;border:2px solid #4ea7ff44;font:500 40px/1.6 "JetBrains Mono",monospace;color:#9fd0ff}
+.v .codigo pre{top:420px;width:940px;margin-left:-470px;font-size:36px}
+.l6{top:720px}
+.v .l6{top:1200px}
+.cuantos{position:absolute;inset:0;opacity:0}
+.cnt{margin:0;text-align:center}
+.cnt b{display:block;font:900 150px/1 "Inter Display",Inter,sans-serif;color:#4ea7ff;text-shadow:0 0 40px #2d7ff988}
+.cnt small{font:600 32px Inter,sans-serif;color:#c9d1e0}
+.cuantos .cnt{position:absolute;left:150px;top:260px}
+.v .cuantos .cnt{left:0;right:0;top:300px}
+.org{position:absolute;left:700px;top:220px;width:1060px;text-align:center}
+.v .org{left:70px;top:620px;width:940px}
+.ob{display:inline-block;width:200px;height:120px;border-radius:16px;border:3px dashed #4ea7ff88;font:900 60px/114px Inter,sans-serif;color:#4ea7ff88}
+.v .ob{width:200px}
+.ob.top{margin-bottom:60px}
+.orow{display:flex;justify-content:center;gap:26px}
+.v .orow{gap:18px}
+.tres-q{position:absolute;left:0;right:0;top:760px;display:flex;justify-content:center;gap:30px}
+.v .tres-q{top:1120px;flex-direction:column;align-items:center;gap:22px}
+.tres-q span{font:800 52px "Inter Display",Inter,sans-serif;color:#ffb07a}
+.ent-box{position:absolute;left:50%;top:150px;width:1000px;margin-left:-500px;padding:24px;border-radius:22px;border:3px solid #4ea7ff;background:linear-gradient(180deg,#123a6ecc,#0b1428e6);text-align:center;box-shadow:0 0 60px #2d7ff955}
+.v .ent-box{top:270px;width:940px;margin-left:-470px}
+.ent-box h3{margin:0;font:800 60px "Inter Display",Inter,sans-serif}
+.ent-box p{margin:8px 0 0;font:600 34px Inter,sans-serif;color:#c9d6ea}
+.disenador{position:absolute;left:110px;top:380px;width:1060px;height:560px;padding:30px;border-radius:22px;background-color:#0b1224;background-image:radial-gradient(#4ea7ff22 1.5px,transparent 1.5px);background-size:28px 28px;border:2px solid #4ea7ff55}
+.v .disenador{left:70px;top:560px;width:940px;height:620px}
+.disenador .ph,.habil .ph,.panel .ph,.cal .ph,.inv .ph,.prog .ph{margin:0 0 20px;font:700 24px "JetBrains Mono",monospace;letter-spacing:4px;color:#9fd0ff}
+.disenador .fn{position:relative;display:inline-flex;margin:16px 16px 0 0;width:300px}
+.v .disenador .fn{width:400px}
+.habil{position:absolute;left:1230px;top:400px;width:580px;text-align:center}
+.v .habil{left:70px;right:70px;top:1250px;width:auto}
+.habil .cnt b{font-size:140px}
+.crear{margin-top:30px;padding:18px 36px;border:0;border-radius:14px;background:#2d7ff9;color:#fff;font:800 34px Inter,sans-serif}
+.nueva{display:block;width:fit-content;margin:24px auto 0;padding:14px 26px;border-radius:999px;background:#123a6e;border:2px solid #4ea7ff;font:700 30px Inter,sans-serif}
+.organi{position:absolute;left:50%;top:170px;width:1500px;margin-left:-750px;text-align:center}
+.v .organi{top:320px;width:960px;margin-left:-480px}
+.jefe{display:inline-block;padding:20px 50px;border-radius:16px;background:#f2f5fa;color:#0b1020;font:800 44px Inter,sans-serif}
+.lineas{width:4px;height:60px;margin:0 auto;background:#4ea7ff}
+.fila3{display:flex;justify-content:center;gap:30px}
+.v .fila3{flex-direction:column;align-items:center;gap:20px}
+.ficha2{width:440px;padding:24px 28px;border-radius:20px;background:#0b1428f2;border:2px solid #4ea7ff;text-align:left}
+.v .ficha2{width:860px}
+.ficha2 b{display:block;margin-bottom:12px;font:800 38px Inter,sans-serif}
+.ficha2 dl{margin:0;display:grid;grid-template-columns:180px 1fr;row-gap:8px;font:600 26px Inter,sans-serif}
+.ficha2 dt{color:#9fb3cf}.ficha2 dd{margin:0}
+.voz{position:absolute;inset:0;opacity:0}
+.orb{position:absolute;left:50%;top:180px;width:220px;height:220px;margin-left:-110px}
+.v .orb{top:340px}
+.orb .ring{position:absolute;inset:0;border-radius:50%;border:4px solid #4ea7ff}
+.orb .mic{position:absolute;inset:30px;border-radius:50%;background:radial-gradient(#4ea7ff,#2d7ff9);display:flex;align-items:center;justify-content:center;box-shadow:0 0 80px #2d7ff9}
+.orb .mic svg{width:80px;height:80px;fill:#fff}
+.habla{position:absolute;left:0;right:0;top:440px;margin:0;text-align:center;font:800 70px "Inter Display",Inter,sans-serif}
+.v .habla{top:620px}
+.coords{position:absolute;left:50%;top:580px;width:1400px;margin-left:-700px;display:grid;grid-template-columns:1fr 1fr;gap:30px}
+.v .coords{top:800px;width:940px;margin-left:-470px;grid-template-columns:1fr}
+.coord{padding:26px;border-radius:20px;background:#0d1a30e6;border:2px solid #4ea7ff66}
+.coord p{margin:0 0 16px;font:700 30px Inter,sans-serif;color:#9fd0ff}
+.pill{display:inline-block;margin:0 12px 10px 0;padding:12px 26px;border-radius:999px;background:#16243f;font:700 32px Inter,sans-serif}
+.hbar{height:18px;margin:14px 0;border-radius:9px;background:#1c2c48;overflow:hidden}
+.hbar i{display:block;height:100%;width:calc(var(--v)*100%);background:#4ea7ff}
+.panel,.cal,.inv{position:absolute;left:50%;top:200px;width:1300px;margin-left:-650px;padding:34px;border-radius:24px;background:#0b1428f2;border:2px solid #4ea7ff66}
+.v .panel,.v .cal,.v .inv{top:420px;width:960px;margin-left:-480px}
+.cal,.inv{opacity:0}
+.preg{padding:22px 28px;border-radius:14px;background:#16243f;font:700 46px Inter,sans-serif}
+.resps{display:flex;flex-direction:column;gap:16px;margin-top:22px}
+.resps span{padding:20px 26px;border-radius:14px;font:700 36px Inter,sans-serif}
+.r-ok{background:#123a2e;color:#34d399}.r-no{background:#2a1212;color:#ff9b9b}
+.dias{display:grid;grid-template-columns:repeat(7,1fr);gap:12px}
+.dias span{padding:18px 0;border-radius:10px;background:#16243f;text-align:center;font:700 30px Inter,sans-serif}
+.cada{margin:20px 0 0;font:800 40px Inter,sans-serif;color:#4ea7ff}
+.inv table{width:100%;border-collapse:collapse;font:600 30px Inter,sans-serif}
+.v .inv table{font-size:24px}
+.inv th{text-align:left;padding:12px;color:#9fb3cf;font-weight:700;border-bottom:2px solid #4ea7ff55}
+.inv td{padding:16px 12px;border-bottom:1px solid #2a3b58}
+.cel{position:absolute;left:660px;top:120px;width:600px;height:860px;padding:270px 30px 30px;border-radius:50px;background:#0b1224;border:6px solid #2a3b58;box-shadow:0 40px 120px #000c}
+.v .cel{left:240px;top:420px}
+.cel .orb{top:40px}
+.bur{margin:0 0 18px;padding:18px 22px;border-radius:20px;font:600 30px Inter,sans-serif}
+.bur.yo{margin-left:60px;background:#1f4f9a}
+.bur.co{background:#16243f;border:2px solid #4ea7ff66}
+.bur.co b{display:block;font:700 22px "JetBrains Mono",monospace;color:#9fd0ff;margin-bottom:6px}
+.aprobar{position:relative;height:84px;border-radius:16px;background:#2d7ff9;text-align:center;font:800 38px/84px Inter,sans-serif}
+.aprobar span{position:absolute;inset:0}
+.aprobar .a2{opacity:0}
+.prog{position:absolute;left:1330px;top:420px;width:500px;padding:28px;border-radius:20px;background:#0b1428f2;border:2px solid #34d399}
+.v .prog{left:70px;right:70px;top:1340px;width:auto}
+.prog b{display:block;font:800 40px Inter,sans-serif}
+.prog span{display:block;margin-top:10px;font:600 28px Inter,sans-serif;color:#c9d1e0}
+#e-sello .c3{font-size:56px}
+.fn{height:96px;border-radius:14px;background:#0d1a30;border:2px solid #4ea7ff;align-items:center;gap:14px;padding:0 18px;font:700 30px Inter,sans-serif;box-shadow:0 0 30px #2d7ff944}
+.fn i{flex:none;width:44px;height:44px;border-radius:50%;background:var(--blue);font:700 24px/44px "JetBrains Mono",monospace;font-style:normal;text-align:center}
+
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="106.52" data-width="1920" data-height="1080" data-fps="25">
+<div id="fondo" class="clip fondo" data-start="0.00" data-duration="106.52" data-track-index="0"><div class="glow"></div><div class="floor"><div class="floorgrid"></div></div></div>
+<div id="kick" class="clip " data-start="0.00" data-duration="97.51" data-track-index="30"><p class="kicker"><b>6/7</b> ARVANTTI OS</p></div>
+<div id="e-recap" class="clip scene" data-start="0.00" data-duration="4.43" data-track-index="3"><p class="center figcap"><span class="w">En</span> <span class="w">la</span> <span class="w">parte</span> <span class="w">5,</span> <span class="w">ninguna</span> <span class="w">clave</span> <span class="w">se</span> <span class="w">escapó.</span></p><div class="msg ia rc"><b>IA</b> Clave del banco: <code class="tapada on">•••••••• tapada</code></div></div>
+<div id="e-gancho" class="clip scene" data-start="3.93" data-duration="6.51" data-track-index="3">
+      <div class="enjambre"><span class="ag-d" style="--h:0"></span><span class="ag-d" style="--h:47"></span><span class="ag-d" style="--h:94"></span><span class="ag-d" style="--h:141"></span><span class="ag-d" style="--h:188"></span><span class="ag-d" style="--h:235"></span><span class="ag-d" style="--h:282"></span><span class="ag-d" style="--h:329"></span><span class="ag-d" style="--h:16"></span><span class="ag-d" style="--h:63"></span><span class="ag-d" style="--h:110"></span><span class="ag-d" style="--h:157"></span><span class="ag-d" style="--h:204"></span><span class="ag-d" style="--h:251"></span><span class="ag-d" style="--h:298"></span><span class="ag-d" style="--h:345"></span><span class="ag-d" style="--h:32"></span><span class="ag-d" style="--h:79"></span><span class="ag-d" style="--h:126"></span><span class="ag-d" style="--h:173"></span><span class="ag-d" style="--h:220"></span><span class="ag-d" style="--h:267"></span><span class="ag-d" style="--h:314"></span><span class="ag-d" style="--h:1"></span><span class="ag-d" style="--h:48"></span><span class="ag-d" style="--h:95"></span><span class="ag-d" style="--h:142"></span><span class="ag-d" style="--h:189"></span><span class="ag-d" style="--h:236"></span><span class="ag-d" style="--h:283"></span><span class="ag-d" style="--h:330"></span><span class="ag-d" style="--h:17"></span><span class="ag-d" style="--h:64"></span><span class="ag-d" style="--h:111"></span><span class="ag-d" style="--h:158"></span><span class="ag-d" style="--h:205"></span><span class="ag-d" style="--h:252"></span><span class="ag-d" style="--h:299"></span><span class="ag-d" style="--h:346"></span><span class="ag-d" style="--h:33"></span><span class="ag-d" style="--h:80"></span><span class="ag-d" style="--h:127"></span><span class="ag-d" style="--h:174"></span><span class="ag-d" style="--h:221"></span><span class="ag-d" style="--h:268"></span><span class="ag-d" style="--h:315"></span><span class="ag-d" style="--h:2"></span><span class="ag-d" style="--h:49"></span></div>
+      <h1 class="center q q6"><span class="w">¿Y</span> <span class="w">quién</span> <span class="w">responde</span> <span class="w">por</span> <span class="w">cada</span> <span class="w">uno?</span></h1></div>
+<audio id="sfx-0" src="assets/shared/core/sfx/whoosh.wav" data-start="4.48" data-duration="1.40" data-volume="0.2" data-track-index="100"></audio>
+<div id="e-dolor" class="clip scene" data-start="9.94" data-duration="9.23" data-track-index="3">
+      <div class="codigo"><pre>const agente = new Agent({
+  model: "…",
+  tools: [ … ],
+  prompt: `…`
+});</pre><p class="lbl l6"><span class="w">¿Cosa</span> <span class="w">de</span> <span class="w">programadores?</span></p></div>
+      <div class="cuantos"><p class="cnt"><b id="cnt6">0</b><small>agentes</small></p>
+        <div class="org"><div class="ob top">?</div><div class="orow"><div class="ob">?</div><div class="ob">?</div><div class="ob">?</div><div class="ob">?</div></div></div>
+        <div class="tres-q"><span>¿Cuántos son?</span><span>¿Qué hacen?</span><span>¿Quién es su dueño?</span></div></div></div>
+<div id="e-edicion" class="clip scene" data-start="18.67" data-duration="17.95" data-track-index="3">
+      <div class="ent-box"><h3>Arvantti OS Enterprise</h3><p><span class="w">La</span> <span class="w">edición</span> <span class="w">para</span> <span class="w">dirigir</span></p></div>
+      <div class="disenador"><p class="ph">DISEÑADOR VISUAL · Revisión de pedidos</p><div class="fn" id="fn0"><i>1</i>Recibe pedidos</div><div class="fn" id="fn1"><i>2</i>Revisa atrasos</div><div class="fn" id="fn2"><i>3</i>Consulta la memoria</div><div class="fn" id="fn3"><i>4</i>Pide aprobación</div><div class="fn" id="fn4"><i>5</i>Entrega informe</div></div>
+      <div class="habil"><p class="cnt"><b id="cnt120">0</b><small>habilidades listas</small></p><button class="crear">+ Crear habilidad</button><span class="nueva">Política de descuentos · de su empresa</span></div></div>
+<audio id="sfx-1" src="assets/shared/core/sfx/spark.wav" data-start="19.22" data-duration="1.40" data-volume="0.22" data-track-index="101"></audio>
+<audio id="sfx-2" src="assets/shared/core/sfx/click-soft.mp3" data-start="28.02" data-duration="1.40" data-volume="0.12" data-track-index="102"></audio>
+<audio id="sfx-3" src="assets/shared/core/sfx/click-soft.mp3" data-start="28.27" data-duration="1.40" data-volume="0.12" data-track-index="103"></audio>
+<audio id="sfx-4" src="assets/shared/core/sfx/click-soft.mp3" data-start="28.52" data-duration="1.40" data-volume="0.12" data-track-index="104"></audio>
+<audio id="sfx-5" src="assets/shared/core/sfx/click-soft.mp3" data-start="28.77" data-duration="1.40" data-volume="0.12" data-track-index="105"></audio>
+<audio id="sfx-6" src="assets/shared/core/sfx/click-soft.mp3" data-start="29.02" data-duration="1.40" data-volume="0.12" data-track-index="106"></audio>
+<audio id="sfx-7" src="assets/shared/core/sfx/click.wav" data-start="32.98" data-duration="1.40" data-volume="0.25" data-track-index="107"></audio>
+<div id="e-org" class="clip scene" data-start="36.12" data-duration="14.74" data-track-index="3">
+      <div class="organi"><div class="jefe">Gerente</div><div class="lineas"></div><div class="fila3"><div class="ficha2"><b>Agente CFO</b><dl><dt>Cargo</dt><dd>CFO</dd><dt>Alcance</dt><dd>Finanzas</dd><dt>Responsable</dt><dd>Gerente financiera</dd></dl></div><div class="ficha2"><b>Agente COO</b><dl><dt>Cargo</dt><dd>COO</dd><dt>Alcance</dt><dd>Operaciones</dd><dt>Responsable</dt><dd>Dir. de operaciones</dd></dl></div><div class="ficha2"><b>Agente CMO</b><dl><dt>Cargo</dt><dd>CMO</dd><dt>Alcance</dt><dd>Mercadeo</dd><dt>Responsable</dt><dd>Dir. de mercadeo</dd></dl></div></div></div>
+      <div class="voz"><div class="orb" id="orb6"><div class="ring r1"></div><div class="ring r2"></div><div class="mic"><svg viewBox="0 0 24 24"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3zm-7 9h2a5 5 0 0 0 10 0h2a7 7 0 0 1-6 6.9V21h-2v-2.1A7 7 0 0 1 5 12z"/></svg></div></div><p class="habla"><span class="w">Basta</span> <span class="w">con</span> <span class="w">hablar.</span></p>
+        <div class="coords"><div class="coord"><p>Coordinador de agentes</p><span class="pill">CFO</span><span class="pill">COO</span><span class="pill">CMO</span></div>
+        <div class="coord"><p>Coordinador de hilos</p><div class="hbar"><i style="--v:0.9"></i></div><div class="hbar"><i style="--v:0.6"></i></div><div class="hbar"><i style="--v:0.35"></i></div></div></div></div></div>
+<audio id="sfx-8" src="assets/shared/core/sfx/whoosh-short.mp3" data-start="41.93" data-duration="1.40" data-volume="0.2" data-track-index="108"></audio>
+<div id="e-panel" class="clip scene" data-start="50.37" data-duration="16.05" data-track-index="3">
+      <div class="panel"><p class="ph">PANEL DE DIRECCIÓN</p><div class="preg">¿Qué está bloqueado?</div>
+        <div class="resps"><span class="r-ok">Avanzó: informe de cierre, 80 %</span><span class="r-no">Bloqueado: espera aprobación del margen</span></div></div>
+      <div class="cal"><p class="ph">TRABAJO PROGRAMADO</p><div class="dias"><span class="">1</span><span class="">2</span><span class="">3</span><span class="">4</span><span class="">5</span><span class="">6</span><span class="rep">7</span><span class="">8</span><span class="">9</span><span class="">10</span><span class="">11</span><span class="">12</span><span class="">13</span><span class="rep">14</span><span class="">15</span><span class="">16</span><span class="">17</span><span class="">18</span><span class="">19</span><span class="">20</span><span class="rep">21</span><span class="">22</span><span class="">23</span><span class="">24</span><span class="">25</span><span class="">26</span><span class="">27</span><span class="rep">28</span></div><p class="cada">Cada viernes · corre solo</p></div>
+      <div class="inv"><p class="ph">INVENTARIO DE IA</p><table><tr><th>Agente</th><th>IA</th><th>Conexiones</th><th>Dueño</th></tr><tr><td>Agente CFO</td><td>Claude</td><td>ERP, Banco</td><td>Gerente financiera</td></tr><tr><td>Agente COO</td><td>ChatGPT</td><td>CRM</td><td>Dir. de operaciones</td></tr><tr><td>Agente CMO</td><td>Gemini</td><td>Nube</td><td>Dir. de mercadeo</td></tr></table></div></div>
+<audio id="sfx-9" src="assets/shared/core/sfx/pop.mp3" data-start="53.54" data-duration="1.40" data-volume="0.15" data-track-index="109"></audio>
+<audio id="sfx-10" src="assets/shared/core/sfx/click-soft.mp3" data-start="59.62" data-duration="1.40" data-volume="0.2" data-track-index="110"></audio>
+<div id="e-lunes" class="clip scene" data-start="65.91" data-duration="20.44" data-track-index="3">
+      <div class="reloj r2"><span class="dia">LUNES</span><span class="hora">9:10</span></div>
+      <div class="cel"><div class="orb" id="orb7"><div class="ring r1"></div><div class="ring r2"></div><div class="mic"><svg viewBox="0 0 24 24"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3zm-7 9h2a5 5 0 0 0 10 0h2a7 7 0 0 1-6 6.9V21h-2v-2.1A7 7 0 0 1 5 12z"/></svg></div></div><div class="bur yo">¿Cómo va el informe de la junta?</div><div class="bur co"><b>Coordinador</b>Listo en un 80 %. Falta su aprobación del margen por producto.</div><div class="aprobar"><span class="a1">Aprobar</span><span class="a2">✓ Aprobado</span></div></div>
+      <div class="prog"><p class="ph">PROGRAMADO</p><b>Informe de cierre</b><span>Cada fin de mes · el borrador se arma solo</span></div></div>
+<audio id="sfx-11" src="assets/shared/core/sfx/spark.wav" data-start="78.54" data-duration="1.40" data-volume="0.25" data-track-index="111"></audio>
+<audio id="sfx-12" src="assets/shared/core/sfx/click.wav" data-start="82.06" data-duration="1.40" data-volume="0.2" data-track-index="112"></audio>
+<div id="e-sello" class="clip scene" data-start="85.86" data-duration="11.90" data-track-index="3"><p class="center figcap c2"><span class="w">La</span> <span class="w">edición</span> <span class="w">Enterprise,</span> <span class="w">sobre</span> <span class="w">el</span> <span class="w">mismo</span> <span class="w">núcleo</span> <span class="w">de</span> <span class="w">Arvantti</span> <span class="w">OS.</span></p><p class="center figcap c3"><span class="w">Todo</span> <span class="w">quedó</span> <span class="w">hecho.</span> <span class="w">Ahora</span> <span class="w">la</span> <span class="w">junta</span> <span class="w">pregunta:</span> <span class="w">¿qué</span> <span class="w">pasó</span> <span class="w">exactamente?</span></p><div class="capas" id="fb">
+    <div class="capa ent" id="fb-ent"><h3>Arvantti OS Enterprise</h3><p>Agentes, habilidades, voz y panel de dirección</p></div>
+    <div class="capa nuc" id="fb-nuc"><p class="ct">NÚCLEO · CINCO PROMESAS</p><div class="proms"><div class="prom" id="fb-p0" style="--c:#f87171">Controla</div><div class="prom" id="fb-p1" style="--c:#a78bfa">Protege</div><div class="prom" id="fb-p2" style="--c:#34d399">Organiza</div><div class="prom" id="fb-p3" style="--c:#fbbf24">Recuerda</div><div class="prom" id="fb-p4" style="--c:#22d3ee">Rinde cuentas</div></div></div>
+    <div class="capa base" id="fb-base"><p class="ct">BASE · SE CONECTA CON TODO</p>
+      <div class="fila"><span id="fb-ia0">Claude</span><span id="fb-ia1">ChatGPT</span><span id="fb-ia2">Gemini</span><span id="fb-ia3">Copilot</span><span id="fb-ia4">Modelos privados</span></div>
+      <div class="fila sis"><span id="fb-s0">CRM<small>sistema de clientes</small></span><span id="fb-s1">ERP<small>sistema de gestión</small></span><span id="fb-s2">Nube<small>sus servicios</small></span><span id="fb-s3">Archivos<small>sus documentos</small></span><span class="pl" id="fb-pl0">En el escritorio</span><span class="pl" id="fb-pl1">En la nube</span></div></div>
+  </div>
+    <div class="sigue"><span>Parte 6 de 7</span> Continúa en la parte 7: <b style="color:#22d3ee">Rinde cuentas</b></div></div>
+<audio id="sfx-13" src="assets/shared/core/sfx/spark.wav" data-start="86.61" data-duration="1.40" data-volume="0.2" data-track-index="113"></audio>
+<div id="e-firma" class="clip scene" data-start="97.26" data-duration="9.51" data-track-index="3">
+    <svg class="estela" viewBox="0 0 1920 1080" preserveAspectRatio="none"><path id="p2" d="M-60 475.2 C 384 475.2 576 691.2 960 561.6 S 1536 432 1980 648" pathLength="1"/></svg>
+    <div class="fin"><img class="marca" src="assets/clips/marca.png" alt=""><h1 class="metal">Arvantti OS</h1><p class="full">ARVANTTI OPERATING SYSTEM FOR AI</p><p class="firma">La IA bajo su gobierno.</p><p class="url">arvantti.tech</p></div></div>
+<audio id="sfx-14" src="assets/shared/core/sfx/hit.wav" data-start="98.11" data-duration="1.40" data-volume="0.3" data-track-index="114"></audio>
+<div id="sweep-0" class="clip sweep" data-start="3.83" data-duration="0.90" data-track-index="40"></div>
+<div id="sweep-1" class="clip sweep" data-start="9.84" data-duration="0.90" data-track-index="40"></div>
+<div id="sweep-2" class="clip sweep" data-start="18.57" data-duration="0.90" data-track-index="40"></div>
+<div id="sweep-3" class="clip sweep" data-start="36.02" data-duration="0.90" data-track-index="40"></div>
+<div id="sweep-4" class="clip sweep" data-start="50.27" data-duration="0.90" data-track-index="40"></div>
+<div id="sweep-5" class="clip sweep" data-start="65.81" data-duration="0.90" data-track-index="40"></div>
+<div id="sweep-6" class="clip sweep" data-start="85.76" data-duration="0.90" data-track-index="40"></div>
+<div id="sweep-7" class="clip sweep" data-start="97.16" data-duration="0.90" data-track-index="40"></div>
+<audio id="voz-recap" src="escenas/01-recap/assets/audio/voiceover.mp3" data-start="0.60" data-duration="3.08" data-volume="1" data-track-index="115"></audio>
+<audio id="voz-gancho" src="escenas/02-gancho/assets/audio/voiceover.mp3" data-start="4.48" data-duration="4.91" data-volume="1" data-track-index="116"></audio>
+<audio id="voz-dolor" src="escenas/03-dolor/assets/audio/voiceover.mp3" data-start="10.49" data-duration="7.63" data-volume="1" data-track-index="117"></audio>
+<audio id="voz-edicion" src="escenas/04-edicion/assets/audio/voiceover.mp3" data-start="19.22" data-duration="16.35" data-volume="1" data-track-index="118"></audio>
+<audio id="voz-organigrama" src="escenas/05-organigrama/assets/audio/voiceover.mp3" data-start="36.57" data-duration="13.24" data-volume="1" data-track-index="119"></audio>
+<audio id="voz-panel" src="escenas/06-panel/assets/audio/voiceover.mp3" data-start="50.82" data-duration="14.45" data-volume="1" data-track-index="120"></audio>
+<audio id="voz-lunes" src="escenas/07-lunes/assets/audio/voiceover.mp3" data-start="66.46" data-duration="18.44" data-volume="1" data-track-index="121"></audio>
+<audio id="voz-figura" src="escenas/08-figura/assets/audio/voiceover.mp3" data-start="86.41" data-duration="4.21" data-volume="1" data-track-index="122"></audio>
+<audio id="voz-siguiente" src="escenas/09-siguiente/assets/audio/voiceover.mp3" data-start="91.31" data-duration="4.60" data-volume="1" data-track-index="123"></audio>
+<audio id="voz-firma" src="escenas/10-firma/assets/audio/voiceover.mp3" data-start="98.11" data-duration="4.91" data-volume="1" data-track-index="124"></audio>
+<audio id="musica" src="audio/musica-mezcla.mp3" data-start="0.00" data-duration="106.52" data-volume="0.5" data-track-index="125"></audio>
+</div>
+<script>
+const tl = gsap.timeline({ paused: true });
+tl.fromTo("#fondo .floorgrid",{"backgroundPositionY":"0px"},{"backgroundPositionY":"4261px","duration":106.520407,"ease":"none"},0.00);
+tl.fromTo("#fondo .glow",{"opacity":0.55},{"opacity":1,"duration":6,"ease":"sine.inOut","yoyo":true,"repeat":17},0.00);
+tl.fromTo("#kick .kicker",{"opacity":0,"x":-30},{"opacity":1,"x":0,"duration":0.6},0.20);
+tl.fromTo("#e-recap .figcap .w",{"opacity":0,"y":36,"filter":"blur(10px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.55,"stagger":0.06,"ease":"power3.out"},0.60);
+tl.fromTo("#e-recap .rc",{"opacity":0,"y":40},{"opacity":1,"y":0,"duration":0.5,"ease":"back.out(1.6)"},0.20);
+tl.to("#e-recap",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},3.93);
+tl.fromTo("#e-gancho",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},3.93);
+tl.fromTo("#e-gancho .ag-d",{"opacity":0,"scale":0},{"opacity":1,"scale":1,"duration":0.25,"stagger":{"each":0.049999999999999996,"from":"center","grid":[4,12]},"ease":"back.out(2)"},4.48);
+tl.to("#e-gancho .enjambre",{"opacity":0.18,"filter":"blur(3px)","duration":0.4},7.24);
+tl.fromTo("#e-gancho .q .w",{"opacity":0,"y":40,"filter":"blur(14px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.55,"stagger":0.09,"ease":"power3.out"},7.44);
+tl.to("#e-gancho",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},9.94);
+tl.fromTo("#e-dolor",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},9.94);
+tl.fromTo("#e-dolor .codigo pre",{"opacity":0,"y":30},{"opacity":1,"y":0,"duration":0.5},10.49);
+tl.fromTo("#e-dolor .l6 .w",{"opacity":0,"y":36,"filter":"blur(10px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.55,"stagger":0.08,"ease":"power3.out"},11.87);
+tl.to("#e-dolor .codigo",{"opacity":0,"duration":0.4},12.89);
+tl.fromTo("#e-dolor .cuantos",{"opacity":0},{"opacity":1,"duration":0.3},13.19);
+tl.fromTo("#cnt6",{"innerText":0},{"innerText":63,"duration":1.6,"snap":{"innerText":1},"ease":"power2.in"},13.29);
+tl.fromTo("#e-dolor .ob",{"opacity":0,"scale":0.6},{"opacity":1,"scale":1,"duration":0.3,"stagger":0.1},14.53);
+tl.fromTo("#e-dolor .tres-q span:nth-child(1)",{"opacity":0,"y":20},{"opacity":1,"y":0,"duration":0.35,"ease":"back.out(2)"},15.13);
+tl.fromTo("#e-dolor .tres-q span:nth-child(2)",{"opacity":0,"y":20},{"opacity":1,"y":0,"duration":0.35,"ease":"back.out(2)"},16.17);
+tl.fromTo("#e-dolor .tres-q span:nth-child(3)",{"opacity":0,"y":20},{"opacity":1,"y":0,"duration":0.35,"ease":"back.out(2)"},17.05);
+tl.to("#e-dolor",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},18.67);
+tl.fromTo("#e-edicion",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},18.67);
+tl.fromTo("#e-edicion .ent-box",{"opacity":0,"y":-40},{"opacity":1,"y":0,"duration":0.6,"ease":"power3.out"},19.22);
+tl.fromTo("#e-edicion .ent-box p .w",{"opacity":0,"y":36,"filter":"blur(10px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.55,"stagger":0.07,"ease":"power3.out"},20.98);
+tl.fromTo("#e-edicion .disenador",{"opacity":0,"y":40},{"opacity":1,"y":0,"duration":0.5},27.72);
+tl.fromTo("#fn0",{"opacity":0,"scale":0.6},{"opacity":1,"scale":1,"duration":0.35,"ease":"back.out(2)"},28.02);
+tl.fromTo("#fn1",{"opacity":0,"scale":0.6},{"opacity":1,"scale":1,"duration":0.35,"ease":"back.out(2)"},28.27);
+tl.fromTo("#fn2",{"opacity":0,"scale":0.6},{"opacity":1,"scale":1,"duration":0.35,"ease":"back.out(2)"},28.52);
+tl.fromTo("#fn3",{"opacity":0,"scale":0.6},{"opacity":1,"scale":1,"duration":0.35,"ease":"back.out(2)"},28.77);
+tl.fromTo("#fn4",{"opacity":0,"scale":0.6},{"opacity":1,"scale":1,"duration":0.35,"ease":"back.out(2)"},29.02);
+tl.fromTo("#e-edicion .habil",{"opacity":0,"y":40},{"opacity":1,"y":0,"duration":0.5},29.90);
+tl.fromTo("#cnt120",{"innerText":0},{"innerText":120,"duration":1.3,"snap":{"innerText":1},"ease":"power2.out"},30.10);
+tl.call(()=>{const e=document.getElementById("cnt120");if(e)e.textContent="+120"},null,31.50);
+tl.to("#e-edicion .crear",{"scale":0.92,"backgroundColor":"#ffffff","color":"#0b1020","duration":0.12,"yoyo":true,"repeat":1},32.98);
+tl.fromTo("#e-edicion .nueva",{"opacity":0,"y":20},{"opacity":1,"y":0,"duration":0.4,"ease":"back.out(2)"},33.28);
+tl.to("#e-edicion",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},36.12);
+tl.fromTo("#e-org",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},36.12);
+tl.fromTo("#e-org .jefe",{"opacity":0,"y":-30},{"opacity":1,"y":0,"duration":0.4},36.57);
+tl.fromTo("#e-org .ficha2",{"opacity":0,"y":40},{"opacity":1,"y":0,"duration":0.45,"stagger":0.15,"ease":"back.out(1.6)"},36.77);
+tl.fromTo("#e-org dt:nth-of-type(1), #e-org dd:nth-of-type(1)",{"opacity":0},{"opacity":1,"duration":0.3},37.69);
+tl.fromTo("#e-org dt:nth-of-type(2), #e-org dd:nth-of-type(2)",{"opacity":0},{"opacity":1,"duration":0.3},38.53);
+tl.fromTo("#e-org dt:nth-of-type(3), #e-org dd:nth-of-type(3)",{"opacity":0},{"opacity":1,"duration":0.3},39.61);
+tl.to("#e-org .organi",{"opacity":0,"y":-40,"duration":0.4},41.53);
+tl.fromTo("#e-org .voz",{"opacity":0},{"opacity":1,"duration":0.3},41.83);
+tl.fromTo("#orb6",{"opacity":0,"scale":0.5},{"opacity":1,"scale":1,"duration":0.5,"ease":"back.out(2)"},41.93);
+tl.fromTo("#orb6 .r1",{scale:1,opacity:.8},{scale:1.6,opacity:0,duration:1,repeat:5,ease:"power1.out"},42.23);
+tl.fromTo("#orb6 .r2",{scale:1,opacity:.6},{scale:2,opacity:0,duration:1.3,repeat:5,ease:"power1.out"},42.53);
+tl.fromTo("#e-org .habla .w",{"opacity":0,"y":36,"filter":"blur(10px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.55,"stagger":0.08,"ease":"power3.out"},42.92);
+tl.fromTo("#e-org .coord:nth-child(1)",{"opacity":0,"x":-40},{"opacity":1,"x":0,"duration":0.4},44.17);
+tl.fromTo("#e-org .coord:nth-child(1) .pill",{"opacity":0,"scale":0.6},{"opacity":1,"scale":1,"duration":0.3,"stagger":0.15,"ease":"back.out(2)"},45.53);
+tl.fromTo("#e-org .coord:nth-child(2)",{"opacity":0,"x":40},{"opacity":1,"x":0,"duration":0.4},46.77);
+tl.fromTo("#e-org .hbar i",{"scaleX":0},{"scaleX":1,"duration":1.6,"stagger":0.1,"ease":"power1.out","transformOrigin":"0 50%"},48.01);
+tl.to("#e-org",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},50.37);
+tl.fromTo("#e-panel",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},50.37);
+tl.fromTo("#e-panel .panel",{"opacity":0,"y":40},{"opacity":1,"y":0,"duration":0.5},50.82);
+tl.fromTo("#e-panel .preg",{"opacity":0,"x":-30},{"opacity":1,"x":0,"duration":0.4},52.42);
+tl.fromTo("#e-panel .r-ok",{"opacity":0,"y":20},{"opacity":1,"y":0,"duration":0.35},53.54);
+tl.fromTo("#e-panel .r-no",{"opacity":0,"y":20},{"opacity":1,"y":0,"duration":0.35},54.98);
+tl.to("#e-panel .panel",{"opacity":0,"duration":0.4},55.62);
+tl.fromTo("#e-panel .cal",{"opacity":0,"y":40},{"opacity":1,"y":0,"duration":0.5},56.02);
+tl.fromTo("#e-panel .dias .rep",{"backgroundColor":"#16243f"},{"backgroundColor":"#4ea7ff","duration":0.25,"stagger":0.2},57.58);
+tl.fromTo("#e-panel .cada",{"opacity":0},{"opacity":1,"duration":0.4},58.34);
+tl.to("#e-panel .cal",{"opacity":0,"duration":0.4},58.92);
+tl.fromTo("#e-panel .inv",{"opacity":0,"y":40},{"opacity":1,"y":0,"duration":0.5},59.32);
+tl.fromTo("#e-panel tr",{"opacity":0,"x":-30},{"opacity":1,"x":0,"duration":0.3,"stagger":0.25},59.62);
+tl.to("#e-panel",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},65.91);
+tl.fromTo("#e-lunes",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},65.91);
+tl.fromTo("#e-lunes .reloj",{"opacity":0,"y":-30},{"opacity":1,"y":0,"duration":0.5},66.26);
+tl.fromTo("#e-lunes .cel",{"opacity":0,"y":80},{"opacity":1,"y":0,"duration":0.6,"ease":"power3.out"},66.46);
+tl.fromTo("#orb7 .r1",{scale:1,opacity:.8},{scale:1.6,opacity:0,duration:1,repeat:3,ease:"power1.out"},68.86);
+tl.fromTo("#orb7 .r2",{scale:1,opacity:.6},{scale:2,opacity:0,duration:1.3,repeat:3,ease:"power1.out"},69.16);
+tl.fromTo("#e-lunes .yo",{"opacity":0,"y":20},{"opacity":1,"y":0,"duration":0.35},70.92);
+tl.fromTo("#e-lunes .co",{"opacity":0,"y":20},{"opacity":1,"y":0,"duration":0.35},72.50);
+tl.fromTo("#e-lunes .aprobar",{"opacity":0,"scale":0.7},{"opacity":1,"scale":1,"duration":0.3},77.94);
+tl.to("#e-lunes .aprobar",{"backgroundColor":"#34d399","scale":1.08,"duration":0.2,"yoyo":true,"repeat":1},78.54);
+tl.to("#e-lunes .a1",{"opacity":0,"duration":0.1},78.64);
+tl.fromTo("#e-lunes .a2",{"opacity":0},{"opacity":1,"duration":0.1},78.64);
+tl.fromTo("#e-lunes .prog",{"opacity":0,"x":60},{"opacity":1,"x":0,"duration":0.5,"ease":"power3.out"},80.10);
+tl.to("#e-lunes",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},85.86);
+tl.fromTo("#e-sello",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},85.86);
+tl.fromTo("#e-sello .c2 .w",{"opacity":0,"y":36,"filter":"blur(10px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.55,"stagger":0.07,"ease":"power3.out"},86.41);
+tl.to("#fb-p0",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #f87171","duration":0.3},86.16);
+tl.to("#fb-p1",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #a78bfa","duration":0.3},86.26);
+tl.to("#fb-p2",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #34d399","duration":0.3},86.36);
+tl.to("#fb-p3",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #fbbf24","duration":0.3},86.46);
+tl.to("#fb-p4",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #22d3ee","duration":0.3},86.56);
+tl.to("#fb-ent",{"boxShadow":"0 0 0 4px #4ea7ff, 0 0 90px #2d7ff9","duration":0.5},86.61);
+tl.to("#e-sello .c2",{"opacity":0,"duration":0.3},91.01);
+tl.fromTo("#e-sello .c3 .w",{"opacity":0,"y":36,"filter":"blur(10px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.55,"stagger":0.06,"ease":"power3.out"},91.31);
+tl.to("#fb-p4",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #22d3ee","duration":0.3},94.51);
+tl.fromTo("#e-sello .sigue",{"opacity":0,"y":30},{"opacity":1,"y":0,"duration":0.5,"ease":"power3.out"},95.31);
+tl.to("#e-sello",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},97.26);
+tl.fromTo("#e-firma",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},97.26);
+tl.fromTo("#p2",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":1.8,"ease":"power2.inOut"},97.26);
+tl.to("#p2",{"opacity":0.2,"duration":1},99.06);
+tl.fromTo("#e-firma .marca",{"opacity":0,"scale":0.5,"rotate":-8},{"opacity":1,"scale":1,"rotate":0,"duration":1,"ease":"back.out(1.6)"},97.81);
+tl.fromTo("#e-firma h1",{"opacity":0,"letterSpacing":"30px","filter":"blur(10px)"},{"opacity":1,"letterSpacing":"0px","filter":"blur(0px)","duration":1.2,"ease":"power3.out"},98.11);
+tl.fromTo("#e-firma .full",{"opacity":0},{"opacity":1,"duration":0.8},98.51);
+tl.fromTo("#e-firma .firma",{"opacity":0,"y":20},{"opacity":1,"y":0,"duration":0.8,"ease":"power3.out"},100.99);
+tl.fromTo("#e-firma .url",{"opacity":0},{"opacity":1,"duration":0.8},101.99);
+tl.to("#e-firma .fin",{"opacity":0,"duration":1},105.77);
+tl.fromTo("#sweep-0",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},3.83);
+tl.fromTo("#sweep-1",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},9.84);
+tl.fromTo("#sweep-2",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},18.57);
+tl.fromTo("#sweep-3",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},36.02);
+tl.fromTo("#sweep-4",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},50.27);
+tl.fromTo("#sweep-5",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},65.81);
+tl.fromTo("#sweep-6",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},85.76);
+tl.fromTo("#sweep-7",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},97.16);
+window.__timelines = window.__timelines || {};
+window.__timelines["main"] = tl;
+</script>
+</body>
+</html>

@@ -31,7 +31,7 @@ const alineacionDe = (e) => E(`escenas/${e.dir}/assets/audio/alignment.json`);
 
 // Palabras que la voz en español lee mal: se envían escritas como se pronuncian (en pantalla quedan igual).
 const PRONUNCIA = [["ISO 42001", "ISO cuarenta y dos mil uno"], ["SDD", "ese de de"], ["T-12", "te doce"],
-  ["8:02", "ocho y dos"], ["8:05", "ocho y cinco"], ["8:14", "ocho y catorce"], ["8:15", "ocho y quince"], ["8:21", "ocho y veintiuno"], ["9:10", "nueve y diez"]];
+  ["ISO/IEC 42001", "ISO cuarenta y dos mil uno"], ["8:02", "ocho y dos"], ["8:05", "ocho y cinco"], ["8:14", "ocho y catorce"], ["8:15", "ocho y quince"], ["8:21", "ocho y veintiuno"], ["9:10", "nueve y diez"]];
 function paraVoz(texto) {
   let out = "", idx = [];
   for (let i = 0; i < texto.length; ) {

@@ -1,0 +1,1 @@
+Arvantti Operating System for AI rinde cuentas. Cada acción deja un comprobante: quién la hizo, sea persona, agente o sistema; qué hizo, con el antes y el después; con qué herramienta y qué IA; y cuándo, con fecha y hora exactas. Los comprobantes solo se agregan: nada se edita ni se borra después, y no guardan claves, solo huellas.

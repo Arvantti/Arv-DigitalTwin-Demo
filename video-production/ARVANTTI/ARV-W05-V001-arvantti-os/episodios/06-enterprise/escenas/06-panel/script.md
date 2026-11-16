@@ -1,0 +1,1 @@
+Desde un panel de dirección, pregunta en sus palabras qué avanzó o qué está bloqueado. El trabajo que se repite queda programado y corre solo. Y un inventario le muestra qué agentes, qué IA y qué conexiones tiene la empresa, con su dueño.

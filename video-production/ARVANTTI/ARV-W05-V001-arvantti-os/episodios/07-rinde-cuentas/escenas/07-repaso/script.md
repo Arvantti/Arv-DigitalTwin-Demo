@@ -1,0 +1,1 @@
+Repasemos el lunes. 8:02, se crea la tarea T-12. 8:05, el agente recibe el contexto con fuentes. 8:14, se bloquea una salida a internet. 8:15, permiso para leer las ventas. 8:21, un guardián tapa la clave del banco. 9:10, la gerente aprueba por voz. La cifra la cambió el agente de finanzas, con la aprobación de la gerente. Todo, con comprobante.

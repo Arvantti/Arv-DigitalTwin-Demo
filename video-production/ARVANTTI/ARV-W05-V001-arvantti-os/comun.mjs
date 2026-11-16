@@ -65,14 +65,20 @@ export function sello(c, x, y, { prom, n, sigue, sigueId }) {
     <div class="sigue"><span>Parte ${n} de 7</span> Continúa en la parte ${n + 1}: <b style="color:${PROMESAS[iS]?.c || "#4ea7ff"}">${sigue}</b></div>`);
   enter("e-sello", s);
   wordsIn("#e-sello .c2", x.voiceAt, 0.07);
-  PROMESAS.forEach((_, i) => { if (i !== iP) c.to(`#fb-p${i}`, { opacity: 0.35, duration: 0.3 }, s + 0.3); });
-  promOn(c, "fb", iP, x.voiceAt + 0.2);
-  at(`#fb-p${iP}`, { scale: 1 }, { scale: 1.12, duration: 0.5, ease: "back.out(2)" }, x.voiceAt + 0.2);
+  if (iP >= 0) {
+    PROMESAS.forEach((_, i) => { if (i !== iP) c.to(`#fb-p${i}`, { opacity: 0.35, duration: 0.3 }, s + 0.3); });
+    promOn(c, "fb", iP, x.voiceAt + 0.2);
+    at(`#fb-p${iP}`, { scale: 1 }, { scale: 1.12, duration: 0.5, ease: "back.out(2)" }, x.voiceAt + 0.2);
+  } else {
+    // Sin promesa: se enciende la edición Enterprise sobre el núcleo completo.
+    PROMESAS.forEach((_, i) => promOn(c, "fb", i, s + 0.3 + i * 0.1));
+    to("#fb-ent", { boxShadow: "0 0 0 4px #4ea7ff, 0 0 90px #2d7ff9", duration: 0.5 }, x.voiceAt + 0.2);
+  }
   sfx("spark.wav", x.voiceAt + 0.2, 0.2);
   to("#e-sello .c2", { opacity: 0, duration: 0.3 }, y.voiceAt - 0.3);
   wordsIn("#e-sello .c3", y.voiceAt, 0.06);
   if (iS >= 0) {
-    to(`#fb-p${iP}`, { scale: 1, duration: 0.4 }, P(y, y.txt.split(" ").slice(-2).join(" ")) - 0.2);
+    if (iP >= 0) to(`#fb-p${iP}`, { scale: 1, duration: 0.4 }, P(y, y.txt.split(" ").slice(-2).join(" ")) - 0.2);
     promOn(c, "fb", iS, P(y, y.txt.split(" ").slice(-2).join(" ")));
   }
   at("#e-sello .sigue", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, y.voiceAt + y.voz - 0.6);

@@ -1,0 +1,1 @@
+Cada agente tiene un cargo, un alcance y un responsable, como en un organigrama. Para dirigirlos, basta con hablar: el coordinador de agentes reparte el trabajo y el coordinador de hilos sigue cada frente en paralelo.

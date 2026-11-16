@@ -1,0 +1,81 @@
+/* Episodio 7 · Rinde cuentas */
+.aprob-ok{position:absolute;left:50%;top:430px;transform:translateX(-50%);padding:26px 50px;border-radius:18px;background:#34d399;color:#0b1020;font:800 52px Inter,sans-serif;box-shadow:0 0 60px #34d39988}
+.v .aprob-ok{top:860px}
+.informe{position:absolute;left:50%;top:160px;width:900px;margin-left:-450px;padding:40px;border-radius:20px;background:#f2f5fa;color:#0b1020}
+.v .informe{top:380px;width:940px;margin-left:-470px}
+.informe .ph{margin:0 0 24px;font:700 24px "JetBrains Mono",monospace;letter-spacing:4px;color:#5c6b80}
+.informe .ln{height:20px;margin:0 0 20px;border-radius:6px;background:#cfd8e6}
+.informe .ln.s{width:60%}
+.cifra{position:relative;display:flex;justify-content:space-between;align-items:center;margin:0 0 20px;padding:20px 26px;border-radius:14px;font:700 36px Inter,sans-serif}
+.cifra b{font:900 56px "Inter Display",Inter,sans-serif}
+.cifra i{position:absolute;right:-40px;top:-40px;width:80px;height:80px;border-radius:50%;background:#ff6b35;color:#fff;font:900 56px/80px Inter,sans-serif;font-style:normal;text-align:center}
+.q7{top:760px;font-size:90px}
+.v .q7{top:1200px}
+.scroll{position:absolute;left:50%;top:150px;width:900px;height:800px;margin-left:-450px;overflow:hidden;-webkit-mask-image:linear-gradient(#0000,#000 15%,#000 85%,#0000);mask-image:linear-gradient(#0000,#000 15%,#000 85%,#0000)}
+.v .scroll{top:300px;width:940px;height:1300px;margin-left:-470px}
+.scroll .msg{opacity:1}
+.regis{position:absolute;left:50%;top:220px;width:1200px;margin-left:-600px;padding:34px;border-radius:20px;background:#0b1224;border:2px solid #4ea7ff55;opacity:0}
+.v .regis{top:440px;width:940px;margin-left:-470px}
+.regis .ph{margin:0 0 20px;font:700 24px "JetBrains Mono",monospace;letter-spacing:4px;color:#9fd0ff}
+.rl{margin:0 0 16px;font:500 34px "JetBrains Mono",monospace;color:#e6eefc}
+.v .rl{font-size:28px}
+.goma{position:absolute;left:30px;top:80px;width:60px;height:60px;border-radius:12px;background:#ff6b9a}
+.sinprueba{position:absolute;left:0;right:0;top:640px;display:flex;justify-content:center;gap:50px}
+.v .sinprueba{top:1000px;flex-direction:column;align-items:center;gap:26px}
+.sinprueba span{font:900 80px "Inter Display",Inter,sans-serif;color:#ffb07a}
+.recibo{position:absolute;left:50%;top:320px;width:1000px;margin-left:-500px;padding:36px 44px;border-radius:22px;background:#f2f5fa;color:#0b1020;box-shadow:0 40px 120px #000c;border-top:14px solid #22d3ee}
+.v .recibo{top:560px;width:940px;margin-left:-470px}
+.recibo .ph{margin:0 0 20px;font:700 26px "JetBrains Mono",monospace;letter-spacing:4px;color:#0e7490}
+.recibo dl{margin:0;display:grid;grid-template-columns:200px 1fr;row-gap:16px;font:700 38px Inter,sans-serif}
+.v .recibo dl{font-size:34px;grid-template-columns:180px 1fr}
+.recibo dt{color:#5c6b80}.recibo dd{margin:0}
+.pie{display:flex;justify-content:space-between;align-items:center;margin-top:26px;padding-top:22px;border-top:2px dashed #b9c4d6}
+.v .pie{flex-direction:column;align-items:flex-start;gap:16px}
+.pie .solo{display:flex;align-items:center;gap:14px;padding:12px 22px;border-radius:12px;background:#0b1020;color:#fff;font:800 30px Inter,sans-serif}
+.pie .solo .lock{background:#22d3ee}.pie .solo .lock::before{border-color:#22d3ee}
+.huella{font:700 28px "JetBrains Mono",monospace;color:#0e7490}
+.hv{position:absolute;left:50%;top:170px;width:1200px;margin-left:-600px;padding:40px;border-radius:24px;background:#0b1428f2;border:3px solid #22d3ee;box-shadow:0 0 60px #22d3ee44}
+.v .hv{top:400px;width:940px;margin-left:-470px}
+.hv .ph{margin:0;font:700 26px "JetBrains Mono",monospace;letter-spacing:4px;color:#22d3ee}
+.hv h3{margin:10px 0 30px;font:800 64px "Inter Display",Inter,sans-serif}
+.hv-g{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.v .hv-g{grid-template-columns:1fr}
+.hv-i{padding:24px;border-radius:16px;background:#16243f}
+.hv-i small{display:block;font:600 24px Inter,sans-serif;color:#9fb3cf}
+.hv-i b{display:block;margin-top:8px;font:800 34px Inter,sans-serif}
+.hv-b{display:flex;gap:20px;margin-top:30px}
+.hv-b span{padding:18px 34px;border-radius:14px;font:800 36px Inter,sans-serif}
+.volver{background:#2d7ff9}.apagar{background:#2a1212;border:3px solid #ff4d4d;color:#ffb0b0}
+.sello-iso{position:absolute;left:300px;top:330px;width:340px;height:340px;border-radius:50%;border:10px double #22d3ee;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 0 70px #22d3ee66}
+.v .sello-iso{left:370px;top:440px}
+.sello-iso b{font:800 44px "JetBrains Mono",monospace;color:#22d3ee}
+.sello-iso span{font:900 90px/1 "Inter Display",Inter,sans-serif}
+.iso-t{position:absolute;left:740px;right:110px;top:360px}
+.v .iso-t{left:70px;right:70px;top:880px;text-align:center}
+.iso-t p{margin:0 0 24px}
+.iso-t .i1,.iso-t .i2{font:800 50px "Inter Display",Inter,sans-serif}
+.iso-t .i2{color:#22d3ee}
+.iso-t .i0{font:500 32px Inter,sans-serif;color:#c9d1e0}
+.linea{position:absolute;left:50%;top:150px;width:1300px;margin-left:-650px}
+.v .linea{top:300px;width:940px;margin-left:-470px}
+.hito{display:flex;align-items:center;gap:26px;margin:0 0 18px;padding:18px 26px;border-radius:16px;background:#0d1a30e6;border-left:10px solid var(--c)}
+.v .hito{gap:18px;padding:18px 20px;margin-bottom:22px}
+.hh{flex:none;width:130px;font:800 44px "Inter Display",Inter,sans-serif}
+.v .hh{width:110px;font-size:40px}
+.ht{flex:1;font:700 36px Inter,sans-serif}
+.v .ht{font-size:32px}
+.hp{padding:8px 18px;border-radius:10px;background:var(--c);color:#0b1020;font:800 26px Inter,sans-serif}
+.cifra-f{position:absolute;left:50%;top:300px;width:900px;margin-left:-450px;padding:40px;border-radius:22px;background:#f2f5fa;color:#0b1020;border-top:14px solid #22d3ee;box-shadow:0 40px 120px #000c}
+.v .cifra-f{top:640px;width:940px;margin-left:-470px}
+.cifra-f .ph{margin:0 0 20px;font:700 28px "JetBrains Mono",monospace;letter-spacing:3px;color:#0e7490}
+.cifra-f p{margin:0 0 12px;font:600 44px Inter,sans-serif}
+.sello-c{position:absolute;right:-20px;bottom:-40px;padding:12px 24px;border:6px solid #0e7490;border-radius:14px;background:#f2f5fa;color:#0e7490;font:900 44px "Inter Display",Inter,sans-serif;letter-spacing:3px}
+#e-completa .capas{top:57%}
+.v #e-completa .capas{top:56%}
+.fin-serie{position:absolute;left:0;right:0;top:110px;text-align:center;font:700 28px "JetBrains Mono",monospace;letter-spacing:10px;color:#9fd0ff}
+.v .fin-serie{top:400px}
+.diag{position:absolute;left:50%;bottom:90px;width:1000px;margin-left:-500px;padding:26px;border-radius:20px;background:#2d7ff9;text-align:center;box-shadow:0 0 70px #2d7ff988}
+.v .diag{bottom:260px;width:940px;margin-left:-470px}
+.diag b{display:block;font:800 46px "Inter Display",Inter,sans-serif}
+.diag span{display:block;margin-top:8px;font:600 32px Inter,sans-serif}
+#e-firma .fin{top:170px}.v #e-firma .fin{top:620px}

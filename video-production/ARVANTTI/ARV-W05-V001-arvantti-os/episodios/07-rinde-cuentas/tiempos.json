@@ -1,0 +1,74 @@
+[
+ {
+  "id": "recap",
+  "start": 0,
+  "voiceAt": 0.6,
+  "voz": 3.71,
+  "dur": 4.81,
+  "real": true
+ },
+ {
+  "id": "gancho",
+  "start": 4.81,
+  "voiceAt": 5.11,
+  "voz": 5.25,
+  "dur": 6.35,
+  "real": true
+ },
+ {
+  "id": "dolor",
+  "start": 11.16,
+  "voiceAt": 11.46,
+  "voz": 10.37,
+  "dur": 11.47,
+  "real": true
+ },
+ {
+  "id": "comprobante",
+  "start": 22.63,
+  "voiceAt": 22.93,
+  "voz": 22.99,
+  "dur": 24.09,
+  "real": true
+ },
+ {
+  "id": "hoja",
+  "start": 46.72,
+  "voiceAt": 46.92,
+  "voz": 10.68,
+  "dur": 11.68,
+  "real": true
+ },
+ {
+  "id": "iso",
+  "start": 58.4,
+  "voiceAt": 58.6,
+  "voz": 11.89,
+  "dur": 12.99,
+  "real": true
+ },
+ {
+  "id": "repaso",
+  "start": 71.39,
+  "voiceAt": 71.69,
+  "voz": 27.32,
+  "dur": 28.82,
+  "real": true
+ },
+ {
+  "id": "completa",
+  "start": 100.21,
+  "voiceAt": 100.51,
+  "voz": 9.87,
+  "dur": 11.17,
+  "real": true
+ },
+ {
+  "id": "firma",
+  "start": 111.39,
+  "voiceAt": 111.99,
+  "voz": 4.75,
+  "dur": 11.35,
+  "real": true
+ }
+]
