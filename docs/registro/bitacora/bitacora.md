@@ -1,5 +1,9 @@
 # Bitácora
 
+## 2026-11-17 · Gauges temporales de tres fuentes anclados en el gemelo
+
+Se reemplazó la tabla fija de la tríada por seis gauges en los puntos de interés del modelo (bombeo, PRS, válvulas entre niveles y C44), con las etiquetas exactas **Planta Real**, **Cosimulador** y **Fractal**. Siguen los puntos de escena durante el recorrido de frames persistidos y muestran `—` ante datos faltantes. Typecheck, build Gallery y diff-check pasan. No se inició sesión/mandos ni se desplegó; falta E2E visual con frames reales. Ver [[../historico/sesion-codigo/2026-11-17-gauges-triada-3d]].
+
 ## 2026-11-17 · Aplicar aprobación en D1 y corregir comando del Worker
 
 Tras fusionar PR #219, el workflow aplicó `0002_signup_approval.sql` en `digitaltwin-access-control`; la verificación Wrangler confirma cero migraciones pendientes. El deploy del Worker falló porque `pnpm ... deploy` invocó el comando de despliegue interno de pnpm. Se corrige a `pnpm ... run deploy` en una rama nueva; el Worker aún no tiene este cambio y no se tocó Auth0 ni la D1 del Acueducto. Ver [[../historico/sesion-codigo/2026-11-17-despliegue-access-db-y-fix-workflow]].
