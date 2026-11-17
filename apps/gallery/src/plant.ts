@@ -1823,9 +1823,6 @@ function syncPlcStudySelection(study?: ForecastStudySummary): void {
 
 // ------------------------------------------------------------------ comparación persistida: una rejilla, tres fuentes, sin extrapolar.
 const TRIAD_SOURCES = ["emulator", "cosimulation", "optimization"] as const;
-const TRIAD_SOURCE_LABELS: Record<(typeof TRIAD_SOURCES)[number], string> = {
-  emulator: "EMULADOR", cosimulation: "COSIMULADOR", optimization: "OPTIMIZACIÓN",
-};
 const TRIAD_PRESSURE_METRICS = [
   { label: "Descarga de bombeo / entrada VRP", observable: "pump_discharge_pressure_mca", tag: "PLC.Pump.DischargePressureMca", equipment: "pumpset-main-01", variable: "discharge_pressure_mca" },
   { label: "Salida VRP", observable: "prs_outlet_pressure_mca", tag: "PLC.PRS.OutletPressureMca", equipment: "prs-01", variable: "outlet_pressure_mca" },
@@ -1839,6 +1836,18 @@ const TRIAD_FLOW_METRICS = [
   { label: "Caudal de bombeo", observable: "pump_flow_m3h", tag: "PLC.Pump.FlowM3h", equipment: "pumpset-main-01", variable: "flow_m3h" },
   { label: "Caudal VRP", observable: "prs_flow_m3h", tag: "PLC.PRS.FlowM3h", equipment: "prs-01", variable: "flow_m3h" },
 ];
+const TRIAD_GAUGE_SOURCE_LABELS: Record<(typeof TRIAD_SOURCES)[number], string> = {
+  emulator: "Planta Real", cosimulation: "Cosimulador", optimization: "Fractal",
+};
+type TriadMetric = (typeof TRIAD_PRESSURE_METRICS)[number] | (typeof TRIAD_FLOW_METRICS)[number];
+const TRIAD_GAUGE_POINTS: { id: string; label: string; equipment: string; lift: number; metric: TriadMetric }[] = [
+  { id: "pump-discharge", label: "Descarga de bombeo", equipment: "pumpset-main-01", lift: 1.0, metric: TRIAD_PRESSURE_METRICS[0] },
+  { id: "prs-outlet", label: "Salida de PRS", equipment: "prs-01", lift: 0.9, metric: TRIAD_PRESSURE_METRICS[1] },
+  { id: "floor-1-outlet", label: "Salida tras válvula 1–2", equipment: "valve-between-12", lift: 0.35, metric: TRIAD_PRESSURE_METRICS[2] },
+  { id: "floor-2-outlet", label: "Salida tras válvula 2–3", equipment: "valve-between-23", lift: 0.35, metric: TRIAD_PRESSURE_METRICS[3] },
+  { id: "floor-3-outlet", label: "Salida tras válvula 3–4", equipment: "valve-between-34", lift: 0.35, metric: TRIAD_PRESSURE_METRICS[4] },
+  { id: "critical-house", label: "Vivienda crítica C44", equipment: "grid-04", lift: 1.0, metric: TRIAD_PRESSURE_METRICS[5] },
+];
 function recordOf(value: unknown): Record<string, unknown> | null {
   return value !== null && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : null;
 }
@@ -1847,7 +1856,7 @@ function frameSnapshot(state: Record<string, unknown>): Record<string, unknown> 
   const candidate = direct ?? state;
   return recordOf(candidate.equipment) && recordOf(candidate.lines) ? candidate : null;
 }
-function triadMetric(frame: TriadSourceFrame, metric: (typeof TRIAD_PRESSURE_METRICS)[number] | (typeof TRIAD_FLOW_METRICS)[number]): number | null {
+function triadMetric(frame: TriadSourceFrame, metric: TriadMetric): number | null {
   if (!frame) return null;
   const state = frame.state;
   const observables = recordOf(state.observables);
@@ -1864,46 +1873,56 @@ function triadMetric(frame: TriadSourceFrame, metric: (typeof TRIAD_PRESSURE_MET
 function renderTriadOverlay(frame: TriadViewFrame | null): void {
   const panel = $<HTMLElement>("triad-overlay");
   panel.hidden = !frame || doc.plant.id !== "water-network-scale-v1";
-  if (!frame || panel.hidden) return;
-  const qualities = TRIAD_SOURCES.map((source) => {
-    const saved = frame.sources[source];
-    const quality = saved?.model_quality ?? (typeof saved?.state.quality === "string" ? saved.state.quality : undefined);
-    return quality ? `${TRIAD_SOURCE_LABELS[source]}: ${quality}` : undefined;
-  }).filter((quality): quality is string => Boolean(quality));
-  $("triad-overlay-time").textContent = `t=${frame.simulation_time_s.toFixed(0)} s · SOLO coincidencias exactas; los faltantes aparecen como —.${qualities.length ? ` Calidad declarada: ${qualities.join(" · ")}` : ""}`;
   const root = $<HTMLElement>("triad-overlay-values");
   root.replaceChildren();
-  const table = document.createElement("table");
-  table.style.cssText = "width:100%;border-collapse:collapse;margin:6px 0 12px";
-  const header = document.createElement("tr");
-  for (const text of ["Señal", ...TRIAD_SOURCES.map((source) => TRIAD_SOURCE_LABELS[source])]) {
-    const cell = document.createElement("th"); cell.textContent = text;
-    cell.style.cssText = "text-align:left;padding:5px;border-bottom:1px solid #52627a;color:#dbeafe"; header.append(cell);
-  }
-  table.append(header);
-  const sections = [
-    ["PRESIONES · MCA / APERTURA · %", TRIAD_PRESSURE_METRICS],
-    ["CAUDALES · M³/H", TRIAD_FLOW_METRICS],
-  ] as const;
-  for (const [title, metrics] of sections) {
-    const sectionRow = document.createElement("tr"); const sectionCell = document.createElement("th");
-    sectionCell.colSpan = 4; sectionCell.textContent = title; sectionCell.style.cssText = "text-align:left;padding:8px 5px 4px;color:#93c5fd";
-    sectionRow.append(sectionCell); table.append(sectionRow);
-    for (const metric of metrics) {
-      const row = document.createElement("tr"); const label = document.createElement("td");
-      label.textContent = metric.label; label.style.cssText = "padding:4px 5px;border-bottom:1px solid #26344a"; row.append(label);
-      for (const source of TRIAD_SOURCES) {
-        const cell = document.createElement("td");
-        const value = triadMetric(frame.sources[source], metric);
-        cell.textContent = value === null ? "—" : `${value.toFixed(1)}${"unit" in metric && metric.unit === "%" ? "%" : ""}`;
-        cell.title = frame.sources[source] ? `${TRIAD_SOURCE_LABELS[source]} · ${frame.sources[source]!.temporal_context ?? "frame guardado"} · t=${frame.sources[source]!.simulation_time_s}s` : "Sin frame de esta fuente en este instante";
-        cell.style.cssText = `padding:4px 5px;border-bottom:1px solid #26344a;color:${value === null ? "#94a3b8" : source === "emulator" ? "#67e8f9" : source === "cosimulation" ? "#fbbf24" : "#c4b5fd"};font-family:'IBM Plex Mono',monospace`;
-        row.append(cell);
-      }
-      table.append(row);
+  if (!frame || panel.hidden) return;
+  $("triad-overlay-time").textContent = `t=${frame.simulation_time_s.toFixed(0)} s · Lecturas exactas · reproducción de solo lectura`;
+  for (const point of TRIAD_GAUGE_POINTS) {
+    const gauge = document.createElement("article");
+    gauge.className = "triad-gauge";
+    gauge.dataset.equipment = point.equipment;
+    gauge.dataset.lift = String(point.lift);
+    gauge.setAttribute("aria-label", `${point.label}: comparación Planta Real, Cosimulador y Fractal`);
+    const title = document.createElement("h3");
+    title.textContent = point.label;
+    const readings = document.createElement("div");
+    readings.className = "triad-gauge-readings";
+    for (const source of TRIAD_SOURCES) {
+      const reading = document.createElement("div");
+      reading.className = "triad-gauge-reading";
+      reading.dataset.source = source;
+      const sourceLabel = document.createElement("span");
+      sourceLabel.textContent = TRIAD_GAUGE_SOURCE_LABELS[source];
+      const value = triadMetric(frame.sources[source], point.metric);
+      const formatted = document.createElement("strong");
+      formatted.textContent = value === null ? "—" : `${value.toFixed(1)} ${"unit" in point.metric && point.metric.unit === "%" ? "%" : "mca"}`;
+      const saved = frame.sources[source];
+      reading.title = saved ? `${TRIAD_GAUGE_SOURCE_LABELS[source]} · ${saved.temporal_context ?? "frame guardado"} · t=${saved.simulation_time_s}s` : "Sin frame guardado para este instante";
+      reading.append(sourceLabel, formatted);
+      readings.append(reading);
     }
+    gauge.append(title, readings);
+    root.append(gauge);
   }
-  root.append(table);
+  updateTriadGaugePositions();
+}
+
+function updateTriadGaugePositions(): void {
+  const panel = $<HTMLElement>("triad-overlay");
+  if (panel.hidden || doc.plant.id !== "water-network-scale-v1") return;
+  const bounds = $<HTMLCanvasElement>("scene").getBoundingClientRect();
+  for (const gauge of panel.querySelectorAll<HTMLElement>(".triad-gauge")) {
+    const asset = assets.get(gauge.dataset.equipment ?? "");
+    if (!asset) { gauge.hidden = true; continue; }
+    const anchor = asset.root.getWorldPosition(new THREE.Vector3());
+    anchor.y += Number(gauge.dataset.lift ?? 0.5);
+    anchor.project(stage.camera);
+    const x = bounds.left + (anchor.x + 1) * bounds.width / 2;
+    const y = bounds.top + (1 - anchor.y) * bounds.height / 2;
+    const visible = anchor.z >= -1 && anchor.z <= 1 && x >= 0 && x <= window.innerWidth && y >= 0 && y <= window.innerHeight;
+    gauge.hidden = !visible;
+    if (visible) { gauge.style.left = `${x}px`; gauge.style.top = `${y}px`; }
+  }
 }
 
 // ------------------------------------------------------------------ un solo escritorio: 3D + HMI y pasado de solo lectura
@@ -2526,6 +2545,7 @@ let transport: PalletTransport | null = null;
 let moldView: MoldChangeView | null = null;
 function loop(): void {
   const dt = stage.render();
+  updateTriadGaugePositions();
   // con el play, la escena corre `scale` veces más rápido: agentes, montacargas, ciclos de las máquinas y productos
   const scale = visualScale(playRate?.() ?? 1);
   const simDt = dt * scale;
