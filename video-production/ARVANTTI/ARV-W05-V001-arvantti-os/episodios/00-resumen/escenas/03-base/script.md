@@ -1,0 +1,1 @@
+Funciona con cualquier IA: Claude, ChatGPT, Gemini, Copilot o sus propios modelos privados. Y se conecta con sus sistemas: el de clientes, el de gestión, la nube y sus documentos. En el escritorio o en la nube.

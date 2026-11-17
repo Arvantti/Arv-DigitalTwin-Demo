@@ -1,0 +1,1 @@
+Para dirigirlos, basta con hablar, desde el carro, el celular o la sala de juntas. Un panel de dirección le muestra qué avanzó y qué está bloqueado, y un inventario, qué agentes y qué IA trabajan para usted.

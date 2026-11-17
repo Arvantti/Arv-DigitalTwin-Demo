@@ -1,0 +1,106 @@
+[
+ {
+  "id": "pregunta",
+  "start": 0,
+  "voiceAt": 1.2,
+  "voz": 3.87,
+  "dur": 6.07,
+  "real": true
+ },
+ {
+  "id": "titulo",
+  "start": 6.07,
+  "voiceAt": 6.57,
+  "voz": 6.11,
+  "dur": 7.81,
+  "real": true
+ },
+ {
+  "id": "base",
+  "start": 13.88,
+  "voiceAt": 14.18,
+  "voz": 15.2,
+  "dur": 16.3,
+  "real": false
+ },
+ {
+  "id": "nucleo",
+  "start": 30.18,
+  "voiceAt": 30.38,
+  "voz": 5.6,
+  "dur": 6.8,
+  "real": false
+ },
+ {
+  "id": "organiza",
+  "start": 36.98,
+  "voiceAt": 37.28,
+  "voz": 6.4,
+  "dur": 7.6,
+  "real": false
+ },
+ {
+  "id": "recuerda",
+  "start": 44.58,
+  "voiceAt": 44.88,
+  "voz": 9.2,
+  "dur": 10.4,
+  "real": false
+ },
+ {
+  "id": "controla",
+  "start": 54.98,
+  "voiceAt": 55.28,
+  "voz": 13.2,
+  "dur": 14.4,
+  "real": false
+ },
+ {
+  "id": "protege",
+  "start": 69.38,
+  "voiceAt": 69.68,
+  "voz": 10.8,
+  "dur": 12,
+  "real": false
+ },
+ {
+  "id": "enterprise",
+  "start": 81.38,
+  "voiceAt": 81.68,
+  "voz": 14,
+  "dur": 15.2,
+  "real": false
+ },
+ {
+  "id": "dirigir",
+  "start": 96.58,
+  "voiceAt": 96.78,
+  "voz": 15.6,
+  "dur": 16.7,
+  "real": false
+ },
+ {
+  "id": "rinde",
+  "start": 113.28,
+  "voiceAt": 113.58,
+  "voz": 13.6,
+  "dur": 14.9,
+  "real": false
+ },
+ {
+  "id": "coding",
+  "start": 128.18,
+  "voiceAt": 128.48,
+  "voz": 6.4,
+  "dur": 7.9,
+  "real": false
+ },
+ {
+  "id": "firma",
+  "start": 136.08,
+  "voiceAt": 136.68,
+  "voz": 4.4,
+  "dur": 8.5,
+  "real": false
+ }
+]
