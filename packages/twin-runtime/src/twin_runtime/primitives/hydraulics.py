@@ -25,8 +25,10 @@ simulación por pasos, si nada cambia, converge en una o dos iteraciones.
 
 from __future__ import annotations
 
+import heapq
 import math
 from dataclasses import dataclass, field
+from functools import lru_cache
 
 G = 9.81
 MCA_PER_BAR = 10.197  # 1 bar en metros de columna de agua a 20 °C
@@ -422,19 +424,46 @@ def _valve_char(opening: float, characteristic: str, rangeability: float) -> flo
     return x
 
 
+@lru_cache(maxsize=64)
+def _minimum_degree_order(pattern: tuple[frozenset[int], ...]) -> tuple[int, ...]:
+    """Calcula y cachea el orden de eliminación para una topología de matriz dispersa."""
+    adjacency = [set(row) for row in pattern]
+    remaining = set(range(len(pattern)))
+    degree_heap = [(len(adjacency[i]), i) for i in range(len(pattern))]
+    heapq.heapify(degree_heap)
+    order: list[int] = []
+    while remaining:
+        degree, k = heapq.heappop(degree_heap)
+        if k not in remaining or degree != len(adjacency[k] & remaining):
+            continue
+        remaining.remove(k)
+        order.append(k)
+        neighbors = sorted(adjacency[k] & remaining)
+        for i in neighbors:
+            adjacency[i].discard(k)
+            for j in neighbors:
+                if i != j:
+                    adjacency[i].add(j)
+            heapq.heappush(degree_heap, (len(adjacency[i] & remaining), i))
+    return tuple(order)
+
+
 def _solve_sparse_symmetric(matrix: list[dict[int, float]], rhs: list[float]) -> list[float]:
-    """Eliminación de Gauss sobre una matriz dispersa simétrica definida positiva, eligiendo en cada paso el
-    nodo con menos vecinos (mínimo grado) para limitar el relleno. Redes de unos cientos de nodos."""
+    """Eliminación de Gauss dispersa; reutiliza el orden mínimo-grado de topologías repetidas.
+
+    En la iteración hidráulica cambian los coeficientes numéricos, pero la topología de la matriz
+    suele permanecer igual. Se cachea solo el orden estructural; cada corrida rehace la eliminación
+    numérica y conserva el desempate determinista por índice.
+    """
     n = len(rhs)
+    pattern = tuple(frozenset(j for j, value in row.items() if j != i and value != 0.0) for i, row in enumerate(matrix))
+    order = _minimum_degree_order(pattern)
     a = [dict(row) for row in matrix]
     b = list(rhs)
     remaining = set(range(n))
-    order: list[int] = []
     pivots: list[tuple[int, float, dict[int, float]]] = []
-    while remaining:
-        k = min(remaining, key=lambda i: (len(a[i]), i))
-        remaining.discard(k)
-        order.append(k)
+    for k in order:
+        remaining.remove(k)
         row = a[k]
         diag = row.pop(k)
         neighbors = {j: v for j, v in row.items() if j in remaining}

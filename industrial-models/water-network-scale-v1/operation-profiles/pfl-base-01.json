@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "id": "pfl-base-01",
-  "name": "PFL-BASE-01 · 100 % aperturas de viviendas · PRS editable en PLC",
-  "description": "Demanda residencial al 100 % durante 24 horas. El perfil no programa la rama ni la apertura de la PRS: el operador las controla desde el PLC virtual. Si desea programar aperturas por hora, clone esta plantilla y defina auto_opening_pct en las horas deseadas.",
+  "name": "PFL-BASE-01 · 100 % aperturas de viviendas · PRS operada desde el PLC",
+  "description": "Plantilla de solo lectura con demanda residencial al 100 % durante 24 horas. No programa la rama ni la apertura de la PRS: el operador las controla desde el PLC virtual. Para ajustar el perfil o programar aperturas por hora, guarde primero una copia en Archivo y edite esa copia.",
   "hours": {
     "0": { "global_consumers_pct": 100 },
     "1": { "global_consumers_pct": 100 },

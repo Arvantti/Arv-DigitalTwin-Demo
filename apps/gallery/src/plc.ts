@@ -3,7 +3,7 @@ import { demoFetch, demoWebSocket } from "./demo-client";
 
 type Value = number | string | null;
 type Snapshot = { state: string; variables: Record<string, Value>; animation: Record<string, number>; active_faults: string[] };
-type Message = { t: number; speed: number; paused: boolean; running?: boolean; plc_tags?: Record<string, Value>; snapshot: { equipment: Record<string, Snapshot> }; events: { type: string; equipment_id?: string }[] };
+type Message = { t: number; speed: number; effective_speed?: number; simulation_lag_s?: number; paused: boolean; running?: boolean; plc_tags?: Record<string, Value>; snapshot: { equipment: Record<string, Snapshot> }; events: { type: string; equipment_id?: string }[] };
 type Asset = { id: string; name: string; group: string; level?: number };
 type Schema = { name: string; assets: Asset[]; service_constraint: { critical_pressure_min_mca: number; automatic_target_mca: number } };
 type Sample = { t: number; main: number; recirculation: number; consumption: number; leakage: number; critical: number; supplyLevel: number; pumpDischarge: number; stationIn: number; stationOut: number; grid1In: number; grid1Out: number; grid2Out: number; grid3Out: number; criticalFlow: number };
@@ -60,6 +60,7 @@ let optimizedTrajectory: TrajectoryPoint[] = [];
 let cosimulationTrajectory: TrajectoryPoint[] = [];
 let comparisons: Comparison[] = [];
 let triadFrames: TriadFrame[] = [];
+let selectedTriadSource: "emulator" | "cosimulation" | "optimization" = "emulator";
 let triadPlaybackTimer: number | null = null;
 let cosimulationRunning = false;
 let runStartedAt = "";
@@ -80,12 +81,15 @@ let profiles: OperationProfile[] = [];
 let activeProfile: OperationProfile = { name: "Nuevo escenario", description: "", hours: {} };
 let activeProfileId: string | null = null;
 let profileHour = 0;
+let lastProfileLockHour = -1;
 type ProfileParameter = "global" | `level-${number}` | `between-${string}` | "prs";
 let profileParameter: ProfileParameter = "global";
 let profilePrsControlsTouched = false;
 let sessionId = query.get("session");
 let activeSessionProfileId: string | null = null;
 let pendingSessionProfileId: string | null = null;
+let pendingSessionProfileHour: number | null = null;
+let profileEditInFlight = false;
 let selectedStudyContext: { studyId: string; studyType?: string; profileName?: string } | null = query.get("study") ? { studyId: query.get("study")! } : null;
 let stopRequested = false;
 let plcRunning = false;
@@ -159,7 +163,7 @@ function renderFractalProfileSelector(): void {
     for (const profile of items) group.append(new Option(profile.name, profile.id ?? ""));
     select.add(group);
   }
-  select.value = activeSessionProfileId ?? activeProfileId ?? "";
+  select.value = pendingSessionProfileId ?? activeSessionProfileId ?? activeProfileId ?? "";
   select.disabled = true;
 }
 
@@ -177,11 +181,15 @@ function renderRunProfileSelector(): void {
     select.add(group);
   }
   select.value = activeProfileId ?? "";
+  const editButton = $<HTMLButtonElement>("edit-selected-scenario");
+  if (editButton) editButton.textContent = activeProfileId?.startsWith("builtin-") ? "COPIAR PLANTILLA" : "EDITAR ESCENARIO";
   const runningProfile = profiles.find((profile) => profile.id === activeSessionProfileId)?.name ?? activeSessionProfileId;
   $("scenario-selection-note").textContent = !activeProfileId
     ? "Seleccione un escenario guardado. Los borradores sin guardar no se pueden ejecutar."
-    : plcRunning && activeProfileId === activeSessionProfileId
-      ? `En marcha con ${runningProfile}. Para cambiarlo, seleccione otro escenario y prográmelo para la próxima hora.`
+    : plcRunning && activeProfileId === activeSessionProfileId && activeProfileId?.startsWith("builtin-")
+      ? `En marcha con la plantilla ${runningProfile}. Para modificarla, guarde primero una copia en Archivo, selecciónela y prográmela para la próxima hora.`
+      : plcRunning && activeProfileId === activeSessionProfileId
+        ? `En marcha con ${runningProfile}. Para cambiarlo, seleccione otro escenario y prográmelo para la próxima hora.`
       : plcRunning
         ? `PLC sigue con ${runningProfile}. El escenario elegido no se aplica hasta programarlo para la próxima hora.`
         : sessionId && activeProfileId !== activeSessionProfileId
@@ -190,17 +198,18 @@ function renderRunProfileSelector(): void {
 }
 
 function selectScreen(id: string): void {
-  const primary = id === "fractal" ? "master" : id;
-  document.querySelectorAll<HTMLElement>(".screen").forEach((node) => node.classList.toggle("active", node.id === id || node.id === primary));
+  const liveOperation = ["operation", "pumping", "grid"].includes(id);
+  const primary = id === "fractal" ? "master" : liveOperation ? "operation" : id;
+  document.querySelectorAll<HTMLElement>(".screen").forEach((node) => node.classList.toggle("active", liveOperation ? node.id === "pumping" || node.id === "grid" : node.id === id || node.id === primary));
   document.querySelectorAll<HTMLButtonElement>(".tabs button").forEach((node) => node.classList.toggle("active", node.dataset.screen === primary));
   if (primary === "profiles") renderProfileEditor();
   document.body.classList.toggle("screen-fractal", false);
   document.body.classList.toggle("screen-history", primary === "history");
-  document.body.classList.toggle("screen-grid", id === "grid");
+  document.body.classList.toggle("screen-grid", liveOperation);
   document.body.classList.toggle("screen-day", id === "day");
-  document.body.classList.toggle("screen-pumping", id === "pumping");
+  document.body.classList.toggle("screen-pumping", liveOperation);
   if (Object.keys(latest).length) renderVisibleScreen();
-  else if (primary === "pumping") renderSupplyComparison();
+  else if (liveOperation) renderSupplyComparison();
   if (id === "fractal") {
     document.getElementById("fractal")?.scrollIntoView({ behavior: "smooth", block: "start" });
     void renderFractal();
@@ -251,14 +260,35 @@ function renderPumping(): void {
   $("tanks").innerHTML = tankCard("tank-recirc-01", "TANQUE DE RETORNO 1") + tankCard("tank-recirc-02", "TANQUE DE RETORNO 2") + tankCard("tank-supply-01", "TANQUE DE BOMBEO");
   $("pumps").innerHTML = pumpCard("pumpset-recirc-01", "GRUPO DE RECIRCULACIÓN") + pumpCard("pumpset-main-01", "GRUPO PRINCIPAL");
   const prs = eq("prs-01");
-  const branch = String(prs?.variables.branch_auto ?? "") === "1" ? "AUTO" : "MANUAL";
-  $("branch-state").textContent = `RAMA · ${branch}`;
+  const branchValue = prs?.variables.branch_auto;
+  const branchKnown = branchValue !== undefined && branchValue !== null;
+  const isAuto = String(branchValue ?? "") === "1";
+  const branch = branchKnown ? isAuto ? "AUTO" : "MANUAL" : "—";
+  $("branch-state").textContent = `${branchKnown ? "RAMA SELECCIONADA" : "RAMA SIN LECTURA"} · ${branch}`;
+  const liveControlsAvailable = socket?.readyState === WebSocket.OPEN && plcRunning;
+  const autoValveOpen = prs?.animation.valve_a_open ?? 0;
+  const manualValveOpen = prs?.animation.valve_b_open ?? 0;
+  const branchTransitioning = isAuto ? autoValveOpen < 0.999 || manualValveOpen > 0.001 : manualValveOpen < 0.999 || autoValveOpen > 0.001;
+  document.querySelectorAll<HTMLButtonElement>("[data-command]").forEach((button) => {
+    const selected = branchKnown && button.dataset.command === branch.toLowerCase();
+    button.classList.toggle("active", selected);
+    button.setAttribute("aria-pressed", String(selected));
+    button.disabled = !liveControlsAvailable;
+  });
   const openingInput = $<HTMLInputElement>("auto-opening");
   const manualInput = $<HTMLInputElement>("manual-setpoint");
   const currentOpening = n(value("prs-01", "auto_opening_pct"));
   if (document.activeElement !== openingInput && currentOpening !== null) openingInput.value = String(currentOpening);
-  openingInput.disabled = currentOpening === null;
+  openingInput.disabled = !liveControlsAvailable || currentOpening === null;
   if (document.activeElement !== manualInput) manualInput.value = String(n(value("prs-01", "manual_setting_mca")) ?? 20.94);
+  manualInput.disabled = !liveControlsAvailable;
+  $("prs-mode-explanation").textContent = !liveControlsAvailable
+    ? "SIN SESIÓN EN MARCHA · Inicie o reanude la emulación para enviar mandos."
+    : !branchKnown
+      ? "SIN LECTURA DE LA RAMA · Espere el primer frame de la sesión PLC."
+      : isAuto
+        ? `RAMA SELECCIONADA · AUTO: rama A con apertura fija (${currentOpening === null ? "—" : `${currentOpening.toFixed(0)} %`}). En este modelo esa apertura se convierte mediante una curva asumida en consigna de salida; no regula automáticamente la presión crítica. La consigna MANUAL queda preparada, pero no gobierna el caudal hasta seleccionar MANUAL.${branchTransitioning ? " Cambio de rama en curso: primero abre la entrante y luego cierra la saliente." : ""}${paused ? " Sesión pausada: el efecto se verá al reanudar." : ""}`
+        : `RAMA SELECCIONADA · MANUAL: rama B con consigna fija de salida (${fmt(value("prs-01", "manual_setting_mca"))} mca). La apertura AUTO queda preparada, pero no gobierna el caudal hasta seleccionar AUTO.${branchTransitioning ? " Cambio de rama en curso: primero abre la entrante y luego cierra la saliente." : ""}${paused ? " Sesión pausada: el efecto se verá al reanudar." : ""}`;
   $("auto-opening-output").textContent = currentOpening === null ? "—" : `${currentOpening.toFixed(0)} %`;
   $("manual-output").textContent = `${Number(manualInput.value).toFixed(2)} mca`;
   const autoOpening = 100 * (prs?.animation.valve_a_open ?? 0);
@@ -305,6 +335,15 @@ function renderSupplyComparison(): void {
 }
 
 function renderGrid(): void {
+  const liveControlsAvailable = socket?.readyState === WebSocket.OPEN && plcRunning;
+  const liveStatus = $("live-controls-status");
+  if (liveStatus) liveStatus.textContent = !liveControlsAvailable
+    ? "SIN SESIÓN EN MARCHA · Los mandos están desactivados. Inicie o reanude la emulación para actuar."
+    : paused
+      ? "SESIÓN EN PAUSA · Puede ajustar mandos; los cambios se reflejarán al reanudar."
+      : "EN VIVO · Los cambios afectan la sesión actual, no el perfil horario.";
+  const liveButtons = [$<HTMLInputElement>("all-consumers"), ...document.querySelectorAll<HTMLInputElement>("[data-level-consumers]"), $<HTMLButtonElement>("random"), $<HTMLButtonElement>("live-save-as-profile")];
+  liveButtons.forEach((control) => { control.disabled = !liveControlsAvailable || (control.id === "random" && paused); });
   const liveDemand = ["grid-01", "grid-02", "grid-03", "grid-04"].reduce((sum, id) => sum + (n(value(id, "consumption_m3h")) ?? 0), 0);
   $("live-demand-total").textContent = `${fmt(liveDemand)} m³/h`;
   type LowPoint = { grid: string; valve: string; pressure: number };
@@ -752,7 +791,7 @@ function renderVisibleScreen(): void {
   const active = document.querySelector<HTMLElement>(".screen.active")?.id;
   if (active === "master") renderMaster();
   else if (active === "day") renderDay();
-  else if (active === "pumping") { renderPumping(); renderHydraulicProfile(); }
+  else if (active === "pumping") { renderPumping(); renderHydraulicProfile(); if ($("grid").classList.contains("active")) renderGrid(); }
   else if (active === "grid") renderGrid();
   else if (active === "trends") renderTrends();
   else if (active === "history") renderSavedRuns();
@@ -776,9 +815,17 @@ function render(message: Message): void {  latest = message.snapshot.equipment;
   const hh = String(Math.floor(simTime / 3600)).padStart(2, "0");
   const mm = String(Math.floor((simTime % 3600) / 60)).padStart(2, "0");
   const ss = String(Math.floor(simTime % 60)).padStart(2, "0");
-  $("clock").textContent = `PLANTA REAL · ${hh}:${mm}:${ss} · ×${message.speed}`;
+  const effectiveSpeed = message.effective_speed ?? 0;
+  const simulationLag = message.simulation_lag_s ?? 0;
+  $("clock").textContent = `SIM ${hh}:${mm}:${ss} · OBJ ×${message.speed} · REAL ×${fmt(effectiveSpeed, 1)} · RETRASO ${fmt(simulationLag, 0)}s`;
+  $("clock").title = "Velocidad seleccionada vs. velocidad efectiva observada; retraso pendiente expresado en segundos simulados.";
   $<HTMLSelectElement>("session-speed").value = String(message.speed);
   recordHistory(message);
+  const lockHour = Math.floor(simTime / 3600);
+  if (lockHour !== lastProfileLockHour && document.querySelector<HTMLElement>(".screen.active")?.id === "profiles") {
+    lastProfileLockHour = lockHour;
+    renderProfileEditor();
+  }
   renderVisibleScreen();
   renderAlarms();
   if (message.t >= DAY_SECONDS) { saveCurrentRun(); socket?.close(); }
@@ -929,6 +976,53 @@ function effectivePrsOpening(upToHour: number): number | undefined {
   return undefined;
 }
 
+function profileHourLockReason(hour: number): string | null {
+  const sessionProfile = activeProfileId === activeSessionProfileId || activeProfileId === pendingSessionProfileId;
+  if (!sessionId || !plcRunning || !sessionProfile) return null;
+  const currentHour = Math.floor(simTime / 3600);
+  if (hour > currentHour) return null;
+  const start = `${String(hour).padStart(2, "0")}:00`;
+  const end = `${String(hour + 1).padStart(2, "0")}:00`;
+  return `La franja ${start}–${end} ya empezó o quedó en el pasado; no se puede editar.`;
+}
+
+async function persistFutureProfileEdit(hour: number): Promise<void> {
+  if (!sessionId || !plcRunning || !activeProfileId || (activeProfileId !== activeSessionProfileId && activeProfileId !== pendingSessionProfileId)) return;
+  const blocked = profileHourLockReason(hour);
+  if (blocked) { $("profile-point-status").textContent = blocked; return; }
+  if (profileEditInFlight) { $("profile-point-status").textContent = "Guardando el cambio futuro anterior… espera antes de editar otra franja."; return; }
+  profileEditInFlight = true;
+  const status = $("profile-point-status");
+  status.textContent = `Programando automáticamente desde la franja ${String(hour).padStart(2, "0")}:00…`;
+  try {
+    const createdResponse = await apiFetch(`/api/plants/${plantId}/operation-profiles`, {
+      method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(activeProfile),
+    });
+    const created = await createdResponse.json().catch(() => ({})) as OperationProfile & { detail?: string };
+    if (!createdResponse.ok || !created.id) throw Error(created.detail ?? "No se pudo crear la versión privada del escenario.");
+    const startsAtHour = Math.min(hour, pendingSessionProfileHour ?? hour);
+    const scheduledResponse = await apiFetch(`/api/plants/${plantId}/sessions/${sessionId}/schedule-profile`, {
+      method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ profile_id: created.id, starts_at_hour: startsAtHour }),
+    });
+    const scheduled = await scheduledResponse.json().catch(() => ({})) as { starts_at_hour?: number; detail?: string };
+    if (!scheduledResponse.ok) throw Error(scheduled.detail ?? "El reloj avanzó; vuelve a elegir una franja futura.");
+    profiles.push(created);
+    activeProfile = structuredClone(created);
+    activeProfileId = created.id;
+    pendingSessionProfileId = created.id;
+    pendingSessionProfileHour = scheduled.starts_at_hour ?? startsAtHour;
+    renderWorkspaceContext();
+    renderRunProfileSelector();
+    renderProfileEditor();
+    $("profile-point-status").textContent = `Cambio programado automáticamente desde la hora ${String(pendingSessionProfileHour + 1).padStart(2, "0")}. Historial intacto; los futuros anteriores quedan desactualizados.`;
+    void loadComparisons().catch(() => { $("triad-position").textContent = "No se pudo actualizar el estado de las comparaciones anteriores."; });
+  } catch (error) {
+    status.textContent = error instanceof Error ? error.message : "No se pudo aplicar el cambio futuro.";
+  } finally {
+    profileEditInFlight = false;
+  }
+}
+
 function profilePointValue(): number | undefined {
   const hour = currentProfileHour();
   if (profileParameter === "global") return hour.global_consumers_pct ?? 100;
@@ -946,6 +1040,21 @@ function setProfilePointValue(value: number): void {
   else if (profileParameter.startsWith("level-")) (hour.levels ??= {})[profileParameter.slice(6)] = value;
   else if (profileParameter.startsWith("between-")) (hour.between_levels ??= {})[profileParameter.slice(8)] = value;
   else hour.prs = { ...hour.prs, auto_opening_pct: value };
+}
+
+function profileHourContext(hour: number): string {
+  const range = `${String(hour).padStart(2, "0")}:00–${String(hour + 1).padStart(2, "0")}:00`;
+  const label = `H${String(hour + 1).padStart(2, "0")} · ${range}`;
+  const belongsToSession = activeProfileId === activeSessionProfileId || activeProfileId === pendingSessionProfileId;
+  if (sessionId && plcRunning && belongsToSession) {
+    const currentHour = Math.floor(simTime / 3600);
+    return hour <= currentHour
+      ? `FRANJA EN CURSO O YA INICIADA · ${label}. Está bloqueada: no cambia ni reescribe el instante actual.`
+      : `PUNTO FUTURO · ${label}. Editar este punto versiona el perfil y programa el cambio desde esta franja; no es un mando instantáneo.`;
+  }
+  if (sessionId && plcRunning) return `BORRADOR NO APLICADO · ${label}. Este punto cambia el archivo seleccionado, no la sesión en marcha; guarde y programe el perfil si desea aplicarlo.`;
+  if (sessionId) return `PERFIL · ${label}. Esta edición no altera la sesión detenida; inicie una nueva sesión con este perfil para usarla.`;
+  return `PUNTO DEL PERFIL · ${label}. Define el valor de esta hora cuando se ejecute el escenario; no actúa en tiempo real.`;
 }
 
 function renderProfileChart(): void {
@@ -968,7 +1077,7 @@ function renderProfileChart(): void {
     }).join("");
     const lines = series.map((item) => {
       const points = values.map((point, hour) => `${x(hour)},${y(item.value(point), max)}`).join(" ");
-      const markers = values.map((point, hour) => `<circle class="scenario-point ${hour === profileHour ? "selected" : ""}" style="color:${item.color}" data-profile-hour="${hour}" data-profile-parameter="${item.parameter}" cx="${x(hour)}" cy="${y(item.value(point), max)}" r="${hour === profileHour ? 6 : 4}"><title>Hora ${String(hour + 1).padStart(2, "0")} · ${item.label}: ${item.value(point).toFixed(1)} %</title></circle>`).join("");
+      const markers = values.map((point, hour) => { const locked = Boolean(profileHourLockReason(hour)); return `<circle class="scenario-point ${hour === profileHour ? "selected" : ""} ${locked ? "locked" : ""}" style="color:${item.color}" data-profile-hour="${hour}" data-profile-parameter="${item.parameter}" cx="${x(hour)}" cy="${y(item.value(point), max)}" r="${hour === profileHour ? 6 : 4}"><title>${profileHourLockReason(hour) ?? `Hora ${String(hour + 1).padStart(2, "0")} · ${item.label}: ${item.value(point).toFixed(1)} %`}</title></circle>`; }).join("");
       return `<polyline fill="none" stroke="${item.color}" stroke-width="2.5" points="${points}"/>${markers}`;
     }).join("");
     const legend = series.map((item) => `<span><i style="background:${item.color}"></i>${item.label}</span>`).join("");
@@ -987,21 +1096,25 @@ function renderProfileChart(): void {
   const editorValue = selectedValue === undefined ? "" : String(selectedValue);
   const editorType = isPrs ? "number" : "range";
   const editorOutput = selectedValue === undefined ? "Sin programar" : `${selectedValue} %`;
-  $("profile-preview-chart").innerHTML = `<p class="scenario-chart-name">${escapedName || "Escenario sin nombre"} · HORA ${String(profileHour + 1).padStart(2, "0")}</p>${chart("Apertura promedio de viviendas por nivel · 24 horas", 100, levelSeries)}<section class="profile-point-editor"><label>Parámetro<select id="profile-point-parameter">${parameterOptions.map(([value, label]) => `<option value="${value}" ${value === profileParameter ? "selected" : ""}>${label}</option>`).join("")}</select></label><label>Hora ${String(profileHour + 1).padStart(2, "0")} · ${selectedLabel}<input id="profile-point-range" type="${editorType}" min="${isPrs ? 20 : 0}" max="100" step="1" value="${isPrs ? editorValue : String(selectedValue ?? 0)}" ${isPrs ? 'placeholder="Sin programar"' : ""}/><output id="profile-point-output">${isPrs ? editorOutput : `${selectedValue} %`}</output></label><p class="muted">Seleccione un punto para elegir la hora; en la gráfica también se selecciona el nivel que editará.</p></section>`;
+  $("profile-preview-chart").innerHTML = `<p class="scenario-chart-name">${escapedName || "Escenario sin nombre"} · HORA ${String(profileHour + 1).padStart(2, "0")}</p><p id="profile-time-context" class="profile-time-context" aria-live="polite">${profileHourContext(profileHour)}</p>${chart("Apertura promedio de viviendas por nivel · 24 horas", 100, levelSeries)}<section class="profile-point-editor"><label>Parámetro<select id="profile-point-parameter">${parameterOptions.map(([value, label]) => `<option value="${value}" ${value === profileParameter ? "selected" : ""}>${label}</option>`).join("")}</select></label><label>Hora ${String(profileHour + 1).padStart(2, "0")} · ${selectedLabel}<input id="profile-point-range" type="${editorType}" min="${isPrs ? 20 : 0}" max="100" step="1" value="${isPrs ? editorValue : String(selectedValue ?? 0)}" ${isPrs ? 'placeholder="Sin programar"' : ""}/><output id="profile-point-output">${isPrs ? editorOutput : `${selectedValue} %`}</output></label><p id="profile-point-status" class="muted" aria-live="polite">Seleccione una franja. Las que ya iniciaron durante la sesión están bloqueadas.</p></section>`;
   document.querySelectorAll<SVGCircleElement>(".scenario-point[data-profile-hour]").forEach((point) => point.onclick = () => {
     updateProfileHourFromForm();
     profileHour = Number(point.dataset.profileHour);
     if (point.dataset.profileParameter) profileParameter = point.dataset.profileParameter as ProfileParameter;
     renderProfileEditor();
+    const reason = profileHourLockReason(profileHour);
+    if (reason) $("profile-point-status").textContent = reason;
   });
   const parameterSelect = $<HTMLSelectElement>("profile-point-parameter");
   parameterSelect.onchange = () => { profileParameter = parameterSelect.value as ProfileParameter; renderProfileChart(); };
   const range = $<HTMLInputElement>("profile-point-range");
   const readOnly = Boolean(activeProfileId?.startsWith("builtin-"));
+  const locked = Boolean(profileHourLockReason(profileHour));
   document.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLButtonElement>("#profiles input, #profiles select, #profiles button").forEach((control) => {
     if (["profile-select", "profile-new", "profile-save-as"].includes(control.id)) return;
-    control.disabled = readOnly;
+    control.disabled = readOnly || locked;
   });
+  if (locked) $("profile-point-status").textContent = profileHourLockReason(profileHour)!;
   range.oninput = () => {
     if (isPrs && !range.value.trim()) {
       const prs = currentProfileHour().prs;
@@ -1014,7 +1127,7 @@ function renderProfileChart(): void {
     setProfilePointValue(openingValue);
     $("profile-point-output").textContent = `${openingValue} %`;
   };
-  range.onchange = () => renderProfileEditor();
+  range.onchange = () => { void persistFutureProfileEdit(profileHour); if (!plcRunning) renderProfileEditor(); };
 }
 
 function updateProfilePrsControls(mode: HTMLSelectElement, branch: HTMLSelectElement): void {
@@ -1124,22 +1237,29 @@ function renderProfileEditor(): void {
     updateProfilePrsControls(mode, branch);
     updateProfileHourFromForm();
     renderProfileChart();
+    void persistFutureProfileEdit(profileHour);
   });
   const ranges = [global, ...document.querySelectorAll<HTMLInputElement>("[data-profile-level], [data-profile-between]"), critical, manual];
-  ranges.forEach((input) => input.oninput = () => {
-    if (input === critical || input === manual) profilePrsControlsTouched = true;
-    const output = input.parentElement?.querySelector("output");
-    if (output) output.textContent = input === critical || input === manual ? `${Number(input.value).toFixed(2)} mca` : `${input.value} %`;
-    updateProfileHourFromForm();
-    renderProfileChart();
+  ranges.forEach((input) => {
+    input.oninput = () => {
+      if (input === critical || input === manual) profilePrsControlsTouched = true;
+      const output = input.parentElement?.querySelector("output");
+      if (output) output.textContent = input === critical || input === manual ? `${Number(input.value).toFixed(2)} mca` : `${input.value} %`;
+      updateProfileHourFromForm();
+      renderProfileChart();
+    };
+    input.onchange = () => { void persistFutureProfileEdit(profileHour); };
   });
-  document.querySelectorAll<HTMLInputElement>("[data-profile-grid]").forEach((input) => input.oninput = () => {
-    const grid = input.dataset.profileGrid!, valve = input.dataset.profileValve!;
-    const entry = currentProfileHour();
-    const destination = valve.startsWith("l") ? (entry.leaks ??= {}) : (entry.dwellings ??= {});
-    (destination[grid] ??= {})[valve] = Number(input.value);
-    input.parentElement!.querySelector("output")!.textContent = `${input.value}%`;
-    renderProfileChart();
+  document.querySelectorAll<HTMLInputElement>("[data-profile-grid]").forEach((input) => {
+    input.oninput = () => {
+      const grid = input.dataset.profileGrid!, valve = input.dataset.profileValve!;
+      const entry = currentProfileHour();
+      const destination = valve.startsWith("l") ? (entry.leaks ??= {}) : (entry.dwellings ??= {});
+      (destination[grid] ??= {})[valve] = Number(input.value);
+      input.parentElement!.querySelector("output")!.textContent = `${input.value}%`;
+      renderProfileChart();
+    };
+    input.onchange = () => { void persistFutureProfileEdit(profileHour); };
   });
   renderProfileChart();
 }
@@ -1165,7 +1285,9 @@ async function loadComparisons(preferredId?: string): Promise<void> {
     const version = manifest
       ? `t₀=${fmt(manifest.base_time_s / 3600, 2)} h · ${manifest.time_step_s / 3600}/${manifest.horizon_s / 3600} h · ${manifest.input_hash.slice(0, 10)}`
       : "contexto antiguo sin manifiesto";
-    select.add(new Option(`${comparison.comparison_id} · ${comparison.profile_id} · ${version} · ${sources || "sin fuentes"}`, comparison.comparison_id));
+    const currentScenarioId = pendingSessionProfileId ?? activeSessionProfileId;
+    const stale = Boolean(currentScenarioId && comparison.profile_id !== currentScenarioId);
+    select.add(new Option(`${stale ? "OBSOLETA · " : ""}${comparison.comparison_id} · ${comparison.profile_id} · ${version} · ${sources || "sin fuentes"}`, comparison.comparison_id));
   }
   const selectedId = comparisons.some((item) => item.comparison_id === previous)
     ? previous
@@ -1174,6 +1296,7 @@ async function loadComparisons(preferredId?: string): Promise<void> {
   $<HTMLInputElement>("triad-slider").disabled = true;
   $<HTMLButtonElement>("triad-play").disabled = true;
   triadFrames = [];
+  renderEngineComparisonCharts();
   renderTriadFrame();
   if (selectedId) await loadTriadFrames();
 }
@@ -1183,12 +1306,145 @@ async function loadTriadFrames(): Promise<void> {
   const comparisonId = $<HTMLSelectElement>("comparison-select").value;
   const response = await getJson<{ triads: TriadFrame[] }>(`/api/plants/${plantId}/sessions/${sessionId}/comparisons/${encodeURIComponent(comparisonId)}/triads`);
   triadFrames = response.triads;
+  renderEngineComparisonCharts();
   const sourceStatus = comparisons.find((item) => item.comparison_id === comparisonId)?.source_status;
   if (sourceStatus) $("triad-position").textContent = `Fuentes: ${Object.entries(sourceStatus).map(([source, item]) => `${source} ${sourceStatusLabel(item.status)}${item.detail ? ` (${item.detail})` : ""}`).join(" · ")}`;
   const slider = $<HTMLInputElement>("triad-slider");
   slider.min = "0"; slider.max = String(Math.max(0, triadFrames.length - 1)); slider.value = "0"; slider.disabled = triadFrames.length === 0;
   $<HTMLButtonElement>("triad-play").disabled = triadFrames.length < 2;
   renderTriadFrame();
+}
+
+type ComparisonObservables = Record<string, number | null>;
+
+function triadObservables(state: Record<string, unknown>): ComparisonObservables {
+  const snapshot = (state.snapshot && typeof state.snapshot === "object" ? state.snapshot : state) as Record<string, unknown>;
+  const tags = (state.plc_tags && typeof state.plc_tags === "object" ? state.plc_tags : snapshot.plc_tags) as Record<string, unknown> | undefined;
+  const equipment = (snapshot.equipment ?? state.equipment) as Record<string, { variables?: Record<string, unknown> }> | undefined;
+  const tag = (key: string, asset: string, variable: string): number | null => {
+    const tagged = tags?.[key];
+    if (typeof tagged === "number" && Number.isFinite(tagged)) return tagged;
+    const raw = equipment?.[asset]?.variables?.[variable];
+    return typeof raw === "number" && Number.isFinite(raw) ? raw : null;
+  };
+  const sumTags = (prefix: string, variable: string): number | null => {
+    const values = [1, 2, 3, 4].map((level) => {
+      const tagged = tags?.[`PLC.Grid.L${level}.${prefix}`];
+      if (typeof tagged === "number" && Number.isFinite(tagged)) return tagged;
+      const raw = equipment?.[`grid-0${level}`]?.variables?.[variable];
+      return typeof raw === "number" && Number.isFinite(raw) ? raw : null;
+    });
+    return values.every((item) => item !== null) ? (values as number[]).reduce((sum, item) => sum + item, 0) : null;
+  }
+  const values: ComparisonObservables = {
+    pump_flow: tag("PLC.Pump.FlowM3h", "pumpset-main-01", "flow_m3h"),
+    pump_discharge: tag("PLC.Pump.DischargePressureMca", "pumpset-main-01", "discharge_pressure_mca"),
+    prs_inlet: tag("PLC.PRS.InletPressureMca", "prs-01", "inlet_pressure_mca"),
+    prs_outlet: tag("PLC.PRS.OutletPressureMca", "prs-01", "outlet_pressure_mca"),
+    prs_flow: tag("PLC.PRS.FlowM3h", "prs-01", "flow_m3h"),
+    prs_opening: tag("PLC.PRS.AutoOpeningPct", "prs-01", "auto_opening_pct"),
+    critical_pressure: tag("PLC.PRS.CriticalPressureMca", "prs-01", "critical_pressure_mca"),
+    demand: sumTags("ConsumptionM3h", "consumption_m3h"),
+    leakage: sumTags("LeakageM3h", "leakage_m3h"),
+    supply_level: tag("PLC.Tank.Supply.LevelPct", "tank-supply-01", "level_pct"),
+    return1_level: tag("PLC.Tank.Recirc01.LevelPct", "tank-recirc-01", "level_pct"),
+    return2_level: tag("PLC.Tank.Recirc02.LevelPct", "tank-recirc-02", "level_pct"),
+    recirculation_flow: tag("PLC.Pump.RecirculationFlowM3h", "pumpset-recirc-01", "flow_m3h"),
+    pump_speed: tag("PLC.Pump.SpeedPct", "pumpset-main-01", "speed_pct"),
+    pump_power: tag("PLC.Pump.PowerKw", "pumpset-main-01", "power_kw"),
+    pumps_running: tag("PLC.Pump.RunningCount", "pumpset-main-01", "pumps_running"),
+    recirculation_auto: typeof tags?.["PLC.Pump.RecirculationAutoActive"] === "boolean"
+      ? (tags["PLC.Pump.RecirculationAutoActive"] ? 1 : 0)
+      : tag("PLC.Pump.RecirculationAutoActive", "pumpset-recirc-01", "level_auto_active"),
+  };
+  for (const level of [1, 2, 3, 4]) {
+    values[`level${level}_pressure`] = tag(`PLC.Grid.L${level}.MinimumPressureMca`, `grid-0${level}`, "min_pressure_mca");
+    values[`valve${level === 1 ? 12 : level === 2 ? 23 : 34}_opening`] = level < 4
+      ? tag(`PLC.Valve.Vertical${level === 1 ? 12 : level === 2 ? 23 : 34}OpeningPct`, `valve-between-${level === 1 ? 12 : level === 2 ? 23 : 34}`, "opening_pct")
+      : null;
+  }
+  return values;
+}
+
+function renderEngineComparisonCharts(): void {
+  const target = $("engine-comparison-charts");
+  if (!target) return;
+  if (!triadFrames.length) { target.innerHTML = `<p class="empty">Seleccione y cargue una comparación guardada para ver curvas de los motores.</p>`; return; }
+  const selectedComparison = comparisons.find((item) => item.comparison_id === $<HTMLSelectElement>("comparison-select").value);
+  const currentProfileId = pendingSessionProfileId ?? activeSessionProfileId;
+  const staleNotice = currentProfileId && selectedComparison?.profile_id && selectedComparison.profile_id !== currentProfileId
+    ? `<p class="comparison-status step-note">COMPARACIÓN OBSOLETA · Se calculó con ${selectedComparison.profile_id}; el escenario vigente es ${currentProfileId}. Se conserva como historial; solicite nuevos cálculos para actualizarla.</p>`
+    : "";
+  const colors = { emulator: "#4EA7FF", cosimulation: "#55d58c", optimization: "#f4b56c" } as const;
+  const labels = { emulator: "Emulador observado", cosimulation: "Cosimulador · no optimizado", optimization: "Fractal · optimizado" } as const;
+  const metrics = [
+    ["pump_flow", "Caudal de alimentación antes de VRP", "m³/h"], ["pump_discharge", "Presión de descarga de bomba", "mca"],
+    ["prs_opening", "Apertura VRP", "%"], ["prs_inlet", "Presión de entrada a VRP", "mca"],
+    ["prs_outlet", "Presión de salida de VRP", "mca"], ["prs_flow", "Caudal a la salida de VRP", "m³/h"],
+    ["critical_pressure", "Presión del punto crítico", "mca"], ["demand", "Consumo total de viviendas", "m³/h"],
+    ["leakage", "Caudal total de fugas", "m³/h"], ["supply_level", "Nivel del tanque de suministro", "%"],
+    ["return1_level", "Nivel tanque de retorno 1", "%"], ["return2_level", "Nivel tanque de retorno 2", "%"],
+    ["recirculation_flow", "Caudal de recirculación", "m³/h"], ["pump_speed", "Velocidad de bombas", "%"],
+    ["pump_power", "Potencia de bombeo", "kW"], ["pumps_running", "Bombas principales en marcha", "unid."],
+    ["recirculation_auto", "Control automático de recirculación", "0/1"], ["level1_pressure", "Presión mínima nivel 1", "mca"],
+    ["level2_pressure", "Presión mínima nivel 2", "mca"], ["level3_pressure", "Presión mínima nivel 3", "mca"],
+    ["level4_pressure", "Presión mínima nivel 4", "mca"], ["valve12_opening", "Apertura válvula entre niveles 1–2", "%"],
+    ["valve23_opening", "Apertura válvula entre niveles 2–3", "%"], ["valve34_opening", "Apertura válvula entre niveles 3–4", "%"],
+  ] as const;
+  const width = 900, height = 230, left = 54, right = 18, top = 16, bottom = 32;
+  const maxTime = Math.max(3600, ...triadFrames.map((frame) => frame.simulation_time_s));
+  const x = (t: number) => left + (t / maxTime) * (width - left - right);
+  target.innerHTML = staleNotice + metrics.map(([key, title, unit]) => {
+    const all: ( { source: keyof typeof labels; t: number; v: number } | null )[][] = (["emulator", "cosimulation", "optimization"] as const).map((source) => triadFrames.map((frame) => {
+      const saved = frame.sources[source];
+      if (!saved) return null;
+      const value = triadObservables(saved.state)[key];
+      return value === null || value === undefined ? null : { source, t: frame.simulation_time_s, v: value };
+    }));
+    const readings = all.flatMap((line) => line.flatMap((point) => point ? [point.v] : []));
+    if (!readings.length) return `<article class="trend panel"><h2>${title}<span>${unit}</span></h2><p class="empty">Ningún motor publicó esta señal para la comparación.</p></article>`;
+    const low = Math.min(...readings), high = Math.max(...readings), padY = Math.max((high - low) * .1, .1);
+    const min = low - padY, max = high + padY;
+    const y = (v: number) => height - bottom - ((v - min) / (max - min)) * (height - top - bottom);
+    const grid = [0, .5, 1].map((fraction) => { const v = max - fraction * (max - min); return `<line class="scenario-grid" x1="${left}" x2="${width-right}" y1="${y(v)}" y2="${y(v)}"/><text class="scenario-axis" x="${left-7}" y="${y(v)+4}" text-anchor="end">${fmt(v, 1)}</text>`; }).join("");
+    const ticks = [0, .25, .5, .75, 1].map((fraction) => { const t = maxTime * fraction; return `<text class="scenario-axis" x="${x(t)}" y="${height-7}" text-anchor="middle">${fmt(t / 3600, 1)} h</text>`; }).join("");
+    const stepSignals = new Set(["prs_opening", "valve12_opening", "valve23_opening", "valve34_opening", "pumps_running", "recirculation_auto"]);
+    const lines = all.map((points, index) => {
+      const source = (["emulator", "cosimulation", "optimization"] as const)[index];
+      if (!points.length) return "";
+      let previous: { source: keyof typeof labels; t: number; v: number } | null = null;
+      const commands: string[] = [];
+      for (const point of points) {
+        if (!point) { previous = null; continue; }
+        if (!previous) commands.push(`M${x(point.t).toFixed(1)},${y(point.v).toFixed(1)}`);
+        else if (stepSignals.has(key)) commands.push(`H${x(point.t).toFixed(1)} V${y(point.v).toFixed(1)}`);
+        else commands.push(`L${x(point.t).toFixed(1)},${y(point.v).toFixed(1)}`);
+        previous = point;
+      }
+      return `<path d="${commands.join(" ")}" fill="none" stroke="${colors[source]}" stroke-width="2.5"><title>${labels[source]}${stepSignals.has(key) ? " · escalón" : ""}</title></path>`;
+    }).join("");
+    const legend = (["emulator", "cosimulation", "optimization"] as const).map((source, index) => {
+      const quality = triadFrames.map((frame) => frame.sources[source]?.model_quality ?? (typeof frame.sources[source]?.state.quality === "string" ? frame.sources[source]?.state.quality as string : "")).find(Boolean);
+      return `<span title="${quality ?? "Calidad no declarada"}"><i style="background:${colors[source]}"></i>${labels[source]}${quality ? ` · ${quality}` : " · calidad no declarada"} · ${all[index].filter(Boolean).length ? `${all[index].filter(Boolean).length} puntos` : "sin datos"}</span>`;
+    }).join("");
+    return `<article class="trend panel"><h2>${title}<span>${unit}</span></h2><svg class="day-chart" data-engine-comparison data-max-time="${maxTime}" viewBox="0 0 ${width} ${height}" role="img" aria-label="${title}, comparación temporal de tres fuentes">${grid}${ticks}${lines}</svg><div class="legend">${legend}</div></article>`;
+  }).join("");
+}
+
+function updateComparisonCursor(simulationTime: number | null): void {
+  document.querySelectorAll<SVGSVGElement>("svg[data-engine-comparison]").forEach((svg) => {
+    svg.querySelector(".comparison-cursor")?.remove();
+    if (simulationTime === null) return;
+    const maxTime = Number(svg.dataset.maxTime);
+    if (!Number.isFinite(maxTime) || maxTime <= 0) return;
+    const width = 900, left = 54, right = 18;
+    const x = left + Math.max(0, Math.min(1, simulationTime / maxTime)) * (width - left - right);
+    const cursor = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    cursor.setAttribute("class", "comparison-cursor"); cursor.setAttribute("x1", String(x)); cursor.setAttribute("x2", String(x));
+    cursor.setAttribute("y1", "16"); cursor.setAttribute("y2", "198"); cursor.setAttribute("stroke", "#ffffff");
+    cursor.setAttribute("stroke-width", "1.5"); cursor.setAttribute("stroke-dasharray", "4 3");
+    svg.append(cursor);
+  });
 }
 
 function sourceStatusLabel(status: string): string {
@@ -1202,12 +1458,14 @@ function renderTriadFrame(): void {
   const frame = triadFrames[index];
   output.replaceChildren();
   if (!frame) {
+    updateComparisonCursor(null);
     const selected = comparisons.find((item) => item.comparison_id === $<HTMLSelectElement>("comparison-select").value);
     const sourceStatus = Object.entries(selected?.source_status ?? {}).map(([source, item]) => `${source}: ${sourceStatusLabel(item.status)}${item.detail ? ` (${item.detail})` : ""}`).join(" · ");
     $("triad-position").textContent = `${sourceStatus ? `Fuentes: ${sourceStatus}. ` : ""}La reproducción y la escena 3D recorren únicamente frames guardados; no vuelven a simular ni interpolan.`;
     return;
   }
-  $("triad-position").textContent = `Frame ${index + 1} de ${triadFrames.length} · t=${fmt(frame.simulation_time_s, 0)} s · ${frame.aligned ? "tiempos alineados" : "faltan frames o tiempos desalineados"} · perfil ${frame.profile_id} · hash ${frame.profile_hash.slice(0, 12)}…`;
+  $("triad-position").textContent = `Frame ${index + 1} de ${triadFrames.length} · t=${fmt(frame.simulation_time_s, 0)} s · 3D: ${selectedTriadSource} · ${frame.aligned ? "tiempos alineados" : "faltan frames o tiempos desalineados"} · perfil ${frame.profile_id} · hash ${frame.profile_hash.slice(0, 12)}…`;
+  updateComparisonCursor(frame.simulation_time_s);
   for (const source of ["emulator", "cosimulation", "optimization"]) {
     const saved = frame.sources[source];
     const card = document.createElement("article"); card.className = "panel";
@@ -1233,12 +1491,7 @@ function renderTriadFrame(): void {
         state: saved.state,
       } : null]),
     );
-    const source = ["emulator", "cosimulation", "optimization"].find((name) => {
-      const saved = frame.sources[name];
-      if (!saved) return false;
-      const candidate = name === "emulator" ? saved.state : saved.state.snapshot ?? saved.state;
-      return Boolean(candidate && typeof candidate === "object" && "equipment" in candidate && "lines" in candidate);
-    }) ?? "emulator";
+      const source = selectedTriadSource;
     const saved = frame.sources[source];
     const candidate = saved ? (source === "emulator" ? saved.state : saved.state.snapshot ?? saved.state) : undefined;
     notify3d("plc-show-3d", {
@@ -1312,7 +1565,7 @@ async function start(): Promise<void> {
   $<HTMLAnchorElement>("link-plant").href = `/plant.html?plant=${plantId}${query.get("api") ? `&api=${encodeURIComponent(apiOrigin)}` : ""}`;
   buildAssets();
   const initialScreen = query.get("screen");
-  if (["master", "day", "pumping", "grid", "profiles", "trends", "fractal", "history"].includes(initialScreen ?? "")) selectScreen(initialScreen!);
+  if (["master", "day", "operation", "pumping", "grid", "profiles", "trends", "fractal", "history"].includes(initialScreen ?? "")) selectScreen(initialScreen!);
   $("connect").onclick = () => { void connect(); };
   $("stop-session").onclick = () => { void stopSession().catch((error) => { $("connection").textContent = `● ERROR · ${String(error)}`; }); };
   $("pause").onclick = () => {
@@ -1335,6 +1588,7 @@ async function start(): Promise<void> {
     const result = await response.json().catch(() => ({})) as { starts_at_hour?: number; detail?: string };
     if (!response.ok) { $("scenario-selection-note").textContent = result.detail ?? "No se pudo programar el escenario."; return; }
     pendingSessionProfileId = activeProfileId;
+    pendingSessionProfileHour = result.starts_at_hour ?? null;
     renderWorkspaceContext();
     $("scenario-selection-note").textContent = `Programado para la hora ${String((result.starts_at_hour ?? 0) + 1).padStart(2, "0")}. El PLC mantiene el perfil actual hasta entonces.`;
     renderSessionControls();
@@ -1386,6 +1640,10 @@ async function start(): Promise<void> {
   $("comparison-load").onclick = () => { void loadTriadFrames().catch((error) => { $("triad-position").textContent = `No se pudieron cargar los frames: ${String(error)}`; }); };
   $<HTMLSelectElement>("comparison-select").onchange = () => { void loadTriadFrames(); };
   $<HTMLInputElement>("triad-slider").oninput = renderTriadFrame;
+  $<HTMLSelectElement>("triad-source-select").onchange = (event) => {
+    selectedTriadSource = (event.target as HTMLSelectElement).value as typeof selectedTriadSource;
+    renderTriadFrame();
+  };
   $("triad-play").onclick = () => {
     if (triadPlaybackTimer !== null || triadFrames.length < 2) return;
     $<HTMLButtonElement>("triad-play").disabled = true;
@@ -1500,7 +1758,7 @@ async function start(): Promise<void> {
   };
   $("profile-new").onclick = () => {
     const selected = profiles.find((profile) => profile.id === activeProfileId);
-    const template = selected ?? profiles.find((profile) => profile.id?.endsWith("pfl-personalizado-01"));
+    const template = selected ?? profiles.find((profile) => profile.id?.endsWith("pfl-base-01"));
     activeProfile = template ? structuredClone(template) : { name: "", description: "", hours: {} };
     delete activeProfile.id;
     activeProfile.name = template ? `Copia de ${template.name}` : "Nuevo escenario";
@@ -1563,13 +1821,15 @@ async function start(): Promise<void> {
     notify3d("plc-show-3d", selected ? { studyId: selected } : {});
   });
   renderDay(); renderSavedRuns(); await loadProfiles();
+  renderPumping();
   renderWorkspaceContext();
   if (sessionId) {
-    const state = await getJson<{ running: boolean; paused?: boolean; profile_id?: string | null; pending_profile_id?: string | null; t?: number }>(`/api/plants/${plantId}/sessions/${sessionId}`).catch(() => null);
+    const state = await getJson<{ running: boolean; paused?: boolean; profile_id?: string | null; pending_profile_id?: string | null; pending_profile_hour?: number | null; t?: number }>(`/api/plants/${plantId}/sessions/${sessionId}`).catch(() => null);
     if (state) {
       activeSessionProfileId = state.profile_id ?? null;
       pendingSessionProfileId = state.pending_profile_id ?? null;
-      const sessionProfile = profiles.find((profile) => profile.id === activeSessionProfileId);
+      pendingSessionProfileHour = state.pending_profile_hour ?? null;
+      const sessionProfile = profiles.find((profile) => profile.id === (pendingSessionProfileId ?? activeSessionProfileId));
       if (sessionProfile) {
         activeProfile = structuredClone(sessionProfile);
         activeProfileId = sessionProfile.id ?? null;

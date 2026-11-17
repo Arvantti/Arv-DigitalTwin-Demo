@@ -13,6 +13,13 @@
         <div><p class="eyebrow">DIGITALTWIN · CONTROL DE ACCESO</p><h1>Administrar usuarios</h1></div>
       </header>
       <p id="access-status" class="access-status" role="status" aria-live="polite">Verificando sesión…</p>
+      <section id="registrations-panel" class="access-panel" hidden>
+        <div class="access-section-heading">
+          <div><h2>Solicitudes pendientes</h2><p id="registrations-count">Cargando solicitudes…</p><p>Revisa esta sección periódicamente. Las solicitudes no envían avisos automáticos.</p></div>
+          <button id="refresh-registrations" type="button" class="secondary">Actualizar solicitudes</button>
+        </div>
+        <div id="registrations-list" class="access-users"></div>
+      </section>
       <section id="invite-panel" class="access-panel" hidden>
         <h2>Invitar visualizador</h2>
         <form id="invite-form">

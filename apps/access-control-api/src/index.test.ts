@@ -4,6 +4,7 @@ vi.mock("jose", () => ({
   jwtVerify: vi.fn(async (assertion: string) => {
     if (assertion === "admin-token") return { payload: { sub: "cf-admin-user", email: "admin@example.test", email_verified: true } };
     if (assertion === "viewer-token") return { payload: { sub: "cf-viewer-user", email: "viewer@example.test", email_verified: true } };
+    if (assertion === "unverified-token") return { payload: { sub: "cf-viewer-user", email: "viewer@example.test", email_verified: false } };
     if (assertion === "impostor-token") return { payload: { sub: "cf-impostor-user", email: "admin@example.test", email_verified: true } };
     throw new Error("invalid assertion");
   }),
@@ -124,6 +125,19 @@ describe("access-control API", () => {
     expect(result.headers.get("location")).toBe(`${origin}/`);
   });
 
+  it("redirects pending applicants from protected twin routes to the portal notice", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => Response.json({ allowed: false, approval_status: "pending" })));
+    const result = await onRequest({
+      request: new Request("https://digitaltwin.arvantti.online/plant?plant=water-network-scale-v1", {
+        headers: { "cf-access-jwt-assertion": "signed-assertion", cookie: "CF_Authorization=real-session-cookie" },
+      }),
+      env: { ACCESS_CONTROL_API_URL: "https://access-api.example" },
+      next: async () => new Response("page"),
+    });
+    expect(result.status).toBe(302);
+    expect(result.headers.get("location")).toBe("https://digitaltwin.arvantti.online/?access=pending");
+  });
+
   it("rejects a forged internal session header when the browser has no Access cookie", async () => {
     const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
@@ -169,10 +183,12 @@ describe("access-control API", () => {
     expect(await adminAction.json()).toEqual({ allowed: true });
   });
 
-  it("allows only the exact configured upstream subject to enter admin routes", async () => {
+  it("denies ordinary users any administrative route, including approval actions", async () => {
     const regular = await worker.fetch(request("/admin/users", "viewer-token"), env());
+    const forgedApproval = await worker.fetch(request("/admin/registrations/auth0%7Cviewer/approve", "viewer-token", { method: "POST" }), env());
     const impostor = await worker.fetch(request("/admin/users", "impostor-token"), env());
     expect(regular.status).toBe(403);
+    expect(forgedApproval.status).toBe(403);
     expect(impostor.status).toBe(403);
   });
 
@@ -233,7 +249,153 @@ describe("access-control API", () => {
     expect(badPermission.status).toBe(422);
   });
 
-  it("never sends generated passwords to the browser when creating an invited account", async () => {
+  it("records a verified first-time identity as pending without any mail integration", async () => {
+    const statements: string[] = [];
+    const db = {
+      prepare: (sql: string) => ({
+        bind: (..._values: unknown[]) => ({
+          first: async () => sql.includes("FROM access_users") ? null : sql.includes("FROM access_signup_requests")
+            ? { auth0_sub: "auth0|viewer", email: "viewer@example.test", status: "pending", requested_at: 1 }
+            : null,
+          run: async () => { statements.push(sql); return { success: true, meta: { changes: 1 } }; },
+        }),
+      }),
+    };
+    const response = await worker.fetch(request("/v1/me", "viewer-token"), env({ DB: db }));
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({ approval_status: "pending", twins: [], grants: [] });
+    expect(statements.some((sql) => sql.includes("INSERT INTO access_signup_requests"))).toBe(true);
+    expect(statements.every((sql) => !sql.includes("notification"))).toBe(true);
+  });
+
+  it("records an unapproved user's first protected-twin attempt and denies it", async () => {
+    const db = {
+      prepare: (sql: string) => ({
+        bind: (..._values: unknown[]) => ({
+          first: async () => sql.includes("FROM access_users") ? null : sql.includes("FROM access_signup_requests")
+            ? { auth0_sub: "auth0|viewer", email: "viewer@example.test", status: "pending", requested_at: 1 }
+            : null,
+          run: async () => ({ success: true, meta: { changes: 1 } }),
+        }),
+      }),
+    };
+    const response = await worker.fetch(request("/v1/check?twin_id=water-network-scale-v1&permission=view", "viewer-token"), env({ DB: db }));
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({ allowed: false, approval_status: "pending" });
+  });
+
+  it("does not open approval requests until the identity provider verifies the email", async () => {
+    const run = vi.fn(async () => ({ success: true, meta: { changes: 1 } }));
+    const db = {
+      prepare: (sql: string) => ({ bind: () => ({ first: async () => sql.includes("FROM access_users") ? null : null, run }) }),
+    };
+    const response = await worker.fetch(request("/v1/me", "unverified-token"), env({ DB: db }));
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({ approval_status: "email_unverified", email_verified: false, twins: [] });
+    expect(run).not.toHaveBeenCalled();
+  });
+
+  it("approves a pending verified request with read-only access inherited by future twins", async () => {
+    const batch = vi.fn(async (_statements: unknown[]) => [{ meta: { changes: 1 } }, {}, {}]);
+    const db = {
+      prepare: (sql: string) => ({
+        sql,
+        bind: (..._values: unknown[]) => ({
+          sql,
+          first: async () => sql.includes("FROM access_signup_requests")
+            ? { auth0_sub: "auth0|new-user", email: "new@example.test", status: "pending", requested_at: 1 }
+            : null,
+        }),
+      }),
+      batch,
+    };
+    vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const identity = accessIdentityResponse(input, init);
+      if (identity) return identity;
+      if (String(input).endsWith("/oauth/token")) return Response.json({ access_token: "mock-management-token" });
+      if (String(input).endsWith("/api/v2/users/auth0%7Cnew-user")) return Response.json({ user_id: "auth0|new-user", email_verified: true });
+      return new Response(null, { status: 404 });
+    }));
+    const response = await worker.fetch(request("/admin/registrations/auth0%7Cnew-user/approve", "admin-token", { method: "POST" }), env({ DB: db }));
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({ subject: "auth0|new-user", status: "active", global_view_only: true });
+    expect(batch).toHaveBeenCalledOnce();
+    const statements = batch.mock.calls[0]?.[0] as Array<{ sql?: string }>;
+    expect(statements[0]?.sql).toContain("status = 'pending'");
+    expect(statements[1]?.sql).toContain("INSERT INTO access_users");
+    expect(statements[1]?.sql).toContain("WHERE EXISTS");
+    expect(JSON.stringify(statements)).toContain("global_view_only");
+  });
+
+  it("fails closed when a concurrent admin has already decided the signup request", async () => {
+    const batch = vi.fn(async (_statements: unknown[]) => [{ meta: { changes: 0 } }, {}, {}]);
+    const db = {
+      prepare: (sql: string) => ({
+        bind: (..._values: unknown[]) => ({
+          first: async () => sql.includes("FROM access_signup_requests")
+            ? { auth0_sub: "auth0|new-user", email: "new@example.test", status: "pending", requested_at: 1 }
+            : null,
+        }),
+      }),
+      batch,
+    };
+    vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const identity = accessIdentityResponse(input, init);
+      if (identity) return identity;
+      if (String(input).endsWith("/oauth/token")) return Response.json({ access_token: "mock-management-token" });
+      if (String(input).endsWith("/api/v2/users/auth0%7Cnew-user")) return Response.json({ user_id: "auth0|new-user", email_verified: true });
+      return new Response(null, { status: 404 });
+    }));
+    const response = await worker.fetch(request("/admin/registrations/auth0%7Cnew-user/approve", "admin-token", { method: "POST" }), env({ DB: db }));
+    expect(response.status).toBe(409);
+    expect(await response.json()).toMatchObject({ detail: "Registration request is no longer pending" });
+  });
+
+  it("rejects an approval request without granting access", async () => {
+    const batch = vi.fn(async (_statements: unknown[]) => [{ meta: { changes: 1 } }, {}]);
+    const db = {
+      prepare: (sql: string) => ({
+        bind: (..._values: unknown[]) => ({
+          sql,
+          first: async () => sql.includes("FROM access_signup_requests")
+            ? { auth0_sub: "auth0|new-user", email: "new@example.test", status: "pending", requested_at: 1 }
+            : null,
+        }),
+      }),
+      batch,
+    };
+    const response = await worker.fetch(request("/admin/registrations/auth0%7Cnew-user/reject", "admin-token", { method: "POST" }), env({ DB: db }));
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({ subject: "auth0|new-user", status: "rejected" });
+    expect(batch).toHaveBeenCalledOnce();
+    expect(JSON.stringify(batch.mock.calls[0]?.[0])).toContain("rejected");
+  });
+
+  it("applies approved global view-only access to the configured catalog but not study actions", async () => {
+    const db = {
+      prepare: (sql: string) => ({
+        bind: () => ({
+          first: async () => sql.includes("FROM access_users") ? { status: "active", global_view_only: 1 } : null,
+          all: async () => ({ results: [] }),
+        }),
+      }),
+    };
+    const view = await worker.fetch(request("/v1/check?twin_id=water-network-scale-v1&permission=view", "viewer-token"), env({ DB: db }));
+    const study = await worker.fetch(request("/v1/check?twin_id=water-network-scale-v1&permission=saved_studies.create", "viewer-token"), env({ DB: db }));
+    expect(await view.json()).toEqual({ allowed: true });
+    expect(await study.json()).toEqual({ allowed: false });
+  });
+
+  it("never sends generated passwords to the browser and grants invitees verified read-only access", async () => {
+    const statements: string[] = [];
+    const db = {
+      prepare: (sql: string) => ({
+        bind: (..._values: unknown[]) => ({
+          run: async () => { statements.push(sql); return { success: true, meta: { changes: 1 } }; },
+        }),
+      }),
+      batch: vi.fn(async (_statements: unknown[]) => []),
+    };
     const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const accessIdentity = accessIdentityResponse(input, init);
       if (accessIdentity) return accessIdentity;
@@ -248,10 +410,11 @@ describe("access-control API", () => {
     const response = await worker.fetch(request("/admin/users", "admin-token", {
       method: "POST", headers: { "content-type": "application/json" },
       body: JSON.stringify({ email: "new@example.test", account_type: "reseller" }),
-    }), env());
+    }), env({ DB: db }));
     const body = await response.json() as Record<string, unknown>;
     expect(response.status).toBe(201);
     expect(body).toMatchObject({ invitation_sent: true });
+    expect(statements.some((sql) => sql.includes("global_view_only") && sql.includes(", 1,"))).toBe(true);
     expect(JSON.stringify(body)).not.toMatch(/password|ticket|secret/i);
     const createCall = fetchMock.mock.calls.find(([input]) => String(input).endsWith("/api/v2/users"));
     const createRequest = createCall?.[1] as RequestInit;

@@ -26,9 +26,9 @@ type Identity = { sub: string; email: string; emailVerified: boolean };
 type CloudflareAccessIdentity = { id?: unknown; user_uuid?: unknown; email?: unknown };
 type AccountType = "client" | "reseller";
 type PermissionRow = { twin_id: string; permission: TwinPermission };
+type SignupRequest = { auth0_sub: string; email: string; status: "pending" | "approved" | "rejected"; requested_at: number };
 type Auth0User = { user_id: string; email?: string; name?: string; blocked?: boolean; email_verified?: boolean; app_metadata?: { account_type?: AccountType } };
 
-const ACCESS_PERMISSIONS = new Set<string>(["view", "saved_studies.read", "saved_studies.create", "saved_studies.edit"]);
 const MAX_BODY_BYTES = 16_384;
 let jwks: ReturnType<typeof createRemoteJWKSet> | undefined;
 
@@ -111,7 +111,7 @@ async function rowsForUser(env: Env, sub: string): Promise<PermissionRow[]> {
   return result.results ?? [];
 }
 
-function principal(user: Identity, assignments: readonly PermissionRow[], admin: boolean): AccessPrincipal {
+function principal(user: Identity, assignments: readonly PermissionRow[], admin: boolean, globalViewOnly = false): AccessPrincipal {
   const byTwin = new Map<string, TwinPermission[]>();
   for (const row of assignments) {
     const list = byTwin.get(row.twin_id) ?? [];
@@ -121,6 +121,7 @@ function principal(user: Identity, assignments: readonly PermissionRow[], admin:
   return {
     subject: user.sub,
     administrator: admin,
+    globalViewOnly,
     assignments: [...byTwin].map(([twinId, permissions]) => ({ twinId, permissions })),
   };
 }
@@ -158,6 +159,17 @@ async function audit(env: Env, actor: string, target: string, action: string, tw
   ).bind(crypto.randomUUID(), actor, target, twinId, action, JSON.stringify(detail), Math.floor(Date.now() / 1000)).run();
 }
 
+async function signupRequestFor(env: Env, user: Identity): Promise<SignupRequest | null> {
+  if (!user.emailVerified) return null;
+  const now = Math.floor(Date.now() / 1000);
+  await env.DB.prepare(
+    "INSERT INTO access_signup_requests (auth0_sub, email, status, requested_at, updated_at) SELECT ?, ?, 'pending', ?, ? WHERE NOT EXISTS (SELECT 1 FROM access_users WHERE auth0_sub = ?) ON CONFLICT(auth0_sub) DO UPDATE SET email = excluded.email, updated_at = excluded.updated_at WHERE access_signup_requests.status = 'pending'",
+  ).bind(user.sub, user.email, now, now, user.sub).run();
+  return env.DB.prepare(
+    "SELECT auth0_sub, email, status, requested_at FROM access_signup_requests WHERE auth0_sub = ?",
+  ).bind(user.sub).first<SignupRequest>();
+}
+
 async function revokeAuth0Sessions(env: Env, token: string, sub: string): Promise<void> {
   const response = await auth0Request(env, token, `/users/${encodeURIComponent(sub)}/sessions`, { method: "DELETE" });
   if (!response.ok && response.status !== 404) throw new Error("session_revocation_failed");
@@ -171,8 +183,8 @@ async function handleAdmin(request: Request, env: Env, actor: Identity, path: st
     const token = await auth0Token(env);
     // Only enumerate accounts explicitly created/managed by this control plane; never expose other tenant identities.
     const accountRows = await env.DB.prepare(
-      "SELECT auth0_sub, email, account_type, status FROM access_users ORDER BY created_at DESC LIMIT 500",
-    ).all<{ auth0_sub: string; email: string; account_type: AccountType; status: string }>();
+      "SELECT auth0_sub, email, account_type, status, global_view_only FROM access_users ORDER BY created_at DESC LIMIT 500",
+    ).all<{ auth0_sub: string; email: string; account_type: AccountType; status: string; global_view_only: number }>();
     const result = await Promise.all((accountRows.results ?? []).map(async (account) => {
       const response = await auth0Request(env, token, `/users/${encodeURIComponent(account.auth0_sub)}`);
       if (!response.ok) return null;
@@ -185,6 +197,7 @@ async function handleAdmin(request: Request, env: Env, actor: Identity, path: st
         blocked: user.blocked === true,
         account_type: account.account_type,
         status: account.status,
+        global_view_only: account.global_view_only === 1,
         grants: (await rowsForUser(env, account.auth0_sub)).reduce<Record<string, TwinPermission[]>>((all, row) => {
           (all[row.twin_id] ??= []).push(row.permission);
           return all;
@@ -192,6 +205,66 @@ async function handleAdmin(request: Request, env: Env, actor: Identity, path: st
       };
     }));
     return json({ users: result.filter((user): user is NonNullable<typeof user> => user !== null), twins: catalog(env) });
+  }
+
+  if (request.method === "GET" && parts.length === 1 && parts[0] === "registrations") {
+    const token = await auth0Token(env);
+    const rows = await env.DB.prepare(
+      "SELECT auth0_sub, email, status, requested_at FROM access_signup_requests WHERE status = 'pending' ORDER BY requested_at ASC LIMIT 500",
+    ).all<SignupRequest>();
+    const registrations = await Promise.all((rows.results ?? []).map(async (row) => {
+      const response = await auth0Request(env, token, `/users/${encodeURIComponent(row.auth0_sub)}`);
+      if (!response.ok) return null;
+      const user = await response.json() as Auth0User;
+      return {
+        subject: row.auth0_sub,
+        email: row.email,
+        name: user.name ?? "",
+        email_verified: user.email_verified === true,
+        requested_at: row.requested_at,
+      };
+    }));
+    return json({ registrations: registrations.filter((item): item is NonNullable<typeof item> => item !== null) });
+  }
+
+  if (parts.length === 3 && parts[0] === "registrations") {
+    const targetSub = parts[1];
+    const action = parts[2];
+    const target = await env.DB.prepare(
+      "SELECT auth0_sub, email, status, requested_at FROM access_signup_requests WHERE auth0_sub = ?",
+    ).bind(targetSub).first<SignupRequest>();
+    if (!target) return json({ detail: "Registration request not found" }, 404);
+    if (target.status !== "pending") return json({ detail: "Registration request is no longer pending" }, 409);
+
+    if (request.method === "POST" && action === "approve") {
+      const token = await auth0Token(env);
+      const profileResponse = await auth0Request(env, token, `/users/${encodeURIComponent(targetSub)}`);
+      if (!profileResponse.ok) return json({ detail: "Identity provider could not verify the applicant" }, 502);
+      const profile = await profileResponse.json() as Auth0User;
+      if (profile.email_verified !== true) return json({ detail: "The applicant must verify their email before approval" }, 409);
+      const now = Math.floor(Date.now() / 1000);
+      const results = await env.DB.batch([
+        env.DB.prepare("UPDATE access_signup_requests SET status = 'approved', updated_at = ? WHERE auth0_sub = ? AND status = 'pending'")
+          .bind(now, targetSub),
+        env.DB.prepare("INSERT INTO access_users (auth0_sub, email, account_type, status, global_view_only, created_at, updated_at) SELECT ?, ?, 'client', 'active', 1, ?, ? WHERE EXISTS (SELECT 1 FROM access_signup_requests WHERE auth0_sub = ? AND status = 'approved' AND updated_at = ?) ON CONFLICT(auth0_sub) DO UPDATE SET email = excluded.email, status = 'active', global_view_only = 1, updated_at = excluded.updated_at")
+          .bind(targetSub, target.email, now, now, targetSub, now),
+        env.DB.prepare("INSERT INTO access_admin_audit (id, actor_sub, target_sub, twin_id, action, detail_json, created_at) SELECT ?, ?, ?, NULL, 'signup.approved', ?, ? WHERE EXISTS (SELECT 1 FROM access_signup_requests WHERE auth0_sub = ? AND status = 'approved' AND updated_at = ?)")
+          .bind(crypto.randomUUID(), actor.sub, targetSub, JSON.stringify({ global_view_only: true }), now, targetSub, now),
+      ]);
+      if (!results[0]?.meta?.changes) return json({ detail: "Registration request is no longer pending" }, 409);
+      return json({ subject: targetSub, status: "active", global_view_only: true });
+    }
+
+    if (request.method === "POST" && action === "reject") {
+      const now = Math.floor(Date.now() / 1000);
+      const results = await env.DB.batch([
+        env.DB.prepare("UPDATE access_signup_requests SET status = 'rejected', updated_at = ? WHERE auth0_sub = ? AND status = 'pending'").bind(now, targetSub),
+        env.DB.prepare("INSERT INTO access_admin_audit (id, actor_sub, target_sub, twin_id, action, detail_json, created_at) SELECT ?, ?, ?, NULL, 'signup.rejected', '{}', ? WHERE EXISTS (SELECT 1 FROM access_signup_requests WHERE auth0_sub = ? AND status = 'rejected' AND updated_at = ?)").bind(crypto.randomUUID(), actor.sub, targetSub, now, targetSub, now),
+      ]);
+      if (!results[0]?.meta?.changes) return json({ detail: "Registration request is no longer pending" }, 409);
+      return json({ subject: targetSub, status: "rejected" });
+    }
+
   }
 
   if (request.method === "POST" && parts.length === 1 && parts[0] === "users") {
@@ -221,7 +294,7 @@ async function handleAdmin(request: Request, env: Env, actor: Identity, path: st
     const user = await created.json() as Auth0User;
     if (!user.user_id) return json({ detail: "Identity provider returned an invalid user record" }, 502);
     const now = Math.floor(Date.now() / 1000);
-    await env.DB.prepare("INSERT INTO access_users (auth0_sub, email, account_type, status, created_at, updated_at) VALUES (?, ?, ?, 'active', ?, ?)")
+    await env.DB.prepare("INSERT INTO access_users (auth0_sub, email, account_type, status, global_view_only, created_at, updated_at) VALUES (?, ?, ?, 'active', 1, ?, ?)")
       .bind(user.user_id, email, accountType, now, now).run();
 
     // Send both verification and password setup emails. Never return the generated password or ticket.
@@ -266,8 +339,11 @@ async function handleAdmin(request: Request, env: Env, actor: Identity, path: st
       const target = await env.DB.prepare("SELECT auth0_sub FROM access_users WHERE auth0_sub = ?").bind(targetSub)
         .first<{ auth0_sub: string }>();
       if (!target) return json({ detail: "Managed user not found" }, 404);
-      await env.DB.prepare("DELETE FROM twin_access_grants WHERE auth0_sub = ?").bind(targetSub).run();
-      await audit(env, actor.sub, targetSub, "user.access_revoked", null, { all_twins: true });
+      await env.DB.batch([
+        env.DB.prepare("DELETE FROM twin_access_grants WHERE auth0_sub = ?").bind(targetSub),
+        env.DB.prepare("UPDATE access_users SET global_view_only = 0, updated_at = ? WHERE auth0_sub = ?").bind(Math.floor(Date.now() / 1000), targetSub),
+      ]);
+      await audit(env, actor.sub, targetSub, "user.access_revoked", null, { all_twins: true, global_view_only: false });
       const token = await auth0Token(env);
       await revokeAuth0Sessions(env, token, targetSub);
       return json({ subject: targetSub, access_revoked: true });
@@ -341,23 +417,51 @@ export default {
       if (!catalog(env).includes(twinId) || (permission !== "admin.action" && !isTwinPermission(permission))) {
         response = json({ detail: "Valid twin_id and permission are required" }, 422);
       } else {
-        const account = await env.DB.prepare("SELECT status FROM access_users WHERE auth0_sub = ?").bind(user.sub)
-          .first<{ status: string }>();
-        if (account?.status === "suspended") response = json({ allowed: false }, 403);
-        else if (permission === "admin.action") response = json({ allowed: isAdmin(user, env) });
+        const administrator = isAdmin(user, env);
+        if (permission === "admin.action") response = json({ allowed: administrator });
+        else if (!administrator && !user.emailVerified) response = json({ allowed: false, approval_status: "email_unverified" });
         else {
-          const grants = await rowsForUser(env, user.sub);
-          const policy = principal(user, grants, isAdmin(user, env));
-          response = json({ allowed: hasTwinPermission(policy, twinId, permission) });
+          const account = await env.DB.prepare("SELECT status, global_view_only FROM access_users WHERE auth0_sub = ?").bind(user.sub)
+            .first<{ status: string; global_view_only: number }>();
+          if (administrator) {
+            const grants = await rowsForUser(env, user.sub);
+            response = json({ allowed: hasTwinPermission(principal(user, grants, true), twinId, permission) });
+          } else if (account?.status === "suspended") response = json({ allowed: false, approval_status: "suspended" });
+          else if (!account) {
+            const signup = await signupRequestFor(env, user);
+            response = json({ allowed: false, approval_status: signup?.status ?? "pending" });
+          } else if (account.status !== "active") response = json({ allowed: false, approval_status: "suspended" });
+          else {
+            const grants = await rowsForUser(env, user.sub);
+            const policy = principal(user, grants, false, account.global_view_only === 1);
+            response = json({ allowed: hasTwinPermission(policy, twinId, permission) });
+          }
         }
       }
     } else if (url.pathname === "/v1/me" && request.method === "GET") {
-      const rows = await rowsForUser(env, user.sub);
-      const account = await env.DB.prepare("SELECT account_type, status FROM access_users WHERE auth0_sub = ?").bind(user.sub)
-        .first<{ account_type: AccountType; status: string }>();
+      const administrator = isAdmin(user, env);
+      if (!administrator && !user.emailVerified) {
+        return withCors(json({ administrator: false, email: user.email, email_verified: false, approval_status: "email_unverified", global_view_only: false, twins: [], grants: [] }), request, env);
+      }
+      const account = await env.DB.prepare("SELECT account_type, status, global_view_only FROM access_users WHERE auth0_sub = ?").bind(user.sub)
+        .first<{ account_type: AccountType; status: string; global_view_only: number }>();
       if (account?.status === "suspended") return withCors(json({ detail: "Account suspended" }, 403), request, env);
-      const me = principal(user, rows, isAdmin(user, env));
-      response = json({ administrator: me.administrator, email: user.email, twins: visibleTwinIds(me, catalog(env)), grants: rows });
+      if (!account && !administrator) {
+        const signup = user.emailVerified ? await signupRequestFor(env, user) : null;
+        return withCors(json({
+          administrator: false,
+          email: user.email,
+          email_verified: user.emailVerified,
+          approval_status: user.emailVerified ? signup?.status ?? "pending" : "email_unverified",
+          global_view_only: false,
+          twins: [],
+          grants: [],
+        }), request, env);
+      }
+      const rows = await rowsForUser(env, user.sub);
+      const globalViewOnly = account?.global_view_only === 1;
+      const me = principal(user, rows, administrator, globalViewOnly);
+      response = json({ administrator: me.administrator, email: user.email, approval_status: "approved", global_view_only: globalViewOnly, twins: visibleTwinIds(me, catalog(env)), grants: rows });
     } else if (url.pathname.startsWith("/admin/")) {
       try {
         response = await handleAdmin(request, env, user, url.pathname.slice("/admin/".length));

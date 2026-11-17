@@ -9,15 +9,27 @@ type ManagedUser = {
   blocked: boolean;
   account_type: ViewerAccountType | null;
   status: "active" | "suspended";
+  global_view_only: boolean;
   grants: Record<string, TwinPermission[]>;
 };
 type UserList = { users: ManagedUser[]; twins: string[] };
+type SignupRequest = {
+  subject: string;
+  email: string;
+  name: string;
+  email_verified: boolean;
+  requested_at: number;
+};
 
 const apiBase = import.meta.env.PROD
   ? "/api/access"
   : import.meta.env.VITE_ACCESS_CONTROL_API_URL?.trim().replace(/\/$/, "") ?? "";
 const statusNode = document.querySelector<HTMLElement>("#access-status")!;
 const invitePanel = document.querySelector<HTMLElement>("#invite-panel")!;
+const registrationsPanel = document.querySelector<HTMLElement>("#registrations-panel")!;
+const registrationsList = document.querySelector<HTMLElement>("#registrations-list")!;
+const registrationsCount = document.querySelector<HTMLElement>("#registrations-count")!;
+const refreshRegistrationsButton = document.querySelector<HTMLButtonElement>("#refresh-registrations")!;
 const usersPanel = document.querySelector<HTMLElement>("#users-panel")!;
 const usersList = document.querySelector<HTMLElement>("#users-list")!;
 const usersCount = document.querySelector<HTMLElement>("#users-count")!;
@@ -90,7 +102,10 @@ function renderPermissions(user: ManagedUser, twins: string[]): void {
       label.className = "access-grant";
       const checkbox = document.createElement("input");
       checkbox.type = "checkbox";
-      checkbox.checked = granted.has(permission);
+      const inheritedView = user.global_view_only && permission === "view";
+      checkbox.checked = inheritedView || granted.has(permission);
+      checkbox.disabled = inheritedView;
+      if (inheritedView) checkbox.title = "Incluido por la aprobación de solo lectura global.";
       checkbox.addEventListener("change", async () => {
         const next = new Set(user.grants[twinId] ?? []);
         if (checkbox.checked) next.add(permission);
@@ -112,7 +127,7 @@ function renderPermissions(user: ManagedUser, twins: string[]): void {
           twinInputs.forEach((input) => { input.disabled = false; });
         }
       });
-      label.append(checkbox, document.createTextNode(labels[permission]));
+      label.append(checkbox, document.createTextNode(inheritedView ? "Solo lectura (todos los gemelos)" : labels[permission]));
       panel.append(label);
     }
     permissionsGrid.append(panel);
@@ -121,7 +136,7 @@ function renderPermissions(user: ManagedUser, twins: string[]): void {
 
 function openPermissions(user: ManagedUser, twins: string[]): void {
   dialogTitle.textContent = user.name || user.email;
-  dialogMeta.textContent = `${user.email} · ${user.account_type === "reseller" ? "Reseller" : "Cliente"} · ${isSuspended(user) ? "Suspendido" : "Activo"}${user.email_verified ? " · correo verificado" : " · correo pendiente de verificación"}`;
+  dialogMeta.textContent = `${user.email} · ${user.account_type === "reseller" ? "Reseller" : "Cliente"} · ${isSuspended(user) ? "Suspendido" : "Activo"}${user.global_view_only ? " · solo lectura global" : ""}${user.email_verified ? " · correo verificado" : " · correo pendiente de verificación"}`;
   dialogMessage("Los cambios en las casillas se guardan inmediatamente.");
   renderPermissions(user, twins);
 
@@ -164,6 +179,7 @@ function openPermissions(user: ManagedUser, twins: string[]): void {
     try {
       await api(`/admin/users/${encodeURIComponent(user.subject)}/access`, { method: "DELETE" });
       user.grants = {};
+      user.global_view_only = false;
       renderPermissions(user, twins);
       if (loadedUsers) renderUsers(loadedUsers);
       dialogMessage(`Se retiraron todos los permisos de ${user.email}.`, "success");
@@ -209,7 +225,7 @@ function renderUsers(data: UserList): void {
     const meta = document.createElement("p");
     meta.className = "access-user-meta";
     const state = isSuspended(user) ? "Suspendido" : "Activo";
-    meta.textContent = `${user.email} · ${user.account_type === "reseller" ? "Reseller" : "Cliente"} · ${state}${user.email_verified ? " · correo verificado" : " · correo pendiente de verificación"}`;
+    meta.textContent = `${user.email} · ${user.account_type === "reseller" ? "Reseller" : "Cliente"} · ${state}${user.global_view_only ? " · solo lectura global" : ""}${user.email_verified ? " · correo verificado" : " · correo pendiente de verificación"}`;
     info.append(title, meta);
     const edit = createButton("Editar permisos", () => openPermissions(user, data.twins));
     row.append(info, edit);
@@ -230,14 +246,81 @@ async function loadUsers(): Promise<void> {
   }
 }
 
+async function loadRegistrations(): Promise<void> {
+  refreshRegistrationsButton.disabled = true;
+  try {
+    const data = await api<{ registrations: SignupRequest[] }>("/admin/registrations");
+    registrationsList.replaceChildren();
+    registrationsCount.textContent = `${data.registrations.length} solicitudes pendientes`;
+    if (!data.registrations.length) {
+      const empty = document.createElement("p");
+      empty.className = "access-empty";
+      empty.textContent = "No hay solicitudes pendientes.";
+      registrationsList.append(empty);
+      return;
+    }
+    for (const registration of data.registrations) {
+      const row = document.createElement("article");
+      row.className = "access-registration-row";
+      const info = document.createElement("div");
+      info.className = "access-registration-info";
+      const title = document.createElement("h3");
+      title.textContent = registration.name || registration.email;
+      const meta = document.createElement("p");
+      meta.className = "access-user-meta";
+      const requested = new Date(registration.requested_at * 1000).toLocaleString();
+      meta.textContent = `${registration.email} · ${registration.email_verified ? "correo verificado" : "correo sin verificar"} · solicitud: ${requested}`;
+      info.append(title, meta);
+      const actions = document.createElement("div");
+      actions.className = "access-registration-actions";
+      const approve = createButton("Aprobar · solo lectura global", async () => {
+        if (!window.confirm(`¿Aprobar ${registration.email}? Tendrá lectura en todos los gemelos actuales y futuros.`)) return;
+        approve.disabled = true;
+        try {
+          await api(`/admin/registrations/${encodeURIComponent(registration.subject)}/approve`, { method: "POST", body: "{}" });
+          status(`Solicitud aprobada para ${registration.email}.`, "success");
+          await Promise.all([loadRegistrations(), loadUsers()]);
+        } catch (error) {
+          status(error instanceof Error ? error.message : "No se pudo aprobar la solicitud.", "error");
+          approve.disabled = false;
+        }
+      });
+      approve.disabled = !registration.email_verified;
+      if (!registration.email_verified) approve.title = "El solicitante debe verificar su correo primero.";
+      const reject = createButton("Rechazar", async () => {
+        if (!window.confirm(`¿Rechazar la solicitud de ${registration.email}? No recibirá acceso a los gemelos.`)) return;
+        reject.disabled = true;
+        try {
+          await api(`/admin/registrations/${encodeURIComponent(registration.subject)}/reject`, { method: "POST", body: "{}" });
+          status(`Solicitud rechazada para ${registration.email}.`, "success");
+          await loadRegistrations();
+        } catch (error) {
+          status(error instanceof Error ? error.message : "No se pudo rechazar la solicitud.", "error");
+          reject.disabled = false;
+        }
+      }, true);
+      reject.classList.add("danger");
+      actions.append(approve, reject);
+      row.append(info, actions);
+      registrationsList.append(row);
+    }
+  } catch (error) {
+    registrationsCount.textContent = "No se pudieron cargar las solicitudes";
+    status(error instanceof Error ? error.message : "No se pudieron cargar las solicitudes.", "error");
+  } finally {
+    refreshRegistrationsButton.disabled = false;
+  }
+}
+
 async function initialize(): Promise<void> {
   try {
     if (!apiBase) throw new Error("La API de control de acceso aún no está configurada.");
     const me = await api<{ administrator: boolean }>("/v1/me");
     if (!me.administrator) throw new Error("Esta cuenta no tiene permisos de administración.");
     invitePanel.hidden = false;
+    registrationsPanel.hidden = false;
     usersPanel.hidden = false;
-    await loadUsers();
+    await Promise.all([loadRegistrations(), loadUsers()]);
   } catch (error) {
     status(error instanceof Error ? error.message : "No se pudo verificar la sesión.", "error");
   }
@@ -254,7 +337,7 @@ inviteForm.addEventListener("submit", async (event) => {
       body: JSON.stringify({ email: form.get("email"), account_type: form.get("account_type") }),
     });
     inviteForm.reset();
-    status("Invitación enviada. La cuenta iniciará sin gemelos asignados.", "success");
+    status("Invitación enviada. Al verificar el correo y definir su contraseña, tendrá solo lectura en todos los gemelos.", "success");
     await loadUsers();
   } catch (error) {
     status(error instanceof Error ? error.message : "No se pudo enviar la invitación.", "error");
@@ -267,6 +350,7 @@ userSearch.addEventListener("input", () => {
   if (loadedUsers) renderUsers(loadedUsers);
 });
 refreshButton.addEventListener("click", () => void loadUsers());
+refreshRegistrationsButton.addEventListener("click", () => void loadRegistrations());
 closeDialogButton.addEventListener("click", () => permissionsDialog.close());
 doneDialogButton.addEventListener("click", () => permissionsDialog.close());
 void initialize();

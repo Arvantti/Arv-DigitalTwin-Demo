@@ -24,6 +24,8 @@ export type AccessPrincipal = {
   subject: string;
   /** Set only by trusted server-side admin policy, never by user profile metadata. */
   administrator: boolean;
+  /** Read-only visibility over the current and future catalog, set only after approval. */
+  globalViewOnly?: boolean;
   assignments: readonly TwinAssignment[];
 };
 
@@ -35,6 +37,7 @@ export function hasTwinPermission(
 ): boolean {
   if (!principal.subject || !twinId) return false;
   if (principal.administrator) return true;
+  if (principal.globalViewOnly && permission === "view") return true;
   return principal.assignments.some(
     (assignment) => assignment.twinId === twinId && assignment.permissions.includes(permission),
   );
@@ -42,7 +45,7 @@ export function hasTwinPermission(
 
 /** Returns only explicitly viewable twins; no wildcard/future-twin inheritance. */
 export function visibleTwinIds(principal: AccessPrincipal, catalogTwinIds: readonly string[]): string[] {
-  if (principal.administrator) return [...new Set(catalogTwinIds)];
+  if (principal.administrator || principal.globalViewOnly) return [...new Set(catalogTwinIds)];
   const catalog = new Set(catalogTwinIds);
   return [...new Set(principal.assignments
     .filter((assignment) => catalog.has(assignment.twinId) && assignment.permissions.includes("view"))

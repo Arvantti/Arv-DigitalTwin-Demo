@@ -36,7 +36,7 @@ def test_base_profile_leaves_prs_opening_to_the_virtual_plc(tmp_path, monkeypatc
     monkeypatch.setenv("TWIN_DATA", str(tmp_path))
     profiles = ProfileStore(PLANT).list()
     base = next(profile for profile in profiles if profile["id"] == "builtin-water-network-scale-v1-pfl-base-01")
-    assert base["name"] == "PFL-BASE-01 · 100 % aperturas de viviendas · PRS editable en PLC"
+    assert base["name"] == "PFL-BASE-01 · 100 % aperturas de viviendas · PRS operada desde el PLC"
     assert len(base["hours"]) == 24
     assert all(entry["global_consumers_pct"] == 100 for entry in base["hours"].values())
     assert all("prs" not in entry for entry in base["hours"].values())
@@ -437,7 +437,7 @@ def test_historian_rejects_overwriting_a_calculated_run(tmp_path, monkeypatch) -
 def test_retired_scenario_templates_are_removed_from_existing_local_store(tmp_path, monkeypatch) -> None:
     monkeypatch.setenv("TWIN_DATA", str(tmp_path))
     store = ProfileStore(PLANT)
-    retired = ("pfl-noc-01", "pdd-prs-fijo-01", "pdd-prs-punto-critico-18-01")
+    retired = ("pfl-noc-01", "pdd-prs-fijo-01", "pdd-prs-punto-critico-18-01", "pfl-personalizado-01")
     with store._connect() as conn:
         conn.executemany(
             "INSERT INTO operation_profiles (id, plant_id, name, description, data, created_at, updated_at) "
@@ -445,7 +445,7 @@ def test_retired_scenario_templates_are_removed_from_existing_local_store(tmp_pa
             [(f"builtin-{PLANT}-{item}", PLANT, "Retirado", "", "{}", "old", "old") for item in retired],
         )
     refreshed = ProfileStore(PLANT)
-    assert len([p for p in refreshed.list() if p["id"].startswith("builtin-")]) == 3
+    assert len([p for p in refreshed.list() if p["id"].startswith("builtin-")]) == 2
     assert all(refreshed.get(f"builtin-{PLANT}-{item}") is None for item in retired)
 
 

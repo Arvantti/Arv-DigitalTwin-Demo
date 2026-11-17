@@ -235,7 +235,7 @@ class ProfileStore:
         if self.plant_id == "water-network-scale-v1":
             retired = tuple(f"builtin-{self.plant_id}-{name}" for name in (
                 "pfl-noc-01", "pfl-noc-02", "pfl-res-01",
-                "pdd-prs-fijo-01", "pdd-prs-punto-critico-18-01",
+                "pdd-prs-fijo-01", "pdd-prs-punto-critico-18-01", "pfl-personalizado-01",
             ))
             with self._connect() as conn:
                 placeholders = ", ".join("?" for _ in retired)

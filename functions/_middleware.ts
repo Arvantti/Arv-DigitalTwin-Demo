@@ -137,8 +137,15 @@ export async function onRequest(context: PagesContext): Promise<Response> {
     });
     if (result.status === 422) return response("Twin is not in the access catalog", 404);
     if (!result.ok) return response("Access authorization service unavailable", 503);
-    const body = await result.json() as { allowed?: unknown };
-    if (body.allowed !== true) return response("This account cannot view the requested twin", 403);
+    const body = await result.json() as { allowed?: unknown; approval_status?: string };
+    if (body.allowed !== true) {
+      if (body.approval_status === "pending" || body.approval_status === "rejected" || body.approval_status === "email_unverified") {
+        const target = new URL("/", url.origin);
+        target.searchParams.set("access", body.approval_status);
+        return new Response(null, { status: 302, headers: { location: target.toString(), "cache-control": "no-store" } });
+      }
+      return response(body.approval_status === "suspended" ? "Account suspended" : "This account cannot view the requested twin", 403);
+    }
     return context.next();
   } catch {
     return response("Access authorization service unavailable", 503);

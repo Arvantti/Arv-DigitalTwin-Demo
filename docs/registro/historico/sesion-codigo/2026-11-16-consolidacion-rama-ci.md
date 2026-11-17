@@ -1,0 +1,7 @@
+# Consolidación de rama para CI y PR
+
+Se preparó la rama `feat/access-self-registration-approval` para revisión mediante PR, sin desplegar. El alcance local combina el flujo de autorregistro con aprobación manual (sin avisos automáticos), el ajuste de programación de perfiles solo a franjas futuras, la comparación temporal sincronizada de las fuentes PLC virtual/Cosimulador/Fractal y la aceleración medida del solver hidráulico. Se retiró la plantilla PFL redundante y se conserva el perfil base; se actualizó la prueba de catálogo que aún esperaba el nombre/total anterior.
+
+Validaciones locales: `pnpm -r typecheck`, `pnpm -r test`, `pnpm gallery:build`, `uv run ruff check .`, `uv run twin-lib validate` y `uv run pytest -q` pasan (472 pruebas Python). El build conserva el aviso existente de externalización browser de `node:module` desde `highs`; pytest conserva aviso de deprecación Starlette/httpx. `git diff --check` se verificará antes del commit.
+
+El workflow CI ejecuta validaciones Python/web en PR. Pages solo se despliega automáticamente al integrar en `main`; el workflow de Worker Acueducto es manual y ejecuta migración D1 remota/despliegue. No existe workflow GitHub para el Worker de control de acceso. No se aplicaron migraciones remotas, no se modificó Auth0, no se ejecutó Wrangler y no se desplegó. La carpeta `docs/videos-redes/serie-2-universo-de-gemelos/` permanece local y fuera del commit/staging. La habilitación de CI/CD de Workers queda como trabajo separado sujeto a autorización de cambios remotos.

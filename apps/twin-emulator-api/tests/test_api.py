@@ -231,11 +231,7 @@ def test_operation_profiles_persist_and_drive_the_plc_virtual(tmp_path, monkeypa
     assert {tuple(item["id"].rsplit("-", 3)[-3:]) for item in builtins} == {
         ("pdd", "rca", "01"),
         ("pfl", "base", "01"),
-        ("pfl", "personalizado", "01"),
     }
-    custom = next(item for item in builtins if item["id"].endswith("pfl-personalizado-01"))
-    assert custom["hours"]["0"]["leaks"]["grid-01"] == {"l1": 0, "l2": 0}
-    assert "prs" not in custom["hours"]["0"]
     assert template["hours"]["11"]["global_consumers_pct"] == 100
     assert template["hours"]["23"]["global_consumers_pct"] == 30
     assert client.put(f"{url}/{profile['id']}", json=payload).status_code == 200
@@ -254,6 +250,29 @@ def test_operation_profiles_persist_and_drive_the_plc_virtual(tmp_path, monkeypa
     assert client.post(url, json={"name": "incorrecto", "hours": {"24": {}}}).status_code == 422
 
 
+def test_schedule_profile_only_accepts_future_frana_and_keeps_earliest_pending() -> None:
+    plant_id = "water-network-scale-v1"
+    session_id = client.post(f"/api/plants/{plant_id}/sessions", json={}).json()["id"]
+    session = session_manager.get(plant_id, session_id)
+    assert session is not None
+    session.running = True
+    profile = client.post(f"/api/plants/{plant_id}/operation-profiles", json={
+        "name": "Prueba futuro", "description": "", "hours": {"3": {"global_consumers_pct": 70}},
+    }).json()
+    url = f"/api/plants/{plant_id}/sessions/{session_id}/schedule-profile"
+    first = client.post(url, json={"profile_id": profile["id"], "starts_at_hour": 5})
+    assert first.status_code == 200 and first.json()["starts_at_hour"] == 5
+    earlier = client.post(url, json={"profile_id": profile["id"], "starts_at_hour": 3})
+    assert earlier.status_code == 200 and earlier.json()["starts_at_hour"] == 3
+    assert session.profile_id is None  # la versión futura aún no está activa
+    session.plant.sim.t = 3 * 3600
+    session.apply_profile_hour(3)
+    assert session.profile_id == profile["id"] and session.pending_profile is None
+    blocked = client.post(url, json={"profile_id": profile["id"], "starts_at_hour": 3})
+    assert blocked.status_code == 409
+    assert "franja futura" in blocked.json()["detail"]
+
+
 def test_plc_and_3d_read_the_same_sensor_sample_at_each_simulated_instant() -> None:
     plant = "water-network-scale-v1"
     session_id = client.post(f"/api/plants/{plant}/sessions", json={}).json()["id"]
@@ -264,7 +283,12 @@ def test_plc_and_3d_read_the_same_sensor_sample_at_each_simulated_instant() -> N
     url = f"/api/plants/{plant}/sessions/{session_id}/plc-tags"
     first_tags = client.get(url).json()["plc_tags"]
     assert client.get(url).json()["plc_tags"] == first_tags
-    assert session.message()["plc_tags"] == first_tags
+    session.budget = 3.5
+    message = session.message()
+    assert message["plc_tags"] == first_tags
+    assert message["simulation_lag_s"] == 3.5
+    assert message["effective_speed"] >= 0
+    session.budget = 0.0
     session.plant.step()
     next_snapshot = session.snapshot()
     assert next_snapshot is not first
