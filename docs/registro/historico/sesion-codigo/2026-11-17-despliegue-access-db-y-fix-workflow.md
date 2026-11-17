@@ -1,0 +1,5 @@
+# Migración remota de aprobación y corrección del despliegue Access
+
+Tras la fusión del PR #219, se ejecutó el workflow manual `Deploy access control API` en `main` con autorización del usuario. Las pruebas/typecheck pasaron y la migración remota `0002_signup_approval.sql` se aplicó correctamente a la D1 `digitaltwin-access-control`: `access_users.global_view_only` y la tabla `access_signup_requests` con su índice. No se modificó la D1 `acueducto-emulator` ni Auth0.
+
+El paso de despliegue del Worker falló: `pnpm --filter ... deploy` invocó el comando especial de pnpm en vez del script del package. Se verificó por Wrangler, en solo lectura, que no quedan migraciones pendientes. La corrección propuesta es ejecutar `pnpm --filter @twin/access-control-api run deploy`; se prepara en rama `fix/access-control-deploy-command` y debe pasar PR/CI antes de volver a dispatchar el workflow. El Worker aún no se ha desplegado con la versión de aprobación. El deploy Pages de PR #218 sí se completó anteriormente.
