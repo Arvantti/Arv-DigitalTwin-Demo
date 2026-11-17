@@ -42,22 +42,22 @@ export function componer(c) {
     leave("e-gancho", s + d);
   }
 
-  // 3. Dolor: todo permitido; permisos que nadie vuelve a quitar.
+  // 3. Dolor: reglas fijas; permisos que nadie vuelve a quitar.
   {
     const x = S.dolor; const [s, d] = span(x);
     const tL = P(x, "Los permisos");
     clip("e-dolor", "scene", s, d, `
       <div class="puertas">${Array.from({ length: 5 }, (_, i) => `<div class="puerta" id="pu${i}"><div class="hoja"></div></div>`).join("")}</div>
-      <p class="lbl l1">${words("Todo permitido…")}</p>
+      <p class="lbl l1">${words("Reglas fijas para todos…")}</p>
       <div class="llavero"><div class="aro"></div>${Array.from({ length: 7 }, (_, i) => `<span class="llave" style="--r:${-60 + i * 20}deg"></span>`).join("")}<p class="agl">Agente</p></div>
       <p class="lbl l2">${words("«Para que funcione». Y nadie los quita.")}</p>`);
     enter("e-dolor", s);
     at("#e-dolor .puerta", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.3, stagger: 0.08 }, x.voiceAt);
     for (let i = 0; i < 5; i++) {
-      to(`#pu${i} .hoja`, { rotateY: -75, duration: 0.5, ease: "power2.out" }, P(x, "todo está") + i * 0.35);
-      sfx("click.wav", P(x, "todo está") + i * 0.35, 0.12);
+      to(`#pu${i} .hoja`, { rotateY: -75, duration: 0.5, ease: "power2.out" }, P(x, "reglas fijas") + i * 0.35);
+      sfx("click.wav", P(x, "reglas fijas") + i * 0.35, 0.12);
     }
-    wordsIn("#e-dolor .l1", P(x, "todo está"), 0.1);
+    wordsIn("#e-dolor .l1", P(x, "reglas fijas"), 0.1);
     to("#e-dolor .puertas, #e-dolor .l1", { opacity: 0, duration: 0.4 }, tL - 0.4);
     at("#e-dolor .llavero", { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.6, ease: "back.out(1.8)" }, tL);
     at("#e-dolor .llave", { opacity: 0, scale: 0 }, { opacity: 1, scale: 1, duration: 0.25, stagger: 0.12, ease: "back.out(3)" }, tL + 0.3);
@@ -66,23 +66,23 @@ export function componer(c) {
     leave("e-dolor", s + d);
   }
 
-  // 4. Principio: todo prohibido hasta que alguien lo autoriza.
+  // 4. Principio: las reglas de su empresa, configurables y cumplidas con hooks.
   {
     const x = S.principio; const [s, d] = span(x);
-    const tT = P(x, "todo está prohibido");
+    const tT = P(x, "las reglas");
     clip("e-principio", "scene", s, d, `
       <p class="center figcap">${words("Arvantti OS controla.")}</p>
       <div class="badge-prom" style="--c:${ROJO}">CONTROLA</div>
-      <div class="switch"><div class="track"><div class="knob"></div></div><p class="sw-l">${words("Todo prohibido")}</p><p class="sw-s">${words("hasta que alguien lo autoriza")}</p></div>`);
+      <div class="switch"><div class="track"><div class="knob"></div></div><p class="sw-l">${words("Sus reglas")}</p><p class="sw-s">${words("configurables · se cumplen con hooks")}</p></div>`);
     enter("e-principio", s);
     wordsIn("#e-principio .figcap", x.voiceAt, 0.06);
     at("#e-principio .badge-prom", { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.5, ease: "back.out(2)" }, P(x, "controla"));
-    at("#e-principio .switch", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.5 }, P(x, "principio"));
+    at("#e-principio .switch", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.5 }, P(x, "con las reglas"));
     to("#e-principio .knob", { x: VERT ? 150 : 170, duration: 0.35, ease: "back.out(2)" }, tT);
     to("#e-principio .track", { backgroundColor: ROJO, boxShadow: `0 0 50px ${ROJO}`, duration: 0.3 }, tT);
     sfx("click.wav", tT, 0.35);
     wordsIn("#e-principio .sw-l", tT, 0.08);
-    wordsIn("#e-principio .sw-s", P(x, "hasta que"), 0.06);
+    wordsIn("#e-principio .sw-s", P(x, "hooks"), 0.06);
     leave("e-principio", s + d);
   }
 

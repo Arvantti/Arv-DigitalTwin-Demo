@@ -27,54 +27,54 @@
   "id": "guardianes",
   "start": 27.57,
   "voiceAt": 27.87,
-  "voz": 11.96,
-  "dur": 13.06,
+  "voz": 13.95,
+  "dur": 15.05,
   "real": true
  },
  {
   "id": "claves",
-  "start": 40.63,
-  "voiceAt": 40.83,
+  "start": 42.62,
+  "voiceAt": 42.82,
   "voz": 17.79,
   "dur": 18.79,
   "real": true
  },
  {
   "id": "vigilan",
-  "start": 59.42,
-  "voiceAt": 59.62,
+  "start": 61.41,
+  "voiceAt": 61.61,
   "voz": 7.39,
   "dur": 8.49,
   "real": true
  },
  {
   "id": "lunes",
-  "start": 67.91,
-  "voiceAt": 68.21,
+  "start": 69.9,
+  "voiceAt": 70.2,
   "voz": 14.45,
   "dur": 15.95,
   "real": true
  },
  {
   "id": "figura",
-  "start": 83.86,
-  "voiceAt": 84.16,
+  "start": 85.84,
+  "voiceAt": 86.14,
   "voz": 3.55,
   "dur": 4.35,
   "real": true
  },
  {
   "id": "siguiente",
-  "start": 88.21,
-  "voiceAt": 88.41,
+  "start": 90.2,
+  "voiceAt": 90.4,
   "voz": 6.11,
   "dur": 7.91,
   "real": true
  },
  {
   "id": "firma",
-  "start": 96.12,
-  "voiceAt": 96.72,
+  "start": 98.11,
+  "voiceAt": 98.71,
   "voz": 4.75,
   "dur": 8.85,
   "real": true

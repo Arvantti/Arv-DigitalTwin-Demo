@@ -1,1 +1,1 @@
-Arvantti Operating System for AI controla con un principio simple: todo está prohibido hasta que alguien lo autoriza.
+Arvantti Operating System for AI controla con las reglas de su empresa: usted configura y edita qué puede hacer cada IA. Y los hooks, puntos de control en cada acción, hacen que esas reglas se respeten siempre.
