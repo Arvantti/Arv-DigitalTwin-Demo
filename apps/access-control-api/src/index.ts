@@ -20,16 +20,13 @@ type Env = {
   AUTH0_CLIENT_ID: string;
   AUTH0_DB_CONNECTION: string;
   TWIN_CATALOG: string;
-  RESEND_API_KEY?: string;
-  APPROVAL_NOTIFICATION_EMAIL?: string;
-  APPROVAL_NOTIFICATION_FROM?: string;
 };
 
 type Identity = { sub: string; email: string; emailVerified: boolean };
 type CloudflareAccessIdentity = { id?: unknown; user_uuid?: unknown; email?: unknown };
 type AccountType = "client" | "reseller";
 type PermissionRow = { twin_id: string; permission: TwinPermission };
-type SignupRequest = { auth0_sub: string; email: string; status: "pending" | "approved" | "rejected"; notification_status: string; requested_at: number };
+type SignupRequest = { auth0_sub: string; email: string; status: "pending" | "approved" | "rejected"; requested_at: number };
 type Auth0User = { user_id: string; email?: string; name?: string; blocked?: boolean; email_verified?: boolean; app_metadata?: { account_type?: AccountType } };
 
 const MAX_BODY_BYTES = 16_384;
@@ -162,63 +159,15 @@ async function audit(env: Env, actor: string, target: string, action: string, tw
   ).bind(crypto.randomUUID(), actor, target, twinId, action, JSON.stringify(detail), Math.floor(Date.now() / 1000)).run();
 }
 
-function escapeHtml(value: string): string {
-  return value.replace(/[&<>\"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '\"': "&quot;", "'": "&#39;" })[character] ?? character);
-}
-
-async function notifyApprovalRequest(env: Env, request: SignupRequest): Promise<string> {
-  const now = Math.floor(Date.now() / 1000);
-  const claimed = await env.DB.prepare(
-    "UPDATE access_signup_requests SET notification_status = 'sending', notification_attempted_at = ?, updated_at = ? WHERE auth0_sub = ? AND status = 'pending' AND notification_status != 'sent' AND (notification_attempted_at IS NULL OR notification_attempted_at < ?)",
-  ).bind(now, now, request.auth0_sub, now - 600).run();
-  if (!claimed.meta?.changes) return request.notification_status;
-  if (!env.RESEND_API_KEY || !env.APPROVAL_NOTIFICATION_EMAIL || !env.APPROVAL_NOTIFICATION_FROM) {
-    await env.DB.prepare("UPDATE access_signup_requests SET notification_status = 'unconfigured', updated_at = ? WHERE auth0_sub = ?")
-      .bind(now, request.auth0_sub).run();
-    return "unconfigured";
-  }
-
-  const email = escapeHtml(request.email);
-  let delivered = false;
-  try {
-    const response = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        authorization: `Bearer ${env.RESEND_API_KEY}`,
-        "content-type": "application/json",
-        "Idempotency-Key": `digitaltwin-approval-${encodeURIComponent(request.auth0_sub)}-${now}`,
-      },
-      body: JSON.stringify({
-        from: env.APPROVAL_NOTIFICATION_FROM,
-        to: [env.APPROVAL_NOTIFICATION_EMAIL],
-        subject: "Nueva solicitud de acceso a DigitalTwin",
-        text: `La cuenta ${request.email} solicitó acceso. Revisa y aprueba la solicitud en ${env.GALLERY_ORIGIN}/access-admin.html.`,
-        html: `<p>La cuenta <strong>${email}</strong> solicitó acceso a DigitalTwin.</p><p><a href="${env.GALLERY_ORIGIN}/access-admin.html">Revisar solicitud en Administración</a></p>`,
-      }),
-    });
-    delivered = response.ok;
-  } catch {
-    delivered = false;
-  }
-  const status = delivered ? "sent" : "failed";
-  await env.DB.prepare(
-    "UPDATE access_signup_requests SET notification_status = ?, notification_sent_at = ?, updated_at = ? WHERE auth0_sub = ?",
-  ).bind(status, delivered ? now : null, now, request.auth0_sub).run();
-  return status;
-}
-
 async function signupRequestFor(env: Env, user: Identity): Promise<SignupRequest | null> {
   if (!user.emailVerified) return null;
   const now = Math.floor(Date.now() / 1000);
   await env.DB.prepare(
     "INSERT INTO access_signup_requests (auth0_sub, email, status, requested_at, updated_at) SELECT ?, ?, 'pending', ?, ? WHERE NOT EXISTS (SELECT 1 FROM access_users WHERE auth0_sub = ?) ON CONFLICT(auth0_sub) DO UPDATE SET email = excluded.email, updated_at = excluded.updated_at WHERE access_signup_requests.status = 'pending'",
   ).bind(user.sub, user.email, now, now, user.sub).run();
-  const request = await env.DB.prepare(
-    "SELECT auth0_sub, email, status, notification_status, requested_at FROM access_signup_requests WHERE auth0_sub = ?",
+  return env.DB.prepare(
+    "SELECT auth0_sub, email, status, requested_at FROM access_signup_requests WHERE auth0_sub = ?",
   ).bind(user.sub).first<SignupRequest>();
-  if (!request || request.status !== "pending") return request;
-  request.notification_status = await notifyApprovalRequest(env, request);
-  return request;
 }
 
 async function revokeAuth0Sessions(env: Env, token: string, sub: string): Promise<void> {
@@ -261,7 +210,7 @@ async function handleAdmin(request: Request, env: Env, actor: Identity, path: st
   if (request.method === "GET" && parts.length === 1 && parts[0] === "registrations") {
     const token = await auth0Token(env);
     const rows = await env.DB.prepare(
-      "SELECT auth0_sub, email, status, notification_status, requested_at FROM access_signup_requests WHERE status = 'pending' ORDER BY requested_at ASC LIMIT 500",
+      "SELECT auth0_sub, email, status, requested_at FROM access_signup_requests WHERE status = 'pending' ORDER BY requested_at ASC LIMIT 500",
     ).all<SignupRequest>();
     const registrations = await Promise.all((rows.results ?? []).map(async (row) => {
       const response = await auth0Request(env, token, `/users/${encodeURIComponent(row.auth0_sub)}`);
@@ -273,7 +222,6 @@ async function handleAdmin(request: Request, env: Env, actor: Identity, path: st
         name: user.name ?? "",
         email_verified: user.email_verified === true,
         requested_at: row.requested_at,
-        notification_status: row.notification_status,
       };
     }));
     return json({ registrations: registrations.filter((item): item is NonNullable<typeof item> => item !== null) });
@@ -283,7 +231,7 @@ async function handleAdmin(request: Request, env: Env, actor: Identity, path: st
     const targetSub = parts[1];
     const action = parts[2];
     const target = await env.DB.prepare(
-      "SELECT auth0_sub, email, status, notification_status, requested_at FROM access_signup_requests WHERE auth0_sub = ?",
+      "SELECT auth0_sub, email, status, requested_at FROM access_signup_requests WHERE auth0_sub = ?",
     ).bind(targetSub).first<SignupRequest>();
     if (!target) return json({ detail: "Registration request not found" }, 404);
     if (target.status !== "pending") return json({ detail: "Registration request is no longer pending" }, 409);
@@ -295,34 +243,28 @@ async function handleAdmin(request: Request, env: Env, actor: Identity, path: st
       const profile = await profileResponse.json() as Auth0User;
       if (profile.email_verified !== true) return json({ detail: "The applicant must verify their email before approval" }, 409);
       const now = Math.floor(Date.now() / 1000);
-      await env.DB.batch([
-        env.DB.prepare("INSERT INTO access_users (auth0_sub, email, account_type, status, global_view_only, created_at, updated_at) VALUES (?, ?, 'client', 'active', 1, ?, ?) ON CONFLICT(auth0_sub) DO UPDATE SET email = excluded.email, status = 'active', global_view_only = 1, updated_at = excluded.updated_at")
-          .bind(targetSub, target.email, now, now),
+      const results = await env.DB.batch([
         env.DB.prepare("UPDATE access_signup_requests SET status = 'approved', updated_at = ? WHERE auth0_sub = ? AND status = 'pending'")
           .bind(now, targetSub),
-        env.DB.prepare("INSERT INTO access_admin_audit (id, actor_sub, target_sub, twin_id, action, detail_json, created_at) VALUES (?, ?, ?, NULL, 'signup.approved', ?, ?)")
-          .bind(crypto.randomUUID(), actor.sub, targetSub, JSON.stringify({ global_view_only: true }), now),
+        env.DB.prepare("INSERT INTO access_users (auth0_sub, email, account_type, status, global_view_only, created_at, updated_at) SELECT ?, ?, 'client', 'active', 1, ?, ? WHERE EXISTS (SELECT 1 FROM access_signup_requests WHERE auth0_sub = ? AND status = 'approved' AND updated_at = ?) ON CONFLICT(auth0_sub) DO UPDATE SET email = excluded.email, status = 'active', global_view_only = 1, updated_at = excluded.updated_at")
+          .bind(targetSub, target.email, now, now, targetSub, now),
+        env.DB.prepare("INSERT INTO access_admin_audit (id, actor_sub, target_sub, twin_id, action, detail_json, created_at) SELECT ?, ?, ?, NULL, 'signup.approved', ?, ? WHERE EXISTS (SELECT 1 FROM access_signup_requests WHERE auth0_sub = ? AND status = 'approved' AND updated_at = ?)")
+          .bind(crypto.randomUUID(), actor.sub, targetSub, JSON.stringify({ global_view_only: true }), now, targetSub, now),
       ]);
+      if (!results[0]?.meta?.changes) return json({ detail: "Registration request is no longer pending" }, 409);
       return json({ subject: targetSub, status: "active", global_view_only: true });
     }
 
     if (request.method === "POST" && action === "reject") {
       const now = Math.floor(Date.now() / 1000);
-      await env.DB.batch([
+      const results = await env.DB.batch([
         env.DB.prepare("UPDATE access_signup_requests SET status = 'rejected', updated_at = ? WHERE auth0_sub = ? AND status = 'pending'").bind(now, targetSub),
-        env.DB.prepare("INSERT INTO access_admin_audit (id, actor_sub, target_sub, twin_id, action, detail_json, created_at) VALUES (?, ?, ?, NULL, 'signup.rejected', '{}', ?)").bind(crypto.randomUUID(), actor.sub, targetSub, now),
+        env.DB.prepare("INSERT INTO access_admin_audit (id, actor_sub, target_sub, twin_id, action, detail_json, created_at) SELECT ?, ?, ?, NULL, 'signup.rejected', '{}', ? WHERE EXISTS (SELECT 1 FROM access_signup_requests WHERE auth0_sub = ? AND status = 'rejected' AND updated_at = ?)").bind(crypto.randomUUID(), actor.sub, targetSub, now, targetSub, now),
       ]);
+      if (!results[0]?.meta?.changes) return json({ detail: "Registration request is no longer pending" }, 409);
       return json({ subject: targetSub, status: "rejected" });
     }
 
-    if (request.method === "POST" && action === "resend-notification") {
-      const now = Math.floor(Date.now() / 1000);
-      await env.DB.prepare("UPDATE access_signup_requests SET notification_status = 'pending', notification_attempted_at = NULL, updated_at = ? WHERE auth0_sub = ? AND status = 'pending'")
-        .bind(now, targetSub).run();
-      const notificationStatus = await notifyApprovalRequest(env, { ...target, notification_status: "pending" });
-      if (notificationStatus !== "sent") return json({ detail: notificationStatus === "unconfigured" ? "Approval email is not configured" : "Approval notification could not be delivered" }, 502);
-      return json({ subject: targetSub, notification_sent: true });
-    }
   }
 
   if (request.method === "POST" && parts.length === 1 && parts[0] === "users") {
@@ -511,7 +453,6 @@ export default {
           email: user.email,
           email_verified: user.emailVerified,
           approval_status: user.emailVerified ? signup?.status ?? "pending" : "email_unverified",
-          notification_status: signup?.notification_status ?? null,
           global_view_only: false,
           twins: [],
           grants: [],

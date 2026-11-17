@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import asyncio
 from dataclasses import dataclass, field
-from time import time
+from time import monotonic, time
 from typing import Any
 from uuid import uuid4
 
@@ -17,7 +17,7 @@ from .profiles import commands_for_hour, current_prs_inlet_offset_mca
 from .session_checkpoints import checkpoints
 
 TICK_S = 0.1
-MAX_STEPS_PER_TICK = 4000
+MAX_STEPS_PER_TICK = 10
 CHECKPOINT_INTERVAL_S = 3600.0
 def _activate_fixed_prs_opening(plant: Any, profile: dict[str, Any] | None = None) -> None:
     """Fuerza AUTO a apertura fija desde el estado del equipo o un mando perfilado explícito."""
@@ -69,12 +69,19 @@ class PlantSession:
     applied_profile_hour: int | None = None
     pending_profile: tuple[int, str, dict[str, Any]] | None = None
     budget: float = 0.0
+    effective_speed: float = 0.0
+    _rate_sample_wall: float = field(default_factory=monotonic, repr=False)
+    _rate_sample_t: float = 0.0
     sent_events: int = 0
     last_sample_t: float = -60.0
     last_checkpoint_t: float = 0.0
     recommendations: list[dict[str, Any]] = field(default_factory=list)
     _snapshot_t: float | None = field(default=None, repr=False)
     _snapshot: dict[str, Any] | None = field(default=None, repr=False)
+
+    def __post_init__(self) -> None:
+        self._rate_sample_wall = monotonic()
+        self._rate_sample_t = self.plant.t
 
     def snapshot(self) -> dict[str, Any]:
         """Una lectura de sensores por instante simulado, compartida por PLC y 3D."""
@@ -87,6 +94,12 @@ class PlantSession:
         self._snapshot = None
 
     def message(self) -> dict[str, Any]:
+        now = monotonic()
+        elapsed = now - self._rate_sample_wall
+        if elapsed >= 1.0:
+            self.effective_speed = max(0.0, (self.plant.t - self._rate_sample_t) / elapsed)
+            self._rate_sample_wall = now
+            self._rate_sample_t = self.plant.t
         snapshot = self.snapshot()
         hour = int(self.plant.t // 3600)
         profile_state = {"id": self.profile_id, "hour": hour} if self.profile_id else None
@@ -97,6 +110,8 @@ class PlantSession:
                 "session_id": self.id,
                 "t": self.plant.t,
                 "speed": self.speed,
+                "effective_speed": self.effective_speed,
+                "simulation_lag_s": max(0.0, self.budget),
                 "paused": self.paused,
                 "running": self.running,
                 "profile": profile_state,
@@ -216,23 +231,32 @@ class SessionManager:
         session.task = asyncio.create_task(self._run(session))
 
     async def _run(self, session: PlantSession) -> None:
+        last_tick_wall = monotonic()
         try:
             while session.running:
-                if session.demo_expires_at is not None and time() >= session.demo_expires_at:
+                wall_now = time()
+                monotonic_now = monotonic()
+                elapsed_wall_s = max(0.0, monotonic_now - last_tick_wall)
+                last_tick_wall = monotonic_now
+                if session.demo_expires_at is not None and wall_now >= session.demo_expires_at:
                     self.stop(session)
                     break
                 if not session.paused:
                     session.apply_profile_hour(int(session.plant.t // 3600))
-                    session.budget += session.speed * TICK_S
+                    session.budget += session.speed * elapsed_wall_s
                     steps = 0
                     while session.budget >= session.plant.model.dt and steps < MAX_STEPS_PER_TICK:
                         session.plant.step()
                         session.budget -= session.plant.model.dt
                         steps += 1
-                    if steps == MAX_STEPS_PER_TICK:
-                        session.budget = 0.0
                 session.publish()
-                await asyncio.sleep(TICK_S)
+                if session.paused:
+                    await asyncio.sleep(TICK_S)
+                elif session.budget < session.plant.model.dt:
+                    delay = min(TICK_S, (session.plant.model.dt - session.budget) / session.speed)
+                    await asyncio.sleep(max(0.0, delay))
+                else:
+                    await asyncio.sleep(0)
         finally:
             session.publish()
 
@@ -242,19 +266,26 @@ class SessionManager:
         checkpoints.save(session)
         audit.record(session.plant_id, "session.stopped", session_id=session.id, details={"simulated_t": session.plant.t})
 
-    def schedule_profile(self, session: PlantSession, profile_id: str, profile: dict[str, Any]) -> int:
-        """Programa el perfil para la siguiente hora simulada; no envía mandos al aceptarlo."""
+    def schedule_profile(
+        self, session: PlantSession, profile_id: str, profile: dict[str, Any], starts_at_hour: int | None = None
+    ) -> int:
+        """Programa una versión de perfil en una franja futura, sin alterar el pasado."""
         current_hour = int(session.plant.t // 3600)
-        session.pending_profile = (current_hour + 1, profile_id, profile)
+        requested_hour = current_hour + 1 if starts_at_hour is None else starts_at_hour
+        if isinstance(requested_hour, bool) or not isinstance(requested_hour, int) or not current_hour < requested_hour < 24:
+            raise ValueError(f"solo se puede programar una franja futura (hora {current_hour + 1} o posterior)")
+        if session.pending_profile is not None:
+            requested_hour = min(requested_hour, session.pending_profile[0])
+        session.pending_profile = (requested_hour, profile_id, profile)
         session.last_activity = time()
         checkpoints.save(session)
         audit.record(
             session.plant_id,
             "profile.scheduled",
             session_id=session.id,
-            details={"profile_id": profile_id, "starts_at_hour": current_hour + 1},
+            details={"profile_id": profile_id, "starts_at_hour": requested_hour},
         )
-        return current_hour + 1
+        return requested_hour
 
     def command(self, session: PlantSession, payload: dict[str, Any]) -> None:
         if "speed" in payload:

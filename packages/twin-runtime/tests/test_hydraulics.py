@@ -3,9 +3,30 @@
 import math
 
 import pytest
-from twin_runtime.primitives.hydraulics import MCA_PER_BAR, HydraulicNetwork, darcy_friction
+from twin_runtime.primitives.hydraulics import (
+    MCA_PER_BAR,
+    HydraulicNetwork,
+    _minimum_degree_order,
+    _solve_sparse_symmetric,
+    darcy_friction,
+)
 
 BAR = MCA_PER_BAR  # 1 bar en mca
+
+
+def test_sparse_symmetric_solver_solves_known_system() -> None:
+    # Sistema tridiagonal: la solución exacta de A·x=b es [5, 5, 5].
+    matrix = [{0: 4.0, 1: -1.0}, {0: -1.0, 1: 4.0, 2: -1.0}, {1: -1.0, 2: 3.0}]
+    assert _solve_sparse_symmetric(matrix, [15.0, 10.0, 10.0]) == pytest.approx([5.0, 5.0, 5.0])
+
+
+def test_sparse_solver_reuses_only_the_elimination_order_for_same_topology() -> None:
+    matrix = [{0: 4.0, 1: -1.0}, {0: -1.0, 1: 4.0, 2: -1.0}, {1: -1.0, 2: 3.0}]
+    _minimum_degree_order.cache_clear()
+    assert _solve_sparse_symmetric(matrix, [15.0, 10.0, 10.0]) == pytest.approx([5.0, 5.0, 5.0])
+    assert _solve_sparse_symmetric(matrix, [2.0, 4.0, 7.0]) == pytest.approx([1.0, 2.0, 3.0])
+    assert _minimum_degree_order.cache_info().hits == 1
+    _minimum_degree_order.cache_clear()
 
 
 def test_emitter_discharges_by_kv_and_square_root_of_pressure() -> None:

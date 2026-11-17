@@ -183,10 +183,12 @@ describe("access-control API", () => {
     expect(await adminAction.json()).toEqual({ allowed: true });
   });
 
-  it("allows only the exact configured upstream subject to enter admin routes", async () => {
+  it("denies ordinary users any administrative route, including approval actions", async () => {
     const regular = await worker.fetch(request("/admin/users", "viewer-token"), env());
+    const forgedApproval = await worker.fetch(request("/admin/registrations/auth0%7Cviewer/approve", "viewer-token", { method: "POST" }), env());
     const impostor = await worker.fetch(request("/admin/users", "impostor-token"), env());
     expect(regular.status).toBe(403);
+    expect(forgedApproval.status).toBe(403);
     expect(impostor.status).toBe(403);
   });
 
@@ -247,13 +249,13 @@ describe("access-control API", () => {
     expect(badPermission.status).toBe(422);
   });
 
-  it("records a verified first-time identity as pending and returns no twin access", async () => {
+  it("records a verified first-time identity as pending without any mail integration", async () => {
     const statements: string[] = [];
     const db = {
       prepare: (sql: string) => ({
         bind: (..._values: unknown[]) => ({
           first: async () => sql.includes("FROM access_users") ? null : sql.includes("FROM access_signup_requests")
-            ? { auth0_sub: "auth0|viewer", email: "viewer@example.test", status: "pending", notification_status: "pending", requested_at: 1 }
+            ? { auth0_sub: "auth0|viewer", email: "viewer@example.test", status: "pending", requested_at: 1 }
             : null,
           run: async () => { statements.push(sql); return { success: true, meta: { changes: 1 } }; },
         }),
@@ -261,9 +263,9 @@ describe("access-control API", () => {
     };
     const response = await worker.fetch(request("/v1/me", "viewer-token"), env({ DB: db }));
     expect(response.status).toBe(200);
-    expect(await response.json()).toMatchObject({ approval_status: "pending", notification_status: "unconfigured", twins: [], grants: [] });
+    expect(await response.json()).toMatchObject({ approval_status: "pending", twins: [], grants: [] });
     expect(statements.some((sql) => sql.includes("INSERT INTO access_signup_requests"))).toBe(true);
-    expect(statements.some((sql) => sql.includes("notification_status = 'unconfigured'"))).toBe(true);
+    expect(statements.every((sql) => !sql.includes("notification"))).toBe(true);
   });
 
   it("records an unapproved user's first protected-twin attempt and denies it", async () => {
@@ -271,7 +273,7 @@ describe("access-control API", () => {
       prepare: (sql: string) => ({
         bind: (..._values: unknown[]) => ({
           first: async () => sql.includes("FROM access_users") ? null : sql.includes("FROM access_signup_requests")
-            ? { auth0_sub: "auth0|viewer", email: "viewer@example.test", status: "pending", notification_status: "pending", requested_at: 1 }
+            ? { auth0_sub: "auth0|viewer", email: "viewer@example.test", status: "pending", requested_at: 1 }
             : null,
           run: async () => ({ success: true, meta: { changes: 1 } }),
         }),
@@ -294,14 +296,14 @@ describe("access-control API", () => {
   });
 
   it("approves a pending verified request with read-only access inherited by future twins", async () => {
-    const batch = vi.fn(async (_statements: unknown[]) => []);
+    const batch = vi.fn(async (_statements: unknown[]) => [{ meta: { changes: 1 } }, {}, {}]);
     const db = {
       prepare: (sql: string) => ({
         sql,
         bind: (..._values: unknown[]) => ({
           sql,
           first: async () => sql.includes("FROM access_signup_requests")
-            ? { auth0_sub: "auth0|new-user", email: "new@example.test", status: "pending", notification_status: "sent", requested_at: 1 }
+            ? { auth0_sub: "auth0|new-user", email: "new@example.test", status: "pending", requested_at: 1 }
             : null,
         }),
       }),
@@ -319,50 +321,44 @@ describe("access-control API", () => {
     expect(await response.json()).toMatchObject({ subject: "auth0|new-user", status: "active", global_view_only: true });
     expect(batch).toHaveBeenCalledOnce();
     const statements = batch.mock.calls[0]?.[0] as Array<{ sql?: string }>;
+    expect(statements[0]?.sql).toContain("status = 'pending'");
+    expect(statements[1]?.sql).toContain("INSERT INTO access_users");
+    expect(statements[1]?.sql).toContain("WHERE EXISTS");
     expect(JSON.stringify(statements)).toContain("global_view_only");
   });
 
-  it("sends one approval notification through the configured email provider", async () => {
-    const statements: string[] = [];
+  it("fails closed when a concurrent admin has already decided the signup request", async () => {
+    const batch = vi.fn(async (_statements: unknown[]) => [{ meta: { changes: 0 } }, {}, {}]);
     const db = {
       prepare: (sql: string) => ({
         bind: (..._values: unknown[]) => ({
-          first: async () => sql.includes("FROM access_users") ? null : sql.includes("FROM access_signup_requests")
-            ? { auth0_sub: "auth0|viewer", email: "viewer@example.test", status: "pending", notification_status: "pending", requested_at: 1 }
+          first: async () => sql.includes("FROM access_signup_requests")
+            ? { auth0_sub: "auth0|new-user", email: "new@example.test", status: "pending", requested_at: 1 }
             : null,
-          run: async () => { statements.push(sql); return { success: true, meta: { changes: 1 } }; },
         }),
       }),
+      batch,
     };
-    const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+    vi.stubGlobal("fetch", vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
       const identity = accessIdentityResponse(input, init);
       if (identity) return identity;
-      if (String(input) === "https://api.resend.com/emails") return Response.json({ id: "email-id" }, { status: 200 });
+      if (String(input).endsWith("/oauth/token")) return Response.json({ access_token: "mock-management-token" });
+      if (String(input).endsWith("/api/v2/users/auth0%7Cnew-user")) return Response.json({ user_id: "auth0|new-user", email_verified: true });
       return new Response(null, { status: 404 });
-    });
-    vi.stubGlobal("fetch", fetchMock);
-    const response = await worker.fetch(request("/v1/me", "viewer-token"), env({
-      DB: db,
-      RESEND_API_KEY: "test-key",
-      APPROVAL_NOTIFICATION_EMAIL: "admin@example.test",
-      APPROVAL_NOTIFICATION_FROM: "DigitalTwin <access@example.test>",
     }));
-    expect(response.status).toBe(200);
-    expect((await response.json() as { notification_status: string }).notification_status).toBe("sent");
-    const mailCall = fetchMock.mock.calls.find(([input]) => String(input) === "https://api.resend.com/emails");
-    expect(mailCall).toBeTruthy();
-    expect(new Headers(mailCall?.[1]?.headers).get("Idempotency-Key")).toContain("digitaltwin-approval");
-    expect(statements.some((sql) => sql.includes("notification_status = ?"))).toBe(true);
+    const response = await worker.fetch(request("/admin/registrations/auth0%7Cnew-user/approve", "admin-token", { method: "POST" }), env({ DB: db }));
+    expect(response.status).toBe(409);
+    expect(await response.json()).toMatchObject({ detail: "Registration request is no longer pending" });
   });
 
   it("rejects an approval request without granting access", async () => {
-    const batch = vi.fn(async (_statements: unknown[]) => []);
+    const batch = vi.fn(async (_statements: unknown[]) => [{ meta: { changes: 1 } }, {}]);
     const db = {
       prepare: (sql: string) => ({
         bind: (..._values: unknown[]) => ({
           sql,
           first: async () => sql.includes("FROM access_signup_requests")
-            ? { auth0_sub: "auth0|new-user", email: "new@example.test", status: "pending", notification_status: "sent", requested_at: 1 }
+            ? { auth0_sub: "auth0|new-user", email: "new@example.test", status: "pending", requested_at: 1 }
             : null,
         }),
       }),

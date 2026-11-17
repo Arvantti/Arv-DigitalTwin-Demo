@@ -8,8 +8,7 @@ This Worker is the control plane for Auth0 identities, signup approvals, and per
 - Pending users see a waiting notice in the public portal. `/v1/check` denies all model access until approval.
 - `GET /admin/registrations` lists pending requests. `POST /admin/registrations/{auth0_sub}/approve` requires a verified Auth0 email, marks the account active, and enables `global_view_only`. That policy grants only `view` for every twin in `TWIN_CATALOG`, including future twins; it does not grant saved-study access or editing.
 - `POST /admin/registrations/{auth0_sub}/reject` records rejection; rejected identities remain denied.
-- The first request sends an administrator notification through Resend. If email is not configured or delivery fails, the request remains pending and the admin console exposes the notification state and retry action.
-- `RESEND_API_KEY`, `APPROVAL_NOTIFICATION_EMAIL`, and `APPROVAL_NOTIFICATION_FROM` are Worker secrets. The sender must be verified with Resend. Configure them with `wrangler secret put <NAME> --config wrangler.access-control.jsonc`; never commit or paste secret values into chat.
+- There is deliberately no automatic administrator notification. Review pending requests from the Administration console periodically; its refresh button loads the current queue.
 - New self-registrations by password and Google use separate Auth0 identities. Do not automatically link accounts by matching email; account linking requires a separately authenticated, reviewed flow.
 
 ## Auth0 settings to apply after the backend is deployed
@@ -26,13 +25,13 @@ These Dashboard changes and the D1 migration are production changes; do not appl
 - `GET /v1/check?twin_id=...&permission=...`: server-side permission decision used by Pages and model gateways. Global viewers inherit only `view` from the current configured catalog.
 - `GET /admin/users`: managed accounts and grants.
 - `POST /admin/users` `{email, account_type}`: creates a database account through `AUTH0_DB_CONNECTION`, sends verification and password-setup email, and marks it active with global read-only access after email verification. The generated password and setup ticket are never returned.
-- `GET /admin/registrations`: pending self-registration requests.
-- `POST /admin/registrations/{auth0_sub}/approve|reject|resend-notification`: administers the approval queue.
+- `GET /admin/registrations`: pending self-registration requests. Review them periodically in the console; no automatic notification is sent.
+- `POST /admin/registrations/{auth0_sub}/approve|reject`: administers the approval queue.
 - `PUT /admin/users/{auth0_sub}/twins/{twin_id}` `{permissions}`: atomically replaces explicit permissions for one twin. Extra scenario permissions remain per-user/per-twin.
 - `PATCH /admin/users/{auth0_sub}` `{status: "active"|"suspended"}`: blocks/unblocks in Auth0; suspension also requests session revocation.
 - `DELETE /admin/users/{auth0_sub}/access`: revokes explicit grants and inherited global read-only access while retaining identity and audit history.
 
-Every non-health route requires a valid Access assertion and matching session cookie; browser-origin requests are limited to the Gallery origin. The Worker fails closed for pending, rejected, suspended, unverified, and unassigned identities. New global viewers see future twins only when those twin IDs are added to the trusted `TWIN_CATALOG`.
+Every non-health route requires a valid Access assertion and matching session cookie; browser-origin requests are limited to the Gallery origin. Administrative routes additionally require the exact configured administrator Auth0 subject; ordinary users cannot approve themselves, edit access records, or assign the trusted global-view flag. Approval/rejection is conditional on the request still being pending, so concurrent decisions cannot turn a rejected request into an approved account. The Worker fails closed for pending, rejected, suspended, unverified, and unassigned identities. New global viewers see future twins only when those twin IDs are added to the trusted `TWIN_CATALOG`.
 
 ## Validation and deployment
 

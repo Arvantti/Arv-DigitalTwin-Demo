@@ -19,7 +19,6 @@ type SignupRequest = {
   name: string;
   email_verified: boolean;
   requested_at: number;
-  notification_status: "pending" | "sending" | "sent" | "failed" | "unconfigured";
 };
 
 const apiBase = import.meta.env.PROD
@@ -270,10 +269,7 @@ async function loadRegistrations(): Promise<void> {
       const meta = document.createElement("p");
       meta.className = "access-user-meta";
       const requested = new Date(registration.requested_at * 1000).toLocaleString();
-      const notification = registration.notification_status === "sent" ? "aviso enviado"
-        : registration.notification_status === "unconfigured" ? "correo de avisos sin configurar"
-          : registration.notification_status === "failed" ? "falló el aviso" : "aviso pendiente";
-      meta.textContent = `${registration.email} · ${registration.email_verified ? "correo verificado" : "correo sin verificar"} · ${requested} · ${notification}`;
+      meta.textContent = `${registration.email} · ${registration.email_verified ? "correo verificado" : "correo sin verificar"} · solicitud: ${requested}`;
       info.append(title, meta);
       const actions = document.createElement("div");
       actions.className = "access-registration-actions";
@@ -305,20 +301,6 @@ async function loadRegistrations(): Promise<void> {
       }, true);
       reject.classList.add("danger");
       actions.append(approve, reject);
-      if (registration.notification_status !== "sent") {
-        const resend = createButton("Reenviar aviso", async () => {
-          resend.disabled = true;
-          try {
-            await api(`/admin/registrations/${encodeURIComponent(registration.subject)}/resend-notification`, { method: "POST", body: "{}" });
-            status(`Aviso enviado para la solicitud de ${registration.email}.`, "success");
-            await loadRegistrations();
-          } catch (error) {
-            status(error instanceof Error ? error.message : "No se pudo enviar el aviso.", "error");
-            resend.disabled = false;
-          }
-        }, true);
-        actions.append(resend);
-      }
       row.append(info, actions);
       registrationsList.append(row);
     }

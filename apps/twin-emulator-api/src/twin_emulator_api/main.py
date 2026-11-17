@@ -326,6 +326,7 @@ def get_plant_session(plant_id: str, session_id: str) -> dict[str, Any]:
         "t": session.plant.t,
         "profile_id": session.profile_id,
         "pending_profile_id": session.pending_profile[1] if session.pending_profile else None,
+        "pending_profile_hour": session.pending_profile[0] if session.pending_profile else None,
     }
 
 
@@ -342,17 +343,24 @@ async def start_plant_session(plant_id: str, session_id: str) -> dict[str, Any]:
 def schedule_saved_profile(
     plant_id: str, session_id: str, request: Request, payload: Annotated[dict[str, Any], Body()]
 ) -> dict[str, Any]:
-    """El operador PLC programa un escenario persistido para la próxima hora, nunca Fractal."""
+    """Programa una versión de escenario en una franja futura, nunca en la hora actual/pasada."""
     session = session_manager.get(plant_id, session_id)
     if session is None:
         raise HTTPException(404, "sesión desconocida")
+    owner_id = request.headers.get("x-twin-demo-id")
+    if session.demo_client_id and session.demo_client_id != owner_id:
+        raise HTTPException(403, "la sesión pertenece a otro usuario")
     if not session.running:
         raise HTTPException(409, "el PLC debe estar en play para programar un perfil")
     profile_id = payload.get("profile_id")
-    profile = ProfileStore(plant_id, request.headers.get("x-twin-demo-id")).get(profile_id) if isinstance(profile_id, str) else None
+    profile = ProfileStore(plant_id, owner_id).get(profile_id) if isinstance(profile_id, str) else None
     if profile is None:
-        raise HTTPException(404, "escenario guardado desconocido")
-    starts_at_hour = session_manager.schedule_profile(session, profile_id, profile)
+        raise HTTPException(404, "escenario guardado desconocido o privado de otro usuario")
+    requested_hour = payload.get("starts_at_hour")
+    try:
+        starts_at_hour = session_manager.schedule_profile(session, profile_id, profile, requested_hour)
+    except ValueError as exc:
+        raise HTTPException(409, str(exc)) from exc
     historian.command(
         session_id,
         session.plant.t,
@@ -734,9 +742,12 @@ def create_comparison_manifest(
         return existing
     if not session.running or session.paused:
         raise HTTPException(409, "inicie o reanude el PLC para fijar un snapshot de comparación")
-    profile_id = requested_profile_id or session.profile_id
-    if not isinstance(profile_id, str) or profile_id != session.profile_id:
-        raise HTTPException(409, "el manifiesto debe usar el perfil activo de la sesión PLC")
+    profile_id = requested_profile_id or (session.pending_profile[1] if session.pending_profile else session.profile_id)
+    allowed_profile_ids = {session.profile_id}
+    if session.pending_profile:
+        allowed_profile_ids.add(session.pending_profile[1])
+    if not isinstance(profile_id, str) or profile_id not in allowed_profile_ids:
+        raise HTTPException(409, "el manifiesto debe usar el perfil activo o el cambio futuro pendiente de esta sesión")
     owner_id = request.headers.get("x-twin-demo-id")
     profile = ProfileStore(plant_id, owner_id).get(profile_id)
     if profile is None:
@@ -746,8 +757,8 @@ def create_comparison_manifest(
     tags = plc_tags(
         session.snapshot(), profile_id=profile_id, profile_hour=profile_hour, simulated_time=base_time
     )
-    if tags.get("PLC.Profile.ActiveId") != profile_id:
-        raise HTTPException(409, "el snapshot PLC no corresponde al perfil activo")
+    if tags.get("PLC.Profile.ActiveId") != session.profile_id:
+        raise HTTPException(409, "el snapshot PLC no corresponde al perfil realmente activo")
     if int(tags.get("PLC.Pump.RunningCount") or 0) == 0 or float(tags.get("PLC.PRS.OutletPressureMca") or 0) < 5:
         raise HTTPException(409, "espere a que arranquen las bombas y se presurice la VRP antes de fijar la comparación")
     history_frames: list[dict[str, Any]] = []
@@ -755,10 +766,10 @@ def create_comparison_manifest(
         if sample["t"] >= base_time:
             continue
         stored_profile, sample_tags = sample.get("profile"), sample.get("plc_tags")
-        if not isinstance(stored_profile, dict) or stored_profile.get("id") != profile_id:
-            raise HTTPException(409, "el historial contiene otro perfil; inicie una sesión con perfil único")
-        if not isinstance(sample_tags, dict) or sample_tags.get("PLC.Profile.ActiveId") != profile_id:
-            raise HTTPException(409, "el historial PLC no permite verificar el perfil activo")
+        if not isinstance(stored_profile, dict) or not isinstance(stored_profile.get("id"), str):
+            raise HTTPException(409, "el historial no identifica la versión de escenario de cada muestra")
+        if not isinstance(sample_tags, dict) or sample_tags.get("PLC.Profile.ActiveId") != stored_profile["id"]:
+            raise HTTPException(409, "el historial PLC no permite verificar la versión activa en cada muestra")
         history_frames.append({"simulation_time_s": sample["t"], "plc_tags": sample_tags})
     snapshot_id = f"{session_id}:{base_time:g}"
     profile_hash = _profile_fingerprint(profile)
