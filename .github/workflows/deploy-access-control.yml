@@ -38,4 +38,4 @@ jobs:
       - name: Apply pending D1 migrations
         run: pnpm --filter @twin/access-control-api exec wrangler d1 migrations apply digitaltwin-access-control --remote --config ../../wrangler.access-control.jsonc
       - name: Deploy access control Worker
-        run: pnpm --filter @twin/access-control-api deploy
+        run: pnpm --filter @twin/access-control-api run deploy

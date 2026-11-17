@@ -1,5 +1,9 @@
 # Bitácora
 
+## 2026-11-17 · Aplicar aprobación en D1 y corregir comando del Worker
+
+Tras fusionar PR #219, el workflow aplicó `0002_signup_approval.sql` en `digitaltwin-access-control`; la verificación Wrangler confirma cero migraciones pendientes. El deploy del Worker falló porque `pnpm ... deploy` invocó el comando de despliegue interno de pnpm. Se corrige a `pnpm ... run deploy` en una rama nueva; el Worker aún no tiene este cambio y no se tocó Auth0 ni la D1 del Acueducto. Ver [[../historico/sesion-codigo/2026-11-17-despliegue-access-db-y-fix-workflow]].
+
 ## 2026-11-17 · Añadir despliegue manual CI/CD del Worker de acceso
 
 Tras integrar PR #218 y desplegar Pages automáticamente, se consultó en solo lectura el historial remoto de `digitaltwin-access-control`: `0002_signup_approval.sql` está pendiente. Se añadió el workflow manual de GitHub Actions para `main`, que valida/testea el Worker, aplica migraciones pendientes en esa D1 y despliega `digitaltwin-access-control`. No toca la D1 `acueducto-emulator`; sin Auth0 ni ejecución/deploy remotos por ahora. Ver [[../historico/sesion-codigo/2026-11-17-workflow-deploy-access-control]].
