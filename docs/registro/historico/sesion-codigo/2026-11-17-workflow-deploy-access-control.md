@@ -1,0 +1,5 @@
+# Workflow de despliegue del Worker de control de acceso
+
+Tras fusionarse PR #218 a `main`, Pages se desplegó mediante su workflow y la rama local `main` se actualizó. El usuario autorizó continuar con la incorporación del Worker a CI/CD y preguntó por el objetivo de D1. Una consulta de solo lectura a Wrangler mostró `0002_signup_approval.sql` como migración pendiente en la base `digitaltwin-access-control`; no se ejecutó ningún cambio remoto. La migración añade `global_view_only` a `access_users` y crea `access_signup_requests` e índice.
+
+Se añadió `.github/workflows/deploy-access-control.yml`: dispatch manual limitado a `main`, verifica credenciales Cloudflare, instala dependencias, ejecuta pruebas/typecheck de access-core/API, aplica solo migraciones pendientes de `digitaltwin-access-control` y despliega `digitaltwin-access-control`. El workflow no altera la base separada `acueducto-emulator`. Pendiente validar el archivo, abrir PR, fusionarlo y luego ejecutar el workflow autorizado; confirmar despliegue y probar backend. No se modificó Auth0 ni se desplegó.

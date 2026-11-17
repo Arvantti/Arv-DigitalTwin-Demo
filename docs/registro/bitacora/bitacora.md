@@ -1,5 +1,9 @@
 # Bitácora
 
+## 2026-11-17 · Añadir despliegue manual CI/CD del Worker de acceso
+
+Tras integrar PR #218 y desplegar Pages automáticamente, se consultó en solo lectura el historial remoto de `digitaltwin-access-control`: `0002_signup_approval.sql` está pendiente. Se añadió el workflow manual de GitHub Actions para `main`, que valida/testea el Worker, aplica migraciones pendientes en esa D1 y despliega `digitaltwin-access-control`. No toca la D1 `acueducto-emulator`; sin Auth0 ni ejecución/deploy remotos por ahora. Ver [[../historico/sesion-codigo/2026-11-17-workflow-deploy-access-control]].
+
 ## 2026-11-16 · Consolidar cambios de operación, acceso y CI para revisión
 
 Se consolidó en `feat/access-self-registration-approval` el flujo de aprobación manual, el control de perfiles futuros, la comparación temporal y la optimización del solver; se actualizaron las expectativas de catálogo que aún asumían la plantilla retirada. Validación local completa: 472 pruebas Python, Ruff, validación twin-lib, typecheck/test PNPM y build Gallery pasaron. CI de PR valida, Pages despliega en merge a `main`; Worker de Acueducto se despliega manualmente y el Worker de acceso no tiene workflow. Sin migraciones remotas, cambios Auth0 ni despliegues. Se preservó fuera del staging `docs/videos-redes/serie-2-universo-de-gemelos/`. Ver [[../historico/sesion-codigo/2026-11-16-consolidacion-rama-ci]].
