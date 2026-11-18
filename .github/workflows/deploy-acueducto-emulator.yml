@@ -101,18 +101,35 @@ jobs:
           pnpm --filter @twin/cloudflare-emulator-worker typecheck
           pnpm --filter @twin/cloudflare-emulator-worker test
           uv sync --frozen --all-packages
-          uv run ruff check apps/twin-emulator-api/src/twin_emulator_api apps/twin-emulator-api/tests apps/fractal-engineering-api/src apps/fractal-engineering-api/tests apps/fractal-optimization-api/src apps/fractal-optimization-api/tests apps/cosimulation-engine-api/src apps/cosimulation-engine-api/tests fractal/optimization cosimulation
-          uv run pytest apps/twin-emulator-api/tests apps/fractal-engineering-api/tests apps/fractal-optimization-api/tests apps/cosimulation-engine-api/tests
+          uv run ruff check apps/twin-emulator-api/src/twin_emulator_api apps/twin-emulator-api/tests apps/fractal-engineering-api/src apps/fractal-engineering-api/tests apps/fractal-optimization-api/src apps/fractal-optimization-api/tests apps/cosimulation-engine-api/src apps/cosimulation-engine-api/tests apps/water-network-cosim-model-api/src apps/water-network-cosim-model-api/tests fractal/optimization cosimulation
+          uv run pytest apps/twin-emulator-api/tests apps/fractal-engineering-api/tests apps/fractal-optimization-api/tests apps/cosimulation-engine-api/tests apps/water-network-cosim-model-api/tests
       - name: Apply D1 migrations
         run: pnpm --filter @twin/cloudflare-emulator-worker exec wrangler d1 migrations apply acueducto-emulator --remote --config ../../wrangler.acueducto.jsonc
       - name: Set Worker secrets
         run: |
           printf '%s' "$D1_BRIDGE_TOKEN" | pnpm --filter @twin/cloudflare-emulator-worker exec wrangler secret put D1_BRIDGE_TOKEN --config ../../wrangler.acueducto.jsonc
           printf '%s' "$DEMO_TOKEN_SECRET" | pnpm --filter @twin/cloudflare-emulator-worker exec wrangler secret put DEMO_TOKEN_SECRET --config ../../wrangler.acueducto.jsonc
+      - name: Set internal cosimulation relay secret when configured
+        env:
+          COSIMULATION_INTERNAL_TOKEN: ${{ secrets.COSIMULATION_INTERNAL_TOKEN }}
+        run: |
+          if [[ -z "$COSIMULATION_INTERNAL_TOKEN" ]]; then
+            echo 'Cosimulation relay is disabled: configure COSIMULATION_INTERNAL_TOKEN to enable it.'
+            exit 0
+          fi
+          if [[ ${#COSIMULATION_INTERNAL_TOKEN} -lt 32 || ${#COSIMULATION_INTERNAL_TOKEN} -gt 256 || ! "$COSIMULATION_INTERNAL_TOKEN" =~ ^[A-Za-z0-9_-]+$ ]]; then
+            echo 'COSIMULATION_INTERNAL_TOKEN must be 32–256 URL-safe characters.' >&2
+            exit 1
+          fi
+          printf '%s' "$COSIMULATION_INTERNAL_TOKEN" | pnpm --filter @twin/cloudflare-emulator-worker exec wrangler secret put COSIMULATION_INTERNAL_TOKEN --config ../../wrangler.acueducto.jsonc
       - name: Deploy Worker and Container
         shell: bash
+        env:
+          COSIMULATION_INTERNAL_TOKEN: ${{ secrets.COSIMULATION_INTERNAL_TOKEN }}
         run: |
-          args=(--config ../../wrangler.acueducto.jsonc --var "D1_GATEWAY_ORIGIN:$D1_GATEWAY_ORIGIN" --var "CORS_ORIGINS:$CORS_ORIGINS")
+          relay_enabled=false
+          if [[ -n "$COSIMULATION_INTERNAL_TOKEN" ]]; then relay_enabled=true; fi
+          args=(--config ../../wrangler.acueducto.jsonc --var "D1_GATEWAY_ORIGIN:$D1_GATEWAY_ORIGIN" --var "CORS_ORIGINS:$CORS_ORIGINS" --var "COSIMULATION_RELAY_ENABLED:$relay_enabled")
           if [[ -n "$ACCESS_CONTROL_API_URL" ]]; then args+=(--var "ACCESS_CONTROL_API_URL:$ACCESS_CONTROL_API_URL"); fi
           if [[ -n "$ACCESS_TEAM_DOMAIN" ]]; then
             args+=(--var "ACCESS_TEAM_DOMAIN:$ACCESS_TEAM_DOMAIN" --var "ACCESS_AUD:$ACCESS_AUD")

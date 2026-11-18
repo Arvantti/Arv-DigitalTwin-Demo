@@ -20,11 +20,14 @@ def profile_fingerprint(profile: dict[str, Any]) -> str:
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
-def _project(endpoint: str, payload: dict[str, Any]) -> dict[str, Any]:
+def _project(endpoint: str, payload: dict[str, Any], internal_token: str | None = None) -> dict[str, Any]:
+    headers = {"content-type": "application/json"}
+    if internal_token:
+        headers["authorization"] = f"Bearer {internal_token}"
     request = Request(
         f"{endpoint.rstrip('/')}/v2/project",
         data=json.dumps(payload, ensure_ascii=False, allow_nan=False).encode(),
-        headers={"content-type": "application/json"},
+        headers=headers,
         method="POST",
     )
     with urlopen(request, timeout=120) as response:  # noqa: S310 — endpoint proviene de configuración del proceso
@@ -94,7 +97,9 @@ def _validate_model_frames(model_result: dict[str, Any], request: dict[str, Any]
     return normalized
 
 
-def run_trajectory(job_id: str, request: dict[str, Any], model_endpoint: str) -> dict[str, Any]:
+def run_trajectory(
+    job_id: str, request: dict[str, Any], model_endpoint: str, internal_token: str | None = None
+) -> dict[str, Any]:
     """Pide una trayectoria completa a un modelo, sin participantes ni acople cruzado."""
     profile = request["profile"]
     expected_hash = profile_fingerprint(profile)
@@ -114,7 +119,7 @@ def run_trajectory(job_id: str, request: dict[str, Any], model_endpoint: str) ->
         "horizon_s": request["horizon_s"],
         "forecast_times_s": request["forecast_times_s"],
     }
-    model_result = _project(model_endpoint, model_request)
+    model_result = _project(model_endpoint, model_request, internal_token) if internal_token else _project(model_endpoint, model_request)
     if model_result.get("profile_hash") != expected_hash:
         raise ValueError("modelo cosimulado devolvió un perfil distinto al recibido")
     frames = _validate_model_frames(model_result, request)

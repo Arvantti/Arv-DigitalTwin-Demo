@@ -5,12 +5,16 @@ import { verifyDemoToken, signDemoToken } from "./demo-auth";
 type Env = {
   ACUEDUCTO_CONTAINER: DurableObjectNamespace<AcueductoContainer>;
   FRACTAL_CONTAINER: DurableObjectNamespace<FractalContainer>;
+  COSIMULATION_CONTAINER: DurableObjectNamespace<CosimulationContainer>;
+  COSIMULATION_MODEL_CONTAINER: DurableObjectNamespace<CosimulationModelContainer>;
   DB: D1Database;
   D1_BRIDGE_TOKEN: string;
   D1_GATEWAY_ORIGIN: string;
+  COSIMULATION_RELAY_ENABLED: string;
   ALLOWED_PLANT_IDS: string;
   CORS_ORIGINS: string;
   DEMO_TOKEN_SECRET: string;
+  COSIMULATION_INTERNAL_TOKEN?: string;
   DEMO_BOOTSTRAP_LIMITER?: RateLimit;
   DEMO_API_LIMITER?: RateLimit;
   DEMO_FRACTAL_LIMITER?: RateLimit;
@@ -474,12 +478,51 @@ async function proxyApi(request: Request, env: Env, visitorId: string, sharedStu
   }
 }
 
+function internalTokenMatches(expected: string | undefined, request: Request): boolean {
+  const match = (request.headers.get("authorization") ?? "").match(/^Bearer ([A-Za-z0-9_-]{32,256})$/);
+  if (!expected || expected.length < 32 || expected.length > 256 || !match) return false;
+  const encoder = new TextEncoder();
+  const left = encoder.encode(expected);
+  const right = encoder.encode(match[1]);
+  let difference = left.length ^ right.length;
+  for (let index = 0; index < 256; index++) difference |= (left[index] ?? 0) ^ (right[index] ?? 0);
+  return difference === 0;
+}
+
 export class ContainerEgressProxy extends WorkerEntrypoint<Env> {
   async fetch(request: Request): Promise<Response> {
     const target = new URL(request.url);
     const gateway = new URL(this.env.D1_GATEWAY_ORIGIN);
     if (target.origin !== gateway.origin) return new Response("Outbound host is not allowed", { status: 403 });
     if (target.pathname === "/_internal/d1") return d1Request(request, this.env);
+    if (target.pathname.startsWith("/_internal/cosimulation/")) {
+      if (target.search) return new Response("Internal service route not allowed", { status: 404 });
+      if (this.env.COSIMULATION_RELAY_ENABLED !== "true") return new Response("Cosimulation relay disabled", { status: 404 });
+      if (!internalTokenMatches(this.env.COSIMULATION_INTERNAL_TOKEN, request)) {
+        return new Response("Internal service authentication required", { status: 401 });
+      }
+      const enginePrefix = "/_internal/cosimulation/engine";
+      const modelPrefix = "/_internal/cosimulation/model";
+      let forward: ((request: Request) => Promise<Response>) | undefined;
+      let upstreamPath = "";
+      if (target.pathname === `${enginePrefix}/v2/jobs` && request.method === "POST") {
+        forward = (internalRequest) => this.env.COSIMULATION_CONTAINER.getByName("cosimulation").fetch(internalRequest);
+        upstreamPath = "/v2/jobs";
+      } else if (/^\/_internal\/cosimulation\/engine\/v2\/jobs\/COSIM-[A-F0-9]{16}$/i.test(target.pathname) && request.method === "GET") {
+        forward = (internalRequest) => this.env.COSIMULATION_CONTAINER.getByName("cosimulation").fetch(internalRequest);
+        upstreamPath = target.pathname.slice(enginePrefix.length);
+      } else if (target.pathname === `${modelPrefix}/v2/project` && request.method === "POST") {
+        forward = (internalRequest) => this.env.COSIMULATION_MODEL_CONTAINER.getByName("cosimulation-model").fetch(internalRequest);
+        upstreamPath = "/v2/project";
+      } else {
+        return new Response("Internal service route not allowed", { status: 404 });
+      }
+      const forwarded = new Request(`http://cosimulation.internal${upstreamPath}${target.search}`, request);
+      for (const header of ["authorization", "cookie", "cf-access-jwt-assertion", "x-twin-demo-token", "x-twin-demo-id"]) {
+        forwarded.headers.delete(header);
+      }
+      return forward(forwarded);
+    }
     if (target.pathname.startsWith("/api/plants/")) return fetch(request);
     return new Response("Outbound path is not allowed", { status: 403 });
   }
@@ -591,10 +634,38 @@ export class FractalContainer extends ManagedPythonContainer {
   protected readonly serviceName = "Fractal";
 
   protected containerEnvironment(gateway: URL): Record<string, string> {
+    const token = this.env.COSIMULATION_RELAY_ENABLED === "true" ? (this.env.COSIMULATION_INTERNAL_TOKEN ?? "") : "";
     return {
       FRACTAL_PLC_API_URL: gateway.origin,
+      COSIMULATION_ENGINE_API_URL: token.length >= 32 ? `${gateway.origin}/_internal/cosimulation/engine` : "",
+      COSIMULATION_INTERNAL_TOKEN: token,
       SSL_CERT_FILE: "/etc/cloudflare/certs/cloudflare-containers-ca.crt",
     };
+  }
+}
+
+export class CosimulationContainer extends ManagedPythonContainer {
+  protected readonly port = 8300;
+  protected readonly healthPath = "/health";
+  protected readonly serviceName = "Cosimulation Engine";
+
+  protected containerEnvironment(gateway: URL): Record<string, string> {
+    const token = this.env.COSIMULATION_RELAY_ENABLED === "true" ? (this.env.COSIMULATION_INTERNAL_TOKEN ?? "") : "";
+    return {
+      COSIMULATION_MODEL_URL: token.length >= 32 ? `${gateway.origin}/_internal/cosimulation/model` : "",
+      COSIMULATION_INTERNAL_TOKEN: token,
+      SSL_CERT_FILE: "/etc/cloudflare/certs/cloudflare-containers-ca.crt",
+    };
+  }
+}
+
+export class CosimulationModelContainer extends ManagedPythonContainer {
+  protected readonly port = 8400;
+  protected readonly healthPath = "/health";
+  protected readonly serviceName = "Water network cosimulation model";
+
+  protected containerEnvironment(_gateway: URL): Record<string, string> {
+    return { SSL_CERT_FILE: "/etc/cloudflare/certs/cloudflare-containers-ca.crt" };
   }
 }
 

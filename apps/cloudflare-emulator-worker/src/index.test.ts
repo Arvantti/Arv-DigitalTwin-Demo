@@ -1,5 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-vi.mock("cloudflare:workers", () => ({ DurableObject: class {}, WorkerEntrypoint: class {} }));
+vi.mock("cloudflare:workers", () => ({
+  DurableObject: class {},
+  WorkerEntrypoint: class { env: unknown; constructor(_ctx: unknown, env: unknown) { this.env = env; } },
+}));
 vi.mock("jose", () => ({
   createRemoteJWKSet: vi.fn(() => ({})),
   jwtVerify: vi.fn(async (assertion: string) => {
@@ -7,7 +10,7 @@ vi.mock("jose", () => ({
     throw new Error("invalid assertion");
   }),
 }));
-import worker from "./index";
+import worker, { ContainerEgressProxy } from "./index";
 import { signDemoToken, verifyDemoToken } from "./demo-auth";
 
 beforeEach(() => {
@@ -22,6 +25,7 @@ beforeEach(() => {
 
 const origin = "https://digitaltwin.arvantti.online";
 const secret = "test-secret-for-cloudflare-demo-only-32-bytes";
+const cosimulationSecret = "test-cosimulation-internal-token-32-bytes";
 
 function env(overrides: Record<string, unknown> = {}) {
   return {
@@ -507,5 +511,106 @@ describe("public demo gateway", () => {
       rateLimitedEnv,
     );
     expect(response.status).toBe(429);
+  });
+});
+
+describe("private cosimulation relay", () => {
+  it("authenticates and routes engine/model requests while stripping the bearer before the service", async () => {
+    const engineFetch = vi.fn(async (request: Request) => {
+      expect(new URL(request.url).pathname).toBe("/v2/jobs");
+      expect(request.headers.get("authorization")).toBeNull();
+      expect(request.headers.get("cookie")).toBeNull();
+      expect(request.headers.get("cf-access-jwt-assertion")).toBeNull();
+      return Response.json({ service: "engine" });
+    });
+    const modelFetch = vi.fn(async (request: Request) => {
+      expect(new URL(request.url).pathname).toBe("/v2/project");
+      expect(request.headers.get("authorization")).toBeNull();
+      return Response.json({ service: "model" });
+    });
+    const proxy = new ContainerEgressProxy({} as never, env({
+      COSIMULATION_RELAY_ENABLED: "true",
+      COSIMULATION_INTERNAL_TOKEN: cosimulationSecret,
+      COSIMULATION_CONTAINER: { getByName: (name: string) => {
+        expect(name).toBe("cosimulation");
+        return { fetch: engineFetch };
+      } },
+      COSIMULATION_MODEL_CONTAINER: { getByName: (name: string) => {
+        expect(name).toBe("cosimulation-model");
+        return { fetch: modelFetch };
+      } },
+    }) as never);
+
+    const engineResponse = await proxy.fetch(new Request(
+      "https://demo.workers.dev/_internal/cosimulation/engine/v2/jobs",
+      { method: "POST", headers: {
+        authorization: `Bearer ${cosimulationSecret}`, cookie: "sensitive-cookie", "cf-access-jwt-assertion": "sensitive-assertion",
+      } },
+    ));
+    const modelResponse = await proxy.fetch(new Request(
+      "https://demo.workers.dev/_internal/cosimulation/model/v2/project",
+      { method: "POST", headers: { authorization: `Bearer ${cosimulationSecret}` } },
+    ));
+
+    expect(engineResponse.status).toBe(200);
+    expect(await engineResponse.json()).toEqual({ service: "engine" });
+    expect(modelResponse.status).toBe(200);
+    expect(await modelResponse.json()).toEqual({ service: "model" });
+    expect(engineFetch).toHaveBeenCalledOnce();
+    expect(modelFetch).toHaveBeenCalledOnce();
+  });
+
+  it("fails closed for missing credentials and rejects all other internal paths", async () => {
+    const engineFetch = vi.fn(async () => Response.json({ unexpected: true }));
+    const proxy = new ContainerEgressProxy({} as never, env({
+      COSIMULATION_RELAY_ENABLED: "true",
+      COSIMULATION_INTERNAL_TOKEN: cosimulationSecret,
+      COSIMULATION_CONTAINER: { getByName: () => ({ fetch: engineFetch }) },
+    }) as never);
+    const unauthorized = await proxy.fetch(new Request(
+      "https://demo.workers.dev/_internal/cosimulation/engine/v2/jobs",
+      { method: "POST" },
+    ));
+    const invalidToken = await proxy.fetch(new Request(
+      "https://demo.workers.dev/_internal/cosimulation/engine/v2/jobs",
+      { method: "POST", headers: { authorization: `Bearer ${"x".repeat(cosimulationSecret.length)}` } },
+    ));
+    const forbiddenPath = await proxy.fetch(new Request(
+      "https://demo.workers.dev/_internal/cosimulation/engine/v2/jobs/COSIM-AAAAAAAAAAAAAAAA",
+      { method: "POST", headers: { authorization: `Bearer ${cosimulationSecret}` } },
+    ));
+    const forbiddenHost = await proxy.fetch(new Request(
+      "https://attacker.example/_internal/cosimulation/engine/v2/jobs",
+      { method: "POST", headers: { authorization: `Bearer ${cosimulationSecret}` } },
+    ));
+
+    expect(unauthorized.status).toBe(401);
+    expect(invalidToken.status).toBe(401);
+    expect(forbiddenPath.status).toBe(404);
+    expect(forbiddenHost.status).toBe(403);
+    expect(engineFetch).not.toHaveBeenCalled();
+  });
+
+  it("keeps the relay disabled by default even if a stale secret remains stored", async () => {
+    const engineFetch = vi.fn(async () => Response.json({ unexpected: true }));
+    const proxy = new ContainerEgressProxy({} as never, env({
+      COSIMULATION_INTERNAL_TOKEN: cosimulationSecret,
+      COSIMULATION_CONTAINER: { getByName: () => ({ fetch: engineFetch }) },
+    }) as never);
+    const response = await proxy.fetch(new Request(
+      "https://demo.workers.dev/_internal/cosimulation/engine/v2/jobs",
+      { method: "POST", headers: { authorization: `Bearer ${cosimulationSecret}` } },
+    ));
+    expect(response.status).toBe(404);
+    expect(engineFetch).not.toHaveBeenCalled();
+  });
+
+  it("does not expose the private relay on the public Worker route", async () => {
+    const response = await worker.fetch(new Request(
+      "https://demo.workers.dev/_internal/cosimulation/engine/v2/jobs",
+      { method: "POST", headers: { authorization: `Bearer ${cosimulationSecret}` } },
+    ), env({ COSIMULATION_INTERNAL_TOKEN: cosimulationSecret }));
+
+    expect(response.status).toBe(404);
   });
 });

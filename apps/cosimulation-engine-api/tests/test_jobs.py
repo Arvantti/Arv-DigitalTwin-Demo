@@ -31,17 +31,30 @@ def test_job_blocks_until_one_model_endpoint_is_configured(tmp_path, monkeypatch
     assert "único modelo" in job["error"]
 
 
+def test_job_blocks_when_internal_model_relay_credential_is_missing(tmp_path, monkeypatch) -> None:
+    monkeypatch.setenv("TWIN_DATA", str(tmp_path))
+    monkeypatch.setenv("COSIMULATION_MODEL_URL", "http://model.internal")
+    monkeypatch.delenv("COSIMULATION_INTERNAL_TOKEN", raising=False)
+    accepted = TestClient(main.app).post("/v2/jobs", json=PAYLOAD)
+    job = TestClient(main.app).get(f"/v2/jobs/{accepted.json()['job_id']}").json()
+    assert accepted.status_code == 202
+    assert job["status"] == "blocked"
+    assert "credencial interna" in job["error"]
+
+
 def test_job_runs_single_model_and_persists_its_result(tmp_path, monkeypatch) -> None:
     monkeypatch.setenv("TWIN_DATA", str(tmp_path))
     monkeypatch.setenv("COSIMULATION_MODEL_URL", "http://model.internal")
+    monkeypatch.setenv("COSIMULATION_INTERNAL_TOKEN", "test-cosimulation-internal-token-32-bytes")
     monkeypatch.setattr(
         main,
         "run_trajectory",
-        lambda job_id, request, endpoint: {
+        lambda job_id, request, endpoint, internal_token: {
             "job_id": job_id,
             "profile_hash": request["profile_hash"],
             "model_id": "model-1",
             "endpoint": endpoint,
+            "internal_token": internal_token,
             "source": "cosimulation",
             "applied_to_plc": False,
             "frames": [],
@@ -53,6 +66,7 @@ def test_job_runs_single_model_and_persists_its_result(tmp_path, monkeypatch) ->
     assert accepted.status_code == 202
     assert job["status"] == "succeeded"
     assert job["result"]["endpoint"] == "http://model.internal"
+    assert job["result"]["internal_token"] == "test-cosimulation-internal-token-32-bytes"
     assert job["result"]["source"] == "cosimulation"
 
 

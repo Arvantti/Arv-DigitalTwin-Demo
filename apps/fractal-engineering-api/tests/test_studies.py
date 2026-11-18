@@ -167,11 +167,14 @@ def test_cosimulation_refuses_history_from_a_different_profile(monkeypatch) -> N
 
 def test_submit_cosimulation_job_polls_engine_and_returns_model_result(monkeypatch) -> None:
     monkeypatch.setenv("COSIMULATION_ENGINE_API_URL", "https://cosim.example")
+    monkeypatch.setenv("COSIMULATION_INTERNAL_TOKEN", "test-cosimulation-internal-token-32-bytes")
     seen = []
+    authorization_headers = []
 
     def fake_urlopen(request, timeout):
         url = request.full_url if hasattr(request, "full_url") else request
         seen.append(url)
+        authorization_headers.append(request.get_header("Authorization") if hasattr(request, "get_header") else None)
         if url.endswith("/v2/jobs"):
             return io.BytesIO(b'{"status":"queued","job_id":"COSIM-1"}')
         result = {
@@ -190,10 +193,12 @@ def test_submit_cosimulation_job_polls_engine_and_returns_model_result(monkeypat
     assert result["model_id"] == "model-v1"
     assert len(result["frames"]) == 1
     assert seen == ["https://cosim.example/v2/jobs", "https://cosim.example/v2/jobs/COSIM-1"]
+    assert authorization_headers == ["Bearer test-cosimulation-internal-token-32-bytes"] * 2
 
 
 def test_submit_cosimulation_job_stays_blocked_without_model_frames(monkeypatch) -> None:
     monkeypatch.setenv("COSIMULATION_ENGINE_API_URL", "https://cosim.example")
+    monkeypatch.setenv("COSIMULATION_INTERNAL_TOKEN", "test-cosimulation-internal-token-32-bytes")
 
     def fake_urlopen(request, timeout):
         url = request.full_url if hasattr(request, "full_url") else request

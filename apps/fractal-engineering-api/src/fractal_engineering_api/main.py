@@ -149,13 +149,17 @@ def publish_optimization_run(
 def submit_cosimulation_job(payload: dict[str, Any]) -> dict[str, Any]:
     """Ejecuta un trabajo en la API de cosimulación, aislada del motor de Fractal."""
     origin = os.getenv("COSIMULATION_ENGINE_API_URL", "").rstrip("/")
+    internal_token = os.getenv("COSIMULATION_INTERNAL_TOKEN", "")
     if not origin:
         raise HTTPException(503, "Configure COSIMULATION_ENGINE_API_URL para habilitar cosimulación")
+    if len(internal_token) < 32:
+        raise HTTPException(503, "La credencial del transporte interno de cosimulación no está configurada")
+    internal_headers = {"authorization": f"Bearer {internal_token}"}
     try:
         request = UrlRequest(
             f"{origin}/v2/jobs",
             data=json.dumps(payload, ensure_ascii=False, allow_nan=False).encode(),
-            headers={"content-type": "application/json"},
+            headers={"content-type": "application/json", **internal_headers},
             method="POST",
         )
         with urlopen(request, timeout=10) as response:  # noqa: S310 — origen configurado por despliegue
@@ -168,7 +172,10 @@ def submit_cosimulation_job(payload: dict[str, Any]) -> dict[str, Any]:
         encoded_job_id = quote(job_id, safe="")
         deadline = time.monotonic() + float(os.getenv("COSIMULATION_JOB_TIMEOUT_S", "180"))
         while time.monotonic() < deadline:
-            with urlopen(f"{origin}/v2/jobs/{encoded_job_id}", timeout=10) as response:  # noqa: S310
+            status_request = UrlRequest(
+                f"{origin}/v2/jobs/{encoded_job_id}", headers=internal_headers, method="GET"
+            )
+            with urlopen(status_request, timeout=10) as response:  # noqa: S310 — origen configurado por despliegue
                 job = json.load(response)
             if not isinstance(job, dict):
                 raise HTTPException(502, "Cosimulation Engine devolvió un estado inválido")
