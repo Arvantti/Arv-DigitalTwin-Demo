@@ -329,12 +329,31 @@ def test_session_api_stores_and_replays_model_results_as_separate_triad_sources(
     for _ in range(12):
         operation.plant.step()
     local_historian.frame(session_id, operation.plant.t, {"source": "emulator", "unchanged": True})
+    sample = {"profile": {"id": profile["id"]}, "plc_tags": {"PLC.Profile.ActiveId": profile["id"]}}
+    local_historian.sample(session_id, 1, sample)
+    local_historian.sample(session_id, 0, sample)
+    local_historian.sample(session_id, operation.plant.t, {})  # El instante base no pertenece al historial.
+    local_historian.sample(session_id, operation.plant.t + 1, {})
+    local_historian.sample("other-session", 0, {})
+    expected_history = [
+        {"simulation_time_s": row["t"], "plc_tags": row["plc_tags"]}
+        for row in local_historian.read(session_id)["samples"] if row["t"] < operation.plant.t
+    ]
+
+    def reject_full_history_read(_session_id: str) -> None:
+        raise AssertionError("Fijar el manifiesto no necesita comandos ni recomendaciones")
+
+    monkeypatch.setattr(local_historian, "read", reject_full_history_read)
     manifest_response = client.post(
         f"{BASE}/sessions/{session_id}/comparisons/comparison-api/manifest",
         json={"profile_id": profile["id"], "time_step_s": 3600, "horizon_s": 86400},
     )
     assert manifest_response.status_code == 200, manifest_response.text
     manifest = manifest_response.json()
+    assert manifest["history_times_s"] == [0, 1]
+    assert manifest["history_sample_count"] == 2
+    assert manifest["history_hash"] == main_module._canonical_fingerprint(expected_history)
+    assert manifest["profile_hash"] == main_module._profile_fingerprint(ProfileStore(PLANT).get(profile["id"]))
     repeated_manifest = client.post(
         f"{BASE}/sessions/{session_id}/comparisons/comparison-api/manifest",
         json={"profile_id": profile["id"], "time_step_s": 3600, "horizon_s": 86400},

@@ -523,7 +523,20 @@ export class ContainerEgressProxy extends WorkerEntrypoint<Env> {
       }
       return forward(forwarded);
     }
-    if (target.pathname.startsWith("/api/plants/")) return fetch(request);
+    if (target.pathname.startsWith("/api/plants/")) {
+      if (request.method !== "POST" || !/^\/api\/plants\/[^/]+\/sessions\/[^/]+\/comparisons\/[^/]+\/manifest$/.test(target.pathname)) {
+        return fetch(request);
+      }
+      const started = Date.now();
+      let outcome: number | string = "error";
+      try {
+        const response = await fetch(request);
+        outcome = response.status;
+        return response;
+      } finally {
+        console.info("comparison_manifest egress", { outcome, elapsed_ms: Date.now() - started });
+      }
+    }
     return new Response("Outbound path is not allowed", { status: 403 });
   }
 }

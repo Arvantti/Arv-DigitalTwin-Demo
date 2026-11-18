@@ -1,0 +1,6 @@
+# 2026-11-18 · Diagnóstico del manifiesto de cosimulación
+
+- El usuario autorizó una prueba de 24 h con paso de 1 h sobre la demo virtual PDD-RCA-01. Falló con HTTP 502 al agotar el timeout al fijar el manifiesto. Una consulta de solo lectura a D1 confirmó 115 muestras y 115 frames de emulación, sin manifiesto ni ejecución calculada. Se pausó la sesión con aprobación del usuario.
+- El seguimiento autorizado añade tiempos y resultado de la llamada en Fractal y del egreso HTTP del Worker, además de tiempos de consulta del manifiesto, lectura de muestras y persistencia en el emulador. La telemetría propia no incluye IDs, credenciales ni cuerpos. No se atribuye todavía el fallo a una etapa de almacenamiento específica.
+- Se filtran las muestras anteriores al snapshot en SQL y se evita leer comandos/recomendaciones para el manifiesto. El test comprueba el orden, la exclusión del corte, otra sesión y la equivalencia del hash temporal y de perfil.
+- Validación local: Ruff, 62 pruebas Python dirigidas, typecheck y 32 pruebas del Worker. Sin nuevo despliegue ni reintento. Probar 1 h / paso 1 h después de autorizar el despliegue y la ejecución remota; revisar las mediciones antes de volver a las 24 h.

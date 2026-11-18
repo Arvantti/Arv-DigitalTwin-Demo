@@ -1,5 +1,9 @@
 # Bitácora
 
+## 2026-11-18 · Diagnóstico del manifiesto de cosimulación
+
+La prueba autorizada en producción con PDD-RCA-01 devolvió 502 al fijar el manifiesto, antes de que el engine recibiera un trabajo. D1 mostró muestras y frames de emulación, pero ningún manifiesto ni ejecución; se pausó la sesión. Se añadió medición por etapas y una consulta de muestras estrictamente anteriores al snapshot, sin comandos ni recomendaciones. Ruff, 62 pruebas Python dirigidas, typecheck y 32 pruebas del Worker pasan. No se reintentó la prueba ni se desplegó el ajuste. Ver [[../historico/sesion-codigo/2026-11-18-diagnostico-manifiesto-cosimulacion]].
+
 ## 2026-11-18 · Relay interno autenticado para Cosimulación
 
 Se implementó Fractal→engine→modelo a través del proxy Worker usado por Containers, con dos nuevos Durable Objects, rutas allowlisted y token interno URL-safe validado en tiempo constante/eliminado antes de cada Container. El relay queda apagado sin `COSIMULATION_INTERNAL_TOKEN`; el workflow manual puede cargarlo como secret y despliega el flag explícito para que un secret viejo no lo reactive. Typecheck/32 tests Worker, 53 tests Python dirigidos, Ruff, Wrangler dry-run y build/health smoke de Containers de engine/modelo pasan. Sin deploy, cambios de secretos/D1 ni sesión PLC. Ver [[../historico/sesion-codigo/2026-11-18-relay-privado-cosimulacion]].
