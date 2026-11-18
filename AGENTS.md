@@ -44,5 +44,17 @@ pnpm gallery                      # galería en http://localhost:5173 (con el em
                                   # escena de planta: http://localhost:5173/plant.html (docs/plant-scene.md)
 ```
 
+## Reglas de trabajo
+- Responde en español. Usa siempre pnpm.
+- Solo la última versión: lo que queda obsoleto se borra, no se acumulan copias ni variantes.
+- Git: cada pedido nuevo va en su propia rama y PR desde `main`, aunque haya otro PR abierto. Antes de cada push, comprueba en GitHub que el PR siga abierto. Agrega archivos por nombre: nunca `git add -A`, `git add .`, `-f` ni `--force` sin permiso, y revisa `git show --stat` antes de subir.
+- Nunca expongas secretos (API keys, tokens, `.env`) en chat, logs, commits ni archivos.
+- Las demos no usan fechas de calendario sino días relativos. Las personas en escena usan `P.operator()` de `packages/twin-3d/src/parts.ts`, nunca cajas sueltas.
+- Marca: Arvantti es la marca tecnológica de Sequoia Space, no la empresa. Solo «Arvantti» es marca registrada y lleva ® en texto visible (no en URLs, ids ni código); Harness, Fractal y demás productos no lo llevan.
+
+## Conocimiento fuera del repo
+- `GraphBrain/Arvantti-DigitalTwin/` (`/home/andydev/Coding/GraphBrain/`) es la fuente canónica de memoria y conocimiento del proyecto para todos los arneses. Lee `memory/MEMORY.md` al empezar y abre las demás memorias según su `description`. La convención está en `memory/README.md`, y el material de referencia (base de conocimiento, GPT, guiones) en `references/`.
+- `../assets/`, al lado de los worktrees y fuera de git, guarda videos, renders y audio. No los agregues al repo.
+
 ## Registro del proyecto (obligatorio)
 `docs/registro/` es una bóveda de Obsidian con el plan, la bitácora, las decisiones y el histórico de conversaciones con la IA, que respaldan el registro de software en Colombia. **Todo PR actualiza la bitácora y el histórico** siguiendo `docs/registro/como-actualizar.md`. Nunca incluyas credenciales ni tokens en esas notas.

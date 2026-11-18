@@ -1,5 +1,9 @@
 # Bitácora
 
+## 2026-11-18 · Reglas de trabajo y conocimiento compartido en AGENTS.md
+
+Se migró la memoria del proyecto Claude Code de la organización Pro (instrucciones y 32 memorias) a `GraphBrain/Arvantti-DigitalTwin/`, fuera del repo, como fuente común para Claude, Codex, Pi y Arvantti Harness. `AGENTS.md` incorpora las reglas transversales (idioma, pnpm, última versión, flujo de PRs, secretos, demos y marca) y apunta a GraphBrain y a `../assets/` para el material pesado fuera de git. Solo documentación: sin cambios de código, despliegues ni secretos. Ver [[../historico/sesion-codigo/2026-11-18-reglas-agents-y-graphbrain]].
+
 ## 2026-11-18 · Relay interno autenticado para Cosimulación
 
 Se implementó Fractal→engine→modelo a través del proxy Worker usado por Containers, con dos nuevos Durable Objects, rutas allowlisted y token interno URL-safe validado en tiempo constante/eliminado antes de cada Container. El relay queda apagado sin `COSIMULATION_INTERNAL_TOKEN`; el workflow manual puede cargarlo como secret y despliega el flag explícito para que un secret viejo no lo reactive. Typecheck/32 tests Worker, 53 tests Python dirigidos, Ruff, Wrangler dry-run y build/health smoke de Containers de engine/modelo pasan. Sin deploy, cambios de secretos/D1 ni sesión PLC. Ver [[../historico/sesion-codigo/2026-11-18-relay-privado-cosimulacion]].
