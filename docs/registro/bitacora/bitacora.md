@@ -1,5 +1,9 @@
 # Bitácora
 
+## 2026-11-18 · Retirar aviso de GitHub Actions con runtime Node 20
+
+El aviso de Pages era sobre el runtime JavaScript interno de `pnpm/action-setup@v4` y `astral-sh/setup-uv@v6`, forzado temporalmente por GitHub a Node 24; no sobre el runtime de Gallery, que ya usa Node 26.12.1. Se actualizaron los workflows a pnpm action v6 y setup-uv v10.3.3; deploy manual de Acueducto también usa checkout/setup-node v5. CI por validar en PR; sin despliegues ni cambios de configuración. Ver [[../historico/sesion-codigo/2026-11-18-actualizar-github-actions-node24]].
+
 ## 2026-11-17 · Endpoint local HTTP para el modelo de Cosimulación
 
 Se añadió `apps/water-network-cosim-model-api/` para exponer el adaptador horario existente por HTTP bajo el contrato v2, con calidad cuasiestacionaria asumida explícita. E2E local engine→modelo con fixture: 4 frames history/present/forecast, perfil/hash/rejilla validados, no aplicado; build/health del contenedor, Ruff y 475 pruebas pasan. No se usó ni publicó sesión PLC real. No se desplegó: el endpoint aún carece de autenticación y Cloudflare requiere transporte interno autenticado. Ver [[../historico/sesion-codigo/2026-11-17-endpoint-modelo-cosimulacion-local]].
