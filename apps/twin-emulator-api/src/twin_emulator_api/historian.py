@@ -346,6 +346,15 @@ class SessionHistorian:
                 "INSERT OR REPLACE INTO recommendations VALUES (?, ?, ?, ?)", (session_id, recommendation_id, t, json.dumps(payload))
             )
 
+    def samples_before(self, session_id: str, cutoff_s: float) -> list[dict[str, Any]]:
+        """Lee solo las muestras previas al corte, en orden temporal estricto."""
+        with self._connect() as conn:
+            rows = conn.execute(
+                "SELECT t, payload FROM samples WHERE session_id = ? AND t < ? ORDER BY t",
+                (session_id, cutoff_s),
+            ).fetchall()
+        return [{"t": t, **json.loads(payload)} for t, payload in rows]
+
     def read(self, session_id: str) -> dict[str, Any]:
         with self._connect() as conn:
             samples = conn.execute("SELECT t, payload FROM samples WHERE session_id = ? ORDER BY t", (session_id,)).fetchall()

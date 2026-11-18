@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
 import math
 import os
 import sys
@@ -354,15 +355,20 @@ def cosimulation_from_plc(payload: dict[str, Any], request: Request) -> dict[str
     comparison_id = payload.get("comparison_id") or f"CMP-{uuid4().hex[:12].upper()}"
     if not isinstance(comparison_id, str) or not comparison_id or "/" in comparison_id or ".." in comparison_id:
         raise HTTPException(422, "comparison_id inválido")
-    manifest = gateway_post_json(
-        f"{base}/comparisons/{comparison_id}/manifest",
-        {
-            "profile_id": payload.get("profile_id"),
-            "time_step_s": step,
-            "horizon_s": horizon,
-        },
-        demo_token,
-    )
+    started = time.perf_counter()
+    manifest_received = False
+    try:
+        manifest = gateway_post_json(
+            f"{base}/comparisons/{comparison_id}/manifest",
+            {"profile_id": payload.get("profile_id"), "time_step_s": step, "horizon_s": horizon},
+            demo_token,
+        )
+        manifest_received = True
+    finally:
+        logging.getLogger("uvicorn.error").info(
+            "comparison_manifest fractal ok=%s elapsed_ms=%.1f",
+            manifest_received, (time.perf_counter() - started) * 1000,
+        )
     if manifest.get("session_id") != session_id or manifest.get("plant_id") != plant_id:
         raise HTTPException(409, "el manifiesto pertenece a otra sesión o planta")
     profile = manifest.get("profile")

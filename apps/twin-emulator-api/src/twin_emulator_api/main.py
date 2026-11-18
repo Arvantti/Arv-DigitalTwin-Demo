@@ -28,10 +28,13 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import json
+import logging
 import math
 import os
 import re
 import time
+from collections.abc import Iterator
+from contextlib import contextmanager
 from datetime import date
 from typing import Annotated, Any
 
@@ -715,6 +718,20 @@ def _validate_comparison_grid(time_step_s: Any, horizon_s: Any) -> tuple[float, 
     return step, horizon
 
 
+@contextmanager
+def _measure_manifest_stage(stage: str) -> Iterator[None]:
+    started = time.perf_counter()
+    ok = False
+    try:
+        yield
+        ok = True
+    finally:
+        logging.getLogger("uvicorn.error").info(
+            "comparison_manifest stage=%s ok=%s elapsed_ms=%.1f",
+            stage, ok, (time.perf_counter() - started) * 1000,
+        )
+
+
 @app.post("/api/plants/{plant_id}/sessions/{session_id}/comparisons/{comparison_id}/manifest")
 def create_comparison_manifest(
     plant_id: str,
@@ -731,7 +748,8 @@ def create_comparison_manifest(
         raise HTTPException(404, "sesión desconocida")
     step, horizon = _validate_comparison_grid(payload.get("time_step_s"), payload.get("horizon_s"))
     requested_profile_id = payload.get("profile_id")
-    existing = historian.get_comparison_manifest(session_id, comparison_id)
+    with _measure_manifest_stage("lookup"):
+        existing = historian.get_comparison_manifest(session_id, comparison_id)
     if existing is not None:
         if (
             requested_profile_id not in (None, existing["profile_id"])
@@ -762,9 +780,9 @@ def create_comparison_manifest(
     if int(tags.get("PLC.Pump.RunningCount") or 0) == 0 or float(tags.get("PLC.PRS.OutletPressureMca") or 0) < 5:
         raise HTTPException(409, "espere a que arranquen las bombas y se presurice la VRP antes de fijar la comparación")
     history_frames: list[dict[str, Any]] = []
-    for sample in historian.read(session_id)["samples"]:
-        if sample["t"] >= base_time:
-            continue
+    with _measure_manifest_stage("history_read"):
+        samples = historian.samples_before(session_id, base_time)
+    for sample in samples:
         stored_profile, sample_tags = sample.get("profile"), sample.get("plc_tags")
         if not isinstance(stored_profile, dict) or not isinstance(stored_profile.get("id"), str):
             raise HTTPException(409, "el historial no identifica la versión de escenario de cada muestra")
@@ -803,7 +821,8 @@ def create_comparison_manifest(
         "history_sample_count": len(history_frames),
     }
     try:
-        return historian.create_comparison_manifest(session_id, comparison_id, manifest)
+        with _measure_manifest_stage("persist"):
+            return historian.create_comparison_manifest(session_id, comparison_id, manifest)
     except ValueError as exc:
         raise HTTPException(409, str(exc)) from exc
 
