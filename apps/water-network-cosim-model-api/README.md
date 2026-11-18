@@ -30,4 +30,4 @@ uv run pytest apps/water-network-cosim-model-api/tests apps/cosimulation-engine-
 
 ## Seguridad y despliegue
 
-El endpoint todavía no tiene autenticación de servicio. **No exponerlo a Internet ni desplegarlo así.** Cloudflare Containers no tiene salida general a Internet; antes de configurar `COSIMULATION_MODEL_URL` hay que provisionar transporte privado y autenticado entre Fractal, el engine y este servicio. No configurar endpoints remotos ni registrar datos de sesiones aquí hasta aprobar el diseño y el despliegue.
+La API del Container no implementa auth por sí misma. En Cloudflare debe quedar detrás del relay interno del Worker, que acepta solo rutas engine/modelo allowlisted, exige `COSIMULATION_INTERNAL_TOKEN` de 32–256 caracteres, valida el bearer en comparación de tiempo constante y lo elimina antes de proxyar al Container. El Container no tiene salida general a Internet ni endpoint público. No habilitar el secreto ni desplegar los nuevos Containers hasta tener autorización y completar las validaciones; en despliegues locales mantener bind en loopback.

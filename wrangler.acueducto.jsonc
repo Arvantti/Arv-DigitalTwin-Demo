@@ -29,6 +29,28 @@
 					"build_context": "."
 				}
 			}
+		},
+		{
+			"name": "acueducto-emulator-api-cosimulationcontainer",
+			"class_name": "CosimulationContainer",
+			"scheduling_policy": "durable_object",
+			"images": {
+				"default": {
+					"dockerfile": "./apps/cosimulation-engine-api/Containerfile",
+					"build_context": "."
+				}
+			}
+		},
+		{
+			"name": "acueducto-emulator-api-cosimulationmodelcontainer",
+			"class_name": "CosimulationModelContainer",
+			"scheduling_policy": "durable_object",
+			"images": {
+				"default": {
+					"dockerfile": "./apps/water-network-cosim-model-api/Containerfile",
+					"build_context": "."
+				}
+			}
 		}
 	],
 	"durable_objects": {
@@ -40,6 +62,14 @@
 			{
 				"name": "FRACTAL_CONTAINER",
 				"class_name": "FractalContainer"
+			},
+			{
+				"name": "COSIMULATION_CONTAINER",
+				"class_name": "CosimulationContainer"
+			},
+			{
+				"name": "COSIMULATION_MODEL_CONTAINER",
+				"class_name": "CosimulationModelContainer"
 			}
 		]
 	},
@@ -54,6 +84,13 @@
 			"tag": "v2",
 			"new_sqlite_classes": [
 				"FractalContainer"
+			]
+		},
+		{
+			"tag": "v3",
+			"new_sqlite_classes": [
+				"CosimulationContainer",
+				"CosimulationModelContainer"
 			]
 		}
 	],
@@ -95,6 +132,7 @@
 		"ALLOWED_PLANT_IDS": "water-network-scale-v1",
 		"D1_GATEWAY_ORIGIN": "https://acueducto-emulator-api.andres-quiceno.workers.dev",
 		"CORS_ORIGINS": "https://digitaltwin.arvantti.online,https://digitaltwin-arvantti.pages.dev",
-		"ACCESS_CONTROL_API_URL": ""
+		"ACCESS_CONTROL_API_URL": "",
+		"COSIMULATION_RELAY_ENABLED": "false"
 	}
 }

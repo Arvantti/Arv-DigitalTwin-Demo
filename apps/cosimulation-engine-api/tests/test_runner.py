@@ -1,11 +1,35 @@
 from __future__ import annotations
 
+import io
+import json
 from importlib import import_module
 
 import pytest
 from cosimulation_engine_api import main as _api_main  # noqa: F401
 
 runner = import_module("cosimulation.runner")
+
+
+def test_model_request_authenticates_to_the_internal_worker_relay(monkeypatch) -> None:
+    captured = {}
+
+    def fake_urlopen(request, timeout):
+        captured["request"] = request
+        captured["timeout"] = timeout
+        return io.BytesIO(json.dumps({
+            "contract_version": runner.MODEL_RESULT_CONTRACT_VERSION,
+            "profile_hash": "hash-1",
+            "model_id": "model-1",
+            "quality": "fixture_assumed",
+            "frames": [{"simulation_time_s": 1}],
+        }).encode())
+
+    monkeypatch.setattr(runner, "urlopen", fake_urlopen)
+    result = runner._project("https://gateway.workers.dev/_internal/cosimulation/model", {"profile_hash": "hash-1"}, "a" * 32)
+
+    assert result["model_id"] == "model-1"
+    assert captured["request"].get_header("Authorization") == f"Bearer {'a' * 32}"
+    assert captured["request"].full_url.endswith("/_internal/cosimulation/model/v2/project")
 
 
 def test_runner_projects_one_model_with_the_shared_profile_and_returns_three_temporal_contexts(monkeypatch) -> None:

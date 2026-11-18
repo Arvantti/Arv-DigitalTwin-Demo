@@ -59,9 +59,13 @@ def _run_job(job_id: str) -> None:
     if not model_endpoint:
         _update(job_id, "blocked", error="falta COSIMULATION_MODEL_URL para el único modelo cosimulado")
         return
+    internal_token = os.getenv("COSIMULATION_INTERNAL_TOKEN", "")
+    if len(internal_token) < 32:
+        _update(job_id, "blocked", error="falta una credencial interna válida para el modelo cosimulado")
+        return
     _update(job_id, "running")
     try:
-        result = run_trajectory(job_id, json.loads(row["request_json"]), model_endpoint)
+        result = run_trajectory(job_id, json.loads(row["request_json"]), model_endpoint, internal_token)
     except Exception as exc:  # La respuesta pública no incluye configuración del proceso.
         _update(job_id, "failed", error=f"{type(exc).__name__}: {str(exc)[:240]}")
         return
