@@ -1,5 +1,9 @@
 # Bitácora
 
+## 2026-11-17 · Endpoint local HTTP para el modelo de Cosimulación
+
+Se añadió `apps/water-network-cosim-model-api/` para exponer el adaptador horario existente por HTTP bajo el contrato v2, con calidad cuasiestacionaria asumida explícita. E2E local engine→modelo con fixture: 4 frames history/present/forecast, perfil/hash/rejilla validados, no aplicado; build/health del contenedor, Ruff y 475 pruebas pasan. No se usó ni publicó sesión PLC real. No se desplegó: el endpoint aún carece de autenticación y Cloudflare requiere transporte interno autenticado. Ver [[../historico/sesion-codigo/2026-11-17-endpoint-modelo-cosimulacion-local]].
+
 ## 2026-11-17 · Gauges temporales de tres fuentes anclados en el gemelo
 
 Se reemplazó la tabla fija de la tríada por seis gauges en los puntos de interés del modelo (bombeo, PRS, válvulas entre niveles y C44), con las etiquetas exactas **Planta Real**, **Cosimulador** y **Fractal**. Siguen los puntos de escena durante el recorrido de frames persistidos y muestran `—` ante datos faltantes. Typecheck, build Gallery y diff-check pasan. No se inició sesión/mandos ni se desplegó; falta E2E visual con frames reales. Ver [[../historico/sesion-codigo/2026-11-17-gauges-triada-3d]].
