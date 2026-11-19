@@ -61,6 +61,7 @@ describe("D1 bridge", () => {
 
 describe("comparison manifest proxy timings", () => {
   it("records gateway and container stages without logging the request", async () => {
+    const timingHeader = "x-twin-internal-manifest-do-timing";
     const log = vi.spyOn(console, "info").mockImplementation(() => {});
     const managed = {
       running: false,
@@ -69,8 +70,9 @@ describe("comparison manifest proxy timings", () => {
         if (typeof input === "string") return Response.json({ status: "ok" });
         expect(input.headers.get("authorization")).toBeNull();
         expect(input.headers.get("x-twin-demo-id")).toBe("test-owner");
+        expect(input.headers.get(timingHeader)).toBeNull();
         expect(await input.json()).toEqual({ marker: "test-body" });
-        return Response.json({ detail: "conflict" }, { status: 409 });
+        return Response.json({ detail: "conflict" }, { status: 409, headers: { [timingHeader]: "untrusted" } });
       }) }),
     };
     const object = new AcueductoContainer({ container: managed } as never, env());
@@ -83,17 +85,24 @@ describe("comparison manifest proxy timings", () => {
     });
     try {
       const response = await worker.fetch(new Request(path, {
-        method: "POST", headers: { authorization: `Bearer ${token}` }, body: JSON.stringify({ marker: "test-body" }),
+        method: "POST", headers: { authorization: `Bearer ${token}`, [timingHeader]: "untrusted" },
+        body: JSON.stringify({ marker: "test-body" }),
       }), environment);
       expect(response.status).toBe(409);
+      expect(response.headers.get(timingHeader)).toBeNull();
       expect(await response.json()).toEqual({ detail: "conflict" });
       const stages = log.mock.calls.map(([, fields]) => `${fields.stage}:${fields.event}`);
       expect(stages).toEqual([
         "worker_ingress:start", "worker_to_do:start", "do_ready:start", "do_ready:end",
         "do_inactivity_timeout:start", "do_inactivity_timeout:end", "do_to_tcp:start", "do_to_tcp:end",
-        "worker_to_do:end", "worker_ingress:end",
+        "worker_to_do:end", "worker_do_breakdown:end", "worker_ingress:end",
       ]);
-      expect(JSON.stringify(log.mock.calls)).not.toMatch(/test-session|test-comparison|test-body|test-owner|authorization/i);
+      expect(log).toHaveBeenCalledWith("comparison_manifest proxy", {
+        stage: "worker_do_breakdown", event: "end", outcome: 409,
+        do_entry_at_ms: expect.any(Number), do_ready_ms: expect.any(Number),
+        do_inactivity_timeout_ms: expect.any(Number), do_to_tcp_ms: expect.any(Number),
+      });
+      expect(JSON.stringify(log.mock.calls)).not.toMatch(/test-session|test-comparison|test-body|test-owner|authorization|untrusted/i);
       log.mockClear();
       await worker.fetch(new Request(`${origin}/_worker/health`), environment);
       expect(log).not.toHaveBeenCalled();
