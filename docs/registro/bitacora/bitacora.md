@@ -1,5 +1,9 @@
 # Bitácora
 
+## 2026-11-18 · Observabilidad acotada del manifiesto PLC
+
+La prueba corta agotó la espera en Fractal y el Worker recibió un 409 tardío (47,6 s). Sin observabilidad de contenedores no pudo identificarse el motivo. Se agrega captura de logs solo para Acueducto y Fractal, sin access log de Uvicorn, y códigos fijos para los rechazos del manifiesto. No cambia el timeout ni las reglas del PLC. Ver [[../historico/sesion-codigo/2026-11-18-observabilidad-manifiesto-plc]].
+
 ## 2026-11-18 · Diagnóstico del manifiesto de cosimulación
 
 La prueba autorizada en producción con PDD-RCA-01 devolvió 502 al fijar el manifiesto, antes de que el engine recibiera un trabajo. D1 mostró muestras y frames de emulación, pero ningún manifiesto ni ejecución; se pausó la sesión. Se añadió medición por etapas y una consulta de muestras estrictamente anteriores al snapshot, sin comandos ni recomendaciones. Ruff, 62 pruebas Python dirigidas, typecheck y 32 pruebas del Worker pasan. No se reintentó la prueba ni se desplegó el ajuste. Ver [[../historico/sesion-codigo/2026-11-18-diagnostico-manifiesto-cosimulacion]].
