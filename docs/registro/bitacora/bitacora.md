@@ -1,5 +1,9 @@
 # Bitácora
 
+## 2026-11-19 · Lectura de checkpoints BLOB de D1
+
+Tras desplegar la medición del proxy, la sesión vigente no pudo reanudarse: el emulador rechazó el checkpoint al leerlo por WebSocket aunque D1 conservaba un BLOB de versión 2. El puente Worker ahora codifica el arreglo de bytes devuelto por D1 con el marcador binario que entiende Python. No se escribió en D1 ni se envió una solicitud de cosimulación. Ver [[../historico/sesion-codigo/2026-11-19-restauracion-checkpoints-d1]].
+
 ## 2026-11-18 · Medición del trayecto Worker → contenedor del manifiesto
 
 En la prueba con una sesión PDD-RCA-01 nueva, Fractal agotó 15,0 s y el egreso del Worker registró 409 tras 46,2 s. El emulador consultó el manifiesto en 45 ms y rechazó `session_not_running` casi simultáneamente con la pausa posterior al timeout; la demora previa sigue sin explicar. Se añadieron marcas de entrada y tiempos por tramo en el proxy y el Durable Object. Typecheck y 33 pruebas del Worker pasan. Sin nuevo despliegue ni reintento. Ver [[../historico/sesion-codigo/2026-11-18-medicion-proxy-manifiesto-plc]].

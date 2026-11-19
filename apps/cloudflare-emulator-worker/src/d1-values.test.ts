@@ -9,6 +9,17 @@ describe("D1 JSON transport for BLOB values", () => {
     expect([...decodeD1Value(encoded) as Uint8Array]).toEqual([...input]);
   });
 
+  it("encodes D1 result arrays as BLOBs, including empty and large checkpoints", () => {
+    for (const bytes of [[], [0, 1, 2, 127, 255], Array.from({ length: 772_400 }, (_, i) => i % 256)]) {
+      const encoded = encodeD1Value(bytes);
+      expect(encoded).toEqual(encodeD1Value(Uint8Array.from(bytes)));
+      expect(decodeD1Value(encoded)).toEqual(Uint8Array.from(bytes));
+    }
+    expect(encodeD1Value([256])).toEqual([256]);
+    expect(encodeD1Value(["12"])).toEqual(["12"]);
+    expect(encodeD1Value("[0,255]")).toBe("[0,255]");
+  });
+
   it("preserves scalar SQL parameters and normalizes booleans", () => {
     expect(decodeD1Value(null)).toBeNull();
     expect(decodeD1Value("plant")).toBe("plant");
