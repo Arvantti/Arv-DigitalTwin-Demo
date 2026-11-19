@@ -45,6 +45,20 @@ function env(overrides: Record<string, unknown> = {}) {
   } as never;
 }
 
+describe("D1 bridge", () => {
+  it("returns a checkpoint BLOB as binary transport alongside its schema version", async () => {
+    const all = async () => ({
+      success: true, results: [{ schema_version: 2, payload: [0, 1, 2, 127, 255] }], meta: { changes: 0 },
+    });
+    const response = await worker.fetch(new Request("https://demo.workers.dev/_internal/d1", {
+      method: "POST", headers: { authorization: "Bearer bridge-secret" },
+      body: JSON.stringify({ sql: "SELECT schema_version, payload FROM session_checkpoints", params: [] }),
+    }), env({ DB: { prepare: () => ({ bind: () => ({ all }) }) } }));
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ success: true, rows: [[2, { __twin_d1_bytes__: "AAECf/8=" }]], changes: 0 });
+  });
+});
+
 describe("comparison manifest proxy timings", () => {
   it("records gateway and container stages without logging the request", async () => {
     const log = vi.spyOn(console, "info").mockImplementation(() => {});
