@@ -1,5 +1,9 @@
 # Bitácora
 
+## 2026-11-19 · Evitar el sondeo de arranque repetido en Acueducto
+
+El desglose en producción concentró 91,7 s en disponibilidad del contenedor frente a 49 ms de TCP. Se confirmó que Acueducto repetía la comprobación de arranque en cada solicitud; ahora reutiliza la disponibilidad ya comprobada mientras siga en marcha y la invalida al detenerse o fallar el transporte. Typecheck y 37 pruebas; sin despliegue ni reintento. Ver [[../historico/sesion-codigo/2026-11-19-acueducto-disponibilidad-contenedor]].
+
 ## 2026-11-19 · Tiempos del Durable Object en el log del Worker
 
 El intento corto recibió 502 en Fractal y un 409 tardío del emulador. El Worker midió 56,1 s en su llamada al Durable Object, pero ni el tail ni la búsqueda histórica recuperaron el desglose interno. El proxy recoge esos tiempos en el Worker y retira su cabecera interna antes de devolver la respuesta. Sin despliegue ni reintento. Ver [[../historico/sesion-codigo/2026-11-19-desglose-manifiesto-durable-object]].

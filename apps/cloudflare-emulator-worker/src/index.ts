@@ -578,6 +578,8 @@ export class ContainerEgressProxy extends WorkerEntrypoint<Env> {
 abstract class ManagedPythonContainer extends DurableObject<Env> {
   private starting: Promise<void> | undefined;
   private monitoring: Promise<void> | undefined;
+  private ready = false;
+  protected readonly reuseReadiness: boolean = false;
   protected abstract readonly port: number;
   protected abstract readonly healthPath: string;
   protected abstract readonly serviceName: string;
@@ -599,7 +601,11 @@ abstract class ManagedPythonContainer extends DurableObject<Env> {
     const measure = <T>(stage: string, run: () => Promise<T>): Promise<T> =>
       measureManifest(timed, stage, run, (ms) => { durations.push(ms); });
     await measure("do_ready", () => {
-      this.starting ??= this.startAndWaitForPort().finally(() => { this.starting = undefined; });
+      if (!this.ctx.container?.running) this.ready = false;
+      if (this.reuseReadiness && this.ready) return Promise.resolve();
+      this.starting ??= this.startAndWaitForPort()
+        .then(() => { this.ready = true; })
+        .finally(() => { this.starting = undefined; });
       return this.starting;
     });
 
@@ -610,7 +616,14 @@ abstract class ManagedPythonContainer extends DurableObject<Env> {
     url.host = "container";
     const forwarded = new Request(url, request);
     forwarded.headers.delete("host");
-    const response = await measure("do_to_tcp", () => container.getTcpPort(this.port).fetch(forwarded));
+    let response: Response;
+    try {
+      response = await measure("do_to_tcp", () => container.getTcpPort(this.port).fetch(forwarded));
+    } catch (error) {
+      // Probe again on the next request; never retry an operation that may have reached Python.
+      this.ready = false;
+      throw error;
+    }
     if (!timed) return response;
     // The DO logs are not always visible in the gateway tail. Carry only timing data to proxyApi.
     const internal = new Response(response.body, response);
@@ -664,12 +677,16 @@ abstract class ManagedPythonContainer extends DurableObject<Env> {
       .then(() => undefined);
     this.monitoring = monitoring;
     this.ctx.waitUntil(monitoring.finally(() => {
-      if (this.monitoring === monitoring) this.monitoring = undefined;
+      if (this.monitoring === monitoring) {
+        this.ready = false;
+        this.monitoring = undefined;
+      }
     }));
   }
 }
 
 export class AcueductoContainer extends ManagedPythonContainer {
+  protected override readonly reuseReadiness = true;
   protected readonly port = 8000;
   protected readonly healthPath = "/api/health";
   protected readonly serviceName = "Acueducto";
