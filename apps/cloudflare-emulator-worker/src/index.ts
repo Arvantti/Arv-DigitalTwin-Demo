@@ -406,6 +406,27 @@ async function proxyFractal(
   }
 }
 
+function isManifestPost(request: Request): boolean {
+  return request.method === "POST" &&
+    /^\/api\/plants\/[^/]+\/sessions\/[^/]+\/comparisons\/[^/]+\/manifest$/.test(new URL(request.url).pathname);
+}
+
+function measureManifest<T>(enabled: boolean, stage: string, operation: () => Promise<T>): Promise<T> {
+  if (!enabled) return operation();
+  console.info("comparison_manifest proxy", { stage, event: "start", at_ms: Date.now() });
+  const started = Date.now();
+  return (async () => {
+    let outcome: number | string = "error";
+    try {
+      const result = await operation();
+      outcome = result instanceof Response ? result.status : "ok";
+      return result;
+    } finally {
+      console.info("comparison_manifest proxy", { stage, event: "end", outcome, elapsed_ms: Date.now() - started });
+    }
+  })();
+}
+
 async function proxyApi(request: Request, env: Env, visitorId: string, sharedStudiesRead = false, sharedStudiesEdit = false): Promise<Response> {
   const url = new URL(request.url);
   if (!url.pathname.startsWith("/api/plants/")) {
@@ -458,7 +479,8 @@ async function proxyApi(request: Request, env: Env, visitorId: string, sharedStu
   }
   try {
     const container = env.ACUEDUCTO_CONTAINER.getByName("acueducto");
-    const response = await container.fetch(proxyRequest(request, visitorId, demoExpiresAt, sharedStudiesRead, sharedStudiesEdit));
+    const upstream = proxyRequest(request, visitorId, demoExpiresAt, sharedStudiesRead, sharedStudiesEdit);
+    const response = await measureManifest(isManifestPost(request), "worker_to_do", () => container.fetch(upstream));
     if (!creation || !response.ok) return withCors(response, request, env);
     const data = await response.clone().json() as { id?: unknown; plant_id?: unknown };
     const plantId = new URL(request.url).pathname.match(/^\/api\/plants\/([^/]+)\/sessions$/)?.[1];
@@ -524,18 +546,7 @@ export class ContainerEgressProxy extends WorkerEntrypoint<Env> {
       return forward(forwarded);
     }
     if (target.pathname.startsWith("/api/plants/")) {
-      if (request.method !== "POST" || !/^\/api\/plants\/[^/]+\/sessions\/[^/]+\/comparisons\/[^/]+\/manifest$/.test(target.pathname)) {
-        return fetch(request);
-      }
-      const started = Date.now();
-      let outcome: number | string = "error";
-      try {
-        const response = await fetch(request);
-        outcome = response.status;
-        return response;
-      } finally {
-        console.info("comparison_manifest egress", { outcome, elapsed_ms: Date.now() - started });
-      }
+      return measureManifest(isManifestPost(request), "fractal_egress", () => fetch(request));
     }
     return new Response("Outbound path is not allowed", { status: 403 });
   }
@@ -559,17 +570,20 @@ abstract class ManagedPythonContainer extends DurableObject<Env> {
   }
 
   async fetch(request: Request): Promise<Response> {
-    this.starting ??= this.startAndWaitForPort().finally(() => { this.starting = undefined; });
-    await this.starting;
+    const timed = isManifestPost(request);
+    await measureManifest(timed, "do_ready", () => {
+      this.starting ??= this.startAndWaitForPort().finally(() => { this.starting = undefined; });
+      return this.starting;
+    });
 
     const container = this.ctx.container!;
-    await container.setInactivityTimeout(10 * 60 * 1000);
+    await measureManifest(timed, "do_inactivity_timeout", () => container.setInactivityTimeout(10 * 60 * 1000));
     const url = new URL(request.url);
     url.protocol = "http:";
     url.host = "container";
     const forwarded = new Request(url, request);
     forwarded.headers.delete("host");
-    return container.getTcpPort(this.port).fetch(forwarded);
+    return measureManifest(timed, "do_to_tcp", () => container.getTcpPort(this.port).fetch(forwarded));
   }
 
   private async startAndWaitForPort(): Promise<void> {
@@ -684,7 +698,7 @@ export class CosimulationModelContainer extends ManagedPythonContainer {
   }
 }
 
-export default {
+const gatewayWorker = {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
     if (url.pathname === "/_worker/health") return Response.json({ status: "ok", service: "acueducto-gateway" });
@@ -801,5 +815,11 @@ export default {
     }
     if (fractalPath) return proxyFractal(request, env, visitorId, fractalRelayToken!, sharedStudiesRead, sharedStudiesEdit);
     return proxyApi(request, env, visitorId, sharedStudiesRead, sharedStudiesEdit);
+  },
+};
+
+export default {
+  fetch(request: Request, env: Env): Promise<Response> {
+    return measureManifest(isManifestPost(request), "worker_ingress", () => gatewayWorker.fetch(request, env));
   },
 };

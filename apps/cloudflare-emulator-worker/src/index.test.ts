@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("cloudflare:workers", () => ({
-  DurableObject: class {},
+  DurableObject: class { ctx: unknown; env: unknown; constructor(ctx: unknown, env: unknown) { this.ctx = ctx; this.env = env; } },
   WorkerEntrypoint: class { env: unknown; constructor(_ctx: unknown, env: unknown) { this.env = env; } },
 }));
 vi.mock("jose", () => ({
@@ -10,7 +10,7 @@ vi.mock("jose", () => ({
     throw new Error("invalid assertion");
   }),
 }));
-import worker, { ContainerEgressProxy } from "./index";
+import worker, { AcueductoContainer, ContainerEgressProxy } from "./index";
 import { signDemoToken, verifyDemoToken } from "./demo-auth";
 
 beforeEach(() => {
@@ -44,6 +44,50 @@ function env(overrides: Record<string, unknown> = {}) {
     ...overrides,
   } as never;
 }
+
+describe("comparison manifest proxy timings", () => {
+  it("records gateway and container stages without logging the request", async () => {
+    const log = vi.spyOn(console, "info").mockImplementation(() => {});
+    const managed = {
+      running: false,
+      setInactivityTimeout: vi.fn(async () => {}),
+      getTcpPort: () => ({ fetch: vi.fn(async (input: string | Request) => {
+        if (typeof input === "string") return Response.json({ status: "ok" });
+        expect(input.headers.get("authorization")).toBeNull();
+        expect(input.headers.get("x-twin-demo-id")).toBe("test-owner");
+        expect(await input.json()).toEqual({ marker: "test-body" });
+        return Response.json({ detail: "conflict" }, { status: 409 });
+      }) }),
+    };
+    const object = new AcueductoContainer({ container: managed } as never, env());
+    managed.running = true;
+    const token = await signDemoToken(secret, "test-owner", Math.floor(Date.now() / 1000) + 60);
+    const path = `${origin}/api/plants/water-network-scale-v1/sessions/test-session/comparisons/test-comparison/manifest`;
+    const environment = env({
+      DB: { prepare: () => ({ bind: () => ({ first: async () => ({ session_id: "test-session" }) }) }) },
+      ACUEDUCTO_CONTAINER: { getByName: () => object },
+    });
+    try {
+      const response = await worker.fetch(new Request(path, {
+        method: "POST", headers: { authorization: `Bearer ${token}` }, body: JSON.stringify({ marker: "test-body" }),
+      }), environment);
+      expect(response.status).toBe(409);
+      expect(await response.json()).toEqual({ detail: "conflict" });
+      const stages = log.mock.calls.map(([, fields]) => `${fields.stage}:${fields.event}`);
+      expect(stages).toEqual([
+        "worker_ingress:start", "worker_to_do:start", "do_ready:start", "do_ready:end",
+        "do_inactivity_timeout:start", "do_inactivity_timeout:end", "do_to_tcp:start", "do_to_tcp:end",
+        "worker_to_do:end", "worker_ingress:end",
+      ]);
+      expect(JSON.stringify(log.mock.calls)).not.toMatch(/test-session|test-comparison|test-body|test-owner|authorization/i);
+      log.mockClear();
+      await worker.fetch(new Request(`${origin}/_worker/health`), environment);
+      expect(log).not.toHaveBeenCalled();
+    } finally {
+      log.mockRestore();
+    }
+  });
+});
 
 describe("public demo gateway", () => {
   it("does not allow API use without an anonymous session capability", async () => {

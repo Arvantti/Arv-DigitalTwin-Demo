@@ -1,5 +1,9 @@
 # Bitácora
 
+## 2026-11-18 · Medición del trayecto Worker → contenedor del manifiesto
+
+En la prueba con una sesión PDD-RCA-01 nueva, Fractal agotó 15,0 s y el egreso del Worker registró 409 tras 46,2 s. El emulador consultó el manifiesto en 45 ms y rechazó `session_not_running` casi simultáneamente con la pausa posterior al timeout; la demora previa sigue sin explicar. Se añadieron marcas de entrada y tiempos por tramo en el proxy y el Durable Object. Typecheck y 33 pruebas del Worker pasan. Sin nuevo despliegue ni reintento. Ver [[../historico/sesion-codigo/2026-11-18-medicion-proxy-manifiesto-plc]].
+
 ## 2026-11-18 · Observabilidad acotada del manifiesto PLC
 
 La prueba corta agotó la espera en Fractal y el Worker recibió un 409 tardío (47,6 s). Sin observabilidad de contenedores no pudo identificarse el motivo. Se agrega captura de logs solo para Acueducto y Fractal, sin access log de Uvicorn, y códigos fijos para los rechazos del manifiesto. No cambia el timeout ni las reglas del PLC. Ver [[../historico/sesion-codigo/2026-11-18-observabilidad-manifiesto-plc]].
