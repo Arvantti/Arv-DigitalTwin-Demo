@@ -313,7 +313,7 @@ def test_historian_keeps_emulator_history_append_only_and_materializes_exact_tri
     assert historian.nearest_frame("session-x", 10)["snapshot"]["value"] == 1
 
 
-def test_session_api_stores_and_replays_model_results_as_separate_triad_sources(tmp_path, monkeypatch) -> None:
+def test_session_api_stores_and_replays_model_results_as_separate_triad_sources(tmp_path, monkeypatch, caplog) -> None:
     from twin_emulator_api import main as main_module
     from twin_emulator_api.historian import SessionHistorian
 
@@ -360,11 +360,16 @@ def test_session_api_stores_and_replays_model_results_as_separate_triad_sources(
     )
     assert repeated_manifest.status_code == 200
     assert repeated_manifest.json()["input_hash"] == manifest["input_hash"]
-    incompatible = client.post(
-        f"{BASE}/sessions/{session_id}/comparisons/comparison-api/manifest",
-        json={"profile_id": profile["id"], "time_step_s": 3600, "horizon_s": 7200},
-    )
+    with caplog.at_level("INFO", logger="uvicorn.error"):
+        incompatible = client.post(
+            f"{BASE}/sessions/{session_id}/comparisons/comparison-api/manifest",
+            json={"profile_id": profile["id"], "time_step_s": 3600, "horizon_s": 7200},
+        )
     assert incompatible.status_code == 409
+    assert incompatible.json()["detail"] == "comparison_id ya está fijado a otro perfil o rejilla temporal"
+    assert "comparison_manifest rejected reason=existing_context" in caplog.messages
+    assert any(message.startswith("comparison_manifest stage=session_lookup ") for message in caplog.messages)
+    assert not any(session_id in message or profile["id"] in message for message in caplog.messages)
     assert client.get(f"{BASE}/sessions/{session_id}/comparisons/comparison-api/manifest").json() == manifest
     status_path = f"{BASE}/sessions/{session_id}/comparisons/comparison-api/sources/cosimulation/status"
     assert client.post(status_path, json={"status": "in_progress", "detail": "modelo en cola"}).status_code == 200

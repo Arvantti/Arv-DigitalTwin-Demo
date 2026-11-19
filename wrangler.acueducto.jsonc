@@ -11,6 +11,7 @@
 		{
 			"name": "acueducto-emulator-api-acueductocontainer",
 			"class_name": "AcueductoContainer",
+			"observability": { "enabled": true, "logs": { "enabled": true } },
 			"scheduling_policy": "durable_object",
 			"images": {
 				"default": {
@@ -22,6 +23,7 @@
 		{
 			"name": "acueducto-emulator-api-fractalcontainer",
 			"class_name": "FractalContainer",
+			"observability": { "enabled": true, "logs": { "enabled": true } },
 			"scheduling_policy": "durable_object",
 			"images": {
 				"default": {

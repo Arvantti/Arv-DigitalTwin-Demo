@@ -630,6 +630,7 @@ export class AcueductoContainer extends ManagedPythonContainer {
 
   protected containerEnvironment(gateway: URL): Record<string, string> {
     return {
+      UVICORN_ACCESS_LOG: "false",
       TWIN_SERVICE_ID: "acueducto",
       TWIN_ALLOWED_PLANTS: this.env.ALLOWED_PLANT_IDS,
       TWIN_DATA_BACKEND: "d1",
@@ -649,6 +650,7 @@ export class FractalContainer extends ManagedPythonContainer {
   protected containerEnvironment(gateway: URL): Record<string, string> {
     const token = this.env.COSIMULATION_RELAY_ENABLED === "true" ? (this.env.COSIMULATION_INTERNAL_TOKEN ?? "") : "";
     return {
+      UVICORN_ACCESS_LOG: "false",
       FRACTAL_PLC_API_URL: gateway.origin,
       COSIMULATION_ENGINE_API_URL: token.length >= 32 ? `${gateway.origin}/_internal/cosimulation/engine` : "",
       COSIMULATION_INTERNAL_TOKEN: token,
