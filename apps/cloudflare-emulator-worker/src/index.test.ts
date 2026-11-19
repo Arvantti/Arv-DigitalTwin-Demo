@@ -112,6 +112,64 @@ describe("comparison manifest proxy timings", () => {
   });
 });
 
+describe("Acueducto container readiness", () => {
+  it("shares a cold probe, serves warm requests without probing and probes after a restart", async () => {
+    let finishMonitor: () => void;
+    let monitoring: Promise<void> | undefined;
+    const fetchPort = vi.fn(async (input: string | Request) => {
+      if (typeof input === "string") return new Response(null, { status: 200 });
+      return Response.json({ ok: true });
+    });
+    const managed = {
+      running: false,
+      images: { default: { name: "test" } },
+      interceptOutboundHttps: vi.fn(async () => {}),
+      start: vi.fn(() => { managed.running = true; }),
+      monitor: () => new Promise<void>((resolve) => { finishMonitor = resolve; }),
+      setInactivityTimeout: vi.fn(async () => {}),
+      getTcpPort: () => ({ fetch: fetchPort }),
+    };
+    const object = new AcueductoContainer({
+      container: managed, exports: { ContainerEgressProxy: () => ({}) },
+      waitUntil: (work: Promise<void>) => { monitoring = work; },
+    } as never, env());
+    const call = () => object.fetch(new Request(`${origin}/api/health`));
+    const probes = () => fetchPort.mock.calls.filter(([input]) => typeof input === "string").length;
+    expect((await Promise.all([call(), call()])).map((r) => r.status)).toEqual([200, 200]);
+    expect(managed.start).toHaveBeenCalledTimes(1);
+    expect(probes()).toBe(1);
+    await call();
+    expect(probes()).toBe(1);
+    managed.running = false;
+    finishMonitor!();
+    await monitoring;
+    await call();
+    expect(managed.start).toHaveBeenCalledTimes(2);
+    expect(probes()).toBe(2);
+    expect(managed.setInactivityTimeout).toHaveBeenCalledTimes(6);
+  });
+
+  it("rechecks after a TCP failure without replaying the failed POST", async () => {
+    let fail = false;
+    const fetchPort = vi.fn(async (input: string | Request) => {
+      if (typeof input === "string") return new Response(null, { status: 200 });
+      if (fail) throw new Error("TCP unavailable");
+      return new Response(null, { status: 204 });
+    });
+    const managed = { running: false, setInactivityTimeout: async () => {}, getTcpPort: () => ({ fetch: fetchPort }) };
+    const object = new AcueductoContainer({ container: managed } as never, env());
+    managed.running = true;
+    const call = () => object.fetch(new Request(`${origin}/api/plants/water-network-scale-v1/sessions`, { method: "POST" }));
+    await call();
+    fail = true;
+    await expect(call()).rejects.toThrow("TCP unavailable");
+    expect(fetchPort.mock.calls.map(([input]) => typeof input)).toEqual(["string", "object", "object"]);
+    fail = false;
+    expect((await call()).status).toBe(204);
+    expect(fetchPort.mock.calls.map(([input]) => typeof input)).toEqual(["string", "object", "object", "string", "object"]);
+  });
+});
+
 describe("public demo gateway", () => {
   it("does not allow API use without an anonymous session capability", async () => {
     const response = await worker.fetch(new Request(`${origin}/api/plants/water-network-scale-v1`), env());
