@@ -411,10 +411,28 @@ function isManifestPost(request: Request): boolean {
     /^\/api\/plants\/[^/]+\/sessions\/[^/]+\/comparisons\/[^/]+\/manifest$/.test(new URL(request.url).pathname);
 }
 
-function measureManifest<T>(enabled: boolean, stage: string, operation: () => Promise<T>): Promise<T> {
+const MANIFEST_DO_TIMING = "x-twin-internal-manifest-do-timing";
+
+function collectManifestDoTiming(response: Response): Response {
+  const raw = response.headers.get(MANIFEST_DO_TIMING);
+  if (raw === null) return response;
+  const timings = /^(\d{13}),(\d{1,9}),(\d{1,9}),(\d{1,9})$/.exec(raw);
+  if (timings) {
+    const [do_entry_at_ms, do_ready_ms, do_inactivity_timeout_ms, do_to_tcp_ms] = timings.slice(1).map(Number);
+    console.info("comparison_manifest proxy", {
+      stage: "worker_do_breakdown", event: "end", outcome: response.status,
+      do_entry_at_ms, do_ready_ms, do_inactivity_timeout_ms, do_to_tcp_ms,
+    });
+  }
+  const clean = new Response(response.body, response);
+  clean.headers.delete(MANIFEST_DO_TIMING);
+  return clean;
+}
+
+function measureManifest<T>(enabled: boolean, stage: string, operation: () => Promise<T>, record?: (ms: number) => void): Promise<T> {
   if (!enabled) return operation();
-  console.info("comparison_manifest proxy", { stage, event: "start", at_ms: Date.now() });
   const started = Date.now();
+  console.info("comparison_manifest proxy", { stage, event: "start", at_ms: started });
   return (async () => {
     let outcome: number | string = "error";
     try {
@@ -422,7 +440,9 @@ function measureManifest<T>(enabled: boolean, stage: string, operation: () => Pr
       outcome = result instanceof Response ? result.status : "ok";
       return result;
     } finally {
-      console.info("comparison_manifest proxy", { stage, event: "end", outcome, elapsed_ms: Date.now() - started });
+      const elapsed_ms = Math.max(0, Date.now() - started);
+      record?.(elapsed_ms);
+      console.info("comparison_manifest proxy", { stage, event: "end", outcome, elapsed_ms });
     }
   })();
 }
@@ -480,7 +500,10 @@ async function proxyApi(request: Request, env: Env, visitorId: string, sharedStu
   try {
     const container = env.ACUEDUCTO_CONTAINER.getByName("acueducto");
     const upstream = proxyRequest(request, visitorId, demoExpiresAt, sharedStudiesRead, sharedStudiesEdit);
-    const response = await measureManifest(isManifestPost(request), "worker_to_do", () => container.fetch(upstream));
+    const timed = isManifestPost(request);
+    if (timed) upstream.headers.delete(MANIFEST_DO_TIMING);
+    const result = await measureManifest(timed, "worker_to_do", () => container.fetch(upstream));
+    const response = timed ? collectManifestDoTiming(result) : result;
     if (!creation || !response.ok) return withCors(response, request, env);
     const data = await response.clone().json() as { id?: unknown; plant_id?: unknown };
     const plantId = new URL(request.url).pathname.match(/^\/api\/plants\/([^/]+)\/sessions$/)?.[1];
@@ -571,19 +594,28 @@ abstract class ManagedPythonContainer extends DurableObject<Env> {
 
   async fetch(request: Request): Promise<Response> {
     const timed = isManifestPost(request);
-    await measureManifest(timed, "do_ready", () => {
+    const entryAt = timed ? Date.now() : 0;
+    const durations: number[] = [];
+    const measure = <T>(stage: string, run: () => Promise<T>): Promise<T> =>
+      measureManifest(timed, stage, run, (ms) => { durations.push(ms); });
+    await measure("do_ready", () => {
       this.starting ??= this.startAndWaitForPort().finally(() => { this.starting = undefined; });
       return this.starting;
     });
 
     const container = this.ctx.container!;
-    await measureManifest(timed, "do_inactivity_timeout", () => container.setInactivityTimeout(10 * 60 * 1000));
+    await measure("do_inactivity_timeout", () => container.setInactivityTimeout(10 * 60 * 1000));
     const url = new URL(request.url);
     url.protocol = "http:";
     url.host = "container";
     const forwarded = new Request(url, request);
     forwarded.headers.delete("host");
-    return measureManifest(timed, "do_to_tcp", () => container.getTcpPort(this.port).fetch(forwarded));
+    const response = await measure("do_to_tcp", () => container.getTcpPort(this.port).fetch(forwarded));
+    if (!timed) return response;
+    // The DO logs are not always visible in the gateway tail. Carry only timing data to proxyApi.
+    const internal = new Response(response.body, response);
+    internal.headers.set(MANIFEST_DO_TIMING, [entryAt, ...durations].join(","));
+    return internal;
   }
 
   private async startAndWaitForPort(): Promise<void> {

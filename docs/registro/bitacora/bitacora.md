@@ -1,5 +1,9 @@
 # Bitácora
 
+## 2026-11-19 · Tiempos del Durable Object en el log del Worker
+
+El intento corto recibió 502 en Fractal y un 409 tardío del emulador. El Worker midió 56,1 s en su llamada al Durable Object, pero ni el tail ni la búsqueda histórica recuperaron el desglose interno. El proxy recoge esos tiempos en el Worker y retira su cabecera interna antes de devolver la respuesta. Sin despliegue ni reintento. Ver [[../historico/sesion-codigo/2026-11-19-desglose-manifiesto-durable-object]].
+
 ## 2026-11-19 · Lectura de checkpoints BLOB de D1
 
 Tras desplegar la medición del proxy, la sesión vigente no pudo reanudarse: el emulador rechazó el checkpoint al leerlo por WebSocket aunque D1 conservaba un BLOB de versión 2. El puente Worker ahora codifica el arreglo de bytes devuelto por D1 con el marcador binario que entiende Python. No se escribió en D1 ni se envió una solicitud de cosimulación. Ver [[../historico/sesion-codigo/2026-11-19-restauracion-checkpoints-d1]].
