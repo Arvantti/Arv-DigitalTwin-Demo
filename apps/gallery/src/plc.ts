@@ -1733,8 +1733,9 @@ async function start(): Promise<void> {
     const comparisonId = studyType === "optimized" && selectedComparison?.manifest && selectedComparison.profile_id === profileId && !selectedComparison.runs.optimization
       ? selectedComparison.comparison_id
       : undefined;
+    const selectedManifest = comparisonId ? selectedComparison?.manifest : undefined;
     try {
-      const response = await fractalFetch("/studies/horizon/from-plc", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ session_id: sessionId, plant_id: plantId, emulator_api: apiOrigin, profile_id: profileId, comparison_id: comparisonId, objective_id: "OBJ-PRESSURE-MIN", target_pressure_mca: studyType === "optimized" ? fractalTarget.valueAsNumber : undefined, study_type: studyType }) });
+      const response = await fractalFetch("/studies/horizon/from-plc", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ session_id: sessionId, plant_id: plantId, emulator_api: apiOrigin, profile_id: profileId, comparison_id: comparisonId, ...(selectedManifest ? { time_step_s: selectedManifest.time_step_s, horizon_s: selectedManifest.horizon_s } : {}), objective_id: "OBJ-PRESSURE-MIN", target_pressure_mca: studyType === "optimized" ? fractalTarget.valueAsNumber : undefined, study_type: studyType }) });
       if (!response.ok) { const detail = await response.json().catch(() => ({})) as { detail?: string }; throw Error(detail.detail ?? "Fractal no pudo proyectar el perfil PLC"); }
       study = await response.json();
       latestFractalStudy = study as unknown as Record<string, unknown>;
