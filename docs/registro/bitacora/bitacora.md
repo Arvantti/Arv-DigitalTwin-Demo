@@ -1,5 +1,9 @@
 # Bitácora
 
+## 2026-11-20 · Runtime Node del paso Buildx en despliegue manual
+
+El despliegue de #232 terminó correctamente, pero el workflow manual todavía invocaba `docker/setup-buildx-action@v3` (runtime interno Node 20) y GitHub advirtió que lo forzaría a Node 24. Se actualiza solo ese paso a v4.4.1 (runtime interno Node 24); la versión 26.12.1 de la aplicación no cambia. No se despliega ni se inicia otra cosimulación. Ver [[../historico/sesion-codigo/2026-11-20-buildx-node24]].
+
 ## 2026-11-20 · Dependencias del modelo hidráulico cosimulado
 
 Tras desplegar #231, el manifiesto se fijó en 6,23 s y el motor pasó a `failed` por un HTTP 500. La instalación aislada del modelo reproduce un fallo al cargar NumPy aunque `/health` funciona. Se declaran las dependencias del solver y se añade una prueba de proyección real con instalación aislada antes de desplegar. Sin cambios remotos. Ver [[../historico/sesion-codigo/2026-11-20-dependencias-modelo-hidraulico]].
