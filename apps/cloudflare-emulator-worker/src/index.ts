@@ -406,6 +406,47 @@ async function proxyFractal(
   }
 }
 
+function isManifestPost(request: Request): boolean {
+  return request.method === "POST" &&
+    /^\/api\/plants\/[^/]+\/sessions\/[^/]+\/comparisons\/[^/]+\/manifest$/.test(new URL(request.url).pathname);
+}
+
+const MANIFEST_DO_TIMING = "x-twin-internal-manifest-do-timing";
+
+function collectManifestDoTiming(response: Response): Response {
+  const raw = response.headers.get(MANIFEST_DO_TIMING);
+  if (raw === null) return response;
+  const timings = /^(\d{13}),(\d{1,9}),(\d{1,9}),(\d{1,9})$/.exec(raw);
+  if (timings) {
+    const [do_entry_at_ms, do_ready_ms, do_inactivity_timeout_ms, do_to_tcp_ms] = timings.slice(1).map(Number);
+    console.info("comparison_manifest proxy", {
+      stage: "worker_do_breakdown", event: "end", outcome: response.status,
+      do_entry_at_ms, do_ready_ms, do_inactivity_timeout_ms, do_to_tcp_ms,
+    });
+  }
+  const clean = new Response(response.body, response);
+  clean.headers.delete(MANIFEST_DO_TIMING);
+  return clean;
+}
+
+function measureManifest<T>(enabled: boolean, stage: string, operation: () => Promise<T>, record?: (ms: number) => void): Promise<T> {
+  if (!enabled) return operation();
+  const started = Date.now();
+  console.info("comparison_manifest proxy", { stage, event: "start", at_ms: started });
+  return (async () => {
+    let outcome: number | string = "error";
+    try {
+      const result = await operation();
+      outcome = result instanceof Response ? result.status : "ok";
+      return result;
+    } finally {
+      const elapsed_ms = Math.max(0, Date.now() - started);
+      record?.(elapsed_ms);
+      console.info("comparison_manifest proxy", { stage, event: "end", outcome, elapsed_ms });
+    }
+  })();
+}
+
 async function proxyApi(request: Request, env: Env, visitorId: string, sharedStudiesRead = false, sharedStudiesEdit = false): Promise<Response> {
   const url = new URL(request.url);
   if (!url.pathname.startsWith("/api/plants/")) {
@@ -458,7 +499,11 @@ async function proxyApi(request: Request, env: Env, visitorId: string, sharedStu
   }
   try {
     const container = env.ACUEDUCTO_CONTAINER.getByName("acueducto");
-    const response = await container.fetch(proxyRequest(request, visitorId, demoExpiresAt, sharedStudiesRead, sharedStudiesEdit));
+    const upstream = proxyRequest(request, visitorId, demoExpiresAt, sharedStudiesRead, sharedStudiesEdit);
+    const timed = isManifestPost(request);
+    if (timed) upstream.headers.delete(MANIFEST_DO_TIMING);
+    const result = await measureManifest(timed, "worker_to_do", () => container.fetch(upstream));
+    const response = timed ? collectManifestDoTiming(result) : result;
     if (!creation || !response.ok) return withCors(response, request, env);
     const data = await response.clone().json() as { id?: unknown; plant_id?: unknown };
     const plantId = new URL(request.url).pathname.match(/^\/api\/plants\/([^/]+)\/sessions$/)?.[1];
@@ -523,7 +568,9 @@ export class ContainerEgressProxy extends WorkerEntrypoint<Env> {
       }
       return forward(forwarded);
     }
-    if (target.pathname.startsWith("/api/plants/")) return fetch(request);
+    if (target.pathname.startsWith("/api/plants/")) {
+      return measureManifest(isManifestPost(request), "fractal_egress", () => fetch(request));
+    }
     return new Response("Outbound path is not allowed", { status: 403 });
   }
 }
@@ -531,6 +578,8 @@ export class ContainerEgressProxy extends WorkerEntrypoint<Env> {
 abstract class ManagedPythonContainer extends DurableObject<Env> {
   private starting: Promise<void> | undefined;
   private monitoring: Promise<void> | undefined;
+  private ready = false;
+  protected readonly reuseReadiness: boolean = false;
   protected abstract readonly port: number;
   protected abstract readonly healthPath: string;
   protected abstract readonly serviceName: string;
@@ -546,17 +595,40 @@ abstract class ManagedPythonContainer extends DurableObject<Env> {
   }
 
   async fetch(request: Request): Promise<Response> {
-    this.starting ??= this.startAndWaitForPort().finally(() => { this.starting = undefined; });
-    await this.starting;
+    const timed = isManifestPost(request);
+    const entryAt = timed ? Date.now() : 0;
+    const durations: number[] = [];
+    const measure = <T>(stage: string, run: () => Promise<T>): Promise<T> =>
+      measureManifest(timed, stage, run, (ms) => { durations.push(ms); });
+    await measure("do_ready", () => {
+      if (!this.ctx.container?.running) this.ready = false;
+      if (this.reuseReadiness && this.ready) return Promise.resolve();
+      this.starting ??= this.startAndWaitForPort()
+        .then(() => { this.ready = true; })
+        .finally(() => { this.starting = undefined; });
+      return this.starting;
+    });
 
     const container = this.ctx.container!;
-    await container.setInactivityTimeout(10 * 60 * 1000);
+    await measure("do_inactivity_timeout", () => container.setInactivityTimeout(10 * 60 * 1000));
     const url = new URL(request.url);
     url.protocol = "http:";
     url.host = "container";
     const forwarded = new Request(url, request);
     forwarded.headers.delete("host");
-    return container.getTcpPort(this.port).fetch(forwarded);
+    let response: Response;
+    try {
+      response = await measure("do_to_tcp", () => container.getTcpPort(this.port).fetch(forwarded));
+    } catch (error) {
+      // Probe again on the next request; never retry an operation that may have reached Python.
+      this.ready = false;
+      throw error;
+    }
+    if (!timed) return response;
+    // The DO logs are not always visible in the gateway tail. Carry only timing data to proxyApi.
+    const internal = new Response(response.body, response);
+    internal.headers.set(MANIFEST_DO_TIMING, [entryAt, ...durations].join(","));
+    return internal;
   }
 
   private async startAndWaitForPort(): Promise<void> {
@@ -605,18 +677,23 @@ abstract class ManagedPythonContainer extends DurableObject<Env> {
       .then(() => undefined);
     this.monitoring = monitoring;
     this.ctx.waitUntil(monitoring.finally(() => {
-      if (this.monitoring === monitoring) this.monitoring = undefined;
+      if (this.monitoring === monitoring) {
+        this.ready = false;
+        this.monitoring = undefined;
+      }
     }));
   }
 }
 
 export class AcueductoContainer extends ManagedPythonContainer {
+  protected override readonly reuseReadiness = true;
   protected readonly port = 8000;
   protected readonly healthPath = "/api/health";
   protected readonly serviceName = "Acueducto";
 
   protected containerEnvironment(gateway: URL): Record<string, string> {
     return {
+      UVICORN_ACCESS_LOG: "false",
       TWIN_SERVICE_ID: "acueducto",
       TWIN_ALLOWED_PLANTS: this.env.ALLOWED_PLANT_IDS,
       TWIN_DATA_BACKEND: "d1",
@@ -636,6 +713,7 @@ export class FractalContainer extends ManagedPythonContainer {
   protected containerEnvironment(gateway: URL): Record<string, string> {
     const token = this.env.COSIMULATION_RELAY_ENABLED === "true" ? (this.env.COSIMULATION_INTERNAL_TOKEN ?? "") : "";
     return {
+      UVICORN_ACCESS_LOG: "false",
       FRACTAL_PLC_API_URL: gateway.origin,
       COSIMULATION_ENGINE_API_URL: token.length >= 32 ? `${gateway.origin}/_internal/cosimulation/engine` : "",
       COSIMULATION_INTERNAL_TOKEN: token,
@@ -669,7 +747,7 @@ export class CosimulationModelContainer extends ManagedPythonContainer {
   }
 }
 
-export default {
+const gatewayWorker = {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
     if (url.pathname === "/_worker/health") return Response.json({ status: "ok", service: "acueducto-gateway" });
@@ -786,5 +864,11 @@ export default {
     }
     if (fractalPath) return proxyFractal(request, env, visitorId, fractalRelayToken!, sharedStudiesRead, sharedStudiesEdit);
     return proxyApi(request, env, visitorId, sharedStudiesRead, sharedStudiesEdit);
+  },
+};
+
+export default {
+  fetch(request: Request, env: Env): Promise<Response> {
+    return measureManifest(isManifestPost(request), "worker_ingress", () => gatewayWorker.fetch(request, env));
   },
 };

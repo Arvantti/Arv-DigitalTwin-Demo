@@ -1,0 +1,5 @@
+# 2026-11-18 · Medición del proxy del manifiesto PLC
+
+- Tras desplegar #227, la sesión anterior había expirado. Con autorización se creó otra sesión PDD-RCA-01 y se hizo un solo intento de 1 h con paso de 1 h, a ×60 en la emulación. Fractal midió 15,0 s hasta su timeout; el Worker midió 46,2 s hasta un 409. La consulta del manifiesto tardó 45,4 ms y el rechazo `session_not_running` quedó junto a la pausa posterior al timeout. D1 confirmó cero manifiestos y ejecuciones. La sesión quedó pausada.
+- El seguimiento instrumenta solo el POST de manifiesto: egreso de Fractal, entrada al Worker, llamada al Durable Object, espera de disponibilidad, renovación de inactividad y petición TCP. Se registran marcas de inicio, duración y resultado, sin rutas, identificadores, cuerpos ni credenciales. Los intervalos se anidan; no deben sumarse.
+- La regresión comprueba orden de marcas y preservación de solicitud/respuesta y autorización existente. Typecheck y 33 pruebas del Worker pasan. No se modifica el timeout, no se reintenta y no se despliega. La siguiente prueba requiere autorización independiente.

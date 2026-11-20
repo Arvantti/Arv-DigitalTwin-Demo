@@ -103,6 +103,10 @@ jobs:
           uv sync --frozen --all-packages
           uv run ruff check apps/twin-emulator-api/src/twin_emulator_api apps/twin-emulator-api/tests apps/fractal-engineering-api/src apps/fractal-engineering-api/tests apps/fractal-optimization-api/src apps/fractal-optimization-api/tests apps/cosimulation-engine-api/src apps/cosimulation-engine-api/tests apps/water-network-cosim-model-api/src apps/water-network-cosim-model-api/tests fractal/optimization cosimulation
           uv run pytest apps/twin-emulator-api/tests apps/fractal-engineering-api/tests apps/fractal-optimization-api/tests apps/cosimulation-engine-api/tests apps/water-network-cosim-model-api/tests
+      - name: Test the model with isolated runtime dependencies
+        env:
+          UV_PROJECT_ENVIRONMENT: ${{ runner.temp }}/acueducto-model-smoke-venv
+        run: uv run --python 3.12 --locked --no-dev --package water-network-cosim-model-api --with pytest --with httpx pytest apps/water-network-cosim-model-api/tests
       - name: Apply D1 migrations
         run: pnpm --filter @twin/cloudflare-emulator-worker exec wrangler d1 migrations apply acueducto-emulator --remote --config ../../wrangler.acueducto.jsonc
       - name: Set Worker secrets

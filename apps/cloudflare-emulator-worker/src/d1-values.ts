@@ -16,6 +16,10 @@ export function encodeD1Value(value: unknown): unknown {
   let bytes: Uint8Array | null = null;
   if (value instanceof ArrayBuffer) bytes = new Uint8Array(value);
   else if (ArrayBuffer.isView(value)) bytes = new Uint8Array(value.buffer, value.byteOffset, value.byteLength);
+  // D1 results return BLOB columns as arrays of bytes; scalar SQL values cannot be arrays.
+  else if (Array.isArray(value) && value.every((byte) => Number.isInteger(byte) && byte >= 0 && byte <= 255)) {
+    bytes = Uint8Array.from(value);
+  }
   if (!bytes) return value;
 
   let binary = "";

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("cloudflare:workers", () => ({
-  DurableObject: class {},
+  DurableObject: class { ctx: unknown; env: unknown; constructor(ctx: unknown, env: unknown) { this.ctx = ctx; this.env = env; } },
   WorkerEntrypoint: class { env: unknown; constructor(_ctx: unknown, env: unknown) { this.env = env; } },
 }));
 vi.mock("jose", () => ({
@@ -10,7 +10,7 @@ vi.mock("jose", () => ({
     throw new Error("invalid assertion");
   }),
 }));
-import worker, { ContainerEgressProxy } from "./index";
+import worker, { AcueductoContainer, ContainerEgressProxy } from "./index";
 import { signDemoToken, verifyDemoToken } from "./demo-auth";
 
 beforeEach(() => {
@@ -44,6 +44,131 @@ function env(overrides: Record<string, unknown> = {}) {
     ...overrides,
   } as never;
 }
+
+describe("D1 bridge", () => {
+  it("returns a checkpoint BLOB as binary transport alongside its schema version", async () => {
+    const all = async () => ({
+      success: true, results: [{ schema_version: 2, payload: [0, 1, 2, 127, 255] }], meta: { changes: 0 },
+    });
+    const response = await worker.fetch(new Request("https://demo.workers.dev/_internal/d1", {
+      method: "POST", headers: { authorization: "Bearer bridge-secret" },
+      body: JSON.stringify({ sql: "SELECT schema_version, payload FROM session_checkpoints", params: [] }),
+    }), env({ DB: { prepare: () => ({ bind: () => ({ all }) }) } }));
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ success: true, rows: [[2, { __twin_d1_bytes__: "AAECf/8=" }]], changes: 0 });
+  });
+});
+
+describe("comparison manifest proxy timings", () => {
+  it("records gateway and container stages without logging the request", async () => {
+    const timingHeader = "x-twin-internal-manifest-do-timing";
+    const log = vi.spyOn(console, "info").mockImplementation(() => {});
+    const managed = {
+      running: false,
+      setInactivityTimeout: vi.fn(async () => {}),
+      getTcpPort: () => ({ fetch: vi.fn(async (input: string | Request) => {
+        if (typeof input === "string") return Response.json({ status: "ok" });
+        expect(input.headers.get("authorization")).toBeNull();
+        expect(input.headers.get("x-twin-demo-id")).toBe("test-owner");
+        expect(input.headers.get(timingHeader)).toBeNull();
+        expect(await input.json()).toEqual({ marker: "test-body" });
+        return Response.json({ detail: "conflict" }, { status: 409, headers: { [timingHeader]: "untrusted" } });
+      }) }),
+    };
+    const object = new AcueductoContainer({ container: managed } as never, env());
+    managed.running = true;
+    const token = await signDemoToken(secret, "test-owner", Math.floor(Date.now() / 1000) + 60);
+    const path = `${origin}/api/plants/water-network-scale-v1/sessions/test-session/comparisons/test-comparison/manifest`;
+    const environment = env({
+      DB: { prepare: () => ({ bind: () => ({ first: async () => ({ session_id: "test-session" }) }) }) },
+      ACUEDUCTO_CONTAINER: { getByName: () => object },
+    });
+    try {
+      const response = await worker.fetch(new Request(path, {
+        method: "POST", headers: { authorization: `Bearer ${token}`, [timingHeader]: "untrusted" },
+        body: JSON.stringify({ marker: "test-body" }),
+      }), environment);
+      expect(response.status).toBe(409);
+      expect(response.headers.get(timingHeader)).toBeNull();
+      expect(await response.json()).toEqual({ detail: "conflict" });
+      const stages = log.mock.calls.map(([, fields]) => `${fields.stage}:${fields.event}`);
+      expect(stages).toEqual([
+        "worker_ingress:start", "worker_to_do:start", "do_ready:start", "do_ready:end",
+        "do_inactivity_timeout:start", "do_inactivity_timeout:end", "do_to_tcp:start", "do_to_tcp:end",
+        "worker_to_do:end", "worker_do_breakdown:end", "worker_ingress:end",
+      ]);
+      expect(log).toHaveBeenCalledWith("comparison_manifest proxy", {
+        stage: "worker_do_breakdown", event: "end", outcome: 409,
+        do_entry_at_ms: expect.any(Number), do_ready_ms: expect.any(Number),
+        do_inactivity_timeout_ms: expect.any(Number), do_to_tcp_ms: expect.any(Number),
+      });
+      expect(JSON.stringify(log.mock.calls)).not.toMatch(/test-session|test-comparison|test-body|test-owner|authorization|untrusted/i);
+      log.mockClear();
+      await worker.fetch(new Request(`${origin}/_worker/health`), environment);
+      expect(log).not.toHaveBeenCalled();
+    } finally {
+      log.mockRestore();
+    }
+  });
+});
+
+describe("Acueducto container readiness", () => {
+  it("shares a cold probe, serves warm requests without probing and probes after a restart", async () => {
+    let finishMonitor: () => void;
+    let monitoring: Promise<void> | undefined;
+    const fetchPort = vi.fn(async (input: string | Request) => {
+      if (typeof input === "string") return new Response(null, { status: 200 });
+      return Response.json({ ok: true });
+    });
+    const managed = {
+      running: false,
+      images: { default: { name: "test" } },
+      interceptOutboundHttps: vi.fn(async () => {}),
+      start: vi.fn(() => { managed.running = true; }),
+      monitor: () => new Promise<void>((resolve) => { finishMonitor = resolve; }),
+      setInactivityTimeout: vi.fn(async () => {}),
+      getTcpPort: () => ({ fetch: fetchPort }),
+    };
+    const object = new AcueductoContainer({
+      container: managed, exports: { ContainerEgressProxy: () => ({}) },
+      waitUntil: (work: Promise<void>) => { monitoring = work; },
+    } as never, env());
+    const call = () => object.fetch(new Request(`${origin}/api/health`));
+    const probes = () => fetchPort.mock.calls.filter(([input]) => typeof input === "string").length;
+    expect((await Promise.all([call(), call()])).map((r) => r.status)).toEqual([200, 200]);
+    expect(managed.start).toHaveBeenCalledTimes(1);
+    expect(probes()).toBe(1);
+    await call();
+    expect(probes()).toBe(1);
+    managed.running = false;
+    finishMonitor!();
+    await monitoring;
+    await call();
+    expect(managed.start).toHaveBeenCalledTimes(2);
+    expect(probes()).toBe(2);
+    expect(managed.setInactivityTimeout).toHaveBeenCalledTimes(6);
+  });
+
+  it("rechecks after a TCP failure without replaying the failed POST", async () => {
+    let fail = false;
+    const fetchPort = vi.fn(async (input: string | Request) => {
+      if (typeof input === "string") return new Response(null, { status: 200 });
+      if (fail) throw new Error("TCP unavailable");
+      return new Response(null, { status: 204 });
+    });
+    const managed = { running: false, setInactivityTimeout: async () => {}, getTcpPort: () => ({ fetch: fetchPort }) };
+    const object = new AcueductoContainer({ container: managed } as never, env());
+    managed.running = true;
+    const call = () => object.fetch(new Request(`${origin}/api/plants/water-network-scale-v1/sessions`, { method: "POST" }));
+    await call();
+    fail = true;
+    await expect(call()).rejects.toThrow("TCP unavailable");
+    expect(fetchPort.mock.calls.map(([input]) => typeof input)).toEqual(["string", "object", "object"]);
+    fail = false;
+    expect((await call()).status).toBe(204);
+    expect(fetchPort.mock.calls.map(([input]) => typeof input)).toEqual(["string", "object", "object", "string", "object"]);
+  });
+});
 
 describe("public demo gateway", () => {
   it("does not allow API use without an anonymous session capability", async () => {

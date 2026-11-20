@@ -1,5 +1,33 @@
 # Bitácora
 
+## 2026-11-20 · Dependencias del modelo hidráulico cosimulado
+
+Tras desplegar #231, el manifiesto se fijó en 6,23 s y el motor pasó a `failed` por un HTTP 500. La instalación aislada del modelo reproduce un fallo al cargar NumPy aunque `/health` funciona. Se declaran las dependencias del solver y se añade una prueba de proyección real con instalación aislada antes de desplegar. Sin cambios remotos. Ver [[../historico/sesion-codigo/2026-11-20-dependencias-modelo-hidraulico]].
+
+## 2026-11-19 · Evitar el sondeo de arranque repetido en Acueducto
+
+El desglose en producción concentró 91,7 s en disponibilidad del contenedor frente a 49 ms de TCP. Se confirmó que Acueducto repetía la comprobación de arranque en cada solicitud; ahora reutiliza la disponibilidad ya comprobada mientras siga en marcha y la invalida al detenerse o fallar el transporte. Typecheck y 37 pruebas; sin despliegue ni reintento. Ver [[../historico/sesion-codigo/2026-11-19-acueducto-disponibilidad-contenedor]].
+
+## 2026-11-19 · Tiempos del Durable Object en el log del Worker
+
+El intento corto recibió 502 en Fractal y un 409 tardío del emulador. El Worker midió 56,1 s en su llamada al Durable Object, pero ni el tail ni la búsqueda histórica recuperaron el desglose interno. El proxy recoge esos tiempos en el Worker y retira su cabecera interna antes de devolver la respuesta. Sin despliegue ni reintento. Ver [[../historico/sesion-codigo/2026-11-19-desglose-manifiesto-durable-object]].
+
+## 2026-11-19 · Lectura de checkpoints BLOB de D1
+
+Tras desplegar la medición del proxy, la sesión vigente no pudo reanudarse: el emulador rechazó el checkpoint al leerlo por WebSocket aunque D1 conservaba un BLOB de versión 2. El puente Worker ahora codifica el arreglo de bytes devuelto por D1 con el marcador binario que entiende Python. No se escribió en D1 ni se envió una solicitud de cosimulación. Ver [[../historico/sesion-codigo/2026-11-19-restauracion-checkpoints-d1]].
+
+## 2026-11-18 · Medición del trayecto Worker → contenedor del manifiesto
+
+En la prueba con una sesión PDD-RCA-01 nueva, Fractal agotó 15,0 s y el egreso del Worker registró 409 tras 46,2 s. El emulador consultó el manifiesto en 45 ms y rechazó `session_not_running` casi simultáneamente con la pausa posterior al timeout; la demora previa sigue sin explicar. Se añadieron marcas de entrada y tiempos por tramo en el proxy y el Durable Object. Typecheck y 33 pruebas del Worker pasan. Sin nuevo despliegue ni reintento. Ver [[../historico/sesion-codigo/2026-11-18-medicion-proxy-manifiesto-plc]].
+
+## 2026-11-18 · Observabilidad acotada del manifiesto PLC
+
+La prueba corta agotó la espera en Fractal y el Worker recibió un 409 tardío (47,6 s). Sin observabilidad de contenedores no pudo identificarse el motivo. Se agrega captura de logs solo para Acueducto y Fractal, sin access log de Uvicorn, y códigos fijos para los rechazos del manifiesto. No cambia el timeout ni las reglas del PLC. Ver [[../historico/sesion-codigo/2026-11-18-observabilidad-manifiesto-plc]].
+
+## 2026-11-18 · Diagnóstico del manifiesto de cosimulación
+
+La prueba autorizada en producción con PDD-RCA-01 devolvió 502 al fijar el manifiesto, antes de que el engine recibiera un trabajo. D1 mostró muestras y frames de emulación, pero ningún manifiesto ni ejecución; se pausó la sesión. Se añadió medición por etapas y una consulta de muestras estrictamente anteriores al snapshot, sin comandos ni recomendaciones. Ruff, 62 pruebas Python dirigidas, typecheck y 32 pruebas del Worker pasan. No se reintentó la prueba ni se desplegó el ajuste. Ver [[../historico/sesion-codigo/2026-11-18-diagnostico-manifiesto-cosimulacion]].
+
 ## 2026-11-18 · Reglas de trabajo y conocimiento compartido en AGENTS.md
 
 Se migró la memoria del proyecto Claude Code de la organización Pro (instrucciones y 32 memorias) a `GraphBrain/Arvantti-DigitalTwin/`, fuera del repo, como fuente común para Claude, Codex, Pi y Arvantti Harness. `AGENTS.md` incorpora las reglas transversales (idioma, pnpm, última versión, flujo de PRs, secretos, demos y marca) y apunta a GraphBrain y a `../assets/` para el material pesado fuera de git. Solo documentación: sin cambios de código, despliegues ni secretos. Ver [[../historico/sesion-codigo/2026-11-18-reglas-agents-y-graphbrain]].

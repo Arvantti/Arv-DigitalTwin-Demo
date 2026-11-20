@@ -28,10 +28,13 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import json
+import logging
 import math
 import os
 import re
 import time
+from collections.abc import Iterator
+from contextlib import contextmanager
 from datetime import date
 from typing import Annotated, Any
 
@@ -715,6 +718,25 @@ def _validate_comparison_grid(time_step_s: Any, horizon_s: Any) -> tuple[float, 
     return step, horizon
 
 
+@contextmanager
+def _measure_manifest_stage(stage: str) -> Iterator[None]:
+    started = time.perf_counter()
+    ok = False
+    try:
+        yield
+        ok = True
+    finally:
+        logging.getLogger("uvicorn.error").info(
+            "comparison_manifest stage=%s ok=%s elapsed_ms=%.1f",
+            stage, ok, (time.perf_counter() - started) * 1000,
+        )
+
+
+def _manifest_conflict(reason: str, detail: str) -> HTTPException:
+    logging.getLogger("uvicorn.error").info("comparison_manifest rejected reason=%s", reason)
+    return HTTPException(409, detail)
+
+
 @app.post("/api/plants/{plant_id}/sessions/{session_id}/comparisons/{comparison_id}/manifest")
 def create_comparison_manifest(
     plant_id: str,
@@ -726,30 +748,35 @@ def create_comparison_manifest(
     """Fija un contexto PLC/profile/horizonte para asociar corridas independientes."""
     if not re.fullmatch(r"[A-Za-z0-9_-]{1,96}", comparison_id):
         raise HTTPException(422, "comparison_id inválido")
-    session = session_manager.get(plant_id, session_id)
+    with _measure_manifest_stage("session_lookup"):
+        session = session_manager.get(plant_id, session_id)
     if session is None or (session.demo_client_id and session.demo_client_id != request.headers.get("x-twin-demo-id")):
         raise HTTPException(404, "sesión desconocida")
     step, horizon = _validate_comparison_grid(payload.get("time_step_s"), payload.get("horizon_s"))
     requested_profile_id = payload.get("profile_id")
-    existing = historian.get_comparison_manifest(session_id, comparison_id)
+    with _measure_manifest_stage("lookup"):
+        existing = historian.get_comparison_manifest(session_id, comparison_id)
     if existing is not None:
         if (
             requested_profile_id not in (None, existing["profile_id"])
             or step != existing["time_step_s"]
             or horizon != existing["horizon_s"]
         ):
-            raise HTTPException(409, "comparison_id ya está fijado a otro perfil o rejilla temporal")
+            raise _manifest_conflict("existing_context", "comparison_id ya está fijado a otro perfil o rejilla temporal")
         return existing
     if not session.running or session.paused:
-        raise HTTPException(409, "inicie o reanude el PLC para fijar un snapshot de comparación")
+        raise _manifest_conflict("session_not_running", "inicie o reanude el PLC para fijar un snapshot de comparación")
     profile_id = requested_profile_id or (session.pending_profile[1] if session.pending_profile else session.profile_id)
     allowed_profile_ids = {session.profile_id}
     if session.pending_profile:
         allowed_profile_ids.add(session.pending_profile[1])
     if not isinstance(profile_id, str) or profile_id not in allowed_profile_ids:
-        raise HTTPException(409, "el manifiesto debe usar el perfil activo o el cambio futuro pendiente de esta sesión")
+        raise _manifest_conflict(
+            "profile_not_active_or_pending", "el manifiesto debe usar el perfil activo o el cambio futuro pendiente de esta sesión"
+        )
     owner_id = request.headers.get("x-twin-demo-id")
-    profile = ProfileStore(plant_id, owner_id).get(profile_id)
+    with _measure_manifest_stage("profile_load"):
+        profile = ProfileStore(plant_id, owner_id).get(profile_id)
     if profile is None:
         raise HTTPException(404, "perfil guardado desconocido")
     base_time = float(session.plant.t)
@@ -758,18 +785,20 @@ def create_comparison_manifest(
         session.snapshot(), profile_id=profile_id, profile_hour=profile_hour, simulated_time=base_time
     )
     if tags.get("PLC.Profile.ActiveId") != session.profile_id:
-        raise HTTPException(409, "el snapshot PLC no corresponde al perfil realmente activo")
+        raise _manifest_conflict("snapshot_profile_mismatch", "el snapshot PLC no corresponde al perfil realmente activo")
     if int(tags.get("PLC.Pump.RunningCount") or 0) == 0 or float(tags.get("PLC.PRS.OutletPressureMca") or 0) < 5:
-        raise HTTPException(409, "espere a que arranquen las bombas y se presurice la VRP antes de fijar la comparación")
+        raise _manifest_conflict(
+            "insufficient_pressure_or_pumps", "espere a que arranquen las bombas y se presurice la VRP antes de fijar la comparación"
+        )
     history_frames: list[dict[str, Any]] = []
-    for sample in historian.read(session_id)["samples"]:
-        if sample["t"] >= base_time:
-            continue
+    with _measure_manifest_stage("history_read"):
+        samples = historian.samples_before(session_id, base_time)
+    for sample in samples:
         stored_profile, sample_tags = sample.get("profile"), sample.get("plc_tags")
         if not isinstance(stored_profile, dict) or not isinstance(stored_profile.get("id"), str):
-            raise HTTPException(409, "el historial no identifica la versión de escenario de cada muestra")
+            raise _manifest_conflict("history_missing_profile", "el historial no identifica la versión de escenario de cada muestra")
         if not isinstance(sample_tags, dict) or sample_tags.get("PLC.Profile.ActiveId") != stored_profile["id"]:
-            raise HTTPException(409, "el historial PLC no permite verificar la versión activa en cada muestra")
+            raise _manifest_conflict("history_profile_mismatch", "el historial PLC no permite verificar la versión activa en cada muestra")
         history_frames.append({"simulation_time_s": sample["t"], "plc_tags": sample_tags})
     snapshot_id = f"{session_id}:{base_time:g}"
     profile_hash = _profile_fingerprint(profile)
@@ -803,9 +832,10 @@ def create_comparison_manifest(
         "history_sample_count": len(history_frames),
     }
     try:
-        return historian.create_comparison_manifest(session_id, comparison_id, manifest)
+        with _measure_manifest_stage("persist"):
+            return historian.create_comparison_manifest(session_id, comparison_id, manifest)
     except ValueError as exc:
-        raise HTTPException(409, str(exc)) from exc
+        raise _manifest_conflict("persist_conflict", str(exc)) from exc
 
 
 @app.get("/api/plants/{plant_id}/sessions/{session_id}/comparisons/{comparison_id}/manifest")
