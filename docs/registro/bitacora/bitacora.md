@@ -1,5 +1,9 @@
 # Bitácora
 
+## 2026-11-20 · Dependencias del modelo hidráulico cosimulado
+
+Tras desplegar #231, el manifiesto se fijó en 6,23 s y el motor pasó a `failed` por un HTTP 500. La instalación aislada del modelo reproduce un fallo al cargar NumPy aunque `/health` funciona. Se declaran las dependencias del solver y se añade una prueba de proyección real con instalación aislada antes de desplegar. Sin cambios remotos. Ver [[../historico/sesion-codigo/2026-11-20-dependencias-modelo-hidraulico]].
+
 ## 2026-11-19 · Evitar el sondeo de arranque repetido en Acueducto
 
 El desglose en producción concentró 91,7 s en disponibilidad del contenedor frente a 49 ms de TCP. Se confirmó que Acueducto repetía la comprobación de arranque en cada solicitud; ahora reutiliza la disponibilidad ya comprobada mientras siga en marcha y la invalida al detenerse o fallar el transporte. Typecheck y 37 pruebas; sin despliegue ni reintento. Ver [[../historico/sesion-codigo/2026-11-19-acueducto-disponibilidad-contenedor]].
