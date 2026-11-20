@@ -542,15 +542,26 @@ def horizon_from_plc(payload: dict[str, Any], request: Request) -> dict[str, Any
         comparison_id = payload.get("comparison_id") or f"CMP-{uuid4().hex[:12].upper()}"
         if not isinstance(comparison_id, str) or not comparison_id or "/" in comparison_id or ".." in comparison_id:
             raise HTTPException(422, "comparison_id inválido")
+        requested_step = payload.get("time_step_s", 3600)
+        requested_horizon = payload.get("horizon_s", 86400)
+        if (
+            isinstance(requested_step, bool) or requested_step != 3600
+            or isinstance(requested_horizon, bool) or not isinstance(requested_horizon, (int, float))
+            or not math.isfinite(requested_horizon) or requested_horizon % 3600 != 0
+            or not 3600 <= requested_horizon <= 86400
+        ):
+            raise HTTPException(422, "Fractal requiere paso 1 h y horizonte de 1–24 h enteras")
         manifest = gateway_post_json(
             f"{origin}/api/plants/{plant_id}/sessions/{session_id}/comparisons/{comparison_id}/manifest",
             {
                 "profile_id": payload.get("profile_id"),
                 "time_step_s": 3600,
-                "horizon_s": 86400,
+                "horizon_s": requested_horizon,
             },
             demo_token,
         )
+        if manifest.get("time_step_s") != 3600 or manifest.get("horizon_s") != requested_horizon:
+            raise HTTPException(409, "el manifiesto no corresponde a la rejilla solicitada para Fractal")
         profile = manifest.get("profile")
         snapshot = manifest.get("snapshot")
         tags = snapshot.get("plc_tags") if isinstance(snapshot, dict) else None
@@ -580,6 +591,7 @@ def horizon_from_plc(payload: dict[str, Any], request: Request) -> dict[str, Any
                 "snapshot_id": manifest["snapshot_id"],
                 "comparison_id": comparison_id,
                 "comparison_context": manifest,
+                "horizon_hours": int(requested_horizon // 3600),
                 "objective_id": objective_id,
                 "target_pressure_mca": target_pressure,
                 "study_type": "optimized",
@@ -706,6 +718,7 @@ def _horizon_study(payload: dict[str, Any], *, publish: bool, plc_token: str | N
             "objective_id": objective_id,
             "target_pressure_mca": target_pressure,
             "profile_hash": profile_fingerprint(profile),
+            "horizon_hours": payload.get("horizon_hours", 24),
             "snapshot": {
                 "snapshot_id": str(payload.get("snapshot_id") or f"{session_id}:{simulation_time:g}"),
                 "simulation_time_s": simulation_time,
