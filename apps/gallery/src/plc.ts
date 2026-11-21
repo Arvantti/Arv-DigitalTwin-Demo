@@ -1336,6 +1336,7 @@ function triadObservables(state: Record<string, unknown>): ComparisonObservables
     });
     return values.every((item) => item !== null) ? (values as number[]).reduce((sum, item) => sum + item, 0) : null;
   }
+  const command = (state.commands && typeof state.commands === "object" ? state.commands : {}) as Record<string, unknown>;
   const values: ComparisonObservables = {
     pump_flow: tag("PLC.Pump.FlowM3h", "pumpset-main-01", "flow_m3h"),
     pump_discharge: tag("PLC.Pump.DischargePressureMca", "pumpset-main-01", "discharge_pressure_mca"),
@@ -1363,7 +1364,32 @@ function triadObservables(state: Record<string, unknown>): ComparisonObservables
       ? tag(`PLC.Valve.Vertical${level === 1 ? 12 : level === 2 ? 23 : 34}OpeningPct`, `valve-between-${level === 1 ? 12 : level === 2 ? 23 : 34}`, "opening_pct")
       : null;
   }
+  if (values.prs_opening === null) {
+    const commanded = command.vrp_opening_pct;
+    if (typeof commanded === "number" && Number.isFinite(commanded)) values.prs_opening = commanded;
+    // No reconstruir una apertura ausente desde presiones: los modelos deben
+    // publicarla con procedencia para que ambas trayectorias sean comparables.
+  }
+  const levelPressures = [1, 2, 3, 4].map((level) => values[`level${level}_pressure`]);
+  values.home_min_pressure = levelPressures.every((pressure) => pressure !== null) ? Math.min(...levelPressures as number[]) : null;
+  values.total_delivery = values.demand !== null && values.leakage !== null ? values.demand + values.leakage : null;
   return values;
+}
+
+function accumulatedBalance(source: "cosimulation" | "optimization", metric: "demand" | "leakage" | "total_delivery", baseTime: number, step: number): (number | null)[] {
+  let total = 0, last = baseTime, valid = step > 0;
+  return triadFrames.map((frame) => {
+    if (frame.simulation_time_s <= baseTime) return null;
+    const saved = frame.sources[source];
+    if (!saved || saved.temporal_context !== "forecast" || saved.simulation_time_s !== frame.simulation_time_s) { valid = false; return null; }
+    const duration = frame.simulation_time_s - last;
+    if (!valid || duration <= 0 || duration > step) { valid = false; return null; }
+    const rate = triadObservables(saved.state)[metric];
+    if (rate === null || rate === undefined) { valid = false; return null; }
+    total += rate * duration / 3600;
+    last = frame.simulation_time_s;
+    return total;
+  });
 }
 
 function renderEngineComparisonCharts(): void {
@@ -1376,13 +1402,20 @@ function renderEngineComparisonCharts(): void {
     ? `<p class="comparison-status step-note">COMPARACIÓN OBSOLETA · Se calculó con ${selectedComparison.profile_id}; el escenario vigente es ${currentProfileId}. Se conserva como historial; solicite nuevos cálculos para actualizarla.</p>`
     : "";
   const colors = { emulator: "#4EA7FF", cosimulation: "#55d58c", optimization: "#f4b56c" } as const;
-  const labels = { emulator: "Emulador observado", cosimulation: "Cosimulador · no optimizado", optimization: "Fractal · optimizado" } as const;
+  const labels = { emulator: "Planta Real · observada", cosimulation: "Cosimulador · proyección", optimization: "Fractal · propuesta" } as const;
   const metrics = [
+    ["home_min_pressure", "Presión mínima de viviendas · umbral del estudio", "mca"],
+    ["prs_opening", "Apertura VRP publicada · escalones horarios", "%"],
+    ["demand", "Consumo entregado a viviendas", "m³/h"],
+    ["leakage", "Fugas", "m³/h"],
+    ["total_delivery", "Consumo entregado + fugas", "m³/h"],
+    ["cumulative_demand", "Volumen acumulado · consumo entregado", "m³"],
+    ["cumulative_leakage", "Volumen acumulado · fugas", "m³"],
+    ["cumulative_total_delivery", "Volumen acumulado · total", "m³"],
     ["pump_flow", "Caudal de alimentación antes de VRP", "m³/h"], ["pump_discharge", "Presión de descarga de bomba", "mca"],
     ["prs_opening", "Apertura VRP", "%"], ["prs_inlet", "Presión de entrada a VRP", "mca"],
     ["prs_outlet", "Presión de salida de VRP", "mca"], ["prs_flow", "Caudal a la salida de VRP", "m³/h"],
-    ["critical_pressure", "Presión del punto crítico", "mca"], ["demand", "Consumo total de viviendas", "m³/h"],
-    ["leakage", "Caudal total de fugas", "m³/h"], ["supply_level", "Nivel del tanque de suministro", "%"],
+    ["supply_level", "Nivel del tanque de suministro", "%"],
     ["return1_level", "Nivel tanque de retorno 1", "%"], ["return2_level", "Nivel tanque de retorno 2", "%"],
     ["recirculation_flow", "Caudal de recirculación", "m³/h"], ["pump_speed", "Velocidad de bombas", "%"],
     ["pump_power", "Potencia de bombeo", "kW"], ["pumps_running", "Bombas principales en marcha", "unid."],
@@ -1393,21 +1426,30 @@ function renderEngineComparisonCharts(): void {
   ] as const;
   const width = 900, height = 230, left = 54, right = 18, top = 16, bottom = 32;
   const maxTime = Math.max(3600, ...triadFrames.map((frame) => frame.simulation_time_s));
+  const targetPressure = triadFrames.map((frame) => (frame.sources.optimization?.state.commands as Record<string, unknown> | undefined)?.target_pressure_mca).find((value): value is number => typeof value === "number" && Number.isFinite(value));
+  const baseTime = selectedComparison?.manifest?.base_time_s;
+  const step = selectedComparison?.manifest?.time_step_s;
   const x = (t: number) => left + (t / maxTime) * (width - left - right);
   target.innerHTML = staleNotice + metrics.map(([key, title, unit]) => {
-    const all: ( { source: keyof typeof labels; t: number; v: number } | null )[][] = (["emulator", "cosimulation", "optimization"] as const).map((source) => triadFrames.map((frame) => {
+    const accumulated = key.startsWith("cumulative_") && baseTime !== undefined && step !== undefined
+      ? (Object.fromEntries((["cosimulation", "optimization"] as const).map((source) =>
+        [source, accumulatedBalance(source, key.slice("cumulative_".length) as "demand" | "leakage" | "total_delivery", baseTime, step)])) as Record<string, (number | null)[]>)
+      : null;
+    const all: ( { source: keyof typeof labels; t: number; v: number } | null )[][] = (["emulator", "cosimulation", "optimization"] as const).map((source) => triadFrames.map((frame, index) => {
       const saved = frame.sources[source];
-      if (!saved) return null;
-      const value = triadObservables(saved.state)[key];
+      if (!saved || saved.simulation_time_s !== frame.simulation_time_s) return null;
+      const value = accumulated ? accumulated[source]?.[index] ?? null : key.startsWith("cumulative_") ? null : triadObservables(saved.state)[key];
       return value === null || value === undefined ? null : { source, t: frame.simulation_time_s, v: value };
     }));
     const readings = all.flatMap((line) => line.flatMap((point) => point ? [point.v] : []));
     if (!readings.length) return `<article class="trend panel"><h2>${title}<span>${unit}</span></h2><p class="empty">Ningún motor publicó esta señal para la comparación.</p></article>`;
-    const low = Math.min(...readings), high = Math.max(...readings), padY = Math.max((high - low) * .1, .1);
+    const thresholdValues = key === "home_min_pressure" && targetPressure !== undefined ? [targetPressure] : [];
+    const low = Math.min(...readings, ...thresholdValues), high = Math.max(...readings, ...thresholdValues), padY = Math.max((high - low) * .1, .1);
     const min = low - padY, max = high + padY;
     const y = (v: number) => height - bottom - ((v - min) / (max - min)) * (height - top - bottom);
     const grid = [0, .5, 1].map((fraction) => { const v = max - fraction * (max - min); return `<line class="scenario-grid" x1="${left}" x2="${width-right}" y1="${y(v)}" y2="${y(v)}"/><text class="scenario-axis" x="${left-7}" y="${y(v)+4}" text-anchor="end">${fmt(v, 1)}</text>`; }).join("");
     const ticks = [0, .25, .5, .75, 1].map((fraction) => { const t = maxTime * fraction; return `<text class="scenario-axis" x="${x(t)}" y="${height-7}" text-anchor="middle">${fmt(t / 3600, 1)} h</text>`; }).join("");
+    const threshold = key === "home_min_pressure" && targetPressure !== undefined ? `<line x1="${left}" x2="${width-right}" y1="${y(targetPressure)}" y2="${y(targetPressure)}" stroke="#f17474" stroke-dasharray="6 4"/><text x="${width-right-5}" y="${y(targetPressure)-5}" fill="#f5b0b0" text-anchor="end">${fmt(targetPressure)} mca</text>` : "";
     const stepSignals = new Set(["prs_opening", "valve12_opening", "valve23_opening", "valve34_opening", "pumps_running", "recirculation_auto"]);
     const lines = all.map((points, index) => {
       const source = (["emulator", "cosimulation", "optimization"] as const)[index];
@@ -1417,17 +1459,19 @@ function renderEngineComparisonCharts(): void {
       for (const point of points) {
         if (!point) { previous = null; continue; }
         if (!previous) commands.push(`M${x(point.t).toFixed(1)},${y(point.v).toFixed(1)}`);
-        else if (stepSignals.has(key)) commands.push(`H${x(point.t).toFixed(1)} V${y(point.v).toFixed(1)}`);
-        else commands.push(`L${x(point.t).toFixed(1)},${y(point.v).toFixed(1)}`);
+        else if (stepSignals.has(key) && step !== undefined && point.t - previous.t === step) commands.push(`H${x(point.t).toFixed(1)} V${y(point.v).toFixed(1)}`);
+        else commands.push(`M${x(point.t).toFixed(1)},${y(point.v).toFixed(1)}`);
         previous = point;
       }
-      return `<path d="${commands.join(" ")}" fill="none" stroke="${colors[source]}" stroke-width="2.5"><title>${labels[source]}${stepSignals.has(key) ? " · escalón" : ""}</title></path>`;
+      const dots = points.filter((point): point is NonNullable<typeof point> => point !== null).map((point) =>
+        `<circle cx="${x(point.t).toFixed(1)}" cy="${y(point.v).toFixed(1)}" r="3.5" fill="${colors[source]}"><title>${labels[source]} · t=${point.t} s · ${fmt(point.v)} ${unit}</title></circle>`).join("");
+      return `<path d="${commands.join(" ")}" fill="none" stroke="${colors[source]}" stroke-width="2.5"/>${dots}`;
     }).join("");
     const legend = (["emulator", "cosimulation", "optimization"] as const).map((source, index) => {
       const quality = triadFrames.map((frame) => frame.sources[source]?.model_quality ?? (typeof frame.sources[source]?.state.quality === "string" ? frame.sources[source]?.state.quality as string : "")).find(Boolean);
       return `<span title="${quality ?? "Calidad no declarada"}"><i style="background:${colors[source]}"></i>${labels[source]}${quality ? ` · ${quality}` : " · calidad no declarada"} · ${all[index].filter(Boolean).length ? `${all[index].filter(Boolean).length} puntos` : "sin datos"}</span>`;
     }).join("");
-    return `<article class="trend panel"><h2>${title}<span>${unit}</span></h2><svg class="day-chart" data-engine-comparison data-max-time="${maxTime}" viewBox="0 0 ${width} ${height}" role="img" aria-label="${title}, comparación temporal de tres fuentes">${grid}${ticks}${lines}</svg><div class="legend">${legend}</div></article>`;
+    return `<article class="trend panel"><h2>${title}<span>${unit}</span></h2><svg class="day-chart" data-engine-comparison data-max-time="${maxTime}" viewBox="0 0 ${width} ${height}" role="img" aria-label="${title}, comparación temporal de tres fuentes">${grid}${ticks}${threshold}${lines}</svg><div class="legend">${legend}</div></article>`;
   }).join("");
 }
 
@@ -1469,12 +1513,23 @@ function renderTriadFrame(): void {
   for (const source of ["emulator", "cosimulation", "optimization"]) {
     const saved = frame.sources[source];
     const card = document.createElement("article"); card.className = "panel";
-    const title = document.createElement("h3"); title.textContent = source === "emulator" ? "EMULADOR" : source === "cosimulation" ? "COSIMULADOR" : "OPTIMIZADOR"; card.append(title);
+    const title = document.createElement("h3"); title.textContent = source === "emulator" ? "Planta Real" : source === "cosimulation" ? "Cosimulador" : "Fractal"; card.append(title);
     if (!saved) {
       const missing = document.createElement("p"); missing.textContent = "Sin frame guardado para este instante."; card.append(missing);
     } else {
       const quality = saved.model_quality ?? (typeof saved.state.quality === "string" ? saved.state.quality : undefined);
       const meta = document.createElement("p"); meta.textContent = `t=${fmt(saved.simulation_time_s, 0)} s · ${saved.temporal_context ?? "historia"}${quality ? ` · calidad: ${quality}` : ""}`; card.append(meta);
+      const values = triadObservables(saved.state);
+      const reading = document.createElement("p");
+      reading.textContent = `Mínimo viviendas ${values.home_min_pressure === null ? "—" : `${fmt(values.home_min_pressure)} mca`} · VRP ${values.prs_opening === null ? "—" : `${fmt(values.prs_opening)} %`} · Consumo entregado ${values.demand === null ? "—" : `${fmt(values.demand)} m³/h`} · Fugas ${values.leakage === null ? "—" : `${fmt(values.leakage)} m³/h`} · Total ${values.total_delivery === null ? "—" : `${fmt(values.total_delivery)} m³/h`}`;
+      card.append(reading);
+      const manifest = comparisons.find((item) => item.comparison_id === $<HTMLSelectElement>("comparison-select").value)?.manifest;
+      if ((source === "cosimulation" || source === "optimization") && manifest) {
+        const accumulated = (["demand", "leakage", "total_delivery"] as const).map((metric) => accumulatedBalance(source, metric, manifest.base_time_s, manifest.time_step_s)[index]);
+        const volumes = document.createElement("p");
+        volumes.textContent = `Acumulado desde t=${fmt(manifest.base_time_s, 0)} s · consumo ${accumulated[0] === null ? "—" : fmt(accumulated[0])} m³ · fugas ${accumulated[1] === null ? "—" : fmt(accumulated[1])} m³ · total ${accumulated[2] === null ? "—" : fmt(accumulated[2])} m³`;
+        card.append(volumes);
+      }
       const details = document.createElement("details");
       const summary = document.createElement("summary"); summary.textContent = "Ver datos persistidos";
       const pre = document.createElement("pre"); pre.textContent = JSON.stringify(saved.state, null, 2);

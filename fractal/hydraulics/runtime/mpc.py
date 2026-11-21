@@ -336,11 +336,11 @@ def project_24h(
         if study_type == "optimized":
             # La optimización vive en un paquete/proceso separado; se importa de forma perezosa
             # para que el motor de proyección base no cargue lógica del optimizador.
-            from fractal.optimization.instant_search import optimize
+            from fractal.optimization.instant_search import optimize_opening
 
-            # Cada hora conserva exactamente las aperturas del perfil; solo se busca
-            # la presión de salida PRS que satisface el objetivo elegido.
-            search = optimize(
+            # Cada hora conserva las aperturas del perfil y busca la mínima
+            # apertura VRP factible con la curva presión-apertura asumida.
+            search = optimize_opening(
                 scenario_tags,
                 target_pressure_mca=float(target_pressure_mca),
                 vertical_openings_pct=scenario_openings,
@@ -404,6 +404,16 @@ def project_24h(
             critical_consumer_id=critical_consumer_id,
             required_min_pressure_mca=float(target_pressure_mca) if optimized_controls is not None else None,
         )
+        if optimized_controls is not None:
+            # La condición de las 64 viviendas debe seguir cumpliéndose al final
+            # del intervalo, después de actualizar los niveles de los tanques.
+            home_pressures = end_state.get("consumer_pressures_mca", {})
+            optimized_feasible = (
+                optimized_feasible
+                and len(home_pressures) == 64
+                and min(float(value) for value in home_pressures.values()) >= float(target_pressure_mca)
+                and bool(end_state["feasible"])
+            )
         flow_out = float(end_state["flow_m3h"])
         recirc_end_flow, recirc_a, recirc_b = _recirc.pump_flow(_MODEL, tank_levels) if recirc_on else (0.0, 0.0, 0.0)
         levels_in_bounds = not overflow and all(0 <= value <= 100 for value in tank_levels.values())
