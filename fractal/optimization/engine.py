@@ -124,7 +124,8 @@ def optimize_job(job: dict[str, Any]) -> dict[str, Any]:
     from fractal.hydraulics.runtime.mpc import project_24h
 
     hours = project_24h(
-        tags, profile, study_type="optimized", objective_id=objective_id, target_pressure_mca=target_pressure_mca
+        tags, profile, study_type="optimized", objective_id=objective_id, target_pressure_mca=target_pressure_mca,
+        horizon_hours=job.get("horizon_hours", 24),
     )
     feasible = all(bool(frame.get("commands", {}).get("constraints_satisfied")) and bool(frame["robust"]) for frame in hours)
     baseline = project_24h(tags, profile, study_type="baseline")

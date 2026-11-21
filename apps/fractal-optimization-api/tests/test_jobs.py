@@ -88,6 +88,29 @@ def test_profile_horizon_requires_the_exact_profile_hash() -> None:
         main._validate_request({**request, "profile": changed})
 
 
+def test_profile_horizon_is_bounded_and_passed_to_solver(monkeypatch) -> None:
+    from fractal.hydraulics.runtime import mpc
+
+    profile = {"id": "PFL-test", "hours": {"0": {"global_consumers_pct": 80}}}
+    request = {
+        **BASE_REQUEST, "kind": "profile-horizon", "profile": profile,
+        "profile_hash": profile_fingerprint(profile), "horizon_hours": 1,
+    }
+    main._validate_request(request)
+    for invalid in (True, 0, 1.5, 25):
+        with pytest.raises(HTTPException, match="horizon_hours"):
+            main._validate_request({**request, "horizon_hours": invalid})
+    received = []
+    monkeypatch.setattr(mpc, "project_24h", lambda *_args, **kwargs: received.append(kwargs) or [{
+        "profile_hour": 0, "commands": {"constraints_satisfied": False, "vrp_opening_pct": None,
+        "vrp_opening_required_pct": None},
+    }])
+    result = optimize_job({**request, "job_id": "OPT-test"})
+    assert received[0]["horizon_hours"] == 1
+    assert len(result["hours"]) == 1
+    assert result["applied"] is False
+
+
 def test_job_rejects_unknown_contract_version_and_missing_target() -> None:
     client = TestClient(main.app)
     assert client.post("/v2/jobs", json={"contract_version": "fractal-optimization-job.v3"}).status_code == 422

@@ -10,6 +10,7 @@
     "objective_id": { "const": "OBJ-PRESSURE-MIN" },
     "target_pressure_mca": { "type": "number", "minimum": 10, "maximum": 45 },
     "profile_hash": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "horizon_hours": { "type": "integer", "minimum": 1, "maximum": 24, "description": "For profile-horizon only; defaults to 24 for existing callers." },
     "snapshot": {
       "type": "object",
       "required": ["snapshot_id", "simulation_time_s", "plc_tags"],

@@ -99,6 +99,9 @@ def _validate_request(payload: dict[str, Any]) -> None:
             raise HTTPException(422, "profile debe incluir id y hours del perfil guardado")
         if payload.get("profile_hash") != profile_fingerprint(profile):
             raise HTTPException(422, "profile_hash no coincide con el perfil enviado")
+        hours = payload.get("horizon_hours", 24)
+        if isinstance(hours, bool) or not isinstance(hours, int) or not 1 <= hours <= 24:
+            raise HTTPException(422, "horizon_hours debe ser un entero entre 1 y 24")
 
 
 @app.get("/health")
