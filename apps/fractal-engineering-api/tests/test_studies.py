@@ -898,6 +898,66 @@ def test_optimization_uses_the_selected_comparison_snapshot_not_live_plc_state(m
     assert payload["comparison_id"] == "CMP-frozen"
 
 
+def test_optimization_reuses_one_hour_manifest_without_rebasing_snapshot(monkeypatch) -> None:
+    monkeypatch.setenv("FRACTAL_PLC_API_URL", "https://plc.example")
+    profile = {"id": "profile-frozen", "hours": {"0": {"global_consumers_pct": 55}}}
+    tags = {
+        "PLC.Profile.ActiveId": "profile-frozen", "PLC.Session.SimulatedTime": 743,
+        "PLC.Pump.RunningCount": 2, "PLC.PRS.OutletPressureMca": 20,
+    }
+    manifest = {
+        "plant_id": "water-network-scale-v1", "session_id": "session-old",
+        "profile_id": "profile-frozen", "profile_hash": fractal_api.profile_fingerprint(profile),
+        "profile": profile, "snapshot_id": "session-old:743", "base_time_s": 743,
+        "time_step_s": 3600, "horizon_s": 3600, "input_hash": "frozen-input-hash",
+        "forecast_times_s": [3600],
+        "snapshot": {"snapshot_id": "session-old:743", "simulation_time_s": 743, "plc_tags": tags},
+    }
+    captured = []
+    monkeypatch.setattr(fractal_api, "gateway_post_json", lambda url, body, token: captured.append(body) or manifest)
+    monkeypatch.setattr(fractal_api, "record_comparison_status", lambda *args: None)
+    monkeypatch.setattr(fractal_api, "gateway_json", lambda *_args: pytest.fail("no releer el PLC vivo"))
+    monkeypatch.setattr(
+        fractal_api, "_horizon_study",
+        lambda payload, publish, **kwargs: captured.append(payload) or {"study_type": "optimized"},
+    )
+    response = client.post("/studies/horizon/from-plc", json={
+        "session_id": "session-old", "plant_id": "water-network-scale-v1", "profile_id": profile["id"],
+        "comparison_id": "CMP-existing", "study_type": "optimized", "target_pressure_mca": 20,
+        "time_step_s": 3600, "horizon_s": 3600,
+    })
+    assert response.status_code == 200, response.text
+    assert captured[0] == {"profile_id": profile["id"], "time_step_s": 3600, "horizon_s": 3600}
+    assert captured[1]["horizon_hours"] == 1
+    assert captured[1]["snapshot_id"] == "session-old:743"
+    assert captured[1]["plc_tags"] == tags
+    assert captured[1]["comparison_context"]["forecast_times_s"] == [3600]
+
+
+def test_optimization_rejects_manifest_with_different_grid_before_job(monkeypatch) -> None:
+    monkeypatch.setenv("FRACTAL_PLC_API_URL", "https://plc.example")
+    monkeypatch.setattr(fractal_api, "gateway_post_json", lambda *_args: {
+        "time_step_s": 3600, "horizon_s": 86400,
+    })
+    monkeypatch.setattr(fractal_api, "_horizon_study", lambda *_args, **_kwargs: pytest.fail("no optimizar"))
+    response = client.post("/studies/horizon/from-plc", json={
+        "session_id": "session-old", "plant_id": "water-network-scale-v1", "study_type": "optimized",
+        "target_pressure_mca": 20, "comparison_id": "CMP-frozen", "horizon_s": 3600,
+    })
+    assert response.status_code == 409
+
+
+@pytest.mark.parametrize("horizon", [True, 0, 3601, 90000])
+def test_optimization_rejects_unsupported_manifest_horizon_before_post(monkeypatch, horizon) -> None:
+    monkeypatch.setenv("FRACTAL_PLC_API_URL", "https://plc.example")
+    monkeypatch.setattr(fractal_api, "gateway_post_json", lambda *args: pytest.fail("no fijar manifiesto inválido"))
+    response = client.post("/studies/horizon/from-plc", json={
+        "session_id": "session-old", "plant_id": "water-network-scale-v1", "study_type": "optimized",
+        "target_pressure_mca": 20, "horizon_s": horizon,
+    })
+    assert response.status_code == 422
+
+
 def test_forecast_refuses_mismatched_session_profile(monkeypatch) -> None:
     monkeypatch.setenv("FRACTAL_PLC_API_URL", "http://plc-internal:8000")
     monkeypatch.setattr(
