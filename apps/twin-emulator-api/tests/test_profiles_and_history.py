@@ -407,6 +407,25 @@ def test_session_api_stores_and_replays_model_results_as_separate_triad_sources(
         assert at_present["sources"]["cosimulation"]["state"]["source"] == "cosimulation"
         assert at_present["sources"]["cosimulation"]["model_quality"] == "test_fixture_not_physical_validation"
         assert at_present["sources"]["optimization"] is None
+        optimized = {
+            **body, "run_id": "FRA-API-test", "source": "optimization",
+            "frames": [{
+                "simulation_time_s": manifest["forecast_times_s"][0], "temporal_context": "forecast",
+                "state": {"plc_tags": {
+                    "PLC.PRS.EstimatedOpeningPct": 42.0,
+                    "PLC.Grid.L1.ConsumptionM3h": 1.0, "PLC.Grid.L2.ConsumptionM3h": 1.0,
+                    "PLC.Grid.L3.ConsumptionM3h": 1.0, "PLC.Grid.L4.ConsumptionM3h": 1.0,
+                    "PLC.Grid.L1.LeakageM3h": 0.1, "PLC.Grid.L2.LeakageM3h": 0.1,
+                    "PLC.Grid.L3.LeakageM3h": 0.1, "PLC.Grid.L4.LeakageM3h": 0.1,
+                }, "commands": {"target_pressure_mca": 18.0, "vrp_opening_pct": 42.0}},
+            }],
+        }
+        assert client.post(path, json=optimized).status_code == 201
+        triads = client.get(f"{BASE}/sessions/{session_id}/comparisons/comparison-api/triads").json()["triads"]
+        at_future = next(item for item in triads if item["simulation_time_s"] == manifest["forecast_times_s"][0])
+        assert at_future["sources"]["cosimulation"]["state"]["source"] == "cosimulation"
+        assert at_future["sources"]["optimization"]["state"]["commands"]["vrp_opening_pct"] == 42.0
+        assert at_future["sources"]["emulator"] is None  # El futuro no se inventa como observación.
         assert local_historian.nearest_frame(session_id, manifest["base_time_s"])["snapshot"]["unchanged"] is True
         reopened_historian = SessionHistorian()
         assert reopened_historian.get_comparison_manifest(session_id, "comparison-api") == manifest
