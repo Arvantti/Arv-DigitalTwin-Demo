@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import importlib.util
 from collections.abc import Callable
+from math import acos, pi
 from pathlib import Path
 from typing import Any
 
@@ -489,6 +490,13 @@ def project_24h(
                 forecast_tags[f"{tag_prefix}.PressureMca"] = nominal_state["leak_pressures_mca"].get(
                     f"L{level}.{leak_id}", nominal_state["level_pressures_mca"][str(level)]
                 )
+        inlet = float(nominal_state["prs_inlet_mca"])
+        outlet = float(nominal_state["prs_outlet_mca"])
+        if inlet > 15 and 15 <= outlet <= inlet:
+            # Curva asumida, no sensor ni mando de apertura. Mismo estimador
+            # para el futuro base y el optimizado; calidad en tag separado.
+            forecast_tags["PLC.PRS.EstimatedOpeningPct"] = round(20 + 80 * acos(1 - 2 * (outlet - 15) / (inlet - 15)) / pi, 2)
+            forecast_tags["PLC.PRS.OpeningEstimateQuality"] = "assumed_cosine_not_physically_validated"
         carried_tags.update({
             "PLC.Pump.DischargePressureMca": nominal_state["pump_discharge_mca"],
             "PLC.PRS.InletPressureMca": nominal_state["prs_inlet_mca"],

@@ -1365,10 +1365,11 @@ function triadObservables(state: Record<string, unknown>): ComparisonObservables
       : null;
   }
   if (values.prs_opening === null) {
+    const estimated = tags?.["PLC.PRS.EstimatedOpeningPct"];
     const commanded = command.vrp_opening_pct;
-    if (typeof commanded === "number" && Number.isFinite(commanded)) values.prs_opening = commanded;
-    // No reconstruir una apertura ausente desde presiones: los modelos deben
-    // publicarla con procedencia para que ambas trayectorias sean comparables.
+    if (typeof estimated === "number" && Number.isFinite(estimated)) values.prs_opening = estimated;
+    else if (typeof commanded === "number" && Number.isFinite(commanded)) values.prs_opening = commanded;
+    // No reconstruir una apertura ausente desde presiones en la UI.
   }
   const levelPressures = [1, 2, 3, 4].map((level) => values[`level${level}_pressure`]);
   values.home_min_pressure = levelPressures.every((pressure) => pressure !== null) ? Math.min(...levelPressures as number[]) : null;
@@ -1405,7 +1406,7 @@ function renderEngineComparisonCharts(): void {
   const labels = { emulator: "Planta Real · observada", cosimulation: "Cosimulador · proyección", optimization: "Fractal · propuesta" } as const;
   const metrics = [
     ["home_min_pressure", "Presión mínima de viviendas · umbral del estudio", "mca"],
-    ["prs_opening", "Apertura VRP publicada · escalones horarios", "%"],
+    ["prs_opening", "Apertura VRP · estimación declarada o medición", "%"],
     ["demand", "Consumo entregado a viviendas", "m³/h"],
     ["leakage", "Fugas", "m³/h"],
     ["total_delivery", "Consumo entregado + fugas", "m³/h"],

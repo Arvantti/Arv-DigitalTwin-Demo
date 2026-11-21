@@ -645,6 +645,8 @@ def test_optimized_hour_uses_selected_controls_in_snapshot_and_forecast_tags(mon
     assert calls[0] == {"vertical": (80.0, 100.0, 100.0), "dwelling": 40.0, "leak": None}
     assert calls[1] == {"vertical": (50.0, 100.0, 100.0), "dwelling": 25.0, "leak": 35.0}
     assert frame["plc_tags"]["PLC.PRS.BranchAuto"] is False
+    assert frame["plc_tags"]["PLC.PRS.OpeningEstimateQuality"] == "assumed_cosine_not_physically_validated"
+    assert 20 <= frame["plc_tags"]["PLC.PRS.EstimatedOpeningPct"] <= 100
     assert frame["plc_tags"]["PLC.Pump.DischargePressureMca"] == frame["scenarios"][0]["state"]["pump_discharge_mca"]
 
 
