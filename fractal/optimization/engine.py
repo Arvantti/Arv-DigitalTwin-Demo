@@ -128,7 +128,7 @@ def optimize_job(job: dict[str, Any]) -> dict[str, Any]:
         horizon_hours=job.get("horizon_hours", 24),
     )
     feasible = all(bool(frame.get("commands", {}).get("constraints_satisfied")) and bool(frame["robust"]) for frame in hours)
-    baseline = project_24h(tags, profile, study_type="baseline")
+    baseline = project_24h(tags, profile, study_type="baseline", horizon_hours=job.get("horizon_hours", 24))
     leakage_comparison = compare_leakage(hours, baseline, target_pressure_mca=float(target_pressure_mca))
     draft_hours: dict[str, Any] = {}
     if feasible:

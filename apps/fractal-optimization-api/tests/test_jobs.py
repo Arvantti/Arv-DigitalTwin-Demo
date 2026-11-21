@@ -102,11 +102,14 @@ def test_profile_horizon_is_bounded_and_passed_to_solver(monkeypatch) -> None:
             main._validate_request({**request, "horizon_hours": invalid})
     received = []
     monkeypatch.setattr(mpc, "project_24h", lambda *_args, **kwargs: received.append(kwargs) or [{
-        "profile_hour": 0, "commands": {"constraints_satisfied": False, "vrp_opening_pct": None,
-        "vrp_opening_required_pct": None},
+        "profile_hour": 0, "start_t_s": 10, "end_t_s": 3600, "duration_s": 3590,
+        "robust": False, "end_state": {"consumer_pressures_mca": {}},
+        "scenarios": [{"state": {"flow_m3h": 2.0, "leakage_m3h": 0.2}}],
+        "commands": {"constraints_satisfied": False, "vrp_opening_pct": None,
+                     "vrp_opening_required_pct": None},
     }])
     result = optimize_job({**request, "job_id": "OPT-test"})
-    assert received[0]["horizon_hours"] == 1
+    assert received[0]["horizon_hours"] == received[1]["horizon_hours"] == 1
     assert len(result["hours"]) == 1
     assert result["applied"] is False
 
