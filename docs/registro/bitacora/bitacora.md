@@ -43,6 +43,9 @@ La prueba autorizada en producción con PDD-RCA-01 devolvió 502 al fijar el man
 ## 2026-11-18 · Reglas de trabajo y conocimiento compartido en AGENTS.md
 
 Se migró la memoria del proyecto Claude Code de la organización Pro (instrucciones y 32 memorias) a `GraphBrain/Arvantti-DigitalTwin/`, fuera del repo, como fuente común para Claude, Codex, Pi y Arvantti Harness. `AGENTS.md` incorpora las reglas transversales (idioma, pnpm, última versión, flujo de PRs, secretos, demos y marca) y apunta a GraphBrain y a `../assets/` para el material pesado fuera de git. Solo documentación: sin cambios de código, despliegues ni secretos. Ver [[../historico/sesion-codigo/2026-11-18-reglas-agents-y-graphbrain]].
+## 2026-11-18 · Preparar flujo audiovisual ARVANTTI Digital Twin
+
+Se adaptó el flujo común de video al producto ARVANTTI Digital Twin y se añadió la skill específica y el acuerdo Pi/Claude con ownership de archivos, gates editoriales/técnicos, uso de demos verificadas, seguridad de secretos y revisión de licencias. El configurador admite 1–4 renditions con dimensiones explícitas (vertical, horizontal, cuadrado o custom) y no elige formato por defecto. Se agregó CLI reutilizable de ElevenLabs Music: prompt visible, confirmación `ENVIAR`, una única solicitud, sin reintentos, sidecar sin secretos y pruebas HTTP mock. El usuario comunicó saldo recargado; no se llamó a ElevenLabs, no se consumió saldo y no se produjo/guionizó el video. Validación: 4 pruebas Music mock, 5 TTS mock, syntax checks Node y prueba aislada del configurador con renditions horizontal+vertical. Sin cambios remotos, capturas, sesión PLC, commits ni despliegues. Ver [[../historico/sesion-codigo/2026-11-18-flujo-video-digital-twin]].
 
 ## 2026-11-18 · Relay interno autenticado para Cosimulación
 

@@ -1,8 +1,8 @@
-# Generador de videos ARVANTTI Labs
+# Producción de video · ARVANTTI Digital Twin
 
-Kit local para preparar proyectos de video de ARVANTTI con HyperFrames: identidad visual, recursos compartidos, guía editorial y asistente de configuración. **No genera ni publica un MP4 automáticamente**; crea la configuración inicial para que el proyecto se diseñe, revise y renderice con HyperFrames.
+Flujo y tooling del proyecto para preparar videos con identidad **ARVANTTI Digital Twin**. El paquete de cada pieza vive bajo `video-production/ARVANTTI/<ID-y-slug>/`; los assets, capturas y renders no se copian a esta carpeta común. Esta configuración no crea un video ni hace llamadas a proveedores hasta que una persona aprueba la salida concreta.
 
-## Empezar
+## Configurar un paquete
 
 Desde la raíz del repositorio:
 
@@ -10,35 +10,47 @@ Desde la raíz del repositorio:
 pnpm video:configure
 ```
 
-El asistente pregunta formato y dimensiones, tema, audiencia, canal, duración, voz y fuente de claims. Guarda `video-config.json` en una carpeta versionada bajo `video-production/ARVANTTI/`. No asume un formato ni duración. Si la carpeta elegida ya existe, no la sobrescribe.
+El asistente define brief inicial, CTA, fuentes, assets permitidos y entre una y cuatro renditions. Los tamaños predefinidos son vertical 1080×1920, horizontal 1920×1080, cuadrado 1080×1080 y personalizado. Ninguno es el formato por defecto. Cada rendition se compone y revisa por separado; el asistente guarda solo `video-config.json` y no redacta guion/storyboard ni produce medios.
 
-## Generar locución con ElevenLabs
+La identidad del configurador es `digital-twin`. El kit local tiene el símbolo de ARVANTTI Labs utilizado en piezas previas de Digital Twin; confirmar su pertinencia en el brief de cada pieza. No importar branding ni assets de AndyOpenDev o del proyecto de referencia.
 
-El guion predeterminado es `<proyecto>/script.md`. Configura `ELEVENLABS_API_KEY` y `ELEVENLABS_VOICE_ID` en el entorno del proceso; `ELEVENLABS_MODEL_ID` es opcional y usa `eleven_v4` si no está definida. La CLI no carga `.env` automáticamente: puedes exportar las variables en la shell o usar un gestor de secretos local. `.env.example` contiene solo placeholders; el archivo `.env` real y variantes como `.env.local` están ignorados por Git. No pongas la clave en argumentos, archivos, YAML ni logs.
+## ElevenLabs Music
+
+La generación requiere `ELEVENLABS_API_KEY` en el entorno seguro del proceso. No necesita `ELEVENLABS_VOICE_ID`. El CLI muestra proveedor/modelo, duración y prompt exacto, y solo realiza una llamada si se escribe `ENVIAR` tras confirmar que se acepta el consumo de cuota:
 
 ```bash
-export ELEVENLABS_API_KEY='tu-clave-local'
-export ELEVENLABS_VOICE_ID='tu-id-de-voz'
-pnpm video:voice --project video-production/ARVANTTI/ARV-W01-V001-mi-video
-# opcional: --script ruta/al/guion-aprobado.md
+pnpm video:music --project <paquete> --prompt <archivo-prompt.txt> --duration-seconds <segundos>
 ```
 
-El comando muestra el texto exacto y solicita escribir `ENVIAR` antes de hacer la petición. Cualquier otra respuesta cancela sin enviar. Guarda `assets/audio/voiceover.mp3` y `voiceover-meta.json` (modelo, voz y parámetros, nunca la clave), sin sobrescribir archivos existentes. Ajustes: stability 0.50, similarity boost 0.85, style 0.00, speed 1.00, speaker boost activado. Pruebas HTTP simuladas: `pnpm video:voice:test`.
+La salida MP3 y un sidecar `.meta.json` quedan en `assets/audio/` por defecto. No se sobrescriben archivos; fallas de autenticación/cuota/servicio no se reintentan. Las pruebas son simuladas y no contactan ElevenLabs:
 
-Para GitHub Actions, configura `ELEVENLABS_API_KEY` en **Settings → Secrets and variables → Actions → Secrets**; refiérela solo como secret de entorno del paso, nunca como literal en YAML. No hay envío automatizado configurado.
+```bash
+pnpm video:music:test
+```
 
-Después, crea/edita la composición con HyperFrames y usa sus comandos con PNPM, por ejemplo `pnpm dlx hyperframes --help`. Revisa la guía completa en [`ARVANTTI_VIDEO_PRODUCTION_WORKFLOW.md`](./ARVANTTI_VIDEO_PRODUCTION_WORKFLOW.md) y la skill local `.agents/skills/arvantti-labs-video/SKILL.md`.
+La música generada no garantiza automáticamente ausencia de reclamos ni derechos universales. Antes de distribución, revisar y registrar los términos/licencia aplicables a la cuenta/plan y al canal; no hacer claims legales absolutos.
 
-## Recursos de marca
+## ElevenLabs TTS
 
-- `shared/arvantti/`: logo oficial ARVANTTI Labs.
-- `shared/core/`: estilos, utilidades de motion y efectos de sonido compartidos (créditos de SFX en su carpeta).
-- Los proyectos deben referenciar estos recursos desde `assets/shared/`, sin duplicarlos ni modificarlos.
-- Tipografías oficiales: Orbit, Inter e IBM Plex Mono. Cargar archivos locales con `@font-face` cuando estén disponibles; no depender de fuentes remotas.
+El flujo existente de locución requiere `ELEVENLABS_API_KEY` y `ELEVENLABS_VOICE_ID` en el entorno; `ELEVENLABS_MODEL_ID` es opcional. No leer ni copiar `.env` de otro proyecto, no pegar secretos en chat/archivos/argumentos ni asumir que otra sesión de agente hereda las variables. El ejecutor solo comprueba presencia de variables y detiene el proceso si faltan.
 
-## Límites
+```bash
+pnpm video:voice --project <paquete> [--script <guion-aprobado.md>]
+pnpm video:voice:test
+```
 
-- Los claims y métricas deben citar documentación del proyecto y sus límites; nunca inventarlos.
-- Preview y QA técnico no equivalen a aprobación editorial.
-- No publicar, subir ni enviar material fuera del repositorio sin autorización explícita.
-- Los recursos originales y entregas anteriores se conservan; cada preview/render lleva versión.
+Antes de llamar a TTS, aprobar guion exacto, voz, proveedor/modelo y envío. La aprobación del guion no aprueba automáticamente consumo de cuota. Se guardan audio y metadatos no secretos, nunca la API key. La voz de AndyOpenDev solo se usa con autorización del propietario y acceso autorizado en la cuenta del destino; el ID se lee del entorno, no se hardcodea.
+
+La clave no se carga automáticamente desde `.env` por los comandos existentes. El propietario debe disponerla mediante un secret manager o el entorno seguro desde el que se ejecutará. Para un proceso local, no es necesario GitHub. Si alguna vez se usa GitHub Actions, configurar un secret allí y poner un gate humano antes de llamadas facturables. No se ha hecho ninguna llamada a ElevenLabs durante la configuración del flujo.
+
+## Renderer, capturas y QA
+
+- Renderer previsto: HyperFrames mediante PNPM (verificar versión/comandos antes de producir); no está instalado como dependencia directa en este workspace.
+- Capturas de la aplicación: Playwright solo después de verificar instalación, origen de datos y aislamiento de la sesión. No incluir credenciales, notificaciones o datos reales no autorizados.
+- `ffmpeg` y `ffprobe` están disponibles en el entorno inspeccionado para mezcla y revisión técnica.
+- La skill específica y gates están en `.agents/skills/arvantti-digital-twin-video/SKILL.md`; el acuerdo con Claude está en `video-production/AGENT-HANDOFF.md`.
+- HyperFrames/FFmpeg QA no sustituye revisión editorial humana. La aprobación del video completo no autoriza publicación, subida o distribución.
+
+## Plantilla de paquete
+
+La estructura detallada se mantiene flexible según el tipo de pieza, pero suele incluir `README.md`, `brief.md`, `sources.md`, `claims.json`, `script.md`, `storyboard.json`, `video-config.json`, `assets/`, `previews/`, `out/` y `QA.md`. Los guiones/claims deben estar respaldados; datos dudosos se califican como asumidos. Preservar originales y las versiones vigentes de otras personas.

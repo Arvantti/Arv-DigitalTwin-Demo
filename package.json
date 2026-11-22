@@ -10,6 +10,8 @@
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",
     "video:configure": "node video-production/video-pipeline.mjs",
+    "video:music": "node video-production/music.mjs",
+    "video:music:test": "node --test video-production/music.test.mjs",
     "video:voice": "node video-production/voiceover.mjs",
     "video:voice:test": "node --test video-production/voiceover.test.mjs"
   }

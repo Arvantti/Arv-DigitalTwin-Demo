@@ -1,4 +1,4 @@
-# Flujo de producción de video — ARVANTTI Labs
+# Flujo de producción de video — ARVANTTI Digital Twin
 
 ## Propósito
 
@@ -12,28 +12,29 @@ Antes de producir, consultar en este orden:
 
 1. Brief aprobado de la pieza.
 2. Documentación, código, artículo o demo fuente del proyecto. Para el gemelo digital, preferir contratos, `docs/`, código fuente y resultados de pruebas vigentes.
-3. Esta guía y `.agents/skills/arvantti-labs-video/SKILL.md` como referencia transferida de marca.
-4. Recursos oficiales disponibles localmente en `video-production/shared/arvantti/` y `video-production/shared/core/`.
-5. Proyecto y guion de referencia correspondiente.
+3. Esta guía y `.agents/skills/arvantti-digital-twin-video/SKILL.md`.
+4. Recursos del repositorio destino en `video-production/shared/arvantti/` y `video-production/shared/core/`; confirmar que cada asset corresponde a la identidad/brief.
+5. Proyecto previo de Digital Twin pertinente. El material AndyOpenDev solo sirve para prácticas transferibles; no copiar sus assets, guiones ni marca.
 
 Si dos fuentes entran en conflicto, detenerse y documentar la duda para aprobación humana. No inventar claims, capacidades, resultados, fechas, clientes o métricas.
 
 ## Preguntas obligatorias antes de producir
 
-El agente debe preguntar primero:
+El agente debe confirmar primero si esta pieza requiere una sola rendition o varias y para cada una preguntar canal/tamaño:
 
 ```text
-¿Qué tipo y tamaño quieres para el video?
-1) Vertical social: 1080×1920
+1) Vertical: 1080×1920
 2) Horizontal: 1920×1080
 3) Cuadrado: 1080×1080
 4) Personalizado
 ```
 
+No hay formato predeterminado. Cada rendition necesita composición, safe areas, captions y QA propios; no asumir que basta con recortar un master.
+
 Después debe confirmar:
 
-- Tema y audiencia.
-- Canal de publicación.
+- Tema, propósito/tesis y audiencia.
+- Uno o más canales de publicación y formato de cada rendition.
 - Objetivo editorial.
 - Duración deseada, si no está definida por el brief.
 - Idioma y voz de narración.
@@ -63,7 +64,7 @@ No crear escenas hasta que estén definidos:
 - Canal y formato.
 - Acción esperada del espectador.
 
-### Gate 2 — Guion y storyboard
+### Gate 2 — Guion
 
 El guion debe separar:
 
@@ -74,21 +75,29 @@ El guion debe separar:
 - Assets requeridos.
 - Tiempo de inicio y fin.
 
-La persona responsable aprueba el guion antes de la implementación.
+La persona responsable aprueba el guion antes de storyboard final, TTS o montaje. La aprobación del guion no aprueba proveedor, voz ni consumo de cuota.
 
-### Gate 3 — Preview
+### Gate 3 — Voz/TTS
+
+Si hay locución, confirmar proveedor, modelo, voz, autorización en la cuenta del destino y presupuesto/cuota. Antes de enviar, enseñar el texto exacto y solicitar una autorización explícita de envío. Nunca transferir claves ni leer `.env` de otro proyecto; no reintentar tras fallos de autenticación/cuota.
+
+### Gate 4 — Datos/captura
+
+Para videos de producto, verificar que los resultados mostrados existen y están persistidos. Para el Acueducto, Cosimulación y Fractal deben estar calculados, validados y persistidos antes de grabar. Si faltan, es un bloqueo de producción: no grabar resultados inventados, interpolar datos ausentes ni narrar al público la indisponibilidad como sustituto. Una sesión virtual no prueba conexión a planta física. No cambiar sesiones compartidas ni mandar comandos PLC sin autorización.
+
+### Gate 5 — Preview
 
 Revisar una preview o contacto de frames antes del render final. La revisión humana decide sobre claridad, ritmo, tono y fidelidad de marca.
 
-### Gate 4 — QA técnico
+### Gate 6 — QA técnico
 
 El agente valida formato, duración, audio, legibilidad, safe area, transiciones y errores del renderer.
 
-### Gate 5 — Aprobación final
+### Gate 7 — Aprobación final
 
 QA técnico aprobado no equivale a aprobación editorial. La pieza solo se marca como aprobada cuando la persona responsable confirma copy, montaje, audio y branding.
 
-No publicar ni enviar nada fuera del proyecto.
+La aprobación del master completo y la autorización de publicación/distribución son independientes. No publicar ni enviar nada fuera del proyecto sin autorización explícita.
 
 ## Estructura de carpetas
 
@@ -136,7 +145,7 @@ out/<slug>-v003.mp4
 - `video-config.json`: tamaño, FPS, duración, safe area y renderer.
 - `QA.md`: checks automáticos y aprobación humana.
 
-Los componentes y assets comunes no se copian en cada proyecto. Se mantienen en `video-production/shared/core/`; los recursos de identidad ARVANTTI están en `video-production/shared/arvantti/`. Cada proyecto los referencia mediante `assets/shared/` (enlazado a `../../../shared/`). En esta instalación se usa únicamente la skill `arvantti-labs-video`; no se mezclan otras identidades.
+Los componentes y assets comunes no se copian en cada proyecto. Se mantienen en `video-production/shared/core/`; los recursos ARVANTTI están en `video-production/shared/arvantti/`. Cada proyecto los referencia mediante `assets/shared/` (enlazado a `../../../shared/`). La identidad editorial de esta serie es ARVANTTI Digital Twin. El kit local contiene el símbolo ARVANTTI Labs usado en piezas previas; confirmar su uso en cada brief y no presentarlo como un lockup distinto no aprobado. No se mezclan assets de otras marcas.
 
 ## Claims respaldados
 
@@ -160,13 +169,13 @@ Si el claim no tiene respaldo:
 
 La comunicación de ARVANTTI debe ser clara, directa, elegante, técnica, humana y basada en evidencia. Evitar hype, absolutos y promesas vacías.
 
-## Identidad ARVANTTI Labs
+## Identidad ARVANTTI Digital Twin
 
 ### Posicionamiento
 
-ARVANTTI Labs diseña inteligencia para operar sistemas reales mediante ingeniería, arneses inteligentes, simulación, evaluación y optimización determinística.
+Comunicar las capacidades de ARVANTTI Digital Twin con evidencia del repositorio, separando arquitectura implementada, resultados calculados, supuestos y propuestas futuras. La comunicación debe mostrar decisiones, límites, evaluación y operación virtual; no presentar un prototipo como producto terminado ni una sesión virtual como instalación física conectada.
 
-La comunicación debe mostrar arquitectura, decisiones, límites, evaluación y operación real. No presentar un prototipo como producto terminado.
+La frase de marca aprobada para la pieza de lanzamiento es «Decide antes de que pase». El CTA se confirma en el brief de cada video.
 
 ### Paleta oficial
 
@@ -200,7 +209,7 @@ Las fuentes deben estar disponibles localmente o declararse con `@font-face`. No
 
 ## Límites de identidad
 
-Esta instalación es exclusiva de ARVANTTI Labs. No incorporar mascotas, logos o recursos de otras marcas. Si un brief pide una identidad o asset no incluido, detenerse y solicitar los recursos aprobados; no recrearlos ni improvisarlos.
+Esta instalación es exclusiva de ARVANTTI Digital Twin. No incorporar mascotas, logos o recursos de AndyOpenDev/otras marcas. La identidad Digital Twin no convierte automáticamente el logo ARVANTTI Labs en lockup de producto: utilizar el símbolo/lockup solo según la guía aprobada. Si el brief requiere un asset no incluido, detenerse y solicitar recursos aprobados; no recrearlos ni improvisarlos.
 
 ## Proceso de producción
 
@@ -273,9 +282,11 @@ Evitar una secuencia de tarjetas estáticas con fundidos básicos: crear continu
 
 ### 7. Audio y locución
 
-La locución aprobada puede generarse desde `<proyecto>/script.md` con `pnpm video:voice --project <proyecto> [--script <archivo>]`. El comando muestra el guion exacto y solo lo envía si el operador escribe `ENVIAR`; no eludas esta confirmación. Lee `ELEVENLABS_API_KEY` y `ELEVENLABS_VOICE_ID` del entorno y `ELEVENLABS_MODEL_ID` opcional (por defecto `eleven_v4`). El audio se guarda en `assets/audio/voiceover.mp3`, junto a `voiceover-meta.json` sin credenciales. Parámetros fijos aprobados: stability 0.50, similarity boost 0.85, style 0.00, speed 1.00 y speaker boost activado. Nunca registres la API key en metadatos, archivos, argumentos, YAML literal ni logs; `.env` debe estar ignorado y `.env.example` lleva solo placeholders. Para GitHub Actions, guardar la clave en **Settings → Secrets and variables → Actions → Secrets**.
+La locución aprobada puede generarse desde `<proyecto>/script.md` con `pnpm video:voice --project <proyecto> [--script <archivo>]`. El comando muestra el guion exacto y solo lo envía si el operador escribe `ENVIAR`; no eludas esta confirmación. Lee `ELEVENLABS_API_KEY` y `ELEVENLABS_VOICE_ID` del entorno y `ELEVENLABS_MODEL_ID` opcional (por defecto `eleven_v4`). Ningún agente debe leer/copiar `.env` ajenos ni asumir que otra sesión hereda secretos; el operador comprueba solo presencia en el entorno seguro y nunca imprime valores. El audio se guarda en `assets/audio/voiceover.mp3`, junto a `voiceover-meta.json` sin credenciales. Parámetros fijos aprobados: stability 0.50, similarity boost 0.85, style 0.00, speed 1.00 y speaker boost activado. Nunca registres la API key en metadatos, archivos, argumentos, YAML literal ni logs; `.env` debe estar ignorado y `.env.example` lleva solo placeholders. Para GitHub Actions, guardar la clave en **Settings → Secrets and variables → Actions → Secrets**.
 
-Los SFX deben reforzar acciones visibles. Mezclar la voz por encima de música y SFX. Validar duración y loudness con FFmpeg. Si falta la locución, producir una preview marcada como `TEMP_AUDIO` y no como entrega final. Las pruebas de ElevenLabs usan HTTP simulado: `pnpm video:voice:test`; nunca llaman al servicio real.
+La música instrumental se genera con `pnpm video:music --project <proyecto> --prompt <archivo> --duration-seconds <segundos>`; el CLI muestra el prompt exacto y pide `ENVIAR` antes de una única llamada. Usa la clave del entorno seguro, no requiere Voice ID, nunca reintenta fallos y guarda metadatos no secretos. La música generada no garantiza ausencia de reclamos: verificar términos/licencia de la cuenta/plan antes de distribuir. Pruebas simuladas: `pnpm video:music:test` y `pnpm video:voice:test`; ninguna contacta ElevenLabs.
+
+Los SFX deben reforzar acciones visibles. Mezclar voz por encima de música/SFX y validar duración/loudness con FFmpeg. No sustituir voz aprobada por audio temporal ni presentar una preview `TEMP_AUDIO` como entrega final.
 
 ### 8. Previews
 
@@ -311,7 +322,7 @@ Comprobar según el brief, no con valores universales:
 - Ausencia de errores y advertencias del renderer.
 - Logo, colores y tipografía.
 
-### 10. Aprobación humana
+### 10. Aprobación humana y distribución
 
 La persona responsable revisa el video completo y confirma:
 
@@ -326,9 +337,13 @@ La persona responsable revisa el video completo y confirma:
 
 Solo después se marca `APPROVED`. Este flujo no publica ni envía contenido automáticamente.
 
+## Coordinación entre agentes
+
+Pi mantiene skills, workflow y herramientas comunes. Claude edita solo el paquete individual que el responsable le asigne, nunca las rutas comunes ni un archivo concurrentemente asignado a otro agente. Consultar `video-production/AGENT-HANDOFF.md`; anunciar archivos antes de editar, revisar `git status`/`git diff` y entregar rutas absolutas, cambios, validaciones y bloqueos. No hacer commits, despliegues ni publicaciones sin instrucción.
+
 ## Checklist final
 
-- [ ] Se preguntó el tamaño y formato antes de producir.
+- [ ] Se confirmó una o más renditions con dimensiones/canales explícitos; safe areas y QA se revisaron por rendition.
 - [ ] El brief define audiencia, canal, objetivo y CTA.
 - [ ] Las fuentes y claims están registrados.
 - [ ] El guion fue aprobado antes del montaje.
@@ -341,4 +356,6 @@ Solo después se marca `APPROVED`. Este flujo no publica ni envía contenido aut
 - [ ] Se revisó la legibilidad en móvil.
 - [ ] Se revisaron audio, duración, transiciones y formato.
 - [ ] QA técnico y aprobación humana están separados.
+- [ ] Se revisaron términos/licencia de música para el uso previsto; no se hizo una garantía legal absoluta.
+- [ ] La aprobación del master está registrada y la autorización de publicación/distribución se obtuvo aparte.
 - [ ] No se publicó ni envió nada fuera del proyecto.
