@@ -19,88 +19,88 @@
   "id": "base",
   "start": 13.88,
   "voiceAt": 14.18,
-  "voz": 15.2,
-  "dur": 16.3,
-  "real": false
+  "voz": 14.68,
+  "dur": 15.78,
+  "real": true
  },
  {
   "id": "nucleo",
-  "start": 30.18,
-  "voiceAt": 30.38,
-  "voz": 5.6,
-  "dur": 6.8,
-  "real": false
+  "start": 29.66,
+  "voiceAt": 29.86,
+  "voz": 5.49,
+  "dur": 6.69,
+  "real": true
  },
  {
   "id": "organiza",
-  "start": 36.98,
-  "voiceAt": 37.28,
-  "voz": 6.4,
-  "dur": 7.6,
-  "real": false
+  "start": 36.35,
+  "voiceAt": 36.65,
+  "voz": 5.33,
+  "dur": 6.53,
+  "real": true
  },
  {
   "id": "recuerda",
-  "start": 44.58,
-  "voiceAt": 44.88,
-  "voz": 9.2,
-  "dur": 10.4,
-  "real": false
+  "start": 42.87,
+  "voiceAt": 43.17,
+  "voz": 9.09,
+  "dur": 10.29,
+  "real": true
  },
  {
   "id": "controla",
-  "start": 54.98,
-  "voiceAt": 55.28,
-  "voz": 13.2,
-  "dur": 14.4,
-  "real": false
+  "start": 53.16,
+  "voiceAt": 53.46,
+  "voz": 11.81,
+  "dur": 13.01,
+  "real": true
  },
  {
   "id": "protege",
-  "start": 69.38,
-  "voiceAt": 69.68,
-  "voz": 10.8,
-  "dur": 12,
-  "real": false
+  "start": 66.17,
+  "voiceAt": 66.47,
+  "voz": 9.95,
+  "dur": 11.15,
+  "real": true
  },
  {
   "id": "enterprise",
-  "start": 81.38,
-  "voiceAt": 81.68,
-  "voz": 14,
-  "dur": 15.2,
-  "real": false
+  "start": 77.32,
+  "voiceAt": 77.62,
+  "voz": 13.87,
+  "dur": 15.07,
+  "real": true
  },
  {
   "id": "dirigir",
-  "start": 96.58,
-  "voiceAt": 96.78,
-  "voz": 15.6,
-  "dur": 16.7,
-  "real": false
+  "start": 92.4,
+  "voiceAt": 92.6,
+  "voz": 13.09,
+  "dur": 14.19,
+  "real": true
  },
  {
   "id": "rinde",
-  "start": 113.28,
-  "voiceAt": 113.58,
-  "voz": 13.6,
-  "dur": 14.9,
-  "real": false
+  "start": 106.58,
+  "voiceAt": 106.88,
+  "voz": 13.01,
+  "dur": 14.31,
+  "real": true
  },
  {
   "id": "coding",
-  "start": 128.18,
-  "voiceAt": 128.48,
-  "voz": 6.4,
-  "dur": 7.9,
-  "real": false
+  "start": 120.89,
+  "voiceAt": 121.19,
+  "voz": 5.8,
+  "dur": 7.3,
+  "real": true
  },
  {
   "id": "firma",
-  "start": 136.08,
-  "voiceAt": 136.68,
-  "voz": 4.4,
-  "dur": 8.5,
-  "real": false
+  "start": 128.19,
+  "voiceAt": 128.79,
+  "voz": 4.91,
+  "dur": 9.01,
+  "real": true
  }
 ]
