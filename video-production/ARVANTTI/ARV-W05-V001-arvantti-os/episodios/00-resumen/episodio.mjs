@@ -12,9 +12,10 @@ export const ESCENAS = [
   { id: "protege", dir: "08-protege", lead: 0.3, tail: 0.9 },
   { id: "enterprise", dir: "09-enterprise", lead: 0.3, tail: 0.9 },
   { id: "dirigir", dir: "10-dirigir", lead: 0.2, tail: 0.9 },
-  { id: "rinde", dir: "11-rinde", lead: 0.3, tail: 1.0 },
-  { id: "coding", dir: "12-coding", lead: 0.3, tail: 1.2 },
-  { id: "firma", dir: "13-firma", lead: 0.6, tail: 3.5 },
+  { id: "fractal", dir: "11-fractal", lead: 0.3, tail: 1.0 },
+  { id: "rinde", dir: "12-rinde", lead: 0.3, tail: 1.0 },
+  { id: "coding", dir: "13-coding", lead: 0.3, tail: 1.2 },
+  { id: "firma", dir: "14-firma", lead: 0.6, tail: 3.5 },
 ];
 
 const C = Object.fromEntries(PROMESAS.map((p) => [p.id, p.c]));
@@ -278,6 +279,33 @@ export function componer(c) {
     leave("e-dirigir", s + d);
   }
 
+  // 11. Fractal: el motor de decisiones; primero las reglas, después optimiza; tres módulos opcionales.
+  {
+    const x = S.fractal; const [s, d] = span(x);
+    const M = [["Fractal Process", "Procesos, tareas y recursos", "en Arvantti OS", "Fractal Process"], ["Fractal Finance", "Márgenes, caja y riesgo", "en Arvantti OS Enterprise", "Fractal Finance"], ["Fractal Industrial", "Con el gemelo digital de su planta", "en Arvantti Digital Twin", "Fractal Industrial"]];
+    const tR = P(x, "Primero aprende"), tO = P(x, "después optimiza"), tU = P(x, "Un solo");
+    clip("e-fractal", "scene", s, d, `
+      <div class="fx-core"><p class="fx-k">MOTOR DE DECISIONES</p><h3>Arvantti Fractal</h3></div>
+      <div class="fx-flujo"><span class="fx-a">Reglas de su empresa</span><i class="fx-f">→</i><span class="fx-b">Optimiza</span></div>
+      <div class="fx-mods">${M.map(([n, q, w]) => `<div class="fx-m"><b>${n}</b><p>${q}</p><small>${w}</small></div>`).join("")}</div>
+      <p class="fx-u">${words("Un solo núcleo · tres módulos opcionales")}</p>`);
+    enter("e-fractal", s);
+    at("#e-fractal .fx-core", { opacity: 0, scale: 0.8 }, { opacity: 1, scale: 1, duration: 0.6, ease: "back.out(1.8)" }, P(x, "Arvantti Fractal"));
+    sfx("spark.wav", P(x, "Arvantti Fractal"), 0.22);
+    at("#e-fractal .fx-a", { opacity: 0, x: -40 }, { opacity: 1, x: 0, duration: 0.45 }, tR);
+    at("#e-fractal .fx-f", { opacity: 0 }, { opacity: 1, duration: 0.3 }, tO - 0.2);
+    at("#e-fractal .fx-b", { opacity: 0, x: 40 }, { opacity: 1, x: 0, duration: 0.45, ease: "back.out(2)" }, tO);
+    sfx("click.wav", tO, 0.2);
+    M.forEach(([, , , f], i) => {
+      at(`#e-fractal .fx-m:nth-child(${i + 1})`, { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 0.5, ease: "back.out(1.6)" }, P(x, f));
+      to(`#e-fractal .fx-m:nth-child(${i + 1})`, { boxShadow: "0 0 0 3px #4ea7ff, 0 0 50px #2d7ff988", duration: 0.3 }, P(x, f));
+      to(`#e-fractal .fx-m:nth-child(${i + 1})`, { boxShadow: "0 0 0 0px #4ea7ff, 0 0 0px #2d7ff900", duration: 0.4 }, P(x, f) + 1.6);
+      sfx("pop.mp3", P(x, f), 0.15);
+    });
+    wordsIn("#e-fractal .fx-u", tU, 0.07);
+    leave("e-fractal", s + d);
+  }
+
   // 11. Rinde cuentas: comprobante que solo se agrega; ISO/IEC 42001.
   {
     const x = S.rinde; const [s, d] = span(x);
@@ -333,7 +361,7 @@ export function componer(c) {
   // 13. Firma.
   firma(c, S.firma);
 
-  [S.titulo, S.base, S.organiza, S.recuerda, S.controla, S.protege, S.enterprise, S.dirigir, S.rinde, S.coding, S.firma].forEach((x) => sweep(x.start));
+  [S.titulo, S.base, S.organiza, S.recuerda, S.controla, S.protege, S.enterprise, S.dirigir, S.fractal, S.rinde, S.coding, S.firma].forEach((x) => sweep(x.start));
 }
 
 /** Grafo de decisiones en un lienzo de 760x520 (se escala por CSS), con dos nodos que llegan después. */

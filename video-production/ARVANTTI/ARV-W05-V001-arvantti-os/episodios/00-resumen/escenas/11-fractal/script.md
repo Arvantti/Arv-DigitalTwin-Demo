@@ -1,0 +1,1 @@
+Y para decidir, se conecta con Arvantti Fractal, el motor de decisiones de Arvantti. Primero aprende las reglas de su empresa y después optimiza. Fractal Process optimiza procesos, tareas y recursos. Fractal Finance, en Enterprise, evalúa márgenes, caja y riesgo. Y Fractal Industrial trabaja con el gemelo digital de su planta. Un solo núcleo, tres módulos opcionales.

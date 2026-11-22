@@ -80,25 +80,33 @@
   "real": true
  },
  {
-  "id": "rinde",
+  "id": "fractal",
   "start": 106.58,
   "voiceAt": 106.88,
+  "voz": 23.48,
+  "dur": 24.78,
+  "real": true
+ },
+ {
+  "id": "rinde",
+  "start": 131.37,
+  "voiceAt": 131.67,
   "voz": 13.01,
   "dur": 14.31,
   "real": true
  },
  {
   "id": "coding",
-  "start": 120.89,
-  "voiceAt": 121.19,
+  "start": 145.68,
+  "voiceAt": 145.98,
   "voz": 5.8,
   "dur": 7.3,
   "real": true
  },
  {
   "id": "firma",
-  "start": 128.19,
-  "voiceAt": 128.79,
+  "start": 152.98,
+  "voiceAt": 153.58,
   "voz": 4.91,
   "dur": 9.01,
   "real": true
