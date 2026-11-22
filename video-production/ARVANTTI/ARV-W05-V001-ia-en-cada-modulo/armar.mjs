@@ -174,26 +174,26 @@ function componer() {
     clip("e-gancho", "scene", 0, d, `<div class="shade"></div>
       <div class="hud"><i class="c tl"></i><i class="c tr"></i><i class="c bl"></i><i class="c br"></i></div>
       <div class="tag3d"><i></i>ARVANTTI DIGITAL TWIN · 3D</div>
-      <h1 class="hook"><span class="l1">${words("La IA no es un módulo.")}</span><span class="l2">${words("Está en todos.")}</span></h1>`, 3);
+      <h1 class="hook"><span class="l1">${words("La IA no es un módulo.")}</span><span class="l2">${words("Está en todo el sistema.")}</span></h1>`, 3);
     at("#g-vuelo", { scale: 1.08 }, { scale: 1.0, duration: d, ease: "none" }, 0);
     at("#e-gancho .tag3d", { opacity: 0, x: -40 }, { opacity: 1, x: 0, duration: 0.5, ease: "back.out(2)" }, en(x, "Arvantti") - 0.1);
     at("#e-gancho .l1 .w", { opacity: 0, y: 40, filter: "blur(10px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.4, stagger: 0.09, ease: "power3.out" }, en(x, "inteligencia"));
-    at("#e-gancho .l2 .w", { opacity: 0, y: 40, filter: "blur(10px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.4, stagger: 0.12, ease: "power3.out" }, en(x, "Está en"));
+    at("#e-gancho .l2 .w", { opacity: 0, y: 40, filter: "blur(10px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.4, stagger: 0.12, ease: "power3.out" }, en(x, "está integrada"));
     sfx("hit.wav", 0.05, 0.25);
-    sfx("spark.wav", en(x, "Está en"), 0.25);
+    sfx("spark.wav", en(x, "está integrada"), 0.25);
     to("#e-gancho, #g-vuelo", { opacity: 0, duration: X }, d - X);
   }
 
   // 2. Núcleo: planos, fotos y catálogos se vuelven 3D; luego el cerebro empresarial en grafo.
   {
     const x = S.nucleo;
-    const nodos = [["Equipos", 170, 150], ["Procesos", 730, 150], ["Pedidos", 170, 500], ["Personas", 730, 500]];
+    const nodos = [["Máquinas", 170, 150], ["Procesos", 730, 150], ["Pedidos", 170, 500], ["Personas", 730, 500], ["Documentos", 450, 590]];
     const menores = Array.from({ length: 14 }, (_, i) => { const a = (i / 14) * Math.PI * 2 + 0.2; return [450 + Math.cos(a) * (300 + rnd() * 110), 325 + Math.sin(a) * (210 + rnd() * 70)]; });
     const st = escenaModulo(x, `
       <div class="doc" id="n-d0"><p>PLANO</p><svg viewBox="0 0 240 130"><rect x="10" y="10" width="220" height="110"/><line x1="10" y1="60" x2="130" y2="60"/><line x1="130" y1="10" x2="130" y2="120"/><rect x="150" y="30" width="60" height="40"/><circle cx="60" cy="95" r="16"/></svg></div>
       <div class="doc" id="n-d1"><p>FOTO</p><img src="assets/tomas/${FMT}/p-inyectoras-2.png" alt=""></div>
       <div class="doc" id="n-d2"><p>CATÁLOGO</p><div class="spec"><i></i><i></i><i></i><i></i><i></i></div></div>
-      <div class="panel" id="n-3d"><img src="assets/tomas/ui/equipos.png" alt=""><div class="scan"></div></div>
+      <div class="panel" id="n-3d"><img src="assets/tomas/ui/equipos.png" alt=""><div class="scan"></div><div class="rev"><span class="dot"></span>Tu equipo revisa el modelo</div></div>
       <svg class="graph" id="n-g" viewBox="0 0 900 640">
         ${menores.map(([a, b], i) => `<line class="e2" x1="${nodos[i % 4][1]}" y1="${nodos[i % 4][2]}" x2="${a.toFixed(0)}" y2="${b.toFixed(0)}"/>`).join("")}
         ${nodos.map(([, a, b], i) => `<line class="e1" id="n-e${i}" x1="450" y1="325" x2="${a}" y2="${b}" pathLength="1"/>`).join("")}
@@ -202,12 +202,13 @@ function componer() {
       </svg>
       <div class="gcore" id="n-core"><span class="dot"></span>Cerebro<br>empresarial</div>
       ${nodos.map(([n, a, b], i) => `<div class="gnode" id="n-n${i}" style="left:${a - 95}px;top:${b - 34}px">${n}</div>`).join("")}`);
-    const tP = en(x, "planos"), tF = en(x, "fotos"), tC = en(x, "catálogos"), tA = en(x, "arma rápido"), tN = en(x, "Pero el núcleo"), tB = en(x, "cerebro"), tG = en(x, "un grafo");
+    const tP = en(x, "planos"), tF = en(x, "fotografías"), tC = en(x, "catálogos"), tA = en(x, "te ayuda a crear"), tN = en(x, "Y además"), tB = en(x, "cerebro"), tG = en(x, "un grafo");
     [tP, tF, tC].forEach((t, i) => { at(`${st} #n-d${i}`, { opacity: 0, y: -60, rotate: i === 1 ? 4 : -4 }, { opacity: 1, y: 0, rotate: i === 1 ? 2 : -2, duration: 0.5, ease: "back.out(1.6)" }, t - 0.1); sfx("click-soft.mp3", t, 0.2); });
     [320, 15, -290].forEach((dx, i) => to(`${st} #n-d${i}`, { x: dx, y: 250, scale: 0.2, opacity: 0, rotate: 0, duration: 0.6, ease: "power3.in" }, tA - 0.3 + i * 0.06));
     at(`${st} #n-3d`, { opacity: 0, clipPath: "inset(50% 50% 50% 50%)" }, { opacity: 1, clipPath: "inset(0% 0% 0% 0%)", duration: 0.7, ease: "power3.inOut" }, tA + 0.3);
     at(`${st} #n-3d .scan`, { y: -60 }, { y: 510, duration: 1.6, ease: "power1.inOut", repeat: 1 }, tA + 0.6);
     sfx("spark.wav", tA + 0.3, 0.22);
+    pop(`${st} #n-3d .rev`, tA + 1.6);
     to(`${st} #n-3d`, { opacity: 0.18, scale: 0.96, filter: "blur(3px)", duration: 0.6 }, tN);
     fade(`${st} #n-g .e2`, tB - 0.2, 0.8);
     fade(`${st} #n-g .n2`, tB - 0.1, 0.8);
@@ -220,7 +221,7 @@ function componer() {
       tl.push(`tl.to(${q(`${st} #n-n${i}`)},{boxShadow:"0 0 0 3px #4ea7ff, 0 0 50px #2d7ff9cc",duration:.3,yoyo:true,repeat:1},${t.toFixed(2)});`);
       sfx("click-soft.mp3", t, 0.18);
     });
-    tl.push(`tl.to(${q(`${st} #n-g .n2`)},{fill:"#4ea7ff",duration:.3,stagger:.05},${(en(x, "información") - 0.3).toFixed(2)});`);
+    tl.push(`tl.to(${q(`${st} #n-g .n2`)},{fill:"#4ea7ff",duration:.3,stagger:.05},${(en(x, "documentos") + 0.4).toFixed(2)});`);
   }
 
   // 3. Integrator: datos de ERP, CRM y SCADA; la IA marca los que no cuadran.
@@ -232,9 +233,10 @@ function componer() {
       ${SYS.map(([n, sub], i) => `<div class="sys" id="i-s${i}" style="top:${40 + i * 200}px"><b>${n}</b><small>${sub}</small></div>`).join("")}
       <svg class="flow" viewBox="0 0 900 640">${SYS.map((_, i) => `<path id="i-l${i}" d="M240 ${100 + i * 200} C 290 ${100 + i * 200}, 290 320, 330 320" pathLength="1"/>`).join("")}</svg>
       <div class="tabla" id="i-t"><div class="th"><span>Pedido</span><span>Cantidad</span><span>Línea</span><span>Temp.</span></div>
-        ${FILAS.map((f, i) => `<div class="tr" id="i-r${i}"><span>${f[0]}</span><span>${f[1]}</span><span>${f[2]}</span><span>${f[3]}</span>${f[4] ? `<em>${f[4]}</em>` : ""}</div>`).join("")}<div class="scan"></div></div>`);
+        ${FILAS.map((f, i) => `<div class="tr" id="i-r${i}"><span>${f[0]}</span><span>${f[1]}</span><span>${f[2]}</span><span>${f[3]}</span>${f[4] ? `<em>${f[4]}</em>` : ""}</div>`).join("")}<div class="scan"></div></div>
+      <div class="vision" id="i-v"><span class="dot"></span>Una sola visión de tu operación<small>Datos validados para APS, CoSimulation, Fractal y Control Center</small></div>`);
     SYS.forEach(([n], i) => { const t = en(x, n); pop(`${st} #i-s${i}`, t - 0.1); at(`${st} #i-l${i}`, { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.5 }, t + 0.2); sfx("click-soft.mp3", t, 0.18); });
-    const tR = en(x, "revisa"), tM = en(x, "marca");
+    const tR = en(x, "analiza"), tM = en(x, "identifica"), tV = en(x, "una sola visión");
     fade(`${st} #i-t`, en(x, "ERP") + 0.3, 0.5);
     at(`${st} #i-t .tr`, { opacity: 0, x: 30 }, { opacity: 1, x: 0, duration: 0.3, stagger: 0.12 }, en(x, "ERP") + 0.5);
     at(`${st} #i-t .scan`, { y: 50, opacity: 1 }, { y: 560, opacity: 1, duration: tM - tR + 0.3, ease: "none" }, tR - 0.2);
@@ -244,6 +246,9 @@ function componer() {
       at(`${st} #i-r${r} em`, { opacity: 0, x: 20 }, { opacity: 1, x: 0, duration: 0.3 }, tM + k * 0.25 + 0.1);
     });
     sfx("click.wav", tM, 0.25);
+    to(`${st} #i-t, ${st} .sys, ${st} .flow`, { opacity: 0.2, duration: 0.4 }, tV - 0.3);
+    pop(`${st} #i-v`, tV - 0.1);
+    sfx("spark.wav", tV, 0.2);
   }
 
   // 4. APS: un plan armado a mano choca; la IA lo muestra y propone uno que cumple las restricciones.
@@ -260,10 +265,10 @@ function componer() {
         ${LOTES.map(([id, r, a, l]) => `<div class="lote ${id === "m" ? "mano" : ""}" id="a-${id}" style="left:${cx(a)}px;top:${cy(r) + 14}px;width:${l * 54 - 6}px"></div>`).join("")}
         <div class="choque" id="a-x">Choque: misma línea, misma hora</div>
         <div class="cursor" id="a-cur" style="left:${cx(5.5)}px;top:${cy(3) + 40}px"></div>
-        <div class="ok" id="a-ok"><span class="dot"></span>Plan que cumple todas tus restricciones</div>
-        <div class="metodo" id="a-met">IA + métodos exactos</div>
+        <div class="ok" id="a-ok"><span class="dot"></span>Respeta<i>Máquinas</i><i>Materiales</i><i>Capacidades</i><i>Entregas</i></div>
+        <div class="metodo" id="a-met">Planificación + optimización + IA</div>
       </div>`);
-    const tM = en(x, "a mano"), tF = en(x, "falla"), tC = en(x, "lo construye"), tR = en(x, "respetando");
+    const tM = en(x, "analiza tus planes"), tF = en(x, "detecta conflictos"), tC = en(x, "genera planes"), tR = en(x, "respetando");
     at(`${st} .lote`, { opacity: 0, scaleX: 0 }, { opacity: 1, scaleX: 1, duration: 0.4, stagger: 0.06, ease: "power3.out", transformOrigin: "0% 50%" }, x.start + 0.6);
     // El lote se arrastra a mano encima de otro de la línea 2.
     fade(`${st} #a-cur`, tM - 0.4, 0.2);
@@ -280,6 +285,7 @@ function componer() {
     to(`${st} #a-b`, { x: cx(4.5) - cx(5), duration: 0.6, ease: "power3.inOut" }, tC + 0.4);
     pop(`${st} #a-met`, tC + 0.4);
     pop(`${st} #a-ok`, tR - 0.1);
+    at(`${st} #a-ok i`, { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.3, stagger: 0.35 }, en(x, "máquinas,") - 0.1);
     sfx("spark.wav", tR, 0.22);
   }
 
@@ -300,15 +306,17 @@ function componer() {
         <polyline class="sim" id="c-cerca" points="${pts(cerca, 0, 15)}"/>
         <polygon class="band" id="c-band" points="${pts((t) => cerca(t) - 22, 15, 24)} ${pts((t) => cerca(t) + 22, 24, 15).split(" ").reverse().join(" ")}"/>
         <polyline class="sim proy" id="c-proy" points="${pts(cerca, 15, 24)}" pathLength="1"/>
-        <text x="100" y="560" class="lbl">Planta real</text><text x="300" y="560" class="lbl e">Cosimulación</text><text x="610" y="560" class="lbl">Próximas horas</text>
+        <polyline class="sim proy alt" id="c-alt" points="${pts((t) => cerca(t) - (t - 15) * 9, 15, 24)}" pathLength="1"/>
+        <text x="700" y="140" class="lbl" id="c-l1" style="fill:#c4b5fd">Alternativa</text><text x="700" y="500" class="lbl e" id="c-l2">Plan actual</text>
+        <text x="100" y="560" class="lbl">Planta real</text><text x="300" y="560" class="lbl e">Cosimulación</text><text x="610" y="560" class="lbl">Escenarios · próximas horas</text>
       </svg>`);
-    const tR = en(x, "reglas"), tC = en(x, "compara"), tA = en(x, "ajusta"), tP = en(x, "proyectar");
+    const tR = en(x, "reglas"), tC = en(x, "compara"), tA = en(x, "ajustar"), tP = en(x, "simular escenarios");
     pop(`${st} #c-r`, tR - 0.2);
     at(`${st} #c-r li`, { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 0.3, stagger: 0.2 }, tR + 0.2);
     sfx("pop.mp3", tR, 0.2);
     to(`${st} #c-r`, { scale: 0.62, x: -12, y: -18, duration: 0.6, ease: "power3.inOut" }, tC - 0.6);
     fade(`${st} #c-ch`, tC - 0.5);
-    set(`${st} #c-cerca, ${st} #c-band, ${st} #c-proy`, { opacity: 0 }, x.start);
+    set(`${st} #c-cerca, ${st} #c-band, ${st} #c-proy, ${st} #c-alt, ${st} #c-l1, ${st} #c-l2`, { opacity: 0 }, x.start);
     at(`${st} #c-real`, { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 1.2, ease: "power1.inOut" }, tC - 0.3);
     at(`${st} #c-lejos`, { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 1.2, ease: "power1.inOut" }, tC);
     to(`${st} #c-lejos`, { opacity: 0, duration: 1.0 }, tA);
@@ -317,58 +325,81 @@ function componer() {
     to(`${st} #c-band`, { opacity: 1, duration: 0.6 }, tP);
     set(`${st} #c-proy`, { opacity: 1 }, tP);
     at(`${st} #c-proy`, { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 1.0, ease: "power1.out" }, tP);
+    set(`${st} #c-alt`, { opacity: 1 }, tP + 0.4);
+    at(`${st} #c-alt`, { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 1.0, ease: "power1.out" }, tP + 0.4);
+    fade(`${st} #c-l2`, tP + 0.8); fade(`${st} #c-l1`, tP + 1.2);
   }
 
-  // 6. Fractal Industrial: reglas primero, universo de planes, algoritmos genéticos, frente de mejores y Monte Carlo.
+  // 6. Fractal Industrial: reglas primero; IA, optimización, genéticos y estocásticos juntos; población que evoluciona;
+  // Monte Carlo: cada finalista corrido en muchos escenarios, con su distribución de resultados y el más robusto marcado.
   {
     const x = S.fractal;
-    const N = 120, P = 6;
-    const ox = 120, oy = 560, w = 720, h = 400; // ejes: ocupación → derecha, energía ↓ arriba = menos energía
+    const N = 110, P = 3;
+    const ox = 120, oy = 600, w = 720, h = 380;
     const front = (u) => [ox + 60 + u * (w - 120), oy - 70 - (h - 140) * Math.sqrt(1 - (u - 0.05) ** 2 * 0.95)];
-    const dots = Array.from({ length: N }, (_, i) => {
+    const dots = Array.from({ length: N }, () => {
       const r0 = [ox + 20 + rnd() * (w - 40), oy - 20 - rnd() * (h - 40)];
-      const u = rnd();
-      const f = front(u);
+      const f = front(rnd());
       const g1 = [r0[0] + (f[0] - r0[0]) * 0.45 + (rnd() - 0.5) * 60, r0[1] + (f[1] - r0[1]) * 0.45 + (rnd() - 0.5) * 60];
       const g2 = [f[0] + (rnd() - 0.5) * 40, f[1] + 18 + rnd() * 40];
       return { r0, g1, g2 };
     });
-    const best = Array.from({ length: P }, (_, i) => front(0.08 + (i * 0.84) / (P - 1)));
+    const best = [front(0.2), front(0.5), front(0.8)];
+    const gauss = () => Math.sqrt(-2 * Math.log(rnd() + 1e-9)) * Math.cos(2 * Math.PI * rnd());
+    // Distribución de resultados por plan (entregas a tiempo, %): A rinde alto pero varía mucho; B alto y estable; C estable pero bajo.
+    const PLANES = [["Plan A", 0.70, 0.17], ["Plan B", 0.76, 0.05], ["Plan C", 0.50, 0.06]];
+    const mx = (v) => 230 + Math.max(0, Math.min(1, v)) * 610;
+    const filas = PLANES.map(([n, m, sd], k) => ({ n, y: 250 + k * 120, pts: Array.from({ length: 40 }, () => mx(m + sd * gauss())), m: mx(m), lo: mx(m - 2 * sd), hi: mx(m + 2 * sd) }));
+    const TEC = ["Inteligencia artificial", "Optimización matemática", "Algoritmos genéticos", "Métodos estocásticos"];
     const st = escenaModulo(x, `
-      <div class="chip" id="f-r"><span class="ok">✓</span>Tus reglas, primero</div>
+      <div class="chip" id="f-r"><span class="ok">✓</span>Reglas · restricciones · objetivos</div>
+      <div class="tec" id="f-t">${TEC.map((t, i) => `<span id="f-t${i}">${t}</span>`).join("<b>+</b>")}</div>
       <svg class="chart" id="f-ch" viewBox="0 0 900 640">
         <line class="ax" x1="${ox}" y1="${oy}" x2="${ox + w}" y2="${oy}"/><line class="ax" x1="${ox}" y1="${oy}" x2="${ox}" y2="${oy - h}"/>
-        <text x="${ox + w - 250}" y="${oy + 40}" class="lbl">Más ocupación →</text><text x="${ox - 10}" y="${oy - h - 16}" class="lbl">↑ Menos energía</text>
+        <text x="${ox + w - 250}" y="${oy + 34}" class="lbl">Más ocupación →</text><text x="${ox + 10}" y="${oy - h + 10}" class="lbl">↑ Menos energía</text>
         ${dots.map((p, i) => `<circle class="pl" id="f-p${i}" cx="${p.r0[0].toFixed(0)}" cy="${p.r0[1].toFixed(0)}" r="6"/>`).join("")}
-        ${best.map(([a, b], i) => `<g class="best" id="f-b${i}"><line class="wh" x1="${a.toFixed(0)}" y1="${(b - 34).toFixed(0)}" x2="${a.toFixed(0)}" y2="${(b + 34).toFixed(0)}"/><line class="wh" x1="${(a - 12).toFixed(0)}" y1="${(b - 34).toFixed(0)}" x2="${(a + 12).toFixed(0)}" y2="${(b - 34).toFixed(0)}"/><line class="wh" x1="${(a - 12).toFixed(0)}" y1="${(b + 34).toFixed(0)}" x2="${(a + 12).toFixed(0)}" y2="${(b + 34).toFixed(0)}"/><circle cx="${a.toFixed(0)}" cy="${b.toFixed(0)}" r="12"/></g>`).join("")}
+        ${best.map(([a, b], i) => `<g class="best" id="f-b${i}"><circle cx="${a.toFixed(0)}" cy="${b.toFixed(0)}" r="13"/><text x="${(a + 18).toFixed(0)}" y="${(b - 14).toFixed(0)}" class="lbl">${PLANES[i][0]}</text></g>`).join("")}
       </svg>
       <div class="gen" id="f-gen">Generación <b>1</b></div>
-      <div class="obj" id="f-o"><span>Máxima ocupación</span><span>Menor energía</span></div>
-      <div class="mc" id="f-mc">Incertidumbre de cada plan · Monte Carlo</div>`);
-    const tR = en(x, "reglas"), tU = en(x, "universo"), tG = en(x, "algoritmos"), tB = en(x, "buscan los mejores"), tO = en(x, "objetivos"), tM = en(x, "Monte Carlo");
+      <svg class="chart" id="f-mc" viewBox="0 0 900 640">
+        <text x="0" y="180" class="lbl t">Cada punto = un escenario simulado (Monte Carlo)</text>
+        <line class="ax" x1="230" y1="560" x2="840" y2="560"/><text x="230" y="596" class="lbl">Entregas a tiempo →</text>
+        ${filas.map((f, k) => `<g id="f-f${k}"><text x="0" y="${f.y + 8}" class="lbl n">${f.n}</text><rect class="rango" x="${f.lo.toFixed(0)}" y="${f.y - 30}" width="${(Math.min(840, f.hi) - Math.max(230, f.lo)).toFixed(0)}" height="60" rx="10"/>
+          ${f.pts.map((v) => `<circle class="esc" cx="${v.toFixed(0)}" cy="${(f.y + (rnd() - 0.5) * 44).toFixed(0)}" r="6"/>`).join("")}<line class="med" x1="${f.m.toFixed(0)}" y1="${f.y - 38}" x2="${f.m.toFixed(0)}" y2="${f.y + 38}"/></g>`).join("")}
+      </svg>
+      <div class="robusto" id="f-rob">Más robusto</div>`);
+    const tR = en(x, "reglas"), tCo = en(x, "combina"), tE = en(x, "explorar"), tB = en(x, "encontrar mejores"), tM = en(x, "Monte Carlo"), tRo = en(x, "robustas");
     pop(`${st} #f-r`, tR - 0.2);
     sfx("pop.mp3", tR, 0.2);
-    fade(`${st} #f-ch`, tR + 0.3, 0.5);
-    set(`${st} .best, ${st} #f-gen, ${st} #f-o, ${st} #f-mc`, { opacity: 0 }, x.start);
-    at(`${st} .pl`, { opacity: 0, scale: 0, transformOrigin: "50% 50%" }, { opacity: 0.85, scale: 1, duration: 0.3, stagger: 0.008, ease: "back.out(2)" }, Math.min(tG - 1.0, tU - 0.6));
-    // Generaciones: la población se acerca al frente de mejores planes.
-    const t1 = tG + 0.3, t2 = tB - 0.2;
+    set(`${st} .best, ${st} #f-gen, ${st} #f-mc, ${st} #f-rob, ${st} #f-ch`, { opacity: 0 }, x.start);
+    fade(`${st} #f-t`, tCo - 0.2, 0.3);
+    TEC.forEach((t, i) => { const tt = en(x, ["IA,", "optimización", "algoritmos", "métodos"][i], "combina"); pop(`${st} #f-t${i}`, tt - 0.1); sfx("click-soft.mp3", tt, 0.16); });
+    fade(`${st} #f-ch`, tE - 0.6, 0.5);
+    at(`${st} .pl`, { opacity: 0, scale: 0, transformOrigin: "50% 50%" }, { opacity: 0.85, scale: 1, duration: 0.3, stagger: 0.006, ease: "back.out(2)" }, tE - 0.5);
+    // Generaciones: la población de planes se acerca al frente de mejores.
+    const t1 = tE + 0.4, t2 = Math.max(t1 + 2.2, tB);
     fade(`${st} #f-gen`, t1 - 0.2, 0.3);
     dots.forEach((p, i) => {
       to(`${st} #f-p${i}`, { attr: { cx: +p.g1[0].toFixed(0), cy: +p.g1[1].toFixed(0) }, duration: 0.9, ease: "power2.inOut" }, t1);
-      to(`${st} #f-p${i}`, { attr: { cx: +p.g2[0].toFixed(0), cy: +p.g2[1].toFixed(0) }, duration: 0.9, ease: "power2.inOut" }, Math.max(t1 + 1.1, t2 - 1.0));
+      to(`${st} #f-p${i}`, { attr: { cx: +p.g2[0].toFixed(0), cy: +p.g2[1].toFixed(0) }, duration: 0.9, ease: "power2.inOut" }, t1 + 1.1);
     });
-    tl.push(`tl.call(()=>{},null,${t1.toFixed(2)});`);
-    [[t1 + 0.45, 12], [Math.max(t1 + 1.5, t2 - 0.5), 48]].forEach(([t, g]) => tl.push(`tl.set(${q(`${st} #f-gen b`)},{textContent:"${g}"},${t.toFixed(2)});`));
+    [[t1 + 0.45, 12], [t1 + 1.55, 48]].forEach(([t, g]) => tl.push(`tl.set(${q(`${st} #f-gen b`)},{textContent:"${g}"},${t.toFixed(2)});`));
     sfx("whoosh-short.mp3", t1, 0.2);
-    to(`${st} .pl`, { opacity: 0.18, duration: 0.5 }, t2 + 0.3);
-    at(`${st} .best`, { opacity: 0, scale: 0.4, transformOrigin: "50% 50%" }, { opacity: 1, scale: 1, duration: 0.4, stagger: 0.1, ease: "back.out(2)" }, t2 + 0.3);
-    set(`${st} .best .wh`, { opacity: 0 }, x.start);
-    sfx("spark.wav", t2 + 0.3, 0.22);
-    out(`${st} #f-gen`, tO - 0.3);
-    pop(`${st} #f-o`, tO - 0.1);
-    at(`${st} .best .wh`, { opacity: 0 }, { opacity: 1, duration: 0.4, stagger: 0.05 }, tM);
-    pop(`${st} #f-mc`, tM + 0.1);
+    to(`${st} .pl`, { opacity: 0.18, duration: 0.5 }, t2);
+    at(`${st} .best`, { opacity: 0, scale: 0.4, transformOrigin: "50% 50%" }, { opacity: 1, scale: 1, duration: 0.4, stagger: 0.12, ease: "back.out(2)" }, t2);
+    sfx("spark.wav", t2, 0.22);
+    // Monte Carlo: los tres finalistas se prueban en muchos escenarios.
+    to(`${st} #f-ch, ${st} #f-gen`, { opacity: 0, duration: 0.4 }, tM - 0.4);
+    to(`${st} #f-t`, { opacity: 0.35, duration: 0.4 }, tM - 0.4);
+    fade(`${st} #f-mc`, tM - 0.2, 0.3);
+    filas.forEach((_, k) => {
+      at(`${st} #f-f${k} .esc`, { opacity: 0, scale: 0, transformOrigin: "50% 50%" }, { opacity: 0.85, scale: 1, duration: 0.2, stagger: 0.025, ease: "back.out(2)" }, tM + 0.1 + k * 0.35);
+      at(`${st} #f-f${k} .rango, ${st} #f-f${k} .med`, { opacity: 0 }, { opacity: 1, duration: 0.4 }, tM + 1.2 + k * 0.3);
+    });
+    sfx("typing.mp3", tM + 0.1, 0.15);
+    tl.push(`tl.to(${q(`${st} #f-f1 .rango`)},{fill:"#4ea7ff33",stroke:"#4ea7ff",strokeWidth:3,duration:.3},${(tRo - 0.3).toFixed(2)});`);
+    pop(`${st} #f-rob`, tRo - 0.2);
+    sfx("spark.wav", tRo, 0.22);
   }
 
   // 7. Control Center: patrón de alarmas y acción sugerida (una persona decide).
@@ -378,8 +409,8 @@ function componer() {
     const st = escenaModulo(x, `
       <div class="alarmas" id="k-a"><p class="tt">ALARMAS · EN VIVO</p>${AL.map(([h, e, m, p], i) => `<div class="al ${p ? "pat" : ""}" id="k-${i}"><i></i><span>${h}</span><b>${e}</b><span>${m}</span></div>`).join("")}</div>
       <div class="patron" id="k-p">Patrón: se repite cada 5 minutos</div>
-      <div class="sug" id="k-s"><p><span class="dot"></span>Acción sugerida</p><h4>Revisar el enfriamiento de la Línea 2</h4><div class="bt"><span class="si">Aceptar</span><span>Descartar</span></div></div>`);
-    const tP = en(x, "patrones"), tS = en(x, "sugiere");
+      <div class="sug" id="k-s"><p><span class="dot"></span>Recomendación · tu equipo decide</p><h4>Revisar el enfriamiento de la Línea 2</h4><div class="bt"><span class="si">Aceptar</span><span>Descartar</span></div></div>`);
+    const tP = en(x, "patrones"), tS = en(x, "recomienda");
     at(`${st} .al`, { opacity: 0, x: 40 }, { opacity: 1, x: 0, duration: 0.3, stagger: 0.18 }, x.start + 0.5);
     tl.push(`tl.to(${q(`${st} .al.pat`)},{borderColor:"#4ea7ff",backgroundColor:"#12305acc",duration:.3,stagger:.15},${(tP - 0.1).toFixed(2)});`);
     pop(`${st} #k-p`, tP + 0.3);
@@ -403,9 +434,10 @@ function componer() {
         <circle class="hit" id="d-h" cx="858" cy="230" r="14"/>
         <text x="320" y="560" class="lbl">Comportamiento real</text><text x="590" y="560" class="lbl e">Predicción</text>
       </svg>
-      <div class="falla" id="d-f">Falla probable</div>
-      <div class="aprob" id="d-a"><p>Acción propuesta</p><h4>Bajar la velocidad y programar mantenimiento</h4><span class="btn" id="d-b">Aprobar</span><div class="cursor" id="d-cur" style="left:520px;top:260px"></div></div>`);
-    const tC = en(x, "chip"), tA = en(x, "aprende"), tP = en(x, "predice"), tAc = en(x, "si hay que"), tAp = en(x, "aprobación");
+      <div class="falla" id="d-f">Posible falla</div>
+      <div class="pasos" id="d-s"><span>Observa</span><span>Predice</span><span>Recomienda</span><span>Actúa con autorización</span></div>
+      <div class="aprob" id="d-a"><p>Recomendación</p><h4>Bajar la velocidad y programar mantenimiento</h4><span class="btn" id="d-b">Autorizar</span><div class="cursor" id="d-cur" style="left:520px;top:260px"></div></div>`);
+    const tC = en(x, "inteligencia física"), tA = en(x, "Aprende"), tP = en(x, "anticipa"), tAc = en(x, "si hay que"), tAp = en(x, "autorización");
     pop(`${st} #d-c`, x.start + 0.6);
     tl.push(`tl.to(${q(`${st} #d-c .die`)},{boxShadow:"0 0 0 4px #4ea7ff, 0 0 70px #2d7ff9",duration:.35,yoyo:true,repeat:3},${(tC - 0.1).toFixed(2)});`);
     sfx("spark.wav", tC, 0.2);
@@ -420,8 +452,10 @@ function componer() {
     pop(`${st} #d-a`, tAc);
     at(`${st} #d-cur`, { opacity: 0, x: 0, y: 0 }, { opacity: 1, x: -190, y: -85, duration: 0.8, ease: "power2.inOut" }, tAp - 0.9);
     tl.push(`tl.to(${q(`${st} #d-b`)},{backgroundColor:"#4ea7ff",color:"#05070c",scale:.94,duration:.12,yoyo:true,repeat:1},${(tAp - 0.05).toFixed(2)});`);
-    tl.push(`tl.set(${q(`${st} #d-b`)},{textContent:"Aprobado por una persona ✓",backgroundColor:"#2d7ff9",color:"#ffffff"},${(tAp + 0.25).toFixed(2)});`);
+    tl.push(`tl.set(${q(`${st} #d-b`)},{textContent:"Autorizado por una persona ✓",backgroundColor:"#2d7ff9",color:"#ffffff"},${(tAp + 0.25).toFixed(2)});`);
     sfx("click-soft.mp3", tAp, 0.3);
+    fade(`${st} #d-s`, tA - 0.3, 0.3);
+    [tA, en(x, "anticipa"), tAc, tAp].forEach((t, i) => tl.push(`tl.to(${q(`${st} #d-s span:nth-child(${i + 1})`)},{backgroundColor:"#2d7ff9",borderColor:"#4ea7ff",color:"#ffffff",duration:.3},${(t - 0.1).toFixed(2)});`));
   }
 
   // 9. AI Embedded Assistant: la capa conversacional que reúne la IA de todos los módulos.
@@ -435,8 +469,8 @@ function componer() {
           <div class="bars"><i style="height:30%"></i><i style="height:38%"></i><i style="height:46%"></i><i style="height:61%"></i><i style="height:82%"></i></div>
           <div class="src"><span>Dendro Scada</span><span>Control Center</span><span>Fractal</span><span>Cerebro empresarial</span></div></div>
       </div>
-      <div class="pills" id="s-p"><span class="pill os">IA de Arvantti OS</span><span class="pill" id="s-mcp">MCP</span><span class="pill" id="s-cli">CLI</span><span class="pill otros" id="s-o">Otros modelos de IA</span></div>`);
-    const tCap = en(x, "capa"), tRes = en(x, "Responde"), tCe = en(x, "cerebro"), tOS = en(x, "Arvantti OS"), tM = en(x, "MCP"), tCl = en(x, "CLI"), tOt = en(x, "otros modelos");
+      <div class="pills" id="s-p"><span class="pill os">IA de Arvantti OS</span><span class="pill" id="s-mcp">MCP · herramientas y otras IA</span><span class="pill" id="s-cli">CLI · comandos y automatizaciones</span></div>`);
+    const tCap = en(x, "conversar") + 0.4, tRes = en(x, "responde"), tCe = en(x, "cerebro"), tOS = en(x, "Arvantti OS"), tM = en(x, "MCP"), tCl = en(x, "CLI");
     fade(`${st} #s-c`, x.start + 0.4);
     pop(`${st} #s-q`, tCap - 0.3);
     sfx("pop.mp3", tCap - 0.3, 0.2);
@@ -447,7 +481,6 @@ function componer() {
     pop(`${st} .pill.os`, tOS - 0.1);
     pop(`${st} #s-mcp`, tM - 0.1);
     pop(`${st} #s-cli`, tCl - 0.1);
-    pop(`${st} #s-o`, tOt - 0.1);
     [tOS, tM, tCl].forEach((t) => sfx("click-soft.mp3", t, 0.18));
   }
 
@@ -479,9 +512,9 @@ function componer() {
       <svg class="hepta" viewBox="0 0 ${W} ${H}"><polygon id="z-b" points="${P.map((p) => p.join(",")).join(" ")}" pathLength="1"/>${P.map(([a, b], i) => `<line id="z-r${i}" x1="${R.cx}" y1="${R.cy}" x2="${a}" y2="${b}" pathLength="1"/>`).join("")}</svg>
       <div class="hcore" style="left:${R.cx - 130}px;top:${R.cy - 130}px"><span class="dot"></span><b>Digital Twin</b><small>Núcleo 3D + cerebro</small></div>
       ${MOD.map((n, i) => `<div class="hm" id="z-m${i}" style="left:${P[i][0] - 170}px;top:${P[i][1] - 40}px"><span class="dot"></span>${n}</div>`).join("")}
-      <p class="lema" id="z-l"><span class="u">Ocho piezas, una sola inteligencia.</span><br><span class="g">El gemelo observa, simula y recomienda.</span><br><b>Tu equipo decide.</b></p>
+      <p class="lema" id="z-l"><span class="u">Ocho piezas. Una sola inteligencia.</span><br><span class="g">El gemelo observa, simula y recomienda.</span><br><b>Tu equipo decide.</b></p>
       <div class="fin" id="z-f"><img class="marca" src="assets/clips/marca.png" alt=""><h1>Arvantti <span>Digital Twin</span></h1><p class="firma">Ensaya el mañana antes de vivirlo.</p><p class="url">digitaltwin.arvantti.online</p></div>`, 3);
-    const tU = en(x, "una sola"), tG = en(x, "El gemelo"), tT = en(x, "Tu equipo");
+    const tU = en(x, "Una sola"), tG = en(x, "El gemelo"), tT = en(x, "Tu equipo");
     enter("e-cierre", s);
     at("#z-bg img", { scale: 1.0 }, { scale: 1.12, duration: d, ease: "none" }, s);
     at("#z-b", { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 1.0, ease: "power2.inOut" }, s + 0.2);

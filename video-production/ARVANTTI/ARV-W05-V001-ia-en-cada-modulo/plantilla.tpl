@@ -103,7 +103,7 @@ html,body{width:{{W}}px;height:{{H}}px;margin:0;overflow:hidden;background:var(-
 .chart .pl{fill:#a7abb3}
 .chart .best circle{fill:var(--electric);stroke:#fff;stroke-width:3}
 .chart .wh{stroke:#c4b5fd;stroke-width:3}
-.gen{right:20px;top:4px;font:700 26px "JetBrains Mono",monospace;color:var(--ti2)}.gen b{color:#fff}
+.gen{right:20px;top:120px;font:700 26px "JetBrains Mono",monospace;color:var(--ti2)}.gen b{color:#fff}
 .obj{right:10px;top:70px;display:flex;gap:10px;opacity:0}.obj span{padding:10px 16px;border-radius:24px;background:#12305a;border:2px solid var(--electric);font:700 22px Inter,sans-serif}
 .mc{left:0;top:62px;padding:10px 18px;border-radius:10px;border:2px solid #c4b5fd;background:#0b1a33f0;font:700 24px Inter,sans-serif;color:#e9e3ff;opacity:0}
 
@@ -167,6 +167,25 @@ html,body{width:{{W}}px;height:{{H}}px;margin:0;overflow:hidden;background:var(-
 .fin h1 span{display:block}
 .fin .firma{margin:28px 0 0;font:600 52px Inter,sans-serif;opacity:0}
 .fin .url{margin:30px 0 0;font:500 30px "JetBrains Mono",monospace;letter-spacing:4px;color:#7a9cc6;opacity:0}
+
+/* v002 */
+.rev{position:absolute;right:16px;bottom:16px;padding:10px 18px;border-radius:24px;background:#0b1a33ee;border:2px solid var(--electric);font:700 24px Inter,sans-serif;opacity:0}
+.vision{left:150px;top:200px;width:600px;padding:26px 30px;border-radius:18px;background:#0b1a33fa;border:3px solid var(--electric);box-shadow:0 0 60px #2d7ff966;font:800 38px/1.15 Inter,sans-serif;opacity:0}
+.vision small{display:block;margin-top:12px;font:500 24px/1.3 Inter,sans-serif;color:var(--ti)}
+.ok i{font-style:normal;margin-left:10px;padding:4px 12px;border-radius:14px;background:#12305a;font-size:22px}
+.chart .alt{stroke:#c4b5fd}
+.tec{left:0;top:56px;width:900px;display:flex;flex-wrap:wrap;align-items:center;gap:8px;opacity:0;z-index:3}
+.tec span{padding:8px 14px;border-radius:10px;background:#0b1a33f0;border:2px solid var(--electric);font:700 21px Inter,sans-serif;opacity:0}
+.tec span:first-child{border-color:#c4b5fd;color:#e9e3ff}
+.tec b{font:800 24px Inter,sans-serif;color:var(--ti2)}
+.chart .lbl.t{fill:#e9e3ff;font-weight:700}.chart .lbl.n{font-size:26px;font-weight:800;fill:#fff}
+.chart .esc{fill:#a7abb3}
+.chart .rango{fill:#ffffff10;stroke:#a7abb3;stroke-width:2;opacity:0}
+.chart .med{stroke:#fff;stroke-width:4;opacity:0}
+.robusto{right:0;top:415px;padding:10px 18px;border-radius:10px;background:var(--electric);color:#05070c;font:800 26px Inter,sans-serif;opacity:0}
+.pasos{left:0;top:580px;width:900px;display:flex;gap:10px;opacity:0}
+.pasos span{flex:1;text-align:center;padding:12px 8px;border-radius:10px;border:2px solid #ffffff22;background:#070d18e0;font:700 22px Inter,sans-serif;color:var(--ti2)}
+.pasos span:last-child{flex:1.6}
 
 /* Subtítulos */
 .sub{position:absolute;display:flex;align-items:center;justify-content:center;text-align:center}

@@ -30,7 +30,7 @@ export function paraVoz(texto) {
   }
   return { texto: out, idx };
 }
-const VOICE_SETTINGS = { stability: 0.5, similarity_boost: 0.85, style: 0, speed: 1, use_speaker_boost: true };
+const VOICE_SETTINGS = { stability: 0.5, similarity_boost: 0.85, style: 0, speed: Number(process.env.VOZ_SPEED || 1), use_speaker_boost: true };
 const modelo = () => process.env.ELEVENLABS_MODEL_ID || "eleven_v4";
 const hash = (s) => crypto.createHash("sha256").update(s).digest("hex").slice(0, 16);
 function credenciales() {
