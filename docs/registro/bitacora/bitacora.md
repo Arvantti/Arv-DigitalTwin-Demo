@@ -2,7 +2,7 @@
 
 ## 2026-11-21 · Adopción coherente de la curva VRP optimizada
 
-El borrador Fractal antes programaba una consigna manual distinta de la apertura horaria presentada. Ahora conserva el consumo horario y programa `fixed_opening` en rama auto, con apertura por hora y validación de esquema. Pruebas locales focales y sin mandos ni despliegues remotos; falta validar visualmente el flujo completo. Ver [[../historico/sesion-codigo/2026-11-20-dependencias-modelo-hidraulico#Continuación 2026-11-21: adopción de apertura VRP por hora]].
+El borrador Fractal antes programaba una consigna manual distinta de la apertura horaria presentada. Ahora conserva el consumo horario y programa `fixed_opening` en rama auto, con apertura por hora y validación de esquema. Un recorrido local persistido verificó cálculo, aprobación y programación para la siguiente hora, sin aplicar el plan ni cruzar todavía el cambio horario; falta validar visualmente el flujo completo y la observación posterior a la activación. Ver [[../historico/sesion-codigo/2026-11-20-dependencias-modelo-hidraulico#Continuación 2026-11-21: adopción de apertura VRP por hora]].
 
 ## 2026-11-20 · Fractal sobre la rejilla inmutable del manifiesto corto
 
