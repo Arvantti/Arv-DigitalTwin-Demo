@@ -1,5 +1,9 @@
 # Bitácora
 
+## 2026-11-21 · Adopción coherente de la curva VRP optimizada
+
+El borrador Fractal antes programaba una consigna manual distinta de la apertura horaria presentada. Ahora conserva el consumo horario y programa `fixed_opening` en rama auto, con apertura por hora y validación de esquema. Pruebas locales focales y sin mandos ni despliegues remotos; falta validar visualmente el flujo completo. Ver [[../historico/sesion-codigo/2026-11-20-dependencias-modelo-hidraulico#Continuación 2026-11-21: adopción de apertura VRP por hora]].
+
 ## 2026-11-20 · Fractal sobre la rejilla inmutable del manifiesto corto
 
 Tras fijar en producción un manifiesto de 1 h y publicar 15 frames del Cosimulador, el historial mostró 13 frames exactos de Planta Real, ningún frame de Fractal y huecos explícitos en presente/futuro. Fractal forzaba 24 h al asociarse a una comparación, lo que impedía usar el manifiesto de 1 h sin crear otra comparación. La HMI ahora pasa el paso/horizonte de la comparación seleccionada; Fractal valida la rejilla del manifiesto y el motor calcula ese número de horas (1–24). No se ejecutaron nuevos cálculos remotos ni se aplicaron resultados. Ver [[../historico/sesion-codigo/2026-11-20-dependencias-modelo-hidraulico#Continuación: horizonte de Fractal sobre manifiesto fijo]].

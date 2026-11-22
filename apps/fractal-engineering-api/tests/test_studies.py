@@ -638,13 +638,13 @@ def test_optimized_hour_uses_selected_controls_in_snapshot_and_forecast_tags(mon
     assert frame["plc_tags"]["PLC.Valve.Vertical12OpeningPct"] == 80.0
     assert frame["commands"]["vrp_opening_pct"] == 72.0
     assert frame["commands"]["target_pressure_mca"] == 18.0
-    assert frame["commands"]["prs"]["branch"] == "manual"
+    assert frame["commands"]["prs"] == {"branch": "auto", "control_mode": "fixed_opening", "auto_opening_pct": 72.0}
     assert len(frame["scenarios"]) == 1
     assert frame["scenarios"][0]["demand_factor"] == 1.0
     assert len(calls) == 2
     assert calls[0] == {"vertical": (80.0, 100.0, 100.0), "dwelling": 40.0, "leak": None}
     assert calls[1] == {"vertical": (50.0, 100.0, 100.0), "dwelling": 25.0, "leak": 35.0}
-    assert frame["plc_tags"]["PLC.PRS.BranchAuto"] is False
+    assert frame["plc_tags"]["PLC.PRS.BranchAuto"] is True
     assert frame["plc_tags"]["PLC.PRS.OpeningEstimateQuality"] == "assumed_cosine_not_physically_validated"
     assert 20 <= frame["plc_tags"]["PLC.PRS.EstimatedOpeningPct"] <= 100
     assert frame["plc_tags"]["PLC.Pump.DischargePressureMca"] == frame["scenarios"][0]["state"]["pump_discharge_mca"]

@@ -151,6 +151,26 @@ def test_hourly_profile_preloads_auto_opening_while_manual_branch_is_active() ->
     assert station.auto_opening_pct == 62
 
 
+def test_fractal_fixed_opening_profile_commands_the_auto_branch_at_each_hour() -> None:
+    profile = normalize_profile({"name": "Plan aprobado", "hours": {
+        "0": {"prs": {"branch": "auto", "control_mode": "fixed_opening", "auto_opening_pct": 42}},
+        "1": {"prs": {"branch": "auto", "control_mode": "fixed_opening", "auto_opening_pct": 38}},
+    }})
+    plant = _plant_model(PLANT).create(seed=1, random_faults=False, horizon_s=120)
+    session = PlantSession("fractal-adoption-local", PLANT, plant, "profile", profile)
+    station = plant.equipment["prs-01"]
+    session.apply_profile_hour(0)
+    assert station.branch == "auto" and station.auto_control_mode == "fixed_opening"
+    assert station.auto_opening_pct == 42
+    session.apply_profile_hour(1)
+    assert station.auto_opening_pct == 38
+    for _ in range(10):
+        plant.step()
+    assert station.p_out > 0
+    with pytest.raises(ValueError, match="auto_opening_pct es obligatorio"):
+        normalize_profile({"name": "Incomplete", "hours": {"0": {"prs": {"control_mode": "fixed_opening"}}}})
+
+
 def test_profile_hours_without_prs_opening_preserve_live_plc_opening() -> None:
     profile = normalize_profile({
         "name": "Curva horaria",

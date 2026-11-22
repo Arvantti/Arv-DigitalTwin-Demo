@@ -137,7 +137,13 @@ def optimize_job(job: dict[str, Any]) -> dict[str, Any]:
             plan = dict(profile.get("hours", {}).get(hour, {}))
             settings = frame.get("commands") or {}
             if settings:
-                plan["prs"] = {**plan.get("prs", {}), **settings["prs"]}
+                # El plan adoptado debe actuar sobre la apertura optimizada,
+                # no activar una consigna manual distinta de la trayectoria.
+                original_prs = plan.get("prs", {})
+                plan["prs"] = {
+                    **({"inlet_pressure_mca": original_prs["inlet_pressure_mca"]} if "inlet_pressure_mca" in original_prs else {}),
+                    **settings["prs"],
+                }
             draft_hours[hour] = plan
     return {
         "contract_version": RESULT_CONTRACT_VERSION,

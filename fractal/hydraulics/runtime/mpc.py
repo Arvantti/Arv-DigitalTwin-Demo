@@ -428,7 +428,9 @@ def project_24h(
         effective_openings = tuple(float(nominal_state[f"valve_{key}_pct"]) for key in ("12", "23", "34"))
         snapshot_entry = {
             **entry,
-            "prs": {**prs_entry, "branch": "manual" if optimized_controls is not None else "auto" if prs_branch_auto else "manual"},
+            "prs": ({**prs_entry, "branch": "auto", "control_mode": "fixed_opening",
+                     "auto_opening_pct": optimized_controls["vrp_opening_pct"]}
+                    if optimized_controls is not None else {**prs_entry, "branch": "auto" if prs_branch_auto else "manual"}),
         }
         frame_snapshot = _snapshot(scenario_tags, nominal_state, tank_levels, demand, effective_openings, snapshot_entry)
         recirc_snapshot = frame_snapshot["equipment"].get("pumpset-recirc-01")
@@ -462,7 +464,7 @@ def project_24h(
                 "PLC.PRS.ControlPointPressureMca": nominal_state["control_point_pressure_mca"],
                 "PLC.PRS.OutletPressureMca": nominal_state["prs_outlet_mca"],
                 "PLC.PRS.InletPressureMca": nominal_state["prs_inlet_mca"],
-                "PLC.PRS.BranchAuto": prs_branch_auto and optimized_controls is None,
+                "PLC.PRS.BranchAuto": optimized_controls is not None or prs_branch_auto,
             }
         )
         for connection, opening in zip((12, 23, 34), effective_openings, strict=True):
@@ -523,7 +525,8 @@ def project_24h(
                 "out_of_bounds": not levels_in_bounds,
                 "commands": (
                     {
-                        "prs": {"branch": "manual", "manual_setting_mca": optimized_controls["prs_mca"]},
+                        "prs": {"branch": "auto", "control_mode": "fixed_opening",
+                                "auto_opening_pct": optimized_controls["vrp_opening_pct"]},
                         "vrp_opening_pct": optimized_controls["vrp_opening_pct"],
                         "vrp_opening_required_pct": optimized_controls.get("vrp_opening_required_pct"),
                         "opening_curve_status": optimized_controls.get("opening_curve_status"),
