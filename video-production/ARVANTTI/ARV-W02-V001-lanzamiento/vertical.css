@@ -53,8 +53,7 @@
 .bottomc{bottom:250px;font-size:110px}
 
 /* Módulos */
-.hx,.hx2{top:190px;padding:0 50px;font-size:84px;line-height:1.05}
-.hx2 .sinu{margin-top:18px;font-size:48px}
+.hx,.hx2,.hx3{top:190px;padding:0 50px;font-size:84px;line-height:1.05}
 .mod{width:310px;padding-left:66px}
 .mod i{left:12px;width:44px;height:44px;font-size:24px;line-height:40px}
 .mod p{font-size:30px}
@@ -66,3 +65,8 @@
 .fin h1 span{display:block}
 .fin .firma{font-size:58px}
 .fin .url{font-size:30px;letter-spacing:4px}
+.tres{top:680px}
+.tres .ey{font-size:28px;letter-spacing:5px;padding:0 60px;line-height:1.5}
+.tres .prods{flex-direction:column;gap:34px}
+.tres .prods span{font-size:84px}
+.reglas{top:880px}

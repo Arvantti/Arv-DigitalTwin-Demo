@@ -52,3 +52,7 @@ Sin voz, `componer` estima los tiempos (2,5 palabras por segundo) y marca el vid
   (APS · CoSimulation, Control Center, AI Assistant, Integrator · DendroScada). La voz lee "Integrator" en inglés
   (`PRONUNCIA` en `armar.mjs`) y `componer` usa los tiempos por carácter de ElevenLabs para sincronizar cada palabra.
 - Grabaciones, audios y renders no van al repo (`.gitignore`).
+- v004 (2026-11-22, horizontal v004 / vertical v003): la escena 9 dice que la IA está en cada módulo (puntos de IA en el
+  núcleo y en las siete tarjetas) y quita "sin cobro por usuario"; Fractal pasa a "Fractal Industrial" y aprende primero
+  tus reglas; el asistente usa la IA de Arvantti OS; se explican OEE, ERP y Gantt; el cierre suma la tarjeta "Uno de los
+  tres productos de Arvantti" (Arvantti OS · Arvantti Digital Twin · Arvantti Fractal). Unos 2:18.

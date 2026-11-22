@@ -87,6 +87,8 @@ html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:var(--b
 .wide .stage3d{perspective-origin:50% 0%}
 .right3{position:absolute;left:1360px;top:420px;width:460px}
 .right3 .chip{display:block;width:fit-content}
+.reglas{position:absolute;left:0;right:0;top:470px;text-align:center;opacity:0;z-index:4}
+.reglas .chip{font-size:52px;padding:22px 48px}
 
 /* Fractal */
 .topl{position:absolute;left:110px;top:70px}
@@ -126,8 +128,9 @@ html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:var(--b
 .bottomc{position:absolute;left:0;right:0;bottom:90px;margin:0;text-align:center;font:800 84px "Inter Display",Inter,sans-serif}
 
 /* Planes */
-.hx,.hx2{position:absolute;left:0;right:0;top:56px;margin:0;text-align:center;font:800 64px "Inter Display",Inter,sans-serif;letter-spacing:-1px}
-.hx2 .sinu{display:block;margin-top:6px;font:600 38px Inter,sans-serif;letter-spacing:0;color:var(--electric);opacity:0}
+.hx,.hx2,.hx3{position:absolute;left:0;right:0;top:56px;margin:0;text-align:center;font:800 64px "Inter Display",Inter,sans-serif;letter-spacing:-1px}
+.ai{position:absolute;right:-16px;top:-16px;width:44px;height:44px;border-radius:50%;background:#4ea7ff;color:#05070c;font:800 18px/44px Inter,sans-serif;text-align:center;box-shadow:0 0 26px #4ea7ffcc;opacity:0;z-index:3}
+.hcore .ai{right:22px;top:22px}
 .hepta{position:absolute;inset:0;width:1920px;height:1080px}
 .hepta polygon{fill:#2d7ff90d;stroke:#4ea7ff;stroke-width:3;stroke-dasharray:1;stroke-dashoffset:1;filter:drop-shadow(0 0 10px #2d7ff9)}
 .hepta line{stroke:#4ea7ff88;stroke-width:2.5;stroke-dasharray:1;stroke-dashoffset:1}
@@ -148,6 +151,11 @@ html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:var(--b
 .fin h1 span{color:transparent}
 .fin .firma{margin:28px 0 0;font:600 52px Inter,sans-serif;color:#fff}
 .fin .url{margin:40px 0 0;font:500 28px "JetBrains Mono",monospace;letter-spacing:6px;color:#7a9cc6}
+.tres{position:absolute;left:0;right:0;top:420px;text-align:center}
+.tres .ey{margin:0 0 44px;font:600 30px "JetBrains Mono",monospace;letter-spacing:8px;color:#9fb3cf;opacity:0}
+.tres .prods{display:flex;justify-content:center;gap:56px}
+.tres .prods span{font:800 64px "Inter Display",Inter,sans-serif;color:#d8dadf;opacity:0}
+.tres .prods span.on{color:#fff;text-shadow:0 0 40px #2d7ff9aa}
 
 .sweep{background:linear-gradient(100deg,#0000 35%,#4ea7ff18 45%,#ffffff40 50%,#4ea7ff18 55%,#0000 65%);mix-blend-mode:screen;pointer-events:none}
 #temp{left:auto;top:auto;right:20px;bottom:16px;font:700 15px "JetBrains Mono",monospace;color:#ff6b35;letter-spacing:2px}
