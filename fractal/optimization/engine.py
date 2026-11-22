@@ -20,6 +20,77 @@ def profile_fingerprint(profile: dict[str, Any]) -> str:
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
+def modeled_leakage_volume_m3(hours: list[dict[str, Any]]) -> float:
+    """Integra la fuga horaria modelada sin completar intervalos ausentes."""
+    return sum(
+        float(frame["scenarios"][0]["state"]["leakage_m3h"]) * float(frame["duration_s"]) / 3600
+        for frame in hours
+    )
+
+
+def modeled_volumes_m3(hours: list[dict[str, Any]]) -> dict[str, float]:
+    """Volúmenes del solver: caudal total = consumo entregado + fugas."""
+    total = leakage = 0.0
+    for frame in hours:
+        state = frame["scenarios"][0]["state"]
+        duration_h = float(frame["duration_s"]) / 3600
+        flow = float(state["flow_m3h"])
+        leak = float(state["leakage_m3h"])
+        if flow < 0 or leak < 0 or leak > flow:
+            raise ValueError("balance hidráulico inválido para volumen modelado")
+        total += flow * duration_h
+        leakage += leak * duration_h
+    return {"total_m3": total, "leakage_m3": leakage, "delivered_consumption_m3": total - leakage}
+
+
+def compare_leakage(
+    hours: list[dict[str, Any]], baseline: list[dict[str, Any]], *, target_pressure_mca: float | None = None
+) -> dict[str, Any]:
+    """Compara dos trayectorias completas sobre exactamente los mismos intervalos."""
+    if not hours or len(hours) != len(baseline):
+        raise ValueError("comparación de fugas sin intervalos completos")
+    for proposed, reference in zip(hours, baseline, strict=True):
+        for field in ("start_t_s", "end_t_s", "duration_s", "profile_hour"):
+            if proposed[field] != reference[field]:
+                raise ValueError(f"comparación de fugas con {field} desalineado")
+        if proposed["duration_s"] <= 0 or proposed["end_t_s"] - proposed["start_t_s"] != proposed["duration_s"]:
+            raise ValueError("intervalo de comparación inválido")
+    base_metrics = modeled_volumes_m3(baseline)
+    proposed_metrics = modeled_volumes_m3(hours)
+    base_volume = base_metrics["leakage_m3"]
+    proposed_volume = proposed_metrics["leakage_m3"]
+    feasible = all(bool(frame["robust"]) and bool(frame.get("commands", {}).get("constraints_satisfied")) for frame in hours)
+    baseline_meets_target = (
+        target_pressure_mca is not None
+        and all(
+            len(frame["end_state"]["consumer_pressures_mca"]) == 64
+            and min(frame["end_state"]["consumer_pressures_mca"].values()) >= target_pressure_mca
+            for frame in baseline
+        )
+    )
+    improvement = base_volume - proposed_volume if feasible else None
+    return {
+        "baseline_leakage_volume_m3": base_volume,
+        "proposed_leakage_volume_m3": proposed_volume,
+        "baseline_volumes_m3": base_metrics,
+        "proposed_volumes_m3": proposed_metrics,
+        "modeled_total_reduction_m3": base_metrics["total_m3"] - proposed_metrics["total_m3"] if feasible else None,
+        "modeled_reduction_m3": improvement,
+        "modeled_reduction_pct": 100 * improvement / base_volume if improvement is not None and base_volume > 0 else None,
+        "comparison_start_t_s": hours[0]["start_t_s"],
+        "comparison_end_t_s": hours[-1]["end_t_s"],
+        "feasible": feasible,
+        "baseline_meets_target": baseline_meets_target,
+        "improves_leakage": improvement is not None and improvement > 0,
+        "interpretation": (
+            "feasible_vs_feasible" if baseline_meets_target and feasible
+            else "pressure_recovery_vs_infeasible_baseline" if feasible
+            else "proposed_plan_infeasible"
+        ),
+        "kind": "modeled_counterfactual_not_observed_savings",
+    }
+
+
 def optimize_job(job: dict[str, Any]) -> dict[str, Any]:
     snapshot = job["snapshot"]
     tags = snapshot["plc_tags"]
@@ -56,7 +127,9 @@ def optimize_job(job: dict[str, Any]) -> dict[str, Any]:
         tags, profile, study_type="optimized", objective_id=objective_id, target_pressure_mca=target_pressure_mca,
         horizon_hours=job.get("horizon_hours", 24),
     )
-    feasible = all(bool(frame.get("commands", {}).get("constraints_satisfied")) for frame in hours)
+    feasible = all(bool(frame.get("commands", {}).get("constraints_satisfied")) and bool(frame["robust"]) for frame in hours)
+    baseline = project_24h(tags, profile, study_type="baseline", horizon_hours=job.get("horizon_hours", 24))
+    leakage_comparison = compare_leakage(hours, baseline, target_pressure_mca=float(target_pressure_mca))
     draft_hours: dict[str, Any] = {}
     if feasible:
         for frame in hours:
@@ -64,7 +137,13 @@ def optimize_job(job: dict[str, Any]) -> dict[str, Any]:
             plan = dict(profile.get("hours", {}).get(hour, {}))
             settings = frame.get("commands") or {}
             if settings:
-                plan["prs"] = {**plan.get("prs", {}), **settings["prs"]}
+                # El plan adoptado debe actuar sobre la apertura optimizada,
+                # no activar una consigna manual distinta de la trayectoria.
+                original_prs = plan.get("prs", {})
+                plan["prs"] = {
+                    **({"inlet_pressure_mca": original_prs["inlet_pressure_mca"]} if "inlet_pressure_mca" in original_prs else {}),
+                    **settings["prs"],
+                }
             draft_hours[hour] = plan
     return {
         "contract_version": RESULT_CONTRACT_VERSION,
@@ -80,6 +159,9 @@ def optimize_job(job: dict[str, Any]) -> dict[str, Any]:
         "applied": False,
         "validation_status": "hydraulic_setpoints_only",
         "hours": hours,
+        "modeled_leakage_volume_m3": modeled_leakage_volume_m3(hours),
+        "leakage_comparison": leakage_comparison,
+        "optimization_quality": "bounded_hourly_candidate_search_not_global_horizon_optimum",
         "draft_profile": (
             {
                 "name": f"PFL-FRA-{job['job_id'][:8].upper()} · optimizado",

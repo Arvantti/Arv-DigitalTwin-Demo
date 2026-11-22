@@ -151,6 +151,26 @@ def test_hourly_profile_preloads_auto_opening_while_manual_branch_is_active() ->
     assert station.auto_opening_pct == 62
 
 
+def test_fractal_fixed_opening_profile_commands_the_auto_branch_at_each_hour() -> None:
+    profile = normalize_profile({"name": "Plan aprobado", "hours": {
+        "0": {"prs": {"branch": "auto", "control_mode": "fixed_opening", "auto_opening_pct": 42}},
+        "1": {"prs": {"branch": "auto", "control_mode": "fixed_opening", "auto_opening_pct": 38}},
+    }})
+    plant = _plant_model(PLANT).create(seed=1, random_faults=False, horizon_s=120)
+    session = PlantSession("fractal-adoption-local", PLANT, plant, "profile", profile)
+    station = plant.equipment["prs-01"]
+    session.apply_profile_hour(0)
+    assert station.branch == "auto" and station.auto_control_mode == "fixed_opening"
+    assert station.auto_opening_pct == 42
+    session.apply_profile_hour(1)
+    assert station.auto_opening_pct == 38
+    for _ in range(10):
+        plant.step()
+    assert station.p_out > 0
+    with pytest.raises(ValueError, match="auto_opening_pct es obligatorio"):
+        normalize_profile({"name": "Incomplete", "hours": {"0": {"prs": {"control_mode": "fixed_opening"}}}})
+
+
 def test_profile_hours_without_prs_opening_preserve_live_plc_opening() -> None:
     profile = normalize_profile({
         "name": "Curva horaria",
@@ -407,6 +427,25 @@ def test_session_api_stores_and_replays_model_results_as_separate_triad_sources(
         assert at_present["sources"]["cosimulation"]["state"]["source"] == "cosimulation"
         assert at_present["sources"]["cosimulation"]["model_quality"] == "test_fixture_not_physical_validation"
         assert at_present["sources"]["optimization"] is None
+        optimized = {
+            **body, "run_id": "FRA-API-test", "source": "optimization",
+            "frames": [{
+                "simulation_time_s": manifest["forecast_times_s"][0], "temporal_context": "forecast",
+                "state": {"plc_tags": {
+                    "PLC.PRS.EstimatedOpeningPct": 42.0,
+                    "PLC.Grid.L1.ConsumptionM3h": 1.0, "PLC.Grid.L2.ConsumptionM3h": 1.0,
+                    "PLC.Grid.L3.ConsumptionM3h": 1.0, "PLC.Grid.L4.ConsumptionM3h": 1.0,
+                    "PLC.Grid.L1.LeakageM3h": 0.1, "PLC.Grid.L2.LeakageM3h": 0.1,
+                    "PLC.Grid.L3.LeakageM3h": 0.1, "PLC.Grid.L4.LeakageM3h": 0.1,
+                }, "commands": {"target_pressure_mca": 18.0, "vrp_opening_pct": 42.0}},
+            }],
+        }
+        assert client.post(path, json=optimized).status_code == 201
+        triads = client.get(f"{BASE}/sessions/{session_id}/comparisons/comparison-api/triads").json()["triads"]
+        at_future = next(item for item in triads if item["simulation_time_s"] == manifest["forecast_times_s"][0])
+        assert at_future["sources"]["cosimulation"]["state"]["source"] == "cosimulation"
+        assert at_future["sources"]["optimization"]["state"]["commands"]["vrp_opening_pct"] == 42.0
+        assert at_future["sources"]["emulator"] is None  # El futuro no se inventa como observación.
         assert local_historian.nearest_frame(session_id, manifest["base_time_s"])["snapshot"]["unchanged"] is True
         reopened_historian = SessionHistorian()
         assert reopened_historian.get_comparison_manifest(session_id, "comparison-api") == manifest

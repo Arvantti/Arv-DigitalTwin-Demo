@@ -74,9 +74,15 @@ def test_automatic_control_can_hold_a_fixed_household_without_confusing_global_m
 
 def test_valve_restriction_increases_loss_and_reduces_critical_pressure() -> None:
     tags = base_tags()
-    baseline = model.evaluate(tags, prs_mca=20.94)
-    restricted = model.evaluate(tags, prs_mca=20.94, vertical_openings_pct=(50, 100, 100))
+    # La factibilidad de presión requiere declarar el umbral; sin él se
+    # comprueban solo límites físicos y convergencia.
+    baseline = model.evaluate(tags, prs_mca=20.94, required_min_pressure_mca=14.0)
+    restricted = model.evaluate(
+        tags, prs_mca=20.94, vertical_openings_pct=(50, 100, 100), required_min_pressure_mca=14.0
+    )
+    assert baseline["feasible"] is True
     assert restricted["critical_pressure_mca"] < baseline["critical_pressure_mca"]
+    assert restricted["constraint_results"]["critical_pressure"] is False
     assert restricted["feasible"] is False
 
 

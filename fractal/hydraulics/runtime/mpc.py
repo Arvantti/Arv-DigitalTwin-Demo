@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import importlib.util
 from collections.abc import Callable
+from math import acos, pi
 from pathlib import Path
 from typing import Any
 
@@ -336,11 +337,11 @@ def project_24h(
         if study_type == "optimized":
             # La optimización vive en un paquete/proceso separado; se importa de forma perezosa
             # para que el motor de proyección base no cargue lógica del optimizador.
-            from fractal.optimization.instant_search import optimize
+            from fractal.optimization.instant_search import optimize_opening
 
-            # Cada hora conserva exactamente las aperturas del perfil; solo se busca
-            # la presión de salida PRS que satisface el objetivo elegido.
-            search = optimize(
+            # Cada hora conserva las aperturas del perfil y busca la mínima
+            # apertura VRP factible con la curva presión-apertura asumida.
+            search = optimize_opening(
                 scenario_tags,
                 target_pressure_mca=float(target_pressure_mca),
                 vertical_openings_pct=scenario_openings,
@@ -404,6 +405,16 @@ def project_24h(
             critical_consumer_id=critical_consumer_id,
             required_min_pressure_mca=float(target_pressure_mca) if optimized_controls is not None else None,
         )
+        if optimized_controls is not None:
+            # La condición de las 64 viviendas debe seguir cumpliéndose al final
+            # del intervalo, después de actualizar los niveles de los tanques.
+            home_pressures = end_state.get("consumer_pressures_mca", {})
+            optimized_feasible = (
+                optimized_feasible
+                and len(home_pressures) == 64
+                and min(float(value) for value in home_pressures.values()) >= float(target_pressure_mca)
+                and bool(end_state["feasible"])
+            )
         flow_out = float(end_state["flow_m3h"])
         recirc_end_flow, recirc_a, recirc_b = _recirc.pump_flow(_MODEL, tank_levels) if recirc_on else (0.0, 0.0, 0.0)
         levels_in_bounds = not overflow and all(0 <= value <= 100 for value in tank_levels.values())
@@ -417,7 +428,9 @@ def project_24h(
         effective_openings = tuple(float(nominal_state[f"valve_{key}_pct"]) for key in ("12", "23", "34"))
         snapshot_entry = {
             **entry,
-            "prs": {**prs_entry, "branch": "manual" if optimized_controls is not None else "auto" if prs_branch_auto else "manual"},
+            "prs": ({**prs_entry, "branch": "auto", "control_mode": "fixed_opening",
+                     "auto_opening_pct": optimized_controls["vrp_opening_pct"]}
+                    if optimized_controls is not None else {**prs_entry, "branch": "auto" if prs_branch_auto else "manual"}),
         }
         frame_snapshot = _snapshot(scenario_tags, nominal_state, tank_levels, demand, effective_openings, snapshot_entry)
         recirc_snapshot = frame_snapshot["equipment"].get("pumpset-recirc-01")
@@ -451,7 +464,7 @@ def project_24h(
                 "PLC.PRS.ControlPointPressureMca": nominal_state["control_point_pressure_mca"],
                 "PLC.PRS.OutletPressureMca": nominal_state["prs_outlet_mca"],
                 "PLC.PRS.InletPressureMca": nominal_state["prs_inlet_mca"],
-                "PLC.PRS.BranchAuto": prs_branch_auto and optimized_controls is None,
+                "PLC.PRS.BranchAuto": optimized_controls is not None or prs_branch_auto,
             }
         )
         for connection, opening in zip((12, 23, 34), effective_openings, strict=True):
@@ -479,6 +492,13 @@ def project_24h(
                 forecast_tags[f"{tag_prefix}.PressureMca"] = nominal_state["leak_pressures_mca"].get(
                     f"L{level}.{leak_id}", nominal_state["level_pressures_mca"][str(level)]
                 )
+        inlet = float(nominal_state["prs_inlet_mca"])
+        outlet = float(nominal_state["prs_outlet_mca"])
+        if inlet > 15 and 15 <= outlet <= inlet:
+            # Curva asumida, no sensor ni mando de apertura. Mismo estimador
+            # para el futuro base y el optimizado; calidad en tag separado.
+            forecast_tags["PLC.PRS.EstimatedOpeningPct"] = round(20 + 80 * acos(1 - 2 * (outlet - 15) / (inlet - 15)) / pi, 2)
+            forecast_tags["PLC.PRS.OpeningEstimateQuality"] = "assumed_cosine_not_physically_validated"
         carried_tags.update({
             "PLC.Pump.DischargePressureMca": nominal_state["pump_discharge_mca"],
             "PLC.PRS.InletPressureMca": nominal_state["prs_inlet_mca"],
@@ -505,7 +525,8 @@ def project_24h(
                 "out_of_bounds": not levels_in_bounds,
                 "commands": (
                     {
-                        "prs": {"branch": "manual", "manual_setting_mca": optimized_controls["prs_mca"]},
+                        "prs": {"branch": "auto", "control_mode": "fixed_opening",
+                                "auto_opening_pct": optimized_controls["vrp_opening_pct"]},
                         "vrp_opening_pct": optimized_controls["vrp_opening_pct"],
                         "vrp_opening_required_pct": optimized_controls.get("vrp_opening_required_pct"),
                         "opening_curve_status": optimized_controls.get("opening_curve_status"),

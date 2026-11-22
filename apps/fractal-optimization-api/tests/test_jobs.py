@@ -27,6 +27,69 @@ def test_optimizer_uses_snapshot_and_user_target_without_applying_a_command() ->
     assert result["recommendation"]["status"] == "no_change"
 
 
+def test_pressure_recovery_can_be_proposed_even_if_baseline_leaks_less(monkeypatch) -> None:
+    from fractal.hydraulics.runtime import mpc
+
+    def fake_project(_tags, _profile, *, study_type, **_kwargs):
+        optimized = study_type == "optimized"
+        pressure = 18.1 if optimized else 15.0
+        return [{
+            "start_t_s": 18000, "end_t_s": 21600, "duration_s": 3600,
+            "profile_hour": 5, "robust": True,
+            "end_state": {"consumer_pressures_mca": {f"house-{i}": pressure for i in range(64)}},
+            "scenarios": [{"state": {"leakage_m3h": 2.0 if optimized else 1.0, "flow_m3h": 10.0}}],
+            "commands": {
+                "constraints_satisfied": True, "prs": {"manual_setting_mca": 24.0},
+                "vrp_opening_pct": 42.0,
+            } if optimized else {},
+        }]
+
+    monkeypatch.setattr(mpc, "project_24h", fake_project)
+    profile = {"id": "manual-forecast", "hours": {"5": {"global_consumers_pct": 60}}}
+    result = optimize_job({
+        **BASE_REQUEST, "kind": "profile-horizon", "job_id": "OPT-recovery",
+        "profile": profile, "profile_hash": profile_fingerprint(profile),
+    })
+    assert result["leakage_comparison"]["modeled_reduction_m3"] == -1
+    assert result["leakage_comparison"]["interpretation"] == "pressure_recovery_vs_infeasible_baseline"
+    assert result["draft_profile"] is not None
+    assert result["requires_operator_acceptance"] is True
+    assert result["applied"] is False
+
+
+def test_adoptable_draft_replays_optimized_opening_without_changing_demand(monkeypatch) -> None:
+    from twin_emulator_api.profiles import commands_for_hour, normalize_profile
+
+    from fractal.hydraulics.runtime import mpc
+
+    def fake_project(_tags, _profile, *, study_type, **_kwargs):
+        optimized = study_type == "optimized"
+        return [{
+            "profile_hour": 12, "start_t_s": 43200, "end_t_s": 46800, "duration_s": 3600,
+            "robust": True, "end_state": {"consumer_pressures_mca": {f"h{i}": 18.05 for i in range(64)}},
+            "scenarios": [{"state": {"flow_m3h": 10.0, "leakage_m3h": 1.0}}],
+            "commands": {"constraints_satisfied": True, "prs": {
+                "branch": "auto", "control_mode": "fixed_opening", "auto_opening_pct": 42.0,
+            }, "vrp_opening_pct": 42.0} if optimized else {},
+        }]
+
+    monkeypatch.setattr(mpc, "project_24h", fake_project)
+    profile = {"id": "forecast", "hours": {"12": {
+        "global_consumers_pct": 94, "prs": {"branch": "manual", "manual_setting_mca": 25},
+    }}}
+    result = optimize_job({**BASE_REQUEST, "kind": "profile-horizon", "job_id": "OPT-opening",
+                           "profile": profile, "profile_hash": profile_fingerprint(profile), "horizon_hours": 1})
+    draft = normalize_profile(result["draft_profile"])
+    assert draft["hours"]["12"]["global_consumers_pct"] == 94
+    assert draft["hours"]["12"]["prs"] == {
+        "branch": "auto", "control_mode": "fixed_opening", "auto_opening_pct": 42.0,
+    }
+    commands = commands_for_hour(draft, 12)
+    assert {"equipment": "prs-01", "command": "set_auto_opening", "args": {"pct": 42.0}} in commands
+    assert not any(command["command"] == "set_manual_setting" for command in commands)
+    assert result["applied"] is False
+
+
 def test_job_is_persisted_and_returns_only_a_recommendation(tmp_path, monkeypatch) -> None:
     monkeypatch.setenv("TWIN_DATA", str(tmp_path))
     def fake_optimize(job):
@@ -72,11 +135,14 @@ def test_profile_horizon_is_bounded_and_passed_to_solver(monkeypatch) -> None:
             main._validate_request({**request, "horizon_hours": invalid})
     received = []
     monkeypatch.setattr(mpc, "project_24h", lambda *_args, **kwargs: received.append(kwargs) or [{
-        "profile_hour": 0, "commands": {"constraints_satisfied": False, "vrp_opening_pct": None,
-        "vrp_opening_required_pct": None},
+        "profile_hour": 0, "start_t_s": 10, "end_t_s": 3600, "duration_s": 3590,
+        "robust": False, "end_state": {"consumer_pressures_mca": {}},
+        "scenarios": [{"state": {"flow_m3h": 2.0, "leakage_m3h": 0.2}}],
+        "commands": {"constraints_satisfied": False, "vrp_opening_pct": None,
+                     "vrp_opening_required_pct": None},
     }])
     result = optimize_job({**request, "job_id": "OPT-test"})
-    assert received[0]["horizon_hours"] == 1
+    assert received[0]["horizon_hours"] == received[1]["horizon_hours"] == 1
     assert len(result["hours"]) == 1
     assert result["applied"] is False
 

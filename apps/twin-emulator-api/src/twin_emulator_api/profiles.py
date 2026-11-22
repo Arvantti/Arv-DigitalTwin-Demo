@@ -112,7 +112,7 @@ def normalize_profile(payload: Mapping[str, Any]) -> dict[str, Any]:
                 checked["manual_setting_mca"] = _number(prs["manual_setting_mca"], f"hours.{hour}.prs.manual_setting_mca", 15, 35)
             mode = prs.get("control_mode", "fixed_outlet" if "auto_outlet_mca" in prs else None)
             if mode is not None:
-                if mode not in {"critical_pressure", "critical_point", "fixed_outlet"}:
+                if mode not in {"critical_pressure", "critical_point", "fixed_outlet", "fixed_opening"}:
                     raise ValueError(f"hours.{hour}.prs.control_mode no es compatible")
                 checked["control_mode"] = mode
             if "auto_outlet_mca" in prs:
@@ -128,12 +128,14 @@ def normalize_profile(payload: Mapping[str, Any]) -> dict[str, Any]:
                 if checked.get("control_mode") != "critical_point":
                     raise ValueError(f"hours.{hour}.prs.critical_control_point requiere control_mode critical_point")
                 checked["critical_control_point"] = point
-            if checked.get("control_mode") in {"fixed_outlet", "critical_point"}:
+            if checked.get("control_mode") in {"fixed_outlet", "fixed_opening", "critical_point"}:
                 if checked.get("branch", "auto") != "auto":
                     raise ValueError(f"hours.{hour}.prs con este modo requiere la rama auto")
                 checked["branch"] = "auto"
                 if checked["control_mode"] == "fixed_outlet" and "auto_outlet_mca" not in checked:
                     raise ValueError(f"hours.{hour}.prs.auto_outlet_mca es obligatorio en fixed_outlet")
+                if checked["control_mode"] == "fixed_opening" and "auto_opening_pct" not in checked:
+                    raise ValueError(f"hours.{hour}.prs.auto_opening_pct es obligatorio en fixed_opening")
                 if checked["control_mode"] == "critical_point":
                     if checked.get("critical_control_point") != "L4.C44":
                         raise ValueError(f"hours.{hour}.prs.critical_control_point debe ser L4.C44 en critical_point")

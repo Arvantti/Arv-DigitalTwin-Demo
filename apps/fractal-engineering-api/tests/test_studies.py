@@ -1,5 +1,6 @@
 import io
 import json
+from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
@@ -7,7 +8,7 @@ from fractal_engineering_api import main as fractal_api
 from fractal_engineering_api.main import app
 
 from fractal.hydraulics.runtime import mpc
-from fractal.optimization import instant_search, optimizer
+from fractal.optimization import engine, instant_search, optimizer
 
 client = TestClient(app)
 
@@ -610,7 +611,7 @@ def test_optimized_hour_uses_selected_controls_in_snapshot_and_forecast_tags(mon
             }
         }
 
-    monkeypatch.setattr(instant_search, "optimize", fake_optimize)
+    monkeypatch.setattr(instant_search, "optimize_opening", fake_optimize)
     tags = {
         "PLC.Pump.FlowM3h": 10.0,
         "PLC.Pump.DischargePressureMca": 72.1,
@@ -637,13 +638,15 @@ def test_optimized_hour_uses_selected_controls_in_snapshot_and_forecast_tags(mon
     assert frame["plc_tags"]["PLC.Valve.Vertical12OpeningPct"] == 80.0
     assert frame["commands"]["vrp_opening_pct"] == 72.0
     assert frame["commands"]["target_pressure_mca"] == 18.0
-    assert frame["commands"]["prs"]["branch"] == "manual"
+    assert frame["commands"]["prs"] == {"branch": "auto", "control_mode": "fixed_opening", "auto_opening_pct": 72.0}
     assert len(frame["scenarios"]) == 1
     assert frame["scenarios"][0]["demand_factor"] == 1.0
     assert len(calls) == 2
     assert calls[0] == {"vertical": (80.0, 100.0, 100.0), "dwelling": 40.0, "leak": None}
     assert calls[1] == {"vertical": (50.0, 100.0, 100.0), "dwelling": 25.0, "leak": 35.0}
-    assert frame["plc_tags"]["PLC.PRS.BranchAuto"] is False
+    assert frame["plc_tags"]["PLC.PRS.BranchAuto"] is True
+    assert frame["plc_tags"]["PLC.PRS.OpeningEstimateQuality"] == "assumed_cosine_not_physically_validated"
+    assert 20 <= frame["plc_tags"]["PLC.PRS.EstimatedOpeningPct"] <= 100
     assert frame["plc_tags"]["PLC.Pump.DischargePressureMca"] == frame["scenarios"][0]["state"]["pump_discharge_mca"]
 
 
@@ -690,6 +693,165 @@ def test_optimizer_interpolates_prs_pressure_for_18_mca_and_keeps_scenario_valve
     assert optimized["valve_23_pct"] == 55.0
     assert optimized["valve_34_pct"] == 96.0
     assert set(seen_openings) == {(30.0, 55.0, 96.0)}
+
+
+def test_optimizer_protects_all_64_homes_even_if_control_point_meets_target(monkeypatch) -> None:
+    homes = [f"L{level}.C{branch}{position}" for level in range(1, 5)
+             for branch in range(1, 5) for position in range(1, 5)]
+
+    def fake_evaluate(_tags, *, prs_mca, **_kwargs):
+        pressures = {home: prs_mca - 3.0 for home in homes}
+        pressures["L1.C11"] = prs_mca - 7.0
+        return {
+            "consumer_pressures_mca": pressures,
+            "critical_pressure_mca": prs_mca - 7.0,
+            "control_point_pressure_mca": prs_mca - 3.0,
+            "prs_inlet_mca": 50.0,
+            "prs_outlet_mca": prs_mca,
+            "feasible": True,
+            **_test_flow_outputs(),
+        }
+
+    monkeypatch.setattr(instant_search.module, "evaluate", fake_evaluate)
+    result = instant_search.optimize({}, 18.0, critical_consumer_id="L4.C44")
+    assert result["constraints_satisfied"] is True
+    assert result["optimized"]["prs_mca"] == pytest.approx(25.05, abs=0.01)
+    assert min(result["optimized"]["consumer_pressures_mca"].values()) >= 18
+
+
+def test_modeled_leakage_volume_respects_partial_first_interval() -> None:
+    frames = [
+        {"duration_s": 1800, "scenarios": [{"state": {"leakage_m3h": 2.0}}]},
+        {"duration_s": 3600, "scenarios": [{"state": {"leakage_m3h": 3.0}}]},
+    ]
+    assert engine.modeled_leakage_volume_m3(frames) == pytest.approx(4.0)
+    with pytest.raises(KeyError):
+        engine.modeled_leakage_volume_m3([{"duration_s": 3600, "scenarios": [{}]}])
+
+
+def test_leakage_comparison_uses_same_partial_intervals_and_hides_infeasible_savings() -> None:
+    def frame(start, duration, leak, *, feasible=True):
+        return {
+            "start_t_s": start, "end_t_s": start + duration, "duration_s": duration,
+            "profile_hour": int(start // 3600) % 24,
+            "scenarios": [{"state": {"leakage_m3h": leak, "flow_m3h": leak + 10}}],
+            "commands": {"constraints_satisfied": feasible}, "robust": feasible,
+        }
+
+    optimized = [frame(1800, 1800, 1), frame(3600, 3600, 2)]
+    baseline = [frame(1800, 1800, 2), frame(3600, 3600, 3)]
+    comparison = engine.compare_leakage(optimized, baseline)
+    assert comparison["baseline_leakage_volume_m3"] == pytest.approx(4)
+    assert comparison["proposed_leakage_volume_m3"] == pytest.approx(2.5)
+    assert comparison["modeled_reduction_m3"] == pytest.approx(1.5)
+    assert comparison["modeled_reduction_pct"] == pytest.approx(37.5)
+    assert comparison["baseline_volumes_m3"]["delivered_consumption_m3"] == pytest.approx(15)
+    assert comparison["proposed_volumes_m3"]["delivered_consumption_m3"] == pytest.approx(15)
+    assert comparison["modeled_total_reduction_m3"] == pytest.approx(1.5)
+    assert comparison["kind"] == "modeled_counterfactual_not_observed_savings"
+    with pytest.raises(ValueError, match="desalineado"):
+        engine.compare_leakage(optimized, [frame(1800, 1800, 2), frame(3601, 3599, 3)])
+    with pytest.raises(ValueError, match="completos"):
+        engine.compare_leakage(optimized, baseline[:1])
+    optimized[1]["robust"] = False
+    assert engine.compare_leakage(optimized, baseline)["modeled_reduction_m3"] is None
+    assert engine.compare_leakage(optimized, baseline)["modeled_total_reduction_m3"] is None
+
+
+def test_hour_five_manual_forecast_through_hour_24_compares_only_matching_frames() -> None:
+    profile_path = Path(__file__).resolve().parents[3] / "industrial-models/water-network-scale-v1/operation-profiles/pdd-rca-01.json"
+    profile = json.loads(profile_path.read_text())
+    profile["hours"]["12"]["global_consumers_pct"] = 94.0
+    profile["hours"]["14"]["global_consumers_pct"] = 82.0
+    tags = {
+        "PLC.Session.SimulatedTime": 5 * 3600,
+        "PLC.Tank.Supply.LevelPct": 70, "PLC.Tank.Recirc01.LevelPct": 40,
+        "PLC.Tank.Recirc02.LevelPct": 40, "PLC.Pump.DischargePressureMca": 72.1,
+        "PLC.Pump.SetpointMca": 70, "PLC.PRS.ManualSettingMca": 26.66,
+        "PLC.PRS.OutletPressureMca": 20.94,
+    }
+    baseline = mpc.project_24h(tags, profile, horizon_hours=19)
+    proposed = mpc.project_24h(tags, profile, study_type="optimized", target_pressure_mca=18, horizon_hours=19)
+    assert len(baseline) == len(proposed) == 19
+    assert [frame["profile_hour"] for frame in proposed] == list(range(5, 24))
+    assert proposed[0]["start_t_s"] == 5 * 3600
+    assert proposed[-1]["end_t_s"] == 24 * 3600
+    for source in (baseline, proposed):
+        assert source[7]["profile_commands"]["global_consumers_pct"] == 94.0
+        assert source[9]["profile_commands"]["global_consumers_pct"] == 82.0
+    assert proposed[6]["commands"]["vrp_opening_pct"] > proposed[0]["commands"]["vrp_opening_pct"]
+    assert proposed[9]["commands"]["vrp_opening_pct"] < proposed[6]["commands"]["vrp_opening_pct"]
+    for frame in proposed:
+        pressures = frame["end_state"]["consumer_pressures_mca"]
+        assert len(pressures) == 64
+        assert min(pressures.values()) >= 18
+        assert frame["robust"] and frame["commands"]["constraints_satisfied"]
+    comparison = engine.compare_leakage(proposed, baseline)
+    assert comparison["comparison_start_t_s"] == 5 * 3600
+    assert comparison["comparison_end_t_s"] == 24 * 3600
+    assert comparison["modeled_reduction_m3"] == pytest.approx(
+        comparison["baseline_leakage_volume_m3"] - comparison["proposed_leakage_volume_m3"]
+    )
+    for metrics in (comparison["baseline_volumes_m3"], comparison["proposed_volumes_m3"]):
+        assert metrics["total_m3"] == pytest.approx(metrics["delivered_consumption_m3"] + metrics["leakage_m3"])
+    # La dirección del efecto depende del perfil y del solver: no presuponer ahorro.
+    assert comparison["improves_leakage"] == (comparison["modeled_reduction_m3"] > 0)
+    pressure_check = engine.compare_leakage(proposed, baseline, target_pressure_mca=18)
+    assert pressure_check["baseline_meets_target"] is False
+    assert pressure_check["interpretation"] == "pressure_recovery_vs_infeasible_baseline"
+
+
+def test_optimizer_chooses_lower_leakage_not_just_lowest_feasible_setting(monkeypatch) -> None:
+    homes = [f"L{level}.C{branch}{position}" for level in range(1, 5)
+             for branch in range(1, 5) for position in range(1, 5)]
+
+    def fake_evaluate(_tags, *, prs_mca, **_kwargs):
+        return {
+            "consumer_pressures_mca": {home: prs_mca - 3 for home in homes},
+            "critical_pressure_mca": prs_mca - 3,
+            "prs_inlet_mca": 60.0,
+            "prs_outlet_mca": prs_mca,
+            "feasible": True,
+            **_test_flow_outputs(),
+            "leakage_m3h": 0.1 + (prs_mca - 30) ** 2 / 100,
+        }
+
+    monkeypatch.setattr(instant_search.module, "evaluate", fake_evaluate)
+    result = instant_search.optimize({}, 18.0)
+    assert result["constraints_satisfied"] is True
+    assert result["optimized"]["prs_mca"] > 25
+    assert result["optimized"]["leakage_m3h"] < 0.12
+    assert result["optimized"]["search_quality"] == "bounded_sampled_candidates_not_global_optimum"
+
+
+def test_optimizer_rejects_partial_house_pressure_set(monkeypatch) -> None:
+    def fake_evaluate(_tags, *, prs_mca, **_kwargs):
+        return {"consumer_pressures_mca": {"L4.C44": prs_mca}, "critical_pressure_mca": prs_mca}
+
+    monkeypatch.setattr(instant_search.module, "evaluate", fake_evaluate)
+    with pytest.raises(ValueError, match="64 viviendas"):
+        instant_search.optimize({}, 18.0)
+
+
+def test_fixed_opening_scenario_uses_percent_curve_without_treating_it_as_mca() -> None:
+    tags = {
+        "PLC.Tank.Supply.LevelPct": 70, "PLC.Pump.SetpointMca": 70,
+        "PLC.PRS.OutletPressureMca": 20.94,
+    }
+    for level in range(1, 5):
+        for branch in range(1, 5):
+            for position in range(1, 5):
+                tags[f"PLC.Grid.L{level}.Consumer.C{branch}{position}.OpeningPct"] = 100
+    open_state = instant_search.evaluate_fixed_opening(tags, 100, required_min_pressure_mca=18)
+    assert open_state["opening_pct"] == 100
+    assert open_state["inlet_mca"] < 100
+    assert open_state["outlet_mca"] < open_state["inlet_mca"]
+    assert open_state["all_homes_above_target"] is True
+    assert open_state["prs_regulating"] is False
+    assert open_state["other_model_constraints_satisfied"] is True
+    assert open_state["applied"] is False
+    with pytest.raises(ValueError, match="20–100"):
+        instant_search.evaluate_fixed_opening(tags, 101)
 
 
 def test_real_hydraulic_optimizer_calculates_flow_for_selected_pressure_target() -> None:

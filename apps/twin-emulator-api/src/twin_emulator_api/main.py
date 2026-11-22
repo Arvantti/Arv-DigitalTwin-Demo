@@ -638,7 +638,13 @@ def activate_fractal_profile(plant_id: str, session_id: str, study_id: str) -> d
     profile = ProfileStore(plant_id, session.demo_client_id).get(study["profile_id"])
     if profile is None:
         raise HTTPException(404, "perfil aprobado desconocido")
-    starts_at_hour = session_manager.schedule_profile(session, profile["id"], profile)
+    starts_at_hour = int(session.plant.t // 3600) + 1
+    # Una propuesta se aplica solamente si conserva el mando calculado para la
+    # primera franja futura. Nunca se rellena con la apertura previa del PLC.
+    scheduled_prs = profile.get("hours", {}).get(str(starts_at_hour), {}).get("prs", {})
+    if scheduled_prs.get("control_mode") != "fixed_opening" or "auto_opening_pct" not in scheduled_prs:
+        raise HTTPException(409, "el estudio no contiene una apertura VRP optimizada para la primera hora programable")
+    starts_at_hour = session_manager.schedule_profile(session, profile["id"], profile, starts_at_hour)
     study["profile_status"] = "scheduled"
     study["starts_at_hour"] = starts_at_hour
     studies.update(session_id, study_id, session.plant.t, study)
