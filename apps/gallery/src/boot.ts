@@ -6,7 +6,19 @@ const el = () => document.getElementById("boot");
 
 /** Cede el hilo para que el navegador pinte la etapa antes de que empiece el trabajo pesado y síncrono. */
 export function tick(): Promise<void> {
-  return new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve, 0)));
+  // En pestañas no enfocadas o con ahorro de energía el navegador puede pausar
+  // requestAnimationFrame por completo. El arranque no debe quedar detenido
+  // entre dos etapas de carga: tras un margen breve continúa sin ese repintado.
+  return new Promise((resolve) => {
+    let done = false;
+    const finish = () => {
+      if (done) return;
+      done = true;
+      resolve();
+    };
+    requestAnimationFrame(() => setTimeout(finish, 0));
+    setTimeout(finish, 250);
+  });
 }
 
 export async function bootStage(percent: number, text: string): Promise<void> {

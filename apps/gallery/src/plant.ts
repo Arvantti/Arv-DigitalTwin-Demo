@@ -2544,6 +2544,9 @@ let productsApi: ProductsApi | null = null;
 let transport: PalletTransport | null = null;
 let moldView: MoldChangeView | null = null;
 function loop(): void {
+  // rAF puede quedar suspendido cuando la pestaña no tiene foco. No dejamos el
+  // velo de carga cubriendo una escena que ya fue construida por esa razón.
+  if (frames === 0) setTimeout(() => { if (frames < 12) bootDone(); }, 1500);
   const dt = stage.render();
   updateTriadGaugePositions();
   // con el play, la escena corre `scale` veces más rápido: agentes, montacargas, ciclos de las máquinas y productos
