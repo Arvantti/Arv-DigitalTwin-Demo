@@ -1,0 +1,16 @@
+{
+  "salida": "digital-twin-ia-en-cada-modulo",
+  "guion": "https://claude.ai/artifact/LBpSthbSNk3eNS3EBRr4P6",
+  "escenas": [
+    { "id": "gancho", "voz": "Esto es Arvantti DigitalTwin: una copia viva de tu planta en 3D. Y aquí la inteligencia artificial no es un módulo aparte. Está en cada uno." },
+    { "id": "nucleo", "modulo": 0, "nombre": "Núcleo · Digital Twin 3D", "ia": "Arma el 3D y el cerebro empresarial", "voz": "Empieza en el núcleo. Le das los planos, las fotos y los catálogos de tus equipos, y la IA arma rápido el modelo 3D con tu planta real. Pero el núcleo no es solo 3D: la IA también construye un cerebro empresarial, un grafo que conecta equipos, procesos, pedidos y personas con la información de tu empresa." },
+    { "id": "integrator", "modulo": 1, "nombre": "Integrator", "ia": "Detecta datos incoherentes", "voz": "En Integrator, que conecta tu ERP, el software de gestión; tu CRM, el de clientes; y tu SCADA, el sistema que vigila las máquinas, la IA revisa los datos y marca los que no cuadran." },
+    { "id": "aps", "modulo": 2, "nombre": "APS · Programación de pedidos", "ia": "Revisa y construye el plan contigo", "voz": "En APS, la programación avanzada de pedidos, la IA analiza el plan que armas a mano y te muestra dónde falla. O lo construye contigo, junto a métodos exactos, respetando todas tus restricciones." },
+    { "id": "cosim", "modulo": 3, "nombre": "CoSimulation", "ia": "Aprende tus reglas y se ajusta a la planta real", "voz": "En CoSimulation, primero le enseñas las reglas de tu empresa. Después, la IA compara su simulación con la planta real y ajusta su comportamiento para proyectar las próximas horas." },
+    { "id": "fractal", "modulo": 4, "nombre": "Fractal Industrial", "ia": "Algoritmos genéticos + Monte Carlo", "voz": "En Fractal Industrial también le enseñas tus reglas primero. Luego, algoritmos genéticos, una IA que hace evolucionar los planes, buscan los mejores en un universo de opciones, con los objetivos que tú elijas. Y Monte Carlo mide la incertidumbre de cada uno." },
+    { "id": "control", "modulo": 5, "nombre": "Control Center", "ia": "Reconoce patrones de alarmas", "voz": "En el Control Center, la IA reconoce patrones en las alarmas y te sugiere qué hacer." },
+    { "id": "dendro", "modulo": 6, "nombre": "Dendro Scada Physical AI", "ia": "Predice fallas y comportamiento", "voz": "Junto a la máquina, Dendro Scada lleva IA física en su propio chip: aprende cómo se comporta, predice fallas y, si hay que actuar, lo hace solo con tu aprobación." },
+    { "id": "asistente", "modulo": 7, "nombre": "AI Embedded Assistant", "ia": "La capa conversacional", "voz": "Y para hablar con todo eso está el AI Embedded Assistant, la capa conversacional. Responde con lo que sabe el cerebro empresarial, usa la IA de Arvantti OS y viene con MCP y CLI, dos formas estándar de conectar los otros modelos de IA que ya uses." },
+    { "id": "cierre", "voz": "Ocho piezas, una sola inteligencia. El gemelo observa, simula y recomienda. Tu equipo decide." }
+  ]
+}
