@@ -360,7 +360,11 @@ def test_shared_session_can_be_created_and_inspected() -> None:
         "study_type": "optimized",
         "temporal_context": "forecast",
         "applied": False,
-        "draft_profile": {"name": "PFL-FRA-TEST", "description": "aprobación manual", "hours": {}},
+        "draft_profile": {
+            "name": "PFL-FRA-TEST",
+            "description": "aprobación manual",
+            "hours": {"1": {"prs": {"branch": "auto", "control_mode": "fixed_opening", "auto_opening_pct": 42}}},
+        },
         "hours": [],
     }
     assert client.post(study_url, json=optimized).status_code == 201
