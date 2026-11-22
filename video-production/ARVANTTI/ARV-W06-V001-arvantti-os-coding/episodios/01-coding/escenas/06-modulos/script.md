@@ -1,0 +1,1 @@
+Debajo hay seis módulos: Tasks, Brain, Policy, Grants, Guardianes y Receipts. Encima, lo propio del programador: terminales en paralelo, planes antes de programar, el mapa del código, el room de concilio y tus propios flujos con pruebas de calidad. En Linux, Mac o Windows, o en la nube, con un mismo cerebro para todo el equipo.

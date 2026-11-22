@@ -1,0 +1,1 @@
+Martes, 9:20. Tres terminales arrancan: Claude Code en la conexión con finanzas, Codex en la pantalla de control de piso, Gemini en las pruebas. Cada uno en su worktree. En el panel se ve en vivo: tres tareas en curso, cero choques.

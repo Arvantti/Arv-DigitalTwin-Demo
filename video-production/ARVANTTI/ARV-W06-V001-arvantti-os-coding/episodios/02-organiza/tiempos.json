@@ -1,0 +1,90 @@
+[
+ {
+  "id": "recap",
+  "start": 0,
+  "voiceAt": 0.6,
+  "voz": 3.97,
+  "dur": 5.07,
+  "real": true
+ },
+ {
+  "id": "gancho",
+  "start": 5.07,
+  "voiceAt": 5.37,
+  "voz": 5.64,
+  "dur": 7.04,
+  "real": true
+ },
+ {
+  "id": "dolor",
+  "start": 12.11,
+  "voiceAt": 12.41,
+  "voz": 10.76,
+  "dur": 12.16,
+  "real": true
+ },
+ {
+  "id": "tasks",
+  "start": 24.28,
+  "voiceAt": 24.58,
+  "voz": 19.07,
+  "dur": 20.47,
+  "real": true
+ },
+ {
+  "id": "sdd",
+  "start": 44.74,
+  "voiceAt": 45.04,
+  "voz": 17.32,
+  "dur": 18.72,
+  "real": true
+ },
+ {
+  "id": "gobernanza",
+  "start": 63.46,
+  "voiceAt": 63.76,
+  "voz": 29.88,
+  "dur": 31.28,
+  "real": true
+ },
+ {
+  "id": "martes",
+  "start": 94.75,
+  "voiceAt": 95.05,
+  "voz": 31.4,
+  "dur": 32.8,
+  "real": true
+ },
+ {
+  "id": "pedidos",
+  "start": 127.55,
+  "voiceAt": 127.85,
+  "voz": 17.63,
+  "dur": 19.03,
+  "real": true
+ },
+ {
+  "id": "figura",
+  "start": 146.58,
+  "voiceAt": 146.88,
+  "voz": 4.6,
+  "dur": 6,
+  "real": true
+ },
+ {
+  "id": "siguiente",
+  "start": 152.58,
+  "voiceAt": 152.78,
+  "voz": 4.6,
+  "dur": 6.4,
+  "real": true
+ },
+ {
+  "id": "firma",
+  "start": 158.98,
+  "voiceAt": 159.58,
+  "voz": 4.91,
+  "dur": 9.01,
+  "real": true
+ }
+]

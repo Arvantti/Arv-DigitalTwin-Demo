@@ -1,0 +1,1 @@
+Martes, 9:25. El agente de finanzas no recorre el repositorio. El mapa del código le muestra dónde se calcula el costo de cada orden, y el Graph Brain le recuerda que el equipo decidió costear con los tiempos reales que reporta el piso, no con los tiempos estándar. Lee cuatro archivos, no cuatrocientos. Con fuente.

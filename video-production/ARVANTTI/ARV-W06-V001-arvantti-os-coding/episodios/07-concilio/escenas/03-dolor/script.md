@@ -1,0 +1,1 @@
+Cuando varios agentes trabajan en lo mismo, cada uno propone lo suyo. Gana el último que habló, o te toca leer dos conversaciones para entender en qué no están de acuerdo. Y repartir el trabajo entre terminales lo haces a mano.

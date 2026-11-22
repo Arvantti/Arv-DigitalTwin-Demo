@@ -1,0 +1,1 @@
+El guardián le deja usar la variable de entorno que el equipo creó para esa clave: su código la llama por el nombre, pero el agente nunca lee el valor. Y si una prueba imprime la clave por error, en el registro sale tapada. El cambio sigue, sin fugas.

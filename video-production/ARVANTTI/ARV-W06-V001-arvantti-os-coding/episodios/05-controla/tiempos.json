@@ -1,0 +1,82 @@
+[
+ {
+  "id": "recap",
+  "start": 0,
+  "voiceAt": 0.6,
+  "voz": 4.13,
+  "dur": 5.23,
+  "real": true
+ },
+ {
+  "id": "gancho",
+  "start": 5.23,
+  "voiceAt": 5.53,
+  "voz": 5.25,
+  "dur": 6.65,
+  "real": true
+ },
+ {
+  "id": "dolor",
+  "start": 11.88,
+  "voiceAt": 12.18,
+  "voz": 10.37,
+  "dur": 11.77,
+  "real": true
+ },
+ {
+  "id": "policy",
+  "start": 23.65,
+  "voiceAt": 23.95,
+  "voz": 20.69,
+  "dur": 22.09,
+  "real": true
+ },
+ {
+  "id": "hooks",
+  "start": 45.74,
+  "voiceAt": 46.04,
+  "voz": 20.69,
+  "dur": 22.09,
+  "real": true
+ },
+ {
+  "id": "grants",
+  "start": 67.83,
+  "voiceAt": 68.13,
+  "voz": 15.39,
+  "dur": 16.79,
+  "real": true
+ },
+ {
+  "id": "martes",
+  "start": 84.61,
+  "voiceAt": 84.91,
+  "voz": 18.13,
+  "dur": 19.53,
+  "real": true
+ },
+ {
+  "id": "figura",
+  "start": 104.14,
+  "voiceAt": 104.44,
+  "voz": 5.25,
+  "dur": 6.65,
+  "real": true
+ },
+ {
+  "id": "siguiente",
+  "start": 110.79,
+  "voiceAt": 110.99,
+  "voz": 4.44,
+  "dur": 6.24,
+  "real": true
+ },
+ {
+  "id": "firma",
+  "start": 117.03,
+  "voiceAt": 117.63,
+  "voz": 4.91,
+  "dur": 9.01,
+  "real": true
+ }
+]

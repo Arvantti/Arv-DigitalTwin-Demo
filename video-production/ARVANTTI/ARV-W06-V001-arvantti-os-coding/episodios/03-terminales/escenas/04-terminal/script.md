@@ -1,0 +1,1 @@
+Arvantti OS Coding le da a cada agente su propia terminal real, la misma consola donde trabaja un programador. Y cada terminal tiene su worktree: una copia de trabajo aparte del mismo repositorio, con su propia rama. Los agentes avanzan en paralelo sin tocarse, y su trabajo se junta solo cuando está listo y revisado.

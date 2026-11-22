@@ -1,0 +1,1 @@
+Desde un solo panel ves todas las terminales: qué agente está en qué tarea, qué está haciendo y qué espera tu aprobación. Puedes entrar a cualquiera, escribirle o detenerla. Y un árbol te muestra la jerarquía de lo que está haciendo cada agente, con su traza hasta la terminal donde corre: tocas un agente y llegas a su terminal, sin interrumpir su forma de trabajar.

@@ -1,0 +1,1 @@
+Arvantti OS controla con las reglas de tu equipo. El módulo Policy guarda esas reglas, y tú las configuras y las editas: qué se puede leer, escribir o borrar, qué comandos se pueden ejecutar y qué librerías se pueden instalar. La empresa pone reglas para todos, y cada proyecto puede hacerlas más estrictas, nunca más flojas.

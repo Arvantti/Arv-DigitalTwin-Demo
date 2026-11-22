@@ -1,0 +1,1 @@
+Las claves de acceso viven en archivos de configuración, como el .env. Una IA puede leerlas, pegarlas en el chat, dejarlas en un registro o subirlas con el código. Y con un atajo de ruta puede salirse de su carpeta sin que nadie lo note.

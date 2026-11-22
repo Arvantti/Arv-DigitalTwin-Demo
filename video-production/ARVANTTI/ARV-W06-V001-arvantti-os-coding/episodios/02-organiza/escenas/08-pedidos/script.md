@@ -1,0 +1,1 @@
+Ese mismo día llegan dos pedidos más. Agregar un filtro por turno al reporte de costos es mediano: va con un mini SDD de una página. Y corregir el formato de una fecha en la pantalla de piso es pequeño: queda como una tarea simple, sin plan. Cada pedido, con el plan a su medida.

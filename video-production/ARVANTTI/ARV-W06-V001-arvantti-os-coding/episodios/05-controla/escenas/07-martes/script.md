@@ -1,0 +1,1 @@
+Martes, 10:40. El agente quiere instalar una librería que no está en la lista del equipo. El hook lo detiene y deja el motivo. Recibe permiso para escribir solo en la carpeta de integración con finanzas, durante esta tarea. Y cuando intenta subir a la rama principal, espera la aprobación de la líder técnica.

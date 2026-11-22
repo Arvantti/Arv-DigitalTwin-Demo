@@ -1,0 +1,98 @@
+[
+ {
+  "id": "recap",
+  "start": 0,
+  "voiceAt": 0.6,
+  "voz": 3.79,
+  "dur": 4.89,
+  "real": true
+ },
+ {
+  "id": "gancho",
+  "start": 4.89,
+  "voiceAt": 5.19,
+  "voz": 3.87,
+  "dur": 5.27,
+  "real": true
+ },
+ {
+  "id": "dolor",
+  "start": 10.15,
+  "voiceAt": 10.45,
+  "voz": 11.89,
+  "dur": 13.29,
+  "real": true
+ },
+ {
+  "id": "terminal",
+  "start": 23.44,
+  "voiceAt": 23.74,
+  "voz": 20.04,
+  "dur": 21.44,
+  "real": true
+ },
+ {
+  "id": "git",
+  "start": 44.88,
+  "voiceAt": 45.18,
+  "voz": 14.99,
+  "dur": 16.39,
+  "real": true
+ },
+ {
+  "id": "panel",
+  "start": 61.27,
+  "voiceAt": 61.57,
+  "voz": 21.55,
+  "dur": 22.95,
+  "real": true
+ },
+ {
+  "id": "multi",
+  "start": 84.22,
+  "voiceAt": 84.52,
+  "voz": 20.77,
+  "dur": 22.17,
+  "real": true
+ },
+ {
+  "id": "coordinadora",
+  "start": 106.39,
+  "voiceAt": 106.69,
+  "voz": 10.19,
+  "dur": 11.59,
+  "real": true
+ },
+ {
+  "id": "martes",
+  "start": 117.98,
+  "voiceAt": 118.28,
+  "voz": 15.23,
+  "dur": 16.63,
+  "real": true
+ },
+ {
+  "id": "figura",
+  "start": 134.61,
+  "voiceAt": 134.91,
+  "voz": 4.99,
+  "dur": 6.39,
+  "real": true
+ },
+ {
+  "id": "siguiente",
+  "start": 140.99,
+  "voiceAt": 141.19,
+  "voz": 5.07,
+  "dur": 6.87,
+  "real": true
+ },
+ {
+  "id": "firma",
+  "start": 147.86,
+  "voiceAt": 148.46,
+  "voz": 4.99,
+  "dur": 9.09,
+  "real": true
+ }
+]

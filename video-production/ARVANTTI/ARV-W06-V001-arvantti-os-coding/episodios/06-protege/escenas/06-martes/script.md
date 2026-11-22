@@ -1,0 +1,1 @@
+Martes, 10:52. El agente de finanzas programa la API que conecta el software con el ERP, el sistema de gestión donde vive la contabilidad. Para probarla necesita los datos de acceso, pero no puede abrir el .env: ese archivo está fuera de su alcance desde el principio.

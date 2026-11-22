@@ -1,0 +1,1 @@
+El módulo Grants da permisos puntuales: quién, sobre qué y para qué, mientras dura la tarea, y se retiran con un clic. Subir código a la rama principal o publicar siempre espera el sí de una persona. Y cuando algo se niega, queda escrita la razón.

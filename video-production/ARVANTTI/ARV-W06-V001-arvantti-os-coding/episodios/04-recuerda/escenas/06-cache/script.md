@@ -1,0 +1,1 @@
+Cada agente recibe solo lo que su tarea necesita, y sus habilidades se le cargan solo cuando hacen falta. Arvantti cuida el caché, lo que la IA ya leyó, para no pagar dos veces por lo mismo. Y cada respuesta cita su fuente.

@@ -1,0 +1,1 @@
+Cada asistente trabaja a su manera: unos prueban, otros no. Para que sigan los pasos de tu equipo, repites las mismas instrucciones en cada sesión, y cada vez que cargas algo nuevo, el asistente vuelve a empezar y pagas de nuevo todo lo que ya había leído.

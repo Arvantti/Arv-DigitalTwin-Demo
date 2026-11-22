@@ -1,0 +1,1 @@
+Martes, 11:30. El agente de control de piso está programando la API que enviará los datos de la planta a finanzas, y propone que mande cada movimiento de la orden en el instante. El de finanzas, que programa la API que los recibe, propone consolidarlos por turno, para no llenar la contabilidad de registros.

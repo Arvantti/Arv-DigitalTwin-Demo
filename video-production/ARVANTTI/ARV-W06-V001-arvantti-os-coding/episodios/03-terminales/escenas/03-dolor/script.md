@@ -1,0 +1,1 @@
+Cuando varios asistentes trabajan en la misma carpeta, uno borra lo que el otro acaba de escribir. Las pruebas fallan sin saber por qué. Y tú terminas abriendo ventanas para adivinar quién está en qué.

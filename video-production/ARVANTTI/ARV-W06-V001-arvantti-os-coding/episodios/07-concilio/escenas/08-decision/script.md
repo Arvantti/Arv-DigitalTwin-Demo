@@ -1,0 +1,1 @@
+En el room de concilio exponen sus razones, la líder técnica elige consolidar por turno, y ellos se reparten lo que falta: finanzas programa el cierre por turno, la pantalla de piso muestra el avance en vivo y las pruebas cubren los dos casos.

@@ -1,0 +1,90 @@
+[
+ {
+  "id": "recap",
+  "start": 0,
+  "voiceAt": 0.6,
+  "voz": 3.16,
+  "dur": 4.26,
+  "real": true
+ },
+ {
+  "id": "gancho",
+  "start": 4.26,
+  "voiceAt": 4.56,
+  "voz": 3.87,
+  "dur": 5.27,
+  "real": true
+ },
+ {
+  "id": "dolor",
+  "start": 9.53,
+  "voiceAt": 9.83,
+  "voz": 13.09,
+  "dur": 14.49,
+  "real": true
+ },
+ {
+  "id": "concilio",
+  "start": 24.01,
+  "voiceAt": 24.31,
+  "voz": 12.59,
+  "dur": 13.99,
+  "real": true
+ },
+ {
+  "id": "reparto",
+  "start": 38.01,
+  "voiceAt": 38.31,
+  "voz": 15.39,
+  "dur": 16.79,
+  "real": true
+ },
+ {
+  "id": "jerarquia",
+  "start": 54.79,
+  "voiceAt": 55.09,
+  "voz": 7.81,
+  "dur": 9.21,
+  "real": true
+ },
+ {
+  "id": "martes",
+  "start": 64,
+  "voiceAt": 64.3,
+  "voz": 18.68,
+  "dur": 20.08,
+  "real": true
+ },
+ {
+  "id": "decision",
+  "start": 84.08,
+  "voiceAt": 84.38,
+  "voz": 14.45,
+  "dur": 15.85,
+  "real": true
+ },
+ {
+  "id": "figura",
+  "start": 99.93,
+  "voiceAt": 100.23,
+  "voz": 4.83,
+  "dur": 6.23,
+  "real": true
+ },
+ {
+  "id": "siguiente",
+  "start": 106.16,
+  "voiceAt": 106.36,
+  "voz": 6.84,
+  "dur": 8.64,
+  "real": true
+ },
+ {
+  "id": "firma",
+  "start": 114.8,
+  "voiceAt": 115.4,
+  "voz": 4.99,
+  "dur": 9.09,
+  "real": true
+ }
+]

@@ -1,0 +1,1 @@
+Y Arvantti OS Coding le suma un tercero, el Understanding Repo: el mapa del código, que dice qué hace cada parte y de qué depende. Lleva un mapa por cada worktree y sigue cada cambio de rama, así cada agente tiene el contexto de su propia copia o el del proyecto entero, según lo necesite.

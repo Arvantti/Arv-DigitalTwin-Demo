@@ -1,0 +1,1 @@
+Y se prefiere la CLI sobre MCP: cada servidor MCP llena el contexto de definiciones y rompe el caché; la CLI responde por partes, sin secretos y con registro. MCP queda disponible, con las mismas reglas.

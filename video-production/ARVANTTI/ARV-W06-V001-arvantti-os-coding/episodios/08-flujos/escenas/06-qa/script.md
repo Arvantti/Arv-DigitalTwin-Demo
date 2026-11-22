@@ -1,0 +1,1 @@
+Y en esos flujos automatizados, los hooks disparan dos validaciones de QA, el control de calidad, en cada paso: la de código, que revisa cómo está escrito, y la funcional, que revisa que haga lo que debe. Si alguna falla, el flujo no pasa a la aprobación y el agente corrige primero. Los pasos, las pruebas y quién aprueba, los defines tú, a la medida de tu empresa.

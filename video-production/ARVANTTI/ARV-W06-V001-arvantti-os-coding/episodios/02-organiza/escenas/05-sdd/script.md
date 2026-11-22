@@ -1,0 +1,1 @@
+SDD es desarrollo guiado por especificación: antes de programar, se escribe qué se va a construir, cómo, y cómo se va a comprobar que quedó bien. Tú apruebas el plan. Cada tarea se asigna a una persona o a un agente, y se sigue hasta el final en un tablero en vivo.

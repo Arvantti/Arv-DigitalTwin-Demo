@@ -1,0 +1,82 @@
+[
+ {
+  "id": "recap",
+  "start": 0,
+  "voiceAt": 0.6,
+  "voz": 4.21,
+  "dur": 5.31,
+  "real": true
+ },
+ {
+  "id": "gancho",
+  "start": 5.31,
+  "voiceAt": 5.61,
+  "voz": 6.03,
+  "dur": 7.43,
+  "real": true
+ },
+ {
+  "id": "dolor",
+  "start": 12.74,
+  "voiceAt": 13.04,
+  "voz": 11.31,
+  "dur": 12.71,
+  "real": true
+ },
+ {
+  "id": "brain",
+  "start": 25.45,
+  "voiceAt": 25.75,
+  "voz": 16.43,
+  "dur": 17.83,
+  "real": true
+ },
+ {
+  "id": "mapa",
+  "start": 43.28,
+  "voiceAt": 43.58,
+  "voz": 17.63,
+  "dur": 19.03,
+  "real": true
+ },
+ {
+  "id": "cache",
+  "start": 62.31,
+  "voiceAt": 62.61,
+  "voz": 14.29,
+  "dur": 15.69,
+  "real": true
+ },
+ {
+  "id": "martes",
+  "start": 78,
+  "voiceAt": 78.3,
+  "voz": 20.04,
+  "dur": 21.44,
+  "real": true
+ },
+ {
+  "id": "figura",
+  "start": 99.44,
+  "voiceAt": 99.74,
+  "voz": 4.75,
+  "dur": 6.15,
+  "real": true
+ },
+ {
+  "id": "siguiente",
+  "start": 105.59,
+  "voiceAt": 105.79,
+  "voz": 4.68,
+  "dur": 6.48,
+  "real": true
+ },
+ {
+  "id": "firma",
+  "start": 112.07,
+  "voiceAt": 112.67,
+  "voz": 5.15,
+  "dur": 9.25,
+  "real": true
+ }
+]

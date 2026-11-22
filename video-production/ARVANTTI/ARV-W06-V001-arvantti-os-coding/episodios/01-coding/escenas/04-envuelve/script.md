@@ -1,0 +1,1 @@
+No reemplaza a Claude Code, Codex, Gemini, Copilot, OpenCode, Kimi ni a tus modelos locales: los envuelve. Por dentro, todo pasa por la CLI de Arvantti, su línea de comandos, que es el contrato estable; cada asistente se conecta con un adaptador delgado. Así cambias de IA sin cambiar tus reglas.

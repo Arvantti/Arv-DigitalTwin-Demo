@@ -1,0 +1,1 @@
+Arvantti los inyecta en la memoria de Claude Code, Codex u OpenCode justo cuando hacen falta, sin dañar el caché ni obligarlos a rehacer su contexto: el asistente sigue donde iba. No cambia cómo trabaja cada asistente: solo le suma tu receta.

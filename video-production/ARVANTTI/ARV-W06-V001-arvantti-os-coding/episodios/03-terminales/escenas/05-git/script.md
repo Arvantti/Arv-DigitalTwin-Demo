@@ -1,0 +1,1 @@
+Todo va integrado con Git, el sistema que guarda la historia del código: cada tarea abre su rama, cada commit lleva el número de su tarea y de su SDD, y el trabajo se junta con un pull request, una solicitud de revisión que aprueba una persona.

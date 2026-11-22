@@ -1,0 +1,1 @@
+El módulo Brain es la memoria del proyecto, con tres cerebros. El de proyecto sabe dónde va el trabajo: tareas, planes y documentos. El Graph Brain guarda las decisiones como un mapa de puntos conectados: quién decidió qué, cuándo y con qué evidencia.

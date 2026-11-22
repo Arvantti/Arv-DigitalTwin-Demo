@@ -1,0 +1,1 @@
+El módulo Guardianes son vigilantes que tu equipo configura y ajusta, y que revisan cada acción antes de que ocurra. La ruta segura mantiene al agente dentro de su proyecto. Los secretos no se leen: el .env queda fuera de su alcance, y si una clave aparece en una respuesta, se tapa antes de llegar al chat, al registro o al código.

@@ -1,0 +1,1 @@
+Y es multi arnés: en cada terminal corre el asistente que elijas, Claude Code, Codex, OpenCode o Gemini, cada uno con su propio arnés, su forma de trabajar y sus subagentes, sus ayudantes internos. Arvantti no modifica esos arneses, no daña su contexto ni cambia cómo trabajan: solo les da el contexto adecuado.

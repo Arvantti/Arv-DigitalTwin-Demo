@@ -1,0 +1,1 @@
+Después, la funcional: una prueba sale en rojo, porque el turno de la noche no cierra a medianoche. En cada caso el flujo vuelve a ejecutar, el agente corrige, todo pasa en verde, y recién ahí se pide la revisión.

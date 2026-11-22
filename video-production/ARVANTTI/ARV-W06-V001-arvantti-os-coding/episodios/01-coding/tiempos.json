@@ -1,0 +1,90 @@
+[
+ {
+  "id": "gancho",
+  "start": 0,
+  "voiceAt": 0.3,
+  "voz": 6.61,
+  "dur": 8.01,
+  "real": true
+ },
+ {
+  "id": "dolor",
+  "start": 8.01,
+  "voiceAt": 8.31,
+  "voz": 11.89,
+  "dur": 13.29,
+  "real": true
+ },
+ {
+  "id": "sistema",
+  "start": 21.29,
+  "voiceAt": 21.59,
+  "voz": 9.64,
+  "dur": 11.04,
+  "real": true
+ },
+ {
+  "id": "envuelve",
+  "start": 32.33,
+  "voiceAt": 32.63,
+  "voz": 20.92,
+  "dur": 22.32,
+  "real": true
+ },
+ {
+  "id": "cli",
+  "start": 54.66,
+  "voiceAt": 54.96,
+  "voz": 15.88,
+  "dur": 17.28,
+  "real": true
+ },
+ {
+  "id": "modulos",
+  "start": 71.94,
+  "voiceAt": 72.24,
+  "voz": 22.13,
+  "dur": 23.53,
+  "real": true
+ },
+ {
+  "id": "medida",
+  "start": 95.47,
+  "voiceAt": 95.77,
+  "voz": 8.12,
+  "dur": 9.52,
+  "real": true
+ },
+ {
+  "id": "martes",
+  "start": 104.99,
+  "voiceAt": 105.29,
+  "voz": 20.77,
+  "dur": 22.17,
+  "real": true
+ },
+ {
+  "id": "figura",
+  "start": 127.16,
+  "voiceAt": 127.46,
+  "voz": 4.05,
+  "dur": 5.45,
+  "real": true
+ },
+ {
+  "id": "siguiente",
+  "start": 132.61,
+  "voiceAt": 132.81,
+  "voz": 2.69,
+  "dur": 4.49,
+  "real": true
+ },
+ {
+  "id": "firma",
+  "start": 137.1,
+  "voiceAt": 137.7,
+  "voz": 4.75,
+  "dur": 8.85,
+  "real": true
+ }
+]

@@ -1,0 +1,90 @@
+[
+ {
+  "id": "recap",
+  "start": 0,
+  "voiceAt": 0.6,
+  "voz": 3.97,
+  "dur": 5.07,
+  "real": true
+ },
+ {
+  "id": "gancho",
+  "start": 5.07,
+  "voiceAt": 5.37,
+  "voz": 4.05,
+  "dur": 5.45,
+  "real": true
+ },
+ {
+  "id": "dolor",
+  "start": 10.52,
+  "voiceAt": 10.82,
+  "voz": 15.15,
+  "dur": 16.55,
+  "real": true
+ },
+ {
+  "id": "flujos",
+  "start": 27.07,
+  "voiceAt": 27.37,
+  "voz": 14.03,
+  "dur": 15.43,
+  "real": true
+ },
+ {
+  "id": "inyecta",
+  "start": 42.5,
+  "voiceAt": 42.8,
+  "voz": 15.57,
+  "dur": 16.97,
+  "real": true
+ },
+ {
+  "id": "qa",
+  "start": 59.47,
+  "voiceAt": 59.77,
+  "voz": 22.67,
+  "dur": 24.07,
+  "real": true
+ },
+ {
+  "id": "martes",
+  "start": 83.54,
+  "voiceAt": 83.84,
+  "voz": 18.13,
+  "dur": 19.53,
+  "real": true
+ },
+ {
+  "id": "funcional",
+  "start": 103.07,
+  "voiceAt": 103.37,
+  "voz": 13.64,
+  "dur": 15.04,
+  "real": true
+ },
+ {
+  "id": "figura",
+  "start": 118.11,
+  "voiceAt": 118.41,
+  "voz": 5.49,
+  "dur": 6.89,
+  "real": true
+ },
+ {
+  "id": "siguiente",
+  "start": 124.99,
+  "voiceAt": 125.19,
+  "voz": 5.72,
+  "dur": 7.52,
+  "real": true
+ },
+ {
+  "id": "firma",
+  "start": 132.51,
+  "voiceAt": 133.11,
+  "voz": 4.99,
+  "dur": 9.09,
+  "real": true
+ }
+]

@@ -1,0 +1,1 @@
+Martes, 11:45. El agente de control de piso termina el avance en vivo y hace su commit. El hook corre dos validaciones de QA. Primero, la de código: el análisis de calidad detecta un monkeypatch, un parche improvisado que cambia una función por debajo, y devuelve el cambio para corregirlo.

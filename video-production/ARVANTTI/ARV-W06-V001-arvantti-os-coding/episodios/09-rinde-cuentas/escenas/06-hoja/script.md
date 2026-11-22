@@ -1,0 +1,1 @@
+Cada agente tiene su hoja de vida: sus versiones, las mejoras que esperan aprobación y un botón para volver atrás o apagarlo de inmediato. Apoya las prácticas de ISO/IEC 42001, la norma internacional para gestionar la IA, y deja la evidencia lista para la certificación.

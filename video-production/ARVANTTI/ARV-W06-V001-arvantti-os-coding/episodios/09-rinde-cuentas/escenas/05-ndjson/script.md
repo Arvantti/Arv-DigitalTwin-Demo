@@ -1,0 +1,1 @@
+Se guardan en NDJSON, un formato de texto donde cada línea es un registro que leen las personas y los programas. Solo se agregan: nada se edita ni se borra. No guardan claves, solo huellas. Y cada comprobante enlaza su commit en Git, su tarea y su SDD.

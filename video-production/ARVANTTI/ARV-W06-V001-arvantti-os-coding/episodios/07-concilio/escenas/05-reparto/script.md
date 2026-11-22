@@ -1,0 +1,1 @@
+Después, en la misma conversación, se reparten el trabajo que falta entre las terminales: quién toma qué, en qué orden y qué depende de qué. Cada acuerdo queda escrito en el plan y en la tarea. Y tú puedes entrar, preguntar o cambiar el reparto cuando quieras.

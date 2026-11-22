@@ -1,0 +1,82 @@
+[
+ {
+  "id": "recap",
+  "start": 0,
+  "voiceAt": 0.6,
+  "voz": 4.05,
+  "dur": 5.15,
+  "real": true
+ },
+ {
+  "id": "gancho",
+  "start": 5.15,
+  "voiceAt": 5.45,
+  "voz": 4.6,
+  "dur": 6,
+  "real": true
+ },
+ {
+  "id": "dolor",
+  "start": 11.15,
+  "voiceAt": 11.45,
+  "voz": 14.84,
+  "dur": 16.24,
+  "real": true
+ },
+ {
+  "id": "guardianes",
+  "start": 27.38,
+  "voiceAt": 27.68,
+  "voz": 20.77,
+  "dur": 22.17,
+  "real": true
+ },
+ {
+  "id": "conexiones",
+  "start": 49.55,
+  "voiceAt": 49.85,
+  "voz": 25.23,
+  "dur": 26.63,
+  "real": true
+ },
+ {
+  "id": "martes",
+  "start": 76.19,
+  "voiceAt": 76.49,
+  "voz": 17.87,
+  "dur": 19.27,
+  "real": true
+ },
+ {
+  "id": "variable",
+  "start": 95.45,
+  "voiceAt": 95.75,
+  "voz": 14.76,
+  "dur": 16.16,
+  "real": true
+ },
+ {
+  "id": "figura",
+  "start": 111.61,
+  "voiceAt": 111.91,
+  "voz": 4.75,
+  "dur": 6.15,
+  "real": true
+ },
+ {
+  "id": "siguiente",
+  "start": 117.77,
+  "voiceAt": 117.97,
+  "voz": 4.13,
+  "dur": 5.93,
+  "real": true
+ },
+ {
+  "id": "firma",
+  "start": 123.69,
+  "voiceAt": 124.29,
+  "voz": 4.91,
+  "dur": 9.01,
+  "real": true
+ }
+]

@@ -1,0 +1,1 @@
+El módulo Tasks organiza el trabajo. Antes de empezar, mide cuánto planear. Un cambio pequeño y reversible se hace directo. El trabajo normal queda como tarea, con dueño, estado y fecha. Si es mediano, propone un mini SDD; si es grande o tiene riesgo, un SDD completo.

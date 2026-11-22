@@ -1,0 +1,1 @@
+Martes, 9 de la mañana. La líder técnica arranca un software que integra producción, control de piso y finanzas: cada orden que se cierra en planta debe mostrar su costo real en finanzas. En el proyecto van a trabajar tres asistentes distintos. Los tres, bajo Arvantti OS: las mismas reglas, la misma memoria, el mismo registro.

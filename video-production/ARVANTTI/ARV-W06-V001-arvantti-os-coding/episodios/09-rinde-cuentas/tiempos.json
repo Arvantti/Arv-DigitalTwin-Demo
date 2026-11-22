@@ -1,0 +1,82 @@
+[
+ {
+  "id": "recap",
+  "start": 0,
+  "voiceAt": 0.6,
+  "voz": 4.68,
+  "dur": 5.78,
+  "real": true
+ },
+ {
+  "id": "gancho",
+  "start": 5.78,
+  "voiceAt": 6.08,
+  "voz": 7.97,
+  "dur": 9.37,
+  "real": true
+ },
+ {
+  "id": "dolor",
+  "start": 15.14,
+  "voiceAt": 15.44,
+  "voz": 10.92,
+  "dur": 12.32,
+  "real": true
+ },
+ {
+  "id": "receipts",
+  "start": 27.46,
+  "voiceAt": 27.76,
+  "voz": 14.11,
+  "dur": 15.51,
+  "real": true
+ },
+ {
+  "id": "ndjson",
+  "start": 42.97,
+  "voiceAt": 43.27,
+  "voz": 17.79,
+  "dur": 19.19,
+  "real": true
+ },
+ {
+  "id": "hoja",
+  "start": 62.16,
+  "voiceAt": 62.46,
+  "voz": 16.27,
+  "dur": 17.67,
+  "real": true
+ },
+ {
+  "id": "martes",
+  "start": 79.83,
+  "voiceAt": 80.13,
+  "voz": 31.79,
+  "dur": 33.19,
+  "real": true
+ },
+ {
+  "id": "linea",
+  "start": 113.02,
+  "voiceAt": 113.32,
+  "voz": 7,
+  "dur": 8.4,
+  "real": true
+ },
+ {
+  "id": "figura",
+  "start": 121.42,
+  "voiceAt": 121.72,
+  "voz": 14.6,
+  "dur": 16.1,
+  "real": true
+ },
+ {
+  "id": "firma",
+  "start": 137.53,
+  "voiceAt": 138.13,
+  "voz": 4.99,
+  "dur": 9.09,
+  "real": true
+ }
+]

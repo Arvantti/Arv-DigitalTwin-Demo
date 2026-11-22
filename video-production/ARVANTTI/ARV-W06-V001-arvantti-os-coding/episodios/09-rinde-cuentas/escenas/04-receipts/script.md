@@ -1,0 +1,1 @@
+El módulo Receipts deja un comprobante de cada acción: quién la hizo, persona o agente; qué hizo, con el antes y el después; con qué herramienta, qué IA y qué permiso; y cuándo, con fecha y hora exactas.

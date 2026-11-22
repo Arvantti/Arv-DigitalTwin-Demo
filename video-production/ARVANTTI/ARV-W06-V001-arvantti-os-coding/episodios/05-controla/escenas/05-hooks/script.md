@@ -1,0 +1,1 @@
+Los hooks, puntos de control antes y después de cada acción, hacen que se cumplan siempre, sea cual sea la IA. Cada programador puede sumar sus propios hooks para controlar a su IA, inyectados en el arnés de su asistente o como configuración global: tú decides. Y el director del proyecto define reglas de negocio para los miembros de su equipo.

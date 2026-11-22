@@ -1,0 +1,1 @@
+Repasemos el martes. 9:02, SDD aprobado y guardado en .md y en la base de datos. 9:20, tres terminales en paralelo. 9:25, el mapa del código lleva al agente a cuatro archivos. 10:40, un hook frena una librería fuera de la lista. 10:52, un guardián tapa la clave. 11:30, el concilio decide. 11:45, un hook de QA frena un commit hasta que pasa las pruebas.
