@@ -8,7 +8,7 @@ H = "-h" if o == "h" else ""
 M = {"01-nucleo": ("serie-01-nucleo", "v001" if H else "v004"), "02-integrator": ("serie-02-integrator", "v001" if H else "v002"),
      "03-aps": ("serie-03-aps", "v002" if H else "v003"), "04-cosimulation": ("serie-04-cosimulation", "v002" if H else "v003"),
      "05-fractal": ("serie-05-fractal", "v001"), "06-control-center": ("serie-06-control-center", "v001"),
-     "07-dendro-scada": ("serie-07-dendro-scada", "v001"), "08-ai-assistant": ("serie-08-ai-assistant", "v001")}
+     "07-dendro-scada": ("serie-07-dendro-scada", "v001"), "08-ai-assistant": ("serie-08-ai-assistant", "v002")}
 def T(v): return {s["id"]: s for s in json.load(open(R + f"videos/{v}/tiempos.json"))}
 def master(v): n, ver = M[v]; return R + f"out/{n}{H}-{ver}.mp4"
 def dur(f): return float(subprocess.check_output(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", f]))

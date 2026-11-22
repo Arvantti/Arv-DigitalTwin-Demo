@@ -591,7 +591,7 @@ function componer() {
         } else if (c.grafico === "gobierno") {
           const filas = [["Qué puede hacer la IA", "Solo lo que tú permites"], ["Quién la usa", "Administrador · Programador · Visualizador"], ["Cada respuesta", "Queda registrada"]];
           clip(`pg${i}`, "scene", a, dur, svg(`
-            <text class="dzH" x="500" y="90" text-anchor="middle">Gobernanza · Arvantti Harness</text>
+            <text class="dzH" x="500" y="90" text-anchor="middle">Gobernanza · Arvantti OS</text>
             ${filas.map(([t, d], k) => `<g class="goF" id="gf${i}-${k}"><rect x="60" y="${150 + k * 200}" width="880" height="160" rx="22"/><text class="goT" x="100" y="${215 + k * 200}">${t}</text><text class="goD" x="100" y="${265 + k * 200}">${d}</text><text class="goK" x="890" y="${245 + k * 200}" text-anchor="end">✓</text></g>`).join("")}`));
           filas.forEach((_, k) => at(`#gf${i}-${k}`, { opacity: 0, x: -50 }, { opacity: 1, x: 0, duration: 0.4, ease: "power3.out" }, (fases[k] ?? a + 0.3 + k * 0.9)));
         } else {
