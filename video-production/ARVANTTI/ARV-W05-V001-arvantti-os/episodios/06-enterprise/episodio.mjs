@@ -9,6 +9,7 @@ export const ESCENAS = [
   { id: "edicion", dir: "04-edicion", lead: 0.3, tail: 0.8 },
   { id: "organigrama", dir: "05-organigrama", lead: 0.2, tail: 0.8 },
   { id: "panel", dir: "06-panel", lead: 0.2, tail: 0.9 },
+  { id: "fractal", dir: "06b-fractal", lead: 0.3, tail: 1.0 },
   { id: "lunes", dir: "07-lunes", lead: 0.3, tail: 1.2 },
   { id: "figura", dir: "08-figura", lead: 0.3, tail: 0.5 },
   { id: "siguiente", dir: "09-siguiente", lead: 0.2, tail: 1.6 },
@@ -152,6 +153,29 @@ export function componer(c) {
     leave("e-panel", s + d);
   }
 
+  // 6b. Dos módulos opcionales de Arvantti Fractal: Process y Finance; primero las reglas.
+  {
+    const x = S.fractal; const [s, d] = span(x);
+    const M = [["Fractal Process", "Procesos, tareas y recursos", "Fractal Process"], ["Fractal Finance", "Márgenes, caja y riesgo", "Fractal Finance"]];
+    const tR = P(x, "Primero aprenden"), tO = P(x, "después optimizan");
+    clip("e-fractal", "scene", s, d, `
+      <div class="fx-core"><p class="fx-k">MOTOR DE DECISIONES</p><h3>Arvantti Fractal</h3></div>
+      <div class="fx-mods dos">${M.map(([n, q]) => `<div class="fx-m"><b>${n}</b><p>${q}</p><small>módulo opcional</small></div>`).join("")}</div>
+      <div class="fx-flujo abajo"><span class="fx-a">Reglas de su empresa</span><i class="fx-f">→</i><span class="fx-b">Optimiza</span></div>`);
+    enter("e-fractal", s);
+    at("#e-fractal .fx-core", { opacity: 0, scale: 0.8 }, { opacity: 1, scale: 1, duration: 0.6, ease: "back.out(1.8)" }, P(x, "Arvantti Fractal"));
+    sfx("spark.wav", P(x, "Arvantti Fractal"), 0.22);
+    M.forEach(([, , f], i) => {
+      at(`#e-fractal .fx-m:nth-child(${i + 1})`, { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 0.5, ease: "back.out(1.6)" }, P(x, f));
+      sfx("pop.mp3", P(x, f), 0.15);
+    });
+    at("#e-fractal .fx-a", { opacity: 0, x: -40 }, { opacity: 1, x: 0, duration: 0.45 }, tR);
+    at("#e-fractal .fx-f", { opacity: 0 }, { opacity: 1, duration: 0.3 }, tO - 0.2);
+    at("#e-fractal .fx-b", { opacity: 0, x: 40 }, { opacity: 1, x: 0, duration: 0.45, ease: "back.out(2)" }, tO);
+    sfx("click.wav", tO, 0.2);
+    leave("e-fractal", s + d);
+  }
+
   // 7. Lunes 9:10: la gerente pregunta por voz desde el carro y aprueba.
   {
     const x = S.lunes; const [s, d] = span(x);
@@ -179,6 +203,6 @@ export function componer(c) {
   sello(c, S.figura, S.siguiente, { prom: "", n: 6, sigue: "Rinde cuentas", sigueId: "rinde" });
   firma(c, S.firma);
 
-  [S.gancho, S.dolor, S.edicion, S.organigrama, S.panel, S.lunes, S.figura, S.firma].forEach((x) => sweep(x.start));
+  [S.gancho, S.dolor, S.edicion, S.organigrama, S.panel, S.fractal, S.lunes, S.figura, S.firma].forEach((x) => sweep(x.start));
 }
 

@@ -48,33 +48,41 @@
   "real": true
  },
  {
-  "id": "lunes",
+  "id": "fractal",
   "start": 66.16,
   "voiceAt": 66.46,
+  "voz": 15.39,
+  "dur": 16.69,
+  "real": true
+ },
+ {
+  "id": "lunes",
+  "start": 82.85,
+  "voiceAt": 83.15,
   "voz": 18.44,
   "dur": 19.94,
   "real": true
  },
  {
   "id": "figura",
-  "start": 86.11,
-  "voiceAt": 86.41,
+  "start": 102.79,
+  "voiceAt": 103.09,
   "voz": 4.21,
   "dur": 5.01,
   "real": true
  },
  {
   "id": "siguiente",
-  "start": 91.11,
-  "voiceAt": 91.31,
+  "start": 107.8,
+  "voiceAt": 108,
   "voz": 4.6,
   "dur": 6.4,
   "real": true
  },
  {
   "id": "firma",
-  "start": 97.51,
-  "voiceAt": 98.11,
+  "start": 114.2,
+  "voiceAt": 114.8,
   "voz": 4.91,
   "dur": 9.01,
   "real": true

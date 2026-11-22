@@ -8,6 +8,7 @@ export const ESCENAS = [
   { id: "analogia", dir: "04-analogia", lead: 0.3, tail: 0.9 },
   { id: "base", dir: "05-base", lead: 0.3, tail: 0.6 },
   { id: "promesas", dir: "06-promesas", lead: 0.2, tail: 1.4 },
+  { id: "fractal", dir: "06b-fractal", lead: 0.3, tail: 1.0 },
   { id: "lunes", dir: "07-lunes", lead: 0.4, tail: 1.0 },
   { id: "figura", dir: "08-figura", lead: 0.3, tail: 0.6 },
   { id: "siguiente", dir: "09-siguiente", lead: 0.2, tail: 1.6 },
@@ -163,6 +164,27 @@ export function componer(c) {
     leave("e-capas", s + d);
   }
 
+  // 6b. Arvantti Fractal: el motor de decisiones; primero las reglas, después optimiza.
+  {
+    const x = S.fractal; const [s, d] = span(x);
+    const tR = P(x, "primero aprende"), tO = P(x, "después optimiza");
+    clip("e-fractal", "scene", s, d, `
+      <div class="fx-core"><p class="fx-k">MOTOR DE DECISIONES</p><h3>Arvantti Fractal</h3></div>
+      <div class="fx-flujo"><span class="fx-a">Reglas de su empresa</span><i class="fx-f">→</i><span class="fx-b">Optimiza</span></div>
+      <div class="fx-mods"><div class="fx-m"><b>Muchas variables</b><p>Capacidad, costos, tiempos y riesgo</p></div><div class="fx-m"><b>Alternativas</b><p>Compara y explica la mejor</p></div><div class="fx-m"><b>Una persona decide</b><p>Con las fuentes a la vista</p></div></div>`);
+    enter("e-fractal", s);
+    at("#e-fractal .fx-core", { opacity: 0, scale: 0.8 }, { opacity: 1, scale: 1, duration: 0.6, ease: "back.out(1.8)" }, P(x, "Arvantti Fractal"));
+    sfx("spark.wav", P(x, "Arvantti Fractal"), 0.22);
+    at("#e-fractal .fx-m:nth-child(1)", { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 0.5, ease: "back.out(1.6)" }, P(x, "muchas variables"));
+    at("#e-fractal .fx-a", { opacity: 0, x: -40 }, { opacity: 1, x: 0, duration: 0.45 }, tR);
+    at("#e-fractal .fx-f", { opacity: 0 }, { opacity: 1, duration: 0.3 }, tO - 0.2);
+    at("#e-fractal .fx-b", { opacity: 0, x: 40 }, { opacity: 1, x: 0, duration: 0.45, ease: "back.out(2)" }, tO);
+    at("#e-fractal .fx-m:nth-child(2)", { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 0.5, ease: "back.out(1.6)" }, tO + 0.3);
+    at("#e-fractal .fx-m:nth-child(3)", { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 0.5, ease: "back.out(1.6)" }, tO + 0.8);
+    sfx("click.wav", tO, 0.2);
+    leave("e-fractal", s + d);
+  }
+
   // 7. El lunes: tres IA distintas, un solo sistema.
   {
     const x = S.lunes; const [s, d] = span(x);
@@ -235,7 +257,7 @@ export function componer(c) {
     sfx("hit.wav", x.voiceAt, 0.3);
   }
 
-  [S.dolor, S.titulo, S.analogia, S.base, S.lunes, S.figura, S.firma].forEach((x) => sweep(x.start));
+  [S.dolor, S.titulo, S.analogia, S.base, S.fractal, S.lunes, S.figura, S.firma].forEach((x) => sweep(x.start));
 }
 
 function tl_pulse(c, sel, t) {
