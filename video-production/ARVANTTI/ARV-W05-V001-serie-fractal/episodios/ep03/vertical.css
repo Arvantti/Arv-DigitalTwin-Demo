@@ -22,3 +22,10 @@
 .aguanta{flex-direction:column;align-items:center;gap:18px}
 .aguanta .card{width:760px}
 .rt{flex:none;height:50px}
+.sorteo{flex-wrap:wrap}
+.leyenda{margin-right:0}
+.leyenda .pq{position:static}
+.rangos .rg b.pq{width:auto;text-align:left;font-size:34px}
+.caps{grid-template-columns:1fr 1fr}
+.leyenda .pq{width:auto}
+.mcw svg{width:900px}

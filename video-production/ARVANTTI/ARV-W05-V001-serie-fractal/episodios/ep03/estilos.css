@@ -38,3 +38,16 @@
 .aguanta .no em{color:var(--alert)}
 .nsc em{display:none;font-style:normal}
 #ns0{display:inline}
+.sorteo{gap:16px}.sorteo .tag{font-size:26px}
+.leyenda{margin-right:150px}
+.leyenda .pq{position:absolute;right:40px;color:#fff}
+.rangos{position:relative}
+.rangos .rg b.pq{flex:none;width:120px;text-align:right;font:800 38px "Inter Display",Inter,sans-serif;color:#fff}
+.aguanta strong{font:800 84px "Inter Display",Inter,sans-serif;color:#fff}
+.aguanta .no strong{color:var(--alert)}
+.aguanta .card span{font-size:26px;color:var(--ice)}
+.leyenda{margin-right:0}
+.leyenda .pq{position:static;flex:none;width:200px;text-align:right}
+#e-dados .st{gap:20px;padding-top:120px}
+.mcw svg{width:960px}
+.cont b{font-size:100px}

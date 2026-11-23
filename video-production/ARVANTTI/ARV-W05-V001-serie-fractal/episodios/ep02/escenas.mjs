@@ -21,7 +21,7 @@ export function componerEpisodio(c) {
   // 1. Cientos de formas de producir el pedido.
   {
     const x = S.arbol; const [s, d] = span(x);
-    const tC = P(x, "cientos"), tM = P(x, "Probarlas");
+    const tC = P(x, "miles"), tM = P(x, "Probarlas");
     clip("e-arbol", "scene", s, d, `${KICK}
       <div class="st">
         <h1 class="h q">${words("¿Aceptamos el pedido?")}</h1>

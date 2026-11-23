@@ -1,1 +1,1 @@
-Montecarlo no solo mide desviaciones: genera escenarios, evalúa riesgos, muestra a qué variables es más sensible cada plan y compara su robustez. Y también puede trabajar dentro de la optimización, para buscar planes que aguanten la incertidumbre.
+Montecarlo no se queda en un promedio: genera escenarios, estima qué tan probable es cada resultado, evalúa riesgos, ayuda a ver a qué es más sensible cada plan y compara su robustez. Y también puede trabajar dentro de la optimización, para buscar planes que aguanten la incertidumbre.

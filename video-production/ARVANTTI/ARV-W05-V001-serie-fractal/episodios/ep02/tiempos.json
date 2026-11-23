@@ -3,62 +3,62 @@
   "id": "arbol",
   "start": 0,
   "voiceAt": 1.4,
-  "voz": 9.64,
-  "dur": 12.04,
+  "voz": 9.25,
+  "dur": 11.65,
   "real": true
  },
  {
   "id": "reglas",
-  "start": 12.04,
-  "voiceAt": 12.34,
+  "start": 11.65,
+  "voiceAt": 11.95,
   "voz": 10.45,
   "dur": 11.75,
   "real": true
  },
  {
   "id": "ia-opt",
-  "start": 23.79,
-  "voiceAt": 24.09,
+  "start": 23.4,
+  "voiceAt": 23.7,
   "voz": 16.2,
   "dur": 17.5,
   "real": true
  },
  {
   "id": "evolutivos",
-  "start": 41.28,
-  "voiceAt": 41.58,
+  "start": 40.89,
+  "voiceAt": 41.19,
   "voz": 17.48,
   "dur": 18.78,
   "real": true
  },
  {
   "id": "objetivos",
-  "start": 60.06,
-  "voiceAt": 60.36,
+  "start": 59.67,
+  "voiceAt": 59.97,
   "voz": 8.44,
   "dur": 9.74,
   "real": true
  },
  {
   "id": "resultado",
-  "start": 69.8,
-  "voiceAt": 70.1,
-  "voz": 11.39,
-  "dur": 12.69,
+  "start": 69.41,
+  "voiceAt": 69.71,
+  "voz": 11.65,
+  "dur": 12.95,
   "real": true
  },
  {
   "id": "siguiente",
-  "start": 82.49,
-  "voiceAt": 82.79,
+  "start": 82.36,
+  "voiceAt": 82.66,
   "voz": 5.07,
   "dur": 6.37,
   "real": true
  },
  {
   "id": "cierre",
-  "start": 88.85,
-  "voiceAt": 89.75,
+  "start": 88.72,
+  "voiceAt": 89.62,
   "voz": 5.25,
   "dur": 10.65,
   "real": true

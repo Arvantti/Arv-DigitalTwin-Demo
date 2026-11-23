@@ -47,12 +47,12 @@ export function componerEpisodio(c) {
     clip("e-azar", "scene", s, d, `${KICK}
       <div class="st">
         <div class="panel card uno"><small>Un solo cálculo</small>${curva(c, "cv2", { w: 520, h: 150, puntos: [3, 4, 4.5, 5, 6, 6.5, 7.5, 8], t0: x.voiceAt + 0.2 })}</div>
-        <div class="row mts"><span class="chip" id="mt0">Métodos estocásticos · el azar en el modelo</span><span class="chip" id="mt1">Simulación Monte Carlo</span></div>
+        <div class="row mts"><span class="chip" id="mt0">Métodos estocásticos · la incertidumbre con probabilidades</span><span class="chip" id="mt1">Simulación Monte Carlo</span></div>
       </div>`, 3);
     enter("e-azar", s);
     pop("#e-azar .uno", x.voiceAt);
     to("#e-azar .uno", { opacity: 0.35, scale: 0.85, duration: 0.5 }, tE - 0.3);
-    pop("#mt0", tE); luz("#mt0", P(x, "el azar"));
+    pop("#mt0", tE); luz("#mt0", P(x, "con probabilidades"));
     pop("#mt1", tM); luz("#mt1", tM + 0.3);
     sfx("2a", "pop.mp3", tE, 0.15); sfx("2b", "pop.mp3", tM, 0.15);
     leave("e-azar", s + d);
@@ -66,12 +66,14 @@ export function componerEpisodio(c) {
       <div class="st">
         <div class="cont"><b class="nsc">${["1", "10", "100", "500", "1.000", "2.500", "5.000", "10.000"].map((n, i) => `<em id="ns${i}">${n}</em>`).join("")}</b><span>escenarios simulados</span></div>
         <div class="panel vz mcw">${montecarlo(c, "mc3", { w: 1100, h: 460, n: 60, t0: x.voiceAt + 0.3, dur: d - 2.2, seed: 31 })}<p class="vl">Cada línea, un escenario · a la derecha, cuántas veces sale cada resultado</p></div>
+        <div class="row sorteo"><span class="tag" id="so0">Retraso de 2 días</span><span class="tag" id="so1">Máquina parada</span><span class="tag" id="so2">Cambio de fecha</span></div>
       </div>`, 3);
     enter("e-dados", s);
     fade("#e-dados .cont", x.voiceAt);
     pop("#e-dados .mcw", x.voiceAt + 0.1);
     const N = [1, 10, 100, 500, 1000, 2500, 5000, 10000];
     N.forEach((_, i) => { const t = tM - 0.6 + i * ((tD - tM + 1.2) / N.length); if (i) set(`#ns${i - 1}`, { display: "none" }, t); set(`#ns${i}`, { display: "inline" }, t); });
+    [["un retraso", 0], ["una máquina", 1], ["un cliente", 2]].forEach(([k, i]) => pop(`#so${i}`, P(x, k)));
     sfx("3a", "whoosh-short.mp3", tM, 0.2);
     leave("e-dados", s + d);
   }
@@ -79,14 +81,14 @@ export function componerEpisodio(c) {
   // 4. Cada alternativa se vuelve un rango.
   {
     const x = S.rango; const [s, d] = span(x);
-    const R = [["Opción A", 18, 82, 55], ["Opción B", 38, 70, 56], ["Opción C", 8, 92, 62]];
-    const tR = P(x, "un rango"), tP = P(x, "lo más probable"), tB = P(x, "el mejor caso"), tW = P(x, "el peor caso");
+    const R = [["Opción A", 18, 82, 55, "78%"], ["Opción B", 38, 70, 56, "91%"], ["Opción C", 8, 92, 62, "64%"]];
+    const tR = P(x, "un rango"), tP = P(x, "lo esperado"), tW = P(x, "pesimista"), tB = P(x, "optimista"), tQ = P(x, "la probabilidad");
     clip("e-rango", "scene", s, d, `${KICK}
       <div class="st">
         <h2 class="h md r-t">${words("De un número a un rango.")}</h2>
         <div class="panel rangos">
-          <div class="leyenda"><span id="lg0">Peor caso</span><span id="lg1">Más probable</span><span id="lg2">Mejor caso</span></div>
-          ${R.map(([n, a, b, m], i) => `<div class="rg"><span>${n}</span><div class="rt"><i class="rb" style="left:${a}%;width:${b - a}%"></i><i class="rm" style="left:${m}%"></i><i class="r1" style="left:${m}%"></i></div></div>`).join("")}
+          <div class="leyenda"><span id="lg0">Pesimista</span><span id="lg1">Esperado</span><span id="lg2">Optimista</span><span class="pq" id="lg3">Prob. de cumplir</span></div>
+          ${R.map(([n, a, b, m, q], i) => `<div class="rg"><span>${n}</span><div class="rt"><i class="rb" style="left:${a}%;width:${b - a}%"></i><i class="rm" style="left:${m}%"></i><i class="r1" style="left:${m}%"></i></div><b class="pq">${q}</b></div>`).join("")}
         </div>
       </div>`, 3);
     enter("e-rango", s);
@@ -96,7 +98,8 @@ export function componerEpisodio(c) {
     to("#e-rango .r1", { opacity: 0, duration: 0.3 }, tR - 0.2);
     at("#e-rango .rb", { scaleX: 0 }, { scaleX: 1, transformOrigin: "50% 50%", duration: 0.7, stagger: 0.15, ease: "power2.out" }, tR);
     at("#e-rango .rm", { opacity: 0, scale: 0 }, { opacity: 1, scale: 1, duration: 0.4, stagger: 0.1, ease: "back.out(2)" }, tP);
-    fade("#lg1", tP); fade("#lg2", tB); fade("#lg0", tW);
+    fade("#lg1", tP); fade("#lg2", tB); fade("#lg0", tW); fade("#lg3", tQ);
+    at("#e-rango b.pq", { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.4, stagger: 0.15, ease: "back.out(2)" }, tQ + 0.2);
     sfx("4a", "whoosh-short.mp3", tR, 0.18);
     leave("e-rango", s + d);
   }
@@ -104,7 +107,7 @@ export function componerEpisodio(c) {
   // 5. Monte Carlo genera escenarios, evalúa riesgos, sensibilidad y robustez; también dentro de la optimización.
   {
     const x = S.robustez; const [s, d] = span(x);
-    const C = [["genera escenarios", "Genera escenarios"], ["evalúa riesgos", "Evalúa riesgos"], ["sensible", "Sensibilidad"], ["compara su robustez", "Robustez"]];
+    const C = [["genera escenarios", "Genera escenarios"], ["qué tan probable", "Probabilidades"], ["evalúa riesgos", "Evalúa riesgos"], ["sensible", "Sensibilidad"], ["compara su robustez", "Robustez"]];
     const V = [["Retraso del proveedor", 92], ["Paro de una máquina", 64], ["Cambio de fecha", 38]];
     const tS = P(x, "sensible"), tO = P(x, "dentro de la optimización");
     clip("e-rob", "scene", s, d, `${KICK}
@@ -123,20 +126,20 @@ export function componerEpisodio(c) {
     leave("e-rob", s + d);
   }
 
-  // 6. El pedido del lunes: qué opciones aguantan un retraso.
+  // 6. El pedido del lunes: probabilidad de cumplir de cada opción si hay un retraso.
   {
     const x = S.lunes; const [s, d] = span(x);
-    const O = [["Opción A", "Aguanta un retraso", true], ["Opción B", "No lo aguanta", false], ["Opción C", "Aguanta un retraso", true]];
+    const O = [["Opción A", "72%", true], ["Opción B", "88%", true], ["Opción C", "41%", false]];
+    const tQ = P(x, "con qué probabilidad");
     clip("e-lunes", "scene", s, d, `${KICK}
       <div class="st">
-        <h2 class="h md l-t">${words("El pedido del lunes.")}</h2>
-        <div class="row aguanta">${O.map(([n, t, ok], i) => `<div class="panel card ${ok ? "on" : "no"}" id="ag${i}"><b>${n}</b><span><em>${ok ? "✓" : "✕"}</em> ${t}</span></div>`).join("")}</div>
+        <h2 class="h md l-t">${words("Si hay un retraso…")}</h2>
+        <div class="row aguanta">${O.map(([n, q, ok], i) => `<div class="panel card ${ok ? "on" : "no"}" id="ag${i}"><b>${n}</b><strong>${q}</strong><span>probabilidad de cumplir</span></div>`).join("")}</div>
       </div>`, 3);
     enter("e-lunes", s);
     titleIn("#e-lunes .l-t", x.voiceAt);
-    O.forEach((_, i) => pop(`#ag${i}`, P(x, "aguantan") + i * 0.25));
-    to("#ag1", { opacity: 0.6, duration: 0.4 }, P(x, "cuáles no"));
-    sfx("6a", "pop.mp3", P(x, "aguantan"), 0.15);
+    O.forEach((_, i) => pop(`#ag${i}`, tQ + i * 0.25));
+    sfx("6a", "pop.mp3", tQ, 0.15);
     leave("e-lunes", s + d);
   }
 

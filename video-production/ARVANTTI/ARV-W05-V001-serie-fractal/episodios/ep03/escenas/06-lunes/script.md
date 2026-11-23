@@ -1,1 +1,1 @@
-Para el pedido del lunes, ahora sabemos qué opciones aguantan un retraso y cuáles no.
+Para el pedido del lunes, ahora sabemos con qué probabilidad cumple cada opción si hay un retraso.
