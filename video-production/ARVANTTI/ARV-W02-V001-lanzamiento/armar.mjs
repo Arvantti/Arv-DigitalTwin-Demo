@@ -35,7 +35,7 @@ const ESCENAS = [
   { id: "asistente", dir: "07-asistente", lead: 0.3, tail: 0.9 },
   { id: "conecta", dir: "08-conecta", lead: 0.3, tail: 0.9 },
   { id: "modulos", dir: "09-modulos", lead: 0.3, tail: 1.6 },
-  { id: "cierre", dir: "10-cierre", lead: 1.0, tail: 7.0 },
+  { id: "cierre", dir: "10-cierre", lead: 1.0, tail: 5.6 },
 ];
 
 const texto = (e) => fs.readFileSync(T(`escenas/${e.dir}/script.md`), "utf8").trim();
@@ -413,7 +413,7 @@ function componer() {
   // 6. Fractal: escenarios que se comparan y se eligen.
   {
     const x = S.fractal; const [s, d] = span(x);
-    const tG = enPalabra(x, "Después genera"), tK = enPalabra(x, "los califica"), tB = enPalabra(x, "te entrega"), tC = enPalabra(x, "Los comparas"), tE = enPalabra(x, "Eliges"), tY = enPalabra(x, "Y solo con");
+    const tG = enPalabra(x, "Después genera"), tK = enPalabra(x, "las evalúa"), tB = enPalabra(x, "te presenta"), tC = enPalabra(x, "Las comparas"), tE = enPalabra(x, "Eliges"), tY = enPalabra(x, "Y solo con");
     const cards = ["ui-aps-gantt-manual.png", "ui-aps-gantt.png", "ui-fractal.png", "ui-aps-propuesta.png", "ui-control.png"];
     const scores = [62, 74, 91, 70, 58];
     clip("e-fractal", "scene", s, d, `
@@ -427,7 +427,7 @@ function componer() {
     enter("e-fractal", s);
     at("#e-fractal .q2 .w", { opacity: 0, y: 40, filter: "blur(12px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.6, stagger: 0.07, ease: "power3.out" }, x.voiceAt);
     to("#e-fractal .q2", { opacity: 0, scale: 0.8, filter: "blur(16px)", duration: 0.5, ease: "power2.in" }, enPalabra(x, "Fractal Industrial") - 0.3);
-    const tR6 = enPalabra(x, "aprende tus reglas");
+    const tR6 = enPalabra(x, "incorpora tus reglas");
     at("#e-fractal .topl", { opacity: 0 }, { opacity: 1, duration: 0.5 }, tR6 - 0.6);
     at("#e-fractal .reglas", { opacity: 0, y: 40, scale: 0.8 }, { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: "back.out(2)" }, tR6);
     to("#e-fractal .reglas", { opacity: 0, y: -30, duration: 0.4 }, tG - 0.1);
@@ -438,10 +438,11 @@ function componer() {
     at("#e-fractal .score i", { scaleX: 0 }, { scaleX: 1, duration: 1.0, stagger: 0.1, ease: "power2.out" }, tK);
     at("#e-fractal .score b", { opacity: 0 }, { opacity: 1, duration: 0.4, stagger: 0.1 }, tK + 0.4);
     at("#e-fractal .tags .chip", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.45, stagger: 0.15, ease: "back.out(2)" }, tK);
-    // La mejor sube al frente.
-    to("#e-fractal .card:not(.c2)", { opacity: 0.25, filter: "blur(4px) brightness(.5)", duration: 0.6 }, tB);
-    to("#e-fractal .c2", { z: 260, scale: 1.25, duration: 0.9, ease: "power3.inOut" }, tB);
-    tl.push(`tl.to("#e-fractal .c2",{boxShadow:"0 0 0 3px #4ea7ff, 0 0 80px #2d7ff9aa",duration:.5},${tB.toFixed(2)});`);
+    // Las mejores que encontró pasan al frente (no una sola "mejor").
+    to("#e-fractal .c0, #e-fractal .c4", { opacity: 0.25, filter: "blur(4px) brightness(.5)", duration: 0.6 }, tB);
+    to("#e-fractal .c2", { z: 160, scale: 1.12, duration: 0.9, ease: "power3.inOut" }, tB);
+    to("#e-fractal .c1, #e-fractal .c3", { z: 60, duration: 0.9, ease: "power3.inOut" }, tB);
+    tl.push(`tl.to("#e-fractal .c1, #e-fractal .c2, #e-fractal .c3",{boxShadow:"0 0 0 3px #4ea7ff, 0 0 60px #2d7ff9aa",duration:.5},${tB.toFixed(2)});`);
     to("#e-fractal .tags", { opacity: 0, duration: 0.4 }, tB);
     // Se compara en el gemelo.
     at("#e-fractal .b4", { opacity: 0, clipPath: "inset(30% 30% 30% 30% round 24px)" }, { opacity: 1, clipPath: "inset(0% 0% 0% 0% round 0px)", duration: 0.9, ease: "power3.inOut" }, tC - 0.2);

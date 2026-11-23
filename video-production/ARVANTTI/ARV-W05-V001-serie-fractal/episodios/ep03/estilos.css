@@ -51,3 +51,6 @@
 #e-dados .st{gap:20px;padding-top:120px}
 .mcw svg{width:960px}
 .cont b{font-size:100px}
+.cont b{min-width:0;text-align:center}
+.aguanta .card em.atr{font:600 26px Inter,sans-serif;color:#d8dadf;margin-top:6px}
+.aguanta .no em.atr{color:#ffb27a}

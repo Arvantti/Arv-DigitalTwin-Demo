@@ -1,1 +1,1 @@
-El resultado no es una respuesta única ni la promesa del óptimo perfecto. Son las mejores alternativas que encontró, con su impacto: lo que gana y lo que cede cada una. Tú eliges.
+El resultado no es una respuesta única ni la promesa del óptimo perfecto. Ninguna opción gana en todo: son las mejores alternativas que encontró, con lo que gana y lo que cede cada una. Tú eliges según tus prioridades.

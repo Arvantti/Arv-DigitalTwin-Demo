@@ -1,15 +1,15 @@
 <!doctype html>
-<html lang="es" data-resolution="portrait">
+<html lang="es" data-resolution="landscape">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=1080, height=1920">
+<meta name="viewport" content="width=1920, height=1080">
 <title>Arvantti Digital Twin · lanzamiento</title>
 <script src="assets/vendor/gsap.min.js"></script>
 <style>
 :root{--blue:#2d7ff9;--electric:#4ea7ff;--ti:#d8dadf;--dti:#7a7e86;--black:#05070c;--white:#f8fafc}
 *{box-sizing:border-box}
-html,body{width:1080px;height:1920px;margin:0;overflow:hidden;background:var(--black);font-family:Inter,"Inter Display",Arial,sans-serif;color:var(--white)}
-#root{position:relative;width:1080px;height:1920px;overflow:hidden;background:var(--black)}
+html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:var(--black);font-family:Inter,"Inter Display",Arial,sans-serif;color:var(--white)}
+#root{position:relative;width:1920px;height:1080px;overflow:hidden;background:var(--black)}
 .clip{position:absolute;inset:0}
 .scene{overflow:hidden}
 .w,.aw{display:inline-block;white-space:pre}
@@ -20,14 +20,14 @@ html,body{width:1080px;height:1920px;margin:0;overflow:hidden;background:var(--b
 .fondo .floorgrid{position:absolute;inset:0;transform:rotateX(68deg);transform-origin:50% 100%;background-image:linear-gradient(#4ea7ff33 2px,transparent 2px),linear-gradient(90deg,#4ea7ff33 2px,transparent 2px);background-size:120px 120px}
 
 /* Estela de luz */
-.estela{position:absolute;inset:0;width:1080px;height:1920px}
+.estela{position:absolute;inset:0;width:1920px;height:1080px}
 .estela path{fill:none;stroke:url(#gEst);stroke:#4ea7ff;stroke-width:5;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1;filter:drop-shadow(0 0 10px #4ea7ff) drop-shadow(0 0 30px #2d7ff9)}
 .q{position:absolute;left:0;right:0;top:400px;text-align:center;margin:0;font:800 150px/1 "Inter Display",Inter,sans-serif;letter-spacing:-3px}
 
 /* Imagen a sangre */
 .bleed{position:absolute;inset:0;overflow:hidden}
-.bleed img{position:absolute;inset:0;width:1080px;height:1920px;object-fit:cover;transform-origin:50% 50%}
-.bleedv{object-fit:cover;width:1080px;height:1920px}
+.bleed img{position:absolute;inset:0;width:1920px;height:1080px;object-fit:cover;transform-origin:50% 50%}
+.bleedv{object-fit:cover;width:1920px;height:1080px}
 .bleed.dim img{filter:blur(10px) brightness(.25) saturate(.6)}
 .vignette{position:absolute;inset:0;background:radial-gradient(1200px 700px at 50% 45%,#0000 40%,#05070ccc 100%),linear-gradient(#0000 60%,#05070cdd)}
 
@@ -115,7 +115,7 @@ html,body{width:1080px;height:1920px;margin:0;overflow:hidden;background:var(--b
 .wave i{display:block;width:8px;height:calc(var(--h)*70px);border-radius:4px;background:linear-gradient(#4ea7ff,#2d7ff9);transform-origin:50% 50%}
 
 /* Conecta */
-.net{position:absolute;inset:0;width:1080px;height:1920px}
+.net{position:absolute;inset:0;width:1920px;height:1080px}
 .net line{stroke:#4ea7ff;stroke-width:3;stroke-dasharray:1;stroke-dashoffset:1;filter:drop-shadow(0 0 6px #4ea7ff)}
 .net .pk{fill:#fff;filter:drop-shadow(0 0 8px #4ea7ff);opacity:0}
 .node{position:absolute;width:220px;height:84px;border-radius:14px;background:#0d1a30;border:2px solid #4ea7ff88;display:flex;flex-direction:column;align-items:center;justify-content:center;font:700 30px Inter,sans-serif;box-shadow:0 0 30px #2d7ff933}
@@ -131,7 +131,7 @@ html,body{width:1080px;height:1920px;margin:0;overflow:hidden;background:var(--b
 .hx,.hx2,.hx3{position:absolute;left:0;right:0;top:56px;margin:0;text-align:center;font:800 64px "Inter Display",Inter,sans-serif;letter-spacing:-1px}
 .ai{position:absolute;right:-16px;top:-16px;width:44px;height:44px;border-radius:50%;background:#4ea7ff;color:#05070c;font:800 18px/44px Inter,sans-serif;text-align:center;box-shadow:0 0 26px #4ea7ffcc;opacity:0;z-index:3}
 .hcore .ai{right:22px;top:22px}
-.hepta{position:absolute;inset:0;width:1080px;height:1920px}
+.hepta{position:absolute;inset:0;width:1920px;height:1080px}
 .hepta polygon{fill:#2d7ff90d;stroke:#4ea7ff;stroke-width:3;stroke-dasharray:1;stroke-dashoffset:1;filter:drop-shadow(0 0 10px #2d7ff9)}
 .hepta line{stroke:#4ea7ff88;stroke-width:2.5;stroke-dasharray:1;stroke-dashoffset:1}
 .hcore{position:absolute;width:300px;height:300px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(circle,#123063,#0a1426 70%);box-shadow:0 0 0 2px #4ea7ff99,0 0 80px #2d7ff966;opacity:0;z-index:2}
@@ -159,84 +159,11 @@ html,body{width:1080px;height:1920px;margin:0;overflow:hidden;background:var(--b
 
 .sweep{background:linear-gradient(100deg,#0000 35%,#4ea7ff18 45%,#ffffff40 50%,#4ea7ff18 55%,#0000 65%);mix-blend-mode:screen;pointer-events:none}
 #temp{left:auto;top:auto;right:20px;bottom:16px;font:700 15px "JetBrains Mono",monospace;color:#ff6b35;letter-spacing:2px}
-/* Versión vertical 9:16 (1080x1920) para redes: se agrega al final de los estilos de plantilla.html (FORMATO=vertical). */
-.fondo .glow{background:radial-gradient(700px 900px at 50% 45%,#12305e55 0%,#05070c00 70%),radial-gradient(500px 600px at 80% 90%,#2d7ff922 0%,#05070c00 70%)}
-.fondo .floor{height:40%}
-.q{top:820px;font-size:118px;letter-spacing:-2px}
-
-/* Título */
-.titulo{top:640px}
-.titulo .marca{width:200px}
-.titulo h1{font-size:132px;line-height:1.02}
-.titulo .t1,.titulo .t2{display:block}
-
-/* Planifica: texto arriba, pantalla abajo */
-.col{left:80px;top:150px;width:920px}
-.big{font-size:96px}
-.col .chips{margin-top:34px}
-.verbs{margin-top:26px;font-size:44px}
-.right{left:70px;top:1100px;width:1180px;height:780px;transform:scale(.8);transform-origin:0 0}
-.stage3d{perspective-origin:50% 40%}
-
-/* Gemelo */
-.hud{inset:40px 30px}
-.hud .live{right:20px;font-size:17px;letter-spacing:3px}
-.hud .scrub{left:60px;right:60px;bottom:40px}
-.lowerleft{left:80px;bottom:260px}
-.lowerleft .big{font-size:130px}
-.label{left:80px;bottom:260px;font-size:100px}
-.play{left:440px;top:860px}
-
-/* Control */
-.top{left:80px;top:150px;width:920px}
-.mid{font-size:84px}
-.wide{left:70px;top:560px;transform:scale(.8);transform-origin:0 0}
-.right3{left:80px;top:1180px;width:920px}
-.right3 .chip{font-size:44px;padding:18px 36px;margin-bottom:22px}
-
-/* Fractal */
-.topl{left:80px;top:150px}
-.center{top:640px;padding:0 60px;font-size:96px}
-.card{left:240px;top:760px}
-.tags{top:1240px;padding:0 60px}
-.decide{padding:200px 40px 260px}
-.decide p{font-size:96px}
-
-/* Asistente */
-.chat{left:50px;top:520px;width:980px;height:860px}
-.chat .bar{font-size:30px}
-.chat .badge{font-size:18px;padding:6px 14px}
-.msg{max-width:800px;font-size:42px}
-.wave{bottom:44px}
-
-/* Conecta */
-.node{width:220px}
-.bottomc{bottom:250px;font-size:110px}
-
-/* Módulos */
-.hx,.hx2,.hx3{top:190px;padding:0 50px;font-size:84px;line-height:1.05}
-.mod{width:310px;padding-left:66px}
-.mod i{left:12px;width:44px;height:44px;font-size:24px;line-height:40px}
-.mod p{font-size:30px}
-.mod small{font-size:18px}
-
-/* Cierre */
-.fin{top:620px}
-.fin h1{font-size:120px;line-height:1.05}
-.fin h1 span{display:block}
-.fin .firma{font-size:58px}
-.fin .url{font-size:30px;letter-spacing:4px}
-.tres{top:680px}
-.tres .ey{font-size:28px;letter-spacing:5px;padding:0 60px;line-height:1.5}
-.tres .prods{flex-direction:column;gap:34px}
-.tres .prods span{font-size:84px}
-.reglas{top:880px}
-
 </style>
 </head>
 <body>
-<div id="root" data-composition-id="main" data-start="0" data-duration="138.45" data-width="1080" data-height="1920" data-fps="25">
-<div id="fondo" class="clip fondo" data-start="0.00" data-duration="138.45" data-track-index="0"><div class="glow"></div><div class="floor"><div class="floorgrid"></div></div></div>
+<div id="root" data-composition-id="main" data-start="0" data-duration="139.88" data-width="1920" data-height="1080" data-fps="25">
+<div id="fondo" class="clip fondo" data-start="0.00" data-duration="139.88" data-track-index="0"><div class="glow"></div><div class="floor"><div class="floorgrid"></div></div></div>
 <div id="e-pregunta" class="clip scene" data-start="0.00" data-duration="7.06" data-track-index="3">
       <svg class="estela" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="gEst" x1="0" x2="1"><stop offset="0" stop-color="#2d7ff9" stop-opacity="0"/><stop offset=".7" stop-color="#4ea7ff"/><stop offset="1" stop-color="#ffffff"/></linearGradient></defs>
       <path id="p1" d="M-60 640 C 380 640 560 430 960 520 S 1520 690 1980 470" pathLength="1"/></svg>
@@ -247,17 +174,17 @@ html,body{width:1080px;height:1920px;margin:0;overflow:hidden;background:var(--b
       <div class="titulo"><img class="marca" src="assets/clips/marca.png" alt=""><h1><span class="t1">Arvantti</span> <span class="t2">Digital Twin</span></h1></div>
       <div class="flare"></div></div>
 <audio id="sfx-2" src="assets/shared/core/sfx/hit.wav" data-start="9.69" data-duration="1.40" data-volume="0.3" data-track-index="24"></audio>
-<div id="e-planifica" class="clip scene" data-start="13.39" data-duration="21.99" data-track-index="3">
+<div id="e-planifica" class="clip scene" data-start="13.39" data-duration="22.80" data-track-index="3">
       <div class="col"><p class="kicker"><b>01</b> APS · COSIMULATION</p><h2 class="big"><span class="w">Todo</span> <span class="w">empieza</span> <span class="w">con</span> <span class="w">el</span> <span class="w">plan.</span></h2>
       <div class="chips"><span class="chip">Recursos</span><span class="chip">Turnos</span><span class="chip">Cambios</span><span class="chip">Entregas</span></div>
       <ul class="verbs"><li>Arrastra una orden.</li><li>Fija un pedido.</li><li>Elige un objetivo.</li><li>Calcula.</li></ul></div>
-      <div class="right"><div class="stage3d"><div class="device" id="pl-dev"><div id="pl-s0" class="shot"><img src="assets/tomas/ui-aps-pedidos.png" alt=""></div><div id="pl-s1" class="shot"><img src="assets/tomas/ui-aps-gantt-manual.png" alt=""></div><video id="pl-s2" class="shot" src="assets/clips/gantt-arrastrar.mp4" muted playsinline data-start="22.72" data-duration="3.16" data-track-index="32"></video><div id="pl-s3" class="shot"><img src="assets/tomas/ui-aps-objetivo.png" alt=""></div><div id="pl-s4" class="shot"><img src="assets/tomas/ui-aps-propuesta.png" alt=""></div><div class="edge" id="pl-edge"></div><div class="sheen" id="pl-sheen"></div></div><div class="reflect"></div></div></div></div>
+      <div class="right"><div class="stage3d"><div class="device" id="pl-dev"><div id="pl-s0" class="shot"><img src="assets/tomas/ui-aps-pedidos.png" alt=""></div><div id="pl-s1" class="shot"><img src="assets/tomas/ui-aps-gantt-manual.png" alt=""></div><video id="pl-s2" class="shot" src="assets/clips/gantt-arrastrar.mp4" muted playsinline data-start="22.72" data-duration="3.08" data-track-index="32"></video><div id="pl-s3" class="shot"><img src="assets/tomas/ui-aps-objetivo.png" alt=""></div><div id="pl-s4" class="shot"><img src="assets/tomas/ui-aps-propuesta.png" alt=""></div><div class="edge" id="pl-edge"></div><div class="sheen" id="pl-sheen"></div></div><div class="reflect"></div></div></div></div>
 <audio id="sfx-3" src="assets/shared/core/sfx/whoosh-short.mp3" data-start="13.49" data-duration="1.40" data-volume="0.3" data-track-index="26"></audio>
 <audio id="sfx-3c0" src="assets/shared/core/sfx/click-soft.mp3" data-start="23.02" data-duration="1.40" data-volume="0.25" data-track-index="27"></audio>
 <audio id="sfx-3c1" src="assets/shared/core/sfx/click-soft.mp3" data-start="24.46" data-duration="1.40" data-volume="0.25" data-track-index="28"></audio>
-<audio id="sfx-3c2" src="assets/shared/core/sfx/click-soft.mp3" data-start="25.58" data-duration="1.40" data-volume="0.25" data-track-index="29"></audio>
-<video id="lapso" class="clip bleedv" src="assets/clips/lapso.mp4" muted playsinline data-start="34.88" data-duration="6.41" data-track-index="4"></video>
-<div id="e-gemelo" class="clip scene" data-start="34.88" data-duration="11.83" data-track-index="5">
+<audio id="sfx-3c2" src="assets/shared/core/sfx/click-soft.mp3" data-start="25.50" data-duration="1.40" data-volume="0.25" data-track-index="29"></audio>
+<video id="lapso" class="clip bleedv" src="assets/clips/lapso.mp4" muted playsinline data-start="35.69" data-duration="6.41" data-track-index="4"></video>
+<div id="e-gemelo" class="clip scene" data-start="35.69" data-duration="11.83" data-track-index="5">
       <div class="bleed b1"><img src="assets/tomas/3d-inyectoras-2.png" alt=""></div>
       <div class="bleed b2"><img src="assets/tomas/3d-salsas.png" alt=""></div>
       <div class="bleed b5"><img src="assets/tomas/3d-confecciones.png" alt=""></div>
@@ -268,14 +195,14 @@ html,body{width:1080px;height:1920px;margin:0;overflow:hidden;background:var(--b
       <div class="lowerleft"><p class="kicker"><b>02</b> DIGITAL TWIN 3D</p><h2 class="big"><span class="w">Míralo</span> <span class="w">vivir.</span></h2></div>
       <p class="label" id="lb-0">Máquinas</p><p class="label" id="lb-1">Líneas</p><p class="label" id="lb-2">Personas</p><p class="label" id="lb-3">Inventarios</p>
       <div class="play"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="46"/><path d="M40 30 L72 50 L40 70 Z"/></svg></div></div>
-<audio id="sfx-4" src="assets/shared/core/sfx/whoosh.wav" data-start="34.88" data-duration="1.40" data-volume="0.3" data-track-index="32"></audio>
-<audio id="sfx-4p" src="assets/shared/core/sfx/pop.mp3" data-start="44.21" data-duration="1.40" data-volume="0.35" data-track-index="33"></audio>
-<div id="e-control" class="clip scene" data-start="46.21" data-duration="11.03" data-track-index="3">
+<audio id="sfx-4" src="assets/shared/core/sfx/whoosh.wav" data-start="35.69" data-duration="1.40" data-volume="0.3" data-track-index="32"></audio>
+<audio id="sfx-4p" src="assets/shared/core/sfx/pop.mp3" data-start="45.02" data-duration="1.40" data-volume="0.35" data-track-index="33"></audio>
+<div id="e-control" class="clip scene" data-start="47.02" data-duration="11.03" data-track-index="3">
       <div class="top"><p class="kicker"><b>03</b> CONTROL CENTER</p><h2 class="mid"><span class="w">Cada</span> <span class="w">indicador,</span> <span class="w">en</span> <span class="w">su</span> <span class="w">lugar.</span></h2></div>
       <div class="wide"><div class="stage3d"><div class="device" id="cc-dev"><div id="cc-s0" class="shot"><img src="assets/tomas/ui-control.png" alt=""></div><div class="edge" id="cc-edge"></div><div class="sheen" id="cc-sheen"></div></div><div class="reflect"></div></div></div>
       <div class="chips right3"><span class="chip lg">OEE</span><span class="chip lg">Ocupación</span><span class="chip lg">Cuellos de botella</span></div></div>
-<audio id="sfx-5" src="assets/shared/core/sfx/whoosh-short.mp3" data-start="46.21" data-duration="1.40" data-volume="0.3" data-track-index="35"></audio>
-<div id="e-fractal" class="clip scene" data-start="56.74" data-duration="18.47" data-track-index="3">
+<audio id="sfx-5" src="assets/shared/core/sfx/whoosh-short.mp3" data-start="47.02" data-duration="1.40" data-volume="0.3" data-track-index="35"></audio>
+<div id="e-fractal" class="clip scene" data-start="57.55" data-duration="20.48" data-track-index="3">
       <h2 class="center q2"><span class="w">¿Y</span> <span class="w">si</span> <span class="w">hay</span> <span class="w">más</span> <span class="w">de</span> <span class="w">una</span> <span class="w">buena</span> <span class="w">respuesta?</span></h2>
       <div class="topl"><p class="kicker"><b>04</b> FRACTAL INDUSTRIAL</p></div>
       <div class="reglas"><span class="chip lg">Tus reglas</span></div>
@@ -283,71 +210,71 @@ html,body{width:1080px;height:1920px;margin:0;overflow:hidden;background:var(--b
       <div class="tags"><span class="chip">Entregas</span><span class="chip">Cambios</span><span class="chip">Ocupación</span><span class="chip">Energía</span></div>
       <div class="bleed b4"><img src="assets/tomas/3d-ui.png" alt=""></div>
       <div class="decide"><p><span class="w">Tú</span> <span class="w">decides.</span></p><button>ENVIAR A PLANTA</button></div></div>
-<audio id="sfx-6" src="assets/shared/core/sfx/whoosh.wav" data-start="62.41" data-duration="1.40" data-volume="0.3" data-track-index="37"></audio>
-<audio id="sfx-6c" src="assets/shared/core/sfx/click.wav" data-start="71.55" data-duration="1.40" data-volume="0.35" data-track-index="38"></audio>
-<div id="e-asistente" class="clip scene" data-start="74.70" data-duration="12.23" data-track-index="3">
+<audio id="sfx-6" src="assets/shared/core/sfx/whoosh.wav" data-start="63.42" data-duration="1.40" data-volume="0.3" data-track-index="37"></audio>
+<audio id="sfx-6c" src="assets/shared/core/sfx/click.wav" data-start="74.28" data-duration="1.40" data-volume="0.35" data-track-index="38"></audio>
+<div id="e-asistente" class="clip scene" data-start="77.53" data-duration="12.23" data-track-index="3">
       <div class="topl"><p class="kicker"><b>05</b> AI ASSISTANT</p></div>
       <div class="chat"><div class="bar"><span class="dot"></span> AI Assistant <span class="badge">IA de Arvantti OS · según tu rol</span></div>
       <div class="msg me"><span class="ch">¿</span><span class="ch">Q</span><span class="ch">u</span><span class="ch">é</span><span class="ch"> </span><span class="ch">r</span><span class="ch">e</span><span class="ch">c</span><span class="ch">u</span><span class="ch">r</span><span class="ch">s</span><span class="ch">o</span><span class="ch"> </span><span class="ch">v</span><span class="ch">a</span><span class="ch"> </span><span class="ch">m</span><span class="ch">á</span><span class="ch">s</span><span class="ch"> </span><span class="ch">c</span><span class="ch">a</span><span class="ch">r</span><span class="ch">g</span><span class="ch">a</span><span class="ch">d</span><span class="ch">o</span><span class="ch"> </span><span class="ch">e</span><span class="ch">s</span><span class="ch">t</span><span class="ch">a</span><span class="ch"> </span><span class="ch">s</span><span class="ch">e</span><span class="ch">m</span><span class="ch">a</span><span class="ch">n</span><span class="ch">a</span><span class="ch">?</span></div>
       <div class="msg ai"><span class="aw">La</span> <span class="aw">línea</span> <span class="aw">2,</span> <span class="aw">con</span> <span class="aw">71</span> <span class="aw">%</span> <span class="aw">de</span> <span class="aw">ocupación.</span> <span class="aw">Fractal</span> <span class="aw">puede</span> <span class="aw">repartir</span> <span class="aw">su</span> <span class="aw">carga</span> <span class="aw">sin</span> <span class="aw">mover</span> <span class="aw">ninguna</span> <span class="aw">entrega.</span></div>
       <div class="wave"><i style="--h:0.30"></i><i style="--h:0.99"></i><i style="--h:0.48"></i><i style="--h:0.95"></i><i style="--h:0.65"></i><i style="--h:0.86"></i><i style="--h:0.79"></i><i style="--h:0.73"></i><i style="--h:0.90"></i><i style="--h:0.58"></i><i style="--h:0.97"></i><i style="--h:0.40"></i><i style="--h:1.00"></i><i style="--h:0.38"></i><i style="--h:0.98"></i><i style="--h:0.55"></i><i style="--h:0.92"></i><i style="--h:0.71"></i><i style="--h:0.81"></i><i style="--h:0.84"></i><i style="--h:0.67"></i><i style="--h:0.94"></i><i style="--h:0.51"></i><i style="--h:0.99"></i><i style="--h:0.33"></i><i style="--h:1.00"></i><i style="--h:0.45"></i><i style="--h:0.96"></i></div></div></div>
-<audio id="sfx-7" src="assets/shared/core/sfx/typing.mp3" data-start="75.35" data-duration="1.40" data-volume="0.2" data-track-index="40"></audio>
-<div id="e-conecta" class="clip scene" data-start="86.43" data-duration="9.01" data-track-index="3">
+<audio id="sfx-7" src="assets/shared/core/sfx/typing.mp3" data-start="78.18" data-duration="1.40" data-volume="0.2" data-track-index="40"></audio>
+<div id="e-conecta" class="clip scene" data-start="89.25" data-duration="9.01" data-track-index="3">
       <div class="bleed dim"><img src="assets/tomas/ui-arquitectura.png" alt=""></div>
       <div class="topl"><p class="kicker"><b>06</b> INTEGRATOR · DENDROSCADA</p></div>
-      <svg class="net" viewBox="0 0 1080 1920"><line id="ln0" x1="150" y1="602" x2="540" y2="850" pathLength="1"/><line id="ln1" x1="410" y1="602" x2="540" y2="850" pathLength="1"/><line id="ln2" x1="670" y1="602" x2="540" y2="850" pathLength="1"/><line id="ln3" x1="930" y1="602" x2="540" y2="850" pathLength="1"/><line id="lnE" x1="540" y1="1150" x2="540" y2="1420" pathLength="1"/><circle class="pk" id="pk0" r="7" cx="150" cy="602"/><circle class="pk" id="pk1" r="7" cx="410" cy="602"/><circle class="pk" id="pk2" r="7" cx="670" cy="602"/><circle class="pk" id="pk3" r="7" cx="930" cy="602"/><circle class="pk" id="pkE" r="7" cx="540" cy="1420"/></svg>
-      <div class="node m" id="nd0" style="left:40px;top:518px">Línea 1<small>PLC</small></div><div class="node m" id="nd1" style="left:300px;top:518px">Línea 2<small>PLC</small></div><div class="node m" id="nd2" style="left:560px;top:518px">Máquina 7<small>PLC</small></div><div class="node m" id="nd3" style="left:820px;top:518px">Celda 3<small>PLC</small></div>
-      <div class="proto" style="left:580px;top:750px">OPC UA · MQTT</div>
-      <div class="core" style="left:390px;top:850px"><img src="assets/clips/marca.png" alt=""><span>Digital Twin</span></div>
-      <div class="node erp" style="left:420px;top:1420px">ERP<small>pedidos · inventario</small></div>
+      <svg class="net" viewBox="0 0 1920 1080"><line id="ln0" x1="350" y1="260" x2="810" y2="515" pathLength="1"/><line id="ln1" x1="350" y1="430" x2="810" y2="515" pathLength="1"/><line id="ln2" x1="350" y1="600" x2="810" y2="515" pathLength="1"/><line id="ln3" x1="350" y1="770" x2="810" y2="515" pathLength="1"/><line id="lnE" x1="1110" y1="515" x2="1560" y2="515" pathLength="1"/><circle class="pk" id="pk0" r="7" cx="350" cy="260"/><circle class="pk" id="pk1" r="7" cx="350" cy="430"/><circle class="pk" id="pk2" r="7" cx="350" cy="600"/><circle class="pk" id="pk3" r="7" cx="350" cy="770"/><circle class="pk" id="pkE" r="7" cx="1560" cy="515"/></svg>
+      <div class="node m" id="nd0" style="left:130px;top:218px">Línea 1<small>PLC</small></div><div class="node m" id="nd1" style="left:130px;top:388px">Línea 2<small>PLC</small></div><div class="node m" id="nd2" style="left:130px;top:558px">Máquina 7<small>PLC</small></div><div class="node m" id="nd3" style="left:130px;top:728px">Celda 3<small>PLC</small></div>
+      <div class="proto" style="left:560px;top:355px">OPC UA · MQTT</div>
+      <div class="core" style="left:810px;top:365px"><img src="assets/clips/marca.png" alt=""><span>Digital Twin</span></div>
+      <div class="node erp" style="left:1560px;top:455px">ERP<small>pedidos · inventario</small></div>
       <h2 class="bottomc"><span class="w">Conectado.</span></h2></div>
-<audio id="sfx-8" src="assets/shared/core/sfx/spark.wav" data-start="87.62" data-duration="1.40" data-volume="0.25" data-track-index="42"></audio>
-<div id="e-modulos" class="clip scene" data-start="94.95" data-duration="31.79" data-track-index="3">
+<audio id="sfx-8" src="assets/shared/core/sfx/spark.wav" data-start="90.44" data-duration="1.40" data-volume="0.25" data-track-index="42"></audio>
+<div id="e-modulos" class="clip scene" data-start="97.77" data-duration="31.79" data-track-index="3">
       <h2 class="center hx"><span class="w">Un</span> <span class="w">núcleo.</span> <span class="w">Siete</span> <span class="w">módulos.</span></h2>
       <h2 class="center hx3"><span class="w">La</span> <span class="w">IA</span> <span class="w">está</span> <span class="w">en</span> <span class="w">cada</span> <span class="w">módulo.</span></h2>
       <h2 class="center hx2"><span class="w">Elige</span> <span class="w">tus</span> <span class="w">módulos.</span></h2>
-      <svg class="hepta" viewBox="0 0 1080 1920">
-        <polygon id="hx-borde" points="540,440 829,651 901,1125 701,1505 379,1505 179,1125 251,651" pathLength="1"/>
-        <line id="hx-r0" x1="540" y1="1000" x2="540" y2="440" pathLength="1"/><line id="hx-r1" x1="540" y1="1000" x2="829" y2="651" pathLength="1"/><line id="hx-r2" x1="540" y1="1000" x2="901" y2="1125" pathLength="1"/><line id="hx-r3" x1="540" y1="1000" x2="701" y2="1505" pathLength="1"/><line id="hx-r4" x1="540" y1="1000" x2="379" y2="1505" pathLength="1"/><line id="hx-r5" x1="540" y1="1000" x2="179" y2="1125" pathLength="1"/><line id="hx-r6" x1="540" y1="1000" x2="251" y2="651" pathLength="1"/>
+      <svg class="hepta" viewBox="0 0 1920 1080">
+        <polygon id="hx-borde" points="960,260 1382,384 1486,663 1194,887 726,887 434,663 538,384" pathLength="1"/>
+        <line id="hx-r0" x1="960" y1="590" x2="960" y2="260" pathLength="1"/><line id="hx-r1" x1="960" y1="590" x2="1382" y2="384" pathLength="1"/><line id="hx-r2" x1="960" y1="590" x2="1486" y2="663" pathLength="1"/><line id="hx-r3" x1="960" y1="590" x2="1194" y2="887" pathLength="1"/><line id="hx-r4" x1="960" y1="590" x2="726" y2="887" pathLength="1"/><line id="hx-r5" x1="960" y1="590" x2="434" y2="663" pathLength="1"/><line id="hx-r6" x1="960" y1="590" x2="538" y2="384" pathLength="1"/>
       </svg>
-      <div class="hcore" style="left:390px;top:850px"><img src="assets/clips/marca.png" alt=""><b>Arvantti</b><span>Digital Twin</span><small>Gemelo 3D · núcleo</small><b class="ai">IA</b></div>
-      <div class="mod" id="md0" style="left:385px;top:388px"><i>1</i><p>Integrator</p><small>ERP · CRM · SCADA</small><b class="ai">IA</b></div><div class="mod" id="md1" style="left:674px;top:599px"><i>2</i><p>APS</p><small>Órdenes y recursos</small><b class="ai">IA</b></div><div class="mod" id="md2" style="left:746px;top:1073px"><i>3</i><p>CoSimulation</p><small>Reglas de tu planta</small><b class="ai">IA</b></div><div class="mod" id="md3" style="left:546px;top:1453px"><i>4</i><p>Fractal Industrial</p><small>Escenarios multiobjetivo</small><b class="ai">IA</b></div><div class="mod" id="md4" style="left:224px;top:1453px"><i>5</i><p>Control Center</p><small>Monitoreo en vivo</small><b class="ai">IA</b></div><div class="mod" id="md5" style="left:24px;top:1073px"><i>6</i><p>DendroScada</p><small>Hardware SCADA propio</small><b class="ai">IA</b></div><div class="mod" id="md6" style="left:96px;top:599px"><i>7</i><p>AI Assistant</p><small>IA de Arvantti OS</small><b class="ai">IA</b></div></div>
-<audio id="sfx-90" src="assets/shared/core/sfx/pop.mp3" data-start="102.78" data-duration="1.40" data-volume="0.18" data-track-index="44"></audio>
-<audio id="sfx-91" src="assets/shared/core/sfx/pop.mp3" data-start="103.86" data-duration="1.40" data-volume="0.18" data-track-index="45"></audio>
-<audio id="sfx-92" src="assets/shared/core/sfx/pop.mp3" data-start="104.78" data-duration="1.40" data-volume="0.18" data-track-index="46"></audio>
-<audio id="sfx-93" src="assets/shared/core/sfx/pop.mp3" data-start="105.98" data-duration="1.40" data-volume="0.18" data-track-index="47"></audio>
-<audio id="sfx-94" src="assets/shared/core/sfx/pop.mp3" data-start="107.42" data-duration="1.40" data-volume="0.18" data-track-index="48"></audio>
-<audio id="sfx-95" src="assets/shared/core/sfx/pop.mp3" data-start="108.62" data-duration="1.40" data-volume="0.18" data-track-index="49"></audio>
-<audio id="sfx-96" src="assets/shared/core/sfx/pop.mp3" data-start="110.06" data-duration="1.40" data-volume="0.18" data-track-index="50"></audio>
-<audio id="sfx-9ai" src="assets/shared/core/sfx/spark.wav" data-start="114.34" data-duration="1.40" data-volume="0.25" data-track-index="51"></audio>
-<audio id="sfx-9" src="assets/shared/core/sfx/whoosh-short.mp3" data-start="94.95" data-duration="1.40" data-volume="0.3" data-track-index="52"></audio>
-<div id="e-cierre" class="clip scene" data-start="126.23" data-duration="12.47" data-track-index="3">
+      <div class="hcore" style="left:810px;top:440px"><img src="assets/clips/marca.png" alt=""><b>Arvantti</b><span>Digital Twin</span><small>Gemelo 3D · núcleo</small><b class="ai">IA</b></div>
+      <div class="mod" id="md0" style="left:790px;top:208px"><i>1</i><p>Integrator</p><small>ERP · CRM · SCADA</small><b class="ai">IA</b></div><div class="mod" id="md1" style="left:1212px;top:332px"><i>2</i><p>APS</p><small>Órdenes y recursos</small><b class="ai">IA</b></div><div class="mod" id="md2" style="left:1316px;top:611px"><i>3</i><p>CoSimulation</p><small>Reglas de tu planta</small><b class="ai">IA</b></div><div class="mod" id="md3" style="left:1024px;top:835px"><i>4</i><p>Fractal Industrial</p><small>Escenarios multiobjetivo</small><b class="ai">IA</b></div><div class="mod" id="md4" style="left:556px;top:835px"><i>5</i><p>Control Center</p><small>Monitoreo en vivo</small><b class="ai">IA</b></div><div class="mod" id="md5" style="left:264px;top:611px"><i>6</i><p>DendroScada</p><small>Hardware SCADA propio</small><b class="ai">IA</b></div><div class="mod" id="md6" style="left:368px;top:332px"><i>7</i><p>AI Assistant</p><small>IA de Arvantti OS</small><b class="ai">IA</b></div></div>
+<audio id="sfx-90" src="assets/shared/core/sfx/pop.mp3" data-start="105.60" data-duration="1.40" data-volume="0.18" data-track-index="44"></audio>
+<audio id="sfx-91" src="assets/shared/core/sfx/pop.mp3" data-start="106.68" data-duration="1.40" data-volume="0.18" data-track-index="45"></audio>
+<audio id="sfx-92" src="assets/shared/core/sfx/pop.mp3" data-start="107.60" data-duration="1.40" data-volume="0.18" data-track-index="46"></audio>
+<audio id="sfx-93" src="assets/shared/core/sfx/pop.mp3" data-start="108.80" data-duration="1.40" data-volume="0.18" data-track-index="47"></audio>
+<audio id="sfx-94" src="assets/shared/core/sfx/pop.mp3" data-start="110.24" data-duration="1.40" data-volume="0.18" data-track-index="48"></audio>
+<audio id="sfx-95" src="assets/shared/core/sfx/pop.mp3" data-start="111.44" data-duration="1.40" data-volume="0.18" data-track-index="49"></audio>
+<audio id="sfx-96" src="assets/shared/core/sfx/pop.mp3" data-start="112.88" data-duration="1.40" data-volume="0.18" data-track-index="50"></audio>
+<audio id="sfx-9ai" src="assets/shared/core/sfx/spark.wav" data-start="117.16" data-duration="1.40" data-volume="0.25" data-track-index="51"></audio>
+<audio id="sfx-9" src="assets/shared/core/sfx/whoosh-short.mp3" data-start="97.77" data-duration="1.40" data-volume="0.3" data-track-index="52"></audio>
+<div id="e-cierre" class="clip scene" data-start="129.05" data-duration="11.07" data-track-index="3">
       <svg class="estela" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice"><path id="p2" d="M-60 470 C 380 470 560 690 960 560 S 1520 430 1980 640" pathLength="1"/></svg>
       <div class="fin"><img class="marca" src="assets/clips/marca.png" alt=""><h1>Arvantti <span>Digital Twin</span></h1><p class="firma">Decide antes de que pase.</p><p class="url">digitaltwin.arvantti.online</p></div>
       <div class="tres"><p class="ey">UNO DE LOS TRES PRODUCTOS DE ARVANTTI</p><div class="prods"><span>Arvantti OS</span><span class="on">Arvantti Digital Twin</span><span>Arvantti Fractal</span></div></div></div>
-<audio id="sfx-10" src="assets/shared/core/sfx/hit.wav" data-start="127.48" data-duration="1.40" data-volume="0.3" data-track-index="54"></audio>
+<audio id="sfx-10" src="assets/shared/core/sfx/hit.wav" data-start="130.30" data-duration="1.40" data-volume="0.3" data-track-index="54"></audio>
 <div id="sweep-0" class="clip sweep" data-start="6.46" data-duration="0.90" data-track-index="40"></div>
 <div id="sweep-1" class="clip sweep" data-start="13.29" data-duration="0.90" data-track-index="40"></div>
-<div id="sweep-2" class="clip sweep" data-start="34.78" data-duration="0.90" data-track-index="40"></div>
-<div id="sweep-3" class="clip sweep" data-start="56.64" data-duration="0.90" data-track-index="40"></div>
-<div id="sweep-4" class="clip sweep" data-start="94.85" data-duration="0.90" data-track-index="40"></div>
-<div id="sweep-5" class="clip sweep" data-start="126.13" data-duration="0.90" data-track-index="40"></div>
+<div id="sweep-2" class="clip sweep" data-start="35.59" data-duration="0.90" data-track-index="40"></div>
+<div id="sweep-3" class="clip sweep" data-start="57.45" data-duration="0.90" data-track-index="40"></div>
+<div id="sweep-4" class="clip sweep" data-start="97.67" data-duration="0.90" data-track-index="40"></div>
+<div id="sweep-5" class="clip sweep" data-start="128.95" data-duration="0.90" data-track-index="40"></div>
 <audio id="voz-pregunta" src="escenas/01-pregunta/assets/audio/voiceover.mp3" data-start="1.60" data-duration="4.21" data-volume="1" data-track-index="61"></audio>
 <audio id="voz-titulo" src="escenas/02-titulo/assets/audio/voiceover.mp3" data-start="7.21" data-duration="4.83" data-volume="1" data-track-index="62"></audio>
-<audio id="voz-planifica" src="escenas/03-planifica/assets/audio/voiceover.mp3" data-start="14.14" data-duration="20.19" data-volume="1" data-track-index="63"></audio>
-<audio id="voz-gemelo" src="escenas/04-gemelo/assets/audio/voiceover.mp3" data-start="35.53" data-duration="10.03" data-volume="1" data-track-index="64"></audio>
-<audio id="voz-control" src="escenas/05-control/assets/audio/voiceover.mp3" data-start="46.76" data-duration="9.33" data-volume="1" data-track-index="65"></audio>
-<audio id="voz-fractal" src="escenas/06-fractal/assets/audio/voiceover.mp3" data-start="57.29" data-duration="16.67" data-volume="1" data-track-index="66"></audio>
-<audio id="voz-asistente" src="escenas/07-asistente/assets/audio/voiceover.mp3" data-start="75.25" data-duration="10.53" data-volume="1" data-track-index="67"></audio>
-<audio id="voz-conecta" src="escenas/08-conecta/assets/audio/voiceover.mp3" data-start="86.98" data-duration="7.31" data-volume="1" data-track-index="68"></audio>
-<audio id="voz-modulos" src="escenas/09-modulos/assets/audio/voiceover.mp3" data-start="95.50" data-duration="29.39" data-volume="1" data-track-index="69"></audio>
-<audio id="voz-cierre" src="escenas/10-cierre/assets/audio/voiceover.mp3" data-start="127.48" data-duration="3.97" data-volume="1" data-track-index="70"></audio>
-<audio id="musica" src="assets/clips/musica-mezcla.mp3" data-start="0.00" data-duration="138.45" data-volume="0.55" data-track-index="71"></audio>
+<audio id="voz-planifica" src="escenas/03-planifica/assets/audio/voiceover.mp3" data-start="14.14" data-duration="21.00" data-volume="1" data-track-index="63"></audio>
+<audio id="voz-gemelo" src="escenas/04-gemelo/assets/audio/voiceover.mp3" data-start="36.34" data-duration="10.03" data-volume="1" data-track-index="64"></audio>
+<audio id="voz-control" src="escenas/05-control/assets/audio/voiceover.mp3" data-start="47.57" data-duration="9.33" data-volume="1" data-track-index="65"></audio>
+<audio id="voz-fractal" src="escenas/06-fractal/assets/audio/voiceover.mp3" data-start="58.10" data-duration="18.68" data-volume="1" data-track-index="66"></audio>
+<audio id="voz-asistente" src="escenas/07-asistente/assets/audio/voiceover.mp3" data-start="78.08" data-duration="10.53" data-volume="1" data-track-index="67"></audio>
+<audio id="voz-conecta" src="escenas/08-conecta/assets/audio/voiceover.mp3" data-start="89.80" data-duration="7.31" data-volume="1" data-track-index="68"></audio>
+<audio id="voz-modulos" src="escenas/09-modulos/assets/audio/voiceover.mp3" data-start="98.32" data-duration="29.39" data-volume="1" data-track-index="69"></audio>
+<audio id="voz-cierre" src="escenas/10-cierre/assets/audio/voiceover.mp3" data-start="130.30" data-duration="3.97" data-volume="1" data-track-index="70"></audio>
+<audio id="musica" src="assets/clips/musica-mezcla.mp3" data-start="0.00" data-duration="139.88" data-volume="0.55" data-track-index="71"></audio>
 </div>
 <script>
 window.__timelines = window.__timelines || {};
 const tl = gsap.timeline({ paused: true });
-tl.fromTo("#fondo .floorgrid",{"backgroundPositionY":"0px"},{"backgroundPositionY":"5538px","duration":138.453876,"ease":"none"},0.00);
+tl.fromTo("#fondo .floorgrid",{"backgroundPositionY":"0px"},{"backgroundPositionY":"5595px","duration":139.87510100000003,"ease":"none"},0.00);
 tl.fromTo("#fondo .glow",{"opacity":0.5},{"opacity":1,"duration":6,"ease":"sine.inOut","yoyo":true,"repeat":23},0.00);
 tl.fromTo("#p1",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":2.2,"ease":"power2.inOut"},0.20);
 tl.fromTo("#e-pregunta .q .w",{"opacity":0,"y":40,"filter":"blur(16px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.7,"stagger":0.18,"ease":"power3.out"},4.24);
@@ -364,196 +291,197 @@ tl.fromTo("#e-planifica",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filte
 tl.fromTo("#e-planifica .kicker",{"opacity":0,"x":-30},{"opacity":1,"x":0,"duration":0.6,"ease":"power3.out"},13.59);
 tl.fromTo("#e-planifica .big .w",{"opacity":0,"y":50,"filter":"blur(10px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.6,"stagger":0.08,"ease":"power3.out"},14.14);
 tl.fromTo("#pl-dev",{"rotateY":-32,"rotateX":8,"z":-500,"opacity":0},{"rotateY":-14,"rotateX":4,"z":0,"opacity":1,"duration":1.4,"ease":"power3.out"},13.49);
-tl.to("#pl-dev",{"rotateY":-6,"rotateX":2,"duration":20.492653,"ease":"sine.inOut"},14.89);
-tl.fromTo("#pl-s0 img",{"scale":1.05,"y":0},{"scale":1.15,"y":-40,"duration":3.3916329999999997,"ease":"sine.inOut"},13.39);
-tl.fromTo("#pl-s1",{"clipPath":"inset(0 0 0 100%)"},{"clipPath":"inset(0 0 0 0%)","duration":0.7,"ease":"power3.inOut"},15.98);
-tl.fromTo("#pl-edge",{"left":"100%","opacity":1},{"left":"0%","opacity":0,"duration":0.7,"ease":"power3.inOut"},15.98);
-tl.fromTo("#pl-s1 img",{"scale":1},{"scale":1.12,"duration":7.039999999999999,"ease":"sine.inOut"},15.98);
-tl.fromTo("#e-planifica .chip",{"opacity":0,"y":20,"scale":0.9},{"opacity":1,"y":0,"scale":1,"duration":0.5,"stagger":0.32,"ease":"back.out(2)"},19.94);
+tl.to("#pl-dev",{"rotateY":-6,"rotateX":2,"duration":21.302449,"ease":"sine.inOut"},14.89);
+tl.fromTo("#pl-s0 img",{"scale":1.05,"y":0},{"scale":1.15,"y":-40,"duration":3.2316329999999995,"ease":"sine.inOut"},13.39);
+tl.fromTo("#pl-s1",{"clipPath":"inset(0 0 0 100%)"},{"clipPath":"inset(0 0 0 0%)","duration":0.7,"ease":"power3.inOut"},15.82);
+tl.fromTo("#pl-edge",{"left":"100%","opacity":1},{"left":"0%","opacity":0,"duration":0.7,"ease":"power3.inOut"},15.82);
+tl.fromTo("#pl-s1 img",{"scale":1},{"scale":1.12,"duration":7.199999999999999,"ease":"sine.inOut"},15.82);
+tl.fromTo("#e-planifica .chip",{"opacity":0,"y":20,"scale":0.9},{"opacity":1,"y":0,"scale":1,"duration":0.5,"stagger":0.32,"ease":"back.out(2)"},20.02);
 tl.fromTo("#pl-s2",{"clipPath":"inset(0 0 0 100%)"},{"clipPath":"inset(0 0 0 0%)","duration":0.7,"ease":"power3.inOut"},22.82);
 tl.fromTo("#pl-edge",{"left":"100%","opacity":1},{"left":"0%","opacity":0,"duration":0.7,"ease":"power3.inOut"},22.82);
-tl.fromTo("#pl-s3",{"clipPath":"inset(0 0 0 100%)"},{"clipPath":"inset(0 0 0 0%)","duration":0.7,"ease":"power3.inOut"},25.48);
-tl.fromTo("#pl-edge",{"left":"100%","opacity":1},{"left":"0%","opacity":0,"duration":0.7,"ease":"power3.inOut"},25.48);
-tl.fromTo("#pl-s3 img",{"scale":1,"x":0,"y":0},{"scale":1.8,"x":0,"y":60,"duration":1.920000000000003,"ease":"power2.inOut"},25.58);
-tl.fromTo("#pl-s4",{"clipPath":"inset(0 0 0 100%)"},{"clipPath":"inset(0 0 0 0%)","duration":0.7,"ease":"power3.inOut"},27.10);
-tl.fromTo("#pl-edge",{"left":"100%","opacity":1},{"left":"0%","opacity":0,"duration":0.7,"ease":"power3.inOut"},27.10);
-tl.fromTo("#pl-s4 img",{"scale":1.35,"x":300,"y":260},{"scale":1.02,"x":0,"y":0,"duration":8.281019999999998,"ease":"power2.inOut"},27.10);
+tl.fromTo("#pl-s3",{"clipPath":"inset(0 0 0 100%)"},{"clipPath":"inset(0 0 0 0%)","duration":0.7,"ease":"power3.inOut"},25.40);
+tl.fromTo("#pl-edge",{"left":"100%","opacity":1},{"left":"0%","opacity":0,"duration":0.7,"ease":"power3.inOut"},25.40);
+tl.fromTo("#pl-s3 img",{"scale":1,"x":0,"y":0},{"scale":1.8,"x":0,"y":60,"duration":1.8400000000000012,"ease":"power2.inOut"},25.50);
+tl.fromTo("#pl-s4",{"clipPath":"inset(0 0 0 100%)"},{"clipPath":"inset(0 0 0 0%)","duration":0.7,"ease":"power3.inOut"},26.94);
+tl.fromTo("#pl-edge",{"left":"100%","opacity":1},{"left":"0%","opacity":0,"duration":0.7,"ease":"power3.inOut"},26.94);
+tl.fromTo("#pl-s4 img",{"scale":1.35,"x":300,"y":260},{"scale":1.02,"x":0,"y":0,"duration":9.250815999999997,"ease":"power2.inOut"},26.94);
 tl.to("#e-planifica .chips",{"opacity":0,"y":-10,"duration":0.4},22.42);
 tl.fromTo("#e-planifica .verbs li:nth-child(1)",{"opacity":0,"x":-40},{"opacity":1,"x":0,"color":"#ffffff","duration":0.5,"ease":"power3.out"},23.02);
 tl.fromTo("#e-planifica .verbs li:nth-child(2)",{"opacity":0,"x":-40},{"opacity":1,"x":0,"color":"#ffffff","duration":0.5,"ease":"power3.out"},24.46);
 tl.to("#e-planifica .verbs li:nth-child(1)",{"color":"#5c6b80","duration":0.4},24.46);
-tl.fromTo("#e-planifica .verbs li:nth-child(3)",{"opacity":0,"x":-40},{"opacity":1,"x":0,"color":"#ffffff","duration":0.5,"ease":"power3.out"},25.58);
-tl.to("#e-planifica .verbs li:nth-child(2)",{"color":"#5c6b80","duration":0.4},25.58);
-tl.fromTo("#e-planifica .verbs li:nth-child(4)",{"opacity":0,"x":-40},{"opacity":1,"x":0,"color":"#ffffff","duration":0.5,"ease":"power3.out"},27.10);
-tl.to("#e-planifica .verbs li:nth-child(3)",{"color":"#5c6b80","duration":0.4},27.10);
-tl.to("#e-planifica .verbs li:nth-child(4)",{color:"#4ea7ff",textShadow:"0 0 30px #2d7ff9",duration:.5},27.40);
-tl.fromTo("#pl-sheen",{"xPercent":-100},{"xPercent":200,"duration":1.4,"ease":"power2.inOut"},27.50);
-tl.to("#e-planifica",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},35.13);
-tl.fromTo("#lapso",{"opacity":0,"scale":1.15},{"opacity":1,"scale":1.04,"duration":6.008980000000001,"ease":"power1.out"},34.88);
-tl.fromTo("#e-gemelo .hud",{"opacity":0},{"opacity":1,"duration":0.6},35.18);
-tl.fromTo("#e-gemelo .hud .c",{"scale":1.6,"opacity":0},{"scale":1,"opacity":1,"duration":0.6,"stagger":0.08,"ease":"power3.out"},35.18);
-tl.fromTo("#e-gemelo .scan",{"yPercent":-10},{"yPercent":1100,"duration":3.5,"ease":"none","repeat":2},35.28);
-tl.fromTo("#e-gemelo .scrub i",{"scaleX":0},{"scaleX":1,"duration":11.83102,"ease":"none"},34.88);
-tl.fromTo("#e-gemelo .lowerleft .kicker",{"opacity":0,"x":-30},{"opacity":1,"x":0,"duration":0.6},35.18);
-tl.fromTo("#e-gemelo .lowerleft .w",{"opacity":0,"y":60,"filter":"blur(12px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.7,"stagger":0.12,"ease":"power3.out"},35.83);
-tl.to("#e-gemelo .lowerleft",{"opacity":0,"y":30,"duration":0.5},40.49);
-tl.fromTo("#e-gemelo .b1",{"opacity":0,"clipPath":"circle(0% at 50% 50%)"},{"opacity":1,"clipPath":"circle(80% at 50% 50%)","duration":0.7,"ease":"power3.inOut"},40.74);
-tl.fromTo("#e-gemelo .b1 img",{"scale":1.25,"x":-60},{"scale":1.05,"x":0,"duration":1.5399999999999963,"ease":"power1.out"},40.74);
-tl.fromTo("#lb-0",{"opacity":0,"x":-50,"filter":"blur(8px)"},{"opacity":1,"x":0,"filter":"blur(0px)","duration":0.5,"ease":"power3.out"},40.99);
-tl.to("#lb-0",{"opacity":0,"x":40,"duration":0.3},41.58);
-tl.fromTo("#e-gemelo .b2",{"opacity":0,"clipPath":"circle(0% at 50% 50%)"},{"opacity":1,"clipPath":"circle(80% at 50% 50%)","duration":0.7,"ease":"power3.inOut"},41.58);
-tl.fromTo("#e-gemelo .b2 img",{"scale":1.25,"x":60},{"scale":1.05,"x":0,"duration":1.420000000000006,"ease":"power1.out"},41.58);
-tl.fromTo("#lb-1",{"opacity":0,"x":-50,"filter":"blur(8px)"},{"opacity":1,"x":0,"filter":"blur(0px)","duration":0.5,"ease":"power3.out"},41.83);
-tl.to("#lb-1",{"opacity":0,"x":40,"duration":0.3},42.30);
-tl.fromTo("#e-gemelo .b5",{"opacity":0,"clipPath":"circle(0% at 50% 50%)"},{"opacity":1,"clipPath":"circle(80% at 50% 50%)","duration":0.7,"ease":"power3.inOut"},42.30);
-tl.fromTo("#e-gemelo .b5 img",{"scale":1.25,"x":-60},{"scale":1.05,"x":0,"duration":1.2999999999999943,"ease":"power1.out"},42.30);
-tl.fromTo("#lb-2",{"opacity":0,"x":-50,"filter":"blur(8px)"},{"opacity":1,"x":0,"filter":"blur(0px)","duration":0.5,"ease":"power3.out"},42.55);
-tl.to("#lb-2",{"opacity":0,"x":40,"duration":0.3},42.90);
-tl.fromTo("#e-gemelo .b3",{"opacity":0,"clipPath":"circle(0% at 50% 50%)"},{"opacity":1,"clipPath":"circle(80% at 50% 50%)","duration":0.7,"ease":"power3.inOut"},42.90);
-tl.fromTo("#e-gemelo .b3 img",{"scale":1.25,"x":60},{"scale":1.05,"x":0,"duration":1.8600000000000037,"ease":"power1.out"},42.90);
-tl.fromTo("#lb-3",{"opacity":0,"x":-50,"filter":"blur(8px)"},{"opacity":1,"x":0,"filter":"blur(0px)","duration":0.5,"ease":"power3.out"},43.15);
-tl.to("#lb-3",{"opacity":0,"x":40,"duration":0.3},44.06);
-tl.fromTo("#e-gemelo .b4",{"opacity":0,"clipPath":"circle(0% at 50% 50%)"},{"opacity":1,"clipPath":"circle(80% at 50% 50%)","duration":0.7,"ease":"power3.inOut"},44.06);
-tl.fromTo("#e-gemelo .b4 img",{"scale":1.25,"x":-60},{"scale":1.05,"x":0,"duration":3.202040000000001,"ease":"power1.out"},44.06);
-tl.fromTo("#e-gemelo .play",{"opacity":0,"scale":0.4},{"opacity":1,"scale":1,"duration":0.6,"ease":"back.out(2)"},44.21);
-tl.to("#e-gemelo .play",{"scale":1.5,"opacity":0,"duration":0.8,"ease":"power2.in"},45.51);
-tl.to("#e-gemelo .b4 img",{"scale":1.2,"duration":1.5,"ease":"power2.in"},45.11);
-tl.to("#e-gemelo",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},46.46);
-tl.fromTo("#e-control",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},46.21);
-tl.fromTo("#e-control .kicker",{"opacity":0,"y":-20},{"opacity":1,"y":0,"duration":0.5},46.41);
-tl.fromTo("#e-control .mid .w",{"opacity":0,"y":40,"filter":"blur(10px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.6,"stagger":0.07,"ease":"power3.out"},46.76);
-tl.fromTo("#cc-dev",{"rotateX":30,"y":300,"opacity":0},{"rotateX":8,"y":0,"opacity":1,"duration":1.2,"ease":"power3.out"},46.31);
-tl.fromTo("#cc-s0 img",{"scale":1,"x":0,"y":0},{"scale":2.1,"x":820,"y":260,"duration":1.4,"ease":"power3.inOut"},50.12);
-tl.to("#cc-s0 img",{"scale":1.6,"x":-60,"y":120,"duration":1.4,"ease":"power3.inOut"},53.76);
-tl.to("#cc-s0 img",{"scale":1.05,"x":0,"y":0,"duration":1.4,"ease":"power3.inOut"},55.30);
-tl.fromTo("#e-control .chip:nth-child(1)",{"opacity":0,"x":60},{"opacity":1,"x":0,"duration":0.5,"ease":"back.out(1.8)"},50.52);
-tl.fromTo("#e-control .chip:nth-child(2)",{"opacity":0,"x":60},{"opacity":1,"x":0,"duration":0.5,"ease":"back.out(1.8)"},53.96);
-tl.fromTo("#e-control .chip:nth-child(3)",{"opacity":0,"x":60},{"opacity":1,"x":0,"duration":0.5,"ease":"back.out(1.8)"},55.00);
-tl.fromTo("#cc-sheen",{"xPercent":-100},{"xPercent":200,"duration":1.4,"ease":"power2.inOut"},47.41);
-tl.to("#e-control",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},56.99);
-tl.fromTo("#e-fractal",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},56.74);
-tl.fromTo("#e-fractal .q2 .w",{"opacity":0,"y":40,"filter":"blur(12px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.6,"stagger":0.07,"ease":"power3.out"},57.29);
-tl.to("#e-fractal .q2",{"opacity":0,"scale":0.8,"filter":"blur(16px)","duration":0.5,"ease":"power2.in"},59.31);
-tl.fromTo("#e-fractal .topl",{"opacity":0},{"opacity":1,"duration":0.5},60.45);
-tl.fromTo("#e-fractal .reglas",{"opacity":0,"y":40,"scale":0.8},{"opacity":1,"y":0,"scale":1,"duration":0.6,"ease":"back.out(2)"},61.05);
-tl.to("#e-fractal .reglas",{"opacity":0,"y":-30,"duration":0.4},62.31);
-tl.fromTo("#e-fractal .c0",{"opacity":0,"z":-1600,"rotateY":0,"x":0},{"opacity":1,"z":-440,"rotateY":32,"x":-400,"duration":1.1,"ease":"power3.out"},62.41);
-tl.fromTo("#e-fractal .c1",{"opacity":0,"z":-1600,"rotateY":0,"x":0},{"opacity":1,"z":-220,"rotateY":16,"x":-200,"duration":1.1,"ease":"power3.out"},62.53);
-tl.fromTo("#e-fractal .c2",{"opacity":0,"z":-1600,"rotateY":0,"x":0},{"opacity":1,"z":0,"rotateY":0,"x":0,"duration":1.1,"ease":"power3.out"},62.65);
-tl.fromTo("#e-fractal .c3",{"opacity":0,"z":-1600,"rotateY":0,"x":0},{"opacity":1,"z":-220,"rotateY":-16,"x":200,"duration":1.1,"ease":"power3.out"},62.77);
-tl.fromTo("#e-fractal .c4",{"opacity":0,"z":-1600,"rotateY":0,"x":0},{"opacity":1,"z":-440,"rotateY":-32,"x":400,"duration":1.1,"ease":"power3.out"},62.89);
-tl.fromTo("#e-fractal .score i",{"scaleX":0},{"scaleX":1,"duration":1,"stagger":0.1,"ease":"power2.out"},64.17);
-tl.fromTo("#e-fractal .score b",{"opacity":0},{"opacity":1,"duration":0.4,"stagger":0.1},64.57);
-tl.fromTo("#e-fractal .tags .chip",{"opacity":0,"y":30},{"opacity":1,"y":0,"duration":0.45,"stagger":0.15,"ease":"back.out(2)"},64.17);
-tl.to("#e-fractal .card:not(.c2)",{"opacity":0.25,"filter":"blur(4px) brightness(.5)","duration":0.6},66.45);
-tl.to("#e-fractal .c2",{"z":260,"scale":1.25,"duration":0.9,"ease":"power3.inOut"},66.45);
-tl.to("#e-fractal .c2",{boxShadow:"0 0 0 3px #4ea7ff, 0 0 80px #2d7ff9aa",duration:.5},66.45);
-tl.to("#e-fractal .tags",{"opacity":0,"duration":0.4},66.45);
-tl.fromTo("#e-fractal .b4",{"opacity":0,"clipPath":"inset(30% 30% 30% 30% round 24px)"},{"opacity":1,"clipPath":"inset(0% 0% 0% 0% round 0px)","duration":0.9,"ease":"power3.inOut"},67.89);
-tl.fromTo("#e-fractal .b4 img",{"scale":1.2},{"scale":1.05,"duration":3.5600000000000023,"ease":"sine.out"},67.89);
-tl.fromTo("#e-fractal .decide",{"opacity":0},{"opacity":1,"duration":0.4},69.63);
-tl.fromTo("#e-fractal .decide .w",{"opacity":0,"y":30},{"opacity":1,"y":0,"duration":0.5,"stagger":0.1,"ease":"power3.out"},69.63);
-tl.fromTo("#e-fractal .decide button",{"opacity":0,"scale":0.8},{"opacity":1,"scale":1,"duration":0.5,"ease":"back.out(2)"},70.45);
-tl.to("#e-fractal .decide button",{"scale":0.92,"background":"#4ea7ff","duration":0.15,"yoyo":true,"repeat":1},71.55);
-tl.to("#e-fractal .decide button",{boxShadow:"0 0 0 18px #4ea7ff00, 0 0 90px #4ea7ff",duration:.6},71.75);
-tl.to("#e-fractal",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},74.95);
-tl.fromTo("#e-asistente",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},74.70);
-tl.fromTo("#e-asistente .chat",{"opacity":0,"y":80,"rotateX":18},{"opacity":1,"y":0,"rotateX":0,"duration":0.9,"ease":"power3.out"},74.80);
-tl.fromTo("#e-asistente .topl",{"opacity":0},{"opacity":1,"duration":0.5},74.90);
-tl.fromTo("#e-asistente .wave i",{"scaleY":0.15},{"scaleY":1,"duration":0.25,"stagger":{"each":0.03,"from":"center","yoyo":true,"repeat":25},"ease":"sine.inOut"},75.10);
-tl.fromTo("#e-asistente .ch",{"opacity":0},{"opacity":1,"duration":0.01,"stagger":0.035},75.35);
-tl.fromTo("#e-asistente .aw",{"opacity":0,"filter":"blur(6px)"},{"opacity":1,"filter":"blur(0px)","duration":0.25,"stagger":0.12},77.25);
-tl.to("#e-asistente",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},86.68);
-tl.fromTo("#e-conecta",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},86.43);
-tl.fromTo("#e-conecta .core",{"opacity":0,"scale":0.5},{"opacity":1,"scale":1,"duration":0.8,"ease":"back.out(1.7)"},86.63);
-tl.fromTo("#e-conecta .node.m",{"opacity":0,"x":-60},{"opacity":1,"x":0,"duration":0.5,"stagger":0.1,"ease":"power3.out"},87.32);
-tl.fromTo("#ln0",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"power2.out"},87.62);
-tl.fromTo("#pk0",{"attr":{"cx":150,"cy":602},"opacity":1},{"attr":{"cx":540,"cy":850},"opacity":1,"duration":0.9,"ease":"power1.in","repeat":3,"repeatDelay":0.2},88.02);
-tl.fromTo("#ln1",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"power2.out"},87.72);
-tl.fromTo("#pk1",{"attr":{"cx":410,"cy":602},"opacity":1},{"attr":{"cx":540,"cy":850},"opacity":1,"duration":0.9,"ease":"power1.in","repeat":3,"repeatDelay":0.25},88.14);
-tl.fromTo("#ln2",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"power2.out"},87.82);
-tl.fromTo("#pk2",{"attr":{"cx":670,"cy":602},"opacity":1},{"attr":{"cx":540,"cy":850},"opacity":1,"duration":0.9,"ease":"power1.in","repeat":3,"repeatDelay":0.30000000000000004},88.26);
-tl.fromTo("#ln3",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"power2.out"},87.92);
-tl.fromTo("#pk3",{"attr":{"cx":930,"cy":602},"opacity":1},{"attr":{"cx":540,"cy":850},"opacity":1,"duration":0.9,"ease":"power1.in","repeat":3,"repeatDelay":0.35000000000000003},88.38);
-tl.fromTo("#e-conecta .proto",{"opacity":0,"y":20},{"opacity":1,"y":0,"duration":0.5},88.12);
-tl.fromTo("#e-conecta .erp",{"opacity":0,"x":60},{"opacity":1,"x":0,"duration":0.5,"ease":"back.out(1.7)"},91.16);
-tl.fromTo("#lnE",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.5},91.36);
-tl.fromTo("#pkE",{"attr":{"cx":540,"cy":1420},"opacity":1},{"attr":{"cx":540,"cy":1150},"opacity":1,"duration":0.8,"ease":"power1.in","repeat":2,"repeatDelay":0.2},91.76);
-tl.fromTo("#e-conecta .bottomc .w",{"opacity":0,"y":30,"filter":"blur(10px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.6},91.96);
-tl.to("#e-conecta",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},95.20);
-tl.fromTo("#e-modulos",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},94.95);
-tl.fromTo("#e-modulos .hx .w",{"opacity":0,"y":30,"filter":"blur(10px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.6,"stagger":0.1,"ease":"power3.out"},95.40);
-tl.fromTo("#e-modulos .hcore",{"opacity":0,"scale":0.4},{"opacity":1,"scale":1,"duration":0.9,"ease":"back.out(1.7)"},97.16);
-tl.to("#e-modulos .hcore",{boxShadow:"0 0 0 3px #4ea7ff, 0 0 120px #2d7ff9aa",duration:.6,yoyo:true,repeat:1},98.06);
-tl.fromTo("#hx-borde",{"strokeDashoffset":1,"opacity":1},{"strokeDashoffset":0,"opacity":1,"duration":1.2399999999999949,"ease":"power2.inOut"},101.44);
-tl.fromTo("#md0",{"opacity":0,"scale":0.6,"y":20},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(2)"},102.66);
-tl.fromTo("#hx-r0",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.45,"ease":"power2.out"},102.66);
-tl.to("#md0",{boxShadow:"0 0 0 2px #4ea7ff, 0 0 50px #2d7ff9aa",duration:.25,yoyo:true,repeat:1},102.78);
-tl.fromTo("#md1",{"opacity":0,"scale":0.6,"y":20},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(2)"},103.74);
-tl.fromTo("#hx-r1",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.45,"ease":"power2.out"},103.74);
-tl.to("#md1",{boxShadow:"0 0 0 2px #4ea7ff, 0 0 50px #2d7ff9aa",duration:.25,yoyo:true,repeat:1},103.86);
-tl.fromTo("#md2",{"opacity":0,"scale":0.6,"y":20},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(2)"},104.66);
-tl.fromTo("#hx-r2",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.45,"ease":"power2.out"},104.66);
-tl.to("#md2",{boxShadow:"0 0 0 2px #4ea7ff, 0 0 50px #2d7ff9aa",duration:.25,yoyo:true,repeat:1},104.78);
-tl.fromTo("#md3",{"opacity":0,"scale":0.6,"y":20},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(2)"},105.86);
-tl.fromTo("#hx-r3",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.45,"ease":"power2.out"},105.86);
-tl.to("#md3",{boxShadow:"0 0 0 2px #4ea7ff, 0 0 50px #2d7ff9aa",duration:.25,yoyo:true,repeat:1},105.98);
-tl.fromTo("#md4",{"opacity":0,"scale":0.6,"y":20},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(2)"},107.30);
-tl.fromTo("#hx-r4",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.45,"ease":"power2.out"},107.30);
-tl.to("#md4",{boxShadow:"0 0 0 2px #4ea7ff, 0 0 50px #2d7ff9aa",duration:.25,yoyo:true,repeat:1},107.42);
-tl.fromTo("#md5",{"opacity":0,"scale":0.6,"y":20},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(2)"},108.50);
-tl.fromTo("#hx-r5",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.45,"ease":"power2.out"},108.50);
-tl.to("#md5",{boxShadow:"0 0 0 2px #4ea7ff, 0 0 50px #2d7ff9aa",duration:.25,yoyo:true,repeat:1},108.62);
-tl.fromTo("#md6",{"opacity":0,"scale":0.6,"y":20},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(2)"},109.94);
-tl.fromTo("#hx-r6",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.45,"ease":"power2.out"},109.94);
-tl.to("#md6",{boxShadow:"0 0 0 2px #4ea7ff, 0 0 50px #2d7ff9aa",duration:.25,yoyo:true,repeat:1},110.06);
-tl.to("#e-modulos .hx",{"opacity":0,"y":-20,"duration":0.4},111.20);
-tl.fromTo("#e-modulos .hx3 .w",{"opacity":0,"y":30,"filter":"blur(10px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.5,"stagger":0.08,"ease":"power3.out"},111.50);
-tl.fromTo("#e-modulos .ai",{"opacity":0,"scale":0.2},{"opacity":1,"scale":1,"duration":0.45,"stagger":0.09,"ease":"back.out(2.4)"},114.34);
-tl.to(".hcore .ai",{scale:1.5,boxShadow:"0 0 0 6px #4ea7ff55, 0 0 50px #4ea7ff",duration:.3,yoyo:true,repeat:1},115.82);
-tl.to("#md0 .ai",{scale:1.5,boxShadow:"0 0 0 6px #4ea7ff55, 0 0 50px #4ea7ff",duration:.3,yoyo:true,repeat:1},116.86);
-tl.to("#md1 .ai",{scale:1.5,boxShadow:"0 0 0 6px #4ea7ff55, 0 0 50px #4ea7ff",duration:.3,yoyo:true,repeat:1},117.98);
-tl.to("#md2 .ai",{scale:1.5,boxShadow:"0 0 0 6px #4ea7ff55, 0 0 50px #4ea7ff",duration:.3,yoyo:true,repeat:1},119.14);
-tl.to("#md4 .ai",{scale:1.5,boxShadow:"0 0 0 6px #4ea7ff55, 0 0 50px #4ea7ff",duration:.3,yoyo:true,repeat:1},120.54);
-tl.to("#md5 .ai",{scale:1.5,boxShadow:"0 0 0 6px #4ea7ff55, 0 0 50px #4ea7ff",duration:.3,yoyo:true,repeat:1},121.58);
-tl.to("#e-modulos .hx3",{"opacity":0,"y":-20,"duration":0.4},122.48);
-tl.fromTo("#e-modulos .hx2 .w",{"opacity":0,"y":30,"filter":"blur(10px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.5,"stagger":0.1,"ease":"power3.out"},122.78);
-tl.to("#md0 > *",{"opacity":0.35,"duration":0.5},122.98);
-tl.to("#md0",{borderColor:"#4ea7ff22",duration:.5},122.98);
-tl.to("#hx-r0",{"opacity":0.15,"duration":0.5},122.98);
-tl.to("#md1",{borderColor:"#4ea7ff",background:"#12305a",boxShadow:"0 0 0 2px #4ea7ff, 0 0 60px #2d7ff988",duration:.4},123.08);
-tl.to("#hx-r1",{"stroke":"#4ea7ff","strokeWidth":5,"duration":0.4},123.08);
-tl.to("#md2",{borderColor:"#4ea7ff",background:"#12305a",boxShadow:"0 0 0 2px #4ea7ff, 0 0 60px #2d7ff988",duration:.4},123.33);
-tl.to("#hx-r2",{"stroke":"#4ea7ff","strokeWidth":5,"duration":0.4},123.33);
-tl.to("#md3",{borderColor:"#4ea7ff",background:"#12305a",boxShadow:"0 0 0 2px #4ea7ff, 0 0 60px #2d7ff988",duration:.4},123.58);
-tl.to("#hx-r3",{"stroke":"#4ea7ff","strokeWidth":5,"duration":0.4},123.58);
-tl.to("#md4 > *",{"opacity":0.35,"duration":0.5},122.98);
-tl.to("#md4",{borderColor:"#4ea7ff22",duration:.5},122.98);
-tl.to("#hx-r4",{"opacity":0.15,"duration":0.5},122.98);
-tl.to("#md5 > *",{"opacity":0.35,"duration":0.5},122.98);
-tl.to("#md5",{borderColor:"#4ea7ff22",duration:.5},122.98);
-tl.to("#hx-r5",{"opacity":0.15,"duration":0.5},122.98);
-tl.to("#md6 > *",{"opacity":0.35,"duration":0.5},122.98);
-tl.to("#md6",{borderColor:"#4ea7ff22",duration:.5},122.98);
-tl.to("#hx-r6",{"opacity":0.15,"duration":0.5},122.98);
-tl.to("#e-modulos",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},126.48);
-tl.fromTo("#e-cierre",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},126.23);
-tl.fromTo("#p2",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":1.8,"ease":"power2.inOut"},126.23);
-tl.to("#p2",{"opacity":0.2,"duration":1},128.03);
-tl.fromTo("#e-cierre .marca",{"opacity":0,"scale":0.5,"rotate":-8},{"opacity":1,"scale":1,"rotate":0,"duration":1,"ease":"back.out(1.6)"},127.18);
-tl.fromTo("#e-cierre h1",{"opacity":0,"letterSpacing":"30px","filter":"blur(10px)"},{"opacity":1,"letterSpacing":"2px","filter":"blur(0px)","duration":1.2,"ease":"power3.out"},127.48);
-tl.fromTo("#e-cierre .firma",{"opacity":0,"y":20},{"opacity":1,"y":0,"duration":0.8,"ease":"power3.out"},129.56);
-tl.fromTo("#e-cierre .url",{"opacity":0},{"opacity":1,"duration":0.8},130.56);
-tl.to("#e-cierre .fin",{"opacity":0,"y":-30,"filter":"blur(10px)","duration":0.7},131.76);
-tl.fromTo("#e-cierre .tres .ey",{"opacity":0,"letterSpacing":"18px"},{"opacity":1,"letterSpacing":"8px","duration":0.9,"ease":"power3.out"},132.16);
-tl.fromTo("#e-cierre .tres .prods span",{"opacity":0,"y":40,"filter":"blur(10px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.6,"stagger":0.25,"ease":"power3.out"},132.56);
-tl.to("#e-cierre .tres",{"opacity":0,"duration":1},137.70);
+tl.fromTo("#e-planifica .verbs li:nth-child(3)",{"opacity":0,"x":-40},{"opacity":1,"x":0,"color":"#ffffff","duration":0.5,"ease":"power3.out"},25.50);
+tl.to("#e-planifica .verbs li:nth-child(2)",{"color":"#5c6b80","duration":0.4},25.50);
+tl.fromTo("#e-planifica .verbs li:nth-child(4)",{"opacity":0,"x":-40},{"opacity":1,"x":0,"color":"#ffffff","duration":0.5,"ease":"power3.out"},26.94);
+tl.to("#e-planifica .verbs li:nth-child(3)",{"color":"#5c6b80","duration":0.4},26.94);
+tl.to("#e-planifica .verbs li:nth-child(4)",{color:"#4ea7ff",textShadow:"0 0 30px #2d7ff9",duration:.5},27.24);
+tl.fromTo("#pl-sheen",{"xPercent":-100},{"xPercent":200,"duration":1.4,"ease":"power2.inOut"},27.34);
+tl.to("#e-planifica",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},35.94);
+tl.fromTo("#lapso",{"opacity":0,"scale":1.15},{"opacity":1,"scale":1.04,"duration":6.009184000000005,"ease":"power1.out"},35.69);
+tl.fromTo("#e-gemelo .hud",{"opacity":0},{"opacity":1,"duration":0.6},35.99);
+tl.fromTo("#e-gemelo .hud .c",{"scale":1.6,"opacity":0},{"scale":1,"opacity":1,"duration":0.6,"stagger":0.08,"ease":"power3.out"},35.99);
+tl.fromTo("#e-gemelo .scan",{"yPercent":-10},{"yPercent":1100,"duration":3.5,"ease":"none","repeat":2},36.09);
+tl.fromTo("#e-gemelo .scrub i",{"scaleX":0},{"scaleX":1,"duration":11.83102,"ease":"none"},35.69);
+tl.fromTo("#e-gemelo .lowerleft .kicker",{"opacity":0,"x":-30},{"opacity":1,"x":0,"duration":0.6},35.99);
+tl.fromTo("#e-gemelo .lowerleft .w",{"opacity":0,"y":60,"filter":"blur(12px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.7,"stagger":0.12,"ease":"power3.out"},36.64);
+tl.to("#e-gemelo .lowerleft",{"opacity":0,"y":30,"duration":0.5},41.30);
+tl.fromTo("#e-gemelo .b1",{"opacity":0,"clipPath":"circle(0% at 50% 50%)"},{"opacity":1,"clipPath":"circle(80% at 50% 50%)","duration":0.7,"ease":"power3.inOut"},41.55);
+tl.fromTo("#e-gemelo .b1 img",{"scale":1.25,"x":-60},{"scale":1.05,"x":0,"duration":1.5399999999999963,"ease":"power1.out"},41.55);
+tl.fromTo("#lb-0",{"opacity":0,"x":-50,"filter":"blur(8px)"},{"opacity":1,"x":0,"filter":"blur(0px)","duration":0.5,"ease":"power3.out"},41.80);
+tl.to("#lb-0",{"opacity":0,"x":40,"duration":0.3},42.39);
+tl.fromTo("#e-gemelo .b2",{"opacity":0,"clipPath":"circle(0% at 50% 50%)"},{"opacity":1,"clipPath":"circle(80% at 50% 50%)","duration":0.7,"ease":"power3.inOut"},42.39);
+tl.fromTo("#e-gemelo .b2 img",{"scale":1.25,"x":60},{"scale":1.05,"x":0,"duration":1.4199999999999988,"ease":"power1.out"},42.39);
+tl.fromTo("#lb-1",{"opacity":0,"x":-50,"filter":"blur(8px)"},{"opacity":1,"x":0,"filter":"blur(0px)","duration":0.5,"ease":"power3.out"},42.64);
+tl.to("#lb-1",{"opacity":0,"x":40,"duration":0.3},43.11);
+tl.fromTo("#e-gemelo .b5",{"opacity":0,"clipPath":"circle(0% at 50% 50%)"},{"opacity":1,"clipPath":"circle(80% at 50% 50%)","duration":0.7,"ease":"power3.inOut"},43.11);
+tl.fromTo("#e-gemelo .b5 img",{"scale":1.25,"x":-60},{"scale":1.05,"x":0,"duration":1.3000000000000014,"ease":"power1.out"},43.11);
+tl.fromTo("#lb-2",{"opacity":0,"x":-50,"filter":"blur(8px)"},{"opacity":1,"x":0,"filter":"blur(0px)","duration":0.5,"ease":"power3.out"},43.36);
+tl.to("#lb-2",{"opacity":0,"x":40,"duration":0.3},43.71);
+tl.fromTo("#e-gemelo .b3",{"opacity":0,"clipPath":"circle(0% at 50% 50%)"},{"opacity":1,"clipPath":"circle(80% at 50% 50%)","duration":0.7,"ease":"power3.inOut"},43.71);
+tl.fromTo("#e-gemelo .b3 img",{"scale":1.25,"x":60},{"scale":1.05,"x":0,"duration":1.8600000000000037,"ease":"power1.out"},43.71);
+tl.fromTo("#lb-3",{"opacity":0,"x":-50,"filter":"blur(8px)"},{"opacity":1,"x":0,"filter":"blur(0px)","duration":0.5,"ease":"power3.out"},43.96);
+tl.to("#lb-3",{"opacity":0,"x":40,"duration":0.3},44.87);
+tl.fromTo("#e-gemelo .b4",{"opacity":0,"clipPath":"circle(0% at 50% 50%)"},{"opacity":1,"clipPath":"circle(80% at 50% 50%)","duration":0.7,"ease":"power3.inOut"},44.87);
+tl.fromTo("#e-gemelo .b4 img",{"scale":1.25,"x":-60},{"scale":1.05,"x":0,"duration":3.2018359999999975,"ease":"power1.out"},44.87);
+tl.fromTo("#e-gemelo .play",{"opacity":0,"scale":0.4},{"opacity":1,"scale":1,"duration":0.6,"ease":"back.out(2)"},45.02);
+tl.to("#e-gemelo .play",{"scale":1.5,"opacity":0,"duration":0.8,"ease":"power2.in"},46.32);
+tl.to("#e-gemelo .b4 img",{"scale":1.2,"duration":1.5,"ease":"power2.in"},45.92);
+tl.to("#e-gemelo",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},47.27);
+tl.fromTo("#e-control",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},47.02);
+tl.fromTo("#e-control .kicker",{"opacity":0,"y":-20},{"opacity":1,"y":0,"duration":0.5},47.22);
+tl.fromTo("#e-control .mid .w",{"opacity":0,"y":40,"filter":"blur(10px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.6,"stagger":0.07,"ease":"power3.out"},47.57);
+tl.fromTo("#cc-dev",{"rotateX":30,"y":300,"opacity":0},{"rotateX":8,"y":0,"opacity":1,"duration":1.2,"ease":"power3.out"},47.12);
+tl.fromTo("#cc-s0 img",{"scale":1,"x":0,"y":0},{"scale":2.1,"x":820,"y":260,"duration":1.4,"ease":"power3.inOut"},50.93);
+tl.to("#cc-s0 img",{"scale":1.6,"x":-60,"y":120,"duration":1.4,"ease":"power3.inOut"},54.57);
+tl.to("#cc-s0 img",{"scale":1.05,"x":0,"y":0,"duration":1.4,"ease":"power3.inOut"},56.11);
+tl.fromTo("#e-control .chip:nth-child(1)",{"opacity":0,"x":60},{"opacity":1,"x":0,"duration":0.5,"ease":"back.out(1.8)"},51.33);
+tl.fromTo("#e-control .chip:nth-child(2)",{"opacity":0,"x":60},{"opacity":1,"x":0,"duration":0.5,"ease":"back.out(1.8)"},54.77);
+tl.fromTo("#e-control .chip:nth-child(3)",{"opacity":0,"x":60},{"opacity":1,"x":0,"duration":0.5,"ease":"back.out(1.8)"},55.81);
+tl.fromTo("#cc-sheen",{"xPercent":-100},{"xPercent":200,"duration":1.4,"ease":"power2.inOut"},48.22);
+tl.to("#e-control",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},57.80);
+tl.fromTo("#e-fractal",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},57.55);
+tl.fromTo("#e-fractal .q2 .w",{"opacity":0,"y":40,"filter":"blur(12px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.6,"stagger":0.07,"ease":"power3.out"},58.10);
+tl.to("#e-fractal .q2",{"opacity":0,"scale":0.8,"filter":"blur(16px)","duration":0.5,"ease":"power2.in"},60.12);
+tl.fromTo("#e-fractal .topl",{"opacity":0},{"opacity":1,"duration":0.5},61.26);
+tl.fromTo("#e-fractal .reglas",{"opacity":0,"y":40,"scale":0.8},{"opacity":1,"y":0,"scale":1,"duration":0.6,"ease":"back.out(2)"},61.86);
+tl.to("#e-fractal .reglas",{"opacity":0,"y":-30,"duration":0.4},63.32);
+tl.fromTo("#e-fractal .c0",{"opacity":0,"z":-1600,"rotateY":0,"x":0},{"opacity":1,"z":-440,"rotateY":32,"x":-660,"duration":1.1,"ease":"power3.out"},63.42);
+tl.fromTo("#e-fractal .c1",{"opacity":0,"z":-1600,"rotateY":0,"x":0},{"opacity":1,"z":-220,"rotateY":16,"x":-330,"duration":1.1,"ease":"power3.out"},63.54);
+tl.fromTo("#e-fractal .c2",{"opacity":0,"z":-1600,"rotateY":0,"x":0},{"opacity":1,"z":0,"rotateY":0,"x":0,"duration":1.1,"ease":"power3.out"},63.66);
+tl.fromTo("#e-fractal .c3",{"opacity":0,"z":-1600,"rotateY":0,"x":0},{"opacity":1,"z":-220,"rotateY":-16,"x":330,"duration":1.1,"ease":"power3.out"},63.78);
+tl.fromTo("#e-fractal .c4",{"opacity":0,"z":-1600,"rotateY":0,"x":0},{"opacity":1,"z":-440,"rotateY":-32,"x":660,"duration":1.1,"ease":"power3.out"},63.90);
+tl.fromTo("#e-fractal .score i",{"scaleX":0},{"scaleX":1,"duration":1,"stagger":0.1,"ease":"power2.out"},65.22);
+tl.fromTo("#e-fractal .score b",{"opacity":0},{"opacity":1,"duration":0.4,"stagger":0.1},65.62);
+tl.fromTo("#e-fractal .tags .chip",{"opacity":0,"y":30},{"opacity":1,"y":0,"duration":0.45,"stagger":0.15,"ease":"back.out(2)"},65.22);
+tl.to("#e-fractal .c0, #e-fractal .c4",{"opacity":0.25,"filter":"blur(4px) brightness(.5)","duration":0.6},67.54);
+tl.to("#e-fractal .c2",{"z":160,"scale":1.12,"duration":0.9,"ease":"power3.inOut"},67.54);
+tl.to("#e-fractal .c1, #e-fractal .c3",{"z":60,"duration":0.9,"ease":"power3.inOut"},67.54);
+tl.to("#e-fractal .c1, #e-fractal .c2, #e-fractal .c3",{boxShadow:"0 0 0 3px #4ea7ff, 0 0 60px #2d7ff9aa",duration:.5},67.54);
+tl.to("#e-fractal .tags",{"opacity":0,"duration":0.4},67.54);
+tl.fromTo("#e-fractal .b4",{"opacity":0,"clipPath":"inset(30% 30% 30% 30% round 24px)"},{"opacity":1,"clipPath":"inset(0% 0% 0% 0% round 0px)","duration":0.9,"ease":"power3.inOut"},70.62);
+tl.fromTo("#e-fractal .b4 img",{"scale":1.2},{"scale":1.05,"duration":3.5600000000000023,"ease":"sine.out"},70.62);
+tl.fromTo("#e-fractal .decide",{"opacity":0},{"opacity":1,"duration":0.4},72.32);
+tl.fromTo("#e-fractal .decide .w",{"opacity":0,"y":30},{"opacity":1,"y":0,"duration":0.5,"stagger":0.1,"ease":"power3.out"},72.32);
+tl.fromTo("#e-fractal .decide button",{"opacity":0,"scale":0.8},{"opacity":1,"scale":1,"duration":0.5,"ease":"back.out(2)"},73.18);
+tl.to("#e-fractal .decide button",{"scale":0.92,"background":"#4ea7ff","duration":0.15,"yoyo":true,"repeat":1},74.28);
+tl.to("#e-fractal .decide button",{boxShadow:"0 0 0 18px #4ea7ff00, 0 0 90px #4ea7ff",duration:.6},74.48);
+tl.to("#e-fractal",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},77.78);
+tl.fromTo("#e-asistente",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},77.53);
+tl.fromTo("#e-asistente .chat",{"opacity":0,"y":80,"rotateX":18},{"opacity":1,"y":0,"rotateX":0,"duration":0.9,"ease":"power3.out"},77.63);
+tl.fromTo("#e-asistente .topl",{"opacity":0},{"opacity":1,"duration":0.5},77.73);
+tl.fromTo("#e-asistente .wave i",{"scaleY":0.15},{"scaleY":1,"duration":0.25,"stagger":{"each":0.03,"from":"center","yoyo":true,"repeat":25},"ease":"sine.inOut"},77.93);
+tl.fromTo("#e-asistente .ch",{"opacity":0},{"opacity":1,"duration":0.01,"stagger":0.035},78.18);
+tl.fromTo("#e-asistente .aw",{"opacity":0,"filter":"blur(6px)"},{"opacity":1,"filter":"blur(0px)","duration":0.25,"stagger":0.12},80.08);
+tl.to("#e-asistente",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},89.50);
+tl.fromTo("#e-conecta",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},89.25);
+tl.fromTo("#e-conecta .core",{"opacity":0,"scale":0.5},{"opacity":1,"scale":1,"duration":0.8,"ease":"back.out(1.7)"},89.45);
+tl.fromTo("#e-conecta .node.m",{"opacity":0,"x":-60},{"opacity":1,"x":0,"duration":0.5,"stagger":0.1,"ease":"power3.out"},90.14);
+tl.fromTo("#ln0",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"power2.out"},90.44);
+tl.fromTo("#pk0",{"attr":{"cx":350,"cy":260},"opacity":1},{"attr":{"cx":810,"cy":515},"opacity":1,"duration":0.9,"ease":"power1.in","repeat":3,"repeatDelay":0.2},90.84);
+tl.fromTo("#ln1",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"power2.out"},90.54);
+tl.fromTo("#pk1",{"attr":{"cx":350,"cy":430},"opacity":1},{"attr":{"cx":810,"cy":515},"opacity":1,"duration":0.9,"ease":"power1.in","repeat":3,"repeatDelay":0.25},90.96);
+tl.fromTo("#ln2",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"power2.out"},90.64);
+tl.fromTo("#pk2",{"attr":{"cx":350,"cy":600},"opacity":1},{"attr":{"cx":810,"cy":515},"opacity":1,"duration":0.9,"ease":"power1.in","repeat":3,"repeatDelay":0.30000000000000004},91.08);
+tl.fromTo("#ln3",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"power2.out"},90.74);
+tl.fromTo("#pk3",{"attr":{"cx":350,"cy":770},"opacity":1},{"attr":{"cx":810,"cy":515},"opacity":1,"duration":0.9,"ease":"power1.in","repeat":3,"repeatDelay":0.35000000000000003},91.20);
+tl.fromTo("#e-conecta .proto",{"opacity":0,"y":20},{"opacity":1,"y":0,"duration":0.5},90.94);
+tl.fromTo("#e-conecta .erp",{"opacity":0,"x":60},{"opacity":1,"x":0,"duration":0.5,"ease":"back.out(1.7)"},93.98);
+tl.fromTo("#lnE",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.5},94.18);
+tl.fromTo("#pkE",{"attr":{"cx":1560,"cy":515},"opacity":1},{"attr":{"cx":1110,"cy":515},"opacity":1,"duration":0.8,"ease":"power1.in","repeat":2,"repeatDelay":0.2},94.58);
+tl.fromTo("#e-conecta .bottomc .w",{"opacity":0,"y":30,"filter":"blur(10px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.6},94.78);
+tl.to("#e-conecta",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},98.02);
+tl.fromTo("#e-modulos",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},97.77);
+tl.fromTo("#e-modulos .hx .w",{"opacity":0,"y":30,"filter":"blur(10px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.6,"stagger":0.1,"ease":"power3.out"},98.22);
+tl.fromTo("#e-modulos .hcore",{"opacity":0,"scale":0.4},{"opacity":1,"scale":1,"duration":0.9,"ease":"back.out(1.7)"},99.98);
+tl.to("#e-modulos .hcore",{boxShadow:"0 0 0 3px #4ea7ff, 0 0 120px #2d7ff9aa",duration:.6,yoyo:true,repeat:1},100.88);
+tl.fromTo("#hx-borde",{"strokeDashoffset":1,"opacity":1},{"strokeDashoffset":0,"opacity":1,"duration":1.2399999999999949,"ease":"power2.inOut"},104.26);
+tl.fromTo("#md0",{"opacity":0,"scale":0.6,"y":20},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(2)"},105.48);
+tl.fromTo("#hx-r0",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.45,"ease":"power2.out"},105.48);
+tl.to("#md0",{boxShadow:"0 0 0 2px #4ea7ff, 0 0 50px #2d7ff9aa",duration:.25,yoyo:true,repeat:1},105.60);
+tl.fromTo("#md1",{"opacity":0,"scale":0.6,"y":20},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(2)"},106.56);
+tl.fromTo("#hx-r1",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.45,"ease":"power2.out"},106.56);
+tl.to("#md1",{boxShadow:"0 0 0 2px #4ea7ff, 0 0 50px #2d7ff9aa",duration:.25,yoyo:true,repeat:1},106.68);
+tl.fromTo("#md2",{"opacity":0,"scale":0.6,"y":20},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(2)"},107.48);
+tl.fromTo("#hx-r2",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.45,"ease":"power2.out"},107.48);
+tl.to("#md2",{boxShadow:"0 0 0 2px #4ea7ff, 0 0 50px #2d7ff9aa",duration:.25,yoyo:true,repeat:1},107.60);
+tl.fromTo("#md3",{"opacity":0,"scale":0.6,"y":20},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(2)"},108.68);
+tl.fromTo("#hx-r3",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.45,"ease":"power2.out"},108.68);
+tl.to("#md3",{boxShadow:"0 0 0 2px #4ea7ff, 0 0 50px #2d7ff9aa",duration:.25,yoyo:true,repeat:1},108.80);
+tl.fromTo("#md4",{"opacity":0,"scale":0.6,"y":20},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(2)"},110.12);
+tl.fromTo("#hx-r4",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.45,"ease":"power2.out"},110.12);
+tl.to("#md4",{boxShadow:"0 0 0 2px #4ea7ff, 0 0 50px #2d7ff9aa",duration:.25,yoyo:true,repeat:1},110.24);
+tl.fromTo("#md5",{"opacity":0,"scale":0.6,"y":20},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(2)"},111.32);
+tl.fromTo("#hx-r5",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.45,"ease":"power2.out"},111.32);
+tl.to("#md5",{boxShadow:"0 0 0 2px #4ea7ff, 0 0 50px #2d7ff9aa",duration:.25,yoyo:true,repeat:1},111.44);
+tl.fromTo("#md6",{"opacity":0,"scale":0.6,"y":20},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(2)"},112.76);
+tl.fromTo("#hx-r6",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.45,"ease":"power2.out"},112.76);
+tl.to("#md6",{boxShadow:"0 0 0 2px #4ea7ff, 0 0 50px #2d7ff9aa",duration:.25,yoyo:true,repeat:1},112.88);
+tl.to("#e-modulos .hx",{"opacity":0,"y":-20,"duration":0.4},114.02);
+tl.fromTo("#e-modulos .hx3 .w",{"opacity":0,"y":30,"filter":"blur(10px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.5,"stagger":0.08,"ease":"power3.out"},114.32);
+tl.fromTo("#e-modulos .ai",{"opacity":0,"scale":0.2},{"opacity":1,"scale":1,"duration":0.45,"stagger":0.09,"ease":"back.out(2.4)"},117.16);
+tl.to(".hcore .ai",{scale:1.5,boxShadow:"0 0 0 6px #4ea7ff55, 0 0 50px #4ea7ff",duration:.3,yoyo:true,repeat:1},118.64);
+tl.to("#md0 .ai",{scale:1.5,boxShadow:"0 0 0 6px #4ea7ff55, 0 0 50px #4ea7ff",duration:.3,yoyo:true,repeat:1},119.68);
+tl.to("#md1 .ai",{scale:1.5,boxShadow:"0 0 0 6px #4ea7ff55, 0 0 50px #4ea7ff",duration:.3,yoyo:true,repeat:1},120.80);
+tl.to("#md2 .ai",{scale:1.5,boxShadow:"0 0 0 6px #4ea7ff55, 0 0 50px #4ea7ff",duration:.3,yoyo:true,repeat:1},121.96);
+tl.to("#md4 .ai",{scale:1.5,boxShadow:"0 0 0 6px #4ea7ff55, 0 0 50px #4ea7ff",duration:.3,yoyo:true,repeat:1},123.36);
+tl.to("#md5 .ai",{scale:1.5,boxShadow:"0 0 0 6px #4ea7ff55, 0 0 50px #4ea7ff",duration:.3,yoyo:true,repeat:1},124.40);
+tl.to("#e-modulos .hx3",{"opacity":0,"y":-20,"duration":0.4},125.30);
+tl.fromTo("#e-modulos .hx2 .w",{"opacity":0,"y":30,"filter":"blur(10px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.5,"stagger":0.1,"ease":"power3.out"},125.60);
+tl.to("#md0 > *",{"opacity":0.35,"duration":0.5},125.80);
+tl.to("#md0",{borderColor:"#4ea7ff22",duration:.5},125.80);
+tl.to("#hx-r0",{"opacity":0.15,"duration":0.5},125.80);
+tl.to("#md1",{borderColor:"#4ea7ff",background:"#12305a",boxShadow:"0 0 0 2px #4ea7ff, 0 0 60px #2d7ff988",duration:.4},125.90);
+tl.to("#hx-r1",{"stroke":"#4ea7ff","strokeWidth":5,"duration":0.4},125.90);
+tl.to("#md2",{borderColor:"#4ea7ff",background:"#12305a",boxShadow:"0 0 0 2px #4ea7ff, 0 0 60px #2d7ff988",duration:.4},126.15);
+tl.to("#hx-r2",{"stroke":"#4ea7ff","strokeWidth":5,"duration":0.4},126.15);
+tl.to("#md3",{borderColor:"#4ea7ff",background:"#12305a",boxShadow:"0 0 0 2px #4ea7ff, 0 0 60px #2d7ff988",duration:.4},126.40);
+tl.to("#hx-r3",{"stroke":"#4ea7ff","strokeWidth":5,"duration":0.4},126.40);
+tl.to("#md4 > *",{"opacity":0.35,"duration":0.5},125.80);
+tl.to("#md4",{borderColor:"#4ea7ff22",duration:.5},125.80);
+tl.to("#hx-r4",{"opacity":0.15,"duration":0.5},125.80);
+tl.to("#md5 > *",{"opacity":0.35,"duration":0.5},125.80);
+tl.to("#md5",{borderColor:"#4ea7ff22",duration:.5},125.80);
+tl.to("#hx-r5",{"opacity":0.15,"duration":0.5},125.80);
+tl.to("#md6 > *",{"opacity":0.35,"duration":0.5},125.80);
+tl.to("#md6",{borderColor:"#4ea7ff22",duration:.5},125.80);
+tl.to("#hx-r6",{"opacity":0.15,"duration":0.5},125.80);
+tl.to("#e-modulos",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},129.30);
+tl.fromTo("#e-cierre",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},129.05);
+tl.fromTo("#p2",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":1.8,"ease":"power2.inOut"},129.05);
+tl.to("#p2",{"opacity":0.2,"duration":1},130.85);
+tl.fromTo("#e-cierre .marca",{"opacity":0,"scale":0.5,"rotate":-8},{"opacity":1,"scale":1,"rotate":0,"duration":1,"ease":"back.out(1.6)"},130.00);
+tl.fromTo("#e-cierre h1",{"opacity":0,"letterSpacing":"30px","filter":"blur(10px)"},{"opacity":1,"letterSpacing":"2px","filter":"blur(0px)","duration":1.2,"ease":"power3.out"},130.30);
+tl.fromTo("#e-cierre .firma",{"opacity":0,"y":20},{"opacity":1,"y":0,"duration":0.8,"ease":"power3.out"},132.38);
+tl.fromTo("#e-cierre .url",{"opacity":0},{"opacity":1,"duration":0.8},133.38);
+tl.to("#e-cierre .fin",{"opacity":0,"y":-30,"filter":"blur(10px)","duration":0.7},134.58);
+tl.fromTo("#e-cierre .tres .ey",{"opacity":0,"letterSpacing":"18px"},{"opacity":1,"letterSpacing":"8px","duration":0.9,"ease":"power3.out"},134.98);
+tl.fromTo("#e-cierre .tres .prods span",{"opacity":0,"y":40,"filter":"blur(10px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.6,"stagger":0.25,"ease":"power3.out"},135.38);
+tl.to("#e-cierre .tres",{"opacity":0,"duration":1},139.13);
 tl.fromTo("#sweep-0",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},6.46);
 tl.fromTo("#sweep-1",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},13.29);
-tl.fromTo("#sweep-2",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},34.78);
-tl.fromTo("#sweep-3",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},56.64);
-tl.fromTo("#sweep-4",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},94.85);
-tl.fromTo("#sweep-5",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},126.13);
+tl.fromTo("#sweep-2",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},35.59);
+tl.fromTo("#sweep-3",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},57.45);
+tl.fromTo("#sweep-4",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},97.67);
+tl.fromTo("#sweep-5",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},128.95);
 window.__timelines["main"] = tl;
 tl.seek(0);
 </script>

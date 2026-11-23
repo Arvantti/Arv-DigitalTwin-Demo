@@ -1,1 +1,1 @@
-Montecarlo es repetir el mismo cálculo miles de veces, cada vez con valores sorteados según su probabilidad: un retraso de dos días, una máquina que para, un cliente que cambia la fecha. Como tirar los dados muchas veces para ver qué suele salir.
+Montecarlo es repetir el mismo cálculo muchas veces, cada vez con valores sorteados según su probabilidad: un retraso de dos días, una máquina que para, un cliente que cambia la fecha. Como tirar los dados muchas veces para ver qué suele salir.

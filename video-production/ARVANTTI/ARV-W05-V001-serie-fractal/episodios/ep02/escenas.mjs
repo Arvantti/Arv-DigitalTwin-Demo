@@ -10,7 +10,7 @@ export const ESCENAS = [
   { id: "cierre", dir: "08-cierre", lead: 0.9, tail: 4.5, sinSubtitulos: true },
 ];
 
-import { red, region, arbol, poblacion, pareto } from "../../viz.mjs";
+import { red, region, arbol, genetico, pareto } from "../../viz.mjs";
 import { ayudas, opciones, animarOpciones, familias, cierre } from "../../comun.mjs";
 
 export function componerEpisodio(c) {
@@ -18,10 +18,10 @@ export function componerEpisodio(c) {
   const { pop, fade, izq, luz, tachar, kick } = ayudas(c);
   const KICK = kick(2);
 
-  // 1. Cientos de formas de producir el pedido.
+  // 1. Muchísimas formas de producir el pedido.
   {
     const x = S.arbol; const [s, d] = span(x);
-    const tC = P(x, "miles"), tM = P(x, "Probarlas");
+    const tC = P(x, "muchísimas"), tM = P(x, "Probarlas");
     clip("e-arbol", "scene", s, d, `${KICK}
       <div class="st">
         <h1 class="h q">${words("¿Aceptamos el pedido?")}</h1>
@@ -41,12 +41,12 @@ export function componerEpisodio(c) {
   {
     const x = S.reglas; const [s, d] = span(x);
     const R = [["Qué se puede mover", "Se puede mover", "✓"], ["qué no", "No se mueve", "✕"], ["qué cliente", "Cliente primero", "1"]];
-    const tA = P(x, "Primero aprende"), tO = P(x, "optimiza");
+    const tA = P(x, "Primero incorpora"), tO = P(x, "optimiza");
     clip("e-reglas", "scene", s, d, `${KICK}
       <div class="st">
         <h2 class="h md r-t">${words("Primero, tus reglas.")}</h2>
         <div class="row rgs">${R.map(([, t, ic], i) => `<div class="panel card rg" id="rg${i}"><i class="ic">${ic}</i><b>${t}</b></div>`).join("")}</div>
-        <div class="row pas"><span class="chip on" id="pa0">1 · Aprende tus reglas</span><span class="flecha" id="pa1">→</span><span class="chip" id="pa2">2 · Optimiza</span></div>
+        <div class="row pas"><span class="chip on" id="pa0">1 · Incorpora tus reglas</span><span class="flecha" id="pa1">→</span><span class="chip" id="pa2">2 · Optimiza</span></div>
       </div>`, 3);
     enter("e-reglas", s);
     titleIn("#e-reglas .r-t", P(x, "tus reglas") - 0.2);
@@ -86,7 +86,7 @@ export function componerEpisodio(c) {
     clip("e-evol", "scene", s, d, `${KICK}
       <div class="st">
         <div class="row ops3"><span class="chip" id="ev0">Selección</span><span class="chip" id="ev1">Recombinación</span><span class="chip" id="ev2">Mutación</span></div>
-        <div class="panel pobw">${poblacion(c, "pob4", { w: VERT ? 860 : 1100, h: VERT ? 620 : 430, n: 30, gens: 5, t0: tG, dur: tC - tG + 0.5, seed: 9 })}</div>
+        <div class="panel pobw">${genetico(c, "gen4", { t0: tG - 0.2, tS: P(x, "seleccionan"), tR: P(x, "recombinan"), tM: P(x, "mutan"), tG: P(x, "generación tras"), tEnd: tC - 0.5 })}</div>
         <span class="chip on ne">Optimización evolutiva · no es una red neuronal</span>
       </div>
       <div class="st capa"><h2 class="h md cv">${words("Su valor: la combinación.")}</h2>${familias("fa4")}</div>`, 3);
@@ -127,18 +127,18 @@ export function componerEpisodio(c) {
   // 6. El resultado: las mejores alternativas con su impacto.
   {
     const x = S.resultado; const [s, d] = span(x);
-    const tS = P(x, "Son las mejores"), tG = P(x, "lo que gana"), tE = P(x, "Tú eliges");
+    const tS = P(x, "son las mejores"), tG = P(x, "lo que gana"), tE = P(x, "Tú eliges");
     clip("e-res", "scene", s, d, `${KICK}
       <div class="st">
         <div class="row nos"><span class="h md tache" id="no0">Una respuesta única</span><span class="h md tache" id="no1">El óptimo perfecto</span></div>
-        ${opciones("op6", [["Opción A", [85, 40, 55], "Gana entregas · cede costo"], ["Opción B", [60, 80, 50], "Gana costo · cede tiempo"], ["Opción C", [72, 62, 78], "Equilibrada"]], [["Entregas"], ["Costo"], ["Margen"]])}
-        <span class="chip on te">Tú eliges</span>
+        ${opciones("op6", [["Opción A", [85, 40, 55], "Gana entregas · cede costo"], ["Opción B", [60, 80, 50], "Gana costo · cede tiempo"], ["Opción C", [72, 62, 78], "Equilibrada · no gana en todo"]], [["Entregas"], ["Costo"], ["Margen"]])}
+        <span class="chip on te">Tú eliges según tus prioridades</span>
       </div>`, 3);
     enter("e-res", s);
     fade("#no0", P(x, "una respuesta") - 0.2); fade("#no1", P(x, "la promesa") - 0.2);
     tachar("#no0", P(x, "ni la")); tachar("#no1", tS - 0.3);
     to("#e-res .nos", { opacity: 0.35, scale: 0.8, duration: 0.5 }, tS);
-    animarOpciones(c, "op6", tS + 0.1, P(x, "con su impacto"));
+    animarOpciones(c, "op6", tS + 0.1, P(x, "lo que gana"));
     at("#op6 small", { opacity: 0 }, { opacity: 1, duration: 0.4, stagger: 0.2 }, tG);
     pop("#e-res .te", tE);
     sfx("6a", "pop.mp3", tS, 0.15); sfx("6b", "spark.wav", tE, 0.2);
