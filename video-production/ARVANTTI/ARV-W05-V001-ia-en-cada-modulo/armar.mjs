@@ -346,10 +346,19 @@ function componer() {
     });
     const best = [front(0.2), front(0.5), front(0.8)];
     const gauss = () => Math.sqrt(-2 * Math.log(rnd() + 1e-9)) * Math.cos(2 * Math.PI * rnd());
-    // Distribución de resultados por plan (entregas a tiempo, %): A rinde alto pero varía mucho; B alto y estable; C estable pero bajo.
-    const PLANES = [["Plan A", 0.70, 0.17], ["Plan B", 0.76, 0.05], ["Plan C", 0.50, 0.06]];
-    const mx = (v) => 230 + Math.max(0, Math.min(1, v)) * 610;
-    const filas = PLANES.map(([n, m, sd], k) => ({ n, y: 250 + k * 120, pts: Array.from({ length: 40 }, () => mx(m + sd * gauss())), m: mx(m), lo: mx(m - 2 * sd), hi: mx(m + 2 * sd) }));
+    // Ejemplo ilustrativo: 30 escenarios por plan (entregas a tiempo, %) frente a la meta.
+    // Se cuenta en cuántos cumple la meta y cuánto falta, en promedio, cuando no cumple.
+    const PLANES = [["Plan A", 0.88, 0.09], ["Plan B", 0.91, 0.035], ["Plan C", 0.83, 0.03]];
+    const META = 0.85, RUNS = 30;
+    const mx = (v) => 150 + Math.max(0, Math.min(1, (v - 0.6) / 0.4)) * 450;
+    const filas = PLANES.map(([n, m, sd], k) => {
+      const vals = Array.from({ length: RUNS }, () => Math.min(0.995, m + sd * gauss()));
+      const fallas = vals.filter((v) => v < META);
+      const falta = fallas.length ? (fallas.reduce((a, v) => a + (META - v), 0) / fallas.length) * 100 : 0;
+      return { n, y: 250 + k * 120, vals, ok: RUNS - fallas.length, falta };
+    });
+    const mejor = filas.reduce((b, f, k) => (f.ok > filas[b].ok ? k : b), 0);
+    const num = (v) => v.toFixed(1).replace(".", ",");
     const TEC = ["Inteligencia artificial", "Optimización matemática", "Algoritmos genéticos", "Métodos estocásticos"];
     const st = escenaModulo(x, `
       <div class="chip" id="f-r"><span class="ok">✓</span>Reglas · restricciones · objetivos</div>
@@ -362,13 +371,16 @@ function componer() {
       </svg>
       <div class="gen" id="f-gen">Generación <b>1</b></div>
       <svg class="chart" id="f-mc" viewBox="0 0 900 640">
-        <text x="0" y="180" class="lbl t">Cada punto = un escenario simulado (Monte Carlo)</text>
-        <line class="ax" x1="230" y1="560" x2="840" y2="560"/><text x="230" y="596" class="lbl">Entregas a tiempo →</text>
-        ${filas.map((f, k) => `<g id="f-f${k}"><text x="0" y="${f.y + 8}" class="lbl n">${f.n}</text><rect class="rango" x="${f.lo.toFixed(0)}" y="${f.y - 30}" width="${(Math.min(840, f.hi) - Math.max(230, f.lo)).toFixed(0)}" height="60" rx="10"/>
-          ${f.pts.map((v) => `<circle class="esc" cx="${v.toFixed(0)}" cy="${(f.y + (rnd() - 0.5) * 44).toFixed(0)}" r="6"/>`).join("")}<line class="med" x1="${f.m.toFixed(0)}" y1="${f.y - 38}" x2="${f.m.toFixed(0)}" y2="${f.y + 38}"/></g>`).join("")}
+        <text x="0" y="150" class="lbl t">Cada punto = un escenario simulado (${RUNS} por plan)</text>
+        <text x="900" y="150" class="lbl nota" text-anchor="end">Ejemplo ilustrativo</text>
+        <line class="ax" x1="150" y1="560" x2="600" y2="560"/><text x="150" y="596" class="lbl">Entregas a tiempo →</text>
+        <g id="f-meta"><line class="meta" x1="${mx(META).toFixed(0)}" y1="200" x2="${mx(META).toFixed(0)}" y2="560"/><text x="${mx(META).toFixed(0)}" y="190" class="lbl e" text-anchor="middle">Meta ${Math.round(META * 100)} %</text></g>
+        ${filas.map((f, k) => `<g id="f-f${k}"><rect class="rango" x="-10" y="${f.y - 44}" width="915" height="88" rx="12"/><text x="0" y="${f.y + 9}" class="lbl n">${f.n}</text>
+          ${f.vals.map((v) => `<circle class="esc ${v < META ? "no" : ""}" cx="${mx(v).toFixed(0)}" cy="${(f.y + (rnd() - 0.5) * 44).toFixed(0)}" r="6"/>`).join("")}
+          <g class="res"><text x="630" y="${f.y - 4}" class="lbl n2">Cumple en ${f.ok} de ${RUNS}</text><text x="630" y="${f.y + 28}" class="lbl">${f.falta ? `Si no cumple: −${num(f.falta)} pts` : "Siempre cumple"}</text></g></g>`).join("")}
       </svg>
-      <div class="robusto" id="f-rob">Más robusto</div>`);
-    const tR = en(x, "reglas"), tCo = en(x, "combina"), tE = en(x, "explorar"), tB = en(x, "encontrar mejores"), tM = en(x, "Monte Carlo"), tRo = en(x, "robustas");
+      <div class="robusto" id="f-rob">Mayor probabilidad de cumplir</div>`);
+    const tR = en(x, "reglas"), tCo = en(x, "combina"), tE = en(x, "explorar"), tB = en(x, "encontrar mejores"), tM = en(x, "Monte Carlo"), tRo = en(x, "cumplimiento");
     pop(`${st} #f-r`, tR - 0.2);
     sfx("pop.mp3", tR, 0.2);
     set(`${st} .best, ${st} #f-gen, ${st} #f-mc, ${st} #f-rob, ${st} #f-ch`, { opacity: 0 }, x.start);
@@ -390,14 +402,15 @@ function componer() {
     sfx("spark.wav", t2, 0.22);
     // Monte Carlo: los tres finalistas se prueban en muchos escenarios.
     to(`${st} #f-ch, ${st} #f-gen`, { opacity: 0, duration: 0.4 }, tM - 0.4);
-    to(`${st} #f-t`, { opacity: 0.35, duration: 0.4 }, tM - 0.4);
+    to(`${st} #f-t`, { opacity: 0, duration: 0.4 }, tM - 0.4);
     fade(`${st} #f-mc`, tM - 0.2, 0.3);
     filas.forEach((_, k) => {
       at(`${st} #f-f${k} .esc`, { opacity: 0, scale: 0, transformOrigin: "50% 50%" }, { opacity: 0.85, scale: 1, duration: 0.2, stagger: 0.025, ease: "back.out(2)" }, tM + 0.1 + k * 0.35);
-      at(`${st} #f-f${k} .rango, ${st} #f-f${k} .med`, { opacity: 0 }, { opacity: 1, duration: 0.4 }, tM + 1.2 + k * 0.3);
+      at(`${st} #f-f${k} .res`, { opacity: 0 }, { opacity: 1, duration: 0.4 }, tM + 1.4 + k * 0.3);
     });
+    at(`${st} #f-meta`, { opacity: 0 }, { opacity: 1, duration: 0.4 }, tM + 0.9);
     sfx("typing.mp3", tM + 0.1, 0.15);
-    tl.push(`tl.to(${q(`${st} #f-f1 .rango`)},{fill:"#4ea7ff33",stroke:"#4ea7ff",strokeWidth:3,duration:.3},${(tRo - 0.3).toFixed(2)});`);
+    tl.push(`tl.to(${q(`${st} #f-f${mejor} .rango`)},{opacity:1,duration:.3},${(tRo - 0.3).toFixed(2)});`);
     pop(`${st} #f-rob`, tRo - 0.2);
     sfx("spark.wav", tRo, 0.22);
   }

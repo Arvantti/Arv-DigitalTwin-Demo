@@ -179,10 +179,11 @@ html,body{width:{{W}}px;height:{{H}}px;margin:0;overflow:hidden;background:var(-
 .tec span:first-child{border-color:#c4b5fd;color:#e9e3ff}
 .tec b{font:800 24px Inter,sans-serif;color:var(--ti2)}
 .chart .lbl.t{fill:#e9e3ff;font-weight:700}.chart .lbl.n{font-size:26px;font-weight:800;fill:#fff}
-.chart .esc{fill:#a7abb3}
-.chart .rango{fill:#ffffff10;stroke:#a7abb3;stroke-width:2;opacity:0}
-.chart .med{stroke:#fff;stroke-width:4;opacity:0}
-.robusto{right:0;top:415px;padding:10px 18px;border-radius:10px;background:var(--electric);color:#05070c;font:800 26px Inter,sans-serif;opacity:0}
+.chart .esc{fill:#4ea7ff}.chart .esc.no{fill:var(--alert)}
+.chart .rango{fill:#4ea7ff22;stroke:#4ea7ff;stroke-width:3;opacity:0}
+.chart .meta{stroke:#fff;stroke-width:3;stroke-dasharray:10 8}
+.chart .lbl.n2{font-weight:800;fill:#fff}.chart .lbl.nota{font-size:18px;font-style:italic;fill:var(--ti2)}
+.robusto{right:0;top:612px;padding:10px 18px;border-radius:10px;background:var(--electric);color:#05070c;font:800 26px Inter,sans-serif;opacity:0}
 .pasos{left:0;top:580px;width:900px;display:flex;gap:10px;opacity:0}
 .pasos span{flex:1;text-align:center;padding:12px 8px;border-radius:10px;border:2px solid #ffffff22;background:#070d18e0;font:700 22px Inter,sans-serif;color:var(--ti2)}
 .pasos span:last-child{flex:1.6}

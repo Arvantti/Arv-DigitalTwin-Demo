@@ -39,7 +39,7 @@
       "modulo": 4,
       "nombre": "Fractal Industrial",
       "ia": "IA + optimización + escenarios",
-      "voz": "En Fractal Industrial, primero le enseñas tus reglas, restricciones y objetivos. Después combina IA, optimización matemática, algoritmos genéticos y métodos estocásticos para explorar miles de alternativas y encontrar mejores planes. Y con Monte Carlo prueba cada plan en muchos escenarios inciertos, para que elijas soluciones eficientes y robustas."
+      "voz": "En Fractal Industrial, primero le enseñas tus reglas, restricciones y objetivos. Después, combina IA, optimización matemática, algoritmos genéticos y métodos estocásticos para explorar numerosas alternativas y encontrar mejores planes. Y con simulación Monte Carlo analiza cómo respondería cada plan ante diferentes escenarios inciertos, para que elijas con el cumplimiento y el riesgo a la vista."
     },
     {
       "id": "control",
@@ -60,7 +60,7 @@
       "modulo": 7,
       "nombre": "AI Embedded Assistant",
       "ia": "La capa conversacional",
-      "voz": "Y para conversar con todo el sistema está el AI Embedded Assistant: responde con el conocimiento del cerebro empresarial y comparte capacidades con Arvantti OS. Con MCP se conecta a herramientas y otras IA, y con su CLI acepta comandos y automatizaciones."
+      "voz": "Y para conversar con todo el sistema está el AI Embedded Assistant: responde con el conocimiento del cerebro empresarial y comparte capacidades con Arvantti OS. Con MCP, el protocolo de contexto de modelos, se conecta a herramientas y a otras IA; y con su CLI, la interfaz de línea de comandos, acepta comandos y automatizaciones."
     },
     {
       "id": "cierre",
