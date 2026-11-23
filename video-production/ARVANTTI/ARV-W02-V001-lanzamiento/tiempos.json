@@ -19,64 +19,64 @@
   "id": "planifica",
   "start": 13.64,
   "voiceAt": 14.14,
-  "voz": 15.31,
-  "dur": 16.61,
+  "voz": 20.19,
+  "dur": 21.49,
   "real": true
  },
  {
   "id": "gemelo",
-  "start": 30.25,
-  "voiceAt": 30.65,
+  "start": 35.13,
+  "voiceAt": 35.53,
   "voz": 10.03,
   "dur": 11.33,
   "real": true
  },
  {
   "id": "control",
-  "start": 41.58,
-  "voiceAt": 41.88,
-  "voz": 6.69,
-  "dur": 7.89,
+  "start": 46.46,
+  "voiceAt": 46.76,
+  "voz": 9.33,
+  "dur": 10.53,
   "real": true
  },
  {
   "id": "fractal",
-  "start": 49.46,
-  "voiceAt": 49.76,
-  "voz": 12.75,
-  "dur": 14.05,
+  "start": 56.99,
+  "voiceAt": 57.29,
+  "voz": 16.67,
+  "dur": 17.97,
   "real": true
  },
  {
   "id": "asistente",
-  "start": 63.51,
-  "voiceAt": 63.81,
-  "voz": 7.81,
-  "dur": 9.01,
+  "start": 74.95,
+  "voiceAt": 75.25,
+  "voz": 10.53,
+  "dur": 11.73,
   "real": true
  },
  {
   "id": "conecta",
-  "start": 72.52,
-  "voiceAt": 72.82,
-  "voz": 5.88,
-  "dur": 7.08,
+  "start": 86.68,
+  "voiceAt": 86.98,
+  "voz": 7.31,
+  "dur": 8.51,
   "real": true
  },
  {
   "id": "modulos",
-  "start": 79.6,
-  "voiceAt": 79.9,
-  "voz": 18.6,
-  "dur": 20.5,
+  "start": 95.2,
+  "voiceAt": 95.5,
+  "voz": 29.39,
+  "dur": 31.29,
   "real": true
  },
  {
   "id": "cierre",
-  "start": 100.1,
-  "voiceAt": 101.1,
-  "voz": 3.87,
-  "dur": 10.77,
+  "start": 126.48,
+  "voiceAt": 127.48,
+  "voz": 3.97,
+  "dur": 11.97,
   "real": true
  }
 ]

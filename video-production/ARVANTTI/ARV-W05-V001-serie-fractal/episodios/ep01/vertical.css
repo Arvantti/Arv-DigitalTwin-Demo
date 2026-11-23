@@ -1,0 +1,23 @@
+.mail{width:940px}
+.areas{display:grid;grid-template-columns:1fr 1fr;gap:26px}
+.area{width:440px}
+.ops{flex-direction:column;align-items:center;gap:22px}
+.op{width:620px}
+.flujo{flex-direction:column;gap:46px}
+.reglas{flex-direction:row;flex-wrap:wrap;justify-content:center;align-items:center;gap:16px}
+.reglas .chip{font-size:28px}
+.nucleo{width:260px;height:260px}
+.opt{width:820px}
+.bar i{width:calc(var(--n) * 5.6px)}
+.prods{flex-direction:column;align-items:center;gap:26px}
+.prod{width:760px;padding:28px}
+.anillos{transform:scale(.95)}
+#ml0{left:-20px;top:-110px}#ml1{right:-20px;top:-110px}#ml2{left:210px;top:680px}
+.pasos{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+
+.nucleo small{font-size:16px;letter-spacing:1px}
+.opt b{font-size:40px}
+.bar span{width:170px;font-size:30px}
+.bar i{height:16px}
+.mail .ml{font-size:36px}.mail .mh{font-size:40px}
+.fin .firma{font-size:48px}

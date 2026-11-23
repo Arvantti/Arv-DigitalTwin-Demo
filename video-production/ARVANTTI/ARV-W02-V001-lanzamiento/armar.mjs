@@ -35,7 +35,7 @@ const ESCENAS = [
   { id: "asistente", dir: "07-asistente", lead: 0.3, tail: 0.9 },
   { id: "conecta", dir: "08-conecta", lead: 0.3, tail: 0.9 },
   { id: "modulos", dir: "09-modulos", lead: 0.3, tail: 1.6 },
-  { id: "cierre", dir: "10-cierre", lead: 1.0, tail: 5.9 },
+  { id: "cierre", dir: "10-cierre", lead: 1.0, tail: 7.0 },
 ];
 
 const texto = (e) => fs.readFileSync(T(`escenas/${e.dir}/script.md`), "utf8").trim();
@@ -413,20 +413,24 @@ function componer() {
   // 6. Fractal: escenarios que se comparan y se eligen.
   {
     const x = S.fractal; const [s, d] = span(x);
-    const tG = enPalabra(x, "Fractal genera"), tK = enPalabra(x, "los califica"), tB = enPalabra(x, "te entrega"), tC = enPalabra(x, "Los comparas"), tE = enPalabra(x, "Eliges"), tY = enPalabra(x, "Y solo entonces");
+    const tG = enPalabra(x, "Después genera"), tK = enPalabra(x, "los califica"), tB = enPalabra(x, "te entrega"), tC = enPalabra(x, "Los comparas"), tE = enPalabra(x, "Eliges"), tY = enPalabra(x, "Y solo con");
     const cards = ["ui-aps-gantt-manual.png", "ui-aps-gantt.png", "ui-fractal.png", "ui-aps-propuesta.png", "ui-control.png"];
     const scores = [62, 74, 91, 70, 58];
     clip("e-fractal", "scene", s, d, `
       <h2 class="center q2">${words("¿Y si hay más de una buena respuesta?")}</h2>
-      <div class="topl">${kicker("04", "FRACTAL")}</div>
+      <div class="topl">${kicker("04", "FRACTAL INDUSTRIAL")}</div>
+      <div class="reglas"><span class="chip lg">Tus reglas</span></div>
       <div class="fan">${cards.map((c, i) => `<div class="card c${i}"><img src="assets/tomas/${c}" alt=""><div class="score"><i style="width:${scores[i]}%"></i><b>${scores[i]}</b></div></div>`).join("")}</div>
       <div class="tags">${["Entregas", "Cambios", "Ocupación", "Energía"].map((c) => `<span class="chip">${c}</span>`).join("")}</div>
       <div class="bleed b4"><img src="assets/tomas/3d-ui.png" alt=""></div>
       <div class="decide"><p>${words("Tú decides.")}</p><button>ENVIAR A PLANTA</button></div>`, 3);
     enter("e-fractal", s);
     at("#e-fractal .q2 .w", { opacity: 0, y: 40, filter: "blur(12px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.6, stagger: 0.07, ease: "power3.out" }, x.voiceAt);
-    to("#e-fractal .q2", { opacity: 0, scale: 0.8, filter: "blur(16px)", duration: 0.5, ease: "power2.in" }, tG - 0.4);
-    at("#e-fractal .topl", { opacity: 0 }, { opacity: 1, duration: 0.5 }, tG - 0.2);
+    to("#e-fractal .q2", { opacity: 0, scale: 0.8, filter: "blur(16px)", duration: 0.5, ease: "power2.in" }, enPalabra(x, "Fractal Industrial") - 0.3);
+    const tR6 = enPalabra(x, "aprende tus reglas");
+    at("#e-fractal .topl", { opacity: 0 }, { opacity: 1, duration: 0.5 }, tR6 - 0.6);
+    at("#e-fractal .reglas", { opacity: 0, y: 40, scale: 0.8 }, { opacity: 1, y: 0, scale: 1, duration: 0.6, ease: "back.out(2)" }, tR6);
+    to("#e-fractal .reglas", { opacity: 0, y: -30, duration: 0.4 }, tG - 0.1);
     cards.forEach((_, i) => {
       const k = i - 2;
       at(`#e-fractal .c${i}`, { opacity: 0, z: -1600, rotateY: 0, x: 0 }, { opacity: 1, z: -Math.abs(k) * 220, rotateY: -k * 16, x: k * (VERT ? 200 : 330), duration: 1.1, ease: "power3.out" }, tG + i * 0.12);
@@ -458,7 +462,7 @@ function componer() {
     const a = "La línea 2, con 71 % de ocupación. Fractal puede repartir su carga sin mover ninguna entrega.";
     clip("e-asistente", "scene", s, d, `
       <div class="topl">${kicker("05", "AI ASSISTANT")}</div>
-      <div class="chat"><div class="bar"><span class="dot"></span> AI Assistant <span class="badge">Solo consulta · según tu rol</span></div>
+      <div class="chat"><div class="bar"><span class="dot"></span> AI Assistant <span class="badge">IA de Arvantti OS · según tu rol</span></div>
       <div class="msg me">${q.split("").map((c) => `<span class="ch">${c}</span>`).join("")}</div>
       <div class="msg ai">${words(a, "aw")}</div>
       <div class="wave">${Array.from({ length: 28 }, (_, i) => `<i style="--h:${(0.3 + 0.7 * Math.abs(Math.sin(i * 1.7))).toFixed(2)}"></i>`).join("")}</div></div>`, 3);
@@ -518,10 +522,10 @@ function componer() {
       ["Integrator", "ERP · CRM · SCADA"],
       ["APS", "Órdenes y recursos"],
       ["CoSimulation", "Reglas de tu planta"],
-      ["Fractal", "Escenarios multiobjetivo"],
+      ["Fractal Industrial", "Escenarios multiobjetivo"],
       ["Control Center", "Monitoreo en vivo"],
       ["DendroScada", "Hardware SCADA propio"],
-      ["AI Assistant", "IA privada"],
+      ["AI Assistant", "IA de Arvantti OS"],
     ];
     const C = VERT ? { x: 540, y: 1000 } : { x: 960, y: 590 }, RX = VERT ? 370 : 540, RY = VERT ? 560 : 330, MW = VERT ? 310 : 340;
     const V = MOD.map((_, i) => { const a = -Math.PI / 2 + (i * 2 * Math.PI) / 7; return { x: Math.round(C.x + RX * Math.cos(a)), y: Math.round(C.y + RY * Math.sin(a)) }; });
@@ -530,13 +534,14 @@ function componer() {
     const elegidos = [1, 2, 3]; // ejemplo de selección: APS, CoSimulation y Fractal sobre el núcleo
     clip("e-modulos", "scene", s, d, `
       <h2 class="center hx">${words("Un núcleo. Siete módulos.")}</h2>
-      <h2 class="center hx2">${words("Elige tus módulos.")} <span class="sinu">Sin cobro por usuario.</span></h2>
+      <h2 class="center hx3">${words("La IA está en cada módulo.")}</h2>
+      <h2 class="center hx2">${words("Elige tus módulos.")}</h2>
       <svg class="hepta" viewBox="0 0 ${W} ${H}">
         <polygon id="hx-borde" points="${V.map((v) => `${v.x},${v.y}`).join(" ")}" pathLength="1"/>
         ${V.map((v, i) => `<line id="hx-r${i}" x1="${C.x}" y1="${C.y}" x2="${v.x}" y2="${v.y}" pathLength="1"/>`).join("")}
       </svg>
-      <div class="hcore" style="left:${C.x - 150}px;top:${C.y - 150}px"><img src="assets/clips/marca.png" alt=""><b>Arvantti</b><span>Digital Twin</span><small>Gemelo 3D · núcleo</small></div>
-      ${MOD.map(([n, sub], i) => `<div class="mod" id="md${i}" style="left:${V[i].x - MW / 2}px;top:${V[i].y - 52}px"><i>${i + 1}</i><p>${n}</p><small>${sub}</small></div>`).join("")}`, 3);
+      <div class="hcore" style="left:${C.x - 150}px;top:${C.y - 150}px"><img src="assets/clips/marca.png" alt=""><b>Arvantti</b><span>Digital Twin</span><small>Gemelo 3D · núcleo</small><b class="ai">IA</b></div>
+      ${MOD.map(([n, sub], i) => `<div class="mod" id="md${i}" style="left:${V[i].x - MW / 2}px;top:${V[i].y - 52}px"><i>${i + 1}</i><p>${n}</p><small>${sub}</small><b class="ai">IA</b></div>`).join("")}`, 3);
     enter("e-modulos", s);
     at("#e-modulos .hx .w", { opacity: 0, y: 30, filter: "blur(10px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.6, stagger: 0.1, ease: "power3.out" }, x.voiceAt - 0.1);
     at("#e-modulos .hcore", { opacity: 0, scale: 0.4 }, { opacity: 1, scale: 1, duration: 0.9, ease: "back.out(1.7)" }, tA - 0.3);
@@ -548,10 +553,20 @@ function componer() {
       tl.push(`tl.to("#md${i}",{boxShadow:"0 0 0 2px #4ea7ff, 0 0 50px #2d7ff9aa",duration:.25,yoyo:true,repeat:1},${tM[i].toFixed(2)});`);
       sfx(`9${i}`, "pop.mp3", tM[i], 0.18);
     });
+    // "La inteligencia artificial no es un módulo aparte: está en todos": un punto de IA se enciende en cada tarjeta y en el núcleo.
+    const tI = enPalabra(x, "Y la inteligencia"), tT = enPalabra(x, "está en todos");
+    to("#e-modulos .hx", { opacity: 0, y: -20, duration: 0.4 }, tI - 0.3);
+    at("#e-modulos .hx3 .w", { opacity: 0, y: 30, filter: "blur(10px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.5, stagger: 0.08, ease: "power3.out" }, tI);
+    at("#e-modulos .ai", { opacity: 0, scale: 0.2 }, { opacity: 1, scale: 1, duration: 0.45, stagger: 0.09, ease: "back.out(2.4)" }, tT);
+    sfx("9ai", "spark.wav", tT, 0.25);
+    // Cada verbo enciende el módulo donde la IA hace ese trabajo: núcleo, Integrator, APS, CoSimulation, Control Center y DendroScada.
+    [["Arma el modelo", ".hcore"], ["revisa los datos", "#md0"], ["mejora el plan", "#md1"], ["aprende de la planta", "#md2"], ["detecta patrones", "#md4"], ["anticipa fallas", "#md5"]].forEach(([w, sel]) => {
+      const t = enPalabra(x, w);
+      tl.push(`tl.to("${sel} .ai",{scale:1.5,boxShadow:"0 0 0 6px #4ea7ff55, 0 0 50px #4ea7ff",duration:.3,yoyo:true,repeat:1},${t.toFixed(2)});`);
+    });
     // "Activas solo los que necesitas": se encienden unos módulos de ejemplo y los demás quedan en espera.
-    to("#e-modulos .hx", { opacity: 0, y: -20, duration: 0.4 }, tX - 0.3);
+    to("#e-modulos .hx3", { opacity: 0, y: -20, duration: 0.4 }, tX - 0.3);
     at("#e-modulos .hx2 .w", { opacity: 0, y: 30, filter: "blur(10px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.5, stagger: 0.1, ease: "power3.out" }, tX);
-    at("#e-modulos .sinu", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.6, ease: "back.out(1.6)" }, enPalabra(x, "sin cobro"));
     MOD.forEach((_, i) => {
       if (elegidos.includes(i)) {
         tl.push(`tl.to("#md${i}",{borderColor:"#4ea7ff",background:"#12305a",boxShadow:"0 0 0 2px #4ea7ff, 0 0 60px #2d7ff988",duration:.4},${(tX + 0.3 + elegidos.indexOf(i) * 0.25).toFixed(2)});`);
@@ -572,7 +587,8 @@ function componer() {
     const tD = enPalabra(x, "Decide");
     clip("e-cierre", "scene", s, d, `
       <svg class="estela" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice"><path id="p2" d="M-60 470 C 380 470 560 690 960 560 S 1520 430 1980 640" pathLength="1"/></svg>
-      <div class="fin"><img class="marca" src="assets/clips/marca.png" alt=""><h1>Arvantti <span>Digital Twin</span></h1><p class="firma">Decide antes de que pase.</p><p class="url">digitaltwin.arvantti.online</p></div>`, 3);
+      <div class="fin"><img class="marca" src="assets/clips/marca.png" alt=""><h1>Arvantti <span>Digital Twin</span></h1><p class="firma">Decide antes de que pase.</p><p class="url">digitaltwin.arvantti.online</p></div>
+      <div class="tres"><p class="ey">UNO DE LOS TRES PRODUCTOS DE ARVANTTI</p><div class="prods"><span>Arvantti OS</span><span class="on">Arvantti Digital Twin</span><span>Arvantti Fractal</span></div></div>`, 3);
     enter("e-cierre", s);
     at("#p2", { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 1.8, ease: "power2.inOut" }, s);
     to("#p2", { opacity: 0.2, duration: 1 }, s + 1.8);
@@ -580,7 +596,11 @@ function componer() {
     at("#e-cierre h1", { opacity: 0, letterSpacing: "30px", filter: "blur(10px)" }, { opacity: 1, letterSpacing: "2px", filter: "blur(0px)", duration: 1.2, ease: "power3.out" }, x.voiceAt);
     at("#e-cierre .firma", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.8, ease: "power3.out" }, tD);
     at("#e-cierre .url", { opacity: 0 }, { opacity: 1, duration: 0.8 }, tD + 1.0);
-    to("#e-cierre .fin", { opacity: 0, duration: 1.0 }, s + d - 1.0);
+    const tTres = tD + 2.6;
+    to("#e-cierre .fin", { opacity: 0, y: -30, filter: "blur(10px)", duration: 0.7 }, tTres - 0.4);
+    at("#e-cierre .tres .ey", { opacity: 0, letterSpacing: "18px" }, { opacity: 1, letterSpacing: "8px", duration: 0.9, ease: "power3.out" }, tTres);
+    at("#e-cierre .tres .prods span", { opacity: 0, y: 40, filter: "blur(10px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.6, stagger: 0.25, ease: "power3.out" }, tTres + 0.4);
+    to("#e-cierre .tres", { opacity: 0, duration: 1.0 }, s + d - 1.0);
     sfx(10, "hit.wav", x.voiceAt, 0.3);
   }
 

@@ -1,1 +1,1 @@
-Todo empieza con el plan. Un programador con Gantt que entiende de recursos, turnos, cambios y entregas. Arrastra una orden. Fija un pedido. Elige un objetivo. El cosimulador calcula la mejor programación, sin romper una sola entrega.
+Todo empieza con el plan. Un programador con Gantt, el diagrama de pedidos en el tiempo, que entiende de recursos, turnos, cambios y entregas. Arrastra una orden. Fija un pedido. Elige un objetivo. El cosimulador primero aprende las reglas de tu empresa, y después calcula la mejor programación, sin romper una sola entrega.

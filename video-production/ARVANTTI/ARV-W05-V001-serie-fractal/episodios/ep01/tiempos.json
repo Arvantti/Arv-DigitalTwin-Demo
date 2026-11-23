@@ -1,0 +1,66 @@
+[
+ {
+  "id": "pedido",
+  "start": 0,
+  "voiceAt": 1.4,
+  "voz": 7.08,
+  "dur": 9.48,
+  "real": true
+ },
+ {
+  "id": "areas",
+  "start": 9.48,
+  "voiceAt": 9.88,
+  "voz": 8.52,
+  "dur": 9.82,
+  "real": true
+ },
+ {
+  "id": "fractal",
+  "start": 19.3,
+  "voiceAt": 19.7,
+  "voz": 8.91,
+  "dur": 10.51,
+  "real": true
+ },
+ {
+  "id": "reglas",
+  "start": 29.8,
+  "voiceAt": 30.1,
+  "voz": 9.8,
+  "dur": 11.3,
+  "real": true
+ },
+ {
+  "id": "producto",
+  "start": 41.1,
+  "voiceAt": 41.4,
+  "voz": 9.95,
+  "dur": 11.35,
+  "real": true
+ },
+ {
+  "id": "modulos",
+  "start": 52.45,
+  "voiceAt": 52.75,
+  "voz": 7.16,
+  "dur": 8.56,
+  "real": true
+ },
+ {
+  "id": "serie",
+  "start": 61.01,
+  "voiceAt": 61.31,
+  "voz": 6.69,
+  "dur": 7.99,
+  "real": true
+ },
+ {
+  "id": "cierre",
+  "start": 69,
+  "voiceAt": 69.9,
+  "voz": 5.07,
+  "dur": 10.47,
+  "real": true
+ }
+]
