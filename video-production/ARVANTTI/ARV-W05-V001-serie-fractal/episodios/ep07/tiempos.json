@@ -1,0 +1,58 @@
+[
+ {
+  "id": "miercoles",
+  "start": 0,
+  "voiceAt": 1.4,
+  "voz": 5.33,
+  "dur": 7.73,
+  "real": true
+ },
+ {
+  "id": "resumen",
+  "start": 7.73,
+  "voiceAt": 8.03,
+  "voz": 9.95,
+  "dur": 11.25,
+  "real": true
+ },
+ {
+  "id": "explica",
+  "start": 18.98,
+  "voiceAt": 19.28,
+  "voz": 9.48,
+  "dur": 10.78,
+  "real": true
+ },
+ {
+  "id": "versiones",
+  "start": 29.76,
+  "voiceAt": 30.06,
+  "voz": 6.35,
+  "dur": 7.65,
+  "real": true
+ },
+ {
+  "id": "decide",
+  "start": 37.41,
+  "voiceAt": 37.71,
+  "voz": 6.03,
+  "dur": 7.33,
+  "real": true
+ },
+ {
+  "id": "modulos",
+  "start": 44.75,
+  "voiceAt": 45.05,
+  "voz": 10.45,
+  "dur": 11.75,
+  "real": true
+ },
+ {
+  "id": "cierre",
+  "start": 56.5,
+  "voiceAt": 57.4,
+  "voz": 5.07,
+  "dur": 10.47,
+  "real": true
+ }
+]

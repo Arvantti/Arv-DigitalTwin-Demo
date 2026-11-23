@@ -1,0 +1,58 @@
+[
+ {
+  "id": "flujo",
+  "start": 0,
+  "voiceAt": 1.4,
+  "voz": 12.51,
+  "dur": 14.91,
+  "real": true
+ },
+ {
+  "id": "process",
+  "start": 14.91,
+  "voiceAt": 15.21,
+  "voz": 4.28,
+  "dur": 5.58,
+  "real": true
+ },
+ {
+  "id": "os",
+  "start": 20.5,
+  "voiceAt": 20.8,
+  "voz": 10.11,
+  "dur": 11.41,
+  "real": true
+ },
+ {
+  "id": "reglas",
+  "start": 31.91,
+  "voiceAt": 32.21,
+  "voz": 11.55,
+  "dur": 12.85,
+  "real": true
+ },
+ {
+  "id": "material",
+  "start": 44.75,
+  "voiceAt": 45.05,
+  "voz": 15.8,
+  "dur": 17.1,
+  "real": true
+ },
+ {
+  "id": "comprobante",
+  "start": 61.86,
+  "voiceAt": 62.16,
+  "voz": 11.23,
+  "dur": 12.53,
+  "real": true
+ },
+ {
+  "id": "cierre",
+  "start": 74.39,
+  "voiceAt": 75.29,
+  "voz": 5.15,
+  "dur": 10.55,
+  "real": true
+ }
+]

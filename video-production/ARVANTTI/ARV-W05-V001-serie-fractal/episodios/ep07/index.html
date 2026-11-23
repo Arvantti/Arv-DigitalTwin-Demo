@@ -1,0 +1,656 @@
+<!doctype html>
+<html lang="es" data-resolution="landscape">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1920, height=1080">
+<title>Serie Arvantti Fractal</title>
+<script src="assets/vendor/gsap.min.js"></script>
+<style>
+:root{--blue:#2d7ff9;--electric:#4ea7ff;--ice:#9fd0ff;--ti:#d8dadf;--dti:#7a7e86;--black:#05070c;--white:#f8fafc;--panel:#0d1a30;--alert:#ff8a3d}
+*{box-sizing:border-box}
+html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:var(--black);font-family:Inter,"Inter Display",Arial,sans-serif;color:var(--white)}
+#root{position:relative;width:1920px;height:1080px;overflow:hidden;background:var(--black)}
+.clip{position:absolute;inset:0}
+.scene{overflow:hidden}
+.w{display:inline-block;white-space:pre}
+
+/* Fondo */
+.fondo .glow{position:absolute;inset:-20%;background:radial-gradient(900px 520px at 50% 45%,#12305e55 0%,#05070c00 70%),radial-gradient(700px 400px at 80% 90%,#2d7ff922 0%,#05070c00 70%)}
+.fondo .floor{position:absolute;left:-50%;right:-50%;bottom:-10%;height:55%;perspective:900px;opacity:.45;-webkit-mask-image:linear-gradient(#0000,#000 55%);mask-image:linear-gradient(#0000,#000 55%)}
+.fondo .floorgrid{position:absolute;inset:0;transform:rotateX(68deg);transform-origin:50% 100%;background-image:linear-gradient(#4ea7ff33 2px,transparent 2px),linear-gradient(90deg,#4ea7ff33 2px,transparent 2px);background-size:120px 120px}
+.sweep{background:linear-gradient(100deg,#0000 35%,#4ea7ff18 45%,#ffffff40 50%,#4ea7ff18 55%,#0000 65%);mix-blend-mode:screen;pointer-events:none}
+#temp{left:auto;top:auto;right:20px;bottom:16px;font:700 15px "JetBrains Mono",monospace;color:var(--alert);letter-spacing:2px}
+
+/* Escenario centrado: sirve igual en horizontal y vertical */
+.st{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:40px;padding:110px 150px 200px;text-align:center}
+.kick{position:absolute;left:110px;top:70px;margin:0;font:600 26px "JetBrains Mono",monospace;letter-spacing:8px;color:var(--electric)}
+.kick b{display:inline-block;padding:4px 12px;margin-right:12px;border:2px solid var(--blue);color:#fff;font-weight:700;letter-spacing:2px}
+.h{margin:0;font:800 96px/1.05 "Inter Display",Inter,sans-serif;letter-spacing:-2px}
+.h.xl{font-size:140px;letter-spacing:-3px}
+.h.md{font-size:72px;letter-spacing:-1.5px}
+.sub{margin:0;font:500 44px/1.3 Inter,sans-serif;color:#c9d1e0}
+.ti{background:linear-gradient(100deg,#d8dadf 0%,#d8dadf 40%,#ffffff 50%,#d8dadf 60%,#d8dadf 100%);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent}
+.hl{color:var(--electric)}
+.chip{display:inline-block;padding:12px 26px;border:2px solid #4ea7ff66;border-radius:999px;background:#0d1a30cc;font:600 32px Inter,sans-serif;color:#e6eefc;box-shadow:0 0 24px #2d7ff933;white-space:nowrap}
+.chip.on{background:var(--blue);border-color:var(--electric);color:#fff;box-shadow:0 0 40px #2d7ff988}
+.row{display:flex;flex-wrap:wrap;justify-content:center;gap:28px}
+.panel{border-radius:22px;background:#0b1428f0;border:2px solid #4ea7ff88;box-shadow:0 30px 90px #000a,0 0 50px #2d7ff933}
+.marca{display:block;height:auto;filter:drop-shadow(0 0 30px #2d7ff988)}
+
+/* Subtítulos quemados con la palabra que suena resaltada */
+.cap{position:absolute;left:0;right:0;top:auto;bottom:60px;text-align:center;pointer-events:none}
+.cap span.l{display:inline-block;max-width:1500px;padding:12px 26px;border-radius:14px;background:#05070cc8;font:700 40px/1.3 Inter,sans-serif;color:#c9d1e0}
+.cap .cw{display:inline-block;white-space:pre}
+.cap .cw.on{color:#fff;text-shadow:0 0 18px #4ea7ff}
+
+/* Cierre */
+.fin .marca{width:240px}
+.fin .firma{margin:0;font:600 54px/1.25 Inter,sans-serif;color:#fff}
+.fin .url{margin:0;font:500 28px "JetBrains Mono",monospace;letter-spacing:6px;color:#7a9cc6}
+/* Estilos compartidos de las gráficas (viz.mjs) y piezas comunes de la serie, episodios 2 a 7 */
+.fondo-red{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:.32}
+.fondo-red .red{width:1700px;height:auto}
+.red{overflow:visible}
+.ra{stroke:#4ea7ff55;stroke-width:2;stroke-dasharray:1;stroke-dashoffset:1}
+.rn{fill:#0d1a30;stroke:#4ea7ff;stroke-width:3}
+.rp{fill:#fff;opacity:0;filter:drop-shadow(0 0 8px #4ea7ff) drop-shadow(0 0 16px #2d7ff9)}
+.cam{overflow:visible}
+.cn{fill:#0d1a30;stroke:#4ea7ff88;stroke-width:2}
+.cio{fill:#2d7ff9;stroke:#fff;stroke-width:3;filter:drop-shadow(0 0 10px #4ea7ff)}
+.ce{fill:none;stroke:#9fb3cf;stroke-width:2;stroke-dasharray:1;stroke-dashoffset:1}
+.cb{fill:none;stroke:#4ea7ff;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1;filter:drop-shadow(0 0 8px #4ea7ff)}
+.cb.b0{stroke:#fff;stroke-width:6}.cb.b2{stroke:#9fd0ff}
+.ct{fill:#fff;font:700 26px Inter,sans-serif;opacity:0}
+.mbar{display:flex;align-items:flex-end;gap:10px;height:86px}
+.mbar i{display:block;width:26px;border-radius:5px 5px 0 0;background:linear-gradient(#4ea7ff,#2d7ff9);transform-origin:50% 100%}
+.mbar i.al{background:linear-gradient(#ff8a3d,#c2561a)}
+.curva{width:270px;height:86px;overflow:visible}
+.cv-line{fill:none;stroke:#4ea7ff;stroke-width:4;stroke-dasharray:1;stroke-dashoffset:1;filter:drop-shadow(0 0 6px #4ea7ff)}
+.cv-area{fill:#2d7ff922}.cv-band{fill:#4ea7ff1c}
+.arbol{overflow:visible}
+.ar{stroke:#4ea7ff;stroke-width:3;stroke-dasharray:1;stroke-dashoffset:1;stroke-linecap:round}
+.ar.n0{stroke-width:6;stroke:#fff}.ar.n1{stroke-width:5;stroke:#9fd0ff}.ar.n2{stroke-width:4}.ar.n3{stroke:#4ea7ffcc}.ar.n4{stroke:#4ea7ff88;stroke-width:2}
+.aroot{fill:#2d7ff9;stroke:#fff;stroke-width:3;filter:drop-shadow(0 0 10px #4ea7ff)}
+.region,.pob,.pareto,.mc{overflow:visible}
+.ax{stroke:#7a9cc6;stroke-width:2}
+.axl,.rlab,.gen{fill:#9fb3cf;font:600 20px "JetBrains Mono",monospace;letter-spacing:1px}
+.rlab{text-anchor:middle}
+.rs{stroke:#d8dadf;stroke-width:3;stroke-dasharray:1;stroke-dashoffset:1}
+.rf{fill:#2d7ff933;stroke:#4ea7ff;stroke-width:2}
+.obj{stroke:#9fd0ff;stroke-width:3;stroke-dasharray:10 8}
+.rpto{fill:#fff;filter:drop-shadow(0 0 10px #4ea7ff)}
+.meta{fill:#2d7ff922;stroke:#4ea7ff66;stroke-width:2;stroke-dasharray:8 8}
+.cruce{stroke:#9fd0ff;stroke-width:2;opacity:0}
+.ind{fill:#4ea7ff;stroke:#fff;stroke-width:2}
+.ind.mut{fill:#d8dadf}
+.gen{font-size:24px;fill:#fff}
+.pp{fill:#4ea7ff55}
+.pf{fill:none;stroke:#fff;stroke-width:4;stroke-dasharray:1;stroke-dashoffset:1;filter:drop-shadow(0 0 8px #4ea7ff)}
+.pb{fill:#2d7ff9;stroke:#fff;stroke-width:3}
+.mcl{fill:none;stroke:#4ea7ff66;stroke-width:2;stroke-dasharray:1;stroke-dashoffset:1}
+.mch{fill:#4ea7ff}
+.gantt{display:flex;flex-direction:column;gap:18px;width:100%}
+.gr{display:flex;align-items:center;gap:20px}
+.gr span{flex:none;width:170px;text-align:right;font:600 26px Inter,sans-serif;color:#c9d1e0}
+.gt{position:relative;flex:1;height:44px;border-radius:10px;background:#0d1a30;border:1px solid #4ea7ff33}
+.gt i{position:absolute;top:6px;bottom:6px;border-radius:7px;background:linear-gradient(90deg,#2d7ff9,#4ea7ff)}
+.gt i.al{background:linear-gradient(90deg,#c2561a,#ff8a3d);box-shadow:0 0 20px #ff8a3d88}
+/* Piezas comunes */
+.vz{display:flex;flex-direction:column;align-items:center;gap:14px}
+.vz svg{display:block}
+.vz .vl{margin:0;font:600 24px "JetBrains Mono",monospace;letter-spacing:3px;color:var(--ice);text-transform:uppercase}
+.opts{display:flex;gap:26px;justify-content:center;flex-wrap:wrap}
+.opt{width:440px;padding:20px 26px;text-align:left}
+.opt b{display:block;font:700 32px Inter,sans-serif;margin-bottom:8px}
+.opt small{display:block;margin-top:10px;font:500 24px Inter,sans-serif;color:var(--ice)}
+.bar{display:flex;align-items:center;gap:14px;margin-top:8px}
+.bar span{flex:none;width:150px;font:500 22px Inter,sans-serif;color:#9fb3cf}
+.bar i{flex:none;height:12px;width:calc(var(--n) * 2.4px);border-radius:6px;background:linear-gradient(90deg,var(--blue),var(--electric));transform-origin:0 50%}
+.bar i.r{background:linear-gradient(90deg,#7a7e86,#d8dadf)}
+.bar i.al{background:linear-gradient(90deg,#c2561a,#ff8a3d)}
+.alert{color:var(--alert)}
+.chip.al{border-color:#ff8a3d;color:#ffd2b3;box-shadow:0 0 24px #ff8a3d55}
+.tag{display:inline-block;padding:6px 16px;border-radius:999px;border:2px solid #4ea7ff88;font:700 22px "JetBrains Mono",monospace;letter-spacing:2px;color:var(--ice)}
+.fams{gap:16px}
+.fams .chip{font-size:26px;padding:10px 20px}
+.tache{position:relative;display:inline-block}
+.tache::after{content:"";position:absolute;left:-10px;right:-10px;top:52%;height:6px;border-radius:4px;background:var(--alert);transform:scaleX(var(--x,0));transform-origin:0 50%}
+.card{padding:26px 30px;text-align:left;display:flex;flex-direction:column;gap:10px}
+.card b{font:800 40px/1.1 "Inter Display",Inter,sans-serif}
+.card small{font:600 22px "JetBrains Mono",monospace;letter-spacing:2px;color:var(--ice);text-transform:uppercase}
+.card span{font:500 28px/1.3 Inter,sans-serif;color:#c9d1e0}
+.card.on{border-color:var(--electric);background:#10264acc}
+.flecha{font:800 60px Inter,sans-serif;color:var(--electric);text-shadow:0 0 20px #4ea7ff}
+
+/* Ep 7 */
+.cal{padding:22px 34px;display:flex;flex-direction:column;gap:12px}
+.cal small{font:700 22px "JetBrains Mono",monospace;letter-spacing:3px;color:var(--ice);text-transform:uppercase}
+.cal .dias{display:flex;gap:16px}
+.cal .dias span{width:150px;padding:18px 0;border-radius:12px;background:#0d1a30;border:1px solid #4ea7ff44;font:700 34px Inter,sans-serif;color:#9fb3cf}
+.ger{width:900px;align-items:center;text-align:center}
+.resu{gap:28px;align-items:stretch}
+.rs{width:480px}
+.rs em{font-style:normal;color:var(--electric)}
+.expl{width:1100px;padding:20px 36px;text-align:left}
+.expl .ln{display:flex;align-items:center;gap:24px;padding:16px 0;border-top:1px solid #4ea7ff33}
+.expl .ln:first-child{border-top:0}
+.expl em{font:700 26px "JetBrains Mono",monospace;font-style:normal;color:var(--electric)}
+.expl b{flex:1;font:700 36px Inter,sans-serif}
+.expl .ok{font-style:normal;font-size:36px;color:var(--electric)}
+.rng{position:relative;width:300px;height:60px}
+.rng i{position:absolute;height:12px;border-radius:6px;background:linear-gradient(90deg,#7a7e8688,#4ea7ff,#7a7e8688)}
+.rng i:nth-child(1){top:4px}.rng i:nth-child(2){top:24px}.rng i:nth-child(3){top:44px}
+.vline{position:relative;display:flex;gap:120px;align-items:center}
+.vline svg{position:absolute;left:0;right:0;top:50%;width:100%;height:20px;transform:translateY(-50%);overflow:visible}
+.vline line{stroke:#4ea7ff;stroke-width:4;stroke-dasharray:1;stroke-dashoffset:1;vector-effect:non-scaling-stroke}
+.vn{position:relative;width:320px;padding:20px;display:flex;flex-direction:column;align-items:center;gap:6px;background:#0b1428}
+.vn b{font:800 32px Inter,sans-serif}
+.vn small{font:600 22px "JetBrains Mono",monospace;color:var(--ice)}
+.cd{font-size:30px}
+.comp{width:760px;padding:20px 30px;text-align:left}
+.comp .bar span{width:60px;font:700 28px "JetBrains Mono",monospace;color:#fff}
+.comp .bar i{height:20px;width:calc(var(--n) * 6.4px)}
+.comp small{display:block;margin-top:10px;font:500 24px Inter,sans-serif;color:var(--ice)}
+.ops{gap:30px}
+.op{width:300px;padding:24px 26px;text-align:left}
+.op b{display:block;font:700 34px Inter,sans-serif;margin-bottom:16px}
+.op i{display:block;height:14px;width:var(--w);border-radius:8px;background:linear-gradient(90deg,var(--blue),var(--electric));transform-origin:0 50%}
+.op small{display:block;margin-top:10px;font:500 22px "JetBrains Mono",monospace;letter-spacing:3px;color:#9fb3cf}
+.tuya{font-size:44px;padding:16px 44px}
+.anillos{position:relative;width:560px;height:560px}
+.anillos svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.anillos circle{fill:none;stroke:#4ea7ff;stroke-width:4;stroke-dasharray:1;stroke-dashoffset:1;filter:drop-shadow(0 0 8px #4ea7ff)}
+.orbp{fill:#fff;opacity:0;filter:drop-shadow(0 0 10px #4ea7ff)}
+.nuc{position:absolute;left:190px;top:190px;width:180px;height:180px;border-radius:50%;background:radial-gradient(#1a3a6e,#0a1222);border:3px solid var(--electric);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;box-shadow:0 0 70px #2d7ff988}
+.nuc span{font:800 36px "Inter Display",Inter,sans-serif}
+.nuc small{font:600 16px "JetBrains Mono",monospace;color:var(--ice)}
+.mlab{position:absolute;padding:14px 26px;border-radius:16px;background:#0d1a30f0;border:2px solid var(--electric);text-align:center;white-space:nowrap;box-shadow:0 0 30px #2d7ff955}
+.mlab b{display:block;font:800 38px "Inter Display",Inter,sans-serif}
+.mlab small{font:500 24px Inter,sans-serif;color:var(--ice)}
+#ml0{left:-330px;top:90px}#ml1{right:-300px;top:90px}#ml2{left:110px;top:500px}
+.jps{font-size:36px;padding:14px 36px;margin-top:40px}
+
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="66.96" data-width="1920" data-height="1080" data-fps="25">
+<div id="fondo" class="clip fondo" data-start="0.00" data-duration="66.96" data-track-index="0"><div class="glow"></div><div class="floor"><div class="floorgrid"></div></div></div>
+<div id="e-mie" class="clip scene" data-start="0.00" data-duration="7.98" data-track-index="3"><p class="kick"><b>EP 7</b> SERIE ARVANTTI FRACTAL</p>
+      <div class="st">
+        <div class="cal panel"><small>Semana</small><div class="dias"><span class="">Lun</span><span class="">Mar</span><span class="hoy">Mié</span><span class="">Jue</span><span class="">Vie</span></div></div>
+        <div class="panel card ger"><small>La gerente</small><b>Tiene la respuesta completa</b><span>a la pregunta del lunes: ¿lo aceptamos?</span></div>
+      </div></div>
+<audio id="sfx-1a" src="assets/shared/core/sfx/pop.mp3" data-start="1.40" data-duration="1.40" data-volume="0.15" data-track-index="22"></audio>
+<div id="e-res" class="clip scene" data-start="7.48" data-duration="11.75" data-track-index="3"><p class="kick"><b>EP 7</b> SERIE ARVANTTI FRACTAL</p>
+      <div class="st"><div class="row resu"><div class="panel card rs" id="rs0"><small>Fractal Industrial</small><b><em>✓</em> Planta</b><span>Alcanza si partimos el pedido</span></div><div class="panel card rs" id="rs1"><small>Fractal Process</small><b><em>✓</em> Proceso</b><span>Material el mismo día: la compra ya no frena</span></div><div class="panel card rs" id="rs2"><small>Fractal Finance</small><b><em>✓</em> Caja</b><span>Se aprieta, pero un anticipo lo resuelve</span></div></div></div></div>
+<audio id="sfx-20" src="assets/shared/core/sfx/pop.mp3" data-start="8.03" data-duration="1.40" data-volume="0.12" data-track-index="24"></audio>
+<audio id="sfx-21" src="assets/shared/core/sfx/pop.mp3" data-start="10.43" data-duration="1.40" data-volume="0.12" data-track-index="25"></audio>
+<audio id="sfx-22" src="assets/shared/core/sfx/pop.mp3" data-start="14.91" data-duration="1.40" data-volume="0.12" data-track-index="26"></audio>
+<div id="e-exp" class="clip scene" data-start="18.73" data-duration="11.28" data-track-index="3"><p class="kick"><b>EP 7</b> SERIE ARVANTTI FRACTAL</p>
+      <div class="st">
+        <h2 class="h md x-t"><span class="w">Fractal</span> <span class="w">explica</span> <span class="w">por</span> <span class="w">qué.</span></h2>
+        <div class="panel expl"><div class="ln" id="ln0"><em>1</em><b>Reglas que respetó</b><i class="ok">✓</i></div><div class="ln" id="ln1"><em>2</em><b>Datos que usó</b><i class="ok">✓</i></div><div class="ln" id="ln2"><em>3</em><b>Supuestos</b><i class="ok">✓</i></div><div class="ln" id="ln3"><em>4</em><b>Riesgo de cada alternativa</b><div class="rng"><i style="left:20%;width:50%"></i><i style="left:35%;width:30%"></i><i style="left:10%;width:75%"></i></div></div></div>
+      </div></div>
+<audio id="sfx-30" src="assets/shared/core/sfx/pop.mp3" data-start="22.96" data-duration="1.40" data-volume="0.1" data-track-index="28"></audio>
+<audio id="sfx-31" src="assets/shared/core/sfx/pop.mp3" data-start="24.32" data-duration="1.40" data-volume="0.1" data-track-index="29"></audio>
+<audio id="sfx-32" src="assets/shared/core/sfx/pop.mp3" data-start="25.52" data-duration="1.40" data-volume="0.1" data-track-index="30"></audio>
+<audio id="sfx-33" src="assets/shared/core/sfx/pop.mp3" data-start="26.56" data-duration="1.40" data-volume="0.1" data-track-index="31"></audio>
+<div id="e-ver" class="clip scene" data-start="29.51" data-duration="8.15" data-track-index="3"><p class="kick"><b>EP 7</b> SERIE ARVANTTI FRACTAL</p>
+      <div class="st">
+        <div class="vline"><svg viewBox="0 0 1000 20" preserveAspectRatio="none"><line x1="0" y1="10" x2="1000" y2="10" pathLength="1"/></svg>
+          <div class="panel vn" id="vn0"><b>Escenario v1</b><small>Lunes</small></div><div class="panel vn" id="vn1"><b>Escenario v2</b><small>Martes</small></div><div class="panel vn" id="vn2"><b>Escenario v3</b><small>Hoy · datos nuevos</small></div></div>
+        <span class="chip al cd">Cambian los datos</span>
+        <div class="panel comp"><div class="bar"><span>v2</span><i style="--n:70"></i></div><div class="bar"><span>v3</span><i style="--n:82"></i></div><small>Se compara antes de decidir</small></div>
+      </div></div>
+<audio id="sfx-4a" src="assets/shared/core/sfx/hit.wav" data-start="32.78" data-duration="1.40" data-volume="0.14" data-track-index="33"></audio>
+<audio id="sfx-4b" src="assets/shared/core/sfx/whoosh-short.mp3" data-start="34.46" data-duration="1.40" data-volume="0.18" data-track-index="34"></audio>
+<div id="e-dec" class="clip scene" data-start="37.16" data-duration="7.83" data-track-index="3">
+      <div class="fondo-red"><svg class="red" id="red7" viewBox="0 0 1600 900">
+    <line class="ra" id="red7-e0" x1="40" y1="310" x2="420" y2="205" pathLength="1"/><line class="ra" id="red7-e1" x1="40" y1="310" x2="420" y2="275" pathLength="1"/><line class="ra" id="red7-e2" x1="40" y1="310" x2="420" y2="345" pathLength="1"/><line class="ra" id="red7-e3" x1="40" y1="310" x2="420" y2="485" pathLength="1"/><line class="ra" id="red7-e4" x1="40" y1="310" x2="420" y2="555" pathLength="1"/><line class="ra" id="red7-e5" x1="40" y1="310" x2="420" y2="625" pathLength="1"/><line class="ra" id="red7-e6" x1="40" y1="380" x2="420" y2="205" pathLength="1"/><line class="ra" id="red7-e7" x1="40" y1="380" x2="420" y2="275" pathLength="1"/><line class="ra" id="red7-e8" x1="40" y1="380" x2="420" y2="415" pathLength="1"/><line class="ra" id="red7-e9" x1="40" y1="380" x2="420" y2="555" pathLength="1"/><line class="ra" id="red7-e10" x1="40" y1="380" x2="420" y2="625" pathLength="1"/><line class="ra" id="red7-e11" x1="40" y1="450" x2="420" y2="345" pathLength="1"/><line class="ra" id="red7-e12" x1="40" y1="450" x2="420" y2="485" pathLength="1"/><line class="ra" id="red7-e13" x1="40" y1="450" x2="420" y2="555" pathLength="1"/><line class="ra" id="red7-e14" x1="40" y1="450" x2="420" y2="625" pathLength="1"/><line class="ra" id="red7-e15" x1="40" y1="450" x2="420" y2="695" pathLength="1"/><line class="ra" id="red7-e16" x1="40" y1="520" x2="420" y2="485" pathLength="1"/><line class="ra" id="red7-e17" x1="40" y1="520" x2="420" y2="555" pathLength="1"/><line class="ra" id="red7-e18" x1="40" y1="520" x2="420" y2="695" pathLength="1"/><line class="ra" id="red7-e19" x1="40" y1="590" x2="420" y2="205" pathLength="1"/><line class="ra" id="red7-e20" x1="40" y1="590" x2="420" y2="275" pathLength="1"/><line class="ra" id="red7-e21" x1="40" y1="590" x2="420" y2="345" pathLength="1"/><line class="ra" id="red7-e22" x1="40" y1="590" x2="420" y2="415" pathLength="1"/><line class="ra" id="red7-e23" x1="40" y1="590" x2="420" y2="555" pathLength="1"/><line class="ra" id="red7-e24" x1="40" y1="590" x2="420" y2="695" pathLength="1"/><line class="ra" id="red7-e25" x1="420" y1="205" x2="800" y2="170" pathLength="1"/><line class="ra" id="red7-e26" x1="420" y1="205" x2="800" y2="240" pathLength="1"/><line class="ra" id="red7-e27" x1="420" y1="205" x2="800" y2="310" pathLength="1"/><line class="ra" id="red7-e28" x1="420" y1="205" x2="800" y2="380" pathLength="1"/><line class="ra" id="red7-e29" x1="420" y1="205" x2="800" y2="450" pathLength="1"/><line class="ra" id="red7-e30" x1="420" y1="205" x2="800" y2="520" pathLength="1"/><line class="ra" id="red7-e31" x1="420" y1="205" x2="800" y2="590" pathLength="1"/><line class="ra" id="red7-e32" x1="420" y1="205" x2="800" y2="730" pathLength="1"/><line class="ra" id="red7-e33" x1="420" y1="275" x2="800" y2="170" pathLength="1"/><line class="ra" id="red7-e34" x1="420" y1="275" x2="800" y2="240" pathLength="1"/><line class="ra" id="red7-e35" x1="420" y1="275" x2="800" y2="310" pathLength="1"/><line class="ra" id="red7-e36" x1="420" y1="275" x2="800" y2="380" pathLength="1"/><line class="ra" id="red7-e37" x1="420" y1="275" x2="800" y2="450" pathLength="1"/><line class="ra" id="red7-e38" x1="420" y1="275" x2="800" y2="520" pathLength="1"/><line class="ra" id="red7-e39" x1="420" y1="275" x2="800" y2="590" pathLength="1"/><line class="ra" id="red7-e40" x1="420" y1="275" x2="800" y2="660" pathLength="1"/><line class="ra" id="red7-e41" x1="420" y1="275" x2="800" y2="730" pathLength="1"/><line class="ra" id="red7-e42" x1="420" y1="345" x2="800" y2="170" pathLength="1"/><line class="ra" id="red7-e43" x1="420" y1="345" x2="800" y2="310" pathLength="1"/><line class="ra" id="red7-e44" x1="420" y1="345" x2="800" y2="380" pathLength="1"/><line class="ra" id="red7-e45" x1="420" y1="345" x2="800" y2="450" pathLength="1"/><line class="ra" id="red7-e46" x1="420" y1="345" x2="800" y2="520" pathLength="1"/><line class="ra" id="red7-e47" x1="420" y1="345" x2="800" y2="590" pathLength="1"/><line class="ra" id="red7-e48" x1="420" y1="345" x2="800" y2="730" pathLength="1"/><line class="ra" id="red7-e49" x1="420" y1="415" x2="800" y2="170" pathLength="1"/><line class="ra" id="red7-e50" x1="420" y1="415" x2="800" y2="310" pathLength="1"/><line class="ra" id="red7-e51" x1="420" y1="415" x2="800" y2="380" pathLength="1"/><line class="ra" id="red7-e52" x1="420" y1="415" x2="800" y2="590" pathLength="1"/><line class="ra" id="red7-e53" x1="420" y1="415" x2="800" y2="660" pathLength="1"/><line class="ra" id="red7-e54" x1="420" y1="415" x2="800" y2="730" pathLength="1"/><line class="ra" id="red7-e55" x1="420" y1="485" x2="800" y2="170" pathLength="1"/><line class="ra" id="red7-e56" x1="420" y1="485" x2="800" y2="240" pathLength="1"/><line class="ra" id="red7-e57" x1="420" y1="485" x2="800" y2="310" pathLength="1"/><line class="ra" id="red7-e58" x1="420" y1="485" x2="800" y2="380" pathLength="1"/><line class="ra" id="red7-e59" x1="420" y1="485" x2="800" y2="450" pathLength="1"/><line class="ra" id="red7-e60" x1="420" y1="485" x2="800" y2="520" pathLength="1"/><line class="ra" id="red7-e61" x1="420" y1="485" x2="800" y2="590" pathLength="1"/><line class="ra" id="red7-e62" x1="420" y1="485" x2="800" y2="660" pathLength="1"/><line class="ra" id="red7-e63" x1="420" y1="555" x2="800" y2="240" pathLength="1"/><line class="ra" id="red7-e64" x1="420" y1="555" x2="800" y2="380" pathLength="1"/><line class="ra" id="red7-e65" x1="420" y1="555" x2="800" y2="520" pathLength="1"/><line class="ra" id="red7-e66" x1="420" y1="555" x2="800" y2="590" pathLength="1"/><line class="ra" id="red7-e67" x1="420" y1="625" x2="800" y2="170" pathLength="1"/><line class="ra" id="red7-e68" x1="420" y1="625" x2="800" y2="240" pathLength="1"/><line class="ra" id="red7-e69" x1="420" y1="625" x2="800" y2="380" pathLength="1"/><line class="ra" id="red7-e70" x1="420" y1="625" x2="800" y2="450" pathLength="1"/><line class="ra" id="red7-e71" x1="420" y1="625" x2="800" y2="730" pathLength="1"/><line class="ra" id="red7-e72" x1="420" y1="695" x2="800" y2="240" pathLength="1"/><line class="ra" id="red7-e73" x1="420" y1="695" x2="800" y2="450" pathLength="1"/><line class="ra" id="red7-e74" x1="420" y1="695" x2="800" y2="520" pathLength="1"/><line class="ra" id="red7-e75" x1="420" y1="695" x2="800" y2="590" pathLength="1"/><line class="ra" id="red7-e76" x1="420" y1="695" x2="800" y2="730" pathLength="1"/><line class="ra" id="red7-e77" x1="800" y1="170" x2="1180" y2="205" pathLength="1"/><line class="ra" id="red7-e78" x1="800" y1="170" x2="1180" y2="345" pathLength="1"/><line class="ra" id="red7-e79" x1="800" y1="170" x2="1180" y2="415" pathLength="1"/><line class="ra" id="red7-e80" x1="800" y1="170" x2="1180" y2="485" pathLength="1"/><line class="ra" id="red7-e81" x1="800" y1="170" x2="1180" y2="555" pathLength="1"/><line class="ra" id="red7-e82" x1="800" y1="240" x2="1180" y2="275" pathLength="1"/><line class="ra" id="red7-e83" x1="800" y1="240" x2="1180" y2="485" pathLength="1"/><line class="ra" id="red7-e84" x1="800" y1="240" x2="1180" y2="555" pathLength="1"/><line class="ra" id="red7-e85" x1="800" y1="240" x2="1180" y2="695" pathLength="1"/><line class="ra" id="red7-e86" x1="800" y1="310" x2="1180" y2="205" pathLength="1"/><line class="ra" id="red7-e87" x1="800" y1="310" x2="1180" y2="345" pathLength="1"/><line class="ra" id="red7-e88" x1="800" y1="310" x2="1180" y2="485" pathLength="1"/><line class="ra" id="red7-e89" x1="800" y1="310" x2="1180" y2="555" pathLength="1"/><line class="ra" id="red7-e90" x1="800" y1="310" x2="1180" y2="625" pathLength="1"/><line class="ra" id="red7-e91" x1="800" y1="310" x2="1180" y2="695" pathLength="1"/><line class="ra" id="red7-e92" x1="800" y1="380" x2="1180" y2="205" pathLength="1"/><line class="ra" id="red7-e93" x1="800" y1="380" x2="1180" y2="485" pathLength="1"/><line class="ra" id="red7-e94" x1="800" y1="380" x2="1180" y2="695" pathLength="1"/><line class="ra" id="red7-e95" x1="800" y1="450" x2="1180" y2="205" pathLength="1"/><line class="ra" id="red7-e96" x1="800" y1="450" x2="1180" y2="415" pathLength="1"/><line class="ra" id="red7-e97" x1="800" y1="450" x2="1180" y2="555" pathLength="1"/><line class="ra" id="red7-e98" x1="800" y1="450" x2="1180" y2="695" pathLength="1"/><line class="ra" id="red7-e99" x1="800" y1="520" x2="1180" y2="275" pathLength="1"/><line class="ra" id="red7-e100" x1="800" y1="520" x2="1180" y2="345" pathLength="1"/><line class="ra" id="red7-e101" x1="800" y1="520" x2="1180" y2="415" pathLength="1"/><line class="ra" id="red7-e102" x1="800" y1="520" x2="1180" y2="625" pathLength="1"/><line class="ra" id="red7-e103" x1="800" y1="520" x2="1180" y2="695" pathLength="1"/><line class="ra" id="red7-e104" x1="800" y1="590" x2="1180" y2="275" pathLength="1"/><line class="ra" id="red7-e105" x1="800" y1="590" x2="1180" y2="345" pathLength="1"/><line class="ra" id="red7-e106" x1="800" y1="590" x2="1180" y2="415" pathLength="1"/><line class="ra" id="red7-e107" x1="800" y1="590" x2="1180" y2="555" pathLength="1"/><line class="ra" id="red7-e108" x1="800" y1="590" x2="1180" y2="625" pathLength="1"/><line class="ra" id="red7-e109" x1="800" y1="590" x2="1180" y2="695" pathLength="1"/><line class="ra" id="red7-e110" x1="800" y1="660" x2="1180" y2="205" pathLength="1"/><line class="ra" id="red7-e111" x1="800" y1="660" x2="1180" y2="275" pathLength="1"/><line class="ra" id="red7-e112" x1="800" y1="660" x2="1180" y2="415" pathLength="1"/><line class="ra" id="red7-e113" x1="800" y1="660" x2="1180" y2="485" pathLength="1"/><line class="ra" id="red7-e114" x1="800" y1="660" x2="1180" y2="555" pathLength="1"/><line class="ra" id="red7-e115" x1="800" y1="660" x2="1180" y2="695" pathLength="1"/><line class="ra" id="red7-e116" x1="800" y1="730" x2="1180" y2="205" pathLength="1"/><line class="ra" id="red7-e117" x1="800" y1="730" x2="1180" y2="485" pathLength="1"/><line class="ra" id="red7-e118" x1="800" y1="730" x2="1180" y2="555" pathLength="1"/><line class="ra" id="red7-e119" x1="800" y1="730" x2="1180" y2="625" pathLength="1"/><line class="ra" id="red7-e120" x1="1180" y1="205" x2="1560" y2="310" pathLength="1"/><line class="ra" id="red7-e121" x1="1180" y1="205" x2="1560" y2="590" pathLength="1"/><line class="ra" id="red7-e122" x1="1180" y1="275" x2="1560" y2="310" pathLength="1"/><line class="ra" id="red7-e123" x1="1180" y1="275" x2="1560" y2="450" pathLength="1"/><line class="ra" id="red7-e124" x1="1180" y1="275" x2="1560" y2="520" pathLength="1"/><line class="ra" id="red7-e125" x1="1180" y1="275" x2="1560" y2="590" pathLength="1"/><line class="ra" id="red7-e126" x1="1180" y1="345" x2="1560" y2="310" pathLength="1"/><line class="ra" id="red7-e127" x1="1180" y1="345" x2="1560" y2="450" pathLength="1"/><line class="ra" id="red7-e128" x1="1180" y1="415" x2="1560" y2="310" pathLength="1"/><line class="ra" id="red7-e129" x1="1180" y1="415" x2="1560" y2="450" pathLength="1"/><line class="ra" id="red7-e130" x1="1180" y1="415" x2="1560" y2="520" pathLength="1"/><line class="ra" id="red7-e131" x1="1180" y1="485" x2="1560" y2="310" pathLength="1"/><line class="ra" id="red7-e132" x1="1180" y1="485" x2="1560" y2="450" pathLength="1"/><line class="ra" id="red7-e133" x1="1180" y1="485" x2="1560" y2="520" pathLength="1"/><line class="ra" id="red7-e134" x1="1180" y1="485" x2="1560" y2="590" pathLength="1"/><line class="ra" id="red7-e135" x1="1180" y1="555" x2="1560" y2="310" pathLength="1"/><line class="ra" id="red7-e136" x1="1180" y1="555" x2="1560" y2="590" pathLength="1"/><line class="ra" id="red7-e137" x1="1180" y1="625" x2="1560" y2="380" pathLength="1"/><line class="ra" id="red7-e138" x1="1180" y1="625" x2="1560" y2="450" pathLength="1"/><line class="ra" id="red7-e139" x1="1180" y1="625" x2="1560" y2="590" pathLength="1"/><line class="ra" id="red7-e140" x1="1180" y1="695" x2="1560" y2="310" pathLength="1"/><line class="ra" id="red7-e141" x1="1180" y1="695" x2="1560" y2="380" pathLength="1"/><line class="ra" id="red7-e142" x1="1180" y1="695" x2="1560" y2="520" pathLength="1"/>
+    <circle class="rn" id="red7-n0" cx="40" cy="310" r="11"/><circle class="rn" id="red7-n1" cx="40" cy="380" r="11"/><circle class="rn" id="red7-n2" cx="40" cy="450" r="11"/><circle class="rn" id="red7-n3" cx="40" cy="520" r="11"/><circle class="rn" id="red7-n4" cx="40" cy="590" r="11"/><circle class="rn" id="red7-n5" cx="420" cy="205" r="11"/><circle class="rn" id="red7-n6" cx="420" cy="275" r="11"/><circle class="rn" id="red7-n7" cx="420" cy="345" r="11"/><circle class="rn" id="red7-n8" cx="420" cy="415" r="11"/><circle class="rn" id="red7-n9" cx="420" cy="485" r="11"/><circle class="rn" id="red7-n10" cx="420" cy="555" r="11"/><circle class="rn" id="red7-n11" cx="420" cy="625" r="11"/><circle class="rn" id="red7-n12" cx="420" cy="695" r="11"/><circle class="rn" id="red7-n13" cx="800" cy="170" r="11"/><circle class="rn" id="red7-n14" cx="800" cy="240" r="11"/><circle class="rn" id="red7-n15" cx="800" cy="310" r="11"/><circle class="rn" id="red7-n16" cx="800" cy="380" r="11"/><circle class="rn" id="red7-n17" cx="800" cy="450" r="11"/><circle class="rn" id="red7-n18" cx="800" cy="520" r="11"/><circle class="rn" id="red7-n19" cx="800" cy="590" r="11"/><circle class="rn" id="red7-n20" cx="800" cy="660" r="11"/><circle class="rn" id="red7-n21" cx="800" cy="730" r="11"/><circle class="rn" id="red7-n22" cx="1180" cy="205" r="11"/><circle class="rn" id="red7-n23" cx="1180" cy="275" r="11"/><circle class="rn" id="red7-n24" cx="1180" cy="345" r="11"/><circle class="rn" id="red7-n25" cx="1180" cy="415" r="11"/><circle class="rn" id="red7-n26" cx="1180" cy="485" r="11"/><circle class="rn" id="red7-n27" cx="1180" cy="555" r="11"/><circle class="rn" id="red7-n28" cx="1180" cy="625" r="11"/><circle class="rn" id="red7-n29" cx="1180" cy="695" r="11"/><circle class="rn" id="red7-n30" cx="1560" cy="310" r="11"/><circle class="rn" id="red7-n31" cx="1560" cy="380" r="11"/><circle class="rn" id="red7-n32" cx="1560" cy="450" r="11"/><circle class="rn" id="red7-n33" cx="1560" cy="520" r="11"/><circle class="rn" id="red7-n34" cx="1560" cy="590" r="11"/>
+    <circle class="rp" id="red7-p0" r="6" cx="0" cy="0"/><circle class="rp" id="red7-p1" r="6" cx="0" cy="0"/><circle class="rp" id="red7-p2" r="6" cx="0" cy="0"/><circle class="rp" id="red7-p3" r="6" cx="0" cy="0"/><circle class="rp" id="red7-p4" r="6" cx="0" cy="0"/><circle class="rp" id="red7-p5" r="6" cx="0" cy="0"/><circle class="rp" id="red7-p6" r="6" cx="0" cy="0"/><circle class="rp" id="red7-p7" r="6" cx="0" cy="0"/><circle class="rp" id="red7-p8" r="6" cx="0" cy="0"/><circle class="rp" id="red7-p9" r="6" cx="0" cy="0"/><circle class="rp" id="red7-p10" r="6" cx="0" cy="0"/><circle class="rp" id="red7-p11" r="6" cx="0" cy="0"/><circle class="rp" id="red7-p12" r="6" cx="0" cy="0"/><circle class="rp" id="red7-p13" r="6" cx="0" cy="0"/>
+  </svg></div>
+      <div class="st">
+        <h1 class="h xl ti nd">Fractal no decide.</h1>
+        <div class="row ops"><div class="panel op" id="dop0"><b>Opción A</b><i style="--w:78%"></i><small>Impacto</small></div><div class="panel op" id="dop1"><b>Opción B</b><i style="--w:62%"></i><small>Impacto</small></div><div class="panel op" id="dop2"><b>Opción C</b><i style="--w:85%"></i><small>Impacto</small></div></div>
+        <span class="chip on tuya">La decisión es tuya</span>
+      </div></div>
+<audio id="sfx-5a" src="assets/shared/core/sfx/hit.wav" data-start="37.71" data-duration="1.40" data-volume="0.25" data-track-index="36"></audio>
+<audio id="sfx-5b" src="assets/shared/core/sfx/spark.wav" data-start="42.23" data-duration="1.40" data-volume="0.22" data-track-index="37"></audio>
+<div id="e-mod" class="clip scene" data-start="44.50" data-duration="12.25" data-track-index="3"><p class="kick"><b>EP 7</b> SERIE ARVANTTI FRACTAL</p>
+      <div class="st">
+        <div class="anillos">
+          <svg viewBox="-300 -300 600 600"><circle id="an0" r="150" pathLength="1"/><g class="orb" id="orb0"><circle class="orbp" cx="150" cy="0" r="9"/></g><circle id="an1" r="210" pathLength="1"/><g class="orb" id="orb1"><circle class="orbp" cx="210" cy="0" r="9"/></g><circle id="an2" r="270" pathLength="1"/><g class="orb" id="orb2"><circle class="orbp" cx="270" cy="0" r="9"/></g></svg>
+          <div class="nuc"><span>Fractal</span><small>Un núcleo</small></div>
+          <div class="mlab" id="ml0"><b>Industrial</b><small>Arvantti Digital Twin</small></div><div class="mlab" id="ml1"><b>Process</b><small>Arvantti OS</small></div><div class="mlab" id="ml2"><b>Finance</b><small>Arvantti OS Enterprise</small></div>
+        </div>
+        <span class="chip on jps">Juntos o por separado</span>
+      </div></div>
+<audio id="sfx-60" src="assets/shared/core/sfx/pop.mp3" data-start="47.37" data-duration="1.40" data-volume="0.15" data-track-index="39"></audio>
+<audio id="sfx-61" src="assets/shared/core/sfx/pop.mp3" data-start="49.41" data-duration="1.40" data-volume="0.15" data-track-index="40"></audio>
+<audio id="sfx-62" src="assets/shared/core/sfx/pop.mp3" data-start="51.29" data-duration="1.40" data-volume="0.15" data-track-index="41"></audio>
+<div id="e-cierre" class="clip scene" data-start="56.25" data-duration="10.97" data-track-index="3">
+    <div class="st fin">
+      <img class="marca" src="assets/clips/marca.png" alt="">
+      <h1 class="h xl ti">Arvantti Fractal</h1>
+      <p class="firma">Las mejores opciones y su impacto,<br>para que tú decidas.</p>
+      <p class="url">arvantti.tech</p>
+    </div></div>
+<audio id="sfx-fin" src="assets/shared/core/sfx/hit.wav" data-start="57.40" data-duration="1.40" data-volume="0.28" data-track-index="43"></audio>
+<div id="sweep-0" class="clip sweep" data-start="7.38" data-duration="0.90" data-track-index="40"></div>
+<div id="sweep-1" class="clip sweep" data-start="18.63" data-duration="0.90" data-track-index="40"></div>
+<div id="sweep-2" class="clip sweep" data-start="29.41" data-duration="0.90" data-track-index="40"></div>
+<div id="sweep-3" class="clip sweep" data-start="37.06" data-duration="0.90" data-track-index="40"></div>
+<div id="sweep-4" class="clip sweep" data-start="44.40" data-duration="0.90" data-track-index="40"></div>
+<div id="sweep-5" class="clip sweep" data-start="56.15" data-duration="0.90" data-track-index="40"></div>
+<div id="cap0" class="clip cap" data-start="1.35" data-duration="2.60" data-track-index="45"><span class="l"><span class="cw" id="cap0w0">Miércoles.</span> <span class="cw" id="cap0w1">La</span> <span class="cw" id="cap0w2">gerente</span> <span class="cw" id="cap0w3">tiene</span> <span class="cw" id="cap0w4">sobre</span> <span class="cw" id="cap0w5">la</span> <span class="cw" id="cap0w6">mesa</span></span></div>
+<div id="cap1" class="clip cap" data-start="3.95" data-duration="2.08" data-track-index="45"><span class="l"><span class="cw" id="cap1w0">la</span> <span class="cw" id="cap1w1">respuesta</span> <span class="cw" id="cap1w2">completa</span> <span class="cw" id="cap1w3">a</span> <span class="cw" id="cap1w4">la</span> <span class="cw" id="cap1w5">pregunta</span> <span class="cw" id="cap1w6">del</span></span></div>
+<div id="cap2" class="clip cap" data-start="6.03" data-duration="1.00" data-track-index="45"><span class="l"><span class="cw" id="cap2w0">lunes.</span></span></div>
+<div id="cap3" class="clip cap" data-start="7.98" data-duration="2.40" data-track-index="45"><span class="l"><span class="cw" id="cap3w0">La</span> <span class="cw" id="cap3w1">planta</span> <span class="cw" id="cap3w2">alcanza</span> <span class="cw" id="cap3w3">si</span> <span class="cw" id="cap3w4">partimos</span> <span class="cw" id="cap3w5">el</span> <span class="cw" id="cap3w6">pedido.</span></span></div>
+<div id="cap4" class="clip cap" data-start="10.38" data-duration="2.00" data-track-index="45"><span class="l"><span class="cw" id="cap4w0">El</span> <span class="cw" id="cap4w1">material</span> <span class="cw" id="cap4w2">se</span> <span class="cw" id="cap4w3">pide</span> <span class="cw" id="cap4w4">el</span> <span class="cw" id="cap4w5">mismo</span> <span class="cw" id="cap4w6">día,</span></span></div>
+<div id="cap5" class="clip cap" data-start="12.38" data-duration="1.48" data-track-index="45"><span class="l"><span class="cw" id="cap5w0">así</span> <span class="cw" id="cap5w1">que</span> <span class="cw" id="cap5w2">la</span> <span class="cw" id="cap5w3">compra</span> <span class="cw" id="cap5w4">ya</span> <span class="cw" id="cap5w5">no</span> <span class="cw" id="cap5w6">frena</span></span></div>
+<div id="cap6" class="clip cap" data-start="13.86" data-duration="1.00" data-track-index="45"><span class="l"><span class="cw" id="cap6w0">el</span> <span class="cw" id="cap6w1">proceso.</span></span></div>
+<div id="cap7" class="clip cap" data-start="14.86" data-duration="1.28" data-track-index="45"><span class="l"><span class="cw" id="cap7w0">La</span> <span class="cw" id="cap7w1">caja</span> <span class="cw" id="cap7w2">se</span> <span class="cw" id="cap7w3">aprieta,</span></span></div>
+<div id="cap8" class="clip cap" data-start="16.14" data-duration="2.14" data-track-index="45"><span class="l"><span class="cw" id="cap8w0">pero</span> <span class="cw" id="cap8w1">un</span> <span class="cw" id="cap8w2">anticipo</span> <span class="cw" id="cap8w3">lo</span> <span class="cw" id="cap8w4">resuelve.</span></span></div>
+<div id="cap9" class="clip cap" data-start="19.23" data-duration="1.60" data-track-index="45"><span class="l"><span class="cw" id="cap9w0">Y</span> <span class="cw" id="cap9w1">lo</span> <span class="cw" id="cap9w2">más</span> <span class="cw" id="cap9w3">importante:</span></span></div>
+<div id="cap10" class="clip cap" data-start="20.83" data-duration="2.08" data-track-index="45"><span class="l"><span class="cw" id="cap10w0">Fractal</span> <span class="cw" id="cap10w1">explica</span> <span class="cw" id="cap10w2">por</span> <span class="cw" id="cap10w3">qué.</span></span></div>
+<div id="cap11" class="clip cap" data-start="22.91" data-duration="1.36" data-track-index="45"><span class="l"><span class="cw" id="cap11w0">Qué</span> <span class="cw" id="cap11w1">reglas</span> <span class="cw" id="cap11w2">respetó,</span></span></div>
+<div id="cap12" class="clip cap" data-start="24.27" data-duration="1.20" data-track-index="45"><span class="l"><span class="cw" id="cap12w0">qué</span> <span class="cw" id="cap12w1">datos</span> <span class="cw" id="cap12w2">usó,</span></span></div>
+<div id="cap13" class="clip cap" data-start="25.47" data-duration="2.40" data-track-index="45"><span class="l"><span class="cw" id="cap13w0">qué</span> <span class="cw" id="cap13w1">supuso</span> <span class="cw" id="cap13w2">y</span> <span class="cw" id="cap13w3">cuánto</span> <span class="cw" id="cap13w4">riesgo</span> <span class="cw" id="cap13w5">tiene</span> <span class="cw" id="cap13w6">cada</span></span></div>
+<div id="cap14" class="clip cap" data-start="27.87" data-duration="1.19" data-track-index="45"><span class="l"><span class="cw" id="cap14w0">alternativa.</span></span></div>
+<div id="cap15" class="clip cap" data-start="30.01" data-duration="2.72" data-track-index="45"><span class="l"><span class="cw" id="cap15w0">Cada</span> <span class="cw" id="cap15w1">escenario</span> <span class="cw" id="cap15w2">queda</span> <span class="cw" id="cap15w3">guardado</span> <span class="cw" id="cap15w4">con</span> <span class="cw" id="cap15w5">su</span> <span class="cw" id="cap15w6">versión.</span></span></div>
+<div id="cap16" class="clip cap" data-start="32.73" data-duration="1.68" data-track-index="45"><span class="l"><span class="cw" id="cap16w0">Si</span> <span class="cw" id="cap16w1">mañana</span> <span class="cw" id="cap16w2">cambian</span> <span class="cw" id="cap16w3">los</span> <span class="cw" id="cap16w4">datos,</span></span></div>
+<div id="cap17" class="clip cap" data-start="34.41" data-duration="2.30" data-track-index="45"><span class="l"><span class="cw" id="cap17w0">se</span> <span class="cw" id="cap17w1">vuelve</span> <span class="cw" id="cap17w2">a</span> <span class="cw" id="cap17w3">calcular</span> <span class="cw" id="cap17w4">y</span> <span class="cw" id="cap17w5">se</span> <span class="cw" id="cap17w6">compara.</span></span></div>
+<div id="cap18" class="clip cap" data-start="37.66" data-duration="1.76" data-track-index="45"><span class="l"><span class="cw" id="cap18w0">Fractal</span> <span class="cw" id="cap18w1">no</span> <span class="cw" id="cap18w2">decide.</span></span></div>
+<div id="cap19" class="clip cap" data-start="39.42" data-duration="2.08" data-track-index="45"><span class="l"><span class="cw" id="cap19w0">Te</span> <span class="cw" id="cap19w1">presenta</span> <span class="cw" id="cap19w2">las</span> <span class="cw" id="cap19w3">mejores</span> <span class="cw" id="cap19w4">opciones</span> <span class="cw" id="cap19w5">y</span> <span class="cw" id="cap19w6">su</span></span></div>
+<div id="cap20" class="clip cap" data-start="41.50" data-duration="2.55" data-track-index="45"><span class="l"><span class="cw" id="cap20w0">impacto.</span> <span class="cw" id="cap20w1">La</span> <span class="cw" id="cap20w2">decisión</span> <span class="cw" id="cap20w3">es</span> <span class="cw" id="cap20w4">tuya.</span></span></div>
+<div id="cap21" class="clip cap" data-start="45.00" data-duration="2.32" data-track-index="45"><span class="l"><span class="cw" id="cap21w0">Un</span> <span class="cw" id="cap21w1">núcleo</span> <span class="cw" id="cap21w2">y</span> <span class="cw" id="cap21w3">tres</span> <span class="cw" id="cap21w4">módulos:</span></span></div>
+<div id="cap22" class="clip cap" data-start="47.32" data-duration="2.04" data-track-index="45"><span class="l"><span class="cw" id="cap22w0">Industrial</span> <span class="cw" id="cap22w1">en</span> <span class="cw" id="cap22w2">el</span> <span class="cw" id="cap22w3">gemelo</span> <span class="cw" id="cap22w4">digital,</span></span></div>
+<div id="cap23" class="clip cap" data-start="49.36" data-duration="2.60" data-track-index="45"><span class="l"><span class="cw" id="cap23w0">Process</span> <span class="cw" id="cap23w1">en</span> <span class="cw" id="cap23w2">Arvantti</span> <span class="cw" id="cap23w3">OS</span> <span class="cw" id="cap23w4">y</span> <span class="cw" id="cap23w5">Finance</span> <span class="cw" id="cap23w6">en</span></span></div>
+<div id="cap24" class="clip cap" data-start="51.96" data-duration="2.08" data-track-index="45"><span class="l"><span class="cw" id="cap24w0">Arvantti</span> <span class="cw" id="cap24w1">OS</span> <span class="cw" id="cap24w2">Enterprise.</span></span></div>
+<div id="cap25" class="clip cap" data-start="54.04" data-duration="1.76" data-track-index="45"><span class="l"><span class="cw" id="cap25w0">Juntos</span> <span class="cw" id="cap25w1">o</span> <span class="cw" id="cap25w2">por</span> <span class="cw" id="cap25w3">separado.</span></span></div>
+<audio id="voz-miercoles" src="escenas/01-miercoles/assets/audio/voiceover.mp3" data-start="1.40" data-duration="5.33" data-volume="1" data-track-index="76"></audio>
+<audio id="voz-resumen" src="escenas/02-resumen/assets/audio/voiceover.mp3" data-start="8.03" data-duration="9.95" data-volume="1" data-track-index="77"></audio>
+<audio id="voz-explica" src="escenas/03-explica/assets/audio/voiceover.mp3" data-start="19.28" data-duration="9.48" data-volume="1" data-track-index="78"></audio>
+<audio id="voz-versiones" src="escenas/04-versiones/assets/audio/voiceover.mp3" data-start="30.06" data-duration="6.35" data-volume="1" data-track-index="79"></audio>
+<audio id="voz-decide" src="escenas/05-decide/assets/audio/voiceover.mp3" data-start="37.71" data-duration="6.03" data-volume="1" data-track-index="80"></audio>
+<audio id="voz-modulos" src="escenas/06-modulos/assets/audio/voiceover.mp3" data-start="45.05" data-duration="10.45" data-volume="1" data-track-index="81"></audio>
+<audio id="voz-cierre" src="escenas/07-cierre/assets/audio/voiceover.mp3" data-start="57.40" data-duration="5.07" data-volume="1" data-track-index="82"></audio>
+<audio id="musica" src="musica-mezcla.mp3" data-start="0.00" data-duration="66.96" data-volume="0.5" data-track-index="83"></audio>
+</div>
+<script>
+window.__timelines = window.__timelines || {};
+const tl = gsap.timeline({ paused: true });
+tl.fromTo("#fondo .floorgrid",{"backgroundPositionY":"0px"},{"backgroundPositionY":"2679px","duration":66.96285800000001,"ease":"none"},0.00);
+tl.fromTo("#fondo .glow",{"opacity":0.5},{"opacity":1,"duration":6,"ease":"sine.inOut","yoyo":true,"repeat":11},0.00);
+tl.fromTo("#e-mie .kick",{"opacity":0,"x":-30},{"opacity":1,"x":0,"duration":0.6},0.30);
+tl.fromTo("#e-mie .cal",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},1.20);
+tl.fromTo("#e-mie .hoy",{"backgroundColor":"#0d1a3000"},{"backgroundColor":"#2d7ff9","color":"#fff","duration":0.4},1.60);
+tl.fromTo("#e-mie .ger",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},2.52);
+tl.to("#e-mie",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},7.73);
+tl.fromTo("#e-res",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},7.48);
+tl.fromTo("#rs0",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},7.93);
+tl.fromTo("#rs1",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},10.33);
+tl.fromTo("#rs2",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},14.81);
+tl.to("#e-res",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},18.98);
+tl.fromTo("#e-exp",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},18.73);
+tl.fromTo("#e-exp .x-t .w",{"opacity":0,"y":40,"filter":"blur(10px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.6,"stagger":0.07,"ease":"power3.out"},20.68);
+tl.fromTo("#e-exp .expl",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},22.56);
+tl.fromTo("#ln0",{"opacity":0,"x":-40},{"opacity":1,"x":0,"duration":0.45,"stagger":0,"ease":"power3.out"},22.86);
+tl.fromTo("#ln1",{"opacity":0,"x":-40},{"opacity":1,"x":0,"duration":0.45,"stagger":0,"ease":"power3.out"},24.22);
+tl.fromTo("#ln2",{"opacity":0,"x":-40},{"opacity":1,"x":0,"duration":0.45,"stagger":0,"ease":"power3.out"},25.42);
+tl.fromTo("#ln3",{"opacity":0,"x":-40},{"opacity":1,"x":0,"duration":0.45,"stagger":0,"ease":"power3.out"},26.46);
+tl.fromTo("#e-exp .rng i",{"scaleX":0},{"scaleX":1,"transformOrigin":"50% 50%","duration":0.5,"stagger":0.12},26.86);
+tl.to("#e-exp",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},29.76);
+tl.fromTo("#e-ver",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},29.51);
+tl.fromTo("#e-ver .vline line",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":1.2},30.06);
+tl.fromTo("#vn0",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},30.06);
+tl.fromTo("#vn1",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},31.74);
+tl.fromTo("#e-ver .cd",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},32.78);
+tl.fromTo("#vn2",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},34.46);
+tl.to("#vn2",{"backgroundColor":"#2d7ff9","borderColor":"#4ea7ff","color":"#ffffff","boxShadow":"0 0 40px #2d7ff988","duration":0.35},34.76);
+tl.fromTo("#e-ver .comp",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},35.42);
+tl.fromTo("#e-ver .comp i",{"scaleX":0},{"scaleX":1,"duration":0.6,"stagger":0.2},35.62);
+tl.to("#e-ver",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},37.41);
+tl.fromTo("#red7 .rn",{"opacity":0,"scale":0,"transformOrigin":"50% 50%"},{"opacity":1,"scale":1,"duration":0.35,"stagger":0.025,"ease":"back.out(2)"},37.46);
+tl.fromTo("#red7 .ra",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.5,"stagger":0.006,"ease":"power2.out"},37.66);
+tl.fromTo("#red7-p0",{"attr":{"cx":40,"cy":520},"opacity":1},{"attr":{"cx":420,"cy":275},"duration":0.77928575,"ease":"none","immediateRender":false},37.96);
+tl.fromTo("#red7-p0",{"attr":{"cx":420,"cy":275},"opacity":1},{"attr":{"cx":800,"cy":380},"duration":0.77928575,"ease":"none","immediateRender":false},38.74);
+tl.fromTo("#red7-p0",{"attr":{"cx":800,"cy":380},"opacity":1},{"attr":{"cx":1180,"cy":485},"duration":0.77928575,"ease":"none","immediateRender":false},39.52);
+tl.fromTo("#red7-p0",{"attr":{"cx":1180,"cy":485},"opacity":1},{"attr":{"cx":1560,"cy":310},"duration":0.77928575,"ease":"none","immediateRender":false},40.30);
+tl.to("#red7-p0",{"opacity":0,"duration":0.15},41.08);
+tl.fromTo("#red7-p1",{"attr":{"cx":40,"cy":380},"opacity":1},{"attr":{"cx":420,"cy":695},"duration":0.77928575,"ease":"none","immediateRender":false},38.41);
+tl.fromTo("#red7-p1",{"attr":{"cx":420,"cy":695},"opacity":1},{"attr":{"cx":800,"cy":380},"duration":0.77928575,"ease":"none","immediateRender":false},39.19);
+tl.fromTo("#red7-p1",{"attr":{"cx":800,"cy":380},"opacity":1},{"attr":{"cx":1180,"cy":205},"duration":0.77928575,"ease":"none","immediateRender":false},39.97);
+tl.fromTo("#red7-p1",{"attr":{"cx":1180,"cy":205},"opacity":1},{"attr":{"cx":1560,"cy":520},"duration":0.77928575,"ease":"none","immediateRender":false},40.75);
+tl.to("#red7-p1",{"opacity":0,"duration":0.15},41.52);
+tl.fromTo("#red7-p2",{"attr":{"cx":40,"cy":450},"opacity":1},{"attr":{"cx":420,"cy":625},"duration":0.77928575,"ease":"none","immediateRender":false},38.85);
+tl.fromTo("#red7-p2",{"attr":{"cx":420,"cy":625},"opacity":1},{"attr":{"cx":800,"cy":520},"duration":0.77928575,"ease":"none","immediateRender":false},39.63);
+tl.fromTo("#red7-p2",{"attr":{"cx":800,"cy":520},"opacity":1},{"attr":{"cx":1180,"cy":625},"duration":0.77928575,"ease":"none","immediateRender":false},40.41);
+tl.fromTo("#red7-p2",{"attr":{"cx":1180,"cy":625},"opacity":1},{"attr":{"cx":1560,"cy":310},"duration":0.77928575,"ease":"none","immediateRender":false},41.19);
+tl.to("#red7-p2",{"opacity":0,"duration":0.15},41.97);
+tl.fromTo("#red7-p3",{"attr":{"cx":40,"cy":590},"opacity":1},{"attr":{"cx":420,"cy":275},"duration":0.77928575,"ease":"none","immediateRender":false},39.30);
+tl.fromTo("#red7-p3",{"attr":{"cx":420,"cy":275},"opacity":1},{"attr":{"cx":800,"cy":380},"duration":0.77928575,"ease":"none","immediateRender":false},40.08);
+tl.fromTo("#red7-p3",{"attr":{"cx":800,"cy":380},"opacity":1},{"attr":{"cx":1180,"cy":345},"duration":0.77928575,"ease":"none","immediateRender":false},40.86);
+tl.fromTo("#red7-p3",{"attr":{"cx":1180,"cy":345},"opacity":1},{"attr":{"cx":1560,"cy":310},"duration":0.77928575,"ease":"none","immediateRender":false},41.64);
+tl.to("#red7-p3",{"opacity":0,"duration":0.15},42.41);
+tl.fromTo("#red7-p4",{"attr":{"cx":40,"cy":310},"opacity":1},{"attr":{"cx":420,"cy":625},"duration":0.77928575,"ease":"none","immediateRender":false},39.74);
+tl.fromTo("#red7-p4",{"attr":{"cx":420,"cy":625},"opacity":1},{"attr":{"cx":800,"cy":450},"duration":0.77928575,"ease":"none","immediateRender":false},40.52);
+tl.fromTo("#red7-p4",{"attr":{"cx":800,"cy":450},"opacity":1},{"attr":{"cx":1180,"cy":415},"duration":0.77928575,"ease":"none","immediateRender":false},41.30);
+tl.fromTo("#red7-p4",{"attr":{"cx":1180,"cy":415},"opacity":1},{"attr":{"cx":1560,"cy":310},"duration":0.77928575,"ease":"none","immediateRender":false},42.08);
+tl.to("#red7-p4",{"opacity":0,"duration":0.15},42.86);
+tl.fromTo("#red7-p5",{"attr":{"cx":40,"cy":450},"opacity":1},{"attr":{"cx":420,"cy":555},"duration":0.77928575,"ease":"none","immediateRender":false},40.19);
+tl.fromTo("#red7-p5",{"attr":{"cx":420,"cy":555},"opacity":1},{"attr":{"cx":800,"cy":520},"duration":0.77928575,"ease":"none","immediateRender":false},40.97);
+tl.fromTo("#red7-p5",{"attr":{"cx":800,"cy":520},"opacity":1},{"attr":{"cx":1180,"cy":345},"duration":0.77928575,"ease":"none","immediateRender":false},41.75);
+tl.fromTo("#red7-p5",{"attr":{"cx":1180,"cy":345},"opacity":1},{"attr":{"cx":1560,"cy":590},"duration":0.77928575,"ease":"none","immediateRender":false},42.53);
+tl.to("#red7-p5",{"opacity":0,"duration":0.15},43.31);
+tl.fromTo("#red7-p6",{"attr":{"cx":40,"cy":310},"opacity":1},{"attr":{"cx":420,"cy":205},"duration":0.77928575,"ease":"none","immediateRender":false},40.63);
+tl.fromTo("#red7-p6",{"attr":{"cx":420,"cy":205},"opacity":1},{"attr":{"cx":800,"cy":170},"duration":0.77928575,"ease":"none","immediateRender":false},41.41);
+tl.fromTo("#red7-p6",{"attr":{"cx":800,"cy":170},"opacity":1},{"attr":{"cx":1180,"cy":555},"duration":0.77928575,"ease":"none","immediateRender":false},42.19);
+tl.fromTo("#red7-p6",{"attr":{"cx":1180,"cy":555},"opacity":1},{"attr":{"cx":1560,"cy":520},"duration":0.77928575,"ease":"none","immediateRender":false},42.97);
+tl.to("#red7-p6",{"opacity":0,"duration":0.15},43.75);
+tl.fromTo("#red7-p7",{"attr":{"cx":40,"cy":450},"opacity":1},{"attr":{"cx":420,"cy":275},"duration":0.77928575,"ease":"none","immediateRender":false},41.08);
+tl.fromTo("#red7-p7",{"attr":{"cx":420,"cy":275},"opacity":1},{"attr":{"cx":800,"cy":170},"duration":0.77928575,"ease":"none","immediateRender":false},41.86);
+tl.fromTo("#red7-p7",{"attr":{"cx":800,"cy":170},"opacity":1},{"attr":{"cx":1180,"cy":485},"duration":0.77928575,"ease":"none","immediateRender":false},42.64);
+tl.fromTo("#red7-p7",{"attr":{"cx":1180,"cy":485},"opacity":1},{"attr":{"cx":1560,"cy":310},"duration":0.77928575,"ease":"none","immediateRender":false},43.42);
+tl.to("#red7-p7",{"opacity":0,"duration":0.15},44.20);
+tl.fromTo("#red7-p8",{"attr":{"cx":40,"cy":450},"opacity":1},{"attr":{"cx":420,"cy":345},"duration":0.77928575,"ease":"none","immediateRender":false},41.52);
+tl.fromTo("#red7-p8",{"attr":{"cx":420,"cy":345},"opacity":1},{"attr":{"cx":800,"cy":240},"duration":0.77928575,"ease":"none","immediateRender":false},42.30);
+tl.fromTo("#red7-p8",{"attr":{"cx":800,"cy":240},"opacity":1},{"attr":{"cx":1180,"cy":625},"duration":0.77928575,"ease":"none","immediateRender":false},43.08);
+tl.fromTo("#red7-p8",{"attr":{"cx":1180,"cy":625},"opacity":1},{"attr":{"cx":1560,"cy":310},"duration":0.77928575,"ease":"none","immediateRender":false},43.86);
+tl.to("#red7-p8",{"opacity":0,"duration":0.15},44.64);
+tl.fromTo("#red7-p9",{"attr":{"cx":40,"cy":590},"opacity":1},{"attr":{"cx":420,"cy":415},"duration":0.77928575,"ease":"none","immediateRender":false},41.97);
+tl.fromTo("#red7-p9",{"attr":{"cx":420,"cy":415},"opacity":1},{"attr":{"cx":800,"cy":170},"duration":0.77928575,"ease":"none","immediateRender":false},42.75);
+tl.fromTo("#red7-p9",{"attr":{"cx":800,"cy":170},"opacity":1},{"attr":{"cx":1180,"cy":345},"duration":0.77928575,"ease":"none","immediateRender":false},43.53);
+tl.fromTo("#red7-p9",{"attr":{"cx":1180,"cy":345},"opacity":1},{"attr":{"cx":1560,"cy":380},"duration":0.77928575,"ease":"none","immediateRender":false},44.31);
+tl.to("#red7-p9",{"opacity":0,"duration":0.15},45.09);
+tl.fromTo("#red7-p10",{"attr":{"cx":40,"cy":520},"opacity":1},{"attr":{"cx":420,"cy":485},"duration":0.77928575,"ease":"none","immediateRender":false},42.41);
+tl.fromTo("#red7-p10",{"attr":{"cx":420,"cy":485},"opacity":1},{"attr":{"cx":800,"cy":380},"duration":0.77928575,"ease":"none","immediateRender":false},43.19);
+tl.fromTo("#red7-p10",{"attr":{"cx":800,"cy":380},"opacity":1},{"attr":{"cx":1180,"cy":695},"duration":0.77928575,"ease":"none","immediateRender":false},43.97);
+tl.fromTo("#red7-p10",{"attr":{"cx":1180,"cy":695},"opacity":1},{"attr":{"cx":1560,"cy":380},"duration":0.77928575,"ease":"none","immediateRender":false},44.75);
+tl.to("#red7-p10",{"opacity":0,"duration":0.15},45.53);
+tl.fromTo("#red7-p11",{"attr":{"cx":40,"cy":310},"opacity":1},{"attr":{"cx":420,"cy":275},"duration":0.77928575,"ease":"none","immediateRender":false},42.86);
+tl.fromTo("#red7-p11",{"attr":{"cx":420,"cy":275},"opacity":1},{"attr":{"cx":800,"cy":450},"duration":0.77928575,"ease":"none","immediateRender":false},43.64);
+tl.fromTo("#red7-p11",{"attr":{"cx":800,"cy":450},"opacity":1},{"attr":{"cx":1180,"cy":205},"duration":0.77928575,"ease":"none","immediateRender":false},44.42);
+tl.fromTo("#red7-p11",{"attr":{"cx":1180,"cy":205},"opacity":1},{"attr":{"cx":1560,"cy":450},"duration":0.77928575,"ease":"none","immediateRender":false},45.20);
+tl.to("#red7-p11",{"opacity":0,"duration":0.15},45.98);
+tl.fromTo("#red7-p12",{"attr":{"cx":40,"cy":380},"opacity":1},{"attr":{"cx":420,"cy":695},"duration":0.77928575,"ease":"none","immediateRender":false},43.31);
+tl.fromTo("#red7-p12",{"attr":{"cx":420,"cy":695},"opacity":1},{"attr":{"cx":800,"cy":380},"duration":0.77928575,"ease":"none","immediateRender":false},44.08);
+tl.fromTo("#red7-p12",{"attr":{"cx":800,"cy":380},"opacity":1},{"attr":{"cx":1180,"cy":205},"duration":0.77928575,"ease":"none","immediateRender":false},44.86);
+tl.fromTo("#red7-p12",{"attr":{"cx":1180,"cy":205},"opacity":1},{"attr":{"cx":1560,"cy":310},"duration":0.77928575,"ease":"none","immediateRender":false},45.64);
+tl.to("#red7-p12",{"opacity":0,"duration":0.15},46.42);
+tl.fromTo("#red7-p13",{"attr":{"cx":40,"cy":380},"opacity":1},{"attr":{"cx":420,"cy":485},"duration":0.77928575,"ease":"none","immediateRender":false},43.75);
+tl.fromTo("#red7-p13",{"attr":{"cx":420,"cy":485},"opacity":1},{"attr":{"cx":800,"cy":520},"duration":0.77928575,"ease":"none","immediateRender":false},44.53);
+tl.fromTo("#red7-p13",{"attr":{"cx":800,"cy":520},"opacity":1},{"attr":{"cx":1180,"cy":275},"duration":0.77928575,"ease":"none","immediateRender":false},45.31);
+tl.fromTo("#red7-p13",{"attr":{"cx":1180,"cy":275},"opacity":1},{"attr":{"cx":1560,"cy":310},"duration":0.77928575,"ease":"none","immediateRender":false},46.09);
+tl.to("#red7-p13",{"opacity":0,"duration":0.15},46.87);
+tl.to("#red7 .rn",{fill:"#4ea7ff",duration:.25,stagger:{each:.03,from:"start"},yoyo:true,repeat:1},38.06);
+tl.fromTo("#e-dec",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},37.16);
+tl.fromTo("#e-dec .nd",{"opacity":0,"letterSpacing":"30px","filter":"blur(12px)"},{"opacity":1,"letterSpacing":"-3px","filter":"blur(0px)","duration":1,"ease":"power3.out"},37.51);
+tl.fromTo("#dop0",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},39.47);
+tl.fromTo("#dop1",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},39.72);
+tl.fromTo("#dop2",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},39.97);
+tl.fromTo("#e-dec .op i",{"scaleX":0},{"scaleX":1,"duration":0.7,"stagger":0.2},41.23);
+tl.fromTo("#e-dec .tuya",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},42.23);
+tl.to("#e-dec",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},44.75);
+tl.fromTo("#e-mod",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},44.50);
+tl.fromTo("#e-mod .nuc",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},45.05);
+tl.fromTo("#an0",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.8,"ease":"power2.out"},47.07);
+tl.fromTo("#ml0",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},47.37);
+tl.fromTo("#orb0 .orbp",{"opacity":0},{"opacity":1,"duration":0.3},47.77);
+tl.fromTo("#orb0",{"rotation":0},{"rotation":300,"svgOrigin":"0 0","duration":9.37510300000001,"ease":"none"},47.77);
+tl.fromTo("#an1",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.8,"ease":"power2.out"},49.11);
+tl.fromTo("#ml1",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},49.41);
+tl.fromTo("#orb1 .orbp",{"opacity":0},{"opacity":1,"duration":0.3},49.81);
+tl.fromTo("#orb1",{"rotation":120},{"rotation":-180,"svgOrigin":"0 0","duration":7.335103000000011,"ease":"none"},49.81);
+tl.fromTo("#an2",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.8,"ease":"power2.out"},50.99);
+tl.fromTo("#ml2",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},51.29);
+tl.fromTo("#orb2 .orbp",{"opacity":0},{"opacity":1,"duration":0.3},51.69);
+tl.fromTo("#orb2",{"rotation":240},{"rotation":540,"svgOrigin":"0 0","duration":5.455103000000008,"ease":"none"},51.69);
+tl.fromTo("#e-mod .jps",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},54.09);
+tl.to("#e-mod",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},56.50);
+tl.fromTo("#e-cierre",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},56.25);
+tl.fromTo("#e-cierre .marca",{"opacity":0,"scale":0.5,"rotate":-8},{"opacity":1,"scale":1,"rotate":0,"duration":1,"ease":"back.out(1.6)"},57.00);
+tl.fromTo("#e-cierre h1",{"opacity":0,"letterSpacing":"30px","filter":"blur(10px)"},{"opacity":1,"letterSpacing":"-3px","filter":"blur(0px)","duration":1.1,"ease":"power3.out"},57.40);
+tl.fromTo("#e-cierre .firma",{"opacity":0,"y":24},{"opacity":1,"y":0,"duration":0.8,"ease":"power3.out"},58.92);
+tl.fromTo("#e-cierre .url",{"opacity":0,"y":24},{"opacity":1,"y":0,"duration":0.8,"ease":"power3.out"},61.96);
+tl.to("#e-cierre .fin",{"opacity":0,"duration":1},66.21);
+tl.fromTo("#sweep-0",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},7.38);
+tl.fromTo("#sweep-1",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},18.63);
+tl.fromTo("#sweep-2",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},29.41);
+tl.fromTo("#sweep-3",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},37.06);
+tl.fromTo("#sweep-4",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},44.40);
+tl.fromTo("#sweep-5",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},56.15);
+tl.set("#cap0w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},1.40);
+tl.set("#cap0w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},2.52);
+tl.set("#cap0w0",{"color":"#c9d1e0","textShadow":"none"},2.52);
+tl.set("#cap0w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},2.68);
+tl.set("#cap0w1",{"color":"#c9d1e0","textShadow":"none"},2.68);
+tl.set("#cap0w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},3.08);
+tl.set("#cap0w2",{"color":"#c9d1e0","textShadow":"none"},3.08);
+tl.set("#cap0w4",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},3.32);
+tl.set("#cap0w3",{"color":"#c9d1e0","textShadow":"none"},3.32);
+tl.set("#cap0w5",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},3.56);
+tl.set("#cap0w4",{"color":"#c9d1e0","textShadow":"none"},3.56);
+tl.set("#cap0w6",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},3.72);
+tl.set("#cap0w5",{"color":"#c9d1e0","textShadow":"none"},3.72);
+tl.set("#cap1w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},4.00);
+tl.set("#cap1w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},4.12);
+tl.set("#cap1w0",{"color":"#c9d1e0","textShadow":"none"},4.12);
+tl.set("#cap1w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},4.68);
+tl.set("#cap1w1",{"color":"#c9d1e0","textShadow":"none"},4.68);
+tl.set("#cap1w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},5.28);
+tl.set("#cap1w2",{"color":"#c9d1e0","textShadow":"none"},5.28);
+tl.set("#cap1w4",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},5.36);
+tl.set("#cap1w3",{"color":"#c9d1e0","textShadow":"none"},5.36);
+tl.set("#cap1w5",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},5.48);
+tl.set("#cap1w4",{"color":"#c9d1e0","textShadow":"none"},5.48);
+tl.set("#cap1w6",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},5.88);
+tl.set("#cap1w5",{"color":"#c9d1e0","textShadow":"none"},5.88);
+tl.set("#cap2w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},6.08);
+tl.set("#cap3w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},8.03);
+tl.set("#cap3w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},8.19);
+tl.set("#cap3w0",{"color":"#c9d1e0","textShadow":"none"},8.19);
+tl.set("#cap3w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},8.51);
+tl.set("#cap3w1",{"color":"#c9d1e0","textShadow":"none"},8.51);
+tl.set("#cap3w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},8.99);
+tl.set("#cap3w2",{"color":"#c9d1e0","textShadow":"none"},8.99);
+tl.set("#cap3w4",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},9.19);
+tl.set("#cap3w3",{"color":"#c9d1e0","textShadow":"none"},9.19);
+tl.set("#cap3w5",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},9.59);
+tl.set("#cap3w4",{"color":"#c9d1e0","textShadow":"none"},9.59);
+tl.set("#cap3w6",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},9.71);
+tl.set("#cap3w5",{"color":"#c9d1e0","textShadow":"none"},9.71);
+tl.set("#cap4w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},10.43);
+tl.set("#cap4w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},10.71);
+tl.set("#cap4w0",{"color":"#c9d1e0","textShadow":"none"},10.71);
+tl.set("#cap4w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},10.99);
+tl.set("#cap4w1",{"color":"#c9d1e0","textShadow":"none"},10.99);
+tl.set("#cap4w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},11.11);
+tl.set("#cap4w2",{"color":"#c9d1e0","textShadow":"none"},11.11);
+tl.set("#cap4w4",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},11.39);
+tl.set("#cap4w3",{"color":"#c9d1e0","textShadow":"none"},11.39);
+tl.set("#cap4w5",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},11.55);
+tl.set("#cap4w4",{"color":"#c9d1e0","textShadow":"none"},11.55);
+tl.set("#cap4w6",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},11.87);
+tl.set("#cap4w5",{"color":"#c9d1e0","textShadow":"none"},11.87);
+tl.set("#cap5w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},12.43);
+tl.set("#cap5w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},12.63);
+tl.set("#cap5w0",{"color":"#c9d1e0","textShadow":"none"},12.63);
+tl.set("#cap5w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},12.75);
+tl.set("#cap5w1",{"color":"#c9d1e0","textShadow":"none"},12.75);
+tl.set("#cap5w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},12.95);
+tl.set("#cap5w2",{"color":"#c9d1e0","textShadow":"none"},12.95);
+tl.set("#cap5w4",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},13.31);
+tl.set("#cap5w3",{"color":"#c9d1e0","textShadow":"none"},13.31);
+tl.set("#cap5w5",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},13.55);
+tl.set("#cap5w4",{"color":"#c9d1e0","textShadow":"none"},13.55);
+tl.set("#cap5w6",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},13.67);
+tl.set("#cap5w5",{"color":"#c9d1e0","textShadow":"none"},13.67);
+tl.set("#cap6w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},13.91);
+tl.set("#cap6w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},14.03);
+tl.set("#cap6w0",{"color":"#c9d1e0","textShadow":"none"},14.03);
+tl.set("#cap7w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},14.91);
+tl.set("#cap7w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},15.07);
+tl.set("#cap7w0",{"color":"#c9d1e0","textShadow":"none"},15.07);
+tl.set("#cap7w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},15.31);
+tl.set("#cap7w1",{"color":"#c9d1e0","textShadow":"none"},15.31);
+tl.set("#cap7w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},15.47);
+tl.set("#cap7w2",{"color":"#c9d1e0","textShadow":"none"},15.47);
+tl.set("#cap8w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},16.19);
+tl.set("#cap8w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},16.51);
+tl.set("#cap8w0",{"color":"#c9d1e0","textShadow":"none"},16.51);
+tl.set("#cap8w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},16.75);
+tl.set("#cap8w1",{"color":"#c9d1e0","textShadow":"none"},16.75);
+tl.set("#cap8w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},17.15);
+tl.set("#cap8w2",{"color":"#c9d1e0","textShadow":"none"},17.15);
+tl.set("#cap8w4",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},17.31);
+tl.set("#cap8w3",{"color":"#c9d1e0","textShadow":"none"},17.31);
+tl.set("#cap9w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},19.28);
+tl.set("#cap9w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},19.44);
+tl.set("#cap9w0",{"color":"#c9d1e0","textShadow":"none"},19.44);
+tl.set("#cap9w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},19.60);
+tl.set("#cap9w1",{"color":"#c9d1e0","textShadow":"none"},19.60);
+tl.set("#cap9w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},19.84);
+tl.set("#cap9w2",{"color":"#c9d1e0","textShadow":"none"},19.84);
+tl.set("#cap10w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},20.88);
+tl.set("#cap10w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},21.40);
+tl.set("#cap10w0",{"color":"#c9d1e0","textShadow":"none"},21.40);
+tl.set("#cap10w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},21.92);
+tl.set("#cap10w1",{"color":"#c9d1e0","textShadow":"none"},21.92);
+tl.set("#cap10w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},22.24);
+tl.set("#cap10w2",{"color":"#c9d1e0","textShadow":"none"},22.24);
+tl.set("#cap11w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},22.96);
+tl.set("#cap11w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},23.12);
+tl.set("#cap11w0",{"color":"#c9d1e0","textShadow":"none"},23.12);
+tl.set("#cap11w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},23.44);
+tl.set("#cap11w1",{"color":"#c9d1e0","textShadow":"none"},23.44);
+tl.set("#cap12w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},24.32);
+tl.set("#cap12w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},24.56);
+tl.set("#cap12w0",{"color":"#c9d1e0","textShadow":"none"},24.56);
+tl.set("#cap12w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},24.80);
+tl.set("#cap12w1",{"color":"#c9d1e0","textShadow":"none"},24.80);
+tl.set("#cap13w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},25.52);
+tl.set("#cap13w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},25.72);
+tl.set("#cap13w0",{"color":"#c9d1e0","textShadow":"none"},25.72);
+tl.set("#cap13w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},26.40);
+tl.set("#cap13w1",{"color":"#c9d1e0","textShadow":"none"},26.40);
+tl.set("#cap13w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},26.56);
+tl.set("#cap13w2",{"color":"#c9d1e0","textShadow":"none"},26.56);
+tl.set("#cap13w4",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},26.96);
+tl.set("#cap13w3",{"color":"#c9d1e0","textShadow":"none"},26.96);
+tl.set("#cap13w5",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},27.36);
+tl.set("#cap13w4",{"color":"#c9d1e0","textShadow":"none"},27.36);
+tl.set("#cap13w6",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},27.68);
+tl.set("#cap13w5",{"color":"#c9d1e0","textShadow":"none"},27.68);
+tl.set("#cap14w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},27.92);
+tl.set("#cap15w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},30.06);
+tl.set("#cap15w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},30.30);
+tl.set("#cap15w0",{"color":"#c9d1e0","textShadow":"none"},30.30);
+tl.set("#cap15w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},30.86);
+tl.set("#cap15w1",{"color":"#c9d1e0","textShadow":"none"},30.86);
+tl.set("#cap15w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},31.10);
+tl.set("#cap15w2",{"color":"#c9d1e0","textShadow":"none"},31.10);
+tl.set("#cap15w4",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},31.58);
+tl.set("#cap15w3",{"color":"#c9d1e0","textShadow":"none"},31.58);
+tl.set("#cap15w5",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},31.74);
+tl.set("#cap15w4",{"color":"#c9d1e0","textShadow":"none"},31.74);
+tl.set("#cap15w6",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},31.94);
+tl.set("#cap15w5",{"color":"#c9d1e0","textShadow":"none"},31.94);
+tl.set("#cap16w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},32.78);
+tl.set("#cap16w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},32.94);
+tl.set("#cap16w0",{"color":"#c9d1e0","textShadow":"none"},32.94);
+tl.set("#cap16w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},33.26);
+tl.set("#cap16w1",{"color":"#c9d1e0","textShadow":"none"},33.26);
+tl.set("#cap16w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},33.66);
+tl.set("#cap16w2",{"color":"#c9d1e0","textShadow":"none"},33.66);
+tl.set("#cap16w4",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},33.94);
+tl.set("#cap16w3",{"color":"#c9d1e0","textShadow":"none"},33.94);
+tl.set("#cap17w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},34.46);
+tl.set("#cap17w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},34.62);
+tl.set("#cap17w0",{"color":"#c9d1e0","textShadow":"none"},34.62);
+tl.set("#cap17w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},34.89);
+tl.set("#cap17w1",{"color":"#c9d1e0","textShadow":"none"},34.89);
+tl.set("#cap17w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},34.94);
+tl.set("#cap17w2",{"color":"#c9d1e0","textShadow":"none"},34.94);
+tl.set("#cap17w4",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},35.50);
+tl.set("#cap17w3",{"color":"#c9d1e0","textShadow":"none"},35.50);
+tl.set("#cap17w5",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},35.62);
+tl.set("#cap17w4",{"color":"#c9d1e0","textShadow":"none"},35.62);
+tl.set("#cap17w6",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},35.74);
+tl.set("#cap17w5",{"color":"#c9d1e0","textShadow":"none"},35.74);
+tl.set("#cap18w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},37.71);
+tl.set("#cap18w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},38.43);
+tl.set("#cap18w0",{"color":"#c9d1e0","textShadow":"none"},38.43);
+tl.set("#cap18w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},38.59);
+tl.set("#cap18w1",{"color":"#c9d1e0","textShadow":"none"},38.59);
+tl.set("#cap19w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},39.47);
+tl.set("#cap19w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},39.71);
+tl.set("#cap19w0",{"color":"#c9d1e0","textShadow":"none"},39.71);
+tl.set("#cap19w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},39.95);
+tl.set("#cap19w1",{"color":"#c9d1e0","textShadow":"none"},39.95);
+tl.set("#cap19w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},40.11);
+tl.set("#cap19w2",{"color":"#c9d1e0","textShadow":"none"},40.11);
+tl.set("#cap19w4",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},40.63);
+tl.set("#cap19w3",{"color":"#c9d1e0","textShadow":"none"},40.63);
+tl.set("#cap19w5",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},41.15);
+tl.set("#cap19w4",{"color":"#c9d1e0","textShadow":"none"},41.15);
+tl.set("#cap19w6",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},41.23);
+tl.set("#cap19w5",{"color":"#c9d1e0","textShadow":"none"},41.23);
+tl.set("#cap20w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},41.55);
+tl.set("#cap20w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},42.23);
+tl.set("#cap20w0",{"color":"#c9d1e0","textShadow":"none"},42.23);
+tl.set("#cap20w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},42.35);
+tl.set("#cap20w1",{"color":"#c9d1e0","textShadow":"none"},42.35);
+tl.set("#cap20w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},42.99);
+tl.set("#cap20w2",{"color":"#c9d1e0","textShadow":"none"},42.99);
+tl.set("#cap20w4",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},43.23);
+tl.set("#cap20w3",{"color":"#c9d1e0","textShadow":"none"},43.23);
+tl.set("#cap21w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},45.05);
+tl.set("#cap21w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},45.29);
+tl.set("#cap21w0",{"color":"#c9d1e0","textShadow":"none"},45.29);
+tl.set("#cap21w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},45.77);
+tl.set("#cap21w1",{"color":"#c9d1e0","textShadow":"none"},45.77);
+tl.set("#cap21w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},45.93);
+tl.set("#cap21w2",{"color":"#c9d1e0","textShadow":"none"},45.93);
+tl.set("#cap21w4",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},46.17);
+tl.set("#cap21w3",{"color":"#c9d1e0","textShadow":"none"},46.17);
+tl.set("#cap22w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},47.37);
+tl.set("#cap22w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},47.77);
+tl.set("#cap22w0",{"color":"#c9d1e0","textShadow":"none"},47.77);
+tl.set("#cap22w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},47.89);
+tl.set("#cap22w1",{"color":"#c9d1e0","textShadow":"none"},47.89);
+tl.set("#cap22w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},48.01);
+tl.set("#cap22w2",{"color":"#c9d1e0","textShadow":"none"},48.01);
+tl.set("#cap22w4",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},48.49);
+tl.set("#cap22w3",{"color":"#c9d1e0","textShadow":"none"},48.49);
+tl.set("#cap23w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},49.41);
+tl.set("#cap23w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},49.77);
+tl.set("#cap23w0",{"color":"#c9d1e0","textShadow":"none"},49.77);
+tl.set("#cap23w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},49.93);
+tl.set("#cap23w1",{"color":"#c9d1e0","textShadow":"none"},49.93);
+tl.set("#cap23w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},50.45);
+tl.set("#cap23w2",{"color":"#c9d1e0","textShadow":"none"},50.45);
+tl.set("#cap23w4",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},51.13);
+tl.set("#cap23w3",{"color":"#c9d1e0","textShadow":"none"},51.13);
+tl.set("#cap23w5",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},51.29);
+tl.set("#cap23w4",{"color":"#c9d1e0","textShadow":"none"},51.29);
+tl.set("#cap23w6",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},51.85);
+tl.set("#cap23w5",{"color":"#c9d1e0","textShadow":"none"},51.85);
+tl.set("#cap24w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},52.01);
+tl.set("#cap24w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},52.53);
+tl.set("#cap24w0",{"color":"#c9d1e0","textShadow":"none"},52.53);
+tl.set("#cap24w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},52.97);
+tl.set("#cap24w1",{"color":"#c9d1e0","textShadow":"none"},52.97);
+tl.set("#cap25w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},54.09);
+tl.set("#cap25w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},54.57);
+tl.set("#cap25w0",{"color":"#c9d1e0","textShadow":"none"},54.57);
+tl.set("#cap25w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},54.65);
+tl.set("#cap25w1",{"color":"#c9d1e0","textShadow":"none"},54.65);
+tl.set("#cap25w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},54.81);
+tl.set("#cap25w2",{"color":"#c9d1e0","textShadow":"none"},54.81);
+window.__timelines["main"] = tl;
+tl.seek(0);
+</script>
+</body>
+</html>

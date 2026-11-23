@@ -1,0 +1,82 @@
+[
+ {
+  "id": "caja",
+  "start": 0,
+  "voiceAt": 1.4,
+  "voz": 7.31,
+  "dur": 9.71,
+  "real": true
+ },
+ {
+  "id": "finance",
+  "start": 9.71,
+  "voiceAt": 10.01,
+  "voz": 5.07,
+  "dur": 6.37,
+  "real": true
+ },
+ {
+  "id": "calcula",
+  "start": 16.08,
+  "voiceAt": 16.38,
+  "voz": 8.99,
+  "dur": 10.29,
+  "real": true
+ },
+ {
+  "id": "reglas",
+  "start": 26.37,
+  "voiceAt": 26.67,
+  "voz": 6.03,
+  "dur": 7.33,
+  "real": true
+ },
+ {
+  "id": "combina",
+  "start": 33.7,
+  "voiceAt": 34,
+  "voz": 9.25,
+  "dur": 10.55,
+  "real": true
+ },
+ {
+  "id": "demanda",
+  "start": 44.25,
+  "voiceAt": 44.55,
+  "voz": 13.64,
+  "dur": 14.94,
+  "real": true
+ },
+ {
+  "id": "mezcla",
+  "start": 59.19,
+  "voiceAt": 59.49,
+  "voz": 15.07,
+  "dur": 16.37,
+  "real": true
+ },
+ {
+  "id": "proveedores",
+  "start": 75.56,
+  "voiceAt": 75.86,
+  "voz": 9.87,
+  "dur": 11.17,
+  "real": true
+ },
+ {
+  "id": "lunes",
+  "start": 86.73,
+  "voiceAt": 87.03,
+  "voz": 12.12,
+  "dur": 13.42,
+  "real": true
+ },
+ {
+  "id": "cierre",
+  "start": 100.15,
+  "voiceAt": 101.05,
+  "voz": 5.25,
+  "dur": 10.65,
+  "real": true
+ }
+]

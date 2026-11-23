@@ -1,0 +1,1 @@
+Cuando las opciones son demasiadas, los algoritmos genéticos y evolutivos exploran el espacio de soluciones: seleccionan, recombinan y mutan planes, generación tras generación. Es optimización evolutiva, no una red neuronal. Su valor está en combinarse con los demás métodos.

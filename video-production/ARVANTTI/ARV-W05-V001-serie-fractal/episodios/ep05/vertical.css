@@ -1,0 +1,18 @@
+.flujo5{flex-direction:column;gap:14px}
+.flujo5 .linea{display:none}
+.paso{width:760px;flex-direction:row;justify-content:center;gap:20px;padding:16px}
+.f-t{font-size:64px}
+.op{font-size:34px;white-space:normal}
+.dos{flex-direction:column;align-items:center;gap:22px}
+.osb,.calc{width:900px}
+.rgs{flex-direction:column;align-items:center}
+.tiempos{width:960px}
+.tiempos .bar{flex-direction:column;align-items:flex-start;gap:4px}
+.tiempos .bar span{width:auto}
+.tiempos .bar i{width:calc(var(--n) * 8.8px)}
+.espera{width:900px}
+#op5 .opt{width:900px}
+.recibo{width:960px}
+.recibo .ln{flex-direction:column;gap:4px}
+.sig{flex-direction:column;align-items:center}
+.sig .chip{white-space:normal}

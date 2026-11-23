@@ -109,3 +109,129 @@ export function barras(c, id, { valores, t0, alerta = -1 } = {}) {
   if (t0 != null) c.at(`#${id} i`, { scaleY: 0 }, { scaleY: 1, duration: 0.5, stagger: 0.05, ease: "power2.out" }, t0);
   return svg;
 }
+
+/** Árbol de opciones que se ramifica (muchas combinaciones). */
+export function arbol(c, id, { w = 900, h = 460, niveles = 5, t0, dur = 2.5, seed = 4 } = {}) {
+  const r = azar(seed);
+  const segs = [];
+  const rama = (x, y, ang, len, n) => {
+    if (n === 0) return;
+    const hijos = n > 3 ? 2 : 3;
+    for (let k = 0; k < hijos; k++) {
+      const a = ang + (k - (hijos - 1) / 2) * (0.5 + r() * 0.2);
+      const x2 = x + Math.cos(a) * len, y2 = y + Math.sin(a) * len;
+      segs.push({ x, y, x2, y2, n: niveles - n });
+      rama(x2, y2, a, len * 0.78, n - 1);
+    }
+  };
+  rama(40, h / 2, 0, w / 5.2, niveles);
+  const ys = segs.flatMap((g) => [g.y, g.y2]), xs = segs.flatMap((g) => [g.x, g.x2]);
+  const y0 = Math.min(...ys) - 14, x1 = Math.max(...xs) + 14;
+  const svg = `<svg class="arbol" id="${id}" viewBox="20 ${y0.toFixed(0)} ${(x1 - 20).toFixed(0)} ${(Math.max(...ys) + 14 - y0).toFixed(0)}">${segs.map((s, k) => `<line class="ar n${s.n}" x1="${s.x.toFixed(1)}" y1="${s.y.toFixed(1)}" x2="${s.x2.toFixed(1)}" y2="${s.y2.toFixed(1)}" pathLength="1"/>`).join("")}<circle class="aroot" cx="40" cy="${h / 2}" r="12"/></svg>`;
+  if (t0 != null) for (let n = 0; n < niveles; n++) c.at(`#${id} .ar.n${n}`, { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: dur / niveles, ease: "none" }, t0 + (n * dur) / niveles);
+  return svg;
+}
+
+/** Región factible (optimización matemática): restricciones que recortan el plano y un punto que mejora el objetivo. */
+export function region(c, id, { w = 520, h = 400, t0, dur = 3 } = {}) {
+  const svg = `<svg class="region" id="${id}" viewBox="0 0 ${w} ${h}">
+    <line class="ax" x1="40" y1="${h - 40}" x2="${w - 20}" y2="${h - 40}"/><line class="ax" x1="40" y1="${h - 40}" x2="40" y2="20"/>
+    <line class="rs" x1="40" y1="90" x2="${w - 60}" y2="${h - 40}" pathLength="1"/>
+    <line class="rs" x1="40" y1="230" x2="${w - 40}" y2="120" pathLength="1"/>
+    <line class="rs" x1="330" y1="20" x2="330" y2="${h - 40}" pathLength="1"/>
+    <polygon class="rf" points="40,${h - 40} 40,230 248,184 330,206 330,${h - 40}"/>
+    <line class="obj" x1="140" y1="${h - 40}" x2="40" y2="${h - 140}"/>
+    <circle class="rpto" cx="90" cy="${h - 90}" r="12"/>
+    <text class="rlab" x="250" y="${h - 12}">Restricciones de tu operación</text></svg>`;
+  if (t0 != null) {
+    c.at(`#${id} .rs`, { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.6, stagger: 0.25 }, t0);
+    c.at(`#${id} .rf`, { opacity: 0 }, { opacity: 1, duration: 0.6 }, t0 + 0.9);
+    c.at(`#${id} .rpto`, { opacity: 0 }, { opacity: 1, duration: 0.3 }, t0 + 1.2);
+    c.to(`#${id} .rpto`, { attr: { cx: 248, cy: 184 }, duration: dur - 1.4, ease: "power2.inOut" }, t0 + 1.4);
+    c.at(`#${id} .obj`, { x: 0, y: 0, opacity: 0.2 }, { x: 230, y: -100, opacity: 0.8, duration: dur - 1.4, ease: "power2.inOut" }, t0 + 1.4);
+  }
+  return svg;
+}
+
+/** Población evolutiva: puntos que se seleccionan, recombinan y mutan; cada generación se acerca a mejores zonas. */
+export function poblacion(c, id, { w = 760, h = 420, n = 26, gens = 4, t0, dur = 4, seed = 9 } = {}) {
+  const r = azar(seed);
+  const meta = { x: w * 0.78, y: h * 0.28 };
+  let pts = Array.from({ length: n }, () => ({ x: 40 + r() * (w - 80), y: 40 + r() * (h - 80) }));
+  const G = [pts];
+  for (let g = 1; g <= gens; g++) {
+    const k = g / gens;
+    pts = pts.map((p) => ({ x: p.x + (meta.x - p.x) * (0.35 + 0.1 * k) + (r() - 0.5) * 60 * (1 - k), y: p.y + (meta.y - p.y) * (0.35 + 0.1 * k) + (r() - 0.5) * 60 * (1 - k) }));
+    G.push(pts);
+  }
+  const svg = `<svg class="pob" id="${id}" viewBox="0 0 ${w} ${h}">
+    <circle class="meta" cx="${meta.x}" cy="${meta.y}" r="70"/>
+    ${Array.from({ length: 8 }, (_, k) => `<line class="cruce" id="${id}-x${k}" x1="0" y1="0" x2="0" y2="0"/>`).join("")}
+    ${G[0].map((p, k) => `<circle class="ind${k % 7 === 0 ? " mut" : ""}" id="${id}-i${k}" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="9"/>`).join("")}
+    <text class="gen" id="${id}-g" x="20" y="${h - 14}">Generación 1</text></svg>`;
+  if (t0 != null) {
+    c.at(`#${id} .ind`, { opacity: 0, scale: 0, transformOrigin: "50% 50%" }, { opacity: 1, scale: 1, duration: 0.4, stagger: 0.02 }, t0);
+    const pg = (dur - 0.6) / gens;
+    for (let g = 1; g <= gens; g++) {
+      const t = t0 + 0.6 + (g - 1) * pg;
+      // Recombinación: líneas entre parejas.
+      for (let k = 0; k < 8; k++) {
+        const a = G[g - 1][(k * 3) % n], b = G[g - 1][(k * 3 + 5) % n];
+        c.at(`#${id}-x${k}`, { attr: { x1: a.x, y1: a.y, x2: b.x, y2: b.y }, opacity: 0.8 }, { opacity: 0, duration: pg * 0.5, immediateRender: false }, t);
+      }
+      G[g].forEach((p, k) => c.to(`#${id}-i${k}`, { attr: { cx: p.x, cy: p.y }, duration: pg * 0.7, ease: "power2.inOut" }, t + pg * 0.2));
+      c.set(`#${id}-g`, { textContent: `Generación ${g + 1}` }, t + pg * 0.2);
+    }
+  }
+  return svg;
+}
+
+/** Frontera de mejores planes con dos objetivos (multiobjetivo). */
+export function pareto(c, id, { w = 620, h = 420, ejeX = "Menos energía", ejeY = "Entregas a tiempo", t0, seed = 13 } = {}) {
+  const r = azar(seed);
+  const pts = Array.from({ length: 34 }, () => { const x = 60 + r() * (w - 120), y = 40 + r() * (h - 110); return { x, y }; });
+  const front = Array.from({ length: 7 }, (_, k) => { const a = (k / 6) * Math.PI / 2; return { x: 70 + Math.cos(a) * (w - 150), y: h - 60 - Math.sin(a) * (h - 120) }; });
+  const svg = `<svg class="pareto" id="${id}" viewBox="0 0 ${w} ${h}">
+    <line class="ax" x1="50" y1="${h - 50}" x2="${w - 10}" y2="${h - 50}"/><line class="ax" x1="50" y1="${h - 50}" x2="50" y2="10"/>
+    <text class="axl" x="${w - 10}" y="${h - 16}" text-anchor="end">${ejeX} →</text><text class="axl" x="60" y="26">↑ ${ejeY}</text>
+    ${pts.filter((p) => (p.x - 70) ** 2 / (w - 150) ** 2 + (h - 60 - p.y) ** 2 / (h - 120) ** 2 < 0.9).map((p) => `<circle class="pp" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="7"/>`).join("")}
+    <path class="pf" d="${front.map((p, k) => `${k ? "L" : "M"}${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(" ")}" pathLength="1"/>
+    ${front.map((p) => `<circle class="pb" cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="11"/>`).join("")}</svg>`;
+  if (t0 != null) {
+    c.at(`#${id} .pp`, { opacity: 0 }, { opacity: 1, duration: 0.3, stagger: 0.02 }, t0);
+    c.at(`#${id} .pf`, { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 1, ease: "power2.out" }, t0 + 0.8);
+    c.at(`#${id} .pb`, { opacity: 0, scale: 0, transformOrigin: "50% 50%" }, { opacity: 1, scale: 1, duration: 0.3, stagger: 0.1 }, t0 + 0.9);
+  }
+  return svg;
+}
+
+/** Montecarlo: abanico de trayectorias tenues y un histograma que se llena. */
+export function montecarlo(c, id, { w = 760, h = 420, n = 40, t0, dur = 3, seed = 31 } = {}) {
+  const r = azar(seed);
+  const pasos = 12, x0 = 40, hw = w * 0.62;
+  const fins = [];
+  const lineas = Array.from({ length: n }, () => {
+    let y = h / 2; const pts = [[x0, y]];
+    for (let k = 1; k <= pasos; k++) { y += (r() - 0.5) * 34 + (r() - 0.5) * 10; pts.push([x0 + (k * hw) / pasos, y]); }
+    fins.push(y);
+    return pts.map(([x, y], k) => `${k ? "L" : "M"}${x.toFixed(1)} ${y.toFixed(1)}`).join(" ");
+  });
+  const bins = Array(10).fill(0); const ymin = Math.min(...fins), ymax = Math.max(...fins);
+  fins.forEach((y) => bins[Math.min(9, Math.floor(((y - ymin) / (ymax - ymin || 1)) * 10))]++);
+  const bmax = Math.max(...bins), bx = x0 + hw + 30, bh = (ymax - ymin) / 10 || 10;
+  const svg = `<svg class="mc" id="${id}" viewBox="0 0 ${w} ${h}">
+    ${lineas.map((d, k) => `<path class="mcl" id="${id}-l${k}" d="${d}" pathLength="1"/>`).join("")}
+    ${bins.map((b, k) => `<rect class="mch" x="${bx}" y="${(ymin + k * bh).toFixed(1)}" width="${((b / bmax) * (w - bx - 20)).toFixed(1)}" height="${Math.max(4, bh - 4).toFixed(1)}" rx="4"/>`).join("")}</svg>`;
+  if (t0 != null) {
+    lineas.forEach((_, k) => c.at(`#${id}-l${k}`, { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.6, ease: "none" }, t0 + (k * (dur - 0.6)) / n));
+    c.at(`#${id} .mch`, { scaleX: 0, transformOrigin: "0% 50%" }, { scaleX: 1, duration: dur * 0.6, stagger: 0.05, ease: "power2.out" }, t0 + dur * 0.4);
+  }
+  return svg;
+}
+
+/** Gantt simplificado: barras por recurso; una puede marcarse como cuello de botella. */
+export function gantt(c, id, { filas = [["Línea 1", [[0, 30], [34, 60]]], ["Línea 2", [[5, 45], [50, 90]]], ["Línea 3", [[0, 25], [28, 70]]]], cuello = -1, t0 } = {}) {
+  const svg = `<div class="gantt" id="${id}">${filas.map(([n, bs], i) => `<div class="gr"><span>${n}</span><div class="gt">${bs.map(([a, b], k) => `<i class="${i === cuello && k === bs.length - 1 ? "al" : ""}" style="left:${a}%;width:${b - a}%"></i>`).join("")}</div></div>`).join("")}</div>`;
+  if (t0 != null) c.at(`#${id} i`, { scaleX: 0, transformOrigin: "0% 50%" }, { scaleX: 1, duration: 0.5, stagger: 0.08, ease: "power2.out" }, t0);
+  return svg;
+}

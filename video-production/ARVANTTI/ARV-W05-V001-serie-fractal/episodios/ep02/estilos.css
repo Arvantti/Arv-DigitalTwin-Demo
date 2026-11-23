@@ -1,0 +1,38 @@
+/* Ep 2 */
+.q{text-shadow:0 0 60px #05070c}
+.arb svg{width:1300px;height:auto}
+.vs{gap:22px}
+.am{font-size:34px}
+.rgs{gap:30px}
+.rg{width:420px;align-items:center;text-align:center}
+.rg .ic{font:800 64px Inter,sans-serif;font-style:normal;color:var(--electric);text-shadow:0 0 20px #4ea7ff}
+.pas{align-items:center;gap:26px}
+.pas .chip{font-size:36px}
+.dos{gap:40px;align-items:stretch}
+.met{padding:20px 26px;display:flex;flex-direction:column;align-items:center;gap:12px}
+.met small{font:700 26px "JetBrains Mono",monospace;letter-spacing:3px;color:#fff;text-transform:uppercase}
+.met .lb{gap:12px}
+.pobw{padding:16px}
+.pobw svg{width:1100px;height:auto}
+.ne{font-size:32px}
+.objs{display:flex;flex-direction:column;gap:22px;justify-content:center;align-items:flex-start}
+.objs .chip{font-size:36px}
+.par{padding:20px}
+.nos{gap:60px}
+.nos .h{color:#9fb3cf}
+.te,.px{font-size:40px;padding:16px 40px}
+.rsg{gap:30px}
+.rsg .card{width:340px;align-items:center}
+.riesgo{font:600 34px Inter,sans-serif}
+.riesgo em{display:inline-block;font-style:normal;font-weight:800;color:var(--alert);margin-left:8px}
+.arb svg{width:auto;height:560px;max-width:1500px}
+.pobw .ind{r:13px}
+.capa{pointer-events:none}
+.capa .fams .chip{font-size:32px;padding:12px 26px}
+#fa4 .chip{opacity:0}
+.arb{position:relative}
+.arb svg{height:440px}
+.arb .am{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:44px;padding:16px 40px;background:#1a0f08ee}
+#e-arbol .st{gap:30px}
+.par svg{width:760px;height:auto}
+.par svg{width:680px}

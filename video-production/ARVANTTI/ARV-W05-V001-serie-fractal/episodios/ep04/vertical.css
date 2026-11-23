@@ -1,0 +1,27 @@
+.parte{font-size:28px}
+.par2{flex-direction:column}
+.par2 .card{width:760px}
+.enlace{width:20px;height:120px;transform:rotate(90deg) scale(0.6)}
+.planta{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.planta .flecha{display:none}
+.eq{width:440px}
+.dos{flex-direction:column;gap:14px}
+.mod{width:860px}
+.pas{flex-direction:column;gap:6px}
+.pas .flecha{transform:rotate(90deg)}
+.alts{flex-direction:column;gap:14px}
+.alt{width:940px;padding:14px 22px;gap:8px}
+.alt .gantt{gap:8px}
+.alt .gt{height:30px}
+#e-alt .st{gap:22px;padding-top:180px}
+.verbos{flex-direction:column;align-items:center;gap:20px}
+.nomueve{flex-direction:column;width:860px}
+.cita{width:960px}
+.cita p{font-size:50px}
+.semana{flex-direction:column;width:960px}
+.semana svg{width:880px}
+.ords{width:880px}
+.enlace{display:none}
+.par2{gap:24px}
+.semana{width:960px}
+.blk{font-size:20px}

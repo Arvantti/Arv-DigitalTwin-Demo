@@ -1,0 +1,1 @@
+Cruza esa demanda con la capacidad real de la planta, que analiza Fractal Industrial. Y te muestra qué conviene fabricar por adelantado para tener en inventario, y qué fabricar solo cuando llega el pedido, con el impacto de cada mezcla en entregas, inventario y caja.

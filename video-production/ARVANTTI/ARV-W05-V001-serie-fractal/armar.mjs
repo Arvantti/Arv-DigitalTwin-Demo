@@ -22,6 +22,7 @@ const FPS = 25;
 const VERT = process.env.FORMATO === "vertical";
 const W = VERT ? 1080 : 1920, H = VERT ? 1920 : 1080;
 const MUSICA = path.join(HERE, "assets/clips/musica-serie.mp3");
+const MUSICA_LARGA = path.join(HERE, "assets/clips/musica-serie-larga.mp3");
 
 const { ESCENAS, componerEpisodio } = await import(pathToFileURL(path.join(EPDIR, "escenas.mjs")).href);
 
@@ -138,8 +139,10 @@ function mezclaMusica(escenas, total) {
   const dst = path.join(EPDIR, "musica-mezcla.mp3");
   if (VERT && fs.existsSync(dst)) return dst;
   if (!fs.existsSync(MUSICA)) return null;
+  // Episodios más largos que la pista de la serie usan la versión larga (misma indicación, 130 s).
+  const src = total > duracion(MUSICA) - 1 && fs.existsSync(MUSICA_LARGA) ? MUSICA_LARGA : MUSICA;
   const voces = escenas.filter((x) => x.real);
-  const args = ["-y", "-v", "error", "-i", MUSICA];
+  const args = ["-y", "-v", "error", "-i", src];
   voces.forEach((x) => args.push("-i", vozDe(x)));
   const del = voces.map((x, i) => `[${i + 1}:a]adelay=${Math.round(x.voiceAt * 1000)}:all=1,aformat=sample_rates=48000:channel_layouts=stereo[v${i}]`).join(";");
   const f = `${del};${voces.map((_, i) => `[v${i}]`).join("")}amix=inputs=${voces.length}:normalize=0,apad=whole_dur=${total.toFixed(2)}[vz];` +
@@ -217,7 +220,8 @@ function componer() {
 
   let plantilla = fs.readFileSync(path.join(HERE, "plantilla.html"), "utf8");
   const extra = path.join(EPDIR, "estilos.css");
-  let css = fs.existsSync(extra) ? fs.readFileSync(extra, "utf8") : "";
+  const compartido = path.join(HERE, "viz.css");
+  let css = (EP !== "ep01" && fs.existsSync(compartido) ? fs.readFileSync(compartido, "utf8") + "\n" : "") + (fs.existsSync(extra) ? fs.readFileSync(extra, "utf8") : "");
   if (VERT) {
     plantilla = plantilla
       .replaceAll("width:1920px;height:1080px", "width:1080px;height:1920px")

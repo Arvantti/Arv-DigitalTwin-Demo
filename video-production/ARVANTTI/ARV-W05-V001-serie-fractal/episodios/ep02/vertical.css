@@ -1,0 +1,23 @@
+.arb svg{width:900px}
+.vs{flex-direction:column;align-items:center;gap:16px}
+.rgs{flex-direction:column;align-items:center;gap:18px}
+.rg{width:760px;flex-direction:row;gap:30px;justify-content:center}
+.pas{flex-direction:column;gap:10px}
+.pas .flecha{transform:rotate(90deg)}
+.dos{flex-direction:column;align-items:center;gap:24px}
+.met svg{max-width:760px;height:auto}
+.met .lb{flex-wrap:wrap}
+#e-iaopt .st{gap:24px;padding-top:180px}
+#e-iaopt .fams .chip{font-size:24px}
+.pobw svg{width:860px}
+.ne{font-size:30px;white-space:normal;max-width:900px}
+.objs{align-items:center}
+.nos{flex-direction:column;gap:10px}
+.nos .h{font-size:64px}
+.rsg{flex-direction:column;align-items:center;gap:20px}
+.rsg .card{width:700px}
+.arb svg{width:900px;height:auto;max-height:900px}
+.par svg{width:900px;height:auto}
+.capa .fams .chip{font-size:34px}
+.arb svg{height:auto}
+.par svg{width:900px}

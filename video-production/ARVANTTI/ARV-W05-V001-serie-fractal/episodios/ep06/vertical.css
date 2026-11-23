@@ -1,0 +1,24 @@
+.hecho{flex-direction:column;align-items:center}
+.dir{width:860px}
+.en{font-size:30px;white-space:normal}
+.metr{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.area{width:450px}
+.rgs{flex-direction:column;align-items:center;gap:18px}
+.rg{width:800px;flex-direction:row;justify-content:center;gap:24px}
+.venn{width:960px;height:900px}
+.cir{width:520px;height:520px;left:220px;right:auto}
+.c1{top:0;align-items:center;text-align:center;justify-content:flex-start;padding:90px 60px 160px}
+.c2{top:380px;align-items:center;text-align:center;justify-content:flex-end;padding:160px 60px 90px}
+.tit{flex-direction:column;align-items:center}
+.tit .chip{white-space:normal;max-width:900px}
+.pron{width:900px}
+.cruce{flex-direction:column;gap:6px}
+.balanza{flex-direction:column;gap:14px}
+.riel{width:700px}
+#op7 .opt,#op8 .opt,#op9 .opt{width:900px}
+#e-mez .st{gap:26px}
+.arriba{flex-direction:column;gap:14px}
+.caja{width:880px;height:auto}
+.qs{gap:16px}
+.venn .uno{top:50%;bottom:auto;transform:translate(-50%,-50%)}
+.c1,.c2{padding-left:60px;padding-right:60px}

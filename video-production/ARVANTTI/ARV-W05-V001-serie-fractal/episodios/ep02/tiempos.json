@@ -1,0 +1,66 @@
+[
+ {
+  "id": "arbol",
+  "start": 0,
+  "voiceAt": 1.4,
+  "voz": 9.64,
+  "dur": 12.04,
+  "real": true
+ },
+ {
+  "id": "reglas",
+  "start": 12.04,
+  "voiceAt": 12.34,
+  "voz": 10.45,
+  "dur": 11.75,
+  "real": true
+ },
+ {
+  "id": "ia-opt",
+  "start": 23.79,
+  "voiceAt": 24.09,
+  "voz": 16.2,
+  "dur": 17.5,
+  "real": true
+ },
+ {
+  "id": "evolutivos",
+  "start": 41.28,
+  "voiceAt": 41.58,
+  "voz": 17.48,
+  "dur": 18.78,
+  "real": true
+ },
+ {
+  "id": "objetivos",
+  "start": 60.06,
+  "voiceAt": 60.36,
+  "voz": 8.44,
+  "dur": 9.74,
+  "real": true
+ },
+ {
+  "id": "resultado",
+  "start": 69.8,
+  "voiceAt": 70.1,
+  "voz": 11.39,
+  "dur": 12.69,
+  "real": true
+ },
+ {
+  "id": "siguiente",
+  "start": 82.49,
+  "voiceAt": 82.79,
+  "voz": 5.07,
+  "dur": 6.37,
+  "real": true
+ },
+ {
+  "id": "cierre",
+  "start": 88.85,
+  "voiceAt": 89.75,
+  "voz": 5.25,
+  "dur": 10.65,
+  "real": true
+ }
+]

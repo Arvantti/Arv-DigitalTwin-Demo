@@ -1,0 +1,18 @@
+.cal .dias span{width:160px}
+.ger{width:900px}
+.resu{flex-direction:column;align-items:center;gap:18px}
+.rs{width:880px}
+.expl{width:960px}
+.expl b{font-size:34px}
+.rng{width:220px}
+.vline{flex-direction:column;gap:40px}
+.vline svg{display:none}
+.vn{width:600px}
+.comp{width:900px}
+.comp .bar i{width:calc(var(--n) * 8px)}
+.ops{flex-direction:column;align-items:center;gap:20px}
+.op{width:620px}
+.fondo-red .red{width:1900px;transform:rotate(90deg)}
+.anillos{transform:scale(1.15);margin:120px 0 80px}
+#ml0{left:-10px;top:-150px}#ml1{right:-10px;top:-150px;left:auto}#ml2{left:80px;top:590px}
+.jps{margin-top:200px}

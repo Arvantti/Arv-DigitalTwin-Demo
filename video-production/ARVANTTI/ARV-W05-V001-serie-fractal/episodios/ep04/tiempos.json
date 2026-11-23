@@ -1,0 +1,66 @@
+[
+ {
+  "id": "pregunta",
+  "start": 0,
+  "voiceAt": 1.4,
+  "voz": 5.72,
+  "dur": 8.12,
+  "real": true
+ },
+ {
+  "id": "industrial",
+  "start": 8.12,
+  "voiceAt": 8.42,
+  "voz": 5.25,
+  "dur": 6.55,
+  "real": true
+ },
+ {
+  "id": "gemelo",
+  "start": 14.67,
+  "voiceAt": 14.97,
+  "voz": 7.31,
+  "dur": 8.61,
+  "real": true
+ },
+ {
+  "id": "reglas",
+  "start": 23.29,
+  "voiceAt": 23.59,
+  "voz": 10.61,
+  "dur": 11.91,
+  "real": true
+ },
+ {
+  "id": "alternativas",
+  "start": 35.19,
+  "voiceAt": 35.49,
+  "voz": 9.09,
+  "dur": 10.39,
+  "real": true
+ },
+ {
+  "id": "solo",
+  "start": 45.58,
+  "voiceAt": 45.88,
+  "voz": 5.25,
+  "dur": 6.55,
+  "real": true
+ },
+ {
+  "id": "respuesta",
+  "start": 52.13,
+  "voiceAt": 52.43,
+  "voz": 6.11,
+  "dur": 7.41,
+  "real": true
+ },
+ {
+  "id": "cierre",
+  "start": 59.55,
+  "voiceAt": 60.45,
+  "voz": 5.15,
+  "dur": 10.55,
+  "real": true
+ }
+]

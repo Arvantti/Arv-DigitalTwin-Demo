@@ -1,0 +1,1 @@
+En el pedido del lunes, lo que más demora no es la planta: es esperar el material del proveedor. Fractal Process te presenta opciones con su impacto: pedir el material el mismo día que se confirma el pedido, o tener un acuerdo de suministro con el proveedor. Tú eliges.

@@ -1,0 +1,1 @@
+Y no sirve solo para un pedido puntual. Con modelos de predicción de demanda, a partir de los históricos de tu ERP, el sistema de gestión de tu empresa, Fractal estima cuánto vas a vender en los próximos meses, con su rango de incertidumbre.

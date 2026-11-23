@@ -1,0 +1,24 @@
+.plan{width:960px;padding:22px}
+.gr span{width:150px}
+.dias{margin-left:170px;font-size:22px}
+.evs{flex-direction:column;align-items:center;gap:14px}
+.uno{width:860px}
+.uno svg{width:780px}
+.mts{flex-direction:column;align-items:center}
+.mts .chip{font-size:30px}
+.cont{flex-direction:column;align-items:center;gap:0}
+.cont b{min-width:0;text-align:center}
+.mcw svg{width:900px}
+.rangos{width:960px;padding:26px}
+.leyenda{margin-left:0;font-size:22px}
+.rangos .rg{flex-direction:column;align-items:stretch;gap:10px}
+.rangos .rg>span{text-align:left}
+.caps{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.sens{width:960px}
+.sens .bar{flex-direction:column;align-items:flex-start;gap:6px}
+.sens .bar span{width:auto}
+.sens .bar i{width:calc(var(--n) * 8.6px)}
+.oi{font-size:34px}
+.aguanta{flex-direction:column;align-items:center;gap:18px}
+.aguanta .card{width:760px}
+.rt{flex:none;height:50px}

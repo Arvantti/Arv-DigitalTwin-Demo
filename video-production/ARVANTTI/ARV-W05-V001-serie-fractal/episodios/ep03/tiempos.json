@@ -1,0 +1,58 @@
+[
+ {
+  "id": "martes",
+  "start": 0,
+  "voiceAt": 1.4,
+  "voz": 7.71,
+  "dur": 10.11,
+  "real": true
+ },
+ {
+  "id": "azar",
+  "start": 10.11,
+  "voiceAt": 10.41,
+  "voz": 8.67,
+  "dur": 9.97,
+  "real": true
+ },
+ {
+  "id": "dados",
+  "start": 20.08,
+  "voiceAt": 20.38,
+  "voz": 8.83,
+  "dur": 10.13,
+  "real": true
+ },
+ {
+  "id": "rango",
+  "start": 30.21,
+  "voiceAt": 30.51,
+  "voz": 7.63,
+  "dur": 8.93,
+  "real": true
+ },
+ {
+  "id": "robustez",
+  "start": 39.14,
+  "voiceAt": 39.44,
+  "voz": 15.15,
+  "dur": 16.45,
+  "real": true
+ },
+ {
+  "id": "lunes",
+  "start": 55.59,
+  "voiceAt": 55.89,
+  "voz": 4.99,
+  "dur": 6.29,
+  "real": true
+ },
+ {
+  "id": "cierre",
+  "start": 61.88,
+  "voiceAt": 62.78,
+  "voz": 5.15,
+  "dur": 10.55,
+  "real": true
+ }
+]
