@@ -23,7 +23,7 @@ const sh = (cmd, args) => execFileSync(cmd, args, { stdio: "inherit" });
 
 // Disposición por formato: cabecera (kicker, módulo, IA), escenario de 900x640 escalado, subtítulos y heptágono pequeño.
 const L = FMT === "v"
-  ? { head: { x: 70, y: 210, w: 940 }, stage: { x: 90, y: 600, s: 1 }, sub: { top: 1330, h: 200, side: 60, font: 56 }, mini: { x: 390, y: 1590, s: 300 }, hook: 98 }
+  ? { head: { x: 70, y: 210, w: 940 }, stage: { x: 90, y: 600, s: 1 }, sub: { top: 1270, h: 190, side: 60, font: 56 }, mini: { x: 405, y: 1480, s: 270 }, hook: 98 }
   : { head: { x: 100, y: 120, w: 700 }, stage: { x: 880, y: 150, s: 1.044 }, sub: { top: 880, h: 150, side: 160, font: 46 }, mini: { x: 220, y: 540, s: 300 }, hook: 96 };
 
 function duracion(f) {

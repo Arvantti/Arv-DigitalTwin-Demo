@@ -149,7 +149,7 @@ html,body{width:{{W}}px;height:{{H}}px;margin:0;overflow:hidden;background:var(-
 .mini line{stroke:#ffffff22;stroke-width:2}
 .mini .mn{fill:#0d1a30;stroke:#4ea7ff88;stroke-width:2}
 .mini .mt{font:700 17px "JetBrains Mono",monospace;fill:#fff;text-anchor:middle}
-.mini p{margin:6px 0 0;text-align:center;font:600 20px "JetBrains Mono",monospace;letter-spacing:2px;color:var(--ti2)}
+.mini p{white-space:nowrap;margin:6px -60px 0;text-align:center;font:600 20px "JetBrains Mono",monospace;letter-spacing:2px;color:var(--ti2)}
 
 /* Cierre */
 .hepta{position:absolute;inset:0;width:100%;height:100%}
