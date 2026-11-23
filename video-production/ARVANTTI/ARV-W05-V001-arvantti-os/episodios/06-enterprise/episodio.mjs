@@ -157,11 +157,11 @@ export function componer(c) {
   {
     const x = S.fractal; const [s, d] = span(x);
     const M = [["Fractal Process", "Procesos, tareas y recursos", "Fractal Process"], ["Fractal Finance", "Márgenes, caja y riesgo", "Fractal Finance"]];
-    const tR = P(x, "Primero aprenden"), tO = P(x, "después optimizan");
+    const tR = P(x, "Primero incorporan"), tO = P(x, "después exploran"), tD = P(x, "usted decida");
     clip("e-fractal", "scene", s, d, `
-      <div class="fx-core"><p class="fx-k">MOTOR DE DECISIONES</p><h3>Arvantti Fractal</h3></div>
+      <div class="fx-core"><p class="fx-k">OPTIMIZACIÓN Y APOYO A LA DECISIÓN</p><h3>Arvantti Fractal</h3></div>
       <div class="fx-mods dos">${M.map(([n, q]) => `<div class="fx-m"><b>${n}</b><p>${q}</p><small>módulo opcional</small></div>`).join("")}</div>
-      <div class="fx-flujo abajo"><span class="fx-a">Reglas de su empresa</span><i class="fx-f">→</i><span class="fx-b">Optimiza</span></div>`);
+      <div class="fx-flujo abajo"><span class="fx-a">Reglas y objetivos</span><i class="fx-f">→</i><span class="fx-b">Alternativas e impacto</span><i class="fx-f fx-f2">→</i><span class="fx-c">Usted decide</span></div>`);
     enter("e-fractal", s);
     at("#e-fractal .fx-core", { opacity: 0, scale: 0.8 }, { opacity: 1, scale: 1, duration: 0.6, ease: "back.out(1.8)" }, P(x, "Arvantti Fractal"));
     sfx("spark.wav", P(x, "Arvantti Fractal"), 0.22);
@@ -170,8 +170,11 @@ export function componer(c) {
       sfx("pop.mp3", P(x, f), 0.15);
     });
     at("#e-fractal .fx-a", { opacity: 0, x: -40 }, { opacity: 1, x: 0, duration: 0.45 }, tR);
-    at("#e-fractal .fx-f", { opacity: 0 }, { opacity: 1, duration: 0.3 }, tO - 0.2);
+    at("#e-fractal .fx-f:not(.fx-f2)", { opacity: 0 }, { opacity: 1, duration: 0.3 }, tO - 0.2);
     at("#e-fractal .fx-b", { opacity: 0, x: 40 }, { opacity: 1, x: 0, duration: 0.45, ease: "back.out(2)" }, tO);
+    at("#e-fractal .fx-f2", { opacity: 0 }, { opacity: 1, duration: 0.3 }, tD - 0.3);
+    at("#e-fractal .fx-c", { opacity: 0, x: 40 }, { opacity: 1, x: 0, duration: 0.45, ease: "back.out(2)" }, tD);
+    sfx("click.wav", tD, 0.2);
     sfx("click.wav", tO, 0.2);
     leave("e-fractal", s + d);
   }

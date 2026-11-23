@@ -1,1 +1,1 @@
-Y para decidir, Enterprise suma dos módulos opcionales de Arvantti Fractal: Fractal Process, que optimiza procesos, tareas y recursos, y Fractal Finance, que evalúa márgenes, caja y riesgo. Primero aprenden las reglas de su empresa y después optimizan.
+Y para decidir, Enterprise suma dos módulos opcionales de Arvantti Fractal: Fractal Process, que optimiza procesos, tareas y recursos, y Fractal Finance, que evalúa márgenes, caja y riesgo. Primero incorporan las reglas de su empresa; después exploran alternativas y le muestran su impacto para que usted decida.

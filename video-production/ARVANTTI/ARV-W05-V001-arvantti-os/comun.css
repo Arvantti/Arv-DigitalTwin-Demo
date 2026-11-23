@@ -151,5 +151,7 @@
 .v .fx-u{top:1500px;font-size:44px;padding:0 50px}
 .fx-mods.dos{width:1100px;margin-left:-550px}
 .v .fx-mods.dos{width:940px;margin-left:-470px}
-.fx-flujo.abajo{top:680px}
+.fx-flujo.abajo{top:720px}
 .v .fx-flujo.abajo{top:1160px}
+.fx-flujo .fx-c{background:#f8fafc;border-color:#f8fafc;color:#0b1428}
+.v .fx-flujo{gap:12px}.v .fx-flujo span{font-size:25px;padding:12px 18px}.v .fx-f{font-size:34px}

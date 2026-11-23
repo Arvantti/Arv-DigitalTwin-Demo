@@ -164,21 +164,24 @@ export function componer(c) {
     leave("e-capas", s + d);
   }
 
-  // 6b. Arvantti Fractal: el motor de decisiones; primero las reglas, después optimiza.
+  // 6b. Arvantti Fractal: optimización y apoyo a la decisión; reglas, alternativas, usted decide.
   {
     const x = S.fractal; const [s, d] = span(x);
-    const tR = P(x, "primero aprende"), tO = P(x, "después optimiza");
+    const tR = P(x, "Primero incorpora"), tO = P(x, "después explora"), tD = P(x, "usted decida");
     clip("e-fractal", "scene", s, d, `
-      <div class="fx-core"><p class="fx-k">MOTOR DE DECISIONES</p><h3>Arvantti Fractal</h3></div>
-      <div class="fx-flujo"><span class="fx-a">Reglas de su empresa</span><i class="fx-f">→</i><span class="fx-b">Optimiza</span></div>
-      <div class="fx-mods"><div class="fx-m"><b>Muchas variables</b><p>Capacidad, costos, tiempos y riesgo</p></div><div class="fx-m"><b>Alternativas</b><p>Compara y explica la mejor</p></div><div class="fx-m"><b>Una persona decide</b><p>Con las fuentes a la vista</p></div></div>`);
+      <div class="fx-core"><p class="fx-k">OPTIMIZACIÓN Y APOYO A LA DECISIÓN</p><h3>Arvantti Fractal</h3></div>
+      <div class="fx-flujo"><span class="fx-a">Reglas y objetivos</span><i class="fx-f">→</i><span class="fx-b">Alternativas e impacto</span><i class="fx-f fx-f2">→</i><span class="fx-c">Usted decide</span></div>
+      <div class="fx-mods"><div class="fx-m"><b>Muchas variables</b><p>Capacidad, costos, tiempos y riesgo</p></div><div class="fx-m"><b>Alternativas</b><p>Compara y muestra su impacto</p></div><div class="fx-m"><b>Una persona decide</b><p>Con las fuentes a la vista</p></div></div>`);
     enter("e-fractal", s);
     at("#e-fractal .fx-core", { opacity: 0, scale: 0.8 }, { opacity: 1, scale: 1, duration: 0.6, ease: "back.out(1.8)" }, P(x, "Arvantti Fractal"));
     sfx("spark.wav", P(x, "Arvantti Fractal"), 0.22);
     at("#e-fractal .fx-m:nth-child(1)", { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 0.5, ease: "back.out(1.6)" }, P(x, "muchas variables"));
     at("#e-fractal .fx-a", { opacity: 0, x: -40 }, { opacity: 1, x: 0, duration: 0.45 }, tR);
-    at("#e-fractal .fx-f", { opacity: 0 }, { opacity: 1, duration: 0.3 }, tO - 0.2);
+    at("#e-fractal .fx-f:not(.fx-f2)", { opacity: 0 }, { opacity: 1, duration: 0.3 }, tO - 0.2);
     at("#e-fractal .fx-b", { opacity: 0, x: 40 }, { opacity: 1, x: 0, duration: 0.45, ease: "back.out(2)" }, tO);
+    at("#e-fractal .fx-f2", { opacity: 0 }, { opacity: 1, duration: 0.3 }, tD - 0.3);
+    at("#e-fractal .fx-c", { opacity: 0, x: 40 }, { opacity: 1, x: 0, duration: 0.45, ease: "back.out(2)" }, tD);
+    sfx("click.wav", tD, 0.2);
     at("#e-fractal .fx-m:nth-child(2)", { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 0.5, ease: "back.out(1.6)" }, tO + 0.3);
     at("#e-fractal .fx-m:nth-child(3)", { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 0.5, ease: "back.out(1.6)" }, tO + 0.8);
     sfx("click.wav", tO, 0.2);
