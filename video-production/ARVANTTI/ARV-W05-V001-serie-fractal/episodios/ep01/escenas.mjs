@@ -10,6 +10,8 @@ export const ESCENAS = [
   { id: "cierre", dir: "08-cierre", lead: 0.9, tail: 4.5, sinSubtitulos: true },
 ];
 
+import { red, caminos, curva, barras } from "../../viz.mjs";
+
 const KICK = `<p class="kick"><b>EP 1</b> SERIE ARVANTTI FRACTAL</p>`;
 
 export function componerEpisodio(c) {
@@ -43,10 +45,18 @@ export function componerEpisodio(c) {
   {
     const x = S.areas; const [s, d] = span(x);
     const A = [["planta", "Planta", "¿Hay capacidad?"], ["procesos", "Procesos", "¿Llegamos a tiempo?"], ["inventario", "Inventario", "¿Alcanza el material?"], ["caja", "Caja", "¿Aguanta la caja?"]];
+    const tG = P(x, "toca");
+    const G = {
+      planta: barras(c, "g-planta", { valores: [55, 70, 62, 88, 100, 76], alerta: 4, t0: P(x, "planta") }),
+      procesos: curva(c, "g-procesos", { puntos: [3, 5, 4, 6, 5, 8, 7, 9], t0: P(x, "procesos") }),
+      inventario: barras(c, "g-inventario", { valores: [95, 82, 70, 58, 40, 28], alerta: 5, t0: P(x, "inventario") }),
+      caja: curva(c, "g-caja", { puntos: [8, 7, 7.5, 5, 4, 3, 4.5, 6], banda: true, t0: P(x, "caja") }),
+    };
+    void tG;
     clip("e-areas", "scene", s, d, `${KICK}
       <div class="st">
         <h2 class="h md a-t">${words("Parece una pregunta simple.")}</h2>
-        <div class="row areas">${A.map(([k, n, q]) => `<div class="panel area" id="ar-${k}"><b>${n}</b><span>${q}</span></div>`).join("")}</div>
+        <div class="row areas">${A.map(([k, n, q]) => `<div class="panel area" id="ar-${k}"><b>${n}</b><div class="mini">${G[k]}</div><span>${q}</span></div>`).join("")}</div>
       </div>`, 3);
     enter("e-areas", s);
     titleIn("#e-areas .a-t", x.voiceAt);
@@ -67,6 +77,7 @@ export function componerEpisodio(c) {
     const x = S.fractal; const [s, d] = span(x);
     const tF = P(x, "Arvantti Fractal"), tN = P(x, "no decide"), tO = P(x, "las mejores"), tD = P(x, "para que");
     clip("e-fractal", "scene", s, d, `
+      <div class="fondo-red">${red(c, "red3", { w: 1600, h: 900, capas: [5, 8, 9, 8, 5], t0: s + 0.3, dur: d - 1.2, seed: 21 })}</div>
       <div class="st">
         <img class="marca fm" src="assets/clips/marca.png" alt="">
         <h1 class="h xl ti ft">Arvantti Fractal</h1>
@@ -95,15 +106,15 @@ export function componerEpisodio(c) {
     clip("e-reglas", "scene", s, d, `${KICK}
       <div class="st"><div class="flujo">
         <div class="reglas">${R.map((r, i) => `<span class="chip rg" id="rg${i}">${r}</span>`).join("")}</div>
-        <div class="nucleo" id="nu"><span>FRACTAL</span><small>Tus reglas primero</small><em></em></div>
+        <div class="motor" id="nu"><div class="m-red">${red(c, "red4", { w: 620, h: 400, capas: [3, 6, 6, 4], t0: tM - 0.2, dur: tA - tM + 0.6, seed: 5 })}</div><div class="m-cam">${caminos(c, "cam4", { w: 620, h: 400, t0: tA - 0.1, dur: tI - tA + 0.4, seed: 17 })}</div><p class="m-l"><b>FRACTAL</b> · tus reglas primero</p></div>
         <div class="opts">${O.map(([n, v], i) => `<div class="panel opt" id="op${i}"><b>Opción ${n}</b>${["Entregas", "Costo", "Riesgo"].map((m, k) => `<div class="bar"><span>${m}</span><i class="${k === 2 ? "r" : ""}" style="--n:${v[k]}"></i></div>`).join("")}</div>`).join("")}</div>
       </div></div>`, 3);
     enter("e-reglas", s);
     R.forEach((_, i) => at(`#rg${i}`, { opacity: 0, x: -40 }, { opacity: 1, x: 0, duration: 0.45, ease: "power3.out" }, tR + i * 0.3));
-    pop("#nu", tR + 0.2);
+    fade("#nu .m-l", tR + 0.2);
     to("#e-reglas .rg", { x: VERT ? 0 : 60, y: VERT ? 40 : 0, opacity: 0.35, scale: 0.9, duration: 0.6, stagger: 0.12, ease: "power2.in" }, tM - 0.6);
-    c.tl.push(`tl.to("#nu",{boxShadow:"0 0 0 6px #4ea7ff, 0 0 160px #2d7ff9cc",scale:1.08,duration:.45,yoyo:true,repeat:3},${tM.toFixed(2)});`);
-    at("#nu em", { rotate: 0 }, { rotate: 360, duration: 4, ease: "none" }, tM);
+    to("#nu .m-red", { opacity: 0, duration: 0.4 }, tA - 0.3);
+    at("#nu .m-cam", { opacity: 0 }, { opacity: 1, duration: 0.3 }, tA - 0.2);
     O.forEach((_, i) => at(`#op${i}`, { opacity: 0, x: 40 }, { opacity: 1, x: 0, duration: 0.5, ease: "power3.out" }, tA + i * 0.3));
     at("#e-reglas .opt i", { scaleX: 0 }, { scaleX: 1, duration: 0.7, stagger: 0.08, ease: "power2.out" }, tI - 0.1);
     sfx("4a", "whoosh-short.mp3", tM, 0.25); sfx("4b", "pop.mp3", tA, 0.15);
@@ -143,7 +154,7 @@ export function componerEpisodio(c) {
     clip("e-modulos", "scene", s, d, `${KICK}
       <div class="st">
         <div class="anillos">
-          <svg viewBox="-300 -300 600 600">${[150, 210, 270].map((r, i) => `<circle id="an${i}" r="${r}" pathLength="1"/>`).join("")}</svg>
+          <svg viewBox="-300 -300 600 600">${[150, 210, 270].map((r, i) => `<circle id="an${i}" r="${r}" pathLength="1"/><g class="orb" id="orb${i}"><circle class="orbp" cx="${r}" cy="0" r="9"/></g>`).join("")}</svg>
           <div class="nuc"><span>Fractal</span><small>Un solo núcleo</small></div>
           ${M.map(([n, q], i) => `<div class="mlab" id="ml${i}"><b>${n}</b><small>${q}</small></div>`).join("")}
         </div>
@@ -154,6 +165,8 @@ export function componerEpisodio(c) {
       const t = P(x, k);
       at(`#an${i}`, { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.8, ease: "power2.out" }, t - 0.3);
       pop(`#ml${i}`, t);
+      at(`#orb${i} .orbp`, { opacity: 0 }, { opacity: 1, duration: 0.3 }, t + 0.4);
+      at(`#orb${i}`, { rotation: [0, 120, 240][i] }, { rotation: [0, 120, 240][i] + (i % 2 ? -1 : 1) * 300, svgOrigin: "0 0", duration: s + d - t, ease: "none" }, t + 0.4);
       sfx(`6${i}`, "pop.mp3", t, 0.15);
     });
     leave("e-modulos", s + d);
@@ -167,12 +180,13 @@ export function componerEpisodio(c) {
     clip("e-serie", "scene", s, d, `${KICK}
       <div class="st">
         <h1 class="h xl q2">${words("¿Lo aceptamos?")}</h1>
-        <div class="row pasos">${PASOS.map((p, i) => `<span class="chip ps" id="ps${i}">${i + 1}. ${p}</span>`).join("")}</div>
+        <div class="ruta-w"><svg class="ruta" viewBox="0 0 1200 60" preserveAspectRatio="none"><line x1="40" y1="30" x2="1160" y2="30" pathLength="1"/></svg><div class="row pasos">${PASOS.map((p, i) => `<span class="chip ps" id="ps${i}">${i + 1}. ${p}</span>`).join("")}</div></div>
         <span class="chip on dp">Decide una persona</span>
       </div>`, 3);
     enter("e-serie", s);
     titleIn("#e-serie .q2", P(x, "la pregunta") - 0.1, 0.15);
-    PASOS.forEach((_, i) => pop(`#ps${i}`, tP + i * 0.25));
+    at("#e-serie .ruta line", { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 1.2, ease: "power1.inOut" }, tP);
+    PASOS.forEach((_, i) => { pop(`#ps${i}`, tP + i * 0.25); to(`#ps${i}`, { backgroundColor: "#1f4f9a", borderColor: "#4ea7ff", duration: 0.3 }, tP + 0.3 + i * 0.25); });
     pop("#e-serie .dp", tD);
     sfx("7a", "spark.wav", tD, 0.2);
     leave("e-serie", s + d);

@@ -21,3 +21,15 @@
 .bar i{height:16px}
 .mail .ml{font-size:36px}.mail .mh{font-size:40px}
 .fin .firma{font-size:48px}
+.motor{transform:scale(1.4);margin:70px 0}
+.fondo-red .red{width:1900px;transform:rotate(90deg)}
+.area .mini{height:100px}
+.ruta{display:none}
+#e-reglas .st{padding-top:200px;gap:20px}
+#e-reglas .flujo{gap:24px}
+.motor{transform:scale(1.15);margin:40px 0}
+.opts{gap:12px}
+.opt{padding:12px 22px}
+.opt b{font-size:34px;margin-bottom:2px}
+.bar{margin-top:4px}
+.bar span{font-size:26px}

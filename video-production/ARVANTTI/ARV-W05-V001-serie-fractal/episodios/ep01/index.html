@@ -98,6 +98,39 @@ html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:var(--b
 .pasos{gap:22px}
 .ps{font-size:34px}
 .dp{font-size:42px;padding:16px 44px}
+/* v002: gráficas, red y caminos */
+.mini{height:90px;display:flex;align-items:flex-end;justify-content:center}
+.mbar{display:flex;align-items:flex-end;gap:10px;height:86px}
+.mbar i{display:block;width:26px;border-radius:5px 5px 0 0;background:linear-gradient(#4ea7ff,#2d7ff9);transform-origin:50% 100%}
+.mbar i.al{background:linear-gradient(#ff8a3d,#c2561a)}
+.curva{width:270px;height:86px;overflow:visible}
+.cv-line{fill:none;stroke:#4ea7ff;stroke-width:4;stroke-dasharray:1;stroke-dashoffset:1;filter:drop-shadow(0 0 6px #4ea7ff)}
+.cv-area{fill:#2d7ff922}
+.cv-band{fill:#4ea7ff1c}
+.fondo-red{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:.32}
+.fondo-red .red{width:1700px;height:auto}
+.red{overflow:visible}
+.ra{stroke:#4ea7ff55;stroke-width:2;stroke-dasharray:1;stroke-dashoffset:1}
+.rn{fill:#0d1a30;stroke:#4ea7ff;stroke-width:3}
+.rp{fill:#fff;opacity:0;filter:drop-shadow(0 0 8px #4ea7ff) drop-shadow(0 0 16px #2d7ff9)}
+.motor{position:relative;flex:none;width:620px;height:470px}
+.motor .m-red,.motor .m-cam{position:absolute;left:0;top:0;width:620px;height:400px}
+.motor .m-cam{opacity:0}
+.motor svg{width:620px;height:400px;overflow:visible}
+.motor .m-l{position:absolute;left:0;right:0;bottom:0;margin:0;font:600 24px "JetBrains Mono",monospace;letter-spacing:3px;color:var(--ice)}
+.motor .m-l b{color:#fff}
+.cn{fill:#0d1a30;stroke:#4ea7ff88;stroke-width:2}
+.cio{fill:#2d7ff9;stroke:#fff;stroke-width:3;filter:drop-shadow(0 0 10px #4ea7ff)}
+.ce{fill:none;stroke:#9fb3cf;stroke-width:2;stroke-dasharray:1;stroke-dashoffset:1}
+.cb{fill:none;stroke:#4ea7ff;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1;filter:drop-shadow(0 0 8px #4ea7ff)}
+.cb.b0{stroke:#ffffff;stroke-width:6}
+.cb.b2{stroke:#9fd0ff}
+.ct{fill:#fff;font:700 26px Inter,sans-serif;opacity:0}
+.orbp{fill:#fff;opacity:0;filter:drop-shadow(0 0 10px #4ea7ff)}
+.ruta-w{position:relative}
+.ruta{position:absolute;left:0;right:0;top:50%;width:100%;height:60px;transform:translateY(-50%);overflow:visible}
+.ruta line{stroke:#4ea7ff;stroke-width:4;stroke-dasharray:1;stroke-dashoffset:1;filter:drop-shadow(0 0 8px #4ea7ff)}
+.ps{position:relative;background:#0d1a30}
 
 </style>
 </head>
@@ -119,13 +152,22 @@ html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:var(--b
 <div id="e-areas" class="clip scene" data-start="9.23" data-duration="10.32" data-track-index="3"><p class="kick"><b>EP 1</b> SERIE ARVANTTI FRACTAL</p>
       <div class="st">
         <h2 class="h md a-t"><span class="w">Parece</span> <span class="w">una</span> <span class="w">pregunta</span> <span class="w">simple.</span></h2>
-        <div class="row areas"><div class="panel area" id="ar-planta"><b>Planta</b><span>¿Hay capacidad?</span></div><div class="panel area" id="ar-procesos"><b>Procesos</b><span>¿Llegamos a tiempo?</span></div><div class="panel area" id="ar-inventario"><b>Inventario</b><span>¿Alcanza el material?</span></div><div class="panel area" id="ar-caja"><b>Caja</b><span>¿Aguanta la caja?</span></div></div>
+        <div class="row areas"><div class="panel area" id="ar-planta"><b>Planta</b><div class="mini"><div class="mbar" id="g-planta"><i class="" style="height:55%"></i><i class="" style="height:70%"></i><i class="" style="height:62%"></i><i class="" style="height:88%"></i><i class="al" style="height:100%"></i><i class="" style="height:76%"></i></div></div><span>¿Hay capacidad?</span></div><div class="panel area" id="ar-procesos"><b>Procesos</b><div class="mini"><svg class="curva" id="g-procesos" viewBox="0 0 300 90" preserveAspectRatio="none">
+    
+    <path class="cv-area" d="M0.0 82.0 L42.9 57.3 L85.7 69.7 L128.6 45.0 L171.4 57.3 L214.3 20.3 L257.1 32.7 L300.0 8.0 L300 90 L0 90 Z"/><path class="cv-line" d="M0.0 82.0 L42.9 57.3 L85.7 69.7 L128.6 45.0 L171.4 57.3 L214.3 20.3 L257.1 32.7 L300.0 8.0" pathLength="1"/></svg></div><span>¿Llegamos a tiempo?</span></div><div class="panel area" id="ar-inventario"><b>Inventario</b><div class="mini"><div class="mbar" id="g-inventario"><i class="" style="height:95%"></i><i class="" style="height:82%"></i><i class="" style="height:70%"></i><i class="" style="height:58%"></i><i class="" style="height:40%"></i><i class="al" style="height:28%"></i></div></div><span>¿Alcanza el material?</span></div><div class="panel area" id="ar-caja"><b>Caja</b><div class="mini"><svg class="curva" id="g-caja" viewBox="0 0 300 90" preserveAspectRatio="none">
+    <path class="cv-band" d="M0.0 -2.0 L42.9 12.8 L85.7 5.4 L128.6 42.4 L171.4 57.2 L214.3 72.0 L257.1 49.8 L300.0 27.6 L300.0 47.6 L257.1 69.8 L214.3 92.0 L171.4 77.2 L128.6 62.4 L85.7 25.4 L42.9 32.8 L0.0 18.0 Z"/>
+    <path class="cv-area" d="M0.0 8.0 L42.9 22.8 L85.7 15.4 L128.6 52.4 L171.4 67.2 L214.3 82.0 L257.1 59.8 L300.0 37.6 L300 90 L0 90 Z"/><path class="cv-line" d="M0.0 8.0 L42.9 22.8 L85.7 15.4 L128.6 52.4 L171.4 67.2 L214.3 82.0 L257.1 59.8 L300.0 37.6" pathLength="1"/></svg></div><span>¿Aguanta la caja?</span></div></div>
       </div></div>
 <audio id="sfx-20" src="assets/shared/core/sfx/pop.mp3" data-start="12.44" data-duration="1.40" data-volume="0.12" data-track-index="25"></audio>
 <audio id="sfx-21" src="assets/shared/core/sfx/pop.mp3" data-start="13.24" data-duration="1.40" data-volume="0.12" data-track-index="26"></audio>
 <audio id="sfx-22" src="assets/shared/core/sfx/pop.mp3" data-start="14.20" data-duration="1.40" data-volume="0.12" data-track-index="27"></audio>
 <audio id="sfx-23" src="assets/shared/core/sfx/pop.mp3" data-start="15.24" data-duration="1.40" data-volume="0.12" data-track-index="28"></audio>
 <div id="e-fractal" class="clip scene" data-start="19.05" data-duration="11.01" data-track-index="3">
+      <div class="fondo-red"><svg class="red" id="red3" viewBox="0 0 1600 900">
+    <line class="ra" id="red3-e0" x1="40" y1="310" x2="420" y2="205" pathLength="1"/><line class="ra" id="red3-e1" x1="40" y1="310" x2="420" y2="275" pathLength="1"/><line class="ra" id="red3-e2" x1="40" y1="310" x2="420" y2="345" pathLength="1"/><line class="ra" id="red3-e3" x1="40" y1="310" x2="420" y2="415" pathLength="1"/><line class="ra" id="red3-e4" x1="40" y1="310" x2="420" y2="485" pathLength="1"/><line class="ra" id="red3-e5" x1="40" y1="310" x2="420" y2="555" pathLength="1"/><line class="ra" id="red3-e6" x1="40" y1="310" x2="420" y2="625" pathLength="1"/><line class="ra" id="red3-e7" x1="40" y1="380" x2="420" y2="205" pathLength="1"/><line class="ra" id="red3-e8" x1="40" y1="380" x2="420" y2="345" pathLength="1"/><line class="ra" id="red3-e9" x1="40" y1="380" x2="420" y2="415" pathLength="1"/><line class="ra" id="red3-e10" x1="40" y1="380" x2="420" y2="485" pathLength="1"/><line class="ra" id="red3-e11" x1="40" y1="380" x2="420" y2="695" pathLength="1"/><line class="ra" id="red3-e12" x1="40" y1="450" x2="420" y2="415" pathLength="1"/><line class="ra" id="red3-e13" x1="40" y1="450" x2="420" y2="485" pathLength="1"/><line class="ra" id="red3-e14" x1="40" y1="450" x2="420" y2="555" pathLength="1"/><line class="ra" id="red3-e15" x1="40" y1="450" x2="420" y2="625" pathLength="1"/><line class="ra" id="red3-e16" x1="40" y1="520" x2="420" y2="205" pathLength="1"/><line class="ra" id="red3-e17" x1="40" y1="520" x2="420" y2="275" pathLength="1"/><line class="ra" id="red3-e18" x1="40" y1="520" x2="420" y2="345" pathLength="1"/><line class="ra" id="red3-e19" x1="40" y1="520" x2="420" y2="485" pathLength="1"/><line class="ra" id="red3-e20" x1="40" y1="520" x2="420" y2="555" pathLength="1"/><line class="ra" id="red3-e21" x1="40" y1="520" x2="420" y2="695" pathLength="1"/><line class="ra" id="red3-e22" x1="40" y1="590" x2="420" y2="205" pathLength="1"/><line class="ra" id="red3-e23" x1="40" y1="590" x2="420" y2="275" pathLength="1"/><line class="ra" id="red3-e24" x1="40" y1="590" x2="420" y2="345" pathLength="1"/><line class="ra" id="red3-e25" x1="40" y1="590" x2="420" y2="415" pathLength="1"/><line class="ra" id="red3-e26" x1="40" y1="590" x2="420" y2="485" pathLength="1"/><line class="ra" id="red3-e27" x1="40" y1="590" x2="420" y2="555" pathLength="1"/><line class="ra" id="red3-e28" x1="420" y1="205" x2="800" y2="170" pathLength="1"/><line class="ra" id="red3-e29" x1="420" y1="205" x2="800" y2="310" pathLength="1"/><line class="ra" id="red3-e30" x1="420" y1="205" x2="800" y2="380" pathLength="1"/><line class="ra" id="red3-e31" x1="420" y1="205" x2="800" y2="520" pathLength="1"/><line class="ra" id="red3-e32" x1="420" y1="205" x2="800" y2="590" pathLength="1"/><line class="ra" id="red3-e33" x1="420" y1="205" x2="800" y2="660" pathLength="1"/><line class="ra" id="red3-e34" x1="420" y1="205" x2="800" y2="730" pathLength="1"/><line class="ra" id="red3-e35" x1="420" y1="275" x2="800" y2="240" pathLength="1"/><line class="ra" id="red3-e36" x1="420" y1="275" x2="800" y2="310" pathLength="1"/><line class="ra" id="red3-e37" x1="420" y1="275" x2="800" y2="590" pathLength="1"/><line class="ra" id="red3-e38" x1="420" y1="275" x2="800" y2="730" pathLength="1"/><line class="ra" id="red3-e39" x1="420" y1="345" x2="800" y2="170" pathLength="1"/><line class="ra" id="red3-e40" x1="420" y1="345" x2="800" y2="240" pathLength="1"/><line class="ra" id="red3-e41" x1="420" y1="345" x2="800" y2="380" pathLength="1"/><line class="ra" id="red3-e42" x1="420" y1="345" x2="800" y2="450" pathLength="1"/><line class="ra" id="red3-e43" x1="420" y1="345" x2="800" y2="590" pathLength="1"/><line class="ra" id="red3-e44" x1="420" y1="345" x2="800" y2="660" pathLength="1"/><line class="ra" id="red3-e45" x1="420" y1="345" x2="800" y2="730" pathLength="1"/><line class="ra" id="red3-e46" x1="420" y1="415" x2="800" y2="170" pathLength="1"/><line class="ra" id="red3-e47" x1="420" y1="415" x2="800" y2="240" pathLength="1"/><line class="ra" id="red3-e48" x1="420" y1="415" x2="800" y2="310" pathLength="1"/><line class="ra" id="red3-e49" x1="420" y1="415" x2="800" y2="590" pathLength="1"/><line class="ra" id="red3-e50" x1="420" y1="415" x2="800" y2="660" pathLength="1"/><line class="ra" id="red3-e51" x1="420" y1="485" x2="800" y2="240" pathLength="1"/><line class="ra" id="red3-e52" x1="420" y1="485" x2="800" y2="310" pathLength="1"/><line class="ra" id="red3-e53" x1="420" y1="485" x2="800" y2="380" pathLength="1"/><line class="ra" id="red3-e54" x1="420" y1="485" x2="800" y2="520" pathLength="1"/><line class="ra" id="red3-e55" x1="420" y1="485" x2="800" y2="590" pathLength="1"/><line class="ra" id="red3-e56" x1="420" y1="485" x2="800" y2="730" pathLength="1"/><line class="ra" id="red3-e57" x1="420" y1="555" x2="800" y2="170" pathLength="1"/><line class="ra" id="red3-e58" x1="420" y1="555" x2="800" y2="240" pathLength="1"/><line class="ra" id="red3-e59" x1="420" y1="555" x2="800" y2="310" pathLength="1"/><line class="ra" id="red3-e60" x1="420" y1="555" x2="800" y2="520" pathLength="1"/><line class="ra" id="red3-e61" x1="420" y1="555" x2="800" y2="730" pathLength="1"/><line class="ra" id="red3-e62" x1="420" y1="625" x2="800" y2="170" pathLength="1"/><line class="ra" id="red3-e63" x1="420" y1="625" x2="800" y2="310" pathLength="1"/><line class="ra" id="red3-e64" x1="420" y1="625" x2="800" y2="380" pathLength="1"/><line class="ra" id="red3-e65" x1="420" y1="625" x2="800" y2="450" pathLength="1"/><line class="ra" id="red3-e66" x1="420" y1="625" x2="800" y2="590" pathLength="1"/><line class="ra" id="red3-e67" x1="420" y1="625" x2="800" y2="730" pathLength="1"/><line class="ra" id="red3-e68" x1="420" y1="695" x2="800" y2="170" pathLength="1"/><line class="ra" id="red3-e69" x1="420" y1="695" x2="800" y2="310" pathLength="1"/><line class="ra" id="red3-e70" x1="420" y1="695" x2="800" y2="450" pathLength="1"/><line class="ra" id="red3-e71" x1="420" y1="695" x2="800" y2="590" pathLength="1"/><line class="ra" id="red3-e72" x1="420" y1="695" x2="800" y2="660" pathLength="1"/><line class="ra" id="red3-e73" x1="800" y1="170" x2="1180" y2="205" pathLength="1"/><line class="ra" id="red3-e74" x1="800" y1="170" x2="1180" y2="275" pathLength="1"/><line class="ra" id="red3-e75" x1="800" y1="170" x2="1180" y2="345" pathLength="1"/><line class="ra" id="red3-e76" x1="800" y1="170" x2="1180" y2="415" pathLength="1"/><line class="ra" id="red3-e77" x1="800" y1="170" x2="1180" y2="485" pathLength="1"/><line class="ra" id="red3-e78" x1="800" y1="170" x2="1180" y2="625" pathLength="1"/><line class="ra" id="red3-e79" x1="800" y1="170" x2="1180" y2="695" pathLength="1"/><line class="ra" id="red3-e80" x1="800" y1="240" x2="1180" y2="205" pathLength="1"/><line class="ra" id="red3-e81" x1="800" y1="240" x2="1180" y2="345" pathLength="1"/><line class="ra" id="red3-e82" x1="800" y1="240" x2="1180" y2="415" pathLength="1"/><line class="ra" id="red3-e83" x1="800" y1="240" x2="1180" y2="485" pathLength="1"/><line class="ra" id="red3-e84" x1="800" y1="240" x2="1180" y2="625" pathLength="1"/><line class="ra" id="red3-e85" x1="800" y1="310" x2="1180" y2="205" pathLength="1"/><line class="ra" id="red3-e86" x1="800" y1="310" x2="1180" y2="275" pathLength="1"/><line class="ra" id="red3-e87" x1="800" y1="310" x2="1180" y2="345" pathLength="1"/><line class="ra" id="red3-e88" x1="800" y1="310" x2="1180" y2="415" pathLength="1"/><line class="ra" id="red3-e89" x1="800" y1="310" x2="1180" y2="625" pathLength="1"/><line class="ra" id="red3-e90" x1="800" y1="310" x2="1180" y2="695" pathLength="1"/><line class="ra" id="red3-e91" x1="800" y1="380" x2="1180" y2="205" pathLength="1"/><line class="ra" id="red3-e92" x1="800" y1="380" x2="1180" y2="275" pathLength="1"/><line class="ra" id="red3-e93" x1="800" y1="380" x2="1180" y2="345" pathLength="1"/><line class="ra" id="red3-e94" x1="800" y1="380" x2="1180" y2="415" pathLength="1"/><line class="ra" id="red3-e95" x1="800" y1="380" x2="1180" y2="485" pathLength="1"/><line class="ra" id="red3-e96" x1="800" y1="380" x2="1180" y2="555" pathLength="1"/><line class="ra" id="red3-e97" x1="800" y1="380" x2="1180" y2="625" pathLength="1"/><line class="ra" id="red3-e98" x1="800" y1="380" x2="1180" y2="695" pathLength="1"/><line class="ra" id="red3-e99" x1="800" y1="450" x2="1180" y2="485" pathLength="1"/><line class="ra" id="red3-e100" x1="800" y1="450" x2="1180" y2="555" pathLength="1"/><line class="ra" id="red3-e101" x1="800" y1="450" x2="1180" y2="625" pathLength="1"/><line class="ra" id="red3-e102" x1="800" y1="450" x2="1180" y2="695" pathLength="1"/><line class="ra" id="red3-e103" x1="800" y1="520" x2="1180" y2="205" pathLength="1"/><line class="ra" id="red3-e104" x1="800" y1="520" x2="1180" y2="345" pathLength="1"/><line class="ra" id="red3-e105" x1="800" y1="520" x2="1180" y2="485" pathLength="1"/><line class="ra" id="red3-e106" x1="800" y1="520" x2="1180" y2="555" pathLength="1"/><line class="ra" id="red3-e107" x1="800" y1="520" x2="1180" y2="625" pathLength="1"/><line class="ra" id="red3-e108" x1="800" y1="520" x2="1180" y2="695" pathLength="1"/><line class="ra" id="red3-e109" x1="800" y1="590" x2="1180" y2="205" pathLength="1"/><line class="ra" id="red3-e110" x1="800" y1="590" x2="1180" y2="275" pathLength="1"/><line class="ra" id="red3-e111" x1="800" y1="590" x2="1180" y2="415" pathLength="1"/><line class="ra" id="red3-e112" x1="800" y1="590" x2="1180" y2="485" pathLength="1"/><line class="ra" id="red3-e113" x1="800" y1="590" x2="1180" y2="555" pathLength="1"/><line class="ra" id="red3-e114" x1="800" y1="590" x2="1180" y2="625" pathLength="1"/><line class="ra" id="red3-e115" x1="800" y1="590" x2="1180" y2="695" pathLength="1"/><line class="ra" id="red3-e116" x1="800" y1="660" x2="1180" y2="205" pathLength="1"/><line class="ra" id="red3-e117" x1="800" y1="660" x2="1180" y2="275" pathLength="1"/><line class="ra" id="red3-e118" x1="800" y1="660" x2="1180" y2="415" pathLength="1"/><line class="ra" id="red3-e119" x1="800" y1="660" x2="1180" y2="485" pathLength="1"/><line class="ra" id="red3-e120" x1="800" y1="730" x2="1180" y2="205" pathLength="1"/><line class="ra" id="red3-e121" x1="800" y1="730" x2="1180" y2="275" pathLength="1"/><line class="ra" id="red3-e122" x1="800" y1="730" x2="1180" y2="345" pathLength="1"/><line class="ra" id="red3-e123" x1="800" y1="730" x2="1180" y2="485" pathLength="1"/><line class="ra" id="red3-e124" x1="800" y1="730" x2="1180" y2="555" pathLength="1"/><line class="ra" id="red3-e125" x1="800" y1="730" x2="1180" y2="695" pathLength="1"/><line class="ra" id="red3-e126" x1="1180" y1="205" x2="1560" y2="310" pathLength="1"/><line class="ra" id="red3-e127" x1="1180" y1="205" x2="1560" y2="380" pathLength="1"/><line class="ra" id="red3-e128" x1="1180" y1="205" x2="1560" y2="450" pathLength="1"/><line class="ra" id="red3-e129" x1="1180" y1="205" x2="1560" y2="520" pathLength="1"/><line class="ra" id="red3-e130" x1="1180" y1="275" x2="1560" y2="310" pathLength="1"/><line class="ra" id="red3-e131" x1="1180" y1="275" x2="1560" y2="380" pathLength="1"/><line class="ra" id="red3-e132" x1="1180" y1="345" x2="1560" y2="310" pathLength="1"/><line class="ra" id="red3-e133" x1="1180" y1="345" x2="1560" y2="450" pathLength="1"/><line class="ra" id="red3-e134" x1="1180" y1="345" x2="1560" y2="520" pathLength="1"/><line class="ra" id="red3-e135" x1="1180" y1="345" x2="1560" y2="590" pathLength="1"/><line class="ra" id="red3-e136" x1="1180" y1="415" x2="1560" y2="310" pathLength="1"/><line class="ra" id="red3-e137" x1="1180" y1="415" x2="1560" y2="380" pathLength="1"/><line class="ra" id="red3-e138" x1="1180" y1="415" x2="1560" y2="450" pathLength="1"/><line class="ra" id="red3-e139" x1="1180" y1="415" x2="1560" y2="520" pathLength="1"/><line class="ra" id="red3-e140" x1="1180" y1="415" x2="1560" y2="590" pathLength="1"/><line class="ra" id="red3-e141" x1="1180" y1="485" x2="1560" y2="450" pathLength="1"/><line class="ra" id="red3-e142" x1="1180" y1="485" x2="1560" y2="520" pathLength="1"/><line class="ra" id="red3-e143" x1="1180" y1="485" x2="1560" y2="590" pathLength="1"/><line class="ra" id="red3-e144" x1="1180" y1="555" x2="1560" y2="380" pathLength="1"/><line class="ra" id="red3-e145" x1="1180" y1="555" x2="1560" y2="450" pathLength="1"/><line class="ra" id="red3-e146" x1="1180" y1="555" x2="1560" y2="520" pathLength="1"/><line class="ra" id="red3-e147" x1="1180" y1="555" x2="1560" y2="590" pathLength="1"/><line class="ra" id="red3-e148" x1="1180" y1="625" x2="1560" y2="380" pathLength="1"/><line class="ra" id="red3-e149" x1="1180" y1="625" x2="1560" y2="450" pathLength="1"/><line class="ra" id="red3-e150" x1="1180" y1="695" x2="1560" y2="310" pathLength="1"/><line class="ra" id="red3-e151" x1="1180" y1="695" x2="1560" y2="450" pathLength="1"/><line class="ra" id="red3-e152" x1="1180" y1="695" x2="1560" y2="590" pathLength="1"/>
+    <circle class="rn" id="red3-n0" cx="40" cy="310" r="11"/><circle class="rn" id="red3-n1" cx="40" cy="380" r="11"/><circle class="rn" id="red3-n2" cx="40" cy="450" r="11"/><circle class="rn" id="red3-n3" cx="40" cy="520" r="11"/><circle class="rn" id="red3-n4" cx="40" cy="590" r="11"/><circle class="rn" id="red3-n5" cx="420" cy="205" r="11"/><circle class="rn" id="red3-n6" cx="420" cy="275" r="11"/><circle class="rn" id="red3-n7" cx="420" cy="345" r="11"/><circle class="rn" id="red3-n8" cx="420" cy="415" r="11"/><circle class="rn" id="red3-n9" cx="420" cy="485" r="11"/><circle class="rn" id="red3-n10" cx="420" cy="555" r="11"/><circle class="rn" id="red3-n11" cx="420" cy="625" r="11"/><circle class="rn" id="red3-n12" cx="420" cy="695" r="11"/><circle class="rn" id="red3-n13" cx="800" cy="170" r="11"/><circle class="rn" id="red3-n14" cx="800" cy="240" r="11"/><circle class="rn" id="red3-n15" cx="800" cy="310" r="11"/><circle class="rn" id="red3-n16" cx="800" cy="380" r="11"/><circle class="rn" id="red3-n17" cx="800" cy="450" r="11"/><circle class="rn" id="red3-n18" cx="800" cy="520" r="11"/><circle class="rn" id="red3-n19" cx="800" cy="590" r="11"/><circle class="rn" id="red3-n20" cx="800" cy="660" r="11"/><circle class="rn" id="red3-n21" cx="800" cy="730" r="11"/><circle class="rn" id="red3-n22" cx="1180" cy="205" r="11"/><circle class="rn" id="red3-n23" cx="1180" cy="275" r="11"/><circle class="rn" id="red3-n24" cx="1180" cy="345" r="11"/><circle class="rn" id="red3-n25" cx="1180" cy="415" r="11"/><circle class="rn" id="red3-n26" cx="1180" cy="485" r="11"/><circle class="rn" id="red3-n27" cx="1180" cy="555" r="11"/><circle class="rn" id="red3-n28" cx="1180" cy="625" r="11"/><circle class="rn" id="red3-n29" cx="1180" cy="695" r="11"/><circle class="rn" id="red3-n30" cx="1560" cy="310" r="11"/><circle class="rn" id="red3-n31" cx="1560" cy="380" r="11"/><circle class="rn" id="red3-n32" cx="1560" cy="450" r="11"/><circle class="rn" id="red3-n33" cx="1560" cy="520" r="11"/><circle class="rn" id="red3-n34" cx="1560" cy="590" r="11"/>
+    <circle class="rp" id="red3-p0" r="6" cx="0" cy="0"/><circle class="rp" id="red3-p1" r="6" cx="0" cy="0"/><circle class="rp" id="red3-p2" r="6" cx="0" cy="0"/><circle class="rp" id="red3-p3" r="6" cx="0" cy="0"/><circle class="rp" id="red3-p4" r="6" cx="0" cy="0"/><circle class="rp" id="red3-p5" r="6" cx="0" cy="0"/><circle class="rp" id="red3-p6" r="6" cx="0" cy="0"/><circle class="rp" id="red3-p7" r="6" cx="0" cy="0"/><circle class="rp" id="red3-p8" r="6" cx="0" cy="0"/><circle class="rp" id="red3-p9" r="6" cx="0" cy="0"/><circle class="rp" id="red3-p10" r="6" cx="0" cy="0"/><circle class="rp" id="red3-p11" r="6" cx="0" cy="0"/><circle class="rp" id="red3-p12" r="6" cx="0" cy="0"/><circle class="rp" id="red3-p13" r="6" cx="0" cy="0"/>
+  </svg></div>
       <div class="st">
         <img class="marca fm" src="assets/clips/marca.png" alt="">
         <h1 class="h xl ti ft">Arvantti Fractal</h1>
@@ -138,7 +180,17 @@ html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:var(--b
 <div id="e-reglas" class="clip scene" data-start="29.55" data-duration="11.80" data-track-index="3"><p class="kick"><b>EP 1</b> SERIE ARVANTTI FRACTAL</p>
       <div class="st"><div class="flujo">
         <div class="reglas"><span class="chip rg" id="rg0">Qué se puede mover</span><span class="chip rg" id="rg1">Qué cliente va primero</span><span class="chip rg" id="rg2">Turnos y capacidad</span></div>
-        <div class="nucleo" id="nu"><span>FRACTAL</span><small>Tus reglas primero</small><em></em></div>
+        <div class="motor" id="nu"><div class="m-red"><svg class="red" id="red4" viewBox="0 0 620 400">
+    <line class="ra" id="red4-e0" x1="40" y1="130" x2="220" y2="30" pathLength="1"/><line class="ra" id="red4-e1" x1="40" y1="130" x2="220" y2="166" pathLength="1"/><line class="ra" id="red4-e2" x1="40" y1="130" x2="220" y2="370" pathLength="1"/><line class="ra" id="red4-e3" x1="40" y1="200" x2="220" y2="30" pathLength="1"/><line class="ra" id="red4-e4" x1="40" y1="200" x2="220" y2="98" pathLength="1"/><line class="ra" id="red4-e5" x1="40" y1="200" x2="220" y2="166" pathLength="1"/><line class="ra" id="red4-e6" x1="40" y1="200" x2="220" y2="302" pathLength="1"/><line class="ra" id="red4-e7" x1="40" y1="200" x2="220" y2="370" pathLength="1"/><line class="ra" id="red4-e8" x1="40" y1="270" x2="220" y2="30" pathLength="1"/><line class="ra" id="red4-e9" x1="40" y1="270" x2="220" y2="166" pathLength="1"/><line class="ra" id="red4-e10" x1="40" y1="270" x2="220" y2="302" pathLength="1"/><line class="ra" id="red4-e11" x1="40" y1="270" x2="220" y2="370" pathLength="1"/><line class="ra" id="red4-e12" x1="220" y1="30" x2="400" y2="98" pathLength="1"/><line class="ra" id="red4-e13" x1="220" y1="30" x2="400" y2="234" pathLength="1"/><line class="ra" id="red4-e14" x1="220" y1="30" x2="400" y2="370" pathLength="1"/><line class="ra" id="red4-e15" x1="220" y1="98" x2="400" y2="30" pathLength="1"/><line class="ra" id="red4-e16" x1="220" y1="98" x2="400" y2="98" pathLength="1"/><line class="ra" id="red4-e17" x1="220" y1="98" x2="400" y2="234" pathLength="1"/><line class="ra" id="red4-e18" x1="220" y1="98" x2="400" y2="302" pathLength="1"/><line class="ra" id="red4-e19" x1="220" y1="98" x2="400" y2="370" pathLength="1"/><line class="ra" id="red4-e20" x1="220" y1="166" x2="400" y2="30" pathLength="1"/><line class="ra" id="red4-e21" x1="220" y1="166" x2="400" y2="166" pathLength="1"/><line class="ra" id="red4-e22" x1="220" y1="166" x2="400" y2="234" pathLength="1"/><line class="ra" id="red4-e23" x1="220" y1="166" x2="400" y2="370" pathLength="1"/><line class="ra" id="red4-e24" x1="220" y1="234" x2="400" y2="98" pathLength="1"/><line class="ra" id="red4-e25" x1="220" y1="234" x2="400" y2="166" pathLength="1"/><line class="ra" id="red4-e26" x1="220" y1="234" x2="400" y2="234" pathLength="1"/><line class="ra" id="red4-e27" x1="220" y1="234" x2="400" y2="370" pathLength="1"/><line class="ra" id="red4-e28" x1="220" y1="302" x2="400" y2="30" pathLength="1"/><line class="ra" id="red4-e29" x1="220" y1="302" x2="400" y2="98" pathLength="1"/><line class="ra" id="red4-e30" x1="220" y1="302" x2="400" y2="166" pathLength="1"/><line class="ra" id="red4-e31" x1="220" y1="302" x2="400" y2="234" pathLength="1"/><line class="ra" id="red4-e32" x1="220" y1="302" x2="400" y2="302" pathLength="1"/><line class="ra" id="red4-e33" x1="220" y1="302" x2="400" y2="370" pathLength="1"/><line class="ra" id="red4-e34" x1="220" y1="370" x2="400" y2="98" pathLength="1"/><line class="ra" id="red4-e35" x1="220" y1="370" x2="400" y2="166" pathLength="1"/><line class="ra" id="red4-e36" x1="220" y1="370" x2="400" y2="234" pathLength="1"/><line class="ra" id="red4-e37" x1="220" y1="370" x2="400" y2="302" pathLength="1"/><line class="ra" id="red4-e38" x1="220" y1="370" x2="400" y2="370" pathLength="1"/><line class="ra" id="red4-e39" x1="400" y1="30" x2="580" y2="95" pathLength="1"/><line class="ra" id="red4-e40" x1="400" y1="30" x2="580" y2="235" pathLength="1"/><line class="ra" id="red4-e41" x1="400" y1="30" x2="580" y2="305" pathLength="1"/><line class="ra" id="red4-e42" x1="400" y1="98" x2="580" y2="95" pathLength="1"/><line class="ra" id="red4-e43" x1="400" y1="98" x2="580" y2="235" pathLength="1"/><line class="ra" id="red4-e44" x1="400" y1="166" x2="580" y2="95" pathLength="1"/><line class="ra" id="red4-e45" x1="400" y1="166" x2="580" y2="165" pathLength="1"/><line class="ra" id="red4-e46" x1="400" y1="166" x2="580" y2="235" pathLength="1"/><line class="ra" id="red4-e47" x1="400" y1="166" x2="580" y2="305" pathLength="1"/><line class="ra" id="red4-e48" x1="400" y1="234" x2="580" y2="235" pathLength="1"/><line class="ra" id="red4-e49" x1="400" y1="234" x2="580" y2="305" pathLength="1"/><line class="ra" id="red4-e50" x1="400" y1="302" x2="580" y2="95" pathLength="1"/><line class="ra" id="red4-e51" x1="400" y1="302" x2="580" y2="165" pathLength="1"/><line class="ra" id="red4-e52" x1="400" y1="302" x2="580" y2="235" pathLength="1"/><line class="ra" id="red4-e53" x1="400" y1="370" x2="580" y2="235" pathLength="1"/><line class="ra" id="red4-e54" x1="400" y1="370" x2="580" y2="305" pathLength="1"/>
+    <circle class="rn" id="red4-n0" cx="40" cy="130" r="11"/><circle class="rn" id="red4-n1" cx="40" cy="200" r="11"/><circle class="rn" id="red4-n2" cx="40" cy="270" r="11"/><circle class="rn" id="red4-n3" cx="220" cy="30" r="11"/><circle class="rn" id="red4-n4" cx="220" cy="98" r="11"/><circle class="rn" id="red4-n5" cx="220" cy="166" r="11"/><circle class="rn" id="red4-n6" cx="220" cy="234" r="11"/><circle class="rn" id="red4-n7" cx="220" cy="302" r="11"/><circle class="rn" id="red4-n8" cx="220" cy="370" r="11"/><circle class="rn" id="red4-n9" cx="400" cy="30" r="11"/><circle class="rn" id="red4-n10" cx="400" cy="98" r="11"/><circle class="rn" id="red4-n11" cx="400" cy="166" r="11"/><circle class="rn" id="red4-n12" cx="400" cy="234" r="11"/><circle class="rn" id="red4-n13" cx="400" cy="302" r="11"/><circle class="rn" id="red4-n14" cx="400" cy="370" r="11"/><circle class="rn" id="red4-n15" cx="580" cy="95" r="11"/><circle class="rn" id="red4-n16" cx="580" cy="165" r="11"/><circle class="rn" id="red4-n17" cx="580" cy="235" r="11"/><circle class="rn" id="red4-n18" cx="580" cy="305" r="11"/>
+    <circle class="rp" id="red4-p0" r="6" cx="0" cy="0"/><circle class="rp" id="red4-p1" r="6" cx="0" cy="0"/><circle class="rp" id="red4-p2" r="6" cx="0" cy="0"/><circle class="rp" id="red4-p3" r="6" cx="0" cy="0"/><circle class="rp" id="red4-p4" r="6" cx="0" cy="0"/><circle class="rp" id="red4-p5" r="6" cx="0" cy="0"/><circle class="rp" id="red4-p6" r="6" cx="0" cy="0"/><circle class="rp" id="red4-p7" r="6" cx="0" cy="0"/><circle class="rp" id="red4-p8" r="6" cx="0" cy="0"/><circle class="rp" id="red4-p9" r="6" cx="0" cy="0"/><circle class="rp" id="red4-p10" r="6" cx="0" cy="0"/><circle class="rp" id="red4-p11" r="6" cx="0" cy="0"/><circle class="rp" id="red4-p12" r="6" cx="0" cy="0"/><circle class="rp" id="red4-p13" r="6" cx="0" cy="0"/>
+  </svg></div><div class="m-cam"><svg class="cam" id="cam4" viewBox="0 0 620 400">
+    <circle class="cn" cx="70.0" cy="50.0" r="6"/><circle class="cn" cx="70.0" cy="150.0" r="6"/><circle class="cn" cx="70.0" cy="250.0" r="6"/><circle class="cn" cx="70.0" cy="350.0" r="6"/><circle class="cn" cx="158.3" cy="57.7" r="6"/><circle class="cn" cx="164.8" cy="145.1" r="6"/><circle class="cn" cx="172.4" cy="246.0" r="6"/><circle class="cn" cx="171.1" cy="343.2" r="6"/><circle class="cn" cx="251.7" cy="51.4" r="6"/><circle class="cn" cx="262.3" cy="147.1" r="6"/><circle class="cn" cx="253.6" cy="239.6" r="6"/><circle class="cn" cx="273.6" cy="348.5" r="6"/><circle class="cn" cx="352.3" cy="51.7" r="6"/><circle class="cn" cx="356.8" cy="155.3" r="6"/><circle class="cn" cx="351.2" cy="240.6" r="6"/><circle class="cn" cx="366.8" cy="349.2" r="6"/><circle class="cn" cx="439.2" cy="56.6" r="6"/><circle class="cn" cx="444.2" cy="153.7" r="6"/><circle class="cn" cx="445.6" cy="253.1" r="6"/><circle class="cn" cx="449.0" cy="353.8" r="6"/><circle class="cn" cx="550.0" cy="50.0" r="6"/><circle class="cn" cx="550.0" cy="150.0" r="6"/><circle class="cn" cx="550.0" cy="250.0" r="6"/><circle class="cn" cx="550.0" cy="350.0" r="6"/>
+    <path class="ce" id="cam4-x0" d="M20.0 200.0 L70.0 250.0 L171.1 343.2 L273.6 348.5 L351.2 240.6 L444.2 153.7 L550.0 50.0 L600.0 200.0" pathLength="1"/><path class="ce" id="cam4-x1" d="M20.0 200.0 L70.0 50.0 L164.8 145.1 L251.7 51.4 L352.3 51.7 L439.2 56.6 L550.0 50.0 L600.0 200.0" pathLength="1"/><path class="ce" id="cam4-x2" d="M20.0 200.0 L70.0 350.0 L172.4 246.0 L253.6 239.6 L351.2 240.6 L445.6 253.1 L550.0 350.0 L600.0 200.0" pathLength="1"/><path class="ce" id="cam4-x3" d="M20.0 200.0 L70.0 250.0 L172.4 246.0 L253.6 239.6 L366.8 349.2 L445.6 253.1 L550.0 150.0 L600.0 200.0" pathLength="1"/><path class="ce" id="cam4-x4" d="M20.0 200.0 L70.0 50.0 L158.3 57.7 L251.7 51.4 L352.3 51.7 L444.2 153.7 L550.0 150.0 L600.0 200.0" pathLength="1"/><path class="ce" id="cam4-x5" d="M20.0 200.0 L70.0 250.0 L172.4 246.0 L253.6 239.6 L356.8 155.3 L444.2 153.7 L550.0 50.0 L600.0 200.0" pathLength="1"/><path class="ce" id="cam4-x6" d="M20.0 200.0 L70.0 350.0 L171.1 343.2 L273.6 348.5 L366.8 349.2 L445.6 253.1 L550.0 350.0 L600.0 200.0" pathLength="1"/><path class="ce" id="cam4-x7" d="M20.0 200.0 L70.0 350.0 L171.1 343.2 L253.6 239.6 L351.2 240.6 L445.6 253.1 L550.0 150.0 L600.0 200.0" pathLength="1"/><path class="ce" id="cam4-x8" d="M20.0 200.0 L70.0 150.0 L158.3 57.7 L251.7 51.4 L352.3 51.7 L439.2 56.6 L550.0 50.0 L600.0 200.0" pathLength="1"/><path class="ce" id="cam4-x9" d="M20.0 200.0 L70.0 50.0 L164.8 145.1 L251.7 51.4 L356.8 155.3 L439.2 56.6 L550.0 150.0 L600.0 200.0" pathLength="1"/><path class="ce" id="cam4-x10" d="M20.0 200.0 L70.0 250.0 L164.8 145.1 L262.3 147.1 L351.2 240.6 L445.6 253.1 L550.0 150.0 L600.0 200.0" pathLength="1"/><path class="ce" id="cam4-x11" d="M20.0 200.0 L70.0 350.0 L172.4 246.0 L273.6 348.5 L366.8 349.2 L449.0 353.8 L550.0 350.0 L600.0 200.0" pathLength="1"/>
+    <path class="cb b0" id="cam4-b0" d="M20.0 200.0 L70.0 50.0 L158.3 57.7 L262.3 147.1 L352.3 51.7 L444.2 153.7 L550.0 250.0 L600.0 200.0" pathLength="1"/><path class="cb b1" id="cam4-b1" d="M20.0 200.0 L70.0 150.0 L164.8 145.1 L253.6 239.6 L366.8 349.2 L449.0 353.8 L550.0 350.0 L600.0 200.0" pathLength="1"/><path class="cb b2" id="cam4-b2" d="M20.0 200.0 L70.0 150.0 L158.3 57.7 L251.7 51.4 L352.3 51.7 L439.2 56.6 L550.0 150.0 L600.0 200.0" pathLength="1"/>
+    <circle class="cio" cx="20" cy="200" r="14"/><circle class="cio fin" cx="600" cy="200" r="14"/>
+    <text class="ct" id="cam4-t0" x="564.0" y="236.0">A</text><text class="ct" id="cam4-t1" x="564.0" y="336.0">B</text><text class="ct" id="cam4-t2" x="564.0" y="136.0">C</text>
+  </svg></div><p class="m-l"><b>FRACTAL</b> · tus reglas primero</p></div>
         <div class="opts"><div class="panel opt" id="op0"><b>Opción A</b><div class="bar"><span>Entregas</span><i class="" style="--n:80"></i></div><div class="bar"><span>Costo</span><i class="" style="--n:55"></i></div><div class="bar"><span>Riesgo</span><i class="r" style="--n:30"></i></div></div><div class="panel opt" id="op1"><b>Opción B</b><div class="bar"><span>Entregas</span><i class="" style="--n:65"></i></div><div class="bar"><span>Costo</span><i class="" style="--n:75"></i></div><div class="bar"><span>Riesgo</span><i class="r" style="--n:50"></i></div></div><div class="panel opt" id="op2"><b>Opción C</b><div class="bar"><span>Entregas</span><i class="" style="--n:90"></i></div><div class="bar"><span>Costo</span><i class="" style="--n:40"></i></div><div class="bar"><span>Riesgo</span><i class="r" style="--n:70"></i></div></div></div>
       </div></div></div>
 <audio id="sfx-4a" src="assets/shared/core/sfx/whoosh-short.mp3" data-start="33.46" data-duration="1.40" data-volume="0.25" data-track-index="33"></audio>
@@ -159,7 +211,7 @@ html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:var(--b
 <div id="e-modulos" class="clip scene" data-start="52.20" data-duration="9.06" data-track-index="3"><p class="kick"><b>EP 1</b> SERIE ARVANTTI FRACTAL</p>
       <div class="st">
         <div class="anillos">
-          <svg viewBox="-300 -300 600 600"><circle id="an0" r="150" pathLength="1"/><circle id="an1" r="210" pathLength="1"/><circle id="an2" r="270" pathLength="1"/></svg>
+          <svg viewBox="-300 -300 600 600"><circle id="an0" r="150" pathLength="1"/><g class="orb" id="orb0"><circle class="orbp" cx="150" cy="0" r="9"/></g><circle id="an1" r="210" pathLength="1"/><g class="orb" id="orb1"><circle class="orbp" cx="210" cy="0" r="9"/></g><circle id="an2" r="270" pathLength="1"/><g class="orb" id="orb2"><circle class="orbp" cx="270" cy="0" r="9"/></g></svg>
           <div class="nuc"><span>Fractal</span><small>Un solo núcleo</small></div>
           <div class="mlab" id="ml0"><b>Industrial</b><small>La planta</small></div><div class="mlab" id="ml1"><b>Process</b><small>Los procesos</small></div><div class="mlab" id="ml2"><b>Finance</b><small>El dinero</small></div>
         </div>
@@ -170,7 +222,7 @@ html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:var(--b
 <div id="e-serie" class="clip scene" data-start="60.76" data-duration="8.49" data-track-index="3"><p class="kick"><b>EP 1</b> SERIE ARVANTTI FRACTAL</p>
       <div class="st">
         <h1 class="h xl q2"><span class="w">¿Lo</span> <span class="w">aceptamos?</span></h1>
-        <div class="row pasos"><span class="chip ps" id="ps0">1. Planta</span><span class="chip ps" id="ps1">2. Procesos</span><span class="chip ps" id="ps2">3. Caja</span><span class="chip ps" id="ps3">4. Riesgo</span></div>
+        <div class="ruta-w"><svg class="ruta" viewBox="0 0 1200 60" preserveAspectRatio="none"><line x1="40" y1="30" x2="1160" y2="30" pathLength="1"/></svg><div class="row pasos"><span class="chip ps" id="ps0">1. Planta</span><span class="chip ps" id="ps1">2. Procesos</span><span class="chip ps" id="ps2">3. Caja</span><span class="chip ps" id="ps3">4. Riesgo</span></div></div>
         <span class="chip on dp">Decide una persona</span>
       </div></div>
 <audio id="sfx-7a" src="assets/shared/core/sfx/spark.wav" data-start="66.63" data-duration="1.40" data-volume="0.2" data-track-index="44"></audio>
@@ -245,6 +297,12 @@ tl.fromTo("#e-pedido .ml",{"opacity":0,"x":-20},{"opacity":1,"x":0,"duration":0.
 tl.to("#e-pedido .mail",{"scale":0.86,"opacity":0.55,"duration":0.6,"ease":"power2.inOut"},7.08);
 tl.fromTo("#e-pedido .q1 .w",{"opacity":0,"y":40,"filter":"blur(10px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.6,"stagger":0.15,"ease":"power3.out"},7.38);
 tl.to("#e-pedido",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},9.48);
+tl.fromTo("#g-planta i",{"scaleY":0},{"scaleY":1,"duration":0.5,"stagger":0.05,"ease":"power2.out"},12.44);
+tl.fromTo("#g-procesos .cv-line",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.9,"ease":"power2.out"},13.24);
+tl.fromTo("#g-procesos .cv-area, #g-procesos .cv-band",{"opacity":0},{"opacity":1,"duration":0.9,"ease":"power2.out"},13.44);
+tl.fromTo("#g-inventario i",{"scaleY":0},{"scaleY":1,"duration":0.5,"stagger":0.05,"ease":"power2.out"},14.20);
+tl.fromTo("#g-caja .cv-line",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.9,"ease":"power2.out"},15.24);
+tl.fromTo("#g-caja .cv-area, #g-caja .cv-band",{"opacity":0},{"opacity":1,"duration":0.9,"ease":"power2.out"},15.44);
 tl.fromTo("#e-areas",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},9.23);
 tl.fromTo("#e-areas .a-t .w",{"opacity":0,"y":40,"filter":"blur(10px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.6,"stagger":0.07,"ease":"power3.out"},9.88);
 tl.fromTo("#ar-planta",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},12.34);
@@ -258,6 +316,79 @@ tl.to("#ar-inventario",{"y":-30,"rotate":-2,"duration":0.6,"ease":"power2.out"},
 tl.to("#ar-caja",{"x":40,"rotate":3,"duration":0.6,"ease":"power2.out"},16.20);
 tl.to("#e-areas .a-t",{"opacity":0.4,"duration":0.5},11.64);
 tl.to("#e-areas",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},19.30);
+tl.fromTo("#red3 .rn",{"opacity":0,"scale":0,"transformOrigin":"50% 50%"},{"opacity":1,"scale":1,"duration":0.35,"stagger":0.025,"ease":"back.out(2)"},19.35);
+tl.fromTo("#red3 .ra",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.5,"stagger":0.006,"ease":"power2.out"},19.55);
+tl.fromTo("#red3-p0",{"attr":{"cx":40,"cy":310},"opacity":1},{"attr":{"cx":420,"cy":415},"duration":1.150969375,"ease":"none","immediateRender":false},19.85);
+tl.fromTo("#red3-p0",{"attr":{"cx":420,"cy":415},"opacity":1},{"attr":{"cx":800,"cy":450},"duration":1.150969375,"ease":"none","immediateRender":false},21.00);
+tl.fromTo("#red3-p0",{"attr":{"cx":800,"cy":450},"opacity":1},{"attr":{"cx":1180,"cy":485},"duration":1.150969375,"ease":"none","immediateRender":false},22.15);
+tl.fromTo("#red3-p0",{"attr":{"cx":1180,"cy":485},"opacity":1},{"attr":{"cx":1560,"cy":590},"duration":1.150969375,"ease":"none","immediateRender":false},23.30);
+tl.to("#red3-p0",{"opacity":0,"duration":0.15},24.45);
+tl.fromTo("#red3-p1",{"attr":{"cx":40,"cy":590},"opacity":1},{"attr":{"cx":420,"cy":205},"duration":1.150969375,"ease":"none","immediateRender":false},20.50);
+tl.fromTo("#red3-p1",{"attr":{"cx":420,"cy":205},"opacity":1},{"attr":{"cx":800,"cy":240},"duration":1.150969375,"ease":"none","immediateRender":false},21.65);
+tl.fromTo("#red3-p1",{"attr":{"cx":800,"cy":240},"opacity":1},{"attr":{"cx":1180,"cy":555},"duration":1.150969375,"ease":"none","immediateRender":false},22.80);
+tl.fromTo("#red3-p1",{"attr":{"cx":1180,"cy":555},"opacity":1},{"attr":{"cx":1560,"cy":310},"duration":1.150969375,"ease":"none","immediateRender":false},23.96);
+tl.to("#red3-p1",{"opacity":0,"duration":0.15},25.11);
+tl.fromTo("#red3-p2",{"attr":{"cx":40,"cy":590},"opacity":1},{"attr":{"cx":420,"cy":205},"duration":1.150969375,"ease":"none","immediateRender":false},21.16);
+tl.fromTo("#red3-p2",{"attr":{"cx":420,"cy":205},"opacity":1},{"attr":{"cx":800,"cy":520},"duration":1.150969375,"ease":"none","immediateRender":false},22.31);
+tl.fromTo("#red3-p2",{"attr":{"cx":800,"cy":520},"opacity":1},{"attr":{"cx":1180,"cy":485},"duration":1.150969375,"ease":"none","immediateRender":false},23.46);
+tl.fromTo("#red3-p2",{"attr":{"cx":1180,"cy":485},"opacity":1},{"attr":{"cx":1560,"cy":380},"duration":1.150969375,"ease":"none","immediateRender":false},24.61);
+tl.to("#red3-p2",{"opacity":0,"duration":0.15},25.76);
+tl.fromTo("#red3-p3",{"attr":{"cx":40,"cy":450},"opacity":1},{"attr":{"cx":420,"cy":555},"duration":1.150969375,"ease":"none","immediateRender":false},21.82);
+tl.fromTo("#red3-p3",{"attr":{"cx":420,"cy":555},"opacity":1},{"attr":{"cx":800,"cy":240},"duration":1.150969375,"ease":"none","immediateRender":false},22.97);
+tl.fromTo("#red3-p3",{"attr":{"cx":800,"cy":240},"opacity":1},{"attr":{"cx":1180,"cy":485},"duration":1.150969375,"ease":"none","immediateRender":false},24.12);
+tl.fromTo("#red3-p3",{"attr":{"cx":1180,"cy":485},"opacity":1},{"attr":{"cx":1560,"cy":590},"duration":1.150969375,"ease":"none","immediateRender":false},25.27);
+tl.to("#red3-p3",{"opacity":0,"duration":0.15},26.42);
+tl.fromTo("#red3-p4",{"attr":{"cx":40,"cy":590},"opacity":1},{"attr":{"cx":420,"cy":485},"duration":1.150969375,"ease":"none","immediateRender":false},22.48);
+tl.fromTo("#red3-p4",{"attr":{"cx":420,"cy":485},"opacity":1},{"attr":{"cx":800,"cy":730},"duration":1.150969375,"ease":"none","immediateRender":false},23.63);
+tl.fromTo("#red3-p4",{"attr":{"cx":800,"cy":730},"opacity":1},{"attr":{"cx":1180,"cy":345},"duration":1.150969375,"ease":"none","immediateRender":false},24.78);
+tl.fromTo("#red3-p4",{"attr":{"cx":1180,"cy":345},"opacity":1},{"attr":{"cx":1560,"cy":380},"duration":1.150969375,"ease":"none","immediateRender":false},25.93);
+tl.to("#red3-p4",{"opacity":0,"duration":0.15},27.08);
+tl.fromTo("#red3-p5",{"attr":{"cx":40,"cy":380},"opacity":1},{"attr":{"cx":420,"cy":555},"duration":1.150969375,"ease":"none","immediateRender":false},23.13);
+tl.fromTo("#red3-p5",{"attr":{"cx":420,"cy":555},"opacity":1},{"attr":{"cx":800,"cy":520},"duration":1.150969375,"ease":"none","immediateRender":false},24.28);
+tl.fromTo("#red3-p5",{"attr":{"cx":800,"cy":520},"opacity":1},{"attr":{"cx":1180,"cy":555},"duration":1.150969375,"ease":"none","immediateRender":false},25.44);
+tl.fromTo("#red3-p5",{"attr":{"cx":1180,"cy":555},"opacity":1},{"attr":{"cx":1560,"cy":590},"duration":1.150969375,"ease":"none","immediateRender":false},26.59);
+tl.to("#red3-p5",{"opacity":0,"duration":0.15},27.74);
+tl.fromTo("#red3-p6",{"attr":{"cx":40,"cy":380},"opacity":1},{"attr":{"cx":420,"cy":205},"duration":1.150969375,"ease":"none","immediateRender":false},23.79);
+tl.fromTo("#red3-p6",{"attr":{"cx":420,"cy":205},"opacity":1},{"attr":{"cx":800,"cy":590},"duration":1.150969375,"ease":"none","immediateRender":false},24.94);
+tl.fromTo("#red3-p6",{"attr":{"cx":800,"cy":590},"opacity":1},{"attr":{"cx":1180,"cy":555},"duration":1.150969375,"ease":"none","immediateRender":false},26.09);
+tl.fromTo("#red3-p6",{"attr":{"cx":1180,"cy":555},"opacity":1},{"attr":{"cx":1560,"cy":310},"duration":1.150969375,"ease":"none","immediateRender":false},27.24);
+tl.to("#red3-p6",{"opacity":0,"duration":0.15},28.40);
+tl.fromTo("#red3-p7",{"attr":{"cx":40,"cy":380},"opacity":1},{"attr":{"cx":420,"cy":415},"duration":1.150969375,"ease":"none","immediateRender":false},24.45);
+tl.fromTo("#red3-p7",{"attr":{"cx":420,"cy":415},"opacity":1},{"attr":{"cx":800,"cy":310},"duration":1.150969375,"ease":"none","immediateRender":false},25.60);
+tl.fromTo("#red3-p7",{"attr":{"cx":800,"cy":310},"opacity":1},{"attr":{"cx":1180,"cy":625},"duration":1.150969375,"ease":"none","immediateRender":false},26.75);
+tl.fromTo("#red3-p7",{"attr":{"cx":1180,"cy":625},"opacity":1},{"attr":{"cx":1560,"cy":590},"duration":1.150969375,"ease":"none","immediateRender":false},27.90);
+tl.to("#red3-p7",{"opacity":0,"duration":0.15},29.05);
+tl.fromTo("#red3-p8",{"attr":{"cx":40,"cy":450},"opacity":1},{"attr":{"cx":420,"cy":695},"duration":1.150969375,"ease":"none","immediateRender":false},25.11);
+tl.fromTo("#red3-p8",{"attr":{"cx":420,"cy":695},"opacity":1},{"attr":{"cx":800,"cy":730},"duration":1.150969375,"ease":"none","immediateRender":false},26.26);
+tl.fromTo("#red3-p8",{"attr":{"cx":800,"cy":730},"opacity":1},{"attr":{"cx":1180,"cy":625},"duration":1.150969375,"ease":"none","immediateRender":false},27.41);
+tl.fromTo("#red3-p8",{"attr":{"cx":1180,"cy":625},"opacity":1},{"attr":{"cx":1560,"cy":520},"duration":1.150969375,"ease":"none","immediateRender":false},28.56);
+tl.to("#red3-p8",{"opacity":0,"duration":0.15},29.71);
+tl.fromTo("#red3-p9",{"attr":{"cx":40,"cy":380},"opacity":1},{"attr":{"cx":420,"cy":485},"duration":1.150969375,"ease":"none","immediateRender":false},25.76);
+tl.fromTo("#red3-p9",{"attr":{"cx":420,"cy":485},"opacity":1},{"attr":{"cx":800,"cy":590},"duration":1.150969375,"ease":"none","immediateRender":false},26.92);
+tl.fromTo("#red3-p9",{"attr":{"cx":800,"cy":590},"opacity":1},{"attr":{"cx":1180,"cy":275},"duration":1.150969375,"ease":"none","immediateRender":false},28.07);
+tl.fromTo("#red3-p9",{"attr":{"cx":1180,"cy":275},"opacity":1},{"attr":{"cx":1560,"cy":520},"duration":1.150969375,"ease":"none","immediateRender":false},29.22);
+tl.to("#red3-p9",{"opacity":0,"duration":0.15},30.37);
+tl.fromTo("#red3-p10",{"attr":{"cx":40,"cy":380},"opacity":1},{"attr":{"cx":420,"cy":555},"duration":1.150969375,"ease":"none","immediateRender":false},26.42);
+tl.fromTo("#red3-p10",{"attr":{"cx":420,"cy":555},"opacity":1},{"attr":{"cx":800,"cy":170},"duration":1.150969375,"ease":"none","immediateRender":false},27.57);
+tl.fromTo("#red3-p10",{"attr":{"cx":800,"cy":170},"opacity":1},{"attr":{"cx":1180,"cy":485},"duration":1.150969375,"ease":"none","immediateRender":false},28.72);
+tl.fromTo("#red3-p10",{"attr":{"cx":1180,"cy":485},"opacity":1},{"attr":{"cx":1560,"cy":450},"duration":1.150969375,"ease":"none","immediateRender":false},29.87);
+tl.to("#red3-p10",{"opacity":0,"duration":0.15},31.03);
+tl.fromTo("#red3-p11",{"attr":{"cx":40,"cy":520},"opacity":1},{"attr":{"cx":420,"cy":275},"duration":1.150969375,"ease":"none","immediateRender":false},27.08);
+tl.fromTo("#red3-p11",{"attr":{"cx":420,"cy":275},"opacity":1},{"attr":{"cx":800,"cy":450},"duration":1.150969375,"ease":"none","immediateRender":false},28.23);
+tl.fromTo("#red3-p11",{"attr":{"cx":800,"cy":450},"opacity":1},{"attr":{"cx":1180,"cy":275},"duration":1.150969375,"ease":"none","immediateRender":false},29.38);
+tl.fromTo("#red3-p11",{"attr":{"cx":1180,"cy":275},"opacity":1},{"attr":{"cx":1560,"cy":380},"duration":1.150969375,"ease":"none","immediateRender":false},30.53);
+tl.to("#red3-p11",{"opacity":0,"duration":0.15},31.68);
+tl.fromTo("#red3-p12",{"attr":{"cx":40,"cy":450},"opacity":1},{"attr":{"cx":420,"cy":695},"duration":1.150969375,"ease":"none","immediateRender":false},27.74);
+tl.fromTo("#red3-p12",{"attr":{"cx":420,"cy":695},"opacity":1},{"attr":{"cx":800,"cy":380},"duration":1.150969375,"ease":"none","immediateRender":false},28.89);
+tl.fromTo("#red3-p12",{"attr":{"cx":800,"cy":380},"opacity":1},{"attr":{"cx":1180,"cy":345},"duration":1.150969375,"ease":"none","immediateRender":false},30.04);
+tl.fromTo("#red3-p12",{"attr":{"cx":1180,"cy":345},"opacity":1},{"attr":{"cx":1560,"cy":520},"duration":1.150969375,"ease":"none","immediateRender":false},31.19);
+tl.to("#red3-p12",{"opacity":0,"duration":0.15},32.34);
+tl.fromTo("#red3-p13",{"attr":{"cx":40,"cy":380},"opacity":1},{"attr":{"cx":420,"cy":625},"duration":1.150969375,"ease":"none","immediateRender":false},28.40);
+tl.fromTo("#red3-p13",{"attr":{"cx":420,"cy":625},"opacity":1},{"attr":{"cx":800,"cy":730},"duration":1.150969375,"ease":"none","immediateRender":false},29.55);
+tl.fromTo("#red3-p13",{"attr":{"cx":800,"cy":730},"opacity":1},{"attr":{"cx":1180,"cy":205},"duration":1.150969375,"ease":"none","immediateRender":false},30.70);
+tl.fromTo("#red3-p13",{"attr":{"cx":1180,"cy":205},"opacity":1},{"attr":{"cx":1560,"cy":310},"duration":1.150969375,"ease":"none","immediateRender":false},31.85);
+tl.to("#red3-p13",{"opacity":0,"duration":0.15},33.00);
+tl.to("#red3 .rn",{fill:"#4ea7ff",duration:.25,stagger:{each:.03,from:"start"},yoyo:true,repeat:1},19.95);
 tl.fromTo("#e-fractal",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},19.05);
 tl.fromTo("#e-fractal .fm",{"opacity":0,"scale":0.5},{"opacity":1,"scale":1,"duration":0.9,"ease":"back.out(1.6)"},20.30);
 tl.fromTo("#e-fractal .ft",{"opacity":0,"letterSpacing":"40px","filter":"blur(14px)"},{"opacity":1,"letterSpacing":"-3px","filter":"blur(0px)","duration":1.1,"ease":"power3.out"},20.70);
@@ -269,14 +400,104 @@ tl.fromTo("#fo2",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"
 tl.fromTo("#e-fractal .op i",{"scaleX":0},{"scaleX":1,"duration":0.8,"stagger":0.2,"ease":"power2.out"},25.58);
 tl.fromTo("#e-fractal .td",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},27.30);
 tl.to("#e-fractal",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},29.80);
+tl.fromTo("#red4 .rn",{"opacity":0,"scale":0,"transformOrigin":"50% 50%"},{"opacity":1,"scale":1,"duration":0.35,"stagger":0.025,"ease":"back.out(2)"},33.26);
+tl.fromTo("#red4 .ra",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.5,"stagger":0.006,"ease":"power2.out"},33.46);
+tl.fromTo("#red4-p0",{"attr":{"cx":40,"cy":270},"opacity":1},{"attr":{"cx":220,"cy":30},"duration":0.23999999999999963,"ease":"none","immediateRender":false},33.76);
+tl.fromTo("#red4-p0",{"attr":{"cx":220,"cy":30},"opacity":1},{"attr":{"cx":400,"cy":302},"duration":0.23999999999999963,"ease":"none","immediateRender":false},34.00);
+tl.fromTo("#red4-p0",{"attr":{"cx":400,"cy":302},"opacity":1},{"attr":{"cx":580,"cy":305},"duration":0.23999999999999963,"ease":"none","immediateRender":false},34.24);
+tl.to("#red4-p0",{"opacity":0,"duration":0.15},34.48);
+tl.fromTo("#red4-p1",{"attr":{"cx":40,"cy":130},"opacity":1},{"attr":{"cx":220,"cy":234},"duration":0.23999999999999963,"ease":"none","immediateRender":false},33.86);
+tl.fromTo("#red4-p1",{"attr":{"cx":220,"cy":234},"opacity":1},{"attr":{"cx":400,"cy":370},"duration":0.23999999999999963,"ease":"none","immediateRender":false},34.10);
+tl.fromTo("#red4-p1",{"attr":{"cx":400,"cy":370},"opacity":1},{"attr":{"cx":580,"cy":165},"duration":0.23999999999999963,"ease":"none","immediateRender":false},34.34);
+tl.to("#red4-p1",{"opacity":0,"duration":0.15},34.58);
+tl.fromTo("#red4-p2",{"attr":{"cx":40,"cy":270},"opacity":1},{"attr":{"cx":220,"cy":98},"duration":0.23999999999999963,"ease":"none","immediateRender":false},33.97);
+tl.fromTo("#red4-p2",{"attr":{"cx":220,"cy":98},"opacity":1},{"attr":{"cx":400,"cy":98},"duration":0.23999999999999963,"ease":"none","immediateRender":false},34.21);
+tl.fromTo("#red4-p2",{"attr":{"cx":400,"cy":98},"opacity":1},{"attr":{"cx":580,"cy":305},"duration":0.23999999999999963,"ease":"none","immediateRender":false},34.45);
+tl.to("#red4-p2",{"opacity":0,"duration":0.15},34.69);
+tl.fromTo("#red4-p3",{"attr":{"cx":40,"cy":130},"opacity":1},{"attr":{"cx":220,"cy":30},"duration":0.23999999999999963,"ease":"none","immediateRender":false},34.07);
+tl.fromTo("#red4-p3",{"attr":{"cx":220,"cy":30},"opacity":1},{"attr":{"cx":400,"cy":302},"duration":0.23999999999999963,"ease":"none","immediateRender":false},34.31);
+tl.fromTo("#red4-p3",{"attr":{"cx":400,"cy":302},"opacity":1},{"attr":{"cx":580,"cy":235},"duration":0.23999999999999963,"ease":"none","immediateRender":false},34.55);
+tl.to("#red4-p3",{"opacity":0,"duration":0.15},34.79);
+tl.fromTo("#red4-p4",{"attr":{"cx":40,"cy":200},"opacity":1},{"attr":{"cx":220,"cy":302},"duration":0.23999999999999963,"ease":"none","immediateRender":false},34.17);
+tl.fromTo("#red4-p4",{"attr":{"cx":220,"cy":302},"opacity":1},{"attr":{"cx":400,"cy":98},"duration":0.23999999999999963,"ease":"none","immediateRender":false},34.41);
+tl.fromTo("#red4-p4",{"attr":{"cx":400,"cy":98},"opacity":1},{"attr":{"cx":580,"cy":95},"duration":0.23999999999999963,"ease":"none","immediateRender":false},34.65);
+tl.to("#red4-p4",{"opacity":0,"duration":0.15},34.89);
+tl.fromTo("#red4-p5",{"attr":{"cx":40,"cy":270},"opacity":1},{"attr":{"cx":220,"cy":166},"duration":0.23999999999999963,"ease":"none","immediateRender":false},34.27);
+tl.fromTo("#red4-p5",{"attr":{"cx":220,"cy":166},"opacity":1},{"attr":{"cx":400,"cy":166},"duration":0.23999999999999963,"ease":"none","immediateRender":false},34.51);
+tl.fromTo("#red4-p5",{"attr":{"cx":400,"cy":166},"opacity":1},{"attr":{"cx":580,"cy":165},"duration":0.23999999999999963,"ease":"none","immediateRender":false},34.75);
+tl.to("#red4-p5",{"opacity":0,"duration":0.15},34.99);
+tl.fromTo("#red4-p6",{"attr":{"cx":40,"cy":200},"opacity":1},{"attr":{"cx":220,"cy":98},"duration":0.23999999999999963,"ease":"none","immediateRender":false},34.38);
+tl.fromTo("#red4-p6",{"attr":{"cx":220,"cy":98},"opacity":1},{"attr":{"cx":400,"cy":30},"duration":0.23999999999999963,"ease":"none","immediateRender":false},34.62);
+tl.fromTo("#red4-p6",{"attr":{"cx":400,"cy":30},"opacity":1},{"attr":{"cx":580,"cy":235},"duration":0.23999999999999963,"ease":"none","immediateRender":false},34.86);
+tl.to("#red4-p6",{"opacity":0,"duration":0.15},35.10);
+tl.fromTo("#red4-p7",{"attr":{"cx":40,"cy":200},"opacity":1},{"attr":{"cx":220,"cy":98},"duration":0.23999999999999963,"ease":"none","immediateRender":false},34.48);
+tl.fromTo("#red4-p7",{"attr":{"cx":220,"cy":98},"opacity":1},{"attr":{"cx":400,"cy":30},"duration":0.23999999999999963,"ease":"none","immediateRender":false},34.72);
+tl.fromTo("#red4-p7",{"attr":{"cx":400,"cy":30},"opacity":1},{"attr":{"cx":580,"cy":165},"duration":0.23999999999999963,"ease":"none","immediateRender":false},34.96);
+tl.to("#red4-p7",{"opacity":0,"duration":0.15},35.20);
+tl.fromTo("#red4-p8",{"attr":{"cx":40,"cy":200},"opacity":1},{"attr":{"cx":220,"cy":166},"duration":0.23999999999999963,"ease":"none","immediateRender":false},34.58);
+tl.fromTo("#red4-p8",{"attr":{"cx":220,"cy":166},"opacity":1},{"attr":{"cx":400,"cy":234},"duration":0.23999999999999963,"ease":"none","immediateRender":false},34.82);
+tl.fromTo("#red4-p8",{"attr":{"cx":400,"cy":234},"opacity":1},{"attr":{"cx":580,"cy":95},"duration":0.23999999999999963,"ease":"none","immediateRender":false},35.06);
+tl.to("#red4-p8",{"opacity":0,"duration":0.15},35.30);
+tl.fromTo("#red4-p9",{"attr":{"cx":40,"cy":130},"opacity":1},{"attr":{"cx":220,"cy":98},"duration":0.23999999999999963,"ease":"none","immediateRender":false},34.69);
+tl.fromTo("#red4-p9",{"attr":{"cx":220,"cy":98},"opacity":1},{"attr":{"cx":400,"cy":98},"duration":0.23999999999999963,"ease":"none","immediateRender":false},34.93);
+tl.fromTo("#red4-p9",{"attr":{"cx":400,"cy":98},"opacity":1},{"attr":{"cx":580,"cy":305},"duration":0.23999999999999963,"ease":"none","immediateRender":false},35.17);
+tl.to("#red4-p9",{"opacity":0,"duration":0.15},35.41);
+tl.fromTo("#red4-p10",{"attr":{"cx":40,"cy":130},"opacity":1},{"attr":{"cx":220,"cy":234},"duration":0.23999999999999963,"ease":"none","immediateRender":false},34.79);
+tl.fromTo("#red4-p10",{"attr":{"cx":220,"cy":234},"opacity":1},{"attr":{"cx":400,"cy":166},"duration":0.23999999999999963,"ease":"none","immediateRender":false},35.03);
+tl.fromTo("#red4-p10",{"attr":{"cx":400,"cy":166},"opacity":1},{"attr":{"cx":580,"cy":165},"duration":0.23999999999999963,"ease":"none","immediateRender":false},35.27);
+tl.to("#red4-p10",{"opacity":0,"duration":0.15},35.51);
+tl.fromTo("#red4-p11",{"attr":{"cx":40,"cy":130},"opacity":1},{"attr":{"cx":220,"cy":370},"duration":0.23999999999999963,"ease":"none","immediateRender":false},34.89);
+tl.fromTo("#red4-p11",{"attr":{"cx":220,"cy":370},"opacity":1},{"attr":{"cx":400,"cy":234},"duration":0.23999999999999963,"ease":"none","immediateRender":false},35.13);
+tl.fromTo("#red4-p11",{"attr":{"cx":400,"cy":234},"opacity":1},{"attr":{"cx":580,"cy":95},"duration":0.23999999999999963,"ease":"none","immediateRender":false},35.37);
+tl.to("#red4-p11",{"opacity":0,"duration":0.15},35.61);
+tl.fromTo("#red4-p12",{"attr":{"cx":40,"cy":130},"opacity":1},{"attr":{"cx":220,"cy":30},"duration":0.23999999999999963,"ease":"none","immediateRender":false},34.99);
+tl.fromTo("#red4-p12",{"attr":{"cx":220,"cy":30},"opacity":1},{"attr":{"cx":400,"cy":234},"duration":0.23999999999999963,"ease":"none","immediateRender":false},35.23);
+tl.fromTo("#red4-p12",{"attr":{"cx":400,"cy":234},"opacity":1},{"attr":{"cx":580,"cy":235},"duration":0.23999999999999963,"ease":"none","immediateRender":false},35.47);
+tl.to("#red4-p12",{"opacity":0,"duration":0.15},35.71);
+tl.fromTo("#red4-p13",{"attr":{"cx":40,"cy":200},"opacity":1},{"attr":{"cx":220,"cy":166},"duration":0.23999999999999963,"ease":"none","immediateRender":false},35.10);
+tl.fromTo("#red4-p13",{"attr":{"cx":220,"cy":166},"opacity":1},{"attr":{"cx":400,"cy":302},"duration":0.23999999999999963,"ease":"none","immediateRender":false},35.34);
+tl.fromTo("#red4-p13",{"attr":{"cx":400,"cy":302},"opacity":1},{"attr":{"cx":580,"cy":165},"duration":0.23999999999999963,"ease":"none","immediateRender":false},35.58);
+tl.to("#red4-p13",{"opacity":0,"duration":0.15},35.82);
+tl.to("#red4 .rn",{fill:"#4ea7ff",duration:.25,stagger:{each:.03,from:"start"},yoyo:true,repeat:1},33.86);
+tl.fromTo("#cam4 .cn, #cam4 .cio",{"opacity":0},{"opacity":1,"duration":0.4,"stagger":0.01},34.80);
+tl.fromTo("#cam4-x0",{"strokeDashoffset":1,"opacity":0.9},{"strokeDashoffset":0,"duration":0.5,"ease":"power1.inOut"},35.00);
+tl.to("#cam4-x0",{"opacity":0.18,"duration":0.4},35.50);
+tl.fromTo("#cam4-x1",{"strokeDashoffset":1,"opacity":0.9},{"strokeDashoffset":0,"duration":0.5,"ease":"power1.inOut"},35.14);
+tl.to("#cam4-x1",{"opacity":0.18,"duration":0.4},35.64);
+tl.fromTo("#cam4-x2",{"strokeDashoffset":1,"opacity":0.9},{"strokeDashoffset":0,"duration":0.5,"ease":"power1.inOut"},35.28);
+tl.to("#cam4-x2",{"opacity":0.18,"duration":0.4},35.78);
+tl.fromTo("#cam4-x3",{"strokeDashoffset":1,"opacity":0.9},{"strokeDashoffset":0,"duration":0.5,"ease":"power1.inOut"},35.42);
+tl.to("#cam4-x3",{"opacity":0.18,"duration":0.4},35.92);
+tl.fromTo("#cam4-x4",{"strokeDashoffset":1,"opacity":0.9},{"strokeDashoffset":0,"duration":0.5,"ease":"power1.inOut"},35.56);
+tl.to("#cam4-x4",{"opacity":0.18,"duration":0.4},36.06);
+tl.fromTo("#cam4-x5",{"strokeDashoffset":1,"opacity":0.9},{"strokeDashoffset":0,"duration":0.5,"ease":"power1.inOut"},35.70);
+tl.to("#cam4-x5",{"opacity":0.18,"duration":0.4},36.20);
+tl.fromTo("#cam4-x6",{"strokeDashoffset":1,"opacity":0.9},{"strokeDashoffset":0,"duration":0.5,"ease":"power1.inOut"},35.84);
+tl.to("#cam4-x6",{"opacity":0.18,"duration":0.4},36.34);
+tl.fromTo("#cam4-x7",{"strokeDashoffset":1,"opacity":0.9},{"strokeDashoffset":0,"duration":0.5,"ease":"power1.inOut"},35.98);
+tl.to("#cam4-x7",{"opacity":0.18,"duration":0.4},36.48);
+tl.fromTo("#cam4-x8",{"strokeDashoffset":1,"opacity":0.9},{"strokeDashoffset":0,"duration":0.5,"ease":"power1.inOut"},36.11);
+tl.to("#cam4-x8",{"opacity":0.18,"duration":0.4},36.61);
+tl.fromTo("#cam4-x9",{"strokeDashoffset":1,"opacity":0.9},{"strokeDashoffset":0,"duration":0.5,"ease":"power1.inOut"},36.25);
+tl.to("#cam4-x9",{"opacity":0.18,"duration":0.4},36.75);
+tl.fromTo("#cam4-x10",{"strokeDashoffset":1,"opacity":0.9},{"strokeDashoffset":0,"duration":0.5,"ease":"power1.inOut"},36.39);
+tl.to("#cam4-x10",{"opacity":0.18,"duration":0.4},36.89);
+tl.fromTo("#cam4-x11",{"strokeDashoffset":1,"opacity":0.9},{"strokeDashoffset":0,"duration":0.5,"ease":"power1.inOut"},36.53);
+tl.to("#cam4-x11",{"opacity":0.18,"duration":0.4},37.03);
+tl.fromTo("#cam4-b0",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.7,"ease":"power2.out"},36.77);
+tl.fromTo("#cam4-t0",{"opacity":0},{"opacity":1,"duration":0.3},37.27);
+tl.fromTo("#cam4-b1",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.7,"ease":"power2.out"},37.07);
+tl.fromTo("#cam4-t1",{"opacity":0},{"opacity":1,"duration":0.3},37.57);
+tl.fromTo("#cam4-b2",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.7,"ease":"power2.out"},37.37);
+tl.fromTo("#cam4-t2",{"opacity":0},{"opacity":1,"duration":0.3},37.87);
 tl.fromTo("#e-reglas",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},29.55);
 tl.fromTo("#rg0",{"opacity":0,"x":-40},{"opacity":1,"x":0,"duration":0.45,"ease":"power3.out"},31.14);
 tl.fromTo("#rg1",{"opacity":0,"x":-40},{"opacity":1,"x":0,"duration":0.45,"ease":"power3.out"},31.44);
 tl.fromTo("#rg2",{"opacity":0,"x":-40},{"opacity":1,"x":0,"duration":0.45,"ease":"power3.out"},31.74);
-tl.fromTo("#nu",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},31.34);
+tl.fromTo("#nu .m-l",{"opacity":0,"y":24},{"opacity":1,"y":0,"duration":0.5,"ease":"power3.out"},31.34);
 tl.to("#e-reglas .rg",{"x":60,"y":0,"opacity":0.35,"scale":0.9,"duration":0.6,"stagger":0.12,"ease":"power2.in"},32.86);
-tl.to("#nu",{boxShadow:"0 0 0 6px #4ea7ff, 0 0 160px #2d7ff9cc",scale:1.08,duration:.45,yoyo:true,repeat:3},33.46);
-tl.fromTo("#nu em",{"rotate":0},{"rotate":360,"duration":4,"ease":"none"},33.46);
+tl.to("#nu .m-red",{"opacity":0,"duration":0.4},34.60);
+tl.fromTo("#nu .m-cam",{"opacity":0},{"opacity":1,"duration":0.3},34.70);
 tl.fromTo("#op0",{"opacity":0,"x":40},{"opacity":1,"x":0,"duration":0.5,"ease":"power3.out"},34.90);
 tl.fromTo("#op1",{"opacity":0,"x":40},{"opacity":1,"x":0,"duration":0.5,"ease":"power3.out"},35.20);
 tl.fromTo("#op2",{"opacity":0,"x":40},{"opacity":1,"x":0,"duration":0.5,"ease":"power3.out"},35.50);
@@ -295,17 +516,28 @@ tl.fromTo("#e-modulos",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter"
 tl.fromTo("#e-modulos .nuc",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},52.83);
 tl.fromTo("#an0",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.8,"ease":"power2.out"},54.69);
 tl.fromTo("#ml0",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},54.99);
+tl.fromTo("#orb0 .orbp",{"opacity":0},{"opacity":1,"duration":0.3},55.39);
+tl.fromTo("#orb0",{"rotation":0},{"rotation":300,"svgOrigin":"0 0","duration":6.268979000000009,"ease":"none"},55.39);
 tl.fromTo("#an1",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.8,"ease":"power2.out"},56.29);
 tl.fromTo("#ml1",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},56.59);
+tl.fromTo("#orb1 .orbp",{"opacity":0},{"opacity":1,"duration":0.3},56.99);
+tl.fromTo("#orb1",{"rotation":120},{"rotation":-180,"svgOrigin":"0 0","duration":4.668979000000007,"ease":"none"},56.99);
 tl.fromTo("#an2",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.8,"ease":"power2.out"},58.21);
 tl.fromTo("#ml2",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},58.51);
+tl.fromTo("#orb2 .orbp",{"opacity":0},{"opacity":1,"duration":0.3},58.91);
+tl.fromTo("#orb2",{"rotation":240},{"rotation":540,"svgOrigin":"0 0","duration":2.7489790000000127,"ease":"none"},58.91);
 tl.to("#e-modulos",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},61.01);
 tl.fromTo("#e-serie",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},60.76);
 tl.fromTo("#e-serie .q2 .w",{"opacity":0,"y":40,"filter":"blur(10px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.6,"stagger":0.15,"ease":"power3.out"},62.93);
+tl.fromTo("#e-serie .ruta line",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":1.2,"ease":"power1.inOut"},64.39);
 tl.fromTo("#ps0",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},64.39);
+tl.to("#ps0",{"backgroundColor":"#1f4f9a","borderColor":"#4ea7ff","duration":0.3},64.69);
 tl.fromTo("#ps1",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},64.64);
+tl.to("#ps1",{"backgroundColor":"#1f4f9a","borderColor":"#4ea7ff","duration":0.3},64.94);
 tl.fromTo("#ps2",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},64.89);
+tl.to("#ps2",{"backgroundColor":"#1f4f9a","borderColor":"#4ea7ff","duration":0.3},65.19);
 tl.fromTo("#ps3",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},65.14);
+tl.to("#ps3",{"backgroundColor":"#1f4f9a","borderColor":"#4ea7ff","duration":0.3},65.44);
 tl.fromTo("#e-serie .dp",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},66.63);
 tl.to("#e-serie",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},69.00);
 tl.fromTo("#e-cierre",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},68.75);
