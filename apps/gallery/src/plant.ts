@@ -1492,6 +1492,9 @@ function applyMessage(msg: SimMessage, label: string): void {
   const hh = String(Math.floor(t / 3600)).padStart(2, "0");
   const mm = String(Math.floor((t % 3600) / 60)).padStart(2, "0");
   const ss = String(Math.floor(t % 60)).padStart(2, "0");
+  if (doc.plant.id === "water-network-scale-v1" && label.startsWith("PLC.") && $("water-plc-panel").hidden && $("water-history-panel").hidden) {
+    renderSnapshotGauges(msg.snapshot, msg.t, "live");
+  }
   const stopped = label === "PLC.DETENIDO";
   const paused = label === "PLC.EN PAUSA";
   $("clock").textContent = label.startsWith("TRÍADA")
@@ -1905,7 +1908,7 @@ const TRIAD_FLOW_METRICS = [
   { label: "Caudal VRP", observable: "prs_flow_m3h", tag: "PLC.PRS.FlowM3h", equipment: "prs-01", variable: "flow_m3h" },
 ];
 const TRIAD_GAUGE_SOURCE_LABELS: Record<(typeof TRIAD_SOURCES)[number], string> = {
-  emulator: "Planta Real", cosimulation: "Cosimulador", optimization: "Fractal",
+  emulator: "Emulador (Real)", cosimulation: "Cosimulado", optimization: "Optimizado",
 };
 type TriadMetric = (typeof TRIAD_PRESSURE_METRICS)[number] | (typeof TRIAD_FLOW_METRICS)[number];
 const TRIAD_GAUGE_POINTS: { id: string; label: string; equipment: string; lift: number; metric: TriadMetric }[] = [
@@ -1995,10 +1998,10 @@ function triadMetric(frame: TriadSourceFrame, metric: TriadMetric): number | nul
   const value = variables?.[metric.variable];
   return typeof value === "number" && Number.isFinite(value) ? value : null;
 }
-function renderSnapshotGauges(snapshot: SimMessage["snapshot"], t: number, mode: "history" | "study", consumerPressures?: Record<string, unknown>): void {
+function renderSnapshotGauges(snapshot: SimMessage["snapshot"], t: number, mode: "history" | "study" | "live", consumerPressures?: Record<string, unknown>, comparison?: TriadViewFrame, optimized = true): void {
   const panel = $("triad-overlay");
   panel.dataset.mode = mode;
-  panel.setAttribute("aria-label", mode === "history" ? "Gauges del histórico PLC · solo lectura" : "Gauges del estudio Fractal · no aplicado");
+  panel.setAttribute("aria-label", mode === "live" ? "Gauges de Planta Real · PLC virtual" : mode === "history" ? "Gauges del histórico PLC · solo lectura" : "Gauges del estudio Fractal · no aplicado");
   panel.hidden = false;
   panel.querySelector<HTMLElement>(".triad-overlay-status")!.hidden = true;
   const root = $("triad-overlay-values");
@@ -2021,21 +2024,35 @@ function renderSnapshotGauges(snapshot: SimMessage["snapshot"], t: number, mode:
     gauge.dataset.lift = String(point.lift);
     const title = document.createElement("h3");
     title.textContent = isCritical ? (critical ? `Vivienda mínima · ${critical.equipment.replace("grid-0", "L")}.${critical.key.slice(2).toUpperCase()}` : "Vivienda mínima") : point.label;
-    const reading = document.createElement("div");
-    reading.className = "triad-gauge-reading";
-    reading.dataset.source = mode === "history" ? "emulator" : "optimization";
-    const context = document.createElement("span");
-    context.textContent = `${mode === "history" ? "Histórico PLC" : "Fractal · no aplicado"} · t=${t.toFixed(0)} s`;
-    const formatted = document.createElement("strong");
-    formatted.textContent = typeof value === "number" && Number.isFinite(value) ? `${value.toFixed(2)} mca` : "—";
-    reading.append(context, formatted);
-    gauge.append(title, reading);
+    const readings = document.createElement("div"); readings.className = "triad-gauge-readings";
+    for (const source of TRIAD_SOURCES) {
+      const reading = document.createElement("div"); reading.className = "triad-gauge-reading"; reading.dataset.source = source;
+      const label = document.createElement("span"); label.textContent = TRIAD_GAUGE_SOURCE_LABELS[source];
+      const own = source === (mode === "study" ? "optimization" : "emulator") && (mode !== "study" || optimized);
+      const saved = comparison?.simulation_time_s === t ? comparison.sources[source] : null;
+      const measured = own ? value : saved && saved.simulation_time_s === t ? (isCritical ? minimumPressure(saved) : triadMetric(saved, point.metric)) : null;
+      const formatted = document.createElement("strong");
+      formatted.textContent = typeof measured === "number" && Number.isFinite(measured) ? `${measured.toFixed(2)} mca` : "—";
+      reading.title = measured === null || measured === undefined ? "Sin datos compatibles de esta fuente para este instante" : `t=${t}s · ${own && mode === "study" ? "propuesta no aplicada" : "lectura guardada o emulada"}`;
+      reading.append(label, formatted); readings.append(reading);
+    }
+    gauge.title = `t=${t}s · ${mode === "study" && !optimized ? "Evaluación Fractal sin optimizar: no es una propuesta optimizada." : mode}`;
+    gauge.append(title, readings);
     title.tabIndex = 0; title.title = "Arrastrar · flechas para mover · doble clic para restablecer";
     root.append(gauge);
   }
   updateTriadGaugePositions();
 }
 
+function minimumPressure(frame: TriadSourceFrame): number | null {
+  if (!frame) return null;
+  const tags = recordOf(frame.state.plc_tags);
+  const individual = Object.entries(tags ?? {}).filter(([key, value]) => /Consumer\..*\.PressureMca$/.test(key) && typeof value === "number" && Number.isFinite(value)).map(([, value]) => value as number);
+  if (individual.length) return Math.min(...individual);
+  const equipment = recordOf(frameSnapshot(frame.state)?.equipment);
+  const floors = [1, 2, 3, 4].map((level) => recordOf(recordOf(equipment?.[`grid-0${level}`])?.variables)?.min_pressure_mca);
+  return floors.every((value) => typeof value === "number" && Number.isFinite(value)) ? Math.min(...floors as number[]) : null;
+}
 function renderTriadOverlay(frame: TriadViewFrame | null): void {
   const panel = $<HTMLElement>("triad-overlay");
   panel.dataset.mode = "triad";
@@ -2053,7 +2070,7 @@ function renderTriadOverlay(frame: TriadViewFrame | null): void {
     gauge.dataset.lift = String(point.lift);
     gauge.setAttribute("aria-label", `${point.label}: comparación Planta Real, Cosimulador y Fractal`);
     const title = document.createElement("h3");
-    title.textContent = point.label;
+    title.textContent = point.id === "critical-house" ? "Presión mínima viviendas" : point.label;
     const readings = document.createElement("div");
     readings.className = "triad-gauge-readings";
     for (const source of TRIAD_SOURCES) {
@@ -2062,7 +2079,7 @@ function renderTriadOverlay(frame: TriadViewFrame | null): void {
       reading.dataset.source = source;
       const sourceLabel = document.createElement("span");
       sourceLabel.textContent = TRIAD_GAUGE_SOURCE_LABELS[source];
-      const value = triadMetric(frame.sources[source], point.metric);
+      const value = point.id === "critical-house" ? minimumPressure(frame.sources[source]) : triadMetric(frame.sources[source], point.metric);
       const formatted = document.createElement("strong");
       formatted.textContent = value === null ? "—" : `${value.toFixed(1)} ${"unit" in point.metric && point.metric.unit === "%" ? "%" : "mca"}`;
       const saved = frame.sources[source];
@@ -2131,7 +2148,7 @@ function updateTriadGaugePositions(): void {
       delete gauge.dataset.dragged; gauge.style.removeProperty("left"); gauge.style.removeProperty("top");
     }
   }
-  if (panel.dataset.mode === "history" || panel.dataset.mode === "study") { placeSnapshotGauges(panel); updateGaugeLeaders(); return; }
+  if (["live", "history", "study"].includes(panel.dataset.mode ?? "")) { placeSnapshotGauges(panel); updateGaugeLeaders(); return; }
   const bounds = $<HTMLCanvasElement>("scene").getBoundingClientRect();
   const blockers = [...document.querySelectorAll<HTMLElement>(
     'header, #sidebar, #hud, #events-panel, #forecast-panel, #water-plc-panel, #water-history-panel, #route-panel, dialog[open], [aria-label="Cubo de orientación de cámara"]',
@@ -2231,7 +2248,7 @@ function showTriadFrame(frame: TriadViewFrame): void {
 
 function waterView(view: "3d" | "plc" | "history"): void {
   if (view !== "3d" && $("forecast-panel").dataset.mode === "comparison") { comparisonControl("pause"); $("forecast-panel").hidden = true; }
-  if (["history", "study"].includes($("triad-overlay").dataset.mode ?? "")) $("triad-overlay").hidden = true;
+  if (["live", "history", "study"].includes($("triad-overlay").dataset.mode ?? "")) $("triad-overlay").hidden = true;
   if (view === "plc" || view === "history") {
     triadViewActive = false;
     $("triad-overlay").hidden = true;
@@ -2247,6 +2264,7 @@ function waterView(view: "3d" | "plc" | "history"): void {
     document.body.classList.remove("forecast-mode");
     $("clock").textContent = "VISTA PLC / ESCENARIOS";
   }
+  if (view === "3d" && !triadViewActive && latestLiveMessage && !forecastStudyId) applyMessage(latestLiveMessage, latestLiveMessage.running === false ? "PLC.DETENIDO" : "PLC.ACTUAL");
   if (view === "3d" && !triadViewActive && sessionId && doc.plant.id === "water-network-scale-v1") {
     void loadForecast().catch((error) => { $("forecast-values").textContent = `No se pudo actualizar la lista de escenarios: ${String(error)}`; });
   }
@@ -2304,6 +2322,7 @@ interface ForecastStudySummary {
   profile_id?: string;
   profile_name?: string;
   objective_id?: string;
+  comparison_id?: string;
 }
 
 interface ForecastFrame {
@@ -2427,6 +2446,12 @@ async function loadForecast(): Promise<void> {
   const studiesResponse = await apiFetch(`/api/plants/${doc.plant.id}/sessions/${sessionId}/fractal/studies`);
   const studies = studiesResponse.ok ? await studiesResponse.json() as ForecastStudySummary[] : [];
   if ($("forecast-panel").dataset.mode === "comparison") return;
+  if (forecastStudyId && !studies.some((study) => study.study_id === forecastStudyId)) {
+    forecastPlaybackStop?.(); forecastPlaybackStop = null;
+    forecastStudyId = null; url.delete("study"); history.replaceState(null, "", `${location.pathname}?${url}`);
+    $("forecast-panel").hidden = true; document.body.classList.remove("forecast-mode");
+    if (latestLiveMessage) applyMessage(latestLiveMessage, "PLC.ACTUAL");
+  }
   if (!forecastStudyId && studies.length) {
     forecastStudyId = studies[0].study_id;
     url.set("study", forecastStudyId);
@@ -2491,6 +2516,14 @@ async function loadForecastFrames(study?: ForecastStudySummary, archivedResult?:
   $("forecast-help").textContent = `Elija un escenario y pulse REPRODUCIR para recorrer sus ${data.frames.length} horas. «Volver al PLC actual» muestra nuevamente la operación en vivo.`;
   if (!data.frames.length) { $("forecast-values").textContent = "El estudio no contiene horas para reproducir."; return; }
 
+  const comparisonFrames = new Map<number, TriadViewFrame>();
+  if (!archivedStudyId && sessionId && study?.comparison_id) {
+    const response = await apiFetch(`/api/plants/${doc.plant.id}/sessions/${sessionId}/comparisons/${encodeURIComponent(study.comparison_id)}/triads`).catch(() => null);
+    if (response?.ok) {
+      const comparison = await response.json() as { triads: TriadViewFrame[] };
+      for (const frame of comparison.triads ?? []) comparisonFrames.set(frame.simulation_time_s, frame);
+    }
+  }
   let playbackPosition = 0;
   const scenarioState = (frame: ForecastFrame): Record<string, unknown> => {
     const index = Math.floor((frame.scenarios.length - 1) / 2);
@@ -2509,7 +2542,7 @@ async function loadForecastFrames(study?: ForecastStudySummary, archivedResult?:
     const rightTime = right.end_t_s ?? data.base_time + (rightIndex + 1) * 3600;
     const time = blendNumber(leftTime, rightTime, fraction) ?? leftTime;
     applyMessage({ t: time, speed: 240, snapshot, events: [] }, "FUTURO FRACTAL");
-    renderSnapshotGauges(snapshot, time, "study", recordOf(state.consumer_pressures_mca) ?? undefined);
+    renderSnapshotGauges(snapshot, time, "study", recordOf(state.consumer_pressures_mca) ?? undefined, comparisonFrames.get(time), study?.study_type === "optimized");
     const elapsedMinutes = leftIndex * 60;
     const hour = Math.floor(elapsedMinutes / 60) + 1;
     const minute = elapsedMinutes % 60;
@@ -2625,6 +2658,12 @@ async function start(): Promise<void> {
       }
       if (event.data.type === "plc-session-created" && event.data.sessionId && /^[\w-]+$/.test(event.data.sessionId)) {
         if (sessionId !== event.data.sessionId) {
+          forecastPlaybackStop?.(); forecastPlaybackStop = null;
+          forecastStudyId = null; currentTriadFrame = null; triadViewActive = false; historicalTime = null;
+          archivedStudyId = null; archivedStudyVersion = 0;
+          url.delete("study"); url.delete("savedStudy"); url.delete("savedVersion");
+          $("forecast-panel").hidden = true; $("triad-overlay").hidden = true; document.body.classList.remove("forecast-mode");
+          syncPlcStudySelection();
           disconnect(); sessionId = event.data.sessionId; url.set("session", sessionId); history.replaceState(null, "", `${location.pathname}?${url}`);
           connect();
         }

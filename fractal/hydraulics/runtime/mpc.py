@@ -244,6 +244,7 @@ def project_24h(
     target_pressure_mca: float | None = None,
     horizon_hours: int = 24,
     on_recirculation_transition: Callable[[dict[str, Any]], None] | None = None,
+    on_hour_completed: Callable[[dict[str, Any]], None] | None = None,
 ) -> list[dict[str, Any]]:
     """Genera un horizonte con el perfil guardado; optimized propone sin modificar entradas operativas."""
     if not 1 <= horizon_hours <= 24:
@@ -548,4 +549,6 @@ def project_24h(
                 ),
             }
         )
+        if on_hour_completed is not None:
+            on_hour_completed(plan[-1])
     return plan

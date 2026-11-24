@@ -1,5 +1,14 @@
 # Bitácora
 
+## 2026-11-24 · Checkpoint de progreso, curva VRP y edición directa
+
+Progreso medido por horas de motor con ámbito planta/sesión; tarjetas con indicadores independientes. Curva VRP y edición de puntos por arrastre/cuadro numérico sobre borrador. Limpieza de estudio ajeno al cambiar sesión y gauges con tres fuentes/ausencias explícitas. Typecheck/build/Worker, 90 pruebas y regresiones adicionales de progreso correctos. Nuevo rediseño solicitado del panel temporal queda pendiente separado. Ver documentación pública plc-progress-and-point-editing y registro local.
+
+
+## 2026-11-24 · Curva horaria de apertura VRP
+
+Añadida quinta línea rosa discontinua y editable al gráfico de viviendas, con porcentaje de apertura AUTO del perfil por hora, sin inventar valores antes de primera consigna. Typecheck/build y Playwright correctos. Progreso de motores sigue en implementación independiente. Ver [[../historico/sesion-codigo/2026-11-24-curva-vrp-escenario]].
+
 ## 2026-11-24 · Gauges: verificación visual en localhost
 
 Tras objeción del usuario se abrió localhost y se detectó banda inferior de gauges superpuesta al panel Fractal. Se sustituyó por posicionamiento junto a equipos con líneas y búsqueda de espacio libre. Captura real revisada: seis gauges/seis líneas/cero cruces con paneles en viewport probado. Ver [[../historico/sesion-codigo/2026-11-24-gauges-localhost-verificacion-visual]].

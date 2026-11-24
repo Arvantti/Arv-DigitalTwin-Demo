@@ -29,12 +29,13 @@ def test_project_endpoint_delegates_to_model_adapter(monkeypatch) -> None:
     }
     received = {}
 
-    def fake_project(payload):
+    def fake_project(payload, *, on_hour_completed):
+        assert callable(on_hour_completed)
         received.update(payload)
         return expected
 
     monkeypatch.setattr(main, "project", fake_project)
-    payload = {"contract_version": "cosimulation-model-request.v2", "job_id": "COSIM-test"}
+    payload = {"contract_version": "cosimulation-model-request.v2", "job_id": "COSIM-test", "horizon_s": 3600}
 
     response = client.post("/v2/project", json=payload)
 
