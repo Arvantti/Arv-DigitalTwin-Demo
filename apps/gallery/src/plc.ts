@@ -24,7 +24,7 @@ const query = new URLSearchParams(location.search);
 const plantId = query.get("plant") ?? "water-network-scale-v1";
 const embedded = query.get("embedded") === "1";
 if (embedded) document.body.classList.add("embedded-plc");
-function notify3d(type: "plc-session-created" | "plc-show-3d", data: { sessionId?: string; studyId?: string; comparisonId?: string; triadFrame?: { simulation_time_s: number; source: string; snapshot?: Record<string, unknown>; sources: Record<string, { simulation_time_s: number; temporal_context?: string; model_quality?: string; state: Record<string, unknown> } | null> } } = {}): void {
+function notify3d(type: "plc-session-created" | "plc-show-3d", data: { sessionId?: string; studyId?: string; comparisonId?: string; triadFrame?: { simulation_time_s: number; timeline_s?: number[]; source: string; snapshot?: Record<string, unknown>; sources: Record<string, { simulation_time_s: number; temporal_context?: string; model_quality?: string; state: Record<string, unknown> } | null> } } = {}): void {
   if (embedded && window.parent !== window) window.parent.postMessage({ type, plantId, ...data }, location.origin);
 }
 // En desarrollo usa el proxy local. Una HMI publicada puede apuntar a un host FastAPI explícito:
@@ -99,6 +99,11 @@ const fmt = (value: Value | undefined, digits = 1) => {
   const number = n(value);
   return number === null ? "—" : number.toLocaleString("es-CO", { maximumFractionDigits: digits, minimumFractionDigits: digits });
 };
+const fmtSeconds = (seconds: number) => seconds >= 60 ? `${(seconds / 60).toLocaleString("es-CO", { maximumFractionDigits: 1, minimumFractionDigits: 1 })} min` : `${seconds.toLocaleString("es-CO", { maximumFractionDigits: 2, minimumFractionDigits: 2 })} s`;
+function updateCalculationTime(kind: "cosim" | "fractal", seconds: number, horizonHours: number): void {
+  const label = kind === "cosim" ? "Cosimulador" : "Fractal";
+  $("calculation-times-note").textContent = `Última ejecución ${label}: ${fmtSeconds(seconds)} para ${horizonHours.toLocaleString("es-CO")} h · referencia local, sin conexión física.`;
+}
 const eq = (id: string) => latest[id];
 const value = (id: string, key: string) => eq(id)?.variables[key];
 const send = (equipment: string, command: string, args: Record<string, unknown> = {}) => socket?.readyState === WebSocket.OPEN && socket.send(JSON.stringify({ equipment, command, args }));
@@ -132,7 +137,10 @@ function renderSessionControls(): void {
   const profileMatchesSession = Boolean(selectedFractalProfileId && selectedFractalProfileId === activeSessionProfileId);
   const canProject = Boolean(active && !paused && sessionId && profileMatchesSession);
   if (project) project.disabled = !canProject;
-  if (cosimulation) cosimulation.disabled = !canProject || cosimulationRunning;
+  if (cosimulation) cosimulation.disabled = !active || paused || !sessionId || !activeSessionProfileId || cosimulationRunning;
+  $("cosim-profile-context").textContent = activeSessionProfileId
+    ? `Perfil activo: ${profiles.find((profile) => profile.id === activeSessionProfileId)?.name ?? activeSessionProfileId}${!active ? " · Reanude la sesión para proyectar." : paused ? " · Reanude para proyectar." : ""}`
+    : "Primero inicie una sesión con un escenario guardado.";
   const fractalNote = $("fractal-source-note");
   if (fractalNote) fractalNote.textContent = !sessionId
     ? "Primero inicie la emulación PLC con un escenario guardado."
@@ -202,6 +210,9 @@ function selectScreen(id: string): void {
   const primary = id === "fractal" ? "master" : liveOperation ? "operation" : id;
   document.querySelectorAll<HTMLElement>(".screen").forEach((node) => node.classList.toggle("active", liveOperation ? node.id === "pumping" || node.id === "grid" : node.id === id || node.id === primary));
   document.querySelectorAll<HTMLButtonElement>(".tabs button").forEach((node) => node.classList.toggle("active", node.dataset.screen === primary));
+  const tab = document.querySelector<HTMLButtonElement>(`.tabs button[data-screen="${primary}"]`);
+  document.querySelectorAll(".tabs button").forEach((button) => { if (button === tab) button.setAttribute("aria-current", "page"); else button.removeAttribute("aria-current"); });
+  if (tab) { const nav = tab.parentElement!; nav.scrollLeft = Math.max(0, tab.offsetLeft - nav.offsetLeft - 12); }
   if (primary === "profiles") renderProfileEditor();
   document.body.classList.toggle("screen-fractal", false);
   document.body.classList.toggle("screen-history", primary === "history");
@@ -237,26 +248,33 @@ function renderMaster(): void {
   ].map(([label, reading, detail]) => `<div class="kpi panel"><small>${label}</small><b>${reading}</b><small>${detail}</small></div>`).join("");
 }
 
+function emptyState(title: string, description: string): string {
+  return `<div class="empty-state panel" role="status"><h2>${title}</h2><p>${description}</p><button type="button" data-open-screen="master">IR A SIMULACIÓN</button></div>`;
+}
 function tankCard(id: string, label: string): string {
-  const level = Math.max(0, Math.min(100, n(value(id, "level_pct")) ?? 0));
-  return `<article class="card panel"><p class="eyebrow">${label}</p><div class="tank-level"><i style="height:${level}%"></i><span>${fmt(level)} %</span></div><div class="readings"><span>Entrada <b>${fmt(value(id, "inflow_kg_h"))} kg/h</b></span><span>Salida <b>${fmt(value(id, "outflow_kg_h"))} kg/h</b></span><span>Masa <b>${fmt(value(id, "mass_kg"), 0)} kg</b></span><span>Estado <b>${eq(id)?.state ?? "—"}</b></span></div></article>`;
+  const measuredLevel = n(value(id, "level_pct"));
+  const level = Math.max(0, Math.min(100, measuredLevel ?? 0));
+  return `<article class="card panel"><p class="eyebrow">${label}</p><div class="tank-level"><i style="height:${level}%"></i><span>${measuredLevel === null ? "Sin lectura" : `${fmt(level)} %`}</span></div><div class="readings"><span>Entrada <b>${fmt(value(id, "inflow_kg_h"))} kg/h</b></span><span>Salida <b>${fmt(value(id, "outflow_kg_h"))} kg/h</b></span><span>Masa <b>${fmt(value(id, "mass_kg"), 0)} kg</b></span><span>Estado <b>${eq(id)?.state ?? "—"}</b></span></div></article>`;
 }
 
 function pumpCard(id: string, label: string): string {
   const isLevelControlled = id === "pumpset-recirc-01";
+  const disabled = socket?.readyState === WebSocket.OPEN && plcRunning ? "" : "disabled";
   const automatic = n(value(id, "automatic_enabled")) === 1;
   const levelActive = n(value(id, "level_auto_active")) === 1;
   const state = eq(id)?.state?.toUpperCase() ?? "—";
-  const mode = isLevelControlled
+  const mode = !eq(id) ? "SIN LECTURAS"
+    : isLevelControlled
     ? automatic
       ? levelActive ? "AUTO · RECIRCULANDO POR NIVEL" : "AUTO · EN ESPERA DE NIVEL"
       : "PARO MANUAL · AUTO BLOQUEADO"
     : state;
   const levelReadings = isLevelControlled ? `<span>Retorno <b>${fmt(value(id, "source_level_pct"))} %</b></span><span>Tanque destino <b>${fmt(value(id, "target_level_pct"))} %</b></span><span>Arranque auto <b>≥ ${fmt(value(id, "start_level_pct"), 0)} %</b></span><span>Paro auto <b>&lt; ${fmt(value(id, "stop_level_pct"), 0)} % / destino ${fmt(value(id, "target_full_pct"), 0)} %</b></span>` : "";
-  return `<article class="card panel pump-card"><p class="eyebrow">${label}</p><h2>${state}</h2><p class="pump-mode ${automatic ? "automatic" : "manual-stop"}">${mode}</p><div class="readings"><span>Caudal <b>${fmt(value(id, "flow_m3h"))} m³/h</b></span><span>VFD <b>${fmt(value(id, "speed_pct"))} %</b></span><span>Succión <b>${fmt(value(id, "suction_pressure_mca"))} mca</b></span><span>Descarga <b>${fmt(value(id, "discharge_pressure_mca"))} mca</b></span><span>Potencia <b>${fmt(value(id, "power_kw"))} kW</b></span><span>Bombas <b>${fmt(value(id, "pumps_running"), 0)}/${fmt(value(id, "pumps_available"), 0)}</b></span>${levelReadings}</div><div class="controls"><button data-pump="${id}" data-pump-command="start">${isLevelControlled ? "REARMAR AUTO" : "START"}</button><button data-pump="${id}" data-pump-command="stop">PARO MANUAL</button></div></article>`;
+  return `<article class="card panel pump-card"><p class="eyebrow">${label}</p><h2>${state}</h2><p class="pump-mode ${automatic ? "automatic" : "manual-stop"}">${mode}</p><div class="readings"><span>Caudal <b>${fmt(value(id, "flow_m3h"))} m³/h</b></span><span>VFD <b>${fmt(value(id, "speed_pct"))} %</b></span><span>Succión <b>${fmt(value(id, "suction_pressure_mca"))} mca</b></span><span>Descarga <b>${fmt(value(id, "discharge_pressure_mca"))} mca</b></span><span>Potencia <b>${fmt(value(id, "power_kw"))} kW</b></span><span>Bombas <b>${fmt(value(id, "pumps_running"), 0)}/${fmt(value(id, "pumps_available"), 0)}</b></span>${levelReadings}</div><div class="controls"><button ${disabled} data-pump="${id}" data-pump-command="start">${isLevelControlled ? "REARMAR AUTO" : "ARRANCAR"}</button><button ${disabled} data-pump="${id}" data-pump-command="stop">PARO MANUAL</button></div></article>`;
 }
 
 function renderPumping(): void {
+  $("operation-data-note").textContent = !Object.keys(latest).length ? "Sin lecturas cargadas. Inicie la sesión para recibir mediciones; los mandos están desactivados." : plcRunning ? (paused ? "Sesión en pausa · los mandos se reflejan al reanudar." : "Lecturas en vivo · los mandos actúan en la sesión actual.") : `Sesión detenida · última lectura ${comparisonTime(simTime)}. Reanude desde Simulación para habilitar mandos.`;
   $("tanks").innerHTML = tankCard("tank-recirc-01", "TANQUE DE RETORNO 1") + tankCard("tank-recirc-02", "TANQUE DE RETORNO 2") + tankCard("tank-supply-01", "TANQUE DE BOMBEO");
   $("pumps").innerHTML = pumpCard("pumpset-recirc-01", "GRUPO DE RECIRCULACIÓN") + pumpCard("pumpset-main-01", "GRUPO PRINCIPAL");
   const prs = eq("prs-01");
@@ -326,7 +344,7 @@ function renderSupplyComparison(): void {
     const timeLabels = [0, 6, 12, 18, 24].map((hour) => `<text class="scenario-axis" x="${x(hour * 3600)}" y="${height - 8}" text-anchor="middle">${String(hour).padStart(2, "0")}:00</text>`).join("");
     const lines = series.map((item) => {
       const points = item.points.map((point) => `${x(point.t)},${y(point[metric])}`).join(" ");
-      return points ? `<polyline fill="none" stroke="${item.color}" stroke-width="2.5" points="${points}"/>` : "";
+      return points ? `<polyline fill="none" stroke="${item.color}" stroke-width="1.2" points="${points}"/>` : "";
     }).join("");
     const legend = series.map((item) => `<span><i style="background:${item.color}"></i>${item.name}</span>`).join("");
     return `<article class="trend panel"><h3>${title} <span>${unit}</span></h3><div class="scenario-chart-scroll"><svg class="day-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="${title} en salida de bombeo">${ticks}${timeLabels}${lines}</svg></div><div class="legend">${legend}</div></article>`;
@@ -395,7 +413,7 @@ function renderSavedRuns(): void {
     const min = Math.min(...run.samples.map((sample) => sample.critical));
     const consumption = run.samples.slice(1).reduce((total, sample, index) => total + sample.consumption * (sample.t - run.samples[index].t) / 3600, 0);
     return `<article class="card panel"><p class="eyebrow">PLANTA REAL · ${new Date(run.startedAt).toLocaleString("es-CO")}</p><h2>${fmt(run.durationS / 3600, 2)} h de sesión</h2><div class="readings"><span>Presión mín. <b>${fmt(min)} mca</b></span><span>Consumo <b>${fmt(consumption, 2)} m³</b></span><span>Muestras <b>${run.samples.length}</b></span></div><div class="controls"><button data-load-run="${run.id}">VER CURVAS</button><button data-delete-run="${run.id}">ELIMINAR</button></div></article>`;
-  }).join("") : `<p class="muted">Aún no hay sesiones guardadas. Al desconectar o completar una sesión de Planta Real, sus señales se archivarán aquí.</p>`;
+  }).join("") : emptyState("Todavía no hay sesiones guardadas", "Aquí aparecerán las sesiones que finalice y guarde en este navegador. Podrá abrir sus curvas y revisar su desempeño.");
   document.querySelectorAll<HTMLButtonElement>("[data-load-run]").forEach((button) => button.onclick = () => {
     const run = savedRuns().find((item) => item.id === button.dataset.loadRun);
     if (!run) return;
@@ -492,6 +510,10 @@ function bindChartExpanders(): void {
 }
 
 function renderTrends(): void {
+  if (history.length < 2) {
+    $("trends-charts").innerHTML = emptyState("Aún no hay una tendencia registrada", "Las curvas se forman mientras avanza la emulación. La comparación de cálculos guardados se consulta por separado en Estudios y comparación.");
+    return;
+  }
   $("trends-charts").innerHTML = [
     trend("Caudal de bombeo principal", "m³/h", history.map((sample) => sample.main)),
     trend("Consumo residencial", "m³/h", history.map((sample) => sample.consumption), "warn"),
@@ -537,7 +559,7 @@ function dayChart(title: string, unit: string, series: { name: string; values: n
   const y = (reading: number) => top + (height - top - bottom) - ((reading - low) / range) * (height - top - bottom);
   const axis = [0, .25, .5, .75, 1].map((fraction) => { const reading = low + range * fraction; return `<line x1="${left}" x2="${width - right}" y1="${y(reading)}" y2="${y(reading)}" class="axis" /><text x="${left - 5}" y="${y(reading) + 4}" text-anchor="end">${fmt(reading, 1)}</text>`; }).join("");
   const timeAxis = [0, .25, .5, .75, 1].map((fraction) => { const sample = history[Math.round((history.length - 1) * fraction)]; const elapsed = Math.floor(sample.t / 60); return `<text x="${left + fraction * (width - left - right)}" y="${height - 8}" text-anchor="middle">${String(Math.floor(elapsed / 60)).padStart(2, "0")}:${String(elapsed % 60).padStart(2, "0")}</text>`; }).join("");
-  const lines = series.map((item) => `<polyline points="${item.values.map((reading, index) => `${x(index)},${y(reading)}`).join(" ")}" fill="none" stroke="${item.color}" stroke-width="2.5" />`).join("");
+  const lines = series.map((item) => `<polyline points="${item.values.map((reading, index) => `${x(index)},${y(reading)}`).join(" ")}" fill="none" stroke="${item.color}" stroke-width="1.2" />`).join("");
   const referenceLine = reference === undefined ? "" : `<line x1="${left}" x2="${width - right}" y1="${y(reference)}" y2="${y(reference)}" class="ref" />`;
   const legend = series.map((item) => `<span><i style="background:${item.color}"></i>${item.name}</span>`).join("");
   return `<article class="trend panel"><h2>${title}<span>${unit}</span></h2><button class="chart-expand" data-expand-chart aria-label="Ampliar ${title}">⤢ AMPLIAR</button><svg class="day-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="${title}"><g class="day-axis">${axis}${timeAxis}</g>${referenceLine}${lines}</svg><div class="legend">${legend}</div></article>`;
@@ -550,7 +572,7 @@ function integrate(reading: (sample: Sample) => number): number {
 function renderDay(): void {
   if (history.length < 2) {
     $("day-kpis").innerHTML = "";
-    $("day-charts").innerHTML = "";
+    $("day-charts").innerHTML = emptyState("Todavía no hay datos para la curva del día", "Inicie o reanude una emulación para registrar señales, o abra las curvas de una sesión guardada desde Historial. No se muestra una curva de referencia como si fueran mediciones.");
     return;
   }
   const peak = history.reduce((best, sample) => sample.consumption > best.consumption ? sample : best, history[0]);
@@ -645,9 +667,13 @@ async function renderSavedStudyLibrary(): Promise<void> {
   const box = $("saved-study-library");
   if (!box) return;
   const response = await apiFetch(`/api/plants/${encodeURIComponent(plantId)}/saved-studies`);
-  if (!response.ok) { box.innerHTML = `<p class="muted">No se pudo cargar la biblioteca durable.</p>`; return; }
+  if (!response.ok) { box.innerHTML = `<p class="muted">No se pudo cargar la biblioteca.</p>`; return; }
   const items = await response.json() as SavedStudySummary[];
-  box.innerHTML = items.length ? items.map((item) => `<article class="panel saved-study-item"><p class="eyebrow">${item.version_count} VERSIONES · ACTUALIZADO ${safeHtml(item.updated_at)}</p><h3>${safeHtml(item.name)}</h3><p class="muted">${safeHtml(item.id)} · versión ${item.latest_version}</p><div class="controls"><a href="/plant.html?plant=${encodeURIComponent(plantId)}&savedStudy=${encodeURIComponent(item.id)}&savedVersion=${item.latest_version}${query.get("api") ? `&api=${encodeURIComponent(apiOrigin)}` : ""}">REPRODUCIR EN GEMELO 3D</a><button data-open-saved-study="${safeHtml(item.id)}">ABRIR RESULTADO</button><button data-rerun-saved-study="${safeHtml(item.id)}">RECALCULAR COMO VERSIÓN</button><button data-version-target="${safeHtml(item.id)}">USAR PRÓXIMO CÁLCULO</button><button data-rename-saved-study="${safeHtml(item.id)}">RENOMBRAR</button><button data-delete-saved-study="${safeHtml(item.id)}">ELIMINAR</button></div><div data-saved-study-result="${safeHtml(item.id)}"></div></article>`).join("") : `<p class="muted">Aún no hay estudios en esta biblioteca. Guarde una proyección desde una sesión PLC.</p>`;
+  $("saved-study-count").textContent = items.length ? `· ${items.length} estudios` : "· Vacía";
+  const library = document.querySelector<HTMLDetailsElement>(".study-library")!;
+  if (items.length > Number(library.dataset.count ?? "-1") && items.length > 0) library.open = true;
+  library.dataset.count = String(items.length);
+  box.innerHTML = items.length ? items.map((item) => `<article class="panel saved-study-item"><p class="eyebrow">${item.version_count} VERSIONES · ACTUALIZADO ${safeHtml(item.updated_at)}</p><h3>${safeHtml(item.name)}</h3><p class="muted">Versión ${item.latest_version}</p><div class="controls"><a href="/plant.html?plant=${encodeURIComponent(plantId)}&savedStudy=${encodeURIComponent(item.id)}&savedVersion=${item.latest_version}${query.get("api") ? `&api=${encodeURIComponent(apiOrigin)}` : ""}">REPRODUCIR EN GEMELO 3D</a><button data-open-saved-study="${safeHtml(item.id)}">ABRIR RESULTADO</button><button data-rerun-saved-study="${safeHtml(item.id)}">RECALCULAR COMO VERSIÓN</button><button data-version-target="${safeHtml(item.id)}">USAR PRÓXIMO CÁLCULO</button><button data-rename-saved-study="${safeHtml(item.id)}">RENOMBRAR</button><button data-delete-saved-study="${safeHtml(item.id)}">ELIMINAR</button></div><div data-saved-study-result="${safeHtml(item.id)}"></div></article>`).join("") : `<p class="muted">Aún no hay estudios en esta biblioteca. Guarde una proyección desde una sesión PLC.</p>`;
   if (selectedSavedStudyId) box.querySelector(`[data-version-target="${CSS.escape(selectedSavedStudyId)}"]`)?.classList.add("primary");
 }
 
@@ -781,10 +807,12 @@ async function renderFractal(): Promise<void> {
   } else optimizedTrajectory = [];
   renderSupplyComparison();
   const safe = (value: string) => value.replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]!);
-  box.innerHTML = visibleStudies.length ? `<article class="panel"><p class="eyebrow">ESCENARIOS GUARDADOS · FUTURO NO APLICADO</p>${visibleStudies.map((study) => {
+  if (!latestFractalStudy) $("saved-study-action-note").textContent = "Guardar se habilita al terminar un cálculo nuevo.";
+  if (!latestFractalStudy) $("fractal-recommendations").innerHTML = `<p class="muted">${visibleStudies.length ? "Abra uno de los estudios de esta sesión, o calcule uno nuevo en el paso 4." : "Todavía no ha calculado un estudio en esta sesión. Use el paso 4 para comenzar."}</p>`;
+  box.innerHTML = visibleStudies.length ? `<h3 class="study-list-title">Estudios de esta sesión</h3>${visibleStudies.map((study) => {
     const profile = study.profile_name ?? study.profile_id ?? "perfil";
-    return `<p>${labels[study.study_type]} · ${safe(profile)} · ${safe(study.study_id)} · t=${fmt(study.base_time, 0)} s · <a href="/plant.html?plant=${encodeURIComponent(plantId)}&session=${encodeURIComponent(sessionId!)}&study=${encodeURIComponent(study.study_id)}${query.get("api") ? `&api=${encodeURIComponent(apiOrigin)}` : ""}">VER EN GEMELO 3D</a></p>`;
-  }).join("")}</article>` : `<p class="muted">No hay escenarios futuros guardados en esta sesión.</p>`;
+    return `<article class="panel study-session-item"><div><h3>${labels[study.study_type]}</h3><p class="muted">${safe(profile)}</p><p class="muted">Calculado desde ${comparisonTime(study.base_time)}</p></div><a href="/plant.html?plant=${encodeURIComponent(plantId)}&session=${encodeURIComponent(sessionId!)}&study=${encodeURIComponent(study.study_id)}${query.get("api") ? `&api=${encodeURIComponent(apiOrigin)}` : ""}">VER EN 3D</a><details><summary>Detalles del estudio</summary><p>${safe(study.study_id)}</p></details></article>`;
+  }).join("")}` : `<p class="muted">No hay escenarios futuros guardados en esta sesión.</p>`;
 }
 
 function renderVisibleScreen(): void {
@@ -1069,7 +1097,7 @@ function renderProfileChart(): void {
   const width = 1100, height = 280, left = 48, right = 16, top = 18, bottom = 36;
   const x = (hour: number) => left + hour * (width - left - right) / 23;
   const y = (value: number, max: number) => top + (height - top - bottom) * (1 - value / max);
-  const hourLabels = values.map((_, hour) => `<text x="${x(hour)}" y="${height - 10}" text-anchor="middle">${String(hour + 1).padStart(2, "0")}</text>`).join("");
+  const hourLabels = values.map((_, hour) => `<text class="scenario-hour-label" x="${x(hour)}" y="${height - 10}" text-anchor="middle">${String(hour + 1).padStart(2, "0")}</text>`).join("");
   const chart = (title: string, max: number, series: { label: string; color: string; value: (point: typeof values[number]) => number; parameter: ProfileParameter }[]) => {
     const grid = [0, .25, .5, .75, 1].map((fraction) => {
       const reading = max * (1 - fraction);
@@ -1077,8 +1105,8 @@ function renderProfileChart(): void {
     }).join("");
     const lines = series.map((item) => {
       const points = values.map((point, hour) => `${x(hour)},${y(item.value(point), max)}`).join(" ");
-      const markers = values.map((point, hour) => { const locked = Boolean(profileHourLockReason(hour)); return `<circle class="scenario-point ${hour === profileHour ? "selected" : ""} ${locked ? "locked" : ""}" style="color:${item.color}" data-profile-hour="${hour}" data-profile-parameter="${item.parameter}" cx="${x(hour)}" cy="${y(item.value(point), max)}" r="${hour === profileHour ? 6 : 4}"><title>${profileHourLockReason(hour) ?? `Hora ${String(hour + 1).padStart(2, "0")} · ${item.label}: ${item.value(point).toFixed(1)} %`}</title></circle>`; }).join("");
-      return `<polyline fill="none" stroke="${item.color}" stroke-width="2.5" points="${points}"/>${markers}`;
+      const markers = values.map((point, hour) => { const locked = Boolean(profileHourLockReason(hour)); return `<circle class="scenario-point ${hour === profileHour ? "selected" : ""} ${locked ? "locked" : ""}" style="color:${item.color}" data-profile-hour="${hour}" data-profile-parameter="${item.parameter}" cx="${x(hour)}" cy="${y(item.value(point), max)}" r="${hour === profileHour ? 4 : 2.5}"><title>${profileHourLockReason(hour) ?? `Hora ${String(hour + 1).padStart(2, "0")} · ${item.label}: ${item.value(point).toFixed(1)} %`}</title></circle>`; }).join("");
+      return `<polyline fill="none" stroke="${item.color}" stroke-width="1.2" points="${points}"/>${markers}`;
     }).join("");
     const legend = series.map((item) => `<span><i style="background:${item.color}"></i>${item.label}</span>`).join("");
     return `<article class="scenario-chart-card"><h3>${title}</h3><div class="scenario-chart-scroll"><svg class="scenario-chart" viewBox="0 0 ${width} ${height}" role="img" aria-label="${title}; seleccione una hora para editar">${grid}${lines}${hourLabels}</svg></div><div class="legend">${legend}</div></article>`;
@@ -1287,7 +1315,10 @@ async function loadComparisons(preferredId?: string): Promise<void> {
       : "contexto antiguo sin manifiesto";
     const currentScenarioId = pendingSessionProfileId ?? activeSessionProfileId;
     const stale = Boolean(currentScenarioId && comparison.profile_id !== currentScenarioId);
-    select.add(new Option(`${stale ? "OBSOLETA · " : ""}${comparison.comparison_id} · ${comparison.profile_id} · ${version} · ${sources || "sin fuentes"}`, comparison.comparison_id));
+    const name = profiles.find((profile) => profile.id === comparison.profile_id)?.name ?? "Escenario guardado";
+    const option = new Option(`${stale ? "Perfil anterior · " : ""}${name} · ${manifest ? `${fmt(manifest.horizon_s / 3600, 0)} h desde ${comparisonTime(manifest.base_time_s)}` : "Cálculo anterior"}`, comparison.comparison_id);
+    option.title = `${comparison.comparison_id} · ${comparison.profile_id} · ${version} · ${sources}`;
+    select.add(option);
   }
   const selectedId = comparisons.some((item) => item.comparison_id === previous)
     ? previous
@@ -1301,16 +1332,35 @@ async function loadComparisons(preferredId?: string): Promise<void> {
   if (selectedId) await loadTriadFrames();
 }
 
+let triadLoadRequest = 0;
+function comparisonTime(t: number): string {
+  const seconds = Math.max(0, Math.floor(t));
+  return `${String(Math.floor(seconds / 3600)).padStart(2, "0")}:${String(Math.floor(seconds / 60) % 60).padStart(2, "0")}:${String(seconds % 60).padStart(2, "0")}`;
+}
 async function loadTriadFrames(): Promise<void> {
+  const request = ++triadLoadRequest;
+  if (triadPlaybackTimer !== null) window.clearInterval(triadPlaybackTimer);
+  triadPlaybackTimer = null;
+  $<HTMLInputElement>("triad-slider").disabled = true;
+  $<HTMLButtonElement>("triad-play").disabled = true;
+  $<HTMLButtonElement>("triad-pause").disabled = true;
+  $<HTMLButtonElement>("triad-show-3d").disabled = true;
+  triadFrames = []; renderTriadFrame();
   if (!sessionId || !$<HTMLSelectElement>("comparison-select").value) return;
+  $("triad-time-label").textContent = "Cargando instantes…";
   const comparisonId = $<HTMLSelectElement>("comparison-select").value;
-  const response = await getJson<{ triads: TriadFrame[] }>(`/api/plants/${plantId}/sessions/${sessionId}/comparisons/${encodeURIComponent(comparisonId)}/triads`);
+  const response = await getJson<{ triads: TriadFrame[] }>(`/api/plants/${plantId}/sessions/${sessionId}/comparisons/${encodeURIComponent(comparisonId)}/triads`).catch((error) => {
+    if (request === triadLoadRequest) $("triad-time-label").textContent = "No se pudieron cargar los instantes";
+    throw error;
+  });
+  if (request !== triadLoadRequest || comparisonId !== $<HTMLSelectElement>("comparison-select").value) return;
   triadFrames = response.triads;
   renderEngineComparisonCharts();
   const sourceStatus = comparisons.find((item) => item.comparison_id === comparisonId)?.source_status;
   if (sourceStatus) $("triad-position").textContent = `Fuentes: ${Object.entries(sourceStatus).map(([source, item]) => `${source} ${sourceStatusLabel(item.status)}${item.detail ? ` (${item.detail})` : ""}`).join(" · ")}`;
   const slider = $<HTMLInputElement>("triad-slider");
-  slider.min = "0"; slider.max = String(Math.max(0, triadFrames.length - 1)); slider.value = "0"; slider.disabled = triadFrames.length === 0;
+  slider.min = "0"; slider.max = String(Math.max(0, triadFrames.length - 1)); slider.value = "0"; slider.disabled = triadFrames.length < 2;
+  $<HTMLButtonElement>("triad-show-3d").disabled = triadFrames.length === 0;
   $<HTMLButtonElement>("triad-play").disabled = triadFrames.length < 2;
   renderTriadFrame();
 }
@@ -1465,8 +1515,8 @@ function renderEngineComparisonCharts(): void {
         previous = point;
       }
       const dots = points.filter((point): point is NonNullable<typeof point> => point !== null).map((point) =>
-        `<circle cx="${x(point.t).toFixed(1)}" cy="${y(point.v).toFixed(1)}" r="3.5" fill="${colors[source]}"><title>${labels[source]} · t=${point.t} s · ${fmt(point.v)} ${unit}</title></circle>`).join("");
-      return `<path d="${commands.join(" ")}" fill="none" stroke="${colors[source]}" stroke-width="2.5"/>${dots}`;
+        `<circle cx="${x(point.t).toFixed(1)}" cy="${y(point.v).toFixed(1)}" r="1.6" fill="${colors[source]}"><title>${labels[source]} · t=${point.t} s · ${fmt(point.v)} ${unit}</title></circle>`).join("");
+      return `<path d="${commands.join(" ")}" fill="none" stroke="${colors[source]}" stroke-width="1.2"/>${dots}`;
     }).join("");
     const legend = (["emulator", "cosimulation", "optimization"] as const).map((source, index) => {
       const quality = triadFrames.map((frame) => frame.sources[source]?.model_quality ?? (typeof frame.sources[source]?.state.quality === "string" ? frame.sources[source]?.state.quality as string : "")).find(Boolean);
@@ -1474,6 +1524,8 @@ function renderEngineComparisonCharts(): void {
     }).join("");
     return `<article class="trend panel"><h2>${title}<span>${unit}</span></h2><svg class="day-chart" data-engine-comparison data-max-time="${maxTime}" viewBox="0 0 ${width} ${height}" role="img" aria-label="${title}, comparación temporal de tres fuentes">${grid}${ticks}${threshold}${lines}</svg><div class="legend">${legend}</div></article>`;
   }).join("");
+  const selectedFrame = triadFrames[Number($<HTMLInputElement>("triad-slider").value)];
+  updateComparisonCursor(selectedFrame?.simulation_time_s ?? null);
 }
 
 function updateComparisonCursor(simulationTime: number | null): void {
@@ -1484,10 +1536,12 @@ function updateComparisonCursor(simulationTime: number | null): void {
     if (!Number.isFinite(maxTime) || maxTime <= 0) return;
     const width = 900, left = 54, right = 18;
     const x = left + Math.max(0, Math.min(1, simulationTime / maxTime)) * (width - left - right);
-    const cursor = document.createElementNS("http://www.w3.org/2000/svg", "line");
-    cursor.setAttribute("class", "comparison-cursor"); cursor.setAttribute("x1", String(x)); cursor.setAttribute("x2", String(x));
-    cursor.setAttribute("y1", "16"); cursor.setAttribute("y2", "198"); cursor.setAttribute("stroke", "#ffffff");
-    cursor.setAttribute("stroke-width", "1.5"); cursor.setAttribute("stroke-dasharray", "4 3");
+    const cursor = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    cursor.setAttribute("class", "comparison-cursor");
+    cursor.setAttribute("d", `M ${x} 16 V 198`);
+    cursor.setAttribute("fill", "none"); cursor.setAttribute("stroke", "#ffffff");
+    cursor.setAttribute("stroke-width", "1"); cursor.setAttribute("stroke-dasharray", "4 3");
+    cursor.setAttribute("vector-effect", "non-scaling-stroke");
     svg.append(cursor);
   });
 }
@@ -1496,7 +1550,7 @@ function sourceStatusLabel(status: string): string {
   return ({ not_requested: "no solicitada", in_progress: "en proceso", ready: "lista", blocked: "bloqueada", failed: "fallida" } as Record<string, string>)[status] ?? status;
 }
 
-function renderTriadFrame(): void {
+function renderTriadFrame(showIn3d = false): void {
   const output = $("triad-frames");
   const slider = $<HTMLInputElement>("triad-slider");
   const index = Number(slider?.value ?? 0);
@@ -1506,23 +1560,36 @@ function renderTriadFrame(): void {
     updateComparisonCursor(null);
     const selected = comparisons.find((item) => item.comparison_id === $<HTMLSelectElement>("comparison-select").value);
     const sourceStatus = Object.entries(selected?.source_status ?? {}).map(([source, item]) => `${source}: ${sourceStatusLabel(item.status)}${item.detail ? ` (${item.detail})` : ""}`).join(" · ");
-    $("triad-position").textContent = `${sourceStatus ? `Fuentes: ${sourceStatus}. ` : ""}La reproducción y la escena 3D recorren únicamente frames guardados; no vuelven a simular ni interpolan.`;
+    $("triad-time-label").textContent = "Sin instantes disponibles";
+    $("triad-position").textContent = selected ? "Este cálculo todavía no tiene resultados para recorrer. Ejecute la proyección o la cosimulación correspondiente." : "Seleccione una comparación para consultar sus resultados.";
+    $("triad-technical").textContent = sourceStatus;
     return;
   }
-  $("triad-position").textContent = `Frame ${index + 1} de ${triadFrames.length} · t=${fmt(frame.simulation_time_s, 0)} s · 3D: ${selectedTriadSource} · ${frame.aligned ? "tiempos alineados" : "faltan frames o tiempos desalineados"} · perfil ${frame.profile_id} · hash ${frame.profile_hash.slice(0, 12)}…`;
+  $("triad-time-label").textContent = comparisonTime(frame.simulation_time_s);
+  const selected = comparisons.find((item) => item.comparison_id === $<HTMLSelectElement>("comparison-select").value);
+  const stale = Boolean((pendingSessionProfileId ?? activeSessionProfileId) && selected?.profile_id !== (pendingSessionProfileId ?? activeSessionProfileId));
+  $("triad-position").textContent = `${comparisonTime(triadFrames[0].simulation_time_s)} → ${comparisonTime(triadFrames.at(-1)!.simulation_time_s)} · Instante ${index + 1} de ${triadFrames.length}${stale ? " · Calculado con un perfil anterior." : ""}${frame.aligned ? "" : " · Alguna fuente no tiene datos en este instante."}`;
+  $("triad-technical").textContent = `${selected?.comparison_id ?? ""} · t=${frame.simulation_time_s}s · perfil ${frame.profile_id} · hash ${frame.profile_hash} · ${frame.aligned ? "tiempos alineados" : "fuentes incompletas o tiempos desalineados"}`;
   updateComparisonCursor(frame.simulation_time_s);
   for (const source of ["emulator", "cosimulation", "optimization"]) {
     const saved = frame.sources[source];
     const card = document.createElement("article"); card.className = "panel";
     const title = document.createElement("h3"); title.textContent = source === "emulator" ? "Planta Real" : source === "cosimulation" ? "Cosimulador" : "Fractal"; card.append(title);
     if (!saved) {
-      const missing = document.createElement("p"); missing.textContent = "Sin frame guardado para este instante."; card.append(missing);
+      const missing = document.createElement("p"); missing.textContent = "Sin datos en este instante. Seleccione otra hora o calcule esta fuente."; card.append(missing);
     } else {
       const quality = saved.model_quality ?? (typeof saved.state.quality === "string" ? saved.state.quality : undefined);
-      const meta = document.createElement("p"); meta.textContent = `t=${fmt(saved.simulation_time_s, 0)} s · ${saved.temporal_context ?? "historia"}${quality ? ` · calidad: ${quality}` : ""}`; card.append(meta);
+      const meta = document.createElement("p"); meta.textContent = `Instante ${comparisonTime(saved.simulation_time_s)}`; card.append(meta);
       const values = triadObservables(saved.state);
-      const reading = document.createElement("p");
-      reading.textContent = `Mínimo viviendas ${values.home_min_pressure === null ? "—" : `${fmt(values.home_min_pressure)} mca`} · VRP ${values.prs_opening === null ? "—" : `${fmt(values.prs_opening)} %`} · Consumo entregado ${values.demand === null ? "—" : `${fmt(values.demand)} m³/h`} · Fugas ${values.leakage === null ? "—" : `${fmt(values.leakage)} m³/h`} · Total ${values.total_delivery === null ? "—" : `${fmt(values.total_delivery)} m³/h`}`;
+      const reading = document.createElement("dl"); reading.className = "comparison-readings";
+      for (const [label, key, unit] of [
+        ["Presión mínima viviendas", "home_min_pressure", "mca"], ["Apertura VRP", "prs_opening", "%"],
+        ["Consumo entregado", "demand", "m³/h"], ["Fugas", "leakage", "m³/h"], ["Total entregado", "total_delivery", "m³/h"],
+      ]) {
+        const term = document.createElement("dt"); term.textContent = label;
+        const value = document.createElement("dd"); value.textContent = values[key] === null || values[key] === undefined ? "—" : `${fmt(values[key], 2)} ${unit}`;
+        reading.append(term, value);
+      }
       card.append(reading);
       const manifest = comparisons.find((item) => item.comparison_id === $<HTMLSelectElement>("comparison-select").value)?.manifest;
       if ((source === "cosimulation" || source === "optimization") && manifest) {
@@ -1532,13 +1599,14 @@ function renderTriadFrame(): void {
         card.append(volumes);
       }
       const details = document.createElement("details");
-      const summary = document.createElement("summary"); summary.textContent = "Ver datos persistidos";
+      const summary = document.createElement("summary"); summary.textContent = "Detalles técnicos";
       const pre = document.createElement("pre"); pre.textContent = JSON.stringify(saved.state, null, 2);
-      details.append(summary, pre); card.append(details);
+      const modelNote = document.createElement("p"); modelNote.textContent = quality ? `Calidad del modelo: ${quality}` : "Lectura del emulador PLC";
+      details.append(summary, modelNote, pre); card.append(details);
     }
     output.append(card);
   }
-  if (sessionId) {
+  if (sessionId && showIn3d) {
     const persistedSources = Object.fromEntries(
       Object.entries(frame.sources).map(([source, saved]) => [source, saved ? {
         simulation_time_s: saved.simulation_time_s,
@@ -1555,6 +1623,7 @@ function renderTriadFrame(): void {
       comparisonId: $<HTMLSelectElement>("comparison-select").value,
       triadFrame: {
         simulation_time_s: frame.simulation_time_s,
+        timeline_s: triadFrames.map((item) => item.simulation_time_s),
         source,
         snapshot: candidate && typeof candidate === "object" ? candidate as Record<string, unknown> : undefined,
         sources: persistedSources,
@@ -1617,7 +1686,7 @@ function randomize(): void {
 
 async function start(): Promise<void> {
   schema = await getJson<Schema>(`/api/plants/${plantId}/plc-schema`);
-  $("plant-name").textContent = ` · ${schema.name.toUpperCase()}`;
+  $("plant-name").textContent = ` · ${schema.name.replace(/^PLC MASTER\s*[·-]\s*/i, "").toUpperCase()}`;
   $<HTMLAnchorElement>("link-plant").href = `/plant.html?plant=${plantId}${query.get("api") ? `&api=${encodeURIComponent(apiOrigin)}` : ""}`;
   buildAssets();
   const initialScreen = query.get("screen");
@@ -1693,9 +1762,10 @@ async function start(): Promise<void> {
   $("save-fractal-study").onclick = () => { void saveLatestFractalStudy(); };
   $("saved-study-library").addEventListener("click", (event) => { void handleSavedStudyLibraryClick(event); });
   void renderSavedStudyLibrary();
-  $("comparison-load").onclick = () => { void loadTriadFrames().catch((error) => { $("triad-position").textContent = `No se pudieron cargar los frames: ${String(error)}`; }); };
-  $<HTMLSelectElement>("comparison-select").onchange = () => { void loadTriadFrames(); };
-  $<HTMLInputElement>("triad-slider").oninput = renderTriadFrame;
+  $("comparison-load").onclick = () => { void loadTriadFrames().catch((error) => { $("triad-position").textContent = `No se pudieron cargar los resultados: ${String(error)}`; }); };
+  $<HTMLSelectElement>("comparison-select").onchange = () => { void loadTriadFrames().catch(() => { $("triad-time-label").textContent = "No se pudieron cargar los instantes"; $("triad-position").textContent = "Pulse Actualizar comparación para volver a intentarlo."; }); };
+  $("triad-show-3d").onclick = () => renderTriadFrame(true);
+  $<HTMLInputElement>("triad-slider").oninput = () => renderTriadFrame();
   $<HTMLSelectElement>("triad-source-select").onchange = (event) => {
     selectedTriadSource = (event.target as HTMLSelectElement).value as typeof selectedTriadSource;
     renderTriadFrame();
@@ -1704,22 +1774,27 @@ async function start(): Promise<void> {
     if (triadPlaybackTimer !== null || triadFrames.length < 2) return;
     $<HTMLButtonElement>("triad-play").disabled = true;
     $<HTMLButtonElement>("triad-pause").disabled = false;
+    const slider = $<HTMLInputElement>("triad-slider");
+    if (Number(slider.value) >= triadFrames.length - 1) slider.value = "0";
+    let playbackTime = triadFrames[Number(slider.value)].simulation_time_s;
+    let previousTick = performance.now();
+    renderTriadFrame(true);
     triadPlaybackTimer = window.setInterval(() => {
-      const slider = $<HTMLInputElement>("triad-slider");
-      if (Number(slider.value) >= triadFrames.length - 1) {
-        window.clearInterval(triadPlaybackTimer!); triadPlaybackTimer = null;
-        $<HTMLButtonElement>("triad-play").disabled = false;
-        $<HTMLButtonElement>("triad-pause").disabled = true;
-        return;
-      }
-      slider.value = String(Number(slider.value) + 1); renderTriadFrame();
-    }, 700);
+      const now = performance.now();
+      const elapsed = Math.min((now - previousTick) / 1000, 0.5); previousTick = now;
+      playbackTime += elapsed * Number($<HTMLSelectElement>("triad-speed").value) * 3600;
+      let index = Number(slider.value);
+      while (index + 1 < triadFrames.length && triadFrames[index + 1].simulation_time_s <= playbackTime) index++;
+      if (index !== Number(slider.value)) { slider.value = String(index); renderTriadFrame(true); }
+      if (index >= triadFrames.length - 1) $("triad-pause").click();
+    }, 100);
   };
   $("triad-pause").onclick = () => {
     if (triadPlaybackTimer !== null) window.clearInterval(triadPlaybackTimer);
     triadPlaybackTimer = null;
     $<HTMLButtonElement>("triad-play").disabled = triadFrames.length < 2;
     $<HTMLButtonElement>("triad-pause").disabled = true;
+    if (embedded) window.parent.postMessage({ type: "plc-comparison-paused", plantId }, location.origin);
   };
   const fractalStudyType = $<HTMLSelectElement>("fractal-study-type");
   const fractalHorizonButton = $<HTMLButtonElement>("fractal-horizon");
@@ -1735,8 +1810,7 @@ async function start(): Promise<void> {
   $("cosimulation-run").onclick = async () => {
     if (!sessionId || !activeSessionProfileId) { $("cosimulation-status").textContent = "Inicie una sesión PLC para ejecutar la cosimulación."; return; }
     if (!fractalOrigin) { $("cosimulation-status").textContent = "Configure Fractal con ?fractal=https://host-fractal para solicitar la cosimulación."; return; }
-    const profileId = $<HTMLSelectElement>("fractal-profile-select").value;
-    if (profileId !== activeSessionProfileId) { $("cosimulation-status").textContent = "La cosimulación debe usar el perfil activo de esta sesión PLC."; return; }
+    const profileId = activeSessionProfileId;
     const horizonHours = $<HTMLInputElement>("cosim-horizon-hours").valueAsNumber;
     const stepHours = $<HTMLInputElement>("cosim-step-hours").valueAsNumber;
     if (!Number.isFinite(horizonHours) || !Number.isFinite(stepHours) || horizonHours < 1 || stepHours < 1 || horizonHours > 168 || stepHours > 24 || horizonHours % stepHours !== 0) {
@@ -1750,6 +1824,7 @@ async function start(): Promise<void> {
     const button = $<HTMLButtonElement>("cosimulation-run");
     cosimulationRunning = true;
     renderSessionControls();
+    const calculationStartedAt = performance.now();
     button.textContent = "… EJECUTANDO MODELO COSIMULADO";
     $("cosimulation-status").textContent = "El backend leerá el perfil activo y las muestras persistidas de esta sesión; solo publicará frames devueltos por el modelo.";
     try {
@@ -1764,6 +1839,7 @@ async function start(): Promise<void> {
       });
       const body = await response.json().catch(() => ({})) as { detail?: string; comparison_id?: string; job_id?: string; model_id?: string; frame_count?: number; applied_to_plc?: boolean };
       if (!response.ok) throw Error(body.detail ?? `Cosimulation API respondió ${response.status}`);
+      updateCalculationTime("cosim", (performance.now() - calculationStartedAt) / 1000, horizonHours);
       await loadComparisons(body.comparison_id).catch((error) => { $("triad-position").textContent = `Resultado guardado; no se pudieron cargar las tríadas: ${String(error)}`; });
       $("cosimulation-status").textContent = `${body.frame_count ?? 0} frames guardados · modelo ${body.model_id ?? "sin ID"} · comparación ${body.comparison_id ?? "sin ID"} · ${body.applied_to_plc === false ? "NO APLICADO AL PLC" : "estado de aplicación no declarado"}.`;
     } catch (error) {
@@ -1783,6 +1859,7 @@ async function start(): Promise<void> {
     if (profileId !== activeSessionProfileId) { window.alert("Para alinear el historial, el estudio debe usar el perfil activo del PLC. Inicie una sesión nueva para cambiar el perfil."); return; }
     if (studyType === "optimized" && (!Number.isFinite(fractalTarget.valueAsNumber) || fractalTarget.valueAsNumber < 10 || fractalTarget.valueAsNumber > 45)) { window.alert("Elija explícitamente una presión mínima objetivo entre 10 y 45 mca."); return; }
     const button = fractalHorizonButton;
+    const calculationStartedAt = performance.now();
     button.disabled = true; button.textContent = studyType === "optimized" ? "… OPTIMIZANDO PRESIÓN POR HORA" : "… LEYENDO PLC Y PROYECTANDO";
     let study: { study_id: string; study_type: string; base_time: number; target_pressure_mca?: number; profile_id?: string; profile_hash?: string; comparison_id?: string; comparison_run_published?: { frame_count?: number }; comparison_persistence_error?: string; hours: { hour: number; supply_level_pct: number; robust: boolean; commands?: { vrp_opening_pct?: number | null; vrp_opening_required_pct?: number | null; opening_curve_status?: string; target_pressure_mca?: number; applied_pressure_target_mca?: number; target_met?: boolean }; profile_commands?: { prs?: { control_mode?: string; critical_control_point?: string; critical_setpoint_mca?: number } }; scenarios: { demand_factor: number; state: Record<string, number> & { prs_inlet_mca: number; prs_outlet_mca: number; critical_pressure_mca: number; control_point_pressure_mca: number; consumer_pressures_mca: Record<string, number> }; feasible: boolean }[] }[]; published?: unknown };
     const selectedComparison = comparisons.find((item) => item.comparison_id === $<HTMLSelectElement>("comparison-select").value);
@@ -1794,6 +1871,7 @@ async function start(): Promise<void> {
       const response = await fractalFetch("/studies/horizon/from-plc", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ session_id: sessionId, plant_id: plantId, emulator_api: apiOrigin, profile_id: profileId, comparison_id: comparisonId, ...(selectedManifest ? { time_step_s: selectedManifest.time_step_s, horizon_s: selectedManifest.horizon_s } : {}), objective_id: "OBJ-PRESSURE-MIN", target_pressure_mca: studyType === "optimized" ? fractalTarget.valueAsNumber : undefined, study_type: studyType }) });
       if (!response.ok) { const detail = await response.json().catch(() => ({})) as { detail?: string }; throw Error(detail.detail ?? "Fractal no pudo proyectar el perfil PLC"); }
       study = await response.json();
+      updateCalculationTime("fractal", (performance.now() - calculationStartedAt) / 1000, study.hours.length || 24);
       latestFractalStudy = study as unknown as Record<string, unknown>;
       $<HTMLButtonElement>("save-fractal-study").disabled = false;
       if (study.study_type === "optimized") {
@@ -1877,6 +1955,26 @@ async function start(): Promise<void> {
     const selected = new URL(anchor.href).searchParams.get("study");
     notify3d("plc-show-3d", selected ? { studyId: selected } : {});
   });
+  if (embedded) window.addEventListener("message", (event: MessageEvent<{ type?: string; action?: string; value?: string }>) => {
+    if (event.origin !== location.origin || event.source !== window.parent || event.data.type !== "plc-comparison-control") return;
+    const { action, value } = event.data;
+    if (action === "speed" && ["1", "2", "4"].includes(value ?? "")) {
+      $<HTMLSelectElement>("triad-speed").value = value!;
+      return;
+    }
+    if (action === "pause") { $("triad-pause").click(); return; }
+    if (action === "play") { $("triad-play").click(); return; }
+    if (action === "select" && comparisons.some((item) => item.comparison_id === value)) {
+      $<HTMLSelectElement>("comparison-select").value = value!;
+      void loadTriadFrames().then(() => renderTriadFrame(true)).catch(() => { $("triad-position").textContent = "No se pudo abrir la comparación."; });
+    } else if (action === "seek" && value !== undefined && Number.isInteger(Number(value)) && Number(value) >= 0 && Number(value) < triadFrames.length) {
+      $("triad-pause").click();
+      $<HTMLInputElement>("triad-slider").value = value; renderTriadFrame(true);
+    } else if (action === "source" && ["emulator", "cosimulation", "optimization"].includes(value ?? "")) {
+      selectedTriadSource = value as typeof selectedTriadSource;
+      $<HTMLSelectElement>("triad-source-select").value = value!; renderTriadFrame(true);
+    }
+  });
   renderDay(); renderSavedRuns(); await loadProfiles();
   renderPumping();
   renderWorkspaceContext();
@@ -1898,7 +1996,15 @@ async function start(): Promise<void> {
       renderWorkspaceContext();
       renderSessionControls(); renderRunProfileSelector();
       if (state.running) void connect();
-      else $("connection").textContent = "● EMULACIÓN DETENIDA · ÚLTIMO ESTADO CONSERVADO";
+      else {
+        $("connection").textContent = "● EMULACIÓN DETENIDA · ÚLTIMO ESTADO CONSERVADO";
+        const last = await getJson<{ t: number; snapshot: Message["snapshot"] }>(`/api/plants/${plantId}/sessions/${sessionId}/historian/frame?at_t=${state.t ?? 0}`).catch(() => null);
+        if (last?.snapshot?.equipment) {
+          latest = last.snapshot.equipment; simTime = last.t;
+          $("clock").textContent = `ÚLTIMA LECTURA · ${comparisonTime(last.t)}`;
+          renderVisibleScreen(); renderAlarms();
+        }
+      }
       if (sessionId) {
         void renderFractal();
         void loadComparisons().catch((error) => { $("triad-position").textContent = `No se pudieron leer las comparaciones guardadas: ${String(error)}`; });
@@ -1907,5 +2013,9 @@ async function start(): Promise<void> {
   }
 }
 
+document.querySelector(".content")?.addEventListener("click", (event) => {
+  const button = (event.target as HTMLElement).closest<HTMLButtonElement>("[data-open-screen]");
+  if (button?.dataset.openScreen) selectScreen(button.dataset.openScreen);
+});
 document.querySelectorAll<HTMLButtonElement>("[data-screen]").forEach((button) => button.onclick = () => selectScreen(button.dataset.screen!));
 start().catch((error: unknown) => { $("plant-name").textContent = ` · ERROR: ${String(error)}`; });

@@ -1,7 +1,7 @@
 import "./ambient-network.css";
 
 /** Fondo ambiental común: red de nodos azul/naranja, adaptada del home de arvantti.tech. */
-if (typeof window !== "undefined" && typeof document !== "undefined" && !document.getElementById("ambient-network-canvas")) {
+if (typeof window !== "undefined" && typeof document !== "undefined" && document.documentElement.dataset.ambientNetwork !== "off" && !document.getElementById("ambient-network-canvas")) {
   const canvas = document.createElement("canvas");
   canvas.id = "ambient-network-canvas";
   canvas.setAttribute("aria-hidden", "true");

@@ -139,6 +139,7 @@ let historicalTime: number | null = null;
 type TriadSourceFrame = { simulation_time_s: number; temporal_context?: string; model_quality?: string; state: Record<string, unknown> } | null;
 type TriadViewFrame = {
   simulation_time_s: number;
+  timeline_s?: number[];
   source: string;
   snapshot?: Record<string, unknown>;
   sources: Record<string, TriadSourceFrame>;
@@ -1728,17 +1729,84 @@ function appendEvents(events: { t: number; type: string; equipment_id?: string; 
   while (ol.children.length > 120) ol.lastChild?.remove();
 }
 
+function setupForecastPanel(): void {
+  const panel = $("forecast-panel");
+  const header = $("forecast-panel-drag");
+  const bounds = () => ({ left: 8, top: Math.min(72, Math.max(8, innerHeight - 168)), right: innerWidth - 8, bottom: innerHeight - 8 });
+  const place = (left: number, top: number, width: number, height: number) => {
+    const b = bounds();
+    width = Math.max(Math.min(240, b.right - b.left), Math.min(width, b.right - b.left));
+    height = Math.max(Math.min(160, b.bottom - b.top), Math.min(height, b.bottom - b.top));
+    Object.assign(panel.style, { transform: "none", bottom: "auto", left: `${Math.max(b.left, Math.min(left, b.right - width))}px`, top: `${Math.max(b.top, Math.min(top, b.bottom - height))}px`, width: `${width}px`, height: `${height}px` });
+  };
+  const change = (rect: DOMRect, edge: string, dx: number, dy: number) => {
+    if (!edge) { place(rect.left + dx, rect.top + dy, rect.width, rect.height); return; }
+    const b = bounds();
+    const minWidth = Math.min(240, b.right - b.left), minHeight = Math.min(160, b.bottom - b.top);
+    const left = edge.includes("w") ? Math.max(b.left, Math.min(rect.left + dx, rect.right - minWidth)) : rect.left;
+    const top = edge.includes("n") ? Math.max(b.top, Math.min(rect.top + dy, rect.bottom - minHeight)) : rect.top;
+    const right = edge.includes("e") ? Math.min(b.right, Math.max(rect.right + dx, left + minWidth)) : rect.right;
+    const bottom = edge.includes("s") ? Math.min(b.bottom, Math.max(rect.bottom + dy, top + minHeight)) : rect.bottom;
+    place(left, top, right - left, bottom - top);
+  };
+  const bind = (handle: HTMLElement, edge: string) => {
+    let drag: { id: number; x: number; y: number; rect: DOMRect } | null = null;
+    handle.onpointerdown = (event) => {
+      if (event.button !== 0) return;
+      event.preventDefault(); event.stopPropagation();
+      drag = { id: event.pointerId, x: event.clientX, y: event.clientY, rect: panel.getBoundingClientRect() };
+      handle.setPointerCapture(event.pointerId);
+    };
+    handle.onpointermove = (event) => {
+      if (!drag || drag.id !== event.pointerId) return;
+      event.preventDefault(); event.stopPropagation();
+      change(drag.rect, edge, event.clientX - drag.x, event.clientY - drag.y);
+    };
+    handle.onpointerup = handle.onpointercancel = handle.onlostpointercapture = () => { drag = null; };
+    handle.onkeydown = (event) => {
+      if (!["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(event.key)) return;
+      event.preventDefault(); event.stopPropagation();
+      const step = event.shiftKey ? 48 : 16;
+      change(panel.getBoundingClientRect(), edge, event.key === "ArrowLeft" ? -step : event.key === "ArrowRight" ? step : 0, event.key === "ArrowUp" ? -step : event.key === "ArrowDown" ? step : 0);
+    };
+  };
+  bind(header, "");
+  const labels: Record<string, string> = { n: "superior", s: "inferior", e: "derecho", w: "izquierdo", ne: "superior derecha", nw: "superior izquierda", se: "inferior derecha", sw: "inferior izquierda" };
+  for (const [edge, label] of Object.entries(labels)) {
+    const handle = document.createElement("button");
+    handle.type = "button"; handle.className = "forecast-resize"; handle.dataset.edge = edge;
+    handle.setAttribute("aria-label", `Redimensionar panel Fractal · ${label}`);
+    handle.title = `Arrastrar para redimensionar · ${label}`;
+    panel.append(handle); bind(handle, edge);
+  }
+  window.addEventListener("resize", () => {
+    if (!panel.hidden && panel.style.height) { const rect = panel.getBoundingClientRect(); place(rect.left, rect.top, rect.width, rect.height); }
+  });
+}
+
 function buildLighting(): void {
   const el = $("lighting");
   const labels: Record<LightingPreset, string> = { night: "NOCHE", day: "DÍA", golden: "ATARDECER" };
+  const icons: Record<LightingPreset, string> = {
+    night: '<path d="M20 14a8 8 0 0 1-10-10 8 8 0 1 0 10 10Z"/>',
+    day: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/>',
+    golden: '<path d="M3 17h18M5 21h14M6 17a6 6 0 0 1 12 0M12 3v3M3 8l2 2m14 0 2-2"/>',
+  };
+  el.setAttribute("aria-label", "Iluminación de la escena");
   for (const preset of ["night", "day", "golden"] as LightingPreset[]) {
     const b = document.createElement("button");
-    b.textContent = labels[preset];
+    b.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[preset]}</svg>`;
+    b.title = labels[preset];
+    b.setAttribute("aria-label", labels[preset]);
+    b.setAttribute("aria-pressed", String(stage.lighting === preset));
     b.classList.toggle("active", stage.lighting === preset);
     b.onclick = () => {
       stage.setLighting(preset);
       clearFog();
-      el.querySelectorAll("button").forEach((x) => x.classList.toggle("active", x === b));
+      el.querySelectorAll("button").forEach((x) => {
+        x.classList.toggle("active", x === b);
+        x.setAttribute("aria-pressed", String(x === b));
+      });
     };
     el.appendChild(b);
   }
@@ -1848,6 +1916,63 @@ const TRIAD_GAUGE_POINTS: { id: string; label: string; equipment: string; lift: 
   { id: "floor-3-outlet", label: "Salida tras válvula 3–4", equipment: "valve-between-34", lift: 0.35, metric: TRIAD_PRESSURE_METRICS[4] },
   { id: "critical-house", label: "Vivienda crítica C44", equipment: "grid-04", lift: 1.0, metric: TRIAD_PRESSURE_METRICS[5] },
 ];
+const gaugePositions = new Map<string, { x: number; y: number }>();
+function setupGaugeDragging(): void {
+  const panel = $("triad-overlay");
+  let drag: { key: string; id: number; dx: number; dy: number } | null = null;
+  panel.addEventListener("pointerdown", (event) => {
+    const title = (event.target as HTMLElement).closest(".triad-gauge h3");
+    if (!title || event.button !== 0) return;
+    const gauge = title.parentElement!;
+    const rect = gauge.getBoundingClientRect();
+    drag = { key: gauge.dataset.key!, id: event.pointerId, dx: event.clientX - rect.left, dy: event.clientY - rect.top };
+    panel.setPointerCapture(event.pointerId);
+    event.preventDefault(); event.stopPropagation();
+  });
+  panel.addEventListener("pointermove", (event) => {
+    if (!drag || drag.id !== event.pointerId) return;
+    gaugePositions.set(drag.key, { x: event.clientX - drag.dx, y: event.clientY - drag.dy });
+    updateTriadGaugePositions();
+    event.preventDefault(); event.stopPropagation();
+  });
+  const stop = () => { drag = null; };
+  panel.addEventListener("pointerup", stop); panel.addEventListener("pointercancel", stop); panel.addEventListener("lostpointercapture", stop);
+  panel.addEventListener("dblclick", (event) => {
+    const title = (event.target as HTMLElement).closest(".triad-gauge h3");
+    if (title) { gaugePositions.delete(title.parentElement!.dataset.key!); updateTriadGaugePositions(); }
+  });
+  panel.addEventListener("keydown", (event) => {
+    const title = (event.target as HTMLElement).closest(".triad-gauge h3");
+    if (!title || !["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(event.key)) return;
+    const gauge = title.parentElement!, rect = gauge.getBoundingClientRect(), step = event.shiftKey ? 48 : 16;
+    gaugePositions.set(gauge.dataset.key!, { x: rect.left + (event.key === "ArrowRight" ? step : event.key === "ArrowLeft" ? -step : 0), y: rect.top + (event.key === "ArrowDown" ? step : event.key === "ArrowUp" ? -step : 0) });
+    updateTriadGaugePositions(); event.preventDefault(); event.stopPropagation();
+  });
+}
+function updateGaugeLeaders(): void {
+  const panel = $("triad-overlay");
+  const ns = "http://www.w3.org/2000/svg";
+  let layer = panel.querySelector<SVGSVGElement>(".gauge-leaders");
+  if (!layer) { layer = document.createElementNS(ns, "svg"); layer.classList.add("gauge-leaders"); layer.setAttribute("aria-hidden", "true"); panel.prepend(layer); }
+  layer.replaceChildren();
+  const bounds = $<HTMLCanvasElement>("scene").getBoundingClientRect();
+  for (const gauge of panel.querySelectorAll<HTMLElement>('.triad-gauge[data-dragged="true"], .triad-gauge[data-connected="true"]')) {
+    const asset = assets.get(gauge.dataset.equipment ?? "");
+    if (!asset || gauge.hidden) continue;
+    const anchor = asset.root.getWorldPosition(new THREE.Vector3());
+    anchor.y += Number(gauge.dataset.lift ?? 0.5); anchor.project(stage.camera);
+    if (anchor.z < -1 || anchor.z > 1) continue;
+    const x = bounds.left + (anchor.x + 1) * bounds.width / 2, y = bounds.top + (1 - anchor.y) * bounds.height / 2;
+    const rect = gauge.getBoundingClientRect();
+    const line = document.createElementNS(ns, "line");
+    line.setAttribute("x1", String(Math.max(rect.left, Math.min(x, rect.right))));
+    line.setAttribute("y1", String(Math.max(rect.top, Math.min(y, rect.bottom))));
+    line.setAttribute("x2", String(x)); line.setAttribute("y2", String(y));
+    const dot = document.createElementNS(ns, "circle");
+    dot.setAttribute("cx", String(x)); dot.setAttribute("cy", String(y)); dot.setAttribute("r", "4");
+    layer.append(line, dot);
+  }
+}
 function recordOf(value: unknown): Record<string, unknown> | null {
   return value !== null && typeof value === "object" && !Array.isArray(value) ? value as Record<string, unknown> : null;
 }
@@ -1870,8 +1995,51 @@ function triadMetric(frame: TriadSourceFrame, metric: TriadMetric): number | nul
   const value = variables?.[metric.variable];
   return typeof value === "number" && Number.isFinite(value) ? value : null;
 }
+function renderSnapshotGauges(snapshot: SimMessage["snapshot"], t: number, mode: "history" | "study", consumerPressures?: Record<string, unknown>): void {
+  const panel = $("triad-overlay");
+  panel.dataset.mode = mode;
+  panel.setAttribute("aria-label", mode === "history" ? "Gauges del histórico PLC · solo lectura" : "Gauges del estudio Fractal · no aplicado");
+  panel.hidden = false;
+  panel.querySelector<HTMLElement>(".triad-overlay-status")!.hidden = true;
+  const root = $("triad-overlay-values");
+  root.replaceChildren();
+  const homes = Object.entries(snapshot.equipment).flatMap(([equipment, item]) =>
+    Object.entries(item.variables).filter(([key, value]) => /^p_c\d+$/.test(key) && typeof value === "number" && Number.isFinite(value))
+      .map(([key, value]) => ({ equipment, key, value: value as number })));
+  for (const [home, pressure] of Object.entries(consumerPressures ?? {})) {
+    const match = /^L([1-4])\.(C\d+)$/.exec(home);
+    if (match && typeof pressure === "number" && Number.isFinite(pressure)) homes.push({ equipment: `grid-0${match[1]}`, key: `p_${match[2].toLowerCase()}`, value: pressure });
+  }
+  const critical = homes.reduce<(typeof homes)[number] | null>((min, home) => !min || home.value < min.value ? home : min, null);
+  for (const point of TRIAD_GAUGE_POINTS) {
+    const isCritical = point.id === "critical-house";
+    const value = isCritical ? critical?.value : snapshot.equipment[point.metric.equipment]?.variables[point.metric.variable];
+    const gauge = document.createElement("article");
+    gauge.className = "triad-gauge";
+    gauge.dataset.key = `${mode}:${point.id}`;
+    gauge.dataset.equipment = isCritical && critical ? critical.equipment : point.equipment;
+    gauge.dataset.lift = String(point.lift);
+    const title = document.createElement("h3");
+    title.textContent = isCritical ? (critical ? `Vivienda mínima · ${critical.equipment.replace("grid-0", "L")}.${critical.key.slice(2).toUpperCase()}` : "Vivienda mínima") : point.label;
+    const reading = document.createElement("div");
+    reading.className = "triad-gauge-reading";
+    reading.dataset.source = mode === "history" ? "emulator" : "optimization";
+    const context = document.createElement("span");
+    context.textContent = `${mode === "history" ? "Histórico PLC" : "Fractal · no aplicado"} · t=${t.toFixed(0)} s`;
+    const formatted = document.createElement("strong");
+    formatted.textContent = typeof value === "number" && Number.isFinite(value) ? `${value.toFixed(2)} mca` : "—";
+    reading.append(context, formatted);
+    gauge.append(title, reading);
+    title.tabIndex = 0; title.title = "Arrastrar · flechas para mover · doble clic para restablecer";
+    root.append(gauge);
+  }
+  updateTriadGaugePositions();
+}
+
 function renderTriadOverlay(frame: TriadViewFrame | null): void {
   const panel = $<HTMLElement>("triad-overlay");
+  panel.dataset.mode = "triad";
+  panel.setAttribute("aria-label", "Gauges comparativos de la reproducción guardada");
   panel.hidden = !frame || doc.plant.id !== "water-network-scale-v1";
   const root = $<HTMLElement>("triad-overlay-values");
   root.replaceChildren();
@@ -1880,6 +2048,7 @@ function renderTriadOverlay(frame: TriadViewFrame | null): void {
   for (const point of TRIAD_GAUGE_POINTS) {
     const gauge = document.createElement("article");
     gauge.className = "triad-gauge";
+    gauge.dataset.key = `triad:${point.id}`;
     gauge.dataset.equipment = point.equipment;
     gauge.dataset.lift = String(point.lift);
     gauge.setAttribute("aria-label", `${point.label}: comparación Planta Real, Cosimulador y Fractal`);
@@ -1901,17 +2070,81 @@ function renderTriadOverlay(frame: TriadViewFrame | null): void {
       reading.append(sourceLabel, formatted);
       readings.append(reading);
     }
+    title.tabIndex = 0; title.title = "Arrastrar · flechas para mover · doble clic para restablecer";
     gauge.append(title, readings);
     root.append(gauge);
   }
   updateTriadGaugePositions();
 }
 
+function placeSnapshotGauges(panel: HTMLElement): void {
+  const bounds = $<HTMLCanvasElement>("scene").getBoundingClientRect();
+  const blocked = [...document.querySelectorAll<HTMLElement>('header, #sidebar, #hud, #events-panel, #forecast-panel, #water-plc-panel, #water-history-panel, #route-panel, [aria-label="Cubo de orientación de cámara"]')]
+    .filter((node) => !node.hidden && node.checkVisibility())
+    .map((node) => node.getBoundingClientRect()).filter((r) => r.width > 0 && r.height > 0);
+  const collides = (a: DOMRect, b: DOMRect) => a.left < b.right + 10 && a.right > b.left - 10 && a.top < b.bottom + 10 && a.bottom > b.top - 10;
+  const gauges = [...panel.querySelectorAll<HTMLElement>(".triad-gauge")];
+  // Manual placements take precedence and retain their leaders.
+  for (const gauge of gauges.filter((node) => node.dataset.dragged)) blocked.push(gauge.getBoundingClientRect());
+  for (const gauge of gauges.filter((node) => !node.dataset.dragged)) {
+    const asset = assets.get(gauge.dataset.equipment ?? "");
+    if (!asset) { gauge.hidden = true; continue; }
+    gauge.hidden = false; gauge.dataset.connected = "true";
+    const anchor = asset.root.getWorldPosition(new THREE.Vector3());
+    anchor.y += Number(gauge.dataset.lift ?? 0.5); anchor.project(stage.camera);
+    const x = bounds.left + (anchor.x + 1) * bounds.width / 2;
+    const y = bounds.top + (1 - anchor.y) * bounds.height / 2;
+    const size = gauge.getBoundingClientRect();
+    let best: { x: number; y: number; distance: number } | null = null;
+    const consider = (left: number, top: number) => {
+      left = Math.max(8, Math.min(left, innerWidth - size.width - 8));
+      top = Math.max(76, Math.min(top, innerHeight - size.height - 8));
+      const rect = new DOMRect(left, top, size.width, size.height);
+      if (blocked.some((b) => collides(rect, b))) return;
+      const distance = Math.hypot(left + size.width / 2 - x, top + size.height / 2 - y);
+      if (!best || distance < best.distance) best = { x: left, y: top, distance };
+    };
+    for (const dx of [-size.width - 24, 24, -size.width / 2]) for (const dy of [-size.height - 24, 24]) consider(x + dx, y + dy);
+    if (!best) for (let top = 80; top + size.height < innerHeight; top += size.height + 14)
+      for (let left = 12; left + size.width < innerWidth; left += size.width + 14) consider(left, top);
+    const position = best as { x: number; y: number; distance: number } | null;
+    if (position) {
+      gauge.style.left = `${position.x}px`; gauge.style.top = `${position.y}px`;
+      blocked.push(new DOMRect(position.x, position.y, size.width, size.height));
+    } else {
+      // Compact viewport fallback stays reachable rather than suppressing a reading.
+      gauge.style.left = "8px"; gauge.style.top = `${76 + gauges.indexOf(gauge) * (size.height + 8)}px`;
+    }
+  }
+}
 function updateTriadGaugePositions(): void {
   const panel = $<HTMLElement>("triad-overlay");
   if (panel.hidden || doc.plant.id !== "water-network-scale-v1") return;
-  const bounds = $<HTMLCanvasElement>("scene").getBoundingClientRect();
   for (const gauge of panel.querySelectorAll<HTMLElement>(".triad-gauge")) {
+    const position = gaugePositions.get(gauge.dataset.key!);
+    if (position) {
+      gauge.dataset.dragged = "true"; gauge.hidden = false;
+      const rect = gauge.getBoundingClientRect();
+      gauge.style.left = `${Math.max(8, Math.min(position.x, innerWidth - rect.width - 8))}px`;
+      gauge.style.top = `${Math.max(72, Math.min(position.y, innerHeight - rect.height - 8))}px`;
+    } else if (gauge.dataset.dragged) {
+      delete gauge.dataset.dragged; gauge.style.removeProperty("left"); gauge.style.removeProperty("top");
+    }
+  }
+  if (panel.dataset.mode === "history" || panel.dataset.mode === "study") { placeSnapshotGauges(panel); updateGaugeLeaders(); return; }
+  const bounds = $<HTMLCanvasElement>("scene").getBoundingClientRect();
+  const blockers = [...document.querySelectorAll<HTMLElement>(
+    'header, #sidebar, #hud, #events-panel, #forecast-panel, #water-plc-panel, #water-history-panel, #route-panel, dialog[open], [aria-label="Cubo de orientación de cámara"]',
+  )].filter((element) => !element.hidden && getComputedStyle(element).display !== "none")
+    .map((element) => element.getBoundingClientRect()).filter((rect) => rect.width > 0 && rect.height > 0);
+  const overlaps = (a: DOMRect, b: DOMRect): boolean =>
+    a.left < b.right + 8 && a.right > b.left - 8 && a.top < b.bottom + 8 && a.bottom > b.top - 8;
+  const status = panel.querySelector<HTMLElement>(".triad-overlay-status")!;
+  status.hidden = false;
+  status.hidden = blockers.some((rect) => overlaps(status.getBoundingClientRect(), rect));
+  const occupied = status.hidden ? [...blockers] : [...blockers, status.getBoundingClientRect()];
+  for (const gauge of panel.querySelectorAll<HTMLElement>(".triad-gauge")) {
+    if (gauge.dataset.dragged) { occupied.push(gauge.getBoundingClientRect()); continue; }
     const asset = assets.get(gauge.dataset.equipment ?? "");
     if (!asset) { gauge.hidden = true; continue; }
     const anchor = asset.root.getWorldPosition(new THREE.Vector3());
@@ -1921,11 +2154,62 @@ function updateTriadGaugePositions(): void {
     const y = bounds.top + (1 - anchor.y) * bounds.height / 2;
     const visible = anchor.z >= -1 && anchor.z <= 1 && x >= 0 && x <= window.innerWidth && y >= 0 && y <= window.innerHeight;
     gauge.hidden = !visible;
-    if (visible) { gauge.style.left = `${x}px`; gauge.style.top = `${y}px`; }
+    if (visible) {
+      gauge.style.left = `${x}px`; gauge.style.top = `${y}px`;
+      const rect = gauge.getBoundingClientRect();
+      // Keep labels anchored to their equipment; omit occluded labels rather than cover UI.
+      gauge.hidden = rect.left < 8 || rect.right > window.innerWidth - 8 || rect.top < 8
+        || occupied.some((blocker) => overlaps(rect, blocker));
+      if (!gauge.hidden) occupied.push(rect);
+    }
   }
+  updateGaugeLeaders();
 }
 
 // ------------------------------------------------------------------ un solo escritorio: 3D + HMI y pasado de solo lectura
+function comparisonControl(action: string, value?: string): void {
+  $<HTMLIFrameElement>("water-plc-frame").contentWindow?.postMessage({ type: "plc-comparison-control", action, value }, location.origin);
+}
+function renderComparisonControls(frame: TriadViewFrame): void {
+  const plc = $<HTMLIFrameElement>("water-plc-frame").contentDocument;
+  if (!plc) return;
+  const panel = $("forecast-panel"); panel.dataset.mode = "comparison"; panel.hidden = false;
+  $("forecast-panel-drag").textContent = "◆ COMPARACIÓN · RESULTADOS GUARDADOS";
+  $("forecast-selection-label").textContent = "Comparación";
+  $("forecast-return").textContent = "↶ VOLVER AL PLC ACTUAL";
+  $("forecast-time-label").textContent = "Instante";
+  $("forecast-source-control").hidden = false;
+  const speed = $<HTMLSelectElement>("forecast-speed");
+  speed.parentElement!.hidden = false;
+  speed.value = plc.querySelector<HTMLSelectElement>("#triad-speed")?.value ?? "1";
+  speed.onchange = () => comparisonControl("speed", speed.value);
+  const source = plc.querySelector<HTMLSelectElement>("#comparison-select");
+  const select = $<HTMLSelectElement>("forecast-study");
+  select.replaceChildren(...[...source?.options ?? []].map((option) => new Option(option.text, option.value)));
+  select.disabled = false;
+  select.value = source?.value ?? "";
+  select.onchange = () => comparisonControl("select", select.value);
+  const slider = plc.querySelector<HTMLInputElement>("#triad-slider");
+  const instant = $<HTMLSelectElement>("forecast-hour");
+  instant.replaceChildren(...Array.from({ length: Number(slider?.max ?? 0) + 1 }, (_, index) => {
+    const time = frame.timeline_s?.[index];
+    const label = time === undefined ? `Instante ${index + 1}` : `${String(Math.floor(time / 3600)).padStart(2, "0")}:${String(Math.floor(time / 60) % 60).padStart(2, "0")}:${String(Math.floor(time) % 60).padStart(2, "0")}`;
+    return new Option(label, String(index));
+  }));
+  instant.value = slider?.value ?? "0"; instant.onchange = () => comparisonControl("seek", instant.value);
+  const sourceSelect = $<HTMLSelectElement>("forecast-source");
+  sourceSelect.value = plc.querySelector<HTMLSelectElement>("#triad-source-select")?.value ?? "emulator";
+  sourceSelect.onchange = () => comparisonControl("source", sourceSelect.value);
+  const playing = plc.querySelector<HTMLButtonElement>("#triad-pause")?.disabled === false;
+  const play = $<HTMLButtonElement>("forecast-play");
+  play.disabled = !playing && plc.querySelector<HTMLButtonElement>("#triad-play")?.disabled === true;
+  play.textContent = playing ? "❚❚ PAUSAR" : "▶ REPRODUCIR";
+  play.setAttribute("aria-label", playing ? "Pausar comparación" : "Reproducir comparación");
+  play.onclick = () => comparisonControl(playing ? "pause" : "play");
+  $("forecast-study-meta").textContent = plc.querySelector("#triad-position")?.textContent ?? "";
+  $("forecast-values").textContent = `Instante consultado: ${plc.querySelector("#triad-time-label")?.textContent ?? frame.simulation_time_s + " s"}`;
+  $("forecast-help").textContent = "Mismos resultados e instante que en Estudios y comparación. Los gauges muestran las tres fuentes. No modifica el PLC.";
+}
 function showTriadFrame(frame: TriadViewFrame): void {
   currentTriadFrame = frame;
   triadViewActive = true;
@@ -1941,10 +2225,13 @@ function showTriadFrame(frame: TriadViewFrame): void {
     }])) as SimMessage["snapshot"]["equipment"];
     applyMessage({ t: frame.simulation_time_s, snapshot: { equipment, lines: {}, links: {} }, events: [] }, "TRÍADA · SIN SNAPSHOT · NO APLICADA");
   }
-  $("btn-connect").textContent = "◆ TRÍADA EN 3D · NO APLICADA";
+  $("btn-connect").textContent = "◆ COMPARACIÓN EN 3D";
+  renderComparisonControls(frame);
 }
 
 function waterView(view: "3d" | "plc" | "history"): void {
+  if (view !== "3d" && $("forecast-panel").dataset.mode === "comparison") { comparisonControl("pause"); $("forecast-panel").hidden = true; }
+  if (["history", "study"].includes($("triad-overlay").dataset.mode ?? "")) $("triad-overlay").hidden = true;
   if (view === "plc" || view === "history") {
     triadViewActive = false;
     $("triad-overlay").hidden = true;
@@ -2004,6 +2291,7 @@ async function showHistory(t: number): Promise<void> {
     if (request !== historyRequest || $("water-history-panel").hidden) return;
     historicalTime = data.t;
     applyMessage({ t: data.t, snapshot: data.snapshot, events: [] }, "HISTÓRICO · NO OPERATIVO");
+    renderSnapshotGauges(data.snapshot, data.t, "history");
     $("history-caption").textContent = `t=${Math.floor(data.t)} s · PLC sigue en play · vista de solo lectura`;
   } catch (error) { if (request === historyRequest) $("history-caption").textContent = `No se pudo leer el histórico: ${String(error)}`; }
 }
@@ -2095,6 +2383,12 @@ const forecastStudyTypeLabel = (studyType: string): string => ({
 }[studyType] ?? studyType.toUpperCase());
 
 async function loadForecast(): Promise<void> {
+  $("forecast-panel").dataset.mode = "study";
+  $("forecast-panel-drag").textContent = "◆ ESTUDIO FRACTAL · FUTURO NO APLICADO";
+  $("forecast-selection-label").textContent = "Estudio"; $("forecast-time-label").textContent = "Hora futura";
+  $("forecast-source-control").hidden = true;
+  $<HTMLSelectElement>("forecast-speed").parentElement!.hidden = false;
+  $<HTMLSelectElement>("forecast-speed").onchange = null;
   const studySelector = $<HTMLSelectElement>("forecast-study");
   if (archivedStudyId) {
     const libraryResponse = await apiFetch(`/api/plants/${encodeURIComponent(doc.plant.id)}/saved-studies/${encodeURIComponent(archivedStudyId)}`);
@@ -2107,6 +2401,7 @@ async function loadForecast(): Promise<void> {
     const versionResponse = await apiFetch(`/api/plants/${encodeURIComponent(doc.plant.id)}/saved-studies/${encodeURIComponent(archivedStudyId)}/versions/${version}`);
     if (!versionResponse.ok) throw new Error("No se pudo recuperar la versión archivada");
     const savedVersion = await versionResponse.json() as { result: Record<string, unknown> };
+    if ($("forecast-panel").dataset.mode === "comparison") return;
     const result = savedVersion.result;
     if (result.temporal_context !== "forecast" || result.applied !== false || !Array.isArray(result.hours)) {
       throw new Error("El archivo no contiene un futuro simulado reproducible");
@@ -2131,6 +2426,7 @@ async function loadForecast(): Promise<void> {
   if (!sessionId) return;
   const studiesResponse = await apiFetch(`/api/plants/${doc.plant.id}/sessions/${sessionId}/fractal/studies`);
   const studies = studiesResponse.ok ? await studiesResponse.json() as ForecastStudySummary[] : [];
+  if ($("forecast-panel").dataset.mode === "comparison") return;
   if (!forecastStudyId && studies.length) {
     forecastStudyId = studies[0].study_id;
     url.set("study", forecastStudyId);
@@ -2181,6 +2477,7 @@ async function loadForecastFrames(study?: ForecastStudySummary, archivedResult?:
     if (!response.ok) throw new Error("No se pudo cargar el estudio Fractal desde PLC");
     data = await response.json() as { base_time: number; frames: ForecastFrame[] };
   }
+  if ($("forecast-panel").dataset.mode === "comparison") return;
   const panel = $("forecast-panel");
   const selector = $<HTMLSelectElement>("forecast-hour");
   const playButton = $<HTMLButtonElement>("forecast-play");
@@ -2191,6 +2488,7 @@ async function loadForecastFrames(study?: ForecastStudySummary, archivedResult?:
   const profileLabel = profile ? ` · ${profile}` : "";
   $("forecast-study-meta").textContent = `${forecastStudyTypeLabel(study?.study_type ?? "forecast")}${profileLabel} · ${forecastStudyId} · ${data.frames.length} horas`;
   selector.innerHTML = data.frames.map((frame) => `<option value="${frame.hour}">Hora ${String(frame.hour + 1).padStart(2, "0")}</option>`).join("");
+  $("forecast-help").textContent = `Elija un escenario y pulse REPRODUCIR para recorrer sus ${data.frames.length} horas. «Volver al PLC actual» muestra nuevamente la operación en vivo.`;
   if (!data.frames.length) { $("forecast-values").textContent = "El estudio no contiene horas para reproducir."; return; }
 
   let playbackPosition = 0;
@@ -2201,7 +2499,8 @@ async function loadForecastFrames(study?: ForecastStudySummary, archivedResult?:
   const showPosition = (position: number) => {
     const leftIndex = Math.min(data.frames.length - 1, Math.floor(position));
     const rightIndex = Math.min(data.frames.length - 1, leftIndex + 1);
-    const fraction = position - leftIndex;
+    // Reproducción acelerada de muestras guardadas: no inventar lecturas entre horas.
+    const fraction = 0;
     const left = data.frames[leftIndex], right = data.frames[rightIndex];
     const snapshot = blendForecastSnapshots(left.snapshot, right.snapshot, fraction);
     const state = blendRecord(scenarioState(left), scenarioState(right), fraction);
@@ -2210,7 +2509,8 @@ async function loadForecastFrames(study?: ForecastStudySummary, archivedResult?:
     const rightTime = right.end_t_s ?? data.base_time + (rightIndex + 1) * 3600;
     const time = blendNumber(leftTime, rightTime, fraction) ?? leftTime;
     applyMessage({ t: time, speed: 240, snapshot, events: [] }, "FUTURO FRACTAL");
-    const elapsedMinutes = Math.round(position * 60);
+    renderSnapshotGauges(snapshot, time, "study", recordOf(state.consumer_pressures_mca) ?? undefined);
+    const elapsedMinutes = leftIndex * 60;
     const hour = Math.floor(elapsedMinutes / 60) + 1;
     const minute = elapsedMinutes % 60;
     const timeLabel = `Hora ${String(hour).padStart(2, "0")}${minute ? `:${String(minute).padStart(2, "0")}` : ""}`;
@@ -2219,7 +2519,7 @@ async function loadForecastFrames(study?: ForecastStudySummary, archivedResult?:
     const pressureText = typeof pressure === "number" ? `${pressure.toFixed(2)} mca` : "— mca";
     const leakageText = typeof leakage === "number" ? `${leakage.toFixed(3)} m³/h` : "— m³/h";
     $("forecast-values").textContent = `${timeLabel} · Tanque de suministro ${supplyLevel.toFixed(1)} % · Presión crítica ${pressureText} · Fuga ${leakageText}`;
-    selector.value = String(Math.round(position));
+    selector.value = String(left.hour);
   };
 
   let playbackTimer: number | undefined;
@@ -2281,7 +2581,6 @@ async function start(): Promise<void> {
     : await fetch(`/api/plants/${encodeURIComponent(plantId)}`, { cache: "no-store" }).catch(() => null);
   if (!res?.ok) {
     const message = `No se pudo cargar ${plantId} desde la API ni desde el plano estático publicado.`;
-    $("plant-name").textContent = message;
     bootError(message);
     return;
   }
@@ -2292,6 +2591,7 @@ async function start(): Promise<void> {
   stage.setGroundElevation(Math.min(...doc.zones.map((zone) => zone.elevation ?? 0)));
   $<HTMLAnchorElement>("link-equipos").href = `/equipos.html?plant=${plantId}`;
   $("forecast-return").onclick = () => {
+    comparisonControl("pause"); currentTriadFrame = null; triadViewActive = false; $("triad-overlay").hidden = true;
     forecastPlaybackStop?.(); forecastPlaybackStop = null;
     forecastStudyId = null; url.delete("study");
     if (archivedStudyId) { archivedStudyId = null; archivedStudyVersion = 0; url.delete("savedStudy"); url.delete("savedVersion"); }
@@ -2319,6 +2619,10 @@ async function start(): Promise<void> {
     window.addEventListener("message", (event: MessageEvent<{ type?: string; sessionId?: string; studyId?: string; plantId?: string; triadFrame?: TriadViewFrame }>) => {
       const frame = $<HTMLIFrameElement>("water-plc-frame");
       if (event.origin !== location.origin || event.source !== frame.contentWindow || event.data.plantId !== doc.plant.id) return;
+      if (event.data.type === "plc-comparison-paused" && $("forecast-panel").dataset.mode === "comparison") {
+        const play = $<HTMLButtonElement>("forecast-play"); play.textContent = "▶ REPRODUCIR";
+        play.setAttribute("aria-label", "Reproducir comparación"); play.onclick = () => comparisonControl("play");
+      }
       if (event.data.type === "plc-session-created" && event.data.sessionId && /^[\w-]+$/.test(event.data.sessionId)) {
         if (sessionId !== event.data.sessionId) {
           disconnect(); sessionId = event.data.sessionId; url.set("session", sessionId); history.replaceState(null, "", `${location.pathname}?${url}`);
@@ -2328,8 +2632,8 @@ async function start(): Promise<void> {
       if (event.data.type === "plc-show-3d") {
         const triad = event.data.triadFrame;
         if (triad && Number.isFinite(triad.simulation_time_s) && triad.sources) {
+          currentTriadFrame = triad;
           waterView("3d");
-          showTriadFrame(triad);
         } else {
           currentTriadFrame = null;
           triadViewActive = false;
@@ -2343,7 +2647,6 @@ async function start(): Promise<void> {
       }
     });
   }
-  $("plant-name").textContent = doc.plant.name.toUpperCase();
   const simulated = doc.equipment.filter((e) => e.sim).length;
   await bootStage(34, "Construyendo zonas y pisos…");
   buildZones();
@@ -2364,9 +2667,10 @@ async function start(): Promise<void> {
     });
   await bootStage(78, "Procesando conexiones y tuberías…");
   buildPipes();
-  $("plant-meta").textContent = `${doc.equipment.length} activos · ${simulated} simulados · ${doc.zones.length} zonas · ${pipeRuns.length} tuberías · ${doc.walkways.length} pasarelas`;
   await bootStage(88, "Configurando iluminación y cámaras…");
   buildLighting();
+  setupForecastPanel();
+  setupGaugeDragging();
   buildCameras();
 
   const sel = $<HTMLSelectElement>("scenario");
