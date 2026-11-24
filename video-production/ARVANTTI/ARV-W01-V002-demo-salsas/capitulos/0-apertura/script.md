@@ -32,6 +32,6 @@ Cada versión es una foto completa de los datos, sin el historial de cambios, y 
 
 Al usarla, el APS, el emulador, el centro de control y el gemelo 3D trabajan con estos datos. Para los escenarios volvemos a la cartera precargada.
 
-Veamos cinco escenarios. Uno, calcular la programación. Dos, un cliente adelanta su pedido. Tres, se cae la llenadora de mostaza. Cuatro, optimizar la secuencia de llenado para lavar menos, con Fractal, nuestro simulador de escenarios. Y cinco, cuánta merma vale la pena ahorrar.
+Veamos cinco escenarios. Uno, calcular la programación. Dos, un cliente adelanta su pedido. Tres, se cae la llenadora de mostaza. Cuatro, optimizar la secuencia de llenado para lavar menos, con Fractal, nuestro módulo que compara escenarios. Y cinco, cuánta merma vale la pena ahorrar.
 
-Todo esto corre sobre Arvantti DigitalTwin, el gemelo 3D, con sus módulos: el APS para programar, el cosimulador que calcula la programación, Fractal para comparar escenarios y el centro de control. El Integrator, DendroScada y el asistente de IA no se usan en este video, porque la demostración se centra en la optimización. Los veremos en otro video, con el hardware físico. Empecemos.
+Todo esto corre sobre Arvantti DigitalTwin, el gemelo 3D, con sus módulos: el APS para programar, el cosimulador que calcula la programación, Fractal para comparar escenarios y el centro de control. El Integrator, DendroScada y el asistente de IA no se usan en este video, porque la demostración se centra en la optimización. Empecemos.
