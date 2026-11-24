@@ -1,1 +1,1 @@
-Brain es la memoria: el proyecto, las decisiones en un grafo y el mapa del código, que lleva al agente directo a lo que necesita. Lee cuatro archivos, no cuatrocientos. Menos contexto, menos costo, y con fuente.
+Brain es la memoria: el proyecto, las decisiones en un grafo y el mapa del código, que lleva al agente directo a lo que necesita. Lee cuatro archivos, no cuatrocientos. Menos contexto, menos costo, y con fuente. Y tú decides dónde documentar: en archivos .md, en la base de datos o en ambos.

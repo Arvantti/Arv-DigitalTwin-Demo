@@ -49,7 +49,7 @@ export function componer(c) {
     panels: [{ items: [
       { h: mod(0), cls: "w1 ctr", at: "Tasks", fx: "pop" },
       { h: escalera(), cls: "w23", at: "mide cuánto", on: [["directo", '[data-k="0"]'], ["tarea", '[data-k="1"]'], ["mini SDD", '[data-k="2"]'], ["SDD completo", '[data-k="3"]']] },
-      { h: `<div class="col2">${file("SDD-P07.md · junto al código", "#4ea7ff", "sub")}${file("Base de datos del proyecto", LAV, "sub")}</div>`, cls: "w3 ctr", at: "Cada plan", subs: ["archivos .md", "base de datos"] },
+      { h: `<div class="col2">${file("SDD-P07", "#4ea7ff", "sub")}${chip("Enlazado a la tarea P-07", LAV, "sub")}</div>`, cls: "w3 ctr", at: "Cada plan", subs: ["documentado", "enlazado"] },
     ] }],
     glos: [["SDD es", "SDD", "desarrollo guiado por especificación: el plan escrito antes de programar"]],
   });
@@ -79,6 +79,11 @@ export function componer(c) {
       { h: card({ k: "cerebro 3 · edición Coding", t: "Mapa del código", p: "Lleva directo a lo que necesita", c: LAV }), cls: "w3", at: "el mapa del código" },
       { h: cnt("archivos leídos", "4 de 400", "#7dd3a8"), cls: "wa", at: "Lee cuatro", fx: "pop" },
       { h: chips(["Menos contexto", "Menos costo", "Con fuente"], "#7dd3a8"), cls: "wa", at: "Menos contexto", subs: ["Menos contexto", "menos costo", "con fuente"] },
+    ] },
+    { at: "Y tú decides", cap: "Tú decides dónde documentar", items: [
+      { h: card({ k: "junto al código", t: "Archivos .md", c: "#4ea7ff" }), cls: "w3", at: "en archivos .md", on: "o en ambos" },
+      { h: card({ k: "tres cerebros", t: "Base de datos", c: LAV }), cls: "w3", at: "en la base de datos", on: "o en ambos" },
+      { h: sello("O en ambos", LAV), cls: "w3 ctr", at: "o en ambos", fx: "pop" },
     ] }],
     glos: [["Menos contexto", "contexto", "lo que la IA tiene en mente al trabajar"]],
   });

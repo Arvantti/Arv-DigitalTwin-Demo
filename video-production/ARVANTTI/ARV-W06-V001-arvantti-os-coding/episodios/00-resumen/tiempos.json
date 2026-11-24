@@ -35,94 +35,94 @@
   "id": "tasks",
   "start": 49.6,
   "voiceAt": 49.9,
-  "voz": 15.6,
-  "dur": 17,
+  "voz": 13.2,
+  "dur": 14.6,
   "real": false
  },
  {
   "id": "terminales",
-  "start": 66.6,
-  "voiceAt": 66.9,
+  "start": 64.2,
+  "voiceAt": 64.5,
   "voz": 19.6,
   "dur": 21,
   "real": false
  },
  {
   "id": "brain",
-  "start": 87.6,
-  "voiceAt": 87.9,
-  "voz": 15.2,
-  "dur": 16.6,
+  "start": 85.2,
+  "voiceAt": 85.5,
+  "voz": 21.6,
+  "dur": 23,
   "real": false
  },
  {
   "id": "controla",
-  "start": 104.2,
-  "voiceAt": 104.5,
+  "start": 108.2,
+  "voiceAt": 108.5,
   "voz": 17.6,
   "dur": 19,
   "real": false
  },
  {
   "id": "guardianes",
-  "start": 123.2,
-  "voiceAt": 123.5,
+  "start": 127.2,
+  "voiceAt": 127.5,
   "voz": 23.6,
   "dur": 25,
   "real": false
  },
  {
   "id": "concilio",
-  "start": 148.2,
-  "voiceAt": 148.5,
+  "start": 152.2,
+  "voiceAt": 152.5,
   "voz": 11.6,
   "dur": 13,
   "real": false
  },
  {
   "id": "fractal",
-  "start": 161.2,
-  "voiceAt": 161.5,
+  "start": 165.2,
+  "voiceAt": 165.5,
   "voz": 19.6,
   "dur": 21,
   "real": false
  },
  {
   "id": "flujos",
-  "start": 182.2,
-  "voiceAt": 182.5,
+  "start": 186.2,
+  "voiceAt": 186.5,
   "voz": 24,
   "dur": 25.4,
   "real": false
  },
  {
   "id": "dirige",
-  "start": 207.6,
-  "voiceAt": 207.9,
+  "start": 211.6,
+  "voiceAt": 211.9,
   "voz": 14,
   "dur": 15.4,
   "real": false
  },
  {
   "id": "receipts",
-  "start": 223,
-  "voiceAt": 223.3,
+  "start": 227,
+  "voiceAt": 227.3,
   "voz": 21.2,
   "dur": 22.6,
   "real": false
  },
  {
   "id": "figura",
-  "start": 245.6,
-  "voiceAt": 245.9,
+  "start": 249.6,
+  "voiceAt": 249.9,
   "voz": 11.2,
   "dur": 13.1,
   "real": false
  },
  {
   "id": "firma",
-  "start": 258.7,
-  "voiceAt": 259.3,
+  "start": 262.7,
+  "voiceAt": 263.3,
   "voz": 8,
   "dur": 12.1,
   "real": false
