@@ -1,0 +1,1 @@
+Primero incorpora tus reglas. Después combina inteligencia artificial, optimización matemática, algoritmos genéticos y evolutivos y métodos estocásticos para buscar mejores planes, con varios objetivos a la vez.

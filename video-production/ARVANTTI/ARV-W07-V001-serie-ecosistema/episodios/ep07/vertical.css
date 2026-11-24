@@ -1,0 +1,15 @@
+.qs{flex-direction:column;align-items:center;gap:14px}
+.hay{font-size:110px}
+.dat{gap:12px}
+.os{width:900px}
+.tri3{flex-direction:column;align-items:center;gap:16px}
+.vz3{width:900px;padding:16px}
+.vz3 .curva{width:600px;height:160px}
+.vz3 .pl{display:none}
+.aviso{margin-top:6px}
+.opts{flex-direction:column}
+.exp{flex-direction:column;gap:20px}
+.res{width:900px}
+.pila{flex-direction:row;gap:12px}.recibo.mini{width:300px;font-size:22px}
+.rd{flex-direction:column;align-items:center;gap:14px}
+.tres3{flex-direction:column;align-items:center;gap:14px}.tres3 .card{width:760px}

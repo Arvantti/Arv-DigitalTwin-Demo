@@ -1,0 +1,66 @@
+[
+ {
+  "id": "falla",
+  "start": 0,
+  "voiceAt": 1.4,
+  "voz": 7.63,
+  "dur": 10.03,
+  "real": true
+ },
+ {
+  "id": "dendro",
+  "start": 10.03,
+  "voiceAt": 10.43,
+  "voz": 4.75,
+  "dur": 6.35,
+  "real": true
+ },
+ {
+  "id": "hardware",
+  "start": 16.38,
+  "voiceAt": 16.68,
+  "voz": 8.28,
+  "dur": 9.78,
+  "real": true
+ },
+ {
+  "id": "dosia",
+  "start": 26.16,
+  "voiceAt": 26.46,
+  "voz": 10.19,
+  "dur": 11.79,
+  "real": true
+ },
+ {
+  "id": "mant",
+  "start": 37.95,
+  "voiceAt": 38.25,
+  "voz": 6.92,
+  "dur": 8.52,
+  "real": true
+ },
+ {
+  "id": "aprob",
+  "start": 46.47,
+  "voiceAt": 46.77,
+  "voz": 7,
+  "dur": 8.5,
+  "real": true
+ },
+ {
+  "id": "patente",
+  "start": 54.97,
+  "voiceAt": 55.27,
+  "voz": 3.55,
+  "dur": 5.05,
+  "real": true
+ },
+ {
+  "id": "cierre",
+  "start": 60.03,
+  "voiceAt": 60.93,
+  "voz": 4.99,
+  "dur": 10.39,
+  "real": true
+ }
+]

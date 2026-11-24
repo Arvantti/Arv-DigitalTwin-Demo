@@ -1,0 +1,50 @@
+[
+ {
+  "id": "fuentes",
+  "start": 0,
+  "voiceAt": 1.4,
+  "voz": 8.2,
+  "dur": 10.6,
+  "real": true
+ },
+ {
+  "id": "integrator",
+  "start": 10.6,
+  "voiceAt": 11,
+  "voz": 10.27,
+  "dur": 11.87,
+  "real": true
+ },
+ {
+  "id": "conectores",
+  "start": 22.47,
+  "voiceAt": 22.77,
+  "voz": 10.03,
+  "dur": 11.63,
+  "real": true
+ },
+ {
+  "id": "donde",
+  "start": 34.1,
+  "voiceAt": 34.4,
+  "voz": 5.49,
+  "dur": 6.99,
+  "real": true
+ },
+ {
+  "id": "base",
+  "start": 41.09,
+  "voiceAt": 41.39,
+  "voz": 10.61,
+  "dur": 12.31,
+  "real": true
+ },
+ {
+  "id": "cierre",
+  "start": 53.39,
+  "voiceAt": 54.29,
+  "voz": 4.99,
+  "dur": 10.39,
+  "real": true
+ }
+]

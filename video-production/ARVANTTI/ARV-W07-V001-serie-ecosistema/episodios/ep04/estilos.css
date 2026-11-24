@@ -1,0 +1,34 @@
+/* Ep 4 · Fractal */
+.e-t{text-shadow:0 0 60px #05070c}
+.elec{gap:24px}
+.fm{width:170px}
+.mo{font-size:44px;color:#fff}
+.td2{gap:26px}.td2 .chip{font-size:40px}
+.nd{border-color:#9fb3cf;color:#c9d1e0}
+#e-met .st{gap:26px}
+.rg{font-size:34px}
+.fams{gap:14px}.fams .chip{font-size:30px}
+.mv{gap:40px}
+.mv .vz{padding:18px 24px}
+.mv small,.mcr small{font:600 24px "JetBrains Mono",monospace;letter-spacing:2px;color:var(--ice);text-transform:uppercase}
+.mv svg{width:560px;height:300px}
+.mcr{gap:40px;align-items:center}
+.mcr .vz{padding:18px 24px}
+.mcr svg{width:620px;height:330px}
+.rangos{width:640px;padding:26px 30px;display:flex;flex-direction:column;gap:26px}
+.rangos .rg{display:flex;align-items:center;gap:20px}
+.rangos .rg>span{flex:none;width:150px;text-align:right;font:700 28px Inter,sans-serif}
+.rt{position:relative;flex:1;height:46px;border-radius:12px;background:#0d1a30;border:1px solid #4ea7ff33}
+.rt i{position:absolute;top:8px;bottom:8px}
+.rb{border-radius:8px;background:linear-gradient(90deg,#7a7e8688,#4ea7ff,#7a7e8688)}
+.rm{width:20px;margin-left:-10px;top:2px!important;bottom:2px!important;border-radius:6px;background:#fff;box-shadow:0 0 16px #4ea7ff}
+.rangos .rg b.pq{flex:none;width:100px;text-align:right;font:800 34px "Inter Display",Inter,sans-serif;color:#fff}
+.caps{gap:20px}.caps .chip{font-size:32px}
+.mej{font-size:36px}
+.nuc-f{width:240px;height:240px;border-radius:50%;background:radial-gradient(#1a3a6e,#0a1222);border:3px solid var(--electric);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;box-shadow:0 0 80px #2d7ff988}
+.nuc-f b{font:800 40px "Inter Display",Inter,sans-serif}.nuc-f small{font:600 22px "JetBrains Mono",monospace;color:var(--ice)}
+.tri{gap:34px}.tri .card{width:440px}
+.j-t{max-width:1500px;text-shadow:0 0 60px #05070c}
+.opts{flex-direction:row;gap:26px}
+.opt small{display:block;margin-top:10px;font:600 24px Inter,sans-serif;color:var(--ice)}
+.ld{font-size:40px;padding:16px 40px}

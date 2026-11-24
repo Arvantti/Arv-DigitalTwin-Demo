@@ -10,25 +10,13 @@ export const ESCENAS = [
 ];
 
 import { red, caminos, curva, barras } from "../../viz.mjs";
-import { ayudas, cierre } from "../../comun.mjs";
+import { ayudas, cierre, planta } from "../../comun.mjs";
 
 export const PRODUCTOS = [
   ["os", "Arvantti OS", "Gobierna la IA de tu empresa"],
   ["dt", "Arvantti Digital Twin", "Una copia viva de tu operación"],
   ["fr", "Arvantti Fractal", "Las mejores opciones y su impacto"],
 ];
-
-/** Planta isométrica simple (gemelo digital) dibujada en SVG. */
-function planta(id) {
-  const caja = (x, y, w, h, alto, cls = "") => {
-    const t = `${x},${y} ${x + w},${y - w / 2} ${x + w + h},${y - w / 2 + h / 2} ${x + h},${y + h / 2}`;
-    const l = `${x},${y} ${x + h},${y + h / 2} ${x + h},${y + h / 2 + alto} ${x},${y + alto}`;
-    const r = `${x + h},${y + h / 2} ${x + w + h},${y - w / 2 + h / 2} ${x + w + h},${y - w / 2 + h / 2 + alto} ${x + h},${y + h / 2 + alto}`;
-    return `<g class="iso ${cls}"><polygon class="il" points="${l}"/><polygon class="ir" points="${r}"/><polygon class="it" points="${t}"/></g>`;
-  };
-  return `<svg class="planta" id="${id}" viewBox="0 0 300 170">${caja(30, 80, 90, 40, 34)}${caja(140, 70, 60, 30, 46, "m2")}${caja(210, 104, 40, 24, 22, "m3")}
-    <circle class="pulso" cx="80" cy="70" r="6"/><circle class="pulso p2" cx="170" cy="52" r="6"/><circle class="pulso p3" cx="232" cy="92" r="6"/></svg>`;
-}
 
 export function componerEpisodio(c) {
   const { S, P, at, to, set, clip, words, sfx, span, enter, leave, titleIn, sweep, VERT } = c;

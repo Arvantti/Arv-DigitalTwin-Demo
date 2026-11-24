@@ -83,3 +83,25 @@
 .gfh{fill:#9fd0ff;font-size:28px}
 .gcut{stroke:#fff;stroke-width:3;stroke-dasharray:8 6}
 .gcurva{fill:none;stroke:#fff;stroke-width:5;stroke-linejoin:round;filter:drop-shadow(0 0 8px #4ea7ff)}
+/* Piezas comunes de la serie del ecosistema */
+.planta{overflow:visible}
+.iso .it{fill:#2d7ff9}.iso .il{fill:#13284d}.iso .ir{fill:#1d4f9c}
+.iso polygon{stroke:#9fd0ff;stroke-width:1.2}
+.iso.m2 .it{fill:#4ea7ff}.iso.m3 .it{fill:#d8dadf}
+.pulso{fill:#fff;filter:drop-shadow(0 0 8px #4ea7ff)}
+.tag{display:inline-block;padding:8px 20px;border:2px solid #4ea7ff66;border-radius:10px;font:600 28px "JetBrains Mono",monospace;color:#e6eefc;background:#0d1a30}
+.chat{padding:18px 30px;border-radius:24px 24px 24px 6px;background:#0d1a30f0;border:2px solid #4ea7ff66;text-align:left;box-shadow:0 0 30px #2d7ff933}
+.chat small{display:block;font:600 22px "JetBrains Mono",monospace;letter-spacing:1px;color:#9fb3cf;margin-bottom:6px}
+.chat span{font:800 36px Inter,sans-serif;color:#e6eefc}
+.card{padding:24px 28px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
+.card b{font:800 40px/1.1 "Inter Display",Inter,sans-serif}
+.card small,.card span{font:500 26px/1.3 Inter,sans-serif;color:var(--ice)}
+.card .ic{font:800 56px Inter,sans-serif;font-style:normal;color:var(--electric);text-shadow:0 0 20px #4ea7ff}
+.card.on{border-color:var(--electric);background:#10264acc;box-shadow:0 0 60px #2d7ff988}
+.card.al{border-color:#ff8a3d;box-shadow:0 0 50px #ff8a3d55}
+.grande{font-size:44px;padding:16px 44px}
+.recibo{width:560px;padding:22px 30px;text-align:left;font:500 26px "JetBrains Mono",monospace;color:#c9d1e0}
+.recibo b{display:block;font:800 32px Inter,sans-serif;color:#fff;margin-bottom:10px}
+.recibo div{display:flex;justify-content:space-between;padding:6px 0;border-top:1px solid #4ea7ff33}
+.recibo em{font-style:normal;color:var(--ice)}
+.ok{color:#9fd0ff}

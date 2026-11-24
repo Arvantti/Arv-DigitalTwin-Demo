@@ -1,0 +1,860 @@
+<!doctype html>
+<html lang="es" data-resolution="landscape">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1920, height=1080">
+<title>Serie Arvantti Ecosistema</title>
+<script src="assets/vendor/gsap.min.js"></script>
+<style>
+:root{--blue:#2d7ff9;--electric:#4ea7ff;--ice:#9fd0ff;--ti:#d8dadf;--dti:#7a7e86;--black:#05070c;--white:#f8fafc;--panel:#0d1a30;--alert:#ff8a3d}
+*{box-sizing:border-box}
+html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:var(--black);font-family:Inter,"Inter Display",Arial,sans-serif;color:var(--white)}
+#root{position:relative;width:1920px;height:1080px;overflow:hidden;background:var(--black)}
+.clip{position:absolute;inset:0}
+.scene{overflow:hidden}
+.w{display:inline-block;white-space:pre}
+
+/* Fondo */
+.fondo .glow{position:absolute;inset:-20%;background:radial-gradient(900px 520px at 50% 45%,#12305e55 0%,#05070c00 70%),radial-gradient(700px 400px at 80% 90%,#2d7ff922 0%,#05070c00 70%)}
+.fondo .floor{position:absolute;left:-50%;right:-50%;bottom:-10%;height:55%;perspective:900px;opacity:.45;-webkit-mask-image:linear-gradient(#0000,#000 55%);mask-image:linear-gradient(#0000,#000 55%)}
+.fondo .floorgrid{position:absolute;inset:0;transform:rotateX(68deg);transform-origin:50% 100%;background-image:linear-gradient(#4ea7ff33 2px,transparent 2px),linear-gradient(90deg,#4ea7ff33 2px,transparent 2px);background-size:120px 120px}
+.sweep{background:linear-gradient(100deg,#0000 35%,#4ea7ff18 45%,#ffffff40 50%,#4ea7ff18 55%,#0000 65%);mix-blend-mode:screen;pointer-events:none}
+#temp{left:auto;top:auto;right:20px;bottom:16px;font:700 15px "JetBrains Mono",monospace;color:var(--alert);letter-spacing:2px}
+
+/* Escenario centrado: sirve igual en horizontal y vertical */
+.st{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:40px;padding:110px 150px 200px;text-align:center}
+.kick{position:absolute;left:110px;top:70px;margin:0;font:600 26px "JetBrains Mono",monospace;letter-spacing:8px;color:var(--electric)}
+.kick b{display:inline-block;padding:4px 12px;margin-right:12px;border:2px solid var(--blue);color:#fff;font-weight:700;letter-spacing:2px}
+.h{margin:0;font:800 96px/1.05 "Inter Display",Inter,sans-serif;letter-spacing:-2px}
+.h.xl{font-size:140px;letter-spacing:-3px}
+.h.md{font-size:72px;letter-spacing:-1.5px}
+.sub{margin:0;font:500 44px/1.3 Inter,sans-serif;color:#c9d1e0}
+.ti{background:linear-gradient(100deg,#d8dadf 0%,#d8dadf 40%,#ffffff 50%,#d8dadf 60%,#d8dadf 100%);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent}
+.hl{color:var(--electric)}
+.chip{display:inline-block;padding:12px 26px;border:2px solid #4ea7ff66;border-radius:999px;background:#0d1a30cc;font:600 32px Inter,sans-serif;color:#e6eefc;box-shadow:0 0 24px #2d7ff933;white-space:nowrap}
+.chip.on{background:var(--blue);border-color:var(--electric);color:#fff;box-shadow:0 0 40px #2d7ff988}
+.row{display:flex;flex-wrap:wrap;justify-content:center;gap:28px}
+.panel{border-radius:22px;background:#0b1428f0;border:2px solid #4ea7ff88;box-shadow:0 30px 90px #000a,0 0 50px #2d7ff933}
+.marca{display:block;height:auto;filter:drop-shadow(0 0 30px #2d7ff988)}
+
+/* Subtítulos quemados con la palabra que suena resaltada */
+.cap{position:absolute;left:0;right:0;top:auto;bottom:60px;text-align:center;pointer-events:none}
+.cap span.l{display:inline-block;max-width:1500px;padding:12px 26px;border-radius:14px;background:#05070cc8;font:700 40px/1.3 Inter,sans-serif;color:#c9d1e0}
+.cap .cw{display:inline-block;white-space:pre}
+.cap .cw.on{color:#fff;text-shadow:0 0 18px #4ea7ff}
+
+/* Cierre */
+.fin .marca{width:240px}
+.fin .firma{margin:0;font:600 54px/1.25 Inter,sans-serif;color:#fff}
+.fin .url{margin:0;font:500 28px "JetBrains Mono",monospace;letter-spacing:6px;color:#7a9cc6}
+/* Estilos compartidos de las gráficas (viz.mjs) y piezas comunes de la serie, episodios 2 a 7 */
+.fondo-red{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:.32}
+.fondo-red .red{width:1700px;height:auto}
+.red{overflow:visible}
+.ra{stroke:#4ea7ff55;stroke-width:2;stroke-dasharray:1;stroke-dashoffset:1}
+.rn{fill:#0d1a30;stroke:#4ea7ff;stroke-width:3}
+.rp{fill:#fff;opacity:0;filter:drop-shadow(0 0 8px #4ea7ff) drop-shadow(0 0 16px #2d7ff9)}
+.cam{overflow:visible}
+.cn{fill:#0d1a30;stroke:#4ea7ff88;stroke-width:2}
+.cio{fill:#2d7ff9;stroke:#fff;stroke-width:3;filter:drop-shadow(0 0 10px #4ea7ff)}
+.ce{fill:none;stroke:#9fb3cf;stroke-width:2;stroke-dasharray:1;stroke-dashoffset:1}
+.cb{fill:none;stroke:#4ea7ff;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1;filter:drop-shadow(0 0 8px #4ea7ff)}
+.cb.b0{stroke:#fff;stroke-width:6}.cb.b2{stroke:#9fd0ff}
+.ct{fill:#fff;font:700 26px Inter,sans-serif;opacity:0}
+.mbar{display:flex;align-items:flex-end;gap:10px;height:86px}
+.mbar i{display:block;width:26px;border-radius:5px 5px 0 0;background:linear-gradient(#4ea7ff,#2d7ff9);transform-origin:50% 100%}
+.mbar i.al{background:linear-gradient(#ff8a3d,#c2561a)}
+.curva{width:270px;height:86px;overflow:visible}
+.cv-line{fill:none;stroke:#4ea7ff;stroke-width:4;stroke-dasharray:1;stroke-dashoffset:1;filter:drop-shadow(0 0 6px #4ea7ff)}
+.cv-area{fill:#2d7ff922}.cv-band{fill:#4ea7ff1c}
+.arbol{overflow:visible}
+.ar{stroke:#4ea7ff;stroke-width:3;stroke-dasharray:1;stroke-dashoffset:1;stroke-linecap:round}
+.ar.n0{stroke-width:6;stroke:#fff}.ar.n1{stroke-width:5;stroke:#9fd0ff}.ar.n2{stroke-width:4}.ar.n3{stroke:#4ea7ffcc}.ar.n4{stroke:#4ea7ff88;stroke-width:2}
+.aroot{fill:#2d7ff9;stroke:#fff;stroke-width:3;filter:drop-shadow(0 0 10px #4ea7ff)}
+.region,.pob,.pareto,.mc{overflow:visible}
+.ax{stroke:#7a9cc6;stroke-width:2}
+.axl,.rlab,.gen{fill:#9fb3cf;font:600 20px "JetBrains Mono",monospace;letter-spacing:1px}
+.rlab{text-anchor:middle}
+.rs{stroke:#d8dadf;stroke-width:3;stroke-dasharray:1;stroke-dashoffset:1}
+.rf{fill:#2d7ff933;stroke:#4ea7ff;stroke-width:2}
+.obj{stroke:#9fd0ff;stroke-width:3;stroke-dasharray:10 8}
+.rpto{fill:#fff;filter:drop-shadow(0 0 10px #4ea7ff)}
+.meta{fill:#2d7ff922;stroke:#4ea7ff66;stroke-width:2;stroke-dasharray:8 8}
+.cruce{stroke:#9fd0ff;stroke-width:2;opacity:0}
+.ind{fill:#4ea7ff;stroke:#fff;stroke-width:2}
+.ind.mut{fill:#d8dadf}
+.gen{font-size:24px;fill:#fff}
+.pp{fill:#4ea7ff55}
+.pf{fill:none;stroke:#fff;stroke-width:4;stroke-dasharray:1;stroke-dashoffset:1;filter:drop-shadow(0 0 8px #4ea7ff)}
+.pb{fill:#2d7ff9;stroke:#fff;stroke-width:3}
+.mcl{fill:none;stroke:#4ea7ff66;stroke-width:2;stroke-dasharray:1;stroke-dashoffset:1}
+.mch{fill:#4ea7ff}
+.gantt{display:flex;flex-direction:column;gap:18px;width:100%}
+.gr{display:flex;align-items:center;gap:20px}
+.gr span{flex:none;width:170px;text-align:right;font:600 26px Inter,sans-serif;color:#c9d1e0}
+.gt{position:relative;flex:1;height:44px;border-radius:10px;background:#0d1a30;border:1px solid #4ea7ff33}
+.gt i{position:absolute;top:6px;bottom:6px;border-radius:7px;background:linear-gradient(90deg,#2d7ff9,#4ea7ff)}
+.gt i.al{background:linear-gradient(90deg,#c2561a,#ff8a3d);box-shadow:0 0 20px #ff8a3d88}
+/* Piezas comunes */
+.vz{display:flex;flex-direction:column;align-items:center;gap:14px}
+.vz svg{display:block}
+.vz .vl{margin:0;font:600 24px "JetBrains Mono",monospace;letter-spacing:3px;color:var(--ice);text-transform:uppercase}
+.opts{display:flex;gap:26px;justify-content:center;flex-wrap:wrap}
+.opt{width:440px;padding:20px 26px;text-align:left}
+.opt b{display:block;font:700 32px Inter,sans-serif;margin-bottom:8px}
+.opt small{display:block;margin-top:10px;font:500 24px Inter,sans-serif;color:var(--ice)}
+.bar{display:flex;align-items:center;gap:14px;margin-top:8px}
+.bar span{flex:none;width:150px;font:500 22px Inter,sans-serif;color:#9fb3cf}
+.bar i{flex:none;height:12px;width:calc(var(--n) * 2.4px);border-radius:6px;background:linear-gradient(90deg,var(--blue),var(--electric));transform-origin:0 50%}
+.bar i.r{background:linear-gradient(90deg,#7a7e86,#d8dadf)}
+.bar i.al{background:linear-gradient(90deg,#c2561a,#ff8a3d)}
+.alert{color:var(--alert)}
+.chip.al{border-color:#ff8a3d;color:#ffd2b3;box-shadow:0 0 24px #ff8a3d55}
+.tag{display:inline-block;padding:6px 16px;border-radius:999px;border:2px solid #4ea7ff88;font:700 22px "JetBrains Mono",monospace;letter-spacing:2px;color:var(--ice)}
+.fams{gap:16px}
+.fams .chip{font-size:26px;padding:10px 20px}
+.tache{position:relative;display:inline-block}
+.tache::after{content:"";position:absolute;left:-10px;right:-10px;top:52%;height:6px;border-radius:4px;background:var(--alert);transform:scaleX(var(--x,0));transform-origin:0 50%}
+.card{padding:26px 30px;text-align:left;display:flex;flex-direction:column;gap:10px}
+.card b{font:800 40px/1.1 "Inter Display",Inter,sans-serif}
+.card small{font:600 22px "JetBrains Mono",monospace;letter-spacing:2px;color:var(--ice);text-transform:uppercase}
+.card span{font:500 28px/1.3 Inter,sans-serif;color:#c9d1e0}
+.card.on{border-color:var(--electric);background:#10264acc}
+.flecha{font:800 60px Inter,sans-serif;color:var(--electric);text-shadow:0 0 20px #4ea7ff}
+.gen-svg{overflow:visible}
+.gt{fill:#9fb3cf;font:700 22px "JetBrains Mono",monospace;letter-spacing:2px;text-transform:uppercase}
+.gt.hj,.gh,.gm,.gfh,.gcut{opacity:0}
+.gb{stroke:#05070c;stroke-width:2}
+.gb.c0{fill:#2d7ff9}.gb.c1{fill:#4ea7ff}.gb.c2{fill:#9fd0ff}.gb.c3{fill:#d8dadf}
+.gm{stroke:#fff;stroke-width:4;filter:drop-shadow(0 0 12px #fff)}
+.gfb{fill:#4ea7ff}
+.gf{fill:#fff;font:800 24px Inter,sans-serif}
+.gfh{fill:#9fd0ff;font-size:28px}
+.gcut{stroke:#fff;stroke-width:3;stroke-dasharray:8 6}
+.gcurva{fill:none;stroke:#fff;stroke-width:5;stroke-linejoin:round;filter:drop-shadow(0 0 8px #4ea7ff)}
+/* Piezas comunes de la serie del ecosistema */
+.planta{overflow:visible}
+.iso .it{fill:#2d7ff9}.iso .il{fill:#13284d}.iso .ir{fill:#1d4f9c}
+.iso polygon{stroke:#9fd0ff;stroke-width:1.2}
+.iso.m2 .it{fill:#4ea7ff}.iso.m3 .it{fill:#d8dadf}
+.pulso{fill:#fff;filter:drop-shadow(0 0 8px #4ea7ff)}
+.tag{display:inline-block;padding:8px 20px;border:2px solid #4ea7ff66;border-radius:10px;font:600 28px "JetBrains Mono",monospace;color:#e6eefc;background:#0d1a30}
+.chat{padding:18px 30px;border-radius:24px 24px 24px 6px;background:#0d1a30f0;border:2px solid #4ea7ff66;text-align:left;box-shadow:0 0 30px #2d7ff933}
+.chat small{display:block;font:600 22px "JetBrains Mono",monospace;letter-spacing:1px;color:#9fb3cf;margin-bottom:6px}
+.chat span{font:800 36px Inter,sans-serif;color:#e6eefc}
+.card{padding:24px 28px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
+.card b{font:800 40px/1.1 "Inter Display",Inter,sans-serif}
+.card small,.card span{font:500 26px/1.3 Inter,sans-serif;color:var(--ice)}
+.card .ic{font:800 56px Inter,sans-serif;font-style:normal;color:var(--electric);text-shadow:0 0 20px #4ea7ff}
+.card.on{border-color:var(--electric);background:#10264acc;box-shadow:0 0 60px #2d7ff988}
+.card.al{border-color:#ff8a3d;box-shadow:0 0 50px #ff8a3d55}
+.grande{font-size:44px;padding:16px 44px}
+.recibo{width:560px;padding:22px 30px;text-align:left;font:500 26px "JetBrains Mono",monospace;color:#c9d1e0}
+.recibo b{display:block;font:800 32px Inter,sans-serif;color:#fff;margin-bottom:10px}
+.recibo div{display:flex;justify-content:space-between;padding:6px 0;border-top:1px solid #4ea7ff33}
+.recibo em{font-style:normal;color:var(--ice)}
+.ok{color:#9fd0ff}
+
+/* Ep 4 · Fractal */
+.e-t{text-shadow:0 0 60px #05070c}
+.elec{gap:24px}
+.fm{width:170px}
+.mo{font-size:44px;color:#fff}
+.td2{gap:26px}.td2 .chip{font-size:40px}
+.nd{border-color:#9fb3cf;color:#c9d1e0}
+#e-met .st{gap:26px}
+.rg{font-size:34px}
+.fams{gap:14px}.fams .chip{font-size:30px}
+.mv{gap:40px}
+.mv .vz{padding:18px 24px}
+.mv small,.mcr small{font:600 24px "JetBrains Mono",monospace;letter-spacing:2px;color:var(--ice);text-transform:uppercase}
+.mv svg{width:560px;height:300px}
+.mcr{gap:40px;align-items:center}
+.mcr .vz{padding:18px 24px}
+.mcr svg{width:620px;height:330px}
+.rangos{width:640px;padding:26px 30px;display:flex;flex-direction:column;gap:26px}
+.rangos .rg{display:flex;align-items:center;gap:20px}
+.rangos .rg>span{flex:none;width:150px;text-align:right;font:700 28px Inter,sans-serif}
+.rt{position:relative;flex:1;height:46px;border-radius:12px;background:#0d1a30;border:1px solid #4ea7ff33}
+.rt i{position:absolute;top:8px;bottom:8px}
+.rb{border-radius:8px;background:linear-gradient(90deg,#7a7e8688,#4ea7ff,#7a7e8688)}
+.rm{width:20px;margin-left:-10px;top:2px!important;bottom:2px!important;border-radius:6px;background:#fff;box-shadow:0 0 16px #4ea7ff}
+.rangos .rg b.pq{flex:none;width:100px;text-align:right;font:800 34px "Inter Display",Inter,sans-serif;color:#fff}
+.caps{gap:20px}.caps .chip{font-size:32px}
+.mej{font-size:36px}
+.nuc-f{width:240px;height:240px;border-radius:50%;background:radial-gradient(#1a3a6e,#0a1222);border:3px solid var(--electric);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;box-shadow:0 0 80px #2d7ff988}
+.nuc-f b{font:800 40px "Inter Display",Inter,sans-serif}.nuc-f small{font:600 22px "JetBrains Mono",monospace;color:var(--ice)}
+.tri{gap:34px}.tri .card{width:440px}
+.j-t{max-width:1500px;text-shadow:0 0 60px #05070c}
+.opts{flex-direction:row;gap:26px}
+.opt small{display:block;margin-top:10px;font:600 24px Inter,sans-serif;color:var(--ice)}
+.ld{font-size:40px;padding:16px 40px}
+
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="85.99" data-width="1920" data-height="1080" data-fps="25">
+<div id="fondo" class="clip fondo" data-start="0.00" data-duration="85.99" data-track-index="0"><div class="glow"></div><div class="floor"><div class="floorgrid"></div></div></div>
+<div id="e-ele" class="clip scene" data-start="0.00" data-duration="10.36" data-track-index="3"><p class="kick"><b>EP 4</b> ARVANTTI · SISTEMA EMPRESARIAL</p>
+      <div class="st">
+        <h1 class="h xl e-t"><span class="w">Hay</span> <span class="w">que</span> <span class="w">elegir.</span></h1>
+        <div class="row elec"><span class="chip grande" id="el0">¿Más turnos?</span><span class="chip grande" id="el1">¿Más inventario?</span><span class="chip grande" id="el2">¿Otro proveedor?</span><span class="chip grande" id="el3">¿Otra secuencia?</span></div>
+      </div></div>
+<audio id="sfx-10" src="assets/shared/core/sfx/pop.mp3" data-start="4.97" data-duration="1.40" data-volume="0.12" data-track-index="22"></audio>
+<audio id="sfx-11" src="assets/shared/core/sfx/pop.mp3" data-start="5.91" data-duration="1.40" data-volume="0.12" data-track-index="23"></audio>
+<audio id="sfx-12" src="assets/shared/core/sfx/pop.mp3" data-start="7.00" data-duration="1.40" data-volume="0.12" data-track-index="24"></audio>
+<audio id="sfx-13" src="assets/shared/core/sfx/pop.mp3" data-start="8.12" data-duration="1.40" data-volume="0.12" data-track-index="25"></audio>
+<div id="e-fr" class="clip scene" data-start="9.86" data-duration="12.29" data-track-index="3">
+      <div class="fondo-red"><svg class="red" id="red2" viewBox="0 0 1600 900">
+    <line class="ra" id="red2-e0" x1="40" y1="310" x2="420" y2="205" pathLength="1"/><line class="ra" id="red2-e1" x1="40" y1="310" x2="420" y2="275" pathLength="1"/><line class="ra" id="red2-e2" x1="40" y1="310" x2="420" y2="345" pathLength="1"/><line class="ra" id="red2-e3" x1="40" y1="310" x2="420" y2="415" pathLength="1"/><line class="ra" id="red2-e4" x1="40" y1="310" x2="420" y2="485" pathLength="1"/><line class="ra" id="red2-e5" x1="40" y1="310" x2="420" y2="555" pathLength="1"/><line class="ra" id="red2-e6" x1="40" y1="310" x2="420" y2="625" pathLength="1"/><line class="ra" id="red2-e7" x1="40" y1="380" x2="420" y2="205" pathLength="1"/><line class="ra" id="red2-e8" x1="40" y1="380" x2="420" y2="345" pathLength="1"/><line class="ra" id="red2-e9" x1="40" y1="380" x2="420" y2="415" pathLength="1"/><line class="ra" id="red2-e10" x1="40" y1="380" x2="420" y2="485" pathLength="1"/><line class="ra" id="red2-e11" x1="40" y1="380" x2="420" y2="695" pathLength="1"/><line class="ra" id="red2-e12" x1="40" y1="450" x2="420" y2="415" pathLength="1"/><line class="ra" id="red2-e13" x1="40" y1="450" x2="420" y2="485" pathLength="1"/><line class="ra" id="red2-e14" x1="40" y1="450" x2="420" y2="555" pathLength="1"/><line class="ra" id="red2-e15" x1="40" y1="450" x2="420" y2="625" pathLength="1"/><line class="ra" id="red2-e16" x1="40" y1="520" x2="420" y2="205" pathLength="1"/><line class="ra" id="red2-e17" x1="40" y1="520" x2="420" y2="275" pathLength="1"/><line class="ra" id="red2-e18" x1="40" y1="520" x2="420" y2="345" pathLength="1"/><line class="ra" id="red2-e19" x1="40" y1="520" x2="420" y2="485" pathLength="1"/><line class="ra" id="red2-e20" x1="40" y1="520" x2="420" y2="555" pathLength="1"/><line class="ra" id="red2-e21" x1="40" y1="520" x2="420" y2="695" pathLength="1"/><line class="ra" id="red2-e22" x1="40" y1="590" x2="420" y2="205" pathLength="1"/><line class="ra" id="red2-e23" x1="40" y1="590" x2="420" y2="275" pathLength="1"/><line class="ra" id="red2-e24" x1="40" y1="590" x2="420" y2="345" pathLength="1"/><line class="ra" id="red2-e25" x1="40" y1="590" x2="420" y2="415" pathLength="1"/><line class="ra" id="red2-e26" x1="40" y1="590" x2="420" y2="485" pathLength="1"/><line class="ra" id="red2-e27" x1="40" y1="590" x2="420" y2="555" pathLength="1"/><line class="ra" id="red2-e28" x1="420" y1="205" x2="800" y2="170" pathLength="1"/><line class="ra" id="red2-e29" x1="420" y1="205" x2="800" y2="310" pathLength="1"/><line class="ra" id="red2-e30" x1="420" y1="205" x2="800" y2="380" pathLength="1"/><line class="ra" id="red2-e31" x1="420" y1="205" x2="800" y2="520" pathLength="1"/><line class="ra" id="red2-e32" x1="420" y1="205" x2="800" y2="590" pathLength="1"/><line class="ra" id="red2-e33" x1="420" y1="205" x2="800" y2="660" pathLength="1"/><line class="ra" id="red2-e34" x1="420" y1="205" x2="800" y2="730" pathLength="1"/><line class="ra" id="red2-e35" x1="420" y1="275" x2="800" y2="240" pathLength="1"/><line class="ra" id="red2-e36" x1="420" y1="275" x2="800" y2="310" pathLength="1"/><line class="ra" id="red2-e37" x1="420" y1="275" x2="800" y2="590" pathLength="1"/><line class="ra" id="red2-e38" x1="420" y1="275" x2="800" y2="730" pathLength="1"/><line class="ra" id="red2-e39" x1="420" y1="345" x2="800" y2="170" pathLength="1"/><line class="ra" id="red2-e40" x1="420" y1="345" x2="800" y2="240" pathLength="1"/><line class="ra" id="red2-e41" x1="420" y1="345" x2="800" y2="380" pathLength="1"/><line class="ra" id="red2-e42" x1="420" y1="345" x2="800" y2="450" pathLength="1"/><line class="ra" id="red2-e43" x1="420" y1="345" x2="800" y2="590" pathLength="1"/><line class="ra" id="red2-e44" x1="420" y1="345" x2="800" y2="660" pathLength="1"/><line class="ra" id="red2-e45" x1="420" y1="345" x2="800" y2="730" pathLength="1"/><line class="ra" id="red2-e46" x1="420" y1="415" x2="800" y2="170" pathLength="1"/><line class="ra" id="red2-e47" x1="420" y1="415" x2="800" y2="240" pathLength="1"/><line class="ra" id="red2-e48" x1="420" y1="415" x2="800" y2="310" pathLength="1"/><line class="ra" id="red2-e49" x1="420" y1="415" x2="800" y2="590" pathLength="1"/><line class="ra" id="red2-e50" x1="420" y1="415" x2="800" y2="660" pathLength="1"/><line class="ra" id="red2-e51" x1="420" y1="485" x2="800" y2="240" pathLength="1"/><line class="ra" id="red2-e52" x1="420" y1="485" x2="800" y2="310" pathLength="1"/><line class="ra" id="red2-e53" x1="420" y1="485" x2="800" y2="380" pathLength="1"/><line class="ra" id="red2-e54" x1="420" y1="485" x2="800" y2="520" pathLength="1"/><line class="ra" id="red2-e55" x1="420" y1="485" x2="800" y2="590" pathLength="1"/><line class="ra" id="red2-e56" x1="420" y1="485" x2="800" y2="730" pathLength="1"/><line class="ra" id="red2-e57" x1="420" y1="555" x2="800" y2="170" pathLength="1"/><line class="ra" id="red2-e58" x1="420" y1="555" x2="800" y2="240" pathLength="1"/><line class="ra" id="red2-e59" x1="420" y1="555" x2="800" y2="310" pathLength="1"/><line class="ra" id="red2-e60" x1="420" y1="555" x2="800" y2="520" pathLength="1"/><line class="ra" id="red2-e61" x1="420" y1="555" x2="800" y2="730" pathLength="1"/><line class="ra" id="red2-e62" x1="420" y1="625" x2="800" y2="170" pathLength="1"/><line class="ra" id="red2-e63" x1="420" y1="625" x2="800" y2="310" pathLength="1"/><line class="ra" id="red2-e64" x1="420" y1="625" x2="800" y2="380" pathLength="1"/><line class="ra" id="red2-e65" x1="420" y1="625" x2="800" y2="450" pathLength="1"/><line class="ra" id="red2-e66" x1="420" y1="625" x2="800" y2="590" pathLength="1"/><line class="ra" id="red2-e67" x1="420" y1="625" x2="800" y2="730" pathLength="1"/><line class="ra" id="red2-e68" x1="420" y1="695" x2="800" y2="170" pathLength="1"/><line class="ra" id="red2-e69" x1="420" y1="695" x2="800" y2="310" pathLength="1"/><line class="ra" id="red2-e70" x1="420" y1="695" x2="800" y2="450" pathLength="1"/><line class="ra" id="red2-e71" x1="420" y1="695" x2="800" y2="590" pathLength="1"/><line class="ra" id="red2-e72" x1="420" y1="695" x2="800" y2="660" pathLength="1"/><line class="ra" id="red2-e73" x1="800" y1="170" x2="1180" y2="205" pathLength="1"/><line class="ra" id="red2-e74" x1="800" y1="170" x2="1180" y2="275" pathLength="1"/><line class="ra" id="red2-e75" x1="800" y1="170" x2="1180" y2="345" pathLength="1"/><line class="ra" id="red2-e76" x1="800" y1="170" x2="1180" y2="415" pathLength="1"/><line class="ra" id="red2-e77" x1="800" y1="170" x2="1180" y2="485" pathLength="1"/><line class="ra" id="red2-e78" x1="800" y1="170" x2="1180" y2="625" pathLength="1"/><line class="ra" id="red2-e79" x1="800" y1="170" x2="1180" y2="695" pathLength="1"/><line class="ra" id="red2-e80" x1="800" y1="240" x2="1180" y2="205" pathLength="1"/><line class="ra" id="red2-e81" x1="800" y1="240" x2="1180" y2="345" pathLength="1"/><line class="ra" id="red2-e82" x1="800" y1="240" x2="1180" y2="415" pathLength="1"/><line class="ra" id="red2-e83" x1="800" y1="240" x2="1180" y2="485" pathLength="1"/><line class="ra" id="red2-e84" x1="800" y1="240" x2="1180" y2="625" pathLength="1"/><line class="ra" id="red2-e85" x1="800" y1="310" x2="1180" y2="205" pathLength="1"/><line class="ra" id="red2-e86" x1="800" y1="310" x2="1180" y2="275" pathLength="1"/><line class="ra" id="red2-e87" x1="800" y1="310" x2="1180" y2="345" pathLength="1"/><line class="ra" id="red2-e88" x1="800" y1="310" x2="1180" y2="415" pathLength="1"/><line class="ra" id="red2-e89" x1="800" y1="310" x2="1180" y2="625" pathLength="1"/><line class="ra" id="red2-e90" x1="800" y1="310" x2="1180" y2="695" pathLength="1"/><line class="ra" id="red2-e91" x1="800" y1="380" x2="1180" y2="205" pathLength="1"/><line class="ra" id="red2-e92" x1="800" y1="380" x2="1180" y2="275" pathLength="1"/><line class="ra" id="red2-e93" x1="800" y1="380" x2="1180" y2="345" pathLength="1"/><line class="ra" id="red2-e94" x1="800" y1="380" x2="1180" y2="415" pathLength="1"/><line class="ra" id="red2-e95" x1="800" y1="380" x2="1180" y2="485" pathLength="1"/><line class="ra" id="red2-e96" x1="800" y1="380" x2="1180" y2="555" pathLength="1"/><line class="ra" id="red2-e97" x1="800" y1="380" x2="1180" y2="625" pathLength="1"/><line class="ra" id="red2-e98" x1="800" y1="380" x2="1180" y2="695" pathLength="1"/><line class="ra" id="red2-e99" x1="800" y1="450" x2="1180" y2="485" pathLength="1"/><line class="ra" id="red2-e100" x1="800" y1="450" x2="1180" y2="555" pathLength="1"/><line class="ra" id="red2-e101" x1="800" y1="450" x2="1180" y2="625" pathLength="1"/><line class="ra" id="red2-e102" x1="800" y1="450" x2="1180" y2="695" pathLength="1"/><line class="ra" id="red2-e103" x1="800" y1="520" x2="1180" y2="205" pathLength="1"/><line class="ra" id="red2-e104" x1="800" y1="520" x2="1180" y2="345" pathLength="1"/><line class="ra" id="red2-e105" x1="800" y1="520" x2="1180" y2="485" pathLength="1"/><line class="ra" id="red2-e106" x1="800" y1="520" x2="1180" y2="555" pathLength="1"/><line class="ra" id="red2-e107" x1="800" y1="520" x2="1180" y2="625" pathLength="1"/><line class="ra" id="red2-e108" x1="800" y1="520" x2="1180" y2="695" pathLength="1"/><line class="ra" id="red2-e109" x1="800" y1="590" x2="1180" y2="205" pathLength="1"/><line class="ra" id="red2-e110" x1="800" y1="590" x2="1180" y2="275" pathLength="1"/><line class="ra" id="red2-e111" x1="800" y1="590" x2="1180" y2="415" pathLength="1"/><line class="ra" id="red2-e112" x1="800" y1="590" x2="1180" y2="485" pathLength="1"/><line class="ra" id="red2-e113" x1="800" y1="590" x2="1180" y2="555" pathLength="1"/><line class="ra" id="red2-e114" x1="800" y1="590" x2="1180" y2="625" pathLength="1"/><line class="ra" id="red2-e115" x1="800" y1="590" x2="1180" y2="695" pathLength="1"/><line class="ra" id="red2-e116" x1="800" y1="660" x2="1180" y2="205" pathLength="1"/><line class="ra" id="red2-e117" x1="800" y1="660" x2="1180" y2="275" pathLength="1"/><line class="ra" id="red2-e118" x1="800" y1="660" x2="1180" y2="415" pathLength="1"/><line class="ra" id="red2-e119" x1="800" y1="660" x2="1180" y2="485" pathLength="1"/><line class="ra" id="red2-e120" x1="800" y1="730" x2="1180" y2="205" pathLength="1"/><line class="ra" id="red2-e121" x1="800" y1="730" x2="1180" y2="275" pathLength="1"/><line class="ra" id="red2-e122" x1="800" y1="730" x2="1180" y2="345" pathLength="1"/><line class="ra" id="red2-e123" x1="800" y1="730" x2="1180" y2="485" pathLength="1"/><line class="ra" id="red2-e124" x1="800" y1="730" x2="1180" y2="555" pathLength="1"/><line class="ra" id="red2-e125" x1="800" y1="730" x2="1180" y2="695" pathLength="1"/><line class="ra" id="red2-e126" x1="1180" y1="205" x2="1560" y2="310" pathLength="1"/><line class="ra" id="red2-e127" x1="1180" y1="205" x2="1560" y2="380" pathLength="1"/><line class="ra" id="red2-e128" x1="1180" y1="205" x2="1560" y2="450" pathLength="1"/><line class="ra" id="red2-e129" x1="1180" y1="205" x2="1560" y2="520" pathLength="1"/><line class="ra" id="red2-e130" x1="1180" y1="275" x2="1560" y2="310" pathLength="1"/><line class="ra" id="red2-e131" x1="1180" y1="275" x2="1560" y2="380" pathLength="1"/><line class="ra" id="red2-e132" x1="1180" y1="345" x2="1560" y2="310" pathLength="1"/><line class="ra" id="red2-e133" x1="1180" y1="345" x2="1560" y2="450" pathLength="1"/><line class="ra" id="red2-e134" x1="1180" y1="345" x2="1560" y2="520" pathLength="1"/><line class="ra" id="red2-e135" x1="1180" y1="345" x2="1560" y2="590" pathLength="1"/><line class="ra" id="red2-e136" x1="1180" y1="415" x2="1560" y2="310" pathLength="1"/><line class="ra" id="red2-e137" x1="1180" y1="415" x2="1560" y2="380" pathLength="1"/><line class="ra" id="red2-e138" x1="1180" y1="415" x2="1560" y2="450" pathLength="1"/><line class="ra" id="red2-e139" x1="1180" y1="415" x2="1560" y2="520" pathLength="1"/><line class="ra" id="red2-e140" x1="1180" y1="415" x2="1560" y2="590" pathLength="1"/><line class="ra" id="red2-e141" x1="1180" y1="485" x2="1560" y2="450" pathLength="1"/><line class="ra" id="red2-e142" x1="1180" y1="485" x2="1560" y2="520" pathLength="1"/><line class="ra" id="red2-e143" x1="1180" y1="485" x2="1560" y2="590" pathLength="1"/><line class="ra" id="red2-e144" x1="1180" y1="555" x2="1560" y2="380" pathLength="1"/><line class="ra" id="red2-e145" x1="1180" y1="555" x2="1560" y2="450" pathLength="1"/><line class="ra" id="red2-e146" x1="1180" y1="555" x2="1560" y2="520" pathLength="1"/><line class="ra" id="red2-e147" x1="1180" y1="555" x2="1560" y2="590" pathLength="1"/><line class="ra" id="red2-e148" x1="1180" y1="625" x2="1560" y2="380" pathLength="1"/><line class="ra" id="red2-e149" x1="1180" y1="625" x2="1560" y2="450" pathLength="1"/><line class="ra" id="red2-e150" x1="1180" y1="695" x2="1560" y2="310" pathLength="1"/><line class="ra" id="red2-e151" x1="1180" y1="695" x2="1560" y2="450" pathLength="1"/><line class="ra" id="red2-e152" x1="1180" y1="695" x2="1560" y2="590" pathLength="1"/>
+    <circle class="rn" id="red2-n0" cx="40" cy="310" r="11"/><circle class="rn" id="red2-n1" cx="40" cy="380" r="11"/><circle class="rn" id="red2-n2" cx="40" cy="450" r="11"/><circle class="rn" id="red2-n3" cx="40" cy="520" r="11"/><circle class="rn" id="red2-n4" cx="40" cy="590" r="11"/><circle class="rn" id="red2-n5" cx="420" cy="205" r="11"/><circle class="rn" id="red2-n6" cx="420" cy="275" r="11"/><circle class="rn" id="red2-n7" cx="420" cy="345" r="11"/><circle class="rn" id="red2-n8" cx="420" cy="415" r="11"/><circle class="rn" id="red2-n9" cx="420" cy="485" r="11"/><circle class="rn" id="red2-n10" cx="420" cy="555" r="11"/><circle class="rn" id="red2-n11" cx="420" cy="625" r="11"/><circle class="rn" id="red2-n12" cx="420" cy="695" r="11"/><circle class="rn" id="red2-n13" cx="800" cy="170" r="11"/><circle class="rn" id="red2-n14" cx="800" cy="240" r="11"/><circle class="rn" id="red2-n15" cx="800" cy="310" r="11"/><circle class="rn" id="red2-n16" cx="800" cy="380" r="11"/><circle class="rn" id="red2-n17" cx="800" cy="450" r="11"/><circle class="rn" id="red2-n18" cx="800" cy="520" r="11"/><circle class="rn" id="red2-n19" cx="800" cy="590" r="11"/><circle class="rn" id="red2-n20" cx="800" cy="660" r="11"/><circle class="rn" id="red2-n21" cx="800" cy="730" r="11"/><circle class="rn" id="red2-n22" cx="1180" cy="205" r="11"/><circle class="rn" id="red2-n23" cx="1180" cy="275" r="11"/><circle class="rn" id="red2-n24" cx="1180" cy="345" r="11"/><circle class="rn" id="red2-n25" cx="1180" cy="415" r="11"/><circle class="rn" id="red2-n26" cx="1180" cy="485" r="11"/><circle class="rn" id="red2-n27" cx="1180" cy="555" r="11"/><circle class="rn" id="red2-n28" cx="1180" cy="625" r="11"/><circle class="rn" id="red2-n29" cx="1180" cy="695" r="11"/><circle class="rn" id="red2-n30" cx="1560" cy="310" r="11"/><circle class="rn" id="red2-n31" cx="1560" cy="380" r="11"/><circle class="rn" id="red2-n32" cx="1560" cy="450" r="11"/><circle class="rn" id="red2-n33" cx="1560" cy="520" r="11"/><circle class="rn" id="red2-n34" cx="1560" cy="590" r="11"/>
+    <circle class="rp" id="red2-p0" r="6" cx="0" cy="0"/><circle class="rp" id="red2-p1" r="6" cx="0" cy="0"/><circle class="rp" id="red2-p2" r="6" cx="0" cy="0"/><circle class="rp" id="red2-p3" r="6" cx="0" cy="0"/><circle class="rp" id="red2-p4" r="6" cx="0" cy="0"/><circle class="rp" id="red2-p5" r="6" cx="0" cy="0"/><circle class="rp" id="red2-p6" r="6" cx="0" cy="0"/><circle class="rp" id="red2-p7" r="6" cx="0" cy="0"/><circle class="rp" id="red2-p8" r="6" cx="0" cy="0"/><circle class="rp" id="red2-p9" r="6" cx="0" cy="0"/><circle class="rp" id="red2-p10" r="6" cx="0" cy="0"/><circle class="rp" id="red2-p11" r="6" cx="0" cy="0"/><circle class="rp" id="red2-p12" r="6" cx="0" cy="0"/><circle class="rp" id="red2-p13" r="6" cx="0" cy="0"/>
+  </svg></div>
+      <div class="st">
+        <img class="marca fm" src="assets/clips/marca.png" alt="">
+        <h1 class="h xl ti">Arvantti Fractal</h1>
+        <p class="sub mo">Motor de optimización y apoyo a la decisión</p>
+        <div class="row td2"><span class="chip nd">No decide por ti</span><span class="chip on tu">Tú decides</span></div>
+      </div></div>
+<audio id="sfx-2a" src="assets/shared/core/sfx/whoosh-short.mp3" data-start="10.51" data-duration="1.40" data-volume="0.2" data-track-index="27"></audio>
+<audio id="sfx-2b" src="assets/shared/core/sfx/spark.wav" data-start="19.39" data-duration="1.40" data-volume="0.18" data-track-index="28"></audio>
+<div id="e-met" class="clip scene" data-start="21.64" data-duration="15.11" data-track-index="3"><p class="kick"><b>EP 4</b> ARVANTTI · SISTEMA EMPRESARIAL</p>
+      <div class="st">
+        <span class="chip on rg">1 · Incorpora tus reglas</span>
+        <div class="row fams" id="fa3"><span class="chip" id="fa3-0">Inteligencia artificial</span><span class="chip" id="fa3-1">Optimización matemática</span><span class="chip" id="fa3-2">Genéticos y evolutivos</span><span class="chip" id="fa3-3">Estocásticos</span><span class="chip" id="fa3-4">Monte Carlo</span></div>
+        <div class="row mv">
+          <div class="panel vz"><svg class="cam" id="cm3" viewBox="0 0 560 300">
+    <circle class="cn" cx="70.0" cy="50.0" r="6"/><circle class="cn" cx="70.0" cy="116.7" r="6"/><circle class="cn" cx="70.0" cy="183.3" r="6"/><circle class="cn" cx="70.0" cy="250.0" r="6"/><circle class="cn" cx="146.2" cy="44.6" r="6"/><circle class="cn" cx="149.5" cy="106.5" r="6"/><circle class="cn" cx="160.5" cy="191.7" r="6"/><circle class="cn" cx="141.6" cy="255.2" r="6"/><circle class="cn" cx="226.1" cy="43.1" r="6"/><circle class="cn" cx="246.6" cy="111.2" r="6"/><circle class="cn" cx="233.8" cy="179.9" r="6"/><circle class="cn" cx="238.6" cy="253.4" r="6"/><circle class="cn" cx="318.8" cy="49.5" r="6"/><circle class="cn" cx="327.1" cy="114.2" r="6"/><circle class="cn" cx="310.8" cy="188.9" r="6"/><circle class="cn" cx="330.2" cy="238.9" r="6"/><circle class="cn" cx="400.1" cy="41.0" r="6"/><circle class="cn" cx="408.3" cy="105.9" r="6"/><circle class="cn" cx="401.8" cy="193.5" r="6"/><circle class="cn" cx="415.2" cy="255.5" r="6"/><circle class="cn" cx="490.0" cy="50.0" r="6"/><circle class="cn" cx="490.0" cy="116.7" r="6"/><circle class="cn" cx="490.0" cy="183.3" r="6"/><circle class="cn" cx="490.0" cy="250.0" r="6"/>
+    <path class="ce" id="cm3-x0" d="M20.0 150.0 L70.0 250.0 L160.5 191.7 L233.8 179.9 L330.2 238.9 L401.8 193.5 L490.0 116.7 L540.0 150.0" pathLength="1"/><path class="ce" id="cm3-x1" d="M20.0 150.0 L70.0 50.0 L146.2 44.6 L246.6 111.2 L310.8 188.9 L415.2 255.5 L490.0 250.0 L540.0 150.0" pathLength="1"/><path class="ce" id="cm3-x2" d="M20.0 150.0 L70.0 116.7 L149.5 106.5 L246.6 111.2 L327.1 114.2 L400.1 41.0 L490.0 50.0 L540.0 150.0" pathLength="1"/><path class="ce" id="cm3-x3" d="M20.0 150.0 L70.0 50.0 L149.5 106.5 L226.1 43.1 L318.8 49.5 L408.3 105.9 L490.0 116.7 L540.0 150.0" pathLength="1"/><path class="ce" id="cm3-x4" d="M20.0 150.0 L70.0 116.7 L160.5 191.7 L246.6 111.2 L318.8 49.5 L400.1 41.0 L490.0 50.0 L540.0 150.0" pathLength="1"/><path class="ce" id="cm3-x5" d="M20.0 150.0 L70.0 116.7 L160.5 191.7 L233.8 179.9 L327.1 114.2 L408.3 105.9 L490.0 50.0 L540.0 150.0" pathLength="1"/><path class="ce" id="cm3-x6" d="M20.0 150.0 L70.0 116.7 L146.2 44.6 L226.1 43.1 L327.1 114.2 L401.8 193.5 L490.0 116.7 L540.0 150.0" pathLength="1"/><path class="ce" id="cm3-x7" d="M20.0 150.0 L70.0 116.7 L160.5 191.7 L233.8 179.9 L327.1 114.2 L401.8 193.5 L490.0 183.3 L540.0 150.0" pathLength="1"/><path class="ce" id="cm3-x8" d="M20.0 150.0 L70.0 250.0 L160.5 191.7 L233.8 179.9 L310.8 188.9 L408.3 105.9 L490.0 116.7 L540.0 150.0" pathLength="1"/><path class="ce" id="cm3-x9" d="M20.0 150.0 L70.0 116.7 L160.5 191.7 L233.8 179.9 L330.2 238.9 L401.8 193.5 L490.0 183.3 L540.0 150.0" pathLength="1"/><path class="ce" id="cm3-x10" d="M20.0 150.0 L70.0 50.0 L149.5 106.5 L226.1 43.1 L318.8 49.5 L400.1 41.0 L490.0 50.0 L540.0 150.0" pathLength="1"/><path class="ce" id="cm3-x11" d="M20.0 150.0 L70.0 183.3 L141.6 255.2 L238.6 253.4 L330.2 238.9 L401.8 193.5 L490.0 250.0 L540.0 150.0" pathLength="1"/>
+    <path class="cb b0" id="cm3-b0" d="M20.0 150.0 L70.0 183.3 L149.5 106.5 L246.6 111.2 L327.1 114.2 L400.1 41.0 L490.0 50.0 L540.0 150.0" pathLength="1"/><path class="cb b1" id="cm3-b1" d="M20.0 150.0 L70.0 50.0 L146.2 44.6 L246.6 111.2 L327.1 114.2 L408.3 105.9 L490.0 183.3 L540.0 150.0" pathLength="1"/><path class="cb b2" id="cm3-b2" d="M20.0 150.0 L70.0 250.0 L141.6 255.2 L238.6 253.4 L310.8 188.9 L401.8 193.5 L490.0 183.3 L540.0 150.0" pathLength="1"/>
+    <circle class="cio" cx="20" cy="150" r="14"/><circle class="cio fin" cx="540" cy="150" r="14"/>
+    <text class="ct" id="cm3-t0" x="504.0" y="36.0">A</text><text class="ct" id="cm3-t1" x="504.0" y="169.3">B</text><text class="ct" id="cm3-t2" x="504.0" y="169.3">C</text>
+  </svg><small>Busca mejores planes</small></div>
+          <div class="panel vz"><svg class="pareto" id="pr3" viewBox="0 0 520 300">
+    <line class="ax" x1="50" y1="250" x2="510" y2="250"/><line class="ax" x1="50" y1="250" x2="50" y2="10"/>
+    <text class="axl" x="510" y="284" text-anchor="end">Menos energía →</text><text class="axl" x="60" y="26">↑ Entregas a tiempo</text>
+    <circle class="pp" cx="156.4" cy="127.0" r="7"/><circle class="pp" cx="79.3" cy="105.0" r="7"/><circle class="pp" cx="108.4" cy="102.4" r="7"/><circle class="pp" cx="338.1" cy="161.6" r="7"/><circle class="pp" cx="185.2" cy="89.2" r="7"/><circle class="pp" cx="339.5" cy="136.8" r="7"/><circle class="pp" cx="263.6" cy="203.1" r="7"/><circle class="pp" cx="105.3" cy="74.1" r="7"/><circle class="pp" cx="122.8" cy="158.0" r="7"/><circle class="pp" cx="358.0" cy="203.1" r="7"/><circle class="pp" cx="322.6" cy="129.2" r="7"/><circle class="pp" cx="359.1" cy="163.6" r="7"/><circle class="pp" cx="282.5" cy="156.0" r="7"/><circle class="pp" cx="197.8" cy="222.3" r="7"/><circle class="pp" cx="64.6" cy="205.9" r="7"/><circle class="pp" cx="116.8" cy="130.3" r="7"/><circle class="pp" cx="335.8" cy="198.1" r="7"/><circle class="pp" cx="352.6" cy="188.7" r="7"/>
+    <path class="pf" d="M440.0 240.0 L427.4 193.4 L390.4 150.0 L331.6 112.7 L255.0 84.1 L165.8 66.1 L70.0 60.0" pathLength="1"/>
+    <circle class="pb" cx="440.0" cy="240.0" r="11"/><circle class="pb" cx="427.4" cy="193.4" r="11"/><circle class="pb" cx="390.4" cy="150.0" r="11"/><circle class="pb" cx="331.6" cy="112.7" r="11"/><circle class="pb" cx="255.0" cy="84.1" r="11"/><circle class="pb" cx="165.8" cy="66.1" r="11"/><circle class="pb" cx="70.0" cy="60.0" r="11"/></svg><small>Varios objetivos a la vez</small></div>
+        </div>
+      </div></div>
+<audio id="sfx-3a" src="assets/shared/core/sfx/pop.mp3" data-start="22.19" data-duration="1.40" data-volume="0.15" data-track-index="30"></audio>
+<audio id="sfx-30" src="assets/shared/core/sfx/pop.mp3" data-start="25.39" data-duration="1.40" data-volume="0.1" data-track-index="31"></audio>
+<audio id="sfx-31" src="assets/shared/core/sfx/pop.mp3" data-start="26.91" data-duration="1.40" data-volume="0.1" data-track-index="32"></audio>
+<audio id="sfx-32" src="assets/shared/core/sfx/pop.mp3" data-start="28.35" data-duration="1.40" data-volume="0.1" data-track-index="33"></audio>
+<audio id="sfx-33" src="assets/shared/core/sfx/pop.mp3" data-start="30.59" data-duration="1.40" data-volume="0.1" data-track-index="34"></audio>
+<div id="e-mc" class="clip scene" data-start="36.25" data-duration="18.30" data-track-index="3"><p class="kick"><b>EP 4</b> ARVANTTI · SISTEMA EMPRESARIAL</p>
+      <div class="st">
+        <div class="row mcr">
+          <div class="panel vz"><svg class="mc" id="mc4" viewBox="0 0 620 330">
+    <path class="mcl" id="mc4-l0" d="M40.0 165.0 L72.0 152.3 L104.1 140.0 L136.1 127.6 L168.1 130.0 L200.2 121.0 L232.2 138.0 L264.2 150.4 L296.3 140.9 L328.3 142.3 L360.3 143.4 L392.4 163.5 L424.4 152.3" pathLength="1"/><path class="mcl" id="mc4-l1" d="M40.0 165.0 L72.0 174.8 L104.1 175.8 L136.1 175.5 L168.1 180.8 L200.2 168.5 L232.2 159.4 L264.2 149.5 L296.3 156.7 L328.3 173.0 L360.3 183.8 L392.4 190.5 L424.4 186.5" pathLength="1"/><path class="mcl" id="mc4-l2" d="M40.0 165.0 L72.0 165.9 L104.1 155.4 L136.1 156.0 L168.1 158.5 L200.2 157.9 L232.2 158.1 L264.2 145.2 L296.3 130.5 L328.3 133.4 L360.3 148.1 L392.4 142.3 L424.4 152.4" pathLength="1"/><path class="mcl" id="mc4-l3" d="M40.0 165.0 L72.0 160.5 L104.1 166.6 L136.1 165.3 L168.1 153.9 L200.2 158.3 L232.2 156.2 L264.2 146.1 L296.3 154.3 L328.3 171.1 L360.3 155.7 L392.4 157.9 L424.4 173.4" pathLength="1"/><path class="mcl" id="mc4-l4" d="M40.0 165.0 L72.0 165.3 L104.1 179.1 L136.1 169.8 L168.1 162.3 L200.2 168.3 L232.2 185.3 L264.2 198.3 L296.3 206.9 L328.3 205.2 L360.3 201.2 L392.4 188.0 L424.4 169.3" pathLength="1"/><path class="mcl" id="mc4-l5" d="M40.0 165.0 L72.0 150.8 L104.1 145.3 L136.1 151.6 L168.1 136.6 L200.2 139.9 L232.2 149.3 L264.2 133.7 L296.3 123.1 L328.3 113.0 L360.3 103.2 L392.4 107.0 L424.4 102.6" pathLength="1"/><path class="mcl" id="mc4-l6" d="M40.0 165.0 L72.0 166.4 L104.1 166.9 L136.1 166.3 L168.1 155.2 L200.2 149.6 L232.2 156.8 L264.2 142.8 L296.3 141.3 L328.3 125.2 L360.3 116.9 L392.4 119.6 L424.4 119.8" pathLength="1"/><path class="mcl" id="mc4-l7" d="M40.0 165.0 L72.0 184.3 L104.1 183.4 L136.1 195.7 L168.1 179.4 L200.2 193.9 L232.2 204.9 L264.2 194.1 L296.3 193.9 L328.3 189.0 L360.3 203.5 L392.4 200.7 L424.4 217.5" pathLength="1"/><path class="mcl" id="mc4-l8" d="M40.0 165.0 L72.0 159.3 L104.1 150.8 L136.1 139.7 L168.1 149.1 L200.2 169.9 L232.2 176.2 L264.2 185.2 L296.3 193.4 L328.3 190.5 L360.3 196.4 L392.4 201.1 L424.4 212.0" pathLength="1"/><path class="mcl" id="mc4-l9" d="M40.0 165.0 L72.0 167.5 L104.1 152.8 L136.1 142.1 L168.1 158.3 L200.2 149.3 L232.2 139.8 L264.2 141.0 L296.3 126.8 L328.3 129.9 L360.3 132.9 L392.4 141.0 L424.4 135.4" pathLength="1"/><path class="mcl" id="mc4-l10" d="M40.0 165.0 L72.0 178.0 L104.1 178.2 L136.1 164.3 L168.1 168.8 L200.2 166.4 L232.2 161.5 L264.2 162.4 L296.3 171.4 L328.3 168.2 L360.3 149.6 L392.4 159.0 L424.4 148.7" pathLength="1"/><path class="mcl" id="mc4-l11" d="M40.0 165.0 L72.0 154.6 L104.1 169.6 L136.1 156.2 L168.1 141.8 L200.2 143.8 L232.2 155.6 L264.2 158.2 L296.3 153.6 L328.3 163.2 L360.3 161.6 L392.4 169.5 L424.4 178.7" pathLength="1"/><path class="mcl" id="mc4-l12" d="M40.0 165.0 L72.0 171.9 L104.1 191.4 L136.1 177.7 L168.1 161.4 L200.2 154.9 L232.2 156.1 L264.2 151.3 L296.3 154.1 L328.3 166.5 L360.3 150.2 L392.4 161.1 L424.4 168.4" pathLength="1"/><path class="mcl" id="mc4-l13" d="M40.0 165.0 L72.0 169.3 L104.1 187.7 L136.1 185.2 L168.1 198.0 L200.2 192.7 L232.2 203.6 L264.2 213.9 L296.3 225.5 L328.3 224.3 L360.3 231.6 L392.4 239.4 L424.4 254.0" pathLength="1"/><path class="mcl" id="mc4-l14" d="M40.0 165.0 L72.0 177.8 L104.1 161.1 L136.1 166.1 L168.1 166.6 L200.2 172.1 L232.2 177.1 L264.2 187.4 L296.3 204.9 L328.3 188.8 L360.3 175.4 L392.4 178.6 L424.4 173.9" pathLength="1"/><path class="mcl" id="mc4-l15" d="M40.0 165.0 L72.0 168.5 L104.1 166.1 L136.1 179.5 L168.1 171.4 L200.2 169.7 L232.2 172.7 L264.2 178.8 L296.3 185.4 L328.3 203.0 L360.3 214.2 L392.4 220.1 L424.4 232.9" pathLength="1"/><path class="mcl" id="mc4-l16" d="M40.0 165.0 L72.0 161.7 L104.1 162.2 L136.1 153.7 L168.1 150.5 L200.2 146.4 L232.2 155.8 L264.2 134.6 L296.3 123.5 L328.3 137.3 L360.3 155.4 L392.4 156.2 L424.4 159.6" pathLength="1"/><path class="mcl" id="mc4-l17" d="M40.0 165.0 L72.0 170.0 L104.1 158.5 L136.1 162.3 L168.1 176.2 L200.2 183.5 L232.2 184.6 L264.2 200.5 L296.3 199.7 L328.3 212.6 L360.3 205.4 L392.4 193.1 L424.4 196.9" pathLength="1"/><path class="mcl" id="mc4-l18" d="M40.0 165.0 L72.0 156.1 L104.1 158.6 L136.1 151.6 L168.1 167.9 L200.2 164.5 L232.2 174.1 L264.2 168.3 L296.3 172.3 L328.3 161.0 L360.3 164.8 L392.4 162.5 L424.4 152.6" pathLength="1"/><path class="mcl" id="mc4-l19" d="M40.0 165.0 L72.0 168.3 L104.1 149.0 L136.1 152.1 L168.1 168.8 L200.2 158.8 L232.2 139.9 L264.2 139.8 L296.3 146.2 L328.3 155.8 L360.3 153.5 L392.4 146.5 L424.4 128.6" pathLength="1"/><path class="mcl" id="mc4-l20" d="M40.0 165.0 L72.0 162.6 L104.1 179.6 L136.1 183.3 L168.1 177.9 L200.2 190.6 L232.2 173.3 L264.2 186.8 L296.3 186.3 L328.3 171.0 L360.3 172.4 L392.4 190.4 L424.4 183.4" pathLength="1"/><path class="mcl" id="mc4-l21" d="M40.0 165.0 L72.0 164.5 L104.1 181.2 L136.1 174.6 L168.1 167.4 L200.2 178.8 L232.2 186.4 L264.2 202.6 L296.3 196.4 L328.3 200.9 L360.3 204.2 L392.4 212.9 L424.4 216.7" pathLength="1"/><path class="mcl" id="mc4-l22" d="M40.0 165.0 L72.0 160.5 L104.1 142.6 L136.1 145.8 L168.1 144.5 L200.2 132.6 L232.2 132.2 L264.2 125.9 L296.3 110.8 L328.3 104.6 L360.3 104.1 L392.4 90.8 L424.4 86.9" pathLength="1"/><path class="mcl" id="mc4-l23" d="M40.0 165.0 L72.0 169.8 L104.1 183.8 L136.1 177.5 L168.1 172.6 L200.2 174.0 L232.2 194.3 L264.2 206.8 L296.3 199.1 L328.3 182.7 L360.3 164.9 L392.4 148.4 L424.4 145.0" pathLength="1"/><path class="mcl" id="mc4-l24" d="M40.0 165.0 L72.0 159.8 L104.1 159.2 L136.1 151.1 L168.1 137.6 L200.2 157.4 L232.2 158.1 L264.2 147.1 L296.3 135.7 L328.3 129.2 L360.3 125.2 L392.4 143.8 L424.4 158.0" pathLength="1"/><path class="mcl" id="mc4-l25" d="M40.0 165.0 L72.0 163.3 L104.1 164.4 L136.1 152.4 L168.1 146.5 L200.2 129.1 L232.2 131.8 L264.2 131.8 L296.3 122.9 L328.3 115.1 L360.3 103.5 L392.4 95.7 L424.4 83.3" pathLength="1"/><path class="mcl" id="mc4-l26" d="M40.0 165.0 L72.0 178.0 L104.1 180.3 L136.1 177.3 L168.1 160.2 L200.2 155.2 L232.2 174.6 L264.2 178.1 L296.3 177.7 L328.3 169.4 L360.3 167.1 L392.4 169.6 L424.4 171.8" pathLength="1"/><path class="mcl" id="mc4-l27" d="M40.0 165.0 L72.0 175.9 L104.1 178.7 L136.1 185.1 L168.1 185.8 L200.2 187.6 L232.2 176.4 L264.2 157.3 L296.3 167.7 L328.3 178.5 L360.3 159.9 L392.4 153.6 L424.4 160.3" pathLength="1"/><path class="mcl" id="mc4-l28" d="M40.0 165.0 L72.0 170.1 L104.1 169.7 L136.1 187.6 L168.1 169.4 L200.2 158.4 L232.2 160.9 L264.2 172.7 L296.3 177.7 L328.3 183.6 L360.3 193.5 L392.4 200.3 L424.4 198.9" pathLength="1"/><path class="mcl" id="mc4-l29" d="M40.0 165.0 L72.0 168.0 L104.1 156.1 L136.1 171.6 L168.1 158.7 L200.2 156.6 L232.2 158.9 L264.2 149.2 L296.3 167.1 L328.3 177.3 L360.3 186.2 L392.4 194.1 L424.4 196.9" pathLength="1"/><path class="mcl" id="mc4-l30" d="M40.0 165.0 L72.0 170.7 L104.1 171.8 L136.1 184.0 L168.1 193.3 L200.2 186.6 L232.2 175.8 L264.2 181.0 L296.3 187.2 L328.3 178.9 L360.3 181.4 L392.4 190.7 L424.4 192.6" pathLength="1"/><path class="mcl" id="mc4-l31" d="M40.0 165.0 L72.0 161.0 L104.1 151.3 L136.1 143.3 L168.1 141.7 L200.2 139.5 L232.2 128.1 L264.2 144.2 L296.3 150.2 L328.3 147.9 L360.3 151.3 L392.4 163.8 L424.4 149.1" pathLength="1"/><path class="mcl" id="mc4-l32" d="M40.0 165.0 L72.0 175.3 L104.1 164.9 L136.1 176.3 L168.1 157.8 L200.2 168.7 L232.2 172.1 L264.2 172.2 L296.3 160.4 L328.3 141.6 L360.3 152.7 L392.4 139.8 L424.4 139.9" pathLength="1"/><path class="mcl" id="mc4-l33" d="M40.0 165.0 L72.0 167.6 L104.1 163.5 L136.1 143.6 L168.1 141.2 L200.2 156.9 L232.2 143.2 L264.2 147.8 L296.3 155.6 L328.3 160.8 L360.3 173.1 L392.4 164.8 L424.4 182.9" pathLength="1"/><path class="mcl" id="mc4-l34" d="M40.0 165.0 L72.0 176.2 L104.1 188.7 L136.1 193.4 L168.1 200.1 L200.2 194.5 L232.2 185.7 L264.2 184.1 L296.3 175.9 L328.3 168.4 L360.3 179.9 L392.4 166.0 L424.4 179.9" pathLength="1"/><path class="mcl" id="mc4-l35" d="M40.0 165.0 L72.0 168.8 L104.1 180.3 L136.1 190.2 L168.1 189.8 L200.2 203.3 L232.2 196.6 L264.2 182.4 L296.3 189.3 L328.3 187.6 L360.3 191.6 L392.4 194.5 L424.4 195.1" pathLength="1"/><path class="mcl" id="mc4-l36" d="M40.0 165.0 L72.0 150.5 L104.1 155.8 L136.1 160.4 L168.1 161.2 L200.2 156.8 L232.2 171.3 L264.2 178.0 L296.3 160.7 L328.3 144.5 L360.3 135.6 L392.4 152.3 L424.4 141.7" pathLength="1"/><path class="mcl" id="mc4-l37" d="M40.0 165.0 L72.0 170.3 L104.1 180.8 L136.1 193.2 L168.1 183.8 L200.2 191.4 L232.2 203.8 L264.2 210.0 L296.3 217.1 L328.3 197.2 L360.3 188.6 L392.4 196.4 L424.4 204.9" pathLength="1"/><path class="mcl" id="mc4-l38" d="M40.0 165.0 L72.0 163.5 L104.1 165.3 L136.1 172.3 L168.1 169.4 L200.2 150.5 L232.2 157.5 L264.2 170.6 L296.3 168.6 L328.3 189.1 L360.3 167.5 L392.4 175.4 L424.4 168.8" pathLength="1"/><path class="mcl" id="mc4-l39" d="M40.0 165.0 L72.0 180.1 L104.1 161.4 L136.1 157.2 L168.1 165.8 L200.2 179.8 L232.2 180.6 L264.2 186.1 L296.3 198.1 L328.3 187.7 L360.3 173.0 L392.4 189.3 L424.4 176.5" pathLength="1"/><path class="mcl" id="mc4-l40" d="M40.0 165.0 L72.0 162.4 L104.1 150.4 L136.1 150.6 L168.1 132.6 L200.2 129.0 L232.2 133.3 L264.2 122.3 L296.3 119.9 L328.3 119.3 L360.3 108.7 L392.4 91.4 L424.4 108.0" pathLength="1"/><path class="mcl" id="mc4-l41" d="M40.0 165.0 L72.0 151.9 L104.1 147.3 L136.1 138.4 L168.1 136.2 L200.2 142.9 L232.2 124.9 L264.2 118.2 L296.3 103.1 L328.3 113.7 L360.3 106.5 L392.4 117.2 L424.4 119.9" pathLength="1"/><path class="mcl" id="mc4-l42" d="M40.0 165.0 L72.0 162.6 L104.1 145.4 L136.1 149.1 L168.1 146.0 L200.2 137.4 L232.2 138.0 L264.2 151.4 L296.3 139.1 L328.3 141.8 L360.3 124.5 L392.4 128.6 L424.4 112.9" pathLength="1"/><path class="mcl" id="mc4-l43" d="M40.0 165.0 L72.0 177.2 L104.1 183.6 L136.1 187.4 L168.1 185.7 L200.2 177.9 L232.2 166.0 L264.2 167.6 L296.3 154.4 L328.3 162.5 L360.3 171.1 L392.4 171.8 L424.4 176.3" pathLength="1"/><path class="mcl" id="mc4-l44" d="M40.0 165.0 L72.0 158.8 L104.1 139.8 L136.1 154.9 L168.1 154.8 L200.2 149.0 L232.2 156.5 L264.2 154.7 L296.3 159.7 L328.3 146.7 L360.3 128.3 L392.4 118.9 L424.4 108.7" pathLength="1"/><path class="mcl" id="mc4-l45" d="M40.0 165.0 L72.0 147.1 L104.1 159.4 L136.1 147.0 L168.1 146.5 L200.2 133.7 L232.2 138.2 L264.2 120.3 L296.3 103.6 L328.3 121.4 L360.3 114.5 L392.4 116.0 L424.4 131.0" pathLength="1"/><path class="mcl" id="mc4-l46" d="M40.0 165.0 L72.0 149.1 L104.1 145.6 L136.1 153.5 L168.1 153.2 L200.2 143.9 L232.2 149.1 L264.2 159.2 L296.3 163.3 L328.3 155.3 L360.3 150.9 L392.4 157.2 L424.4 139.1" pathLength="1"/><path class="mcl" id="mc4-l47" d="M40.0 165.0 L72.0 167.7 L104.1 152.9 L136.1 141.0 L168.1 129.7 L200.2 131.6 L232.2 136.2 L264.2 132.6 L296.3 146.2 L328.3 163.9 L360.3 179.5 L392.4 177.2 L424.4 184.3" pathLength="1"/><path class="mcl" id="mc4-l48" d="M40.0 165.0 L72.0 178.8 L104.1 176.5 L136.1 188.6 L168.1 177.3 L200.2 192.1 L232.2 202.6 L264.2 198.9 L296.3 198.4 L328.3 191.6 L360.3 192.2 L392.4 182.5 L424.4 181.1" pathLength="1"/><path class="mcl" id="mc4-l49" d="M40.0 165.0 L72.0 168.3 L104.1 166.9 L136.1 160.0 L168.1 149.3 L200.2 147.8 L232.2 150.8 L264.2 159.9 L296.3 170.9 L328.3 163.1 L360.3 181.7 L392.4 198.9 L424.4 190.6" pathLength="1"/>
+    <rect class="mch" x="454.4" y="83.3" width="22.4" height="13.1" rx="4"/><rect class="mch" x="454.4" y="100.4" width="44.8" height="13.1" rx="4"/><rect class="mch" x="454.4" y="117.4" width="44.8" height="13.1" rx="4"/><rect class="mch" x="454.4" y="134.5" width="78.4" height="13.1" rx="4"/><rect class="mch" x="454.4" y="151.6" width="78.4" height="13.1" rx="4"/><rect class="mch" x="454.4" y="168.7" width="145.6" height="13.1" rx="4"/><rect class="mch" x="454.4" y="185.7" width="78.4" height="13.1" rx="4"/><rect class="mch" x="454.4" y="202.8" width="44.8" height="13.1" rx="4"/><rect class="mch" x="454.4" y="219.9" width="11.2" height="13.1" rx="4"/><rect class="mch" x="454.4" y="237.0" width="11.2" height="13.1" rx="4"/></svg><small>Numerosos escenarios inciertos</small></div>
+          <div class="panel rangos"><div class="rg"><span>Opción A</span><div class="rt"><i class="rb" style="left:18%;width:64%"></i><i class="rm" style="left:55%"></i></div><b class="pq">78%</b></div><div class="rg"><span>Opción B</span><div class="rt"><i class="rb" style="left:38%;width:32%"></i><i class="rm" style="left:56%"></i></div><b class="pq">91%</b></div><div class="rg"><span>Opción C</span><div class="rt"><i class="rb" style="left:8%;width:84%"></i><i class="rm" style="left:62%"></i></div><b class="pq">64%</b></div></div>
+        </div>
+        <div class="row caps"><span class="chip" id="cp0">Prob. de cumplir</span><span class="chip" id="cp1">Variabilidad</span><span class="chip" id="cp2">Peores casos</span></div>
+        <span class="chip on mej">Las mejores opciones que encontró</span>
+      </div></div>
+<audio id="sfx-4a" src="assets/shared/core/sfx/whoosh-short.mp3" data-start="36.80" data-duration="1.40" data-volume="0.18" data-track-index="36"></audio>
+<audio id="sfx-40" src="assets/shared/core/sfx/pop.mp3" data-start="43.44" data-duration="1.40" data-volume="0.1" data-track-index="37"></audio>
+<audio id="sfx-41" src="assets/shared/core/sfx/pop.mp3" data-start="45.00" data-duration="1.40" data-volume="0.1" data-track-index="38"></audio>
+<audio id="sfx-42" src="assets/shared/core/sfx/pop.mp3" data-start="47.12" data-duration="1.40" data-volume="0.1" data-track-index="39"></audio>
+<div id="e-mods" class="clip scene" data-start="54.05" data-duration="10.38" data-track-index="3"><p class="kick"><b>EP 4</b> ARVANTTI · SISTEMA EMPRESARIAL</p>
+      <div class="st">
+        <div class="nuc-f"><b>Núcleo</b><small>Fractal</small></div>
+        <div class="row tri"><div class="panel card" id="fm0"><b>Fractal Industrial</b><small>en el gemelo</small></div><div class="panel card" id="fm1"><b>Fractal Process</b><small>en Arvantti OS</small></div><div class="panel card" id="fm2"><b>Fractal Finance</b><small>en Arvantti OS Enterprise</small></div></div>
+      </div></div>
+<audio id="sfx-50" src="assets/shared/core/sfx/pop.mp3" data-start="56.68" data-duration="1.40" data-volume="0.12" data-track-index="41"></audio>
+<audio id="sfx-51" src="assets/shared/core/sfx/pop.mp3" data-start="58.20" data-duration="1.40" data-volume="0.12" data-track-index="42"></audio>
+<audio id="sfx-52" src="assets/shared/core/sfx/pop.mp3" data-start="60.36" data-duration="1.40" data-volume="0.12" data-track-index="43"></audio>
+<div id="e-jun" class="clip scene" data-start="63.93" data-duration="12.00" data-track-index="3"><p class="kick"><b>EP 4</b> ARVANTTI · SISTEMA EMPRESARIAL</p>
+      <div class="st">
+        <h2 class="h md j-t"><span class="w">Capacidad,</span> <span class="w">procesos</span> <span class="w">y</span> <span class="w">caja</span> <span class="w">en</span> <span class="w">un</span> <span class="w">solo</span> <span class="w">cálculo</span></h2>
+        <div class="opts" id="op6"><div class="panel opt" id="op6-0"><b>Alternativa A</b><div class="bar"><span>Capacidad</span><i class="" style="--n:85"></i></div><div class="bar"><span>Procesos</span><i class="" style="--n:55"></i></div><div class="bar"><span>Caja</span><i class="" style="--n:60"></i></div><small>Más turnos</small></div><div class="panel opt" id="op6-1"><b>Alternativa B</b><div class="bar"><span>Capacidad</span><i class="" style="--n:70"></i></div><div class="bar"><span>Procesos</span><i class="" style="--n:80"></i></div><div class="bar"><span>Caja</span><i class="" style="--n:72"></i></div><small>Más inventario</small></div><div class="panel opt" id="op6-2"><b>Alternativa C</b><div class="bar"><span>Capacidad</span><i class="" style="--n:62"></i></div><div class="bar"><span>Procesos</span><i class="" style="--n:66"></i></div><div class="bar"><span>Caja</span><i class="" style="--n:88"></i></div><small>Otro proveedor</small></div></div>
+        <span class="chip on ld">La junta decide</span>
+      </div></div>
+<audio id="sfx-6a" src="assets/shared/core/sfx/pop.mp3" data-start="66.40" data-duration="1.40" data-volume="0.15" data-track-index="45"></audio>
+<audio id="sfx-6b" src="assets/shared/core/sfx/spark.wav" data-start="72.88" data-duration="1.40" data-volume="0.18" data-track-index="46"></audio>
+<div id="e-cierre" class="clip scene" data-start="75.43" data-duration="10.81" data-track-index="3">
+    <div class="st fin">
+      <img class="marca" src="assets/clips/marca.png" alt="">
+      <h1 class="h xl ti">Arvantti</h1>
+      <p class="firma">Gobierna tu IA, entiende tu operación<br>y decide mejor.</p>
+      <p class="url">arvantti.tech</p>
+    </div></div>
+<audio id="sfx-fin" src="assets/shared/core/sfx/hit.wav" data-start="76.58" data-duration="1.40" data-volume="0.28" data-track-index="48"></audio>
+<div id="sweep-0" class="clip sweep" data-start="9.76" data-duration="0.90" data-track-index="40"></div>
+<div id="sweep-1" class="clip sweep" data-start="21.54" data-duration="0.90" data-track-index="40"></div>
+<div id="sweep-2" class="clip sweep" data-start="36.15" data-duration="0.90" data-track-index="40"></div>
+<div id="sweep-3" class="clip sweep" data-start="53.95" data-duration="0.90" data-track-index="40"></div>
+<div id="sweep-4" class="clip sweep" data-start="63.83" data-duration="0.90" data-track-index="40"></div>
+<div id="sweep-5" class="clip sweep" data-start="75.33" data-duration="0.90" data-track-index="40"></div>
+<div id="cap0" class="clip cap" data-start="1.35" data-duration="2.16" data-track-index="45"><span class="l"><span class="cw" id="cap0w0">Ya</span> <span class="cw" id="cap0w1">sabemos</span> <span class="cw" id="cap0w2">qué</span> <span class="cw" id="cap0w3">pasa</span> <span class="cw" id="cap0w4">en</span> <span class="cw" id="cap0w5">la</span> <span class="cw" id="cap0w6">operación.</span></span></div>
+<div id="cap1" class="clip cap" data-start="3.51" data-duration="1.39" data-track-index="45"><span class="l"><span class="cw" id="cap1w0">Ahora</span> <span class="cw" id="cap1w1">hay</span> <span class="cw" id="cap1w2">que</span> <span class="cw" id="cap1w3">elegir:</span></span></div>
+<div id="cap2" class="clip cap" data-start="4.90" data-duration="0.96" data-track-index="45"><span class="l"><span class="cw" id="cap2w0">¿más</span> <span class="cw" id="cap2w1">turnos,</span></span></div>
+<div id="cap3" class="clip cap" data-start="5.86" data-duration="1.09" data-track-index="45"><span class="l"><span class="cw" id="cap3w0">más</span> <span class="cw" id="cap3w1">inventario,</span></span></div>
+<div id="cap4" class="clip cap" data-start="6.95" data-duration="1.12" data-track-index="45"><span class="l"><span class="cw" id="cap4w0">otro</span> <span class="cw" id="cap4w1">proveedor,</span></span></div>
+<div id="cap5" class="clip cap" data-start="8.07" data-duration="1.34" data-track-index="45"><span class="l"><span class="cw" id="cap5w0">otra</span> <span class="cw" id="cap5w1">secuencia?</span></span></div>
+<div id="cap6" class="clip cap" data-start="10.46" data-duration="2.56" data-track-index="45"><span class="l"><span class="cw" id="cap6w0">Arvantti</span> <span class="cw" id="cap6w1">Fractal</span> <span class="cw" id="cap6w2">es</span> <span class="cw" id="cap6w3">el</span> <span class="cw" id="cap6w4">motor</span> <span class="cw" id="cap6w5">de</span> <span class="cw" id="cap6w6">optimización</span></span></div>
+<div id="cap7" class="clip cap" data-start="13.02" data-duration="2.24" data-track-index="45"><span class="l"><span class="cw" id="cap7w0">y</span> <span class="cw" id="cap7w1">apoyo</span> <span class="cw" id="cap7w2">a</span> <span class="cw" id="cap7w3">la</span> <span class="cw" id="cap7w4">decisión</span> <span class="cw" id="cap7w5">de</span> <span class="cw" id="cap7w6">Arvantti.</span></span></div>
+<div id="cap8" class="clip cap" data-start="15.26" data-duration="1.36" data-track-index="45"><span class="l"><span class="cw" id="cap8w0">No</span> <span class="cw" id="cap8w1">decide</span> <span class="cw" id="cap8w2">por</span> <span class="cw" id="cap8w3">ti:</span></span></div>
+<div id="cap9" class="clip cap" data-start="16.62" data-duration="1.92" data-track-index="45"><span class="l"><span class="cw" id="cap9w0">te</span> <span class="cw" id="cap9w1">presenta</span> <span class="cw" id="cap9w2">las</span> <span class="cw" id="cap9w3">mejores</span> <span class="cw" id="cap9w4">opciones</span> <span class="cw" id="cap9w5">y</span> <span class="cw" id="cap9w6">su</span></span></div>
+<div id="cap10" class="clip cap" data-start="18.54" data-duration="2.45" data-track-index="45"><span class="l"><span class="cw" id="cap10w0">impacto,</span> <span class="cw" id="cap10w1">para</span> <span class="cw" id="cap10w2">que</span> <span class="cw" id="cap10w3">tú</span> <span class="cw" id="cap10w4">decidas.</span></span></div>
+<div id="cap11" class="clip cap" data-start="22.14" data-duration="2.16" data-track-index="45"><span class="l"><span class="cw" id="cap11w0">Primero</span> <span class="cw" id="cap11w1">incorpora</span> <span class="cw" id="cap11w2">tus</span> <span class="cw" id="cap11w3">reglas.</span></span></div>
+<div id="cap12" class="clip cap" data-start="24.30" data-duration="2.56" data-track-index="45"><span class="l"><span class="cw" id="cap12w0">Después</span> <span class="cw" id="cap12w1">combina</span> <span class="cw" id="cap12w2">inteligencia</span> <span class="cw" id="cap12w3">artificial,</span></span></div>
+<div id="cap13" class="clip cap" data-start="26.86" data-duration="1.44" data-track-index="45"><span class="l"><span class="cw" id="cap13w0">optimización</span> <span class="cw" id="cap13w1">matemática,</span></span></div>
+<div id="cap14" class="clip cap" data-start="28.30" data-duration="3.44" data-track-index="45"><span class="l"><span class="cw" id="cap14w0">algoritmos</span> <span class="cw" id="cap14w1">genéticos</span> <span class="cw" id="cap14w2">y</span> <span class="cw" id="cap14w3">evolutivos</span> <span class="cw" id="cap14w4">y</span> <span class="cw" id="cap14w5">métodos</span> <span class="cw" id="cap14w6">estocásticos</span></span></div>
+<div id="cap15" class="clip cap" data-start="31.74" data-duration="1.80" data-track-index="45"><span class="l"><span class="cw" id="cap15w0">para</span> <span class="cw" id="cap15w1">buscar</span> <span class="cw" id="cap15w2">mejores</span> <span class="cw" id="cap15w3">planes,</span></span></div>
+<div id="cap16" class="clip cap" data-start="33.54" data-duration="1.96" data-track-index="45"><span class="l"><span class="cw" id="cap16w0">con</span> <span class="cw" id="cap16w1">varios</span> <span class="cw" id="cap16w2">objetivos</span> <span class="cw" id="cap16w3">a</span> <span class="cw" id="cap16w4">la</span> <span class="cw" id="cap16w5">vez.</span></span></div>
+<div id="cap17" class="clip cap" data-start="36.75" data-duration="2.48" data-track-index="45"><span class="l"><span class="cw" id="cap17w0">Y</span> <span class="cw" id="cap17w1">con</span> <span class="cw" id="cap17w2">la</span> <span class="cw" id="cap17w3">simulación</span> <span class="cw" id="cap17w4">Montecarlo</span> <span class="cw" id="cap17w5">analiza</span> <span class="cw" id="cap17w6">cómo</span></span></div>
+<div id="cap18" class="clip cap" data-start="39.23" data-duration="4.04" data-track-index="45"><span class="l"><span class="cw" id="cap18w0">respondería</span> <span class="cw" id="cap18w1">cada</span> <span class="cw" id="cap18w2">alternativa</span> <span class="cw" id="cap18w3">ante</span> <span class="cw" id="cap18w4">numerosos</span> <span class="cw" id="cap18w5">escenarios</span> <span class="cw" id="cap18w6">inciertos:</span></span></div>
+<div id="cap19" class="clip cap" data-start="43.27" data-duration="1.68" data-track-index="45"><span class="l"><span class="cw" id="cap19w0">su</span> <span class="cw" id="cap19w1">probabilidad</span> <span class="cw" id="cap19w2">de</span> <span class="cw" id="cap19w3">cumplir,</span></span></div>
+<div id="cap20" class="clip cap" data-start="44.95" data-duration="1.96" data-track-index="45"><span class="l"><span class="cw" id="cap20w0">cuánto</span> <span class="cw" id="cap20w1">varía</span> <span class="cw" id="cap20w2">y</span> <span class="cw" id="cap20w3">qué</span> <span class="cw" id="cap20w4">tan</span> <span class="cw" id="cap20w5">malos</span> <span class="cw" id="cap20w6">son</span></span></div>
+<div id="cap21" class="clip cap" data-start="46.91" data-duration="1.52" data-track-index="45"><span class="l"><span class="cw" id="cap21w0">los</span> <span class="cw" id="cap21w1">peores</span> <span class="cw" id="cap21w2">casos.</span></span></div>
+<div id="cap22" class="clip cap" data-start="48.43" data-duration="1.88" data-track-index="45"><span class="l"><span class="cw" id="cap22w0">No</span> <span class="cw" id="cap22w1">promete</span> <span class="cw" id="cap22w2">el</span> <span class="cw" id="cap22w3">óptimo</span> <span class="cw" id="cap22w4">perfecto:</span></span></div>
+<div id="cap23" class="clip cap" data-start="50.31" data-duration="2.99" data-track-index="45"><span class="l"><span class="cw" id="cap23w0">te</span> <span class="cw" id="cap23w1">presenta</span> <span class="cw" id="cap23w2">las</span> <span class="cw" id="cap23w3">mejores</span> <span class="cw" id="cap23w4">opciones</span> <span class="cw" id="cap23w5">que</span> <span class="cw" id="cap23w6">encontró.</span></span></div>
+<div id="cap24" class="clip cap" data-start="54.55" data-duration="1.00" data-track-index="45"><span class="l"><span class="cw" id="cap24w0">Un</span> <span class="cw" id="cap24w1">núcleo,</span></span></div>
+<div id="cap25" class="clip cap" data-start="55.55" data-duration="1.08" data-track-index="45"><span class="l"><span class="cw" id="cap25w0">tres</span> <span class="cw" id="cap25w1">módulos:</span></span></div>
+<div id="cap26" class="clip cap" data-start="56.63" data-duration="1.52" data-track-index="45"><span class="l"><span class="cw" id="cap26w0">Industrial</span> <span class="cw" id="cap26w1">en</span> <span class="cw" id="cap26w2">el</span> <span class="cw" id="cap26w3">gemelo,</span></span></div>
+<div id="cap27" class="clip cap" data-start="58.15" data-duration="2.88" data-track-index="45"><span class="l"><span class="cw" id="cap27w0">Process</span> <span class="cw" id="cap27w1">en</span> <span class="cw" id="cap27w2">Arvantti</span> <span class="cw" id="cap27w3">OS</span> <span class="cw" id="cap27w4">y</span> <span class="cw" id="cap27w5">Finance</span> <span class="cw" id="cap27w6">en</span></span></div>
+<div id="cap28" class="clip cap" data-start="61.03" data-duration="2.15" data-track-index="45"><span class="l"><span class="cw" id="cap28w0">Arvantti</span> <span class="cw" id="cap28w1">OS</span> <span class="cw" id="cap28w2">Enterprise.</span></span></div>
+<div id="cap29" class="clip cap" data-start="64.43" data-duration="1.04" data-track-index="45"><span class="l"><span class="cw" id="cap29w0">Para</span> <span class="cw" id="cap29w1">la</span> <span class="cw" id="cap29w2">junta,</span></span></div>
+<div id="cap30" class="clip cap" data-start="65.47" data-duration="2.68" data-track-index="45"><span class="l"><span class="cw" id="cap30w0">Fractal</span> <span class="cw" id="cap30w1">compara</span> <span class="cw" id="cap30w2">las</span> <span class="cw" id="cap30w3">alternativas</span> <span class="cw" id="cap30w4">de</span> <span class="cw" id="cap30w5">capacidad,</span></span></div>
+<div id="cap31" class="clip cap" data-start="68.15" data-duration="2.72" data-track-index="45"><span class="l"><span class="cw" id="cap31w0">procesos</span> <span class="cw" id="cap31w1">y</span> <span class="cw" id="cap31w2">caja</span> <span class="cw" id="cap31w3">en</span> <span class="cw" id="cap31w4">un</span> <span class="cw" id="cap31w5">solo</span> <span class="cw" id="cap31w6">cálculo.</span></span></div>
+<div id="cap32" class="clip cap" data-start="70.87" data-duration="1.96" data-track-index="45"><span class="l"><span class="cw" id="cap32w0">Y</span> <span class="cw" id="cap32w1">muestra</span> <span class="cw" id="cap32w2">el</span> <span class="cw" id="cap32w3">impacto</span> <span class="cw" id="cap32w4">de</span> <span class="cw" id="cap32w5">cada</span> <span class="cw" id="cap32w6">una,</span></span></div>
+<div id="cap33" class="clip cap" data-start="72.83" data-duration="1.75" data-track-index="45"><span class="l"><span class="cw" id="cap33w0">para</span> <span class="cw" id="cap33w1">que</span> <span class="cw" id="cap33w2">la</span> <span class="cw" id="cap33w3">junta</span> <span class="cw" id="cap33w4">decida.</span></span></div>
+<audio id="voz-elegir" src="escenas/01-elegir/assets/audio/voiceover.mp3" data-start="1.40" data-duration="7.71" data-volume="1" data-track-index="89"></audio>
+<audio id="voz-fractal" src="escenas/02-fractal/assets/audio/voiceover.mp3" data-start="10.51" data-duration="10.19" data-volume="1" data-track-index="90"></audio>
+<audio id="voz-metodos" src="escenas/03-metodos/assets/audio/voiceover.mp3" data-start="22.19" data-duration="13.01" data-volume="1" data-track-index="91"></audio>
+<audio id="voz-montecarlo" src="escenas/04-montecarlo/assets/audio/voiceover.mp3" data-start="36.80" data-duration="16.20" data-volume="1" data-track-index="92"></audio>
+<audio id="voz-modulos" src="escenas/05-modulos/assets/audio/voiceover.mp3" data-start="54.60" data-duration="8.28" data-volume="1" data-track-index="93"></audio>
+<audio id="voz-junta" src="escenas/06-junta/assets/audio/voiceover.mp3" data-start="64.48" data-duration="9.80" data-volume="1" data-track-index="94"></audio>
+<audio id="voz-cierre" src="escenas/07-cierre/assets/audio/voiceover.mp3" data-start="76.58" data-duration="4.91" data-volume="1" data-track-index="95"></audio>
+<audio id="musica" src="musica-mezcla.mp3" data-start="0.00" data-duration="85.99" data-volume="0.5" data-track-index="96"></audio>
+</div>
+<script>
+window.__timelines = window.__timelines || {};
+const tl = gsap.timeline({ paused: true });
+tl.fromTo("#fondo .floorgrid",{"backgroundPositionY":"0px"},{"backgroundPositionY":"3439px","duration":85.986529,"ease":"none"},0.00);
+tl.fromTo("#fondo .glow",{"opacity":0.5},{"opacity":1,"duration":6,"ease":"sine.inOut","yoyo":true,"repeat":14},0.00);
+tl.fromTo("#e-ele .kick",{"opacity":0,"x":-30},{"opacity":1,"x":0,"duration":0.6},0.30);
+tl.fromTo("#e-ele .e-t .w",{"opacity":0,"y":40,"filter":"blur(10px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.6,"stagger":0.12,"ease":"power3.out"},3.86);
+tl.fromTo("#el0",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},4.87);
+tl.fromTo("#el1",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},5.81);
+tl.fromTo("#el2",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},6.90);
+tl.fromTo("#el3",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},8.02);
+tl.to("#e-ele",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},10.11);
+tl.fromTo("#red2 .rn",{"opacity":0,"scale":0,"transformOrigin":"50% 50%"},{"opacity":1,"scale":1,"duration":0.35,"stagger":0.025,"ease":"back.out(2)"},10.16);
+tl.fromTo("#red2 .ra",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.5,"stagger":0.006,"ease":"power2.out"},10.36);
+tl.fromTo("#red2-p0",{"attr":{"cx":40,"cy":310},"opacity":1},{"attr":{"cx":420,"cy":415},"duration":1.310969375,"ease":"none","immediateRender":false},10.66);
+tl.fromTo("#red2-p0",{"attr":{"cx":420,"cy":415},"opacity":1},{"attr":{"cx":800,"cy":450},"duration":1.310969375,"ease":"none","immediateRender":false},11.97);
+tl.fromTo("#red2-p0",{"attr":{"cx":800,"cy":450},"opacity":1},{"attr":{"cx":1180,"cy":485},"duration":1.310969375,"ease":"none","immediateRender":false},13.28);
+tl.fromTo("#red2-p0",{"attr":{"cx":1180,"cy":485},"opacity":1},{"attr":{"cx":1560,"cy":590},"duration":1.310969375,"ease":"none","immediateRender":false},14.59);
+tl.to("#red2-p0",{"opacity":0,"duration":0.15},15.90);
+tl.fromTo("#red2-p1",{"attr":{"cx":40,"cy":590},"opacity":1},{"attr":{"cx":420,"cy":205},"duration":1.310969375,"ease":"none","immediateRender":false},11.41);
+tl.fromTo("#red2-p1",{"attr":{"cx":420,"cy":205},"opacity":1},{"attr":{"cx":800,"cy":240},"duration":1.310969375,"ease":"none","immediateRender":false},12.72);
+tl.fromTo("#red2-p1",{"attr":{"cx":800,"cy":240},"opacity":1},{"attr":{"cx":1180,"cy":555},"duration":1.310969375,"ease":"none","immediateRender":false},14.03);
+tl.fromTo("#red2-p1",{"attr":{"cx":1180,"cy":555},"opacity":1},{"attr":{"cx":1560,"cy":310},"duration":1.310969375,"ease":"none","immediateRender":false},15.34);
+tl.to("#red2-p1",{"opacity":0,"duration":0.15},16.65);
+tl.fromTo("#red2-p2",{"attr":{"cx":40,"cy":590},"opacity":1},{"attr":{"cx":420,"cy":205},"duration":1.310969375,"ease":"none","immediateRender":false},12.15);
+tl.fromTo("#red2-p2",{"attr":{"cx":420,"cy":205},"opacity":1},{"attr":{"cx":800,"cy":520},"duration":1.310969375,"ease":"none","immediateRender":false},13.47);
+tl.fromTo("#red2-p2",{"attr":{"cx":800,"cy":520},"opacity":1},{"attr":{"cx":1180,"cy":485},"duration":1.310969375,"ease":"none","immediateRender":false},14.78);
+tl.fromTo("#red2-p2",{"attr":{"cx":1180,"cy":485},"opacity":1},{"attr":{"cx":1560,"cy":380},"duration":1.310969375,"ease":"none","immediateRender":false},16.09);
+tl.to("#red2-p2",{"opacity":0,"duration":0.15},17.40);
+tl.fromTo("#red2-p3",{"attr":{"cx":40,"cy":450},"opacity":1},{"attr":{"cx":420,"cy":555},"duration":1.310969375,"ease":"none","immediateRender":false},12.90);
+tl.fromTo("#red2-p3",{"attr":{"cx":420,"cy":555},"opacity":1},{"attr":{"cx":800,"cy":240},"duration":1.310969375,"ease":"none","immediateRender":false},14.21);
+tl.fromTo("#red2-p3",{"attr":{"cx":800,"cy":240},"opacity":1},{"attr":{"cx":1180,"cy":485},"duration":1.310969375,"ease":"none","immediateRender":false},15.53);
+tl.fromTo("#red2-p3",{"attr":{"cx":1180,"cy":485},"opacity":1},{"attr":{"cx":1560,"cy":590},"duration":1.310969375,"ease":"none","immediateRender":false},16.84);
+tl.to("#red2-p3",{"opacity":0,"duration":0.15},18.15);
+tl.fromTo("#red2-p4",{"attr":{"cx":40,"cy":590},"opacity":1},{"attr":{"cx":420,"cy":485},"duration":1.310969375,"ease":"none","immediateRender":false},13.65);
+tl.fromTo("#red2-p4",{"attr":{"cx":420,"cy":485},"opacity":1},{"attr":{"cx":800,"cy":730},"duration":1.310969375,"ease":"none","immediateRender":false},14.96);
+tl.fromTo("#red2-p4",{"attr":{"cx":800,"cy":730},"opacity":1},{"attr":{"cx":1180,"cy":345},"duration":1.310969375,"ease":"none","immediateRender":false},16.27);
+tl.fromTo("#red2-p4",{"attr":{"cx":1180,"cy":345},"opacity":1},{"attr":{"cx":1560,"cy":380},"duration":1.310969375,"ease":"none","immediateRender":false},17.59);
+tl.to("#red2-p4",{"opacity":0,"duration":0.15},18.90);
+tl.fromTo("#red2-p5",{"attr":{"cx":40,"cy":380},"opacity":1},{"attr":{"cx":420,"cy":555},"duration":1.310969375,"ease":"none","immediateRender":false},14.40);
+tl.fromTo("#red2-p5",{"attr":{"cx":420,"cy":555},"opacity":1},{"attr":{"cx":800,"cy":520},"duration":1.310969375,"ease":"none","immediateRender":false},15.71);
+tl.fromTo("#red2-p5",{"attr":{"cx":800,"cy":520},"opacity":1},{"attr":{"cx":1180,"cy":555},"duration":1.310969375,"ease":"none","immediateRender":false},17.02);
+tl.fromTo("#red2-p5",{"attr":{"cx":1180,"cy":555},"opacity":1},{"attr":{"cx":1560,"cy":590},"duration":1.310969375,"ease":"none","immediateRender":false},18.33);
+tl.to("#red2-p5",{"opacity":0,"duration":0.15},19.65);
+tl.fromTo("#red2-p6",{"attr":{"cx":40,"cy":380},"opacity":1},{"attr":{"cx":420,"cy":205},"duration":1.310969375,"ease":"none","immediateRender":false},15.15);
+tl.fromTo("#red2-p6",{"attr":{"cx":420,"cy":205},"opacity":1},{"attr":{"cx":800,"cy":590},"duration":1.310969375,"ease":"none","immediateRender":false},16.46);
+tl.fromTo("#red2-p6",{"attr":{"cx":800,"cy":590},"opacity":1},{"attr":{"cx":1180,"cy":555},"duration":1.310969375,"ease":"none","immediateRender":false},17.77);
+tl.fromTo("#red2-p6",{"attr":{"cx":1180,"cy":555},"opacity":1},{"attr":{"cx":1560,"cy":310},"duration":1.310969375,"ease":"none","immediateRender":false},19.08);
+tl.to("#red2-p6",{"opacity":0,"duration":0.15},20.39);
+tl.fromTo("#red2-p7",{"attr":{"cx":40,"cy":380},"opacity":1},{"attr":{"cx":420,"cy":415},"duration":1.310969375,"ease":"none","immediateRender":false},15.90);
+tl.fromTo("#red2-p7",{"attr":{"cx":420,"cy":415},"opacity":1},{"attr":{"cx":800,"cy":310},"duration":1.310969375,"ease":"none","immediateRender":false},17.21);
+tl.fromTo("#red2-p7",{"attr":{"cx":800,"cy":310},"opacity":1},{"attr":{"cx":1180,"cy":625},"duration":1.310969375,"ease":"none","immediateRender":false},18.52);
+tl.fromTo("#red2-p7",{"attr":{"cx":1180,"cy":625},"opacity":1},{"attr":{"cx":1560,"cy":590},"duration":1.310969375,"ease":"none","immediateRender":false},19.83);
+tl.to("#red2-p7",{"opacity":0,"duration":0.15},21.14);
+tl.fromTo("#red2-p8",{"attr":{"cx":40,"cy":450},"opacity":1},{"attr":{"cx":420,"cy":695},"duration":1.310969375,"ease":"none","immediateRender":false},16.65);
+tl.fromTo("#red2-p8",{"attr":{"cx":420,"cy":695},"opacity":1},{"attr":{"cx":800,"cy":730},"duration":1.310969375,"ease":"none","immediateRender":false},17.96);
+tl.fromTo("#red2-p8",{"attr":{"cx":800,"cy":730},"opacity":1},{"attr":{"cx":1180,"cy":625},"duration":1.310969375,"ease":"none","immediateRender":false},19.27);
+tl.fromTo("#red2-p8",{"attr":{"cx":1180,"cy":625},"opacity":1},{"attr":{"cx":1560,"cy":520},"duration":1.310969375,"ease":"none","immediateRender":false},20.58);
+tl.to("#red2-p8",{"opacity":0,"duration":0.15},21.89);
+tl.fromTo("#red2-p9",{"attr":{"cx":40,"cy":380},"opacity":1},{"attr":{"cx":420,"cy":485},"duration":1.310969375,"ease":"none","immediateRender":false},17.40);
+tl.fromTo("#red2-p9",{"attr":{"cx":420,"cy":485},"opacity":1},{"attr":{"cx":800,"cy":590},"duration":1.310969375,"ease":"none","immediateRender":false},18.71);
+tl.fromTo("#red2-p9",{"attr":{"cx":800,"cy":590},"opacity":1},{"attr":{"cx":1180,"cy":275},"duration":1.310969375,"ease":"none","immediateRender":false},20.02);
+tl.fromTo("#red2-p9",{"attr":{"cx":1180,"cy":275},"opacity":1},{"attr":{"cx":1560,"cy":520},"duration":1.310969375,"ease":"none","immediateRender":false},21.33);
+tl.to("#red2-p9",{"opacity":0,"duration":0.15},22.64);
+tl.fromTo("#red2-p10",{"attr":{"cx":40,"cy":380},"opacity":1},{"attr":{"cx":420,"cy":555},"duration":1.310969375,"ease":"none","immediateRender":false},18.15);
+tl.fromTo("#red2-p10",{"attr":{"cx":420,"cy":555},"opacity":1},{"attr":{"cx":800,"cy":170},"duration":1.310969375,"ease":"none","immediateRender":false},19.46);
+tl.fromTo("#red2-p10",{"attr":{"cx":800,"cy":170},"opacity":1},{"attr":{"cx":1180,"cy":485},"duration":1.310969375,"ease":"none","immediateRender":false},20.77);
+tl.fromTo("#red2-p10",{"attr":{"cx":1180,"cy":485},"opacity":1},{"attr":{"cx":1560,"cy":450},"duration":1.310969375,"ease":"none","immediateRender":false},22.08);
+tl.to("#red2-p10",{"opacity":0,"duration":0.15},23.39);
+tl.fromTo("#red2-p11",{"attr":{"cx":40,"cy":520},"opacity":1},{"attr":{"cx":420,"cy":275},"duration":1.310969375,"ease":"none","immediateRender":false},18.90);
+tl.fromTo("#red2-p11",{"attr":{"cx":420,"cy":275},"opacity":1},{"attr":{"cx":800,"cy":450},"duration":1.310969375,"ease":"none","immediateRender":false},20.21);
+tl.fromTo("#red2-p11",{"attr":{"cx":800,"cy":450},"opacity":1},{"attr":{"cx":1180,"cy":275},"duration":1.310969375,"ease":"none","immediateRender":false},21.52);
+tl.fromTo("#red2-p11",{"attr":{"cx":1180,"cy":275},"opacity":1},{"attr":{"cx":1560,"cy":380},"duration":1.310969375,"ease":"none","immediateRender":false},22.83);
+tl.to("#red2-p11",{"opacity":0,"duration":0.15},24.14);
+tl.fromTo("#red2-p12",{"attr":{"cx":40,"cy":450},"opacity":1},{"attr":{"cx":420,"cy":695},"duration":1.310969375,"ease":"none","immediateRender":false},19.65);
+tl.fromTo("#red2-p12",{"attr":{"cx":420,"cy":695},"opacity":1},{"attr":{"cx":800,"cy":380},"duration":1.310969375,"ease":"none","immediateRender":false},20.96);
+tl.fromTo("#red2-p12",{"attr":{"cx":800,"cy":380},"opacity":1},{"attr":{"cx":1180,"cy":345},"duration":1.310969375,"ease":"none","immediateRender":false},22.27);
+tl.fromTo("#red2-p12",{"attr":{"cx":1180,"cy":345},"opacity":1},{"attr":{"cx":1560,"cy":520},"duration":1.310969375,"ease":"none","immediateRender":false},23.58);
+tl.to("#red2-p12",{"opacity":0,"duration":0.15},24.89);
+tl.fromTo("#red2-p13",{"attr":{"cx":40,"cy":380},"opacity":1},{"attr":{"cx":420,"cy":625},"duration":1.310969375,"ease":"none","immediateRender":false},20.39);
+tl.fromTo("#red2-p13",{"attr":{"cx":420,"cy":625},"opacity":1},{"attr":{"cx":800,"cy":730},"duration":1.310969375,"ease":"none","immediateRender":false},21.71);
+tl.fromTo("#red2-p13",{"attr":{"cx":800,"cy":730},"opacity":1},{"attr":{"cx":1180,"cy":205},"duration":1.310969375,"ease":"none","immediateRender":false},23.02);
+tl.fromTo("#red2-p13",{"attr":{"cx":1180,"cy":205},"opacity":1},{"attr":{"cx":1560,"cy":310},"duration":1.310969375,"ease":"none","immediateRender":false},24.33);
+tl.to("#red2-p13",{"opacity":0,"duration":0.15},25.64);
+tl.to("#red2 .rn",{fill:"#4ea7ff",duration:.25,stagger:{each:.03,from:"start"},yoyo:true,repeat:1},10.76);
+tl.fromTo("#e-fr",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},9.86);
+tl.fromTo("#e-fr .fm",{"opacity":0,"scale":0.5},{"opacity":1,"scale":1,"duration":0.8,"ease":"back.out(1.6)"},10.21);
+tl.fromTo("#e-fr h1",{"opacity":0,"letterSpacing":"30px","filter":"blur(10px)"},{"opacity":1,"letterSpacing":"-3px","filter":"blur(0px)","duration":1,"ease":"power3.out"},10.51);
+tl.fromTo("#e-fr .mo",{"opacity":0,"y":24},{"opacity":1,"y":0,"duration":0.5,"ease":"power3.out"},11.75);
+tl.fromTo("#e-fr .nd",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},15.31);
+tl.fromTo("#e-fr .tu",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},19.39);
+tl.to("#e-fr",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},21.89);
+tl.fromTo("#cm3 .cn, #cm3 .cio",{"opacity":0},{"opacity":1,"duration":0.4,"stagger":0.01},24.75);
+tl.fromTo("#cm3-x0",{"strokeDashoffset":1,"opacity":0.9},{"strokeDashoffset":0,"duration":0.5,"ease":"power1.inOut"},24.95);
+tl.to("#cm3-x0",{"opacity":0.18,"duration":0.4},25.45);
+tl.fromTo("#cm3-x1",{"strokeDashoffset":1,"opacity":0.9},{"strokeDashoffset":0,"duration":0.5,"ease":"power1.inOut"},25.09);
+tl.to("#cm3-x1",{"opacity":0.18,"duration":0.4},25.59);
+tl.fromTo("#cm3-x2",{"strokeDashoffset":1,"opacity":0.9},{"strokeDashoffset":0,"duration":0.5,"ease":"power1.inOut"},25.22);
+tl.to("#cm3-x2",{"opacity":0.18,"duration":0.4},25.72);
+tl.fromTo("#cm3-x3",{"strokeDashoffset":1,"opacity":0.9},{"strokeDashoffset":0,"duration":0.5,"ease":"power1.inOut"},25.36);
+tl.to("#cm3-x3",{"opacity":0.18,"duration":0.4},25.86);
+tl.fromTo("#cm3-x4",{"strokeDashoffset":1,"opacity":0.9},{"strokeDashoffset":0,"duration":0.5,"ease":"power1.inOut"},25.50);
+tl.to("#cm3-x4",{"opacity":0.18,"duration":0.4},26.00);
+tl.fromTo("#cm3-x5",{"strokeDashoffset":1,"opacity":0.9},{"strokeDashoffset":0,"duration":0.5,"ease":"power1.inOut"},25.64);
+tl.to("#cm3-x5",{"opacity":0.18,"duration":0.4},26.14);
+tl.fromTo("#cm3-x6",{"strokeDashoffset":1,"opacity":0.9},{"strokeDashoffset":0,"duration":0.5,"ease":"power1.inOut"},25.77);
+tl.to("#cm3-x6",{"opacity":0.18,"duration":0.4},26.27);
+tl.fromTo("#cm3-x7",{"strokeDashoffset":1,"opacity":0.9},{"strokeDashoffset":0,"duration":0.5,"ease":"power1.inOut"},25.91);
+tl.to("#cm3-x7",{"opacity":0.18,"duration":0.4},26.41);
+tl.fromTo("#cm3-x8",{"strokeDashoffset":1,"opacity":0.9},{"strokeDashoffset":0,"duration":0.5,"ease":"power1.inOut"},26.05);
+tl.to("#cm3-x8",{"opacity":0.18,"duration":0.4},26.55);
+tl.fromTo("#cm3-x9",{"strokeDashoffset":1,"opacity":0.9},{"strokeDashoffset":0,"duration":0.5,"ease":"power1.inOut"},26.19);
+tl.to("#cm3-x9",{"opacity":0.18,"duration":0.4},26.69);
+tl.fromTo("#cm3-x10",{"strokeDashoffset":1,"opacity":0.9},{"strokeDashoffset":0,"duration":0.5,"ease":"power1.inOut"},26.32);
+tl.to("#cm3-x10",{"opacity":0.18,"duration":0.4},26.82);
+tl.fromTo("#cm3-x11",{"strokeDashoffset":1,"opacity":0.9},{"strokeDashoffset":0,"duration":0.5,"ease":"power1.inOut"},26.46);
+tl.to("#cm3-x11",{"opacity":0.18,"duration":0.4},26.96);
+tl.fromTo("#cm3-b0",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.7,"ease":"power2.out"},26.70);
+tl.fromTo("#cm3-t0",{"opacity":0},{"opacity":1,"duration":0.3},27.20);
+tl.fromTo("#cm3-b1",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.7,"ease":"power2.out"},27.00);
+tl.fromTo("#cm3-t1",{"opacity":0},{"opacity":1,"duration":0.3},27.50);
+tl.fromTo("#cm3-b2",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.7,"ease":"power2.out"},27.30);
+tl.fromTo("#cm3-t2",{"opacity":0},{"opacity":1,"duration":0.3},27.80);
+tl.fromTo("#pr3 .pp",{"opacity":0},{"opacity":1,"duration":0.3,"stagger":0.02},33.59);
+tl.fromTo("#pr3 .pf",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":1,"ease":"power2.out"},34.39);
+tl.fromTo("#pr3 .pb",{"opacity":0,"scale":0,"transformOrigin":"50% 50%"},{"opacity":1,"scale":1,"duration":0.3,"stagger":0.1},34.49);
+tl.fromTo("#e-met",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},21.64);
+tl.fromTo("#e-met .rg",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},22.19);
+tl.fromTo("#fa3 .chip",{"opacity":0},{"opacity":0.35,"duration":0.2},24.15);
+tl.to("#fa3-0",{"opacity":1,"duration":0.2},25.39);
+tl.to("#fa3-0",{"backgroundColor":"#2d7ff9","borderColor":"#4ea7ff","color":"#ffffff","boxShadow":"0 0 40px #2d7ff988","duration":0.35},25.59);
+tl.to("#fa3-1",{"opacity":1,"duration":0.2},26.91);
+tl.to("#fa3-1",{"backgroundColor":"#2d7ff9","borderColor":"#4ea7ff","color":"#ffffff","boxShadow":"0 0 40px #2d7ff988","duration":0.35},27.11);
+tl.to("#fa3-2",{"opacity":1,"duration":0.2},28.35);
+tl.to("#fa3-2",{"backgroundColor":"#2d7ff9","borderColor":"#4ea7ff","color":"#ffffff","boxShadow":"0 0 40px #2d7ff988","duration":0.35},28.55);
+tl.to("#fa3-3",{"opacity":1,"duration":0.2},30.59);
+tl.to("#fa3-3",{"backgroundColor":"#2d7ff9","borderColor":"#4ea7ff","color":"#ffffff","boxShadow":"0 0 40px #2d7ff988","duration":0.35},30.79);
+tl.fromTo("#e-met .mv .vz:first-child",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},24.55);
+tl.fromTo("#e-met .mv .vz:last-child",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},33.49);
+tl.to("#e-met",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},36.50);
+tl.fromTo("#mc4-l0",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"none"},37.20);
+tl.fromTo("#mc4-l1",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"none"},37.26);
+tl.fromTo("#mc4-l2",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"none"},37.32);
+tl.fromTo("#mc4-l3",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"none"},37.38);
+tl.fromTo("#mc4-l4",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"none"},37.43);
+tl.fromTo("#mc4-l5",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"none"},37.49);
+tl.fromTo("#mc4-l6",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"none"},37.55);
+tl.fromTo("#mc4-l7",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"none"},37.61);
+tl.fromTo("#mc4-l8",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"none"},37.67);
+tl.fromTo("#mc4-l9",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"none"},37.72);
+tl.fromTo("#mc4-l10",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"none"},37.78);
+tl.fromTo("#mc4-l11",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"none"},37.84);
+tl.fromTo("#mc4-l12",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"none"},37.90);
+tl.fromTo("#mc4-l13",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"none"},37.96);
+tl.fromTo("#mc4-l14",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"none"},38.01);
+tl.fromTo("#mc4-l15",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"none"},38.07);
+tl.fromTo("#mc4-l16",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"none"},38.13);
+tl.fromTo("#mc4-l17",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"none"},38.19);
+tl.fromTo("#mc4-l18",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"none"},38.25);
+tl.fromTo("#mc4-l19",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"none"},38.30);
+tl.fromTo("#mc4-l20",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"none"},38.36);
+tl.fromTo("#mc4-l21",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"none"},38.42);
+tl.fromTo("#mc4-l22",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"none"},38.48);
+tl.fromTo("#mc4-l23",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"none"},38.54);
+tl.fromTo("#mc4-l24",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"none"},38.59);
+tl.fromTo("#mc4-l25",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"none"},38.65);
+tl.fromTo("#mc4-l26",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"none"},38.71);
+tl.fromTo("#mc4-l27",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"none"},38.77);
+tl.fromTo("#mc4-l28",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"none"},38.83);
+tl.fromTo("#mc4-l29",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"none"},38.88);
+tl.fromTo("#mc4-l30",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"none"},38.94);
+tl.fromTo("#mc4-l31",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"none"},39.00);
+tl.fromTo("#mc4-l32",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"none"},39.06);
+tl.fromTo("#mc4-l33",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"none"},39.12);
+tl.fromTo("#mc4-l34",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"none"},39.17);
+tl.fromTo("#mc4-l35",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"none"},39.23);
+tl.fromTo("#mc4-l36",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"none"},39.29);
+tl.fromTo("#mc4-l37",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"none"},39.35);
+tl.fromTo("#mc4-l38",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"none"},39.41);
+tl.fromTo("#mc4-l39",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"none"},39.46);
+tl.fromTo("#mc4-l40",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"none"},39.52);
+tl.fromTo("#mc4-l41",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"none"},39.58);
+tl.fromTo("#mc4-l42",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"none"},39.64);
+tl.fromTo("#mc4-l43",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"none"},39.70);
+tl.fromTo("#mc4-l44",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"none"},39.75);
+tl.fromTo("#mc4-l45",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"none"},39.81);
+tl.fromTo("#mc4-l46",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"none"},39.87);
+tl.fromTo("#mc4-l47",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"none"},39.93);
+tl.fromTo("#mc4-l48",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"none"},39.99);
+tl.fromTo("#mc4-l49",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"none"},40.04);
+tl.fromTo("#mc4 .mch",{"scaleX":0,"transformOrigin":"0% 50%"},{"scaleX":1,"duration":2.1,"stagger":0.05,"ease":"power2.out"},38.60);
+tl.fromTo("#e-mc",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},36.25);
+tl.fromTo("#e-mc .mcr .vz",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},36.80);
+tl.fromTo("#e-mc .rangos",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},39.72);
+tl.fromTo("#e-mc .rb",{"scaleX":0},{"scaleX":1,"transformOrigin":"50% 50%","duration":0.6,"stagger":0.15},39.92);
+tl.fromTo("#e-mc .rm",{"opacity":0},{"opacity":1,"duration":0.3,"stagger":0.1},40.42);
+tl.fromTo("#e-mc .pq",{"opacity":0,"scale":0.6},{"opacity":1,"scale":1,"duration":0.35,"stagger":0.12},43.44);
+tl.fromTo("#cp0",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},43.34);
+tl.to("#cp0",{"backgroundColor":"#2d7ff9","borderColor":"#4ea7ff","color":"#ffffff","boxShadow":"0 0 40px #2d7ff988","duration":0.35},43.74);
+tl.fromTo("#cp1",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},44.90);
+tl.to("#cp1",{"backgroundColor":"#2d7ff9","borderColor":"#4ea7ff","color":"#ffffff","boxShadow":"0 0 40px #2d7ff988","duration":0.35},45.30);
+tl.fromTo("#cp2",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},47.02);
+tl.to("#cp2",{"backgroundColor":"#2d7ff9","borderColor":"#4ea7ff","color":"#ffffff","boxShadow":"0 0 40px #2d7ff988","duration":0.35},47.42);
+tl.fromTo("#e-mc .mej",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},49.08);
+tl.to("#e-mc",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},54.30);
+tl.fromTo("#e-mods",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},54.05);
+tl.fromTo("#e-mods .nuc-f",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},54.60);
+tl.fromTo("#fm0",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},56.58);
+tl.to("#fm0",{"borderColor":"#4ea7ff","boxShadow":"0 0 50px #2d7ff988","duration":0.3},56.98);
+tl.fromTo("#fm1",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},58.10);
+tl.to("#fm1",{"borderColor":"#4ea7ff","boxShadow":"0 0 50px #2d7ff988","duration":0.3},58.50);
+tl.fromTo("#fm2",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},60.26);
+tl.to("#fm2",{"borderColor":"#4ea7ff","boxShadow":"0 0 50px #2d7ff988","duration":0.3},60.66);
+tl.to("#e-mods",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},64.18);
+tl.fromTo("#e-jun",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},63.93);
+tl.fromTo("#e-jun .j-t .w",{"opacity":0,"y":40,"filter":"blur(10px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.6,"stagger":0.05,"ease":"power3.out"},65.90);
+tl.fromTo("#op6 .opt",{"opacity":0,"y":40},{"opacity":1,"y":0,"duration":0.5,"stagger":0.25,"ease":"power3.out"},66.40);
+tl.fromTo("#op6 .bar i",{"scaleX":0},{"scaleX":1,"duration":0.7,"stagger":0.06,"ease":"power2.out"},69.68);
+tl.fromTo("#e-jun .ld",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},72.88);
+tl.to("#e-jun",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},75.68);
+tl.fromTo("#e-cierre",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},75.43);
+tl.fromTo("#e-cierre .marca",{"opacity":0,"scale":0.5,"rotate":-8},{"opacity":1,"scale":1,"rotate":0,"duration":1,"ease":"back.out(1.6)"},76.18);
+tl.fromTo("#e-cierre h1",{"opacity":0,"letterSpacing":"30px","filter":"blur(10px)"},{"opacity":1,"letterSpacing":"-3px","filter":"blur(0px)","duration":1.1,"ease":"power3.out"},76.58);
+tl.fromTo("#e-cierre .firma",{"opacity":0,"y":24},{"opacity":1,"y":0,"duration":0.8,"ease":"power3.out"},77.62);
+tl.fromTo("#e-cierre .url",{"opacity":0,"y":24},{"opacity":1,"y":0,"duration":0.8,"ease":"power3.out"},81.14);
+tl.to("#e-cierre .fin",{"opacity":0,"duration":1},85.24);
+tl.fromTo("#sweep-0",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},9.76);
+tl.fromTo("#sweep-1",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},21.54);
+tl.fromTo("#sweep-2",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},36.15);
+tl.fromTo("#sweep-3",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},53.95);
+tl.fromTo("#sweep-4",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},63.83);
+tl.fromTo("#sweep-5",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},75.33);
+tl.set("#cap0w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},1.40);
+tl.set("#cap0w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},1.64);
+tl.set("#cap0w0",{"color":"#c9d1e0","textShadow":"none"},1.64);
+tl.set("#cap0w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},2.04);
+tl.set("#cap0w1",{"color":"#c9d1e0","textShadow":"none"},2.04);
+tl.set("#cap0w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},2.20);
+tl.set("#cap0w2",{"color":"#c9d1e0","textShadow":"none"},2.20);
+tl.set("#cap0w4",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},2.40);
+tl.set("#cap0w3",{"color":"#c9d1e0","textShadow":"none"},2.40);
+tl.set("#cap0w5",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},2.48);
+tl.set("#cap0w4",{"color":"#c9d1e0","textShadow":"none"},2.48);
+tl.set("#cap0w6",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},2.64);
+tl.set("#cap0w5",{"color":"#c9d1e0","textShadow":"none"},2.64);
+tl.set("#cap1w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},3.56);
+tl.set("#cap1w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},3.96);
+tl.set("#cap1w0",{"color":"#c9d1e0","textShadow":"none"},3.96);
+tl.set("#cap1w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},4.08);
+tl.set("#cap1w1",{"color":"#c9d1e0","textShadow":"none"},4.08);
+tl.set("#cap1w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},4.16);
+tl.set("#cap1w2",{"color":"#c9d1e0","textShadow":"none"},4.16);
+tl.set("#cap2w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},4.95);
+tl.set("#cap2w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},5.32);
+tl.set("#cap2w0",{"color":"#c9d1e0","textShadow":"none"},5.32);
+tl.set("#cap3w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},5.91);
+tl.set("#cap3w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},6.04);
+tl.set("#cap3w0",{"color":"#c9d1e0","textShadow":"none"},6.04);
+tl.set("#cap4w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},7.00);
+tl.set("#cap4w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},7.32);
+tl.set("#cap4w0",{"color":"#c9d1e0","textShadow":"none"},7.32);
+tl.set("#cap5w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},8.12);
+tl.set("#cap5w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},8.36);
+tl.set("#cap5w0",{"color":"#c9d1e0","textShadow":"none"},8.36);
+tl.set("#cap6w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},10.51);
+tl.set("#cap6w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},11.07);
+tl.set("#cap6w0",{"color":"#c9d1e0","textShadow":"none"},11.07);
+tl.set("#cap6w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},11.63);
+tl.set("#cap6w1",{"color":"#c9d1e0","textShadow":"none"},11.63);
+tl.set("#cap6w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},11.75);
+tl.set("#cap6w2",{"color":"#c9d1e0","textShadow":"none"},11.75);
+tl.set("#cap6w4",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},11.87);
+tl.set("#cap6w3",{"color":"#c9d1e0","textShadow":"none"},11.87);
+tl.set("#cap6w5",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},12.23);
+tl.set("#cap6w4",{"color":"#c9d1e0","textShadow":"none"},12.23);
+tl.set("#cap6w6",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},12.39);
+tl.set("#cap6w5",{"color":"#c9d1e0","textShadow":"none"},12.39);
+tl.set("#cap7w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},13.07);
+tl.set("#cap7w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},13.27);
+tl.set("#cap7w0",{"color":"#c9d1e0","textShadow":"none"},13.27);
+tl.set("#cap7w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},13.59);
+tl.set("#cap7w1",{"color":"#c9d1e0","textShadow":"none"},13.59);
+tl.set("#cap7w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},13.67);
+tl.set("#cap7w2",{"color":"#c9d1e0","textShadow":"none"},13.67);
+tl.set("#cap7w4",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},13.79);
+tl.set("#cap7w3",{"color":"#c9d1e0","textShadow":"none"},13.79);
+tl.set("#cap7w5",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},14.27);
+tl.set("#cap7w4",{"color":"#c9d1e0","textShadow":"none"},14.27);
+tl.set("#cap7w6",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},14.35);
+tl.set("#cap7w5",{"color":"#c9d1e0","textShadow":"none"},14.35);
+tl.set("#cap8w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},15.31);
+tl.set("#cap8w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},15.47);
+tl.set("#cap8w0",{"color":"#c9d1e0","textShadow":"none"},15.47);
+tl.set("#cap8w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},15.87);
+tl.set("#cap8w1",{"color":"#c9d1e0","textShadow":"none"},15.87);
+tl.set("#cap8w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},16.03);
+tl.set("#cap8w2",{"color":"#c9d1e0","textShadow":"none"},16.03);
+tl.set("#cap9w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},16.67);
+tl.set("#cap9w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},16.91);
+tl.set("#cap9w0",{"color":"#c9d1e0","textShadow":"none"},16.91);
+tl.set("#cap9w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},17.23);
+tl.set("#cap9w1",{"color":"#c9d1e0","textShadow":"none"},17.23);
+tl.set("#cap9w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},17.39);
+tl.set("#cap9w2",{"color":"#c9d1e0","textShadow":"none"},17.39);
+tl.set("#cap9w4",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},17.91);
+tl.set("#cap9w3",{"color":"#c9d1e0","textShadow":"none"},17.91);
+tl.set("#cap9w5",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},18.39);
+tl.set("#cap9w4",{"color":"#c9d1e0","textShadow":"none"},18.39);
+tl.set("#cap9w6",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},18.47);
+tl.set("#cap9w5",{"color":"#c9d1e0","textShadow":"none"},18.47);
+tl.set("#cap10w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},18.59);
+tl.set("#cap10w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},19.39);
+tl.set("#cap10w0",{"color":"#c9d1e0","textShadow":"none"},19.39);
+tl.set("#cap10w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},19.55);
+tl.set("#cap10w1",{"color":"#c9d1e0","textShadow":"none"},19.55);
+tl.set("#cap10w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},19.79);
+tl.set("#cap10w2",{"color":"#c9d1e0","textShadow":"none"},19.79);
+tl.set("#cap10w4",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},19.95);
+tl.set("#cap10w3",{"color":"#c9d1e0","textShadow":"none"},19.95);
+tl.set("#cap11w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},22.19);
+tl.set("#cap11w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},22.75);
+tl.set("#cap11w0",{"color":"#c9d1e0","textShadow":"none"},22.75);
+tl.set("#cap11w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},23.27);
+tl.set("#cap11w1",{"color":"#c9d1e0","textShadow":"none"},23.27);
+tl.set("#cap11w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},23.47);
+tl.set("#cap11w2",{"color":"#c9d1e0","textShadow":"none"},23.47);
+tl.set("#cap12w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},24.35);
+tl.set("#cap12w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},24.91);
+tl.set("#cap12w0",{"color":"#c9d1e0","textShadow":"none"},24.91);
+tl.set("#cap12w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},25.39);
+tl.set("#cap12w1",{"color":"#c9d1e0","textShadow":"none"},25.39);
+tl.set("#cap12w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},26.03);
+tl.set("#cap12w2",{"color":"#c9d1e0","textShadow":"none"},26.03);
+tl.set("#cap13w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},26.91);
+tl.set("#cap13w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},27.47);
+tl.set("#cap13w0",{"color":"#c9d1e0","textShadow":"none"},27.47);
+tl.set("#cap14w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},28.35);
+tl.set("#cap14w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},28.91);
+tl.set("#cap14w0",{"color":"#c9d1e0","textShadow":"none"},28.91);
+tl.set("#cap14w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},29.50);
+tl.set("#cap14w1",{"color":"#c9d1e0","textShadow":"none"},29.50);
+tl.set("#cap14w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},29.55);
+tl.set("#cap14w2",{"color":"#c9d1e0","textShadow":"none"},29.55);
+tl.set("#cap14w4",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},30.43);
+tl.set("#cap14w3",{"color":"#c9d1e0","textShadow":"none"},30.43);
+tl.set("#cap14w5",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},30.59);
+tl.set("#cap14w4",{"color":"#c9d1e0","textShadow":"none"},30.59);
+tl.set("#cap14w6",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},31.07);
+tl.set("#cap14w5",{"color":"#c9d1e0","textShadow":"none"},31.07);
+tl.set("#cap15w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},31.79);
+tl.set("#cap15w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},32.03);
+tl.set("#cap15w0",{"color":"#c9d1e0","textShadow":"none"},32.03);
+tl.set("#cap15w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},32.35);
+tl.set("#cap15w1",{"color":"#c9d1e0","textShadow":"none"},32.35);
+tl.set("#cap15w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},32.83);
+tl.set("#cap15w2",{"color":"#c9d1e0","textShadow":"none"},32.83);
+tl.set("#cap16w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},33.59);
+tl.set("#cap16w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},33.79);
+tl.set("#cap16w0",{"color":"#c9d1e0","textShadow":"none"},33.79);
+tl.set("#cap16w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},34.11);
+tl.set("#cap16w1",{"color":"#c9d1e0","textShadow":"none"},34.11);
+tl.set("#cap16w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},34.59);
+tl.set("#cap16w2",{"color":"#c9d1e0","textShadow":"none"},34.59);
+tl.set("#cap16w4",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},34.67);
+tl.set("#cap16w3",{"color":"#c9d1e0","textShadow":"none"},34.67);
+tl.set("#cap16w5",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},34.75);
+tl.set("#cap16w4",{"color":"#c9d1e0","textShadow":"none"},34.75);
+tl.set("#cap17w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},36.80);
+tl.set("#cap17w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},36.96);
+tl.set("#cap17w0",{"color":"#c9d1e0","textShadow":"none"},36.96);
+tl.set("#cap17w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},37.08);
+tl.set("#cap17w1",{"color":"#c9d1e0","textShadow":"none"},37.08);
+tl.set("#cap17w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},37.20);
+tl.set("#cap17w2",{"color":"#c9d1e0","textShadow":"none"},37.20);
+tl.set("#cap17w4",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},37.68);
+tl.set("#cap17w3",{"color":"#c9d1e0","textShadow":"none"},37.68);
+tl.set("#cap17w5",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},38.40);
+tl.set("#cap17w4",{"color":"#c9d1e0","textShadow":"none"},38.40);
+tl.set("#cap17w6",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},38.96);
+tl.set("#cap17w5",{"color":"#c9d1e0","textShadow":"none"},38.96);
+tl.set("#cap18w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},39.28);
+tl.set("#cap18w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},39.92);
+tl.set("#cap18w0",{"color":"#c9d1e0","textShadow":"none"},39.92);
+tl.set("#cap18w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},40.32);
+tl.set("#cap18w1",{"color":"#c9d1e0","textShadow":"none"},40.32);
+tl.set("#cap18w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},41.00);
+tl.set("#cap18w2",{"color":"#c9d1e0","textShadow":"none"},41.00);
+tl.set("#cap18w4",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},41.20);
+tl.set("#cap18w3",{"color":"#c9d1e0","textShadow":"none"},41.20);
+tl.set("#cap18w5",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},41.84);
+tl.set("#cap18w4",{"color":"#c9d1e0","textShadow":"none"},41.84);
+tl.set("#cap18w6",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},42.32);
+tl.set("#cap18w5",{"color":"#c9d1e0","textShadow":"none"},42.32);
+tl.set("#cap19w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},43.32);
+tl.set("#cap19w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},43.44);
+tl.set("#cap19w0",{"color":"#c9d1e0","textShadow":"none"},43.44);
+tl.set("#cap19w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},44.04);
+tl.set("#cap19w1",{"color":"#c9d1e0","textShadow":"none"},44.04);
+tl.set("#cap19w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},44.16);
+tl.set("#cap19w2",{"color":"#c9d1e0","textShadow":"none"},44.16);
+tl.set("#cap20w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},45.00);
+tl.set("#cap20w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},45.36);
+tl.set("#cap20w0",{"color":"#c9d1e0","textShadow":"none"},45.36);
+tl.set("#cap20w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},45.84);
+tl.set("#cap20w1",{"color":"#c9d1e0","textShadow":"none"},45.84);
+tl.set("#cap20w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},46.08);
+tl.set("#cap20w2",{"color":"#c9d1e0","textShadow":"none"},46.08);
+tl.set("#cap20w4",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},46.24);
+tl.set("#cap20w3",{"color":"#c9d1e0","textShadow":"none"},46.24);
+tl.set("#cap20w5",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},46.48);
+tl.set("#cap20w4",{"color":"#c9d1e0","textShadow":"none"},46.48);
+tl.set("#cap20w6",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},46.80);
+tl.set("#cap20w5",{"color":"#c9d1e0","textShadow":"none"},46.80);
+tl.set("#cap21w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},46.96);
+tl.set("#cap21w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},47.12);
+tl.set("#cap21w0",{"color":"#c9d1e0","textShadow":"none"},47.12);
+tl.set("#cap21w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},47.52);
+tl.set("#cap21w1",{"color":"#c9d1e0","textShadow":"none"},47.52);
+tl.set("#cap22w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},48.48);
+tl.set("#cap22w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},48.64);
+tl.set("#cap22w0",{"color":"#c9d1e0","textShadow":"none"},48.64);
+tl.set("#cap22w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},49.04);
+tl.set("#cap22w1",{"color":"#c9d1e0","textShadow":"none"},49.04);
+tl.set("#cap22w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},49.16);
+tl.set("#cap22w2",{"color":"#c9d1e0","textShadow":"none"},49.16);
+tl.set("#cap22w4",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},49.64);
+tl.set("#cap22w3",{"color":"#c9d1e0","textShadow":"none"},49.64);
+tl.set("#cap23w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},50.36);
+tl.set("#cap23w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},50.48);
+tl.set("#cap23w0",{"color":"#c9d1e0","textShadow":"none"},50.48);
+tl.set("#cap23w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},50.96);
+tl.set("#cap23w1",{"color":"#c9d1e0","textShadow":"none"},50.96);
+tl.set("#cap23w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},51.20);
+tl.set("#cap23w2",{"color":"#c9d1e0","textShadow":"none"},51.20);
+tl.set("#cap23w4",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},51.76);
+tl.set("#cap23w3",{"color":"#c9d1e0","textShadow":"none"},51.76);
+tl.set("#cap23w5",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},52.16);
+tl.set("#cap23w4",{"color":"#c9d1e0","textShadow":"none"},52.16);
+tl.set("#cap23w6",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},52.32);
+tl.set("#cap23w5",{"color":"#c9d1e0","textShadow":"none"},52.32);
+tl.set("#cap24w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},54.60);
+tl.set("#cap24w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},54.84);
+tl.set("#cap24w0",{"color":"#c9d1e0","textShadow":"none"},54.84);
+tl.set("#cap25w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},55.60);
+tl.set("#cap25w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},55.80);
+tl.set("#cap25w0",{"color":"#c9d1e0","textShadow":"none"},55.80);
+tl.set("#cap26w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},56.68);
+tl.set("#cap26w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},57.24);
+tl.set("#cap26w0",{"color":"#c9d1e0","textShadow":"none"},57.24);
+tl.set("#cap26w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},57.32);
+tl.set("#cap26w1",{"color":"#c9d1e0","textShadow":"none"},57.32);
+tl.set("#cap26w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},57.40);
+tl.set("#cap26w2",{"color":"#c9d1e0","textShadow":"none"},57.40);
+tl.set("#cap27w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},58.20);
+tl.set("#cap27w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},58.76);
+tl.set("#cap27w0",{"color":"#c9d1e0","textShadow":"none"},58.76);
+tl.set("#cap27w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},59.00);
+tl.set("#cap27w1",{"color":"#c9d1e0","textShadow":"none"},59.00);
+tl.set("#cap27w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},59.48);
+tl.set("#cap27w2",{"color":"#c9d1e0","textShadow":"none"},59.48);
+tl.set("#cap27w4",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},60.12);
+tl.set("#cap27w3",{"color":"#c9d1e0","textShadow":"none"},60.12);
+tl.set("#cap27w5",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},60.36);
+tl.set("#cap27w4",{"color":"#c9d1e0","textShadow":"none"},60.36);
+tl.set("#cap27w6",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},60.92);
+tl.set("#cap27w5",{"color":"#c9d1e0","textShadow":"none"},60.92);
+tl.set("#cap28w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},61.08);
+tl.set("#cap28w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},61.60);
+tl.set("#cap28w0",{"color":"#c9d1e0","textShadow":"none"},61.60);
+tl.set("#cap28w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},62.04);
+tl.set("#cap28w1",{"color":"#c9d1e0","textShadow":"none"},62.04);
+tl.set("#cap29w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},64.48);
+tl.set("#cap29w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},64.68);
+tl.set("#cap29w0",{"color":"#c9d1e0","textShadow":"none"},64.68);
+tl.set("#cap29w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},64.80);
+tl.set("#cap29w1",{"color":"#c9d1e0","textShadow":"none"},64.80);
+tl.set("#cap30w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},65.52);
+tl.set("#cap30w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},66.00);
+tl.set("#cap30w0",{"color":"#c9d1e0","textShadow":"none"},66.00);
+tl.set("#cap30w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},66.40);
+tl.set("#cap30w1",{"color":"#c9d1e0","textShadow":"none"},66.40);
+tl.set("#cap30w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},66.64);
+tl.set("#cap30w2",{"color":"#c9d1e0","textShadow":"none"},66.64);
+tl.set("#cap30w4",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},67.16);
+tl.set("#cap30w3",{"color":"#c9d1e0","textShadow":"none"},67.16);
+tl.set("#cap30w5",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},67.28);
+tl.set("#cap30w4",{"color":"#c9d1e0","textShadow":"none"},67.28);
+tl.set("#cap31w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},68.20);
+tl.set("#cap31w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},68.80);
+tl.set("#cap31w0",{"color":"#c9d1e0","textShadow":"none"},68.80);
+tl.set("#cap31w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},68.96);
+tl.set("#cap31w1",{"color":"#c9d1e0","textShadow":"none"},68.96);
+tl.set("#cap31w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},69.44);
+tl.set("#cap31w2",{"color":"#c9d1e0","textShadow":"none"},69.44);
+tl.set("#cap31w4",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},69.68);
+tl.set("#cap31w3",{"color":"#c9d1e0","textShadow":"none"},69.68);
+tl.set("#cap31w5",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},69.84);
+tl.set("#cap31w4",{"color":"#c9d1e0","textShadow":"none"},69.84);
+tl.set("#cap31w6",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},70.08);
+tl.set("#cap31w5",{"color":"#c9d1e0","textShadow":"none"},70.08);
+tl.set("#cap32w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},70.92);
+tl.set("#cap32w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},71.04);
+tl.set("#cap32w0",{"color":"#c9d1e0","textShadow":"none"},71.04);
+tl.set("#cap32w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},71.36);
+tl.set("#cap32w1",{"color":"#c9d1e0","textShadow":"none"},71.36);
+tl.set("#cap32w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},71.44);
+tl.set("#cap32w2",{"color":"#c9d1e0","textShadow":"none"},71.44);
+tl.set("#cap32w4",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},71.92);
+tl.set("#cap32w3",{"color":"#c9d1e0","textShadow":"none"},71.92);
+tl.set("#cap32w5",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},72.08);
+tl.set("#cap32w4",{"color":"#c9d1e0","textShadow":"none"},72.08);
+tl.set("#cap32w6",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},72.40);
+tl.set("#cap32w5",{"color":"#c9d1e0","textShadow":"none"},72.40);
+tl.set("#cap33w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},72.88);
+tl.set("#cap33w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},73.00);
+tl.set("#cap33w0",{"color":"#c9d1e0","textShadow":"none"},73.00);
+tl.set("#cap33w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},73.12);
+tl.set("#cap33w1",{"color":"#c9d1e0","textShadow":"none"},73.12);
+tl.set("#cap33w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},73.28);
+tl.set("#cap33w2",{"color":"#c9d1e0","textShadow":"none"},73.28);
+tl.set("#cap33w4",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},73.60);
+tl.set("#cap33w3",{"color":"#c9d1e0","textShadow":"none"},73.60);
+window.__timelines["main"] = tl;
+tl.seek(0);
+</script>
+</body>
+</html>

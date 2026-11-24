@@ -1,0 +1,682 @@
+<!doctype html>
+<html lang="es" data-resolution="landscape">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1920, height=1080">
+<title>Serie Arvantti Ecosistema</title>
+<script src="assets/vendor/gsap.min.js"></script>
+<style>
+:root{--blue:#2d7ff9;--electric:#4ea7ff;--ice:#9fd0ff;--ti:#d8dadf;--dti:#7a7e86;--black:#05070c;--white:#f8fafc;--panel:#0d1a30;--alert:#ff8a3d}
+*{box-sizing:border-box}
+html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:var(--black);font-family:Inter,"Inter Display",Arial,sans-serif;color:var(--white)}
+#root{position:relative;width:1920px;height:1080px;overflow:hidden;background:var(--black)}
+.clip{position:absolute;inset:0}
+.scene{overflow:hidden}
+.w{display:inline-block;white-space:pre}
+
+/* Fondo */
+.fondo .glow{position:absolute;inset:-20%;background:radial-gradient(900px 520px at 50% 45%,#12305e55 0%,#05070c00 70%),radial-gradient(700px 400px at 80% 90%,#2d7ff922 0%,#05070c00 70%)}
+.fondo .floor{position:absolute;left:-50%;right:-50%;bottom:-10%;height:55%;perspective:900px;opacity:.45;-webkit-mask-image:linear-gradient(#0000,#000 55%);mask-image:linear-gradient(#0000,#000 55%)}
+.fondo .floorgrid{position:absolute;inset:0;transform:rotateX(68deg);transform-origin:50% 100%;background-image:linear-gradient(#4ea7ff33 2px,transparent 2px),linear-gradient(90deg,#4ea7ff33 2px,transparent 2px);background-size:120px 120px}
+.sweep{background:linear-gradient(100deg,#0000 35%,#4ea7ff18 45%,#ffffff40 50%,#4ea7ff18 55%,#0000 65%);mix-blend-mode:screen;pointer-events:none}
+#temp{left:auto;top:auto;right:20px;bottom:16px;font:700 15px "JetBrains Mono",monospace;color:var(--alert);letter-spacing:2px}
+
+/* Escenario centrado: sirve igual en horizontal y vertical */
+.st{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:40px;padding:110px 150px 200px;text-align:center}
+.kick{position:absolute;left:110px;top:70px;margin:0;font:600 26px "JetBrains Mono",monospace;letter-spacing:8px;color:var(--electric)}
+.kick b{display:inline-block;padding:4px 12px;margin-right:12px;border:2px solid var(--blue);color:#fff;font-weight:700;letter-spacing:2px}
+.h{margin:0;font:800 96px/1.05 "Inter Display",Inter,sans-serif;letter-spacing:-2px}
+.h.xl{font-size:140px;letter-spacing:-3px}
+.h.md{font-size:72px;letter-spacing:-1.5px}
+.sub{margin:0;font:500 44px/1.3 Inter,sans-serif;color:#c9d1e0}
+.ti{background:linear-gradient(100deg,#d8dadf 0%,#d8dadf 40%,#ffffff 50%,#d8dadf 60%,#d8dadf 100%);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent}
+.hl{color:var(--electric)}
+.chip{display:inline-block;padding:12px 26px;border:2px solid #4ea7ff66;border-radius:999px;background:#0d1a30cc;font:600 32px Inter,sans-serif;color:#e6eefc;box-shadow:0 0 24px #2d7ff933;white-space:nowrap}
+.chip.on{background:var(--blue);border-color:var(--electric);color:#fff;box-shadow:0 0 40px #2d7ff988}
+.row{display:flex;flex-wrap:wrap;justify-content:center;gap:28px}
+.panel{border-radius:22px;background:#0b1428f0;border:2px solid #4ea7ff88;box-shadow:0 30px 90px #000a,0 0 50px #2d7ff933}
+.marca{display:block;height:auto;filter:drop-shadow(0 0 30px #2d7ff988)}
+
+/* Subtítulos quemados con la palabra que suena resaltada */
+.cap{position:absolute;left:0;right:0;top:auto;bottom:60px;text-align:center;pointer-events:none}
+.cap span.l{display:inline-block;max-width:1500px;padding:12px 26px;border-radius:14px;background:#05070cc8;font:700 40px/1.3 Inter,sans-serif;color:#c9d1e0}
+.cap .cw{display:inline-block;white-space:pre}
+.cap .cw.on{color:#fff;text-shadow:0 0 18px #4ea7ff}
+
+/* Cierre */
+.fin .marca{width:240px}
+.fin .firma{margin:0;font:600 54px/1.25 Inter,sans-serif;color:#fff}
+.fin .url{margin:0;font:500 28px "JetBrains Mono",monospace;letter-spacing:6px;color:#7a9cc6}
+/* Estilos compartidos de las gráficas (viz.mjs) y piezas comunes de la serie, episodios 2 a 7 */
+.fondo-red{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:.32}
+.fondo-red .red{width:1700px;height:auto}
+.red{overflow:visible}
+.ra{stroke:#4ea7ff55;stroke-width:2;stroke-dasharray:1;stroke-dashoffset:1}
+.rn{fill:#0d1a30;stroke:#4ea7ff;stroke-width:3}
+.rp{fill:#fff;opacity:0;filter:drop-shadow(0 0 8px #4ea7ff) drop-shadow(0 0 16px #2d7ff9)}
+.cam{overflow:visible}
+.cn{fill:#0d1a30;stroke:#4ea7ff88;stroke-width:2}
+.cio{fill:#2d7ff9;stroke:#fff;stroke-width:3;filter:drop-shadow(0 0 10px #4ea7ff)}
+.ce{fill:none;stroke:#9fb3cf;stroke-width:2;stroke-dasharray:1;stroke-dashoffset:1}
+.cb{fill:none;stroke:#4ea7ff;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1;filter:drop-shadow(0 0 8px #4ea7ff)}
+.cb.b0{stroke:#fff;stroke-width:6}.cb.b2{stroke:#9fd0ff}
+.ct{fill:#fff;font:700 26px Inter,sans-serif;opacity:0}
+.mbar{display:flex;align-items:flex-end;gap:10px;height:86px}
+.mbar i{display:block;width:26px;border-radius:5px 5px 0 0;background:linear-gradient(#4ea7ff,#2d7ff9);transform-origin:50% 100%}
+.mbar i.al{background:linear-gradient(#ff8a3d,#c2561a)}
+.curva{width:270px;height:86px;overflow:visible}
+.cv-line{fill:none;stroke:#4ea7ff;stroke-width:4;stroke-dasharray:1;stroke-dashoffset:1;filter:drop-shadow(0 0 6px #4ea7ff)}
+.cv-area{fill:#2d7ff922}.cv-band{fill:#4ea7ff1c}
+.arbol{overflow:visible}
+.ar{stroke:#4ea7ff;stroke-width:3;stroke-dasharray:1;stroke-dashoffset:1;stroke-linecap:round}
+.ar.n0{stroke-width:6;stroke:#fff}.ar.n1{stroke-width:5;stroke:#9fd0ff}.ar.n2{stroke-width:4}.ar.n3{stroke:#4ea7ffcc}.ar.n4{stroke:#4ea7ff88;stroke-width:2}
+.aroot{fill:#2d7ff9;stroke:#fff;stroke-width:3;filter:drop-shadow(0 0 10px #4ea7ff)}
+.region,.pob,.pareto,.mc{overflow:visible}
+.ax{stroke:#7a9cc6;stroke-width:2}
+.axl,.rlab,.gen{fill:#9fb3cf;font:600 20px "JetBrains Mono",monospace;letter-spacing:1px}
+.rlab{text-anchor:middle}
+.rs{stroke:#d8dadf;stroke-width:3;stroke-dasharray:1;stroke-dashoffset:1}
+.rf{fill:#2d7ff933;stroke:#4ea7ff;stroke-width:2}
+.obj{stroke:#9fd0ff;stroke-width:3;stroke-dasharray:10 8}
+.rpto{fill:#fff;filter:drop-shadow(0 0 10px #4ea7ff)}
+.meta{fill:#2d7ff922;stroke:#4ea7ff66;stroke-width:2;stroke-dasharray:8 8}
+.cruce{stroke:#9fd0ff;stroke-width:2;opacity:0}
+.ind{fill:#4ea7ff;stroke:#fff;stroke-width:2}
+.ind.mut{fill:#d8dadf}
+.gen{font-size:24px;fill:#fff}
+.pp{fill:#4ea7ff55}
+.pf{fill:none;stroke:#fff;stroke-width:4;stroke-dasharray:1;stroke-dashoffset:1;filter:drop-shadow(0 0 8px #4ea7ff)}
+.pb{fill:#2d7ff9;stroke:#fff;stroke-width:3}
+.mcl{fill:none;stroke:#4ea7ff66;stroke-width:2;stroke-dasharray:1;stroke-dashoffset:1}
+.mch{fill:#4ea7ff}
+.gantt{display:flex;flex-direction:column;gap:18px;width:100%}
+.gr{display:flex;align-items:center;gap:20px}
+.gr span{flex:none;width:170px;text-align:right;font:600 26px Inter,sans-serif;color:#c9d1e0}
+.gt{position:relative;flex:1;height:44px;border-radius:10px;background:#0d1a30;border:1px solid #4ea7ff33}
+.gt i{position:absolute;top:6px;bottom:6px;border-radius:7px;background:linear-gradient(90deg,#2d7ff9,#4ea7ff)}
+.gt i.al{background:linear-gradient(90deg,#c2561a,#ff8a3d);box-shadow:0 0 20px #ff8a3d88}
+/* Piezas comunes */
+.vz{display:flex;flex-direction:column;align-items:center;gap:14px}
+.vz svg{display:block}
+.vz .vl{margin:0;font:600 24px "JetBrains Mono",monospace;letter-spacing:3px;color:var(--ice);text-transform:uppercase}
+.opts{display:flex;gap:26px;justify-content:center;flex-wrap:wrap}
+.opt{width:440px;padding:20px 26px;text-align:left}
+.opt b{display:block;font:700 32px Inter,sans-serif;margin-bottom:8px}
+.opt small{display:block;margin-top:10px;font:500 24px Inter,sans-serif;color:var(--ice)}
+.bar{display:flex;align-items:center;gap:14px;margin-top:8px}
+.bar span{flex:none;width:150px;font:500 22px Inter,sans-serif;color:#9fb3cf}
+.bar i{flex:none;height:12px;width:calc(var(--n) * 2.4px);border-radius:6px;background:linear-gradient(90deg,var(--blue),var(--electric));transform-origin:0 50%}
+.bar i.r{background:linear-gradient(90deg,#7a7e86,#d8dadf)}
+.bar i.al{background:linear-gradient(90deg,#c2561a,#ff8a3d)}
+.alert{color:var(--alert)}
+.chip.al{border-color:#ff8a3d;color:#ffd2b3;box-shadow:0 0 24px #ff8a3d55}
+.tag{display:inline-block;padding:6px 16px;border-radius:999px;border:2px solid #4ea7ff88;font:700 22px "JetBrains Mono",monospace;letter-spacing:2px;color:var(--ice)}
+.fams{gap:16px}
+.fams .chip{font-size:26px;padding:10px 20px}
+.tache{position:relative;display:inline-block}
+.tache::after{content:"";position:absolute;left:-10px;right:-10px;top:52%;height:6px;border-radius:4px;background:var(--alert);transform:scaleX(var(--x,0));transform-origin:0 50%}
+.card{padding:26px 30px;text-align:left;display:flex;flex-direction:column;gap:10px}
+.card b{font:800 40px/1.1 "Inter Display",Inter,sans-serif}
+.card small{font:600 22px "JetBrains Mono",monospace;letter-spacing:2px;color:var(--ice);text-transform:uppercase}
+.card span{font:500 28px/1.3 Inter,sans-serif;color:#c9d1e0}
+.card.on{border-color:var(--electric);background:#10264acc}
+.flecha{font:800 60px Inter,sans-serif;color:var(--electric);text-shadow:0 0 20px #4ea7ff}
+.gen-svg{overflow:visible}
+.gt{fill:#9fb3cf;font:700 22px "JetBrains Mono",monospace;letter-spacing:2px;text-transform:uppercase}
+.gt.hj,.gh,.gm,.gfh,.gcut{opacity:0}
+.gb{stroke:#05070c;stroke-width:2}
+.gb.c0{fill:#2d7ff9}.gb.c1{fill:#4ea7ff}.gb.c2{fill:#9fd0ff}.gb.c3{fill:#d8dadf}
+.gm{stroke:#fff;stroke-width:4;filter:drop-shadow(0 0 12px #fff)}
+.gfb{fill:#4ea7ff}
+.gf{fill:#fff;font:800 24px Inter,sans-serif}
+.gfh{fill:#9fd0ff;font-size:28px}
+.gcut{stroke:#fff;stroke-width:3;stroke-dasharray:8 6}
+.gcurva{fill:none;stroke:#fff;stroke-width:5;stroke-linejoin:round;filter:drop-shadow(0 0 8px #4ea7ff)}
+/* Piezas comunes de la serie del ecosistema */
+.planta{overflow:visible}
+.iso .it{fill:#2d7ff9}.iso .il{fill:#13284d}.iso .ir{fill:#1d4f9c}
+.iso polygon{stroke:#9fd0ff;stroke-width:1.2}
+.iso.m2 .it{fill:#4ea7ff}.iso.m3 .it{fill:#d8dadf}
+.pulso{fill:#fff;filter:drop-shadow(0 0 8px #4ea7ff)}
+.tag{display:inline-block;padding:8px 20px;border:2px solid #4ea7ff66;border-radius:10px;font:600 28px "JetBrains Mono",monospace;color:#e6eefc;background:#0d1a30}
+.chat{padding:18px 30px;border-radius:24px 24px 24px 6px;background:#0d1a30f0;border:2px solid #4ea7ff66;text-align:left;box-shadow:0 0 30px #2d7ff933}
+.chat small{display:block;font:600 22px "JetBrains Mono",monospace;letter-spacing:1px;color:#9fb3cf;margin-bottom:6px}
+.chat span{font:800 36px Inter,sans-serif;color:#e6eefc}
+.card{padding:24px 28px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
+.card b{font:800 40px/1.1 "Inter Display",Inter,sans-serif}
+.card small,.card span{font:500 26px/1.3 Inter,sans-serif;color:var(--ice)}
+.card .ic{font:800 56px Inter,sans-serif;font-style:normal;color:var(--electric);text-shadow:0 0 20px #4ea7ff}
+.card.on{border-color:var(--electric);background:#10264acc;box-shadow:0 0 60px #2d7ff988}
+.card.al{border-color:#ff8a3d;box-shadow:0 0 50px #ff8a3d55}
+.grande{font-size:44px;padding:16px 44px}
+.recibo{width:560px;padding:22px 30px;text-align:left;font:500 26px "JetBrains Mono",monospace;color:#c9d1e0}
+.recibo b{display:block;font:800 32px Inter,sans-serif;color:#fff;margin-bottom:10px}
+.recibo div{display:flex;justify-content:space-between;padding:6px 0;border-top:1px solid #4ea7ff33}
+.recibo em{font-style:normal;color:var(--ice)}
+.ok{color:#9fd0ff}
+
+/* Ep 3 · Digital Twin */
+.r-t,.g-t{text-shadow:0 0 60px #05070c}
+.rep{gap:50px;align-items:stretch}
+.reporte,.vivo{width:520px;padding:26px;display:flex;flex-direction:column;align-items:center;gap:16px}
+.reporte small,.vivo small{font:700 22px "JetBrains Mono",monospace;letter-spacing:2px;color:var(--ice);text-transform:uppercase}
+.reporte .mbar,.vivo .curva{transform:scale(1.4);margin:20px 0}
+.viejo{font:700 26px Inter,sans-serif;font-style:normal;color:var(--alert)}
+.live{font:700 26px Inter,sans-serif;font-style:normal;color:var(--ice)}
+.pg .planta{width:900px;height:auto}
+.seniales{gap:22px}.seniales b{color:#fff}
+.lec{align-items:center;gap:30px}
+.lec .card{width:400px}
+.flecha-l{width:220px;height:40px;overflow:visible}
+.flecha-l line{stroke:#4ea7ff;stroke-width:5;stroke-dasharray:1;stroke-dashoffset:1}
+.flecha-l polygon{fill:#4ea7ff}
+.vb{gap:24px}.vb .chip{font-size:38px}
+.nunca{font-size:34px;border-color:#9fd0ff}
+.hepta{position:relative;width:1500px;height:780px}
+.nucleo-dt{position:absolute;left:50%;top:50%;width:230px;height:230px;margin:-115px 0 0 -115px;border-radius:50%;background:radial-gradient(#1a3a6e,#0a1222);border:3px solid var(--electric);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;box-shadow:0 0 80px #2d7ff988}
+.nucleo-dt b{font:800 40px "Inter Display",Inter,sans-serif}
+.nucleo-dt small{font:600 20px "JetBrains Mono",monospace;color:var(--ice)}
+.md-m{position:absolute;width:300px;margin:-50px 0 0 -150px;padding:14px 16px;display:flex;flex-direction:column;gap:4px}
+.md-m b{font:800 30px "Inter Display",Inter,sans-serif}
+.md-m small{font:500 22px Inter,sans-serif;color:var(--ice)}
+.pasos2{align-items:center;gap:24px}.pasos2 .chip{font-size:36px}
+.flecha{font:800 50px Inter,sans-serif;color:var(--electric)}
+.gw3{padding:24px 30px;display:flex;flex-direction:column;align-items:center;gap:14px;width:1200px}
+.gw3 small{font:600 26px Inter,sans-serif;color:var(--ice)}
+.cuello{font:700 26px Inter,sans-serif;font-style:normal;color:var(--alert)}
+.asi{gap:50px;align-items:center}
+.asist{width:640px;padding:26px;display:flex;flex-direction:column;gap:16px;text-align:left}
+.asist > small{font:700 22px "JetBrains Mono",monospace;letter-spacing:2px;color:var(--electric);text-transform:uppercase}
+.chat.r{align-self:flex-end;border-radius:24px 24px 6px 24px;background:#13284d}
+.conex{display:flex;flex-direction:column;gap:18px;align-items:flex-start}
+.otras{gap:14px}
+
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="80.07" data-width="1920" data-height="1080" data-fps="25">
+<div id="fondo" class="clip fondo" data-start="0.00" data-duration="80.07" data-track-index="0"><div class="glow"></div><div class="floor"><div class="floorgrid"></div></div></div>
+<div id="e-rep" class="clip scene" data-start="0.00" data-duration="11.82" data-track-index="3"><p class="kick"><b>EP 3</b> ARVANTTI · SISTEMA EMPRESARIAL</p>
+      <div class="st">
+        <h2 class="h md r-t"><span class="w">¿La</span> <span class="w">operación</span> <span class="w">aguanta</span> <span class="w">más</span> <span class="w">demanda?</span></h2>
+        <div class="row rep">
+          <div class="panel reporte"><small>Reporte · semana pasada</small><div class="mbar" id="g-rep"><i class="" style="height:62%"></i><i class="" style="height:70%"></i><i class="" style="height:58%"></i><i class="" style="height:66%"></i><i class="" style="height:72%"></i></div><em class="viejo">Desactualizado</em></div>
+          <div class="panel vivo"><small>Operación completa · ahora</small><svg class="curva" id="g-vivo" viewBox="0 0 300 90" preserveAspectRatio="none">
+    
+    <path class="cv-area" d="M0.0 82.0 L42.9 63.5 L85.7 72.8 L128.6 45.0 L171.4 54.3 L214.3 26.5 L257.1 35.8 L300.0 8.0 L300 90 L0 90 Z"/><path class="cv-line" d="M0.0 82.0 L42.9 63.5 L85.7 72.8 L128.6 45.0 L171.4 54.3 L214.3 26.5 L257.1 35.8 L300.0 8.0" pathLength="1"/></svg><em class="live">● En vivo</em></div>
+        </div>
+      </div></div>
+<audio id="sfx-1a" src="assets/shared/core/sfx/pop.mp3" data-start="1.80" data-duration="1.40" data-volume="0.12" data-track-index="22"></audio>
+<audio id="sfx-1b" src="assets/shared/core/sfx/whoosh-short.mp3" data-start="8.68" data-duration="1.40" data-volume="0.18" data-track-index="23"></audio>
+<div id="e-gem" class="clip scene" data-start="11.32" data-duration="11.17" data-track-index="3"><p class="kick"><b>EP 3</b> ARVANTTI · SISTEMA EMPRESARIAL</p>
+      <div class="st">
+        <div class="pg"><svg class="planta" id="pl2" viewBox="0 0 300 170"><g class="iso "><polygon class="il" points="30,80 70,100 70,134 30,114"/><polygon class="ir" points="70,100 160,55 160,89 70,134"/><polygon class="it" points="30,80 120,35 160,55 70,100"/></g><g class="iso m2"><polygon class="il" points="140,70 170,85 170,131 140,116"/><polygon class="ir" points="170,85 230,55 230,101 170,131"/><polygon class="it" points="140,70 200,40 230,55 170,85"/></g><g class="iso m3"><polygon class="il" points="210,104 234,116 234,138 210,126"/><polygon class="ir" points="234,116 274,96 274,118 234,138"/><polygon class="it" points="210,104 250,84 274,96 234,116"/></g>
+    <circle class="pulso" cx="80" cy="70" r="6"/><circle class="pulso p2" cx="170" cy="52" r="6"/><circle class="pulso p3" cx="232" cy="92" r="6"/></svg></div>
+        <h2 class="h md g-t"><span class="w">Una</span> <span class="w">copia</span> <span class="w">viva</span> <span class="w">de</span> <span class="w">tu</span> <span class="w">operación</span></h2>
+        <div class="row seniales"><span class="tag" id="se0">Temperatura · <b>212 °C</b></span><span class="tag" id="se1">Ciclo · <b>18,4 s</b></span><span class="tag" id="se2">Estado · <b>Produciendo</b></span></div>
+      </div></div>
+<audio id="sfx-2a" src="assets/shared/core/sfx/whoosh-short.mp3" data-start="11.97" data-duration="1.40" data-volume="0.18" data-track-index="25"></audio>
+<audio id="sfx-2b" src="assets/shared/core/sfx/pop.mp3" data-start="19.85" data-duration="1.40" data-volume="0.12" data-track-index="26"></audio>
+<div id="e-lec" class="clip scene" data-start="21.99" data-duration="10.26" data-track-index="3"><p class="kick"><b>EP 3</b> ARVANTTI · SISTEMA EMPRESARIAL</p>
+      <div class="st">
+        <div class="row lec">
+          <div class="panel card" id="sis"><b>Tus sistemas</b><small>Máquinas · ERP · planillas</small></div>
+          <svg class="flecha-l" viewBox="0 0 220 40"><line x1="10" y1="20" x2="190" y2="20" pathLength="1"/><polygon points="190,8 214,20 190,32"/></svg>
+          <div class="panel card on" id="tw"><b>Digital Twin</b><small>Solo lectura</small></div>
+        </div>
+        <div class="row vb"><span class="chip" id="vb0">Observa</span><span class="chip" id="vb1">Simula</span><span class="chip" id="vb2">Recomienda</span></div>
+        <span class="chip nunca">Nunca mueve nada en la planta</span>
+      </div></div>
+<audio id="sfx-30" src="assets/shared/core/sfx/pop.mp3" data-start="26.22" data-duration="1.40" data-volume="0.12" data-track-index="28"></audio>
+<audio id="sfx-31" src="assets/shared/core/sfx/pop.mp3" data-start="27.22" data-duration="1.40" data-volume="0.12" data-track-index="29"></audio>
+<audio id="sfx-32" src="assets/shared/core/sfx/pop.mp3" data-start="27.82" data-duration="1.40" data-volume="0.12" data-track-index="30"></audio>
+<div id="e-mod" class="clip scene" data-start="31.75" data-duration="13.57" data-track-index="3"><p class="kick"><b>EP 3</b> ARVANTTI · SISTEMA EMPRESARIAL</p>
+      <div class="st">
+        <div class="hepta">
+          <div class="nucleo-dt"><b>Núcleo</b><small>Digital Twin</small></div>
+          <div class="panel md-m" id="md0" style="left:calc(50% + 0px);top:calc(50% + -330px)"><b>Integrator</b><small>Conecta</small></div><div class="panel md-m" id="md1" style="left:calc(50% + 374px);top:calc(50% + -206px)"><b>APS</b><small>Planificador avanzado</small></div><div class="panel md-m" id="md2" style="left:calc(50% + 467px);top:calc(50% + 73px)"><b>CoSimulation</b><small>Simula el futuro</small></div><div class="panel md-m" id="md3" style="left:calc(50% + 208px);top:calc(50% + 297px)"><b>Fractal Industrial</b><small>Mejores opciones</small></div><div class="panel md-m" id="md4" style="left:calc(50% + -208px);top:calc(50% + 297px)"><b>Control Center</b><small>Avance e inventarios</small></div><div class="panel md-m" id="md5" style="left:calc(50% + -467px);top:calc(50% + 73px)"><b>Dendro</b><small>IA en la máquina</small></div><div class="panel md-m" id="md6" style="left:calc(50% + -374px);top:calc(50% + -206px)"><b>Asistente de IA</b><small>Reportes y gráficas</small></div>
+        </div>
+      </div></div>
+<audio id="sfx-40" src="assets/shared/core/sfx/pop.mp3" data-start="34.42" data-duration="1.40" data-volume="0.1" data-track-index="32"></audio>
+<audio id="sfx-41" src="assets/shared/core/sfx/pop.mp3" data-start="35.50" data-duration="1.40" data-volume="0.1" data-track-index="33"></audio>
+<audio id="sfx-42" src="assets/shared/core/sfx/pop.mp3" data-start="38.10" data-duration="1.40" data-volume="0.1" data-track-index="34"></audio>
+<audio id="sfx-43" src="assets/shared/core/sfx/pop.mp3" data-start="39.26" data-duration="1.40" data-volume="0.1" data-track-index="35"></audio>
+<audio id="sfx-44" src="assets/shared/core/sfx/pop.mp3" data-start="40.54" data-duration="1.40" data-volume="0.1" data-track-index="36"></audio>
+<audio id="sfx-45" src="assets/shared/core/sfx/pop.mp3" data-start="41.78" data-duration="1.40" data-volume="0.1" data-track-index="37"></audio>
+<audio id="sfx-46" src="assets/shared/core/sfx/pop.mp3" data-start="42.46" data-duration="1.40" data-volume="0.1" data-track-index="38"></audio>
+<div id="e-cos" class="clip scene" data-start="44.81" data-duration="12.05" data-track-index="3"><p class="kick"><b>EP 3</b> ARVANTTI · SISTEMA EMPRESARIAL</p>
+      <div class="st">
+        <div class="row pasos2"><span class="chip" id="p1">1 · Incorpora tus reglas</span><span class="flecha">→</span><span class="chip" id="p2">2 · Calcula el futuro</span></div>
+        <div class="panel gw3"><small>Si la demanda sube un trimestre entero</small><div class="gantt" id="gt5"><div class="gr"><span>Línea 1</span><div class="gt"><i class="" style="left:0%;width:28%"></i><i class="" style="left:30%;width:32%"></i><i class="" style="left:64%;width:32%"></i></div></div><div class="gr"><span>Línea 2</span><div class="gt"><i class="" style="left:0%;width:40%"></i><i class="al" style="left:42%;width:56%"></i></div></div><div class="gr"><span>Línea 3</span><div class="gt"><i class="" style="left:4%;width:26%"></i><i class="" style="left:32%;width:26%"></i><i class="" style="left:60%;width:39%"></i></div></div></div><em class="cuello">Cuello de botella</em></div>
+      </div></div>
+<audio id="sfx-5a" src="assets/shared/core/sfx/pop.mp3" data-start="48.20" data-duration="1.40" data-volume="0.12" data-track-index="40"></audio>
+<audio id="sfx-5b" src="assets/shared/core/sfx/whoosh-short.mp3" data-start="51.08" data-duration="1.40" data-volume="0.18" data-track-index="41"></audio>
+<div id="e-asi" class="clip scene" data-start="56.37" data-duration="13.57" data-track-index="3"><p class="kick"><b>EP 3</b> ARVANTTI · SISTEMA EMPRESARIAL</p>
+      <div class="st">
+        <div class="row asi">
+          <div class="panel asist"><small>Asistente · IA de Arvantti OS</small>
+            <div class="chat q"><span>¿Qué línea se satura primero?</span></div>
+            <div class="chat r"><span>La línea 2, en la semana 6.</span></div>
+          </div>
+          <div class="conex">
+            <span class="chip" id="cx0">MCP · conexión estándar para IA</span>
+            <span class="chip" id="cx1">CLI · línea de comandos</span>
+            <div class="row otras"><span class="tag" id="ot0">Otra IA 1</span><span class="tag" id="ot1">Otra IA 2</span><span class="tag" id="ot2">Otra IA 3</span></div>
+          </div>
+        </div>
+      </div></div>
+<audio id="sfx-6a" src="assets/shared/core/sfx/pop.mp3" data-start="57.52" data-duration="1.40" data-volume="0.12" data-track-index="43"></audio>
+<audio id="sfx-6b" src="assets/shared/core/sfx/pop.mp3" data-start="61.64" data-duration="1.40" data-volume="0.12" data-track-index="44"></audio>
+<div id="e-cierre" class="clip scene" data-start="69.44" data-duration="10.89" data-track-index="3">
+    <div class="st fin">
+      <img class="marca" src="assets/clips/marca.png" alt="">
+      <h1 class="h xl ti">Arvantti</h1>
+      <p class="firma">Gobierna tu IA, entiende tu operación<br>y decide mejor.</p>
+      <p class="url">arvantti.tech</p>
+    </div></div>
+<audio id="sfx-fin" src="assets/shared/core/sfx/hit.wav" data-start="70.59" data-duration="1.40" data-volume="0.28" data-track-index="46"></audio>
+<div id="sweep-0" class="clip sweep" data-start="11.22" data-duration="0.90" data-track-index="40"></div>
+<div id="sweep-1" class="clip sweep" data-start="21.89" data-duration="0.90" data-track-index="40"></div>
+<div id="sweep-2" class="clip sweep" data-start="31.65" data-duration="0.90" data-track-index="40"></div>
+<div id="sweep-3" class="clip sweep" data-start="44.71" data-duration="0.90" data-track-index="40"></div>
+<div id="sweep-4" class="clip sweep" data-start="56.27" data-duration="0.90" data-track-index="40"></div>
+<div id="sweep-5" class="clip sweep" data-start="69.34" data-duration="0.90" data-track-index="40"></div>
+<div id="cap0" class="clip cap" data-start="1.35" data-duration="1.92" data-track-index="45"><span class="l"><span class="cw" id="cap0w0">Segunda</span> <span class="cw" id="cap0w1">parte</span> <span class="cw" id="cap0w2">de</span> <span class="cw" id="cap0w3">la</span> <span class="cw" id="cap0w4">pregunta:</span></span></div>
+<div id="cap1" class="clip cap" data-start="3.27" data-duration="2.56" data-track-index="45"><span class="l"><span class="cw" id="cap1w0">¿la</span> <span class="cw" id="cap1w1">operación</span> <span class="cw" id="cap1w2">aguanta</span> <span class="cw" id="cap1w3">más</span> <span class="cw" id="cap1w4">demanda?</span></span></div>
+<div id="cap2" class="clip cap" data-start="5.83" data-duration="1.84" data-track-index="45"><span class="l"><span class="cw" id="cap2w0">Para</span> <span class="cw" id="cap2w1">saberlo</span> <span class="cw" id="cap2w2">hay</span> <span class="cw" id="cap2w3">que</span> <span class="cw" id="cap2w4">ver</span> <span class="cw" id="cap2w5">la</span> <span class="cw" id="cap2w6">operación</span></span></div>
+<div id="cap3" class="clip cap" data-start="7.67" data-duration="2.16" data-track-index="45"><span class="l"><span class="cw" id="cap3w0">completa,</span> <span class="cw" id="cap3w1">no</span> <span class="cw" id="cap3w2">un</span> <span class="cw" id="cap3w3">reporte</span> <span class="cw" id="cap3w4">de</span> <span class="cw" id="cap3w5">la</span> <span class="cw" id="cap3w6">semana</span></span></div>
+<div id="cap4" class="clip cap" data-start="9.83" data-duration="1.04" data-track-index="45"><span class="l"><span class="cw" id="cap4w0">pasada.</span></span></div>
+<div id="cap5" class="clip cap" data-start="11.92" data-duration="2.64" data-track-index="45"><span class="l"><span class="cw" id="cap5w0">Arvantti</span> <span class="cw" id="cap5w1">Digital</span> <span class="cw" id="cap5w2">Twin</span> <span class="cw" id="cap5w3">es</span> <span class="cw" id="cap5w4">una</span> <span class="cw" id="cap5w5">copia</span> <span class="cw" id="cap5w6">viva</span></span></div>
+<div id="cap6" class="clip cap" data-start="14.56" data-duration="1.92" data-track-index="45"><span class="l"><span class="cw" id="cap6w0">de</span> <span class="cw" id="cap6w1">tu</span> <span class="cw" id="cap6w2">operación</span> <span class="cw" id="cap6w3">en</span> <span class="cw" id="cap6w4">3D.</span></span></div>
+<div id="cap7" class="clip cap" data-start="16.48" data-duration="1.92" data-track-index="45"><span class="l"><span class="cw" id="cap7w0">Se</span> <span class="cw" id="cap7w1">mueve</span> <span class="cw" id="cap7w2">al</span> <span class="cw" id="cap7w3">ritmo</span> <span class="cw" id="cap7w4">de</span> <span class="cw" id="cap7w5">la</span> <span class="cw" id="cap7w6">real,</span></span></div>
+<div id="cap8" class="clip cap" data-start="18.40" data-duration="1.92" data-track-index="45"><span class="l"><span class="cw" id="cap8w0">con</span> <span class="cw" id="cap8w1">los</span> <span class="cw" id="cap8w2">mismos</span> <span class="cw" id="cap8w3">equipos</span> <span class="cw" id="cap8w4">y</span> <span class="cw" id="cap8w5">las</span> <span class="cw" id="cap8w6">mismas</span></span></div>
+<div id="cap9" class="clip cap" data-start="20.32" data-duration="1.12" data-track-index="45"><span class="l"><span class="cw" id="cap9w0">señales.</span></span></div>
+<div id="cap10" class="clip cap" data-start="22.49" data-duration="2.00" data-track-index="45"><span class="l"><span class="cw" id="cap10w0">Se</span> <span class="cw" id="cap10w1">conecta</span> <span class="cw" id="cap10w2">a</span> <span class="cw" id="cap10w3">lo</span> <span class="cw" id="cap10w4">que</span> <span class="cw" id="cap10w5">ya</span> <span class="cw" id="cap10w6">tienes,</span></span></div>
+<div id="cap11" class="clip cap" data-start="24.49" data-duration="1.44" data-track-index="45"><span class="l"><span class="cw" id="cap11w0">en</span> <span class="cw" id="cap11w1">solo</span> <span class="cw" id="cap11w2">lectura.</span></span></div>
+<div id="cap12" class="clip cap" data-start="25.93" data-duration="1.24" data-track-index="45"><span class="l"><span class="cw" id="cap12w0">Solo</span> <span class="cw" id="cap12w1">observa,</span></span></div>
+<div id="cap13" class="clip cap" data-start="27.17" data-duration="1.80" data-track-index="45"><span class="l"><span class="cw" id="cap13w0">simula</span> <span class="cw" id="cap13w1">y</span> <span class="cw" id="cap13w2">recomienda;</span></span></div>
+<div id="cap14" class="clip cap" data-start="28.97" data-duration="2.23" data-track-index="45"><span class="l"><span class="cw" id="cap14w0">nunca</span> <span class="cw" id="cap14w1">mueve</span> <span class="cw" id="cap14w2">nada</span> <span class="cw" id="cap14w3">en</span> <span class="cw" id="cap14w4">la</span> <span class="cw" id="cap14w5">planta.</span></span></div>
+<div id="cap15" class="clip cap" data-start="32.25" data-duration="2.12" data-track-index="45"><span class="l"><span class="cw" id="cap15w0">Un</span> <span class="cw" id="cap15w1">núcleo</span> <span class="cw" id="cap15w2">y</span> <span class="cw" id="cap15w3">siete</span> <span class="cw" id="cap15w4">módulos:</span></span></div>
+<div id="cap16" class="clip cap" data-start="34.37" data-duration="3.68" data-track-index="45"><span class="l"><span class="cw" id="cap16w0">Integrator,</span> <span class="cw" id="cap16w1">el</span> <span class="cw" id="cap16w2">APS</span> <span class="cw" id="cap16w3">o</span> <span class="cw" id="cap16w4">planificador</span> <span class="cw" id="cap16w5">avanzado,</span></span></div>
+<div id="cap17" class="clip cap" data-start="38.05" data-duration="2.44" data-track-index="45"><span class="l"><span class="cw" id="cap17w0">CoSimulation,</span> <span class="cw" id="cap17w1">Fractal</span> <span class="cw" id="cap17w2">Industrial,</span></span></div>
+<div id="cap18" class="clip cap" data-start="40.49" data-duration="1.24" data-track-index="45"><span class="l"><span class="cw" id="cap18w0">Control</span> <span class="cw" id="cap18w1">Center,</span></span></div>
+<div id="cap19" class="clip cap" data-start="41.73" data-duration="2.33" data-track-index="45"><span class="l"><span class="cw" id="cap19w0">Dendro</span> <span class="cw" id="cap19w1">y</span> <span class="cw" id="cap19w2">el</span> <span class="cw" id="cap19w3">asistente</span> <span class="cw" id="cap19w4">de</span> <span class="cw" id="cap19w5">IA.</span></span></div>
+<div id="cap20" class="clip cap" data-start="45.31" data-duration="2.84" data-track-index="45"><span class="l"><span class="cw" id="cap20w0">El</span> <span class="cw" id="cap20w1">cosimulador</span> <span class="cw" id="cap20w2">corre</span> <span class="cw" id="cap20w3">el</span> <span class="cw" id="cap20w4">futuro</span> <span class="cw" id="cap20w5">en</span> <span class="cw" id="cap20w6">paralelo.</span></span></div>
+<div id="cap21" class="clip cap" data-start="48.15" data-duration="2.08" data-track-index="45"><span class="l"><span class="cw" id="cap21w0">Primero</span> <span class="cw" id="cap21w1">incorpora</span> <span class="cw" id="cap21w2">las</span> <span class="cw" id="cap21w3">reglas</span> <span class="cw" id="cap21w4">de</span> <span class="cw" id="cap21w5">producción</span> <span class="cw" id="cap21w6">de</span></span></div>
+<div id="cap22" class="clip cap" data-start="50.23" data-duration="0.80" data-track-index="45"><span class="l"><span class="cw" id="cap22w0">tu</span> <span class="cw" id="cap22w1">empresa,</span></span></div>
+<div id="cap23" class="clip cap" data-start="51.03" data-duration="1.60" data-track-index="45"><span class="l"><span class="cw" id="cap23w0">y</span> <span class="cw" id="cap23w1">después</span> <span class="cw" id="cap23w2">calcula:</span></span></div>
+<div id="cap24" class="clip cap" data-start="52.63" data-duration="1.68" data-track-index="45"><span class="l"><span class="cw" id="cap24w0">qué</span> <span class="cw" id="cap24w1">pasa</span> <span class="cw" id="cap24w2">si</span> <span class="cw" id="cap24w3">la</span> <span class="cw" id="cap24w4">demanda</span> <span class="cw" id="cap24w5">sube</span> <span class="cw" id="cap24w6">un</span></span></div>
+<div id="cap25" class="clip cap" data-start="54.31" data-duration="1.31" data-track-index="45"><span class="l"><span class="cw" id="cap25w0">trimestre</span> <span class="cw" id="cap25w1">entero.</span></span></div>
+<div id="cap26" class="clip cap" data-start="56.87" data-duration="2.72" data-track-index="45"><span class="l"><span class="cw" id="cap26w0">Su</span> <span class="cw" id="cap26w1">asistente</span> <span class="cw" id="cap26w2">usa</span> <span class="cw" id="cap26w3">la</span> <span class="cw" id="cap26w4">IA</span> <span class="cw" id="cap26w5">de</span> <span class="cw" id="cap26w6">Arvantti</span></span></div>
+<div id="cap27" class="clip cap" data-start="59.59" data-duration="2.96" data-track-index="45"><span class="l"><span class="cw" id="cap27w0">OS.</span> <span class="cw" id="cap27w1">Y</span> <span class="cw" id="cap27w2">el</span> <span class="cw" id="cap27w3">gemelo</span> <span class="cw" id="cap27w4">trae</span> <span class="cw" id="cap27w5">MCP</span> <span class="cw" id="cap27w6">y</span></span></div>
+<div id="cap28" class="clip cap" data-start="62.55" data-duration="3.36" data-track-index="45"><span class="l"><span class="cw" id="cap28w0">CLI,</span> <span class="cw" id="cap28w1">conexiones</span> <span class="cw" id="cap28w2">estándar</span> <span class="cw" id="cap28w3">para</span> <span class="cw" id="cap28w4">que</span> <span class="cw" id="cap28w5">otros</span> <span class="cw" id="cap28w6">modelos</span></span></div>
+<div id="cap29" class="clip cap" data-start="65.91" data-duration="1.68" data-track-index="45"><span class="l"><span class="cw" id="cap29w0">de</span> <span class="cw" id="cap29w1">IA</span> <span class="cw" id="cap29w2">de</span> <span class="cw" id="cap29w3">tu</span> <span class="cw" id="cap29w4">empresa</span> <span class="cw" id="cap29w5">también</span> <span class="cw" id="cap29w6">le</span></span></div>
+<div id="cap30" class="clip cap" data-start="67.59" data-duration="1.10" data-track-index="45"><span class="l"><span class="cw" id="cap30w0">pregunten.</span></span></div>
+<audio id="voz-reporte" src="escenas/01-reporte/assets/audio/voiceover.mp3" data-start="1.40" data-duration="9.17" data-volume="1" data-track-index="84"></audio>
+<audio id="voz-gemelo" src="escenas/02-gemelo/assets/audio/voiceover.mp3" data-start="11.97" data-duration="9.17" data-volume="1" data-track-index="85"></audio>
+<audio id="voz-lectura" src="escenas/03-lectura/assets/audio/voiceover.mp3" data-start="22.54" data-duration="8.36" data-volume="1" data-track-index="86"></audio>
+<audio id="voz-modulos" src="escenas/04-modulos/assets/audio/voiceover.mp3" data-start="32.30" data-duration="11.47" data-volume="1" data-track-index="87"></audio>
+<audio id="voz-cosim" src="escenas/05-cosim/assets/audio/voiceover.mp3" data-start="45.36" data-duration="9.95" data-volume="1" data-track-index="88"></audio>
+<audio id="voz-asistente" src="escenas/06-asistente/assets/audio/voiceover.mp3" data-start="56.92" data-duration="11.47" data-volume="1" data-track-index="89"></audio>
+<audio id="voz-cierre" src="escenas/07-cierre/assets/audio/voiceover.mp3" data-start="70.59" data-duration="4.99" data-volume="1" data-track-index="90"></audio>
+<audio id="musica" src="musica-mezcla.mp3" data-start="0.00" data-duration="80.07" data-volume="0.5" data-track-index="91"></audio>
+</div>
+<script>
+window.__timelines = window.__timelines || {};
+const tl = gsap.timeline({ paused: true });
+tl.fromTo("#fondo .floorgrid",{"backgroundPositionY":"0px"},{"backgroundPositionY":"3203px","duration":80.074695,"ease":"none"},0.00);
+tl.fromTo("#fondo .glow",{"opacity":0.5},{"opacity":1,"duration":6,"ease":"sine.inOut","yoyo":true,"repeat":13},0.00);
+tl.fromTo("#g-rep i",{"scaleY":0},{"scaleY":1,"duration":0.5,"stagger":0.05,"ease":"power2.out"},2.00);
+tl.fromTo("#g-vivo .cv-line",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.9,"ease":"power2.out"},7.12);
+tl.fromTo("#g-vivo .cv-area, #g-vivo .cv-band",{"opacity":0},{"opacity":1,"duration":0.9,"ease":"power2.out"},7.32);
+tl.fromTo("#e-rep .kick",{"opacity":0,"x":-30},{"opacity":1,"x":0,"duration":0.6},0.30);
+tl.fromTo("#e-rep .r-t .w",{"opacity":0,"y":40,"filter":"blur(10px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.6,"stagger":0.08,"ease":"power3.out"},3.22);
+tl.fromTo("#e-rep .reporte",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},1.80);
+tl.fromTo("#e-rep .vivo",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},6.92);
+tl.to("#e-rep .reporte",{"opacity":0.35,"filter":"grayscale(1) blur(2px)","scale":0.92,"duration":0.6},8.68);
+tl.fromTo("#e-rep .viejo",{"opacity":0,"y":24},{"opacity":1,"y":0,"duration":0.5,"ease":"power3.out"},8.88);
+tl.to("#e-rep",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},11.57);
+tl.fromTo("#e-gem",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},11.32);
+tl.fromTo("#pl2 .iso",{"opacity":0,"y":40},{"opacity":1,"y":0,"duration":0.6,"stagger":0.2,"ease":"power3.out"},11.97);
+tl.fromTo("#e-gem .g-t .w",{"opacity":0,"y":40,"filter":"blur(10px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.6,"stagger":0.06,"ease":"power3.out"},13.61);
+tl.fromTo("#pl2 .pulso",{"opacity":0.2,"scale":0.6,"transformOrigin":"50% 50%"},{"opacity":1,"scale":1.5,"duration":0.5,"stagger":0.15,"yoyo":true,"repeat":9,"ease":"sine.inOut"},17.01);
+tl.fromTo("#e-gem .tag",{"opacity":0,"y":14},{"opacity":1,"y":0,"duration":0.35,"stagger":0.18},19.55);
+tl.to("#e-gem",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},22.24);
+tl.fromTo("#e-lec",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},21.99);
+tl.fromTo("#sis",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},22.54);
+tl.fromTo("#tw",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},22.94);
+tl.fromTo("#e-lec .flecha-l line",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6},22.84);
+tl.to("#tw",{"backgroundColor":"#2d7ff9","borderColor":"#4ea7ff","color":"#ffffff","boxShadow":"0 0 40px #2d7ff988","duration":0.35},24.78);
+tl.fromTo("#vb0",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},26.12);
+tl.to("#vb0",{"backgroundColor":"#2d7ff9","borderColor":"#4ea7ff","color":"#ffffff","boxShadow":"0 0 40px #2d7ff988","duration":0.35},26.52);
+tl.fromTo("#vb1",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},27.12);
+tl.to("#vb1",{"backgroundColor":"#2d7ff9","borderColor":"#4ea7ff","color":"#ffffff","boxShadow":"0 0 40px #2d7ff988","duration":0.35},27.52);
+tl.fromTo("#vb2",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},27.72);
+tl.to("#vb2",{"backgroundColor":"#2d7ff9","borderColor":"#4ea7ff","color":"#ffffff","boxShadow":"0 0 40px #2d7ff988","duration":0.35},28.12);
+tl.fromTo("#e-lec .nunca",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},29.02);
+tl.to("#e-lec",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},32.00);
+tl.fromTo("#e-mod",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},31.75);
+tl.fromTo("#e-mod .nucleo-dt",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},32.30);
+tl.fromTo("#md0",{"opacity":0,"scale":0.5},{"opacity":1,"scale":1,"duration":0.4,"ease":"back.out(2)"},34.32);
+tl.to("#md0",{"borderColor":"#4ea7ff","boxShadow":"0 0 40px #2d7ff988","duration":0.3},34.62);
+tl.fromTo("#md1",{"opacity":0,"scale":0.5},{"opacity":1,"scale":1,"duration":0.4,"ease":"back.out(2)"},35.40);
+tl.to("#md1",{"borderColor":"#4ea7ff","boxShadow":"0 0 40px #2d7ff988","duration":0.3},35.70);
+tl.fromTo("#md2",{"opacity":0,"scale":0.5},{"opacity":1,"scale":1,"duration":0.4,"ease":"back.out(2)"},38.00);
+tl.to("#md2",{"borderColor":"#4ea7ff","boxShadow":"0 0 40px #2d7ff988","duration":0.3},38.30);
+tl.fromTo("#md3",{"opacity":0,"scale":0.5},{"opacity":1,"scale":1,"duration":0.4,"ease":"back.out(2)"},39.16);
+tl.to("#md3",{"borderColor":"#4ea7ff","boxShadow":"0 0 40px #2d7ff988","duration":0.3},39.46);
+tl.fromTo("#md4",{"opacity":0,"scale":0.5},{"opacity":1,"scale":1,"duration":0.4,"ease":"back.out(2)"},40.44);
+tl.to("#md4",{"borderColor":"#4ea7ff","boxShadow":"0 0 40px #2d7ff988","duration":0.3},40.74);
+tl.fromTo("#md5",{"opacity":0,"scale":0.5},{"opacity":1,"scale":1,"duration":0.4,"ease":"back.out(2)"},41.68);
+tl.to("#md5",{"borderColor":"#4ea7ff","boxShadow":"0 0 40px #2d7ff988","duration":0.3},41.98);
+tl.fromTo("#md6",{"opacity":0,"scale":0.5},{"opacity":1,"scale":1,"duration":0.4,"ease":"back.out(2)"},42.36);
+tl.to("#md6",{"borderColor":"#4ea7ff","boxShadow":"0 0 40px #2d7ff988","duration":0.3},42.66);
+tl.to("#e-mod",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},45.06);
+tl.fromTo("#gt5 i",{"scaleX":0,"transformOrigin":"0% 50%"},{"scaleX":1,"duration":0.5,"stagger":0.08,"ease":"power2.out"},51.28);
+tl.fromTo("#e-cos",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},44.81);
+tl.fromTo("#p1",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},48.10);
+tl.to("#p1",{"backgroundColor":"#2d7ff9","borderColor":"#4ea7ff","color":"#ffffff","boxShadow":"0 0 40px #2d7ff988","duration":0.35},48.50);
+tl.fromTo("#e-cos .flecha",{"opacity":0,"y":24},{"opacity":1,"y":0,"duration":0.5,"ease":"power3.out"},50.78);
+tl.fromTo("#p2",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},51.08);
+tl.to("#p2",{"backgroundColor":"#2d7ff9","borderColor":"#4ea7ff","color":"#ffffff","boxShadow":"0 0 40px #2d7ff988","duration":0.35},51.38);
+tl.fromTo("#e-cos .gw3",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},51.08);
+tl.fromTo("#e-cos .cuello",{"opacity":0,"y":24},{"opacity":1,"y":0,"duration":0.5,"ease":"power3.out"},54.24);
+tl.to("#e-cos",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},56.62);
+tl.fromTo("#e-asi",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},56.37);
+tl.fromTo("#e-asi .asist",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},56.92);
+tl.fromTo("#e-asi .chat.q",{"opacity":0,"x":-30},{"opacity":1,"x":0,"duration":0.4},57.52);
+tl.fromTo("#e-asi .chat.r",{"opacity":0,"x":30},{"opacity":1,"x":0,"duration":0.4},58.52);
+tl.fromTo("#cx0",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},61.54);
+tl.fromTo("#cx1",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},62.50);
+tl.fromTo("#e-asi .otras .tag",{"opacity":0,"y":14},{"opacity":1,"y":0,"duration":0.35,"stagger":0.15},65.32);
+tl.to("#e-asi",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},69.69);
+tl.fromTo("#e-cierre",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},69.44);
+tl.fromTo("#e-cierre .marca",{"opacity":0,"scale":0.5,"rotate":-8},{"opacity":1,"scale":1,"rotate":0,"duration":1,"ease":"back.out(1.6)"},70.19);
+tl.fromTo("#e-cierre h1",{"opacity":0,"letterSpacing":"30px","filter":"blur(10px)"},{"opacity":1,"letterSpacing":"-3px","filter":"blur(0px)","duration":1.1,"ease":"power3.out"},70.59);
+tl.fromTo("#e-cierre .firma",{"opacity":0,"y":24},{"opacity":1,"y":0,"duration":0.8,"ease":"power3.out"},71.71);
+tl.fromTo("#e-cierre .url",{"opacity":0,"y":24},{"opacity":1,"y":0,"duration":0.8,"ease":"power3.out"},75.31);
+tl.to("#e-cierre .fin",{"opacity":0,"duration":1},79.32);
+tl.fromTo("#sweep-0",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},11.22);
+tl.fromTo("#sweep-1",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},21.89);
+tl.fromTo("#sweep-2",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},31.65);
+tl.fromTo("#sweep-3",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},44.71);
+tl.fromTo("#sweep-4",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},56.27);
+tl.fromTo("#sweep-5",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},69.34);
+tl.set("#cap0w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},1.40);
+tl.set("#cap0w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},1.88);
+tl.set("#cap0w0",{"color":"#c9d1e0","textShadow":"none"},1.88);
+tl.set("#cap0w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},2.16);
+tl.set("#cap0w1",{"color":"#c9d1e0","textShadow":"none"},2.16);
+tl.set("#cap0w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},2.24);
+tl.set("#cap0w2",{"color":"#c9d1e0","textShadow":"none"},2.24);
+tl.set("#cap0w4",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},2.36);
+tl.set("#cap0w3",{"color":"#c9d1e0","textShadow":"none"},2.36);
+tl.set("#cap1w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},3.32);
+tl.set("#cap1w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},3.48);
+tl.set("#cap1w0",{"color":"#c9d1e0","textShadow":"none"},3.48);
+tl.set("#cap1w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},4.04);
+tl.set("#cap1w1",{"color":"#c9d1e0","textShadow":"none"},4.04);
+tl.set("#cap1w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},4.68);
+tl.set("#cap1w2",{"color":"#c9d1e0","textShadow":"none"},4.68);
+tl.set("#cap1w4",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},4.96);
+tl.set("#cap1w3",{"color":"#c9d1e0","textShadow":"none"},4.96);
+tl.set("#cap2w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},5.88);
+tl.set("#cap2w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},6.08);
+tl.set("#cap2w0",{"color":"#c9d1e0","textShadow":"none"},6.08);
+tl.set("#cap2w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},6.76);
+tl.set("#cap2w1",{"color":"#c9d1e0","textShadow":"none"},6.76);
+tl.set("#cap2w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},6.88);
+tl.set("#cap2w2",{"color":"#c9d1e0","textShadow":"none"},6.88);
+tl.set("#cap2w4",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},7.00);
+tl.set("#cap2w3",{"color":"#c9d1e0","textShadow":"none"},7.00);
+tl.set("#cap2w5",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},7.12);
+tl.set("#cap2w4",{"color":"#c9d1e0","textShadow":"none"},7.12);
+tl.set("#cap2w6",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},7.24);
+tl.set("#cap2w5",{"color":"#c9d1e0","textShadow":"none"},7.24);
+tl.set("#cap3w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},7.72);
+tl.set("#cap3w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},8.68);
+tl.set("#cap3w0",{"color":"#c9d1e0","textShadow":"none"},8.68);
+tl.set("#cap3w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},8.84);
+tl.set("#cap3w1",{"color":"#c9d1e0","textShadow":"none"},8.84);
+tl.set("#cap3w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},9.12);
+tl.set("#cap3w2",{"color":"#c9d1e0","textShadow":"none"},9.12);
+tl.set("#cap3w4",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},9.40);
+tl.set("#cap3w3",{"color":"#c9d1e0","textShadow":"none"},9.40);
+tl.set("#cap3w5",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},9.52);
+tl.set("#cap3w4",{"color":"#c9d1e0","textShadow":"none"},9.52);
+tl.set("#cap3w6",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},9.60);
+tl.set("#cap3w5",{"color":"#c9d1e0","textShadow":"none"},9.60);
+tl.set("#cap4w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},9.88);
+tl.set("#cap5w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},11.97);
+tl.set("#cap5w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},12.53);
+tl.set("#cap5w0",{"color":"#c9d1e0","textShadow":"none"},12.53);
+tl.set("#cap5w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},12.93);
+tl.set("#cap5w1",{"color":"#c9d1e0","textShadow":"none"},12.93);
+tl.set("#cap5w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},13.41);
+tl.set("#cap5w2",{"color":"#c9d1e0","textShadow":"none"},13.41);
+tl.set("#cap5w4",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},13.57);
+tl.set("#cap5w3",{"color":"#c9d1e0","textShadow":"none"},13.57);
+tl.set("#cap5w5",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},13.81);
+tl.set("#cap5w4",{"color":"#c9d1e0","textShadow":"none"},13.81);
+tl.set("#cap5w6",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},14.29);
+tl.set("#cap5w5",{"color":"#c9d1e0","textShadow":"none"},14.29);
+tl.set("#cap6w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},14.61);
+tl.set("#cap6w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},14.73);
+tl.set("#cap6w0",{"color":"#c9d1e0","textShadow":"none"},14.73);
+tl.set("#cap6w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},14.85);
+tl.set("#cap6w1",{"color":"#c9d1e0","textShadow":"none"},14.85);
+tl.set("#cap6w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},15.41);
+tl.set("#cap6w2",{"color":"#c9d1e0","textShadow":"none"},15.41);
+tl.set("#cap6w4",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},15.57);
+tl.set("#cap6w3",{"color":"#c9d1e0","textShadow":"none"},15.57);
+tl.set("#cap7w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},16.53);
+tl.set("#cap7w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},16.69);
+tl.set("#cap7w0",{"color":"#c9d1e0","textShadow":"none"},16.69);
+tl.set("#cap7w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},17.01);
+tl.set("#cap7w1",{"color":"#c9d1e0","textShadow":"none"},17.01);
+tl.set("#cap7w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},17.17);
+tl.set("#cap7w2",{"color":"#c9d1e0","textShadow":"none"},17.17);
+tl.set("#cap7w4",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},17.49);
+tl.set("#cap7w3",{"color":"#c9d1e0","textShadow":"none"},17.49);
+tl.set("#cap7w5",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},17.61);
+tl.set("#cap7w4",{"color":"#c9d1e0","textShadow":"none"},17.61);
+tl.set("#cap7w6",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},17.73);
+tl.set("#cap7w5",{"color":"#c9d1e0","textShadow":"none"},17.73);
+tl.set("#cap8w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},18.45);
+tl.set("#cap8w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},18.61);
+tl.set("#cap8w0",{"color":"#c9d1e0","textShadow":"none"},18.61);
+tl.set("#cap8w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},18.85);
+tl.set("#cap8w1",{"color":"#c9d1e0","textShadow":"none"},18.85);
+tl.set("#cap8w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},19.17);
+tl.set("#cap8w2",{"color":"#c9d1e0","textShadow":"none"},19.17);
+tl.set("#cap8w4",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},19.69);
+tl.set("#cap8w3",{"color":"#c9d1e0","textShadow":"none"},19.69);
+tl.set("#cap8w5",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},19.85);
+tl.set("#cap8w4",{"color":"#c9d1e0","textShadow":"none"},19.85);
+tl.set("#cap8w6",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},20.05);
+tl.set("#cap8w5",{"color":"#c9d1e0","textShadow":"none"},20.05);
+tl.set("#cap9w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},20.37);
+tl.set("#cap10w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},22.54);
+tl.set("#cap10w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},22.78);
+tl.set("#cap10w0",{"color":"#c9d1e0","textShadow":"none"},22.78);
+tl.set("#cap10w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},23.22);
+tl.set("#cap10w1",{"color":"#c9d1e0","textShadow":"none"},23.22);
+tl.set("#cap10w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},23.30);
+tl.set("#cap10w2",{"color":"#c9d1e0","textShadow":"none"},23.30);
+tl.set("#cap10w4",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},23.42);
+tl.set("#cap10w3",{"color":"#c9d1e0","textShadow":"none"},23.42);
+tl.set("#cap10w5",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},23.58);
+tl.set("#cap10w4",{"color":"#c9d1e0","textShadow":"none"},23.58);
+tl.set("#cap10w6",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},23.82);
+tl.set("#cap10w5",{"color":"#c9d1e0","textShadow":"none"},23.82);
+tl.set("#cap11w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},24.54);
+tl.set("#cap11w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},24.78);
+tl.set("#cap11w0",{"color":"#c9d1e0","textShadow":"none"},24.78);
+tl.set("#cap11w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},25.14);
+tl.set("#cap11w1",{"color":"#c9d1e0","textShadow":"none"},25.14);
+tl.set("#cap12w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},25.98);
+tl.set("#cap12w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},26.22);
+tl.set("#cap12w0",{"color":"#c9d1e0","textShadow":"none"},26.22);
+tl.set("#cap13w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},27.22);
+tl.set("#cap13w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},27.74);
+tl.set("#cap13w0",{"color":"#c9d1e0","textShadow":"none"},27.74);
+tl.set("#cap13w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},27.82);
+tl.set("#cap13w1",{"color":"#c9d1e0","textShadow":"none"},27.82);
+tl.set("#cap14w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},29.02);
+tl.set("#cap14w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},29.42);
+tl.set("#cap14w0",{"color":"#c9d1e0","textShadow":"none"},29.42);
+tl.set("#cap14w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},29.82);
+tl.set("#cap14w1",{"color":"#c9d1e0","textShadow":"none"},29.82);
+tl.set("#cap14w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},30.10);
+tl.set("#cap14w2",{"color":"#c9d1e0","textShadow":"none"},30.10);
+tl.set("#cap14w4",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},30.18);
+tl.set("#cap14w3",{"color":"#c9d1e0","textShadow":"none"},30.18);
+tl.set("#cap14w5",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},30.30);
+tl.set("#cap14w4",{"color":"#c9d1e0","textShadow":"none"},30.30);
+tl.set("#cap15w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},32.30);
+tl.set("#cap15w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},32.54);
+tl.set("#cap15w0",{"color":"#c9d1e0","textShadow":"none"},32.54);
+tl.set("#cap15w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},33.02);
+tl.set("#cap15w1",{"color":"#c9d1e0","textShadow":"none"},33.02);
+tl.set("#cap15w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},33.18);
+tl.set("#cap15w2",{"color":"#c9d1e0","textShadow":"none"},33.18);
+tl.set("#cap15w4",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},33.58);
+tl.set("#cap15w3",{"color":"#c9d1e0","textShadow":"none"},33.58);
+tl.set("#cap16w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},34.42);
+tl.set("#cap16w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},35.50);
+tl.set("#cap16w0",{"color":"#c9d1e0","textShadow":"none"},35.50);
+tl.set("#cap16w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},35.74);
+tl.set("#cap16w1",{"color":"#c9d1e0","textShadow":"none"},35.74);
+tl.set("#cap16w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},36.30);
+tl.set("#cap16w2",{"color":"#c9d1e0","textShadow":"none"},36.30);
+tl.set("#cap16w4",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},36.46);
+tl.set("#cap16w3",{"color":"#c9d1e0","textShadow":"none"},36.46);
+tl.set("#cap16w5",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},37.10);
+tl.set("#cap16w4",{"color":"#c9d1e0","textShadow":"none"},37.10);
+tl.set("#cap17w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},38.10);
+tl.set("#cap17w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},39.26);
+tl.set("#cap17w0",{"color":"#c9d1e0","textShadow":"none"},39.26);
+tl.set("#cap17w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},39.66);
+tl.set("#cap17w1",{"color":"#c9d1e0","textShadow":"none"},39.66);
+tl.set("#cap18w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},40.54);
+tl.set("#cap18w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},41.02);
+tl.set("#cap18w0",{"color":"#c9d1e0","textShadow":"none"},41.02);
+tl.set("#cap19w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},41.78);
+tl.set("#cap19w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},42.38);
+tl.set("#cap19w0",{"color":"#c9d1e0","textShadow":"none"},42.38);
+tl.set("#cap19w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},42.46);
+tl.set("#cap19w1",{"color":"#c9d1e0","textShadow":"none"},42.46);
+tl.set("#cap19w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},42.54);
+tl.set("#cap19w2",{"color":"#c9d1e0","textShadow":"none"},42.54);
+tl.set("#cap19w4",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},43.10);
+tl.set("#cap19w3",{"color":"#c9d1e0","textShadow":"none"},43.10);
+tl.set("#cap19w5",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},43.26);
+tl.set("#cap19w4",{"color":"#c9d1e0","textShadow":"none"},43.26);
+tl.set("#cap20w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},45.36);
+tl.set("#cap20w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},45.60);
+tl.set("#cap20w0",{"color":"#c9d1e0","textShadow":"none"},45.60);
+tl.set("#cap20w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},46.24);
+tl.set("#cap20w1",{"color":"#c9d1e0","textShadow":"none"},46.24);
+tl.set("#cap20w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},46.52);
+tl.set("#cap20w2",{"color":"#c9d1e0","textShadow":"none"},46.52);
+tl.set("#cap20w4",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},46.64);
+tl.set("#cap20w3",{"color":"#c9d1e0","textShadow":"none"},46.64);
+tl.set("#cap20w5",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},47.04);
+tl.set("#cap20w4",{"color":"#c9d1e0","textShadow":"none"},47.04);
+tl.set("#cap20w6",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},47.20);
+tl.set("#cap20w5",{"color":"#c9d1e0","textShadow":"none"},47.20);
+tl.set("#cap21w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},48.20);
+tl.set("#cap21w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},48.68);
+tl.set("#cap21w0",{"color":"#c9d1e0","textShadow":"none"},48.68);
+tl.set("#cap21w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},49.20);
+tl.set("#cap21w1",{"color":"#c9d1e0","textShadow":"none"},49.20);
+tl.set("#cap21w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},49.40);
+tl.set("#cap21w2",{"color":"#c9d1e0","textShadow":"none"},49.40);
+tl.set("#cap21w4",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},49.64);
+tl.set("#cap21w3",{"color":"#c9d1e0","textShadow":"none"},49.64);
+tl.set("#cap21w5",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},49.76);
+tl.set("#cap21w4",{"color":"#c9d1e0","textShadow":"none"},49.76);
+tl.set("#cap21w6",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},50.20);
+tl.set("#cap21w5",{"color":"#c9d1e0","textShadow":"none"},50.20);
+tl.set("#cap22w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},50.28);
+tl.set("#cap22w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},50.40);
+tl.set("#cap22w0",{"color":"#c9d1e0","textShadow":"none"},50.40);
+tl.set("#cap23w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},51.08);
+tl.set("#cap23w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},51.20);
+tl.set("#cap23w0",{"color":"#c9d1e0","textShadow":"none"},51.20);
+tl.set("#cap23w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},51.80);
+tl.set("#cap23w1",{"color":"#c9d1e0","textShadow":"none"},51.80);
+tl.set("#cap24w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},52.68);
+tl.set("#cap24w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},52.88);
+tl.set("#cap24w0",{"color":"#c9d1e0","textShadow":"none"},52.88);
+tl.set("#cap24w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},53.12);
+tl.set("#cap24w1",{"color":"#c9d1e0","textShadow":"none"},53.12);
+tl.set("#cap24w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},53.24);
+tl.set("#cap24w2",{"color":"#c9d1e0","textShadow":"none"},53.24);
+tl.set("#cap24w4",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},53.36);
+tl.set("#cap24w3",{"color":"#c9d1e0","textShadow":"none"},53.36);
+tl.set("#cap24w5",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},53.88);
+tl.set("#cap24w4",{"color":"#c9d1e0","textShadow":"none"},53.88);
+tl.set("#cap24w6",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},54.24);
+tl.set("#cap24w5",{"color":"#c9d1e0","textShadow":"none"},54.24);
+tl.set("#cap25w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},54.36);
+tl.set("#cap25w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},54.88);
+tl.set("#cap25w0",{"color":"#c9d1e0","textShadow":"none"},54.88);
+tl.set("#cap26w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},56.92);
+tl.set("#cap26w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},57.12);
+tl.set("#cap26w0",{"color":"#c9d1e0","textShadow":"none"},57.12);
+tl.set("#cap26w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},57.76);
+tl.set("#cap26w1",{"color":"#c9d1e0","textShadow":"none"},57.76);
+tl.set("#cap26w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},57.96);
+tl.set("#cap26w2",{"color":"#c9d1e0","textShadow":"none"},57.96);
+tl.set("#cap26w4",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},58.20);
+tl.set("#cap26w3",{"color":"#c9d1e0","textShadow":"none"},58.20);
+tl.set("#cap26w5",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},58.68);
+tl.set("#cap26w4",{"color":"#c9d1e0","textShadow":"none"},58.68);
+tl.set("#cap26w6",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},58.92);
+tl.set("#cap26w5",{"color":"#c9d1e0","textShadow":"none"},58.92);
+tl.set("#cap27w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},59.64);
+tl.set("#cap27w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},60.60);
+tl.set("#cap27w0",{"color":"#c9d1e0","textShadow":"none"},60.60);
+tl.set("#cap27w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},60.68);
+tl.set("#cap27w1",{"color":"#c9d1e0","textShadow":"none"},60.68);
+tl.set("#cap27w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},60.76);
+tl.set("#cap27w2",{"color":"#c9d1e0","textShadow":"none"},60.76);
+tl.set("#cap27w4",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},61.16);
+tl.set("#cap27w3",{"color":"#c9d1e0","textShadow":"none"},61.16);
+tl.set("#cap27w5",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},61.64);
+tl.set("#cap27w4",{"color":"#c9d1e0","textShadow":"none"},61.64);
+tl.set("#cap27w6",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},62.44);
+tl.set("#cap27w5",{"color":"#c9d1e0","textShadow":"none"},62.44);
+tl.set("#cap28w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},62.60);
+tl.set("#cap28w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},63.80);
+tl.set("#cap28w0",{"color":"#c9d1e0","textShadow":"none"},63.80);
+tl.set("#cap28w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},64.32);
+tl.set("#cap28w1",{"color":"#c9d1e0","textShadow":"none"},64.32);
+tl.set("#cap28w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},64.76);
+tl.set("#cap28w2",{"color":"#c9d1e0","textShadow":"none"},64.76);
+tl.set("#cap28w4",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},65.00);
+tl.set("#cap28w3",{"color":"#c9d1e0","textShadow":"none"},65.00);
+tl.set("#cap28w5",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},65.32);
+tl.set("#cap28w4",{"color":"#c9d1e0","textShadow":"none"},65.32);
+tl.set("#cap28w6",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},65.56);
+tl.set("#cap28w5",{"color":"#c9d1e0","textShadow":"none"},65.56);
+tl.set("#cap29w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},65.96);
+tl.set("#cap29w1",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},66.12);
+tl.set("#cap29w0",{"color":"#c9d1e0","textShadow":"none"},66.12);
+tl.set("#cap29w2",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},66.40);
+tl.set("#cap29w1",{"color":"#c9d1e0","textShadow":"none"},66.40);
+tl.set("#cap29w3",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},66.52);
+tl.set("#cap29w2",{"color":"#c9d1e0","textShadow":"none"},66.52);
+tl.set("#cap29w4",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},66.80);
+tl.set("#cap29w3",{"color":"#c9d1e0","textShadow":"none"},66.80);
+tl.set("#cap29w5",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},67.08);
+tl.set("#cap29w4",{"color":"#c9d1e0","textShadow":"none"},67.08);
+tl.set("#cap29w6",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},67.52);
+tl.set("#cap29w5",{"color":"#c9d1e0","textShadow":"none"},67.52);
+tl.set("#cap30w0",{"color":"#ffffff","textShadow":"0 0 18px #4ea7ff"},67.64);
+window.__timelines["main"] = tl;
+tl.seek(0);
+</script>
+</body>
+</html>

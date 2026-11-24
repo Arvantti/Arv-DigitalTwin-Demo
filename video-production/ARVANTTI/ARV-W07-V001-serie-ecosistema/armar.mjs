@@ -31,7 +31,7 @@ const vozDe = (e) => path.join(EPDIR, `escenas/${e.dir}/assets/audio/voiceover.m
 const alineacionDe = (e) => path.join(EPDIR, `escenas/${e.dir}/assets/audio/alignment.json`);
 
 // Siglas y nombres que la voz en español lee mal: se envían escritos como se pronuncian.
-const PRONUNCIA = [["Integrator", "Íntegreitor"], ["ERP", "E R P"], ["CRM", "C R M"], ["SCADA", "Escada"], ["OEE", "O E E"], ["APS", "A P S"], ["3D", "tres D"]];
+const PRONUNCIA = [["Integrator", "Íntegreitor"], ["ERP", "E R P"], ["CRM", "C R M"], ["SCADA", "Escada"], ["OEE", "O E E"], ["APS", "A P S"], ["3D", "tres D"], ["MCP", "M C P"], ["CLI", "C L I"]];
 function paraVoz(t) {
   let out = "", idx = [];
   for (let i = 0; i < t.length; ) {

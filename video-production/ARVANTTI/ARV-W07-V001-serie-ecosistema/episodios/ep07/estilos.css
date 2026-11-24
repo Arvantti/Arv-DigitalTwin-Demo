@@ -1,0 +1,30 @@
+/* Ep 7 · La respuesta */
+.q{text-shadow:0 0 60px #05070c}
+.qs{gap:22px}.qs .chip{font-size:34px}
+.hay{font-size:120px}
+.dat{gap:16px;align-items:center}
+.flecha{font:800 50px Inter,sans-serif;color:var(--electric)}
+.os{width:820px}
+.tri3{gap:30px;align-items:stretch}
+.vz3{width:500px;padding:22px;display:flex;flex-direction:column;align-items:center;gap:14px}
+.vz3 small{font:600 22px "JetBrains Mono",monospace;letter-spacing:1px;color:var(--ice);text-align:center}
+.vz3 .curva{width:420px;height:200px}
+.vz3 .pl .planta{width:300px;height:auto}
+.vz3 .gr span{width:110px;font-size:22px}
+.aviso{margin-top:40px;padding:22px 30px;border-radius:16px;border:2px solid #ff8a3d;background:#2a160bcc;display:flex;flex-direction:column;gap:8px;box-shadow:0 0 40px #ff8a3d55}
+.aviso b{font:800 40px Inter,sans-serif}.aviso span{font:600 28px Inter,sans-serif;color:#ffb27a}
+.mods{gap:20px}.mods .chip{font-size:34px}
+.opts{flex-direction:row;gap:26px}
+.opt small{display:block;margin-top:10px;font:600 24px Inter,sans-serif;color:var(--ice)}
+.exp{gap:40px;align-items:center}
+.res{width:820px;padding:28px 32px;display:flex;flex-direction:column;gap:16px;text-align:left}
+.res small{font:700 22px "JetBrains Mono",monospace;letter-spacing:2px;color:var(--electric);text-transform:uppercase}
+.res b{font:800 40px/1.25 Inter,sans-serif}
+.fuentes{justify-content:flex-start;gap:12px}
+.pila{display:flex;flex-direction:column;gap:14px}
+.recibo.mini{width:420px;padding:16px 22px}
+.dj{font-size:130px}
+.rd{gap:26px}.rd .chip{font-size:40px}
+.nm{max-width:1500px}
+.tres3{gap:30px}.tres3 .card{width:420px}
+.juntos{font-size:38px}

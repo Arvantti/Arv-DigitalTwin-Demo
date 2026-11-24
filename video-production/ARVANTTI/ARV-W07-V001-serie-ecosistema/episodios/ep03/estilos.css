@@ -1,0 +1,35 @@
+/* Ep 3 · Digital Twin */
+.r-t,.g-t{text-shadow:0 0 60px #05070c}
+.rep{gap:50px;align-items:stretch}
+.reporte,.vivo{width:520px;padding:26px;display:flex;flex-direction:column;align-items:center;gap:16px}
+.reporte small,.vivo small{font:700 22px "JetBrains Mono",monospace;letter-spacing:2px;color:var(--ice);text-transform:uppercase}
+.reporte .mbar,.vivo .curva{transform:scale(1.4);margin:20px 0}
+.viejo{font:700 26px Inter,sans-serif;font-style:normal;color:var(--alert)}
+.live{font:700 26px Inter,sans-serif;font-style:normal;color:var(--ice)}
+.pg .planta{width:900px;height:auto}
+.seniales{gap:22px}.seniales b{color:#fff}
+.lec{align-items:center;gap:30px}
+.lec .card{width:400px}
+.flecha-l{width:220px;height:40px;overflow:visible}
+.flecha-l line{stroke:#4ea7ff;stroke-width:5;stroke-dasharray:1;stroke-dashoffset:1}
+.flecha-l polygon{fill:#4ea7ff}
+.vb{gap:24px}.vb .chip{font-size:38px}
+.nunca{font-size:34px;border-color:#9fd0ff}
+.hepta{position:relative;width:1500px;height:780px}
+.nucleo-dt{position:absolute;left:50%;top:50%;width:230px;height:230px;margin:-115px 0 0 -115px;border-radius:50%;background:radial-gradient(#1a3a6e,#0a1222);border:3px solid var(--electric);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;box-shadow:0 0 80px #2d7ff988}
+.nucleo-dt b{font:800 40px "Inter Display",Inter,sans-serif}
+.nucleo-dt small{font:600 20px "JetBrains Mono",monospace;color:var(--ice)}
+.md-m{position:absolute;width:300px;margin:-50px 0 0 -150px;padding:14px 16px;display:flex;flex-direction:column;gap:4px}
+.md-m b{font:800 30px "Inter Display",Inter,sans-serif}
+.md-m small{font:500 22px Inter,sans-serif;color:var(--ice)}
+.pasos2{align-items:center;gap:24px}.pasos2 .chip{font-size:36px}
+.flecha{font:800 50px Inter,sans-serif;color:var(--electric)}
+.gw3{padding:24px 30px;display:flex;flex-direction:column;align-items:center;gap:14px;width:1200px}
+.gw3 small{font:600 26px Inter,sans-serif;color:var(--ice)}
+.cuello{font:700 26px Inter,sans-serif;font-style:normal;color:var(--alert)}
+.asi{gap:50px;align-items:center}
+.asist{width:640px;padding:26px;display:flex;flex-direction:column;gap:16px;text-align:left}
+.asist > small{font:700 22px "JetBrains Mono",monospace;letter-spacing:2px;color:var(--electric);text-transform:uppercase}
+.chat.r{align-self:flex-end;border-radius:24px 24px 6px 24px;background:#13284d}
+.conex{display:flex;flex-direction:column;gap:18px;align-items:flex-start}
+.otras{gap:14px}

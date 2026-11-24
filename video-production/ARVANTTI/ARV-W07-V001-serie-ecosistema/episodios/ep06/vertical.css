@@ -1,0 +1,10 @@
+.circ{width:960px;height:900px}
+.fu{width:200px;margin-left:-100px;font-size:30px}
+.centro{width:380px;margin-left:-190px}
+.cables{width:960px}
+.sist{display:grid;grid-template-columns:1fr 1fr;gap:18px}.si{width:420px}
+.pr3{gap:14px}.pr3 .card{width:300px;padding:18px 10px}.pr3 .card b{font-size:32px}
+.hilos{width:960px}
+.capa-c{width:960px}
+.don{flex-direction:column;gap:20px;align-items:center}.don .card{width:860px}
+.rel{width:960px}

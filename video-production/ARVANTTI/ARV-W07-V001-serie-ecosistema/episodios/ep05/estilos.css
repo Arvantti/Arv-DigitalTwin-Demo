@@ -1,0 +1,49 @@
+/* Ep 5 · Dendro */
+.fal{gap:60px;align-items:center}
+.horas{padding:24px 30px;display:flex;flex-direction:column;gap:16px;align-items:center}
+.horas small{font:600 24px "JetBrains Mono",monospace;letter-spacing:1px;color:var(--ice)}
+.hb{display:flex;align-items:flex-end;gap:16px;height:210px}
+.hb i{display:block;width:56px;border-radius:8px 8px 0 0;background:linear-gradient(#4ea7ff,#2d7ff9)}
+.hb i.al{background:linear-gradient(#ff8a3d,#c2561a)}
+.mw{display:flex;flex-direction:column;align-items:center;gap:20px}
+.maq{width:520px;height:auto;overflow:visible}
+.mq-b{fill:#13284d;stroke:#9fd0ff;stroke-width:3}.mq-p{fill:#2d7ff9;opacity:.7}
+.mq-r{fill:none;stroke:#4ea7ff;stroke-width:6}.mq-r2{stroke:#fff;stroke-width:5}
+.mq-base{fill:#7a7e86}
+.mq-al circle{fill:#ff8a3d;filter:drop-shadow(0 0 14px #ff8a3d)}.mq-al text{fill:#05070c;font:900 36px Inter,sans-serif}
+.arru{border-color:#ff8a3d;color:#ffb27a;font-size:34px}
+.dn{font-size:52px;color:#fff;letter-spacing:2px}
+.dm{align-items:center;gap:30px}.dm .maq{width:360px}
+.ia{font-size:36px}
+.hw{gap:60px;align-items:center}
+.tarjeta{width:640px;height:auto}
+.pcb{fill:#0d2a1c;stroke:#4ea7ff;stroke-width:3}
+.tarjeta .pcb{fill:#0b1a33}
+.chipc{fill:#13284d;stroke:#fff;stroke-width:3}
+.tarjeta text{fill:#fff;font:800 40px Inter,sans-serif}
+.pista{stroke:#9fd0ff;stroke-width:3;stroke-dasharray:1;stroke-dashoffset:1}
+.con{fill:#d8dadf}
+.hw-t{display:flex;flex-direction:column;gap:20px;align-items:flex-start}
+.hw-t .chip{font-size:34px}
+.sw{padding:24px 30px;display:flex;flex-direction:column;gap:12px;align-items:center}
+.sw small{font:600 24px "JetBrains Mono",monospace;letter-spacing:1px;color:var(--ice)}
+.senial{width:1100px;height:auto;overflow:visible}
+.banda{fill:#2d7ff922;stroke:#4ea7ff55;stroke-dasharray:6 6}
+.sl{fill:none;stroke:#4ea7ff33;stroke-width:4}
+.sl.on{stroke:#4ea7ff;filter:drop-shadow(0 0 6px #4ea7ff)}
+.desv{font:700 28px Inter,sans-serif;font-style:normal;color:var(--alert)}
+.cc{flex-direction:column;align-items:center;gap:10px}
+.flecha{font:800 50px Inter,sans-serif;color:var(--electric)}
+#cc4{width:720px}
+.mt{gap:22px}.mt .chip{font-size:32px}
+.gw5{width:1200px;padding:26px 30px;display:flex;flex-direction:column;gap:14px;align-items:center}
+.mlab{font:700 26px Inter,sans-serif;font-style:normal;color:#fff}
+.accion{width:900px;padding:28px 34px;display:flex;flex-direction:column;gap:16px;align-items:center}
+.accion small{font:600 24px "JetBrains Mono",monospace;letter-spacing:1px;color:var(--ice)}
+.accion b{font:800 44px Inter,sans-serif}
+.btns{gap:20px}.btns .chip{font-size:34px}
+.persona{display:flex;align-items:center;gap:14px;font:600 28px Inter,sans-serif;color:var(--ice)}
+.persona svg{width:56px;height:56px;fill:none;stroke:#9fd0ff;stroke-width:4}
+.unica{font-size:34px}
+.pa-t{font-size:120px}
+.pat{font-size:48px;padding:18px 50px}

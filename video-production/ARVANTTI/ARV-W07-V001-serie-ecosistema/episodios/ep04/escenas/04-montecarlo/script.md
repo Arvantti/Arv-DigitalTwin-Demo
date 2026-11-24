@@ -1,0 +1,1 @@
+Y con la simulación Montecarlo analiza cómo respondería cada alternativa ante numerosos escenarios inciertos: su probabilidad de cumplir, cuánto varía y qué tan malos son los peores casos. No promete el óptimo perfecto: te presenta las mejores opciones que encontró.

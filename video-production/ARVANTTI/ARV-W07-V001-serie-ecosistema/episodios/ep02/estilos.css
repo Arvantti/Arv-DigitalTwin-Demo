@@ -1,0 +1,35 @@
+/* Ep 2 · Arvantti OS */
+.s-t{max-width:1400px;text-shadow:0 0 60px #05070c}
+.sueltas{gap:30px}
+.chat{position:relative}
+#su0{transform:rotate(-4deg)}#su1{transform:rotate(3deg)}#su2{transform:rotate(-2deg)}#su3{transform:rotate(4deg)}
+.alerta{display:block;margin-top:8px;font:700 22px "JetBrains Mono",monospace;font-style:normal;color:var(--alert)}
+.ias{gap:24px}
+.capa-os{width:1100px;padding:26px 30px;display:flex;align-items:center;justify-content:center;gap:26px}
+.capa-os .marca{width:80px}
+.capa-os b{font:800 54px "Inter Display",Inter,sans-serif}
+.capa-os small{font:500 28px Inter,sans-serif;color:var(--ice)}
+.tres .chip{font-size:36px}
+.medida{font-size:26px}
+.proms{gap:22px;align-items:stretch}
+.prom{width:300px}
+.prom b{font-size:36px}
+.cer{gap:40px;align-items:center}
+.gw{padding:20px;display:flex;flex-direction:column;align-items:center}
+.gl{font:700 22px "JetBrains Mono",monospace;letter-spacing:3px;color:var(--electric);text-transform:uppercase}
+.grafo{width:640px;height:auto;overflow:visible}
+.ge{stroke:#4ea7ff;stroke-width:3;stroke-dasharray:1;stroke-dashoffset:1}
+.gn circle{fill:#0d1a30;stroke:#4ea7ff;stroke-width:3}
+.gn.gm circle{fill:#13284d;stroke:#fff}
+.gn text{fill:#fff;font:700 18px Inter,sans-serif}
+.pq{padding:18px 34px;display:flex;flex-direction:column;gap:6px}
+.pq small{font:700 22px "JetBrains Mono",monospace;letter-spacing:3px;color:var(--electric);text-transform:uppercase}
+.pq b{font:800 40px Inter,sans-serif}
+.pasos{gap:20px}.pasos .chip{font-size:32px}
+.ags{gap:30px}
+.ag{width:300px}
+.anill{gap:40px;align-items:center}
+.nucleo-os{width:260px;height:260px;border-radius:50%;background:radial-gradient(#1a3a6e,#0a1222);border:3px solid var(--electric);display:flex;align-items:center;justify-content:center;box-shadow:0 0 80px #2d7ff988}
+.nucleo-os b{font:800 40px "Inter Display",Inter,sans-serif}
+.mod{width:420px}
+.ent{font-size:22px;margin-top:6px}

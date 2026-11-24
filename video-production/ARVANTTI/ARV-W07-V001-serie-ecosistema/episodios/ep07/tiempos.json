@@ -1,0 +1,66 @@
+[
+ {
+  "id": "junta",
+  "start": 0,
+  "voiceAt": 1.4,
+  "voz": 8.59,
+  "dur": 10.99,
+  "real": true
+ },
+ {
+  "id": "datos",
+  "start": 10.99,
+  "voiceAt": 11.39,
+  "voz": 9.48,
+  "dur": 11.08,
+  "real": true
+ },
+ {
+  "id": "simula",
+  "start": 22.08,
+  "voiceAt": 22.38,
+  "voz": 11.55,
+  "dur": 13.15,
+  "real": true
+ },
+ {
+  "id": "fractal",
+  "start": 35.22,
+  "voiceAt": 35.52,
+  "voz": 10.37,
+  "dur": 11.97,
+  "real": true
+ },
+ {
+  "id": "explica",
+  "start": 47.19,
+  "voiceAt": 47.49,
+  "voz": 6.92,
+  "dur": 8.42,
+  "real": true
+ },
+ {
+  "id": "decide",
+  "start": 55.62,
+  "voiceAt": 55.92,
+  "voz": 5.41,
+  "dur": 6.91,
+  "real": true
+ },
+ {
+  "id": "nombre",
+  "start": 62.52,
+  "voiceAt": 62.82,
+  "voz": 9.17,
+  "dur": 10.87,
+  "real": true
+ },
+ {
+  "id": "cierre",
+  "start": 73.39,
+  "voiceAt": 74.29,
+  "voz": 5.07,
+  "dur": 10.47,
+  "real": true
+ }
+]

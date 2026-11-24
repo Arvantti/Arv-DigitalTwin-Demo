@@ -1,0 +1,23 @@
+/* Ep 6 · Integrator */
+.circ{position:relative;width:1500px;height:720px}
+.centro{position:absolute;left:50%;top:50%;width:420px;margin:-60px 0 0 -210px;padding:30px;text-align:center}
+.centro b{font:800 40px/1.2 "Inter Display",Inter,sans-serif}
+.fu{position:absolute;margin:-30px 0 0 -110px;width:220px;text-align:center;font-size:34px}
+#e-int .st{gap:10px}
+.hub{width:520px}
+.cables{width:1400px;height:90px;overflow:visible}
+.cables line,.hilos line{stroke:#4ea7ff;stroke-width:4;stroke-dasharray:1;stroke-dashoffset:1;filter:drop-shadow(0 0 6px #4ea7ff)}
+.sist{gap:24px}.si{width:320px}
+#e-con .st{gap:16px}
+.pr3{gap:40px}.pr3 .card{width:360px}
+.hilos{width:1200px;height:80px;overflow:visible}
+.capa-c{width:1200px;padding:24px;display:flex;flex-direction:column;align-items:center;gap:16px}
+.capa-c b{font:800 44px "Inter Display",Inter,sans-serif}
+.don{gap:50px;align-items:stretch}
+.don .card{width:560px}
+.bd{gap:14px;margin-top:10px}
+.rel{width:900px;height:auto;overflow:visible}
+.re{stroke:#4ea7ff66;stroke-width:2;stroke-dasharray:1;stroke-dashoffset:1}
+.en circle{fill:#0d1a30;stroke:#4ea7ff;stroke-width:3;filter:drop-shadow(0 0 10px #2d7ff988)}
+.en text{fill:#fff;font:700 18px Inter,sans-serif}
+.mismo{font-size:38px}

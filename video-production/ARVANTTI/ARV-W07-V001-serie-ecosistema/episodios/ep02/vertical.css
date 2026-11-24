@@ -1,0 +1,14 @@
+.sueltas{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.capa-os{width:940px;flex-direction:column;gap:10px}
+.proms{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.prom{width:420px}
+#pm4{grid-column:1 / span 2;justify-self:center}
+.cer{flex-direction:column;gap:24px}
+.grafo{width:760px}
+.recibo{width:760px}
+.pq{width:900px}.pq b{font-size:42px}
+.pasos{flex-direction:column;align-items:center;gap:14px}
+.ags{flex-direction:column;align-items:center;gap:14px}.ag{width:600px;flex-direction:row;justify-content:center}
+.anill{flex-direction:column;gap:24px}
+.mod{width:760px}
+.fondo-red .red{width:1900px;transform:rotate(90deg)}

@@ -42,3 +42,16 @@ export function cierre(c, x) {
   to("#e-cierre .fin", { opacity: 0, duration: 1 }, s + d - 1);
   sfx("fin", "hit.wav", x.voiceAt, 0.28);
 }
+
+/** Planta isométrica simple (gemelo digital) dibujada en SVG. */
+export function planta(id) {
+  const caja = (x, y, w, h, alto, cls = "") => {
+    const t = `${x},${y} ${x + w},${y - w / 2} ${x + w + h},${y - w / 2 + h / 2} ${x + h},${y + h / 2}`;
+    const l = `${x},${y} ${x + h},${y + h / 2} ${x + h},${y + h / 2 + alto} ${x},${y + alto}`;
+    const r = `${x + h},${y + h / 2} ${x + w + h},${y - w / 2 + h / 2} ${x + w + h},${y - w / 2 + h / 2 + alto} ${x + h},${y + h / 2 + alto}`;
+    return `<g class="iso ${cls}"><polygon class="il" points="${l}"/><polygon class="ir" points="${r}"/><polygon class="it" points="${t}"/></g>`;
+  };
+  return `<svg class="planta" id="${id}" viewBox="0 0 300 170">${caja(30, 80, 90, 40, 34)}${caja(140, 70, 60, 30, 46, "m2")}${caja(210, 104, 40, 24, 22, "m3")}
+    <circle class="pulso" cx="80" cy="70" r="6"/><circle class="pulso p2" cx="170" cy="52" r="6"/><circle class="pulso p3" cx="232" cy="92" r="6"/></svg>`;
+}
+

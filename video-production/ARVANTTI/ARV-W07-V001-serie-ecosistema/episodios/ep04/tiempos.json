@@ -1,0 +1,58 @@
+[
+ {
+  "id": "elegir",
+  "start": 0,
+  "voiceAt": 1.4,
+  "voz": 7.71,
+  "dur": 10.11,
+  "real": true
+ },
+ {
+  "id": "fractal",
+  "start": 10.11,
+  "voiceAt": 10.51,
+  "voz": 10.19,
+  "dur": 11.79,
+  "real": true
+ },
+ {
+  "id": "metodos",
+  "start": 21.89,
+  "voiceAt": 22.19,
+  "voz": 13.01,
+  "dur": 14.61,
+  "real": true
+ },
+ {
+  "id": "montecarlo",
+  "start": 36.5,
+  "voiceAt": 36.8,
+  "voz": 16.2,
+  "dur": 17.8,
+  "real": true
+ },
+ {
+  "id": "modulos",
+  "start": 54.3,
+  "voiceAt": 54.6,
+  "voz": 8.28,
+  "dur": 9.88,
+  "real": true
+ },
+ {
+  "id": "junta",
+  "start": 64.18,
+  "voiceAt": 64.48,
+  "voz": 9.8,
+  "dur": 11.5,
+  "real": true
+ },
+ {
+  "id": "cierre",
+  "start": 75.68,
+  "voiceAt": 76.58,
+  "voz": 4.91,
+  "dur": 10.31,
+  "real": true
+ }
+]

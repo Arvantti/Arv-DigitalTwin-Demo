@@ -1,0 +1,58 @@
+[
+ {
+  "id": "sueltas",
+  "start": 0,
+  "voiceAt": 1.4,
+  "voz": 9.56,
+  "dur": 11.96,
+  "real": true
+ },
+ {
+  "id": "os",
+  "start": 11.96,
+  "voiceAt": 12.36,
+  "voz": 11.89,
+  "dur": 13.29,
+  "real": true
+ },
+ {
+  "id": "promesas",
+  "start": 25.25,
+  "voiceAt": 25.55,
+  "voz": 6.11,
+  "dur": 7.61,
+  "real": true
+ },
+ {
+  "id": "cerebro",
+  "start": 32.86,
+  "voiceAt": 33.16,
+  "voz": 7.71,
+  "dur": 9.21,
+  "real": true
+ },
+ {
+  "id": "escenario",
+  "start": 42.07,
+  "voiceAt": 42.37,
+  "voz": 8.83,
+  "dur": 10.33,
+  "real": true
+ },
+ {
+  "id": "process",
+  "start": 52.39,
+  "voiceAt": 52.69,
+  "voz": 7.71,
+  "dur": 9.31,
+  "real": true
+ },
+ {
+  "id": "cierre",
+  "start": 61.7,
+  "voiceAt": 62.6,
+  "voz": 5.07,
+  "dur": 10.47,
+  "real": true
+ }
+]
