@@ -1,1 +1,1 @@
-Y para decidir con muchas variables, se conecta con Arvantti Fractal, el motor de decisiones de Arvantti: primero aprende las reglas de su empresa y después optimiza.
+Y para decidir con muchas variables, se conecta con Arvantti Fractal, el motor de optimización y apoyo a la decisión de Arvantti. Primero incorpora las reglas de su empresa; después explora alternativas y le muestra su impacto para que usted decida.

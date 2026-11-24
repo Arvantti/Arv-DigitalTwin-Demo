@@ -193,6 +193,31 @@ html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:var(--b
 .archivo i{display:block;width:90px;height:110px;margin:0 auto 16px;border-radius:8px;background:linear-gradient(135deg,#1f4f9a 0 70%,#0000 70%),#1f4f9a}
 .archivo b{display:block;font:800 34px Inter,sans-serif}
 .archivo small{font:600 24px Inter,sans-serif;color:#555}
+/* Fractal (resumen, ep1, ep6) */
+.fx-core{position:absolute;left:50%;top:120px;width:760px;margin-left:-380px;padding:26px;border-radius:24px;text-align:center;border:3px solid #2d7ff9;background:linear-gradient(180deg,#12305ecc,#0b1428f2);box-shadow:0 0 80px #2d7ff955}
+.fx-core h3{margin:6px 0 0;font:800 64px "Inter Display",Inter,sans-serif;color:#fff}
+.fx-k{margin:0;font:700 22px "JetBrains Mono",monospace;letter-spacing:5px;color:#9fd0ff}
+.fx-flujo{position:absolute;left:0;right:0;top:340px;display:flex;justify-content:center;align-items:center;gap:26px}
+.fx-flujo span{padding:14px 30px;border-radius:999px;font:700 32px Inter,sans-serif;border:2px solid #d8dadf88;background:#16243f;color:#e6eefc}
+.fx-flujo .fx-b{background:#2d7ff9;border-color:#2d7ff9;color:#fff}
+.fx-f{font:800 44px Inter,sans-serif;color:#9fd0ff;font-style:normal}
+.fx-mods{position:absolute;left:50%;top:470px;width:1560px;margin-left:-780px;display:flex;gap:30px}
+.fx-m{flex:1 1 0;padding:30px;border-radius:22px;border:2px solid #4ea7ff66;background:#0b1428f2;text-align:center}
+.fx-m b{display:block;font:800 40px "Inter Display",Inter,sans-serif;color:#fff}
+.fx-m p{margin:12px 0 10px;font:600 28px Inter,sans-serif;color:#c9d6ea}
+.fx-m small{font:600 20px "JetBrains Mono",monospace;letter-spacing:1px;color:#9fd0ff}
+.fx-u{position:absolute;left:0;right:0;top:820px;margin:0;text-align:center;font:700 40px Inter,sans-serif;color:#d8dadf}
+.v .fx-core{top:250px;width:940px;margin-left:-470px}
+.v .fx-flujo{top:520px}
+.v .fx-mods{top:660px;width:940px;margin-left:-470px;flex-direction:column;gap:24px}
+.v .fx-m b{font-size:46px}.v .fx-m p{font-size:32px}.v .fx-m small{font-size:22px}
+.v .fx-u{top:1500px;font-size:44px;padding:0 50px}
+.fx-mods.dos{width:1100px;margin-left:-550px}
+.v .fx-mods.dos{width:940px;margin-left:-470px}
+.fx-flujo.abajo{top:720px}
+.v .fx-flujo.abajo{top:1160px}
+.fx-flujo .fx-c{background:#f8fafc;border-color:#f8fafc;color:#0b1428}
+.v .fx-flujo{gap:12px}.v .fx-flujo span{font-size:25px;padding:12px 18px}.v .fx-f{font-size:34px}
 
 /* Resumen: estilos de los episodios 2 a 7 (sin reglas atadas a escenas) + propios. Regenerar si cambian. */
 /* --- 02-organiza/estilos.css --- */
@@ -766,31 +791,12 @@ code{font-family:"JetBrains Mono",monospace}
 .v #e-protege .nota{top:1000px}
 .resp .rb{position:relative;left:auto;top:auto;transform:none;display:inline-block;margin:0 0 24px}
 #e-protege .tapada{position:static;display:inline-block;margin-left:14px;transform:none}
-/* Fractal */
-.fx-core{position:absolute;left:50%;top:120px;width:760px;margin-left:-380px;padding:26px;border-radius:24px;text-align:center;border:3px solid #2d7ff9;background:linear-gradient(180deg,#12305ecc,#0b1428f2);box-shadow:0 0 80px #2d7ff955}
-.fx-core h3{margin:6px 0 0;font:800 64px "Inter Display",Inter,sans-serif;color:#fff}
-.fx-k{margin:0;font:700 22px "JetBrains Mono",monospace;letter-spacing:5px;color:#9fd0ff}
-.fx-flujo{position:absolute;left:0;right:0;top:340px;display:flex;justify-content:center;align-items:center;gap:26px}
-.fx-flujo span{padding:14px 30px;border-radius:999px;font:700 32px Inter,sans-serif;border:2px solid #d8dadf88;background:#16243f;color:#e6eefc}
-.fx-flujo .fx-b{background:#2d7ff9;border-color:#2d7ff9;color:#fff}
-.fx-f{font:800 44px Inter,sans-serif;color:#9fd0ff;font-style:normal}
-.fx-mods{position:absolute;left:50%;top:470px;width:1560px;margin-left:-780px;display:flex;gap:30px}
-.fx-m{flex:1 1 0;padding:30px;border-radius:22px;border:2px solid #4ea7ff66;background:#0b1428f2;text-align:center}
-.fx-m b{display:block;font:800 40px "Inter Display",Inter,sans-serif;color:#fff}
-.fx-m p{margin:12px 0 10px;font:600 28px Inter,sans-serif;color:#c9d6ea}
-.fx-m small{font:600 20px "JetBrains Mono",monospace;letter-spacing:1px;color:#9fd0ff}
-.fx-u{position:absolute;left:0;right:0;top:820px;margin:0;text-align:center;font:700 40px Inter,sans-serif;color:#d8dadf}
-.v .fx-core{top:250px;width:940px;margin-left:-470px}
-.v .fx-flujo{top:520px}
-.v .fx-mods{top:660px;width:940px;margin-left:-470px;flex-direction:column;gap:24px}
-.v .fx-m b{font-size:46px}.v .fx-m p{font-size:32px}.v .fx-m small{font-size:22px}
-.v .fx-u{top:1500px;font-size:44px;padding:0 50px}
 
 </style>
 </head>
 <body>
-<div id="root" data-composition-id="main" data-start="0" data-duration="161.99" data-width="1920" data-height="1080" data-fps="25">
-<div id="fondo" class="clip fondo" data-start="0.00" data-duration="161.99" data-track-index="0"><div class="glow"></div><div class="floor"><div class="floorgrid"></div></div></div>
+<div id="root" data-composition-id="main" data-start="0" data-duration="170.27" data-width="1920" data-height="1080" data-fps="25">
+<div id="fondo" class="clip fondo" data-start="0.00" data-duration="170.27" data-track-index="0"><div class="glow"></div><div class="floor"><div class="floorgrid"></div></div></div>
 <div id="e-gancho" class="clip scene" data-start="0.00" data-duration="6.32" data-track-index="3">
       <div class="win" id="win0" style="left:90px;top:120px"><div class="wb"><i></i><i></i><i></i><span>Chat de IA</span></div><p>Ventas</p><div class="ln"></div><div class="ln s"></div></div><div class="win" id="win1" style="left:1420px;top:110px"><div class="wb"><i></i><i></i><i></i><span>Asistente</span></div><p>Finanzas</p><div class="ln"></div><div class="ln s"></div></div><div class="win" id="win2" style="left:120px;top:760px"><div class="wb"><i></i><i></i><i></i><span>Copiloto</span></div><p>Operaciones</p><div class="ln"></div><div class="ln s"></div></div><div class="win" id="win3" style="left:1450px;top:740px"><div class="wb"><i></i><i></i><i></i><span>Agente</span></div><p>Compras</p><div class="ln"></div><div class="ln s"></div></div><div class="win" id="win4" style="left:700px;top:60px"><div class="wb"><i></i><i></i><i></i><span>Chat de IA</span></div><p>Talento humano</p><div class="ln"></div><div class="ln s"></div></div><div class="win" id="win5" style="left:760px;top:880px"><div class="wb"><i></i><i></i><i></i><span>Bot</span></div><p>Servicio al cliente</p><div class="ln"></div><div class="ln s"></div></div>
       <p class="center pre"><span class="w">La</span> <span class="w">IA</span> <span class="w">ya</span> <span class="w">está</span> <span class="w">en</span> <span class="w">su</span> <span class="w">empresa.</span></p>
@@ -882,42 +888,43 @@ code{font-family:"JetBrains Mono",monospace}
 <audio id="sfx-44" src="assets/shared/core/sfx/whoosh-short.mp3" data-start="92.60" data-duration="1.40" data-volume="0.2" data-track-index="144"></audio>
 <audio id="sfx-45" src="assets/shared/core/sfx/pop.mp3" data-start="99.56" data-duration="1.40" data-volume="0.15" data-track-index="145"></audio>
 <audio id="sfx-46" src="assets/shared/core/sfx/click-soft.mp3" data-start="102.14" data-duration="1.40" data-volume="0.2" data-track-index="146"></audio>
-<div id="e-fractal" class="clip scene" data-start="106.33" data-duration="25.28" data-track-index="3">
-      <div class="fx-core"><p class="fx-k">MOTOR DE DECISIONES</p><h3>Arvantti Fractal</h3></div>
-      <div class="fx-flujo"><span class="fx-a">Reglas de su empresa</span><i class="fx-f">→</i><span class="fx-b">Optimiza</span></div>
+<div id="e-fractal" class="clip scene" data-start="106.33" data-duration="29.99" data-track-index="3">
+      <div class="fx-core"><p class="fx-k">OPTIMIZACIÓN Y APOYO A LA DECISIÓN</p><h3>Arvantti Fractal</h3></div>
+      <div class="fx-flujo"><span class="fx-a">Reglas y objetivos</span><i class="fx-f">→</i><span class="fx-b">Alternativas e impacto</span><i class="fx-f fx-f2">→</i><span class="fx-c">Usted decide</span></div>
       <div class="fx-mods"><div class="fx-m"><b>Fractal Process</b><p>Procesos, tareas y recursos</p><small>en Arvantti OS</small></div><div class="fx-m"><b>Fractal Finance</b><p>Márgenes, caja y riesgo</p><small>en Arvantti OS Enterprise</small></div><div class="fx-m"><b>Fractal Industrial</b><p>Con el gemelo digital de su planta</p><small>en Arvantti Digital Twin</small></div></div>
       <p class="fx-u"><span class="w">Un</span> <span class="w">solo</span> <span class="w">núcleo</span> <span class="w">·</span> <span class="w">tres</span> <span class="w">módulos</span> <span class="w">opcionales</span></p></div>
-<audio id="sfx-47" src="assets/shared/core/sfx/spark.wav" data-start="108.64" data-duration="1.40" data-volume="0.22" data-track-index="147"></audio>
-<audio id="sfx-48" src="assets/shared/core/sfx/click.wav" data-start="114.44" data-duration="1.40" data-volume="0.2" data-track-index="148"></audio>
-<audio id="sfx-49" src="assets/shared/core/sfx/pop.mp3" data-start="115.92" data-duration="1.40" data-volume="0.15" data-track-index="149"></audio>
-<audio id="sfx-50" src="assets/shared/core/sfx/pop.mp3" data-start="119.68" data-duration="1.40" data-volume="0.15" data-track-index="150"></audio>
-<audio id="sfx-51" src="assets/shared/core/sfx/pop.mp3" data-start="124.40" data-duration="1.40" data-volume="0.15" data-track-index="151"></audio>
-<div id="e-comp" class="clip scene" data-start="131.12" data-duration="14.81" data-track-index="3">
+<audio id="sfx-47" src="assets/shared/core/sfx/spark.wav" data-start="109.76" data-duration="1.40" data-volume="0.22" data-track-index="147"></audio>
+<audio id="sfx-48" src="assets/shared/core/sfx/click.wav" data-start="119.76" data-duration="1.40" data-volume="0.2" data-track-index="148"></audio>
+<audio id="sfx-49" src="assets/shared/core/sfx/click.wav" data-start="116.72" data-duration="1.40" data-volume="0.2" data-track-index="149"></audio>
+<audio id="sfx-50" src="assets/shared/core/sfx/pop.mp3" data-start="120.92" data-duration="1.40" data-volume="0.15" data-track-index="150"></audio>
+<audio id="sfx-51" src="assets/shared/core/sfx/pop.mp3" data-start="124.60" data-duration="1.40" data-volume="0.15" data-track-index="151"></audio>
+<audio id="sfx-52" src="assets/shared/core/sfx/pop.mp3" data-start="129.20" data-duration="1.40" data-volume="0.15" data-track-index="152"></audio>
+<div id="e-comp" class="clip scene" data-start="135.82" data-duration="18.39" data-track-index="3">
       <p class="center figcap"><span class="w">Arvantti</span> <span class="w">OS</span> <span class="w">rinde</span> <span class="w">cuentas.</span></p>
       <div class="badge-prom" style="--c:#f8fafc">RINDE CUENTAS</div>
       <div class="recibo"><p class="ph">COMPROBANTE #000847</p><dl><dt>Quién</dt><dd>Agente de finanzas · agente</dd><dt>Qué</dt><dd>Margen 31,8 % → 32,4 %</dd><dt>Con qué</dt><dd>Hoja de cálculo · Claude</dd><dt>Cuándo</dt><dd>16 nov 2026 · 08:47:12</dd></dl>
         <div class="pie"><span class="solo"><span class="lock"></span>Solo se agrega</span><span class="huella">Huella: 9f2c…a71e</span></div></div>
       <div class="sello-iso"><b>ISO/IEC</b><span>42001</span></div>
       <div class="iso-t"><p class="i1">Apoya las prácticas de ISO/IEC 42001</p><p class="i0">La norma internacional para gestionar la IA en las empresas</p><p class="i2">Evidencia lista para la certificación</p></div></div>
-<audio id="sfx-52" src="assets/shared/core/sfx/spark.wav" data-start="131.67" data-duration="1.40" data-volume="0.2" data-track-index="152"></audio>
-<audio id="sfx-53" src="assets/shared/core/sfx/click-soft.mp3" data-start="136.55" data-duration="1.40" data-volume="0.2" data-track-index="153"></audio>
-<audio id="sfx-54" src="assets/shared/core/sfx/click-soft.mp3" data-start="136.76" data-duration="1.40" data-volume="0.2" data-track-index="154"></audio>
-<audio id="sfx-55" src="assets/shared/core/sfx/click-soft.mp3" data-start="137.55" data-duration="1.40" data-volume="0.2" data-track-index="155"></audio>
-<audio id="sfx-56" src="assets/shared/core/sfx/click-soft.mp3" data-start="138.39" data-duration="1.40" data-volume="0.2" data-track-index="156"></audio>
-<audio id="sfx-57" src="assets/shared/core/sfx/hit.wav" data-start="139.35" data-duration="1.40" data-volume="0.25" data-track-index="157"></audio>
-<audio id="sfx-58" src="assets/shared/core/sfx/spark.wav" data-start="142.07" data-duration="1.40" data-volume="0.2" data-track-index="158"></audio>
-<div id="e-cod" class="clip scene" data-start="145.43" data-duration="7.80" data-track-index="3"><p class="center figcap"><span class="w">Dos</span> <span class="w">ediciones,</span> <span class="w">un</span> <span class="w">mismo</span> <span class="w">núcleo.</span></p><div class="capas" id="fc">
+<audio id="sfx-53" src="assets/shared/core/sfx/spark.wav" data-start="136.37" data-duration="1.40" data-volume="0.2" data-track-index="153"></audio>
+<audio id="sfx-54" src="assets/shared/core/sfx/click-soft.mp3" data-start="141.13" data-duration="1.40" data-volume="0.2" data-track-index="154"></audio>
+<audio id="sfx-55" src="assets/shared/core/sfx/click-soft.mp3" data-start="141.38" data-duration="1.40" data-volume="0.2" data-track-index="155"></audio>
+<audio id="sfx-56" src="assets/shared/core/sfx/click-soft.mp3" data-start="142.17" data-duration="1.40" data-volume="0.2" data-track-index="156"></audio>
+<audio id="sfx-57" src="assets/shared/core/sfx/click-soft.mp3" data-start="143.01" data-duration="1.40" data-volume="0.2" data-track-index="157"></audio>
+<audio id="sfx-58" src="assets/shared/core/sfx/hit.wav" data-start="143.97" data-duration="1.40" data-volume="0.25" data-track-index="158"></audio>
+<audio id="sfx-59" src="assets/shared/core/sfx/spark.wav" data-start="150.37" data-duration="1.40" data-volume="0.2" data-track-index="159"></audio>
+<div id="e-cod" class="clip scene" data-start="153.71" data-duration="7.80" data-track-index="3"><p class="center figcap"><span class="w">Dos</span> <span class="w">ediciones,</span> <span class="w">un</span> <span class="w">mismo</span> <span class="w">núcleo.</span></p><div class="capas" id="fc">
     <div class="eds"><div class="capa ent" id="fc-ent"><h3>Arvantti OS Enterprise</h3><p>Agentes, habilidades, voz y panel de dirección</p></div><div class="capa ent cod" id="fc-cod"><h3>Arvantti OS Coding</h3><p>Para equipos de software · con su propia serie</p></div></div>
     <div class="capa nuc" id="fc-nuc"><p class="ct">NÚCLEO · CINCO PROMESAS</p><div class="proms"><div class="prom" id="fc-p0" style="--c:#2d7ff9">Controla</div><div class="prom" id="fc-p1" style="--c:#c4b5fd">Protege</div><div class="prom" id="fc-p2" style="--c:#4ea7ff">Organiza</div><div class="prom" id="fc-p3" style="--c:#d8dadf">Recuerda</div><div class="prom" id="fc-p4" style="--c:#f8fafc">Rinde cuentas</div></div></div>
     <div class="capa base" id="fc-base"><p class="ct">BASE · SE CONECTA CON TODO</p>
       <div class="fila"><span id="fc-ia0">Claude</span><span id="fc-ia1">ChatGPT</span><span id="fc-ia2">Gemini</span><span id="fc-ia3">Copilot</span><span id="fc-ia4">Modelos privados</span></div>
       <div class="fila sis"><span id="fc-s0">CRM<small>sistema de clientes</small></span><span id="fc-s1">ERP<small>sistema de gestión</small></span><span id="fc-s2">Nube<small>sus servicios</small></span><span id="fc-s3">Archivos<small>sus documentos</small></span><span class="pl" id="fc-pl0">En el escritorio</span><span class="pl" id="fc-pl1">En la nube</span></div></div>
   </div></div>
-<audio id="sfx-59" src="assets/shared/core/sfx/spark.wav" data-start="147.42" data-duration="1.40" data-volume="0.22" data-track-index="159"></audio>
-<div id="e-firma" class="clip scene" data-start="152.73" data-duration="9.51" data-track-index="3">
+<audio id="sfx-60" src="assets/shared/core/sfx/spark.wav" data-start="155.70" data-duration="1.40" data-volume="0.22" data-track-index="160"></audio>
+<div id="e-firma" class="clip scene" data-start="161.01" data-duration="9.51" data-track-index="3">
     <svg class="estela" viewBox="0 0 1920 1080" preserveAspectRatio="none"><path id="p2" d="M-60 475.2 C 384 475.2 576 691.2 960 561.6 S 1536 432 1980 648" pathLength="1"/></svg>
     <div class="fin"><img class="marca" src="assets/clips/marca.png" alt=""><h1 class="metal">Arvantti OS</h1><p class="full">ARVANTTI OPERATING SYSTEM FOR AI</p><p class="firma">La IA bajo su gobierno.</p><p class="url">arvantti.tech</p></div></div>
-<audio id="sfx-60" src="assets/shared/core/sfx/hit.wav" data-start="153.58" data-duration="1.40" data-volume="0.3" data-track-index="160"></audio>
+<audio id="sfx-61" src="assets/shared/core/sfx/hit.wav" data-start="161.86" data-duration="1.40" data-volume="0.3" data-track-index="161"></audio>
 <div id="sweep-0" class="clip sweep" data-start="5.72" data-duration="0.90" data-track-index="40"></div>
 <div id="sweep-1" class="clip sweep" data-start="13.53" data-duration="0.90" data-track-index="40"></div>
 <div id="sweep-2" class="clip sweep" data-start="36.00" data-duration="0.90" data-track-index="40"></div>
@@ -927,29 +934,29 @@ code{font-family:"JetBrains Mono",monospace}
 <div id="sweep-6" class="clip sweep" data-start="76.97" data-duration="0.90" data-track-index="40"></div>
 <div id="sweep-7" class="clip sweep" data-start="92.05" data-duration="0.90" data-track-index="40"></div>
 <div id="sweep-8" class="clip sweep" data-start="106.23" data-duration="0.90" data-track-index="40"></div>
-<div id="sweep-9" class="clip sweep" data-start="131.02" data-duration="0.90" data-track-index="40"></div>
-<div id="sweep-10" class="clip sweep" data-start="145.33" data-duration="0.90" data-track-index="40"></div>
-<div id="sweep-11" class="clip sweep" data-start="152.63" data-duration="0.90" data-track-index="40"></div>
-<audio id="voz-pregunta" src="escenas/01-pregunta/assets/audio/voiceover.mp3" data-start="1.20" data-duration="3.87" data-volume="1" data-track-index="161"></audio>
-<audio id="voz-titulo" src="escenas/02-titulo/assets/audio/voiceover.mp3" data-start="6.57" data-duration="6.11" data-volume="1" data-track-index="162"></audio>
-<audio id="voz-base" src="escenas/03-base/assets/audio/voiceover.mp3" data-start="14.18" data-duration="14.68" data-volume="1" data-track-index="163"></audio>
-<audio id="voz-nucleo" src="escenas/04-nucleo/assets/audio/voiceover.mp3" data-start="29.86" data-duration="5.49" data-volume="1" data-track-index="164"></audio>
-<audio id="voz-organiza" src="escenas/05-organiza/assets/audio/voiceover.mp3" data-start="36.65" data-duration="5.33" data-volume="1" data-track-index="165"></audio>
-<audio id="voz-recuerda" src="escenas/06-recuerda/assets/audio/voiceover.mp3" data-start="43.17" data-duration="9.09" data-volume="1" data-track-index="166"></audio>
-<audio id="voz-controla" src="escenas/07-controla/assets/audio/voiceover.mp3" data-start="53.46" data-duration="11.81" data-volume="1" data-track-index="167"></audio>
-<audio id="voz-protege" src="escenas/08-protege/assets/audio/voiceover.mp3" data-start="66.47" data-duration="9.95" data-volume="1" data-track-index="168"></audio>
-<audio id="voz-enterprise" src="escenas/09-enterprise/assets/audio/voiceover.mp3" data-start="77.62" data-duration="13.87" data-volume="1" data-track-index="169"></audio>
-<audio id="voz-dirigir" src="escenas/10-dirigir/assets/audio/voiceover.mp3" data-start="92.60" data-duration="13.09" data-volume="1" data-track-index="170"></audio>
-<audio id="voz-fractal" src="escenas/11-fractal/assets/audio/voiceover.mp3" data-start="106.88" data-duration="23.48" data-volume="1" data-track-index="171"></audio>
-<audio id="voz-rinde" src="escenas/12-rinde/assets/audio/voiceover.mp3" data-start="131.67" data-duration="13.01" data-volume="1" data-track-index="172"></audio>
-<audio id="voz-coding" src="escenas/13-coding/assets/audio/voiceover.mp3" data-start="145.98" data-duration="5.80" data-volume="1" data-track-index="173"></audio>
-<audio id="voz-firma" src="escenas/14-firma/assets/audio/voiceover.mp3" data-start="153.58" data-duration="4.91" data-volume="1" data-track-index="174"></audio>
-<audio id="musica" src="audio/musica-mezcla.mp3" data-start="0.00" data-duration="161.99" data-volume="0.5" data-track-index="175"></audio>
+<div id="sweep-9" class="clip sweep" data-start="135.72" data-duration="0.90" data-track-index="40"></div>
+<div id="sweep-10" class="clip sweep" data-start="153.61" data-duration="0.90" data-track-index="40"></div>
+<div id="sweep-11" class="clip sweep" data-start="160.91" data-duration="0.90" data-track-index="40"></div>
+<audio id="voz-pregunta" src="escenas/01-pregunta/assets/audio/voiceover.mp3" data-start="1.20" data-duration="3.87" data-volume="1" data-track-index="162"></audio>
+<audio id="voz-titulo" src="escenas/02-titulo/assets/audio/voiceover.mp3" data-start="6.57" data-duration="6.11" data-volume="1" data-track-index="163"></audio>
+<audio id="voz-base" src="escenas/03-base/assets/audio/voiceover.mp3" data-start="14.18" data-duration="14.68" data-volume="1" data-track-index="164"></audio>
+<audio id="voz-nucleo" src="escenas/04-nucleo/assets/audio/voiceover.mp3" data-start="29.86" data-duration="5.49" data-volume="1" data-track-index="165"></audio>
+<audio id="voz-organiza" src="escenas/05-organiza/assets/audio/voiceover.mp3" data-start="36.65" data-duration="5.33" data-volume="1" data-track-index="166"></audio>
+<audio id="voz-recuerda" src="escenas/06-recuerda/assets/audio/voiceover.mp3" data-start="43.17" data-duration="9.09" data-volume="1" data-track-index="167"></audio>
+<audio id="voz-controla" src="escenas/07-controla/assets/audio/voiceover.mp3" data-start="53.46" data-duration="11.81" data-volume="1" data-track-index="168"></audio>
+<audio id="voz-protege" src="escenas/08-protege/assets/audio/voiceover.mp3" data-start="66.47" data-duration="9.95" data-volume="1" data-track-index="169"></audio>
+<audio id="voz-enterprise" src="escenas/09-enterprise/assets/audio/voiceover.mp3" data-start="77.62" data-duration="13.87" data-volume="1" data-track-index="170"></audio>
+<audio id="voz-dirigir" src="escenas/10-dirigir/assets/audio/voiceover.mp3" data-start="92.60" data-duration="13.09" data-volume="1" data-track-index="171"></audio>
+<audio id="voz-fractal" src="escenas/11-fractal/assets/audio/voiceover.mp3" data-start="106.88" data-duration="28.19" data-volume="1" data-track-index="172"></audio>
+<audio id="voz-rinde" src="escenas/12-rinde/assets/audio/voiceover.mp3" data-start="136.37" data-duration="16.59" data-volume="1" data-track-index="173"></audio>
+<audio id="voz-coding" src="escenas/13-coding/assets/audio/voiceover.mp3" data-start="154.26" data-duration="5.80" data-volume="1" data-track-index="174"></audio>
+<audio id="voz-firma" src="escenas/14-firma/assets/audio/voiceover.mp3" data-start="161.86" data-duration="4.91" data-volume="1" data-track-index="175"></audio>
+<audio id="musica" src="audio/musica-mezcla.mp3" data-start="0.00" data-duration="170.27" data-volume="0.5" data-track-index="176"></audio>
 </div>
 <script>
 const tl = gsap.timeline({ paused: true });
-tl.fromTo("#fondo .floorgrid",{"backgroundPositionY":"0px"},{"backgroundPositionY":"6479px","duration":161.98653000000002,"ease":"none"},0.00);
-tl.fromTo("#fondo .glow",{"opacity":0.55},{"opacity":1,"duration":6,"ease":"sine.inOut","yoyo":true,"repeat":26},0.00);
+tl.fromTo("#fondo .floorgrid",{"backgroundPositionY":"0px"},{"backgroundPositionY":"6811px","duration":170.267345,"ease":"none"},0.00);
+tl.fromTo("#fondo .glow",{"opacity":0.55},{"opacity":1,"duration":6,"ease":"sine.inOut","yoyo":true,"repeat":28},0.00);
 tl.fromTo("#win0",{"opacity":0,"scale":0.6,"y":40},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},0.15);
 tl.fromTo("#win1",{"opacity":0,"scale":0.6,"y":40},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},0.40);
 tl.fromTo("#win2",{"opacity":0,"scale":0.6,"y":40},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},0.65);
@@ -1097,60 +1104,62 @@ tl.fromTo("#e-dirigir .inv",{"opacity":0,"y":40},{"opacity":1,"y":0,"duration":0
 tl.fromTo("#e-dirigir tr",{"opacity":0,"x":-30},{"opacity":1,"x":0,"duration":0.3,"stagger":0.2},102.14);
 tl.to("#e-dirigir",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},106.33);
 tl.fromTo("#e-fractal",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},106.33);
-tl.fromTo("#e-fractal .fx-core",{"opacity":0,"scale":0.8},{"opacity":1,"scale":1,"duration":0.6,"ease":"back.out(1.8)"},108.64);
-tl.fromTo("#e-fractal .fx-a",{"opacity":0,"x":-40},{"opacity":1,"x":0,"duration":0.45},112.16);
-tl.fromTo("#e-fractal .fx-f",{"opacity":0},{"opacity":1,"duration":0.3},114.24);
-tl.fromTo("#e-fractal .fx-b",{"opacity":0,"x":40},{"opacity":1,"x":0,"duration":0.45,"ease":"back.out(2)"},114.44);
-tl.fromTo("#e-fractal .fx-m:nth-child(1)",{"opacity":0,"y":50},{"opacity":1,"y":0,"duration":0.5,"ease":"back.out(1.6)"},115.92);
-tl.to("#e-fractal .fx-m:nth-child(1)",{"boxShadow":"0 0 0 3px #4ea7ff, 0 0 50px #2d7ff988","duration":0.3},115.92);
-tl.to("#e-fractal .fx-m:nth-child(1)",{"boxShadow":"0 0 0 0px #4ea7ff, 0 0 0px #2d7ff900","duration":0.4},117.52);
-tl.fromTo("#e-fractal .fx-m:nth-child(2)",{"opacity":0,"y":50},{"opacity":1,"y":0,"duration":0.5,"ease":"back.out(1.6)"},119.68);
-tl.to("#e-fractal .fx-m:nth-child(2)",{"boxShadow":"0 0 0 3px #4ea7ff, 0 0 50px #2d7ff988","duration":0.3},119.68);
-tl.to("#e-fractal .fx-m:nth-child(2)",{"boxShadow":"0 0 0 0px #4ea7ff, 0 0 0px #2d7ff900","duration":0.4},121.28);
-tl.fromTo("#e-fractal .fx-m:nth-child(3)",{"opacity":0,"y":50},{"opacity":1,"y":0,"duration":0.5,"ease":"back.out(1.6)"},124.40);
-tl.to("#e-fractal .fx-m:nth-child(3)",{"boxShadow":"0 0 0 3px #4ea7ff, 0 0 50px #2d7ff988","duration":0.3},124.40);
-tl.to("#e-fractal .fx-m:nth-child(3)",{"boxShadow":"0 0 0 0px #4ea7ff, 0 0 0px #2d7ff900","duration":0.4},126.00);
-tl.fromTo("#e-fractal .fx-u .w",{"opacity":0,"y":36,"filter":"blur(10px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.55,"stagger":0.07,"ease":"power3.out"},127.84);
-tl.to("#e-fractal",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},131.12);
-tl.fromTo("#e-comp",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},131.12);
-tl.set("#e-comp .sello-iso, #e-comp .iso-t",{"opacity":0},131.12);
-tl.fromTo("#e-comp .badge-prom",{"opacity":0,"scale":0.6},{"opacity":1,"scale":1,"duration":0.5,"ease":"back.out(2)"},131.67);
-tl.fromTo("#e-comp .figcap .w",{"opacity":0,"y":36,"filter":"blur(10px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.55,"stagger":0.06,"ease":"power3.out"},131.87);
-tl.fromTo("#e-comp .recibo",{"opacity":0,"y":80},{"opacity":1,"y":0,"duration":0.6,"ease":"power3.out"},133.11);
-tl.fromTo("#e-comp dt:nth-of-type(1), #e-comp dd:nth-of-type(1)",{"opacity":0,"x":-30},{"opacity":1,"x":0,"duration":0.35},136.55);
-tl.fromTo("#e-comp dt:nth-of-type(2), #e-comp dd:nth-of-type(2)",{"opacity":0,"x":-30},{"opacity":1,"x":0,"duration":0.35},136.76);
-tl.fromTo("#e-comp dt:nth-of-type(3), #e-comp dd:nth-of-type(3)",{"opacity":0,"x":-30},{"opacity":1,"x":0,"duration":0.35},137.55);
-tl.fromTo("#e-comp dt:nth-of-type(4), #e-comp dd:nth-of-type(4)",{"opacity":0,"x":-30},{"opacity":1,"x":0,"duration":0.35},138.39);
-tl.fromTo("#e-comp .solo",{"opacity":0,"scale":0.7},{"opacity":1,"scale":1,"duration":0.4,"ease":"back.out(2)"},135.11);
-tl.fromTo("#e-comp .huella",{"opacity":0},{"opacity":1,"duration":0.4},135.51);
-tl.to("#e-comp .recibo, #e-comp .badge-prom",{"opacity":0,"duration":0.4},138.95);
-tl.to("#e-comp .figcap",{"opacity":0,"duration":0.4},138.95);
-tl.to("#e-comp .sello-iso, #e-comp .iso-t",{"opacity":1,"duration":0.01},139.30);
-tl.fromTo("#e-comp .sello-iso",{"scale":0.4,"rotate":-20},{"scale":1,"rotate":0,"duration":0.7,"ease":"back.out(1.8)"},139.35);
-tl.fromTo("#e-comp .i1",{"opacity":0,"x":-30},{"opacity":1,"x":0,"duration":0.4},139.55);
-tl.fromTo("#e-comp .i0",{"opacity":0},{"opacity":1,"duration":0.4},140.15);
-tl.fromTo("#e-comp .i2",{"opacity":0,"x":-30},{"opacity":1,"x":0,"duration":0.4},142.07);
-tl.to("#e-comp",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},145.43);
-tl.fromTo("#e-cod",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},145.43);
-tl.to("#fc-p0",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #2d7ff9","duration":0.3},145.63);
-tl.to("#fc-p1",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #c4b5fd","duration":0.3},145.71);
-tl.to("#fc-p2",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #4ea7ff","duration":0.3},145.79);
-tl.to("#fc-p3",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #d8dadf","duration":0.3},145.87);
-tl.to("#fc-p4",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #f8fafc","duration":0.3},145.95);
-tl.fromTo("#fc-ent",{"opacity":0.4},{"opacity":1,"duration":0.4},145.63);
-tl.fromTo("#fc-cod",{"opacity":0,"x":80,"y":0},{"opacity":1,"x":0,"y":0,"duration":0.6,"ease":"back.out(1.6)"},147.42);
-tl.to("#fc-cod",{"boxShadow":"0 0 0 4px #c4b5fd, 0 0 90px #c4b5fd88","duration":0.5},147.82);
-tl.fromTo("#e-cod .figcap .w",{"opacity":0,"y":36,"filter":"blur(10px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.55,"stagger":0.06,"ease":"power3.out"},145.98);
-tl.to("#e-cod",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},152.73);
-tl.fromTo("#e-firma",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},152.73);
-tl.fromTo("#p2",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":1.8,"ease":"power2.inOut"},152.73);
-tl.to("#p2",{"opacity":0.2,"duration":1},154.53);
-tl.fromTo("#e-firma .marca",{"opacity":0,"scale":0.5,"rotate":-8},{"opacity":1,"scale":1,"rotate":0,"duration":1,"ease":"back.out(1.6)"},153.28);
-tl.fromTo("#e-firma h1",{"opacity":0,"letterSpacing":"30px","filter":"blur(10px)"},{"opacity":1,"letterSpacing":"0px","filter":"blur(0px)","duration":1.2,"ease":"power3.out"},153.58);
-tl.fromTo("#e-firma .full",{"opacity":0},{"opacity":1,"duration":0.8},153.98);
-tl.fromTo("#e-firma .firma",{"opacity":0,"y":20},{"opacity":1,"y":0,"duration":0.8,"ease":"power3.out"},156.54);
-tl.fromTo("#e-firma .url",{"opacity":0},{"opacity":1,"duration":0.8},157.54);
-tl.to("#e-firma .fin",{"opacity":0,"duration":1},161.24);
+tl.fromTo("#e-fractal .fx-core",{"opacity":0,"scale":0.8},{"opacity":1,"scale":1,"duration":0.6,"ease":"back.out(1.8)"},109.76);
+tl.fromTo("#e-fractal .fx-a",{"opacity":0,"x":-40},{"opacity":1,"x":0,"duration":0.45},114.40);
+tl.fromTo("#e-fractal .fx-f:not(.fx-f2)",{"opacity":0},{"opacity":1,"duration":0.3},116.52);
+tl.fromTo("#e-fractal .fx-b",{"opacity":0,"x":40},{"opacity":1,"x":0,"duration":0.45,"ease":"back.out(2)"},116.72);
+tl.fromTo("#e-fractal .fx-f2",{"opacity":0},{"opacity":1,"duration":0.3},119.46);
+tl.fromTo("#e-fractal .fx-c",{"opacity":0,"x":40},{"opacity":1,"x":0,"duration":0.45,"ease":"back.out(2)"},119.76);
+tl.fromTo("#e-fractal .fx-m:nth-child(1)",{"opacity":0,"y":50},{"opacity":1,"y":0,"duration":0.5,"ease":"back.out(1.6)"},120.92);
+tl.to("#e-fractal .fx-m:nth-child(1)",{"boxShadow":"0 0 0 3px #4ea7ff, 0 0 50px #2d7ff988","duration":0.3},120.92);
+tl.to("#e-fractal .fx-m:nth-child(1)",{"boxShadow":"0 0 0 0px #4ea7ff, 0 0 0px #2d7ff900","duration":0.4},122.52);
+tl.fromTo("#e-fractal .fx-m:nth-child(2)",{"opacity":0,"y":50},{"opacity":1,"y":0,"duration":0.5,"ease":"back.out(1.6)"},124.60);
+tl.to("#e-fractal .fx-m:nth-child(2)",{"boxShadow":"0 0 0 3px #4ea7ff, 0 0 50px #2d7ff988","duration":0.3},124.60);
+tl.to("#e-fractal .fx-m:nth-child(2)",{"boxShadow":"0 0 0 0px #4ea7ff, 0 0 0px #2d7ff900","duration":0.4},126.20);
+tl.fromTo("#e-fractal .fx-m:nth-child(3)",{"opacity":0,"y":50},{"opacity":1,"y":0,"duration":0.5,"ease":"back.out(1.6)"},129.20);
+tl.to("#e-fractal .fx-m:nth-child(3)",{"boxShadow":"0 0 0 3px #4ea7ff, 0 0 50px #2d7ff988","duration":0.3},129.20);
+tl.to("#e-fractal .fx-m:nth-child(3)",{"boxShadow":"0 0 0 0px #4ea7ff, 0 0 0px #2d7ff900","duration":0.4},130.80);
+tl.fromTo("#e-fractal .fx-u .w",{"opacity":0,"y":36,"filter":"blur(10px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.55,"stagger":0.07,"ease":"power3.out"},132.64);
+tl.to("#e-fractal",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},135.82);
+tl.fromTo("#e-comp",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},135.82);
+tl.set("#e-comp .sello-iso, #e-comp .iso-t",{"opacity":0},135.82);
+tl.fromTo("#e-comp .badge-prom",{"opacity":0,"scale":0.6},{"opacity":1,"scale":1,"duration":0.5,"ease":"back.out(2)"},136.37);
+tl.fromTo("#e-comp .figcap .w",{"opacity":0,"y":36,"filter":"blur(10px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.55,"stagger":0.06,"ease":"power3.out"},136.57);
+tl.fromTo("#e-comp .recibo",{"opacity":0,"y":80},{"opacity":1,"y":0,"duration":0.6,"ease":"power3.out"},137.81);
+tl.fromTo("#e-comp dt:nth-of-type(1), #e-comp dd:nth-of-type(1)",{"opacity":0,"x":-30},{"opacity":1,"x":0,"duration":0.35},141.13);
+tl.fromTo("#e-comp dt:nth-of-type(2), #e-comp dd:nth-of-type(2)",{"opacity":0,"x":-30},{"opacity":1,"x":0,"duration":0.35},141.38);
+tl.fromTo("#e-comp dt:nth-of-type(3), #e-comp dd:nth-of-type(3)",{"opacity":0,"x":-30},{"opacity":1,"x":0,"duration":0.35},142.17);
+tl.fromTo("#e-comp dt:nth-of-type(4), #e-comp dd:nth-of-type(4)",{"opacity":0,"x":-30},{"opacity":1,"x":0,"duration":0.35},143.01);
+tl.fromTo("#e-comp .solo",{"opacity":0,"scale":0.7},{"opacity":1,"scale":1,"duration":0.4,"ease":"back.out(2)"},139.73);
+tl.fromTo("#e-comp .huella",{"opacity":0},{"opacity":1,"duration":0.4},140.13);
+tl.to("#e-comp .recibo, #e-comp .badge-prom",{"opacity":0,"duration":0.4},143.57);
+tl.to("#e-comp .figcap",{"opacity":0,"duration":0.4},143.57);
+tl.to("#e-comp .sello-iso, #e-comp .iso-t",{"opacity":1,"duration":0.01},143.92);
+tl.fromTo("#e-comp .sello-iso",{"scale":0.4,"rotate":-20},{"scale":1,"rotate":0,"duration":0.7,"ease":"back.out(1.8)"},143.97);
+tl.fromTo("#e-comp .i1",{"opacity":0,"x":-30},{"opacity":1,"x":0,"duration":0.4},144.17);
+tl.fromTo("#e-comp .i0",{"opacity":0},{"opacity":1,"duration":0.4},144.77);
+tl.fromTo("#e-comp .i2",{"opacity":0,"x":-30},{"opacity":1,"x":0,"duration":0.4},150.37);
+tl.to("#e-comp",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},153.71);
+tl.fromTo("#e-cod",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},153.71);
+tl.to("#fc-p0",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #2d7ff9","duration":0.3},153.91);
+tl.to("#fc-p1",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #c4b5fd","duration":0.3},153.99);
+tl.to("#fc-p2",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #4ea7ff","duration":0.3},154.07);
+tl.to("#fc-p3",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #d8dadf","duration":0.3},154.15);
+tl.to("#fc-p4",{"opacity":1,"filter":"saturate(1)","boxShadow":"0 0 40px #f8fafc","duration":0.3},154.23);
+tl.fromTo("#fc-ent",{"opacity":0.4},{"opacity":1,"duration":0.4},153.91);
+tl.fromTo("#fc-cod",{"opacity":0,"x":80,"y":0},{"opacity":1,"x":0,"y":0,"duration":0.6,"ease":"back.out(1.6)"},155.70);
+tl.to("#fc-cod",{"boxShadow":"0 0 0 4px #c4b5fd, 0 0 90px #c4b5fd88","duration":0.5},156.10);
+tl.fromTo("#e-cod .figcap .w",{"opacity":0,"y":36,"filter":"blur(10px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.55,"stagger":0.06,"ease":"power3.out"},154.26);
+tl.to("#e-cod",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},161.01);
+tl.fromTo("#e-firma",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},161.01);
+tl.fromTo("#p2",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":1.8,"ease":"power2.inOut"},161.01);
+tl.to("#p2",{"opacity":0.2,"duration":1},162.81);
+tl.fromTo("#e-firma .marca",{"opacity":0,"scale":0.5,"rotate":-8},{"opacity":1,"scale":1,"rotate":0,"duration":1,"ease":"back.out(1.6)"},161.56);
+tl.fromTo("#e-firma h1",{"opacity":0,"letterSpacing":"30px","filter":"blur(10px)"},{"opacity":1,"letterSpacing":"0px","filter":"blur(0px)","duration":1.2,"ease":"power3.out"},161.86);
+tl.fromTo("#e-firma .full",{"opacity":0},{"opacity":1,"duration":0.8},162.26);
+tl.fromTo("#e-firma .firma",{"opacity":0,"y":20},{"opacity":1,"y":0,"duration":0.8,"ease":"power3.out"},164.82);
+tl.fromTo("#e-firma .url",{"opacity":0},{"opacity":1,"duration":0.8},165.82);
+tl.to("#e-firma .fin",{"opacity":0,"duration":1},169.52);
 tl.fromTo("#sweep-0",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},5.72);
 tl.fromTo("#sweep-1",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},13.53);
 tl.fromTo("#sweep-2",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},36.00);
@@ -1160,9 +1169,9 @@ tl.fromTo("#sweep-5",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"po
 tl.fromTo("#sweep-6",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},76.97);
 tl.fromTo("#sweep-7",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},92.05);
 tl.fromTo("#sweep-8",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},106.23);
-tl.fromTo("#sweep-9",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},131.02);
-tl.fromTo("#sweep-10",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},145.33);
-tl.fromTo("#sweep-11",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},152.63);
+tl.fromTo("#sweep-9",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},135.72);
+tl.fromTo("#sweep-10",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},153.61);
+tl.fromTo("#sweep-11",{"xPercent":-120},{"xPercent":120,"duration":0.9,"ease":"power2.inOut"},160.91);
 window.__timelines = window.__timelines || {};
 window.__timelines["main"] = tl;
 </script>

@@ -83,30 +83,30 @@
   "id": "fractal",
   "start": 106.58,
   "voiceAt": 106.88,
-  "voz": 23.48,
-  "dur": 24.78,
+  "voz": 28.19,
+  "dur": 29.49,
   "real": true
  },
  {
   "id": "rinde",
-  "start": 131.37,
-  "voiceAt": 131.67,
-  "voz": 13.01,
-  "dur": 14.31,
+  "start": 136.07,
+  "voiceAt": 136.37,
+  "voz": 16.59,
+  "dur": 17.89,
   "real": true
  },
  {
   "id": "coding",
-  "start": 145.68,
-  "voiceAt": 145.98,
+  "start": 153.96,
+  "voiceAt": 154.26,
   "voz": 5.8,
   "dur": 7.3,
   "real": true
  },
  {
   "id": "firma",
-  "start": 152.98,
-  "voiceAt": 153.58,
+  "start": 161.26,
+  "voiceAt": 161.86,
   "voz": 4.91,
   "dur": 9.01,
   "real": true
