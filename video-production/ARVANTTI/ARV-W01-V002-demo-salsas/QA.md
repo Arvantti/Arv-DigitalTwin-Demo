@@ -36,3 +36,9 @@
 
 ## v003 (2026-11-10)
 - SKU de corrido ("esecaú"), sin pausas entre letras (0,4 s). Solo se regrabó 0-S02 (340 caracteres). Duración 12:25.
+
+## v004 (2026-11-23) · matriz de correcciones de Fractal
+- D2: 0-S09 dice "con Fractal, nuestro módulo que compara escenarios" (antes "nuestro simulador de escenarios").
+- 0-S10: se quitó "Los veremos en otro video, con el hardware físico" (regla de Andy: no mencionar nada pendiente ni previsto).
+- D3 y D4 no aplican a este video (no tiene capítulo de IA); D5 queda igual.
+- Solo se regrabaron 0-S09 y 0-S10 (621 caracteres). Duración 12:23. Sin comprobación Scribe: la cuota de ElevenLabs quedó en cero.
