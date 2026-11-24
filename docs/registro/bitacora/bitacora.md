@@ -1,5 +1,49 @@
 # Bitácora
 
+## 2026-11-24 · Ensayo temporal aislado y cierre de controles de curva
+
+Emulador real cruzó varias horas: pasado bloqueado, actual42,5% aplicado tras confirmar, futuro45,5% ejecutado a su hora. Cosim+Fractal nuevos con mismo manifiesto, diezgauges y consulta3D sin rebobinarPLC. Corregidos botonesverticales, visibilidadMANUAL, mensajes de borrador, exclusión de cálculoFractal y doblecarga del visor. 34pruebasPython más Playwrightfixtures/tipos/build. Ensayo detenido, datosusuario intactos. Última carrera de carga y velocidadcuantitativa requieren revalidación puntual. Ver [[../historico/sesion-codigo/2026-11-24-ensayo-integral-edicion-temporal]].
+
+## 2026-11-24 · Consigna MANUAL oculta en modo AUTO
+
+Corregido CSS que mostraba label de presión MANUAL pese a hidden=true. Se distingue aperturaAUTO (%) de presión en ramaMANUAL (mca), sin cambiar mandos. Typecheck/build correctos. Ver [[../historico/sesion-codigo/2026-11-24-ocultar-presion-manual-en-auto]].
+
+## 2026-11-24 · Edición del escenario activo desde Operación en vivo
+
+Gráfica compartida con pasado bloqueado y edición actual/futura; Guardar y aplicar confirma. Backend valida propiedad/revisión/hora, modifica solo mandos actuales tocados y conserva historial. Comparaciones anteriores marcadas por hash. 27 pruebas, Playwright aislado, tipos/build correctos. Servicios actualizados sin sesión activa. Ver [[../historico/sesion-codigo/2026-11-24-editar-perfil-operacion-en-vivo]].
+
+## 2026-11-24 · Edición de aperturas solo desde la curva
+
+Retirados editor inferior duplicado y nota de consigna; quedan selector de curva, arrastre y cuadro contextual con flechas0,5. Limpieza de handlers/CSS sin referencias rotas. Typecheck/build y Playwright de guardado exacto correctos. Ver [[../historico/sesion-codigo/2026-11-24-retirar-editor-inferior-duplicado]].
+
+## 2026-11-24 · Flechas actualizan curva y captura de arrastre ampliada
+
+Corregidos botones que solo cambiaban input sin actualizar borrador; ahora flechas/escritura refrescan gráfica inmediatamente. Áreas de captura ampliadas sin afectar otras curvas; ayuda explícita para plantillas readonly. Playwright con arrastre fuera del marcador y guardado interceptado correcto. Ver [[../historico/sesion-codigo/2026-11-24-correccion-flechas-y-area-arrastre]].
+
+## 2026-11-24 · Selector de curva y edición 0,5 %
+
+Curva activa elegible arriba a la izquierda, otras atenuadas/no interactivas. Arrastre con valor y trazado en vivo; escritura y botones ±0,5; corregido redondeo de sliders avanzados al guardar. Playwright verifica guardado exacto de60,5 solo en curva elegida, sin writes reales. Ver [[../historico/sesion-codigo/2026-11-24-selector-curva-arrastre-medio-punto]].
+
+## 2026-11-24 · VRP: selector junto a gráfica y plantilla constante 30 %
+
+AUTO/MANUAL por hora movido a gráfica, edición de borrador con guardado explícito. Plantillas con AUTO30 durante24h independientes de rampa residencial; perfiles personalizados intactos. 19 pruebas y Playwright de modo/guardado/responsive correctos. Ver [[../historico/sesion-codigo/2026-11-24-modo-vrp-grafica-plantilla-30]].
+
+## 2026-11-24 · Ensayo local desde cero para prueba manual
+
+Con elección explícita se eliminaron perfiles de prueba, sesiones, muestras y cálculos del entorno aislado, conservando dos plantillas y auditoría. Servicios reiniciados; ninguna emulación iniciada. Navegador MCP no disponible: historial local del navegador no confirmado. Ver [[../historico/sesion-codigo/2026-11-24-reinicio-limpio-prueba-manual]].
+
+## 2026-11-24 · Localhost activo y acciones Calcular/Recorrer diferenciadas
+
+Servicios aislados recuperados conservando sesión detenida 23:12:37. Visor 3D: Recorrer resultados, no calcula. PLC: Calcular futuro cosimulado/evaluación/optimización, genera datos nuevos. Typecheck/build y prueba de seguimiento correctos. Ver [[../historico/sesion-codigo/2026-11-24-localhost-y-acciones-calculo-visor]].
+
+## 2026-11-24 · Reproductor sigue el reloj de Planta Real
+
+Por defecto el modelo sigue señales/reloj del WebSocket observador; mover slider o reproducir futuro pausa seguimiento sin modificar PLC. Botón Seguir Planta Real recupera el último instante y continúa. Prueba Playwright con transporte aislado correcta. Ver [[../historico/sesion-codigo/2026-11-24-reproductor-sigue-planta]].
+
+## 2026-11-24 · Reproductor temporal, diez gauges y Archivo y rendimiento
+
+Reproductor común con modos Real/futuro cosimulado/optimizado y slider. Añadidos apertura VRP, consumo, fugas y total a los gauges. Eliminada ficha duplicada; pestaña Archivo y rendimiento. Resultados del ensayo limpiados con elección explícita, conservando perfiles/historia y copia reversible. Typecheck/build y prueba responsive de pestaña correctos; reproducción integral de cálculos nuevos pendiente tras limpieza. Ver [[../historico/sesion-codigo/2026-11-24-reproductor-gauges-y-archivo]].
+
 ## 2026-11-24 · Checkpoint de progreso, curva VRP y edición directa
 
 Progreso medido por horas de motor con ámbito planta/sesión; tarjetas con indicadores independientes. Curva VRP y edición de puntos por arrastre/cuadro numérico sobre borrador. Limpieza de estudio ajeno al cambiar sesión y gauges con tres fuentes/ausencias explícitas. Typecheck/build/Worker, 90 pruebas y regresiones adicionales de progreso correctos. Nuevo rediseño solicitado del panel temporal queda pendiente separado. Ver documentación pública plc-progress-and-point-editing y registro local.

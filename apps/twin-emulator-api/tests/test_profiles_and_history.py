@@ -32,15 +32,22 @@ def comparison_manifest(session_id: str, profile_id: str = "profile-x", profile_
     }
 
 
-def test_base_profile_leaves_prs_opening_to_the_virtual_plc(tmp_path, monkeypatch) -> None:
+def test_base_profile_programs_independent_constant_prs_opening(tmp_path, monkeypatch) -> None:
     monkeypatch.setenv("TWIN_DATA", str(tmp_path))
     profiles = ProfileStore(PLANT).list()
     base = next(profile for profile in profiles if profile["id"] == "builtin-water-network-scale-v1-pfl-base-01")
-    assert base["name"] == "PFL-BASE-01 · 100 % aperturas de viviendas · PRS operada desde el PLC"
+    assert base["name"] == "PFL-BASE-01 · Viviendas 100 % · VRP AUTO constante 30 %"
     assert len(base["hours"]) == 24
     assert all(entry["global_consumers_pct"] == 100 for entry in base["hours"].values())
-    assert all("prs" not in entry for entry in base["hours"].values())
-    assert not any(item["equipment"] == "prs-01" for hour in range(24) for item in commands_for_hour(base, hour))
+    assert all(entry["prs"]["auto_opening_pct"] == 30 for entry in base["hours"].values())
+    for hour in range(24):
+        commands = commands_for_hour(base, hour)
+        assert {"equipment": "prs-01", "command": "select_branch", "args": {"branch": "auto"}} in commands
+        assert {"equipment": "prs-01", "command": "set_auto_opening", "args": {"pct": 30}} in commands
+    ramp = next(profile for profile in profiles if profile["id"].endswith("pdd-rca-01"))
+    assert [ramp["hours"][str(h)]["global_consumers_pct"] for h in (0, 11, 23)] == [30, 100, 30]
+    assert all(entry["prs"]["branch"] == "auto" and entry["prs"]["auto_opening_pct"] == 30
+               for entry in ramp["hours"].values())
 
 
 def test_water_emulator_uses_equipment_initial_opening_without_a_profile(monkeypatch) -> None:
