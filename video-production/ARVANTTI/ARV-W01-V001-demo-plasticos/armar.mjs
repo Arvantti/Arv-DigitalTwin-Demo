@@ -49,7 +49,7 @@ const MODULOS = [
   ["integrador", "1 · Integrator", "ERP, CRM, sistemas SCADA y otros"],
   ["aps", "2 · APS", "programación y planificación de órdenes y recursos"],
   ["cosimulacion", "3 · CoSimulation", "cosimulador matemático entrenable con las reglas de la empresa"],
-  ["fractal", "4 · Fractal", "simulación robusta por escenarios y multiobjetivo"],
+  ["fractal", "4 · Fractal", "optimización multiobjetivo y análisis de escenarios bajo incertidumbre"],
   ["control", "5 · Control Center", "monitoreo y control conectado a su SCADA o control de piso"],
   ["dendro", "6 · DendroScada", "hardware SCADA propio: conecta cualquier máquina o proceso"],
   ["ia", "7 · AI Assistant", "Cerebro Empresarial IA: IA privada en lenguaje natural"],
