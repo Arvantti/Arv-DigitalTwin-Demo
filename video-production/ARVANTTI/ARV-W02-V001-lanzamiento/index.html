@@ -1,15 +1,15 @@
 <!doctype html>
-<html lang="es" data-resolution="landscape">
+<html lang="es" data-resolution="portrait">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=1920, height=1080">
+<meta name="viewport" content="width=1080, height=1920">
 <title>Arvantti Digital Twin · lanzamiento</title>
 <script src="assets/vendor/gsap.min.js"></script>
 <style>
 :root{--blue:#2d7ff9;--electric:#4ea7ff;--ti:#d8dadf;--dti:#7a7e86;--black:#05070c;--white:#f8fafc}
 *{box-sizing:border-box}
-html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:var(--black);font-family:Inter,"Inter Display",Arial,sans-serif;color:var(--white)}
-#root{position:relative;width:1920px;height:1080px;overflow:hidden;background:var(--black)}
+html,body{width:1080px;height:1920px;margin:0;overflow:hidden;background:var(--black);font-family:Inter,"Inter Display",Arial,sans-serif;color:var(--white)}
+#root{position:relative;width:1080px;height:1920px;overflow:hidden;background:var(--black)}
 .clip{position:absolute;inset:0}
 .scene{overflow:hidden}
 .w,.aw{display:inline-block;white-space:pre}
@@ -20,14 +20,14 @@ html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:var(--b
 .fondo .floorgrid{position:absolute;inset:0;transform:rotateX(68deg);transform-origin:50% 100%;background-image:linear-gradient(#4ea7ff33 2px,transparent 2px),linear-gradient(90deg,#4ea7ff33 2px,transparent 2px);background-size:120px 120px}
 
 /* Estela de luz */
-.estela{position:absolute;inset:0;width:1920px;height:1080px}
+.estela{position:absolute;inset:0;width:1080px;height:1920px}
 .estela path{fill:none;stroke:url(#gEst);stroke:#4ea7ff;stroke-width:5;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1;filter:drop-shadow(0 0 10px #4ea7ff) drop-shadow(0 0 30px #2d7ff9)}
 .q{position:absolute;left:0;right:0;top:400px;text-align:center;margin:0;font:800 150px/1 "Inter Display",Inter,sans-serif;letter-spacing:-3px}
 
 /* Imagen a sangre */
 .bleed{position:absolute;inset:0;overflow:hidden}
-.bleed img{position:absolute;inset:0;width:1920px;height:1080px;object-fit:cover;transform-origin:50% 50%}
-.bleedv{object-fit:cover;width:1920px;height:1080px}
+.bleed img{position:absolute;inset:0;width:1080px;height:1920px;object-fit:cover;transform-origin:50% 50%}
+.bleedv{object-fit:cover;width:1080px;height:1920px}
 .bleed.dim img{filter:blur(10px) brightness(.25) saturate(.6)}
 .vignette{position:absolute;inset:0;background:radial-gradient(1200px 700px at 50% 45%,#0000 40%,#05070ccc 100%),linear-gradient(#0000 60%,#05070cdd)}
 
@@ -115,7 +115,7 @@ html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:var(--b
 .wave i{display:block;width:8px;height:calc(var(--h)*70px);border-radius:4px;background:linear-gradient(#4ea7ff,#2d7ff9);transform-origin:50% 50%}
 
 /* Conecta */
-.net{position:absolute;inset:0;width:1920px;height:1080px}
+.net{position:absolute;inset:0;width:1080px;height:1920px}
 .net line{stroke:#4ea7ff;stroke-width:3;stroke-dasharray:1;stroke-dashoffset:1;filter:drop-shadow(0 0 6px #4ea7ff)}
 .net .pk{fill:#fff;filter:drop-shadow(0 0 8px #4ea7ff);opacity:0}
 .node{position:absolute;width:220px;height:84px;border-radius:14px;background:#0d1a30;border:2px solid #4ea7ff88;display:flex;flex-direction:column;align-items:center;justify-content:center;font:700 30px Inter,sans-serif;box-shadow:0 0 30px #2d7ff933}
@@ -131,7 +131,7 @@ html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:var(--b
 .hx,.hx2,.hx3{position:absolute;left:0;right:0;top:56px;margin:0;text-align:center;font:800 64px "Inter Display",Inter,sans-serif;letter-spacing:-1px}
 .ai{position:absolute;right:-16px;top:-16px;width:44px;height:44px;border-radius:50%;background:#4ea7ff;color:#05070c;font:800 18px/44px Inter,sans-serif;text-align:center;box-shadow:0 0 26px #4ea7ffcc;opacity:0;z-index:3}
 .hcore .ai{right:22px;top:22px}
-.hepta{position:absolute;inset:0;width:1920px;height:1080px}
+.hepta{position:absolute;inset:0;width:1080px;height:1920px}
 .hepta polygon{fill:#2d7ff90d;stroke:#4ea7ff;stroke-width:3;stroke-dasharray:1;stroke-dashoffset:1;filter:drop-shadow(0 0 10px #2d7ff9)}
 .hepta line{stroke:#4ea7ff88;stroke-width:2.5;stroke-dasharray:1;stroke-dashoffset:1}
 .hcore{position:absolute;width:300px;height:300px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(circle,#123063,#0a1426 70%);box-shadow:0 0 0 2px #4ea7ff99,0 0 80px #2d7ff966;opacity:0;z-index:2}
@@ -159,10 +159,83 @@ html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:var(--b
 
 .sweep{background:linear-gradient(100deg,#0000 35%,#4ea7ff18 45%,#ffffff40 50%,#4ea7ff18 55%,#0000 65%);mix-blend-mode:screen;pointer-events:none}
 #temp{left:auto;top:auto;right:20px;bottom:16px;font:700 15px "JetBrains Mono",monospace;color:#ff6b35;letter-spacing:2px}
+/* Versión vertical 9:16 (1080x1920) para redes: se agrega al final de los estilos de plantilla.html (FORMATO=vertical). */
+.fondo .glow{background:radial-gradient(700px 900px at 50% 45%,#12305e55 0%,#05070c00 70%),radial-gradient(500px 600px at 80% 90%,#2d7ff922 0%,#05070c00 70%)}
+.fondo .floor{height:40%}
+.q{top:820px;font-size:118px;letter-spacing:-2px}
+
+/* Título */
+.titulo{top:640px}
+.titulo .marca{width:200px}
+.titulo h1{font-size:132px;line-height:1.02}
+.titulo .t1,.titulo .t2{display:block}
+
+/* Planifica: texto arriba, pantalla abajo */
+.col{left:80px;top:150px;width:920px}
+.big{font-size:96px}
+.col .chips{margin-top:34px}
+.verbs{margin-top:26px;font-size:44px}
+.right{left:70px;top:1100px;width:1180px;height:780px;transform:scale(.8);transform-origin:0 0}
+.stage3d{perspective-origin:50% 40%}
+
+/* Gemelo */
+.hud{inset:40px 30px}
+.hud .live{right:20px;font-size:17px;letter-spacing:3px}
+.hud .scrub{left:60px;right:60px;bottom:40px}
+.lowerleft{left:80px;bottom:260px}
+.lowerleft .big{font-size:130px}
+.label{left:80px;bottom:260px;font-size:100px}
+.play{left:440px;top:860px}
+
+/* Control */
+.top{left:80px;top:150px;width:920px}
+.mid{font-size:84px}
+.wide{left:70px;top:560px;transform:scale(.8);transform-origin:0 0}
+.right3{left:80px;top:1180px;width:920px}
+.right3 .chip{font-size:44px;padding:18px 36px;margin-bottom:22px}
+
+/* Fractal */
+.topl{left:80px;top:150px}
+.center{top:640px;padding:0 60px;font-size:96px}
+.card{left:240px;top:760px}
+.tags{top:1240px;padding:0 60px}
+.decide{padding:200px 40px 260px}
+.decide p{font-size:96px}
+
+/* Asistente */
+.chat{left:50px;top:520px;width:980px;height:860px}
+.chat .bar{font-size:30px}
+.chat .badge{font-size:18px;padding:6px 14px}
+.msg{max-width:800px;font-size:42px}
+.wave{bottom:44px}
+
+/* Conecta */
+.node{width:220px}
+.bottomc{bottom:250px;font-size:110px}
+
+/* Módulos */
+.hx,.hx2,.hx3{top:190px;padding:0 50px;font-size:84px;line-height:1.05}
+.mod{width:310px;padding-left:66px}
+.mod i{left:12px;width:44px;height:44px;font-size:24px;line-height:40px}
+.mod p{font-size:30px}
+.mod small{font-size:18px}
+
+/* Cierre */
+.fin{top:620px}
+.fin h1{font-size:120px;line-height:1.05}
+.fin h1 span{display:block}
+.fin .firma{font-size:58px}
+.fin .url{font-size:30px;letter-spacing:4px}
+.tres{top:680px}
+.tres .ey{font-size:28px;letter-spacing:5px;padding:0 60px;line-height:1.5}
+.tres .prods{flex-direction:column;gap:34px}
+.tres .prods span{font-size:84px}
+.reglas{top:880px}
+
 </style>
 </head>
 <body>
-<div id="root" data-composition-id="main" data-start="0" data-duration="139.88" data-width="1920" data-height="1080" data-fps="25">
+<div id="root" data-composition-id="main" data-start="0" data-duration="139.88" data-width="1080" data-height="1920" data-fps="25">
 <div id="fondo" class="clip fondo" data-start="0.00" data-duration="139.88" data-track-index="0"><div class="glow"></div><div class="floor"><div class="floorgrid"></div></div></div>
 <div id="e-pregunta" class="clip scene" data-start="0.00" data-duration="7.06" data-track-index="3">
       <svg class="estela" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="gEst" x1="0" x2="1"><stop offset="0" stop-color="#2d7ff9" stop-opacity="0"/><stop offset=".7" stop-color="#4ea7ff"/><stop offset="1" stop-color="#ffffff"/></linearGradient></defs>
@@ -222,23 +295,23 @@ html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:var(--b
 <div id="e-conecta" class="clip scene" data-start="89.25" data-duration="9.01" data-track-index="3">
       <div class="bleed dim"><img src="assets/tomas/ui-arquitectura.png" alt=""></div>
       <div class="topl"><p class="kicker"><b>06</b> INTEGRATOR · DENDROSCADA</p></div>
-      <svg class="net" viewBox="0 0 1920 1080"><line id="ln0" x1="350" y1="260" x2="810" y2="515" pathLength="1"/><line id="ln1" x1="350" y1="430" x2="810" y2="515" pathLength="1"/><line id="ln2" x1="350" y1="600" x2="810" y2="515" pathLength="1"/><line id="ln3" x1="350" y1="770" x2="810" y2="515" pathLength="1"/><line id="lnE" x1="1110" y1="515" x2="1560" y2="515" pathLength="1"/><circle class="pk" id="pk0" r="7" cx="350" cy="260"/><circle class="pk" id="pk1" r="7" cx="350" cy="430"/><circle class="pk" id="pk2" r="7" cx="350" cy="600"/><circle class="pk" id="pk3" r="7" cx="350" cy="770"/><circle class="pk" id="pkE" r="7" cx="1560" cy="515"/></svg>
-      <div class="node m" id="nd0" style="left:130px;top:218px">Línea 1<small>PLC</small></div><div class="node m" id="nd1" style="left:130px;top:388px">Línea 2<small>PLC</small></div><div class="node m" id="nd2" style="left:130px;top:558px">Máquina 7<small>PLC</small></div><div class="node m" id="nd3" style="left:130px;top:728px">Celda 3<small>PLC</small></div>
-      <div class="proto" style="left:560px;top:355px">OPC UA · MQTT</div>
-      <div class="core" style="left:810px;top:365px"><img src="assets/clips/marca.png" alt=""><span>Digital Twin</span></div>
-      <div class="node erp" style="left:1560px;top:455px">ERP<small>pedidos · inventario</small></div>
+      <svg class="net" viewBox="0 0 1080 1920"><line id="ln0" x1="150" y1="602" x2="540" y2="850" pathLength="1"/><line id="ln1" x1="410" y1="602" x2="540" y2="850" pathLength="1"/><line id="ln2" x1="670" y1="602" x2="540" y2="850" pathLength="1"/><line id="ln3" x1="930" y1="602" x2="540" y2="850" pathLength="1"/><line id="lnE" x1="540" y1="1150" x2="540" y2="1420" pathLength="1"/><circle class="pk" id="pk0" r="7" cx="150" cy="602"/><circle class="pk" id="pk1" r="7" cx="410" cy="602"/><circle class="pk" id="pk2" r="7" cx="670" cy="602"/><circle class="pk" id="pk3" r="7" cx="930" cy="602"/><circle class="pk" id="pkE" r="7" cx="540" cy="1420"/></svg>
+      <div class="node m" id="nd0" style="left:40px;top:518px">Línea 1<small>PLC</small></div><div class="node m" id="nd1" style="left:300px;top:518px">Línea 2<small>PLC</small></div><div class="node m" id="nd2" style="left:560px;top:518px">Máquina 7<small>PLC</small></div><div class="node m" id="nd3" style="left:820px;top:518px">Celda 3<small>PLC</small></div>
+      <div class="proto" style="left:580px;top:750px">OPC UA · MQTT</div>
+      <div class="core" style="left:390px;top:850px"><img src="assets/clips/marca.png" alt=""><span>Digital Twin</span></div>
+      <div class="node erp" style="left:420px;top:1420px">ERP<small>pedidos · inventario</small></div>
       <h2 class="bottomc"><span class="w">Conectado.</span></h2></div>
 <audio id="sfx-8" src="assets/shared/core/sfx/spark.wav" data-start="90.44" data-duration="1.40" data-volume="0.25" data-track-index="42"></audio>
 <div id="e-modulos" class="clip scene" data-start="97.77" data-duration="31.79" data-track-index="3">
       <h2 class="center hx"><span class="w">Un</span> <span class="w">núcleo.</span> <span class="w">Siete</span> <span class="w">módulos.</span></h2>
       <h2 class="center hx3"><span class="w">La</span> <span class="w">IA</span> <span class="w">está</span> <span class="w">en</span> <span class="w">cada</span> <span class="w">módulo.</span></h2>
       <h2 class="center hx2"><span class="w">Elige</span> <span class="w">tus</span> <span class="w">módulos.</span></h2>
-      <svg class="hepta" viewBox="0 0 1920 1080">
-        <polygon id="hx-borde" points="960,260 1382,384 1486,663 1194,887 726,887 434,663 538,384" pathLength="1"/>
-        <line id="hx-r0" x1="960" y1="590" x2="960" y2="260" pathLength="1"/><line id="hx-r1" x1="960" y1="590" x2="1382" y2="384" pathLength="1"/><line id="hx-r2" x1="960" y1="590" x2="1486" y2="663" pathLength="1"/><line id="hx-r3" x1="960" y1="590" x2="1194" y2="887" pathLength="1"/><line id="hx-r4" x1="960" y1="590" x2="726" y2="887" pathLength="1"/><line id="hx-r5" x1="960" y1="590" x2="434" y2="663" pathLength="1"/><line id="hx-r6" x1="960" y1="590" x2="538" y2="384" pathLength="1"/>
+      <svg class="hepta" viewBox="0 0 1080 1920">
+        <polygon id="hx-borde" points="540,440 829,651 901,1125 701,1505 379,1505 179,1125 251,651" pathLength="1"/>
+        <line id="hx-r0" x1="540" y1="1000" x2="540" y2="440" pathLength="1"/><line id="hx-r1" x1="540" y1="1000" x2="829" y2="651" pathLength="1"/><line id="hx-r2" x1="540" y1="1000" x2="901" y2="1125" pathLength="1"/><line id="hx-r3" x1="540" y1="1000" x2="701" y2="1505" pathLength="1"/><line id="hx-r4" x1="540" y1="1000" x2="379" y2="1505" pathLength="1"/><line id="hx-r5" x1="540" y1="1000" x2="179" y2="1125" pathLength="1"/><line id="hx-r6" x1="540" y1="1000" x2="251" y2="651" pathLength="1"/>
       </svg>
-      <div class="hcore" style="left:810px;top:440px"><img src="assets/clips/marca.png" alt=""><b>Arvantti</b><span>Digital Twin</span><small>Gemelo 3D · núcleo</small><b class="ai">IA</b></div>
-      <div class="mod" id="md0" style="left:790px;top:208px"><i>1</i><p>Integrator</p><small>ERP · CRM · SCADA</small><b class="ai">IA</b></div><div class="mod" id="md1" style="left:1212px;top:332px"><i>2</i><p>APS</p><small>Órdenes y recursos</small><b class="ai">IA</b></div><div class="mod" id="md2" style="left:1316px;top:611px"><i>3</i><p>CoSimulation</p><small>Reglas de tu planta</small><b class="ai">IA</b></div><div class="mod" id="md3" style="left:1024px;top:835px"><i>4</i><p>Fractal Industrial</p><small>Escenarios multiobjetivo</small><b class="ai">IA</b></div><div class="mod" id="md4" style="left:556px;top:835px"><i>5</i><p>Control Center</p><small>Monitoreo en vivo</small><b class="ai">IA</b></div><div class="mod" id="md5" style="left:264px;top:611px"><i>6</i><p>DendroScada</p><small>Hardware SCADA propio</small><b class="ai">IA</b></div><div class="mod" id="md6" style="left:368px;top:332px"><i>7</i><p>AI Assistant</p><small>IA de Arvantti OS</small><b class="ai">IA</b></div></div>
+      <div class="hcore" style="left:390px;top:850px"><img src="assets/clips/marca.png" alt=""><b>Arvantti</b><span>Digital Twin</span><small>Gemelo 3D · núcleo</small><b class="ai">IA</b></div>
+      <div class="mod" id="md0" style="left:385px;top:388px"><i>1</i><p>Integrator</p><small>ERP · CRM · SCADA</small><b class="ai">IA</b></div><div class="mod" id="md1" style="left:674px;top:599px"><i>2</i><p>APS</p><small>Órdenes y recursos</small><b class="ai">IA</b></div><div class="mod" id="md2" style="left:746px;top:1073px"><i>3</i><p>CoSimulation</p><small>Reglas de tu planta</small><b class="ai">IA</b></div><div class="mod" id="md3" style="left:546px;top:1453px"><i>4</i><p>Fractal Industrial</p><small>Escenarios multiobjetivo</small><b class="ai">IA</b></div><div class="mod" id="md4" style="left:224px;top:1453px"><i>5</i><p>Control Center</p><small>Monitoreo en vivo</small><b class="ai">IA</b></div><div class="mod" id="md5" style="left:24px;top:1073px"><i>6</i><p>DendroScada</p><small>Hardware SCADA propio</small><b class="ai">IA</b></div><div class="mod" id="md6" style="left:96px;top:599px"><i>7</i><p>AI Assistant</p><small>IA de Arvantti OS</small><b class="ai">IA</b></div></div>
 <audio id="sfx-90" src="assets/shared/core/sfx/pop.mp3" data-start="105.60" data-duration="1.40" data-volume="0.18" data-track-index="44"></audio>
 <audio id="sfx-91" src="assets/shared/core/sfx/pop.mp3" data-start="106.68" data-duration="1.40" data-volume="0.18" data-track-index="45"></audio>
 <audio id="sfx-92" src="assets/shared/core/sfx/pop.mp3" data-start="107.60" data-duration="1.40" data-volume="0.18" data-track-index="46"></audio>
@@ -364,11 +437,11 @@ tl.to("#e-fractal .q2",{"opacity":0,"scale":0.8,"filter":"blur(16px)","duration"
 tl.fromTo("#e-fractal .topl",{"opacity":0},{"opacity":1,"duration":0.5},61.26);
 tl.fromTo("#e-fractal .reglas",{"opacity":0,"y":40,"scale":0.8},{"opacity":1,"y":0,"scale":1,"duration":0.6,"ease":"back.out(2)"},61.86);
 tl.to("#e-fractal .reglas",{"opacity":0,"y":-30,"duration":0.4},63.32);
-tl.fromTo("#e-fractal .c0",{"opacity":0,"z":-1600,"rotateY":0,"x":0},{"opacity":1,"z":-440,"rotateY":32,"x":-660,"duration":1.1,"ease":"power3.out"},63.42);
-tl.fromTo("#e-fractal .c1",{"opacity":0,"z":-1600,"rotateY":0,"x":0},{"opacity":1,"z":-220,"rotateY":16,"x":-330,"duration":1.1,"ease":"power3.out"},63.54);
+tl.fromTo("#e-fractal .c0",{"opacity":0,"z":-1600,"rotateY":0,"x":0},{"opacity":1,"z":-440,"rotateY":32,"x":-400,"duration":1.1,"ease":"power3.out"},63.42);
+tl.fromTo("#e-fractal .c1",{"opacity":0,"z":-1600,"rotateY":0,"x":0},{"opacity":1,"z":-220,"rotateY":16,"x":-200,"duration":1.1,"ease":"power3.out"},63.54);
 tl.fromTo("#e-fractal .c2",{"opacity":0,"z":-1600,"rotateY":0,"x":0},{"opacity":1,"z":0,"rotateY":0,"x":0,"duration":1.1,"ease":"power3.out"},63.66);
-tl.fromTo("#e-fractal .c3",{"opacity":0,"z":-1600,"rotateY":0,"x":0},{"opacity":1,"z":-220,"rotateY":-16,"x":330,"duration":1.1,"ease":"power3.out"},63.78);
-tl.fromTo("#e-fractal .c4",{"opacity":0,"z":-1600,"rotateY":0,"x":0},{"opacity":1,"z":-440,"rotateY":-32,"x":660,"duration":1.1,"ease":"power3.out"},63.90);
+tl.fromTo("#e-fractal .c3",{"opacity":0,"z":-1600,"rotateY":0,"x":0},{"opacity":1,"z":-220,"rotateY":-16,"x":200,"duration":1.1,"ease":"power3.out"},63.78);
+tl.fromTo("#e-fractal .c4",{"opacity":0,"z":-1600,"rotateY":0,"x":0},{"opacity":1,"z":-440,"rotateY":-32,"x":400,"duration":1.1,"ease":"power3.out"},63.90);
 tl.fromTo("#e-fractal .score i",{"scaleX":0},{"scaleX":1,"duration":1,"stagger":0.1,"ease":"power2.out"},65.22);
 tl.fromTo("#e-fractal .score b",{"opacity":0},{"opacity":1,"duration":0.4,"stagger":0.1},65.62);
 tl.fromTo("#e-fractal .tags .chip",{"opacity":0,"y":30},{"opacity":1,"y":0,"duration":0.45,"stagger":0.15,"ease":"back.out(2)"},65.22);
@@ -396,17 +469,17 @@ tl.fromTo("#e-conecta",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter"
 tl.fromTo("#e-conecta .core",{"opacity":0,"scale":0.5},{"opacity":1,"scale":1,"duration":0.8,"ease":"back.out(1.7)"},89.45);
 tl.fromTo("#e-conecta .node.m",{"opacity":0,"x":-60},{"opacity":1,"x":0,"duration":0.5,"stagger":0.1,"ease":"power3.out"},90.14);
 tl.fromTo("#ln0",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"power2.out"},90.44);
-tl.fromTo("#pk0",{"attr":{"cx":350,"cy":260},"opacity":1},{"attr":{"cx":810,"cy":515},"opacity":1,"duration":0.9,"ease":"power1.in","repeat":3,"repeatDelay":0.2},90.84);
+tl.fromTo("#pk0",{"attr":{"cx":150,"cy":602},"opacity":1},{"attr":{"cx":540,"cy":850},"opacity":1,"duration":0.9,"ease":"power1.in","repeat":3,"repeatDelay":0.2},90.84);
 tl.fromTo("#ln1",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"power2.out"},90.54);
-tl.fromTo("#pk1",{"attr":{"cx":350,"cy":430},"opacity":1},{"attr":{"cx":810,"cy":515},"opacity":1,"duration":0.9,"ease":"power1.in","repeat":3,"repeatDelay":0.25},90.96);
+tl.fromTo("#pk1",{"attr":{"cx":410,"cy":602},"opacity":1},{"attr":{"cx":540,"cy":850},"opacity":1,"duration":0.9,"ease":"power1.in","repeat":3,"repeatDelay":0.25},90.96);
 tl.fromTo("#ln2",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"power2.out"},90.64);
-tl.fromTo("#pk2",{"attr":{"cx":350,"cy":600},"opacity":1},{"attr":{"cx":810,"cy":515},"opacity":1,"duration":0.9,"ease":"power1.in","repeat":3,"repeatDelay":0.30000000000000004},91.08);
+tl.fromTo("#pk2",{"attr":{"cx":670,"cy":602},"opacity":1},{"attr":{"cx":540,"cy":850},"opacity":1,"duration":0.9,"ease":"power1.in","repeat":3,"repeatDelay":0.30000000000000004},91.08);
 tl.fromTo("#ln3",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.6,"ease":"power2.out"},90.74);
-tl.fromTo("#pk3",{"attr":{"cx":350,"cy":770},"opacity":1},{"attr":{"cx":810,"cy":515},"opacity":1,"duration":0.9,"ease":"power1.in","repeat":3,"repeatDelay":0.35000000000000003},91.20);
+tl.fromTo("#pk3",{"attr":{"cx":930,"cy":602},"opacity":1},{"attr":{"cx":540,"cy":850},"opacity":1,"duration":0.9,"ease":"power1.in","repeat":3,"repeatDelay":0.35000000000000003},91.20);
 tl.fromTo("#e-conecta .proto",{"opacity":0,"y":20},{"opacity":1,"y":0,"duration":0.5},90.94);
 tl.fromTo("#e-conecta .erp",{"opacity":0,"x":60},{"opacity":1,"x":0,"duration":0.5,"ease":"back.out(1.7)"},93.98);
 tl.fromTo("#lnE",{"strokeDashoffset":1},{"strokeDashoffset":0,"duration":0.5},94.18);
-tl.fromTo("#pkE",{"attr":{"cx":1560,"cy":515},"opacity":1},{"attr":{"cx":1110,"cy":515},"opacity":1,"duration":0.8,"ease":"power1.in","repeat":2,"repeatDelay":0.2},94.58);
+tl.fromTo("#pkE",{"attr":{"cx":540,"cy":1420},"opacity":1},{"attr":{"cx":540,"cy":1150},"opacity":1,"duration":0.8,"ease":"power1.in","repeat":2,"repeatDelay":0.2},94.58);
 tl.fromTo("#e-conecta .bottomc .w",{"opacity":0,"y":30,"filter":"blur(10px)"},{"opacity":1,"y":0,"filter":"blur(0px)","duration":0.6},94.78);
 tl.to("#e-conecta",{"opacity":0,"filter":"blur(14px)","duration":0.5,"ease":"power2.in"},98.02);
 tl.fromTo("#e-modulos",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},97.77);

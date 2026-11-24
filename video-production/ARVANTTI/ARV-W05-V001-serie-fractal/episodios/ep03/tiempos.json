@@ -19,38 +19,38 @@
   "id": "dados",
   "start": 22.09,
   "voiceAt": 22.39,
-  "voz": 14.52,
-  "dur": 15.82,
+  "voz": 14.6,
+  "dur": 15.9,
   "real": true
  },
  {
   "id": "rango",
-  "start": 37.91,
-  "voiceAt": 38.21,
+  "start": 37.99,
+  "voiceAt": 38.29,
   "voz": 10.92,
   "dur": 12.22,
   "real": true
  },
  {
   "id": "robustez",
-  "start": 50.13,
-  "voiceAt": 50.43,
-  "voz": 17.63,
-  "dur": 18.93,
+  "start": 50.21,
+  "voiceAt": 50.51,
+  "voz": 19.96,
+  "dur": 21.26,
   "real": true
  },
  {
   "id": "lunes",
-  "start": 69.07,
-  "voiceAt": 69.37,
-  "voz": 5.88,
-  "dur": 7.18,
+  "start": 71.47,
+  "voiceAt": 71.77,
+  "voz": 8.05,
+  "dur": 9.35,
   "real": true
  },
  {
   "id": "cierre",
-  "start": 76.24,
-  "voiceAt": 77.14,
+  "start": 80.82,
+  "voiceAt": 81.72,
   "voz": 5.15,
   "dur": 10.55,
   "real": true

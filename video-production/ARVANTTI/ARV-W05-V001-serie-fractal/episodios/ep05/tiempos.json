@@ -27,30 +27,30 @@
   "id": "reglas",
   "start": 31.91,
   "voiceAt": 32.21,
-  "voz": 11.55,
-  "dur": 12.85,
+  "voz": 11.39,
+  "dur": 12.69,
   "real": true
  },
  {
   "id": "material",
-  "start": 44.75,
-  "voiceAt": 45.05,
+  "start": 44.6,
+  "voiceAt": 44.9,
   "voz": 15.8,
   "dur": 17.1,
   "real": true
  },
  {
   "id": "comprobante",
-  "start": 61.86,
-  "voiceAt": 62.16,
+  "start": 61.7,
+  "voiceAt": 62,
   "voz": 11.23,
   "dur": 12.53,
   "real": true
  },
  {
   "id": "cierre",
-  "start": 74.39,
-  "voiceAt": 75.29,
+  "start": 74.23,
+  "voiceAt": 75.13,
   "voz": 5.15,
   "dur": 10.55,
   "real": true

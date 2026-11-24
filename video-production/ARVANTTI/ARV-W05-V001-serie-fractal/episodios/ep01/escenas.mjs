@@ -75,7 +75,7 @@ export function componerEpisodio(c) {
   // 3. Arvantti Fractal: no decide por ti.
   {
     const x = S.fractal; const [s, d] = span(x);
-    const tF = P(x, "Arvantti Fractal"), tN = P(x, "no decide"), tO = P(x, "las mejores"), tD = P(x, "para que");
+    const tF = P(x, "Arvantti Fractal"), tN = P(x, "No decide"), tO = P(x, "las mejores"), tD = P(x, "para que");
     clip("e-fractal", "scene", s, d, `
       <div class="fondo-red">${red(c, "red3", { w: 1600, h: 900, capas: [5, 8, 9, 8, 5], t0: s + 0.3, dur: d - 1.2, seed: 21 })}</div>
       <div class="st">
