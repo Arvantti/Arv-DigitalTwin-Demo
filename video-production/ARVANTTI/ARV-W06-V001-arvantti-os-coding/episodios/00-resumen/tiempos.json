@@ -3,128 +3,128 @@
   "id": "pregunta",
   "start": 0,
   "voiceAt": 0.3,
-  "voz": 7.2,
-  "dur": 8.6,
-  "real": false
+  "voz": 6.77,
+  "dur": 8.17,
+  "real": true
  },
  {
   "id": "titulo",
-  "start": 8.6,
-  "voiceAt": 8.9,
-  "voz": 10,
-  "dur": 11.4,
-  "real": false
+  "start": 8.17,
+  "voiceAt": 8.47,
+  "voz": 10.27,
+  "dur": 11.67,
+  "real": true
  },
  {
   "id": "base",
-  "start": 20,
-  "voiceAt": 20.3,
-  "voz": 19.6,
-  "dur": 21,
-  "real": false
+  "start": 19.83,
+  "voiceAt": 20.13,
+  "voz": 19.23,
+  "dur": 20.63,
+  "real": true
  },
  {
   "id": "nucleo",
-  "start": 41,
-  "voiceAt": 41.3,
-  "voz": 7.2,
-  "dur": 8.6,
-  "real": false
+  "start": 40.46,
+  "voiceAt": 40.76,
+  "voz": 7.39,
+  "dur": 8.79,
+  "real": true
  },
  {
   "id": "tasks",
-  "start": 49.6,
-  "voiceAt": 49.9,
-  "voz": 13.2,
-  "dur": 14.6,
-  "real": false
+  "start": 49.25,
+  "voiceAt": 49.55,
+  "voz": 15.8,
+  "dur": 17.2,
+  "real": true
  },
  {
   "id": "terminales",
-  "start": 64.2,
-  "voiceAt": 64.5,
-  "voz": 19.6,
-  "dur": 21,
-  "real": false
+  "start": 66.45,
+  "voiceAt": 66.75,
+  "voz": 16.35,
+  "dur": 17.75,
+  "real": true
  },
  {
   "id": "brain",
-  "start": 85.2,
-  "voiceAt": 85.5,
-  "voz": 21.6,
-  "dur": 23,
-  "real": false
+  "start": 84.21,
+  "voiceAt": 84.51,
+  "voz": 19.23,
+  "dur": 20.63,
+  "real": true
  },
  {
   "id": "controla",
-  "start": 108.2,
-  "voiceAt": 108.5,
-  "voz": 17.6,
-  "dur": 19,
-  "real": false
+  "start": 104.83,
+  "voiceAt": 105.13,
+  "voz": 14.84,
+  "dur": 16.24,
+  "real": true
  },
  {
   "id": "guardianes",
-  "start": 127.2,
-  "voiceAt": 127.5,
-  "voz": 23.6,
-  "dur": 25,
-  "real": false
+  "start": 121.07,
+  "voiceAt": 121.37,
+  "voz": 17.32,
+  "dur": 18.72,
+  "real": true
  },
  {
   "id": "concilio",
-  "start": 152.2,
-  "voiceAt": 152.5,
-  "voz": 11.6,
-  "dur": 13,
-  "real": false
+  "start": 139.79,
+  "voiceAt": 140.09,
+  "voz": 9.95,
+  "dur": 11.35,
+  "real": true
  },
  {
   "id": "fractal",
-  "start": 165.2,
-  "voiceAt": 165.5,
-  "voz": 19.6,
-  "dur": 21,
-  "real": false
+  "start": 151.14,
+  "voiceAt": 151.44,
+  "voz": 17.24,
+  "dur": 18.64,
+  "real": true
  },
  {
   "id": "flujos",
-  "start": 186.2,
-  "voiceAt": 186.5,
-  "voz": 24,
-  "dur": 25.4,
-  "real": false
+  "start": 169.78,
+  "voiceAt": 170.08,
+  "voz": 18.83,
+  "dur": 20.23,
+  "real": true
  },
  {
   "id": "dirige",
-  "start": 211.6,
-  "voiceAt": 211.9,
-  "voz": 14,
-  "dur": 15.4,
-  "real": false
+  "start": 190.02,
+  "voiceAt": 190.32,
+  "voz": 11.73,
+  "dur": 13.13,
+  "real": true
  },
  {
   "id": "receipts",
-  "start": 227,
-  "voiceAt": 227.3,
-  "voz": 21.2,
-  "dur": 22.6,
-  "real": false
+  "start": 203.15,
+  "voiceAt": 203.45,
+  "voz": 19.72,
+  "dur": 21.12,
+  "real": true
  },
  {
   "id": "figura",
-  "start": 249.6,
-  "voiceAt": 249.9,
-  "voz": 11.2,
-  "dur": 13.1,
-  "real": false
+  "start": 224.27,
+  "voiceAt": 224.57,
+  "voz": 9.72,
+  "dur": 11.62,
+  "real": true
  },
  {
   "id": "firma",
-  "start": 262.7,
-  "voiceAt": 263.3,
-  "voz": 8,
-  "dur": 12.1,
-  "real": false
+  "start": 235.89,
+  "voiceAt": 236.49,
+  "voz": 9.25,
+  "dur": 13.35,
+  "real": true
  }
 ]
