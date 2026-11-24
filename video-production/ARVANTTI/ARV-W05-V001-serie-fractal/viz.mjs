@@ -255,7 +255,7 @@ export function genetico(c, id, { t0, tS, tR, tM, tG, tEnd, seed = 9 } = {}) {
   const gens = 12, best = [80, 86, 86, 88, 89, 89, 91, 91, 92, 93, 93, 94];
   const CX = 760, CY = 70, CW = 310, CH = 330;
   const px = (g) => CX + (g / (gens - 1)) * CW, py = (v) => CY + CH - ((v - 70) / 30) * CH;
-  const pts = best.map((v, g) => `${px(g).toFixed(1)},${py(v).toFixed(1)}`).join(" ");
+  const pts = best.map((v, g) => `${g ? "L" : "M"}${px(g).toFixed(1)} ${py(v).toFixed(1)}`).join(" ");
   const svg = `<svg class="gen-svg" id="${id}" viewBox="0 0 1100 470">
     <text class="gt" x="${X0}" y="36">Planes candidatos</text><text class="gt" x="${xs}" y="36">Puntaje</text>
     ${pob.map((p, i) => `<g class="fila" id="${id}-f${i}">${p.map((v, k) => `<rect class="gb c${v}" x="${bx(k)}" y="${Y0 + i * RH}" width="${BW}" height="${BH}" rx="6"/>`).join("")}<rect class="gfb" x="${xs}" y="${Y0 + i * RH + 6}" width="${fit[i] * 1.1}" height="${BH - 12}" rx="4"/><text class="gf" x="${xs + fit[i] * 1.1 + 10}" y="${Y0 + i * RH + 23}">${fit[i]}</text></g>`).join("")}
@@ -266,7 +266,8 @@ export function genetico(c, id, { t0, tS, tR, tM, tG, tEnd, seed = 9 } = {}) {
     <text class="gf gfh" id="${id}-hf" x="${xs}" y="${yh + 23}">86</text>
     <text class="gt" x="${CX - 20}" y="36">Mejor puntaje</text>
     <line class="ax" x1="${CX}" y1="${CY + CH}" x2="${CX + CW}" y2="${CY + CH}"/><line class="ax" x1="${CX}" y1="${CY + CH}" x2="${CX}" y2="${CY}"/>
-    <polyline class="gcurva" id="${id}-cv" points="${pts}" pathLength="1"/>
+    <clipPath id="${id}-clip"><rect id="${id}-cr" x="${CX - 10}" y="0" width="0" height="470"/></clipPath>
+    <path class="gcurva" id="${id}-cv" d="${pts}" clip-path="url(#${id}-clip)"/>
     <text class="gen" id="${id}-g" x="${CX}" y="${CY + CH + 40}">Generación 1</text></svg>`;
   if (t0 != null) {
     c.at(`#${id} .fila`, { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.4, stagger: 0.08 }, t0);
@@ -283,7 +284,7 @@ export function genetico(c, id, { t0, tS, tR, tM, tG, tEnd, seed = 9 } = {}) {
     c.at(`#${id}-hf`, { opacity: 0 }, { opacity: 1, duration: 0.3 }, tM + 0.4);
     // Generación tras generación: la curva del mejor puntaje sube.
     const pg = Math.max(0.12, (tEnd - tG - 0.4) / (gens - 1));
-    c.at(`#${id}-cv`, { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: pg * (gens - 1), ease: "none" }, tG);
+    c.at(`#${id}-cr`, { attr: { width: 0 } }, { attr: { width: CW + 30 }, duration: pg * (gens - 1), ease: "none" }, tG);
     for (let g = 1; g < gens; g++) c.set(`#${id}-g`, { textContent: `Generación ${g + 1}` }, tG + g * pg);
   }
   return svg;

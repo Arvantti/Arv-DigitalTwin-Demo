@@ -71,7 +71,7 @@ export function componerEpisodio(c) {
     enter("e-dados", s);
     fade("#e-dados .cont", x.voiceAt);
     pop("#e-dados .mcw", x.voiceAt + 0.1);
-    luz("#e-dados .cont", tM); luz("#e-dados .cont", tD);
+    at("#e-dados .nsc", { scale: 1 }, { scale: 1.12, duration: 0.35, yoyo: true, repeat: 1, ease: "sine.inOut" }, tM); at("#e-dados .nsc", { scale: 1 }, { scale: 1.12, duration: 0.35, yoyo: true, repeat: 1, ease: "sine.inOut", immediateRender: false }, tD);
     [["un retraso", 0], ["una máquina", 1], ["un cliente", 2]].forEach(([k, i]) => pop(`#so${i}`, P(x, k)));
     sfx("3a", "whoosh-short.mp3", tM, 0.2);
     leave("e-dados", s + d);

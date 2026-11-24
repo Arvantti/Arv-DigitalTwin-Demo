@@ -131,7 +131,7 @@ html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:var(--b
 .gf{fill:#fff;font:800 24px Inter,sans-serif}
 .gfh{fill:#9fd0ff;font-size:28px}
 .gcut{stroke:#fff;stroke-width:3;stroke-dasharray:8 6}
-.gcurva{fill:none;stroke:#fff;stroke-width:5;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1;filter:drop-shadow(0 0 8px #4ea7ff)}
+.gcurva{fill:none;stroke:#fff;stroke-width:5;stroke-linejoin:round;filter:drop-shadow(0 0 8px #4ea7ff)}
 
 /* Ep 3 */
 .plan{width:1300px;padding:26px 34px;display:flex;flex-direction:column;gap:14px}
@@ -189,6 +189,7 @@ html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:var(--b
 .cont b{min-width:0;text-align:center}
 .aguanta .card em.atr{font:600 26px Inter,sans-serif;color:#d8dadf;margin-top:6px}
 .aguanta .no em.atr{color:#ffb27a}
+.nsc{display:inline-block;transform-origin:50% 60%}
 
 </style>
 </head>
@@ -404,8 +405,8 @@ tl.fromTo("#mc3 .mch",{"scaleX":0,"transformOrigin":"0% 50%"},{"scaleX":1,"durat
 tl.fromTo("#e-dados",{"opacity":0,"filter":"blur(18px)"},{"opacity":1,"filter":"blur(0px)","duration":0.5,"ease":"power2.out"},21.84);
 tl.fromTo("#e-dados .cont",{"opacity":0,"y":24},{"opacity":1,"y":0,"duration":0.5,"ease":"power3.out"},22.39);
 tl.fromTo("#e-dados .mcw",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},22.49);
-tl.to("#e-dados .cont",{"backgroundColor":"#2d7ff9","borderColor":"#4ea7ff","color":"#ffffff","boxShadow":"0 0 40px #2d7ff988","duration":0.35},24.55);
-tl.to("#e-dados .cont",{"backgroundColor":"#2d7ff9","borderColor":"#4ea7ff","color":"#ffffff","boxShadow":"0 0 40px #2d7ff988","duration":0.35},33.99);
+tl.fromTo("#e-dados .nsc",{"scale":1},{"scale":1.12,"duration":0.35,"yoyo":true,"repeat":1,"ease":"sine.inOut"},24.55);
+tl.fromTo("#e-dados .nsc",{"scale":1},{"scale":1.12,"duration":0.35,"yoyo":true,"repeat":1,"ease":"sine.inOut","immediateRender":false},33.99);
 tl.fromTo("#so0",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},29.03);
 tl.fromTo("#so1",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},30.55);
 tl.fromTo("#so2",{"opacity":0,"scale":0.6,"y":30},{"opacity":1,"scale":1,"y":0,"duration":0.5,"ease":"back.out(1.8)"},31.87);
