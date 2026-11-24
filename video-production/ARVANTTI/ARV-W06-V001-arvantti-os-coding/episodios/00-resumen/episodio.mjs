@@ -65,6 +65,7 @@ export function componer(c) {
         { h: flow(["Rama de la tarea", "Commit", "Pull request", "Aprueba una persona"], { c: "#4ea7ff" }), cls: "w1", at: "integrados con Git", gap: 0.18 },
         { h: arbol([["Agente de finanzas", "Claude Code", AG.fin, ["subagente: pruebas"]], ["Agente de piso", "Codex", AG.piso, ["subagente: UI"]], ["Agente de pruebas", "Gemini", AG.qa, ["subagente: datos"]]]), cls: "w23", at: "un árbol" },
         { h: cnt("choques", "0", "#7dd3a8"), cls: "w3 ctr", at: "sin pisarse", fx: "pop" },
+        { h: chip("Quién delegó qué, a qué subagente", LAV), cls: "w1 ctr", at: "a qué subagentes" },
       ] },
     ],
     glos: [["worktree", "worktree", "una copia de trabajo aparte del mismo repositorio"], ["con Git", "Git", "el sistema que guarda la historia del código"]],
@@ -100,6 +101,7 @@ export function componer(c) {
       { h: card({ k: "escudo", t: "Ruta segura", p: "Dentro de su proyecto", c: G }), cls: "w3", at: "en su ruta" },
       { h: card({ k: "escudo", t: '<span class="sw"><span class="sa red">sk-live-9f2c…</span><span class="sb">•••• tapada</span></span>', p: "Claves tapadas", c: G }), cls: "w3", at: "tapan las claves", swap: "tapan las claves" },
       { h: term({ t: "erp-api.ts", c: G, l: ['const key = env("<b>ERP_API_KEY</b>")', "valor: •••• (no lo ve)"] }), cls: "w23", at: "Puede programar", subs: ["sin ver nunca", "por su nombre"] },
+      { h: chips(["Tu memoria", "Tu código", "En tu equipo o tu nube privada"], G), cls: "w1", at: "Y tu memoria", subs: ["tu memoria", "tu código", "nube privada"] },
     ] }],
     glos: [["el ERP", "ERP", "el sistema de gestión de la empresa"]],
   });
@@ -118,6 +120,7 @@ export function componer(c) {
       { items: [
         { h: coding("Tus flujos agénticos"), cls: "w1 ctr", at: 0, fx: "pop" },
         { h: flow(PASOS, { c: LAV }), cls: "w1", at: "recetas paso a paso", gap: 0.2 },
+        { h: chips(["Tus agentes", "Tus habilidades", "+100 incluidas"], LAV), cls: "w1", at: "con tus agentes", subs: ["tus agentes", "habilidades", "más de cien"] },
         { h: `<div class="col2" style="width:100%">${barra("caché · intacto", "#7dd3a8")}${barra("contexto · no se reinicia", "#4ea7ff")}</div>`, cls: "w2", at: "los inyecta", fill: ["sin dañar", 1, 0.6] },
       ] },
       { at: "Y en cada commit", items: [
@@ -127,6 +130,11 @@ export function componer(c) {
     ],
     glos: [["flujos agénticos", "flujo agéntico", "receta de trabajo que siguen los agentes"], ["un hook de QA", "QA", "el control de calidad del software"]],
   });
+
+  escena(c, S.dirige, { panels: [{ cap: "Un panel para dirigir", items: [
+    { h: term({ t: "panel de dirección", c: LAV, l: ["> ¿qué avanzó hoy en P-07?", "finanzas · terminada · conexión con el ERP", "> ¿quién aprobó la subida?", "la líder técnica · 10:58", "> ¿qué está bloqueado?", "pruebas · espera tu aprobación"] }), cls: "w2", at: "le preguntas", subs: ["qué avanzó", "qué avanzó", "quién aprobó", "quién aprobó", "qué está bloqueado", "qué está bloqueado"] },
+    { h: `<div class="col2">${chips(["Escritorio", "Nube"], "#4ea7ff")}${sello("Un mismo cerebro para todo tu equipo", LAV)}</div>`, cls: "w2 ctr", at: "en el escritorio", subs: ["escritorio", "nube"] },
+  ] }] });
 
   const W0 = "#f8fafc";
   escena(c, S.receipts, { panels: [
@@ -143,6 +151,6 @@ export function componer(c) {
   ] });
 
   selloEp(c, S.figura, null, { mods: [0, 1, 2, 3, 4, 5], cod: true, n: 0 });
-  firma(c, S.firma);
-  [S.titulo, S.base, S.nucleo, S.tasks, S.terminales, S.brain, S.controla, S.guardianes, S.concilio, S.flujos, S.receipts, S.figura, S.firma].forEach((x) => c.sweep(x.start));
+  firma(c, S.firma, { cta: ["Te acompañamos a implementarlo", "Agenda tu sesión en arvantti.tech", "Te acompañamos"] });
+  [S.titulo, S.base, S.nucleo, S.tasks, S.terminales, S.brain, S.controla, S.guardianes, S.concilio, S.flujos, S.dirige, S.receipts, S.figura, S.firma].forEach((x) => c.sweep(x.start));
 }

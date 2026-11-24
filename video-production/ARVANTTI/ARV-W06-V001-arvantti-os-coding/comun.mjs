@@ -231,14 +231,14 @@ export function selloEp(c, x, y0, { mods = [], cod = false, n, sigue }) {
 }
 
 /** Firma final: marca, «Arvantti OS Coding», nombre completo, «La IA bajo tu gobierno.» y arvantti.tech. */
-export function firma(c, x, { final = false } = {}) {
+export function firma(c, x, { final = false, cta = null } = {}) {
   const { W, H, at, to, clip, enter, sfx, span, P } = c;
   const [s, d] = span(x);
   const tG = P(x, "La IA");
   clip("e-firma", "scene", s, d, `
     <svg class="estela" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><path id="p2" d="M-60 ${H * 0.44} C ${W * 0.2} ${H * 0.44} ${W * 0.3} ${H * 0.64} ${W * 0.5} ${H * 0.52} S ${W * 0.8} ${H * 0.4} ${W + 60} ${H * 0.6}" pathLength="1"/></svg>
     <div class="fin${final ? " final" : ""}"><img class="marca" src="assets/clips/marca.png" alt=""><h1 class="metal">Arvantti OS</h1><p class="cod">CODING</p><p class="full">ARVANTTI OPERATING SYSTEM FOR AI</p><p class="firma">La IA bajo tu gobierno.</p>
-    ${final ? `<p class="finser">FIN DE LA SERIE</p><div class="diag"><b>Diagnóstico de gobernanza de IA para equipos de software</b><span>Agenda tu sesión en arvantti.tech</span></div>` : `<p class="url">arvantti.tech</p>`}</div>`);
+    ${final ? `<p class="finser">FIN DE LA SERIE</p><div class="diag"><b>Diagnóstico de gobernanza de IA para equipos de software</b><span>Agenda tu sesión en arvantti.tech</span></div>` : cta ? `<div class="diag"><b>${cta[0]}</b><span>${cta[1]}</span></div>` : `<p class="url">arvantti.tech</p>`}</div>`);
   enter("e-firma", s);
   at("#p2", { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 1.8, ease: "power2.inOut" }, s);
   to("#p2", { opacity: 0.2, duration: 1 }, s + 1.8);
@@ -250,7 +250,8 @@ export function firma(c, x, { final = false } = {}) {
   if (final) {
     at("#e-firma .finser", { opacity: 0 }, { opacity: 1, duration: 0.8 }, tG + 1.0);
     at("#e-firma .diag", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" }, tG + 1.6);
-  } else at("#e-firma .url", { opacity: 0 }, { opacity: 1, duration: 0.8 }, tG + 1.0);
+  } else if (cta) at("#e-firma .diag", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.7, ease: "power3.out" }, P(x, cta[2]));
+  else at("#e-firma .url", { opacity: 0 }, { opacity: 1, duration: 0.8 }, tG + 1.0);
   to("#e-firma .fin", { opacity: 0, duration: 1.0 }, s + d - 1.0);
   sfx("hit.wav", x.voiceAt, 0.3);
 }

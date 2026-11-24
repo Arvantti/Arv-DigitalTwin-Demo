@@ -1,1 +1,1 @@
-Cada agente trabaja en su propia terminal, con el asistente que tú elijas, y en su propio worktree: una copia de trabajo aparte, con su rama. Avanzan en paralelo sin pisarse, integrados con Git, y un árbol te muestra qué hace cada agente.
+Cada agente trabaja en su propia terminal, con el asistente que tú elijas, y en su propio worktree: una copia de trabajo aparte, con su rama. Avanzan en paralelo sin pisarse, integrados con Git, y un árbol te muestra qué hace cada agente y a qué subagentes delegó.
