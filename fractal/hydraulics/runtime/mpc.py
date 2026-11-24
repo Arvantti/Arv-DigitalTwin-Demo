@@ -433,6 +433,13 @@ def project_24h(
                     if optimized_controls is not None else {**prs_entry, "branch": "auto" if prs_branch_auto else "manual"}),
         }
         frame_snapshot = _snapshot(scenario_tags, nominal_state, tank_levels, demand, effective_openings, snapshot_entry)
+        projected_opening = snapshot_entry["prs"].get(
+            "auto_opening_pct", scenario_tags.get("PLC.PRS.AutoOpeningPct")
+        )
+        if projected_opening is not None:
+            # Forecast channels must describe this frame, not the input PLC opening.
+            frame_snapshot["equipment"]["prs-01"]["variables"]["auto_opening_pct"] = float(projected_opening)
+            frame_snapshot["equipment"]["prs-01"]["animation"]["auto_opening_pct"] = float(projected_opening)
         recirc_snapshot = frame_snapshot["equipment"].get("pumpset-recirc-01")
         if recirc_snapshot:
             recirc_snapshot["state"] = "running" if recirc_on else "idle"
@@ -467,6 +474,8 @@ def project_24h(
                 "PLC.PRS.BranchAuto": optimized_controls is not None or prs_branch_auto,
             }
         )
+        if projected_opening is not None:
+            forecast_tags["PLC.PRS.AutoOpeningPct"] = float(projected_opening)
         for connection, opening in zip((12, 23, 34), effective_openings, strict=True):
             forecast_tags[f"PLC.Valve.Vertical{connection}OpeningPct"] = opening
         for level in range(1, 5):

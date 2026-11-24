@@ -1,5 +1,89 @@
 # Bitácora
 
+## 2026-11-24 · Gauges: verificación visual en localhost
+
+Tras objeción del usuario se abrió localhost y se detectó banda inferior de gauges superpuesta al panel Fractal. Se sustituyó por posicionamiento junto a equipos con líneas y búsqueda de espacio libre. Captura real revisada: seis gauges/seis líneas/cero cruces con paneles en viewport probado. Ver [[../historico/sesion-codigo/2026-11-24-gauges-localhost-verificacion-visual]].
+
+## 2026-11-24 · Gauges del estudio Fractal recuperados
+
+Reproducción individual vuelve a mostrar seis gauges identificados como Fractal, con arrastre/líneas y mínimo residencial real del resultado. Muestras horarias sin interpolación de lecturas. Typecheck y Playwright correctos, sin intervenir la sesión. Ver [[../historico/sesion-codigo/2026-11-24-gauges-estudio-fractal]].
+
+## 2026-11-24 · Recuperar reproducción acelerada
+
+Corregida regresión de integración PLC/3D: selector 1/2/4 h/s visible y compartido en comparación; avance según tiempos guardados, sin interpolación. Velocidad PLC separada. Typecheck/build y Playwright correctos. Ver [[../historico/sesion-codigo/2026-11-24-restaurar-velocidad-reproduccion]].
+
+## 2026-11-24 · Números blancos en gráfica de escenario
+
+Corregido el relleno negro por defecto de horas SVG; horas y porcentajes del editor visibles en blanco. Typecheck/build correctos. Ver [[../historico/sesion-codigo/2026-11-24-numeros-grafica-blancos]].
+
+## 2026-11-24 · Recuperación tras nuevo reinicio
+
+Servicios del ensayo y galería restaurados sin reinicializar bases. Checkpoint conserva 17:00:05 y marca de ejecución; no se abrió operador automatizado ni se alteró ese estado. Separación Cosimulador 03/Fractal 04 conservada. Typecheck/build y HTTP correctos. Ver [[../historico/sesion-codigo/2026-11-24-segundo-reinicio-recuperacion-plc]].
+
+## 2026-11-24 · Cosimulador y Fractal como pasos separados
+
+Cosimulador pasa al 03, Fractal al 04 y revisión al 05, con controles propios y layout de cuatro/dos/una columnas. La cosimulación usa directamente el perfil activo y ya no depende del selector Fractal. Typecheck/build y Playwright correctos, sin ejecutar cálculos. Ver [[../historico/sesion-codigo/2026-11-24-separar-cosimulador-fractal]].
+
+## 2026-11-24 · Separar KPI y pasos de Simulación
+
+Corregidos bordes pegados con 20 px entre los indicadores y el siguiente bloque, sin hueco para filas vacías. Typecheck/build y Playwright correctos. Ver [[../historico/sesion-codigo/2026-11-24-separar-indicadores-y-pasos]].
+
+## 2026-11-24 · Auditoría de usabilidad de todas las pantallas PLC
+
+Revisadas las siete pestañas: distribución común, navegación móvil, tarjetas agrupadas, formularios y mandos claros, estados vacíos y recuperación de última lectura detenida por GET. Playwright en 44 combinaciones de pantalla/ancho/desplegables sin desbordes ni pageerror; sesión intacta y mandos inactivos. Ver [[../historico/sesion-codigo/2026-11-24-auditoria-usabilidad-plc]].
+
+## 2026-11-24 · Estudios y comparación, coordinado con el 3D
+
+Nueva pestaña elegida explícitamente por el usuario, después de Simulación, para Biblioteca, tiempos y comparación. El panel morado se adapta a comparación y comparte selección/instante/fuente/transporte con el PLC. Corregida carrera de cargas de estudio/comparación. Playwright real en 3D y regresiones de revisión/layout correctos. Ver [[../historico/sesion-codigo/2026-11-24-estudios-comparacion-unificada]].
+
+## 2026-11-24 · Revisar estudios sin jerga ni navegación inesperada
+
+Retirado badge de acceso y etiquetas redundantes. Estudios/biblioteca simplificados; comparación opcional con hora visible y magnitudes ordenadas. Corregido envío automático a 3D al mover la barra: ahora requiere acción explícita. Playwright verifica recorrido, navegación y estados vacío/un solo instante; layout en cuatro anchos correcto. Ver [[../historico/sesion-codigo/2026-11-24-plc-revision-comprensible]].
+
+## 2026-11-24 · Simulación PLC compacta y fondo limpio
+
+Se eliminó el fondo de red solo en la HMI; pasos 01–03 en fila en escritorio y apilados en móvil. Resultados/guardado, biblioteca, tiempos y comparación separados; enlaces y controles mejorados. Typecheck/build y Playwright en cuatro anchos correctos, sin mandos PLC. Ver [[../historico/sesion-codigo/2026-11-24-plc-simulacion-compacta]].
+
+## 2026-11-24 · Panel Fractal abajo a la izquierda por defecto
+
+Se ubicó el panel junto al lateral izquierdo, anclado al borde inferior por defecto y adaptado a móvil. Conserva arrastre y redimensionado. Typecheck/build y Playwright correctos. Ver [[../historico/sesion-codigo/2026-11-24-fractal-inferior-izquierda]].
+
+## 2026-11-24 · Retirar contadores de cabecera
+
+Se eliminaron también activos/simulados/zonas/tuberías/pasarelas de la barra superior, conservando controles y la lógica de simulación. Typecheck/build y HTML servido correctos. Ver [[../historico/sesion-codigo/2026-11-24-quitar-contadores-cabecera]].
+
+## 2026-11-24 · Retirar título redundante de cabecera
+
+Se quitó el nombre de planta en la barra superior, conservando indicadores y controles. Typecheck/build y regresión Playwright correctos. Ver [[../historico/sesion-codigo/2026-11-24-quitar-titulo-cabecera-planta]].
+
+## 2026-11-24 · Panel Fractal y gauges interactivos
+
+Iconos de iluminación, gauges históricos con datos del snapshot, selector sin desbordar y panel Fractal movible/redimensionable desde bordes y esquinas, con contenido responsive. Gauges arrastrables con líneas guía que siguen la cámara y conservan posición al cambiar de instante. Typecheck/build y Playwright con ratón/teclado correctos, sin mandos PLC. Ver [[../historico/sesion-codigo/2026-11-24-panel-fractal-gauges-interactivos]].
+
+## 2026-11-24 · Retirada de tarjeta introductoria del PLC
+
+Se quitó la tarjeta «Acueducto a escala» del centro de simulación y su CSS exclusivo. Controles y aviso de sesión virtual conservados. Typecheck, build y HTML servido verificados. Ver [[../historico/sesion-codigo/2026-11-24-retirar-tarjeta-intro-plc]].
+
+## 2026-11-24 · Recuperación de galería del ensayo aislado
+
+Se corrigió la configuración de conexión usando Gallery 5173 con proxy a servicios aislados, sin relajar autenticación ni CORS. Modelo/HMI cargan en Playwright sin pageerror; sesión detenida y sin recalcular. Captura headless aún pendiente. Ver [[../historico/sesion-codigo/2026-11-24-recuperar-galeria-ensayo]].
+
+## 2026-11-23 · Recuperación y aplicación virtual de la propuesta
+
+Se recuperaron bases y estudio tras reinicio, sin recalcular. En copia aislada se aprobó/programó la propuesta y se verificó su entrada real al cruzar la hora: apertura 37,88 %, mínimo observado 18,02 m.c.a. en L4.C21. Ejecución API/WebSocket, no grabación de UI. Sesión detenida, sin tocar infraestructura física. Ver [[../historico/sesion-codigo/2026-11-23-reinicio-aplicacion-demo-acueducto]].
+
+## 2026-11-23 · Apertura optimizada coherente en la tríada
+
+Ensayo real de 12 horas con Fractal. Se corrigió un tag que retenía apertura inicial en los frames optimizados; ahora comandos, tags y snapshot coinciden. Nueva integración en copia aislada verificó 64 viviendas por hora, mínimo >=18 m.c.a. y restricciones declaradas satisfechas. No aplicado al PLC. Ver [[../historico/sesion-codigo/2026-11-23-fractal-apertura-publicada]].
+
+## 2026-11-23 · Cosimulación tras cambiar el perfil operativo
+
+Se admite historial de perfiles versionados validando cada muestra contra su perfil histórico y conservando el hash del manifiesto. 68 pruebas y una integración real aislada: dos perfiles, 137 frames publicados, sin alterar sesión ni aplicar mandos. Exclusiones de medios/cachés en Git, sin borrar archivos. Ver [[../historico/sesion-codigo/2026-11-23-cosimulacion-historial-versionado]].
+
+## 2026-11-23 · Legibilidad de gráficas y gauges del Acueducto
+
+Trazos y puntos más finos, cursor horario visible y persistente al cambiar de pestaña, y ocultación de gauges ocluidos por paneles o diálogos. Typecheck, build y comprobaciones Playwright locales correctos, sin mandos ni despliegue. Ver [[../historico/sesion-codigo/2026-11-23-acueducto-legibilidad-demo]].
+
 ## 2026-11-21 · Adopción coherente de la curva VRP optimizada
 
 El borrador Fractal antes programaba una consigna manual distinta de la apertura horaria presentada. Ahora conserva el consumo horario y programa `fixed_opening` en rama auto, con apertura por hora y validación de esquema. Un recorrido local persistido verificó cálculo, aprobación, programación y aplicación al cruzar la siguiente hora: la apertura AUTO observada coincidió exactamente con la propuesta para esa franja. La revisión Playwright del gemelo 3D confirmó el estudio y ambas horas; se añadió fallback de carga para pestañas sin foco. No quedan validaciones locales pendientes. Ver [[../historico/sesion-codigo/2026-11-20-dependencias-modelo-hidraulico#Continuación 2026-11-21: adopción de apertura VRP por hora]].

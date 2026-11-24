@@ -33,15 +33,19 @@ def test_from_plc_rejects_a_profile_different_from_the_session_history(monkeypat
     assert "perfil activo del PLC" in response.json()["detail"]
 
 
-def test_cosimulation_from_plc_uses_only_stored_history_and_publishes_separate_run(monkeypatch) -> None:
+@pytest.mark.parametrize("historical_profile", ["active-profile", "previous-profile"])
+@pytest.mark.parametrize("tamper_history", [False, True])
+def test_cosimulation_from_plc_uses_only_stored_history_and_publishes_separate_run(
+    monkeypatch, historical_profile, tamper_history,
+) -> None:
     monkeypatch.setenv("FRACTAL_PLC_API_URL", "https://plc.example")
     profile = {"id": "active-profile", "hours": {"0": {"global_consumers_pct": 100}}}
     seen = {}
 
     history_samples = [
         {
-            "t": 5, "profile": {"id": "active-profile"},
-            "plc_tags": {"PLC.Profile.ActiveId": "active-profile", "pressure": 3},
+            "t": 5, "profile": {"id": historical_profile},
+            "plc_tags": {"PLC.Profile.ActiveId": historical_profile, "pressure": 3},
         },
         {
             "t": 10, "profile": {"id": "active-profile"},
@@ -63,6 +67,9 @@ def test_cosimulation_from_plc_uses_only_stored_history_and_publishes_separate_r
         "input_hash": "manifest-input-hash", "history_sample_count": 2,
     }
 
+    if tamper_history:
+        history_samples[0]["plc_tags"]["pressure"] = 999
+
     def fake_gateway(url, _token=None):
         if url.endswith("/historian"):
             return {"samples": history_samples}
@@ -74,6 +81,7 @@ def test_cosimulation_from_plc_uses_only_stored_history_and_publishes_separate_r
         return context
 
     def fake_submit(job):
+        assert not tamper_history, "no debe ejecutarse un historial alterado"
         seen["job"] = job
         return {
             "job_id": "COSIM-test", "model_id": "model-approved", "model_quality": "fixture_not_validation", "snapshot_id": "session-1:12",
@@ -107,6 +115,12 @@ def test_cosimulation_from_plc_uses_only_stored_history_and_publishes_separate_r
         },
     )
 
+    if tamper_history:
+        assert response.status_code == 409
+        assert "ya no coincide" in response.json()["detail"]
+        assert "job" not in seen
+        assert "publication" not in seen
+        return
     assert response.status_code == 200, response.text
     body = response.json()
     assert body["comparison_id"] == "CMP-shared"
@@ -117,7 +131,7 @@ def test_cosimulation_from_plc_uses_only_stored_history_and_publishes_separate_r
     assert request["initial_snapshot"] == context["snapshot"]
     assert request["profile_hash"] == fractal_api.profile_fingerprint(profile)
     assert request["history_frames"] == [
-        {"simulation_time_s": 5, "plc_tags": {"PLC.Profile.ActiveId": "active-profile", "pressure": 3}},
+        {"simulation_time_s": 5, "plc_tags": {"PLC.Profile.ActiveId": historical_profile, "pressure": 3}},
         {"simulation_time_s": 10, "plc_tags": {"PLC.Profile.ActiveId": "active-profile", "pressure": 4}},
     ]
     assert seen["publication"][5] == context
@@ -125,7 +139,19 @@ def test_cosimulation_from_plc_uses_only_stored_history_and_publishes_separate_r
     assert source_statuses == ["in_progress"]
 
 
-def test_cosimulation_refuses_history_from_a_different_profile(monkeypatch) -> None:
+@pytest.mark.parametrize(
+    ("stored_profile", "historical_tags", "status"),
+    [
+        ({"id": "previous-profile"}, {"PLC.Profile.ActiveId": "active-profile"}, 502),
+        ({"id": "previous-profile"}, None, 502),
+        ({}, {"PLC.Profile.ActiveId": "previous-profile"}, 409),
+        ({"id": ""}, {"PLC.Profile.ActiveId": ""}, 409),
+        (None, {"PLC.Profile.ActiveId": "previous-profile"}, 409),
+    ],
+)
+def test_cosimulation_refuses_unverifiable_historical_profile(
+    monkeypatch, stored_profile, historical_tags, status,
+) -> None:
     monkeypatch.setenv("FRACTAL_PLC_API_URL", "https://plc.example")
     profile = {"id": "active-profile", "hours": {"0": {"global_consumers_pct": 100}}}
 
@@ -145,8 +171,8 @@ def test_cosimulation_refuses_history_from_a_different_profile(monkeypatch) -> N
         if url.endswith("/historian"):
             return {
                 "samples": [{
-                    "t": 5, "profile": {"id": "previous-profile"},
-                    "plc_tags": {"PLC.Profile.ActiveId": "previous-profile"},
+                    "t": 5, "profile": stored_profile,
+                    "plc_tags": historical_tags,
                 }]
             }
         raise AssertionError(f"unexpected gateway URL: {url}")
@@ -156,14 +182,14 @@ def test_cosimulation_refuses_history_from_a_different_profile(monkeypatch) -> N
     monkeypatch.setattr(fractal_api, "record_comparison_status", lambda *_args: None)
     monkeypatch.setattr(
         fractal_api, "submit_cosimulation_job",
-        lambda _job: pytest.fail("no debe ejecutarse un historial con perfil mixto"),
+        lambda _job: pytest.fail("no debe ejecutarse un historial no verificable"),
     )
     response = client.post(
         "/studies/cosimulation/from-plc",
         json={"plant_id": "water-network-scale-v1", "session_id": "session-1", "time_step_s": 3600, "horizon_s": 3600},
     )
-    assert response.status_code == 409
-    assert "historial contiene otro perfil" in response.json()["detail"]
+    assert response.status_code == status
+    assert "históric" in response.json()["detail"]
 
 
 def test_submit_cosimulation_job_polls_engine_and_returns_model_result(monkeypatch) -> None:
@@ -632,11 +658,17 @@ def test_optimized_hour_uses_selected_controls_in_snapshot_and_forecast_tags(mon
             "between_levels": {"12": 50},
         },
     }}
+    tags["PLC.PRS.AutoOpeningPct"] = 30.0
     frames = mpc.project_24h(tags, profile, study_type="optimized", target_pressure_mca=18, horizon_hours=2)
     frame = frames[0]
     assert frame["snapshot"]["equipment"]["valve-between-12"]["animation"]["opening"] == 0.8
     assert frame["plc_tags"]["PLC.Valve.Vertical12OpeningPct"] == 80.0
     assert frame["commands"]["vrp_opening_pct"] == 72.0
+    for projected in frames:
+        assert projected["plc_tags"]["PLC.PRS.AutoOpeningPct"] == 72.0
+        assert projected["snapshot"]["equipment"]["prs-01"]["variables"]["auto_opening_pct"] == 72.0
+        assert projected["snapshot"]["equipment"]["prs-01"]["animation"]["auto_opening_pct"] == 72.0
+    assert tags["PLC.PRS.AutoOpeningPct"] == 30.0  # input snapshot stays immutable
     assert frame["commands"]["target_pressure_mca"] == 18.0
     assert frame["commands"]["prs"] == {"branch": "auto", "control_mode": "fixed_opening", "auto_opening_pct": 72.0}
     assert len(frame["scenarios"]) == 1

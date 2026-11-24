@@ -20,12 +20,14 @@
       </div>
     </div>
     <canvas id="scene"></canvas>
-    <section id="forecast-panel" hidden style="position:fixed;z-index:20;top:78px;left:50%;transform:translateX(-50%);width:min(560px,calc(100vw - 32px));padding:14px 18px;background:rgba(44,24,78,.96);border:2px solid #c084fc;border-radius:8px;color:#fff;box-shadow:0 8px 32px #0009;font:13px Inter, sans-serif">
-      <strong style="color:#e9d5ff">◆ ESCENARIO FRACTAL · FUTURO NO APLICADO</strong>
+    <section id="forecast-panel" hidden style="position:fixed;z-index:20;padding:14px 18px;background:rgba(44,24,78,.96);border:2px solid #c084fc;border-radius:8px;color:#fff;box-shadow:0 8px 32px #0009;font:13px Inter, sans-serif">
+      <button id="forecast-panel-drag" type="button" title="Arrastrar panel · flechas para mover" aria-label="Mover panel Fractal">◆ ESCENARIO FRACTAL · FUTURO NO APLICADO</button>
+      <div class="forecast-panel-content">
       <div id="forecast-study-meta" style="margin:8px 0"></div>
-      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:8px 0"><label>Escenario <select id="forecast-study" aria-label="Escenario futuro guardado"></select></label><button id="forecast-play" type="button" aria-label="Reproducir proyección">▶ REPRODUCIR</button><label>Velocidad <select id="forecast-speed"><option value="1" selected>1 h/s</option><option value="2">2 h/s</option><option value="4">4 h/s</option></select></label><label>Hora futura <select id="forecast-hour"></select></label></div>
+      <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:8px 0"><label class="forecast-scenario-field"><span id="forecast-selection-label">Estudio</span> <select id="forecast-study" aria-label="Escenario futuro guardado"></select></label><button id="forecast-play" type="button" aria-label="Reproducir proyección">▶ REPRODUCIR</button><label>Velocidad <select id="forecast-speed"><option value="1" selected>1 h/s</option><option value="2">2 h/s</option><option value="4">4 h/s</option></select></label><label><span id="forecast-time-label">Hora futura</span> <select id="forecast-hour"></select></label><label id="forecast-source-control" hidden>Fuente 3D <select id="forecast-source"><option value="emulator">Planta Real</option><option value="cosimulation">Cosimulador</option><option value="optimization">Fractal</option></select></label></div>
       <div id="forecast-values" style="margin-top:8px"></div>
-      <small>Elija un escenario y pulse REPRODUCIR para recorrer sus 24 horas. «Volver al PLC actual» muestra nuevamente la operación en vivo.</small><div><button id="forecast-return">↶ VOLVER AL PLC ACTUAL</button></div>
+      <small id="forecast-help">Elija un escenario y pulse REPRODUCIR para recorrer sus horas. «Volver al PLC actual» muestra nuevamente la operación en vivo.</small><div><button id="forecast-return">↶ VOLVER AL PLC ACTUAL</button></div>
+      </div>
     </section>
     <section id="triad-overlay" hidden aria-label="Gauges comparativos de la reproducción guardada">
       <div class="triad-overlay-status"><strong>TRÍADA · FRAMES GUARDADOS · NO APLICADA</strong><p id="triad-overlay-time"></p></div>
@@ -33,7 +35,6 @@
     </section>
     <header class="topbar glass">
       <div class="brand"><span class="logo">◆</span> TWIN<span class="dim">/</span>PLANT</div>
-      <div class="title"><span id="plant-name">—</span><span class="dim" id="plant-meta"></span></div>
       <div class="lighting" id="lighting"></div>
       <nav id="water-workspace-nav" class="water-workspace-nav" aria-label="Vistas del acueducto" hidden><button id="view-3d" class="active">◆ 3D</button><button id="view-plc">▣ PLC Y ESCENARIOS</button><button id="view-history">◷ HISTÓRICO</button></nav>
       <div class="clock" id="clock">SIM · DESCONECTADA</div>

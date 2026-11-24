@@ -32,6 +32,7 @@ h3 { font: 700 12px Inter, sans-serif; letter-spacing: 0.18em; color: var(--acce
 .brand { font: 700 18px Orbitron, sans-serif; letter-spacing: 0.12em; }
 .logo { color: var(--accent); text-shadow: 0 0 8px rgba(45, 127, 249, 0.4); }
 .title { flex: 1; font: 600 16px Orbitron, sans-serif; letter-spacing: 0.06em; display: flex; gap: 12px; align-items: baseline; }
+.lighting { margin-left:auto; }
 .lighting button { margin-left: 4px; }
 .clock { font: 600 13px "IBM Plex Mono", monospace; color: var(--cyan); min-width: 210px; text-align: right; }
 button, select {
@@ -107,6 +108,18 @@ body.shot .glass, body.shot .lil-gui { display: none !important; }
 .right-col .glass { position: static; width: auto; max-height: none; flex: none; }
 #gui-host { flex: none; }
 .sidebar [hidden], .nav-link[hidden] { display: none; }
+@media (max-width: 1200px) and (min-width: 901px) {
+  /* La escena sigue siendo de escritorio, pero los paneles no deben salirse del viewport
+     en laptops o capturas de 1152–1200 px. */
+  .topbar { gap: 10px; padding-inline: 10px; }
+  .brand { font-size: 15px; }
+  .title { min-width: 0; font-size: 12px; gap: 6px; }
+  .clock { min-width: 150px; font-size: 11px; }
+  .lighting button, .water-workspace-nav button { padding-inline: 7px; font-size: 10px; }
+  .right-col { width: 280px; right: 12px; }
+  .hud, .events { width: 280px; }
+  #view-cube { right: 304px; width: 104px; }
+}
 @media (max-width: 900px) {
   .sidebar { width: 200px; }
   .hud, .events, .right-col { width: 260px; }
@@ -353,13 +366,47 @@ button.pick { padding: 2px 8px; font-size: 11px; }
 .water-history-panel label { display:grid; gap:8px; margin:16px 0; }
 .water-history-panel input { width:100%; }
 .water-history-panel strong { display:block; margin:12px 0; color:#4ea7ff; font:12px "IBM Plex Mono",monospace; }
+#forecast-panel { box-sizing:border-box; left:268px; bottom:8px; top:auto; width:min(560px,calc(100vw - 284px)); max-width:calc(100vw - 16px); max-height:calc(100dvh - 80px); }
+@media(max-width:700px) { #forecast-panel { left:8px; width:min(560px,calc(100vw - 16px)); } }
+#forecast-panel:not([hidden]) { display:flex; flex-direction:column; }
+#forecast-panel-drag { flex-shrink:0; display:block; width:100%; padding:0 0 8px; border:0; background:none; color:#e9d5ff; text-align:left; font:700 12px Inter,sans-serif; cursor:grab; touch-action:none; user-select:none; white-space:normal; }
+#forecast-panel-drag:active { cursor:grabbing; }
+.forecast-panel-content { min-height:0; min-width:0; overflow:auto; overflow-wrap:anywhere; scrollbar-gutter:stable; }
+.forecast-panel-content label { min-width:0; max-width:100%; }
+.forecast-panel-content select,.forecast-panel-content button { max-width:100%; }
+#forecast-panel .forecast-resize { position:absolute; z-index:2; margin:0; padding:0; border:0; border-radius:0; background:transparent; touch-action:none; }
+.forecast-resize[data-edge="n"],.forecast-resize[data-edge="s"] { left:10px; right:10px; height:8px; cursor:ns-resize; }
+.forecast-resize[data-edge="n"] { top:-4px; }.forecast-resize[data-edge="s"] { bottom:-4px; }
+.forecast-resize[data-edge="w"],.forecast-resize[data-edge="e"] { top:10px; bottom:10px; width:8px; cursor:ew-resize; }
+.forecast-resize[data-edge="w"] { left:-4px; }.forecast-resize[data-edge="e"] { right:-4px; }
+.forecast-resize[data-edge="nw"],.forecast-resize[data-edge="ne"],.forecast-resize[data-edge="sw"],.forecast-resize[data-edge="se"] { width:14px; height:14px; }
+.forecast-resize[data-edge="nw"],.forecast-resize[data-edge="ne"] { top:-4px; }
+.forecast-resize[data-edge="sw"],.forecast-resize[data-edge="se"] { bottom:-4px; }
+.forecast-resize[data-edge="nw"],.forecast-resize[data-edge="sw"] { left:-4px; }
+.forecast-resize[data-edge="ne"],.forecast-resize[data-edge="se"] { right:-4px; }
+.forecast-resize[data-edge="nw"],.forecast-resize[data-edge="se"] { cursor:nwse-resize; }
+.forecast-resize[data-edge="ne"],.forecast-resize[data-edge="sw"] { cursor:nesw-resize; }
+#forecast-panel .forecast-resize:focus-visible { outline:2px solid #e9d5ff; }
+#forecast-panel .forecast-scenario-field { display:flex; flex-direction:column; gap:4px; flex:0 0 100%; min-width:0; max-width:100%; }
+#forecast-study { box-sizing:border-box; width:100%; min-width:0; max-width:100%; text-overflow:ellipsis; }
 #triad-overlay { position:fixed; inset:0; z-index:30; pointer-events:none; color:#f8fafc; font:11px Inter,sans-serif; }
-#triad-overlay[hidden] { display:none; }
+#triad-overlay[hidden], body:has(dialog[open]) #triad-overlay { display:none; }
+/* Lecturas distribuidas junto al equipo, conectadas y sin tapar los paneles. */
+#triad-overlay:is([data-mode="history"],[data-mode="study"]) .triad-gauge { position:fixed; width:196px; min-width:0; transform:none; }
+#triad-overlay:is([data-mode="history"],[data-mode="study"]) .triad-gauge::after { display:none; }
+.lighting button svg { display:block; }
 .triad-overlay-status { position:fixed; top:82px; right:14px; max-width:min(420px,calc(100vw - 28px)); padding:8px 11px; border:1px solid #4ea7ff; background:rgba(5,10,32,.94); box-shadow:0 5px 18px #0008; }
 .triad-overlay-status strong { color:#dbeafe; font:600 9px Orbitron,Inter,sans-serif; letter-spacing:.08em; }
 .triad-overlay-status p { margin:4px 0 0; color:#b8c7dc; font-size:10px; }
 .triad-gauge { position:fixed; width:196px; padding:7px; transform:translate(-50%,calc(-100% - 12px)); border:1px solid #73b9ffbb; background:rgba(5,10,32,.94); box-shadow:0 5px 20px #0009; }
+.gauge-leaders { position:absolute; inset:0; width:100%; height:100%; overflow:hidden; pointer-events:none; stroke:#7dd3fc; stroke-width:1.5; fill:#0a1630; filter:drop-shadow(0 1px 2px #000); }
+.triad-gauge { pointer-events:auto; }
+.triad-gauge h3 { cursor:grab; touch-action:none; user-select:none; }
+.triad-gauge h3:active { cursor:grabbing; }
+#triad-overlay .triad-gauge[data-dragged="true"] { position:fixed; width:196px; transform:none; }
+#triad-overlay .triad-gauge[data-dragged="true"]::after { display:none; }
 .triad-gauge::after { position:absolute; content:""; left:calc(50% - 5px); bottom:-7px; width:8px; height:8px; transform:rotate(45deg); border-right:1px solid #73b9ffbb; border-bottom:1px solid #73b9ffbb; background:#0a1630; }
+.triad-gauge[hidden], .triad-overlay-status[hidden] { display:none; }
 .triad-gauge h3 { margin:0 0 5px; color:#dbeafe; font:600 9px Inter,sans-serif; }
 .triad-gauge-readings { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:4px; }
 .triad-gauge-reading { min-width:0; padding:4px 3px; border-radius:4px; background:#0c1730; text-align:center; }

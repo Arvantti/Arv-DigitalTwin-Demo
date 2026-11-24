@@ -407,10 +407,13 @@ def cosimulation_from_plc(payload: dict[str, Any], request: Request) -> dict[str
         if at >= base_time:
             continue
         stored_profile = sample.get("profile")
-        if not isinstance(stored_profile, dict) or stored_profile.get("id") != profile_id:
-            raise HTTPException(409, "el historial contiene otro perfil; inicie una sesión con un único perfil para alinear modelos")
-        if not isinstance(plc_tags, dict) or plc_tags.get("PLC.Profile.ActiveId") != profile_id:
-            raise HTTPException(502, f"muestra PLC {index} sin tags del perfil activo; no se reconstruyen datos faltantes")
+        historical_profile_id = stored_profile.get("id") if isinstance(stored_profile, dict) else None
+        if not isinstance(historical_profile_id, str) or not historical_profile_id.strip():
+            raise HTTPException(409, f"muestra PLC {index} sin versión histórica de perfil verificable")
+        # Past observations retain the profile active at their own timestamp.
+        # Only the immutable present snapshot/future profile must use profile_id.
+        if not isinstance(plc_tags, dict) or plc_tags.get("PLC.Profile.ActiveId") != historical_profile_id:
+            raise HTTPException(502, f"muestra PLC {index} sin tags del perfil histórico; no se reconstruyen datos faltantes")
         history_frames.append({"simulation_time_s": at, "plc_tags": plc_tags})
     history_frames.sort(key=lambda frame: frame["simulation_time_s"])
     if canonical_fingerprint(history_frames) != manifest.get("history_hash"):

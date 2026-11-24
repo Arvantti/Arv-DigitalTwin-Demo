@@ -23,3 +23,18 @@ city-models/centro-medellin-v1/osm-build/
 docs/demo-plasticos/*/video/
 docs/demo-plasticos/audio/
 docs/demo-plasticos/*.mp4
+
+# Producción audiovisual: medios generados y cachés locales, no fuentes ni guiones.
+video-production/**/out/
+video-production/**/.hyperframes/
+video-production/**/.thumbnails/
+video-production/**/.waveform-cache/
+video-production/**/assets/captures/
+video-production/**/assets/audio/
+video-production/**/assets/functional-trial/
+video-production/**/functional-demo-session.json
+
+# Capturas y paquetes de diagnóstico locales en la raíz.
+/acueducto-*.png
+/visual-review-stalled.png
+/pi-bug-report-*.zip
