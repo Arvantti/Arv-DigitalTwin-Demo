@@ -1,0 +1,7 @@
+assets/clips/
+episodios/*/escenas/*/assets/
+episodios/*/vertical/
+episodios/*/musica-mezcla.mp3
+out/
+.hyperframes/
+renders/

@@ -1,0 +1,20 @@
+.mesa,.mesa-svg{width:900px}
+.qs{flex-direction:column;align-items:center;gap:18px}.qs .chip{font-size:40px}
+.islas{display:grid;grid-template-columns:1fr 1fr;gap:24px;justify-items:center}
+.isla{width:440px}
+#is2{grid-column:1 / span 2}
+.chats{flex-direction:column;align-items:center;gap:18px}
+.chat span{font-size:44px}
+.prods{flex-direction:column;align-items:center;gap:20px}
+.prod{width:820px;padding:14px 24px;gap:6px}
+.prod .pv{height:150px;flex:none}.pv svg{width:260px;height:146px}
+.prod b{font-size:40px}
+.prod span{font-size:28px}
+.mini3{gap:14px}.m3{width:300px;font-size:26px;padding:14px 6px}
+.hilos{width:960px}
+.capa{width:960px}
+.capa .row{gap:14px}.tag{font-size:26px}
+.eps{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.ep{width:400px}
+.fin .firma{font-size:48px}
+.fondo-red .red{width:1900px;transform:rotate(90deg)}

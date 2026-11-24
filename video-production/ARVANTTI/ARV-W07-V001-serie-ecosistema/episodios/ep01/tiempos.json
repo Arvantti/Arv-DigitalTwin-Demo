@@ -1,0 +1,58 @@
+[
+ {
+  "id": "junta",
+  "start": 0,
+  "voiceAt": 1.4,
+  "voz": 8.59,
+  "dur": 10.99,
+  "real": true
+ },
+ {
+  "id": "islas",
+  "start": 10.99,
+  "voiceAt": 11.39,
+  "voz": 10.92,
+  "dur": 12.32,
+  "real": true
+ },
+ {
+  "id": "arvantti",
+  "start": 23.31,
+  "voiceAt": 23.71,
+  "voz": 5.64,
+  "dur": 6.84,
+  "real": true
+ },
+ {
+  "id": "productos",
+  "start": 30.16,
+  "voiceAt": 30.46,
+  "voz": 12.67,
+  "dur": 14.17,
+  "real": true
+ },
+ {
+  "id": "base",
+  "start": 44.33,
+  "voiceAt": 44.63,
+  "voz": 7.71,
+  "dur": 9.21,
+  "real": true
+ },
+ {
+  "id": "serie",
+  "start": 53.53,
+  "voiceAt": 53.83,
+  "voz": 3.79,
+  "dur": 5.49,
+  "real": true
+ },
+ {
+  "id": "cierre",
+  "start": 59.02,
+  "voiceAt": 59.92,
+  "voz": 5.07,
+  "dur": 10.47,
+  "real": true
+ }
+]

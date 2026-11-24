@@ -1,0 +1,17 @@
+/* Base vertical 9:16 (se agrega después de los estilos de la plantilla) */
+.st{padding:220px 60px 330px;gap:46px}
+.kick{left:60px;top:110px;font-size:24px;letter-spacing:6px}
+.h{font-size:92px}.h.xl{font-size:120px}.h.md{font-size:76px}
+.cap{bottom:200px}
+.cap span.l{max-width:960px;font-size:46px}
+.fondo .glow{background:radial-gradient(700px 900px at 50% 45%,#12305e55 0%,#05070c00 70%),radial-gradient(500px 600px at 80% 90%,#2d7ff922 0%,#05070c00 70%)}
+.fondo .floor{height:38%}
+/* Piezas comunes en vertical (episodios 2 a 7) */
+.opts{flex-direction:column;align-items:center;gap:16px}
+.opt{width:860px;padding:16px 26px}
+.opt b{font-size:38px}
+.bar span{width:200px;font-size:28px}
+.bar i{height:16px;width:calc(var(--n) * 5.4px)}
+.fams{gap:12px}.fams .chip{font-size:28px}
+.gr span{width:190px;font-size:28px}
+.vz .vl{font-size:26px}

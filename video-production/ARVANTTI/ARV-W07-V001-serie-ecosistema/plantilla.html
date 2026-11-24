@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="es" data-resolution="landscape">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1920, height=1080">
+<title>Serie Arvantti Ecosistema</title>
+<script src="assets/vendor/gsap.min.js"></script>
+<style>
+:root{--blue:#2d7ff9;--electric:#4ea7ff;--ice:#9fd0ff;--ti:#d8dadf;--dti:#7a7e86;--black:#05070c;--white:#f8fafc;--panel:#0d1a30;--alert:#ff8a3d}
+*{box-sizing:border-box}
+html,body{width:1920px;height:1080px;margin:0;overflow:hidden;background:var(--black);font-family:Inter,"Inter Display",Arial,sans-serif;color:var(--white)}
+#root{position:relative;width:1920px;height:1080px;overflow:hidden;background:var(--black)}
+.clip{position:absolute;inset:0}
+.scene{overflow:hidden}
+.w{display:inline-block;white-space:pre}
+
+/* Fondo */
+.fondo .glow{position:absolute;inset:-20%;background:radial-gradient(900px 520px at 50% 45%,#12305e55 0%,#05070c00 70%),radial-gradient(700px 400px at 80% 90%,#2d7ff922 0%,#05070c00 70%)}
+.fondo .floor{position:absolute;left:-50%;right:-50%;bottom:-10%;height:55%;perspective:900px;opacity:.45;-webkit-mask-image:linear-gradient(#0000,#000 55%);mask-image:linear-gradient(#0000,#000 55%)}
+.fondo .floorgrid{position:absolute;inset:0;transform:rotateX(68deg);transform-origin:50% 100%;background-image:linear-gradient(#4ea7ff33 2px,transparent 2px),linear-gradient(90deg,#4ea7ff33 2px,transparent 2px);background-size:120px 120px}
+.sweep{background:linear-gradient(100deg,#0000 35%,#4ea7ff18 45%,#ffffff40 50%,#4ea7ff18 55%,#0000 65%);mix-blend-mode:screen;pointer-events:none}
+#temp{left:auto;top:auto;right:20px;bottom:16px;font:700 15px "JetBrains Mono",monospace;color:var(--alert);letter-spacing:2px}
+
+/* Escenario centrado: sirve igual en horizontal y vertical */
+.st{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:40px;padding:110px 150px 200px;text-align:center}
+.kick{position:absolute;left:110px;top:70px;margin:0;font:600 26px "JetBrains Mono",monospace;letter-spacing:8px;color:var(--electric)}
+.kick b{display:inline-block;padding:4px 12px;margin-right:12px;border:2px solid var(--blue);color:#fff;font-weight:700;letter-spacing:2px}
+.h{margin:0;font:800 96px/1.05 "Inter Display",Inter,sans-serif;letter-spacing:-2px}
+.h.xl{font-size:140px;letter-spacing:-3px}
+.h.md{font-size:72px;letter-spacing:-1.5px}
+.sub{margin:0;font:500 44px/1.3 Inter,sans-serif;color:#c9d1e0}
+.ti{background:linear-gradient(100deg,#d8dadf 0%,#d8dadf 40%,#ffffff 50%,#d8dadf 60%,#d8dadf 100%);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent}
+.hl{color:var(--electric)}
+.chip{display:inline-block;padding:12px 26px;border:2px solid #4ea7ff66;border-radius:999px;background:#0d1a30cc;font:600 32px Inter,sans-serif;color:#e6eefc;box-shadow:0 0 24px #2d7ff933;white-space:nowrap}
+.chip.on{background:var(--blue);border-color:var(--electric);color:#fff;box-shadow:0 0 40px #2d7ff988}
+.row{display:flex;flex-wrap:wrap;justify-content:center;gap:28px}
+.panel{border-radius:22px;background:#0b1428f0;border:2px solid #4ea7ff88;box-shadow:0 30px 90px #000a,0 0 50px #2d7ff933}
+.marca{display:block;height:auto;filter:drop-shadow(0 0 30px #2d7ff988)}
+
+/* Subtítulos quemados con la palabra que suena resaltada */
+.cap{position:absolute;left:0;right:0;top:auto;bottom:60px;text-align:center;pointer-events:none}
+.cap span.l{display:inline-block;max-width:1500px;padding:12px 26px;border-radius:14px;background:#05070cc8;font:700 40px/1.3 Inter,sans-serif;color:#c9d1e0}
+.cap .cw{display:inline-block;white-space:pre}
+.cap .cw.on{color:#fff;text-shadow:0 0 18px #4ea7ff}
+
+/* Cierre */
+.fin .marca{width:240px}
+.fin .firma{margin:0;font:600 54px/1.25 Inter,sans-serif;color:#fff}
+.fin .url{margin:0;font:500 28px "JetBrains Mono",monospace;letter-spacing:6px;color:#7a9cc6}
+/*{{CSS}}*/
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="{{TOTAL}}" data-width="1920" data-height="1080" data-fps="25">
+{{CLIPS}}
+</div>
+<script>
+window.__timelines = window.__timelines || {};
+const tl = gsap.timeline({ paused: true });
+{{TIMELINE}}
+window.__timelines["main"] = tl;
+tl.seek(0);
+</script>
+</body>
+</html>
