@@ -1,0 +1,724 @@
+/* Generado por armar-estilos.mjs: no editar a mano (cambios en propios-vertical.css). */
+/* s01 ← base vertical */
+#s01 .st{padding:220px 60px 330px;gap:46px}
+#s01 .kick{left:60px;top:110px;font-size:24px;letter-spacing:6px}
+#s01 .h{font-size:92px}
+#s01 .h.xl{font-size:120px}
+#s01 .h.md{font-size:76px}
+#s01 .cap{bottom:200px}
+#s01 .cap span.l{max-width:960px;font-size:46px}
+#s01 .fondo .glow{background:radial-gradient(700px 900px at 50% 45%,#12305e55 0%,#05070c00 70%),radial-gradient(500px 600px at 80% 90%,#2d7ff922 0%,#05070c00 70%)}
+#s01 .fondo .floor{height:38%}
+#s01 .opts{flex-direction:column;align-items:center;gap:16px}
+#s01 .opt{width:860px;padding:16px 26px}
+#s01 .opt b{font-size:38px}
+#s01 .bar span{width:200px;font-size:28px}
+#s01 .bar i{height:16px;width:calc(var(--n) * 5.4px)}
+#s01 .fams{gap:12px}
+#s01 .fams .chip{font-size:28px}
+#s01 .gr span{width:190px;font-size:28px}
+#s01 .vz .vl{font-size:26px}
+/* s01 ← ep01 */
+#s01 .mail{width:940px}
+#s01 .areas{display:grid;grid-template-columns:1fr 1fr;gap:26px}
+#s01 .area{width:440px}
+#s01 .ops{flex-direction:column;align-items:center;gap:22px}
+#s01 .op{width:620px}
+#s01 .flujo{flex-direction:column;gap:46px}
+#s01 .reglas{flex-direction:row;flex-wrap:wrap;justify-content:center;align-items:center;gap:16px}
+#s01 .reglas .chip{font-size:28px}
+#s01 .nucleo{width:260px;height:260px}
+#s01 .opt{width:820px}
+#s01 .bar i{width:calc(var(--n) * 5.6px)}
+#s01 .prods{flex-direction:column;align-items:center;gap:26px}
+#s01 .prod{width:760px;padding:28px}
+#s01 .anillos{transform:scale(.95)}
+#s01 #ml0{left:-20px;top:-110px}
+#s01 #ml1{right:-20px;top:-110px}
+#s01 #ml2{left:210px;top:680px}
+#s01 .pasos{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+#s01 .nucleo small{font-size:16px;letter-spacing:1px}
+#s01 .opt b{font-size:40px}
+#s01 .bar span{width:170px;font-size:30px}
+#s01 .bar i{height:16px}
+#s01 .mail .ml{font-size:36px}
+#s01 .mail .mh{font-size:40px}
+#s01 .fin .firma{font-size:48px}
+#s01 .motor{transform:scale(1.4);margin:70px 0}
+#s01 .fondo-red .red{width:1900px;transform:rotate(90deg)}
+#s01 .area .mini{height:100px}
+#s01 .ruta{display:none}
+#s01 .motor{transform:scale(1.15);margin:40px 0}
+#s01 .opts{gap:12px}
+#s01 .opt{padding:12px 22px}
+#s01 .opt b{font-size:34px;margin-bottom:2px}
+#s01 .bar{margin-top:4px}
+#s01 .bar span{font-size:26px}
+/* s02 ← base vertical */
+#s02 .st{padding:220px 60px 330px;gap:46px}
+#s02 .kick{left:60px;top:110px;font-size:24px;letter-spacing:6px}
+#s02 .h{font-size:92px}
+#s02 .h.xl{font-size:120px}
+#s02 .h.md{font-size:76px}
+#s02 .cap{bottom:200px}
+#s02 .cap span.l{max-width:960px;font-size:46px}
+#s02 .fondo .glow{background:radial-gradient(700px 900px at 50% 45%,#12305e55 0%,#05070c00 70%),radial-gradient(500px 600px at 80% 90%,#2d7ff922 0%,#05070c00 70%)}
+#s02 .fondo .floor{height:38%}
+#s02 .opts{flex-direction:column;align-items:center;gap:16px}
+#s02 .opt{width:860px;padding:16px 26px}
+#s02 .opt b{font-size:38px}
+#s02 .bar span{width:200px;font-size:28px}
+#s02 .bar i{height:16px;width:calc(var(--n) * 5.4px)}
+#s02 .fams{gap:12px}
+#s02 .fams .chip{font-size:28px}
+#s02 .gr span{width:190px;font-size:28px}
+#s02 .vz .vl{font-size:26px}
+/* s02 ← ep01 */
+#s02 .mail{width:940px}
+#s02 .areas{display:grid;grid-template-columns:1fr 1fr;gap:26px}
+#s02 .area{width:440px}
+#s02 .ops{flex-direction:column;align-items:center;gap:22px}
+#s02 .op{width:620px}
+#s02 .flujo{flex-direction:column;gap:46px}
+#s02 .reglas{flex-direction:row;flex-wrap:wrap;justify-content:center;align-items:center;gap:16px}
+#s02 .reglas .chip{font-size:28px}
+#s02 .nucleo{width:260px;height:260px}
+#s02 .opt{width:820px}
+#s02 .bar i{width:calc(var(--n) * 5.6px)}
+#s02 .prods{flex-direction:column;align-items:center;gap:26px}
+#s02 .prod{width:760px;padding:28px}
+#s02 .anillos{transform:scale(.95)}
+#s02 #ml0{left:-20px;top:-110px}
+#s02 #ml1{right:-20px;top:-110px}
+#s02 #ml2{left:210px;top:680px}
+#s02 .pasos{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+#s02 .nucleo small{font-size:16px;letter-spacing:1px}
+#s02 .opt b{font-size:40px}
+#s02 .bar span{width:170px;font-size:30px}
+#s02 .bar i{height:16px}
+#s02 .mail .ml{font-size:36px}
+#s02 .mail .mh{font-size:40px}
+#s02 .fin .firma{font-size:48px}
+#s02 .motor{transform:scale(1.4);margin:70px 0}
+#s02 .fondo-red .red{width:1900px;transform:rotate(90deg)}
+#s02 .area .mini{height:100px}
+#s02 .ruta{display:none}
+#s02 .motor{transform:scale(1.15);margin:40px 0}
+#s02 .opts{gap:12px}
+#s02 .opt{padding:12px 22px}
+#s02 .opt b{font-size:34px;margin-bottom:2px}
+#s02 .bar{margin-top:4px}
+#s02 .bar span{font-size:26px}
+/* s03 ← base vertical */
+#s03 .st{padding:220px 60px 330px;gap:46px}
+#s03 .kick{left:60px;top:110px;font-size:24px;letter-spacing:6px}
+#s03 .h{font-size:92px}
+#s03 .h.xl{font-size:120px}
+#s03 .h.md{font-size:76px}
+#s03 .cap{bottom:200px}
+#s03 .cap span.l{max-width:960px;font-size:46px}
+#s03 .fondo .glow{background:radial-gradient(700px 900px at 50% 45%,#12305e55 0%,#05070c00 70%),radial-gradient(500px 600px at 80% 90%,#2d7ff922 0%,#05070c00 70%)}
+#s03 .fondo .floor{height:38%}
+#s03 .opts{flex-direction:column;align-items:center;gap:16px}
+#s03 .opt{width:860px;padding:16px 26px}
+#s03 .opt b{font-size:38px}
+#s03 .bar span{width:200px;font-size:28px}
+#s03 .bar i{height:16px;width:calc(var(--n) * 5.4px)}
+#s03 .fams{gap:12px}
+#s03 .fams .chip{font-size:28px}
+#s03 .gr span{width:190px;font-size:28px}
+#s03 .vz .vl{font-size:26px}
+/* s03 ← ep01 */
+#s03 .mail{width:940px}
+#s03 .areas{display:grid;grid-template-columns:1fr 1fr;gap:26px}
+#s03 .area{width:440px}
+#s03 .ops{flex-direction:column;align-items:center;gap:22px}
+#s03 .op{width:620px}
+#s03 .flujo{flex-direction:column;gap:46px}
+#s03 .reglas{flex-direction:row;flex-wrap:wrap;justify-content:center;align-items:center;gap:16px}
+#s03 .reglas .chip{font-size:28px}
+#s03 .nucleo{width:260px;height:260px}
+#s03 .opt{width:820px}
+#s03 .bar i{width:calc(var(--n) * 5.6px)}
+#s03 .prods{flex-direction:column;align-items:center;gap:26px}
+#s03 .prod{width:760px;padding:28px}
+#s03 .anillos{transform:scale(.95)}
+#s03 #ml0{left:-20px;top:-110px}
+#s03 #ml1{right:-20px;top:-110px}
+#s03 #ml2{left:210px;top:680px}
+#s03 .pasos{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+#s03 .nucleo small{font-size:16px;letter-spacing:1px}
+#s03 .opt b{font-size:40px}
+#s03 .bar span{width:170px;font-size:30px}
+#s03 .bar i{height:16px}
+#s03 .mail .ml{font-size:36px}
+#s03 .mail .mh{font-size:40px}
+#s03 .fin .firma{font-size:48px}
+#s03 .motor{transform:scale(1.4);margin:70px 0}
+#s03 .fondo-red .red{width:1900px;transform:rotate(90deg)}
+#s03 .area .mini{height:100px}
+#s03 .ruta{display:none}
+#s03 .motor{transform:scale(1.15);margin:40px 0}
+#s03 .opts{gap:12px}
+#s03 .opt{padding:12px 22px}
+#s03 .opt b{font-size:34px;margin-bottom:2px}
+#s03 .bar{margin-top:4px}
+#s03 .bar span{font-size:26px}
+/* s10 ← base vertical */
+#s10 .st{padding:220px 60px 330px;gap:46px}
+#s10 .kick{left:60px;top:110px;font-size:24px;letter-spacing:6px}
+#s10 .h{font-size:92px}
+#s10 .h.xl{font-size:120px}
+#s10 .h.md{font-size:76px}
+#s10 .cap{bottom:200px}
+#s10 .cap span.l{max-width:960px;font-size:46px}
+#s10 .fondo .glow{background:radial-gradient(700px 900px at 50% 45%,#12305e55 0%,#05070c00 70%),radial-gradient(500px 600px at 80% 90%,#2d7ff922 0%,#05070c00 70%)}
+#s10 .fondo .floor{height:38%}
+#s10 .opts{flex-direction:column;align-items:center;gap:16px}
+#s10 .opt{width:860px;padding:16px 26px}
+#s10 .opt b{font-size:38px}
+#s10 .bar span{width:200px;font-size:28px}
+#s10 .bar i{height:16px;width:calc(var(--n) * 5.4px)}
+#s10 .fams{gap:12px}
+#s10 .fams .chip{font-size:28px}
+#s10 .gr span{width:190px;font-size:28px}
+#s10 .vz .vl{font-size:26px}
+/* s10 ← ep01 */
+#s10 .mail{width:940px}
+#s10 .areas{display:grid;grid-template-columns:1fr 1fr;gap:26px}
+#s10 .area{width:440px}
+#s10 .ops{flex-direction:column;align-items:center;gap:22px}
+#s10 .op{width:620px}
+#s10 .flujo{flex-direction:column;gap:46px}
+#s10 .reglas{flex-direction:row;flex-wrap:wrap;justify-content:center;align-items:center;gap:16px}
+#s10 .reglas .chip{font-size:28px}
+#s10 .nucleo{width:260px;height:260px}
+#s10 .opt{width:820px}
+#s10 .bar i{width:calc(var(--n) * 5.6px)}
+#s10 .prods{flex-direction:column;align-items:center;gap:26px}
+#s10 .prod{width:760px;padding:28px}
+#s10 .anillos{transform:scale(.95)}
+#s10 #ml0{left:-20px;top:-110px}
+#s10 #ml1{right:-20px;top:-110px}
+#s10 #ml2{left:210px;top:680px}
+#s10 .pasos{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+#s10 .nucleo small{font-size:16px;letter-spacing:1px}
+#s10 .opt b{font-size:40px}
+#s10 .bar span{width:170px;font-size:30px}
+#s10 .bar i{height:16px}
+#s10 .mail .ml{font-size:36px}
+#s10 .mail .mh{font-size:40px}
+#s10 .fin .firma{font-size:48px}
+#s10 .motor{transform:scale(1.4);margin:70px 0}
+#s10 .fondo-red .red{width:1900px;transform:rotate(90deg)}
+#s10 .area .mini{height:100px}
+#s10 .ruta{display:none}
+#s10 .motor{transform:scale(1.15);margin:40px 0}
+#s10 .opts{gap:12px}
+#s10 .opt{padding:12px 22px}
+#s10 .opt b{font-size:34px;margin-bottom:2px}
+#s10 .bar{margin-top:4px}
+#s10 .bar span{font-size:26px}
+/* s04 ← base vertical */
+#s04 .st{padding:220px 60px 330px;gap:46px}
+#s04 .kick{left:60px;top:110px;font-size:24px;letter-spacing:6px}
+#s04 .h{font-size:92px}
+#s04 .h.xl{font-size:120px}
+#s04 .h.md{font-size:76px}
+#s04 .cap{bottom:200px}
+#s04 .cap span.l{max-width:960px;font-size:46px}
+#s04 .fondo .glow{background:radial-gradient(700px 900px at 50% 45%,#12305e55 0%,#05070c00 70%),radial-gradient(500px 600px at 80% 90%,#2d7ff922 0%,#05070c00 70%)}
+#s04 .fondo .floor{height:38%}
+#s04 .opts{flex-direction:column;align-items:center;gap:16px}
+#s04 .opt{width:860px;padding:16px 26px}
+#s04 .opt b{font-size:38px}
+#s04 .bar span{width:200px;font-size:28px}
+#s04 .bar i{height:16px;width:calc(var(--n) * 5.4px)}
+#s04 .fams{gap:12px}
+#s04 .fams .chip{font-size:28px}
+#s04 .gr span{width:190px;font-size:28px}
+#s04 .vz .vl{font-size:26px}
+/* s04 ← ep02 */
+#s04 .arb svg{width:900px}
+#s04 .vs{flex-direction:column;align-items:center;gap:16px}
+#s04 .rgs{flex-direction:column;align-items:center;gap:18px}
+#s04 .rg{width:760px;flex-direction:row;gap:30px;justify-content:center}
+#s04 .pas{flex-direction:column;gap:10px}
+#s04 .pas .flecha{transform:rotate(90deg)}
+#s04 .dos{flex-direction:column;align-items:center;gap:24px}
+#s04 .met svg{max-width:760px;height:auto}
+#s04 .met .lb{flex-wrap:wrap}
+#s04 .pobw svg{width:860px}
+#s04 .ne{font-size:30px;white-space:normal;max-width:900px}
+#s04 .objs{align-items:center}
+#s04 .nos{flex-direction:column;gap:10px}
+#s04 .nos .h{font-size:64px}
+#s04 .rsg{flex-direction:column;align-items:center;gap:20px}
+#s04 .rsg .card{width:700px}
+#s04 .arb svg{width:900px;height:auto;max-height:900px}
+#s04 .par svg{width:900px;height:auto}
+#s04 .capa .fams .chip{font-size:34px}
+#s04 .arb svg{height:auto}
+#s04 .par svg{width:900px}
+/* s05 ← base vertical */
+#s05 .st{padding:220px 60px 330px;gap:46px}
+#s05 .kick{left:60px;top:110px;font-size:24px;letter-spacing:6px}
+#s05 .h{font-size:92px}
+#s05 .h.xl{font-size:120px}
+#s05 .h.md{font-size:76px}
+#s05 .cap{bottom:200px}
+#s05 .cap span.l{max-width:960px;font-size:46px}
+#s05 .fondo .glow{background:radial-gradient(700px 900px at 50% 45%,#12305e55 0%,#05070c00 70%),radial-gradient(500px 600px at 80% 90%,#2d7ff922 0%,#05070c00 70%)}
+#s05 .fondo .floor{height:38%}
+#s05 .opts{flex-direction:column;align-items:center;gap:16px}
+#s05 .opt{width:860px;padding:16px 26px}
+#s05 .opt b{font-size:38px}
+#s05 .bar span{width:200px;font-size:28px}
+#s05 .bar i{height:16px;width:calc(var(--n) * 5.4px)}
+#s05 .fams{gap:12px}
+#s05 .fams .chip{font-size:28px}
+#s05 .gr span{width:190px;font-size:28px}
+#s05 .vz .vl{font-size:26px}
+/* s05 ← ep02 */
+#s05 .arb svg{width:900px}
+#s05 .vs{flex-direction:column;align-items:center;gap:16px}
+#s05 .rgs{flex-direction:column;align-items:center;gap:18px}
+#s05 .rg{width:760px;flex-direction:row;gap:30px;justify-content:center}
+#s05 .pas{flex-direction:column;gap:10px}
+#s05 .pas .flecha{transform:rotate(90deg)}
+#s05 .dos{flex-direction:column;align-items:center;gap:24px}
+#s05 .met svg{max-width:760px;height:auto}
+#s05 .met .lb{flex-wrap:wrap}
+#s05 .pobw svg{width:860px}
+#s05 .ne{font-size:30px;white-space:normal;max-width:900px}
+#s05 .objs{align-items:center}
+#s05 .nos{flex-direction:column;gap:10px}
+#s05 .nos .h{font-size:64px}
+#s05 .rsg{flex-direction:column;align-items:center;gap:20px}
+#s05 .rsg .card{width:700px}
+#s05 .arb svg{width:900px;height:auto;max-height:900px}
+#s05 .par svg{width:900px;height:auto}
+#s05 .capa .fams .chip{font-size:34px}
+#s05 .arb svg{height:auto}
+#s05 .par svg{width:900px}
+/* s06 ← base vertical */
+#s06 .st{padding:220px 60px 330px;gap:46px}
+#s06 .kick{left:60px;top:110px;font-size:24px;letter-spacing:6px}
+#s06 .h{font-size:92px}
+#s06 .h.xl{font-size:120px}
+#s06 .h.md{font-size:76px}
+#s06 .cap{bottom:200px}
+#s06 .cap span.l{max-width:960px;font-size:46px}
+#s06 .fondo .glow{background:radial-gradient(700px 900px at 50% 45%,#12305e55 0%,#05070c00 70%),radial-gradient(500px 600px at 80% 90%,#2d7ff922 0%,#05070c00 70%)}
+#s06 .fondo .floor{height:38%}
+#s06 .opts{flex-direction:column;align-items:center;gap:16px}
+#s06 .opt{width:860px;padding:16px 26px}
+#s06 .opt b{font-size:38px}
+#s06 .bar span{width:200px;font-size:28px}
+#s06 .bar i{height:16px;width:calc(var(--n) * 5.4px)}
+#s06 .fams{gap:12px}
+#s06 .fams .chip{font-size:28px}
+#s06 .gr span{width:190px;font-size:28px}
+#s06 .vz .vl{font-size:26px}
+/* s06 ← ep02 */
+#s06 .arb svg{width:900px}
+#s06 .vs{flex-direction:column;align-items:center;gap:16px}
+#s06 .rgs{flex-direction:column;align-items:center;gap:18px}
+#s06 .rg{width:760px;flex-direction:row;gap:30px;justify-content:center}
+#s06 .pas{flex-direction:column;gap:10px}
+#s06 .pas .flecha{transform:rotate(90deg)}
+#s06 .dos{flex-direction:column;align-items:center;gap:24px}
+#s06 .met svg{max-width:760px;height:auto}
+#s06 .met .lb{flex-wrap:wrap}
+#s06 .pobw svg{width:860px}
+#s06 .ne{font-size:30px;white-space:normal;max-width:900px}
+#s06 .objs{align-items:center}
+#s06 .nos{flex-direction:column;gap:10px}
+#s06 .nos .h{font-size:64px}
+#s06 .rsg{flex-direction:column;align-items:center;gap:20px}
+#s06 .rsg .card{width:700px}
+#s06 .arb svg{width:900px;height:auto;max-height:900px}
+#s06 .par svg{width:900px;height:auto}
+#s06 .capa .fams .chip{font-size:34px}
+#s06 .arb svg{height:auto}
+#s06 .par svg{width:900px}
+/* s09 ← base vertical */
+#s09 .st{padding:220px 60px 330px;gap:46px}
+#s09 .kick{left:60px;top:110px;font-size:24px;letter-spacing:6px}
+#s09 .h{font-size:92px}
+#s09 .h.xl{font-size:120px}
+#s09 .h.md{font-size:76px}
+#s09 .cap{bottom:200px}
+#s09 .cap span.l{max-width:960px;font-size:46px}
+#s09 .fondo .glow{background:radial-gradient(700px 900px at 50% 45%,#12305e55 0%,#05070c00 70%),radial-gradient(500px 600px at 80% 90%,#2d7ff922 0%,#05070c00 70%)}
+#s09 .fondo .floor{height:38%}
+#s09 .opts{flex-direction:column;align-items:center;gap:16px}
+#s09 .opt{width:860px;padding:16px 26px}
+#s09 .opt b{font-size:38px}
+#s09 .bar span{width:200px;font-size:28px}
+#s09 .bar i{height:16px;width:calc(var(--n) * 5.4px)}
+#s09 .fams{gap:12px}
+#s09 .fams .chip{font-size:28px}
+#s09 .gr span{width:190px;font-size:28px}
+#s09 .vz .vl{font-size:26px}
+/* s09 ← ep02 */
+#s09 .arb svg{width:900px}
+#s09 .vs{flex-direction:column;align-items:center;gap:16px}
+#s09 .rgs{flex-direction:column;align-items:center;gap:18px}
+#s09 .rg{width:760px;flex-direction:row;gap:30px;justify-content:center}
+#s09 .pas{flex-direction:column;gap:10px}
+#s09 .pas .flecha{transform:rotate(90deg)}
+#s09 .dos{flex-direction:column;align-items:center;gap:24px}
+#s09 .met svg{max-width:760px;height:auto}
+#s09 .met .lb{flex-wrap:wrap}
+#s09 .pobw svg{width:860px}
+#s09 .ne{font-size:30px;white-space:normal;max-width:900px}
+#s09 .objs{align-items:center}
+#s09 .nos{flex-direction:column;gap:10px}
+#s09 .nos .h{font-size:64px}
+#s09 .rsg{flex-direction:column;align-items:center;gap:20px}
+#s09 .rsg .card{width:700px}
+#s09 .arb svg{width:900px;height:auto;max-height:900px}
+#s09 .par svg{width:900px;height:auto}
+#s09 .capa .fams .chip{font-size:34px}
+#s09 .arb svg{height:auto}
+#s09 .par svg{width:900px}
+/* s07 ← base vertical */
+#s07 .st{padding:220px 60px 330px;gap:46px}
+#s07 .kick{left:60px;top:110px;font-size:24px;letter-spacing:6px}
+#s07 .h{font-size:92px}
+#s07 .h.xl{font-size:120px}
+#s07 .h.md{font-size:76px}
+#s07 .cap{bottom:200px}
+#s07 .cap span.l{max-width:960px;font-size:46px}
+#s07 .fondo .glow{background:radial-gradient(700px 900px at 50% 45%,#12305e55 0%,#05070c00 70%),radial-gradient(500px 600px at 80% 90%,#2d7ff922 0%,#05070c00 70%)}
+#s07 .fondo .floor{height:38%}
+#s07 .opts{flex-direction:column;align-items:center;gap:16px}
+#s07 .opt{width:860px;padding:16px 26px}
+#s07 .opt b{font-size:38px}
+#s07 .bar span{width:200px;font-size:28px}
+#s07 .bar i{height:16px;width:calc(var(--n) * 5.4px)}
+#s07 .fams{gap:12px}
+#s07 .fams .chip{font-size:28px}
+#s07 .gr span{width:190px;font-size:28px}
+#s07 .vz .vl{font-size:26px}
+/* s07 ← ep03 */
+#s07 .plan{width:960px;padding:22px}
+#s07 .gr span{width:150px}
+#s07 .dias{margin-left:170px;font-size:22px}
+#s07 .evs{flex-direction:column;align-items:center;gap:14px}
+#s07 .uno{width:860px}
+#s07 .uno svg{width:780px}
+#s07 .mts{flex-direction:column;align-items:center}
+#s07 .mts .chip{font-size:30px}
+#s07 .cont{flex-direction:column;align-items:center;gap:0}
+#s07 .cont b{min-width:0;text-align:center}
+#s07 .mcw svg{width:900px}
+#s07 .rangos{width:960px;padding:26px}
+#s07 .leyenda{margin-left:0;font-size:22px}
+#s07 .rangos .rg{flex-direction:column;align-items:stretch;gap:10px}
+#s07 .rangos .rg>span{text-align:left}
+#s07 .caps{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+#s07 .sens{width:960px}
+#s07 .sens .bar{flex-direction:column;align-items:flex-start;gap:6px}
+#s07 .sens .bar span{width:auto}
+#s07 .sens .bar i{width:calc(var(--n) * 8.6px)}
+#s07 .oi{font-size:34px}
+#s07 .aguanta{flex-direction:column;align-items:center;gap:18px}
+#s07 .aguanta .card{width:760px}
+#s07 .rt{flex:none;height:50px}
+#s07 .sorteo{flex-wrap:wrap}
+#s07 .leyenda{margin-right:0}
+#s07 .leyenda .pq{position:static}
+#s07 .rangos .rg b.pq{width:auto;text-align:left;font-size:34px}
+#s07 .caps{grid-template-columns:1fr 1fr}
+#s07 .leyenda .pq{width:auto}
+#s07 .mcw svg{width:900px}
+/* s08 ← base vertical */
+#s08 .st{padding:220px 60px 330px;gap:46px}
+#s08 .kick{left:60px;top:110px;font-size:24px;letter-spacing:6px}
+#s08 .h{font-size:92px}
+#s08 .h.xl{font-size:120px}
+#s08 .h.md{font-size:76px}
+#s08 .cap{bottom:200px}
+#s08 .cap span.l{max-width:960px;font-size:46px}
+#s08 .fondo .glow{background:radial-gradient(700px 900px at 50% 45%,#12305e55 0%,#05070c00 70%),radial-gradient(500px 600px at 80% 90%,#2d7ff922 0%,#05070c00 70%)}
+#s08 .fondo .floor{height:38%}
+#s08 .opts{flex-direction:column;align-items:center;gap:16px}
+#s08 .opt{width:860px;padding:16px 26px}
+#s08 .opt b{font-size:38px}
+#s08 .bar span{width:200px;font-size:28px}
+#s08 .bar i{height:16px;width:calc(var(--n) * 5.4px)}
+#s08 .fams{gap:12px}
+#s08 .fams .chip{font-size:28px}
+#s08 .gr span{width:190px;font-size:28px}
+#s08 .vz .vl{font-size:26px}
+/* s08 ← ep03 */
+#s08 .plan{width:960px;padding:22px}
+#s08 .gr span{width:150px}
+#s08 .dias{margin-left:170px;font-size:22px}
+#s08 .evs{flex-direction:column;align-items:center;gap:14px}
+#s08 .uno{width:860px}
+#s08 .uno svg{width:780px}
+#s08 .mts{flex-direction:column;align-items:center}
+#s08 .mts .chip{font-size:30px}
+#s08 .cont{flex-direction:column;align-items:center;gap:0}
+#s08 .cont b{min-width:0;text-align:center}
+#s08 .mcw svg{width:900px}
+#s08 .rangos{width:960px;padding:26px}
+#s08 .leyenda{margin-left:0;font-size:22px}
+#s08 .rangos .rg{flex-direction:column;align-items:stretch;gap:10px}
+#s08 .rangos .rg>span{text-align:left}
+#s08 .caps{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+#s08 .sens{width:960px}
+#s08 .sens .bar{flex-direction:column;align-items:flex-start;gap:6px}
+#s08 .sens .bar span{width:auto}
+#s08 .sens .bar i{width:calc(var(--n) * 8.6px)}
+#s08 .oi{font-size:34px}
+#s08 .aguanta{flex-direction:column;align-items:center;gap:18px}
+#s08 .aguanta .card{width:760px}
+#s08 .rt{flex:none;height:50px}
+#s08 .sorteo{flex-wrap:wrap}
+#s08 .leyenda{margin-right:0}
+#s08 .leyenda .pq{position:static}
+#s08 .rangos .rg b.pq{width:auto;text-align:left;font-size:34px}
+#s08 .caps{grid-template-columns:1fr 1fr}
+#s08 .leyenda .pq{width:auto}
+#s08 .mcw svg{width:900px}
+/* s13 ← base vertical */
+#s13 .st{padding:220px 60px 330px;gap:46px}
+#s13 .kick{left:60px;top:110px;font-size:24px;letter-spacing:6px}
+#s13 .h{font-size:92px}
+#s13 .h.xl{font-size:120px}
+#s13 .h.md{font-size:76px}
+#s13 .cap{bottom:200px}
+#s13 .cap span.l{max-width:960px;font-size:46px}
+#s13 .fondo .glow{background:radial-gradient(700px 900px at 50% 45%,#12305e55 0%,#05070c00 70%),radial-gradient(500px 600px at 80% 90%,#2d7ff922 0%,#05070c00 70%)}
+#s13 .fondo .floor{height:38%}
+#s13 .opts{flex-direction:column;align-items:center;gap:16px}
+#s13 .opt{width:860px;padding:16px 26px}
+#s13 .opt b{font-size:38px}
+#s13 .bar span{width:200px;font-size:28px}
+#s13 .bar i{height:16px;width:calc(var(--n) * 5.4px)}
+#s13 .fams{gap:12px}
+#s13 .fams .chip{font-size:28px}
+#s13 .gr span{width:190px;font-size:28px}
+#s13 .vz .vl{font-size:26px}
+/* s13 ← ep04 */
+#s13 .parte{font-size:28px}
+#s13 .par2{flex-direction:column}
+#s13 .par2 .card{width:760px}
+#s13 .enlace{width:20px;height:120px;transform:rotate(90deg) scale(0.6)}
+#s13 .planta{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+#s13 .planta .flecha{display:none}
+#s13 .eq{width:440px}
+#s13 .dos{flex-direction:column;gap:14px}
+#s13 .mod{width:860px}
+#s13 .pas{flex-direction:column;gap:6px}
+#s13 .pas .flecha{transform:rotate(90deg)}
+#s13 .alts{flex-direction:column;gap:14px}
+#s13 .alt{width:940px;padding:14px 22px;gap:8px}
+#s13 .alt .gantt{gap:8px}
+#s13 .alt .gt{height:30px}
+#s13 .verbos{flex-direction:column;align-items:center;gap:20px}
+#s13 .nomueve{flex-direction:column;width:860px}
+#s13 .cita{width:960px}
+#s13 .cita p{font-size:50px}
+#s13 .semana{flex-direction:column;width:960px}
+#s13 .semana svg{width:880px}
+#s13 .ords{width:880px}
+#s13 .enlace{display:none}
+#s13 .par2{gap:24px}
+#s13 .semana{width:960px}
+#s13 .blk{font-size:20px}
+/* s12 ← base vertical */
+#s12 .st{padding:220px 60px 330px;gap:46px}
+#s12 .kick{left:60px;top:110px;font-size:24px;letter-spacing:6px}
+#s12 .h{font-size:92px}
+#s12 .h.xl{font-size:120px}
+#s12 .h.md{font-size:76px}
+#s12 .cap{bottom:200px}
+#s12 .cap span.l{max-width:960px;font-size:46px}
+#s12 .fondo .glow{background:radial-gradient(700px 900px at 50% 45%,#12305e55 0%,#05070c00 70%),radial-gradient(500px 600px at 80% 90%,#2d7ff922 0%,#05070c00 70%)}
+#s12 .fondo .floor{height:38%}
+#s12 .opts{flex-direction:column;align-items:center;gap:16px}
+#s12 .opt{width:860px;padding:16px 26px}
+#s12 .opt b{font-size:38px}
+#s12 .bar span{width:200px;font-size:28px}
+#s12 .bar i{height:16px;width:calc(var(--n) * 5.4px)}
+#s12 .fams{gap:12px}
+#s12 .fams .chip{font-size:28px}
+#s12 .gr span{width:190px;font-size:28px}
+#s12 .vz .vl{font-size:26px}
+/* s12 ← ep05 */
+#s12 .flujo5{flex-direction:column;gap:14px}
+#s12 .flujo5 .linea{display:none}
+#s12 .paso{width:760px;flex-direction:row;justify-content:center;gap:20px;padding:16px}
+#s12 .f-t{font-size:64px}
+#s12 .op{font-size:34px;white-space:normal}
+#s12 .dos{flex-direction:column;align-items:center;gap:22px}
+#s12 .osb,#s12 .calc{width:900px}
+#s12 .rgs{flex-direction:column;align-items:center}
+#s12 .tiempos{width:960px}
+#s12 .tiempos .bar{flex-direction:column;align-items:flex-start;gap:4px}
+#s12 .tiempos .bar span{width:auto}
+#s12 .tiempos .bar i{width:calc(var(--n) * 8.8px)}
+#s12 .espera{width:900px}
+#s12 #op5 .opt{width:900px}
+#s12 .recibo{width:960px}
+#s12 .recibo .ln{flex-direction:column;gap:4px}
+#s12 .sig{flex-direction:column;align-items:center}
+#s12 .sig .chip{white-space:normal}
+/* s11 ← base vertical */
+#s11 .st{padding:220px 60px 330px;gap:46px}
+#s11 .kick{left:60px;top:110px;font-size:24px;letter-spacing:6px}
+#s11 .h{font-size:92px}
+#s11 .h.xl{font-size:120px}
+#s11 .h.md{font-size:76px}
+#s11 .cap{bottom:200px}
+#s11 .cap span.l{max-width:960px;font-size:46px}
+#s11 .fondo .glow{background:radial-gradient(700px 900px at 50% 45%,#12305e55 0%,#05070c00 70%),radial-gradient(500px 600px at 80% 90%,#2d7ff922 0%,#05070c00 70%)}
+#s11 .fondo .floor{height:38%}
+#s11 .opts{flex-direction:column;align-items:center;gap:16px}
+#s11 .opt{width:860px;padding:16px 26px}
+#s11 .opt b{font-size:38px}
+#s11 .bar span{width:200px;font-size:28px}
+#s11 .bar i{height:16px;width:calc(var(--n) * 5.4px)}
+#s11 .fams{gap:12px}
+#s11 .fams .chip{font-size:28px}
+#s11 .gr span{width:190px;font-size:28px}
+#s11 .vz .vl{font-size:26px}
+/* s11 ← ep06 */
+#s11 .hecho{flex-direction:column;align-items:center}
+#s11 .dir{width:860px}
+#s11 .en{font-size:30px;white-space:normal}
+#s11 .metr{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+#s11 .area{width:450px}
+#s11 .rgs{flex-direction:column;align-items:center;gap:18px}
+#s11 .rg{width:800px;flex-direction:row;justify-content:center;gap:24px}
+#s11 .venn{width:960px;height:900px}
+#s11 .cir{width:520px;height:520px;left:220px;right:auto}
+#s11 .c1{top:0;align-items:center;text-align:center;justify-content:flex-start;padding:90px 60px 160px}
+#s11 .c2{top:380px;align-items:center;text-align:center;justify-content:flex-end;padding:160px 60px 90px}
+#s11 .tit{flex-direction:column;align-items:center}
+#s11 .tit .chip{white-space:normal;max-width:900px}
+#s11 .pron{width:900px}
+#s11 .cruce{flex-direction:column;gap:6px}
+#s11 .balanza{flex-direction:column;gap:14px}
+#s11 .riel{width:700px}
+#s11 #op7 .opt,#s11 #op8 .opt,#s11 #op9 .opt{width:900px}
+#s11 .arriba{flex-direction:column;gap:14px}
+#s11 .caja{width:880px;height:auto}
+#s11 .qs{gap:16px}
+#s11 .venn .uno{top:50%;bottom:auto;transform:translate(-50%,-50%)}
+#s11 .c1,#s11 .c2{padding-left:60px;padding-right:60px}
+/* s14 ← base vertical */
+#s14 .st{padding:220px 60px 330px;gap:46px}
+#s14 .kick{left:60px;top:110px;font-size:24px;letter-spacing:6px}
+#s14 .h{font-size:92px}
+#s14 .h.xl{font-size:120px}
+#s14 .h.md{font-size:76px}
+#s14 .cap{bottom:200px}
+#s14 .cap span.l{max-width:960px;font-size:46px}
+#s14 .fondo .glow{background:radial-gradient(700px 900px at 50% 45%,#12305e55 0%,#05070c00 70%),radial-gradient(500px 600px at 80% 90%,#2d7ff922 0%,#05070c00 70%)}
+#s14 .fondo .floor{height:38%}
+#s14 .opts{flex-direction:column;align-items:center;gap:16px}
+#s14 .opt{width:860px;padding:16px 26px}
+#s14 .opt b{font-size:38px}
+#s14 .bar span{width:200px;font-size:28px}
+#s14 .bar i{height:16px;width:calc(var(--n) * 5.4px)}
+#s14 .fams{gap:12px}
+#s14 .fams .chip{font-size:28px}
+#s14 .gr span{width:190px;font-size:28px}
+#s14 .vz .vl{font-size:26px}
+/* s14 ← ep07 */
+#s14 .cal .dias span{width:160px}
+#s14 .ger{width:900px}
+#s14 .resu{flex-direction:column;align-items:center;gap:18px}
+#s14 .rs{width:880px}
+#s14 .expl{width:960px}
+#s14 .expl b{font-size:34px}
+#s14 .rng{width:220px}
+#s14 .vline{flex-direction:column;gap:40px}
+#s14 .vline svg{display:none}
+#s14 .vn{width:600px}
+#s14 .comp{width:900px}
+#s14 .comp .bar i{width:calc(var(--n) * 8px)}
+#s14 .ops{flex-direction:column;align-items:center;gap:20px}
+#s14 .op{width:620px}
+#s14 .fondo-red .red{width:1900px;transform:rotate(90deg)}
+#s14 .anillos{transform:scale(1.15);margin:120px 0 80px}
+#s14 #ml0{left:-10px;top:-150px}
+#s14 #ml1{right:-10px;top:-150px;left:auto}
+#s14 #ml2{left:80px;top:590px}
+#s14 .jps{margin-top:200px}
+/* s15 ← base vertical */
+#s15 .st{padding:220px 60px 330px;gap:46px}
+#s15 .kick{left:60px;top:110px;font-size:24px;letter-spacing:6px}
+#s15 .h{font-size:92px}
+#s15 .h.xl{font-size:120px}
+#s15 .h.md{font-size:76px}
+#s15 .cap{bottom:200px}
+#s15 .cap span.l{max-width:960px;font-size:46px}
+#s15 .fondo .glow{background:radial-gradient(700px 900px at 50% 45%,#12305e55 0%,#05070c00 70%),radial-gradient(500px 600px at 80% 90%,#2d7ff922 0%,#05070c00 70%)}
+#s15 .fondo .floor{height:38%}
+#s15 .opts{flex-direction:column;align-items:center;gap:16px}
+#s15 .opt{width:860px;padding:16px 26px}
+#s15 .opt b{font-size:38px}
+#s15 .bar span{width:200px;font-size:28px}
+#s15 .bar i{height:16px;width:calc(var(--n) * 5.4px)}
+#s15 .fams{gap:12px}
+#s15 .fams .chip{font-size:28px}
+#s15 .gr span{width:190px;font-size:28px}
+#s15 .vz .vl{font-size:26px}
+/* s15 ← ep07 */
+#s15 .cal .dias span{width:160px}
+#s15 .ger{width:900px}
+#s15 .resu{flex-direction:column;align-items:center;gap:18px}
+#s15 .rs{width:880px}
+#s15 .expl{width:960px}
+#s15 .expl b{font-size:34px}
+#s15 .rng{width:220px}
+#s15 .vline{flex-direction:column;gap:40px}
+#s15 .vline svg{display:none}
+#s15 .vn{width:600px}
+#s15 .comp{width:900px}
+#s15 .comp .bar i{width:calc(var(--n) * 8px)}
+#s15 .ops{flex-direction:column;align-items:center;gap:20px}
+#s15 .op{width:620px}
+#s15 .fondo-red .red{width:1900px;transform:rotate(90deg)}
+#s15 .anillos{transform:scale(1.15);margin:120px 0 80px}
+#s15 #ml0{left:-10px;top:-150px}
+#s15 #ml1{right:-10px;top:-150px;left:auto}
+#s15 #ml2{left:80px;top:590px}
+#s15 .jps{margin-top:200px}
+/* Ajustes propios del resumen en vertical */
+#s03 .mot{white-space:normal;max-width:900px;font-size:30px}
+#s06 .pobw svg{width:900px}
+#s07 .mcw svg{width:900px}
+#s08 .robu{flex-direction:column;align-items:center;gap:12px}
+#s09 .nogana{font-size:66px}
+#s10 .trio{flex-direction:column;align-items:center}
+#s10 .nt{white-space:normal;max-width:900px}
+#s11 .ff{font-size:96px}
+#s11 .metr{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+#s11 .area{width:450px}
+#s11 .neg{white-space:normal;max-width:900px;font-size:30px}
+#s11 .capaB{gap:22px}
+#s11 .pron{width:900px}
+#s11 .balanza{font-size:26px}
+#s12 .fp{font-size:110px}
+#s12 .osd,#s12 .op{white-space:normal;max-width:900px}
+#s12 .recibo{width:960px}
+#s12 .tiempos .bar{flex-direction:row;align-items:center}
+#s12 .tiempos .bar span{width:280px}
+#s12 .tiempos .bar i{width:calc(var(--n) * 6px)}
+#s13 .fi{font-size:110px}
+#s13 .par2{flex-direction:column;gap:24px}
+#s13 .par2 .card{width:760px}
+#s13 .enlace{display:none}
+#s14 .cal .dias span{width:150px}
+#s14 .vers{flex-wrap:wrap}
+#s15 .tres{flex-wrap:wrap}
+#s15 .nd{font-size:104px}
+

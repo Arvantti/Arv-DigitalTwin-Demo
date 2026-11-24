@@ -1,0 +1,28 @@
+/* Ajustes propios del resumen */
+#s03 .st{gap:28px}
+#s03 .mot{font-size:30px;letter-spacing:1px}
+#s06 .pobw svg{width:1100px;height:auto}
+#s07 .st{gap:30px}
+#s07 .m-t{transform-origin:50% 50%}
+#s07 .mcw svg{width:1050px;height:auto}
+#s08 .st{gap:30px}
+#s08 .robu{gap:20px}#s08 .robu .chip{font-size:30px}
+#s09 .nogana{color:#fff}
+#s09 .capaB{gap:34px}
+#s10 .trio{gap:20px}#s10 .nt{font-size:30px}
+#s11 .ff{font-size:96px}
+#s11 .capaA{gap:28px}
+#s11 .capaB{gap:26px}
+#s11 .pron{width:1100px;height:auto}
+#s11 .neg{font-size:32px}
+#s12 .osd{font-size:28px}
+#s12 .capaB{gap:26px}
+#s12 .recibo{width:1000px}
+#s13 .rgp{font-size:30px}
+#s13 .par2{align-items:center;gap:0}
+#s14 .cal{padding:16px 26px}
+#s14 .capaB{gap:30px}
+#s14 .vers{gap:16px}#s14 .vers .chip{font-size:28px}
+#s15 .st{gap:34px}
+#s15 .tres{gap:16px}#s15 .tres .chip{font-size:30px}
+#s15 .nd{font-size:120px}

@@ -1,0 +1,1 @@
+Fractal Finance, en Arvantti OS Enterprise, calcula margen, flujo de caja, capital de trabajo y liquidez. Con la demanda estimada desde los históricos de tu ERP, el sistema de gestión de tu empresa, y la capacidad real de la planta, te muestra qué fabricar por adelantado y qué solo bajo pedido, y te prepara para negociar con tus proveedores.

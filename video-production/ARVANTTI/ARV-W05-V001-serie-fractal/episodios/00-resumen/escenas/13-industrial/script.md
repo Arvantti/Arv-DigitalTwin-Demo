@@ -1,0 +1,1 @@
+Y Fractal Industrial va en el gemelo digital, la copia viva de tu planta. Con tus reglas de producción compara alternativas y muestra dónde se forma el cuello de botella. El gemelo solo observa, simula y recomienda: no mueve nada en la planta.

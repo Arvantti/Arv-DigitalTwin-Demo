@@ -1,0 +1,1 @@
+Así cada alternativa se vuelve un rango de resultados: lo esperado, un escenario pesimista, uno optimista y la probabilidad de cumplir la entrega. Y se ve qué tan robusta es: cuánto varía y qué tan malos son sus peores escenarios.

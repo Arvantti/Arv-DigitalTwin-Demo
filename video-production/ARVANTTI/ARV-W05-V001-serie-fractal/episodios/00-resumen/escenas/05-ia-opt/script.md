@@ -1,0 +1,1 @@
+Para buscar alternativas combina cinco familias de métodos, cada una con su papel. La inteligencia artificial ayuda a entender el problema, formular escenarios e interpretar resultados. La optimización matemática busca planes que mejoren tus objetivos sin romper ninguna restricción.

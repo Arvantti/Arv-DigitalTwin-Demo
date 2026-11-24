@@ -1,0 +1,1 @@
+Fractal Process es el optimizador de Arvantti OS, el sistema operativo empresarial para la IA. Analiza el flujo del pedido, muestra dónde se pierde el tiempo y cómo asignar tareas, personas y recursos. Y cada recomendación queda con su comprobante.

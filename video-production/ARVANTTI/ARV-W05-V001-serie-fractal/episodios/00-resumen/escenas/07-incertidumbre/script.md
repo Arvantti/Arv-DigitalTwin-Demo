@@ -1,0 +1,1 @@
+Y como un plan perfecto en papel puede fallar el martes, los métodos estocásticos representan con probabilidades lo que no se sabe con certeza. La simulación Montecarlo repite el cálculo muchas veces, cada vez con valores sorteados según su probabilidad.

@@ -1,0 +1,1 @@
+Cuando hay miles de formas de producir, los algoritmos genéticos y evolutivos exploran el espacio de soluciones: seleccionan, recombinan y mutan planes, generación tras generación. Es optimización evolutiva, no una red neuronal.

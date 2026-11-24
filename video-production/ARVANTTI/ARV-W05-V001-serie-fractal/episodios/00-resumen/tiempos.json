@@ -1,0 +1,130 @@
+[
+ {
+  "id": "pedido",
+  "start": 0,
+  "voiceAt": 1.4,
+  "voz": 7,
+  "dur": 9.2,
+  "real": true
+ },
+ {
+  "id": "areas",
+  "start": 9.2,
+  "voiceAt": 9.5,
+  "voz": 7,
+  "dur": 8,
+  "real": true
+ },
+ {
+  "id": "fractal",
+  "start": 17.2,
+  "voiceAt": 17.5,
+  "voz": 11.15,
+  "dur": 12.35,
+  "real": true
+ },
+ {
+  "id": "reglas",
+  "start": 29.56,
+  "voiceAt": 29.86,
+  "voz": 9.56,
+  "dur": 10.56,
+  "real": true
+ },
+ {
+  "id": "iaopt",
+  "start": 40.12,
+  "voiceAt": 40.42,
+  "voz": 16.51,
+  "dur": 17.61,
+  "real": true
+ },
+ {
+  "id": "evol",
+  "start": 57.73,
+  "voiceAt": 58.03,
+  "voz": 14.84,
+  "dur": 15.94,
+  "real": true
+ },
+ {
+  "id": "incert",
+  "start": 73.66,
+  "voiceAt": 73.96,
+  "voz": 15.23,
+  "dur": 16.33,
+  "real": true
+ },
+ {
+  "id": "rango",
+  "start": 89.99,
+  "voiceAt": 90.29,
+  "voz": 14.68,
+  "dur": 15.78,
+  "real": true
+ },
+ {
+  "id": "objetivos",
+  "start": 105.77,
+  "voiceAt": 106.07,
+  "voz": 12.36,
+  "dur": 13.46,
+  "real": true
+ },
+ {
+  "id": "modulos",
+  "start": 119.23,
+  "voiceAt": 119.53,
+  "voz": 10.27,
+  "dur": 11.37,
+  "real": true
+ },
+ {
+  "id": "finance",
+  "start": 130.6,
+  "voiceAt": 130.9,
+  "voz": 20.51,
+  "dur": 21.61,
+  "real": true
+ },
+ {
+  "id": "process",
+  "start": 152.2,
+  "voiceAt": 152.5,
+  "voz": 15.39,
+  "dur": 16.49,
+  "real": true
+ },
+ {
+  "id": "industrial",
+  "start": 168.69,
+  "voiceAt": 168.99,
+  "voz": 15.07,
+  "dur": 16.17,
+  "real": true
+ },
+ {
+  "id": "miercoles",
+  "start": 184.86,
+  "voiceAt": 185.26,
+  "voz": 17.95,
+  "dur": 19.15,
+  "real": true
+ },
+ {
+  "id": "decide",
+  "start": 204.01,
+  "voiceAt": 204.31,
+  "voz": 7.24,
+  "dur": 8.44,
+  "real": true
+ },
+ {
+  "id": "cierre",
+  "start": 212.44,
+  "voiceAt": 213.34,
+  "voz": 5.25,
+  "dur": 10.65,
+  "real": true
+ }
+]

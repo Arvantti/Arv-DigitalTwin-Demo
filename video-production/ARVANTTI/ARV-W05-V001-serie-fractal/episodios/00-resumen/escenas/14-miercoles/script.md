@@ -1,0 +1,1 @@
+Miércoles. La respuesta completa está sobre la mesa: un anticipo alivia la caja, el material se pide el mismo día y la planta alcanza si partimos el pedido. Fractal explica qué reglas respetó, qué datos usó y cuánto riesgo tiene cada opción. Y cada escenario queda guardado con su versión.

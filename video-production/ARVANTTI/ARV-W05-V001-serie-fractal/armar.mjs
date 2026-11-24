@@ -21,7 +21,7 @@ const EPDIR = path.join(HERE, "episodios", EP);
 const FPS = 25;
 const VERT = process.env.FORMATO === "vertical";
 const W = VERT ? 1080 : 1920, H = VERT ? 1920 : 1080;
-const MUSICA = path.join(HERE, "assets/clips/musica-serie.mp3");
+const MUSICA = path.join(HERE, process.env.MUSICA || "assets/clips/musica-serie.mp3");
 const MUSICA_LARGA = path.join(HERE, "assets/clips/musica-serie-larga.mp3");
 
 const { ESCENAS, componerEpisodio } = await import(pathToFileURL(path.join(EPDIR, "escenas.mjs")).href);
@@ -44,7 +44,7 @@ function paraVoz(t) {
   }
   return { texto: out, idx };
 }
-const VOICE_SETTINGS = { stability: 0.5, similarity_boost: 0.85, style: 0, speed: 1, use_speaker_boost: true };
+const VOICE_SETTINGS = { stability: 0.5, similarity_boost: 0.85, style: 0, speed: Number(process.env.VOZ_SPEED || 1), use_speaker_boost: true };
 const modelo = () => process.env.ELEVENLABS_MODEL_ID || "eleven_v4";
 const hash = (s) => crypto.createHash("sha256").update(s).digest("hex").slice(0, 16);
 function credenciales() {
@@ -88,9 +88,9 @@ async function voz() {
 }
 
 async function musica() {
-  if (fs.existsSync(MUSICA)) return console.log("Ya existe assets/clips/musica-serie.mp3.");
+  if (fs.existsSync(MUSICA)) return console.log(`Ya existe ${path.relative(HERE, MUSICA)}.`);
   const prompt = fs.readFileSync(path.join(HERE, "musica-prompt.txt"), "utf8").trim();
-  const ms = 100000;
+  const ms = Number(process.env.MUSICA_MS || 100000);
   if (!process.argv.includes("--enviar")) return console.log(`ElevenLabs Music recibirá (${ms} ms):\n${prompt}\nPara enviarlo: agrega --enviar`);
   const { apiKey } = credenciales();
   const res = await fetch("https://api.elevenlabs.io/v1/music?output_format=mp3_44100_128", {
@@ -101,7 +101,7 @@ async function musica() {
   if (!res.ok) throw new Error(`Música: ElevenLabs respondió HTTP ${res.status}; respuesta omitida por seguridad.`);
   fs.mkdirSync(path.dirname(MUSICA), { recursive: true });
   fs.writeFileSync(MUSICA, Buffer.from(await res.arrayBuffer()));
-  console.log(`musica-serie.mp3: ${duracion(MUSICA).toFixed(1)} s`);
+  console.log(`${path.basename(MUSICA)}: ${duracion(MUSICA).toFixed(1)} s`);
 }
 function duracion(f) {
   const r = spawnSync("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", f], { encoding: "utf8" });
@@ -247,7 +247,7 @@ function componer() {
 
 function render(v = "v001") {
   fs.mkdirSync(path.join(HERE, "out"), { recursive: true });
-  const out = path.join(HERE, `out/fractal-${EP}-${VERT ? "vertical" : "horizontal"}-${v}.mp4`);
+  const out = path.join(HERE, `out/fractal-${EP.replace(/^00-/, "")}-${VERT ? "vertical" : "horizontal"}-${v}.mp4`);
   execFileSync("pnpm", ["dlx", "hyperframes@0.9.9", "render", "-o", out, "--fps", String(FPS), "--quality", process.env.QUALITY || "high", "--video-frame-format", "png", ...(process.env.HF_ARGS ? process.env.HF_ARGS.split(" ") : [])], { cwd: VERT ? path.join(EPDIR, "vertical") : EPDIR, stdio: "inherit" });
   console.log(out);
 }
