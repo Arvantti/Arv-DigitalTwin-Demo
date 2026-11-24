@@ -9,6 +9,8 @@ import math
 import os
 import sys
 import time
+from contextvars import ContextVar
+from functools import wraps
 from pathlib import Path
 from typing import Any
 from urllib.error import HTTPError, URLError
@@ -22,7 +24,43 @@ from fastapi.middleware.cors import CORSMiddleware
 
 ROOT = Path(__file__).resolve().parents[4]
 sys.path.insert(0, str(ROOT))
+from cosimulation import progress  # noqa: E402
 from fractal.hydraulics.runtime.mpc import project_24h  # noqa: E402
+
+_calculation_id: ContextVar[str | None] = ContextVar("calculation_id", default=None)
+
+
+def track_calculation(function):
+    @wraps(function)
+    def tracked(payload, request):
+        key = payload.get("progress_id")
+        if key is not None and (not isinstance(key, str) or len(key) != 36 or any(c not in "0123456789abcdef-" for c in key)):
+            raise HTTPException(422, "progress_id debe ser un UUID aleatorio")
+        token = _calculation_id.set(key)
+        if key:
+            progress.put(key + ":scope", {"plant_id": payload.get("plant_id"), "session_id": payload.get("session_id")})
+            progress.put(key, {"status": "running", "phase": "Leyendo instantánea y perfil", "percent": None})
+        try:
+            result = function(payload, request)
+            if key:
+                observed = progress.get(key) or {}
+                progress.put(key, {**observed, "status": "succeeded", "phase": "Resultado guardado", "percent": 100})
+            return result
+        except Exception:
+            if key:
+                progress.put(key, {**(progress.get(key) or {}), "status": "failed", "phase": "Cálculo interrumpido"})
+            raise
+        finally:
+            _calculation_id.reset(token)
+    return tracked
+
+
+def observe_job(job: dict[str, Any]) -> None:
+    key = _calculation_id.get()
+    if key and isinstance(job.get("progress"), dict):
+        percent = job["progress"].get("percent")
+        progress.put(key, {**job["progress"], "percent": min(99, percent) if percent is not None else None})
+
 
 SUPPORTED_OBJECTIVE_ID = "OBJ-PRESSURE-MIN"
 
@@ -33,6 +71,20 @@ app.add_middleware(
     allow_methods=["GET", "POST"],
     allow_headers=["content-type"],
 )
+
+
+@app.post("/studies/progress")
+def calculation_progress(payload: dict[str, Any]) -> dict[str, Any]:
+    progress_id = payload.get("progress_id")
+    if not isinstance(progress_id, str) or len(progress_id) != 36:
+        raise HTTPException(422, "progress_id inválido")
+    scope = progress.get(progress_id + ":scope")
+    if not scope or scope != {"plant_id": payload.get("plant_id"), "session_id": payload.get("session_id")}:
+        raise HTTPException(404, "progreso no disponible")
+    observed = progress.get(progress_id)
+    if observed is None:
+        raise HTTPException(404, "progreso no disponible")
+    return observed
 
 
 @app.get("/health")
@@ -63,6 +115,7 @@ def submit_optimization_job(payload: dict[str, Any]) -> dict[str, Any]:
         while time.monotonic() < deadline:
             with urlopen(f"{origin}/v2/jobs/{job_id}", timeout=10) as response:  # noqa: S310
                 job = json.load(response)
+            observe_job(job)
             if job.get("status") == "succeeded" and isinstance(job.get("result"), dict):
                 return {"job_id": job_id, **job["result"]}
             if job.get("status") in {"failed", "blocked"}:
@@ -180,6 +233,7 @@ def submit_cosimulation_job(payload: dict[str, Any]) -> dict[str, Any]:
                 job = json.load(response)
             if not isinstance(job, dict):
                 raise HTTPException(502, "Cosimulation Engine devolvió un estado inválido")
+            observe_job(job)
             if job.get("status") == "succeeded" and isinstance(job.get("result"), dict):
                 return {"job_id": job_id, **job["result"]}
             if job.get("status") in {"failed", "blocked"}:
@@ -315,6 +369,7 @@ def record_comparison_status(
 
 
 @app.post("/studies/cosimulation/from-plc")
+@track_calculation
 def cosimulation_from_plc(payload: dict[str, Any], request: Request) -> dict[str, Any]:
     """Calcula una trayectoria cosimulada desde datos PLC guardados; no altera el PLC."""
     plant_id, session_id = payload.get("plant_id"), payload.get("session_id")
@@ -524,6 +579,7 @@ def rerun_saved_study(payload: dict[str, Any], request: Request) -> dict[str, An
 
 
 @app.post("/studies/horizon/from-plc")
+@track_calculation
 def horizon_from_plc(payload: dict[str, Any], request: Request) -> dict[str, Any]:
     """Lee estado y perfil persistido de la misma sesión; ignora copias de navegador."""
     session_id = payload.get("session_id")
@@ -732,7 +788,9 @@ def _horizon_study(payload: dict[str, Any], *, publish: bool, plc_token: str | N
         hours = optimization.get("hours", [])
     else:
         hours = project_24h(
-            tags, profile, study_type, objective_id, target_pressure_mca=float(target_pressure) if target_pressure is not None else None
+            tags, profile, study_type, objective_id, target_pressure_mca=float(target_pressure) if target_pressure is not None else None,
+            **({"on_hour_completed": progress.hourly(_calculation_id.get(), "Evaluando perfil Fractal", 24)}
+               if _calculation_id.get() else {}),
         )
     draft_feasible = bool(optimization and optimization.get("requires_operator_acceptance"))
     result = {

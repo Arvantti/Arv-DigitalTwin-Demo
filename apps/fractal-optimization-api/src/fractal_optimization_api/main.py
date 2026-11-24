@@ -15,6 +15,7 @@ from fastapi import BackgroundTasks, FastAPI, HTTPException
 
 ROOT = Path(__file__).resolve().parents[4]
 sys.path.insert(0, str(ROOT))
+from cosimulation import progress  # noqa: E402
 from fractal.optimization.engine import JOB_CONTRACT_VERSION, OBJECTIVE_ID, optimize_job, profile_fingerprint  # noqa: E402
 
 app = FastAPI(title="Fractal Optimization API", version="1.0.0")
@@ -50,6 +51,7 @@ def _job_row(row: sqlite3.Row) -> dict[str, Any]:
         "updated_at": row["updated_at"],
         "result": json.loads(row["result_json"]) if row["result_json"] else None,
         "error": row["error"],
+        "progress": progress.get(row["job_id"]),
     }
 
 

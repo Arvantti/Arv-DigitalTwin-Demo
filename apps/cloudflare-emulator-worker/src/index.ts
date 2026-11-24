@@ -355,7 +355,8 @@ async function proxyFractal(
     return withCors(Response.json({ detail: "Instantaneous optimization is not enabled in the public demo" }, { status: 409 }), request, env);
   }
   const savedStudyRerun = url.pathname === "/fractal/studies/saved/rerun";
-  const plcStudyRoute = /^\/fractal\/studies\/(horizon|profile-preview|cosimulation)\/from-plc$/.test(url.pathname);
+  const plcStudyRoute = /^\/fractal\/studies\/(horizon|profile-preview|cosimulation)\/from-plc$/.test(url.pathname)
+    || url.pathname === "/fractal/studies/progress";
   if (!(url.pathname === "/fractal/health" && request.method === "GET") && !((plcStudyRoute || savedStudyRerun) && request.method === "POST")) {
     return withCors(Response.json({ detail: "Fractal route is not enabled in the public demo" }, { status: 404 }), request, env);
   }
