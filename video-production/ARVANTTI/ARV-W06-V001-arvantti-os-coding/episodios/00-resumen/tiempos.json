@@ -80,41 +80,49 @@
   "real": false
  },
  {
-  "id": "flujos",
+  "id": "fractal",
   "start": 161.2,
   "voiceAt": 161.5,
+  "voz": 19.6,
+  "dur": 21,
+  "real": false
+ },
+ {
+  "id": "flujos",
+  "start": 182.2,
+  "voiceAt": 182.5,
   "voz": 24,
   "dur": 25.4,
   "real": false
  },
  {
   "id": "dirige",
-  "start": 186.6,
-  "voiceAt": 186.9,
+  "start": 207.6,
+  "voiceAt": 207.9,
   "voz": 14,
   "dur": 15.4,
   "real": false
  },
  {
   "id": "receipts",
-  "start": 202,
-  "voiceAt": 202.3,
+  "start": 223,
+  "voiceAt": 223.3,
   "voz": 21.2,
   "dur": 22.6,
   "real": false
  },
  {
   "id": "figura",
-  "start": 224.6,
-  "voiceAt": 224.9,
+  "start": 245.6,
+  "voiceAt": 245.9,
   "voz": 11.2,
   "dur": 13.1,
   "real": false
  },
  {
   "id": "firma",
-  "start": 237.7,
-  "voiceAt": 238.3,
+  "start": 258.7,
+  "voiceAt": 259.3,
   "voz": 8,
   "dur": 12.1,
   "real": false

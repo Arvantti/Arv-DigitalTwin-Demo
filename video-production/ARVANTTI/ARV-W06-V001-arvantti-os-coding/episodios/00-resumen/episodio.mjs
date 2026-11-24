@@ -114,6 +114,13 @@ export function componer(c) {
     { h: card({ k: "reparto", t: "Tarea → Terminal", c: LAV }), cls: "w3", at: "se reparten", fx: "pop" },
   ] }] });
 
+  escena(c, S.fractal, { panels: [{ items: [
+    { h: card({ k: "Optimización y apoyo a la decisión", t: "Fractal Process", p: "En el núcleo de Arvantti OS", c: LAV, cls: "ctr" }), cls: "w1 ctr", at: "Fractal Process", fx: "pop" },
+    { h: flow(["Reglas y objetivos", "Alternativas y probabilidad", "Tú decides"], { c: LAV }), cls: "w1", at: "Primero incorpora", subs: ["Primero incorpora", "evalúa las alternativas", "para que tú decidas"] },
+    { h: card({ k: "propuesta 1", t: "Cada movimiento al instante", b: barra("probabilidad de éxito", AG.piso), c: AG.piso }), cls: "w2", at: "como las propuestas", fill: ["qué tan probable", 0.62, 1.2] },
+    { h: card({ k: "propuesta 2", t: "Consolidar por turno", b: barra("probabilidad de éxito", AG.fin), c: AG.fin }), cls: "w2", at: "como las propuestas", fill: ["qué tan probable", 0.86, 1.2] },
+  ] }] });
+
   const PASOS = ["Observar", "Planear", "Ejecutar", "Verificar", "Aprobar", "Comprobante"];
   escena(c, S.flujos, {
     panels: [
@@ -152,5 +159,5 @@ export function componer(c) {
 
   selloEp(c, S.figura, null, { mods: [0, 1, 2, 3, 4, 5], cod: true, n: 0 });
   firma(c, S.firma, { cta: ["Te acompañamos a implementarlo", "Agenda tu sesión en arvantti.tech", "Te acompañamos"] });
-  [S.titulo, S.base, S.nucleo, S.tasks, S.terminales, S.brain, S.controla, S.guardianes, S.concilio, S.flujos, S.dirige, S.receipts, S.figura, S.firma].forEach((x) => c.sweep(x.start));
+  [S.titulo, S.base, S.nucleo, S.tasks, S.terminales, S.brain, S.controla, S.guardianes, S.concilio, S.fractal, S.flujos, S.dirige, S.receipts, S.figura, S.firma].forEach((x) => c.sweep(x.start));
 }

@@ -1,0 +1,1 @@
+Y para decidir rápido, Arvantti OS trae Fractal Process, su motor de optimización y apoyo a la decisión. Primero incorpora las reglas de tu equipo; después evalúa las alternativas, como las propuestas del concilio, y qué tan probable es que cada una salga bien, para que tú decidas.
