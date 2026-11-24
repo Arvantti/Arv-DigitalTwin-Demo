@@ -1,0 +1,1 @@
+Diseñas tus propios flujos agénticos, recetas paso a paso con tus agentes y habilidades, y Arvantti los inyecta en cada asistente sin dañar su caché ni rehacer su contexto. Y en cada commit, un hook de QA, control de calidad, revisa el código y cómo funciona antes de la revisión.

@@ -1,0 +1,1 @@
+No reemplaza a Claude Code, Codex, Gemini, Copilot, OpenCode, Kimi ni a tus modelos locales: los envuelve, sin cambiar cómo trabaja cada uno. Todo pasa por la CLI de Arvantti, su línea de comandos, que es el contrato estable. En Linux, Mac o Windows, o en la nube.

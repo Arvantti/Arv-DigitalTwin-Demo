@@ -1,0 +1,1 @@
+Receipts deja un comprobante de cada acción que no se puede borrar: quién, qué, con qué IA, con qué permiso y cuándo, enlazado a su commit, su tarea y su SDD. Apoya las prácticas de ISO/IEC 42001, la norma internacional para gestionar la IA, y deja la evidencia lista para la certificación.

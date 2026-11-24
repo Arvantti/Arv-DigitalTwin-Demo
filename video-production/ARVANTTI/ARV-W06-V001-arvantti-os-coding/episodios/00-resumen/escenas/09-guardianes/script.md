@@ -1,0 +1,1 @@
+Los guardianes que tu equipo ajusta mantienen al agente en su ruta y tapan las claves. Puede programar la conexión con el ERP, el sistema de gestión de la empresa, sin ver nunca la clave: su código la usa por su nombre.

@@ -1,0 +1,1 @@
+Policy guarda las reglas que tú configuras, y los hooks, puntos de control antes y después de cada acción, hacen que se cumplan. Grants da permisos puntuales, solo para la tarea. Y subir a la rama principal espera el sí de una persona.

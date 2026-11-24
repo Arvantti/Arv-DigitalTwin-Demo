@@ -1,0 +1,114 @@
+[
+ {
+  "id": "pregunta",
+  "start": 0,
+  "voiceAt": 0.3,
+  "voz": 7.2,
+  "dur": 8.6,
+  "real": false
+ },
+ {
+  "id": "titulo",
+  "start": 8.6,
+  "voiceAt": 8.9,
+  "voz": 10,
+  "dur": 11.4,
+  "real": false
+ },
+ {
+  "id": "base",
+  "start": 20,
+  "voiceAt": 20.3,
+  "voz": 19.6,
+  "dur": 21,
+  "real": false
+ },
+ {
+  "id": "nucleo",
+  "start": 41,
+  "voiceAt": 41.3,
+  "voz": 7.2,
+  "dur": 8.6,
+  "real": false
+ },
+ {
+  "id": "tasks",
+  "start": 49.6,
+  "voiceAt": 49.9,
+  "voz": 15.6,
+  "dur": 17,
+  "real": false
+ },
+ {
+  "id": "terminales",
+  "start": 66.6,
+  "voiceAt": 66.9,
+  "voz": 17.6,
+  "dur": 19,
+  "real": false
+ },
+ {
+  "id": "brain",
+  "start": 85.6,
+  "voiceAt": 85.9,
+  "voz": 15.2,
+  "dur": 16.6,
+  "real": false
+ },
+ {
+  "id": "controla",
+  "start": 102.2,
+  "voiceAt": 102.5,
+  "voz": 17.6,
+  "dur": 19,
+  "real": false
+ },
+ {
+  "id": "guardianes",
+  "start": 121.2,
+  "voiceAt": 121.5,
+  "voz": 17.2,
+  "dur": 18.6,
+  "real": false
+ },
+ {
+  "id": "concilio",
+  "start": 139.8,
+  "voiceAt": 140.1,
+  "voz": 11.6,
+  "dur": 13,
+  "real": false
+ },
+ {
+  "id": "flujos",
+  "start": 152.8,
+  "voiceAt": 153.1,
+  "voz": 20.4,
+  "dur": 21.8,
+  "real": false
+ },
+ {
+  "id": "receipts",
+  "start": 174.6,
+  "voiceAt": 174.9,
+  "voz": 21.2,
+  "dur": 22.6,
+  "real": false
+ },
+ {
+  "id": "figura",
+  "start": 197.2,
+  "voiceAt": 197.5,
+  "voz": 11.2,
+  "dur": 13.1,
+  "real": false
+ },
+ {
+  "id": "firma",
+  "start": 210.3,
+  "voiceAt": 210.9,
+  "voz": 4.4,
+  "dur": 8.5,
+  "real": false
+ }
+]
