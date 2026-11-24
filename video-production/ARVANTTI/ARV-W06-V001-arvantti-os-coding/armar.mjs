@@ -156,7 +156,7 @@ function enPalabra(x, frag) {
 
 /** Música de la serie recortada al episodio, con compresión lateral bajo la voz y fundido al final. */
 function mezclaMusica(escenas, total) {
-  const src = path.join(HERE, "assets/clips/musica-serie.mp3");
+  const src = path.join(HERE, process.env.MUSICA || "assets/clips/musica-serie.mp3");
   if (!fs.existsSync(src)) return null;
   const out = E("audio/musica-mezcla.mp3");
   if (VERT && fs.existsSync(out)) return "audio/musica-mezcla.mp3";
