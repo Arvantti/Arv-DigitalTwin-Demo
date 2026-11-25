@@ -18,7 +18,8 @@ const LOGO = join(HERE, "../../../shared/arvantti/branding/ArvanttiLabsLogo.png"
 const VOZ = join(HERE, "assets/voz");
 const TMP = join(HERE, "assets/tmp");
 const OUT = join(HERE, "out");
-const W = 1080, H = 1920, FPS = 25, WIN = 1080, WIN_Y = 470, PAUSA = 0.6;
+// Cada toma se muestra completa (16:9, sin recortar) en una ventana de 1080x608.
+const W = 1080, H = 1920, FPS = 25, WIN_H = 608, WIN_Y = 600, PAUSA = 0.6;
 const FONT = "/usr/share/fonts/opentype/inter/InterDisplay-Bold.otf";
 
 const guion = () => JSON.parse(readFileSync(join(HERE, "guion.json"), "utf8")).tomas;
@@ -124,15 +125,14 @@ function render(ver = "v001") {
   const piezas = plan.map((p) => {
     const out = join(TMP, `${p.id}.mp4`);
     if (p.cierre) {
-      ff(["-f", "lavfi", "-i", `color=c=0xffffff:s=${W}x${H}:r=${FPS}:d=${p.largo}`, "-loop", "1", "-i", LOGO,
-        "-filter_complex", `[1]scale=900:-1,format=rgba,drawbox=x=iw*0.645:y=0:w=iw:h=ih*0.47:color=white:t=fill,drawbox=x=iw*0.42:y=0:w=iw*0.25:h=ih*0.145:color=white:t=fill,fade=in:st=0:d=0.6:alpha=1[l];[0][l]overlay=(W-w)/2:330:shortest=1,format=yuv420p`,
+      ff(["-f", "lavfi", "-i", `color=c=0x05070c:s=${W}x${H}:r=${FPS}:d=${p.largo}`, "-loop", "1", "-i", LOGO,
+        "-filter_complex", `[1]format=rgba,geq=r='r(X,Y)':g='g(X,Y)':b='b(X,Y)':a='if(lt(alpha(X,Y),120),0,alpha(X,Y))',scale=1000:-1,fade=in:st=0:d=0.6:alpha=1[l];[0][l]overlay=(W-w)/2:330:shortest=1,format=yuv420p`,
         "-t", String(p.largo), "-c:v", "libx264", "-preset", "veryfast", "-crf", "18", out]);
       return out;
     }
-    const [x, y, s] = p.crop;
-    const ins = p.clips.flatMap((c, i) => [...(i === 0 && p.ss ? ["-ss", String(p.ss)] : []), "-i", join(CLIPS, `${c}.mp4`)]);
+        const ins = p.clips.flatMap((c, i) => [...(i === 0 && p.ss ? ["-ss", String(p.ss)] : []), "-i", join(CLIPS, `${c}.mp4`)]);
     const vel = p.vel || 1;
-    const cadena = p.clips.map((_, i) => `[${i}:v]setpts=(PTS-STARTPTS)/${vel},crop=${s}:${s}:${x}:${y},scale=${WIN}:${WIN},fps=${FPS},setsar=1[c${i}]`).join(";");
+    const cadena = p.clips.map((_, i) => `[${i}:v]setpts=(PTS-STARTPTS)/${vel},scale=${W}:${WIN_H},${p.tapar ? `drawbox=x=0:y=ih*${p.tapar}:w=iw:h=ih:color=0x05070c:t=fill,` : ""}fps=${FPS},setsar=1[c${i}]`).join(";");
     const concat = `${p.clips.map((_, i) => `[c${i}]`).join("")}concat=n=${p.clips.length}:v=1:a=0,tpad=stop_mode=clone:stop_duration=${p.largo}[v]`;
     ff([...ins, "-f", "lavfi", "-i", `color=c=0x05070c:s=${W}x${H}:r=${FPS}:d=${p.largo}`,
       "-filter_complex", `${cadena};${concat};[${p.clips.length}][v]overlay=0:${WIN_Y}:shortest=1,format=yuv420p`,
@@ -150,11 +150,11 @@ function render(ver = "v001") {
   const ev = [];
   for (const p of plan) {
     const fin = ini + p.largo;
-    const yT = p.cierre ? 1250 : 240;
-    ev.push(`Dialogue: 1,${assT(ini)},${assT(fin)},Titulo,,0,0,0,,{\\pos(540,${yT})\\fad(250,150)${p.cierre ? "\\c&H2A1A0B&" : ""}}${esc(p.titulo[0])}\\N{\\c&H${p.cierre ? "D07A1E" : "3DB5FF"}&}${esc(p.titulo[1])}`);
+    const yT = p.cierre ? 1250 : 420;
+    ev.push(`Dialogue: 1,${assT(ini)},${assT(fin)},Titulo,,0,0,0,,{\\pos(540,${yT})\\fad(250,150)}${esc(p.titulo[0])}\\N{\\c&H3DB5FF&}${esc(p.titulo[1])}`);
     for (const f of p.frases) {
       if (f.s == null) continue;
-      ev.push(`Dialogue: 2,${assT(p.inicioVoz + f.s)},${assT(p.inicioVoz + f.e + 0.15)},Sub,,0,0,0,,{\\pos(540,${p.cierre ? 1440 : WIN_Y + WIN + 50})}${esc(f.txt)}`);
+      ev.push(`Dialogue: 2,${assT(p.inicioVoz + f.s)},${assT(p.inicioVoz + f.e + 0.15)},Sub,,0,0,0,,{\\pos(540,${p.cierre ? 1440 : WIN_Y + WIN_H + 60})}${esc(f.txt)}`);
     }
     ini = fin;
   }
