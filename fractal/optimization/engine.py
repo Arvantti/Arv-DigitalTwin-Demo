@@ -121,14 +121,22 @@ def optimize_job(job: dict[str, Any]) -> dict[str, Any]:
     profile_hash = profile_fingerprint(profile)
     if job.get("profile_hash") != profile_hash:
         raise ValueError("profile_hash no coincide con el perfil operativo recibido")
+    from cosimulation import progress
     from fractal.hydraulics.runtime.mpc import project_24h
 
+    total = job.get("horizon_hours", 24)
+    key = job.get("job_id")
     hours = project_24h(
         tags, profile, study_type="optimized", objective_id=objective_id, target_pressure_mca=target_pressure_mca,
-        horizon_hours=job.get("horizon_hours", 24),
+        horizon_hours=total,
+        **({"on_hour_completed": progress.hourly(key, "Optimizando apertura VRP", total, work_total=2 * total)} if key else {}),
     )
     feasible = all(bool(frame.get("commands", {}).get("constraints_satisfied")) and bool(frame["robust"]) for frame in hours)
-    baseline = project_24h(tags, profile, study_type="baseline", horizon_hours=job.get("horizon_hours", 24))
+    baseline = project_24h(
+        tags, profile, study_type="baseline", horizon_hours=total,
+        **({"on_hour_completed": progress.hourly(key, "Verificando contra perfil base", total, offset=total, work_total=2 * total)}
+           if key else {}),
+    )
     leakage_comparison = compare_leakage(hours, baseline, target_pressure_mca=float(target_pressure_mca))
     draft_hours: dict[str, Any] = {}
     if feasible:

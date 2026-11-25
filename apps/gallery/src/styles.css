@@ -392,8 +392,13 @@ button.pick { padding: 2px 8px; font-size: 11px; }
 #triad-overlay { position:fixed; inset:0; z-index:30; pointer-events:none; color:#f8fafc; font:11px Inter,sans-serif; }
 #triad-overlay[hidden], body:has(dialog[open]) #triad-overlay { display:none; }
 /* Lecturas distribuidas junto al equipo, conectadas y sin tapar los paneles. */
-#triad-overlay:is([data-mode="history"],[data-mode="study"]) .triad-gauge { position:fixed; width:196px; min-width:0; transform:none; }
-#triad-overlay:is([data-mode="history"],[data-mode="study"]) .triad-gauge::after { display:none; }
+#triad-overlay:is([data-mode="live"],[data-mode="history"],[data-mode="study"]) .triad-gauge { position:fixed; width:248px; min-width:0; transform:none; }
+#triad-overlay:is([data-mode="live"],[data-mode="history"],[data-mode="study"]) .triad-gauge::after { display:none; }
+#model-timeline-control { display:grid; gap:8px; margin:10px 0; color:#e5efff; }
+#model-timeline-control[hidden],#forecast-hour-control[hidden] { display:none; }
+#model-timeline { width:100%; min-height:30px; accent-color:#c084fc; }
+#model-timeline-time { font:600 16px "IBM Plex Mono",monospace; }
+#model-timeline-range { font-size:11px; color:#c8bddb; }
 .lighting button svg { display:block; }
 .triad-overlay-status { position:fixed; top:82px; right:14px; max-width:min(420px,calc(100vw - 28px)); padding:8px 11px; border:1px solid #4ea7ff; background:rgba(5,10,32,.94); box-shadow:0 5px 18px #0008; }
 .triad-overlay-status strong { color:#dbeafe; font:600 9px Orbitron,Inter,sans-serif; letter-spacing:.08em; }
@@ -410,7 +415,7 @@ button.pick { padding: 2px 8px; font-size: 11px; }
 .triad-gauge h3 { margin:0 0 5px; color:#dbeafe; font:600 9px Inter,sans-serif; }
 .triad-gauge-readings { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:4px; }
 .triad-gauge-reading { min-width:0; padding:4px 3px; border-radius:4px; background:#0c1730; text-align:center; }
-.triad-gauge-reading span { display:block; color:#c5d3e6; font-size:8px; white-space:nowrap; }
+.triad-gauge-reading span { display:block; color:#c5d3e6; font-size:8px; white-space:normal; line-height:1.3; min-height:21px; }
 .triad-gauge-reading strong { display:block; margin-top:2px; font:600 10px "IBM Plex Mono",monospace; white-space:nowrap; }
 .triad-gauge-reading[data-source="emulator"] strong { color:#67e8f9; }
 .triad-gauge-reading[data-source="cosimulation"] strong { color:#fbbf24; }

@@ -48,7 +48,7 @@ from twin_runtime.spec import SpecError, load_yaml
 from .audit import audit
 from .historian import historian
 from .plc_tags import opcua_schema, plc_tags
-from .profiles import ProfileStore, commands_for_hour, current_prs_inlet_offset_mca
+from .profiles import ProfileStore, commands_for_hour, current_prs_inlet_offset_mca, normalize_profile
 from .saved_studies import saved_studies
 from .sessions import manager as session_manager
 from .studies import studies
@@ -340,6 +340,82 @@ async def start_plant_session(plant_id: str, session_id: str) -> dict[str, Any]:
         raise HTTPException(404, "sesión desconocida")
     session_manager.start(session)
     return {"id": session.id, "running": True}
+
+
+@app.post("/api/plants/{plant_id}/sessions/{session_id}/edit-active-profile")
+async def edit_active_profile(
+    plant_id: str, session_id: str, request: Request, payload: Annotated[dict[str, Any], Body()]
+) -> dict[str, Any]:
+    """Commit current/future profile edits without allowing a history rewrite.
+
+    No await inside the validated commit: session ticks/commands share this event loop.
+    Commands are tested on a copy before saving or replacing the operational plant.
+    """
+    from copy import deepcopy
+
+    session = session_manager.get(plant_id, session_id)
+    if session is None:
+        raise HTTPException(404, "sesión desconocida")
+    owner = request.headers.get("x-twin-demo-id")
+    if session.demo_client_id and session.demo_client_id != owner:
+        raise HTTPException(403, "sesión de otro usuario")
+    hour = int(session.plant.t // 3600)
+    if not session.running or hour >= 24:
+        raise HTTPException(409, "inicie o reanude una sesión dentro de sus 24 horas")
+    if session.pending_profile:
+        raise HTTPException(409, "ya hay otro perfil programado; resuelva esa programación antes de editar")
+    profile_id = session.profile_id
+    if not profile_id or profile_id.startswith("builtin-"):
+        raise HTTPException(409, "inicie con una copia editable de la plantilla")
+    if (payload.get("profile_id") != profile_id or isinstance(payload.get("expected_hour"), bool)
+            or payload.get("expected_hour") != hour):
+        raise HTTPException(409, "cambió la franja o el perfil activo; revise antes de aplicar")
+    store = ProfileStore(plant_id, owner)
+    saved = store.get(profile_id)
+    if not saved or payload.get("expected_hours") != saved["hours"] or saved["hours"] != session.profile["hours"]:
+        raise HTTPException(409, "el escenario cambió desde que empezó la edición; vuelva a cargarlo")
+    try:
+        proposed = normalize_profile({**saved, "hours": payload["hours"]})
+    except (KeyError, ValueError, TypeError) as exc:
+        raise HTTPException(422, str(exc)) from exc
+    if any(proposed["hours"].get(str(h)) != saved["hours"].get(str(h)) for h in range(hour)):
+        raise HTTPException(409, "las franjas anteriores no se pueden modificar")
+    old = saved["hours"].get(str(hour), {})
+    new = proposed["hours"].get(str(hour), {})
+    # Only changed controls are issued now; unrelated live overrides are retained.
+    changed: dict[str, Any] = {}
+    for key in set(old) | set(new):
+        if old.get(key) == new.get(key):
+            continue
+        if key not in new:
+            raise HTTPException(422, "no elimine mandos actuales; defina explícitamente su valor")
+        if isinstance(new[key], dict):
+            if set(old.get(key, {})) - set(new[key]):
+                raise HTTPException(422, "no elimine mandos actuales; defina explícitamente su valor")
+            changed[key] = {k: v for k, v in new[key].items() if old.get(key, {}).get(k) != v}
+        else:
+            changed[key] = new[key]
+    plant = deepcopy(session.plant)
+    commands = commands_for_hour({"hours": {str(hour): changed}}, hour,
+                                inlet_pressure_offset_mca=current_prs_inlet_offset_mca(plant))
+    try:
+        for item in commands:
+            equipment = plant.equipment[item["equipment"]]
+            equipment.command(item["command"], item["args"])
+            plant.events.extend(equipment.drain_events())
+    except (ValueError, KeyError) as exc:
+        raise HTTPException(422, str(exc)) from exc
+    updated = store.update(profile_id, proposed)
+    if updated is None:
+        raise HTTPException(409, "el perfil ya no existe")
+    session.profile = updated
+    session.plant = plant
+    session.applied_profile_hour = hour
+    session.invalidate_snapshot()
+    # The command log/checkpoint records the real application instant, not hour start.
+    session_manager.command(session, {"event": "active_profile_edited", "profile_id": profile_id, "commands": commands})
+    return {"profile": updated, "applied_at_t": plant.t, "current_hour": hour,
+            "applied_commands": len(commands), "future_saved": True, "previous_results_outdated": True}
 
 
 @app.post("/api/plants/{plant_id}/sessions/{session_id}/schedule-profile")
@@ -954,7 +1030,11 @@ def list_model_comparisons(plant_id: str, session_id: str, request: Request) -> 
     session = session_manager.get(plant_id, session_id)
     if session is None or (session.demo_client_id and session.demo_client_id != request.headers.get("x-twin-demo-id")):
         raise HTTPException(404, "sesión desconocida")
-    return historian.list_model_comparisons(session_id)
+    comparisons = historian.list_model_comparisons(session_id)
+    current_hash = _profile_fingerprint(session.profile) if session.profile else None
+    for comparison in comparisons:
+        comparison["profile_outdated"] = comparison.get("profile_hash") != current_hash
+    return comparisons
 
 
 @app.post("/api/plants/{plant_id}/sessions/{session_id}/comparisons/{comparison_id}/sources/{source}/status")

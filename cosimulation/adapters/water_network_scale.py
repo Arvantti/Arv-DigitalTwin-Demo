@@ -15,7 +15,7 @@ MODEL_ID = "fractal/water-network-scale-v1/quasi-steady-hourly-assumed"
 QUALITY = "assumed_quasi_steady_hourly_not_transient_validated"
 
 
-def project(request: dict[str, Any]) -> dict[str, Any]:
+def project(request: dict[str, Any], *, on_hour_completed=None) -> dict[str, Any]:
     """Adapta el solver horario existente; solo acepta su rejilla soportada de 1 h/≤24 h."""
     if request.get("contract_version") != MODEL_REQUEST_CONTRACT_VERSION:
         raise ValueError("contrato de solicitud de modelo incompatible")
@@ -56,6 +56,7 @@ def project(request: dict[str, Any]) -> dict[str, Any]:
         profile,
         study_type="baseline",
         horizon_hours=int(hours),
+        **({"on_hour_completed": on_hour_completed} if on_hour_completed is not None else {}),
     )
     forecast_frames: list[dict[str, Any]] = []
     for expected_time, frame in zip(forecast_times, projected, strict=True):

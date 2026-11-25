@@ -16,6 +16,7 @@ from fastapi import BackgroundTasks, FastAPI, HTTPException
 
 ROOT = Path(__file__).resolve().parents[4]
 sys.path.insert(0, str(ROOT))
+from cosimulation import progress  # noqa: E402
 from cosimulation.runner import JOB_CONTRACT_VERSION, profile_fingerprint, run_trajectory  # noqa: E402
 
 app = FastAPI(title="Cosimulation Engine API", version="2.0.0")
@@ -147,6 +148,16 @@ def get_job(job_id: str) -> dict[str, Any]:
         row = connection.execute("SELECT * FROM cosimulation_jobs WHERE job_id=?", (job_id,)).fetchone()
     if row is None:
         raise HTTPException(404, "trabajo desconocido")
+    observed = progress.get(job_id)
+    if row["status"] == "running":
+        from urllib.request import Request, urlopen
+        try:
+            request = Request(os.environ["COSIMULATION_MODEL_URL"].rstrip("/") + f"/v2/progress/{job_id}",
+                              headers={"authorization": "Bearer " + os.getenv("COSIMULATION_INTERNAL_TOKEN", "")})
+            with urlopen(request, timeout=2) as response:  # noqa: S310
+                observed = json.load(response)
+        except Exception:
+            pass  # A model without progress remains indeterminate, never a fabricated percentage.
     return {
         "contract_version": JOB_CONTRACT_VERSION,
         "job_id": row["job_id"],
@@ -155,4 +166,5 @@ def get_job(job_id: str) -> dict[str, Any]:
         "updated_at": row["updated_at"],
         "result": json.loads(row["result_json"]) if row["result_json"] else None,
         "error": row["error"],
+        "progress": observed,
     }

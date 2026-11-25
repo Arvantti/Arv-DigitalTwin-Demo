@@ -1492,6 +1492,9 @@ function applyMessage(msg: SimMessage, label: string): void {
   const hh = String(Math.floor(t / 3600)).padStart(2, "0");
   const mm = String(Math.floor((t % 3600) / 60)).padStart(2, "0");
   const ss = String(Math.floor(t % 60)).padStart(2, "0");
+  if (doc.plant.id === "water-network-scale-v1" && label.startsWith("PLC.") && $("water-plc-panel").hidden && $("water-history-panel").hidden) {
+    renderSnapshotGauges(msg.snapshot, msg.t, "live");
+  }
   const stopped = label === "PLC.DETENIDO";
   const paused = label === "PLC.EN PAUSA";
   $("clock").textContent = label.startsWith("TRÍADA")
@@ -1534,7 +1537,8 @@ async function connect(): Promise<void> {
     latestLiveMessage = msg as SimMessage;
     const slider = $<HTMLInputElement>("history-time");
     slider.max = String(Math.floor(msg.t / 60) * 60);
-    if (historicalTime === null && !forecastStudyId && !triadViewActive) applyMessage(msg, msg.running === false ? "PLC.DETENIDO" : msg.paused ? "PLC.EN PAUSA" : "PLC.ACTUAL");
+    if (modelTimelineFollowLive && $("forecast-panel").dataset.mode === "timeline" && $("water-plc-panel").hidden && $("water-history-panel").hidden) followModelLive(msg as SimMessage);
+    else if (historicalTime === null && !forecastStudyId && !triadViewActive) applyMessage(msg, msg.running === false ? "PLC.DETENIDO" : msg.paused ? "PLC.EN PAUSA" : "PLC.ACTUAL");
   };
   // sin API (sitio publicado): se reproduce la grabación de la operación normal
   ws.onclose = () => {
@@ -1904,10 +1908,16 @@ const TRIAD_FLOW_METRICS = [
   { label: "Caudal de bombeo", observable: "pump_flow_m3h", tag: "PLC.Pump.FlowM3h", equipment: "pumpset-main-01", variable: "flow_m3h" },
   { label: "Caudal VRP", observable: "prs_flow_m3h", tag: "PLC.PRS.FlowM3h", equipment: "prs-01", variable: "flow_m3h" },
 ];
+const TRIAD_DELIVERY_METRICS = [
+  { label: "Consumo entregado", observable: "residential_consumption_m3h", tag: "", equipment: "grid-01", variable: "consumption_m3h", unit: "m³/h" },
+  { label: "Fugas", observable: "residential_leakage_m3h", tag: "", equipment: "grid-01", variable: "leakage_m3h", unit: "m³/h" },
+  { label: "Total entregado", observable: "residential_total_m3h", tag: "", equipment: "grid-01", variable: "total", unit: "m³/h" },
+];
 const TRIAD_GAUGE_SOURCE_LABELS: Record<(typeof TRIAD_SOURCES)[number], string> = {
-  emulator: "Planta Real", cosimulation: "Cosimulador", optimization: "Fractal",
+  emulator: "Emulador (Real)", cosimulation: "Cosimulado", optimization: "Optimizado",
 };
-type TriadMetric = (typeof TRIAD_PRESSURE_METRICS)[number] | (typeof TRIAD_FLOW_METRICS)[number];
+type TriadMetric = (typeof TRIAD_PRESSURE_METRICS)[number] | (typeof TRIAD_FLOW_METRICS)[number] | (typeof TRIAD_DELIVERY_METRICS)[number];
+const metricUnit = (metric: TriadMetric): string => "unit" in metric ? metric.unit ?? "mca" : "mca";
 const TRIAD_GAUGE_POINTS: { id: string; label: string; equipment: string; lift: number; metric: TriadMetric }[] = [
   { id: "pump-discharge", label: "Descarga de bombeo", equipment: "pumpset-main-01", lift: 1.0, metric: TRIAD_PRESSURE_METRICS[0] },
   { id: "prs-outlet", label: "Salida de PRS", equipment: "prs-01", lift: 0.9, metric: TRIAD_PRESSURE_METRICS[1] },
@@ -1916,6 +1926,12 @@ const TRIAD_GAUGE_POINTS: { id: string; label: string; equipment: string; lift: 
   { id: "floor-3-outlet", label: "Salida tras válvula 3–4", equipment: "valve-between-34", lift: 0.35, metric: TRIAD_PRESSURE_METRICS[4] },
   { id: "critical-house", label: "Vivienda crítica C44", equipment: "grid-04", lift: 1.0, metric: TRIAD_PRESSURE_METRICS[5] },
 ];
+TRIAD_GAUGE_POINTS.push(
+  { id: "prs-opening", label: "Apertura VRP", equipment: "prs-01", lift: 1.2, metric: TRIAD_PRESSURE_METRICS[6] },
+  { id: "consumption", label: "Consumo entregado · toda la red", equipment: "grid-01", lift: 0.8, metric: TRIAD_DELIVERY_METRICS[0] },
+  { id: "leakage", label: "Fugas · toda la red", equipment: "grid-02", lift: 0.8, metric: TRIAD_DELIVERY_METRICS[1] },
+  { id: "delivery-total", label: "Total entregado · toda la red", equipment: "prs-01", lift: 0.5, metric: TRIAD_DELIVERY_METRICS[2] },
+);
 const gaugePositions = new Map<string, { x: number; y: number }>();
 function setupGaugeDragging(): void {
   const panel = $("triad-overlay");
@@ -1990,15 +2006,26 @@ function triadMetric(frame: TriadSourceFrame, metric: TriadMetric): number | nul
   if (typeof direct === "number" && Number.isFinite(direct)) return direct;
   const snapshot = frameSnapshot(state);
   const equipment = recordOf(snapshot?.equipment);
+  if (metric.observable.startsWith("residential_")) {
+    const sum = (variable: string, tagName: string): number | null => {
+      const values = [1, 2, 3, 4].map((level) => tags?.[`PLC.Grid.L${level}.${tagName}`] ?? recordOf(recordOf(equipment?.[`grid-0${level}`])?.variables)?.[variable]);
+      return values.every((v) => typeof v === "number" && Number.isFinite(v)) ? (values as number[]).reduce((a, b) => a + b, 0) : null;
+    };
+    const consumption = sum("consumption_m3h", "ConsumptionM3h");
+    const leakage = sum("leakage_m3h", "LeakageM3h");
+    if (metric.variable === "consumption_m3h") return consumption;
+    if (metric.variable === "leakage_m3h") return leakage;
+    return consumption !== null && leakage !== null ? consumption + leakage : null;
+  }
   const item = recordOf(equipment?.[metric.equipment]);
   const variables = recordOf(item?.variables);
   const value = variables?.[metric.variable];
   return typeof value === "number" && Number.isFinite(value) ? value : null;
 }
-function renderSnapshotGauges(snapshot: SimMessage["snapshot"], t: number, mode: "history" | "study", consumerPressures?: Record<string, unknown>): void {
+function renderSnapshotGauges(snapshot: SimMessage["snapshot"], t: number, mode: "history" | "study" | "live", consumerPressures?: Record<string, unknown>, comparison?: TriadViewFrame, optimized = true): void {
   const panel = $("triad-overlay");
   panel.dataset.mode = mode;
-  panel.setAttribute("aria-label", mode === "history" ? "Gauges del histórico PLC · solo lectura" : "Gauges del estudio Fractal · no aplicado");
+  panel.setAttribute("aria-label", mode === "live" ? "Gauges de Planta Real · PLC virtual" : mode === "history" ? "Gauges del histórico PLC · solo lectura" : "Gauges del estudio Fractal · no aplicado");
   panel.hidden = false;
   panel.querySelector<HTMLElement>(".triad-overlay-status")!.hidden = true;
   const root = $("triad-overlay-values");
@@ -2013,7 +2040,7 @@ function renderSnapshotGauges(snapshot: SimMessage["snapshot"], t: number, mode:
   const critical = homes.reduce<(typeof homes)[number] | null>((min, home) => !min || home.value < min.value ? home : min, null);
   for (const point of TRIAD_GAUGE_POINTS) {
     const isCritical = point.id === "critical-house";
-    const value = isCritical ? critical?.value : snapshot.equipment[point.metric.equipment]?.variables[point.metric.variable];
+    const value = isCritical ? critical?.value : triadMetric({ simulation_time_s: t, state: { snapshot } }, point.metric);
     const gauge = document.createElement("article");
     gauge.className = "triad-gauge";
     gauge.dataset.key = `${mode}:${point.id}`;
@@ -2021,21 +2048,35 @@ function renderSnapshotGauges(snapshot: SimMessage["snapshot"], t: number, mode:
     gauge.dataset.lift = String(point.lift);
     const title = document.createElement("h3");
     title.textContent = isCritical ? (critical ? `Vivienda mínima · ${critical.equipment.replace("grid-0", "L")}.${critical.key.slice(2).toUpperCase()}` : "Vivienda mínima") : point.label;
-    const reading = document.createElement("div");
-    reading.className = "triad-gauge-reading";
-    reading.dataset.source = mode === "history" ? "emulator" : "optimization";
-    const context = document.createElement("span");
-    context.textContent = `${mode === "history" ? "Histórico PLC" : "Fractal · no aplicado"} · t=${t.toFixed(0)} s`;
-    const formatted = document.createElement("strong");
-    formatted.textContent = typeof value === "number" && Number.isFinite(value) ? `${value.toFixed(2)} mca` : "—";
-    reading.append(context, formatted);
-    gauge.append(title, reading);
+    const readings = document.createElement("div"); readings.className = "triad-gauge-readings";
+    for (const source of TRIAD_SOURCES) {
+      const reading = document.createElement("div"); reading.className = "triad-gauge-reading"; reading.dataset.source = source;
+      const label = document.createElement("span"); label.textContent = TRIAD_GAUGE_SOURCE_LABELS[source];
+      const own = source === (mode === "study" ? "optimization" : "emulator") && (mode !== "study" || optimized);
+      const saved = comparison?.simulation_time_s === t ? comparison.sources[source] : null;
+      const measured = own ? value : saved && saved.simulation_time_s === t ? (isCritical ? minimumPressure(saved) : triadMetric(saved, point.metric)) : null;
+      const formatted = document.createElement("strong");
+      formatted.textContent = typeof measured === "number" && Number.isFinite(measured) ? `${measured.toFixed(2)} ${metricUnit(point.metric)}` : "—";
+      reading.title = measured === null || measured === undefined ? "Sin datos compatibles de esta fuente para este instante" : `t=${t}s · ${own && mode === "study" ? "propuesta no aplicada" : "lectura guardada o emulada"}`;
+      reading.append(label, formatted); readings.append(reading);
+    }
+    gauge.title = `t=${t}s · ${mode === "study" && !optimized ? "Evaluación Fractal sin optimizar: no es una propuesta optimizada." : mode}`;
+    gauge.append(title, readings);
     title.tabIndex = 0; title.title = "Arrastrar · flechas para mover · doble clic para restablecer";
     root.append(gauge);
   }
   updateTriadGaugePositions();
 }
 
+function minimumPressure(frame: TriadSourceFrame): number | null {
+  if (!frame) return null;
+  const tags = recordOf(frame.state.plc_tags);
+  const individual = Object.entries(tags ?? {}).filter(([key, value]) => /Consumer\..*\.PressureMca$/.test(key) && typeof value === "number" && Number.isFinite(value)).map(([, value]) => value as number);
+  if (individual.length) return Math.min(...individual);
+  const equipment = recordOf(frameSnapshot(frame.state)?.equipment);
+  const floors = [1, 2, 3, 4].map((level) => recordOf(recordOf(equipment?.[`grid-0${level}`])?.variables)?.min_pressure_mca);
+  return floors.every((value) => typeof value === "number" && Number.isFinite(value)) ? Math.min(...floors as number[]) : null;
+}
 function renderTriadOverlay(frame: TriadViewFrame | null): void {
   const panel = $<HTMLElement>("triad-overlay");
   panel.dataset.mode = "triad";
@@ -2053,7 +2094,7 @@ function renderTriadOverlay(frame: TriadViewFrame | null): void {
     gauge.dataset.lift = String(point.lift);
     gauge.setAttribute("aria-label", `${point.label}: comparación Planta Real, Cosimulador y Fractal`);
     const title = document.createElement("h3");
-    title.textContent = point.label;
+    title.textContent = point.id === "critical-house" ? "Presión mínima viviendas" : point.label;
     const readings = document.createElement("div");
     readings.className = "triad-gauge-readings";
     for (const source of TRIAD_SOURCES) {
@@ -2062,9 +2103,9 @@ function renderTriadOverlay(frame: TriadViewFrame | null): void {
       reading.dataset.source = source;
       const sourceLabel = document.createElement("span");
       sourceLabel.textContent = TRIAD_GAUGE_SOURCE_LABELS[source];
-      const value = triadMetric(frame.sources[source], point.metric);
+      const value = point.id === "critical-house" ? minimumPressure(frame.sources[source]) : triadMetric(frame.sources[source], point.metric);
       const formatted = document.createElement("strong");
-      formatted.textContent = value === null ? "—" : `${value.toFixed(1)} ${"unit" in point.metric && point.metric.unit === "%" ? "%" : "mca"}`;
+      formatted.textContent = value === null ? "—" : `${value.toFixed(2)} ${metricUnit(point.metric)}`;
       const saved = frame.sources[source];
       reading.title = saved ? `${TRIAD_GAUGE_SOURCE_LABELS[source]} · ${saved.temporal_context ?? "frame guardado"} · t=${saved.simulation_time_s}s` : "Sin frame guardado para este instante";
       reading.append(sourceLabel, formatted);
@@ -2131,7 +2172,7 @@ function updateTriadGaugePositions(): void {
       delete gauge.dataset.dragged; gauge.style.removeProperty("left"); gauge.style.removeProperty("top");
     }
   }
-  if (panel.dataset.mode === "history" || panel.dataset.mode === "study") { placeSnapshotGauges(panel); updateGaugeLeaders(); return; }
+  if (["live", "history", "study"].includes(panel.dataset.mode ?? "")) { placeSnapshotGauges(panel); updateGaugeLeaders(); return; }
   const bounds = $<HTMLCanvasElement>("scene").getBoundingClientRect();
   const blockers = [...document.querySelectorAll<HTMLElement>(
     'header, #sidebar, #hud, #events-panel, #forecast-panel, #water-plc-panel, #water-history-panel, #route-panel, dialog[open], [aria-label="Cubo de orientación de cámara"]',
@@ -2167,6 +2208,119 @@ function updateTriadGaugePositions(): void {
 }
 
 // ------------------------------------------------------------------ un solo escritorio: 3D + HMI y pasado de solo lectura
+let modelTimelineRequest = 0;
+let modelTimelineComparison: string | null = null;
+let modelTimelineSource = "emulator";
+let modelTimelineFollowLive = true;
+let modelTimelineLivePosition: ((t: number) => void) | null = null;
+function followModelLive(message: SimMessage): void {
+  currentTriadFrame = null; triadViewActive = false; historicalTime = null; forecastStudyId = null;
+  applyMessage(message, message.running === false ? "PLC.DETENIDO" : message.paused ? "PLC.EN PAUSA" : "PLC.ACTUAL");
+  modelTimelineLivePosition?.(message.t);
+  $("model-timeline-time").textContent = `${String(Math.floor(message.t / 3600)).padStart(2, "0")}:${String(Math.floor(message.t / 60) % 60).padStart(2, "0")}:${String(Math.floor(message.t) % 60).padStart(2, "0")}`;
+  $("forecast-values").textContent = `Emulador (Real) · ${message.running === false ? "detenido" : message.paused ? "en pausa" : "siguiendo planta en vivo"}`;
+  $("model-follow-live").textContent = "● SIGUIENDO PLANTA REAL";
+  $("model-follow-live").setAttribute("aria-pressed", "true");
+}
+async function loadSessionTimeline(preferredId?: string, preferredTime?: number, source?: string): Promise<void> {
+  if (!sessionId || archivedStudyId) return;
+  const request = ++modelTimelineRequest, ownerSession = sessionId;
+  forecastStudyId = null; url.delete("study");
+  if (preferredTime !== undefined) modelTimelineFollowLive = false;
+  forecastPlaybackStop?.(); forecastPlaybackStop = null;
+  const format = (t: number) => `${String(Math.floor(t / 3600)).padStart(2, "0")}:${String(Math.floor(t / 60) % 60).padStart(2, "0")}:${String(Math.floor(t) % 60).padStart(2, "0")}`;
+  const response = await apiFetch(`/api/plants/${doc.plant.id}/sessions/${ownerSession}/comparisons`);
+  if (!response.ok) throw Error("No se pudieron consultar las comparaciones de esta sesión.");
+  const comparisons = await response.json() as { comparison_id: string; profile_id: string; profile_outdated?: boolean; manifest?: { base_time_s: number; horizon_s: number }; runs: Record<string, unknown> }[];
+  if (request !== modelTimelineRequest || ownerSession !== sessionId) return;
+  const chosen = comparisons.find((c) => c.comparison_id === (preferredId ?? modelTimelineComparison)) ?? comparisons.at(-1);
+  const panel = $("forecast-panel"); panel.dataset.mode = "timeline"; panel.hidden = false;
+  $("forecast-panel-drag").textContent = "◆ VISOR TEMPORAL · NO CALCULA";
+  $("forecast-selection-label").textContent = "Cálculo de referencia";
+  $("model-follow-live").hidden = false;
+  $("forecast-hour-control").hidden = true; $("model-timeline-control").hidden = false; $("forecast-source-control").hidden = false;
+  const select = $<HTMLSelectElement>("forecast-study");
+  select.disabled = !comparisons.length;
+  select.replaceChildren(...comparisons.map((c) => new Option(`${c.profile_outdated ? "Perfil anterior · " : ""}${c.comparison_id} · desde ${format(c.manifest?.base_time_s ?? 0)}`, c.comparison_id)));
+  if (chosen) select.value = chosen.comparison_id;
+  modelTimelineComparison = chosen?.comparison_id ?? null;
+  select.onchange = () => { void loadSessionTimeline(select.value, undefined, modelTimelineSource); };
+  const mode = $<HTMLSelectElement>("forecast-source");
+  modelTimelineSource = source ?? modelTimelineSource;
+  for (const option of mode.options) option.disabled = option.value !== "emulator" && !chosen?.runs[option.value];
+  if (!["emulator", "cosimulation", "optimization"].includes(modelTimelineSource) || mode.options.namedItem(modelTimelineSource)?.disabled) modelTimelineSource = "emulator";
+  if ([...mode.options].find((o) => o.value === modelTimelineSource)?.disabled) modelTimelineSource = "emulator";
+  mode.value = modelTimelineSource;
+  mode.onchange = () => { void loadSessionTimeline(modelTimelineComparison ?? undefined, undefined, mode.value); };
+  const speed = $<HTMLSelectElement>("forecast-speed"); speed.parentElement!.hidden = false; speed.onchange = null;
+  const slider = $<HTMLInputElement>("model-timeline");
+  const play = $<HTMLButtonElement>("forecast-play");
+  let frames: TriadViewFrame[] = [];
+  if (chosen) {
+    const rows = await apiFetch(`/api/plants/${doc.plant.id}/sessions/${ownerSession}/comparisons/${encodeURIComponent(chosen.comparison_id)}/triads`);
+    if (!rows.ok) throw Error("No se pudieron cargar los instantes guardados.");
+    frames = (await rows.json() as { triads: TriadViewFrame[] }).triads;
+  }
+  if (request !== modelTimelineRequest || ownerSession !== sessionId) return;
+  if (modelTimelineSource === "emulator") frames = frames.filter((f) => f.sources.emulator);
+  slider.max = String(Math.max(0, frames.length - 1)); slider.disabled = frames.length < 2;
+  play.disabled = frames.length < 2;
+  $("forecast-study-meta").textContent = chosen ? `Lecturas de una misma comparación · perfil ${chosen.profile_id}` : "Esta sesión todavía no tiene una comparación calculada.";
+  const stop = () => { if (timer !== undefined) clearInterval(timer); timer = undefined; play.textContent = "▶ RECORRER RESULTADOS"; play.setAttribute("aria-label", "Recorrer resultados guardados"); };
+  const requestedIndex = frames.findIndex((f) => f.simulation_time_s === preferredTime);
+  const baseIndex = frames.findIndex((f) => f.simulation_time_s >= (chosen?.manifest?.base_time_s ?? 0));
+  let timer: number | undefined, index = requestedIndex >= 0 ? requestedIndex : modelTimelineSource === "emulator" ? Math.max(0, frames.length - 1) : Math.max(0, baseIndex);
+  forecastPlaybackStop = stop;
+  const show = () => {
+    if (modelTimelineFollowLive && latestLiveMessage) { followModelLive(latestLiveMessage); return; }
+    $("model-follow-live").textContent = "● SEGUIR PLANTA REAL"; $("model-follow-live").setAttribute("aria-pressed", "false");
+    const frame = frames[index];
+    if (!frame) {
+      triadViewActive = false; currentTriadFrame = null;
+      if (latestLiveMessage) applyMessage(latestLiveMessage, "PLC.ACTUAL");
+      $("forecast-values").textContent = "Sin trayectoria guardada para recorrer. Planta Real muestra las últimas señales recibidas.";
+      $("model-timeline-time").textContent = "Sin instantes guardados"; return;
+    }
+    triadViewActive = true; currentTriadFrame = frame; historicalTime = null; forecastStudyId = null;
+    const at = frame.simulation_time_s, future = at > (chosen?.manifest?.base_time_s ?? Infinity);
+    const selectedSource = future && modelTimelineSource !== "emulator" ? modelTimelineSource : "emulator";
+    const saved = frame.sources[selectedSource], snapshot = saved ? frameSnapshot(saved.state) : null;
+    if (snapshot) applyMessage({ t: at, snapshot: snapshot as SimMessage["snapshot"], events: [] }, "REPRODUCCIÓN · " + TRIAD_GAUGE_SOURCE_LABELS[selectedSource as keyof typeof TRIAD_GAUGE_SOURCE_LABELS]);
+    else {
+      const equipment = Object.fromEntries([...assets.keys()].map((id) => [id, { state: "unavailable", phase: null, animation: {}, variables: {}, active_faults: [] }])) as SimMessage["snapshot"]["equipment"];
+      applyMessage({ t: at, snapshot: { equipment, lines: {}, links: {} }, events: [] }, "REPRODUCCIÓN · SIN DATOS");
+    }
+    renderTriadOverlay(frame); $("triad-overlay").dataset.mode = "study"; updateTriadGaugePositions();
+    slider.value = String(index); $("model-timeline-time").textContent = format(at);
+    $("forecast-values").textContent = `${TRIAD_GAUGE_SOURCE_LABELS[selectedSource as keyof typeof TRIAD_GAUGE_SOURCE_LABELS]} · ${format(at)}${snapshot ? "" : " · sin datos en este instante"}`;
+  };
+  $("model-timeline-range").textContent = frames.length ? `${format(frames[0].simulation_time_s)} → ${format(frames.at(-1)!.simulation_time_s)}` : "";
+  $("forecast-help").textContent = "Recorrer solo muestra datos guardados: no calcula ni modifica el PLC. Para calcular, abra PLC y escenarios. Arrastre la barra para consultar otro instante; «Seguir Planta Real» vuelve al presente. — indica ausencia de datos.";
+  modelTimelineLivePosition = (t) => {
+    let nearest = -1;
+    for (let i = 0; i < frames.length && frames[i].simulation_time_s <= t; i++) nearest = i;
+    if (nearest >= 0) { index = nearest; slider.value = String(index); }
+  };
+  $("model-follow-live").onclick = () => { stop(); modelTimelineFollowLive = true; show(); };
+  slider.oninput = () => { stop(); modelTimelineFollowLive = false; index = Number(slider.value); show(); };
+  play.onclick = () => {
+    if (timer !== undefined) { stop(); return; }
+    if (frames.length < 2) return;
+    modelTimelineFollowLive = false;
+    if (index === frames.length - 1) index = modelTimelineSource === "emulator" ? 0 : Math.max(0, baseIndex);
+    let at = frames[index].simulation_time_s, previous = performance.now();
+    show(); play.textContent = "❚❚ PAUSAR RECORRIDO"; play.setAttribute("aria-label", "Pausar recorrido de resultados");
+    timer = window.setInterval(() => {
+      const now = performance.now(); at += Math.min(.5, (now - previous) / 1000) * Number(speed.value) * 3600; previous = now;
+      const before = index;
+      while (index + 1 < frames.length && frames[index + 1].simulation_time_s <= at) index++;
+      if (index !== before) show();
+      if (index === frames.length - 1) stop();
+    }, 100);
+  };
+  url.delete("study"); history.replaceState(null, "", `${location.pathname}?${url}`);
+  show();
+}
 function comparisonControl(action: string, value?: string): void {
   $<HTMLIFrameElement>("water-plc-frame").contentWindow?.postMessage({ type: "plc-comparison-control", action, value }, location.origin);
 }
@@ -2203,7 +2357,7 @@ function renderComparisonControls(frame: TriadViewFrame): void {
   const playing = plc.querySelector<HTMLButtonElement>("#triad-pause")?.disabled === false;
   const play = $<HTMLButtonElement>("forecast-play");
   play.disabled = !playing && plc.querySelector<HTMLButtonElement>("#triad-play")?.disabled === true;
-  play.textContent = playing ? "❚❚ PAUSAR" : "▶ REPRODUCIR";
+  play.textContent = playing ? "❚❚ PAUSAR RECORRIDO" : "▶ RECORRER RESULTADOS";
   play.setAttribute("aria-label", playing ? "Pausar comparación" : "Reproducir comparación");
   play.onclick = () => comparisonControl(playing ? "pause" : "play");
   $("forecast-study-meta").textContent = plc.querySelector("#triad-position")?.textContent ?? "";
@@ -2230,12 +2384,14 @@ function showTriadFrame(frame: TriadViewFrame): void {
 }
 
 function waterView(view: "3d" | "plc" | "history"): void {
+  if (view !== "3d" && $("forecast-panel").dataset.mode === "timeline") { forecastPlaybackStop?.(); $("forecast-panel").hidden = true; modelTimelineRequest++; }
   if (view !== "3d" && $("forecast-panel").dataset.mode === "comparison") { comparisonControl("pause"); $("forecast-panel").hidden = true; }
-  if (["history", "study"].includes($("triad-overlay").dataset.mode ?? "")) $("triad-overlay").hidden = true;
+  if (["live", "history", "study"].includes($("triad-overlay").dataset.mode ?? "")) $("triad-overlay").hidden = true;
   if (view === "plc" || view === "history") {
     triadViewActive = false;
     $("triad-overlay").hidden = true;
-  } else if (currentTriadFrame) showTriadFrame(currentTriadFrame);
+  } else if (currentTriadFrame && $("forecast-panel").dataset.mode !== "timeline") showTriadFrame(currentTriadFrame);
+  else if (view === "3d" && $("forecast-panel").dataset.mode === "timeline") { void loadSessionTimeline(modelTimelineComparison ?? undefined, modelTimelineFollowLive ? undefined : currentTriadFrame?.simulation_time_s); }
   if (view === "plc" && sessionId) $("btn-connect").textContent = "● SIGUIENDO PLC ACTUAL";
   $("water-plc-panel").hidden = view !== "plc";
   if (view === "plc" && !waterPlcResizeInitialized) { setupWaterPlcResize(); waterPlcResizeInitialized = true; }
@@ -2247,8 +2403,9 @@ function waterView(view: "3d" | "plc" | "history"): void {
     document.body.classList.remove("forecast-mode");
     $("clock").textContent = "VISTA PLC / ESCENARIOS";
   }
-  if (view === "3d" && !triadViewActive && sessionId && doc.plant.id === "water-network-scale-v1") {
-    void loadForecast().catch((error) => { $("forecast-values").textContent = `No se pudo actualizar la lista de escenarios: ${String(error)}`; });
+  if (view === "3d" && !triadViewActive && latestLiveMessage && !forecastStudyId) applyMessage(latestLiveMessage, latestLiveMessage.running === false ? "PLC.DETENIDO" : "PLC.ACTUAL");
+  if (view === "3d" && !triadViewActive && sessionId && doc.plant.id === "water-network-scale-v1" && $("forecast-panel").dataset.mode !== "timeline") {
+    void loadSessionTimeline().catch((error) => { $("forecast-values").textContent = `No se pudo abrir la reproducción: ${String(error)}`; });
   }
   if (view === "plc") {
     const frame = $<HTMLIFrameElement>("water-plc-frame");
@@ -2304,6 +2461,7 @@ interface ForecastStudySummary {
   profile_id?: string;
   profile_name?: string;
   objective_id?: string;
+  comparison_id?: string;
 }
 
 interface ForecastFrame {
@@ -2383,6 +2541,8 @@ const forecastStudyTypeLabel = (studyType: string): string => ({
 }[studyType] ?? studyType.toUpperCase());
 
 async function loadForecast(): Promise<void> {
+  if (sessionId && !archivedStudyId) { await loadSessionTimeline(); return; }
+  $("forecast-hour-control").hidden = false; $("model-timeline-control").hidden = true;
   $("forecast-panel").dataset.mode = "study";
   $("forecast-panel-drag").textContent = "◆ ESTUDIO FRACTAL · FUTURO NO APLICADO";
   $("forecast-selection-label").textContent = "Estudio"; $("forecast-time-label").textContent = "Hora futura";
@@ -2427,6 +2587,12 @@ async function loadForecast(): Promise<void> {
   const studiesResponse = await apiFetch(`/api/plants/${doc.plant.id}/sessions/${sessionId}/fractal/studies`);
   const studies = studiesResponse.ok ? await studiesResponse.json() as ForecastStudySummary[] : [];
   if ($("forecast-panel").dataset.mode === "comparison") return;
+  if (forecastStudyId && !studies.some((study) => study.study_id === forecastStudyId)) {
+    forecastPlaybackStop?.(); forecastPlaybackStop = null;
+    forecastStudyId = null; url.delete("study"); history.replaceState(null, "", `${location.pathname}?${url}`);
+    $("forecast-panel").hidden = true; document.body.classList.remove("forecast-mode");
+    if (latestLiveMessage) applyMessage(latestLiveMessage, "PLC.ACTUAL");
+  }
   if (!forecastStudyId && studies.length) {
     forecastStudyId = studies[0].study_id;
     url.set("study", forecastStudyId);
@@ -2488,9 +2654,17 @@ async function loadForecastFrames(study?: ForecastStudySummary, archivedResult?:
   const profileLabel = profile ? ` · ${profile}` : "";
   $("forecast-study-meta").textContent = `${forecastStudyTypeLabel(study?.study_type ?? "forecast")}${profileLabel} · ${forecastStudyId} · ${data.frames.length} horas`;
   selector.innerHTML = data.frames.map((frame) => `<option value="${frame.hour}">Hora ${String(frame.hour + 1).padStart(2, "0")}</option>`).join("");
-  $("forecast-help").textContent = `Elija un escenario y pulse REPRODUCIR para recorrer sus ${data.frames.length} horas. «Volver al PLC actual» muestra nuevamente la operación en vivo.`;
+  $("forecast-help").textContent = `Este visor no calcula: pulse RECORRER RESULTADOS para consultar las ${data.frames.length} horas guardadas. «Volver al PLC actual» muestra nuevamente la operación en vivo.`;
   if (!data.frames.length) { $("forecast-values").textContent = "El estudio no contiene horas para reproducir."; return; }
 
+  const comparisonFrames = new Map<number, TriadViewFrame>();
+  if (!archivedStudyId && sessionId && study?.comparison_id) {
+    const response = await apiFetch(`/api/plants/${doc.plant.id}/sessions/${sessionId}/comparisons/${encodeURIComponent(study.comparison_id)}/triads`).catch(() => null);
+    if (response?.ok) {
+      const comparison = await response.json() as { triads: TriadViewFrame[] };
+      for (const frame of comparison.triads ?? []) comparisonFrames.set(frame.simulation_time_s, frame);
+    }
+  }
   let playbackPosition = 0;
   const scenarioState = (frame: ForecastFrame): Record<string, unknown> => {
     const index = Math.floor((frame.scenarios.length - 1) / 2);
@@ -2509,7 +2683,7 @@ async function loadForecastFrames(study?: ForecastStudySummary, archivedResult?:
     const rightTime = right.end_t_s ?? data.base_time + (rightIndex + 1) * 3600;
     const time = blendNumber(leftTime, rightTime, fraction) ?? leftTime;
     applyMessage({ t: time, speed: 240, snapshot, events: [] }, "FUTURO FRACTAL");
-    renderSnapshotGauges(snapshot, time, "study", recordOf(state.consumer_pressures_mca) ?? undefined);
+    renderSnapshotGauges(snapshot, time, "study", recordOf(state.consumer_pressures_mca) ?? undefined, comparisonFrames.get(time), study?.study_type === "optimized");
     const elapsedMinutes = leftIndex * 60;
     const hour = Math.floor(elapsedMinutes / 60) + 1;
     const minute = elapsedMinutes % 60;
@@ -2526,7 +2700,7 @@ async function loadForecastFrames(study?: ForecastStudySummary, archivedResult?:
   const stopPlayback = () => {
     if (playbackTimer !== undefined) window.clearInterval(playbackTimer);
     playbackTimer = undefined;
-    playButton.textContent = "▶ REPRODUCIR";
+    playButton.textContent = "▶ RECORRER RESULTADOS";
     playButton.setAttribute("aria-label", "Reproducir proyección");
   };
   forecastPlaybackStop = stopPlayback;
@@ -2540,7 +2714,7 @@ async function loadForecastFrames(study?: ForecastStudySummary, archivedResult?:
     if (data.frames.length < 2) return;
     if (playbackPosition >= data.frames.length - 1) playbackPosition = 0;
     showPosition(playbackPosition);
-    playButton.textContent = "❚❚ PAUSAR";
+    playButton.textContent = "❚❚ PAUSAR RECORRIDO";
     playButton.setAttribute("aria-label", "Pausar proyección");
     let previousTick = performance.now();
     playbackTimer = window.setInterval(() => {
@@ -2591,6 +2765,7 @@ async function start(): Promise<void> {
   stage.setGroundElevation(Math.min(...doc.zones.map((zone) => zone.elevation ?? 0)));
   $<HTMLAnchorElement>("link-equipos").href = `/equipos.html?plant=${plantId}`;
   $("forecast-return").onclick = () => {
+    forecastPlaybackStop?.(); modelTimelineRequest++; modelTimelineFollowLive = true; modelTimelineLivePosition = null;
     comparisonControl("pause"); currentTriadFrame = null; triadViewActive = false; $("triad-overlay").hidden = true;
     forecastPlaybackStop?.(); forecastPlaybackStop = null;
     forecastStudyId = null; url.delete("study");
@@ -2616,15 +2791,21 @@ async function start(): Promise<void> {
       $("triad-overlay").hidden = true; waterView("3d");
       if (latestLiveMessage) applyMessage(latestLiveMessage, "PLC.ACTUAL");
     };
-    window.addEventListener("message", (event: MessageEvent<{ type?: string; sessionId?: string; studyId?: string; plantId?: string; triadFrame?: TriadViewFrame }>) => {
+    window.addEventListener("message", (event: MessageEvent<{ type?: string; sessionId?: string; studyId?: string; plantId?: string; triadFrame?: TriadViewFrame; comparisonId?: string }>) => {
       const frame = $<HTMLIFrameElement>("water-plc-frame");
       if (event.origin !== location.origin || event.source !== frame.contentWindow || event.data.plantId !== doc.plant.id) return;
       if (event.data.type === "plc-comparison-paused" && $("forecast-panel").dataset.mode === "comparison") {
-        const play = $<HTMLButtonElement>("forecast-play"); play.textContent = "▶ REPRODUCIR";
+        const play = $<HTMLButtonElement>("forecast-play"); play.textContent = "▶ RECORRER RESULTADOS";
         play.setAttribute("aria-label", "Reproducir comparación"); play.onclick = () => comparisonControl("play");
       }
       if (event.data.type === "plc-session-created" && event.data.sessionId && /^[\w-]+$/.test(event.data.sessionId)) {
         if (sessionId !== event.data.sessionId) {
+          forecastPlaybackStop?.(); forecastPlaybackStop = null;
+          forecastStudyId = null; currentTriadFrame = null; triadViewActive = false; historicalTime = null;
+          archivedStudyId = null; archivedStudyVersion = 0;
+          url.delete("study"); url.delete("savedStudy"); url.delete("savedVersion");
+          $("forecast-panel").hidden = true; $("triad-overlay").hidden = true; document.body.classList.remove("forecast-mode");
+          syncPlcStudySelection();
           disconnect(); sessionId = event.data.sessionId; url.set("session", sessionId); history.replaceState(null, "", `${location.pathname}?${url}`);
           connect();
         }
@@ -2632,8 +2813,9 @@ async function start(): Promise<void> {
       if (event.data.type === "plc-show-3d") {
         const triad = event.data.triadFrame;
         if (triad && Number.isFinite(triad.simulation_time_s) && triad.sources) {
-          currentTriadFrame = triad;
+          currentTriadFrame = null; triadViewActive = true;
           waterView("3d");
+          void loadSessionTimeline(event.data.comparisonId, triad.simulation_time_s, triad.source);
         } else {
           currentTriadFrame = null;
           triadViewActive = false;
