@@ -151,7 +151,7 @@ function render(ver = "v001") {
   for (const p of plan) {
     const fin = ini + p.largo;
     const yT = p.cierre ? 1250 : 420;
-    ev.push(`Dialogue: 1,${assT(ini)},${assT(fin)},Titulo,,0,0,0,,{\\pos(540,${yT})\\fad(250,150)}${esc(p.titulo[0])}\\N{\\c&H3DB5FF&}${esc(p.titulo[1])}`);
+    ev.push(`Dialogue: 1,${assT(ini)},${assT(fin)},Titulo,,0,0,0,,{\\pos(540,${yT})\\fad(250,150)}${esc(p.titulo[0])}\\N{\\c&HFFA74E&}${esc(p.titulo[1])}`);
     for (const f of p.frases) {
       if (f.s == null) continue;
       ev.push(`Dialogue: 2,${assT(p.inicioVoz + f.s)},${assT(p.inicioVoz + f.e + 0.15)},Sub,,0,0,0,,{\\pos(540,${p.cierre ? 1440 : WIN_Y + WIN_H + 60})}${esc(f.txt)}`);
