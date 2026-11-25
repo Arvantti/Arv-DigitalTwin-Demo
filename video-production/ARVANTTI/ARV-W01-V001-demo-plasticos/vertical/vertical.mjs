@@ -128,15 +128,19 @@ function render(ver = "v001") {
   const piezas = plan.map((p) => {
     const out = join(TMP, `${p.id}.mp4`);
     if (p.cierre) {
-      ff(["-f", "lavfi", "-i", `color=c=0xffffff:s=${W}x${H}:r=${FPS}:d=${p.largo}`, "-loop", "1", "-i", LOGO,
-        "-filter_complex", `[1]scale=900:-1,format=rgba,drawbox=x=iw*0.645:y=0:w=iw:h=ih*0.47:color=white:t=fill,drawbox=x=iw*0.42:y=0:w=iw*0.25:h=ih*0.145:color=white:t=fill,fade=in:st=0:d=0.6:alpha=1[l];[0][l]overlay=(W-w)/2:330:shortest=1,format=yuv420p`,
+      ff(["-f", "lavfi", "-i", `color=c=0x05070c:s=${W}x${H}:r=${FPS}:d=${p.largo}`, "-loop", "1", "-i", LOGO,
+        "-filter_complex", `[1]scale=900:-1,format=rgba,drawbox=x=iw*0.645:y=0:w=iw:h=ih*0.47:color=black@0:t=fill:replace=1,drawbox=x=iw*0.42:y=0:w=iw*0.25:h=ih*0.145:color=black@0:t=fill:replace=1,fade=in:st=0:d=0.6:alpha=1[l];[0][l]overlay=(W-w)/2:330:shortest=1,format=yuv420p`,
         "-t", String(p.largo), "-c:v", "libx264", "-preset", "veryfast", "-crf", "18", out]);
       return out;
     }
     const { s } = PANTALLA;
     const ins = p.clips.flatMap((c) => ["-ss", String(c.desde), "-to", String(c.hasta), "-i", LARGO]);
     const vel = p.vel || 1;
-    const cadena = p.clips.map((c, i) => `[${i}:v]setpts=(PTS-STARTPTS)/${vel},crop=${s}:${s}:${PANTALLA.x + c.x}:${PANTALLA.y},scale=${WIN}:${WIN}:flags=lanczos,fps=${FPS},setsar=1[c${i}]`).join(";");
+    // "completo": la pantalla entera (1604x904) a lo ancho, sin recortar; si no, ventana cuadrada recortada.
+    const HC = Math.round(WIN * 904 / 1604 / 2) * 2;
+    const cadena = p.clips.map((c, i) => p.completo
+      ? `[${i}:v]setpts=(PTS-STARTPTS)/${vel},crop=1604:904:${PANTALLA.x}:${PANTALLA.y},scale=${WIN}:${HC}:flags=lanczos,pad=${WIN}:${WIN}:0:(oh-ih)/2:color=0x05070c,fps=${FPS},setsar=1[c${i}]`
+      : `[${i}:v]setpts=(PTS-STARTPTS)/${vel},crop=${s}:${s}:${PANTALLA.x + c.x}:${PANTALLA.y},scale=${WIN}:${WIN}:flags=lanczos,fps=${FPS},setsar=1[c${i}]`).join(";");
     const concat = `${p.clips.map((_, i) => `[c${i}]`).join("")}concat=n=${p.clips.length}:v=1:a=0,tpad=stop_mode=clone:stop_duration=${p.largo}[v]`;
     ff([...ins, "-f", "lavfi", "-i", `color=c=0x05070c:s=${W}x${H}:r=${FPS}:d=${p.largo}`,
       "-filter_complex", `${cadena};${concat};[${p.clips.length}][v]overlay=0:${WIN_Y}:shortest=1,format=yuv420p`,
@@ -155,7 +159,7 @@ function render(ver = "v001") {
   for (const p of plan) {
     const fin = ini + p.largo;
     const yT = p.cierre ? 1250 : 240;
-    ev.push(`Dialogue: 1,${assT(ini)},${assT(fin)},Titulo,,0,0,0,,{\\pos(540,${yT})\\fad(250,150)${p.cierre ? "\\c&H2A1A0B&" : ""}}${esc(p.titulo[0])}\\N{\\c&H${p.cierre ? "D07A1E" : "3DB5FF"}&}${esc(p.titulo[1])}`);
+    ev.push(`Dialogue: 1,${assT(ini)},${assT(fin)},Titulo,,0,0,0,,{\\pos(540,${yT})\\fad(250,150)}${esc(p.titulo[0])}\\N{\\c&H3DB5FF&}${esc(p.titulo[1])}`);
     p.frases.forEach((f, k) => {
       if (f.s == null) return;
       const sig = p.frases[k + 1]?.s;

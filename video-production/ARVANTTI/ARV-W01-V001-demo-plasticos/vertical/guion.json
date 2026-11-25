@@ -1,5 +1,5 @@
 {
-  "nota": "Versión vertical 9:16 para redes (~60 s). Las tomas salen del video largo (horizontal 1920x1080): desde/hasta en segundos y x = recorte cuadrado de 904 px dentro de la pantalla (x 158..1762, y 72..976). Las tomas salen de la v011 (demo-plasticos-v011.mp4). Sólo la voz y la música son nuevas.",
+  "nota": "Versión vertical 9:16 para redes (~60 s). Las tomas salen del video largo (horizontal 1920x1080): desde/hasta en segundos y x = recorte cuadrado de 904 px dentro de la pantalla (x 158..1762, y 72..976). Las tomas salen de la v011 (demo-plasticos-v011.mp4). Sólo la voz y la música son nuevas. \"completo\": true muestra la pantalla entera a lo ancho, sin recortar.",
   "tomas": [
     {
       "id": "V1",
@@ -29,7 +29,8 @@
         "Cada máquina,",
         "en vivo"
       ],
-      "texto": "Cada máquina envía sus datos en tiempo real al centro de control."
+      "texto": "Cada máquina envía sus datos en tiempo real al centro de control.",
+      "completo": true
     },
     {
       "id": "V3",
@@ -44,7 +45,8 @@
         "El plan",
         "de producción"
       ],
-      "texto": "En el APS, el programador de producción, cada barra es una orden y cada rombo, su fecha de entrega."
+      "texto": "En el APS, el programador de producción, cada barra es una orden y cada rombo, su fecha de entrega.",
+      "completo": true
     },
     {
       "id": "V4",
@@ -64,7 +66,8 @@
         "Primero las reglas,",
         "luego el cálculo"
       ],
-      "texto": "Primero se le enseñan al cosimulador las reglas de la planta: moldes, turnos y entregas. Luego calcula el plan en menos de un segundo."
+      "texto": "Primero se le enseñan al cosimulador las reglas de la planta: moldes, turnos y entregas. Luego calcula el plan en menos de un segundo.",
+      "completo": true
     },
     {
       "id": "V5",
@@ -79,7 +82,8 @@
         "Más pedidos",
         "a tiempo"
       ],
-      "texto": "Resultado: dos pedidos tarde menos y noventa horas de máquina libres en la semana."
+      "texto": "Resultado: dos pedidos tarde menos y noventa horas de máquina libres en la semana.",
+      "completo": true
     },
     {
       "id": "V6",
@@ -99,7 +103,8 @@
         "Falla una",
         "inyectora"
       ],
-      "texto": "Si una inyectora falla, el centro de control recibe la alarma al instante."
+      "texto": "Si una inyectora falla, el centro de control recibe la alarma al instante.",
+      "completo": true
     },
     {
       "id": "V7",
@@ -115,7 +120,8 @@
         "Las mejores",
         "opciones"
       ],
-      "texto": "Con esas mismas reglas, Fractal, el motor de optimización y apoyo a la decisión, compara escenarios y presenta las mejores opciones: con un molde de repuesto, de diez a siete pedidos tarde."
+      "texto": "Con esas mismas reglas, Fractal, el motor de optimización y apoyo a la decisión, compara escenarios y presenta las mejores opciones: con un molde de repuesto, de diez a siete pedidos tarde.",
+      "completo": true
     },
     {
       "id": "V8",
@@ -145,7 +151,8 @@
         "La IA en",
         "cada módulo"
       ],
-      "texto": "La IA trabaja en cada módulo: arma el gemelo, revisa los datos y ayuda a plantear escenarios. La IA recomienda; la persona decide."
+      "texto": "La IA trabaja en cada módulo: arma el gemelo, revisa los datos y ayuda a plantear escenarios. La IA recomienda; la persona decide.",
+      "completo": true
     },
     {
       "id": "V9",
