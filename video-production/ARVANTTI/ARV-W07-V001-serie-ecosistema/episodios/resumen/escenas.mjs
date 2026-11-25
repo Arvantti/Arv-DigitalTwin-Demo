@@ -1,10 +1,12 @@
 // Gran resumen Arvantti: pieza final de la serie del ecosistema (guion aprobado por Andy, 2026-11-24).
 // Reutiliza las animaciones de los episodios 1 a 7; cada escena va envuelta en .eN para usar los estilos de su episodio
 // (ver unir-css.mjs). Las escenas de Arvantti OS Coding usan estilos propios (propio.css).
+// Escenas que abren capítulo: llevan unos 3 s de tarjeta de índice antes de la voz.
+const INICIO_CAP = ["junta", "os", "coding", "gemelo", "metodos", "vuelve"];
 export const ESCENAS = [
   "01-junta", "02-islas", "03-productos", "04-base", "05-os", "06-promesas", "07-enterprise", "08-coding", "09-planes", "10-claves",
-  "11-gemelo", "12-modulos", "13-modulos2", "14-ia", "15-metodos", "16-montecarlo", "17-opciones", "18-vuelve", "19-decide", "20-cierre",
-].map((dir, i) => ({ id: dir.slice(3), dir, lead: i === 0 ? 1.4 : dir === "20-cierre" ? 0.9 : 0.35, tail: dir === "20-cierre" ? 4.5 : 1.0, sinSubtitulos: dir === "20-cierre" }));
+  "11-gemelo", "12-modulos", "13-modulos2", "14-ia", "15-metodos", "16-montecarlo", "17-opciones", "18-vuelve", "19-decide", "21-mapa", "20-cierre",
+].map((dir, i) => ({ id: dir.slice(3), dir, lead: INICIO_CAP.includes(dir.slice(3)) ? 3.2 : dir === "20-cierre" ? 0.9 : 0.35, tail: dir === "20-cierre" ? 4.5 : dir === "21-mapa" ? 2.5 : 1.0, sinSubtitulos: dir === "20-cierre" }));
 
 // Capítulos (para la descripción de YouTube): escena con la que empieza cada uno.
 export const CAPITULOS = [
@@ -24,7 +26,7 @@ const PRODUCTOS = [
 export function componerEpisodio(c) {
   const { S, P, at, to, clip, words, sfx, span, enter, leave, titleIn, sweep, VERT } = c;
   const { pop, fade, izq, luz } = ayudas(c);
-  const cap = (n) => `<p class="kick"><b>CAP ${n}</b> ${["LA PREGUNTA", "ARVANTTI OS ENTERPRISE", "ARVANTTI OS CODING", "ARVANTTI DIGITAL TWIN", "ARVANTTI FRACTAL", "LA RESPUESTA"][n]}</p>`;
+  const cap = () => ""; // el capítulo lo muestran la barra de avance y las tarjetas de índice (indice())
   const escena = (id, x, ep, n, inner) => { const [s, d] = span(x); clip(id, "scene", s, d, `<div class="${ep}" style="display:contents">${cap(n)}${inner}</div>`, 3); return [s, d]; };
   const brilla = (sel, t) => to(sel, { borderColor: "#4ea7ff", boxShadow: "0 0 50px #2d7ff988", duration: 0.35 }, t);
 
@@ -46,7 +48,6 @@ export function componerEpisodio(c) {
         <h2 class="h md q">${words("Si la demanda sube el próximo trimestre…")}</h2>
         <div class="row qs">${Q.map(([, t, a], i) => `<span class="chip" id="rq${i}">¿Nos alcanza ${a} <b>${t}</b>?</span>`).join("")}</div>
       </div>`);
-    at("#r-junta .kick", { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.6 }, s + 0.3);
     at("#r-junta .tabla", { opacity: 0, scale: 0.8, transformOrigin: "50% 50%" }, { opacity: 1, scale: 1, duration: 0.8, ease: "power3.out" }, x.voiceAt - 0.6);
     at("#r-junta .silla", { opacity: 0, scale: 0, transformOrigin: "50% 50%" }, { opacity: 1, scale: 1, duration: 0.4, stagger: 0.06, ease: "back.out(2)" }, x.voiceAt - 0.3);
     pop("#r-junta .lbl", x.voiceAt + 0.2);
@@ -486,7 +487,61 @@ export function componerEpisodio(c) {
     leave("r-dec", s + d);
   }
 
+  mapa(c, S.mapa, pop);
+  indice(c);
   cierre(c, S.cierre);
   ESCENAS.slice(1).forEach((e) => sweep(S[e.id].start));
   void words;
+}
+
+// ── Índice: barra de avance arriba y tarjeta de capítulo al empezar cada uno ──
+const NOMBRES = ["La pregunta", "Arvantti OS Enterprise", "Arvantti OS Coding", "Arvantti Digital Twin", "Arvantti Fractal", "La respuesta"];
+const CORTOS = ["La pregunta", "OS Enterprise", "OS Coding", "Digital Twin", "Fractal", "La respuesta"];
+const LEMAS = ["Si la demanda sube, ¿nos alcanza?", "Gobierna la IA de tu empresa", "Cada IA en su terminal, con aprobación humana", "Tu operación en 3D: observa, simula y recomienda", "Las mejores opciones y su impacto", "La IA recomienda; la junta decide"];
+function indice(c) {
+  const { S, total, clip, at, to, set } = c;
+  const ini = CAPITULOS.map(([id]) => S[id].start);
+  const fin = ini.map((t, k) => (k + 1 < ini.length ? ini[k + 1] : total));
+  clip("barra", "barra", 0, total, `<div class="pb">${CORTOS.map((n, k) => `<div class="s" id="pb${k}"><span><i></i></span><b><em>${k + 1}</em><u> · ${n}</u></b></div>`).join("")}</div><div class="pbn">${CORTOS.map((n, k) => `<b id="pbn${k}">${k + 1} · ${n}</b>`).join("")}</div>`, 30);
+  ini.forEach((t, k) => {
+    at(`#pb${k} i`, { scaleX: 0 }, { scaleX: 1, duration: fin[k] - t, ease: "none" }, t);
+    set(`#pb${k} b`, { color: "#ffffff" }, t);
+    set(`#pb${k} b`, { color: "#7fa6d6" }, fin[k]);
+    set(`#pb${k} i`, { backgroundColor: "#2d7ff9" }, fin[k]);
+    at(`#pbn${k}`, { opacity: 0 }, { opacity: 1, duration: 0.3 }, t);
+    if (k + 1 < ini.length) to(`#pbn${k}`, { opacity: 0, duration: 0.3 }, fin[k]);
+  });
+  at("#barra", { opacity: 0 }, { opacity: 1, duration: 0.5 }, ini[0] + 2.8);
+  to("#barra", { opacity: 0, duration: 0.5 }, S.mapa.start);
+  // Tarjetas: cubren la pantalla mientras la escena entra y se van justo antes de la voz.
+  CAPITULOS.forEach(([id], k) => {
+    const x = S[id], t0 = x.start, t1 = x.voiceAt - 0.25, idc = `idx${k}`;
+    clip(idc, "indice", t0, t1 - t0, `<div class="cab">GRAN RESUMEN ARVANTTI · CAPÍTULO ${k + 1} DE 6</div><h1>${NOMBRES[k]}</h1><div class="sub">${LEMAS[k]}</div>
+      <div class="ruta"><span class="base"></span><span class="hecho"></span>${NOMBRES.map((n, j) => `<div class="p${j < k ? " ok" : j === k ? " on" : ""}"><i>${j + 1}</i><b>${n}</b></div>`).join("")}</div>`, 35);
+    at(`#${idc}`, { opacity: k ? 0 : 1 }, { opacity: 1, duration: 0.35 }, t0);
+    at(`#${idc} h1, #${idc} .cab, #${idc} .sub`, { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.5, stagger: 0.08, ease: "power3.out" }, t0 + 0.15);
+    at(`#${idc} .hecho`, { scaleX: k ? (k - 1) / 5 : 0 }, { scaleX: k / 5, duration: 0.8, ease: "power2.inOut" }, t0 + 0.4);
+    at(`#${idc} .p.on i`, { scale: 0.6 }, { scale: 1, duration: 0.5, ease: "back.out(2)" }, t0 + 0.9);
+    to(`#${idc}`, { opacity: 0, filter: "blur(12px)", duration: 0.4 }, t1 - 0.4);
+  });
+}
+
+// ── Gran mapa final: todo conectado con todo ──
+function mapa(c, x, pop) {
+  const { at, to, clip, span, P, VERT, sfx } = c;
+  const [s, d] = span(x);
+  const Z = VERT
+    ? [["fr", 40, 180, 1000, 460], ["os", 40, 668, 1000, 400], ["dt", 40, 1094, 1000, 420], ["ba", 40, 1546, 1000, 236]]
+    : [["fr", 70, 144, 1780, 286], ["os", 70, 448, 870, 372], ["dt", 980, 448, 870, 372], ["ba", 70, 850, 1780, 124]];
+  clip("r-mapa", "scene mapa", s, d, `<div class="lienzo"><div class="zoom"><img src="assets/clips/gran-mapa-${VERT ? "vertical" : "horizontal"}.png">${Z.map(([k, l, t, w, h]) => `<span class="zona" id="mz-${k}" style="left:${l - 6}px;top:${t - 6}px;width:${w + 12}px;height:${h + 12}px"></span>`).join("")}</div></div>`, 3);
+  at("#r-mapa", { opacity: 0 }, { opacity: 1, duration: 0.6 }, s);
+  at("#r-mapa .zoom", { scale: 0.92, filter: "blur(14px)" }, { scale: 1, filter: "blur(0px)", duration: 1.2, ease: "power3.out" }, s);
+  [["fr", "Arvantti Fractal"], ["os", "Arvantti OS"], ["dt", "Arvantti Digital Twin"], ["ba", "los dos comparten"]].forEach(([k, frag], i) => {
+    const t = P(x, frag);
+    at(`#mz-${k}`, { opacity: 0 }, { opacity: 1, duration: 0.35 }, t - 0.1);
+    to(`#mz-${k}`, { opacity: 0, duration: 0.5 }, t + 2.6);
+    sfx(`mp${i}`, "pop.mp3", t, 0.12);
+  });
+  to("#r-mapa", { opacity: 0, filter: "blur(14px)", duration: 0.5 }, s + d - 0.25);
+  void pop;
 }

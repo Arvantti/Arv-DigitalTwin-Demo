@@ -149,3 +149,20 @@
 .rc .niveles,.rc .llave{width:900px}
 .rc .paso{width:700px;padding:12px 20px}
 .e7 .cuatro{flex-wrap:wrap}
+
+/* Índice vertical: solo números en la barra y el nombre del capítulo debajo */
+.pb{left:60px;right:60px;top:60px}
+.pb .s b u{display:none}.pb .s b{font-size:18px}
+.pbn{display:block;position:absolute;left:60px;top:120px;font:700 22px "JetBrains Mono",monospace;letter-spacing:3px;text-transform:uppercase;color:#fff}
+.pbn b{position:absolute;left:0;top:0;white-space:nowrap;opacity:0}
+.indice{gap:40px;padding:0 50px}
+.indice .cab{font-size:22px;letter-spacing:5px;text-align:center}
+.indice h1{font-size:88px}
+.indice .sub{font-size:32px;max-width:900px}
+.indice .ruta .base,.indice .ruta .hecho{left:80px;right:80px;top:34px}
+.indice .p{width:160px;gap:12px}
+.indice .p i{width:70px;height:70px;font-size:28px}
+.indice .p b{font-size:18px;max-width:150px}
+.indice .p.on i{width:92px;height:92px;margin-top:-11px;font-size:36px}
+.indice .p.on b{font-size:21px}
+.mapa .lienzo{width:1080px;height:1920px;transform:translateY(40px) scale(.8)}
