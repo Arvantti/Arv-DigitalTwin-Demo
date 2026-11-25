@@ -1,8 +1,8 @@
 <html><head><meta charset="utf-8"><link rel="stylesheet" href="base.css"><style>
 .a{position:absolute}
-h1{left:0;right:0;top:34px;margin:0;text-align:center;font:800 46px Inter,sans-serif;letter-spacing:-1px}
+h1{left:0;right:0;top:22px;margin:0;text-align:center;font:800 46px Inter,sans-serif;letter-spacing:-1px}
 h1 span{color:var(--electric)}
-.junta{left:50%;top:104px;transform:translateX(-50%);padding:10px 30px;border-radius:999px;border:2px solid #fff;background:#13284d;font:700 24px Inter,sans-serif;box-shadow:0 0 30px #2d7ff966}
+.junta{left:50%;top:88px;transform:translateX(-50%);padding:10px 30px;border-radius:999px;border:2px solid #fff;background:#13284d;font:700 24px Inter,sans-serif;box-shadow:0 0 30px #2d7ff966}
 .prod{top:176px;height:560px;border-radius:24px;border:2px solid #4ea7ff99;background:#0b1428e8;box-shadow:0 0 50px #2d7ff933;padding:20px 22px}
 .prod > .t{display:flex;align-items:center;gap:12px;font:800 34px Inter,sans-serif}
 .prod > .t img{width:40px}
@@ -40,24 +40,24 @@ h1 span{color:var(--electric)}
 .fuera{top:958px;padding:12px 22px;border-radius:14px;border:2px dashed #4ea7ff66;background:#05070ccc;font:600 20px Inter,sans-serif;color:#c9d1e0}
 #sis{left:200px}#maq{left:840px}#ias{left:1450px}
 
-#fr{left:70px;top:160px;width:1780px;height:226px;padding:14px 26px}
-#fr .frl{position:absolute;left:26px;top:14px;width:440px}
-#fr .frm{position:absolute;top:30px;display:flex;flex-direction:column;gap:12px;align-items:flex-start}#fr .frm .lbl{margin:0 0 2px}#fr #frmos{left:500px}#fr #frmdt{right:26px;width:240px}
-#pentaf{position:absolute;left:820px;top:16px;width:700px;height:200px;margin:0}
-#os{left:70px;top:404px;width:870px;height:372px}
-#dt{left:980px;top:404px;width:870px;height:372px}
+#fr{left:70px;top:144px;width:1780px;height:286px;padding:14px 26px}
+#fr .frl{position:absolute;left:26px;top:30px;width:440px}
+#fr .frm{position:absolute;top:50px;display:flex;flex-direction:column;gap:12px;align-items:flex-start}#fr .frm .lbl{margin:0 0 2px}#fr #frmos{left:500px}#fr #frmdt{right:26px;width:240px}
+#pentaf{position:absolute;left:820px;top:18px;width:700px;height:250px;margin:0}
+#os{left:70px;top:448px;width:870px;height:372px}
+#dt{left:980px;top:448px;width:870px;height:372px}
 #os .penta{position:absolute;left:10px;top:84px;width:440px;height:270px;margin:0}
 #os .der{position:absolute;right:20px;top:92px;width:400px;display:flex;flex-direction:column;gap:0}
 #os .der .caja{margin-top:10px;padding:10px 14px}#os .der .caja b{font-size:20px;margin-bottom:4px}
 #dt .hept{position:absolute;left:20px;right:20px;top:96px;height:250px}
-.base{top:792px;height:134px}
-.fuera{top:950px}
+.base{top:834px;height:134px}
+.fuera{top:984px}
 svg#hilos{position:absolute;inset:0;width:1920px;height:1080px;pointer-events:none;z-index:1}
 .md,.nuc,.base,.junta,.fuera{z-index:2}.chip,.caja{position:relative;z-index:2}
 svg#hilos path{fill:none;stroke:#4ea7ff;stroke-width:3;filter:drop-shadow(0 0 5px #4ea7ff)}
 svg#hilos path.fr{stroke:#d8dadf;stroke-dasharray:8 7;filter:drop-shadow(0 0 4px #ffffff88)}
 svg#hilos path.al{stroke:#ff8a3d;stroke-dasharray:6 6;filter:none}
-.nota{left:0;right:0;bottom:22px;text-align:center;font:500 18px Inter,sans-serif;color:#7a8aa3}
+.nota{left:0;right:0;bottom:8px;text-align:center;font:500 16px Inter,sans-serif;color:#7a8aa3}
 </style></head><body><div class="floor"></div>
 <h1 class="a">Arvantti · <span>todo conectado con todo</span></h1>
 <div class="a junta" id="junta">La junta decide · la IA recomienda</div>
@@ -101,7 +101,7 @@ const PE=document.getElementById('penta');
 PR.forEach(([n,f],i)=>{const a=-Math.PI/2+i*2*Math.PI/5;const d=document.createElement('div');d.className='pm';d.id='p'+i;d.style.left=`calc(50% + ${Math.cos(a)*150}px)`;d.style.top=`calc(50% + ${Math.sin(a)*100}px)`;d.innerHTML=`<b>${n}</b><small>${f}</small>`;PE.appendChild(d);});
 const FA=[['Inteligencia artificial','Analiza y formula'],['Optimización matemática','Objetivos con restricciones'],['Genéticos y evolutivos','Exploran soluciones'],['Métodos estocásticos','Incertidumbre'],['Simulación Montecarlo','Escenarios y riesgo']];
 const PF=document.getElementById('pentaf');
-FA.forEach(([n,f],i)=>{const a=-Math.PI/2+i*2*Math.PI/5;const d=document.createElement('div');d.className='pm fa';d.id='f'+i;d.style.left=`calc(50% + ${Math.cos(a)*215}px)`;d.style.top=`calc(50% + ${Math.sin(a)*72}px)`;d.innerHTML=`<b>${n}</b><small>${f}</small>`;PF.appendChild(d);});
+FA.forEach(([n,f],i)=>{const a=-Math.PI/2+i*2*Math.PI/5;const d=document.createElement('div');d.className='pm fa';d.id='f'+i;d.style.left=`calc(50% + ${Math.cos(a)*215}px)`;d.style.top=`calc(50% + ${Math.sin(a)*100}px)`;d.innerHTML=`<b>${n}</b><small>${f}</small>`;PF.appendChild(d);});
 const H=document.getElementById('hept');
 M.forEach(([n,f,fr],i)=>{const a=-Math.PI/2+i*2*Math.PI/7;const d=document.createElement('div');d.className='md'+(fr?' fr':'');d.id='m'+i;d.style.left=`calc(50% + ${Math.cos(a)*300}px)`;d.style.top=`calc(50% + ${Math.sin(a)*98}px)`;d.innerHTML=`<b>${n}</b><small>${f}</small>`;H.appendChild(d);});
 const R=id=>document.getElementById(id).getBoundingClientRect();
