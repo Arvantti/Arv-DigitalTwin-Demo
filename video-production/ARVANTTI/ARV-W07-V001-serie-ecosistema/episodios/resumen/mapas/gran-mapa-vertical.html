@@ -1,0 +1,153 @@
+<html><head><meta charset="utf-8"><link rel="stylesheet" href="base.css"><style>
+.a{position:absolute}
+h1{left:0;right:0;top:22px;margin:0;text-align:center;font:800 46px Inter,sans-serif;letter-spacing:-1px}
+h1 span{color:var(--electric)}
+.junta{left:50%;top:88px;transform:translateX(-50%);padding:10px 30px;border-radius:999px;border:2px solid #fff;background:#13284d;font:700 24px Inter,sans-serif;box-shadow:none}
+.prod{top:176px;height:560px;border-radius:24px;border:2px solid #4ea7ff99;background:#0b1428e8;box-shadow:none;padding:20px 22px}
+.prod > .t{display:flex;align-items:center;gap:12px;font:800 34px Inter,sans-serif}
+.prod > .t img{width:40px}
+.prod > small{display:block;margin:4px 0 14px;font:500 20px Inter,sans-serif;color:var(--ice)}
+.chip{display:inline-block;padding:6px 14px;border-radius:999px;border:2px solid #4ea7ff66;background:#0d1a30;font:600 18px Inter,sans-serif;color:#e6eefc;white-space:nowrap}
+.chip.on{background:var(--blue);border-color:var(--electric);color:#fff}
+.chip.fr{border-color:#d8dadf;background:#1b2230;color:#fff}
+.lbl{font:700 15px "JetBrains Mono",monospace;letter-spacing:2px;color:var(--electric);text-transform:uppercase;margin:0 0 8px}
+.caja{border-radius:16px;border:2px solid #4ea7ff55;background:#0d1a30cc;padding:12px 14px;margin-top:12px}
+.caja b{display:block;font:800 22px Inter,sans-serif;margin-bottom:8px}
+.fila{display:flex;flex-wrap:wrap;gap:8px}
+.it{font:500 17px/1.35 Inter,sans-serif;color:#c9d1e0}
+#os{left:70px;width:590px}
+#dt{left:690px;width:540px}
+#fr{left:1260px;width:590px}
+.hept{position:relative;height:420px}
+.penta{position:relative;height:258px;margin-top:-10px}
+#pentaf{margin-top:14px}
+.penta .nuc{width:110px;height:110px;margin:-55px 0 0 -55px;font-size:19px}
+.pm{position:absolute;width:150px;margin:-26px 0 0 -75px;padding:6px 6px;border-radius:12px;border:2px solid #4ea7ff88;background:#0d1a30;text-align:center;z-index:2}
+.pm b{display:block;font:800 17px Inter,sans-serif}.pm.fa{width:170px;margin-left:-85px}.pm.fa b{font-size:15px}.pm small{font:500 12px Inter,sans-serif;color:var(--ice)}
+.eds{display:flex;gap:12px}.eds .caja{flex:1;margin-top:10px}.eds .caja b{font-size:20px}
+.nuc{position:absolute;left:50%;top:50%;width:130px;height:130px;margin:-65px 0 0 -65px;border-radius:50%;border:3px solid var(--electric);background:radial-gradient(#1a3a6e,#0a1222);display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 0 14px #2d7ff933;font:800 22px Inter,sans-serif}
+.nuc small{font:600 13px "JetBrains Mono",monospace;color:var(--ice)}
+.md{position:absolute;width:168px;margin:-30px 0 0 -84px;padding:7px 8px;border-radius:12px;border:2px solid #4ea7ff88;background:#0d1a30;text-align:center}
+.md b{display:block;font:800 18px Inter,sans-serif}.md small{font:500 13px Inter,sans-serif;color:var(--ice)}
+.md.fr{border-color:#d8dadf}
+.fam{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:8px}
+.fam .chip{font-size:17px}
+.base{top:772px;height:150px;border-radius:20px;border:2px solid #4ea7ff99;background:#0f1e38e8;padding:16px 24px;box-shadow:none}
+.base b{display:block;font:800 28px Inter,sans-serif;margin-bottom:10px}
+#con{left:70px;width:880px;padding:10px 20px}#cer{left:970px;width:880px;padding:10px 20px}
+.cerf{display:flex;align-items:center;gap:10px;height:100%}.cerf b{flex:none;width:220px;margin:0;font-size:26px}.cerf b span{font:500 18px Inter,sans-serif;color:var(--ice)}
+.grafo{width:596px;height:130px;overflow:visible}.grafo line{stroke:#4ea7ff99;stroke-width:2}.grafo rect{fill:#13284d;stroke:#4ea7ff;stroke-width:2}.grafo .hub rect{fill:#2d7ff9;stroke:#9fd0ff}.grafo text{fill:#fff;font:700 16px Inter,sans-serif}
+.fuera{top:958px;padding:12px 22px;border-radius:14px;border:2px dashed #4ea7ff66;background:#05070ccc;font:600 20px Inter,sans-serif;color:#c9d1e0}
+#sis{left:200px}#maq{left:840px}#ias{left:1450px}
+
+#fr{left:70px;top:144px;width:1780px;height:286px;padding:14px 26px}
+#fr .frl{position:absolute;left:26px;top:30px;width:440px}
+#fr .frm{position:absolute;top:50px;display:flex;flex-direction:column;gap:12px;align-items:flex-start}#fr .frm .lbl{margin:0 0 2px}#fr #frmos{left:500px}#fr #frmdt{right:26px;width:240px}
+#pentaf{position:absolute;left:820px;top:18px;width:700px;height:250px;margin:0}
+#os{left:70px;top:448px;width:870px;height:372px}
+#dt{left:980px;top:448px;width:870px;height:372px}
+#os .penta{position:absolute;left:10px;top:84px;width:440px;height:270px;margin:0}
+#os .der{position:absolute;right:20px;top:92px;width:400px;display:flex;flex-direction:column;gap:0}
+#os .der .caja{margin-top:10px;padding:10px 14px}#os .der .caja b{font-size:20px;margin-bottom:4px}
+#dt .hept{position:absolute;left:20px;right:20px;top:96px;height:250px}
+.base{top:850px;height:124px}
+.fuera{top:992px}
+svg#hilos{position:absolute;inset:0;width:1920px;height:1080px;pointer-events:none;z-index:1}
+.md,.nuc,.base,.junta,.fuera{z-index:2}.chip,.caja{position:relative;z-index:2}
+svg#hilos path{fill:none;stroke:#4ea7ff;stroke-width:2.5;opacity:.75}
+svg#hilos path.fr{stroke:#d8dadf;stroke-dasharray:8 7}
+svg#hilos path.al{stroke:#ff8a3d;stroke-dasharray:6 6;filter:none}
+.nota{left:0;right:0;bottom:8px;text-align:center;font:500 16px Inter,sans-serif;color:#7a8aa3}
+</style><style>
+body{width:1080px;height:1920px}
+.floor{height:18%}
+h1{top:46px;font-size:44px}.junta{top:112px}
+#fr{left:40px;top:180px;width:1000px;height:460px}
+#fr .frl{left:26px;top:24px;width:380px}
+#fr #frmos{left:26px;top:282px}#fr #frmdt{left:auto;right:26px;top:362px;width:auto;align-items:flex-end}
+#pentaf{left:370px;top:40px;width:600px;height:360px}
+#os{left:40px;top:668px;width:1000px;height:400px}
+#os .penta{left:10px;top:84px;width:440px;height:300px}
+#os .der{right:20px;top:92px;width:470px}
+#dt{left:40px;top:1094px;width:1000px;height:420px}
+#dt .hept{left:20px;right:20px;top:100px;height:300px}
+.base{top:1546px;height:236px}
+#con{left:40px;width:490px;padding:14px 18px}#cer{left:550px;width:490px;padding:14px 18px}
+.cerf{flex-direction:column;align-items:flex-start;gap:8px}.cerf b{width:auto;font-size:24px}.cerf b span{font-size:16px}
+.cerf b br{display:none}.cerf b span{display:block}
+.grafo{width:454px;height:150px}.grafo text{font-size:14px}#cer .grafo text{font-size:13px}
+.fuera{top:1802px;font-size:19px;padding:10px 18px}#sis{left:40px}#maq{left:auto;right:40px}
+svg#hilos{width:1080px;height:1920px}
+.nota{bottom:14px;padding:0 50px;font-size:15px;line-height:1.4}
+</style></head><body><div class="floor"></div>
+<h1 class="a">Arvantti · <span>todo conectado con todo</span></h1>
+<div class="a junta" id="junta">La junta decide · la IA recomienda</div>
+
+<div class="a prod" id="os"><div class="t"><img src="marca.png">Arvantti OS</div><small>Gobierna la IA de tu empresa · a la medida de cada empresa</small>
+  <div class="penta" id="penta"><div class="nuc" id="nucos">Núcleo<small>ARVANTTI OS</small></div></div>
+  <div class="der">
+    <div class="fila"><span class="chip fr" id="fpro">Fractal Process · procesos y decisiones</span></div>
+    <div class="caja" id="ent"><b>Edición Enterprise</b><div class="it">Agentes con flujos y aprobaciones</div><div class="fila" style="margin-top:6px"><span class="chip fr" id="ffin">Fractal Finance · caja y margen</span></div></div>
+    <div class="caja" id="cod"><b>Edición Coding</b><div class="it">Cada IA en su terminal y su rama · aprobación humana</div></div>
+  </div>
+</div>
+
+<div class="a prod" id="dt"><div class="t"><img src="marca.png">Arvantti Digital Twin</div><small>Tu operación en 3D · observa, simula y recomienda</small>
+  <div class="hept" id="hept"><div class="nuc" id="nucdt">Núcleo<small>DIGITAL TWIN</small></div></div>
+</div>
+
+<div class="a prod" id="fr">
+  <div class="frl"><div class="t" style="display:flex;align-items:center;gap:12px;font:800 34px Inter,sans-serif"><img src="marca.png" style="width:40px">Arvantti Fractal</div>
+    <small style="display:block;margin:4px 0 10px;font:500 20px Inter,sans-serif;color:var(--ice)">Optimización y apoyo a la decisión</small>
+    <div class="it">Primero incorpora tus reglas. Después combina cinco familias de métodos.</div>
+    <div class="it" style="margin-top:8px;color:#fff;font-weight:700">Presenta las mejores opciones y su impacto. No decide por ti.</div></div>
+  <div class="penta" id="pentaf"><div class="nuc" id="nucfr">Núcleo<small>FRACTAL</small></div></div>
+  <div class="frm" id="frmos"><p class="lbl">En Arvantti OS</p>
+    <span class="chip fr" id="fx3">Fractal Finance</span><span class="chip fr" id="fx2">Fractal Process</span></div>
+  <div class="frm" id="frmdt"><p class="lbl">En Digital Twin</p><span class="chip fr" id="fx1">Fractal Industrial</span></div>
+</div>
+
+<div class="a base" id="con"><div class="cerf"><b>Integrator<br><span>compartido por OS y Digital Twin</span></b><svg class="grafo" viewBox="0 0 460 150"><line x1="230" y1="62" x2="72" y2="22"/><line x1="230" y1="62" x2="72" y2="118"/><line x1="230" y1="62" x2="388" y2="22"/><line x1="230" y1="62" x2="388" y2="118"/><line x1="230" y1="62" x2="230" y2="132"/><g class="hub"><rect x="165.0" y="45" width="130" height="34" rx="17"/><text x="230" y="67" text-anchor="middle">Conectores</text></g><g><rect x="2.0" y="5" width="140" height="34" rx="17"/><text x="72" y="27" text-anchor="middle">ERP · gestión</text></g><g><rect x="2.0" y="101" width="140" height="34" rx="17"/><text x="72" y="123" text-anchor="middle">CRM · clientes</text></g><g><rect x="313.0" y="5" width="150" height="34" rx="17"/><text x="388" y="27" text-anchor="middle">SCADA · equipos</text></g><g><rect x="328.0" y="101" width="120" height="34" rx="17"/><text x="388" y="123" text-anchor="middle">Planillas</text></g><g><rect x="187.0" y="115" width="86" height="34" rx="17"/><text x="230" y="137" text-anchor="middle">Y más</text></g></svg></div></div>
+<div class="a base" id="cer"><div class="cerf"><b>Cerebro empresarial<br><span>compartido por OS y Digital Twin</span></b><svg class="grafo" viewBox="0 0 460 150"><line x1="60" y1="26" x2="117" y2="118"/><line x1="117" y1="118" x2="175" y2="26"/><line x1="175" y1="26" x2="232" y2="118"/><line x1="232" y1="118" x2="290" y2="26"/><line x1="290" y1="26" x2="347" y2="118"/><line x1="347" y1="118" x2="405" y2="26"/><line x1="60" y1="26" x2="175" y2="26"/><line x1="175" y1="26" x2="290" y2="26"/><line x1="290" y1="26" x2="405" y2="26"/><line x1="117" y1="118" x2="232" y2="118"/><line x1="232" y1="118" x2="347" y2="118"/><line x1="60" y1="26" x2="232" y2="118"/><line x1="117" y1="118" x2="405" y2="26"/><line x1="175" y1="26" x2="347" y2="118"/><g><rect x="9.0" y="9" width="102" height="34" rx="17"/><text x="60" y="31" text-anchor="middle">Productos</text></g><g><rect x="124.0" y="9" width="102" height="34" rx="17"/><text x="175" y="31" text-anchor="middle">Materiales</text></g><g><rect x="239.0" y="9" width="102" height="34" rx="17"/><text x="290" y="31" text-anchor="middle">Capacidades</text></g><g><rect x="354.0" y="9" width="102" height="34" rx="17"/><text x="405" y="31" text-anchor="middle">Decisiones</text></g><g><rect x="66.0" y="101" width="102" height="34" rx="17"/><text x="117" y="123" text-anchor="middle">Pedidos</text></g><g><rect x="181.0" y="101" width="102" height="34" rx="17"/><text x="232" y="123" text-anchor="middle">Clientes</text></g><g><rect x="296.0" y="101" width="102" height="34" rx="17"/><text x="347" y="123" text-anchor="middle">Costos</text></g></svg></div></div>
+
+<div class="a fuera" id="sis">Tus sistemas: ERP · CRM · SCADA · planillas</div>
+<div class="a fuera" id="maq">Máquinas de la planta</div>
+<svg id="hilos"></svg>
+<div class="a nota">Línea blanca punteada: cada módulo de Fractal y el producto donde se aplica · Naranja: Dendro actúa sobre una máquina solo con aprobación de una persona</div>
+<script>
+// expand template literals written in HTML
+const M=[['Integrator','Conecta tus sistemas'],['APS','Planificador avanzado'],['CoSimulation','Reglas primero, luego el futuro'],['Fractal Industrial','Compara alternativas',1],['Control Center','Avance e inventarios'],['Dendro','IA en la máquina'],['Asistente de IA','Usa la IA de Arvantti OS']];
+const PR=[['Controla','Qué hace cada IA'],['Protege','Claves y datos'],['Organiza','Cada trabajo, una tarea'],['Recuerda','Cerebro empresarial'],['Rinde cuentas','Cada acción, un comprobante']];
+const PE=document.getElementById('penta');
+PR.forEach(([n,f],i)=>{const a=-Math.PI/2+i*2*Math.PI/5;const d=document.createElement('div');d.className='pm';d.id='p'+i;d.style.left=`calc(50% + ${Math.cos(a)*145}px)`;d.style.top=`calc(50% + ${Math.sin(a)*105}px)`;d.innerHTML=`<b>${n}</b><small>${f}</small>`;PE.appendChild(d);});
+const FA=[['Inteligencia artificial','Analiza y formula'],['Optimización matemática','Objetivos con restricciones'],['Genéticos y evolutivos','Exploran soluciones'],['Métodos estocásticos','Incertidumbre'],['Simulación Montecarlo','Escenarios y riesgo']];
+const PF=document.getElementById('pentaf');
+FA.forEach(([n,f],i)=>{const a=-Math.PI/2+i*2*Math.PI/5;const d=document.createElement('div');d.className='pm fa';d.id='f'+i;d.style.left=`calc(50% + ${Math.cos(a)*160}px)`;d.style.top=`calc(50% + ${Math.sin(a)*118}px)`;d.innerHTML=`<b>${n}</b><small>${f}</small>`;PF.appendChild(d);});
+const H=document.getElementById('hept');
+M.forEach(([n,f,fr],i)=>{const a=-Math.PI/2+i*2*Math.PI/7;const d=document.createElement('div');d.className='md'+(fr?' fr':'');d.id='m'+i;d.style.left=`calc(50% + ${Math.cos(a)*330}px)`;d.style.top=`calc(50% + ${Math.sin(a)*112}px)`;d.innerHTML=`<b>${n}</b><small>${f}</small>`;H.appendChild(d);});
+const R=id=>document.getElementById(id).getBoundingClientRect();
+const S=document.getElementById('hilos');
+const P=(d,c='')=>S.insertAdjacentHTML('beforeend',`<path class="${c}" d="${d}"/>`);
+const cx=r=>r.left+r.width/2, cy=r=>r.top+r.height/2;
+// núcleo DT a módulos
+const no=R('nucos');PR.forEach((_,i)=>{const m=R('p'+i);P(`M${cx(no)},${cy(no)} L${cx(m)},${cy(m)}`)});
+const nf=R('nucfr');FA.forEach((_,i)=>{const m=R('f'+i);P(`M${cx(nf)},${cy(nf)} L${cx(m)},${cy(m)}`)});
+const n=R('nucdt');M.forEach((_,i)=>{const m=R('m'+i);P(`M${cx(n)},${cy(n)} L${cx(m)},${cy(m)}`)});
+// productos a la base
+const lin=(x,y1,y2)=>P(`M${x},${y1} L${x},${y2}`);
+const os=R('os'),dt=R('dt'),fr=R('fr'),c=R('con'),ce=R('cer'),jn=R('junta');
+const by=(dt.bottom+c.top)/2;
+P(`M${os.left},${os.bottom-40} L22,${os.bottom-40} L22,${by} L${cx(ce)},${by}`);
+[dt.left+250,dt.right-250].forEach(x=>lin(x,dt.bottom,by));[cx(c),cx(ce)].forEach(x=>lin(x,by,c.top));
+lin(cx(os),os.top,fr.bottom); lin(cx(jn),jn.bottom,fr.top);
+const gy=(fr.bottom+os.top)/2;
+const mi=R('m3'),f1=R('fx1');
+P(`M${f1.right},${cy(f1)} L1062,${cy(f1)} L1062,${cy(mi)} L${mi.right},${cy(mi)}`,'fr');
+const f2=R('fx2'),f3=R('fx3'),pr=R('fpro'),fi=R('ffin'),xr=os.right-14,px=cx(pr);
+P(`M${cx(f2)},${f2.bottom} L${cx(f2)},${gy-6} L${px},${gy-6} L${px},${pr.top}`,'fr');
+const xl=f3.left-14;
+P(`M${f3.left},${cy(f3)} L${xl},${cy(f3)} L${xl},${gy+6} L${xr},${gy+6} L${xr},${cy(fi)} L${fi.right},${cy(fi)}`,'fr');
+const de=R('m5'),mq=R('maq'),gx=(c.right+ce.left)/2;
+P(`M${cx(de)},${de.bottom} L${cx(de)},${dt.bottom-14} L${gx},${dt.bottom-14} L${gx},${cy(mq)} L${mq.left},${cy(mq)}`,'al');
+const si=R('sis');lin(cx(si),c.bottom,si.top);
+</script></body></html>
