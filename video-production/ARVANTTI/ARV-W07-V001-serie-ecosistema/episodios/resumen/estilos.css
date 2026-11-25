@@ -302,8 +302,8 @@
 .e4 .mcr svg{width:560px;height:330px}
 .e4 #rmc svg{width:620px}
 .e4 .opts .opt{width:440px}
-.e7 .cuatro{gap:26px;align-items:stretch}
-.e7 .vz4{width:390px;padding:22px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:14px}
+.e7 .cuatro{gap:22px;align-items:stretch;flex-wrap:nowrap}
+.e7 .vz4{width:360px;padding:22px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:14px}
 .e7 .vz4 > small{font:700 22px "JetBrains Mono",monospace;letter-spacing:2px;color:var(--electric);text-transform:uppercase}
 .e7 .vz4 > b{margin-top:40px;font:800 42px "Inter Display",Inter,sans-serif}
 .e7 .vz4 > span{font:500 28px Inter,sans-serif;color:var(--ice)}
