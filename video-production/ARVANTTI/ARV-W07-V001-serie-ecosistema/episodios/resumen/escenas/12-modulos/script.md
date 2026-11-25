@@ -1,0 +1,1 @@
+Un núcleo y siete módulos. Integrator conecta el ERP, el CRM, que gestiona clientes, y el SCADA, que supervisa los equipos. El APS, el planificador avanzado, programa la producción. Y el cosimulador primero incorpora tus reglas de producción y después corre el futuro en paralelo.

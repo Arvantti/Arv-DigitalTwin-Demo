@@ -1,0 +1,30 @@
+/* ── Propios del gran resumen (vertical) ── */
+.st.apretado{gap:22px}
+.e1 .cab .am{width:90px}.e1 .cab h1{font-size:96px}
+.e1 .prods{flex-direction:column;align-items:center;gap:16px}
+.e1 .prods .prod{width:860px;flex-direction:row;padding:14px 22px;gap:18px;text-align:left}
+.e1 .prods .pv{height:130px}.e1 .prods .pv svg{width:220px;height:124px}
+.e1 .prods .prod b{font-size:36px}.e1 .prods .prod span{font-size:24px}
+.e2 .flujo{flex-direction:column;gap:10px}
+.e3 .gem{flex-direction:column;gap:30px}
+.e3 .gem .pg .planta{width:760px}
+.e3 .reglas12,.e3 .ap13{bottom:auto;top:calc(100% - 330px);white-space:normal;width:900px;text-align:center;font-size:30px}
+.e3 .hepta{top:-40px}
+.e3 .redia svg{width:860px;height:440px}
+.e3 .asi{flex-direction:column;gap:30px}
+.e4 .mv,.e4 .mcr{flex-direction:column;gap:18px}
+.e4 .mv svg{width:820px;height:240px}
+.e4 .mcr svg,.e4 #rmc svg{width:820px;height:300px}
+.e4 .opts .opt{width:860px}
+.e4 .tri{flex-direction:column;align-items:center;gap:14px}.e4 .tri .card{width:760px;padding:16px 24px}
+.e7 .cuatro{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.e7 .vz4{width:450px;padding:18px}
+.e7 .vz4 .pl .planta{width:220px}
+.e7 .res{width:900px}.e7 .res b{font-size:32px}
+.e7 #rop19 .opt{width:860px;padding:12px 22px}
+.e7 #rop19 .bar span{font-size:24px}
+.rc .terms{flex-direction:column;align-items:center;gap:16px}
+.rc .term{width:860px;padding-bottom:14px}
+.rc .planes,.rc .cla{flex-direction:column;gap:26px}
+.rc .niveles,.rc .llave{width:900px}
+.rc .paso{width:700px;padding:12px 20px}

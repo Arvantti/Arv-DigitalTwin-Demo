@@ -1,0 +1,1 @@
+Vuelve la junta. Integrator trajo ventas, pedidos, inventarios y costos. Arvantti OS armó el escenario con el contexto y los permisos. El gemelo simuló la operación y mostró dónde se forma el cuello de botella. Y Dendro avisó qué máquina necesita mantenimiento antes.

@@ -1,0 +1,1 @@
+Para la operación está Arvantti Digital Twin: una copia viva de tu planta en 3D, que se mueve al ritmo de la real. Se conecta a lo que ya tienes en solo lectura: observa, simula y recomienda; nunca mueve nada en la planta.

@@ -1,0 +1,1 @@
+Arvantti Fractal no es un solo algoritmo. Primero incorpora tus reglas. Después combina inteligencia artificial, optimización matemática, algoritmos genéticos y evolutivos, métodos estocásticos y simulación Montecarlo.

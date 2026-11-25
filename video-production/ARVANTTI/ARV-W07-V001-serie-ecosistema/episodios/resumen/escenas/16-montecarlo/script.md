@@ -1,0 +1,1 @@
+Busca varios objetivos a la vez, los que tú elijas. Y con Montecarlo analiza cómo respondería cada opción ante escenarios inciertos: su probabilidad de cumplir, cuánto varía y qué tan malos son los peores casos.

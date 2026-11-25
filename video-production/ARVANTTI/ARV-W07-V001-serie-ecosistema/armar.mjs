@@ -23,6 +23,8 @@ const VERT = process.env.FORMATO === "vertical";
 const W = VERT ? 1080 : 1920, H = VERT ? 1920 : 1080;
 const MUSICA = path.join(HERE, "assets/clips/musica-serie.mp3");
 const MUSICA_LARGA = path.join(HERE, "assets/clips/musica-serie-larga.mp3");
+// Gran resumen (unos 5 min): la pista larga encadenada consigo misma con fundidos (assets/clips/musica-resumen.mp3).
+const MUSICA_RESUMEN = path.join(HERE, "assets/clips/musica-resumen.mp3");
 
 const { ESCENAS, componerEpisodio } = await import(pathToFileURL(path.join(EPDIR, "escenas.mjs")).href);
 
@@ -140,7 +142,8 @@ function mezclaMusica(escenas, total) {
   if (VERT && fs.existsSync(dst)) return dst;
   if (!fs.existsSync(MUSICA)) return null;
   // Episodios más largos que la pista de la serie usan la versión larga (misma indicación, 130 s).
-  const src = total > duracion(MUSICA) - 1 && fs.existsSync(MUSICA_LARGA) ? MUSICA_LARGA : MUSICA;
+  let src = total > duracion(MUSICA) - 1 && fs.existsSync(MUSICA_LARGA) ? MUSICA_LARGA : MUSICA;
+  if (total > duracion(src) - 1 && fs.existsSync(MUSICA_RESUMEN)) src = MUSICA_RESUMEN;
   const voces = escenas.filter((x) => x.real);
   const args = ["-y", "-v", "error", "-i", src];
   voces.forEach((x) => args.push("-i", vozDe(x)));

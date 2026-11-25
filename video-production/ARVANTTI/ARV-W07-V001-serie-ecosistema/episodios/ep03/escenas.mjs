@@ -86,7 +86,7 @@ export function componerEpisodio(c) {
   {
     const x = S.modulos; const [s, d] = span(x);
     const M = [["Integrator", "Integrator", "Conecta"], ["el APS", "APS", "Planificador avanzado"], ["CoSimulation", "CoSimulation", "Simula el futuro"], ["Fractal Industrial", "Fractal Industrial", "Mejores opciones"], ["Control Center", "Control Center", "Avance e inventarios"], ["Dendro", "Dendro", "IA en la máquina"], ["el asistente", "Asistente de IA", "Reportes y gráficas"]];
-    const R = VERT ? 330 : 330, CX = 0, CY = 0;
+    const R = VERT ? 330 : 290, CX = 0, CY = 0;
     clip("e-mod", "scene", s, d, `${KICK}
       <div class="st">
         <div class="hepta">

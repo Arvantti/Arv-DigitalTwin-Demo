@@ -1,0 +1,1 @@
+Fractal comparó las alternativas de capacidad, inventario y caja, con su riesgo. Arvantti OS presentó el resultado explicado, con sus fuentes y sus comprobantes. Y la junta decide. La IA recomienda; la decisión es de las personas.

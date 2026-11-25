@@ -15,7 +15,7 @@
 .flecha-l polygon{fill:#4ea7ff}
 .vb{gap:24px}.vb .chip{font-size:38px}
 .nunca{font-size:34px;border-color:#9fd0ff}
-.hepta{position:relative;width:1500px;height:780px}
+.hepta{position:relative;width:1500px;height:780px;top:40px}
 .nucleo-dt{position:absolute;left:50%;top:50%;width:230px;height:230px;margin:-115px 0 0 -115px;border-radius:50%;background:radial-gradient(#1a3a6e,#0a1222);border:3px solid var(--electric);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;box-shadow:0 0 80px #2d7ff988}
 .nucleo-dt b{font:800 40px "Inter Display",Inter,sans-serif}
 .nucleo-dt small{font:600 20px "JetBrains Mono",monospace;color:var(--ice)}

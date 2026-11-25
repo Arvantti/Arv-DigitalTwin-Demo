@@ -1,0 +1,67 @@
+/* ── Propios del gran resumen ── */
+.st.apretado{gap:26px}
+.e1 .cab{align-items:center;gap:30px}.e1 .cab .am{width:110px}.e1 .cab h1{font-size:110px}
+.e1 .prods .prod{padding:22px 22px}
+.e2 .flujo{align-items:center;gap:22px}.e2 .flujo .chip{font-size:34px}
+.flecha-t{font:800 46px Inter,sans-serif;color:var(--electric)}
+.e2 .ag{padding:18px 24px}
+.e3 .gem{align-items:center;gap:60px}
+.e3 .gem .pg .planta{width:760px}
+.e3 .ld3{display:flex;flex-direction:column;align-items:center;gap:24px}
+.e3 #rtw{width:460px}.e3 #rsl{font-size:36px}
+.e3 .rayos{position:absolute;left:50%;top:50%;width:1600px;height:1000px;margin:-500px 0 0 -800px;overflow:visible}
+.e3 .rayos line{stroke:#4ea7ff;stroke-width:3;stroke-dasharray:1;stroke-dashoffset:1;filter:drop-shadow(0 0 6px #4ea7ff)}
+.e3 .md-m{width:330px;margin-left:-165px}
+.e3 .md-m small{font-size:20px}
+.e3 .reglas12,.e3 .ap13{position:absolute;left:50%;bottom:60px;transform:translateX(-50%);font-size:30px}
+.e3 .redia{padding:18px 24px}.e3 .redia svg{width:620px;height:330px}
+.e3 .redia small{font:600 24px "JetBrains Mono",monospace;letter-spacing:2px;color:var(--ice);text-transform:uppercase}
+.e4 .f-t{text-shadow:0 0 60px #05070c}
+.e4 .mv svg{width:560px;height:260px}
+.e4 .mcr svg{width:560px;height:330px}
+.e4 #rmc svg{width:620px}
+.e4 .opts .opt{width:440px}
+.e7 .cuatro{gap:26px;align-items:stretch}
+.e7 .vz4{width:390px;padding:22px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:14px}
+.e7 .vz4 > small{font:700 22px "JetBrains Mono",monospace;letter-spacing:2px;color:var(--electric);text-transform:uppercase}
+.e7 .vz4 > b{margin-top:40px;font:800 42px "Inter Display",Inter,sans-serif}
+.e7 .vz4 > span{font:500 28px Inter,sans-serif;color:var(--ice)}
+.e7 .pila4{display:flex;flex-direction:column;gap:12px;align-items:center}
+.e7 .vz4 .pl .planta{width:260px;height:auto}
+.e7 .vz4 .gr span{width:110px;font-size:22px}
+.e7 .res{width:1100px;padding:20px 30px}.e7 .res b{font-size:36px}
+.e7 #rop19 .opt{width:420px}
+/* Arvantti OS Coding */
+.rc .c-t{text-shadow:0 0 60px #05070c}
+.rc .terms{gap:30px;align-items:stretch}
+.rc .term{width:500px;padding:0 0 22px;text-align:left;overflow:hidden;display:flex;flex-direction:column;gap:10px}
+.rc .barra{display:flex;align-items:center;gap:8px;padding:12px 18px;background:#13284d;border-bottom:2px solid #4ea7ff55}
+.rc .barra i{width:14px;height:14px;border-radius:50%;background:#4ea7ff88}
+.rc .barra span{margin-left:12px;font:800 30px "Inter Display",Inter,sans-serif;color:#fff}
+.rc .ln{margin:0 22px;font:500 24px "JetBrains Mono",monospace;color:#c9d1e0}
+.rc .ln em{font-style:normal;color:#9fd0ff}
+.rc .ln.ok,.rc .ok{color:#9fd0ff;font-style:normal}
+.rc .rama{margin:6px 22px 0;align-self:flex-start;padding:6px 14px;border:2px solid #4ea7ff66;border-radius:10px;font:600 20px "JetBrains Mono",monospace;color:#e6eefc;background:#0d1a30}
+.rc .reglas{font-size:36px}
+.rc .planes{gap:70px;align-items:center}
+.rc .niveles{width:720px;padding:26px 30px;display:flex;flex-direction:column;gap:16px;text-align:left}
+.rc .niveles > small{font:700 22px "JetBrains Mono",monospace;letter-spacing:3px;color:var(--electric);text-transform:uppercase}
+.rc .nv{display:flex;align-items:center;gap:18px;padding:8px 10px;border:2px solid transparent;border-radius:12px}
+.rc .nv span{flex:none;width:330px;font:700 28px Inter,sans-serif}
+.rc .nv i{display:block;height:18px;border-radius:9px;background:linear-gradient(90deg,#1d4f9c,#4ea7ff)}
+.rc .docs{justify-content:flex-start;gap:12px;margin-top:6px}.rc .docs .tag{font-size:22px}
+.rc .flujo-c{display:flex;flex-direction:column;align-items:center;gap:6px}
+.rc .paso{width:520px;padding:16px 24px;display:flex;align-items:center;justify-content:center;gap:14px}
+.rc .paso b{font:800 32px "Inter Display",Inter,sans-serif}
+.rc .paso .ok{font:800 32px Inter,sans-serif}
+.rc .fl{font:800 34px Inter,sans-serif;color:var(--electric)}
+.rc .cla{gap:70px;align-items:center}
+.rc .llave{width:640px;padding:28px 32px;display:flex;flex-direction:column;gap:16px;text-align:left}
+.rc .llave > small{font:700 22px "JetBrains Mono",monospace;letter-spacing:3px;color:var(--electric);text-transform:uppercase}
+.rc .llave code{font:600 34px "JetBrains Mono",monospace;color:#e6eefc}
+.rc .oculta{color:#9fd0ff;letter-spacing:2px}
+.rc .cand{font:700 28px Inter,sans-serif;font-style:normal;color:var(--ice)}
+.rc .cadena{display:flex;flex-direction:column;align-items:center}
+.rc .cadena .card{width:420px;padding:14px 24px}.rc .cadena .card b{font-size:34px}
+.rc .eslabon{display:block;width:4px;height:30px;background:#4ea7ff;box-shadow:0 0 10px #4ea7ff}
+.rc .gob{text-shadow:0 0 60px #05070c}

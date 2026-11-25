@@ -26,7 +26,7 @@ export function componerEpisodio(c) {
       <div class="st">
         <h2 class="h md q">${words("Si la demanda sube…")}</h2>
         <div class="row qs">${Q.map(([, t], i) => `<span class="chip" id="q${i}">¿Nos alcanza la ${t}?</span>`).join("")}</div>
-        <h1 class="h xl ti hay">${words("Esta vez hay respuesta.")}</h1>
+        <h1 class="h xl hay">${words("Esta vez hay respuesta.")}</h1>
       </div>`, 3);
     at("#e-jun .kick", { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.6 }, s + 0.3);
     titleIn("#e-jun .q", P(x, "si la demanda") - 0.1, 0.1);
@@ -116,7 +116,7 @@ export function componerEpisodio(c) {
     const x = S.decide; const [s, d] = span(x);
     clip("e-dec", "scene", s, d, `${KICK}
       <div class="st">
-        <h1 class="h xl ti dj">${words("La junta decide.")}</h1>
+        <h1 class="h xl dj">${words("La junta decide.")}</h1>
         <div class="row rd"><span class="chip" id="rd0">La IA recomienda</span><span class="chip on" id="rd1">Las personas deciden</span></div>
       </div>`, 3);
     enter("e-dec", s);

@@ -1,0 +1,1 @@
+Fractal Industrial compara alternativas de programación. El Control Center muestra el avance de los pedidos, los inventarios y lo que se va a necesitar. Dendro lleva la IA a la máquina para ver venir la falla, y es la única pieza que puede actuar sobre una máquina, siempre con la aprobación de una persona. Y el asistente de IA arma reportes y gráficas cuando se lo pides.

@@ -1,0 +1,1 @@
+Cinco promesas. Controla qué puede hacer cada IA. Protege las claves y los datos sensibles. Organiza cada trabajo como una tarea con responsable. Recuerda, con un cerebro empresarial que sabe qué se decidió y por qué. Y rinde cuentas: cada acción deja un comprobante.

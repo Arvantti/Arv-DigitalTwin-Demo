@@ -139,7 +139,7 @@ export function componerEpisodio(c) {
     const tA = P(x, "con aprobación");
     clip("e-apr", "scene", s, d, `${KICK}
       <div class="st">
-        <div class="panel accion"><small>Acción propuesta por Dendro</small><b>Bajar velocidad de la máquina 7 un 10 %</b>
+        <div class="panel accion"><small>Acción propuesta por Dendro</small><b>Bajar velocidad de la máquina 7 un 10&nbsp;%</b>
           <div class="row btns"><span class="chip on ap">✓ Aprobar</span><span class="chip">Rechazar</span></div>
           <div class="persona"><svg viewBox="0 0 60 60"><circle cx="30" cy="20" r="12"/><path d="M8 58c0-14 10-22 22-22s22 8 22 22"/></svg><span>Supervisor de turno</span></div>
         </div>

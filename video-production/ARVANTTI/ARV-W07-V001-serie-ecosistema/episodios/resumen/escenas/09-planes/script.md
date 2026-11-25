@@ -1,0 +1,1 @@
+Cada trabajo tiene su nivel de plan, desde una tarea simple hasta una especificación completa, documentada en archivos y en la base del proyecto. Las pruebas corren solas en cada cambio, y nada llega a la rama principal sin la aprobación de una persona.

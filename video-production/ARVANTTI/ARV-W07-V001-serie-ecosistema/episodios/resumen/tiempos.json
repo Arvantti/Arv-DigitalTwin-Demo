@@ -1,0 +1,162 @@
+[
+ {
+  "id": "junta",
+  "start": 0,
+  "voiceAt": 1.4,
+  "voz": 8.44,
+  "dur": 10.84,
+  "real": true
+ },
+ {
+  "id": "islas",
+  "start": 10.84,
+  "voiceAt": 11.19,
+  "voz": 11.39,
+  "dur": 12.74,
+  "real": true
+ },
+ {
+  "id": "productos",
+  "start": 23.58,
+  "voiceAt": 23.93,
+  "voz": 21,
+  "dur": 22.35,
+  "real": true
+ },
+ {
+  "id": "base",
+  "start": 45.93,
+  "voiceAt": 46.28,
+  "voz": 9.25,
+  "dur": 10.6,
+  "real": true
+ },
+ {
+  "id": "os",
+  "start": 56.53,
+  "voiceAt": 56.88,
+  "voz": 12.59,
+  "dur": 13.94,
+  "real": true
+ },
+ {
+  "id": "promesas",
+  "start": 70.47,
+  "voiceAt": 70.82,
+  "voz": 17.79,
+  "dur": 19.14,
+  "real": true
+ },
+ {
+  "id": "enterprise",
+  "start": 89.61,
+  "voiceAt": 89.96,
+  "voz": 13.09,
+  "dur": 14.44,
+  "real": true
+ },
+ {
+  "id": "coding",
+  "start": 104.04,
+  "voiceAt": 104.39,
+  "voz": 11.73,
+  "dur": 13.08,
+  "real": true
+ },
+ {
+  "id": "planes",
+  "start": 117.12,
+  "voiceAt": 117.47,
+  "voz": 14.92,
+  "dur": 16.27,
+  "real": true
+ },
+ {
+  "id": "claves",
+  "start": 133.39,
+  "voiceAt": 133.74,
+  "voz": 8.52,
+  "dur": 9.87,
+  "real": true
+ },
+ {
+  "id": "gemelo",
+  "start": 143.26,
+  "voiceAt": 143.61,
+  "voz": 15.23,
+  "dur": 16.58,
+  "real": true
+ },
+ {
+  "id": "modulos",
+  "start": 159.83,
+  "voiceAt": 160.18,
+  "voz": 18.52,
+  "dur": 19.87,
+  "real": true
+ },
+ {
+  "id": "modulos2",
+  "start": 179.71,
+  "voiceAt": 180.06,
+  "voz": 21.39,
+  "dur": 22.74,
+  "real": true
+ },
+ {
+  "id": "ia",
+  "start": 202.45,
+  "voiceAt": 202.8,
+  "voz": 10.19,
+  "dur": 11.54,
+  "real": true
+ },
+ {
+  "id": "metodos",
+  "start": 213.99,
+  "voiceAt": 214.34,
+  "voz": 13.64,
+  "dur": 14.99,
+  "real": true
+ },
+ {
+  "id": "montecarlo",
+  "start": 228.97,
+  "voiceAt": 229.32,
+  "voz": 13.24,
+  "dur": 14.59,
+  "real": true
+ },
+ {
+  "id": "opciones",
+  "start": 243.57,
+  "voiceAt": 243.92,
+  "voz": 15.23,
+  "dur": 16.58,
+  "real": true
+ },
+ {
+  "id": "vuelve",
+  "start": 260.15,
+  "voiceAt": 260.5,
+  "voz": 16.77,
+  "dur": 18.12,
+  "real": true
+ },
+ {
+  "id": "decide",
+  "start": 278.27,
+  "voiceAt": 278.62,
+  "voz": 15.23,
+  "dur": 16.58,
+  "real": true
+ },
+ {
+  "id": "cierre",
+  "start": 294.85,
+  "voiceAt": 295.75,
+  "voz": 5.07,
+  "dur": 10.47,
+  "real": true
+ }
+]

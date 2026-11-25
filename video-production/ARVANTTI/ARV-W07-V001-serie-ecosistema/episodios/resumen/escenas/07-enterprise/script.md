@@ -1,0 +1,1 @@
+En la edición Enterprise, cada área trabaja con agentes que siguen los flujos y las aprobaciones de la empresa. Fractal Process optimiza procesos y decisiones, y Fractal Finance calcula la caja, el margen y las compras.

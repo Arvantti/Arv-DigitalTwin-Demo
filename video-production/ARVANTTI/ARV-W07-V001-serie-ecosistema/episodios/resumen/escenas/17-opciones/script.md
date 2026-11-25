@@ -1,0 +1,1 @@
+No promete el óptimo perfecto: te presenta las mejores opciones que encontró, con lo que gana y lo que cede cada una. Un núcleo, tres módulos: Industrial en el gemelo, Process en Arvantti OS y Finance en Arvantti OS Enterprise.
