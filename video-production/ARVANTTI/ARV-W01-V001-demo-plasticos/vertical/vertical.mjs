@@ -159,7 +159,7 @@ function render(ver = "v001") {
   for (const p of plan) {
     const fin = ini + p.largo;
     const yT = p.cierre ? 1250 : 240;
-    ev.push(`Dialogue: 1,${assT(ini)},${assT(fin)},Titulo,,0,0,0,,{\\pos(540,${yT})\\fad(250,150)}${esc(p.titulo[0])}\\N{\\c&H3DB5FF&}${esc(p.titulo[1])}`);
+    ev.push(`Dialogue: 1,${assT(ini)},${assT(fin)},Titulo,,0,0,0,,{\\pos(540,${yT})\\fad(250,150)}${esc(p.titulo[0])}\\N{\\c&HFFA74E&}${esc(p.titulo[1])}`);
     p.frases.forEach((f, k) => {
       if (f.s == null) return;
       const sig = p.frases[k + 1]?.s;
