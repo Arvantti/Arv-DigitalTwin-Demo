@@ -1,5 +1,5 @@
 {
-  "nota": "Versión vertical 9:16 para redes (60–90 s). Reutiliza las tomas del video largo; sólo la voz es nueva.",
+  "nota": "Versión vertical 9:16 para redes (60–90 s). Reutiliza las tomas del video largo; sólo la voz es nueva. v002: la toma V8 usa assets/clips/ia-capitulo.mp4, cortado de demo-salsas-horizontal-v006.mp4 entre 708,33 y 769,33 s (capítulo de IA).",
   "tomas": [
     {
       "id": "V1",
@@ -79,10 +79,10 @@
         1000
       ],
       "titulo": [
-        "El plan completo",
-        "en menos de 1 segundo"
+        "Primero las reglas,",
+        "después el plan"
       ],
-      "texto": "El APS, el programador de la producción, arma el plan de toda la planta en menos de un segundo."
+      "texto": "Primero se le enseñan al modelo las reglas de la planta. Con ellas, el cosimulador calcula el plan de toda la planta en menos de un segundo."
     },
     {
       "id": "V6",
@@ -112,20 +112,37 @@
         1000
       ],
       "titulo": [
-        "−6 h de lavado",
-        "−1 t de merma"
+        "−5,6 h de lavado",
+        "−1,3 t de merma"
       ],
-      "texto": "Y Fractal compara escenarios: organizando la planta en campañas por día, quita casi seis horas de lavado y una tonelada de merma, sin atrasar a nadie."
+      "texto": "Fractal, el motor de optimización y apoyo a la decisión, compara escenarios y te presenta las mejores opciones con su impacto: con campañas por día, casi seis horas menos de lavado y más de una tonelada menos de merma, sin atrasar a nadie."
     },
     {
       "id": "V8",
+      "clips": [
+        "ia-capitulo"
+      ],
+      "crop": [
+        730,
+        10,
+        980
+      ],
+      "ss": 50,
+      "titulo": [
+        "La IA,",
+        "en cada módulo"
+      ],
+      "texto": "Y la inteligencia artificial trabaja en cada módulo: arma el gemelo 3D, revisa los datos, ayuda a plantear escenarios y a interpretar los resultados."
+    },
+    {
+      "id": "V9",
       "clips": [],
       "cierre": true,
       "titulo": [
         "Decide antes",
         "de que pase"
       ],
-      "texto": "Fractal recomienda; la persona decide. Arvantti: decide antes de que pase."
+      "texto": "La IA recomienda; la persona decide. Arvantti: decide antes de que pase."
     }
   ]
 }

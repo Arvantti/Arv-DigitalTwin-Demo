@@ -26,7 +26,7 @@ const hash = (s) => createHash("sha256").update(s).digest("hex").slice(0, 16);
 const dur = (f) => Number(execFileSync("ffprobe", ["-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", f]).toString());
 const ff = (args) => execFileSync("ffmpeg", ["-v", "error", "-y", ...args], { stdio: "inherit" });
 
-const PRONUNCIA = [["APS", "a pe ese"], ["3D", "tres de"], ["Arvantti", "Arvanti"]];
+const PRONUNCIA = [["APS", "a pe ese"], ["3D", "tres de"]];
 function paraVoz(texto) {
   let out = "", idx = [];
   for (let i = 0; i < texto.length; ) {
