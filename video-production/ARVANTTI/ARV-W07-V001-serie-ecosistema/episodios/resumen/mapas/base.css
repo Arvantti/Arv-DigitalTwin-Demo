@@ -1,0 +1,5 @@
+:root{--blue:#2d7ff9;--electric:#4ea7ff;--ice:#9fd0ff;--ti:#d8dadf;--dti:#7a7e86;--panel:#0d1a30;--alert:#ff8a3d}
+*{box-sizing:border-box}html,body{margin:0}
+body{width:1920px;height:1080px;overflow:hidden;color:#f8fafc;font-family:Inter,sans-serif;background:radial-gradient(1200px 700px at 50% 40%,#12305e66 0%,#05070c00 70%),#05070c;position:relative}
+.floor{position:absolute;left:0;right:0;bottom:0;height:30%;background:linear-gradient(#05070c,#05070c00 40%),repeating-linear-gradient(90deg,#4ea7ff14 0 2px,transparent 2px 120px);opacity:.7}
+.mono{font-family:"JetBrains Mono",monospace}
