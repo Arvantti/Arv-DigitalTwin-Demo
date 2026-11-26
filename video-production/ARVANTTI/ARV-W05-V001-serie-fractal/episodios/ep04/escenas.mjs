@@ -128,19 +128,21 @@ export function componerEpisodio(c) {
     leave("e-alt", s + d);
   }
 
-  // 6. El gemelo solo observa, simula y recomienda.
+  // 6. El gemelo observa, simula y recomienda; desde el Control Center lo aprobado baja a planta.
   {
     const x = S.solo; const [s, d] = span(x);
     const V = [["observa", "Observa"], ["simula", "Simula"], ["recomienda", "Recomienda"]];
-    const tN = P(x, "No mueve");
+    const tN = P(x, "Control Center");
     clip("e-solo", "scene", s, d, `${KICK}
       <div class="st">
         <div class="row verbos">${V.map(([, t], i) => `<span class="chip" id="vb${i}">${t}</span>`).join("")}</div>
-        <div class="panel card nomueve"><i class="candado">🔒</i><b>No mueve nada en la planta</b></div>
+        <div class="panel card nomueve"><b>Control Center</b><span>Lo que una persona aprueba baja a la planta</span></div>
+        <div class="row verbos"><span class="chip" id="sc0">SCADA de la empresa</span><span class="chip" id="sc1">Dendro SCADA</span></div>
       </div>`, 3);
     enter("e-solo", s);
     V.forEach(([k], i) => { pop(`#vb${i}`, P(x, k) - 0.05); luz(`#vb${i}`, P(x, k) + 0.2); });
-    pop("#e-solo .nomueve", tN);
+    pop("#e-solo .nomueve", tN); luz("#e-solo .nomueve", P(x, "aprueba"));
+    pop("#sc0", P(x, "SCADA de la empresa")); pop("#sc1", P(x, "Dendro SCADA")); luz("#sc1", P(x, "Dendro SCADA") + 0.3);
     V.forEach(([k], i) => sfx(`6${i}`, "pop.mp3", P(x, k), 0.12));
     leave("e-solo", s + d);
   }

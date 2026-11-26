@@ -83,86 +83,86 @@
   "id": "gemelo",
   "start": 150.76,
   "voiceAt": 153.96,
-  "voz": 15.23,
-  "dur": 19.43,
+  "voz": 22.52,
+  "dur": 26.72,
   "real": true
  },
  {
   "id": "modulos",
-  "start": 170.18,
-  "voiceAt": 170.53,
+  "start": 177.47,
+  "voiceAt": 177.82,
   "voz": 18.52,
   "dur": 19.87,
   "real": true
  },
  {
   "id": "modulos2",
-  "start": 190.06,
-  "voiceAt": 190.41,
+  "start": 197.34,
+  "voiceAt": 197.69,
   "voz": 21.39,
   "dur": 22.74,
   "real": true
  },
  {
   "id": "ia",
-  "start": 212.8,
-  "voiceAt": 213.15,
+  "start": 220.09,
+  "voiceAt": 220.44,
   "voz": 10.19,
   "dur": 11.54,
   "real": true
  },
  {
   "id": "metodos",
-  "start": 224.34,
-  "voiceAt": 227.54,
+  "start": 231.63,
+  "voiceAt": 234.83,
   "voz": 13.64,
   "dur": 17.84,
   "real": true
  },
  {
   "id": "montecarlo",
-  "start": 242.17,
-  "voiceAt": 242.52,
+  "start": 249.46,
+  "voiceAt": 249.81,
   "voz": 13.24,
   "dur": 14.59,
   "real": true
  },
  {
   "id": "opciones",
-  "start": 256.77,
-  "voiceAt": 257.12,
+  "start": 264.06,
+  "voiceAt": 264.41,
   "voz": 15.23,
   "dur": 16.58,
   "real": true
  },
  {
   "id": "vuelve",
-  "start": 273.35,
-  "voiceAt": 276.55,
+  "start": 280.64,
+  "voiceAt": 283.84,
   "voz": 21.08,
   "dur": 25.28,
   "real": true
  },
  {
   "id": "decide",
-  "start": 298.63,
-  "voiceAt": 298.98,
+  "start": 305.92,
+  "voiceAt": 306.27,
   "voz": 15.23,
   "dur": 16.58,
   "real": true
  },
  {
   "id": "mapa",
-  "start": 315.21,
-  "voiceAt": 315.56,
+  "start": 322.5,
+  "voiceAt": 322.85,
   "voz": 18.83,
   "dur": 21.68,
   "real": true
  },
  {
   "id": "cierre",
-  "start": 336.89,
-  "voiceAt": 337.79,
+  "start": 344.18,
+  "voiceAt": 345.08,
   "voz": 5.07,
   "dur": 10.47,
   "real": true

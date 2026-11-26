@@ -280,7 +280,7 @@ export function componerEpisodio(c) {
 
   // ── Capítulo 3 · Arvantti Digital Twin ────────────────────────────────────
 
-  // 11. Copia viva en 3D, en solo lectura: observa, simula y recomienda.
+  // 11. Copia viva en 3D: observa, simula y recomienda; desde el Control Center lo aprobado baja a planta.
   {
     const x = S.gemelo;
     const V = [["observa", "Observa"], ["simula", "Simula"], ["recomienda", "Recomienda"]];
@@ -290,9 +290,10 @@ export function componerEpisodio(c) {
           <div class="pg">${foto3d("rpl11", ["3d-inyectoras", "3d-medio", "3d-heroe"])}</div>
           <div class="ld3">
             <div class="panel card on" id="rtw"><b>Digital Twin</b><small>Copia viva en 3D</small></div>
-            <span class="chip" id="rsl">Solo lectura</span>
+            <span class="chip" id="rsl">Conectado a tus sistemas</span>
             <div class="row vb">${V.map(([, t], i) => `<span class="chip" id="rvb${i}">${t}</span>`).join("")}</div>
-            <span class="chip nunca">Nunca mueve nada en la planta</span>
+            <span class="chip nunca" id="rcc11">Control Center · lo aprobado baja a planta</span>
+            <div class="row vb"><span class="chip" id="rsc0">SCADA de tu empresa</span><span class="chip" id="rsc1">Dendro SCADA</span></div>
           </div>
         </div>
       </div>`);
@@ -300,9 +301,10 @@ export function componerEpisodio(c) {
     { const tf = [x.voiceAt - 0.3, P(x, "al ritmo"), P(x, "observa")];
       tf.forEach((t, i) => { at(`#rpl11 img:nth-child(${i + 1})`, { opacity: 0, scale: 1.12 }, { opacity: 1, scale: 1, duration: 1, ease: "power2.out" }, t); to(`#rpl11 img:nth-child(${i + 1})`, { scale: 1.06, duration: 6, ease: "none" }, t + 1); }); }
     pop("#rtw", P(x, "copia viva") - 0.2);
-    pop("#rsl", P(x, "solo lectura")); luz("#rsl", P(x, "solo lectura") + 0.3);
+    pop("#rsl", P(x, "lo que ya tienes")); luz("#rsl", P(x, "lo que ya tienes") + 0.3);
     V.forEach(([k], i) => { pop(`#rvb${i}`, P(x, k) - 0.1); luz(`#rvb${i}`, P(x, k) + 0.3); });
-    pop("#r-gem .nunca", P(x, "nunca mueve"));
+    pop("#rcc11", P(x, "Control Center")); luz("#rcc11", P(x, "una persona aprueba"));
+    pop("#rsc0", P(x, "SCADA de tu empresa")); pop("#rsc1", P(x, "Dendro SCADA")); luz("#rsc1", P(x, "Dendro SCADA") + 0.3);
     sfx("11a", "whoosh-short.mp3", x.voiceAt, 0.18);
     V.forEach(([k], i) => sfx(`11${i}`, "pop.mp3", P(x, k), 0.12));
     leave("r-gem", s + d);

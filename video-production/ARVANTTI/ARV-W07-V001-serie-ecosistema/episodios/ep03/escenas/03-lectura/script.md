@@ -1,1 +1,1 @@
-Se conecta a lo que ya tienes, en solo lectura. Solo observa, simula y recomienda; nunca mueve nada en la planta.
+Se conecta a lo que ya tienes: observa, simula y recomienda. Y desde el Control Center, las recomendaciones que una persona aprueba bajan a la planta, por el SCADA de tu empresa, el sistema que supervisa las máquinas, o por los equipos de Dendro SCADA.

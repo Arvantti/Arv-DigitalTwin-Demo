@@ -43,22 +43,22 @@
   "id": "solo",
   "start": 45.58,
   "voiceAt": 45.88,
-  "voz": 5.25,
-  "dur": 6.55,
+  "voz": 13.71,
+  "dur": 15.01,
   "real": true
  },
  {
   "id": "respuesta",
-  "start": 52.13,
-  "voiceAt": 52.43,
+  "start": 60.6,
+  "voiceAt": 60.9,
   "voz": 6.11,
   "dur": 7.41,
   "real": true
  },
  {
   "id": "cierre",
-  "start": 59.55,
-  "voiceAt": 60.45,
+  "start": 68.01,
+  "voiceAt": 68.91,
   "voz": 5.15,
   "dur": 10.55,
   "real": true

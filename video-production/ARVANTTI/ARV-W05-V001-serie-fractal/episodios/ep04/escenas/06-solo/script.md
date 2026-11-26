@@ -1,1 +1,1 @@
-El gemelo solo observa, simula y recomienda. No mueve nada en la planta.
+El gemelo observa, simula y recomienda. Y desde el Control Center, lo que el jefe de planta aprueba baja a la planta, por el SCADA de la empresa, el sistema que supervisa las máquinas, o por los equipos de Dendro SCADA.

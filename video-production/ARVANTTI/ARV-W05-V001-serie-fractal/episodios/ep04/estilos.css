@@ -30,6 +30,7 @@
 .verbos{gap:30px}
 .verbos .chip{font-size:46px;padding:16px 44px}
 .nomueve{flex-direction:row;align-items:center;gap:24px;padding:26px 44px}
+.nomueve span{font-size:32px;color:#e8f1ff}
 .candado{font-style:normal;font-size:52px}
 .cita{width:1300px;padding:30px 44px;text-align:left}
 .cita small{font:700 24px "JetBrains Mono",monospace;letter-spacing:3px;color:var(--ice);text-transform:uppercase}

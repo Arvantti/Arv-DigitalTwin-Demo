@@ -19,38 +19,38 @@
   "id": "lectura",
   "start": 22.24,
   "voiceAt": 22.54,
-  "voz": 8.36,
-  "dur": 9.76,
+  "voz": 15.39,
+  "dur": 16.79,
   "real": true
  },
  {
   "id": "modulos",
-  "start": 32,
-  "voiceAt": 32.3,
+  "start": 39.02,
+  "voiceAt": 39.32,
   "voz": 11.47,
   "dur": 13.07,
   "real": true
  },
  {
   "id": "cosim",
-  "start": 45.06,
-  "voiceAt": 45.36,
+  "start": 52.09,
+  "voiceAt": 52.39,
   "voz": 9.95,
   "dur": 11.55,
   "real": true
  },
  {
   "id": "asistente",
-  "start": 56.62,
-  "voiceAt": 56.92,
+  "start": 63.64,
+  "voiceAt": 63.94,
   "voz": 11.47,
   "dur": 13.07,
   "real": true
  },
  {
   "id": "cierre",
-  "start": 69.69,
-  "voiceAt": 70.59,
+  "start": 76.71,
+  "voiceAt": 77.61,
   "voz": 4.99,
   "dur": 10.39,
   "real": true

@@ -5,7 +5,8 @@
 .e2 .flujo{align-items:center;gap:22px}.e2 .flujo .chip{font-size:34px}
 .flecha-t{font:800 46px Inter,sans-serif;color:var(--electric)}
 .e2 .ag{padding:18px 24px}
-.e3 .gem{align-items:center;gap:60px}
+.e3 .gem{align-items:center;gap:60px;flex-wrap:nowrap}
+.e3 .ld3 .chip{font-size:30px}.e3 .ld3 .row{gap:16px;flex-wrap:nowrap}
 .e3 .gem .pg .planta{width:760px}
 .e3 .ld3{display:flex;flex-direction:column;align-items:center;gap:24px}
 .e3 #rtw{width:460px}.e3 #rsl{font-size:36px}

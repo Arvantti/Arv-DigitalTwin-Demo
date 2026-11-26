@@ -58,7 +58,7 @@ export function componerEpisodio(c) {
     leave("e-gem", s + d);
   }
 
-  // 3. Solo lectura: observa, simula y recomienda.
+  // 3. Se conecta: observa, simula y recomienda; desde el Control Center lo aprobado baja a planta.
   {
     const x = S.lectura; const [s, d] = span(x);
     const V = [["observa", "Observa"], ["simula", "Simula"], ["recomienda", "Recomienda"]];
@@ -67,17 +67,19 @@ export function componerEpisodio(c) {
         <div class="row lec">
           <div class="panel card" id="sis"><b>Tus sistemas</b><small>Máquinas · ERP · planillas</small></div>
           <svg class="flecha-l" viewBox="0 0 220 40"><line x1="10" y1="20" x2="190" y2="20" pathLength="1"/><polygon points="190,8 214,20 190,32"/></svg>
-          <div class="panel card on" id="tw"><b>Digital Twin</b><small>Solo lectura</small></div>
+          <div class="panel card on" id="tw"><b>Digital Twin</b><small>Conectado a tus sistemas</small></div>
         </div>
         <div class="row vb">${V.map(([, t], i) => `<span class="chip" id="vb${i}">${t}</span>`).join("")}</div>
-        <span class="chip nunca">Nunca mueve nada en la planta</span>
+        <span class="chip nunca" id="cc3">Control Center · lo aprobado baja a planta</span>
+        <div class="row vb"><span class="chip" id="sc0">SCADA de tu empresa</span><span class="chip" id="sc1">Dendro SCADA</span></div>
       </div>`, 3);
     enter("e-lec", s);
     pop("#sis", x.voiceAt); pop("#tw", x.voiceAt + 0.4);
     at("#e-lec .flecha-l line", { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.6 }, x.voiceAt + 0.3);
-    luz("#tw", P(x, "solo lectura"));
+    luz("#tw", P(x, "lo que ya tienes"));
     V.forEach(([k], i) => { pop(`#vb${i}`, P(x, k) - 0.1); luz(`#vb${i}`, P(x, k) + 0.3); });
-    pop("#e-lec .nunca", P(x, "nunca mueve"));
+    pop("#cc3", P(x, "Control Center")); luz("#cc3", P(x, "una persona aprueba"));
+    pop("#sc0", P(x, "SCADA de tu empresa")); pop("#sc1", P(x, "Dendro SCADA")); luz("#sc1", P(x, "Dendro SCADA") + 0.3);
     V.forEach(([k], i) => sfx(`3${i}`, "pop.mp3", P(x, k), 0.12));
     leave("e-lec", s + d);
   }
