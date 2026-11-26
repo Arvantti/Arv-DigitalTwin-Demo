@@ -139,30 +139,30 @@
   "id": "vuelve",
   "start": 273.35,
   "voiceAt": 276.55,
-  "voz": 16.77,
-  "dur": 20.97,
+  "voz": 21.08,
+  "dur": 25.28,
   "real": true
  },
  {
   "id": "decide",
-  "start": 294.32,
-  "voiceAt": 294.67,
+  "start": 298.63,
+  "voiceAt": 298.98,
   "voz": 15.23,
   "dur": 16.58,
   "real": true
  },
  {
   "id": "mapa",
-  "start": 310.9,
-  "voiceAt": 311.25,
+  "start": 315.21,
+  "voiceAt": 315.56,
   "voz": 18.83,
   "dur": 21.68,
   "real": true
  },
  {
   "id": "cierre",
-  "start": 332.58,
-  "voiceAt": 333.48,
+  "start": 336.89,
+  "voiceAt": 337.79,
   "voz": 5.07,
   "dur": 10.47,
   "real": true

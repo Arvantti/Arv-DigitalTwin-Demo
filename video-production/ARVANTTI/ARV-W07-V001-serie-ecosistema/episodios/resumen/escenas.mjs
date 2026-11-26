@@ -448,7 +448,7 @@ export function componerEpisodio(c) {
       <div class="st">
         <div class="row cuatro">
           <div class="panel vz4" id="rv0"><small>Integrator</small><div class="pila4">${D.map((t, i) => `<span class="tag" id="rdt${i}">${t}</span>`).join("")}</div></div>
-          <div class="panel vz4" id="rv1"><small>Arvantti OS</small><b>Escenario</b><span>Contexto y permisos</span></div>
+          <div class="panel vz4" id="rv1"><small>Arvantti OS</small><span class="tag" id="rcer18">Cerebro empresarial</span><b>Escenario</b><span>Con certeza · contexto y permisos</span></div>
           <div class="panel vz4" id="rv2"><small>Gemelo</small><div class="pl">${foto3d("rpl18", ["3d-inyectoras-2"])}</div>${gantt(c, "rgt18", { filas: [["Línea 1", [[0, 40], [44, 80]]], ["Línea 2", [[0, 52], [56, 99]]]], cuello: 1, t0: P(x, "cuello de botella") - 0.4 })}</div>
           <div class="panel vz4" id="rv3"><small>Dendro</small><div class="aviso"><b>Máquina 7</b><span>Mantenimiento antes</span></div></div>
         </div>
@@ -457,6 +457,7 @@ export function componerEpisodio(c) {
     pop("#rv0", P(x, "Integrator") - 0.1);
     D.forEach((k, i) => izq(`#rdt${i}`, P(x, k) - 0.1));
     pop("#rv1", tO - 0.1);
+    pop("#rcer18", P(x, "cerebro empresarial") - 0.1); luz("#rcer18", P(x, "cerebro empresarial") + 0.3);
     pop("#rv2", tG - 0.1);
     at("#rpl18 img", { opacity: 0, scale: 1.15 }, { opacity: 1, scale: 1, duration: 1.2, ease: "power2.out" }, tG);
     pop("#rv3", tD - 0.1);
