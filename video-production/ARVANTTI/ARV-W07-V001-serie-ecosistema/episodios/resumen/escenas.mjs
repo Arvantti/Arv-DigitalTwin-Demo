@@ -92,7 +92,7 @@ export function componerEpisodio(c) {
     const T = { os: "Arvantti OS", dt: "Arvantti Digital Twin", fr: "Arvantti Fractal" };
     const viz = {
       os: red(c, "rred3", { w: 340, h: 190, capas: [3, 5, 5, 2], t0: P(x, T.os) + 0.2, dur: 2.4, seed: 5 }),
-      dt: planta("rpl3"),
+      dt: foto3d("rpl3", ["3d-heroe"]),
       fr: caminos(c, "rcam3", { w: 340, h: 190, cols: 5, filas: 3, explorar: 8, mejores: 3, t0: P(x, T.fr) + 0.2, dur: 2.6, seed: 11 }),
     };
     const [s, d] = escena("r-prod", x, "e1", 0, `
@@ -106,8 +106,7 @@ export function componerEpisodio(c) {
     at("#r-prod h1", { opacity: 0, letterSpacing: "24px", filter: "blur(10px)" }, { opacity: 1, letterSpacing: "-2px", filter: "blur(0px)", duration: 0.9, ease: "power3.out" }, x.voiceAt);
     pop("#r-prod .sj", P(x, "solos o juntos"));
     PRODUCTOS.forEach(([k]) => { const t = P(x, T[k]); pop(`#rpr-${k}`, t - 0.15); brilla(`#rpr-${k}`, t + 0.2); });
-    at("#rpl3 .iso", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.5, stagger: 0.15, ease: "power3.out" }, P(x, T.dt) + 0.1);
-    at("#rpl3 .pulso", { opacity: 0.2, scale: 0.6, transformOrigin: "50% 50%" }, { opacity: 1, scale: 1.4, duration: 0.6, stagger: 0.2, yoyo: true, repeat: 5, ease: "sine.inOut" }, P(x, "copia viva"));
+    at("#rpl3 img", { opacity: 0, scale: 1.15 }, { opacity: 1, scale: 1, duration: 3, ease: "power2.out" }, P(x, T.dt) - 0.2);
     pop("#r-prod .td", P(x, "para que tú"));
     sfx("3a", "whoosh-short.mp3", x.voiceAt, 0.2);
     PRODUCTOS.forEach(([k], i) => sfx(`3${i}`, "pop.mp3", P(x, T[k]), 0.15));
@@ -288,7 +287,7 @@ export function componerEpisodio(c) {
     const [s, d] = escena("r-gem", x, "e3", 3, `
       <div class="st">
         <div class="row gem">
-          <div class="pg">${planta("rpl11")}</div>
+          <div class="pg">${foto3d("rpl11", ["3d-inyectoras", "3d-medio", "3d-heroe"])}</div>
           <div class="ld3">
             <div class="panel card on" id="rtw"><b>Digital Twin</b><small>Copia viva en 3D</small></div>
             <span class="chip" id="rsl">Solo lectura</span>
@@ -298,9 +297,9 @@ export function componerEpisodio(c) {
         </div>
       </div>`);
     enter("r-gem", s);
-    at("#rpl11 .iso", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.6, stagger: 0.2, ease: "power3.out" }, x.voiceAt);
+    { const tf = [x.voiceAt - 0.3, P(x, "al ritmo"), P(x, "observa")];
+      tf.forEach((t, i) => { at(`#rpl11 img:nth-child(${i + 1})`, { opacity: 0, scale: 1.12 }, { opacity: 1, scale: 1, duration: 1, ease: "power2.out" }, t); to(`#rpl11 img:nth-child(${i + 1})`, { scale: 1.06, duration: 6, ease: "none" }, t + 1); }); }
     pop("#rtw", P(x, "copia viva") - 0.2);
-    at("#rpl11 .pulso", { opacity: 0.2, scale: 0.6, transformOrigin: "50% 50%" }, { opacity: 1, scale: 1.5, duration: 0.5, stagger: 0.15, yoyo: true, repeat: 11, ease: "sine.inOut" }, P(x, "al ritmo"));
     pop("#rsl", P(x, "solo lectura")); luz("#rsl", P(x, "solo lectura") + 0.3);
     V.forEach(([k], i) => { pop(`#rvb${i}`, P(x, k) - 0.1); luz(`#rvb${i}`, P(x, k) + 0.3); });
     pop("#r-gem .nunca", P(x, "nunca mueve"));
@@ -450,7 +449,7 @@ export function componerEpisodio(c) {
         <div class="row cuatro">
           <div class="panel vz4" id="rv0"><small>Integrator</small><div class="pila4">${D.map((t, i) => `<span class="tag" id="rdt${i}">${t}</span>`).join("")}</div></div>
           <div class="panel vz4" id="rv1"><small>Arvantti OS</small><b>Escenario</b><span>Contexto y permisos</span></div>
-          <div class="panel vz4" id="rv2"><small>Gemelo</small><div class="pl">${planta("rpl18")}</div>${gantt(c, "rgt18", { filas: [["Línea 1", [[0, 40], [44, 80]]], ["Línea 2", [[0, 52], [56, 99]]]], cuello: 1, t0: P(x, "cuello de botella") - 0.4 })}</div>
+          <div class="panel vz4" id="rv2"><small>Gemelo</small><div class="pl">${foto3d("rpl18", ["3d-inyectoras-2"])}</div>${gantt(c, "rgt18", { filas: [["Línea 1", [[0, 40], [44, 80]]], ["Línea 2", [[0, 52], [56, 99]]]], cuello: 1, t0: P(x, "cuello de botella") - 0.4 })}</div>
           <div class="panel vz4" id="rv3"><small>Dendro</small><div class="aviso"><b>Máquina 7</b><span>Mantenimiento antes</span></div></div>
         </div>
       </div>`);
@@ -459,7 +458,7 @@ export function componerEpisodio(c) {
     D.forEach((k, i) => izq(`#rdt${i}`, P(x, k) - 0.1));
     pop("#rv1", tO - 0.1);
     pop("#rv2", tG - 0.1);
-    at("#rpl18 .iso", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.4, stagger: 0.12 }, tG);
+    at("#rpl18 img", { opacity: 0, scale: 1.15 }, { opacity: 1, scale: 1, duration: 1.2, ease: "power2.out" }, tG);
     pop("#rv3", tD - 0.1);
     at("#r-vue .aviso", { opacity: 0, scale: 0.7 }, { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(2)" }, P(x, "qué máquina"));
     sfx("18a", "pop.mp3", P(x, "Integrator"), 0.12); sfx("18b", "pop.mp3", tO, 0.12); sfx("18c", "pop.mp3", tG, 0.12); sfx("18d", "hit.wav", P(x, "qué máquina"), 0.18);
@@ -544,4 +543,9 @@ function mapa(c, x, pop) {
   });
   to("#r-mapa", { opacity: 0, filter: "blur(14px)", duration: 0.5 }, s + d - 0.25);
   void pop;
+}
+
+// Tomas reales del gemelo 3D de la planta de plásticos (las mismas del video de lanzamiento).
+function foto3d(id, tomas) {
+  return `<div class="foto3d" id="${id}">${tomas.map((t) => `<img src="assets/clips/${t}.png" alt="">`).join("")}</div>`;
 }
