@@ -12,6 +12,8 @@ from pathlib import Path
 from typing import Any
 
 from scipy.optimize import brentq
+from twin_runtime.recirculation_control import return_pump_requested
+from twin_runtime.water_balance import tank_mass_step
 
 _spec = importlib.util.spec_from_file_location("fractal_water_recirc_supply", Path(__file__).with_name("supply.py"))
 _supply = importlib.util.module_from_spec(_spec)
@@ -81,12 +83,15 @@ def split_floor_drains(model: dict[str, Any], distribution_by_level: dict[str, f
 
 def advance_hour(
     model: dict[str, Any], levels: dict[str, float], distribution_by_level: dict[str, float], initially_on: bool,
-    *, duration_s: float = 3600.0,
+    *, duration_s: float = 3600.0, max_step_s: float = 60.0,
+    pump_state: dict[str, float] | None = None,
     on_transition: Callable[[dict[str, Any]], None] | None = None,
 ) -> tuple[dict[str, float], float, bool, bool]:
     """Integra un intervalo de duración explícita con eventos de histéresis y balance de masa."""
     if not 0 < duration_s <= 3600:
         raise ValueError("duration_s debe ser > 0 y <= 3600")
+    if not 0 < max_step_s <= 60:
+        raise ValueError("max_step_s debe ser > 0 y <= 60")
     pump = model["equipment_models"]["pumpset-recirc-01"]["params"]
     capacities = {tank: float(model["equipment_models"][tank]["params"]["volume_l"]) / 1000 for tank in levels}
     volumes = {tank: capacities[tank] * pct / 100 for tank, pct in levels.items()}
@@ -94,7 +99,9 @@ def advance_hour(
     returned = {"tank-recirc-01": return_1, "tank-recirc-02": return_2}
     drawn = sum(returned.values())
     on = initially_on
-    speed = 1.0 if initially_on else 0.0
+    speed = float(pump_state["speed"]) if pump_state is not None else (1.0 if initially_on else 0.0)
+    if not 0 <= speed <= 1:
+        raise ValueError("velocidad inicial de recirculación inválida")
     moved = 0.0
     overflow = False
     elapsed = 0.0
@@ -106,14 +113,13 @@ def advance_hour(
             current["tank-recirc-01"], current["tank-recirc-02"]
         ) + 1e-8 >= float(pump["return_high_start_pct"])
         needs_supply = float(pump["supply_start_pct"]) > 0 and current["tank-supply-01"] <= float(pump["supply_start_pct"]) + 1e-8
-        source_safe = source >= float(pump["stop_level_pct"])
         was_on = on
-        if on:
-            on = source_safe and not full
-        else:
-            on = source_safe and not full and (
-                needs_supply or high_return or (float(pump["supply_start_pct"]) == 0 and source >= float(pump["start_level_pct"]))
-            )
+        on = return_pump_requested(
+            was_on, current["tank-recirc-01"], current["tank-recirc-02"], current["tank-supply-01"],
+            stop_pct=float(pump["stop_level_pct"]), start_pct=float(pump["start_level_pct"]),
+            full_pct=float(pump["target_full_pct"]), supply_start_pct=float(pump["supply_start_pct"]),
+            return_high_start_pct=float(pump["return_high_start_pct"]),
+        )
         if on != was_on and on_transition is not None:
             reason = (
                 "suministro_bajo" if needs_supply else "retorno_alto" if high_return else "origen_alto"
@@ -126,7 +132,7 @@ def advance_hour(
             speed = 0.0
         # El variador operativo sube a 100 % en 20 s tras cada arranque.
         # Integramos la curva a velocidad media durante pasos cortos de rampa.
-        dt = min(5.0 if on and speed < 1.0 else 60.0, duration_s - elapsed)
+        dt = min(5.0 if on and speed < 1.0 else max_step_s, max_step_s, duration_s - elapsed)
         ramp_speed = min(1.0, speed + 0.025 * dt)
         _flow, qa, qb = pump_flow(model, current, ramp_speed) if on else (0.0, 0.0, 0.0)
         supply = "tank-supply-01"
@@ -152,13 +158,27 @@ def advance_hour(
         qa_m3 = min(qa * dt / 3600, volumes["tank-recirc-01"] + returned["tank-recirc-01"] * dt / 3600)
         qb_m3 = min(qb * dt / 3600, volumes["tank-recirc-02"] + returned["tank-recirc-02"] * dt / 3600)
         next_volumes = {
-            supply: volumes[supply] + qa_m3 + qb_m3 - delivered,
-            "tank-recirc-01": volumes["tank-recirc-01"] + returned["tank-recirc-01"] * dt / 3600 - qa_m3,
-            "tank-recirc-02": volumes["tank-recirc-02"] + returned["tank-recirc-02"] * dt / 3600 - qb_m3,
+            supply: tank_mass_step(volumes[supply], capacities[supply], qa_m3 + qb_m3, delivered)[0],
+            "tank-recirc-01": tank_mass_step(
+                volumes["tank-recirc-01"], capacities["tank-recirc-01"],
+                returned["tank-recirc-01"] * dt / 3600, qa_m3,
+            )[0],
+            "tank-recirc-02": tank_mass_step(
+                volumes["tank-recirc-02"], capacities["tank-recirc-02"],
+                returned["tank-recirc-02"] * dt / 3600, qb_m3,
+            )[0],
         }
-        overflow |= delivered + 1e-9 < drawn * dt / 3600 or any(v > capacities[t] + 1e-9 for t, v in next_volumes.items())
+        overflow |= delivered + 1e-9 < drawn * dt / 3600 or (
+            volumes[supply] + qa_m3 + qb_m3 - delivered > capacities[supply] + 1e-9
+            or any(
+                volumes[tank] + returned[tank] * dt / 3600 - q > capacities[tank] + 1e-9
+                for tank, q in (("tank-recirc-01", qa_m3), ("tank-recirc-02", qb_m3))
+            )
+        )
         volumes = {t: min(capacities[t], max(0.0, v)) for t, v in next_volumes.items()}
         moved += qa_m3 + qb_m3
         speed = min(1.0, speed + 0.05 * dt) if on else 0.0
         elapsed += dt
+    if pump_state is not None:
+        pump_state["speed"] = speed
     return {t: 100 * volumes[t] / capacities[t] for t in levels}, moved, on, overflow

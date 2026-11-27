@@ -7,6 +7,7 @@ from typing import Any
 
 from twin_runtime import EquipmentBehavior, StepContext
 from twin_runtime.primitives import PID, FirstOrderLag
+from twin_runtime.water_balance import tank_mass_step
 
 AMBIENT_C = 22.0
 LOSS_W_M2K = 8.0
@@ -135,16 +136,15 @@ class Vessel(EquipmentBehavior):
         outflow = min(outflow_sp, p["outlet_max_kg_h"]) if active else 0.0
         if self.failures.is_active("outlet_valve_fault"):
             outflow = 0.0
-        room = self.capacity_kg - self.mass
-        available = self.mass
-        in_kg = min(inflow * dt / 3600.0, room + outflow * dt / 3600.0)
-        out_kg = min(outflow * dt / 3600.0, available + in_kg)
+        next_mass, in_kg, out_kg = tank_mass_step(
+            self.mass, self.capacity_kg, inflow * dt / 3600.0, outflow * dt / 3600.0
+        )
         self.inflow, self.outflow = in_kg * 3600.0 / dt, out_kg * 3600.0 / dt
 
         if in_kg > 0:  # mezcla térmica con lo que entra
             t_in = float(self.inputs["inflow_temp_c"])
             self.temp = (self.temp * self.mass + t_in * in_kg) / max(1e-9, self.mass + in_kg)
-        self.mass = max(0.0, min(self.capacity_kg, self.mass + in_kg - out_kg))
+        self.mass = next_mass
         self.total_in += in_kg
         self.total_out += out_kg
 

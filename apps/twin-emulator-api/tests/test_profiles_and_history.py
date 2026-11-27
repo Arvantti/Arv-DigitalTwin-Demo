@@ -379,6 +379,14 @@ def test_session_api_stores_and_replays_model_results_as_separate_triad_sources(
     manifest = manifest_response.json()
     assert manifest["history_times_s"] == [0, 1]
     assert manifest["history_sample_count"] == 2
+    snapshot_variables = operation.snapshot()["equipment"]
+    assert manifest["snapshot"]["calculated_tank_volumes_l"] == {
+        tank: snapshot_variables[tank]["variables"]["volume_l"]
+        for tank in ("tank-supply-01", "tank-recirc-01", "tank-recirc-02")
+    }
+    assert manifest["snapshot"]["calculated_recirc_speed_pct"] == (
+        snapshot_variables["pumpset-recirc-01"]["variables"]["speed_pct"]
+    )
     assert manifest["history_hash"] == main_module._canonical_fingerprint(expected_history)
     assert manifest["profile_hash"] == main_module._profile_fingerprint(ProfileStore(PLANT).get(profile["id"]))
     repeated_manifest = client.post(

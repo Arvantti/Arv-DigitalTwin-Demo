@@ -863,8 +863,9 @@ def create_comparison_manifest(
         raise HTTPException(404, "perfil guardado desconocido")
     base_time = float(session.plant.t)
     profile_hour = int(base_time // 3600)
+    plant_snapshot = session.snapshot()
     tags = plc_tags(
-        session.snapshot(), profile_id=profile_id, profile_hour=profile_hour, simulated_time=base_time
+        plant_snapshot, profile_id=profile_id, profile_hour=profile_hour, simulated_time=base_time
     )
     if tags.get("PLC.Profile.ActiveId") != session.profile_id:
         raise _manifest_conflict("snapshot_profile_mismatch", "el snapshot PLC no corresponde al perfil realmente activo")
@@ -910,7 +911,14 @@ def create_comparison_manifest(
         **identity,
         "input_hash": _canonical_fingerprint(identity),
         "profile": profile,
-        "snapshot": {"snapshot_id": snapshot_id, "simulation_time_s": base_time, "plc_tags": tags},
+        "snapshot": {
+            "snapshot_id": snapshot_id, "simulation_time_s": base_time, "plc_tags": tags,
+            "calculated_tank_volumes_l": {
+                tank: plant_snapshot["equipment"][tank]["variables"]["volume_l"]
+                for tank in ("tank-supply-01", "tank-recirc-01", "tank-recirc-02")
+            },
+            "calculated_recirc_speed_pct": plant_snapshot["equipment"]["pumpset-recirc-01"]["variables"]["speed_pct"],
+        },
         "history_sample_count": len(history_frames),
     }
     try:
@@ -1130,6 +1138,9 @@ async def subscribe_plant_session(ws: WebSocket, plant_id: str, session_id: str)
                 return
             try:
                 session_manager.command(session, payload)
+                # Publicar de inmediato los cambios de control (incluida la
+                # velocidad), incluso si la sesión está pausada o entre ticks.
+                session.publish()
             except (KeyError, ValueError) as exc:
                 await ws.send_json({"error": str(exc)})
 
