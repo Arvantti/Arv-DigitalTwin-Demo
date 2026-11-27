@@ -8,6 +8,8 @@ from math import acos, pi
 from pathlib import Path
 from typing import Any
 
+from twin_runtime.prs_curve import outlet_target_from_opening
+
 MODEL_DIR = Path(__file__).resolve().parents[1] / "models" / "water-network-scale-v1"
 PARAMETERS = MODEL_DIR / "parameters.py"
 _spec = importlib.util.spec_from_file_location("fractal_water_parameters", PARAMETERS)
@@ -243,6 +245,8 @@ def project_24h(
     *,
     target_pressure_mca: float | None = None,
     horizon_hours: int = 24,
+    initial_tank_volumes_l: dict[str, float] | None = None,
+    initial_recirc_speed_pct: float | None = None,
     on_recirculation_transition: Callable[[dict[str, Any]], None] | None = None,
     on_hour_completed: Callable[[dict[str, Any]], None] | None = None,
 ) -> list[dict[str, Any]]:
@@ -262,8 +266,22 @@ def project_24h(
         "tank-recirc-01": float(tags.get("PLC.Tank.Recirc01.LevelPct") or 40.0),
         "tank-recirc-02": float(tags.get("PLC.Tank.Recirc02.LevelPct") or 40.0),
     }
+    if initial_tank_volumes_l is not None:
+        for tank in tank_levels:
+            volume = initial_tank_volumes_l.get(tank)
+            capacity = float(_MODEL["equipment_models"][tank]["params"]["volume_l"])
+            if isinstance(volume, bool) or not isinstance(volume, (int, float)) or not 0 <= volume <= capacity:
+                raise ValueError(f"volumen inicial inválido: {tank}")
+            tank_levels[tank] = 100 * volume / capacity
     current_prs = float(tags.get("PLC.PRS.OutletPressureMca") or tags.get("PLC.PRS.ManualSettingMca") or 20.0)
     recirc_on = bool(tags.get("PLC.Pump.RecirculationAutoActive", tags.get("PLC.Pump.RecirculationFlowM3h") or 0))
+    if initial_recirc_speed_pct is not None and (
+        isinstance(initial_recirc_speed_pct, bool) or not isinstance(initial_recirc_speed_pct, (int, float))
+        or not 0 <= initial_recirc_speed_pct <= 100
+    ):
+        raise ValueError("velocidad inicial de recirculación inválida")
+    recirc_pump_state = {"speed": (initial_recirc_speed_pct / 100 if initial_recirc_speed_pct is not None
+                                   else (1.0 if recirc_on else 0.0))}
     openings = tuple(
         float(tags.get(f"PLC.Valve.Vertical{n}OpeningPct") if tags.get(f"PLC.Valve.Vertical{n}OpeningPct") is not None else 100.0)
         for n in (12, 23, 34)
@@ -317,9 +335,17 @@ def project_24h(
             scenario_tags["PLC.Pump.SetpointMca"] = float(prs_entry["inlet_pressure_mca"]) + current_discharge - current_inlet
         prs_control_mode = prs_entry.get("control_mode", "critical_pressure")
         prs_branch_auto = prs_branch == "auto" and study_type != "optimized"
-        prs_auto = prs_branch_auto and prs_control_mode in {"critical_pressure", "critical_point"}
         critical_consumer_id = prs_entry.get("critical_control_point") if prs_control_mode == "critical_point" else None
         prs_setpoint = float(prs_entry.get("auto_outlet_mca", current_prs))
+        fixed_opening = prs_branch_auto and prs_control_mode == "fixed_opening" or (
+            prs_branch_auto and "auto_opening_pct" in prs_entry and "control_mode" not in prs_entry
+        )
+        if fixed_opening:
+            opening = float(prs_entry.get("auto_opening_pct", scenario_tags.get("PLC.PRS.AutoOpeningPct", 30)))
+            prs_setpoint = outlet_target_from_opening(
+                opening, float(scenario_tags.get("PLC.PRS.InletPressureMca") or 0)
+            )
+        prs_auto = prs_branch_auto and not fixed_opening and prs_control_mode in {"critical_pressure", "critical_point"}
         critical_target = critical_setpoint
         between = entry.get("between_levels", {})
         openings = tuple(float(between.get(str(n), opening)) for n, opening in zip((12, 23, 34), openings, strict=True))
@@ -383,7 +409,7 @@ def project_24h(
 
         tank_levels, recirc_volume, recirc_on, overflow = _recirc.advance_hour(
             _MODEL, tank_levels, nominal_state["level_flows_m3h"], recirc_on,
-            duration_s=interval_s,
+            duration_s=interval_s, pump_state=recirc_pump_state,
             on_transition=trace_transition if on_recirculation_transition is not None else None,
         )
         supply_level = tank_levels["tank-supply-01"]
@@ -396,6 +422,15 @@ def project_24h(
         })
         end_prs = float(optimized_controls["prs_mca"]) if optimized_controls is not None else prs_setpoint
         end_openings = scenario_openings
+        if fixed_opening and optimized_controls is None:
+            # La presión de entrada depende del caudal del propio estado proyectado.
+            # Resolver la curva S con la entrada calculada, no con la consigna de la hora anterior.
+            for _ in range(3):
+                estimate = _solver.evaluate(end_tags, prs_mca=end_prs, vertical_openings_pct=end_openings)
+                corrected = outlet_target_from_opening(opening, estimate["prs_inlet_mca"])
+                if abs(corrected - end_prs) < 1e-5:
+                    break
+                end_prs = corrected
         end_state = _solver.evaluate(
             end_tags,
             prs_mca=end_prs,

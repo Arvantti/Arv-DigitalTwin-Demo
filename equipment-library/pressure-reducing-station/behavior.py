@@ -8,6 +8,7 @@ from typing import Any
 
 from twin_runtime import EquipmentBehavior, StepContext
 from twin_runtime.primitives import PID, HydraulicNetwork, RateLimiter
+from twin_runtime.prs_curve import outlet_target_from_opening
 
 RHO_G = 998.0 * 9.81  # N/m³
 LOW_FRACTION = 0.10
@@ -18,16 +19,6 @@ PILOT_DRIFT = 1.15
 WIDE_OPEN_MCA = 1.0e4  # consigna imposible de alcanzar: la PRV queda abierta
 OPENING_MIN_PCT = 20.0
 OPENING_MAX_PCT = 100.0
-
-
-def outlet_target_from_opening(opening_pct: float, inlet_pressure_mca: float) -> float:
-    """Convierte apertura a consigna hidráulica con la curva S asumida (no es un Kv físico)."""
-    import math
-
-    opening = min(OPENING_MAX_PCT, max(OPENING_MIN_PCT, float(opening_pct)))
-    fraction = (opening - OPENING_MIN_PCT) / (OPENING_MAX_PCT - OPENING_MIN_PCT)
-    pressure_span = max(0.0, float(inlet_pressure_mca) - 15.0)
-    return 15.0 + pressure_span * (0.5 - 0.5 * math.cos(math.pi * fraction))
 
 
 def add_pressure_reducing_station(net: HydraulicNetwork, prefix: str, inlet: str, outlet: str,

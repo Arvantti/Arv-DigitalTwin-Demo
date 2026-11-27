@@ -7,6 +7,7 @@ from typing import Any
 
 from twin_runtime import EquipmentBehavior, StepContext
 from twin_runtime.primitives import PID, HydraulicNetwork, RateLimiter
+from twin_runtime.recirculation_control import return_pump_requested
 
 RHO_G = 998.0 * 9.81  # N/m³
 STAGE_UP_S = 15.0
@@ -225,20 +226,29 @@ class BoosterPumpSet(EquipmentBehavior):
         p = self.p
         src = self.inputs["source_level_pct"]
         dst = self.inputs["target_level_pct"]
-        full = dst is not None and dst >= p["target_full_pct"]
-        individual = (self.inputs["source_level_1_pct"], self.inputs["source_level_2_pct"])
-        high_return = p["return_high_start_pct"] < 100 and any(
-            level is not None and level + 1e-8 >= p["return_high_start_pct"] for level in individual
-        )
-        needs_supply = p["supply_start_pct"] > 0 and dst is not None and dst <= p["supply_start_pct"] + 1e-8
-        source_safe = src is None or src >= p["stop_level_pct"]
-        if self.level_on:
-            if not source_safe or full:
-                self.level_on = False
-        elif source_safe and not full:
-            legacy_start = p["supply_start_pct"] == 0 and (src is None or src >= p["start_level_pct"])
-            if needs_supply or high_return or legacy_start:
-                self.level_on = True
+        first = self.inputs["source_level_1_pct"]
+        second = self.inputs["source_level_2_pct"]
+        if src is not None and first is not None and second is not None and dst is not None:
+            self.level_on = return_pump_requested(
+                self.level_on, float(first), float(second), float(dst),
+                stop_pct=p["stop_level_pct"], start_pct=p["start_level_pct"],
+                full_pct=p["target_full_pct"], supply_start_pct=p["supply_start_pct"],
+                return_high_start_pct=p["return_high_start_pct"],
+            )
+        else:
+            # Equipo genérico sin los cuatro sensores: conserva su política previa.
+            full = dst is not None and dst >= p["target_full_pct"]
+            high_return = p["return_high_start_pct"] < 100 and any(
+                level is not None and level + 1e-8 >= p["return_high_start_pct"] for level in (first, second)
+            )
+            needs_supply = p["supply_start_pct"] > 0 and dst is not None and dst <= p["supply_start_pct"] + 1e-8
+            source_safe = src is None or src >= p["stop_level_pct"]
+            if self.level_on:
+                self.level_on = source_safe and not full
+            elif source_safe and not full:
+                self.level_on = needs_supply or high_return or (
+                    p["supply_start_pct"] == 0 and (src is None or src >= p["start_level_pct"])
+                )
         want = min(p["duty_max"], p["pumps"]) if self.level_on else 0
         while len(self.running) > want:
             self._stop_last("level")

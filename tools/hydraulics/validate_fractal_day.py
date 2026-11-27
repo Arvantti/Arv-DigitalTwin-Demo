@@ -47,7 +47,7 @@ def summary(samples: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
-def compare(output: Path, hours: int = 24) -> dict[str, Any]:
+def compare(output: Path, hours: int = 24, calculated_initial: bool = False) -> dict[str, Any]:
     profile = json.loads(PROFILE.read_text(encoding="utf-8"))
     session = session_manager.create(PLANT, _plant_model(PLANT), profile_id=profile["id"], profile=profile)
     session.apply_profile_hour(0)
@@ -57,12 +57,21 @@ def compare(output: Path, hours: int = 24) -> dict[str, Any]:
     if base_tags["PLC.Pump.RunningCount"] == 0:
         raise RuntimeError("la bomba no se estabilizó")
     started = monotonic()
-    frames = project_24h(base_tags, profile, "baseline", horizon_hours=hours)
+    initial_equipment = session.snapshot()["equipment"]
+    initial_state = ({
+        "initial_tank_volumes_l": {
+            tank: initial_equipment[tank]["variables"]["volume_l"]
+            for tank in ("tank-supply-01", "tank-recirc-01", "tank-recirc-02")
+        },
+        "initial_recirc_speed_pct": initial_equipment["pumpset-recirc-01"]["variables"]["speed_pct"],
+    } if calculated_initial else {})
+    frames = project_24h(base_tags, profile, "baseline", horizon_hours=hours, **initial_state)
     if len(frames) != hours:
         raise ValueError(f"Fractal no devolvió {hours} horas")
     report: dict[str, Any] = {
         "scope": f"continuous {hours}-hour emulator run compared to {hours} hourly Fractal forecasts",
         "validation_status": "post_session_snapshot_cache",
+        "calculated_initial": calculated_initial,
         "recirculation_policy": "supply_start_30_or_either_return_90; supply_stop_90_or_source_mean_below_20",
         "sampling": "one PLC sensor sample per simulated tick",
         "execution_mode": "offline_physics; playback cadence controlled separately",
@@ -80,7 +89,7 @@ def compare(output: Path, hours: int = 24) -> dict[str, Any]:
             session.plant.step()
         snapshot = session.snapshot()
         measured = session.message()["plc_tags"]
-        state = frame["scenarios"][1]["state"]
+        state = frame["scenarios"][0]["state"]
         metrics = {name: metric(float(state[name]), float(measured[tag])) for name, tag in CHANNELS.items()}
         for name, tag in TANKS.items():
             tank_id = {
@@ -100,7 +109,7 @@ def compare(output: Path, hours: int = 24) -> dict[str, Any]:
                 "emulator_t_s": session.plant.t,
                 "forecast_t_s": frame["plc_tags"]["PLC.Session.SimulatedTime"],
                 "pressure_safety_agreement": pressure_agreement,
-                "fractal_feasible": frame["scenarios"][1]["feasible"],
+                "fractal_feasible": frame["scenarios"][0]["feasible"],
                 "metrics": metrics,
             }
         )
@@ -121,8 +130,9 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, required=True, help="Archivo JSON de resultados y checkpoints horarios")
     parser.add_argument("--hours", type=int, default=24, choices=range(1, 25), metavar="1..24")
+    parser.add_argument("--calculated-initial", action="store_true", help="Usar volumen calculado y velocidad congelados al inicio")
     args = parser.parse_args()
-    result = compare(args.output, hours=args.hours)
+    result = compare(args.output, hours=args.hours, calculated_initial=args.calculated_initial)
     print(json.dumps({"summary": result["summary"], "safety_disagreements": result["safety_disagreements"]}, indent=2))
     if result["safety_disagreements"]:
         parser.exit(1, "Fractal y emulador discrepan sobre el umbral de 15 mca\n")

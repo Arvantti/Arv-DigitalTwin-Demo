@@ -158,6 +158,27 @@ def test_return_pump_matches_operational_fixed_head_point_and_balances_tanks() -
     assert abs(after - before) < 1e-5  # circuito cerrado; no crea ni destruye agua
 
 
+def test_recirculation_speed_continues_across_subintervals() -> None:
+    levels = {"tank-supply-01": 35, "tank-recirc-01": 75, "tank-recirc-02": 75}
+    demand = {str(level): 1.0 for level in range(1, 5)}
+    continuous_state = {"speed": 0.0}
+    whole, moved, running, overflow = recirc.advance_hour(
+        model.MODEL, levels, demand, False, duration_s=120, max_step_s=1, pump_state=continuous_state,
+    )
+    split_state = {"speed": 0.0}
+    mid, first, mid_on, _ = recirc.advance_hour(
+        model.MODEL, levels, demand, False, duration_s=60, max_step_s=1, pump_state=split_state,
+    )
+    end, second, end_on, _ = recirc.advance_hour(
+        model.MODEL, mid, demand, mid_on, duration_s=60, max_step_s=1, pump_state=split_state,
+    )
+    assert not overflow
+    assert end_on == running
+    assert split_state["speed"] == pytest.approx(continuous_state["speed"])
+    assert end == pytest.approx(whole, abs=1e-4)
+    assert first + second == pytest.approx(moved, abs=1e-5)
+
+
 def test_common_drain_manifold_collects_all_floors_and_splits_without_loss() -> None:
     first, second = recirc.split_floor_drains(model.MODEL, {"1": 1.0, "2": 2.0, "3": 3.0, "4": 4.0})
     assert first == 5.0

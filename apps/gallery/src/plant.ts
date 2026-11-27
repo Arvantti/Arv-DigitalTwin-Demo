@@ -2824,6 +2824,8 @@ async function start(): Promise<void> {
           if (event.data.studyId && /^[\w-]+$/.test(event.data.studyId)) {
             forecastStudyId = event.data.studyId; url.set("study", forecastStudyId); history.replaceState(null, "", `${location.pathname}?${url}`);
             void loadForecast();
+          } else if (event.data.comparisonId && /^[\w-]+$/.test(event.data.comparisonId)) {
+            void loadSessionTimeline(event.data.comparisonId, undefined, "cosimulation");
           } else if (latestLiveMessage && !forecastStudyId) applyMessage(latestLiveMessage, "PLC.ACTUAL");
         }
       }

@@ -56,6 +56,10 @@ def project(request: dict[str, Any], *, on_hour_completed=None) -> dict[str, Any
         profile,
         study_type="baseline",
         horizon_hours=int(hours),
+        **({"initial_tank_volumes_l": snapshot["calculated_tank_volumes_l"]}
+           if "calculated_tank_volumes_l" in snapshot else {}),
+        **({"initial_recirc_speed_pct": snapshot["calculated_recirc_speed_pct"]}
+           if "calculated_recirc_speed_pct" in snapshot else {}),
         **({"on_hour_completed": on_hour_completed} if on_hour_completed is not None else {}),
     )
     forecast_frames: list[dict[str, Any]] = []

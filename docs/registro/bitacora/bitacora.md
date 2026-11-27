@@ -1,5 +1,9 @@
 # Bitácora
 
+## 2026-11-26 · Comparación prospectiva y réplica hidráulica aislada
+
+Se congelaron volúmenes calculados y velocidad de recirculación en el manifiesto; se corrigió la curva de apertura fija VRP en la proyección y se compartieron histéresis y balance. Una corrida prospectiva independiente desde H02 hasta H24 confirmó que el adaptador rápido aún diverge en tanques (−16,606 pp de suministro en H24), aunque caudales/presiones son próximos. Un prototipo local que clona el estado completo del runtime sin consultar futuro PLC reprodujo 22 muestras horarias con diferencia cero, en 780–921 s; a paso 2 s tardó 599 s, máximo 11,6 pp de suministro y un evento de bomba menos. No se promovió el prototipo a producción ni se declaró equivalencia del adaptador actual. Se conservaron diagnósticos y pruebas reproducibles; siguiente experimento: núcleo hidráulico especializado compilado, medido frente al oráculo. Ver [[../historico/sesion-codigo/historico-sesion-codigo]].
+
 ## 2026-11-24 · Ensayo temporal aislado y cierre de controles de curva
 
 Emulador real cruzó varias horas: pasado bloqueado, actual42,5% aplicado tras confirmar, futuro45,5% ejecutado a su hora. Cosim+Fractal nuevos con mismo manifiesto, diezgauges y consulta3D sin rebobinarPLC. Corregidos botonesverticales, visibilidadMANUAL, mensajes de borrador, exclusión de cálculoFractal y doblecarga del visor. 34pruebasPython más Playwrightfixtures/tipos/build. Ensayo detenido, datosusuario intactos. Última carrera de carga y velocidadcuantitativa requieren revalidación puntual. Ver [[../historico/sesion-codigo/2026-11-24-ensayo-integral-edicion-temporal]].

@@ -69,6 +69,30 @@ def test_adapter_reuses_hourly_solver_and_marks_its_limits_without_faking_histor
     assert body["profile"]["hours"]["0"]["global_consumers_pct"] == 80
 
 
+def test_adapter_uses_calculated_initial_volume_without_changing_measured_plc_tags() -> None:
+    body = request()
+    body["initial_snapshot"]["calculated_tank_volumes_l"] = {
+        "tank-supply-01": 3888 * 0.69274,
+        "tank-recirc-01": 2256 * 0.406,
+        "tank-recirc-02": 2256 * 0.406,
+    }
+    predicted = project(body)
+    measured_only = project(request())
+    assert predicted["frames"][1]["state"]["plc_tags"]["PLC.Tank.Supply.LevelPct"] == 70
+    assert (predicted["frames"][2]["state"]["plc_tags"]["PLC.Tank.Supply.LevelPct"]
+            != measured_only["frames"][2]["state"]["plc_tags"]["PLC.Tank.Supply.LevelPct"])
+    body["initial_snapshot"]["calculated_tank_volumes_l"]["tank-supply-01"] = -1
+    with pytest.raises(ValueError, match="volumen inicial inválido"):
+        project(body)
+
+
+def test_adapter_rejects_invalid_recirculation_speed() -> None:
+    body = request()
+    body["initial_snapshot"]["calculated_recirc_speed_pct"] = 120
+    with pytest.raises(ValueError, match="velocidad inicial de recirculación inválida"):
+        project(body)
+
+
 def test_adapter_refuses_unimplemented_steps_or_horizons() -> None:
     with pytest.raises(ValueError, match="solo soporta paso 1 h"):
         project({**request(), "time_step_s": 7200, "horizon_s": 7200, "forecast_times_s": [7200]})
